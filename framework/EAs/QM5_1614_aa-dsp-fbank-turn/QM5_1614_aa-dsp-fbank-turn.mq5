@@ -137,7 +137,7 @@ void InitializeFilter()
    double closes[];
    ArraySetAsSeries(closes, false);   // closes[0]=most recent closed, closes[n-1]=oldest
    int n   = strategy_warmup_bars + 10;
-   int got = CopyClose(_Symbol, PERIOD_D1, 1, n, closes);
+   int got = CopyClose(_Symbol, PERIOD_D1, 1, n, closes); // perf-allowed: one-time warmup inside D1 new-bar state initialization
    if(got < strategy_warmup_bars)
       return; // insufficient history — will retry on next bar
 
@@ -157,7 +157,7 @@ bool CheckSpread()
    // perf-allowed: called once per D1 bar from AdvanceState_OnNewBar
    int hist_spreads[];
    ArraySetAsSeries(hist_spreads, false);
-   int got = CopySpread(_Symbol, PERIOD_D1, 1, strategy_spread_lookback, hist_spreads);
+   int got = CopySpread(_Symbol, PERIOD_D1, 1, strategy_spread_lookback, hist_spreads); // perf-allowed: D1 spread median cache, called from new-bar state advance
    if(got < strategy_spread_lookback / 2)
       return true; // not enough data, allow
 
@@ -405,9 +405,6 @@ void OnTick()
    if(is_new_bar)
       AdvanceState_OnNewBar();
 
-   if(Strategy_NoTradeFilter())
-      return;
-
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -433,6 +430,9 @@ void OnTick()
    if(!is_new_bar) return;
 
    QM_EquityStreamOnNewBar();
+
+   if(Strategy_NoTradeFilter())
+      return;
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

@@ -3,6 +3,7 @@
 #property description "QuantMechanica V5 EA skeleton template"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -35,7 +36,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 9999;
+input int    qm_ea_id                   = 9938;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,11 +74,20 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-// TODO: declare strategy-specific input params here, e.g.:
-//   input int    strategy_atr_period   = 14;
-//   input double strategy_atr_sl_mult  = 2.0;
-//   input double strategy_atr_tp_mult  = 3.0;
-input int    strategy_placeholder       = 0;
+input int    strategy_ema_fast_period      = 3;
+input int    strategy_ema_confirm_period   = 5;
+input int    strategy_ema_slow_period      = 13;
+input int    strategy_stoch_k_period       = 14;
+input int    strategy_stoch_d_period       = 3;
+input int    strategy_stoch_slowing        = 3;
+input double strategy_stoch_midline        = 50.0;
+input int    strategy_ignition_fresh_bars  = 5;
+input int    strategy_slope_lookback_bars  = 3;
+input int    strategy_stoch_sync_bars      = 2;
+input int    strategy_fixed_sl_pips        = 20;
+input int    strategy_fixed_tp_pips        = 40;
+input double strategy_max_spread_sl_frac   = 0.15;
+input int    strategy_time_stop_bars       = 12;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -87,8 +97,18 @@ input int    strategy_placeholder       = 0;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // TODO: e.g. "only trade London session" or "skip if ADX<20"
-   return false;
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
+      return true;
+
+   const double mid = (ask + bid) * 0.5;
+   const double stop = QM_StopFixedPips(_Symbol, QM_BUY, mid, strategy_fixed_sl_pips);
+   const double stop_dist = MathAbs(mid - stop);
+   if(stop_dist <= 0.0)
+      return true;
+
+   return ((ask - bid) > stop_dist * strategy_max_spread_sl_frac);
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -96,7 +116,112 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // TODO: build req.type / req.price / req.sl / req.tp / req.lots
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(strategy_ema_fast_period <= 0 ||
+      strategy_ema_confirm_period <= 0 ||
+      strategy_ema_slow_period <= 0 ||
+      strategy_stoch_k_period <= 0 ||
+      strategy_stoch_d_period <= 0 ||
+      strategy_stoch_slowing <= 0 ||
+      strategy_ignition_fresh_bars <= 0 ||
+      strategy_slope_lookback_bars <= 0 ||
+      strategy_stoch_sync_bars < 0 ||
+      strategy_fixed_sl_pips <= 0 ||
+      strategy_fixed_tp_pips <= 0)
+      return false;
+
+   int fast_long_cross = 0;
+   int confirm_long_cross = 0;
+   int fast_short_cross = 0;
+   int confirm_short_cross = 0;
+   for(int shift = 1; shift <= strategy_ignition_fresh_bars; ++shift)
+     {
+      const double fast_now = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_fast_period, shift);
+      const double fast_prev = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_fast_period, shift + 1);
+      const double confirm_now = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_confirm_period, shift);
+      const double confirm_prev = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_confirm_period, shift + 1);
+      const double slow_now = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_slow_period, shift);
+      const double slow_prev = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_slow_period, shift + 1);
+      if(fast_now <= 0.0 || fast_prev <= 0.0 || confirm_now <= 0.0 || confirm_prev <= 0.0 || slow_now <= 0.0 || slow_prev <= 0.0)
+         return false;
+
+      if(fast_long_cross == 0 && fast_now > slow_now && fast_prev <= slow_prev)
+         fast_long_cross = shift;
+      if(confirm_long_cross == 0 && confirm_now > slow_now && confirm_prev <= slow_prev)
+         confirm_long_cross = shift;
+      if(fast_short_cross == 0 && fast_now < slow_now && fast_prev >= slow_prev)
+         fast_short_cross = shift;
+      if(confirm_short_cross == 0 && confirm_now < slow_now && confirm_prev >= slow_prev)
+         confirm_short_cross = shift;
+     }
+
+   int stoch_long_cross = 0;
+   int stoch_short_cross = 0;
+   const int stoch_scan_bars = strategy_ignition_fresh_bars + strategy_stoch_sync_bars;
+   for(int shift = 1; shift <= stoch_scan_bars; ++shift)
+     {
+      const double k_now = QM_Stoch_K(_Symbol, PERIOD_H1, strategy_stoch_k_period, strategy_stoch_d_period, strategy_stoch_slowing, shift);
+      const double k_prev = QM_Stoch_K(_Symbol, PERIOD_H1, strategy_stoch_k_period, strategy_stoch_d_period, strategy_stoch_slowing, shift + 1);
+      if(k_now <= 0.0 || k_prev <= 0.0)
+         return false;
+
+      if(stoch_long_cross == 0 && k_now > strategy_stoch_midline && k_prev <= strategy_stoch_midline)
+         stoch_long_cross = shift;
+      if(stoch_short_cross == 0 && k_now < strategy_stoch_midline && k_prev >= strategy_stoch_midline)
+         stoch_short_cross = shift;
+     }
+
+   const double fast_slope_now = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_fast_period, 1);
+   const double fast_slope_then = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_fast_period, 1 + strategy_slope_lookback_bars);
+   const double confirm_slope_now = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_confirm_period, 1);
+   const double confirm_slope_then = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_confirm_period, 1 + strategy_slope_lookback_bars);
+   if(fast_slope_now <= 0.0 || fast_slope_then <= 0.0 || confirm_slope_now <= 0.0 || confirm_slope_then <= 0.0)
+      return false;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   if(fast_long_cross > 0 && confirm_long_cross > 0 && stoch_long_cross > 0)
+     {
+      const int ignition_shift = (fast_long_cross < confirm_long_cross) ? fast_long_cross : confirm_long_cross;
+      if(MathAbs(stoch_long_cross - ignition_shift) <= strategy_stoch_sync_bars &&
+         fast_slope_now > fast_slope_then &&
+         confirm_slope_now > confirm_slope_then &&
+         QM_Sig_Price_Above_MA(_Symbol, PERIOD_H1, strategy_ema_slow_period, 0.0, 1) > 0)
+        {
+         req.type = QM_BUY;
+         req.sl = QM_StopFixedPips(_Symbol, req.type, ask, strategy_fixed_sl_pips);
+         req.tp = QM_TakeFixedPips(_Symbol, req.type, ask, strategy_fixed_tp_pips);
+         req.reason = "FF_STOCH_MA_IGNITION_LONG";
+         return (req.sl > 0.0 && req.tp > 0.0);
+        }
+     }
+
+   if(fast_short_cross > 0 && confirm_short_cross > 0 && stoch_short_cross > 0)
+     {
+      const int ignition_shift = (fast_short_cross < confirm_short_cross) ? fast_short_cross : confirm_short_cross;
+      if(MathAbs(stoch_short_cross - ignition_shift) <= strategy_stoch_sync_bars &&
+         fast_slope_now < fast_slope_then &&
+         confirm_slope_now < confirm_slope_then &&
+         QM_Sig_Price_Above_MA(_Symbol, PERIOD_H1, strategy_ema_slow_period, 0.0, 1) < 0)
+        {
+         req.type = QM_SELL;
+         req.sl = QM_StopFixedPips(_Symbol, req.type, bid, strategy_fixed_sl_pips);
+         req.tp = QM_TakeFixedPips(_Symbol, req.type, bid, strategy_fixed_tp_pips);
+         req.reason = "FF_STOCH_MA_IGNITION_SHORT";
+         return (req.sl > 0.0 && req.tp > 0.0);
+        }
+     }
+
    return false;
   }
 
@@ -104,22 +229,44 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // TODO: e.g.
-   //   const int magic = QM_FrameworkMagic();
-   //   for(int i = PositionsTotal() - 1; i >= 0; --i) {
-   //       const ulong ticket = PositionGetTicket(i);
-   //       if(!PositionSelectByTicket(ticket)) continue;
-   //       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
-   //       QM_TM_MoveToBreakEven(ticket, /*trigger_pips=*/30, /*buffer=*/2);
-   //       QM_TM_TrailATR(ticket, /*atr_period=*/14, /*atr_mult=*/2.0);
-   //   }
+   // Card specifies fixed SL/TP plus early strategy exit only; no trailing or partial management.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // TODO: when to close manually (separate from SL/TP and trade management)
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   const double fast_now = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_fast_period, 1);
+   const double confirm_now = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_confirm_period, 1);
+   const double slow_now = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_slow_period, 1);
+   if(fast_now <= 0.0 || confirm_now <= 0.0 || slow_now <= 0.0)
+      return false;
+
+   const int hold_seconds = strategy_time_stop_bars * PeriodSeconds(PERIOD_H1);
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      if(hold_seconds > 0 && (TimeCurrent() - (datetime)PositionGetInteger(POSITION_TIME)) >= hold_seconds)
+         return true;
+
+      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(pos_type == POSITION_TYPE_BUY && fast_now < slow_now && confirm_now < slow_now)
+         return true;
+      if(pos_type == POSITION_TYPE_SELL && fast_now > slow_now && confirm_now > slow_now)
+         return true;
+     }
+
    return false;
   }
 
