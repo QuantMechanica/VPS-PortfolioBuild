@@ -117,7 +117,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // Build entry request
-   req.type        = (cross > 0) ? QM_ORDER_BUY : QM_ORDER_SELL;
+   req.type        = (cross > 0) ? QM_BUY : QM_SELL;
    req.price       = QM_EntryMarketPrice(req.type);
    req.sl          = QM_StopRulesStopFromDistance(sym, req.type, req.price, sl_dist);
    req.tp          = QM_StopRulesTakeFromDistance(sym, req.type, req.price, strategy_tp_ratio * sl_dist);
