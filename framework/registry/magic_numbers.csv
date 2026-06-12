@@ -8654,3 +8654,8 @@
 10302,narang-price-revert,2,USDJPY.DWX,103020002,2026-06-12,Development,active
 10302,narang-price-revert,3,XAUUSD.DWX,103020003,2026-06-12,Development,active
 10302,narang-price-revert,4,GDAXI.DWX,103020004,2026-06-12,Development,active
+10301,narang-trend-mom,0,EURUSD.DWX,103010000,2026-06-12,Development,active
+10301,narang-trend-mom,1,GBPUSD.DWX,103010001,2026-06-12,Development,active
+10301,narang-trend-mom,2,USDJPY.DWX,103010002,2026-06-12,Development,active
+10301,narang-trend-mom,3,XAUUSD.DWX,103010003,2026-06-12,Development,active
+10301,narang-trend-mom,4,GDAXI.DWX,103010004,2026-06-12,Development,active
