@@ -90,3 +90,44 @@ fidelity-lint/Python track records).
 - Zarattini, Aziz & Barbon 2024, SSRN 4824172
 - Stivers & Sun 2013 via Quantpedia option-expiration-week-effect
 - trading-treff.de gap-fade backtest · hbreuer-trading.de FDAX gap study
+
+---
+
+# Wave 2 addendum (same day) — championship/regime/intermarket/Quantpedia sweep
+
+**Run:** wf_fdbe7fd5 (100 agents). **Important integrity note:** the verification
+phase was cut by the claude.ai monthly spend limit — all 25 claims show 0-0 votes
+(NEVER VERIFIED, not refuted; the workflow's "all refuted" summary is an artifact).
+Search+extraction completed. Claude re-verified the actionable claims inline.
+
+## Inline-verified outcomes
+
+- **KER dual-regime switching → CARDED (QM5_12541).** Kaufman Efficiency Ratio as the
+  switch between trend logic and MR logic; formula is primary-literature solid
+  (Kaufman 1995/2013), threshold claim (trend ≥ ~0.3-0.4) consistent with the
+  StrategyQuant codebase entry (page 403s to fetchers; cited as secondary). Census
+  confirmed: KAMA exists (11 cards) but a dual-logic switcher did not. Hysteresis
+  0.35/0.20 in the card guards the threshold-fragility risk.
+- **Oil→equity filter (#0096, Driesprong-Jacobsen-Maat "Striking Oil") → DEAD.**
+  Quantpedia's own page cites follow-up research: oil returns no longer predict G7
+  index returns post-2015. Not carded; logged as falsification study H9.
+- **Quantpedia free-tier diff:** the ~15-17 universe-tradeable entries are dominated by
+  families we hold (FX carry/momentum/value — all research-weak per 2026-06-09
+  synthesis; TSM #0118 — contested, died at Q08) or R3-infeasible (term structure
+  needs futures curves; FED model needs yields — no bond data in our universe).
+- **ATC winners:** 2007 winner = neural net (no-ML: ineligible); remaining winner-rule
+  archaeology is low-yield index pages — folded into router task 9a5dcdaf.
+- **Katsanos, "Intermarket Trading Strategies" (Wiley 2008):** Ch.11 = fourteen
+  mechanical gold systems, Ch.13 = DAX systems, with MetaStock code appendices.
+  UNVERIFIED (book access needed) but the highest-density primary source surfaced by
+  wave 2. → OWNER decision: acquire the book (~EUR 60) and we mine it directly.
+- **Design guidance (unverified but consistent across two sources):** simple N-day
+  time exits match/beat indicator exits for index MR; tight stops destroy index MR
+  (only ~8.5%+ "disaster" stops don't hurt). Adopted in QM5_12541's MR leg.
+
+## Spend-limit operational note
+
+Workflow subagent verification burns claude.ai spend; the monthly cap cut wave 2 at
+~60% of verification. Interactive lane unaffected. If more workflow waves are wanted
+this month, OWNER must raise the cap at claude.ai/settings/usage; otherwise inline
+verification (as done here) is the workaround.

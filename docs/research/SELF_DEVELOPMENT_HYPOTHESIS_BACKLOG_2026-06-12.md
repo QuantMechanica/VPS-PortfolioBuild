@@ -26,6 +26,7 @@ NZDUSD OOS survivor, net Sharpe 1.29 — our only own-developed edge so far).
 | H6 | FX majors show systematic Wednesday (triple-swap) pre/post-rollover pressure | swap-avoidance position flows; wave-1 research: unmined, not dead | backlog |
 | H7 | Gold day-of-week structure post-2018 (Friday strength claim) survives OOS | weekly hedging cycle | backlog |
 | H8 | NDX-XAU D1 regime relationship is exploitable as a portfolio FILTER (not a strategy): XAU strength regime → NDX mean-reversion outperforms trend | risk-on/off rotation; feeds Q11 portfolio layer (DL-064), not a card | backlog |
+| H9 | Oil-return → index-return predictability (Driesprong-Jacobsen-Maat) is DEAD post-2015 in G7 — confirm on XTIUSD.DWX → NDX/WS30/GDAXI before anyone cards it | documented decay (Quantpedia #0096 follow-up refs); cheap D1 falsification study | backlog |
 
 ## Why this program (honest math)
 
