@@ -8729,3 +8729,14 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1046,maroy-intraday-vwap-exit,0,NDX.DWX,10460000,2026-06-12,Development,active
 1046,maroy-intraday-vwap-exit,1,WS30.DWX,10460001,2026-06-12,Development,active
 1046,maroy-intraday-vwap-exit,2,SP500.DWX,10460002,2026-06-12,Development,active
+10322,realized-moments,0,WS30.DWX,103220000,2026-06-12,Development,active
+10322,realized-moments,1,NDX.DWX,103220001,2026-06-12,Development,active
+10322,realized-moments,2,GDAXI.DWX,103220002,2026-06-12,Development,active
+10322,realized-moments,3,XAUUSD.DWX,103220003,2026-06-12,Development,active
+10322,realized-moments,4,EURUSD.DWX,103220004,2026-06-12,Development,active
+10322,realized-moments,5,GBPUSD.DWX,103220005,2026-06-12,Development,active
+10322,realized-moments,6,USDJPY.DWX,103220006,2026-06-12,Development,active
+10322,realized-moments,7,USDCHF.DWX,103220007,2026-06-12,Development,active
+10322,realized-moments,8,USDCAD.DWX,103220008,2026-06-12,Development,active
+10322,realized-moments,9,AUDUSD.DWX,103220009,2026-06-12,Development,active
+10322,realized-moments,10,NZDUSD.DWX,103220010,2026-06-12,Development,active
