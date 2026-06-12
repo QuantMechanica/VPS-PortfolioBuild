@@ -3,6 +3,7 @@
 #property description "QM5_10331 Treasury Pairs"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_BasketOrder.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                    = 10331;
@@ -422,8 +423,8 @@ bool SendLeg(const string symbol, const int slot, const bool buy, const double w
    if(slot < 0 || weight_sum <= 0.0 || spread_stop_distance <= 0.0)
       return false;
 
-   const int magic = QM_MagicChecked(qm_ea_id, slot, symbol);
-   if(magic <= 0)
+   const int framework_magic = QM_FrameworkMagic();
+   if(framework_magic <= 0)
       return false;
 
    const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
@@ -448,30 +449,28 @@ bool SendLeg(const string symbol, const int slot, const bool buy, const double w
 
    const double sl = buy ? price - leg_stop_distance : price + leg_stop_distance;
 
-   MqlTradeRequest request;
-   MqlTradeResult result;
-   ZeroMemory(request);
-   ZeroMemory(result);
-   request.action = TRADE_ACTION_DEAL;
+   QM_BasketOrderRequest request;
    request.symbol = symbol;
-   request.magic = magic;
-   request.volume = lots;
-   request.type = buy ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
+   request.type = buy ? QM_BUY : QM_SELL;
    request.price = NormalizeDouble(price, digits);
    request.sl = NormalizeDouble(sl, digits);
    request.tp = 0.0;
-   request.deviation = strategy_deviation_points;
-   request.comment = "QM5_10331_PAIR";
-   request.type_filling = ORDER_FILLING_IOC;
+   request.lots = lots;
+   request.reason = "QM5_10331_PAIR";
+   request.symbol_slot = slot;
+   request.expiration_seconds = 0;
 
-   string error_class = BROKER_OTHER;
-   const bool ok = QM_TradeContextSend(request, result, error_class);
+   ulong ticket = 0;
+   const bool ok = QM_BasketOpenPosition(qm_ea_id,
+                                         qm_news_mode_legacy,
+                                         strategy_deviation_points,
+                                         request,
+                                         ticket);
    if(!ok)
      {
       QM_LogEvent(QM_WARN, "PAIR_LEG_OPEN_FAILED",
-                  StringFormat("{\"symbol\":\"%s\",\"slot\":%d,\"retcode\":%u,\"error\":\"%s\"}",
-                               QM_LoggerEscapeJson(symbol), slot, result.retcode,
-                               QM_LoggerEscapeJson(error_class)));
+                  StringFormat("{\"symbol\":\"%s\",\"slot\":%d}",
+                               QM_LoggerEscapeJson(symbol), slot));
       return false;
      }
    return true;
