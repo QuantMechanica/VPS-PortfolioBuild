@@ -7966,6 +7966,11 @@
 10226,tv-psar-sma-exit,1,XAUUSD.DWX,102260001,2026-06-12,Development,active
 10226,tv-psar-sma-exit,2,GDAXI.DWX,102260002,2026-06-12,Development,active
 10226,tv-psar-sma-exit,3,NDX.DWX,102260003,2026-06-12,Development,active
+10265,tv-or-psvr,0,GBPUSD.DWX,102650000,2026-06-12,Development,active
+10265,tv-or-psvr,1,EURUSD.DWX,102650001,2026-06-12,Development,active
+10265,tv-or-psvr,2,WS30.DWX,102650002,2026-06-12,Development,active
+10265,tv-or-psvr,3,NDX.DWX,102650003,2026-06-12,Development,active
+10265,tv-or-psvr,4,SP500.DWX,102650004,2026-06-12,Development,active
 10147,tii-momentum,0,AUDCAD.DWX,101470000,2026-06-12,Development,active
 10147,tii-momentum,1,AUDCHF.DWX,101470001,2026-06-12,Development,active
 10147,tii-momentum,2,AUDJPY.DWX,101470002,2026-06-12,Development,active
@@ -8003,3 +8008,7 @@
 10147,tii-momentum,34,XAUUSD.DWX,101470034,2026-06-12,Development,active
 10147,tii-momentum,35,XNGUSD.DWX,101470035,2026-06-12,Development,active
 10147,tii-momentum,36,XTIUSD.DWX,101470036,2026-06-12,Development,active
+10234,tv-rsi-atr-band,0,NDX.DWX,102340000,2026-06-12,Development,active
+10234,tv-rsi-atr-band,1,WS30.DWX,102340001,2026-06-12,Development,active
+10234,tv-rsi-atr-band,2,SP500.DWX,102340002,2026-06-12,Development,active
+10234,tv-rsi-atr-band,3,XAUUSD.DWX,102340003,2026-06-12,Development,active
