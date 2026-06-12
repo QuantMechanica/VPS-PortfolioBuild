@@ -78,6 +78,8 @@ input int    strategy_signal_shift      = 1;
 input int    strategy_atr_period        = 14;
 input double strategy_atr_sl_mult       = 2.0;
 
+int g_aroon_direction = 0;
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -90,13 +92,14 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
-int Strategy_AroonDirection()
+int Strategy_CalculateAroonDirection()
   {
    if(strategy_aroon_period <= 1 || strategy_signal_shift <= 0)
       return 0;
 
    // perf-allowed: Aroon is a bespoke 25-bar high/low recency rule and
-   // the framework has no Aroon reader. iHighest/iLowest keep this bounded.
+   // the framework has no Aroon reader. iHighest/iLowest keep this bounded
+   // and this helper is called only after the framework QM_IsNewBar gate.
    const int high_shift = iHighest(_Symbol,
                                    (ENUM_TIMEFRAMES)_Period,
                                    MODE_HIGH,
@@ -146,6 +149,29 @@ bool Strategy_HasPosition(const int direction)
    return false;
   }
 
+bool Strategy_CloseOppositePositions(const int direction)
+  {
+   bool closed_any = false;
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const bool opposite_long = (direction > 0 && ptype == POSITION_TYPE_SELL);
+      const bool opposite_short = (direction < 0 && ptype == POSITION_TYPE_BUY);
+      if(opposite_long || opposite_short)
+         closed_any = QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY) || closed_any;
+     }
+   return closed_any;
+  }
+
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
 // should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
@@ -162,9 +188,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return false;
 
-   const int direction = Strategy_AroonDirection();
-   if(direction == 0 || Strategy_HasPosition(direction))
+   g_aroon_direction = Strategy_CalculateAroonDirection();
+   const int direction = g_aroon_direction;
+   if(direction == 0)
       return false;
+
+   if(Strategy_HasPosition(direction))
+      return false;
+
+   Strategy_CloseOppositePositions(direction);
 
    req.type = (direction > 0) ? QM_BUY : QM_SELL;
    const double entry = (direction > 0)
@@ -196,7 +228,7 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const int direction = Strategy_AroonDirection();
+   const int direction = g_aroon_direction;
    if(direction == 0)
       return false;
 
