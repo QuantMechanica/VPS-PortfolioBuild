@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        1046
 ; ea_slug:      maroy-intraday-vwap-exit
@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   127fe974b7f8fb87dc8694bb8475b12fc2acad9536656d70e1227306bfd6efff
+; build_hash:   be963c424494777ffc3883f847aa74f245f4c1bee791f689236f8f00e5d49c60
 ; author:       Development
 ; date:         2026-05-17
 ;==========================================================

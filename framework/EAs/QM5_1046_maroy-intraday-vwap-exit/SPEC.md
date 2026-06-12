@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-Long entry when the last closed M30 bar's close exceeds the upper noise boundary (`ref_close * exp(k * sigma)`); short entry when close is below the lower boundary (`ref_close * exp(-k * sigma)`). The boundary reference is yesterday's D1 close; sigma is the rolling N-day standard deviation of daily log-returns. VWAP exit (variant A): close long when bid drops below session VWAP, close short when ask rises above session VWAP. Ladder exit (variant B): close 75% of position at 1% MFE (longs) or 2% MFE (shorts), hold remainder to session end. Hybrid exit (variant C): 75% ladder scale-out, VWAP exit for remainder. All variants flatten at cash session end and use ATR(M30, 14) × 3 as a hard stop.
+Long entry when the last closed M30 bar's close exceeds the upper noise boundary (`session_open * exp(k * sigma)`); short entry when close is below the lower boundary (`session_open * exp(-k * sigma)`). The session reference is the first closed M5 cash-session bar; sigma is the rolling N-day standard deviation of daily log-returns. VWAP exit (variant A): close long when price crosses below session VWAP, close short when price crosses above session VWAP. Ladder exit (variant B): close 75% of position at 1% MFE for longs or 2% MFE for shorts, holding the remainder to session end. Hybrid exit (variant C): 75% ladder scale-out, then VWAP exit for the remainder. All variants flatten at cash session end and use ATR(M30, 14) x 3 as a hard stop.
 
 ---
 
@@ -77,7 +77,7 @@ Long entry when the last closed M30 bar's close exceeds the upper noise boundary
 **Source ID:** `afab7a6f-c3c8-51ae-a609-f376744beb8e`
 **Source type:** paper
 **Pointer:** SSRN 5095349 (Maróy 2025), "Improvements to Intraday Momentum Strategies Using Parameter Optimization and Different Exit Strategies"
-**R1–R4 verdict (Q00):** R1 UNKNOWN / R2 PASS / R3 PASS (ported) / R4 PASS — see `artifacts/cards_approved/QM5_1046_maroy-intraday-vwap-exit.md`
+**R1–R4 verdict (Q00):** all R1–R4 PASS per `artifacts/cards_approved/QM5_1046_maroy-intraday-vwap-exit.md`
 
 ---
 
