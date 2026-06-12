@@ -69,6 +69,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(magic <= 0)
       return false;
 
+   bool have_position = false;
+   ulong position_ticket = 0;
+   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
    for(int i = 0; i < PositionsTotal(); ++i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -76,7 +79,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          continue;
       if(PositionGetString(POSITION_SYMBOL) == _Symbol &&
          (int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return false;
+        {
+         have_position = true;
+         position_ticket = ticket;
+         position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+         break;
+        }
      }
 
    for(int i = 0; i < OrdersTotal(); ++i)
@@ -126,6 +134,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(close1 > highest_high && highest_high < ask)
      {
+      if(have_position)
+        {
+         if(position_type == POSITION_TYPE_BUY)
+            return false;
+         if(!QM_TM_ClosePosition(position_ticket, QM_EXIT_OPPOSITE_SIGNAL))
+            return false;
+        }
       req.type = QM_BUY_LIMIT;
       req.price = highest_high;
       req.sl = req.price - (strategy_stop_atr_mult * atr);
@@ -136,6 +151,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(close1 < lowest_low && lowest_low > bid)
      {
+      if(have_position)
+        {
+         if(position_type == POSITION_TYPE_SELL)
+            return false;
+         if(!QM_TM_ClosePosition(position_ticket, QM_EXIT_OPPOSITE_SIGNAL))
+            return false;
+        }
       req.type = QM_SELL_LIMIT;
       req.price = lowest_low;
       req.sl = req.price + (strategy_stop_atr_mult * atr);
@@ -185,7 +207,7 @@ void Strategy_ManageOpenPosition()
 // Return TRUE to close the open position now.
 bool Strategy_ExitSignal()
   {
-   if(strategy_channel_bars < 2 || strategy_max_hold_bars < 1)
+   if(strategy_max_hold_bars < 1)
       return false;
 
    const int magic = QM_FrameworkMagic();
@@ -219,29 +241,8 @@ bool Strategy_ExitSignal()
    if(open_time > 0 && TimeCurrent() - open_time >= strategy_max_hold_bars * day_seconds)
       return true;
 
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: one closed D1 close for opposite-breakout exit check.
-   if(close1 <= 0.0)
-      return false;
-
-   double highest_high = -DBL_MAX;
-   double lowest_low = DBL_MAX;
-   for(int shift = 2; shift <= strategy_channel_bars + 1; ++shift)
-     {
-      const double bar_high = iHigh(_Symbol, PERIOD_D1, shift); // perf-allowed: bounded Donchian HHLL structural scan for opposite-breakout exit.
-      const double bar_low = iLow(_Symbol, PERIOD_D1, shift); // perf-allowed: bounded Donchian HHLL structural scan for opposite-breakout exit.
-      if(bar_high <= 0.0 || bar_low <= 0.0)
-         return false;
-      if(bar_high > highest_high)
-         highest_high = bar_high;
-      if(bar_low < lowest_low)
-         lowest_low = bar_low;
-     }
-
-   if(position_type == POSITION_TYPE_BUY && close1 < lowest_low)
-      return true;
-   if(position_type == POSITION_TYPE_SELL && close1 > highest_high)
-      return true;
-
+   // Opposite breakout reversal is evaluated inside Strategy_EntrySignal(),
+   // which the framework calls only after QM_IsNewBar().
    return false;
   }
 
