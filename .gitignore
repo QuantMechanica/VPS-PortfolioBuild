@@ -63,3 +63,9 @@ package-lock.json
 .codex_tmp/
 tmp_audit/
 
+# pip install --target artifacts (pypdf + other research deps installed into repo root)
+Lib/
+scripts/pip*.exe
+.tmp_*.pdf
+.tmp_*.html
+
