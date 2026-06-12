@@ -99,20 +99,12 @@ bool Strategy_NoTradeFilter()
       strategy_min_width_spread_mult < 0.0)
       return true;
 
-   const double upper = QM_BB_Upper(_Symbol, strategy_timeframe, strategy_bb_period,
-                                    strategy_bb_deviation, 1, PRICE_CLOSE);
-   const double lower = QM_BB_Lower(_Symbol, strategy_timeframe, strategy_bb_period,
-                                    strategy_bb_deviation, 1, PRICE_CLOSE);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(upper <= 0.0 || lower <= 0.0 || upper <= lower || ask <= 0.0 || bid <= 0.0)
+   if(ask <= 0.0 || bid <= 0.0)
       return true;
 
-   const double spread = ask - bid;
-   if(spread <= 0.0)
-      return true;
-
-   return ((upper - lower) < strategy_min_width_spread_mult * spread);
+   return false;
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -149,6 +141,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   const double spread = ask - bid;
+   if(spread <= 0.0)
+      return false;
+   if((upper_1 - lower_1) < strategy_min_width_spread_mult * spread)
       return false;
 
    const double atr_value = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
