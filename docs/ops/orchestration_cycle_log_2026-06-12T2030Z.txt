@@ -1,0 +1,84 @@
+Orchestration cycle log — 2026-06-12T2030Z
+Cycle runtime: ~17:30Z – 20:30Z (extended: 4 research tasks completed)
+
+=== HEALTH SUMMARY ===
+OVERALL: FAIL
+FAIL: pump_task_lastresult (exit 2147946720 — likely transient; dirty guard just cleared)
+WARN: source_pool_drained (9 sources; threshold 10)
+All other checks: OK
+
+MT5: 10/10 terminal workers alive, 6978 pending work_items, 71 Q03+ PASS in 6h
+Factory: build lane unblocked this cycle (dirty guard fix committed b89b3c745)
+
+=== DIRTY GUARD FIX ===
+5 untracked files were blocking ALL codex builds (repo_dirty_build_guard):
+- Lib/ (pypdf site-packages from pip install --target)
+- scripts/pip3.exe, scripts/pip3.11.exe
+- .tmp_fixpaper.pdf, .tmp_ts_archive.html
+Added to .gitignore (commit b89b3c745 on agents/board-advisor).
+Build lane should self-heal on next pump cycle.
+
+=== TASKS COMPLETED → REVIEW ===
+
+1. 9a5dcdaf (priority 25): Variant-realization survey
+   Artifact: docs/research/VARIANT_REALIZATION_SURVEY_2026-06.md
+   Key findings:
+   - Rene Balke: 3 strategies (Range Breakout, Scalper, MA EA) with verified myfxbook R1 track record
+   - ICT canonical: HTF bias + killzone filter + MSS after sweep + FVG retracement (not breakout)
+   - NNFX: VP Dirty Dozen bans RSI/Stoch/CCI/BB/Fib/ADX/MA-crossover from ALL components
+   - German algo scene: TradersClub24/Schäfermeier = discretionary, no new mechanical cards
+   Linting priority: audit all ICT cards for MSS+killzone; all NNFX cards for Dirty Dozen
+
+2. 27195799 (priority 15): Own-data studies XAU fix drift + OPEX week
+   Artifact: docs/research/OPEX_WEEK_INDEX_STUDY_2026-06.md
+   Study A (XAU fix drift): BLOCKED — XAUUSD not in T_Export at any intraday TF
+     → Needs: Export_FX_Bars.mq5 run for XAUUSD.DWX M1 2016-2026 via T_Export terminal
+   Study B (OPEX week): COMPLETE
+   - OPEX long = DEAD across NDX/WS30/GDAXI/SP500
+   - WEEK_AFTER = TRADEABLE (marginal): NDX OOS Sharpe +0.63, SP500 +0.57
+   - t-stats weak (~0.4), n~40 OOS observations — fragile, bull-regime artifact likely
+   - BUILD_CARD: long-NDX on week-after-OPEX (note fragility in card spec)
+
+3. 648ffc09 (priority 20): Own-data H3-H5 (intra-session structure)
+   Artifact: docs/research/OWN_DATA_H3_H4_H5_2026-06.md
+   NOTE: M30 data not available; H1 used as proxy (results flagged in doc)
+   H3 (NDX power hour): DEAD — sign reversal DEV→OOS, bull-regime artifact
+   H4 (GDAXI Xetra drift after positive session): BUILD_CARD cautious
+     OOS Sharpe 1.50, t=2.01; DEV Sharpe near-zero; needs cost-adjusted backtest
+   H5 (XAU Asia range): BLOCKED — same XAUUSD M30 data missing
+
+4. 7143e208 (priority 15): Library mining — OWNER Downloads folder
+   Artifacts: docs/research/LIBRARY_MINING_*_2026-06.md (9 books), G0_REVIEW doc
+   Books covered: Katz/McCormick, Unger, Connors, Wilder, ICT/Trading Hub, Singh-17Proven, Turtle/TF-Bible
+   G0 APPROVED card stubs written: 12548-12555 (8 cards)
+     - 12548: singh-trend-rider (NEEDS_SPEC)
+     - 12549: singh-trend-bouncer (NEEDS_SPEC)
+     - 12550: singh-fifth-element (APPROVE)
+     - 12551: singh-pendulum (NEEDS_SPEC)
+     - 12552: singh-guppy-burst (NEEDS_SPEC — verify GBPJPY.DWX M5 history)
+     - 12553: singh-english-breakfast-tea (APPROVE)
+     - 12554: ict-london-close-reversal (NEEDS_SPEC)
+     - 12555: abraham-trend-bible-breakout-macd-atr-d1 (NEEDS_SPEC)
+   Pre-existing (prior cycle): 12544 (katz-macd-divergence), 12545 (katz-sma-sr),
+     12546 (katz-seasonal), 12547 (wilder-rsi14-failure-swing)
+   VARIANT proposals for Codex: ICT Turtle Soup 2-step (12556+), Abraham retracement,
+     Turtle S1/S2 pyramid checks vs QM5_11781/QM5_1236
+   G0 rejects: 14 (news-feed 5, discretionary SR 4, no DWX equiv 3, duplicate 2)
+
+=== QM5_10260 STATE ===
+260 work_items at Q02 — mix of FAIL and pending. Prior OWNER note: NDX.DWX 2025
+tick gap + pre-fix .ex5 needs recompile + tick data fix. No change this cycle.
+
+=== OPEN BLOCKERS FOR OWNER ===
+1. XAUUSD intraday data: run Export_FX_Bars.mq5 at T_Export for XAUUSD.DWX M1 + M30
+   to unblock Study A (XAU fix drift) and H5 (Asia range contraction)
+2. Source pool: 9 sources remaining (WARN). Consider adding new research sources.
+3. 12544-12547 cards in cards_review need ea_id_registry.csv entries (Codex task)
+4. Codex bridge heartbeat stale 2240135s — interactive bridge dead; headless lane OK
+
+=== NEXT CYCLE PRIORITY ===
+- Cards 12548-12555 need build_ea tasks (router should auto-route)
+- VARIANT card proposals need Codex implementation
+- GDAXI Xetra drift card (H4 BUILD_CARD) needs drafting after cost-adjusted backtest
+- WEEK_AFTER NDX card needs drafting
+- Source pool replenishment (Gemini research task)
