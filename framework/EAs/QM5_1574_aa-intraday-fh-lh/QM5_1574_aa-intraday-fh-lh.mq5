@@ -83,11 +83,8 @@ bool HasOurOpenPosition()
   }
 
 // Compute the first-half-hour return for today's session.
-// Finds the M30 bar that opened at strategy_session_open_hhmm and computes
-// (close/open - 1).  Uses iBarShift for structural bar lookup and iOpen/iClose
-// with perf-allowed exception (bespoke session-bar structural read — no
-// QM_* indicator equivalent for arbitrary M30 bar OHLC at a named time).
-// Called only inside QM_IsNewBar gate — runs once per M30 bar at entry time.
+// Reads the single M30 bar that opened at strategy_session_open_hhmm and
+// computes (close/open - 1). Called only inside the framework new-bar gate.
 bool FirstHalfHourReturn(double &first_return)
   {
    first_return = 0.0;
@@ -99,12 +96,13 @@ bool FirstHalfHourReturn(double &first_return)
    ref_dt.sec  = 0;
 
    const datetime session_open_time = StructToTime(ref_dt);
-   const int first_shift = iBarShift(_Symbol, PERIOD_M30, session_open_time, true);
-   if(first_shift < 1)
+   MqlRates rates[1];
+   const int copied = CopyRates(_Symbol, PERIOD_M30, session_open_time, 1, rates); // perf-allowed: single named session bar, called inside QM_IsNewBar-gated EntrySignal
+   if(copied != 1 || rates[0].time != session_open_time)
       return false;
 
-   const double bar_open  = iOpen(_Symbol,  PERIOD_M30, first_shift);  // perf-allowed: bespoke session-bar structural read
-   const double bar_close = iClose(_Symbol, PERIOD_M30, first_shift);  // perf-allowed: bespoke session-bar structural read
+   const double bar_open  = rates[0].open;
+   const double bar_close = rates[0].close;
    if(bar_open <= 0.0 || bar_close <= 0.0)
       return false;
 

@@ -45,7 +45,7 @@ The EA mechanises the Gao-Han-Zhou intraday momentum finding published by Alpha 
 | Aspect | Value |
 |---|---|
 | Base timeframe | `M30` |
-| Multi-timeframe refs | `PERIOD_M30` only (session-bar lookup via iBarShift + QM_ATR) |
+| Multi-timeframe refs | `PERIOD_M30` only (single session-bar CopyRates read + QM_ATR) |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
