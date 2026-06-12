@@ -1,0 +1,37 @@
+ops(claude): orchestration cycle log 2026-06-12T2000Z -- library mining task REVIEW
+
+## Cycle Summary
+
+**Health:** WARN (1) — source_pool_drained: 9 pending sources (threshold 10); minor, research throttle trigger is 5.
+
+**Router status:**
+- Claude: 1 IN_PROGRESS → REVIEW (task 7143e208 library mining)
+- Codex: 0 running, 7 ops_issues + 19 review_ea APPROVED in queue
+- Gemini: 0 running, 6 research_strategy + 1 build_ea APPROVED
+- route-many: no_routable_task
+
+**Task completed: 7143e208 — OWNER library mining program**
+- Priority queue processed: all 8 books from priority list
+- Books with proposals in previous sub-cycle (committed af8759d75):
+  - Katz/McCormick Encyclopedia (1 proposal → QM5_12543 carded)
+  - Connors/Alvarez STTSW (covered by existing 31 cards)
+  - Wilder New Concepts (covered by existing 11 cards)
+  - ICT MMM Notes + Trading Hub (ICT fidelity cards QM5_12535-12540)
+  - Trend Following Bible + Way of the Turtle (covered by existing 8 turtle cards)
+- Books processed this cycle:
+  - Unger BST ep45 + Axiory brochure: 0 new proposals (daily-factor = QM5_11891 DUPLICATE; Axiory = black-box fund)
+  - Singh 17 Proven Strategies: 6 NEW proposals committed (2134da27a)
+- Artifact: C:/QM/repo/docs/research/LIBRARY_MINING_singh-17proven-2013_2026-06.md
+- Singh proposals:
+  1. Trend Rider (H4): EMA12 cross EMA36 + pullback + ADX(14)>40 exit
+  2. Trend Bouncer (H1): Dual-BB(12,2+12,4) pullback to midline
+  3. Fifth Element (H4): MACD histogram 4-bar count → 5th bar entry
+  4. Pendulum (H4): Range 10% bounce entry + 50%/90% targets
+  5. Guppy Burst (M5): GBPJPY post-NY-close 3hr range breakout
+  6. English Breakfast Tea (M15): GBPUSD London open reversal (04:15 vs 08:15)
+
+**QM5_10260 queue state:** 254/260 done, 6 pending, Q02-Q08 spread including 3 at Q08. Factory handles normally.
+
+**Risks/blockers:** source_pool_drained at 9 (below WARN threshold of 10; above research trigger of 5). No immediate action needed.
+
+**Next step:** OWNER G0-reviews Singh proposals; cards survivors in cards_review/. Singh strategies have weak R1 (no OOS data) — pipeline is the judge.
