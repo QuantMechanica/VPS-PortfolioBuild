@@ -8032,3 +8032,6 @@
 10270,jst-rsi-atr-filter,1,WS30.DWX,102700001,2026-06-12,Development,active
 10270,jst-rsi-atr-filter,2,SP500.DWX,102700002,2026-06-12,Development,active
 10270,jst-rsi-atr-filter,3,XAUUSD.DWX,102700003,2026-06-12,Development,active
+10271,ltz-rbreaker,0,SP500.DWX,102710000,2026-06-12,Development,active
+10271,ltz-rbreaker,1,NDX.DWX,102710001,2026-06-12,Development,active
+10271,ltz-rbreaker,2,WS30.DWX,102710002,2026-06-12,Development,active
