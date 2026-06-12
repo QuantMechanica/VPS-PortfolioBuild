@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades H1 mean reversion when the last completed bar closes far from its 48-bar simple moving average. A long signal requires the close to be at least 1.5 ATR(24) below the SMA and to reject the low of the bar; a short signal requires the close to be at least 1.5 ATR(24) above the SMA and to reject the high. Entries are skipped when the 96-bar SMA has moved too far over the prior 24 bars, when ATR is below its 20th percentile proxy over the prior 500 H1 bars, or on the first H1 bar after the weekend open. Positions close when a completed H1 bar reaches the 48-bar SMA, after 24 H1 bars, or when the close moves 2.5 ATR beyond the SMA against the position.
+The EA trades H1 mean reversion when the last completed bar closes far from its 48-bar simple moving average. A long signal requires the close to be at least 1.5 ATR(24) below the SMA and to reject the low of the bar; a short signal requires the close to be at least 1.5 ATR(24) above the SMA and to reject the high. Entries are skipped when the 96-bar SMA has moved too far over the prior 24 bars, when ATR is below its 20th percentile proxy over the prior 500 H1 bars, on the first H1 bar after the weekend open, or within two H1 bars of available high-impact news. Positions close when a completed H1 bar reaches the 48-bar SMA, after 24 H1 bars, or when the close moves 2.5 ATR beyond the SMA against the position.
 
 ---
 

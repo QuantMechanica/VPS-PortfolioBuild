@@ -4,15 +4,23 @@
 
 #include <QM/QM_Common.mqh>
 
+// =============================================================================
+// QuantMechanica V5 EA SKELETON
+// -----------------------------------------------------------------------------
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails).
+// =============================================================================
+
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                     = 10302;
-input int    qm_magic_slot_offset         = 0;
-input uint   qm_rng_seed                  = 42;
+input int    qm_ea_id                   = 10302;
+input int    qm_magic_slot_offset       = 0;
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT                 = 0.0;
-input double RISK_FIXED                   = 1000.0;
-input double PORTFOLIO_WEIGHT             = 1.0;
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE60_POST60;
@@ -22,137 +30,45 @@ input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled      = true;
-input int    qm_friday_close_hour_broker  = 21;
+input bool   qm_friday_close_enabled    = true;
+input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_mean_lookback       = 48;
-input int    strategy_atr_period          = 24;
-input double strategy_deviation_threshold = 1.5;
-input double strategy_long_reject_frac    = 0.35;
-input double strategy_short_reject_frac   = 0.65;
-input int    strategy_slope_lookback      = 96;
-input int    strategy_slope_bars          = 24;
-input double strategy_slope_atr_mult      = 0.75;
-input double strategy_stop_atr_mult       = 1.25;
-input int    strategy_time_stop_bars      = 24;
-input double strategy_emergency_atr_mult  = 2.5;
+input int    strategy_mean_lookback          = 48;
+input int    strategy_atr_period             = 24;
+input double strategy_deviation_threshold    = 1.5;
+input double strategy_long_reject_frac       = 0.35;
+input double strategy_short_reject_frac      = 0.65;
+input int    strategy_slope_lookback         = 96;
+input int    strategy_slope_bars             = 24;
+input double strategy_slope_atr_mult         = 0.75;
+input double strategy_stop_atr_mult          = 1.25;
+input int    strategy_time_stop_bars         = 24;
+input double strategy_emergency_atr_mult     = 2.5;
 input int    strategy_atr_percentile_lookback = 500;
-input double strategy_atr_percentile_rank = 20.0;
-input int    strategy_max_spread_points   = 0;
+input double strategy_atr_percentile_rank    = 20.0;
+input int    strategy_max_spread_points      = 0;
 
-bool Strategy_ReadClosedH1Bar(MqlRates &bar)
-  {
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, PERIOD_H1, 1, 1, rates); // perf-allowed: one closed H1 OHLC bar only; entry is called after the framework new-bar gate.
-   if(copied != 1)
-      return false;
-   bar = rates[0];
-   return true;
-  }
-
-bool Strategy_IsWeekendOpenBar(const datetime bar_time)
-  {
-   MqlDateTime dt;
-   TimeToStruct(bar_time, dt);
-   if(dt.day_of_week == 0)
-      return true;
-   if(dt.day_of_week == 1 && dt.hour == 0)
-      return true;
-   return false;
-  }
-
-bool Strategy_GetOurPosition(int &direction, ulong &ticket, datetime &open_time)
-  {
-   direction = 0;
-   ticket = 0;
-   open_time = 0;
-
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong pos_ticket = PositionGetTicket(i);
-      if(pos_ticket == 0 || !PositionSelectByTicket(pos_ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      const ENUM_POSITION_TYPE type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      direction = (type == POSITION_TYPE_BUY) ? 1 : -1;
-      ticket = pos_ticket;
-      open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      return true;
-     }
-
-   return false;
-  }
-
-bool Strategy_ATRPercentileAllows(const double current_atr)
-  {
-   if(current_atr <= 0.0)
-      return false;
-   if(strategy_atr_percentile_lookback <= 0 || strategy_atr_percentile_rank <= 0.0)
-      return true;
-
-   const int lookback = MathMin(strategy_atr_percentile_lookback, 1000);
-   double samples[];
-   ArrayResize(samples, lookback);
-
-   int count = 0;
-   for(int shift = 2; shift < 2 + lookback; ++shift)
-     {
-      const double value = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, shift);
-      if(value <= 0.0)
-         continue;
-      samples[count] = value;
-      count++;
-     }
-
-   if(count < MathMin(50, lookback))
-      return false;
-
-   ArrayResize(samples, count);
-   ArraySort(samples);
-   int rank_index = (int)MathFloor((strategy_atr_percentile_rank / 100.0) * (double)(count - 1));
-   if(rank_index < 0)
-      rank_index = 0;
-   if(rank_index >= count)
-      rank_index = count - 1;
-
-   return (current_atr >= samples[rank_index]);
-  }
-
-bool Strategy_SlopeAllows(const double current_atr)
-  {
-   if(strategy_slope_lookback <= 1 || strategy_slope_bars <= 0 || strategy_slope_atr_mult < 0.0)
-      return false;
-   const double sma_now = QM_SMA(_Symbol, PERIOD_H1, strategy_slope_lookback, 1);
-   const double sma_then = QM_SMA(_Symbol, PERIOD_H1, strategy_slope_lookback, 1 + strategy_slope_bars);
-   if(sma_now <= 0.0 || sma_then <= 0.0 || current_atr <= 0.0)
-      return false;
-   return (MathAbs(sma_now - sma_then) < strategy_slope_atr_mult * current_atr);
-  }
+// -----------------------------------------------------------------------------
+// Strategy hooks
+// -----------------------------------------------------------------------------
 
 // No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
    if(_Period != PERIOD_H1)
       return true;
+
    if(strategy_max_spread_points > 0)
      {
       const int spread_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
       if(spread_points > strategy_max_spread_points)
          return true;
      }
+
    return false;
   }
 
@@ -171,34 +87,93 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_deviation_threshold <= 0.0 || strategy_stop_atr_mult <= 0.0)
       return false;
 
-   int position_direction = 0;
-   ulong ticket = 0;
-   datetime open_time = 0;
-   if(Strategy_GetOurPosition(position_direction, ticket, open_time))
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
 
-   MqlRates bar;
-   if(!Strategy_ReadClosedH1Bar(bar))
-      return false;
-   if(Strategy_IsWeekendOpenBar(bar.time))
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   if(CopyRates(_Symbol, PERIOD_H1, 1, 1, rates) != 1) // perf-allowed: one closed H1 bar; caller already passed QM_IsNewBar().
       return false;
 
-   const double range = bar.high - bar.low;
-   if(bar.close <= 0.0 || bar.high <= 0.0 || bar.low <= 0.0 || range <= 0.0)
+   MqlDateTime bar_dt;
+   TimeToStruct(rates[0].time, bar_dt);
+   if(bar_dt.day_of_week == 0 || (bar_dt.day_of_week == 1 && bar_dt.hour == 0))
       return false;
 
-   const double sma = QM_SMA(_Symbol, PERIOD_H1, strategy_mean_lookback, 1);
-   const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
-   if(sma <= 0.0 || atr <= 0.0)
-      return false;
-   if(!Strategy_ATRPercentileAllows(atr))
-      return false;
-   if(!Strategy_SlopeAllows(atr))
+   if(QM_NewsIsAvailable())
+     {
+      datetime utc_time = QM_BrokerToUTC(TimeCurrent());
+      if(utc_time > 0 && QM_NewsInWindow(utc_time, _Symbol, 120, 120, "HIGH"))
+         return false;
+     }
+
+   const double bar_high = rates[0].high;
+   const double bar_low = rates[0].low;
+   const double bar_close = rates[0].close;
+   const double bar_range = bar_high - bar_low;
+   if(bar_high <= 0.0 || bar_low <= 0.0 || bar_close <= 0.0 || bar_range <= 0.0)
       return false;
 
-   const double deviation = (bar.close - sma) / atr;
-   const bool long_rejection = (bar.close > bar.low + strategy_long_reject_frac * range);
-   const bool short_rejection = (bar.close < bar.low + strategy_short_reject_frac * range);
+   const double sma_mean = QM_SMA(_Symbol, PERIOD_H1, strategy_mean_lookback, 1);
+   const double atr_now = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
+   if(sma_mean <= 0.0 || atr_now <= 0.0)
+      return false;
+
+   const int atr_lookback = (strategy_atr_percentile_lookback < 1000)
+                            ? strategy_atr_percentile_lookback : 1000;
+   if(atr_lookback > 0 && strategy_atr_percentile_rank > 0.0)
+     {
+      double atr_samples[];
+      ArrayResize(atr_samples, atr_lookback);
+      int atr_count = 0;
+      for(int shift = 2; shift < 2 + atr_lookback; ++shift)
+        {
+         const double sample = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, shift);
+         if(sample <= 0.0)
+            continue;
+         atr_samples[atr_count] = sample;
+         atr_count++;
+        }
+
+      if(atr_count < MathMin(50, atr_lookback))
+         return false;
+
+      ArrayResize(atr_samples, atr_count);
+      ArraySort(atr_samples);
+      int rank_index = (int)MathFloor((strategy_atr_percentile_rank / 100.0) * (double)(atr_count - 1));
+      if(rank_index < 0)
+         rank_index = 0;
+      if(rank_index >= atr_count)
+         rank_index = atr_count - 1;
+      if(atr_now < atr_samples[rank_index])
+         return false;
+     }
+
+   if(strategy_slope_lookback <= 1 || strategy_slope_bars <= 0 || strategy_slope_atr_mult < 0.0)
+      return false;
+
+   const double sma_slope_now = QM_SMA(_Symbol, PERIOD_H1, strategy_slope_lookback, 1);
+   const double sma_slope_then = QM_SMA(_Symbol, PERIOD_H1, strategy_slope_lookback, 1 + strategy_slope_bars);
+   if(sma_slope_now <= 0.0 || sma_slope_then <= 0.0)
+      return false;
+   if(MathAbs(sma_slope_now - sma_slope_then) >= strategy_slope_atr_mult * atr_now)
+      return false;
+
+   const double deviation = (bar_close - sma_mean) / atr_now;
+   const bool long_rejection = (bar_close > bar_low + strategy_long_reject_frac * bar_range);
+   const bool short_rejection = (bar_close < bar_low + strategy_short_reject_frac * bar_range);
 
    if(deviation <= -strategy_deviation_threshold && long_rejection)
      {
@@ -218,18 +193,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(req.price <= 0.0)
       return false;
 
-   req.sl = QM_StopATRFromValue(_Symbol, req.type, req.price, atr, strategy_stop_atr_mult);
-   req.tp = 0.0;
+   req.sl = QM_StopATRFromValue(_Symbol, req.type, req.price, atr_now, strategy_stop_atr_mult);
    if(req.sl <= 0.0)
       return false;
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(point <= 0.0)
       return false;
+
    const double sl_points = MathAbs(req.price - req.sl) / point;
    const int min_stop_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
    if(min_stop_points > 0 && sl_points < (double)min_stop_points)
       return false;
+
    if(QM_LotsForRisk(_Symbol, sl_points) <= 0.0)
       return false;
 
@@ -239,16 +215,35 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Trade Management
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no trailing, partial close, or break-even rule.
+   // Card specifies no trailing, partial close, or break-even management.
   }
 
 // Trade Close
 bool Strategy_ExitSignal()
   {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
    int direction = 0;
-   ulong ticket = 0;
    datetime open_time = 0;
-   if(!Strategy_GetOurPosition(direction, ticket, open_time))
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      direction = (position_type == POSITION_TYPE_BUY) ? 1 : -1;
+      open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      break;
+     }
+
+   if(direction == 0)
       return false;
 
    const int h1_seconds = PeriodSeconds(PERIOD_H1);
@@ -259,27 +254,29 @@ bool Strategy_ExitSignal()
          return true;
      }
 
-   MqlRates bar;
-   if(!Strategy_ReadClosedH1Bar(bar))
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   if(CopyRates(_Symbol, PERIOD_H1, 1, 1, rates) != 1) // perf-allowed: one closed H1 bar only for completed-bar exits.
       return false;
 
-   const double sma = QM_SMA(_Symbol, PERIOD_H1, strategy_mean_lookback, 1);
-   const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
-   if(sma <= 0.0 || atr <= 0.0 || bar.close <= 0.0)
+   const double sma_mean = QM_SMA(_Symbol, PERIOD_H1, strategy_mean_lookback, 1);
+   const double atr_now = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
+   const double bar_close = rates[0].close;
+   if(sma_mean <= 0.0 || atr_now <= 0.0 || bar_close <= 0.0)
       return false;
 
    if(direction > 0)
      {
-      if(bar.close >= sma)
+      if(bar_close >= sma_mean)
          return true;
-      if(bar.close <= sma - strategy_emergency_atr_mult * atr)
+      if(bar_close <= sma_mean - strategy_emergency_atr_mult * atr_now)
          return true;
      }
-   else if(direction < 0)
+   else
      {
-      if(bar.close <= sma)
+      if(bar_close <= sma_mean)
          return true;
-      if(bar.close >= sma + strategy_emergency_atr_mult * atr)
+      if(bar_close >= sma_mean + strategy_emergency_atr_mult * atr_now)
          return true;
      }
 
@@ -292,6 +289,10 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
    return false;
   }
 
+// -----------------------------------------------------------------------------
+// Framework wiring - do NOT edit below this line.
+// -----------------------------------------------------------------------------
+
 int OnInit()
   {
    if(!QM_FrameworkInit(qm_ea_id,
@@ -302,8 +303,8 @@ int OnInit()
                         qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        60,
-                        60,
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
@@ -312,7 +313,7 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10302_narang-price-revert\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
 
@@ -352,8 +353,6 @@ void OnTick()
         {
          const ulong ticket = PositionGetTicket(i);
          if(!PositionSelectByTicket(ticket))
-            continue;
-         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
