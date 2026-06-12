@@ -8028,3 +8028,7 @@
 10269,gawd-wma30-trend,1,WS30.DWX,102690001,2026-06-12,Development,active
 10269,gawd-wma30-trend,2,SP500.DWX,102690002,2026-06-12,Development,active
 10269,gawd-wma30-trend,3,XAUUSD.DWX,102690003,2026-06-12,Development,active
+10270,jst-rsi-atr-filter,0,NDX.DWX,102700000,2026-06-12,Development,active
+10270,jst-rsi-atr-filter,1,WS30.DWX,102700001,2026-06-12,Development,active
+10270,jst-rsi-atr-filter,2,SP500.DWX,102700002,2026-06-12,Development,active
+10270,jst-rsi-atr-filter,3,XAUUSD.DWX,102700003,2026-06-12,Development,active
