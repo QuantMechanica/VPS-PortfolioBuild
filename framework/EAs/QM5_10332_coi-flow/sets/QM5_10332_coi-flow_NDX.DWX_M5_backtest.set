@@ -10,25 +10,33 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   3a5c30111612805a1e038950e669634f8dc0ca726900052445ca4ceae17b7b0e
 ; author:       Development
 ; date:         2026-06-12
 ;==========================================================
+qm_ea_id=10332
 qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+qm_rng_seed=42
+qm_stress_reject_probability=0.0
+; strategy-specific params
+strategy_basket_symbols=SP500.DWX,NDX.DWX,WS30.DWX,GDAXI.DWX
+strategy_flow_lookback=100
+strategy_flow_percentile=80.0
+strategy_min_valid_members=3
+strategy_atr_period=14
+strategy_atr_stop_mult=0.50
+strategy_min_stop_spread_mult=4.0
+strategy_spread_lookback=100
+strategy_spread_percentile=80.0
+strategy_session_start_hhmm=1540
+strategy_session_end_hhmm=2150

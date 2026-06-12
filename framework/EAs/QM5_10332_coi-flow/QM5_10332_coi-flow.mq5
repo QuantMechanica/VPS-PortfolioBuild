@@ -111,11 +111,13 @@ double Percentile(double &values[], const double pct)
 
 bool LoadRates(const string symbol, MqlRates &rates[])
   {
+   if(!QM_SymbolAssertOrLog(symbol))
+      return false;
+
    const int lookback = MathMax(strategy_flow_lookback, strategy_spread_lookback);
    const int need = MathMax(lookback + 1, 3);
    ArraySetAsSeries(rates, true);
-   // perf-allowed: Strategy_EntrySignal is called only after the framework QM_IsNewBar gate.
-   const int copied = CopyRates(symbol, (ENUM_TIMEFRAMES)_Period, 1, need, rates);
+   const int copied = CopyRates(symbol, (ENUM_TIMEFRAMES)_Period, 1, need, rates); // perf-allowed: Strategy_EntrySignal is called only after the framework QM_IsNewBar gate.
    return (copied >= need);
   }
 
@@ -402,6 +404,14 @@ int OnInit()
                         qm_news_temporal,
                         qm_news_compliance))
       return INIT_FAILED;
+
+   string symbols[];
+   if(SplitBasket(symbols) >= strategy_min_valid_members)
+     {
+      QM_SymbolGuardInit(symbols);
+      QM_BasketWarmupHistory(symbols, (ENUM_TIMEFRAMES)_Period,
+                             MathMax(strategy_flow_lookback, strategy_spread_lookback) + 5);
+     }
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
