@@ -125,8 +125,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, 2, bars) != 2) // perf-allowed: fixed two closed bars for candlestick geometry after framework new-bar gate.
       return false;
 
-   const MqlRates second = bars[0];
-   const MqlRates first = bars[1];
+   const MqlRates first = bars[0];
+   const MqlRates second = bars[1];
    if(first.open <= 0.0 || first.high <= 0.0 || first.low <= 0.0 || first.close <= 0.0 ||
       second.open <= 0.0 || second.high <= 0.0 || second.low <= 0.0 || second.close <= 0.0)
       return false;

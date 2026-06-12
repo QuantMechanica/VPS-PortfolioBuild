@@ -4,7 +4,7 @@
 **Slug:** mql5-cloud-rsi
 **Source:** a120af9a-fb72-526c-bb80-d1d098a617b5 (see `sources/mql5-examples`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-11
+**Last revised:** 2026-06-12
 
 ---
 
