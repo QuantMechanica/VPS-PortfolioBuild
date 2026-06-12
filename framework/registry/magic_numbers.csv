@@ -8739,3 +8739,12 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10322,realized-moments,8,USDCAD.DWX,103220008,2026-06-12,Development,active
 10322,realized-moments,9,AUDUSD.DWX,103220009,2026-06-12,Development,active
 10322,realized-moments,10,NZDUSD.DWX,103220010,2026-06-12,Development,active
+12543,katz-fx-hhll-limit-pullback,0,EURUSD.DWX,125430000,2026-06-12,Development,active
+12543,katz-fx-hhll-limit-pullback,1,GBPUSD.DWX,125430001,2026-06-12,Development,active
+12543,katz-fx-hhll-limit-pullback,2,USDJPY.DWX,125430002,2026-06-12,Development,active
+12543,katz-fx-hhll-limit-pullback,3,AUDUSD.DWX,125430003,2026-06-12,Development,active
+12543,katz-fx-hhll-limit-pullback,4,NZDUSD.DWX,125430004,2026-06-12,Development,active
+12543,katz-fx-hhll-limit-pullback,5,USDCAD.DWX,125430005,2026-06-12,Development,active
+12543,katz-fx-hhll-limit-pullback,6,USDCHF.DWX,125430006,2026-06-12,Development,active
+12543,katz-fx-hhll-limit-pullback,7,EURJPY.DWX,125430007,2026-06-12,Development,active
+12543,katz-fx-hhll-limit-pullback,8,GBPJPY.DWX,125430008,2026-06-12,Development,active
