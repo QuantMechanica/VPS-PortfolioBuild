@@ -3450,3 +3450,4 @@ ea_id,slug,strategy_id,status,owner,created_at
 11857,blade-macd-stoch-divergence-h1,7f6f2831-ea66-58f6-a7ff-a8c89a44803d,active,Development,2026-06-11
 10290,cinar-trix,1b906e79-c619-5a61-90db-ee19ac95a19f,active,Development,2026-06-12
 10291,cinar-alligator,1b906e79-c619-5a61-90db-ee19ac95a19f,active,Development,2026-06-12
+10297,cinar-mfi,1b906e79-c619-5a61-90db-ee19ac95a19f,active,Development,2026-06-12
