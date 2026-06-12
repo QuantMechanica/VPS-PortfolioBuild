@@ -8666,3 +8666,7 @@
 10326,close-auct-rev,0,SP500.DWX,103260000,2026-06-12,Development,active
 10326,close-auct-rev,1,NDX.DWX,103260001,2026-06-12,Development,active
 10326,close-auct-rev,2,WS30.DWX,103260002,2026-06-12,Development,active
+12535,ict-killzone-sweep-idx,0,NDX.DWX,125350000,2026-06-12,Development,active
+12535,ict-killzone-sweep-idx,1,WS30.DWX,125350001,2026-06-12,Development,active
+12535,ict-killzone-sweep-idx,2,XAUUSD.DWX,125350002,2026-06-12,Development,active
+12535,ict-killzone-sweep-idx,3,GDAXI.DWX,125350003,2026-06-12,Development,active
