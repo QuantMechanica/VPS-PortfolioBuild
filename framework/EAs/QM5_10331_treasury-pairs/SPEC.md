@@ -4,7 +4,7 @@
 **Slug:** treasury-pairs
 **Source:** fd8c6a44-7c20-5e45-a7a8-c6a595ac47a9 (see SSRN abstract 565441)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-12
+**Last revised:** 2026-06-13
 
 ---
 
@@ -99,4 +99,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-12 | Initial build from card | 5cccff22-b99e-41d4-b638-7b7b57b65979 |
+| v1 | 2026-06-13 | Initial build from card | 5cccff22-b99e-41d4-b638-7b7b57b65979 |
