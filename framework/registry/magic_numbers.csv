@@ -8670,3 +8670,8 @@
 12535,ict-killzone-sweep-idx,1,WS30.DWX,125350001,2026-06-12,Development,active
 12535,ict-killzone-sweep-idx,2,XAUUSD.DWX,125350002,2026-06-12,Development,active
 12535,ict-killzone-sweep-idx,3,GDAXI.DWX,125350003,2026-06-12,Development,active
+1158,french-weekend-effect-idx,0,NDX.DWX,11580000,2026-06-12,Development,active
+1158,french-weekend-effect-idx,1,WS30.DWX,11580001,2026-06-12,Development,active
+1158,french-weekend-effect-idx,2,GDAXI.DWX,11580002,2026-06-12,Development,active
+1158,french-weekend-effect-idx,3,UK100.DWX,11580003,2026-06-12,Development,active
+1158,french-weekend-effect-idx,4,SP500.DWX,11580004,2026-06-12,Development,active
