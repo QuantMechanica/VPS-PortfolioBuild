@@ -8039,3 +8039,7 @@
 10272,ltz-turtle20,1,NDX.DWX,102720001,2026-06-12,Development,active
 10272,ltz-turtle20,2,WS30.DWX,102720002,2026-06-12,Development,active
 10272,ltz-turtle20,3,XAUUSD.DWX,102720003,2026-06-12,Development,active
+10273,ltz-ghost,0,SP500.DWX,102730000,2026-06-12,Development,active
+10273,ltz-ghost,1,NDX.DWX,102730001,2026-06-12,Development,active
+10273,ltz-ghost,2,WS30.DWX,102730002,2026-06-12,Development,active
+10273,ltz-ghost,3,XAUUSD.DWX,102730003,2026-06-12,Development,active
