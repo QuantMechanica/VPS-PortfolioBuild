@@ -8035,3 +8035,7 @@
 10271,ltz-rbreaker,0,SP500.DWX,102710000,2026-06-12,Development,active
 10271,ltz-rbreaker,1,NDX.DWX,102710001,2026-06-12,Development,active
 10271,ltz-rbreaker,2,WS30.DWX,102710002,2026-06-12,Development,active
+10272,ltz-turtle20,0,SP500.DWX,102720000,2026-06-12,Development,active
+10272,ltz-turtle20,1,NDX.DWX,102720001,2026-06-12,Development,active
+10272,ltz-turtle20,2,WS30.DWX,102720002,2026-06-12,Development,active
+10272,ltz-turtle20,3,XAUUSD.DWX,102720003,2026-06-12,Development,active

@@ -224,7 +224,6 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   (void)broker_time;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 
