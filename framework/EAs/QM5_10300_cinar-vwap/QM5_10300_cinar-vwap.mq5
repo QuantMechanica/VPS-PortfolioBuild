@@ -91,40 +91,6 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
-bool Strategy_VwapSignal(const int period, double &out_vwap, double &out_close)
-  {
-   out_vwap = 0.0;
-   out_close = 0.0;
-   if(period <= 1)
-      return false;
-
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, strategy_signal_tf, 1, period, rates); // perf-allowed: bespoke closed-bar VWAP window; caller is QM_IsNewBar-gated.
-   if(copied < period)
-      return false;
-
-   double weighted_sum = 0.0;
-   double volume_sum = 0.0;
-   for(int i = 0; i < copied; ++i)
-     {
-      const double close = rates[i].close;
-      const double volume = (double)rates[i].tick_volume;
-      if(close <= 0.0 || volume <= 0.0)
-         return false;
-
-      weighted_sum += close * volume;
-      volume_sum += volume;
-     }
-
-   if(volume_sum <= 0.0)
-      return false;
-
-   out_vwap = weighted_sum / volume_sum;
-   out_close = rates[0].close;
-   return (out_vwap > 0.0 && out_close > 0.0);
-  }
-
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
 // should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
@@ -144,9 +110,31 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(strategy_vwap_period <= 1 || strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return false;
 
-   double vwap = 0.0;
-   double close = 0.0;
-   if(!Strategy_VwapSignal(strategy_vwap_period, vwap, close))
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, strategy_signal_tf, 1, strategy_vwap_period, rates); // perf-allowed: bespoke closed-bar VWAP window; caller is QM_IsNewBar-gated.
+   if(copied < strategy_vwap_period)
+      return false;
+
+   double weighted_sum = 0.0;
+   double volume_sum = 0.0;
+   for(int i = 0; i < copied; ++i)
+     {
+      const double bar_close = rates[i].close;
+      const double bar_volume = (double)rates[i].tick_volume;
+      if(bar_close <= 0.0 || bar_volume <= 0.0)
+         return false;
+
+      weighted_sum += bar_close * bar_volume;
+      volume_sum += bar_volume;
+     }
+
+   if(volume_sum <= 0.0)
+      return false;
+
+   const double vwap = weighted_sum / volume_sum;
+   const double close = rates[0].close;
+   if(vwap <= 0.0 || close <= 0.0)
       return false;
    if(vwap == close)
       return false;
