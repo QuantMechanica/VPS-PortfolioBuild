@@ -8793,3 +8793,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10336,smallcap-volmom,1,NDX.DWX,103360001,2026-06-13,Development,active
 10336,smallcap-volmom,2,WS30.DWX,103360002,2026-06-13,Development,active
 10336,smallcap-volmom,3,GDAXI.DWX,103360003,2026-06-13,Development,active
+10338,intraday-comp-mom,0,SP500.DWX,103380000,2026-06-13,Development,active
+10338,intraday-comp-mom,1,NDX.DWX,103380001,2026-06-13,Development,active
+10338,intraday-comp-mom,2,WS30.DWX,103380002,2026-06-13,Development,active
+10338,intraday-comp-mom,3,GDAXI.DWX,103380003,2026-06-13,Development,active
+10337,smallcap-mr,0,SP500.DWX,103370000,2026-06-13,Development,active
+10337,smallcap-mr,1,NDX.DWX,103370001,2026-06-13,Development,active
+10337,smallcap-mr,2,WS30.DWX,103370002,2026-06-13,Development,active
+10337,smallcap-mr,3,GDAXI.DWX,103370003,2026-06-13,Development,active
