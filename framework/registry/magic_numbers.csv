@@ -8778,3 +8778,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10332,coi-flow,1,NDX.DWX,103320001,2026-06-13,Development,active
 10332,coi-flow,2,WS30.DWX,103320002,2026-06-13,Development,active
 10332,coi-flow,3,GDAXI.DWX,103320003,2026-06-13,Development,active
+10333,dax-loser-rev,0,GDAXI.DWX,103330000,2026-06-13,Development,active
+10333,dax-loser-rev,1,SP500.DWX,103330001,2026-06-13,Development,active
+10333,dax-loser-rev,2,NDX.DWX,103330002,2026-06-13,Development,active
+10333,dax-loser-rev,3,WS30.DWX,103330003,2026-06-13,Development,active
