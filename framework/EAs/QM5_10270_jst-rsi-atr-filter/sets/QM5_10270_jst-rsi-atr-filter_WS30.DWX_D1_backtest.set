@@ -32,11 +32,3 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-strategy_rsi_period=14
-strategy_rsi_oversold=30.0
-strategy_rsi_exit_level=50.0
-strategy_sma_period=50
-strategy_atr_period=14
-strategy_atr_stop_mult=1.5
-strategy_atr_tp_mult=2.0
-strategy_min_atr_spread_mult=3.0
