@@ -8752,3 +8752,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10325,round-close,1,NDX.DWX,103250001,2026-06-12,Development,active
 10325,round-close,2,WS30.DWX,103250002,2026-06-12,Development,active
 10325,round-close,3,GDAXI.DWX,103250003,2026-06-12,Development,active
+10327,eod-reversal,0,SP500.DWX,103270000,2026-06-12,Development,active
+10327,eod-reversal,1,NDX.DWX,103270001,2026-06-12,Development,active
+10327,eod-reversal,2,WS30.DWX,103270002,2026-06-12,Development,active
+10327,eod-reversal,3,GDAXI.DWX,103270003,2026-06-12,Development,active

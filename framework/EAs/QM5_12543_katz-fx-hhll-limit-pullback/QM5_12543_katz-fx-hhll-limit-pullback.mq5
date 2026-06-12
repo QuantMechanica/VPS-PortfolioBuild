@@ -249,6 +249,7 @@ bool Strategy_ExitSignal()
 // P8 News Impact hook. Return false to defer to the central framework filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
+   (void)broker_time;
    return false;
   }
 

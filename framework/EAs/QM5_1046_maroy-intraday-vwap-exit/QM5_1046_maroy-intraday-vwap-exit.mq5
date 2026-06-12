@@ -217,7 +217,6 @@ void Strategy_AdvanceVwapState()
    const int date_key = Strategy_BrokerDateKey(closed_bar_time);
    if(g_session_yyyymmdd != date_key)
       Strategy_ResetSession(closed_bar_time);
-
    const double high = iHigh(_Symbol, strategy_vwap_tf, 1);     // perf-allowed: single closed bar for VWAP
    const double low = iLow(_Symbol, strategy_vwap_tf, 1);       // perf-allowed: single closed bar for VWAP
    const double close = iClose(_Symbol, strategy_vwap_tf, 1);   // perf-allowed: single closed bar for VWAP
@@ -339,7 +338,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
    if(!Strategy_BuildBoundaries())
       return false;
-
    const double close = iClose(_Symbol, strategy_boundary_tf, 1); // perf-allowed: one M30 closed-bar boundary check
    if(close <= 0.0)
       return false;
