@@ -8774,3 +8774,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10331,treasury-pairs,2,SP500.DWX,103310002,2026-06-12,Development,active
 10331,treasury-pairs,3,NDX.DWX,103310003,2026-06-12,Development,active
 10331,treasury-pairs,4,WS30.DWX,103310004,2026-06-12,Development,active
+10332,coi-flow,0,SP500.DWX,103320000,2026-06-13,Development,active
+10332,coi-flow,1,NDX.DWX,103320001,2026-06-13,Development,active
+10332,coi-flow,2,WS30.DWX,103320002,2026-06-13,Development,active
+10332,coi-flow,3,GDAXI.DWX,103320003,2026-06-13,Development,active
