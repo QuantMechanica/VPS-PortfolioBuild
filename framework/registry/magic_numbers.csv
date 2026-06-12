@@ -8020,3 +8020,7 @@
 10267,gawd-sma25-trend,1,WS30.DWX,102670001,2026-06-12,Development,active
 10267,gawd-sma25-trend,2,SP500.DWX,102670002,2026-06-12,Development,active
 10267,gawd-sma25-trend,3,XAUUSD.DWX,102670003,2026-06-12,Development,active
+10268,gawd-sma25-100-cross,0,NDX.DWX,102680000,2026-06-12,Development,active
+10268,gawd-sma25-100-cross,1,WS30.DWX,102680001,2026-06-12,Development,active
+10268,gawd-sma25-100-cross,2,SP500.DWX,102680002,2026-06-12,Development,active
+10268,gawd-sma25-100-cross,3,XAUUSD.DWX,102680003,2026-06-12,Development,active
