@@ -8675,3 +8675,7 @@
 1158,french-weekend-effect-idx,2,GDAXI.DWX,11580002,2026-06-12,Development,active
 1158,french-weekend-effect-idx,3,UK100.DWX,11580003,2026-06-12,Development,active
 1158,french-weekend-effect-idx,4,SP500.DWX,11580004,2026-06-12,Development,active
+12539,ict-london-kz-cable-sweep,0,GBPUSD.DWX,125390000,2026-06-12,Development,active
+12539,ict-london-kz-cable-sweep,1,EURUSD.DWX,125390001,2026-06-12,Development,active
+12537,ict-ote-displacement-xau,0,XAUUSD.DWX,125370000,2026-06-12,Development,active
+12537,ict-ote-displacement-xau,1,NDX.DWX,125370001,2026-06-12,Development,active
