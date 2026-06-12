@@ -8748,3 +8748,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12543,katz-fx-hhll-limit-pullback,6,USDCHF.DWX,125430006,2026-06-12,Development,active
 12543,katz-fx-hhll-limit-pullback,7,EURJPY.DWX,125430007,2026-06-12,Development,active
 12543,katz-fx-hhll-limit-pullback,8,GBPJPY.DWX,125430008,2026-06-12,Development,active
+10325,round-close,0,SP500.DWX,103250000,2026-06-12,Development,active
+10325,round-close,1,NDX.DWX,103250001,2026-06-12,Development,active
+10325,round-close,2,WS30.DWX,103250002,2026-06-12,Development,active
+10325,round-close,3,GDAXI.DWX,103250003,2026-06-12,Development,active
