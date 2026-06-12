@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QuantMechanica V5 EA skeleton template"
+#property description "QM5_10321 Half-Hour Return Periodicity Continuation"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 9999;
+input int    qm_ea_id                   = 10321;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,21 +73,201 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-// TODO: declare strategy-specific input params here, e.g.:
-//   input int    strategy_atr_period   = 14;
-//   input double strategy_atr_sl_mult  = 2.0;
-//   input double strategy_atr_tp_mult  = 3.0;
-input int    strategy_placeholder       = 0;
+input int    strategy_session_start_hhmm = 1630;
+input int    strategy_session_end_hhmm   = 2300;
+input int    strategy_slot_minutes       = 30;
+input int    strategy_history_days       = 10;
+input int    strategy_avg_days           = 5;
+input int    strategy_atr_period         = 14;
+input double strategy_atr_sl_mult        = 0.50;
+input double strategy_spread_median_mult = 1.50;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
+int Strategy_HhmmToMinutes(const int hhmm)
+  {
+   const int hour = hhmm / 100;
+   const int minute = hhmm % 100;
+   if(hour < 0 || hour > 23 || minute < 0 || minute > 59)
+      return -1;
+   return hour * 60 + minute;
+  }
+
+int Strategy_MinutesOfDay(const datetime t)
+  {
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   return dt.hour * 60 + dt.min;
+  }
+
+int Strategy_DayKey(const datetime t)
+  {
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   return dt.year * 1000 + dt.day_of_year;
+  }
+
+bool Strategy_DaySeen(const int &days[], const int count, const int key)
+  {
+   for(int i = 0; i < count; ++i)
+      if(days[i] == key)
+         return true;
+   return false;
+  }
+
+int Strategy_SessionDurationMinutes()
+  {
+   const int start = Strategy_HhmmToMinutes(strategy_session_start_hhmm);
+   const int end = Strategy_HhmmToMinutes(strategy_session_end_hhmm);
+   if(start < 0 || end < 0 || strategy_slot_minutes <= 0)
+      return -1;
+
+   int duration = end - start;
+   if(duration <= 0)
+      duration += 24 * 60;
+   return duration;
+  }
+
+int Strategy_SlotIndex(const datetime t)
+  {
+   const int start = Strategy_HhmmToMinutes(strategy_session_start_hhmm);
+   const int duration = Strategy_SessionDurationMinutes();
+   if(start < 0 || duration <= 0 || strategy_slot_minutes <= 0)
+      return -1;
+
+   int offset = Strategy_MinutesOfDay(t) - start;
+   if(offset < 0)
+      offset += 24 * 60;
+   if(offset < 0 || offset >= duration)
+      return -1;
+   return offset / strategy_slot_minutes;
+  }
+
+bool Strategy_SessionAllows(const datetime t)
+  {
+   const int duration = Strategy_SessionDurationMinutes();
+   if(duration <= 0 || strategy_slot_minutes <= 0)
+      return false;
+   if((duration % strategy_slot_minutes) != 0)
+      return false;
+
+   const int slot = Strategy_SlotIndex(t);
+   const int slot_count = duration / strategy_slot_minutes;
+   if(slot < 0 || slot >= slot_count)
+      return false;
+
+   return (slot > 0 && slot < slot_count - 1);
+  }
+
+double Strategy_MedianSpread(double &values[], const int count)
+  {
+   if(count <= 0)
+      return 0.0;
+
+   ArrayResize(values, count);
+   ArraySort(values);
+   const int mid = count / 2;
+   if((count % 2) == 1)
+      return values[mid];
+   return 0.5 * (values[mid - 1] + values[mid]);
+  }
+
+bool Strategy_CollectSlotStats(const int slot_index,
+                               double &lag1_return,
+                               double &avg_return,
+                               double &median_spread)
+  {
+   lag1_return = 0.0;
+   avg_return = 0.0;
+   median_spread = 0.0;
+
+   if(slot_index < 0 || strategy_history_days < 10 || strategy_avg_days < 1)
+      return false;
+
+   const int bars_per_day = MathMax(1, (24 * 60) / strategy_slot_minutes);
+   const int lookback_bars = MathMax(800, (strategy_history_days + 14) * bars_per_day);
+
+   MqlRates rates[];
+   const int copied = CopyRates(_Symbol, PERIOD_M30, 0, lookback_bars, rates); // perf-allowed: bounded same-slot history, called only after framework QM_IsNewBar gate.
+   if(copied <= 0)
+      return false;
+   ArraySetAsSeries(rates, true);
+
+   int days[];
+   double returns[];
+   double spreads[];
+   ArrayResize(days, strategy_history_days);
+   ArrayResize(returns, strategy_history_days);
+   ArrayResize(spreads, strategy_history_days);
+
+   const int current_day = Strategy_DayKey(TimeCurrent());
+   int found = 0;
+   int spread_count = 0;
+
+   for(int i = 1; i < copied && found < strategy_history_days; ++i)
+     {
+      const datetime bar_time = rates[i].time;
+      if(bar_time <= 0)
+         continue;
+
+      const int day_key = Strategy_DayKey(bar_time);
+      if(day_key == current_day || Strategy_DaySeen(days, found, day_key))
+         continue;
+      if(Strategy_SlotIndex(bar_time) != slot_index)
+         continue;
+      if(rates[i].open <= 0.0 || rates[i].close <= 0.0)
+         continue;
+
+      days[found] = day_key;
+      returns[found] = (rates[i].close - rates[i].open) / rates[i].open;
+      if(rates[i].spread > 0)
+        {
+         spreads[spread_count] = (double)rates[i].spread;
+         spread_count++;
+        }
+      found++;
+     }
+
+   if(found < strategy_history_days)
+      return false;
+
+   lag1_return = returns[0];
+   const int avg_count = MathMin(strategy_avg_days, found);
+   double sum = 0.0;
+   for(int i = 0; i < avg_count; ++i)
+      sum += returns[i];
+   avg_return = sum / (double)avg_count;
+   median_spread = Strategy_MedianSpread(spreads, spread_count);
+   return true;
+  }
+
+bool Strategy_SpreadAllows(const double median_spread_points)
+  {
+   if(median_spread_points <= 0.0 || strategy_spread_median_mult <= 0.0)
+      return true;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+      return false;
+
+   const double current_spread_points = (ask - bid) / point;
+   if(current_spread_points <= 0.0)
+      return true;
+   return (current_spread_points <= median_spread_points * strategy_spread_median_mult);
+  }
+
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // TODO: e.g. "only trade London session" or "skip if ADX<20"
+   if(_Period != PERIOD_M30)
+      return true;
+   if(!Strategy_SessionAllows(TimeCurrent()))
+      return true;
    return false;
   }
 
@@ -96,30 +276,91 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // TODO: build req.type / req.price / req.sl / req.tp / req.lots
-   return false;
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   const datetime broker_now = TimeCurrent();
+   if(!Strategy_SessionAllows(broker_now))
+      return false;
+
+   const int slot = Strategy_SlotIndex(broker_now);
+   double lag1_return = 0.0;
+   double avg_return = 0.0;
+   double median_spread = 0.0;
+   if(!Strategy_CollectSlotStats(slot, lag1_return, avg_return, median_spread))
+      return false;
+   if(!Strategy_SpreadAllows(median_spread))
+      return false;
+
+   int direction = 0;
+   if(lag1_return > 0.0 && avg_return >= 0.0)
+      direction = 1;
+   else if(lag1_return < 0.0 && avg_return <= 0.0)
+      direction = -1;
+   else
+      return false;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   const QM_OrderType side = (direction > 0) ? QM_BUY : QM_SELL;
+   const double entry = (direction > 0) ? ask : bid;
+   const double atr = QM_ATR(_Symbol, PERIOD_M30, strategy_atr_period, 1);
+   if(atr <= 0.0)
+      return false;
+
+   const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_atr_sl_mult);
+   if(sl <= 0.0)
+      return false;
+
+   req.type = side;
+   req.price = NormalizeDouble(entry, _Digits);
+   req.sl = sl;
+   req.tp = 0.0;
+   req.reason = (direction > 0) ? "HALFHOUR_CONT_LONG" : "HALFHOUR_CONT_SHORT";
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // TODO: e.g.
-   //   const int magic = QM_FrameworkMagic();
-   //   for(int i = PositionsTotal() - 1; i >= 0; --i) {
-   //       const ulong ticket = PositionGetTicket(i);
-   //       if(!PositionSelectByTicket(ticket)) continue;
-   //       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
-   //       QM_TM_MoveToBreakEven(ticket, /*trigger_pips=*/30, /*buffer=*/2);
-   //       QM_TM_TrailATR(ticket, /*atr_period=*/14, /*atr_mult=*/2.0);
-   //   }
+   // Card specifies no trailing, break-even, partial close, or pyramiding.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // TODO: when to close manually (separate from SL/TP and trade management)
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0 || strategy_slot_minutes <= 0)
+      return false;
+
+   const datetime broker_now = TimeCurrent();
+   const int hold_seconds = strategy_slot_minutes * 60;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      if(open_time > 0 && broker_now >= open_time + hold_seconds)
+         return true;
+     }
+
    return false;
   }
 
@@ -128,6 +369,7 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
+   (void)broker_time;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 

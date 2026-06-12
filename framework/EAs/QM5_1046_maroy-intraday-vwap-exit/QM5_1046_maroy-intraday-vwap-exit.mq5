@@ -147,7 +147,6 @@ void ResetSessionState(const datetime broker_time)
    g_session_dd_blocked = false;
    g_ladder_scaled = false;
    g_entry_bar_ready = false;
-   g_last_vwap_bar = 0;
   }
 
 double RollingLogReturnSigma()
