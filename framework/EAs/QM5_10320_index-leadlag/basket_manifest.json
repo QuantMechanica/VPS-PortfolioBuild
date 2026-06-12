@@ -1,0 +1,19 @@
+{
+  "ea_id": "QM5_10320",
+  "slug": "index-leadlag",
+  "timeframe": "M1",
+  "symbols": [
+    "GDAXI.DWX",
+    "UK100.DWX",
+    "SP500.DWX",
+    "NDX.DWX"
+  ],
+  "leaders": [
+    "SP500.DWX",
+    "NDX.DWX"
+  ],
+  "notes": [
+    "GER40 from the card is implemented as GDAXI.DWX because GDAXI.DWX is the verified DAX symbol in dwx_symbol_matrix.csv.",
+    "SP500.DWX is backtest-only per OWNER rollout note; live promotion is handled by downstream T6 gates."
+  ]
+}
