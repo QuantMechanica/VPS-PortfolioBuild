@@ -217,7 +217,7 @@ void AdvanceVwapState()
    const int date_key = BrokerDateKey(closed_bar_time);
    if(g_session_yyyymmdd != date_key)
       ResetSessionState(closed_bar_time);
-
+// perf-allowed: OHLCV single-bar reads below; inside QM_IsNewBar(strategy_vwap_tf) gate
    const double high   = iHigh  (_Symbol, strategy_vwap_tf, 1); // perf-allowed: VWAP typical-price, 1 bar, new-bar gate
    const double low    = iLow   (_Symbol, strategy_vwap_tf, 1); // perf-allowed
    const double close  = iClose (_Symbol, strategy_vwap_tf, 1); // perf-allowed
@@ -290,7 +290,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
    if(HasOpenStrategyPosition())
       return false;
-
+// perf-allowed: boundary close read below; inside QM_IsNewBar(strategy_boundary_tf) gate
    const double close = iClose(_Symbol, strategy_boundary_tf, 1); // perf-allowed: last closed boundary bar, 1 bar, new-bar gate
    if(close <= 0.0)
       return false;
