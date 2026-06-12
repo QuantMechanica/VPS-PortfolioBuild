@@ -179,8 +179,8 @@ bool RegressionDivergence(const double &base_values[],
       !SeriesYield(base_values, shift, strategy_yield_lookback, current_y))
       return false;
 
-   const double predicted_y = (cov_xy / var_x) * current_x;
-   out_divergence = ((double)corr_sign) * predicted_y - current_y;
+   const double regressed_y = (cov_xy / var_x) * current_x;
+   out_divergence = ((double)corr_sign) * regressed_y - current_y;
    return true;
   }
 
