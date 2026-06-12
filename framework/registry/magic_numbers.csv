@@ -8659,3 +8659,10 @@
 10301,narang-trend-mom,2,USDJPY.DWX,103010002,2026-06-12,Development,active
 10301,narang-trend-mom,3,XAUUSD.DWX,103010003,2026-06-12,Development,active
 10301,narang-trend-mom,4,GDAXI.DWX,103010004,2026-06-12,Development,active
+10873,sysls-msci-rev,0,GDAXI.DWX,108730000,2026-06-12,Development,active
+10873,sysls-msci-rev,1,NDX.DWX,108730001,2026-06-12,Development,active
+10873,sysls-msci-rev,2,WS30.DWX,108730002,2026-06-12,Development,active
+10873,sysls-msci-rev,3,SP500.DWX,108730003,2026-06-12,Development,active
+10326,close-auct-rev,0,SP500.DWX,103260000,2026-06-12,Development,active
+10326,close-auct-rev,1,NDX.DWX,103260001,2026-06-12,Development,active
+10326,close-auct-rev,2,WS30.DWX,103260002,2026-06-12,Development,active
