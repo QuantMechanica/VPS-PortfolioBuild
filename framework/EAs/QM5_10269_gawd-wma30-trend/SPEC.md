@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades a long-only D1 WMA trend rule. On each new closed bar, it compares the last closed close to WMA(30) of close and opens a long position when the close is above WMA(30). The position is closed when the last closed close falls below WMA(30). A catastrophic stop is placed at 3.0 * ATR(14) from the entry, and new entries are blocked unless ATR(14) is greater than three times the current spread.
+The EA trades a long-only D1 WMA trend rule. On each new closed bar, it compares the last closed close to WMA(30) of close and opens a long position when the close is above WMA(30). The position is closed when the last closed close falls below WMA(30). A catastrophic stop is placed at 3.0 * ATR(14) from the entry, and new entries, but not exits, are blocked unless ATR(14) is greater than three times the current spread.
 
 ---
 
