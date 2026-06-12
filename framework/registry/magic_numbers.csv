@@ -8681,3 +8681,8 @@
 12537,ict-ote-displacement-xau,1,NDX.DWX,125370001,2026-06-12,Development,active
 12536,ict-ob-retest-idx,0,NDX.DWX,125360000,2026-06-12,Development,active
 12536,ict-ob-retest-idx,1,WS30.DWX,125360001,2026-06-12,Development,active
+12541,ker-regime-dual-idx,0,NDX.DWX,125410000,2026-06-12,Development,active
+12541,ker-regime-dual-idx,1,WS30.DWX,125410001,2026-06-12,Development,active
+12541,ker-regime-dual-idx,2,XAUUSD.DWX,125410002,2026-06-12,Development,active
+12540,ict-amd-judas-xau,0,XAUUSD.DWX,125400000,2026-06-12,Development,active
+12540,ict-amd-judas-xau,1,GBPUSD.DWX,125400001,2026-06-12,Development,active
