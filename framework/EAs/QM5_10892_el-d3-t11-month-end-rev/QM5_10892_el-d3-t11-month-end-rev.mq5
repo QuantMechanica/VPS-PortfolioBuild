@@ -148,11 +148,9 @@ int QM10892_ComputeSignal()
      {
       int bar_ms = iBarShift(QM10892_PAIRS[i], PERIOD_D1, month_start, false); // perf-allowed
       if(bar_ms < 1) return 0;
-
       double base = iOpen(QM10892_PAIRS[i],  PERIOD_D1, bar_ms); // perf-allowed
       double cur  = iClose(QM10892_PAIRS[i], PERIOD_D1, 1);      // perf-allowed
       if(base <= 0.0 || cur <= 0.0) return 0;
-
       mtd[i] = (cur / base) - 1.0;
      }
 
