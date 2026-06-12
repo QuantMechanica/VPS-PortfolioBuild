@@ -8693,3 +8693,12 @@
 10763,fx-month-end-rebal,3,USDJPY.DWX,107630003,2026-06-12,Development,active
 10763,fx-month-end-rebal,4,USDCHF.DWX,107630004,2026-06-12,Development,active
 10763,fx-month-end-rebal,5,USDCAD.DWX,107630005,2026-06-12,Development,active
+12534,nnfx-canonical-d1-fullstack,0,EURUSD.DWX,125340000,2026-06-12,Development,active
+12534,nnfx-canonical-d1-fullstack,1,GBPUSD.DWX,125340001,2026-06-12,Development,active
+12534,nnfx-canonical-d1-fullstack,2,USDJPY.DWX,125340002,2026-06-12,Development,active
+12534,nnfx-canonical-d1-fullstack,3,AUDUSD.DWX,125340003,2026-06-12,Development,active
+12534,nnfx-canonical-d1-fullstack,4,NZDUSD.DWX,125340004,2026-06-12,Development,active
+12534,nnfx-canonical-d1-fullstack,5,USDCAD.DWX,125340005,2026-06-12,Development,active
+12534,nnfx-canonical-d1-fullstack,6,USDCHF.DWX,125340006,2026-06-12,Development,active
+12534,nnfx-canonical-d1-fullstack,7,EURJPY.DWX,125340007,2026-06-12,Development,active
+12534,nnfx-canonical-d1-fullstack,8,GBPJPY.DWX,125340008,2026-06-12,Development,active
