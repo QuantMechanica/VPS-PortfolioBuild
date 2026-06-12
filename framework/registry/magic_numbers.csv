@@ -1,4 +1,4 @@
-﻿ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
+ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11047,roman-sar-break,0,EURUSD.DWX,110470000,2026-06-07,Development,active
 11047,roman-sar-break,1,GBPUSD.DWX,110470001,2026-06-07,Development,active
 11047,roman-sar-break,2,USDCHF.DWX,110470002,2026-06-07,Development,active
@@ -726,8 +726,6 @@
 1050,mql5-smc-order-blocks,2,USDJPY.DWX,10500002,2026-05-16,Development,active
 1050,mql5-smc-order-blocks,3,AUDUSD.DWX,10500003,2026-05-16,Development,active
 1050,mql5-smc-order-blocks,4,USDCAD.DWX,10500004,2026-05-16,Development,active
-1046,maroy-intraday-vwap-exit,0,NDX.DWX,10460000,2026-05-16,Development,active
-1046,maroy-intraday-vwap-exit,1,WS30.DWX,10460001,2026-05-16,Development,active
 1048,estrada-lazy-6m-rotation,0,NDX.DWX,10480000,2026-05-16,Development,active
 1048,estrada-lazy-6m-rotation,1,WS30.DWX,10480001,2026-05-16,Development,active
 1048,estrada-lazy-6m-rotation,2,GDAXI.DWX,10480002,2026-05-16,Development,active
@@ -766,7 +764,6 @@
 1055,tro-mtf-heiken-ashi,3,AUDUSD.DWX,10550003,2026-05-16,Development,active
 1055,tro-mtf-heiken-ashi,4,EURJPY.DWX,10550004,2026-05-16,Development,active
 1055,tro-mtf-heiken-ashi,5,GBPJPY.DWX,10550005,2026-05-16,Development,active
-1046,maroy-intraday-vwap-exit,2,SP500.DWX,10460002,2026-05-16,Development,active
 1056,moskowitz-tsmom-multiasset,0,EURUSD.DWX,10560000,2026-05-17,Development,active
 1056,moskowitz-tsmom-multiasset,1,GBPUSD.DWX,10560001,2026-05-17,Development,active
 1056,moskowitz-tsmom-multiasset,2,USDJPY.DWX,10560002,2026-05-17,Development,active
@@ -8729,3 +8726,6 @@
 10321,halfhour-cont,2,WS30.DWX,103210002,2026-06-12,Development,active
 10321,halfhour-cont,3,GDAXI.DWX,103210003,2026-06-12,Development,active
 10321,halfhour-cont,4,UK100.DWX,103210004,2026-06-12,Development,active
+1046,maroy-intraday-vwap-exit,0,NDX.DWX,10460000,2026-06-12,Development,active
+1046,maroy-intraday-vwap-exit,1,WS30.DWX,10460001,2026-06-12,Development,active
+1046,maroy-intraday-vwap-exit,2,SP500.DWX,10460002,2026-06-12,Development,active

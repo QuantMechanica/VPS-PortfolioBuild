@@ -86,7 +86,6 @@ bool     g_session_dd_blocked = false;
 bool     g_ladder_scaled = false;
 bool     g_entry_bar_ready = false;
 int      g_session_yyyymmdd = 0;
-datetime g_last_vwap_bar = 0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -160,8 +159,8 @@ double RollingLogReturnSigma()
 
    for(int shift = 1; shift <= n; ++shift)
      {
-      const double c0 = iClose(_Symbol, PERIOD_D1, shift);
-      const double c1 = iClose(_Symbol, PERIOD_D1, shift + 1);
+      const double c0 = iClose(_Symbol, PERIOD_D1, shift);     // perf-allowed: D1 log-return HV, N<=60, inside new-bar gate
+      const double c1 = iClose(_Symbol, PERIOD_D1, shift + 1); // perf-allowed
       if(c0 <= 0.0 || c1 <= 0.0)
          continue;
       const double r = MathLog(c0 / c1);
@@ -184,7 +183,7 @@ void AdvanceBoundaryState()
 
    const double close_open_today = (g_session_open_price > 0.0)
                                    ? g_session_open_price
-                                   : iOpen(_Symbol, PERIOD_D1, 0);
+                                   : iOpen(_Symbol, PERIOD_D1, 0); // perf-allowed: today D1 open as session-open ref, 1 bar
    const double sigma_t = RollingLogReturnSigma();
    if(close_open_today <= 0.0 || sigma_t <= 0.0)
       return;
@@ -207,11 +206,12 @@ double AtrStopOnBoundaryTf(const QM_OrderType side, const double entry)
 
 void AdvanceVwapState()
   {
-   const datetime closed_bar_time = iTime(_Symbol, strategy_vwap_tf, 1);
-   if(closed_bar_time <= 0 || closed_bar_time == g_last_vwap_bar)
+   // perf-allowed: single closed-bar time read for session-date check; called
+   // only after QM_IsNewBar(strategy_vwap_tf) gate in Strategy_NoTradeFilter.
+   const datetime closed_bar_time = iTime(_Symbol, strategy_vwap_tf, 1); // perf-allowed
+   if(closed_bar_time <= 0)
       return;
 
-   g_last_vwap_bar = closed_bar_time;
    if(!IsCashSession(closed_bar_time))
       return;
 
@@ -219,10 +219,10 @@ void AdvanceVwapState()
    if(g_session_yyyymmdd != date_key)
       ResetSessionState(closed_bar_time);
 
-   const double high = iHigh(_Symbol, strategy_vwap_tf, 1);
-   const double low = iLow(_Symbol, strategy_vwap_tf, 1);
-   const double close = iClose(_Symbol, strategy_vwap_tf, 1);
-   const double volume = (double)iVolume(_Symbol, strategy_vwap_tf, 1);
+   const double high   = iHigh  (_Symbol, strategy_vwap_tf, 1); // perf-allowed: VWAP typical-price, 1 bar, new-bar gate
+   const double low    = iLow   (_Symbol, strategy_vwap_tf, 1); // perf-allowed
+   const double close  = iClose (_Symbol, strategy_vwap_tf, 1); // perf-allowed
+   const double volume = (double)iVolume(_Symbol, strategy_vwap_tf, 1); // perf-allowed
    if(high <= 0.0 || low <= 0.0 || close <= 0.0 || volume <= 0.0)
       return;
 
@@ -292,7 +292,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(HasOpenStrategyPosition())
       return false;
 
-   const double close = iClose(_Symbol, strategy_boundary_tf, 1);
+   const double close = iClose(_Symbol, strategy_boundary_tf, 1); // perf-allowed: last closed boundary bar, 1 bar, new-bar gate
    if(close <= 0.0)
       return false;
 
