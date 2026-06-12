@@ -84,59 +84,6 @@ input double strategy_atr_sl_mult        = 2.0;
 // Strategy hooks -- implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-double Strategy_MFI(const string symbol, const ENUM_TIMEFRAMES tf, const int period)
-  {
-   if(period <= 0)
-      return EMPTY_VALUE;
-
-   MqlRates rates[];
-   const int copied = CopyRates(symbol, tf, 1, period + 1, rates); // perf-allowed: bespoke closed-bar MFI over bounded period; caller is QM_IsNewBar-gated
-   if(copied < period + 1)
-      return EMPTY_VALUE;
-
-   double positive_flow = 0.0;
-   double negative_flow = 0.0;
-   for(int i = 1; i < copied; ++i)
-     {
-      const double prev_typical = (rates[i - 1].high + rates[i - 1].low + rates[i - 1].close) / 3.0;
-      const double curr_typical = (rates[i].high + rates[i].low + rates[i].close) / 3.0;
-      const double volume = (double)rates[i].tick_volume;
-      if(prev_typical <= 0.0 || curr_typical <= 0.0 || volume <= 0.0)
-         continue;
-
-      const double raw_flow = curr_typical * volume;
-      if(curr_typical > prev_typical)
-         positive_flow += raw_flow;
-      else if(curr_typical < prev_typical)
-         negative_flow += raw_flow;
-     }
-
-   if(positive_flow <= 0.0 && negative_flow <= 0.0)
-      return EMPTY_VALUE;
-   if(negative_flow <= 0.0)
-      return 100.0;
-
-   const double money_ratio = positive_flow / negative_flow;
-   return 100.0 - (100.0 / (1.0 + money_ratio));
-  }
-
-int Strategy_MFISignal()
-  {
-   if(_Period != strategy_signal_tf)
-      return 0;
-   if(strategy_mfi_period <= 0 || strategy_long_threshold >= strategy_short_threshold)
-      return 0;
-
-   const double mfi = Strategy_MFI(_Symbol, strategy_signal_tf, strategy_mfi_period);
-   if(mfi == EMPTY_VALUE)
-      return 0;
-   if(mfi <= strategy_long_threshold)
-      return 1;
-   if(mfi >= strategy_short_threshold)
-      return -1;
-   return 0;
-  }
-
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only -- runs on every tick.
 bool Strategy_NoTradeFilter()
@@ -160,7 +107,48 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    // Trade Entry: card requires D1 MFI(14) threshold reversal.
-   const int signal = Strategy_MFISignal();
+   if(_Period != strategy_signal_tf)
+      return false;
+   if(strategy_mfi_period <= 0 || strategy_long_threshold >= strategy_short_threshold)
+      return false;
+
+   MqlRates rates[];
+   const int copied = CopyRates(_Symbol, strategy_signal_tf, 1, strategy_mfi_period + 1, rates); // perf-allowed: bespoke closed-bar MFI over bounded period; caller is QM_IsNewBar-gated
+   if(copied < strategy_mfi_period + 1)
+      return false;
+
+   double positive_flow = 0.0;
+   double negative_flow = 0.0;
+   for(int i = 1; i < copied; ++i)
+     {
+      const double prev_typical = (rates[i - 1].high + rates[i - 1].low + rates[i - 1].close) / 3.0;
+      const double curr_typical = (rates[i].high + rates[i].low + rates[i].close) / 3.0;
+      const double volume = (double)rates[i].tick_volume;
+      if(prev_typical <= 0.0 || curr_typical <= 0.0 || volume <= 0.0)
+         continue;
+
+      const double raw_flow = curr_typical * volume;
+      if(curr_typical > prev_typical)
+         positive_flow += raw_flow;
+      else if(curr_typical < prev_typical)
+         negative_flow += raw_flow;
+     }
+
+   if(positive_flow <= 0.0 && negative_flow <= 0.0)
+      return false;
+
+   double mfi = 100.0;
+   if(negative_flow > 0.0)
+     {
+      const double money_ratio = positive_flow / negative_flow;
+      mfi = 100.0 - (100.0 / (1.0 + money_ratio));
+     }
+
+   int signal = 0;
+   if(mfi <= strategy_long_threshold)
+      signal = 1;
+   else if(mfi >= strategy_short_threshold)
+      signal = -1;
    if(signal == 0)
       return false;
 
@@ -365,4 +353,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
