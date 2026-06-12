@@ -8012,3 +8012,7 @@
 10234,tv-rsi-atr-band,1,WS30.DWX,102340001,2026-06-12,Development,active
 10234,tv-rsi-atr-band,2,SP500.DWX,102340002,2026-06-12,Development,active
 10234,tv-rsi-atr-band,3,XAUUSD.DWX,102340003,2026-06-12,Development,active
+10266,coasensi-bb20-mr,0,SP500.DWX,102660000,2026-06-12,Development,active
+10266,coasensi-bb20-mr,1,NDX.DWX,102660001,2026-06-12,Development,active
+10266,coasensi-bb20-mr,2,WS30.DWX,102660002,2026-06-12,Development,active
+10266,coasensi-bb20-mr,3,EURUSD.DWX,102660003,2026-06-12,Development,active
