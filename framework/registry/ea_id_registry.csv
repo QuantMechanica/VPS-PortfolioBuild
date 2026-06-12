@@ -3453,3 +3453,8 @@ ea_id,slug,strategy_id,status,owner,created_at
 QM5_10300,cinar-vwap,1b906e79-c619-5a61-90db-ee19ac95a19f,active,Development,2026-06-12
 12534,nnfx-canonical-d1-fullstack,nnfx-canonical-d1,active,claude,2026-06-12
 12535,ict-killzone-sweep-idx,ict-killzone-sweep,active,claude,2026-06-12
+12536,ict-ob-retest-idx,ict-ob-retest,active,claude,2026-06-12
+12537,ict-ote-displacement-xau,ict-ote,active,claude,2026-06-12
+12538,nnfx-canonical-stack2-st-vortex,nnfx-canonical-stack2,active,claude,2026-06-12
+12539,ict-london-kz-cable-sweep,ict-london-kz,active,claude,2026-06-12
+12540,ict-amd-judas-xau,ict-amd-judas,active,claude,2026-06-12
