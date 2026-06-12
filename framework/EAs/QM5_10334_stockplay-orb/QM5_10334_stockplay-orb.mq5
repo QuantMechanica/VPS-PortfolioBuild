@@ -37,6 +37,7 @@ input int    strategy_opening_range_minutes    = 5;
 input int    strategy_relative_volume_minutes  = 15;
 input int    strategy_volume_median_sessions   = 20;
 input double strategy_relative_volume_min      = 1.50;
+input int    strategy_news_proxy_window_minutes = 120;
 input int    strategy_atr_period               = 14;
 input double strategy_emergency_atr_mult       = 1.00;
 input int    strategy_spread_history_bars      = 100;
@@ -51,6 +52,7 @@ bool   g_session_volume_stored = false;
 bool   g_opening_range_ready = false;
 bool   g_first15_ready = false;
 bool   g_in_play = false;
+bool   g_news_in_play = false;
 bool   g_breakout_taken = false;
 bool   g_first_bar_spread_ok = false;
 
@@ -178,6 +180,7 @@ void Strategy_ResetSession(const int day_key)
    g_opening_range_ready = false;
    g_first15_ready = false;
    g_in_play = false;
+   g_news_in_play = false;
    g_breakout_taken = false;
    g_first_bar_spread_ok = false;
    g_session_bar_count = 0;
@@ -211,6 +214,34 @@ bool Strategy_CurrentSpreadAllowed()
    return ((double)spread_raw <= g_spread_p80_points);
   }
 
+bool Strategy_HighImpactNewsInFirstWindow(const datetime session_start_broker)
+  {
+   if(strategy_news_proxy_window_minutes <= 0)
+      return false;
+
+   if(!g_qm_news_loaded)
+     {
+      if(!QM_NewsInit("D:\\QM\\data\\news_calendar",
+                      qm_news_stale_max_hours,
+                      30,
+                      30,
+                      qm_news_min_impact))
+         return false;
+     }
+   if(!g_qm_news_available)
+      return false;
+
+   datetime utc_start = QM_BrokerToUTC(session_start_broker);
+   if(utc_start <= 0)
+      return false;
+
+   return QM_NewsInWindow(utc_start,
+                          _Symbol,
+                          strategy_news_proxy_window_minutes,
+                          0,
+                          "HIGH");
+  }
+
 void AdvanceState_OnNewBar()
   {
    const datetime bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: closed-bar ORB cache
@@ -235,7 +266,10 @@ void AdvanceState_OnNewBar()
    const bool is_start_bar = (minute == start_minute);
 
    if(is_start_bar && day_key != g_session_key)
+     {
       Strategy_ResetSession(day_key);
+      g_news_in_play = Strategy_HighImpactNewsInFirstWindow(bar_time);
+     }
 
    if(!g_session_active)
       return;
@@ -270,9 +304,10 @@ void AdvanceState_OnNewBar()
       const int required_sessions = MathMax(1, MathMin(strategy_volume_median_sessions, QM_VOLUME_HISTORY_MAX));
       const double median_volume = Strategy_MedianVolume();
       g_first15_ready = true;
-      g_in_play = (g_volume_history_count >= required_sessions &&
-                   median_volume > 0.0 &&
-                   g_first15_volume >= strategy_relative_volume_min * median_volume);
+      const bool relative_volume_in_play = (g_volume_history_count >= required_sessions &&
+                                            median_volume > 0.0 &&
+                                            g_first15_volume >= strategy_relative_volume_min * median_volume);
+      g_in_play = (relative_volume_in_play || g_news_in_play);
      }
   }
 

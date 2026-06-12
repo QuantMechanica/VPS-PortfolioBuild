@@ -26,6 +26,7 @@ The EA trades a five-minute opening range breakout on the U.S. cash-session wind
 | `strategy_relative_volume_minutes` | 15 | 15 | First-session volume window for the in-play gate. |
 | `strategy_volume_median_sessions` | 20 | 1-60 | Number of prior sessions used for median first-15-minute tick volume. |
 | `strategy_relative_volume_min` | 1.50 | 1.00-5.00 | Minimum first-15-minute relative volume for in-play classification. |
+| `strategy_news_proxy_window_minutes` | 120 | 0-240 | First-session minutes checked for a high-impact scheduled event as the card's news proxy. |
 | `strategy_atr_period` | 14 | 2-100 | ATR period for the emergency stop cap. |
 | `strategy_emergency_atr_mult` | 1.00 | 0.10-5.00 | Maximum stop distance as ATR multiple when the opening range is wide. |
 | `strategy_spread_history_bars` | 100 | 20-200 | Closed-bar spread samples used for the rolling percentile filter. |
