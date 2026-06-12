@@ -8016,3 +8016,7 @@
 10266,coasensi-bb20-mr,1,NDX.DWX,102660001,2026-06-12,Development,active
 10266,coasensi-bb20-mr,2,WS30.DWX,102660002,2026-06-12,Development,active
 10266,coasensi-bb20-mr,3,EURUSD.DWX,102660003,2026-06-12,Development,active
+10267,gawd-sma25-trend,0,NDX.DWX,102670000,2026-06-12,Development,active
+10267,gawd-sma25-trend,1,WS30.DWX,102670001,2026-06-12,Development,active
+10267,gawd-sma25-trend,2,SP500.DWX,102670002,2026-06-12,Development,active
+10267,gawd-sma25-trend,3,XAUUSD.DWX,102670003,2026-06-12,Development,active
