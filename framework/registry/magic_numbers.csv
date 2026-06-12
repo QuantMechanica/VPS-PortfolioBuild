@@ -8687,3 +8687,9 @@
 12541,ker-regime-dual-idx,2,XAUUSD.DWX,125410002,2026-06-12,Development,active
 12540,ict-amd-judas-xau,0,XAUUSD.DWX,125400000,2026-06-12,Development,active
 12540,ict-amd-judas-xau,1,GBPUSD.DWX,125400001,2026-06-12,Development,active
+10763,fx-month-end-rebal,0,EURUSD.DWX,107630000,2026-06-12,Development,active
+10763,fx-month-end-rebal,1,GBPUSD.DWX,107630001,2026-06-12,Development,active
+10763,fx-month-end-rebal,2,AUDUSD.DWX,107630002,2026-06-12,Development,active
+10763,fx-month-end-rebal,3,USDJPY.DWX,107630003,2026-06-12,Development,active
+10763,fx-month-end-rebal,4,USDCHF.DWX,107630004,2026-06-12,Development,active
+10763,fx-month-end-rebal,5,USDCAD.DWX,107630005,2026-06-12,Development,active
