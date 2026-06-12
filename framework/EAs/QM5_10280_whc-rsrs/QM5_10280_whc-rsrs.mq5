@@ -84,64 +84,6 @@ input double          strategy_atr_sl_mult     = 2.00;
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-bool Strategy_HasOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      return true;
-     }
-
-   return false;
-  }
-
-double Strategy_RSRS(const int shift)
-  {
-   if(strategy_rsrs_period < 2 || shift < 1)
-      return 0.0;
-
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, strategy_signal_tf, shift, strategy_rsrs_period, rates); // perf-allowed: bounded RSRS OLS window, called only inside framework closed-bar gates.
-   if(copied < strategy_rsrs_period)
-      return 0.0;
-
-   double sum_x = 0.0;
-   double sum_y = 0.0;
-   double sum_xx = 0.0;
-   double sum_xy = 0.0;
-
-   for(int i = 0; i < strategy_rsrs_period; ++i)
-     {
-      const double low = rates[i].low;
-      const double high = rates[i].high;
-      if(low <= 0.0 || high <= 0.0)
-         return 0.0;
-
-      sum_x += low;
-      sum_y += high;
-      sum_xx += low * low;
-      sum_xy += low * high;
-     }
-
-   const double n = (double)strategy_rsrs_period;
-   const double denom = n * sum_xx - sum_x * sum_x;
-   if(MathAbs(denom) <= DBL_EPSILON)
-      return 0.0;
-
-   return (n * sum_xy - sum_x * sum_y) / denom;
-  }
-
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
@@ -162,10 +104,39 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(Strategy_HasOpenPosition())
+   if(strategy_rsrs_period < 2)
       return false;
 
-   const double rsrs = Strategy_RSRS(1);
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, strategy_signal_tf, 1, strategy_rsrs_period, rates); // perf-allowed: bounded RSRS OLS window, caller is behind QM_IsNewBar() gate.
+   if(copied < strategy_rsrs_period)
+      return false;
+
+   double sum_x = 0.0;
+   double sum_y = 0.0;
+   double sum_xx = 0.0;
+   double sum_xy = 0.0;
+
+   for(int i = 0; i < strategy_rsrs_period; ++i)
+     {
+      const double low = rates[i].low;
+      const double high = rates[i].high;
+      if(low <= 0.0 || high <= 0.0)
+         return false;
+
+      sum_x += low;
+      sum_y += high;
+      sum_xx += low * low;
+      sum_xy += low * high;
+     }
+
+   const double n = (double)strategy_rsrs_period;
+   const double denom = n * sum_xx - sum_x * sum_x;
+   if(MathAbs(denom) <= DBL_EPSILON)
+      return false;
+
+   const double rsrs = (n * sum_xy - sum_x * sum_y) / denom;
    if(rsrs <= strategy_entry_threshold)
       return false;
 
@@ -194,13 +165,62 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   if(!Strategy_HasOpenPosition())
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   bool has_position = false;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      has_position = true;
+      break;
+     }
+   if(!has_position)
       return false;
 
    if(!QM_IsNewBar(_Symbol, strategy_signal_tf))
       return false;
 
-   const double rsrs = Strategy_RSRS(1);
+   if(strategy_rsrs_period < 2)
+      return false;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, strategy_signal_tf, 1, strategy_rsrs_period, rates); // perf-allowed: bounded RSRS OLS window, guarded by QM_IsNewBar().
+   if(copied < strategy_rsrs_period)
+      return false;
+
+   double sum_x = 0.0;
+   double sum_y = 0.0;
+   double sum_xx = 0.0;
+   double sum_xy = 0.0;
+
+   for(int i = 0; i < strategy_rsrs_period; ++i)
+     {
+      const double low = rates[i].low;
+      const double high = rates[i].high;
+      if(low <= 0.0 || high <= 0.0)
+         return false;
+
+      sum_x += low;
+      sum_y += high;
+      sum_xx += low * low;
+      sum_xy += low * high;
+     }
+
+   const double n = (double)strategy_rsrs_period;
+   const double denom = n * sum_xx - sum_x * sum_x;
+   if(MathAbs(denom) <= DBL_EPSILON)
+      return false;
+
+   const double rsrs = (n * sum_xy - sum_x * sum_y) / denom;
    return (rsrs > 0.0 && rsrs < strategy_exit_threshold);
   }
 
