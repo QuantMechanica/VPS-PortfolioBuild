@@ -116,14 +116,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    // perf-allowed: bespoke shooting-star candle geometry, called only after
    // the framework QM_IsNewBar gate in OnTick.
-   const double star_open   = iOpen(_Symbol, PERIOD_D1, 2);
-   const double star_high   = iHigh(_Symbol, PERIOD_D1, 2);
-   const double star_low    = iLow(_Symbol, PERIOD_D1, 2);
-   const double star_close  = iClose(_Symbol, PERIOD_D1, 2);
-   const double conf_high   = iHigh(_Symbol, PERIOD_D1, 1);
-   const double conf_close  = iClose(_Symbol, PERIOD_D1, 1);
-   const double prev1_close = iClose(_Symbol, PERIOD_D1, 3);
-   const double prev2_close = iClose(_Symbol, PERIOD_D1, 4);
+   const double star_open   = iOpen(_Symbol, PERIOD_D1, 2);  // perf-allowed: closed D1 shooting-star anatomy
+   const double star_high   = iHigh(_Symbol, PERIOD_D1, 2);  // perf-allowed: closed D1 shooting-star anatomy
+   const double star_low    = iLow(_Symbol, PERIOD_D1, 2);   // perf-allowed: closed D1 shooting-star anatomy
+   const double star_close  = iClose(_Symbol, PERIOD_D1, 2); // perf-allowed: closed D1 shooting-star anatomy
+   const double conf_high   = iHigh(_Symbol, PERIOD_D1, 1);  // perf-allowed: closed D1 confirmation bar
+   const double conf_close  = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: closed D1 confirmation bar
+   const double prev1_close = iClose(_Symbol, PERIOD_D1, 3); // perf-allowed: closed D1 two-bar uptrend
+   const double prev2_close = iClose(_Symbol, PERIOD_D1, 4); // perf-allowed: closed D1 two-bar uptrend
 
    if(star_open <= 0.0 || star_high <= 0.0 || star_low <= 0.0 ||
       star_close <= 0.0 || conf_high <= 0.0 || conf_close <= 0.0 ||
