@@ -8756,3 +8756,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10327,eod-reversal,1,NDX.DWX,103270001,2026-06-12,Development,active
 10327,eod-reversal,2,WS30.DWX,103270002,2026-06-12,Development,active
 10327,eod-reversal,3,GDAXI.DWX,103270003,2026-06-12,Development,active
+10328,residual-rev,0,SP500.DWX,103280000,2026-06-12,Development,active
+10328,residual-rev,1,NDX.DWX,103280001,2026-06-12,Development,active
+10328,residual-rev,2,WS30.DWX,103280002,2026-06-12,Development,active
+10328,residual-rev,3,GDAXI.DWX,103280003,2026-06-12,Development,active
+10329,imbalance-rev,0,SP500.DWX,103290000,2026-06-12,Development,active
+10329,imbalance-rev,1,NDX.DWX,103290001,2026-06-12,Development,active
+10329,imbalance-rev,2,WS30.DWX,103290002,2026-06-12,Development,active
+10329,imbalance-rev,3,GDAXI.DWX,103290003,2026-06-12,Development,active
