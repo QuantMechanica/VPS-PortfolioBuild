@@ -308,17 +308,59 @@ bool UpdateBasketState()
    const double threshold = strategy_rank_atr_mult * current.atr_rank / current.close_price;
    int direction = 0;
 
-   if(current_idx == top_idx &&
-      current.intraday > 0.0 &&
-      current.intraday >= median + threshold &&
-      !OvernightConflict(current, 1))
-      direction = 1;
+   bool long_candidate = false;
+   bool short_candidate = false;
+   double long_gap = 0.0;
+   double short_gap = 0.0;
 
-   if(current_idx == bottom_idx &&
-      current.intraday < 0.0 &&
-      current.intraday <= median - threshold &&
-      !OvernightConflict(current, -1))
-      direction = -1;
+   if(top_idx >= 0)
+     {
+      const ComponentScore top = scores[top_idx];
+      const double top_threshold = strategy_rank_atr_mult * top.atr_rank / top.close_price;
+      long_candidate = (top.intraday > 0.0 &&
+                        top.intraday >= median + top_threshold &&
+                        !OvernightConflict(top, 1));
+      long_gap = top.intraday - median;
+     }
+
+   if(bottom_idx >= 0)
+     {
+      const ComponentScore bottom = scores[bottom_idx];
+      const double bottom_threshold = strategy_rank_atr_mult * bottom.atr_rank / bottom.close_price;
+      short_candidate = (bottom.intraday < 0.0 &&
+                         bottom.intraday <= median - bottom_threshold &&
+                         !OvernightConflict(bottom, -1));
+      short_gap = median - bottom.intraday;
+     }
+
+   int selected_idx = -1;
+   int selected_direction = 0;
+   if(long_candidate && short_candidate)
+     {
+      if(long_gap >= short_gap)
+        {
+         selected_idx = top_idx;
+         selected_direction = 1;
+        }
+      else
+        {
+         selected_idx = bottom_idx;
+         selected_direction = -1;
+        }
+     }
+   else if(long_candidate)
+     {
+      selected_idx = top_idx;
+      selected_direction = 1;
+     }
+   else if(short_candidate)
+     {
+      selected_idx = bottom_idx;
+      selected_direction = -1;
+     }
+
+   if(current_idx == selected_idx)
+      direction = selected_direction;
 
    g_state_valid = true;
    g_state_direction = direction;
@@ -346,7 +388,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!UpdateBasketState())
+   if(!g_state_valid)
       return false;
    if(HasOurPosition())
       return false;
@@ -484,6 +526,13 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   const bool is_new_bar = QM_IsNewBar();
+   if(is_new_bar)
+     {
+      QM_EquityStreamOnNewBar();
+      UpdateBasketState();
+     }
+
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -500,10 +549,8 @@ void OnTick()
         }
      }
 
-   if(!QM_IsNewBar())
+   if(!is_new_bar)
       return;
-
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-On each D1 bar, the EA ranks the registered index basket by the rolling 20-session sum of log intraday returns, measured as close divided by the same session open. On the Monday rebalance bar it goes long only when the chart symbol is the top-ranked positive member and its score is at least 0.50 times ATR(20) divided by close above the basket median. It goes short only when the chart symbol is the bottom-ranked negative member and its score is at least the same ATR-normalized threshold below the median. Existing positions exit after five sessions, when the symbol's cached score crosses back through the basket median, or under framework Friday-close rules.
+On each D1 bar, the EA ranks the registered index basket by the rolling 20-session sum of log intraday returns, measured as close divided by the same session open. On the Monday rebalance bar it selects one basket slot: the top-ranked positive member if it clears the ATR-normalized threshold above the basket median, the bottom-ranked negative member if it clears the same threshold below the median, and the larger median-distance candidate if both sides qualify. Existing positions exit after five sessions, when the symbol's cached score crosses back through the basket median, or under framework Friday-close rules.
 
 ---
 
