@@ -8679,3 +8679,5 @@
 12539,ict-london-kz-cable-sweep,1,EURUSD.DWX,125390001,2026-06-12,Development,active
 12537,ict-ote-displacement-xau,0,XAUUSD.DWX,125370000,2026-06-12,Development,active
 12537,ict-ote-displacement-xau,1,NDX.DWX,125370001,2026-06-12,Development,active
+12536,ict-ob-retest-idx,0,NDX.DWX,125360000,2026-06-12,Development,active
+12536,ict-ob-retest-idx,1,WS30.DWX,125360001,2026-06-12,Development,active
