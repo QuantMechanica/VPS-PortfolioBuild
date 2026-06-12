@@ -8724,3 +8724,8 @@
 10320,index-leadlag,1,UK100.DWX,103200001,2026-06-12,Development,active
 10320,index-leadlag,2,SP500.DWX,103200002,2026-06-12,Development,active
 10320,index-leadlag,3,NDX.DWX,103200003,2026-06-12,Development,active
+10321,halfhour-cont,0,SP500.DWX,103210000,2026-06-12,Development,active
+10321,halfhour-cont,1,NDX.DWX,103210001,2026-06-12,Development,active
+10321,halfhour-cont,2,WS30.DWX,103210002,2026-06-12,Development,active
+10321,halfhour-cont,3,GDAXI.DWX,103210003,2026-06-12,Development,active
+10321,halfhour-cont,4,UK100.DWX,103210004,2026-06-12,Development,active
