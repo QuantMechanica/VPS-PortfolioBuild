@@ -78,101 +78,6 @@ input int    strategy_cmf_period         = 20;
 input int    strategy_atr_period         = 14;
 input double strategy_atr_sl_mult        = 2.0;
 
-double Strategy_CMF(const string sym, const ENUM_TIMEFRAMES tf, const int period, const int shift)
-  {
-   if(period <= 0 || shift < 0)
-      return 0.0;
-
-   MqlRates rates[];
-   const int copied = CopyRates(sym, tf, shift, period, rates); // perf-allowed: bespoke closed-bar OHLCV CMF; caller is QM_IsNewBar-gated
-   if(copied < period)
-      return 0.0;
-
-   double money_flow_volume = 0.0;
-   double volume_sum = 0.0;
-   for(int i = 0; i < copied; ++i)
-     {
-      const double high = rates[i].high;
-      const double low = rates[i].low;
-      const double close = rates[i].close;
-      const double volume = (double)rates[i].tick_volume;
-      if(high <= low || volume <= 0.0)
-         continue;
-
-      const double multiplier = ((close - low) - (high - close)) / (high - low);
-      money_flow_volume += multiplier * volume;
-      volume_sum += volume;
-     }
-
-   if(volume_sum <= 0.0)
-      return 0.0;
-   return money_flow_volume / volume_sum;
-  }
-
-bool Strategy_SelectOurPosition(ulong &ticket, ENUM_POSITION_TYPE &position_type)
-  {
-   ticket = 0;
-   position_type = POSITION_TYPE_BUY;
-
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong candidate = PositionGetTicket(i);
-      if(candidate == 0 || !PositionSelectByTicket(candidate))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      ticket = candidate;
-      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      return true;
-     }
-
-   return false;
-  }
-
-bool Strategy_BuildMarketRequest(const QM_OrderType side, QM_EntryRequest &req)
-  {
-   const double entry = (side == QM_BUY)
-                        ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                        : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
-      return false;
-
-   const double atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
-   if(atr <= 0.0)
-      return false;
-
-   const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_atr_sl_mult);
-   if(sl <= 0.0)
-      return false;
-   if(side == QM_BUY && sl >= entry)
-      return false;
-   if(side == QM_SELL && sl <= entry)
-      return false;
-
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0)
-      return false;
-   const double sl_points = MathAbs(entry - sl) / point;
-   if(QM_LotsForRisk(_Symbol, sl_points) <= 0.0)
-      return false;
-
-   req.type = side;
-   req.price = 0.0;
-   req.sl = sl;
-   req.tp = 0.0;
-   req.reason = (side == QM_BUY) ? "CINAR_CMF_LONG" : "CINAR_CMF_SHORT";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-   return true;
-  }
-
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -202,17 +107,53 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // Trade Entry: card requires D1 CMF(20) zero-line direction.
    if(_Period != strategy_signal_tf)
       return false;
-
-   const double cmf = Strategy_CMF(_Symbol, strategy_signal_tf, strategy_cmf_period, 1);
-   if(cmf == 0.0)
+   if(strategy_cmf_period <= 0 || strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return false;
 
+   MqlRates rates[];
+   const int copied = CopyRates(_Symbol, strategy_signal_tf, 1, strategy_cmf_period, rates); // perf-allowed: bespoke closed-bar OHLCV CMF; caller is QM_IsNewBar-gated
+   if(copied < strategy_cmf_period)
+      return false;
+
+   double money_flow_volume = 0.0;
+   double volume_sum = 0.0;
+   for(int i = 0; i < copied; ++i)
+     {
+      const double high = rates[i].high;
+      const double low = rates[i].low;
+      const double close = rates[i].close;
+      const double volume = (double)rates[i].tick_volume;
+      if(high <= low || volume <= 0.0)
+         continue;
+
+      const double multiplier = ((close - low) - (high - close)) / (high - low);
+      money_flow_volume += multiplier * volume;
+      volume_sum += volume;
+     }
+
+   if(volume_sum <= 0.0)
+      return false;
+   const double cmf = money_flow_volume / volume_sum;
+
+   if(cmf == 0.0)
+      return false;
    const QM_OrderType desired_side = (cmf > 0.0) ? QM_BUY : QM_SELL;
 
-   ulong ticket = 0;
-   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
-   if(Strategy_SelectOurPosition(ticket, position_type))
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const bool already_long = (position_type == POSITION_TYPE_BUY);
       if((desired_side == QM_BUY && already_long) ||
          (desired_side == QM_SELL && !already_long))
@@ -221,9 +162,43 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       // Trade Close: stop-and-reverse on CMF zero-line sign flip.
       if(!QM_TM_ClosePosition(ticket, QM_EXIT_OPPOSITE_SIGNAL))
          return false;
+      break;
      }
 
-   return Strategy_BuildMarketRequest(desired_side, req);
+   const double entry = (desired_side == QM_BUY)
+                        ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                        : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(entry <= 0.0)
+      return false;
+
+   const double atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
+   if(atr <= 0.0)
+      return false;
+
+   const double sl = QM_StopATRFromValue(_Symbol, desired_side, entry, atr, strategy_atr_sl_mult);
+   if(sl <= 0.0)
+      return false;
+   if(desired_side == QM_BUY && sl >= entry)
+      return false;
+   if(desired_side == QM_SELL && sl <= entry)
+      return false;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
+      return false;
+
+   const double sl_points = MathAbs(entry - sl) / point;
+   if(QM_LotsForRisk(_Symbol, sl_points) <= 0.0)
+      return false;
+
+   req.type = desired_side;
+   req.price = 0.0;
+   req.sl = sl;
+   req.tp = 0.0;
+   req.reason = (desired_side == QM_BUY) ? "CINAR_CMF_LONG" : "CINAR_CMF_SHORT";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
