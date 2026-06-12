@@ -110,7 +110,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_senkou_b_period <= 0 ||
       strategy_signal_shift <= 0)
       return false;
-
    const double close_price = iClose(_Symbol, _Period, strategy_signal_shift); // perf-allowed: source rule needs the closed-bar close; framework has no close reader.
    const double conversion = QM_Ichimoku_TenkanSen(_Symbol,
                                                    (ENUM_TIMEFRAMES)_Period,
@@ -136,14 +135,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                                                  strategy_kijun_period,
                                                  strategy_senkou_b_period,
                                                  strategy_signal_shift);
-
    if(close_price <= 0.0 ||
       conversion <= 0.0 ||
       base <= 0.0 ||
       span_a <= 0.0 ||
       span_b <= 0.0)
       return false;
-
    int signal = 0;
    if(close_price > span_a &&
       close_price > span_b &&
@@ -157,7 +154,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       signal = -1;
    else
       return false;
-
    req.type = (signal > 0) ? QM_BUY : QM_SELL;
    const double entry = (signal > 0)
                         ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
@@ -193,7 +189,6 @@ bool Strategy_ExitSignal()
       strategy_senkou_b_period <= 0 ||
       strategy_signal_shift <= 0)
       return false;
-
    const double close_price = iClose(_Symbol, _Period, strategy_signal_shift); // perf-allowed: source rule needs the closed-bar close; framework has no close reader.
    const double conversion = QM_Ichimoku_TenkanSen(_Symbol,
                                                    (ENUM_TIMEFRAMES)_Period,
@@ -219,14 +214,12 @@ bool Strategy_ExitSignal()
                                                  strategy_kijun_period,
                                                  strategy_senkou_b_period,
                                                  strategy_signal_shift);
-
    if(close_price <= 0.0 ||
       conversion <= 0.0 ||
       base <= 0.0 ||
       span_a <= 0.0 ||
       span_b <= 0.0)
       return false;
-
    int signal = 0;
    if(close_price > span_a &&
       close_price > span_b &&
@@ -240,7 +233,6 @@ bool Strategy_ExitSignal()
       signal = -1;
    else
       return false;
-
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
