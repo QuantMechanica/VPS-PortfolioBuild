@@ -3,7 +3,6 @@
 #property description "QM5_10331 Treasury Pairs"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_BasketOrder.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                    = 10331;
@@ -305,7 +304,7 @@ bool IsPairPosition()
    if(slot < 0)
       return false;
 
-   return ((int)PositionGetInteger(POSITION_MAGIC) == QM_Magic(qm_ea_id, slot));
+   return ((int)PositionGetInteger(POSITION_MAGIC) == QM_FrameworkMagic());
   }
 
 bool HasPairPosition()
@@ -399,32 +398,15 @@ double PlannedRiskMoney()
    return AccountInfoDouble(ACCOUNT_EQUITY) * (RISK_PERCENT / 100.0) * PORTFOLIO_WEIGHT;
   }
 
-double NormalizedLots(const string symbol, const double lots)
+bool SendLeg(const string symbol, const int slot, const bool buy, const double spread_stop_distance)
   {
-   if(lots <= 0.0)
-      return 0.0;
-   const double min_lot = SymbolInfoDouble(symbol, SYMBOL_VOLUME_MIN);
-   const double max_lot = SymbolInfoDouble(symbol, SYMBOL_VOLUME_MAX);
-   const double step = SymbolInfoDouble(symbol, SYMBOL_VOLUME_STEP);
-   if(min_lot <= 0.0 || max_lot <= 0.0 || step <= 0.0)
-      return 0.0;
-
-   double normalized = MathFloor(lots / step) * step;
-   if(normalized < min_lot)
-      normalized = min_lot;
-   if(normalized > max_lot)
-      normalized = max_lot;
-   return NormalizeDouble(normalized, 8);
-  }
-
-bool SendLeg(const string symbol, const int slot, const bool buy, const double weight,
-             const double weight_sum, const double spread_stop_distance)
-  {
-   if(slot < 0 || weight_sum <= 0.0 || spread_stop_distance <= 0.0)
+   if(slot < 0 || spread_stop_distance <= 0.0)
       return false;
 
    const int framework_magic = QM_FrameworkMagic();
    if(framework_magic <= 0)
+      return false;
+   if(symbol != _Symbol || slot != qm_magic_slot_offset)
       return false;
 
    const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
@@ -441,31 +423,19 @@ bool SendLeg(const string symbol, const int slot, const bool buy, const double w
    const double leg_stop_distance = (symbol == g_pair_b)
                                     ? spread_stop_distance / MathMax(MathAbs(g_beta), strategy_min_beta)
                                     : spread_stop_distance;
-   const double sl_points = MathMax(1.0, leg_stop_distance / point);
-   const double base_lots = QM_LotsForRisk(symbol, sl_points);
-   const double lots = NormalizedLots(symbol, base_lots * MathAbs(weight) / weight_sum);
-   if(lots <= 0.0)
-      return false;
-
    const double sl = buy ? price - leg_stop_distance : price + leg_stop_distance;
 
-   QM_BasketOrderRequest request;
-   request.symbol = symbol;
+   QM_EntryRequest request;
    request.type = buy ? QM_BUY : QM_SELL;
    request.price = NormalizeDouble(price, digits);
    request.sl = NormalizeDouble(sl, digits);
    request.tp = 0.0;
-   request.lots = lots;
    request.reason = "QM5_10331_PAIR";
    request.symbol_slot = slot;
    request.expiration_seconds = 0;
 
    ulong ticket = 0;
-   const bool ok = QM_BasketOpenPosition(qm_ea_id,
-                                         qm_news_mode_legacy,
-                                         strategy_deviation_points,
-                                         request,
-                                         ticket);
+   const bool ok = QM_TM_OpenPosition(request, ticket);
    if(!ok)
      {
       QM_LogEvent(QM_WARN, "PAIR_LEG_OPEN_FAILED",
@@ -486,16 +456,14 @@ bool OpenPair(const int direction)
    if(spread_stop_distance <= 0.0)
       return false;
 
-   const double weight_a = 1.0;
-   const double weight_b = MathAbs(g_beta);
-   const double weight_sum = weight_a + weight_b;
-
    const bool buy_a = (direction > 0);
    const bool buy_b = (direction < 0);
-   const bool a_ok = SendLeg(g_pair_a, g_pair_a_slot, buy_a, weight_a, weight_sum, spread_stop_distance);
-   const bool b_ok = SendLeg(g_pair_b, g_pair_b_slot, buy_b, weight_b, weight_sum, spread_stop_distance);
+   const bool host_is_a = (_Symbol == g_pair_a);
+   const bool opened = host_is_a
+                       ? SendLeg(g_pair_a, g_pair_a_slot, buy_a, spread_stop_distance)
+                       : SendLeg(g_pair_b, g_pair_b_slot, buy_b, spread_stop_distance);
 
-   if(a_ok && b_ok)
+   if(opened)
      {
       g_entry_time = TimeCurrent();
       g_entry_direction = direction;
@@ -506,7 +474,6 @@ bool OpenPair(const int direction)
       return true;
      }
 
-   ClosePair(QM_EXIT_STRATEGY);
    return false;
   }
 
