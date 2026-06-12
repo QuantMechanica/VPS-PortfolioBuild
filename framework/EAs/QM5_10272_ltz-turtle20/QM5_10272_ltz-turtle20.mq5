@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10271 Letian Wang R-Breaker Pivot Reversal"
+#property description "QuantMechanica V5 EA skeleton template"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 10271;
+input int    qm_ea_id                   = 10272;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,8 +73,10 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
+input int    strategy_entry_lookback    = 20;
+input int    strategy_exit_lookback     = 10;
 input int    strategy_atr_period        = 14;
-input double strategy_atr_sl_mult       = 2.0;
+input double strategy_atr_stop_mult     = 2.0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -84,7 +86,6 @@ input double strategy_atr_sl_mult       = 2.0;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // Card provides no exact broker session hours; framework news/Friday gates apply.
    return false;
   }
 
@@ -100,69 +101,45 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
-   const double y_high = iHigh(_Symbol, PERIOD_D1, 1); // perf-allowed: R-Breaker daily pivot arithmetic has no QM OHLC reader.
-   const double y_low = iLow(_Symbol, PERIOD_D1, 1); // perf-allowed: R-Breaker daily pivot arithmetic has no QM OHLC reader.
-   const double y_close = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: R-Breaker daily pivot arithmetic has no QM OHLC reader.
-   const double bar_close = iClose(_Symbol, _Period, 1); // perf-allowed: closed-bar breakout close for bespoke pivot rule.
-   if(y_high <= 0.0 || y_low <= 0.0 || y_close <= 0.0 || bar_close <= 0.0 || y_high <= y_low)
+
+   if(strategy_entry_lookback < 1 || strategy_atr_period < 1 || strategy_atr_stop_mult <= 0.0)
       return false;
 
-   const double pivot = (y_high + y_low + y_close) / 3.0;
-   const double r3 = y_high + 2.0 * (pivot - y_low);
-   const double s3 = y_low - 2.0 * (y_high - pivot);
+   if(QM_Sig_Range_Breakout(_Symbol, PERIOD_CURRENT, strategy_entry_lookback, 1) <= 0)
+      return false;
 
-   if(bar_close > r3)
-     {
-      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      const double sl = QM_StopATR(_Symbol, QM_BUY, ask, strategy_atr_period, strategy_atr_sl_mult);
-      if(ask <= 0.0 || sl <= 0.0)
-         return false;
-      req.type = QM_BUY;
-      req.sl = sl;
-      req.reason = "R_BREAKER_LONG_R3";
-      return true;
-     }
+   const double entry_price = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(entry_price <= 0.0)
+      return false;
 
-   if(bar_close < s3)
-     {
-      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      const double sl = QM_StopATR(_Symbol, QM_SELL, bid, strategy_atr_period, strategy_atr_sl_mult);
-      if(bid <= 0.0 || sl <= 0.0)
-         return false;
-      req.type = QM_SELL;
-      req.sl = sl;
-      req.reason = "R_BREAKER_SHORT_S3";
-      return true;
-     }
+   const double stop_price = QM_StopATR(_Symbol, QM_BUY, entry_price, strategy_atr_period, strategy_atr_stop_mult);
+   if(stop_price <= 0.0 || stop_price >= entry_price)
+      return false;
 
-   return false;
+   req.sl = stop_price;
+   req.reason = "LTZ_TURTLE20_LONG_DONCHIAN";
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
+   // Card specifies no pyramiding, break-even, trailing, or partial-close logic.
+  }
+
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
+bool Strategy_ExitSignal()
+  {
+   if(strategy_exit_lookback < 1)
+      return false;
+
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
-      return;
-   const double y_high = iHigh(_Symbol, PERIOD_D1, 1); // perf-allowed: O(1) R-Breaker daily pivot state for reversal management.
-   const double y_low = iLow(_Symbol, PERIOD_D1, 1); // perf-allowed: O(1) R-Breaker daily pivot state for reversal management.
-   const double y_close = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: O(1) R-Breaker daily pivot state for reversal management.
-   const double today_high = iHigh(_Symbol, PERIOD_D1, 0); // perf-allowed: O(1) current-day high for R-Breaker reversal rule.
-   const double today_low = iLow(_Symbol, PERIOD_D1, 0); // perf-allowed: O(1) current-day low for R-Breaker reversal rule.
-   const double bar_close = iClose(_Symbol, _Period, 1); // perf-allowed: O(1) closed-bar close for R-Breaker reversal rule.
-   if(y_high <= 0.0 || y_low <= 0.0 || y_close <= 0.0 ||
-      today_high <= 0.0 || today_low <= 0.0 || bar_close <= 0.0 || y_high <= y_low)
-      return;
+      return false;
 
-   const double pivot = (y_high + y_low + y_close) / 3.0;
-   const double r1 = 2.0 * pivot - y_low;
-   const double r2 = pivot + (y_high - y_low);
-   const double r3 = y_high + 2.0 * (pivot - y_low);
-   const double s1 = 2.0 * pivot - y_high;
-   const double s2 = pivot - (y_high - y_low);
-   const double s3 = y_low - 2.0 * (y_high - pivot);
-
+   bool has_long = false;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -172,49 +149,17 @@ void Strategy_ManageOpenPosition()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-
-      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      int reverse_side = 0;
-      if(pos_type == POSITION_TYPE_BUY &&
-         ((today_high > r2 && bar_close < r1) || bar_close < s3))
-         reverse_side = -1;
-      else if(pos_type == POSITION_TYPE_SELL &&
-              ((today_low < s2 && bar_close > s1) || bar_close > r3))
-         reverse_side = 1;
-
-      if(reverse_side == 0)
-         continue;
-
-      if(!QM_TM_ClosePosition(ticket, QM_EXIT_OPPOSITE_SIGNAL))
-         continue;
-
-      QM_EntryRequest req;
-      req.type = (reverse_side > 0) ? QM_BUY : QM_SELL;
-      req.price = 0.0;
-      req.tp = 0.0;
-      req.symbol_slot = qm_magic_slot_offset;
-      req.expiration_seconds = 0;
-      req.reason = (reverse_side > 0) ? "R_BREAKER_REVERSE_LONG" : "R_BREAKER_REVERSE_SHORT";
-
-      const double entry = (reverse_side > 0)
-                           ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                           : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      req.sl = QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult);
-      if(entry <= 0.0 || req.sl <= 0.0)
-         continue;
-
-      ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
+      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY)
+        {
+         has_long = true;
+         break;
+        }
      }
-  }
 
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
-bool Strategy_ExitSignal()
-  {
-   // R-Breaker exits are reversals; Strategy_ManageOpenPosition closes and
-   // reopens opposite so the same tick can complete the card's reverse action.
-   return false;
+   if(!has_long)
+      return false;
+
+   return (QM_Sig_Range_Breakout(_Symbol, PERIOD_CURRENT, strategy_exit_lookback, 1) < 0);
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
