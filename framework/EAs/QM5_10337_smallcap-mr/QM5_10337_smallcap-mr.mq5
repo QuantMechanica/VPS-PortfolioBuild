@@ -104,7 +104,7 @@ bool     g_volume_ok = false;
 bool     g_spread_ok = false;
 bool     g_trade_taken_session = false;
 int      g_session_date_key = 0;
-datetime g_last_bar_time = 0;
+datetime g_closed_bar_time = 0;
 double   g_last_close = 0.0;
 double   g_prev_close = 0.0;
 double   g_session_vwap = 0.0;
@@ -350,12 +350,12 @@ bool Strategy_ReadClosedBarState()
    if(copied < rates_needed)
       return false;
 
-   g_last_bar_time = rates[0].time;
+   g_closed_bar_time = rates[0].time;
    g_last_close = rates[0].close;
    g_prev_close = rates[1].close;
-   if(g_last_bar_time <= 0 || g_last_close <= 0.0 || g_prev_close <= 0.0)
+   if(g_closed_bar_time <= 0 || g_last_close <= 0.0 || g_prev_close <= 0.0)
       return false;
-   Strategy_ResetSessionIfNeeded(g_last_bar_time);
+   Strategy_ResetSessionIfNeeded(g_closed_bar_time);
 
    double diffs[STRATEGY_MAX_RV_LOOKBACK];
    double mean = 0.0;
@@ -379,10 +379,10 @@ bool Strategy_ReadClosedBarState()
    if(g_realized_vol_price <= 0.0)
       return false;
 
-   if(!Strategy_ComputeSessionVwap(g_last_bar_time, g_session_vwap))
+   if(!Strategy_ComputeSessionVwap(g_closed_bar_time, g_session_vwap))
       return false;
 
-   const int slot = Strategy_M15Slot(g_last_bar_time);
+   const int slot = Strategy_M15Slot(g_closed_bar_time);
    const int volume_sessions = Strategy_ClampInt(strategy_volume_sessions, 1, STRATEGY_MAX_VOLUME_SESSIONS);
    const double current_volume = (double)rates[0].tick_volume;
    if(g_volume_count[slot] >= volume_sessions && current_volume > 0.0)
@@ -447,7 +447,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
    if(!g_state_ready || !g_volume_ok || !g_spread_ok)
       return false;
-   if(!Strategy_InLiquidSession(g_last_bar_time))
+   if(!Strategy_InLiquidSession(g_closed_bar_time))
       return false;
 
    const double threshold = strategy_extreme_mult * g_realized_vol_price;
