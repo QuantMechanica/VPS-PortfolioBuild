@@ -9032,3 +9032,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12549,turtle-s2-pyramid-d1,17,XAUUSD.DWX,125490017,2026-06-13,Development,active
 12549,turtle-s2-pyramid-d1,18,XAUUSD.DWX,125490018,2026-06-13,Development,active
 12549,turtle-s2-pyramid-d1,19,XAUUSD.DWX,125490019,2026-06-13,Development,active
+10636,et-open-reclaim,0,NDX.DWX,106360000,2026-06-13,Development,active
+10636,et-open-reclaim,1,SP500.DWX,106360001,2026-06-13,Development,active
+10636,et-open-reclaim,2,WS30.DWX,106360002,2026-06-13,Development,active
+10636,et-open-reclaim,3,GDAXI.DWX,106360003,2026-06-13,Development,active
