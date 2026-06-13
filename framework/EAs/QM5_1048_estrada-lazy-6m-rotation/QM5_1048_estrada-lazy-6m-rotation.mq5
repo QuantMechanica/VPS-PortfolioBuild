@@ -4,90 +4,128 @@
 
 #include <QM/QM_Common.mqh>
 
+// =============================================================================
+// QuantMechanica V5 EA
+// Strategy card: QM5_1048 estrada-lazy-6m-rotation, G0 APPROVED.
+// =============================================================================
+
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                    = 1048;
-input int    qm_magic_slot_offset        = 0;
+input int    qm_ea_id                   = 1048;
+input int    qm_magic_slot_offset       = 0;
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT                = 0.0;
-input double RISK_FIXED                  = 1000.0;
-input double PORTFOLIO_WEIGHT            = 0.5;
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode           = QM_NEWS_OFF;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = false;
+input bool   qm_friday_close_enabled    = false;
 input int    qm_friday_close_hour_broker = 21;
 
-input group "Strategy"
-input int    strategy_lookback_d1_bars   = 126;
-input int    strategy_top_n              = 2;
-input int    strategy_atr_period         = 14;
-input double strategy_atr_sl_mult        = 4.0;
-input bool   strategy_absolute_momentum  = false;
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
 
-const int STRATEGY_UNIVERSE_SIZE = 4;
-string    g_universe_symbols[4] = {"NDX.DWX", "WS30.DWX", "GDAXI.DWX", "UK100.DWX"};
-int       g_universe_slots[4]   = {0, 1, 2, 3};
-int       g_last_entry_rebalance_key = 0;
+input group "Strategy"
+input int    strategy_lookback_d1_bars     = 126;
+input int    strategy_top_n                = 2;
+input int    strategy_atr_period           = 14;
+input double strategy_atr_sl_mult          = 4.0;
+input bool   strategy_absolute_momentum    = false;
+input int    strategy_max_spread_points    = 0;
+
+#define STRATEGY_UNIVERSE_SIZE 4
+
+string g_strategy_symbols[STRATEGY_UNIVERSE_SIZE] = {"NDX.DWX", "WS30.DWX", "GDAXI.DWX", "UK100.DWX"};
+int    g_strategy_slots[STRATEGY_UNIVERSE_SIZE]   = {0, 1, 2, 3};
+int    g_last_entry_rebalance_key = 0;
+int    g_last_close_rebalance_key = 0;
 
 int Strategy_CurrentSymbolIndex()
   {
    for(int i = 0; i < STRATEGY_UNIVERSE_SIZE; ++i)
-      if(g_universe_symbols[i] == _Symbol)
+      if(g_strategy_symbols[i] == _Symbol)
          return i;
    return -1;
   }
 
-int Strategy_RebalanceKey(const datetime t)
+int Strategy_CurrentMonthCandidateKey()
   {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   if(dt.mon != 6 && dt.mon != 12)
+   MqlDateTime now_dt;
+   TimeToStruct(TimeCurrent(), now_dt);
+   if(now_dt.day > 7)
       return 0;
-   return dt.year * 100 + dt.mon;
+   if(now_dt.mon != 1 && now_dt.mon != 7)
+      return 0;
+   return now_dt.year * 100 + now_dt.mon;
   }
 
-bool Strategy_IsRebalanceClosedBar()
+int Strategy_RebalanceExecutionKey()
   {
-   const datetime closed_bar = iTime(_Symbol, PERIOD_D1, 1);
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0);
-   if(closed_bar <= 0 || current_bar <= 0)
-      return false;
+   datetime current_time[1];
+   datetime previous_time[1];
+   if(CopyTime(_Symbol, PERIOD_D1, 0, 1, current_time) != 1) // perf-allowed: one closed-bar schedule read inside new-bar entry gate.
+      return 0;
+   if(CopyTime(_Symbol, PERIOD_D1, 1, 1, previous_time) != 1) // perf-allowed: one closed-bar schedule read inside new-bar entry gate.
+      return 0;
 
-   MqlDateTime closed_dt;
-   MqlDateTime current_dt;
-   TimeToStruct(closed_bar, closed_dt);
-   TimeToStruct(current_bar, current_dt);
+   MqlDateTime cur_dt;
+   MqlDateTime prev_dt;
+   TimeToStruct(current_time[0], cur_dt);
+   TimeToStruct(previous_time[0], prev_dt);
 
-   if(closed_dt.mon != 6 && closed_dt.mon != 12)
-      return false;
-   return (closed_dt.mon != current_dt.mon || closed_dt.year != current_dt.year);
+   if(cur_dt.mon == 1 && prev_dt.mon == 12 && cur_dt.year == prev_dt.year + 1)
+      return cur_dt.year * 100 + cur_dt.mon;
+   if(cur_dt.mon == 7 && prev_dt.mon == 6 && cur_dt.year == prev_dt.year)
+      return cur_dt.year * 100 + cur_dt.mon;
+   return 0;
   }
 
-double Strategy_TotalReturn6M(const string symbol)
+double Strategy_TrailingReturn(const string symbol)
   {
    if(strategy_lookback_d1_bars <= 0)
       return -DBL_MAX;
 
-   SymbolSelect(symbol, true);
-   const double recent_close = iClose(symbol, PERIOD_D1, 1);
-   const double lookback_close = iClose(symbol, PERIOD_D1, 1 + strategy_lookback_d1_bars);
-   if(recent_close <= 0.0 || lookback_close <= 0.0)
+   if(!SymbolSelect(symbol, true))
       return -DBL_MAX;
 
-   return (recent_close / lookback_close) - 1.0;
+   double recent_close[1];
+   double lookback_close[1];
+   if(CopyClose(symbol, PERIOD_D1, 1, 1, recent_close) != 1) // perf-allowed: one value per universe symbol on D1 rebalance bars only.
+      return -DBL_MAX;
+   if(CopyClose(symbol, PERIOD_D1, strategy_lookback_d1_bars + 1, 1, lookback_close) != 1) // perf-allowed: fixed 6-month lookback proxy on D1 rebalance bars only.
+      return -DBL_MAX;
+
+   if(recent_close[0] <= 0.0 || lookback_close[0] <= 0.0)
+      return -DBL_MAX;
+   return (recent_close[0] / lookback_close[0]) - 1.0;
   }
 
-bool Strategy_SymbolSelected(const string symbol)
+int Strategy_NormalizedTopN()
   {
-   double returns[4];
-   int order[4];
+   int top_n = strategy_top_n;
+   if(top_n < 1)
+      top_n = 1;
+   if(top_n > STRATEGY_UNIVERSE_SIZE)
+      top_n = STRATEGY_UNIVERSE_SIZE;
+   return top_n;
+  }
+
+bool Strategy_SymbolIsSelected(const string symbol)
+  {
+   double returns[STRATEGY_UNIVERSE_SIZE];
+   int order[STRATEGY_UNIVERSE_SIZE];
 
    for(int i = 0; i < STRATEGY_UNIVERSE_SIZE; ++i)
      {
-      returns[i] = Strategy_TotalReturn6M(g_universe_symbols[i]);
+      returns[i] = Strategy_TrailingReturn(g_strategy_symbols[i]);
       order[i] = i;
      }
 
@@ -104,16 +142,11 @@ bool Strategy_SymbolSelected(const string symbol)
         }
      }
 
-   int top_n = strategy_top_n;
-   if(top_n < 1)
-      top_n = 1;
-   if(top_n > STRATEGY_UNIVERSE_SIZE)
-      top_n = STRATEGY_UNIVERSE_SIZE;
-
+   const int top_n = Strategy_NormalizedTopN();
    for(int rank = 0; rank < top_n; ++rank)
      {
       const int idx = order[rank];
-      if(g_universe_symbols[idx] != symbol)
+      if(g_strategy_symbols[idx] != symbol)
          continue;
       if(returns[idx] <= -DBL_MAX / 2.0)
          return false;
@@ -149,7 +182,21 @@ bool Strategy_HasOpenPosition()
 // No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
-   return (Strategy_CurrentSymbolIndex() < 0);
+   const int symbol_idx = Strategy_CurrentSymbolIndex();
+   if(symbol_idx < 0)
+      return true;
+
+   if(g_strategy_slots[symbol_idx] != qm_magic_slot_offset)
+      return true;
+
+   if(strategy_max_spread_points > 0)
+     {
+      const int spread_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      if(spread_points > strategy_max_spread_points)
+         return true;
+     }
+
+   return false;
   }
 
 // Trade Entry
@@ -165,17 +212,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(_Period != PERIOD_D1)
       return false;
-   if(!Strategy_IsRebalanceClosedBar())
-      return false;
 
-   const int rebalance_key = Strategy_RebalanceKey(iTime(_Symbol, PERIOD_D1, 1));
+   const int rebalance_key = Strategy_RebalanceExecutionKey();
    if(rebalance_key <= 0 || rebalance_key == g_last_entry_rebalance_key)
       return false;
    g_last_entry_rebalance_key = rebalance_key;
 
    if(Strategy_HasOpenPosition())
       return false;
-   if(!Strategy_SymbolSelected(_Symbol))
+   if(!Strategy_SymbolIsSelected(_Symbol))
       return false;
 
    const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -192,7 +237,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Trade Management
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no mid-cycle adjustments beyond the hard ATR stop.
+   // The card specifies no mid-cycle trailing, partial close, or break-even logic.
   }
 
 // Trade Close
@@ -200,12 +245,13 @@ bool Strategy_ExitSignal()
   {
    if(_Period != PERIOD_D1)
       return false;
-   if(!Strategy_IsRebalanceClosedBar())
-      return false;
-   if(!Strategy_HasOpenPosition())
+
+   const int rebalance_key = Strategy_CurrentMonthCandidateKey();
+   if(rebalance_key <= 0 || rebalance_key == g_last_close_rebalance_key)
       return false;
 
-   return !Strategy_SymbolSelected(_Symbol);
+   g_last_close_rebalance_key = rebalance_key;
+   return Strategy_HasOpenPosition();
   }
 
 // News Filter Hook (callable for P8 News Impact phase)
@@ -225,9 +271,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1048\",\"ea\":\"estrada-lazy-6m-rotation\"}");
@@ -248,7 +302,13 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -256,10 +316,8 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
-   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -274,11 +332,10 @@ void OnTick()
         }
      }
 
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes - EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
+
+   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
@@ -291,6 +348,13 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()
