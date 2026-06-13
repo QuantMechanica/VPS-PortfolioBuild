@@ -8833,3 +8833,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10436,mql5-h4m15-sweep,1,GBPUSD.DWX,104360001,2026-06-13,Development,active
 10436,mql5-h4m15-sweep,2,USDJPY.DWX,104360002,2026-06-13,Development,active
 10436,mql5-h4m15-sweep,3,XAUUSD.DWX,104360003,2026-06-13,Development,active
+10443,mql5-trend-mom,0,EURUSD.DWX,104430000,2026-06-13,Development,active
+10443,mql5-trend-mom,1,GBPUSD.DWX,104430001,2026-06-13,Development,active
+10443,mql5-trend-mom,2,USDJPY.DWX,104430002,2026-06-13,Development,active
+10443,mql5-trend-mom,3,GDAXI.DWX,104430003,2026-06-13,Development,active
+10443,mql5-trend-mom,4,XAUUSD.DWX,104430004,2026-06-13,Development,active
