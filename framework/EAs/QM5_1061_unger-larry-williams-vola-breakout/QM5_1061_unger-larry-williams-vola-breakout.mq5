@@ -5,20 +5,28 @@
 #include <QM/QM_Common.mqh>
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                    = 1061;
-input int    qm_magic_slot_offset        = 0;
+input int    qm_ea_id                   = 1061;
+input int    qm_magic_slot_offset       = 0;
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT                = 0.0;
-input double RISK_FIXED                  = 1000.0;
-input double PORTFOLIO_WEIGHT            = 1.0;
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode           = QM_NEWS_PAUSE;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = true;
+input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
+
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input double strategy_k                  = 0.50;
@@ -26,9 +34,9 @@ input int    strategy_atr_period         = 14;
 input double strategy_sl_atr_mult        = 1.50;
 input int    strategy_spread_days        = 20;
 
-int      g_session_day_key = 0;
-int      g_armed_day_key = 0;
-bool     g_trade_taken_today = false;
+int  g_session_day_key = 0;
+int  g_armed_day_key = 0;
+bool g_trade_taken_today = false;
 
 int DayKey(const datetime t)
   {
@@ -59,13 +67,13 @@ int DayOfWeekForDate(const int year, const int mon, const int day)
 int NthSunday(const int year, const int mon, const int nth)
   {
    int seen = 0;
-   for(int d = 1; d <= 31; ++d)
+   for(int day = 1; day <= 31; ++day)
      {
-      if(DayOfWeekForDate(year, mon, d) != 0)
+      if(DayOfWeekForDate(year, mon, day) != 0)
          continue;
       ++seen;
       if(seen == nth)
-         return d;
+         return day;
      }
    return 0;
   }
@@ -90,7 +98,7 @@ void SessionWindowMinutes(const datetime broker_time, int &start_min, int &close
    start_min = 8 * 60;
    close_min = 22 * 60;
 
-   if(StringFind(_Symbol, "GDAXI") >= 0)
+   if(StringFind(_Symbol, "GDAXI") >= 0 || StringFind(_Symbol, "GER40") >= 0)
      {
       start_min = 9 * 60;
       close_min = 17 * 60 + 30;
@@ -119,16 +127,15 @@ void SessionWindowMinutes(const datetime broker_time, int &start_min, int &close
      }
   }
 
-bool IsInsideSession(const datetime broker_time)
+bool IsBeforeSession(const datetime broker_time)
   {
    int start_min = 0;
    int close_min = 0;
    SessionWindowMinutes(broker_time, start_min, close_min);
-   const int now_min = MinutesOfDay(broker_time);
-   return (now_min >= start_min && now_min < close_min);
+   return (MinutesOfDay(broker_time) < start_min);
   }
 
-bool IsAtSessionClose(const datetime broker_time)
+bool IsAtOrAfterSessionClose(const datetime broker_time)
   {
    int start_min = 0;
    int close_min = 0;
@@ -145,23 +152,27 @@ bool IsFirstSessionBar(const datetime broker_time)
    if(now_min < start_min || now_min >= close_min)
       return false;
 
-   int grace = PeriodSeconds((ENUM_TIMEFRAMES)_Period) / 60;
-   if(grace < 5)
-      grace = 5;
-   if(grace > 60)
-      grace = 60;
-   return ((now_min - start_min) <= grace);
+   int grace_min = PeriodSeconds((ENUM_TIMEFRAMES)_Period) / 60;
+   if(grace_min < 5)
+      grace_min = 5;
+   if(grace_min > 60)
+      grace_min = 60;
+   return ((now_min - start_min) <= grace_min);
   }
 
 void RefreshDayState(const datetime broker_time)
   {
    const int key = DayKey(broker_time);
-   if(key != g_session_day_key)
-     {
-      g_session_day_key = key;
-      g_trade_taken_today = false;
-      g_armed_day_key = 0;
-     }
+   if(key == g_session_day_key)
+      return;
+   g_session_day_key = key;
+   g_armed_day_key = 0;
+   g_trade_taken_today = false;
+  }
+
+bool IsOurStopOrderType(const ENUM_ORDER_TYPE order_type)
+  {
+   return (order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP);
   }
 
 bool HasOurOpenPosition()
@@ -183,11 +194,6 @@ bool HasOurOpenPosition()
    return false;
   }
 
-bool IsOurPendingOrderType(const ENUM_ORDER_TYPE order_type)
-  {
-   return (order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP);
-  }
-
 bool HasOurPendingOrders()
   {
    const int magic = QM_FrameworkMagic();
@@ -203,33 +209,10 @@ bool HasOurPendingOrders()
          continue;
       if((int)OrderGetInteger(ORDER_MAGIC) != magic)
          continue;
-      if(IsOurPendingOrderType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
+      if(IsOurStopOrderType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
          return true;
      }
    return false;
-  }
-
-bool DeleteOrderByTicket(const ulong ticket, const string reason)
-  {
-   MqlTradeRequest request;
-   ZeroMemory(request);
-   request.action = TRADE_ACTION_REMOVE;
-   request.order = ticket;
-   request.symbol = _Symbol;
-   request.comment = reason;
-
-   MqlTradeResult result;
-   string error_class = BROKER_OTHER;
-   const bool ok = QM_TradeContextSend(request, result, error_class);
-   QM_LogEvent(ok ? QM_INFO : QM_WARN,
-               "PENDING_CANCEL",
-               StringFormat("{\"ticket\":%I64u,\"reason\":\"%s\",\"ok\":%s,\"retcode\":%u,\"retcode_class\":\"%s\"}",
-                            ticket,
-                            QM_LoggerEscapeJson(reason),
-                            ok ? "true" : "false",
-                            result.retcode,
-                            QM_LoggerEscapeJson(error_class)));
-   return ok;
   }
 
 void CancelOurPendingOrders(const string reason)
@@ -247,9 +230,9 @@ void CancelOurPendingOrders(const string reason)
          continue;
       if((int)OrderGetInteger(ORDER_MAGIC) != magic)
          continue;
-      if(!IsOurPendingOrderType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
+      if(!IsOurStopOrderType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
          continue;
-      DeleteOrderByTicket(ticket, reason);
+      QM_TM_RemovePendingOrder(ticket, reason);
      }
   }
 
@@ -283,28 +266,36 @@ bool SpreadAllowsEntry()
    return ((double)current_spread <= 2.0 * median);
   }
 
-bool BuildStopRequest(const QM_OrderType type,
-                      const double price,
+bool BuildStopRequest(const QM_OrderType order_type,
+                      const double entry_price,
                       const double atr_value,
                       const int expiration_seconds,
                       const string reason,
                       QM_EntryRequest &req)
   {
-   req.type = type;
-   req.price = NormalizeDouble(price, _Digits);
+   req.type = order_type;
+   req.price = NormalizeDouble(entry_price, _Digits);
    req.tp = 0.0;
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = expiration_seconds;
    req.reason = reason;
-   req.sl = QM_StopATRFromValue(_Symbol, type, req.price, atr_value, strategy_sl_atr_mult);
+   req.sl = QM_StopATRFromValue(_Symbol, order_type, req.price, atr_value, strategy_sl_atr_mult);
    return (req.price > 0.0 && req.sl > 0.0);
   }
 
+// No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
+   const datetime broker_now = TimeCurrent();
+   RefreshDayState(broker_now);
+
+   if(IsBeforeSession(broker_now) && !HasOurOpenPosition() && !HasOurPendingOrders())
+      return true;
+
    return false;
   }
 
+// Trade Entry
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY_STOP;
@@ -334,9 +325,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(seconds_to_close <= 0)
       return false;
 
-   const double day_open = iOpen(_Symbol, PERIOD_D1, 0);
-   const double prev_high = iHigh(_Symbol, PERIOD_D1, 1);
-   const double prev_low = iLow(_Symbol, PERIOD_D1, 1);
+   const double day_open = iOpen(_Symbol, PERIOD_D1, 0);       // perf-allowed: D1 session-open structural input, read once per new bar.
+   const double prev_high = iHigh(_Symbol, PERIOD_D1, 1);      // perf-allowed: prior-day range structural input, read once per new bar.
+   const double prev_low = iLow(_Symbol, PERIOD_D1, 1);        // perf-allowed: prior-day range structural input, read once per new bar.
    const double yr = prev_high - prev_low;
    const double atr_value = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if(day_open <= 0.0 || prev_high <= 0.0 || prev_low <= 0.0 || yr <= 0.0 || atr_value <= 0.0)
@@ -353,20 +344,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    QM_EntryRequest buy_req;
-   if(!BuildStopRequest(QM_BUY_STOP,
-                        buy_stop,
-                        atr_value,
-                        seconds_to_close,
-                        "VOLA_BO_BUY_STOP",
-                        buy_req))
+   if(!BuildStopRequest(QM_BUY_STOP, buy_stop, atr_value, seconds_to_close, "VOLA_BO_BUY_STOP", buy_req))
       return false;
-
-   if(!BuildStopRequest(QM_SELL_STOP,
-                        sell_stop,
-                        atr_value,
-                        seconds_to_close,
-                        "VOLA_BO_SELL_STOP",
-                        req))
+   if(!BuildStopRequest(QM_SELL_STOP, sell_stop, atr_value, seconds_to_close, "VOLA_BO_SELL_STOP", req))
       return false;
 
    ulong buy_ticket = 0;
@@ -375,6 +355,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return true;
   }
 
+// Trade Management
 void Strategy_ManageOpenPosition()
   {
    const datetime broker_now = TimeCurrent();
@@ -387,17 +368,19 @@ void Strategy_ManageOpenPosition()
       return;
      }
 
-   if(IsAtSessionClose(broker_now))
+   if(IsAtOrAfterSessionClose(broker_now))
       CancelOurPendingOrders("session_close");
   }
 
+// Trade Close
 bool Strategy_ExitSignal()
   {
    const datetime broker_now = TimeCurrent();
    RefreshDayState(broker_now);
-   return (HasOurOpenPosition() && IsAtSessionClose(broker_now));
+   return (HasOurOpenPosition() && IsAtOrAfterSessionClose(broker_now));
   }
 
+// News Filter Hook (callable for P8 News Impact phase)
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
@@ -410,9 +393,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1061\",\"ea\":\"unger-larry-williams-vola-breakout\"}");
@@ -433,7 +424,12 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -460,6 +456,8 @@ void OnTick()
    if(!QM_IsNewBar())
       return;
 
+   QM_EquityStreamOnNewBar();
+
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
@@ -471,6 +469,13 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()

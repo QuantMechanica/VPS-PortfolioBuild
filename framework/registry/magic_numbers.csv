@@ -8925,3 +8925,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10617,mql5-harami-sto,1,GBPUSD.DWX,106170001,2026-06-13,Development,active
 10617,mql5-harami-sto,2,USDJPY.DWX,106170002,2026-06-13,Development,active
 10617,mql5-harami-sto,3,XAUUSD.DWX,106170003,2026-06-13,Development,active
+10626,mql5-night-sto,0,EURUSD.DWX,106260000,2026-06-13,Development,active
+10626,mql5-night-sto,1,GBPUSD.DWX,106260001,2026-06-13,Development,active
+10626,mql5-night-sto,2,USDJPY.DWX,106260002,2026-06-13,Development,active
