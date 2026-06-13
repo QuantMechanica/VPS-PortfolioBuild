@@ -109,6 +109,14 @@ bool LoadStrategyRates(MqlRates &rates[], const int requested)
    return true;
   }
 
+void RefreshClosedBarCache(const MqlRates &rates[])
+  {
+   if(ArraySize(rates) <= 1)
+      return;
+   g_last_closed_close = rates[1].close;
+   g_last_closed_time = rates[1].time;
+  }
+
 bool IsSwingHigh(MqlRates &rates[], const int total, const int shift, const int width)
   {
    if(width < 1 || shift - width < 0 || shift + width >= total)
@@ -414,9 +422,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(HasOurOpenPosition() || HasOurPendingOrder())
-      return false;
-
    MqlRates rates[];
    if(!LoadStrategyRates(rates, strategy_history_bars))
       return false;
@@ -424,8 +429,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(total <= 0)
       return false;
 
-   g_last_closed_close = rates[1].close;
-   g_last_closed_time = rates[1].time;
+   RefreshClosedBarCache(rates);
+
+   if(HasOurOpenPosition() || HasOurPendingOrder())
+      return false;
 
    const double atr = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
    if(atr <= 0.0)
@@ -480,8 +487,6 @@ bool Strategy_ExitSignal()
    if(magic <= 0)
       return false;
 
-   const double last_closed_close = iClose(_Symbol, strategy_timeframe, 1);  // perf-allowed: O(1) closed-bar ChoCh invalidation read.
-   const datetime last_closed_time = iTime(_Symbol, strategy_timeframe, 1);  // perf-allowed: O(1) closed-bar ChoCh invalidation read.
    const int max_hold_seconds = MathMax(strategy_time_exit_bars, 1) * PeriodSeconds(strategy_timeframe);
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -498,13 +503,13 @@ bool Strategy_ExitSignal()
          return true;
 
       const double choch_level = ChochLevelFromComment(PositionGetString(POSITION_COMMENT));
-      if(choch_level <= 0.0 || last_closed_close <= 0.0 || last_closed_time <= 0)
+      if(choch_level <= 0.0 || g_last_closed_close <= 0.0 || g_last_closed_time <= 0)
          continue;
 
       const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(position_type == POSITION_TYPE_BUY && last_closed_close < choch_level)
+      if(position_type == POSITION_TYPE_BUY && g_last_closed_close < choch_level)
          return true;
-      if(position_type == POSITION_TYPE_SELL && last_closed_close > choch_level)
+      if(position_type == POSITION_TYPE_SELL && g_last_closed_close > choch_level)
          return true;
      }
 
