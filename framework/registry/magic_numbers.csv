@@ -8870,3 +8870,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10503,mql5-candlebw,1,GBPUSD.DWX,105030001,2026-06-13,Development,active
 10503,mql5-candlebw,2,USDJPY.DWX,105030002,2026-06-13,Development,active
 10503,mql5-candlebw,3,XAUUSD.DWX,105030003,2026-06-13,Development,active
+10510,mql5-absorb-stop,0,EURUSD.DWX,105100000,2026-06-13,Development,active
+10510,mql5-absorb-stop,1,GBPUSD.DWX,105100001,2026-06-13,Development,active
+10510,mql5-absorb-stop,2,USDJPY.DWX,105100002,2026-06-13,Development,active
+10510,mql5-absorb-stop,3,XAUUSD.DWX,105100003,2026-06-13,Development,active
+10505,mql5-macd-sar,0,EURUSD.DWX,105050000,2026-06-13,Development,active
+10505,mql5-macd-sar,1,GBPUSD.DWX,105050001,2026-06-13,Development,active
+10505,mql5-macd-sar,2,USDJPY.DWX,105050002,2026-06-13,Development,active
+10505,mql5-macd-sar,3,XAUUSD.DWX,105050003,2026-06-13,Development,active
