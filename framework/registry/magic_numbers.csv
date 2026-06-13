@@ -8980,3 +8980,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10635,et-consol-break,1,SP500.DWX,106350001,2026-06-13,Development,active
 10635,et-consol-break,2,GDAXI.DWX,106350002,2026-06-13,Development,active
 10635,et-consol-break,3,XAUUSD.DWX,106350003,2026-06-13,Development,active
+12546,katz-seasonal-crossover-stoch-confirmation-stop-d1,0,XAUUSD.DWX,125460000,2026-06-13,Development,active
