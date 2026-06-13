@@ -9063,3 +9063,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10644,qa-volz-event,1,NDX.DWX,106440001,2026-06-14,Development,active
 10644,qa-volz-event,2,WS30.DWX,106440002,2026-06-14,Development,active
 10644,qa-volz-event,3,XAUUSD.DWX,106440003,2026-06-14,Development,active
+10646,tv-qss-regime,0,XAUUSD.DWX,106460000,2026-06-14,Development,active
+10646,tv-qss-regime,1,EURUSD.DWX,106460001,2026-06-14,Development,active
+10646,tv-qss-regime,2,GBPUSD.DWX,106460002,2026-06-14,Development,active
+10646,tv-qss-regime,3,GDAXI.DWX,106460003,2026-06-14,Development,active
+10646,tv-qss-regime,4,NDX.DWX,106460004,2026-06-14,Development,active
