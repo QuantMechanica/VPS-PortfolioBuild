@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-On each D1 bar, the EA checks whether the current trading day is the Monday after standard third-Friday monthly expiration. If so, it compares the most recent Friday close against the close `strategy_direction_lookback_bars` daily bars earlier. A positive move opens a long market position and a negative move opens a short market position, both with a protective stop at `strategy_atr_sl_mult * ATR(strategy_atr_period)`. The position is closed once `strategy_time_to_exit_bars` D1 bars have elapsed, or earlier by protective stop or framework Friday close.
+On each D1 bar, the EA checks whether the current trading day is the Monday after standard third-Friday monthly expiration and skips holiday-shifted weeks unless the prior closed D1 bar is Friday. If so, it compares the most recent Friday close against the close `strategy_direction_lookback_bars` daily bars earlier. A positive move opens a long market position and a negative move opens a short market position, both with a protective stop at `strategy_atr_sl_mult * ATR(strategy_atr_period)`. The position is closed once `strategy_time_to_exit_bars` D1 bars have elapsed, or earlier by protective stop or framework Friday close.
 
 ---
 

@@ -121,6 +121,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(now_dt.day_of_week != 1 || now_dt.day < 18 || now_dt.day > 24)
       return false;
 
+   const datetime previous_bar_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: calendar/holiday validation on the closed D1 bar.
+   if(previous_bar_time <= 0)
+      return false;
+   MqlDateTime previous_dt;
+   TimeToStruct(previous_bar_time, previous_dt);
+   if(previous_dt.day_of_week != 5)
+      return false;
+
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
