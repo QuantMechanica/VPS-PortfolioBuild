@@ -49,11 +49,11 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
 // FW1 2026-05-23 — Two-axis news filter per Vault Q09.
-//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
-//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+//   AXIS A (temporal): per-event behaviour. P2 card default = off.
+//   AXIS B (compliance): prop-firm blackout overlay. P2 card default = none.
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 // Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
