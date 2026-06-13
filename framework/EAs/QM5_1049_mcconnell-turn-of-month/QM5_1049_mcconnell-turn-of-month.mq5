@@ -47,6 +47,12 @@ input bool   strategy_require_d1          = true;
 string g_strategy_symbols[STRATEGY_UNIVERSE_SIZE] = {"NDX.DWX", "WS30.DWX", "GDAXI.DWX", "UK100.DWX"};
 int    g_strategy_slots[STRATEGY_UNIVERSE_SIZE]   = {0, 1, 2, 3};
 
+int  g_strategy_last_session_day_key   = 0;
+int  g_strategy_last_session_month_key = 0;
+int  g_strategy_month_session_index    = 0;
+bool g_strategy_entry_due              = false;
+bool g_strategy_exit_due               = false;
+
 // No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
@@ -70,7 +76,31 @@ bool Strategy_NoTradeFilter()
    if(expected_slot != qm_magic_slot_offset)
       return true;
 
-   if(strategy_max_spread_points > 0)
+   MqlDateTime broker_dt;
+   TimeToStruct(TimeCurrent(), broker_dt);
+   const int day_key = broker_dt.year * 10000 + broker_dt.mon * 100 + broker_dt.day;
+   const int month_key = broker_dt.year * 100 + broker_dt.mon;
+
+   if(day_key != g_strategy_last_session_day_key)
+     {
+      const bool have_prior_session = (g_strategy_last_session_day_key > 0);
+      const bool new_month = (have_prior_session && month_key != g_strategy_last_session_month_key);
+
+      if(new_month || !have_prior_session)
+         g_strategy_month_session_index = 1;
+      else
+         g_strategy_month_session_index++;
+
+      g_strategy_last_session_day_key = day_key;
+      g_strategy_last_session_month_key = month_key;
+
+      g_strategy_entry_due = new_month;
+      g_strategy_exit_due = (have_prior_session &&
+                             !new_month &&
+                             g_strategy_month_session_index > MathMax(1, strategy_exit_trading_day));
+     }
+
+   if(strategy_max_spread_points > 0 && QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
      {
       const int spread_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
       if(spread_points > strategy_max_spread_points)
@@ -91,6 +121,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
+   if(!g_strategy_entry_due)
+      return false;
+   g_strategy_entry_due = false;
+
    if(strategy_require_d1 && _Period != PERIOD_D1)
       return false;
    if(strategy_atr_period <= 0 || strategy_atr_stop_mult <= 0.0)
@@ -98,24 +132,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   datetime d1_times[];
-   ArraySetAsSeries(d1_times, true);
-   if(CopyTime(_Symbol, PERIOD_D1, 0, 2, d1_times) != 2) // perf-allowed: two D1 timestamps inside framework new-bar gate.
-      return false;
-
-   MqlDateTime current_dt;
-   MqlDateTime prior_dt;
-   TimeToStruct(d1_times[0], current_dt);
-   TimeToStruct(d1_times[1], prior_dt);
-
-   if(current_dt.year == prior_dt.year && current_dt.mon == prior_dt.mon)
-      return false;
-
    if(strategy_regime_filter)
      {
-      const int p = MathMax(2, strategy_regime_sma_period);
-      const double sma_recent = QM_SMA(_Symbol, PERIOD_D1, p, 1);
-      const double sma_prior = QM_SMA(_Symbol, PERIOD_D1, p, 2);
+      const int period = MathMax(2, strategy_regime_sma_period);
+      const double sma_recent = QM_SMA(_Symbol, PERIOD_D1, period, 1);
+      const double sma_prior = QM_SMA(_Symbol, PERIOD_D1, period, 2);
       if(sma_recent <= 0.0 || sma_prior <= 0.0 || sma_recent < sma_prior)
          return false;
      }
@@ -125,12 +146,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ask <= 0.0 || point <= 0.0)
       return false;
 
-   const double sl = QM_StopATR(_Symbol, QM_BUY, ask, strategy_atr_period, strategy_atr_stop_mult);
-   if(sl <= 0.0 || sl >= ask)
+   const double stop = QM_StopATR(_Symbol, QM_BUY, ask, strategy_atr_period, strategy_atr_stop_mult);
+   if(stop <= 0.0 || stop >= ask)
       return false;
 
    req.price = ask;
-   req.sl = NormalizeDouble(sl, _Digits);
+   req.sl = NormalizeDouble(stop, _Digits);
    req.tp = 0.0;
    return ((ask - req.sl) / point > 0.0);
   }
@@ -146,30 +167,9 @@ bool Strategy_ExitSignal()
   {
    if(strategy_require_d1 && _Period != PERIOD_D1)
       return false;
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
+   if(!g_strategy_exit_due)
       return false;
-
-   datetime d1_times[];
-   ArraySetAsSeries(d1_times, true);
-   const int copied = CopyTime(_Symbol, PERIOD_D1, 0, 12, d1_times); // perf-allowed: bounded D1 session count while a monthly position is open.
-   if(copied < 2)
-      return false;
-
-   MqlDateTime current_dt;
-   TimeToStruct(d1_times[0], current_dt);
-
-   int ordinal = 0;
-   for(int i = 0; i < copied; ++i)
-     {
-      MqlDateTime bar_dt;
-      TimeToStruct(d1_times[i], bar_dt);
-      if(bar_dt.year != current_dt.year || bar_dt.mon != current_dt.mon)
-         break;
-      ordinal++;
-     }
-
-   const int exit_day = MathMax(1, strategy_exit_trading_day);
-   return (ordinal > exit_day);
+   return (QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0);
   }
 
 // News Filter Hook (callable for P8 News Impact phase)

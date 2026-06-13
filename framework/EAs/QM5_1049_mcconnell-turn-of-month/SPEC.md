@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades the McConnell-Xu turn-of-the-month effect on daily equity-index bars. It opens one long position after the D1 bar that ends the prior calendar month has closed, using the broker's actual D1 trading sessions so weekends and unavailable sessions are skipped by the bar stream. It exits after the third trading session of the new month has closed. The baseline has no regime filter; the optional SMA filter skips entries when the D1 200-SMA is descending.
+The EA trades the McConnell-Xu turn-of-the-month effect on daily equity-index bars. It opens one long position on the first broker trading session of a new calendar month; because the previous broker session was the last trading day of the prior month, this implements the card's T-1 close entry as the first executable tick after that close. It exits on the first tick after the third trading session of the new month has completed, leaving the position exposed through the T+3 close. The baseline has no regime filter; the optional SMA filter skips entries when the D1 200-SMA is descending.
 
 ---
 
@@ -20,10 +20,10 @@ The EA trades the McConnell-Xu turn-of-the-month effect on daily equity-index ba
 |---|---:|---|---|
 | strategy_atr_period | 14 | >= 1 | D1 ATR period for the hard protective stop. |
 | strategy_atr_stop_mult | 3.0 | > 0 | ATR multiple used for the long-position stop. |
-| strategy_exit_trading_day | 3 | >= 1 | Trading-session count in the new month after which the position is flattened. |
+| strategy_exit_trading_day | 3 | >= 1 | New-month trading-session count whose close ends the position. |
 | strategy_regime_filter | false | true/false | Optional P3 filter; when enabled, skip entry if the long SMA is descending. |
 | strategy_regime_sma_period | 200 | >= 2 | D1 SMA length used by the optional regime filter. |
-| strategy_max_spread_points | 0 | >= 0 | Optional spread ceiling in points; 0 disables this filter. |
+| strategy_max_spread_points | 0 | >= 0 | Optional spread ceiling in points for new entries; 0 disables this filter. |
 | strategy_require_d1 | true | true/false | Blocks trading unless the chart/test period is D1. |
 
 ---
@@ -31,13 +31,13 @@ The EA trades the McConnell-Xu turn-of-the-month effect on daily equity-index ba
 ## 3. Symbol Universe
 
 **Designed for:**
-- NDX.DWX - Nasdaq 100 index exposure, the card's primary P2 baseline symbol.
+- NDX.DWX - Nasdaq 100 index exposure, the card's primary baseline symbol.
 - WS30.DWX - Dow 30 index exposure, portable US large-cap equity-index proxy.
 - GDAXI.DWX - DAX 40 exposure, matching the card's Germany submarket coverage.
 - UK100.DWX - FTSE 100 exposure, matching the card's UK submarket coverage.
 
 **Explicitly NOT for:**
-- SPX500.DWX - unavailable in the card's DWX feed context; no registry row is used.
+- SPX500.DWX - not a canonical DWX custom symbol for this framework.
 - SPY.DWX - not a canonical DWX custom symbol for this framework.
 - ES.DWX - not a canonical DWX custom symbol for this framework.
 
