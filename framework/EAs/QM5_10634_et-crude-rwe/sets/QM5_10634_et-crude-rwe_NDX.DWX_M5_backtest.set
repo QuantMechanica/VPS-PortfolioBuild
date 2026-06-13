@@ -32,15 +32,3 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-strategy_momentum_threshold_pct=0.35
-strategy_event_window_minutes=20
-strategy_wait_minutes=10
-strategy_rebreak_deadline_min=60
-strategy_atr_period=14
-strategy_sl_atr_buffer=0.20
-strategy_spike_atr_mult=3.00
-strategy_tp_rr=1.20
-strategy_max_hold_bars=12
-strategy_session_start_hour=1
-strategy_session_end_hour=21
-strategy_friday_no_entry_hour=19
