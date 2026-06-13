@@ -8815,3 +8815,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10361,et-range-offset,2,XAUUSD.DWX,103610002,2026-06-13,Development,active
 10361,et-range-offset,3,GDAXI.DWX,103610003,2026-06-13,Development,active
 10361,et-range-offset,4,NDX.DWX,103610004,2026-06-13,Development,active
+10363,et-exp-cont,0,SP500.DWX,103630000,2026-06-13,Development,active
+10363,et-exp-cont,1,NDX.DWX,103630001,2026-06-13,Development,active
+10363,et-exp-cont,2,WS30.DWX,103630002,2026-06-13,Development,active
