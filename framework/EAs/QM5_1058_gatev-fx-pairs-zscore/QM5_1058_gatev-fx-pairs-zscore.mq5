@@ -312,13 +312,14 @@ bool PairTimeStopExceeded(const PairConfig &cfg)
 
 double PairLegLots(const string symbol, const double exposure_scale)
   {
-   const double price = CurrentMid(symbol);
+   // 200-pip nominal SL for lot sizing (disaster stop; real exit is Z-score based).
+   const double sl_pip_distance = 200.0 * 0.0001;   // 200 pips in price units
    const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
-   if(price <= 0.0 || point <= 0.0 || exposure_scale <= 0.0)
+   if(point <= 0.0 || exposure_scale <= 0.0)
       return 0.0;
 
-   const double notional_points = price / point;
-   const double raw_lots = QM_LotsForRisk(symbol, notional_points) * exposure_scale;
+   const double sl_points = sl_pip_distance / point;
+   const double raw_lots  = QM_LotsForRisk(symbol, sl_points) * exposure_scale;
    return QM_TM_NormalizeVolume(symbol, raw_lots);
   }
 
