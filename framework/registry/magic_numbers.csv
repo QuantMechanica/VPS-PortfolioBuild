@@ -8943,3 +8943,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10630,et-ob-bos-bounce,2,XAUUSD.DWX,106300002,2026-06-13,Development,active
 10630,et-ob-bos-bounce,3,SP500.DWX,106300003,2026-06-13,Development,active
 10630,et-ob-bos-bounce,4,GDAXI.DWX,106300004,2026-06-13,Development,active
+10631,et-ob-choch-retest,0,EURUSD.DWX,106310000,2026-06-13,Development,active
+10631,et-ob-choch-retest,1,GBPUSD.DWX,106310001,2026-06-13,Development,active
+10631,et-ob-choch-retest,2,USDJPY.DWX,106310002,2026-06-13,Development,active
+10631,et-ob-choch-retest,3,XAUUSD.DWX,106310003,2026-06-13,Development,active
+10631,et-ob-choch-retest,4,NDX.DWX,106310004,2026-06-13,Development,active
