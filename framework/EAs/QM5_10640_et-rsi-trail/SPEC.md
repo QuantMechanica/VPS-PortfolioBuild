@@ -4,7 +4,7 @@
 **Slug:** et-rsi-trail
 **Source:** cf54ceef-f6e7-5fa0-ae03-98d3d4f8fe64 (see approved strategy card)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-13
+**Last revised:** 2026-06-14
 
 ---
 
@@ -95,4 +95,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-13 | Initial build from card | dbad8151-794b-4f45-a1b5-044889ff4178 |
+| v1 | 2026-06-14 | Initial build from card | dbad8151-794b-4f45-a1b5-044889ff4178 |
