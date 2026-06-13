@@ -68,15 +68,23 @@ string   g_gvar_skip        = "";    // GlobalVariable key for persistence
 // Internal helpers
 // ----------------------------------------------------------------------------
 
-int BaseMagic()
+int UnitMagic(const int unit_idx)
   {
-   return qm_ea_id * 10000 + qm_magic_slot_offset;
+   const int slot = qm_magic_slot_offset + unit_idx;
+   if(!QM_MagicRegistered(qm_ea_id, slot))
+      return -1;
+   return QM_Magic(qm_ea_id, slot);
   }
 
 bool IsOurPosition(const int pos_magic)
   {
-   const int base = BaseMagic();
-   return (pos_magic >= base && pos_magic <= base + strategy_max_units - 1);
+   for(int unit_idx = 0; unit_idx < strategy_max_units; ++unit_idx)
+     {
+      const int unit_magic = UnitMagic(unit_idx);
+      if(unit_magic > 0 && pos_magic == unit_magic)
+         return true;
+     }
+   return false;
   }
 
 int CountOurPositions()
@@ -332,8 +340,6 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
-   g_gvar_skip = StringFormat("QM12548_%d_SkipNext", BaseMagic());
-
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -352,6 +358,8 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   g_gvar_skip = StringFormat("QM12548_%d_SkipNext", QM_FrameworkMagic());
+
    // Restore skip rule from GlobalVariable (survives EA restart)
    if(GlobalVariableCheck(g_gvar_skip))
       g_skip_next = (GlobalVariableGet(g_gvar_skip) > 0.5);
@@ -359,7 +367,6 @@ int OnInit()
       g_skip_next = false;
 
    // Restore pyramid position state from open positions
-   int base_magic = BaseMagic();
    g_units = 0; g_dir = 0; g_last_add_price = 0.0; g_current_stop = 0.0;
    double highest_fill = 0.0;
    double lowest_fill  = DBL_MAX;
