@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-On the first D1 bars of a new month, the EA ranks the registered basket by 12-month-minus-1-month return: close 21 D1 bars ago divided by close 252 D1 bars ago minus one. If the chart symbol is in the top two ranks, it opens long; if the chart symbol is in the bottom two ranks, it opens short. Existing positions are closed during the monthly rebalance window before a fresh rank signal is allowed, and no discretionary exits are used outside monthly rebalance and the hard stop.
+On the first D1 bar after a calendar month changes, the EA ranks the registered basket by 12-month-minus-1-month return: close 21 D1 bars ago divided by close 252 D1 bars ago minus one. If the chart symbol is in the top two ranks, it opens long; if the chart symbol is in the bottom two ranks, it opens short. Existing positions are closed on the monthly rebalance bar before a fresh rank signal is allowed, and no discretionary exits are used outside monthly rebalance and the hard stop.
 
 ---
 
@@ -25,7 +25,6 @@ On the first D1 bars of a new month, the EA ranks the registered basket by 12-mo
 | strategy_atr_sl_mult | 5.0 | 0.5-10.0 | ATR multiple for the hard stop distance. |
 | strategy_spread_median_days | 20 | 1-64 | D1 spread samples used for the median spread filter. |
 | strategy_spread_mult | 3.0 | 0.5-10.0 | Current spread must not exceed this multiple of median spread. |
-| strategy_rebalance_max_day | 7 | 1-10 | First calendar days of a month accepted as the monthly rebalance window. |
 
 Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
 
@@ -66,7 +65,7 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 12 from card frontmatter; realised trades depend on whether the symbol ranks top two or bottom two each month. |
-| Typical hold time | About one month between rebalance windows. |
+| Typical hold time | About one month between month-boundary rebalance bars. |
 | Expected drawdown profile | Wide 5x ATR hard stops; long-short momentum can hold through volatile reversals. |
 | Regime preference | Cross-sectional momentum / trend persistence. |
 | Win rate target (qualitative) | Medium. |

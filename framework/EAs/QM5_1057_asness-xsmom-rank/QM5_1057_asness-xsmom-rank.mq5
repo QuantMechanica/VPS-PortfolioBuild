@@ -36,7 +36,6 @@ input int    strategy_atr_period           = 20;
 input double strategy_atr_sl_mult          = 5.0;
 input int    strategy_spread_median_days   = 20;
 input double strategy_spread_mult          = 3.0;
-input int    strategy_rebalance_max_day    = 7;
 
 const int STRATEGY_UNIVERSE_SIZE = 11;
 string g_universe_symbols[11] =
@@ -73,13 +72,21 @@ int Strategy_RebalanceKey(const datetime t)
    return dt.year * 100 + dt.mon;
   }
 
-bool Strategy_InMonthlyRebalanceWindow()
+bool Strategy_IsMonthRebalanceBar()
   {
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   if(strategy_rebalance_max_day <= 0)
+   if(_Period != PERIOD_D1)
       return false;
-   return (dt.day >= 1 && dt.day <= strategy_rebalance_max_day);
+
+   const datetime closed_bar = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: monthly D1 boundary detection
+   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: monthly D1 boundary detection
+   if(closed_bar <= 0 || current_bar <= 0)
+      return false;
+
+   MqlDateTime closed_dt;
+   MqlDateTime current_dt;
+   TimeToStruct(closed_bar, closed_dt);
+   TimeToStruct(current_bar, current_dt);
+   return (closed_dt.year != current_dt.year || closed_dt.mon != current_dt.mon);
   }
 
 bool Strategy_HasOpenPosition()
@@ -226,7 +233,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = Strategy_CurrentSymbolSlot();
    req.expiration_seconds = 0;
 
-   if(!Strategy_InMonthlyRebalanceWindow())
+   if(!Strategy_IsMonthRebalanceBar())
       return false;
 
    const int rebalance_key = Strategy_RebalanceKey(TimeCurrent());
@@ -248,8 +255,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry <= 0.0)
       return false;
 
-   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   req.sl = QM_StopATRFromValue(_Symbol, req.type, entry, atr, strategy_atr_sl_mult);
+   req.sl = QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult);
    if(req.sl <= 0.0)
       return false;
    if(req.type == QM_BUY && req.sl >= entry)
@@ -270,7 +276,7 @@ bool Strategy_ExitSignal()
   {
    if(_Period != PERIOD_D1)
       return false;
-   if(!Strategy_InMonthlyRebalanceWindow())
+   if(!Strategy_IsMonthRebalanceBar())
       return false;
    if(!Strategy_HasOpenPosition())
       return false;
