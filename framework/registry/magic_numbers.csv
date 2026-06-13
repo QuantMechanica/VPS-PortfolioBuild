@@ -9050,3 +9050,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10640,et-rsi-trail,0,EURUSD.DWX,106400000,2026-06-13,Development,active
 10640,et-rsi-trail,1,XAUUSD.DWX,106400001,2026-06-13,Development,active
 10640,et-rsi-trail,2,GDAXI.DWX,106400002,2026-06-13,Development,active
+10641,et-rsi-bb-daily,0,NDX.DWX,106410000,2026-06-14,Development,active
+10641,et-rsi-bb-daily,1,SP500.DWX,106410001,2026-06-14,Development,active
+10641,et-rsi-bb-daily,2,WS30.DWX,106410002,2026-06-14,Development,active
+10642,et-newhigh-scalp,0,SP500.DWX,106420000,2026-06-14,Development,active
+10642,et-newhigh-scalp,1,NDX.DWX,106420001,2026-06-14,Development,active
+10642,et-newhigh-scalp,2,GDAXI.DWX,106420002,2026-06-14,Development,active
