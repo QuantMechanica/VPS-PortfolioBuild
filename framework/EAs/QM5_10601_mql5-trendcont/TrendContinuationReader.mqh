@@ -60,15 +60,8 @@ bool Strategy_TCReadBuffers(const string indicator_name,
                                applied_price))
       return false;
 
-   double plus_buf[1];
-   double minus_buf[1];
-   if(CopyBuffer(g_tc_handle, 0, shift, 1, plus_buf) != 1)
-      return false;
-   if(CopyBuffer(g_tc_handle, 1, shift, 1, minus_buf) != 1)
-      return false;
-
-   plus_value = plus_buf[0];
-   minus_value = minus_buf[0];
+   plus_value = QM_IndicatorReadBuffer(g_tc_handle, 0, shift);
+   minus_value = QM_IndicatorReadBuffer(g_tc_handle, 1, shift);
    return (MathIsValidNumber(plus_value) && MathIsValidNumber(minus_value));
   }
 
