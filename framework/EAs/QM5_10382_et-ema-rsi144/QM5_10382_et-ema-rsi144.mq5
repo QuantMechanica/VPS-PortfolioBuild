@@ -40,114 +40,9 @@ input int    strategy_target_pips         = 100;
 input int    strategy_nonfx_atr_period    = 20;
 input double strategy_nonfx_atr_mult      = 1.0;
 
-bool Strategy_IsNonFxPort()
-  {
-   return (StringFind(_Symbol, "XAU") >= 0 ||
-           StringFind(_Symbol, "XAG") >= 0 ||
-           StringFind(_Symbol, "XTI") >= 0 ||
-           StringFind(_Symbol, "XNG") >= 0 ||
-           StringFind(_Symbol, "NDX") >= 0 ||
-           StringFind(_Symbol, "WS30") >= 0 ||
-           StringFind(_Symbol, "SP500") >= 0 ||
-           StringFind(_Symbol, "GDAXI") >= 0 ||
-           StringFind(_Symbol, "UK100") >= 0);
-  }
-
-bool Strategy_InFridayEntryBlackout(const datetime broker_time)
-  {
-   MqlDateTime dt;
-   TimeToStruct(broker_time, dt);
-   if(dt.day_of_week != 5)
-      return false;
-   return (dt.hour >= qm_friday_close_hour_broker - 1);
-  }
-
-bool Strategy_HasPendingOrder()
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = OrdersTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = OrderGetTicket(i);
-      if(ticket == 0 || !OrderSelect(ticket))
-         continue;
-      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
-         continue;
-      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
-         continue;
-
-      const ENUM_ORDER_TYPE type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
-      if(type == ORDER_TYPE_BUY_STOP || type == ORDER_TYPE_SELL_STOP)
-         return true;
-     }
-
-   return false;
-  }
-
-bool Strategy_HasOpenPosition(ENUM_POSITION_TYPE &position_type)
-  {
-   position_type = POSITION_TYPE_BUY;
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      return true;
-     }
-
-   return false;
-  }
-
-bool Strategy_RsiExtremeSeen(const bool long_setup)
-  {
-   const int bars = MathMax(1, strategy_rsi_lookback_days) * 24;
-   for(int shift = 1; shift <= bars; ++shift)
-     {
-      const double rsi = QM_RSI(_Symbol, PERIOD_H1, strategy_rsi_period, shift);
-      if(rsi <= 0.0)
-         continue;
-      if(long_setup && rsi <= strategy_rsi_oversold)
-         return true;
-      if(!long_setup && rsi >= strategy_rsi_overbought)
-         return true;
-     }
-
-   return false;
-  }
-
-double Strategy_StopPrice(const QM_OrderType side, const double entry)
-  {
-   if(Strategy_IsNonFxPort())
-      return QM_StopATR(_Symbol, side, entry, strategy_nonfx_atr_period, strategy_nonfx_atr_mult);
-   return QM_StopFixedPips(_Symbol, side, entry, strategy_stop_pips);
-  }
-
-bool Strategy_SpreadAllowsStop(const double entry, const double sl)
-  {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0 || ask < bid || entry <= 0.0 || sl <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   const double stop_distance = MathAbs(entry - sl);
-   return (spread > 0.0 && stop_distance >= 4.0 * spread);
-  }
-
-// No Trade Filter (time, spread, news): framework handles news and Friday close;
-// the card's entry-only Friday and spread gates are applied in Trade Entry.
+// No Trade Filter (time, spread, news): framework handles central news and
+// Friday close. Card entry-only gates are kept in Trade Entry so exits and
+// trade management are not blocked during the Friday pre-close hour.
 bool Strategy_NoTradeFilter()
   {
    return false;
@@ -167,12 +62,33 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(_Period != PERIOD_H1)
       return false;
    if(strategy_fast_ema_period <= 0 || strategy_slow_ema_period <= 0 ||
-      strategy_rsi_period <= 0 || strategy_stop_pips <= 0 || strategy_target_pips <= 0)
+      strategy_rsi_period <= 0 || strategy_rsi_lookback_days <= 0 ||
+      strategy_stop_pips <= 0 || strategy_target_pips <= 0 ||
+      strategy_nonfx_atr_period <= 0 || strategy_nonfx_atr_mult <= 0.0)
       return false;
-   if(Strategy_InFridayEntryBlackout(TimeCurrent()))
+
+   MqlDateTime broker_dt;
+   TimeToStruct(TimeCurrent(), broker_dt);
+   if(broker_dt.day_of_week == 5 && broker_dt.hour >= qm_friday_close_hour_broker - 1)
       return false;
-   if(Strategy_HasPendingOrder())
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+
+      const ENUM_ORDER_TYPE pending_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(pending_type == ORDER_TYPE_BUY_STOP || pending_type == ORDER_TYPE_SELL_STOP)
+         return false;
+     }
 
    const double fast_1 = QM_EMA(_Symbol, PERIOD_H1, strategy_fast_ema_period, 1);
    const double fast_2 = QM_EMA(_Symbol, PERIOD_H1, strategy_fast_ema_period, 2);
@@ -186,36 +102,74 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!long_cross && !short_cross)
       return false;
 
+   bool rsi_extreme_seen = false;
+   const int rsi_lookback_bars = strategy_rsi_lookback_days * 24;
+   for(int shift = 1; shift <= rsi_lookback_bars; ++shift)
+     {
+      const double rsi = QM_RSI(_Symbol, PERIOD_H1, strategy_rsi_period, shift);
+      if(rsi <= 0.0)
+         continue;
+      if(long_cross && rsi <= strategy_rsi_oversold)
+        {
+         rsi_extreme_seen = true;
+         break;
+        }
+      if(short_cross && rsi >= strategy_rsi_overbought)
+        {
+         rsi_extreme_seen = true;
+         break;
+        }
+     }
+   if(!rsi_extreme_seen)
+      return false;
+
    const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(tick_size <= 0.0 || ask <= 0.0 || bid <= 0.0)
+   if(tick_size <= 0.0 || ask <= 0.0 || bid <= 0.0 || ask < bid)
       return false;
+
+   const bool non_fx_port = (StringFind(_Symbol, "XAU") >= 0 ||
+                             StringFind(_Symbol, "XAG") >= 0 ||
+                             StringFind(_Symbol, "XTI") >= 0 ||
+                             StringFind(_Symbol, "XNG") >= 0 ||
+                             StringFind(_Symbol, "NDX") >= 0 ||
+                             StringFind(_Symbol, "WS30") >= 0 ||
+                             StringFind(_Symbol, "SP500") >= 0 ||
+                             StringFind(_Symbol, "GDAXI") >= 0 ||
+                             StringFind(_Symbol, "UK100") >= 0);
 
    if(long_cross)
      {
-      if(!Strategy_RsiExtremeSeen(true))
-         return false;
       req.type = QM_BUY_STOP;
       req.price = NormalizeDouble(fast_1 + tick_size, _Digits);
       if(req.price <= ask + tick_size)
          return false;
-      req.sl = Strategy_StopPrice(req.type, req.price);
+      req.sl = non_fx_port
+               ? QM_StopATR(_Symbol, req.type, req.price, strategy_nonfx_atr_period, strategy_nonfx_atr_mult)
+               : QM_StopFixedPips(_Symbol, req.type, req.price, strategy_stop_pips);
       req.tp = QM_TakeFixedPips(_Symbol, req.type, req.price, strategy_target_pips);
       req.reason = "ET_EMA_RSI144_LONG_STOP";
-      return (req.sl > 0.0 && req.tp > 0.0 && Strategy_SpreadAllowsStop(req.price, req.sl));
+     }
+   else
+     {
+      req.type = QM_SELL_STOP;
+      req.price = NormalizeDouble(fast_1 - tick_size, _Digits);
+      if(req.price >= bid - tick_size)
+         return false;
+      req.sl = non_fx_port
+               ? QM_StopATR(_Symbol, req.type, req.price, strategy_nonfx_atr_period, strategy_nonfx_atr_mult)
+               : QM_StopFixedPips(_Symbol, req.type, req.price, strategy_stop_pips);
+      req.tp = QM_TakeFixedPips(_Symbol, req.type, req.price, strategy_target_pips);
+      req.reason = "ET_EMA_RSI144_SHORT_STOP";
      }
 
-   if(!Strategy_RsiExtremeSeen(false))
+   if(req.sl <= 0.0 || req.tp <= 0.0)
       return false;
-   req.type = QM_SELL_STOP;
-   req.price = NormalizeDouble(fast_1 - tick_size, _Digits);
-   if(req.price >= bid - tick_size)
-      return false;
-   req.sl = Strategy_StopPrice(req.type, req.price);
-   req.tp = QM_TakeFixedPips(_Symbol, req.type, req.price, strategy_target_pips);
-   req.reason = "ET_EMA_RSI144_SHORT_STOP";
-   return (req.sl > 0.0 && req.tp > 0.0 && Strategy_SpreadAllowsStop(req.price, req.sl));
+
+   const double spread = ask - bid;
+   const double stop_distance = MathAbs(req.price - req.sl);
+   return (spread > 0.0 && stop_distance >= 4.0 * spread);
   }
 
 // Trade Management: card baseline has no trailing, break-even, scale-in, or partial exits.
@@ -226,8 +180,27 @@ void Strategy_ManageOpenPosition()
 // Trade Close: close if EMA(144) crosses back through EMA(169) before SL/TP.
 bool Strategy_ExitSignal()
   {
-   ENUM_POSITION_TYPE position_type;
-   if(!Strategy_HasOpenPosition(position_type))
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   bool have_position = false;
+   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      have_position = true;
+      break;
+     }
+   if(!have_position)
       return false;
 
    const double fast_1 = QM_EMA(_Symbol, PERIOD_H1, strategy_fast_ema_period, 1);
