@@ -171,7 +171,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    double swing_high = -DBL_MAX;
    double swing_low = DBL_MAX;
-   for(int i = 0; i < strategy_swing_lookback; ++i)
+   for(int i = 1; i <= strategy_swing_lookback; ++i)
      {
       if(rates[i].high <= 0.0 || rates[i].low <= 0.0)
          return false;
