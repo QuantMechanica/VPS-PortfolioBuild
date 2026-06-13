@@ -11,19 +11,19 @@
 // boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
 // risk + magic + news + Friday-close guard rails). The framework provides:
 //
-//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  - closed-bar gate
 //   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
 //     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
 //     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
 //   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
 //   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
-//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_LotsForRisk(symbol, sl_points)        - risk model lot sizing
 //   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
 //   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
 //
 // DO NOT
-//   - Write per-EA IsNewBar() — use QM_IsNewBar()
-//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//   - Write per-EA IsNewBar() - use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly -
 //     use the QM_* readers above. The framework pools handles and releases them
 //     on shutdown.
 //   - CopyRates over warmup windows on every tick. If you genuinely need raw
@@ -48,7 +48,7 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+// FW1 2026-05-23 - Two-axis news filter per Vault Q09.
 //   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
 //   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
@@ -65,7 +65,7 @@ input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
-// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// FW2 2026-05-23 - only populated by Q05 MED / Q06 HARSH stress setfiles.
 // Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
 // Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
 // deterministic per qm_rng_seed). MED slip/spread/commission live in the
@@ -73,119 +73,40 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_rsi_period           = 7;
-input double strategy_rsi_long_entry       = 30.0;
-input double strategy_rsi_short_entry      = 70.0;
-input double strategy_rsi_exit_level       = 50.0;
-input int    strategy_bb_period            = 20;
-input double strategy_bb_deviation         = 2.0;
-input double strategy_bb_long_entry_pct    = 20.0;
-input double strategy_bb_short_entry_pct   = 80.0;
-input double strategy_bb_exit_pct          = 50.0;
-input int    strategy_atr_period           = 14;
-input double strategy_atr_stop_mult        = 1.5;
-input int    strategy_atr_median_lookback  = 100;
-input double strategy_atr_spike_mult       = 2.5;
-input int    strategy_max_hold_bars        = 4;
+input int    strategy_rsi_period          = 7;
+input double strategy_rsi_long_entry      = 30.0;
+input double strategy_rsi_short_entry     = 70.0;
+input double strategy_rsi_exit_level      = 50.0;
+input int    strategy_bb_period           = 20;
+input double strategy_bb_deviation        = 2.0;
+input double strategy_bb_long_entry_pct   = 20.0;
+input double strategy_bb_short_entry_pct  = 80.0;
+input double strategy_bb_exit_pct         = 50.0;
+input int    strategy_atr_period          = 14;
+input double strategy_atr_stop_mult       = 1.5;
+input int    strategy_atr_median_lookback = 100;
+input double strategy_atr_spike_mult      = 2.5;
+input int    strategy_max_hold_bars       = 4;
 
 // -----------------------------------------------------------------------------
-// Strategy hooks — implement these against the card mechanically.
+// Strategy hooks - implement these against the card mechanically.
 // -----------------------------------------------------------------------------
-
-void Strategy_InitRequest(QM_EntryRequest &req)
-  {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-  }
-
-bool Strategy_ReadClosedClose(const ENUM_TIMEFRAMES tf, const int shift, double &close_price)
-  {
-   close_price = 0.0;
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, tf, shift, 1, rates); // perf-allowed: one closed-bar close read for BB% math.
-   if(copied != 1 || rates[0].close <= 0.0)
-      return false;
-   close_price = rates[0].close;
-   return true;
-  }
-
-bool Strategy_BBPercent(const ENUM_TIMEFRAMES tf, const int shift, double &bb_pct)
-  {
-   bb_pct = 0.0;
-   double close_price = 0.0;
-   if(!Strategy_ReadClosedClose(tf, shift, close_price))
-      return false;
-
-   const double upper = QM_BB_Upper(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, shift, PRICE_CLOSE);
-   const double lower = QM_BB_Lower(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, shift, PRICE_CLOSE);
-   if(upper <= lower || lower <= 0.0)
-      return false;
-
-   bb_pct = ((close_price - lower) / (upper - lower)) * 100.0;
-   return true;
-  }
-
-bool Strategy_AtrMedian(const ENUM_TIMEFRAMES tf, double &atr_now, double &atr_median)
-  {
-   atr_now = QM_ATR(_Symbol, tf, strategy_atr_period, 1);
-   atr_median = 0.0;
-   if(atr_now <= 0.0 || strategy_atr_median_lookback <= 0)
-      return false;
-
-   double values[];
-   ArrayResize(values, strategy_atr_median_lookback);
-   for(int i = 0; i < strategy_atr_median_lookback; ++i)
-     {
-      values[i] = QM_ATR(_Symbol, tf, strategy_atr_period, i + 1);
-      if(values[i] <= 0.0)
-         return false;
-     }
-
-   ArraySort(values);
-   const int mid = strategy_atr_median_lookback / 2;
-   if((strategy_atr_median_lookback % 2) == 0)
-      atr_median = (values[mid - 1] + values[mid]) * 0.5;
-   else
-      atr_median = values[mid];
-   return (atr_median > 0.0);
-  }
-
-bool Strategy_HasOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return true;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) == _Symbol &&
-         (int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return true;
-     }
-
-   return false;
-  }
 
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
+// regime filter). Cheap O(1) checks only - runs on every tick.
 bool Strategy_NoTradeFilter()
   {
    if(_Period != PERIOD_D1)
       return true;
 
-   if(strategy_rsi_period <= 0 || strategy_bb_period <= 1 ||
-      strategy_bb_deviation <= 0.0 || strategy_atr_period <= 0 ||
-      strategy_atr_stop_mult <= 0.0 || strategy_atr_median_lookback <= 1 ||
-      strategy_atr_spike_mult <= 0.0 || strategy_max_hold_bars <= 0)
+   if(strategy_rsi_period <= 0 ||
+      strategy_bb_period <= 1 ||
+      strategy_bb_deviation <= 0.0 ||
+      strategy_atr_period <= 0 ||
+      strategy_atr_stop_mult <= 0.0 ||
+      strategy_atr_median_lookback <= 1 ||
+      strategy_atr_spike_mult <= 0.0 ||
+      strategy_max_hold_bars <= 0)
       return true;
 
    if(strategy_rsi_long_entry <= 0.0 ||
@@ -206,26 +127,54 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   Strategy_InitRequest(req);
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
 
-   if(Strategy_HasOpenPosition())
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) == _Symbol &&
+         (int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
 
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   const double close_1 = QM_SMA(_Symbol, tf, 1, 1, PRICE_CLOSE);
+   const double upper = QM_BB_Upper(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
+   const double lower = QM_BB_Lower(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
    const double rsi = QM_RSI(_Symbol, tf, strategy_rsi_period, 1, PRICE_CLOSE);
-   double bb_pct = 0.0;
-   double atr_now = 0.0;
-   double atr_median = 0.0;
-   if(rsi <= 0.0 || !Strategy_BBPercent(tf, 1, bb_pct))
-      return false;
-   if(!Strategy_AtrMedian(tf, atr_now, atr_median))
-      return false;
-   if(atr_now > atr_median * strategy_atr_spike_mult)
+   const double atr_now = QM_ATR(_Symbol, tf, strategy_atr_period, 1);
+   if(close_1 <= 0.0 || upper <= lower || lower <= 0.0 || rsi <= 0.0 || atr_now <= 0.0)
       return false;
 
-   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   if(digits < 0)
+   double atr_values[];
+   ArrayResize(atr_values, strategy_atr_median_lookback);
+   for(int i = 0; i < strategy_atr_median_lookback; ++i)
+     {
+      atr_values[i] = QM_ATR(_Symbol, tf, strategy_atr_period, i + 1);
+      if(atr_values[i] <= 0.0)
+         return false;
+     }
+   ArraySort(atr_values);
+   const int mid = strategy_atr_median_lookback / 2;
+   const double atr_median = ((strategy_atr_median_lookback % 2) == 0)
+                             ? (atr_values[mid - 1] + atr_values[mid]) * 0.5
+                             : atr_values[mid];
+   if(atr_median <= 0.0 || atr_now > atr_median * strategy_atr_spike_mult)
       return false;
+
+   const double bb_pct = ((close_1 - lower) / (upper - lower)) * 100.0;
 
    if(rsi < strategy_rsi_long_entry && bb_pct < strategy_bb_long_entry_pct)
      {
@@ -233,7 +182,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(ask <= 0.0)
          return false;
       req.type = QM_BUY;
-      req.sl = NormalizeDouble(ask - atr_now * strategy_atr_stop_mult, digits);
+      req.sl = QM_StopATRFromValue(_Symbol, QM_BUY, ask, atr_now, strategy_atr_stop_mult);
       req.tp = 0.0;
       req.reason = "RSI_BB_D1_LONG";
       return (req.sl > 0.0 && req.sl < ask);
@@ -245,7 +194,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(bid <= 0.0)
          return false;
       req.type = QM_SELL;
-      req.sl = NormalizeDouble(bid + atr_now * strategy_atr_stop_mult, digits);
+      req.sl = QM_StopATRFromValue(_Symbol, QM_SELL, bid, atr_now, strategy_atr_stop_mult);
       req.tp = 0.0;
       req.reason = "RSI_BB_D1_SHORT";
       return (req.sl > bid);
@@ -309,9 +258,12 @@ bool Strategy_ExitSignal()
       return false;
 
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   const double close_1 = QM_SMA(_Symbol, tf, 1, 1, PRICE_CLOSE);
+   const double upper = QM_BB_Upper(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
+   const double lower = QM_BB_Lower(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
    const double rsi = QM_RSI(_Symbol, tf, strategy_rsi_period, 1, PRICE_CLOSE);
-   double bb_pct = 0.0;
-   const bool have_indicators = (rsi > 0.0 && Strategy_BBPercent(tf, 1, bb_pct));
+   const bool have_indicators = (close_1 > 0.0 && upper > lower && lower > 0.0 && rsi > 0.0);
+   const double bb_pct = have_indicators ? ((close_1 - lower) / (upper - lower)) * 100.0 : 0.0;
    const int hold_seconds = PeriodSeconds(tf) * strategy_max_hold_bars;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -351,7 +303,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
   }
 
 // -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
+// Framework wiring - do NOT edit below this line unless you know why.
 // -----------------------------------------------------------------------------
 
 int OnInit()
@@ -392,7 +344,7 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // FW1 - 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
    // when both new axes are at their OFF defaults.
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
@@ -426,12 +378,12 @@ void OnTick()
      }
 
    // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // per-tick recompute mistakes - EntrySignal sees one new closed bar per
    // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
 
-   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // FW6 2026-05-23 - emit end-of-day equity snapshot if the day rolled
    // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
