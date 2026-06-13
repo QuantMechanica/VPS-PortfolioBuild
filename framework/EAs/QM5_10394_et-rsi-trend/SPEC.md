@@ -4,7 +4,7 @@
 **Slug:** `et-rsi-trend`
 **Source:** `d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe` (see `strategy-seeds/sources/d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-05-25
+**Last revised:** 2026-06-13
 
 ---
 
@@ -98,4 +98,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-05-25 | Initial build from card | 736cd514-0018-4e93-b645-4f794d70568f |
+| v1 | 2026-06-13 | Initial build from card | b7914471-47ac-4169-a94d-4ef866b74020 |

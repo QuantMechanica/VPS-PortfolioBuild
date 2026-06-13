@@ -4,7 +4,7 @@
 **Slug:** `et-lunch-brk`
 **Source:** `d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe` (see approved card)
 **Author of this spec:** Codex
-**Last revised:** 2026-05-25
+**Last revised:** 2026-06-13
 
 ---
 
@@ -95,4 +95,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-05-25 | Initial build from card | 28e4dff1-aac1-4a7c-a085-d0f11d389d4a |
+| v1 | 2026-06-13 | Initial build from card | b9be2a7d-25ff-4c53-816c-1e3e50bd2b61 |

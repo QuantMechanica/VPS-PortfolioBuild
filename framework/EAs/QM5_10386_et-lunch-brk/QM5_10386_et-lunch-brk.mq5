@@ -86,6 +86,11 @@ input bool   strategy_allow_wednesday   = true;
 input bool   strategy_allow_thursday    = true;
 input bool   strategy_allow_friday      = true;
 
+int  g_etlb_day_key = -1;
+bool g_etlb_buy_submitted_today = false;
+bool g_etlb_sell_submitted_today = false;
+bool g_etlb_cycle_done_today = false;
+
 int ETLB_DayKey(const datetime t)
   {
    MqlDateTime dt;
@@ -112,6 +117,18 @@ bool ETLB_DayAllowed(const datetime t)
    return false;
   }
 
+void ETLB_RefreshDayState(const datetime broker_now)
+  {
+   const int day_key = ETLB_DayKey(broker_now);
+   if(day_key == g_etlb_day_key)
+      return;
+
+   g_etlb_day_key = day_key;
+   g_etlb_buy_submitted_today = false;
+   g_etlb_sell_submitted_today = false;
+   g_etlb_cycle_done_today = false;
+  }
+
 bool ETLB_HasOpenPositionForMagic()
   {
    const int magic = QM_FrameworkMagic();
@@ -126,7 +143,10 @@ bool ETLB_HasOpenPositionForMagic()
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+        {
+         g_etlb_cycle_done_today = true;
          return true;
+        }
      }
    return false;
   }
@@ -147,7 +167,13 @@ bool ETLB_HasPendingTypeForMagic(const ENUM_ORDER_TYPE order_type)
       if((int)OrderGetInteger(ORDER_MAGIC) != magic)
          continue;
       if((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE) == order_type)
+        {
+         if(order_type == ORDER_TYPE_BUY_STOP)
+            g_etlb_buy_submitted_today = true;
+         if(order_type == ORDER_TYPE_SELL_STOP)
+            g_etlb_sell_submitted_today = true;
          return true;
+        }
      }
    return false;
   }
@@ -253,12 +279,7 @@ int ETLB_SecondsUntilClose(const datetime broker_now)
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   const datetime broker_now = TimeCurrent();
-   const int hhmm = ETLB_HHMM(broker_now);
-   if(hhmm >= strategy_close_hhmm)
-      return true;
-   if(!ETLB_DayAllowed(broker_now))
-      return true;
+   ETLB_RefreshDayState(TimeCurrent());
    return false;
   }
 
@@ -276,6 +297,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    const datetime broker_now = TimeCurrent();
+   ETLB_RefreshDayState(broker_now);
    const int hhmm = ETLB_HHMM(broker_now);
    if(hhmm < strategy_lunch_hhmm || hhmm >= strategy_close_hhmm)
       return false;
@@ -286,6 +308,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       ETLB_DeletePendingOrdersForMagic("filled_position");
       return false;
      }
+
+   const bool has_buy_pending = ETLB_HasPendingTypeForMagic(ORDER_TYPE_BUY_STOP);
+   const bool has_sell_pending = ETLB_HasPendingTypeForMagic(ORDER_TYPE_SELL_STOP);
+   if(g_etlb_cycle_done_today || (g_etlb_buy_submitted_today && g_etlb_sell_submitted_today))
+     {
+      g_etlb_cycle_done_today = true;
+      return false;
+     }
+
    if(ETLB_PendingCountForMagic() >= 2)
       return false;
 
@@ -312,7 +343,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double min_stop = 4.0 * spread;
    const int expiration_seconds = ETLB_SecondsUntilClose(broker_now);
 
-   if(!ETLB_HasPendingTypeForMagic(ORDER_TYPE_BUY_STOP))
+   if(!g_etlb_buy_submitted_today && !has_buy_pending)
      {
       const double entry = QM_TM_NormalizePrice(_Symbol, lunch_high + trigger);
       const double raw_sl = lunch_low - strategy_stop_factor * range;
@@ -322,10 +353,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.tp = 0.0;
       req.reason = "QM5_10386_LUNCH_BRK_BUY_STOP";
       req.expiration_seconds = expiration_seconds;
+      g_etlb_buy_submitted_today = true;
       return (req.price > 0.0 && req.sl > 0.0 && req.sl < req.price);
      }
 
-   if(!ETLB_HasPendingTypeForMagic(ORDER_TYPE_SELL_STOP))
+   if(!g_etlb_sell_submitted_today && !has_sell_pending)
      {
       const double entry = QM_TM_NormalizePrice(_Symbol, lunch_low - trigger);
       const double raw_sl = lunch_high + strategy_stop_factor * range;
@@ -335,6 +367,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.tp = 0.0;
       req.reason = "QM5_10386_LUNCH_BRK_SELL_STOP";
       req.expiration_seconds = expiration_seconds;
+      g_etlb_sell_submitted_today = true;
       return (req.price > 0.0 && req.sl > req.price);
      }
 
@@ -345,6 +378,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
+   ETLB_RefreshDayState(TimeCurrent());
    if(ETLB_HasOpenPositionForMagic())
       ETLB_DeletePendingOrdersForMagic("opposite_stop_after_fill");
   }
@@ -354,6 +388,7 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    const datetime broker_now = TimeCurrent();
+   ETLB_RefreshDayState(broker_now);
    if(ETLB_HHMM(broker_now) < strategy_close_hhmm)
       return false;
 

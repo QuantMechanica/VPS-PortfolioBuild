@@ -3,16 +3,16 @@
 ; ea_id:        10394
 ; ea_slug:      et-rsi-trend
 ; ea_version:   v5.0
-; set_version:  s20260605-001
+; set_version:  s20260613-001
 ; symbol:       NDX.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   e792e1722132c4e8441d01a71c70064a5d36ba95c128184bb2e708c15b62c83e
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-05
+; date:         2026-06-13
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000
