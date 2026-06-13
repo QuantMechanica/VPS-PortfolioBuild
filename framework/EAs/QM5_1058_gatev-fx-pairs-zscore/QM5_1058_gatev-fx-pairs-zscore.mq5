@@ -3,6 +3,7 @@
 #property description "QM5_1058 Gatev FX pairs z-score reversion"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_BasketOrder.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 1058;
@@ -89,8 +90,7 @@ bool Strategy_CopyLogCloses(const string symbol, const int bars, double &logs[])
    double closes[];
    ArrayResize(closes, bars);
    ArraySetAsSeries(closes, true);
-   // perf-allowed: this custom pair-stat read is called only after a D1 QM_IsNewBar gate.
-   if(CopyClose(symbol, PERIOD_D1, 1, bars, closes) != bars)
+   if(CopyClose(symbol, PERIOD_D1, 1, bars, closes) != bars) // perf-allowed: this custom pair-stat read is called only after a D1 QM_IsNewBar gate.
       return false;
 
    for(int i = 0; i < bars; ++i)
@@ -251,7 +251,9 @@ bool Strategy_IsPairPosition(const int pair_index)
    if(!Strategy_IsPairLeg(pair_index, symbol))
       return false;
 
-   return ((int)PositionGetInteger(POSITION_MAGIC) == QM_FrameworkMagic());
+   const int slot = Strategy_SlotForSymbol(pair_index, symbol);
+   const int expected_magic = QM_MagicChecked(qm_ea_id, slot, symbol);
+   return (expected_magic > 0 && (int)PositionGetInteger(POSITION_MAGIC) == expected_magic);
   }
 
 int Strategy_OpenPairLegCount(const int pair_index)
@@ -313,29 +315,34 @@ bool Strategy_OpenLeg(const int pair_index,
                       const int spread_direction,
                       const string reason)
   {
-   if(symbol != _Symbol)
-      return true;
-
    const bool buy_leg = (spread_direction * leg_weight) > 0.0;
    const double entry_price = buy_leg ? SymbolInfoDouble(symbol, SYMBOL_ASK)
                                       : SymbolInfoDouble(symbol, SYMBOL_BID);
    if(entry_price <= 0.0)
       return false;
 
-   const double sl_distance = MathMax(entry_price * MathAbs(leg_weight), SymbolInfoDouble(symbol, SYMBOL_POINT));
+   const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
+   if(point <= 0.0)
+      return false;
 
-   QM_EntryRequest req;
-   req.type = buy_leg ? QM_BUY : QM_SELL;
-   req.price = 0.0;
-   req.sl = buy_leg ? MathMax(SymbolInfoDouble(symbol, SYMBOL_POINT), entry_price - sl_distance)
-                    : entry_price + sl_distance;
-   req.tp = 0.0;
-   req.reason = reason;
-   req.symbol_slot = Strategy_SlotForSymbol(pair_index, symbol);
-   req.expiration_seconds = 0;
+   const double notional_points = entry_price / point;
+   const double lots = QM_LotsForRisk(symbol, notional_points) * MathAbs(leg_weight);
+   if(lots <= 0.0 || !MathIsValidNumber(lots))
+      return false;
+
+   QM_BasketOrderRequest breq;
+   breq.symbol = symbol;
+   breq.type = buy_leg ? QM_BUY : QM_SELL;
+   breq.price = 0.0;
+   breq.sl = 0.0;
+   breq.tp = 0.0;
+   breq.lots = lots;
+   breq.reason = reason;
+   breq.symbol_slot = Strategy_SlotForSymbol(pair_index, symbol);
+   breq.expiration_seconds = 0;
 
    ulong ticket = 0;
-   return QM_TM_OpenPosition(req, ticket);
+   return QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, breq, ticket);
   }
 
 bool Strategy_OpenPair(const int pair_index, const int spread_direction)
