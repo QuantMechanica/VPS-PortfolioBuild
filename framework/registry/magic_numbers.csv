@@ -9047,3 +9047,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10639,et-macd-xover,0,EURUSD.DWX,106390000,2026-06-13,Development,active
 10639,et-macd-xover,1,GDAXI.DWX,106390001,2026-06-13,Development,active
 10639,et-macd-xover,2,XAUUSD.DWX,106390002,2026-06-13,Development,active
+10640,et-rsi-trail,0,EURUSD.DWX,106400000,2026-06-13,Development,active
+10640,et-rsi-trail,1,XAUUSD.DWX,106400001,2026-06-13,Development,active
+10640,et-rsi-trail,2,GDAXI.DWX,106400002,2026-06-13,Development,active
