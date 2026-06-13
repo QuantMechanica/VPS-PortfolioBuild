@@ -8,12 +8,14 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import faulthandler
 import json
 import os
 import random
 import shutil
 import signal
 import sqlite3
+import threading
 import time
 from pathlib import Path
 from typing import Any
@@ -27,6 +29,8 @@ SQLITE_WRITE_RETRIES = 12
 SQLITE_WRITE_RETRY_SLEEP_SECONDS = 1.5
 SMOKE_TERMINAL_EXIT_GRACE_SECONDS = 60.0
 SQLITE_LOCK_BACKOFF_SECONDS = 10.0
+STALLDUMP_REQUEST_PATH = Path("D:/QM/reports/state/STALLDUMP_REQUEST")
+STALLDUMP_DIR = Path("D:/QM/reports/state/worker_stalldump")
 
 _STOP = False
 
@@ -59,6 +63,36 @@ def _with_sqlite_retry(fn):
 
 def _is_sqlite_locked(exc: sqlite3.OperationalError) -> bool:
     return "locked" in str(exc).lower()
+
+
+def _start_stalldump_watcher(terminal: str) -> None:
+    """Dump all Python thread stacks when the watchdog asks for stall evidence."""
+
+    def _watch() -> None:
+        last_request: tuple[int, int] | None = None
+        while True:
+            try:
+                if STALLDUMP_REQUEST_PATH.exists():
+                    stat = STALLDUMP_REQUEST_PATH.stat()
+                    request_key = (stat.st_mtime_ns, stat.st_size)
+                    if request_key != last_request:
+                        last_request = request_key
+                        STALLDUMP_DIR.mkdir(parents=True, exist_ok=True)
+                        dump_path = STALLDUMP_DIR / f"{terminal}_{os.getpid()}.txt"
+                        stamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+                        with dump_path.open("a", encoding="utf-8") as fh:
+                            fh.write(f"\n===== STALLDUMP {stamp} terminal={terminal} pid={os.getpid()} =====\n")
+                            fh.flush()
+                            faulthandler.dump_traceback(file=fh, all_threads=True)
+                            fh.flush()
+                else:
+                    last_request = None
+            except Exception:
+                pass
+            time.sleep(5.0)
+
+    thread = threading.Thread(target=_watch, name="stalldump_watcher", daemon=True)
+    thread.start()
 
 
 def _priority_pending_query() -> str:
@@ -858,6 +892,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", type=Path, default=farmctl.DEFAULT_ROOT)
     parser.add_argument("--timeout-minutes", type=float, default=90.0)
     args = parser.parse_args(argv)
+    faulthandler.enable()
+    _start_stalldump_watcher(args.terminal)
     return run_loop(args.root, args.terminal, int(args.timeout_minutes * 60))
 
 

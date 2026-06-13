@@ -34,11 +34,48 @@ $ErrorActionPreference = 'Continue'
 $repo = 'C:\QM\repo'
 $py   = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe'
 $log  = 'D:\QM\reports\state\factory_watchdog.jsonl'
+$stallDumpRequest = 'D:\QM\reports\state\STALLDUMP_REQUEST'
+$stallDumpDir = 'D:\QM\reports\state\worker_stalldump'
 . (Join-Path $PSScriptRoot 'qm_tasks.manifest.ps1')
 
 $now    = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
 $action = 'none'
 $detail = ''
+
+function Invoke-StallDumpCapture {
+    param(
+        [string]$RequestPath,
+        [string]$DumpDir
+    )
+
+    $requestStarted = (Get-Date).ToUniversalTime()
+    try {
+        if (-not (Test-Path $DumpDir)) { New-Item -ItemType Directory -Path $DumpDir -Force | Out-Null }
+        Get-ChildItem -Path $DumpDir -Filter '*.txt' -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTimeUtc -Descending |
+            Select-Object -Skip 50 |
+            Remove-Item -Force -ErrorAction SilentlyContinue
+
+        Set-Content -Path $RequestPath -Value $requestStarted.ToString('yyyy-MM-ddTHH:mm:ssZ') -Encoding ASCII
+        Start-Sleep -Seconds 8
+
+        $files = @(Get-ChildItem -Path $DumpDir -Filter '*.txt' -ErrorAction SilentlyContinue |
+                   Where-Object { $_.LastWriteTimeUtc -ge $requestStarted.AddSeconds(-1) } |
+                   Sort-Object LastWriteTimeUtc -Descending)
+        $sample = ($files | Select-Object -First 10 | ForEach-Object { $_.Name }) -join ','
+        $summary = "stalldump_request files=$($files.Count) dir=$DumpDir"
+        if ($sample) { $summary += " sample=$sample" }
+        return $summary
+    } catch {
+        return "stalldump_request_error=$($_.Exception.Message)"
+    } finally {
+        Remove-Item -Path $RequestPath -Force -ErrorAction SilentlyContinue
+        Get-ChildItem -Path $DumpDir -Filter '*.txt' -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTimeUtc -Descending |
+            Select-Object -Skip 50 |
+            Remove-Item -Force -ErrorAction SilentlyContinue
+    }
+}
 
 # 1. OWNER intent: is the factory meant to be ON? (FACTORY tasks enabled?)
 $factoryEnabled = $false
@@ -218,6 +255,10 @@ else {
         # This watchdog runs as SYSTEM (SeTcb) so the launcher can WTSQueryUserToken
         # + CreateProcessAsUser into qm-admin's session even when RDP is DISCONNECTED.
         # A plain `& $py ...` here would land workers in SYSTEM's session-0 (hazard).
+        if ($dispatchStalled) {
+            $dumpDetail = Invoke-StallDumpCapture -RequestPath $stallDumpRequest -DumpDir $stallDumpDir
+            $detail += " | $dumpDetail"
+        }
         foreach ($d in $daemons) { Stop-Process -Id $d.ProcessId -Force -ErrorAction SilentlyContinue }
         # Kill ONLY factory T1-T10 terminals. NEVER terminate T_Live (live trading —
         # OWNER+Claude authority, Hard Rule) or T_Export (analysis); matching by the
