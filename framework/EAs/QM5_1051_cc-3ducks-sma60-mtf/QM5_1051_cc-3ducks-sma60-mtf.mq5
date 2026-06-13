@@ -119,7 +119,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    double stop = 0.0;
    if(strategy_use_atr_stop)
-      stop = QM_StopATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_mult);
+     {
+      const double atr_h1 = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
+      if(atr_h1 <= 0.0)
+         return false;
+      const double atr_distance = atr_h1 * strategy_atr_mult;
+      stop = QM_OrderTypeIsBuy(side) ? (entry - atr_distance) : (entry + atr_distance);
+      stop = NormalizeDouble(stop, (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS));
+     }
    else
      {
       const double buffer = strategy_sl_buffer_points * point;
