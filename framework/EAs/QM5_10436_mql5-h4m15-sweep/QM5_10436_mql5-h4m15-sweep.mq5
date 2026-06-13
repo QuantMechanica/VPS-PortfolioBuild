@@ -36,163 +36,9 @@ input double strategy_rr                   = 0.2;
 input int    strategy_atr_period_m15       = 14;
 input double strategy_max_stop_atr_mult    = 4.0;
 
-double g_consumed_swing_low = 0.0;
-double g_consumed_swing_high = 0.0;
-
 bool Strategy_NoTradeFilter()
   {
    return false;
-  }
-
-bool HasOpenPositionForThisMagic()
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return true;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return true;
-     }
-
-   return false;
-  }
-
-bool IsSameLevel(const double a, const double b)
-  {
-   if(a <= 0.0 || b <= 0.0)
-      return false;
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0)
-      return MathAbs(a - b) <= 0.00000001;
-   return MathAbs(a - b) <= point * 0.5;
-  }
-
-bool IsSwingHigh(MqlRates &rates[], const int shift, const int range)
-  {
-   const double level = rates[shift].high;
-   if(level <= 0.0)
-      return false;
-
-   for(int k = 1; k <= range; ++k)
-     {
-      if(rates[shift - k].high >= level)
-         return false;
-      if(rates[shift + k].high >= level)
-         return false;
-     }
-
-   return true;
-  }
-
-bool IsSwingLow(MqlRates &rates[], const int shift, const int range)
-  {
-   const double level = rates[shift].low;
-   if(level <= 0.0)
-      return false;
-
-   for(int k = 1; k <= range; ++k)
-     {
-      if(rates[shift - k].low <= level)
-         return false;
-      if(rates[shift + k].low <= level)
-         return false;
-     }
-
-   return true;
-  }
-
-bool LoadMostRecentH4Levels(double &swing_low, double &swing_high)
-  {
-   swing_low = 0.0;
-   swing_high = 0.0;
-
-   const int range = MathMax(1, strategy_swing_range_h4);
-   const int max_age = MathMax(range + 1, strategy_level_max_age_h4);
-   const int bars_needed = max_age + (2 * range) + 4;
-
-   MqlRates h4[];
-   ArraySetAsSeries(h4, true);
-   const int copied = CopyRates(_Symbol, PERIOD_H4, 0, bars_needed, h4); // perf-allowed: bespoke H4 swing scan, called only from closed-bar entry hook.
-   if(copied < bars_needed)
-      return false;
-
-   const int oldest_candidate = MathMin(max_age, copied - range - 1);
-   for(int shift = range + 1; shift <= oldest_candidate; ++shift)
-     {
-      if(swing_low <= 0.0 && IsSwingLow(h4, shift, range))
-        {
-         const double level = h4[shift].low;
-         if(!IsSameLevel(level, g_consumed_swing_low))
-            swing_low = level;
-        }
-
-      if(swing_high <= 0.0 && IsSwingHigh(h4, shift, range))
-        {
-         const double level = h4[shift].high;
-         if(!IsSameLevel(level, g_consumed_swing_high))
-            swing_high = level;
-        }
-
-      if(swing_low > 0.0 && swing_high > 0.0)
-         return true;
-     }
-
-   return (swing_low > 0.0 || swing_high > 0.0);
-  }
-
-bool LoadLastM15SweepBar(MqlRates &bar)
-  {
-   MqlRates m15[];
-   ArraySetAsSeries(m15, true);
-   const int copied = CopyRates(_Symbol, PERIOD_M15, 1, 1, m15); // perf-allowed: single completed M15 bar read under framework new-bar gate.
-   if(copied != 1)
-      return false;
-   bar = m15[0];
-   return (bar.high > 0.0 && bar.low > 0.0 && bar.close > 0.0);
-  }
-
-bool BuildMarketRequest(const QM_OrderType side,
-                        const double entry,
-                        const double raw_stop,
-                        const double swing_level,
-                        const string reason,
-                        QM_EntryRequest &req)
-  {
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0 || entry <= 0.0 || raw_stop <= 0.0)
-      return false;
-
-   const double min_stop_distance = strategy_sl_points * point;
-   const double structure_distance = MathAbs(entry - raw_stop);
-   const double stop_distance = MathMax(min_stop_distance, structure_distance);
-   const double atr = QM_ATR(_Symbol, PERIOD_M15, strategy_atr_period_m15, 1);
-   if(atr <= 0.0 || stop_distance > (strategy_max_stop_atr_mult * atr))
-      return false;
-
-   req.type = side;
-   req.price = 0.0;
-   req.sl = QM_StopRulesStopFromDistance(_Symbol, side, entry, stop_distance);
-   req.tp = QM_TakeRR(_Symbol, side, entry, req.sl, strategy_rr);
-   req.reason = reason;
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-
-   if(req.sl <= 0.0 || req.tp <= 0.0)
-      return false;
-
-   if(side == QM_BUY)
-      g_consumed_swing_low = swing_level;
-   else
-      g_consumed_swing_high = swing_level;
-
-   return true;
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
@@ -205,35 +51,182 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(HasOpenPositionForThisMagic())
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int pos = PositionsTotal() - 1; pos >= 0; --pos)
+     {
+      const ulong ticket = PositionGetTicket(pos);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
+
+   static datetime fired_low_times[];
+   static datetime fired_high_times[];
+   static int fired_low_count = 0;
+   static int fired_high_count = 0;
+   static int fired_low_next = 0;
+   static int fired_high_next = 0;
+   const int fired_capacity = 512;
+   if(ArraySize(fired_low_times) == 0)
+     {
+      ArrayResize(fired_low_times, fired_capacity);
+      ArrayResize(fired_high_times, fired_capacity);
+     }
+
+   const int range = MathMax(1, strategy_swing_range_h4);
+   const int max_age = MathMax(range + 1, strategy_level_max_age_h4);
+   const int bars_needed = max_age + (2 * range) + 4;
+
+   MqlRates h4[];
+   ArraySetAsSeries(h4, true);
+   const int h4_copied = CopyRates(_Symbol, PERIOD_H4, 0, bars_needed, h4); // perf-allowed: bounded bespoke H4 swing scan, reached only from the framework closed-bar entry hook.
+   if(h4_copied < bars_needed)
+      return false;
+
+   MqlRates m15[];
+   ArraySetAsSeries(m15, true);
+   const int m15_copied = CopyRates(_Symbol, PERIOD_M15, 1, 1, m15); // perf-allowed: single completed M15 sweep candle read under the framework closed-bar gate.
+   if(m15_copied != 1 || m15[0].high <= 0.0 || m15[0].low <= 0.0 || m15[0].close <= 0.0)
       return false;
 
    double swing_low = 0.0;
    double swing_high = 0.0;
-   if(!LoadMostRecentH4Levels(swing_low, swing_high))
-      return false;
+   datetime swing_low_time = 0;
+   datetime swing_high_time = 0;
+   const int oldest_candidate = MathMin(max_age, h4_copied - range - 1);
 
-   MqlRates sweep_bar;
-   if(!LoadLastM15SweepBar(sweep_bar))
-      return false;
+   for(int shift = range + 1; shift <= oldest_candidate; ++shift)
+     {
+      if(swing_low <= 0.0)
+        {
+         bool already_fired = false;
+         for(int f = 0; f < fired_low_count; ++f)
+           {
+            if(fired_low_times[f] == h4[shift].time)
+              {
+               already_fired = true;
+               break;
+              }
+           }
+
+         if(!already_fired)
+           {
+            bool is_swing_low = true;
+            const double level_low = h4[shift].low;
+            for(int k = 1; k <= range; ++k)
+              {
+               if(h4[shift - k].low <= level_low || h4[shift + k].low <= level_low)
+                 {
+                  is_swing_low = false;
+                  break;
+                 }
+              }
+
+            if(is_swing_low)
+              {
+               swing_low = level_low;
+               swing_low_time = h4[shift].time;
+              }
+           }
+        }
+
+      if(swing_high <= 0.0)
+        {
+         bool already_fired = false;
+         for(int f = 0; f < fired_high_count; ++f)
+           {
+            if(fired_high_times[f] == h4[shift].time)
+              {
+               already_fired = true;
+               break;
+              }
+           }
+
+         if(!already_fired)
+           {
+            bool is_swing_high = true;
+            const double level_high = h4[shift].high;
+            for(int k = 1; k <= range; ++k)
+              {
+               if(h4[shift - k].high >= level_high || h4[shift + k].high >= level_high)
+                 {
+                  is_swing_high = false;
+                  break;
+                 }
+              }
+
+            if(is_swing_high)
+              {
+               swing_high = level_high;
+               swing_high_time = h4[shift].time;
+              }
+           }
+        }
+
+      if(swing_low > 0.0 && swing_high > 0.0)
+         break;
+     }
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
       return false;
 
    const double spread = MathMax(ask - bid, 0.0);
+   const double min_stop_distance = MathMax(1, strategy_sl_points) * point;
+   const double atr = QM_ATR(_Symbol, PERIOD_M15, MathMax(1, strategy_atr_period_m15), 1);
+   if(atr <= 0.0 || strategy_rr <= 0.0 || strategy_max_stop_atr_mult <= 0.0)
+      return false;
 
-   if(swing_low > 0.0 && sweep_bar.low < swing_low && sweep_bar.close > swing_low)
+   if(swing_low > 0.0 && m15[0].low < swing_low && m15[0].close > swing_low)
      {
-      const double raw_stop = sweep_bar.low - spread;
-      return BuildMarketRequest(QM_BUY, ask, raw_stop, swing_low, "H4_M15_SWEEP_LONG", req);
+      const double raw_stop = m15[0].low - spread;
+      const double stop_distance = MathMax(min_stop_distance, MathAbs(ask - raw_stop));
+      if(stop_distance > strategy_max_stop_atr_mult * atr)
+         return false;
+
+      req.type = QM_BUY;
+      req.price = 0.0;
+      req.sl = QM_StopRulesStopFromDistance(_Symbol, QM_BUY, ask, stop_distance);
+      req.tp = QM_TakeRR(_Symbol, QM_BUY, ask, req.sl, strategy_rr);
+      req.reason = "H4_M15_SWEEP_LONG";
+      if(req.sl <= 0.0 || req.tp <= 0.0)
+         return false;
+
+      fired_low_times[fired_low_next] = swing_low_time;
+      fired_low_next = (fired_low_next + 1) % fired_capacity;
+      if(fired_low_count < fired_capacity)
+         fired_low_count++;
+      return true;
      }
 
-   if(swing_high > 0.0 && sweep_bar.high > swing_high && sweep_bar.close < swing_high)
+   if(swing_high > 0.0 && m15[0].high > swing_high && m15[0].close < swing_high)
      {
-      const double raw_stop = sweep_bar.high + spread;
-      return BuildMarketRequest(QM_SELL, bid, raw_stop, swing_high, "H4_M15_SWEEP_SHORT", req);
+      const double raw_stop = m15[0].high + spread;
+      const double stop_distance = MathMax(min_stop_distance, MathAbs(raw_stop - bid));
+      if(stop_distance > strategy_max_stop_atr_mult * atr)
+         return false;
+
+      req.type = QM_SELL;
+      req.price = 0.0;
+      req.sl = QM_StopRulesStopFromDistance(_Symbol, QM_SELL, bid, stop_distance);
+      req.tp = QM_TakeRR(_Symbol, QM_SELL, bid, req.sl, strategy_rr);
+      req.reason = "H4_M15_SWEEP_SHORT";
+      if(req.sl <= 0.0 || req.tp <= 0.0)
+         return false;
+
+      fired_high_times[fired_high_next] = swing_high_time;
+      fired_high_next = (fired_high_next + 1) % fired_capacity;
+      if(fired_high_count < fired_capacity)
+         fired_high_count++;
+      return true;
      }
 
    return false;
