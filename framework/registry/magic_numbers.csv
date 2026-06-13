@@ -8971,3 +8971,12 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12550,ict-london-close-reversal-m15,1,GBPUSD.DWX,125500001,2026-06-13,Development,active
 12550,ict-london-close-reversal-m15,2,USDJPY.DWX,125500002,2026-06-13,Development,active
 12550,ict-london-close-reversal-m15,3,XAUUSD.DWX,125500003,2026-06-13,Development,active
+12545,katz-sma-support-resistance-stop-d1,0,USDJPY.DWX,125450000,2026-06-13,Development,active
+12545,katz-sma-support-resistance-stop-d1,1,USDCHF.DWX,125450001,2026-06-13,Development,active
+12545,katz-sma-support-resistance-stop-d1,2,EURUSD.DWX,125450002,2026-06-13,Development,active
+12545,katz-sma-support-resistance-stop-d1,3,GBPUSD.DWX,125450003,2026-06-13,Development,active
+12545,katz-sma-support-resistance-stop-d1,4,USDCAD.DWX,125450004,2026-06-13,Development,active
+10635,et-consol-break,0,NDX.DWX,106350000,2026-06-13,Development,active
+10635,et-consol-break,1,SP500.DWX,106350001,2026-06-13,Development,active
+10635,et-consol-break,2,GDAXI.DWX,106350002,2026-06-13,Development,active
+10635,et-consol-break,3,XAUUSD.DWX,106350003,2026-06-13,Development,active
