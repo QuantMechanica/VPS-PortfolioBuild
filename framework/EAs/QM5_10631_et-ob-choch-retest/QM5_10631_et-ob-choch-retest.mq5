@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 9999;
+input int    qm_ea_id                   = 10631;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -52,8 +52,8 @@ input group "News"
 //   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
 //   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 // Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
@@ -480,6 +480,8 @@ bool Strategy_ExitSignal()
    if(magic <= 0)
       return false;
 
+   const double last_closed_close = iClose(_Symbol, strategy_timeframe, 1);  // perf-allowed: O(1) closed-bar ChoCh invalidation read.
+   const datetime last_closed_time = iTime(_Symbol, strategy_timeframe, 1);  // perf-allowed: O(1) closed-bar ChoCh invalidation read.
    const int max_hold_seconds = MathMax(strategy_time_exit_bars, 1) * PeriodSeconds(strategy_timeframe);
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -496,13 +498,13 @@ bool Strategy_ExitSignal()
          return true;
 
       const double choch_level = ChochLevelFromComment(PositionGetString(POSITION_COMMENT));
-      if(choch_level <= 0.0 || g_last_closed_close <= 0.0 || g_last_closed_time <= 0)
+      if(choch_level <= 0.0 || last_closed_close <= 0.0 || last_closed_time <= 0)
          continue;
 
       const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(position_type == POSITION_TYPE_BUY && g_last_closed_close < choch_level)
+      if(position_type == POSITION_TYPE_BUY && last_closed_close < choch_level)
          return true;
-      if(position_type == POSITION_TYPE_SELL && g_last_closed_close > choch_level)
+      if(position_type == POSITION_TYPE_SELL && last_closed_close > choch_level)
          return true;
      }
 
