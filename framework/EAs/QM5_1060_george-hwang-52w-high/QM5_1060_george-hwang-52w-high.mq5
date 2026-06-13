@@ -47,10 +47,11 @@ string g_universe_symbols[11] =
   };
 int g_universe_slots[11] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
-int      g_last_entry_rebalance_key = 0;
-int      g_last_exit_rebalance_key  = 0;
-datetime g_last_pullback_eval_bar   = 0;
-bool     g_pullback_exit_due        = false;
+int  g_month_key             = 0;
+int  g_cached_rank_direction = 0;     // +1 top-2 long, -1 bottom-2 short, 0 not selected.
+bool g_monthly_entry_due     = false;
+bool g_monthly_close_due     = false;
+bool g_pullback_close_due    = false;
 
 int Strategy_CurrentSymbolIndex()
   {
@@ -68,33 +69,19 @@ int Strategy_CurrentSymbolSlot()
    return g_universe_slots[idx];
   }
 
-int Strategy_RebalanceKey(const datetime t)
+int Strategy_CurrentMonthKey()
   {
    MqlDateTime dt;
-   TimeToStruct(t, dt);
+   TimeToStruct(TimeCurrent(), dt);
    return dt.year * 100 + dt.mon;
-  }
-
-bool Strategy_IsMonthRebalanceBar()
-  {
-   if(_Period != PERIOD_D1)
-      return false;
-
-   const datetime closed_bar = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: monthly D1 boundary detection.
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: monthly D1 boundary detection.
-   if(closed_bar <= 0 || current_bar <= 0)
-      return false;
-
-   MqlDateTime closed_dt;
-   MqlDateTime current_dt;
-   TimeToStruct(closed_bar, closed_dt);
-   TimeToStruct(current_bar, current_dt);
-   return (closed_dt.year != current_dt.year || closed_dt.mon != current_dt.mon);
   }
 
 bool Strategy_HasOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -112,6 +99,9 @@ bool Strategy_HasOpenPosition()
 int Strategy_OpenPositionDirection()
   {
    const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return 0;
+
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -131,52 +121,6 @@ int Strategy_OpenPositionDirection()
    return 0;
   }
 
-double Strategy_MedianDailySpreadPoints()
-  {
-   const int n = strategy_spread_median_days;
-   if(n <= 0 || n > 64)
-      return 0.0;
-
-   double values[64];
-   int count = 0;
-   for(int shift = 1; shift <= n; ++shift)
-     {
-      const long spread = iSpread(_Symbol, PERIOD_D1, shift); // perf-allowed: monthly D1 spread median, called only after framework new-bar gate.
-      if(spread <= 0)
-         continue;
-      values[count] = (double)spread;
-      ++count;
-     }
-
-   if(count <= 0)
-      return 0.0;
-
-   for(int i = 0; i < count - 1; ++i)
-      for(int j = i + 1; j < count; ++j)
-         if(values[j] < values[i])
-           {
-            const double tmp = values[i];
-            values[i] = values[j];
-            values[j] = tmp;
-           }
-
-   if((count % 2) == 1)
-      return values[count / 2];
-   return 0.5 * (values[(count / 2) - 1] + values[count / 2]);
-  }
-
-bool Strategy_SpreadAllowsEntry()
-  {
-   const double median_spread = Strategy_MedianDailySpreadPoints();
-   if(median_spread <= 0.0 || strategy_spread_mult <= 0.0)
-      return true;
-
-   const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(current_spread <= 0)
-      return true;
-   return ((double)current_spread <= median_spread * strategy_spread_mult);
-  }
-
 bool Strategy_Proximity(const string symbol, double &out_proximity)
   {
    out_proximity = 0.0;
@@ -184,17 +128,17 @@ bool Strategy_Proximity(const string symbol, double &out_proximity)
       return false;
    if(!QM_SymbolAssertOrLog(symbol))
       return false;
-   if(Bars(symbol, PERIOD_D1) < strategy_lookback_d1_bars + 5) // perf-allowed: D1 history availability guard for explicit basket.
+   if(Bars(symbol, PERIOD_D1) < strategy_lookback_d1_bars + 5) // perf-allowed: D1 history guard for explicit basket inside D1 new-bar state advance.
       return false;
 
-   const double close_value = iClose(symbol, PERIOD_D1, 1); // perf-allowed: card-defined 52w-high proximity, monthly/closed-bar gated.
+   const double close_value = iClose(symbol, PERIOD_D1, 1); // perf-allowed: card-defined 52w proximity, called only from D1 new-bar state advance.
    if(close_value <= 0.0)
       return false;
 
    double max_high = 0.0;
    for(int shift = 1; shift <= strategy_lookback_d1_bars; ++shift)
      {
-      const double high_value = iHigh(symbol, PERIOD_D1, shift); // perf-allowed: bounded 252-bar high for card-defined proximity; called after framework new-bar gate or once per D1 exit check.
+      const double high_value = iHigh(symbol, PERIOD_D1, shift); // perf-allowed: bounded 252-bar high, called only from D1 new-bar state advance.
       if(high_value <= 0.0)
          continue;
       if(max_high <= 0.0 || high_value > max_high)
@@ -206,22 +150,6 @@ bool Strategy_Proximity(const string symbol, double &out_proximity)
 
    out_proximity = close_value / max_high;
    return (out_proximity > 0.0);
-  }
-
-bool Strategy_VolatilityAllowsEntry()
-  {
-   if(strategy_volatility_gate <= 0.0)
-      return true;
-
-   const double close_value = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: single closed-bar close for ATR/close gate after framework new-bar gate.
-   if(close_value <= 0.0)
-      return false;
-
-   const double atr_value = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false;
-
-   return ((atr_value / close_value) <= strategy_volatility_gate);
   }
 
 int Strategy_RankDirection()
@@ -270,12 +198,100 @@ int Strategy_RankDirection()
    return 0;
   }
 
+double Strategy_MedianDailySpreadPoints()
+  {
+   const int n = strategy_spread_median_days;
+   if(n <= 0 || n > 64)
+      return 0.0;
+
+   double values[64];
+   int count = 0;
+   for(int shift = 1; shift <= n; ++shift)
+     {
+      const long spread = iSpread(_Symbol, PERIOD_D1, shift); // perf-allowed: bounded monthly spread median; EntrySignal runs only after D1 state advance.
+      if(spread <= 0)
+         continue;
+      values[count] = (double)spread;
+      ++count;
+     }
+
+   if(count <= 0)
+      return 0.0;
+
+   for(int i = 0; i < count - 1; ++i)
+      for(int j = i + 1; j < count; ++j)
+         if(values[j] < values[i])
+           {
+            const double tmp = values[i];
+            values[i] = values[j];
+            values[j] = tmp;
+           }
+
+   if((count % 2) == 1)
+      return values[count / 2];
+   return 0.5 * (values[(count / 2) - 1] + values[count / 2]);
+  }
+
+bool Strategy_SpreadAllowsEntry()
+  {
+   const double median_spread = Strategy_MedianDailySpreadPoints();
+   if(median_spread <= 0.0 || strategy_spread_mult <= 0.0)
+      return true;
+
+   const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   if(current_spread <= 0)
+      return true;
+   return ((double)current_spread <= median_spread * strategy_spread_mult);
+  }
+
+bool Strategy_VolatilityAllowsEntry()
+  {
+   if(strategy_volatility_gate <= 0.0)
+      return true;
+
+   const double close_value = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: single closed D1 close inside D1 new-bar entry path.
+   if(close_value <= 0.0)
+      return false;
+
+   const double atr_value = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(atr_value <= 0.0)
+      return false;
+
+   return ((atr_value / close_value) <= strategy_volatility_gate);
+  }
+
+void Strategy_AdvanceStateOnD1Bar()
+  {
+   g_monthly_entry_due = false;
+   g_monthly_close_due = false;
+   g_pullback_close_due = false;
+
+   const int current_month = Strategy_CurrentMonthKey();
+   if(current_month != g_month_key)
+     {
+      g_month_key = current_month;
+      g_monthly_close_due = Strategy_HasOpenPosition();
+      g_cached_rank_direction = Strategy_RankDirection();
+      g_monthly_entry_due = (g_cached_rank_direction != 0);
+      return;
+     }
+
+   if(Strategy_OpenPositionDirection() > 0)
+     {
+      double proximity = 0.0;
+      if(Strategy_Proximity(_Symbol, proximity))
+         g_pullback_close_due = (proximity < strategy_pullback_close_ratio);
+     }
+  }
+
 // No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
    if(_Period != PERIOD_D1)
       return true;
    if(Strategy_CurrentSymbolIndex() < 0)
+      return true;
+   if(strategy_rank_slots_each_side <= 0)
       return true;
    if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return true;
@@ -293,11 +309,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = Strategy_CurrentSymbolSlot();
    req.expiration_seconds = 0;
 
-   if(!Strategy_IsMonthRebalanceBar())
-      return false;
-
-   const int rebalance_key = Strategy_RebalanceKey(iTime(_Symbol, PERIOD_D1, 1)); // perf-allowed: monthly duplicate guard.
-   if(rebalance_key <= 0 || rebalance_key == g_last_entry_rebalance_key)
+   if(!g_monthly_entry_due)
       return false;
    if(Strategy_HasOpenPosition())
       return false;
@@ -306,7 +318,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!Strategy_VolatilityAllowsEntry())
       return false;
 
-   const int direction = Strategy_RankDirection();
+   const int direction = g_cached_rank_direction;
    if(direction == 0)
       return false;
 
@@ -325,7 +337,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.reason = (direction > 0) ? "QM5_1060_52WH_LONG_TOP2" : "QM5_1060_52WH_SHORT_BOTTOM2";
-   g_last_entry_rebalance_key = rebalance_key;
+   g_monthly_entry_due = false;
    return true;
   }
 
@@ -338,37 +350,9 @@ void Strategy_ManageOpenPosition()
 // Trade Close
 bool Strategy_ExitSignal()
   {
-   if(_Period != PERIOD_D1)
-      return false;
    if(!Strategy_HasOpenPosition())
       return false;
-
-   if(Strategy_IsMonthRebalanceBar())
-     {
-      const int rebalance_key = Strategy_RebalanceKey(iTime(_Symbol, PERIOD_D1, 1)); // perf-allowed: monthly duplicate guard.
-      if(rebalance_key > 0 && rebalance_key != g_last_exit_rebalance_key)
-        {
-         g_last_exit_rebalance_key = rebalance_key;
-         return true;
-        }
-     }
-
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 pullback-exit duplicate guard.
-   if(current_bar <= 0 || current_bar == g_last_pullback_eval_bar)
-      return g_pullback_exit_due;
-
-   g_last_pullback_eval_bar = current_bar;
-   g_pullback_exit_due = false;
-
-   if(Strategy_OpenPositionDirection() <= 0)
-      return false;
-
-   double proximity = 0.0;
-   if(!Strategy_Proximity(_Symbol, proximity))
-      return false;
-
-   g_pullback_exit_due = (proximity < strategy_pullback_close_ratio);
-   return g_pullback_exit_due;
+   return (g_monthly_close_due || g_pullback_close_due);
   }
 
 // News Filter Hook (callable for P8 News Impact phase)
@@ -434,6 +418,12 @@ void OnTick()
 
    Strategy_ManageOpenPosition();
 
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
+      return;
+
+   QM_EquityStreamOnNewBar();
+   Strategy_AdvanceStateOnD1Bar();
+
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -442,16 +432,13 @@ void OnTick()
          const ulong ticket = PositionGetTicket(i);
          if(!PositionSelectByTicket(ticket))
             continue;
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+            continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
-
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
