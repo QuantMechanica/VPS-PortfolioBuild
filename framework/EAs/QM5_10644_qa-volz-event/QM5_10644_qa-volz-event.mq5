@@ -319,6 +319,22 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    RefreshEntryDay(rates[0].time);
 
+   double vol_z = 0.0;
+   const bool have_vol_z = ComputeVolumeZ(rates, vol_z);
+
+   const double atr_value = QM_ATR(_Symbol, PERIOD_M1, strategy_atr_period, 1);
+   const int direction = (have_vol_z && vol_z >= strategy_volume_z_threshold)
+                         ? DirectionalBreakoutSignal(rates, atr_value)
+                         : 0;
+
+   g_cached_signal_direction = direction;
+   if(direction != 0)
+      g_cached_signal_bar_open = rates[0].open;
+   AddSpreadSample(signal_minute, signal_spread);
+
+   if(direction == 0)
+      return false;
+
    bool allow_entry = true;
    if(HasOurPosition())
       allow_entry = false;
@@ -328,21 +344,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       allow_entry = false;
    if(!NonzeroVolumeGate(rates))
       allow_entry = false;
-
-   double vol_z = 0.0;
-   if(!ComputeVolumeZ(rates, vol_z))
-      allow_entry = false;
-
-   const double atr_value = QM_ATR(_Symbol, PERIOD_M1, strategy_atr_period, 1);
-   const int direction = (allow_entry && vol_z >= strategy_volume_z_threshold)
-                         ? DirectionalBreakoutSignal(rates, atr_value)
-                         : 0;
-
-   g_cached_signal_direction = direction;
-   g_cached_signal_bar_open = rates[0].open;
-   AddSpreadSample(signal_minute, signal_spread);
-
-   if(direction == 0)
+   if(!allow_entry)
       return false;
 
    const QM_OrderType side = (direction > 0) ? QM_BUY : QM_SELL;
