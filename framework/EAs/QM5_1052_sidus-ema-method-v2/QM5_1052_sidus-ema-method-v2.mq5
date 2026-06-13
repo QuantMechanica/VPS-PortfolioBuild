@@ -37,6 +37,10 @@
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 1052;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
 input double RISK_PERCENT               = 0.0;
@@ -44,35 +48,38 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode          = QM_NEWS_OFF;
-input int    qm_news_pause_before_minutes = 30;
-input int    qm_news_pause_after_minutes  = 30;
+// P2 defaults to no news blackout; P8 can switch the two-axis framework modes.
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;
 input string qm_news_min_impact           = "high";
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
+
 input group "Strategy"
-input int    strategy_wma_fast_period   = 5;
-input int    strategy_wma_slow_period   = 8;
-input int    strategy_ema_fast_period   = 18;
-input int    strategy_ema_slow_period   = 28;
-input int    strategy_sl_buffer_points  = 20;
-input bool   strategy_use_rr_take_profit = false;
-input double strategy_rr_target         = 1.5;
-input int    strategy_spread_cap_points = 20;
+input int    strategy_wma_fast_period      = 5;
+input int    strategy_wma_slow_period      = 8;
+input int    strategy_ema_fast_period      = 18;
+input int    strategy_ema_slow_period      = 28;
+input int    strategy_sl_buffer_points     = 20;
+input bool   strategy_use_rr_take_profit   = false;
+input double strategy_rr_target            = 1.5;
+input int    strategy_spread_cap_points    = 20;
 input bool   strategy_session_filter_enabled = false;
-input int    strategy_session_start_hour = 7;
-input int    strategy_session_end_hour   = 17;
+input int    strategy_session_start_hour   = 7;
+input int    strategy_session_end_hour     = 17;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
+// No Trade Filter: card spread cap, optional P3 session sweep, framework news.
 bool Strategy_NoTradeFilter()
   {
    if(strategy_spread_cap_points > 0)
@@ -87,8 +94,10 @@ bool Strategy_NoTradeFilter()
       MqlDateTime dt;
       TimeToStruct(TimeCurrent(), dt);
       const int hour = dt.hour;
+
       if(strategy_session_start_hour == strategy_session_end_hour)
          return false;
+
       if(strategy_session_start_hour < strategy_session_end_hour)
         {
          if(hour < strategy_session_start_hour || hour >= strategy_session_end_hour)
@@ -104,9 +113,7 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
+// Trade Entry: WMA(5/8) cross through EMA(18/28) tunnel on the last closed bar.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -117,8 +124,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_wma_fast_period <= 0 || strategy_wma_slow_period <= 0 ||
-      strategy_ema_fast_period <= 0 || strategy_ema_slow_period <= 0 ||
+   if(strategy_wma_fast_period <= 0 ||
+      strategy_wma_slow_period <= 0 ||
+      strategy_ema_fast_period <= 0 ||
+      strategy_ema_slow_period <= 0 ||
       strategy_sl_buffer_points < 0 ||
       (strategy_use_rr_take_profit && strategy_rr_target <= 0.0))
       return false;
@@ -134,8 +143,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double wma_slow_2 = QM_WMA(_Symbol, tf, strategy_wma_slow_period, 2);
    const double ema_fast_1 = QM_EMA(_Symbol, tf, strategy_ema_fast_period, 1);
    const double ema_slow_1 = QM_EMA(_Symbol, tf, strategy_ema_slow_period, 1);
-   if(wma_fast_1 <= 0.0 || wma_slow_1 <= 0.0 || wma_fast_2 <= 0.0 ||
-      wma_slow_2 <= 0.0 || ema_fast_1 <= 0.0 || ema_slow_1 <= 0.0)
+
+   if(wma_fast_1 <= 0.0 || wma_slow_1 <= 0.0 ||
+      wma_fast_2 <= 0.0 || wma_slow_2 <= 0.0 ||
+      ema_fast_1 <= 0.0 || ema_slow_1 <= 0.0)
       return false;
 
    const bool bullish_cross = (wma_fast_2 <= wma_slow_2 && wma_fast_1 > wma_slow_1);
@@ -153,7 +164,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
 
       req.type = QM_BUY;
-      req.price = 0.0;
       req.sl = sl;
       req.tp = strategy_use_rr_take_profit ? QM_TakeRR(_Symbol, req.type, entry, req.sl, strategy_rr_target) : 0.0;
       req.reason = "SIDUS_LONG_WMA_CROSS_EMA_TUNNEL";
@@ -171,7 +181,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
 
       req.type = QM_SELL;
-      req.price = 0.0;
       req.sl = sl;
       req.tp = strategy_use_rr_take_profit ? QM_TakeRR(_Symbol, req.type, entry, req.sl, strategy_rr_target) : 0.0;
       req.reason = "SIDUS_SHORT_WMA_CROSS_EMA_TUNNEL";
@@ -181,15 +190,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return false;
   }
 
-// Called every tick when an open position exists for this EA's magic.
-// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
+// Trade Management: card specifies no BE, trailing, partial, or pyramiding.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no break-even, trailing, or partial-close management.
   }
 
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
+// Trade Close: reverse WMA(5/8) cross closes the open position.
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
@@ -221,7 +227,8 @@ bool Strategy_ExitSignal()
    const double wma_slow_1 = QM_WMA(_Symbol, tf, strategy_wma_slow_period, 1);
    const double wma_fast_2 = QM_WMA(_Symbol, tf, strategy_wma_fast_period, 2);
    const double wma_slow_2 = QM_WMA(_Symbol, tf, strategy_wma_slow_period, 2);
-   if(wma_fast_1 <= 0.0 || wma_slow_1 <= 0.0 || wma_fast_2 <= 0.0 || wma_slow_2 <= 0.0)
+   if(wma_fast_1 <= 0.0 || wma_slow_1 <= 0.0 ||
+      wma_fast_2 <= 0.0 || wma_slow_2 <= 0.0)
       return false;
 
    const bool bullish_cross = (wma_fast_2 <= wma_slow_2 && wma_fast_1 > wma_slow_1);
@@ -235,12 +242,10 @@ bool Strategy_ExitSignal()
    return false;
   }
 
-// Optional news-filter override. Return TRUE to suppress trading regardless
-// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
-// custom high-impact-event handling beyond the central filter.
+// News Filter Hook: P8 callable hook; default defers to framework modes.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false; // defer to QM_NewsAllowsTrade(...)
+   return false;
   }
 
 // -----------------------------------------------------------------------------
@@ -254,13 +259,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        qm_news_pause_before_minutes,
-                        qm_news_pause_after_minutes,
+                        30,
+                        30,
                         qm_news_stale_max_hours,
-                        qm_news_min_impact))
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -281,7 +290,12 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -313,6 +327,10 @@ void OnTick()
    if(!QM_IsNewBar())
       return;
 
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
+   QM_EquityStreamOnNewBar();
+
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
@@ -324,6 +342,13 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()
