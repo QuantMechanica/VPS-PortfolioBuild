@@ -8959,3 +8959,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12544,katz-macd-divergence-limit-d1,0,XAUUSD.DWX,125440000,2026-06-13,Development,active
 12544,katz-macd-divergence-limit-d1,1,NDX.DWX,125440001,2026-06-13,Development,active
 12544,katz-macd-divergence-limit-d1,2,WS30.DWX,125440002,2026-06-13,Development,active
+10634,et-crude-rwe,0,XTIUSD.DWX,106340000,2026-06-13,Development,active
+10634,et-crude-rwe,1,XAUUSD.DWX,106340001,2026-06-13,Development,active
+10634,et-crude-rwe,2,GDAXI.DWX,106340002,2026-06-13,Development,active
+10634,et-crude-rwe,3,NDX.DWX,106340003,2026-06-13,Development,active
+12551,ict-turtle-soup-asian-false-break-m15,0,EURUSD.DWX,125510000,2026-06-13,Development,active
+12551,ict-turtle-soup-asian-false-break-m15,1,GBPUSD.DWX,125510001,2026-06-13,Development,active
+12551,ict-turtle-soup-asian-false-break-m15,2,USDJPY.DWX,125510002,2026-06-13,Development,active
+12551,ict-turtle-soup-asian-false-break-m15,3,XAUUSD.DWX,125510003,2026-06-13,Development,active
