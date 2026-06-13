@@ -378,6 +378,27 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double min_stop = 4.0 * spread;
    const int expiration_seconds = ETLB_SecondsUntilClose(broker_now);
 
+   if(!g_etlb_buy_submitted_today && !has_buy_pending &&
+      !g_etlb_sell_submitted_today && !has_sell_pending)
+     {
+      QM_EntryRequest sell_req;
+      sell_req.type = QM_SELL_STOP;
+      sell_req.price = QM_TM_NormalizePrice(_Symbol, g_etlb_lunch_low - trigger);
+      sell_req.sl = QM_TM_NormalizePrice(_Symbol, MathMax(g_etlb_lunch_high + strategy_stop_factor * range,
+                                                          sell_req.price + min_stop));
+      sell_req.tp = 0.0;
+      sell_req.reason = "QM5_10386_LUNCH_BRK_SELL_STOP";
+      sell_req.symbol_slot = qm_magic_slot_offset;
+      sell_req.expiration_seconds = expiration_seconds;
+
+      if(sell_req.price > 0.0 && sell_req.sl > sell_req.price)
+        {
+         ulong sell_ticket = 0;
+         if(QM_TM_OpenPosition(sell_req, sell_ticket))
+            g_etlb_sell_submitted_today = true;
+        }
+     }
+
    if(!g_etlb_buy_submitted_today && !has_buy_pending)
      {
       const double entry = QM_TM_NormalizePrice(_Symbol, g_etlb_lunch_high + trigger);
