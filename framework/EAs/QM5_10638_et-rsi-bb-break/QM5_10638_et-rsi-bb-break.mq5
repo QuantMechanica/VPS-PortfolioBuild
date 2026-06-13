@@ -231,24 +231,31 @@ void Strategy_ManageOpenPosition()
       const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
       const double current_sl = PositionGetDouble(POSITION_SL);
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
       if(open_price <= 0.0 || current_sl <= 0.0)
          continue;
 
       const bool is_buy = (pos_type == POSITION_TYPE_BUY);
       const double market = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
                                    : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if(market <= 0.0)
+      if(market <= 0.0 || point <= 0.0)
          continue;
 
-      const double entry_atr = MathAbs(open_price - current_sl) / strategy_atr_stop_mult;
-      if(entry_atr <= 0.0)
-         continue;
-
-      const double target_distance = entry_atr * strategy_atr_target_mult;
-      const bool target_touched = is_buy ? (market >= open_price + target_distance)
-                                         : (market <= open_price - target_distance);
+      const bool trail_armed = is_buy ? (current_sl >= open_price - point * 0.5)
+                                      : (current_sl <= open_price + point * 0.5);
+      bool target_touched = trail_armed;
       if(!target_touched)
-         continue;
+        {
+         const double entry_atr = MathAbs(open_price - current_sl) / strategy_atr_stop_mult;
+         if(entry_atr <= 0.0)
+            continue;
+
+         const double target_distance = entry_atr * strategy_atr_target_mult;
+         target_touched = is_buy ? (market >= open_price + target_distance)
+                                 : (market <= open_price - target_distance);
+         if(!target_touched)
+            continue;
+        }
 
       double trail_low = 0.0;
       double trail_high = 0.0;
@@ -258,7 +265,8 @@ void Strategy_ManageOpenPosition()
       double target_sl = is_buy ? MathMax(open_price, trail_low)
                                 : MathMin(open_price, trail_high);
       target_sl = NormalizeDouble(target_sl, _Digits);
-      const bool improves = is_buy ? (target_sl > current_sl) : (target_sl < current_sl);
+      const bool improves = is_buy ? (target_sl > current_sl + point * 0.5)
+                                   : (target_sl < current_sl - point * 0.5);
       if(improves)
          QM_TM_MoveSL(ticket, target_sl, "target_touched_be_trail_3bar");
      }
