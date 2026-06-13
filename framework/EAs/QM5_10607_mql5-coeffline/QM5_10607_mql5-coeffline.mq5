@@ -37,6 +37,9 @@ input int    strategy_max_hold_bars       = 16;
 input bool   strategy_use_ema_filter      = false;
 input int    strategy_ema_period          = 200;
 
+int  g_last_closed_bar_signal             = 0;
+bool g_last_closed_bar_signal_ready       = false;
+
 string Strategy_BaseSymbol()
   {
    string base = _Symbol;
@@ -147,10 +150,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
+   const int signal = Strategy_CoeffCrossSignal();
+   g_last_closed_bar_signal = signal;
+   g_last_closed_bar_signal_ready = true;
+
    if(Strategy_HasOpenPosition())
       return false;
 
-   const int signal = Strategy_CoeffCrossSignal();
    if(signal == 0)
       return false;
 
@@ -190,7 +196,7 @@ bool Strategy_ExitSignal()
    if(magic <= 0)
       return false;
 
-   const int signal = Strategy_CoeffCrossSignal();
+   const int signal = g_last_closed_bar_signal_ready ? g_last_closed_bar_signal : 0;
    const int hold_seconds = strategy_max_hold_bars * PeriodSeconds((ENUM_TIMEFRAMES)_Period);
    const datetime now = TimeCurrent();
 
