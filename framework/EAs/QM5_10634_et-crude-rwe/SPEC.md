@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades an M5 intraday momentum burst. A long setup exists when price moves at least 0.35% from the lowest low to a later high inside a 20-minute window; after waiting 10 minutes, the EA buys a rebreak above that event high if it occurs within 60 minutes. Short setups mirror the same rule from high to low. The stop is placed beyond the opposite side of the event window by 0.20 ATR(14), the target is 1.2R, and open trades exit if price returns inside the event window or after 12 M5 bars.
+The EA trades an M5 intraday momentum burst. A long setup exists when price moves at least 0.35% from the lowest low to a later high inside a 20-minute window; after waiting 10 minutes, the EA buys a rebreak above that event high if it occurs within 60 minutes. Short setups mirror the same rule from high to low. The stop is placed beyond the opposite side of the event window by 0.20 ATR(14), the target is 1.2R, and open trades exit if the last closed bar closes back inside the event window or after 12 M5 bars.
 
 ---
 

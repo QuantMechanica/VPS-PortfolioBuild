@@ -316,12 +316,14 @@ bool Strategy_ExitSignal()
    if(g_setup_direction == 0 || g_setup_low <= 0.0 || g_setup_high <= g_setup_low)
       return false;
 
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double last_close = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: closed-bar range-return exit from card
+   if(last_close <= 0.0)
+      return false;
+
    if(pos_type == POSITION_TYPE_BUY && g_setup_direction == 1)
-      return (bid >= g_setup_low && bid <= g_setup_high);
+      return (last_close >= g_setup_low && last_close <= g_setup_high);
    if(pos_type == POSITION_TYPE_SELL && g_setup_direction == -1)
-      return (ask >= g_setup_low && ask <= g_setup_high);
+      return (last_close >= g_setup_low && last_close <= g_setup_high);
 
    return false;
   }
