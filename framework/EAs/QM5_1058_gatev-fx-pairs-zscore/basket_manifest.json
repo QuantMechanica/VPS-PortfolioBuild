@@ -1,0 +1,32 @@
+{
+  "ea_id": "QM5_1058",
+  "slug": "gatev-fx-pairs-zscore",
+  "symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "pairs": [
+    {
+      "name": "Pair A",
+      "leg_a": "EURUSD.DWX",
+      "slot_a": 0,
+      "leg_b": "GBPUSD.DWX",
+      "slot_b": 1
+    },
+    {
+      "name": "Pair B",
+      "leg_a": "AUDUSD.DWX",
+      "slot_a": 2,
+      "leg_b": "NZDUSD.DWX",
+      "slot_b": 3
+    }
+  ],
+  "skipped_pairs": [
+    {
+      "name": "Pair C",
+      "reason": "USDNOK.DWX is absent from framework/registry/dwx_symbol_matrix.csv"
+    }
+  ]
+}

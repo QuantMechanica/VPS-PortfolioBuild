@@ -1,45 +1,13 @@
 #property strict
 #property version   "5.0"
-#property description "QuantMechanica V5 EA skeleton template"
+#property description "QM5_1058 Gatev FX pairs z-score reversion"
 
 #include <QM/QM_Common.mqh>
-
-// =============================================================================
-// QuantMechanica V5 EA SKELETON
-// -----------------------------------------------------------------------------
-// Fill in only the five Strategy_* hooks below. Everything else is framework
-// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
-// risk + magic + news + Friday-close guard rails). The framework provides:
-//
-//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
-//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
-//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
-//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
-//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
-//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
-//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
-//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
-//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
-//
-// DO NOT
-//   - Write per-EA IsNewBar() — use QM_IsNewBar()
-//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
-//     use the QM_* readers above. The framework pools handles and releases them
-//     on shutdown.
-//   - CopyRates over warmup windows on every tick. If you genuinely need raw
-//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
-//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
-//     to magic_numbers.csv, run:
-//         python framework/scripts/update_magic_resolver.py
-//     This is idempotent and preserves all rows.
-// =============================================================================
+#include <QM/QM_BasketOrder.mqh>
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 9999;
+input int    qm_ea_id                   = 1058;
 input int    qm_magic_slot_offset       = 0;
-// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
-// All other phases use 42 by default. Stress / noise dimensions read from
-// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -48,16 +16,10 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
-//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
-//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
-// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
-// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
-// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -65,75 +27,469 @@ input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
-// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
-// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
-// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
-// deterministic per qm_rng_seed). MED slip/spread/commission live in the
-// tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-// TODO: declare strategy-specific input params here, e.g.:
-//   input int    strategy_atr_period   = 14;
-//   input double strategy_atr_sl_mult  = 2.0;
-//   input double strategy_atr_tp_mult  = 3.0;
-input int    strategy_placeholder       = 0;
+input ENUM_TIMEFRAMES strategy_signal_tf          = PERIOD_D1;
+input int    strategy_lookback_bars               = 60;
+input double strategy_entry_z                     = 2.0;
+input double strategy_exit_z                      = 0.5;
+input double strategy_hard_stop_z                 = 4.0;
+input double strategy_min_correlation             = 0.60;
+input int    strategy_time_stop_bars              = 20;
+input int    strategy_rollover_blackout_minutes   = 30;
+input int    strategy_news_blackout_minutes       = 120;
+input int    strategy_max_spread_points           = 35;
+input double strategy_beta_min                    = 0.10;
+input double strategy_beta_max                    = 5.00;
 
-// -----------------------------------------------------------------------------
-// Strategy hooks — implement these against the card mechanically.
-// -----------------------------------------------------------------------------
+struct PairConfig
+  {
+   string a;
+   string b;
+   int    slot_a;
+   int    slot_b;
+   int    idx;
+  };
 
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
+double g_pair_z[2] = {0.0, 0.0};
+bool   g_pair_stats_valid[2] = {false, false};
+
+bool ResolvePairForSymbol(const string symbol, PairConfig &cfg)
+  {
+   if(symbol == "EURUSD.DWX" || symbol == "GBPUSD.DWX")
+     {
+      cfg.a = "EURUSD.DWX";
+      cfg.b = "GBPUSD.DWX";
+      cfg.slot_a = 0;
+      cfg.slot_b = 1;
+      cfg.idx = 0;
+      return true;
+     }
+
+   if(symbol == "AUDUSD.DWX" || symbol == "NZDUSD.DWX")
+     {
+      cfg.a = "AUDUSD.DWX";
+      cfg.b = "NZDUSD.DWX";
+      cfg.slot_a = 2;
+      cfg.slot_b = 3;
+      cfg.idx = 1;
+      return true;
+     }
+
+   return false;
+  }
+
+int SlotForSymbol(const PairConfig &cfg, const string symbol)
+  {
+   if(symbol == cfg.a)
+      return cfg.slot_a;
+   if(symbol == cfg.b)
+      return cfg.slot_b;
+   return -1;
+  }
+
+double CurrentMid(const string symbol)
+  {
+   const double bid = SymbolInfoDouble(symbol, SYMBOL_BID);
+   const double ask = SymbolInfoDouble(symbol, SYMBOL_ASK);
+   if(bid > 0.0 && ask > 0.0)
+      return (bid + ask) * 0.5;
+   if(bid > 0.0)
+      return bid;
+   if(ask > 0.0)
+      return ask;
+   return 0.0;
+  }
+
+bool LoadClosedCloses(const string symbol,
+                      const ENUM_TIMEFRAMES tf,
+                      const int count,
+                      double &closes[])
+  {
+   if(count <= 0)
+      return false;
+
+   ArrayResize(closes, count);
+   ArraySetAsSeries(closes, true);
+   // perf-allowed: pair z-score needs closed close arrays for two symbols;
+   // Strategy_EntrySignal is called only after the framework QM_IsNewBar gate.
+   const int copied = CopyClose(symbol, tf, 1, count, closes);
+   return (copied == count);
+  }
+
+bool ComputePairStats(const PairConfig &cfg,
+                      double &z,
+                      double &beta,
+                      double &corr)
+  {
+   z = 0.0;
+   beta = 0.0;
+   corr = 0.0;
+
+   const int lookback = strategy_lookback_bars;
+   if(lookback < 10)
+      return false;
+
+   double close_a[];
+   double close_b[];
+   if(!LoadClosedCloses(cfg.a, strategy_signal_tf, lookback + 1, close_a))
+      return false;
+   if(!LoadClosedCloses(cfg.b, strategy_signal_tf, lookback + 1, close_b))
+      return false;
+
+   double mean_a = 0.0;
+   double mean_b = 0.0;
+   for(int i = 0; i < lookback; ++i)
+     {
+      if(close_a[i] <= 0.0 || close_b[i] <= 0.0)
+         return false;
+      mean_a += MathLog(close_a[i]);
+      mean_b += MathLog(close_b[i]);
+     }
+   mean_a /= (double)lookback;
+   mean_b /= (double)lookback;
+
+   double cov_ab = 0.0;
+   double var_b = 0.0;
+   for(int i = 0; i < lookback; ++i)
+     {
+      const double la = MathLog(close_a[i]);
+      const double lb = MathLog(close_b[i]);
+      cov_ab += (la - mean_a) * (lb - mean_b);
+      var_b += (lb - mean_b) * (lb - mean_b);
+     }
+   if(var_b <= 1e-12)
+      return false;
+
+   beta = cov_ab / var_b;
+   if(MathAbs(beta) < strategy_beta_min || MathAbs(beta) > strategy_beta_max)
+      return false;
+
+   double spread[];
+   ArrayResize(spread, lookback);
+   double mean_spread = 0.0;
+   for(int i = 0; i < lookback; ++i)
+     {
+      spread[i] = MathLog(close_a[i]) - beta * MathLog(close_b[i]);
+      mean_spread += spread[i];
+     }
+   mean_spread /= (double)lookback;
+
+   double var_spread = 0.0;
+   for(int i = 0; i < lookback; ++i)
+      var_spread += (spread[i] - mean_spread) * (spread[i] - mean_spread);
+   if(var_spread <= 1e-12)
+      return false;
+
+   const double std_spread = MathSqrt(var_spread / (double)(lookback - 1));
+   if(std_spread <= 0.0)
+      return false;
+   z = (spread[0] - mean_spread) / std_spread;
+
+   double mean_ra = 0.0;
+   double mean_rb = 0.0;
+   double ret_a[];
+   double ret_b[];
+   ArrayResize(ret_a, lookback);
+   ArrayResize(ret_b, lookback);
+   for(int i = 0; i < lookback; ++i)
+     {
+      if(close_a[i + 1] <= 0.0 || close_b[i + 1] <= 0.0)
+         return false;
+      ret_a[i] = MathLog(close_a[i] / close_a[i + 1]);
+      ret_b[i] = MathLog(close_b[i] / close_b[i + 1]);
+      mean_ra += ret_a[i];
+      mean_rb += ret_b[i];
+     }
+   mean_ra /= (double)lookback;
+   mean_rb /= (double)lookback;
+
+   double cov_r = 0.0;
+   double var_ra = 0.0;
+   double var_rb = 0.0;
+   for(int i = 0; i < lookback; ++i)
+     {
+      const double da = ret_a[i] - mean_ra;
+      const double db = ret_b[i] - mean_rb;
+      cov_r += da * db;
+      var_ra += da * da;
+      var_rb += db * db;
+     }
+   if(var_ra <= 1e-12 || var_rb <= 1e-12)
+      return false;
+   corr = cov_r / MathSqrt(var_ra * var_rb);
+   return true;
+  }
+
+bool HasPositionForSymbolSlot(const string symbol, const int slot)
+  {
+   const int magic = QM_MagicChecked(qm_ea_id, slot, symbol);
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return true;
+     }
+   return false;
+  }
+
+bool PairHasOpenPosition(const PairConfig &cfg)
+  {
+   return HasPositionForSymbolSlot(cfg.a, cfg.slot_a) ||
+          HasPositionForSymbolSlot(cfg.b, cfg.slot_b);
+  }
+
+bool ClosePositionForSymbolSlot(const string symbol, const int slot)
+  {
+   bool closed_any = false;
+   const int magic = QM_MagicChecked(qm_ea_id, slot, symbol);
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if(QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY))
+         closed_any = true;
+     }
+   return closed_any;
+  }
+
+bool ClosePairPositions(const PairConfig &cfg)
+  {
+   bool closed_any = false;
+   if(ClosePositionForSymbolSlot(cfg.a, cfg.slot_a))
+      closed_any = true;
+   if(ClosePositionForSymbolSlot(cfg.b, cfg.slot_b))
+      closed_any = true;
+   return closed_any;
+  }
+
+bool PairTimeStopExceeded(const PairConfig &cfg)
+  {
+   const long max_seconds = (long)strategy_time_stop_bars * (long)PeriodSeconds(strategy_signal_tf);
+   if(max_seconds <= 0)
+      return false;
+
+   const string symbols[2] = {cfg.a, cfg.b};
+   const int slots[2] = {cfg.slot_a, cfg.slot_b};
+   const datetime now = TimeCurrent();
+   for(int leg = 0; leg < 2; ++leg)
+     {
+      const int magic = QM_MagicChecked(qm_ea_id, slots[leg], symbols[leg]);
+      if(magic <= 0)
+         continue;
+      for(int i = PositionsTotal() - 1; i >= 0; --i)
+        {
+         const ulong ticket = PositionGetTicket(i);
+         if(ticket == 0 || !PositionSelectByTicket(ticket))
+            continue;
+         if(PositionGetString(POSITION_SYMBOL) != symbols[leg])
+            continue;
+         if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+            continue;
+         const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
+         if(opened > 0 && now - opened >= max_seconds)
+            return true;
+        }
+     }
+   return false;
+  }
+
+double PairLegLots(const string symbol, const double exposure_scale)
+  {
+   const double price = CurrentMid(symbol);
+   const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
+   if(price <= 0.0 || point <= 0.0 || exposure_scale <= 0.0)
+      return 0.0;
+
+   const double notional_points = price / point;
+   const double raw_lots = QM_LotsForRisk(symbol, notional_points) * exposure_scale;
+   return QM_TM_NormalizeVolume(symbol, raw_lots);
+  }
+
+bool NewsBlocksSymbol(const string symbol, const datetime broker_time)
+  {
+   bool allowed = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
+      qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      allowed = QM_NewsAllowsTrade2(symbol, broker_time, qm_news_temporal, qm_news_compliance);
+   else
+      allowed = QM_NewsAllowsTrade(symbol, broker_time, qm_news_mode_legacy);
+   if(!allowed)
+      return true;
+
+   datetime utc = QM_BrokerToUTC(broker_time);
+   if(utc <= 0)
+      utc = TimeGMT();
+   return QM_NewsInWindow(utc,
+                          symbol,
+                          strategy_news_blackout_minutes,
+                          strategy_news_blackout_minutes);
+  }
+
+bool OpenPair(const PairConfig &cfg, const int direction, const double beta)
+  {
+   if(direction == 0)
+      return false;
+
+   const datetime now = TimeCurrent();
+   if(NewsBlocksSymbol(cfg.a, now) || NewsBlocksSymbol(cfg.b, now))
+      return false;
+
+   const double lots_a = PairLegLots(cfg.a, 1.0);
+   const double lots_b = PairLegLots(cfg.b, MathAbs(beta));
+   if(lots_a <= 0.0 || lots_b <= 0.0)
+      return false;
+
+   QM_BasketOrderRequest req_a;
+   req_a.symbol = cfg.a;
+   req_a.type = (direction > 0) ? QM_BUY : QM_SELL;
+   req_a.price = 0.0;
+   req_a.sl = 0.0;
+   req_a.tp = 0.0;
+   req_a.lots = lots_a;
+   req_a.reason = (direction > 0) ? "GGR_LONG_PAIR_A" : "GGR_SHORT_PAIR_A";
+   req_a.symbol_slot = cfg.slot_a;
+   req_a.expiration_seconds = 0;
+
+   QM_BasketOrderRequest req_b;
+   req_b.symbol = cfg.b;
+   req_b.type = (direction > 0) ? QM_SELL : QM_BUY;
+   req_b.price = 0.0;
+   req_b.sl = 0.0;
+   req_b.tp = 0.0;
+   req_b.lots = lots_b;
+   req_b.reason = (direction > 0) ? "GGR_LONG_PAIR_B_SHORT" : "GGR_SHORT_PAIR_B_LONG";
+   req_b.symbol_slot = cfg.slot_b;
+   req_b.expiration_seconds = 0;
+
+   ulong ticket_a = 0;
+   ulong ticket_b = 0;
+   const bool opened_a = QM_BasketOpenPosition(qm_ea_id, QM_NEWS_OFF, 20, req_a, ticket_a);
+   const bool opened_b = opened_a ? QM_BasketOpenPosition(qm_ea_id, QM_NEWS_OFF, 20, req_b, ticket_b) : false;
+   if(!opened_b && opened_a)
+      ClosePositionForSymbolSlot(cfg.a, cfg.slot_a);
+   return opened_a && opened_b;
+  }
+
 bool Strategy_NoTradeFilter()
   {
-   // TODO: e.g. "only trade London session" or "skip if ADX<20"
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+      return true;
+
+   const double spread_points = (ask - bid) / point;
+   if(strategy_max_spread_points > 0 && spread_points > strategy_max_spread_points)
+      return true;
+
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   const int minute_of_day = dt.hour * 60 + dt.min;
+   const int blackout = MathMax(0, strategy_rollover_blackout_minutes);
+   if(blackout > 0 && (minute_of_day >= 1440 - blackout || minute_of_day <= blackout))
+      return true;
+
    return false;
   }
 
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // TODO: build req.type / req.price / req.sl / req.tp / req.lots
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   PairConfig cfg;
+   if(!ResolvePairForSymbol(_Symbol, cfg))
+      return false;
+
+   double z = 0.0;
+   double beta = 0.0;
+   double corr = 0.0;
+   const bool stats_ok = ComputePairStats(cfg, z, beta, corr);
+   g_pair_stats_valid[cfg.idx] = stats_ok;
+   g_pair_z[cfg.idx] = z;
+   if(!stats_ok)
+      return false;
+
+   if(PairHasOpenPosition(cfg))
+      return false;
+
+   if(corr < strategy_min_correlation)
+      return false;
+
+   int direction = 0;
+   if(z < -strategy_entry_z)
+      direction = 1;
+   else if(z > strategy_entry_z)
+      direction = -1;
+   if(direction == 0)
+      return false;
+
+   OpenPair(cfg, direction, beta);
    return false;
   }
 
-// Called every tick when an open position exists for this EA's magic.
-// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // TODO: e.g.
-   //   const int magic = QM_FrameworkMagic();
-   //   for(int i = PositionsTotal() - 1; i >= 0; --i) {
-   //       const ulong ticket = PositionGetTicket(i);
-   //       if(!PositionSelectByTicket(ticket)) continue;
-   //       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
-   //       QM_TM_MoveToBreakEven(ticket, /*trigger_pips=*/30, /*buffer=*/2);
-   //       QM_TM_TrailATR(ticket, /*atr_period=*/14, /*atr_mult=*/2.0);
-   //   }
+   // Card specifies no trailing, break-even, add-on, or partial-close logic.
   }
 
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // TODO: when to close manually (separate from SL/TP and trade management)
+   PairConfig cfg;
+   if(!ResolvePairForSymbol(_Symbol, cfg))
+      return false;
+   if(!PairHasOpenPosition(cfg))
+      return false;
+
+   if(PairTimeStopExceeded(cfg))
+     {
+      ClosePairPositions(cfg);
+      return false;
+     }
+
+   if(!g_pair_stats_valid[cfg.idx])
+      return false;
+
+   const double abs_z = MathAbs(g_pair_z[cfg.idx]);
+   if(abs_z < strategy_exit_z || abs_z > strategy_hard_stop_z)
+     {
+      ClosePairPositions(cfg);
+      return false;
+     }
+
    return false;
   }
 
-// Optional news-filter override. Return TRUE to suppress trading regardless
-// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
-// custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false; // defer to QM_NewsAllowsTrade(...)
-  }
+   PairConfig cfg;
+   if(!ResolvePairForSymbol(_Symbol, cfg))
+      return false;
 
-// -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
-// -----------------------------------------------------------------------------
+   return NewsBlocksSymbol(cfg.a, broker_time) || NewsBlocksSymbol(cfg.b, broker_time);
+  }
 
 int OnInit()
   {
@@ -142,20 +498,28 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   string symbols[4];
+   symbols[0] = "EURUSD.DWX";
+   symbols[1] = "GBPUSD.DWX";
+   symbols[2] = "AUDUSD.DWX";
+   symbols[3] = "NZDUSD.DWX";
+   QM_SymbolGuardInit(symbols);
+   QM_BasketWarmupHistory(symbols, strategy_signal_tf, strategy_lookback_bars + 5);
+
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1058_gatev_fx_pairs_zscore\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -173,8 +537,7 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
-   // when both new axes are at their OFF defaults.
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -188,10 +551,8 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
-   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -206,22 +567,13 @@ void OnTick()
         }
      }
 
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
 
-   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
-   // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
-   if(Strategy_EntrySignal(req))
-     {
-      ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
-     }
+   Strategy_EntrySignal(req);
   }
 
 void OnTimer()
@@ -233,8 +585,6 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
   {
-   // FW4: feeds closing-deal net-profits to the KS kill-switch.
-   // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
