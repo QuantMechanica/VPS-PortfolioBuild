@@ -324,10 +324,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const int seconds_to_close = (close_min - MinutesOfDay(broker_now)) * 60;
    if(seconds_to_close <= 0)
       return false;
-
-   const double day_open = iOpen(_Symbol, PERIOD_D1, 0);       // perf-allowed: D1 session-open structural input, read once per new bar.
-   const double prev_high = iHigh(_Symbol, PERIOD_D1, 1);      // perf-allowed: prior-day range structural input, read once per new bar.
-   const double prev_low = iLow(_Symbol, PERIOD_D1, 1);        // perf-allowed: prior-day range structural input, read once per new bar.
+   const double day_open  = iOpen(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 session anchor, read once per QM_IsNewBar-gated entry check.
+   const double prev_high = iHigh(_Symbol, PERIOD_D1, 1); // perf-allowed: prior-day range required by card, read once per QM_IsNewBar-gated entry check.
+   const double prev_low  = iLow(_Symbol, PERIOD_D1, 1);  // perf-allowed: prior-day range required by card, read once per QM_IsNewBar-gated entry check.
    const double yr = prev_high - prev_low;
    const double atr_value = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if(day_open <= 0.0 || prev_high <= 0.0 || prev_low <= 0.0 || yr <= 0.0 || atr_value <= 0.0)
