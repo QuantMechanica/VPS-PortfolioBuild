@@ -243,14 +243,19 @@ bool ETLB_ComputeLunchRange(double &range_high, double &range_low)
    range_low = DBL_MAX;
 
    const int bars = MathMax(1, strategy_range_bars);
-   for(int i = 1; i <= bars; ++i)
+   MqlRates rates[];
+   const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, bars, rates); // perf-allowed: bounded closed-bar lunch-range window; Strategy_EntrySignal is called only after the framework QM_IsNewBar gate.
+   if(copied < bars)
+      return false;
+
+   for(int i = 0; i < copied; ++i)
      {
-      const double hi = iHigh(_Symbol, _Period, i); // perf-allowed: bounded lunch-range structural scan inside framework-gated EntrySignal.
-      const double lo = iLow(_Symbol, _Period, i);  // perf-allowed: bounded lunch-range structural scan inside framework-gated EntrySignal.
+      const double hi = rates[i].high;
+      const double lo = rates[i].low;
       if(hi <= 0.0 || lo <= 0.0)
          return false;
       range_high = MathMax(range_high, hi);
-     range_low = MathMin(range_low, lo);
+      range_low = MathMin(range_low, lo);
      }
    return (range_high > range_low && range_low > 0.0);
   }
@@ -381,6 +386,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!g_etlb_buy_submitted_today && !has_buy_pending &&
       !g_etlb_sell_submitted_today && !has_sell_pending)
      {
+      QM_EntryRequest buy_req;
+      buy_req.type = QM_BUY_STOP;
+      buy_req.price = QM_TM_NormalizePrice(_Symbol, g_etlb_lunch_high + trigger);
+      buy_req.sl = QM_TM_NormalizePrice(_Symbol, MathMin(g_etlb_lunch_low - strategy_stop_factor * range,
+                                                         buy_req.price - min_stop));
+      buy_req.tp = 0.0;
+      buy_req.reason = "QM5_10386_LUNCH_BRK_BUY_STOP";
+      buy_req.symbol_slot = qm_magic_slot_offset;
+      buy_req.expiration_seconds = expiration_seconds;
+
       QM_EntryRequest sell_req;
       sell_req.type = QM_SELL_STOP;
       sell_req.price = QM_TM_NormalizePrice(_Symbol, g_etlb_lunch_low - trigger);
@@ -391,40 +406,21 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       sell_req.symbol_slot = qm_magic_slot_offset;
       sell_req.expiration_seconds = expiration_seconds;
 
+      if(buy_req.price > 0.0 && buy_req.sl > 0.0 && buy_req.sl < buy_req.price)
+        {
+         ulong buy_ticket = 0;
+         if(QM_TM_OpenPosition(buy_req, buy_ticket))
+            g_etlb_buy_submitted_today = true;
+        }
+
       if(sell_req.price > 0.0 && sell_req.sl > sell_req.price)
         {
          ulong sell_ticket = 0;
          if(QM_TM_OpenPosition(sell_req, sell_ticket))
             g_etlb_sell_submitted_today = true;
         }
-     }
 
-   if(!g_etlb_buy_submitted_today && !has_buy_pending)
-     {
-      const double entry = QM_TM_NormalizePrice(_Symbol, g_etlb_lunch_high + trigger);
-      const double raw_sl = g_etlb_lunch_low - strategy_stop_factor * range;
-      req.type = QM_BUY_STOP;
-      req.price = entry;
-      req.sl = QM_TM_NormalizePrice(_Symbol, MathMin(raw_sl, entry - min_stop));
-      req.tp = 0.0;
-      req.reason = "QM5_10386_LUNCH_BRK_BUY_STOP";
-      req.expiration_seconds = expiration_seconds;
-      g_etlb_buy_submitted_today = true;
-      return (req.price > 0.0 && req.sl > 0.0 && req.sl < req.price);
-     }
-
-   if(!g_etlb_sell_submitted_today && !has_sell_pending)
-     {
-      const double entry = QM_TM_NormalizePrice(_Symbol, g_etlb_lunch_low - trigger);
-      const double raw_sl = g_etlb_lunch_high + strategy_stop_factor * range;
-      req.type = QM_SELL_STOP;
-      req.price = entry;
-      req.sl = QM_TM_NormalizePrice(_Symbol, MathMax(raw_sl, entry + min_stop));
-      req.tp = 0.0;
-      req.reason = "QM5_10386_LUNCH_BRK_SELL_STOP";
-      req.expiration_seconds = expiration_seconds;
-      g_etlb_sell_submitted_today = true;
-      return (req.price > 0.0 && req.sl > req.price);
+      return false;
      }
 
    return false;
