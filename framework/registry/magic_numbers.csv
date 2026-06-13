@@ -8846,3 +8846,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1044,vpmacd-us-indices,2,SP500.DWX,10440002,2026-06-13,Development,active
 10445,mql5-stddev-rsi,0,EURUSD.DWX,104450000,2026-06-13,Development,active
 10445,mql5-stddev-rsi,1,GBPUSD.DWX,104450001,2026-06-13,Development,active
+10474,mql5-tdsglobal,0,EURUSD.DWX,104740000,2026-06-13,Development,active
+10474,mql5-tdsglobal,1,GBPUSD.DWX,104740001,2026-06-13,Development,active
+10474,mql5-tdsglobal,2,USDJPY.DWX,104740002,2026-06-13,Development,active
+10474,mql5-tdsglobal,3,XAUUSD.DWX,104740003,2026-06-13,Development,active
+10474,mql5-tdsglobal,4,GDAXI.DWX,104740004,2026-06-13,Development,active
+10466,mql5-mom-ma,0,EURUSD.DWX,104660000,2026-06-13,Development,active
+10466,mql5-mom-ma,1,GBPUSD.DWX,104660001,2026-06-13,Development,active
+10466,mql5-mom-ma,2,XAUUSD.DWX,104660002,2026-06-13,Development,active
