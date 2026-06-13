@@ -8967,3 +8967,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12551,ict-turtle-soup-asian-false-break-m15,1,GBPUSD.DWX,125510001,2026-06-13,Development,active
 12551,ict-turtle-soup-asian-false-break-m15,2,USDJPY.DWX,125510002,2026-06-13,Development,active
 12551,ict-turtle-soup-asian-false-break-m15,3,XAUUSD.DWX,125510003,2026-06-13,Development,active
+12550,ict-london-close-reversal-m15,0,EURUSD.DWX,125500000,2026-06-13,Development,active
+12550,ict-london-close-reversal-m15,1,GBPUSD.DWX,125500001,2026-06-13,Development,active
+12550,ict-london-close-reversal-m15,2,USDJPY.DWX,125500002,2026-06-13,Development,active
+12550,ict-london-close-reversal-m15,3,XAUUSD.DWX,125500003,2026-06-13,Development,active
