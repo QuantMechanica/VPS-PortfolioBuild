@@ -48,6 +48,8 @@ datetime g_last_used_zone_time = 0;
 int      g_active_zone_side = 0;
 double   g_active_ob_low = 0.0;
 double   g_active_ob_high = 0.0;
+double   g_cached_swing_high = 0.0;
+double   g_cached_swing_low = 0.0;
 
 double BarOpen(const int shift)  { return iOpen(_Symbol, _Period, shift); }   // perf-allowed: bespoke closed-bar order-block structure
 double BarHigh(const int shift)  { return iHigh(_Symbol, _Period, shift); }   // perf-allowed: bespoke closed-bar order-block structure
@@ -242,6 +244,8 @@ bool BuildLongRequest(QM_EntryRequest &req, const double atr)
       return false;
    if(!FindRecentSwingLows(strategy_swing_width, strategy_structure_lookback, swing_low, prev_low))
       return false;
+   g_cached_swing_high = swing_high;
+   g_cached_swing_low = swing_low;
    if(swing_low <= prev_low || swing_high <= prev_high)
       return false;
 
@@ -303,6 +307,8 @@ bool BuildShortRequest(QM_EntryRequest &req, const double atr)
       return false;
    if(!FindRecentSwingLows(strategy_swing_width, strategy_structure_lookback, swing_low, prev_low))
       return false;
+   g_cached_swing_high = swing_high;
+   g_cached_swing_low = swing_low;
    if(swing_high >= prev_high || swing_low >= prev_low)
       return false;
 
@@ -414,9 +420,9 @@ bool Strategy_ExitSignal()
      }
 
    const double close1 = BarClose(1);
-   if(pos_type == POSITION_TYPE_BUY && g_active_zone_side < 0 && close1 < g_active_ob_low)
+   if(pos_type == POSITION_TYPE_BUY && g_cached_swing_low > 0.0 && close1 < g_cached_swing_low)
       return true;
-   if(pos_type == POSITION_TYPE_SELL && g_active_zone_side > 0 && close1 > g_active_ob_high)
+   if(pos_type == POSITION_TYPE_SELL && g_cached_swing_high > 0.0 && close1 > g_cached_swing_high)
       return true;
 
    return false;
