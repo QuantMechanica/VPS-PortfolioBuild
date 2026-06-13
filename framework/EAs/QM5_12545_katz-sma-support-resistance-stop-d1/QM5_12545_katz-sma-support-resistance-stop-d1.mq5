@@ -177,9 +177,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(sma_now <= 0.0 || sma_prev <= 0.0 || close_now <= 0.0 || close_prev <= 0.0 ||
       atr <= 0.0 || tick <= 0.0)
       return false;
-
-   const double high_now = iHigh(_Symbol, PERIOD_D1, 1); // perf-allowed: signal-bar stop level, called only from QM_IsNewBar-gated entry hook.
-   const double low_now = iLow(_Symbol, PERIOD_D1, 1);   // perf-allowed: signal-bar stop level, called only from QM_IsNewBar-gated entry hook.
+   const double high_now = iHigh(_Symbol, PERIOD_D1, 1); // perf-allowed: bespoke structural stop-level read, QM_IsNewBar-gated.
+   const double low_now = iLow(_Symbol, PERIOD_D1, 1);   // perf-allowed: bespoke structural stop-level read, QM_IsNewBar-gated.
    if(high_now <= 0.0 || low_now <= 0.0)
       return false;
 
