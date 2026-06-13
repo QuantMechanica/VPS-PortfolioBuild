@@ -1,24 +1,33 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_1058 Gatev FX Pairs Z-Score Reversion"
+#property description "QM5_1058 Gatev FX pairs z-score reversion"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_BasketOrder.mqh>
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                    = 1058;
-input int    qm_magic_slot_offset        = 0;
+input int    qm_ea_id                   = 1058;
+input int    qm_magic_slot_offset       = 0;
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT                = 0.0;
-input double RISK_FIXED                  = 1000.0;
-input double PORTFOLIO_WEIGHT            = 1.0;
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode           = QM_NEWS_PAUSE;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE60_POST60;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = true;
+input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
+
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_lookback_bars      = 60;
@@ -29,237 +38,201 @@ input double strategy_min_corr           = 0.6;
 input int    strategy_time_stop_bars     = 20;
 input int    strategy_max_spread_points  = 50;
 
-const int STRATEGY_PAIR_COUNT = 2;
-string g_pair_a[2] = {"EURUSD.DWX", "AUDUSD.DWX"};
-string g_pair_b[2] = {"GBPUSD.DWX", "NZDUSD.DWX"};
-int    g_pair_slot_a[2] = {0, 2};
-int    g_pair_slot_b[2] = {1, 3};
+#define STRATEGY_PAIR_COUNT 2
 
-int Strategy_PairIndex()
+string g_pair_a[STRATEGY_PAIR_COUNT] = {"EURUSD.DWX", "AUDUSD.DWX"};
+string g_pair_b[STRATEGY_PAIR_COUNT] = {"GBPUSD.DWX", "NZDUSD.DWX"};
+int    g_pair_slot_a[STRATEGY_PAIR_COUNT] = {0, 2};
+int    g_pair_slot_b[STRATEGY_PAIR_COUNT] = {1, 3};
+
+int      g_active_pair = -1;
+double   g_beta = 1.0;
+double   g_z_now = 0.0;
+double   g_corr_now = 0.0;
+bool     g_state_ready = false;
+
+int Strategy_PairForHostSymbol(const string symbol)
   {
    for(int i = 0; i < STRATEGY_PAIR_COUNT; ++i)
      {
-      if(_Symbol == g_pair_a[i] || _Symbol == g_pair_b[i])
+      if(symbol == g_pair_a[i] || symbol == g_pair_b[i])
          return i;
      }
    return -1;
   }
 
-bool Strategy_IsLegA(const int pair_index)
-  {
-   return (pair_index >= 0 && pair_index < STRATEGY_PAIR_COUNT && _Symbol == g_pair_a[pair_index]);
-  }
-
-int Strategy_CurrentSlot()
-  {
-   const int pair_index = Strategy_PairIndex();
-   if(pair_index < 0)
-      return qm_magic_slot_offset;
-   return Strategy_IsLegA(pair_index) ? g_pair_slot_a[pair_index] : g_pair_slot_b[pair_index];
-  }
-
-bool Strategy_HasOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      return true;
-     }
-   return false;
-  }
-
-int Strategy_PairSlot(const int pair_index, const bool leg_a)
-  {
-   if(pair_index < 0 || pair_index >= STRATEGY_PAIR_COUNT)
-      return qm_magic_slot_offset;
-   return leg_a ? g_pair_slot_a[pair_index] : g_pair_slot_b[pair_index];
-  }
-
-bool Strategy_IsPairLegPosition(const int pair_index)
+bool Strategy_IsPairLeg(const int pair_index, const string symbol)
   {
    if(pair_index < 0 || pair_index >= STRATEGY_PAIR_COUNT)
       return false;
-
-   const string symbol = PositionGetString(POSITION_SYMBOL);
-   const int magic = (int)PositionGetInteger(POSITION_MAGIC);
-   if(symbol == g_pair_a[pair_index] && magic == QM_Magic(qm_ea_id, Strategy_PairSlot(pair_index, true)))
-      return true;
-   if(symbol == g_pair_b[pair_index] && magic == QM_Magic(qm_ea_id, Strategy_PairSlot(pair_index, false)))
-      return true;
-   return false;
+   return (symbol == g_pair_a[pair_index] || symbol == g_pair_b[pair_index]);
   }
 
-int Strategy_OpenPairLegCount(const int pair_index)
+int Strategy_SlotForSymbol(const int pair_index, const string symbol)
   {
-   int count = 0;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   if(pair_index < 0 || pair_index >= STRATEGY_PAIR_COUNT)
+      return qm_magic_slot_offset;
+   if(symbol == g_pair_a[pair_index])
+      return g_pair_slot_a[pair_index];
+   if(symbol == g_pair_b[pair_index])
+      return g_pair_slot_b[pair_index];
+   return qm_magic_slot_offset;
+  }
+
+bool Strategy_CopyLogCloses(const string symbol, const int bars, double &logs[])
+  {
+   if(!QM_SymbolAssertOrLog(symbol))
+      return false;
+
+   ArrayResize(logs, bars);
+   ArraySetAsSeries(logs, true);
+
+   double closes[];
+   ArrayResize(closes, bars);
+   ArraySetAsSeries(closes, true);
+   // perf-allowed: this custom pair-stat read is called only after a D1 QM_IsNewBar gate.
+   if(CopyClose(symbol, PERIOD_D1, 1, bars, closes) != bars)
+      return false;
+
+   for(int i = 0; i < bars; ++i)
      {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(Strategy_IsPairLegPosition(pair_index))
-         ++count;
+      if(closes[i] <= 0.0)
+         return false;
+      logs[i] = MathLog(closes[i]);
+      if(!MathIsValidNumber(logs[i]))
+         return false;
      }
-   return count;
+   return true;
   }
 
-void Strategy_CloseOpenPairLegs(const int pair_index)
+bool Strategy_EstimateBeta(const double &log_a[], const double &log_b[], const int n, double &beta)
   {
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(!Strategy_IsPairLegPosition(pair_index))
-         continue;
-      QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-     }
-  }
-
-bool Strategy_ReadLogPrices(const string sym_a,
-                            const string sym_b,
-                            const int shift,
-                            double &log_a,
-                            double &log_b)
-  {
-   const double close_a = iClose(sym_a, _Period, shift);
-   const double close_b = iClose(sym_b, _Period, shift);
-   if(close_a <= 0.0 || close_b <= 0.0)
-      return false;
-
-   log_a = MathLog(close_a);
-   log_b = MathLog(close_b);
-   return (MathIsValidNumber(log_a) && MathIsValidNumber(log_b));
-  }
-
-bool Strategy_PairStats(double &z, double &corr)
-  {
-   z = 0.0;
-   corr = 0.0;
-
-   const int pair_index = Strategy_PairIndex();
-   if(pair_index < 0 || strategy_lookback_bars < 20)
-      return false;
-
-   const string sym_a = g_pair_a[pair_index];
-   const string sym_b = g_pair_b[pair_index];
-   SymbolSelect(sym_a, true);
-   SymbolSelect(sym_b, true);
-
-   const int bars_a = Bars(sym_a, _Period);
-   const int bars_b = Bars(sym_b, _Period);
-   const int n = strategy_lookback_bars;
-   if(bars_a < n + 3 || bars_b < n + 3)
-      return false;
-
+   beta = 1.0;
    double sum_x = 0.0;
    double sum_y = 0.0;
    double sum_xx = 0.0;
    double sum_xy = 0.0;
-   for(int shift = 1; shift <= n; ++shift)
+
+   for(int i = 0; i < n; ++i)
      {
-      double y = 0.0;
-      double x = 0.0;
-      if(!Strategy_ReadLogPrices(sym_a, sym_b, shift, y, x))
-         return false;
+      const double x = log_b[i];
+      const double y = log_a[i];
       sum_x += x;
       sum_y += y;
       sum_xx += x * x;
       sum_xy += x * y;
      }
 
-   const double denom = (double)n * sum_xx - sum_x * sum_x;
+   const double dn = (double)n;
+   const double denom = dn * sum_xx - sum_x * sum_x;
    if(MathAbs(denom) <= DBL_EPSILON)
       return false;
-   const double beta = ((double)n * sum_xy - sum_x * sum_y) / denom;
-   if(!MathIsValidNumber(beta))
-      return false;
 
-   double spread_sum = 0.0;
-   double spread_sumsq = 0.0;
-   for(int shift = 1; shift <= n; ++shift)
+   beta = (dn * sum_xy - sum_x * sum_y) / denom;
+   return (MathIsValidNumber(beta) && MathAbs(beta) > 0.0001 && MathAbs(beta) < 100.0);
+  }
+
+bool Strategy_ZScore(const double &log_a[], const double &log_b[], const int n, const double beta, double &z)
+  {
+   z = 0.0;
+   double spread[];
+   ArrayResize(spread, n);
+   ArraySetAsSeries(spread, true);
+
+   double mean = 0.0;
+   for(int i = 0; i < n; ++i)
      {
-      double y = 0.0;
-      double x = 0.0;
-      if(!Strategy_ReadLogPrices(sym_a, sym_b, shift, y, x))
+      spread[i] = log_a[i] - beta * log_b[i];
+      if(!MathIsValidNumber(spread[i]))
          return false;
-      const double spread = y - beta * x;
-      spread_sum += spread;
-      spread_sumsq += spread * spread;
+      mean += spread[i];
+     }
+   mean /= (double)n;
+
+   double variance = 0.0;
+   for(int i = 0; i < n; ++i)
+     {
+      const double d = spread[i] - mean;
+      variance += d * d;
      }
 
-   const double mean = spread_sum / (double)n;
-   const double variance = (spread_sumsq / (double)n) - mean * mean;
-   if(variance <= 0.0)
+   const double sd = MathSqrt(variance / MathMax(1, n - 1));
+   if(sd <= 0.0 || !MathIsValidNumber(sd))
       return false;
 
-   double y_now = 0.0;
-   double x_now = 0.0;
-   if(!Strategy_ReadLogPrices(sym_a, sym_b, 1, y_now, x_now))
-      return false;
-   z = (y_now - beta * x_now - mean) / MathSqrt(variance);
-   if(!MathIsValidNumber(z))
-      return false;
+   z = (spread[0] - mean) / sd;
+   return MathIsValidNumber(z);
+  }
 
-   double sum_ra = 0.0;
-   double sum_rb = 0.0;
-   double sum_raa = 0.0;
-   double sum_rbb = 0.0;
-   double sum_rab = 0.0;
-   int rn = 0;
-   for(int shift = 1; shift <= n; ++shift)
+bool Strategy_ReturnCorrelation(const double &log_a[], const double &log_b[], const int n, double &corr)
+  {
+   corr = 0.0;
+   double sum_a = 0.0;
+   double sum_b = 0.0;
+   double sum_aa = 0.0;
+   double sum_bb = 0.0;
+   double sum_ab = 0.0;
+
+   for(int i = 0; i < n; ++i)
      {
-      double a0 = 0.0;
-      double b0 = 0.0;
-      double a1 = 0.0;
-      double b1 = 0.0;
-      if(!Strategy_ReadLogPrices(sym_a, sym_b, shift, a0, b0))
-         return false;
-      if(!Strategy_ReadLogPrices(sym_a, sym_b, shift + 1, a1, b1))
-         return false;
-      const double ra = a0 - a1;
-      const double rb = b0 - b1;
-      sum_ra += ra;
-      sum_rb += rb;
-      sum_raa += ra * ra;
-      sum_rbb += rb * rb;
-      sum_rab += ra * rb;
-      ++rn;
+      const double ra = log_a[i] - log_a[i + 1];
+      const double rb = log_b[i] - log_b[i + 1];
+      sum_a += ra;
+      sum_b += rb;
+      sum_aa += ra * ra;
+      sum_bb += rb * rb;
+      sum_ab += ra * rb;
      }
 
-   const double corr_denom = MathSqrt(((double)rn * sum_raa - sum_ra * sum_ra) *
-                                      ((double)rn * sum_rbb - sum_rb * sum_rb));
-   if(corr_denom <= DBL_EPSILON)
+   const double dn = (double)n;
+   const double denom = MathSqrt((dn * sum_aa - sum_a * sum_a) *
+                                 (dn * sum_bb - sum_b * sum_b));
+   if(denom <= DBL_EPSILON)
       return false;
-   corr = ((double)rn * sum_rab - sum_ra * sum_rb) / corr_denom;
+
+   corr = (dn * sum_ab - sum_a * sum_b) / denom;
    return MathIsValidNumber(corr);
   }
 
-int Strategy_PositionBarsHeld()
+bool Strategy_RefreshState()
   {
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
+   g_state_ready = false;
+   g_active_pair = Strategy_PairForHostSymbol(_Symbol);
+   if(g_active_pair < 0)
+      return false;
 
-      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      const int shift = iBarShift(_Symbol, _Period, open_time, false);
-      return (shift < 0) ? 0 : shift;
-     }
-   return 0;
+   const int n = MathMax(20, strategy_lookback_bars);
+   const int bars = n + 1;
+   double log_a[];
+   double log_b[];
+   if(!Strategy_CopyLogCloses(g_pair_a[g_active_pair], bars, log_a))
+      return false;
+   if(!Strategy_CopyLogCloses(g_pair_b[g_active_pair], bars, log_b))
+      return false;
+
+   if(!Strategy_EstimateBeta(log_a, log_b, n, g_beta))
+      return false;
+   if(!Strategy_ZScore(log_a, log_b, n, g_beta, g_z_now))
+      return false;
+   if(!Strategy_ReturnCorrelation(log_a, log_b, n, g_corr_now))
+      return false;
+
+   g_state_ready = true;
+   return true;
+  }
+
+bool Strategy_SpreadsNormal(const int pair_index)
+  {
+   if(strategy_max_spread_points <= 0)
+      return true;
+   if(pair_index < 0 || pair_index >= STRATEGY_PAIR_COUNT)
+      return false;
+
+   const long spread_a = SymbolInfoInteger(g_pair_a[pair_index], SYMBOL_SPREAD);
+   const long spread_b = SymbolInfoInteger(g_pair_b[pair_index], SYMBOL_SPREAD);
+   return (spread_a > 0 && spread_b > 0 &&
+           spread_a <= strategy_max_spread_points &&
+           spread_b <= strategy_max_spread_points);
   }
 
 bool Strategy_RolloverWindow(const datetime broker_time)
@@ -270,90 +243,237 @@ bool Strategy_RolloverWindow(const datetime broker_time)
    return (minute_of_day >= 1410 || minute_of_day < 30);
   }
 
-bool Strategy_NoTradeFilter()
+bool Strategy_IsPairPosition(const int pair_index)
   {
-   if(Strategy_PairIndex() < 0)
+   if(pair_index < 0 || pair_index >= STRATEGY_PAIR_COUNT)
+      return false;
+
+   const string symbol = PositionGetString(POSITION_SYMBOL);
+   if(!Strategy_IsPairLeg(pair_index, symbol))
+      return false;
+
+   const int slot = Strategy_SlotForSymbol(pair_index, symbol);
+   return ((int)PositionGetInteger(POSITION_MAGIC) == QM_MagicChecked(qm_ea_id, slot, symbol));
+  }
+
+int Strategy_OpenPairLegCount(const int pair_index)
+  {
+   int count = 0;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(Strategy_IsPairPosition(pair_index))
+         ++count;
+     }
+   return count;
+  }
+
+datetime Strategy_PairOpenTime(const int pair_index)
+  {
+   datetime oldest = 0;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(!Strategy_IsPairPosition(pair_index))
+         continue;
+
+      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
+      if(oldest == 0 || opened < oldest)
+         oldest = opened;
+     }
+   return oldest;
+  }
+
+int Strategy_BarsHeld(const int pair_index)
+  {
+   const datetime opened = Strategy_PairOpenTime(pair_index);
+   const int seconds = PeriodSeconds(PERIOD_D1);
+   if(opened <= 0 || seconds <= 0)
+      return 0;
+   return (int)((TimeCurrent() - opened) / seconds);
+  }
+
+void Strategy_ClosePair(const int pair_index, const QM_ExitReason reason)
+  {
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(Strategy_IsPairPosition(pair_index))
+         QM_TM_ClosePosition(ticket, reason);
+     }
+  }
+
+double Strategy_RiskMoneyPerLeg()
+  {
+   double risk_money = RISK_FIXED;
+   if(risk_money <= 0.0 && RISK_PERCENT > 0.0)
+      risk_money = AccountInfoDouble(ACCOUNT_EQUITY) * RISK_PERCENT / 100.0;
+   return MathMax(0.0, risk_money * PORTFOLIO_WEIGHT);
+  }
+
+double Strategy_NominalLots(const string symbol, const double nominal_money)
+  {
+   const double contract_size = SymbolInfoDouble(symbol, SYMBOL_TRADE_CONTRACT_SIZE);
+   if(contract_size <= 0.0 || nominal_money <= 0.0)
+      return 0.0;
+   return QM_TM_NormalizeVolume(symbol, nominal_money / contract_size);
+  }
+
+bool Strategy_OpenLeg(const int pair_index,
+                      const string symbol,
+                      const double leg_weight,
+                      const int spread_direction,
+                      const string reason)
+  {
+   const bool buy_leg = (spread_direction * leg_weight) > 0.0;
+   const double nominal_money = Strategy_RiskMoneyPerLeg() * MathAbs(leg_weight);
+   const double lots = Strategy_NominalLots(symbol, nominal_money);
+   if(lots <= 0.0)
+      return false;
+
+   QM_BasketOrderRequest breq;
+   breq.symbol = symbol;
+   breq.type = buy_leg ? QM_BUY : QM_SELL;
+   breq.price = 0.0;
+   breq.sl = 0.0;
+   breq.tp = 0.0;
+   breq.lots = lots;
+   breq.reason = reason;
+   breq.symbol_slot = Strategy_SlotForSymbol(pair_index, symbol);
+   breq.expiration_seconds = 0;
+
+   ulong ticket = 0;
+   return QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, breq, ticket);
+  }
+
+bool Strategy_OpenPair(const int pair_index, const int spread_direction)
+  {
+   if(pair_index < 0 || pair_index >= STRATEGY_PAIR_COUNT || spread_direction == 0)
+      return false;
+   if(Strategy_OpenPairLegCount(pair_index) > 0)
+      return false;
+
+   const string reason = (spread_direction > 0) ? "QM5_1058_LONG_PAIR_Z_LT_NEG2"
+                                                : "QM5_1058_SHORT_PAIR_Z_GT_POS2";
+   const double leg_a_weight = 1.0;
+   const double leg_b_weight = -g_beta;
+
+   const bool opened_a = Strategy_OpenLeg(pair_index, g_pair_a[pair_index],
+                                          leg_a_weight, spread_direction, reason);
+   const bool opened_b = Strategy_OpenLeg(pair_index, g_pair_b[pair_index],
+                                          leg_b_weight, spread_direction, reason);
+   if(opened_a && opened_b)
       return true;
-   if(strategy_max_spread_points > 0 && SymbolInfoInteger(_Symbol, SYMBOL_SPREAD) > strategy_max_spread_points)
-      return true;
-   if(Strategy_RolloverWindow(TimeCurrent()))
-      return true;
+
+   Strategy_ClosePair(pair_index, QM_EXIT_STRATEGY);
    return false;
   }
 
+// No Trade Filter: D1 cadence, registered pair membership, spread, and rollover gate.
+bool Strategy_NoTradeFilter()
+  {
+   if((ENUM_TIMEFRAMES)_Period != PERIOD_D1)
+      return true;
+
+   const int pair_index = Strategy_PairForHostSymbol(_Symbol);
+   if(pair_index < 0)
+      return true;
+
+   const int expected_slot = Strategy_SlotForSymbol(pair_index, _Symbol);
+   if(qm_magic_slot_offset != expected_slot)
+      return true;
+
+   if(!Strategy_SpreadsNormal(pair_index))
+      return true;
+
+   if(Strategy_RolloverWindow(TimeCurrent()))
+      return true;
+
+   return false;
+  }
+
+// Trade Entry: rolling OLS beta, spread z-score threshold, and correlation gate.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_1058_GATEV_FX_PAIR";
-   req.symbol_slot = Strategy_CurrentSlot();
+   req.reason = "QM5_1058_GATEV_PAIR_HOST";
+   req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(Strategy_HasOpenPosition())
+   if(!g_state_ready)
+      return false;
+   if(Strategy_OpenPairLegCount(g_active_pair) > 0)
+      return false;
+   if(g_corr_now <= strategy_min_corr)
       return false;
 
-   double z = 0.0;
-   double corr = 0.0;
-   if(!Strategy_PairStats(z, corr))
-      return false;
-   if(corr <= strategy_min_corr)
-      return false;
+   if(g_z_now < -MathAbs(strategy_entry_z))
+      Strategy_OpenPair(g_active_pair, 1);
+   else if(g_z_now > MathAbs(strategy_entry_z))
+      Strategy_OpenPair(g_active_pair, -1);
 
-   const int pair_index = Strategy_PairIndex();
-   const bool is_leg_a = Strategy_IsLegA(pair_index);
-   int spread_direction = 0;
-   if(z < -strategy_entry_z)
-      spread_direction = 1;
-   else if(z > strategy_entry_z)
-      spread_direction = -1;
-   else
-      return false;
-
-   const int leg_direction = is_leg_a ? spread_direction : -spread_direction;
-   req.type = (leg_direction > 0) ? QM_BUY : QM_SELL;
-
-   const double entry = (req.type == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                             : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
-      return false;
-
-   req.sl = 0.0;
-   req.reason = (spread_direction > 0) ? "QM5_1058_LONG_PAIR_Z_LT_NEG2" : "QM5_1058_SHORT_PAIR_Z_GT_POS2";
-   return true;
-  }
-
-void Strategy_ManageOpenPosition()
-  {
-   // Card specifies no trailing, break-even, partial close, or add-on logic.
-  }
-
-bool Strategy_ExitSignal()
-  {
-   const int pair_index = Strategy_PairIndex();
-   const int open_legs = Strategy_OpenPairLegCount(pair_index);
-   if(open_legs == 1)
-      return true;
-   if(open_legs <= 0)
-      return false;
-
-   double z = 0.0;
-   double corr = 0.0;
-   if(!Strategy_PairStats(z, corr))
-      return false;
-
-   if(MathAbs(z) < strategy_exit_z)
-      return true;
-   if(MathAbs(z) > strategy_hard_stop_z)
-      return true;
-   if(strategy_time_stop_bars > 0 && Strategy_PositionBarsHeld() >= strategy_time_stop_bars)
-      return true;
    return false;
   }
 
+// Trade Management: the card specifies no trailing, break-even, partial, or add-on logic.
+void Strategy_ManageOpenPosition()
+  {
+  }
+
+// Trade Close: mean-reversion exit, structural-break stop, and 20-bar time stop.
+bool Strategy_ExitSignal()
+  {
+   if(!g_state_ready || Strategy_OpenPairLegCount(g_active_pair) <= 0)
+      return false;
+
+   if(MathAbs(g_z_now) < MathAbs(strategy_exit_z))
+     {
+      Strategy_ClosePair(g_active_pair, QM_EXIT_STRATEGY);
+      return false;
+     }
+
+   if(MathAbs(g_z_now) > MathAbs(strategy_hard_stop_z))
+     {
+      Strategy_ClosePair(g_active_pair, QM_EXIT_STRATEGY);
+      return false;
+     }
+
+   if(strategy_time_stop_bars > 0 && Strategy_BarsHeld(g_active_pair) >= strategy_time_stop_bars)
+      Strategy_ClosePair(g_active_pair, QM_EXIT_TIME_STOP);
+
+   return false;
+  }
+
+// News Filter Hook: require both legs to pass the framework news gate.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
+   const int pair_index = Strategy_PairForHostSymbol(_Symbol);
+   if(pair_index < 0)
+      return false;
+
+   string symbols[2];
+   symbols[0] = g_pair_a[pair_index];
+   symbols[1] = g_pair_b[pair_index];
+   for(int i = 0; i < 2; ++i)
+     {
+      if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+        {
+         if(!QM_NewsAllowsTrade2(symbols[i], broker_time, qm_news_temporal, qm_news_compliance))
+            return true;
+        }
+      else if(!QM_NewsAllowsTrade(symbols[i], broker_time, qm_news_mode_legacy))
+         return true;
+     }
+
    return false;
   }
 
@@ -364,18 +484,28 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        60,
+                        60,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
-   for(int i = 0; i < STRATEGY_PAIR_COUNT; ++i)
-     {
-      SymbolSelect(g_pair_a[i], true);
-      SymbolSelect(g_pair_b[i], true);
-     }
+   string allowed[4];
+   allowed[0] = "EURUSD.DWX";
+   allowed[1] = "GBPUSD.DWX";
+   allowed[2] = "AUDUSD.DWX";
+   allowed[3] = "NZDUSD.DWX";
+   QM_SymbolGuardInit(allowed);
+   QM_BasketWarmupHistory(allowed, PERIOD_D1, MathMax(300, strategy_lookback_bars + 5));
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1058\",\"ea\":\"gatev-fx-pairs-zscore\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1058\",\"strategy\":\"gatev-fx-pairs-zscore\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -393,35 +523,43 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
+
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   Strategy_ManageOpenPosition();
-
-   if(!QM_IsNewBar())
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
       return;
 
-   if(Strategy_ExitSignal())
-     {
-      Strategy_CloseOpenPairLegs(Strategy_PairIndex());
-     }
+   QM_EquityStreamOnNewBar();
+   Strategy_RefreshState();
+   Strategy_ManageOpenPosition();
+   Strategy_ExitSignal();
 
    QM_EntryRequest req;
-   if(Strategy_EntrySignal(req))
-     {
-      ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
-     }
+   Strategy_EntrySignal(req);
   }
 
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()
