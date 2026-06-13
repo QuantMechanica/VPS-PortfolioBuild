@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10616
-; ea_slug:      mql5-pivotlimit
+; ea_id:        10617
+; ea_slug:      mql5-harami-sto
 ; ea_version:   v5.0
 ; set_version:  s20260613-001
-; symbol:       GBPUSD.DWX
-; timeframe:    M30
+; symbol:       USDJPY.DWX
+; timeframe:    H1
 ; environment:  backtest
-; magic_slot:   1
+; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   66129dd2db7b4f57dc083b562f207055c0332fc8a18e8f3d8e6d6410e0293b20
+; build_hash:   ad2e8a00697db05d1e446553a6c9fd6d11d65db17cfce52de1aed284eca64ddc
 ; author:       Development
 ; date:         2026-06-13
 ;==========================================================
-qm_magic_slot_offset=1
+qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
