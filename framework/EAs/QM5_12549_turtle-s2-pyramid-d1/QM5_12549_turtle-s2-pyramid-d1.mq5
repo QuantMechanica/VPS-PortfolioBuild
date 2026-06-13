@@ -64,15 +64,23 @@ int      g_dir              = 0;     // 1=long, -1=short, 0=flat
 // Internal helpers
 // ----------------------------------------------------------------------------
 
-int BaseMagic()
+int UnitMagic(const int unit_idx)
   {
-   return qm_ea_id * 10000 + qm_magic_slot_offset;
+   const int slot = qm_magic_slot_offset + unit_idx;
+   if(!QM_MagicRegistered(qm_ea_id, slot))
+      return -1;
+   return QM_Magic(qm_ea_id, slot);
   }
 
 bool IsOurPosition(const int pos_magic)
   {
-   const int base = BaseMagic();
-   return (pos_magic >= base && pos_magic <= base + strategy_max_units - 1);
+   for(int unit_idx = 0; unit_idx < strategy_max_units; ++unit_idx)
+     {
+      const int unit_magic = UnitMagic(unit_idx);
+      if(unit_magic > 0 && pos_magic == unit_magic)
+         return true;
+     }
+   return false;
   }
 
 int CountOurPositions()
