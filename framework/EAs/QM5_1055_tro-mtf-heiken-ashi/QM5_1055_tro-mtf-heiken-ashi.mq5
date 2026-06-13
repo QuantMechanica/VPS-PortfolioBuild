@@ -5,20 +5,28 @@
 #include <QM/QM_Common.mqh>
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                    = 1055;
-input int    qm_magic_slot_offset        = 0;
+input int    qm_ea_id                   = 1055;
+input int    qm_magic_slot_offset       = 0;
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT                = 0.0;
-input double RISK_FIXED                  = 1000.0;
-input double PORTFOLIO_WEIGHT            = 1.0;
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode           = QM_NEWS_OFF;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
+input int    qm_news_stale_max_hours    = 336;
+input string qm_news_min_impact         = "high";
+input QM_NewsMode qm_news_mode_legacy   = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = true;
+input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
+
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_has_period         = 6;
@@ -30,32 +38,21 @@ input bool   strategy_use_session_filter = false;
 input int    strategy_london_start_hour  = 7;
 input int    strategy_ny_end_hour        = 21;
 
-#define QM5_1055_HA_CACHE_MAX 8
-
-string   g_ha_cache_key[QM5_1055_HA_CACHE_MAX];
-datetime g_ha_cache_bar_time[QM5_1055_HA_CACHE_MAX];
-int      g_ha_cache_dir[QM5_1055_HA_CACHE_MAX];
-double   g_ha_cache_open[QM5_1055_HA_CACHE_MAX];
-double   g_ha_cache_high[QM5_1055_HA_CACHE_MAX];
-double   g_ha_cache_low[QM5_1055_HA_CACHE_MAX];
-double   g_ha_cache_close[QM5_1055_HA_CACHE_MAX];
-int      g_ha_cache_count = 0;
-
-double QmNormalizePrice(const double price)
+double Strategy_NormalizePrice(const double price)
   {
    if(price <= 0.0)
       return 0.0;
    return NormalizeDouble(price, _Digits);
   }
 
-int QmBrokerHour()
+int Strategy_BrokerHour()
   {
    MqlDateTime dt;
    TimeToStruct(TimeCurrent(), dt);
    return dt.hour;
   }
 
-bool QmHasOurPosition(ENUM_POSITION_TYPE &ptype)
+bool Strategy_SelectPosition(ENUM_POSITION_TYPE &ptype)
   {
    ptype = POSITION_TYPE_BUY;
    const int magic = QM_FrameworkMagic();
@@ -78,73 +75,84 @@ bool QmHasOurPosition(ENUM_POSITION_TYPE &ptype)
    return false;
   }
 
-bool QmReadOhlc(const string symbol,
-                const ENUM_TIMEFRAMES tf,
-                const int shift,
-                const bool smoothed,
-                double &open_price,
-                double &high_price,
-                double &low_price,
-                double &close_price)
+bool Strategy_HeikenAshiClosed(const string symbol,
+                               const ENUM_TIMEFRAMES tf,
+                               const int shift,
+                               const bool smoothed,
+                               double &ha_open,
+                               double &ha_high,
+                               double &ha_low,
+                               double &ha_close)
   {
    if(shift < 1)
       return false;
+
+   const int lookback = (strategy_ha_lookback_bars > 12) ? strategy_ha_lookback_bars : 12;
+   double prev_ha_open = 0.0;
+   double prev_ha_close = 0.0;
 
    if(smoothed)
      {
-      open_price = QM_EMA(symbol, tf, strategy_has_period, shift, PRICE_OPEN);
-      high_price = QM_EMA(symbol, tf, strategy_has_period, shift, PRICE_HIGH);
-      low_price = QM_EMA(symbol, tf, strategy_has_period, shift, PRICE_LOW);
-      close_price = QM_EMA(symbol, tf, strategy_has_period, shift, PRICE_CLOSE);
-     }
-   else
-     {
-      open_price = iOpen(symbol, tf, shift);
-      high_price = iHigh(symbol, tf, shift);
-      low_price = iLow(symbol, tf, shift);
-      close_price = iClose(symbol, tf, shift);
-     }
-
-   return (open_price > 0.0 && high_price > 0.0 && low_price > 0.0 && close_price > 0.0);
-  }
-
-bool QmHeikenAshiCandle(const string symbol,
-                        const ENUM_TIMEFRAMES tf,
-                        const int shift,
-                        const bool smoothed,
-                        double &ha_open,
-                        double &ha_high,
-                        double &ha_low,
-                        double &ha_close)
-  {
-   if(shift < 1)
-      return false;
-
-   const int bars = Bars(symbol, tf);
-   if(bars <= shift + 3)
-      return false;
-
-   int start_shift = shift + MathMax(strategy_ha_lookback_bars, 3);
-   if(start_shift > bars - 1)
-      start_shift = bars - 1;
-
-   double prev_ha_open = 0.0;
-   double prev_ha_close = 0.0;
-   for(int i = start_shift; i >= shift; --i)
-     {
-      double o = 0.0, h = 0.0, l = 0.0, c = 0.0;
-      if(!QmReadOhlc(symbol, tf, i, smoothed, o, h, l, c))
+      if(strategy_has_period < 1)
          return false;
 
-      const double cur_ha_close = (o + h + l + c) / 4.0;
-      const double cur_ha_open = (i == start_shift) ? ((o + c) / 2.0) : ((prev_ha_open + prev_ha_close) / 2.0);
-      const double cur_ha_high = MathMax(h, MathMax(cur_ha_open, cur_ha_close));
-      const double cur_ha_low = MathMin(l, MathMin(cur_ha_open, cur_ha_close));
+      for(int bar_shift = shift + lookback - 1; bar_shift >= shift; --bar_shift)
+        {
+         const double open_price = QM_EMA(symbol, tf, strategy_has_period, bar_shift, PRICE_OPEN);
+         const double high_price = QM_EMA(symbol, tf, strategy_has_period, bar_shift, PRICE_HIGH);
+         const double low_price = QM_EMA(symbol, tf, strategy_has_period, bar_shift, PRICE_LOW);
+         const double close_price = QM_EMA(symbol, tf, strategy_has_period, bar_shift, PRICE_CLOSE);
+         if(open_price <= 0.0 || high_price <= 0.0 || low_price <= 0.0 || close_price <= 0.0)
+            return false;
+
+         const double cur_ha_close = (open_price + high_price + low_price + close_price) / 4.0;
+         const double cur_ha_open = (bar_shift == shift + lookback - 1)
+                                    ? ((open_price + close_price) / 2.0)
+                                    : ((prev_ha_open + prev_ha_close) / 2.0);
+         const double cur_ha_high = MathMax(high_price, MathMax(cur_ha_open, cur_ha_close));
+         const double cur_ha_low = MathMin(low_price, MathMin(cur_ha_open, cur_ha_close));
+
+         prev_ha_open = cur_ha_open;
+         prev_ha_close = cur_ha_close;
+
+         if(bar_shift == shift)
+           {
+            ha_open = cur_ha_open;
+            ha_high = cur_ha_high;
+            ha_low = cur_ha_low;
+            ha_close = cur_ha_close;
+            return true;
+           }
+        }
+      return false;
+     }
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(symbol, tf, shift, lookback, rates); // perf-allowed: bounded HA calculation; OnTick gates strategy work by QM_IsNewBar.
+   if(copied < 3)
+      return false;
+
+   for(int i = copied - 1; i >= 0; --i)
+     {
+      const double open_price = rates[i].open;
+      const double high_price = rates[i].high;
+      const double low_price = rates[i].low;
+      const double close_price = rates[i].close;
+      if(open_price <= 0.0 || high_price <= 0.0 || low_price <= 0.0 || close_price <= 0.0)
+         return false;
+
+      const double cur_ha_close = (open_price + high_price + low_price + close_price) / 4.0;
+      const double cur_ha_open = (i == copied - 1)
+                                 ? ((open_price + close_price) / 2.0)
+                                 : ((prev_ha_open + prev_ha_close) / 2.0);
+      const double cur_ha_high = MathMax(high_price, MathMax(cur_ha_open, cur_ha_close));
+      const double cur_ha_low = MathMin(low_price, MathMin(cur_ha_open, cur_ha_close));
 
       prev_ha_open = cur_ha_open;
       prev_ha_close = cur_ha_close;
 
-      if(i == shift)
+      if(i == 0)
         {
          ha_open = cur_ha_open;
          ha_high = cur_ha_high;
@@ -157,10 +165,13 @@ bool QmHeikenAshiCandle(const string symbol,
    return false;
   }
 
-int QmHaDirection(const ENUM_TIMEFRAMES tf, const bool smoothed)
+int Strategy_HaDirection(const ENUM_TIMEFRAMES tf, const bool smoothed)
   {
-   double ha_open = 0.0, ha_high = 0.0, ha_low = 0.0, ha_close = 0.0;
-   if(!QmHeikenAshiCandle(_Symbol, tf, 1, smoothed, ha_open, ha_high, ha_low, ha_close))
+   double ha_open = 0.0;
+   double ha_high = 0.0;
+   double ha_low = 0.0;
+   double ha_close = 0.0;
+   if(!Strategy_HeikenAshiClosed(_Symbol, tf, 1, smoothed, ha_open, ha_high, ha_low, ha_close))
       return 0;
    if(ha_close > ha_open)
       return 1;
@@ -169,85 +180,7 @@ int QmHaDirection(const ENUM_TIMEFRAMES tf, const bool smoothed)
    return 0;
   }
 
-bool QmCachedHeikenAshi(const ENUM_TIMEFRAMES tf,
-                        const bool smoothed,
-                        double &ha_open,
-                        double &ha_high,
-                        double &ha_low,
-                        double &ha_close,
-                        int &direction)
-  {
-   const datetime closed_bar_time = iTime(_Symbol, tf, 1);
-   if(closed_bar_time <= 0)
-      return false;
-
-   const string key = StringFormat("%s|%d|%d", _Symbol, (int)tf, smoothed ? 1 : 0);
-   for(int i = 0; i < g_ha_cache_count; ++i)
-     {
-      if(g_ha_cache_key[i] != key)
-         continue;
-
-      if(g_ha_cache_bar_time[i] == closed_bar_time)
-        {
-         ha_open = g_ha_cache_open[i];
-         ha_high = g_ha_cache_high[i];
-         ha_low = g_ha_cache_low[i];
-         ha_close = g_ha_cache_close[i];
-         direction = g_ha_cache_dir[i];
-         return true;
-        }
-
-      if(!QmHeikenAshiCandle(_Symbol, tf, 1, smoothed, ha_open, ha_high, ha_low, ha_close))
-         return false;
-
-      direction = 0;
-      if(ha_close > ha_open)
-         direction = 1;
-      else if(ha_close < ha_open)
-         direction = -1;
-
-      g_ha_cache_bar_time[i] = closed_bar_time;
-      g_ha_cache_open[i] = ha_open;
-      g_ha_cache_high[i] = ha_high;
-      g_ha_cache_low[i] = ha_low;
-      g_ha_cache_close[i] = ha_close;
-      g_ha_cache_dir[i] = direction;
-      return true;
-     }
-
-   if(g_ha_cache_count >= QM5_1055_HA_CACHE_MAX)
-      return false;
-
-   if(!QmHeikenAshiCandle(_Symbol, tf, 1, smoothed, ha_open, ha_high, ha_low, ha_close))
-      return false;
-
-   direction = 0;
-   if(ha_close > ha_open)
-      direction = 1;
-   else if(ha_close < ha_open)
-      direction = -1;
-
-   const int slot = g_ha_cache_count;
-   g_ha_cache_key[slot] = key;
-   g_ha_cache_bar_time[slot] = closed_bar_time;
-   g_ha_cache_open[slot] = ha_open;
-   g_ha_cache_high[slot] = ha_high;
-   g_ha_cache_low[slot] = ha_low;
-   g_ha_cache_close[slot] = ha_close;
-   g_ha_cache_dir[slot] = direction;
-   g_ha_cache_count++;
-   return true;
-  }
-
-int QmCachedHaDirection(const ENUM_TIMEFRAMES tf, const bool smoothed)
-  {
-   double ha_open = 0.0, ha_high = 0.0, ha_low = 0.0, ha_close = 0.0;
-   int direction = 0;
-   if(!QmCachedHeikenAshi(tf, smoothed, ha_open, ha_high, ha_low, ha_close, direction))
-      return 0;
-   return direction;
-  }
-
+// Return TRUE to BLOCK trading this tick.
 bool Strategy_NoTradeFilter()
   {
    const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
@@ -256,7 +189,7 @@ bool Strategy_NoTradeFilter()
 
    if(strategy_use_session_filter)
      {
-      const int hour = QmBrokerHour();
+      const int hour = Strategy_BrokerHour();
       if(hour < strategy_london_start_hour || hour >= strategy_ny_end_hour)
          return true;
      }
@@ -277,19 +210,21 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(_Period != PERIOD_M15)
       return false;
 
-   const int h4_dir = QmCachedHaDirection(PERIOD_H4, false);
-   const int h1_dir = QmCachedHaDirection(PERIOD_H1, false);
-   const int m15_dir = QmCachedHaDirection(PERIOD_M15, false);
-   const int has_dir = QmCachedHaDirection(PERIOD_M15, true);
-
+   const int h4_dir = Strategy_HaDirection(PERIOD_H4, false);
+   const int h1_dir = Strategy_HaDirection(PERIOD_H1, false);
+   const int m15_dir = Strategy_HaDirection(PERIOD_M15, false);
+   const int has_dir = Strategy_HaDirection(PERIOD_M15, true);
    if(h4_dir == 0 || h1_dir == 0 || m15_dir == 0 || has_dir == 0)
       return false;
    if(!(h4_dir == h1_dir && h1_dir == m15_dir && m15_dir == has_dir))
       return false;
 
-   double h1_ha_open = 0.0, h1_ha_high = 0.0, h1_ha_low = 0.0, h1_ha_close = 0.0;
-   int h1_ha_dir = 0;
-   if(!QmCachedHeikenAshi(PERIOD_H1, false, h1_ha_open, h1_ha_high, h1_ha_low, h1_ha_close, h1_ha_dir))
+   double h1_ha_open = 0.0;
+   double h1_ha_high = 0.0;
+   double h1_ha_low = 0.0;
+   double h1_ha_close = 0.0;
+   if(!Strategy_HeikenAshiClosed(_Symbol, PERIOD_H1, 1, false,
+                                 h1_ha_open, h1_ha_high, h1_ha_low, h1_ha_close))
       return false;
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
@@ -300,40 +235,36 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(h4_dir > 0)
      {
-      const double sl = QmNormalizePrice(h1_ha_low - strategy_sl_buffer_points * point);
+      const double sl = Strategy_NormalizePrice(h1_ha_low - strategy_sl_buffer_points * point);
       if(sl <= 0.0 || sl >= ask)
          return false;
       req.type = QM_BUY;
-      req.price = 0.0;
       req.sl = sl;
-      req.tp = 0.0;
       req.reason = "TRO_MTF_HA_LONG";
       return true;
      }
 
-   const double sl = QmNormalizePrice(h1_ha_high + strategy_sl_buffer_points * point);
+   const double sl = Strategy_NormalizePrice(h1_ha_high + strategy_sl_buffer_points * point);
    if(sl <= 0.0 || sl <= bid)
       return false;
    req.type = QM_SELL;
-   req.price = 0.0;
    req.sl = sl;
-   req.tp = 0.0;
    req.reason = "TRO_MTF_HA_SHORT";
    return true;
   }
 
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no trailing, break-even, or partial-close rule.
+   // Card specifies no break-even, trailing-stop, or partial-close management.
   }
 
 bool Strategy_ExitSignal()
   {
    ENUM_POSITION_TYPE ptype;
-   if(!QmHasOurPosition(ptype))
+   if(!Strategy_SelectPosition(ptype))
       return false;
 
-   const int has_dir = QmCachedHaDirection(PERIOD_M15, true);
+   const int has_dir = Strategy_HaDirection(PERIOD_M15, true);
    if(has_dir == 0)
       return false;
 
@@ -345,7 +276,7 @@ bool Strategy_ExitSignal()
 
    if(strategy_exit_on_h1_flip)
      {
-      const int h1_dir = QmCachedHaDirection(PERIOD_H1, false);
+      const int h1_dir = Strategy_HaDirection(PERIOD_H1, false);
       if(is_buy && h1_dir < 0)
          return true;
       if(!is_buy && h1_dir > 0)
@@ -360,6 +291,10 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
    return false;
   }
 
+// -----------------------------------------------------------------------------
+// Framework wiring.
+// -----------------------------------------------------------------------------
+
 int OnInit()
   {
    if(!QM_FrameworkInit(qm_ea_id,
@@ -367,9 +302,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1055\",\"ea\":\"QM5_1055_tro_mtf_heiken_ashi\"}");
@@ -390,12 +333,24 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
+
    if(QM_FrameworkHandleFridayClose())
       return;
    if(Strategy_NoTradeFilter())
       return;
+
+   if(!QM_IsNewBar(_Symbol, PERIOD_M15))
+      return;
+
+   QM_EquityStreamOnNewBar();
 
    Strategy_ManageOpenPosition();
 
@@ -405,7 +360,7 @@ void OnTick()
       for(int i = PositionsTotal() - 1; i >= 0; --i)
         {
          const ulong ticket = PositionGetTicket(i);
-         if(ticket == 0 || !PositionSelectByTicket(ticket))
+         if(!PositionSelectByTicket(ticket))
             continue;
          if(PositionGetString(POSITION_SYMBOL) != _Symbol)
             continue;
@@ -413,10 +368,8 @@ void OnTick()
             continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
-     }
-
-   if(!QM_IsNewBar(_Symbol, PERIOD_M15))
       return;
+     }
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
@@ -429,6 +382,13 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()
