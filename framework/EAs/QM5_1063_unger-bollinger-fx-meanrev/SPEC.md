@@ -4,7 +4,7 @@
 **Slug:** `unger-bollinger-fx-meanrev`
 **Source:** `eb97a148-0af9-5b9c-878c-25fb5dfa34f9`
 **Author of this spec:** Codex
-**Last revised:** 2026-06-13
+**Last revised:** 2026-06-14
 
 ---
 

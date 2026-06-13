@@ -188,7 +188,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(HasOurOpenPosition())
       return false;
 
-   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1); // perf-allowed: fixed closed-bar close; no QM close reader exists.
+   const double close_1 = QM_SMA(_Symbol, strategy_signal_tf, 1, 1);
    const double upper = QM_BB_Upper(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 1);
    const double lower = QM_BB_Lower(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 1);
    const double adx = QM_ADX(_Symbol, strategy_signal_tf, strategy_adx_period, 1);
@@ -241,9 +241,13 @@ bool Strategy_ExitSignal()
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return false;
+   if(!HasOurOpenPosition())
+      return false;
+   if(!QM_IsNewBar(_Symbol, strategy_signal_tf))
+      return false;
 
-   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1); // perf-allowed: fixed closed-bar close for middle-band exit.
-   const double close_2 = iClose(_Symbol, strategy_signal_tf, 2); // perf-allowed: fixed prior closed-bar close for middle-band cross.
+   const double close_1 = QM_SMA(_Symbol, strategy_signal_tf, 1, 1);
+   const double close_2 = QM_SMA(_Symbol, strategy_signal_tf, 1, 2);
    const double middle_1 = QM_BB_Middle(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 1);
    const double middle_2 = QM_BB_Middle(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 2);
    const int hold_seconds = strategy_max_hold_bars * PeriodSeconds(strategy_signal_tf);
