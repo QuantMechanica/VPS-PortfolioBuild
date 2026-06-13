@@ -38,51 +38,16 @@ input bool   strategy_use_atr_stop      = false;
 input int    strategy_atr_period        = 14;
 input double strategy_atr_mult          = 1.5;
 
-double Strategy_NormalizePrice(const double price)
-  {
-   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   return NormalizeDouble(price, digits);
-  }
-
-double Strategy_LastClosedClose(const ENUM_TIMEFRAMES tf)
-  {
-   return QM_SMA(_Symbol, tf, 1, 1, PRICE_CLOSE);
-  }
-
-bool Strategy_HasOpenPosition(ENUM_POSITION_TYPE &position_type)
-  {
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      return true;
-     }
-
-   return false;
-  }
-
 // No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0)
-      return true;
-
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
+   if(point <= 0.0 || ask <= 0.0 || bid <= 0.0)
       return true;
 
-   const double spread_points = (ask - bid) / point;
-   if(strategy_spread_cap_points > 0 && spread_points > strategy_spread_cap_points)
+   if(strategy_spread_cap_points > 0 && ((ask - bid) / point) > strategy_spread_cap_points)
       return true;
 
    if(strategy_london_ny_only)
@@ -94,20 +59,6 @@ bool Strategy_NoTradeFilter()
      }
 
    return false;
-  }
-
-double Strategy_InitialStop(const QM_OrderType side, const double entry_price, const double h1_sma)
-  {
-   if(strategy_use_atr_stop)
-      return QM_StopATR(_Symbol, side, entry_price, strategy_atr_period, strategy_atr_mult);
-
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0 || h1_sma <= 0.0)
-      return 0.0;
-
-   const double buffer = strategy_sl_buffer_points * point;
-   const double stop = QM_OrderTypeIsBuy(side) ? (h1_sma - buffer) : (h1_sma + buffer);
-   return Strategy_NormalizePrice(stop);
   }
 
 // Trade Entry
@@ -126,45 +77,76 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(strategy_use_atr_stop && (strategy_atr_period <= 0 || strategy_atr_mult <= 0.0))
       return false;
 
-   ENUM_POSITION_TYPE ignored_type;
-   if(Strategy_HasOpenPosition(ignored_type))
-      return false;
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
       return false;
 
-   const double m5_close = Strategy_LastClosedClose(PERIOD_M5);
+   const double m5_close = QM_SMA(_Symbol, PERIOD_M5, 1, 1, PRICE_CLOSE);
    const double sma_h4 = QM_SMA(_Symbol, PERIOD_H4, strategy_sma_period, 0, PRICE_CLOSE);
    const double sma_h1 = QM_SMA(_Symbol, PERIOD_H1, strategy_sma_period, 0, PRICE_CLOSE);
    const double sma_m5 = QM_SMA(_Symbol, PERIOD_M5, strategy_sma_period, 1, PRICE_CLOSE);
    if(m5_close <= 0.0 || sma_h4 <= 0.0 || sma_h1 <= 0.0 || sma_m5 <= 0.0)
       return false;
 
+   QM_OrderType side = QM_BUY;
+   double entry = 0.0;
    if(bid > sma_h4 && bid > sma_h1 && m5_close > sma_m5)
      {
-      req.type = QM_BUY;
-      req.sl = Strategy_InitialStop(req.type, ask, sma_h1);
-      if(req.sl <= 0.0 || req.sl >= ask)
-         return false;
-      req.tp = QM_TakeRR(_Symbol, req.type, ask, req.sl, strategy_rr);
-      req.reason = "THREE_DUCKS_LONG";
-      return (req.tp > ask);
+      side = QM_BUY;
+      entry = ask;
      }
-
-   if(bid < sma_h4 && bid < sma_h1 && m5_close < sma_m5)
+   else if(bid < sma_h4 && bid < sma_h1 && m5_close < sma_m5)
      {
-      req.type = QM_SELL;
-      req.sl = Strategy_InitialStop(req.type, bid, sma_h1);
-      if(req.sl <= bid)
-         return false;
-      req.tp = QM_TakeRR(_Symbol, req.type, bid, req.sl, strategy_rr);
-      req.reason = "THREE_DUCKS_SHORT";
-      return (req.tp > 0.0 && req.tp < bid);
+      side = QM_SELL;
+      entry = bid;
+     }
+   else
+      return false;
+
+   double stop = 0.0;
+   if(strategy_use_atr_stop)
+      stop = QM_StopATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_mult);
+   else
+     {
+      const double buffer = strategy_sl_buffer_points * point;
+      stop = QM_OrderTypeIsBuy(side) ? (sma_h1 - buffer) : (sma_h1 + buffer);
+      stop = NormalizeDouble(stop, (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS));
      }
 
-   return false;
+   if(stop <= 0.0)
+      return false;
+   if(side == QM_BUY && stop >= entry)
+      return false;
+   if(side == QM_SELL && stop <= entry)
+      return false;
+
+   const double take = QM_TakeRR(_Symbol, side, entry, stop, strategy_rr);
+   if(take <= 0.0)
+      return false;
+   if(side == QM_BUY && take <= entry)
+      return false;
+   if(side == QM_SELL && take >= entry)
+      return false;
+
+   req.type = side;
+   req.sl = stop;
+   req.tp = take;
+   req.reason = (side == QM_BUY) ? "THREE_DUCKS_LONG" : "THREE_DUCKS_SHORT";
+   return true;
   }
 
 // Trade Management
@@ -179,19 +161,28 @@ bool Strategy_ExitSignal()
    if(strategy_sma_period <= 0)
       return false;
 
-   ENUM_POSITION_TYPE position_type;
-   if(!Strategy_HasOpenPosition(position_type))
-      return false;
-
-   const double m5_close = Strategy_LastClosedClose(PERIOD_M5);
+   const double m5_close = QM_SMA(_Symbol, PERIOD_M5, 1, 1, PRICE_CLOSE);
    const double sma_m5 = QM_SMA(_Symbol, PERIOD_M5, strategy_sma_period, 1, PRICE_CLOSE);
    if(m5_close <= 0.0 || sma_m5 <= 0.0)
       return false;
 
-   if(position_type == POSITION_TYPE_BUY && m5_close < sma_m5)
-      return true;
-   if(position_type == POSITION_TYPE_SELL && m5_close > sma_m5)
-      return true;
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(position_type == POSITION_TYPE_BUY && m5_close < sma_m5)
+         return true;
+      if(position_type == POSITION_TYPE_SELL && m5_close > sma_m5)
+         return true;
+     }
 
    return false;
   }

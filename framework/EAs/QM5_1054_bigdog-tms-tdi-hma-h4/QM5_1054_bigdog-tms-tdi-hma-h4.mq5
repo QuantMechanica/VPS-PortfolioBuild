@@ -37,6 +37,10 @@
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 1054;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
 input double RISK_PERCENT               = 0.0;
@@ -44,137 +48,105 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode          = QM_NEWS_OFF;
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
+//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
+input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
+input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
+input double qm_stress_reject_probability = 0.0;
+
 input group "Strategy"
-input int    strategy_tdi_rsi_period     = 13;
-input int    strategy_tdi_signal_period  = 2;
-input double strategy_tdi_midline        = 50.0;
-input int    strategy_hma_period         = 20;
-input int    strategy_asctrend_period    = 10;
-input double strategy_asctrend_atr_mult  = 0.50;
-input int    strategy_swing_lookback     = 10;
-input int    strategy_sl_buffer_points   = 30;
-input double strategy_rr                 = 2.0;
-input int    strategy_spread_cap_points  = 25;
+input int    strategy_tdi_rsi_period          = 13;
+input int    strategy_tdi_signal_period       = 2;
+input double strategy_tdi_midline             = 50.0;
+input int    strategy_hma_period              = 20;
+input int    strategy_asctrend_band_points    = 30;
+input int    strategy_sl_lookback_bars        = 10;
+input int    strategy_sl_buffer_points        = 30;
+input double strategy_rr_target               = 2.0;
+input int    strategy_spread_cap_points       = 25;
 
-double WmaClose(const int period, const int shift)
+double Strategy_Close(const int shift)
   {
-   if(period <= 0 || shift < 0)
-      return 0.0;
-
-   double weighted_sum = 0.0;
-   double weight_total = 0.0;
-   for(int i = 0; i < period; ++i)
-     {
-      const double close_price = iClose(_Symbol, _Period, shift + i);
-      if(close_price <= 0.0)
-         return 0.0;
-
-      const double weight = period - i;
-      weighted_sum += close_price * weight;
-      weight_total += weight;
-     }
-
-   if(weight_total <= 0.0)
-      return 0.0;
-   return weighted_sum / weight_total;
+   return QM_SMA(_Symbol, PERIOD_H4, 1, shift, PRICE_CLOSE);
   }
 
-double HmaValue(const int period, const int shift)
+double Strategy_TdiGreen(const int shift)
   {
-   if(period < 2 || shift < 0)
-      return 0.0;
-
-   const int half_period = MathMax(1, period / 2);
-   const int sqrt_period = MathMax(1, (int)MathSqrt((double)period));
-   double weighted_sum = 0.0;
-   double weight_total = 0.0;
-
-   for(int i = 0; i < sqrt_period; ++i)
-     {
-      const double fast_wma = WmaClose(half_period, shift + i);
-      const double slow_wma = WmaClose(period, shift + i);
-      if(fast_wma <= 0.0 || slow_wma <= 0.0)
-         return 0.0;
-
-      const double raw_hma = (2.0 * fast_wma) - slow_wma;
-      const double weight = sqrt_period - i;
-      weighted_sum += raw_hma * weight;
-      weight_total += weight;
-     }
-
-   if(weight_total <= 0.0)
-      return 0.0;
-   return weighted_sum / weight_total;
+   return QM_RSI(_Symbol, PERIOD_H4, strategy_tdi_rsi_period, shift, PRICE_CLOSE);
   }
 
-double TdiGreen(const int shift)
+double Strategy_TdiRedSignal(const int shift)
   {
-   return QM_RSI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_tdi_rsi_period, shift, PRICE_CLOSE);
-  }
-
-double TdiRed(const int shift)
-  {
-   if(strategy_tdi_signal_period <= 0 || shift < 0)
+   if(strategy_tdi_signal_period <= 0)
       return 0.0;
 
    double sum = 0.0;
+   int samples = 0;
    for(int i = 0; i < strategy_tdi_signal_period; ++i)
      {
-      const double value = TdiGreen(shift + i);
+      const double value = Strategy_TdiGreen(shift + i);
       if(value <= 0.0)
          return 0.0;
       sum += value;
+      samples++;
      }
-   return sum / strategy_tdi_signal_period;
+
+   if(samples <= 0)
+      return 0.0;
+   return sum / samples;
   }
 
-int ASCTrendColor(const int shift)
+int Strategy_TdiCrossDirection()
   {
-   const double close_now = iClose(_Symbol, _Period, shift);
-   const double close_prev = iClose(_Symbol, _Period, shift + 1);
-   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_asctrend_period, shift);
-   if(close_now <= 0.0 || close_prev <= 0.0 || atr <= 0.0 || strategy_asctrend_atr_mult <= 0.0)
+   const double green_1 = Strategy_TdiGreen(1);
+   const double red_1 = Strategy_TdiRedSignal(1);
+   const double green_2 = Strategy_TdiGreen(2);
+   const double red_2 = Strategy_TdiRedSignal(2);
+   if(green_1 <= 0.0 || red_1 <= 0.0 || green_2 <= 0.0 || red_2 <= 0.0)
       return 0;
 
-   const double band_offset = atr * strategy_asctrend_atr_mult;
-   if(close_now > close_prev + band_offset)
+   if(green_1 > red_1 && green_2 <= red_2)
       return 1;
-   if(close_now < close_prev - band_offset)
+   if(green_1 < red_1 && green_2 >= red_2)
       return -1;
    return 0;
   }
 
-bool TdiCrossUp()
+int Strategy_AscTrendColor(const int shift)
   {
-   const double green_1 = TdiGreen(1);
-   const double red_1 = TdiRed(1);
-   const double green_2 = TdiGreen(2);
-   const double red_2 = TdiRed(2);
-   if(green_1 <= 0.0 || red_1 <= 0.0 || green_2 <= 0.0 || red_2 <= 0.0)
-      return false;
-   return (green_2 <= red_2 && green_1 > red_1 &&
-           green_1 > strategy_tdi_midline && red_1 > strategy_tdi_midline);
+   const double close_now = Strategy_Close(shift);
+   const double close_prev = Strategy_Close(shift + 1);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(close_now <= 0.0 || close_prev <= 0.0 || point <= 0.0)
+      return 0;
+
+   const double band = strategy_asctrend_band_points * point;
+   if(close_now > close_prev + band)
+      return 1;
+   if(close_now < close_prev - band)
+      return -1;
+   return 0;
   }
 
-bool TdiCrossDown()
-  {
-   const double green_1 = TdiGreen(1);
-   const double red_1 = TdiRed(1);
-   const double green_2 = TdiGreen(2);
-   const double red_2 = TdiRed(2);
-   if(green_1 <= 0.0 || red_1 <= 0.0 || green_2 <= 0.0 || red_2 <= 0.0)
-      return false;
-   return (green_2 >= red_2 && green_1 < red_1 &&
-           green_1 < strategy_tdi_midline && red_1 < strategy_tdi_midline);
-  }
-
-bool HasOpenPosition()
+bool Strategy_HaveOpenPosition(ENUM_POSITION_TYPE &ptype)
   {
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -184,22 +156,13 @@ bool HasOpenPosition()
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return true;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      return true;
      }
    return false;
-  }
-
-double SwingStopWithBuffer(const QM_OrderType side)
-  {
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const double base_stop = QM_StopStructure(_Symbol, side, QM_EntryMarketPrice(side), strategy_swing_lookback);
-   if(point <= 0.0 || base_stop <= 0.0)
-      return 0.0;
-
-   const double buffer = strategy_sl_buffer_points * point;
-   const double stop = QM_OrderTypeIsBuy(side) ? (base_stop - buffer) : (base_stop + buffer);
-   return QM_StopRulesNormalizePrice(_Symbol, stop);
   }
 
 // -----------------------------------------------------------------------------
@@ -210,9 +173,19 @@ double SwingStopWithBuffer(const QM_OrderType side)
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   const long spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(strategy_spread_cap_points > 0 && spread > strategy_spread_cap_points)
+   if((ENUM_TIMEFRAMES)_Period != PERIOD_H4)
       return true;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(point <= 0.0 || ask <= 0.0 || bid <= 0.0)
+      return true;
+
+   const double spread_points = (ask - bid) / point;
+   if(strategy_spread_cap_points > 0 && spread_points > strategy_spread_cap_points)
+      return true;
+
    return false;
   }
 
@@ -229,33 +202,66 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(_Period != PERIOD_H4 || HasOpenPosition())
+   ENUM_POSITION_TYPE existing_type = POSITION_TYPE_BUY;
+   if(Strategy_HaveOpenPosition(existing_type))
       return false;
 
-   const double close_1 = iClose(_Symbol, _Period, 1);
-   const double hma_1 = HmaValue(strategy_hma_period, 1);
-   if(close_1 <= 0.0 || hma_1 <= 0.0)
+   const int tdi_cross = Strategy_TdiCrossDirection();
+   if(tdi_cross == 0)
       return false;
 
-   const int asctrend = ASCTrendColor(1);
-   if(TdiCrossUp() && close_1 > hma_1 && asctrend > 0)
+   const double green_1 = Strategy_TdiGreen(1);
+   const double red_1 = Strategy_TdiRedSignal(1);
+   const double close_1 = Strategy_Close(1);
+   const double hma_1 = QM_HMA(_Symbol, PERIOD_H4, strategy_hma_period, 1, PRICE_CLOSE);
+   const int asc_color = Strategy_AscTrendColor(1);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(green_1 <= 0.0 || red_1 <= 0.0 || close_1 <= 0.0 || hma_1 <= 0.0 || point <= 0.0)
+      return false;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   if(tdi_cross > 0 &&
+      green_1 > strategy_tdi_midline &&
+      red_1 > strategy_tdi_midline &&
+      close_1 > hma_1 &&
+      asc_color > 0)
      {
+      const double entry = ask;
+      const double structure_sl = QM_StopStructure(_Symbol, QM_BUY, entry, strategy_sl_lookback_bars);
+      const double sl = (structure_sl > 0.0) ? NormalizeDouble(structure_sl - strategy_sl_buffer_points * point, _Digits) : 0.0;
+      const double tp = QM_TakeRR(_Symbol, QM_BUY, entry, sl, strategy_rr_target);
+      if(sl <= 0.0 || tp <= 0.0 || sl >= entry)
+         return false;
+
       req.type = QM_BUY;
-      req.price = 0.0;
-      req.sl = SwingStopWithBuffer(req.type);
-      req.tp = QM_TakeRR(_Symbol, req.type, QM_EntryMarketPrice(req.type), req.sl, strategy_rr);
+      req.sl = sl;
+      req.tp = tp;
       req.reason = "TMS_TDI_HMA_ASCTREND_LONG";
-      return (req.sl > 0.0 && req.tp > 0.0);
+      return true;
      }
 
-   if(TdiCrossDown() && close_1 < hma_1 && asctrend < 0)
+   if(tdi_cross < 0 &&
+      green_1 < strategy_tdi_midline &&
+      red_1 < strategy_tdi_midline &&
+      close_1 < hma_1 &&
+      asc_color < 0)
      {
+      const double entry = bid;
+      const double structure_sl = QM_StopStructure(_Symbol, QM_SELL, entry, strategy_sl_lookback_bars);
+      const double sl = (structure_sl > 0.0) ? NormalizeDouble(structure_sl + strategy_sl_buffer_points * point, _Digits) : 0.0;
+      const double tp = QM_TakeRR(_Symbol, QM_SELL, entry, sl, strategy_rr_target);
+      if(sl <= 0.0 || tp <= 0.0 || sl <= entry)
+         return false;
+
       req.type = QM_SELL;
-      req.price = 0.0;
-      req.sl = SwingStopWithBuffer(req.type);
-      req.tp = QM_TakeRR(_Symbol, req.type, QM_EntryMarketPrice(req.type), req.sl, strategy_rr);
+      req.sl = sl;
+      req.tp = tp;
       req.reason = "TMS_TDI_HMA_ASCTREND_SHORT";
-      return (req.sl > 0.0 && req.tp > 0.0);
+      return true;
      }
 
    return false;
@@ -265,35 +271,31 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no trailing, break-even, or partial-close management.
+   // Card specifies no break-even, trailing, partial close, or pyramiding.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   static datetime last_exit_eval_bar = 0;
-   const datetime current_bar = iTime(_Symbol, _Period, 0);
-   if(current_bar <= 0 || current_bar == last_exit_eval_bar)
+   ENUM_POSITION_TYPE ptype = POSITION_TYPE_BUY;
+   if(!Strategy_HaveOpenPosition(ptype))
       return false;
-   last_exit_eval_bar = current_bar;
 
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   const int tdi_cross = Strategy_TdiCrossDirection();
+   const int asc_color = Strategy_AscTrendColor(1);
+   if(ptype == POSITION_TYPE_BUY)
      {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const int asctrend = ASCTrendColor(1);
-      if(ptype == POSITION_TYPE_BUY && (TdiCrossDown() || asctrend < 0))
+      if(tdi_cross < 0)
          return true;
-      if(ptype == POSITION_TYPE_SELL && (TdiCrossUp() || asctrend > 0))
+      if(asc_color < 0)
+         return true;
+     }
+   else if(ptype == POSITION_TYPE_SELL)
+     {
+      if(tdi_cross > 0)
+         return true;
+      if(asc_color > 0)
          return true;
      }
 
@@ -305,7 +307,7 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false; // defer to QM_NewsAllowsTrade(...)
+   return false; // Defer to the framework news filter.
   }
 
 // -----------------------------------------------------------------------------
@@ -319,9 +321,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,           // legacy back-compat
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,                            // pause-before (legacy hint)
+                        30,                            // pause-after (legacy hint)
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,              // FW1 Axis A
+                        qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -342,7 +352,14 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -374,6 +391,10 @@ void OnTick()
    if(!QM_IsNewBar())
       return;
 
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
+   QM_EquityStreamOnNewBar();
+
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
@@ -385,6 +406,15 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()
