@@ -8829,3 +8829,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10383,et-sma-rsi150,1,NDX.DWX,103830001,2026-06-13,Development,active
 10383,et-sma-rsi150,2,WS30.DWX,103830002,2026-06-13,Development,active
 10383,et-sma-rsi150,3,GDAXI.DWX,103830003,2026-06-13,Development,active
+10436,mql5-h4m15-sweep,0,EURUSD.DWX,104360000,2026-06-13,Development,active
+10436,mql5-h4m15-sweep,1,GBPUSD.DWX,104360001,2026-06-13,Development,active
+10436,mql5-h4m15-sweep,2,USDJPY.DWX,104360002,2026-06-13,Development,active
+10436,mql5-h4m15-sweep,3,XAUUSD.DWX,104360003,2026-06-13,Development,active
