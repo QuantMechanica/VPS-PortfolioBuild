@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA runs on M5 index data. After broker time 19:00, it computes the highest high and lowest low of the prior 15 M5 bars as the lunch range. If the symbol is flat and no stop order pair is already working, it places a buy stop one tick above the range high and a sell stop one tick below the range low. The long stop is below the range low by 0.3 times the range, the short stop is above the range high by 0.3 times the range, and any open position or unfilled stop order is closed or cancelled after broker time 22:00.
+The EA runs on M5 index data. At the first eligible closed bar at or after broker time 19:00, it computes the highest high and lowest low of the prior 15 M5 bars once for that trading day as the lunch range. If the symbol is flat and no stop order pair is already working, it places a buy stop one tick above the range high and a sell stop one tick below the range low. The long stop is below the range low by 0.3 times the range, the short stop is above the range high by 0.3 times the range, and any open position or unfilled stop order is closed or cancelled after broker time 22:00.
 
 ---
 

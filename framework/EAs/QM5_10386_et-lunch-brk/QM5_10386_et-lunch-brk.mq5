@@ -90,6 +90,11 @@ int  g_etlb_day_key = -1;
 bool g_etlb_buy_submitted_today = false;
 bool g_etlb_sell_submitted_today = false;
 bool g_etlb_cycle_done_today = false;
+int  g_etlb_range_day_key = -1;
+bool g_etlb_range_ready = false;
+bool g_etlb_range_valid = false;
+double g_etlb_lunch_high = 0.0;
+double g_etlb_lunch_low = 0.0;
 
 int ETLB_DayKey(const datetime t)
   {
@@ -127,6 +132,11 @@ void ETLB_RefreshDayState(const datetime broker_now)
    g_etlb_buy_submitted_today = false;
    g_etlb_sell_submitted_today = false;
    g_etlb_cycle_done_today = false;
+   g_etlb_range_day_key = -1;
+   g_etlb_range_ready = false;
+   g_etlb_range_valid = false;
+   g_etlb_lunch_high = 0.0;
+   g_etlb_lunch_low = 0.0;
   }
 
 bool ETLB_HasOpenPositionForMagic()
@@ -227,7 +237,7 @@ void ETLB_DeletePendingOrdersForMagic(const string reason)
      }
   }
 
-bool ETLB_RangeAtLunch(double &range_high, double &range_low)
+bool ETLB_ComputeLunchRange(double &range_high, double &range_low)
   {
    range_high = -DBL_MAX;
    range_low = DBL_MAX;
@@ -240,9 +250,40 @@ bool ETLB_RangeAtLunch(double &range_high, double &range_low)
       if(hi <= 0.0 || lo <= 0.0)
          return false;
       range_high = MathMax(range_high, hi);
-      range_low = MathMin(range_low, lo);
+     range_low = MathMin(range_low, lo);
      }
    return (range_high > range_low && range_low > 0.0);
+  }
+
+void ETLB_EnsureLunchRange(const datetime broker_now)
+  {
+   const int day_key = ETLB_DayKey(broker_now);
+   if(g_etlb_range_ready && g_etlb_range_day_key == day_key)
+      return;
+
+   g_etlb_range_day_key = day_key;
+   g_etlb_range_ready = true;
+   g_etlb_range_valid = false;
+   g_etlb_lunch_high = 0.0;
+   g_etlb_lunch_low = 0.0;
+
+   double lunch_high = 0.0;
+   double lunch_low = 0.0;
+   if(!ETLB_ComputeLunchRange(lunch_high, lunch_low))
+      return;
+
+   const double range = lunch_high - lunch_low;
+   const double spread = ETLB_SpreadDistance();
+   if(spread <= 0.0 || range < 4.0 * spread)
+      return;
+
+   const double atr = QM_ATR(_Symbol, _Period, MathMax(1, strategy_atr_period), 1);
+   if(atr <= 0.0 || range > strategy_max_range_atr_mult * atr)
+      return;
+
+   g_etlb_lunch_high = lunch_high;
+   g_etlb_lunch_low = lunch_low;
+   g_etlb_range_valid = true;
   }
 
 double ETLB_SpreadDistance()
@@ -320,20 +361,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ETLB_PendingCountForMagic() >= 2)
       return false;
 
-   double lunch_high = 0.0;
-   double lunch_low = 0.0;
-   if(!ETLB_RangeAtLunch(lunch_high, lunch_low))
+   ETLB_EnsureLunchRange(broker_now);
+   if(!g_etlb_range_valid)
       return false;
 
-   const double range = lunch_high - lunch_low;
+   const double range = g_etlb_lunch_high - g_etlb_lunch_low;
    const double spread = ETLB_SpreadDistance();
-   if(spread <= 0.0 || range < 4.0 * spread)
+   if(spread <= 0.0 || range <= 0.0)
       return false;
-
-   const double atr = QM_ATR(_Symbol, _Period, MathMax(1, strategy_atr_period), 1);
-   if(atr <= 0.0 || range > strategy_max_range_atr_mult * atr)
-      return false;
-
    const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double trigger = MathMax(1, strategy_trigger_ticks) * ((tick_size > 0.0) ? tick_size : point);
@@ -345,8 +380,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(!g_etlb_buy_submitted_today && !has_buy_pending)
      {
-      const double entry = QM_TM_NormalizePrice(_Symbol, lunch_high + trigger);
-      const double raw_sl = lunch_low - strategy_stop_factor * range;
+      const double entry = QM_TM_NormalizePrice(_Symbol, g_etlb_lunch_high + trigger);
+      const double raw_sl = g_etlb_lunch_low - strategy_stop_factor * range;
       req.type = QM_BUY_STOP;
       req.price = entry;
       req.sl = QM_TM_NormalizePrice(_Symbol, MathMin(raw_sl, entry - min_stop));
@@ -359,8 +394,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(!g_etlb_sell_submitted_today && !has_sell_pending)
      {
-      const double entry = QM_TM_NormalizePrice(_Symbol, lunch_low - trigger);
-      const double raw_sl = lunch_high + strategy_stop_factor * range;
+      const double entry = QM_TM_NormalizePrice(_Symbol, g_etlb_lunch_low - trigger);
+      const double raw_sl = g_etlb_lunch_high + strategy_stop_factor * range;
       req.type = QM_SELL_STOP;
       req.price = entry;
       req.sl = QM_TM_NormalizePrice(_Symbol, MathMax(raw_sl, entry + min_stop));
