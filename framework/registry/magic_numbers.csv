@@ -8980,4 +8980,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10635,et-consol-break,1,SP500.DWX,106350001,2026-06-13,Development,active
 10635,et-consol-break,2,GDAXI.DWX,106350002,2026-06-13,Development,active
 10635,et-consol-break,3,XAUUSD.DWX,106350003,2026-06-13,Development,active
+12547,wilder-rsi14-failure-swing-d1,0,EURUSD.DWX,125470000,2026-06-13,Development,active
+12547,wilder-rsi14-failure-swing-d1,1,GBPUSD.DWX,125470001,2026-06-13,Development,active
+12547,wilder-rsi14-failure-swing-d1,2,USDJPY.DWX,125470002,2026-06-13,Development,active
+12547,wilder-rsi14-failure-swing-d1,3,AUDUSD.DWX,125470003,2026-06-13,Development,active
+12547,wilder-rsi14-failure-swing-d1,4,USDCAD.DWX,125470004,2026-06-13,Development,active
+12547,wilder-rsi14-failure-swing-d1,5,XAUUSD.DWX,125470005,2026-06-13,Development,active
 12546,katz-seasonal-crossover-stoch-confirmation-stop-d1,0,XAUUSD.DWX,125460000,2026-06-13,Development,active
