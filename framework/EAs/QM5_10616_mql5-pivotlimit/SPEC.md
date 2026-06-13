@@ -47,7 +47,7 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | H1 |
+| Base timeframe | M30 and H1 |
 | Multi-timeframe refs | Previous D1 bar for pivot levels |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` through framework OnTick gating |
 

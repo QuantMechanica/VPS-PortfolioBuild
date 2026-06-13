@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 9999;
+input int    qm_ea_id                   = 10617;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -86,105 +86,6 @@ input double strategy_atr_sl_mult               = 1.5;
 input double strategy_take_profit_rr            = 1.5;
 input int    strategy_max_spread_points         = 80;
 
-bool Strategy_ReadHaramiBars(MqlRates &bar_last, MqlRates &bar_prev)
-  {
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, strategy_work_tf, 1, 2, rates); // perf-allowed: two closed OHLC bars are required for Harami body geometry; EntrySignal is called only after the framework QM_IsNewBar() gate.
-   if(copied != 2)
-      return false;
-
-   bar_last = rates[0];
-   bar_prev = rates[1];
-   return true;
-  }
-
-bool Strategy_IsBullishHarami(const MqlRates &bar_last, const MqlRates &bar_prev)
-  {
-   if(bar_prev.close >= bar_prev.open || bar_last.close <= bar_last.open)
-      return false;
-
-   const double prev_body = MathAbs(bar_prev.open - bar_prev.close);
-   const double last_body = MathAbs(bar_last.close - bar_last.open);
-   if(prev_body <= 0.0 || last_body <= 0.0 || last_body > prev_body)
-      return false;
-
-   return (bar_last.open >= bar_prev.close && bar_last.close <= bar_prev.open);
-  }
-
-bool Strategy_IsBearishHarami(const MqlRates &bar_last, const MqlRates &bar_prev)
-  {
-   if(bar_prev.close <= bar_prev.open || bar_last.close >= bar_last.open)
-      return false;
-
-   const double prev_body = MathAbs(bar_prev.close - bar_prev.open);
-   const double last_body = MathAbs(bar_last.open - bar_last.close);
-   if(prev_body <= 0.0 || last_body <= 0.0 || last_body > prev_body)
-      return false;
-
-   return (bar_last.open <= bar_prev.close && bar_last.close >= bar_prev.open);
-  }
-
-bool Strategy_FindOurPosition(ENUM_POSITION_TYPE &position_type)
-  {
-   position_type = POSITION_TYPE_BUY;
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      return true;
-     }
-
-   return false;
-  }
-
-double Strategy_MinStopDistance()
-  {
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0)
-      return 0.0;
-
-   const long stops_level = SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
-   const double broker_min = (stops_level > 0) ? ((double)stops_level * point) : 0.0;
-   return MathMax(point, broker_min);
-  }
-
-bool Strategy_BuildBracket(const QM_OrderType side, const double entry, double &sl, double &tp)
-  {
-   sl = 0.0;
-   tp = 0.0;
-   if(entry <= 0.0 || strategy_atr_period <= 0 ||
-      strategy_atr_sl_mult <= 0.0 || strategy_take_profit_rr <= 0.0)
-      return false;
-
-   const double atr = QM_ATR(_Symbol, strategy_work_tf, strategy_atr_period, 1);
-   double stop_distance = atr * strategy_atr_sl_mult;
-   const double min_stop_distance = Strategy_MinStopDistance();
-   if(atr <= 0.0 || min_stop_distance <= 0.0)
-      return false;
-   if(stop_distance < min_stop_distance)
-      stop_distance = min_stop_distance;
-
-   sl = QM_StopATRFromValue(_Symbol, side, entry, stop_distance, 1.0);
-   tp = QM_TakeRR(_Symbol, side, entry, sl, strategy_take_profit_rr);
-   if(sl <= 0.0 || tp <= 0.0)
-      return false;
-   if(QM_OrderTypeIsBuy(side))
-      return (sl < entry && tp > entry);
-   return (sl > entry && tp < entry);
-  }
-
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -222,13 +123,43 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_stoch_slowing <= 0)
       return false;
 
-   ENUM_POSITION_TYPE position_type;
-   if(Strategy_FindOurPosition(position_type))
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
 
-   MqlRates bar_last;
-   MqlRates bar_prev;
-   if(!Strategy_ReadHaramiBars(bar_last, bar_prev))
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, strategy_work_tf, 1, 2, rates); // perf-allowed: Harami body geometry needs exactly two completed OHLC bars; this hook is called only after the framework QM_IsNewBar() gate.
+   if(copied != 2)
+      return false;
+
+   const MqlRates bar_last = rates[0];
+   const MqlRates bar_prev = rates[1];
+   const double prev_body = MathAbs(bar_prev.open - bar_prev.close);
+   const double last_body = MathAbs(bar_last.open - bar_last.close);
+   if(prev_body <= 0.0 || last_body <= 0.0 || last_body > prev_body)
+      return false;
+
+   const bool bullish_harami = (bar_prev.close < bar_prev.open &&
+                                bar_last.close > bar_last.open &&
+                                bar_last.open >= bar_prev.close &&
+                                bar_last.close <= bar_prev.open);
+   const bool bearish_harami = (bar_prev.close > bar_prev.open &&
+                                bar_last.close < bar_last.open &&
+                                bar_last.open <= bar_prev.close &&
+                                bar_last.close >= bar_prev.open);
+   if(!bullish_harami && !bearish_harami)
       return false;
 
    const double stoch_signal = QM_Stoch_D(_Symbol, strategy_work_tf,
@@ -239,29 +170,44 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(stoch_signal <= 0.0)
       return false;
 
-   if(Strategy_IsBullishHarami(bar_last, bar_prev) &&
-      stoch_signal < strategy_stoch_entry_oversold)
+   QM_OrderType side = QM_BUY;
+   double entry = 0.0;
+   if(bullish_harami && stoch_signal < strategy_stoch_entry_oversold)
      {
-      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if(!Strategy_BuildBracket(QM_BUY, ask, req.sl, req.tp))
-         return false;
-      req.type = QM_BUY;
+      side = QM_BUY;
+      entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       req.reason = "BULLISH_HARAMI_STOCH_OVERSOLD";
-      return true;
      }
-
-   if(Strategy_IsBearishHarami(bar_last, bar_prev) &&
-      stoch_signal > strategy_stoch_entry_overbought)
+   else if(bearish_harami && stoch_signal > strategy_stoch_entry_overbought)
      {
-      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      if(!Strategy_BuildBracket(QM_SELL, bid, req.sl, req.tp))
-         return false;
-      req.type = QM_SELL;
+      side = QM_SELL;
+      entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       req.reason = "BEARISH_HARAMI_STOCH_OVERBOUGHT";
-      return true;
      }
+   else
+      return false;
 
-   return false;
+   if(entry <= 0.0 || strategy_atr_period <= 0 ||
+      strategy_atr_sl_mult <= 0.0 || strategy_take_profit_rr <= 0.0)
+      return false;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double atr = QM_ATR(_Symbol, strategy_work_tf, strategy_atr_period, 1);
+   if(point <= 0.0 || atr <= 0.0)
+      return false;
+
+   const long stops_level = SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   const double min_stop_distance = MathMax(point, (stops_level > 0) ? ((double)stops_level * point) : point);
+   const double stop_distance = MathMax(atr * strategy_atr_sl_mult, min_stop_distance);
+
+   req.type = side;
+   req.sl = QM_StopATRFromValue(_Symbol, side, entry, stop_distance, 1.0);
+   req.tp = QM_TakeRR(_Symbol, side, entry, req.sl, strategy_take_profit_rr);
+   if(req.sl <= 0.0 || req.tp <= 0.0)
+      return false;
+   if(QM_OrderTypeIsBuy(side))
+      return (req.sl < entry && req.tp > entry);
+   return (req.sl > entry && req.tp < entry);
   }
 
 // Called every tick when an open position exists for this EA's magic.
@@ -277,8 +223,28 @@ void Strategy_ManageOpenPosition()
 // Trade Close
 bool Strategy_ExitSignal()
   {
-   ENUM_POSITION_TYPE position_type;
-   if(!Strategy_FindOurPosition(position_type))
+   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
+   bool have_position = false;
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      have_position = true;
+      break;
+     }
+
+   if(!have_position)
       return false;
 
    const double stoch_last = QM_Stoch_D(_Symbol, strategy_work_tf,
