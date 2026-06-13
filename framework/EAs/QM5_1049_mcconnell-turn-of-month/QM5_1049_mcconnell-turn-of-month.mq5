@@ -53,6 +53,33 @@ int  g_strategy_month_session_index    = 0;
 bool g_strategy_entry_due              = false;
 bool g_strategy_exit_due               = false;
 
+void Strategy_AdvanceCalendarState(const datetime broker_time)
+  {
+   MqlDateTime broker_dt;
+   TimeToStruct(broker_time, broker_dt);
+   const int day_key = broker_dt.year * 10000 + broker_dt.mon * 100 + broker_dt.day;
+   const int month_key = broker_dt.year * 100 + broker_dt.mon;
+
+   if(day_key == g_strategy_last_session_day_key)
+      return;
+
+   const bool have_prior_session = (g_strategy_last_session_day_key > 0);
+   const bool new_month = (have_prior_session && month_key != g_strategy_last_session_month_key);
+
+   if(new_month || !have_prior_session)
+      g_strategy_month_session_index = 1;
+   else
+      g_strategy_month_session_index++;
+
+   g_strategy_last_session_day_key = day_key;
+   g_strategy_last_session_month_key = month_key;
+
+   g_strategy_entry_due = new_month;
+   g_strategy_exit_due = (have_prior_session &&
+                          !new_month &&
+                          g_strategy_month_session_index > MathMax(1, strategy_exit_trading_day));
+  }
+
 // No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
@@ -75,30 +102,6 @@ bool Strategy_NoTradeFilter()
       return true;
    if(expected_slot != qm_magic_slot_offset)
       return true;
-
-   MqlDateTime broker_dt;
-   TimeToStruct(TimeCurrent(), broker_dt);
-   const int day_key = broker_dt.year * 10000 + broker_dt.mon * 100 + broker_dt.day;
-   const int month_key = broker_dt.year * 100 + broker_dt.mon;
-
-   if(day_key != g_strategy_last_session_day_key)
-     {
-      const bool have_prior_session = (g_strategy_last_session_day_key > 0);
-      const bool new_month = (have_prior_session && month_key != g_strategy_last_session_month_key);
-
-      if(new_month || !have_prior_session)
-         g_strategy_month_session_index = 1;
-      else
-         g_strategy_month_session_index++;
-
-      g_strategy_last_session_day_key = day_key;
-      g_strategy_last_session_month_key = month_key;
-
-      g_strategy_entry_due = new_month;
-      g_strategy_exit_due = (have_prior_session &&
-                             !new_month &&
-                             g_strategy_month_session_index > MathMax(1, strategy_exit_trading_day));
-     }
 
    if(strategy_max_spread_points > 0 && QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
      {
@@ -236,6 +239,12 @@ void OnTick()
 
    Strategy_ManageOpenPosition();
 
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
+   Strategy_AdvanceCalendarState(broker_now);
+
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -249,11 +258,6 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
-
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
