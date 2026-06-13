@@ -3,16 +3,16 @@
 ; ea_id:        1087
 ; ea_slug:      aa-spx-20-252-ma
 ; ea_version:   v5.0
-; set_version:  s20260606-001
+; set_version:  s20260613-001
 ; symbol:       NZDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   9
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   299f53cc86064b75a442c0c336121df578a19b364ac404b82d376e5cc6d962e2
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-06
+; date:         2026-06-13
 ;==========================================================
 qm_magic_slot_offset=9
 RISK_FIXED=1000

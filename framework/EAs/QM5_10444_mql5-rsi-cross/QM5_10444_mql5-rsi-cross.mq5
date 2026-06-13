@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_1087 Alpha Architect 20/252 SMA risk switch"
+#property description "QM5_10444 MQL5 RSI Level Cross Reversal"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 1087;
+input int    qm_ea_id                   = 10444;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -52,8 +52,8 @@ input group "News"
 //   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
 //   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 // Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
@@ -61,7 +61,7 @@ input string qm_news_min_impact           = "high";  // high / medium / low
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled    = false;
+input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
@@ -73,120 +73,99 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_fast_sma_days     = 20;
-input int    strategy_slow_sma_days     = 252;
-input int    strategy_min_daily_bars    = 252;
-input int    strategy_atr_period        = 14;
-input double strategy_atr_sl_mult       = 1.5;
-input int    strategy_max_spread_points = 0;
+// TODO: declare strategy-specific input params here, e.g.:
+//   input int    strategy_atr_period   = 14;
+//   input double strategy_atr_sl_mult  = 2.0;
+//   input double strategy_atr_tp_mult  = 3.0;
+input int    strategy_rsi_period        = 14;
+input double strategy_rsi_lower_level   = 30.0;
+input double strategy_rsi_upper_level   = 70.0;
+input int    strategy_stop_loss_pips    = 30;      // 300 points on 5-digit FX.
+input int    strategy_take_profit_pips  = 0;       // 0 disables fixed TP.
+input bool   strategy_trailing_enabled  = false;
+input int    strategy_trailing_trigger_pips = 30;
+input int    strategy_trailing_step_pips    = 10;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// No Trade Filter (time, spread, news)
+// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
+// regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   if(_Period != PERIOD_D1)
-      return true;
-
-   if(qm_magic_slot_offset == 0 && _Symbol != "SP500.DWX")  return true;
-   if(qm_magic_slot_offset == 1 && _Symbol != "NDX.DWX")    return true;
-   if(qm_magic_slot_offset == 2 && _Symbol != "WS30.DWX")   return true;
-   if(qm_magic_slot_offset == 3 && _Symbol != "GDAXI.DWX")  return true;
-   if(qm_magic_slot_offset == 4 && _Symbol != "XAUUSD.DWX") return true;
-   if(qm_magic_slot_offset == 5 && _Symbol != "XTIUSD.DWX") return true;
-   if(qm_magic_slot_offset == 6 && _Symbol != "EURUSD.DWX") return true;
-   if(qm_magic_slot_offset == 7 && _Symbol != "GBPUSD.DWX") return true;
-   if(qm_magic_slot_offset == 8 && _Symbol != "AUDUSD.DWX") return true;
-   if(qm_magic_slot_offset == 9 && _Symbol != "NZDUSD.DWX") return true;
-   if(qm_magic_slot_offset == 10 && _Symbol != "USDJPY.DWX") return true;
-   if(qm_magic_slot_offset == 11 && _Symbol != "USDCAD.DWX") return true;
-   if(qm_magic_slot_offset == 12 && _Symbol != "USDCHF.DWX") return true;
-   if(qm_magic_slot_offset < 0 || qm_magic_slot_offset > 12)
-      return true;
-
-   if(strategy_max_spread_points > 0)
-     {
-      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread_points > strategy_max_spread_points)
-         return true;
-     }
-
    return false;
   }
 
-// Trade Entry
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
+// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "AA_SMA20_GT_SMA252_LONG";
+   req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(_Period != PERIOD_D1)
-      return false;
-   if(strategy_fast_sma_days <= 0 ||
-      strategy_slow_sma_days <= 0 ||
-      strategy_min_daily_bars < strategy_slow_sma_days ||
-      strategy_atr_period <= 0 ||
-      strategy_atr_sl_mult <= 0.0)
+   if(strategy_rsi_period <= 0 ||
+      strategy_rsi_lower_level <= 0.0 ||
+      strategy_rsi_upper_level >= 100.0 ||
+      strategy_rsi_lower_level >= strategy_rsi_upper_level ||
+      strategy_stop_loss_pips <= 0)
       return false;
 
-   const double warmup_sma = QM_SMA(_Symbol, PERIOD_D1, strategy_min_daily_bars, 1);
-   const double sma_fast = QM_SMA(_Symbol, PERIOD_D1, strategy_fast_sma_days, 1);
-   const double sma_slow = QM_SMA(_Symbol, PERIOD_D1, strategy_slow_sma_days, 1);
-   if(warmup_sma <= 0.0 || sma_fast <= 0.0 || sma_slow <= 0.0)
+   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   const double rsi_1 = QM_RSI(_Symbol, tf, strategy_rsi_period, 1);
+   const double rsi_2 = QM_RSI(_Symbol, tf, strategy_rsi_period, 2);
+   if(rsi_1 <= 0.0 || rsi_2 <= 0.0)
       return false;
 
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      return false;
-     }
-
-   if(sma_fast <= sma_slow)
+   const bool long_cross = (rsi_2 <= strategy_rsi_lower_level &&
+                            rsi_1 > strategy_rsi_lower_level);
+   const bool short_cross = (rsi_2 >= strategy_rsi_upper_level &&
+                             rsi_1 < strategy_rsi_upper_level);
+   if(!long_cross && !short_cross)
       return false;
 
-   const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const QM_OrderType side = long_cross ? QM_BUY : QM_SELL;
+   const double entry = QM_OrderTypeIsBuy(side) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                                : SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(entry <= 0.0)
       return false;
 
-   const double atr_value = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   req.sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr_value, strategy_atr_sl_mult);
-   if(req.sl <= 0.0 || req.sl >= entry)
+   const double sl = QM_StopFixedPips(_Symbol, side, entry, strategy_stop_loss_pips);
+   if(sl <= 0.0)
       return false;
 
+   double tp = 0.0;
+   if(strategy_take_profit_pips > 0)
+     {
+      tp = QM_TakeFixedPips(_Symbol, side, entry, strategy_take_profit_pips);
+      if(tp <= 0.0)
+         return false;
+     }
+
+   req.type = side;
+   req.price = 0.0;
+   req.sl = sl;
+   req.tp = tp;
+   req.reason = long_cross ? "RSI_LOWER_CROSS_UP" : "RSI_UPPER_CROSS_DOWN";
    return true;
   }
 
-// Trade Management
+// Called every tick when an open position exists for this EA's magic.
+// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card defines no trailing, break-even, partial, or pyramiding management.
-  }
-
-// Trade Close
-bool Strategy_ExitSignal()
-  {
-   if(_Period != PERIOD_D1)
-      return false;
-   if(strategy_fast_sma_days <= 0 || strategy_slow_sma_days <= 0)
-      return false;
+   if(!strategy_trailing_enabled ||
+      strategy_trailing_trigger_pips <= 0 ||
+      strategy_trailing_step_pips <= 0)
+      return;
 
    const int magic = QM_FrameworkMagic();
-   bool has_long = false;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -196,27 +175,57 @@ bool Strategy_ExitSignal()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY)
-        {
-         has_long = true;
-         break;
-        }
+      QM_TM_TrailStep(ticket, strategy_trailing_trigger_pips, strategy_trailing_step_pips);
      }
-   if(!has_long)
+  }
+
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
+bool Strategy_ExitSignal()
+  {
+   if(strategy_rsi_period <= 0 ||
+      strategy_rsi_lower_level <= 0.0 ||
+      strategy_rsi_upper_level >= 100.0 ||
+      strategy_rsi_lower_level >= strategy_rsi_upper_level)
       return false;
 
-   const double sma_fast = QM_SMA(_Symbol, PERIOD_D1, strategy_fast_sma_days, 1);
-   const double sma_slow = QM_SMA(_Symbol, PERIOD_D1, strategy_slow_sma_days, 1);
-   if(sma_fast <= 0.0 || sma_slow <= 0.0)
+   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   const double rsi_1 = QM_RSI(_Symbol, tf, strategy_rsi_period, 1);
+   const double rsi_2 = QM_RSI(_Symbol, tf, strategy_rsi_period, 2);
+   if(rsi_1 <= 0.0 || rsi_2 <= 0.0)
       return false;
 
-   if(sma_fast <= sma_slow)
-      return true;
+   const bool long_cross = (rsi_2 <= strategy_rsi_lower_level &&
+                            rsi_1 > strategy_rsi_lower_level);
+   const bool short_cross = (rsi_2 >= strategy_rsi_upper_level &&
+                             rsi_1 < strategy_rsi_upper_level);
+   if(!long_cross && !short_cross)
+      return false;
+
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(ptype == POSITION_TYPE_BUY && short_cross)
+         return true;
+      if(ptype == POSITION_TYPE_SELL && long_cross)
+         return true;
+     }
 
    return false;
   }
 
-// News Filter Hook (callable for P8 News Impact phase)
+// Optional news-filter override. Return TRUE to suppress trading regardless
+// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
+// custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false; // defer to QM_NewsAllowsTrade(...)

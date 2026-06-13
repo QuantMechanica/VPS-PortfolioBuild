@@ -4,7 +4,7 @@
 **Slug:** aa-spx-20-252-ma
 **Source:** ede348b4-0fa7-5be1-baa8-09e9089b67b7
 **Author of this spec:** Codex
-**Last revised:** 2026-06-06
+**Last revised:** 2026-06-13
 
 ---
 
@@ -101,4 +101,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-06 | Initial build from card | b4c70bce-5123-4798-a45c-ec4a7019b814 |
+| v1 | 2026-06-13 | Initial build from card | 498ee2ee-f3d1-4251-ad95-87e289c376fb |
