@@ -1,23 +1,23 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        1048
-; ea_slug:      estrada-lazy-6m-rotation
+; ea_id:        10499
+; ea_slug:      mql5-cloud
 ; ea_version:   v5.0
 ; set_version:  s20260613-001
-; symbol:       UK100.DWX
-; timeframe:    D1
+; symbol:       EURUSD.DWX
+; timeframe:    M15
 ; environment:  backtest
-; magic_slot:   3
+; magic_slot:   0
 ; risk_mode:    FIXED
-; portfolio_weight: 0.5
+; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-13
 ;==========================================================
-qm_magic_slot_offset=3
+qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
-PORTFOLIO_WEIGHT=0.5
+PORTFOLIO_WEIGHT=1
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3

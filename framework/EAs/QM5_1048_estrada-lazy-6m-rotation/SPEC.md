@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-On the first D1 bar after June or December month-end, the EA ranks the four registered DWX index symbols by trailing six-month D1 close-to-close return. It buys the top two symbols and skips the rest. Existing positions are closed once at each semi-annual rebalance so the next top-two basket can be entered from scratch. The baseline does not use the optional absolute-momentum overlay.
+On the first D1 bar after June or December month-end, the EA ranks the four registered DWX index symbols by trailing six-month D1 close-to-close return. It buys the top two symbols and skips the rest. Existing positions are closed once at each semi-annual rebalance so the next top-two basket can be entered from scratch. The baseline does not use the optional absolute-momentum overlay, and a 20% equity drawdown overlay closes the current symbol if tripped.
 
 ---
 
@@ -24,6 +24,7 @@ On the first D1 bar after June or December month-end, the EA ranks the four regi
 | `strategy_atr_sl_mult` | 4.0 | `>0` | ATR multiplier for the stop loss. |
 | `strategy_absolute_momentum` | false | `true/false` | Optional P3 overlay; baseline false per card. |
 | `strategy_max_spread_points` | 0 | `0+` | Optional spread gate; zero disables it for the baseline. |
+| `strategy_portfolio_max_dd_pct` | 20.0 | `0+` | Portfolio drawdown trip level; zero disables it. |
 
 ---
 

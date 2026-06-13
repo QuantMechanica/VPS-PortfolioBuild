@@ -20,8 +20,8 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;
 input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -40,6 +40,7 @@ input int    strategy_atr_period           = 14;
 input double strategy_atr_sl_mult          = 4.0;
 input bool   strategy_absolute_momentum    = false;
 input int    strategy_max_spread_points    = 0;
+input double strategy_portfolio_max_dd_pct = 20.0;
 
 #define STRATEGY_UNIVERSE_SIZE 4
 
@@ -47,6 +48,8 @@ string g_strategy_symbols[STRATEGY_UNIVERSE_SIZE] = {"NDX.DWX", "WS30.DWX", "GDA
 int    g_strategy_slots[STRATEGY_UNIVERSE_SIZE]   = {0, 1, 2, 3};
 int    g_last_entry_rebalance_key = 0;
 int    g_last_close_rebalance_key = 0;
+double g_strategy_start_equity    = 0.0;
+bool   g_strategy_portfolio_stop  = false;
 
 int Strategy_CurrentSymbolIndex()
   {
@@ -179,6 +182,42 @@ bool Strategy_HasOpenPosition()
    return false;
   }
 
+void Strategy_CloseCurrentSymbolPositions()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      QM_TM_ClosePosition(ticket, QM_EXIT_KILLSWITCH);
+     }
+  }
+
+void Strategy_UpdatePortfolioStop()
+  {
+   if(g_strategy_start_equity <= 0.0)
+      g_strategy_start_equity = AccountInfoDouble(ACCOUNT_EQUITY);
+
+   if(strategy_portfolio_max_dd_pct <= 0.0 || g_strategy_start_equity <= 0.0)
+      return;
+
+   const double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   const double dd_pct = 100.0 * (g_strategy_start_equity - equity) / g_strategy_start_equity;
+   if(dd_pct < strategy_portfolio_max_dd_pct)
+      return;
+
+   g_strategy_portfolio_stop = true;
+   Strategy_CloseCurrentSymbolPositions();
+  }
+
 // No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
@@ -218,6 +257,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
    g_last_entry_rebalance_key = rebalance_key;
 
+   if(g_strategy_portfolio_stop)
+      return false;
    if(Strategy_HasOpenPosition())
       return false;
    if(!Strategy_SymbolIsSelected(_Symbol))
@@ -237,7 +278,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Trade Management
 void Strategy_ManageOpenPosition()
   {
-   // The card specifies no mid-cycle trailing, partial close, or break-even logic.
+   Strategy_UpdatePortfolioStop();
   }
 
 // Trade Close
@@ -283,6 +324,10 @@ int OnInit()
                         qm_news_temporal,
                         qm_news_compliance))
       return INIT_FAILED;
+
+   QM_SymbolGuardInit(g_strategy_symbols);
+   QM_BasketWarmupHistory(g_strategy_symbols, PERIOD_D1, strategy_lookback_d1_bars + strategy_atr_period + 10);
+   g_strategy_start_equity = AccountInfoDouble(ACCOUNT_EQUITY);
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1048\",\"ea\":\"estrada-lazy-6m-rotation\"}");
    return INIT_SUCCEEDED;
