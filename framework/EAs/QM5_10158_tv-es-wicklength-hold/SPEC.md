@@ -4,7 +4,7 @@
 **Slug:** `tv-es-wicklength-hold`
 **Source:** `30591366-874b-5bee-b47c-da2fca20b728` (see `strategy-seeds/sources/30591366-874b-5bee-b47c-da2fca20b728/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-09
+**Last revised:** 2026-06-13
 
 ---
 
@@ -91,4 +91,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-09 | Initial build from card | eb48ddd2-5730-4ff0-ab5e-d6474b47e57f |
+| v1 | 2026-06-13 | Initial build from card | 99f73394-aaff-45a2-961b-4614c80045a5 |

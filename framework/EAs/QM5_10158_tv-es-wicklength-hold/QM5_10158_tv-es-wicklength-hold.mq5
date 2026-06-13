@@ -137,11 +137,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const double entry_price = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double signal_low = bars[0].low;
-   const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(entry_price <= 0.0 || signal_low <= 0.0 || atr <= 0.0)
+   if(entry_price <= 0.0 || signal_low <= 0.0)
       return false;
 
-   double stop_price = QM_StopATRFromValue(_Symbol, QM_BUY, entry_price, atr, strategy_atr_sl_mult);
+   double stop_price = QM_StopATR(_Symbol, QM_BUY, entry_price, strategy_atr_period, strategy_atr_sl_mult);
    if(signal_low > 0.0 && signal_low < entry_price && signal_low > stop_price)
       stop_price = NormalizeDouble(signal_low, _Digits);
    if(stop_price <= 0.0 || stop_price >= entry_price)

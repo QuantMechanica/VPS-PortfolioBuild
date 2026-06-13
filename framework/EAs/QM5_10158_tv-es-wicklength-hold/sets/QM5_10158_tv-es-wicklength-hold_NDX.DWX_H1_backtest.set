@@ -3,7 +3,7 @@
 ; ea_id:        10158
 ; ea_slug:      tv-es-wicklength-hold
 ; ea_version:   v5.0
-; set_version:  s20260609-001
+; set_version:  s20260613-001
 ; symbol:       NDX.DWX
 ; timeframe:    H1
 ; environment:  backtest
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-06-09
+; date:         2026-06-13
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000
@@ -31,9 +31,4 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=D:/QM/strategy_farm/artifacts/cards_approved/QM5_10158_tv-es-wicklength-hold.md
-strategy_wick_ma_period=20
-strategy_wick_offset=0.0
-strategy_hold_bars=4
-strategy_atr_period=14
-strategy_atr_sl_mult=1.5
+; card_defaults_source=not_found

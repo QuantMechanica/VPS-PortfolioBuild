@@ -8956,3 +8956,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10632,et-vsa-thrust-ndns,2,XAUUSD.DWX,106320002,2026-06-13,Development,active
 10632,et-vsa-thrust-ndns,3,SP500.DWX,106320003,2026-06-13,Development,active
 10632,et-vsa-thrust-ndns,4,GDAXI.DWX,106320004,2026-06-13,Development,active
+12544,katz-macd-divergence-limit-d1,0,XAUUSD.DWX,125440000,2026-06-13,Development,active
+12544,katz-macd-divergence-limit-d1,1,NDX.DWX,125440001,2026-06-13,Development,active
+12544,katz-macd-divergence-limit-d1,2,WS30.DWX,125440002,2026-06-13,Development,active
