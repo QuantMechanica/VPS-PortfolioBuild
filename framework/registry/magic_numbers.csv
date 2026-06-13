@@ -9059,3 +9059,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10643,qa-cpi-mom,0,SP500.DWX,106430000,2026-06-14,Development,active
 10643,qa-cpi-mom,1,NDX.DWX,106430001,2026-06-14,Development,active
 10643,qa-cpi-mom,2,WS30.DWX,106430002,2026-06-14,Development,active
+10644,qa-volz-event,0,SP500.DWX,106440000,2026-06-14,Development,active
+10644,qa-volz-event,1,NDX.DWX,106440001,2026-06-14,Development,active
+10644,qa-volz-event,2,WS30.DWX,106440002,2026-06-14,Development,active
+10644,qa-volz-event,3,XAUUSD.DWX,106440003,2026-06-14,Development,active
