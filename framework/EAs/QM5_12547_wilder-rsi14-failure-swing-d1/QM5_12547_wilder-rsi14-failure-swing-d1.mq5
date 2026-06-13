@@ -134,28 +134,36 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(bar_low <= 0.0 || bar_high <= 0.0 || bar_high < bar_low)
       return false;
 
-   if(state > 0)
-      long_excursion_low = (long_excursion_low <= 0.0) ? bar_low : MathMin(long_excursion_low, bar_low);
-   if(state < 0)
-      short_excursion_high = (short_excursion_high <= 0.0) ? bar_high : MathMax(short_excursion_high, bar_high);
-
    if(rsi < strategy_rsi_oversold)
      {
+      const bool continuing_long_dip = (state == 1 && long_excursion_low > 0.0);
       state = 1;
       long_bounce_high = 0.0;
       long_pullback_low = 0.0;
-      long_excursion_low = (long_excursion_low <= 0.0 || state != 1) ? bar_low : MathMin(long_excursion_low, bar_low);
+      long_excursion_low = continuing_long_dip ? MathMin(long_excursion_low, bar_low) : bar_low;
+      short_bounce_low = 0.0;
+      short_pullback_high = 0.0;
+      short_excursion_high = 0.0;
       return false;
      }
 
    if(rsi > strategy_rsi_overbought)
      {
+      const bool continuing_short_spike = (state == -1 && short_excursion_high > 0.0);
       state = -1;
       short_bounce_low = 0.0;
       short_pullback_high = 0.0;
-      short_excursion_high = (short_excursion_high <= 0.0 || state != -1) ? bar_high : MathMax(short_excursion_high, bar_high);
+      short_excursion_high = continuing_short_spike ? MathMax(short_excursion_high, bar_high) : bar_high;
+      long_bounce_high = 0.0;
+      long_pullback_low = 0.0;
+      long_excursion_low = 0.0;
       return false;
      }
+
+   if(state > 0)
+      long_excursion_low = (long_excursion_low <= 0.0) ? bar_low : MathMin(long_excursion_low, bar_low);
+   if(state < 0)
+      short_excursion_high = (short_excursion_high <= 0.0) ? bar_high : MathMax(short_excursion_high, bar_high);
 
    if(state == 1 && rsi > strategy_rsi_oversold)
      {
