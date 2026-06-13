@@ -101,34 +101,6 @@ int DateDoy(const datetime t, int &year)
    return dt.day_of_year + 1;
   }
 
-double TrueRangeAt(const MqlRates &rates[], const int index, const int total)
-  {
-   if(index < 0 || index + 1 >= total)
-      return 0.0;
-
-   const double prev_close = rates[index + 1].close;
-   const double hl = rates[index].high - rates[index].low;
-   const double hc = MathAbs(rates[index].high - prev_close);
-   const double lc = MathAbs(rates[index].low - prev_close);
-   return MathMax(hl, MathMax(hc, lc));
-  }
-
-double AtrFromRates(const MqlRates &rates[], const int index, const int total, const int period)
-  {
-   if(period <= 0 || index < 0 || index + period >= total)
-      return 0.0;
-
-   double sum = 0.0;
-   for(int i = 0; i < period; ++i)
-     {
-      const double tr = TrueRangeAt(rates, index + i, total);
-      if(tr <= 0.0)
-         return 0.0;
-      sum += tr;
-     }
-   return sum / period;
-  }
-
 bool FindPriorYearMomentum(const MqlRates &rates[],
                            const int total,
                            const int target_year,
@@ -159,7 +131,7 @@ bool FindPriorYearMomentum(const MqlRates &rates[],
    if(best_index < 0)
       return false;
 
-   const double atr = AtrFromRates(rates, best_index, total, strategy_momentum_atr);
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_momentum_atr, best_index + 1);
    if(atr <= 0.0)
       return false;
 

@@ -150,12 +150,12 @@ void AdvanceState_OnNewBar()
 
    // Channel exit level: LLV/HHV of strategy_exit_period most recent closed bars (bars[1..exit_period])
    // perf-allowed: bespoke structural lookback — no framework equivalent
-   double eh = iHigh(_Symbol, PERIOD_D1, 1);
-   double el = iLow(_Symbol, PERIOD_D1, 1);
+   double eh = iHigh(_Symbol, PERIOD_D1, 1); // perf-allowed
+   double el = iLow(_Symbol, PERIOD_D1, 1);  // perf-allowed
    for(int i = 2; i <= strategy_exit_period; i++)
      {
-      double h = iHigh(_Symbol, PERIOD_D1, i);
-      double l = iLow(_Symbol, PERIOD_D1, i);
+      double h = iHigh(_Symbol, PERIOD_D1, i); // perf-allowed
+      double l = iLow(_Symbol, PERIOD_D1, i);  // perf-allowed
       if(h > eh) eh = h;
       if(l < el) el = l;
      }
@@ -209,8 +209,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    // Check bar[1] (last closed bar) against prior entry_period bars
-   const double bar1_high = iHigh(_Symbol, PERIOD_D1, 1);
-   const double bar1_low  = iLow(_Symbol, PERIOD_D1, 1);
+   const double bar1_high = iHigh(_Symbol, PERIOD_D1, 1); // perf-allowed
+   const double bar1_low  = iLow(_Symbol, PERIOD_D1, 1);  // perf-allowed
    const bool long_break  = (bar1_high > g_donch_long);
    const bool short_break = (bar1_low  < g_donch_short);
    if(!long_break && !short_break) return false;

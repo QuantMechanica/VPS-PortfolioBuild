@@ -41,10 +41,10 @@ The EA builds a D1 day-of-year seasonal momentum curve from prior-year ATR-norma
 
 **Designed for:**
 - `XAUUSD.DWX` - precious-metals proxy named by R3 for Katz's strongest source-market cluster.
+- `GDAXI.DWX` - available secondary index proxy named by the card for NYFE-style equity-index portability.
 
 **Explicitly NOT for:**
 - `XAGUSD.DWX` - close metals proxy, but not listed in the card R3 PASS row for registration.
-- `GDAXI.DWX` - secondary candidate only; the card did not require it in the portable R3 basket.
 
 ---
 
