@@ -1,16 +1,16 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10483
-; ea_slug:      mql5-badx
+; ea_id:        10452
+; ea_slug:      mql5-div3
 ; ea_version:   v5.0
-; set_version:  s20260613-001
+; set_version:  s20260613-stress-med
 ; symbol:       XAUUSD.DWX
-; timeframe:    M30
-; environment:  backtest
+; timeframe:    H1
+; environment:  q05_stress_medium
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   286e1504aa347ec7abd5fc047b3bc391187bffd0ffeb789a7f8529486fbf32b9
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-13
 ;==========================================================
@@ -18,6 +18,7 @@ qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.0000
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
@@ -32,11 +33,3 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-strategy_adx_period=30
-strategy_adx_threshold=20.0
-strategy_bb_period=10
-strategy_bb_deviation=1.5
-strategy_atr_period=14
-strategy_atr_sl_mult=1.5
-strategy_rr_target=2.0
-strategy_time_stop_bars=48
