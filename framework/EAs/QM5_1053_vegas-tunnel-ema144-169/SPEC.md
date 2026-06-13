@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA trades the Vegas Tunnel method on H1 bars. It defines the tunnel as the band between EMA(144) and EMA(169), then opens long when the last closed bar closes above the upper tunnel edge after the prior bar was not above it, and opens short on the mirrored downside breakout. The breakout must also be beyond the 0.382 level of the last 50-bar swing in the breakout direction. Exits are the broker TP at 1.618 times the current tunnel width or a strategy close when the last closed bar returns inside the tunnel.
+This EA trades the Vegas Tunnel method on H1 bars. It defines the tunnel as the band between EMA(144) and EMA(169), then opens long when the last closed bar closes above the upper tunnel edge after the prior bar was not above it, and opens short on the mirrored downside breakout. The breakout must also be beyond the 0.382 level of the last 50-bar swing in the breakout direction. Exits are the broker TP at 1.618 times the current tunnel width from the breakout close or a strategy close when the last closed bar returns inside the tunnel.
 
 ---
 

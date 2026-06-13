@@ -194,7 +194,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type = QM_BUY;
       req.price = 0.0;
       req.sl = NormalizeDouble(tunnel_low_1 - sl_buffer, _Digits);
-      req.tp = NormalizeDouble(entry + strategy_tp_tunnel_mult * tunnel_width, _Digits);
+      req.tp = NormalizeDouble(close_1 + strategy_tp_tunnel_mult * tunnel_width, _Digits);
       req.reason = "QM5_1053_VEGAS_LONG";
       return (req.sl > 0.0 && req.sl < entry && req.tp > entry);
      }
@@ -208,7 +208,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type = QM_SELL;
       req.price = 0.0;
       req.sl = NormalizeDouble(tunnel_high_1 + sl_buffer, _Digits);
-      req.tp = NormalizeDouble(entry - strategy_tp_tunnel_mult * tunnel_width, _Digits);
+      req.tp = NormalizeDouble(close_1 - strategy_tp_tunnel_mult * tunnel_width, _Digits);
       req.reason = "QM5_1053_VEGAS_SHORT";
       return (req.sl > entry && req.tp > 0.0 && req.tp < entry);
      }
