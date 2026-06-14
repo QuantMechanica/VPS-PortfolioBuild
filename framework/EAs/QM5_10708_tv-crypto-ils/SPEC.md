@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades H1 liquidity-sweep reclaims in both directions. It uses EMA(200) for directional bias, then looks for a confirmed recent pivot low or high that the latest closed bar pierces and reclaims. A long requires close above EMA(200), positive 20-bar linear-regression slope, a sweep below a pivot low, and a bullish candle closing in the upper 40% of its range. A short mirrors this below EMA(200), with negative slope, a sweep above a pivot high, and a bearish candle closing in the lower 40% of its range. Exits are fixed 1.5 ATR(14) stop, 2.0R take profit, framework Friday close, or a 48-bar time stop.
+The EA trades H1 liquidity-sweep reclaims in both directions. It uses EMA(200) for directional bias, then scans the configured recent pivot window for a confirmed pivot low or high that the latest closed bar pierces and reclaims. A long requires close above EMA(200), positive 20-bar linear-regression slope, a sweep below a pivot low, and a bullish candle closing in the upper 40% of its range. A short mirrors this below EMA(200), with negative slope, a sweep above a pivot high, and a bearish candle closing in the lower 40% of its range. Exits are fixed 1.5 ATR(14) stop, 2.0R take profit, framework Friday close, or a 48-bar time stop.
 
 ---
 

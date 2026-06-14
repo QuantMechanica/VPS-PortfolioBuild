@@ -9123,6 +9123,12 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10719,tv-gap-or,1,NDX.DWX,107190001,2026-06-14,Development,active
 10719,tv-gap-or,2,WS30.DWX,107190002,2026-06-14,Development,active
 10719,tv-gap-or,3,GDAXI.DWX,107190003,2026-06-14,Development,active
+10724,tv-orb-burdiga,0,NDX.DWX,107240000,2026-06-14,Development,active
+10724,tv-orb-burdiga,1,WS30.DWX,107240001,2026-06-14,Development,active
+10724,tv-orb-burdiga,2,SP500.DWX,107240002,2026-06-14,Development,active
+10724,tv-orb-burdiga,3,GDAXI.DWX,107240003,2026-06-14,Development,active
+10724,tv-orb-burdiga,4,UK100.DWX,107240004,2026-06-14,Development,active
+10724,tv-orb-burdiga,5,XAUUSD.DWX,107240005,2026-06-14,Development,active
 10728,tv-smc-liqgrab,0,EURUSD.DWX,107280000,2026-06-14,Development,active
 10728,tv-smc-liqgrab,1,GBPUSD.DWX,107280001,2026-06-14,Development,active
 10728,tv-smc-liqgrab,2,XAUUSD.DWX,107280002,2026-06-14,Development,active

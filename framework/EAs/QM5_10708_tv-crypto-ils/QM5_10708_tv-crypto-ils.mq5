@@ -112,7 +112,7 @@ double LinearRegressionSlope(const MqlRates &rates[], const int period)
    return (n * sum_xy - sum_x * sum_y) / denom;
   }
 
-bool FindRecentPivot(const MqlRates &rates[], const int pivot_len, const bool want_high, double &level)
+bool FindRecentSweptPivot(const MqlRates &rates[], const int pivot_len, const bool want_high, const MqlRates &signal_bar, double &level)
   {
    level = 0.0;
    const int total = ArraySize(rates);
@@ -150,6 +150,10 @@ bool FindRecentPivot(const MqlRates &rates[], const int pivot_len, const bool wa
 
       if(is_pivot)
         {
+         if(want_high && !(signal_bar.high > candidate && signal_bar.close < candidate))
+            continue;
+         if(!want_high && !(signal_bar.low < candidate && signal_bar.close > candidate))
+            continue;
          level = candidate;
          return true;
         }
@@ -241,8 +245,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    double pivot_low = 0.0;
    double pivot_high = 0.0;
-   const bool have_pivot_low = FindRecentPivot(rates, strategy_pivot_length, false, pivot_low);
-   const bool have_pivot_high = FindRecentPivot(rates, strategy_pivot_length, true, pivot_high);
+   const bool have_pivot_low = FindRecentSweptPivot(rates, strategy_pivot_length, false, signal_bar, pivot_low);
+   const bool have_pivot_high = FindRecentSweptPivot(rates, strategy_pivot_length, true, signal_bar, pivot_high);
 
    const double stop_distance = atr * strategy_atr_sl_mult;
    if(stop_distance <= 0.0 || stop_distance > atr * strategy_max_stop_atr_mult)
