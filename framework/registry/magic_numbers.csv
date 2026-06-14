@@ -9245,3 +9245,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10784,tv-orbo-basic,4,GDAXI.DWX,107840004,2026-06-14,Development,active
 10784,tv-orbo-basic,5,NDX.DWX,107840005,2026-06-14,Development,active
 10784,tv-orbo-basic,6,WS30.DWX,107840006,2026-06-14,Development,active
+10792,tv-cipher-div,0,EURUSD.DWX,107920000,2026-06-14,Development,active
+10792,tv-cipher-div,1,GBPUSD.DWX,107920001,2026-06-14,Development,active
+10792,tv-cipher-div,2,USDJPY.DWX,107920002,2026-06-14,Development,active
+10792,tv-cipher-div,3,XAUUSD.DWX,107920003,2026-06-14,Development,active
+10792,tv-cipher-div,4,GDAXI.DWX,107920004,2026-06-14,Development,active
+10792,tv-cipher-div,5,NDX.DWX,107920005,2026-06-14,Development,active
+10792,tv-cipher-div,6,WS30.DWX,107920006,2026-06-14,Development,active
