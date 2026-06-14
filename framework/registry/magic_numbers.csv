@@ -9349,3 +9349,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10885,risk-carry-vol,4,USDCAD.DWX,108850004,2026-06-14,Development,active
 10885,risk-carry-vol,5,USDCHF.DWX,108850005,2026-06-14,Development,active
 10885,risk-carry-vol,6,NZDUSD.DWX,108850006,2026-06-14,Development,active
+10895,brown-bb-break,0,EURUSD.DWX,108950000,2026-06-14,Development,active
+10895,brown-bb-break,1,GBPUSD.DWX,108950001,2026-06-14,Development,active
+10895,brown-bb-break,2,USDCAD.DWX,108950002,2026-06-14,Development,active
+10895,brown-bb-break,3,USDJPY.DWX,108950003,2026-06-14,Development,active
