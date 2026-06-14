@@ -9171,3 +9171,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10736,tv-ema-wma-2tp,1,GBPUSD.DWX,107360001,2026-06-14,Development,active
 10736,tv-ema-wma-2tp,2,XAUUSD.DWX,107360002,2026-06-14,Development,active
 10736,tv-ema-wma-2tp,3,NDX.DWX,107360003,2026-06-14,Development,active
+10746,tv-smart-pivot,0,EURUSD.DWX,107460000,2026-06-14,Development,active
+10746,tv-smart-pivot,1,GBPUSD.DWX,107460001,2026-06-14,Development,active
+10746,tv-smart-pivot,2,XAUUSD.DWX,107460002,2026-06-14,Development,active
+10746,tv-smart-pivot,3,NDX.DWX,107460003,2026-06-14,Development,active
