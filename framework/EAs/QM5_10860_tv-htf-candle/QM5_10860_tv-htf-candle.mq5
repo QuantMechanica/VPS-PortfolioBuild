@@ -85,6 +85,8 @@ input int    strategy_eod_flat_hour     = 23;
 input int    strategy_eod_flat_minute   = 45;
 
 int g_last_entry_day_key = 0;
+int g_cached_htf_bias = 0;
+bool g_cached_htf_bias_ready = false;
 
 int Strategy_DayKey(const datetime t)
   {
@@ -120,7 +122,7 @@ bool Strategy_ReadClosedClose(const string symbol,
    return (close_price > 0.0);
   }
 
-int Strategy_HTFBias()
+int Strategy_ReadHTFBiasRaw()
   {
    MqlRates rates[];
    if(!Strategy_ReadRates(_Symbol, strategy_htf_timeframe, 1, 1, rates))
@@ -130,6 +132,16 @@ int Strategy_HTFBias()
    if(rates[0].close < rates[0].open)
       return -1;
    return 0;
+  }
+
+int Strategy_HTFBias()
+  {
+   if(g_cached_htf_bias_ready && !QM_IsNewBar(_Symbol, strategy_htf_timeframe))
+      return g_cached_htf_bias;
+
+   g_cached_htf_bias = Strategy_ReadHTFBiasRaw();
+   g_cached_htf_bias_ready = true;
+   return g_cached_htf_bias;
   }
 
 bool Strategy_VolumePasses()
