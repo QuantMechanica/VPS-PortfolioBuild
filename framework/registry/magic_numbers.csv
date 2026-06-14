@@ -9252,3 +9252,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10792,tv-cipher-div,4,GDAXI.DWX,107920004,2026-06-14,Development,active
 10792,tv-cipher-div,5,NDX.DWX,107920005,2026-06-14,Development,active
 10792,tv-cipher-div,6,WS30.DWX,107920006,2026-06-14,Development,active
+10803,tv-3x-super,0,EURUSD.DWX,108030000,2026-06-14,Development,active
+10803,tv-3x-super,1,GBPUSD.DWX,108030001,2026-06-14,Development,active
+10803,tv-3x-super,2,USDJPY.DWX,108030002,2026-06-14,Development,active
+10803,tv-3x-super,3,XAUUSD.DWX,108030003,2026-06-14,Development,active
+10803,tv-3x-super,4,GDAXI.DWX,108030004,2026-06-14,Development,active
+10803,tv-3x-super,5,NDX.DWX,108030005,2026-06-14,Development,active
+10803,tv-3x-super,6,WS30.DWX,108030006,2026-06-14,Development,active
