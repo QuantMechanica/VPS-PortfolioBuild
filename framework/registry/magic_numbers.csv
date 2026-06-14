@@ -9138,3 +9138,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10729,tv-smc-mss-fvg,1,NDX.DWX,107290001,2026-06-14,Development,active
 10729,tv-smc-mss-fvg,2,GBPUSD.DWX,107290002,2026-06-14,Development,active
 10729,tv-smc-mss-fvg,3,EURUSD.DWX,107290003,2026-06-14,Development,active
+10731,tv-liq-engulf-sr,0,EURUSD.DWX,107310000,2026-06-14,Development,active
+10731,tv-liq-engulf-sr,1,GBPUSD.DWX,107310001,2026-06-14,Development,active
+10731,tv-liq-engulf-sr,2,XAUUSD.DWX,107310002,2026-06-14,Development,active
+10731,tv-liq-engulf-sr,3,NDX.DWX,107310003,2026-06-14,Development,active
+10730,tv-orb-sessions,0,NDX.DWX,107300000,2026-06-14,Development,active
+10730,tv-orb-sessions,1,WS30.DWX,107300001,2026-06-14,Development,active
+10730,tv-orb-sessions,2,GDAXI.DWX,107300002,2026-06-14,Development,active
+10730,tv-orb-sessions,3,GBPUSD.DWX,107300003,2026-06-14,Development,active
