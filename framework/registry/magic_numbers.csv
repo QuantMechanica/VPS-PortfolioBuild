@@ -9155,3 +9155,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10734,tv-tasc-week,0,SP500.DWX,107340000,2026-06-14,Development,active
 10734,tv-tasc-week,1,NDX.DWX,107340001,2026-06-14,Development,active
 10734,tv-tasc-week,2,WS30.DWX,107340002,2026-06-14,Development,active
+10735,tv-hilo-atr,0,NDX.DWX,107350000,2026-06-14,Development,active
+10735,tv-hilo-atr,1,WS30.DWX,107350001,2026-06-14,Development,active
+10735,tv-hilo-atr,2,XAUUSD.DWX,107350002,2026-06-14,Development,active
+10735,tv-hilo-atr,3,EURUSD.DWX,107350003,2026-06-14,Development,active
