@@ -9238,3 +9238,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10783,tv-bos-forex,3,AUDUSD.DWX,107830003,2026-06-14,Development,active
 10783,tv-bos-forex,4,USDCAD.DWX,107830004,2026-06-14,Development,active
 10783,tv-bos-forex,5,XAUUSD.DWX,107830005,2026-06-14,Development,active
+10784,tv-orbo-basic,0,EURUSD.DWX,107840000,2026-06-14,Development,active
+10784,tv-orbo-basic,1,GBPUSD.DWX,107840001,2026-06-14,Development,active
+10784,tv-orbo-basic,2,USDJPY.DWX,107840002,2026-06-14,Development,active
+10784,tv-orbo-basic,3,XAUUSD.DWX,107840003,2026-06-14,Development,active
+10784,tv-orbo-basic,4,GDAXI.DWX,107840004,2026-06-14,Development,active
+10784,tv-orbo-basic,5,NDX.DWX,107840005,2026-06-14,Development,active
+10784,tv-orbo-basic,6,WS30.DWX,107840006,2026-06-14,Development,active
