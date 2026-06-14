@@ -9104,3 +9104,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10683,tv-sd-ob-break,2,GBPUSD.DWX,106830002,2026-06-14,Development,active
 10683,tv-sd-ob-break,3,NDX.DWX,106830003,2026-06-14,Development,active
 10683,tv-sd-ob-break,4,GDAXI.DWX,106830004,2026-06-14,Development,active
+10689,tv-zigzag-bos,0,EURUSD.DWX,106890000,2026-06-14,Development,active
+10689,tv-zigzag-bos,1,GBPUSD.DWX,106890001,2026-06-14,Development,active
+10689,tv-zigzag-bos,2,USDJPY.DWX,106890002,2026-06-14,Development,active
+10689,tv-zigzag-bos,3,XAUUSD.DWX,106890003,2026-06-14,Development,active
+10689,tv-zigzag-bos,4,GDAXI.DWX,106890004,2026-06-14,Development,active
