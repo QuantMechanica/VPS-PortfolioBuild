@@ -263,7 +263,7 @@ bool Strategy_NoTradeFilter()
    Strategy_EnsureDayState(broker_now);
 
    if(!Strategy_InsideTradeSession(broker_now))
-      return true;
+      return !Strategy_HasOurOpenPosition();
    if(!Strategy_SpreadAllowed())
       return true;
    if(strategy_max_daily_trades > 0 && g_trades_today >= strategy_max_daily_trades)
@@ -276,6 +276,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    Strategy_InitRequest(req);
 
    if(Strategy_HasOurOpenPosition())
+      return false;
+   if(!Strategy_InsideTradeSession(TimeCurrent()))
       return false;
    if(strategy_max_daily_trades > 0 && g_trades_today >= strategy_max_daily_trades)
       return false;
