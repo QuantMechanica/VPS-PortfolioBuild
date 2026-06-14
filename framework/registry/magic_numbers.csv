@@ -9109,3 +9109,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10689,tv-zigzag-bos,2,USDJPY.DWX,106890002,2026-06-14,Development,active
 10689,tv-zigzag-bos,3,XAUUSD.DWX,106890003,2026-06-14,Development,active
 10689,tv-zigzag-bos,4,GDAXI.DWX,106890004,2026-06-14,Development,active
+10691,tv-smc-pro-btc,0,NDX.DWX,106910000,2026-06-14,Development,active
+10691,tv-smc-pro-btc,1,GDAXI.DWX,106910001,2026-06-14,Development,active
+10691,tv-smc-pro-btc,2,XAUUSD.DWX,106910002,2026-06-14,Development,active
+10691,tv-smc-pro-btc,3,EURUSD.DWX,106910003,2026-06-14,Development,active
+10691,tv-smc-pro-btc,4,GBPJPY.DWX,106910004,2026-06-14,Development,active
