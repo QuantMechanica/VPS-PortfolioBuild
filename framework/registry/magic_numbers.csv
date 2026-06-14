@@ -9358,3 +9358,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10896,brown-ema-trend,0,EURUSD.DWX,108960000,2026-06-14,Development,active
 10896,brown-ema-trend,1,GBPUSD.DWX,108960001,2026-06-14,Development,active
 10896,brown-ema-trend,2,USDJPY.DWX,108960002,2026-06-14,Development,active
+10898,muranno-bb-adx,0,EURUSD.DWX,108980000,2026-06-14,Development,active
+10898,muranno-bb-adx,1,GBPUSD.DWX,108980001,2026-06-14,Development,active
+10898,muranno-bb-adx,2,USDJPY.DWX,108980002,2026-06-14,Development,active
+10898,muranno-bb-adx,3,AUDUSD.DWX,108980003,2026-06-14,Development,active
