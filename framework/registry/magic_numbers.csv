@@ -9085,3 +9085,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10671,tv-wyck-gemini,2,GDAXI.DWX,106710002,2026-06-14,Development,active
 10671,tv-wyck-gemini,3,WS30.DWX,106710003,2026-06-14,Development,active
 10671,tv-wyck-gemini,4,EURUSD.DWX,106710004,2026-06-14,Development,active
+10673,tv-gapfill-orb,0,NDX.DWX,106730000,2026-06-14,Development,active
+10673,tv-gapfill-orb,1,GDAXI.DWX,106730001,2026-06-14,Development,active
+10673,tv-gapfill-orb,2,WS30.DWX,106730002,2026-06-14,Development,active
+10673,tv-gapfill-orb,3,XAUUSD.DWX,106730003,2026-06-14,Development,active
+10673,tv-gapfill-orb,4,XTIUSD.DWX,106730004,2026-06-14,Development,active
