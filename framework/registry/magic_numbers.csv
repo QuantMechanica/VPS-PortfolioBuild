@@ -9220,3 +9220,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10761,tv-vortex,4,GDAXI.DWX,107610004,2026-06-14,Development,active
 10761,tv-vortex,5,NDX.DWX,107610005,2026-06-14,Development,active
 10761,tv-vortex,6,WS30.DWX,107610006,2026-06-14,Development,active
+10775,tv-liq-ims,0,EURUSD.DWX,107750000,2026-06-14,Development,active
+10775,tv-liq-ims,1,GBPUSD.DWX,107750001,2026-06-14,Development,active
+10775,tv-liq-ims,2,USDJPY.DWX,107750002,2026-06-14,Development,active
+10775,tv-liq-ims,3,XAUUSD.DWX,107750003,2026-06-14,Development,active
+10775,tv-liq-ims,4,GDAXI.DWX,107750004,2026-06-14,Development,active
+10775,tv-liq-ims,5,NDX.DWX,107750005,2026-06-14,Development,active
