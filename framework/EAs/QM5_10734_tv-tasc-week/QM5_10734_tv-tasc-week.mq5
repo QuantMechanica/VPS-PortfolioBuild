@@ -73,13 +73,44 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input double strategy_initial_tp_mult   = 1.070;
-input double strategy_hard_stop_mult    = 0.985;
-input double strategy_monday_profit_pct = 0.300;
-input double strategy_monday_tp_boost   = 1.011;
-input double strategy_monday_weak_tp    = 1.025;
+input double strategy_initial_tp_mult        = 1.070;
+input double strategy_hard_stop_mult         = 0.985;
+input double strategy_monday_profit_pct      = 0.300;
+input double strategy_monday_tp_boost        = 1.011;
+input double strategy_monday_weak_tp         = 1.025;
 input double strategy_tuesday_monday_min_pct = 2.000;
-input double strategy_tuesday_max_pct   = 3.000;
+input double strategy_tuesday_max_pct        = 3.000;
+
+bool g_strategy_close_now = false;
+
+bool Strategy_HasOpenLongPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY)
+         return true;
+     }
+
+   return false;
+  }
+
+double Strategy_ReturnPct(const MqlRates &bar)
+  {
+   if(bar.open <= 0.0 || bar.close <= 0.0)
+      return 0.0;
+   return 100.0 * (bar.close - bar.open) / bar.open;
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -89,7 +120,7 @@ input double strategy_tuesday_max_pct   = 3.000;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // Card has no additional time, spread, or regime no-trade filters.
+   // Card has no additional strategy-specific time, spread, or regime filter.
    return false;
   }
 
@@ -106,37 +137,29 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
+   if(Strategy_HasOpenLongPosition())
       return false;
 
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return false;
-     }
-
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: current D1 bar weekday, called only from framework QM_IsNewBar-gated EntrySignal.
-   if(current_bar <= 0)
+   MqlRates bar[1];
+   ArraySetAsSeries(bar, true);
+   if(CopyRates(_Symbol, PERIOD_D1, 0, 1, bar) != 1)
       return false;
 
    MqlDateTime current_dt;
-   TimeToStruct(current_bar, current_dt);
+   TimeToStruct(bar[0].time, current_dt);
    if(current_dt.day_of_week != 1)
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(ask <= 0.0 || strategy_initial_tp_mult <= 1.0 || strategy_hard_stop_mult <= 0.0)
+   if(ask <= 0.0)
+      return false;
+   if(strategy_initial_tp_mult <= 1.0 || strategy_hard_stop_mult <= 0.0 ||
+      strategy_hard_stop_mult >= 1.0)
       return false;
 
    req.price = ask;
-   req.sl = ask * strategy_hard_stop_mult;
-   req.tp = ask * strategy_initial_tp_mult;
+   req.sl = NormalizeDouble(ask * strategy_hard_stop_mult, _Digits);
+   req.tp = NormalizeDouble(ask * strategy_initial_tp_mult, _Digits);
    return true;
   }
 
@@ -144,25 +167,23 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   const datetime closed_bar = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: one closed D1 timestamp for Monday-close TP adjustment; O(1).
-   if(closed_bar <= 0)
+   g_strategy_close_now = false;
+   if(!Strategy_HasOpenLongPosition())
+      return;
+
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
+      return;
+
+   MqlRates bars[4];
+   ArraySetAsSeries(bars, true);
+   if(CopyRates(_Symbol, PERIOD_D1, 0, 4, bars) < 4)
       return;
 
    MqlDateTime closed_dt;
-   TimeToStruct(closed_bar, closed_dt);
-   if(closed_dt.day_of_week != 1)
-      return;
-
-   const double monday_close = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: one closed D1 close for card's Monday open-profit rule.
-   if(monday_close <= 0.0)
-      return;
+   TimeToStruct(bars[1].time, closed_dt);
 
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
-      return;
-
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0)
       return;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -182,19 +203,32 @@ void Strategy_ManageOpenPosition()
       if(entry <= 0.0 || current_tp <= 0.0)
          continue;
 
-      const double open_profit_pct = 100.0 * (monday_close - entry) / entry;
-      double desired_tp = 0.0;
-      if(open_profit_pct > strategy_monday_profit_pct)
-         desired_tp = entry * strategy_initial_tp_mult * strategy_monday_tp_boost;
-      else if(open_profit_pct <= 0.0)
-         desired_tp = entry * strategy_monday_weak_tp;
+      if(closed_dt.day_of_week == 1)
+        {
+         const double open_profit_pct = 100.0 * (bars[1].close - entry) / entry;
+         double desired_tp = 0.0;
+         if(open_profit_pct > strategy_monday_profit_pct)
+            desired_tp = entry * strategy_initial_tp_mult * strategy_monday_tp_boost;
+         else if(open_profit_pct <= 0.0)
+            desired_tp = entry * strategy_monday_weak_tp;
 
-      if(desired_tp <= 0.0)
-         continue;
+         if(desired_tp > 0.0)
+           {
+            desired_tp = NormalizeDouble(desired_tp, _Digits);
+            const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+            if(point > 0.0 && MathAbs(current_tp - desired_tp) > point * 0.5)
+               QM_TM_MoveTP(ticket, desired_tp, "TV_TASC_WEEK_MONDAY_TP_ADJUST");
+           }
+        }
 
-      desired_tp = NormalizeDouble(desired_tp, _Digits);
-      if(MathAbs(current_tp - desired_tp) > point * 0.5)
-         QM_TM_MoveTP(ticket, desired_tp, "TV_TASC_WEEK_MONDAY_TP_ADJUST");
+      if(closed_dt.day_of_week == 2)
+        {
+         const double monday_return_pct = Strategy_ReturnPct(bars[2]);
+         const double tuesday_return_pct = Strategy_ReturnPct(bars[1]);
+         if(monday_return_pct > strategy_tuesday_monday_min_pct &&
+            tuesday_return_pct < strategy_tuesday_max_pct)
+            g_strategy_close_now = true;
+        }
      }
   }
 
@@ -202,44 +236,7 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const datetime tuesday_bar = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: one closed D1 timestamp for Tuesday weakness exit; O(1).
-   if(tuesday_bar <= 0)
-      return false;
-
-   MqlDateTime closed_dt;
-   TimeToStruct(tuesday_bar, closed_dt);
-   if(closed_dt.day_of_week != 2)
-      return false;
-
-   const double monday_open = iOpen(_Symbol, PERIOD_D1, 2);   // perf-allowed: fixed closed-bar daily return reads, no loop.
-   const double monday_close = iClose(_Symbol, PERIOD_D1, 2); // perf-allowed: fixed closed-bar daily return reads, no loop.
-   const double tuesday_open = iOpen(_Symbol, PERIOD_D1, 1);  // perf-allowed: fixed closed-bar daily return reads, no loop.
-   const double tuesday_close = iClose(_Symbol, PERIOD_D1, 1);// perf-allowed: fixed closed-bar daily return reads, no loop.
-   if(monday_open <= 0.0 || monday_close <= 0.0 || tuesday_open <= 0.0 || tuesday_close <= 0.0)
-      return false;
-
-   const double monday_return_pct = 100.0 * (monday_close - monday_open) / monday_open;
-   const double tuesday_return_pct = 100.0 * (tuesday_close - tuesday_open) / tuesday_open;
-   if(monday_return_pct <= strategy_tuesday_monday_min_pct ||
-      tuesday_return_pct >= strategy_tuesday_max_pct)
-      return false;
-
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return true;
-     }
-
-   return false;
+   return g_strategy_close_now;
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
