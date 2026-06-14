@@ -9287,3 +9287,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10817,tv-trend-flow,4,GDAXI.DWX,108170004,2026-06-14,Development,active
 10817,tv-trend-flow,5,NDX.DWX,108170005,2026-06-14,Development,active
 10817,tv-trend-flow,6,WS30.DWX,108170006,2026-06-14,Development,active
+10818,tv-gemini-ema,0,EURUSD.DWX,108180000,2026-06-14,Development,active
+10818,tv-gemini-ema,1,GBPUSD.DWX,108180001,2026-06-14,Development,active
+10818,tv-gemini-ema,2,USDJPY.DWX,108180002,2026-06-14,Development,active
+10818,tv-gemini-ema,3,XAUUSD.DWX,108180003,2026-06-14,Development,active
+10818,tv-gemini-ema,4,GDAXI.DWX,108180004,2026-06-14,Development,active
+10818,tv-gemini-ema,5,NDX.DWX,108180005,2026-06-14,Development,active
+10818,tv-gemini-ema,6,WS30.DWX,108180006,2026-06-14,Development,active
