@@ -9159,3 +9159,15 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10735,tv-hilo-atr,1,WS30.DWX,107350001,2026-06-14,Development,active
 10735,tv-hilo-atr,2,XAUUSD.DWX,107350002,2026-06-14,Development,active
 10735,tv-hilo-atr,3,EURUSD.DWX,107350003,2026-06-14,Development,active
+10745,tv-voltrap-fvg,0,XAUUSD.DWX,107450000,2026-06-14,Development,active
+10745,tv-voltrap-fvg,1,EURUSD.DWX,107450001,2026-06-14,Development,active
+10745,tv-voltrap-fvg,2,GBPUSD.DWX,107450002,2026-06-14,Development,active
+10745,tv-voltrap-fvg,3,NDX.DWX,107450003,2026-06-14,Development,active
+10744,tv-ict-ote,0,XAUUSD.DWX,107440000,2026-06-14,Development,active
+10744,tv-ict-ote,1,EURUSD.DWX,107440001,2026-06-14,Development,active
+10744,tv-ict-ote,2,GBPUSD.DWX,107440002,2026-06-14,Development,active
+10744,tv-ict-ote,3,NDX.DWX,107440003,2026-06-14,Development,active
+10736,tv-ema-wma-2tp,0,EURUSD.DWX,107360000,2026-06-14,Development,active
+10736,tv-ema-wma-2tp,1,GBPUSD.DWX,107360001,2026-06-14,Development,active
+10736,tv-ema-wma-2tp,2,XAUUSD.DWX,107360002,2026-06-14,Development,active
+10736,tv-ema-wma-2tp,3,NDX.DWX,107360003,2026-06-14,Development,active
