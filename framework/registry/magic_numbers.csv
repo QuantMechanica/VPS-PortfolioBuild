@@ -9342,3 +9342,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10877,nt-mag7-equal,0,NDX.DWX,108770000,2026-06-14,Development,active
 10877,nt-mag7-equal,1,SP500.DWX,108770001,2026-06-14,Development,active
 10877,nt-mag7-equal,2,WS30.DWX,108770002,2026-06-14,Development,active
+10885,risk-carry-vol,0,EURUSD.DWX,108850000,2026-06-14,Development,active
+10885,risk-carry-vol,1,GBPUSD.DWX,108850001,2026-06-14,Development,active
+10885,risk-carry-vol,2,USDJPY.DWX,108850002,2026-06-14,Development,active
+10885,risk-carry-vol,3,AUDUSD.DWX,108850003,2026-06-14,Development,active
+10885,risk-carry-vol,4,USDCAD.DWX,108850004,2026-06-14,Development,active
+10885,risk-carry-vol,5,USDCHF.DWX,108850005,2026-06-14,Development,active
+10885,risk-carry-vol,6,NZDUSD.DWX,108850006,2026-06-14,Development,active
