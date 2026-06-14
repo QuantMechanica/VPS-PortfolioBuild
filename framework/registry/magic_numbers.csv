@@ -9119,3 +9119,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10708,tv-crypto-ils,2,XAUUSD.DWX,107080002,2026-06-14,Development,active
 10708,tv-crypto-ils,3,EURUSD.DWX,107080003,2026-06-14,Development,active
 10708,tv-crypto-ils,4,GBPUSD.DWX,107080004,2026-06-14,Development,active
+10719,tv-gap-or,0,SP500.DWX,107190000,2026-06-14,Development,active
+10719,tv-gap-or,1,NDX.DWX,107190001,2026-06-14,Development,active
+10719,tv-gap-or,2,WS30.DWX,107190002,2026-06-14,Development,active
+10719,tv-gap-or,3,GDAXI.DWX,107190003,2026-06-14,Development,active
