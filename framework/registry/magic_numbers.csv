@@ -9114,3 +9114,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10691,tv-smc-pro-btc,2,XAUUSD.DWX,106910002,2026-06-14,Development,active
 10691,tv-smc-pro-btc,3,EURUSD.DWX,106910003,2026-06-14,Development,active
 10691,tv-smc-pro-btc,4,GBPJPY.DWX,106910004,2026-06-14,Development,active
+10708,tv-crypto-ils,0,NDX.DWX,107080000,2026-06-14,Development,active
+10708,tv-crypto-ils,1,GDAXI.DWX,107080001,2026-06-14,Development,active
+10708,tv-crypto-ils,2,XAUUSD.DWX,107080002,2026-06-14,Development,active
+10708,tv-crypto-ils,3,EURUSD.DWX,107080003,2026-06-14,Development,active
+10708,tv-crypto-ils,4,GBPUSD.DWX,107080004,2026-06-14,Development,active
