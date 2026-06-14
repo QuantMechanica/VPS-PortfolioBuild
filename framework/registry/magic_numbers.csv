@@ -9090,3 +9090,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10673,tv-gapfill-orb,2,WS30.DWX,106730002,2026-06-14,Development,active
 10673,tv-gapfill-orb,3,XAUUSD.DWX,106730003,2026-06-14,Development,active
 10673,tv-gapfill-orb,4,XTIUSD.DWX,106730004,2026-06-14,Development,active
+10674,tv-orb-gap-vwap,0,NDX.DWX,106740000,2026-06-14,Development,active
+10674,tv-orb-gap-vwap,1,WS30.DWX,106740001,2026-06-14,Development,active
+10674,tv-orb-gap-vwap,2,GDAXI.DWX,106740002,2026-06-14,Development,active
+10674,tv-orb-gap-vwap,3,XAUUSD.DWX,106740003,2026-06-14,Development,active
