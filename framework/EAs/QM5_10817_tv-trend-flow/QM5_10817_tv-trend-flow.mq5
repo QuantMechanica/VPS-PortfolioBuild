@@ -331,9 +331,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    Strategy_ResetEntryRequest(req);
 
-   if(Strategy_HasOpenPosition())
-      return false;
    if(!Strategy_RefreshSuperTrendCache())
+      return false;
+
+   if(Strategy_HasOpenPosition())
       return false;
 
    const int fast = MathMax(1, strategy_fast_ema);
@@ -418,6 +419,8 @@ bool Strategy_ExitSignal()
    datetime opened_at;
    if(!Strategy_SelectOurPosition(ticket, ptype, opened_at))
       return false;
+
+   Strategy_RefreshSuperTrendCache();
 
    if(Strategy_EMACrossReversal(ptype))
       return true;
