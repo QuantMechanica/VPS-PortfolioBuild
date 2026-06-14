@@ -9191,3 +9191,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10750,tv-rev-brk-orb,3,XAUUSD.DWX,107500003,2026-06-14,Development,active
 10750,tv-rev-brk-orb,4,EURUSD.DWX,107500004,2026-06-14,Development,active
 10750,tv-rev-brk-orb,5,GBPUSD.DWX,107500005,2026-06-14,Development,active
+10755,tv-sweep-rider,0,XAUUSD.DWX,107550000,2026-06-14,Development,active
+10755,tv-sweep-rider,1,EURUSD.DWX,107550001,2026-06-14,Development,active
+10755,tv-sweep-rider,2,GBPUSD.DWX,107550002,2026-06-14,Development,active
+10755,tv-sweep-rider,3,USDJPY.DWX,107550003,2026-06-14,Development,active
+10755,tv-sweep-rider,4,NDX.DWX,107550004,2026-06-14,Development,active
