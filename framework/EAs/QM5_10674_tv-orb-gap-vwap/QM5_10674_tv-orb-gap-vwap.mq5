@@ -356,8 +356,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
       req.type = QM_BUY;
       req.price = 0.0;
-      req.sl = QM_StopRulesNormalizePrice(_Symbol, ask - sl_dist);
-      req.tp = QM_StopRulesNormalizePrice(_Symbol, ask + tp_dist);
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, opening_range_high - sl_dist);
+      req.tp = QM_StopRulesNormalizePrice(_Symbol, opening_range_high + tp_dist);
       req.reason = "orb_gap_vwap_long";
       session_trade_taken = true;
       return (req.sl > 0.0 && req.tp > ask && req.sl < ask);
@@ -374,8 +374,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
       req.type = QM_SELL;
       req.price = 0.0;
-      req.sl = QM_StopRulesNormalizePrice(_Symbol, bid + sl_dist);
-      req.tp = QM_StopRulesNormalizePrice(_Symbol, bid - tp_dist);
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, opening_range_low + sl_dist);
+      req.tp = QM_StopRulesNormalizePrice(_Symbol, opening_range_low - tp_dist);
       req.reason = "orb_gap_vwap_short";
       session_trade_taken = true;
       return (req.sl > bid && req.tp > 0.0 && req.tp < bid);

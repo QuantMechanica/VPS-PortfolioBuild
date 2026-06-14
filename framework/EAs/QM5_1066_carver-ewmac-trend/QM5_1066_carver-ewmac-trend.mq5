@@ -133,7 +133,7 @@ bool SpreadAllowsEntry()
    const double current = CurrentSpreadPoints();
    const double median = MedianSpreadPoints(strategy_spread_days);
    if(current <= 0.0 || median <= 0.0)
-      return false;
+      return true;
    return (current <= median * strategy_spread_mult);
   }
 
