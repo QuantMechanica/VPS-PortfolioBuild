@@ -9366,3 +9366,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10899,muranno-mfi-hma,1,GBPUSD.DWX,108990001,2026-06-14,Development,active
 10899,muranno-mfi-hma,2,USDJPY.DWX,108990002,2026-06-14,Development,active
 10899,muranno-mfi-hma,3,AUDUSD.DWX,108990003,2026-06-14,Development,active
+10901,carter-sma-x,0,GBPUSD.DWX,109010000,2026-06-14,Development,active
+10900,carter-sma-stoch,0,EURUSD.DWX,109000000,2026-06-14,Development,active
