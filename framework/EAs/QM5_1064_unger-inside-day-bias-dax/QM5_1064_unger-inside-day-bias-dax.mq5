@@ -182,16 +182,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   // perf-allowed: bespoke inside-day structural read, framework QM_IsNewBar-gated.
-   const double high_1 = iHigh(_Symbol, strategy_timeframe, 1);
-   // perf-allowed: bespoke inside-day structural read, framework QM_IsNewBar-gated.
-   const double low_1 = iLow(_Symbol, strategy_timeframe, 1);
-   // perf-allowed: closed-bar trend-bias comparison, framework QM_IsNewBar-gated.
-   const double close_1 = iClose(_Symbol, strategy_timeframe, 1);
-   // perf-allowed: bespoke inside-day structural read, framework QM_IsNewBar-gated.
-   const double high_2 = iHigh(_Symbol, strategy_timeframe, 2);
-   // perf-allowed: bespoke inside-day structural read, framework QM_IsNewBar-gated.
-   const double low_2 = iLow(_Symbol, strategy_timeframe, 2);
+   const double high_1 = iHigh(_Symbol, strategy_timeframe, 1);   // perf-allowed: bespoke inside-day structural read, QM_IsNewBar-gated.
+   const double low_1 = iLow(_Symbol, strategy_timeframe, 1);     // perf-allowed: bespoke inside-day structural read, QM_IsNewBar-gated.
+   const double close_1 = iClose(_Symbol, strategy_timeframe, 1); // perf-allowed: closed-bar trend-bias comparison, QM_IsNewBar-gated.
+   const double high_2 = iHigh(_Symbol, strategy_timeframe, 2);   // perf-allowed: bespoke inside-day structural read, QM_IsNewBar-gated.
+   const double low_2 = iLow(_Symbol, strategy_timeframe, 2);     // perf-allowed: bespoke inside-day structural read, QM_IsNewBar-gated.
    if(high_1 <= 0.0 || low_1 <= 0.0 || close_1 <= 0.0 || high_2 <= 0.0 || low_2 <= 0.0)
       return false;
 
