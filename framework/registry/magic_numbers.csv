@@ -1,4 +1,7 @@
 ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
+10881,nt-aw-mom,0,SP500.DWX,108810000,2026-06-14,Development,active
+10881,nt-aw-mom,1,NDX.DWX,108810001,2026-06-14,Development,active
+10881,nt-aw-mom,2,WS30.DWX,108810002,2026-06-14,Development,active
 11047,roman-sar-break,0,EURUSD.DWX,110470000,2026-06-07,Development,active
 11047,roman-sar-break,1,GBPUSD.DWX,110470001,2026-06-07,Development,active
 11047,roman-sar-break,2,USDCHF.DWX,110470002,2026-06-07,Development,active
