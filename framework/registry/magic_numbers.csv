@@ -9146,3 +9146,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10730,tv-orb-sessions,1,WS30.DWX,107300001,2026-06-14,Development,active
 10730,tv-orb-sessions,2,GDAXI.DWX,107300002,2026-06-14,Development,active
 10730,tv-orb-sessions,3,GBPUSD.DWX,107300003,2026-06-14,Development,active
+10732,tv-bdns-orb,0,NDX.DWX,107320000,2026-06-14,Development,active
+10732,tv-bdns-orb,1,WS30.DWX,107320001,2026-06-14,Development,active
+10732,tv-bdns-orb,2,SP500.DWX,107320002,2026-06-14,Development,active
