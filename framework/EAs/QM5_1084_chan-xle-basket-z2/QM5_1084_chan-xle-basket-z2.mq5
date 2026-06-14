@@ -3,7 +3,6 @@
 #property description "QM5_1084 Chan XLE Basket Z-Score Arbitrage"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_BasketOrder.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 1084;
@@ -299,30 +298,30 @@ bool Strategy_OpenLeg(const int index, const int spread_direction, const double 
       return false;
 
    const string symbol = g_symbols[index];
+   if(symbol != _Symbol)
+      return false;
+
    const double leg_weight = Strategy_LegWeight(index);
    const bool buy_leg = (spread_direction * leg_weight) > 0.0;
    const QM_OrderType side = buy_leg ? QM_BUY : QM_SELL;
    const double entry = buy_leg ? SymbolInfoDouble(symbol, SYMBOL_ASK)
                                 : SymbolInfoDouble(symbol, SYMBOL_BID);
    const double atr = QM_ATR(symbol, PERIOD_D1, strategy_atr_period_d1, 1);
-   const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
-   if(entry <= 0.0 || atr <= 0.0 || point <= 0.0 || strategy_atr_sl_mult <= 0.0)
+   if(entry <= 0.0 || atr <= 0.0 || strategy_atr_sl_mult <= 0.0)
       return false;
 
    const double stop_distance = atr * strategy_atr_sl_mult;
-   QM_BasketOrderRequest breq;
-   breq.symbol = symbol;
-   breq.type = side;
-   breq.price = 0.0;
-   breq.sl = buy_leg ? (entry - stop_distance) : (entry + stop_distance);
-   breq.tp = 0.0;
-   breq.lots = QM_LotsForRisk(symbol, stop_distance / point) * MathAbs(leg_weight) / weight_sum;
-   breq.reason = reason;
-   breq.symbol_slot = g_slots[index];
-   breq.expiration_seconds = 0;
+   QM_EntryRequest req;
+   req.type = side;
+   req.price = 0.0;
+   req.sl = buy_leg ? (entry - stop_distance) : (entry + stop_distance);
+   req.tp = 0.0;
+   req.reason = reason;
+   req.symbol_slot = g_slots[index];
+   req.expiration_seconds = 0;
 
    ulong ticket = 0;
-   return QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, breq, ticket);
+   return QM_TM_OpenPosition(req, ticket);
   }
 
 bool Strategy_OpenBasket(const int spread_direction)
