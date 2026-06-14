@@ -55,7 +55,7 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
 |---|---|
 | Base timeframe | D1 |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` for entry dispatch; D1 forecast cache advances from the latest closed D1 bar. |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` for entry dispatch; `QM_IsNewBar(_Symbol, PERIOD_D1)` for closed-bar exits while a position is open. |
 
 ---
 
