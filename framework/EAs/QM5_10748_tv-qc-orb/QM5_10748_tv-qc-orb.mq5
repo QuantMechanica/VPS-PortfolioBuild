@@ -64,7 +64,6 @@ int      g_retest_bars_waited     = 0;
 double   g_or_ranges[OR_RANGE_STORE_MAX];
 int      g_or_range_count         = 0;
 int      g_or_range_next          = 0;
-datetime g_last_closed_bar_time   = 0;
 double   g_last_open              = 0.0;
 double   g_last_high              = 0.0;
 double   g_last_low               = 0.0;
@@ -192,18 +191,17 @@ bool HasOurOpenPosition()
 
 bool ClosedBarSnapshot()
   {
-   const datetime bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: bespoke ORB session bar state, called only after framework new-bar gate.
-   if(bar_time <= 0 || bar_time == g_last_closed_bar_time)
+   MqlRates rates[1];
+   if(CopyRates(_Symbol, _Period, 1, 1, rates) != 1) // perf-allowed: one closed-bar OHLC/time row after framework new-bar gate.
       return false;
 
-   g_last_closed_bar_time = bar_time;
-   g_last_open = iOpen(_Symbol, _Period, 1); // perf-allowed: one closed-bar OHLC read for ORB rejection candle.
-   g_last_high = iHigh(_Symbol, _Period, 1); // perf-allowed: one closed-bar OHLC read for ORB range/retest.
-   g_last_low = iLow(_Symbol, _Period, 1); // perf-allowed: one closed-bar OHLC read for ORB range/retest.
-   g_last_close = iClose(_Symbol, _Period, 1); // perf-allowed: one closed-bar OHLC read for breakout/rejection.
-   g_last_et_minutes = EtMinutesOfDay(bar_time);
-   g_last_et_date_key = EtDateKey(bar_time);
-   g_last_et_day_of_week = EtDayOfWeek(bar_time);
+   g_last_open = rates[0].open;
+   g_last_high = rates[0].high;
+   g_last_low = rates[0].low;
+   g_last_close = rates[0].close;
+   g_last_et_minutes = EtMinutesOfDay(rates[0].time);
+   g_last_et_date_key = EtDateKey(rates[0].time);
+   g_last_et_day_of_week = EtDayOfWeek(rates[0].time);
 
    return (g_last_open > 0.0 && g_last_high > 0.0 && g_last_low > 0.0 && g_last_close > 0.0);
   }
