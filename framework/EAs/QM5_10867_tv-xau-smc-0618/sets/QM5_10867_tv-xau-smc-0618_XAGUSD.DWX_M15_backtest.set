@@ -1,0 +1,55 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10867
+; ea_slug:      tv-xau-smc-0618
+; ea_version:   v5.0
+; set_version:  s20260614-001
+; symbol:       XAGUSD.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   f00a5fb6ff598ed78ed5a06201a387f5a9278e3904a6cf9f8015d2363f47f9b0
+; author:       Development
+; date:         2026-06-14
+;==========================================================
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found
+qm_ea_id=10867
+qm_rng_seed=42
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy_pivot_lookback=5
+strategy_pivot_scan_bars=80
+strategy_atr_period=14
+strategy_sweep_wick_min_atr=0.40
+strategy_ema_slope_period=20
+strategy_stop_atr_buffer=0.20
+strategy_min_stop_atr=1.00
+strategy_target_r=1.50
+strategy_session_start_hour=13
+strategy_session_end_hour=17
+strategy_cooldown_bars=5
