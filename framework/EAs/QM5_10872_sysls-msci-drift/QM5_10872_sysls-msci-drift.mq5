@@ -259,7 +259,8 @@ bool Strategy_ReadAnnouncementEvent(const int announcement_day_key,
 
 bool Strategy_ReadD1Bars(MqlRates &current_bar, MqlRates &closed_bar)
   {
-   MqlRates rates[2];
+   MqlRates rates[];
+   ArrayResize(rates, 2);
    ArraySetAsSeries(rates, true);
    const int copied = CopyRates(_Symbol, PERIOD_D1, 0, 2, rates); // perf-allowed: bounded D1 announcement-date lookup inside framework new-bar entry path.
    if(copied != 2)
