@@ -1,0 +1,12 @@
+
+===== STALLDUMP 2026-06-14T18:25:06Z terminal=T7 pid=23368 =====
+Current thread 0x00005fd8 (most recent call first):
+  File "C:\QM\repo\tools\strategy_farm\terminal_worker.py", line 86 in _watch
+  File "C:\Python311\Lib\threading.py", line 982 in run
+  File "C:\Python311\Lib\threading.py", line 1045 in _bootstrap_inner
+  File "C:\Python311\Lib\threading.py", line 1002 in _bootstrap
+
+Thread 0x000024e4 (most recent call first):
+  File "C:\QM\repo\tools\strategy_farm\terminal_worker.py", line 880 in run_loop
+  File "C:\QM\repo\tools\strategy_farm\terminal_worker.py", line 897 in main
+  File "C:\QM\repo\tools\strategy_farm\terminal_worker.py", line 901 in <module>

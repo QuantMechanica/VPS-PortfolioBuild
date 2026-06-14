@@ -2891,8 +2891,29 @@ while ($queue.Count -gt 0) {{
         return True  # can't tell — assume alive, defer to timeout path
 
 
+# Root-caused 2026-06-14 (full-factory dispatch wedge): a per-claim PowerShell/CIM scan
+# is both FRAGILE and a LOAD SOURCE. The old fallback returned set(allowed) — i.e. "ALL
+# terminals busy" — on any subprocess Exception/timeout/nonzero. Under load the CIM call
+# times out, so claim_atomic saw every terminal as busy -> every worker spun in the
+# no-claim branch (terminal_worker.py:880), 0 spawns, term64=0, for the full WMI-hang
+# window. 10 workers each calling this every 2s hammered WMI and CAUSED the timeouts
+# (self-amplifying). Fix: (1) fail OPEN, never fail closed to all-busy — a detection
+# failure must never wedge the factory; reuse a recent good scan if available. (2) cache
+# briefly so the 10 workers stop hammering WMI. A rare orphaned-terminal double-spawn
+# (the thing all-busy guarded) is self-correcting via the per-item deadline timeout and
+# is vastly less harmful than a 15-min full-factory wedge.
+_RUNNING_MT5_TTL_SECONDS = 4.0
+_RUNNING_MT5_STALE_OK_SECONDS = 30.0
+_running_mt5_cache: dict[str, Any] = {"ts": 0.0, "value": None}
+
+
 def _running_mt5_terminals() -> set[str]:
     allowed = set(active_mt5_terminals())
+    now_m = time.monotonic()
+    cached = _running_mt5_cache.get("value")
+    cache_age = now_m - float(_running_mt5_cache.get("ts") or 0.0)
+    if cached is not None and cache_age < _RUNNING_MT5_TTL_SECONDS:
+        return set(cached)
     try:
         proc = subprocess.run(
             [
@@ -2910,10 +2931,18 @@ def _running_mt5_terminals() -> set[str]:
             creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
         )
     except Exception:
-        return set(allowed)
+        # Detection FAILED -> fail OPEN. Reuse a recent good scan; never assume all-busy.
+        if cached is not None and cache_age < _RUNNING_MT5_STALE_OK_SECONDS:
+            return set(cached)
+        return set()
     if proc.returncode != 0:
-        return set(allowed)
-    return {line.strip().upper() for line in (proc.stdout or "").splitlines() if line.strip().upper() in allowed}
+        if cached is not None and cache_age < _RUNNING_MT5_STALE_OK_SECONDS:
+            return set(cached)
+        return set()
+    result = {line.strip().upper() for line in (proc.stdout or "").splitlines() if line.strip().upper() in allowed}
+    _running_mt5_cache["ts"] = now_m
+    _running_mt5_cache["value"] = set(result)
+    return result
 
 
 def _active_work_item_symbols(conn: sqlite3.Connection) -> dict[str, str]:
