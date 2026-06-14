@@ -9068,3 +9068,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10646,tv-qss-regime,2,GBPUSD.DWX,106460002,2026-06-14,Development,active
 10646,tv-qss-regime,3,GDAXI.DWX,106460003,2026-06-14,Development,active
 10646,tv-qss-regime,4,NDX.DWX,106460004,2026-06-14,Development,active
+10651,tv-koz-sweep,0,NDX.DWX,106510000,2026-06-14,Development,active
+10651,tv-koz-sweep,1,WS30.DWX,106510001,2026-06-14,Development,active
+10651,tv-koz-sweep,2,XAUUSD.DWX,106510002,2026-06-14,Development,active
+10651,tv-koz-sweep,3,EURUSD.DWX,106510003,2026-06-14,Development,active

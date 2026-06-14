@@ -4,17 +4,17 @@
 ; ea_slug:      tv-es-wicklength-hold
 ; ea_version:   v5.0
 ; set_version:  s20260614-001
-; symbol:       NDX.DWX
-; timeframe:    H1
+; symbol:       WS30.DWX
+; timeframe:    M30
 ; environment:  backtest
-; magic_slot:   1
+; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f817710b250fb51ede5f6176e22236313fc84511d9bf6642c341fa561387ccf3
+; build_hash:   e2f4e22dd4235702f02d2d5eafb918d3bb38a550658b86d03077a0490a1e34d6
 ; author:       Development
 ; date:         2026-06-14
 ;==========================================================
-qm_magic_slot_offset=1
+qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
@@ -42,6 +42,6 @@ qm_friday_close_hour_broker=21
 qm_stress_reject_probability=0.0
 strategy_wick_ma_period=20
 strategy_wick_offset=0.0
-strategy_hold_bars=4
+strategy_hold_bars=8
 strategy_atr_period=14
 strategy_atr_sl_mult=1.5

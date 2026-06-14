@@ -4,13 +4,13 @@
 **Slug:** `tv-es-wicklength-hold`
 **Source:** `30591366-874b-5bee-b47c-da2fca20b728` (see `strategy-seeds/sources/30591366-874b-5bee-b47c-da2fca20b728/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-13
+**Last revised:** 2026-06-14
 
 ---
 
 ## 1. Strategy Logic
 
-This EA trades long-only on index CFD bars when the last closed candle has unusually large total wick length. The signal candle's upper wick is `high - max(open, close)`, its lower wick is `min(open, close) - low`, and total wick length must exceed the SMA(20) of total wick length plus the configured offset. The entry is a market buy on the next tick after the closed H1 signal bar. Exit is by protective stop or by closing after the configured holding period.
+This EA trades long-only on index CFD bars when the last closed candle has unusually large total wick length. The signal candle's upper wick is `high - max(open, close)`, its lower wick is `min(open, close) - low`, and total wick length must exceed the SMA(20) of total wick length plus the configured offset. The entry is a market buy on the next tick after the closed signal bar. Exit is by protective stop or by closing after the configured holding period.
 
 ---
 
@@ -20,7 +20,7 @@ This EA trades long-only on index CFD bars when the last closed candle has unusu
 |---|---|---|---|
 | `strategy_wick_ma_period` | 20 | 1+ | Number of closed bars used for the SMA of total wick length. |
 | `strategy_wick_offset` | 0.0 | 0.0+ | Extra wick-length amount required above the SMA before a long entry. |
-| `strategy_hold_bars` | 4 | 1+ | Maximum H1 bars to hold before strategy exit. |
+| `strategy_hold_bars` | 4 | 1+ | Maximum bars to hold before strategy exit; H1 setfiles use 4 and M30 setfiles use 8. |
 | `strategy_atr_period` | 14 | 1+ | ATR lookback used for the protective stop. |
 | `strategy_atr_sl_mult` | 1.5 | >0.0 | ATR multiple for the protective stop before the signal-candle-low tightening rule. |
 
@@ -46,7 +46,7 @@ This EA trades long-only on index CFD bars when the last closed candle has unusu
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `H1` |
+| Base timeframe | `H1` and `M30` |
 | Multi-timeframe refs | none |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` via framework entry gate |
 
@@ -57,7 +57,7 @@ This EA trades long-only on index CFD bars when the last closed candle has unusu
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 160 |
-| Typical hold time | 4 H1 bars, or protective-stop exit earlier |
+| Typical hold time | 4 H1 bars or 8 M30 bars, with protective-stop exit earlier |
 | Expected drawdown profile | Fixed $1,000 risk per backtest trade with ATR or signal-candle-low stop. |
 | Regime preference | Candlestick volatility expansion on liquid US index baskets. |
 | Win rate target (qualitative) | medium |
@@ -91,4 +91,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-13 | Initial build from card | 99f73394-aaff-45a2-961b-4614c80045a5 |
+| v1 | 2026-06-14 | Initial build from card | 76949402-e6cc-4a17-949e-fd4fabc43dcf |
