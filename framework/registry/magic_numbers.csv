@@ -9094,6 +9094,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10674,tv-orb-gap-vwap,1,WS30.DWX,106740001,2026-06-14,Development,active
 10674,tv-orb-gap-vwap,2,GDAXI.DWX,106740002,2026-06-14,Development,active
 10674,tv-orb-gap-vwap,3,XAUUSD.DWX,106740003,2026-06-14,Development,active
+10682,tv-keltner-zones,0,EURUSD.DWX,106820000,2026-06-14,Development,active
+10682,tv-keltner-zones,1,GBPUSD.DWX,106820001,2026-06-14,Development,active
+10682,tv-keltner-zones,2,XAUUSD.DWX,106820002,2026-06-14,Development,active
+10682,tv-keltner-zones,3,NDX.DWX,106820003,2026-06-14,Development,active
+10682,tv-keltner-zones,4,GDAXI.DWX,106820004,2026-06-14,Development,active
 10683,tv-sd-ob-break,0,XAUUSD.DWX,106830000,2026-06-14,Development,active
 10683,tv-sd-ob-break,1,EURUSD.DWX,106830001,2026-06-14,Development,active
 10683,tv-sd-ob-break,2,GBPUSD.DWX,106830002,2026-06-14,Development,active
