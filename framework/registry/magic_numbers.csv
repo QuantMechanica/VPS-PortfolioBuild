@@ -9259,3 +9259,17 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10803,tv-3x-super,4,GDAXI.DWX,108030004,2026-06-14,Development,active
 10803,tv-3x-super,5,NDX.DWX,108030005,2026-06-14,Development,active
 10803,tv-3x-super,6,WS30.DWX,108030006,2026-06-14,Development,active
+10807,tv-mtf-st-zone,0,EURUSD.DWX,108070000,2026-06-14,Development,active
+10807,tv-mtf-st-zone,1,GBPUSD.DWX,108070001,2026-06-14,Development,active
+10807,tv-mtf-st-zone,2,USDJPY.DWX,108070002,2026-06-14,Development,active
+10807,tv-mtf-st-zone,3,XAUUSD.DWX,108070003,2026-06-14,Development,active
+10807,tv-mtf-st-zone,4,GDAXI.DWX,108070004,2026-06-14,Development,active
+10807,tv-mtf-st-zone,5,NDX.DWX,108070005,2026-06-14,Development,active
+10807,tv-mtf-st-zone,6,WS30.DWX,108070006,2026-06-14,Development,active
+10809,tv-dual-st-adx,0,EURUSD.DWX,108090000,2026-06-14,Development,active
+10809,tv-dual-st-adx,1,GBPUSD.DWX,108090001,2026-06-14,Development,active
+10809,tv-dual-st-adx,2,USDJPY.DWX,108090002,2026-06-14,Development,active
+10809,tv-dual-st-adx,3,XAUUSD.DWX,108090003,2026-06-14,Development,active
+10809,tv-dual-st-adx,4,GDAXI.DWX,108090004,2026-06-14,Development,active
+10809,tv-dual-st-adx,5,NDX.DWX,108090005,2026-06-14,Development,active
+10809,tv-dual-st-adx,6,WS30.DWX,108090006,2026-06-14,Development,active
