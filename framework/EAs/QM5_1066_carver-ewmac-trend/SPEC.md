@@ -10,46 +10,45 @@
 
 ## 1. Strategy Logic
 
-This EA trades a daily trend signal based on a fast EMA and slow EMA of the close. On each closed D1 bar it forms a forecast from the EMA difference divided by a volatility estimate, scales it, and caps it to a maximum absolute forecast. It opens long above the positive entry threshold and short below the negative entry threshold. It closes longs when the forecast falls below zero and closes shorts when the forecast rises above zero; the framework handles the emergency ATR stop.
+On each closed D1 bar, the EA compares a fast EMA of close to a slow EMA of close and divides that difference by an EWMA standard deviation of daily close-to-close changes. The result is multiplied by the Rob Carver EWMAC forecast scalar for the selected fast/slow pair and capped to +/-20. A long entry is opened when the capped forecast is above +2, and a short entry is opened when it is below -2. Longs close when the forecast falls below 0, shorts close when it rises above 0, with a 2.5 x ATR(20) emergency stop on every entry.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---:|---|---|
-| `strategy_fast_ema` | 16 | 1-512 | Fast EMA lookback from the card's first-build variant. |
-| `strategy_slow_ema` | 64 | 2-1024 | Slow EMA lookback from the card's first-build variant. |
-| `strategy_vol_span` | 25 | 2-256 | Volatility smoothing span used for forecast normalisation. |
-| `strategy_forecast_scalar` | 3.75 | >0 | Fixed forecast scalar for the EWMAC forecast. |
-| `strategy_forecast_cap` | 20.0 | >0 | Absolute forecast cap. |
-| `strategy_entry_forecast` | 2.0 | >0 | Entry threshold for long and short target positions. |
-| `strategy_exit_long` | 0.0 | any | Close a long when forecast is below this value. |
-| `strategy_exit_short` | 0.0 | any | Close a short when forecast is above this value. |
-| `strategy_atr_period` | 20 | 1-256 | ATR lookback for the emergency stop. |
-| `strategy_atr_sl_mult` | 2.5 | >0 | ATR multiplier for the emergency stop distance. |
-| `strategy_spread_days` | 20 | 0-64 | D1 spread sample count for the median-spread entry filter. |
-| `strategy_spread_mult` | 2.0 | >0 | Maximum current spread as a multiple of median spread. |
-| `strategy_index_start_hour` | 8 | 0-23 | Broker-hour start for index CFD entries. |
-| `strategy_index_end_hour` | 21 | 0-23 | Broker-hour end for index CFD entries. |
-| `strategy_nonindex_min_hour` | 1 | 0-23 | Earliest broker hour for FX and metal rebalancing after rollover. |
+|---|---|---|---|
+| `strategy_ewmac_fast` | 16 | 2-64 tested pairs | Fast EMA lookback for the EWMAC forecast. |
+| `strategy_ewmac_slow` | 64 | 8-256 tested pairs | Slow EMA lookback for the EWMAC forecast. |
+| `strategy_vol_span` | 25 | >1 | EWMA span for daily close-to-close volatility normalisation. |
+| `strategy_entry_forecast` | 2.0 | 0-20 | Absolute forecast threshold required to open a new position. |
+| `strategy_exit_long_forecast` | 0.0 | -20-20 | Forecast level below which a long position closes. |
+| `strategy_exit_short_forecast` | 0.0 | -20-20 | Forecast level above which a short position closes. |
+| `strategy_forecast_cap` | 20.0 | >0 | Absolute cap applied to the scaled forecast. |
+| `strategy_atr_period` | 20 | >1 | ATR period for the emergency stop. |
+| `strategy_atr_sl_mult` | 2.5 | >0 | ATR multiple used for the emergency stop. |
+| `strategy_spread_filter` | true | true/false | Enables the card spread cap for new entries. |
+| `strategy_spread_days` | 20 | >0 | D1 spread sample length for the spread median. |
+| `strategy_spread_mult` | 2.0 | >0 | Current spread must be no more than this multiple of the median spread. |
+| `strategy_index_start_hour` | 8 | 0-23 | Broker-hour start for index CFD new entries. |
+| `strategy_index_end_hour` | 22 | 0-23 | Broker-hour end for index CFD new entries. |
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` - liquid FX pair from the card's portable DWX basket.
-- `GBPUSD.DWX` - liquid FX pair from the card's portable DWX basket.
-- `USDJPY.DWX` - liquid FX pair from the card's portable DWX basket.
-- `AUDUSD.DWX` - liquid FX pair from the card's portable DWX basket.
-- `GDAXI.DWX` - DWX matrix DAX symbol used for the card's GER40 index exposure.
-- `NDX.DWX` - Nasdaq 100 index CFD from the card's portable DWX basket.
-- `WS30.DWX` - Dow 30 index CFD from the card's portable DWX basket.
-- `XAUUSD.DWX` - DWX metal symbol used for the card's XAUUSD exposure.
+- `EURUSD.DWX` - liquid FX pair using only daily close data.
+- `GBPUSD.DWX` - liquid FX pair using only daily close data.
+- `USDJPY.DWX` - liquid FX pair using only daily close data.
+- `AUDUSD.DWX` - liquid FX pair using only daily close data.
+- `GDAXI.DWX` - DAX index CFD equivalent for the card's `GER40.DWX` P2 target.
+- `NDX.DWX` - liquid US index CFD using only daily close data.
+- `WS30.DWX` - liquid US index CFD using only daily close data.
+- `XAUUSD.DWX` - liquid metal CFD using only daily close data.
 
 **Explicitly NOT for:**
-- Symbols outside `framework/registry/dwx_symbol_matrix.csv` - not registered for this EA.
+- Symbols outside `framework/registry/dwx_symbol_matrix.csv` - the build only registers verified DWX symbols.
 
 ---
 
@@ -68,10 +67,10 @@ This EA trades a daily trend signal based on a fast EMA and slow EMA of the clos
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 500 |
-| Typical hold time | days to weeks, with daily closed-bar reassessment |
-| Expected drawdown profile | Trend-following drawdowns during choppy or mean-reverting regimes |
-| Regime preference | trend |
-| Win rate target (qualitative) | medium |
+| Typical hold time | Days to weeks, until forecast crosses back through zero. |
+| Expected drawdown profile | Trend-following drawdowns during sideways or choppy regimes. |
+| Regime preference | Trend |
+| Win rate target (qualitative) | Medium |
 
 ---
 
@@ -80,7 +79,7 @@ This EA trades a daily trend signal based on a fast EMA and slow EMA of the clos
 This card was mechanised from:
 
 **Source ID:** 2a380bee-1ec4-50d1-a348-b10fac642c7a
-**Source type:** blog plus linked code
+**Source type:** blog and linked code
 **Pointer:** https://qoppac.blogspot.com/2015/09/python-code-for-two-trading-rules-in.html and `artifacts/cards_approved/QM5_1066_carver-ewmac-trend.md`
 **R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_1066_carver-ewmac-trend.md`
 
