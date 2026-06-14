@@ -52,8 +52,8 @@ input group "News"
 //   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
 //   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 // Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
@@ -88,8 +88,12 @@ input double strategy_atr_sl_mult        = 1.5;
 input double strategy_reward_risk        = 2.0;
 input int    strategy_session_start_hour = 7;
 input int    strategy_session_end_hour   = 20;
-input int    strategy_vwap_lookback_bars = 128;
 input double strategy_max_spread_points  = 0.0;
+
+double g_session_vwap_num = 0.0;
+double g_session_vwap_den = 0.0;
+double g_session_vwap = 0.0;
+int    g_session_day_key = -1;
 
 int Strategy_ClampInt(const int value, const int lo, const int hi)
   {
@@ -123,40 +127,59 @@ bool Strategy_SameBrokerDate(const datetime a, const datetime b)
    return (da.year == db.year && da.mon == db.mon && da.day == db.day);
   }
 
-bool Strategy_ReadSessionVwap(MqlRates &last_bar, double &session_vwap)
+int Strategy_DayKey(const datetime t)
   {
-   session_vwap = 0.0;
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   return (dt.year * 10000 + dt.mon * 100 + dt.day);
+  }
+
+void Strategy_ResetSessionVwap(const int day_key)
+  {
+   g_session_vwap_num = 0.0;
+   g_session_vwap_den = 0.0;
+   g_session_vwap = 0.0;
+   g_session_day_key = day_key;
+  }
+
+bool Strategy_ReadLastClosedBar(MqlRates &last_bar)
+  {
    ZeroMemory(last_bar);
 
-   const int bars_to_read = Strategy_ClampInt(strategy_vwap_lookback_bars, 16, 256);
    MqlRates rates[];
+   ArrayResize(rates, 1);
    ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, bars_to_read, rates); // perf-allowed: caller is the skeleton closed-bar entry path; bounded session VWAP window.
-   if(copied <= 0)
+   const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, 1, rates); // perf-allowed: caller is the skeleton closed-bar entry path; one closed bar advances cached VWAP.
+   if(copied != 1)
       return false;
 
    last_bar = rates[0];
+   return (last_bar.time > 0 && last_bar.close > 0.0 && last_bar.high > 0.0 && last_bar.low > 0.0);
+  }
 
-   double pv_sum = 0.0;
-   double volume_sum = 0.0;
-   for(int i = copied - 1; i >= 0; --i)
+bool Strategy_AdvanceSessionVwap(const MqlRates &last_bar)
+  {
+   const int day_key = Strategy_DayKey(last_bar.time);
+   if(g_session_day_key != day_key)
+      Strategy_ResetSessionVwap(day_key);
+
+   if(!Strategy_IsInsideSession(last_bar.time))
      {
-      if(!Strategy_SameBrokerDate(rates[i].time, last_bar.time))
-         continue;
-      if(!Strategy_IsInsideSession(rates[i].time))
-         continue;
-
-      const double typical = (rates[i].high + rates[i].low + rates[i].close) / 3.0;
-      const double volume = (rates[i].tick_volume > 0) ? (double)rates[i].tick_volume : 1.0;
-      pv_sum += typical * volume;
-      volume_sum += volume;
+      if(g_session_vwap_den > 0.0)
+         Strategy_ResetSessionVwap(day_key);
+      return false;
      }
 
-   if(volume_sum <= 0.0)
+   const double typical = (last_bar.high + last_bar.low + last_bar.close) / 3.0;
+   const double volume = (last_bar.tick_volume > 0) ? (double)last_bar.tick_volume : 1.0;
+   g_session_vwap_num += typical * volume;
+   g_session_vwap_den += volume;
+
+   if(g_session_vwap_den <= 0.0)
       return false;
 
-   session_vwap = pv_sum / volume_sum;
-   return (session_vwap > 0.0);
+   g_session_vwap = g_session_vwap_num / g_session_vwap_den;
+   return (g_session_vwap > 0.0);
   }
 
 bool Strategy_TouchedEmaZone(const MqlRates &bar, const double fast_ema, const double slow_ema)
@@ -185,21 +208,8 @@ void Strategy_InitRequest(QM_EntryRequest &req)
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   if(!Strategy_IsInsideSession(TimeCurrent()))
-      return true;
-
-   if(strategy_max_spread_points > 0.0)
-     {
-      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      if(point <= 0.0 || ask <= 0.0 || bid <= 0.0)
-         return true;
-      const double spread_points = (ask - bid) / point;
-      if(spread_points > strategy_max_spread_points)
-         return true;
-     }
-
+   // Session filtering is applied in EntrySignal and ExitSignal so the
+   // session-end close can still run after the active trading window.
    return false;
   }
 
@@ -211,12 +221,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    Strategy_InitRequest(req);
 
    MqlRates bar;
-   double vwap = 0.0;
-   if(!Strategy_ReadSessionVwap(bar, vwap))
+   if(!Strategy_ReadLastClosedBar(bar))
+      return false;
+
+   if(!Strategy_AdvanceSessionVwap(bar))
       return false;
 
    if(!Strategy_IsInsideSession(bar.time))
       return false;
+
+   if(strategy_max_spread_points > 0.0)
+     {
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(point <= 0.0 || ask <= 0.0 || bid <= 0.0)
+         return false;
+      const double spread_points = (ask - bid) / point;
+      if(spread_points > strategy_max_spread_points)
+         return false;
+     }
 
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
    const double fast_ema = QM_EMA(_Symbol, tf, strategy_fast_ema_period, 1);
@@ -232,11 +256,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(adx < strategy_adx_min)
       return false;
 
-   const bool touched_vwap_long = (bar.low <= vwap);
-   const bool touched_vwap_short = (bar.high >= vwap);
+   const bool touched_vwap_long = (bar.low <= g_session_vwap);
+   const bool touched_vwap_short = (bar.high >= g_session_vwap);
    const bool touched_ema_zone = Strategy_TouchedEmaZone(bar, fast_ema, slow_ema);
 
-   if(bar.close > vwap &&
+   if(bar.close > g_session_vwap &&
       fast_ema > slow_ema &&
       (touched_vwap_long || touched_ema_zone) &&
       bar.close > fast_ema &&
@@ -253,7 +277,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return (req.sl > 0.0 && req.sl < entry && req.tp > entry);
      }
 
-   if(bar.close < vwap &&
+   if(bar.close < g_session_vwap &&
       fast_ema < slow_ema &&
       (touched_vwap_short || touched_ema_zone) &&
       bar.close < fast_ema &&

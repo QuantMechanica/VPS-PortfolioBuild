@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades the M15 VWAP/EMA pullback rule from the approved card. A long entry requires the last closed bar to be above session VWAP, EMA(9) above EMA(21), a pullback touch of VWAP or the EMA zone, a close back above EMA(9), RSI(14) above 50, and ADX(14) at least 20 with +DI above -DI. Shorts mirror the same logic below VWAP with EMA(9) below EMA(21), RSI below 50, and -DI above +DI. Exits are the card's ATR stop, 2.0R target, framework Friday close, and session-end close.
+The EA trades the M15 VWAP/EMA pullback rule from the approved card. A long entry requires the last closed bar to be above cached same-session VWAP, EMA(9) above EMA(21), a pullback touch of VWAP or the EMA zone, a close back above EMA(9), RSI(14) above 50, and ADX(14) at least 20 with +DI above -DI. Shorts mirror the same logic below VWAP with EMA(9) below EMA(21), RSI below 50, and -DI above +DI. Exits are the card's ATR stop, 2.0R target, framework Friday close, and session-end close.
 
 ---
 
@@ -29,7 +29,6 @@ The EA trades the M15 VWAP/EMA pullback rule from the approved card. A long entr
 | `strategy_reward_risk` | 2.0 | 0.1-10.0 | Full-position take-profit multiple of initial risk. |
 | `strategy_session_start_hour` | 7 | 0-23 | Broker-hour start of the active session. |
 | `strategy_session_end_hour` | 20 | 0-23 | Broker-hour end of the active session. |
-| `strategy_vwap_lookback_bars` | 128 | 16-256 | Closed M15 bars scanned to compute same-day session VWAP. |
 | `strategy_max_spread_points` | 0.0 | 0.0+ | Optional spread gate; 0 disables it. |
 
 > Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
