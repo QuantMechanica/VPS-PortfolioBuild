@@ -3,7 +3,7 @@
 ; ea_id:        10940
 ; ea_slug:      grimes-nested-pb
 ; ea_version:   v5.0
-; set_version:  s20260615-stress-harsh
+; set_version:  s20260616-stress-harsh
 ; symbol:       XAUUSD.DWX
 ; timeframe:    H4
 ; environment:  q06_stress_harsh
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-06-15
+; date:         2026-06-16
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000
