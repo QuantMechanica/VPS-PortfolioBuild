@@ -60,7 +60,7 @@ The EA trades a Chaikin Oscillator flat-to-trend breakout on closed M5 bars. It 
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `100` |
+| Trades / year / symbol | `40` (basket floor; fixed CHO levels are volume-scale-dependent → symbol-dependent: GBPUSD ~320/yr, USDJPY ~1/yr) |
 | Typical hold time | M5 intraday trades, capped at 144 bars |
 | Expected drawdown profile | Execution-cost-sensitive intraday breakout losses during flat regimes |
 | Regime preference | breakout / volatility expansion |

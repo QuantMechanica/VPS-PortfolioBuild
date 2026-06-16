@@ -18,7 +18,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: G0
-expected_trades_per_year_per_symbol: 100
+expected_trades_per_year_per_symbol: 20
 last_updated: 2026-05-22
 g0_approval_reasoning: "R1 MQL5 CodeBase URL/title/author present; R2 deterministic AO bend entry plus opposite/TP/time exits with ~100 trades/year/symbol; R3 AO/ATR/OHLC testable on DWX CFDs; R4 no ML/grid/martingale and one-position-per-magic."
 ---

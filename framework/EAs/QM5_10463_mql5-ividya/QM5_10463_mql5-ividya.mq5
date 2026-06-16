@@ -260,12 +260,31 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
+   // rework v2 2026-06-16: create the iVIDyA handle eagerly so the tester binds
+   // and back-calculates the indicator before the first OnTick read.
+   g_vidya_handle = iVIDyA(_Symbol,
+                           strategy_signal_tf,
+                           strategy_vidya_cmo_period,
+                           strategy_vidya_ema_period,
+                           0,
+                           strategy_vidya_price);
+   if(g_vidya_handle == INVALID_HANDLE)
+     {
+      QM_LogEvent(QM_ERROR, "INIT_FAILED", "{\"reason\":\"ividya_handle_invalid\"}");
+      return INIT_FAILED;
+     }
+
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
 
 void OnDeinit(const int reason)
   {
+   if(g_vidya_handle != INVALID_HANDLE)
+     {
+      IndicatorRelease(g_vidya_handle);
+      g_vidya_handle = INVALID_HANDLE;
+     }
    QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
    QM_FrameworkShutdown();
   }
