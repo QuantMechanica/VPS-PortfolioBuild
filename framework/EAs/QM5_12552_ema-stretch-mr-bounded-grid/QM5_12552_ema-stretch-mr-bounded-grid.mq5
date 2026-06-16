@@ -1,11 +1,11 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_12547 EMA-Stretch Mean-Reversion with Bounded 1%-Risk ATR Scale-In"
+#property description "QM5_12552 EMA-Stretch Mean-Reversion with Bounded 1%-Risk ATR Scale-In"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_12547 ema-stretch-mr-bounded-grid
+// QuantMechanica V5 EA — QM5_12552 ema-stretch-mr-bounded-grid
 // -----------------------------------------------------------------------------
 // Single-symbol H1 mean-reversion. Enters when price is stretched far from
 // EMA(200) with RSI confirmation, then scales into a BOUNDED ladder whose
@@ -38,7 +38,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 12547;
+input int    qm_ea_id                   = 12552;
 input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 

@@ -9369,3 +9369,12 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 10901,carter-sma-x,0,GBPUSD.DWX,109010000,2026-06-14,Development,active
 10900,carter-sma-stoch,0,EURUSD.DWX,109000000,2026-06-14,Development,active
 10902,carter-ema-macd,0,EURUSD.DWX,109020000,2026-06-14,Development,active
+12552,ema-stretch-mr-bounded-grid,0,EURUSD.DWX,125520000,2026-06-16,Claude,active
+12552,ema-stretch-mr-bounded-grid,1,GBPUSD.DWX,125520001,2026-06-16,Claude,active
+12552,ema-stretch-mr-bounded-grid,2,USDCHF.DWX,125520002,2026-06-16,Claude,active
+12552,ema-stretch-mr-bounded-grid,3,AUDUSD.DWX,125520003,2026-06-16,Claude,active
+12552,ema-stretch-mr-bounded-grid,4,USDCAD.DWX,125520004,2026-06-16,Claude,active
+12552,ema-stretch-mr-bounded-grid,5,EURGBP.DWX,125520005,2026-06-16,Claude,active
+12552,ema-stretch-mr-bounded-grid,6,USDJPY.DWX,125520006,2026-06-16,Claude,active
+12552,ema-stretch-mr-bounded-grid,7,EURJPY.DWX,125520007,2026-06-16,Claude,active
+12552,ema-stretch-mr-bounded-grid,8,XAUUSD.DWX,125520008,2026-06-16,Claude,active
