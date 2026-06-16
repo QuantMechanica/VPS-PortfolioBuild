@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12540
 ; ea_slug:      ict-amd-judas-xau
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   c1bf772ccdf45f1bb73171543273a967d3a83d735fc5a4aafcaec3b0aaa5ab63
 ; author:       Development
 ; date:         2026-06-12
 ;==========================================================
