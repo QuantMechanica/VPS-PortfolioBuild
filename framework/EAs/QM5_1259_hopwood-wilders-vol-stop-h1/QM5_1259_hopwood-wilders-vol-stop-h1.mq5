@@ -1,6 +1,9 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_1259 Hopwood Wilders Volatility-Stop H1 Trend-Follower"
+// rework v2 2026-06-16 — fix QM_IsNewBar double-consume: 2nd call in OnTick always
+// returned false so `if(!QM_IsNewBar()) return;` aborted before entry → 0 trades.
+// Latch new-bar state once per tick into is_new_bar and reuse it.
 
 #include <QM/QM_Common.mqh>
 
@@ -372,7 +375,8 @@ void OnTick()
    if (Strategy_NoTradeFilter())
       return;
 
-   if (QM_IsNewBar())
+   const bool is_new_bar = QM_IsNewBar();
+   if (is_new_bar)
    {
       UpdateVSLine();
       g_vs_init_bars++;
@@ -381,7 +385,7 @@ void OnTick()
    Strategy_ManageOpenPosition();
    Strategy_ExitSignal();
 
-   if (!QM_IsNewBar())
+   if (!is_new_bar)
       return;
 
    QM_EquityStreamOnNewBar();

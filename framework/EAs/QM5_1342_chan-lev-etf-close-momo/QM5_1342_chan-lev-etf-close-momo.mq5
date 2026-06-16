@@ -1,6 +1,11 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_1342 Chan Leveraged ETF Close Momentum"
+// rework v2 2026-06-16 — intraday 14:15 entry was gated behind QM_IsNewBar()
+// (run-TF new bar); on D1 the only new bar is 00:00 < 14:15 so SignalTime()
+// was never true on the gated tick -> 0 trades. Entry now evaluated every
+// tick (g_entered_today + HasPosition() enforce one-per-day idempotency);
+// per-bar equity stream stays on the new-bar cadence.
 
 #include <QM/QM_Common.mqh>
 
@@ -206,8 +211,8 @@ void OnTick()
    if (Strategy_NoTradeFilter()) return;
    Strategy_ManageOpenPosition();
    Strategy_ExitSignal();
-   if (!QM_IsNewBar()) return;
-   QM_EquityStreamOnNewBar();
+   if (QM_IsNewBar())
+      QM_EquityStreamOnNewBar();
    QM_EntryRequest req;
    if (Strategy_EntrySignal(req)) { ulong t = 0; QM_TM_OpenPosition(req, t); }
 }

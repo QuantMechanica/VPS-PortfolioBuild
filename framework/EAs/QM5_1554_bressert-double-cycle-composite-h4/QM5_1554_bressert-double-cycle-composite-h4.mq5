@@ -1,6 +1,12 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_1554 Bressert Double-Cycle Composite (H4)"
+// rework v2 2026-06-16 — entry fired only when the *nearest* swing-low/high happened to
+// sit exactly p bars back; a newer nearer swing always reset the age, so the trading-cycle
+// (~24, +/-2) and intermediate-cycle (~96, +/-4) projection windows could never coincide on
+// the same bar => ~0 trades. Faithful fix: scan for ANY confirmed swing within the projection
+// window [p-tol, p+tol] (the Bressert "current bar within +/-tol of the projected next cycle
+// low/high" test) instead of requiring the single nearest swing to be aged exactly p.
 
 #include <QM/QM_Common.mqh>
 
@@ -194,6 +200,96 @@ bool WithinProjectionWindow(const int anchor_shift, const int projected_bars, co
    return (MathAbs(anchor_shift - projected_bars) <= tolerance_bars);
   }
 
+// rework v2: a confirmed cycle low/high is "due now" if there exists a swing of `period`
+// whose age (shift) lands inside the projection window [projected_bars +/- tolerance_bars].
+// This is the faithful "current bar within +/- tol of the projected next cycle low/high"
+// test from the card. Unlike FindLastSwing*, it does not get yanked away by a newer, nearer
+// swing — it inspects the whole window directly. `anchor_time` returns the swing time for
+// the once-per-confluence re-arm guard.
+bool CycleLowProjectionDue(const int period, const int projected_bars, const int tolerance_bars,
+                           datetime &anchor_time)
+  {
+   anchor_time = 0;
+   if(period < 4)
+      return false;
+
+   const int half = period / 2;
+   const int lo_shift = MathMax(half + 1, projected_bars - tolerance_bars);
+   const int hi_shift = projected_bars + tolerance_bars;
+   const int bars = Bars(_Symbol, PERIOD_H4);
+   if(bars <= hi_shift + half + 2)
+      return false;
+
+   for(int shift = lo_shift; shift <= hi_shift; ++shift)
+     {
+      const double candidate = iLow(_Symbol, PERIOD_H4, shift);
+      if(candidate <= 0.0)
+         continue;
+
+      bool is_swing = true;
+      for(int j = shift - half; j <= shift + half; ++j)
+        {
+         if(j < 1)
+            continue;
+         const double v = iLow(_Symbol, PERIOD_H4, j);
+         if(v <= 0.0 || v < candidate)
+           {
+            is_swing = false;
+            break;
+           }
+        }
+
+      if(is_swing)
+        {
+         anchor_time = iTime(_Symbol, PERIOD_H4, shift);
+         return (anchor_time > 0);
+        }
+     }
+   return false;
+  }
+
+bool CycleHighProjectionDue(const int period, const int projected_bars, const int tolerance_bars,
+                            datetime &anchor_time)
+  {
+   anchor_time = 0;
+   if(period < 4)
+      return false;
+
+   const int half = period / 2;
+   const int lo_shift = MathMax(half + 1, projected_bars - tolerance_bars);
+   const int hi_shift = projected_bars + tolerance_bars;
+   const int bars = Bars(_Symbol, PERIOD_H4);
+   if(bars <= hi_shift + half + 2)
+      return false;
+
+   for(int shift = lo_shift; shift <= hi_shift; ++shift)
+     {
+      const double candidate = iHigh(_Symbol, PERIOD_H4, shift);
+      if(candidate <= 0.0)
+         continue;
+
+      bool is_swing = true;
+      for(int j = shift - half; j <= shift + half; ++j)
+        {
+         if(j < 1)
+            continue;
+         const double v = iHigh(_Symbol, PERIOD_H4, j);
+         if(v <= 0.0 || v > candidate)
+           {
+            is_swing = false;
+            break;
+           }
+        }
+
+      if(is_swing)
+        {
+         anchor_time = iTime(_Symbol, PERIOD_H4, shift);
+         return (anchor_time > 0);
+        }
+     }
+   return false;
+  }
+
 double CurrentDss(const int shift)
   {
    return QM_Stoch_K(_Symbol,
@@ -230,17 +326,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(p1 < 4 || p2 <= p1)
       return false;
 
-   const int search = p2 + (p2 / 2) + strategy_intermediate_tolerance_bars + 8;
-   int low_shift_1 = -1, low_shift_2 = -1, high_shift_1 = -1, high_shift_2 = -1;
+   // rework v2: detect cycle-low / cycle-high confluence directly inside each projection
+   // window instead of requiring the single nearest swing to be aged exactly p (which the
+   // next-nearest swing perpetually reset -> the p1 and p2 windows never coincided).
    datetime low_time_1 = 0, low_time_2 = 0, high_time_1 = 0, high_time_2 = 0;
-   if(!FindLastSwingLow(p1, search, low_shift_1, low_time_1))
-      return false;
-   if(!FindLastSwingLow(p2, search, low_shift_2, low_time_2))
-      return false;
-   if(!FindLastSwingHigh(p1, search, high_shift_1, high_time_1))
-      return false;
-   if(!FindLastSwingHigh(p2, search, high_shift_2, high_time_2))
-      return false;
+   const bool low_due_1 =
+      CycleLowProjectionDue(p1, p1, strategy_trading_tolerance_bars, low_time_1);
+   const bool low_due_2 =
+      CycleLowProjectionDue(p2, p2, strategy_intermediate_tolerance_bars, low_time_2);
+   const bool high_due_1 =
+      CycleHighProjectionDue(p1, p1, strategy_trading_tolerance_bars, high_time_1);
+   const bool high_due_2 =
+      CycleHighProjectionDue(p2, p2, strategy_intermediate_tolerance_bars, high_time_2);
 
    const double dss_1 = CurrentDss(1);
    const double dss_2 = CurrentDss(2);
@@ -257,9 +354,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(atr <= 0.0 || point <= 0.0)
       return false;
 
-   const bool long_cycle =
-      WithinProjectionWindow(low_shift_1, p1, strategy_trading_tolerance_bars) &&
-      WithinProjectionWindow(low_shift_2, p2, strategy_intermediate_tolerance_bars);
+   const bool long_cycle = low_due_1 && low_due_2;
    const bool long_confirm =
       dss_1 < strategy_dss_oversold && dss_1 > dss_2 && d1_close > d1_sma;
 

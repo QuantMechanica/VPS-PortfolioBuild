@@ -20,7 +20,7 @@ r3_data_available: UNKNOWN
 r4_ml_forbidden: UNKNOWN
 pipeline_phase: G0
 last_updated: 2026-05-18
-expected_trades_per_year_per_symbol: 85
+expected_trades_per_year_per_symbol: 15
 universe:
   - EURUSD
   - GBPUSD

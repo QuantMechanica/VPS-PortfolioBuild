@@ -1,6 +1,11 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_1258 Hopwood Bermaui-RSI H1 Trend-Follower"
+// rework v2 2026-06-16 — zero-trades fix: BermauiRSI/EMA200 created a fresh
+// iRSI/iMA handle and IndicatorRelease()d it before MT5 could compute, so
+// CopyBuffer returned <requested and the helpers fell back to a constant 50.0.
+// Smoothed RSI pinned at 50 => midline never strictly crossed => 0 entries.
+// Now reads pooled persistent handles (QM_IndRSI/QM_EMA); semantics unchanged.
 
 #include <QM/QM_Common.mqh>
 
@@ -43,12 +48,14 @@ double BermauiRSI(const int shift, const int buffer_size = 28)
    if (buffer_size < strategy_rsi_period * 2 + 1)
       return 50.0;
 
+   // Use the framework's pooled (persistent) RSI handle. A per-call iRSI handle
+   // that is IndicatorRelease()d immediately never gets a calculation pass, so
+   // CopyBuffer would return <requested and pin this oscillator at 50.0.
    double raw_rsi[];
    ArraySetAsSeries(raw_rsi, true);
-   const int handle = iRSI(_Symbol, PERIOD_H1, strategy_rsi_period, PRICE_CLOSE);
+   const int handle = QM_IndRSI(_Symbol, PERIOD_H1, strategy_rsi_period, PRICE_CLOSE);
    if (handle == INVALID_HANDLE) return 50.0;
    const int copied = CopyBuffer(handle, 0, shift, strategy_rsi_period + 1, raw_rsi);
-   IndicatorRelease(handle);
    if (copied != strategy_rsi_period + 1) return 50.0;
 
    double gains = 0.0, losses = 0.0;
@@ -72,13 +79,9 @@ double BermauiRSIClosedShift(const int shift)
 
 double EMA200(const int shift)
 {
-   const int handle = iMA(_Symbol, PERIOD_H1, strategy_ema_period, 0, MODE_EMA, PRICE_CLOSE);
-   if (handle == INVALID_HANDLE) return 0.0;
-   double val[1];
-   const int copied = CopyBuffer(handle, 0, shift + 1, 1, val);
-   IndicatorRelease(handle);
-   if (copied != 1) return 0.0;
-   return val[0];
+   // Pooled persistent EMA handle (same lazy-handle defect as BermauiRSI above
+   // if created+released per call). QM_EMA reads closed bar at shift+1.
+   return QM_EMA(_Symbol, PERIOD_H1, strategy_ema_period, shift + 1, PRICE_CLOSE);
 }
 
 bool CrossedAboveMidline(const int shift)

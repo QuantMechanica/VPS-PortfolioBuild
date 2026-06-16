@@ -1,6 +1,9 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_1336 Chan Index 10-Day Low Long"
+// rework v2 2026-06-16 — set catastrophic ATR stop on entry (req.sl was 0.0, so the
+// fixed-risk sizer returned lots=0 -> every entry REJECTED_RISK -> 0 trades). Card
+// specifies a 2.5*ATR(14,D1) catastrophic stop; the EA never set it. Now applied.
 
 #include <QM/QM_Common.mqh>
 
@@ -33,6 +36,8 @@ input int    strategy_low_lookback       = 10;
 input int    strategy_exit_sma_period    = 5;
 input int    strategy_time_stop_days     = 5;
 input int    strategy_max_spread_points  = 0;
+input int    strategy_atr_period         = 14;
+input double strategy_atr_stop_mult      = 2.5;
 
 datetime g_entry_day = 0;
 
@@ -113,9 +118,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    if (entry <= 0.0) return false;
 
+   // rework v2 2026-06-16: catastrophic stop = 2.5*ATR(14,D1) below entry (card spec).
+   // Required so the fixed-risk sizer can compute lots; without a stop, lots=0 -> reject.
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if (atr <= 0.0) return false;
+   const double sl = entry - strategy_atr_stop_mult * atr;
+   if (sl <= 0.0 || sl >= entry) return false;
+
    req.type = QM_BUY;
    req.price = 0.0;
-   req.sl = 0.0;
+   req.sl = sl;
    req.tp = 0.0;
    req.reason = "CHAN_10D_LOW";
    req.symbol_slot = qm_magic_slot_offset;

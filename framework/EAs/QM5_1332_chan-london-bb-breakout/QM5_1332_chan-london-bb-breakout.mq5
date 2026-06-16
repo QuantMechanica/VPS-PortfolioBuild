@@ -1,6 +1,11 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_1332 Chan London Bollinger Breakout"
+// rework v2 2026-06-16 — BB was built from 20 D1 *closes* (band ~2SD of daily closes,
+// ~100-250 pip half-width) so the London-morning live price never breached it -> 0 trades.
+// Card spec is a time-of-day band: sample the price at the session-start hour on each of
+// the previous 20 days. Rebuilt ComputeBB() to sample the H1 close at strategy_sample_hour
+// (broker time, same clock as the InSession window) across 20 distinct prior days.
 
 #include <QM/QM_Common.mqh>
 
@@ -51,26 +56,52 @@ double PointValue()
 
 void ComputeBB()
 {
-   double prices[];
-   ArraySetAsSeries(prices, true);
-   const int needed = strategy_bb_lookback + 1;
-   if (CopyClose(_Symbol, PERIOD_D1, 2, needed, prices) != needed) return;
+   // Time-of-day Bollinger band: collect the H1 close at strategy_sample_hour (broker
+   // clock, same as InSession) for each of the previous strategy_bb_lookback distinct
+   // days, then SMA +/- strategy_bb_std * stdev. Scanning yesterday backwards keeps the
+   // current (in-progress) session out of the band so the breakout is vs prior history.
+   g_bb_bars = 0;
+   g_bb_mid = g_bb_upper = g_bb_lower = 0.0;
 
-   g_bb_bars = needed;
-   g_bb_mid = 0.0;
-   for (int i = 1; i <= strategy_bb_lookback; ++i)
-      g_bb_mid += prices[i];
-   g_bb_mid /= (double)strategy_bb_lookback;
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   // ~24 H1 bars/day; pull generous history to span lookback days incl. weekends/holidays.
+   const int to_copy = (strategy_bb_lookback + 12) * 30;
+   const int got = CopyRates(_Symbol, PERIOD_H1, 1, to_copy, rates);
+   if (got <= 0) return;
+
+   double samples[];
+   ArrayResize(samples, strategy_bb_lookback);
+   int n = 0;
+   int last_yday = -1;
+   for (int i = 0; i < got && n < strategy_bb_lookback; ++i)
+   {
+      MqlDateTime bt;
+      TimeToStruct(rates[i].time, bt);
+      if (bt.hour != strategy_sample_hour) continue;
+      // one sample per calendar day; rates are newest-first so first hit per day wins.
+      if (bt.day_of_year == last_yday) continue;
+      last_yday = bt.day_of_year;
+      samples[n++] = rates[i].close;
+   }
+   if (n < strategy_bb_lookback) return;
+
+   double mean = 0.0;
+   for (int i = 0; i < n; ++i) mean += samples[i];
+   mean /= (double)n;
 
    double var = 0.0;
-   for (int i = 1; i <= strategy_bb_lookback; ++i)
+   for (int i = 0; i < n; ++i)
    {
-      const double d = prices[i] - g_bb_mid;
+      const double d = samples[i] - mean;
       var += d * d;
    }
-   const double sd = MathSqrt(var / (double)(strategy_bb_lookback - 1));
-   g_bb_upper = g_bb_mid + strategy_bb_std * sd;
-   g_bb_lower = g_bb_mid - strategy_bb_std * sd;
+   const double sd = MathSqrt(var / (double)(n - 1));
+
+   g_bb_mid = mean;
+   g_bb_upper = mean + strategy_bb_std * sd;
+   g_bb_lower = mean - strategy_bb_std * sd;
+   g_bb_bars = n;
 }
 
 bool InSession()
