@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10194 TradingView Supertrend RSI Positional"
+// rework v2 2026-06-16 — SuperTrend direction seed final_lower->hl2 (never-flips fix, sibling 11200)
 
 #include <QM/QM_Common.mqh>
 
@@ -132,7 +133,7 @@ bool Strategy_SupertrendBullish(const int target_shift)
         {
          final_upper = basic_upper;
          final_lower = basic_lower;
-         trend = (close >= final_lower) ? 1 : -1;
+         trend = (close >= median) ? 1 : -1;
          continue;
         }
 

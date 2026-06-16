@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10884 Risk.net G10 Carry 3x3 Monthly Rebalance"
+// rework v2 2026-06-16 — swap-sign entry gate fail-open (.DWX $0 swap)
 
 #include <QM/QM_Common.mqh>
 
@@ -284,12 +285,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(direction == 0)
       return false;
 
-   const double expected_carry = (direction > 0)
-      ? SymbolInfoDouble(_Symbol, SYMBOL_SWAP_LONG)
-      : SymbolInfoDouble(_Symbol, SYMBOL_SWAP_SHORT);
-   if(expected_carry <= 0.0)
-      return false;
-
+   // rework v2 2026-06-16 — swap-sign entry gate fail-open (.DWX $0 swap)
+   // Direction is already chosen by the cross-sectional carry ranking above.
+   // The former `expected_carry <= 0.0 -> return false` rejected EVERY entry on
+   // .DWX symbols (tester applies $0 swap), so it is removed; ranking governs.
    req.type = (direction > 0) ? QM_BUY : QM_SELL;
    const double entry = (direction > 0)
       ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
@@ -465,12 +464,10 @@ bool Strategy_ExitSignal()
    if(desired_direction == 0)
       return true;
 
-   const double expected_carry = (desired_direction > 0)
-      ? SymbolInfoDouble(_Symbol, SYMBOL_SWAP_LONG)
-      : SymbolInfoDouble(_Symbol, SYMBOL_SWAP_SHORT);
-   if(expected_carry <= 0.0)
-      return true;
-
+   // rework v2 2026-06-16 — swap-sign entry gate fail-open (.DWX $0 swap)
+   // Mirror of the entry fix: the former `expected_carry <= 0.0 -> return true`
+   // force-closed EVERY position on .DWX $0-swap symbols. Removed; the basket
+   // ranking (desired_direction vs current_type) governs the exit instead.
    if(current_type == POSITION_TYPE_BUY && desired_direction < 0)
       return true;
    if(current_type == POSITION_TYPE_SELL && desired_direction > 0)
