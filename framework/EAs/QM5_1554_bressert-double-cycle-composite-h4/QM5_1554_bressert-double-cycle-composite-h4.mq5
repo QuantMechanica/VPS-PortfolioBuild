@@ -370,9 +370,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return true;
      }
 
-   const bool short_cycle =
-      WithinProjectionWindow(high_shift_1, p1, strategy_trading_tolerance_bars) &&
-      WithinProjectionWindow(high_shift_2, p2, strategy_intermediate_tolerance_bars);
+   const bool short_cycle = high_due_1 && high_due_2;
    const bool short_confirm =
       dss_1 > strategy_dss_overbought && dss_1 < dss_2 && d1_close < d1_sma;
 
