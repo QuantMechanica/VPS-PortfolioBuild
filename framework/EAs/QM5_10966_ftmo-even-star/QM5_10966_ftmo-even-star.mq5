@@ -1,6 +1,12 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10966 FTMO Evening Star Resistance Reversal"
+// rework v2 2026-06-16 — 0-trade fix: max-stop ATR cap (2.5) rejected the
+// pattern's natural geometry (C1 body >=0.8 ATR + C3 bearish range + buffer
+// lands the stop at ~3-4.5 ATR), and per-window geometry checks did `return
+// false`, aborting the whole 3-bar entry scan on the first miss. Raised
+// strategy_max_stop_atr_mult default to 5.00 and converted in-loop geometric
+// rejects to `continue` so later bars_after_c3 windows are still evaluated.
 
 #include <QM/QM_Common.mqh>
 
@@ -88,7 +94,7 @@ input double strategy_resistance_atr_mult     = 0.35;
 input double strategy_round_tolerance_pct     = 0.15;
 input double strategy_sl_atr_buffer_mult      = 0.25;
 input double strategy_min_stop_atr_mult       = 0.50;
-input double strategy_max_stop_atr_mult       = 2.50;
+input double strategy_max_stop_atr_mult       = 5.00;
 input double strategy_primary_rr              = 2.00;
 input double strategy_alt_tp_min_rr           = 1.50;
 input double strategy_alt_tp_max_rr           = 3.00;
@@ -324,9 +330,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const double sl_raw = pattern_high + strategy_sl_atr_buffer_mult * atr;
       const double stop_distance = sl_raw - bid;
       if(stop_distance <= 0.0)
-         return false;
+         continue;
       if(stop_distance < strategy_min_stop_atr_mult * atr || stop_distance > strategy_max_stop_atr_mult * atr)
-         return false;
+         continue;
 
       double tp_raw = bid - strategy_primary_rr * stop_distance;
       const double swing_tp = NearestPriorSwingLowBelow(rates, bars_after_c3 + 2, strategy_resistance_lookback_bars, bid);

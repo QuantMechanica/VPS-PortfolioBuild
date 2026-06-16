@@ -74,7 +74,7 @@ This EA evaluates the main trend on closed D1 bars and enters from closed H1 bar
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 30 |
+| Trades / year / symbol | ~6 (low-freq swing; revised down from 30 over-claim 2026-06-16) |
 | Typical hold time | Up to 72 H1 bars, with earlier SL/TP or RSI exits |
 | Expected drawdown profile | Fixed $1,000 backtest risk per trade with structural/cloud stops |
 | Regime preference | D1 trend continuation with H1 pullback confirmation |

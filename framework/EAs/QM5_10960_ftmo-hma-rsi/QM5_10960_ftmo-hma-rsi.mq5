@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10960 FTMO HMA RSI volatility stop"
+// rework v2 2026-06-16 — decoupled RSI cross-back from shift-1 to scan the full lookback window so RSI recovery and HMA cross need not coincide on one bar (was ~0 trades / Q02 MIN_TRADES)
 
 #include <QM/QM_Common.mqh>
 
@@ -159,18 +160,31 @@ bool Strategy_RsiWasAbove(const int lookback, const double threshold)
    return false;
   }
 
-bool Strategy_RsiCrossedAbove(const double threshold)
+// Card: "RSI has crossed back above 30" within the recovery window. The cross
+// need not land on the single most-recent bar — scan shifts 1..lookback so the
+// RSI recovery and the HMA confirmation cross can fall on different closed bars.
+bool Strategy_RsiCrossedAbove(const int lookback, const double threshold)
   {
-   const double now = QM_RSI(_Symbol, PERIOD_H4, strategy_rsi_period, 1);
-   const double prev = QM_RSI(_Symbol, PERIOD_H4, strategy_rsi_period, 2);
-   return (now > threshold && prev <= threshold && prev > 0.0);
+   for(int shift = 1; shift <= lookback; ++shift)
+     {
+      const double now  = QM_RSI(_Symbol, PERIOD_H4, strategy_rsi_period, shift);
+      const double prev = QM_RSI(_Symbol, PERIOD_H4, strategy_rsi_period, shift + 1);
+      if(now > threshold && prev <= threshold && prev > 0.0)
+         return true;
+     }
+   return false;
   }
 
-bool Strategy_RsiCrossedBelow(const double threshold)
+bool Strategy_RsiCrossedBelow(const int lookback, const double threshold)
   {
-   const double now = QM_RSI(_Symbol, PERIOD_H4, strategy_rsi_period, 1);
-   const double prev = QM_RSI(_Symbol, PERIOD_H4, strategy_rsi_period, 2);
-   return (now < threshold && now > 0.0 && prev >= threshold);
+   for(int shift = 1; shift <= lookback; ++shift)
+     {
+      const double now  = QM_RSI(_Symbol, PERIOD_H4, strategy_rsi_period, shift);
+      const double prev = QM_RSI(_Symbol, PERIOD_H4, strategy_rsi_period, shift + 1);
+      if(now < threshold && now > 0.0 && prev >= threshold)
+         return true;
+     }
+   return false;
   }
 
 bool Strategy_HmaCrossUpAtShift(const int shift)
@@ -286,10 +300,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const bool long_signal = Strategy_RsiWasBelow(strategy_rsi_lookback_bars, strategy_rsi_oversold) &&
-                            Strategy_RsiCrossedAbove(strategy_rsi_oversold) &&
+                            Strategy_RsiCrossedAbove(strategy_rsi_lookback_bars, strategy_rsi_oversold) &&
                             Strategy_HmaCrossedUpRecently();
    const bool short_signal = Strategy_RsiWasAbove(strategy_rsi_lookback_bars, strategy_rsi_overbought) &&
-                             Strategy_RsiCrossedBelow(strategy_rsi_overbought) &&
+                             Strategy_RsiCrossedBelow(strategy_rsi_lookback_bars, strategy_rsi_overbought) &&
                              Strategy_HmaCrossedDownRecently();
 
    if(!long_signal && !short_signal)

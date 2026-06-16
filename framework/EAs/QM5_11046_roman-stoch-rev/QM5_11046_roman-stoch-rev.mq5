@@ -1,6 +1,12 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_11046 Roman Fixed Stochastic Reversal"
+// rework v2 2026-06-16 — inverted K/D cross direction at extremes caused ~0 trades.
+// Reversal sells when %K crosses DOWN through %D while overbought, and buys when %K
+// crosses UP through %D while oversold (source StrategyStoch mechanic). The prior
+// code paired overbought with a bullish up-cross (and oversold with a down-cross),
+// a geometrically near-impossible combination -> Q02 MIN_TRADES. Exit opposite-cross
+// flipped to stay opposite of the corrected entry.
 
 #include <QM/QM_Common.mqh>
 
@@ -210,8 +216,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(main_prev < 0.0 || sig_prev < 0.0 || main_done < 0.0 || sig_done < 0.0)
       return false;
 
-   const bool short_cross = (main_prev <= sig_prev && main_done > sig_done && main_prev > strategy_top_limit);
-   const bool long_cross = (main_prev >= sig_prev && main_done < sig_done && main_prev < strategy_bottom_limit);
+   // Reversal: SELL when %K crosses DOWN through %D while overbought; BUY when %K
+   // crosses UP through %D while oversold (faithful StrategyStoch reversal mechanic).
+   const bool short_cross = (main_prev >= sig_prev && main_done < sig_done && main_prev > strategy_top_limit);
+   const bool long_cross = (main_prev <= sig_prev && main_done > sig_done && main_prev < strategy_bottom_limit);
    if(!short_cross && !long_cross)
       return false;
 
@@ -312,7 +320,9 @@ bool Strategy_ExitSignal()
 
    const bool cross_up = (main_prev <= sig_prev && main_done > sig_done);
    const bool cross_down = (main_prev >= sig_prev && main_done < sig_done);
-   if((have_buy && cross_up) || (have_sell && cross_down))
+   // Opposite-cross exit: a long (entered on an up-cross) closes on a down-cross,
+   // and a short (entered on a down-cross) closes on an up-cross.
+   if((have_buy && cross_down) || (have_sell && cross_up))
       return true;
 
    return false;

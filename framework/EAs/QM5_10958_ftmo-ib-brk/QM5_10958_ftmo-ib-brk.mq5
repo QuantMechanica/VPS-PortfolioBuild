@@ -1,6 +1,11 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10958 FTMO Initial Balance Breakout"
+// rework v2 2026-06-16 — session windows were card CET values applied to broker time
+//   (DXZ broker = CET+1), so every IB/session window fired 1h early into the pre-session
+//   illiquid hour and suppressed valid breakouts (0 trades). Shift default hhmm windows
+//   +1h to broker time: FX London IB 10:00-11:00 / close 18:00; US index IB 16:30-17:30 /
+//   close 23:00. Logic unchanged; qm_ea_id preserved.
 
 #include <QM/QM_Common.mqh>
 
@@ -36,12 +41,12 @@ input double strategy_sl_buffer_ib_mult          = 0.1;
 input double strategy_tp1_be_ib_mult             = 1.0;
 input double strategy_final_tp_ib_mult           = 1.5;
 input double strategy_spread_stop_max_fraction   = 0.08;
-input int    strategy_fx_ib_start_hhmm           = 900;
-input int    strategy_fx_ib_end_hhmm             = 1000;
-input int    strategy_fx_session_close_hhmm      = 1700;
-input int    strategy_index_ib_start_hhmm        = 1530;
-input int    strategy_index_ib_end_hhmm          = 1630;
-input int    strategy_index_session_close_hhmm   = 2200;
+input int    strategy_fx_ib_start_hhmm           = 1000;  // London IB 09:00 CET -> broker (CET+1)
+input int    strategy_fx_ib_end_hhmm             = 1100;  // London IB 10:00 CET -> broker
+input int    strategy_fx_session_close_hhmm      = 1800;  // London close 17:00 CET -> broker
+input int    strategy_index_ib_start_hhmm        = 1630;  // US IB 15:30 CET (NY open) -> broker
+input int    strategy_index_ib_end_hhmm          = 1730;  // US IB 16:30 CET -> broker
+input int    strategy_index_session_close_hhmm   = 2300;  // US close 22:00 CET -> broker
 input int    strategy_lookback_bars              = 96;
 input int    strategy_news_post_breakout_minutes = 30;
 

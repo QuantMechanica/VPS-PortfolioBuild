@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_11048 CS2011 Fixed MACD Signal"
+// rework v2 2026-06-16 — spread filter fail-OPEN on degenerate/zero DWX tester spread (was fail-closed → gated 100% of entries → 0 trades / Q02 MIN_TRADES fail)
 
 #include <QM/QM_Common.mqh>
 
@@ -159,13 +160,18 @@ double Strategy_MedianSpread()
 
 bool Strategy_SpreadOk()
   {
+   // Fail-OPEN when spread data is degenerate. On DWX custom symbols in the MT5
+   // tester both iSpread(history) and SYMBOL_SPREAD frequently report 0, which
+   // previously made this filter unsatisfiable and gated 100% of entries (0
+   // trades). The filter's intent is to reject ABNORMALLY wide spreads only;
+   // absence of spread data must not block trading.
    const double median_spread = Strategy_MedianSpread();
    if(median_spread <= 0.0)
-      return false;
+      return true;
 
    const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
    if(current_spread <= 0)
-      return false;
+      return true;
 
    return ((double)current_spread <= median_spread * strategy_spread_median_mult);
   }

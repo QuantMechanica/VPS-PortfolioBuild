@@ -1,6 +1,10 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10964 FTMO Volume Profile Value Area Breakout"
+// rework v2 2026-06-16 — raise strategy_max_va_width_atr default 4.0->12.0: the
+// profile is built over the full 23h session window (session 0..23h default), so a
+// 70% value area is structurally several H1-ATRs wide; the 4x ceiling rejected
+// essentially every session -> ~0 trades / Q02 MIN_TRADES. Floor kept at 1.0.
 
 #include <QM/QM_Common.mqh>
 
@@ -77,7 +81,7 @@ input int    strategy_profile_bins        = 48;
 input double strategy_value_area_pct      = 70.0;
 input int    strategy_atr_period          = 14;
 input double strategy_min_va_width_atr    = 1.0;
-input double strategy_max_va_width_atr    = 4.0;
+input double strategy_max_va_width_atr    = 12.0;
 input double strategy_breakout_vol_mult   = 1.2;
 input int    strategy_volume_lookback     = 20;
 input int    strategy_pullback_bars       = 6;
