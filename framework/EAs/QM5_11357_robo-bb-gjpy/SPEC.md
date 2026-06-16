@@ -58,7 +58,7 @@ This EA trades a Bollinger Band mean-reversion setup on M5. It buys when the pri
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `400` |
+| Trades / year / symbol | `80` |
 | Typical hold time | `minutes to a few M5 bars` |
 | Expected drawdown profile | `frequent small losses from capped scalping stops during trend extensions` |
 | Regime preference | `mean-revert` |

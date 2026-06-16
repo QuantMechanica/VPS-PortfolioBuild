@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_11355 RoboForex PSAR CCI M5 Scalp"
+// rework v2 2026-06-16 — spread filter fail-OPEN on degenerate/zero DWX tester spread (ask<=bid was fail-closed → gated 100% of entries → 0 trades / Q02 MIN_TRADES fail)
 
 #include <QM/QM_Common.mqh>
 
@@ -53,12 +54,20 @@ bool Strategy_NoTradeFilter()
    const double pip = ((digits == 3 || digits == 5) ? 10.0 : 1.0) * point;
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(point <= 0.0 || pip <= 0.0 || ask <= 0.0 || bid <= 0.0 || ask <= bid)
+   if(point <= 0.0 || pip <= 0.0 || ask <= 0.0 || bid <= 0.0)
       return true;
 
-   const double spread_pips = (ask - bid) / pip;
-   if(spread_pips > strategy_spread_cap_pips)
-      return true;
+   // Spread cap rejects ABNORMALLY WIDE spreads only. DWX custom symbols in the
+   // MT5 tester frequently quote ask==bid (zero modeled spread); the old
+   // ask<=bid fail-closed guard then blocked 100% of entries (0 trades). Treat a
+   // degenerate/zero spread as acceptable (fail-OPEN) and enforce the cap only
+   // when a real positive spread is present.
+   if(ask > bid)
+     {
+      const double spread_pips = (ask - bid) / pip;
+      if(spread_pips > strategy_spread_cap_pips)
+         return true;
+     }
 
    MqlDateTime gmt;
    TimeToStruct(TimeGMT(), gmt);
