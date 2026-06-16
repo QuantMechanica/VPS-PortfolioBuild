@@ -690,13 +690,13 @@ function Invoke-PerfStaticCheck {
 
     # FAIL patterns
     $localIsNewBarPattern = '(?m)^\s*(?:bool|static\s+bool)\s+IsNewBar\s*\('
-    $rawIndicatorPattern  = '(?m)^\s*[^/\r\n]*?\b(?<![A-Za-z0-9_])(iATR|iMA|iRSI|iMACD|iADX|iBands|iStochastic|iCustom)\s*\('
-    $rawCopyBufferPattern = '(?m)^\s*[^/\r\n]*?\b(?<![A-Za-z0-9_])CopyBuffer\s*\('
-    $rawSeriesPattern     = '(?m)^\s*[^/\r\n]*?\b(?<![A-Za-z0-9_])(iOpen|iHigh|iLow|iClose|iTime|iVolume|Bars)\s*\('
+    $rawIndicatorPattern  = '(?m)^[^/\r\n]*?\b(?<![A-Za-z0-9_])(iATR|iMA|iRSI|iMACD|iADX|iBands|iStochastic|iCustom)\s*\('
+    $rawCopyBufferPattern = '(?m)^[^/\r\n]*?\b(?<![A-Za-z0-9_])CopyBuffer\s*\('
+    $rawSeriesPattern     = '(?m)^[^/\r\n]*?\b(?<![A-Za-z0-9_])(iOpen|iHigh|iLow|iClose|iTime|iVolume|Bars)\s*\('
 
     # WARN patterns
-    $copyDataPattern      = '(?m)^\s*[^/\r\n]*?\b(?<![A-Za-z0-9_])(CopyRates|CopyTime|CopyOpen|CopyHigh|CopyLow|CopyClose|CopyTickVolume|CopyRealVolume|CopySpread)\s*\('
-    $manualReleasePattern = '(?m)^\s*[^/\r\n]*?\bIndicatorRelease\s*\('
+    $copyDataPattern      = '(?m)^[^/\r\n]*?\b(?<![A-Za-z0-9_])(CopyRates|CopyTime|CopyOpen|CopyHigh|CopyLow|CopyClose|CopyTickVolume|CopyRealVolume|CopySpread)\s*\('
+    $manualReleasePattern = '(?m)^[^/\r\n]*?\bIndicatorRelease\s*\('
     $perfAllowedTag       = '//\s*perf-allowed'
 
     foreach ($file in $eaFiles) {
