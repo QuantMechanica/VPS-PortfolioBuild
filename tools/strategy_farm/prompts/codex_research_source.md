@@ -45,6 +45,13 @@ include `g0_status: PENDING` (Claude G0 batch reviewer will later flip it
 to APPROVED or REJECTED) and `expected_trades_per_year_per_symbol: <int>`.
 Estimate cadence conservatively from the mechanical rules; do not draft
 annual/one-shot seasonal ideas unless the source gives strong basket evidence.
+Cadence = the JOINT firing rate of ALL entry filters, not the base trigger
+alone: every extra AND-condition (regime/trend filter, oscillator-extreme,
+session window, confirmation, news/spread gate) multiplicatively thins it.
+Anchors: bare MA/breakout ~10-40/yr; +regime filter ~5-20; +oscillator-extreme
+~3-12; 3+ indicator confluence or calendar/structural setup ~2-15. Scalpers/
+session-breakouts 50-300/yr. When unsure, estimate LOW — over-claiming kills a
+good low-freq EA at the MIN_TRADES gate; under-claiming is harmless.
 
 ID allocation: reserve fresh `QM5_<NNNN>` IDs only through the atomic guard:
 

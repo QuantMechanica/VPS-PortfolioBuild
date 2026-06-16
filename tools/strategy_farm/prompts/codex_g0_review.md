@@ -29,6 +29,21 @@ For each card in your batch (paths listed below):
       against the written entry conditions. If the entry pattern is monthly,
       quarterly, event-only, or otherwise rare, do not accept an inflated
       cadence number just because it appears in frontmatter.
+      CALIBRATION (the #1 cause of false zero-trade Q02 fails — be strict):
+      the cadence is the JOINT firing rate of ALL entry filters combined, NOT
+      the base rate of the trigger alone. Each additional AND-condition
+      (regime/trend filter, oscillator-extreme, session window, confirmation
+      candle, news/spread gate) multiplicatively THINS frequency. Anchors:
+        - a bare MA/Donchian/breakout signal: ~10-40/yr/symbol;
+        - + a slow regime filter (SMA100/200, cloud): halve it (~5-20);
+        - + an oscillator-extreme (RSI<30, %R<-90, stoch): halve again (~3-12);
+        - a 3+ indicator confluence or a calendar/event/structural setup:
+          typically 2-15/yr/symbol; rarely above 20.
+      Intraday scalpers/session-breakouts can legitimately be 50-300/yr. When
+      unsure, estimate LOW: under-claiming routes a good low-freq swing EA to
+      the swing track (good); over-claiming kills it at the MIN_TRADES gate
+      (`effective_min_trades = expected x years x 0.5`). Only a thesis of
+      <=~1 trade/year/symbol is genuinely inadmissible.
    c. If ALL four PASS, also produce two CONSERVATIVE research ESTIMATES from the
       source + mechanics (these are claims, used only to ORDER builds/tests — never
       a gate; the pipeline still judges the EA):
