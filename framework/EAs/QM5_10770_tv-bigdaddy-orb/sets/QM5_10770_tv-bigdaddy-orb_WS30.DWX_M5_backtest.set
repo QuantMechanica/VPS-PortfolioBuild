@@ -32,3 +32,13 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+strategy_session_start_hhmm=1540
+strategy_trading_window_minutes=120
+strategy_full_session_end_hhmm=1600
+strategy_use_full_session=false
+strategy_orb_window_minutes=15
+strategy_mode=0
+strategy_stop_mode=0
+strategy_rr_target=2.0
+strategy_close_at_session_end=true
+strategy_max_spread_points=0.0

@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10760 TradingView IU Opening Range Breakout"
+// rework v2 2026-06-16
 
 #include <QM/QM_Common.mqh>
 
@@ -29,6 +30,12 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
+// rework v2 2026-06-16: session times are anchored in NY market time (the source's
+// reference session), converted from broker time via a DST-aware-by-config offset.
+// Without this, the raw-broker 09:15 window landed during the dead pre-US-open
+// European hours for US index symbols (NDX/WS30/SP500), producing ~0 trades and
+// dragging the multi-symbol Q02 aggregate. Mirrors sibling QM5_10654.
+input int    strategy_broker_to_ny_offset_hours = 7;
 input int    strategy_session_start_hhmm        = 915;
 input int    strategy_session_end_hhmm          = 1515;
 input int    strategy_opening_range_minutes     = 15;
@@ -58,15 +65,17 @@ int Strategy_HhmmToMinutes(const int hhmm)
 
 int Strategy_HhmmFromTime(const datetime t)
   {
+   const datetime ny = t - (datetime)strategy_broker_to_ny_offset_hours * 3600;
    MqlDateTime dt;
-   TimeToStruct(t, dt);
+   TimeToStruct(ny, dt);
    return dt.hour * 100 + dt.min;
   }
 
 int Strategy_DayKey(const datetime t)
   {
+   const datetime ny = t - (datetime)strategy_broker_to_ny_offset_hours * 3600;
    MqlDateTime dt;
-   TimeToStruct(t, dt);
+   TimeToStruct(ny, dt);
    return dt.year * 10000 + dt.mon * 100 + dt.day;
   }
 

@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10758 TradingView SMC Order Block Breakout"
+// rework v2 2026-06-16 — breakout starved: RecentResistance/RecentSupport returned the NEAREST pivot (unbreakable in one bar); now return the structural highest/lowest pivot so breaks actually fire.
 
 #include <QM/QM_Common.mqh>
 
@@ -160,13 +161,24 @@ bool IsPivotLow(const int shift, const int wing)
 
 double RecentResistance()
   {
+   // rework v2 2026-06-16: pick the HIGHEST confirmed pivot high in the lookback
+   // (the structural resistance a breakout is defined against), not the nearest
+   // pivot. The nearest pivot sits just above recent action and is essentially
+   // unbreakable in a single bar, which starved the breakout entry path.
    const int lookback = (int)MathMax(strategy_pivot_lookback, strategy_pivot_wing + 2);
    const int wing = (int)MathMax(strategy_pivot_wing, 1);
+   double pivot_level = 0.0;
    for(int shift = wing + 1; shift <= lookback + wing; ++shift)
      {
       if(IsPivotHigh(shift, wing))
-         return BarHigh(shift);
+        {
+         const double h = BarHigh(shift);
+         if(h > pivot_level)
+            pivot_level = h;
+        }
      }
+   if(pivot_level > 0.0)
+      return pivot_level;
 
    double highest = 0.0;
    for(int shift = 2; shift <= lookback + 1; ++shift)
@@ -180,13 +192,23 @@ double RecentResistance()
 
 double RecentSupport()
   {
+   // rework v2 2026-06-16: pick the LOWEST confirmed pivot low in the lookback
+   // (structural support), mirroring RecentResistance, so short breakouts can
+   // actually trigger on a clean break of the significant swing low.
    const int lookback = (int)MathMax(strategy_pivot_lookback, strategy_pivot_wing + 2);
    const int wing = (int)MathMax(strategy_pivot_wing, 1);
+   double pivot_level = 0.0;
    for(int shift = wing + 1; shift <= lookback + wing; ++shift)
      {
       if(IsPivotLow(shift, wing))
-         return BarLow(shift);
+        {
+         const double l = BarLow(shift);
+         if(pivot_level <= 0.0 || l < pivot_level)
+            pivot_level = l;
+        }
      }
+   if(pivot_level > 0.0)
+      return pivot_level;
 
    double lowest = DBL_MAX;
    for(int shift = 2; shift <= lookback + 1; ++shift)

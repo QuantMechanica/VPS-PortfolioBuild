@@ -20,9 +20,9 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: G0
-expected_trades_per_year_per_symbol: 80
+expected_trades_per_year_per_symbol: 20
 last_updated: 2026-05-22
-g0_approval_reasoning: "R1 PASS TradingView URL/author cited; R2 PASS mechanical WMA cross VWAP/ATR-filter entries/exits with ATR bracket and ~80 trades/year/symbol; R3 PASS OHLC/WMA/VWAP-proxy/ATR testable on DWX symbols; R4 PASS fixed rules no ML/grid/martingale."
+g0_approval_reasoning: "R1 PASS TradingView URL/author cited; R2 PASS mechanical WMA cross VWAP/ATR-filter entries/exits with ATR bracket and ~20 trades/year/symbol (WMA50/100 cross is a slow-MA event, VWAP-side gated; original 80/yr over-claim corrected 2026-06-16); R3 PASS OHLC/WMA/VWAP-proxy/ATR testable on DWX symbols; R4 PASS fixed rules no ML/grid/martingale."
 ---
 
 # TradingView WMA VWAP Momentum Scalper

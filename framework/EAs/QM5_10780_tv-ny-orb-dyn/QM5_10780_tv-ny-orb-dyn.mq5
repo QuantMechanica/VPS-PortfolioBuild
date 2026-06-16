@@ -72,7 +72,7 @@ input group "Strategy"
 // US session year-round.
 input int    strategy_or_start_hhmm      = 830;     // NY opening-range start (incl.)
 input int    strategy_or_end_hhmm        = 845;     // NY opening-range end (excl.)
-input int    strategy_entry_start_hhmm   = 850;     // NY entry window start (incl.)
+input int    strategy_entry_start_hhmm   = 845;     // NY entry window start (incl.) — = OR end, no dead gap
 input int    strategy_entry_end_hhmm     = 1200;    // NY entry window end (incl.)
 input int    strategy_hard_exit_hhmm     = 1325;    // NY hard flat time
 input bool   strategy_second_breakout    = false;   // require break->return->break (ablation)
@@ -282,8 +282,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
    else
      {
-      long_break  = (c1 > g_or_high && c2 <= g_or_high);
-      short_break = (c1 < g_or_low  && c2 >= g_or_low);
+      // Level break of the opening range. The one-shot-per-day g_traded_today
+      // guard already restricts this to a single entry, so requiring the prior
+      // bar to still sit inside the range (a strict adjacent-bar cross) is not
+      // needed and silently drops every breakout that completes inside the
+      // OR-end..entry-start window — which on M1 is the typical first move and
+      // produced 0 trades. A close beyond the range is the faithful breakout.
+      long_break  = (c1 > g_or_high);
+      short_break = (c1 < g_or_low);
      }
    if(long_break == short_break) // neither, or (impossible) both
       return false;
