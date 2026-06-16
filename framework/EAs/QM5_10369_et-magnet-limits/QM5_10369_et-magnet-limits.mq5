@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10369 Elite Trader Magnet Limit Bracket"
+// rework v2 2026-06-16: max-bracket sanity cap compared a session-scale bracket (0.70% of price) against an M1/M5 ATR (a few bp) -> always rejected -> 0 fills -> MIN_TRADES. Cap now uses a daily-scale ATR so it only rejects abnormally wide brackets; intraday stop still uses M1/M5 ATR.
 
 #include <QM/QM_Common.mqh>
 
@@ -205,7 +206,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double atr = QM_ATR(_Symbol, strategy_timeframe, MathMax(1, strategy_atr_period), 1);
    if(atr <= 0.0)
       return false;
-   if(strategy_max_bracket_atr_mult > 0.0 && bracket_width > strategy_max_bracket_atr_mult * atr)
+   // Max-bracket sanity cap must use a daily-scale ATR: the bracket is sized as a
+   // percent of the session open (session-scale), so comparing it to an intraday
+   // M1/M5 ATR (orders of magnitude smaller) would reject every normal day.
+   const double atr_daily = QM_ATR(_Symbol, PERIOD_D1, MathMax(1, strategy_atr_period), 1);
+   if(atr_daily <= 0.0)
+      return false;
+   if(strategy_max_bracket_atr_mult > 0.0 && bracket_width > strategy_max_bracket_atr_mult * atr_daily)
       return false;
    if(strategy_stop_atr_mult <= 0.0)
       return false;

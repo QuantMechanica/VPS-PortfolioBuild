@@ -1,6 +1,17 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10370 Elite Trader ES automatic trendline breakout"
+// rework v2 2026-06-16: fresh-break gate was structurally near-unsatisfiable.
+// The descending-resistance (long) / ascending-support (short) line is anchored
+// at pivots >=5 bars back and extrapolated forward, so by shift 1 the line sits
+// far on one side of price; the hard "prior bar still un-broken at shift 2"
+// (close2<=line2 / close2>=line2) requirement therefore almost never held and
+// the EA fired 0 trades over a full M1 year on SP500/WS30/GDAXI. Replaced the
+// fixed shift-2 prior-bar test with Strategy_FreshBreakAbove/Below, which
+// confirms the source's "one close beyond the line" rule by scanning the bars
+// between the breakout bar and the anchoring pivot for the most recent bar that
+// was on the un-broken side (genuine fresh cross), instead of demanding the
+// cross land exactly between shift 2 and shift 1.
 
 #include <QM/QM_Common.mqh>
 
