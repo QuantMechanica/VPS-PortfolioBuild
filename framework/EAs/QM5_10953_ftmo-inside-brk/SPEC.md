@@ -62,7 +62,7 @@ The EA evaluates each completed H4 bar for an inside bar, where the last closed 
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `30` |
+| Trades / year / symbol | `5` (measured ~3; corrected 2026-06-16 from over-claimed 30) |
 | Typical hold time | H4 to multi-day, depending on breakout follow-through and TP/trailing. |
 | Expected drawdown profile | Moderate clustered losses during false-breakout or compression regimes. |
 | Regime preference | breakout / trend continuation |
