@@ -101,7 +101,7 @@ rejects foreign symbols).
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 18 |
+| Trades / year / symbol | 3 (low-freq swing; ~2.5 observed median across 29 DWX D1 symbols, card corrected 2026-06-16 from 18) |
 | Cadence note | see card body |
 | Typical hold time | see card body |
 | Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |

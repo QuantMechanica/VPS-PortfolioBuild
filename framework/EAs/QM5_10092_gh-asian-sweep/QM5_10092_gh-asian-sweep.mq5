@@ -2,6 +2,11 @@
 #property version   "5.0"
 #property description "QM5_10092 GitHub Asian Range Sweep Reversal"
 
+// rework v2 2026-06-16: sweep detected from completed-bar wick extreme (iHigh/iLow)
+// instead of close-time bid. A liquidity sweep is a transient intrabar wick that
+// reverts; sampling bid only at bar-close missed every sweep that wicked and
+// reverted within one M5 bar, so g_high/low_sweep_seen rarely set -> MIN_TRADES_NOT_MET.
+
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
@@ -226,31 +231,35 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(bid <= 0.0 || ask <= 0.0)
       return false;
 
-   const double high_sweep_pips = (bid - g_asian_high) / pip;
-   const double low_sweep_pips = (g_asian_low - bid) / pip;
-   if(!g_low_sweep_seen &&
-      high_sweep_pips >= strategy_sweep_min_pips &&
-      high_sweep_pips <= strategy_sweep_max_pips)
-     {
-      g_high_sweep_seen = true;
-      if(bid > g_high_sweep_extreme)
-         g_high_sweep_extreme = bid;
-     }
-   if(!g_high_sweep_seen &&
-      low_sweep_pips >= strategy_sweep_min_pips &&
-      low_sweep_pips <= strategy_sweep_max_pips)
-     {
-      g_low_sweep_seen = true;
-      if(g_low_sweep_extreme <= 0.0 || bid < g_low_sweep_extreme)
-         g_low_sweep_extreme = bid;
-     }
-
    const double close_1 = iClose(_Symbol, PERIOD_M5, 1);
    const double high_1 = iHigh(_Symbol, PERIOD_M5, 1);
    const double low_1 = iLow(_Symbol, PERIOD_M5, 1);
    const double open_0 = iOpen(_Symbol, PERIOD_M5, 0);
    if(close_1 <= 0.0 || high_1 <= 0.0 || low_1 <= 0.0 || open_0 <= 0.0)
       return false;
+
+   // rework v2 2026-06-16: detect the sweep from the last COMPLETED bar's wick
+   // extreme (high_1 / low_1), not the close-time bid. The wick is what pierces
+   // the Asian range during a liquidity sweep; the bid at bar-close has usually
+   // already reverted. g_*_sweep_extreme tracks the wick extreme for the SL.
+   const double high_sweep_pips = (high_1 - g_asian_high) / pip;
+   const double low_sweep_pips = (g_asian_low - low_1) / pip;
+   if(!g_low_sweep_seen &&
+      high_sweep_pips >= strategy_sweep_min_pips &&
+      high_sweep_pips <= strategy_sweep_max_pips)
+     {
+      g_high_sweep_seen = true;
+      if(high_1 > g_high_sweep_extreme)
+         g_high_sweep_extreme = high_1;
+     }
+   if(!g_high_sweep_seen &&
+      low_sweep_pips >= strategy_sweep_min_pips &&
+      low_sweep_pips <= strategy_sweep_max_pips)
+     {
+      g_low_sweep_seen = true;
+      if(g_low_sweep_extreme <= 0.0 || low_1 < g_low_sweep_extreme)
+         g_low_sweep_extreme = low_1;
+     }
 
    if(strategy_ema_filter_enabled)
      {

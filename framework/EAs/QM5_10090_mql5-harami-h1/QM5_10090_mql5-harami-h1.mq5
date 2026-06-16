@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10090 MQL5 Harami RSI H1"
+// rework v2 2026-06-16: strategy_rsi_period 1 made the RSI confirm contradict the Harami child direction (period-1 RSI of an up-close child ~=100, never <40 buy / down-close child ~=0, never >60 sell) -> near-zero entries -> MIN_TRADES_NOT_MET. Use standard RSI(14) so the oscillator measures real oversold/overbought context, faithful to the card's RSI confirmation.
 
 #include <QM/QM_Common.mqh>
 
@@ -73,7 +74,7 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_rsi_period             = 1;
+input int    strategy_rsi_period             = 14;
 input double strategy_buy_rsi_max            = 40.0;
 input double strategy_sell_rsi_min           = 60.0;
 input int    strategy_atr_period             = 14;

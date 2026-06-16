@@ -1,6 +1,11 @@
 #property strict
 #property version   "5.0"
 #property description "QuantMechanica V5 EA skeleton template"
+// rework v2 2026-06-16: RSI confirmation period was placeholder 1; RSI(1) reads
+// the close_1-vs-close_2 change which Meeting Lines forces to be near-equal, so
+// RSI sat ~50 and never crossed the 40/60 entry gates (near-zero trades ->
+// MIN_TRADES_NOT_MET). Set to standard 14 so RSI reads oversold/overbought as
+// the card thesis ("RSI below 40 / above 60", exits at 30/70) intends.
 
 #include <QM/QM_Common.mqh>
 
@@ -73,7 +78,7 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_rsi_period              = 1;
+input int    strategy_rsi_period              = 14;
 input double strategy_buy_rsi_max             = 40.0;
 input double strategy_sell_rsi_min            = 60.0;
 input double strategy_exit_level_low          = 30.0;
