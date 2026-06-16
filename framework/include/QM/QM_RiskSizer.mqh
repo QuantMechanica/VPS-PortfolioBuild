@@ -157,14 +157,34 @@ double QM_LotsForRisk(const string symbol, const double sl_points)
    if(lots <= 0.0)
       return 0.0;
 
-   // If broker provides a generic initial margin, cap by available margin.
-   if(snapshot.margin_initial > 0.0)
+   // rework v2 2026-06-16: cap by available margin even when the broker reports
+   // SYMBOL_MARGIN_INITIAL==0 (true for DWX custom symbols). Without this, tight-stop
+   // strategies (e.g. opening-range breakout on high-priced indices) compute raw_lots
+   // that overflow SYMBOL_VOLUME_MAX, get clamped to the 100-lot cap, and are then
+   // rejected by the tester as "no money" on ~95% of days -> spurious MIN_TRADES_NOT_MET.
+   // Wide-stop EAs never hit the cap, so this is a no-op for them.
+   double margin_per_lot = snapshot.margin_initial;
+   if(margin_per_lot <= 0.0)
+     {
+      // Fallback per-lot margin from notional / leverage when broker omits margin_initial.
+      double leverage = (double)AccountInfoInteger(ACCOUNT_LEVERAGE);
+      if(leverage <= 0.0)
+         leverage = 100.0;
+      double price = SymbolInfoDouble(symbol, SYMBOL_ASK);
+      if(price <= 0.0)
+         price = SymbolInfoDouble(symbol, SYMBOL_BID);
+      if(price > 0.0 && snapshot.contract_size > 0.0)
+         margin_per_lot = (price * snapshot.contract_size) / leverage;
+     }
+
+   if(margin_per_lot > 0.0)
      {
       double free_margin = AccountInfoDouble(ACCOUNT_MARGIN_FREE);
       if(free_margin <= 0.0)
          return 0.0;
 
-      double margin_cap_lots = free_margin / snapshot.margin_initial;
+      // Use a safety fraction so the bracket pair (two pending stops) stays affordable.
+      double margin_cap_lots = (free_margin * 0.90) / margin_per_lot;
       lots = QM_RiskSizerQuantizeLots(MathMin(lots, margin_cap_lots),
                                       snapshot.volume_min,
                                       snapshot.volume_max,

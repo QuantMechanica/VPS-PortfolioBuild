@@ -63,7 +63,7 @@ The EA trades the RSI regime rule from the Elite Trader source on the M15 chart.
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `80` |
+| Trades / year / symbol | `8` (rework v2 2026-06-16: RSI(43) midline-regime cross on M15 is a long-period trend filter; real-MT5 Q02 prescreens gave 0-1 trades/6mo, ~6-10/yr — original 80 was a card overclaim) |
 | Typical hold time | Intraday, driven by RSI regime and indicator trailing exits. |
 | Expected drawdown profile | Medium-frequency intraday trend following with whipsaw risk near RSI 50. |
 | Regime preference | Trend |

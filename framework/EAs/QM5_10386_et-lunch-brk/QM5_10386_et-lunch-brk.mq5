@@ -1,6 +1,9 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10386 Elite Trader Lunch Breakout"
+// rework v2 2026-06-16: fix Q02 MIN_TRADES (0 trades): lunch-range ATR cap
+// compared a 15-bar range to a single-bar ATR -> filter always rejected. Scaled
+// cap by strategy_range_bars (see ETLB_EnsureLunchRange).
 
 #include <QM/QM_Common.mqh>
 
@@ -282,8 +285,16 @@ void ETLB_EnsureLunchRange(const datetime broker_now)
    if(spread <= 0.0 || range < 4.0 * spread)
       return;
 
+   // rework v2 2026-06-16: BUG (zero trades every symbol/year). The lunch range
+   // spans strategy_range_bars (15) M5 bars (~75 min) but was compared against a
+   // SINGLE-bar ATR(20) value. A 15-bar accumulated high-low is ~an order of
+   // magnitude larger than one bar's ATR, so (range > 1.5 * single_bar_atr) was
+   // always true -> g_etlb_range_valid never set -> no orders ever placed. Scale
+   // the ATR cap by the number of range bars so the "skip abnormally wide lunch"
+   // filter (card: range above 1.5x ATR(20,M5)) compares like-for-like windows.
+   const int    range_bars = MathMax(1, strategy_range_bars);
    const double atr = QM_ATR(_Symbol, _Period, MathMax(1, strategy_atr_period), 1);
-   if(atr <= 0.0 || range > strategy_max_range_atr_mult * atr)
+   if(atr <= 0.0 || range > strategy_max_range_atr_mult * range_bars * atr)
       return;
 
    g_etlb_lunch_high = lunch_high;

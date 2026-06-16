@@ -1,6 +1,12 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10405 Elite Trader Fixed-Risk Opening Range Breakout"
+// rework v2 2026-06-16: Q02 MIN_TRADES_NOT_MET root cause = framework risk sizer.
+// This EA's opening-range stops are very tight on high-priced indices (WS30 ~40pts),
+// so RISK_FIXED=$1000 demanded >100 lots -> clamped to SYMBOL_VOLUME_MAX -> tester
+// rejected ~95% of daily brackets as "deleted [no money]" (1 fill / 6 months on WS30).
+// Fix in QM_RiskSizer.mqh: apply a free-margin lot cap even when SYMBOL_MARGIN_INITIAL==0
+// (DWX custom symbols), making the bracket affordable. Strategy logic unchanged.
 
 #include <QM/QM_Common.mqh>
 

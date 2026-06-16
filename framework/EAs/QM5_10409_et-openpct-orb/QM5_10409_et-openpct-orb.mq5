@@ -1,6 +1,15 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10409 Elite Trader Open-Percent Afternoon ORB"
+// rework v2 2026-06-16: (1) US/DAX session-open mapped to wrong broker time
+//   (DXZ NY-Close = GMT+2/+3 = ET+7h year-round): US cash open 09:30 ET = 16:30
+//   broker (was 1530 = 08:30 ET, 1h pre-open); Xetra 09:00 CET = 10:00 broker
+//   (was 0900 = 08:00 CET, 1h pre-open). (2) Stop-distance sanity cap used
+//   ATR(20,M1): a fixed ~0.66%-of-open band (buy_mult-sell_mult) is structurally
+//   far wider than 2.5x a 1-minute ATR, so the cap rejected ~every day
+//   (s_trade_done=true) -> near-zero fills -> Q02 MIN_TRADES_NOT_MET. The cap is
+//   meant to reject abnormal wide-gap days, which is a session-scale check ->
+//   compute it on D1 (strategy_atr_tf).
 
 #include <QM/QM_Common.mqh>
 
@@ -73,17 +82,21 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_us_open_hhmm       = 1530;
-input int    strategy_us_arm_hhmm        = 2000;
-input int    strategy_us_last_entry_hhmm = 2159;
-input int    strategy_us_exit_hhmm       = 2200;
-input int    strategy_dax_open_hhmm      = 900;
+input int    strategy_us_open_hhmm       = 1630;   // 09:30 ET cash open in DXZ broker time (ET+7h)
+input int    strategy_us_arm_hhmm        = 2000;   // 13:00 ET
+input int    strategy_us_last_entry_hhmm = 2159;   // 14:59 ET
+input int    strategy_us_exit_hhmm       = 2200;   // 15:00 ET
+input int    strategy_dax_open_hhmm      = 1000;   // 09:00 CET Xetra open in DXZ broker time (CET+1h)
 input int    strategy_dax_arm_hhmm       = 1330;
 input int    strategy_dax_last_entry_hhmm= 1529;
 input int    strategy_dax_exit_hhmm      = 1530;
 input double strategy_buy_mult           = 1.0033;
 input double strategy_sell_mult          = 0.9967;
 input int    strategy_atr_period         = 20;
+// rework v2 2026-06-16: stop-distance sanity cap runs on D1 (session scale), not
+// the M1 trading TF, so a ~0.66%-of-open band is normally WITHIN 2.5x ATR and the
+// cap only rejects genuinely abnormal wide-gap days.
+input ENUM_TIMEFRAMES strategy_atr_tf    = PERIOD_D1;
 input double strategy_max_stop_atr_mult  = 2.5;
 
 int Strategy_Hhmm(const datetime t)
@@ -340,7 +353,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const double buy_stop = Strategy_RoundToTick(s_session_open * strategy_buy_mult);
    const double sell_stop = Strategy_RoundToTick(s_session_open * strategy_sell_mult);
-   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+   const double atr = QM_ATR(_Symbol, strategy_atr_tf, strategy_atr_period, 1);
    if(buy_stop <= 0.0 || sell_stop <= 0.0 || buy_stop <= sell_stop || atr <= 0.0)
       return false;
 
