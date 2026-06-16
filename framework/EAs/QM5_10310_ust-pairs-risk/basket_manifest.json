@@ -1,0 +1,20 @@
+{
+  "logical_symbol": "QM5_10310_UST_PAIRS_RISK_M15",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "M15",
+  "basket_symbols": [
+    "USDJPY.DWX",
+    "USDCAD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "XAUUSD.DWX",
+    "SP500.DWX",
+    "NDX.DWX",
+    "WS30.DWX"
+  ],
+  "notes": [
+    "Treasury-style pairs spread with extreme risk control. EA runs one instance per universe symbol; each instance reads M15 closes of its configured peer (Strategy_PeerSymbol) to build the log-spread S = log(A) - beta*log(B), the 60-day formation correlation/beta, and the 20-day z-score. Foreign-symbol reads (CopyClose/SymbolSelect on the peer) are bound at call site.",
+    "Pairings (A->peer B): USDJPY<->USDCAD, EURUSD<->GBPUSD, XAUUSD->USDJPY, SP500<->NDX, NDX<->SP500, WS30->NDX.",
+    "rework v2 2026-06-16: the executed trade is the CHART leg (A) only — the framework QM_Entry path can open positions on _Symbol only, so the peer leg (B) is used purely for spread/correlation computation, not order placement (single-host basket convention, cf. QM5_10022). Warmup force-loads the full 60-day formation window for the whole basket so the foreign-symbol CopyClose does not return short in the single-symbol tester."
+  ]
+}
