@@ -219,6 +219,57 @@ Forbidden patterns (Claude review will `REJECT_REWORK` on any):
 - File-scope `g_atr_handle` / `IndicatorRelease` — handles are pooled
 - `CopyRates` over warmup window on every tick
 
+## .DWX BACKTEST INVARIANTS — write these RIGHT or the EA silently makes 0 trades
+
+These are strategy-correctness rules for the Darwinex `.DWX` MT5 tester. The
+2026-06-16 zero-trade rework fixed ~88 EAs that compiled and looked correct but
+produced **zero trades** because of one of these. `build_check.ps1` emits
+`BUILD_CHECK_DWX_ADVISORY_*` warnings for the mechanically-detectable ones — but
+the warnings don't block, so YOU must get these right. WRONG → RIGHT:
+
+1. **Spread guards never fail-closed on zero spread.** `.DWX` symbols quote
+   `ask == bid` (0 modeled spread); `SymbolInfoInteger(SYMBOL_SPREAD)` / `iSpread`
+   / `rates[].spread` all read **0** in the tester.
+   WRONG: `if(ask <= bid) return true;` · `if(spread <= 0 || spread > cap) return false;`
+   RIGHT: only block a genuinely wide spread: `if(ask>0 && bid>0 && ask>bid && (ask-bid) > cap) return true;`
+   (zero *price* checks `ask<=0 || bid<=0` are fine; never block on zero *spread*).
+2. **Never gate entry on swap.** `.DWX` applies **$0 swap** in the tester. Reading
+   `SYMBOL_SWAP_*` as a carry SIGNAL/ranking is fine; a boolean `if(swap <= 0) reject`
+   (directly or via a derived `expected_carry`) blocks every trade. Let the ranking decide.
+3. **`QM_IsNewBar()` is single-consume per tick.** Call it ONCE for the entry gate.
+   An exit hook that calls it before the entry gate eats the new-bar event and starves
+   entry. If needed twice, latch `const bool nb = QM_IsNewBar();` once and reuse.
+4. **Don't require two cross EVENTS on the same bar.** Two fresh crossovers (or
+   cross + oscillator-cross) almost never coincide. Make ONE the trigger; the others
+   are STATES (currently above/below), or allow within a small lookback window.
+5. **Session / opening-range windows in BROKER time, matched to the symbol.** DXZ
+   broker = NY-Close GMT+2/+3 (DST-aware). US-index cash open 09:30 ET = broker ~16:30;
+   London 08:00 = broker ~09:00; Frankfurt/DAX 09:00 CET = broker ~10:00. A raw-ET/UTC
+   window, or a US-open window on a DAX symbol, builds the range in dead hours → 0 trades.
+   Convert via `QM_BrokerToUTC` / DST-aware helpers; put per-symbol session params in the setfile.
+6. **Candle-pattern / gap rules need the prior CLOSE, not the prior RANGE.** `.DWX`
+   index/FX CFDs are gapless: `open[0] == close[1]`. A rule needing `open < prior_low`
+   (buy-the-gap, piercing line, morning/evening star with a real gap) can never fire.
+   Reference the prior close or an intraday session frame; relax exact gap to "lower/higher open".
+7. **Compression/range/flat/squeeze: scale a MULTI-bar range to a MULTI-bar baseline.**
+   Comparing an N-bar high-low range to a single-bar ATR is always "not flat" → 0 trades.
+   Multiply the ATR baseline by `sqrt(lookback)`.
+8. **SuperTrend / OTT direction: seed from `hl2` (bar median), not `final_lower`/`final_upper`.**
+   Seeding from a band several ATR away pins the trend and it never flips. Derive `dir@1`/`dir@2`
+   from ONE forward reconstruction, not two convergent ones.
+9. **No degenerate placeholder params** (e.g. `rsi_period=1` pins RSI). Use real values.
+10. **Monthly (MN1) logic is untestable** — the `.DWX` tester yields 0 bars on MN1. Make
+    monthly EAs D1-native with a ~21-bar/month (252-day/year) proxy on `PERIOD_D1`.
+11. **No external-macro-CSV strategies.** We have no VIX / futures-curve / interest-rate /
+    yield feed, and a checked-in CSV won't exist at run time → 0 trades + R3 fail. Don't build
+    strategies whose only signal is such a file.
+12. **Exact tick-minute gates miss.** `if(TimeCurrent() minute == 45)` fails — the new-bar
+    tick arrives after `:45:59`. Key off `iTime(sym, tf, 0)` bar-open time.
+13. **Offset CET/ET clock values to broker time** before use (no direct "09:00 CET" on a
+    broker-time chart).
+14. **Points vs pips.** A fixed range/SL/TP/breakout threshold in raw `*_points` is mis-scaled
+    on 5-digit / JPY symbols. Use `QM_StopRulesPipsToPriceDistance` (pip_factor), not raw points.
+
 ## PERFORMANCE DISCIPLINE (strict — smoke runtime is bounded)
 
 Following the Framework Corset above eliminates ~all known perf-failure

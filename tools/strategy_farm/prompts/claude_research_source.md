@@ -50,6 +50,14 @@ URI: `{{uri}}`
     Other US-equity instruments (SPY ETF, ES futures, individual stocks)
     remain unavailable — port them to SP500.DWX / NDX.DWX / WS30.DWX per
     the card edge.
+  - **Needs a macro feed we do not have** (R3 fail — do NOT draft). VIX /
+    implied vol, interest rates / yields / rate-differential carry, futures
+    TERM STRUCTURE (roll yield / contango / front-vs-next contract), CRB /
+    commodity indices, COT positioning. We have FX majors + NDX/WS30/SP500/
+    GDAXI/UK100/XAUUSD/XAGUSD/XTIUSD/XNGUSD `.DWX` only; a "supply a CSV of
+    <macro series>" input does not exist at run time and builds to 0 trades
+    (2026-06-16: QM5_1177/1179/1203/1249 retired). A spot-price PROXY from
+    symbols we DO have is fine; an external-series dependency is not.
   - **ML / neural net / adaptive parameters / grid-without-bounded-worst-case**
     (R4 / HR14, binding)
 - **Anonymous forum handles are OK** as long as you link the source URL.

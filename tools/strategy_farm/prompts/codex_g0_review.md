@@ -70,6 +70,18 @@ SP500.DWX is now backtest-only available (Custom Symbol since 2026-05-16
 DWX broker feed still doesn't support live SP500 — those cards need
 NDX/WS30 fallback parameters for any future live promotion.
 
+## R3 hard reject — external macro feeds we don't have
+
+REJECT (R3 fail) any card whose signal depends on data outside the `.DWX`
+price universe: VIX / implied vol, interest rates / bond yields / rate
+differentials (carry), futures TERM STRUCTURE (front-vs-next contract / roll
+yield / contango), CRB / commodity indices, COT positioning, or any "supply a
+CSV of <macro series>" input. We have FX majors + NDX/WS30/SP500/GDAXI/UK100/
+XAUUSD/XAGUSD/XTIUSD/XNGUSD `.DWX` only — no macro feed exists and a checked-in
+CSV won't be present at run time, so these build to 0 trades (2026-06-16:
+QM5_1177/1179/1203/1249 retired for exactly this). A spot-price PROXY computed
+from symbols we DO have is acceptable; an external-series dependency is not.
+
 ## Quality bar
 
 You and Claude both apply the same R1–R4 — your verdicts should converge
