@@ -1,6 +1,12 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10463 MQL5 iVIDyA New-Bar Signal"
+// rework v2 2026-06-16: iVIDyA handle was created lazily inside the per-bar
+// reader; in the strategy tester a handle bound after the indicator-binding
+// phase never gets fully calculated (BarsCalculated stays 0) so CopyBuffer
+// perpetually returns !=1, VIDYA reads 0.0, the cross never fires and the EA
+// trades ZERO times over a full year (pattern #3, constant/dead indicator).
+// Fix: create the handle eagerly in OnInit and release it in OnDeinit.
 
 #include <QM/QM_Common.mqh>
 
@@ -100,13 +106,8 @@ double Strategy_VIDYA(const int shift)
    if(strategy_vidya_cmo_period <= 0 || strategy_vidya_ema_period <= 1 || shift < 1)
       return 0.0;
 
-   if(g_vidya_handle == INVALID_HANDLE)
-      g_vidya_handle = iVIDyA(_Symbol,
-                              strategy_signal_tf,
-                              strategy_vidya_cmo_period,
-                              strategy_vidya_ema_period,
-                              0,
-                              strategy_vidya_price);
+   // rework v2 2026-06-16: handle is created eagerly in OnInit (see below);
+   // never create it lazily here — a tester-late handle stays uncalculated.
    if(g_vidya_handle == INVALID_HANDLE)
       return 0.0;
 

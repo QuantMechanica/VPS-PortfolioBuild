@@ -1,6 +1,13 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10460 MQL5 CCI MACD EMA Scalper"
+// rework v2 2026-06-16: pattern-3 over-restrictive same-bar AND-chain. Original
+// demanded a CCI(0) zero-cross AND a MACD signal-line cross on the SAME closed
+// bar — two independent crossovers rarely coincide, starving entries far below
+// the card's ~85 trades/yr. Faithful fix: keep the CCI zero-cross as the trigger
+// and require MACD to be in the confirming cross STATE (main>signal below 0 for
+// longs / main<signal above 0 for shorts) rather than crossing on the identical
+// bar. Mechanic (momentum confluence) preserved; comparisons unchanged.
 
 #include <QM/QM_Common.mqh>
 
@@ -121,20 +128,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double cci_2 = QM_CCI(_Symbol, tf, strategy_cci_period, 2);
    const double macd_main_1 = QM_MACD_Main(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
    const double macd_sig_1 = QM_MACD_Signal(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-   const double macd_main_2 = QM_MACD_Main(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
-   const double macd_sig_2 = QM_MACD_Signal(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
    const double atr_1 = QM_ATR(_Symbol, tf, strategy_atr_period, 1);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(close_1 <= 0.0 || ema_1 <= 0.0 || atr_1 <= 0.0 || point <= 0.0)
       return false;
 
+   // rework v2 2026-06-16: CCI zero-cross is the trigger; MACD supplies a
+   // confirming cross STATE (not a same-bar cross) below/above zero.
    const bool long_signal = (close_1 > ema_1 &&
                              cci_2 <= 0.0 && cci_1 > 0.0 &&
-                             macd_main_2 <= macd_sig_2 && macd_main_1 > macd_sig_1 &&
+                             macd_main_1 > macd_sig_1 &&
                              macd_main_1 < 0.0);
    const bool short_signal = (close_1 < ema_1 &&
                               cci_2 >= 0.0 && cci_1 < 0.0 &&
-                              macd_main_2 >= macd_sig_2 && macd_main_1 < macd_sig_1 &&
+                              macd_main_1 < macd_sig_1 &&
                               macd_main_1 > 0.0);
    if(!long_signal && !short_signal)
       return false;

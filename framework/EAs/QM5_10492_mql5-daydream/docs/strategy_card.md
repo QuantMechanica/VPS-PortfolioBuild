@@ -12,8 +12,8 @@ concepts:
 indicators: [Price Channel]
 target_symbols: [EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD.DWX]
 period: H1
-expected_trade_frequency: "Price-channel overshoot reversal on H1; conservative estimate 40-90 trades/year/symbol."
-expected_trades_per_year_per_symbol: 60
+expected_trade_frequency: "Price-channel overshoot reversal on H1; one-position-per-symbol cap + 48-bar time-stop bound realized frequency. Smoke evidence 2024: USDJPY 9 trades/yr, EURUSD 6 trades/yr; realistic estimate ~8 trades/year/symbol (card_overclaim correction 2026-06-16, was 60)."
+expected_trades_per_year_per_symbol: 8
 g0_status: APPROVED
 r1_track_record: PASS
 r2_mechanical: PASS

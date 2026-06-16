@@ -1,6 +1,12 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10478 MQL5 Bago EMA/RSI Trend Filter"
+// rework v2 2026-06-16: over-restrictive AND-chain — entry required EMA(5/12) cross AND
+// RSI(21)/50 cross to coincide on the EXACT same bar. Card specifies RSI "in the same
+// signal window" as a confirmation (Bago source uses RSI>50 / <50 as a directional
+// filter at EMA-cross time, not a simultaneous RSI crossover). Relaxed RSI to a level
+// confirmation on the cross bar; EMA cross + tunnel context remain the triggers. Keeps
+// entry/exit symmetric and mechanical.
 
 #include <QM/QM_Common.mqh>
 
@@ -166,11 +172,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       close_1 <= 0.0)
       return false;
 
+   // rework v2 2026-06-16: EMA(5/12) cross is the trigger on the closed bar; RSI(21) acts
+   // as a same-window directional confirmation (level, not a simultaneous crossover).
    const bool long_signal = (fast_2 <= slow_2 && fast_1 > slow_1 &&
-                             rsi_2 <= strategy_rsi_midline && rsi_1 > strategy_rsi_midline &&
+                             rsi_1 > strategy_rsi_midline &&
                              close_1 > tunnel_a && close_1 > tunnel_b);
    const bool short_signal = (fast_2 >= slow_2 && fast_1 < slow_1 &&
-                              rsi_2 >= strategy_rsi_midline && rsi_1 < strategy_rsi_midline &&
+                              rsi_1 < strategy_rsi_midline &&
                               close_1 < tunnel_a && close_1 < tunnel_b);
    if(!long_signal && !short_signal)
       return false;
@@ -245,12 +253,13 @@ bool Strategy_ExitSignal()
          rsi_1 > 0.0 && rsi_2 > 0.0 && tunnel_a > 0.0 && tunnel_b > 0.0 &&
          close_1 > 0.0)
         {
+         // rework v2 2026-06-16: mirror entry — EMA cross trigger + RSI level confirmation.
          if(fast_2 <= slow_2 && fast_1 > slow_1 &&
-            rsi_2 <= strategy_rsi_midline && rsi_1 > strategy_rsi_midline &&
+            rsi_1 > strategy_rsi_midline &&
             close_1 > tunnel_a && close_1 > tunnel_b)
             signal = 1;
          else if(fast_2 >= slow_2 && fast_1 < slow_1 &&
-                 rsi_2 >= strategy_rsi_midline && rsi_1 < strategy_rsi_midline &&
+                 rsi_1 < strategy_rsi_midline &&
                  close_1 < tunnel_a && close_1 < tunnel_b)
             signal = -1;
         }
