@@ -64,8 +64,10 @@ The EA trades a double-smoothed moving average crossover. Fast SMEMA is calculat
 | Multi-timeframe refs | none |
 | Bar gating | QM_IsNewBar(_Symbol, PERIOD_CURRENT) (default) |
 
-> Card states "Use M15/H1 baseline"; H1 is chosen as the P2 base timeframe because
-> it matches the card's expected ~120 trades/year/symbol. P3 sweeps may test M15/M30.
+> Card states "Use M15/H1 baseline"; H1 is chosen as the P2 base timeframe. The
+> original "matches ~120 trades/year/symbol" rationale was wrong — realized cadence
+> is ~1-5 trades/year/symbol on H1 baseline (corrected 2026-06-16). P3 sweeps may
+> test M15/M30 for higher cadence, though M15 baseline showed 0 trades in 2024.
 
 ---
 
@@ -73,9 +75,9 @@ The EA trades a double-smoothed moving average crossover. Fast SMEMA is calculat
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 120 |
+| Trades / year / symbol | ~5 (revised 2026-06-16 from 120; backtest evidence 1-4/yr H1 baseline) |
 | Typical hold time | Intraday to 10 bars |
-| Expected drawdown profile | High-cadence whipsaw risk in range-bound markets |
+| Expected drawdown profile | Low-cadence; whipsaw risk in range-bound markets, small-sample variance |
 | Regime preference | Trend-following |
 | Win rate target (qualitative) | medium |
 

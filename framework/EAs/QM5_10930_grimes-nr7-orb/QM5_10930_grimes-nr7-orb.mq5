@@ -5,6 +5,7 @@
 // Source: Adam H. Grimes NR7 + S&P intraday opening-range breakout articles.
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_DSTAware.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10930;
@@ -43,6 +44,7 @@ input double strategy_trail_trigger_r           = 1.50;
 input int    strategy_trail_lookback_bars       = 3;
 input double strategy_spread_stop_fraction      = 0.10;
 input int    strategy_exit_bars_before_day_end  = 2;
+input int    strategy_session_open_hhmm_ny       = 930;  // NY cash-open HHMM anchoring the opening range
 
 int      g_session_key             = 0;
 bool     g_daily_setup_loaded       = false;
@@ -59,18 +61,40 @@ double   g_active_initial_r         = 0.0;
 bool     g_active_is_long           = false;
 bool     g_active_be_done           = false;
 
+// Convert a broker timestamp to a DST-aware New-York MqlDateTime. US index CFDs
+// trade ~24h on DWX, so the broker-calendar midnight is the dead overnight window,
+// not the cash open. Anchoring the opening range to the NY session is what makes
+// the Grimes gap-above-prior-high setup register at all.
+void BrokerToNyStruct(const datetime broker_time, MqlDateTime &ny_dt)
+  {
+   const datetime utc = QM_BrokerToUTC(broker_time);
+   const int ny_off_hours = QM_IsUSDSTUTC(utc) ? -4 : -5;
+   const datetime ny = utc + (ny_off_hours * 3600);
+   ZeroMemory(ny_dt);
+   TimeToStruct(ny, ny_dt);
+  }
+
+// Session key = NY trading date (YYYYMMDD), so an overnight broker-calendar
+// rollover does not split or mis-anchor the opening range.
 int DayKey(const datetime t)
   {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 10000 + dt.mon * 100 + dt.day;
+   MqlDateTime ny;
+   BrokerToNyStruct(t, ny);
+   return ny.year * 10000 + ny.mon * 100 + ny.day;
   }
 
 int MinuteOfDay(const datetime t)
   {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.hour * 60 + dt.min;
+   MqlDateTime ny;
+   BrokerToNyStruct(t, ny);
+   return ny.hour * 60 + ny.min;
+  }
+
+int NyHhmm(const datetime t)
+  {
+   MqlDateTime ny;
+   BrokerToNyStruct(t, ny);
+   return ny.hour * 100 + ny.min;
   }
 
 double TrueRange(const MqlRates &rates[], const int idx)
@@ -247,6 +271,10 @@ bool BuildOpeningRange(const MqlRates &rates[],
      {
       if(DayKey(rates[i].time) != session_key)
          continue;
+      // Anchor the opening range to the NY cash open; ignore the overnight
+      // session that precedes it within the same NY trading date.
+      if(NyHhmm(rates[i].time) < strategy_session_open_hhmm_ny)
+         continue;
       counted++;
       if(counted == 1)
         {
@@ -331,7 +359,9 @@ bool Strategy_NoTradeFilter()
       strategy_trail_trigger_r < strategy_breakeven_trigger_r ||
       strategy_trail_lookback_bars < 1 ||
       strategy_spread_stop_fraction <= 0.0 ||
-      strategy_exit_bars_before_day_end < 1)
+      strategy_exit_bars_before_day_end < 1 ||
+      strategy_session_open_hhmm_ny < 0 ||
+      strategy_session_open_hhmm_ny > 2359)
       return true;
    return false;
   }

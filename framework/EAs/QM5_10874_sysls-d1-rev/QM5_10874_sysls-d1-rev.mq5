@@ -116,8 +116,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(_Period != PERIOD_M15)
       return false;
 
+   // rework v2 2026-06-16 — BUG: gated entry on TimeCurrent() minute==45 exactly.
+   // QM_IsNewBar() fires on the FIRST real tick of the new M15 bar; near the
+   // 23:45 broker close (thin DWX liquidity at the daily rollover) that first
+   // tick routinely lands after :45:59, so dt.min!=45 and the entry never fired
+   // (0 trades / MIN_TRADES). Key the gate off the bar's OPEN time instead — in
+   // the tester M15 bars open exactly at :00/:15/:30/:45, so this is robust.
+   const datetime bar_open = iTime(_Symbol, PERIOD_M15, 0);
+   if(bar_open <= 0)
+      return false;
    MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
+   TimeToStruct(bar_open, dt);
    if(dt.hour != strategy_entry_hour || dt.min != strategy_entry_minute)
       return false;
 
@@ -240,7 +249,13 @@ bool Strategy_ExitSignal()
          return true;
 
       // Trade Close: flatten on opposite same-close signal before scheduled exit.
-      if(now_dt.hour == strategy_entry_hour && now_dt.min == strategy_entry_minute)
+      // rework v2 2026-06-16 — same minute-exact fragility as entry: key the
+      // opposite-signal check off the M15 bar open time, not the tick minute,
+      // so it is reachable once-per-day on the 23:45 bar like the entry.
+      MqlDateTime sig_dt;
+      const datetime sig_bar_open = iTime(_Symbol, PERIOD_M15, 0);
+      TimeToStruct(sig_bar_open, sig_dt);
+      if(sig_bar_open > 0 && sig_dt.hour == strategy_entry_hour && sig_dt.min == strategy_entry_minute)
         {
          MqlRates d1_rates[];
          ArraySetAsSeries(d1_rates, true);
