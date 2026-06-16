@@ -1,6 +1,10 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_9245 Awesome Oscillator Zero Cross (H4)"
+// rework v2 2026-06-16 — noise filter gated |ao1| (the just-crossed bar, ~0 by
+// construction) so it rejected nearly every zero-cross -> ~0 trades / Q02
+// MIN_TRADES fail. Gate on cross momentum |ao1-ao2| instead (faithful to the
+// card's "reject near-flat noise" intent), which is non-zero on real crosses.
 
 #include <QM/QM_Common.mqh>
 
@@ -125,8 +129,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!long_signal && !short_signal)
       return false;
 
-   // Noise filter: signal bar must have meaningful AO magnitude
-   if(ao_median > 0.0 && MathAbs(ao1) <= strategy_ao_noise_mult * ao_median)
+   // Noise filter: the zero-cross must be a meaningful move, not a flat-market
+   // wobble. Gate on the cross momentum |ao1-ao2| (the bar-over-bar AO swing
+   // that produced the cross). NOTE: do NOT gate on |ao1| — the value on the
+   // just-crossed bar is ~0 by construction, so that rejected nearly every
+   // genuine zero-cross and starved the EA of trades.
+   if(ao_median > 0.0 && MathAbs(ao1 - ao2) <= strategy_ao_noise_mult * ao_median)
       return false;
 
    const QM_OrderType side  = long_signal ? QM_BUY : QM_SELL;
