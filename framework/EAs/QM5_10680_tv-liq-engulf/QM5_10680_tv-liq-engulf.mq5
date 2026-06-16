@@ -1,6 +1,13 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10680 TradingView Liquidity Engulfment Reversal"
+// rework v2 2026-06-16 — fix 0-trade contradiction: sweep was required on the SAME
+//   bar as the engulf (bar 1 had to make a fresh 20-bar extreme AND engulf the prior
+//   bar AND stay <=2 ATR — mutually exclusive). Faithful "liquidity grab then engulf
+//   reversal": bar 2 sweeps the liquidity line (extreme of bars 3..lookback+2), bar 1
+//   is the engulfing reversal that closes back through it. Decouples the new-extreme
+//   excursion (bar 2 wick) from the engulf-bar range (bar 1), so the <=2 ATR filter
+//   no longer kills every signal.
 
 #include <QM/QM_Common.mqh>
 
@@ -137,8 +144,10 @@ bool Strategy_PriorLiquidity(const int lookback, double &upper_line, double &low
    if(lookback <= 0)
       return false;
 
+   // Liquidity line is the extreme of the bars BEFORE the sweep bar (bar 2),
+   // i.e. shifts 3..lookback+2, so bar 2 can be the bar that sweeps it.
    int samples = 0;
-   for(int shift = 2; shift <= lookback + 1; ++shift)
+   for(int shift = 3; shift <= lookback + 2; ++shift)
      {
       const double h = iHigh(_Symbol, _Period, shift);
       const double l = iLow(_Symbol, _Period, shift);
@@ -222,14 +231,17 @@ bool Strategy_QualifiedSignal(int &direction,
    if(signal_range <= 0.0 || signal_range > strategy_max_engulf_range_atr_mult * atr)
       return false;
 
+   // Bar 2 is the liquidity-grab bar (sweeps the line); bar 1 is the engulfing
+   // reversal that closes back through the line. Sweep + engulf are on adjacent
+   // bars, not the same bar.
    const bool bullish_engulf = (strategy_allow_longs &&
-                                low1 <= lower_line &&
+                                low2 <= lower_line &&
                                 close1 > open1 &&
                                 close2 < open2 &&
                                 open1 <= close2 &&
                                 close1 > high2);
    const bool bearish_engulf = (strategy_allow_shorts &&
-                                high1 >= upper_line &&
+                                high2 >= upper_line &&
                                 close1 < open1 &&
                                 close2 > open2 &&
                                 open1 >= close2 &&

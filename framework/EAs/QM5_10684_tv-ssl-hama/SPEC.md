@@ -60,7 +60,7 @@ This EA trades when SSL Channel direction and Hama candle direction agree on the
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `220` |
+| Trades / year / symbol | `30` |
 | Typical hold time | short intraday scalping holds |
 | Expected drawdown profile | many small trend-continuation losses controlled by Hama-line stop distance |
 | Regime preference | trend-following with low-volatility consolidation filtered out |

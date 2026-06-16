@@ -1,6 +1,11 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10685 TradingView USDJPY FVG Session Strategy"
+// rework v2 2026-06-16 — FVG retest fired only when the spike bar CLOSED inside a
+// thin (>=0.10 ATR) gap while also being bullish/above-EMA and a 1.5x volume bar:
+// a wide-range volume-spike bar closing inside a thin gap is near-impossible, so
+// ~0 trades. Faithful fix: trigger on the gap TAP (returned_to_zone) + direction
+// + EMA + volume; keep close-inside only as a soft preference removed from the gate.
 
 #include <QM/QM_Common.mqh>
 
@@ -265,11 +270,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          const double gap_bottom = older_high;
          const double gap_top = newer_low;
          const double gap_size = gap_top - gap_bottom;
-         const bool close_inside = (close_1 >= gap_bottom && close_1 <= gap_top);
          const bool returned_to_zone = (low_1 <= gap_top && high_1 >= gap_bottom);
          if(gap_size >= min_gap &&
             returned_to_zone &&
-            close_inside &&
             close_1 > open_1 &&
             close_1 > ema)
            {
@@ -299,11 +302,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          const double gap_bottom = newer_high;
          const double gap_top = older_low;
          const double gap_size = gap_top - gap_bottom;
-         const bool close_inside = (close_1 >= gap_bottom && close_1 <= gap_top);
          const bool returned_to_zone = (low_1 <= gap_top && high_1 >= gap_bottom);
          if(gap_size >= min_gap &&
             returned_to_zone &&
-            close_inside &&
             close_1 < open_1 &&
             close_1 < ema)
            {

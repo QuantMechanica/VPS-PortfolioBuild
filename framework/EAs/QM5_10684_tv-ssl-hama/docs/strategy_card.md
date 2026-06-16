@@ -20,7 +20,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: G0
-expected_trades_per_year_per_symbol: 220
+expected_trades_per_year_per_symbol: 30
 last_updated: 2026-05-22
 g0_approval_reasoning: "R1 source URL cited; R2 mechanical SSL/Hama/ATR-consolidation entries with TP/Hama-return exit and ~220 trades/year/symbol; R3 OHLC EMA/ATR logic testable on DWX FX/metals/indices; R4 fixed non-ML one-position rules."
 ---

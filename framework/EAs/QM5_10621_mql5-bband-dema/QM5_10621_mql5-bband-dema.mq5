@@ -1,6 +1,10 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10621 MQL5 Bollinger DEMA Band Cross"
+// rework v2 2026-06-16 — fix ~0-trade Q02 MIN_TRADES: band-cross was an intrabar
+// open<band test (open below lower band same bar); replaced with the card's
+// two-bar close-vs-band crossover (prior close below band, signal close back
+// above), candle-colour moved to the entry hook. Same as source mql5/code/166.
 
 #include <QM/QM_Common.mqh>
 
@@ -154,30 +158,49 @@ double Strategy_DEMA(const string symbol,
    return (2.0 * ema1 - ema2);
   }
 
+// Two-bar band cross (prior closed bar below the band, the evaluated bar back
+// above it). The previous single-bar form required the bar's OPEN to sit below
+// the lower band, an intrabar V that almost never co-occurs with a 3-day D1
+// DEMA uptrend -> ~0 trades / Q02 MIN_TRADES fail. The card defines the signal
+// as "the candle crosses the lower Bollinger Band from below to above", which
+// is the close-vs-band crossover the source mql5/code/166 EA (and sibling
+// QM5_10266) use.
 bool Strategy_BullishLowerBandCross(const int shift)
   {
-   const double open = iOpen(_Symbol, _Period, shift);
-   const double close = iClose(_Symbol, _Period, shift);
-   const double lower = QM_BB_Lower(_Symbol, (ENUM_TIMEFRAMES)_Period,
-                                    strategy_bands_period,
-                                    strategy_bands_deviation,
-                                    shift + strategy_bands_shift,
-                                    PRICE_CLOSE);
-   return (open > 0.0 && close > 0.0 && lower > 0.0 &&
-           close > open && open < lower && close > lower);
+   const double close_cur  = iClose(_Symbol, _Period, shift);
+   const double close_prev = iClose(_Symbol, _Period, shift + 1);
+   const double lower_cur = QM_BB_Lower(_Symbol, (ENUM_TIMEFRAMES)_Period,
+                                        strategy_bands_period,
+                                        strategy_bands_deviation,
+                                        shift + strategy_bands_shift,
+                                        PRICE_CLOSE);
+   const double lower_prev = QM_BB_Lower(_Symbol, (ENUM_TIMEFRAMES)_Period,
+                                         strategy_bands_period,
+                                         strategy_bands_deviation,
+                                         shift + 1 + strategy_bands_shift,
+                                         PRICE_CLOSE);
+   return (close_cur > 0.0 && close_prev > 0.0 &&
+           lower_cur > 0.0 && lower_prev > 0.0 &&
+           close_prev < lower_prev && close_cur > lower_cur);
   }
 
 bool Strategy_BearishUpperBandCross(const int shift)
   {
-   const double open = iOpen(_Symbol, _Period, shift);
-   const double close = iClose(_Symbol, _Period, shift);
-   const double upper = QM_BB_Upper(_Symbol, (ENUM_TIMEFRAMES)_Period,
-                                    strategy_bands_period,
-                                    strategy_bands_deviation,
-                                    shift + strategy_bands_shift,
-                                    PRICE_CLOSE);
-   return (open > 0.0 && close > 0.0 && upper > 0.0 &&
-           close < open && open > upper && close < upper);
+   const double close_cur  = iClose(_Symbol, _Period, shift);
+   const double close_prev = iClose(_Symbol, _Period, shift + 1);
+   const double upper_cur = QM_BB_Upper(_Symbol, (ENUM_TIMEFRAMES)_Period,
+                                        strategy_bands_period,
+                                        strategy_bands_deviation,
+                                        shift + strategy_bands_shift,
+                                        PRICE_CLOSE);
+   const double upper_prev = QM_BB_Upper(_Symbol, (ENUM_TIMEFRAMES)_Period,
+                                         strategy_bands_period,
+                                         strategy_bands_deviation,
+                                         shift + 1 + strategy_bands_shift,
+                                         PRICE_CLOSE);
+   return (close_cur > 0.0 && close_prev > 0.0 &&
+           upper_cur > 0.0 && upper_prev > 0.0 &&
+           close_prev > upper_prev && close_cur < upper_cur);
   }
 
 bool Strategy_StopDistanceBrokerValid(const double entry, const double stop)
@@ -257,10 +280,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(dema0 <= 0.0 || dema1 <= 0.0 || dema2 <= 0.0)
       return false;
 
+   // Card: completed signal candle must be the right colour (bullish for long,
+   // bearish for short). Kept here, separate from the band-cross test, so the
+   // crossover stays the close-vs-band definition.
+   const double sig_open  = iOpen(_Symbol, _Period, 1);
+   const double sig_close = iClose(_Symbol, _Period, 1);
+   const bool bullish_candle = (sig_open > 0.0 && sig_close > 0.0 && sig_close > sig_open);
+   const bool bearish_candle = (sig_open > 0.0 && sig_close > 0.0 && sig_close < sig_open);
+
    const bool dema_rising = (dema0 > dema1 && dema1 > dema2);
    const bool dema_falling = (dema0 < dema1 && dema1 < dema2);
-   const bool long_signal = dema_rising && Strategy_BullishLowerBandCross(1);
-   const bool short_signal = dema_falling && Strategy_BearishUpperBandCross(1);
+   const bool long_signal = dema_rising && bullish_candle && Strategy_BullishLowerBandCross(1);
+   const bool short_signal = dema_falling && bearish_candle && Strategy_BearishUpperBandCross(1);
    if(!long_signal && !short_signal)
       return false;
 
