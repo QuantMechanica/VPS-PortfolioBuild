@@ -1,6 +1,11 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10914 Grimes Volatility Compression Breakout (grimes-vol-comp)"
+// rework v2 2026-06-16 — fix 0-trade scale bug: a 20-bar high-low RANGE was gated
+// against 1.25*ATR(60), a SINGLE-bar quantity, so the consolidation test could
+// never pass (a 20-bar range is several ATRs wide even in compression). Scale the
+// baseline to the window via sqrt(RangeLookback) random-walk expectation so the
+// 1.25 slack factor from the card applies to a window-sized range, not one bar.
 // Strategy Card: QM5_10914 (grimes-vol-comp), G0 APPROVED 2026-05-22.
 // Source: Adam H. Grimes, "Volatility Compression" (2011) + "Trading Volatility
 // Compression" (2014). ATR(5)/ATR(60) compression -> first range-expansion break.
@@ -40,7 +45,7 @@ input double InpCompressionRatioMax  = 0.75;  // ATR(5)/ATR(60) must be below th
 input int    InpCompressionLookback  = 5;     // ...for >= MinCount of the last N bars
 input int    InpCompressionMinCount  = 3;     // 3 of last 5
 input int    InpRangeLookback        = 20;    // 20-bar consolidation window
-input double InpRangeAtrMult         = 1.25;  // range <= 1.25 * ATR(60) to qualify
+input double InpRangeAtrMult         = 1.25;  // 20-bar range <= 1.25 * ATR(60) * sqrt(lookback) to qualify
 // --- Breakout trigger (card Entry §) ---
 input double InpBreakoutAtrMult      = 0.10;  // close must exceed range by 0.1 * ATR(14)
 // --- Stop loss (card Stop Loss §) ---
@@ -210,7 +215,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double range20 = hh - ll;
    if(range20 <= 0.0)
       return false;
-   if(range20 > InpRangeAtrMult * atr_slow1) // not compressed enough
+   // A 20-bar HIGH-LOW range is a window quantity; ATR(60) is a single-bar quantity.
+   // Compare like-for-like by scaling the baseline to the lookback window via the
+   // random-walk sqrt(N) expectation, then apply the card's 1.25 compression slack.
+   const double range_budget = InpRangeAtrMult * atr_slow1 * MathSqrt((double)InpRangeLookback);
+   if(range20 > range_budget) // not compressed enough
       return false;
 
    // --- breakout trigger -------------------------------------------------------

@@ -66,7 +66,7 @@ Long only on D1 or H4. A trade opens when the last closed bar is near EMA(20), n
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `30` |
+| Trades / year / symbol | `2` |
 | Expected trade frequency | not specified in card frontmatter |
 | Typical hold time | not specified in card frontmatter; expected multi-day trend holds from EMA50 exit |
 | Expected drawdown profile | Momentum breakout with risk during false breakouts and poor tick-volume portability. |

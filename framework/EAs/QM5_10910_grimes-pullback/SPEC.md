@@ -64,7 +64,7 @@ This EA trades a continuation pullback on H1 bars. A long setup requires EMA(50)
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 45 |
+| Trades / year / symbol | 8 (revised 2026-06-16; was 45 over-estimate — see card freq note) |
 | Typical hold time | Up to 16 H1 bars |
 | Expected drawdown profile | Trend-continuation drawdown clustered during failed breakouts and range-bound reversals. |
 | Regime preference | trend-continuation after thrust and pullback |

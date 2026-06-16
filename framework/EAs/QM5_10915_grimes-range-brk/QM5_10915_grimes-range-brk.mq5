@@ -1,6 +1,10 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10915 Grimes Range Pressure Breakout"
+// rework v2 2026-06-16 — fix range-width scale: a 6-18 bar consolidation was
+// gated against a single-bar ATR (width <= 0.9*ATR), unsatisfiable on index M15
+// (0 trades / Q02 MIN_TRADES). Scale the allowed width by sqrt(range_bars) so the
+// 0.9 multiplier expresses per-bar compactness across the multi-bar range.
 
 #include <QM/QM_Common.mqh>
 
@@ -302,7 +306,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const double range_width = range_high - range_low;
       if(range_high <= 0.0 || range_low <= 0.0 || range_width <= 0.0)
          continue;
-      if(range_width > strategy_max_range_atr_mult * atr)
+      // rework v2 2026-06-16: scale the compactness cap by sqrt(range_bars). A
+      // multi-bar range disperses ~sqrt(N) under random-walk noise, so gating its
+      // total span against a single-bar ATR was unsatisfiable. This keeps the
+      // 0.9 multiplier as a per-bar compactness intent while staying reachable.
+      const double max_range_width = strategy_max_range_atr_mult * atr * MathSqrt((double)range_bars);
+      if(range_width > max_range_width)
          continue;
 
       const double range_mid = 0.5 * (range_high + range_low);

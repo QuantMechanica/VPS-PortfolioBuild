@@ -1,6 +1,8 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10829 TradingView MACD 200 EMA Support/Resistance"
+// rework v2 2026-06-16 - S/R touch over-restriction fixed: signal bar may sit near ANY confirmed
+// pivot in max_age window (state), not only the single most-recent pivot. ~0 trades -> tradeable.
 
 #include <QM/QM_Common.mqh>
 
@@ -185,6 +187,11 @@ bool Strategy_FindRecentPivot(const MqlRates &rates[],
    return false;
   }
 
+// rework v2 2026-06-16 - S/R touch is a STATE over recent levels, not a single most-recent
+// pivot: scan every confirmed pivot within max_age and pass if the signal bar trades within
+// ATR tolerance of ANY of them. The old single-most-recent-pivot check made the S/R filter a
+// third near-impossible same-bar coincidence on top of the MACD cross + EMA side, producing
+// ~0 trades. This restores the source's "price is at a horizontal S/R level" semantics.
 bool Strategy_SRTouchPasses(const MqlRates &rates[], const bool is_long)
   {
    if(!strategy_use_sr_filter)
@@ -192,19 +199,27 @@ bool Strategy_SRTouchPasses(const MqlRates &rates[], const bool is_long)
 
    const int strength = MathMax(1, strategy_pivot_strength);
    const int max_age = MathMax(strength + 1, strategy_sr_max_age_bars);
-   int pivot_shift = -1;
-   double pivot_price = 0.0;
-   if(!Strategy_FindRecentPivot(rates, is_long, strength, max_age, pivot_shift, pivot_price))
-      return false;
 
    const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
    if(atr <= 0.0 || strategy_atr_touch_mult < 0.0)
       return false;
-
    const double tolerance = atr * strategy_atr_touch_mult;
-   if(is_long)
-      return (MathAbs(rates[1].low - pivot_price) <= tolerance);
-   return (MathAbs(rates[1].high - pivot_price) <= tolerance);
+   const double probe = is_long ? rates[1].low : rates[1].high;
+
+   const int first_confirmed = strength + 1;
+   const int available = ArraySize(rates) - strength - 1;
+   const int final_shift = MathMin(MathMax(first_confirmed, max_age), available);
+   for(int shift = first_confirmed; shift <= final_shift; ++shift)
+     {
+      const bool ok = is_long ? Strategy_IsPivotLow(rates, shift, strength)
+                              : Strategy_IsPivotHigh(rates, shift, strength);
+      if(!ok)
+         continue;
+      const double level = is_long ? rates[shift].low : rates[shift].high;
+      if(MathAbs(probe - level) <= tolerance)
+         return true;
+     }
+   return false;
   }
 
 double Strategy_SwingStop(const MqlRates &rates[], const bool is_long)

@@ -59,7 +59,7 @@ The EA opens long positions when the current chart timeframe closes with EMA(21)
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `28` |
+| Trades / year / symbol | `5` |
 | Typical hold time | days |
 | Expected drawdown profile | Low-cadence trend-following with risk concentrated in range-bound periods. |
 | Regime preference | trend / volatility-expansion |
