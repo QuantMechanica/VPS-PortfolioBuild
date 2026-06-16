@@ -1,6 +1,15 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10151 TradingView EMA VWAP Scalper"
+// rework v2 2026-06-16: over-restrictive AND-chain. Entry required a fresh
+// single-bar EMA9/21 crossover (edge transition) AND close on the correct
+// session-VWAP side simultaneously; the crossover is a rare one-bar event so
+// the conjunction fired ~3 trades/yr on M5 (smoke 2026-05-27 AUDUSD, claimed
+// 600). Faithful fix per card mechanic ("EMA9 above EMA21 AND close above
+// session VWAP"): trigger on the EMA-stack STATE confirmed by VWAP side
+// (trend continuation), de-duplicated against the prior bar's state so we
+// still enter on the transition into alignment, not every bar. One-position
+// lock + reversal exit already throttle over-trading. No thesis change.
 
 #include <QM/QM_Common.mqh>
 
@@ -146,9 +155,21 @@ int StrategyClosedBarSignal()
       slow_prev <= 0.0 || close_now <= 0.0 || g_session_vwap <= 0.0)
       return 0;
 
-   if(fast_prev <= slow_prev && fast_now > slow_now && close_now > g_session_vwap)
+   // rework v2 2026-06-16: trigger on the EMA-stack STATE (fast above/below
+   // slow) confirmed by the VWAP side, but only when this alignment is NEW
+   // relative to the previous closed bar (prev bar not yet aligned the same
+   // way). This captures both fresh crossovers and the much more frequent
+   // case where price reclaims the correct VWAP side while the stack already
+   // holds — matching the card's "EMA9 above EMA21 AND close above VWAP"
+   // continuation logic instead of demanding a same-bar edge transition.
+   const bool long_now  = (fast_now  > slow_now)  && (close_now > g_session_vwap);
+   const bool long_prev = (fast_prev > slow_prev);
+   const bool short_now  = (fast_now  < slow_now)  && (close_now < g_session_vwap);
+   const bool short_prev = (fast_prev < slow_prev);
+
+   if(long_now && !long_prev)
       return 1;
-   if(fast_prev >= slow_prev && fast_now < slow_now && close_now < g_session_vwap)
+   if(short_now && !short_prev)
       return -1;
    return 0;
   }

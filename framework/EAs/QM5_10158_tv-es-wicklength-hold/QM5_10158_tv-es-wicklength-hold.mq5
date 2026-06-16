@@ -1,6 +1,9 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10158 TradingView ES Wick Length Hold"
+// rework v2 2026-06-16: exclude signal bar from its own wick-MA window (was
+// self-referential -> fired only in warmup days then dormant, ~0 trades/yr vs
+// card 160). Faithful TV semantics: current wick vs MA of preceding wicks.
 
 #include <QM/QM_Common.mqh>
 
@@ -110,14 +113,24 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // perf-allowed: wick length is bespoke OHLC structure. EntrySignal is
    // called only after the framework QM_IsNewBar() gate, so this bounded read
    // runs once per closed bar rather than once per tick.
+   // rework v2 2026-06-16: signal bar was included in its own wick-MA window
+   // (CopyRates start=1,count=N => bars[0]=signal AND bars[0..N-1]=MA window).
+   // Self-reference made the high-wick signal bar inflate the very baseline it
+   // had to beat, so the "wick exceeds its moving average" trigger degenerated
+   // to ties/near-misses and the EA only fired in the first warmup days then
+   // went dormant for the rest of the year (NDX ~11 trades all in Jan 2-5,
+   // SP500/WS30 ~0). The TradingView source compares the *current* wick to the
+   // moving average of the *preceding* wicks — so read N+1 bars and average the
+   // N bars BEFORE the signal bar (bars[1..N]), excluding bars[0] itself.
    MqlRates bars[];
    ArraySetAsSeries(bars, true);
-   const int copied = CopyRates(_Symbol, _Period, 1, strategy_wick_ma_period, bars); // perf-allowed
-   if(copied < strategy_wick_ma_period)
+   const int need = strategy_wick_ma_period + 1;
+   const int copied = CopyRates(_Symbol, _Period, 1, need, bars); // perf-allowed
+   if(copied < need)
       return false;
 
    double wick_sum = 0.0;
-   for(int i = 0; i < strategy_wick_ma_period; ++i)
+   for(int i = 1; i <= strategy_wick_ma_period; ++i)
      {
       const double upper_wick = bars[i].high - MathMax(bars[i].open, bars[i].close);
       const double lower_wick = MathMin(bars[i].open, bars[i].close) - bars[i].low;
