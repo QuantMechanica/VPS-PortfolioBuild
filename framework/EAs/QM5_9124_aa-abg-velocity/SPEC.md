@@ -56,7 +56,7 @@ Applies a third-order alpha-beta-gamma tracking filter (fixed constants alpha=0.
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | ~100 |
+| Trades / year / symbol | ~12 |
 | Typical hold time | days to weeks |
 | Expected drawdown profile | moderate, trend-following with ATR-based hard stop |
 | Regime preference | trend |

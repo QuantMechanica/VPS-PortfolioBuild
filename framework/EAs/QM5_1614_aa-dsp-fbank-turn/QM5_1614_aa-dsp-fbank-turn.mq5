@@ -1,6 +1,10 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_1614 DSP Filter-Bank Turning Points (Alpha Architect / Henry Stern)"
+// rework v2 2026-06-16 — DC-detrend synthesis output: the near-DC bands (T=17427/101572)
+// integrated the price level back into Y, pinning Y >> 0 so the trough-below-zero LONG
+// condition could never fire (~0 trades / Q02 MIN_TRADES). Subtract a slow EMA baseline so
+// Y oscillates around zero as the card's local-trough/crest-around-zero logic requires.
 
 #include <QM/QM_Common.mqh>
 
@@ -57,6 +61,11 @@ static double g_band_b0[NBAND];    // IIR coefficient b0
 
 const double SYNTH_GAIN = 0.886;
 
+// rework v2: slow EMA period used to estimate and remove the DC/trend baseline that the
+// long-period (near-DC) bands reintroduce into the synthesis output. Period chosen ~ the
+// longest *cyclically-meaningful* band (88) so genuine turn cycles are preserved.
+const int    DC_BASELINE_PERIOD = 88;
+
 // ---------------------------------------------------------------------------
 // Per-bar filter state
 // ---------------------------------------------------------------------------
@@ -64,9 +73,11 @@ static double g_filt_y1[NBAND];   // y[n-1] per band
 static double g_filt_y2[NBAND];   // y[n-2] per band
 static double g_filt_x1;          // x[n-1] (close price)
 static double g_filt_x2;          // x[n-2] (close price)
-static double g_Y;                 // synthesized output at t   (last closed bar)
-static double g_Y1;                // synthesized output at t-1
-static double g_Y2;                // synthesized output at t-2
+static double g_Y;                 // DC-detrended synthesized output at t (last closed bar)
+static double g_Y1;                // detrended synthesized output at t-1
+static double g_Y2;                // detrended synthesized output at t-2
+static double g_dc_baseline;       // slow EMA of raw synthesis output (removes DC/trend leakage)
+static bool   g_dc_init;           // baseline seeded flag
 static int    g_warmup_done;       // bars fed into filter so far
 static bool   g_filter_ready;      // true after warmup complete
 static bool   g_spread_ok;         // cached spread gate result
@@ -110,9 +121,25 @@ void AdvanceFilter(double x)
      }
    g_filt_x2 = g_filt_x1;
    g_filt_x1 = x;
+
+   // rework v2: remove DC/trend leakage from the near-DC bands via a slow EMA baseline,
+   // so the detrended output oscillates around zero (required for the card's
+   // trough-below-zero / crest-above-zero turn conditions to be satisfiable on both sides).
+   if(!g_dc_init)
+     {
+      g_dc_baseline = Y;
+      g_dc_init     = true;
+     }
+   else
+     {
+      const double alpha = 2.0 / (DC_BASELINE_PERIOD + 1.0);
+      g_dc_baseline += alpha * (Y - g_dc_baseline);
+     }
+   const double Yd = Y - g_dc_baseline;
+
    g_Y2 = g_Y1;
    g_Y1 = g_Y;
-   g_Y  = Y;
+   g_Y  = Yd;
    g_warmup_done++;
    g_bar_count++;
   }
@@ -129,6 +156,8 @@ void InitializeFilter()
    g_Y           = 0.0;
    g_Y1          = 0.0;
    g_Y2          = 0.0;
+   g_dc_baseline = 0.0;
+   g_dc_init     = false;
    g_warmup_done = 0;
    g_bar_count   = 0;
    g_filter_ready = false;
@@ -364,6 +393,8 @@ int OnInit()
    g_Y           = 0.0;
    g_Y1          = 0.0;
    g_Y2          = 0.0;
+   g_dc_baseline = 0.0;
+   g_dc_init     = false;
    g_warmup_done = 0;
    g_bar_count   = 0;
    g_filter_ready = false;

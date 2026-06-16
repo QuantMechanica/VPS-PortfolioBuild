@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_2010 NNFX V2 H4 Bias H1 Pullback"
+// rework v2 2026-06-16 — SSL channel given persistent Hlv state carry (was instantaneous tri-state that returned neutral whenever close sat between SMA(high)/SMA(low), forcing H4 bias to 0 on the majority of bars and starving entries toward ~0 trades). Faithful to card "SSL green above SSL red".
 
 #include <QM/QM_Common.mqh>
 
@@ -148,18 +149,34 @@ double AverageLow(const string symbol, const ENUM_TIMEFRAMES tf, const int perio
    return sum / (double)period;
   }
 
+// SSL channel direction with persistent Hlv state (the standard SSL channel
+// rule): once close crosses ABOVE the SMA-of-highs the channel is "green/long"
+// and STAYS long until close crosses BELOW the SMA-of-lows (and vice-versa).
+// While close sits between the two bands the prior direction is carried, NOT
+// reset to neutral. We seed neutral and walk forward over a lookback window so
+// the carried state at `shift` is deterministic in the tester.
 int SSLDirection(const string symbol, const ENUM_TIMEFRAMES tf, const int period, const int shift)
   {
-   const double close = iClose(symbol, tf, shift);
-   const double sma_high = AverageHigh(symbol, tf, period, shift);
-   const double sma_low = AverageLow(symbol, tf, period, shift);
-   if(close <= 0.0 || sma_high <= 0.0 || sma_low <= 0.0)
+   const int warmup = 200; // bars walked to settle the Hlv state before `shift`
+   int hlv = 0;
+   bool seen = false;
+   for(int i = shift + warmup; i >= shift; --i)
+     {
+      const double close = iClose(symbol, tf, i);
+      const double sma_high = AverageHigh(symbol, tf, period, i);
+      const double sma_low = AverageLow(symbol, tf, period, i);
+      if(close <= 0.0 || sma_high <= 0.0 || sma_low <= 0.0)
+         continue;
+      seen = true;
+      if(close > sma_high)
+         hlv = 1;
+      else if(close < sma_low)
+         hlv = -1;
+      // else: carry prior hlv (persistent channel state)
+     }
+   if(!seen)
       return 0;
-   if(close > sma_high)
-      return 1;
-   if(close < sma_low)
-      return -1;
-   return 0;
+   return hlv;
   }
 
 double MedianATR(const string symbol, const ENUM_TIMEFRAMES tf, const int period, const int bars, const int start_shift)

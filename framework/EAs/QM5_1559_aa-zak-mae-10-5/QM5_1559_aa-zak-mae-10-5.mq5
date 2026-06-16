@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_1559 Alpha Architect Zakamulin SMA(10) 5% Envelope Timing"
+// rework v2 2026-06-16 — MN1-native logic untestable in MT5 tester (DWX MN1 => 0 bars/0 ticks => QM_SMA(MN1)=0 => 0 trades, false Q02 MIN_TRADES FAIL). Rebuilt D1-native: SMA(10) monthly closes ~= 210-day D1 SMA, evaluated on the first D1 bar of each new calendar month. Mechanics (5% envelope long-only entry/exit, ATR(20,D1)x3 SL, monthly rebalance) preserved.
 
 #include <QM/QM_Common.mqh>
 
@@ -55,9 +56,13 @@ input bool   qm_friday_close_enabled     = false;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Strategy"
-input int    strategy_sma_months         = 10;
+// D1-native proxy of the monthly SMA(10) envelope. The MT5 tester yields 0 bars on
+// PERIOD_MN1 for DWX symbols, so the monthly SMA is approximated from D1 closes:
+// 10 months x 21 trading days ~= 210 D1 bars. The envelope is evaluated once per
+// calendar month, on the first D1 bar of the new month (the prior month just closed).
+input int    strategy_sma_d1_bars        = 210;   // 10-month SMA proxy on D1 closes
 input double strategy_envelope_pct       = 5.0;
-input int    strategy_min_monthly_bars   = 11;
+input int    strategy_min_d1_bars        = 231;   // 210 SMA window + ~1 month warmup
 input int    strategy_atr_period_d1      = 20;
 input double strategy_atr_sl_mult        = 3.0;
 input int    strategy_max_spread_points  = 0;
@@ -65,6 +70,23 @@ input int    strategy_max_spread_points  = 0;
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
+
+// True on the first completed D1 bar of a new calendar month, i.e. when the prior
+// calendar month has just finished. This is the D1-native stand-in for "evaluate on
+// the final completed monthly bar" / "rebalance monthly".
+bool Strategy_IsNewMonthD1Bar()
+  {
+   const datetime closed_bar  = iTime(_Symbol, PERIOD_D1, 1);
+   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0);
+   if(closed_bar <= 0 || current_bar <= 0)
+      return false;
+
+   MqlDateTime closed_dt;
+   MqlDateTime current_dt;
+   TimeToStruct(closed_bar, closed_dt);
+   TimeToStruct(current_bar, current_dt);
+   return (closed_dt.mon != current_dt.mon || closed_dt.year != current_dt.year);
+  }
 
 bool Strategy_NoTradeFilter()
   {
@@ -87,21 +109,25 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_sma_months <= 0 || strategy_envelope_pct <= 0.0 ||
-      strategy_min_monthly_bars < strategy_sma_months + 1 ||
+   if(strategy_sma_d1_bars <= 0 || strategy_envelope_pct <= 0.0 ||
+      strategy_min_d1_bars < strategy_sma_d1_bars + 1 ||
       strategy_atr_period_d1 <= 0 || strategy_atr_sl_mult <= 0.0)
       return false;
 
-   if(Bars(_Symbol, PERIOD_MN1) < strategy_min_monthly_bars)
+   if(Bars(_Symbol, PERIOD_D1) < strategy_min_d1_bars)
       return false;
 
-   const double month_close = iClose(_Symbol, PERIOD_MN1, 1);
-   const double month_sma = QM_SMA(_Symbol, PERIOD_MN1, strategy_sma_months, 1, PRICE_CLOSE);
-   if(month_close <= 0.0 || month_sma <= 0.0)
+   // Rebalance monthly: only act on the first completed D1 bar of a new month.
+   if(!Strategy_IsNewMonthD1Bar())
       return false;
 
-   const double upper_envelope = month_sma * (1.0 + strategy_envelope_pct / 100.0);
-   if(month_close <= upper_envelope)
+   const double close_d1 = iClose(_Symbol, PERIOD_D1, 1);
+   const double sma_d1 = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_d1_bars, 1, PRICE_CLOSE);
+   if(close_d1 <= 0.0 || sma_d1 <= 0.0)
+      return false;
+
+   const double upper_envelope = sma_d1 * (1.0 + strategy_envelope_pct / 100.0);
+   if(close_d1 <= upper_envelope)
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -114,7 +140,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(req.sl <= 0.0 || req.sl >= ask)
       return false;
 
-   req.reason = "MN1_CLOSE_ABOVE_SMA10_PLUS_5PCT";
+   req.reason = "D1_CLOSE_ABOVE_SMA210_PLUS_5PCT";
    return true;
   }
 
@@ -142,18 +168,22 @@ bool Strategy_ExitSignal()
 
    if(!have_position)
       return false;
-   if(strategy_sma_months <= 0 || strategy_envelope_pct <= 0.0)
+   if(strategy_sma_d1_bars <= 0 || strategy_envelope_pct <= 0.0)
       return false;
-   if(Bars(_Symbol, PERIOD_MN1) < strategy_min_monthly_bars)
-      return false;
-
-   const double month_close = iClose(_Symbol, PERIOD_MN1, 1);
-   const double month_sma = QM_SMA(_Symbol, PERIOD_MN1, strategy_sma_months, 1, PRICE_CLOSE);
-   if(month_close <= 0.0 || month_sma <= 0.0)
+   if(Bars(_Symbol, PERIOD_D1) < strategy_min_d1_bars)
       return false;
 
-   const double lower_envelope = month_sma * (1.0 - strategy_envelope_pct / 100.0);
-   return (month_close < lower_envelope);
+   // Rebalance monthly: only evaluate the exit on the first D1 bar of a new month.
+   if(!Strategy_IsNewMonthD1Bar())
+      return false;
+
+   const double close_d1 = iClose(_Symbol, PERIOD_D1, 1);
+   const double sma_d1 = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_d1_bars, 1, PRICE_CLOSE);
+   if(close_d1 <= 0.0 || sma_d1 <= 0.0)
+      return false;
+
+   const double lower_envelope = sma_d1 * (1.0 - strategy_envelope_pct / 100.0);
+   return (close_d1 < lower_envelope);
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)

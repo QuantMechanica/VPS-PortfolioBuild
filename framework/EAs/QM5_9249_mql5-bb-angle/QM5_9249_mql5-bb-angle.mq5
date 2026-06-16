@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_9249 Bollinger Band Angle Skew (H1)"
+// rework v2 2026-06-16 — QM_BB_* calls omitted the `deviation` arg, so the intended shift (1/2/3) landed in the deviation slot and shift collapsed to 1; every band read the SAME bar at deviation 1/2/3, making the angle/skew logic meaningless and the width filter unsatisfiable (~0 trades). Restored deviation=strategy_bb_dev so shift indexes consecutive bars again.
 
 #include <QM/QM_Common.mqh>
 
@@ -58,13 +59,13 @@ bool Strategy_NoTradeFilter()
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    // Bollinger Band values for last 3 closed bars (card [0]=shift1, [1]=shift2, [2]=shift3)
-   const double lower0 = QM_BB_Lower(_Symbol, PERIOD_H1, strategy_bb_period, 1);
-   const double lower1 = QM_BB_Lower(_Symbol, PERIOD_H1, strategy_bb_period, 2);
-   const double lower2 = QM_BB_Lower(_Symbol, PERIOD_H1, strategy_bb_period, 3);
-   const double upper0 = QM_BB_Upper(_Symbol, PERIOD_H1, strategy_bb_period, 1);
-   const double upper1 = QM_BB_Upper(_Symbol, PERIOD_H1, strategy_bb_period, 2);
-   const double upper2 = QM_BB_Upper(_Symbol, PERIOD_H1, strategy_bb_period, 3);
-   const double mid0   = QM_BB_Middle(_Symbol, PERIOD_H1, strategy_bb_period, 1);
+   const double lower0 = QM_BB_Lower(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_dev, 1);
+   const double lower1 = QM_BB_Lower(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_dev, 2);
+   const double lower2 = QM_BB_Lower(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_dev, 3);
+   const double upper0 = QM_BB_Upper(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_dev, 1);
+   const double upper1 = QM_BB_Upper(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_dev, 2);
+   const double upper2 = QM_BB_Upper(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_dev, 3);
+   const double mid0   = QM_BB_Middle(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_dev, 1);
 
    if(lower0 <= 0.0 || upper0 <= 0.0 || mid0 <= 0.0)
       return false;
@@ -79,8 +80,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double width0 = upper0 - lower0;
    double width_sum = width0;
    for(int i = 2; i <= strategy_width_sma_period; i++)
-      width_sum += QM_BB_Upper(_Symbol, PERIOD_H1, strategy_bb_period, i)
-                 - QM_BB_Lower(_Symbol, PERIOD_H1, strategy_bb_period, i);
+      width_sum += QM_BB_Upper(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_dev, i)
+                 - QM_BB_Lower(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_dev, i);
    const double width_sma = width_sum / strategy_width_sma_period;
 
    if(width0 <= width_sma)
@@ -174,7 +175,7 @@ bool Strategy_ExitSignal()
          return true;
 
       // Middle-band exit
-      const double mid      = QM_BB_Middle(_Symbol, PERIOD_H1, strategy_bb_period, 1);
+      const double mid      = QM_BB_Middle(_Symbol, PERIOD_H1, strategy_bb_period, strategy_bb_dev, 1);
       const double bid      = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
 
