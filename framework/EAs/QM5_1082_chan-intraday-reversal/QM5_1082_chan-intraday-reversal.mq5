@@ -1,6 +1,11 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_1082 Chan Intraday Cross-Sectional Reversal"
+// rework v2 2026-06-16 — basket EA never registered its cross-sectional universe:
+// default single-symbol guard left the 3 non-_Symbol symbols' D1 history unloaded
+// in the single-symbol tester, so Strategy_PriorReturn() got iClose==0 -> RankSignal
+// always 0 -> 0 trades -> Q02 MIN_TRADES fail. Fix: register the 4-symbol basket and
+// warm up its D1 history in OnInit (QM_SymbolGuardInit + QM_BasketWarmupHistory).
 
 #include <QM/QM_Common.mqh>
 
@@ -303,6 +308,13 @@ int OnInit()
                         qm_news_temporal,              // FW1 Axis A
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
+
+   // rework v2 2026-06-16 — cross-sectional basket: override the default
+   // single-symbol guard with the explicit universe and force-load each
+   // member's D1 history so Strategy_PriorReturn()/Strategy_RankSignal() can
+   // read iClose() for the non-_Symbol legs inside the single-symbol tester.
+   QM_SymbolGuardInit(g_strategy_symbols);
+   QM_BasketWarmupHistory(g_strategy_symbols, PERIOD_D1, 300);
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;

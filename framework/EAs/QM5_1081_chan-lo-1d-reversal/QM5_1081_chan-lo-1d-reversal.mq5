@@ -1,6 +1,12 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_1081 Chan Lo 1D Cross-Sectional Reversal"
+// rework v2 2026-06-16 — BUG: basket EA read foreign-symbol iClose without
+//   tester history sync, so all non-_Symbol returns were 0/stale -> only
+//   _Symbol valid -> valid_count<2 -> GetCurrentSymbolRank() always false ->
+//   0 trades. Fix: parse universe in OnInit, register basket guard, and
+//   QM_BasketWarmupHistory() to force per-symbol D1 sync (same pattern as
+//   QM5_1057 / QM5_10717-10718). Logic otherwise unchanged.
 
 #include <QM/QM_Common.mqh>
 
@@ -87,6 +93,30 @@ string TrimToken(string value)
    StringTrimLeft(value);
    StringTrimRight(value);
    return value;
+  }
+
+// rework v2 2026-06-16 — parsed universe basket (built once in OnInit) used to
+// register the symbol guard and force the MT5 tester to sync each foreign
+// symbol's D1 history. Without this the per-symbol iClose in GetD1Return()
+// returns 0/stale in the tester and the EA never trades.
+string g_universe_basket[];
+int    g_universe_basket_count = 0;
+
+void QM5_1081_BuildUniverseBasket()
+  {
+   string symbols[];
+   const int count = StringSplit(strategy_universe_symbols, ',', symbols);
+   g_universe_basket_count = 0;
+   ArrayResize(g_universe_basket, MathMax(count, 0));
+   for(int i = 0; i < count; ++i)
+     {
+      const string candidate = TrimToken(symbols[i]);
+      if(candidate == "")
+         continue;
+      g_universe_basket[g_universe_basket_count] = candidate;
+      g_universe_basket_count++;
+     }
+   ArrayResize(g_universe_basket, g_universe_basket_count);
   }
 
 bool GetD1Return(const string symbol, double &ret)
@@ -337,6 +367,15 @@ int OnInit()
                         qm_news_temporal,              // FW1 Axis A
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
+
+   // rework v2 2026-06-16 — register the cross-sectional basket and force the
+   // tester to load each symbol's D1 history before GetD1Return() reads it.
+   QM5_1081_BuildUniverseBasket();
+   if(g_universe_basket_count > 0)
+     {
+      QM_SymbolGuardInit(g_universe_basket);
+      QM_BasketWarmupHistory(g_universe_basket, PERIOD_D1, 300);
+     }
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
