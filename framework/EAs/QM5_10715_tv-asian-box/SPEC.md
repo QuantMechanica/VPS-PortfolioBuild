@@ -68,7 +68,7 @@ The EA builds a fixed Asian-session high/low box in the source timezone, default
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `180` |
+| Trades / year / symbol | `130` |
 | Typical hold time | Intraday; flat by configured end of day |
 | Expected drawdown profile | Breakout losses are capped by ATR stops; no overnight exposure |
 | Regime preference | Volatility-expansion breakout after the Asian range |

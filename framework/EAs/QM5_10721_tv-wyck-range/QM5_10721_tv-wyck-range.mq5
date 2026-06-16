@@ -235,7 +235,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return (req.sl > 0.0 && req.sl < ask && (ask - req.sl) / point > 0.0);
      }
 
-   if(close_cross_down && high_cross_down)
+   if(close_cross_down && high_below_ma)
      {
       req.type = QM_SELL;
       req.price = 0.0;
