@@ -442,7 +442,20 @@ function Validate-LoggerRecord {
 
     if ($Record.PSObject.Properties.Name -contains "ts_utc") {
         $ignored = [System.DateTimeOffset]::MinValue
-        if (-not [System.DateTimeOffset]::TryParse([string]$Record.ts_utc, [ref]$ignored)) {
+        $tsUtc = $Record.ts_utc
+        $tsUtcValid = $false
+        if ($tsUtc -is [System.DateTimeOffset] -or $tsUtc -is [System.DateTime]) {
+            $tsUtcValid = $true
+        } else {
+            $styles = [System.Globalization.DateTimeStyles]::AssumeUniversal -bor [System.Globalization.DateTimeStyles]::AdjustToUniversal
+            $tsUtcValid = [System.DateTimeOffset]::TryParse(
+                [string]$tsUtc,
+                [System.Globalization.CultureInfo]::InvariantCulture,
+                $styles,
+                [ref]$ignored
+            )
+        }
+        if (-not $tsUtcValid) {
             Add-Failure "BUILD_CHECK_LOGGER_SCHEMA_TS_UTC_INVALID: $PathForError line $LineNumber ts_utc=$($Record.ts_utc)."
         }
     }
@@ -534,7 +547,8 @@ function Invoke-ForbiddenScan {
 
     $mqlFiles = New-Object System.Collections.Generic.List[string]
     foreach ($scanRoot in $scanRoots) {
-        $files = Get-ChildItem -LiteralPath $scanRoot -Recurse -File -Include *.mq5,*.mqh
+        $files = Get-ChildItem -LiteralPath $scanRoot -Recurse -File -ErrorAction SilentlyContinue |
+            Where-Object { $_.Extension -in @(".mq5", ".mqh") }
         foreach ($f in $files) {
             $mqlFiles.Add($f.FullName)
         }
@@ -545,7 +559,7 @@ function Invoke-ForbiddenScan {
         return
     }
 
-    $mlPattern = '(?i)\b(tensorflow|torch|pytorch|sklearn|keras|onnx|xgboost|lightgbm|catboost|mlpack|dlib)\b|\.onnx\b|\.pb\b|\.pt\b|\.pth\b'
+    $mlPattern = '(?i)\b(tensorflow|torch|pytorch|sklearn|keras|onnx|xgboost|lightgbm|catboost|mlpack|dlib)\b|\.onnx\b|\.pb\b|\.pt\b|\.pth\b|\bweights\s*\['
     $externalPattern = '(?i)\bWebRequest\s*\(|https?://'
 
     $mlHits = Select-String -Path $mqlFiles.ToArray() -Pattern $mlPattern
@@ -556,6 +570,57 @@ function Invoke-ForbiddenScan {
     $externalHits = Select-String -Path $mqlFiles.ToArray() -Pattern $externalPattern
     foreach ($hit in $externalHits) {
         Add-Failure "BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN: $($hit.Path):$($hit.LineNumber) contains '$($hit.Matches[0].Value)'. Darwinex MT5 native data only."
+    }
+
+    # --- .DWX backtest-invariant idiom scan (EA files only, not QM_* framework helpers) ---
+    # Class 1 FAIL: spread fail-closed   Class 2 FAIL: swap-sign gate
+    # Class 3 FAIL: lazy handle          Class 4 WARN: points-as-pips flat threshold
+    $eaMqlFilesArr = @($mqlFiles | Where-Object { $_ -like '*\EAs\*' })
+    if ($eaMqlFilesArr.Count -gt 0) {
+
+        # Class 1: zero-spread fail-closed guard (FAIL)
+        # .DWX symbols model spread=0; ask<=bid or spread<=0 in a no-trade gate blocks every trade.
+        # NOT flagged: zero-price guards (ask<=0 / bid<=0) which are correct defensive code.
+        $spreadZeroPattern = '(?i)\bask\s*<=\s*bid\b|\b(?:current_spread|spread_points|median_spread)\s*<=\s*0\b|(?<!\w)spread\s*<=\s*0\b|rates\[\w+\]\.spread\s*<=\s*0\b'
+        $spreadZeroHits = Select-String -LiteralPath $eaMqlFilesArr -Pattern $spreadZeroPattern -ErrorAction SilentlyContinue
+        foreach ($hit in $spreadZeroHits) {
+            Add-Failure "BUILD_CHECK_DWX_INVARIANT_SPREAD_FAILCLOSED: $($hit.Path):$($hit.LineNumber) — '$($hit.Matches[0].Value)' blocks on zero spread. .DWX symbols quote ask==bid (zero modelled spread); this no-trade gate kills every backtest trade. Fix: gate on spread > 0 AND spread > your cap; allow zero-spread through."
+        }
+
+        # Class 2: swap-sign entry gate (FAIL)
+        # .DWX symbols carry $0 swap; SYMBOL_SWAP_LONG/SHORT == 0 for all instruments.
+        # A boolean gate on swap sign blocks every trade. Swap may be used as signal/ranking, not as a gate.
+        # Pattern A: direct comparison SymbolInfoDouble(..., SYMBOL_SWAP_LONG) <= 0
+        $swapGatePattern = '(?i)SymbolInfoDouble\s*\([^)]*,\s*SYMBOL_SWAP_(?:LONG|SHORT)\s*\)\s*[<>!]=?\s*0\b'
+        $swapGateHits = Select-String -LiteralPath $eaMqlFilesArr -Pattern $swapGatePattern -ErrorAction SilentlyContinue
+        foreach ($hit in $swapGateHits) {
+            Add-Failure "BUILD_CHECK_DWX_INVARIANT_SWAP_GATE: $($hit.Path):$($hit.LineNumber) — '$($hit.Matches[0].Value)' gates entry/exit on SYMBOL_SWAP sign. .DWX symbols have `$0 swap; this comparison always evaluates the same way and starves entry. Remove the gate; use swap as a signal/ranking value only."
+        }
+        # Pattern B: indirect via common variable names (WARN — heuristic, may have false positives)
+        $swapVarPattern = '(?i)\b(?:swap_?(?:long|short|l|s)|(?:long|short)_?swap|sw_?(?:long|short))\b\s*[<>!]=?\s*0\b'
+        $swapVarHits = Select-String -LiteralPath $eaMqlFilesArr -Pattern $swapVarPattern -ErrorAction SilentlyContinue
+        foreach ($hit in $swapVarHits) {
+            Add-Warning "BUILD_CHECK_DWX_INVARIANT_SWAP_VAR_GATE: $($hit.Path):$($hit.LineNumber) — '$($hit.Matches[0].Value)' looks like a swap variable being compared to 0. If this gates entry/exit, it starves every trade on .DWX `$0-swap instruments. Verify: use swap as a rank/signal, not a boolean gate."
+        }
+
+        # Class 3: immediately-released indicator handle (FAIL)
+        # IndicatorRelease in EA body = handle created locally, freed in same scope.
+        # The tester never back-calculates it and returns a constant fallback value.
+        # Handles must live in QM_* pooled readers, released only by QM_FrameworkShutdown.
+        $lazyHandlePattern = '(?i)\bIndicatorRelease\s*\('
+        $lazyHandleHits = Select-String -LiteralPath $eaMqlFilesArr -Pattern $lazyHandlePattern -ErrorAction SilentlyContinue
+        foreach ($hit in $lazyHandleHits) {
+            Add-Failure "BUILD_CHECK_DWX_INVARIANT_LAZY_HANDLE: $($hit.Path):$($hit.LineNumber) — IndicatorRelease in EA body. Handles must be owned by QM_* pooled readers (QM_ATR, QM_EMA, etc.) and released by QM_FrameworkShutdown only. A locally-created/released handle never back-calculates in the tester."
+        }
+
+        # Class 4: flat _points parameter used directly as a price/range threshold (WARN)
+        # On multi-digit symbols (5-decimal FX, CFD indices) a raw _points value is ~1/100th of a pip.
+        # Must scale via QM_StopRulesPipsToPriceDistance or multiply by _Point / pip_factor.
+        $pointsAsPipsPattern = '(?i)\b\w+_points\b\s*[<>]=?\s*[^;,\n]{0,60}\b(?:ask|bid|price|open\[|close\[|high\[|low\[)\b|\b(?:ask|bid|price|open\[|close\[|high\[|low\[)[^;,\n]{0,60}[<>]=?\s*\b\w+_points\b'
+        $pointsAsPipsHits = Select-String -LiteralPath $eaMqlFilesArr -Pattern $pointsAsPipsPattern -ErrorAction SilentlyContinue
+        foreach ($hit in $pointsAsPipsHits) {
+            Add-Warning "BUILD_CHECK_DWX_INVARIANT_POINTS_AS_PIPS: $($hit.Path):$($hit.LineNumber) compares a _points parameter directly to a price expression. On multi-digit symbols this is likely points-as-pips; scale via QM_StopRulesPipsToPriceDistance or multiply by _Point."
+        }
     }
 }
 
@@ -643,10 +708,10 @@ function Invoke-PerfStaticCheck {
     #    OnInit or OnTick context  → must use QM_Indicators readers
     #
     # WARN:
-    #  - Bare `CopyRates / CopyBuffer / CopyTime/Open/High/Low/Close/...` in
-    #    .mq5 outside a clearly closed-bar branch. Heuristic: any preceding
-    #    20 lines contain QM_IsNewBar() - accepted as gated. Otherwise WARN
-    #    so reviewer can verify.
+    #  - Bare `CopyRates / CopyTime/Open/High/Low/Close/...` in .mq5 outside a
+    #    clearly closed-bar branch. Heuristic: any preceding 20 lines contain
+    #    QM_IsNewBar() - accepted as gated. Otherwise WARN so reviewer can
+    #    verify.
     #  - Manual `IndicatorRelease(` in EA - pool releases on shutdown.
     #
     # Recognized exception: lines containing `// perf-allowed` comment are
@@ -676,11 +741,13 @@ function Invoke-PerfStaticCheck {
 
     # FAIL patterns
     $localIsNewBarPattern = '(?m)^\s*(?:bool|static\s+bool)\s+IsNewBar\s*\('
-    $rawIndicatorPattern  = '(?m)^\s*[^/\r\n]*?\b(?<![A-Za-z0-9_])(iATR|iMA|iRSI|iMACD|iADX|iBands|iStochastic|iCustom)\s*\('
+    $rawIndicatorPattern  = '(?m)^[^/\r\n]*?\b(?<![A-Za-z0-9_])(iATR|iMA|iRSI|iMACD|iADX|iBands|iStochastic|iCustom)\s*\('
+    $rawCopyBufferPattern = '(?m)^[^/\r\n]*?\b(?<![A-Za-z0-9_])CopyBuffer\s*\('
+    $rawSeriesPattern     = '(?m)^[^/\r\n]*?\b(?<![A-Za-z0-9_])(iOpen|iHigh|iLow|iClose|iTime|iVolume|Bars)\s*\('
 
     # WARN patterns
-    $copyDataPattern      = '(?m)^\s*[^/\r\n]*?\b(?<![A-Za-z0-9_])(CopyRates|CopyBuffer|CopyTime|CopyOpen|CopyHigh|CopyLow|CopyClose|CopyTickVolume|CopyRealVolume|CopySpread)\s*\('
-    $manualReleasePattern = '(?m)^\s*[^/\r\n]*?\bIndicatorRelease\s*\('
+    $copyDataPattern      = '(?m)^[^/\r\n]*?\b(?<![A-Za-z0-9_])(CopyRates|CopyTime|CopyOpen|CopyHigh|CopyLow|CopyClose|CopyTickVolume|CopyRealVolume|CopySpread)\s*\('
+    $manualReleasePattern = '(?m)^[^/\r\n]*?\bIndicatorRelease\s*\('
     $perfAllowedTag       = '//\s*perf-allowed'
 
     foreach ($file in $eaFiles) {
@@ -703,6 +770,27 @@ function Invoke-PerfStaticCheck {
             if ($line -match $perfAllowedTag) { continue }
             $fnName = $m.Groups[1].Value
             Add-Failure "EA_PERF_RAW_INDICATOR_CALL: $($file.Name):$lineNum uses raw '$fnName(' - use QM_$($fnName.Substring(1))(...) from QM_Indicators.mqh instead. Add '// perf-allowed' comment to override (requires reviewer sign-off)."
+        }
+
+        # FAIL - raw CopyBuffer in user EAs. Framework indicator readers own
+        # handles and buffer access; direct CopyBuffer bypasses the corset and
+        # was a repeated codex_review system-class failure.
+        $copyBufferMatches = [regex]::Matches($fullText, $rawCopyBufferPattern)
+        foreach ($m in $copyBufferMatches) {
+            $lineNum = ($fullText.Substring(0, $m.Index) -split "`n").Count
+            Add-Failure "EA_FRAMEWORK_RAW_COPYBUFFER: $($file.Name):$lineNum calls CopyBuffer directly; use QM_Indicators reader helpers instead."
+        }
+
+        # FAIL - raw per-bar series readers in user strategy math. These are
+        # allowed only with an explicit perf-allowed exception because they
+        # commonly reimplement framework indicator/window logic.
+        $seriesMatches = [regex]::Matches($fullText, $rawSeriesPattern)
+        foreach ($m in $seriesMatches) {
+            $lineNum = ($fullText.Substring(0, $m.Index) -split "`n").Count
+            $line = $lines[$lineNum - 1]
+            if ($line -match $perfAllowedTag) { continue }
+            $fnName = $m.Groups[1].Value
+            Add-Failure "EA_FRAMEWORK_RAW_SERIES_CALL: $($file.Name):$lineNum calls $fnName directly; use QM_* helpers or add '// perf-allowed' with reviewer sign-off for bespoke structural logic."
         }
 
         # WARN - manual IndicatorRelease

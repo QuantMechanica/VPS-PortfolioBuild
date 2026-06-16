@@ -58,6 +58,45 @@ Build artifact target: `{{build_result_path}}`
   - Trade Close
   - News Filter Hook (callable for P8 News Impact phase)
 
+## .DWX backtest invariants — forbidden idioms (the build gate rejects these)
+
+Your EA will be **REJECTED by `build_check.ps1`** if it contains a hard-fail idiom below.
+
+1. **Spread guards never fail-closed on zero spread.** `.DWX` symbols quote `ask == bid` (0 modelled spread) and `SymbolInfoInteger(SYMBOL_SPREAD) == 0` in the tester.
+   - WRONG: `if(ask <= bid) return true;` · `if(spread <= 0 || spread > cap) return false;`
+   - RIGHT: only block on a genuinely wide spread; allow zero-spread through:
+     `if(ask > 0 && bid > 0 && ask > bid && (ask - bid) / _Point > cap_pips) return true;`
+   - `build_check.ps1` flags `ask <= bid` and `spread <= 0` as `BUILD_CHECK_DWX_INVARIANT_SPREAD_FAILCLOSED`.
+
+2. **Never gate entry on swap sign.** Reading `SYMBOL_SWAP_*` as a carry signal is fine; `if(swap <= 0) reject` blocks every trade on `.DWX` $0-swap instruments.
+   - `build_check.ps1` flags `SymbolInfoDouble(..., SYMBOL_SWAP_LONG) <= 0` style gates as `BUILD_CHECK_DWX_INVARIANT_SWAP_GATE`.
+
+3. **Never create indicator handles in the EA body.** Use the pooled `QM_ATR`/`QM_EMA`/`QM_RSI`/`QM_MACD_*`/`QM_ADX*`/`QM_BB_*`/`QM_SMA`/`QM_Stoch` readers. Never `iX(...)` + `IndicatorRelease` in a signal function — the handle never back-calculates in the tester and returns a constant fallback.
+   - `build_check.ps1` flags `IndicatorRelease` in EA body as `BUILD_CHECK_DWX_INVARIANT_LAZY_HANDLE`.
+   - `Invoke-PerfStaticCheck` also flags raw `iATR(`, `iMA(`, etc. as `EA_PERF_RAW_INDICATOR_CALL`.
+
+4. **`QM_IsNewBar()` is single-consume per tick.** Call it ONCE in `OnTick` for the entry gate. Latch: `const bool is_new_bar = QM_IsNewBar();` — reuse that bool. Never call `QM_IsNewBar()` twice with the same key in one tick.
+
+5. **Don't require two cross EVENTS on the same bar.** Two fresh crossovers almost never coincide on the same bar. Make ONE the trigger and the others STATES (currently-above/below), or allow them within a small lookback window.
+
+6. **Session / OR windows must be in BROKER time, matched to the symbol.** DXZ broker = NY-Close GMT+2/+3 (DST-aware). US-index cash open 09:30 ET ≈ broker 16:30; London 08:00 ≈ broker 09:00. A raw-ET/UTC window builds the range in dead hours → 0 trades. Put per-symbol session params in the setfile; convert via `QM_BrokerToUTC` / DST-aware helpers.
+
+7. **Candle-pattern / gap rules need the prior CLOSE, not the prior RANGE, on 24h CFDs.** `.DWX` index/FX CFDs are gapless: `open[0] == close[1]`. Rules needing `open < prior_low` (Chan gap, piercing line) can never fire. Reference the prior close or an intraday session frame.
+
+8. **Compression / range / squeeze gates: scale a MULTI-bar range against a MULTI-bar baseline.** Comparing an N-bar high-low range to a single-bar ATR is always "not flat" → 0 trades. Multiply the ATR baseline by `sqrt(lookback)`.
+
+9. **SuperTrend / OTT direction: seed from `hl2` (bar median), not `final_lower` / `final_upper`.** Seeding from a band several ATR away pins the trend and it never flips. Derive `dir@1` and `dir@2` from ONE forward reconstruction.
+
+10. **No degenerate placeholder params.** `rsi_period=1` pins RSI; periods of 1 are always wrong. Use the real strategy values from the card.
+
+11. **Monthly (MN1) logic is untestable for `.DWX`** — the tester yields 0 bars on MN1. Make monthly EAs D1-native with a ~21-bar/month (252-day/year) proxy.
+
+12. **External-macro-CSV strategies are infeasible.** No VIX / futures-curve / interest-rate / yield feed exists or will be added. Do NOT build strategies whose only signal is such a file; they hard-fail R3 and produce 0 trades.
+
+13. **Exact tick-minute gates miss.** `if(TimeCurrent() minute == 45)` fails because the new-bar tick arrives after `:45:59`. Key off `iTime(sym, tf, 0)` bar-open time instead.
+
+14. **CET / ET clock values must be offset to broker time before use.** A card's "09:00 CET" is not directly applicable to a broker-time chart — convert first.
+
 ## CANONICAL NAMING (strict — Claude review will reject on any drift)
 
 - Directory: **`{{ea_dir}}`** — use this EXACT path. Do NOT strip the `QM5_` prefix.
@@ -67,6 +106,12 @@ Build artifact target: `{{build_result_path}}`
 - `.ex5` file: same basename with `.ex5` extension after compile.
 - Setfile naming: **`{{ea_id}}_{{slug}}_<SYMBOL>_<TF>_<env>.set`**
   (e.g. `QM5_1044_vpmacd-us-indices_WS30.DWX_H1_backtest.set`).
+
+- **Reworks / improvements (DL-069):** to improve an existing EA, REBUILD IN PLACE —
+  overwrite `{{ea_id}}_{{slug}}` (git keeps the history) and re-enqueue from Q02. Do NOT
+  drop a new `{{ea_id}}_{{slug}}_v2` dir unless you ALSO register that `_v2` slug (active)
+  in `magic_numbers.csv`; an un-promoted `_vN` dir is an inert orphan that the resolver
+  ignores (it runs the highest ACTIVE-registered version) and that `health.chk_stranded_ea_improvements` will flag.
 
 If you generate the smoke setfile manually, name it per the convention above. P2
 setfiles via `gen_setfile.ps1` (see workflow step 9) inherit this pattern.
@@ -161,6 +206,7 @@ Use these framework helpers — DO NOT reimplement them:
 | Stochastic                        | `QM_Stoch_K(sym, tf, k=5, d=3, slow=3)`, `QM_Stoch_D(...)`         |
 | CCI                               | `QM_CCI(sym, tf, period=14)`                                       |
 | Open / close / partial position   | `QM_TM_OpenPosition` / `ClosePosition` / `PartialClose`            |
+| Remove pending orders             | `QM_TM_RemovePendingOrder(ticket, reason)`                         |
 | SL/TP modify, BE, trailing        | `QM_TM_MoveSL/MoveTP/MoveToBreakEven/TrailATR/TrailStep`           |
 | Stop distance from ATR/structure  | `QM_StopATR / QM_StopStructure / QM_StopVolatility / QM_StopFixedPips` |
 | Lot sizing from SL points         | `QM_LotsForRisk(symbol, sl_points)`                                |
@@ -203,7 +249,12 @@ Forbidden patterns (Claude review will `REJECT_REWORK` on any):
   `QM_IsNewBar(symbol, timeframe)` overload or read fixed closed-bar shifts
   from `QM_*` helpers. Do not maintain your own timestamp gate.
 - Direct `iATR / iMA / iRSI / iMACD / iADX / iBands` calls — use the `QM_*` readers
-- `CopyBuffer` on raw handles — the readers do it for you
+- Direct `iOpen / iHigh / iLow / iClose / iTime / iVolume / Bars` calls for strategy
+  math — use `QM_*` readers/signals or a documented `// perf-allowed` exception
+  only for bespoke structural logic.
+- `CopyBuffer` on raw handles — no `perf-allowed` exception; the readers do it for you
+- ML-like weight arrays such as `weights[]` — forbidden under HR14 unless this is a
+  fixed, transparent non-ML coefficient table and explicitly justified before build.
 - File-scope `g_atr_handle` / `IndicatorRelease` — handles are pooled
 - `CopyRates` over warmup window on every tick
 
@@ -245,15 +296,15 @@ N-bar-deep state per tick costs O(N × ticks_per_bar × bars_total).
 **Intraday EAs MUST cache strategy state per closed bar.** Pattern:
 
 ```mq5
-// File-scope cached state (advanced once per new bar)
+// File-scope cached state (advanced by the framework new-bar gate)
 double  g_session_vwap = 0.0;
 double  g_upper_band = 0.0;
 double  g_lower_band = 0.0;
-datetime g_last_advanced_bar = 0;
 
 void AdvanceState_OnNewBar()
   {
-   // Called ONCE per new closed bar from OnTick (gated by QM_IsNewBar).
+   // Called ONCE per new closed bar after OnTick passes QM_IsNewBar().
+   // Do not add a second timestamp gate inside this function.
    // Reads the LAST closed bar's data, updates cumulative state by ONE step,
    // recomputes bands. Never loops back further than necessary.
    double close_last = iClose(_Symbol, _Period, 1);
@@ -375,33 +426,68 @@ build_result JSON is more valuable than masking it with a hopeful rewrite.
    helpers listed in the Framework Corset section above — no per-EA
    `IsNewBar`, no raw `iATR / iMA / iRSI / iMACD / iADX / iBands` calls.
 
+5a. **Write `{{ea_dir}}/SPEC.md`** from `framework/templates/SPEC.md.template`.
+    This file is REQUIRED by the Q01 Build & Spec gate
+    (`framework/scripts/validate_spec_doc.py`); pump records every build
+    that lacks it as `status=failed` with `fail_code=spec_validation_failed`,
+    blocking Q02 promotion. The validator checks: file exists, all 7
+    section headers present (`## 1. Strategy Logic` through
+    `## 7. Risk Model`), ≤5 unfilled `<PLACEHOLDER>` tokens, EA ID line
+    matches dir name. Fill in:
+    - Header: `**EA ID:** QM5_{{ea_id_suffix}}`, `**Slug:** {{slug}}`,
+      `**Source:** {{source_id_from_card_frontmatter}}`, today's date
+    - § 1 Strategy Logic: 2-4 sentence prose summary of the entry/exit
+      rule (paraphrase the card's mechanical body, no jargon)
+    - § 2 Parameters: table of the strategy-specific `input` declarations
+      you wrote in the .mq5 (framework inputs RISK_PERCENT etc. are
+      already documented in V5_FRAMEWORK_DESIGN.md — do NOT re-list)
+    - § 3 Symbol Universe: list each symbol you appended to
+      `magic_numbers.csv` for this EA, with a one-line "why it fits"
+    - § 4 Timeframe: base TF from the card, MTF refs if any
+    - § 5 Expected Behaviour: copy the four metrics from the card
+      frontmatter (`expected_trades_per_year_per_symbol`,
+      `expected_trade_frequency`, hold time, regime)
+    - § 6 Source Citation: source_id + pointer + "all R1–R4 PASS per
+      `artifacts/cards_approved/{{ea_id}}_{{slug}}.md`"
+    - § 7 Risk Model: keep the template's stock table verbatim (it
+      describes the framework convention, not per-EA)
+    - Revision History: `| v1 | YYYY-MM-DD | Initial build from card | <build_task_id> |`
+    Validate with:
+    ```powershell
+    python C:\QM\repo\framework\scripts\validate_spec_doc.py {{ea_dir}}
+    ```
+    Must report `PASS`. If FAIL, fix the listed sections before
+    continuing.
+
 6. Run `pwsh -File C:\QM\repo\framework\scripts\build_check.ps1 -EALabel {{ea_id}}_{{slug}}`.
    Must pass.
 
 7. Run `pwsh -File C:\QM\repo\framework\scripts\compile_one.ps1 -EALabel {{ea_id}}_{{slug}}`.
    Must produce `.ex5`.
 
-8. Run exactly one smoke test on the first registered symbol. `run_smoke.ps1`
-   requires a symbol and year; do not invoke it with only `-EALabel`.
+8. **Generate P2 setfiles before smoke** using `gen_setfile.ps1`.
+   For each symbol in `symbols_registered`, invoke:
+   ```powershell
+   pwsh -File C:\QM\repo\framework\scripts\gen_setfile.ps1 `
+     -EaSlug {{ea_id}}_{{slug}} -Symbol <SYMBOL.DWX> -TF <CARD_TIMEFRAME> -Env backtest
+   ```
+   This populates `framework/EAs/{{ea_id}}_{{slug}}/sets/` with one setfile per
+   symbol named `{{ea_id}}_{{slug}}_<SYMBOL>_<TF>_backtest.set`. Without these the
+   Q02 phase runner exits FATAL ("no setfiles match pattern").
+
+9. Run exactly one smoke test on the first registered symbol and its generated setfile.
+   `run_smoke.ps1` requires a symbol and year; do not invoke it with only `-EALabel`.
    Use terminal dispatch instead of hard-coding T1, because T1-T10 may already
    be occupied by terminal-worker backtests:
    ```powershell
    pwsh -File C:\QM\repo\framework\scripts\run_smoke.ps1 `
      -EALabel {{ea_id}}_{{slug}} -Symbol <FIRST_REGISTERED_SYMBOL.DWX> `
-     -Year 2024 -Terminal any -Period <CARD_TIMEFRAME> -MinTrades 1
+     -Year 2024 -Terminal any -Period <CARD_TIMEFRAME> `
+     -SetFile C:\QM\repo\framework\EAs\{{ea_id}}_{{slug}}\sets\<GENERATED_SETFILE>.set `
+     -MinTrades 1
    ```
    Must yield ≥1 trade for `smoke_result: passed`. If it yields zero trades,
    report `smoke_result: "zero_trades"` with `blocked_reason: "q01_trade_generation_zero_trades"`.
-
-9. **Generate P2 setfiles for ALL registered symbols** using `gen_setfile.ps1`.
-   For each symbol in `symbols_registered`, invoke:
-   ```powershell
-   pwsh -File C:\QM\repo\framework\scripts\gen_setfile.ps1 `
-     -EaSlug {{ea_id}}_{{slug}} -Symbol <SYMBOL.DWX> -TF H1 -Env backtest
-   ```
-   This populates `framework/EAs/{{ea_id}}_{{slug}}/sets/` with one setfile per
-   symbol named `{{ea_id}}_{{slug}}_<SYMBOL>_H1_backtest.set`. Without these the
-   P2 phase runner exits FATAL ("no setfiles match pattern").
 
    If the card targets timeframes other than H1, generate one setfile per
    (symbol × TF) combination.
@@ -421,6 +507,7 @@ No prose around it. Schema:
   "magic_base": <int>,
   "symbols_registered": ["EURUSD.DWX", "..."],
   "setfiles_generated": ["<absolute paths to .set files in sets/>"],
+  "spec_md_path": "<absolute path to SPEC.md or null if not written>",
   "build_check_passed": true,
   "compile_succeeded": true,
   "smoke_result": "passed" | "zero_trades" | "compile_failed" | "build_check_failed" | "framework_error",

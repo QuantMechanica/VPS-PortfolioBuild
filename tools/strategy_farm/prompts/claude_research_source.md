@@ -50,6 +50,11 @@ URI: `{{uri}}`
     Other US-equity instruments (SPY ETF, ES futures, individual stocks)
     remain unavailable — port them to SP500.DWX / NDX.DWX / WS30.DWX per
     the card edge.
+  - **Strategy whose ONLY signal is an external macro feed we do not have**
+    (R3 hard-fail): VIX, futures-curve, interest-rate spread / yield, sentiment
+    CSV, or any data source not available via MT5 DWX ticks. These produce 0
+    trades in backtest and cannot be wired live. Do NOT card them; mark
+    `r3: FAIL` with reason `infeasible_external_signal_source`.
   - **ML / neural net / adaptive parameters / grid-without-bounded-worst-case**
     (R4 / HR14, binding)
 - **Anonymous forum handles are OK** as long as you link the source URL.
