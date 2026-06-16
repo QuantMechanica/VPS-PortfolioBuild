@@ -1,6 +1,11 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_1222 Carver Intraday Range Bracket Scalper"
+// rework v2 2026-06-16 — min-stop-ticks floor too large vs design stop: bracket stop is
+// (R/2)*(K-F)=(R/2)*0.12; the 10-tick floor required R>=166.7*tick, which the 15-min M1
+// range on SP500/NDX/WS30 almost never reaches, so Strategy_PlaceBracket rejected nearly
+// every bar -> ~0 trades / Q02 MIN_TRADES. Lower default floor to 2 ticks (degenerate-range
+// guard only), keeping the design's range-scaled stop intact.
 
 #include <QM/QM_Common.mqh>
 #include <Trade/Trade.mqh>
@@ -42,7 +47,7 @@ input int             strategy_horizon_seconds = 900;
 input double          strategy_entry_f         = 0.75;
 input double          strategy_stop_k          = 0.87;
 input double          strategy_max_spread_r    = 0.20;
-input int             strategy_min_stop_ticks  = 10;
+input int             strategy_min_stop_ticks  = 2;
 input int             strategy_slippage_points = 20;
 
 #define QM5_1222_SYMBOL_COUNT 3

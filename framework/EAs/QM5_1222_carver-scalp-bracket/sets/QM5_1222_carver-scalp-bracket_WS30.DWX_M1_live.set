@@ -40,5 +40,5 @@ strategy_horizon_seconds=900
 strategy_entry_f=0.75
 strategy_stop_k=0.87
 strategy_max_spread_r=0.20
-strategy_min_stop_ticks=10
+strategy_min_stop_ticks=2
 strategy_slippage_points=20
