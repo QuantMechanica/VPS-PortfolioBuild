@@ -1,6 +1,10 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10754 TradingView SMA 5/9 Structure Stop"
+// rework v2 2026-06-16 — fixed zero-trade strangle: optional ATR stop cap was
+// mis-wired (mult<=0 rejected ALL trades) and 3x single-bar ATR cap rejected
+// ~all 5-bar structure stops on a fast M15 cross (2024 smoke 0/1/5 trades vs
+// ~120/yr). ATR cap now genuinely optional + widened to 6x spike-guard.
 
 #include <QM/QM_Common.mqh>
 
@@ -78,7 +82,11 @@ input int             strategy_fast_sma_period       = 5;
 input int             strategy_slow_sma_period       = 9;
 input int             strategy_structure_lookback    = 5;
 input int             strategy_atr_period            = 14;
-input double          strategy_max_stop_atr_mult     = 3.0;
+// rework v2 2026-06-16 — widened 3.0 -> 6.0. The card's ATR cap is a spike
+// guard for OUTSIZED stops; a 5-bar structure stop on a fast M15 cross is
+// routinely several single-bar ATRs wide, so a 3x cap rejected ~all entries
+// (2024 smoke: 0/1/5 trades). 6x still rejects genuine spikes. Set 0 to disable.
+input double          strategy_max_stop_atr_mult     = 6.0;
 input double          strategy_take_profit_rr        = 2.0;
 input bool            strategy_use_sma200_filter     = false;
 input int             strategy_context_sma_period    = 200;
@@ -163,12 +171,21 @@ bool Strategy_StopDistancePasses(const double entry, const double sl)
    if(broker_min_points > 0 && stop_points < (double)broker_min_points)
       return false;
 
-   if(strategy_atr_period <= 0 || strategy_max_stop_atr_mult <= 0.0)
-      return false;
+   // rework v2 2026-06-16 — the ATR cap is the card's *optional* spike guard
+   // ("Optional ATR stop cap to avoid outsized stop during spikes"), not a hard
+   // primary filter. The original wiring rejected EVERY trade when the cap was
+   // disabled (mult<=0 -> return false) AND, while enabled, compared a 5-bar
+   // structure-stop distance against a single-bar ATR cap — dimensionally
+   // guaranteed to over-reject a fast M15 5/9 cross. Evidence: 2024 smoke gave
+   // 0/1/5 trades (EURUSD/USDJPY/GDAXI) vs ~120/yr expected. Fix: mult<=0 now
+   // means "no cap" (filter genuinely optional); keep the cap only as a true
+   // outlier spike guard.
+   if(strategy_max_stop_atr_mult <= 0.0 || strategy_atr_period <= 0)
+      return true;
 
    const double atr = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
    if(atr <= 0.0)
-      return false;
+      return true;
 
    return (stop_distance <= strategy_max_stop_atr_mult * atr);
   }
