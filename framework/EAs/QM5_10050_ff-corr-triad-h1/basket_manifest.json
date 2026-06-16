@@ -1,0 +1,7 @@
+{
+  "logical_symbol": "QM5_10050_CORR_TRIAD_H1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "H1",
+  "basket_symbols": ["EURUSD.DWX", "EURCHF.DWX", "USDCHF.DWX"],
+  "notes": ["Correlation-triad: EURUSD trigger confirmed by EURCHF (same-dir) + USDCHF (inverse) MA state. Foreign-symbol reads bound at call site from the declared basket."]
+}
