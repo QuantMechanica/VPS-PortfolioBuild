@@ -1,6 +1,13 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_11131 TradingMarkets First Pullback Index Limit (tm-first-pb)"
+// rework v2 2026-06-16 — entry limit default flipped to ATR-proxy depth (1.0*ATR14):
+//   fixed 4%-below-close limit, valid only 3 D1 bars, essentially never fills on
+//   index CFDs after a sub-SMA5 pullback inside an uptrend (a 4% drop in 3 days = a
+//   crash), causing ~0 trades / Q02 MIN_TRADES fail. ATR-proxy scales the limit to
+//   each index's daily range (~1-1.5% of price) so the "buy a further drop" setup
+//   fills at its intended cadence. Source-faithful (card lists ATR proxy as a tested
+//   limit-depth mode); no signal logic changed.
 // Strategy Card: QM5_11131 (tm-first-pb), G0 APPROVED 2026-05-22.
 // Source: Matt Radtke, "Learning From The First Pullback Strategy", TradingMarkets 2013.
 
@@ -58,9 +65,9 @@ input int    trend_sma_fast             = 20;
 // First-pullback / exit MA (card: close < SMA5 to set up; close > SMA5 to exit).
 input int    pullback_sma               = 5;
 // Limit-entry depth below the setup close.
-input bool   entry_limit_use_atr        = false;  // false: % below (US indices); true: ATR proxy (non-US)
-input double entry_limit_pct            = 4.0;     // card baseline X=4% for SP500/NDX/WS30
-input double entry_limit_atr_mult       = 1.0;     // card baseline X=1.0*ATR(14) for non-US CFDs (e.g. GDAXI)
+input bool   entry_limit_use_atr        = true;   // rework v2: ATR-proxy depth by default — scales to index volatility so the limit fills; set false for fixed-% depth
+input double entry_limit_pct            = 4.0;     // fixed-% depth below close (only when entry_limit_use_atr=false; 4% rarely fills on index D1)
+input double entry_limit_atr_mult       = 1.0;     // card baseline X=1.0*ATR(14) below the setup close — default fill depth
 input int    entry_atr_period           = 14;      // ATR period for limit proxy + protective stop
 input int    entry_limit_valid_bars     = 3;       // Y: cancel unfilled limit after N D1 bars
 // Protective stop + time exit.

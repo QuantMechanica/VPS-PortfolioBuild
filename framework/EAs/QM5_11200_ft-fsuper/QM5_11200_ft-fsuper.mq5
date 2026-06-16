@@ -1,6 +1,12 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_11200 ft-fsuper"
+// rework v2 2026-06-16 — Supertrend direction seed used close>=final_lower (the lower
+// band) instead of close>=hl2 (centerline). For wide multipliers (buy_m2=7, sell_m3=6)
+// the seed pinned direction permanently to +1 (close is ~never below hl2-7*ATR), so
+// sell3 never went negative (0 short entries) and triple agreement fired ~once/8yr
+// (1 trade 2017-2024 GDAXI) -> Q02 MIN_TRADES fail. Seed from hl2 to match canonical
+// Supertrend and all sibling EAs (10803/10804/10806/10249/12538).
 
 #include <QM/QM_Common.mqh>
 
@@ -177,7 +183,7 @@ int Strategy_SupertrendDirection(const MqlRates &rates[],
 
       int direction = prev_direction;
       if(direction == 0)
-         direction = (close >= final_lower) ? 1 : -1;
+         direction = (close >= hl2) ? 1 : -1;
       else if(direction < 0 && close > final_upper)
          direction = 1;
       else if(direction > 0 && close < final_lower)
