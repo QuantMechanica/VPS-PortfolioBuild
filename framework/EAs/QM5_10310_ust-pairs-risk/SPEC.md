@@ -67,7 +67,7 @@ The EA trades a liquid pair spread on M15 bars. It estimates a 60 trading day re
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `90` |
+| Trades / year / symbol | `40` |
 | Typical hold time | Up to 3 trading days |
 | Expected drawdown profile | Bounded by hard z-score stop and P2 loss cap. |
 | Regime preference | Mean-reverting spread behaviour in liquid correlated pairs. |

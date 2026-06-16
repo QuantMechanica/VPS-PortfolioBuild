@@ -1,6 +1,16 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10310 Treasury-style pairs risk-control EA"
+// rework v2 2026-06-16: 0 trades at Q02 (MIN_TRADES_NOT_MET). Two faithful fixes:
+//   (1) warmup loaded only 600 bars but Strategy_CalcPairState needs ~5761 M15
+//       foreign-symbol bars (60-day formation), so CopyClose(peer,...) returned
+//       short -> Strategy_RefreshPairState() always false -> no entry ever fired.
+//       Warmup now force-loads the full formation window for the whole basket.
+//   (2) the framework entry path (QM_Entry) opens on _Symbol only and
+//       Strategy_OpenLeg() self-rejected the peer leg, so the package could
+//       never be a true 2-leg spread. Made the executed leg the chart symbol
+//       faithfully (peer still used for spread/z), matching the sanctioned
+//       single-host basket pattern (cf. QM5_10022).
 
 #include <QM/QM_Common.mqh>
 
@@ -405,15 +415,15 @@ bool Strategy_OpenPackage(const int direction)
    const double weight_sum = MathAbs(weight_a) + MathAbs(weight_b);
 
    const QM_OrderType type_a = (direction > 0) ? QM_BUY : QM_SELL;
-   const QM_OrderType type_b = (direction > 0) ? QM_SELL : QM_BUY;
    const string reason = (direction > 0) ? "UST_PAIRS_LONG_A_SHORT_B" : "UST_PAIRS_SHORT_A_LONG_B";
 
-   bool opened = false;
-   if(Strategy_OpenLeg(_Symbol, slot_a, type_a, weight_a, weight_sum, reason))
-      opened = true;
-   if(Strategy_OpenLeg(peer, slot_b, type_b, weight_b, weight_sum, reason))
-      opened = true;
-   return opened;
+   // rework v2 2026-06-16: the framework entry path (QM_Entry) can only open on
+   // _Symbol, and Strategy_OpenLeg() rejects any non-chart leg. So the executed
+   // trade is the chart leg (A), sized/stopped on the spread z-signal; the peer
+   // (B) is used only to compute the spread/correlation. This matches the
+   // single-host basket convention (one instance per symbol; cf. QM5_10022).
+   // slot_b is validated above and retained for peer/magic bookkeeping.
+   return Strategy_OpenLeg(_Symbol, slot_a, type_a, weight_a, weight_sum, reason);
   }
 
 // -----------------------------------------------------------------------------
@@ -569,7 +579,11 @@ int OnInit()
    string basket_symbols[8] = {"USDJPY.DWX", "USDCAD.DWX", "EURUSD.DWX", "GBPUSD.DWX",
                                "XAUUSD.DWX", "SP500.DWX", "NDX.DWX", "WS30.DWX"};
    QM_SymbolGuardInit(basket_symbols);
-   QM_BasketWarmupHistory(basket_symbols, strategy_tf, 600);
+   // rework v2 2026-06-16: warmup must cover the full formation window for BOTH
+   // legs or CopyClose(peer,...) returns short and no signal ever computes.
+   // bars_per_day(M15)=96; +1 current bar +64 safety. 60d -> 5825 bars.
+   const int warmup_bars = MathMax(600, strategy_formation_days * 96 + 65);
+   QM_BasketWarmupHistory(basket_symbols, strategy_tf, warmup_bars);
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10310_ust_pairs_risk\"}");
    return INIT_SUCCEEDED;
