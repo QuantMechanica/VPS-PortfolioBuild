@@ -58,7 +58,7 @@ Table of strategy-specific inputs (framework inputs documented in `V5_FRAMEWORK_
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `12` |
+| Trades / year / symbol | `4` (per-leg; ~3-5 round-trips/yr — a single instance only trades when its symbol is in the top-3 selection and holds across months) |
 | Typical hold time | about one month, until next rebalance |
 | Expected drawdown profile | moderate tactical-allocation drawdown; bounded by per-leg ATR SL and PORTFOLIO_WEIGHT=0.33 |
 | Regime preference | relative momentum with risk-regime and correlation diversification |
