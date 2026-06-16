@@ -2,6 +2,12 @@
 #property version   "5.0"
 #property description "QM5_10373 Elite Trader 15-minute opening range scalp"
 
+// rework v2 2026-06-16: opening-range window was hardcoded to ET clock (0930-0945)
+// but TimeCurrent() is DXZ broker time (NY-Close, GMT+2/+3). US cash open 09:30 ET
+// = 16:30 broker time (fixed +7h offset across US DST). Shifted all session HHMM
+// gates ET->broker (+7h) so the OR window aligns with the real RTH open -> fixes 0
+// trades / MIN_TRADES_NOT_MET. Matches sibling US-index EAs (1630 convention).
+
 #include <QM/QM_Common.mqh>
 
 input group "QuantMechanica V5 Framework"
@@ -29,9 +35,9 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_range_start_hhmm    = 930;
-input int    strategy_range_end_hhmm      = 945;
-input int    strategy_entry_cutoff_hhmm   = 1600;
+input int    strategy_range_start_hhmm    = 1630;  // broker time = 09:30 ET
+input int    strategy_range_end_hhmm      = 1645;  // broker time = 09:45 ET
+input int    strategy_entry_cutoff_hhmm   = 2300;  // broker time = 16:00 ET cash close
 input int    strategy_atr_period          = 14;
 input double strategy_target_atr_mult     = 0.15;
 input double strategy_entry_offset_ticks  = 1.0;
@@ -39,7 +45,7 @@ input double strategy_spread_max_frac     = 0.15;
 input double strategy_be_trigger_r        = 0.60;
 input double strategy_be_buffer_ticks     = 1.0;
 input int    strategy_time_stop_seconds   = 60;
-input int    strategy_reentry_cutoff_hhmm = 1000;
+input int    strategy_reentry_cutoff_hhmm = 1700;  // broker time = 10:00 ET
 
 int      g_trade_day_key = 0;
 double   g_or_high = 0.0;

@@ -1,6 +1,12 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10379 Elite Trader 30 Minute Breakout"
+// rework v2 2026-06-16: session HHMMs were raw NY-exchange time (0930/1600) but
+// TimeCurrent() is DXZ broker time (GMT+2/+3); set file has card_defaults_source=
+// not_found so it cannot override. Range/entry window fell on the US overnight
+// (~02:30-09:00 ET) -> 0 RTH breakouts -> MIN_TRADES_NOT_MET. Converted defaults
+// to broker time (US cash 09:30 ET=15:30, 16:00 ET=22:00) per sibling US-index
+// session-breakout convention (coi-flow=1540, residual-rev=1530, oops-gap=1630).
 
 #include <QM/QM_Common.mqh>
 
@@ -73,10 +79,10 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_session_start_hhmm = 930;
+input int    strategy_session_start_hhmm = 1530;  // broker time = 09:30 ET US cash open
 input int    strategy_range_minutes      = 30;
-input int    strategy_latest_entry_hhmm  = 1600;
-input int    strategy_session_close_hhmm = 1600;
+input int    strategy_latest_entry_hhmm  = 2200;  // broker time = 16:00 ET US cash close
+input int    strategy_session_close_hhmm = 2200;  // broker time = 16:00 ET US cash close
 input int    strategy_atr_period         = 20;
 input double strategy_initial_stop_atr   = 0.75;
 input double strategy_breakeven_atr      = 0.75;

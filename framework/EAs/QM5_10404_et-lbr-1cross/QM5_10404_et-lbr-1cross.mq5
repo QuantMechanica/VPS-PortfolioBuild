@@ -1,6 +1,10 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10404 Elite Trader LBR First-Cross Pullback"
+// rework v2 2026-06-16: 3-10 oscillator computed on the wrong buffer (pullback/entry
+// keyed off histogram = main - signal instead of the MACD MAIN line / 3-10 oscillator
+// crossing zero, per the LBR card + corrected sibling QM5_10364). Fixed to use the
+// main-line oscillator zero-line pullback so the first-cross setup actually fires.
 
 #include <QM/QM_Common.mqh>
 
@@ -165,12 +169,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
-   const double macd_1 = QM_MACD_Main(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-   const double sig_1  = QM_MACD_Signal(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-   const double macd_2 = QM_MACD_Main(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
-   const double sig_2  = QM_MACD_Signal(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
-   const double hist_1 = macd_1 - sig_1;
-   const double hist_2 = macd_2 - sig_2;
+   // The LBR "3-10 oscillator" is the MACD MAIN line itself (3EMA-10EMA); the
+   // 16-period SIGNAL line is the trend/zero-cross filter that defines regime.
+   // Pullback + first-cross entry are measured on the oscillator (main line)
+   // crossing zero, NOT on the histogram (main-signal). See sibling QM5_10364.
+   const double osc_1 = QM_MACD_Main(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
+   const double sig_1 = QM_MACD_Signal(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
+   const double osc_2 = QM_MACD_Main(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
+   const double sig_2 = QM_MACD_Signal(_Symbol, tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
 
    if(sig_1 > 0.0 && sig_2 <= 0.0)
      {
@@ -185,9 +191,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       g_short_pullback_seen = false;
      }
 
-   if(g_macd_regime == 1 && hist_1 < 0.0)
+   // Pullback: the 3-10 oscillator dips back through zero against the regime.
+   if(g_macd_regime == 1 && osc_1 < 0.0)
       g_long_pullback_seen = true;
-   if(g_macd_regime == -1 && hist_1 > 0.0)
+   if(g_macd_regime == -1 && osc_1 > 0.0)
       g_short_pullback_seen = true;
 
    const double ema_fast = strategy_use_ema_filter ? QM_EMA(_Symbol, tf, strategy_ema_fast, 1) : 0.0;
@@ -201,7 +208,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   if(g_macd_regime == 1 && g_long_pullback_seen && hist_1 > hist_2 && sig_1 > 0.0)
+   if(g_macd_regime == 1 && g_long_pullback_seen && osc_1 > osc_2 && sig_1 > 0.0)
      {
       if(strategy_use_ema_filter && ema_fast <= ema_slow)
          return false;
@@ -215,7 +222,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return (req.sl > 0.0 && req.tp > 0.0 && req.sl < ask && req.tp > ask);
      }
 
-   if(g_macd_regime == -1 && g_short_pullback_seen && hist_1 < hist_2 && sig_1 < 0.0)
+   if(g_macd_regime == -1 && g_short_pullback_seen && osc_1 < osc_2 && sig_1 < 0.0)
      {
       if(strategy_use_ema_filter && ema_fast >= ema_slow)
          return false;

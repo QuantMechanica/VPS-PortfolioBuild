@@ -1,6 +1,11 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10408 Elite Trader Sample-Time Breakout"
+// rework v2 2026-06-16: over-restrictive breakout trigger — entry required the
+// closed bar to land inside a ~0.001%-wide band above the sample high/low, so the
+// pending stop was almost never placed (Q02 MIN_TRADES_NOT_MET). Replaced the
+// close-in-band guard with a pending-stop validity guard (price still below long /
+// above short trigger), faithfully reproducing the EasyLanguage stop-breakout.
 
 #include <QM/QM_Common.mqh>
 
@@ -451,7 +456,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(atr <= 0.0)
       return false;
 
-   if(close1 >= s_high_val && close1 <= long_trigger)
+   // rework v2 2026-06-16: was close1>=s_high_val && close1<=long_trigger — a
+   // microscopic (~0.001%) band the closed bar almost never landed in, so the
+   // pending breakout stop was virtually never placed (MIN_TRADES_NOT_MET).
+   // Faithful sample-time breakout: after the window, place the buy stop while
+   // price is still below the long trigger (so a BUY_STOP is valid); it fills
+   // when price trades up through it, exactly like the EasyLanguage source.
+   if(close1 < long_trigger)
      {
       const double stop_distance = long_trigger - s_low_val;
       if(stop_distance <= 0.0 || stop_distance > strategy_max_stop_atr_mult * atr)
@@ -468,7 +479,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return true;
      }
 
-   if(close1 <= s_low_val && close1 >= short_trigger)
+   // rework v2 2026-06-16: symmetric fix — place the sell stop while price is
+   // still above the short trigger (so a SELL_STOP is valid); it fills when
+   // price trades down through it. Prior close-in-thin-band guard never fired.
+   if(close1 > short_trigger)
      {
       const double stop_distance = s_high_val - short_trigger;
       if(stop_distance <= 0.0 || stop_distance > strategy_max_stop_atr_mult * atr)

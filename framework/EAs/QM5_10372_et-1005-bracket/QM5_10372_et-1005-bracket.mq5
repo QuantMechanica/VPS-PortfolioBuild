@@ -2,6 +2,13 @@
 #property version   "5.0"
 #property description "QM5_10372 Elite Trader 10:05 High-Low Bracket"
 
+// rework v2 2026-06-16: range-width ATR yardstick was on the M5 chart TF, so the
+// 35-min opening range (≈7 M5 bars) was compared to 1.5x a single M5 bar's
+// ATR(14). The opening range is structurally several multiples of one M5 bar,
+// so range_width <= 1.5*ATR(M5) was almost never true -> ~0 trades ->
+// MIN_TRADES_NOT_MET. Card intent ("skip if 10:05 range > 1.5 ATR(14)") needs a
+// daily-scale yardstick; switched the range-quality ATR reference to PERIOD_D1.
+
 #include <QM/QM_Common.mqh>
 
 // v2: source unchanged; code and magic-slot registration were correct in v1.
@@ -209,7 +216,9 @@ bool Strategy_RangeQualityOK()
   {
    const double range_width = g_range_high - g_range_low;
    const double spread = Strategy_CurrentSpreadPrice();
-   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+   // rework v2 2026-06-16: daily-scale ATR yardstick for the 35-min opening
+   // range (was _Period/M5, which made the AND-chain reject ~every day).
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if(range_width <= 0.0 || spread <= 0.0 || atr <= 0.0)
       return false;
    if(range_width < 4.0 * spread)
