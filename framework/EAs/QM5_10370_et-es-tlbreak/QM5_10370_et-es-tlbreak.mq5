@@ -279,6 +279,61 @@ double Strategy_LineAtShift(const int target_shift,
    return older_price + slope * (double)(target_shift - older_shift);
   }
 
+// Confirm a genuine fresh break ABOVE the projected resistance line: bar 1 is
+// above the line at shift 1, and the most recent closed bar BEFORE bar 1 that
+// crossed was on/below its own line value (i.e. price was beneath resistance and
+// has just closed above it for the first time). Scans shifts 2..recent_shift so
+// the cross is detected wherever it actually happened, not only at shift 2.
+bool Strategy_FreshBreakAbove(const double close1,
+                              const int recent_shift,
+                              const double recent_price,
+                              const int older_shift,
+                              const double older_price)
+  {
+   const double line1 = Strategy_LineAtShift(1, recent_shift, recent_price, older_shift, older_price);
+   if(line1 <= 0.0 || close1 <= line1)
+      return false;
+   const int last = (recent_shift > 2 ? recent_shift : 2);
+   for(int shift = 2; shift <= last; ++shift)
+     {
+      const double linei = Strategy_LineAtShift(shift, recent_shift, recent_price, older_shift, older_price);
+      if(linei <= 0.0)
+         continue;
+      const double c = iClose(_Symbol, _Period, shift);
+      if(c <= 0.0)
+         continue;
+      if(c <= linei)
+         return true;   // a recent bar sat at/below resistance -> bar1 is a fresh break up
+      // bar already above resistance -> not the breakout bar, keep scanning back
+     }
+   return false;
+  }
+
+// Mirror image: confirm a genuine fresh break BELOW the projected support line.
+bool Strategy_FreshBreakBelow(const double close1,
+                              const int recent_shift,
+                              const double recent_price,
+                              const int older_shift,
+                              const double older_price)
+  {
+   const double line1 = Strategy_LineAtShift(1, recent_shift, recent_price, older_shift, older_price);
+   if(line1 <= 0.0 || close1 >= line1)
+      return false;
+   const int last = (recent_shift > 2 ? recent_shift : 2);
+   for(int shift = 2; shift <= last; ++shift)
+     {
+      const double linei = Strategy_LineAtShift(shift, recent_shift, recent_price, older_shift, older_price);
+      if(linei <= 0.0)
+         continue;
+      const double c = iClose(_Symbol, _Period, shift);
+      if(c <= 0.0)
+         continue;
+      if(c >= linei)
+         return true;   // a recent bar sat at/above support -> bar1 is a fresh break down
+     }
+   return false;
+  }
+
 bool Strategy_HasOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
@@ -365,9 +420,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       Strategy_FindTwoPivotHighs(recent_shift, recent_price, older_shift, older_price) &&
       older_price > recent_price)
      {
-      const double line1 = Strategy_LineAtShift(1, recent_shift, recent_price, older_shift, older_price);
-      const double line2 = Strategy_LineAtShift(2, recent_shift, recent_price, older_shift, older_price);
-      if(line1 > 0.0 && line2 > 0.0 && close1 > line1 && close2 <= line2)
+      if(Strategy_FreshBreakAbove(close1, recent_shift, recent_price, older_shift, older_price))
         {
          const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
          if(ask <= 0.0)
@@ -385,9 +438,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       Strategy_FindTwoPivotLows(recent_shift, recent_price, older_shift, older_price) &&
       older_price < recent_price)
      {
-      const double line1 = Strategy_LineAtShift(1, recent_shift, recent_price, older_shift, older_price);
-      const double line2 = Strategy_LineAtShift(2, recent_shift, recent_price, older_shift, older_price);
-      if(line1 > 0.0 && line2 > 0.0 && close1 < line1 && close2 >= line2)
+      if(Strategy_FreshBreakBelow(close1, recent_shift, recent_price, older_shift, older_price))
         {
          const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
          if(bid <= 0.0)

@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10364 Elite Trader LBR 3-10-16 First Cross Pullback"
+// rework v2 2026-06-16: 3-10 oscillator pullback measured on MACD-minus-signal histogram (main-sig) instead of the 3-10 oscillator (MACD main) itself, contradicting sig>0 latch -> 0 trades/yr on SP500/GDAXI/WS30. Faithful fix: pull back on the 3-10 oscillator (MACD main) crossing zero, per card "MACD main = 3-10 histogram".
 
 #include <QM/QM_Common.mqh>
 
@@ -173,8 +174,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       main1 == EMPTY_VALUE || main2 == EMPTY_VALUE)
       return false;
 
-   const double hist1 = main1 - sig1;
-   const double hist2 = main2 - sig2;
+   // The LBR "3-10 oscillator" / "3-10 histogram" is the MACD main line itself
+   // (3EMA-10EMA), with the 16-period signal line as the trend filter. The
+   // first-cross pullback fires when the 3-10 oscillator dips back below zero
+   // and turns up (long) / above zero and turns down (short).
+   const double osc1 = main1;
+   const double osc2 = main2;
 
    if(sig2 <= 0.0 && sig1 > 0.0)
      {
@@ -211,7 +216,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   if(g_setup_direction > 0 && sig1 > 0.0 && hist2 < 0.0 && hist1 > hist2)
+   if(g_setup_direction > 0 && sig1 > 0.0 && osc2 < 0.0 && osc1 > osc2)
      {
       const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, ask, atr, strategy_atr_target_mult);
       const double tp = QM_TakeATRFromValue(_Symbol, QM_BUY, ask, atr, strategy_atr_target_mult);
@@ -222,7 +227,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return true;
      }
 
-   if(g_setup_direction < 0 && sig1 < 0.0 && hist2 > 0.0 && hist1 < hist2)
+   if(g_setup_direction < 0 && sig1 < 0.0 && osc2 > 0.0 && osc1 < osc2)
      {
       const double sl = QM_StopATRFromValue(_Symbol, QM_SELL, bid, atr, strategy_atr_target_mult);
       const double tp = QM_TakeATRFromValue(_Symbol, QM_SELL, bid, atr, strategy_atr_target_mult);

@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10371 Elite Trader ER2 Afternoon Open-Price Breakout"
+// rework v2 2026-06-16: regular-session open mapped to wrong broker hour (15:30 = 08:30 ET pre-open, sparse/missing M1 bars on index CFDs -> ReadSessionOpenPrice ±5min exact-match failed almost daily -> 0 trades / MIN_TRADES_NOT_MET). Fixed to true RTH/cash open: US 16:30 broker (09:30 ET), EU 10:00 broker (09:00 CET), keeping ET+7 / CET+1 NY-close (GMT+2/+3) mapping.
 
 #include <QM/QM_Common.mqh>
 
@@ -29,8 +30,8 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_us_session_open_hhmm = 1530;
-input int    strategy_eu_session_open_hhmm = 900;
+input int    strategy_us_session_open_hhmm = 1630;
+input int    strategy_eu_session_open_hhmm = 1000;
 input int    strategy_entry_hhmm_broker    = 2100;
 input int    strategy_exit_hhmm_broker     = 2300;
 input double strategy_trigger_pct          = 0.0033;
