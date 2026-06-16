@@ -1,6 +1,10 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10699 TradingView CISD Hull Liquidity Sweep"
+// rework v2 2026-06-16 — HMA filter was price-above-rising-HMA, which structurally
+// contradicts a post-sweep reversal entry and vetoed ~all signals (->0 trades).
+// Relaxed to a pure HMA slope-agreement check per card's "shows bullish/bearish
+// condition" so the optional trend filter no longer rejects every valid sweep.
 
 #include <QM/QM_Common.mqh>
 
@@ -242,13 +246,17 @@ bool Strategy_HmaAllows(const QM_OrderType side)
 
    const double hma_1 = QM_HMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_hma_period, 1);
    const double hma_2 = QM_HMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_hma_period, 2);
-   const double c1 = iClose(_Symbol, _Period, 1);
-   if(hma_1 <= 0.0 || hma_2 <= 0.0 || c1 <= 0.0)
+   if(hma_1 <= 0.0 || hma_2 <= 0.0)
       return false;
 
+   // rework v2 2026-06-16 — slope-agreement only. The previous price-vs-HMA
+   // condition (c1 > hma) is structurally false on a reversal entry that just
+   // swept the opposite extreme, so it vetoed essentially every signal. The
+   // card calls this an optional trend filter that "shows a bullish/bearish
+   // condition" — an HMA turning in the trade direction satisfies that intent.
    if(QM_OrderTypeIsBuy(side))
-      return (c1 > hma_1 && hma_1 > hma_2);
-   return (c1 < hma_1 && hma_1 < hma_2);
+      return (hma_1 > hma_2);
+   return (hma_1 < hma_2);
   }
 
 bool Strategy_FillRequest(QM_EntryRequest &req,

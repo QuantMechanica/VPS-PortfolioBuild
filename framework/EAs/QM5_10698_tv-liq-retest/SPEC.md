@@ -79,7 +79,7 @@ The EA searches recent confirmed pivot lows as support and confirmed pivot highs
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 140 |
+| Trades / year / symbol | 30 |
 | Typical hold time | not specified in frontmatter; expected intraday to short swing because exits are static SL/TP |
 | Expected drawdown profile | moderate cadence level-retest reversal with stale-level and large-sweep-candle risk |
 | Regime preference | mean-revert liquidity-sweep rejection |

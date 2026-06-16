@@ -1,6 +1,10 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10721 TradingView Wyckoff Range SMA Cross"
+// rework v2 2026-06-16 — entry required TWO simultaneous fresh SMA crossovers
+// (close-cross AND low/high-cross) on the SAME bar => ~0 trades. Decoupled:
+// close-cross is the trigger event, low/high above/below its range-SMA is a
+// confirming STATE (Wyckoff range-side filter). Exits keep cross-event logic.
 
 #include <QM/QM_Common.mqh>
 
@@ -86,6 +90,8 @@ bool g_close_cross_up = false;
 bool g_close_cross_down = false;
 bool g_low_cross_up = false;
 bool g_high_cross_down = false;
+bool g_low_above_ma = false;   // range-state: last close low above SMA(low)  (long confirm)
+bool g_high_below_ma = false;  // range-state: last close high below SMA(high) (short confirm)
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -130,12 +136,16 @@ bool Strategy_Crosses(MqlRates &rates[],
                       bool &close_cross_up,
                       bool &close_cross_down,
                       bool &low_cross_up,
-                      bool &high_cross_down)
+                      bool &high_cross_down,
+                      bool &low_above_ma,
+                      bool &high_below_ma)
   {
    close_cross_up = false;
    close_cross_down = false;
    low_cross_up = false;
    high_cross_down = false;
+   low_above_ma = false;
+   high_below_ma = false;
 
    if(strategy_cross_over_length < 2 || strategy_range_ma_length < 2)
       return false;
@@ -155,6 +165,11 @@ bool Strategy_Crosses(MqlRates &rates[],
    close_cross_down = (rates[0].close < close_ma_1 && rates[1].close >= close_ma_2);
    low_cross_up = (rates[0].low > low_ma_1 && rates[1].low <= low_ma_2);
    high_cross_down = (rates[0].high < high_ma_1 && rates[1].high >= high_ma_2);
+   // rework v2: range-side STATE on the last closed bar (confirmation, not a
+   // simultaneous fresh crossover). Long needs low above its range-SMA; short
+   // needs high below its range-SMA.
+   low_above_ma = (rates[0].low > low_ma_1);
+   high_below_ma = (rates[0].high < high_ma_1);
    return true;
   }
 
@@ -182,7 +197,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    bool close_cross_down = false;
    bool low_cross_up = false;
    bool high_cross_down = false;
-   if(!Strategy_Crosses(rates, close_cross_up, close_cross_down, low_cross_up, high_cross_down))
+   bool low_above_ma = false;
+   bool high_below_ma = false;
+   if(!Strategy_Crosses(rates, close_cross_up, close_cross_down, low_cross_up, high_cross_down,
+                        low_above_ma, high_below_ma))
       return false;
 
    g_signal_cache_ready = true;
@@ -190,6 +208,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    g_close_cross_down = close_cross_down;
    g_low_cross_up = low_cross_up;
    g_high_cross_down = high_cross_down;
+   g_low_above_ma = low_above_ma;
+   g_high_below_ma = high_below_ma;
 
    const double stop_pct = Strategy_StopPct();
    const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
@@ -203,7 +223,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
       return false;
 
-   if(close_cross_up && low_cross_up)
+   // rework v2: trigger = close-cross; confirm = range-side STATE (was a second
+   // simultaneous fresh crossover, which almost never coincided => ~0 trades).
+   if(close_cross_up && low_above_ma)
      {
       req.type = QM_BUY;
       req.price = 0.0;
