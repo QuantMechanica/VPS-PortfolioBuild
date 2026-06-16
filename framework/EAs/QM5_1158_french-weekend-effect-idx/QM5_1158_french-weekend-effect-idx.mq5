@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_1158 French Weekend Effect (Avoid-Monday Index Long)"
+// rework v2 2026-06-16 — add Mon-Fri weekday + full-day session fallback when SymbolInfoSessionTrade reports no schedule (DWX custom symbols return no sessions in tester) so entry/exit fire instead of 0 trades
 
 #include <QM/QM_Common.mqh>
 
@@ -92,7 +93,10 @@ bool Strategy_HasScheduledSession(const int day_of_week)
       if(SymbolInfoSessionTrade(_Symbol, (ENUM_DAY_OF_WEEK)day_of_week, session, session_from, session_to))
          return true;
      }
-   return false;
+   // Fallback: DWX custom index symbols report no session schedule in the
+   // tester; treat any weekday Mon-Fri as a tradeable session (matches siblings
+   // QM5_1100 / QM5_10888 / QM5_1124). Without this, entry/exit never fire.
+   return (day_of_week >= 1 && day_of_week <= 5);
   }
 
 bool Strategy_SessionBounds(const int day_of_week, int &start_minute, int &close_minute)
@@ -118,6 +122,16 @@ bool Strategy_SessionBounds(const int day_of_week, int &start_minute, int &close
       if(to_minute > close_minute)
          close_minute = to_minute;
       found = true;
+     }
+
+   if(!found && day_of_week >= 1 && day_of_week <= 5)
+     {
+      // Fallback for DWX custom symbols with no reported session schedule:
+      // assume a full trading day [00:00, 24:00) so the entry-near-open and
+      // exit-near-close windows still resolve instead of collapsing to false.
+      start_minute = 0;
+      close_minute = 1440;
+      return true;
      }
 
    return found;

@@ -1,6 +1,10 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_1101 Quantpedia Commodity Momentum 12 Month Rank"
+// rework v2 2026-06-16 — basket universe (XAU/XAG/XTI/XNG) never loaded foreign-symbol
+// D1 history in the tester (SymbolSelect only adds to Market Watch); cross-sectional
+// iClose/iBars returned 0 -> rank never resolved -> 0 trades / Q02 MIN_TRADES fail.
+// Fix: QM_SymbolGuardInit + QM_BasketWarmupHistory in OnInit (mirrors sibling QM5_1246).
 
 #include <QM/QM_Common.mqh>
 
@@ -341,8 +345,17 @@ int OnInit()
                         qm_friday_close_hour_broker))
       return INIT_FAILED;
 
+   // Basket universe: register the allowed set and force the tester to actually
+   // load each foreign symbol's D1 history. SymbolSelect alone only adds to Market
+   // Watch — without the CopyClose warmup the tester returns 0 bars for foreign
+   // symbols and the cross-sectional rank never resolves (0 trades).
+   string g_universe_dyn[];
+   ArrayResize(g_universe_dyn, STRATEGY_UNIVERSE_SIZE);
    for(int i = 0; i < STRATEGY_UNIVERSE_SIZE; ++i)
-      SymbolSelect(g_universe_symbols[i], true);
+      g_universe_dyn[i] = g_universe_symbols[i];
+   QM_SymbolGuardInit(g_universe_dyn);
+   QM_BasketWarmupHistory(g_universe_dyn, PERIOD_D1,
+                          strategy_min_history_d1_bars + strategy_lookback_d1_bars + 10);
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1101\",\"ea\":\"qp-comm-mom12\"}");
    return INIT_SUCCEEDED;
