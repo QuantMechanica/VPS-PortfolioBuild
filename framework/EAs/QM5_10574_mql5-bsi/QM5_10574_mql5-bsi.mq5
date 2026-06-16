@@ -1,6 +1,9 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10574 MQL5 BSI histogram color change"
+// rework v2 2026-06-16 — fix QM_IsNewBar double-consume: Strategy_ExitSignal
+// consumed the per-bar new-bar event before the OnTick entry gate, so entries
+// never fired (~0 trades). Exit no longer gates on QM_IsNewBar.
 
 #include <QM/QM_Common.mqh>
 
@@ -315,9 +318,13 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   if(!QM_IsNewBar())
-      return false;
-
+   // NOTE: do NOT gate on QM_IsNewBar() here. QM_IsNewBar() is a consume-once
+   // tracker keyed by (symbol, timeframe); calling it inside the per-tick
+   // Strategy_ExitSignal() consumed the new-bar event before the framework's
+   // entry gate (OnTick) could see it, so Strategy_EntrySignal never fired
+   // (~0 trades, Q02 MIN_TRADES fail). The exit signal is derived purely from
+   // closed bars (shift>=1) and is stable within a bar, so evaluating it every
+   // tick is correct and leaves the new-bar event intact for the entry gate.
    ENUM_POSITION_TYPE position_type;
    if(!Strategy_ReadOurPositionType(position_type))
       return false;

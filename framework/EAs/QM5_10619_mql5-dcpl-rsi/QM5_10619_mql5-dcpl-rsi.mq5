@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10619 MQL5 Dark Cloud/Piercing Line RSI"
+// rework v2 2026-06-16 — piercing/dark-cloud gate on prior close (open1<close2 / open1>high... ) not prior low/high: gapless H1 .DWX never opens beyond the full prior range, so the canonical pattern never fired (~0 trades). Restored textbook CCandlePattern close-based open condition.
 
 #include <QM/QM_Common.mqh>
 
@@ -122,7 +123,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       close1 > open1 &&
       body1 > avg_body &&
       body2 > avg_body &&
-      open1 < low2 &&
+      open1 < close2 &&
       close1 > close2 &&
       close1 < open2 &&
       close1 > mid2 &&
@@ -132,7 +133,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       close1 < open1 &&
       body1 > avg_body &&
       body2 > avg_body &&
-      open1 > high2 &&
+      open1 > close2 &&
       close1 < close2 &&
       close1 > open2 &&
       close1 < mid2 &&

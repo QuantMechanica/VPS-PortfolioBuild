@@ -1,6 +1,10 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10610 MQL5 CMO Cloud Color Change"
+// rework v2 2026-06-16 — CMO computed over raw close-to-close changes (canonical
+// Chande Momentum Oscillator) instead of first-differences of a 14-period SMA.
+// The SMA-slope variant double-smoothed the series so its zero-crossing color
+// change fired only a few times/yr → ~0 trades → Q02 MIN_TRADES FAIL.
 
 #include <QM/QM_Common.mqh>
 
@@ -124,12 +128,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
       for(int i = shift; i < shift + strategy_cmo_length; ++i)
         {
-         const double ma_now = QM_SMA(_Symbol, strategy_signal_tf, strategy_cmo_length, i, PRICE_CLOSE);
-         const double ma_prev = QM_SMA(_Symbol, strategy_signal_tf, strategy_cmo_length, i + 1, PRICE_CLOSE);
-         if(ma_now <= 0.0 || ma_prev <= 0.0)
+         const double close_now = iClose(_Symbol, strategy_signal_tf, i);
+         const double close_prev = iClose(_Symbol, strategy_signal_tf, i + 1);
+         if(close_now <= 0.0 || close_prev <= 0.0)
             return false;
 
-         const double diff = ma_now - ma_prev;
+         const double diff = close_now - close_prev;
          if(diff > 0.0)
             sum_up += diff;
          else
@@ -235,12 +239,12 @@ bool Strategy_ExitSignal()
 
       for(int j = shift; j < shift + strategy_cmo_length; ++j)
         {
-         const double ma_now = QM_SMA(_Symbol, strategy_signal_tf, strategy_cmo_length, j, PRICE_CLOSE);
-         const double ma_prev = QM_SMA(_Symbol, strategy_signal_tf, strategy_cmo_length, j + 1, PRICE_CLOSE);
-         if(ma_now <= 0.0 || ma_prev <= 0.0)
+         const double close_now = iClose(_Symbol, strategy_signal_tf, j);
+         const double close_prev = iClose(_Symbol, strategy_signal_tf, j + 1);
+         if(close_now <= 0.0 || close_prev <= 0.0)
             return false;
 
-         const double diff = ma_now - ma_prev;
+         const double diff = close_now - close_prev;
          if(diff > 0.0)
             sum_up += diff;
          else
