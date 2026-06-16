@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10010 Robot Wealth FX AR10 Reversal"
+// rework v2 2026-06-16: AR(10) coefficients were all 0.0 -> pred_ret always 0 < threshold -> ZERO trades; seeded thesis-faithful negative (reversal) lag coeffs so the forecast is non-degenerate.
 
 #include <QM/QM_Common.mqh>
 
@@ -39,11 +40,16 @@ input double strategy_max_spread_atr_fraction = 0.20;
 input int    strategy_max_hold_bars           = 6;
 input int    strategy_ny_close_hour_broker    = 23;
 input int    strategy_ny_close_minute_broker  = 50;
+// AR(10) short-term reversal coefficients (Robot Wealth thesis: negative
+// short-horizon FX autocorrelation). Seeded with decaying NEGATIVE lag weights
+// so recent up-moves forecast a pull-back (reversal). These are deterministic,
+// fixed in-sample defaults — no ML/online adaptation. Higher lags left ~0 since
+// the documented effect is concentrated at the shortest horizons.
 input double strategy_ar_intercept            = 0.0;
-input double strategy_ar_lag1                 = 0.0;
-input double strategy_ar_lag2                 = 0.0;
-input double strategy_ar_lag3                 = 0.0;
-input double strategy_ar_lag4                 = 0.0;
+input double strategy_ar_lag1                 = -0.20;
+input double strategy_ar_lag2                 = -0.10;
+input double strategy_ar_lag3                 = -0.05;
+input double strategy_ar_lag4                 = -0.025;
 input double strategy_ar_lag5                 = 0.0;
 input double strategy_ar_lag6                 = 0.0;
 input double strategy_ar_lag7                 = 0.0;

@@ -1,6 +1,11 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10080 GitHub Victor Algo Gap Reversal"
+// rework v2 2026-06-16: gap was measured on adjacent H1 bars (open[1] vs close[2] on
+// the chart TF) where a >=1% gap essentially never occurs intraday -> near-zero trades
+// -> Q02 MIN_TRADES_NOT_MET. A gap-reversal is a DAILY (overnight session) phenomenon:
+// detect the gap as today's D1 open vs prior D1 close, read SMA250/ATR250 on D1, and
+// fire at most once per new daily bar. Faithful to the source (daily gap reversal).
 
 #include <QM/QM_Common.mqh>
 
@@ -92,14 +97,18 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_ReadClosedGapBars(MqlRates &gap_bar, MqlRates &prior_bar)
   {
+   // rework v2 2026-06-16: read the DAILY gap on FULLY CLOSED bars. shift 1 = the
+   // gap/reversal bar (its OPEN gapped from shift-2's close, its CLOSE confirms the
+   // reversal direction); shift 2 = the bar before the gap. Faithful to the source's
+   // "gap bar opens away then closes back" reversal on a daily scale.
    MqlRates bars[];
    ArraySetAsSeries(bars, true);
-   const int copied = CopyRates(_Symbol, _Period, 1, 2, bars); // perf-allowed: bounded closed-bar gap read inside framework new-bar entry hook.
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, 2, bars); // perf-allowed: bounded 2-bar daily gap read, gated by the once-per-daily-bar check in Strategy_EntrySignal.
    if(copied != 2)
       return false;
 
-   gap_bar = bars[0];
-   prior_bar = bars[1];
+   gap_bar = bars[0];   // yesterday's closed D1 bar: gapped at open, closed reversing
+   prior_bar = bars[1]; // the D1 bar before the gap (closed)
    return true;
   }
 
@@ -123,6 +132,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_atr_tp_mult <= 0.0)
       return false;
 
+   // rework v2 2026-06-16: gate to one evaluation per NEW DAILY bar so a daily gap
+   // fires at most once (the H1 chart calls EntrySignal on every H1 new bar).
+   static datetime last_d1_eval = 0;
+   const datetime d1_time = (datetime)SeriesInfoInteger(_Symbol, PERIOD_D1, SERIES_LASTBAR_DATE);
+   if(d1_time == 0 || d1_time == last_d1_eval)
+      return false;
+   last_d1_eval = d1_time;
+
    MqlRates gap_bar;
    MqlRates prior_bar;
    if(!Strategy_ReadClosedGapBars(gap_bar, prior_bar))
@@ -130,8 +147,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(gap_bar.open <= 0.0 || gap_bar.close <= 0.0 || prior_bar.close <= 0.0)
       return false;
 
-   const double sma = QM_SMA(_Symbol, _Period, strategy_sma_period, 1, PRICE_CLOSE);
-   const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+   // rework v2 2026-06-16: SMA250/ATR250 read on D1 (the gap timeframe), not the H1
+   // chart TF where 250 bars is only ~10 days. shift 1 = the gap bar's daily values.
+   const double sma = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 1, PRICE_CLOSE);
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if(sma <= 0.0 || atr <= 0.0)
       return false;
 
@@ -177,8 +196,10 @@ void Strategy_ManageOpenPosition()
    if(strategy_atr_period <= 1 || strategy_atr_sl_mult <= 0.0)
       return;
 
-   const double close_1 = QM_SMA(_Symbol, _Period, 1, 1, PRICE_CLOSE);
-   const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+   // rework v2 2026-06-16: trail on the DAILY scale to match the D1-ATR entry stop
+   // (an H1-ATR trail is ~5x tighter and would instantly stop out the position).
+   const double close_1 = QM_SMA(_Symbol, PERIOD_D1, 1, 1, PRICE_CLOSE);
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(close_1 <= 0.0 || atr <= 0.0 || point <= 0.0)
       return;

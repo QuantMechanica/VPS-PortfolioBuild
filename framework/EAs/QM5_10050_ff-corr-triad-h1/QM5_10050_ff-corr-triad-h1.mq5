@@ -1,6 +1,8 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10050 ForexFactory correlation triad H1 MA cross"
+// rework v2 2026-06-16: same-bar triple MA-cross was near-impossible (<<1 trade/yr);
+// EURUSD fresh cross now TRIGGERS, correlated legs (EURCHF same-dir, USDCHF inverse) CONFIRM via MA state.
 
 #include <QM/QM_Common.mqh>
 
@@ -99,13 +101,18 @@ int TriadSignal()
       uc_fast_1 <= 0.0 || uc_slow_1 <= 0.0 || uc_fast_2 <= 0.0 || uc_slow_2 <= 0.0)
       return 0;
 
-   if(eu_fast_2 <= eu_slow_2 && eu_fast_1 > eu_slow_1 &&
-      ec_fast_2 <= ec_slow_2 && ec_fast_1 > ec_slow_1 &&
-      uc_fast_2 >= uc_slow_2 && uc_fast_1 < uc_slow_1)
+   // EURUSD fresh MA cross is the TRIGGER; correlated legs CONFIRM via current MA state
+   // (EURCHF positively correlated => same-direction bias; USDCHF inversely correlated => opposite bias).
+   const bool eu_cross_up   = (eu_fast_2 <= eu_slow_2 && eu_fast_1 > eu_slow_1);
+   const bool eu_cross_down = (eu_fast_2 >= eu_slow_2 && eu_fast_1 < eu_slow_1);
+   const bool ec_state_up   = (ec_fast_1 > ec_slow_1);
+   const bool ec_state_down = (ec_fast_1 < ec_slow_1);
+   const bool uc_state_up   = (uc_fast_1 > uc_slow_1);
+   const bool uc_state_down = (uc_fast_1 < uc_slow_1);
+
+   if(eu_cross_up && ec_state_up && uc_state_down)
       return 1;
-   if(eu_fast_2 >= eu_slow_2 && eu_fast_1 < eu_slow_1 &&
-      ec_fast_2 >= ec_slow_2 && ec_fast_1 < ec_slow_1 &&
-      uc_fast_2 <= uc_slow_2 && uc_fast_1 > uc_slow_1)
+   if(eu_cross_down && ec_state_down && uc_state_up)
       return -1;
 
    return 0;

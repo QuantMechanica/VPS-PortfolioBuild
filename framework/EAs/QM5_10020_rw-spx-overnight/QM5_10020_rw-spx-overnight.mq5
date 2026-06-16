@@ -1,6 +1,14 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10020 Robot Wealth SPX Overnight Premium"
+// rework v2 2026-06-16: BUG fix — entry/exit were gated on wall-clock hours
+// (entry hour==0, exit hour==16) while the EA runs on the D1 period. On a D1
+// chart QM_IsNewBar fires once/day at the daily bar's fixed open hour, so the
+// hour==0 entry gate fired rarely/never and the hour==16 exit gate was brittle
+// in tick mode -> 0 trades -> MIN_TRADES_NOT_MET. Faithful close->next-open
+// overnight hold is a one-D1-bar hold: enter on each new D1 bar, exit on the
+// next new D1 bar (mirrors sibling QM5_1159). 20-session overnight-minus-
+// intraday filter, ATR(14,H1) SL, spread filter, Friday/news skips unchanged.
 
 #include <QM/QM_Common.mqh>
 
@@ -82,6 +90,10 @@ input int    strategy_exit_hour_broker   = 16;
 input bool   strategy_skip_friday_entry  = true;
 input bool   strategy_skip_news_day      = true;
 
+// rework v2 2026-06-16: track the D1 bar an entry fired on so the position is
+// held exactly one daily bar (close -> next session open) before exit.
+datetime g_last_entry_d1_bar = 0;
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -112,10 +124,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_atr_sl_mult <= 0.0 || strategy_max_spread_atr_pct < 0.0)
       return false;
 
-   MqlDateTime now_dt;
-   TimeToStruct(TimeCurrent(), now_dt);
-   if(now_dt.hour != strategy_entry_hour_broker)
+   // rework v2 2026-06-16: one entry per new D1 bar (close -> next-open hold),
+   // replacing the broken hour==strategy_entry_hour_broker clock gate that
+   // never matched the D1 bar-open hour. strategy_entry_hour_broker retained as
+   // an input for set-file back-compat but no longer gates entry on D1.
+   const datetime d1_bar = iTime(_Symbol, PERIOD_D1, 0);
+   if(d1_bar <= 0 || d1_bar == g_last_entry_d1_bar)
       return false;
+
+   MqlDateTime now_dt;
+   TimeToStruct(d1_bar, now_dt);
    if(strategy_skip_friday_entry && now_dt.day_of_week == 5)
       return false;
    if(strategy_skip_news_day &&
@@ -155,7 +173,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr_h1, strategy_atr_sl_mult);
-   return (req.sl > 0.0);
+   if(req.sl <= 0.0)
+      return false;
+
+   // rework v2 2026-06-16: arm one-bar-hold exit and dedupe within this D1 bar.
+   g_last_entry_d1_bar = d1_bar;
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
@@ -169,13 +192,16 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   MqlDateTime now_dt;
-   TimeToStruct(TimeCurrent(), now_dt);
-   if(now_dt.hour != strategy_exit_hour_broker)
-      return false;
-
+   // rework v2 2026-06-16: exit at the next session open = close once a NEW D1
+   // bar has formed after the entry bar (one-bar overnight hold), replacing the
+   // brittle hour==strategy_exit_hour_broker clock gate. strategy_exit_hour_broker
+   // retained as an input for set-file back-compat.
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
+      return false;
+
+   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0);
+   if(current_d1_bar <= 0)
       return false;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -185,7 +211,11 @@ bool Strategy_ExitSignal()
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
+      if(opened > 0 && opened < current_d1_bar)
          return true;
      }
 

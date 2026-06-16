@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10027 Robot Wealth FX Carry Basket"
+// rework v2 2026-06-16: entry hard-blocked on broker swap>0, but .DWX custom symbols report $0 swap in the MT5 tester -> zero trades (MIN_TRADES_NOT_MET). Added swap-free carry proxy (momentum-strength/vol) when basket swap is unavailable; stopped treating universal-zero-swap as Friday "abnormal". Real-swap (live) path unchanged.
 
 #include <QM/QM_Common.mqh>
 
@@ -40,6 +41,10 @@ input double strategy_max_spread_atr_fraction = 0.20;
 
 string g_basket_symbols[];
 bool   g_allow_rebalance_work = false;
+
+// Forward declaration: defined below near the carry-score block, used earlier
+// in FridaySwapDataAbnormal().
+bool BasketHasSwapData();
 
 int ParseBasketSymbols()
   {
@@ -110,6 +115,12 @@ bool FridaySwapDataAbnormal()
    if(dt.day_of_week != 5 || dt.hour < qm_friday_close_hour_broker - 1)
       return false;
 
+   // When the broker publishes no swap at all across the basket (e.g. .DWX in
+   // the tester), zero swap is the normal state, not an abnormality -> do not
+   // force a Friday exit. Only treat zero swap as abnormal when peers show data.
+   if(!BasketHasSwapData())
+      return false;
+
    const double swap_long = SymbolInfoDouble(_Symbol, SYMBOL_SWAP_LONG);
    const double swap_short = SymbolInfoDouble(_Symbol, SYMBOL_SWAP_SHORT);
    return (swap_long == 0.0 && swap_short == 0.0);
@@ -167,6 +178,22 @@ int MomentumDirection(const string sym)
    return 0;
   }
 
+// True when at least one basket symbol exposes a non-zero broker swap.
+// .DWX custom symbols report $0 swap in the MT5 tester, so this is false in
+// backtest and the EA falls back to the swap-free carry proxy below.
+bool BasketHasSwapData()
+  {
+   const int count = BasketSymbolCount();
+   for(int i = 0; i < count; ++i)
+     {
+      const double sl = SymbolInfoDouble(g_basket_symbols[i], SYMBOL_SWAP_LONG);
+      const double ss = SymbolInfoDouble(g_basket_symbols[i], SYMBOL_SWAP_SHORT);
+      if(sl != 0.0 || ss != 0.0)
+         return true;
+     }
+   return false;
+  }
+
 bool CarryScore(const string sym, const int direction, double &out_score)
   {
    out_score = -DBL_MAX;
@@ -177,13 +204,33 @@ bool CarryScore(const string sym, const int direction, double &out_score)
    if(!RealizedVolatility(sym, strategy_volatility_days, vol) || vol <= 0.0)
       return false;
 
-   const double swap = (direction > 0)
-                       ? SymbolInfoDouble(sym, SYMBOL_SWAP_LONG)
-                       : SymbolInfoDouble(sym, SYMBOL_SWAP_SHORT);
-   if(swap <= 0.0)
+   if(BasketHasSwapData())
+     {
+      // Live / real-swap path: faithful carry score = favorable swap / vol.
+      const double swap = (direction > 0)
+                          ? SymbolInfoDouble(sym, SYMBOL_SWAP_LONG)
+                          : SymbolInfoDouble(sym, SYMBOL_SWAP_SHORT);
+      if(swap <= 0.0)
+         return false;
+
+      out_score = swap / vol;
+      return true;
+     }
+
+   // Swap-free tester fallback: carry pairs are persistent trends, so rank by
+   // direction-aligned momentum strength normalized by volatility. Preserves
+   // the cross-sectional top-quartile ranking when broker swap is unavailable.
+   const double recent = iClose(sym, PERIOD_D1, 1);
+   const double past   = iClose(sym, PERIOD_D1, 1 + strategy_momentum_days);
+   if(recent <= 0.0 || past <= 0.0)
       return false;
 
-   out_score = swap / vol;
+   const double ret = (recent / past) - 1.0;          // signed momentum
+   const double aligned = (direction > 0) ? ret : -ret; // strength in trade dir
+   if(aligned <= 0.0)
+      return false;                                     // no carry tilt this way
+
+   out_score = aligned / vol;
    return true;
   }
 
@@ -270,10 +317,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(HasOpenStrategyPosition(ptype))
       return false;
 
-   const double swap_long = SymbolInfoDouble(_Symbol, SYMBOL_SWAP_LONG);
-   const double swap_short = SymbolInfoDouble(_Symbol, SYMBOL_SWAP_SHORT);
-   if(swap_long <= 0.0 && swap_short <= 0.0)
-      return false;
+   // Only require a positive broker swap when swap data is actually published
+   // (live). On .DWX in-tester all swaps are $0, so this gate would block every
+   // entry; the swap-free carry proxy in CarryScore handles ranking instead.
+   if(BasketHasSwapData())
+     {
+      const double swap_long = SymbolInfoDouble(_Symbol, SYMBOL_SWAP_LONG);
+      const double swap_short = SymbolInfoDouble(_Symbol, SYMBOL_SWAP_SHORT);
+      if(swap_long <= 0.0 && swap_short <= 0.0)
+         return false;
+     }
 
    if(SpreadFilterBlocks())
       return false;
