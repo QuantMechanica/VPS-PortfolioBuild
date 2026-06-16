@@ -12,8 +12,8 @@ concepts:
 indicators: [ParabolicSAR, Volume, ATR]
 target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX]
 period: M5
-expected_trade_frequency: "Intraday volatility breakthrough around current D1 high/low/mid levels with SAR and volume filters; conservative estimate is 50-130 trades/year/symbol on M5."
-expected_trades_per_year_per_symbol: 80
+expected_trade_frequency: "M5 close beyond the PRIOR completed D1 high/low with a tick-volume confirmation. Breaking the previous day's full range on a closed M5 bar is a low-frequency daily-range breakout; measured realization on real-tick 2024 was ~3 trades/yr (GDAXI.DWX) and ~0/yr (EURUSD.DWX). Realistic expectation ~4 trades/year/symbol."
+expected_trades_per_year_per_symbol: 4
 g0_status: APPROVED
 r1_track_record: PASS
 r2_mechanical: PASS

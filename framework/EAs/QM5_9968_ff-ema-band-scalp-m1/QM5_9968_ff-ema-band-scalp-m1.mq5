@@ -153,6 +153,86 @@ bool Strategy_ReadRecentBars(MqlRates &bar1)
    return (bar1.open > 0.0 && bar1.high > 0.0 && bar1.low > 0.0 && bar1.close > 0.0);
   }
 
+// Returns TRUE if, at the given closed-bar shift, the bar pulled back into the
+// EMA(50) high/low band on the LONG side: the band must sit entirely above
+// EMA(100) (trend gate) and the bar's low must reach the band top while its
+// close holds at/above the band bottom. Used to scan a short recency window so
+// the pullback need not coincide on the exact bar of the stochastic cross.
+bool Strategy_BandPullbackLong(const int shift)
+  {
+   if(shift < 1)
+      return false;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   if(CopyRates(_Symbol, PERIOD_CURRENT, shift, 1, rates) != 1)
+      return false;
+   const MqlRates bar = rates[0];
+   if(!(bar.open > 0.0 && bar.high > 0.0 && bar.low > 0.0 && bar.close > 0.0))
+      return false;
+
+   const double ema_high  = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_band_period, shift, PRICE_HIGH);
+   const double ema_low   = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_band_period, shift, PRICE_LOW);
+   const double ema_close = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_band_period, shift, PRICE_CLOSE);
+   const double ema_trend = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_trend_period, shift, PRICE_CLOSE);
+   if(ema_high <= 0.0 || ema_low <= 0.0 || ema_close <= 0.0 || ema_trend <= 0.0)
+      return false;
+
+   const bool trend_long = (ema_high > ema_trend && ema_low > ema_trend && ema_close > ema_trend);
+   const bool pullback   = (bar.low <= ema_high && bar.close >= ema_low);
+   return (trend_long && pullback);
+  }
+
+// Short-side mirror of Strategy_BandPullbackLong at the given closed-bar shift.
+bool Strategy_BandPullbackShort(const int shift)
+  {
+   if(shift < 1)
+      return false;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   if(CopyRates(_Symbol, PERIOD_CURRENT, shift, 1, rates) != 1)
+      return false;
+   const MqlRates bar = rates[0];
+   if(!(bar.open > 0.0 && bar.high > 0.0 && bar.low > 0.0 && bar.close > 0.0))
+      return false;
+
+   const double ema_high  = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_band_period, shift, PRICE_HIGH);
+   const double ema_low   = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_band_period, shift, PRICE_LOW);
+   const double ema_close = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_band_period, shift, PRICE_CLOSE);
+   const double ema_trend = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_trend_period, shift, PRICE_CLOSE);
+   if(ema_high <= 0.0 || ema_low <= 0.0 || ema_close <= 0.0 || ema_trend <= 0.0)
+      return false;
+
+   const bool trend_short = (ema_high < ema_trend && ema_low < ema_trend && ema_close < ema_trend);
+   const bool pullback    = (bar.high >= ema_low && bar.close <= ema_high);
+   return (trend_short && pullback);
+  }
+
+// TRUE if a long band pullback occurred on any of the last `lookback` closed bars.
+bool Strategy_RecentBandPullbackLong()
+  {
+   int lookback = strategy_stoch_zone_lookback;
+   if(lookback < 1)
+      lookback = 1;
+   for(int shift = 1; shift <= lookback; ++shift)
+      if(Strategy_BandPullbackLong(shift))
+         return true;
+   return false;
+  }
+
+// TRUE if a short band pullback occurred on any of the last `lookback` closed bars.
+bool Strategy_RecentBandPullbackShort()
+  {
+   int lookback = strategy_stoch_zone_lookback;
+   if(lookback < 1)
+      lookback = 1;
+   for(int shift = 1; shift <= lookback; ++shift)
+      if(Strategy_BandPullbackShort(shift))
+         return true;
+   return false;
+  }
+
 bool Strategy_StochCrossUp()
   {
    const double k1 = QM_Stoch_K(_Symbol, PERIOD_CURRENT, strategy_stoch_k_period, strategy_stoch_d_period, strategy_stoch_slowing, 1);
@@ -279,7 +359,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const bool trend_long = (ema50_high > ema100 && ema50_low > ema100 && ema50_close > ema100);
-   const bool pullback_long = (bar1.low <= ema50_high && bar1.close >= ema50_low);
+   const bool pullback_long = Strategy_RecentBandPullbackLong();
    if(trend_long && pullback_long && Strategy_StochCrossUp())
      {
       double stop_distance = ask - (ema50_low - buffer);
@@ -296,7 +376,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    const bool trend_short = (ema50_high < ema100 && ema50_low < ema100 && ema50_close < ema100);
-   const bool pullback_short = (bar1.high >= ema50_low && bar1.close <= ema50_high);
+   const bool pullback_short = Strategy_RecentBandPullbackShort();
    if(trend_short && pullback_short && Strategy_StochCrossDown())
      {
       double stop_distance = (ema50_high + buffer) - bid;

@@ -1,6 +1,10 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10537 MQL5 Kolier SuperTrend X2"
+// rework v2 2026-06-16 — fast-flip read from ONE reconstruction (dir@1 vs dir@2);
+// the old double independent-window reconstruction almost never produced a
+// fast_prev!=fast_now flip on M30 (both windows converge on shared history),
+// collapsing entries to ~1/yr. Single-pass capture restores card 30-70/yr intent.
 
 #include <QM/QM_Common.mqh>
 
@@ -93,20 +97,35 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
-int Strategy_SuperTrendDirection(const ENUM_TIMEFRAMES tf,
-                                 const int atr_period,
-                                 const double atr_mult,
-                                 const int shift)
+// Reconstruct the Kolier-style SuperTrend over a single bounded warmup window
+// and report the direction at TWO target shifts (newer `shift_a`, older
+// `shift_b`) from the SAME pass. Reading both directions from one reconstruction
+// is what makes a one-bar color change detectable: dir@1 vs dir@2 differ exactly
+// when the newest closed bar crossed the active band. Two independent
+// reconstructions (the v1 bug) converge on their shared history and almost never
+// disagree, so flips were effectively never seen.
+//
+//   shift_a < shift_b ; both >= 1.
+// Returns false if history/ATR is not yet available (caller treats as no-signal).
+bool Strategy_SuperTrendDirections(const ENUM_TIMEFRAMES tf,
+                                   const int atr_period,
+                                   const double atr_mult,
+                                   const int shift_a,
+                                   const int shift_b,
+                                   int &dir_a,
+                                   int &dir_b)
   {
-   if(atr_period <= 0 || atr_mult <= 0.0 || shift < 1)
-      return 0;
+   dir_a = 0;
+   dir_b = 0;
+   if(atr_period <= 0 || atr_mult <= 0.0 || shift_a < 1 || shift_b <= shift_a)
+      return false;
 
    const int bars = MathMax(strategy_supertrend_bars, atr_period + 20);
    double final_upper = 0.0;
    double final_lower = 0.0;
    int trend = 0;
 
-   for(int s = shift + bars; s >= shift; --s)
+   for(int s = shift_a + bars; s >= shift_a; --s)
      {
       const double high = iHigh(_Symbol, tf, s);
       const double low = iLow(_Symbol, tf, s);
@@ -114,30 +133,51 @@ int Strategy_SuperTrendDirection(const ENUM_TIMEFRAMES tf,
       const double prev_close = iClose(_Symbol, tf, s + 1);
       const double atr = QM_ATR(_Symbol, tf, atr_period, s);
       if(high <= 0.0 || low <= 0.0 || close <= 0.0 || prev_close <= 0.0 || atr <= 0.0)
-         return 0;
+         return false;
 
       const double mid = (high + low) * 0.5;
       const double basic_upper = mid + atr_mult * atr;
       const double basic_lower = mid - atr_mult * atr;
 
-      if(s == shift + bars)
+      if(s == shift_a + bars)
         {
          final_upper = basic_upper;
          final_lower = basic_lower;
          trend = (close >= mid) ? 1 : -1;
-         continue;
+        }
+      else
+        {
+         final_upper = (basic_upper < final_upper || prev_close > final_upper) ? basic_upper : final_upper;
+         final_lower = (basic_lower > final_lower || prev_close < final_lower) ? basic_lower : final_lower;
+
+         if(trend < 0 && close > final_upper)
+            trend = 1;
+         else if(trend > 0 && close < final_lower)
+            trend = -1;
         }
 
-      final_upper = (basic_upper < final_upper || prev_close > final_upper) ? basic_upper : final_upper;
-      final_lower = (basic_lower > final_lower || prev_close < final_lower) ? basic_lower : final_lower;
-
-      if(trend < 0 && close > final_upper)
-         trend = 1;
-      else if(trend > 0 && close < final_lower)
-         trend = -1;
+      // Capture the direction as the same forward pass reaches each target bar.
+      if(s == shift_b)
+         dir_b = trend;
+      if(s == shift_a)
+         dir_a = trend;
      }
 
-   return trend;
+   return (dir_a != 0 && dir_b != 0);
+  }
+
+// Single-shift convenience: direction of the slow-trend filter at `shift`.
+int Strategy_SuperTrendDirection(const ENUM_TIMEFRAMES tf,
+                                 const int atr_period,
+                                 const double atr_mult,
+                                 const int shift)
+  {
+   int dir_a = 0;
+   int dir_b = 0;
+   // Read shift and shift+1 in one pass; we only need shift here.
+   if(!Strategy_SuperTrendDirections(tf, atr_period, atr_mult, shift, shift + 1, dir_a, dir_b))
+      return 0;
+   return dir_a;
   }
 
 bool Strategy_FindOurPosition(ENUM_POSITION_TYPE &position_type)
@@ -180,14 +220,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    ENUM_POSITION_TYPE position_type;
    const bool has_position = Strategy_FindOurPosition(position_type);
 
-   const int fast_now = Strategy_SuperTrendDirection(strategy_fast_timeframe,
-                                                     strategy_atr_period,
-                                                     strategy_atr_multiplier,
-                                                     1);
-   const int fast_prev = Strategy_SuperTrendDirection(strategy_fast_timeframe,
-                                                      strategy_atr_period,
-                                                      strategy_atr_multiplier,
-                                                      2);
+   int fast_now = 0;
+   int fast_prev = 0;
+   if(!Strategy_SuperTrendDirections(strategy_fast_timeframe,
+                                     strategy_atr_period,
+                                     strategy_atr_multiplier,
+                                     1, 2, fast_now, fast_prev))
+      return false;
    const int slow_now = Strategy_SuperTrendDirection(strategy_slow_timeframe,
                                                      strategy_atr_period,
                                                      strategy_atr_multiplier,
