@@ -1,6 +1,11 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_11233 ft-tr-ema50"
+// rework v2 2026-06-16 — entry RSI ceiling 50->70: in a bull regime (close>EMA200,
+// EMA50>EMA200) printing a bullish bounce candle above EMA50, RSI(16) sits >50, so
+// the rsi_entry_high=50 cap contradicted the regime/bounce gates and produced ~0
+// trades. 30-70 band matches sibling ft-tr family (11232=30-65, 11235=40-75) and the
+// momentum-confirming intent of the TrendRider source bounce.
 
 #include <QM/QM_Common.mqh>
 
@@ -86,7 +91,7 @@ input int             strategy_macd_slow        = 26;
 input int             strategy_macd_signal      = 9;
 input int             strategy_volume_ema       = 20;
 input double          strategy_rsi_entry_low    = 30.0;
-input double          strategy_rsi_entry_high   = 50.0;
+input double          strategy_rsi_entry_high   = 70.0;
 input double          strategy_rsi_exit_high    = 78.0;
 input double          strategy_adx_threshold    = 20.0;
 input double          strategy_volume_ratio_min = 1.0;
