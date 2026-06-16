@@ -318,8 +318,15 @@ int Strategy_PlanBasket(const int dir, const double entry1)
       g_plan_price[k] = (dir > 0) ? (entry1 - cum) : (entry1 + cum);
      }
 
-   // Shared catastrophic stop S beyond level N.
-   const double stop_dist = stop_span_atr * atr_long;
+   // Shared catastrophic stop S — MUST sit BEYOND the deepest planned level
+   // p_N (= entry1 -/+ (N-1)*step_dist). When step_dist is floored to
+   // grid_min_pips, the grid span can exceed stop_span_atr*ATR(long), which
+   // would put S inside the ladder so deep levels never fill (price hits S
+   // first) and the 1% solve mis-attributes budget to unreachable levels.
+   // Widen S to max(configured span, grid span + 1*ATR(long) buffer) so the
+   // geometry and the bound stay consistent and all N levels are reachable.
+   const double grid_span = (double)(N - 1) * step_dist;
+   const double stop_dist = MathMax(stop_span_atr * atr_long, grid_span + atr_long);
    g_shared_stop = (dir > 0) ? (entry1 - stop_dist) : (entry1 + stop_dist);
    if(g_shared_stop <= 0.0)
       return 0;
