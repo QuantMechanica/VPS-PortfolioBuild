@@ -1,6 +1,13 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10420 Elite Trader EMA 2/5 Crossover"
+// rework v2 2026-06-16: stateful QM_IsNewBar() was consumed twice per tick
+// (Strategy_ExitSignal + OnTick entry gate) against the same _Symbol|_Period
+// key. Whichever fired first ate the single new-bar flag, starving the entry
+// path whenever a position existed and suppressing opposite-cross exits ->
+// 1 long / 0 shorts over 5937 M30 bars (Q02 MIN_TRADES_NOT_MET). Fix:
+// evaluate QM_IsNewBar() exactly once per tick in OnTick and pass the flag
+// down to Strategy_ExitSignal. Strategy logic (2/5 EMA cross) unchanged.
 
 #include <QM/QM_Common.mqh>
 
@@ -228,7 +235,11 @@ void Strategy_ManageOpenPosition()
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
-bool Strategy_ExitSignal()
+// rework v2 2026-06-16: takes the per-tick new-bar decision from OnTick so the
+// shared stateful QM_IsNewBar() flag is consumed exactly once per tick (see
+// header). The index-overnight flat still runs every tick (it must not wait
+// for a new bar); the opposite-cross exit only evaluates on a closed bar.
+bool Strategy_ExitSignal(const bool is_new_bar)
   {
    // Trade Close: opposite EMA cross; index CFDs are flattened before overnight.
    const int magic = QM_FrameworkMagic();
@@ -248,7 +259,7 @@ bool Strategy_ExitSignal()
             return true;
         }
 
-      if(!QM_IsNewBar())
+      if(!is_new_bar)
          continue;
 
       const int signal = Strategy_EMACrossSignal();
@@ -332,11 +343,17 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // rework v2 2026-06-16: evaluate the stateful new-bar flag ONCE per tick and
+   // share it with both the exit cross-check and the entry gate below. Calling
+   // QM_IsNewBar() separately in each path consumed the single per-bar flag
+   // twice, starving entries/opposite-cross exits.
+   const bool is_new_bar = QM_IsNewBar();
+
    // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
    // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
-   if(Strategy_ExitSignal())
+   if(Strategy_ExitSignal(is_new_bar))
      {
       const int magic = QM_FrameworkMagic();
       for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -353,7 +370,7 @@ void OnTick()
    // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
    // per-tick recompute mistakes — EntrySignal sees one new closed bar per
    // call, not every incoming tick.
-   if(!QM_IsNewBar())
+   if(!is_new_bar)
       return;
 
    // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled

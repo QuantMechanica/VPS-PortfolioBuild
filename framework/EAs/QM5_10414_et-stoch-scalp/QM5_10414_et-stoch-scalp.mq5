@@ -1,6 +1,11 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10414 Elite Trader Stochastic Scalp"
+// rework v2 2026-06-16: stop-entry guard rejected every momentum-snap signal
+// (buy stop at trigger-bar high is <= ask after a strong up-bar, sell stop at
+// trigger-bar low is >= bid after a down-bar) -> 0 trades at Q02. Clamp the
+// stop trigger just beyond current market instead of rejecting, preserving the
+// card's "buy/sell stop at signal-bar extreme" breakout-continuation intent.
 
 #include <QM/QM_Common.mqh>
 
@@ -315,9 +320,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(stoch_prior < strategy_oversold_level && stoch_signal > strategy_midline_level)
      {
-      const double entry = QM_TM_NormalizePrice(_Symbol, high1);
+      // Buy stop at signal-bar high; if the breakout already cleared the high
+      // (momentum-snap bar closes at/near its high), clamp to just above market
+      // so the stop entry still fires instead of rejecting the whole signal.
+      const double trigger = MathMax(high1, ask + tick);
+      const double entry = QM_TM_NormalizePrice(_Symbol, trigger);
       const double sl = QM_TM_NormalizePrice(_Symbol, low1 - buffer);
-      if(entry <= ask + tick || sl <= 0.0 || sl >= entry)
+      if(entry <= 0.0 || sl <= 0.0 || sl >= entry)
          return false;
       if((entry - sl) > atr * strategy_max_stop_atr_mult)
          return false;
@@ -332,9 +341,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(stoch_prior > strategy_overbought_level && stoch_signal < strategy_midline_level)
      {
-      const double entry = QM_TM_NormalizePrice(_Symbol, low1);
+      // Sell stop at signal-bar low; if the break already cleared the low,
+      // clamp to just below market so the stop entry still fires.
+      const double trigger = MathMin(low1, bid - tick);
+      const double entry = QM_TM_NormalizePrice(_Symbol, trigger);
       const double sl = QM_TM_NormalizePrice(_Symbol, high1 + buffer);
-      if(entry >= bid - tick || sl <= entry)
+      if(entry <= 0.0 || sl <= entry)
          return false;
       if((sl - entry) > atr * strategy_max_stop_atr_mult)
          return false;
