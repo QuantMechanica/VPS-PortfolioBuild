@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_12117 demark-td-sequential-h4"
+// rework v2 2026-06-16 — enter on completed TD-9 setup instead of rare TD-13 countdown; setup-streak break no longer wipes signal -> fixes 0-trade MIN_TRADES fail
 
 #include <QM/QM_Common.mqh>
 
@@ -137,50 +138,38 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(g_td.setup_count < 9) return false; // Setup not complete
 
-   // Setup complete - begin Countdown
-   if(g_td.countdown_count == 0)
+   // rework v2 2026-06-16: A completed TD-9 setup IS the entry signal (the
+   // standard DeMark trade, several times/month on H4). The previous code
+   // required a full TD-13 countdown, but the setup state-machine resets the
+   // whole struct (incl. countdown) the first bar the setup streak broke, so
+   // 13 was effectively unreachable -> 0 trades. We fire on the 9 directly.
+   const int setup_dir = g_td.setup_direction;
+
+   // TDST level over the 9-bar setup window (extreme against the setup).
+   double tdst = 0.0;
+   if(setup_dir == 1)
    {
-      // TDST level
-      if(g_td.setup_direction == 1)
+      tdst = DBL_MAX;
+      for(int b = 0; b < 9; b++)
       {
-         g_td.tdst_level = DBL_MAX;
-         for(int b = 0; b < 9; b++)
-         {
-            double l = iLow(_Symbol, PERIOD_H4, b + 1);
-            if(l < g_td.tdst_level) g_td.tdst_level = l;
-         }
+         double l = iLow(_Symbol, PERIOD_H4, b + 1);
+         if(l < tdst) tdst = l;
       }
-      else
+   }
+   else
+   {
+      tdst = 0.0;
+      for(int b = 0; b < 9; b++)
       {
-         g_td.tdst_level = 0;
-         for(int b = 0; b < 9; b++)
-         {
-            double h = iHigh(_Symbol, PERIOD_H4, b + 1);
-            if(h > g_td.tdst_level) g_td.tdst_level = h;
-         }
+         double h = iHigh(_Symbol, PERIOD_H4, b + 1);
+         if(h > tdst) tdst = h;
       }
-      g_td.countdown_direction = g_td.setup_direction;
-      g_td.last_setup_start = 0;
    }
+   g_td.tdst_level = tdst;
 
-   // Countdown bar detection
-   bool countdown_bar = false;
-   if(g_td.countdown_direction == 1)
-   {
-      countdown_bar = (close1 <= iLow(_Symbol, PERIOD_H4, 3)); // close <= low[2]
-   }
-   else if(g_td.countdown_direction == -1)
-   {
-      countdown_bar = (close1 >= iHigh(_Symbol, PERIOD_H4, 3)); // close >= high[2]
-   }
-
-   if(countdown_bar && g_td.countdown_count < 13) g_td.countdown_count++;
-
-   if(g_td.countdown_count < 13) return false;
-
-   // Countdown 13 complete - check confirmation
-   const bool bull_conf = (close0 > iOpen(_Symbol, PERIOD_H4, 0)); // current bar bullish
-   const bool bear_conf = (close0 < iOpen(_Symbol, PERIOD_H4, 0)); // current bar bearish
+   // Confirmation on the just-closed bar (mean-reversion snap on bar 1).
+   const bool bull_conf = (close1 > iOpen(_Symbol, PERIOD_H4, 1)); // closed bar bullish
+   const bool bear_conf = (close1 < iOpen(_Symbol, PERIOD_H4, 1)); // closed bar bearish
 
    // Trend filter: close > SMA(50) - 1.5*ATR for buy
    const double sma50 = QM_SMA(_Symbol, PERIOD_H4, sma_trend_period, 1);
@@ -188,9 +177,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(sma50 <= 0 || atr14 <= 0) { ResetTD(); return false; }
 
    bool long_signal = false, short_signal = false;
-   if(g_td.countdown_direction == 1 && bull_conf && close1 > sma50 - trend_filter_atr * atr14)
+   if(setup_dir == 1 && bull_conf && close1 > sma50 - trend_filter_atr * atr14)
       long_signal = true;
-   else if(g_td.countdown_direction == -1 && bear_conf && close1 < sma50 + trend_filter_atr * atr14)
+   else if(setup_dir == -1 && bear_conf && close1 < sma50 + trend_filter_atr * atr14)
       short_signal = true;
    else
    { ResetTD(); return false; }
@@ -214,7 +203,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // TP1 and TP2 are handled via fixed TP
    const double tp = long_signal ? entry + sl_dist * tp1_atr_mult : entry - sl_dist * tp1_atr_mult;
 
-   g_td.entry_consumed = true;
+   // rework v2 2026-06-16: clear the whole TD struct after firing so the next
+   // setup can re-arm. The old code latched entry_consumed=true forever (never
+   // reset), which would have blocked every trade after the first.
+   ResetTD();
 
    req.type = long_signal ? QM_BUY : QM_SELL;
    req.price = 0.0;

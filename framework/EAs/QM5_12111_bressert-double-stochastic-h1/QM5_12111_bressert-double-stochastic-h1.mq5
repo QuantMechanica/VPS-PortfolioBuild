@@ -1,6 +1,10 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_12111 bressert-double-stochastic-h1 v2"
+// rework v2 2026-06-16 — DSS %D was a 1-bar lag of %K, collapsing the K/D cross
+// into a rare same-bar local-minimum test (anticorrelated with the EMA-200 trend
+// filter) -> ~0 trades. %D is now a real raw_stoch_d-SMA signal line of %K at the
+// same time index, restoring a genuine Bressert K/D cross. Logic otherwise faithful.
 
 #include <QM/QM_Common.mqh>
 
@@ -48,7 +52,9 @@ void ComputeDSS(double &dss_k, double &dss_d, const int shift)
    if(handle1 == INVALID_HANDLE) { dss_k = 50; dss_d = 50; return; }
    double raw_k_buf[];
    ArraySetAsSeries(raw_k_buf, true);
-   const int raw_count = dss_period * 2 + dss_slowing + 2;
+   // need enough raw %K history to also compute a raw_stoch_d-period SMA of the
+   // smoothed DSS %K (the genuine signal line), not just %K itself.
+   const int raw_count = dss_period * 2 + dss_slowing + raw_stoch_d + 2;
    const int ck = CopyBuffer(handle1, 0, shift + 1, raw_count, raw_k_buf);
    IndicatorRelease(handle1);
    if(ck < raw_count) { dss_k = 50; dss_d = 50; return; }
@@ -80,8 +86,15 @@ void ComputeDSS(double &dss_k, double &dss_d, const int shift)
       smoothed[i] = (cnt > 0) ? sum / cnt : 50.0;
    }
 
+   // %K = current smoothed DSS; %D = raw_stoch_d-period SMA of %K at the SAME
+   // time index (a real signal line), so %K crossing %D is a genuine cross
+   // rather than "current bar vs previous bar of the same series".
    dss_k = smoothed[0];
-   dss_d = (dss_len >= 2) ? smoothed[1] : smoothed[0];
+   double dsum = 0.0;
+   int dcnt = 0;
+   for(int j = 0; j < raw_stoch_d && j < dss_len; j++)
+   { dsum += smoothed[j]; dcnt++; }
+   dss_d = (dcnt > 0) ? dsum / dcnt : smoothed[0];
 }
 
 double EMAValue(const int period, const int shift)

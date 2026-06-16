@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_12115 classic-pivot-points-fade-break"
+// rework v2 2026-06-16 — fix permanent no-trade: end-of-day guard counted not-yet-existing next-day bars (Bars() stop_time in the future clamps to current bar => total_bars_today==bars_today => filter rejected every bar; same flaw closed every position 1 bar after entry). Replaced with broker-hour-of-day guards.
 
 #include <QM/QM_Common.mqh>
 
@@ -132,11 +133,14 @@ bool Strategy_NoTradeFilter()
       const int spread = (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
       if(spread > max_spread_points) return true;
    }
-   // First/last bars of broker day
-   const int bars_today = Bars(_Symbol, PERIOD_H1, iTime(_Symbol, PERIOD_D1, 0), TimeCurrent());
-   const int total_bars_today = Bars(_Symbol, PERIOD_H1, iTime(_Symbol, PERIOD_D1, 0), iTime(_Symbol, PERIOD_D1, 0) + PeriodSeconds(PERIOD_D1));
-   if(bars_today < no_trade_start_bars + 1) return true;
-   if(bars_today > total_bars_today - no_trade_end_bars) return true;
+   // First/last bars of broker day, gated on the broker hour of the current H1
+   // bar (the closed bar we act on). The previous Bars(start, next_day_start)
+   // count relied on next-day bars that do not exist yet on the forming day, so
+   // it clamped to the current count and rejected every bar.
+   const datetime day_start = iTime(_Symbol, PERIOD_D1, 0);
+   const int hours_into_day = (int)((iTime(_Symbol, PERIOD_H1, 1) - day_start) / 3600);
+   if(hours_into_day < no_trade_start_bars) return true;            // first N hours
+   if(hours_into_day >= 24 - no_trade_end_bars) return true;        // last N hours
    return false;
 
   }
@@ -226,14 +230,13 @@ bool Strategy_ExitSignal()
    if(!HasPosition()) return false;
    const int magic = QM_FrameworkMagic();
 
-   // End-of-day close
+   // End-of-day close, gated on the broker hour of the current H1 bar. The
+   // previous Bars(now, next_day_start) count relied on next-day bars that do
+   // not exist yet on the forming day, so it read ~1 every bar and closed
+   // positions one bar after entry.
    const datetime d0 = iTime(_Symbol, PERIOD_D1, 0);
-   const datetime d1 = iTime(_Symbol, PERIOD_D1, 1);
-   const datetime broker_now = TimeCurrent();
-
-   // Close 1 bar before day rollover
-   const int bars_left = Bars(_Symbol, PERIOD_H1, broker_now, d0 + PeriodSeconds(PERIOD_D1));
-   if(bars_left <= 1)
+   const int hours_into_day = (int)((iTime(_Symbol, PERIOD_H1, 1) - d0) / 3600);
+   if(hours_into_day >= 23)   // final H1 bar of the broker day
    {
       CloseAll(QM_EXIT_STRATEGY);
       return false;

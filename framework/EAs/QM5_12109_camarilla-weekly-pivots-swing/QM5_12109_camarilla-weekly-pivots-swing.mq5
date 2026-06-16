@@ -1,6 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_12109 camarilla-weekly-pivots-swing v2"
+// rework v2 2026-06-16 — flat max_spread_points=30 hard-blocked all index/metal symbols (NDX/GDAXI/WS30/XAUUSD spreads >> 30 pts) => ~0 trades; gate now scales spread vs price (broker-agnostic)
 
 #include <QM/QM_Common.mqh>
 
@@ -33,7 +34,8 @@ input group "Strategy"
 input int    cam_atr_period           = 14;
 input double atr_sl_mult          = 1.5;
 input double rr_target            = 2.0;
-input int    max_spread_points    = 30;
+input int    max_spread_points    = 30;       // legacy flat cap (FX-tuned); index/metal use frac below
+input double max_spread_frac      = 0.0010;    // spread cap as fraction of price (0.10%) — scales across all symbols
 input int    no_trade_first_bars  = 2;
 
 struct CamPivots
@@ -109,10 +111,20 @@ bool Strategy_NoTradeFilter()
       if(bars_since_week_start < no_trade_first_bars)
          return true;
    }
-   if(max_spread_points > 0)
+   // Spread cap scaled by price so it works across FX, indices and metals.
+   // The flat point cap (max_spread_points) is FX-tuned; a fixed 30-pt cap
+   // permanently blocks index/metal symbols whose spreads run far higher in
+   // points. Use the looser of the two thresholds so FX still respects the
+   // tight cap while index/metal are gated on a relative basis.
+   if(max_spread_points > 0 || max_spread_frac > 0.0)
    {
-      const int spread = (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread > max_spread_points) return true;
+      const double point        = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      const double spread_price  = (double)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD) * point;
+      const double price         = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double cap_flat      = (max_spread_points > 0) ? max_spread_points * point : 0.0;
+      const double cap_frac      = (max_spread_frac > 0.0 && price > 0.0) ? price * max_spread_frac : 0.0;
+      const double cap           = MathMax(cap_flat, cap_frac);
+      if(cap > 0.0 && spread_price > cap) return true;
    }
    return false;
   }

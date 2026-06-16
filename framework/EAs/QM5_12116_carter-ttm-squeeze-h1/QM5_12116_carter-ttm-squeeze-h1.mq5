@@ -1,6 +1,9 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_12116 carter-ttm-squeeze-h1"
+// rework v2 2026-06-16 — raise trade freq toward Q02 floor: squeeze_min_bars 6->3 and demote
+// the non-TTM same-bar EMA200 trend gate to optional (momentum already sets direction); the
+// 6-bar squeeze + same-bar release&momentum&EMA200 AND yielded only ~3-8 trades/sym-yr (sub-floor).
 
 #include <QM/QM_Common.mqh>
 
@@ -33,9 +36,10 @@ input int    bb_period             = 20;
 input double bb_dev                = 2.0;
 input int    kc_period             = 20;
 input double kc_atr_mult           = 1.5;
-input int    squeeze_min_bars      = 6;
+input int    squeeze_min_bars      = 3;
 input int    mom_lookback          = 20;
 input int    ema_trend_period      = 200;
+input bool   require_ema_trend     = false;
 input double atr_sl_mult           = 1.0;
 input double rr_target             = 2.0;
 input int    max_spread_points     = 25;
@@ -171,9 +175,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                   if(close1 <= 0 || ema200 <= 0) { g_squeeze_counter = 0; g_squeeze_active = false; return false; }
 
                   bool long_signal = false, short_signal = false;
-                  if(released_up && mom > 0 && close1 > ema200)
+                  const bool trend_up_ok  = (!require_ema_trend) || (close1 > ema200);
+                  const bool trend_dn_ok  = (!require_ema_trend) || (close1 < ema200);
+                  if(released_up && mom > 0 && trend_up_ok)
                      long_signal = true;
-                  else if(released_dn && mom < 0 && close1 < ema200)
+                  else if(released_dn && mom < 0 && trend_dn_ok)
                      short_signal = true;
 
                   if(long_signal || short_signal)
