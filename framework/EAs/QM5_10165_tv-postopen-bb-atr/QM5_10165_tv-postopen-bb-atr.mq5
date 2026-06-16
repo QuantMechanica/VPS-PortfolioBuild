@@ -1,8 +1,26 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10165 TradingView post-open BB ATR breakout"
+// rework v2 2026-06-16: session windows (DE 08:00-12:00 / US 15:30-19:00) are
+// CET/Frankfurt local exchange time per the card, but were compared against raw
+// broker time (GMT+2/+3). Broker runs 1h ahead of CET year-round, so every
+// session window was shifted +1h and clipped, suppressing entries to a near-zero
+// trade count (Q02 MIN_TRADES_NOT_MET). Fix: convert broker->CET via the
+// canonical QM_DSTAware helpers before the hhmm comparison, mirroring QM5_10210.
 
 #include <QM/QM_Common.mqh>
+
+// Broker time -> CET/CEST local (Frankfurt) hhmm. Broker is UTC+2 (UTC+3 in US
+// DST); CET is UTC+1 (CEST UTC+2). Uses the same US-DST proxy the broker offset
+// itself uses, so the broker->CET delta is a clean -1h all year.
+int QM5_10165_LocalHHMM(const datetime broker_time)
+  {
+   const datetime utc = QM_BrokerToUTC(broker_time);
+   const datetime cet = utc + (QM_IsUSDSTUTC(utc) ? 2 * 3600 : 1 * 3600);
+   MqlDateTime ldt;
+   TimeToStruct(cet, ldt);
+   return ldt.hour * 100 + ldt.min;
+  }
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -114,9 +132,7 @@ bool Strategy_NoTradeFilter()
          return false;
      }
 
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   const int hhmm = dt.hour * 100 + dt.min;
+   const int hhmm = QM5_10165_LocalHHMM(TimeCurrent());
    const bool in_de_window =
       (strategy_de_open_start_hhmm <= strategy_de_open_end_hhmm)
       ? (hhmm >= strategy_de_open_start_hhmm && hhmm < strategy_de_open_end_hhmm)
@@ -158,9 +174,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(bar_time <= 0)
       return false;
 
-   MqlDateTime dt;
-   TimeToStruct(bar_time, dt);
-   const int hhmm = dt.hour * 100 + dt.min;
+   const int hhmm = QM5_10165_LocalHHMM(bar_time);
    const bool in_de_window =
       (strategy_de_open_start_hhmm <= strategy_de_open_end_hhmm)
       ? (hhmm >= strategy_de_open_start_hhmm && hhmm < strategy_de_open_end_hhmm)
@@ -296,9 +310,7 @@ bool Strategy_ExitSignal()
    if(!has_position)
       return false;
 
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   const int hhmm = dt.hour * 100 + dt.min;
+   const int hhmm = QM5_10165_LocalHHMM(TimeCurrent());
    const bool in_de_window =
       (strategy_de_open_start_hhmm <= strategy_de_open_end_hhmm)
       ? (hhmm >= strategy_de_open_start_hhmm && hhmm < strategy_de_open_end_hhmm)
