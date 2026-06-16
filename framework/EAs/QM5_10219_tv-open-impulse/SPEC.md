@@ -57,7 +57,7 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 70 |
+| Trades / year / symbol | 35 |
 | Typical hold time | Intraday bracket trade; exits when 3R target or candle-extreme stop is hit. |
 | Expected drawdown profile | Fixed $1,000 risk per baseline trade; one position per magic number. |
 | Regime preference | Volatility-expansion / momentum-breakout at the market open. |
