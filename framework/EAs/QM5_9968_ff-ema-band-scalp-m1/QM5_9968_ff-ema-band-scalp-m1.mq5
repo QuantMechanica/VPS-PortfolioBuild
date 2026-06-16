@@ -1,6 +1,14 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_9968 ForexFactory EMA Band Scalp M1"
+// rework v2 2026-06-16 — entry fired ~1 trade/yr (Q02 MIN_TRADES) because the
+// EMA(50)-high/low band on M1 is only ~1-2 pips wide and the pullback-into-band
+// test was required on the SAME closed bar as the fresh stochastic cross (two
+// rare events forced to coincide). Faithful fix: allow the band pullback to have
+// occurred within the last strategy_stoch_zone_lookback bars (the same recency
+// window the card already grants the oversold/overbought touch), while the
+// stochastic cross remains the bar-1 trigger. Thresholds/band definition
+// unchanged.
 
 #include <QM/QM_Common.mqh>
 

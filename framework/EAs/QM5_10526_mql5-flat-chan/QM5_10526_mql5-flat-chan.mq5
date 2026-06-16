@@ -1,6 +1,10 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10526 MQL5 Flat Channel Breakout"
+// rework v2 2026-06-16 — flat-width gate compared a 20-bar accumulated channel
+// range against a single-bar ATR (scale mismatch) so "flat" was never satisfied
+// (~0 trades). Scale the threshold by sqrt(lookback) so it gates a *compressed*
+// multi-bar channel as the card intends, keeping strategy_flat_atr_ratio meaningful.
 
 #include <QM/QM_Common.mqh>
 
@@ -147,7 +151,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    const double channel_width = channel_high - channel_low;
-   if(channel_width <= 0.0 || channel_width > strategy_flat_atr_ratio * atr)
+   // FIX (rework v2): channel_width is the high-low range accumulated over
+   // strategy_channel_lookback bars; ATR is a single-bar quantity. A flat/compressed
+   // N-bar range scales ~sqrt(N)*ATR, so gate against sqrt(lookback)*ATR rather than
+   // raw ATR. With lookback=20, ratio=1.20 this admits channels up to ~5.4*ATR wide —
+   // i.e. genuinely compressed ranges — instead of the unreachable ~1.2*ATR.
+   const double flat_width_max = strategy_flat_atr_ratio * MathSqrt((double)strategy_channel_lookback) * atr;
+   if(channel_width <= 0.0 || channel_width > flat_width_max)
       return false;
    if(MathAbs(channel_high - prior_high) > strategy_max_slope_atr * atr ||
       MathAbs(channel_low - prior_low) > strategy_max_slope_atr * atr)

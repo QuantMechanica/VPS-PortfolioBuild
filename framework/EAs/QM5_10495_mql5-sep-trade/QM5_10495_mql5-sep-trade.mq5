@@ -1,6 +1,9 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10495 MQL5 Separate Trade MA Cross Volatility Filter"
+// rework v2 2026-06-16 — spread filter blocked every entry: SYMBOL_SPREAD<=0 (no
+// tester spread info) returned true (no-trade) -> 0 trades; now allows when spread
+// info is absent, matching sibling EAs.
 
 #include <QM/QM_Common.mqh>
 
@@ -69,8 +72,12 @@ bool Strategy_NoTradeFilter()
       return false;
 
    const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   // spread_points <= 0 means the tester/feed has no spread info this tick
+   // (very common for .DWX symbols at bar-close eval) -> treat as "no info,
+   // allow trade", matching every sibling EA. The old "<=0 => return true"
+   // blocked EVERY entry in the tester and produced 0 trades.
    if(spread_points <= 0)
-      return true;
+      return false;
 
    return (spread_points > strategy_max_spread_points);
   }

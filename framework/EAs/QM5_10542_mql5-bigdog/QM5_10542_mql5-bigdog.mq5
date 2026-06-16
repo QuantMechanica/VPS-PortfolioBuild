@@ -1,6 +1,9 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10542 MQL5 BIG DOG Session Stop Breakout"
+// rework v2 2026-06-16 — range/TP/buffer thresholds were raw SYMBOL_POINT but the
+// source "50/30 points" are 4-digit-era pips; on 5-digit DWX FX the 14-16 range is
+// ~200-600 points so range>50 skipped every day => ~0 trades. Now pip-denominated.
 
 #include <QM/QM_Common.mqh>
 
@@ -254,12 +257,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!Strategy_ComputeSessionRange(range_high, range_low))
       return false;
 
-   const double range_points = (range_high - range_low) / point;
-   if(range_points <= 0.0 || range_points > (double)MathMax(1, strategy_max_range_points))
+   // Source thresholds are pip-denominated (4-digit-era "points"). Convert via the
+   // framework pip helper so 5-digit FX (pip_factor 10) and gold/index (pip_factor 1)
+   // are both handled correctly. Raw SYMBOL_POINT made 50 = 5 pips on EURUSD => the
+   // 2-hour afternoon range always exceeded it and every day was skipped.
+   const double max_range_dist = QM_StopRulesPipsToPriceDistance(_Symbol, MathMax(1, strategy_max_range_points));
+   const double range_dist = range_high - range_low;
+   if(range_dist <= 0.0 || max_range_dist <= 0.0 || range_dist > max_range_dist)
       return false;
 
-   const double buffer = MathMax(0, strategy_breakout_buffer_points) * point;
-   const double tp_dist = MathMax(1, strategy_take_profit_points) * point;
+   const double buffer = (strategy_breakout_buffer_points > 0)
+                         ? QM_StopRulesPipsToPriceDistance(_Symbol, strategy_breakout_buffer_points) : 0.0;
+   const double tp_dist = QM_StopRulesPipsToPriceDistance(_Symbol, MathMax(1, strategy_take_profit_points));
    const double buy_entry = range_high + buffer;
    const double sell_entry = range_low - buffer;
    if(buy_entry <= ask + point || sell_entry >= bid - point)
