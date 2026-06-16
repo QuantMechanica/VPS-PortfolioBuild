@@ -1,6 +1,10 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10311 High-Frequency Momentum Buffer"
+// rework v2 2026-06-16: mom_z normalized by ATR-as-return (atr/close) instead of
+// raw price-unit ATR. mom is a dimensionless return; dividing by absolute ATR made
+// the +-0.75 z-threshold scale with price level, requiring physically impossible
+// returns (hundreds of %) on high-priced symbols (XAUUSD/GDAXI/NDX) -> 0 trades.
 
 #include <QM/QM_Common.mqh>
 

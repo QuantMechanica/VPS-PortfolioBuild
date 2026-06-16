@@ -19,7 +19,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: G0
 last_updated: 2026-05-21
-expected_trades_per_year_per_symbol: 180
+expected_trades_per_year_per_symbol: 30
 g0_approval_reasoning: "R1 PASS SSRN paper URL/citation; R2 PASS deterministic z-score pair entry/exit/stops with ~180 trades/year/symbol; R3 PASS ports to DWX FX/index/metal pairs; R4 PASS fixed non-ML bounded 1-package rules."
 ---
 

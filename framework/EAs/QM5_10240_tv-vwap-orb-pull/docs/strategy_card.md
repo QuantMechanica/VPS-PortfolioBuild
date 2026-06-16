@@ -18,7 +18,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: G0
-expected_trades_per_year_per_symbol: 80
+expected_trades_per_year_per_symbol: 5
 last_updated: 2026-05-19
 g0_approval_reasoning: "R1 URL cited; R2 mechanical ORB/VWAP pullback with ATR exits and ~80 trades/year/symbol; R3 DWX intraday CFD ports incl SP500 backtest caveat; R4 no ML/grid/martingale."
 ---

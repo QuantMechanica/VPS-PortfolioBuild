@@ -64,7 +64,7 @@ The EA evaluates fixed candidate pairs on M15 bars using a 90-trading-day format
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `120` |
+| Trades / year / symbol | `12` |
 | Typical hold time | Up to 48 M15 bars, about 12 trading hours. |
 | Expected drawdown profile | Bounded by fixed-risk package stops and residual stop exits. |
 | Regime preference | Mean-revert cointegration residual regime with stable pair relationship. |

@@ -1,0 +1,18 @@
+{
+  "logical_symbol": "QM5_10308_HFT_PAIRS_Z_M5",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "M5",
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "SP500.DWX",
+    "NDX.DWX",
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Pairs z-score reversion. EA runs one instance per host symbol; each instance also reads its correlated partner leg (Strategy_PeerSymbol mapping: EURUSD<->GBPUSD, AUDUSD<->NZDUSD, SP500<->NDX, XAUUSD<->XAGUSD). Partner read is bound at call site via SymbolSelect + CopyClose(peer, M5, ...) for the spread/z computation. Both legs of each traded pair must be warmed/synced for the instance to compute a spread, hence both members of every pair are declared in basket_symbols to avoid SYMBOL_SCOPE_LEAK."
+  ]
+}
