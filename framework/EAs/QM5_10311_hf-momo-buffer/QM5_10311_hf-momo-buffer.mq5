@@ -310,7 +310,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double mom = Strategy_MomentumReturn(1);
-   const double mom_z = mom / atr;
+   // mom is a dimensionless return; normalize by ATR expressed as a return
+   // (atr/close) so the z-threshold is price-level independent across symbols.
+   const double atr_ret = atr / close1;
+   if(atr_ret <= 0.0)
+      return false;
+   const double mom_z = mom / atr_ret;
    const int direction = Strategy_Sign(mom_z);
    if(direction == 0)
       return false;

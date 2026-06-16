@@ -1,6 +1,11 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10323 Derivative Payoff Bias Expiry Drift"
+// rework v2 2026-06-16: entry HH:MM gate keyed off live TimeCurrent() instead of
+// the M30 bar-open time, so the exact-equality (hhmm==2200) missed any month whose
+// 22:00 bar's first tick was stamped off the :00 boundary (gaps/sparse index ticks)
+// -> fills fell well below the ~12/yr design -> MIN_TRADES_NOT_MET. Key the entry
+// calendar+time gate off iTime(...,0) (bar open), matching sibling QM5_10324.
 
 #include <QM/QM_Common.mqh>
 
@@ -298,7 +303,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Strategy_HasOpenPosition(ptype, open_time, open_price))
       return false;
 
-   const datetime broker_now = TimeCurrent();
+   // rework v2 2026-06-16: gate off the closed M30 bar-open time (deterministic
+   // :00/:30 boundary), not the live tick time, so the exact HH:MM equality is
+   // reliably hit once per qualifying calendar day.
+   const datetime broker_now = iTime(_Symbol, strategy_timeframe, 0);
+   if(broker_now <= 0)
+      return false;
    const int hhmm = Strategy_Hhmm(broker_now);
 
    if(Strategy_IsThursdayBeforeThirdFriday(broker_now) &&

@@ -19,7 +19,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: G0
 last_updated: 2026-05-21
-expected_trades_per_year_per_symbol: 120
+expected_trades_per_year_per_symbol: 12
 g0_approval_reasoning: "R1 PASS SSRN URL and named authors; R2 PASS deterministic cointegration residual entry/exit/stops with ~120 trades/year/symbol; R3 PASS ports to DWX FX/index/metal pairs; R4 PASS fixed non-ML bounded 1-package rules."
 ---
 
