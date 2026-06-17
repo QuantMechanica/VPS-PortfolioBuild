@@ -1,45 +1,39 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10475 MQL5 Puria Method MA MACD"
+#property description "QM5_10475 Puria Method MA+MACD (contrarian three-MA displacement)"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA SKELETON
+// QuantMechanica V5 EA — QM5_10475 mql5-puria
 // -----------------------------------------------------------------------------
-// Fill in only the five Strategy_* hooks below. Everything else is framework
-// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
-// risk + magic + news + Friday-close guard rails). The framework provides:
+// Source: MQL5 CodeBase "Puria method" (Sergey Deev / Vladimir Karputov),
+//   https://www.mql5.com/en/code/23250 — card QM5_10475_mql5-puria.
 //
-//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
-//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
-//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
-//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
-//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
-//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
-//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
-//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
-//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
+// Mechanic (card ## Mechanik):
+//   Three MAs: one fast, two slow. The Puria method is CONTRARIAN — it SELLS
+//   when the fast MA displaces ABOVE both slow MAs, and BUYS when the fast MA
+//   displaces BELOW both slow MAs, by more than a small point threshold. MACD
+//   acts as a CONFIRMING STATE (source-code direction), not a second trigger.
 //
-// DO NOT
-//   - Write per-EA IsNewBar() — use QM_IsNewBar()
-//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
-//     use the QM_* readers above. The framework pools handles and releases them
-//     on shutdown.
-//   - CopyRates over warmup windows on every tick. If you genuinely need raw
-//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
-//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
-//     to magic_numbers.csv, run:
-//         python framework/scripts/update_magic_resolver.py
-//     This is idempotent and preserves all rows.
+//   TRIGGER  : fresh fast-vs-slow1 MA cross on the last closed bar (ONE event).
+//   STATES   : fast beyond BOTH slow MAs by > displacement threshold, AND the
+//              MACD main line confirms the contrarian direction.
+//   Short : fast crosses ABOVE slow1, fast > both slows + thr, MACD main > 0.
+//   Long  : fast crosses BELOW slow1, fast < both slows - thr, MACD main < 0.
+//   Exit  : opposite full setup (Strategy_ExitSignal re-reads the closed bar).
+//   Stop  : SL = 1.5 x ATR(14).  TP = 2R.
+//   Sizing: framework (RISK_FIXED backtest / RISK_PERCENT live).
+//   One position per magic; closed-bar reads only.
+//
+// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific; all framework
+// wiring below the marker is untouched skeleton boilerplate.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10475;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
-// All other phases use 42 by default. Stress / noise dimensions read from
-// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -49,15 +43,10 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
 // FW1 2026-05-23 — Two-axis news filter per Vault Q09.
-//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
-//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
-// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
-// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
-// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -65,224 +54,151 @@ input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
-// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
-// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
-// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
-// deterministic per qm_rng_seed). MED slip/spread/commission live in the
-// tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_fast_ma_period    = 19;
-input int    strategy_slow_ma_1_period  = 69;
-input int    strategy_slow_ma_2_period  = 74;
-input double strategy_ma_gap_points     = 0.5;
-input int    strategy_macd_fast         = 17;
-input int    strategy_macd_slow         = 38;
-input int    strategy_macd_signal       = 1;
-input int    strategy_macd_trend_bars   = 8;
+// Three-MA Puria displacement. Fast + two slow MAs (LWMA family per source).
+input int    strategy_fast_period       = 6;     // fast MA period
+input int    strategy_slow1_period      = 17;    // first slow MA (cross reference)
+input int    strategy_slow2_period      = 28;    // second slow MA (displacement gate)
+input double strategy_disp_points       = 0.5;   // min fast-vs-slow displacement, in points
+// MACD confirming state (source-code direction). Standard 12/26/9.
+input int    strategy_macd_fast         = 12;
+input int    strategy_macd_slow         = 26;
+input int    strategy_macd_signal       = 9;
+// Stop / target
 input int    strategy_atr_period        = 14;
-input double strategy_atr_sl_mult       = 1.5;
-input double strategy_tp_r_multiple     = 2.0;
+input double strategy_atr_sl_mult       = 1.5;   // SL = 1.5 x ATR(14)
+input double strategy_tp_rr             = 2.0;   // TP = 2R
 
 // -----------------------------------------------------------------------------
-// Strategy hooks — implement these against the card mechanically.
+// Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
-bool Strategy_NoTradeFilter()
+// Evaluate the full Puria setup on closed bars. Returns +1 long, -1 short, 0 none.
+// `shift` = closed-bar index (1 = last closed bar). Pure read of pooled helpers.
+// The fast-vs-slow1 MA cross is the single fresh TRIGGER; the dual-slow
+// displacement and the MACD-main sign are confirming STATES.
+int Strategy_PuriaSetup(const int shift)
   {
-   // Card uses only the V5 default spread/news/Friday guards.
-   return false;
-  }
-
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
-bool Strategy_EntrySignal(QM_EntryRequest &req)
-  {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return false;
-     }
-
-   if(strategy_fast_ma_period <= 0 || strategy_slow_ma_1_period <= 0 ||
-      strategy_slow_ma_2_period <= 0 || strategy_macd_fast <= 0 ||
-      strategy_macd_slow <= strategy_macd_fast || strategy_macd_signal <= 0 ||
-      strategy_macd_trend_bars < 3 || strategy_atr_period <= 0 ||
-      strategy_atr_sl_mult <= 0.0 || strategy_tp_r_multiple <= 0.0)
-      return false;
-
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(point <= 0.0)
-      return false;
+      return 0;
+   const double thr = strategy_disp_points * point;
 
-   const double fast_ma = QM_EMA(_Symbol, _Period, strategy_fast_ma_period, 1, PRICE_OPEN);
-   const double slow_ma_1 = QM_SMMA(_Symbol, _Period, strategy_slow_ma_1_period, 1, PRICE_HIGH);
-   const double slow_ma_2 = QM_SMMA(_Symbol, _Period, strategy_slow_ma_2_period, 1, PRICE_HIGH);
-   if(fast_ma <= 0.0 || slow_ma_1 <= 0.0 || slow_ma_2 <= 0.0)
-      return false;
+   const double fast_now   = QM_LWMA(_Symbol, PERIOD_CURRENT, strategy_fast_period,  shift);
+   const double slow1_now  = QM_LWMA(_Symbol, PERIOD_CURRENT, strategy_slow1_period, shift);
+   const double slow2_now  = QM_LWMA(_Symbol, PERIOD_CURRENT, strategy_slow2_period, shift);
+   const double fast_prev  = QM_LWMA(_Symbol, PERIOD_CURRENT, strategy_fast_period,  shift + 1);
+   const double slow1_prev = QM_LWMA(_Symbol, PERIOD_CURRENT, strategy_slow1_period, shift + 1);
 
-   const double macd_1 = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
-                                      strategy_macd_slow, strategy_macd_signal,
-                                      1, PRICE_OPEN);
-   bool macd_rising = (macd_1 > 0.0);
-   bool macd_falling = (macd_1 < 0.0);
-   for(int shift = 1; shift < strategy_macd_trend_bars; ++shift)
-     {
-      const double newer = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
-                                        strategy_macd_slow, strategy_macd_signal,
-                                        shift, PRICE_OPEN);
-      const double older = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
-                                        strategy_macd_slow, strategy_macd_signal,
-                                        shift + 1, PRICE_OPEN);
-      if(older > newer)
-         macd_rising = false;
-      if(older < newer)
-         macd_falling = false;
-     }
+   if(fast_now <= 0.0 || slow1_now <= 0.0 || slow2_now <= 0.0 ||
+      fast_prev <= 0.0 || slow1_prev <= 0.0)
+      return 0;
 
-   const bool fast_above_slow = ((fast_ma - slow_ma_1) / point > strategy_ma_gap_points &&
-                                 (fast_ma - slow_ma_2) / point > strategy_ma_gap_points);
-   const bool fast_below_slow = ((slow_ma_1 - fast_ma) / point > strategy_ma_gap_points &&
-                                 (slow_ma_2 - fast_ma) / point > strategy_ma_gap_points);
+   // MACD confirming STATE (main-line sign) — source-code direction.
+   const double macd_main = QM_MACD_Main(_Symbol, PERIOD_CURRENT,
+                                         strategy_macd_fast, strategy_macd_slow,
+                                         strategy_macd_signal, shift);
 
-   double entry = 0.0;
-   if(fast_below_slow && macd_rising)
-     {
-      req.type = QM_BUY;
-      entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      req.sl = QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult);
-      if(entry <= 0.0 || req.sl <= 0.0 || req.sl >= entry)
-         return false;
-      req.tp = NormalizeDouble(entry + (entry - req.sl) * strategy_tp_r_multiple, _Digits);
-      req.reason = "QM5_10475_PURIA_LONG";
-      return (req.tp > entry);
-     }
+   // SHORT: fast just crossed ABOVE slow1 (trigger), fast above BOTH slows by
+   //        thr (displacement state), MACD main > 0 (state). Contrarian => SELL.
+   const bool cross_up = (fast_prev <= slow1_prev && fast_now > slow1_now);
+   if(cross_up &&
+      fast_now > slow1_now + thr &&
+      fast_now > slow2_now + thr &&
+      macd_main > 0.0)
+      return -1;
 
-   if(fast_above_slow && macd_falling)
-     {
-      req.type = QM_SELL;
-      entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      req.sl = QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult);
-      if(entry <= 0.0 || req.sl <= 0.0 || req.sl <= entry)
-         return false;
-      req.tp = NormalizeDouble(entry - (req.sl - entry) * strategy_tp_r_multiple, _Digits);
-      req.reason = "QM5_10475_PURIA_SHORT";
-      return (req.tp > 0.0 && req.tp < entry);
-     }
+   // LONG: fast just crossed BELOW slow1 (trigger), fast below BOTH slows by
+   //       thr (displacement state), MACD main < 0 (state). Contrarian => BUY.
+   const bool cross_dn = (fast_prev >= slow1_prev && fast_now < slow1_now);
+   if(cross_dn &&
+      fast_now < slow1_now - thr &&
+      fast_now < slow2_now - thr &&
+      macd_main < 0.0)
+      return +1;
 
+   return 0;
+  }
+
+// Cheap O(1) per-tick block check. Baseline uses only V5 default guards.
+bool Strategy_NoTradeFilter()
+  {
    return false;
   }
 
-// Called every tick when an open position exists for this EA's magic.
-// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
-void Strategy_ManageOpenPosition()
+// New entry on the last closed bar. Caller guarantees QM_IsNewBar()==true.
+bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // Baseline disables source partial-close and break-even management.
+   // One position per magic — do not stack.
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+      return false;
+
+   const int dir = Strategy_PuriaSetup(1);
+   if(dir == 0)
+      return false;
+
+   const QM_OrderType side = (dir > 0) ? QM_BUY : QM_SELL;
+
+   // Market entry; framework fills price at send. SL from ATR, TP from RR.
+   const double entry_ref = (dir > 0)
+                            ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                            : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(entry_ref <= 0.0)
+      return false;
+
+   const double sl = QM_StopATR(_Symbol, side, entry_ref, strategy_atr_period, strategy_atr_sl_mult);
+   if(sl <= 0.0)
+      return false;
+   const double tp = QM_TakeRR(_Symbol, side, entry_ref, sl, strategy_tp_rr);
+   if(tp <= 0.0)
+      return false;
+
+   req.type   = side;
+   req.price  = 0.0;   // market
+   req.sl     = sl;
+   req.tp     = tp;
+   req.reason = (dir > 0) ? "QM5_10475_PURIA_LONG" : "QM5_10475_PURIA_SHORT";
+   return true;
   }
 
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
+// No active trade management in the baseline (no breakeven / partial / trail).
+void Strategy_ManageOpenPosition()
+  {
+  }
+
+// Close on the opposite full setup. Re-read the closed-bar setup; if it now
+// resolves to the side opposite the open position, signal a manual close.
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
+   if(QM_TM_OpenPositionCount(magic) <= 0)
       return false;
 
-   ENUM_POSITION_TYPE pos_type = POSITION_TYPE_BUY;
-   bool has_position = false;
+   const int dir = Strategy_PuriaSetup(1);
+   if(dir == 0)
+      return false;
+
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
       if(!PositionSelectByTicket(ticket))
          continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-      pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      has_position = true;
-      break;
+      const long ptype = PositionGetInteger(POSITION_TYPE);
+      if(ptype == POSITION_TYPE_BUY && dir < 0)
+         return true;
+      if(ptype == POSITION_TYPE_SELL && dir > 0)
+         return true;
      }
-   if(!has_position)
-      return false;
-
-   if(strategy_fast_ma_period <= 0 || strategy_slow_ma_1_period <= 0 ||
-      strategy_slow_ma_2_period <= 0 || strategy_macd_fast <= 0 ||
-      strategy_macd_slow <= strategy_macd_fast || strategy_macd_signal <= 0 ||
-      strategy_macd_trend_bars < 3)
-      return false;
-
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0)
-      return false;
-
-   const double fast_ma = QM_EMA(_Symbol, _Period, strategy_fast_ma_period, 1, PRICE_OPEN);
-   const double slow_ma_1 = QM_SMMA(_Symbol, _Period, strategy_slow_ma_1_period, 1, PRICE_HIGH);
-   const double slow_ma_2 = QM_SMMA(_Symbol, _Period, strategy_slow_ma_2_period, 1, PRICE_HIGH);
-   const double macd_1 = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
-                                      strategy_macd_slow, strategy_macd_signal,
-                                      1, PRICE_OPEN);
-   if(fast_ma <= 0.0 || slow_ma_1 <= 0.0 || slow_ma_2 <= 0.0)
-      return false;
-
-   bool macd_rising = (macd_1 > 0.0);
-   bool macd_falling = (macd_1 < 0.0);
-   for(int shift = 1; shift < strategy_macd_trend_bars; ++shift)
-     {
-      const double newer = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
-                                        strategy_macd_slow, strategy_macd_signal,
-                                        shift, PRICE_OPEN);
-      const double older = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
-                                        strategy_macd_slow, strategy_macd_signal,
-                                        shift + 1, PRICE_OPEN);
-      if(older > newer)
-         macd_rising = false;
-      if(older < newer)
-         macd_falling = false;
-     }
-
-   const bool long_setup = ((slow_ma_1 - fast_ma) / point > strategy_ma_gap_points &&
-                            (slow_ma_2 - fast_ma) / point > strategy_ma_gap_points &&
-                            macd_rising);
-   const bool short_setup = ((fast_ma - slow_ma_1) / point > strategy_ma_gap_points &&
-                             (fast_ma - slow_ma_2) / point > strategy_ma_gap_points &&
-                             macd_falling);
-
-   if(pos_type == POSITION_TYPE_BUY && short_setup)
-      return true;
-   if(pos_type == POSITION_TYPE_SELL && long_setup)
-      return true;
-
    return false;
   }
 
-// Optional news-filter override. Return TRUE to suppress trading regardless
-// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
-// custom high-impact-event handling beyond the central filter.
+// Defer to the central two-axis news filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   (void)broker_time;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 
@@ -346,7 +262,7 @@ void OnTick()
    // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
+   // Per-tick: discretionary exit (e.g. opposite-signal exit). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -361,14 +277,11 @@ void OnTick()
         }
      }
 
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
+   // Per-closed-bar: entry-signal evaluation.
    if(!QM_IsNewBar())
       return;
 
-   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
-   // since last tick. Cheap: most calls early-return on same-day check.
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled.
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
@@ -389,7 +302,6 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeResult &result)
   {
    // FW4: feeds closing-deal net-profits to the KS kill-switch.
-   // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
