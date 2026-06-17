@@ -1,50 +1,45 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_1249 Hsu Carry Stop"
+#property description "QM5_1249 Hsu-Taylor-Wang FX Carry With Fixed ATR Stop"
 
 #include <QM/QM_Common.mqh>
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                    = 1249;
-input int    qm_magic_slot_offset        = 0;
-input uint   qm_rng_seed                 = 42;
+input int    qm_ea_id                     = 1249;
+input int    qm_magic_slot_offset         = 0;
+input uint   qm_rng_seed                  = 42;
 
 input group "Risk"
-input double RISK_PERCENT                = 0.0;
-input double RISK_FIXED                  = 1000.0;
-input double PORTFOLIO_WEIGHT            = 0.166667;
+input double RISK_PERCENT                 = 0.0;
+input double RISK_FIXED                   = 1000.0;
+input double PORTFOLIO_WEIGHT             = 0.166667;
 
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
-input int    qm_news_stale_max_hours     = 336;
-input string qm_news_min_impact          = "high";
-input QM_NewsMode qm_news_mode_legacy    = QM_NEWS_OFF;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = true;
-input int    qm_friday_close_hour_broker = 21;
+input bool   qm_friday_close_enabled      = true;
+input int    qm_friday_close_hour_broker  = 21;
 
 input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input string strategy_rates_csv_path       = "QM5_1249_fx_monthly_rates.csv";
-input int    strategy_rank_count           = 2;
-input int    strategy_stale_calendar_days  = 45;
-input int    strategy_atr_period_d1        = 20;
-input double strategy_atr_sl_mult          = 2.5;
-input int    strategy_rebalance_months     = 1;
-input bool   strategy_vol_filter_enabled   = false;
-input int    strategy_vol_window_d1        = 20;
-input int    strategy_vol_baseline_d1      = 252;
-input double strategy_vol_percentile       = 80.0;
-input int    strategy_spread_median_days   = 20;
-input double strategy_spread_mult          = 3.0;
+input string strategy_rates_csv_path      = "QM5_1249_fx_monthly_rates.csv";
+input int    strategy_rank_count          = 2;
+input int    strategy_stale_calendar_days = 45;
+input int    strategy_atr_period_d1       = 20;
+input double strategy_atr_stop_mult       = 2.5;
+input int    strategy_rebalance_months    = 1;
+input int    strategy_rebalance_day_limit = 7;
+input double strategy_max_spread_pips     = 0.0;
 
 #define QM5_1249_SYMBOL_COUNT 6
 #define QM5_1249_CCY_COUNT 8
-#define QM5_1249_MAX_RATE_ROWS 512
 
 string g_symbols[QM5_1249_SYMBOL_COUNT] =
   {
@@ -68,8 +63,22 @@ string g_rate_ccys[QM5_1249_CCY_COUNT] =
   };
 
 int g_last_entry_month_key = 0;
-int g_last_exit_month_key  = 0;
+int g_last_exit_month_key = 0;
 int g_stopped_month_key[QM5_1249_SYMBOL_COUNT];
+
+int Strategy_CurrentMonthKey()
+  {
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   return dt.year * 100 + dt.mon;
+  }
+
+int Strategy_CurrentDayOfMonth()
+  {
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   return dt.day;
+  }
 
 int Strategy_CurrentSymbolIndex()
   {
@@ -89,63 +98,18 @@ int Strategy_CcyIndex(const string ccy)
 
 datetime Strategy_ParseDate(const string raw)
   {
-   string s = raw;
-   StringTrimLeft(s);
-   StringTrimRight(s);
-   if(StringLen(s) < 10)
+   string value = raw;
+   StringTrimLeft(value);
+   StringTrimRight(value);
+   if(StringLen(value) < 10)
       return 0;
-   StringReplace(s, "-", ".");
-   return StringToTime(s + " 00:00");
+   StringReplace(value, "-", ".");
+   return StringToTime(value + " 00:00");
   }
 
-int Strategy_MonthKey(const datetime value)
+bool Strategy_ReadLatestRates(double &rates[])
   {
-   if(value <= 0)
-      return 0;
-   MqlDateTime dt;
-   TimeToStruct(value, dt);
-   return dt.year * 100 + dt.mon;
-  }
-
-bool Strategy_IsFirstTradingDayOfMonth()
-  {
-   const datetime closed_bar = iTime(_Symbol, PERIOD_D1, 1);
-   const datetime previous_bar = iTime(_Symbol, PERIOD_D1, 2);
-   if(closed_bar <= 0 || previous_bar <= 0)
-      return false;
-
-   MqlDateTime closed_dt;
-   MqlDateTime previous_dt;
-   TimeToStruct(closed_bar, closed_dt);
-   TimeToStruct(previous_bar, previous_dt);
-   return (closed_dt.mon != previous_dt.mon || closed_dt.year != previous_dt.year);
-  }
-
-bool Strategy_IsScheduledRebalanceClosedBar()
-  {
-   if(_Period != PERIOD_D1 && _Period != PERIOD_H1)
-      return false;
-
-   if(_Period == PERIOD_D1)
-      return Strategy_IsFirstTradingDayOfMonth();
-
-   const datetime closed_bar = iTime(_Symbol, PERIOD_H1, 1);
-   const datetime previous_bar = iTime(_Symbol, PERIOD_H1, 2);
-   if(closed_bar <= 0 || previous_bar <= 0)
-      return false;
-
-   MqlDateTime closed_dt;
-   MqlDateTime previous_dt;
-   TimeToStruct(closed_bar, closed_dt);
-   TimeToStruct(previous_bar, previous_dt);
-   return (closed_dt.mon != previous_dt.mon || closed_dt.year != previous_dt.year);
-  }
-
-bool Strategy_ReadLatestRates(double &rates[], datetime &latest_obs)
-  {
-   latest_obs = 0;
    ArrayInitialize(rates, 0.0);
-
    if(strategy_rates_csv_path == "")
       return false;
 
@@ -164,6 +128,7 @@ bool Strategy_ReadLatestRates(double &rates[], datetime &latest_obs)
       const string date_field = FileReadString(handle);
       double row_rates[QM5_1249_CCY_COUNT];
       bool valid = true;
+
       for(int i = 0; i < QM5_1249_CCY_COUNT; ++i)
         {
          if(FileIsEnding(handle))
@@ -171,8 +136,7 @@ bool Strategy_ReadLatestRates(double &rates[], datetime &latest_obs)
             valid = false;
             break;
            }
-         const string raw_rate = FileReadString(handle);
-         row_rates[i] = StringToDouble(raw_rate);
+         row_rates[i] = StringToDouble(FileReadString(handle));
         }
 
       const datetime row_date = Strategy_ParseDate(date_field);
@@ -188,7 +152,6 @@ bool Strategy_ReadLatestRates(double &rates[], datetime &latest_obs)
      }
 
    FileClose(handle);
-
    if(latest_date <= 0)
       return false;
 
@@ -196,7 +159,6 @@ bool Strategy_ReadLatestRates(double &rates[], datetime &latest_obs)
    if(strategy_stale_calendar_days > 0 && stale_days > strategy_stale_calendar_days)
       return false;
 
-   latest_obs = latest_date;
    for(int i = 0; i < QM5_1249_CCY_COUNT; ++i)
       rates[i] = latest_rates[i];
    return true;
@@ -207,8 +169,7 @@ bool Strategy_RateDifferentials(double &diffs[])
    ArrayInitialize(diffs, 0.0);
 
    double rates[QM5_1249_CCY_COUNT];
-   datetime latest_obs = 0;
-   if(!Strategy_ReadLatestRates(rates, latest_obs))
+   if(!Strategy_ReadLatestRates(rates))
       return false;
 
    for(int i = 0; i < QM5_1249_SYMBOL_COUNT; ++i)
@@ -265,154 +226,6 @@ int Strategy_DesiredDirectionForSymbol()
    return 0;
   }
 
-bool Strategy_RealizedVol(const string symbol, const int end_shift, double &out_vol)
-  {
-   out_vol = 0.0;
-   if(strategy_vol_window_d1 < 2 || strategy_vol_window_d1 > 128 || end_shift < 1)
-      return false;
-
-   SymbolSelect(symbol, true);
-   if(Bars(symbol, PERIOD_D1) < end_shift + strategy_vol_window_d1 + 2)
-      return false;
-
-   double returns[128];
-   double sum = 0.0;
-   int count = 0;
-   for(int i = 0; i < strategy_vol_window_d1; ++i)
-     {
-      const int shift = end_shift + i;
-      const double close_now = iClose(symbol, PERIOD_D1, shift);
-      const double close_prev = iClose(symbol, PERIOD_D1, shift + 1);
-      if(close_now <= 0.0 || close_prev <= 0.0)
-         return false;
-      const double r = MathLog(close_now / close_prev);
-      returns[count] = r;
-      sum += r;
-      ++count;
-     }
-
-   const double mean = sum / (double)count;
-   double var_sum = 0.0;
-   for(int i = 0; i < count; ++i)
-     {
-      const double diff = returns[i] - mean;
-      var_sum += diff * diff;
-     }
-
-   out_vol = MathSqrt(var_sum / (double)(count - 1)) * MathSqrt(252.0);
-   return (out_vol > 0.0);
-  }
-
-bool Strategy_BasketVolAtShift(const int end_shift, double &out_vol)
-  {
-   out_vol = 0.0;
-   double sum = 0.0;
-   int count = 0;
-   for(int i = 0; i < QM5_1249_SYMBOL_COUNT; ++i)
-     {
-      double vol = 0.0;
-      if(!Strategy_RealizedVol(g_symbols[i], end_shift, vol))
-         continue;
-      sum += vol;
-      ++count;
-     }
-
-   if(count < QM5_1249_SYMBOL_COUNT)
-      return false;
-   out_vol = sum / (double)count;
-   return (out_vol > 0.0);
-  }
-
-bool Strategy_VolFilterAllowsEntry()
-  {
-   if(!strategy_vol_filter_enabled)
-      return true;
-
-   if(strategy_vol_baseline_d1 < strategy_vol_window_d1 + 20)
-      return false;
-
-   double current_vol = 0.0;
-   if(!Strategy_BasketVolAtShift(1, current_vol))
-      return false;
-
-   double vols[512];
-   int count = 0;
-   const int max_points = MathMin(strategy_vol_baseline_d1, 512);
-   for(int shift = 2; shift <= max_points + 1; ++shift)
-     {
-      double vol = 0.0;
-      if(!Strategy_BasketVolAtShift(shift, vol))
-         continue;
-      vols[count] = vol;
-      ++count;
-     }
-
-   if(count < 50)
-      return false;
-
-   for(int i = 0; i < count - 1; ++i)
-      for(int j = i + 1; j < count; ++j)
-         if(vols[j] < vols[i])
-           {
-            const double tmp = vols[i];
-            vols[i] = vols[j];
-            vols[j] = tmp;
-           }
-
-   double pct = strategy_vol_percentile;
-   if(pct < 1.0)
-      pct = 1.0;
-   if(pct > 99.0)
-      pct = 99.0;
-   const int idx = (int)MathFloor((pct / 100.0) * (double)(count - 1));
-   return (current_vol <= vols[idx]);
-  }
-
-double Strategy_MedianDailySpreadPoints()
-  {
-   if(strategy_spread_median_days <= 0 || strategy_spread_median_days > 64)
-      return 0.0;
-
-   double values[64];
-   int count = 0;
-   for(int shift = 1; shift <= strategy_spread_median_days; ++shift)
-     {
-      const long spread = iSpread(_Symbol, PERIOD_D1, shift);
-      if(spread <= 0)
-         continue;
-      values[count] = (double)spread;
-      ++count;
-     }
-
-   if(count <= 0)
-      return 0.0;
-
-   for(int i = 0; i < count - 1; ++i)
-      for(int j = i + 1; j < count; ++j)
-         if(values[j] < values[i])
-           {
-            const double tmp = values[i];
-            values[i] = values[j];
-            values[j] = tmp;
-           }
-
-   if((count % 2) == 1)
-      return values[count / 2];
-   return 0.5 * (values[(count / 2) - 1] + values[count / 2]);
-  }
-
-bool Strategy_SpreadAllowsEntry()
-  {
-   const double median_spread = Strategy_MedianDailySpreadPoints();
-   if(median_spread <= 0.0 || strategy_spread_mult <= 0.0)
-      return true;
-
-   const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(current_spread <= 0)
-      return true;
-   return ((double)current_spread <= median_spread * strategy_spread_mult);
-  }
-
 bool Strategy_HasOpenPosition(int &direction)
   {
    direction = 0;
@@ -426,10 +239,45 @@ bool Strategy_HasOpenPosition(int &direction)
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
+
       direction = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY) ? 1 : -1;
       return true;
      }
    return false;
+  }
+
+bool Strategy_IsMonthlyRebalanceWindow()
+  {
+   const int month_key = Strategy_CurrentMonthKey();
+   if(month_key <= 0)
+      return false;
+
+   if(strategy_rebalance_months > 1 && (month_key % strategy_rebalance_months) != 0)
+      return false;
+
+   const int day = Strategy_CurrentDayOfMonth();
+   if(strategy_rebalance_day_limit > 0 && day > strategy_rebalance_day_limit)
+      return false;
+
+   return true;
+  }
+
+bool Strategy_SpreadAllowsEntry()
+  {
+   if(strategy_max_spread_pips <= 0.0)
+      return true;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+   if(!(ask > bid))
+      return true;
+
+   const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathRound(strategy_max_spread_pips));
+   if(cap <= 0.0)
+      return true;
+   return ((ask - bid) <= cap);
   }
 
 bool Strategy_NoTradeFilter()
@@ -437,6 +285,8 @@ bool Strategy_NoTradeFilter()
    if(Strategy_CurrentSymbolIndex() < 0)
       return true;
    if(strategy_rebalance_months < 1)
+      return true;
+   if(strategy_atr_period_d1 < 1 || strategy_atr_stop_mult <= 0.0)
       return true;
    return false;
   }
@@ -451,15 +301,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!Strategy_IsScheduledRebalanceClosedBar())
+   if(!Strategy_IsMonthlyRebalanceWindow())
       return false;
 
-   const datetime rebalance_time = iTime(_Symbol, _Period, 1);
-   const int month_key = Strategy_MonthKey(rebalance_time);
+   const int month_key = Strategy_CurrentMonthKey();
    if(month_key <= 0 || month_key == g_last_entry_month_key)
       return false;
-   if(strategy_rebalance_months > 1 && (month_key % strategy_rebalance_months) != 0)
-      return false;
+   g_last_entry_month_key = month_key;
 
    int existing_direction = 0;
    if(Strategy_HasOpenPosition(existing_direction))
@@ -469,8 +317,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(symbol_idx < 0 || g_stopped_month_key[symbol_idx] == month_key)
       return false;
 
-   if(!Strategy_VolFilterAllowsEntry())
-      return false;
    if(!Strategy_SpreadAllowsEntry())
       return false;
 
@@ -485,15 +331,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    req.symbol_slot = symbol_idx;
    req.type = (desired_direction > 0) ? QM_BUY : QM_SELL;
-   req.price = (desired_direction > 0) ? ask : bid;
-   req.sl = QM_StopATR(_Symbol, req.type, req.price, strategy_atr_period_d1, strategy_atr_sl_mult);
+   req.price = 0.0;
+   const double stop_entry = (desired_direction > 0) ? ask : bid;
+   req.sl = QM_StopATR(_Symbol, req.type, stop_entry, strategy_atr_period_d1, strategy_atr_stop_mult);
    req.tp = 0.0;
-   req.reason = (desired_direction > 0) ? "HSU_CARRY_TOP_RANK" : "HSU_CARRY_BOTTOM_RANK";
-   if(req.sl <= 0.0)
-      return false;
-
-   g_last_entry_month_key = month_key;
-   return true;
+   req.reason = (desired_direction > 0) ? "HSU_CARRY_TOP2_POSITIVE" : "HSU_CARRY_BOTTOM2_NEGATIVE";
+   return (req.sl > 0.0);
   }
 
 void Strategy_ManageOpenPosition()
@@ -502,8 +345,8 @@ void Strategy_ManageOpenPosition()
    if(symbol_idx < 0)
       return;
 
-   const int current_month = Strategy_MonthKey(TimeCurrent());
    const int magic = QM_FrameworkMagic();
+   const int month_key = Strategy_CurrentMonthKey();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -517,22 +360,22 @@ void Strategy_ManageOpenPosition()
       const double sl = PositionGetDouble(POSITION_SL);
       if(sl <= 0.0)
          continue;
+
       const long type = PositionGetInteger(POSITION_TYPE);
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if((type == POSITION_TYPE_BUY && bid <= sl) ||
-         (type == POSITION_TYPE_SELL && ask >= sl))
-         g_stopped_month_key[symbol_idx] = current_month;
+      if((type == POSITION_TYPE_BUY && bid > 0.0 && bid <= sl) ||
+         (type == POSITION_TYPE_SELL && ask > 0.0 && ask >= sl))
+         g_stopped_month_key[symbol_idx] = month_key;
      }
   }
 
 bool Strategy_ExitSignal()
   {
-   if(!Strategy_IsScheduledRebalanceClosedBar())
+   if(!Strategy_IsMonthlyRebalanceWindow())
       return false;
 
-   const datetime rebalance_time = iTime(_Symbol, _Period, 1);
-   const int month_key = Strategy_MonthKey(rebalance_time);
+   const int month_key = Strategy_CurrentMonthKey();
    if(month_key <= 0 || month_key == g_last_exit_month_key)
       return false;
 
@@ -577,6 +420,8 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   QM_SymbolGuardInit(g_symbols);
+   QM_BasketWarmupHistory(g_symbols, PERIOD_D1, strategy_atr_period_d1 + 5);
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
