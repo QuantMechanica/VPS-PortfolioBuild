@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_11012_THE5ERS_STRENGTH_PAIR_H1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "H1",
+  "basket_symbols": [
+    "AUDCAD.DWX", "AUDCHF.DWX", "AUDJPY.DWX", "AUDNZD.DWX", "AUDUSD.DWX",
+    "CADCHF.DWX", "CADJPY.DWX", "CHFJPY.DWX",
+    "EURAUD.DWX", "EURCAD.DWX", "EURCHF.DWX", "EURGBP.DWX", "EURJPY.DWX", "EURNZD.DWX", "EURUSD.DWX",
+    "GBPAUD.DWX", "GBPCAD.DWX", "GBPCHF.DWX", "GBPJPY.DWX", "GBPNZD.DWX", "GBPUSD.DWX",
+    "NZDCAD.DWX", "NZDCHF.DWX", "NZDJPY.DWX", "NZDUSD.DWX",
+    "USDCAD.DWX", "USDCHF.DWX", "USDJPY.DWX"
+  ],
+  "notes": [
+    "The5ers currency-strength relative-momentum. EA runs one instance per registered host symbol; each instance reads the full 28-pair 8-currency (USD/EUR/GBP/JPY/AUD/CHF/NZD/CAD) FX matrix on D1 to rank currency strength, and trades the host symbol only when it is the strongest-vs-weakest pair. Foreign reads are bound at call site via QM_SymbolGuardInit + QM_BasketWarmupHistory; one position per magic on the host symbol. All 28 pairs verified present in dwx_symbol_matrix.csv."
+  ]
+}

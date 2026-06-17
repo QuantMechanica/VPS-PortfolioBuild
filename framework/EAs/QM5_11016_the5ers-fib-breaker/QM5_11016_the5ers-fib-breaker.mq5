@@ -118,7 +118,7 @@ double   g_fib_zone_near     = 0.0;   // retrace zone bound nearer the extreme (
 double   g_fib_zone_far      = 0.0;   // retrace zone bound farther from extreme (fib_hi level)
 double   g_fib_618           = 0.0;   // exact 61.8% retracement price (signal-failure line)
 double   g_atr_h1            = 0.0;   // cached ATR(H1) at shift 1
-double   g_entry_bar_time    = 0;     // bar-open time of the bar we entered on (time stop)
+datetime g_entry_bar_time    = 0;     // bar-open time of the bar we entered on (time stop)
 
 // -----------------------------------------------------------------------------
 // Deterministic confirmed-fractal swing detection on closed bars.
@@ -375,8 +375,10 @@ bool FindBreakerRef(const bool want_long, double &ref)
    ref = 0.0;
    const double zlo = (g_fib_zone_far < g_fib_zone_near) ? g_fib_zone_far : g_fib_zone_near;
    const double zhi = (g_fib_zone_far < g_fib_zone_near) ? g_fib_zone_near : g_fib_zone_far;
-   const int last = (g_impulse_end_shift > 1) ? (g_impulse_end_shift - 1) : 1;
-   for(int s = 1; s <= last; ++s)
+   // Breaker candle must be STRICTLY PRIOR to the signal bar (shift 1) and
+   // before the impulse extreme. Scan shifts 2 .. impulse_end_shift-1.
+   const int last = (g_impulse_end_shift > 2) ? (g_impulse_end_shift - 1) : 2;
+   for(int s = 2; s <= last; ++s)
      {
       const double o = iOpen(_Symbol, _Period, s);  // perf-allowed: bounded closed-bar scan
       const double c = iClose(_Symbol, _Period, s);
