@@ -73,12 +73,27 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
+// Smart Money Pivot Breakout (TradingView `Smart Money Pivot Strategy [Jason Kasei]`).
+//   - strategy_pivot_period : bars each side of a confirmed pivot high/low (ta.pivothigh/low left=right=N).
+//   - strategy_atr_period   : ATR length for the volatility-floor stop distance.
+//   - strategy_atr_sl_mult  : ATR multiple for the stop distance floor.
+//   - strategy_sl_percent   : percent-of-price stop floor (source SL%); stop = max(atr_mult*ATR, price*sl%).
+//   - strategy_rr_target    : take-profit reward:risk multiple (source baseline 2.0R).
+//   - strategy_min_same_dir_bars : min bars since last same-direction entry (anti-cluster filter).
 input int    strategy_pivot_period      = 20;
 input int    strategy_atr_period        = 14;
 input double strategy_atr_sl_mult       = 0.75;
 input double strategy_sl_percent        = 1.0;
 input double strategy_rr_target         = 2.0;
 input int    strategy_min_same_dir_bars = 20;
+
+// File-scope confirmed-pivot state, advanced once per closed bar in the
+// QM_IsNewBar-gated EntrySignal. These are STRATEGY price levels (most recent
+// confirmed pivot high / low), not a new-bar timestamp gate.
+double g_last_pivot_high = 0.0;
+double g_last_pivot_low  = 0.0;
+int    g_bars_since_long  = 1000000;
+int    g_bars_since_short = 1000000;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -88,7 +103,8 @@ input int    strategy_min_same_dir_bars = 20;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // Card has no extra session/spread/regime filter beyond framework gates.
+   // Card has no extra session / spread / regime filter beyond framework gates.
+   // (.DWX quotes zero spread in the tester — never fail-closed on spread.)
    return false;
   }
 
@@ -97,17 +113,12 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   static double last_pivot_high = 0.0;
-   static double last_pivot_low = 0.0;
-   static int bars_since_long_entry = 100000;
-   static int bars_since_short_entry = 100000;
-
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
+   req.type               = QM_BUY;
+   req.price              = 0.0;   // framework fills market price at send
+   req.sl                 = 0.0;
+   req.tp                 = 0.0;
+   req.reason             = "";
+   req.symbol_slot        = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
    if(strategy_pivot_period < 2 ||
@@ -118,40 +129,52 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_min_same_dir_bars < 0)
       return false;
 
-   if(bars_since_long_entry < 100000)
-      bars_since_long_entry++;
-   if(bars_since_short_entry < 100000)
-      bars_since_short_entry++;
+   if(g_bars_since_long < 1000000)
+      g_bars_since_long++;
+   if(g_bars_since_short < 1000000)
+      g_bars_since_short++;
 
-   const int candidate_shift = strategy_pivot_period + 1;
-   const double candidate_high = iHigh(_Symbol, _Period, candidate_shift); // perf-allowed: confirmed pivot structural read inside QM_IsNewBar-gated EntrySignal.
-   const double candidate_low = iLow(_Symbol, _Period, candidate_shift);   // perf-allowed: confirmed pivot structural read inside QM_IsNewBar-gated EntrySignal.
-   bool is_pivot_high = (candidate_high > 0.0);
-   bool is_pivot_low = (candidate_low > 0.0);
+   // --- Confirmed pivot detection (no repaint) -------------------------------
+   // A pivot needs `strategy_pivot_period` bars to its right and left. The most
+   // recently CONFIRMABLE pivot centre therefore sits at shift = period + 1:
+   // bars at shift 1..period form its right window, bars at shift
+   // (centre+1)..(centre+period) its left window. We re-evaluate the centre
+   // each closed bar; once a fresh pivot confirms it replaces the stored level.
+   const int centre = strategy_pivot_period + 1;
+   const double centre_high = iHigh(_Symbol, _Period, centre); // perf-allowed: confirmed-pivot structural read inside QM_IsNewBar-gated EntrySignal.
+   const double centre_low  = iLow(_Symbol, _Period, centre);  // perf-allowed: confirmed-pivot structural read inside QM_IsNewBar-gated EntrySignal.
+   if(centre_high <= 0.0 || centre_low <= 0.0)
+      return false;
 
+   bool is_pivot_high = true;
+   bool is_pivot_low  = true;
    for(int i = 1; i <= strategy_pivot_period; ++i)
      {
-      const double right_high = iHigh(_Symbol, _Period, i); // perf-allowed: bounded 20-bar pivot confirmation inside QM_IsNewBar-gated EntrySignal.
-      const double left_high = iHigh(_Symbol, _Period, candidate_shift + i); // perf-allowed: bounded 20-bar pivot confirmation inside QM_IsNewBar-gated EntrySignal.
-      const double right_low = iLow(_Symbol, _Period, i); // perf-allowed: bounded 20-bar pivot confirmation inside QM_IsNewBar-gated EntrySignal.
-      const double left_low = iLow(_Symbol, _Period, candidate_shift + i); // perf-allowed: bounded 20-bar pivot confirmation inside QM_IsNewBar-gated EntrySignal.
+      const double right_high = iHigh(_Symbol, _Period, i);          // perf-allowed: bounded pivot-confirmation read, QM_IsNewBar-gated.
+      const double left_high  = iHigh(_Symbol, _Period, centre + i); // perf-allowed: bounded pivot-confirmation read, QM_IsNewBar-gated.
+      const double right_low  = iLow(_Symbol, _Period, i);           // perf-allowed: bounded pivot-confirmation read, QM_IsNewBar-gated.
+      const double left_low   = iLow(_Symbol, _Period, centre + i);  // perf-allowed: bounded pivot-confirmation read, QM_IsNewBar-gated.
 
       if(right_high <= 0.0 || left_high <= 0.0 || right_low <= 0.0 || left_low <= 0.0)
-         return false;
+         return false; // insufficient history — cannot confirm this bar
 
-      if(right_high > candidate_high || left_high > candidate_high)
+      if(right_high >= centre_high || left_high >= centre_high)
          is_pivot_high = false;
-      if(right_low < candidate_low || left_low < candidate_low)
+      if(right_low <= centre_low || left_low <= centre_low)
          is_pivot_low = false;
      }
 
    if(is_pivot_high)
-      last_pivot_high = candidate_high;
+      g_last_pivot_high = centre_high;
    if(is_pivot_low)
-      last_pivot_low = candidate_low;
+      g_last_pivot_low = centre_low;
 
-   const double close_last = iClose(_Symbol, _Period, 1); // perf-allowed: closed-bar breakout check inside QM_IsNewBar-gated EntrySignal.
-   const double close_prev = iClose(_Symbol, _Period, 2); // perf-allowed: closed-bar breakout cross check inside QM_IsNewBar-gated EntrySignal.
+   // --- Breakout trigger (cross of the last confirmed pivot on closed bars) ---
+   // ONE event = the close crossing the stored pivot level (prev bar on the
+   // other side, last bar through it). The pivot level itself is a STATE, so we
+   // never demand two coincident cross events on the same bar.
+   const double close_last = iClose(_Symbol, _Period, 1); // perf-allowed: closed-bar breakout read, QM_IsNewBar-gated.
+   const double close_prev = iClose(_Symbol, _Period, 2); // perf-allowed: closed-bar breakout read, QM_IsNewBar-gated.
    if(close_last <= 0.0 || close_prev <= 0.0)
       return false;
 
@@ -159,54 +182,53 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(atr_value <= 0.0)
       return false;
 
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false;
-
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0)
-      return false;
-
-   if(last_pivot_high > 0.0 &&
-      close_prev <= last_pivot_high &&
-      close_last > last_pivot_high &&
-      bars_since_long_entry >= strategy_min_same_dir_bars)
+   // Long: close breaks above the most recent confirmed pivot high.
+   if(g_last_pivot_high > 0.0 &&
+      close_prev <= g_last_pivot_high &&
+      close_last >  g_last_pivot_high &&
+      g_bars_since_long >= strategy_min_same_dir_bars)
      {
-      const double entry = ask;
-      const double stop_dist = MathMax(strategy_atr_sl_mult * atr_value, entry * strategy_sl_percent / 100.0);
-      const double sl = NormalizeDouble(entry - stop_dist, _Digits);
-      const double tp = NormalizeDouble(entry + stop_dist * strategy_rr_target, _Digits);
-      if(sl <= 0.0 || tp <= 0.0 || sl >= entry || tp <= entry)
+      const double entry     = close_last;
+      const double stop_dist = MathMax(strategy_atr_sl_mult * atr_value,
+                                       entry * strategy_sl_percent / 100.0);
+      const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, stop_dist, 1.0);
+      if(sl <= 0.0 || sl >= entry)
+         return false;
+      const double tp = QM_TakeRR(_Symbol, QM_BUY, entry, sl, strategy_rr_target);
+      if(tp <= 0.0 || tp <= entry)
          return false;
 
-      req.type = QM_BUY;
-      req.price = NormalizeDouble(entry, _Digits);
-      req.sl = sl;
-      req.tp = tp;
+      req.type   = QM_BUY;
+      req.price  = 0.0;
+      req.sl     = sl;
+      req.tp     = tp;
       req.reason = "TV_SMART_PIVOT_LONG_BREAKOUT";
-      bars_since_long_entry = 0;
+      g_bars_since_long = 0;
       return true;
      }
 
-   if(last_pivot_low > 0.0 &&
-      close_prev >= last_pivot_low &&
-      close_last < last_pivot_low &&
-      bars_since_short_entry >= strategy_min_same_dir_bars)
+   // Short: close breaks below the most recent confirmed pivot low.
+   if(g_last_pivot_low > 0.0 &&
+      close_prev >= g_last_pivot_low &&
+      close_last <  g_last_pivot_low &&
+      g_bars_since_short >= strategy_min_same_dir_bars)
      {
-      const double entry = bid;
-      const double stop_dist = MathMax(strategy_atr_sl_mult * atr_value, entry * strategy_sl_percent / 100.0);
-      const double sl = NormalizeDouble(entry + stop_dist, _Digits);
-      const double tp = NormalizeDouble(entry - stop_dist * strategy_rr_target, _Digits);
-      if(sl <= 0.0 || tp <= 0.0 || sl <= entry || tp >= entry)
+      const double entry     = close_last;
+      const double stop_dist = MathMax(strategy_atr_sl_mult * atr_value,
+                                       entry * strategy_sl_percent / 100.0);
+      const double sl = QM_StopATRFromValue(_Symbol, QM_SELL, entry, stop_dist, 1.0);
+      if(sl <= 0.0 || sl <= entry)
+         return false;
+      const double tp = QM_TakeRR(_Symbol, QM_SELL, entry, sl, strategy_rr_target);
+      if(tp <= 0.0 || tp >= entry)
          return false;
 
-      req.type = QM_SELL;
-      req.price = NormalizeDouble(entry, _Digits);
-      req.sl = sl;
-      req.tp = tp;
+      req.type   = QM_SELL;
+      req.price  = 0.0;
+      req.sl     = sl;
+      req.tp     = tp;
       req.reason = "TV_SMART_PIVOT_SHORT_BREAKOUT";
-      bars_since_short_entry = 0;
+      g_bars_since_short = 0;
       return true;
      }
 
@@ -217,14 +239,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies fixed SL/TP only; no trailing, BE, or partial close.
+   // Card specifies fixed SL/TP only; no trailing, break-even, or partial close.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // Card exits via fixed 2R TP, stop loss, and framework Friday close only.
+   // Card exits via the fixed 2R TP, the stop loss, and the framework Friday
+   // close only — no discretionary exit.
    return false;
   }
 
@@ -233,7 +256,6 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   (void)broker_time;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 
