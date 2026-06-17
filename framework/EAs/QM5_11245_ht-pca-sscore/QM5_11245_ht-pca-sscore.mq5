@@ -24,7 +24,7 @@
 //
 // DETERMINISM (HR14 — NO ML):
 //   PCA  = symmetric Jacobi eigenvalue rotation on the 6x6 correlation matrix
-//          (deterministic, bounded sweeps; no sklearn / power-method randomness).
+//          (deterministic, bounded sweeps; no external lib, no random init).
 //   OLS  = closed-form normal equations (k<=3 factors -> small symmetric solve).
 //   OU   = closed-form AR(1) regression (b=cov/var). No online learning, no
 //          PnL-adaptive parameters. All math runs on CLOSED D1 bars, advanced
@@ -246,8 +246,7 @@ void QM_AdvancePCA()
      {
       active[m] = false;
       const string sym = g_univ[m];
-      if(Bars(sym, PERIOD_D1) < W + 4)
-         continue;
+      if(Bars(sym, PERIOD_D1) < W + 4) continue;   // perf-allowed: basket-leg warmup count, gated to new D1 bar
 
       bool ok = true;
       double prev = 0.0;
@@ -255,9 +254,9 @@ void QM_AdvancePCA()
       for(int t = 0; t < W + 1; ++t)
         {
          const int shift = (W + 1) - t;
-         // perf-allowed: closed-bar foreign-symbol daily close reads (basket leg);
-         // gated to once-per-new-D1-bar via QM_IsNewBar in OnTick.
-         const double c = iClose(sym, PERIOD_D1, shift);
+         // closed-bar foreign-symbol daily close reads (basket leg); gated to
+         // once-per-new-D1-bar via QM_IsNewBar in OnTick.
+         const double c = iClose(sym, PERIOD_D1, shift);   // perf-allowed: basket-leg daily close, new-bar gated
          if(c <= 0.0) { ok = false; break; }
          if(t > 0)
             ret[m][t - 1] = (c - prev) / prev;

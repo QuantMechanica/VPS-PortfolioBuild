@@ -1,0 +1,18 @@
+{
+  "ea_id": "QM5_12395",
+  "slug": "country-pairs",
+  "timeframe": "D1",
+  "symbols": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "GDAXI.DWX",
+    "UK100.DWX"
+  ],
+  "omitted_card_symbols": [
+    {
+      "symbol": "JPN225.DWX",
+      "reason": "not present in framework/registry/dwx_symbol_matrix.csv"
+    }
+  ]
+}
