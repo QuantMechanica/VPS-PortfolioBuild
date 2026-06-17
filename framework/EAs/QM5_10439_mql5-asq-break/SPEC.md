@@ -4,7 +4,7 @@
 **Slug:** mql5-asq-break
 **Source:** b8b5125a-c67f-5bbc-baff-33456e08f5b2
 **Author of this spec:** Codex
-**Last revised:** 2026-06-17
+**Last revised:** 2026-06-18
 
 ---
 
@@ -107,4 +107,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-17 | Initial build from card | 16b51075-0b30-4dbf-b472-15ceeee7db6d |
+| v1 | 2026-06-18 | Initial build from card | 16b51075-0b30-4dbf-b472-15ceeee7db6d |
