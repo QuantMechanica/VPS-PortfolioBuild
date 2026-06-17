@@ -60,6 +60,7 @@ input group "Strategy"
 input double strategy_trigger_atr_frac  = 0.25;   // |prior-day ret| threshold as fraction of ATR/close
 input int    strategy_atr_period        = 14;     // ATR period on D1 (threshold + stop)
 input double strategy_atr_stop_mult     = 1.25;   // emergency SL distance = mult * ATR(D1)
+input int    strategy_hold_hours        = 24;     // time stop after this many broker-time hours
 input bool   strategy_skip_friday       = true;   // no new entries on broker-time Friday
 input int    strategy_spread_atr_h1_pd  = 14;     // ATR period on H1 for the spread cap
 input double strategy_spread_pct_of_atr_h1 = 10.0; // skip if spread > this % of ATR(14,H1)
@@ -107,8 +108,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    // --- Prior-day closes (closed bars: shift 1 = yesterday, shift 2 = day before) ---
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: single closed-bar read
-   const double close2 = iClose(_Symbol, PERIOD_D1, 2); // perf-allowed: single closed-bar read
+   MqlRates d1[2];
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, 2, d1); // perf-allowed: called only after framework QM_IsNewBar() gate
+   if(copied != 2)
+      return false;
+
+   const double close1 = d1[0].close;
+   const double close2 = d1[1].close;
    if(close1 <= 0.0 || close2 <= 0.0)
       return false;
 
@@ -145,6 +151,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = 0.0;   // no take-profit; 24h time stop governs the exit
    req.reason = (side == QM_BUY) ? "zuck_24h_cont_long" : "zuck_24h_cont_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
@@ -154,20 +162,17 @@ void Strategy_ManageOpenPosition()
   {
   }
 
-// Time-stop exit: hold ~24h. On D1 that means one full daily bar has elapsed —
-// close once a NEW D1 bar has opened since the entry bar.
+// Time-stop exit: hold the configured number of broker-time hours.
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
    if(QM_TM_OpenPositionCount(magic) <= 0)
       return false;
-
-   // Open time of the current D1 bar. If the position opened on an earlier D1
-   // bar, at least one full daily bar has closed → time stop fires.
-   const datetime cur_bar_open = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: single bar-time read
-   if(cur_bar_open <= 0)
+   if(strategy_hold_hours <= 0)
       return false;
 
+   const datetime broker_now = TimeCurrent();
+   const int hold_seconds = strategy_hold_hours * 3600;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -178,8 +183,8 @@ bool Strategy_ExitSignal()
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
       const datetime pos_open = (datetime)PositionGetInteger(POSITION_TIME);
-      if(pos_open > 0 && pos_open < cur_bar_open)
-         return true; // entry bar has fully closed — exit on the new daily bar
+      if(pos_open > 0 && broker_now - pos_open >= hold_seconds)
+         return true;
      }
    return false;
   }

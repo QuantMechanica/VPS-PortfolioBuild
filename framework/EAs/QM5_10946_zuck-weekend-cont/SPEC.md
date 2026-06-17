@@ -50,7 +50,7 @@ Which `.DWX` symbols this EA is designed for.
 
 **Designed for:**
 - `XAUUSD.DWX` — gold; liquid Friday close, strong day-of-week seasonality.
-- `OIL.DWX` — WTI; weekend-gap-sensitive commodity, fits the continuation thesis.
+- `XTIUSD.DWX` — WTI crude oil DWX equivalent; `OIL.DWX` is not in the matrix, while XTIUSD is the verified oil custom symbol.
 - `EURUSD.DWX` — most liquid FX major; clean Friday-close / Monday-open frame.
 - `USDJPY.DWX` — liquid FX major with distinct Asian-Monday reopen behaviour.
 - `SP500.DWX` — S&P 500 (backtest-only custom symbol; NOT broker-routable, so
@@ -59,6 +59,7 @@ Which `.DWX` symbols this EA is designed for.
 - `WS30.DWX` — Dow 30; live-tradable US index, completes the US large-cap basket.
 
 **Explicitly NOT for:**
+- `OIL.DWX` — card shorthand only; not present in `dwx_symbol_matrix.csv`, use `XTIUSD.DWX`.
 - `SPX500.DWX` / `SPY.DWX` / `ES.DWX` — not the canonical custom symbol name; use `SP500.DWX`.
 
 ---
@@ -112,4 +113,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-17 | Initial build from card | central build step |
+| v1 | 2026-06-17 | Initial build from card | cd616657-bc0f-4c23-babb-89e2732a5c6c |
