@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_11147_CLENOW_VAM_ROT_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "SP500.DWX", "NDX.DWX", "WS30.DWX", "GDAXI.DWX", "UK100.DWX",
+    "XAUUSD.DWX", "XTIUSD.DWX", "EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX"
+  ],
+  "notes": [
+    "Clenow volatility-adjusted-momentum cross-sectional ROTATION. EA runs one instance per registered host symbol; each instance reads the full 10-symbol DWX universe on D1, ranks members by annualised 90-day OLS log-price slope * R^2 (volatility-adjusted momentum), applies a 100-day eligibility SMA + 90-day 15% single-day outlier reject + SP500.DWX 200-day market-regime filter, and trades the host LONG only when the host is itself eligible and in the top-N (default 6) with a positive score. Foreign reads are bound at call site via QM_SymbolGuardInit + QM_BasketWarmupHistory; one position per magic on the host symbol; long-only. Card GER40 -> GDAXI.DWX and FTSE100 -> UK100.DWX (nearest matrix ports; flagged). SP500.DWX is a backtest-only read member (regime proxy + rankable host); never a live-routed host. All 10 symbols verified present in dwx_symbol_matrix.csv."
+  ]
+}
