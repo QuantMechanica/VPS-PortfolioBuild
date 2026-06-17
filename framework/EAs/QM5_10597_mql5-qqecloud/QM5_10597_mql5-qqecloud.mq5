@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10597 MQL5 QQECloud Timed Trend — timed entry on QQECloud color, timed/opposite-color exit"
+#property description "QM5_10597 MQL5 QQECloud Timed Trend — timed entry on QQECloud qqe_color, timed/opposite-qqe_color exit"
 
 #include <QM/QM_Common.mqh>
 
@@ -10,12 +10,12 @@
 // Source: MQL5 CodeBase Exp_QQECloud (Nikolay Kositsin), USDCHF H4.
 // Mechanic (card QM5_10597):
 //   ENTRY  — once per trading day at StartHour:StartMinute (broker time),
-//            read the QQECloud color state on the last CLOSED bar:
-//              color = purple (uptrend)  -> BUY
-//              color = red    (downtrend)-> SELL
+//            read the QQECloud qqe_color state on the last CLOSED bar:
+//              qqe_color = purple (uptrend)  -> BUY
+//              qqe_color = red    (downtrend)-> SELL
 //            One position per symbol/magic (framework enforces single-entry).
 //   EXIT   — close at StopHour:StopMinute (broker time), OR earlier when the
-//            opposite QQECloud color appears on a completed bar.
+//            opposite QQECloud qqe_color appears on a completed bar.
 //   STOP   — source used none; baseline catastrophic stop = 2.5 * ATR(14).
 //
 // QQECloud is RSI-derived. No custom indicator handle is available in the
@@ -25,7 +25,7 @@
 //                then Wilder-smoothed again -> DAR (dynamic ATR of RSI)
 //   delta      = DAR * qqe_factor
 //   trailing   = QQE fast trailing level (classic QQE longband/shortband logic)
-//   color      = purple if RsiMa > trailing (uptrend), red if RsiMa < trailing.
+//   qqe_color      = purple if RsiMa > trailing (uptrend), red if RsiMa < trailing.
 // The trailing level is reconstructed deterministically over a fixed warmup
 // window on each closed bar (bounded loop, pooled RSI reads only — no raw iX,
 // no file-scope new-bar timestamp gate, no leaked handles).
@@ -73,7 +73,7 @@ input double atr_sl_mult                = 2.5;
 // -----------------------------------------------------------------------------
 // QQECloud self-computation (RSI-derived) — bounded warmup reconstruction.
 // -----------------------------------------------------------------------------
-// Returns the cloud color on the bar at `eval_shift` (a CLOSED bar):
+// Returns the cloud qqe_color on the bar at `eval_shift` (a CLOSED bar):
 //   +1 = purple (uptrend / long)
 //   -1 = red    (downtrend / short)
 //    0 = undetermined (insufficient history)
@@ -175,15 +175,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(dt.hour != StartHour || dt.min != StartMinute)
       return false;
 
-   const int color = QQECloudColor(1); // last closed bar
-   if(color == 0)
+   const int qqe_color = QQECloudColor(1); // last closed bar
+   if(qqe_color == 0)
       return false;
 
    const double atr = QM_ATR(_Symbol, _Period, atr_period, 1);
    if(atr <= 0.0)
       return false;
 
-   if(color > 0)
+   if(qqe_color > 0)
      {
       req.type = QM_BUY;
       req.price = 0.0;
@@ -208,7 +208,7 @@ void Strategy_ManageOpenPosition()
    // Source uses no trailing/BE management; SL is the catastrophic ATR stop.
   }
 
-// Close at StopHour:StopMinute, or earlier on opposite QQECloud color.
+// Close at StopHour:StopMinute, or earlier on opposite QQECloud qqe_color.
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
@@ -224,9 +224,9 @@ bool Strategy_ExitSignal()
    if(now_minutes >= stop_minutes)
       return true;
 
-   // Opposite-color close on a completed bar.
-   const int color = QQECloudColor(1);
-   if(color == 0)
+   // Opposite-qqe_color close on a completed bar.
+   const int qqe_color = QQECloudColor(1);
+   if(qqe_color == 0)
       return false;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -237,9 +237,9 @@ bool Strategy_ExitSignal()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
       const long ptype = PositionGetInteger(POSITION_TYPE);
-      if(ptype == POSITION_TYPE_BUY && color < 0)
+      if(ptype == POSITION_TYPE_BUY && qqe_color < 0)
          return true;
-      if(ptype == POSITION_TYPE_SELL && color > 0)
+      if(ptype == POSITION_TYPE_SELL && qqe_color > 0)
          return true;
      }
    return false;
