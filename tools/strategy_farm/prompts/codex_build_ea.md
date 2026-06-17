@@ -270,6 +270,50 @@ the warnings don't block, so YOU must get these right. WRONG → RIGHT:
 14. **Points vs pips.** A fixed range/SL/TP/breakout threshold in raw `*_points` is mis-scaled
     on 5-digit / JPY symbols. Use `QM_StopRulesPipsToPriceDistance` (pip_factor), not raw points.
 
+## QM HELPER SIGNATURES — call these EXACTLY (the #1 cause of build COMPILE errors)
+
+Do NOT guess these. Wrong return-type/param-order/enum usage is the dominant
+compile-failure (e.g. using a `void` function's return value = `error 143`).
+
+**Entry request + open (single-entry path):**
+- `struct QM_EntryRequest { QM_OrderType type; double price; double sl; double tp; string reason; int symbol_slot; int expiration_seconds; }` — **NO `lots` field**; the framework sizes lots via `QM_LotsForRisk`. Set `req.type/price/sl/tp/reason` only.
+- `req.type = QM_BUY` / `QM_SELL` (enum `QM_OrderType` = QM_BUY=0, QM_SELL=1, QM_BUY_LIMIT, QM_SELL_LIMIT, QM_BUY_STOP, QM_SELL_STOP). **NOT** `ORDER_TYPE_BUY`.
+- `req.price = 0.0` → framework fills market price at send. `req.sl = 0.0` / `req.tp = 0.0` → none.
+- `bool QM_TM_OpenPosition(const QM_EntryRequest &req, ulong &out_ticket)`.
+
+**Stops / takes — set as PRICES into req.sl / req.tp (all return a price `double`):**
+- `QM_StopATR(const string sym, const QM_OrderType type, const double entry_price, const int atr_period, const double atr_mult)`
+- `QM_StopFixedPips(sym, type, entry_price, pips)` · `QM_StopStructure(sym, type, entry_price, lookback, buffer)` · `QM_StopATRFromValue(sym, type, entry, atr_value, mult)`
+- `QM_TakeRR(const string sym, const QM_OrderType type, const double entry_price, const double sl_price, const double rr)` (RR-multiple TP) · `QM_TakeATRFromValue(sym, type, entry, atr_value, mult)`
+- `double QM_StopRulesPipsToPriceDistance(const string sym, const int pips)` (pips→price distance, scale-correct) · `double QM_StopRulesNormalizePrice(const string sym, const double price)`
+
+**Indicator readers (closed bar = shift 1; return `double`; NEVER raw iX):**
+- `QM_EMA(sym, tf, period, shift=1, price=PRICE_CLOSE)` · `QM_SMA(...)` · `QM_RSI(sym, tf, period, shift=1, price)` · `QM_ATR(sym, tf, period, shift=1)`
+- `QM_ADX(sym, tf, period, shift=1)` · `QM_ADX_PlusDI(...)` · `QM_ADX_MinusDI(...)`
+- `QM_BB_Upper(sym, tf, period, deviation, shift=1, price)` · `QM_BB_Middle/Lower(...)` — **the `deviation` arg is MANDATORY** (omitting it shifts every other arg → all bands read the same bar).
+- `QM_MACD_Main(sym, tf, fast, slow, signal, shift=1, price)` · `QM_MACD_Signal(...)`
+- `bool QM_IsNewBar(const string sym="", const ENUM_TIMEFRAMES tf=PERIOD_CURRENT)` — consume ONCE.
+
+**Position management (all `bool` unless noted):**
+- `QM_TM_ClosePosition(const ulong ticket, const QM_ExitReason reason)` — reasons: `QM_EXIT_STRATEGY`, `QM_EXIT_OPPOSITE_SIGNAL`, `QM_EXIT_TIME_STOP`, …
+- `QM_TM_MoveSL(ticket, double new_sl, string reason)` · `QM_TM_MoveTP(ticket, double new_tp, string reason)`
+- `QM_TM_TrailATR(ticket, int atr_period, double atr_mult)` · `QM_TM_MoveToBreakEven(ticket, int trigger_pips, int buffer_pips)` · `QM_TM_TrailStep(ticket, int trigger_pips, int step_pips)`
+- `QM_TM_AddToPosition(const ulong existing_ticket, const QM_EntryRequest &add_req)` (scale-in) · `QM_TM_PartialClose(ticket, double lots, QM_ExitReason)`
+- `double QM_TM_NormalizeVolume(sym, double requested)` · `double QM_TM_NormalizePrice(sym, double price)` · `int QM_TM_OpenPositionCount(int magic)` · `double QM_TM_OpenPnL(int magic)` · `int QM_FrameworkMagic()`
+- `double QM_LotsForRisk(const string sym, const double sl_points)`
+
+**Broker-time / DST (return `datetime` / `bool`):**
+- `QM_BrokerToUTC(datetime broker_time)` · `QM_UTCToBroker(datetime utc)` · `bool QM_IsUSDSTUTC(datetime utc)` — **only US DST exists; there is NO UK/London or JP DST helper** (London-fix EAs must derive UK DST: last-Sun-Mar→last-Sun-Oct).
+
+**Basket / cross-symbol (both `void`, call in OnInit AFTER QM_FrameworkInit):**
+- `void QM_SymbolGuardInit(const string &allowed[])` · `void QM_BasketWarmupHistory(const string &symbols[], ENUM_TIMEFRAMES tf, int bars)` — required or foreign-symbol reads return 0 in the tester → 0 trades.
+
+**`void` (never use the return value):** QM_SymbolGuardInit, QM_BasketWarmupHistory, QM_LogEvent, QM_EquityStreamOnNewBar, QM_FrameworkShutdown.
+
+**MQL5 ≠ C++ — these C/C++ idioms FAIL to compile (do NOT use them):**
+- `(void)param;` to silence an unused-parameter warning → `error 143: illegal use of 'void' type`. MQL5 does not warn on unused function params; just omit it. (Most common build break.)
+- No `nullptr` (use `NULL`), no `auto`, no range-for, no `std::`, no `#include <vector>`/STL, no exceptions/`try`, no lambdas. Use plain MQL5: fixed arrays, `ArrayResize`, explicit types.
+
 ## PERFORMANCE DISCIPLINE (strict — smoke runtime is bounded)
 
 Following the Framework Corset above eliminates ~all known perf-failure
