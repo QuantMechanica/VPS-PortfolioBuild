@@ -1,4 +1,9 @@
 ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
+12395,country-pairs,0,SP500.DWX,123950000,2026-06-18,Development,active
+12395,country-pairs,1,NDX.DWX,123950001,2026-06-18,Development,active
+12395,country-pairs,2,WS30.DWX,123950002,2026-06-18,Development,active
+12395,country-pairs,3,GDAXI.DWX,123950003,2026-06-18,Development,active
+12395,country-pairs,4,UK100.DWX,123950004,2026-06-18,Development,active
 10881,nt-aw-mom,0,SP500.DWX,108810000,2026-06-14,Development,active
 10881,nt-aw-mom,1,NDX.DWX,108810001,2026-06-14,Development,active
 10881,nt-aw-mom,2,WS30.DWX,108810002,2026-06-14,Development,active
@@ -10146,3 +10151,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11243,ht-h-contrarian,3,NZDUSD.DWX,112430003,2026-06-17,Claude,active
 11243,ht-h-contrarian,4,XAUUSD.DWX,112430004,2026-06-17,Claude,active
 11243,ht-h-contrarian,5,XAGUSD.DWX,112430005,2026-06-17,Claude,active
+11245,ht-pca-sscore,0,EURUSD.DWX,112450000,2026-06-18,Claude,active
+11245,ht-pca-sscore,1,GBPUSD.DWX,112450001,2026-06-18,Claude,active
+11245,ht-pca-sscore,2,AUDUSD.DWX,112450002,2026-06-18,Claude,active
+11245,ht-pca-sscore,3,NZDUSD.DWX,112450003,2026-06-18,Claude,active
+11245,ht-pca-sscore,4,NDX.DWX,112450004,2026-06-18,Claude,active
+11245,ht-pca-sscore,5,WS30.DWX,112450005,2026-06-18,Claude,active

@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_11245_HT_PCA_SSCORE_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "EURUSD.DWX", "GBPUSD.DWX", "AUDUSD.DWX", "NZDUSD.DWX",
+    "NDX.DWX", "WS30.DWX"
+  ],
+  "notes": [
+    "Avellaneda-Lee PCA s-score statistical arbitrage (Hudson & Thames PCA Approach). A FIXED 6-symbol universe (FX majors + US indices) is PCA-decomposed each closed D1 bar: the daily-return correlation matrix is eigendecomposed via deterministic symmetric Jacobi rotation (NO ML / no sklearn), each asset's standardized returns are OLS-regressed on the top-k principal-component factor returns, the regression residual is cumulated into an OU process fit closed-form as AR(1), and the s-score (X-m)/sigma_eq drives mean-reversion entries on the host residual. The EA runs one instance per registered host symbol; every instance computes the SAME universe-wide PCA and trades only its own host residual. Foreign .DWX reads bound at call site via QM_SymbolGuardInit + QM_BasketWarmupHistory; one position per magic on the host. All listed symbols verified present in dwx_symbol_matrix.csv. No external non-MT5 feed; closes read from the .DWX tester only."
+  ]
+}
