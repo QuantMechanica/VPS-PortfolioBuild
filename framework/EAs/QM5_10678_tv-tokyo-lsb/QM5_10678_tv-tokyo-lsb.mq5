@@ -146,7 +146,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // The card's Tokyo candle/range test is bespoke structural OHLC logic.
    // This hook is called only after the framework's QM_IsNewBar() gate.
    MqlRates bars[1];
-   const int copied = CopyRates(_Symbol, _Period, 1, 1, bars);
+   const int copied = CopyRates(_Symbol, _Period, 1, 1, bars); // perf-allowed: one closed checkpoint candle read; Strategy_EntrySignal is called only after QM_IsNewBar().
    if(copied != 1)
       return false;
 
