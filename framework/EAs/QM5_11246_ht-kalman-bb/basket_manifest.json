@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_11246_HT_KALMAN_BB_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Kalman dynamic-hedge-ratio pairs (deterministic predict/update recursion, no ML). Pairs EU/GU(0/1) AU/NU(2/3) XAU/XAG(4/5). Host leg via framework magic; partner legs via QM_BasketOpenPosition at their slots; both/all legs open+close together; warmup via QM_SymbolGuardInit+QM_BasketWarmupHistory. Closed-form estimators only, NO ML, no external feed. All legs in dwx_symbol_matrix.csv."
+  ]
+}

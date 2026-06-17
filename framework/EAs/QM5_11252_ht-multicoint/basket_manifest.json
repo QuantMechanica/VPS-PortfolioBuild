@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_11252_HT_MULTICOINT_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "NDX.DWX",
+    "WS30.DWX"
+  ],
+  "notes": [
+    "Multivariate cointegration basket (rolling multi-OLS Johansen analogue, >=3 legs). Default FX 4-leg EU(host)/GU/AU/NU; index legs NDX/WS30 for a separate setfile instance. Host leg via framework magic; partner legs via QM_BasketOpenPosition at their slots; both/all legs open+close together; warmup via QM_SymbolGuardInit+QM_BasketWarmupHistory. Closed-form estimators only, NO ML, no external feed. All legs in dwx_symbol_matrix.csv."
+  ]
+}

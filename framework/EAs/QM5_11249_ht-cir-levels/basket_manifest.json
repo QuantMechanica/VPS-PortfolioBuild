@@ -1,0 +1,15 @@
+{
+  "logical_symbol": "QM5_11249_HT_CIR_LEVELS_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "XAUUSD.DWX"
+  ],
+  "notes": [
+    "CIR mean-reverting positive-spread pairs (closed-form WLS on discretized CIR). Pairs EU/GU(0/1) AU/NU(2/3) XAU/EU(4/0). Host leg via framework magic; partner legs via QM_BasketOpenPosition at their slots; both/all legs open+close together; warmup via QM_SymbolGuardInit+QM_BasketWarmupHistory. Closed-form estimators only, NO ML, no external feed. All legs in dwx_symbol_matrix.csv."
+  ]
+}
