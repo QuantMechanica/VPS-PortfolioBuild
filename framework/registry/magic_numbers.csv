@@ -10209,3 +10209,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12386,comm-mom12m,1,XAGUSD.DWX,123860001,2026-06-18,Development,active
 12386,comm-mom12m,2,XTIUSD.DWX,123860002,2026-06-18,Development,active
 12386,comm-mom12m,3,XNGUSD.DWX,123860003,2026-06-18,Development,active
+12409,stock-st-rev,0,SP500.DWX,124090000,2026-06-18,Development,active
+12409,stock-st-rev,1,NDX.DWX,124090001,2026-06-18,Development,active
+12409,stock-st-rev,2,WS30.DWX,124090002,2026-06-18,Development,active
+12409,stock-st-rev,3,GDAXI.DWX,124090003,2026-06-18,Development,active
+12409,stock-st-rev,4,UK100.DWX,124090004,2026-06-18,Development,active
+12409,stock-st-rev,5,XAUUSD.DWX,124090005,2026-06-18,Development,active
+12409,stock-st-rev,6,XTIUSD.DWX,124090006,2026-06-18,Development,active
