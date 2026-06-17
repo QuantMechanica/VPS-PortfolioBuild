@@ -1,0 +1,26 @@
+{
+  "logical_symbol": "QM5_11052_PST_RELMOM_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "USDCHF.DWX",
+    "USDCAD.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "SP500.DWX",
+    "GDAXI.DWX",
+    "UK100.DWX",
+    "XAUUSD.DWX",
+    "XAGUSD.DWX",
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "pysystemtrade (Rob Carver) cross-sectional relative-momentum rule (relmomentum10/20/40/80). The EA runs one instance per host symbol. Each instance compares the host's volatility-normalised cumulative-return path to its OWN asset-class benchmark (FX majors / equity indices / commodities), built as the equal-weight mean of the foreign class peers read on D1. Foreign-symbol reads (Bars/CopyClose on the peers) are bound at call site to the peer symbol, not the host. A combined forecast across four horizons drives long/short entry (>=+5 / <=-5) and a signal-reversal exit (long exits <=+1, short exits >=-1); an emergency 3*ATR(D1,20) stop bounds worst-case risk. One position per magic on the host; no grid, no martingale. Class membership: FX = EURUSD/GBPUSD/USDJPY/AUDUSD/NZDUSD/USDCHF/USDCAD; INDEX = NDX/WS30/SP500/GDAXI/UK100; COMMODITY = XAUUSD/XAGUSD/XTIUSD/XNGUSD. A host only trades when it belongs to a class with >= min_class_members peers carrying data."
+  ]
+}
