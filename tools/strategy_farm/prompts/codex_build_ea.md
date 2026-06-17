@@ -313,6 +313,7 @@ compile-failure (e.g. using a `void` function's return value = `error 143`).
 **MQL5 ≠ C++ — these C/C++ idioms FAIL to compile (do NOT use them):**
 - `(void)param;` to silence an unused-parameter warning → `error 143: illegal use of 'void' type`. MQL5 does not warn on unused function params; just omit it. (Most common build break.)
 - No `nullptr` (use `NULL`), no `auto`, no range-for, no `std::`, no `#include <vector>`/STL, no exceptions/`try`, no lambdas. Use plain MQL5: fixed arrays, `ArrayResize`, explicit types.
+- Reserved type keywords CANNOT be variable names → `error 149 unexpected token`. The common trap is **`color`** (use `qqe_color`/`cloud_color` instead); also `datetime/string/double/int/bool/long/uint/char/short/float/input/struct/enum`.
 
 ## PERFORMANCE DISCIPLINE (strict — smoke runtime is bounded)
 
