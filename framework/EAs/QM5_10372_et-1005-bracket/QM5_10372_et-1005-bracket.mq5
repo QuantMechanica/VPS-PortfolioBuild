@@ -2,21 +2,7 @@
 #property version   "5.0"
 #property description "QM5_10372 Elite Trader 10:05 High-Low Bracket"
 
-// rework v2 2026-06-16: range-width ATR yardstick was on the M5 chart TF, so the
-// 35-min opening range (≈7 M5 bars) was compared to 1.5x a single M5 bar's
-// ATR(14). The opening range is structurally several multiples of one M5 bar,
-// so range_width <= 1.5*ATR(M5) was almost never true -> ~0 trades ->
-// MIN_TRADES_NOT_MET. Card intent ("skip if 10:05 range > 1.5 ATR(14)") needs a
-// daily-scale yardstick; switched the range-quality ATR reference to PERIOD_D1.
-
 #include <QM/QM_Common.mqh>
-
-// v2: source unchanged; code and magic-slot registration were correct in v1.
-// Root cause of v1 ONINIT_FAILED classification: run_smoke.ps1 scanned the
-// full day's terminal journal on T10 (2026-05-31) and picked up "tester stopped
-// because OnInit returns non-zero code 1" entries from OTHER concurrent tests.
-// The EA itself ran correctly (4 trades, exit_code=0, PF=0.13). _v2 forces a
-// fresh pipeline entry with a distinct artifact so Q02 retests cleanly.
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10372;
@@ -61,6 +47,7 @@ bool     g_long_taken_today = false;
 bool     g_short_taken_today = false;
 double   g_range_high = 0.0;
 double   g_range_low = 0.0;
+int      g_range_bars = 0;
 
 int Strategy_DayKey(const datetime t)
   {
@@ -96,6 +83,7 @@ void Strategy_ResetDay(const datetime t)
    g_short_taken_today = false;
    g_range_high = 0.0;
    g_range_low = 0.0;
+   g_range_bars = 0;
   }
 
 double Strategy_NormalizePrice(const double price)
@@ -105,13 +93,14 @@ double Strategy_NormalizePrice(const double price)
    return NormalizeDouble(price, (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS));
   }
 
-double Strategy_CurrentSpreadPrice()
+bool Strategy_CopyRatesByPosition(const int start_pos, const int count, MqlRates &rates[])
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
-      return 0.0;
-   return ask - bid;
+   if(count <= 0)
+      return false;
+   ArraySetAsSeries(rates, true);
+   // perf-allowed: opening-range structural math runs only inside Strategy_EntrySignal after the framework QM_IsNewBar() gate.
+   const int copied = CopyRates(_Symbol, _Period, start_pos, count, rates);
+   return (copied == count);
   }
 
 bool Strategy_HasOurPosition()
@@ -174,18 +163,7 @@ void Strategy_CancelOurPendingOrders()
          continue;
       if(!Strategy_IsOurPendingType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
          continue;
-
-      MqlTradeRequest request;
-      MqlTradeResult result;
-      ZeroMemory(request);
-      ZeroMemory(result);
-      request.action = TRADE_ACTION_REMOVE;
-      request.order = ticket;
-      request.symbol = _Symbol;
-      request.comment = "et_1005_cancel_pending";
-
-      string error_class = BROKER_OTHER;
-      QM_TradeContextSend(request, result, error_class);
+      QM_TM_RemovePendingOrder(ticket, "et_1005_cancel_pending");
      }
   }
 
@@ -215,15 +193,20 @@ bool Strategy_AfterExitTime(const datetime t)
 bool Strategy_RangeQualityOK()
   {
    const double range_width = g_range_high - g_range_low;
-   const double spread = Strategy_CurrentSpreadPrice();
-   // rework v2 2026-06-16: daily-scale ATR yardstick for the 35-min opening
-   // range (was _Period/M5, which made the AND-chain reject ~every day).
-   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   if(range_width <= 0.0 || spread <= 0.0 || atr <= 0.0)
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   double spread = 0.0;
+   if(ask > 0.0 && bid > 0.0 && ask > bid)
+      spread = ask - bid;
+
+   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+   if(range_width <= 0.0 || atr <= 0.0 || g_range_bars <= 0)
       return false;
-   if(range_width < 4.0 * spread)
+   if(spread > 0.0 && range_width < 4.0 * spread)
       return false;
-   return (range_width <= strategy_max_range_atr_mult * atr);
+
+   const double scaled_atr = atr * MathSqrt((double)g_range_bars);
+   return (range_width <= strategy_max_range_atr_mult * scaled_atr);
   }
 
 bool Strategy_BuildRequest(const QM_OrderType type,
@@ -243,9 +226,12 @@ bool Strategy_BuildRequest(const QM_OrderType type,
 
    if(req.sl <= 0.0)
       return false;
-   if((type == QM_BUY || type == QM_BUY_STOP) && !(req.sl < ((req.price > 0.0) ? req.price : SymbolInfoDouble(_Symbol, SYMBOL_BID))))
+
+   const double ref_buy = (req.price > 0.0) ? req.price : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ref_sell = (req.price > 0.0) ? req.price : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if((type == QM_BUY || type == QM_BUY_STOP) && !(req.sl < ref_buy))
       return false;
-   if((type == QM_SELL || type == QM_SELL_STOP) && !(req.sl > ((req.price > 0.0) ? req.price : SymbolInfoDouble(_Symbol, SYMBOL_ASK))))
+   if((type == QM_SELL || type == QM_SELL_STOP) && !(req.sl > ref_sell))
       return false;
    return true;
   }
@@ -284,9 +270,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_max_range_atr_mult <= 0.0)
       return false;
 
-   const datetime bar_time = iTime(_Symbol, _Period, 1);
+   MqlRates last_bar[];
+   if(!Strategy_CopyRatesByPosition(1, 1, last_bar))
+      return false;
+
+   const datetime bar_time = last_bar[0].time;
    if(bar_time <= 0)
       return false;
+
    Strategy_ResetDay(bar_time);
    Strategy_HasOurPosition();
 
@@ -296,21 +287,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(!g_range_ready && Strategy_InWindow(bar_min, open_min, bracket_min))
      {
-      const double high = iHigh(_Symbol, _Period, 1);
-      const double low = iLow(_Symbol, _Period, 1);
-      if(high <= 0.0 || low <= 0.0 || high <= low)
+      if(last_bar[0].high <= 0.0 || last_bar[0].low <= 0.0 || last_bar[0].high <= last_bar[0].low)
          return false;
 
       if(g_range_high <= 0.0 || g_range_low <= 0.0)
         {
-         g_range_high = high;
-         g_range_low = low;
+         g_range_high = last_bar[0].high;
+         g_range_low = last_bar[0].low;
         }
       else
         {
-         g_range_high = MathMax(g_range_high, high);
-         g_range_low = MathMin(g_range_low, low);
+         g_range_high = MathMax(g_range_high, last_bar[0].high);
+         g_range_low = MathMin(g_range_low, last_bar[0].low);
         }
+      g_range_bars++;
       return false;
      }
 
@@ -345,13 +335,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
 
       ulong buy_ticket = 0;
-      QM_TM_OpenPosition(buy_req, buy_ticket);
+      if(!QM_TM_OpenPosition(buy_req, buy_ticket))
+         return false;
       g_initial_orders_submitted = true;
       return true;
      }
 
-   const double close_last = iClose(_Symbol, _Period, 1);
-   const double close_prev = iClose(_Symbol, _Period, 2);
+   MqlRates cross_bars[];
+   if(!Strategy_CopyRatesByPosition(1, 2, cross_bars))
+      return false;
+
+   const double close_last = cross_bars[0].close;
+   const double close_prev = cross_bars[1].close;
    if(close_last <= 0.0 || close_prev <= 0.0)
       return false;
 
@@ -397,9 +392,9 @@ bool Strategy_ExitSignal()
 
       if(Strategy_AfterExitTime(TimeCurrent()))
          return true;
-      if(pos_type == POSITION_TYPE_BUY && bid > 0.0 && bid <= g_range_low - tick_size)
+      if(pos_type == POSITION_TYPE_BUY && bid > 0.0 && g_range_low > 0.0 && bid <= g_range_low - tick_size)
          return true;
-      if(pos_type == POSITION_TYPE_SELL && ask > 0.0 && ask >= g_range_high + tick_size)
+      if(pos_type == POSITION_TYPE_SELL && ask > 0.0 && g_range_high > 0.0 && ask >= g_range_high + tick_size)
          return true;
      }
    return false;
@@ -509,5 +504,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
-

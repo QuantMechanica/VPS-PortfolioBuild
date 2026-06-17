@@ -4,13 +4,13 @@
 **Slug:** et-1005-bracket
 **Source:** d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe (see `strategy-seeds/sources/d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-05-25
+**Last revised:** 2026-06-17
 
 ---
 
 ## 1. Strategy Logic
 
-The EA records the session high and low from the configured regular-session open until the configured 10:05 ET-equivalent bracket time. After the bracket is ready, it submits a buy stop one tick above the range high and a sell stop one tick below the range low, with the protective stop on the opposite side of the range. If a position is open, the opposite pending order is cancelled; the position exits at the configured 16:00 ET-equivalent time or when price breaks the opposite side of the bracket. The EA allows at most one long and one short entry per trading day.
+The EA records the session high and low from the configured regular-session open until the configured 10:05 ET-equivalent bracket time. After the bracket is ready, it submits a buy stop one tick above the range high and a sell stop one tick below the range low, with the protective stop on the opposite side of the range. If a position is open, the opposite pending order is cancelled; the position exits at the configured 16:00 ET-equivalent time or when price breaks the opposite side of the bracket. The range filter skips unusually wide brackets using ATR(14) scaled by the number of M5 bars in the opening range, and the EA allows at most one long and one short entry per trading day.
 
 ---
 
@@ -95,3 +95,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-05-25 | Initial build from card | 87c62a88-f8d3-49f1-9478-cb2105712dc3 |
+| v2 | 2026-06-17 | Rebuild in place from card | 80d22bf7-abe8-44d7-bf4b-b5cb7f921a54 |
