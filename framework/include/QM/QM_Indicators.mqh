@@ -27,6 +27,7 @@
 //   double QM_BB_Lower(sym, tf, period, deviation, shift=1, price=PRICE_CLOSE)
 //   double QM_BB_Middle(sym, tf, period, deviation, shift=1, price=PRICE_CLOSE)
 //   double QM_DeMarker(sym, tf, period, shift=1)
+//   double QM_MFI(sym, tf, period, shift=1)   // Money Flow Index on tick volume
 //   double QM_Envelope_Upper(sym, tf, period, deviation, method, shift=1, price=PRICE_CLOSE)
 //   double QM_Envelope_Lower(sym, tf, period, deviation, method, shift=1, price=PRICE_CLOSE)
 //
@@ -507,6 +508,26 @@ double QM_Momentum(const string sym, const ENUM_TIMEFRAMES tf, const int period,
                    const int shift = 1, const ENUM_APPLIED_PRICE price = PRICE_CLOSE)
   {
    return QM_IndicatorReadBuffer(QM_IndMomentum(sym, tf, period, price), 0, shift);
+  }
+
+// --- Money Flow Index (MFI) ---
+// .DWX symbols carry no real exchange volume in the tester, so MFI is computed
+// on TICK volume per the card's "map exchange volume to tick volume" rule.
+// Pooled like every other reader — never call iMFI / CopyBuffer in an EA.
+int QM_IndMFI(const string sym, const ENUM_TIMEFRAMES tf, const int period)
+  {
+   const string key = StringFormat("MFI|%s|%d|%d", sym, (int)tf, period);
+   int h = QM_IndicatorsLookup(key);
+   if(h != INVALID_HANDLE)
+      return h;
+   h = iMFI(sym, tf, period, VOLUME_TICK);
+   return QM_IndicatorsRegister(key, h);
+  }
+
+double QM_MFI(const string sym, const ENUM_TIMEFRAMES tf, const int period,
+              const int shift = 1)
+  {
+   return QM_IndicatorReadBuffer(QM_IndMFI(sym, tf, period), 0, shift);
   }
 
 // --- Ichimoku Kinko Hyo ---
