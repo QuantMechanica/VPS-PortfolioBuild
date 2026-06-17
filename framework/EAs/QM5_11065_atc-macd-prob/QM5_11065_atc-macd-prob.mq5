@@ -400,6 +400,16 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
+   // The probability snapshot is a fixed-size array. Guard that the configured
+   // history span (prob_lookback + pct_lookback + margin) fits SNAP_MAX so a
+   // sweep setfile cannot overrun it. This is a config check, not adaptation.
+   if(strategy_prob_lookback + strategy_atr_pct_lookback + 5 >= SNAP_MAX)
+     {
+      QM_LogEvent(QM_ERROR, "INIT_FAIL",
+                  "{\"reason\":\"prob_lookback+atr_pct_lookback exceeds SNAP_MAX\"}");
+      return INIT_FAILED;
+     }
+
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
