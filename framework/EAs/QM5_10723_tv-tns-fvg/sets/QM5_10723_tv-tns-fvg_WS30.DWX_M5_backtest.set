@@ -3,16 +3,16 @@
 ; ea_id:        10723
 ; ea_slug:      tv-tns-fvg
 ; ea_version:   v5.0
-; set_version:  s20260602-001
+; set_version:  s20260617-001
 ; symbol:       WS30.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   348a137655aadb4e944fb2ea5205e4134286f95204cba374a9be95656b6505fd
+; build_hash:   5851744531e9b5bbf660c237ad5c561bb08439339bf378a79bdbd587d22083fb
 ; author:       Development
-; date:         2026-06-02
+; date:         2026-06-17
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000

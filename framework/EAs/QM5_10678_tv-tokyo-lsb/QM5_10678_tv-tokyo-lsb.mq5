@@ -91,6 +91,12 @@ input double strategy_rr                         = 1.5;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(bid <= 0.0 || ask <= 0.0)
+      return true;
+   if(ask > 0.0 && bid > 0.0 && ask < bid)
+      return true;
    return false;
   }
 
@@ -137,9 +143,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(period_seconds <= 0)
       return false;
 
-   // perf-allowed: the card's Tokyo candle/range test is bespoke structural OHLC logic;
-   // this hook is called only after the framework's QM_IsNewBar() gate.
-   const datetime bar_open_broker = iTime(_Symbol, _Period, 1);
+   // The card's Tokyo candle/range test is bespoke structural OHLC logic.
+   // This hook is called only after the framework's QM_IsNewBar() gate.
+   MqlRates bars[1];
+   const int copied = CopyRates(_Symbol, _Period, 1, 1, bars);
+   if(copied != 1)
+      return false;
+
+   const datetime bar_open_broker = bars[0].time;
    if(bar_open_broker <= 0)
       return false;
 
@@ -169,8 +180,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(close_minute > reference_start_minute && open_minute <= magic_minute)
      {
-      const double h1 = iHigh(_Symbol, _Period, 1);
-      const double l1 = iLow(_Symbol, _Period, 1);
+      const double h1 = bars[0].high;
+      const double l1 = bars[0].low;
       if(h1 > 0.0 && l1 > 0.0 && h1 > l1)
         {
          if(!reference_range_has_data)
@@ -200,10 +211,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(((close_minute - first_minute) % strategy_checkpoint_interval_min) != 0)
       return false;
 
-   const double open1 = iOpen(_Symbol, _Period, 1);
-   const double high1 = iHigh(_Symbol, _Period, 1);
-   const double low1 = iLow(_Symbol, _Period, 1);
-   const double close1 = iClose(_Symbol, _Period, 1);
+   const double open1 = bars[0].open;
+   const double high1 = bars[0].high;
+   const double low1 = bars[0].low;
+   const double close1 = bars[0].close;
    if(open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0)
       return false;
 

@@ -41,9 +41,10 @@ input int    strategy_be_lock_points         = 5;
 input bool   strategy_filter_weak_sl         = true;
 input int    strategy_edge_offset_points     = 0;
 input int    strategy_max_trades_per_day     = 3;
-input int    strategy_session_start_hhmm     = 1530;
-input int    strategy_entry_cutoff_hhmm      = 2130;
-input int    strategy_session_end_hhmm       = 2200;
+input bool   strategy_use_symbol_session     = true;
+input int    strategy_session_start_hhmm     = 1630;
+input int    strategy_entry_cutoff_hhmm      = 2230;
+input int    strategy_session_end_hhmm       = 2300;
 input int    strategy_max_spread_points      = 0;
 
 int g_trade_day_key = 0;
@@ -61,6 +62,23 @@ int Strategy_Hhmm(const datetime t)
    MqlDateTime dt;
    TimeToStruct(t, dt);
    return dt.hour * 100 + dt.min;
+  }
+
+void Strategy_SessionTimes(int &start_hhmm, int &cutoff_hhmm, int &end_hhmm)
+  {
+   start_hhmm = strategy_session_start_hhmm;
+   cutoff_hhmm = strategy_entry_cutoff_hhmm;
+   end_hhmm = strategy_session_end_hhmm;
+
+   if(!strategy_use_symbol_session)
+      return;
+
+   if(StringFind(_Symbol, "GDAXI") >= 0)
+     {
+      start_hhmm = 1000;
+      cutoff_hhmm = 1830;
+      end_hhmm = 1900;
+     }
   }
 
 void Strategy_ResetDailyCounterIfNeeded(const datetime broker_time)
@@ -236,8 +254,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(g_trades_today >= strategy_max_trades_per_day)
       return false;
 
+   int session_start = 0;
+   int entry_cutoff = 0;
+   int session_end = 0;
+   Strategy_SessionTimes(session_start, entry_cutoff, session_end);
    const int hhmm = Strategy_Hhmm(broker_now);
-   if(hhmm < strategy_session_start_hhmm || hhmm >= strategy_entry_cutoff_hhmm)
+   if(hhmm < session_start || hhmm >= entry_cutoff)
       return false;
 
    if(strategy_max_spread_points > 0 && Strategy_CurrentSpreadPoints() > strategy_max_spread_points)
@@ -256,7 +278,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double edge = MathMax(0, strategy_edge_offset_points) * point;
    const MqlRates tap = rates[1];
    const int min_shift = MathMax(1, strategy_min_tap_age) + 1;
-   const int max_shift = MathMin(strategy_fvg_max_age, copied - 3);
+   const int max_shift = MathMin(strategy_fvg_max_age + 1, copied - 3);
 
    for(int shift = min_shift; shift <= max_shift; ++shift)
      {
@@ -338,7 +360,11 @@ void Strategy_ManageOpenPosition()
 
 bool Strategy_ExitSignal()
   {
-   return (Strategy_Hhmm(TimeCurrent()) >= strategy_session_end_hhmm);
+   int session_start = 0;
+   int entry_cutoff = 0;
+   int session_end = 0;
+   Strategy_SessionTimes(session_start, entry_cutoff, session_end);
+   return (Strategy_Hhmm(TimeCurrent()) >= session_end);
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)

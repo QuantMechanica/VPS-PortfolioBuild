@@ -3,16 +3,16 @@
 ; ea_id:        10678
 ; ea_slug:      tv-tokyo-lsb
 ; ea_version:   v5.0
-; set_version:  s20260531-001
+; set_version:  s20260617-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3f12e7a99207eced2e86fd2186feeff1598da6d9b5b41982ca187255c87b9f53
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-31
+; date:         2026-06-17
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000

@@ -4,7 +4,7 @@
 **Slug:** tv-tns-fvg
 **Source:** d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7
 **Author of this spec:** Codex
-**Last revised:** 2026-06-02
+**Last revised:** 2026-06-17
 
 ---
 
@@ -30,9 +30,10 @@ The EA trades M5 index CFD taps into active fair value gaps. A bullish gap is fo
 | strategy_filter_weak_sl | true | true/false | Skip setups where the stop would remain inside the tapped FVG. |
 | strategy_edge_offset_points | 0 | 0-1000 | Extra points required inside FVG edges for tap-candle clearance. |
 | strategy_max_trades_per_day | 3 | 1-20 | Maximum entry attempts per broker day. |
-| strategy_session_start_hhmm | 1530 | 0000-2359 | Broker-time session start, mapped from index regular session. |
-| strategy_entry_cutoff_hhmm | 2130 | 0000-2359 | Broker-time no-new-entry cutoff, mapped from 15:30 ET. |
-| strategy_session_end_hhmm | 2200 | 0000-2359 | Broker-time forced-flat session end, mapped from 16:00 ET. |
+| strategy_use_symbol_session | true | true/false | Use broker-time regular-session defaults by symbol, with GDAXI.DWX mapped to the DAX cash session. |
+| strategy_session_start_hhmm | 1630 | 0000-2359 | Broker-time fallback session start, mapped from US index regular session. |
+| strategy_entry_cutoff_hhmm | 2230 | 0000-2359 | Broker-time fallback no-new-entry cutoff, mapped from 15:30 ET. |
+| strategy_session_end_hhmm | 2300 | 0000-2359 | Broker-time fallback forced-flat session end, mapped from 16:00 ET. |
 | strategy_max_spread_points | 0 | 0-100000 | Optional spread ceiling in points; 0 disables the spread gate. |
 
 ---
@@ -101,3 +102,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-02 | Initial build from card | a85279dc-95c3-4911-b47e-bea925e21943 |
+| v2 | 2026-06-17 | Rebuild from approved card with symbol-session defaults | c896e7a8-63cb-457d-a77a-1cc5ddd33ca0 |

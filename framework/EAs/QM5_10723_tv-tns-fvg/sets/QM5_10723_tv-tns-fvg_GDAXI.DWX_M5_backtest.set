@@ -3,16 +3,16 @@
 ; ea_id:        10723
 ; ea_slug:      tv-tns-fvg
 ; ea_version:   v5.0
-; set_version:  s20260602-001
+; set_version:  s20260617-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2e57a064e7519913dd04efad4f5c8f91789e7334dc769940d03bb8b7198d4b9e
+; build_hash:   90d4f5c47b9f2eae1d1a21141ce5a52053aa6d477df0804e03fdd1c324af258e
 ; author:       Development
-; date:         2026-06-02
+; date:         2026-06-17
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000
