@@ -1,0 +1,9 @@
+{
+  "logical_symbol": "QM5_11156_QC_TACT_MOM_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": ["SP500.DWX", "NDX.DWX", "WS30.DWX", "XAUUSD.DWX"],
+  "notes": [
+    "QuantConnect tactical relative-momentum rotation. EA runs one instance per host symbol; each reads the full universe's D1 bars to rank 50-day momentum and goes long the host only when it is the single strongest sleeve (100%-allocation rule). Foreign reads via QM_SymbolGuardInit + QM_BasketWarmupHistory. Card's defensive BND leg ported to XAUUSD.DWX gold proxy (no DWX bond CFD). SP500.DWX is a backtest-only read member. One position per magic."
+  ]
+}

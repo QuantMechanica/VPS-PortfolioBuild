@@ -1,0 +1,13 @@
+{
+  "logical_symbol": "QM5_11178_ZIP_RSI_LS_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "SP500.DWX", "NDX.DWX", "WS30.DWX", "GDAXI.DWX",
+    "EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX",
+    "XAUUSD.DWX", "XAGUSD.DWX", "XTIUSD.DWX"
+  ],
+  "notes": [
+    "Cross-sectional RSI long/short. EA runs one instance per host symbol; each ranks the 10-symbol universe by RSI(14) on the closed D1 bar and goes LONG the host if it is top-N, SHORT if bottom-N. RSI used as a cross-sectional rank STATE (not a cross event). Foreign reads via QM_SymbolGuardInit + QM_BasketWarmupHistory. Card's GER40 ported to GDAXI.DWX; XAU/XAG/XTI normalized to .DWX. SP500.DWX is a backtest-only read member. One position per magic per host."
+  ]
+}
