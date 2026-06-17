@@ -1,0 +1,9 @@
+{
+  "logical_symbol": "QM5_11242_HT_COPULA_MPI_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": ["EURUSD.DWX", "GBPUSD.DWX", "AUDUSD.DWX", "NZDUSD.DWX", "NDX.DWX", "WS30.DWX"],
+  "notes": [
+    "Copula mispricing-index pairs trade (CLOSED-FORM Gaussian copula — NO ML/MLE). Three host/partner pairs: EURUSD/GBPUSD (slots 0/1), AUDUSD/NZDUSD (slots 2/3), NDX/WS30 (slots 4/5). rho via Kendall-tau (rho=sin(pi*tau/2), method-of-moments); conditional MPI via the closed-form Gaussian h-function; inline NormCDF (Abramowitz-Stegun) + NormInv (Acklam). Host leg via framework magic; partner leg via QM_BasketOpenPosition at its slot; both legs open/close together. Spread/ranks computed in-EA from .DWX D1 closes only — no external feed. All six legs broker-routable and in dwx_symbol_matrix.csv. Select pair per-setfile via qm_magic_slot_offset + strategy_partner_symbol + strategy_partner_slot."
+  ]
+}

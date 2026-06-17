@@ -1,0 +1,9 @@
+{
+  "logical_symbol": "QM5_11243_HT_H_CONTRARIAN_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": ["EURUSD.DWX", "GBPUSD.DWX", "AUDUSD.DWX", "NZDUSD.DWX", "XAUUSD.DWX", "XAGUSD.DWX"],
+  "notes": [
+    "Bogomolov H-construction contrarian spread pairs trade (deterministic, no ML, no external feed). 'H' = Bogomolov H-statistic (h_mult*stdev of the log-spread over a bounded formation window), NOT the Hurst exponent. Three host/partner pairs: EURUSD/GBPUSD (slots 0/1), AUDUSD/NZDUSD (slots 2/3), XAUUSD/XAGUSD (slots 4/5). Host leg via framework magic; partner via QM_BasketOpenPosition at its slot; equal-notional half-risk per leg; both legs open/close together. Per-D1-bar H-volatility qualification on a rolling 252-bar formation window. All six legs in dwx_symbol_matrix.csv. Modeled on sibling QM5_11240_ht-dist-pairs."
+  ]
+}
