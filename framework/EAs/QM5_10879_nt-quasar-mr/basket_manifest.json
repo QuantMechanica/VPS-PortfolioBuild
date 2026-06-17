@@ -1,0 +1,13 @@
+{
+  "logical_symbol": "QM5_10879_NT_QUASAR_MR_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "WS30.DWX"
+  ],
+  "notes": [
+    "NexusTrade 'Quasar' SMA/RSI oversold mean-reversion. EA runs one instance per universe symbol; each instance additionally reads SP500.DWX on D1 as a regime/proxy gate before taking an entry on its own symbol. Foreign-symbol reads (Bars/iClose/iRSI on the proxy) are bound at call site against the proxy symbol, not the per-instance symbol. One-position-per-magic; no grid."
+  ]
+}
