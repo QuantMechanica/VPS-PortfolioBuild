@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QuantMechanica V5 EA skeleton template"
+#property description "QM5_10729 TradingView SMC sweep + MSS + FVG (shary890)"
 
 #include <QM/QM_Common.mqh>
 
@@ -73,15 +73,255 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_swing_len         = 5;
-input double strategy_rr                = 2.0;
-input int    strategy_london_start_hhmm = 700;
-input int    strategy_london_end_hhmm   = 1000;
-input int    strategy_ny_start_hhmm     = 1230;
-input int    strategy_ny_end_hhmm       = 1600;
-input int    strategy_pivot_scan_bars   = 160;
-input int    strategy_max_spread_points = 0;
-input int    strategy_min_stop_points   = 0;
+// SMC sweep + MSS + FVG (TradingView "SMC ICT Backtest XAUUSD + MNQ", author
+// shary890). Mechanics from the APPROVED card QM5_10729:
+//   * Maintain last confirmed pivot high/low using swingLen = 5.
+//   * Long: current low sweeps below the last pivot low, close reclaims above it,
+//     close also breaks the previous-bar high (bullish MSS), and a bullish FVG
+//     is present (low[1] > high[3]). Short = mirror.
+//   * SL = signal-bar low (long) / high (short); TP = 2R.
+//   * Trade only inside the London or New York session windows.
+//   * Exit any open position at session end (no overnight carry).
+//
+// .DWX BACKTEST INVARIANT (binding, overrides the card's literal "same bar"
+// wording): the MSS must be detected BEFORE the FVG entry, and the FVG-confirmed
+// entry must fire on a LATER closed bar than the MSS-arm bar — never the same
+// bar. We therefore ARM the direction on the sweep+reclaim+MSS bar, then ENTER
+// on a subsequent closed bar that prints a same-direction FVG. The arm expires
+// after `strategy_arm_max_bars` closed bars to avoid stale signals.
+//
+// Session windows are expressed in BROKER time (DXZ NY-Close GMT+2/+3) so the
+// window lands on live hours regardless of US DST. The TradingView source does
+// not state a timezone explicitly; the card's London 07:00-10:00 / New York
+// 12:30-16:00 values are carried verbatim as broker-time HHMM inputs and are
+// overridable per symbol via the setfile (per .DWX invariant #5).
+input int    strategy_swing_len         = 5;     // pivot lookback each side (card swingLen=5)
+input int    strategy_arm_max_bars      = 6;     // bars an MSS arm stays valid for an FVG entry
+input double strategy_tp_rr             = 2.0;   // take-profit as R multiple (card 2R)
+input int    strategy_london_start_hhmm = 700;   // London window start, broker HHMM
+input int    strategy_london_end_hhmm   = 1000;  // London window end,   broker HHMM
+input int    strategy_ny_start_hhmm     = 1230;  // New York window start, broker HHMM
+input int    strategy_ny_end_hhmm       = 1600;  // New York window end,   broker HHMM
+input int    strategy_max_spread_points = 0;     // 0 = disabled (DWX quotes 0 spread in tester)
+
+// -----------------------------------------------------------------------------
+// File-scope MSS-arm state. Advanced once per closed bar via the new-bar gate
+// inside Strategy_EntrySignal (caller guarantees QM_IsNewBar()==true there).
+// -----------------------------------------------------------------------------
+int      g_arm_dir            = 0;       // +1 armed long, -1 armed short, 0 none
+datetime g_arm_bar_time       = 0;       // open-time of the bar that armed the MSS
+int      g_arm_bars_elapsed   = 0;       // closed bars since the arm formed
+double   g_last_pivot_high    = 0.0;     // last confirmed swing high (price)
+double   g_last_pivot_low     = 0.0;     // last confirmed swing low (price)
+
+int HHMMToMinutes(const int hhmm)
+  {
+   const int hour   = hhmm / 100;
+   const int minute = hhmm % 100;
+   return hour * 60 + minute;
+  }
+
+int BrokerMinuteOfDay(const datetime broker_time)
+  {
+   MqlDateTime dt;
+   ZeroMemory(dt);
+   TimeToStruct(broker_time, dt);
+   return dt.hour * 60 + dt.min;
+  }
+
+// True while broker wall-clock is inside the London OR New York window.
+bool InSession(const datetime broker_time)
+  {
+   const int m = BrokerMinuteOfDay(broker_time);
+   const bool london = (m >= HHMMToMinutes(strategy_london_start_hhmm) &&
+                        m <  HHMMToMinutes(strategy_london_end_hhmm));
+   const bool newyork = (m >= HHMMToMinutes(strategy_ny_start_hhmm) &&
+                         m <  HHMMToMinutes(strategy_ny_end_hhmm));
+   return (london || newyork);
+  }
+
+// True once the later (NY) window has closed for the day — used to force flat.
+bool SessionEnded(const datetime broker_time)
+  {
+   const int m = BrokerMinuteOfDay(broker_time);
+   return (m >= HHMMToMinutes(strategy_ny_end_hhmm));
+  }
+
+bool HasOurOpenPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      return true;
+     }
+   return false;
+  }
+
+bool SpreadAllowed()
+  {
+   // .DWX quotes ask==bid (0 modeled spread) in the tester — never fail-closed
+   // on zero spread. Only block a genuinely wide spread when a cap is set.
+   if(strategy_max_spread_points <= 0)
+      return true;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double ask   = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid   = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(point <= 0.0 || ask <= 0.0 || bid <= 0.0)
+      return true; // fail-open: do not block on bad/zero quotes in the tester
+   if(ask <= bid)
+      return true; // zero/negative modeled spread is fine
+   return ((ask - bid) / point <= strategy_max_spread_points);
+  }
+
+// --- Pivot detection (swingLen each side, closed bars) ----------------------
+// A confirmed pivot sits at the center shift `swing+1`: its high (low) is the
+// max (min) over the `swing` bars on each side. We evaluate using the most
+// recently CLOSED window so the pivot is fully confirmed (right side filled).
+// Bounded loop over 2*swing+1 closed bars.
+bool ConfirmedPivotHigh(const int swing, double &pivot_price)
+  {
+   if(swing <= 0)
+      return false;
+   const int center = swing + 1; // shift of the candidate pivot bar
+   const double center_high = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, center); // perf-allowed: bounded pivot scan, closed bars.
+   if(center_high <= 0.0)
+      return false;
+   for(int s = 1; s <= swing; ++s)
+     {
+      const double left  = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, center + s); // perf-allowed: bounded pivot scan.
+      const double right = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, center - s); // perf-allowed: bounded pivot scan.
+      if(left <= 0.0 || right <= 0.0)
+         return false;
+      if(center_high < left || center_high < right)
+         return false;
+     }
+   pivot_price = center_high;
+   return true;
+  }
+
+bool ConfirmedPivotLow(const int swing, double &pivot_price)
+  {
+   if(swing <= 0)
+      return false;
+   const int center = swing + 1;
+   const double center_low = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, center); // perf-allowed: bounded pivot scan, closed bars.
+   if(center_low <= 0.0)
+      return false;
+   for(int s = 1; s <= swing; ++s)
+     {
+      const double left  = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, center + s); // perf-allowed: bounded pivot scan.
+      const double right = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, center - s); // perf-allowed: bounded pivot scan.
+      if(left <= 0.0 || right <= 0.0)
+         return false;
+      if(center_low > left || center_low > right)
+         return false;
+     }
+   pivot_price = center_low;
+   return true;
+  }
+
+// Refresh the last confirmed pivot high/low once per closed bar.
+void RefreshPivots()
+  {
+   double ph = 0.0, pl = 0.0;
+   if(ConfirmedPivotHigh(strategy_swing_len, ph))
+      g_last_pivot_high = ph;
+   if(ConfirmedPivotLow(strategy_swing_len, pl))
+      g_last_pivot_low = pl;
+  }
+
+// --- FVG (3-candle imbalance) on the most recent closed bars ----------------
+// Bullish FVG: low of the newest closed bar (shift 1) is above the high of the
+// bar two before it (shift 3) — gap at the middle bar (shift 2). Bearish mirror.
+bool BullishFVG()
+  {
+   const double low_new  = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, 1);  // perf-allowed: card-defined 3-bar FVG, closed bars.
+   const double high_old = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, 3); // perf-allowed: card-defined 3-bar FVG, closed bars.
+   if(low_new <= 0.0 || high_old <= 0.0)
+      return false;
+   return (low_new > high_old);
+  }
+
+bool BearishFVG()
+  {
+   const double high_new = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: card-defined 3-bar FVG, closed bars.
+   const double low_old  = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, 3);  // perf-allowed: card-defined 3-bar FVG, closed bars.
+   if(high_new <= 0.0 || low_old <= 0.0)
+      return false;
+   return (high_new < low_old);
+  }
+
+void InitRequest(QM_EntryRequest &req)
+  {
+   req.type               = QM_BUY;
+   req.price              = 0.0;
+   req.sl                 = 0.0;
+   req.tp                 = 0.0;
+   req.reason             = "";
+   req.symbol_slot        = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+  }
+
+void ClearArm()
+  {
+   g_arm_dir          = 0;
+   g_arm_bar_time     = 0;
+   g_arm_bars_elapsed = 0;
+  }
+
+// Detect a fresh sweep + reclaim + MSS on the just-closed bar (shift 1) and arm
+// the direction. Overwrites any prior arm. Returns true if an arm was set.
+bool TryArmMSS()
+  {
+   const double close1 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: MSS confirmation, closed bars.
+   const double low1   = iLow(_Symbol,   (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: MSS confirmation, closed bars.
+   const double high1  = iHigh(_Symbol,  (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: MSS confirmation, closed bars.
+   const double high2  = iHigh(_Symbol,  (ENUM_TIMEFRAMES)_Period, 2); // perf-allowed: MSS confirmation, closed bars.
+   const double low2   = iLow(_Symbol,   (ENUM_TIMEFRAMES)_Period, 2); // perf-allowed: MSS confirmation, closed bars.
+   if(close1 <= 0.0 || low1 <= 0.0 || high1 <= 0.0 || high2 <= 0.0 || low2 <= 0.0)
+      return false;
+
+   const datetime bar1_time = iTime(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: arm-bar timestamp, closed bar.
+
+   // Bullish MSS: sweep below last pivot low, close reclaims above it, and close
+   // breaks the previous-bar high.
+   if(g_last_pivot_low > 0.0 &&
+      low1 < g_last_pivot_low &&
+      close1 > g_last_pivot_low &&
+      close1 > high2)
+     {
+      g_arm_dir          = +1;
+      g_arm_bar_time     = bar1_time;
+      g_arm_bars_elapsed = 0;
+      return true;
+     }
+
+   // Bearish MSS: sweep above last pivot high, close falls back below it, and
+   // close breaks the previous-bar low.
+   if(g_last_pivot_high > 0.0 &&
+      high1 > g_last_pivot_high &&
+      close1 < g_last_pivot_high &&
+      close1 < low2)
+     {
+      g_arm_dir          = -1;
+      g_arm_bar_time     = bar1_time;
+      g_arm_bars_elapsed = 0;
+      return true;
+     }
+
+   return false;
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -91,42 +331,14 @@ input int    strategy_min_stop_points   = 0;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   const int magic = QM_FrameworkMagic();
-   bool has_position = false;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-        {
-         has_position = true;
-         break;
-        }
-     }
-
-   if(has_position)
+   // Let trade management / exit run while a position is open.
+   if(HasOurOpenPosition())
       return false;
 
-   if(strategy_max_spread_points > 0)
-     {
-      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      if(point <= 0.0 || ask <= 0.0 || bid <= 0.0)
-         return true;
-      if((ask - bid) / point > strategy_max_spread_points)
-         return true;
-     }
+   if(!InSession(TimeCurrent()))
+      return true;
 
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   const int hhmm = dt.hour * 100 + dt.min;
-   const bool london = (hhmm >= strategy_london_start_hhmm && hhmm < strategy_london_end_hhmm);
-   const bool ny = (hhmm >= strategy_ny_start_hhmm && hhmm < strategy_ny_end_hhmm);
-   if(!london && !ny)
+   if(!SpreadAllowed())
       return true;
 
    return false;
@@ -137,119 +349,93 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
+   InitRequest(req);
 
-   if(strategy_swing_len < 1 || strategy_rr <= 0.0)
-      return false;
-
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   // --- Per-closed-bar state advance (runs once; caller gated on QM_IsNewBar) -
+   // 1) Age any existing arm BEFORE re-evaluating, so the entry below can only
+   //    fire on a bar strictly LATER than the arm bar (.DWX invariant: MSS
+   //    detected first, FVG entry on a later bar — never the same bar).
+   const datetime bar1_time = iTime(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: new-bar timestamp, closed bar.
+   bool armed_on_a_prior_bar = false;
+   if(g_arm_dir != 0)
      {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return false;
-     }
-
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   const int hhmm = dt.hour * 100 + dt.min;
-   const bool london = (hhmm >= strategy_london_start_hhmm && hhmm < strategy_london_end_hhmm);
-   const bool ny = (hhmm >= strategy_ny_start_hhmm && hhmm < strategy_ny_end_hhmm);
-   if(!london && !ny)
-      return false;
-
-   const int scan_bars = MathMax(strategy_pivot_scan_bars, strategy_swing_len * 2 + 10);
-   MqlRates rates[];
-   ArrayResize(rates, scan_bars);
-   const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, scan_bars, rates); // perf-allowed: bounded SMC pivot/FVG snapshot on the framework QM_IsNewBar entry path.
-   if(copied < strategy_swing_len * 2 + 4)
-      return false;
-   ArraySetAsSeries(rates, true);
-
-   double last_pivot_low = 0.0;
-   double last_pivot_high = 0.0;
-   const int max_shift = MathMin(copied - strategy_swing_len - 1, strategy_pivot_scan_bars - strategy_swing_len - 1);
-   for(int shift = strategy_swing_len; shift <= max_shift; ++shift)
-     {
-      bool pivot_low = true;
-      bool pivot_high = true;
-      for(int side = 1; side <= strategy_swing_len; ++side)
+      if(g_arm_bar_time > 0 && bar1_time > g_arm_bar_time)
         {
-         if(rates[shift].low >= rates[shift - side].low || rates[shift].low >= rates[shift + side].low)
-            pivot_low = false;
-         if(rates[shift].high <= rates[shift - side].high || rates[shift].high <= rates[shift + side].high)
-            pivot_high = false;
+         g_arm_bars_elapsed += 1;
+         armed_on_a_prior_bar = true;
         }
-
-      if(last_pivot_low <= 0.0 && pivot_low)
-         last_pivot_low = rates[shift].low;
-      if(last_pivot_high <= 0.0 && pivot_high)
-         last_pivot_high = rates[shift].high;
-      if(last_pivot_low > 0.0 && last_pivot_high > 0.0)
-         break;
+      if(g_arm_bars_elapsed > strategy_arm_max_bars)
+         ClearArm();
      }
 
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   // 2) Refresh confirmed pivots from the freshly closed window.
+   RefreshPivots();
+
+   // 3) Capture the arm that is active from a PRIOR bar before this bar can
+   //    re-arm (a fresh arm this bar must not enable a same-bar entry).
+   const int  active_dir    = (armed_on_a_prior_bar ? g_arm_dir : 0);
+   const bool can_enter_now = (active_dir != 0);
+
+   // 4) Attempt a fresh MSS arm on this just-closed bar (may overwrite the arm
+   //    AFTER we have captured `active_dir`, so it only affects later bars).
+   TryArmMSS();
+
+   // --- Entry gate: only on a bar later than the arm, inside session ---------
+   if(!can_enter_now)
+      return false;
+   if(HasOurOpenPosition())
+      return false;
+   if(!InSession(TimeCurrent()))
+      return false;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(point <= 0.0 || ask <= 0.0 || bid <= 0.0)
+   if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   const int broker_stop_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
-   const int min_stop_points = MathMax(strategy_min_stop_points, broker_stop_points);
+   const double sig_low  = iLow(_Symbol,  (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: signal-bar SL, closed bar.
+   const double sig_high = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: signal-bar SL, closed bar.
+   if(sig_low <= 0.0 || sig_high <= 0.0)
+      return false;
 
-   if(last_pivot_low > 0.0 &&
-      rates[0].low < last_pivot_low &&
-      rates[0].close > last_pivot_low &&
-      rates[0].close > rates[1].high &&
-      rates[0].low > rates[2].high)
+   // --- Long: armed bullish + a bullish FVG prints on this later bar ---------
+   if(active_dir > 0 && BullishFVG())
      {
       const double entry = ask;
-      const double sl = NormalizeDouble(rates[0].low, _Digits);
+      const double sl    = QM_StopRulesNormalizePrice(_Symbol, sig_low);
       if(sl <= 0.0 || sl >= entry)
-         return false;
-      const double sl_points = MathAbs(entry - sl) / point;
-      if(sl_points <= min_stop_points)
-         return false;
+        { ClearArm(); return false; }
+      const double tp    = QM_TakeRR(_Symbol, QM_BUY, entry, sl, strategy_tp_rr);
+      if(tp <= entry)
+        { ClearArm(); return false; }
 
-      req.type = QM_BUY;
-      req.price = 0.0;
-      req.sl = sl;
-      req.tp = NormalizeDouble(QM_TakeRR(_Symbol, QM_BUY, entry, sl, strategy_rr), _Digits);
-      req.reason = "SMC_MSS_FVG_LONG";
-      return (req.tp > entry);
+      req.type   = QM_BUY;
+      req.price  = 0.0;
+      req.sl     = sl;
+      req.tp     = tp;
+      req.reason = "TV_SMC_MSS_FVG_LONG";
+      ClearArm();
+      return true;
      }
 
-   if(last_pivot_high > 0.0 &&
-      rates[0].high > last_pivot_high &&
-      rates[0].close < last_pivot_high &&
-      rates[0].close < rates[1].low &&
-      rates[0].high < rates[2].low)
+   // --- Short: armed bearish + a bearish FVG prints on this later bar --------
+   if(active_dir < 0 && BearishFVG())
      {
       const double entry = bid;
-      const double sl = NormalizeDouble(rates[0].high, _Digits);
+      const double sl    = QM_StopRulesNormalizePrice(_Symbol, sig_high);
       if(sl <= 0.0 || sl <= entry)
-         return false;
-      const double sl_points = MathAbs(sl - entry) / point;
-      if(sl_points <= min_stop_points)
-         return false;
+        { ClearArm(); return false; }
+      const double tp    = QM_TakeRR(_Symbol, QM_SELL, entry, sl, strategy_tp_rr);
+      if(tp >= entry || tp <= 0.0)
+        { ClearArm(); return false; }
 
-      req.type = QM_SELL;
-      req.price = 0.0;
-      req.sl = sl;
-      req.tp = NormalizeDouble(QM_TakeRR(_Symbol, QM_SELL, entry, sl, strategy_rr), _Digits);
-      req.reason = "SMC_MSS_FVG_SHORT";
-      return (req.tp > 0.0 && req.tp < entry);
+      req.type   = QM_SELL;
+      req.price  = 0.0;
+      req.sl     = sl;
+      req.tp     = tp;
+      req.reason = "TV_SMC_MSS_FVG_SHORT";
+      ClearArm();
+      return true;
      }
 
    return false;
@@ -259,41 +445,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no trailing, break-even, partial close, or pyramiding.
+   // Card uses a fixed signal-bar SL and a 2R TP only; no BE, trail, or partial
+   // close. Force-flat at session end is handled in Strategy_ExitSignal.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const int magic = QM_FrameworkMagic();
-   bool has_position = false;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-        {
-         has_position = true;
-         break;
-        }
-     }
-
-   if(!has_position)
+   // Card: exit any open position at session end if TP/SL has not fired.
+   if(!SessionEnded(TimeCurrent()))
       return false;
-
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   const int hhmm = dt.hour * 100 + dt.min;
-   const bool london = (hhmm >= strategy_london_start_hhmm && hhmm < strategy_london_end_hhmm);
-   const bool ny = (hhmm >= strategy_ny_start_hhmm && hhmm < strategy_ny_end_hhmm);
-   if(!london && !ny)
-      return true;
-
-   return false;
+   return HasOurOpenPosition();
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
@@ -301,7 +464,6 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   (void)broker_time;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 
