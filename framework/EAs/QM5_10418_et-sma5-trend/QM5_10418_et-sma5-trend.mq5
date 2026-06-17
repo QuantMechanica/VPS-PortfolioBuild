@@ -74,20 +74,85 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input ENUM_TIMEFRAMES strategy_signal_tf          = PERIOD_M2;
-input int             strategy_sma_period         = 5;
-input int             strategy_atr_period         = 20;
-input double          strategy_atr_stop_mult      = 1.0;
-input bool            strategy_distance_gate_on   = true;
-input double          strategy_distance_min_pct   = 0.05;
-input double          strategy_distance_max_pct   = 3.0;
-input int             strategy_session1_start_hhmm = 1530;
-input int             strategy_session1_end_hhmm   = 1730;
-input int             strategy_session2_start_hhmm = 2100;
-input int             strategy_session2_end_hhmm   = 2200;
+input int             strategy_sma_period         = 5;     // card: SMA length 5 (sweep 5/8/10 in P3)
+input int             strategy_atr_period         = 20;    // card: ATR(20) emergency stop
+input double          strategy_atr_stop_mult      = 1.0;   // card: 1.0 * ATR (sweep 0.75/1.0/1.5)
+input bool            strategy_distance_gate_on   = true;  // card: distance gate baseline ON
+input double          strategy_distance_min_pct   = 0.05;  // card: lower bound 0.05% of SMA
+input double          strategy_distance_max_pct   = 3.0;   // card: upper bound 3.0% of SMA
+// Session windows are expressed in EXCHANGE local wall-clock (ET for US index
+// cash). The card trades the first two hours and the last hour of the index
+// cash session. US cash open = 09:30 ET, close = 16:00 ET, so:
+//   first two hours = 09:30..11:30 ET ; last hour = 15:00..16:00 ET.
+// DXZ broker time = NY-close GMT+2/+3 (DST-aware). ET = UTC-5/-4. Because BOTH
+// ET and broker time shift together on the US-DST boundary, the ET->broker
+// offset is a CONSTANT +7 hours year-round. We add that fixed offset to the
+// exchange-local window so the window stays anchored to the cash session across
+// the DST boundary (invariant #5) WITHOUT per-tick DST math. For a non-US-ET
+// session (e.g. DAX/CET) a setfile can override these four hhmm values and the
+// offset; see open_questions.
+input int             strategy_exch_to_broker_offset_h = 7;     // ET->DXZ-broker = +7h constant
+input int             strategy_session1_start_hhmm     = 930;   // 09:30 ET cash open
+input int             strategy_session1_end_hhmm       = 1130;  // 11:30 ET (first two hours)
+input int             strategy_session2_start_hhmm     = 1500;  // 15:00 ET (last hour start)
+input int             strategy_session2_end_hhmm       = 1600;  // 16:00 ET cash close
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
+
+// Convert an exchange-local HHMM to a broker-time HHMM using the fixed
+// exchange->broker hour offset. Returns minutes-of-day in broker time so the
+// caller can compare against the current broker bar time. Wrap-safe across
+// midnight (result kept in [0,1440)).
+int Strategy_ExchHHMMToBrokerMinutes(const int exch_hhmm)
+  {
+   const int exch_min = (exch_hhmm / 100) * 60 + (exch_hhmm % 100);
+   int broker_min = exch_min + strategy_exch_to_broker_offset_h * 60;
+   broker_min %= 1440;
+   if(broker_min < 0)
+      broker_min += 1440;
+   return broker_min;
+  }
+
+// TRUE if the current broker bar-open time falls inside either trade window.
+// Keyed off the open time of the forming bar (iTime shift 0), per invariant #12
+// (do not gate on exact tick minute).
+bool Strategy_InTradeWindow()
+  {
+   const datetime bar_open = iTime(_Symbol, strategy_signal_tf, 0);
+   if(bar_open <= 0)
+      return false;
+   MqlDateTime dt;
+   TimeToStruct(bar_open, dt);
+   const int now_min = dt.hour * 60 + dt.min;
+
+   const int s1_start = Strategy_ExchHHMMToBrokerMinutes(strategy_session1_start_hhmm);
+   const int s1_end   = Strategy_ExchHHMMToBrokerMinutes(strategy_session1_end_hhmm);
+   const int s2_start = Strategy_ExchHHMMToBrokerMinutes(strategy_session2_start_hhmm);
+   const int s2_end   = Strategy_ExchHHMMToBrokerMinutes(strategy_session2_end_hhmm);
+
+   const bool in_first = (now_min >= s1_start && now_min < s1_end);
+   const bool in_last  = (now_min >= s2_start && now_min < s2_end);
+   return (in_first || in_last);
+  }
+
+// TRUE if this EA already holds a position on the current symbol/magic.
+bool Strategy_HasOpenPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return true;
+     }
+   return false;
+  }
 
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.

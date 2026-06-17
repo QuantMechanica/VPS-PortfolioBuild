@@ -254,9 +254,15 @@ bool Strategy_CurrentSpreadAllows()
    if(strategy_spread_lookback_days < 1 || strategy_same_slot_bars_per_day < 1)
       return true;
 
+   // .DWX BACKTEST INVARIANT #1: the Darwinex tester quotes ask == bid, so
+   // SYMBOL_SPREAD and iSpread() both read 0. A spread filter that fail-closes
+   // on a zero current spread (or that can never build a non-zero rolling
+   // percentile) would block every trade. Treat a non-positive current spread
+   // as "no measurable spread" and ALLOW; only an explicitly-too-wide live
+   // spread relative to the rolling 80th percentile is rejected.
    const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
    if(current_spread <= 0)
-      return false;
+      return true;
 
    double spreads[];
    ArrayResize(spreads, strategy_spread_lookback_days);
@@ -271,6 +277,8 @@ bool Strategy_CurrentSpreadAllows()
       count++;
      }
 
+   // Not enough historical spread observations (e.g. all-zero .DWX history) →
+   // the percentile is undefined, so do not block.
    if(count < strategy_min_beta_observations)
       return true;
 
@@ -424,7 +432,10 @@ bool Strategy_ExitSignal()
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   (void)broker_time;
+   // Defer to the central two-axis news filter (QM_NewsAllowsTrade2). No custom
+   // high-impact handling required for this strategy. MQL5 does not warn on
+   // unused parameters, so broker_time is simply left untouched (a C-style
+   // `(void)broker_time;` cast is illegal in MQL5 — error 143).
    return false;
   }
 
