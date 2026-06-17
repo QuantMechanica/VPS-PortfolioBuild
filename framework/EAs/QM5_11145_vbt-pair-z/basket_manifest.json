@@ -1,0 +1,13 @@
+{
+  "logical_symbol": "QM5_11145_VBT_PAIR_Z_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "EURUSD.DWX", "GBPUSD.DWX",
+    "AUDUSD.DWX", "NZDUSD.DWX",
+    "GDAXI.DWX", "NDX.DWX"
+  ],
+  "notes": [
+    "Two-leg cointegration pairs trade (rolling-OLS spread z-score, +/-1.96 entry, zero-cross exit). Three pairs registered as host/partner slot pairs: EURUSD/GBPUSD (slots 0/1), AUDUSD/NZDUSD (slots 2/3), GDAXI/NDX (slots 4/5). Each instance trades a host leg via the framework magic and the partner leg via QM_BasketOpenPosition at the partner's registered slot; both legs open/close together, partner opened first so a failed partner aborts the pair (no naked leg). Spread z-score computed in-EA from host+partner .DWX D1 closes only — no external feed. Card's GER40.DWX index leg ported to GDAXI.DWX (the DAX-40 matrix symbol). All six legs verified present in dwx_symbol_matrix.csv. Set strategy_partner_symbol + strategy_partner_slot + qm_magic_slot_offset per-setfile to select the pair."
+  ]
+}
