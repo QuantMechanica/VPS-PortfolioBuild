@@ -32,8 +32,12 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input ENUM_TIMEFRAMES strategy_signal_tf          = PERIOD_M5;
-input int    strategy_session_start_hhmm          = 900;
-input int    strategy_session_end_hhmm            = 1730;
+// Session HHMM in BROKER time (inv #5/#13). DXZ broker = NY-Close GMT+2/+3,
+// Frankfurt cash 09:00-17:30 CET/CEST ~ broker 10:00-18:30 year-round
+// (broker = Frankfurt local + 1h in both DST regimes). Override per symbol in
+// the setfile if a different cash session is desired.
+input int    strategy_session_start_hhmm          = 1000;
+input int    strategy_session_end_hhmm            = 1830;
 input int    strategy_session_skip_minutes        = 15;
 input int    strategy_ranking_minutes             = 60;
 input int    strategy_holding_minutes             = 60;
@@ -100,13 +104,16 @@ bool Strategy_AfterSessionEnd(const datetime broker_time)
    return (Strategy_MinutesOfDay(broker_time) >= end);
   }
 
-bool Strategy_EvaluationCadenceAllows(const datetime broker_time)
+bool Strategy_EvaluationCadenceAllows()
   {
    const int start = Strategy_HhmmToMinutes(strategy_session_start_hhmm);
    if(start < 0 || strategy_ranking_minutes <= 0)
       return false;
 
-   const int offset = Strategy_MinutesOfDay(broker_time) - start;
+   // Key off the M5 bar-OPEN minute, not the live tick minute (inv #12). The
+   // whole boundary bar (e.g. the 10:00 M5 bar) then qualifies, so the new-bar
+   // entry pass at the start of the bucket always sees an open cadence.
+   const int offset = Strategy_MinutesOfDay(iTime(_Symbol, strategy_signal_tf, 0)) - start;
    if(offset < 0)
       return false;
    return ((offset % strategy_ranking_minutes) == 0);
@@ -215,9 +222,13 @@ double Strategy_Percentile(double &values[], const int count, const double perce
 
 bool Strategy_CurrentSpreadAllows()
   {
+   // DWX tester invariant #1: .DWX symbols quote ask==bid, so SYMBOL_SPREAD and
+   // iSpread() both read 0 here. The rolling-80th-percentile spread filter is a
+   // LIVE-only refinement; it must never fail-closed on zero spread or it blocks
+   // every backtest trade. With no genuine spread data, ALLOW the trade.
    const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
    if(current_spread <= 0)
-      return false;
+      return true; // zero modeled spread (tester) -> do not block
    if(strategy_spread_lookback_bars <= 0)
       return true;
 
@@ -233,6 +244,7 @@ bool Strategy_CurrentSpreadAllows()
       count++;
      }
 
+   // Insufficient genuine-spread history (e.g. tester) -> allow.
    if(count < 20)
       return true;
 
@@ -254,7 +266,7 @@ bool Strategy_NoTradeFilter()
    const datetime broker_now = TimeCurrent();
    if(!Strategy_InEntrySession(broker_now))
       return true;
-   if(!Strategy_EvaluationCadenceAllows(broker_now))
+   if(!Strategy_EvaluationCadenceAllows())
       return true;
    return false;
   }
@@ -270,7 +282,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    const datetime broker_now = TimeCurrent();
-   if(!Strategy_InEntrySession(broker_now) || !Strategy_EvaluationCadenceAllows(broker_now))
+   if(!Strategy_InEntrySession(broker_now) || !Strategy_EvaluationCadenceAllows())
       return false;
 
    string worst_symbol = "";
@@ -370,8 +382,7 @@ bool Strategy_ExitSignal()
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   (void)broker_time;
-   return false;
+   return false; // defer to QM_NewsAllowsTrade(...)
   }
 
 int OnInit()

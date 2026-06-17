@@ -122,14 +122,17 @@ bool Strategy_IsSessionClose(const datetime broker_time)
    return (Strategy_MinutesOfDay(broker_time) >= close_min);
   }
 
-bool Strategy_CurrentSpreadPrice(double &spread_price)
+// Returns the current spread as a price distance, or 0.0 when there is no
+// measurable spread. On .DWX symbols the tester quotes ask == bid (zero
+// modeled spread) — callers MUST treat 0.0 as "no spread filter" and fail
+// OPEN, never block the trade (DWX invariant #1: never gate on zero spread).
+double Strategy_CurrentSpreadPrice()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
-      return false;
-   spread_price = ask - bid;
-   return true;
+      return 0.0;
+   return (ask - bid);
   }
 
 bool Strategy_HasOpenPosition(ENUM_POSITION_TYPE &position_type)
@@ -164,12 +167,16 @@ bool Strategy_BuildMarketRequest(const QM_OrderType side,
    if(sl <= 0.0)
       return false;
 
-   double spread_price = 0.0;
-   if(!Strategy_CurrentSpreadPrice(spread_price))
+   const double stop_distance = MathAbs(entry - sl);
+   if(stop_distance <= 0.0)
       return false;
 
-   const double stop_distance = MathAbs(entry - sl);
-   if(stop_distance <= 0.0 || stop_distance < strategy_min_stop_spreads * spread_price)
+   // Card: skip entries where the stop distance is below four spreads. DWX
+   // invariant #1 — only apply when a real spread is quoted; on zero spread
+   // (the tester) fail OPEN so this never silently blocks every trade.
+   const double spread_price = Strategy_CurrentSpreadPrice();
+   if(spread_price > 0.0 && strategy_min_stop_spreads > 0.0 &&
+      stop_distance < strategy_min_stop_spreads * spread_price)
       return false;
 
    req.type = side;
@@ -199,9 +206,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Strategy_IsFinalEntryWindow(TimeCurrent()) || Strategy_IsSessionClose(TimeCurrent()))
       return false;
 
+   // Card: one active position per symbol/magic — no stacking, no pyramiding.
+   ENUM_POSITION_TYPE existing_type;
+   if(Strategy_HasOpenPosition(existing_type))
+      return false;
+
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
-   const int regime = QM_Sig_Price_Above_MA(_Symbol, tf, strategy_sma_period, 0.0, 1);
-   if(regime == 0)
+
+   // Regime filter: closed-bar close[1] vs SMA(150). Card mandates a SIMPLE
+   // moving average (not EMA), so read QM_SMA directly rather than the generic
+   // price-vs-MA signal helper (which uses EMA internally).
+   const double close1 = iClose(_Symbol, tf, 1);
+   const double sma1   = QM_SMA(_Symbol, tf, strategy_sma_period, 1);
+   if(close1 <= 0.0 || sma1 <= 0.0)
       return false;
 
    const double rsi_now = QM_RSI(_Symbol, tf, strategy_rsi_period, 1);
@@ -209,10 +226,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(rsi_now <= 0.0 || rsi_prev <= 0.0)
       return false;
 
-   if(regime > 0 && rsi_prev >= strategy_rsi_oversold && rsi_now < strategy_rsi_oversold)
+   // RSI level-cross is the single trigger EVENT; the SMA regime is a STATE
+   // filter (DWX invariant #4 — do not require two cross events on one bar).
+   if(close1 > sma1 && rsi_prev >= strategy_rsi_oversold && rsi_now < strategy_rsi_oversold)
       return Strategy_BuildMarketRequest(QM_BUY, "SMA150_RSI5_CROSS_BELOW_30_LONG", req);
 
-   if(regime < 0 && rsi_prev <= strategy_rsi_overbought && rsi_now > strategy_rsi_overbought)
+   if(close1 < sma1 && rsi_prev <= strategy_rsi_overbought && rsi_now > strategy_rsi_overbought)
       return Strategy_BuildMarketRequest(QM_SELL, "SMA150_RSI5_CROSS_ABOVE_70_SHORT", req);
 
    return false;
@@ -253,7 +272,6 @@ bool Strategy_ExitSignal()
 // News Filter Hook: no card-specific override; central framework news gate applies.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   (void)broker_time;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 

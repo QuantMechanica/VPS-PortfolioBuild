@@ -5,33 +5,28 @@
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA SKELETON
+// QM5_10419 — Elite Trader SPM Tuned MACD (5/13/6 on M5)
 // -----------------------------------------------------------------------------
-// Fill in only the five Strategy_* hooks below. Everything else is framework
-// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
-// risk + magic + news + Friday-close guard rails). The framework provides:
+// Card: QM5_10419_et-spm-macd  (g0_status: APPROVED)
+// Source: jack hershey / frostengine, SPM Boot Camp p9, Elite Trader 2008-10-21
 //
-//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
-//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
-//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
-//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
-//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
-//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
-//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
-//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
-//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
+// Mechanic (baseline M5, MACD 5/13/6):
+//   Long  : MACD line > 0 AND signal line > 0 (zero-line STATES) AND MACD line
+//           crosses ABOVE signal line on the last completed bar (trigger EVENT).
+//   Short : MACD line < 0 AND signal line < 0 (zero-line STATES) AND MACD line
+//           crosses BELOW signal line on the last completed bar (trigger EVENT).
+//           Entry at next bar open (req.price = 0 -> framework market fill).
+//   Exit  : opposite MACD/signal cross, OR histogram crosses through zero,
+//           OR strategy_max_hold_bars (24) closed M5 bars elapsed (time stop).
+//   Stop  : strategy_atr_stop_mult (1.5) * ATR(20) from entry. Reject if stop
+//           distance < 4x spread, but only when a GENUINE positive spread is
+//           modeled (.DWX quotes zero spread in the tester).
+//   Filter: liquid index/metal session window; one position per symbol/magic
+//           (framework enforces single-entry; entry simply re-arms on next bar).
 //
-// DO NOT
-//   - Write per-EA IsNewBar() — use QM_IsNewBar()
-//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
-//     use the QM_* readers above. The framework pools handles and releases them
-//     on shutdown.
-//   - CopyRates over warmup windows on every tick. If you genuinely need raw
-//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
-//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
-//     to magic_numbers.csv, run:
-//         python framework/scripts/update_magic_resolver.py
-//     This is idempotent and preserves all rows.
+// Only the five Strategy_* hooks are filled; all framework wiring below the
+// hooks is kept verbatim from EA_Skeleton.mq5. Uses ONLY pooled QM_* readers
+// (no raw iMACD/iATR, no per-EA IsNewBar). qm_ea_id = 10419.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -143,7 +138,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const double spread = ask - bid;
    const double stop_distance = strategy_atr_stop_mult * atr;
-   if(stop_distance <= 0.0 || stop_distance < 4.0 * spread)
+   if(stop_distance <= 0.0)
+      return false;
+   // Reject only when a GENUINE (positive) spread is modeled and the stop is
+   // tighter than 4x it. .DWX quotes zero spread in the tester (ask==bid),
+   // which must NOT block trading (DWX backtest invariant #1).
+   if(spread > 0.0 && stop_distance < 4.0 * spread)
       return false;
 
    if(macd1 > 0.0 && sig1 > 0.0 && macd2 <= sig2 && macd1 > sig1)
@@ -230,7 +230,6 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   (void)broker_time;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 

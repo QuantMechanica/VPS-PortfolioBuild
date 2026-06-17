@@ -161,24 +161,13 @@ bool Strategy_NoTradeFilter()
    if((ENUM_TIMEFRAMES)_Period != strategy_signal_tf)
       return true;
 
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return false;
-     }
+   // If we already hold this EA's position, allow the per-tick pipeline through
+   // so Strategy_ExitSignal can manage / close it (including session-end exit).
+   if(Strategy_HasOpenPosition())
+      return false;
 
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   const int now_hhmm = dt.hour * 100 + dt.min;
-   const bool in_first = (now_hhmm >= strategy_session1_start_hhmm && now_hhmm < strategy_session1_end_hhmm);
-   const bool in_last = (now_hhmm >= strategy_session2_start_hhmm && now_hhmm < strategy_session2_end_hhmm);
-   return !(in_first || in_last);
+   // Flat: only allow new-entry evaluation inside a trade window.
+   return !Strategy_InTradeWindow();
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -199,25 +188,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(strategy_sma_period <= 1 || strategy_atr_period <= 0 || strategy_atr_stop_mult <= 0.0)
       return false;
 
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   const int now_hhmm = dt.hour * 100 + dt.min;
-   const bool in_first = (now_hhmm >= strategy_session1_start_hhmm && now_hhmm < strategy_session1_end_hhmm);
-   const bool in_last = (now_hhmm >= strategy_session2_start_hhmm && now_hhmm < strategy_session2_end_hhmm);
-   if(!(in_first || in_last))
+   // No overnight holding + one position per symbol/magic: only a NEW entry
+   // fires inside a trade window while flat.
+   if(!Strategy_InTradeWindow())
       return false;
-
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return false;
-     }
+   if(Strategy_HasOpenPosition())
+      return false;
 
    const double close1 = iClose(_Symbol, strategy_signal_tf, 1);
    const double sma1 = QM_SMA(_Symbol, strategy_signal_tf, strategy_sma_period, 1);
@@ -295,18 +271,17 @@ bool Strategy_ExitSignal()
    if(!have_position)
       return false;
 
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   const int now_hhmm = dt.hour * 100 + dt.min;
-   const bool in_first = (now_hhmm >= strategy_session1_start_hhmm && now_hhmm < strategy_session1_end_hhmm);
-   const bool in_last = (now_hhmm >= strategy_session2_start_hhmm && now_hhmm < strategy_session2_end_hhmm);
-   if(!(in_first || in_last))
+   // Session-end / no-overnight exit: outside both windows -> close now.
+   if(!Strategy_InTradeWindow())
       return true;
 
-   const double close1 = iClose(_Symbol, strategy_signal_tf, 1);
-   const double sma1 = QM_SMA(_Symbol, strategy_signal_tf, strategy_sma_period, 1);
+   // Invalidation exits (card). Closed-bar reads: "Close" = last closed bar
+   // (shift 1) vs its own SMA (shift 1); "prior Low/High" = the bar before that
+   // (shift 2). Long closes on Close<SMA OR Close<Low[1]; short is the mirror.
+   const double close1   = iClose(_Symbol, strategy_signal_tf, 1);
+   const double sma1     = QM_SMA(_Symbol, strategy_signal_tf, strategy_sma_period, 1);
    const double low_prev = iLow(_Symbol, strategy_signal_tf, 2);
-   const double high_prev = iHigh(_Symbol, strategy_signal_tf, 2);
+   const double high_prev= iHigh(_Symbol, strategy_signal_tf, 2);
    if(close1 <= 0.0 || sma1 <= 0.0 || low_prev <= 0.0 || high_prev <= 0.0)
       return false;
 
@@ -321,8 +296,7 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   (void)broker_time;
-   return false; // defer to QM_NewsAllowsTrade(...)
+   return false; // defer to QM_NewsAllowsTrade(...) — no custom news handling
   }
 
 // -----------------------------------------------------------------------------

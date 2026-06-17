@@ -463,7 +463,7 @@ bool Strategy_ExitSignal()
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   (void)broker_time;
+   // Defer to the framework two-axis news filter (QM_NewsAllowsTrade2).
    return false;
   }
 
