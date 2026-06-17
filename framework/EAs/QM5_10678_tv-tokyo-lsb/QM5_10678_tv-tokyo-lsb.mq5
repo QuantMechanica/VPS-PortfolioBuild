@@ -73,11 +73,12 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_magic_close_pkt_hhmm       = 555;
+input int    strategy_reference_start_pkt_hhmm   = 500;
+input int    strategy_magic_pkt_hhmm             = 554;
 input int    strategy_first_checkpoint_pkt_hhmm  = 630;
 input int    strategy_final_checkpoint_pkt_hhmm  = 830;
 input int    strategy_checkpoint_interval_min    = 15;
-input int    strategy_session_flat_pkt_hhmm      = 2355;
+input int    strategy_session_flat_pkt_hhmm      = 900;
 input int    strategy_atr_period                 = 14;
 input double strategy_max_stop_atr_mult          = 1.75;
 input double strategy_rr                         = 1.5;
@@ -90,7 +91,6 @@ input double strategy_rr                         = 1.5;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // Time gates are entry-only so session-flat exits are never suppressed.
    return false;
   }
 
@@ -108,72 +108,107 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    static int    state_day_key = 0;
-   static bool   magic_range_ready = false;
+   static bool   reference_range_ready = false;
+   static bool   reference_range_has_data = false;
    static bool   trade_taken_today = false;
-   static double magic_high = 0.0;
-   static double magic_low = 0.0;
+   static double reference_high = 0.0;
+   static double reference_low = 0.0;
 
-   if(_Period != PERIOD_M5)
+   if(_Period != PERIOD_M3 && _Period != PERIOD_M5)
       return false;
    if(strategy_atr_period <= 0 || strategy_max_stop_atr_mult <= 0.0 || strategy_rr <= 0.0)
       return false;
    if(strategy_checkpoint_interval_min <= 0)
       return false;
 
-   const datetime bar_open_broker = iTime(_Symbol, PERIOD_M5, 1);
+   const int reference_start_minute = (strategy_reference_start_pkt_hhmm / 100) * 60 + (strategy_reference_start_pkt_hhmm % 100);
+   const int magic_minute = (strategy_magic_pkt_hhmm / 100) * 60 + (strategy_magic_pkt_hhmm % 100);
+   const int first_minute = (strategy_first_checkpoint_pkt_hhmm / 100) * 60 + (strategy_first_checkpoint_pkt_hhmm % 100);
+   const int final_minute = (strategy_final_checkpoint_pkt_hhmm / 100) * 60 + (strategy_final_checkpoint_pkt_hhmm % 100);
+   if(reference_start_minute < 0 || reference_start_minute > 1439 ||
+      magic_minute < 0 || magic_minute > 1439 ||
+      first_minute < 0 || first_minute > 1439 ||
+      final_minute < 0 || final_minute > 1439)
+      return false;
+   if(reference_start_minute > magic_minute || first_minute > final_minute)
+      return false;
+
+   const int period_seconds = PeriodSeconds(_Period);
+   if(period_seconds <= 0)
+      return false;
+
+   // perf-allowed: the card's Tokyo candle/range test is bespoke structural OHLC logic;
+   // this hook is called only after the framework's QM_IsNewBar() gate.
+   const datetime bar_open_broker = iTime(_Symbol, _Period, 1);
    if(bar_open_broker <= 0)
       return false;
 
-   const datetime bar_close_broker = bar_open_broker + PeriodSeconds(PERIOD_M5);
+   const datetime bar_close_broker = bar_open_broker + period_seconds;
+   const datetime bar_open_pkt = QM_BrokerToUTC(bar_open_broker) + (5 * 3600);
    const datetime bar_close_pkt = QM_BrokerToUTC(bar_close_broker) + (5 * 3600);
+   MqlDateTime pkt_open;
    MqlDateTime pkt;
+   ZeroMemory(pkt_open);
    ZeroMemory(pkt);
+   TimeToStruct(bar_open_pkt, pkt_open);
    TimeToStruct(bar_close_pkt, pkt);
 
    const int day_key = pkt.year * 10000 + pkt.mon * 100 + pkt.day;
    if(day_key != state_day_key)
      {
       state_day_key = day_key;
-      magic_range_ready = false;
+      reference_range_ready = false;
+      reference_range_has_data = false;
       trade_taken_today = false;
-      magic_high = 0.0;
-      magic_low = 0.0;
+      reference_high = 0.0;
+      reference_low = 0.0;
      }
 
+   const int open_minute = pkt_open.hour * 60 + pkt_open.min;
    const int close_minute = pkt.hour * 60 + pkt.min;
-   const int magic_minute = (strategy_magic_close_pkt_hhmm / 100) * 60 + (strategy_magic_close_pkt_hhmm % 100);
-   const int first_minute = (strategy_first_checkpoint_pkt_hhmm / 100) * 60 + (strategy_first_checkpoint_pkt_hhmm % 100);
-   const int final_minute = (strategy_final_checkpoint_pkt_hhmm / 100) * 60 + (strategy_final_checkpoint_pkt_hhmm % 100);
 
-   if(close_minute == magic_minute)
+   if(close_minute > reference_start_minute && open_minute <= magic_minute)
      {
-      const double h1 = iHigh(_Symbol, PERIOD_M5, 1);
-      const double l1 = iLow(_Symbol, PERIOD_M5, 1);
+      const double h1 = iHigh(_Symbol, _Period, 1);
+      const double l1 = iLow(_Symbol, _Period, 1);
       if(h1 > 0.0 && l1 > 0.0 && h1 > l1)
         {
-         magic_high = h1;
-         magic_low = l1;
-         magic_range_ready = true;
+         if(!reference_range_has_data)
+           {
+            reference_high = h1;
+            reference_low = l1;
+            reference_range_has_data = true;
+           }
+         else
+           {
+            reference_high = MathMax(reference_high, h1);
+            reference_low = MathMin(reference_low, l1);
+           }
         }
+     }
+
+   if(open_minute <= magic_minute && close_minute > magic_minute)
+     {
+      reference_range_ready = reference_range_has_data;
       return false;
      }
 
-   if(trade_taken_today || !magic_range_ready)
+   if(trade_taken_today || !reference_range_ready)
       return false;
    if(close_minute < first_minute || close_minute > final_minute)
       return false;
    if(((close_minute - first_minute) % strategy_checkpoint_interval_min) != 0)
       return false;
 
-   const double open1 = iOpen(_Symbol, PERIOD_M5, 1);
-   const double high1 = iHigh(_Symbol, PERIOD_M5, 1);
-   const double low1 = iLow(_Symbol, PERIOD_M5, 1);
-   const double close1 = iClose(_Symbol, PERIOD_M5, 1);
+   const double open1 = iOpen(_Symbol, _Period, 1);
+   const double high1 = iHigh(_Symbol, _Period, 1);
+   const double low1 = iLow(_Symbol, _Period, 1);
+   const double close1 = iClose(_Symbol, _Period, 1);
    if(open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0)
       return false;
 
-   const bool long_clean = (MathMin(open1, close1) > magic_high && low1 > magic_high && close1 > magic_high);
-   const bool short_clean = (MathMax(open1, close1) < magic_low && high1 < magic_low && close1 < magic_low);
+   const bool long_clean = (close1 > reference_high && low1 > reference_high);
+   const bool short_clean = (close1 < reference_low && high1 < reference_low);
    if(!long_clean && !short_clean)
       return false;
 
@@ -188,7 +223,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    req.type = long_clean ? QM_BUY : QM_SELL;
    req.price = 0.0;
-   req.sl = QM_StopStructureFromExtremes(_Symbol, req.type, magic_low, magic_high);
+   req.sl = QM_StopRulesNormalizePrice(_Symbol, long_clean ? reference_low : reference_high);
    req.tp = QM_TakeRR(_Symbol, req.type, entry, req.sl, strategy_rr);
    req.reason = long_clean ? "TV_TOKYO_LSB_LONG" : "TV_TOKYO_LSB_SHORT";
 
