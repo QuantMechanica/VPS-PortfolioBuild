@@ -202,13 +202,15 @@ void QM_AdvanceForecast()
    g_ready = false;
    g_combined = 0.0;
 
-   const int W = strategy_series_window;        // synthetic-series length (days)
+   int W = strategy_series_window;              // synthetic-series length (days)
    if(W < 80) return;
+   // Bound the synthetic window so fixed history buffers never overflow.
+   const int volL0 = strategy_vol_lookback;
+   if(W + volL0 + 1 > QM_HBUF) W = QM_HBUF - volL0 - 1;
 
-   // Per-member close history: need W+vol_lookback+2 closed daily closes so we
-   // can form W daily returns each vol-normalised over a trailing window.
+   // Per-member close history: W + vol_lookback + 1 closed daily closes so the
+   // trailing vol window is available even for the earliest synthetic day.
    const int volL = strategy_vol_lookback;
-   const int need = W + volL + 2;               // daily closes required per member
 
    // 1) Read each member's daily close history ONCE, derive its daily-return
    //    series, then form the cross-sectional MEDIAN vol-normalised return per
@@ -220,8 +222,7 @@ void QM_AdvanceForecast()
    //    for the earliest synthetic day too.
    const int H = W + volL + 1;                  // number of closes per member
 
-   double mclose[QM_MAX_MEMBERS][];             // [member][hist] close, idx 0 = shift H, ... idx H-1 = shift 1
-   double mret[QM_MAX_MEMBERS][];               // [member][hist-1] daily return aligned to mclose[i]/mclose[i-1]
+   static double mret[QM_MAX_MEMBERS][QM_HBUF]; // [member][hist] daily return, idx 0..H-1
    bool   mactive[QM_MAX_MEMBERS];
 
    int active_members = 0;
@@ -231,7 +232,7 @@ void QM_AdvanceForecast()
       const string sym = g_member[m];
       if(Bars(sym, PERIOD_D1) < strategy_min_d1_bars) continue;
 
-      ArrayResize(mclose[m], H);
+      double prev_close = 0.0;
       bool ok = true;
       // idx i corresponds to D1 shift (H - i): i=0 -> oldest (shift H), i=H-1 -> shift 1.
       for(int i = 0; i < H; ++i)
@@ -241,14 +242,11 @@ void QM_AdvanceForecast()
          // gated to once-per-new-D1-bar via QM_IsNewBar in OnTick.
          const double c = iClose(sym, PERIOD_D1, shift);
          if(c <= 0.0) { ok = false; break; }
-         mclose[m][i] = c;
+         if(i == 0) mret[m][i] = 0.0;
+         else       mret[m][i] = (c - prev_close) / prev_close;
+         prev_close = c;
         }
       if(!ok) continue;
-
-      ArrayResize(mret[m], H);                  // mret[m][i] = return into day i (i>=1)
-      mret[m][0] = 0.0;
-      for(int i = 1; i < H; ++i)
-         mret[m][i] = (mclose[m][i] - mclose[m][i - 1]) / mclose[m][i - 1];
 
       mactive[m] = true;
       ++active_members;

@@ -1,0 +1,14 @@
+{
+  "logical_symbol": "QM5_11055_PST_ASSETTREND_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX", "AUDUSD.DWX",
+    "NZDUSD.DWX", "USDCHF.DWX", "USDCAD.DWX", "EURJPY.DWX", "GBPJPY.DWX",
+    "NDX.DWX", "WS30.DWX", "GDAXI.DWX", "UK100.DWX", "SP500.DWX",
+    "XAUUSD.DWX", "XAGUSD.DWX", "XTIUSD.DWX", "XNGUSD.DWX"
+  ],
+  "notes": [
+    "pysystemtrade asset-class trend. EA runs one instance per registered host symbol; each instance trends the cross-sectional median vol-normalised return of the host's asset CLASS (forex / index / metals+commodities), reading the foreign .DWX class members on D1. Class membership is resolved in-EA; this manifest lists the read universe so the factory pre-selects the symbols. Foreign reads bound at call site via QM_SymbolGuardInit + QM_BasketWarmupHistory; one position per magic on the host. SP500.DWX is a backtest-only read member (never a live-routed host). All listed symbols verified present in dwx_symbol_matrix.csv."
+  ]
+}

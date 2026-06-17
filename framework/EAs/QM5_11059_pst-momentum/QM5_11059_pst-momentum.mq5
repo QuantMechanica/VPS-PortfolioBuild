@@ -228,6 +228,10 @@ double QM5_11059_CombinedForecast(bool &ok)
 // entry path; on an unchanged bar this is an O(1) timestamp compare + cache hit.
 double QM5_11059_GetForecast(bool &ok)
   {
+   // perf-allowed: iTime here is a CACHE-INVALIDATION key for the expensive
+   // composite forecast, NOT a new-bar entry gate. Entry cadence is owned by
+   // the framework QM_IsNewBar() gate in OnTick; this only avoids recomputing
+   // the O(N) close scan on every per-tick exit-hook call within the same bar.
    const datetime last_closed = iTime(_Symbol, _Period, 1);
    if(last_closed != g_forecast_bar_time || !g_forecast_valid)
      {

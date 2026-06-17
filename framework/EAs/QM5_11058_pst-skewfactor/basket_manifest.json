@@ -1,0 +1,13 @@
+{
+  "logical_symbol": "QM5_11058_PST_SKEWFACTOR_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "kind": "basket",
+  "basket_symbols": [
+    "EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX", "AUDUSD.DWX",
+    "NDX.DWX", "WS30.DWX", "XAUUSD.DWX"
+  ],
+  "notes": [
+    "pysystemtrade cross-sectional negative-skew factor (Rob Carver / pst-group, source_id 352af9de-f372-5cf2-9a86-681a26224597). EA runs one instance per registered host symbol; each instance reads the full 7-asset basket on D1 to compute neg_skew over 365D and 180D lookbacks, demeans the host's neg_skew against the cross-sectional all-asset mean (abs components) or the host asset-class mean (rv components), normalises by the cross-sectional robust vol, EWMA-smooths, scales, caps to [-20,20], averages to a combined forecast, and trades the host on +-5 entry / +-1 exit. No external feed: skew is a pure statistic of each symbol's own D1 return distribution over closed bars. Foreign reads are bound at call site via QM_SymbolGuardInit + QM_BasketWarmupHistory; one position per magic on the host symbol. Asset-class tags: FX={EURUSD,GBPUSD,USDJPY,AUDUSD}, indices={NDX,WS30}, commodity={XAUUSD}. All 7 assets verified present in dwx_symbol_matrix.csv."
+  ]
+}

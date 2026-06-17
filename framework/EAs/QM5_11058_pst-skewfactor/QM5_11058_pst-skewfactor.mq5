@@ -313,10 +313,12 @@ void QM_AdvanceFactor()
    // 5. EWMA-smooth each available raw component, then scalar + cap.
    const double alpha_long  = 2.0 / ((double)strategy_ewma_span_long  + 1.0);
    const double alpha_short = 2.0 / ((double)strategy_ewma_span_short + 1.0);
-   const double alpha[QM_NCOMP] = { alpha_long, alpha_short, alpha_long, alpha_short };
-   const double scalar[QM_NCOMP] =
-     { strategy_scalar_abs365, strategy_scalar_abs180,
-       strategy_scalar_rv365,  strategy_scalar_rv180 };
+   double alpha[QM_NCOMP];
+   alpha[0] = alpha_long;  alpha[1] = alpha_short;
+   alpha[2] = alpha_long;  alpha[3] = alpha_short;
+   double scalar[QM_NCOMP];
+   scalar[0] = strategy_scalar_abs365; scalar[1] = strategy_scalar_abs180;
+   scalar[2] = strategy_scalar_rv365;  scalar[3] = strategy_scalar_rv180;
 
    double combined_sum = 0.0;
    int    combined_cnt = 0;
