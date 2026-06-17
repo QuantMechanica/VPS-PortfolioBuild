@@ -1,40 +1,8 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10974 ftmo-obv-brk — OBV-confirmed range breakout (H1)"
+#property description "QM5_10974 ftmo-obv-brk"
 
 #include <QM/QM_Common.mqh>
-
-// =============================================================================
-// QuantMechanica V5 EA — QM5_10974 ftmo-obv-brk
-// -----------------------------------------------------------------------------
-// Source: FTMO "Technical analysis - On Balance Volume relies on volumes" (2023).
-// Card: artifacts/cards_approved/QM5_10974_ftmo-obv-brk.md (g0_status APPROVED).
-//
-// Mechanics (closed-bar reads at shift 1; OBV from tick volume):
-//   OBV : cumulative signed tick volume, advanced ONE step per closed bar and
-//         cached in file scope (no per-tick re-summation).
-//   Price range : rolling N-bar (default 40) high/low over closed bars 1..N.
-//   OBV   range : rolling N-bar high/low of the cached OBV series.
-//   Long entry  : close[1] breaks above the N-bar price-range high (excluding
-//                 the current breakout bar) by >= brk_atr_mult * ATR, AND OBV
-//                 broke above its N-bar OBV-range high on bar 1 or bar 2, AND
-//                 close[1] > EMA(trend_period).
-//   Short entry : mirror image below the range low.
-//   Quality filters (skip): range height < range_min_atr * ATR or
-//                 > range_max_atr * ATR; breakout candle range > candle_max_atr * ATR.
-//   Stop  : long  = farther of {range midpoint, breakout-candle low - sl_atr_buf*ATR}.
-//           short = farther of {range midpoint, breakout-candle high + sl_atr_buf*ATR}.
-//   Target: 2.0R (QM_TakeRR).
-//   Manage: after price travels >= trail_trigger_r * R in favour, trail the stop
-//           to EMA(trail_period) (only ever tightened).
-//   Exit  : OBV closes back INSIDE its pre-breakout range for 2 consecutive
-//           closed bars, OR time exit after max_hold_bars closed bars.
-//   Spread guard : fail-open on .DWX zero modeled spread; block only a genuinely
-//                  wide spread > spread_pct_of_stop of the ATR stop distance.
-//
-// Only the 5 Strategy_* hooks + Strategy inputs + the cached-OBV advance are
-// EA-specific. Everything else is framework wiring and MUST stay intact.
-// =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10974;
@@ -49,9 +17,9 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
-input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
+input int    qm_news_stale_max_hours    = 336;
+input string qm_news_min_impact         = "high";
+input QM_NewsMode qm_news_mode_legacy   = QM_NEWS_OFF;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
@@ -61,335 +29,259 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_range_lookback     = 40;    // price & OBV range lookback (closed bars)
-input int    strategy_trend_period       = 100;   // EMA trend filter period
-input int    strategy_trail_period       = 20;    // EMA used to trail the stop
-input int    strategy_atr_period         = 14;    // ATR period (filter / breakout / stop)
-input double strategy_brk_atr_mult       = 0.20;  // min breakout beyond range edge, in ATR
-input double strategy_sl_atr_buf         = 0.25;  // ATR buffer beyond breakout candle extreme
-input double strategy_tp_rr              = 2.0;   // take-profit as R multiple
-input double strategy_trail_trigger_r    = 1.5;   // start EMA trail after this many R in favour
-input double strategy_range_min_atr      = 1.2;   // skip if range height < this * ATR
-input double strategy_range_max_atr      = 5.0;   // skip if range height > this * ATR
-input double strategy_candle_max_atr     = 2.2;   // skip if breakout candle range > this * ATR
-input int    strategy_obv_confirm_window = 2;     // OBV break allowed on bar 1..this
-input int    strategy_max_hold_bars      = 30;    // time exit after this many closed bars
-input int    strategy_obv_exit_bars      = 2;     // OBV-back-inside bars to force exit
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input int    strategy_range_lookback     = 40;
+input int    strategy_atr_period         = 14;
+input int    strategy_trend_ema_period   = 100;
+input int    strategy_trail_ema_period   = 20;
+input double strategy_breakout_atr_mult  = 0.20;
+input double strategy_stop_atr_buffer    = 0.25;
+input double strategy_take_rr            = 2.0;
+input double strategy_trail_trigger_r    = 1.5;
+input double strategy_range_min_atr      = 1.2;
+input double strategy_range_max_atr      = 5.0;
+input double strategy_candle_max_atr     = 2.2;
+input int    strategy_obv_confirm_bars   = 2;
+input int    strategy_obv_exit_bars      = 2;
+input int    strategy_max_hold_bars      = 30;
+input double strategy_max_spread_atr     = 0.15;
 
-// -----------------------------------------------------------------------------
-// Cached OBV state (advanced ONE step per closed bar). The OBV series is a
-// rolling ring buffer of the last (lookback + obv_confirm_window + a margin)
-// closed-bar OBV values, newest at index 0.
-// -----------------------------------------------------------------------------
-#define QM_OBV_HIST 64
+double g_sig_close1             = 0.0;
+double g_sig_high1              = 0.0;
+double g_sig_low1               = 0.0;
+double g_sig_atr                = 0.0;
+double g_sig_range_high         = 0.0;
+double g_sig_range_low          = 0.0;
+double g_sig_range_mid          = 0.0;
+bool   g_sig_obv_long_confirm   = false;
+bool   g_sig_obv_short_confirm  = false;
+double g_sig_obv_range_high     = 0.0;
+double g_sig_obv_range_low      = 0.0;
 
-double   g_obv_run        = 0.0;          // running cumulative OBV (latest closed bar)
-double   g_obv_hist[QM_OBV_HIST];         // index 0 = OBV at shift 1, 1 = shift 2, ...
-int      g_obv_filled     = 0;            // how many history slots are populated
-datetime g_obv_last_bar   = 0;            // bar-open time of the last advanced bar
-double   g_obv_prev_close = 0.0;          // close used for the last OBV sign step
+bool   g_latched_position       = false;
+double g_latched_entry          = 0.0;
+double g_latched_risk           = 0.0;
+double g_latched_obv_high       = 0.0;
+double g_latched_obv_low        = 0.0;
+bool   g_latched_trail_armed    = false;
+bool   g_cached_obv_exit        = false;
 
-// Per-position latched state (single position per magic; one symbol per test).
-bool     g_pos_active       = false;
-bool     g_pos_is_long      = false;
-double   g_pos_entry        = 0.0;
-double   g_pos_risk_dist    = 0.0;        // |entry - sl| at entry (the R unit)
-double   g_pos_obv_lo       = 0.0;        // pre-breakout OBV range low
-double   g_pos_obv_hi       = 0.0;        // pre-breakout OBV range high
-datetime g_pos_entry_bar    = 0;          // bar-open time of the entry bar
-int      g_pos_obv_inside   = 0;          // consecutive bars OBV back inside range
-bool     g_pos_trail_armed  = false;      // 1.5R reached -> EMA trail active
-
-// -----------------------------------------------------------------------------
-// OBV advance — called ONCE per new closed bar (after the framework new-bar gate).
-// Advances the cumulative OBV by exactly one bar and pushes it into the ring.
-// -----------------------------------------------------------------------------
-void AdvanceOBV_OnNewBar()
+bool RefreshClosedBarState()
   {
-   // The just-closed bar is shift 1. Its OBV contribution compares close[1] to
-   // close[2]; tick volume of bar 1 is added/subtracted by that sign.
-   const double close1 = iClose(_Symbol, _Period, 1);   // perf-allowed: single closed-bar read
-   const double close2 = iClose(_Symbol, _Period, 2);   // perf-allowed: single closed-bar read
-   const double vol1   = (double)iVolume(_Symbol, _Period, 1); // perf-allowed: single closed-bar tick volume
-   if(close1 <= 0.0)
-      return;
+   g_sig_close1            = 0.0;
+   g_sig_high1             = 0.0;
+   g_sig_low1              = 0.0;
+   g_sig_atr               = 0.0;
+   g_sig_range_high        = 0.0;
+   g_sig_range_low         = 0.0;
+   g_sig_range_mid         = 0.0;
+   g_sig_obv_long_confirm  = false;
+   g_sig_obv_short_confirm = false;
+   g_sig_obv_range_high    = 0.0;
+   g_sig_obv_range_low     = 0.0;
+   g_cached_obv_exit       = false;
 
-   if(g_obv_filled == 0)
+   const int lb = strategy_range_lookback;
+   const int confirm_bars = MathMax(1, strategy_obv_confirm_bars);
+   const int need_bars = lb + confirm_bars + strategy_obv_exit_bars + 4;
+   if(lb < 2 || need_bars < 10)
+      return false;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, _Period, 0, need_bars, rates); // perf-allowed: closed-bar OBV/range rebuild, called only from the new-bar entry hook
+   if(copied < need_bars)
+      return false;
+
+   double obv[];
+   ArrayResize(obv, need_bars);
+   ArrayInitialize(obv, 0.0);
+   for(int s = need_bars - 2; s >= 1; --s)
      {
-      // Seed: first closed bar contributes its volume in the up direction by
-      // convention; subsequent bars use the close-to-close sign.
-      g_obv_run = vol1;
+      obv[s] = obv[s + 1];
+      const double vol = (double)rates[s].tick_volume;
+      if(rates[s].close > rates[s + 1].close)
+         obv[s] += vol;
+      else if(rates[s].close < rates[s + 1].close)
+         obv[s] -= vol;
      }
-   else
+
+   g_sig_close1 = rates[1].close;
+   g_sig_high1  = rates[1].high;
+   g_sig_low1   = rates[1].low;
+   if(g_sig_close1 <= 0.0 || g_sig_high1 <= 0.0 || g_sig_low1 <= 0.0)
+      return false;
+
+   g_sig_range_high = -DBL_MAX;
+   g_sig_range_low  = DBL_MAX;
+   for(int s = 2; s <= lb + 1; ++s)
      {
-      if(close2 > 0.0)
+      if(rates[s].high > g_sig_range_high)
+         g_sig_range_high = rates[s].high;
+      if(rates[s].low < g_sig_range_low)
+         g_sig_range_low = rates[s].low;
+     }
+   if(g_sig_range_high <= 0.0 || g_sig_range_low <= 0.0 || g_sig_range_high <= g_sig_range_low)
+      return false;
+
+   g_sig_range_mid = 0.5 * (g_sig_range_high + g_sig_range_low);
+   g_sig_atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+   if(g_sig_atr <= 0.0)
+      return false;
+
+   g_sig_obv_range_high = -DBL_MAX;
+   g_sig_obv_range_low  = DBL_MAX;
+   for(int s = 2; s <= lb + 1; ++s)
+     {
+      if(obv[s] > g_sig_obv_range_high)
+         g_sig_obv_range_high = obv[s];
+      if(obv[s] < g_sig_obv_range_low)
+         g_sig_obv_range_low = obv[s];
+     }
+
+   for(int k = 1; k <= confirm_bars; ++k)
+     {
+      double hi = -DBL_MAX;
+      double lo = DBL_MAX;
+      for(int s = k + 1; s <= k + lb; ++s)
         {
-         if(close1 > close2)       g_obv_run += vol1;
-         else if(close1 < close2)  g_obv_run -= vol1;
-         // equal close: OBV unchanged
+         if(obv[s] > hi)
+            hi = obv[s];
+         if(obv[s] < lo)
+            lo = obv[s];
         }
+      if(obv[k] > hi)
+         g_sig_obv_long_confirm = true;
+      if(obv[k] < lo)
+         g_sig_obv_short_confirm = true;
      }
-   g_obv_prev_close = close1;
 
-   // Push newest OBV to the front of the ring (shift positions down by one).
-   for(int i = QM_OBV_HIST - 1; i >= 1; --i)
-      g_obv_hist[i] = g_obv_hist[i - 1];
-   g_obv_hist[0] = g_obv_run;
-   if(g_obv_filled < QM_OBV_HIST)
-      g_obv_filled++;
-  }
-
-// Rolling OBV range high over [from_idx .. from_idx+count-1] of g_obv_hist.
-double OBV_RangeHigh(const int from_idx, const int count)
-  {
-   double hi = -DBL_MAX;
-   const int last = from_idx + count - 1;
-   if(last >= g_obv_filled)
-      return 0.0; // not enough history yet
-   for(int i = from_idx; i <= last; ++i)
-      if(g_obv_hist[i] > hi)
-         hi = g_obv_hist[i];
-   return hi;
-  }
-
-double OBV_RangeLow(const int from_idx, const int count)
-  {
-   double lo = DBL_MAX;
-   const int last = from_idx + count - 1;
-   if(last >= g_obv_filled)
-      return 0.0;
-   for(int i = from_idx; i <= last; ++i)
-      if(g_obv_hist[i] < lo)
-         lo = g_obv_hist[i];
-   return lo;
-  }
-
-// Rolling price high/low over closed bars [shift_from .. shift_from+count-1].
-double PriceRangeHigh(const int shift_from, const int count)
-  {
-   double hi = -DBL_MAX;
-   for(int s = shift_from; s < shift_from + count; ++s)
+   if(g_latched_position && strategy_obv_exit_bars > 0)
      {
-      const double h = iHigh(_Symbol, _Period, s); // perf-allowed: rolling range, once per closed bar
-      if(h > hi) hi = h;
+      int inside_count = 0;
+      for(int k = 1; k <= strategy_obv_exit_bars; ++k)
+        {
+         if(obv[k] >= g_latched_obv_low && obv[k] <= g_latched_obv_high)
+            inside_count++;
+         else
+            break;
+        }
+      g_cached_obv_exit = (inside_count >= strategy_obv_exit_bars);
      }
-   return hi;
+
+   return true;
   }
 
-double PriceRangeLow(const int shift_from, const int count)
+void LatchEntryState(const double entry_price, const double sl_price)
   {
-   double lo = DBL_MAX;
-   for(int s = shift_from; s < shift_from + count; ++s)
-     {
-      const double l = iLow(_Symbol, _Period, s); // perf-allowed: rolling range, once per closed bar
-      if(l < lo) lo = l;
-     }
-   return lo;
+   g_latched_position    = true;
+   g_latched_entry       = entry_price;
+   g_latched_risk        = MathAbs(entry_price - sl_price);
+   g_latched_obv_high    = g_sig_obv_range_high;
+   g_latched_obv_low     = g_sig_obv_range_low;
+   g_latched_trail_armed = false;
+   g_cached_obv_exit     = false;
   }
 
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
-
-// Cheap O(1) per-tick gate. Spread guard only. Fail-open on .DWX zero spread.
 bool Strategy_NoTradeFilter()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
       return false;
 
-   const double stop_distance = atr_value; // ATR as the stop-distance reference
-   const double spread = ask - bid;
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
-      return true;
+   if(ask > bid)
+     {
+      const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+      if(atr_value > 0.0 && (ask - bid) > strategy_max_spread_atr * atr_value)
+         return true;
+     }
 
    return false;
   }
 
-// OBV-confirmed range-breakout entry. Caller guarantees QM_IsNewBar() == true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(!RefreshClosedBarState())
       return false;
 
-   const int lb = strategy_range_lookback;
-   if(lb < 2)
+   const int magic = QM_FrameworkMagic();
+   if(QM_TM_OpenPositionCount(magic) > 0)
       return false;
 
-   // Need the price range (shifts 2..lb+1, i.e. the lb bars BEFORE the breakout
-   // bar at shift 1) plus enough OBV history including the confirm window.
-   if(g_obv_filled < lb + strategy_obv_confirm_window + 1)
+   const double range_height = g_sig_range_high - g_sig_range_low;
+   if(range_height < strategy_range_min_atr * g_sig_atr)
+      return false;
+   if(range_height > strategy_range_max_atr * g_sig_atr)
+      return false;
+   if((g_sig_high1 - g_sig_low1) > strategy_candle_max_atr * g_sig_atr)
       return false;
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
+   const double trend_ema = QM_EMA(_Symbol, _Period, strategy_trend_ema_period, 1);
+   if(trend_ema <= 0.0)
       return false;
 
-   const double ema_trend = QM_EMA(_Symbol, _Period, strategy_trend_period, 1);
-   if(ema_trend <= 0.0)
-      return false;
+   const double breakout_buffer = strategy_breakout_atr_mult * g_sig_atr;
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
 
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   const double high1  = iHigh(_Symbol, _Period, 1);  // perf-allowed: single closed-bar read
-   const double low1   = iLow(_Symbol, _Period, 1);   // perf-allowed: single closed-bar read
-   if(close1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0)
-      return false;
-
-   // Pre-breakout price range = lb bars BEFORE the breakout bar -> shifts 2..lb+1.
-   const double range_high = PriceRangeHigh(2, lb);
-   const double range_low  = PriceRangeLow(2, lb);
-   if(range_high <= 0.0 || range_low <= 0.0 || range_high <= range_low)
-      return false;
-
-   const double range_height = range_high - range_low;
-   const double range_mid    = 0.5 * (range_high + range_low);
-
-   // Range-quality filter: skip too-tight or too-wide consolidations.
-   if(range_height < strategy_range_min_atr * atr_value)
-      return false;
-   if(range_height > strategy_range_max_atr * atr_value)
-      return false;
-
-   // Breakout candle range filter.
-   const double candle_range = high1 - low1;
-   if(candle_range > strategy_candle_max_atr * atr_value)
-      return false;
-
-   // Pre-breakout OBV range = lb OBV values BEFORE the breakout bar. The
-   // breakout bar's OBV is g_obv_hist[0]; the prior lb values are indices 1..lb.
-   const double obv_range_high = OBV_RangeHigh(1, lb);
-   const double obv_range_low  = OBV_RangeLow(1, lb);
-   if(obv_range_high == 0.0 && obv_range_low == 0.0)
-      return false;
-
-   const double brk_buffer = strategy_brk_atr_mult * atr_value;
-
-   // OBV broke its range on the breakout bar (idx 0) or up to obv_confirm_window
-   // bars earlier (idx 0..window-1).
-   bool obv_broke_up   = false;
-   bool obv_broke_down = false;
-   for(int k = 0; k < strategy_obv_confirm_window; ++k)
+   if(g_sig_close1 > g_sig_range_high + breakout_buffer &&
+      g_sig_obv_long_confirm &&
+      g_sig_close1 > trend_ema)
      {
-      if(g_obv_hist[k] > obv_range_high) obv_broke_up   = true;
-      if(g_obv_hist[k] < obv_range_low)  obv_broke_down = true;
-     }
-
-   // --- Long setup ---
-   const bool long_price_break = (close1 > range_high + brk_buffer);
-   const bool long_trend_ok    = (close1 > ema_trend);
-   if(long_price_break && obv_broke_up && long_trend_ok)
-     {
-      // Stop: farther of {range midpoint, breakout candle low - buf*ATR} from entry.
-      const double sl_struct = low1 - strategy_sl_atr_buf * atr_value;
-      double sl = MathMin(range_mid, sl_struct); // lower (farther below entry) = farther stop
-      if(sl >= close1)
+      const double entry_price = (ask > 0.0) ? ask : g_sig_close1;
+      const double candle_stop = g_sig_low1 - strategy_stop_atr_buffer * g_sig_atr;
+      const double sl_price = QM_StopRulesNormalizePrice(_Symbol, MathMin(g_sig_range_mid, candle_stop));
+      if(sl_price <= 0.0 || sl_price >= entry_price)
+         return false;
+      const double tp_price = QM_TakeRR(_Symbol, QM_BUY, entry_price, sl_price, strategy_take_rr);
+      if(tp_price <= 0.0)
          return false;
 
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if(entry <= 0.0 || sl >= entry)
-         return false;
-
-      const double tp = QM_TakeRR(_Symbol, QM_BUY, entry, sl, strategy_tp_rr);
-      if(tp <= 0.0)
-         return false;
-
-      req.type   = QM_BUY;
-      req.price  = 0.0;
-      req.sl     = QM_StopRulesNormalizePrice(_Symbol, sl);
-      req.tp     = tp;
-      req.reason = "obv_brk_long";
-
-      LatchEntry(true, entry, MathAbs(entry - sl), obv_range_low, obv_range_high);
+      req.type = QM_BUY;
+      req.sl = sl_price;
+      req.tp = tp_price;
+      req.reason = "obv_breakout_long";
+      LatchEntryState(entry_price, sl_price);
       return true;
      }
 
-   // --- Short setup ---
-   const bool short_price_break = (close1 < range_low - brk_buffer);
-   const bool short_trend_ok    = (close1 < ema_trend);
-   if(short_price_break && obv_broke_down && short_trend_ok)
+   if(g_sig_close1 < g_sig_range_low - breakout_buffer &&
+      g_sig_obv_short_confirm &&
+      g_sig_close1 < trend_ema)
      {
-      const double sl_struct = high1 + strategy_sl_atr_buf * atr_value;
-      double sl = MathMax(range_mid, sl_struct); // higher (farther above entry) = farther stop
-      if(sl <= close1)
+      const double entry_price = (bid > 0.0) ? bid : g_sig_close1;
+      const double candle_stop = g_sig_high1 + strategy_stop_atr_buffer * g_sig_atr;
+      const double sl_price = QM_StopRulesNormalizePrice(_Symbol, MathMax(g_sig_range_mid, candle_stop));
+      if(sl_price <= 0.0 || sl_price <= entry_price)
+         return false;
+      const double tp_price = QM_TakeRR(_Symbol, QM_SELL, entry_price, sl_price, strategy_take_rr);
+      if(tp_price <= 0.0)
          return false;
 
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      if(entry <= 0.0 || sl <= entry)
-         return false;
-
-      const double tp = QM_TakeRR(_Symbol, QM_SELL, entry, sl, strategy_tp_rr);
-      if(tp <= 0.0)
-         return false;
-
-      req.type   = QM_SELL;
-      req.price  = 0.0;
-      req.sl     = QM_StopRulesNormalizePrice(_Symbol, sl);
-      req.tp     = tp;
-      req.reason = "obv_brk_short";
-
-      LatchEntry(false, entry, MathAbs(entry - sl), obv_range_low, obv_range_high);
+      req.type = QM_SELL;
+      req.sl = sl_price;
+      req.tp = tp_price;
+      req.reason = "obv_breakout_short";
+      LatchEntryState(entry_price, sl_price);
       return true;
      }
 
    return false;
   }
 
-// Latch per-position state at the moment we build the entry request.
-void LatchEntry(const bool is_long, const double entry, const double risk_dist,
-                const double obv_lo, const double obv_hi)
-  {
-   g_pos_active      = true;
-   g_pos_is_long     = is_long;
-   g_pos_entry       = entry;
-   g_pos_risk_dist   = risk_dist;
-   g_pos_obv_lo      = obv_lo;
-   g_pos_obv_hi      = obv_hi;
-   g_pos_entry_bar   = iTime(_Symbol, _Period, 0); // current (forming) bar = entry bar
-   g_pos_obv_inside  = 0;
-   g_pos_trail_armed = false;
-  }
-
-// Trade management: after trail_trigger_r in favour, trail the stop to EMA(trail).
 void Strategy_ManageOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
-   if(QM_TM_OpenPositionCount(magic) <= 0)
-     {
-      g_pos_active = false;
-      return;
-     }
-   if(!g_pos_active || g_pos_risk_dist <= 0.0)
-      return;
+   bool found = false;
 
-   // Arm the trail once price has travelled trail_trigger_r * R in favour.
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(bid <= 0.0 || ask <= 0.0)
-      return;
-
-   const double trigger_dist = strategy_trail_trigger_r * g_pos_risk_dist;
-   if(!g_pos_trail_armed)
-     {
-      if(g_pos_is_long && (bid - g_pos_entry) >= trigger_dist)
-         g_pos_trail_armed = true;
-      else if(!g_pos_is_long && (g_pos_entry - ask) >= trigger_dist)
-         g_pos_trail_armed = true;
-     }
-   if(!g_pos_trail_armed)
-      return;
-
-   const double ema_trail = QM_EMA(_Symbol, _Period, strategy_trail_period, 1);
-   if(ema_trail <= 0.0)
-      return;
-
-   // Find this EA's open position and tighten the stop toward EMA(trail).
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -400,83 +292,106 @@ void Strategy_ManageOpenPosition()
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
 
-      const double cur_sl  = PositionGetDouble(POSITION_SL);
-      const double new_sl  = QM_StopRulesNormalizePrice(_Symbol, ema_trail);
+      found = true;
+      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double current_sl = PositionGetDouble(POSITION_SL);
+      const double current_tp = PositionGetDouble(POSITION_TP);
+      const bool is_long = (pos_type == POSITION_TYPE_BUY);
 
-      if(g_pos_is_long)
+      if(!g_latched_position)
         {
-         // Only ever raise the stop, and keep it below the current bid.
-         if(new_sl > cur_sl && new_sl < bid)
-            QM_TM_MoveSL(ticket, new_sl, "obv_brk_ema_trail");
+         g_latched_position = true;
+         g_latched_entry = open_price;
+         if(current_sl > 0.0)
+            g_latched_risk = MathAbs(open_price - current_sl);
+         else if(current_tp > 0.0 && strategy_take_rr > 0.0)
+            g_latched_risk = MathAbs(current_tp - open_price) / strategy_take_rr;
+         g_latched_trail_armed = false;
+        }
+
+      if(g_latched_risk <= 0.0)
+         break;
+
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(bid <= 0.0 || ask <= 0.0)
+         break;
+
+      if(!g_latched_trail_armed)
+        {
+         if(is_long && bid >= open_price + strategy_trail_trigger_r * g_latched_risk)
+            g_latched_trail_armed = true;
+         if(!is_long && ask <= open_price - strategy_trail_trigger_r * g_latched_risk)
+            g_latched_trail_armed = true;
+        }
+
+      if(!g_latched_trail_armed)
+         break;
+
+      const double trail_ema = QM_EMA(_Symbol, _Period, strategy_trail_ema_period, 1);
+      if(trail_ema <= 0.0)
+         break;
+
+      const double new_sl = QM_StopRulesNormalizePrice(_Symbol, trail_ema);
+      if(is_long)
+        {
+         if(new_sl > current_sl && new_sl < bid)
+            QM_TM_MoveSL(ticket, new_sl, "ema20_trail_after_1_5r");
         }
       else
         {
-         // Only ever lower the stop, and keep it above the current ask.
-         if((cur_sl <= 0.0 || new_sl < cur_sl) && new_sl > ask)
-            QM_TM_MoveSL(ticket, new_sl, "obv_brk_ema_trail");
+         if((current_sl <= 0.0 || new_sl < current_sl) && new_sl > ask)
+            QM_TM_MoveSL(ticket, new_sl, "ema20_trail_after_1_5r");
         }
       break;
      }
+
+   if(!found)
+     {
+      g_latched_position = false;
+      g_latched_entry = 0.0;
+      g_latched_risk = 0.0;
+      g_latched_trail_armed = false;
+      g_cached_obv_exit = false;
+     }
   }
 
-// Discretionary exit: OBV back inside its pre-breakout range for N consecutive
-// closed bars, OR time exit after max_hold_bars. Evaluated on the closed-bar
-// path via OnTick's QM_IsNewBar gate calling Strategy_ExitSignal -> but the
-// framework calls Strategy_ExitSignal every tick. We only update the OBV-inside
-// counter once per new bar (latched on g_obv_last_bar) to keep it bar-accurate.
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   if(QM_TM_OpenPositionCount(magic) <= 0)
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      g_pos_active = false;
-      return false;
-     }
-   if(!g_pos_active)
-      return false;
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
 
-   // Time exit: count closed bars since the entry bar.
-   const datetime cur_bar = iTime(_Symbol, _Period, 0);
-   if(g_pos_entry_bar > 0 && cur_bar > g_pos_entry_bar)
-     {
-      const int bars_held = iBarShift(_Symbol, _Period, g_pos_entry_bar, false);
-      if(bars_held >= strategy_max_hold_bars)
+      if(g_cached_obv_exit)
          return true;
-     }
 
-   // OBV-back-inside exit: update the consecutive counter once per closed bar.
-   // g_obv_hist[0] is the most-recently-closed bar's OBV.
-   if(g_obv_filled > 0)
-     {
-      const double obv_last = g_obv_hist[0];
-      const bool inside = (obv_last <= g_pos_obv_hi && obv_last >= g_pos_obv_lo);
-      // Recompute the counter from scratch over the last N closed bars so the
-      // per-tick call is idempotent (no double-counting across ticks).
-      int consec = 0;
-      for(int k = 0; k < strategy_obv_exit_bars && k < g_obv_filled; ++k)
+      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      const int period_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
+      if(open_time > 0 && period_seconds > 0 && strategy_max_hold_bars > 0)
         {
-         if(g_obv_hist[k] <= g_pos_obv_hi && g_obv_hist[k] >= g_pos_obv_lo)
-            consec++;
-         else
-            break;
+         if((TimeCurrent() - open_time) >= strategy_max_hold_bars * period_seconds)
+            return true;
         }
-      g_pos_obv_inside = consec;
-      if(inside && consec >= strategy_obv_exit_bars)
-         return true;
+
+      return false;
      }
 
+   g_latched_position = false;
    return false;
   }
 
-// Defer to the central news filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
-
-// -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
-// -----------------------------------------------------------------------------
 
 int OnInit()
   {
@@ -485,25 +400,18 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
-
-   ArrayInitialize(g_obv_hist, 0.0);
-   g_obv_run        = 0.0;
-   g_obv_filled     = 0;
-   g_obv_last_bar   = 0;
-   g_obv_prev_close = 0.0;
-   g_pos_active     = false;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
@@ -536,10 +444,8 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
-   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -552,16 +458,10 @@ void OnTick()
             continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
-      g_pos_active = false;
      }
 
-   // Per-closed-bar work below.
    if(!QM_IsNewBar())
       return;
-
-   // FIRST: advance cached OBV state by exactly one closed bar.
-   AdvanceOBV_OnNewBar();
-   g_obv_last_bar = iTime(_Symbol, _Period, 0);
 
    QM_EquityStreamOnNewBar();
 
