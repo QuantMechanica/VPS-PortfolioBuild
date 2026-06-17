@@ -48,7 +48,7 @@ session-close proxy (default broker 20:30), with the framework Friday-close guar
 
 **Designed for:**
 - `XAUUSD.DWX` — liquid commodity with a strong intraday session structure; use commodity broker window (08:00–11:00) via setfile.
-- `OIL.DWX` — liquid commodity with intraday session structure; commodity broker window via setfile.
+- `XTIUSD.DWX` — WTI crude (card said `OIL.DWX`, not in matrix → ported to nearest DWX oil); liquid commodity with intraday session structure; commodity broker window via setfile.
 - `NDX.DWX` — Nasdaq 100 index CFD with a clear US cash-session morning band; default index broker window (16:30–19:00).
 - `WS30.DWX` — Dow 30 index CFD; same US cash-session morning band.
 - `SP500.DWX` — S&P 500 index CFD (backtest-only Custom Symbol); same US cash-session morning band. T6 live promotion forbidden for SP500-only (route to NDX/WS30).
