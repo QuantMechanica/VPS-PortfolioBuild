@@ -5,41 +5,35 @@
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA SKELETON
+// QuantMechanica V5 EA — QM5_10209 TradingView ATR EMA Session Volatility Switch
 // -----------------------------------------------------------------------------
-// Fill in only the five Strategy_* hooks below. Everything else is framework
-// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
-// risk + magic + news + Friday-close guard rails). The framework provides:
+// Source: TradingView `ATR EMA Strategy` (whitebear28). Mechanical rules:
+//   * Compute ATR(25) and EMA(50) on the signal timeframe (M15/M30).
+//   * Only act inside the configured intraday session.
+//   * Long  : ATR(25) below long threshold  AND price crosses above EMA(50).
+//   * Short : ATR(25) above short threshold AND price crosses below EMA(50).
+//   * Exit  : first of TP (+/- tp_mult*ATR), SL (-/+ sl_mult*ATR), or session end.
+//   * Respect a max-daily-trades cap.
 //
-//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
-//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
-//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
-//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
-//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
-//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
-//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
-//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
-//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
-//
-// DO NOT
-//   - Write per-EA IsNewBar() — use QM_IsNewBar()
-//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
-//     use the QM_* readers above. The framework pools handles and releases them
-//     on shutdown.
-//   - CopyRates over warmup windows on every tick. If you genuinely need raw
-//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
-//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
-//     to magic_numbers.csv, run:
-//         python framework/scripts/update_magic_resolver.py
-//     This is idempotent and preserves all rows.
+// .DWX BACKTEST INVARIANTS honoured here:
+//   * Session windows are BROKER time and DST-aware (TimeCurrent() is broker
+//     time; DXZ broker = NY-Close GMT+2/+3, DST follows the US calendar). The
+//     per-symbol default windows below are expressed in BROKER clock already
+//     (US-index cash open 09:30 ET == broker ~16:30; DAX 09:00 CET == broker
+//     ~10:00; London/FX/gold liquid hours == broker ~09:00). An exchange-clock
+//     09:00-17:30 window applied raw to a US index would build the session in
+//     dead hours -> zero trades, so we map per symbol. Overridable per setfile.
+//   * Spread guard NEVER fails closed on zero spread: .DWX quotes ask==bid in
+//     the tester. Only a genuinely wide spread blocks.
+//   * QM_IsNewBar() is consumed once (framework OnTick), entry gated on closed
+//     bars; EMA cross uses ONE trigger (the cross) + ATR regime as a STATE.
+//   * ATR thresholds are price-unit dependent: defaults map to broker price
+//     POINTS via ATR/point so per-symbol setfile thresholds stay scale-correct.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10209;
 input int    qm_magic_slot_offset       = 0;
-// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
-// All other phases use 42 by default. Stress / noise dimensions read from
-// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -48,16 +42,10 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
-//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
-//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
-// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
-// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
-// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -65,29 +53,37 @@ input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
-// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
-// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
-// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
-// deterministic per qm_rng_seed). MED slip/spread/commission live in the
-// tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_signal_tf = PERIOD_CURRENT;
-input int    strategy_atr_period        = 25;
-input int    strategy_ema_period        = 50;
-input double strategy_long_atr_points_max = 20.0;
-input double strategy_short_atr_points_min = 25.0;
-input double strategy_sl_atr_mult       = 10.0;
-input double strategy_tp_atr_mult       = 5.0;
-input int    strategy_session_start_hour = 9;
-input int    strategy_session_start_min  = 0;
-input int    strategy_session_end_hour   = 17;
-input int    strategy_session_end_min    = 30;
-input int    strategy_max_daily_trades   = 3;
-input double strategy_spread_stop_fraction = 0.10;
+input ENUM_TIMEFRAMES strategy_signal_tf       = PERIOD_CURRENT; // M15/M30 base TF from chart/setfile
+input int    strategy_atr_period               = 25;            // ATR(25), source default
+input int    strategy_ema_period               = 50;            // EMA(50), source default
+input double strategy_long_atr_points_max       = 20.0;         // long allowed when ATR(points) < this
+input double strategy_short_atr_points_min      = 25.0;         // short allowed when ATR(points) > this
+input double strategy_sl_atr_mult              = 10.0;          // stop = sl_mult * ATR (source default)
+input double strategy_tp_atr_mult              = 5.0;           // take = tp_mult * ATR (source default)
+input int    strategy_max_daily_trades         = 3;             // source default daily cap
+input double strategy_spread_atr_fraction      = 0.10;          // spread must be <= 10% of ATR stop distance
+// Session window in BROKER time. -1 on all four => use per-symbol default
+// (already broker-clock, DST-aware via TimeCurrent()). Override per setfile.
+input int    strategy_session_start_hour       = -1;
+input int    strategy_session_start_min        = -1;
+input int    strategy_session_end_hour         = -1;
+input int    strategy_session_end_min          = -1;
 
-int Strategy_MinutesOfDay(const datetime t)
+// -----------------------------------------------------------------------------
+// Session helpers — all clock math on BROKER time (TimeCurrent()).
+// -----------------------------------------------------------------------------
+
+ENUM_TIMEFRAMES Strategy_Timeframe()
+  {
+   if(strategy_signal_tf == PERIOD_CURRENT)
+      return (ENUM_TIMEFRAMES)_Period;
+   return strategy_signal_tf;
+  }
+
+int Strategy_MinuteOfDay(const datetime t)
   {
    MqlDateTime dt;
    TimeToStruct(t, dt);
@@ -104,18 +100,49 @@ datetime Strategy_DayStart(const datetime t)
    return StructToTime(dt);
   }
 
-ENUM_TIMEFRAMES Strategy_Timeframe()
+// Per-symbol BROKER-time liquid session. The card's "09:00-17:30 exchange/server
+// mapped to target symbol local liquid hours" maps to these broker windows.
+// Returned hours/minutes are already broker-clock; TimeCurrent() supplies the
+// DST-aware broker time directly (no further offset needed). A non-default
+// setfile override (any field >= 0) takes precedence and is used verbatim.
+void Strategy_ResolveSession(int &start_hour, int &start_min, int &end_hour, int &end_min)
   {
-   if(strategy_signal_tf == PERIOD_CURRENT)
-      return (ENUM_TIMEFRAMES)_Period;
-   return strategy_signal_tf;
+   start_hour = strategy_session_start_hour;
+   start_min  = strategy_session_start_min;
+   end_hour   = strategy_session_end_hour;
+   end_min    = strategy_session_end_min;
+
+   if(start_hour >= 0 && start_min >= 0 && end_hour >= 0 && end_min >= 0)
+      return;
+
+   // DAX cash session 09:00-17:30 CET == broker ~10:00-18:30.
+   if(_Symbol == "GDAXI.DWX" || _Symbol == "GER40.DWX" || _Symbol == "DE30.DWX")
+     {
+      start_hour = 10; start_min = 0;
+      end_hour   = 18; end_min   = 30;
+      return;
+     }
+
+   // US index cash session 09:30-16:00 ET == broker ~16:30-23:00.
+   if(_Symbol == "NDX.DWX" || _Symbol == "WS30.DWX" || _Symbol == "SP500.DWX")
+     {
+      start_hour = 16; start_min = 30;
+      end_hour   = 23; end_min   = 0;
+      return;
+     }
+
+   // FX / gold: London-into-NY liquid hours, broker ~09:00-17:30.
+   start_hour = 9;  start_min = 0;
+   end_hour   = 17; end_min   = 30;
   }
 
-bool Strategy_InSession(const datetime t)
+bool Strategy_InSession(const datetime broker_t)
   {
-   const int now_min = Strategy_MinutesOfDay(t);
-   const int start_min = MathMax(0, MathMin(1439, strategy_session_start_hour * 60 + strategy_session_start_min));
-   const int end_min = MathMax(0, MathMin(1439, strategy_session_end_hour * 60 + strategy_session_end_min));
+   int sh, sm, eh, em;
+   Strategy_ResolveSession(sh, sm, eh, em);
+   const int now_min   = Strategy_MinuteOfDay(broker_t);
+   const int start_min = MathMax(0, MathMin(1439, sh * 60 + sm));
+   const int end_min   = MathMax(0, MathMin(1439, eh * 60 + em));
    if(start_min == end_min)
       return true;
    if(start_min < end_min)
@@ -123,17 +150,23 @@ bool Strategy_InSession(const datetime t)
    return (now_min >= start_min || now_min < end_min);
   }
 
-bool Strategy_SessionEnded(const datetime t)
+bool Strategy_SessionEnded(const datetime broker_t)
   {
-   const int now_min = Strategy_MinutesOfDay(t);
-   const int start_min = MathMax(0, MathMin(1439, strategy_session_start_hour * 60 + strategy_session_start_min));
-   const int end_min = MathMax(0, MathMin(1439, strategy_session_end_hour * 60 + strategy_session_end_min));
+   int sh, sm, eh, em;
+   Strategy_ResolveSession(sh, sm, eh, em);
+   const int now_min   = Strategy_MinuteOfDay(broker_t);
+   const int start_min = MathMax(0, MathMin(1439, sh * 60 + sm));
+   const int end_min   = MathMax(0, MathMin(1439, eh * 60 + em));
    if(start_min == end_min)
       return false;
    if(start_min < end_min)
       return (now_min >= end_min);
    return (now_min >= end_min && now_min < start_min);
   }
+
+// -----------------------------------------------------------------------------
+// Position / daily-cap accounting.
+// -----------------------------------------------------------------------------
 
 bool Strategy_HasOpenPosition()
   {
@@ -179,30 +212,37 @@ int Strategy_TodayEntryCount()
       if(entry == DEAL_ENTRY_IN || entry == DEAL_ENTRY_INOUT)
          ++count;
      }
+   // Count the currently-open trade too (its closing deal isn't in history yet).
+   if(Strategy_HasOpenPosition())
+      ++count;
    return count;
   }
 
+// Spread must be <= spread_atr_fraction * (sl_mult * ATR) price distance.
+// NEVER fail-closed on zero spread: .DWX quotes ask==bid (zero modeled spread)
+// in the tester, which is a VALID, tradeable condition.
 bool Strategy_SpreadAllowed(const double atr_value)
   {
-   if(atr_value <= 0.0 || strategy_sl_atr_mult <= 0.0 || strategy_spread_stop_fraction < 0.0)
+   if(atr_value <= 0.0 || strategy_sl_atr_mult <= 0.0 || strategy_spread_atr_fraction < 0.0)
       return false;
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0 || ask < bid)
+   if(ask <= 0.0 || bid <= 0.0)        // zero-PRICE check is fine
       return false;
-   const double max_spread = atr_value * strategy_sl_atr_mult * strategy_spread_stop_fraction;
+   if(ask <= bid)                      // ask==bid (zero spread) => allowed
+      return true;
+   const double max_spread = atr_value * strategy_sl_atr_mult * strategy_spread_atr_fraction;
    return ((ask - bid) <= max_spread);
   }
 
 // -----------------------------------------------------------------------------
-// Strategy hooks — implement these against the card mechanically.
+// Strategy hooks.
 // -----------------------------------------------------------------------------
 
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
+// No Trade Filter (time, spread, news). Entry-only gates: leaving them out of
+// the exit path keeps EOD/session-end closes live even after the window ends.
 bool Strategy_NoTradeFilter()
   {
-   // No-Trade Filter: session/spread are entry-only so EOD exits remain live.
    if(Strategy_HasOpenPosition())
       return false;
 
@@ -214,13 +254,13 @@ bool Strategy_NoTradeFilter()
    if(!Strategy_SpreadAllowed(atr_value))
       return true;
 
-   // News Filter Hook is called by OnTick before this strategy filter.
    return false;
   }
 
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
+// Trade Entry. Caller guarantees QM_IsNewBar() == true. EMA cross is the single
+// trigger event; ATR regime is a concurrent STATE (per .DWX invariant: do not
+// require two cross events on the same bar). Lots are sized by the framework
+// risk model inside QM_TM_OpenPosition -> never computed inline here.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -247,32 +287,35 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
    const double atr_points = atr_value / point;
 
+   // Closed-bar EMA cross: bar 2 -> bar 1 transition relative to EMA(50).
    const double close_1 = iClose(_Symbol, tf, 1);
    const double close_2 = iClose(_Symbol, tf, 2);
-   const double ema_1 = QM_EMA(_Symbol, tf, strategy_ema_period, 1);
-   const double ema_2 = QM_EMA(_Symbol, tf, strategy_ema_period, 2);
+   const double ema_1   = QM_EMA(_Symbol, tf, strategy_ema_period, 1);
+   const double ema_2   = QM_EMA(_Symbol, tf, strategy_ema_period, 2);
    if(close_1 <= 0.0 || close_2 <= 0.0 || ema_1 <= 0.0 || ema_2 <= 0.0)
       return false;
 
-   const bool cross_up = (close_2 <= ema_2 && close_1 > ema_1);
+   const bool cross_up   = (close_2 <= ema_2 && close_1 > ema_1);
    const bool cross_down = (close_2 >= ema_2 && close_1 < ema_1);
 
+   // Long: low-volatility regime permits longs on a bullish EMA cross.
    if(cross_up && atr_points < strategy_long_atr_points_max)
      {
-      req.type = QM_BUY;
-      req.price = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      req.sl = QM_StopATRFromValue(_Symbol, req.type, req.price, atr_value, strategy_sl_atr_mult);
-      req.tp = QM_TakeATRFromValue(_Symbol, req.type, req.price, atr_value, strategy_tp_atr_mult);
+      req.type   = QM_BUY;
+      req.price  = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      req.sl     = QM_StopATRFromValue(_Symbol, req.type, req.price, atr_value, strategy_sl_atr_mult);
+      req.tp     = QM_TakeATRFromValue(_Symbol, req.type, req.price, atr_value, strategy_tp_atr_mult);
       req.reason = "ATR_EMA_SESSION_LONG";
       return (req.price > 0.0 && req.sl > 0.0 && req.tp > 0.0);
      }
 
+   // Short: high-volatility regime permits shorts on a bearish EMA cross.
    if(cross_down && atr_points > strategy_short_atr_points_min)
      {
-      req.type = QM_SELL;
-      req.price = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      req.sl = QM_StopATRFromValue(_Symbol, req.type, req.price, atr_value, strategy_sl_atr_mult);
-      req.tp = QM_TakeATRFromValue(_Symbol, req.type, req.price, atr_value, strategy_tp_atr_mult);
+      req.type   = QM_SELL;
+      req.price  = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      req.sl     = QM_StopATRFromValue(_Symbol, req.type, req.price, atr_value, strategy_sl_atr_mult);
+      req.tp     = QM_TakeATRFromValue(_Symbol, req.type, req.price, atr_value, strategy_tp_atr_mult);
       req.reason = "ATR_EMA_SESSION_SHORT";
       return (req.price > 0.0 && req.sl > 0.0 && req.tp > 0.0);
      }
@@ -280,28 +323,22 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return false;
   }
 
-// Called every tick when an open position exists for this EA's magic.
-// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
+// Trade Management. Card specifies fixed ATR SL/TP only — no trail/BE/partial.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies fixed ATR SL/TP only; no trailing, BE, or partial exits.
   }
 
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
+// Trade Close. Exit on the first of TP, SL (both broker-managed), or session end.
 bool Strategy_ExitSignal()
   {
-   // Trade Close: first of TP, SL, or configured session end.
    return (Strategy_HasOpenPosition() && Strategy_SessionEnded(TimeCurrent()));
   }
 
-// Optional news-filter override. Return TRUE to suppress trading regardless
-// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
-// custom high-impact-event handling beyond the central filter.
+// News Filter Hook (callable for Q09 News Impact phase). Defer to central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    (void)broker_time;
-   return false; // defer to QM_NewsAllowsTrade(...)
+   return false;
   }
 
 // -----------------------------------------------------------------------------
@@ -328,7 +365,7 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10209_tv-atr-ema-session\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -364,7 +401,7 @@ void OnTick()
    // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
+   // Per-tick: discretionary exit (session end). Separate from broker SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -379,14 +416,11 @@ void OnTick()
         }
      }
 
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
+   // Per-closed-bar: entry-signal evaluation. Single-consume of QM_IsNewBar().
    if(!QM_IsNewBar())
       return;
 
-   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
-   // since last tick. Cheap: most calls early-return on same-day check.
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled.
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
@@ -406,8 +440,6 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
   {
-   // FW4: feeds closing-deal net-profits to the KS kill-switch.
-   // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 

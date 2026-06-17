@@ -1,6 +1,12 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10089 MQL5 Black Crows White Soldiers RSI H1"
+// Three White Soldiers / Three Black Crows reversal pattern + RSI confirmation,
+// H1. Card QM5_10089 (artifacts/cards_approved/QM5_10089_mql5-bcw-rsi-h1.md),
+// source Artyom Trishkin MQL5 article 15479. Pattern is the TRIGGER; RSI is a
+// confirming STATE (one fresh event per bar avoids the .DWX double-cross zero-trade
+// trap). Standard RSI(14) is used (NOT a degenerate period-1 RSI which would pin
+// the oscillator to ~0/100 and contradict the pattern direction -> near-zero trades).
 
 #include <QM/QM_Common.mqh>
 
@@ -11,19 +17,19 @@
 // boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
 // risk + magic + news + Friday-close guard rails). The framework provides:
 //
-//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  - closed-bar gate
 //   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
 //     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
 //     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
 //   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
 //   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
-//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_LotsForRisk(symbol, sl_points)        - risk model lot sizing
 //   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
 //   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
 //
 // DO NOT
-//   - Write per-EA IsNewBar() — use QM_IsNewBar()
-//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//   - Write per-EA IsNewBar() - use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly -
 //     use the QM_* readers above. The framework pools handles and releases them
 //     on shutdown.
 //   - CopyRates over warmup windows on every tick. If you genuinely need raw
@@ -48,7 +54,7 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+// FW1 2026-05-23 - Two-axis news filter per Vault Q09.
 //   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
 //   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
@@ -65,7 +71,7 @@ input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
-// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// FW2 2026-05-23 - only populated by Q05 MED / Q06 HARSH stress setfiles.
 // Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
 // Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
 // deterministic per qm_rng_seed). MED slip/spread/commission live in the
@@ -73,38 +79,44 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_rsi_period        = 1;
-input double strategy_buy_rsi_max       = 40.0;
-input double strategy_sell_rsi_min      = 60.0;
-input double strategy_exit_upper        = 70.0;
-input double strategy_exit_lower        = 30.0;
-input int    strategy_atr_period        = 14;
-input double strategy_atr_sl_mult       = 2.0;
-input double strategy_min_body_atr_mult = 0.10;
-input int    strategy_max_spread_points = 0;
+// Three White Soldiers / Three Black Crows + RSI confirmation parameters.
+input int    strategy_rsi_period             = 14;    // standard RSI; NOT degenerate period-1
+input double strategy_buy_rsi_max            = 40.0;  // confirm 3WS long only when RSI(1) below this
+input double strategy_sell_rsi_min           = 60.0;  // confirm 3BC short only when RSI(1) above this
+input double strategy_rsi_exit_high          = 70.0;  // exit cross level (high)
+input double strategy_rsi_exit_low           = 30.0;  // exit cross level (low)
+input int    strategy_atr_period             = 14;    // ATR period for protective stop
+input double strategy_atr_sl_mult            = 2.0;   // ATR multiple for protective stop (card: 2.0)
+input int    strategy_context_bars           = 1;     // bars of opposite context preceding the 3-bar pattern
+input double strategy_min_body_points        = 0.0;   // optional min body size per pattern candle (points; 0=off)
+input double strategy_max_spread_points      = 0.0;   // optional wide-spread guard (points; 0=off)
 
 // -----------------------------------------------------------------------------
-// Strategy hooks — implement these against the card mechanically.
+// Strategy hooks - implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
+// regime filter). Cheap O(1) checks only - runs on every tick.
 bool Strategy_NoTradeFilter()
   {
    if(strategy_rsi_period <= 0 ||
       strategy_atr_period <= 0 ||
       strategy_atr_sl_mult <= 0.0 ||
-      strategy_min_body_atr_mult < 0.0 ||
-      strategy_buy_rsi_max <= 0.0 ||
-      strategy_sell_rsi_min <= 0.0 ||
-      strategy_exit_upper <= strategy_exit_lower ||
-      strategy_max_spread_points < 0)
+      strategy_context_bars < 1 ||
+      strategy_context_bars > 20 ||
+      strategy_min_body_points < 0.0 ||
+      strategy_max_spread_points < 0.0)
       return true;
 
-   if(strategy_max_spread_points > 0)
+   // Fail-OPEN spread guard: .DWX quotes ask==bid (0 modeled spread) in the
+   // tester, so never block on zero spread. Only reject a genuinely wide spread.
+   if(strategy_max_spread_points > 0.0)
      {
-      const long spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread > strategy_max_spread_points)
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      if(ask > 0.0 && bid > 0.0 && point > 0.0 && ask > bid &&
+         (ask - bid) / point > strategy_max_spread_points)
          return true;
      }
 
@@ -124,63 +136,104 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const double rsi = QM_RSI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_rsi_period, 1);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
+      return false;
+
+   // Need 3 pattern bars (shift 1..3) + context_bars preceding bars for the
+   // opposite-trend context. Read CLOSED bars only, starting at shift 1.
+   const int context_bars = MathMax(1, MathMin(strategy_context_bars, 20));
+   const int bars_needed = 3 + context_bars;
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   // perf-allowed: 3-soldiers/3-crows body structure needs closed OHLC bars;
+   // this hook runs only after QM_IsNewBar() (once per closed bar), so the
+   // CopyRates is bounded and not on the per-tick path.
+   const int copied = CopyRates(_Symbol, PERIOD_H1, 1, bars_needed, rates);
+   if(copied != bars_needed)
+      return false;
+
+   // rates[0]=most recent closed (shift1), rates[1]=shift2, rates[2]=shift3 = pattern.
+   for(int i = 0; i < bars_needed; ++i)
+      if(rates[i].open <= 0.0 || rates[i].close <= 0.0)
+         return false;
+
+   // Three consecutive bullish candles (white soldiers): each closes above its
+   // open and each closes higher than the previous close (progressive advance).
+   // rates[2] is the oldest of the three.
+   const bool body0_bull = (rates[0].close > rates[0].open);
+   const bool body1_bull = (rates[1].close > rates[1].open);
+   const bool body2_bull = (rates[2].close > rates[2].open);
+   const bool soldiers_advance = (rates[0].close > rates[1].close &&
+                                  rates[1].close > rates[2].close);
+   bool three_white_soldiers = (body0_bull && body1_bull && body2_bull &&
+                                soldiers_advance);
+
+   // Three consecutive bearish candles (black crows): each closes below its
+   // open and each closes lower than the previous close (progressive decline).
+   const bool body0_bear = (rates[0].close < rates[0].open);
+   const bool body1_bear = (rates[1].close < rates[1].open);
+   const bool body2_bear = (rates[2].close < rates[2].open);
+   const bool crows_decline = (rates[0].close < rates[1].close &&
+                               rates[1].close < rates[2].close);
+   bool three_black_crows = (body0_bear && body1_bear && body2_bear &&
+                             crows_decline);
+
+   // Optional minimum body size per pattern candle (off by default).
+   if(strategy_min_body_points > 0.0)
+     {
+      const double min_body = strategy_min_body_points * point;
+      for(int i = 0; i < 3; ++i)
+        {
+         if(MathAbs(rates[i].close - rates[i].open) < min_body)
+           {
+            three_white_soldiers = false;
+            three_black_crows = false;
+            break;
+           }
+        }
+     }
+
+   // Preceding context: the three-bar pattern follows the opposite trend.
+   // For 3WS we want a prior downward leg; for 3BC a prior upward leg. .DWX
+   // CFDs are gapless (open[0]==close[1]) so we reference CLOSES, not gaps.
+   // rates[i] is older than rates[i-1]; downward = newer close below older.
+   bool downward_context = true;
+   bool upward_context = true;
+   for(int i = 3; i < bars_needed; ++i)
+     {
+      downward_context = downward_context && (rates[i - 1].close < rates[i].close);
+      upward_context = upward_context && (rates[i - 1].close > rates[i].close);
+     }
+
+   // RSI confirmation STATE on the last completed bar (shift 1).
+   const double rsi = QM_RSI(_Symbol, PERIOD_H1, strategy_rsi_period, 1);
    if(rsi <= 0.0)
       return false;
 
-   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
-   if(atr <= 0.0)
-      return false;
-   const double min_body = atr * strategy_min_body_atr_mult;
-
-   const double o1 = iOpen(_Symbol, _Period, 1);
-   const double c1 = iClose(_Symbol, _Period, 1);
-   const double o2 = iOpen(_Symbol, _Period, 2);
-   const double c2 = iClose(_Symbol, _Period, 2);
-   const double o3 = iOpen(_Symbol, _Period, 3);
-   const double c3 = iClose(_Symbol, _Period, 3);
-   const double o4 = iOpen(_Symbol, _Period, 4);
-   const double c4 = iClose(_Symbol, _Period, 4);
-   if(o1 <= 0.0 || c1 <= 0.0 || o2 <= 0.0 || c2 <= 0.0 ||
-      o3 <= 0.0 || c3 <= 0.0 || o4 <= 0.0 || c4 <= 0.0)
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   const bool white_soldiers =
-      c3 > o3 && c2 > o2 && c1 > o1 &&
-      (c3 - o3) >= min_body &&
-      (c2 - o2) >= min_body &&
-      (c1 - o1) >= min_body &&
-      c1 > c2 && c2 > c3 &&
-      o2 >= MathMin(o3, c3) && o2 <= MathMax(o3, c3) &&
-      o1 >= MathMin(o2, c2) && o1 <= MathMax(o2, c2) &&
-      c4 < o4 && c4 > c3;
-
-   if(white_soldiers && rsi < strategy_buy_rsi_max)
+   if(three_white_soldiers && downward_context && rsi < strategy_buy_rsi_max)
      {
       req.type = QM_BUY;
-      req.price = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      req.price = ask;
       req.sl = QM_StopATR(_Symbol, req.type, req.price, strategy_atr_period, strategy_atr_sl_mult);
-      req.reason = "BCW_RSI_WHITE_SOLDIERS";
-      return (req.price > 0.0 && req.sl > 0.0);
+      req.tp = 0.0;
+      req.reason = "3ws_rsi_long";
+      return (req.sl > 0.0);
      }
 
-   const bool black_crows =
-      c3 < o3 && c2 < o2 && c1 < o1 &&
-      (o3 - c3) >= min_body &&
-      (o2 - c2) >= min_body &&
-      (o1 - c1) >= min_body &&
-      c1 < c2 && c2 < c3 &&
-      o2 >= MathMin(o3, c3) && o2 <= MathMax(o3, c3) &&
-      o1 >= MathMin(o2, c2) && o1 <= MathMax(o2, c2) &&
-      c4 > o4 && c4 < c3;
-
-   if(black_crows && rsi > strategy_sell_rsi_min)
+   if(three_black_crows && upward_context && rsi > strategy_sell_rsi_min)
      {
       req.type = QM_SELL;
-      req.price = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      req.price = bid;
       req.sl = QM_StopATR(_Symbol, req.type, req.price, strategy_atr_period, strategy_atr_sl_mult);
-      req.reason = "BCW_RSI_BLACK_CROWS";
-      return (req.price > 0.0 && req.sl > 0.0);
+      req.tp = 0.0;
+      req.reason = "3bc_rsi_short";
+      return (req.sl > 0.0);
      }
 
    return false;
@@ -190,7 +243,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies RSI/opposite-pattern exits only; no trailing, partial, or BE logic.
+   // Card specifies no trailing, partial close, or break-even management.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
@@ -198,11 +251,11 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
+   if(magic <= 0 || strategy_rsi_period <= 0)
       return false;
 
-   ENUM_POSITION_TYPE pos_type = POSITION_TYPE_BUY;
-   bool have_position = false;
+   bool have_long = false;
+   bool have_short = false;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -212,72 +265,34 @@ bool Strategy_ExitSignal()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-      pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      have_position = true;
-      break;
+
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(ptype == POSITION_TYPE_BUY)
+         have_long = true;
+      if(ptype == POSITION_TYPE_SELL)
+         have_short = true;
      }
 
-   if(!have_position)
+   if(!have_long && !have_short)
       return false;
 
-   const double rsi1 = QM_RSI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_rsi_period, 1);
-   const double rsi2 = QM_RSI(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_rsi_period, 2);
-   if(rsi1 <= 0.0 || rsi2 <= 0.0)
+   // RSI exit crossings on closed bars (shift 1 = last completed, shift 2 = prior).
+   // Long closes on a downward cross through the high (70) or low (30) level.
+   // Short closes on an upward cross through the low (30) or high (70) level.
+   const double rsi_now = QM_RSI(_Symbol, PERIOD_H1, strategy_rsi_period, 1);
+   const double rsi_prev = QM_RSI(_Symbol, PERIOD_H1, strategy_rsi_period, 2);
+   if(rsi_now <= 0.0 || rsi_prev <= 0.0)
       return false;
 
-   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
-   if(atr <= 0.0)
-      return false;
-   const double min_body = atr * strategy_min_body_atr_mult;
+   if(have_long &&
+      ((rsi_prev > strategy_rsi_exit_high && rsi_now <= strategy_rsi_exit_high) ||
+       (rsi_prev > strategy_rsi_exit_low && rsi_now <= strategy_rsi_exit_low)))
+      return true;
 
-   const double o1 = iOpen(_Symbol, _Period, 1);
-   const double c1 = iClose(_Symbol, _Period, 1);
-   const double o2 = iOpen(_Symbol, _Period, 2);
-   const double c2 = iClose(_Symbol, _Period, 2);
-   const double o3 = iOpen(_Symbol, _Period, 3);
-   const double c3 = iClose(_Symbol, _Period, 3);
-   const double o4 = iOpen(_Symbol, _Period, 4);
-   const double c4 = iClose(_Symbol, _Period, 4);
-   if(o1 <= 0.0 || c1 <= 0.0 || o2 <= 0.0 || c2 <= 0.0 ||
-      o3 <= 0.0 || c3 <= 0.0 || o4 <= 0.0 || c4 <= 0.0)
-      return false;
-
-   const bool white_soldiers =
-      c3 > o3 && c2 > o2 && c1 > o1 &&
-      (c3 - o3) >= min_body &&
-      (c2 - o2) >= min_body &&
-      (c1 - o1) >= min_body &&
-      c1 > c2 && c2 > c3 &&
-      o2 >= MathMin(o3, c3) && o2 <= MathMax(o3, c3) &&
-      o1 >= MathMin(o2, c2) && o1 <= MathMax(o2, c2) &&
-      c4 < o4 && c4 > c3;
-
-   const bool black_crows =
-      c3 < o3 && c2 < o2 && c1 < o1 &&
-      (o3 - c3) >= min_body &&
-      (o2 - c2) >= min_body &&
-      (o1 - c1) >= min_body &&
-      c1 < c2 && c2 < c3 &&
-      o2 >= MathMin(o3, c3) && o2 <= MathMax(o3, c3) &&
-      o1 >= MathMin(o2, c2) && o1 <= MathMax(o2, c2) &&
-      c4 > o4 && c4 < c3;
-
-   if(pos_type == POSITION_TYPE_BUY)
-     {
-      if((rsi2 >= strategy_exit_upper && rsi1 < strategy_exit_upper) ||
-         (rsi2 >= strategy_exit_lower && rsi1 < strategy_exit_lower))
-         return true;
-      if(black_crows && rsi1 > strategy_sell_rsi_min)
-         return true;
-     }
-   else if(pos_type == POSITION_TYPE_SELL)
-     {
-      if((rsi2 <= strategy_exit_lower && rsi1 > strategy_exit_lower) ||
-         (rsi2 <= strategy_exit_upper && rsi1 > strategy_exit_upper))
-         return true;
-      if(white_soldiers && rsi1 < strategy_buy_rsi_max)
-         return true;
-     }
+   if(have_short &&
+      ((rsi_prev < strategy_rsi_exit_low && rsi_now >= strategy_rsi_exit_low) ||
+       (rsi_prev < strategy_rsi_exit_high && rsi_now >= strategy_rsi_exit_high)))
+      return true;
 
    return false;
   }
@@ -287,12 +302,11 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   (void)broker_time;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 
 // -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
+// Framework wiring - do NOT edit below this line unless you know why.
 // -----------------------------------------------------------------------------
 
 int OnInit()
@@ -333,7 +347,7 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // FW1 - 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
    // when both new axes are at their OFF defaults.
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
@@ -367,12 +381,12 @@ void OnTick()
      }
 
    // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // per-tick recompute mistakes - EntrySignal sees one new closed bar per
    // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
 
-   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // FW6 2026-05-23 - emit end-of-day equity snapshot if the day rolled
    // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
