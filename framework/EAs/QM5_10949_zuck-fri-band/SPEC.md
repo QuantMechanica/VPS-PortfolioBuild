@@ -41,6 +41,7 @@ session-close proxy (default broker 20:30), with the framework Friday-close guar
 | `strategy_atr_period` | 14 | 7-28 | ATR period (M15 trigger/stop and H1 range floor) |
 | `strategy_atr_stop_mult` | 1.0 | 0.75-1.5 | Stop distance = mult × ATR(14,M15) |
 | `strategy_spread_pct_of_atr` | 15.0 | 5-30 | Skip if spread > this % of ATR(14,M15) |
+| `strategy_scan_bars` | 200 | 50-300 | Bounded closed-bar scan used to reconstruct the current Friday morning window |
 
 ---
 
@@ -107,4 +108,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-17 | Initial build from card | board-advisor build |
+| v1 | 2026-06-17 | Initial build from card | 881726ce-1c5a-425e-ac18-fda99e6bddd6 |
