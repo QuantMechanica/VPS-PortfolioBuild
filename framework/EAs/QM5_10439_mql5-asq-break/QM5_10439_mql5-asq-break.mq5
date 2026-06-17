@@ -52,8 +52,8 @@ input group "News"
 //   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
 //   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 // Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
@@ -73,120 +73,126 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
+// TODO: declare strategy-specific input params here, e.g.:
+//   input int    strategy_atr_period   = 14;
+//   input double strategy_atr_sl_mult  = 2.0;
+//   input double strategy_atr_tp_mult  = 3.0;
 input int    strategy_fast_ema_period       = 150;
 input int    strategy_slow_ema_period       = 510;
 input int    strategy_atr_period            = 14;
-input double strategy_ema_atr_sep_mult      = 0.5;
 input int    strategy_breakout_lookback     = 20;
+input double strategy_ema_atr_separation    = 0.5;
 input double strategy_breakout_atr_buffer   = 0.25;
+input int    strategy_rsi_period            = 14;
 input double strategy_long_rsi_min          = 40.0;
 input double strategy_long_rsi_max          = 65.0;
 input double strategy_short_rsi_min         = 35.0;
 input double strategy_short_rsi_max         = 60.0;
 input bool   strategy_htf_filter_enabled    = true;
-input ENUM_TIMEFRAMES strategy_htf          = PERIOD_H1;
 input int    strategy_htf_fast_ema_period   = 50;
 input int    strategy_htf_slow_ema_period   = 200;
 input double strategy_sl_atr_mult           = 1.2;
 input double strategy_h1_sl_cap_atr_mult    = 3.0;
-input double strategy_take_rr               = 2.0;
-input double strategy_be_trigger_r          = 1.0;
+input double strategy_tp_rr                 = 2.0;
 input int    strategy_session_start_hour    = 8;
 input int    strategy_session_end_hour      = 20;
-input double strategy_max_spread_atr_frac   = 0.15;
+input double strategy_spread_atr_max_frac   = 0.15;
 input int    strategy_friday_cutoff_hour    = 16;
 input int    strategy_max_entries_per_day   = 3;
 
-int g_entry_day_key = 0;
-int g_entry_attempts_today = 0;
+int g_asq_day_key = 0;
+int g_asq_entries_today = 0;
 
-int DayKey(const datetime t)
+int ASQ_DayKey(const datetime broker_time)
   {
    MqlDateTime dt;
-   TimeToStruct(t, dt);
+   TimeToStruct(broker_time, dt);
    return dt.year * 10000 + dt.mon * 100 + dt.day;
   }
 
-datetime DayStart(const datetime t)
+void ASQ_ResetDayIfNeeded(const datetime broker_time)
   {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   dt.hour = 0;
-   dt.min = 0;
-   dt.sec = 0;
-   return StructToTime(dt);
-  }
-
-void RefreshEntryDay(const datetime broker_now)
-  {
-   const int key = DayKey(broker_now);
-   if(key != g_entry_day_key)
+   const int day_key = ASQ_DayKey(broker_time);
+   if(day_key != g_asq_day_key)
      {
-      g_entry_day_key = key;
-      g_entry_attempts_today = 0;
+      g_asq_day_key = day_key;
+      g_asq_entries_today = 0;
      }
   }
 
-int CountTodayEntriesFromHistory(const datetime broker_now)
+bool ASQ_HasOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
-      return 0;
-
-   if(!HistorySelect(DayStart(broker_now), broker_now))
-      return 0;
-
-   int count = 0;
-   const int total = HistoryDealsTotal();
-   for(int i = 0; i < total; ++i)
-     {
-      const ulong deal_ticket = HistoryDealGetTicket(i);
-      if(deal_ticket == 0)
-         continue;
-      if(HistoryDealGetString(deal_ticket, DEAL_SYMBOL) != _Symbol)
-         continue;
-      if((int)HistoryDealGetInteger(deal_ticket, DEAL_MAGIC) != magic)
-         continue;
-      if((ENUM_DEAL_ENTRY)HistoryDealGetInteger(deal_ticket, DEAL_ENTRY) == DEAL_ENTRY_IN)
-         count++;
-     }
-   return count;
-  }
-
-int EntriesToday(const datetime broker_now)
-  {
-   RefreshEntryDay(broker_now);
-   const int history_count = CountTodayEntriesFromHistory(broker_now);
-   return (history_count > g_entry_attempts_today) ? history_count : g_entry_attempts_today;
-  }
-
-bool ClosedBarBreakoutExtremes(const int lookback_bars, double &highest, double &lowest)
-  {
-   highest = -DBL_MAX;
-   lowest = DBL_MAX;
-   if(lookback_bars < 1)
       return false;
 
-   for(int shift = 2; shift <= lookback_bars + 1; ++shift)
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      const double high_price = iHigh(_Symbol, _Period, shift); // perf-allowed: bounded N-bar structural breakout, called only from closed-bar EntrySignal.
-      const double low_price = iLow(_Symbol, _Period, shift); // perf-allowed: bounded N-bar structural breakout, called only from closed-bar EntrySignal.
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return true;
+     }
+   return false;
+  }
+
+bool ASQ_ReadBreakoutRange(const int lookback, double &highest_high, double &lowest_low)
+  {
+   highest_high = -DBL_MAX;
+   lowest_low = DBL_MAX;
+   if(lookback <= 0)
+      return false;
+
+   for(int shift = 2; shift <= lookback + 1; ++shift)
+     {
+      const double high_price = iHigh(_Symbol, _Period, shift); // perf-allowed: closed-bar ASQ N-bar breakout range, called only after framework QM_IsNewBar gate.
+      const double low_price = iLow(_Symbol, _Period, shift); // perf-allowed: closed-bar ASQ N-bar breakout range, called only after framework QM_IsNewBar gate.
       if(high_price <= 0.0 || low_price <= 0.0)
          return false;
-      if(high_price > highest)
-         highest = high_price;
-      if(low_price < lowest)
-         lowest = low_price;
+      if(high_price > highest_high)
+         highest_high = high_price;
+      if(low_price < lowest_low)
+         lowest_low = low_price;
      }
-   return (highest > 0.0 && lowest > 0.0 && highest > lowest);
+
+   return (highest_high > 0.0 && lowest_low > 0.0 && highest_high > lowest_low);
   }
 
-bool CurrentBrokerTime(MqlDateTime &dt)
+double ASQ_StopDistance()
   {
-   const datetime broker_now = TimeCurrent();
-   if(broker_now <= 0)
+   const double m5_atr = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_atr_period, 1);
+   const double h1_atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
+   if(m5_atr <= 0.0 || h1_atr <= 0.0 || strategy_sl_atr_mult <= 0.0 || strategy_h1_sl_cap_atr_mult <= 0.0)
+      return 0.0;
+
+   const double baseline = m5_atr * strategy_sl_atr_mult;
+   const double cap = h1_atr * strategy_h1_sl_cap_atr_mult;
+   return MathMin(baseline, cap);
+  }
+
+bool ASQ_FillRequest(QM_EntryRequest &req,
+                     const QM_OrderType order_type,
+                     const double entry_price,
+                     const string reason)
+  {
+   const double stop_distance = ASQ_StopDistance();
+   if(stop_distance <= 0.0 || entry_price <= 0.0)
       return false;
-   TimeToStruct(broker_now, dt);
+
+   req.type = order_type;
+   req.price = 0.0;
+   req.sl = QM_StopRulesStopFromDistance(_Symbol, order_type, entry_price, stop_distance);
+   req.tp = QM_TakeRR(_Symbol, order_type, entry_price, req.sl, strategy_tp_rr);
+   req.reason = reason;
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+   if(req.sl <= 0.0 || req.tp <= 0.0)
+      return false;
+
+   g_asq_entries_today++;
    return true;
   }
 
@@ -198,28 +204,40 @@ bool CurrentBrokerTime(MqlDateTime &dt)
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   MqlDateTime dt;
-   if(!CurrentBrokerTime(dt))
+   const datetime broker_now = TimeCurrent();
+   ASQ_ResetDayIfNeeded(broker_now);
+
+   if(ASQ_HasOpenPosition())
+      return false;
+
+   if(g_asq_entries_today >= strategy_max_entries_per_day)
       return true;
 
-   if(dt.hour < strategy_session_start_hour || dt.hour >= strategy_session_end_hour)
+   MqlDateTime dt;
+   TimeToStruct(broker_now, dt);
+   if(dt.day_of_week == 5 && dt.hour >= strategy_friday_cutoff_hour)
       return true;
+
+   const int start_hour = strategy_session_start_hour;
+   const int end_hour = strategy_session_end_hour;
+   if(start_hour < end_hour)
+     {
+      if(dt.hour < start_hour || dt.hour >= end_hour)
+         return true;
+     }
+   else if(start_hour > end_hour)
+     {
+      if(dt.hour < start_hour && dt.hour >= end_hour)
+         return true;
+     }
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
+   const double atr = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_atr_period, 1);
+   if(ask <= 0.0 || bid <= 0.0 || atr <= 0.0)
       return true;
-
-   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
-   if(atr <= 0.0)
+   if(ask > bid && strategy_spread_atr_max_frac > 0.0 && (ask - bid) > atr * strategy_spread_atr_max_frac)
       return true;
-
-   if(ask > bid)
-     {
-      const double spread = ask - bid;
-      if(spread > atr * strategy_max_spread_atr_frac)
-         return true;
-     }
 
    return false;
   }
@@ -237,49 +255,34 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const datetime broker_now = TimeCurrent();
-   RefreshEntryDay(broker_now);
-
-   MqlDateTime dt;
-   TimeToStruct(broker_now, dt);
-   if(dt.day_of_week == 5 && dt.hour >= strategy_friday_cutoff_hour)
+   ASQ_ResetDayIfNeeded(TimeCurrent());
+   if(g_asq_entries_today >= strategy_max_entries_per_day)
+      return false;
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   if(EntriesToday(broker_now) >= strategy_max_entries_per_day)
+   if(strategy_fast_ema_period <= 0 || strategy_slow_ema_period <= 0 ||
+      strategy_atr_period <= 0 || strategy_breakout_lookback <= 0 ||
+      strategy_rsi_period <= 0)
       return false;
 
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0 || QM_TM_OpenPositionCount(magic) > 0)
+   const double ema_fast = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_fast_ema_period, 1);
+   const double ema_slow = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_slow_ema_period, 1);
+   const double atr = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_atr_period, 1);
+   const double rsi = QM_RSI(_Symbol, PERIOD_CURRENT, strategy_rsi_period, 1, PRICE_CLOSE);
+   const double close_last = iClose(_Symbol, _Period, 1); // perf-allowed: closed-bar ASQ breakout/momentum close, caller guarantees QM_IsNewBar.
+   const double close_prev = iClose(_Symbol, _Period, 2); // perf-allowed: closed-bar ASQ candle momentum close, caller guarantees QM_IsNewBar.
+   if(ema_fast <= 0.0 || ema_slow <= 0.0 || atr <= 0.0 || rsi <= 0.0 ||
+      close_last <= 0.0 || close_prev <= 0.0)
       return false;
 
-   if(strategy_fast_ema_period <= 0 || strategy_slow_ema_period <= strategy_fast_ema_period ||
-      strategy_atr_period <= 0 || strategy_breakout_lookback <= 0)
-      return false;
-
-   const double ema_fast = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_fast_ema_period, 1);
-   const double ema_slow = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_slow_ema_period, 1);
-   const double atr_m5 = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
-   const double rsi = QM_RSI(_Symbol, (ENUM_TIMEFRAMES)_Period, 14, 1);
-   if(ema_fast <= 0.0 || ema_slow <= 0.0 || atr_m5 <= 0.0 || rsi <= 0.0)
-      return false;
-
-   if(MathAbs(ema_fast - ema_slow) <= strategy_ema_atr_sep_mult * atr_m5)
-      return false;
-
-   const double close_1 = iClose(_Symbol, _Period, 1); // perf-allowed: closed-bar price condition, called only after framework QM_IsNewBar gate.
-   const double close_2 = iClose(_Symbol, _Period, 2); // perf-allowed: closed-bar candle momentum, called only after framework QM_IsNewBar gate.
-   if(close_1 <= 0.0 || close_2 <= 0.0)
-      return false;
-
-   double range_high = 0.0;
-   double range_low = 0.0;
-   if(!ClosedBarBreakoutExtremes(strategy_breakout_lookback, range_high, range_low))
+   if(MathAbs(ema_fast - ema_slow) <= atr * strategy_ema_atr_separation)
       return false;
 
    if(strategy_htf_filter_enabled)
      {
-      const double htf_fast = QM_EMA(_Symbol, strategy_htf, strategy_htf_fast_ema_period, 1);
-      const double htf_slow = QM_EMA(_Symbol, strategy_htf, strategy_htf_slow_ema_period, 1);
+      const double htf_fast = QM_EMA(_Symbol, PERIOD_H1, strategy_htf_fast_ema_period, 1);
+      const double htf_slow = QM_EMA(_Symbol, PERIOD_H1, strategy_htf_slow_ema_period, 1);
       if(htf_fast <= 0.0 || htf_slow <= 0.0)
          return false;
       if(ema_fast > ema_slow && htf_fast <= htf_slow)
@@ -288,65 +291,36 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
+   double prior_high = 0.0;
+   double prior_low = 0.0;
+   if(!ASQ_ReadBreakoutRange(strategy_breakout_lookback, prior_high, prior_low))
+      return false;
+
+   const double breakout_buffer = atr * strategy_breakout_atr_buffer;
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   QM_OrderType side = QM_BUY;
-   double entry_price = 0.0;
-   bool signal = false;
-
    if(ema_fast > ema_slow &&
-      close_1 > ema_fast &&
-      close_1 > ema_slow &&
-      close_1 > range_high + strategy_breakout_atr_buffer * atr_m5 &&
+      close_last > ema_fast &&
+      close_last > ema_slow &&
+      close_last > prior_high + breakout_buffer &&
       rsi >= strategy_long_rsi_min &&
       rsi <= strategy_long_rsi_max &&
-      close_1 > close_2)
-     {
-      side = QM_BUY;
-      entry_price = ask;
-      signal = true;
-     }
-   else if(ema_fast < ema_slow &&
-           close_1 < ema_fast &&
-           close_1 < ema_slow &&
-           close_1 < range_low - strategy_breakout_atr_buffer * atr_m5 &&
-           rsi >= strategy_short_rsi_min &&
-           rsi <= strategy_short_rsi_max &&
-           close_1 < close_2)
-     {
-      side = QM_SELL;
-      entry_price = bid;
-      signal = true;
-     }
+      close_last > close_prev)
+      return ASQ_FillRequest(req, QM_BUY, ask, "ASQ_LONG_BREAKOUT");
 
-   if(!signal || entry_price <= 0.0)
-      return false;
+   if(ema_fast < ema_slow &&
+      close_last < ema_fast &&
+      close_last < ema_slow &&
+      close_last < prior_low - breakout_buffer &&
+      rsi >= strategy_short_rsi_min &&
+      rsi <= strategy_short_rsi_max &&
+      close_last < close_prev)
+      return ASQ_FillRequest(req, QM_SELL, bid, "ASQ_SHORT_BREAKOUT");
 
-   const double atr_h1 = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
-   if(atr_h1 <= 0.0)
-      return false;
-
-   double sl_distance = strategy_sl_atr_mult * atr_m5;
-   const double sl_cap = strategy_h1_sl_cap_atr_mult * atr_h1;
-   if(sl_cap > 0.0 && sl_distance > sl_cap)
-      sl_distance = sl_cap;
-
-   req.type = side;
-   req.price = 0.0;
-   req.sl = QM_StopRulesStopFromDistance(_Symbol, side, entry_price, sl_distance);
-   req.tp = QM_TakeRR(_Symbol, side, entry_price, req.sl, strategy_take_rr);
-   req.reason = (side == QM_BUY) ? "ASQ_LONG_BREAKOUT" : "ASQ_SHORT_BREAKOUT";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-
-   if(req.sl <= 0.0 || req.tp <= 0.0)
-      return false;
-
-   g_entry_attempts_today++;
-   return true;
+   return false;
   }
 
 // Called every tick when an open position exists for this EA's magic.
@@ -354,7 +328,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 void Strategy_ManageOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0 || strategy_be_trigger_r <= 0.0)
+   if(magic <= 0)
       return;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -368,27 +342,28 @@ void Strategy_ManageOpenPosition()
          continue;
 
       const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const bool is_buy = (position_type == POSITION_TYPE_BUY);
       const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
       const double current_sl = PositionGetDouble(POSITION_SL);
-      const double market_price = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID) : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-      if(open_price <= 0.0 || current_sl <= 0.0 || market_price <= 0.0 || point <= 0.0)
+      if(open_price <= 0.0 || current_sl <= 0.0 || point <= 0.0)
          continue;
 
-      const double initial_r = is_buy ? (open_price - current_sl) : (current_sl - open_price);
-      if(initial_r <= point)
+      const bool is_buy = (position_type == POSITION_TYPE_BUY);
+      const double risk_distance = MathAbs(open_price - current_sl);
+      const double market_price = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                                         : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(risk_distance <= 0.0 || market_price <= 0.0)
          continue;
 
-      const double moved = is_buy ? (market_price - open_price) : (open_price - market_price);
-      if(moved < initial_r * strategy_be_trigger_r)
+      const double favorable_distance = is_buy ? (market_price - open_price)
+                                               : (open_price - market_price);
+      if(favorable_distance < risk_distance)
          continue;
 
-      const bool already_be = is_buy ? (current_sl >= open_price) : (current_sl <= open_price);
-      if(already_be)
-         continue;
-
-      QM_TM_MoveSL(ticket, QM_TM_NormalizePrice(_Symbol, open_price), "ASQ_MOVE_TO_BREAKEVEN_1R");
+      const bool improves = is_buy ? (current_sl < open_price - point * 0.5)
+                                   : (current_sl > open_price + point * 0.5);
+      if(improves)
+         QM_TM_MoveSL(ticket, QM_StopRulesNormalizePrice(_Symbol, open_price), "ASQ_MOVE_TO_BE_1R");
      }
   }
 
@@ -396,6 +371,8 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
+   // ASQ baseline exits only by fixed 2R TP, ATR SL, framework Friday close,
+   // and the break-even stop move in Strategy_ManageOpenPosition.
    return false;
   }
 

@@ -10,23 +10,14 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   fe103faf1596a14e15d396fb675b60c7712a9284a0a74670f2ea0e9034c9115d
+; build_hash:   6bbef47bf75ada33ea3878dcbf9db907e3fb6d0ed34ba77305205914e5ceb527
 ; author:       Development
 ; date:         2026-06-17
 ;==========================================================
 qm_magic_slot_offset=2
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=1
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
@@ -41,26 +32,3 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-strategy_fast_ema_period=150
-strategy_slow_ema_period=510
-strategy_atr_period=14
-strategy_ema_atr_sep_mult=0.5
-strategy_breakout_lookback=20
-strategy_breakout_atr_buffer=0.25
-strategy_long_rsi_min=40.0
-strategy_long_rsi_max=65.0
-strategy_short_rsi_min=35.0
-strategy_short_rsi_max=60.0
-strategy_htf_filter_enabled=1
-strategy_htf=16385
-strategy_htf_fast_ema_period=50
-strategy_htf_slow_ema_period=200
-strategy_sl_atr_mult=1.2
-strategy_h1_sl_cap_atr_mult=3.0
-strategy_take_rr=2.0
-strategy_be_trigger_r=1.0
-strategy_session_start_hour=8
-strategy_session_end_hour=20
-strategy_max_spread_atr_frac=0.15
-strategy_friday_cutoff_hour=16
-strategy_max_entries_per_day=3

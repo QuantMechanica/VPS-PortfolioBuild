@@ -2,7 +2,7 @@
 
 **EA ID:** QM5_10439
 **Slug:** mql5-asq-break
-**Source:** b8b5125a-c67f-5bbc-baff-33456e08f5b2
+**Source:** b8b5125a-c67f-5bbc-baff-33456e08f5b2 (see MQL5 CodeBase citation)
 **Author of this spec:** Codex
 **Last revised:** 2026-06-18
 
@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades completed M5-bar breakouts only during the 08:00-20:00 broker-time session. A long entry requires EMA(150) above EMA(510), EMA separation greater than 0.5 x ATR(14), the close above both EMAs, a close above the prior 20-bar high plus 0.25 x ATR(14), RSI(14) between 40 and 65, bullish candle momentum, and H1 EMA(50) above EMA(200). A short entry mirrors the same seven conditions with EMA direction down, a close below the prior 20-bar low minus 0.25 x ATR(14), RSI(14) between 35 and 60, bearish candle momentum, and H1 EMA(50) below EMA(200). Exits are the fixed 2.0R take profit, the ATR stop, the framework Friday close, and a move to breakeven after price reaches +1R.
+The EA evaluates completed M5 bars for a seven-condition breakout. A long trade requires EMA(150) above EMA(510), enough EMA separation versus ATR(14), close above both EMAs, a close above the prior 20-bar high plus 0.25 ATR, RSI(14) in the long zone, bullish close-to-close momentum, and H1 EMA50 above EMA200. A short trade mirrors those conditions below the EMAs and below the prior 20-bar low. Exits use the initial ATR stop, a fixed 2R take-profit, framework Friday close, and a move to break-even after price reaches +1R.
 
 ---
 
@@ -18,43 +18,42 @@ The EA trades completed M5-bar breakouts only during the 08:00-20:00 broker-time
 
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
-| strategy_fast_ema_period | 150 | >= 1 | Fast M5 EMA for primary trend direction. |
-| strategy_slow_ema_period | 510 | > fast EMA | Slow M5 EMA for primary trend direction. |
-| strategy_atr_period | 14 | >= 1 | ATR period used for separation, breakout buffer, stop, and spread filter. |
-| strategy_ema_atr_sep_mult | 0.5 | > 0 | Minimum EMA separation as a multiple of M5 ATR. |
-| strategy_breakout_lookback | 20 | >= 1 | Prior-bar range length used for high and low breakout levels. |
-| strategy_breakout_atr_buffer | 0.25 | >= 0 | ATR buffer added to the breakout high or low. |
+| strategy_fast_ema_period | 150 | >0 | Fast trend EMA on the M5 chart. |
+| strategy_slow_ema_period | 510 | >0 | Slow trend EMA on the M5 chart. |
+| strategy_atr_period | 14 | >0 | ATR period for separation, breakout buffer, spread guard, and stop distance. |
+| strategy_breakout_lookback | 20 | >0 | Number of prior bars used for breakout high/low. |
+| strategy_ema_atr_separation | 0.5 | >=0 | Minimum EMA separation as a multiple of M5 ATR. |
+| strategy_breakout_atr_buffer | 0.25 | >=0 | Breakout buffer beyond the prior range as a multiple of M5 ATR. |
+| strategy_rsi_period | 14 | >0 | RSI period for momentum-zone filtering. |
 | strategy_long_rsi_min | 40.0 | 0-100 | Lower bound for long RSI zone. |
 | strategy_long_rsi_max | 65.0 | 0-100 | Upper bound for long RSI zone. |
 | strategy_short_rsi_min | 35.0 | 0-100 | Lower bound for short RSI zone. |
 | strategy_short_rsi_max | 60.0 | 0-100 | Upper bound for short RSI zone. |
-| strategy_htf_filter_enabled | true | true/false | Enables the baseline H1 EMA agreement filter. |
-| strategy_htf | PERIOD_H1 | MT5 timeframe | Higher timeframe used for EMA agreement. |
-| strategy_htf_fast_ema_period | 50 | >= 1 | Fast H1 EMA for higher-timeframe agreement. |
-| strategy_htf_slow_ema_period | 200 | > fast EMA | Slow H1 EMA for higher-timeframe agreement. |
-| strategy_sl_atr_mult | 1.2 | > 0 | Stop distance as a multiple of M5 ATR. |
-| strategy_h1_sl_cap_atr_mult | 3.0 | > 0 | Maximum stop distance as a multiple of H1 ATR. |
-| strategy_take_rr | 2.0 | > 0 | Take-profit multiple of the stop distance. |
-| strategy_be_trigger_r | 1.0 | > 0 | Breakeven trigger measured in initial risk units. |
-| strategy_session_start_hour | 8 | 0-23 | Broker-time session start hour for new trading. |
-| strategy_session_end_hour | 20 | 1-24 | Broker-time session end hour for new trading. |
-| strategy_max_spread_atr_frac | 0.15 | >= 0 | Blocks entry when modeled spread exceeds this fraction of M5 ATR. |
-| strategy_friday_cutoff_hour | 16 | 0-23 | Friday broker-time hour after which new entries are blocked. |
-| strategy_max_entries_per_day | 3 | >= 1 | Maximum same-symbol same-magic entries per broker day. |
+| strategy_htf_filter_enabled | true | true/false | Enables H1 EMA50/EMA200 agreement filter. |
+| strategy_htf_fast_ema_period | 50 | >0 | Fast EMA for higher-timeframe agreement. |
+| strategy_htf_slow_ema_period | 200 | >0 | Slow EMA for higher-timeframe agreement. |
+| strategy_sl_atr_mult | 1.2 | >0 | M5 ATR multiple for baseline stop distance. |
+| strategy_h1_sl_cap_atr_mult | 3.0 | >0 | H1 ATR multiple used as maximum stop distance cap. |
+| strategy_tp_rr | 2.0 | >0 | Fixed reward/risk multiple for take-profit. |
+| strategy_session_start_hour | 8 | 0-23 | Broker-time session start hour for new entries. |
+| strategy_session_end_hour | 20 | 0-23 | Broker-time session end hour for new entries. |
+| strategy_spread_atr_max_frac | 0.15 | >=0 | Maximum modeled spread as a fraction of M5 ATR. |
+| strategy_friday_cutoff_hour | 16 | 0-23 | Broker-time Friday hour after which new entries stop. |
+| strategy_max_entries_per_day | 3 | >=1 | Maximum entry attempts per broker day. |
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- XAUUSD.DWX - Card-listed gold CFD, suitable for intraday trend breakout testing.
-- EURUSD.DWX - Card-listed major FX pair, suitable for liquid M5 breakout testing.
-- GBPUSD.DWX - Card-listed major FX pair, suitable for liquid M5 breakout testing.
-- XAGUSD.DWX - Card-listed silver CFD, suitable for intraday metals breakout testing.
+- XAUUSD.DWX - card-listed gold CFD target with DWX data availability.
+- EURUSD.DWX - card-listed major FX target with DWX data availability.
+- GBPUSD.DWX - card-listed major FX target with DWX data availability.
+- XAGUSD.DWX - card-listed silver CFD target with DWX data availability.
 
 **Explicitly NOT for:**
-- SP500.DWX - Not in this card's R3 FX/metals basket.
-- NDX.DWX - Not in this card's R3 FX/metals basket.
+- Non-DWX symbols - build and backtest registry requires canonical `.DWX` symbols.
+- Symbols outside `framework/registry/dwx_symbol_matrix.csv` - no broker/tester data guarantee.
 
 ---
 
@@ -63,8 +62,8 @@ The EA trades completed M5-bar breakouts only during the 08:00-20:00 broker-time
 | Aspect | Value |
 |---|---|
 | Base timeframe | M5 |
-| Multi-timeframe refs | H1 EMA(50), H1 EMA(200), H1 ATR(14) stop cap |
-| Bar gating | QM_IsNewBar(_Symbol, PERIOD_CURRENT) (default) |
+| Multi-timeframe refs | H1 EMA50/EMA200 agreement; H1 ATR stop cap |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` via framework OnTick gate |
 
 ---
 
@@ -73,10 +72,10 @@ The EA trades completed M5-bar breakouts only during the 08:00-20:00 broker-time
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 120 |
-| Typical hold time | Intraday, minutes to hours |
-| Expected drawdown profile | Controlled by ATR stop, 2.0R target, 1R breakeven, and daily entry cap. |
-| Regime preference | Breakout with trend and momentum confirmation |
-| Win rate target (qualitative) | Medium |
+| Typical hold time | Card does not state an exact hold time; expected intraday M5 scalper holds are minutes to hours. |
+| Expected drawdown profile | Card does not state a drawdown target; fixed ATR stop and 2R target imply bounded per-trade loss. |
+| Regime preference | Strict intraday breakout with trend and momentum confirmation. |
+| Win rate target (qualitative) | Medium; strict conditions trade less often but target 2R exits. |
 
 ---
 
@@ -87,7 +86,7 @@ This card was mechanised from:
 **Source ID:** b8b5125a-c67f-5bbc-baff-33456e08f5b2
 **Source type:** MQL5 CodeBase
 **Pointer:** https://www.mql5.com/en/code/71189
-**R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_10439_mql5-asq-break.md`
+**R1-R4 verdict (Q00):** all PASS per `artifacts/cards_approved/QM5_10439_mql5-asq-break.md`
 
 ---
 
@@ -107,4 +106,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | 16b51075-0b30-4dbf-b472-15ceeee7db6d |
+| v1 | 2026-06-18 | Initial build from card | ff8e7d88-9443-41ac-860d-7a5e8decf224 |
