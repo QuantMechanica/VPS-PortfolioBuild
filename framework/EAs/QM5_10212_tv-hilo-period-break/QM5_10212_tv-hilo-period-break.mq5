@@ -323,7 +323,6 @@ bool Strategy_ExitSignal()
 // Optional news-filter override. Defer to the central framework filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   (void)broker_time;
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 

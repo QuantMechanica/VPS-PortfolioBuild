@@ -292,7 +292,6 @@ bool Strategy_ExitSignal()
 // news filter callable through this hook path.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   (void)broker_time;
    return false;
   }
 

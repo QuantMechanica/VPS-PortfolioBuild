@@ -337,7 +337,6 @@ bool Strategy_ExitSignal()
 // News Filter Hook (callable for Q09 News Impact phase). Defer to central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   (void)broker_time;
    return false;
   }
 
