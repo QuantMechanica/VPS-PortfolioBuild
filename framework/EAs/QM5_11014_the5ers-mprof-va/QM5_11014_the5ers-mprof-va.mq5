@@ -353,6 +353,9 @@ bool InTradingSession(const datetime broker_now)
 // Fail-open on .DWX zero modeled spread.
 bool Strategy_NoTradeFilter()
   {
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+      return false;
+
    const datetime broker_now = TimeCurrent();
    if(!InTradingSession(broker_now))
       return true;
@@ -380,6 +383,14 @@ bool Strategy_NoTradeFilter()
 // Closed-bar entry (caller guarantees QM_IsNewBar() == true).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
    if(!g_profile_valid)
