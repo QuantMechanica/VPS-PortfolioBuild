@@ -93,6 +93,7 @@ bool     g_pos_is_buy        = false;
 bool     g_pos_tp1_done      = false;   // first-target partial taken
 bool     g_pos_be_done       = false;   // moved to break-even
 datetime g_pos_open_bar      = 0;       // bar-open time at which the position opened
+double   g_pos_best_swing    = 0.0;     // best closed-bar extreme since entry
 
 // -----------------------------------------------------------------------------
 // Helpers (order/position management — not strategy iX math).
@@ -118,6 +119,34 @@ int OutbarPendingCount()
       count++;
      }
    return count;
+  }
+
+// Cancel this EA's current-symbol pending orders when a newer outside bar appears.
+bool OutbarCancelPendingOrders()
+  {
+   const int magic = QM_FrameworkMagic();
+   bool all_ok = true;
+   const int total = OrdersTotal();
+   for(int i = total - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0)
+         continue;
+      if(!OrderSelect(ticket))
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type != ORDER_TYPE_BUY_STOP && order_type != ORDER_TYPE_SELL_STOP)
+         continue;
+
+      if(!QM_TM_RemovePendingOrder(ticket, "new_outside_bar"))
+         all_ok = false;
+     }
+   return all_ok;
   }
 
 // Select this EA's open position on the current symbol; return its ticket or 0.
@@ -154,6 +183,7 @@ void OutbarResetPosState(const ulong ticket)
    g_pos_tp1_done  = false;
    g_pos_be_done   = false;
    g_pos_open_bar  = iTime(_Symbol, _Period, 0); // perf-allowed: current bar-open stamp
+   g_pos_best_swing = g_pos_entry;
   }
 
 // -----------------------------------------------------------------------------
@@ -186,10 +216,8 @@ bool Strategy_NoTradeFilter()
 // Outside-bar reversal stop-entry. Caller guarantees QM_IsNewBar() == true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One live order OR position per magic/symbol.
+   // One live position per magic/symbol.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
-      return false;
-   if(OutbarPendingCount() > 0)
       return false;
 
    // --- Closed-bar OHLC of the outside bar (shift 1) and its reference (2). ---
@@ -204,6 +232,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // --- Outside-bar pattern (gapless CFD: prior bar high/low, not a gap). ---
    if(!(high1 > high2 && low1 < low2))
       return false;
+
+   // Card build note: a fresh outside bar supersedes older unfilled stops.
+   if(OutbarPendingCount() > 0)
+     {
+      if(!OutbarCancelPendingOrders())
+         return false;
+      if(OutbarPendingCount() > 0)
+         return false;
+     }
 
    // --- Range filter: meaningful engulfing bar. ---
    const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
@@ -233,7 +270,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    const double midpoint = (high1 + low1) * 0.5;
-   const double tick = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   double tick = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   if(tick <= 0.0)
+      tick = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(tick <= 0.0)
       return false;
 
@@ -297,6 +336,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl                 = sl_price;
    req.tp                 = 0.0;       // managed in Strategy_ManageOpenPosition
    req.reason             = is_buy ? "outbar_rev_buystop" : "outbar_rev_sellstop";
+   req.symbol_slot        = qm_magic_slot_offset;
    req.expiration_seconds = expiry_seconds;
    return true;
   }
@@ -353,9 +393,36 @@ void Strategy_ManageOpenPosition()
          g_pos_be_done = true;
      }
 
-   // --- ATR trail of the remainder (only after the first target is taken). ---
+   // --- ATR trail after each new favorable closed-bar swing high/low. ---
    if(g_pos_tp1_done)
-      QM_TM_TrailATR(ticket, strategy_atr_period, strategy_trail_atr_mult);
+     {
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      if(point <= 0.0 || atr_value <= 0.0)
+         return;
+
+      if(g_pos_is_buy)
+        {
+         const double swing_high = iHigh(_Symbol, _Period, 1); // perf-allowed: single closed-bar structural read
+         if(swing_high > g_pos_best_swing + point)
+           {
+            const double trail_sl = QM_TM_NormalizePrice(_Symbol, swing_high - atr_value * strategy_trail_atr_mult);
+            if(trail_sl > 0.0 && trail_sl < mkt)
+               QM_TM_MoveSL(ticket, trail_sl, "outbar_swing_atr_trail");
+            g_pos_best_swing = swing_high;
+           }
+        }
+      else
+        {
+         const double swing_low = iLow(_Symbol, _Period, 1); // perf-allowed: single closed-bar structural read
+         if(g_pos_best_swing <= 0.0 || swing_low < g_pos_best_swing - point)
+           {
+            const double trail_sl = QM_TM_NormalizePrice(_Symbol, swing_low + atr_value * strategy_trail_atr_mult);
+            if(trail_sl > 0.0 && trail_sl > mkt)
+               QM_TM_MoveSL(ticket, trail_sl, "outbar_swing_atr_trail");
+            g_pos_best_swing = swing_low;
+           }
+        }
+     }
   }
 
 // Discretionary closes: final 7R target and the D1 time stop.
