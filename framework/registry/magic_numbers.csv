@@ -9725,6 +9725,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11017,the5ers-outbar-rev,2,USDJPY.DWX,110170002,2026-06-17,Claude,active
 11017,the5ers-outbar-rev,3,XAUUSD.DWX,110170003,2026-06-17,Claude,active
 11017,the5ers-outbar-rev,4,GDAXI.DWX,110170004,2026-06-17,Claude,active
+11017,the5ers-outbar-rev,5,AUDUSD.DWX,110170005,2026-06-18,Development,active
 11018,the5ers-outbar-cont,0,EURUSD.DWX,110180000,2026-06-17,Claude,active
 11018,the5ers-outbar-cont,1,GBPUSD.DWX,110180001,2026-06-17,Claude,active
 11018,the5ers-outbar-cont,2,USDJPY.DWX,110180002,2026-06-17,Claude,active
