@@ -203,21 +203,22 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const int warmup = MathMax(strategy_confirm_lookback + 5, 3 * strategy_st_atr_period);
 
    // --- ENTRY EVENT: SuperTrend flipped bullish within the lookback window. ---
-   // The flip is the SINGLE event. Search the window for a bar where dir goes
-   // from <=0 (prev) to >0 (now). dir@1 must be bullish (we only enter long
-   // while ST is currently bullish).
-   const int dir1 = QM_SuperTrendDir(_Symbol, _Period, strategy_st_atr_period,
-                                     strategy_st_factor, 1, warmup);
-   if(dir1 <= 0)
+   // The flip is the SINGLE event. One forward reconstruction yields dir at
+   // shifts 1..lookback+1; search for a bar where dir goes from <=0 to >0.
+   // dir@1 must be bullish (we only enter long while ST is currently bullish).
+   int st_dir[];
+   if(!QM_SuperTrendDirSeries(_Symbol, _Period, strategy_st_atr_period,
+                              strategy_st_factor, strategy_confirm_lookback + 1,
+                              warmup, st_dir))
+      return false;
+   if(st_dir[0] <= 0)
       return false; // ST must currently be bullish
 
    bool st_flipped_bull = false;
    for(int s = 1; s <= strategy_confirm_lookback; ++s)
      {
-      const int d_now  = QM_SuperTrendDir(_Symbol, _Period, strategy_st_atr_period,
-                                          strategy_st_factor, s, warmup);
-      const int d_prev = QM_SuperTrendDir(_Symbol, _Period, strategy_st_atr_period,
-                                          strategy_st_factor, s + 1, warmup);
+      const int d_now  = st_dir[s - 1]; // shift s
+      const int d_prev = st_dir[s];     // shift s+1
       if(d_now > 0 && d_prev <= 0)
         {
          st_flipped_bull = true;
@@ -314,22 +315,23 @@ bool Strategy_ExitSignal()
    const int warmup = MathMax(strategy_confirm_lookback + 5, 3 * strategy_st_atr_period);
 
    // --- EXIT EVENT: SuperTrend flipped bearish within the lookback window. ---
-   const int dir1 = QM_SuperTrendDir(_Symbol, _Period, strategy_st_atr_period,
-                                     strategy_st_factor, 1, warmup);
+   int st_dir[];
+   if(!QM_SuperTrendDirSeries(_Symbol, _Period, strategy_st_atr_period,
+                              strategy_st_factor, strategy_confirm_lookback + 1,
+                              warmup, st_dir))
+      return false;
    bool st_flipped_bear = false;
    for(int s = 1; s <= strategy_confirm_lookback; ++s)
      {
-      const int d_now  = QM_SuperTrendDir(_Symbol, _Period, strategy_st_atr_period,
-                                          strategy_st_factor, s, warmup);
-      const int d_prev = QM_SuperTrendDir(_Symbol, _Period, strategy_st_atr_period,
-                                          strategy_st_factor, s + 1, warmup);
+      const int d_now  = st_dir[s - 1]; // shift s
+      const int d_prev = st_dir[s];     // shift s+1
       if(d_now < 0 && d_prev >= 0)
         {
          st_flipped_bear = true;
          break;
         }
      }
-   if(!st_flipped_bear || dir1 >= 0)
+   if(!st_flipped_bear || st_dir[0] >= 0)
       return false;
 
    // --- EMA STATE: short below long within the lookback window. ---
