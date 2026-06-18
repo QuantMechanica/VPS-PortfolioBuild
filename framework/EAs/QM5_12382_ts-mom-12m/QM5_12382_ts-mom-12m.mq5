@@ -88,7 +88,7 @@ int MonthKeyFromTime(const datetime t)
    return dt.year * 100 + dt.mon;
   }
 
-bool IsFirstD1BarOfMonth()
+bool IsD1CalendarMonthBoundary()
   {
    MqlRates rates[];
    ArrayResize(rates, 2);
@@ -267,9 +267,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!IsFirstD1BarOfMonth())
-      return false;
-
    if(!SpreadAllowsEntry())
       return false;
 
@@ -422,7 +419,7 @@ void OnTick()
    // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
-   if(!IsFirstD1BarOfMonth())
+   if(!IsD1CalendarMonthBoundary())
       return;
 
    Strategy_ManageOpenPosition();
