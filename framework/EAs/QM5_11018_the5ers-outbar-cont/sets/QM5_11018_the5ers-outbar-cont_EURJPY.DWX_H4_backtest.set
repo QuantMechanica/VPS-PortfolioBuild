@@ -1,0 +1,50 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11018
+; ea_slug:      the5ers-outbar-cont
+; ea_version:   v5.0
+; set_version:  s20260618-001
+; symbol:       EURJPY.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   4
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   3478f6e7bd5d3d22fa294c111b6bb808271fab7d2c5d7d942da738f745219f7c
+; author:       Development
+; date:         2026-06-18
+;==========================================================
+qm_magic_slot_offset=4
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11018_the5ers-outbar-cont.md
+strategy_ema_fast_period=20
+strategy_ema_slow_period=50
+strategy_pullback_bars=5
+strategy_atr_period=14
+strategy_range_min_atr=1.0
+strategy_range_max_atr=3.0
+strategy_order_expiry_bars=2
+strategy_sl_atr_mult=2.0
+strategy_tp1_atr_mult=2.0
+strategy_tp1_partial_pct=50.0
+strategy_be_trigger_pct=80.0
+strategy_trail_atr_mult=2.0
+strategy_final_rr=7.0
+strategy_time_stop_bars=24
+strategy_risk_cap_d1_pct=75.0
+strategy_spread_pct_of_atr=15.0

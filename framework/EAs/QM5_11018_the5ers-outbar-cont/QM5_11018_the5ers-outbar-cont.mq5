@@ -27,7 +27,7 @@
 //   Pending expiry         : order_expiry_bars H4 bars (default 2).
 //   Initial SL             : sl_atr_mult * ATR from the stop-entry price.
 //   Risk-cap filter        : skip if initial risk distance > risk_cap_pct of the
-//                            20-day ATR converted to H4 units (D1 ATR / 6).
+//                            20-day ATR in price units.
 //   First target           : partial-close tp1_partial_pct at tp1_atr_mult * ATR.
 //   Break-even             : move SL to entry once price reaches be_trigger_pct of
 //                            the first-target distance.
@@ -81,8 +81,8 @@ input double strategy_be_trigger_pct    = 80.0;   // % of first-target reached -
 input double strategy_trail_atr_mult    = 2.0;    // trail distance = mult * ATR
 input double strategy_final_rr          = 7.0;    // final TP in R multiples
 input int    strategy_time_stop_bars    = 24;     // close after this many H4 bars
-input double strategy_risk_cap_d1_pct   = 75.0;   // skip if SL dist > pct of (D1 ATR / 6)
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input double strategy_risk_cap_d1_pct   = 75.0;   // skip if SL dist > pct of D1 ATR(20)
+input double strategy_spread_pct_of_atr  = 15.0;  // skip if spread > this % of H4 ATR
 
 // -----------------------------------------------------------------------------
 // File-scope per-position management state. One position per magic, so a single
@@ -95,7 +95,7 @@ double g_pos_tp1_distance  = 0.0;     // first-target distance (tp1_atr_mult * A
 bool   g_pos_is_buy        = false;
 bool   g_pos_partial_done  = false;
 bool   g_pos_be_done       = false;
-datetime g_pos_open_bar    = 0;       // H4 bar-open time at which the position opened
+datetime g_pos_open_time   = 0;       // position open time for bar-count time stop
 
 // -----------------------------------------------------------------------------
 // Helpers
@@ -149,7 +149,7 @@ void ResetPositionState()
    g_pos_is_buy       = false;
    g_pos_partial_done = false;
    g_pos_be_done      = false;
-   g_pos_open_bar     = 0;
+   g_pos_open_time    = 0;
   }
 
 // -----------------------------------------------------------------------------
@@ -168,13 +168,9 @@ bool Strategy_NoTradeFilter()
    if(atr_value <= 0.0)
       return false; // no ATR yet — defer to entry gate
 
-   const double stop_distance = strategy_sl_atr_mult * atr_value;
-   if(stop_distance <= 0.0)
-      return false;
-
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread > (strategy_spread_pct_of_atr / 100.0) * atr_value)
       return true;
 
    return false;
@@ -192,12 +188,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // --- Closed-bar OHLC (perf-allowed single-shift structural reads) ---
-   const double high1 = iHigh(_Symbol, _Period, 1);
-   const double low1  = iLow(_Symbol, _Period, 1);
-   const double open1 = iOpen(_Symbol, _Period, 1);
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double high2 = iHigh(_Symbol, _Period, 2);
-   const double low2  = iLow(_Symbol, _Period, 2);
+   const double high1 = iHigh(_Symbol, _Period, 1); // perf-allowed structural outside-bar OHLC on gated closed bar
+   const double low1  = iLow(_Symbol, _Period, 1); // perf-allowed structural outside-bar OHLC on gated closed bar
+   const double open1 = iOpen(_Symbol, _Period, 1); // perf-allowed structural outside-bar OHLC on gated closed bar
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed structural outside-bar OHLC on gated closed bar
+   const double high2 = iHigh(_Symbol, _Period, 2); // perf-allowed structural outside-bar OHLC on gated closed bar
+   const double low2  = iLow(_Symbol, _Period, 2); // perf-allowed structural outside-bar OHLC on gated closed bar
    if(high1 <= 0.0 || low1 <= 0.0 || open1 <= 0.0 || close1 <= 0.0 ||
       high2 <= 0.0 || low2 <= 0.0)
       return false;
@@ -241,9 +237,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const int last_shift  = strategy_pullback_bars + 1; // 5 bars -> shifts 2..6
    for(int s = first_shift; s <= last_shift; ++s)
      {
-      const double low_s   = iLow(_Symbol, _Period, s);
-      const double high_s  = iHigh(_Symbol, _Period, s);
-      const double close_s = iClose(_Symbol, _Period, s);
+      const double low_s   = iLow(_Symbol, _Period, s); // perf-allowed bounded pullback-window OHLC on gated closed bar
+      const double high_s  = iHigh(_Symbol, _Period, s); // perf-allowed bounded pullback-window OHLC on gated closed bar
+      const double close_s = iClose(_Symbol, _Period, s); // perf-allowed bounded pullback-window OHLC on gated closed bar
       if(low_s <= 0.0 || high_s <= 0.0 || close_s <= 0.0)
          continue;
 
@@ -312,13 +308,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(sl_distance <= 0.0)
       return false;
 
-   // --- Risk-cap filter: SL distance must not exceed pct of (20-day ATR in H4
-   //     units). 20-day ATR ~= ATR(20) on D1; H4 has 6 bars/day so divide by 6. ---
+   // --- Risk-cap filter: SL distance must not exceed pct of 20-day ATR.
+   //     D1 ATR is already a price-distance measure, so no bar-count scaling.
    const double d1_atr = QM_ATR(_Symbol, PERIOD_D1, 20, 1);
    if(d1_atr > 0.0)
      {
-      const double d1_atr_h4_units = d1_atr / 6.0;
-      const double cap = (strategy_risk_cap_d1_pct / 100.0) * d1_atr_h4_units;
+      const double cap = (strategy_risk_cap_d1_pct / 100.0) * d1_atr;
       if(cap > 0.0 && sl_distance > cap)
          return false;
      }
@@ -334,6 +329,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = uptrend ? "outbar_cont_long" : "outbar_cont_short";
+   req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = strategy_order_expiry_bars * PeriodSeconds(_Period);
    return true;
   }
@@ -358,7 +354,7 @@ void Strategy_ManageOpenPosition()
       g_pos_ticket      = ticket;
       g_pos_entry_price = PositionGetDouble(POSITION_PRICE_OPEN);
       g_pos_is_buy      = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
-      g_pos_open_bar    = iTime(_Symbol, _Period, 0); // bar-open of current bar
+      g_pos_open_time   = (datetime)PositionGetInteger(POSITION_TIME);
       double atr_now = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
       if(atr_now <= 0.0)
          atr_now = 0.0;
@@ -418,19 +414,19 @@ bool Strategy_ExitSignal()
       return false;
 
    // --- Time stop: close after time_stop_bars H4 bars. ---
-   if(g_pos_open_bar > 0)
+   if(g_pos_open_time > 0)
      {
-      const datetime cur_bar = iTime(_Symbol, _Period, 0);
-      if(cur_bar > 0)
+      const int period_seconds = PeriodSeconds(_Period);
+      if(period_seconds > 0)
         {
-         const int bars_held = (int)((cur_bar - g_pos_open_bar) / PeriodSeconds(_Period));
+         const int bars_held = (int)((TimeCurrent() - g_pos_open_time) / period_seconds);
          if(bars_held >= strategy_time_stop_bars)
             return true;
         }
      }
 
    // --- Signal exit: closed H4 bar on the wrong side of EMA(slow). ---
-   const double close1   = iClose(_Symbol, _Period, 1);
+   const double close1   = iClose(_Symbol, _Period, 1); // perf-allowed single closed-bar signal-exit price read
    const double ema_slow = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 1);
    if(close1 <= 0.0 || ema_slow <= 0.0)
       return false;
