@@ -12574,3 +12574,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1343,chan-open-gap-ls,4,UK100.DWX,13430004,2026-06-18,Claude,reserved
 1344,chan-session-pctl-momo,0,XAUUSD.DWX,13440000,2026-06-18,Claude,reserved
 1344,chan-session-pctl-momo,1,XTIUSD.DWX,13440001,2026-06-18,Claude,reserved
+9364,mql5-ichi-cloud-trend,0,GBPUSD.DWX,93640000,2026-06-18,Development,active
+9364,mql5-ichi-cloud-trend,1,EURUSD.DWX,93640001,2026-06-18,Development,active
+9364,mql5-ichi-cloud-trend,2,USDJPY.DWX,93640002,2026-06-18,Development,active
+9364,mql5-ichi-cloud-trend,3,XAUUSD.DWX,93640003,2026-06-18,Development,active
