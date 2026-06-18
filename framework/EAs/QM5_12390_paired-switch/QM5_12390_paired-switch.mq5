@@ -167,7 +167,7 @@ bool Strategy_SpreadAllowsEntry()
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
       return false;
-   if(ask <= bid)
+   if(!(ask > bid))
       return true;
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);

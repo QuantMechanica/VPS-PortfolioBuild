@@ -10774,3 +10774,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11416,ichimoku-tenkan-kijun-cross-cloud-h4,1,GBPUSD.DWX,114160001,2026-06-18,Claude,active
 11416,ichimoku-tenkan-kijun-cross-cloud-h4,2,USDJPY.DWX,114160002,2026-06-18,Claude,active
 11416,ichimoku-tenkan-kijun-cross-cloud-h4,3,AUDUSD.DWX,114160003,2026-06-18,Claude,active
+11420,macd-stochastic-pullback-scalp-m5,0,EURUSD.DWX,114200000,2026-06-18,Claude,active
+11420,macd-stochastic-pullback-scalp-m5,1,GBPUSD.DWX,114200001,2026-06-18,Claude,active
