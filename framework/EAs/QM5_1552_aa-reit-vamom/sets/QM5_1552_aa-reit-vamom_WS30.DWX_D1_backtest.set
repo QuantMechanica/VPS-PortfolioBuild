@@ -9,7 +9,7 @@
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
-; portfolio_weight: 0.3333333333
+; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-18
@@ -17,7 +17,7 @@
 qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
-PORTFOLIO_WEIGHT=0.3333333333
+PORTFOLIO_WEIGHT=1
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3

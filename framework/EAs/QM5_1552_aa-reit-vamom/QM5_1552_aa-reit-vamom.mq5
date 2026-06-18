@@ -84,8 +84,8 @@ double ComputeReturn(const MqlRates &rates[], const int lookback)
   {
    if(ArraySize(rates) <= lookback)
       return 0.0;
-   const double recent = rates[0].close;
-   const double past = rates[lookback].close;
+   const double past = rates[0].close;
+   const double recent = rates[lookback].close;
    if(recent <= 0.0 || past <= 0.0)
       return 0.0;
    return (recent / past) - 1.0;
@@ -98,10 +98,10 @@ double ComputeRealizedVolatility(const MqlRates &rates[], const int lookback)
 
    double sum = 0.0;
    double sumsq = 0.0;
-   for(int i = 0; i < lookback; ++i)
+   for(int i = 1; i <= lookback; ++i)
      {
       const double c0 = rates[i].close;
-      const double c1 = rates[i + 1].close;
+      const double c1 = rates[i - 1].close;
       if(c0 <= 0.0 || c1 <= 0.0)
          return 0.0;
       const double r = MathLog(c0 / c1);
