@@ -177,6 +177,14 @@ bool Strategy_NoTradeFilter()
 // bounded scan of CLOSED bars only.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic; no pyramiding.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -265,7 +273,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                req.reason = "stoch_div_long";
                g_entry_swing_price = lo1_price;
                g_entry_dir         = 1;
-               g_entry_bar_time    = iTime(_Symbol, _Period, 0); // entry bar open
+               g_entry_bar_time    = iTime(_Symbol, _Period, 0); // perf-allowed: latch entry bar open for time stop
                return true;
               }
            }
@@ -329,7 +337,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                req.reason = "stoch_div_short";
                g_entry_swing_price = hi1_price;
                g_entry_dir         = -1;
-               g_entry_bar_time    = iTime(_Symbol, _Period, 0);
+               g_entry_bar_time    = iTime(_Symbol, _Period, 0); // perf-allowed: latch entry bar open for time stop
                return true;
               }
            }
@@ -368,6 +376,7 @@ bool Strategy_ExitSignal()
    // Time stop: count closed H4 bars since entry.
    if(g_entry_bar_time > 0)
      {
+      // perf-allowed: maps the latched entry bar to a closed-bar count.
       const int bars_since = iBarShift(_Symbol, _Period, g_entry_bar_time, false);
       if(bars_since >= strategy_time_stop_bars)
          return true;

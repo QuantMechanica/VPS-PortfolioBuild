@@ -95,8 +95,9 @@ input int    strategy_max_spread_points      = 0;
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
+// No Trade Filter (time, spread, news): central news and Friday gates run in
+// the framework; this hook only adds the optional card-safe spread ceiling.
+// Return TRUE to BLOCK trading this tick. Cheap O(1) checks only.
 bool Strategy_NoTradeFilter()
   {
    if(strategy_max_spread_points > 0)
@@ -112,9 +113,9 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
+// Trade Entry: detect active FVGs, confirm a qualifying tap candle, and enter
+// at market on the next closed-bar evaluation with ATR stop and pivot target.
+// Caller guarantees QM_IsNewBar() == true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -304,8 +305,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return false;
   }
 
-// Called every tick when an open position exists for this EA's magic.
-// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
+// Trade Management: move stop to breakeven plus lock offset after +0.8R.
+// No trailing is used in the baseline.
 void Strategy_ManageOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
@@ -348,8 +349,7 @@ void Strategy_ManageOpenPosition()
      }
   }
 
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
+// Trade Close: force-flat at the regular-session end. SL/TP remain broker-side.
 bool Strategy_ExitSignal()
   {
    MqlDateTime dt;
@@ -360,9 +360,8 @@ bool Strategy_ExitSignal()
    return (dt.hour * 100 + dt.min >= session_end);
   }
 
-// Optional news-filter override. Return TRUE to suppress trading regardless
-// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
-// custom high-impact-event handling beyond the central filter.
+// News Filter Hook: no strategy-specific override; central P8-compatible
+// framework news filter remains callable.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false; // defer to QM_NewsAllowsTrade(...)
