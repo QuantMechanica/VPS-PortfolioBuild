@@ -145,69 +145,82 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Bars(_Symbol, tf) < bars_required) // perf-allowed: bar count check, O(1), no data copy
       return false;
 
-   double pivot_lows[2];
-   double pivot_low_rsi[2];
-   double pivot_highs[2];
-   double pivot_high_rsi[2];
-   ArrayInitialize(pivot_lows, 0.0);
-   ArrayInitialize(pivot_low_rsi, 0.0);
-   ArrayInitialize(pivot_highs, 0.0);
-   ArrayInitialize(pivot_high_rsi, 0.0);
-
-   int lows_found = 0;
-   int highs_found = 0;
    const int first_shift = strategy_pivot_order + 1;
    const int last_shift = first_shift + strategy_pivot_scan_bars - 1;
+   const double latest_low = iLow(_Symbol, tf, first_shift);   // perf-allowed: bespoke pivot confirmation, no QM helper
+   const double latest_high = iHigh(_Symbol, tf, first_shift); // perf-allowed: bespoke pivot confirmation, no QM helper
+   if(latest_low <= 0.0 || latest_high <= 0.0)
+      return false;
 
-   for(int shift = first_shift; shift <= last_shift; ++shift)
+   bool latest_is_low_pivot = true;
+   bool latest_is_high_pivot = true;
+   for(int offset = 1; offset <= strategy_pivot_order; ++offset)
+     {
+      if(latest_low >= iLow(_Symbol, tf, first_shift - offset) ||  // perf-allowed: pivot neighbourhood, no QM helper
+         latest_low >= iLow(_Symbol, tf, first_shift + offset))    // perf-allowed: pivot neighbourhood, no QM helper
+         latest_is_low_pivot = false;
+      if(latest_high <= iHigh(_Symbol, tf, first_shift - offset) || // perf-allowed: pivot neighbourhood, no QM helper
+         latest_high <= iHigh(_Symbol, tf, first_shift + offset))   // perf-allowed: pivot neighbourhood, no QM helper
+         latest_is_high_pivot = false;
+     }
+
+   double previous_low = 0.0;
+   double previous_low_rsi = 0.0;
+   double previous_high = 0.0;
+   double previous_high_rsi = 0.0;
+
+   for(int shift = first_shift + 1; shift <= last_shift; ++shift)
      {
       const double center_low = iLow(_Symbol, tf, shift);   // perf-allowed: bespoke pivot scan, no QM helper
       const double center_high = iHigh(_Symbol, tf, shift); // perf-allowed: bespoke pivot scan, no QM helper
       if(center_low <= 0.0 || center_high <= 0.0)
          continue;
 
-      bool is_low_pivot = true;
-      bool is_high_pivot = true;
-      for(int offset = 1; offset <= strategy_pivot_order; ++offset)
+      if(latest_is_low_pivot && previous_low <= 0.0)
         {
-         if(center_low >= iLow(_Symbol, tf, shift - offset) ||  // perf-allowed: pivot neighbourhood, no QM helper
-            center_low >= iLow(_Symbol, tf, shift + offset))    // perf-allowed: pivot neighbourhood, no QM helper
-            is_low_pivot = false;
-         if(center_high <= iHigh(_Symbol, tf, shift - offset) || // perf-allowed: pivot neighbourhood, no QM helper
-            center_high <= iHigh(_Symbol, tf, shift + offset))   // perf-allowed: pivot neighbourhood, no QM helper
-            is_high_pivot = false;
-        }
-
-      if(is_low_pivot && lows_found < strategy_pivot_count_k)
-        {
-         const double rsi_at_pivot = QM_RSI(_Symbol, tf, strategy_rsi_period, shift);
-         if(rsi_at_pivot > 0.0)
+         bool is_low_pivot = true;
+         for(int offset = 1; offset <= strategy_pivot_order; ++offset)
            {
-            pivot_lows[lows_found] = center_low;
-            pivot_low_rsi[lows_found] = rsi_at_pivot;
-            lows_found++;
+            if(center_low >= iLow(_Symbol, tf, shift - offset) ||  // perf-allowed: pivot neighbourhood, no QM helper
+               center_low >= iLow(_Symbol, tf, shift + offset))    // perf-allowed: pivot neighbourhood, no QM helper
+               is_low_pivot = false;
+           }
+         if(is_low_pivot)
+           {
+            previous_low = center_low;
+            previous_low_rsi = QM_RSI(_Symbol, tf, strategy_rsi_period, shift);
            }
         }
 
-      if(is_high_pivot && highs_found < strategy_pivot_count_k)
+      if(latest_is_high_pivot && previous_high <= 0.0)
         {
-         const double rsi_at_pivot = QM_RSI(_Symbol, tf, strategy_rsi_period, shift);
-         if(rsi_at_pivot > 0.0)
+         bool is_high_pivot = true;
+         for(int offset = 1; offset <= strategy_pivot_order; ++offset)
            {
-            pivot_highs[highs_found] = center_high;
-            pivot_high_rsi[highs_found] = rsi_at_pivot;
-            highs_found++;
+            if(center_high <= iHigh(_Symbol, tf, shift - offset) || // perf-allowed: pivot neighbourhood, no QM helper
+               center_high <= iHigh(_Symbol, tf, shift + offset))   // perf-allowed: pivot neighbourhood, no QM helper
+               is_high_pivot = false;
+           }
+         if(is_high_pivot)
+           {
+            previous_high = center_high;
+            previous_high_rsi = QM_RSI(_Symbol, tf, strategy_rsi_period, shift);
            }
         }
 
-      if(lows_found >= strategy_pivot_count_k && highs_found >= strategy_pivot_count_k)
+      if((!latest_is_low_pivot || previous_low > 0.0) &&
+         (!latest_is_high_pivot || previous_high > 0.0))
          break;
      }
 
-   const bool bullish_divergence = (lows_found >= 2 &&
-                                    pivot_lows[0] < pivot_lows[1] &&
-                                    pivot_low_rsi[0] > pivot_low_rsi[1] &&
-                                    pivot_low_rsi[0] < strategy_centerline);
+   const double latest_low_rsi = latest_is_low_pivot ? QM_RSI(_Symbol, tf, strategy_rsi_period, first_shift) : 0.0;
+   const bool bullish_divergence = (latest_is_low_pivot &&
+                                    previous_low > 0.0 &&
+                                    latest_low_rsi > 0.0 &&
+                                    previous_low_rsi > 0.0 &&
+                                    latest_low < previous_low &&
+                                    latest_low_rsi > previous_low_rsi &&
+                                    latest_low_rsi < strategy_centerline);
    if(bullish_divergence)
      {
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -215,15 +228,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(ask <= 0.0 || atr <= 0.0)
          return false;
       req.type = QM_BUY;
-      req.sl = NormalizeDouble(pivot_lows[0] - strategy_atr_stop_mult * atr, _Digits);
-      req.reason = StringFormat("RSI_DIVTREND_LONG_RSI=%.2f", pivot_low_rsi[0]);
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, latest_low - strategy_atr_stop_mult * atr);
+      req.reason = StringFormat("RSI_DIVTREND_LONG_RSI=%.2f", latest_low_rsi);
       return (req.sl > 0.0 && req.sl < ask);
      }
 
-   const bool bearish_divergence = (highs_found >= 2 &&
-                                    pivot_highs[0] > pivot_highs[1] &&
-                                    pivot_high_rsi[0] < pivot_high_rsi[1] &&
-                                    pivot_high_rsi[0] > strategy_centerline);
+   const double latest_high_rsi = latest_is_high_pivot ? QM_RSI(_Symbol, tf, strategy_rsi_period, first_shift) : 0.0;
+   const bool bearish_divergence = (latest_is_high_pivot &&
+                                    previous_high > 0.0 &&
+                                    latest_high_rsi > 0.0 &&
+                                    previous_high_rsi > 0.0 &&
+                                    latest_high > previous_high &&
+                                    latest_high_rsi < previous_high_rsi &&
+                                    latest_high_rsi > strategy_centerline);
    if(bearish_divergence)
      {
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
@@ -231,8 +248,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(bid <= 0.0 || atr <= 0.0)
          return false;
       req.type = QM_SELL;
-      req.sl = NormalizeDouble(pivot_highs[0] + strategy_atr_stop_mult * atr, _Digits);
-      req.reason = StringFormat("RSI_DIVTREND_SHORT_RSI=%.2f", pivot_high_rsi[0]);
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, latest_high + strategy_atr_stop_mult * atr);
+      req.reason = StringFormat("RSI_DIVTREND_SHORT_RSI=%.2f", latest_high_rsi);
       return (req.sl > bid);
      }
 

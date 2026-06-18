@@ -3,7 +3,7 @@
 ; ea_id:        10169
 ; ea_slug:      rsi-div-trend
 ; ea_version:   v5.0
-; set_version:  s20260610-001
+; set_version:  s20260618-001
 ; symbol:       WS30.DWX
 ; timeframe:    D1
 ; environment:  backtest
@@ -12,12 +12,15 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-06-10
+; date:         2026-06-18
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
@@ -32,3 +35,14 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+strategy_rsi_period=14
+strategy_pivot_order=5
+strategy_pivot_count_k=2
+strategy_ema_fast_period=50
+strategy_ema_slow_period=200
+strategy_centerline=50.0
+strategy_atr_period=14
+strategy_atr_stop_mult=1.0
+strategy_trail_atr_mult=4.0
+strategy_warmup_bars=220
+strategy_pivot_scan_bars=80

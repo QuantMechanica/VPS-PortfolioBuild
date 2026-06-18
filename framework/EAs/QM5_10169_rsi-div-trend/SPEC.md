@@ -4,13 +4,13 @@
 **Slug:** rsi-div-trend
 **Source:** d3c009d7-a8d6-5251-b572-4777b207c2b9
 **Author of this spec:** Codex
-**Last revised:** 2026-06-10
+**Last revised:** 2026-06-18
 
 ---
 
 ## 1. Strategy Logic
 
-The EA evaluates once per completed D1 bar. It scans confirmed D1 swing pivots with order 5, then opens long when price confirms a lower low while RSI(14) confirms a higher low and the confirming RSI is below 50. It opens short when price confirms a higher high while RSI(14) confirms a lower high and the confirming RSI is above 50. Long exits require RSI to remain below 50 and fall below entry RSI while EMA(50) is not above EMA(200); short exits mirror this with RSI above 50, above entry RSI, and EMA(50) not below EMA(200). Initial stops sit one ATR(14) beyond the confirming pivot, and optional trailing uses 4 ATR only after the EMA trend conversion is active.
+The EA evaluates once per completed D1 bar. It requires the newest D1 swing pivot to be the just-confirmed pivot at `pivot_order + 1`, then opens long when that pivot is a lower low while RSI(14) is a higher low and below 50. It opens short when the just-confirmed pivot is a higher high while RSI(14) is a lower high and above 50. Long exits require RSI to remain below 50 and fall below entry RSI while EMA(50) is not above EMA(200); short exits mirror this with RSI above 50, above entry RSI, and EMA(50) not below EMA(200). Initial stops sit one ATR(14) beyond the confirming pivot, and optional trailing uses 4 ATR only after the EMA trend conversion is active.
 
 ---
 
@@ -96,4 +96,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-10 | Initial build from card | be1e6416-9621-4f62-907b-71004d85c24b |
+| v1 | 2026-06-18 | Initial build from card | 41db04c7-43e1-4aea-a60f-e23628fa55ff |
