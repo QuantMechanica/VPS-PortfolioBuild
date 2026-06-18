@@ -3,16 +3,16 @@
 ; ea_id:        1238
 ; ea_slug:      tv-vwap-rsi-cont
 ; ea_version:   v5.0
-; set_version:  s20260526-001
+; set_version:  s20260618-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   28f21143bffac5345f4e973d09f9e176ad629e9b33222f2091d15d3acf18d1ce
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-26
+; date:         2026-06-18
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000

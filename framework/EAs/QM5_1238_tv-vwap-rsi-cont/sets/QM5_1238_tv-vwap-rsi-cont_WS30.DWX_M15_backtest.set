@@ -3,16 +3,16 @@
 ; ea_id:        1238
 ; ea_slug:      tv-vwap-rsi-cont
 ; ea_version:   v5.0
-; set_version:  s20260526-001
+; set_version:  s20260618-001
 ; symbol:       WS30.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   9
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b7c188328a6f7251e66fab1a158eae89c8c8a3d00d5e784c883e60fc2a6f8f4d
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-26
+; date:         2026-06-18
 ;==========================================================
 qm_magic_slot_offset=9
 RISK_FIXED=1000
