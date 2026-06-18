@@ -10504,3 +10504,15 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11312,tc20-h1-10-ema14-high-low-psar,0,EURUSD.DWX,113120000,2026-06-18,Claude,active
 11312,tc20-h1-10-ema14-high-low-psar,1,GBPUSD.DWX,113120001,2026-06-18,Claude,active
 11312,tc20-h1-10-ema14-high-low-psar,2,USDJPY.DWX,113120002,2026-06-18,Claude,active
+11316,tc20-h1-9-ema5-12-34-psar,0,EURUSD.DWX,113160000,2026-06-18,Claude,active
+11316,tc20-h1-9-ema5-12-34-psar,1,GBPUSD.DWX,113160001,2026-06-18,Claude,active
+11316,tc20-h1-9-ema5-12-34-psar,2,USDJPY.DWX,113160002,2026-06-18,Claude,active
+11318,tc-m5-10-ema40-80-cci,0,EURUSD.DWX,113180000,2026-06-18,Claude,active
+11318,tc-m5-10-ema40-80-cci,1,GBPUSD.DWX,113180001,2026-06-18,Claude,active
+11318,tc-m5-10-ema40-80-cci,2,USDJPY.DWX,113180002,2026-06-18,Claude,active
+11313,tc20-h1-12-ema5-rsi3-stoch-adx,0,EURUSD.DWX,113130000,2026-06-18,Claude,active
+11313,tc20-h1-12-ema5-rsi3-stoch-adx,1,GBPUSD.DWX,113130001,2026-06-18,Claude,active
+11313,tc20-h1-12-ema5-rsi3-stoch-adx,2,USDJPY.DWX,113130002,2026-06-18,Claude,active
+11314,tc-m5-7-london-open-box-breakout,0,GBPUSD.DWX,113140000,2026-06-18,Claude,active
+11314,tc-m5-7-london-open-box-breakout,1,GBPJPY.DWX,113140001,2026-06-18,Claude,active
+11314,tc-m5-7-london-open-box-breakout,2,EURUSD.DWX,113140002,2026-06-18,Claude,active
