@@ -3,8 +3,8 @@
 **EA ID:** QM5_9123
 **Slug:** `aa-tes01325-cross`
 **Source:** `ede348b4-0fa7-5be1-baa8-09e9089b67b7` (see `strategy-seeds/sources/ede348b4-0fa7-5be1-baa8-09e9089b67b7/`)
-**Author of this spec:** Claude
-**Last revised:** 2026-06-10
+**Author of this spec:** Codex
+**Last revised:** 2026-06-18
 
 ---
 
@@ -94,4 +94,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-10 | Initial build from card | 7f02a3e6-3129-4e9e-bfce-71e5cd2e2861 |
+| v1 | 2026-06-18 | Initial build from card | f187d3ba-78cc-4ab9-93f8-b2edfe1b994b |

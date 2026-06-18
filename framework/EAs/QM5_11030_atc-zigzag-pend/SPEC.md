@@ -4,7 +4,7 @@
 **Slug:** `atc-zigzag-pend`
 **Source:** `9441393d-5ffc-5b43-87be-bd532110f204` (see `strategy-seeds/sources/9441393d-5ffc-5b43-87be-bd532110f204/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-17
+**Last revised:** 2026-06-18
 
 ---
 
@@ -111,4 +111,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-17 | Initial build from card | board-advisor build |
+| v1 | 2026-06-18 | Initial build from card | a94b271b-713b-492a-8431-4b81a9d5d829 |
