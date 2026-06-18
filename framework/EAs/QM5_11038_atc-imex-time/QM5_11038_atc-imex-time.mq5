@@ -74,30 +74,20 @@ input double strategy_tp_atr_mult                = 0.45;
 input bool   strategy_reversal_enabled           = false;
 input double strategy_spread_pct_of_stop         = 25.0;
 
-datetime g_last_attempt_day[3] = {0, 0, 0};
-
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
 int BrokerMinuteOfBarOpen()
   {
-   const datetime bar_open = iTime(_Symbol, _Period, 1); // perf-allowed: single closed-bar timestamp
-   if(bar_open <= 0)
+   const datetime broker_now = TimeCurrent();
+   if(broker_now <= 0)
       return -1;
 
    MqlDateTime dt;
    ZeroMemory(dt);
-   TimeToStruct(bar_open, dt);
+   TimeToStruct(broker_now, dt);
    return dt.hour * 60 + dt.min;
-  }
-
-datetime BrokerDayOfBarOpen()
-  {
-   const datetime bar_open = iTime(_Symbol, _Period, 1); // perf-allowed: single closed-bar timestamp
-   if(bar_open <= 0)
-      return 0;
-   return (datetime)((bar_open / 86400) * 86400);
   }
 
 int ActiveTimePointSlot(const int minute_of_day)
@@ -231,11 +221,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const int slot = ActiveTimePointSlot(minute_of_day);
    if(slot < 0)
       return false;
-
-   const datetime day = BrokerDayOfBarOpen();
-   if(day == 0 || g_last_attempt_day[slot] == day)
-      return false;
-   g_last_attempt_day[slot] = day;
 
    double imex = 0.0;
    if(!ComputeImex(imex))
