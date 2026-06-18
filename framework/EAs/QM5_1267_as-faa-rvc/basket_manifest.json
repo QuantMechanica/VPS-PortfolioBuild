@@ -1,0 +1,13 @@
+{
+  "logical_symbol": "QM5_1267_AS_FAA_RVC_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": ["SP500.DWX", "NDX.DWX", "WS30.DWX", "GDAXI.DWX", "XAUUSD.DWX", "XTIUSD.DWX", "EURUSD.DWX"],
+  "notes": [
+    "AllocateSmartly 'Flexible Asset Allocation' (Keller & van Putten, SSRN 2193735) — cross-sectional FAA rotation on Relative momentum (R), Volatility (V) and Correlation (C). Each monthly rebalance the EA ranks the whole universe by a fixed-weight composite of three cross-sectional ranks: score = 1.0*rank_R + 0.5*rank_V + 0.5*rank_C, lower = better. rank_R is momentum-DESC (highest return -> rank 1); rank_V is vol-ASC (lowest vol -> rank 1); rank_C is avg-pairwise-correlation-ASC (lowest correlation to the universe -> rank 1). The best-N (default 3) are selected; the absolute-momentum filter drops any selected sleeve with non-positive lookback momentum (that slot rotates to cash = stays flat). Weights and lookbacks are FIXED constants from the source heuristic — no ML, no adaptive parameters.",
+    "EA runs one instance per host symbol. Each instance reads the full universe's D1 closes (via QM_SymbolGuardInit + QM_BasketWarmupHistory) to compute the cross-sectional R/V/C states, then goes long the host ONLY when the host survives into the positive-momentum best-N. One position per magic on the host; long-only (the source rotates into cash, never shorts).",
+    "ETF -> DWX CFD ports (ETFs are not tradeable on Darwinex; nearest liquid proxies, all matrix-verified in framework/registry/dwx_symbol_matrix.csv): SP500.DWX <- US large-cap ETF (SPY/VTI, BACKTEST-ONLY read member, not broker-routable for live); NDX.DWX <- tech/growth ETF (QQQ); WS30.DWX <- US large-cap value (DIA); GDAXI.DWX <- EAFE/European equity ETF (VEA/EFA); XAUUSD.DWX <- gold/real-asset ETF (GLD); XTIUSD.DWX <- broad-commodity ETF (DBC); EURUSD.DWX <- non-USD / FX diversifier. Bond sleeves from the source paper's safe-asset set have no DWX CFD; per the card's declared CFD-port variant they are omitted and 'cash' is represented by a sleeve going flat under the absolute-momentum filter.",
+    "Monthly logic is D1-native (the .DWX tester yields 0 bars on MN1). Rebalance fires on the first new D1 bar of a new broker-time month (QM_IsRebalanceBar tracks month/year). Lookback uses a 21-trading-day-per-month proxy: default 4 months = 84 D1 bars for the R/V/C return series.",
+    "Slot mapping (magic = 1267*10000 + slot): SP500.DWX slot 0, NDX.DWX slot 1, WS30.DWX slot 2, GDAXI.DWX slot 3, XAUUSD.DWX slot 4, XTIUSD.DWX slot 5, EURUSD.DWX slot 6. Codex assigns the canonical slots when registering magic_numbers.csv."
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "logical_symbol": "QM5_1269_AS_HAA_BALANCED_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": ["SP500.DWX", "NDX.DWX", "WS30.DWX", "GDAXI.DWX", "XTIUSD.DWX", "XAUUSD.DWX", "XAGUSD.DWX"],
+  "notes": [
+    "AllocateSmartly Hybrid Asset Allocation - Balanced (Keller & Keuning, SSRN 4346906; TuringTrader Keller_HAA_v2.cs). Canary-gated cross-sectional dual-momentum rotation. EA runs ONE instance per host symbol; each reads the full universe's D1 closes to compute 13612 momentum [MOM = sum over m in {1,3,6,12} of (c/c_m -1)], applies the canary risk gate, ranks the offensive legs, and goes long the host ONLY when the host is an allocated slot under the monthly allocation. Long-only. One position per magic. Foreign reads via QM_SymbolGuardInit + QM_BasketWarmupHistory.",
+    "D1-NATIVE MONTHLY PROXY: source cadence is month-end (MN1), but the .DWX tester yields 0 bars on MN1 (build rule #10). Built D1-native with a 21-trading-day/month (252-day/year) proxy: m-month lookback = m*21 D1 bars; rebalance fires on the first new D1 bar of each new broker-time calendar month.",
+    "ETFs are NOT tradeable on DWX. Offensive 8-leg HAA-Balanced universe ported to DWX proxies and FLAGGED: SPY->SP500.DWX (backtest-only read; live uses NDX/WS30); IWM(US small)->WS30.DWX APPROX (no Russell-2000 CFD); VEA(developed ex-US)->GDAXI.DWX APPROX (DAX); DBC(broad commodity)->XTIUSD.DWX APPROX (WTI crude); IEF(7-10y Treasury)->XAUUSD.DWX APPROX (gold safe leg); TLT(20y+ Treasury)->XAGUSD.DWX APPROX (silver 2nd safe metal); NDX.DWX added as a live-tradable US large-cap companion to the SP500 backtest-only read.",
+    "DROPPED legs (no clean DWX analog, FLAGGED): VWO (emerging-market equity) and VNQ (US REIT) have no Darwinex CFD proxy and are omitted from the offensive universe. The top-N selection therefore ranks 7 ported legs instead of the source's 8.",
+    "DEFENSIVE / SAFE sleeve -> XAUUSD.DWX (gold); cash/BIL sleeve represented as flat/no-position. In risk-off the whole book holds the defensive sleeve; any offensive leg with non-positive momentum is replaced by the defensive sleeve (absolute-momentum replacement).",
+    "CANARY (TIP) -> NO DWX bond/TIPS CFD exists. APPROXIMATED by the absolute 13612 momentum of XAUUSD.DWX (gold) as the risk-on/off gate. This is the least-faithful port (gold strength as defensive-demand/inflation proxy for the TIP canary) and is FLAGGED as a candidate for a future custom TIP symbol. SP500.DWX is a backtest-only read member (broker does not route SP500 orders); live promotion must use NDX/WS30 hosts."
+  ]
+}
