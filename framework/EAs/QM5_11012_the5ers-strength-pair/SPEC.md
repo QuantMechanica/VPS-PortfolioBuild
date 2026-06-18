@@ -4,7 +4,7 @@
 **Slug:** `the5ers-strength-pair`
 **Source:** `1d445184-7c47-57da-9856-a123682a932d` (see `strategy-seeds/sources/1d445184-7c47-57da-9856-a123682a932d/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-17
+**Last revised:** 2026-06-18
 
 ---
 
@@ -98,7 +98,7 @@ only opens a position on the host symbol when the host is the rank1-vs-rank8 pai
 This card was mechanised from:
 
 **Source ID:** `1d445184-7c47-57da-9856-a123682a932d`
-**Source type:** `forum` (broker/educational blog — The5ers)
+**Source type:** `blog` (broker/educational blog — The5ers)
 **Pointer:** `https://the5ers.com/forex-strength-meter/`
 **R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_11012_the5ers-strength-pair.md`
 
@@ -120,4 +120,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-17 | Initial build from card | board-advisor build |
+| v1 | 2026-06-18 | Initial build from card | dc228327-39b4-47ed-ad4e-94f1fd417be8 |

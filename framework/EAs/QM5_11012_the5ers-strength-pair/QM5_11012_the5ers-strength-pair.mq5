@@ -91,6 +91,7 @@ int      g_rank_strong = -1;      // ccy index of rank 1 (strongest)
 int      g_rank_weak   = -1;      // ccy index of rank 8 (weakest)
 double   g_spread_pct  = 0.0;     // |strength[strong]-strength[weak]| in %
 bool     g_strength_ready = false;
+bool     g_closed_bar_ready = false;
 
 // Host decomposition (resolved in OnInit).
 int      g_host_base  = -1;       // ccy index of host base, or -1 if host not in model
@@ -273,6 +274,14 @@ bool Strategy_NoTradeFilter()
 // H1 entry. Caller guarantees QM_IsNewBar()==true (one call per closed H1 bar).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    const int magic = QM_FrameworkMagic();
    if(QM_TM_OpenPositionCount(magic) > 0)
       return false;
@@ -328,6 +337,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = (dir > 0) ? "strength_pair_long" : "strength_pair_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
@@ -340,6 +351,9 @@ void Strategy_ManageOpenPosition()
 // rank1-vs-rank8 pair), and a 48-bar H1 time stop.
 bool Strategy_ExitSignal()
   {
+   if(!g_closed_bar_ready)
+      return false;
+
    const int magic = QM_FrameworkMagic();
    if(QM_TM_OpenPositionCount(magic) <= 0)
       return false;
@@ -474,6 +488,7 @@ void OnTick()
    // H1 bar, refresh D1 currency strength BEFORE evaluating the rule-based exit
    // so the signal-exit sees the current ranking.
    const bool nb = QM_IsNewBar();
+   g_closed_bar_ready = nb;
    if(nb)
       QM_AdvanceStrength();
 
