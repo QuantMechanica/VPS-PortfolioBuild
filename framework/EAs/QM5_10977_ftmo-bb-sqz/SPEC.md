@@ -1,61 +1,51 @@
-# QM5_10977_ftmo-bb-sqz — Strategy Spec
+# QM5_10977_ftmo-bb-sqz - Strategy Spec
 
 **EA ID:** QM5_10977
 **Slug:** `ftmo-bb-sqz`
 **Source:** `c11dc4d3-bdfb-5076-aeed-5d943e9ef03f` (see `strategy-seeds/sources/c11dc4d3-bdfb-5076-aeed-5d943e9ef03f/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-17
+**Last revised:** 2026-06-18
 
 ---
 
 ## 1. Strategy Logic
 
-This EA trades a Bollinger Band squeeze-breakout on closed H1 bars, long and
-short. It builds Bollinger Bands with SMA(20) and 2.0 standard deviations and
-measures band width (upper minus lower). A "squeeze" exists when the current
-band width sits in the lowest 20th percentile of the previous 120 bars'
-widths. When a squeeze occurred within the last 6 bars and the bar then closes
-above the upper band while also above the SMA(20), the EA enters long at market;
-the mirror condition (close below the lower band and below SMA(20)) enters
-short. Over-extended breakout bars whose range exceeds 2.5x ATR(14) are skipped.
+This EA trades a Bollinger Band squeeze breakout on closed H1 bars. It calculates Bollinger Bands from typical price with SMA(20) and 2.0 standard deviations, then treats a bar as squeezed when band width is in the lowest 20th percentile of the prior 120 H1 widths. If a squeeze occurred within the last 6 H1 bars, the EA enters long when the last closed candle closes above the upper band and above the SMA(20), or enters short when it closes below the lower band and below the SMA(20).
 
-The stop is placed just beyond the opposite band (long: lower band minus 0.25x
-ATR; short: upper band plus 0.25x ATR). Take-profit is 2.5R from entry. Once
-price travels 1.2R in favour, the stop is moved to breakeven. The position is
-also closed if a later bar closes back across SMA(20) against the trade, or
-after 36 closed H1 bars have elapsed (time stop).
+The breakout candle is skipped when its high-low range is greater than 2.5 x ATR(14), and the EA also skips unusually wide spreads above 1.5 x the 20-bar median spread while allowing `.DWX` zero modeled spread. Long stops are placed at the lower band minus 0.25 x ATR(14); short stops are placed at the upper band plus 0.25 x ATR(14). Take-profit is 2.5R, stop is moved to breakeven after 1.2R touch, and discretionary exits occur on a close back across SMA(20) or after 36 H1 bars.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `strategy_bb_period` | 20 | 10-50 | Bollinger period (SMA + bands) |
+|---|---:|---|---|
+| `strategy_bb_period` | 20 | 10-50 | Bollinger period for SMA and bands |
 | `strategy_bb_deviation` | 2.0 | 1.0-3.0 | Bollinger standard-deviation multiple |
-| `strategy_sqz_lookback` | 120 | 60-240 | Squeeze percentile window in bars |
-| `strategy_sqz_pct` | 20.0 | 10.0-40.0 | Squeeze percentile threshold (%) |
-| `strategy_sqz_recent` | 6 | 1-20 | Squeeze armed if true within N recent bars |
-| `strategy_atr_period` | 14 | 7-28 | ATR period (range filter + stop buffer) |
-| `strategy_range_atr_mult` | 2.5 | 1.5-4.0 | Skip breakout bar if range > mult x ATR |
-| `strategy_stop_atr_buffer_mult` | 0.25 | 0.0-1.0 | Stop buffer beyond opposite band, in ATR |
-| `strategy_tp_rr` | 2.5 | 1.0-5.0 | Take-profit R-multiple |
-| `strategy_be_trigger_rr` | 1.2 | 0.5-2.5 | Move SL to breakeven after this many R |
-| `strategy_time_exit_bars` | 36 | 12-120 | Force-close after N closed H1 bars |
-| `strategy_spread_pct_of_stop` | 15.0 | 5.0-50.0 | Skip if spread > this % of stop distance |
+| `strategy_squeeze_lookback` | 120 | 60-240 | Historical band-width percentile window |
+| `strategy_squeeze_percentile` | 20.0 | 5.0-40.0 | Low-percentile threshold for squeeze |
+| `strategy_squeeze_recent_bars` | 6 | 1-20 | Lookback for a recent squeeze before breakout |
+| `strategy_atr_period` | 14 | 7-28 | ATR period for range filter and stop buffer |
+| `strategy_max_range_atr_mult` | 2.5 | 1.0-5.0 | Skip breakout candle if range exceeds this ATR multiple |
+| `strategy_stop_atr_buffer_mult` | 0.25 | 0.0-1.0 | ATR buffer beyond the opposite band for stop placement |
+| `strategy_take_profit_rr` | 2.5 | 1.0-5.0 | Primary take-profit in R multiples |
+| `strategy_breakeven_trigger_rr` | 1.2 | 0.5-3.0 | Move stop to breakeven after this R multiple is touched |
+| `strategy_time_exit_bars` | 36 | 12-120 | Maximum holding time in H1 bars |
+| `strategy_spread_median_bars` | 20 | 5-60 | Median-spread lookback in bars |
+| `strategy_spread_median_mult` | 1.5 | 1.0-5.0 | Maximum current spread versus median spread |
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — liquid major FX, clean volatility-cycle squeeze/expansion behaviour.
-- `GBPUSD.DWX` — liquid major FX with frequent volatility expansions.
-- `USDJPY.DWX` — liquid major FX; squeeze breakouts around session transitions.
-- `XAUUSD.DWX` — high-volatility metal where band-squeeze expansions are pronounced.
+- `EURUSD.DWX` - liquid major FX pair from the card's R3 portable basket.
+- `GBPUSD.DWX` - liquid major FX pair from the card's R3 portable basket.
+- `USDJPY.DWX` - liquid major FX pair from the card's R3 portable basket.
+- `XAUUSD.DWX` - liquid metal symbol from the card's R3 portable basket.
 
 **Explicitly NOT for:**
-- Index CFDs (`NDX.DWX`, `WS30.DWX`, `SP500.DWX`) — card targets the FX/metals basket only; index gap/session dynamics are not what this card was calibrated on.
+- `SP500.DWX`, `NDX.DWX`, `WS30.DWX` - the card defines an FX/metals basket, not an equity-index basket.
 
 ---
 
@@ -73,11 +63,11 @@ after 36 closed H1 bars have elapsed (time stop).
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `36` (card estimate 24-48) |
-| Typical hold time | `hours to a few days (<= 36 H1 bars)` |
-| Expected drawdown profile | `breakout strategy — clustered small losses on failed breakouts, occasional large 2.5R wins` |
+| Trades / year / symbol | `36` |
+| Typical hold time | `hours to a few days, capped at 36 H1 bars` |
+| Expected drawdown profile | `failed-breakout losses with occasional 2.5R trend-continuation wins` |
 | Regime preference | `volatility-expansion / breakout` |
-| Win rate target (qualitative) | `low` |
+| Win rate target (qualitative) | `low to medium` |
 
 ---
 
@@ -86,9 +76,9 @@ after 36 closed H1 bars have elapsed (time stop).
 This card was mechanised from:
 
 **Source ID:** `c11dc4d3-bdfb-5076-aeed-5d943e9ef03f`
-**Source type:** `forum` (FTMO educational blog article)
+**Source type:** `blog`
 **Pointer:** https://ftmo.com/en/blog/technical-analysis-bollinger-bands-as-a-combination-of-trend-and-volatility/
-**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_10977_ftmo-bb-sqz.md`
+**R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_10977_ftmo-bb-sqz.md`
 
 ---
 
@@ -100,7 +90,7 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
@@ -108,4 +98,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-17 | Initial build from card | board-advisor build |
+| v1 | 2026-06-18 | Initial build from card | 50d9634a-7832-434a-96e0-f56a13afe1ac |
