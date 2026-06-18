@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10723
-; ea_slug:      tv-tns-fvg
+; ea_id:        11014
+; ea_slug:      the5ers-mprof-va
 ; ea_version:   v5.0
 ; set_version:  s20260618-001
-; symbol:       SP500.DWX
-; timeframe:    M5
+; symbol:       USDJPY.DWX
+; timeframe:    M30
 ; environment:  backtest
-; magic_slot:   1
+; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   048301fc78366072dc546aafb57b7b9a0e1b5ecc7bad1b36f34e6b5a197b2096
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-18
 ;==========================================================
-qm_magic_slot_offset=1
+qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
