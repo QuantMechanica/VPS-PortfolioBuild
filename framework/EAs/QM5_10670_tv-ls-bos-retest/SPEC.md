@@ -30,8 +30,8 @@ The EA looks for a confirmed swing low or swing high, then waits for a closed ba
 | strategy_max_stop_atr | 2.50 | >0.0 | Reject entries whose stop distance is larger than this ATR multiple. |
 | strategy_rr_target | 2.00 | >0.0 | Fixed reward-to-risk target. |
 | strategy_session_filter_enabled | true | true/false | Enables the NY Open broker-time session filter. |
-| strategy_session_start_minute | 810 | 0-1439 | Session start minute of UTC day after broker-to-UTC conversion, default 13:30 UTC / 06:30 MST. |
-| strategy_session_end_minute | 900 | 0-1439 | Session end minute of UTC day after broker-to-UTC conversion, default 15:00 UTC / 08:00 MST. |
+| strategy_session_start_hhmm_broker | 1530 | 0000-2359 | Broker-time session start, default 15:30 broker as the 06:30 MST P2 window equivalent. |
+| strategy_session_end_hhmm_broker | 1700 | 0000-2359 | Broker-time session end, default 17:00 broker as the 08:00 MST P2 window equivalent. |
 | strategy_max_spread_points | 200 | >=0 | Maximum allowed spread in points; zero disables the spread cap. |
 
 ---

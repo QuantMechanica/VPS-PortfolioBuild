@@ -3,16 +3,16 @@
 ; ea_id:        10670
 ; ea_slug:      tv-ls-bos-retest
 ; ea_version:   v5.0
-; set_version:  s20260531-001
+; set_version:  s20260618-001
 ; symbol:       WS30.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   bb9b8ae9f573d704b1920a36c7ee600cb421d852335fe58d9479121f225b45ea
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-31
+; date:         2026-06-18
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000
