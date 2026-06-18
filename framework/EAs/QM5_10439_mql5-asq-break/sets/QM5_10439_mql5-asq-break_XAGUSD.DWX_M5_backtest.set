@@ -3,16 +3,16 @@
 ; ea_id:        10439
 ; ea_slug:      mql5-asq-break
 ; ea_version:   v5.0
-; set_version:  s20260617-001
+; set_version:  s20260618-001
 ; symbol:       XAGUSD.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d91b72f794db06032534ebd36f4ca35a21b2d3e5aa616cb452901519d963aebd
+; build_hash:   28efe9faf8f49aea503451b0af1c122d5bc8a51e4d2cd0906de8aab7fe87cd5e
 ; author:       Development
-; date:         2026-06-17
+; date:         2026-06-18
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000
