@@ -29,6 +29,7 @@ The EA evaluates once per completed D1 bar. It requires the newest D1 swing pivo
 | `strategy_trail_atr_mult` | 4.0 | 0.0, 3.0, 4.0 | ATR trailing multiple after trend conversion; 0 disables trailing. |
 | `strategy_warmup_bars` | 220 | >= 200 | Minimum D1 history before evaluating entries. |
 | `strategy_pivot_scan_bars` | 80 | >= 20 | Bounded D1 pivot scan window. |
+| `strategy_max_spread_points` | 0 | >= 0 | Optional maximum spread guard; 0 disables the guard and zero modeled spread is allowed. |
 
 Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not repeated here.
 

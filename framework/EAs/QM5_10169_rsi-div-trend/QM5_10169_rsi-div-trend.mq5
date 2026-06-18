@@ -88,6 +88,7 @@ input double strategy_atr_stop_mult     = 1.0;
 input double strategy_trail_atr_mult    = 4.0;
 input int    strategy_warmup_bars       = 220;
 input int    strategy_pivot_scan_bars   = 80;
+input int    strategy_max_spread_points = 0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -97,6 +98,35 @@ input int    strategy_pivot_scan_bars   = 80;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   if(_Period != PERIOD_D1)
+      return true;
+
+   if(strategy_rsi_period <= 1 ||
+      strategy_pivot_order < 1 ||
+      strategy_pivot_count_k != 2 ||
+      strategy_ema_fast_period <= 1 ||
+      strategy_ema_slow_period <= strategy_ema_fast_period ||
+      strategy_atr_period <= 0 ||
+      strategy_atr_stop_mult <= 0.0 ||
+      strategy_warmup_bars < strategy_ema_slow_period ||
+      strategy_pivot_scan_bars < strategy_pivot_order * 2 + strategy_pivot_count_k)
+      return true;
+
+   if(QM_EMA(_Symbol, PERIOD_D1, strategy_ema_slow_period, 1) <= 0.0 ||
+      QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 1) <= 0.0 ||
+      QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1) <= 0.0)
+      return true;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+      return true;
+   if(strategy_max_spread_points > 0 &&
+      ask > bid &&
+      (ask - bid) > strategy_max_spread_points * point)
+      return true;
+
    return false;
   }
 
