@@ -10649,3 +10649,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11371,tom-demark-ema9-30-momentum-h1,0,EURUSD.DWX,113710000,2026-06-18,Claude,active
 11371,tom-demark-ema9-30-momentum-h1,1,GBPUSD.DWX,113710001,2026-06-18,Claude,active
 11371,tom-demark-ema9-30-momentum-h1,2,USDJPY.DWX,113710002,2026-06-18,Claude,active
+11384,blade-h4-ema30-breakout-retrace,0,EURUSD.DWX,113840000,2026-06-18,Claude,active
+11384,blade-h4-ema30-breakout-retrace,1,GBPUSD.DWX,113840001,2026-06-18,Claude,active
+11384,blade-h4-ema30-breakout-retrace,2,USDJPY.DWX,113840002,2026-06-18,Claude,active
