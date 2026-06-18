@@ -323,7 +323,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // Evaluate on the just-closed M15 bar in London time.
-   const datetime closed_bar_broker = iTime(_Symbol, PERIOD_M15, 1);
+   const datetime closed_bar_broker = iTime(_Symbol, PERIOD_M15, 1); // perf-allowed: bespoke session timestamp, gated by QM_IsNewBar()
    if(closed_bar_broker <= 0)
       return false;
    const datetime closed_bar_london = Strategy_BrokerToLondon(closed_bar_broker);

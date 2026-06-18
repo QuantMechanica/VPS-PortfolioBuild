@@ -3,8 +3,8 @@
 **EA ID:** QM5_11020
 **Slug:** `the5ers-london-bo`
 **Source:** `1d445184-7c47-57da-9856-a123682a932d` (The5ers blog interview with Jacques S)
-**Author of this spec:** Claude
-**Last revised:** 2026-06-17
+**Author of this spec:** Codex
+**Last revised:** 2026-06-18
 
 ---
 
@@ -113,4 +113,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-17 | Initial build from card | pending-stop London bracket, broker-time UK-DST session |
+| v1 | 2026-06-18 | Initial build from card | e2d220a8-ebe5-4ec9-b96d-8d0af5a52654 |
