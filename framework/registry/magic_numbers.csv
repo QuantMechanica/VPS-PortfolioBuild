@@ -10311,3 +10311,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12397,oil-eq-reg,0,SP500.DWX,123970000,2026-06-18,Development,active
 12397,oil-eq-reg,1,NDX.DWX,123970001,2026-06-18,Development,active
 12397,oil-eq-reg,2,WS30.DWX,123970002,2026-06-18,Development,active
+12404,stock-lowvol,0,SP500.DWX,124040000,2026-06-18,Development,active
+12404,stock-lowvol,1,NDX.DWX,124040001,2026-06-18,Development,active
+12404,stock-lowvol,2,WS30.DWX,124040002,2026-06-18,Development,active
+12404,stock-lowvol,3,GDAXI.DWX,124040003,2026-06-18,Development,active
+12404,stock-lowvol,4,UK100.DWX,124040004,2026-06-18,Development,active
+12404,stock-lowvol,5,XAUUSD.DWX,124040005,2026-06-18,Development,active
+12404,stock-lowvol,6,XTIUSD.DWX,124040006,2026-06-18,Development,active
