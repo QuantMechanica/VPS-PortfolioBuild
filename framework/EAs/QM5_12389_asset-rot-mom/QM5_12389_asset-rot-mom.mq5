@@ -121,13 +121,16 @@ double ARM_ROC(const string sym, const int lookback)
   {
    if(lookback < 2)
       return 0.0;
-   if(Bars(sym, PERIOD_D1) < lookback + 2)
+
+   double closes[];
+   ArraySetAsSeries(closes, true);
+   const int count = lookback + 1;
+   const int got = CopyClose(sym, PERIOD_D1, 1, count, closes); // perf-allowed: bounded D1 ROC basket read after framework QM_IsNewBar gate and monthly cadence.
+   if(got != count)
       return 0.0;
 
-   // perf-allowed: fixed two-point D1 ROC read for cross-sectional basket,
-   // called only after the framework QM_IsNewBar gate and monthly cadence.
-   const double recent = iClose(sym, PERIOD_D1, 1);
-   const double past = iClose(sym, PERIOD_D1, 1 + lookback);
+   const double recent = closes[0];
+   const double past = closes[lookback];
    if(recent <= 0.0 || past <= 0.0)
       return 0.0;
    return (recent - past) / past;
@@ -143,7 +146,7 @@ void ARM_UpdateMedianSpread()
    const int need = MathMin(strategy_spread_days, 120);
    // perf-allowed: bounded D1 spread snapshot for card MedianSpread(60D),
    // called only on monthly rebalance bars, never per tick.
-   const int got = CopyRates(_Symbol, PERIOD_D1, 1, need, rates);
+   const int got = CopyRates(_Symbol, PERIOD_D1, 1, need, rates); // perf-allowed: bounded D1 spread snapshot on monthly rebalance bars only.
    if(got <= 0)
       return;
 
