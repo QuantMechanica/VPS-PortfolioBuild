@@ -4,7 +4,7 @@
 **Slug:** gh-santi-adxma
 **Source:** 3b3ec48a-0755-5187-9331-afb36e174175
 **Author of this spec:** Codex
-**Last revised:** 2026-06-09
+**Last revised:** 2026-06-18
 
 ---
 
@@ -93,3 +93,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-09 | Initial build from card | 4b3dc30a-0c83-4826-ad1f-0fa1f470dbed |
+| v2 | 2026-06-18 | Rebuild in place from approved card | 13744988-0be1-4477-bd0c-9ceec9bf882d |

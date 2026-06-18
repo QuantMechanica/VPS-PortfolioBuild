@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA evaluates completed H1 candles only. It buys when a bearish mother candle is followed by a bullish child candle whose body is fully inside the mother body, with the mother candle closing below the prior context close and RSI below 40. It sells on the inverse bearish Harami setup with RSI above 60. Positions have a 2.0 ATR(14) protective stop and no fixed take-profit; exits occur when RSI crosses back down through 70 or 30 for longs, or back up through 30 or 70 for shorts.
+The EA evaluates completed H1 candles only. It buys when a bearish mother candle is followed by a bullish child candle whose body is fully contained inside the mother candle body, and the preceding context is downward. It sells when a bullish mother candle is followed by a bearish child candle whose body is fully contained inside the mother candle body, and the preceding context is upward. Long entries require RSI(1) below 40, short entries require RSI(1) above 60, and positions use a 2.0 ATR(14) protective stop with no fixed take-profit. Long exits occur when RSI crosses downward through 70 or 30; short exits occur when RSI crosses upward through 30 or 70.
 
 ---
 
@@ -18,12 +18,12 @@ The EA evaluates completed H1 candles only. It buys when a bearish mother candle
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_rsi_period` | 14 | 1+ | RSI lookback used for entry confirmation and exit crosses. The card names RSI(1), while the DWX build invariant flags period 1 as degenerate. |
+| `strategy_rsi_period` | 1 | 1+ | RSI lookback used for entry confirmation and exit crosses. |
 | `strategy_buy_rsi_max` | 40.0 | 0-100 | Maximum RSI value allowed for long entries. |
 | `strategy_sell_rsi_min` | 60.0 | 0-100 | Minimum RSI value allowed for short entries. |
 | `strategy_atr_period` | 14 | 1+ | ATR lookback for the protective stop. |
 | `strategy_atr_sl_mult` | 2.0 | >0 | ATR multiplier for the protective stop. |
-| `strategy_context_bars` | 1 | 1-20 | Number of pre-mother bars used to define upward/downward context. |
+| `strategy_context_bars` | 1 | 1-20 | Number of pre-mother bars used to define upward or downward context. |
 | `strategy_min_mother_body_points` | 0.0 | 0+ | Optional minimum mother candle body size in points; 0 disables it. |
 | `strategy_max_spread_points` | 0.0 | 0+ | Optional maximum spread in points; 0 disables it. |
 
@@ -62,11 +62,11 @@ The EA evaluates completed H1 candles only. It buys when a bearish mother candle
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 80 |
-| Expected trade frequency | Not separately specified in frontmatter; implied moderate H1 cadence from 80 trades/year/symbol. |
-| Typical hold time | Not specified in frontmatter; RSI-cross exit implies hours to days. |
+| Expected trade frequency | Not specified in frontmatter. |
+| Typical hold time | Not specified in frontmatter. |
 | Expected drawdown profile | Bounded by V5 fixed-risk stops in backtest. |
-| Regime preference | Mean-reversion candlestick reversal after local upward/downward context. |
-| Win rate target (qualitative) | medium |
+| Regime preference | Mean-reversion candlestick reversal. |
+| Win rate target (qualitative) | Not specified in frontmatter. |
 
 ---
 
@@ -76,7 +76,7 @@ This card was mechanised from:
 
 **Source ID:** `a120af9a-fb72-526c-bb80-d1d098a617b5`
 **Source type:** article
-**Pointer:** Artyom Trishkin, "Deconstructing examples of trading strategies in the client terminal", MQL5 Articles, 2025-02-13.
+**Pointer:** Artyom Trishkin, "Deconstructing examples of trading strategies in the client terminal", MQL5 Articles, 2025-02-13, https://www.mql5.com/en/articles/15479
 **R1-R4 verdict (Q00):** all PASS per `artifacts/cards_approved/QM5_10090_mql5-harami-h1.md`
 
 ---
@@ -97,5 +97,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-09 | Initial build from card | c54aeb45-cbe3-4da0-8d2d-8fffe4f7ce6c |
-| v2 | 2026-06-18 | Rebuild from card | ef57e38d-95c5-42ab-8133-f73926ccec80 |
+| v1 | 2026-06-18 | Initial build from card | 6e049719-cf3c-44a8-8721-5c4f99868517 |
