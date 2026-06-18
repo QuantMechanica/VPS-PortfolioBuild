@@ -10583,3 +10583,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11347,rbt-adx-momentum-m5,1,GBPUSD.DWX,113470001,2026-06-18,Claude,active
 11347,rbt-adx-momentum-m5,2,AUDUSD.DWX,113470002,2026-06-18,Claude,active
 11347,rbt-adx-momentum-m5,3,USDCAD.DWX,113470003,2026-06-18,Claude,active
+11352,rbt-bb-rsi11-breakout-m15,0,EURUSD.DWX,113520000,2026-06-18,Claude,active
+11352,rbt-bb-rsi11-breakout-m15,1,GBPUSD.DWX,113520001,2026-06-18,Claude,active
+11352,rbt-bb-rsi11-breakout-m15,2,AUDUSD.DWX,113520002,2026-06-18,Claude,active
+11352,rbt-bb-rsi11-breakout-m15,3,USDJPY.DWX,113520003,2026-06-18,Claude,active
