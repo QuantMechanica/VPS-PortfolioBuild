@@ -10,11 +10,13 @@
 ; magic_slot:   6
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d7e23d400dde7100d290dc309db2e5b2262231140a75894e5993f84cb2709fd4
+; build_hash:   21568a3447d6e8c6e450e14623a0b7466b0abb12d06d1c5915b31781f5d0a447
 ; author:       Development
 ; date:         2026-06-18
 ;==========================================================
 qm_magic_slot_offset=6
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
