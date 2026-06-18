@@ -78,7 +78,7 @@ input double strategy_spread_pct_of_stop         = 25.0;
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-int BrokerMinuteOfBarOpen()
+int BrokerMinuteCurrent()
   {
    const datetime broker_now = TimeCurrent();
    if(broker_now <= 0)
@@ -214,7 +214,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_imex_threshold <= 0.0)
       return false;
 
-   const int minute_of_day = BrokerMinuteOfBarOpen();
+   const int minute_of_day = BrokerMinuteCurrent();
    if(minute_of_day < 0 || minute_of_day >= strategy_latest_entry_broker_minutes)
       return false;
 
@@ -275,7 +275,7 @@ bool Strategy_ExitSignal()
    if(magic <= 0 || QM_TM_OpenPositionCount(magic) <= 0)
       return false;
 
-   const int minute_of_day = BrokerMinuteOfBarOpen();
+   const int minute_of_day = BrokerMinuteCurrent();
    if(minute_of_day < 0 || minute_of_day >= strategy_latest_entry_broker_minutes)
       return false;
    if(ActiveTimePointSlot(minute_of_day) < 0)
@@ -373,11 +373,16 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   const bool is_new_bar = QM_IsNewBar();
+   if(is_new_bar)
+      QM_EquityStreamOnNewBar();
+
    // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
-   if(Strategy_ExitSignal())
+   // Per-closed-bar: discretionary exit (e.g. time-point reversal). Separate
+   // from SL/TP and driven by the same single QM_IsNewBar() consume as entry.
+   if(is_new_bar && Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
       for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -394,12 +399,8 @@ void OnTick()
    // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
    // per-tick recompute mistakes — EntrySignal sees one new closed bar per
    // call, not every incoming tick.
-   if(!QM_IsNewBar())
+   if(!is_new_bar)
       return;
-
-   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
-   // since last tick. Cheap: most calls early-return on same-day check.
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
