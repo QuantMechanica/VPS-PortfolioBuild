@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_1334_CHAN_PARAM_SPREAD_SIZING_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Ernie Chan parameterless spread sizing applied to the XAUUSD/XAGUSD mean-reverting pair (source_id fce67611). spread = XAUUSD - beta*XAGUSD (linear, card definition; beta default 1.0 normalized 1:1 baseline). Over a strategy_calib_window (120 D1 bars) the EA computes spread_mean and max_dev = max(|spread-mean|); target_fraction = clamp((spread-mean)/max_dev, -1, +1). Hold short spread (short XAU / long XAG) when target_fraction > min_trade_fraction (rich), long spread (long XAU / short XAG) when target_fraction < -min_trade_fraction (cheap). Reversion exit when |target_fraction| falls back inside the flat band; emergency flat when |spread-mean| > 1.25*max_dev. One net spread position per magic per leg via QM_BasketOpenPosition; foreign-leg closes warmed via QM_SymbolGuardInit + QM_BasketWarmupHistory; ATR(20)*2.0 D1 protective stop per leg. Both legs verified in dwx_symbol_matrix.csv (XAUUSD.DWX, XAGUSD.DWX) — no port needed. D1-native, closed-form, no ML, no external feed; fail-OPEN spread guard, no swap gate, single QM_IsNewBar consume per OnTick."
+  ]
+}
