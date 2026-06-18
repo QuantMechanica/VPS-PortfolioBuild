@@ -1,0 +1,18 @@
+{
+  "logical_symbol": "QM5_1357_AS_PRAGMATIC_AA_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "NDX.DWX",
+    "WS30.DWX",
+    "GDAXI.DWX",
+    "XAUUSD.DWX"
+  ],
+  "notes": [
+    "AllocateSmartly / Vojtko-Javorska Pragmatic Asset Allocation (source_id 2df06de7), realized as the strategy's mechanical core: a dual-momentum (relative + absolute) rotation across asset-class proxies with a monthly rebalance and a 12-month SMA qualification filter. Each leg trades its own magic slot (one position per magic per leg) via the per-instance basket pattern (host_symbol=_per_instance); cross-sectional ranking is computed across the whole basket on the closed D1 bar after a single QM_IsNewBar(_Symbol, PERIOD_D1) consume; foreign-leg reads warmed via QM_SymbolGuardInit + QM_BasketWarmupHistory. D1-native (MN1 untestable). Monthly cadence gated by a broker-time calendar-month roll on the D1 bar-open time (iTime), not a tick-minute gate.",
+    "Mechanics: rank the four proxies by 12-month price change (252 D1 bars). A proxy is HELD only if (a) it ranks within the top strategy_top_n (default 2) by momentum AND (b) it closed above its 12-month SMA (strategy_sma_filter_days). Otherwise the sleeve goes to cash (flat). Long-only; ATR(20)*3.0 D1 protective stop per leg; held to the next monthly rebalance, exited when the sleeve loses selection (rank or SMA filter). No trailing/partial/break-even (card specifies none intramonth).",
+    "FLAG — un-routable card elements dropped: (1) The yield-curve regime branch (10y vs 3m US Treasury) has NO .DWX rate/yield feed (DWX invariant #11: no external macro/rate CSV) and is dropped; the risk-vs-defensive switch is realized implicitly by the absolute-momentum SMA filter sending non-trending proxies to cash. (2) IEF (7-10y Treasury bond) and BIL (T-bill/cash) defensive sleeves have NO routable .DWX bond proxy; their carry/bond-yield edge is realized only as the price-momentum proxy of the remaining assets (XAUUSD substitutes GLD as the sole routable defensive asset class). (3) ACWI/QQQ/EEM mapped to NDX.DWX/WS30.DWX/GDAXI.DWX (Nasdaq/Dow/DAX) — the routable equity proxies in dwx_symbol_matrix.csv.",
+    ".DWX invariants honored: fail-OPEN (no spread guard that blocks on zero spread); $0 swap in tester not gated (carry sleeve realized as price-momentum proxy, FLAGGED above); prior-CLOSE reads (iClose shift>=1); single QM_IsNewBar consume per OnTick; all in-EA closed-form, no ML, no external feed; RISK_FIXED default in tester. All four basket symbols verified present in framework/registry/dwx_symbol_matrix.csv. SP500.DWX deliberately omitted (backtest-only / non-routable for live) so the basket stays live-promotable; NDX/WS30/GDAXI/XAUUSD are all live-tradable proxies.",
+    "frontmatter_mismatch: card frontmatter ea_id=QM5_1357 matches BUILD TARGET ea_id 1357 — no mismatch."
+  ]
+}
