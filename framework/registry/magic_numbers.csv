@@ -10321,3 +10321,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12407,oil-pred-eq,0,SP500.DWX,124070000,2026-06-18,Development,active
 12407,oil-pred-eq,1,NDX.DWX,124070001,2026-06-18,Development,active
 12407,oil-pred-eq,2,WS30.DWX,124070002,2026-06-18,Development,active
+11888,lien-perfect-order-sma-stack,0,EURUSD.DWX,118880000,2026-06-18,Development,active
+11888,lien-perfect-order-sma-stack,1,GBPUSD.DWX,118880001,2026-06-18,Development,active
+11888,lien-perfect-order-sma-stack,2,USDJPY.DWX,118880002,2026-06-18,Development,active
+11888,lien-perfect-order-sma-stack,3,USDCAD.DWX,118880003,2026-06-18,Development,active
+11888,lien-perfect-order-sma-stack,4,USDCHF.DWX,118880004,2026-06-18,Development,active
+11888,lien-perfect-order-sma-stack,5,AUDUSD.DWX,118880005,2026-06-18,Development,active
+11888,lien-perfect-order-sma-stack,6,NZDUSD.DWX,118880006,2026-06-18,Development,active
+11888,lien-perfect-order-sma-stack,7,EURJPY.DWX,118880007,2026-06-18,Development,active
+11888,lien-perfect-order-sma-stack,8,GBPJPY.DWX,118880008,2026-06-18,Development,active
+11888,lien-perfect-order-sma-stack,9,AUDJPY.DWX,118880009,2026-06-18,Development,active
