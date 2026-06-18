@@ -1,11 +1,16 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_9364 Ichimoku Cloud Trend with ADX"
-// Strategy Card: QM5_9364 (mql5-ichi-cloud-trend)
-// Source: Stephen Njuki, MQL5 Wizard Techniques Part 73, Pattern 8.
-// G0 APPROVED 2026-05-19.
 
 #include <QM/QM_Common.mqh>
+
+// =============================================================================
+// QuantMechanica V5 EA SKELETON
+// -----------------------------------------------------------------------------
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails).
+// =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 9364;
@@ -41,10 +46,28 @@ input int    strategy_atr_period        = 14;
 input double strategy_sl_atr_mult       = 1.0;
 input int    strategy_max_hold_bars     = 72;
 
-bool GetOurPosition(ENUM_POSITION_TYPE &ptype, datetime &open_time)
+// -----------------------------------------------------------------------------
+// Strategy hooks - implemented mechanically from the approved card.
+// -----------------------------------------------------------------------------
+
+// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
+// regime filter). Cheap O(1) checks only - runs on every tick.
+bool Strategy_NoTradeFilter()
   {
-   ptype = POSITION_TYPE_BUY;
-   open_time = 0;
+   return false;
+  }
+
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
+bool Strategy_EntrySignal(QM_EntryRequest &req)
+  {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
 
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
@@ -57,115 +80,62 @@ bool GetOurPosition(ENUM_POSITION_TYPE &ptype, datetime &open_time)
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      return true;
+      if(PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
      }
 
-   return false;
-  }
+   if(strategy_tenkan_period <= 0 ||
+      strategy_kijun_period <= 0 ||
+      strategy_senkou_period <= 0 ||
+      strategy_adx_period <= 1 ||
+      strategy_atr_period <= 1 ||
+      strategy_sl_atr_mult <= 0.0)
+      return false;
 
-bool ReadPatternInputs(const int cloud_shift, double &close_curr, double &close_prev,
-                       double &span_a_curr, double &span_a_prev,
-                       double &span_b_curr)
-  {
-   close_curr = iClose(_Symbol, _Period, 1); // perf-allowed: card requires closed-bar Close[0].
-   close_prev = iClose(_Symbol, _Period, 2); // perf-allowed: card requires closed-bar Close[1].
-   span_a_curr = QM_Ichimoku_SenkouSpanA(_Symbol, _Period,
-                                         strategy_tenkan_period,
-                                         strategy_kijun_period,
-                                         strategy_senkou_period,
-                                         cloud_shift);
-   span_a_prev = QM_Ichimoku_SenkouSpanA(_Symbol, _Period,
-                                         strategy_tenkan_period,
-                                         strategy_kijun_period,
-                                         strategy_senkou_period,
-                                         cloud_shift + 1);
-   span_b_curr = QM_Ichimoku_SenkouSpanB(_Symbol, _Period,
-                                         strategy_tenkan_period,
-                                         strategy_kijun_period,
-                                         strategy_senkou_period,
-                                         cloud_shift);
+   double closes[];
+   ArraySetAsSeries(closes, true);
+   if(CopyClose(_Symbol, _Period, 1, 2, closes) != 2) // perf-allowed: EntrySignal is called only after QM_IsNewBar().
+      return false;
 
-   return close_curr > 0.0 && close_prev > 0.0 &&
-          span_a_curr > 0.0 && span_a_prev > 0.0 && span_b_curr > 0.0;
-  }
+   const double close_curr = closes[0];
+   const double close_prev = closes[1];
+   if(close_curr <= 0.0 || close_prev <= 0.0)
+      return false;
 
-int Pattern8Signal()
-  {
-   const int cloud_shift = strategy_kijun_period + 1;
-
-   double close_curr, close_prev, span_a_curr, span_a_prev, span_b_curr;
-   if(!ReadPatternInputs(cloud_shift, close_curr, close_prev,
-                         span_a_curr, span_a_prev, span_b_curr))
-      return 0;
-
+   const int cloud_shift_curr = strategy_kijun_period + 1;
+   const int cloud_shift_prev = strategy_kijun_period + 2;
+   const double span_a_curr = QM_Ichimoku_SenkouSpanA(_Symbol, _Period,
+                                                       strategy_tenkan_period,
+                                                       strategy_kijun_period,
+                                                       strategy_senkou_period,
+                                                       cloud_shift_curr);
+   const double span_a_prev = QM_Ichimoku_SenkouSpanA(_Symbol, _Period,
+                                                       strategy_tenkan_period,
+                                                       strategy_kijun_period,
+                                                       strategy_senkou_period,
+                                                       cloud_shift_prev);
+   const double span_b_curr = QM_Ichimoku_SenkouSpanB(_Symbol, _Period,
+                                                       strategy_tenkan_period,
+                                                       strategy_kijun_period,
+                                                       strategy_senkou_period,
+                                                       cloud_shift_curr);
    const double adx = QM_ADX(_Symbol, _Period, strategy_adx_period, 1);
-   if(adx < strategy_adx_min)
-      return 0;
+   const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+   if(span_a_curr <= 0.0 ||
+      span_a_prev <= 0.0 ||
+      span_b_curr <= 0.0 ||
+      adx < strategy_adx_min ||
+      atr <= 0.0)
+      return false;
 
    if(close_prev < close_curr &&
       close_prev > span_a_prev &&
       close_curr > span_a_curr &&
       span_a_curr > span_b_curr)
-      return 1;
-
-   if(close_prev > close_curr &&
-      close_prev < span_a_prev &&
-      close_curr < span_a_curr &&
-      span_a_curr < span_b_curr)
-      return -1;
-
-   return 0;
-  }
-
-bool Strategy_NoTradeFilter()
-  {
-   return false;
-  }
-
-bool Strategy_EntrySignal(QM_EntryRequest &req)
-  {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-
-   ENUM_POSITION_TYPE ptype;
-   datetime open_time;
-   if(GetOurPosition(ptype, open_time))
-      return false;
-
-   const int signal = Pattern8Signal();
-   if(signal == 0)
-      return false;
-
-   const int cloud_shift = strategy_kijun_period + 1;
-   const double span_a = QM_Ichimoku_SenkouSpanA(_Symbol, _Period,
-                                                 strategy_tenkan_period,
-                                                 strategy_kijun_period,
-                                                 strategy_senkou_period,
-                                                 cloud_shift);
-   const double span_b = QM_Ichimoku_SenkouSpanB(_Symbol, _Period,
-                                                 strategy_tenkan_period,
-                                                 strategy_kijun_period,
-                                                 strategy_senkou_period,
-                                                 cloud_shift);
-   const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(span_a <= 0.0 || span_b <= 0.0 || atr <= 0.0)
-      return false;
-
-   if(signal > 0)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      const double sl = MathMin(span_a, span_b) - strategy_sl_atr_mult * atr;
-      if(entry <= 0.0 || sl >= entry)
+      const double sl = MathMin(span_a_curr, span_b_curr) - (strategy_sl_atr_mult * atr);
+      if(entry <= 0.0 || sl <= 0.0 || sl >= entry)
          return false;
 
       req.type = QM_BUY;
@@ -174,56 +144,124 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return true;
      }
 
-   const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double sl = MathMax(span_a, span_b) + strategy_sl_atr_mult * atr;
-   if(entry <= 0.0 || sl <= entry)
-      return false;
+   if(close_prev > close_curr &&
+      close_prev < span_a_prev &&
+      close_curr < span_a_curr &&
+      span_a_curr < span_b_curr)
+     {
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double sl = MathMax(span_a_curr, span_b_curr) + (strategy_sl_atr_mult * atr);
+      if(entry <= 0.0 || sl <= 0.0 || sl <= entry)
+         return false;
 
-   req.type = QM_SELL;
-   req.sl = QM_StopRulesNormalizePrice(_Symbol, sl);
-   req.reason = "ICHI_CLOUD_TREND_SELL";
-   return true;
+      req.type = QM_SELL;
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, sl);
+      req.reason = "ICHI_CLOUD_TREND_SELL";
+      return true;
+     }
+
+   return false;
   }
 
+// Called every tick when an open position exists for this EA's magic.
 void Strategy_ManageOpenPosition()
   {
    // Card specifies no trailing, break-even, partial, or pyramiding management.
   }
 
+// Return TRUE to close the open position now.
 bool Strategy_ExitSignal()
   {
-   ENUM_POSITION_TYPE ptype;
-   datetime open_time;
-   if(!GetOurPosition(ptype, open_time))
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
 
-   const int hold_limit_secs = strategy_max_hold_bars * PeriodSeconds(_Period);
-   if(hold_limit_secs > 0 && (int)(TimeCurrent() - open_time) >= hold_limit_secs)
+   bool have_position = false;
+   ENUM_POSITION_TYPE ptype = POSITION_TYPE_BUY;
+   datetime open_time = 0;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if(PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      have_position = true;
+      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      break;
+     }
+
+   if(!have_position)
+      return false;
+
+   const int hold_limit_seconds = strategy_max_hold_bars * PeriodSeconds(_Period);
+   if(hold_limit_seconds > 0 && (int)(TimeCurrent() - open_time) >= hold_limit_seconds)
       return true;
 
-   const int signal = Pattern8Signal();
+   if(strategy_tenkan_period <= 0 ||
+      strategy_kijun_period <= 0 ||
+      strategy_senkou_period <= 0 ||
+      strategy_adx_period <= 1)
+      return false;
+
+   double closes[];
+   ArraySetAsSeries(closes, true);
+   if(CopyClose(_Symbol, _Period, 1, 2, closes) != 2) // perf-allowed: O(1) closed-bar exit check.
+      return false;
+
+   const double close_curr = closes[0];
+   const double close_prev = closes[1];
+   if(close_curr <= 0.0 || close_prev <= 0.0)
+      return false;
+
+   const int cloud_shift_curr = strategy_kijun_period + 1;
+   const int cloud_shift_prev = strategy_kijun_period + 2;
+   const double span_a_curr = QM_Ichimoku_SenkouSpanA(_Symbol, _Period,
+                                                       strategy_tenkan_period,
+                                                       strategy_kijun_period,
+                                                       strategy_senkou_period,
+                                                       cloud_shift_curr);
+   const double span_a_prev = QM_Ichimoku_SenkouSpanA(_Symbol, _Period,
+                                                       strategy_tenkan_period,
+                                                       strategy_kijun_period,
+                                                       strategy_senkou_period,
+                                                       cloud_shift_prev);
+   const double span_b_curr = QM_Ichimoku_SenkouSpanB(_Symbol, _Period,
+                                                       strategy_tenkan_period,
+                                                       strategy_kijun_period,
+                                                       strategy_senkou_period,
+                                                       cloud_shift_curr);
+   if(span_a_curr <= 0.0 || span_a_prev <= 0.0 || span_b_curr <= 0.0)
+      return false;
+
+   const double adx = QM_ADX(_Symbol, _Period, strategy_adx_period, 1);
+   int signal = 0;
+   if(adx >= strategy_adx_min)
+     {
+      if(close_prev < close_curr &&
+         close_prev > span_a_prev &&
+         close_curr > span_a_curr &&
+         span_a_curr > span_b_curr)
+         signal = 1;
+      else if(close_prev > close_curr &&
+              close_prev < span_a_prev &&
+              close_curr < span_a_curr &&
+              span_a_curr < span_b_curr)
+         signal = -1;
+     }
+
    if(ptype == POSITION_TYPE_BUY && signal < 0)
       return true;
    if(ptype == POSITION_TYPE_SELL && signal > 0)
       return true;
 
-   const int cloud_shift = strategy_kijun_period + 1;
-   const double close_curr = iClose(_Symbol, _Period, 1); // perf-allowed: cloud re-entry exit uses latest closed close.
-   const double span_a = QM_Ichimoku_SenkouSpanA(_Symbol, _Period,
-                                                 strategy_tenkan_period,
-                                                 strategy_kijun_period,
-                                                 strategy_senkou_period,
-                                                 cloud_shift);
-   const double span_b = QM_Ichimoku_SenkouSpanB(_Symbol, _Period,
-                                                 strategy_tenkan_period,
-                                                 strategy_kijun_period,
-                                                 strategy_senkou_period,
-                                                 cloud_shift);
-   if(close_curr <= 0.0 || span_a <= 0.0 || span_b <= 0.0)
-      return false;
-
-   const double cloud_top = MathMax(span_a, span_b);
-   const double cloud_bottom = MathMin(span_a, span_b);
+   const double cloud_top = MathMax(span_a_curr, span_b_curr);
+   const double cloud_bottom = MathMin(span_a_curr, span_b_curr);
    if(ptype == POSITION_TYPE_BUY && close_curr <= cloud_top)
       return true;
    if(ptype == POSITION_TYPE_SELL && close_curr >= cloud_bottom)
@@ -232,10 +270,15 @@ bool Strategy_ExitSignal()
    return false;
   }
 
+// Optional news-filter override.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
+
+// -----------------------------------------------------------------------------
+// Framework wiring - do NOT edit below this line unless you know why.
+// -----------------------------------------------------------------------------
 
 int OnInit()
   {
@@ -257,11 +300,7 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK",
-               StringFormat("{\"card\":\"QM5_9364\",\"ea\":\"mql5-ichi-cloud-trend\","
-                            "\"tenkan\":%d,\"kijun\":%d,\"senkou\":%d,\"adx_min\":%.1f}",
-                            strategy_tenkan_period, strategy_kijun_period,
-                            strategy_senkou_period, strategy_adx_min));
+   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
 
@@ -279,7 +318,6 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -302,8 +340,6 @@ void OnTick()
         {
          const ulong ticket = PositionGetTicket(i);
          if(!PositionSelectByTicket(ticket))
-            continue;
-         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
