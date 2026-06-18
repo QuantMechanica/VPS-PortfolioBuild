@@ -10331,3 +10331,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11888,lien-perfect-order-sma-stack,7,EURJPY.DWX,118880007,2026-06-18,Development,active
 11888,lien-perfect-order-sma-stack,8,GBPJPY.DWX,118880008,2026-06-18,Development,active
 11888,lien-perfect-order-sma-stack,9,AUDJPY.DWX,118880009,2026-06-18,Development,active
+12405,stock-cycle12,0,SP500.DWX,124050000,2026-06-18,Development,active
+12405,stock-cycle12,1,NDX.DWX,124050001,2026-06-18,Development,active
+12405,stock-cycle12,2,WS30.DWX,124050002,2026-06-18,Development,active
+12405,stock-cycle12,3,GDAXI.DWX,124050003,2026-06-18,Development,active
+12405,stock-cycle12,4,UK100.DWX,124050004,2026-06-18,Development,active
