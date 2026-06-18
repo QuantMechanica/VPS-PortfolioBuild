@@ -117,7 +117,7 @@ bool Strategy_SpreadOk()
 
 bool Strategy_HasOpenPosition()
   {
-   const int magic = QM_Magic(qm_ea_id, qm_magic_slot_offset);
+   const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return false;
 
@@ -137,7 +137,7 @@ bool Strategy_HasOpenPosition()
 
 bool Strategy_HasPendingOrder()
   {
-   const int magic = QM_Magic(qm_ea_id, qm_magic_slot_offset);
+   const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return false;
 
@@ -157,7 +157,7 @@ bool Strategy_HasPendingOrder()
 
 void Strategy_CancelOwnPendingOrders(const string reason)
   {
-   const int magic = QM_Magic(qm_ea_id, qm_magic_slot_offset);
+   const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return;
 
@@ -177,7 +177,7 @@ void Strategy_CancelOwnPendingOrders(const string reason)
 
 void Strategy_CancelInvalidPendingOrders()
   {
-   const int magic = QM_Magic(qm_ea_id, qm_magic_slot_offset);
+   const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return;
 
