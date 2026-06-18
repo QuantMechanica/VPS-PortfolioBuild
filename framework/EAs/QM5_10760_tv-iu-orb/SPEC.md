@@ -4,7 +4,7 @@
 **Slug:** tv-iu-orb
 **Source:** d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7
 **Author of this spec:** Codex
-**Last revised:** 2026-05-31
+**Last revised:** 2026-06-18
 
 ---
 
@@ -18,8 +18,9 @@ The EA records the high and low of the configured opening-range window on M5 bar
 
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
-| `strategy_session_start_hhmm` | 915 | 0000-2359 | Broker-time start of the opening session. |
-| `strategy_session_end_hhmm` | 1515 | 0000-2359 | Broker-time session close where open positions are flattened. |
+| `strategy_broker_to_ny_offset_hours` | 7 | 0-23 | Hours subtracted from broker time to evaluate the source session in New York market time. |
+| `strategy_session_start_hhmm` | 915 | 0000-2359 | New York market-time start of the opening session. |
+| `strategy_session_end_hhmm` | 1515 | 0000-2359 | New York market-time session close where open positions are flattened. |
 | `strategy_opening_range_minutes` | 15 | 5-60 | Minutes after session start used to lock the opening range. |
 | `strategy_max_trades_per_day` | 2 | 1+ | Maximum entries allowed per symbol per day. |
 | `strategy_rr_target` | 2.0 | >0 | Take-profit distance as a multiple of stop distance. |
@@ -98,3 +99,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-05-31 | Initial build from card | 6fff897b-4318-4381-ac4f-6e3cf0191c71 |
+| v2 | 2026-06-18 | Rebuild handoff validation | 46f24546-b59f-4d73-a7fa-89bb89aa2b44 |
