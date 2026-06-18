@@ -1,0 +1,58 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10976
+; ea_slug:      ftmo-ma-cross
+; ea_version:   v5.0
+; set_version:  s20260618-001
+; symbol:       XAUUSD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-06-18
+;==========================================================
+qm_ea_id=10976
+qm_magic_slot_offset=3
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10976_ftmo-ma-cross.md
+strategy_sma_fast_period=50
+strategy_sma_slow_period=200
+strategy_qualify_bars=20
+strategy_atr_period=14
+strategy_slope_bars=20
+strategy_slope_atr_mult=0.25
+strategy_range_atr_mult=2.5
+strategy_swing_bars=12
+strategy_swing_atr_buf=0.50
+strategy_tp_rr=3.0
+strategy_trail_trigger_rr=1.5
+strategy_exit_close_bars=2
+strategy_max_hold_bars=80
+strategy_spread_pct_of_stop=15.0

@@ -13,8 +13,8 @@
 // Mechanics (long + short, closed-bar reads at shift 1; H4):
 //   Long regime STATE : RSI(14) in [40,80] on >= 14 of the last 20 closed bars
 //                       AND close(1) > EMA(100).
-//   Long pullback STATE: within the lookback window before the trigger bar, RSI
-//                       dipped below 50 but stayed above 40 (40 < RSI < 50).
+//   Long pullback STATE: prior closed RSI dipped below 50 but stayed above 40
+//                       (40 < RSI < 50).
 //   Long trigger EVENT: RSI crosses back above 50 (prev<=50, now>50)
 //                       AND the trigger candle closes above the PRIOR candle high.
 //   Short is the mirror: RSI(14) in [20,60] on >=14/20, close<EMA(100), pullback
@@ -73,7 +73,6 @@ input double strategy_short_band_hi      = 60.0;   // short regime RSI band high
 input double strategy_rsi_cross_level    = 50.0;   // RSI resumption trigger level
 input double strategy_long_pb_floor      = 40.0;   // long pullback: RSI stays above this
 input double strategy_short_pb_ceil      = 60.0;   // short pullback: RSI stays below this
-input int    strategy_pullback_bars      = 6;      // bars to look back for the pullback dip
 input int    strategy_swing_lookback     = 8;      // swing low/high lookback for the stop
 input double strategy_swing_atr_buffer   = 0.25;   // ATR buffer beyond the swing extreme
 input double strategy_tp_rr              = 2.0;    // take-profit in R multiples
@@ -86,26 +85,6 @@ input double strategy_atr_pctile         = 25.0;   // ATR floor percentile (0..1
 input double strategy_stop_min_atr_mult  = 0.5;    // skip if stop distance < this * ATR
 input double strategy_stop_max_atr_mult  = 2.5;    // skip if stop distance > this * ATR
 input double strategy_spread_pct_of_stop = 15.0;   // skip if spread > this % of stop distance
-
-// -----------------------------------------------------------------------------
-// File-scope per-trade state for the time exit. Indexed by the bar-open time
-// of the entry bar so a re-init mid-trade still measures bars-in-trade robustly.
-// -----------------------------------------------------------------------------
-datetime g_entry_bar_time = 0;   // iTime of the bar on which we entered (0 = flat)
-
-// -----------------------------------------------------------------------------
-// Helper: bars elapsed (closed bars) since the entry bar, on this symbol/TF.
-// Returns -1 if the entry bar time is unknown.
-// -----------------------------------------------------------------------------
-int BarsSinceEntry()
-  {
-   if(g_entry_bar_time == 0)
-      return -1;
-   const int idx = iBarShift(_Symbol, _Period, g_entry_bar_time, true);
-   if(idx < 0)
-      return -1;
-   return idx; // shift of the entry bar == number of bars elapsed since it closed
-  }
 
 // -----------------------------------------------------------------------------
 // Helper: count how many of the last `lookback` closed RSI values lie within
@@ -194,6 +173,14 @@ bool Strategy_NoTradeFilter()
 // Long + short entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -236,24 +223,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const bool trigger = (rsi_prev <= strategy_rsi_cross_level &&
                             rsi_now  >  strategy_rsi_cross_level) &&
                            (close1 > high_prior); // candle closes above prior high
-      // Pullback STATE before the trigger bar: RSI dipped into (pb_floor, cross]
-      bool pullback = false;
-      if(regime && trigger)
-        {
-         const int first_shift = 2;
-         const int last_shift  = strategy_pullback_bars + 1;
-         for(int s = first_shift; s <= last_shift; ++s)
-           {
-            const double r = QM_RSI(_Symbol, _Period, strategy_rsi_period, s);
-            if(r <= 0.0)
-               continue;
-            if(r > strategy_long_pb_floor && r < strategy_rsi_cross_level)
-              {
-               pullback = true;
-               break;
-              }
-           }
-        }
+      const bool pullback = (rsi_prev > strategy_long_pb_floor &&
+                             rsi_prev < strategy_rsi_cross_level);
       long_ok = (regime && trigger && pullback);
    }
 
@@ -268,23 +239,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const bool trigger = (rsi_prev >= strategy_rsi_cross_level &&
                             rsi_now  <  strategy_rsi_cross_level) &&
                            (close1 < low_prior); // candle closes below prior low
-      bool pullback = false;
-      if(regime && trigger)
-        {
-         const int first_shift = 2;
-         const int last_shift  = strategy_pullback_bars + 1;
-         for(int s = first_shift; s <= last_shift; ++s)
-           {
-            const double r = QM_RSI(_Symbol, _Period, strategy_rsi_period, s);
-            if(r <= 0.0)
-               continue;
-            if(r < strategy_short_pb_ceil && r > strategy_rsi_cross_level)
-              {
-               pullback = true;
-               break;
-              }
-           }
-        }
+      const bool pullback = (rsi_prev < strategy_short_pb_ceil &&
+                             rsi_prev > strategy_rsi_cross_level);
       short_ok = (regime && trigger && pullback);
      }
 
@@ -335,8 +291,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.tp     = tp;
    req.reason = (side == QM_BUY) ? "ftmo_rsi_trend_long" : "ftmo_rsi_trend_short";
 
-   // Latch the entry bar time for the bars-in-trade time exit.
-   g_entry_bar_time = iTime(_Symbol, _Period, 0);
    return true;
   }
 
@@ -391,15 +345,7 @@ bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
    if(QM_TM_OpenPositionCount(magic) <= 0)
-     {
-      g_entry_bar_time = 0; // flat — clear the latch
       return false;
-     }
-
-   // Time exit: N closed bars elapsed since entry.
-   const int bars_in = BarsSinceEntry();
-   if(bars_in >= strategy_time_exit_bars)
-      return true;
 
    const double rsi_now = QM_RSI(_Symbol, _Period, strategy_rsi_period, 1);
    if(rsi_now <= 0.0)
@@ -413,6 +359,13 @@ bool Strategy_ExitSignal()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
+      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      if(open_time > 0)
+        {
+         const int period_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
+         if(period_seconds > 0 && TimeCurrent() - open_time >= strategy_time_exit_bars * period_seconds)
+            return true;
+        }
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       if(ptype == POSITION_TYPE_BUY && rsi_now < strategy_long_exit_rsi)
          return true;
@@ -497,7 +450,6 @@ void OnTick()
             continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
-      g_entry_bar_time = 0; // cleared after a discretionary close
      }
 
    if(!QM_IsNewBar())

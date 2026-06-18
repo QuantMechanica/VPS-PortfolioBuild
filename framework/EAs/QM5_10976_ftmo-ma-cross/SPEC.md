@@ -4,7 +4,7 @@
 **Slug:** `ftmo-ma-cross`
 **Source:** `c11dc4d3-bdfb-5076-aeed-5d943e9ef03f` (FTMO blog, moving averages)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-17
+**Last revised:** 2026-06-18
 
 ---
 
@@ -84,7 +84,7 @@ consecutive H4 closes back through SMA(200), or after a hard 80-bar time stop.
 This card was mechanised from:
 
 **Source ID:** `c11dc4d3-bdfb-5076-aeed-5d943e9ef03f`
-**Source type:** `forum` (FTMO educational blog article)
+**Source type:** `blog` (FTMO educational article)
 **Pointer:** `https://ftmo.com/en/blog/technical-analysis-why-are-moving-averages-so-popular/`
 **R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_10976_ftmo-ma-cross.md`
 
@@ -106,4 +106,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-17 | Initial build from card | board-advisor build |
+| v1 | 2026-06-18 | Initial build from card | c3478e4d-09dc-4e2c-bca1-511623a2b014 |
