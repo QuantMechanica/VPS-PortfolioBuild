@@ -9,38 +9,26 @@
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
-; portfolio_weight: 1.0
-; build_hash:   09653599cc651631240f178f6e9ca7298275412d9dc2534b93ba4f5ba12439fd
+; portfolio_weight: 1
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-18
 ;==========================================================
-qm_ea_id=1092
 qm_magic_slot_offset=2
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
-PORTFOLIO_WEIGHT=1.0
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=true
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
-strategy_rebalance_months=3
-strategy_rebalance_window_days=7
-strategy_bucket_size=3
-strategy_atr_period=20
-strategy_atr_sl_mult=5.0
-strategy_max_spread_points=30
-strategy_stale_days_monthly=45
-strategy_stale_days_quarterly=120
-strategy_ppp_observation_yyyymmdd=20231231
-strategy_ppp_eur_usd=1.5000
-strategy_ppp_gbp_usd=1.4000
-strategy_ppp_jpy_usd=0.0075
-strategy_ppp_aud_usd=0.7500
-strategy_ppp_cad_usd=0.8000
-strategy_ppp_chf_usd=1.1000
-strategy_ppp_nzd_usd=0.6800
+PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found
