@@ -11821,3 +11821,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12362,nikh-supertrend,4,GDAXI.DWX,123620004,2026-06-18,Development,active
 12362,nikh-supertrend,5,NDX.DWX,123620005,2026-06-18,Development,active
 12362,nikh-supertrend,6,WS30.DWX,123620006,2026-06-18,Development,active
+12350,spec-ema20-40,0,EURUSD.DWX,123500000,2026-06-18,Development,active
+12350,spec-ema20-40,1,GBPUSD.DWX,123500001,2026-06-18,Development,active
+12350,spec-ema20-40,2,USDJPY.DWX,123500002,2026-06-18,Development,active
+12350,spec-ema20-40,3,XAUUSD.DWX,123500003,2026-06-18,Development,active
+12350,spec-ema20-40,4,GDAXI.DWX,123500004,2026-06-18,Development,active
+12350,spec-ema20-40,5,NDX.DWX,123500005,2026-06-18,Development,active
+12350,spec-ema20-40,6,WS30.DWX,123500006,2026-06-18,Development,active
