@@ -207,9 +207,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    double body_sum = 0.0;
    for(int shift = 2; shift < 2 + strategy_warmup_bars; ++shift)
-      body_sum += MathAbs(rates[shift].open - rates[shift].close);
+      body_sum += (rates[shift].open - rates[shift].close);
 
-   const double mean_body = body_sum / (double)strategy_warmup_bars;
+   const double mean_body = MathAbs(body_sum / (double)strategy_warmup_bars);
    const double star_body = MathAbs(star.open - star.close);
    const double bearish_body = star.open - star.close;
    if(mean_body <= 0.0 || star_body <= 0.0 || star.high <= 0.0 || star.low <= 0.0)
@@ -264,13 +264,10 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   const int period_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
-   const datetime now = TimeCurrent();
    const double threshold = strategy_stop_threshold_pct / 100.0;
-   if(magic <= 0 || period_seconds <= 0 || threshold <= 0.0)
+   if(magic <= 0 || threshold <= 0.0)
       return false;
 
-   const long max_hold_seconds = (long)strategy_holding_bars * (long)period_seconds;
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -294,7 +291,8 @@ bool Strategy_ExitSignal()
         }
 
       const datetime opened_at = (datetime)PositionGetInteger(POSITION_TIME);
-      if(opened_at > 0 && max_hold_seconds > 0 && (long)(now - opened_at) >= max_hold_seconds)
+      const int bars_since_entry = iBarShift(_Symbol, (ENUM_TIMEFRAMES)_Period, opened_at, false); // perf-allowed: O(1) completed-bar age for card time stop.
+      if(opened_at > 0 && bars_since_entry >= strategy_holding_bars)
          return true;
      }
 

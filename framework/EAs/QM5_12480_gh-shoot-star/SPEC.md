@@ -19,7 +19,7 @@ This EA trades a short-only shooting-star reversal on the chart timeframe, inten
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
 | strategy_lower_bound | 0.2 | greater than 0 | Maximum lower wick size as a multiple of shooting-star body size. |
-| strategy_body_size | 0.5 | greater than 0 | Maximum shooting-star body size as a multiple of the 60-bar average body estimate. |
+| strategy_body_size | 0.5 | greater than 0 | Maximum shooting-star body size as a multiple of abs(mean(open-close)) over the 60-bar warmup. |
 | strategy_stop_threshold_pct | 5.0 | greater than 0 | Symmetric source stop/profit threshold in percent. |
 | strategy_holding_bars | 7 | greater than 0 | Maximum holding period in base-timeframe bars. |
 | strategy_warmup_bars | 60 | 3 or more | Closed-bar warmup window used for average body estimate. |
