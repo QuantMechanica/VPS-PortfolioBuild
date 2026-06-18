@@ -165,13 +165,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return true;
   }
 
-// Trade management: trail the stop toward EMA(13) once per closed bar, never
-// loosening it. Card: "Trail SL to EMA(13) value on each bar."
+// Trade management: trail the stop toward EMA(13), never loosening it. Card:
+// "Trail SL to EMA(13) value on each bar." Reads the closed-bar (shift 1) EMA13,
+// so the target only changes once per bar; QM_TM_MoveSL is idempotent when the
+// value has not improved. NO QM_IsNewBar() call here — the framework calls this
+// before the OnTick entry gate, and consuming the new-bar event would starve
+// Strategy_EntrySignal (.DWX trap #3).
 void Strategy_ManageOpenPosition()
   {
-   if(!QM_IsNewBar())
-      return; // closed-bar cadence; the entry gate latches its own QM_IsNewBar
-
    const int magic = QM_FrameworkMagic();
    if(QM_TM_OpenPositionCount(magic) <= 0)
       return;
