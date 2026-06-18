@@ -4,7 +4,7 @@
 **Slug:** `the5ers-pitchfork-bounce`
 **Source:** `1d445184-7c47-57da-9856-a123682a932d` (The5ers blog: "All You Need to Know About Andrews Pitchforks Strategy")
 **Author of this spec:** Codex
-**Last revised:** 2026-06-17
+**Last revised:** 2026-06-18
 
 ---
 
@@ -116,4 +116,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-17 | Initial build from card | board-advisor worktree |
+| v1 | 2026-06-18 | Initial build from card | 2988a363-6fa3-44d7-abe5-7fd4f5f86ad1 |

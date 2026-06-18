@@ -114,17 +114,17 @@ int FindPivot(const bool want_high, const int from_shift, const int max_shift, c
   {
    for(int s = from_shift; s <= max_shift; ++s)
      {
-      const double pivot_val = want_high ? iHigh(_Symbol, _Period, s)  // perf-allowed: bounded closed-bar scan
-                                         : iLow(_Symbol, _Period, s);
+      const double pivot_val = want_high ? iHigh(_Symbol, _Period, s)  // perf-allowed: bounded pitchfork swing scan on the closed-bar path
+                                         : iLow(_Symbol, _Period, s);  // perf-allowed: bounded pitchfork swing scan on the closed-bar path
       if(pivot_val <= 0.0)
          continue;
       bool is_pivot = true;
       for(int k = 1; k <= width && is_pivot; ++k)
         {
-         const double left  = want_high ? iHigh(_Symbol, _Period, s + k)
-                                        : iLow(_Symbol, _Period, s + k);
-         const double right = want_high ? iHigh(_Symbol, _Period, s - k)
-                                        : iLow(_Symbol, _Period, s - k);
+         const double left  = want_high ? iHigh(_Symbol, _Period, s + k)  // perf-allowed: bounded pitchfork swing scan on the closed-bar path
+                                        : iLow(_Symbol, _Period, s + k);  // perf-allowed: bounded pitchfork swing scan on the closed-bar path
+         const double right = want_high ? iHigh(_Symbol, _Period, s - k)  // perf-allowed: bounded pitchfork swing scan on the closed-bar path
+                                        : iLow(_Symbol, _Period, s - k);  // perf-allowed: bounded pitchfork swing scan on the closed-bar path
          if(left <= 0.0 || right <= 0.0)
            { is_pivot = false; break; }
          if(want_high)
@@ -160,9 +160,9 @@ void RebuildPitchfork(const bool want_bull)
    const int p0 = FindPivot(p2_high, p1 + 1, max_s, width);
    if(p0 < 0) { if(want_bull) g_bull_valid=false; else g_bear_valid=false; return; }
 
-   const double p0_price = p2_high ? iHigh(_Symbol, _Period, p0) : iLow(_Symbol, _Period, p0);
-   const double p1_price = p2_high ? iLow(_Symbol, _Period, p1)  : iHigh(_Symbol, _Period, p1);
-   const double p2_price = p2_high ? iHigh(_Symbol, _Period, p2) : iLow(_Symbol, _Period, p2);
+   const double p0_price = p2_high ? iHigh(_Symbol, _Period, p0) : iLow(_Symbol, _Period, p0); // perf-allowed: bounded pitchfork anchor read on the closed-bar path
+   const double p1_price = p2_high ? iLow(_Symbol, _Period, p1)  : iHigh(_Symbol, _Period, p1); // perf-allowed: bounded pitchfork anchor read on the closed-bar path
+   const double p2_price = p2_high ? iHigh(_Symbol, _Period, p2) : iLow(_Symbol, _Period, p2); // perf-allowed: bounded pitchfork anchor read on the closed-bar path
    if(p0_price <= 0.0 || p1_price <= 0.0 || p2_price <= 0.0)
      { if(want_bull) g_bull_valid=false; else g_bear_valid=false; return; }
 
@@ -255,6 +255,14 @@ bool Strategy_NoTradeFilter()
 // Entry: pitchfork outer-line bounce. Caller guarantees QM_IsNewBar()==true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
@@ -264,10 +272,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double tol = strategy_touch_atr_mult * atr_value;
 
    // Closed-bar OHLC at shift 1 (the bar that just closed).
-   const double high1  = iHigh(_Symbol,  _Period, 1);  // perf-allowed: single closed-bar reads
-   const double low1   = iLow(_Symbol,   _Period, 1);
-   const double open1  = iOpen(_Symbol,  _Period, 1);
-   const double close1 = iClose(_Symbol, _Period, 1);
+   const double high1  = iHigh(_Symbol,  _Period, 1);  // perf-allowed: single closed-bar pitchfork rejection read
+   const double low1   = iLow(_Symbol,   _Period, 1);  // perf-allowed: single closed-bar pitchfork rejection read
+   const double open1  = iOpen(_Symbol,  _Period, 1);  // perf-allowed: single closed-bar pitchfork rejection read
+   const double close1 = iClose(_Symbol, _Period, 1);  // perf-allowed: single closed-bar pitchfork rejection read
    if(high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0)
       return false;
    const double range1 = high1 - low1;
@@ -362,7 +370,7 @@ void Strategy_ManageOpenPosition()
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
      {
       if(g_entry_bar_time == 0)
-         g_entry_bar_time = iTime(_Symbol, _Period, 0); // bar-open of current forming bar
+         g_entry_bar_time = iTime(_Symbol, _Period, 0); // perf-allowed: O(1) bar-open latch for time stop
      }
    else
       g_entry_bar_time = 0;
@@ -376,7 +384,7 @@ bool Strategy_ExitSignal()
 
    const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
    const double tol = (atr_value > 0.0) ? strategy_touch_atr_mult * atr_value : 0.0;
-   const double close1 = iClose(_Symbol, _Period, 1);
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: O(1) closed-bar signal-exit read
    if(close1 <= 0.0)
       return false;
 
@@ -412,7 +420,7 @@ bool Strategy_ExitSignal()
       const int secs = PeriodSeconds(_Period);
       if(secs > 0)
         {
-         const datetime now_bar = iTime(_Symbol, _Period, 0);
+         const datetime now_bar = iTime(_Symbol, _Period, 0); // perf-allowed: O(1) bar-open read for time stop
          const long elapsed = (long)(now_bar - g_entry_bar_time) / secs;
          if(elapsed >= strategy_time_stop_bars)
             return true;
