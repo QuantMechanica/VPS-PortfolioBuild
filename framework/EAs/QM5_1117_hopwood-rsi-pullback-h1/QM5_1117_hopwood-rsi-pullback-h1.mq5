@@ -95,8 +95,11 @@ bool Strategy_NoTradeFilter()
   {
    if(strategy_max_spread_points > 0)
      {
-      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread_points > strategy_max_spread_points)
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      if(bid > 0.0 && ask > 0.0 && point > 0.0 && ask > bid &&
+         (ask - bid) > strategy_max_spread_points * point)
          return true;
      }
 
@@ -215,24 +218,24 @@ bool Strategy_ExitSignal()
    if(!have_position)
       return false;
 
-   const double close_1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: no QM close reader; single closed-bar value for card trend-flip exit.
    const double ema_1 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_period, 1, PRICE_CLOSE);
    const double rsi_1 = QM_RSI(_Symbol, PERIOD_H1, strategy_rsi_period, 1, PRICE_CLOSE);
-   if(close_1 <= 0.0 || ema_1 <= 0.0 || rsi_1 <= 0.0)
+   const int trend_state = QM_Sig_Price_Above_MA(_Symbol, PERIOD_H1, strategy_ema_period, 0.0, 1);
+   if(ema_1 <= 0.0 || rsi_1 <= 0.0)
       return false;
 
    if(pos_type == POSITION_TYPE_BUY)
      {
       if(rsi_1 >= strategy_rsi_overbought)
          return true;
-      if(close_1 < ema_1)
+      if(trend_state < 0)
          return true;
      }
    else if(pos_type == POSITION_TYPE_SELL)
      {
       if(rsi_1 <= strategy_rsi_oversold)
          return true;
-      if(close_1 > ema_1)
+      if(trend_state > 0)
          return true;
      }
 
