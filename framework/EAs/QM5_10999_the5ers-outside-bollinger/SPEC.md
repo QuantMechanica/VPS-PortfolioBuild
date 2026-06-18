@@ -4,7 +4,7 @@
 **Slug:** `the5ers-outside-bollinger`
 **Source:** `1d445184-7c47-57da-9856-a123682a932d` (The5ers blog — "Forex Trading Strategy Outside Bollinger Bands")
 **Author of this spec:** Codex
-**Last revised:** 2026-06-17
+**Last revised:** 2026-06-18
 
 ---
 
@@ -107,4 +107,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-17 | Initial build from card | board-advisor build |
+| v1 | 2026-06-18 | Initial build from card | 90a99255-d52b-4851-a649-c3ff8e26999a |

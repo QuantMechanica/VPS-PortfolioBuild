@@ -8,7 +8,7 @@
 // QuantMechanica V5 EA — QM5_10999 the5ers-outside-bollinger
 // -----------------------------------------------------------------------------
 // Source: The5ers "Forex Trading Strategy Outside Bollinger Bands"
-//   (https://the5ers.com/outside-bolinger-bands/, updated 2020-02-28).
+//   (the5ers.com/outside-bolinger-bands, updated 2020-02-28).
 // Card: artifacts/cards_approved/QM5_10999_the5ers-outside-bollinger.md
 //   (g0_status APPROVED).
 //
@@ -141,6 +141,14 @@ bool BandwidthInBottomPercentile()
 // Mean-reversion entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -265,13 +273,15 @@ bool Strategy_ExitSignal()
 
    const double bb_mid = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
    const double close1 = iClose(_Symbol, _Period, 1);  // perf-allowed: single closed-bar read
+   const double high1 = iHigh(_Symbol, _Period, 1);    // perf-allowed: single closed-bar read
+   const double low1 = iLow(_Symbol, _Period, 1);      // perf-allowed: single closed-bar read
 
    // Primary exit: last closed bar reached/crossed the middle band.
-   if(bb_mid > 0.0 && close1 > 0.0)
+   if(bb_mid > 0.0 && close1 > 0.0 && high1 > 0.0 && low1 > 0.0)
      {
-      if(pos_type == POSITION_TYPE_BUY && close1 >= bb_mid)
+      if(pos_type == POSITION_TYPE_BUY && high1 >= bb_mid)
          return true;
-      if(pos_type == POSITION_TYPE_SELL && close1 <= bb_mid)
+      if(pos_type == POSITION_TYPE_SELL && low1 <= bb_mid)
          return true;
      }
 
@@ -281,8 +291,7 @@ bool Strategy_ExitSignal()
       const int bar_secs = PeriodSeconds(_Period);
       if(bar_secs > 0)
         {
-         const datetime cur_bar_open = iTime(_Symbol, _Period, 0);
-         const int held_bars = (int)((cur_bar_open - open_time) / bar_secs);
+         const int held_bars = (int)((TimeCurrent() - open_time) / bar_secs);
          if(held_bars >= strategy_time_stop_bars)
             return true;
         }
