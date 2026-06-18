@@ -4,7 +4,7 @@
 **Slug:** `ftmo-vwap-macd`
 **Source:** `c11dc4d3-bdfb-5076-aeed-5d943e9ef03f` (FTMO, "Technical Indicators in Trading Strategies")
 **Author of this spec:** Codex
-**Last revised:** 2026-06-17
+**Last revised:** 2026-06-18
 
 ---
 
@@ -45,7 +45,8 @@ opposite side of VWAP, leaving the liquid window (session end), or a
 | `strategy_sl_atr_buffer` | 0.25 | 0.0-1.0 | Stop buffer beyond the swing = mult × ATR |
 | `strategy_tp_rr` | 1.8 | 1.0-3.0 | Take-profit as a multiple of risk (R) |
 | `strategy_max_hold_bars` | 32 | 8-96 | Time-stop in M15 bars |
-| `strategy_spread_pct_of_stop` | 15.0 | 1-100 | Skip if spread > this % of stop distance (fail-open on 0) |
+| `strategy_spread_lookback` | 20 | 5-50 | Closed-bar lookback used for the median spread baseline |
+| `strategy_spread_median_mult` | 1.5 | 1.0-5.0 | Skip if current spread exceeds this multiple of the median spread baseline; zero spread passes |
 
 ---
 
@@ -54,7 +55,7 @@ opposite side of VWAP, leaving the liquid window (session end), or a
 **Designed for:**
 - `EURUSD.DWX` — deep, liquid London/NY FX pair with clean intraday VWAP structure.
 - `GBPUSD.DWX` — liquid London-centric FX pair; strong session momentum.
-- `GER40.DWX` — DAX 40 index CFD; pronounced European-session intraday trends.
+- `GDAXI.DWX` — canonical DWX DAX 40 proxy for the card's `GER40.DWX` target; pronounced European-session intraday trends.
 - `NDX.DWX` — Nasdaq 100 index CFD; momentum-rich US-session VWAP behaviour.
 
 **Explicitly NOT for:**
@@ -112,4 +113,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-17 | Initial build from card | board-advisor worktree |
+| v1 | 2026-06-18 | Initial build from card | d73ad468-b2ad-49d9-81f0-f17549ae0cb3 |

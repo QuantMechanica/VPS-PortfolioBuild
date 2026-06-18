@@ -1,48 +1,45 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10991 ftmo-season — Seasonal-bias trend trigger (D1, long/short)"
+#property description "QM5_10991 ftmo-season seasonal-bias trend trigger"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_10991 ftmo-season
+// QuantMechanica V5 EA SKELETON
 // -----------------------------------------------------------------------------
-// Source: FTMO "How to Apply Seasonality to Your Trading Strategy" (2026-01-23).
-// Card: artifacts/cards_approved/QM5_10991_ftmo-season.md (g0_status APPROVED).
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails). The framework provides:
 //
-// Mechanics (D1, closed-bar reads at shift 1; long & short):
-//   Seasonal bias STATE (self-contained, NO external CSV/feed):
-//     The bias for the CURRENT calendar month is derived purely from the bar
-//     clock (TimeToStruct(bar_time).mon) + price history. Once per new calendar
-//     month we compute the MEDIAN month-over-month D1-close return for that
-//     calendar month across the trailing `strategy_season_years` years.
-//       median > +season_thresh_pct  -> BULLISH (longs allowed)
-//       median < -season_thresh_pct  -> BEARISH (shorts allowed)
-//       otherwise                    -> NEUTRAL (no trade)
-//     This is a fixed deterministic lookup recomputed from the bar timestamp,
-//     not an online-learned / PnL-adaptive parameter (HR14 clean).
-//   Trend STATE  (long): close>EMA(50) AND EMA(50)>EMA(200).
-//   Trend STATE  (short): close<EMA(50) AND EMA(50)<EMA(200).
-//   Trigger EVENT(long): D1 close above Donchian(20) high (prior-N-bar high).
-//   Trigger EVENT(short): D1 close below Donchian(20) low.
-//   Stop  : long entry-2*ATR(14); short entry+2*ATR(14).
-//   Take  : 3.0R from entry/stop.
-//   Exits : (a) D1 close back across EMA(50) against the position,
-//           (b) end of current calendar month (last tradable session),
-//           (c) time stop after `strategy_time_stop_bars` D1 bars.
-//   Month-end skip: do not OPEN within `strategy_month_end_skip` trading days
-//                   of month end (signal too close to the calendar exit).
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
+//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
+//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
+//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
+//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
+//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
+//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
 //
-// .DWX invariants honoured: spread guard fails OPEN on zero modeled spread;
-// no swap gate; Donchian breakout uses the prior-bar high/low (gapless-safe);
-// sessions/month read from the bar clock; no external macro feed.
-//
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific.
+// DO NOT
+//   - Write per-EA IsNewBar() — use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//     use the QM_* readers above. The framework pools handles and releases them
+//     on shutdown.
+//   - CopyRates over warmup windows on every tick. If you genuinely need raw
+//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
+//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
+//     to magic_numbers.csv, run:
+//         python framework/scripts/update_magic_resolver.py
+//     This is idempotent and preserves all rows.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10991;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -51,10 +48,16 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
+//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -62,287 +65,172 @@ input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_ema_fast_period   = 50;     // trend fast EMA (D1)
-input int    strategy_ema_slow_period   = 200;    // trend slow EMA (D1)
-input int    strategy_donchian_period   = 20;     // Donchian breakout lookback (bars)
-input int    strategy_atr_period        = 14;     // ATR period for stop
-input double strategy_sl_atr_mult       = 2.0;    // stop distance = mult * ATR
-input double strategy_tp_rr             = 3.0;    // take profit = RR multiple of risk
-input int    strategy_season_years      = 10;     // trailing years for seasonal median
-input double strategy_season_thresh_pct = 0.40;   // |median monthly return| threshold, %
-input int    strategy_month_end_skip    = 2;      // skip opens within N trading days of month end
-input int    strategy_time_stop_bars    = 20;     // close after N D1 bars held
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input int    strategy_bias_jan          = 0;      // -1 bearish, 0 neutral, +1 bullish; fixed offline table
+input int    strategy_bias_feb          = 0;
+input int    strategy_bias_mar          = 0;
+input int    strategy_bias_apr          = 0;
+input int    strategy_bias_may          = 0;
+input int    strategy_bias_jun          = 0;
+input int    strategy_bias_jul          = 0;
+input int    strategy_bias_aug          = 0;
+input int    strategy_bias_sep          = 0;
+input int    strategy_bias_oct          = 0;
+input int    strategy_bias_nov          = 0;
+input int    strategy_bias_dec          = 0;
+input int    strategy_ema_fast_period   = 50;
+input int    strategy_ema_slow_period   = 200;
+input int    strategy_donchian_period   = 20;
+input int    strategy_atr_period        = 14;
+input double strategy_sl_atr_mult       = 2.0;
+input double strategy_tp_rr             = 3.0;
+input int    strategy_month_end_skip    = 2;
+input int    strategy_time_stop_bars    = 20;
+input double strategy_spread_pct_of_stop = 15.0;
 
 // -----------------------------------------------------------------------------
-// File-scope cached seasonal state (advanced once per new calendar month).
-//   g_season_bias: +1 bullish / -1 bearish / 0 neutral for g_season_month.
-// -----------------------------------------------------------------------------
-int      g_season_month = 0;     // calendar month (1..12) the cached bias is for
-int      g_season_year  = 0;     // calendar year the cache was last advanced in
-int      g_season_bias  = 0;     // +1 / 0 / -1
-
-// Compute the median month-over-month D1-close return (in %) for a given
-// calendar month, across the trailing `years` occurrences, using the bar clock
-// and D1 closes only. Returns true on success and writes `median_pct`.
-// Heavy-ish but runs at most once per calendar month (≤12×/year), gated by the
-// new-month check in Strategy_EntrySignal — well within the smoke budget.
-bool ComputeSeasonalMedian(const int target_month, const int years, double &median_pct)
-  {
-   // Pull enough D1 history to cover `years`+buffer years of closes.
-   const int need_bars = (years + 2) * 366;
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   // perf-allowed: bespoke seasonality math, copied ONCE per new calendar month.
-   const int got = CopyRates(_Symbol, PERIOD_D1, 1, need_bars, rates);
-   if(got < 60)
-      return false;
-
-   // Walk chronologically (oldest->newest) building per-(year,month) last close.
-   // A "month-over-month return" for calendar month M in year Y is:
-   //   (lastClose[Y,M] / lastClose[prev calendar month]) - 1.
-   double rets[];
-   int    n_ret = 0;
-   ArrayResize(rets, years + 4);
-
-   int    prev_month_idx = -1;     // running (year*12+month) of the previous month seen
-   double prev_month_close = 0.0;  // last close of that previous month
-   int    cur_month_idx = -1;
-   double cur_month_close = 0.0;
-   datetime cur_month_time = 0;
-
-   for(int i = got - 1; i >= 0; --i)   // oldest first
-     {
-      MqlDateTime dt;
-      TimeToStruct(rates[i].time, dt);
-      const int midx = dt.year * 12 + dt.mon;
-      if(midx != cur_month_idx)
-        {
-         // a new month started: finalize the previous month
-         if(cur_month_idx >= 0)
-           {
-            // does the just-finished month equal the target calendar month?
-            MqlDateTime fin;
-            TimeToStruct(cur_month_time, fin);
-            if(fin.mon == target_month && prev_month_idx == cur_month_idx - 1 &&
-               prev_month_close > 0.0)
-              {
-               const double r = (cur_month_close / prev_month_close) - 1.0;
-               if(n_ret < ArraySize(rets))
-                  rets[n_ret++] = r * 100.0;
-              }
-            prev_month_idx   = cur_month_idx;
-            prev_month_close = cur_month_close;
-           }
-         cur_month_idx = midx;
-        }
-      cur_month_close = rates[i].close;
-      cur_month_time  = rates[i].time;
-     }
-
-   if(n_ret <= 0)
-      return false;
-
-   // Keep only the most recent `years` observations.
-   int use = n_ret;
-   if(use > years)
-     {
-      // shift the tail (most recent are at the end since we appended chronologically)
-      const int start = n_ret - years;
-      for(int k = 0; k < years; ++k)
-         rets[k] = rets[start + k];
-      use = years;
-     }
-
-   // Median.
-   ArrayResize(rets, use);
-   ArraySort(rets);
-   if(use % 2 == 1)
-      median_pct = rets[use / 2];
-   else
-      median_pct = 0.5 * (rets[use / 2 - 1] + rets[use / 2]);
-   return true;
-  }
-
-// Advance the cached seasonal bias if the calendar month rolled. Reads the
-// current closed-bar (shift 1) time for the calendar month.
-void AdvanceSeasonalBias_OnNewBar()
-  {
-   const datetime bar_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: closed-bar clock
-   if(bar_time <= 0)
-      return;
-   MqlDateTime dt;
-   TimeToStruct(bar_time, dt);
-   if(dt.mon == g_season_month && dt.year == g_season_year)
-      return; // same month — cache still valid
-
-   g_season_month = dt.mon;
-   g_season_year  = dt.year;
-
-   double median_pct = 0.0;
-   if(!ComputeSeasonalMedian(dt.mon, strategy_season_years, median_pct))
-     {
-      g_season_bias = 0; // insufficient history -> neutral (no trade)
-      return;
-     }
-   if(median_pct > strategy_season_thresh_pct)
-      g_season_bias = 1;
-   else if(median_pct < -strategy_season_thresh_pct)
-      g_season_bias = -1;
-   else
-      g_season_bias = 0;
-  }
-
-// True if the current closed bar is within `skip` trading days of month end.
-// Uses the next-calendar-day rollover from the closed-bar time.
-bool WithinMonthEndSkip(const datetime bar_time, const int skip_days)
-  {
-   if(skip_days <= 0)
-      return false;
-   MqlDateTime dt;
-   TimeToStruct(bar_time, dt);
-   const int this_mon = dt.mon;
-   // Walk forward up to `skip_days` calendar days; if the month changes within
-   // that window, the bar is "near month end". Calendar-day proxy for trading
-   // days is conservative (weekends shorten the real distance, never lengthen).
-   datetime t = bar_time;
-   for(int d = 1; d <= skip_days; ++d)
-     {
-      t += 86400;
-      MqlDateTime fwd;
-      TimeToStruct(t, fwd);
-      if(fwd.mon != this_mon)
-         return true;
-     }
-   return false;
-  }
-
-// -----------------------------------------------------------------------------
-// Strategy hooks
+// Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only (regime/seasonal work is on the
-// closed-bar path). Fail-OPEN on .DWX zero modeled spread.
+// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
+// regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block
-
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false; // defer to entry gate
-
-   const double stop_distance = strategy_sl_atr_mult * atr_value;
-   if(stop_distance <= 0.0)
       return false;
 
+   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+   if(atr_value <= 0.0 || strategy_sl_atr_mult <= 0.0)
+      return false;
+
+   const double stop_distance = atr_value * strategy_sl_atr_mult;
    const double spread = ask - bid;
    if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
-      return true; // genuinely wide spread -> block
+      return true;
 
    return false;
   }
 
-// Long & short entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
+// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // Advance the seasonal-bias cache if the calendar month rolled.
-   AdvanceSeasonalBias_OnNewBar();
-   if(g_season_bias == 0)
-      return false; // neutral month — skip
-
-   const datetime bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: closed-bar clock
+   const datetime bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: D1 closed-bar clock for month bias and month-end skip
    if(bar_time <= 0)
       return false;
-   // Skip opening too close to the calendar month exit.
-   if(WithinMonthEndSkip(bar_time, strategy_month_end_skip))
+
+   MqlDateTime dt;
+   TimeToStruct(bar_time, dt);
+
+   int seasonal_bias = 0;
+   switch(dt.mon)
+     {
+      case 1:  seasonal_bias = strategy_bias_jan; break;
+      case 2:  seasonal_bias = strategy_bias_feb; break;
+      case 3:  seasonal_bias = strategy_bias_mar; break;
+      case 4:  seasonal_bias = strategy_bias_apr; break;
+      case 5:  seasonal_bias = strategy_bias_may; break;
+      case 6:  seasonal_bias = strategy_bias_jun; break;
+      case 7:  seasonal_bias = strategy_bias_jul; break;
+      case 8:  seasonal_bias = strategy_bias_aug; break;
+      case 9:  seasonal_bias = strategy_bias_sep; break;
+      case 10: seasonal_bias = strategy_bias_oct; break;
+      case 11: seasonal_bias = strategy_bias_nov; break;
+      case 12: seasonal_bias = strategy_bias_dec; break;
+     }
+   if(seasonal_bias == 0)
       return false;
 
-   // --- Trend STATE (closed bar) ---
+   if(strategy_month_end_skip > 0)
+     {
+      const int this_month = dt.mon;
+      datetime probe = bar_time;
+      for(int d = 1; d <= strategy_month_end_skip; ++d)
+        {
+         probe += 86400;
+         MqlDateTime fwd;
+         TimeToStruct(probe, fwd);
+         if(fwd.mon != this_month)
+            return false;
+        }
+     }
+
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar price for EMA/Donchian trigger
    const double ema_fast = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 1);
    const double ema_slow = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 1);
-   if(ema_fast <= 0.0 || ema_slow <= 0.0)
-      return false;
-
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0)
-      return false;
-
    const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
+   if(close1 <= 0.0 || ema_fast <= 0.0 || ema_slow <= 0.0 || atr_value <= 0.0)
+      return false;
+   if(strategy_donchian_period < 1 || strategy_sl_atr_mult <= 0.0 || strategy_tp_rr <= 0.0)
       return false;
 
-   // Donchian(period) over the bars PRIOR to the trigger bar (shifts 2..period+1).
-   // Comparing the trigger-bar close to the prior-N-bar high/low = breakout EVENT.
    double don_high = -DBL_MAX;
-   double don_low  =  DBL_MAX;
-   const int first_shift = 2;
-   const int last_shift  = strategy_donchian_period + 1;
-   for(int s = first_shift; s <= last_shift; ++s)
+   double don_low = DBL_MAX;
+   for(int shift = 2; shift <= strategy_donchian_period + 1; ++shift)
      {
-      const double h = iHigh(_Symbol, _Period, s); // perf-allowed: Donchian channel build
-      const double l = iLow(_Symbol, _Period, s);  // perf-allowed: Donchian channel build
-      if(h > don_high) don_high = h;
-      if(l < don_low)  don_low  = l;
+      const double h = iHigh(_Symbol, _Period, shift); // perf-allowed: bounded Donchian channel over prior closed bars
+      const double l = iLow(_Symbol, _Period, shift);  // perf-allowed: bounded Donchian channel over prior closed bars
+      if(h > don_high)
+         don_high = h;
+      if(l < don_low)
+         don_low = l;
      }
    if(don_high <= 0.0 || don_low <= 0.0)
       return false;
 
-   // --- Long setup ---
-   if(g_season_bias > 0)
+   if(seasonal_bias > 0)
      {
-      if(!(close1 > ema_fast))         return false;
-      if(!(ema_fast > ema_slow))       return false;
-      if(!(close1 > don_high))         return false; // breakout above Donchian high
-
+      if(close1 <= ema_fast || ema_fast <= ema_slow || close1 <= don_high)
+         return false;
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
          return false;
       const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr_value, strategy_sl_atr_mult);
-      if(sl <= 0.0)
-         return false;
       const double tp = QM_TakeRR(_Symbol, QM_BUY, entry, sl, strategy_tp_rr);
-      if(tp <= 0.0)
+      if(sl <= 0.0 || tp <= 0.0)
          return false;
-
-      req.type   = QM_BUY;
-      req.price  = 0.0;
-      req.sl     = sl;
-      req.tp     = tp;
+      req.type = QM_BUY;
+      req.sl = sl;
+      req.tp = tp;
       req.reason = "ftmo_season_long";
       return true;
      }
 
-   // --- Short setup ---
-   if(g_season_bias < 0)
+   if(seasonal_bias < 0)
      {
-      if(!(close1 < ema_fast))         return false;
-      if(!(ema_fast < ema_slow))       return false;
-      if(!(close1 < don_low))          return false; // breakout below Donchian low
-
+      if(close1 >= ema_fast || ema_fast >= ema_slow || close1 >= don_low)
+         return false;
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(entry <= 0.0)
          return false;
       const double sl = QM_StopATRFromValue(_Symbol, QM_SELL, entry, atr_value, strategy_sl_atr_mult);
-      if(sl <= 0.0)
-         return false;
       const double tp = QM_TakeRR(_Symbol, QM_SELL, entry, sl, strategy_tp_rr);
-      if(tp <= 0.0)
+      if(sl <= 0.0 || tp <= 0.0)
          return false;
-
-      req.type   = QM_SELL;
-      req.price  = 0.0;
-      req.sl     = sl;
-      req.tp     = tp;
+      req.type = QM_SELL;
+      req.sl = sl;
+      req.tp = tp;
       req.reason = "ftmo_season_short";
       return true;
      }
@@ -350,23 +238,24 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return false;
   }
 
-// Fixed ATR stop + RR take handle the primary risk. No active trail.
+// Called every tick when an open position exists for this EA's magic.
+// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
+   // Card specifies fixed ATR stop, fixed 3R target, EMA/month/time exits only.
   }
 
-// Discretionary exits: (a) D1 close back across EMA(50) against the position,
-// (b) end of the current calendar month, (c) time stop after N D1 bars held.
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
    if(QM_TM_OpenPositionCount(magic) <= 0)
       return false;
 
-   // Select this EA's position to read direction + open time.
-   bool   is_long = false;
+   bool is_long = false;
    datetime open_time = 0;
-   bool   found = false;
+   bool found = false;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -374,7 +263,9 @@ bool Strategy_ExitSignal()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-      is_long   = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      is_long = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
       open_time = (datetime)PositionGetInteger(POSITION_TIME);
       found = true;
       break;
@@ -382,42 +273,43 @@ bool Strategy_ExitSignal()
    if(!found)
       return false;
 
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar price for EMA exit
    const double ema_fast = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 1);
-   const double close1   = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   if(ema_fast > 0.0 && close1 > 0.0)
+   if(close1 > 0.0 && ema_fast > 0.0)
      {
-      // (a) close back across EMA(50) against the position.
-      if(is_long  && close1 < ema_fast)  return true;
-      if(!is_long && close1 > ema_fast)  return true;
+      if(is_long && close1 < ema_fast)
+         return true;
+      if(!is_long && close1 > ema_fast)
+         return true;
      }
 
-   const datetime bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: closed-bar clock
-   if(bar_time > 0)
-     {
-      // (b) end of current calendar month — exit on the last tradable session.
-      // If the NEXT calendar day is in a different month, this is month end.
-      MqlDateTime now_dt, nxt_dt;
-      TimeToStruct(bar_time, now_dt);
-      TimeToStruct(bar_time + 86400, nxt_dt);
-      if(nxt_dt.mon != now_dt.mon)
-         return true;
+   const datetime bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: D1 closed-bar clock for calendar exits
+   if(bar_time <= 0)
+      return false;
 
-      // (c) time stop after N D1 bars held (calendar-day proxy on D1).
-      if(open_time > 0 && strategy_time_stop_bars > 0)
-        {
-         const long held_days = (long)((bar_time - open_time) / 86400);
-         if(held_days >= strategy_time_stop_bars)
-            return true;
-        }
+   MqlDateTime dt;
+   MqlDateTime nxt;
+   TimeToStruct(bar_time, dt);
+   TimeToStruct(bar_time + 86400, nxt);
+   if(nxt.mon != dt.mon)
+      return true;
+
+   if(open_time > 0 && strategy_time_stop_bars > 0)
+     {
+      const long held_days = (long)((bar_time - open_time) / 86400);
+      if(held_days >= strategy_time_stop_bars)
+         return true;
      }
 
    return false;
   }
 
-// Defer to the central news filter.
+// Optional news-filter override. Return TRUE to suppress trading regardless
+// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
+// custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false;
+   return false; // defer to QM_NewsAllowsTrade(...)
   }
 
 // -----------------------------------------------------------------------------
@@ -462,6 +354,8 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults.
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -475,8 +369,10 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -491,9 +387,14 @@ void OnTick()
         }
      }
 
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
 
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
@@ -513,6 +414,8 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
   {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 

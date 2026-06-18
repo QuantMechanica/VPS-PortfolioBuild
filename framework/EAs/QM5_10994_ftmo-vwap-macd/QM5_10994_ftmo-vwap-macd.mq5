@@ -7,7 +7,7 @@
 // =============================================================================
 // QuantMechanica V5 EA — QM5_10994 ftmo-vwap-macd
 // -----------------------------------------------------------------------------
-// Source: FTMO, "Technical Indicators in Trading Strategies" (c11dc4d3-...).
+// Source: FTMO technical-indicator strategy article (source_id c11dc4d3-...).
 // Card: artifacts/cards_approved/QM5_10994_ftmo-vwap-macd.md (g0_status APPROVED).
 //
 // Mechanics (M15, closed-bar reads at shift 1; one position per symbol/magic):
@@ -22,7 +22,7 @@
 //                  a fresh cross, OR histogram turned positive after >=3 negs).
 //   Short setup  : mirror.
 //   VWAP slope   : skip if |VWAP[1]-VWAP[8]| <= slope_atr_frac * ATR (flat).
-//   Spread       : skip only a genuinely wide spread (fail-open on .DWX 0 spread).
+//   Spread       : skip only spread > 1.5x 20-bar median spread (fail-open on .DWX 0 spread).
 //   Session      : trade only inside the broker-time London+NY liquid window.
 //   Stop         : long  = pullback swing low  - sl_atr_buffer * ATR(14)
 //                  short = pullback swing high + sl_atr_buffer * ATR(14)
@@ -79,7 +79,8 @@ input int    strategy_swing_lookback    = 8;      // pullback swing extreme look
 input double strategy_sl_atr_buffer     = 0.25;   // stop buffer beyond swing = mult * ATR
 input double strategy_tp_rr             = 1.8;    // take-profit = tp_rr * R
 input int    strategy_max_hold_bars     = 32;     // time-stop in M15 bars
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input int    strategy_spread_lookback   = 20;     // median spread lookback (closed bars)
+input double strategy_spread_median_mult = 1.5;   // skip if spread > mult * 20-bar median spread
 
 // -----------------------------------------------------------------------------
 // File-scope cached intraday state (advanced ONCE per closed bar).
@@ -90,6 +91,7 @@ double   g_vwap_cum_v          = 0.0;   // sum(volume) since anchor
 double   g_vwap_now            = 0.0;   // VWAP at the last closed bar (shift 1)
 double   g_vwap_hist[];                 // ring of recent closed-bar VWAP values
 int      g_vwap_hist_size      = 0;     // count of valid entries written
+double   g_median_spread_points = 0.0;  // 20-bar closed-bar median spread in points
 datetime g_entry_bar_time      = 0;     // bar-open time of the bar we entered on
 int      g_entry_dir           = 0;     // +1 long / -1 short of the live position
 
@@ -138,6 +140,33 @@ void VWAP_AdvanceOnNewBar()
    g_vwap_cum_v  += v;
    if(g_vwap_cum_v > 0.0)
       g_vwap_now = g_vwap_cum_pv / g_vwap_cum_v;
+
+   MqlRates spread_rates[];
+   ArraySetAsSeries(spread_rates, true);
+   const int spread_lookback = MathMax(1, strategy_spread_lookback);
+   const int copied = CopyRates(_Symbol, _Period, 1, spread_lookback, spread_rates); // perf-allowed: closed-bar median spread cache, called only from framework new-bar entry path
+   if(copied > 0)
+     {
+      int spreads[];
+      ArrayResize(spreads, copied);
+      int spread_count = 0;
+      for(int i = 0; i < copied; ++i)
+        {
+         if(spread_rates[i].spread < 0)
+            continue;
+         spreads[spread_count] = spread_rates[i].spread;
+         spread_count++;
+        }
+      if(spread_count > 0)
+        {
+         ArrayResize(spreads, spread_count);
+         ArraySort(spreads);
+         if((spread_count % 2) == 1)
+            g_median_spread_points = (double)spreads[spread_count / 2];
+         else
+            g_median_spread_points = 0.5 * (double)(spreads[spread_count / 2 - 1] + spreads[spread_count / 2]);
+        }
+     }
 
    // Push into the slope ring (newest last).
    const int cap = MathMax(16, strategy_swing_lookback + 2);
@@ -191,16 +220,14 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false;
-   const double stop_distance = strategy_sl_atr_buffer * atr_value + atr_value; // ~ swing+buffer scale
-   if(stop_distance <= 0.0)
+   if(g_median_spread_points <= 0.0 || strategy_spread_median_mult <= 0.0)
       return false;
 
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double spread_cap = g_median_spread_points * point * strategy_spread_median_mult;
+   if(point > 0.0 && spread_cap > 0.0 && spread > 0.0 && spread > spread_cap)
       return true;
 
    return false;
@@ -229,6 +256,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double vwap = g_vwap_now;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask > 0.0 && bid > 0.0 && point > 0.0 &&
+      g_median_spread_points > 0.0 && strategy_spread_median_mult > 0.0)
+     {
+      const double spread = ask - bid;
+      const double spread_cap = g_median_spread_points * point * strategy_spread_median_mult;
+      if(spread > 0.0 && spread_cap > 0.0 && spread > spread_cap)
+         return false;
+     }
 
    // VWAP slope filter: |VWAP[now] - VWAP[8 bars back]| must exceed slope_atr_frac*ATR.
    const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
@@ -283,7 +322,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          if(l_s > 0.0 && l_s < swing_low)
             swing_low = l_s;
         }
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double entry = ask;
       if(entry <= 0.0)
          return false;
       const double sl = swing_low - strategy_sl_atr_buffer * atr_value;
@@ -312,7 +351,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          if(h_s > swing_high)
             swing_high = h_s;
         }
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double entry = bid;
       if(entry <= 0.0)
          return false;
       const double sl = swing_high + strategy_sl_atr_buffer * atr_value;
