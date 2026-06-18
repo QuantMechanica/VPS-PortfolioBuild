@@ -76,7 +76,15 @@ input double strategy_maxbreak_atr_mult = 3.0;    // skip if break candle range 
 input double strategy_tp_rr             = 2.0;    // take-profit in R multiples
 input double strategy_be_trigger_rr     = 1.0;    // move SL to break-even after this many R
 input int    strategy_time_exit_bars    = 40;     // close after this many H1 bars held
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input int    strategy_structure_scan    = 120;    // bounded scan for confirmed fractal swings
+input int    strategy_spread_median_bars = 20;    // card spread filter lookback
+
+int      g_setup_dir         = 0;
+int      g_setup_bars_left   = 0;
+double   g_setup_level       = 0.0;
+double   g_setup_zone_half   = 0.0;
+double   g_open_zone_low     = 0.0;
+double   g_open_zone_high    = 0.0;
 
 // -----------------------------------------------------------------------------
 // Structural helpers (closed-bar, bounded lookback — perf-allowed bespoke math).
@@ -149,6 +157,153 @@ bool RecentSwingLow(const int from_shift, const int left, const int right,
    return false;
   }
 
+bool RecentTwoSwingHighs(const int from_shift, const int left, const int right,
+                         const int max_scan, double &newer_price, int &newer_shift,
+                         double &older_price, int &older_shift)
+  {
+   newer_price = 0.0;
+   older_price = 0.0;
+   newer_shift = 0;
+   older_shift = 0;
+
+   for(int s = from_shift; s <= from_shift + max_scan; ++s)
+     {
+      if(!IsSwingHigh(s, left, right))
+         continue;
+
+      const double price = iHigh(_Symbol, _Period, s); // perf-allowed structural read
+      if(newer_shift == 0)
+        {
+         newer_shift = s;
+         newer_price = price;
+        }
+      else
+        {
+         older_shift = s;
+         older_price = price;
+         return true;
+        }
+     }
+   return false;
+  }
+
+bool RecentTwoSwingLows(const int from_shift, const int left, const int right,
+                        const int max_scan, double &newer_price, int &newer_shift,
+                        double &older_price, int &older_shift)
+  {
+   newer_price = 0.0;
+   older_price = 0.0;
+   newer_shift = 0;
+   older_shift = 0;
+
+   for(int s = from_shift; s <= from_shift + max_scan; ++s)
+     {
+      if(!IsSwingLow(s, left, right))
+         continue;
+
+      const double price = iLow(_Symbol, _Period, s); // perf-allowed structural read
+      if(newer_shift == 0)
+        {
+         newer_shift = s;
+         newer_price = price;
+        }
+      else
+        {
+         older_shift = s;
+         older_price = price;
+         return true;
+        }
+     }
+   return false;
+  }
+
+bool Strategy_SpreadAllowsEntry()
+  {
+   const int current_spread = (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   if(current_spread == 0)
+      return true;
+   if(current_spread < 0)
+      return true;
+
+   const int bars = MathMax(1, strategy_spread_median_bars);
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, _Period, 1, bars, rates); // perf-allowed: card 20-bar median spread, called only from the new-bar entry hook.
+   if(copied <= 0)
+      return true;
+
+   int spreads[];
+   ArrayResize(spreads, copied);
+   int n = 0;
+   for(int i = 0; i < copied; ++i)
+     {
+      if(rates[i].spread > 0)
+        {
+         spreads[n] = (int)rates[i].spread;
+         n++;
+        }
+     }
+   if(n <= 0)
+      return true;
+
+   ArrayResize(spreads, n);
+   ArraySort(spreads);
+   const double median = (n % 2 == 1) ? (double)spreads[n / 2]
+                                      : 0.5 * (double)(spreads[n / 2 - 1] + spreads[n / 2]);
+   if(median <= 0.0)
+      return true;
+
+   return ((double)current_spread <= 1.5 * median);
+  }
+
+bool Strategy_DetectBosSetup(const double atr_value)
+  {
+   const int left  = strategy_fractal_left;
+   const int right = strategy_fractal_right;
+   const int first_swing_shift = right + 1;
+   const int max_scan = MathMax(20, strategy_structure_scan);
+
+   const double break_high  = iHigh(_Symbol, _Period, 1);  // perf-allowed structural read
+   const double break_low   = iLow(_Symbol, _Period, 1);   // perf-allowed structural read
+   const double break_close = iClose(_Symbol, _Period, 1); // perf-allowed structural read
+   if(break_high <= 0.0 || break_low <= 0.0 || break_close <= 0.0)
+      return false;
+   if((break_high - break_low) > strategy_maxbreak_atr_mult * atr_value)
+      return false;
+
+   double high_new = 0.0, high_old = 0.0, low_new = 0.0, low_old = 0.0;
+   int high_new_shift = 0, high_old_shift = 0, low_new_shift = 0, low_old_shift = 0;
+   const bool have_highs = RecentTwoSwingHighs(first_swing_shift, left, right, max_scan,
+                                               high_new, high_new_shift, high_old, high_old_shift);
+   const bool have_lows = RecentTwoSwingLows(first_swing_shift, left, right, max_scan,
+                                             low_new, low_new_shift, low_old, low_old_shift);
+   if(!have_highs || !have_lows)
+      return false;
+
+   const bool prior_bearish = (high_new < high_old && low_new < low_old);
+   const bool prior_bullish = (high_new > high_old && low_new > low_old);
+
+   if(prior_bearish && break_close > high_new + strategy_bos_atr_mult * atr_value)
+     {
+      g_setup_dir = 1;
+      g_setup_bars_left = strategy_retest_window;
+      g_setup_level = high_new;
+      g_setup_zone_half = strategy_zone_atr_mult * atr_value;
+      return true;
+     }
+
+   if(prior_bullish && break_close < low_new - strategy_bos_atr_mult * atr_value)
+     {
+      g_setup_dir = -1;
+      g_setup_bars_left = strategy_retest_window;
+      g_setup_level = low_new;
+      g_setup_zone_half = strategy_zone_atr_mult * atr_value;
+      return true;
+     }
+
+   return false;
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
@@ -156,24 +311,8 @@ bool RecentSwingLow(const int from_shift, const int left, const int right,
 // Cheap O(1) per-tick gate. Fail-OPEN spread guard only (.DWX models 0 spread).
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — never block on a missing quote
-
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to the entry gate
-
-   const double stop_distance = strategy_zone_atr_mult * atr_value;
-   if(stop_distance <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
-      return true;
-
+   // No time/session filter in the card. The spread filter needs a 20-bar
+   // median and is evaluated on the closed-bar entry path.
    return false;
   }
 
@@ -181,16 +320,24 @@ bool Strategy_NoTradeFilter()
 // The most recently CLOSED bar (shift 1) is the candidate retest/rejection bar.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+      return false;
+
+   if(!Strategy_SpreadAllowsEntry())
       return false;
 
    const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
    if(atr_value <= 0.0)
       return false;
-
-   const int left  = strategy_fractal_left;
-   const int right = strategy_fractal_right;
 
    // Candidate retest/rejection bar = last closed bar (shift 1).
    const double rt_high  = iHigh(_Symbol, _Period, 1);  // perf-allowed structural read
@@ -201,50 +348,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(rt_high <= 0.0 || rt_low <= 0.0 || rt_range <= 0.0)
       return false;
 
-   const double zone_half = strategy_zone_atr_mult * atr_value;
-   if(zone_half <= 0.0)
-      return false;
-
-   // First confirmable swing shift: needs `right` closed bars to its right, and
-   // the retest bar itself sits at shift 1, so begin the swing scan beyond it.
-   const int first_swing_shift = right + 1;
-   const int max_scan = strategy_retest_window + left + right + 5;
-
-   // -------------------------------------------------------------------------
-   // LONG: prior bearish structure -> BOS up through a confirmed swing high ->
-   // retest of that broken swing-high zone with a bullish rejection.
-   // -------------------------------------------------------------------------
-   double sh_price = 0.0; int sh_shift = 0;
-   if(RecentSwingHigh(first_swing_shift, left, right, max_scan, sh_price, sh_shift))
+   if(g_setup_dir != 0 && g_setup_bars_left > 0 && g_setup_level > 0.0)
      {
-      // BOS confirmation: some bar between the swing and the retest bar closed
-      // above the swing high by >= bos_atr_mult*ATR. Scan that window.
-      bool bos_up = false;
-      int  break_shift = 0;
-      const int scan_to = MathMin(sh_shift - 1, strategy_retest_window + 1);
-      for(int s = 1; s <= scan_to; ++s)
-        {
-         const double c = iClose(_Symbol, _Period, s); // perf-allowed structural read
-         if(c > sh_price + strategy_bos_atr_mult * atr_value)
-           {
-            bos_up = true;
-            break_shift = s;
-            break;
-           }
-        }
-      if(bos_up && break_shift >= 1)
-        {
-         // Exhausted-break filter: break candle range must not be too large.
-         const double bk_range = iHigh(_Symbol, _Period, break_shift) - iLow(_Symbol, _Period, break_shift);
-         const bool not_exhausted = (bk_range <= strategy_maxbreak_atr_mult * atr_value);
+      const double zone_half = (g_setup_zone_half > 0.0) ? g_setup_zone_half
+                                                         : strategy_zone_atr_mult * atr_value;
+      const bool touched = (rt_low <= g_setup_level + zone_half &&
+                            rt_high >= g_setup_level - zone_half);
 
-         // Retest: last closed bar dipped into the broken-level zone and rejected.
-         const bool touched = (rt_low <= sh_price + zone_half && rt_high >= sh_price - zone_half);
+      if(g_setup_dir > 0)
+        {
          const double lower_wick = MathMin(rt_open, rt_close) - rt_low;
          const bool rejection = (lower_wick >= strategy_wick_frac * rt_range) &&
                                 (rt_close >= rt_low + 0.5 * rt_range);
-
-         if(not_exhausted && touched && rejection && break_shift <= strategy_retest_window)
+         if(touched && rejection)
            {
             const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
             if(entry <= 0.0)
@@ -260,42 +376,21 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             req.sl     = sl;
             req.tp     = tp;
             req.reason = "bos_flip_long";
+            req.symbol_slot = qm_magic_slot_offset;
+            req.expiration_seconds = 0;
+            g_open_zone_low = g_setup_level - zone_half;
+            g_open_zone_high = g_setup_level + zone_half;
+            g_setup_dir = 0;
+            g_setup_bars_left = 0;
             return true;
            }
         }
-     }
-
-   // -------------------------------------------------------------------------
-   // SHORT: prior bullish structure -> BOS down through a confirmed swing low ->
-   // retest of that broken swing-low zone with a bearish rejection.
-   // -------------------------------------------------------------------------
-   double sl_price = 0.0; int sl_shift = 0;
-   if(RecentSwingLow(first_swing_shift, left, right, max_scan, sl_price, sl_shift))
-     {
-      bool bos_down = false;
-      int  break_shift = 0;
-      const int scan_to = MathMin(sl_shift - 1, strategy_retest_window + 1);
-      for(int s = 1; s <= scan_to; ++s)
+      else
         {
-         const double c = iClose(_Symbol, _Period, s); // perf-allowed structural read
-         if(c < sl_price - strategy_bos_atr_mult * atr_value)
-           {
-            bos_down = true;
-            break_shift = s;
-            break;
-           }
-        }
-      if(bos_down && break_shift >= 1)
-        {
-         const double bk_range = iHigh(_Symbol, _Period, break_shift) - iLow(_Symbol, _Period, break_shift);
-         const bool not_exhausted = (bk_range <= strategy_maxbreak_atr_mult * atr_value);
-
-         const bool touched = (rt_high >= sl_price - zone_half && rt_low <= sl_price + zone_half);
          const double upper_wick = rt_high - MathMax(rt_open, rt_close);
          const bool rejection = (upper_wick >= strategy_wick_frac * rt_range) &&
                                 (rt_close <= rt_low + 0.5 * rt_range);
-
-         if(not_exhausted && touched && rejection && break_shift <= strategy_retest_window)
+         if(touched && rejection)
            {
             const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
             if(entry <= 0.0)
@@ -311,11 +406,27 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             req.sl     = sl;
             req.tp     = tp;
             req.reason = "bos_flip_short";
+            req.symbol_slot = qm_magic_slot_offset;
+            req.expiration_seconds = 0;
+            g_open_zone_low = g_setup_level - zone_half;
+            g_open_zone_high = g_setup_level + zone_half;
+            g_setup_dir = 0;
+            g_setup_bars_left = 0;
             return true;
            }
         }
+
+      g_setup_bars_left--;
+      if(g_setup_bars_left <= 0)
+        {
+         g_setup_dir = 0;
+         g_setup_level = 0.0;
+         g_setup_zone_half = 0.0;
+        }
+      return false;
      }
 
+   Strategy_DetectBosSetup(atr_value);
    return false;
   }
 
@@ -398,19 +509,16 @@ bool Strategy_ExitSignal()
            }
         }
 
-      // Reverse-through-zone exit: last closed bar closed against the trade by
-      // more than zone_half beyond the entry-adverse side.
-      const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-      if(atr_value > 0.0)
+      // Reverse-through-zone exit: last closed bar closed beyond the originating
+      // retest zone against the trade.
+      if(g_open_zone_low > 0.0 && g_open_zone_high > 0.0)
         {
-         const double zone_half = strategy_zone_atr_mult * atr_value;
          const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed structural read
-         const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
-         if(close1 > 0.0 && open_price > 0.0)
+         if(close1 > 0.0)
            {
-            if(ptype == POSITION_TYPE_BUY && close1 < open_price - zone_half)
+            if(ptype == POSITION_TYPE_BUY && close1 < g_open_zone_low)
                return true;
-            if(ptype == POSITION_TYPE_SELL && close1 > open_price + zone_half)
+            if(ptype == POSITION_TYPE_SELL && close1 > g_open_zone_high)
                return true;
            }
         }
