@@ -37,6 +37,10 @@
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 1091;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
 input double RISK_PERCENT               = 0.0;
@@ -44,11 +48,29 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode          = QM_NEWS_OFF;
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
+//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
+input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
+input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
+
+input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
+input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_atr_period        = 20;
@@ -65,10 +87,10 @@ input double strategy_rate_cad          = 5.00;
 input double strategy_rate_chf          = 1.75;
 input double strategy_rate_nzd          = 5.50;
 
-int g_last_entry_rebalance_ym = 0;
-int g_last_exit_rebalance_ym = 0;
+int g_entry_rebalance_ym_seen = 0;
+int g_exit_rebalance_ym_seen = 0;
 
-int CurrencyIndex(const string ccy)
+int Strategy_CurrencyIndex(const string ccy)
   {
    if(ccy == "USD") return 0;
    if(ccy == "EUR") return 1;
@@ -81,7 +103,7 @@ int CurrencyIndex(const string ccy)
    return -1;
   }
 
-double CurrencyRateByIndex(const int idx)
+double Strategy_CurrencyRateByIndex(const int idx)
   {
    if(idx == 0) return strategy_rate_usd;
    if(idx == 1) return strategy_rate_eur;
@@ -94,32 +116,32 @@ double CurrencyRateByIndex(const int idx)
    return 0.0;
   }
 
-int CurrencyRankHighToLow(const int idx)
+int Strategy_CurrencyRankHighToLow(const int idx)
   {
    if(idx < 0)
       return 99;
 
-   const double rate = CurrencyRateByIndex(idx);
+   const double rate = Strategy_CurrencyRateByIndex(idx);
    int rank = 1;
    for(int i = 0; i < 8; ++i)
      {
       if(i == idx)
          continue;
-      const double other = CurrencyRateByIndex(i);
+      const double other = Strategy_CurrencyRateByIndex(i);
       if(other > rate || (other == rate && i < idx))
          rank++;
      }
    return rank;
   }
 
-int RebalanceYm()
+int Strategy_RebalanceYm()
   {
    MqlDateTime now_dt;
    TimeToStruct(TimeCurrent(), now_dt);
    return (now_dt.year * 100 + now_dt.mon);
   }
 
-bool IsMonthlyRebalanceBar()
+bool Strategy_IsMonthlyRebalanceBar()
   {
    MqlDateTime now_dt;
    TimeToStruct(TimeCurrent(), now_dt);
@@ -128,7 +150,7 @@ bool IsMonthlyRebalanceBar()
    return true;
   }
 
-int SymbolCarryDirection()
+int Strategy_SymbolCarryDirection()
   {
    string root = _Symbol;
    const int dot_pos = StringFind(root, ".");
@@ -155,7 +177,7 @@ int SymbolCarryDirection()
    else
       return 0;
 
-   const int rank = CurrencyRankHighToLow(CurrencyIndex(non_usd));
+   const int rank = Strategy_CurrencyRankHighToLow(Strategy_CurrencyIndex(non_usd));
    if(rank <= 3)
       return inverse_quoted ? -1 : 1;
    if(rank >= 6)
@@ -163,14 +185,14 @@ int SymbolCarryDirection()
    return 0;
   }
 
-bool SpreadAllowsEntry()
+bool Strategy_SpreadAllowsEntry()
   {
    if(strategy_spread_days <= 0 || strategy_spread_mult <= 0.0)
       return true;
 
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, strategy_spread_days, rates); // perf-allowed: called only from closed-bar Strategy_EntrySignal().
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, strategy_spread_days, rates); // perf-allowed: called only from framework-gated Strategy_EntrySignal().
    if(copied <= 0)
       return true;
 
@@ -225,15 +247,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!IsMonthlyRebalanceBar())
+   if(!Strategy_IsMonthlyRebalanceBar())
       return false;
 
-   const int ym = RebalanceYm();
-   if(ym == g_last_entry_rebalance_ym)
+   const int ym = Strategy_RebalanceYm();
+   if(ym == g_entry_rebalance_ym_seen)
       return false;
 
-   const int direction = SymbolCarryDirection();
-   if(direction == 0 || !SpreadAllowsEntry())
+   const int direction = Strategy_SymbolCarryDirection();
+   if(direction == 0 || !Strategy_SpreadAllowsEntry())
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -249,7 +271,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(req.sl <= 0.0)
       return false;
 
-   g_last_entry_rebalance_ym = ym;
+   g_entry_rebalance_ym_seen = ym;
    return true;
   }
 
@@ -264,11 +286,11 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   if(!IsMonthlyRebalanceBar())
+   if(!Strategy_IsMonthlyRebalanceBar())
       return false;
 
-   const int ym = RebalanceYm();
-   if(ym == g_last_exit_rebalance_ym)
+   const int ym = Strategy_RebalanceYm();
+   if(ym == g_exit_rebalance_ym_seen)
       return false;
 
    const int magic = QM_FrameworkMagic();
@@ -281,7 +303,7 @@ bool Strategy_ExitSignal()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-      g_last_exit_rebalance_ym = ym;
+      g_exit_rebalance_ym_seen = ym;
       return true;
      }
    return false;
@@ -307,9 +329,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,           // legacy back-compat
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,                            // pause-before (legacy hint)
+                        30,                            // pause-after (legacy hint)
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,              // FW1 Axis A
+                        qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -330,7 +360,14 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -362,6 +399,10 @@ void OnTick()
    if(!QM_IsNewBar())
       return;
 
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
+   QM_EquityStreamOnNewBar();
+
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
@@ -373,6 +414,15 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()
