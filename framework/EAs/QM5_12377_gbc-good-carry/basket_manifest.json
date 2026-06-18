@@ -1,0 +1,15 @@
+{
+  "logical_symbol": "QM5_12377_GBC_GOOD_CARRY_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "EURUSD.DWX", "GBPUSD.DWX", "USDCHF.DWX", "USDCAD.DWX", "NZDUSD.DWX",
+    "EURGBP.DWX", "EURCHF.DWX", "EURCAD.DWX", "EURNZD.DWX",
+    "GBPCHF.DWX", "GBPCAD.DWX", "GBPNZD.DWX",
+    "CADCHF.DWX", "NZDCHF.DWX", "NZDCAD.DWX"
+  ],
+  "notes": [
+    "GBC 'Good Carry' cross-sectional FX carry basket (deterministic, no ML, no external feed). Allowed-currency universe = USD/EUR/GBP/CHF/CAD/NZD; 'bad carry' AUD/JPY/NOK excluded per card (NOK has no DWX pair). All 15 (strong,weak) pairs among the allowed currencies are directly routable in dwx_symbol_matrix.csv — no triangulation. EA runs one instance per host; ranks currencies cross-sectionally and goes long the top / short the bottom via two long-short legs (framework slot 0 = host identity; legs via QM_BasketOpenPosition). Monthly rebalance gated by broker-time calendar-month roll on the closed D1 bar (D1-native; MN1 untestable in .DWX tester). Per-leg hard stop = 3.0*ATR(20,D1).",
+    "**CRITICAL — CARRY/SWAP EDGE NOT MODELLED IN BACKTEST:** .DWX symbols apply $0 swap in the MT5 tester, so the true carry/swap edge is invisible (this is exactly what zero-trades the swap-ranked QM5_10718). The ranking is therefore realized as a PRICE/TREND momentum proxy (mean cross-sectional log-return over ~63 D1 bars), preserving the long-high/short-low structure so the EA actually trades. Backtest only proves the trend realization survives costs — the swap economic thesis needs live_swap.json injection (deferred swap-research [[reference-swap-ftmo-dxz-5pers-2026-06-09]]) before live promotion. Patterned on QM5_10718 basket idiom (QM_SymbolGuardInit + QM_BasketWarmupHistory + QM_BasketOpenPosition)."
+  ]
+}
