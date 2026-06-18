@@ -90,6 +90,7 @@ double   g_trigger_line      = 0.0;   // intervening swing extreme = trigger lin
 double   g_pattern_extreme   = 0.0;   // higher of two tops (short) / lower of two bottoms (long)
 double   g_atr_cached        = 0.0;   // ATR value at detection
 datetime g_signal_bar_time   = 0;     // bar-open time of the bar that produced the signal
+double   g_active_trigger     = 0.0;   // trigger line preserved for signal-exit checks
 
 // -----------------------------------------------------------------------------
 // Swing detection — confirmed 3L/3R fractal on closed bars (perf-allowed raw OHLC)
@@ -172,30 +173,52 @@ bool FindPriorSwingLow(const int side, const int first_center, const int max_bac
    return FindSwingLow(side, from_shift, last_shift, out_price, out_center);
   }
 
-// Lowest LOW between two shifts (the trigger line for a double top).
-double LowestLowBetween(const int newer_shift, const int older_shift)
+// Confirmed intervening swing LOW between two tops. The lowest confirmed swing
+// is the literal trigger line for the double-top break.
+double InterveningSwingLow(const int side, const int newer_shift, const int older_shift)
   {
-   double lo = 0.0;
-   for(int s = newer_shift; s <= older_shift; ++s)
+   double trigger = 0.0;
+   for(int c = newer_shift + side; c <= older_shift - side; ++c)
      {
-      const double l = iLow(_Symbol, _Period, s); // perf-allowed
-      if(l <= 0.0) continue;
-      if(lo <= 0.0 || l < lo) lo = l;
+      const double lc = iLow(_Symbol, _Period, c); // perf-allowed: structural swing scan
+      if(lc <= 0.0)
+         continue;
+      bool is_low = true;
+      for(int k = 1; k <= side; ++k)
+        {
+         const double ln = iLow(_Symbol, _Period, c - k); // perf-allowed
+         const double lo = iLow(_Symbol, _Period, c + k); // perf-allowed
+         if(ln <= 0.0 || lo <= 0.0) { is_low = false; break; }
+         if(ln <= lc || lo <= lc)   { is_low = false; break; }
+        }
+      if(is_low && (trigger <= 0.0 || lc < trigger))
+         trigger = lc;
      }
-   return lo;
+   return trigger;
   }
 
-// Highest HIGH between two shifts (the trigger line for a double bottom).
-double HighestHighBetween(const int newer_shift, const int older_shift)
+// Confirmed intervening swing HIGH between two bottoms. The highest confirmed
+// swing is the trigger line for the double-bottom break.
+double InterveningSwingHigh(const int side, const int newer_shift, const int older_shift)
   {
-   double hi = 0.0;
-   for(int s = newer_shift; s <= older_shift; ++s)
+   double trigger = 0.0;
+   for(int c = newer_shift + side; c <= older_shift - side; ++c)
      {
-      const double h = iHigh(_Symbol, _Period, s); // perf-allowed
-      if(h <= 0.0) continue;
-      if(h > hi) hi = h;
+      const double hc = iHigh(_Symbol, _Period, c); // perf-allowed: structural swing scan
+      if(hc <= 0.0)
+         continue;
+      bool is_high = true;
+      for(int k = 1; k <= side; ++k)
+        {
+         const double hn = iHigh(_Symbol, _Period, c - k); // perf-allowed
+         const double ho = iHigh(_Symbol, _Period, c + k); // perf-allowed
+         if(hn <= 0.0 || ho <= 0.0) { is_high = false; break; }
+         if(hn >= hc || ho >= hc)   { is_high = false; break; }
+        }
+      if(is_high && hc > trigger)
+         trigger = hc;
      }
-   return hi;
+   return trigger;
   }
 
 // -----------------------------------------------------------------------------
@@ -256,17 +279,17 @@ void DetectPattern_OnNewBar()
                // (newer top h1 vs older top h2 — neither breaks the other badly)
                const double higher_top = MathMax(h1_price, h2_price);
                // Intervening swing low between the two tops = trigger line.
-               const double trig = LowestLowBetween(h1_center + 1, h2_center - 1);
-               if(trig > 0.0)
+               const double trigger = InterveningSwingLow(side, h1_center, h2_center);
+               if(trigger > 0.0)
                  {
                   // Trigger line at least sep below BOTH tops.
-                  if((h1_price - trig) >= sep && (h2_price - trig) >= sep)
+                  if((h1_price - trigger) >= sep && (h2_price - trigger) >= sep)
                     {
                      // Break EVENT: close[1] breaks below trigger by brk.
-                     if(close1 <= (trig - brk))
+                     if(close1 <= (trigger - brk))
                        {
                         g_signal_dir      = -1;
-                        g_trigger_line    = trig;
+                        g_trigger_line    = trigger;
                         g_pattern_extreme = higher_top;
                         g_atr_cached      = atr;
                         g_signal_bar_time = iTime(_Symbol, _Period, 0); // perf-allowed: current forming bar
@@ -292,15 +315,15 @@ void DetectPattern_OnNewBar()
             if(MathAbs(l1_price - l2_price) <= tol)
               {
                const double lower_bottom = MathMin(l1_price, l2_price);
-               const double trig = HighestHighBetween(l1_center + 1, l2_center - 1);
-               if(trig > 0.0)
+               const double trigger = InterveningSwingHigh(side, l1_center, l2_center);
+               if(trigger > 0.0)
                  {
-                  if((trig - l1_price) >= sep && (trig - l2_price) >= sep)
+                  if((trigger - l1_price) >= sep && (trigger - l2_price) >= sep)
                     {
-                     if(close1 >= (trig + brk))
+                     if(close1 >= (trigger + brk))
                        {
                         g_signal_dir      = +1;
-                        g_trigger_line    = trig;
+                        g_trigger_line    = trigger;
                         g_pattern_extreme = lower_bottom;
                         g_atr_cached      = atr;
                         g_signal_bar_time = iTime(_Symbol, _Period, 0); // perf-allowed: current forming bar
@@ -329,6 +352,14 @@ bool Strategy_NoTradeFilter()
 // pattern state latched by DetectPattern_OnNewBar() this same bar.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic; no pyramiding.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -353,6 +384,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl     = sl;
       req.tp     = tp;
       req.reason = "double_top_trigger_short";
+      g_active_trigger = g_trigger_line;
       return true;
      }
    else
@@ -370,6 +402,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl     = sl;
       req.tp     = tp;
       req.reason = "double_bottom_trigger_long";
+      g_active_trigger = g_trigger_line;
       return true;
      }
   }
@@ -409,14 +442,14 @@ bool Strategy_ExitSignal()
       // (a) Signal exit — close[1] back on the wrong side of the trigger line.
       // For a short, the break was DOWN through the trigger; a close back above
       // it = pattern invalidated. Mirror for long. Use the stored trigger line.
-      if(g_trigger_line > 0.0)
+      if(g_active_trigger > 0.0)
         {
          const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed bar
          if(close1 > 0.0)
            {
-            if(pos_type == POSITION_TYPE_SELL && close1 > g_trigger_line)
+            if(pos_type == POSITION_TYPE_SELL && close1 > g_active_trigger)
                return true;
-            if(pos_type == POSITION_TYPE_BUY  && close1 < g_trigger_line)
+            if(pos_type == POSITION_TYPE_BUY  && close1 < g_active_trigger)
                return true;
            }
         }
@@ -488,6 +521,14 @@ void OnTick()
 
    Strategy_ManageOpenPosition();
 
+   if(!QM_IsNewBar())
+      return;
+
+   // Advance cached pattern state ONCE per closed bar before the entry gate.
+   DetectPattern_OnNewBar();
+
+   QM_EquityStreamOnNewBar();
+
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -498,17 +539,11 @@ void OnTick()
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+         if(QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY))
+            g_active_trigger = 0.0;
         }
-     }
-
-   if(!QM_IsNewBar())
       return;
-
-   // Advance cached pattern state ONCE per closed bar before the entry gate.
-   DetectPattern_OnNewBar();
-
-   QM_EquityStreamOnNewBar();
+     }
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

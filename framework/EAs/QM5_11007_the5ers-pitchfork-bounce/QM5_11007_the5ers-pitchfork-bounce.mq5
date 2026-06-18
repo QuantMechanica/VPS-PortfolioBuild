@@ -1,45 +1,8 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11007 the5ers-pitchfork-bounce — Andrews Pitchfork outer-line mean-reversion bounce (H4)"
+#property description "QM5_11007 The5ers Andrews Pitchfork Median Bounce"
 
 #include <QM/QM_Common.mqh>
-
-// =============================================================================
-// QuantMechanica V5 EA — QM5_11007 the5ers-pitchfork-bounce
-// -----------------------------------------------------------------------------
-// Source: The5ers blog "All You Need to Know About Andrews Pitchforks Strategy".
-// Card: artifacts/cards_approved/QM5_11007_the5ers-pitchfork-bounce.md (APPROVED).
-//
-// Mechanics (mean-reversion, closed-bar reads only):
-//   Pitchfork is anchored to THREE deterministic, confirmed fractal pivots
-//   (P0/P1/P2) found with a 3-left/3-right fractal rule on closed bars:
-//     Bullish triplet : low(P0) - high(P1) - low(P2), with low(P2) > low(P0).
-//     Bearish triplet : high(P0) - low(P1) - high(P2), with high(P2) < high(P0).
-//   Andrews construction (per bar index, all values projected to the entry bar):
-//     median line : from P0 through the midpoint of (P1,P2).
-//     handle/slope: (mid_price - P0_price) / (mid_index - P0_index) per bar.
-//     lower line  : parallel to median, anchored at the lower of P1/P2.
-//     upper line  : parallel to median, anchored at the higher of P1/P2.
-//   Long entry (next bar open, framework fills market at send) when:
-//     - the lower pitchfork line at the prior closed bar is touched within
-//       touch_atr_mult * ATR (low[1] within tolerance of lower_line[1]);
-//     - rejection: close[1] > lower_line[1] and lower wick >= 50% of range;
-//     - RSI(14)[1] < rsi_long_max;
-//     - median target is >= 1.0R away; line spacing >= min_spacing_atr_mult*ATR;
-//     - no open position under this magic.
-//   Short entry is the mirror at the upper line with RSI[1] > rsi_short_min.
-//   Stop : long  -> touch-low  - sl_atr_mult*ATR; short -> touch-high + sl_atr_mult*ATR.
-//   Take : pitchfork median line at the current bar, capped at tp_cap_rr * R.
-//   Exits: signal exit if price closes beyond the touched outer line by
-//          touch_atr_mult*ATR; time stop after time_stop_bars closed H4 bars.
-//
-// .DWX invariants honoured: fail-OPEN spread guard, no swap gate, prior-CLOSE
-// based geometry (no gap rules), no external feed, broker-time agnostic (no
-// session window — pitchfork geometry is session-independent). Pivot scan is
-// bounded and cached per closed bar (no per-tick history scans).
-//
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific.
-// =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 11007;
@@ -54,8 +17,8 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -66,194 +29,241 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_fractal_width      = 3;      // bars left/right for a confirmed swing pivot
-input int    strategy_scan_bars          = 200;    // bounded closed-bar scan window for pivots
-input int    strategy_rsi_period         = 14;     // RSI lookback
-input double strategy_rsi_long_max       = 35.0;   // long requires RSI[1] < this
-input double strategy_rsi_short_min      = 65.0;   // short requires RSI[1] > this
-input int    strategy_atr_period         = 14;     // ATR for tolerance/stop/spacing
-input double strategy_touch_atr_mult     = 0.25;   // touch tolerance & signal-exit overshoot
-input double strategy_sl_atr_mult        = 0.5;    // stop buffer beyond the touch extreme
-input double strategy_wick_frac_min      = 0.50;   // rejection wick must be >= this fraction of range
-input double strategy_min_spacing_atr    = 2.0;    // min upper-lower line spacing at entry, in ATR
-input double strategy_min_target_rr      = 1.0;    // skip if median target < this * R
-input double strategy_tp_cap_rr          = 2.5;    // cap median target at this * R
-input int    strategy_min_anchor_bars    = 30;     // min bars between P0 and the entry bar
-input int    strategy_max_age_bars       = 120;    // expire pitchfork this many bars after P2
-input int    strategy_time_stop_bars     = 24;     // close after this many closed bars
-input double strategy_spread_pct_of_stop = 25.0;   // skip if spread > this % of stop distance
+input int    strategy_swing_width       = 3;
+input int    strategy_atr_period        = 14;
+input double strategy_touch_atr_mult    = 0.25;
+input double strategy_reject_wick_ratio = 0.50;
+input double strategy_rsi_long_max      = 35.0;
+input double strategy_rsi_short_min     = 65.0;
+input double strategy_stop_atr_mult     = 0.50;
+input double strategy_min_spacing_atr   = 2.0;
+input double strategy_min_target_rr     = 1.0;
+input double strategy_max_target_rr     = 2.5;
+input int    strategy_min_a_bars        = 30;
+input int    strategy_pitchfork_expiry  = 120;
+input int    strategy_time_stop_bars    = 24;
+input int    strategy_scan_bars         = 180;
+input int    strategy_max_spread_points = 0;
 
-// -----------------------------------------------------------------------------
-// File-scope cached pitchfork state — advanced ONCE per closed bar.
-// Indices are bar-shift values relative to the just-closed bar (shift 1 = bar 0
-// of the geometry frame). Prices are the pivot extremes.
-// -----------------------------------------------------------------------------
-// Bullish pitchfork (anchors a LOWER outer line for long bounces).
-bool   g_bull_valid     = false;
-double g_bull_lower1    = 0.0;   // lower outer line value projected to shift 1
-double g_bull_median1   = 0.0;   // median line value projected to shift 1
-double g_bull_spacing   = 0.0;   // upper-lower spacing at shift 1 (price units)
-int    g_bull_p0_shift  = 0;     // P0 shift (oldest anchor) — for age/anchor checks
-// Bearish pitchfork (anchors an UPPER outer line for short bounces).
-bool   g_bear_valid     = false;
-double g_bear_upper1    = 0.0;
-double g_bear_median1   = 0.0;
-double g_bear_spacing   = 0.0;
-int    g_bear_p0_shift  = 0;
-
-// Entry-bar bookkeeping for the time stop (bars elapsed since entry).
-datetime g_entry_bar_time = 0;
-
-// -----------------------------------------------------------------------------
-// Fractal pivot detection on closed bars. A swing-high at shift s requires
-// high[s] strictly greater than the `width` bars on each side; swing-low mirror.
-// Scans from `from_shift` outward (increasing shift = older) up to scan_bars.
-// Returns the shift of the found pivot, or -1. Bounded; called per closed bar.
-// -----------------------------------------------------------------------------
-int FindPivot(const bool want_high, const int from_shift, const int max_shift, const int width)
+struct SwingPoint
   {
-   for(int s = from_shift; s <= max_shift; ++s)
-     {
-      const double pivot_val = want_high ? iHigh(_Symbol, _Period, s)  // perf-allowed: bounded pitchfork swing scan on the closed-bar path
-                                         : iLow(_Symbol, _Period, s);  // perf-allowed: bounded pitchfork swing scan on the closed-bar path
-      if(pivot_val <= 0.0)
-         continue;
-      bool is_pivot = true;
-      for(int k = 1; k <= width && is_pivot; ++k)
-        {
-         const double left  = want_high ? iHigh(_Symbol, _Period, s + k)  // perf-allowed: bounded pitchfork swing scan on the closed-bar path
-                                        : iLow(_Symbol, _Period, s + k);  // perf-allowed: bounded pitchfork swing scan on the closed-bar path
-         const double right = want_high ? iHigh(_Symbol, _Period, s - k)  // perf-allowed: bounded pitchfork swing scan on the closed-bar path
-                                        : iLow(_Symbol, _Period, s - k);  // perf-allowed: bounded pitchfork swing scan on the closed-bar path
-         if(left <= 0.0 || right <= 0.0)
-           { is_pivot = false; break; }
-         if(want_high)
-           { if(!(pivot_val > left) || !(pivot_val > right)) is_pivot = false; }
-         else
-           { if(!(pivot_val < left) || !(pivot_val < right)) is_pivot = false; }
-        }
-      if(is_pivot)
-         return s;
-     }
-   return -1;
+   int    type;
+   int    shift;
+   double price;
+  };
+
+struct PitchforkSetup
+  {
+   bool   valid;
+   int    direction;
+   int    a_shift;
+   int    b_shift;
+   int    c_shift;
+   double slope;
+   double median_intercept;
+   double lower_intercept;
+   double upper_intercept;
+  };
+
+int      g_active_direction = 0;
+datetime g_active_entry_bar_time = 0;
+double   g_active_outer_slope = 0.0;
+double   g_active_outer_intercept = 0.0;
+
+double PfLineAt(const double slope, const double intercept, const double x)
+  {
+   return slope * x + intercept;
   }
 
-// Build one pitchfork from a confirmed P0-P1-P2 fractal triplet and project the
-// median + the requested outer line to shift 1. want_bull=true builds the
-// bullish (low-high-low) fork and its LOWER outer line; false builds the
-// bearish (high-low-high) fork and its UPPER outer line.
-void RebuildPitchfork(const bool want_bull)
+void ResetActivePitchfork()
   {
-   const int width   = strategy_fractal_width;
-   const int max_s   = strategy_scan_bars;
-   const int first_s = width + 1; // need `width` confirming bars to the right (shifts >=1)
+   g_active_direction = 0;
+   g_active_entry_bar_time = 0;
+   g_active_outer_slope = 0.0;
+   g_active_outer_intercept = 0.0;
+  }
 
-   // P2 = most-recent pivot of the inner type; P1 = opposite pivot older than P2;
-   // P0 = same-type pivot older than P1. Bullish: P0 low, P1 high, P2 low.
-   const bool p2_high = !want_bull; // bullish triplet ends on a low; bearish on a high
-   const int p2 = FindPivot(p2_high, first_s, max_s, width);
-   if(p2 < 0) { if(want_bull) g_bull_valid=false; else g_bear_valid=false; return; }
+bool IsSwingLow(const int shift, const int width)
+  {
+   const double candidate = iLow(_Symbol, _Period, shift); // perf-allowed: bounded pitchfork fractal scan inside closed-bar strategy hook.
+   if(candidate <= 0.0)
+      return false;
 
-   const int p1 = FindPivot(!p2_high, p2 + 1, max_s, width);
-   if(p1 < 0) { if(want_bull) g_bull_valid=false; else g_bear_valid=false; return; }
-
-   const int p0 = FindPivot(p2_high, p1 + 1, max_s, width);
-   if(p0 < 0) { if(want_bull) g_bull_valid=false; else g_bear_valid=false; return; }
-
-   const double p0_price = p2_high ? iHigh(_Symbol, _Period, p0) : iLow(_Symbol, _Period, p0); // perf-allowed: bounded pitchfork anchor read on the closed-bar path
-   const double p1_price = p2_high ? iLow(_Symbol, _Period, p1)  : iHigh(_Symbol, _Period, p1); // perf-allowed: bounded pitchfork anchor read on the closed-bar path
-   const double p2_price = p2_high ? iHigh(_Symbol, _Period, p2) : iLow(_Symbol, _Period, p2); // perf-allowed: bounded pitchfork anchor read on the closed-bar path
-   if(p0_price <= 0.0 || p1_price <= 0.0 || p2_price <= 0.0)
-     { if(want_bull) g_bull_valid=false; else g_bear_valid=false; return; }
-
-   // Card directional filter: bullish needs the 2nd low above the 1st low;
-   // bearish needs the 2nd high below the 1st high. (P0 and P2 are same-type.)
-   if(want_bull && !(p2_price > p0_price)) { g_bull_valid=false; return; }
-   if(!want_bull && !(p2_price < p0_price)) { g_bear_valid=false; return; }
-
-   // Age / anchor distance: P0 must be at least min_anchor_bars older than the
-   // entry bar (shift 1), and the fork must not be older than max_age_bars past P2.
-   if((p0 - 1) < strategy_min_anchor_bars) { if(want_bull) g_bull_valid=false; else g_bear_valid=false; return; }
-   if((p2 - 1) > strategy_max_age_bars)    { if(want_bull) g_bull_valid=false; else g_bear_valid=false; return; }
-
-   // Andrews median: from P0 through the midpoint of (P1,P2).
-   // Use bar-shift as the x-axis. Smaller shift = more recent. Project to shift 1.
-   const double mid_shift = (p1 + p2) / 2.0;
-   const double mid_price = (p1_price + p2_price) / 2.0;
-   const double dshift    = (double)p0 - mid_shift; // shift delta from mid to P0
-   if(MathAbs(dshift) < 1e-9) { if(want_bull) g_bull_valid=false; else g_bear_valid=false; return; }
-   // price per UNIT shift (note: increasing shift = older = back in time).
-   const double slope = (p0_price - mid_price) / dshift; // price change per +1 shift
-   // median value at shift 1: extrapolate from P0 along the slope.
-   const double median1 = p0_price + slope * (1.0 - (double)p0);
-
-   // Outer parallels pass through P1 and P2 (the two non-apex anchors), offset
-   // from the median by each anchor's vertical distance at its own shift.
-   const double median_at_p1 = p0_price + slope * ((double)p1 - (double)p0);
-   const double median_at_p2 = p0_price + slope * ((double)p2 - (double)p0);
-   const double off_p1 = p1_price - median_at_p1;
-   const double off_p2 = p2_price - median_at_p2;
-   const double upper_off = MathMax(off_p1, off_p2);
-   const double lower_off = MathMin(off_p1, off_p2);
-   const double upper1 = median1 + upper_off;
-   const double lower1 = median1 + lower_off;
-   const double spacing = upper1 - lower1;
-
-   if(want_bull)
+   for(int i = 1; i <= width; ++i)
      {
-      g_bull_valid   = true;
-      g_bull_lower1  = lower1;
-      g_bull_median1 = median1;
-      g_bull_spacing = spacing;
-      g_bull_p0_shift= p0;
+      const double newer = iLow(_Symbol, _Period, shift - i); // perf-allowed: bounded pitchfork fractal scan inside closed-bar strategy hook.
+      const double older = iLow(_Symbol, _Period, shift + i); // perf-allowed: bounded pitchfork fractal scan inside closed-bar strategy hook.
+      if(newer <= 0.0 || older <= 0.0)
+         return false;
+      if(candidate >= newer || candidate >= older)
+         return false;
+     }
+
+   return true;
+  }
+
+bool IsSwingHigh(const int shift, const int width)
+  {
+   const double candidate = iHigh(_Symbol, _Period, shift); // perf-allowed: bounded pitchfork fractal scan inside closed-bar strategy hook.
+   if(candidate <= 0.0)
+      return false;
+
+   for(int i = 1; i <= width; ++i)
+     {
+      const double newer = iHigh(_Symbol, _Period, shift - i); // perf-allowed: bounded pitchfork fractal scan inside closed-bar strategy hook.
+      const double older = iHigh(_Symbol, _Period, shift + i); // perf-allowed: bounded pitchfork fractal scan inside closed-bar strategy hook.
+      if(newer <= 0.0 || older <= 0.0)
+         return false;
+      if(candidate <= newer || candidate <= older)
+         return false;
+     }
+
+   return true;
+  }
+
+bool BuildPitchforkFromTriplet(const SwingPoint &a,
+                               const SwingPoint &b,
+                               const SwingPoint &c,
+                               const int direction,
+                               PitchforkSetup &setup)
+  {
+   setup.valid = false;
+   setup.direction = direction;
+   setup.a_shift = a.shift;
+   setup.b_shift = b.shift;
+   setup.c_shift = c.shift;
+
+   if(a.shift < strategy_min_a_bars)
+      return false;
+   if(c.shift > strategy_pitchfork_expiry)
+      return false;
+
+   const double x_a = -(double)a.shift;
+   const double x_b = -(double)b.shift;
+   const double x_c = -(double)c.shift;
+   const double mid_x = (x_b + x_c) * 0.5;
+   const double mid_y = (b.price + c.price) * 0.5;
+   const double denom = mid_x - x_a;
+   if(MathAbs(denom) < 0.0000001)
+      return false;
+
+   setup.slope = (mid_y - a.price) / denom;
+   setup.median_intercept = a.price - setup.slope * x_a;
+
+   const double b_intercept = b.price - setup.slope * x_b;
+   const double c_intercept = c.price - setup.slope * x_c;
+   if(direction > 0)
+     {
+      setup.upper_intercept = b_intercept;
+      setup.lower_intercept = c_intercept;
      }
    else
      {
-      g_bear_valid   = true;
-      g_bear_upper1  = upper1;
-      g_bear_median1 = median1;
-      g_bear_spacing = spacing;
-      g_bear_p0_shift= p0;
+      setup.lower_intercept = b_intercept;
+      setup.upper_intercept = c_intercept;
      }
+
+   setup.valid = true;
+   return true;
   }
 
-// Advance both cached pitchforks once per closed bar.
-void AdvanceState_OnNewBar()
+bool FindPitchfork(const int direction, PitchforkSetup &setup)
   {
-   g_bull_valid = false;
-   g_bear_valid = false;
-   RebuildPitchfork(true);
-   RebuildPitchfork(false);
+   setup.valid = false;
+   const int width = MathMax(1, strategy_swing_width);
+   const int min_shift = width + 1;
+   const int max_shift = MathMax(strategy_scan_bars, strategy_min_a_bars + width + 5);
+
+   SwingPoint swings[128];
+   int swing_count = 0;
+
+   for(int shift = max_shift; shift >= min_shift && swing_count < 128; --shift)
+     {
+      const bool is_low = IsSwingLow(shift, width);
+      const bool is_high = IsSwingHigh(shift, width);
+      if(is_low == is_high)
+         continue;
+
+      swings[swing_count].type = is_low ? -1 : 1;
+      swings[swing_count].shift = shift;
+      swings[swing_count].price = is_low
+                                  ? iLow(_Symbol, _Period, shift)   // perf-allowed: structural pitchfork anchor price.
+                                  : iHigh(_Symbol, _Period, shift); // perf-allowed: structural pitchfork anchor price.
+      swing_count++;
+     }
+
+   bool found = false;
+   PitchforkSetup latest;
+   latest.valid = false;
+
+   for(int i = 0; i <= swing_count - 3; ++i)
+     {
+      const SwingPoint a = swings[i];
+      const SwingPoint b = swings[i + 1];
+      const SwingPoint c = swings[i + 2];
+
+      if(direction > 0)
+        {
+         if(a.type != -1 || b.type != 1 || c.type != -1)
+            continue;
+         if(c.price <= a.price)
+            continue;
+        }
+      else
+        {
+         if(a.type != 1 || b.type != -1 || c.type != 1)
+            continue;
+         if(c.price >= a.price)
+            continue;
+        }
+
+      PitchforkSetup candidate;
+      if(BuildPitchforkFromTriplet(a, b, c, direction, candidate))
+        {
+         latest = candidate;
+         found = true;
+        }
+     }
+
+   if(!found)
+      return false;
+
+   setup = latest;
+   return true;
   }
 
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
-
-// Cheap O(1) per-tick gate. Fail-OPEN spread guard only (.DWX models 0 spread).
-bool Strategy_NoTradeFilter()
+bool SelectOurPosition(ulong &ticket,
+                       ENUM_POSITION_TYPE &position_type,
+                       datetime &position_time)
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — never block on zero price
+   ticket = 0;
+   position_type = POSITION_TYPE_BUY;
+   position_time = 0;
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false;
-   const double stop_distance = strategy_sl_atr_mult * atr_value;
-   if(stop_distance <= 0.0)
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
 
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong pos_ticket = PositionGetTicket(i);
+      if(pos_ticket == 0 || !PositionSelectByTicket(pos_ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      ticket = pos_ticket;
+      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      position_time = (datetime)PositionGetInteger(POSITION_TIME);
       return true;
+     }
+
    return false;
   }
 
-// Entry: pitchfork outer-line bounce. Caller guarantees QM_IsNewBar()==true.
-bool Strategy_EntrySignal(QM_EntryRequest &req)
+void InitRequest(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
    req.price = 0.0;
@@ -262,100 +272,131 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
+  }
+
+bool Strategy_NoTradeFilter()
+  {
+   if(strategy_max_spread_points <= 0)
+      return false;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+      return true;
+
+   if(ask > bid)
+     {
+      const double spread_points = (ask - bid) / point;
+      if(spread_points > (double)strategy_max_spread_points)
+         return true;
+     }
+
+   return false;
+  }
+
+bool Strategy_EntrySignal(QM_EntryRequest &req)
+  {
+   InitRequest(req);
 
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false;
-   const double tol = strategy_touch_atr_mult * atr_value;
-
-   // Closed-bar OHLC at shift 1 (the bar that just closed).
-   const double high1  = iHigh(_Symbol,  _Period, 1);  // perf-allowed: single closed-bar pitchfork rejection read
-   const double low1   = iLow(_Symbol,   _Period, 1);  // perf-allowed: single closed-bar pitchfork rejection read
-   const double open1  = iOpen(_Symbol,  _Period, 1);  // perf-allowed: single closed-bar pitchfork rejection read
-   const double close1 = iClose(_Symbol, _Period, 1);  // perf-allowed: single closed-bar pitchfork rejection read
-   if(high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0)
-      return false;
-   const double range1 = high1 - low1;
-   if(range1 <= 0.0)
+   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+   const double rsi = QM_RSI(_Symbol, (ENUM_TIMEFRAMES)_Period, 14, 1, PRICE_CLOSE);
+   if(atr <= 0.0 || rsi <= 0.0)
       return false;
 
-   const double rsi1 = QM_RSI(_Symbol, _Period, strategy_rsi_period, 1);
-   if(rsi1 <= 0.0)
+   const double open1 = iOpen(_Symbol, _Period, 1);   // perf-allowed: candle rejection geometry for pitchfork entry.
+   const double high1 = iHigh(_Symbol, _Period, 1);   // perf-allowed: candle rejection geometry for pitchfork entry.
+   const double low1 = iLow(_Symbol, _Period, 1);     // perf-allowed: candle rejection geometry for pitchfork entry.
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: candle rejection geometry for pitchfork entry.
+   if(open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0 || high1 <= low1)
       return false;
 
-   // --- LONG: lower-line touch + rejection ---
-   if(g_bull_valid && g_bull_spacing >= strategy_min_spacing_atr * atr_value)
+   const double range = high1 - low1;
+   const double lower_wick = MathMin(open1, close1) - low1;
+   const double upper_wick = high1 - MathMax(open1, close1);
+   const double touch_tolerance = strategy_touch_atr_mult * atr;
+   const double spacing_min = strategy_min_spacing_atr * atr;
+
+   PitchforkSetup bullish;
+   if(FindPitchfork(1, bullish))
      {
-      const double lower = g_bull_lower1;
-      const bool touched = (MathAbs(low1 - lower) <= tol) || (low1 < lower && (lower - low1) <= tol);
-      const bool reject  = (close1 > lower);
-      const double lower_wick = MathMin(open1, close1) - low1;
-      const bool wick_ok = (lower_wick >= strategy_wick_frac_min * range1);
-      const bool rsi_ok  = (rsi1 < strategy_rsi_long_max);
-      if(touched && reject && wick_ok && rsi_ok)
+      const double lower_line1 = PfLineAt(bullish.slope, bullish.lower_intercept, -1.0);
+      const double upper_line1 = PfLineAt(bullish.slope, bullish.upper_intercept, -1.0);
+      const double median_now = PfLineAt(bullish.slope, bullish.median_intercept, 0.0);
+      const double spacing = MathAbs(upper_line1 - lower_line1);
+
+      if(spacing >= spacing_min &&
+         low1 <= lower_line1 + touch_tolerance &&
+         close1 > lower_line1 &&
+         lower_wick >= range * strategy_reject_wick_ratio &&
+         rsi < strategy_rsi_long_max)
         {
-         const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         if(entry > 0.0)
+         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+         const double entry = (ask > 0.0) ? ask : close1;
+         const double sl = QM_StopRulesNormalizePrice(_Symbol, low1 - strategy_stop_atr_mult * atr);
+         const double risk = entry - sl;
+         const double median_distance = median_now - entry;
+         if(sl > 0.0 && risk > 0.0 && median_distance >= risk * strategy_min_target_rr)
            {
-            const double sl = QM_StopRulesStopFromDistance(_Symbol, QM_BUY, entry,
-                                                           (entry - low1) + strategy_sl_atr_mult * atr_value);
-            const double risk = entry - sl;
-            if(risk > 0.0)
+            const double max_tp = entry + risk * strategy_max_target_rr;
+            const double tp = QM_StopRulesNormalizePrice(_Symbol, MathMin(median_now, max_tp));
+            if(tp > entry)
               {
-               double target = g_bull_median1;            // median-line TP at current bar
-               const double cap = entry + strategy_tp_cap_rr * risk;
-               if(target > cap) target = cap;             // cap at tp_cap_rr * R
-               const double reward = target - entry;
-               // protective floor: median target must be >= min_target_rr * R away
-               if(reward >= strategy_min_target_rr * risk && target > entry)
-                 {
-                  req.type   = QM_BUY;
-                  req.price  = 0.0;
-                  req.sl     = QM_StopRulesNormalizePrice(_Symbol, sl);
-                  req.tp     = QM_StopRulesNormalizePrice(_Symbol, target);
-                  req.reason = "pitchfork_lower_bounce_long";
-                  return true;
-                 }
+               req.type = QM_BUY;
+               req.price = 0.0;
+               req.sl = sl;
+               req.tp = tp;
+               req.reason = "PITCHFORK_LOWER_BOUNCE_LONG";
+               req.symbol_slot = qm_magic_slot_offset;
+               g_active_direction = 1;
+               g_active_entry_bar_time = iTime(_Symbol, _Period, 0); // perf-allowed: store entry bar for fixed pitchfork exit projection.
+               g_active_outer_slope = bullish.slope;
+               g_active_outer_intercept = bullish.lower_intercept;
+               return true;
               }
            }
         }
      }
 
-   // --- SHORT: upper-line touch + rejection ---
-   if(g_bear_valid && g_bear_spacing >= strategy_min_spacing_atr * atr_value)
+   PitchforkSetup bearish;
+   if(FindPitchfork(-1, bearish))
      {
-      const double upper = g_bear_upper1;
-      const bool touched = (MathAbs(high1 - upper) <= tol) || (high1 > upper && (high1 - upper) <= tol);
-      const bool reject  = (close1 < upper);
-      const double upper_wick = high1 - MathMax(open1, close1);
-      const bool wick_ok = (upper_wick >= strategy_wick_frac_min * range1);
-      const bool rsi_ok  = (rsi1 > strategy_rsi_short_min);
-      if(touched && reject && wick_ok && rsi_ok)
+      const double lower_line1 = PfLineAt(bearish.slope, bearish.lower_intercept, -1.0);
+      const double upper_line1 = PfLineAt(bearish.slope, bearish.upper_intercept, -1.0);
+      const double median_now = PfLineAt(bearish.slope, bearish.median_intercept, 0.0);
+      const double spacing = MathAbs(upper_line1 - lower_line1);
+
+      if(spacing >= spacing_min &&
+         high1 >= upper_line1 - touch_tolerance &&
+         close1 < upper_line1 &&
+         upper_wick >= range * strategy_reject_wick_ratio &&
+         rsi > strategy_rsi_short_min)
         {
-         const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         if(entry > 0.0)
+         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+         const double entry = (bid > 0.0) ? bid : close1;
+         const double sl = QM_StopRulesNormalizePrice(_Symbol, high1 + strategy_stop_atr_mult * atr);
+         const double risk = sl - entry;
+         const double median_distance = entry - median_now;
+         if(sl > 0.0 && risk > 0.0 && median_distance >= risk * strategy_min_target_rr)
            {
-            const double sl = QM_StopRulesStopFromDistance(_Symbol, QM_SELL, entry,
-                                                           (high1 - entry) + strategy_sl_atr_mult * atr_value);
-            const double risk = sl - entry;
-            if(risk > 0.0)
+            const double min_tp = entry - risk * strategy_max_target_rr;
+            const double tp = QM_StopRulesNormalizePrice(_Symbol, MathMax(median_now, min_tp));
+            if(tp > 0.0 && tp < entry)
               {
-               double target = g_bear_median1;
-               const double cap = entry - strategy_tp_cap_rr * risk;
-               if(target < cap) target = cap;
-               const double reward = entry - target;
-               if(reward >= strategy_min_target_rr * risk && target < entry)
-                 {
-                  req.type   = QM_SELL;
-                  req.price  = 0.0;
-                  req.sl     = QM_StopRulesNormalizePrice(_Symbol, sl);
-                  req.tp     = QM_StopRulesNormalizePrice(_Symbol, target);
-                  req.reason = "pitchfork_upper_bounce_short";
-                  return true;
-                 }
+               req.type = QM_SELL;
+               req.price = 0.0;
+               req.sl = sl;
+               req.tp = tp;
+               req.reason = "PITCHFORK_UPPER_BOUNCE_SHORT";
+               req.symbol_slot = qm_magic_slot_offset;
+               g_active_direction = -1;
+               g_active_entry_bar_time = iTime(_Symbol, _Period, 0); // perf-allowed: store entry bar for fixed pitchfork exit projection.
+               g_active_outer_slope = bearish.slope;
+               g_active_outer_intercept = bearish.upper_intercept;
+               return true;
               }
            }
         }
@@ -364,81 +405,56 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return false;
   }
 
-// Latch the entry bar-open time once a position is open (for the time stop).
 void Strategy_ManageOpenPosition()
   {
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
-     {
-      if(g_entry_bar_time == 0)
-         g_entry_bar_time = iTime(_Symbol, _Period, 0); // perf-allowed: O(1) bar-open latch for time stop
-     }
-   else
-      g_entry_bar_time = 0;
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
+      ResetActivePitchfork();
   }
 
-// Signal exit (close beyond the touched outer line by tolerance) + time stop.
 bool Strategy_ExitSignal()
   {
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
+   ulong ticket = 0;
+   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
+   datetime position_time = 0;
+   if(!SelectOurPosition(ticket, position_type, position_time))
       return false;
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   const double tol = (atr_value > 0.0) ? strategy_touch_atr_mult * atr_value : 0.0;
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: O(1) closed-bar signal-exit read
-   if(close1 <= 0.0)
-      return false;
+   int period_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
+   if(period_seconds <= 0)
+      period_seconds = 14400;
 
-   // Determine current position direction.
-   const int magic = QM_FrameworkMagic();
-   bool is_long = false, have = false;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   if(strategy_time_stop_bars > 0 && position_time > 0)
      {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      is_long = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
-      have = true;
-      break;
-     }
-   if(!have)
-      return false;
-
-   // Signal exit: price closed beyond the touched outer line by tolerance.
-   if(tol > 0.0)
-     {
-      if(is_long && g_bull_valid && close1 < (g_bull_lower1 - tol))
-         return true;
-      if(!is_long && g_bear_valid && close1 > (g_bear_upper1 + tol))
+      const int held_seconds = (int)(TimeCurrent() - position_time);
+      if(held_seconds >= strategy_time_stop_bars * period_seconds)
          return true;
      }
 
-   // Time stop: close after strategy_time_stop_bars closed bars since entry.
-   if(g_entry_bar_time > 0)
-     {
-      const int secs = PeriodSeconds(_Period);
-      if(secs > 0)
-        {
-         const datetime now_bar = iTime(_Symbol, _Period, 0); // perf-allowed: O(1) bar-open read for time stop
-         const long elapsed = (long)(now_bar - g_entry_bar_time) / secs;
-         if(elapsed >= strategy_time_stop_bars)
-            return true;
-        }
-     }
+   if(g_active_direction == 0 || g_active_entry_bar_time <= 0)
+      return false;
+
+   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+   const datetime closed_bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: O(1) closed-bar exit projection, no custom new-bar gate.
+   const double close1 = iClose(_Symbol, _Period, 1);           // perf-allowed: O(1) closed-bar exit signal from card.
+   if(atr <= 0.0 || closed_bar_time <= 0 || close1 <= 0.0)
+      return false;
+
+   const double bars_from_entry = (double)(closed_bar_time - g_active_entry_bar_time) / (double)period_seconds;
+   const double outer_line = PfLineAt(g_active_outer_slope, g_active_outer_intercept, bars_from_entry);
+   const double tolerance = strategy_touch_atr_mult * atr;
+
+   if(position_type == POSITION_TYPE_BUY && close1 < outer_line - tolerance)
+      return true;
+   if(position_type == POSITION_TYPE_SELL && close1 > outer_line + tolerance)
+      return true;
 
    return false;
   }
 
-// Defer to the central news filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
-
-// -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
-// -----------------------------------------------------------------------------
 
 int OnInit()
   {
@@ -447,20 +463,20 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_11007\",\"strategy\":\"the5ers-pitchfork-bounce\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -509,8 +525,6 @@ void OnTick()
 
    if(!QM_IsNewBar())
       return;
-
-   AdvanceState_OnNewBar();   // refresh cached pitchforks once per closed bar
 
    QM_EquityStreamOnNewBar();
 
