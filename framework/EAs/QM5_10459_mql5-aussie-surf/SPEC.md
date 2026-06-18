@@ -4,7 +4,7 @@
 **Slug:** mql5-aussie-surf
 **Source:** b8b5125a-c67f-5bbc-baff-33456e08f5b2 (see `strategy-seeds/sources/b8b5125a-c67f-5bbc-baff-33456e08f5b2/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-05-28
+**Last revised:** 2026-06-18
 
 ---
 
@@ -30,6 +30,7 @@ The EA trades M15 pullbacks in the direction of the Alligator trend. A long sign
 | `strategy_atr_period` | 14 | 1-100 | ATR period for the volatility stop component. |
 | `strategy_atr_sl_mult` | 1.5 | 0.1-10.0 | ATR multiplier for the volatility stop component. |
 | `strategy_rr_take_profit` | 2.0 | 0.1-10.0 | Reward-to-risk multiple for take profit. |
+| `strategy_max_spread_points` | 30 | 0-500 | Maximum positive bid/ask spread in points; zero `.DWX` modeled spread is allowed. |
 
 ---
 
@@ -101,3 +102,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-05-28 | Initial build from card | 3decc398-149b-4713-adea-72e5376dc760 |
+| v2 | 2026-06-18 | Rebuild in place from approved card | 865e0f6d-f176-4aa6-8e15-7930ca7ae7df |

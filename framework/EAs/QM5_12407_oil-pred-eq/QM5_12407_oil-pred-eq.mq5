@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10459 MQL5 Aussie Surfer Alligator Bands"
+#property description "QM5_12407 Oil-Predicted Equity Timing"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 10459;
+input int    qm_ea_id                   = 12407;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,19 +73,212 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_alligator_jaw_period      = 13;
-input int    strategy_alligator_jaw_shift       = 8;
-input int    strategy_alligator_teeth_period    = 8;
-input int    strategy_alligator_teeth_shift     = 5;
-input int    strategy_alligator_lips_period     = 5;
-input int    strategy_alligator_lips_shift      = 3;
-input int    strategy_bb_period                 = 20;
-input double strategy_bb_deviation              = 2.0;
-input int    strategy_touch_lookback_bars       = 10;
-input int    strategy_atr_period                = 14;
-input double strategy_atr_sl_mult               = 1.5;
-input double strategy_rr_take_profit            = 2.0;
-input int    strategy_max_spread_points         = 30;
+input string strategy_oil_symbol                  = "XTIUSD.DWX";
+input int    strategy_regression_lookback_months  = 60;
+input int    strategy_min_paired_observations     = 60;
+input double strategy_monthly_threshold           = 0.0;
+input int    strategy_atr_period                  = 20;
+input double strategy_atr_sl_mult                 = 2.5;
+input int    strategy_spread_median_days          = 60;
+
+bool   g_qm12407_signal_valid       = false;
+bool   g_qm12407_signal_long        = false;
+bool   g_qm12407_month_evaluated    = false;
+double g_qm12407_expected_return    = 0.0;
+
+bool QM12407_IsTargetSymbol()
+  {
+   return (_Symbol == "SP500.DWX" || _Symbol == "NDX.DWX" || _Symbol == "WS30.DWX");
+  }
+
+bool QM12407_IsFirstTradableDayOfMonth()
+  {
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int got = CopyRates(_Symbol, PERIOD_D1, 0, 2, rates); // perf-allowed: closed-bar monthly cadence check from Strategy_EntrySignal only.
+   if(got < 2)
+      return false;
+
+   MqlDateTime current_dt;
+   MqlDateTime prior_dt;
+   TimeToStruct(rates[0].time, current_dt);
+   TimeToStruct(rates[1].time, prior_dt);
+   return (current_dt.mon != prior_dt.mon || current_dt.year != prior_dt.year);
+  }
+
+bool QM12407_ReadMonthEndCloses(const string symbol,
+                                const int max_months,
+                                double &month_closes[])
+  {
+   ArrayResize(month_closes, 0);
+   if(max_months < 3)
+      return false;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int bars_to_copy = (max_months + 4) * 23;
+   const int got = CopyRates(symbol, PERIOD_D1, 1, bars_to_copy, rates); // perf-allowed: bounded D1 history read for monthly regression, called after QM_IsNewBar().
+   if(got < 80)
+      return false;
+
+   int current_year = -1;
+   int current_month = -1;
+   double last_close = 0.0;
+   int out_count = 0;
+
+   for(int i = got - 1; i >= 0; --i)
+     {
+      if(rates[i].close <= 0.0)
+         continue;
+
+      MqlDateTime dt;
+      TimeToStruct(rates[i].time, dt);
+      if(current_year < 0)
+        {
+         current_year = dt.year;
+         current_month = dt.mon;
+         last_close = rates[i].close;
+         continue;
+        }
+
+      if(dt.year == current_year && dt.mon == current_month)
+        {
+         last_close = rates[i].close;
+         continue;
+        }
+
+      ArrayResize(month_closes, out_count + 1);
+      month_closes[out_count] = last_close;
+      out_count++;
+
+      current_year = dt.year;
+      current_month = dt.mon;
+      last_close = rates[i].close;
+     }
+
+   if(last_close > 0.0)
+     {
+      ArrayResize(month_closes, out_count + 1);
+      month_closes[out_count] = last_close;
+      out_count++;
+     }
+
+   return (out_count >= strategy_min_paired_observations + 2);
+  }
+
+bool QM12407_UpdateMonthlySignal()
+  {
+   g_qm12407_signal_valid = false;
+   g_qm12407_signal_long = false;
+   g_qm12407_expected_return = 0.0;
+   g_qm12407_month_evaluated = true;
+
+   double equity_closes[];
+   double oil_closes[];
+   const int requested_months = strategy_regression_lookback_months + 4;
+   if(!QM12407_ReadMonthEndCloses(_Symbol, requested_months, equity_closes))
+      return false;
+   if(!QM12407_ReadMonthEndCloses(strategy_oil_symbol, requested_months, oil_closes))
+      return false;
+
+   const int equity_count = ArraySize(equity_closes);
+   const int oil_count = ArraySize(oil_closes);
+   const int n = MathMin(equity_count, oil_count);
+   if(n < strategy_min_paired_observations + 2)
+      return false;
+
+   const int equity_start = equity_count - n;
+   const int oil_start = oil_count - n;
+   const int samples = MathMin(strategy_regression_lookback_months, n - 2);
+   if(samples < strategy_min_paired_observations)
+      return false;
+
+   double sum_x = 0.0;
+   double sum_y = 0.0;
+   double sum_xx = 0.0;
+   double sum_xy = 0.0;
+   int used = 0;
+
+   for(int k = n - samples; k < n; ++k)
+     {
+      const double oil_prev = oil_closes[oil_start + k - 2];
+      const double oil_now = oil_closes[oil_start + k - 1];
+      const double eq_prev = equity_closes[equity_start + k - 1];
+      const double eq_now = equity_closes[equity_start + k];
+      if(oil_prev <= 0.0 || oil_now <= 0.0 || eq_prev <= 0.0 || eq_now <= 0.0)
+         continue;
+
+      const double x = (oil_now / oil_prev) - 1.0;
+      const double y = (eq_now / eq_prev) - 1.0;
+      sum_x += x;
+      sum_y += y;
+      sum_xx += x * x;
+      sum_xy += x * y;
+      used++;
+     }
+
+   if(used < strategy_min_paired_observations)
+      return false;
+
+   const double denom = (used * sum_xx) - (sum_x * sum_x);
+   if(MathAbs(denom) <= 1.0e-12)
+      return false;
+
+   const double slope = ((used * sum_xy) - (sum_x * sum_y)) / denom;
+   const double intercept = (sum_y - slope * sum_x) / used;
+   const double latest_oil_prev = oil_closes[oil_start + n - 2];
+   const double latest_oil_now = oil_closes[oil_start + n - 1];
+   if(latest_oil_prev <= 0.0 || latest_oil_now <= 0.0)
+      return false;
+
+   const double latest_oil_return = (latest_oil_now / latest_oil_prev) - 1.0;
+   g_qm12407_expected_return = intercept + slope * latest_oil_return;
+   g_qm12407_signal_valid = true;
+   g_qm12407_signal_long = (g_qm12407_expected_return > strategy_monthly_threshold);
+   return true;
+  }
+
+bool QM12407_SpreadBlocked()
+  {
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return true;
+   if(!(ask > bid))
+      return false;
+
+   const double current_spread = ask - bid;
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(current_spread <= 0.0 || point <= 0.0 || strategy_spread_median_days <= 0)
+      return false;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int got = CopyRates(_Symbol, PERIOD_D1, 1, strategy_spread_median_days, rates); // perf-allowed: bounded spread sample for card filter, called after QM_IsNewBar().
+   if(got <= 0)
+      return false;
+
+   double spreads[];
+   int samples = 0;
+   for(int i = 0; i < got; ++i)
+     {
+      if(rates[i].spread <= 0)
+         continue;
+      ArrayResize(spreads, samples + 1);
+      spreads[samples] = rates[i].spread * point;
+      samples++;
+     }
+
+   if(samples < 5)
+      return false;
+
+   ArraySort(spreads);
+   const double median_spread = spreads[samples / 2];
+   if(median_spread <= 0.0)
+      return false;
+
+   return (current_spread > (2.0 * median_spread));
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -95,117 +288,9 @@ input int    strategy_max_spread_points         = 30;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   if(strategy_max_spread_points <= 0)
-      return false;
-
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+   if(!QM12407_IsTargetSymbol())
       return true;
-
-   if(ask > bid && ((ask - bid) / point) > (double)strategy_max_spread_points)
-      return true;
-
    return false;
-  }
-
-double Strategy_AlligatorJaw(const int shift)
-  {
-   return QM_SMMA(_Symbol, PERIOD_CURRENT, strategy_alligator_jaw_period,
-                  shift + strategy_alligator_jaw_shift, PRICE_MEDIAN);
-  }
-
-double Strategy_AlligatorTeeth(const int shift)
-  {
-   return QM_SMMA(_Symbol, PERIOD_CURRENT, strategy_alligator_teeth_period,
-                  shift + strategy_alligator_teeth_shift, PRICE_MEDIAN);
-  }
-
-double Strategy_AlligatorLips(const int shift)
-  {
-   return QM_SMMA(_Symbol, PERIOD_CURRENT, strategy_alligator_lips_period,
-                  shift + strategy_alligator_lips_shift, PRICE_MEDIAN);
-  }
-
-bool Strategy_ReadClosedRates(MqlRates &rates[])
-  {
-   const int bars_needed = strategy_touch_lookback_bars + 3;
-   ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, PERIOD_CURRENT, 0, bars_needed, rates); // perf-allowed: closed-bar snapshot inside framework new-bar entry gate.
-   return (copied >= bars_needed);
-  }
-
-bool Strategy_BollingerTouch(const MqlRates &rates[],
-                             const bool long_side,
-                             double &swing_price)
-  {
-   swing_price = long_side ? DBL_MAX : -DBL_MAX;
-   bool touched = false;
-
-   for(int shift = 1; shift <= strategy_touch_lookback_bars; ++shift)
-     {
-      const double lower = QM_BB_Lower(_Symbol, PERIOD_CURRENT, strategy_bb_period,
-                                       strategy_bb_deviation, shift, PRICE_CLOSE);
-      const double upper = QM_BB_Upper(_Symbol, PERIOD_CURRENT, strategy_bb_period,
-                                       strategy_bb_deviation, shift, PRICE_CLOSE);
-      const double low = rates[shift].low;
-      const double high = rates[shift].high;
-      const double close = rates[shift].close;
-      if(lower <= 0.0 || upper <= 0.0 || low <= 0.0 || high <= 0.0 || close <= 0.0)
-         continue;
-
-      if(long_side)
-        {
-         if(low <= lower || close <= lower)
-            touched = true;
-         if(low < swing_price)
-            swing_price = low;
-        }
-      else
-        {
-         if(high >= upper || close >= upper)
-            touched = true;
-         if(high > swing_price)
-            swing_price = high;
-        }
-     }
-
-   if(!touched)
-      return false;
-   return long_side ? (swing_price < DBL_MAX) : (swing_price > -DBL_MAX);
-  }
-
-bool Strategy_BuildRequest(QM_EntryRequest &req,
-                           const QM_OrderType side,
-                           const double entry,
-                           const double structure_stop)
-  {
-   const double atr = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_atr_period, 1);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(entry <= 0.0 || structure_stop <= 0.0 || atr <= 0.0 || point <= 0.0)
-      return false;
-
-   const double atr_distance = atr * strategy_atr_sl_mult;
-   double sl = 0.0;
-   if(QM_OrderTypeIsBuy(side))
-      sl = MathMin(entry - atr_distance, structure_stop);
-   else
-      sl = MathMax(entry + atr_distance, structure_stop);
-
-   sl = QM_StopRulesNormalizePrice(_Symbol, sl);
-   const double tp = QM_TakeRR(_Symbol, side, entry, sl, strategy_rr_take_profit);
-   if(sl <= 0.0 || tp <= 0.0 || MathAbs(entry - sl) <= point)
-      return false;
-
-   req.type = side;
-   req.price = 0.0;
-   req.sl = sl;
-   req.tp = tp;
-   req.reason = QM_OrderTypeIsBuy(side) ? "AUSSIE_SURF_LONG" : "AUSSIE_SURF_SHORT";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-   return true;
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -221,54 +306,49 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_touch_lookback_bars < 1 || strategy_bb_period < 2 ||
-      strategy_atr_period < 1 || strategy_rr_take_profit <= 0.0 ||
-      strategy_atr_sl_mult <= 0.0 || strategy_max_spread_points < 0)
+   if(!QM12407_IsTargetSymbol())
+      return false;
+   if(!QM12407_IsFirstTradableDayOfMonth())
       return false;
 
-   MqlRates rates[];
-   if(!Strategy_ReadClosedRates(rates))
+   if(!QM12407_UpdateMonthlySignal())
+      return false;
+   if(!g_qm12407_signal_long)
+      return false;
+   if(QM12407_SpreadBlocked())
       return false;
 
-   const double lips = Strategy_AlligatorLips(1);
-   const double teeth = Strategy_AlligatorTeeth(1);
-   const double jaw = Strategy_AlligatorJaw(1);
-   const double close1 = rates[1].close;
-   const double close2 = rates[2].close;
-   const double mid1 = QM_BB_Middle(_Symbol, PERIOD_CURRENT, strategy_bb_period,
-                                    strategy_bb_deviation, 1, PRICE_CLOSE);
-   const double mid2 = QM_BB_Middle(_Symbol, PERIOD_CURRENT, strategy_bb_period,
-                                    strategy_bb_deviation, 2, PRICE_CLOSE);
-   if(lips <= 0.0 || teeth <= 0.0 || jaw <= 0.0 ||
-      close1 <= 0.0 || close2 <= 0.0 || mid1 <= 0.0 || mid2 <= 0.0)
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double entry = (ask > 0.0) ? ask : bid;
+   if(entry <= 0.0)
       return false;
 
-   double swing = 0.0;
-   if(lips > teeth && teeth > jaw &&
-      close2 <= mid2 && close1 > mid1 &&
-      Strategy_BollingerTouch(rates, true, swing))
-      return Strategy_BuildRequest(req, QM_BUY, SymbolInfoDouble(_Symbol, SYMBOL_ASK), swing);
+   req.sl = QM_StopATR(_Symbol, QM_BUY, entry, strategy_atr_period, strategy_atr_sl_mult);
+   if(req.sl <= 0.0)
+      return false;
 
-   if(lips < teeth && teeth < jaw &&
-      close2 >= mid2 && close1 < mid1 &&
-      Strategy_BollingerTouch(rates, false, swing))
-      return Strategy_BuildRequest(req, QM_SELL, SymbolInfoDouble(_Symbol, SYMBOL_BID), swing);
-
-   return false;
+   req.reason = StringFormat("oil_reg_expected=%.6f_threshold=%.6f",
+                             g_qm12407_expected_return,
+                             strategy_monthly_threshold);
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card baseline has no trailing, break-even, or partial-close management.
+   // Card specifies no trailing, partial close, or break-even management.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // Card baseline exits by fixed 2R TP, SL, and framework Friday close.
+   if(!QM12407_IsTargetSymbol())
+      return false;
+   if(g_qm12407_month_evaluated && (!g_qm12407_signal_valid || !g_qm12407_signal_long))
+      return true;
    return false;
   }
 
@@ -304,7 +384,13 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   string allowed_symbols[4] = {"SP500.DWX", "NDX.DWX", "WS30.DWX", "XTIUSD.DWX"};
+   QM_SymbolGuardInit(allowed_symbols);
+   QM_BasketWarmupHistory(allowed_symbols,
+                          PERIOD_D1,
+                          (strategy_regression_lookback_months + 4) * 23);
+
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12407_oil_pred_eq\"}");
    return INIT_SUCCEEDED;
   }
 
