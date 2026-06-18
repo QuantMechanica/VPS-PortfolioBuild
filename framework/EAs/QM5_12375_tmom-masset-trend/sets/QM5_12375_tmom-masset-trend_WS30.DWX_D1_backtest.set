@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        1233
-; ea_slug:      ict-silver-bullet
+; ea_id:        12375
+; ea_slug:      tmom-masset-trend
 ; ea_version:   v5.0
 ; set_version:  s20260618-001
-; symbol:       USDCAD.DWX
-; timeframe:    M5
+; symbol:       WS30.DWX
+; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   4
+; magic_slot:   6
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   253c147ec04a3990652ce04d22cf24c1bb265dc4563afdfbb437e30322a8f3d5
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-18
 ;==========================================================
-qm_magic_slot_offset=4
+qm_magic_slot_offset=6
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

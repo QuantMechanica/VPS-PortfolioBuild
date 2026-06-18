@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   423050e1ab8dcd4bf928d97eb14c687facd3e5dce4e2740d46bef4e3123a8f75
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-18
 ;==========================================================
@@ -32,20 +32,3 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-qm_ea_id=12382
-qm_rng_seed=42
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=1
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
-strategy_momentum_lookback_d1=252
-strategy_vol_lookback_d1=60
-strategy_spread_lookback_d1=60
-strategy_atr_period_d1=20
-strategy_atr_stop_mult=3.0
-strategy_min_warmup_bars=260
-strategy_portfolio_stop_r=6.0
