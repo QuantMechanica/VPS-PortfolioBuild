@@ -81,7 +81,7 @@ input int    strategy_macd_slow_period  = 26;
 input int    strategy_macd_signal_period = 9;
 input int    strategy_atr_period        = 14;
 input double strategy_atr_sl_mult       = 1.0;
-input int    strategy_take_profit_points = 20;
+input int    strategy_take_profit_pips  = 20;
 input bool   strategy_close_opposite_cross = true;
 
 // -----------------------------------------------------------------------------
@@ -116,7 +116,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_macd_signal_period <= 0 ||
       strategy_atr_period <= 0 ||
       strategy_atr_sl_mult <= 0.0 ||
-      strategy_take_profit_points <= 0)
+      strategy_take_profit_pips <= 0)
       return false;
 
    const double fast_1 = QM_SMA(_Symbol, _Period, strategy_fast_ma_period, 1, PRICE_CLOSE);
@@ -142,49 +142,47 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       slow_b_1 == 0.0 || slow_b_2 == 0.0)
       return false;
 
-   const bool crossed_above = (fast_1 > slow_a_1 && fast_1 > slow_b_1 &&
-                               fast_2 <= slow_a_2 && fast_2 <= slow_b_2);
-   const bool crossed_below = (fast_1 < slow_a_1 && fast_1 < slow_b_1 &&
-                               fast_2 >= slow_a_2 && fast_2 >= slow_b_2);
+   const double slow_upper_1 = MathMax(slow_a_1, slow_b_1);
+   const double slow_upper_2 = MathMax(slow_a_2, slow_b_2);
+   const double slow_lower_1 = MathMin(slow_a_1, slow_b_1);
+   const double slow_lower_2 = MathMin(slow_a_2, slow_b_2);
+   const bool crossed_above = (fast_1 > slow_upper_1 && fast_2 <= slow_upper_2);
+   const bool crossed_below = (fast_1 < slow_lower_1 && fast_2 >= slow_lower_2);
    const bool macd_long = (macd_1 > 0.0 || macd_1 > macd_2);
    const bool macd_short = (macd_1 < 0.0 || macd_1 < macd_2);
 
    if(crossed_above && macd_long)
      {
       req.type = QM_BUY;
-      req.price = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double entry_price = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(entry_price <= 0.0)
+         return false;
+      req.sl = QM_StopATR(_Symbol,
+                          req.type,
+                          entry_price,
+                          strategy_atr_period,
+                          strategy_atr_sl_mult);
+      req.tp = QM_TakeFixedPips(_Symbol, req.type, entry_price, strategy_take_profit_pips);
       req.reason = "MAMACD_LONG";
      }
    else if(crossed_below && macd_short)
      {
       req.type = QM_SELL;
-      req.price = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double entry_price = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(entry_price <= 0.0)
+         return false;
+      req.sl = QM_StopATR(_Symbol,
+                          req.type,
+                          entry_price,
+                          strategy_atr_period,
+                          strategy_atr_sl_mult);
+      req.tp = QM_TakeFixedPips(_Symbol, req.type, entry_price, strategy_take_profit_pips);
       req.reason = "MAMACD_SHORT";
      }
    else
       return false;
 
-   if(req.price <= 0.0)
-      return false;
-
-   req.sl = QM_StopATR(_Symbol,
-                       req.type,
-                       req.price,
-                       strategy_atr_period,
-                       strategy_atr_sl_mult);
-   if(req.sl <= 0.0)
-      return false;
-
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0)
-      return false;
-   const double tp_distance = (double)strategy_take_profit_points * point;
-   if(req.type == QM_BUY)
-      req.tp = NormalizeDouble(req.price + tp_distance, _Digits);
-   else
-      req.tp = NormalizeDouble(req.price - tp_distance, _Digits);
-
-   return (req.tp > 0.0);
+   return (req.sl > 0.0 && req.tp > 0.0);
   }
 
 // Called every tick when an open position exists for this EA's magic.
@@ -233,10 +231,12 @@ bool Strategy_ExitSignal()
       slow_b_1 == 0.0 || slow_b_2 == 0.0)
       return false;
 
-   const bool crossed_above = (fast_1 > slow_a_1 && fast_1 > slow_b_1 &&
-                               fast_2 <= slow_a_2 && fast_2 <= slow_b_2);
-   const bool crossed_below = (fast_1 < slow_a_1 && fast_1 < slow_b_1 &&
-                               fast_2 >= slow_a_2 && fast_2 >= slow_b_2);
+   const double slow_upper_1 = MathMax(slow_a_1, slow_b_1);
+   const double slow_upper_2 = MathMax(slow_a_2, slow_b_2);
+   const double slow_lower_1 = MathMin(slow_a_1, slow_b_1);
+   const double slow_lower_2 = MathMin(slow_a_2, slow_b_2);
+   const bool crossed_above = (fast_1 > slow_upper_1 && fast_2 <= slow_upper_2);
+   const bool crossed_below = (fast_1 < slow_lower_1 && fast_2 >= slow_lower_2);
 
    if(have_long && crossed_below)
       return true;

@@ -4,13 +4,13 @@
 **Slug:** `mql5-mamacd`
 **Source:** `b8b5125a-c67f-5bbc-baff-33456e08f5b2` (see `strategy-seeds/sources/b8b5125a-c67f-5bbc-baff-33456e08f5b2/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-05-29
+**Last revised:** 2026-06-18
 
 ---
 
 ## 1. Strategy Logic
 
-The EA evaluates closed M15 bars. It opens long when the 5-period SMA on close crosses above both the 85-period and 75-period SMAs on low, with MACD(12,26,9) above zero or rising versus the prior closed bar. It opens short on the inverse cross when MACD is below zero or falling. Positions use an ATR-normalized hard stop, a fixed broker-point take profit, and close early on the opposite fast-MA cross when enabled.
+The EA evaluates closed M15 bars. It opens long when the 5-period SMA on close crosses above the upper side of the 85-period and 75-period SMA-on-low envelope, with MACD(12,26,9) above zero or rising versus the prior closed bar. It opens short when the fast SMA crosses below the lower side of the same slow-MA envelope and MACD is below zero or falling. Positions use an ATR-normalized hard stop, a fixed pip take profit converted through the framework stop-rules helper, and close early on the opposite fast-MA envelope cross when enabled.
 
 ---
 
@@ -26,7 +26,7 @@ The EA evaluates closed M15 bars. It opens long when the 5-period SMA on close c
 | `strategy_macd_signal_period` | 9 | `>0` | MACD signal period. |
 | `strategy_atr_period` | 14 | `>0` | ATR period for the hard stop. |
 | `strategy_atr_sl_mult` | 1.0 | `>0` | Stop distance as a multiple of ATR. |
-| `strategy_take_profit_points` | 20 | `>0` | Take-profit distance in broker points. |
+| `strategy_take_profit_pips` | 20 | `>0` | Take-profit distance in pips, converted to price distance by the framework. |
 | `strategy_close_opposite_cross` | true | `true/false` | Close an open position when the opposite fast-MA cross occurs. |
 
 > Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
@@ -99,3 +99,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-05-29 | Initial build from card | a635810b-ea07-4e91-b37d-a2ca8ddf8f47 |
+| v2 | 2026-06-18 | Rebuild from approved card for Q01 | b2352364-51cb-473e-a013-7227581e77ad |
