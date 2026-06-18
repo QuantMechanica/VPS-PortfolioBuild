@@ -4,7 +4,7 @@
 **Slug:** tv-scp-score
 **Source:** d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7 (see `strategy-seeds/sources/d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-05-31
+**Last revised:** 2026-06-18
 
 ---
 
@@ -111,4 +111,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-05-31 | Initial build from card | ec39084a-e5ba-48a8-b7d2-a2d6be9ea9fa |
+| v1 | 2026-06-18 | Initial build from card | a87578cb-b548-4b13-bf7b-fe0d2fb61130 |

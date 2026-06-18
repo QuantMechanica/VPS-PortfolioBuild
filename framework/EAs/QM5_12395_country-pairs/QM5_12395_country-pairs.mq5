@@ -3,7 +3,6 @@
 #property description "QM5_12395 Country Index Distance Pairs"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_BasketOrder.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 12395;
@@ -265,7 +264,7 @@ void Strategy_ClosePair(const int pair_index, const QM_ExitReason reason)
       if(!Strategy_PairContainsSymbol(pair_index, symbol))
          continue;
 
-      const int expected_magic = QM_MagicChecked(qm_ea_id, Strategy_SymbolSlot(symbol), symbol);
+      const int expected_magic = QM_FrameworkMagic();
       if(expected_magic > 0 && (int)PositionGetInteger(POSITION_MAGIC) == expected_magic)
          QM_TM_ClosePosition(ticket, reason);
      }
@@ -282,7 +281,7 @@ bool Strategy_IsRegisteredPairPosition(const int pair_index)
    const string symbol = PositionGetString(POSITION_SYMBOL);
    if(!Strategy_PairContainsSymbol(pair_index, symbol))
       return false;
-   const int expected_magic = QM_MagicChecked(qm_ea_id, Strategy_SymbolSlot(symbol), symbol);
+   const int expected_magic = QM_FrameworkMagic();
    return (expected_magic > 0 && (int)PositionGetInteger(POSITION_MAGIC) == expected_magic);
   }
 
@@ -338,8 +337,11 @@ bool Strategy_PrepareLegRequest(const int pair_index,
                                 const string symbol,
                                 const bool buy_leg,
                                 const double base_price,
-                                QM_BasketOrderRequest &breq)
+                                QM_EntryRequest &req)
   {
+   if(symbol != _Symbol)
+      return false;
+
    const double entry = buy_leg ? SymbolInfoDouble(symbol, SYMBOL_ASK)
                                 : SymbolInfoDouble(symbol, SYMBOL_BID);
    const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
@@ -353,39 +355,17 @@ bool Strategy_PrepareLegRequest(const int pair_index,
    if(sl <= 0.0 || sl_points <= 0.0)
       return false;
 
-   breq.symbol = symbol;
-   breq.type = buy_leg ? QM_BUY : QM_SELL;
-   breq.price = 0.0;
-   breq.sl = sl;
-   breq.tp = 0.0;
-   breq.lots = QM_LotsForRisk(symbol, sl_points);
-   breq.reason = buy_leg ? "QM5_12395_COUNTRY_PAIR_BUY_LEG" : "QM5_12395_COUNTRY_PAIR_SELL_LEG";
-   breq.symbol_slot = Strategy_SymbolSlot(symbol);
-   breq.expiration_seconds = 0;
-   return (breq.lots > 0.0);
+   req.type = buy_leg ? QM_BUY : QM_SELL;
+   req.price = 0.0;
+   req.sl = sl;
+   req.tp = 0.0;
+   req.reason = buy_leg ? "QM5_12395_COUNTRY_PAIR_BUY_LEG" : "QM5_12395_COUNTRY_PAIR_SELL_LEG";
+   req.symbol_slot = Strategy_SymbolSlot(symbol);
+   req.expiration_seconds = 0;
+   return (QM_LotsForRisk(symbol, sl_points) > 0.0);
   }
 
-bool Strategy_EqualizeNotionalLots(QM_BasketOrderRequest &req_a, QM_BasketOrderRequest &req_b)
-  {
-   const double entry_a = QM_BasketMarketPrice(req_a.symbol, req_a.type);
-   const double entry_b = QM_BasketMarketPrice(req_b.symbol, req_b.type);
-   const double notional_a = Strategy_NotionalPerLot(req_a.symbol, entry_a);
-   const double notional_b = Strategy_NotionalPerLot(req_b.symbol, entry_b);
-   if(notional_a <= 0.0 || notional_b <= 0.0)
-      return false;
-
-   const double max_notional_a = req_a.lots * notional_a;
-   const double max_notional_b = req_b.lots * notional_b;
-   const double target_notional = MathMin(max_notional_a, max_notional_b);
-   if(target_notional <= 0.0)
-      return false;
-
-   req_a.lots = QM_TM_NormalizeVolume(req_a.symbol, target_notional / notional_a);
-   req_b.lots = QM_TM_NormalizeVolume(req_b.symbol, target_notional / notional_b);
-   return (req_a.lots > 0.0 && req_b.lots > 0.0);
-  }
-
-bool Strategy_OpenPair(const int pair_index, const int spread_direction)
+bool Strategy_PrepareChartPairLeg(const int pair_index, const int spread_direction, QM_EntryRequest &req)
   {
    if(pair_index < 0 || pair_index >= STRATEGY_PAIR_COUNT || spread_direction == 0)
       return false;
@@ -399,26 +379,11 @@ bool Strategy_OpenPair(const int pair_index, const int spread_direction)
    const bool buy_a = (spread_direction > 0);
    const bool buy_b = !buy_a;
 
-   QM_BasketOrderRequest req_a;
-   QM_BasketOrderRequest req_b;
-   if(!Strategy_PrepareLegRequest(pair_index, sym_a, buy_a, g_pair_base_a[pair_index], req_a))
-      return false;
-   if(!Strategy_PrepareLegRequest(pair_index, sym_b, buy_b, g_pair_base_b[pair_index], req_b))
-      return false;
-   if(!Strategy_EqualizeNotionalLots(req_a, req_b))
-      return false;
-
-   ulong ticket_a = 0;
-   if(!QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, req_a, ticket_a))
-      return false;
-
-   ulong ticket_b = 0;
-   if(!QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, req_b, ticket_b))
-     {
-      Strategy_ClosePair(pair_index, QM_EXIT_STRATEGY);
-      return false;
-     }
-   return true;
+   if(_Symbol == sym_a)
+      return Strategy_PrepareLegRequest(pair_index, sym_a, buy_a, g_pair_base_a[pair_index], req);
+   if(_Symbol == sym_b)
+      return Strategy_PrepareLegRequest(pair_index, sym_b, buy_b, g_pair_base_b[pair_index], req);
+   return false;
   }
 
 bool Strategy_RefreshState()
@@ -512,9 +477,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double upper = g_pair_mean[pair_index] + strategy_entry_stdev * stdev;
    const double lower = g_pair_mean[pair_index] - strategy_entry_stdev * stdev;
    if(g_pair_spread_now[pair_index] > upper)
-      Strategy_OpenPair(pair_index, -1);
-   else if(g_pair_spread_now[pair_index] < lower)
-      Strategy_OpenPair(pair_index, 1);
+      return Strategy_PrepareChartPairLeg(pair_index, -1, req);
+   if(g_pair_spread_now[pair_index] < lower)
+      return Strategy_PrepareChartPairLeg(pair_index, 1, req);
 
    return false;
   }
@@ -522,9 +487,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Trade Management.
 void Strategy_ManageOpenPosition()
   {
-   for(int p = 0; p < STRATEGY_PAIR_COUNT; ++p)
-      if(Strategy_OpenPairLegCount(p) == 1)
-         Strategy_ClosePair(p, QM_EXIT_STRATEGY);
   }
 
 // Trade Close.
@@ -644,7 +606,11 @@ void OnTick()
       return;
 
    QM_EntryRequest req;
-   Strategy_EntrySignal(req);
+   if(Strategy_EntrySignal(req))
+     {
+      ulong out_ticket = 0;
+      QM_TM_OpenPosition(req, out_ticket);
+     }
   }
 
 void OnTimer()
