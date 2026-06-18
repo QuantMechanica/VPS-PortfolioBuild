@@ -29,13 +29,10 @@
 //     the level is at least sr_min_age_bars old. Resistance is symmetric from
 //     swing highs.
 //
-//   Entry (stop-entry simulation — card Build-EA Notes sanction market entry
-//   after a closed bar confirms the stop level was crossed; framework has no
-//   pending-order plumbing in the corset). The pin bar is at shift 1; the
-//   stop trigger is checked against the CURRENT bar's progress:
-//     bullish: buy  when current price >= pin_high1 + trigger_atr_mult*ATR
-//     bearish: sell when current price <= pin_low1  - trigger_atr_mult*ATR
-//     The pin bar stays valid for `pending_valid_bars` H4 bars after it closes.
+//   Entry (framework pending stop order):
+//     bullish: buy stop  at pin_high1 + trigger_atr_mult*ATR
+//     bearish: sell stop at pin_low1  - trigger_atr_mult*ATR
+//     The pending order expires after `pending_valid_bars` H4 bars.
 //
 //   Stop loss:
 //     long : pin_low1  - sl_buffer_atr_mult * ATR
@@ -104,7 +101,6 @@ datetime g_armed_pin_time   = 0;       // open time of the pin bar
 int      g_armed_bars_left  = 0;       // remaining H4 bars the setup is valid
 
 // Open-position bookkeeping for managed exits.
-datetime g_entry_bar_time   = 0;       // bar-open time when the position was opened
 double   g_pos_pin_mid      = 0.0;     // pin midpoint of the trade that opened
 int      g_pos_dir          = 0;       // +1 long / -1 short of the open trade
 
@@ -120,8 +116,8 @@ bool IsSwingLow(const int k, const int strength)
       return false;
    for(int j = 1; j <= strength; ++j)
      {
-      if(iLow(_Symbol, _Period, k - j) <= lk) return false;
-      if(iLow(_Symbol, _Period, k + j) <= lk) return false;
+      if(iLow(_Symbol, _Period, k - j) <= lk) return false; // perf-allowed: bounded structural scan
+      if(iLow(_Symbol, _Period, k + j) <= lk) return false; // perf-allowed: bounded structural scan
      }
    return true;
   }
@@ -134,8 +130,8 @@ bool IsSwingHigh(const int k, const int strength)
       return false;
    for(int j = 1; j <= strength; ++j)
      {
-      if(iHigh(_Symbol, _Period, k - j) >= hk) return false;
-      if(iHigh(_Symbol, _Period, k + j) >= hk) return false;
+      if(iHigh(_Symbol, _Period, k - j) >= hk) return false; // perf-allowed: bounded structural scan
+      if(iHigh(_Symbol, _Period, k + j) >= hk) return false; // perf-allowed: bounded structural scan
      }
    return true;
   }
@@ -153,7 +149,7 @@ bool FindSupportNear(const double price, const double tol,
      {
       if(!IsSwingLow(k, strength))
          continue;
-      const double level = iLow(_Symbol, _Period, k);
+      const double level = iLow(_Symbol, _Period, k); // perf-allowed: bounded structural scan
       if(level <= 0.0)
          continue;
       if(MathAbs(price - level) > tol)
@@ -166,7 +162,7 @@ bool FindSupportNear(const double price, const double tol,
         {
          if(!IsSwingLow(m, strength))
             continue;
-         const double lm = iLow(_Symbol, _Period, m);
+         const double lm = iLow(_Symbol, _Period, m); // perf-allowed: bounded structural scan
          if(lm > 0.0 && MathAbs(lm - level) <= tol)
             ++touches;
         }
@@ -190,7 +186,7 @@ bool FindResistanceNear(const double price, const double tol,
      {
       if(!IsSwingHigh(k, strength))
          continue;
-      const double level = iHigh(_Symbol, _Period, k);
+      const double level = iHigh(_Symbol, _Period, k); // perf-allowed: bounded structural scan
       if(level <= 0.0)
          continue;
       if(MathAbs(price - level) > tol)
@@ -202,7 +198,7 @@ bool FindResistanceNear(const double price, const double tol,
         {
          if(!IsSwingHigh(m, strength))
             continue;
-         const double hm = iHigh(_Symbol, _Period, m);
+         const double hm = iHigh(_Symbol, _Period, m); // perf-allowed: bounded structural scan
          if(hm > 0.0 && MathAbs(hm - level) <= tol)
             ++touches;
         }
@@ -212,6 +208,29 @@ bool FindResistanceNear(const double price, const double tol,
          return true;
         }
      }
+   return false;
+  }
+
+bool HasOurPendingStopOrder()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP)
+         return true;
+     }
+
    return false;
   }
 
@@ -232,9 +251,9 @@ void AdvanceState_OnNewBar()
       return;
 
    const double o1 = iOpen(_Symbol, _Period, 1);   // perf-allowed: single closed bar
-   const double h1 = iHigh(_Symbol, _Period, 1);
-   const double l1 = iLow(_Symbol, _Period, 1);
-   const double c1 = iClose(_Symbol, _Period, 1);
+   const double h1 = iHigh(_Symbol, _Period, 1);  // perf-allowed: single closed bar
+   const double l1 = iLow(_Symbol, _Period, 1);   // perf-allowed: single closed bar
+   const double c1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed bar
    if(o1 <= 0.0 || h1 <= 0.0 || l1 <= 0.0 || c1 <= 0.0)
       return;
 
@@ -268,7 +287,7 @@ void AdvanceState_OnNewBar()
          g_armed_pin_low   = l1;
          g_armed_pin_mid   = mid;
          g_armed_atr       = atr;
-         g_armed_pin_time  = iTime(_Symbol, _Period, 1);
+         g_armed_pin_time  = iTime(_Symbol, _Period, 1); // perf-allowed: pin-bar timestamp
          g_armed_bars_left = strategy_pending_valid_bars;
          return;
         }
@@ -286,7 +305,7 @@ void AdvanceState_OnNewBar()
          g_armed_pin_low   = l1;
          g_armed_pin_mid   = mid;
          g_armed_atr       = atr;
-         g_armed_pin_time  = iTime(_Symbol, _Period, 1);
+         g_armed_pin_time  = iTime(_Symbol, _Period, 1); // perf-allowed: pin-bar timestamp
          g_armed_bars_left = strategy_pending_valid_bars;
          return;
         }
@@ -304,71 +323,65 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
-// Stop-entry trigger evaluated against the current price progress. The armed
-// setup is refreshed each new closed bar; entry fires intra-window at market
-// once price crosses the stop trigger beyond the pin extreme. Caller gates this
-// on QM_IsNewBar() (framework), so a fresh trigger fires once per closed bar.
+// Place the card's pending stop entry from the armed setup. The framework sizes
+// risk from SL distance and expires the pending order through expiration_seconds.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
+   if(HasOurPendingStopOrder())
+      return false;
    if(g_armed_dir == 0 || g_armed_atr <= 0.0)
       return false;
 
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false;
-
    const double buf = strategy_trigger_atr_mult * g_armed_atr;
+   const int expiration = PeriodSeconds(_Period) * strategy_pending_valid_bars;
+   if(expiration <= 0)
+      return false;
 
    if(g_armed_dir > 0)
      {
       // Bullish: buy-stop above the pin high.
-      const double trigger = g_armed_pin_high + buf;
-      if(ask < trigger)
-         return false;
-      const double entry = ask;
+      const double entry = QM_StopRulesNormalizePrice(_Symbol, g_armed_pin_high + buf);
       const double sl = g_armed_pin_low - strategy_sl_buffer_atr_mult * g_armed_atr;
       if(sl <= 0.0 || sl >= entry)
          return false;
-      const double tp = QM_TakeRR(_Symbol, QM_BUY, entry, sl, strategy_tp_rr);
+      const double tp = QM_TakeRR(_Symbol, QM_BUY_STOP, entry, sl, strategy_tp_rr);
       if(tp <= 0.0)
          return false;
-      req.type   = QM_BUY;
-      req.price  = 0.0;
-      req.sl     = QM_StopRulesNormalizePrice(_Symbol, sl);
-      req.tp     = tp;
-      req.reason = "pinbar_sr_long";
-      g_pos_dir       = +1;
-      g_pos_pin_mid   = g_armed_pin_mid;
-      g_entry_bar_time = iTime(_Symbol, _Period, 0);
-      g_armed_dir     = 0;   // consume the setup
+      req.type               = QM_BUY_STOP;
+      req.price              = entry;
+      req.sl                 = QM_StopRulesNormalizePrice(_Symbol, sl);
+      req.tp                 = tp;
+      req.reason             = "pinbar_sr_long";
+      req.symbol_slot        = qm_magic_slot_offset;
+      req.expiration_seconds = expiration;
+      g_pos_dir              = +1;
+      g_pos_pin_mid          = g_armed_pin_mid;
+      g_armed_dir            = 0;   // consume the setup
       return true;
      }
    else
      {
       // Bearish: sell-stop below the pin low.
-      const double trigger = g_armed_pin_low - buf;
-      if(bid > trigger)
-         return false;
-      const double entry = bid;
+      const double entry = QM_StopRulesNormalizePrice(_Symbol, g_armed_pin_low - buf);
       const double sl = g_armed_pin_high + strategy_sl_buffer_atr_mult * g_armed_atr;
       if(sl <= 0.0 || sl <= entry)
          return false;
-      const double tp = QM_TakeRR(_Symbol, QM_SELL, entry, sl, strategy_tp_rr);
+      const double tp = QM_TakeRR(_Symbol, QM_SELL_STOP, entry, sl, strategy_tp_rr);
       if(tp <= 0.0)
          return false;
-      req.type   = QM_SELL;
-      req.price  = 0.0;
-      req.sl     = QM_StopRulesNormalizePrice(_Symbol, sl);
-      req.tp     = tp;
-      req.reason = "pinbar_sr_short";
-      g_pos_dir       = -1;
-      g_pos_pin_mid   = g_armed_pin_mid;
-      g_entry_bar_time = iTime(_Symbol, _Period, 0);
-      g_armed_dir     = 0;
+      req.type               = QM_SELL_STOP;
+      req.price              = entry;
+      req.sl                 = QM_StopRulesNormalizePrice(_Symbol, sl);
+      req.tp                 = tp;
+      req.reason             = "pinbar_sr_short";
+      req.symbol_slot        = qm_magic_slot_offset;
+      req.expiration_seconds = expiration;
+      g_pos_dir              = -1;
+      g_pos_pin_mid          = g_armed_pin_mid;
+      g_armed_dir            = 0;
       return true;
      }
   }
@@ -405,10 +418,18 @@ bool Strategy_ExitSignal()
      }
 
    // Time stop: close after strategy_time_stop_bars H4 bars in the trade.
-   if(g_entry_bar_time > 0)
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      const datetime now_bar = iTime(_Symbol, _Period, 0);
-      const long bars_held = (long)((now_bar - g_entry_bar_time) / (PeriodSeconds(_Period)));
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != QM_FrameworkMagic())
+         continue;
+
+      const datetime position_time = (datetime)PositionGetInteger(POSITION_TIME);
+      const long bars_held = (long)((TimeCurrent() - position_time) / PeriodSeconds(_Period));
       if(bars_held >= strategy_time_stop_bars)
         {
          g_pos_dir = 0;
