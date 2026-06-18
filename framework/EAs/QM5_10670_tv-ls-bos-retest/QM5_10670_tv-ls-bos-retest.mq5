@@ -15,8 +15,8 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;
 input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -41,8 +41,8 @@ input double strategy_atr_stop_buffer_mult   = 0.10;
 input double strategy_max_stop_atr           = 2.50;
 input double strategy_rr_target              = 2.00;
 input bool   strategy_session_filter_enabled = true;
-input int    strategy_session_start_minute   = 990;  // 16:30 broker time
-input int    strategy_session_end_minute     = 1080; // 18:00 broker time
+input int    strategy_session_start_minute   = 810;  // 13:30 UTC, card 06:30 MST
+input int    strategy_session_end_minute     = 900;  // 15:00 UTC, card 08:00 MST
 input int    strategy_max_spread_points      = 200;
 
 int MinuteOfDay(const datetime value)
@@ -70,7 +70,8 @@ bool IsInSession(const datetime value)
    if(start_minute == end_minute)
       return true;
 
-   const int now_minute = MinuteOfDay(value);
+   const datetime utc_value = QM_BrokerToUTC(value);
+   const int now_minute = MinuteOfDay(utc_value);
    if(start_minute < end_minute)
       return (now_minute >= start_minute && now_minute < end_minute);
    return (now_minute >= start_minute || now_minute < end_minute);
@@ -87,9 +88,14 @@ bool SpreadAllowed()
    if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
       return false;
 
-   return ((ask - bid) / point <= (double)strategy_max_spread_points);
+   if(ask > bid && ((ask - bid) / point) > (double)strategy_max_spread_points)
+      return false;
+   return true;
   }
 
+// perf-allowed: bespoke closed-bar swing/sweep/BOS structure needs raw OHLC reads.
+// These helpers are reached only from Strategy_EntrySignal after the framework
+// consumes QM_IsNewBar(), so the lookback scan runs once per closed bar.
 double HighestHighClosed(const int start_shift, const int bars)
   {
    if(start_shift < 1 || bars < 1)

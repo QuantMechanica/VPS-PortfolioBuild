@@ -5,36 +5,58 @@
 #include <QM/QM_Common.mqh>
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                    = 1092;
-input int    qm_magic_slot_offset        = 0;
+input int    qm_ea_id                   = 1092;
+input int    qm_magic_slot_offset       = 0;
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT                = 0.0;
-input double RISK_FIXED                  = 1000.0;
-input double PORTFOLIO_WEIGHT            = 1.0;
+input double RISK_PERCENT               = 0.0;
+input double RISK_FIXED                 = 1000.0;
+input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode           = QM_NEWS_OFF;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours    = 336;
+input string qm_news_min_impact         = "high";
+input QM_NewsMode qm_news_mode_legacy   = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = true;
+input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
+
 input group "Strategy"
-input int    strategy_rebalance_months   = 3;
-input int    strategy_rebalance_hour     = 1;
-input int    strategy_bucket_size        = 3;
-input int    strategy_atr_period         = 20;
-input double strategy_atr_sl_mult        = 5.0;
-input int    strategy_spread_days        = 20;
-input double strategy_spread_mult        = 3.0;
-input int    strategy_stale_days_monthly = 45;
-input int    strategy_stale_days_quarterly = 120;
-input string strategy_ppp_csv_path       = "QM5_1092_ppp_fair_values.csv";
+input int    strategy_rebalance_months        = 3;
+input int    strategy_rebalance_window_days   = 7;
+input int    strategy_bucket_size             = 3;
+input int    strategy_atr_period              = 20;
+input double strategy_atr_sl_mult             = 5.0;
+input int    strategy_max_spread_points       = 30;
+input int    strategy_stale_days_monthly      = 45;
+input int    strategy_stale_days_quarterly    = 120;
+input int    strategy_ppp_observation_yyyymmdd = 20231231;
+input double strategy_ppp_eur_usd             = 1.5000;
+input double strategy_ppp_gbp_usd             = 1.4000;
+input double strategy_ppp_jpy_usd             = 0.0075;
+input double strategy_ppp_aud_usd             = 0.7500;
+input double strategy_ppp_cad_usd             = 0.8000;
+input double strategy_ppp_chf_usd             = 1.1000;
+input double strategy_ppp_nzd_usd             = 0.6800;
 
 const int STRATEGY_UNIVERSE_SIZE = 7;
-string g_symbols[7] = {"EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX", "AUDUSD.DWX", "USDCAD.DWX", "USDCHF.DWX", "NZDUSD.DWX"};
-string g_ccys[7]    = {"EUR", "GBP", "JPY", "AUD", "CAD", "CHF", "NZD"};
+string g_strategy_symbols[7] =
+  {
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "NZDUSD.DWX"
+  };
 
 int g_last_entry_rebalance_key = 0;
 int g_last_exit_rebalance_key = 0;
@@ -42,9 +64,43 @@ int g_last_exit_rebalance_key = 0;
 int Strategy_CurrentSymbolIndex()
   {
    for(int i = 0; i < STRATEGY_UNIVERSE_SIZE; ++i)
-      if(g_symbols[i] == _Symbol)
+      if(g_strategy_symbols[i] == _Symbol)
          return i;
    return -1;
+  }
+
+bool Strategy_IsUsdBasePair(const int index)
+  {
+   return (index == 2 || index == 4 || index == 5);
+  }
+
+double Strategy_FairValueUsdPerCurrency(const int index)
+  {
+   if(index == 0)
+      return strategy_ppp_eur_usd;
+   if(index == 1)
+      return strategy_ppp_gbp_usd;
+   if(index == 2)
+      return strategy_ppp_jpy_usd;
+   if(index == 3)
+      return strategy_ppp_aud_usd;
+   if(index == 4)
+      return strategy_ppp_cad_usd;
+   if(index == 5)
+      return strategy_ppp_chf_usd;
+   if(index == 6)
+      return strategy_ppp_nzd_usd;
+   return 0.0;
+  }
+
+datetime Strategy_ObservationDate()
+  {
+   const int y = strategy_ppp_observation_yyyymmdd / 10000;
+   const int m = (strategy_ppp_observation_yyyymmdd / 100) % 100;
+   const int d = strategy_ppp_observation_yyyymmdd % 100;
+   if(y < 1970 || m < 1 || m > 12 || d < 1 || d > 31)
+      return 0;
+   return StringToTime(StringFormat("%04d.%02d.%02d 00:00", y, m, d));
   }
 
 int Strategy_RebalanceKey(const datetime t)
@@ -56,125 +112,79 @@ int Strategy_RebalanceKey(const datetime t)
    return dt.year * 100 + bucket_month;
   }
 
-bool Strategy_IsRebalanceClosedBar()
+bool Strategy_IsRebalanceWindow(const datetime t)
   {
-   if(_Period != PERIOD_H1 && _Period != PERIOD_D1)
+   if(strategy_rebalance_months != 1 && strategy_rebalance_months != 3)
+      return false;
+   if(strategy_rebalance_window_days < 1)
       return false;
 
-   const datetime closed_bar = iTime(_Symbol, _Period, 1);
-   const datetime current_bar = iTime(_Symbol, _Period, 0);
-   if(closed_bar <= 0 || current_bar <= 0)
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   if(dt.day > strategy_rebalance_window_days)
       return false;
-
-   MqlDateTime closed_dt;
-   MqlDateTime current_dt;
-   TimeToStruct(closed_bar, closed_dt);
-   TimeToStruct(current_bar, current_dt);
-   if(current_dt.hour < strategy_rebalance_hour)
-      return false;
-
    if(strategy_rebalance_months <= 1)
-      return (closed_dt.mon != current_dt.mon || closed_dt.year != current_dt.year);
-
-   const int closed_q = (closed_dt.mon - 1) / 3;
-   const int current_q = (current_dt.mon - 1) / 3;
-   return (closed_q != current_q || closed_dt.year != current_dt.year);
+      return true;
+   return (dt.mon == 1 || dt.mon == 4 || dt.mon == 7 || dt.mon == 10);
   }
 
-datetime Strategy_ParseDate(const string raw)
+bool Strategy_PppObservationFresh()
   {
-   string s = raw;
-   StringTrimLeft(s);
-   StringTrimRight(s);
-   if(StringLen(s) < 10)
-      return 0;
-   StringReplace(s, "-", ".");
-   return StringToTime(s + " 00:00");
-  }
-
-bool Strategy_ReadLatestPppFairValue(const string ccy, double &out_fair_value, datetime &out_obs_date)
-  {
-   out_fair_value = 0.0;
-   out_obs_date = 0;
-   if(strategy_ppp_csv_path == "")
+   const datetime obs = Strategy_ObservationDate();
+   if(obs <= 0)
       return false;
 
-   int handle = FileOpen(strategy_ppp_csv_path, FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ, ',');
-   if(handle == INVALID_HANDLE)
-      handle = FileOpen(strategy_ppp_csv_path, FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON, ',');
-   if(handle == INVALID_HANDLE)
-      return false;
-
-   while(!FileIsEnding(handle))
-     {
-      const string date_field = FileReadString(handle);
-      const string ccy_field = FileReadString(handle);
-      const string ppp_field = FileReadString(handle);
-      const string cpi_field = FileReadString(handle);
-      if(date_field == "" || ccy_field == "")
-         continue;
-      if(ccy_field != ccy)
-         continue;
-
-      const datetime obs_date = Strategy_ParseDate(date_field);
-      const double cpi_value = StringToDouble(cpi_field);
-      const double ppp_value = StringToDouble(ppp_field);
-      const double fair_value = (cpi_value > 0.0) ? cpi_value : ppp_value;
-      if(obs_date <= 0 || fair_value <= 0.0)
-         continue;
-      if(obs_date > TimeCurrent())
-         continue;
-      if(obs_date >= out_obs_date)
-        {
-         out_obs_date = obs_date;
-         out_fair_value = fair_value;
-        }
-     }
-
-   FileClose(handle);
-   if(out_fair_value <= 0.0 || out_obs_date <= 0)
+   const datetime now = TimeCurrent();
+   if(obs > now)
       return false;
 
    const int stale_days = (strategy_rebalance_months <= 1) ? strategy_stale_days_monthly : strategy_stale_days_quarterly;
-   if(stale_days > 0 && (TimeCurrent() - out_obs_date) > stale_days * 86400)
-      return false;
-
-   return true;
+   if(stale_days <= 0)
+      return true;
+   return ((now - obs) <= stale_days * 86400);
   }
 
-double Strategy_SpotUsdPerCcy(const int index)
+double Strategy_SpotUsdPerCurrency(const int index)
   {
-   const string symbol = g_symbols[index];
-   SymbolSelect(symbol, true);
-   const double close = iClose(symbol, PERIOD_D1, 1);
-   if(close <= 0.0)
+   if(index < 0 || index >= STRATEGY_UNIVERSE_SIZE)
       return 0.0;
-   if(symbol == "USDJPY.DWX" || symbol == "USDCAD.DWX" || symbol == "USDCHF.DWX")
-      return 1.0 / close;
-   return close;
+
+   const string symbol = g_strategy_symbols[index];
+   SymbolSelect(symbol, true);
+   double bid = SymbolInfoDouble(symbol, SYMBOL_BID);
+   double ask = SymbolInfoDouble(symbol, SYMBOL_ASK);
+   double mid = 0.0;
+   if(bid > 0.0 && ask > 0.0)
+      mid = 0.5 * (bid + ask);
+   else if(bid > 0.0)
+      mid = bid;
+   else if(ask > 0.0)
+      mid = ask;
+   if(mid <= 0.0)
+      return 0.0;
+
+   if(Strategy_IsUsdBasePair(index))
+      return 1.0 / mid;
+   return mid;
   }
 
 bool Strategy_DeviationByIndex(const int index, double &out_deviation)
   {
    out_deviation = 0.0;
-   if(index < 0 || index >= STRATEGY_UNIVERSE_SIZE)
+   const double fair = Strategy_FairValueUsdPerCurrency(index);
+   const double spot = Strategy_SpotUsdPerCurrency(index);
+   if(fair <= 0.0 || spot <= 0.0)
       return false;
 
-   double fair_value = 0.0;
-   datetime obs_date = 0;
-   if(!Strategy_ReadLatestPppFairValue(g_ccys[index], fair_value, obs_date))
-      return false;
-
-   const double spot_usd = Strategy_SpotUsdPerCcy(index);
-   if(spot_usd <= 0.0 || fair_value <= 0.0)
-      return false;
-
-   out_deviation = (spot_usd / fair_value) - 1.0;
+   out_deviation = (spot / fair) - 1.0;
    return true;
   }
 
 int Strategy_DirectionForSymbol()
   {
+   if(!Strategy_PppObservationFresh())
+      return 0;
+
    const int current_index = Strategy_CurrentSymbolIndex();
    if(current_index < 0)
       return 0;
@@ -192,81 +202,54 @@ int Strategy_DirectionForSymbol()
       ++count;
      }
 
-   const int bucket_size = MathMin(MathMax(strategy_bucket_size, 1), count / 2);
-   if(bucket_size <= 0)
+   if(count < 3)
       return 0;
 
    for(int i = 0; i < count - 1; ++i)
       for(int j = i + 1; j < count; ++j)
          if(scores[j] < scores[i])
            {
-            const double tmp_score = scores[i];
+            const double score_tmp = scores[i];
             scores[i] = scores[j];
-            scores[j] = tmp_score;
-            const int tmp_index = indexes[i];
+            scores[j] = score_tmp;
+            const int index_tmp = indexes[i];
             indexes[i] = indexes[j];
-            indexes[j] = tmp_index;
+            indexes[j] = index_tmp;
            }
 
-   int ccy_direction = 0;
+   const int bucket_size = MathMin(MathMax(strategy_bucket_size, 1), count / 2);
+   int currency_direction = 0;
    for(int i = 0; i < bucket_size; ++i)
       if(indexes[i] == current_index)
-         ccy_direction = 1;
+         currency_direction = 1;
    for(int i = count - bucket_size; i < count; ++i)
       if(indexes[i] == current_index)
-         ccy_direction = -1;
-   if(ccy_direction == 0)
+         currency_direction = -1;
+
+   if(currency_direction == 0)
       return 0;
-
-   const string symbol = g_symbols[current_index];
-   const bool usd_base = (symbol == "USDJPY.DWX" || symbol == "USDCAD.DWX" || symbol == "USDCHF.DWX");
-   return usd_base ? -ccy_direction : ccy_direction;
-  }
-
-double Strategy_MedianDailySpreadPoints()
-  {
-   const int n = strategy_spread_days;
-   if(n <= 0 || n > 64)
-      return 0.0;
-
-   double values[64];
-   int count = 0;
-   for(int shift = 1; shift <= n; ++shift)
-     {
-      const long spread = iSpread(_Symbol, PERIOD_D1, shift);
-      if(spread <= 0)
-         continue;
-      values[count] = (double)spread;
-      ++count;
-     }
-
-   if(count <= 0)
-      return 0.0;
-
-   for(int i = 0; i < count - 1; ++i)
-      for(int j = i + 1; j < count; ++j)
-         if(values[j] < values[i])
-           {
-            const double tmp = values[i];
-            values[i] = values[j];
-            values[j] = tmp;
-           }
-
-   if((count % 2) == 1)
-      return values[count / 2];
-   return 0.5 * (values[(count / 2) - 1] + values[count / 2]);
+   if(Strategy_IsUsdBasePair(current_index))
+      return -currency_direction;
+   return currency_direction;
   }
 
 bool Strategy_SpreadAllowsEntry()
   {
-   const double median_spread = Strategy_MedianDailySpreadPoints();
-   if(median_spread <= 0.0 || strategy_spread_mult <= 0.0)
+   if(strategy_max_spread_points <= 0)
       return true;
 
-   const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(current_spread <= 0)
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+      return false;
+   if(ask < bid)
+      return false;
+   if(ask == bid)
       return true;
-   return ((double)current_spread <= median_spread * strategy_spread_mult);
+
+   const double spread_points = (ask - bid) / point;
+   return (spread_points <= strategy_max_spread_points);
   }
 
 bool Strategy_HasOpenPosition()
@@ -286,11 +269,33 @@ bool Strategy_HasOpenPosition()
    return false;
   }
 
+bool Strategy_PositionOpenedBeforeCurrentRebalance()
+  {
+   const int magic = QM_FrameworkMagic();
+   const int current_key = Strategy_RebalanceKey(TimeCurrent());
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      return (Strategy_RebalanceKey(open_time) < current_key);
+     }
+   return false;
+  }
+
 bool Strategy_NoTradeFilter()
   {
    if(Strategy_CurrentSymbolIndex() < 0)
       return true;
    if(strategy_rebalance_months != 1 && strategy_rebalance_months != 3)
+      return true;
+   if(strategy_bucket_size < 1 || strategy_bucket_size > 3)
       return true;
    return false;
   }
@@ -305,10 +310,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!Strategy_IsRebalanceClosedBar())
+   const datetime now = TimeCurrent();
+   if(!Strategy_IsRebalanceWindow(now))
       return false;
 
-   const int rebalance_key = Strategy_RebalanceKey(iTime(_Symbol, _Period, 1));
+   const int rebalance_key = Strategy_RebalanceKey(now);
    if(rebalance_key <= 0 || rebalance_key == g_last_entry_rebalance_key)
       return false;
    if(Strategy_HasOpenPosition())
@@ -325,8 +331,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ask <= 0.0 || bid <= 0.0 || strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return false;
 
-   const int slot = Strategy_CurrentSymbolIndex();
-   req.symbol_slot = slot;
+   req.symbol_slot = Strategy_CurrentSymbolIndex();
    req.type = (direction > 0) ? QM_BUY : QM_SELL;
    req.price = (direction > 0) ? ask : bid;
    req.sl = QM_StopATR(_Symbol, req.type, req.price, strategy_atr_period, strategy_atr_sl_mult);
@@ -341,40 +346,23 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
   {
-   // Trade Management: the card specifies only the broker hard stop and rebalance exits.
+   // Trade Management: the card specifies only the ATR hard stop and scheduled rebalance exits.
   }
 
 bool Strategy_ExitSignal()
   {
-   if(!Strategy_IsRebalanceClosedBar())
+   const datetime now = TimeCurrent();
+   if(!Strategy_IsRebalanceWindow(now))
       return false;
 
-   const int rebalance_key = Strategy_RebalanceKey(iTime(_Symbol, _Period, 1));
+   const int rebalance_key = Strategy_RebalanceKey(now);
    if(rebalance_key <= 0 || rebalance_key == g_last_exit_rebalance_key)
       return false;
+   if(!Strategy_PositionOpenedBeforeCurrentRebalance())
+      return false;
 
-   const int magic = QM_FrameworkMagic();
-   const int desired_direction = Strategy_DirectionForSymbol();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      const long pos_type = PositionGetInteger(POSITION_TYPE);
-      const int current_direction = (pos_type == POSITION_TYPE_BUY) ? 1 : -1;
-      if(desired_direction == 0 || desired_direction != current_direction)
-        {
-         g_last_exit_rebalance_key = rebalance_key;
-         return true;
-        }
-     }
-
-   return false;
+   g_last_exit_rebalance_key = rebalance_key;
+   return true;
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
@@ -389,12 +377,22 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   QM_SymbolGuardInit(g_strategy_symbols);
+   QM_BasketWarmupHistory(g_strategy_symbols, PERIOD_D1, 40);
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1092_qp_fx_value_ppp\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -412,7 +410,12 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -439,6 +442,8 @@ void OnTick()
    if(!QM_IsNewBar())
       return;
 
+   QM_EquityStreamOnNewBar();
+
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
@@ -450,6 +455,13 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()

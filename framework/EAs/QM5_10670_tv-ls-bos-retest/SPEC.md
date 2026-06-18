@@ -4,7 +4,7 @@
 **Slug:** tv-ls-bos-retest
 **Source:** d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7
 **Author of this spec:** Codex
-**Last revised:** 2026-05-31
+**Last revised:** 2026-06-18
 
 ---
 
@@ -30,8 +30,8 @@ The EA looks for a confirmed swing low or swing high, then waits for a closed ba
 | strategy_max_stop_atr | 2.50 | >0.0 | Reject entries whose stop distance is larger than this ATR multiple. |
 | strategy_rr_target | 2.00 | >0.0 | Fixed reward-to-risk target. |
 | strategy_session_filter_enabled | true | true/false | Enables the NY Open broker-time session filter. |
-| strategy_session_start_minute | 990 | 0-1439 | Session start minute of broker day, default 16:30. |
-| strategy_session_end_minute | 1080 | 0-1439 | Session end minute of broker day, default 18:00. |
+| strategy_session_start_minute | 810 | 0-1439 | Session start minute of UTC day after broker-to-UTC conversion, default 13:30 UTC / 06:30 MST. |
+| strategy_session_end_minute | 900 | 0-1439 | Session end minute of UTC day after broker-to-UTC conversion, default 15:00 UTC / 08:00 MST. |
 | strategy_max_spread_points | 200 | >=0 | Maximum allowed spread in points; zero disables the spread cap. |
 
 ---
@@ -100,3 +100,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-05-31 | Initial build from card | 5da6fe9f-affa-46fd-b42c-89fec5bbe68d |
+| v2 | 2026-06-18 | Rebuild in place from card | 663949c9-095b-4cfe-b113-3203d0894c0b |
