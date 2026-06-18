@@ -3,16 +3,16 @@
 ; ea_id:        10687
 ; ea_slug:      tv-parent-sweep
 ; ea_version:   v5.0
-; set_version:  s20260531-001
+; set_version:  s20260618-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    M30
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   73fd90871ab9b0b1e2a75a7ebd2e02f8d8ab109f42e015ace8be277bb2cd2f0b
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-31
+; date:         2026-06-18
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000

@@ -3,16 +3,16 @@
 ; ea_id:        10687
 ; ea_slug:      tv-parent-sweep
 ; ea_version:   v5.0
-; set_version:  s20260531-001
+; set_version:  s20260618-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    M30
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   e02bd289ed05b233d42b82c16b9efc5afab96a74207e0a5d426e8b60161ac17a
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-31
+; date:         2026-06-18
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000

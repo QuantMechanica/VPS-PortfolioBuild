@@ -3,16 +3,16 @@
 ; ea_id:        10687
 ; ea_slug:      tv-parent-sweep
 ; ea_version:   v5.0
-; set_version:  s20260531-001
+; set_version:  s20260618-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    M30
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   7b16589877d89dda66ba7f51afc37a1992d6f618e7f58aace4c65b4edd04a6c3
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-31
+; date:         2026-06-18
 ;==========================================================
 qm_magic_slot_offset=4
 RISK_FIXED=1000

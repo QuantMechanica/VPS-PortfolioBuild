@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 9999;
+input int    qm_ea_id                   = 11028;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -300,6 +300,11 @@ int OnInit()
                         qm_news_temporal,              // FW1 Axis A
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
+
+   string warmup_symbols[4] = {"GBPJPY.DWX", "GBPUSD.DWX", "USDJPY.DWX", "EURJPY.DWX"};
+   QM_SymbolGuardInit(warmup_symbols);
+   QM_BasketWarmupHistory(warmup_symbols, (ENUM_TIMEFRAMES)_Period,
+                          strategy_slow_wma_period + strategy_atr_period + 10);
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;

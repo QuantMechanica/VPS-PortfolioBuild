@@ -28,6 +28,7 @@ The EA tracks Asia, London, and New York sessions using broker timestamps conver
 | `strategy_reclaim_filter` | true | true/false | Requires a bullish reclaim candle for longs and bearish reclaim candle for shorts. |
 | `strategy_atr_period` | 14 | 5-50 | ATR period used for the stop buffer. |
 | `strategy_stop_atr_buffer` | 0.10 | 0.0-0.25 | ATR fraction added beyond the sweep extreme for the stop. |
+| `strategy_session_lookback_bars` | 900 | 96-1000 | Closed-bar history used to reconstruct recent parent and child session ranges. |
 | `strategy_max_spread_points` | 60 | 0-500 | Blocks new entries when spread is above this point threshold; 0 disables. |
 | `strategy_rollover_start_hhmm_utc` | 2355 | 0-2359 | Start of UTC rollover no-trade window after broker-time conversion. |
 | `strategy_rollover_end_hhmm_utc` | 5 | 0-2359 | End of UTC rollover no-trade window after broker-time conversion. |
@@ -98,4 +99,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | 694eb06c-4a14-4fef-8414-cd39109f5ccc |
+| v1 | 2026-06-18 | Initial build from card | bc02ea75-e890-49be-92c3-4aebe3ccdfc7 |
