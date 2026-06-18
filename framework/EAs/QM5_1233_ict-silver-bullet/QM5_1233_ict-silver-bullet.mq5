@@ -2,7 +2,6 @@
 #property version   "5.0"
 #property description "QM5_1233 ICT Silver Bullet NY AM liquidity sweep"
 
-#include <Trade/Trade.mqh>
 #include <QM/QM_Common.mqh>
 
 input group "QuantMechanica V5 Framework"
@@ -66,7 +65,6 @@ const string STRATEGY_SYMBOLS[STRATEGY_SYMBOL_COUNT] =
    "UK100.DWX"
   };
 
-datetime g_last_entry_bar = 0;
 int      g_last_filled_session_key = 0;
 
 datetime Strategy_BrokerToNewYork(const datetime broker_time)
@@ -111,7 +109,10 @@ bool Strategy_SpreadOk()
    if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
       return false;
 
-   return ((ask - bid) / point <= (double)strategy_max_spread_points);
+   if(ask > bid && (ask - bid) / point > (double)strategy_max_spread_points)
+      return false;
+
+   return true;
   }
 
 bool Strategy_HasOpenPosition()
@@ -160,7 +161,6 @@ void Strategy_CancelOwnPendingOrders(const string reason)
    if(magic <= 0)
       return;
 
-   CTrade trade;
    for(int i = OrdersTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = OrderGetTicket(i);
@@ -171,8 +171,7 @@ void Strategy_CancelOwnPendingOrders(const string reason)
       if((int)OrderGetInteger(ORDER_MAGIC) != magic)
          continue;
 
-      if(trade.OrderDelete(ticket))
-         QM_LogEvent(QM_INFO, "PENDING_CANCEL", StringFormat("{\"ticket\":%I64u,\"reason\":\"%s\"}", ticket, reason));
+      QM_TM_RemovePendingOrder(ticket, reason);
      }
   }
 
@@ -182,11 +181,11 @@ void Strategy_CancelInvalidPendingOrders()
    if(magic <= 0)
       return;
 
-   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1);
-   if(close_1 <= 0.0)
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(bid <= 0.0 || ask <= 0.0)
       return;
 
-   CTrade trade;
    for(int i = OrdersTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = OrderGetTicket(i);
@@ -201,11 +200,10 @@ void Strategy_CancelInvalidPendingOrders()
       const double sl = OrderGetDouble(ORDER_SL);
       if(sl <= 0.0)
          continue;
-      if((order_type == ORDER_TYPE_BUY_LIMIT && close_1 <= sl) ||
-         (order_type == ORDER_TYPE_SELL_LIMIT && close_1 >= sl))
+      if((order_type == ORDER_TYPE_BUY_LIMIT && bid <= sl) ||
+         (order_type == ORDER_TYPE_SELL_LIMIT && ask >= sl))
         {
-         if(trade.OrderDelete(ticket))
-            QM_LogEvent(QM_INFO, "PENDING_INVALIDATED", StringFormat("{\"ticket\":%I64u}", ticket));
+         QM_TM_RemovePendingOrder(ticket, "closed_beyond_stop_side");
         }
      }
   }
@@ -224,14 +222,14 @@ bool Strategy_BuildReferenceRange(datetime &ny_now,
    range_high = -DBL_MAX;
    range_low = DBL_MAX;
 
-   const double prev_h1_high = iHigh(_Symbol, PERIOD_H1, 1);
-   const double prev_h1_low = iLow(_Symbol, PERIOD_H1, 1);
+   const double prev_h1_high = iHigh(_Symbol, PERIOD_H1, 1); // perf-allowed: card requires previous completed H1 liquidity candle.
+   const double prev_h1_low = iLow(_Symbol, PERIOD_H1, 1); // perf-allowed: card requires previous completed H1 liquidity candle.
    if(prev_h1_high <= 0.0 || prev_h1_low <= 0.0 || prev_h1_high <= prev_h1_low)
       return false;
 
    for(int shift = 1; shift <= 288; ++shift)
      {
-      const datetime bar_time = iTime(_Symbol, strategy_signal_tf, shift);
+      const datetime bar_time = iTime(_Symbol, strategy_signal_tf, shift); // perf-allowed: finite M5 09:00-09:59 NY structural range.
       if(bar_time <= 0)
          break;
 
@@ -242,8 +240,8 @@ bool Strategy_BuildReferenceRange(datetime &ny_now,
       const int hhmm = Strategy_Hhmm(ny_bar);
       if(hhmm >= 900 && hhmm < 1000)
         {
-         const double high_i = iHigh(_Symbol, strategy_signal_tf, shift);
-         const double low_i = iLow(_Symbol, strategy_signal_tf, shift);
+         const double high_i = iHigh(_Symbol, strategy_signal_tf, shift); // perf-allowed: finite M5 09:00-09:59 NY structural range.
+         const double low_i = iLow(_Symbol, strategy_signal_tf, shift); // perf-allowed: finite M5 09:00-09:59 NY structural range.
          if(high_i <= 0.0 || low_i <= 0.0 || high_i < low_i)
             return false;
          if(high_i > range_high)
@@ -376,7 +374,7 @@ bool Strategy_BuildLongSetup(QM_EntryRequest &req,
    bool swept = false;
    for(int shift = 1; shift <= max_bars; ++shift)
      {
-      const double low_i = iLow(_Symbol, strategy_signal_tf, shift);
+      const double low_i = iLow(_Symbol, strategy_signal_tf, shift); // perf-allowed: displacement-leg sweep scan bounded by MaxDisplacementBars.
       if(low_i > 0.0 && low_i <= sell_side_liquidity - (double)strategy_sweep_buffer_points * point)
         {
          swept = true;
@@ -384,11 +382,11 @@ bool Strategy_BuildLongSetup(QM_EntryRequest &req,
             sweep_low = low_i;
         }
      }
-   if(!swept || iClose(_Symbol, strategy_signal_tf, 1) <= sell_side_liquidity)
+   if(!swept || iClose(_Symbol, strategy_signal_tf, 1) <= sell_side_liquidity) // perf-allowed: closed-bar return above sell-side liquidity.
       return false;
 
-   const double fvg_low = iLow(_Symbol, strategy_signal_tf, 1);
-   const double fvg_high = iHigh(_Symbol, strategy_signal_tf, 3);
+   const double fvg_low = iLow(_Symbol, strategy_signal_tf, 1); // perf-allowed: bullish FVG latest-bar lower edge.
+   const double fvg_high = iHigh(_Symbol, strategy_signal_tf, 3); // perf-allowed: bullish FVG older-bar upper edge.
    if(fvg_low <= 0.0 || fvg_high <= 0.0 || fvg_low <= fvg_high)
       return false;
 
@@ -425,7 +423,7 @@ bool Strategy_BuildShortSetup(QM_EntryRequest &req,
    bool swept = false;
    for(int shift = 1; shift <= max_bars; ++shift)
      {
-      const double high_i = iHigh(_Symbol, strategy_signal_tf, shift);
+      const double high_i = iHigh(_Symbol, strategy_signal_tf, shift); // perf-allowed: displacement-leg sweep scan bounded by MaxDisplacementBars.
       if(high_i > 0.0 && high_i >= buy_side_liquidity + (double)strategy_sweep_buffer_points * point)
         {
          swept = true;
@@ -433,11 +431,11 @@ bool Strategy_BuildShortSetup(QM_EntryRequest &req,
             sweep_high = high_i;
         }
      }
-   if(!swept || iClose(_Symbol, strategy_signal_tf, 1) >= buy_side_liquidity)
+   if(!swept || iClose(_Symbol, strategy_signal_tf, 1) >= buy_side_liquidity) // perf-allowed: closed-bar return below buy-side liquidity.
       return false;
 
-   const double fvg_high = iHigh(_Symbol, strategy_signal_tf, 1);
-   const double fvg_low = iLow(_Symbol, strategy_signal_tf, 3);
+   const double fvg_high = iHigh(_Symbol, strategy_signal_tf, 1); // perf-allowed: bearish FVG latest-bar lower edge.
+   const double fvg_low = iLow(_Symbol, strategy_signal_tf, 3); // perf-allowed: bearish FVG older-bar upper edge.
    if(fvg_high <= 0.0 || fvg_low <= 0.0 || fvg_high >= fvg_low)
       return false;
 
@@ -469,9 +467,6 @@ bool Strategy_NoTradeFilter()
       return true;
    if(_Period != strategy_signal_tf)
       return true;
-   if(Bars(_Symbol, strategy_signal_tf) < 310)
-      return true;
-
    const datetime ny_now = Strategy_BrokerToNewYork(TimeCurrent());
    if(Strategy_Hhmm(ny_now) >= strategy_ny_entry_end_hhmm)
       Strategy_CancelOwnPendingOrders("ny_window_closed");
@@ -489,10 +484,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
-
-   const datetime bar_time = iTime(_Symbol, strategy_signal_tf, 1);
-   if(bar_time <= 0 || bar_time == g_last_entry_bar)
-      return false;
 
    datetime ny_now = 0;
    double buy_side_liq = 0.0;
@@ -517,9 +508,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    bool signal = Strategy_BuildShortSetup(req, buy_side_liq, range_high, range_low);
    if(!signal)
       signal = Strategy_BuildLongSetup(req, sell_side_liq, range_high, range_low);
-
-   if(signal)
-      g_last_entry_bar = bar_time;
 
    return signal;
   }

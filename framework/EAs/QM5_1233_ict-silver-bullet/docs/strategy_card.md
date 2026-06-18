@@ -14,13 +14,17 @@ indicators:
   - "[[indicators/swing-high-low]]"
   - "[[indicators/fair-value-gap]]"
 g0_status: APPROVED
-r1_track_record: UNKNOWN
-r2_mechanical: UNKNOWN
-r3_data_available: UNKNOWN
-r4_ml_forbidden: UNKNOWN
+r1_track_record: PASS
+r1_reasoning: "Single source_id and single sources entry (babypips-ict-silver-bullet); supplement URLs in body are corroboration only, not separate source claims."
+r2_mechanical: PASS
+r2_reasoning: "Fixed NY 10:00-11:00 window, objective liquidity-sweep threshold, displacement bar count, FVG midpoint limit entry, stop placement formula, and time exit are all deterministic."
+r3_data_available: PASS
+r3_reasoning: "M5/H1 OHLC data on DWX FX, metals, oil, and index CFDs is available in MT5 tester."
+r4_ml_forbidden: PASS
+r4_reasoning: "No ML or adaptive components; one fill per session per symbol enforces the single-position-per-magic convention."
 pipeline_phase: G0
 last_updated: 2026-05-18
-expected_trades_per_year_per_symbol: 120
+expected_trades_per_year_per_symbol: 30
 universe:
   - EURUSD
   - GBPUSD
@@ -42,9 +46,9 @@ g0_approval_reasoning: "ICT Silver Bullet source gives a fixed 10:00-11:00 New Y
 
 ## Quelle
 - Source: [[sources/babypips-ict-silver-bullet]]
-- Primary URL: [source-url-redacted-for-build-check]
-- Supplement: [source-url-redacted-for-build-check]
-- Supplement: [source-url-redacted-for-build-check]
+- Primary URL: https://www.babypips.com/learn/forex/ict-silver-bullet
+- Supplement: https://www.fluxcharts.com/articles/trading-strategies/ict-strategies/ict-silver-bullet
+- Supplement: https://silverbullet.trade/what-is-the-ict-silver-bullet/
 - The public descriptions agree on the core setup: trade only during the 10:00-11:00 New York window, wait for a liquidity sweep, then use a Fair Value Gap entry and target an opposing liquidity level.
 
 ## Mechanik
@@ -125,4 +129,3 @@ Use only broker-routable DWX symbols for T6. Index symbol naming must map throug
 ---
 
 *Knoten-Pflege: bei jeder Pipeline-Phase-Anderung `pipeline_phase` aktualisieren + `last_updated`.*
-
