@@ -95,6 +95,8 @@ int      g_setup_dir        = 0;
 double   g_setup_level      = 0.0;
 datetime g_setup_break_time = 0;
 double   g_setup_atr        = 0.0;
+double   g_trade_ref_level  = 0.0;
+double   g_trade_ref_atr    = 0.0;
 
 // -----------------------------------------------------------------------------
 // Swing helpers (closed-bar, bounded). perf-allowed: bespoke structural logic,
@@ -270,6 +272,14 @@ bool Strategy_NoTradeFilter()
 // Entry on the closed-bar path. Caller guarantees QM_IsNewBar() == true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic; no pyramiding.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -317,6 +327,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl     = sl;
       req.tp     = tp;
       req.reason = "quasimodo_short_retest";
+      g_trade_ref_level = g_setup_level;
+      g_trade_ref_atr   = g_setup_atr;
       g_setup_dir = 0;    // consume the setup
       return true;
      }
@@ -338,6 +350,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl     = sl;
       req.tp     = tp;
       req.reason = "quasimodo_long_retest";
+      g_trade_ref_level = g_setup_level;
+      g_trade_ref_atr   = g_setup_atr;
       g_setup_dir = 0;
       return true;
      }
@@ -373,15 +387,15 @@ bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
    if(QM_TM_OpenPositionCount(magic) <= 0)
-      return false;
-   if(g_setup_atr <= 0.0)
+     return false;
+   if(g_trade_ref_level <= 0.0 || g_trade_ref_atr <= 0.0)
       return false;
 
    const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: last closed bar
    if(close1 <= 0.0)
       return false;
 
-   const double buf = strategy_exit_atr_mult * g_setup_atr;
+   const double buf = strategy_exit_atr_mult * g_trade_ref_atr;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -394,11 +408,10 @@ bool Strategy_ExitSignal()
          continue;
 
       const long ptype = PositionGetInteger(POSITION_TYPE);
-      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
-      // Adverse close beyond the entry reference by buf.
-      if(ptype == POSITION_TYPE_SELL && close1 > open_price + buf)
+      // Adverse close beyond the retested Quasimodo level by buf.
+      if(ptype == POSITION_TYPE_SELL && close1 > g_trade_ref_level + buf)
          return true;  // short going against us
-      if(ptype == POSITION_TYPE_BUY && close1 < open_price - buf)
+      if(ptype == POSITION_TYPE_BUY && close1 < g_trade_ref_level - buf)
          return true;  // long going against us
      }
    return false;
