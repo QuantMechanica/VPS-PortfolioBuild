@@ -171,10 +171,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
 
       // SL: 3 pips above the PSAR dot. PSAR is already above price for a short.
-      const double buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_buffer_pips);
+      const double buffer  = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_buffer_pips);
+      const double tp_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_tp_pips);
       double sl = QM_StopRulesNormalizePrice(_Symbol, sar1 + buffer);
-      double tp = QM_StopFixedPips(_Symbol, QM_SELL, entry, strategy_tp_pips);
-      if(sl <= 0.0 || tp <= 0.0 || sl <= entry)
+      double tp = QM_StopRulesNormalizePrice(_Symbol, entry - tp_dist); // TP below entry for a short
+      if(sl <= 0.0 || tp <= 0.0 || sl <= entry || tp >= entry)
          return false;
 
       req.type   = QM_SELL;
