@@ -96,3 +96,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | f187d3ba-78cc-4ab9-93f8-b2edfe1b994b |
 | v2 | 2026-06-18 | Re-enter active TES side after framework-forced flat states | e6743064-703b-4b6c-898f-0b0da0267572 |
+| v3 | 2026-06-18 | Make TES warmup rates ordering explicit for newest-first indexing | e6743064-703b-4b6c-898f-0b0da0267572 |

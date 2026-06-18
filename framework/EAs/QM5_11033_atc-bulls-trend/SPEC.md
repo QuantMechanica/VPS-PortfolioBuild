@@ -1,63 +1,53 @@
-# QM5_11033_atc-bulls-trend — Strategy Spec
+# QM5_11033_atc-bulls-trend - Strategy Spec
 
 **EA ID:** QM5_11033
 **Slug:** `atc-bulls-trend`
 **Source:** `9441393d-5ffc-5b43-87be-bd532110f204` (see `strategy-seeds/sources/9441393d-5ffc-5b43-87be-bd532110f204/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-17
+**Last revised:** 2026-06-18
 
 ---
 
 ## 1. Strategy Logic
 
-Bulls Power trend-change continuation, mechanised from the ATC 2010 "Bulls
-Indicator" EA (Tauzowski). On each closed H1 bar the EA computes Bulls Power =
-High − EMA(close, `bulls_period`) and its slope over `trend_lookback` bars,
-normalised by ATR so the threshold is scale-invariant across FX pairs. It goes
-**long** when Bulls Power is positive, the normalised slope is rising at least
-`slope_threshold`, and the prior close is above the EMA. It goes **short** when
-Bulls Power is negative (optionally also requiring Bears Power = Low − EMA to be
-negative), the normalised slope is falling at most −`slope_threshold`, and the
-prior close is below the EMA. Stop distance = max(`sl_min_pips` equivalent,
-`sl_atr_mult` × ATR); take profit = `tp_rr` × stop (card baseline 2R). An
-optional early exit closes the position when Bulls Power re-crosses zero against
-the trade before SL/TP. Trades fire only inside the London/NY broker-time window
-and, optionally, only when ADX ≥ `adx_threshold`. One position per symbol/magic.
+The EA trades the first directional impulse after a Bulls Power trend change on completed bars. Long entries require Bulls Power above zero, ATR-normalized Bulls Power slope above the threshold, and the last close above the EMA of the Bulls period. Short entries require negative Bulls Power, or optional negative Bear Power confirmation, with the opposite slope and close-below-EMA conditions. Exits are the fixed 2R take profit, the fixed stop, framework Friday close, and optional early close when Bulls Power crosses back through zero.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `strategy_bulls_period` | 13 | 8-34 | EMA period for Bulls/Bears Power and the trend EMA |
-| `strategy_trend_lookback` | 5 | 3-8 | Bars back used for the Bulls Power slope |
-| `strategy_slope_threshold` | 0.25 | 0.25-0.75 | Minimum \|slope\|/ATR (ATR-normalized units) to act |
-| `strategy_bear_confirm` | false | bool | Also require Bears Power < 0 to allow a short |
-| `strategy_atr_period` | 14 | 10-20 | ATR period for slope normalisation and stop floor |
-| `strategy_sl_atr_mult` | 1.5 | 1.0-2.0 | Stop distance = mult × ATR (the larger of this / pip floor) |
-| `strategy_sl_min_pips` | 40 | 30-50 | Stop floor in pips equivalent |
-| `strategy_tp_rr` | 2.0 | 1.5-3.0 | Take-profit = tp_rr × stop distance (card: 2R) |
-| `strategy_zero_cross_exit` | true | bool | Early close on Bulls Power zero re-cross against the trade |
-| `strategy_session_start_broker` | 9 | 0-23 | London/NY window start hour (broker time) |
-| `strategy_session_end_broker` | 22 | 0-23 | London/NY window end hour (broker time) |
-| `strategy_use_adx_filter` | true | bool | Require ADX ≥ threshold for trend-change confirmation |
-| `strategy_adx_period` | 14 | 10-20 | ADX period |
-| `strategy_adx_threshold` | 18.0 | 14-25 | ADX trend-change confirmation floor |
-| `strategy_spread_pct_of_stop` | 15.0 | 5-30 | Skip if spread > this % of stop distance (fail-open on .DWX) |
+|---|---:|---|---|
+| `strategy_bulls_period` | 13 | 13, 21, 34 | EMA period used in Bulls Power and Bear Power. |
+| `strategy_trend_lookback` | 5 | 3, 5, 8 | Bars back for Bulls Power slope comparison. |
+| `strategy_bulls_slope_threshold` | 0.50 | 0.25-0.75 | Minimum ATR-normalized Bulls Power slope. |
+| `strategy_atr_period` | 14 | 14 | ATR period used for stop and slope normalization. |
+| `strategy_atr_sl_mult` | 1.50 | 1.0-2.0 | ATR stop multiplier. |
+| `strategy_fixed_sl_pips` | 40 | 30-50 | Fixed pip stop candidate; larger of this and ATR stop is used. |
+| `strategy_reward_risk` | 2.0 | 2.0 | Take profit multiple of stop distance. |
+| `strategy_use_bear_power` | true | true/false | Allows Bear Power to confirm short entries. |
+| `strategy_use_adx_filter` | true | true/false | Enables the optional ADX trend confirmation filter. |
+| `strategy_adx_period` | 14 | 14 | ADX period for optional trend confirmation. |
+| `strategy_adx_min` | 18.0 | 18.0 | Minimum ADX when the optional filter is enabled. |
+| `strategy_use_zero_cross_exit` | true | true/false | Enables early close on Bulls Power zero-cross. |
+| `strategy_session_start_hour` | 8 | 0-23 | Broker-hour start for London/New York liquid hours. |
+| `strategy_session_end_hour` | 22 | 0-23 | Broker-hour end for London/New York liquid hours. |
+| `strategy_max_spread_pips` | 3 | 0+ | Maximum modeled spread in pips; zero spread remains tradeable. |
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — most liquid FX major; clean London/NY trend impulses suit Bulls Power continuation.
-- `GBPUSD.DWX` — high-volatility major with pronounced London/NY directional moves.
-- `EURJPY.DWX` — JPY cross with strong trend persistence; pip-scaling handled via `QM_StopRulesPipsToPriceDistance`.
-- `USDJPY.DWX` — liquid JPY major; trend-following continuation per source basket.
+- `EURUSD.DWX` - primary source-compatible major FX pair with deep DWX H1 history.
+- `GBPUSD.DWX` - major London/New York FX pair fitting the liquid-hours filter.
+- `EURJPY.DWX` - card-listed FX cross with DWX H1 data and trend impulse behavior.
+- `USDJPY.DWX` - card-listed major FX pair with DWX H1 data and liquid-session coverage.
 
 **Explicitly NOT for:**
-- Index / metal `.DWX` symbols — the card's basket and session model are FX-specific (London/NY liquid hours).
+- `SP500.DWX` - index symbol outside the card's FX basket.
+- `NDX.DWX` - index symbol outside the card's FX basket.
+- `XAUUSD.DWX` - commodity symbol outside the card's FX basket.
 
 ---
 
@@ -66,7 +56,7 @@ and, optionally, only when ADX ≥ `adx_threshold`. One position per symbol/magi
 | Aspect | Value |
 |---|---|
 | Base timeframe | `H1` |
-| Multi-timeframe refs | `none` |
+| Multi-timeframe refs | none |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
@@ -75,11 +65,11 @@ and, optionally, only when ADX ≥ `adx_threshold`. One position per symbol/magi
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `70` (card: conservative 50-120) |
-| Typical hold time | `hours to a few days` (H1 trend-change continuation) |
-| Expected drawdown profile | `bounded by fixed SL, 2R TP, fixed risk, one position per magic` |
-| Regime preference | `trend / momentum-breakout` |
-| Win rate target (qualitative) | `medium` (2R target implies sub-50% break-even) |
+| Trades / year / symbol | `70` |
+| Typical hold time | hours to a few days, bounded by fixed SL/TP and Friday close |
+| Expected drawdown profile | trend-continuation losses cluster during choppy reversals after near-miss TP moves |
+| Regime preference | trend / momentum-breakout |
+| Win rate target (qualitative) | medium |
 
 ---
 
@@ -88,9 +78,9 @@ and, optionally, only when ADX ≥ `adx_threshold`. One position per symbol/magi
 This card was mechanised from:
 
 **Source ID:** `9441393d-5ffc-5b43-87be-bd532110f204`
-**Source type:** `forum` (MQL5 Articles / ATC 2010 interview)
-**Pointer:** `https://www.mql5.com/en/articles/537` (Tomasz Tauzowski)
-**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_11033_atc-bulls-trend.md`
+**Source type:** `article`
+**Pointer:** `https://www.mql5.com/en/articles/537`
+**R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_11033_atc-bulls-trend.md`
 
 ---
 
@@ -98,11 +88,11 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
@@ -110,4 +100,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-17 | Initial build from card | pending compile/register (central step) |
+| v1 | 2026-06-18 | Initial build from card | 0442f8ee-fa0e-41b3-b8f7-811fc4e75ab9 |

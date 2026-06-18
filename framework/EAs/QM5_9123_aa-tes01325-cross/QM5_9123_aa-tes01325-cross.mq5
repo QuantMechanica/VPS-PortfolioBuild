@@ -120,6 +120,7 @@ void AdvanceState_OnNewBar()
       MqlRates rates[];
       const int n = CopyRates(_Symbol, PERIOD_D1, 1, 600, rates); // perf-allowed: one-time warmup, called only inside QM_IsNewBar gate
       if(n < strategy_warmup_bars) return; // not enough history — try again next bar
+      ArraySetAsSeries(rates, true);
 
       // Seed all three smoothers from the oldest available bar
       g_es1 = rates[n-1].close;
