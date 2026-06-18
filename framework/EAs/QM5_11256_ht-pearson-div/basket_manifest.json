@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_11256_HT_PEARSON_DIV_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "NDX.DWX",
+    "WS30.DWX"
+  ],
+  "notes": [
+    "Cross-sectional Pearson-divergence: each symbol runs as its own single-position host but warms+reads the FULL 6-symbol cohort for the shared ranking (cross-symbol dependency in the SIGNAL, not execution). qm_magic_slot_offset must match the host symbol slot. D1-native (21-bar/month proxy). Warmup via QM_SymbolGuardInit+QM_BasketWarmupHistory. Closed-form/deterministic, NO ML, no external feed. All legs in dwx_symbol_matrix.csv."
+  ]
+}

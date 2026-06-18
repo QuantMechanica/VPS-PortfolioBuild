@@ -1,0 +1,15 @@
+{
+  "logical_symbol": "QM5_11253_HT_BASIC_COP_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "XAUUSD.DWX"
+  ],
+  "notes": [
+    "Basic-copula conditional-probability pairs (CLOSED-FORM Gaussian, Kendall-tau rho, inline NormCDF/NormInv, no ML). Pairs EU/GU(0/1) AU/NU(2/3) XAU/EU(4/0). Host via framework magic; partner via QM_BasketOpenPosition. Warmup via QM_SymbolGuardInit+QM_BasketWarmupHistory. Closed-form/deterministic, NO ML, no external feed. All legs in dwx_symbol_matrix.csv."
+  ]
+}

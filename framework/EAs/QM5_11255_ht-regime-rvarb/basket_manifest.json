@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_11255_HT_REGIME_RVARB_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "EURUSD.DWX", "GBPUSD.DWX",
+    "AUDUSD.DWX", "NZDUSD.DWX",
+    "XAUUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg regime-switching relative-value pair (Bock/Mestel 2009 via Hudson & Thames, source_id af021dd0-e07d-5f72-9933-de7a3533934e). On each closed D1 bar the EA fits a rolling-OLS log-ratio hedge over a training window (default 504 D1 bars), forms the spread X_t = ln(host/host_0) - beta*ln(partner/partner_0), then classifies the spread DETERMINISTICALLY into two regimes by splitting the training-window sample at its MEDIAN (state 1 = high cluster, state 2 = low cluster), computing per-cluster mean/std, the current regime (state 1 if X_t >= grand mean, else state 2), and closed-form equal-prior Gaussian posteriors P(state|X_t). NO HMM-EM / Hamilton-filter / likelihood-maximisation fit (banned under HR14) — the two-state structure is realised by a fixed deterministic partition + closed-form posterior, no iteration, no PnL-adaptive parameters.",
+    "Entry/exit are the card's regime-specific sigma-band + probability inequalities (delta default 1.5, rho default 0.70): LONG spread (BUY host / SELL partner) when state-1 X_t<=mu1-delta*sig1 & P(1|X)>=rho OR state-2 X_t<=mu2-delta*sig2; SHORT spread (SELL host / BUY partner) when state-1 X_t>=mu1+delta*sig1 OR state-2 X_t>=mu2+delta*sig2 & P(2|X)>=rho; symmetric close rules; time stop after max_hold_bars (default 60) D1 bars. Qualification: training-window bars sufficient, both cluster sigmas>0, regime means separated (|mu1-mu2|>=gap*pooled_sigma, gap default 0.5), and bounded AR(1) half-life in [3,80] D1 bars. Flat-only refit each closed bar; no in-position parameter update.",
+    "Three economically-cointegrated host/partner pairs are selected per-setfile via qm_magic_slot_offset + strategy_partner_symbol + strategy_partner_slot: EURUSD.DWX(slot 0)/GBPUSD.DWX(slot 1); AUDUSD.DWX(slot 2)/NZDUSD.DWX(slot 3); XAUUSD.DWX(slot 4)/EURUSD.DWX(slot 0, EURUSD reused as the card's pair-C partner). Each instance trades a host leg via the framework magic and the partner leg via QM_BasketOpenPosition at the partner's registered slot; both legs open/close together, partner opened first so a failed partner aborts the pair (no naked leg). Spread computed in-EA from host+partner .DWX D1 closes only.",
+    "All five distinct legs are native .DWX symbols verified present in dwx_symbol_matrix.csv (EURUSD/GBPUSD/AUDUSD/NZDUSD/XAUUSD) — NO port needed. No external feed, no ML."
+  ]
+}

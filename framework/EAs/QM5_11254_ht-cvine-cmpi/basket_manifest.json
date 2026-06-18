@@ -1,0 +1,15 @@
+{
+  "logical_symbol": "QM5_11254_HT_CVINE_CMPI_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "NDX.DWX"
+  ],
+  "notes": [
+    "Gaussian C-vine conditional MPI (closed-form partial-correlation recursion, Gauss-Jordan inverse, no MLE/ML). Host EURUSD(0) + partners GBPUSD(1)/AUDUSD(2)/NZDUSD(3); NDX(4) optional cross-asset partner. Partners via QM_BasketOpenPosition. Warmup via QM_SymbolGuardInit+QM_BasketWarmupHistory. Closed-form/deterministic, NO ML, no external feed. All legs in dwx_symbol_matrix.csv."
+  ]
+}
