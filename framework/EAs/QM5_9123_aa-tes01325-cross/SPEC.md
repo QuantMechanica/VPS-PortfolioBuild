@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA computes a triple exponential smoothing (TES) signal from D1 closes using a fixed smoothing constant alpha=0.1325. The three nested smoothers are: ES1_t = alpha*Close_t + (1-alpha)*ES1_{t-1}; ES2_t = alpha*ES1_t + (1-alpha)*ES2_{t-1}; TES_t = alpha*ES2_t + (1-alpha)*TES_{t-1}. A long position is entered when the D1 close crosses above TES (prior close was at or below TES), and a short position is entered when the D1 close crosses below TES (prior close was at or above TES). The existing position is closed when the D1 close crosses back to the opposite side of TES, which also triggers an entry in the new direction if the cross condition is met. An initial stop-loss of 2.5×ATR(20,D1) is placed on entry. Trades are suppressed during the first 120 D1 bars (warmup) and when the current spread exceeds 2.5× the 20-day median spread.
+The EA computes a triple exponential smoothing (TES) signal from D1 closes using a fixed smoothing constant alpha=0.1325. The three nested smoothers are: ES1_t = alpha*Close_t + (1-alpha)*ES1_{t-1}; ES2_t = alpha*ES1_t + (1-alpha)*ES2_{t-1}; TES_t = alpha*ES2_t + (1-alpha)*TES_{t-1}. A long position is entered when the completed D1 close is above TES, and a short position is entered when the completed D1 close is below TES; this re-establishes the current card signal after framework-forced flat states such as Friday close. The existing position is closed when the D1 close crosses back to the opposite side of TES, which also allows a same-bar flip into the new side. An initial stop-loss of 2.5×ATR(20,D1) is placed on entry. Trades are suppressed during the first 120 D1 bars (warmup) and when the current spread exceeds 2.5× the 20-day median spread.
 
 ---
 
@@ -95,3 +95,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | f187d3ba-78cc-4ab9-93f8-b2edfe1b994b |
+| v2 | 2026-06-18 | Re-enter active TES side after framework-forced flat states | e6743064-703b-4b6c-898f-0b0da0267572 |

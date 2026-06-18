@@ -172,14 +172,14 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
-// Entry signal — called once per closed D1 bar (after QM_IsNewBar gate).
-// Also handles TES-cross exit so same-bar flip (exit short → enter long) is possible.
+// Entry signal - called once per closed D1 bar (after QM_IsNewBar gate).
+// Also handles TES-side exit so same-bar flip (exit short -> enter long) is possible.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    // Declare all locals at top — MQL5 const-after-jump scoping is fragile.
    ENUM_POSITION_TYPE ptype;
    ulong ticket;
-   bool long_exit, short_exit, long_cross, short_cross;
+   bool long_exit, short_exit, long_signal, short_signal;
    double atr, sl_dist, entry_pt;
    double spread_pt, cur_spread, med_spread;
 
@@ -215,11 +215,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
         }
      }
 
-   // === TES cross — card: both current AND prior bar must be on correct sides ===
-   long_cross  = (g_close_cur > g_tes  && g_close_prev <= g_tes_prev);
-   short_cross = (g_close_cur < g_tes  && g_close_prev >= g_tes_prev);
+   // === TES side signal ===
+   // The card defines Close > TES / Close < TES as the fixed trend signal.
+   // Re-enter that active side after framework-forced flat states (Friday close, SL).
+   long_signal  = (g_close_cur > g_tes);
+   short_signal = (g_close_cur < g_tes);
 
-   if(!long_cross && !short_cross)
+   if(!long_signal && !short_signal)
       return false;
 
    // === Build entry request ===
@@ -234,19 +236,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
    req.tp                 = 0.0;
 
-   if(long_cross)
+   if(long_signal)
      {
       req.type   = QM_BUY;
       req.price  = 0.0;
       req.sl     = SymbolInfoDouble(_Symbol, SYMBOL_ASK) - sl_dist;
-      req.reason = "TES_LONG_CROSS";
+      req.reason = "TES_LONG_STATE";
       return true;
      }
 
    req.type   = QM_SELL;
    req.price  = 0.0;
    req.sl     = SymbolInfoDouble(_Symbol, SYMBOL_BID) + sl_dist;
-   req.reason = "TES_SHORT_CROSS";
+   req.reason = "TES_SHORT_STATE";
    return true;
   }
 

@@ -19,13 +19,16 @@
 //   At each evaluation:
 //     - Cancel any still-pending order for this magic (carried from the prior
 //       evaluation — "cancel unfilled pending orders at the next evaluation").
-//     - If a position is already open for this magic, leave it to its SL/TP and
-//       Strategy_ManageOpenPosition (breakeven); place no new pending order.
+//     - If a position is already open for this magic and the new signal is
+//       opposite, close it before arming the replacement pending order.
+//       Same-direction active positions are left to SL/TP and breakeven.
 //     - Otherwise read prior D1 bar O/H/L/C (shift 1) and current bid:
 //         Long  : current price > prior close ->
 //                 BUY STOP  at prior_high + entry_buffer_atr * ATR.
 //         Short : current price < prior close ->
 //                 SELL STOP at prior_low  - entry_buffer_atr * ATR.
+//       Optional secondary limit triggers are enabled by input and used only
+//       when the primary stop level is not valid for the current quote.
 //       Long takes precedence if both somehow qualify (price cannot be both).
 //   Stop / Take: SL = sl_atr_mult * ATR, TP = tp_atr_mult * ATR, measured from
 //                the PENDING price (gapless .DWX CFDs: lots size off pending->SL).
@@ -41,10 +44,9 @@
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
 // else is framework wiring and MUST stay intact.
 //
-// NOTE (open question): the card lists OPTIONAL secondary buy-limit/sell-limit
-// reversal triggers. The V5 single-entry framework path is one pending order
-// per magic, so this build implements only the PRIMARY stop-breakout order
-// (the literal, always-present rule). Secondary limit legs are a P3 sweep idea.
+// NOTE (open question): the card says "near prior low/high" for the optional
+// secondary limits without an exact offset. This build uses the literal prior
+// low/high as the pending limit price.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -80,6 +82,7 @@ input double strategy_tp_atr_mult         = 1.5;    // target distance = mult * 
 input double strategy_breakeven_atr       = 1.0;    // move SL to entry once profit >= mult * ATR
 input int    strategy_range_filter_bars   = 60;     // median-range lookback (0 disables filter)
 input double strategy_spread_pct_of_stop  = 15.0;   // skip if spread > this % of stop distance
+input bool   strategy_enable_secondary_limits = true; // optional card trigger near prior low/high
 
 // -----------------------------------------------------------------------------
 // File-scope state
@@ -127,6 +130,29 @@ bool HasOwnPendingOrder()
          continue;
       if(OrderGetString(ORDER_SYMBOL) == _Symbol)
          return true;
+     }
+   return false;
+  }
+
+// Select this EA's open position on this symbol, if any.
+bool SelectOwnPosition(ulong &ticket, ENUM_POSITION_TYPE &ptype)
+  {
+   ticket = 0;
+   ptype = POSITION_TYPE_BUY;
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong pos_ticket = PositionGetTicket(i);
+      if(pos_ticket == 0 || !PositionSelectByTicket(pos_ticket))
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+
+      ticket = pos_ticket;
+      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      return true;
      }
    return false;
   }
@@ -199,6 +225,14 @@ bool Strategy_NoTradeFilter()
 // so this fires once per closed D1 bar; we self-throttle to the eval cadence.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type               = QM_BUY_STOP;
+   req.price              = 0.0;
+   req.sl                 = 0.0;
+   req.tp                 = 0.0;
+   req.reason             = "";
+   req.symbol_slot        = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // --- Cadence accumulator (advances once per closed bar) ---
    g_bars_since_eval++;
    const int cadence = (strategy_eval_cadence_bars > 0) ? strategy_eval_cadence_bars : 1;
@@ -209,10 +243,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // --- Evaluation tick: cancel any stale pending order from last evaluation ---
    CancelOwnPendingOrders();
 
-   // One position per symbol/magic — if filled, manage it, place nothing new.
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
-      return false;
-
    // Defensive: never stack pending orders (cancel above should have cleared it).
    if(HasOwnPendingOrder())
       return false;
@@ -222,10 +252,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // --- Prior completed D1 bar OHLC (shift 1) ---
+   const double prior_open  = iOpen(_Symbol, _Period, 1);  // perf-allowed: closed-bar OHLC
    const double prior_high  = iHigh(_Symbol, _Period, 1);  // perf-allowed: closed-bar OHLC
    const double prior_low   = iLow(_Symbol, _Period, 1);   // perf-allowed: closed-bar OHLC
    const double prior_close = iClose(_Symbol, _Period, 1); // perf-allowed: closed-bar OHLC
-   if(prior_high <= 0.0 || prior_low <= 0.0 || prior_close <= 0.0)
+   if(prior_open <= 0.0 || prior_high <= 0.0 || prior_low <= 0.0 || prior_close <= 0.0)
       return false;
 
    const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
@@ -239,16 +270,25 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const double buffer = strategy_entry_buffer_atr * atr_value;
 
-   // --- Directional decision vs prior close ---
-   QM_OrderType otype;
+   // --- Directional decision vs prior close/open ---
+   QM_OrderType otype = QM_BUY_STOP;
    double pending_price = 0.0;
+   int signal_dir = 0; // +1 long, -1 short
    if(bid > prior_close)
      {
       // Long breakout: buy stop above prior high.
       otype = QM_BUY_STOP;
       pending_price = prior_high + buffer;
-      // Stop entry must sit strictly above current ask to be a valid buy stop.
-      if(pending_price <= ask)
+      signal_dir = 1;
+      // Stop entry must sit strictly above current ask to be a valid buy stop;
+      // otherwise try the optional long limit near prior low.
+      if(pending_price <= ask && strategy_enable_secondary_limits && bid > prior_open)
+        {
+         otype = QM_BUY_LIMIT;
+         pending_price = prior_low;
+        }
+      if((otype == QM_BUY_STOP && pending_price <= ask) ||
+         (otype == QM_BUY_LIMIT && pending_price >= ask))
          return false;
      }
    else if(bid < prior_close)
@@ -256,13 +296,32 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       // Short breakout: sell stop below prior low.
       otype = QM_SELL_STOP;
       pending_price = prior_low - buffer;
-      // Stop entry must sit strictly below current bid to be a valid sell stop.
-      if(pending_price >= bid)
+      signal_dir = -1;
+      // Stop entry must sit strictly below current bid to be a valid sell stop;
+      // otherwise try the optional short limit near prior high.
+      if(pending_price >= bid && strategy_enable_secondary_limits && bid < prior_open)
+        {
+         otype = QM_SELL_LIMIT;
+         pending_price = prior_high;
+        }
+      if((otype == QM_SELL_STOP && pending_price >= bid) ||
+         (otype == QM_SELL_LIMIT && pending_price <= bid))
          return false;
      }
    else
      {
       return false; // exactly at prior close — no signal
+     }
+
+   ulong own_ticket = 0;
+   ENUM_POSITION_TYPE own_type = POSITION_TYPE_BUY;
+   if(SelectOwnPosition(own_ticket, own_type))
+     {
+      const bool existing_long = (own_type == POSITION_TYPE_BUY);
+      if((signal_dir > 0 && existing_long) || (signal_dir < 0 && !existing_long))
+         return false;
+      if(!QM_TM_ClosePosition(own_ticket, QM_EXIT_OPPOSITE_SIGNAL))
+         return false;
      }
 
    pending_price = QM_TM_NormalizePrice(_Symbol, pending_price);
@@ -279,7 +338,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price              = pending_price; // pending entry level
    req.sl                 = sl;
    req.tp                 = tp;
-   req.reason             = (otype == QM_BUY_STOP) ? "atc_ohlc_buystop" : "atc_ohlc_sellstop";
+   if(otype == QM_BUY_STOP)
+      req.reason = "atc_ohlc_buystop";
+   else if(otype == QM_SELL_STOP)
+      req.reason = "atc_ohlc_sellstop";
+   else if(otype == QM_BUY_LIMIT)
+      req.reason = "atc_ohlc_buylimit";
+   else
+      req.reason = "atc_ohlc_selllimit";
    // Expire after the cadence window so an untouched level self-cancels even if
    // no later tick re-evaluates. 86400s per D1 bar.
    req.expiration_seconds = cadence * 86400;
