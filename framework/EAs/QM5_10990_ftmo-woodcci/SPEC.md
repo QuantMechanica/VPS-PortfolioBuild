@@ -4,7 +4,7 @@
 **Slug:** `ftmo-woodcci`
 **Source:** `c11dc4d3-bdfb-5076-aeed-5d943e9ef03f` (FTMO, "Trading the Woodies CCI System - COMPLETE Guide", 2018)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-17
+**Last revised:** 2026-06-18
 
 ---
 
@@ -108,4 +108,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-17 | Initial build from card | board-advisor build |
+| v1 | 2026-06-18 | Initial build from card | a019628f-9dcc-4a31-a91a-2686664cd830 |

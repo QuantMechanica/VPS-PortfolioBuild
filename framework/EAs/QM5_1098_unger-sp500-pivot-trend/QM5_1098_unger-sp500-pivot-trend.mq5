@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_1098 Unger S&P Pivot-Point Trend"
+#property description "QM5_1098 Unger S&P Pivot-Point Trend Following"
 
 #include <QM/QM_Common.mqh>
 
@@ -37,6 +37,10 @@
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 1098;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
+input uint   qm_rng_seed                = 42;
 
 input group "Risk"
 input double RISK_PERCENT               = 0.0;
@@ -44,69 +48,93 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode          = QM_NEWS_PAUSE;
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
+//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
+input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
+input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
+input double qm_stress_reject_probability = 0.0;
+
 input group "Strategy"
-input int    strategy_entry_ny_hhmm      = 1030;
-input int    strategy_session_open_hhmm  = 930;
-input int    strategy_session_close_hhmm = 1600;
-input int    strategy_atr_period         = 14;
-input double strategy_atr_sl_mult        = 1.5;
-input bool   strategy_use_rr_take_profit = false;
-input double strategy_take_profit_rr     = 2.0;
-input int    strategy_max_spread_points  = 0;
-input int    strategy_session_scan_bars  = 600;
+input int    strategy_entry_hhmm_ny       = 1030;
+input int    strategy_cash_open_hhmm_ny   = 930;
+input int    strategy_cash_close_hhmm_ny  = 1600;
+input int    strategy_atr_period          = 14;
+input double strategy_atr_sl_mult         = 1.5;
+input bool   strategy_use_rr_tp           = false;
+input double strategy_rr_tp               = 2.0;
+input double strategy_median_spread_points = 0.0;
+input int    strategy_pivot_scan_bars     = 160;
 
-int g_last_entry_day_key = 0;
-datetime g_last_entry_eval_bar = 0;
-datetime g_last_exit_eval_bar = 0;
-bool g_cached_exit_signal = false;
+int      g_pivot_day_key = 0;
+double   g_cached_r1 = 0.0;
+double   g_cached_s1 = 0.0;
+int      g_last_entry_eval_day_key = 0;
 
-int NyUtcOffsetHours(const datetime utc)
+int HhmmToMinutes(const int hhmm)
   {
-   return QM_IsUSDSTUTC(utc) ? -4 : -5;
+   return ((hhmm / 100) * 60) + (hhmm % 100);
   }
 
-datetime BrokerToNY(const datetime broker_time)
+datetime BrokerToNewYork(const datetime broker_time)
   {
    const datetime utc = QM_BrokerToUTC(broker_time);
-   return utc + (NyUtcOffsetHours(utc) * 3600);
+   const int ny_offset_hours = QM_IsUSDSTUTC(utc) ? -4 : -5;
+   return utc + (ny_offset_hours * 3600);
   }
 
-int HhmmFromTime(const datetime t)
+int DateKey(const datetime t)
   {
    MqlDateTime dt;
+   ZeroMemory(dt);
    TimeToStruct(t, dt);
-   return dt.hour * 100 + dt.min;
+   return (dt.year * 10000) + (dt.mon * 100) + dt.day;
   }
 
-int DayKeyFromTime(const datetime t)
+int NewYorkDateKey(const datetime broker_time)
   {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 10000 + dt.mon * 100 + dt.day;
+   return DateKey(BrokerToNewYork(broker_time));
   }
 
-bool IsWeekdayNY(const datetime ny_time)
+int NewYorkMinutes(const datetime broker_time)
   {
    MqlDateTime dt;
-   TimeToStruct(ny_time, dt);
+   ZeroMemory(dt);
+   TimeToStruct(BrokerToNewYork(broker_time), dt);
+   return (dt.hour * 60) + dt.min;
+  }
+
+bool IsNewYorkWeekday(const datetime broker_time)
+  {
+   MqlDateTime dt;
+   ZeroMemory(dt);
+   TimeToStruct(BrokerToNewYork(broker_time), dt);
    return (dt.day_of_week >= 1 && dt.day_of_week <= 5);
   }
 
-bool IsCashSessionCloseNY(const datetime ny_close_time)
-  {
-   const int hhmm = HhmmFromTime(ny_close_time);
-   return (hhmm > strategy_session_open_hhmm && hhmm <= strategy_session_close_hhmm);
-  }
-
-bool HasOpenPositionForMagic()
+bool HasOurOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -114,53 +142,114 @@ bool HasOpenPositionForMagic()
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return true;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      return true;
      }
    return false;
   }
 
-bool GetPreviousCashSession(double &out_high, double &out_low, double &out_close, const int current_day_key)
+bool GetOurPositionType(ENUM_POSITION_TYPE &position_type)
   {
-   out_high = 0.0;
-   out_low = 0.0;
-   out_close = 0.0;
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
 
-   int target_day = 0;
-   bool have_day = false;
-   const int max_bars = MathMax(50, strategy_session_scan_bars);
-   for(int shift = 2; shift <= max_bars; ++shift)
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      const datetime bar_open = iTime(_Symbol, PERIOD_M30, shift);
-      if(bar_open <= 0)
-         break;
-
-      const datetime ny_close = BrokerToNY(bar_open + PeriodSeconds(PERIOD_M30));
-      if(!IsWeekdayNY(ny_close) || !IsCashSessionCloseNY(ny_close))
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
-
-      const int day_key = DayKeyFromTime(ny_close);
-      if(day_key >= current_day_key)
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
-
-      if(!have_day)
-        {
-         target_day = day_key;
-         have_day = true;
-         out_high = iHigh(_Symbol, PERIOD_M30, shift);
-         out_low = iLow(_Symbol, PERIOD_M30, shift);
-         out_close = iClose(_Symbol, PERIOD_M30, shift);
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-        }
+      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      return true;
+     }
+   return false;
+  }
 
-      if(day_key != target_day)
-         break;
+double CurrentSpreadPoints()
+  {
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+      return 0.0;
+   if(ask < bid)
+      return 0.0;
+   return (ask - bid) / point;
+  }
 
-      out_high = MathMax(out_high, iHigh(_Symbol, PERIOD_M30, shift));
-      out_low = MathMin(out_low, iLow(_Symbol, PERIOD_M30, shift));
+bool ComputePreviousCashPivots(const int current_ny_key, double &out_r1, double &out_s1)
+  {
+   out_r1 = 0.0;
+   out_s1 = 0.0;
+
+   if(g_pivot_day_key == current_ny_key && g_cached_r1 > 0.0 && g_cached_s1 > 0.0)
+     {
+      out_r1 = g_cached_r1;
+      out_s1 = g_cached_s1;
+      return true;
      }
 
-   return (have_day && out_high > 0.0 && out_low > 0.0 && out_close > 0.0 && out_high > out_low);
+   const int open_min = HhmmToMinutes(strategy_cash_open_hhmm_ny);
+   const int close_min = HhmmToMinutes(strategy_cash_close_hhmm_ny);
+   int target_key = 0;
+   double prev_high = 0.0;
+   double prev_low = 0.0;
+   double prev_close = 0.0;
+
+   for(int shift = 1; shift <= strategy_pivot_scan_bars; ++shift)
+     {
+      const datetime bar_broker = iTime(_Symbol, PERIOD_M30, shift); // perf-allowed: bounded previous cash-session pivot scan, called only inside framework closed-bar entry hook.
+      if(bar_broker <= 0)
+         continue;
+
+      const datetime bar_ny = BrokerToNewYork(bar_broker);
+      const int bar_key = DateKey(bar_ny);
+      if(bar_key >= current_ny_key)
+         continue;
+
+      MqlDateTime dt;
+      ZeroMemory(dt);
+      TimeToStruct(bar_ny, dt);
+      if(dt.day_of_week < 1 || dt.day_of_week > 5)
+         continue;
+
+      const int bar_min = (dt.hour * 60) + dt.min;
+      if(bar_min < open_min || bar_min >= close_min)
+         continue;
+
+      if(target_key == 0)
+        {
+         target_key = bar_key;
+         prev_close = iClose(_Symbol, PERIOD_M30, shift); // perf-allowed: final bar close of prior cash session for floor pivot.
+        }
+      else if(bar_key != target_key)
+         break;
+
+      const double h = iHigh(_Symbol, PERIOD_M30, shift); // perf-allowed: bounded prior cash-session high for floor pivot.
+      const double l = iLow(_Symbol, PERIOD_M30, shift);  // perf-allowed: bounded prior cash-session low for floor pivot.
+      if(h <= 0.0 || l <= 0.0)
+         continue;
+      if(prev_high == 0.0 || h > prev_high)
+         prev_high = h;
+      if(prev_low == 0.0 || l < prev_low)
+         prev_low = l;
+     }
+
+   if(prev_high <= 0.0 || prev_low <= 0.0 || prev_close <= 0.0 || prev_high <= prev_low)
+      return false;
+
+   const double pivot = (prev_high + prev_low + prev_close) / 3.0;
+   g_cached_r1 = QM_StopRulesNormalizePrice(_Symbol, (2.0 * pivot) - prev_low);
+   g_cached_s1 = QM_StopRulesNormalizePrice(_Symbol, (2.0 * pivot) - prev_high);
+   g_pivot_day_key = current_ny_key;
+   out_r1 = g_cached_r1;
+   out_s1 = g_cached_s1;
+   return (out_r1 > 0.0 && out_s1 > 0.0);
   }
 
 // -----------------------------------------------------------------------------
@@ -171,16 +260,22 @@ bool GetPreviousCashSession(double &out_high, double &out_low, double &out_close
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   const datetime ny_now = BrokerToNY(TimeCurrent());
-   if(!IsWeekdayNY(ny_now))
+   const datetime broker_now = TimeCurrent();
+   const bool has_position = HasOurOpenPosition();
+
+   if(!IsNewYorkWeekday(broker_now) && !has_position)
       return true;
 
-   if(strategy_max_spread_points > 0)
-     {
-      const long spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread > strategy_max_spread_points)
-         return true;
-     }
+   const int ny_minutes = NewYorkMinutes(broker_now);
+   const int open_min = HhmmToMinutes(strategy_cash_open_hhmm_ny);
+   const int close_min = HhmmToMinutes(strategy_cash_close_hhmm_ny);
+   if((ny_minutes < open_min || ny_minutes > close_min) && !has_position)
+      return true;
+
+   const double spread_points = CurrentSpreadPoints();
+   if(strategy_median_spread_points > 0.0 &&
+      spread_points > (2.0 * strategy_median_spread_points))
+      return true;
 
    return false;
   }
@@ -198,122 +293,95 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(_Period != PERIOD_M30)
-      return false;
-   if(HasOpenPositionForMagic())
+   if(HasOurOpenPosition())
       return false;
 
-   const datetime signal_open = iTime(_Symbol, PERIOD_M30, 1);
-   if(signal_open <= 0)
-      return false;
-   if(signal_open == g_last_entry_eval_bar)
-      return false;
-   g_last_entry_eval_bar = signal_open;
-
-   const datetime signal_ny_close = BrokerToNY(signal_open + PeriodSeconds(PERIOD_M30));
-   const int signal_day_key = DayKeyFromTime(signal_ny_close);
-   if(!IsWeekdayNY(signal_ny_close) || HhmmFromTime(signal_ny_close) != strategy_entry_ny_hhmm)
-      return false;
-   if(g_last_entry_day_key == signal_day_key)
+   const datetime broker_now = TimeCurrent();
+   if(!IsNewYorkWeekday(broker_now))
       return false;
 
-   double prev_high = 0.0;
-   double prev_low = 0.0;
-   double prev_close = 0.0;
-   if(!GetPreviousCashSession(prev_high, prev_low, prev_close, signal_day_key))
+   const int ny_key = NewYorkDateKey(broker_now);
+   const int ny_minutes = NewYorkMinutes(broker_now);
+   if(ny_minutes != HhmmToMinutes(strategy_entry_hhmm_ny))
       return false;
 
-   const double pivot = (prev_high + prev_low + prev_close) / 3.0;
-   const double r1 = 2.0 * pivot - prev_low;
-   const double s1 = 2.0 * pivot - prev_high;
-   const double signal_close = iClose(_Symbol, PERIOD_M30, 1);
-   if(signal_close <= 0.0 || r1 <= s1)
+   if(g_last_entry_eval_day_key == ny_key)
+      return false;
+   g_last_entry_eval_day_key = ny_key;
+
+   double r1 = 0.0;
+   double s1 = 0.0;
+   if(!ComputePreviousCashPivots(ny_key, r1, s1))
       return false;
 
-   if(signal_close > r1)
+   const double close_m30 = iClose(_Symbol, PERIOD_M30, 1); // perf-allowed: fixed closed M30 decision bar at 10:30 NY.
+   if(close_m30 <= 0.0)
+      return false;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   if(close_m30 > r1)
+     {
       req.type = QM_BUY;
-   else if(signal_close < s1)
+      const double entry = (ask > 0.0) ? ask : close_m30;
+      req.sl = QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult);
+      if(req.sl <= 0.0)
+         return false;
+      req.tp = strategy_use_rr_tp ? QM_TakeRR(_Symbol, req.type, entry, req.sl, strategy_rr_tp) : 0.0;
+      req.reason = "UNGER_PIVOT_R1_BREAK";
+      return true;
+     }
+
+   if(close_m30 < s1)
+     {
       req.type = QM_SELL;
-   else
-      return false;
+      const double entry = (bid > 0.0) ? bid : close_m30;
+      req.sl = QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult);
+      if(req.sl <= 0.0)
+         return false;
+      req.tp = strategy_use_rr_tp ? QM_TakeRR(_Symbol, req.type, entry, req.sl, strategy_rr_tp) : 0.0;
+      req.reason = "UNGER_PIVOT_S1_BREAK";
+      return true;
+     }
 
-   const double entry = QM_EntryMarketPrice(req.type);
-   if(entry <= 0.0)
-      return false;
-
-   req.sl = QM_StopATR(_Symbol, req.type, entry, strategy_atr_period, strategy_atr_sl_mult);
-   if(req.sl <= 0.0)
-      return false;
-
-   if(strategy_use_rr_take_profit)
-      req.tp = QM_TakeRR(_Symbol, req.type, entry, req.sl, strategy_take_profit_rr);
-
-   req.reason = (req.type == QM_BUY) ? "UNGER_PIVOT_R1_BREAK" : "UNGER_PIVOT_S1_BREAK";
-   g_last_entry_day_key = signal_day_key;
-   return true;
+   return false;
   }
 
+// Called every tick when an open position exists for this EA's magic.
+// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card default: no trailing, partial, or break-even management.
+   // Card specifies fixed ATR stop, no trailing, no BE, no partial close.
   }
 
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const datetime ny_now = BrokerToNY(TimeCurrent());
-   const int hhmm_now = HhmmFromTime(ny_now);
-   if(hhmm_now >= strategy_session_close_hhmm)
+   ENUM_POSITION_TYPE position_type;
+   if(!GetOurPositionType(position_type))
+      return false;
+
+   const datetime broker_now = TimeCurrent();
+   const int ny_minutes = NewYorkMinutes(broker_now);
+   if(ny_minutes >= HhmmToMinutes(strategy_cash_close_hhmm_ny))
       return true;
 
-   const datetime signal_open = iTime(_Symbol, PERIOD_M30, 1);
-   if(signal_open <= 0)
-      return false;
-   if(signal_open == g_last_exit_eval_bar)
-      return g_cached_exit_signal;
-
-   g_last_exit_eval_bar = signal_open;
-   g_cached_exit_signal = false;
-
-   const datetime signal_ny_close = BrokerToNY(signal_open + PeriodSeconds(PERIOD_M30));
-   if(!IsCashSessionCloseNY(signal_ny_close))
+   if(g_cached_r1 <= 0.0 || g_cached_s1 <= 0.0)
       return false;
 
-   double prev_high = 0.0;
-   double prev_low = 0.0;
-   double prev_close = 0.0;
-   if(!GetPreviousCashSession(prev_high, prev_low, prev_close, DayKeyFromTime(signal_ny_close)))
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   const double pivot = (prev_high + prev_low + prev_close) / 3.0;
-   const double r1 = 2.0 * pivot - prev_low;
-   const double s1 = 2.0 * pivot - prev_high;
-   const double signal_close = iClose(_Symbol, PERIOD_M30, 1);
-   if(signal_close <= 0.0 || r1 <= s1)
-      return false;
-
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(pos_type == POSITION_TYPE_BUY && signal_close < s1)
-        {
-         g_cached_exit_signal = true;
-         return true;
-        }
-      if(pos_type == POSITION_TYPE_SELL && signal_close > r1)
-        {
-         g_cached_exit_signal = true;
-         return true;
-        }
-     }
+   if(position_type == POSITION_TYPE_BUY && bid < g_cached_s1)
+      return true;
+   if(position_type == POSITION_TYPE_SELL && ask > g_cached_r1)
+      return true;
 
    return false;
   }
@@ -337,9 +405,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,           // legacy back-compat
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,                            // pause-before (legacy hint)
+                        30,                            // pause-after (legacy hint)
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,              // FW1 Axis A
+                        qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -360,7 +436,14 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -392,6 +475,10 @@ void OnTick()
    if(!QM_IsNewBar())
       return;
 
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
+   QM_EquityStreamOnNewBar();
+
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
@@ -403,6 +490,15 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()

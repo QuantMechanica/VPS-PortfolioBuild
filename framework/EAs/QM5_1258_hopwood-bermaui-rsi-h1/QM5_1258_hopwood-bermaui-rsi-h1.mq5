@@ -3,7 +3,6 @@
 #property description "QM5_1258 Hopwood Bermaui-RSI H1 Trend-Follower"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_Signals.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 1258;

@@ -27,8 +27,8 @@
 //                     current PSAR if (and only if) it improves the stop.
 //   Exits           : opposite PSAR flip -> manual close; time exit after
 //                     time_exit_bars closed H1 bars.
-//   Spread guard    : block only a genuinely wide spread (fail-open on .DWX
-//                     zero modeled spread).
+//   Spread guard    : block only when current spread exceeds 1.5x the 20-bar
+//                     median spread (fail-open on .DWX zero modeled spread).
 //
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
 // else is framework wiring and MUST stay intact.
@@ -72,32 +72,52 @@ input double strategy_sl_max_atr_mult   = 2.5;    // skip if stop distance excee
 input double strategy_tp_rr             = 2.0;    // take-profit as R-multiple of risk
 input double strategy_trail_trigger_r   = 1.0;    // start PSAR trail after +this*R
 input int    strategy_time_exit_bars    = 40;     // close after this many H1 bars
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input int    strategy_spread_median_bars = 20;    // median spread lookback
+input double strategy_spread_median_mult = 1.5;   // skip if spread > mult * median spread
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only — regime/signal work is in
+double MedianClosedBarSpreadPoints()
+  {
+   const int n = strategy_spread_median_bars;
+   if(n <= 0)
+      return 0.0;
+
+   double values[];
+   ArrayResize(values, n);
+   int count = 0;
+   for(int shift = 1; shift <= n; ++shift)
+     {
+      const long spread_points = iSpread(_Symbol, _Period, shift); // perf-allowed: bounded spread-window filter
+      if(spread_points < 0)
+         continue;
+      values[count] = (double)spread_points;
+      ++count;
+     }
+   if(count <= 0)
+      return 0.0;
+
+   ArrayResize(values, count);
+   ArraySort(values);
+   const int mid = count / 2;
+   if((count % 2) == 1)
+      return values[mid];
+   return 0.5 * (values[mid - 1] + values[mid]);
+  }
+
+// Cheap per-tick gate. Spread guard only — regime/signal work is in
 // Strategy_EntrySignal on the closed-bar path. Fail-open on .DWX zero spread.
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to the entry gate, do not block here
-
-   const double stop_distance = strategy_sl_atr_mult * atr_value;
-   if(stop_distance <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   const long current_spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   const double median_spread_points = MedianClosedBarSpreadPoints();
+   // Only a genuinely wide spread blocks; zero modeled spread passes.
+   if(current_spread_points > 0 &&
+      median_spread_points > 0.0 &&
+      strategy_spread_median_mult > 0.0 &&
+      (double)current_spread_points > strategy_spread_median_mult * median_spread_points)
       return true;
 
    return false;
@@ -133,6 +153,14 @@ bool VolatilityAboveFloor(const double atr_now)
 // QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -296,7 +324,7 @@ bool Strategy_ExitSignal()
    if(QM_TM_OpenPositionCount(magic) <= 0)
       return false;
 
-   const datetime current_bar_open = iTime(_Symbol, _Period, 0);
+   const datetime current_bar_open = iTime(_Symbol, _Period, 0); // perf-allowed: current bar time for bounded time exit
    const int period_seconds = PeriodSeconds(_Period);
    if(current_bar_open <= 0 || period_seconds <= 0)
       return false;

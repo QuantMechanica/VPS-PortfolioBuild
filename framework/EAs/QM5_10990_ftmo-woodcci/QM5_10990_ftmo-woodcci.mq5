@@ -28,8 +28,9 @@
 //                         (b) LSMA slope flips against the position for 2
 //                             consecutive closed bars, OR
 //                         (c) time exit after time_exit_bars (48) H1 bars.
-//   Spread guard        : skip only a genuinely wide spread > spread_median_mult
-//                         x the 20-bar median spread (fail-open on .DWX 0 spread).
+//   Spread guard        : entry skips only a genuinely wide spread >
+//                         spread_median_mult x the 20-bar median spread
+//                         (fail-open on .DWX 0 spread).
 //
 // LSMA has no dedicated QM_* reader; it is a least-squares (linear-regression)
 // endpoint. The closed-form regression below is bespoke structural math the
@@ -173,36 +174,34 @@ bool Woodcci_ATRBelowPercentile()
    return (rank_pct < strategy_atr_pctile);
   }
 
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
-
-// Cheap O(1) per-tick gate. Spread guard only; regime/signal work is on the
-// closed-bar path in Strategy_EntrySignal. Fail-open on .DWX zero spread.
-bool Strategy_NoTradeFilter()
+// Entry-only spread filter. The NoTrade hook stays O(1); this bounded median
+// check runs only after the framework closed-bar gate reaches EntrySignal.
+bool Woodcci_CurrentSpreadTooWide()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
+      return false;
 
    const double spread = ask - bid;
    if(spread <= 0.0)
-      return false; // .DWX models zero spread — never block on it (fail-open)
+      return false; // .DWX modeled spread can be zero; never block on that.
 
-   // Median spread reference over the last N closed bars via rates[].spread.
-   MqlRates rates[];
    const int want = strategy_spread_lookback;
-   const int got  = CopyRates(_Symbol, _Period, 1, want, rates); // perf-allowed: bounded, fail-open
+   if(want < 3)
+      return false;
+
+   MqlRates rates[];
+   const int got = CopyRates(_Symbol, _Period, 1, want, rates); // perf-allowed: EntrySignal is closed-bar gated
    if(got < 3)
-      return false; // not enough data — defer, do not block
+      return false;
 
    double spreads_pts[];
    ArrayResize(spreads_pts, got);
    int valid = 0;
    for(int i = 0; i < got; ++i)
      {
-      const double sp = (double)rates[i].spread; // in points
+      const double sp = (double)rates[i].spread;
       if(sp > 0.0)
         {
          spreads_pts[valid] = sp;
@@ -210,25 +209,39 @@ bool Strategy_NoTradeFilter()
         }
      }
    if(valid < 3)
-      return false; // .DWX zero modeled spread in history — fail-open
+      return false;
 
    ArrayResize(spreads_pts, valid);
    ArraySort(spreads_pts);
-   double median_pts;
+
+   double median_pts = 0.0;
    if(valid % 2 == 1)
       median_pts = spreads_pts[valid / 2];
    else
       median_pts = 0.5 * (spreads_pts[valid / 2 - 1] + spreads_pts[valid / 2]);
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(median_pts <= 0.0 || point <= 0.0)
+   if(point <= 0.0 || median_pts <= 0.0)
       return false;
-   const double median_price = median_pts * point;
 
-   // Block only a genuinely wide current spread.
-   if(spread > strategy_spread_median_mult * median_price)
+   return (spread > strategy_spread_median_mult * median_pts * point);
+  }
+
+// -----------------------------------------------------------------------------
+// Strategy hooks
+// -----------------------------------------------------------------------------
+
+// Cheap O(1) per-tick gate. Historical spread/regime/signal work is on the
+// closed-bar path in Strategy_EntrySignal. Fail-open on .DWX zero spread.
+bool Strategy_NoTradeFilter()
+  {
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
       return true;
-   return false;
+   if(ask < bid)
+      return true;
+   return false; // zero or normal positive spread remains tradeable
   }
 
 // Long+short entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
@@ -240,6 +253,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    // --- Volatility floor: skip low-ATR regimes ---
    if(Woodcci_ATRBelowPercentile())
+      return false;
+
+   // --- Spread guard: skip only genuinely wide current spread ---
+   if(Woodcci_CurrentSpreadTooWide())
       return false;
 
    const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
@@ -454,6 +471,11 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
+
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -468,12 +490,8 @@ void OnTick()
             continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
-     }
-
-   if(!QM_IsNewBar())
       return;
-
-   QM_EquityStreamOnNewBar();
+     }
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
