@@ -159,10 +159,10 @@ void ResetSessionCache(const int day_key)
 void AddClosedBarToSession(const int shift)
   {
    // perf-allowed: fixed closed-bar OHLCV read for session VWAP; no QM OHLC helpers exist.
-   const double high = iHigh(_Symbol, strategy_timeframe, shift);
-   const double low = iLow(_Symbol, strategy_timeframe, shift);
-   const double close = iClose(_Symbol, strategy_timeframe, shift);
-   const long tick_volume = iVolume(_Symbol, strategy_timeframe, shift);
+   const double high = iHigh(_Symbol, strategy_timeframe, shift); // perf-allowed
+   const double low = iLow(_Symbol, strategy_timeframe, shift); // perf-allowed
+   const double close = iClose(_Symbol, strategy_timeframe, shift); // perf-allowed
+   const long tick_volume = iVolume(_Symbol, strategy_timeframe, shift); // perf-allowed
    if(high <= 0.0 || low <= 0.0 || close <= 0.0 || high < low)
       return;
 
@@ -196,7 +196,7 @@ void BootstrapSessionFromClosedDay(const datetime signal_time)
    for(int shift = max_bars; shift >= 1; --shift)
      {
       // perf-allowed: bounded one-time daily VWAP bootstrap; no QM Time helper exists.
-      const datetime bar_time = iTime(_Symbol, strategy_timeframe, shift);
+      const datetime bar_time = iTime(_Symbol, strategy_timeframe, shift); // perf-allowed
       if(bar_time <= 0 || DayKey(bar_time) != g_session_day_key)
          continue;
       AddClosedBarToSession(shift);
@@ -220,7 +220,7 @@ double MedianSpreadForEntryHour()
    for(int shift = 1; shift <= max_shift; ++shift)
      {
       // perf-allowed: historical spread baseline only when modeled spread is non-zero.
-      const datetime bar_time = iTime(_Symbol, strategy_timeframe, shift);
+      const datetime bar_time = iTime(_Symbol, strategy_timeframe, shift); // perf-allowed
       if(bar_time <= 0)
          continue;
       MqlDateTime dt;
@@ -295,14 +295,14 @@ void AdvanceState_OnNewBar()
       return;
 
    // perf-allowed: fixed closed-bar OHLC/time reads; no QM OHLC helpers exist.
-   g_signal_time = iTime(_Symbol, strategy_timeframe, 1);
+   g_signal_time = iTime(_Symbol, strategy_timeframe, 1); // perf-allowed
    if(g_signal_time <= 0)
       return;
 
-   g_signal_open = iOpen(_Symbol, strategy_timeframe, 1);
-   g_signal_close = iClose(_Symbol, strategy_timeframe, 1);
-   g_prev_low = iLow(_Symbol, strategy_timeframe, 2);
-   g_prev_high = iHigh(_Symbol, strategy_timeframe, 2);
+   g_signal_open = iOpen(_Symbol, strategy_timeframe, 1); // perf-allowed
+   g_signal_close = iClose(_Symbol, strategy_timeframe, 1); // perf-allowed
+   g_prev_low = iLow(_Symbol, strategy_timeframe, 2); // perf-allowed
+   g_prev_high = iHigh(_Symbol, strategy_timeframe, 2); // perf-allowed
 
    const int day_key = DayKey(g_signal_time);
    if(day_key != g_session_day_key)
