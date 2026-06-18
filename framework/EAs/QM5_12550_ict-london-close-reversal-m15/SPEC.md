@@ -4,7 +4,7 @@
 **Slug:** ict-london-close-reversal-m15
 **Source:** ict-mmm-notes-2020-london-close
 **Author of this spec:** Codex
-**Last revised:** 2026-06-13
+**Last revised:** 2026-06-18
 
 ---
 
@@ -106,4 +106,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-13 | Initial build from card | 10e4d27a-50a9-489c-927c-0cd247537d25 |
+| v1 | 2026-06-18 | Initial build from card | 5c0945a1-2efd-418e-989b-610142f20b8e |

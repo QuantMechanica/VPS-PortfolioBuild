@@ -148,8 +148,14 @@ bool Strategy_SpreadAllows()
   {
    if(strategy_max_spread_points <= 0)
       return true;
-   const long spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   return (spread > 0 && spread <= strategy_max_spread_points);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+      return false;
+   if(ask > bid)
+      return ((ask - bid) / point <= strategy_max_spread_points);
+   return true;
   }
 
 bool Strategy_HasOurPendingOrder()

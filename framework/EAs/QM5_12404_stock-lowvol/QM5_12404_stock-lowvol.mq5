@@ -61,13 +61,6 @@ double g_median_spread_points = 0.0;
 int    g_last_rebalance_mon   = -1;
 int    g_last_rebalance_yr    = -1;
 
-bool IsNewMonthBar()
-  {
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   return (dt.year != g_last_rebalance_yr || dt.mon != g_last_rebalance_mon);
-  }
-
 int UniverseIndex(const string symbol)
   {
    for(int i = 0; i < UNIVERSE_SIZE; i++)
@@ -432,7 +425,7 @@ void OnTick()
 
    QM_EquityStreamOnNewBar();
 
-   if(IsNewMonthBar())
+   if(QM_IsNewBar(_Symbol, PERIOD_MN1))
       AdvanceState_OnNewMonth();
 
    QM_EntryRequest req;
