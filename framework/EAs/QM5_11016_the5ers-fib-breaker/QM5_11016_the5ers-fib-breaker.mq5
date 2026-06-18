@@ -140,8 +140,8 @@ int FindSwingHighShift(const int from_shift, const int k, const int scan_bars)
       bool is_pivot = true;
       for(int j = 1; j <= k; ++j)
         {
-         const double hl = iHigh(_Symbol, _Period, c - j);
-         const double hr = iHigh(_Symbol, _Period, c + j);
+         const double hl = iHigh(_Symbol, _Period, c - j); // perf-allowed: bounded closed-bar scan
+         const double hr = iHigh(_Symbol, _Period, c + j); // perf-allowed: bounded closed-bar scan
          if(hl <= 0.0 || hr <= 0.0 || hc <= hl || hc <= hr)
            {
             is_pivot = false;
@@ -166,8 +166,8 @@ int FindSwingLowShift(const int from_shift, const int k, const int scan_bars)
       bool is_pivot = true;
       for(int j = 1; j <= k; ++j)
         {
-         const double ll = iLow(_Symbol, _Period, c - j);
-         const double lr = iLow(_Symbol, _Period, c + j);
+         const double ll = iLow(_Symbol, _Period, c - j); // perf-allowed: bounded closed-bar scan
+         const double lr = iLow(_Symbol, _Period, c + j); // perf-allowed: bounded closed-bar scan
          if(ll <= 0.0 || lr <= 0.0 || lc >= ll || lc >= lr)
            {
             is_pivot = false;
@@ -193,8 +193,8 @@ int FindD1SwingHighShift(const int from_shift, const int k, const int scan_bars)
       bool is_pivot = true;
       for(int j = 1; j <= k; ++j)
         {
-         const double hl = iHigh(_Symbol, PERIOD_D1, c - j);
-         const double hr = iHigh(_Symbol, PERIOD_D1, c + j);
+         const double hl = iHigh(_Symbol, PERIOD_D1, c - j); // perf-allowed: bounded closed D1 scan
+         const double hr = iHigh(_Symbol, PERIOD_D1, c + j); // perf-allowed: bounded closed D1 scan
          if(hl <= 0.0 || hr <= 0.0 || hc <= hl || hc <= hr)
            {
             is_pivot = false;
@@ -219,8 +219,8 @@ int FindD1SwingLowShift(const int from_shift, const int k, const int scan_bars)
       bool is_pivot = true;
       for(int j = 1; j <= k; ++j)
         {
-         const double ll = iLow(_Symbol, PERIOD_D1, c - j);
-         const double lr = iLow(_Symbol, PERIOD_D1, c + j);
+         const double ll = iLow(_Symbol, PERIOD_D1, c - j); // perf-allowed: bounded closed D1 scan
+         const double lr = iLow(_Symbol, PERIOD_D1, c + j); // perf-allowed: bounded closed D1 scan
          if(ll <= 0.0 || lr <= 0.0 || lc >= ll || lc >= lr)
            {
             is_pivot = false;
@@ -260,10 +260,10 @@ int ComputeD1Bias()
    if(sl2 < 0)
       return 0;
 
-   const double hi_latest = iHigh(_Symbol, PERIOD_D1, sh1);
-   const double hi_prev   = iHigh(_Symbol, PERIOD_D1, sh2);
-   const double lo_latest = iLow(_Symbol, PERIOD_D1, sl1);
-   const double lo_prev   = iLow(_Symbol, PERIOD_D1, sl2);
+   const double hi_latest = iHigh(_Symbol, PERIOD_D1, sh1); // perf-allowed: closed D1 pivot read
+   const double hi_prev   = iHigh(_Symbol, PERIOD_D1, sh2); // perf-allowed: closed D1 pivot read
+   const double lo_latest = iLow(_Symbol, PERIOD_D1, sl1);  // perf-allowed: closed D1 pivot read
+   const double lo_prev   = iLow(_Symbol, PERIOD_D1, sl2);  // perf-allowed: closed D1 pivot read
    if(hi_latest <= 0.0 || hi_prev <= 0.0 || lo_latest <= 0.0 || lo_prev <= 0.0)
       return 0;
 
@@ -306,8 +306,8 @@ bool RecomputeStructure()
       if(sl_start < 0)
          return false;
 
-      const double end_price   = iHigh(_Symbol, _Period, sh_end);
-      const double start_price = iLow(_Symbol, _Period, sl_start);
+      const double end_price   = iHigh(_Symbol, _Period, sh_end);   // perf-allowed: closed H1 pivot read
+      const double start_price = iLow(_Symbol, _Period, sl_start);  // perf-allowed: closed H1 pivot read
       if(end_price <= 0.0 || start_price <= 0.0 || end_price <= start_price)
          return false;
 
@@ -341,8 +341,8 @@ bool RecomputeStructure()
       if(sh_start < 0)
          return false;
 
-      const double end_price   = iLow(_Symbol, _Period, sl_end);
-      const double start_price = iHigh(_Symbol, _Period, sh_start);
+      const double end_price   = iLow(_Symbol, _Period, sl_end);       // perf-allowed: closed H1 pivot read
+      const double start_price = iHigh(_Symbol, _Period, sh_start);    // perf-allowed: closed H1 pivot read
       if(end_price <= 0.0 || start_price <= 0.0 || start_price <= end_price)
          return false;
 
@@ -381,9 +381,9 @@ bool FindBreakerRef(const bool want_long, double &ref)
    for(int s = 2; s <= last; ++s)
      {
       const double o = iOpen(_Symbol, _Period, s);  // perf-allowed: bounded closed-bar scan
-      const double c = iClose(_Symbol, _Period, s);
-      const double h = iHigh(_Symbol, _Period, s);
-      const double l = iLow(_Symbol, _Period, s);
+      const double c = iClose(_Symbol, _Period, s); // perf-allowed: bounded closed-bar scan
+      const double h = iHigh(_Symbol, _Period, s);  // perf-allowed: bounded closed-bar scan
+      const double l = iLow(_Symbol, _Period, s);   // perf-allowed: bounded closed-bar scan
       if(o <= 0.0 || c <= 0.0)
          continue;
       // candle must intersect the retracement zone
@@ -509,9 +509,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   const double open1  = iOpen(_Symbol, _Period, 1);
-   const double high1  = iHigh(_Symbol, _Period, 1);
-   const double low1   = iLow(_Symbol, _Period, 1);
+   const double open1  = iOpen(_Symbol, _Period, 1);  // perf-allowed: single closed-bar read
+   const double high1  = iHigh(_Symbol, _Period, 1);  // perf-allowed: single closed-bar read
+   const double low1   = iLow(_Symbol, _Period, 1);   // perf-allowed: single closed-bar read
    if(close1 <= 0.0 || open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0)
       return false;
    const double range1 = high1 - low1;
@@ -540,14 +540,24 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(close_pos < strategy_signal_close_frac)
          return false;
 
-      // Structural stop: below the impulse swing low minus ATR buffer.
+      double retrace_low = low1;
+      for(int rs = 2; rs < g_impulse_end_shift; ++rs)
+        {
+         const double lr = iLow(_Symbol, _Period, rs); // perf-allowed: bounded retracement swing scan
+         if(lr > 0.0 && lr < retrace_low)
+            retrace_low = lr;
+        }
+
+      // Structural stop: below the retracement swing low minus ATR buffer.
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
          return false;
-      const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, g_impulse_start, g_atr_h1, strategy_sl_atr_mult);
+      const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, retrace_low, g_atr_h1, strategy_sl_atr_mult);
       if(sl <= 0.0 || sl >= entry)
          return false;
-      const double tp = QM_TakeRR(_Symbol, QM_BUY, entry, sl, strategy_rr_target);
+      double tp = QM_TakeRR(_Symbol, QM_BUY, entry, sl, strategy_rr_target);
+      if(g_impulse_end > entry && tp > g_impulse_end)
+         tp = g_impulse_end;
       if(tp <= 0.0)
          return false;
 
@@ -556,7 +566,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl     = sl;
       req.tp     = tp;
       req.reason = "fib_breaker_long";
-      g_entry_bar_time = iTime(_Symbol, _Period, 0); // current (new) bar open time
+      g_entry_bar_time = iTime(_Symbol, _Period, 0); // perf-allowed: current new-bar open time after framework gate
       return true;
      }
 
@@ -577,10 +587,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double entry_s = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(entry_s <= 0.0)
       return false;
-   const double sl_s = QM_StopATRFromValue(_Symbol, QM_SELL, g_impulse_start, g_atr_h1, strategy_sl_atr_mult);
+   double retrace_high = high1;
+   for(int rs = 2; rs < g_impulse_end_shift; ++rs)
+     {
+      const double hr = iHigh(_Symbol, _Period, rs); // perf-allowed: bounded retracement swing scan
+      if(hr > retrace_high)
+         retrace_high = hr;
+     }
+
+   const double sl_s = QM_StopATRFromValue(_Symbol, QM_SELL, retrace_high, g_atr_h1, strategy_sl_atr_mult);
    if(sl_s <= 0.0 || sl_s <= entry_s)
       return false;
-   const double tp_s = QM_TakeRR(_Symbol, QM_SELL, entry_s, sl_s, strategy_rr_target);
+   double tp_s = QM_TakeRR(_Symbol, QM_SELL, entry_s, sl_s, strategy_rr_target);
+   if(g_impulse_end < entry_s && tp_s < g_impulse_end)
+      tp_s = g_impulse_end;
    if(tp_s <= 0.0)
       return false;
 
@@ -589,7 +609,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl_s;
    req.tp     = tp_s;
    req.reason = "fib_breaker_short";
-   g_entry_bar_time = iTime(_Symbol, _Period, 0);
+   g_entry_bar_time = iTime(_Symbol, _Period, 0); // perf-allowed: current new-bar open time after framework gate
    return true;
   }
 
