@@ -11219,3 +11219,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11523,ciurea-sma100-price-cross-h4,0,EURUSD.DWX,115230000,2026-06-18,Claude,reserved
 11523,ciurea-sma100-price-cross-h4,1,GBPUSD.DWX,115230001,2026-06-18,Claude,reserved
 11524,ciurea-ema200-price-cross-m30,0,EURUSD.DWX,115240000,2026-06-18,Claude,reserved
+11525,ciurea-stoch1435-bounce-h4,0,GBPUSD.DWX,115250000,2026-06-18,Claude,reserved
+11525,ciurea-stoch1435-bounce-h4,1,EURUSD.DWX,115250001,2026-06-18,Claude,reserved
+11526,ciurea-rsi10-50-d1,0,GBPUSD.DWX,115260000,2026-06-18,Claude,reserved
+11527,ciurea-engulfing-m30,0,EURUSD.DWX,115270000,2026-06-18,Claude,reserved
+11527,ciurea-engulfing-m30,1,GBPUSD.DWX,115270001,2026-06-18,Claude,reserved
+11528,ciurea-inv-hammer-shooting-star-m30,0,EURUSD.DWX,115280000,2026-06-18,Claude,reserved
+11528,ciurea-inv-hammer-shooting-star-m30,1,GBPUSD.DWX,115280001,2026-06-18,Claude,reserved
+11529,ciurea-hammer-hanging-man-m15,0,EURUSD.DWX,115290000,2026-06-18,Claude,reserved
+11529,ciurea-hammer-hanging-man-m15,1,GBPUSD.DWX,115290001,2026-06-18,Claude,reserved
+11530,carter-t-h1-sma9-100-cross,0,GBPUSD.DWX,115300000,2026-06-18,Claude,reserved
+11534,carter-t-h1-bb20-ema3-macd617-rsi14,0,EURUSD.DWX,115340000,2026-06-18,Claude,reserved
+11534,carter-t-h1-bb20-ema3-macd617-rsi14,1,GBPUSD.DWX,115340001,2026-06-18,Claude,reserved
+11535,carter-t-h1-psar01-ema5-12-34,0,EURUSD.DWX,115350000,2026-06-18,Claude,reserved
