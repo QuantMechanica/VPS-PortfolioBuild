@@ -4,7 +4,7 @@
 **Slug:** `tv-smc-ob`
 **Source:** `d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7` (see approved card)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-19
 
 ---
 
@@ -18,12 +18,12 @@ The EA trades a Smart Money Concepts family with two entry paths on closed H1 ba
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_pivot_lookback` | 20 | 10-40 | Bars searched for support, resistance, and order-block context. |
+| `strategy_pivot_lookback` | 10 | 10-40 | Bars searched for support, resistance, and order-block context. |
 | `strategy_pivot_wing` | 2 | 1-5 | Left/right bars required to confirm a pivot high or low. |
 | `strategy_mode` | `STRATEGY_MODE_COMBINED` | breakout/order-block/combined | Selects breakout-only, order-block-only, or combined family logic. |
 | `strategy_atr_period` | 14 | 10-20 | ATR period for volatility, stops, and trailing. |
 | `strategy_vol_lookback` | 50 | 20-100 | ATR sample window used for percentile-style volatility filtering. |
-| `strategy_vol_percentile_min` | 50.0 | 40.0-60.0 | Minimum ATR percentile rank required before entry. |
+| `strategy_vol_percentile_min` | 40.0 | 40.0-60.0 | Minimum ATR percentile rank required before entry. |
 | `strategy_atr_sl_mult` | 2.0 | 1.5-2.5 | Initial ATR stop multiplier. |
 | `strategy_trail_activation_r` | 1.5 | 1.0-2.0 | Profit in R before ATR trailing activates. |
 | `strategy_trail_atr_mult` | 2.0 | 1.5-2.5 | ATR multiplier used by the trailing stop. |
@@ -107,3 +107,5 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 |---|---|---|---|
 | v1 | 2026-05-31 | Initial build from card | 242b0f38-2758-43d9-9b0b-2c471895e284 |
 | v2 | 2026-06-18 | Rebuild in place from approved card | 78eed496-5465-4ff4-a66e-94cb35e4cd78 |
+| v3 | 2026-06-19 | Q01 smoke rework; removed extra breakout cross-event gate | a0669c13-5eb1-41aa-b7c5-7fd5f4d44ab6 |
+| v4 | 2026-06-19 | Q01 smoke rework; recent pivot defaults and volatility threshold | a0669c13-5eb1-41aa-b7c5-7fd5f4d44ab6 |

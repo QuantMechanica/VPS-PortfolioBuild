@@ -1,7 +1,7 @@
 #property strict
 #property version   "5.0"
 #property description "QM5_10758 TradingView SMC Order Block Breakout"
-// rework v2 2026-06-16 — breakout starved: RecentResistance/RecentSupport returned the NEAREST pivot (unbreakable in one bar); now return the structural highest/lowest pivot so breaks actually fire.
+// rework v4 2026-06-19 — smoke MIN_TRADES_NOT_MET: use the card's least restrictive tested defaults and the most recent confirmed pivot as active structure.
 
 #include <QM/QM_Common.mqh>
 
@@ -81,12 +81,12 @@ enum StrategyMode
    STRATEGY_MODE_COMBINED = 2
   };
 
-input int          strategy_pivot_lookback       = 20;
+input int          strategy_pivot_lookback       = 10;
 input int          strategy_pivot_wing           = 2;
 input StrategyMode strategy_mode                 = STRATEGY_MODE_COMBINED;
 input int          strategy_atr_period           = 14;
 input int          strategy_vol_lookback         = 50;
-input double       strategy_vol_percentile_min   = 50.0;
+input double       strategy_vol_percentile_min   = 40.0;
 input double       strategy_atr_sl_mult          = 2.0;
 input double       strategy_trail_activation_r   = 1.5;
 input double       strategy_trail_atr_mult       = 2.0;
@@ -161,24 +161,16 @@ bool IsPivotLow(const int shift, const int wing)
 
 double RecentResistance()
   {
-   // rework v2 2026-06-16: pick the HIGHEST confirmed pivot high in the lookback
-   // (the structural resistance a breakout is defined against), not the nearest
-   // pivot. The nearest pivot sits just above recent action and is essentially
-   // unbreakable in a single bar, which starved the breakout entry path.
+   // Active resistance is the most recent confirmed pivot high in the lookback.
+   // That is the literal "recent resistance" level from the card; the extremum
+   // fallback is only for windows without a confirmed pivot.
    const int lookback = (int)MathMax(strategy_pivot_lookback, strategy_pivot_wing + 2);
    const int wing = (int)MathMax(strategy_pivot_wing, 1);
-   double pivot_level = 0.0;
    for(int shift = wing + 1; shift <= lookback + wing; ++shift)
      {
       if(IsPivotHigh(shift, wing))
-        {
-         const double h = BarHigh(shift);
-         if(h > pivot_level)
-            pivot_level = h;
-        }
+         return BarHigh(shift);
      }
-   if(pivot_level > 0.0)
-      return pivot_level;
 
    double highest = 0.0;
    for(int shift = 2; shift <= lookback + 1; ++shift)
@@ -192,23 +184,15 @@ double RecentResistance()
 
 double RecentSupport()
   {
-   // rework v2 2026-06-16: pick the LOWEST confirmed pivot low in the lookback
-   // (structural support), mirroring RecentResistance, so short breakouts can
-   // actually trigger on a clean break of the significant swing low.
+   // Active support mirrors RecentResistance: the most recent confirmed pivot
+   // low, with a range-extremum fallback only when no pivot is found.
    const int lookback = (int)MathMax(strategy_pivot_lookback, strategy_pivot_wing + 2);
    const int wing = (int)MathMax(strategy_pivot_wing, 1);
-   double pivot_level = 0.0;
    for(int shift = wing + 1; shift <= lookback + wing; ++shift)
      {
       if(IsPivotLow(shift, wing))
-        {
-         const double l = BarLow(shift);
-         if(pivot_level <= 0.0 || l < pivot_level)
-            pivot_level = l;
-        }
+         return BarLow(shift);
      }
-   if(pivot_level > 0.0)
-      return pivot_level;
 
    double lowest = DBL_MAX;
    for(int shift = 2; shift <= lookback + 1; ++shift)
@@ -392,8 +376,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double close1 = BarClose(1);
-   const double close2 = BarClose(2);
-   if(close1 <= 0.0 || close2 <= 0.0)
+   if(close1 <= 0.0)
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -406,7 +389,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const double resistance = RecentResistance();
       const double support = RecentSupport();
 
-      if(resistance > 0.0 && close1 > resistance && close2 <= resistance && SupertrendAllows(1))
+      if(resistance > 0.0 && close1 > resistance && SupertrendAllows(1))
         {
          const double structure_sl = support - atr * strategy_structure_atr_buffer;
          const double sl = BuildStop(QM_BUY, ask, structure_sl, atr);
@@ -417,7 +400,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
            }
         }
 
-      if(support > 0.0 && close1 < support && close2 >= support && SupertrendAllows(-1))
+      if(support > 0.0 && close1 < support && SupertrendAllows(-1))
         {
          const double structure_sl = resistance + atr * strategy_structure_atr_buffer;
          const double sl = BuildStop(QM_SELL, bid, structure_sl, atr);
