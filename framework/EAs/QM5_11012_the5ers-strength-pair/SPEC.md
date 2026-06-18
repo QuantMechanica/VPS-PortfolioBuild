@@ -22,8 +22,8 @@ on H1 — long needs close>EMA50, positive EMA50 slope, and a positive last-bar 
 (mirror for short). Exit on momentum reversal (H1 close crosses to the wrong side of
 EMA50), on the host no longer being the rank1-vs-rank8 pair in the held direction, on
 a 48 H1-bar time stop, on the 1.8R take-profit, or on the 1.5×ATR(H1,14) stop. A
-strength spread filter (rank1 minus rank8 must be ≥ 0.35%) and a liquid-session
-(broker-time London/NY) window gate entries.
+strength spread filter (rank1 minus rank8 must be >= 0.35%) and a liquid-session
+(broker-time London/NY) window gate entries while leaving existing-position exits active.
 
 ---
 

@@ -241,6 +241,9 @@ int QM_HostStrengthDirection()
 // Fail-open on .DWX zero modeled spread.
 bool Strategy_NoTradeFilter()
   {
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+      return false;
+
    // Liquid London/NY hours in broker time (wrap-safe, but window is non-wrapping).
    const datetime broker_now = TimeCurrent();
    MqlDateTime dt;
