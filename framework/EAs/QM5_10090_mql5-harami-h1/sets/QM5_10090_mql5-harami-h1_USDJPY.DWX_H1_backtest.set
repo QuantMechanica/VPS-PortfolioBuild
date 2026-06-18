@@ -3,16 +3,16 @@
 ; ea_id:        10090
 ; ea_slug:      mql5-harami-h1
 ; ea_version:   v5.0
-; set_version:  s20260609-001
+; set_version:  s20260618-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   29cd6b9314d8ed251f6c5d3f979dee9661e89785f99dc163b240f81b2f7b602d
 ; author:       Development
-; date:         2026-06-09
+; date:         2026-06-18
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000
@@ -32,3 +32,21 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+qm_ea_id=10090
+qm_rng_seed=42
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy_rsi_period=14
+strategy_buy_rsi_max=40.0
+strategy_sell_rsi_min=60.0
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_context_bars=1
+strategy_min_mother_body_points=0.0
+strategy_max_spread_points=0.0

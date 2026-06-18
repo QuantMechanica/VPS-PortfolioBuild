@@ -4,13 +4,13 @@
 **Slug:** `mql5-harami-h1`
 **Source:** `a120af9a-fb72-526c-bb80-d1d098a617b5` (see `strategy-seeds/sources/a120af9a-fb72-526c-bb80-d1d098a617b5/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-09
+**Last revised:** 2026-06-18
 
 ---
 
 ## 1. Strategy Logic
 
-The EA evaluates completed H1 candles only. It buys when a bearish mother candle is followed by a bullish child candle whose body is fully inside the mother body, with the mother candle closing below the prior context close and RSI(1) below 40. It sells on the inverse bearish Harami setup with RSI(1) above 60. Positions have a 2.0 ATR(14) protective stop and no fixed take-profit; exits occur when RSI crosses back down through 70 or 30 for longs, or back up through 30 or 70 for shorts.
+The EA evaluates completed H1 candles only. It buys when a bearish mother candle is followed by a bullish child candle whose body is fully inside the mother body, with the mother candle closing below the prior context close and RSI below 40. It sells on the inverse bearish Harami setup with RSI above 60. Positions have a 2.0 ATR(14) protective stop and no fixed take-profit; exits occur when RSI crosses back down through 70 or 30 for longs, or back up through 30 or 70 for shorts.
 
 ---
 
@@ -18,7 +18,7 @@ The EA evaluates completed H1 candles only. It buys when a bearish mother candle
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_rsi_period` | 1 | 1+ | RSI lookback used for entry confirmation and exit crosses. |
+| `strategy_rsi_period` | 14 | 1+ | RSI lookback used for entry confirmation and exit crosses. The card names RSI(1), while the DWX build invariant flags period 1 as degenerate. |
 | `strategy_buy_rsi_max` | 40.0 | 0-100 | Maximum RSI value allowed for long entries. |
 | `strategy_sell_rsi_min` | 60.0 | 0-100 | Minimum RSI value allowed for short entries. |
 | `strategy_atr_period` | 14 | 1+ | ATR lookback for the protective stop. |
@@ -98,4 +98,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-09 | Initial build from card | c54aeb45-cbe3-4da0-8d2d-8fffe4f7ce6c |
-
+| v2 | 2026-06-18 | Rebuild from card | ef57e38d-95c5-42ab-8133-f73926ccec80 |

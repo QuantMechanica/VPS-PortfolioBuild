@@ -107,7 +107,7 @@ bool Strategy_NoTradeFilter()
       const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
       if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
          return true;
-      if((ask - bid) / point > strategy_max_spread_points)
+      if(ask > bid && (ask - bid) / point > strategy_max_spread_points)
          return true;
      }
 
@@ -184,8 +184,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(bullish_harami && rsi < strategy_buy_rsi_max)
      {
       req.type = QM_BUY;
-      req.price = ask;
-      req.sl = QM_StopATR(_Symbol, req.type, req.price, strategy_atr_period, strategy_atr_sl_mult);
+      req.price = 0.0;
+      req.sl = QM_StopATR(_Symbol, req.type, ask, strategy_atr_period, strategy_atr_sl_mult);
       req.tp = 0.0;
       req.reason = "harami_rsi_long";
       return (req.sl > 0.0);
@@ -197,8 +197,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(bearish_harami && rsi > strategy_sell_rsi_min)
      {
       req.type = QM_SELL;
-      req.price = bid;
-      req.sl = QM_StopATR(_Symbol, req.type, req.price, strategy_atr_period, strategy_atr_sl_mult);
+      req.price = 0.0;
+      req.sl = QM_StopATR(_Symbol, req.type, bid, strategy_atr_period, strategy_atr_sl_mult);
       req.tp = 0.0;
       req.reason = "harami_rsi_short";
       return (req.sl > 0.0);
@@ -382,4 +382,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
