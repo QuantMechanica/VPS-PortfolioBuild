@@ -10410,3 +10410,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12531,clenow-mom,5,NDX.DWX,125310005,2026-06-18,Development,active
 12531,clenow-mom,6,WS30.DWX,125310006,2026-06-18,Development,active
 12531,clenow-mom,7,XAUUSD.DWX,125310007,2026-06-18,Development,active
+12449,ea31337-mabrk,0,EURUSD.DWX,124490000,2026-06-18,Development,active
+12449,ea31337-mabrk,1,GBPUSD.DWX,124490001,2026-06-18,Development,active
+12449,ea31337-mabrk,2,USDJPY.DWX,124490002,2026-06-18,Development,active
+12449,ea31337-mabrk,3,XAUUSD.DWX,124490003,2026-06-18,Development,active
+12449,ea31337-mabrk,4,GDAXI.DWX,124490004,2026-06-18,Development,active
