@@ -175,15 +175,14 @@ void CloseBasketOnEmergencyStop()
       return;
 
    double open_pnl = 0.0;
-   const long magic_base = (long)qm_ea_id * 10000L;
+   const long magic = (long)QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; i--)
      {
       const ulong ticket = PositionGetTicket(i);
       if(!PositionSelectByTicket(ticket))
          continue;
 
-      const long magic = PositionGetInteger(POSITION_MAGIC);
-      if(magic < magic_base || magic >= magic_base + UNIVERSE_SIZE)
+      if(PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
       open_pnl += PositionGetDouble(POSITION_PROFIT);
      }
@@ -197,8 +196,7 @@ void CloseBasketOnEmergencyStop()
       if(!PositionSelectByTicket(ticket))
          continue;
 
-      const long magic = PositionGetInteger(POSITION_MAGIC);
-      if(magic < magic_base || magic >= magic_base + UNIVERSE_SIZE)
+      if(PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
       QM_TM_ClosePosition(ticket, QM_EXIT_KILLSWITCH);
      }

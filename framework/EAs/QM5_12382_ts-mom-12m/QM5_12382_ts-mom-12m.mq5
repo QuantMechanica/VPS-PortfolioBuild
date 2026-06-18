@@ -81,8 +81,6 @@ input double strategy_atr_stop_mult        = 3.0;
 input int    strategy_min_warmup_bars      = 260;
 input double strategy_portfolio_stop_r     = 6.0;
 
-int g_last_manage_month_key = 0;
-
 int MonthKeyFromTime(const datetime t)
   {
    MqlDateTime dt;
@@ -92,11 +90,14 @@ int MonthKeyFromTime(const datetime t)
 
 bool IsFirstD1BarOfMonth()
   {
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: monthly rebalance anchor needs the D1 bar-open date.
-   const datetime previous_bar = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: compares adjacent D1 bar months only.
-   if(current_bar <= 0 || previous_bar <= 0)
+   MqlRates rates[];
+   ArrayResize(rates, 2);
+   ArraySetAsSeries(rates, true);
+   if(CopyRates(_Symbol, PERIOD_D1, 0, 2, rates) != 2) // perf-allowed: called only after the framework QM_IsNewBar(_Symbol, PERIOD_D1) gate in OnTick.
       return false;
-   return MonthKeyFromTime(current_bar) != MonthKeyFromTime(previous_bar);
+   if(rates[0].time <= 0 || rates[1].time <= 0)
+      return false;
+   return MonthKeyFromTime(rates[0].time) != MonthKeyFromTime(rates[1].time);
   }
 
 bool LoadD1Closes(const int required_bars, double &closes[])
@@ -307,13 +308,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   const int month_key = MonthKeyFromTime(TimeCurrent());
-   if(month_key == g_last_manage_month_key)
-      return;
-   if(!IsFirstD1BarOfMonth())
-      return;
-   g_last_manage_month_key = month_key;
-
    ENUM_POSITION_TYPE ptype;
    ulong ticket = 0;
    if(!GetOurPosition(ptype, ticket))
@@ -419,10 +413,21 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
-   // Per-tick: trade management can adjust SL/TP on open positions.
+   // Per-closed-D1-bar: monthly rebalance logic is evaluated only after the
+   // framework gate consumes the new daily bar event.
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
+      return;
+
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
+   QM_EquityStreamOnNewBar();
+
+   if(!IsFirstD1BarOfMonth())
+      return;
+
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
+   // Monthly discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -436,16 +441,6 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
-
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
-   if(!QM_IsNewBar())
-      return;
-
-   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
-   // since last tick. Cheap: most calls early-return on same-day check.
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
