@@ -4,7 +4,7 @@
 **Slug:** `rw-pairs-z`
 **Source:** `dcbac84f-6ecf-5d21-9630-50faa69306ec` (see approved card)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-09
+**Last revised:** 2026-06-18
 
 ---
 
@@ -60,10 +60,10 @@ On each D1 close the EA evaluates a two-symbol spread, `Y close - beta * X close
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `35` |
+| Trades / year / symbol | `10` |
 | Typical hold time | Up to 30 trading days |
 | Expected drawdown profile | Mean-reversion losses cluster when the spread trends instead of reverting. |
-| Regime preference | mean-revert |
+| Regime preference | Low-frequency swing mean-reversion on a 100-day rolling z-score. |
 | Win rate target (qualitative) | medium |
 
 ---
@@ -96,3 +96,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-09 | Initial build from card | c7761526-fc98-4e37-96e3-1c9a270a1e07 |
+| v2 | 2026-06-18 | In-place build handoff refresh | a2925c14-6115-418c-821b-6bd8fb1e053b |
