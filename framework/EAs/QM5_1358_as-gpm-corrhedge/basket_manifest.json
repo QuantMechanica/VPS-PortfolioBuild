@@ -1,0 +1,23 @@
+{
+  "logical_symbol": "QM5_1358_AS_GPM_CORRHEDGE_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "kind": "basket",
+  "basket_symbols": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "GDAXI.DWX",
+    "UK100.DWX",
+    "XTIUSD.DWX",
+    "XNGUSD.DWX",
+    "XAGUSD.DWX",
+    "XAUUSD.DWX"
+  ],
+  "notes": [
+    "AllocateSmartly Generalized Protective Momentum (Keuning & Keller, source_id 2df06de7-6a3a-5b06-9e6d-446d1a01fab9) with correlation hedge. EA runs one instance per registered host symbol (host_symbol=_per_instance), D1-native, monthly rebalance on the broker-time calendar-month roll (first closed D1 bar of a new month).",
+    "Each instance reads the full 9-symbol basket on CLOSED D1 bars to compute ri = mean of 1/3/6/12-month price returns (month = 21 D1 bars), ci = 12-month (252-bar) Pearson correlation of the asset's monthly-step returns vs the equal-weight basket monthly returns, and zi = ri*(1-ci). Breadth n = count of RISK assets with zi>0. n<=4 (half of 8) -> 100% crash-protection (defensive proxy); n>4 -> top-3 risk sleeves by zi plus the defensive proxy for the residual ((8-n)/4) crash-protection weight. Long-only sleeve holds; one position per magic on the host symbol; equal weight realized via RISK_FIXED per-symbol sizing.",
+    "DWX REALIZATION FLAGS: source 12-asset universe (SPY/QQQ/IWM/VGK/EWJ/EEM/VNQ/DBC/GLD/HYG/LQD/TLT + IEF/cash) is NOT routable on DWX (no bond/credit/REIT/Europe-ETF/EM CFDs). Ported to 8 RISK proxies = 5 equity indices (SP500/NDX/WS30/GDAXI/UK100) + 3 commodities (XTIUSD/XNGUSD/XAGUSD), with XAUUSD.DWX as the DEFENSIVE / crash-protection proxy standing in for IEF/TLT treasuries (gold safe-haven). The source's bond carry/yield edge is realized purely as a PRICE-MOMENTUM proxy: there is no yield/curve feed and .DWX applies $0 swap in the tester, so any carry component is unmodeled and FLAGGED.",
+    "SP500.DWX is backtest-only (broker does not route SP500 orders) — T6 live promotion of an SP500-selected leg requires NDX/WS30 parallel-validation per card. Spread guard fails OPEN on zero modeled spread. Foreign-symbol D1 reads bound at OnInit via QM_SymbolGuardInit + QM_BasketWarmupHistory (12m momentum + 12m correlation depth). All 9 symbols verified present in dwx_symbol_matrix.csv at build time."
+  ]
+}
