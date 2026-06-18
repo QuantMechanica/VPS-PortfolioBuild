@@ -90,97 +90,6 @@ input int    strategy_timeout_bars      = 120;
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-double Strategy_Close(const int shift)
-  {
-   return iClose(_Symbol, PERIOD_H1, shift); // perf-allowed: closed-bar breakout/re-entry check.
-  }
-
-bool Strategy_WprCrossedUpRecently()
-  {
-   int lookback = strategy_wpr_cross_lookback;
-   if(lookback < 1)
-      lookback = 1;
-   for(int shift = 1; shift <= lookback; ++shift)
-     {
-      const double now_wpr = QM_WPR(_Symbol, PERIOD_H1, strategy_wpr_period, shift);
-      const double prev_wpr = QM_WPR(_Symbol, PERIOD_H1, strategy_wpr_period, shift + 1);
-      if(prev_wpr < strategy_wpr_upper_level && now_wpr >= strategy_wpr_upper_level)
-         return true;
-     }
-   return false;
-  }
-
-bool Strategy_WprCrossedDownRecently()
-  {
-   int lookback = strategy_wpr_cross_lookback;
-   if(lookback < 1)
-      lookback = 1;
-   for(int shift = 1; shift <= lookback; ++shift)
-     {
-      const double now_wpr = QM_WPR(_Symbol, PERIOD_H1, strategy_wpr_period, shift);
-      const double prev_wpr = QM_WPR(_Symbol, PERIOD_H1, strategy_wpr_period, shift + 1);
-      if(prev_wpr > strategy_wpr_lower_level && now_wpr <= strategy_wpr_lower_level)
-         return true;
-     }
-   return false;
-  }
-
-bool Strategy_HasOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      return true;
-     }
-   return false;
-  }
-
-double Strategy_MarketEntryPrice(const QM_OrderType type)
-  {
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(type == QM_BUY)
-      return (ask > 0.0) ? ask : bid;
-   return (bid > 0.0) ? bid : ask;
-  }
-
-bool Strategy_BuildStops(QM_EntryRequest &req, const double entry_price)
-  {
-   double sl = QM_StopStructure(_Symbol, req.type, entry_price, strategy_structure_lookback);
-   const double buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_structure_buffer_pips);
-   if(sl <= 0.0 || buffer <= 0.0)
-      return false;
-
-   if(req.type == QM_BUY)
-      sl -= buffer;
-   else
-      sl += buffer;
-   sl = QM_StopRulesNormalizePrice(_Symbol, sl);
-
-   if(req.type == QM_BUY && sl >= entry_price)
-      return false;
-   if(req.type == QM_SELL && sl <= entry_price)
-      return false;
-
-   const double tp = QM_TakeRR(_Symbol, req.type, entry_price, sl, strategy_target_rr);
-   if(tp <= 0.0)
-      return false;
-
-   req.price = 0.0;
-   req.sl = sl;
-   req.tp = tp;
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-   return true;
-  }
-
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
@@ -209,7 +118,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_structure_lookback <= 0 || strategy_target_rr <= 0.0)
       return false;
 
-   const double close_1 = Strategy_Close(1);
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
+
+   const double close_1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: fixed closed-bar breakout close; no QM_Close helper exists.
    const double smma_high_1 = QM_SMMA(_Symbol, PERIOD_H1, strategy_smma_period, 1, PRICE_HIGH);
    const double smma_low_1 = QM_SMMA(_Symbol, PERIOD_H1, strategy_smma_period, 1, PRICE_LOW);
    const double stoch_k_1 = QM_Stoch_K(_Symbol, PERIOD_H1, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
@@ -217,25 +138,70 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(close_1 <= 0.0 || smma_high_1 <= 0.0 || smma_low_1 <= 0.0)
       return false;
 
-   if(close_1 > smma_high_1 && Strategy_WprCrossedUpRecently() && stoch_k_1 > stoch_d_1)
+   int wpr_lookback = strategy_wpr_cross_lookback;
+   if(wpr_lookback < 1)
+      wpr_lookback = 1;
+   bool wpr_crossed_up = false;
+   bool wpr_crossed_down = false;
+   for(int shift = 1; shift <= wpr_lookback; ++shift)
      {
-      req.type = QM_BUY;
-      req.reason = "CARTER_SMMA55_WPR_STOCH_LONG";
-      const double entry = Strategy_MarketEntryPrice(req.type);
-      if(entry <= 0.0)
-         return false;
-      return Strategy_BuildStops(req, entry);
+      const double now_wpr = QM_WPR(_Symbol, PERIOD_H1, strategy_wpr_period, shift);
+      const double prev_wpr = QM_WPR(_Symbol, PERIOD_H1, strategy_wpr_period, shift + 1);
+      if(prev_wpr < strategy_wpr_upper_level && now_wpr >= strategy_wpr_upper_level)
+         wpr_crossed_up = true;
+      if(prev_wpr > strategy_wpr_lower_level && now_wpr <= strategy_wpr_lower_level)
+         wpr_crossed_down = true;
      }
 
-   if(close_1 < smma_low_1 && Strategy_WprCrossedDownRecently() && stoch_k_1 < stoch_d_1)
+   QM_OrderType entry_type = QM_BUY;
+   string reason = "";
+   if(close_1 > smma_high_1 && wpr_crossed_up && stoch_k_1 > stoch_d_1)
      {
-      req.type = QM_SELL;
-      req.reason = "CARTER_SMMA55_WPR_STOCH_SHORT";
-      const double entry = Strategy_MarketEntryPrice(req.type);
-      if(entry <= 0.0)
-         return false;
-      return Strategy_BuildStops(req, entry);
+      entry_type = QM_BUY;
+      reason = "CARTER_SMMA55_WPR_STOCH_LONG";
      }
+   else if(close_1 < smma_low_1 && wpr_crossed_down && stoch_k_1 < stoch_d_1)
+     {
+      entry_type = QM_SELL;
+      reason = "CARTER_SMMA55_WPR_STOCH_SHORT";
+     }
+   else
+      return false;
+
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   double entry = (entry_type == QM_BUY) ? ask : bid;
+   if(entry <= 0.0)
+      entry = (entry_type == QM_BUY) ? bid : ask;
+   if(entry <= 0.0)
+      return false;
+
+   double sl = QM_StopStructure(_Symbol, entry_type, entry, strategy_structure_lookback);
+   const double buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_structure_buffer_pips);
+   if(sl <= 0.0 || buffer <= 0.0)
+      return false;
+   if(entry_type == QM_BUY)
+      sl -= buffer;
+   else
+      sl += buffer;
+   sl = QM_StopRulesNormalizePrice(_Symbol, sl);
+   if(entry_type == QM_BUY && sl >= entry)
+      return false;
+   if(entry_type == QM_SELL && sl <= entry)
+      return false;
+
+   const double tp = QM_TakeRR(_Symbol, entry_type, entry, sl, strategy_target_rr);
+   if(tp <= 0.0)
+      return false;
+
+   req.type = entry_type;
+   req.price = 0.0;
+   req.sl = sl;
+   req.tp = tp;
+   req.reason = reason;
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+   return true;
 
    return false;
   }
@@ -252,7 +218,7 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   const double close_1 = Strategy_Close(1);
+   const double close_1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: fixed closed-bar channel re-entry check; no QM_Close helper exists.
    const double smma_high_1 = QM_SMMA(_Symbol, PERIOD_H1, strategy_smma_period, 1, PRICE_HIGH);
    const double smma_low_1 = QM_SMMA(_Symbol, PERIOD_H1, strategy_smma_period, 1, PRICE_LOW);
    const int seconds_per_bar = PeriodSeconds(PERIOD_H1);
