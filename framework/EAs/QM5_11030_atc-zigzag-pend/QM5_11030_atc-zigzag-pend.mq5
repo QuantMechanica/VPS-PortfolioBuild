@@ -312,7 +312,28 @@ bool PendingAlive(const ulong ticket)
   {
    if(ticket == 0)
       return false;
-   return OrderSelect(ticket);
+   if(!OrderSelect(ticket))
+      return false;
+
+   const string symbol = OrderGetString(ORDER_SYMBOL);
+   if(symbol != _Symbol)
+      return false;
+
+   const long magic = OrderGetInteger(ORDER_MAGIC);
+   if((int)magic != QM_FrameworkMagic())
+      return false;
+
+   const ENUM_ORDER_STATE state = (ENUM_ORDER_STATE)OrderGetInteger(ORDER_STATE);
+   if(state != ORDER_STATE_PLACED && state != ORDER_STATE_PARTIAL)
+      return false;
+
+   const ENUM_ORDER_TYPE type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+   return (type == ORDER_TYPE_BUY_STOP ||
+           type == ORDER_TYPE_SELL_STOP ||
+           type == ORDER_TYPE_BUY_LIMIT ||
+           type == ORDER_TYPE_SELL_LIMIT ||
+           type == ORDER_TYPE_BUY_STOP_LIMIT ||
+           type == ORDER_TYPE_SELL_STOP_LIMIT);
   }
 
 // Cancel any tracked pending orders (e.g. on fill or refresh).

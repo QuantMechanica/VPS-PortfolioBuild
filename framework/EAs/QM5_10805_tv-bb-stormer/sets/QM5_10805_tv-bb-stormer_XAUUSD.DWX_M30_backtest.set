@@ -3,16 +3,16 @@
 ; ea_id:        10805
 ; ea_slug:      tv-bb-stormer
 ; ea_version:   v5.0
-; set_version:  s20260605-001
+; set_version:  s20260618-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    M30
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   fa7baa3e42bc789d07faf59abdfc9faede87a5aab9929b32ba4cff5624c43dbc
+; build_hash:   5dd18fc11f8860a2bc29674c2d9c578fa36f94e013c805a8f44c0cb27d8c2122
 ; author:       Development
-; date:         2026-06-05
+; date:         2026-06-18
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000

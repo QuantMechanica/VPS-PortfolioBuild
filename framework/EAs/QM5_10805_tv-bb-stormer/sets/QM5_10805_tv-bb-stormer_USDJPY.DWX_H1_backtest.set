@@ -3,16 +3,16 @@
 ; ea_id:        10805
 ; ea_slug:      tv-bb-stormer
 ; ea_version:   v5.0
-; set_version:  s20260605-001
+; set_version:  s20260618-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   e6740cbf598e0928f9e2eff7b97975915435c04a27d24513884ce6816b582877
+; build_hash:   3572c695e1854aeec1021225cd4be3677be67fb9211596922b01c3e223fdee7a
 ; author:       Development
-; date:         2026-06-05
+; date:         2026-06-18
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000

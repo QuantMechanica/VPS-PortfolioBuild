@@ -3,16 +3,16 @@
 ; ea_id:        10805
 ; ea_slug:      tv-bb-stormer
 ; ea_version:   v5.0
-; set_version:  s20260605-001
+; set_version:  s20260618-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f09b1e0f3c6291d36e5febe7812ed021734dbc23e866902cbdda12e7574f7757
+; build_hash:   20f227813205ed8c83580605bf399a4f0720c5741c94f55a634dff0ba341abf8
 ; author:       Development
-; date:         2026-06-05
+; date:         2026-06-18
 ;==========================================================
 qm_magic_slot_offset=4
 RISK_FIXED=1000

@@ -3,16 +3,16 @@
 ; ea_id:        10805
 ; ea_slug:      tv-bb-stormer
 ; ea_version:   v5.0
-; set_version:  s20260605-001
+; set_version:  s20260618-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   efc145c182a2e381e6ab2421899261e949291976529330ab1bf3b0961344cefe
+; build_hash:   a1d686bfa48eb58b17e6f2ff79378f793380a8c3e2052cf998755b192d257640
 ; author:       Development
-; date:         2026-06-05
+; date:         2026-06-18
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000

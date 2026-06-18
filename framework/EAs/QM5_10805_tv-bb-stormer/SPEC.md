@@ -4,7 +4,7 @@
 **Slug:** `tv-bb-stormer`
 **Source:** `d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7` (see TradingView source citation in the approved card)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-05
+**Last revised:** 2026-06-18
 
 ---
 
@@ -97,3 +97,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-05 | Initial build from card | 8f3b05e4-7631-4b55-9e86-e312128480b9 |
+| v2 | 2026-06-18 | Rebuild in place from approved card | e1184f17-7370-4a8b-aa05-715aea0e479c |
