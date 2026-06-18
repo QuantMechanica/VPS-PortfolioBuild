@@ -1,273 +1,365 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_1228 carver-volatten-ewmac — Carver volatility-attenuated EWMAC trend (D1)"
+#property description "QM5_1228 Carver volatility-attenuated EWMAC"
 
 #include <QM/QM_Common.mqh>
 
-// =============================================================================
-// QuantMechanica V5 EA — QM5_1228 carver-volatten-ewmac
-// -----------------------------------------------------------------------------
-// Source: Rob Carver (qoppac blog).
-//   - 2015 EWMAC base rule: forecast = (EMA(fast) - EMA(slow)) / price_vol,
-//     scaled by a forecast scalar and capped to a bounded band.
-//   - 2021 volatility-attenuation post: multiply every raw forecast by an
-//     attenuation factor derived from the current volatility percentile, so
-//     exposure is cut in high-vol regimes and modestly raised in low-vol ones.
-// Card: artifacts/cards_approved/QM5_1228_carver-volatten-ewmac.md (g0 APPROVED).
-//
-// Mechanics (closed-bar reads at shift >= 1, evaluated once per new D1 bar):
-//   EWMAC      : raw = (EMA(fast) - EMA(slow)) / price_vol.
-//   price_vol  : StdDev(close, vol_fast_period) — price-unit daily volatility,
-//                scale-correct per symbol (matches the EMA difference units).
-//   raw scaled : raw_forecast = raw * forecast_scalar (Carver scalar; tuned so
-//                the typical |forecast| sits near 10).
-//   vol regime : normalised_vol = short_vol / long_vol, with
-//                short_vol = StdDev(close, vol_fast_period),
-//                long_vol  = StdDev(close, vol_slow_period) (long-run proxy).
-//   vol_quantile : rank fraction of the current normalised_vol within a fixed
-//                  rank_window of prior normalised_vol values (bounded port of
-//                  Carver's "percentile vs all prior history"; see open_q).
-//   attenuation: clamp(2.0 - 1.5 * vol_quantile, atten_lo, atten_hi).
-//   forecast   : clamp(raw_forecast * attenuation, -fc_cap, +fc_cap).
-//   LONG  if forecast > +entry_threshold.
-//   SHORT if forecast < -entry_threshold.
-//   Exit LONG  when forecast <= 0 ; exit SHORT when forecast >= 0.
-//   Stop       : emergency 2.5 * ATR(20) on entry (both directions).
-//   Spread gd  : skip only a genuinely wide spread > spread_pct_of_stop of the
-//                stop distance (fail-open on .DWX zero modeled spread).
-//
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
-// else is framework wiring and MUST stay intact.
-// =============================================================================
-
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 1228;
-input int    qm_magic_slot_offset       = 0;
-input uint   qm_rng_seed                = 42;
+input int    qm_ea_id                     = 1228;
+input int    qm_magic_slot_offset         = 0;
+input uint   qm_rng_seed                  = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.0;
-input double RISK_FIXED                 = 1000.0;
-input double PORTFOLIO_WEIGHT           = 1.0;
+input double RISK_PERCENT                 = 0.0;
+input double RISK_FIXED                   = 1000.0;
+input double PORTFOLIO_WEIGHT             = 1.0;
 
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled    = true;
-input int    qm_friday_close_hour_broker = 21;
+input bool   qm_friday_close_enabled      = true;
+input int    qm_friday_close_hour_broker  = 21;
 
 input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-// EWMAC base rule (Carver: slow = 4 * fast; default fast=16 -> slow=64).
-input int    strategy_ewmac_fast        = 16;     // fast EMA span
-input int    strategy_ewmac_slow        = 64;     // slow EMA span (= 4 * fast)
-input double strategy_forecast_scalar   = 4.1;    // Carver forecast scalar (EWMAC16/64 ~ 4.1)
-input double strategy_fc_cap            = 20.0;   // bounded forecast clamp [-cap,+cap]
-input double strategy_entry_threshold   = 4.0;    // |forecast| > this => enter (deadband)
-// Volatility attenuation.
-input int    strategy_vol_fast_period   = 25;     // short price-vol StdDev period (daily vol)
-input int    strategy_vol_slow_period   = 100;    // long-run price-vol StdDev period (regime proxy)
-input int    strategy_vol_rank_window   = 40;     // bars of prior normalised_vol for the percentile rank
-input double strategy_atten_lo          = 0.25;   // attenuation lower bound
-input double strategy_atten_hi          = 2.0;    // attenuation upper bound
-// Emergency stop.
-input int    strategy_atr_period        = 20;     // ATR period for the emergency stop
-input double strategy_sl_atr_mult       = 2.5;    // emergency stop = mult * ATR
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input int    strategy_fast_period         = 16;
+input int    strategy_slow_multiplier     = 4;
+input int    strategy_vol_period          = 25;
+input int    strategy_vol_history_bars    = 2500;
+input int    strategy_attenuation_ema     = 10;
+input double strategy_forecast_scalar     = 10.0;
+input double strategy_entry_threshold     = 4.0;
+input double strategy_forecast_cap        = 20.0;
+input double strategy_attenuation_min     = 0.25;
+input double strategy_attenuation_max     = 2.0;
+input int    strategy_atr_period          = 20;
+input double strategy_atr_stop_mult       = 2.5;
+input int    strategy_min_bars            = 500;
+input int    strategy_spread_median_days  = 20;
+input double strategy_spread_cap_mult     = 2.0;
 
-// -----------------------------------------------------------------------------
-// Internal: continuous Carver forecast for a given closed-bar shift.
-// Returns true on success and writes the bounded forecast into out_fc.
-// All reads are closed-bar (shift >= 1) via pooled QM_* handles, so this is
-// safe to call a bounded number of times per new bar.
-// -----------------------------------------------------------------------------
-bool ComputeForecastAtShift(const int shift, double &out_fc)
+double g_last_forecast = 0.0;
+bool   g_have_forecast = false;
+
+double Strategy_Clamp(const double value, const double lo, const double hi)
   {
-   if(shift < 1)
-      return false;
-
-   const double ema_fast = QM_EMA(_Symbol, _Period, strategy_ewmac_fast, shift);
-   const double ema_slow = QM_EMA(_Symbol, _Period, strategy_ewmac_slow, shift);
-   if(ema_fast <= 0.0 || ema_slow <= 0.0)
-      return false;
-
-   // Price-unit daily volatility (same units as the EMA difference).
-   const double price_vol = QM_StdDev(_Symbol, _Period, strategy_vol_fast_period, shift);
-   if(price_vol <= 0.0)
-      return false;
-
-   // Raw EWMAC, normalised by price vol, scaled by the Carver forecast scalar.
-   const double raw          = (ema_fast - ema_slow) / price_vol;
-   const double raw_forecast = raw * strategy_forecast_scalar;
-
-   // Volatility regime: short vol vs long-run vol.
-   const double long_vol = QM_StdDev(_Symbol, _Period, strategy_vol_slow_period, shift);
-   if(long_vol <= 0.0)
-      return false;
-   const double norm_vol = price_vol / long_vol;
-
-   // Volatility percentile rank within a bounded window of PRIOR normalised_vol
-   // values (shifts shift+1 .. shift+rank_window). Bounded port of Carver's
-   // "percentile vs all prior history": rank = fraction of prior values below
-   // the current one, in [0,1].
-   int counted = 0;
-   int below   = 0;
-   for(int k = 1; k <= strategy_vol_rank_window; ++k)
-     {
-      const int s = shift + k;
-      const double sv = QM_StdDev(_Symbol, _Period, strategy_vol_fast_period, s);
-      const double lv = QM_StdDev(_Symbol, _Period, strategy_vol_slow_period, s);
-      if(sv <= 0.0 || lv <= 0.0)
-         continue;
-      const double nv = sv / lv;
-      counted++;
-      if(nv < norm_vol)
-         below++;
-     }
-   // Default to neutral quantile (0.5 -> attenuation 1.25) until window fills.
-   double vol_quantile = 0.5;
-   if(counted > 0)
-      vol_quantile = (double)below / (double)counted;
-
-   // Attenuation: high vol (high quantile) -> small factor; low vol -> larger.
-   double attenuation = 2.0 - 1.5 * vol_quantile;
-   if(attenuation < strategy_atten_lo) attenuation = strategy_atten_lo;
-   if(attenuation > strategy_atten_hi) attenuation = strategy_atten_hi;
-
-   // Final bounded forecast.
-   double fc = raw_forecast * attenuation;
-   if(fc >  strategy_fc_cap) fc =  strategy_fc_cap;
-   if(fc < -strategy_fc_cap) fc = -strategy_fc_cap;
-
-   out_fc = fc;
-   return true;
+   if(value < lo)
+      return lo;
+   if(value > hi)
+      return hi;
+   return value;
   }
 
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
+double Strategy_DailyReturnStdDev(const MqlRates &rates[],
+                                  const int shift,
+                                  const int period,
+                                  const int copied)
+  {
+   if(period <= 1 || shift < 0 || shift + period >= copied)
+      return 0.0;
 
-// Cheap O(1) per-tick gate. Spread guard only — forecast work is on the
-// closed-bar entry/exit path. Fail-open on .DWX zero modeled spread.
-bool Strategy_NoTradeFilter()
+   double sum = 0.0;
+   double sum_sq = 0.0;
+   int samples = 0;
+   for(int i = 0; i < period; ++i)
+     {
+      const double c0 = rates[shift + i].close;
+      const double c1 = rates[shift + i + 1].close;
+      if(c0 <= 0.0 || c1 <= 0.0)
+         return 0.0;
+      const double r = (c0 / c1) - 1.0;
+      sum += r;
+      sum_sq += r * r;
+      samples++;
+     }
+
+   if(samples <= 1)
+      return 0.0;
+   const double mean = sum / samples;
+   const double variance = (sum_sq / samples) - (mean * mean);
+   if(variance <= 0.0)
+      return 0.0;
+   return MathSqrt(variance);
+  }
+
+double Strategy_VolAverage(const double &vols[], const int start, const int count)
+  {
+   if(count <= 0)
+      return 0.0;
+   double sum = 0.0;
+   int samples = 0;
+   for(int i = 0; i < count; ++i)
+     {
+      const double v = vols[start + i];
+      if(v <= 0.0)
+         return 0.0;
+      sum += v;
+      samples++;
+     }
+   if(samples <= 0)
+      return 0.0;
+   return sum / samples;
+  }
+
+double Strategy_VolQuantile(const double &vols[], const int shift, const int history)
+  {
+   if(history <= 0 || vols[shift] <= 0.0)
+      return 0.0;
+
+   int below_or_equal = 0;
+   int samples = 0;
+   const double current_vol = vols[shift];
+   for(int i = 1; i <= history; ++i)
+     {
+      const double prior_vol = vols[shift + i];
+      if(prior_vol <= 0.0)
+         continue;
+      if(prior_vol <= current_vol)
+         below_or_equal++;
+      samples++;
+     }
+
+   if(samples <= 0)
+      return 0.0;
+   return (double)below_or_equal / (double)samples;
+  }
+
+double Strategy_MedianSpreadPrice(const MqlRates &rates[],
+                                  const int copied,
+                                  const int lookback)
+  {
+   if(lookback <= 0 || copied <= 0)
+      return 0.0;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
+      return 0.0;
+
+   double spreads[];
+   ArrayResize(spreads, lookback);
+   int samples = 0;
+   for(int i = 0; i < lookback && i < copied; ++i)
+     {
+      if(rates[i].spread < 0)
+         continue;
+      spreads[samples] = (double)rates[i].spread * point;
+      samples++;
+     }
+
+   if(samples <= 0)
+      return 0.0;
+
+   ArrayResize(spreads, samples);
+   ArraySort(spreads);
+   const int mid = samples / 2;
+   if((samples % 2) == 1)
+      return spreads[mid];
+   return 0.5 * (spreads[mid - 1] + spreads[mid]);
+  }
+
+bool Strategy_SpreadAllowsEntry(const MqlRates &rates[], const int copied)
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to the entry gate, do not block
-
-   const double stop_distance = strategy_sl_atr_mult * atr_value;
-   if(stop_distance <= 0.0)
       return false;
-
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(ask <= bid)
       return true;
 
-   return false;
+   const double median_spread = Strategy_MedianSpreadPrice(rates, copied, strategy_spread_median_days);
+   if(median_spread <= 0.0)
+      return true;
+
+   const double current_spread = ask - bid;
+   return (current_spread <= strategy_spread_cap_mult * median_spread);
   }
 
-// Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
-// LONG  if forecast > +threshold ; SHORT if forecast < -threshold.
-bool Strategy_EntrySignal(QM_EntryRequest &req)
+bool Strategy_ComputeForecast(double &forecast, MqlRates &rates[], int &copied)
   {
-   // One open position per symbol/magic.
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+   forecast = 0.0;
+   copied = 0;
+
+   const int slow_period = strategy_fast_period * strategy_slow_multiplier;
+   if(strategy_fast_period <= 1 || strategy_slow_multiplier <= 1 || slow_period <= strategy_fast_period)
+      return false;
+   if(strategy_vol_period <= 1 || strategy_vol_history_bars <= 10 || strategy_attenuation_ema <= 0)
       return false;
 
-   double forecast = 0.0;
-   if(!ComputeForecastAtShift(1, forecast))
+   const int requested = strategy_vol_history_bars + strategy_vol_period + strategy_attenuation_ema + 5;
+   ArraySetAsSeries(rates, true);
+   copied = CopyRates(_Symbol, PERIOD_D1, 1, requested, rates); // perf-allowed: called from framework QM_IsNewBar-gated entry path.
+   if(copied <= 0)
       return false;
 
-   QM_OrderType side;
-   if(forecast > strategy_entry_threshold)
-      side = QM_BUY;
-   else if(forecast < -strategy_entry_threshold)
-      side = QM_SELL;
-   else
+   const int effective_history = MathMin(strategy_vol_history_bars,
+                                         copied - strategy_vol_period - strategy_attenuation_ema - 1);
+   const int required_warmup = MathMax(slow_period + 50, strategy_min_bars);
+   if(effective_history < required_warmup)
       return false;
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
+   const int vol_count = effective_history + strategy_attenuation_ema + 1;
+   double vols[];
+   ArrayResize(vols, vol_count);
+   for(int shift = 0; shift < vol_count; ++shift)
+     {
+      vols[shift] = Strategy_DailyReturnStdDev(rates, shift, strategy_vol_period, copied);
+      if(vols[shift] <= 0.0)
+         return false;
+     }
+
+   const double ema_fast = QM_EMA(_Symbol, PERIOD_D1, strategy_fast_period, 1, PRICE_CLOSE);
+   const double ema_slow = QM_EMA(_Symbol, PERIOD_D1, slow_period, 1, PRICE_CLOSE);
+   if(ema_fast <= 0.0 || ema_slow <= 0.0 || rates[0].close <= 0.0 || vols[0] <= 0.0)
       return false;
 
-   const double entry = (side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                         : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
+   const double alpha = 2.0 / ((double)strategy_attenuation_ema + 1.0);
+   double attenuation_ema = 0.0;
+   bool have_attenuation = false;
+   for(int shift = strategy_attenuation_ema - 1; shift >= 0; --shift)
+     {
+      const double ten_year_vol = Strategy_VolAverage(vols, shift, effective_history);
+      if(ten_year_vol <= 0.0)
+         return false;
+
+      const double vol_quantile = Strategy_VolQuantile(vols, shift, effective_history);
+      double attenuation = 2.0 - (1.5 * vol_quantile);
+      attenuation = Strategy_Clamp(attenuation, strategy_attenuation_min, strategy_attenuation_max);
+
+      if(!have_attenuation)
+        {
+         attenuation_ema = attenuation;
+         have_attenuation = true;
+        }
+      else
+         attenuation_ema = (alpha * attenuation) + ((1.0 - alpha) * attenuation_ema);
+     }
+
+   if(!have_attenuation)
       return false;
 
-   const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr_value, strategy_sl_atr_mult);
-   if(sl <= 0.0)
-      return false;
-
-   req.type   = side;
-   req.price  = 0.0;   // framework fills market price at send
-   req.sl     = sl;
-   req.tp     = 0.0;   // trend rule: no fixed TP; exit on forecast sign flip
-   req.reason = (side == QM_BUY) ? "ewmac_volatten_long" : "ewmac_volatten_short";
+   const double ewmac_pct = (ema_fast - ema_slow) / rates[0].close;
+   double raw_forecast = (ewmac_pct / vols[0]) * strategy_forecast_scalar;
+   forecast = Strategy_Clamp(raw_forecast * attenuation_ema,
+                             -strategy_forecast_cap,
+                             strategy_forecast_cap);
    return true;
   }
 
-// No active trade management beyond the fixed emergency ATR stop. The
-// forecast-sign exit lives in Strategy_ExitSignal.
+bool Strategy_GetOurPosition(ENUM_POSITION_TYPE &ptype)
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      return true;
+     }
+   return false;
+  }
+
+bool Strategy_NoTradeFilter()
+  {
+   return false;
+  }
+
+bool Strategy_EntrySignal(QM_EntryRequest &req)
+  {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   double forecast = 0.0;
+   MqlRates rates[];
+   int copied = 0;
+   if(!Strategy_ComputeForecast(forecast, rates, copied))
+      return false;
+
+   g_last_forecast = forecast;
+   g_have_forecast = true;
+
+   if(!Strategy_SpreadAllowsEntry(rates, copied))
+      return false;
+
+   QM_OrderType order_type = QM_BUY;
+   if(forecast > strategy_entry_threshold)
+      order_type = QM_BUY;
+   else if(forecast < -strategy_entry_threshold)
+      order_type = QM_SELL;
+   else
+      return false;
+
+   const double entry_price = QM_OrderTypeIsBuy(order_type)
+                              ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                              : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(entry_price <= 0.0 || atr <= 0.0)
+      return false;
+
+   const double stop_price = QM_StopATRFromValue(_Symbol, order_type, entry_price, atr, strategy_atr_stop_mult);
+   if(stop_price <= 0.0)
+      return false;
+
+   req.type = order_type;
+   req.price = 0.0;
+   req.sl = stop_price;
+   req.tp = 0.0;
+   req.reason = QM_OrderTypeIsBuy(order_type) ? "CARVER_VOLATTEN_EWMAC_LONG" : "CARVER_VOLATTEN_EWMAC_SHORT";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+   return true;
+  }
+
 void Strategy_ManageOpenPosition()
   {
   }
 
-// Exit: close LONG when forecast <= 0 ; close SHORT when forecast >= 0.
 bool Strategy_ExitSignal()
   {
-   const int magic = QM_FrameworkMagic();
-   if(QM_TM_OpenPositionCount(magic) <= 0)
+   ENUM_POSITION_TYPE ptype = POSITION_TYPE_BUY;
+   if(!Strategy_GetOurPosition(ptype))
       return false;
 
-   double forecast = 0.0;
-   if(!ComputeForecastAtShift(1, forecast))
+   const int slow_period = strategy_fast_period * strategy_slow_multiplier;
+   if(strategy_fast_period <= 1 || strategy_slow_multiplier <= 1 || slow_period <= strategy_fast_period)
       return false;
 
-   // Determine current net direction for this magic.
-   bool has_long  = false;
-   bool has_short = false;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      const long ptype = PositionGetInteger(POSITION_TYPE);
-      if(ptype == POSITION_TYPE_BUY)  has_long  = true;
-      if(ptype == POSITION_TYPE_SELL) has_short = true;
-     }
+   const double ema_fast = QM_EMA(_Symbol, PERIOD_D1, strategy_fast_period, 1, PRICE_CLOSE);
+   const double ema_slow = QM_EMA(_Symbol, PERIOD_D1, slow_period, 1, PRICE_CLOSE);
+   if(ema_fast <= 0.0 || ema_slow <= 0.0)
+      return false;
 
-   if(has_long && forecast <= 0.0)
+   const double ewmac = ema_fast - ema_slow;
+   if(ptype == POSITION_TYPE_BUY && ewmac <= 0.0)
       return true;
-   if(has_short && forecast >= 0.0)
+   if(ptype == POSITION_TYPE_SELL && ewmac >= 0.0)
       return true;
    return false;
   }
 
-// Defer to the central news filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
-
-// -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
-// -----------------------------------------------------------------------------
 
 int OnInit()
   {
@@ -276,20 +368,20 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1228\",\"ea\":\"carver-volatten-ewmac\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -307,6 +399,7 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
