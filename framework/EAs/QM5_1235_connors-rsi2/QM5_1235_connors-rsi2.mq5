@@ -29,150 +29,41 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_timeframe         = PERIOD_D1;
-input int             strategy_rsi_period        = 2;
-input int             strategy_sma_trend_period  = 200;
-input int             strategy_sma_exit_period   = 5;
-input int             strategy_atr_period        = 14;
-input double          strategy_entry_rsi_long    = 10.0;
-input double          strategy_entry_rsi_short   = 90.0;
-input double          strategy_exit_rsi_long     = 70.0;
-input double          strategy_exit_rsi_short    = 30.0;
-input double          strategy_atr_stop_mult     = 3.0;
-input int             strategy_max_hold_bars     = 10;
-input int             strategy_min_history_bars  = 220;
-input bool            strategy_enable_shorts     = true;
-input bool            strategy_use_sma_slope     = false;
-input int             strategy_sma_slope_bars    = 20;
-input int             strategy_spread_days       = 60;
-input double          strategy_spread_mult       = 2.0;
+input ENUM_TIMEFRAMES strategy_timeframe        = PERIOD_D1;
+input int             strategy_rsi_period       = 2;
+input int             strategy_sma_trend_period = 200;
+input int             strategy_sma_exit_period  = 5;
+input int             strategy_atr_period       = 14;
+input double          strategy_entry_rsi_long   = 10.0;
+input double          strategy_entry_rsi_short  = 90.0;
+input double          strategy_exit_rsi_long    = 70.0;
+input double          strategy_exit_rsi_short   = 30.0;
+input double          strategy_atr_stop_mult    = 3.0;
+input int             strategy_max_hold_bars    = 10;
+input int             strategy_min_history_bars = 220;
+input bool            strategy_enable_shorts    = true;
+input bool            strategy_use_sma_slope    = false;
+input int             strategy_sma_slope_bars   = 20;
+input double          strategy_max_spread_points = 0.0;
 
-datetime g_last_exit_bar = 0;
-bool     g_exit_now      = false;
-
-bool Strategy_SelectOurPosition(ulong &ticket, ENUM_POSITION_TYPE &ptype, datetime &open_time)
-  {
-   ticket = 0;
-   ptype = POSITION_TYPE_BUY;
-   open_time = 0;
-
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong t = PositionGetTicket(i);
-      if(t == 0 || !PositionSelectByTicket(t))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      ticket = t;
-      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      return true;
-     }
-
-   return false;
-  }
-
-double Strategy_MedianSpreadForEntryHour()
-  {
-   if(strategy_spread_days <= 0)
-      return 0.0;
-
-   const datetime signal_bar_time = iTime(_Symbol, strategy_timeframe, 1);
-   if(signal_bar_time <= 0)
-      return 0.0;
-
-   MqlDateTime signal_dt;
-   TimeToStruct(signal_bar_time, signal_dt);
-
-   const int max_shift = MathMax(1, strategy_spread_days);
-   double values[];
-   ArrayResize(values, max_shift);
-   int count = 0;
-
-   for(int shift = 1; shift <= max_shift; ++shift)
-     {
-      const datetime t = iTime(_Symbol, strategy_timeframe, shift);
-      if(t <= 0)
-         continue;
-
-      MqlDateTime dt;
-      TimeToStruct(t, dt);
-      if(dt.hour != signal_dt.hour)
-         continue;
-
-      const double spread = (double)iSpread(_Symbol, strategy_timeframe, shift);
-      if(spread > 0.0)
-        {
-         values[count] = spread;
-         count++;
-        }
-     }
-
-   if(count <= 0)
-      return 0.0;
-
-   ArrayResize(values, count);
-   ArraySort(values);
-
-   const int mid = count / 2;
-   if((count % 2) == 1)
-      return values[mid];
-   return (values[mid - 1] + values[mid]) * 0.5;
-  }
-
-bool Strategy_SpreadOk()
-  {
-   const double median_spread = Strategy_MedianSpreadForEntryHour();
-   if(median_spread <= 0.0)
-      return true;
-
-   const double current_spread = (double)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(current_spread <= 0.0)
-      return false;
-
-   return (current_spread <= median_spread * strategy_spread_mult);
-  }
-
-bool Strategy_SmaSlopeOk(const bool for_long)
-  {
-   if(!strategy_use_sma_slope)
-      return true;
-
-   const int slope_bars = MathMax(1, strategy_sma_slope_bars);
-   const double sma_now = QM_SMA(_Symbol, strategy_timeframe, strategy_sma_trend_period, 1);
-   const double sma_then = QM_SMA(_Symbol, strategy_timeframe, strategy_sma_trend_period, 1 + slope_bars);
-   if(sma_now <= 0.0 || sma_then <= 0.0)
-      return false;
-
-   if(for_long)
-      return (sma_now > sma_then);
-   return (sma_now < sma_then);
-  }
-
-int Strategy_BarsHeld(const datetime open_time)
-  {
-   if(open_time <= 0)
-      return 0;
-
-   const int shift = iBarShift(_Symbol, strategy_timeframe, open_time, false);
-   if(shift < 0)
-      return 0;
-   return shift;
-  }
-
+// Return TRUE to BLOCK trading this tick.
 bool Strategy_NoTradeFilter()
   {
    if(strategy_timeframe != PERIOD_D1)
       return true;
    if(_Period != strategy_timeframe)
       return true;
+
+   if(strategy_max_spread_points > 0.0)
+     {
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+         return true;
+      if(ask > bid && ((ask - bid) / point) > strategy_max_spread_points)
+         return true;
+     }
 
    return false;
   }
@@ -187,44 +78,51 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const int warmup = MathMax(strategy_min_history_bars,
-                              strategy_sma_trend_period + strategy_sma_slope_bars + strategy_atr_period + 5);
-   if(Bars(_Symbol, strategy_timeframe) < warmup)
-      return false;
-
-   ulong ticket;
-   ENUM_POSITION_TYPE ptype;
-   datetime open_time;
-   if(Strategy_SelectOurPosition(ticket, ptype, open_time))
-      return false;
-
-   if(!Strategy_SpreadOk())
-      return false;
-
-   const double close_1 = iClose(_Symbol, strategy_timeframe, 1);
+   const int slope_bars = MathMax(1, strategy_sma_slope_bars);
+   const int history_shift = MathMax(strategy_min_history_bars - strategy_sma_trend_period + 1,
+                                     1 + slope_bars);
+   const double close_1 = QM_SMA(_Symbol, strategy_timeframe, 1, 1);
    const double sma_200 = QM_SMA(_Symbol, strategy_timeframe, strategy_sma_trend_period, 1);
+   const double sma_200_then = QM_SMA(_Symbol, strategy_timeframe, strategy_sma_trend_period, history_shift);
    const double rsi_2 = QM_RSI(_Symbol, strategy_timeframe, strategy_rsi_period, 1);
-   const double atr = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
+   const double atr_14 = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
+   if(close_1 <= 0.0 || sma_200 <= 0.0 || sma_200_then <= 0.0 || rsi_2 <= 0.0 || atr_14 <= 0.0)
+      return false;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(close_1 <= 0.0 || sma_200 <= 0.0 || rsi_2 <= 0.0 || atr <= 0.0 || ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
       return false;
 
-   if(close_1 > sma_200 && rsi_2 < strategy_entry_rsi_long && Strategy_SmaSlopeOk(true))
+   if(close_1 > sma_200 && rsi_2 < strategy_entry_rsi_long)
      {
+      if(strategy_use_sma_slope && sma_200 <= sma_200_then)
+         return false;
+
       req.type = QM_BUY;
-      req.price = ask;
-      req.sl = QM_StopATRFromValue(_Symbol, QM_BUY, ask, atr, strategy_atr_stop_mult);
+      req.price = 0.0;
+      req.sl = QM_StopATRFromValue(_Symbol, QM_BUY, ask, atr_14, strategy_atr_stop_mult);
       req.reason = "CONNORS_RSI2_LONG";
       return (req.sl > 0.0 && req.sl < ask - point);
      }
 
-   if(strategy_enable_shorts && close_1 < sma_200 && rsi_2 > strategy_entry_rsi_short && Strategy_SmaSlopeOk(false))
+   bool short_allowed_for_symbol = strategy_enable_shorts;
+   if(StringFind(_Symbol, "XAUUSD") >= 0 ||
+      StringFind(_Symbol, "NDX") >= 0 ||
+      StringFind(_Symbol, "WS30") >= 0 ||
+      StringFind(_Symbol, "GDAXI") >= 0 ||
+      StringFind(_Symbol, "UK100") >= 0)
+      short_allowed_for_symbol = false;
+
+   if(short_allowed_for_symbol && close_1 < sma_200 && rsi_2 > strategy_entry_rsi_short)
      {
+      if(strategy_use_sma_slope && sma_200 >= sma_200_then)
+         return false;
+
       req.type = QM_SELL;
-      req.price = bid;
-      req.sl = QM_StopATRFromValue(_Symbol, QM_SELL, bid, atr, strategy_atr_stop_mult);
+      req.price = 0.0;
+      req.sl = QM_StopATRFromValue(_Symbol, QM_SELL, bid, atr_14, strategy_atr_stop_mult);
       req.reason = "CONNORS_RSI2_SHORT";
       return (req.sl > bid + point);
      }
@@ -234,44 +132,46 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
   {
-   // Card baseline uses the initial ATR protective stop; no trailing stop.
+   // Card baseline has no trailing, break-even, partial close, scale-in, or martingale.
   }
 
 bool Strategy_ExitSignal()
   {
-   const datetime bar_time = iTime(_Symbol, strategy_timeframe, 0);
-   if(bar_time <= 0)
-      return false;
-   if(bar_time == g_last_exit_bar)
-      return g_exit_now;
-
-   g_last_exit_bar = bar_time;
-   g_exit_now = false;
-
-   ulong ticket;
-   ENUM_POSITION_TYPE ptype;
-   datetime open_time;
-   if(!Strategy_SelectOurPosition(ticket, ptype, open_time))
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
 
-   const double close_1 = iClose(_Symbol, strategy_timeframe, 1);
-   const double sma_5 = QM_SMA(_Symbol, strategy_timeframe, strategy_sma_exit_period, 1);
-   const double rsi_2 = QM_RSI(_Symbol, strategy_timeframe, strategy_rsi_period, 1);
-   if(close_1 <= 0.0 || sma_5 <= 0.0 || rsi_2 <= 0.0)
-      return false;
-
-   if(Strategy_BarsHeld(open_time) >= strategy_max_hold_bars)
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      g_exit_now = true;
-      return true;
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      const double close_1 = QM_SMA(_Symbol, strategy_timeframe, 1, 1);
+      const double sma_5 = QM_SMA(_Symbol, strategy_timeframe, strategy_sma_exit_period, 1);
+      const double rsi_2 = QM_RSI(_Symbol, strategy_timeframe, strategy_rsi_period, 1);
+      if(close_1 <= 0.0 || sma_5 <= 0.0 || rsi_2 <= 0.0)
+         return false;
+
+      const int hold_seconds = PeriodSeconds(strategy_timeframe) * MathMax(1, strategy_max_hold_bars);
+      if(open_time > 0 && TimeCurrent() - open_time >= hold_seconds)
+         return true;
+
+      if(ptype == POSITION_TYPE_BUY && (close_1 > sma_5 || rsi_2 > strategy_exit_rsi_long))
+         return true;
+      if(ptype == POSITION_TYPE_SELL && (close_1 < sma_5 || rsi_2 < strategy_exit_rsi_short))
+         return true;
+
+      return false;
      }
 
-   if(ptype == POSITION_TYPE_BUY && (close_1 > sma_5 || rsi_2 > strategy_exit_rsi_long))
-      g_exit_now = true;
-   else if(ptype == POSITION_TYPE_SELL && (close_1 < sma_5 || rsi_2 < strategy_exit_rsi_short))
-      g_exit_now = true;
-
-   return g_exit_now;
+   return false;
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
@@ -328,6 +228,7 @@ void OnTick()
 
    if(QM_FrameworkHandleFridayClose())
       return;
+
    if(Strategy_NoTradeFilter())
       return;
 
