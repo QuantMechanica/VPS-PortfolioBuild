@@ -3,8 +3,8 @@
 **EA ID:** QM5_11002
 **Slug:** `the5ers-m1-ema-stoch`
 **Source:** `1d445184-7c47-57da-9856-a123682a932d` (The5ers blog, "1 Minute Scalping Strategy")
-**Author of this spec:** Claude
-**Last revised:** 2026-06-17
+**Author of this spec:** Codex
+**Last revised:** 2026-06-18
 
 ---
 
@@ -116,3 +116,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-17 | Initial build from card | board-advisor build |
+| v2 | 2026-06-18 | Initial build from card | d9f92d69-dc09-43a2-89cb-84fbd79254ba |

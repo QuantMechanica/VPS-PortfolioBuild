@@ -23,8 +23,9 @@
 //   Exit (long) : EMA(fast) crosses below EMA(slow)  OR  MACD main < 0.
 //   Exit (short): EMA(fast) crosses above EMA(slow)  OR  MACD main > 0.
 //   Time stop   : close after time_stop_bars closed H1 bars in the position.
-//   Spread guard: skip only a genuinely wide spread > spread_pct_of_stop of the
-//                 stop distance (fail-OPEN on .DWX zero modeled spread).
+//   Spread guard: skip entries only when spread is genuinely wider than
+//                 spread_pct_of_stop of the stop distance (fail-open on .DWX
+//                 zero modeled spread).
 //
 // NOTE: MACD main line CAN be negative — the sign IS the directional filter.
 // There is deliberately no `macd <= 0 -> reject` guard; long wants >0, short <0.
@@ -72,34 +73,25 @@ input double strategy_spread_pct_of_stop = 15.0;   // skip if spread > this % of
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only — signal work is on the closed-bar
-// path in Strategy_EntrySignal. Fail-OPEN on .DWX zero modeled spread.
+// No strategy-level no-trade state beyond the central framework gates. The
+// card's spread guard is entry-only and lives in Strategy_EntrySignal so exits
+// and the 72-bar time stop are never suppressed by a wide spread.
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to the entry gate, do not block here
-
-   const double stop_distance = strategy_sl_atr_mult * atr_value;
-   if(stop_distance <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
-      return true;
-
    return false;
   }
 
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic; no pyramiding.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -122,13 +114,27 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(atr_value <= 0.0)
       return false;
 
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   const double stop_distance = strategy_sl_atr_mult * atr_value;
+   if(stop_distance <= 0.0)
+      return false;
+
+   const double spread = ask - bid;
+   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
+   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+      return false;
+
    // --- Long: fresh bullish EMA cross EVENT + MACD positive STATE ---
    const bool cross_up   = (ema_fast_2 <= ema_slow_2 && ema_fast_1 > ema_slow_1);
    const bool cross_down = (ema_fast_2 >= ema_slow_2 && ema_fast_1 < ema_slow_1);
 
    if(cross_up && macd_main_1 > 0.0)
      {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double entry = ask;
       if(entry <= 0.0)
          return false;
       const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr_value, strategy_sl_atr_mult);
@@ -145,7 +151,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // --- Short: fresh bearish EMA cross EVENT + MACD negative STATE ---
    if(cross_down && macd_main_1 < 0.0)
      {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double entry = bid;
       if(entry <= 0.0)
          return false;
       const double sl = QM_StopATRFromValue(_Symbol, QM_SELL, entry, atr_value, strategy_sl_atr_mult);

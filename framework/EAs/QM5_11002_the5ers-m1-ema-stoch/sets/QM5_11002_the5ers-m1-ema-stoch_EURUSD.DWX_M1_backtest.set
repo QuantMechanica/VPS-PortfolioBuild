@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10999
-; ea_slug:      the5ers-outside-bollinger
+; ea_id:        11002
+; ea_slug:      the5ers-m1-ema-stoch
 ; ea_version:   v5.0
 ; set_version:  s20260618-001
-; symbol:       EURJPY.DWX
-; timeframe:    H1
+; symbol:       EURUSD.DWX
+; timeframe:    M1
 ; environment:  backtest
-; magic_slot:   4
+; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   ed62ac1835a1385e3e5eb57554d0c6a1b7cfa9677433323feec26804b1d34c31
+; build_hash:   91a2d3355ce66e0187992b722372f7785ce926a14ccad0c6b34de90fbfc94266
 ; author:       Development
 ; date:         2026-06-18
 ;==========================================================
-qm_magic_slot_offset=4
+qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

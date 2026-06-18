@@ -40,7 +40,6 @@ exceeds `3.0 × ATR(14)` (news-shock continuation). One position per magic; no p
 | `strategy_bandwidth_lookback` | 240 | 60-480 | Bars for bandwidth percentile sample |
 | `strategy_bandwidth_pctile` | 10.0 | 0-50 | Skip if bandwidth below this percentile |
 | `strategy_range_atr_cap` | 3.0 | 1.5-6.0 | Skip if signal-candle range > cap×ATR |
-| `strategy_spread_pct_of_stop` | 15.0 | 5-50 | Skip if spread > this % of stop distance |
 
 ---
 

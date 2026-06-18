@@ -127,6 +127,14 @@ bool Strategy_NoTradeFilter()
 // Closed-bar entry. Caller guarantees QM_IsNewBar() == true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic; no pyramiding.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -167,7 +175,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      {
       // Regime confirmation: a fresh EMA cross-up within the last N closed bars.
       bool recent_cross_up = false;
-      const int last_shift = strategy_cross_lookback + 1; // need shift s+1 for the prior bar
       for(int s = 1; s <= strategy_cross_lookback; ++s)
         {
          const double f_s  = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, s);
@@ -294,7 +301,7 @@ bool Strategy_ExitSignal()
 
       // --- Time-stop: close after N M1 bars elapsed since entry. ---
       const datetime opened   = (datetime)PositionGetInteger(POSITION_TIME);
-      const datetime bar_open = iTime(_Symbol, _Period, 0); // current (forming) bar open
+      const datetime bar_open = iTime(_Symbol, _Period, 0); // perf-allowed: current bar open for bounded time-stop
       if(opened > 0 && bar_open > opened)
         {
          const int bars_held = (int)((bar_open - opened) / (PeriodSeconds(_Period)));

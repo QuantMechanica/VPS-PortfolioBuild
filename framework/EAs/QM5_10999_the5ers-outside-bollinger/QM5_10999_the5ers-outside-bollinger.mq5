@@ -30,8 +30,7 @@
 //   Filters      : skip if BB bandwidth (upper-lower)/middle is in the bottom
 //                  bandwidth_pctile of the last bandwidth_lookback closed bars;
 //                  skip if the outside-body candle range > range_atr_cap * ATR(14).
-//   Spread guard : skip only a genuinely wide spread > spread_pct_of_stop of the
-//                  stop distance (fail-open on .DWX zero modeled spread).
+//   Spread guard : no card-specific spread cap; only unusable/crossed quotes block.
 //
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything else
 // is framework wiring and MUST stay intact.
@@ -72,32 +71,20 @@ input int    strategy_time_stop_bars     = 18;     // close after N closed H1 ba
 input int    strategy_bandwidth_lookback = 240;    // bars for bandwidth percentile
 input double strategy_bandwidth_pctile   = 10.0;   // skip if bandwidth below this percentile
 input double strategy_range_atr_cap      = 3.0;    // skip if outside-body range > cap*ATR
-input double strategy_spread_pct_of_stop = 15.0;   // skip if spread > this % of stop distance
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only — signal work is on the closed-bar
-// path in Strategy_EntrySignal. Fail-open on .DWX zero modeled spread.
+// Cheap O(1) per-tick gate. No card-specific time/spread filter; framework news
+// runs before this hook. Zero modeled .DWX spread is tradeable.
 bool Strategy_NoTradeFilter()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to the entry gate
-
-   const double stop_distance = strategy_sl_atr_mult * atr_value;
-   if(stop_distance <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+      return true;
+   if(ask > 0.0 && bid > 0.0 && ask < bid)
       return true;
 
    return false;
