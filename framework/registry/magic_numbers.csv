@@ -11136,3 +11136,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11493,carter-t-bb-slope-midline-bounce-m5,1,GBPUSD.DWX,114930001,2026-06-18,Claude,reserved
 11493,carter-t-bb-slope-midline-bounce-m5,2,GBPJPY.DWX,114930002,2026-06-18,Claude,reserved
 11494,carter-t-mtf-triple-ema-bb-align-m5h1,0,EURUSD.DWX,114940000,2026-06-18,Claude,reserved
+12480,gh-shoot-star,0,EURUSD.DWX,124800000,2026-06-18,Development,active
+12480,gh-shoot-star,1,GBPUSD.DWX,124800001,2026-06-18,Development,active
+12480,gh-shoot-star,2,USDJPY.DWX,124800002,2026-06-18,Development,active
+12480,gh-shoot-star,3,XAUUSD.DWX,124800003,2026-06-18,Development,active
+12480,gh-shoot-star,4,NDX.DWX,124800004,2026-06-18,Development,active
+12480,gh-shoot-star,5,WS30.DWX,124800005,2026-06-18,Development,active
