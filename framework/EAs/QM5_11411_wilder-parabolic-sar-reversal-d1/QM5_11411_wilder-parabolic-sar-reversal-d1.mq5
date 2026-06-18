@@ -251,9 +251,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // in the favorable direction only (the SAR is monotone within a trend leg).
 void Strategy_ManageOpenPosition()
   {
-   if(!QM_IsNewBarLatched())
-      return; // only re-anchor once per closed bar, not per tick
-
+   // NOTE: do NOT call QM_IsNewBar() here — it is single-consume per tick and
+   // the framework needs it for the entry gate later in OnTick. The SAR value
+   // at shift 1 is constant within a bar, and the monotone "only tighten"
+   // guards below make QM_TM_MoveSL a no-op once the SL already tracks the SAR,
+   // so this re-anchors at most once per closed bar without stealing the event.
    const int magic = QM_FrameworkMagic();
    const double sar = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 1);
    if(sar <= 0.0)
