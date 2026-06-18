@@ -4,7 +4,7 @@
 **Slug:** `tv-smc-ob`
 **Source:** `d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7` (see approved card)
 **Author of this spec:** Codex
-**Last revised:** 2026-05-31
+**Last revised:** 2026-06-18
 
 ---
 
@@ -106,3 +106,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-05-31 | Initial build from card | 242b0f38-2758-43d9-9b0b-2c471895e284 |
+| v2 | 2026-06-18 | Rebuild in place from approved card | 78eed496-5465-4ff4-a66e-94cb35e4cd78 |
