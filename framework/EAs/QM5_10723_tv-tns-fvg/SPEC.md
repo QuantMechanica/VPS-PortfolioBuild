@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades M5 index CFD taps into active fair value gaps. A bullish gap is formed when a closed bar's low is above the high two bars earlier; a bearish gap is formed when a closed bar's high is below the low two bars earlier. At least three bars after formation, the EA enters long after a bearish tap candle into a bullish gap, or short after a bullish tap candle into a bearish gap. The stop is ATR based, take profit is the nearest confirmed swing pivot in the trade direction, setups below 1.5R are skipped, stops move to breakeven plus a small lock after 0.8R, and positions are force-closed at session end.
+The EA trades M5 index CFD taps into active fair value gaps. A bullish gap is formed when a closed bar's low is above the high two bars earlier; a bearish gap is formed when a closed bar's high is below the low two bars earlier. At least three bars after formation, the EA enters long after a bearish tap candle whose extremity taps a bullish gap, or short after a bullish tap candle whose extremity taps a bearish gap. The stop is ATR based, take profit is the nearest confirmed swing pivot in the trade direction, setups below 1.5R are skipped, stops move to breakeven plus a small lock after 0.8R, and positions are force-closed at session end.
 
 ---
 
@@ -105,3 +105,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | v2 | 2026-06-17 | Rebuild from approved card with symbol-session defaults | c896e7a8-63cb-457d-a77a-1cc5ddd33ca0 |
 | v3 | 2026-06-18 | Build validation and smoke handoff | 64f4ecae-a324-4e0f-91ef-db0c7c767946 |
 | v4 | 2026-06-18 | Build validation and smoke handoff | f74c2d1f-f7b8-475f-8401-a4becf99c732 |
+| v5 | 2026-06-18 | Rework tap predicate after smoke trade-count review | f74c2d1f-f7b8-475f-8401-a4becf99c732 |

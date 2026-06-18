@@ -10377,6 +10377,14 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11260,cs-stoch-mfi,2,XAUUSD.DWX,112600002,2026-06-18,Claude,active
 11260,cs-stoch-mfi,3,NDX.DWX,112600003,2026-06-18,Claude,active
 11260,cs-stoch-mfi,4,GDAXI.DWX,112600004,2026-06-18,Claude,active
+12528,chan-xsec-mr,0,EURUSD.DWX,125280000,2026-06-18,Development,active
+12528,chan-xsec-mr,1,GBPUSD.DWX,125280001,2026-06-18,Development,active
+12528,chan-xsec-mr,2,USDJPY.DWX,125280002,2026-06-18,Development,active
+12528,chan-xsec-mr,3,AUDUSD.DWX,125280003,2026-06-18,Development,active
+12528,chan-xsec-mr,4,USDCAD.DWX,125280004,2026-06-18,Development,active
+12528,chan-xsec-mr,5,NDX.DWX,125280005,2026-06-18,Development,active
+12528,chan-xsec-mr,6,WS30.DWX,125280006,2026-06-18,Development,active
+12528,chan-xsec-mr,7,XAUUSD.DWX,125280007,2026-06-18,Development,active
 12530,chan-xsec-lowvol,0,EURUSD.DWX,125300000,2026-06-18,Development,active
 12530,chan-xsec-lowvol,1,GBPUSD.DWX,125300001,2026-06-18,Development,active
 12530,chan-xsec-lowvol,2,USDJPY.DWX,125300002,2026-06-18,Development,active

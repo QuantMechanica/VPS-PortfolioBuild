@@ -207,8 +207,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          const double zone_high = rates[shift].low;
          const bool bearish_tap = (tap.close < tap.open);
          const bool high_inside = (tap.high >= zone_low + edge && tap.high <= zone_high - edge);
-         const bool tapped_zone = (tap.low <= zone_high);
-         if(bearish_tap && high_inside && tapped_zone)
+         const bool low_inside = (tap.low >= zone_low + edge && tap.low <= zone_high - edge);
+         const bool tapped_zone = (tap.high >= zone_low + edge && tap.low <= zone_high - edge);
+         if(bearish_tap && (high_inside || low_inside) && tapped_zone)
            {
             const double entry = ask;
             const double sl = NormalizeDouble(entry - stop_dist, _Digits);
@@ -257,8 +258,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          const double zone_high = rates[shift + 2].low;
          const bool bullish_tap = (tap.close > tap.open);
          const bool low_inside = (tap.low >= zone_low + edge && tap.low <= zone_high - edge);
-         const bool tapped_zone = (tap.high >= zone_low);
-         if(bullish_tap && low_inside && tapped_zone)
+         const bool high_inside = (tap.high >= zone_low + edge && tap.high <= zone_high - edge);
+         const bool tapped_zone = (tap.high >= zone_low + edge && tap.low <= zone_high - edge);
+         if(bullish_tap && (low_inside || high_inside) && tapped_zone)
            {
             const double entry = bid;
             const double sl = NormalizeDouble(entry + stop_dist, _Digits);
