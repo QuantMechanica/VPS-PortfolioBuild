@@ -11828,3 +11828,15 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12350,spec-ema20-40,4,GDAXI.DWX,123500004,2026-06-18,Development,active
 12350,spec-ema20-40,5,NDX.DWX,123500005,2026-06-18,Development,active
 12350,spec-ema20-40,6,WS30.DWX,123500006,2026-06-18,Development,active
+12382,ts-mom-12m,0,EURUSD.DWX,123820000,2026-06-18,Development,active
+12382,ts-mom-12m,1,GBPUSD.DWX,123820001,2026-06-18,Development,active
+12382,ts-mom-12m,2,USDJPY.DWX,123820002,2026-06-18,Development,active
+12382,ts-mom-12m,3,USDCHF.DWX,123820003,2026-06-18,Development,active
+12382,ts-mom-12m,4,USDCAD.DWX,123820004,2026-06-18,Development,active
+12382,ts-mom-12m,5,XAUUSD.DWX,123820005,2026-06-18,Development,active
+12382,ts-mom-12m,6,XAGUSD.DWX,123820006,2026-06-18,Development,active
+12382,ts-mom-12m,7,XTIUSD.DWX,123820007,2026-06-18,Development,active
+12382,ts-mom-12m,8,SP500.DWX,123820008,2026-06-18,Development,active
+12382,ts-mom-12m,9,NDX.DWX,123820009,2026-06-18,Development,active
+12382,ts-mom-12m,10,WS30.DWX,123820010,2026-06-18,Development,active
+12382,ts-mom-12m,11,GDAXI.DWX,123820011,2026-06-18,Development,active
