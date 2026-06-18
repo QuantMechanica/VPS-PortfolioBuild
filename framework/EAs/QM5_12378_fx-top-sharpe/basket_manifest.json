@@ -1,0 +1,9 @@
+{
+  "logical_symbol": "QM5_12378_FX_TOP_SHARPE_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": ["EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX", "USDCHF.DWX", "USDCAD.DWX", "AUDUSD.DWX", "NZDUSD.DWX"],
+  "notes": [
+    "Neely & Weller cross-sectional FX rotation by trailing Sharpe (source_id b7832a20). EA runs one instance per host symbol; each ranks the full 7-major DWX universe by trailing Sharpe = mean/stdev of D1 simple returns over strategy_sharpe_lookback bars, computed in-EA from .DWX closes via a single rebalance-bar CopyClose (no QM_Sharpe helper exists). Foreign-symbol closes warmed via QM_SymbolGuardInit + QM_BasketWarmupHistory. Host goes long only when it is in the top-N (default 5) by Sharpe AND its own MA trend rule is long (Close>SMA(50)); long-only, one position per magic. Rolling Sharpe + top-N book = STATE; re-ranked every strategy_rebalance_days (20 business days). Exit on top-N drop-out or trend-rule flip. Card's long/short rule library reduced to the long leg for the framework's one-position-per-magic long-only realization. All 7 majors verified in dwx_symbol_matrix.csv; no port needed. D1-native, no ML, no external feed."
+  ]
+}

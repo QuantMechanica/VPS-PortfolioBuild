@@ -1,0 +1,11 @@
+{
+  "logical_symbol": "QM5_12396_COUNTRY_BAB_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": ["SP500.DWX", "NDX.DWX", "WS30.DWX", "GDAXI.DWX", "UK100.DWX"],
+  "notes": [
+    "Country-index Betting-Against-Beta (BAB) cross-sectional long/short basket. Each index's beta is the closed-form OLS slope of its daily returns vs the equal-weight universe-average ('market') return over a rolling N-bar D1 window: beta_i = cov(r_i, r_mkt) / var(r_mkt). No ML. The universe is ranked by beta; the EA goes LONG the low-beta head and SHORT the high-beta tail. Ranking = STATE, recomputed once per closed D1 rebalance bar (monthly proxy via day-of-month boundary; MN1 is untestable on .DWX). EA runs one instance per host; the host trades only when it is in the long or short set. Foreign reads via QM_SymbolGuardInit + QM_BasketWarmupHistory. One position per magic.",
+    "COUNTRY UNIVERSE LIMITED TO AVAILABLE DWX EQUITY INDICES. The source uses broad country ETFs; the DWX matrix has only a small index set. Country proxies = SP500.DWX (US, backtest-only), NDX.DWX (US tech), WS30.DWX (US), GDAXI.DWX (Germany/DAX 40), UK100.DWX (UK/FTSE 100). The three US indices are highly correlated, so the effective country breadth is ~{US-cluster, Germany, UK} — a genuine limitation flagged here and in SPEC.md.",
+    "Card listed JPN225.DWX, but it is NOT in framework/registry/dwx_symbol_matrix.csv (no Nikkei CFD) and was dropped. SP500.DWX is a backtest-only read/trade member; live promotion of an SP500.DWX leg is a T6-gate concern, not a build concern."
+  ]
+}

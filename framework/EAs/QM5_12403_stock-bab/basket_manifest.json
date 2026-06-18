@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_12403_STOCK_BAB_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": ["SP500.DWX", "NDX.DWX", "WS30.DWX", "GDAXI.DWX", "UK100.DWX"],
+  "notes": [
+    "Stock Betting-Against-Beta (BAB), cross-sectional long/short basket. Same BAB mechanic as the sibling country-bab (QM5_1104) but the SOURCE universe is individual US stocks. Individual stocks are NOT available on Darwinex .DWX, so the stock universe is PROXIED by the five liquid DWX equity-index CFDs: SP500.DWX (S&P 500, backtest-only), NDX.DWX (Nasdaq 100), WS30.DWX (Dow 30), GDAXI.DWX (DAX 40), UK100.DWX (FTSE 100).",
+    "PROXY FLAG: this is a reduced-breadth port. The source's hundreds of single names collapse to five index CFDs, so cross-sectional beta dispersion is far smaller than the source. The card's GER40.DWX/JP225.DWX are not in dwx_symbol_matrix.csv — GER40 is represented by GDAXI.DWX (DAX) and JP225 is dropped (no matrix entry; no phantom symbols).",
+    "Benchmark/market leg = the EQUAL-WEIGHT universe-average daily return computed per closed D1 bar from the basket (NOT a single index). Beta = closed-form OLS slope Cov(r_i, r_mkt)/Var(r_mkt) over strategy_beta_lookback_d1 closed D1 bars. NO ML. Rank by beta ascending; long the bottom bucket (low beta), short the top bucket (high beta).",
+    "EA runs one instance per host symbol; each reads the full universe's D1 bars to rank beta and trades only when the host is itself inside a bucket (long if low-beta, short if high-beta). Foreign reads via QM_SymbolGuardInit + QM_BasketWarmupHistory. Monthly rebalance on the last D1 trading bar of the month (broker time). D1-native. SP500.DWX is a backtest-only ranking member; an EA instance hosted on SP500.DWX is not live-routable. One position per magic per host."
+  ]
+}

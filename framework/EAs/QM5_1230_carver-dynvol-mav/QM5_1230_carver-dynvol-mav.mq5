@@ -1,45 +1,45 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_1230 carver-dynvol-mav — Carver Dynamic-Vol Starter MAV (trend MA-cross + dynamic-vol stop, D1)"
+#property description "QM5_1230 Carver Dynamic-Vol Starter MAV"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_1230 carver-dynvol-mav
+// QuantMechanica V5 EA SKELETON
 // -----------------------------------------------------------------------------
-// Source: Rob Carver, qoppac.blogspot.com 2020-12 "Dynamic trend following"
-//         (Leveraged Trading starter system + dynamic-vol-control variant).
-// Card: artifacts/cards_approved/QM5_1230_carver-dynvol-mav.md (g0_status APPROVED).
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails). The framework provides:
 //
-// Mechanics (D1, closed-bar reads at shift 1; one position per symbol/magic):
-//   Trend STATE  : fast_ma = EMA(16), slow_ma = EMA(64). raw_signal =
-//                  +1 if fast>slow, -1 if fast<slow, 0 if equal.
-//   Entry EVENT  : a fresh fast/slow MA cross (the cross is the trigger; the
-//                  relationship is the state). If flat and the signal flips into
-//                  a non-zero direction, open in that direction.
-//   Dynamic vol  : daily_vol = StdDev(close-to-close price changes, 25), measured
-//                  on closed bars. StopGap = stop_vol_mult * current_daily_vol
-//                  (Carver 8x daily vol ~= 0.5 annual std). The vol term scales
-//                  RISK_FIXED position size via the framework lot sizer (smaller
-//                  stop => larger lots), NOT a lot martingale.
-//   Stop loss    : broker SL placed at StopGap from entry (sizes lots, hard floor).
-//   Exit (mgmt)  : trailing high/low-water. Track highest close since long entry
-//                  (lowest since short). Close LONG when close < hwm - StopGap;
-//                  close SHORT when close > lwm + StopGap. StopGap recomputed each
-//                  closed bar from CURRENT daily_vol (dynamic).
-//   Exit (conserv): optional MA-flip — close if raw_signal flips opposite.
-//   Whipsaw guard: after a stop-out / trail-out, do not reopen the SAME direction
-//                  until an opposite signal appears OR cooldown_bars elapse.
-//   Filters      : require >= min_bars closed D1 bars; spread cap (fail-open on
-//                  .DWX zero modeled spread); closed-bar cadence only.
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
+//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
+//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
+//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
+//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
+//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
+//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
 //
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything else
-// is framework wiring and MUST stay intact.
+// DO NOT
+//   - Write per-EA IsNewBar() — use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//     use the QM_* readers above. The framework pools handles and releases them
+//     on shutdown.
+//   - CopyRates over warmup windows on every tick. If you genuinely need raw
+//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
+//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
+//     to magic_numbers.csv, run:
+//         python framework/scripts/update_magic_resolver.py
+//     This is idempotent and preserves all rows.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 1230;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -48,10 +48,16 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
+//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -59,306 +65,322 @@ input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_fast_ma_period    = 16;     // fast EMA (Carver 16)
-input int    strategy_slow_ma_period    = 64;     // slow EMA (Carver 64)
-input int    strategy_vol_lookback      = 25;     // close-to-close changes for daily vol StdDev
-input double strategy_stop_vol_mult     = 8.0;    // StopGap = mult * daily_vol (Carver 8x ~ 0.5 annual std)
-input int    strategy_cooldown_bars     = 20;     // same-direction reentry cooldown after a stop-out
-input bool   strategy_ma_flip_exit      = true;   // conservative exit: close when raw_signal flips opposite
-input int    strategy_min_bars          = 100;    // require this many closed bars before trading
-input double strategy_spread_pct_of_stop = 25.0;  // skip new entries if spread > this % of StopGap
+input int    strategy_fast_ema_period      = 16;
+input int    strategy_slow_ema_period      = 64;
+input int    strategy_daily_vol_period     = 25;
+input double strategy_stop_gap_vol_mult    = 8.0;
+input int    strategy_min_d1_bars          = 100;
+input int    strategy_cooldown_bars        = 20;
+input bool   strategy_exit_on_ma_flip      = true;
+input bool   strategy_dynamic_derisk       = true;
+input double strategy_derisk_step          = 0.10;
+input int    strategy_spread_cap_points    = 0;
 
 // -----------------------------------------------------------------------------
-// File-scope trade state (advanced on the closed-bar gate). Carver's trailing
-// high/low-water mark and the same-direction whipsaw guard need a small amount
-// of deterministic state — this is plain trade bookkeeping, NOT ML / adaptive
-// parameters (nothing here mutates a strategy parameter from running PnL).
-// -----------------------------------------------------------------------------
-bool     g_in_position      = false;   // mirror of "we hold a position for our magic"
-int      g_pos_dir          = 0;       // +1 long / -1 short while in position
-double   g_extreme_close    = 0.0;     // highest close since long entry / lowest since short
-datetime g_state_bar_time   = 0;       // last closed-bar timestamp the state advanced on
-
-int      g_cooldown_dir     = 0;       // direction we are cooling down on (+1/-1/0)
-int      g_cooldown_left    = 0;       // closed bars remaining in cooldown
-
-// -----------------------------------------------------------------------------
-// Helpers
+// Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// Raw MA-relationship state on closed bars at `shift`: +1 fast>slow, -1 fast<slow,
-// 0 equal / unavailable.
-int CarverRawSignal(const int shift)
+// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
+// regime filter). Cheap O(1) checks only — runs on every tick.
+bool Strategy_NoTradeFilter()
   {
-   const double fast_ma = QM_EMA(_Symbol, _Period, strategy_fast_ma_period, shift);
-   const double slow_ma = QM_EMA(_Symbol, _Period, strategy_slow_ma_period, shift);
-   if(fast_ma <= 0.0 || slow_ma <= 0.0)
-      return 0;
-   if(fast_ma > slow_ma)
-      return 1;
-   if(fast_ma < slow_ma)
-      return -1;
-   return 0;
+   if(strategy_spread_cap_points <= 0)
+      return false;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+      return true;
+
+   if(ask > bid)
+     {
+      const double spread_points = (ask - bid) / point;
+      if(spread_points > (double)strategy_spread_cap_points)
+         return true;
+     }
+
+   return false;
   }
 
-// Sample standard deviation of close-to-close price changes over the last
-// `strategy_vol_lookback` changes (closed bars). Bounded loop (<= ~26 reads),
-// runs only on the closed-bar path. iClose is a documented per-bar read here —
-// the daily-vol estimate is bespoke structural math the QM readers don't cover.
-double CarverDailyVol()
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
+// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
+bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   const int n = strategy_vol_lookback;
-   if(n < 2)
-      return 0.0;
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
 
-   // Need closes at shifts 1 .. n+1 to form n changes (close[s] - close[s+1]).
-   double sum = 0.0;
-   double diffs[];
-   ArrayResize(diffs, n);
-   for(int i = 0; i < n; ++i)
-     {
-      const int s = i + 1;
-      const double c0 = iClose(_Symbol, _Period, s);     // perf-allowed: bespoke vol math, closed-bar gated
-      const double c1 = iClose(_Symbol, _Period, s + 1); // perf-allowed: bespoke vol math, closed-bar gated
-      if(c0 <= 0.0 || c1 <= 0.0)
-         return 0.0;
-      const double d = c0 - c1;
-      diffs[i] = d;
-      sum += d;
-     }
-   const double mean = sum / n;
-   double var = 0.0;
-   for(int i = 0; i < n; ++i)
-     {
-      const double e = diffs[i] - mean;
-      var += e * e;
-     }
-   var /= (n - 1); // sample variance
-   if(var <= 0.0)
-      return 0.0;
-   return MathSqrt(var);
-  }
+   static bool had_position = false;
+   static int last_position_direction = 0;
+   static int cooldown_direction = 0;
+   static int cooldown_remaining = 0;
 
-// Current open-position direction for our magic (+1 long / -1 short / 0 flat),
-// and entry price by reference. Reads MT5 position state directly.
-int CarverPositionDir(double &entry_price)
-  {
-   entry_price = 0.0;
+   bool have_position = false;
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-      entry_price = PositionGetDouble(POSITION_PRICE_OPEN);
-      const long ptype = PositionGetInteger(POSITION_TYPE);
-      if(ptype == POSITION_TYPE_BUY)
-         return 1;
-      if(ptype == POSITION_TYPE_SELL)
-         return -1;
+
+      have_position = true;
+      last_position_direction = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY) ? 1 : -1;
+      break;
      }
-   return 0;
-  }
 
-// Advance the file-scope trade/cooldown state ONCE per closed bar. Called from
-// the closed-bar path only (never adds its own timestamp gate beyond the dedupe).
-void CarverAdvanceState()
-  {
-   const datetime bar_time = iTime(_Symbol, _Period, 0); // perf-allowed: closed-bar dedupe key
-   if(bar_time == g_state_bar_time)
-      return;
-   g_state_bar_time = bar_time;
-
-   double entry_price = 0.0;
-   const int dir = CarverPositionDir(entry_price);
-
-   if(dir == 0)
+   if(!have_position && had_position)
      {
-      // Flat: tick down any active cooldown by one closed bar.
-      g_in_position   = false;
-      g_pos_dir       = 0;
-      g_extreme_close = 0.0;
-      if(g_cooldown_left > 0)
+      cooldown_direction = last_position_direction;
+      cooldown_remaining = strategy_cooldown_bars;
+     }
+   had_position = have_position;
+
+   if(have_position)
+      return false;
+
+   if(strategy_fast_ema_period <= 0 ||
+      strategy_slow_ema_period <= strategy_fast_ema_period ||
+      strategy_daily_vol_period <= 1 ||
+      strategy_stop_gap_vol_mult <= 0.0 ||
+      strategy_min_d1_bars < strategy_slow_ema_period)
+      return false;
+
+   const double warmup_close = iClose(_Symbol, PERIOD_D1, strategy_min_d1_bars + 1); // perf-allowed: one D1 warmup probe inside framework new-bar gate.
+   if(warmup_close <= 0.0)
+      return false;
+
+   const double fast_ma = QM_EMA(_Symbol, PERIOD_D1, strategy_fast_ema_period, 1);
+   const double slow_ma = QM_EMA(_Symbol, PERIOD_D1, strategy_slow_ema_period, 1);
+   if(fast_ma <= 0.0 || slow_ma <= 0.0)
+      return false;
+
+   int raw_signal = 0;
+   if(fast_ma > slow_ma)
+      raw_signal = 1;
+   else if(fast_ma < slow_ma)
+      raw_signal = -1;
+   if(raw_signal == 0)
+      return false;
+
+   if(cooldown_remaining > 0)
+     {
+      if(raw_signal == cooldown_direction)
         {
-         g_cooldown_left -= 1;
-         if(g_cooldown_left <= 0)
-            g_cooldown_dir = 0;
+         cooldown_remaining--;
+         return false;
         }
-      return;
+      cooldown_remaining = 0;
+      cooldown_direction = 0;
      }
 
-   // In position: maintain the high/low-water mark from the last closed close.
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: closed-bar read
-   if(!g_in_position || g_pos_dir != dir)
+   double sum = 0.0;
+   double sum_sq = 0.0;
+   int samples = 0;
+   for(int shift = 1; shift <= strategy_daily_vol_period; ++shift)
      {
-      // Just entered (or direction flipped) — seed the extreme from entry & close.
-      g_in_position   = true;
-      g_pos_dir       = dir;
-      g_extreme_close = (close1 > 0.0 ? close1 : entry_price);
-      if(entry_price > 0.0)
-        {
-         if(dir > 0)
-            g_extreme_close = MathMax(g_extreme_close, entry_price);
-         else
-            g_extreme_close = MathMin(g_extreme_close, entry_price);
-        }
-      return;
+      const double c_now = iClose(_Symbol, PERIOD_D1, shift);       // perf-allowed: 25-bar close-difference volatility, gated by Strategy_EntrySignal new-bar caller.
+      const double c_prev = iClose(_Symbol, PERIOD_D1, shift + 1);  // perf-allowed: paired previous close for card-defined daily close-to-close changes.
+      if(c_now <= 0.0 || c_prev <= 0.0)
+         continue;
+      const double diff = c_now - c_prev;
+      sum += diff;
+      sum_sq += diff * diff;
+      samples++;
      }
+   if(samples < strategy_daily_vol_period)
+      return false;
 
-   if(close1 > 0.0)
-     {
-      if(dir > 0)
-         g_extreme_close = MathMax(g_extreme_close, close1);
-      else
-         g_extreme_close = MathMin(g_extreme_close, close1);
-     }
-  }
+   const double mean = sum / (double)samples;
+   const double variance = (sum_sq / (double)samples) - mean * mean;
+   if(variance <= 0.0)
+      return false;
 
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
+   const double daily_vol = MathSqrt(variance);
+   const double stop_gap = strategy_stop_gap_vol_mult * daily_vol;
+   if(stop_gap <= 0.0)
+      return false;
 
-// Cheap O(1) per-tick gate. Spread guard only (fail-open on .DWX zero spread).
-// Regime/signal/vol work is on the closed-bar path in Strategy_EntrySignal.
-bool Strategy_NoTradeFilter()
-  {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   const double spread = ask - bid;
-   if(spread <= 0.0)
-      return false; // .DWX models zero spread — never fail-closed on it
-
-   // Reference distance = current StopGap. If vol unavailable, defer (don't block).
-   const double daily_vol = CarverDailyVol();
-   if(daily_vol <= 0.0)
-      return false;
-   const double stop_gap = strategy_stop_vol_mult * daily_vol;
-   if(stop_gap <= 0.0)
-      return false;
-
-   if(spread > (strategy_spread_pct_of_stop / 100.0) * stop_gap)
-      return true; // genuinely wide spread — block new entry this tick
-
-   return false;
-  }
-
-// Entry on a fresh MA cross. Caller guarantees QM_IsNewBar() == true.
-bool Strategy_EntrySignal(QM_EntryRequest &req)
-  {
-   // One open position per symbol/magic.
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
-      return false;
-
-   // Require enough history for the slow EMA + vol window to be meaningful.
-   if(Bars(_Symbol, _Period) < strategy_min_bars) // perf-allowed: history-length guard
-      return false;
-
-   // --- Trend STATE now vs previous closed bar (the cross is the EVENT) ---
-   const int sig_now  = CarverRawSignal(1);
-   const int sig_prev = CarverRawSignal(2);
-   if(sig_now == 0)
-      return false;
-
-   // Fresh cross into a non-zero direction: prev was opposite-or-flat, now decided.
-   const bool crossed = (sig_prev != sig_now);
-   if(!crossed)
-      return false;
-
-   // --- Whipsaw guard: block same-direction reentry during cooldown unless the
-   //     signal has flipped opposite (an opposite cross always clears it). ---
-   if(g_cooldown_left > 0 && g_cooldown_dir == sig_now)
-      return false;
-
-   // --- Dynamic vol -> StopGap. Smaller vol => tighter stop => larger lots via
-   //     QM_LotsForRisk against RISK_FIXED (Carver dynamic-vol position scaling). ---
-   const double daily_vol = CarverDailyVol();
-   if(daily_vol <= 0.0)
-      return false;
-
-   const double entry = (sig_now > 0 ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                     : SymbolInfoDouble(_Symbol, SYMBOL_BID));
-   if(entry <= 0.0)
-      return false;
-
-   const QM_OrderType otype = (sig_now > 0 ? QM_BUY : QM_SELL);
-   // Stop distance = stop_vol_mult * daily_vol (price units). QM_StopATRFromValue
-   // treats daily_vol as the per-unit distance and applies the multiplier.
-   const double sl = QM_StopATRFromValue(_Symbol, otype, entry, daily_vol, strategy_stop_vol_mult);
-   if(sl <= 0.0)
-      return false;
-
-   req.type   = otype;
-   req.price  = 0.0;  // framework fills market price at send
-   req.sl     = sl;
-   req.tp     = 0.0;  // trend system rides the trailing high/low-water exit, no fixed TP
-   req.reason = (sig_now > 0 ? "carver_dynvol_long" : "carver_dynvol_short");
-   return true;
-  }
-
-// Trailing high/low-water management is evaluated in Strategy_ExitSignal (it must
-// decide a full close). No SL/TP nudging here — the broker SL is the hard floor.
-void Strategy_ManageOpenPosition()
-  {
-  }
-
-// Discretionary exit: dynamic trailing high/low-water OR optional MA-flip.
-bool Strategy_ExitSignal()
-  {
+   const double close_last = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: closed D1 close used as fallback entry anchor.
    double entry_price = 0.0;
-   const int dir = CarverPositionDir(entry_price);
-   if(dir == 0)
-      return false;
-
-   // Conservative MA-flip exit: raw signal turned opposite to the position.
-   if(strategy_ma_flip_exit)
+   if(raw_signal > 0)
      {
-      const int sig_now = CarverRawSignal(1);
-      if(sig_now != 0 && sig_now != dir)
-         return true;
-     }
-
-   // Dynamic trailing high/low-water. StopGap recomputed from CURRENT daily vol.
-   const double daily_vol = CarverDailyVol();
-   if(daily_vol <= 0.0)
-      return false;
-   const double stop_gap = strategy_stop_vol_mult * daily_vol;
-   if(stop_gap <= 0.0)
-      return false;
-
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: closed-bar read
-   if(close1 <= 0.0)
-      return false;
-
-   // g_extreme_close is advanced once per closed bar in CarverAdvanceState().
-   if(!g_in_position || g_extreme_close <= 0.0)
-      return false;
-
-   if(dir > 0)
-     {
-      if(close1 < g_extreme_close - stop_gap)
-         return true; // long trail-out
+      req.type = QM_BUY;
+      entry_price = (ask > 0.0) ? ask : close_last;
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, entry_price - stop_gap);
+      req.reason = "carver_dynvol_mav_long";
      }
    else
      {
-      if(close1 > g_extreme_close + stop_gap)
-         return true; // short trail-out
+      req.type = QM_SELL;
+      entry_price = (bid > 0.0) ? bid : close_last;
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, entry_price + stop_gap);
+      req.reason = "carver_dynvol_mav_short";
+     }
+
+   if(entry_price <= 0.0 || req.sl <= 0.0)
+      return false;
+
+   return true;
+  }
+
+// Called every tick when an open position exists for this EA's magic.
+// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
+void Strategy_ManageOpenPosition()
+  {
+   static ulong tracked_ticket = 0;
+   static double initial_vol = 0.0;
+   static double initial_lots = 0.0;
+
+   if(strategy_daily_vol_period <= 1 || strategy_stop_gap_vol_mult <= 0.0)
+      return;
+
+   double sum = 0.0;
+   double sum_sq = 0.0;
+   int samples = 0;
+   for(int shift = 1; shift <= strategy_daily_vol_period; ++shift)
+     {
+      const double c_now = iClose(_Symbol, PERIOD_D1, shift);       // perf-allowed: bounded 25-bar daily-vol recompute; O(25), no CopyRates.
+      const double c_prev = iClose(_Symbol, PERIOD_D1, shift + 1);  // perf-allowed: card requires close-to-close price changes.
+      if(c_now <= 0.0 || c_prev <= 0.0)
+         continue;
+      const double diff = c_now - c_prev;
+      sum += diff;
+      sum_sq += diff * diff;
+      samples++;
+     }
+   if(samples < strategy_daily_vol_period)
+      return;
+
+   const double mean = sum / (double)samples;
+   const double variance = (sum_sq / (double)samples) - mean * mean;
+   if(variance <= 0.0)
+      return;
+
+   const double current_vol = MathSqrt(variance);
+   const double stop_gap = strategy_stop_gap_vol_mult * current_vol;
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double min_lot = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
+   if(current_vol <= 0.0 || stop_gap <= 0.0 || point <= 0.0)
+      return;
+
+   const int magic = QM_FrameworkMagic();
+   bool found = false;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      found = true;
+      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const bool is_buy = (position_type == POSITION_TYPE_BUY);
+      const double current_sl = PositionGetDouble(POSITION_SL);
+      const double lots = PositionGetDouble(POSITION_VOLUME);
+      const double market_price = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                                         : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(market_price <= 0.0)
+         continue;
+
+      if(ticket != tracked_ticket)
+        {
+         tracked_ticket = ticket;
+         initial_vol = current_vol;
+         initial_lots = lots;
+        }
+
+      const double target_sl = QM_StopRulesNormalizePrice(_Symbol, is_buy ? (market_price - stop_gap) : (market_price + stop_gap));
+      const bool improves = (current_sl <= 0.0) ||
+                            (is_buy ? (target_sl > current_sl + point * 0.5)
+                                    : (target_sl < current_sl - point * 0.5));
+      if(target_sl > 0.0 && improves)
+         QM_TM_MoveSL(ticket, target_sl, "carver_dynvol_watermark_stop");
+
+      if(strategy_dynamic_derisk && initial_vol > 0.0 && initial_lots > 0.0 &&
+         current_vol > initial_vol * (1.0 + strategy_derisk_step))
+        {
+         double target_lots = initial_lots * initial_vol / current_vol;
+         if(target_lots < min_lot)
+            target_lots = min_lot;
+         if(lots > target_lots + min_lot * 0.5)
+           {
+            const double excess = QM_TM_NormalizeVolume(_Symbol, lots - target_lots);
+            if(excess >= min_lot && lots - excess >= min_lot)
+               QM_TM_PartialClose(ticket, excess, QM_EXIT_PARTIAL);
+           }
+        }
+     }
+
+   if(!found)
+     {
+      tracked_ticket = 0;
+      initial_vol = 0.0;
+      initial_lots = 0.0;
+     }
+  }
+
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
+bool Strategy_ExitSignal()
+  {
+   if(!strategy_exit_on_ma_flip)
+      return false;
+
+   const double fast_ma = QM_EMA(_Symbol, PERIOD_D1, strategy_fast_ema_period, 1);
+   const double slow_ma = QM_EMA(_Symbol, PERIOD_D1, strategy_slow_ema_period, 1);
+   if(fast_ma <= 0.0 || slow_ma <= 0.0)
+      return false;
+
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(position_type == POSITION_TYPE_BUY && fast_ma < slow_ma)
+         return true;
+      if(position_type == POSITION_TYPE_SELL && fast_ma > slow_ma)
+         return true;
      }
 
    return false;
   }
 
-// Defer to the central news filter.
+// Optional news-filter override. Return TRUE to suppress trading regardless
+// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
+// custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false;
+   return false; // defer to QM_NewsAllowsTrade(...)
   }
 
 // -----------------------------------------------------------------------------
@@ -385,13 +407,6 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
-   g_in_position    = false;
-   g_pos_dir        = 0;
-   g_extreme_close  = 0.0;
-   g_state_bar_time = 0;
-   g_cooldown_dir   = 0;
-   g_cooldown_left  = 0;
-
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
@@ -410,6 +425,8 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults.
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -423,17 +440,13 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
-      // Trail-out / MA-flip close: start the same-direction whipsaw cooldown.
-      if(g_pos_dir != 0)
-        {
-         g_cooldown_dir  = g_pos_dir;
-         g_cooldown_left = strategy_cooldown_bars;
-        }
       for(int i = PositionsTotal() - 1; i >= 0; --i)
         {
          const ulong ticket = PositionGetTicket(i);
@@ -445,34 +458,21 @@ void OnTick()
         }
      }
 
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
 
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
-
-   // Advance trailing/cooldown state once per new closed bar before evaluating entry.
-   CarverAdvanceState();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
-      if(QM_TM_OpenPosition(req, out_ticket))
-        {
-         // Seed state immediately so the trail has a mark on the entry bar.
-         double entry_price = 0.0;
-         const int dir = CarverPositionDir(entry_price);
-         if(dir != 0)
-           {
-            g_in_position   = true;
-            g_pos_dir       = dir;
-            const double c1 = iClose(_Symbol, _Period, 1); // perf-allowed: seed extreme
-            g_extreme_close = (c1 > 0.0 ? c1 : entry_price);
-            if(entry_price > 0.0)
-               g_extreme_close = (dir > 0 ? MathMax(g_extreme_close, entry_price)
-                                          : MathMin(g_extreme_close, entry_price));
-           }
-        }
+      QM_TM_OpenPosition(req, out_ticket);
      }
   }
 
@@ -485,6 +485,8 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
   {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 

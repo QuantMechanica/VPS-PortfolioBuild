@@ -1,0 +1,11 @@
+{
+  "logical_symbol": "QM5_12394_SECTOR_MOM12M_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": ["SP500.DWX", "NDX.DWX", "WS30.DWX", "GDAXI.DWX", "UK100.DWX", "XAUUSD.DWX", "XTIUSD.DWX", "XAGUSD.DWX"],
+  "notes": [
+    "Sector 12-month momentum rotation. Source (Papers With Backtest / Quantpedia 'Sector Momentum Rotational System', source_id b7832a20) ranks ten US sector ETFs by 12-month momentum each calendar month and holds the strongest three equally, rebalancing monthly. Sector ETFs (XLK, XLF, XLE, ...) are NOT routable on DWX, so the universe is ported to liquid DWX index/commodity CFD proxies that preserve the cross-sectional rank mechanics.",
+    "Universe port: index proxies SP500.DWX (S&P 500, backtest-only read member), NDX.DWX (Nasdaq 100), WS30.DWX (Dow 30), GDAXI.DWX (DAX 40), UK100.DWX (FTSE 100); commodity proxies XAUUSD.DWX (gold), XTIUSD.DWX (WTI oil), XAGUSD.DWX (silver). Card target_symbols listed JPN225.DWX, but no Nikkei/JP225 symbol exists in framework/registry/dwx_symbol_matrix.csv, so it is dropped; commodity proxies added to widen the cross-section for the rotation. All eight symbols verified present in dwx_symbol_matrix.csv.",
+    "EA runs one instance per host symbol; each reads the full universe's D1 bars to rank 12-month (252 D1 bar) momentum and goes long the host only when the host is inside the top-N (default top 3) by momentum. Monthly rebalance gated by broker-time calendar-month change (D1-native proxy; MN1 is untestable in the .DWX tester). Foreign reads via QM_SymbolGuardInit + QM_BasketWarmupHistory. Long-only (source never shorts). Protective stop 3.0*ATR(20,D1); monthly reselection is the primary exit. One position per magic per host. RISK_FIXED backtest / RISK_PERCENT live."
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "logical_symbol": "QM5_12392_COMM_ASYM_IE_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX", "XTIUSD.DWX", "XNGUSD.DWX"],
+  "notes": [
+    "Commodity return-asymmetry cross-section (Papers With Backtest / Quantpedia, source_id b7832a20). EA runs one instance per host symbol; each reads every commodity's D1 closes to compute an Information-Event (IE) asymmetry count over the latest 260 daily returns: IE = count(r > mean+2*stdev) - count(r < mean-2*stdev). Ranked ascending by IE, the EA longs the lowest-IE commodity and shorts the highest-IE commodity, rebalanced on the first tradable D1 bar of each calendar month. The host opens a long only when it is the lowest-IE pick, a short only when it is the highest-IE pick. Foreign reads via QM_SymbolGuardInit + QM_BasketWarmupHistory; IE needs the full return distribution so closes are pulled with a single CopyClose per symbol inside the monthly new-bar gate (no per-tick history). DWX commodity universe XAUUSD/XAGUSD/XTIUSD/XNGUSD (matrix available=true); source's 22-name futures universe narrowed to a 1-long/1-short pair. MN1 untestable in .DWX tester so cadence is a D1-native broker-time month-rollover gate. Protective 3.0*ATR(20,D1) stop; monthly reselection is the primary exit. One position per magic."
+  ]
+}
