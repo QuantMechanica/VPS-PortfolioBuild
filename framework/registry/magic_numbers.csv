@@ -11814,3 +11814,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11790,carter-h1-s5-smma55-wpr-stoch-h1,5,USDCAD.DWX,117900005,2026-06-18,Claude,reserved
 11791,carter-h1-s6-ema51560-pullback-h1,0,EURUSD.DWX,117910000,2026-06-18,Claude,reserved
 11791,carter-h1-s6-ema51560-pullback-h1,1,GBPUSD.DWX,117910001,2026-06-18,Claude,reserved
+12362,nikh-supertrend,0,EURUSD.DWX,123620000,2026-06-18,Development,active
+12362,nikh-supertrend,1,GBPUSD.DWX,123620001,2026-06-18,Development,active
+12362,nikh-supertrend,2,USDJPY.DWX,123620002,2026-06-18,Development,active
+12362,nikh-supertrend,3,XAUUSD.DWX,123620003,2026-06-18,Development,active
+12362,nikh-supertrend,4,GDAXI.DWX,123620004,2026-06-18,Development,active
+12362,nikh-supertrend,5,NDX.DWX,123620005,2026-06-18,Development,active
+12362,nikh-supertrend,6,WS30.DWX,123620006,2026-06-18,Development,active
