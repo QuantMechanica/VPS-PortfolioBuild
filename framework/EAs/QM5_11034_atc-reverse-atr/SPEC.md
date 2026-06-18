@@ -4,13 +4,13 @@
 **Slug:** atc-reverse-atr
 **Source:** 9441393d-5ffc-5b43-87be-bd532110f204 (see approved card)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-07
+**Last revised:** 2026-06-18
 
 ---
 
 ## 1. Strategy Logic
 
-The EA opens one market position at a time on the active symbol and magic slot. The first trade uses the configured initial direction; after a position closes, the next eligible closed H1 bar opens the opposite direction. Entries do not use a directional indicator. Exits are handled by an initial ATR hard stop, an ATR trailing stop, and the framework Friday close.
+The EA trades one market position at a time on the active symbol and magic slot. The first entry uses the configured initial direction; after a trade has closed, the next eligible completed H1 bar opens the opposite direction. Entry direction is not forecast by an indicator. Exits are handled by the initial ATR hard stop, the ATR trailing stop, and the framework Friday close.
 
 ---
 
@@ -22,7 +22,7 @@ The EA opens one market position at a time on the active symbol and magic slot. 
 | strategy_atr_period | 14 | 1+ | ATR period used for hard stop, trailing stop, and optional percentile filter. |
 | strategy_atr_trail_mult | 2.0 | 0.1+ | ATR multiple for the trailing stop. |
 | strategy_hard_sl_atr | 3.0 | 0.1+ | Initial disaster stop distance in ATR multiples. |
-| strategy_cooldown_bars | 0 | 0+ | Closed bars to wait after a position closes before the next reversal entry. |
+| strategy_cooldown_bars | 0 | 0+ | Completed bars to wait after a position closes before the next reversal entry. |
 | strategy_min_atr_percentile | 0 | 0-100 | Optional ATR percentile threshold; 0 disables this filter. |
 | strategy_atr_percentile_lookback | 250 | 1+ | Lookback bars for the optional ATR percentile filter. |
 | strategy_median_spread_points | 20 | 1+ | Per-symbol median spread estimate in points for the card spread filter. |
@@ -92,4 +92,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-07 | Initial build from card | 69e50253-932c-4682-b23b-fce52c9b5cdd |
+| v1 | 2026-06-18 | Initial build from card | e1e9dfb2-873c-4af0-a3df-2d6cce7a9869 |

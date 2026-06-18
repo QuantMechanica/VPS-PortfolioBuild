@@ -3,7 +3,7 @@
 ; ea_id:        11034
 ; ea_slug:      atc-reverse-atr
 ; ea_version:   v5.0
-; set_version:  s20260607-001
+; set_version:  s20260618-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-06-07
+; date:         2026-06-18
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000
