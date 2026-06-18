@@ -284,11 +284,11 @@ bool Strategy_SpreadTooWide()
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
       return true;
-   if(ask <= bid)
-      return false;
    if(strategy_max_spread_points <= 0)
       return false;
-   return ((ask - bid) > (double)strategy_max_spread_points * point);
+   if(ask > bid && (ask - bid) > (double)strategy_max_spread_points * point)
+      return true;
+   return false;
   }
 
 bool Strategy_PriorDayRangeAdequate()
