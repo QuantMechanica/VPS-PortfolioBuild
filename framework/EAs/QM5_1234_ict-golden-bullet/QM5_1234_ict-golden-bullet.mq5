@@ -12,7 +12,7 @@ input uint   qm_rng_seed                 = 42;
 input group "Risk"
 input double RISK_PERCENT                = 0.0;
 input double RISK_FIXED                  = 1000.0;
-input double PORTFOLIO_WEIGHT            = 0.50;
+input double PORTFOLIO_WEIGHT            = 1.0;
 
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
@@ -30,22 +30,30 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input ENUM_TIMEFRAMES strategy_signal_tf  = PERIOD_M5;
-input int    strategy_ny_utc_offset_hours = -4;
+input int    strategy_ny_entry_start_hhmm = 1300;
+input int    strategy_ny_entry_end_hhmm   = 1400;
+input int    strategy_ny_time_exit_hhmm   = 1455;
+input int    strategy_reference_start_hhmm = 1200;
+input int    strategy_reference_end_hhmm   = 1300;
 input int    strategy_sweep_buffer_points = 5;
 input int    strategy_stop_buffer_points  = 5;
-input int    strategy_min_stop_points     = 20;
+input int    strategy_min_stop_points     = 25;
 input int    strategy_atr_period_m5       = 14;
+input int    strategy_atr_period_h1       = 14;
 input double strategy_max_stop_atr_mult   = 1.50;
 input double strategy_min_reward_risk     = 1.50;
 input double strategy_take_profit_rr      = 2.00;
-input int    strategy_swing_lookback_bars = 12;
-input int    strategy_max_spread_points   = 0;
+input int    strategy_max_displacement_bars = 3;
+input double strategy_min_range_atr_h1_mult = 0.30;
+input double strategy_min_atr_m5_mult     = 0.50;
+input int    strategy_atr_median_days     = 20;
+input int    strategy_max_spread_points   = 35;
 input double strategy_max_spread_mult     = 2.50;
-input double strategy_min_atr_hour_mult   = 0.50;
+input int    strategy_spread_median_days  = 20;
 
 #define STRATEGY_SYMBOL_COUNT 12
 
-const string STRATEGY_SYMBOLS[12] =
+const string STRATEGY_SYMBOLS[STRATEGY_SYMBOL_COUNT] =
   {
    "EURUSD.DWX",
    "GBPUSD.DWX",
@@ -61,28 +69,27 @@ const string STRATEGY_SYMBOLS[12] =
    "UK100.DWX"
   };
 
-int      g_session_day = -1;
-double   g_buy_side_liquidity = 0.0;
-double   g_sell_side_liquidity = 0.0;
-bool     g_short_swept = false;
-bool     g_long_swept = false;
-double   g_short_sweep_high = 0.0;
-double   g_long_sweep_low = 0.0;
-int      g_short_sweep_bars = 0;
-int      g_long_sweep_bars = 0;
-bool     g_short_ordered = false;
-bool     g_long_ordered = false;
-datetime g_last_entry_bar = 0;
+int g_short_attempt_session_key = 0;
+int g_long_attempt_session_key = 0;
 
-datetime Strategy_BrokerToNY(const datetime broker_time)
+datetime Strategy_BrokerToNewYork(const datetime broker_time)
   {
-   return QM_BrokerToUTC(broker_time) + strategy_ny_utc_offset_hours * 3600;
+   const datetime utc = QM_BrokerToUTC(broker_time);
+   const int ny_offset_hours = QM_IsUSDSTUTC(utc) ? -4 : -5;
+   return utc + ny_offset_hours * 3600;
   }
 
-int Strategy_NYDateKey(const datetime broker_time)
+int Strategy_Hhmm(const datetime value)
   {
    MqlDateTime dt;
-   TimeToStruct(Strategy_BrokerToNY(broker_time), dt);
+   TimeToStruct(value, dt);
+   return dt.hour * 100 + dt.min;
+  }
+
+int Strategy_DateKey(const datetime value)
+  {
+   MqlDateTime dt;
+   TimeToStruct(value, dt);
    return dt.year * 10000 + dt.mon * 100 + dt.day;
   }
 
@@ -96,148 +103,12 @@ int Strategy_SymbolSlot()
    return -1;
   }
 
-bool Strategy_IsPMWindow(const datetime broker_time)
-  {
-   MqlDateTime ny;
-   TimeToStruct(Strategy_BrokerToNY(broker_time), ny);
-   return (ny.hour == 13);
-  }
-
-bool Strategy_IsCancelWindow(const datetime broker_time)
-  {
-   MqlDateTime ny;
-   TimeToStruct(Strategy_BrokerToNY(broker_time), ny);
-   return (ny.hour >= 14);
-  }
-
-bool Strategy_IsTimeExitWindow(const datetime broker_time)
-  {
-   MqlDateTime ny;
-   TimeToStruct(Strategy_BrokerToNY(broker_time), ny);
-   return (ny.hour > 14 || (ny.hour == 14 && ny.min >= 55));
-  }
-
-bool Strategy_CurrentSpread(double &spread_price, double &spread_points)
-  {
-   spread_price = 0.0;
-   spread_points = 0.0;
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(ask <= 0.0 || bid <= 0.0 || ask <= bid || point <= 0.0)
-      return false;
-
-   spread_price = ask - bid;
-   spread_points = spread_price / point;
-   return true;
-  }
-
-bool Strategy_QualityFiltersOk()
-  {
-   double spread_price = 0.0;
-   double spread_points = 0.0;
-   if(!Strategy_CurrentSpread(spread_price, spread_points))
-      return false;
-   if(strategy_max_spread_points > 0 && spread_points > (double)strategy_max_spread_points)
-      return false;
-
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   // perf-allowed: Strategy_QualityFiltersOk() is only called from EntrySignal after the framework new-bar gate.
-   const int copied = CopyRates(_Symbol, strategy_signal_tf, 1, 288 * 25, rates); // perf-allowed
-   if(copied < 288)
-      return false;
-
-   MqlDateTime now_ny;
-   TimeToStruct(Strategy_BrokerToNY(TimeCurrent()), now_ny);
-   double spread_samples[];
-   double atr_samples[];
-   ArrayResize(spread_samples, 0);
-   ArrayResize(atr_samples, 0);
-
-   for(int i = 0; i < copied; ++i)
-     {
-      MqlDateTime bar_ny;
-      TimeToStruct(Strategy_BrokerToNY(rates[i].time), bar_ny);
-      if(bar_ny.hour != now_ny.hour || rates[i].spread <= 0)
-         continue;
-
-      const int idx = ArraySize(spread_samples);
-      ArrayResize(spread_samples, idx + 1);
-      ArrayResize(atr_samples, idx + 1);
-      spread_samples[idx] = (double)rates[i].spread;
-      atr_samples[idx] = MathMax(0.0, rates[i].high - rates[i].low);
-     }
-
-   if(ArraySize(spread_samples) >= 10)
-     {
-      ArraySort(spread_samples);
-      const double median_spread = spread_samples[ArraySize(spread_samples) / 2];
-      if(median_spread > 0.0 && spread_points > strategy_max_spread_mult * median_spread)
-         return false;
-     }
-
-   if(ArraySize(atr_samples) >= 10)
-     {
-      ArraySort(atr_samples);
-      const double median_range = atr_samples[ArraySize(atr_samples) / 2];
-      const double atr_now = QM_ATR(_Symbol, strategy_signal_tf, MathMax(1, strategy_atr_period_m5), 1);
-      if(median_range > 0.0 && atr_now < strategy_min_atr_hour_mult * median_range)
-         return false;
-     }
-
-   return true;
-  }
-
-bool Strategy_OurPendingLimitType(const ENUM_ORDER_TYPE order_type)
-  {
-   return (order_type == ORDER_TYPE_BUY_LIMIT || order_type == ORDER_TYPE_SELL_LIMIT);
-  }
-
-bool Strategy_DeletePendingOrder(const ulong ticket, const string reason)
-  {
-   MqlTradeRequest request;
-   ZeroMemory(request);
-   request.action = TRADE_ACTION_REMOVE;
-   request.order = ticket;
-   request.symbol = _Symbol;
-   request.comment = reason;
-
-   MqlTradeResult result;
-   string error_class = BROKER_OTHER;
-   const bool ok = QM_TradeContextSend(request, result, error_class);
-   QM_LogEvent(ok ? QM_INFO : QM_WARN,
-               "PENDING_DELETE",
-               StringFormat("{\"ticket\":%I64u,\"reason\":\"%s\",\"ok\":%s,\"retcode\":%u,\"retcode_class\":\"%s\"}",
-                            ticket,
-                            QM_LoggerEscapeJson(reason),
-                            ok ? "true" : "false",
-                            result.retcode,
-                            QM_LoggerEscapeJson(error_class)));
-   return ok;
-  }
-
-void Strategy_DeleteOurPendingLimits(const string reason)
+bool Strategy_HasOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
-   for(int i = OrdersTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = OrderGetTicket(i);
-      if(ticket == 0 || !OrderSelect(ticket))
-         continue;
-      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
-         continue;
-      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
-         continue;
-      if(!Strategy_OurPendingLimitType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
-         continue;
-      Strategy_DeletePendingOrder(ticket, reason);
-     }
-  }
+   if(magic <= 0)
+      return false;
 
-bool Strategy_HasOurOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -248,12 +119,36 @@ bool Strategy_HasOurOpenPosition()
       if((int)PositionGetInteger(POSITION_MAGIC) == magic)
          return true;
      }
+
    return false;
   }
 
-bool Strategy_HasOurPendingLimit()
+bool Strategy_HasPendingOrder()
   {
    const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) == magic)
+         return true;
+     }
+
+   return false;
+  }
+
+void Strategy_CancelOwnPendingOrders(const string reason)
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return;
+
    for(int i = OrdersTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = OrderGetTicket(i);
@@ -263,125 +158,220 @@ bool Strategy_HasOurPendingLimit()
          continue;
       if((int)OrderGetInteger(ORDER_MAGIC) != magic)
          continue;
-      if(Strategy_OurPendingLimitType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
-         return true;
+
+      QM_TM_RemovePendingOrder(ticket, reason);
      }
-   return false;
   }
 
-void Strategy_ResetSession(const datetime broker_time)
+void Strategy_CancelInvalidPendingOrders()
   {
-   g_session_day = Strategy_NYDateKey(broker_time);
-   g_buy_side_liquidity = 0.0;
-   g_sell_side_liquidity = 0.0;
-   g_short_swept = false;
-   g_long_swept = false;
-   g_short_sweep_high = 0.0;
-   g_long_sweep_low = 0.0;
-   g_short_sweep_bars = 0;
-   g_long_sweep_bars = 0;
-   g_short_ordered = false;
-   g_long_ordered = false;
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return;
+
+   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1); // perf-allowed: close-side cancellation is evaluated once per framework new bar.
+   if(close_1 <= 0.0)
+      return;
+
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      const double sl = OrderGetDouble(ORDER_SL);
+      if(sl <= 0.0)
+         continue;
+      if((order_type == ORDER_TYPE_BUY_LIMIT && close_1 <= sl) ||
+         (order_type == ORDER_TYPE_SELL_LIMIT && close_1 >= sl))
+         QM_TM_RemovePendingOrder(ticket, "closed_beyond_stop_side");
+     }
   }
 
-bool Strategy_PrepareReferenceRange(const datetime broker_time)
+bool Strategy_SpreadOk()
   {
-   if(g_session_day != Strategy_NYDateKey(broker_time))
-      Strategy_ResetSession(broker_time);
-   if(g_buy_side_liquidity > 0.0 && g_sell_side_liquidity > 0.0)
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+      return false;
+
+   double spread_points = 0.0;
+   if(ask > bid)
+      spread_points = (ask - bid) / point;
+
+   if(strategy_max_spread_points > 0 && spread_points > (double)strategy_max_spread_points)
+      return false;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, strategy_signal_tf, 1, 288 * MathMax(1, strategy_spread_median_days + 2), rates); // perf-allowed: bounded same-hour spread median, called only after framework new-bar gate.
+   if(copied < 288)
       return true;
 
-   const double prev_h1_high = iHigh(_Symbol, PERIOD_H1, 1);
-   const double prev_h1_low = iLow(_Symbol, PERIOD_H1, 1);
+   const datetime ny_now = Strategy_BrokerToNewYork(TimeCurrent());
+   MqlDateTime now_dt;
+   TimeToStruct(ny_now, now_dt);
+
+   double samples[32];
+   int count = 0;
+   for(int i = 0; i < copied && count < 32; ++i)
+     {
+      if(rates[i].spread > 0)
+        {
+         const datetime ny_bar = Strategy_BrokerToNewYork(rates[i].time);
+         MqlDateTime bar_dt;
+         TimeToStruct(ny_bar, bar_dt);
+         if(bar_dt.hour != now_dt.hour)
+            continue;
+         samples[count] = (double)rates[i].spread;
+         ++count;
+        }
+     }
+
+   if(count < 10)
+      return true;
+
+   for(int i = 0; i < count - 1; ++i)
+     {
+      for(int j = i + 1; j < count; ++j)
+        {
+         if(samples[j] < samples[i])
+           {
+            const double tmp = samples[i];
+            samples[i] = samples[j];
+            samples[j] = tmp;
+           }
+        }
+     }
+
+   const double median_spread = samples[count / 2];
+   if(median_spread > 0.0 && spread_points > strategy_max_spread_mult * median_spread)
+      return false;
+   return true;
+  }
+
+bool Strategy_BuildReferenceRange(datetime &ny_now,
+                                  double &buy_side_liquidity,
+                                  double &sell_side_liquidity,
+                                  double &range_high,
+                                  double &range_low)
+  {
+   ny_now = Strategy_BrokerToNewYork(TimeCurrent());
+   const int today_key = Strategy_DateKey(ny_now);
+
+   buy_side_liquidity = -DBL_MAX;
+   sell_side_liquidity = DBL_MAX;
+   range_high = -DBL_MAX;
+   range_low = DBL_MAX;
+
+   const double prev_h1_high = iHigh(_Symbol, PERIOD_H1, 1); // perf-allowed: card requires previous completed H1 liquidity candle.
+   const double prev_h1_low = iLow(_Symbol, PERIOD_H1, 1); // perf-allowed: card requires previous completed H1 liquidity candle.
    if(prev_h1_high <= 0.0 || prev_h1_low <= 0.0 || prev_h1_high <= prev_h1_low)
       return false;
 
-   double hour_high = -DBL_MAX;
-   double hour_low = DBL_MAX;
-   for(int i = 1; i <= 48; ++i)
+   for(int shift = 1; shift <= 288; ++shift)
      {
-      const datetime bt = iTime(_Symbol, strategy_signal_tf, i);
-      if(bt <= 0)
-         continue;
-      MqlDateTime ny;
-      TimeToStruct(Strategy_BrokerToNY(bt), ny);
-      if(ny.hour != 12)
+      const datetime bar_time = iTime(_Symbol, strategy_signal_tf, shift); // perf-allowed: finite M5 12:00-12:59 NY structural range.
+      if(bar_time <= 0)
+         break;
+
+      const datetime ny_bar = Strategy_BrokerToNewYork(bar_time);
+      if(Strategy_DateKey(ny_bar) != today_key)
          continue;
 
-      const double high_i = iHigh(_Symbol, strategy_signal_tf, i);
-      const double low_i = iLow(_Symbol, strategy_signal_tf, i);
-      if(high_i > hour_high)
-         hour_high = high_i;
-      if(low_i < hour_low)
-         hour_low = low_i;
+      const int hhmm = Strategy_Hhmm(ny_bar);
+      if(hhmm >= strategy_reference_start_hhmm && hhmm < strategy_reference_end_hhmm)
+        {
+         const double high_i = iHigh(_Symbol, strategy_signal_tf, shift); // perf-allowed: finite M5 12:00-12:59 NY structural range.
+         const double low_i = iLow(_Symbol, strategy_signal_tf, shift); // perf-allowed: finite M5 12:00-12:59 NY structural range.
+         if(high_i <= 0.0 || low_i <= 0.0 || high_i < low_i)
+            return false;
+         if(high_i > range_high)
+            range_high = high_i;
+         if(low_i < range_low)
+            range_low = low_i;
+        }
      }
 
-   if(hour_high <= 0.0 || hour_low <= 0.0 || hour_high <= hour_low)
+   if(range_high <= 0.0 || range_low <= 0.0 || range_high <= range_low)
       return false;
 
-   g_buy_side_liquidity = MathMax(prev_h1_high, hour_high);
-   g_sell_side_liquidity = MathMin(prev_h1_low, hour_low);
-   return (g_buy_side_liquidity > g_sell_side_liquidity);
+   buy_side_liquidity = MathMax(prev_h1_high, range_high);
+   sell_side_liquidity = MathMin(prev_h1_low, range_low);
+   return (buy_side_liquidity > sell_side_liquidity);
   }
 
-bool Strategy_SessionRangeOk()
+bool Strategy_SessionRangeQualityOk(const double range_high, const double range_low)
   {
-   double high_12 = -DBL_MAX;
-   double low_12 = DBL_MAX;
-   for(int i = 1; i <= 48; ++i)
-     {
-      const datetime bt = iTime(_Symbol, strategy_signal_tf, i);
-      if(bt <= 0)
-         continue;
-      MqlDateTime ny;
-      TimeToStruct(Strategy_BrokerToNY(bt), ny);
-      if(ny.hour != 12)
-         continue;
-      high_12 = MathMax(high_12, iHigh(_Symbol, strategy_signal_tf, i));
-      low_12 = MathMin(low_12, iLow(_Symbol, strategy_signal_tf, i));
-     }
-
-   const double atr_h1 = QM_ATR(_Symbol, PERIOD_H1, MathMax(1, strategy_atr_period_m5), 1);
-   return (high_12 > low_12 && atr_h1 > 0.0 && (high_12 - low_12) >= 0.30 * atr_h1);
+   const double atr_h1 = QM_ATR(_Symbol, PERIOD_H1, MathMax(1, strategy_atr_period_h1), 1);
+   if(atr_h1 <= 0.0)
+      return false;
+   return ((range_high - range_low) >= strategy_min_range_atr_h1_mult * atr_h1);
   }
 
-double Strategy_NearestSwingTarget(const bool want_high, const double entry)
+bool Strategy_AtrQualityOk()
   {
-   double target = 0.0;
-   for(int i = 1; i <= MathMax(2, strategy_swing_lookback_bars); ++i)
-     {
-      const datetime bt = iTime(_Symbol, strategy_signal_tf, i);
-      if(bt <= 0)
-         continue;
-      MqlDateTime ny;
-      TimeToStruct(Strategy_BrokerToNY(bt), ny);
-      if(ny.hour != 12)
-         continue;
+   const int period = MathMax(1, strategy_atr_period_m5);
+   const double current_atr = QM_ATR(_Symbol, strategy_signal_tf, period, 1);
+   if(current_atr <= 0.0)
+      return false;
 
-      if(want_high)
+   double samples[20];
+   int count = 0;
+   const int days = MathMin(20, MathMax(1, strategy_atr_median_days));
+   for(int day = 1; day <= days; ++day)
+     {
+      const int shift = day * 288 + 1;
+      const double sample = QM_ATR(_Symbol, strategy_signal_tf, period, shift);
+      if(sample > 0.0 && count < 20)
         {
-         const double h = iHigh(_Symbol, strategy_signal_tf, i);
-         if(h > entry && (target <= 0.0 || h < target))
-            target = h;
-        }
-      else
-        {
-         const double l = iLow(_Symbol, strategy_signal_tf, i);
-         if(l < entry && (target <= 0.0 || l > target))
-            target = l;
+         samples[count] = sample;
+         ++count;
         }
      }
-   return target;
+
+   if(count < MathMin(5, days))
+      return true;
+
+   for(int i = 0; i < count - 1; ++i)
+     {
+      for(int j = i + 1; j < count; ++j)
+        {
+         if(samples[j] < samples[i])
+           {
+            const double tmp = samples[i];
+            samples[i] = samples[j];
+            samples[j] = tmp;
+           }
+        }
+     }
+
+   const double median_atr = samples[count / 2];
+   return (median_atr <= 0.0 || current_atr >= strategy_min_atr_m5_mult * median_atr);
   }
 
-bool Strategy_StopDistanceOk(const double entry, const double sl)
+bool Strategy_StopDistanceOk(const QM_OrderType side, const double entry, const double sl)
   {
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(point <= 0.0 || entry <= 0.0 || sl <= 0.0)
       return false;
+   if(QM_OrderTypeIsBuy(side) && sl >= entry)
+      return false;
+   if(!QM_OrderTypeIsBuy(side) && sl <= entry)
+      return false;
 
    const double stop_points = MathAbs(entry - sl) / point;
    if(stop_points < (double)MathMax(1, strategy_min_stop_points))
+      return false;
+
+   const int stops_level = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   if(stops_level > 0 && stop_points <= (double)stops_level)
       return false;
 
    const double atr = QM_ATR(_Symbol, strategy_signal_tf, MathMax(1, strategy_atr_period_m5), 1);
@@ -391,117 +381,149 @@ bool Strategy_StopDistanceOk(const double entry, const double sl)
    return (MathAbs(entry - sl) <= strategy_max_stop_atr_mult * atr);
   }
 
-void Strategy_UpdateSweepState()
+bool Strategy_FindOpposingSwingTarget(const bool long_side, const double entry, const double sl, double &target)
   {
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0)
-      return;
+   target = 0.0;
+   if(entry <= 0.0 || sl <= 0.0)
+      return false;
 
-   const double high_1 = iHigh(_Symbol, strategy_signal_tf, 1);
-   const double low_1 = iLow(_Symbol, strategy_signal_tf, 1);
-   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1);
-   const double sweep_buffer = MathMax(0, strategy_sweep_buffer_points) * point;
-
-   if(!g_short_ordered)
+   for(int shift = 1; shift <= 288; ++shift)
      {
-      if(!g_short_swept && high_1 >= g_buy_side_liquidity + sweep_buffer)
+      const datetime bar_time = iTime(_Symbol, strategy_signal_tf, shift); // perf-allowed: finite M5 12:00-12:59 NY swing-target search.
+      if(bar_time <= 0)
+         break;
+
+      const int hhmm = Strategy_Hhmm(Strategy_BrokerToNewYork(bar_time));
+      if(hhmm < strategy_reference_start_hhmm || hhmm >= strategy_reference_end_hhmm)
+         continue;
+
+      if(long_side)
         {
-         g_short_swept = true;
-         g_short_sweep_high = high_1;
-         g_short_sweep_bars = 0;
+         const double high_i = iHigh(_Symbol, strategy_signal_tf, shift); // perf-allowed: finite M5 12:00-12:59 NY swing-target search.
+         if(high_i > entry && (target <= 0.0 || high_i < target))
+            target = high_i;
         }
-      else if(g_short_swept)
+      else
         {
-         ++g_short_sweep_bars;
-         g_short_sweep_high = MathMax(g_short_sweep_high, high_1);
-         if(g_short_sweep_bars > 3 || close_1 > g_buy_side_liquidity + sweep_buffer)
-            g_short_swept = false;
+         const double low_i = iLow(_Symbol, strategy_signal_tf, shift); // perf-allowed: finite M5 12:00-12:59 NY swing-target search.
+         if(low_i < entry && (target <= 0.0 || low_i > target))
+            target = low_i;
         }
      }
 
-   if(!g_long_ordered)
-     {
-      if(!g_long_swept && low_1 <= g_sell_side_liquidity - sweep_buffer)
-        {
-         g_long_swept = true;
-         g_long_sweep_low = low_1;
-         g_long_sweep_bars = 0;
-        }
-      else if(g_long_swept)
-        {
-         ++g_long_sweep_bars;
-         g_long_sweep_low = MathMin(g_long_sweep_low, low_1);
-         if(g_long_sweep_bars > 3 || close_1 < g_sell_side_liquidity - sweep_buffer)
-            g_long_swept = false;
-        }
-     }
-  }
-
-bool Strategy_BuildShortLimit(QM_EntryRequest &req)
-  {
-   if(!g_short_swept || g_short_ordered)
-      return false;
-   if(iClose(_Symbol, strategy_signal_tf, 1) >= g_buy_side_liquidity)
+   if(target <= 0.0)
       return false;
 
-   const double fvg_bottom = iHigh(_Symbol, strategy_signal_tf, 3);
-   const double fvg_top = iLow(_Symbol, strategy_signal_tf, 1);
-   if(fvg_bottom <= 0.0 || fvg_top <= 0.0 || fvg_bottom >= fvg_top)
+   const double reward = long_side ? (target - entry) : (entry - target);
+   const double risk = MathAbs(entry - sl);
+   if(risk <= 0.0 || reward / risk < strategy_min_reward_risk)
       return false;
 
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const double entry = NormalizeDouble((fvg_bottom + fvg_top) * 0.5, _Digits);
-   const double sl = NormalizeDouble(MathMax(g_short_sweep_high, fvg_top) + MathMax(0, strategy_stop_buffer_points) * point, _Digits);
-   if(sl <= entry || !Strategy_StopDistanceOk(entry, sl))
-      return false;
-
-   double tp = Strategy_NearestSwingTarget(false, entry);
-   const double risk = sl - entry;
-   if(tp <= 0.0 || (entry - tp) / risk < strategy_min_reward_risk)
-      tp = entry - strategy_take_profit_rr * risk;
-
-   req.type = QM_SELL_LIMIT;
-   req.price = entry;
-   req.sl = sl;
-   req.tp = NormalizeDouble(tp, _Digits);
-   req.reason = "ict_golden_bullet_short";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 3600;
-   g_short_ordered = true;
+   target = NormalizeDouble(target, _Digits);
    return true;
   }
 
-bool Strategy_BuildLongLimit(QM_EntryRequest &req)
+bool Strategy_BuildLongSetup(QM_EntryRequest &req,
+                             const int session_key,
+                             const double sell_side_liquidity)
   {
-   if(!g_long_swept || g_long_ordered)
-      return false;
-   if(iClose(_Symbol, strategy_signal_tf, 1) <= g_sell_side_liquidity)
-      return false;
-
-   const double fvg_bottom = iHigh(_Symbol, strategy_signal_tf, 1);
-   const double fvg_top = iLow(_Symbol, strategy_signal_tf, 3);
-   if(fvg_bottom <= 0.0 || fvg_top <= 0.0 || fvg_bottom >= fvg_top)
+   if(g_long_attempt_session_key == session_key)
       return false;
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const double entry = NormalizeDouble((fvg_bottom + fvg_top) * 0.5, _Digits);
-   const double sl = NormalizeDouble(MathMin(g_long_sweep_low, fvg_bottom) - MathMax(0, strategy_stop_buffer_points) * point, _Digits);
-   if(sl >= entry || !Strategy_StopDistanceOk(entry, sl))
+   if(point <= 0.0)
       return false;
 
-   double tp = Strategy_NearestSwingTarget(true, entry);
-   const double risk = entry - sl;
-   if(tp <= 0.0 || (tp - entry) / risk < strategy_min_reward_risk)
-      tp = entry + strategy_take_profit_rr * risk;
+   const int max_bars = MathMax(1, strategy_max_displacement_bars);
+   double sweep_low = DBL_MAX;
+   bool swept = false;
+   for(int shift = 1; shift <= max_bars; ++shift)
+     {
+      const double low_i = iLow(_Symbol, strategy_signal_tf, shift); // perf-allowed: displacement-leg sweep scan bounded by MaxDisplacementBars.
+      if(low_i > 0.0 && low_i <= sell_side_liquidity - (double)strategy_sweep_buffer_points * point)
+        {
+         swept = true;
+         if(low_i < sweep_low)
+            sweep_low = low_i;
+        }
+     }
+   if(!swept || iClose(_Symbol, strategy_signal_tf, 1) <= sell_side_liquidity) // perf-allowed: closed-bar return above sell-side liquidity.
+      return false;
+
+   const double fvg_low = iHigh(_Symbol, strategy_signal_tf, 1); // perf-allowed: bullish FVG lower edge from latest closed bar.
+   const double fvg_high = iLow(_Symbol, strategy_signal_tf, 3); // perf-allowed: bullish FVG upper edge from displacement leg.
+   if(fvg_low <= 0.0 || fvg_high <= 0.0 || fvg_low >= fvg_high)
+      return false;
+
+   const double entry = NormalizeDouble((fvg_low + fvg_high) * 0.5, _Digits);
+   const double sl = NormalizeDouble(MathMin(sweep_low, fvg_low) - (double)strategy_stop_buffer_points * point, _Digits);
+   if(!Strategy_StopDistanceOk(QM_BUY_LIMIT, entry, sl))
+      return false;
+
+   double tp = 0.0;
+   if(!Strategy_FindOpposingSwingTarget(true, entry, sl, tp))
+      tp = NormalizeDouble(entry + MathAbs(entry - sl) * strategy_take_profit_rr, _Digits);
 
    req.type = QM_BUY_LIMIT;
    req.price = entry;
    req.sl = sl;
-   req.tp = NormalizeDouble(tp, _Digits);
+   req.tp = tp;
    req.reason = "ict_golden_bullet_long";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 3600;
-   g_long_ordered = true;
+   g_long_attempt_session_key = session_key;
+   return true;
+  }
+
+bool Strategy_BuildShortSetup(QM_EntryRequest &req,
+                              const int session_key,
+                              const double buy_side_liquidity)
+  {
+   if(g_short_attempt_session_key == session_key)
+      return false;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
+      return false;
+
+   const int max_bars = MathMax(1, strategy_max_displacement_bars);
+   double sweep_high = -DBL_MAX;
+   bool swept = false;
+   for(int shift = 1; shift <= max_bars; ++shift)
+     {
+      const double high_i = iHigh(_Symbol, strategy_signal_tf, shift); // perf-allowed: displacement-leg sweep scan bounded by MaxDisplacementBars.
+      if(high_i > 0.0 && high_i >= buy_side_liquidity + (double)strategy_sweep_buffer_points * point)
+        {
+         swept = true;
+         if(high_i > sweep_high)
+            sweep_high = high_i;
+        }
+     }
+   if(!swept || iClose(_Symbol, strategy_signal_tf, 1) >= buy_side_liquidity) // perf-allowed: closed-bar return below buy-side liquidity.
+      return false;
+
+   const double fvg_low = iHigh(_Symbol, strategy_signal_tf, 3); // perf-allowed: bearish FVG lower edge from displacement leg.
+   const double fvg_high = iLow(_Symbol, strategy_signal_tf, 1); // perf-allowed: bearish FVG upper edge from latest closed bar.
+   if(fvg_low <= 0.0 || fvg_high <= 0.0 || fvg_low >= fvg_high)
+      return false;
+
+   const double entry = NormalizeDouble((fvg_low + fvg_high) * 0.5, _Digits);
+   const double sl = NormalizeDouble(MathMax(sweep_high, fvg_high) + (double)strategy_stop_buffer_points * point, _Digits);
+   if(!Strategy_StopDistanceOk(QM_SELL_LIMIT, entry, sl))
+      return false;
+
+   double tp = 0.0;
+   if(!Strategy_FindOpposingSwingTarget(false, entry, sl, tp))
+      tp = NormalizeDouble(entry - MathAbs(sl - entry) * strategy_take_profit_rr, _Digits);
+
+   req.type = QM_SELL_LIMIT;
+   req.price = entry;
+   req.sl = sl;
+   req.tp = tp;
+   req.reason = "ict_golden_bullet_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 3600;
+   g_short_attempt_session_key = session_key;
    return true;
   }
 
@@ -518,8 +540,10 @@ bool Strategy_NoTradeFilter()
       return true;
    if(strategy_max_stop_atr_mult <= 0.0 || strategy_take_profit_rr <= 0.0)
       return true;
-   if(Bars(_Symbol, strategy_signal_tf) < 320)
-      return true;
+
+   const datetime ny_now = Strategy_BrokerToNewYork(TimeCurrent());
+   if(Strategy_Hhmm(ny_now) >= strategy_ny_entry_end_hhmm)
+      Strategy_CancelOwnPendingOrders("ny_pm_window_closed");
 
    return false;
   }
@@ -534,65 +558,42 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const datetime bar_time = iTime(_Symbol, strategy_signal_tf, 1);
-   if(bar_time <= 0 || bar_time == g_last_entry_bar)
-      return false;
-   g_last_entry_bar = bar_time;
+   Strategy_CancelInvalidPendingOrders();
 
-   if(Strategy_IsCancelWindow(TimeCurrent()))
-      Strategy_DeleteOurPendingLimits("ny_pm_window_closed");
-   if(!Strategy_IsPMWindow(bar_time))
-      return false;
-   if(Strategy_HasOurOpenPosition() || Strategy_HasOurPendingLimit())
-      return false;
-   if(!Strategy_PrepareReferenceRange(bar_time))
-      return false;
-   if(!Strategy_SessionRangeOk())
-      return false;
-   if(!Strategy_QualityFiltersOk())
+   datetime ny_now = 0;
+   double buy_side_liq = 0.0;
+   double sell_side_liq = 0.0;
+   double range_high = 0.0;
+   double range_low = 0.0;
+   if(!Strategy_BuildReferenceRange(ny_now, buy_side_liq, sell_side_liq, range_high, range_low))
       return false;
 
-   Strategy_UpdateSweepState();
+   const int hhmm = Strategy_Hhmm(ny_now);
+   if(hhmm < strategy_ny_entry_start_hhmm || hhmm >= strategy_ny_entry_end_hhmm)
+      return false;
 
-   if(Strategy_BuildShortLimit(req))
-      return true;
-   if(Strategy_BuildLongLimit(req))
-      return true;
+   const int session_key = Strategy_DateKey(ny_now);
+   if(Strategy_HasOpenPosition() || Strategy_HasPendingOrder())
+      return false;
+   if(!Strategy_SpreadOk() || !Strategy_SessionRangeQualityOk(range_high, range_low) || !Strategy_AtrQualityOk())
+      return false;
 
-   return false;
+   bool signal = Strategy_BuildShortSetup(req, session_key, buy_side_liq);
+   if(!signal)
+      signal = Strategy_BuildLongSetup(req, session_key, sell_side_liq);
+
+   return signal;
   }
 
 void Strategy_ManageOpenPosition()
   {
-   if(Strategy_IsCancelWindow(TimeCurrent()))
-      Strategy_DeleteOurPendingLimits("ny_pm_window_closed");
-
-   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1);
-   const int magic = QM_FrameworkMagic();
-   for(int i = OrdersTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = OrderGetTicket(i);
-      if(ticket == 0 || !OrderSelect(ticket))
-         continue;
-      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
-         continue;
-      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
-         continue;
-
-      const ENUM_ORDER_TYPE type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
-      if(!Strategy_OurPendingLimitType(type))
-         continue;
-
-      const double sl = OrderGetDouble(ORDER_SL);
-      if((type == ORDER_TYPE_BUY_LIMIT && close_1 < sl) ||
-         (type == ORDER_TYPE_SELL_LIMIT && close_1 > sl))
-         Strategy_DeletePendingOrder(ticket, "closed_beyond_stop_side");
-     }
+   // Card specifies no trailing, break-even, scale-in, or partial-close logic.
   }
 
 bool Strategy_ExitSignal()
   {
-   return Strategy_IsTimeExitWindow(TimeCurrent());
+   const datetime ny_now = Strategy_BrokerToNewYork(TimeCurrent());
+   return (Strategy_Hhmm(ny_now) >= strategy_ny_time_exit_hhmm);
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
