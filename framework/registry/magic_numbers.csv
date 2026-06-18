@@ -1,4 +1,14 @@
 ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
+1641,aa-qend-mom-season,0,NDX.DWX,16410000,2026-06-18,Development,active
+1641,aa-qend-mom-season,1,WS30.DWX,16410001,2026-06-18,Development,active
+1641,aa-qend-mom-season,2,SP500.DWX,16410002,2026-06-18,Development,active
+1641,aa-qend-mom-season,3,GDAXI.DWX,16410003,2026-06-18,Development,active
+1641,aa-qend-mom-season,4,UK100.DWX,16410004,2026-06-18,Development,active
+1644,aa-sector-xmom-third,0,SP500.DWX,16440000,2026-06-18,Development,active
+1644,aa-sector-xmom-third,1,NDX.DWX,16440001,2026-06-18,Development,active
+1644,aa-sector-xmom-third,2,WS30.DWX,16440002,2026-06-18,Development,active
+1644,aa-sector-xmom-third,3,GDAXI.DWX,16440003,2026-06-18,Development,active
+1644,aa-sector-xmom-third,4,UK100.DWX,16440004,2026-06-18,Development,active
 12395,country-pairs,0,SP500.DWX,123950000,2026-06-18,Development,active
 12395,country-pairs,1,NDX.DWX,123950001,2026-06-18,Development,active
 12395,country-pairs,2,WS30.DWX,123950002,2026-06-18,Development,active
