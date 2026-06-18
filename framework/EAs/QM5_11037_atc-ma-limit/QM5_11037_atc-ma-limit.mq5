@@ -63,6 +63,7 @@ input group "Strategy"
 input int    strategy_fast_ma_period      = 13;    // fast MA period (close)
 input int    strategy_slow_ma_period      = 55;    // slow MA period (close)
 input int    strategy_slope_lookback      = 5;     // MA-slope lookback (bars)
+input int    strategy_ma_method           = 1;     // 0=SMA, 1=EMA
 input int    strategy_atr_period          = 14;    // ATR period (offset / stop)
 input double strategy_limit_offset_atr    = 0.25;  // pullback limit offset = mult * ATR
 input double strategy_sl_atr_mult         = 1.5;   // stop distance = mult * ATR from limit
@@ -71,6 +72,8 @@ input int    strategy_pending_expiry_bars = 6;     // cancel unfilled pending af
 input double strategy_adx_min             = 0.0;   // optional ADX floor (0 = disabled)
 input int    strategy_adx_period          = 14;    // ADX period (when filter enabled)
 input double strategy_spread_pct_of_stop  = 15.0;  // skip if spread > this % of stop distance
+input int    strategy_session_start_hour  = 7;     // broker hour, inclusive
+input int    strategy_session_end_hour    = 22;    // broker hour, exclusive
 
 // -----------------------------------------------------------------------------
 // Helpers (EA-local, bespoke pending-order state — framework has no pending
@@ -78,15 +81,39 @@ input double strategy_spread_pct_of_stop  = 15.0;  // skip if spread > this % of
 // -----------------------------------------------------------------------------
 
 // Short-term MA trend STATE on closed bars: +1 bullish, -1 bearish, 0 none.
+double Strategy_MA(const int period, const int shift)
+  {
+   if(strategy_ma_method == 0)
+      return QM_SMA(_Symbol, _Period, period, shift);
+   return QM_EMA(_Symbol, _Period, period, shift);
+  }
+
+bool Strategy_IsLiquidSession(const datetime broker_time)
+  {
+   if(strategy_session_start_hour == strategy_session_end_hour)
+      return true;
+
+   MqlDateTime dt;
+   TimeToStruct(broker_time, dt);
+   const int start_h = (strategy_session_start_hour < 0) ? 0 :
+                       ((strategy_session_start_hour > 23) ? 23 : strategy_session_start_hour);
+   const int end_h = (strategy_session_end_hour < 0) ? 0 :
+                     ((strategy_session_end_hour > 24) ? 24 : strategy_session_end_hour);
+
+   if(start_h < end_h)
+      return (dt.hour >= start_h && dt.hour < end_h);
+   return (dt.hour >= start_h || dt.hour < end_h);
+  }
+
 int Strategy_TrendState()
   {
-   const double fast1 = QM_SMA(_Symbol, _Period, strategy_fast_ma_period, 1);
-   const double slow1 = QM_SMA(_Symbol, _Period, strategy_slow_ma_period, 1);
+   const double fast1 = Strategy_MA(strategy_fast_ma_period, 1);
+   const double slow1 = Strategy_MA(strategy_slow_ma_period, 1);
    if(fast1 <= 0.0 || slow1 <= 0.0)
       return 0;
 
    const int slope_shift = 1 + ((strategy_slope_lookback > 0) ? strategy_slope_lookback : 1);
-   const double fast_prev = QM_SMA(_Symbol, _Period, strategy_fast_ma_period, slope_shift);
+   const double fast_prev = Strategy_MA(strategy_fast_ma_period, slope_shift);
    if(fast_prev <= 0.0)
       return 0;
    const double slope = fast1 - fast_prev;
@@ -128,9 +155,14 @@ void Strategy_RemoveOwnPending(const int magic)
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only; fail-open on .DWX zero spread.
+// No Trade Filter (time, spread, news): central news runs before this hook,
+// broker-hour session blocks illiquid hours, and spread fails open on .DWX zero
+// modeled spread.
 bool Strategy_NoTradeFilter()
   {
+   if(!Strategy_IsLiquidSession(TimeCurrent()))
+      return true;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
@@ -152,10 +184,18 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
-// Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate). Places /
-// refreshes / cancels the pending limit order once per closed bar.
+// Trade Entry: caller guarantees QM_IsNewBar() == true (closed-bar gate).
+// Places / refreshes / cancels the pending limit order once per closed bar.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY_LIMIT;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    const int magic = QM_FrameworkMagic();
 
    // One active position per symbol/magic: while filled, keep no pending.
@@ -212,6 +252,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl                 = sl;
       req.tp                 = tp;
       req.reason             = "atc_ma_limit_buy";
+      req.symbol_slot        = qm_magic_slot_offset;
       req.expiration_seconds = expiry_seconds;
       return true;
      }
@@ -232,16 +273,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl                 = sl;
    req.tp                 = tp;
    req.reason             = "atc_ma_limit_sell";
+   req.symbol_slot        = qm_magic_slot_offset;
    req.expiration_seconds = expiry_seconds;
    return true;
   }
 
-// Fixed ATR stop/target carry the position; no active trade management.
+// Trade Management: fixed ATR stop/target carry the position; no active
+// trailing or partial close is enabled in the P2 baseline.
 void Strategy_ManageOpenPosition()
   {
   }
 
-// Defensive exit: opposite MA trend STATE closes the open position.
+// Trade Close: opposite MA trend STATE closes the open position.
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
@@ -271,7 +314,7 @@ bool Strategy_ExitSignal()
    return false;
   }
 
-// Defer to the central news filter.
+// News Filter Hook: defer to the central news filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;

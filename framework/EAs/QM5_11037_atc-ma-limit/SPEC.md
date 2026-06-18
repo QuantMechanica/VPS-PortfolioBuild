@@ -4,15 +4,16 @@
 **Slug:** `atc-ma-limit`
 **Source:** `9441393d-5ffc-5b43-87be-bd532110f204` (Boris Odintsov, MQL5 Articles 532)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-17
+**Last revised:** 2026-06-18
 
 ---
 
 ## 1. Strategy Logic
 
 Short-term moving-average trend-following with dynamically-refreshed pullback
-limit-order entries. On each closed M5 bar the EA computes a fast SMA and a slow
-SMA on close and the fast-MA slope over a lookback window. The trend is bullish
+limit-order entries. On each closed M5 bar the EA computes a fast moving average
+and a slow moving average on close, using either EMA or SMA, and measures the
+fast-MA slope over a lookback window. The trend is bullish
 when fast > slow AND the fast-MA slope is positive, bearish when fast < slow AND
 the slope is negative. While bullish and flat the EA places (and once per bar
 refreshes) a BUY LIMIT at `Bid - limit_offset_atr * ATR` below market; while
@@ -22,8 +23,8 @@ new one placed), auto-expires after `pending_expiry_bars`, and is cancelled when
 the trend flips or disappears. A filled position carries a fixed stop at
 `sl_atr_mult * ATR` from the limit price and a take-profit at `tp_rr ×` the stop
 distance. The position is closed early if the MA trend turns to the opposite
-direction. An optional ADX floor (default disabled) suppresses entries in flat
-regimes.
+direction. A broker-time session gate keeps entries inside liquid hours, and an
+optional ADX floor (default disabled) suppresses entries in flat regimes.
 
 ---
 
@@ -31,9 +32,10 @@ regimes.
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_fast_ma_period` | 13 | 8-21 | Fast SMA period (close) |
-| `strategy_slow_ma_period` | 55 | 34-89 | Slow SMA period (close) |
+| `strategy_fast_ma_period` | 13 | 8-21 | Fast MA period (close) |
+| `strategy_slow_ma_period` | 55 | 34-89 | Slow MA period (close) |
 | `strategy_slope_lookback` | 5 | 3-8 | Bars back used to measure fast-MA slope |
+| `strategy_ma_method` | 1 | 0-1 | MA method: 0=SMA, 1=EMA |
 | `strategy_atr_period` | 14 | 7-21 | ATR period (limit offset and stop) |
 | `strategy_limit_offset_atr` | 0.25 | 0.15-0.40 | Pullback limit offset = mult × ATR |
 | `strategy_sl_atr_mult` | 1.5 | 1.0-2.0 | Stop distance = mult × ATR from limit price |
@@ -42,6 +44,8 @@ regimes.
 | `strategy_adx_min` | 0.0 | 0 / 18-22 | Optional ADX floor (0 disables the filter) |
 | `strategy_adx_period` | 14 | 7-21 | ADX period when the filter is enabled |
 | `strategy_spread_pct_of_stop` | 15.0 | 5-30 | Skip if spread > this % of stop distance (fail-open) |
+| `strategy_session_start_hour` | 7 | 0-23 | Broker-time session start hour, inclusive |
+| `strategy_session_end_hour` | 22 | 0-24 | Broker-time session end hour, exclusive |
 
 ---
 
@@ -109,3 +113,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-17 | Initial build from card | board-advisor build |
+| v2 | 2026-06-18 | Q01 build task refresh | 09d67821-eeea-4610-bc17-be03675f6c6f |
