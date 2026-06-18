@@ -127,6 +127,21 @@ datetime BrokerDayStart(const datetime broker_t)
    return StructToTime(dt);
   }
 
+datetime PreviousTradingDayStart(const datetime today_start)
+  {
+   datetime d = today_start - 86400;
+   for(int i = 0; i < 7; ++i)
+     {
+      MqlDateTime dt;
+      ZeroMemory(dt);
+      TimeToStruct(d, dt);
+      if(dt.day_of_week >= 1 && dt.day_of_week <= 5)
+         return BrokerDayStart(d);
+      d -= 86400;
+     }
+   return today_start - 86400;
+  }
+
 // Build the prior broker-day market profile from this symbol's own M30 bars.
 // Returns true and fills out_* on success. Bounded, deterministic, closed-bar.
 bool BuildPriorProfile(const datetime today_start,
@@ -135,9 +150,9 @@ bool BuildPriorProfile(const datetime today_start,
   {
    out_vah = out_val = out_poc = out_width = 0.0;
 
-   // Prior broker-day window: [today_start - 1 day, today_start).
-   const datetime prior_start = today_start - 86400;
-   const datetime prior_end   = today_start; // exclusive
+   // Prior broker trading-day window: [prior_start, prior_start + 1 day).
+   const datetime prior_start = PreviousTradingDayStart(today_start);
+   const datetime prior_end   = prior_start + 86400; // exclusive
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(point <= 0.0)
@@ -148,7 +163,7 @@ bool BuildPriorProfile(const datetime today_start,
 
    // First pass over prior-day M30 bars: find price range + total volume.
    // perf-allowed: bespoke market-profile build, gated to once per broker-day.
-   const int total_bars = Bars(_Symbol, PERIOD_M30);
+   const int total_bars = Bars(_Symbol, PERIOD_M30); // perf-allowed
    if(total_bars <= 0)
       return false;
 
@@ -391,6 +406,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
+   AdvanceState_OnNewBar();
+
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
    if(!g_profile_valid)
@@ -407,9 +424,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // Last closed M30 bar OHLC (perf-allowed single-bar reads).
-   const double c1 = iClose(_Symbol, PERIOD_M30, 1);
-   const double h1 = iHigh(_Symbol, PERIOD_M30, 1);
-   const double l1 = iLow(_Symbol, PERIOD_M30, 1);
+   const double c1 = iClose(_Symbol, PERIOD_M30, 1); // perf-allowed
+   const double h1 = iHigh(_Symbol, PERIOD_M30, 1);  // perf-allowed
+   const double l1 = iLow(_Symbol, PERIOD_M30, 1);   // perf-allowed
    if(c1 <= 0.0 || h1 <= 0.0 || l1 <= 0.0)
       return false;
 
@@ -611,9 +628,6 @@ void OnTick()
 
    if(!QM_IsNewBar())
       return;
-
-   // FIRST on the closed-bar path: advance cached market-profile + session state.
-   AdvanceState_OnNewBar();
 
    QM_EquityStreamOnNewBar();
 
