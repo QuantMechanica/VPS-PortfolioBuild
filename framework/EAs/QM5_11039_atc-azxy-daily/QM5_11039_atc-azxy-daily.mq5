@@ -1,62 +1,45 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11039 atc-azxy-daily — Prior-Day Min/Max Previous-Year Analog Daily Scalp (D1)"
+#property description "QM5_11039 Prior Day Min Max Daily Pattern Scalp"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11039 atc-azxy-daily
+// QuantMechanica V5 EA SKELETON
 // -----------------------------------------------------------------------------
-// Source: Andrea Zani, Interview with Andrea Zani (ATC 2011), MQL5 Articles,
-//         2011-12-20, https://www.mql5.com/en/articles/555 (AZXY).
-// Card: artifacts/cards_approved/QM5_11039_atc-azxy-daily.md (g0_status APPROVED).
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails). The framework provides:
 //
-// Mechanics (D1-native, all reads on closed bars at shift >= 1):
-//   Once per closed D1 bar build a normalized PRIOR-DAY coordinate vector from
-//   the prior bar's own OHLC (gapless-CFD safe — uses the bar's High/Low/Close,
-//   never a gap):
-//     rangePos  = (Close[1] - Low[1]) / (High[1] - Low[1])      in [0,1]
-//     bodyDir   = sign(Close[1] - Open[1])                       in {-1,0,+1}
-//     rangePct  = percentile of (High[1]-Low[1]) over the last
-//                 range_lookback_days closed daily ranges        in [0,1]
-//   Find the matching day in the PREVIOUS YEAR (~252 trading days back) and scan
-//   a +/- pattern_window_days window of analog bars. An analog bar qualifies if
-//   its own normalized coordinate vector is within analog_similarity of the
-//   current vector (Euclidean over the 3 normalized components). For every
-//   qualifying analog bar measure its realized NEXT-day return in ATR(H1) units.
-//   The MEDIAN of those next-day returns is the directional signal:
-//     median >  +pattern_return_threshold  -> go LONG
-//     median <  -pattern_return_threshold  -> go SHORT
-//   At most ONE market order per day (one open position per symbol/magic).
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
+//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
+//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
+//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
+//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
+//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
+//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
 //
-//   Stop / Take (card P2 baseline, expressed via ATR(H1)):
-//     atrH1   = ATR(14, H1) at shift 1
-//     TP dist = tp_atr_h1_mult * atrH1   (small-target lock)
-//     SL dist = max(sl_tp_multiple * TP_dist, sl_atr_h1_floor_mult * atrH1)
-//   Time exit: close any open position at/after time_exit_hour_broker (broker
-//   server time == tester chart clock; no conversion needed for a wall-clock
-//   server-time exit). After TP/SL/time-exit, the one-order-per-day +
-//   one-position-per-magic rule prevents re-entry the same day.
-//
-//   Filters:
-//     - Spread guard: skip only a genuinely WIDE spread (fail-open on .DWX zero
-//       modeled spread).
-//     - Minimum prior-day range >= min_range_atr_d1_mult * ATR(14, D1).
-//     - Skip if the previous-year analog window lacks enough qualifying bars.
-//
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
-// else is framework wiring and MUST stay intact.
-//
-// NOTE: the previous-year analog scan reads raw daily OHLC at fixed closed-bar
-// shifts. It runs ONCE per closed D1 bar (gated by QM_IsNewBar in OnTick before
-// Strategy_EntrySignal) with a bounded window loop (<= analog_window_max bars),
-// so the per-bar cost is O(range_lookback + 2*pattern_window) — well within the
-// smoke budget on D1. // perf-allowed: bespoke seasonality structure.
+// DO NOT
+//   - Write per-EA IsNewBar() — use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//     use the QM_* readers above. The framework pools handles and releases them
+//     on shutdown.
+//   - CopyRates over warmup windows on every tick. If you genuinely need raw
+//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
+//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
+//     to magic_numbers.csv, run:
+//         python framework/scripts/update_magic_resolver.py
+//     This is idempotent and preserves all rows.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 11039;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -65,10 +48,16 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
+//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -76,275 +65,362 @@ input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    pattern_window_days        = 10;    // +/- analog window around the previous-year anchor day
-input int    range_lookback_days        = 60;    // bars used for the prior-day range percentile
-input double analog_similarity          = 0.20;  // max Euclidean distance for an analog match (normalized coords)
-input int    analog_min_matches         = 3;     // min qualifying analog bars to trust the median
-input double pattern_return_threshold   = 0.10;  // median next-day return (ATR-H1 units) to trigger
-input double tp_atr_h1_mult             = 0.35;  // TP distance = mult * ATR(14,H1)
-input double sl_tp_multiple             = 2.0;   // SL = sl_tp_multiple * TP distance ...
-input double sl_atr_h1_floor_mult       = 1.0;   // ... but never tighter than this * ATR(14,H1)
-input int    atr_h1_period              = 14;    // ATR period on H1 (TP/SL sizing + return units)
-input int    atr_d1_period              = 14;    // ATR period on D1 (min-range filter)
-input double min_range_atr_d1_mult      = 0.75;  // prior-day range must exceed this * ATR(14,D1)
-input int    time_exit_hour_broker      = 22;    // close any open position at/after this broker hour
-input double spread_pct_of_stop         = 25.0;  // skip if spread > this % of stop distance
+input int    strategy_pattern_window_days        = 10;
+input int    strategy_range_lookback_days        = 60;
+input double strategy_analog_top_percent         = 20.0;
+input double strategy_return_threshold_atr_mult  = 0.10;
+input double strategy_tp_atr_mult                = 0.35;
+input double strategy_sl_tp_multiple             = 2.0;
+input double strategy_sl_atr_mult                = 1.0;
+input int    strategy_atr_period                 = 14;
+input int    strategy_min_tp_pips                = 6;
+input int    strategy_max_tp_pips                = 10;
+input double strategy_min_d1_range_atr_mult      = 0.75;
+input int    strategy_time_exit_hour_broker      = 22;
+input int    strategy_max_spread_points          = 30;
+input bool   strategy_body_confirm_enabled       = false;
 
-// Hard ceiling on the analog window so the per-bar loop is always bounded.
-#define QM_ANALOG_WINDOW_MAX 30
-
-// -----------------------------------------------------------------------------
-// Helpers (bespoke seasonality math — all read CLOSED bars only)
-// -----------------------------------------------------------------------------
-
-// Normalized prior-bar range position at a given closed-bar shift: where the
-// bar's CLOSE sits inside its own High-Low range, in [0,1]. Gapless-safe.
-double NormRangePos(const int shift)
+double Strategy_ClampDouble(const double value, const double lo, const double hi)
   {
-   const double hi = iHigh(_Symbol, PERIOD_D1, shift);  // perf-allowed: closed-bar read
-   const double lo = iLow(_Symbol, PERIOD_D1, shift);   // perf-allowed
-   const double cl = iClose(_Symbol, PERIOD_D1, shift); // perf-allowed
-   const double rng = hi - lo;
-   if(rng <= 0.0)
-      return 0.5;
-   double p = (cl - lo) / rng;
-   if(p < 0.0) p = 0.0;
-   if(p > 1.0) p = 1.0;
-   return p;
+   if(value < lo)
+      return lo;
+   if(value > hi)
+      return hi;
+   return value;
   }
 
-// Body direction sign at a given closed-bar shift: +1 / 0 / -1.
-double BodyDir(const int shift)
+int Strategy_MaxInt(const int a, const int b)
   {
-   const double op = iOpen(_Symbol, PERIOD_D1, shift);  // perf-allowed
-   const double cl = iClose(_Symbol, PERIOD_D1, shift); // perf-allowed
-   if(cl > op) return  1.0;
-   if(cl < op) return -1.0;
-   return 0.0;
+   return (a > b) ? a : b;
   }
 
-// Daily true range (High-Low) at a given closed-bar shift.
-double DayRange(const int shift)
+int Strategy_MinInt(const int a, const int b)
   {
-   return iHigh(_Symbol, PERIOD_D1, shift) - iLow(_Symbol, PERIOD_D1, shift); // perf-allowed
+   return (a < b) ? a : b;
   }
 
-// Range percentile of the bar at `shift` versus the `lookback` daily ranges that
-// PRECEDE it (shifts shift+1 .. shift+lookback). Returns fraction in [0,1].
-double RangePercentile(const int shift, const int lookback)
+int Strategy_AbsInt(const int value)
   {
-   const double r0 = DayRange(shift);
-   if(r0 <= 0.0)
-      return 0.5;
-   int below = 0;
-   int total = 0;
-   for(int k = 1; k <= lookback; ++k)
+   return (value < 0) ? -value : value;
+  }
+
+int Strategy_BodyDirection(const MqlRates &bar)
+  {
+   if(bar.close > bar.open)
+      return 1;
+   if(bar.close < bar.open)
+      return -1;
+   return 0;
+  }
+
+bool Strategy_RangePercentile(MqlRates &rates[], const int index, const int lookback, double &out_pct)
+  {
+   out_pct = 0.0;
+   if(index < 0 || lookback <= 0)
+      return false;
+
+   const double target_range = rates[index].high - rates[index].low;
+   if(target_range <= 0.0)
+      return false;
+
+   int samples = 0;
+   int below_or_equal = 0;
+   const int total = ArraySize(rates);
+   for(int i = index + 1; i < total && i <= index + lookback; ++i)
      {
-      const double rk = DayRange(shift + k);
-      if(rk <= 0.0)
+      const double range_i = rates[i].high - rates[i].low;
+      if(range_i <= 0.0)
          continue;
-      ++total;
-      if(rk <= r0)
-         ++below;
+      samples++;
+      if(range_i <= target_range)
+         below_or_equal++;
      }
-   if(total <= 0)
-      return 0.5;
-   return (double)below / (double)total;
+
+   if(samples <= 0)
+      return false;
+
+   out_pct = (double)below_or_equal / (double)samples;
+   return true;
   }
 
-// Euclidean distance between two normalized coordinate vectors. bodyDir is
-// rescaled from {-1,0,+1} to roughly [0,1] span (×0.5) so all three components
-// share a comparable magnitude.
-double VectorDistance(const double posA, const double dirA, const double pctA,
-                      const double posB, const double dirB, const double pctB)
+double Strategy_VectorDistance(const MqlRates &a,
+                               const double a_range_pct,
+                               const MqlRates &b,
+                               const double b_range_pct)
   {
-   const double dp = posA - posB;
-   const double dd = (dirA - dirB) * 0.5;
-   const double dc = pctA - pctB;
-   return MathSqrt(dp * dp + dd * dd + dc * dc);
+   const double a_range = a.high - a.low;
+   const double b_range = b.high - b.low;
+   if(a_range <= 0.0 || b_range <= 0.0)
+      return DBL_MAX;
+
+   const double a_pos = (a.close - a.low) / a_range;
+   const double b_pos = (b.close - b.low) / b_range;
+   const double body_delta = MathAbs((double)Strategy_BodyDirection(a) -
+                                     (double)Strategy_BodyDirection(b));
+
+   return MathAbs(a_pos - b_pos) +
+          MathAbs(a_range_pct - b_range_pct) +
+          0.35 * body_delta;
   }
 
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
+void Strategy_SortPairs(double &scores[], double &returns[], const int count)
+  {
+   for(int i = 1; i < count; ++i)
+     {
+      const double key_score = scores[i];
+      const double key_return = returns[i];
+      int j = i - 1;
+      while(j >= 0 && scores[j] > key_score)
+        {
+         scores[j + 1] = scores[j];
+         returns[j + 1] = returns[j];
+         j--;
+        }
+      scores[j + 1] = key_score;
+      returns[j + 1] = key_return;
+     }
+  }
 
-// Cheap O(1) per-tick gate. Spread guard only — fail-open on .DWX zero spread.
-// All seasonality work lives in Strategy_EntrySignal on the closed-bar path.
-bool Strategy_NoTradeFilter()
+void Strategy_SortValues(double &values[], const int count)
+  {
+   for(int i = 1; i < count; ++i)
+     {
+      const double key = values[i];
+      int j = i - 1;
+      while(j >= 0 && values[j] > key)
+        {
+         values[j + 1] = values[j];
+         j--;
+        }
+      values[j + 1] = key;
+     }
+  }
+
+bool Strategy_MedianPreviousYearReturn(double &out_median_return)
+  {
+   out_median_return = 0.0;
+
+   const int window_days = Strategy_MaxInt(1, strategy_pattern_window_days);
+   const int lookback_days = Strategy_MaxInt(5, strategy_range_lookback_days);
+   const int required_bars = 370 + window_days + lookback_days + 5;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, required_bars, rates); // perf-allowed: D1 closed-bar analog scan; Strategy_EntrySignal is called only after QM_IsNewBar().
+   if(copied < required_bars / 2)
+      return false;
+
+   if(rates[0].high <= rates[0].low)
+      return false;
+
+   double current_range_pct = 0.0;
+   if(!Strategy_RangePercentile(rates, 0, lookback_days, current_range_pct))
+      return false;
+
+   MqlDateTime current_dt;
+   TimeToStruct(rates[0].time, current_dt);
+   const int target_year = current_dt.year - 1;
+
+   double scores[128];
+   double next_returns[128];
+   int candidates = 0;
+
+   for(int i = 1; i < copied - lookback_days - 1 && candidates < 128; ++i)
+     {
+      MqlDateTime analog_dt;
+      TimeToStruct(rates[i].time, analog_dt);
+      if(analog_dt.year != target_year)
+         continue;
+      if(Strategy_AbsInt(analog_dt.day_of_year - current_dt.day_of_year) > window_days)
+         continue;
+
+      double analog_range_pct = 0.0;
+      if(!Strategy_RangePercentile(rates, i, lookback_days, analog_range_pct))
+         continue;
+
+      const double score = Strategy_VectorDistance(rates[0], current_range_pct,
+                                                   rates[i], analog_range_pct);
+      if(score == DBL_MAX)
+         continue;
+
+      scores[candidates] = score;
+      next_returns[candidates] = rates[i - 1].close - rates[i].close;
+      candidates++;
+     }
+
+   if(candidates <= 0)
+      return false;
+
+   Strategy_SortPairs(scores, next_returns, candidates);
+
+   int top_count = (int)MathCeil((double)candidates * Strategy_ClampDouble(strategy_analog_top_percent, 1.0, 100.0) / 100.0);
+   top_count = Strategy_MaxInt(1, Strategy_MinInt(top_count, candidates));
+
+   double selected[128];
+   for(int i = 0; i < top_count; ++i)
+      selected[i] = next_returns[i];
+
+   Strategy_SortValues(selected, top_count);
+   if((top_count % 2) == 1)
+      out_median_return = selected[top_count / 2];
+   else
+      out_median_return = 0.5 * (selected[top_count / 2 - 1] + selected[top_count / 2]);
+
+   return true;
+  }
+
+bool Strategy_SpreadTooWide()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   const double atr_h1 = QM_ATR(_Symbol, PERIOD_H1, atr_h1_period, 1);
-   if(atr_h1 <= 0.0)
-      return false; // no ATR yet — defer to the entry gate, do not block here
-
-   double tp_dist = tp_atr_h1_mult * atr_h1;
-   double sl_dist = MathMax(sl_tp_multiple * tp_dist, sl_atr_h1_floor_mult * atr_h1);
-   if(sl_dist <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (spread_pct_of_stop / 100.0) * sl_dist)
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
       return true;
-
-   return false;
+   if(ask <= bid)
+      return false;
+   if(strategy_max_spread_points <= 0)
+      return false;
+   return ((ask - bid) > (double)strategy_max_spread_points * point);
   }
 
-// Once-per-day entry. Caller guarantees QM_IsNewBar() == true (closed D1 bar).
+bool Strategy_PriorDayRangeAdequate()
+  {
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, 1, rates); // perf-allowed: one closed D1 bar read for card range filter.
+   if(copied != 1 || rates[0].high <= rates[0].low)
+      return false;
+
+   const double d1_atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(d1_atr <= 0.0)
+      return false;
+
+   return ((rates[0].high - rates[0].low) >= strategy_min_d1_range_atr_mult * d1_atr);
+  }
+
+int Strategy_CurrentPriorBodyDirection()
+  {
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, 1, rates); // perf-allowed: one closed D1 bar read for optional card body confirmation.
+   if(copied != 1)
+      return 0;
+   return Strategy_BodyDirection(rates[0]);
+  }
+
+// -----------------------------------------------------------------------------
+// Strategy hooks — implement these against the card mechanically.
+// -----------------------------------------------------------------------------
+
+// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
+// regime filter). Cheap O(1) checks only — runs on every tick.
+bool Strategy_NoTradeFilter()
+  {
+   return Strategy_SpreadTooWide();
+  }
+
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
+// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic == at most one order per day here, since
-   // this hook only fires on a new closed D1 bar.
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // --- Minimum prior-day range filter ---
-   const double atr_d1 = QM_ATR(_Symbol, PERIOD_D1, atr_d1_period, 1);
-   if(atr_d1 <= 0.0)
-      return false;
-   const double prior_range = DayRange(1);
-   if(prior_range < min_range_atr_d1_mult * atr_d1)
+   if(!Strategy_PriorDayRangeAdequate())
       return false;
 
-   // --- Current normalized prior-day coordinate vector (prior bar = shift 1) ---
-   const double cur_pos = NormRangePos(1);
-   const double cur_dir = BodyDir(1);
-   const double cur_pct = RangePercentile(1, range_lookback_days);
+   double median_return = 0.0;
+   if(!Strategy_MedianPreviousYearReturn(median_return))
+      return false;
 
-   // --- ATR(H1) — units for the next-day return measure and for TP/SL sizing ---
-   const double atr_h1 = QM_ATR(_Symbol, PERIOD_H1, atr_h1_period, 1);
+   const double atr_h1 = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
    if(atr_h1 <= 0.0)
       return false;
 
-   // --- Previous-year analog window: anchor ~252 trading days back, scan a
-   //     +/- pattern_window_days window. For each analog bar within the
-   //     similarity radius, record its realized next-day return in ATR-H1 units. ---
-   int window = pattern_window_days;
-   if(window < 1) window = 1;
-   if(window > QM_ANALOG_WINDOW_MAX) window = QM_ANALOG_WINDOW_MAX;
-
-   const int anchor = 252;                 // ~1 trading year back (D1-native)
-   const int first  = anchor - window;     // nearest analog shift
-   const int last   = anchor + window;     // furthest analog shift
-
-   // The percentile lookback and the next-day measure require bars deeper than
-   // `last`; bail out gracefully if history is too short (returns 0 -> skip).
-   if(iClose(_Symbol, PERIOD_D1, last + range_lookback_days + 1) <= 0.0) // perf-allowed: history probe
-      return false;
-
-   double next_returns[QM_ANALOG_WINDOW_MAX * 2 + 1];
-   int    n_matches = 0;
-
-   for(int s = first; s <= last; ++s)
-     {
-      if(s < 2)
-         continue; // need a next-day bar at s-1 that is itself a CLOSED bar (>=1)
-
-      const double a_pos = NormRangePos(s);
-      const double a_dir = BodyDir(s);
-      const double a_pct = RangePercentile(s, range_lookback_days);
-
-      const double dist = VectorDistance(cur_pos, cur_dir, cur_pct,
-                                         a_pos, a_dir, a_pct);
-      if(dist > analog_similarity)
-         continue;
-
-      // Realized NEXT-day return after the analog bar: close[s-1] - close[s],
-      // both closed bars, expressed in ATR-H1 units.
-      const double c_s   = iClose(_Symbol, PERIOD_D1, s);     // perf-allowed
-      const double c_nxt = iClose(_Symbol, PERIOD_D1, s - 1); // perf-allowed (next day)
-      if(c_s <= 0.0 || c_nxt <= 0.0)
-         continue;
-
-      next_returns[n_matches] = (c_nxt - c_s) / atr_h1;
-      ++n_matches;
-     }
-
-   if(n_matches < analog_min_matches)
-      return false;
-
-   // --- Median of the analog next-day returns (insertion sort, n is small) ---
-   for(int i = 1; i < n_matches; ++i)
-     {
-      const double key = next_returns[i];
-      int j = i - 1;
-      while(j >= 0 && next_returns[j] > key)
-        {
-         next_returns[j + 1] = next_returns[j];
-         --j;
-        }
-      next_returns[j + 1] = key;
-     }
-   double median;
-   if((n_matches % 2) == 1)
-      median = next_returns[n_matches / 2];
-   else
-      median = 0.5 * (next_returns[n_matches / 2 - 1] + next_returns[n_matches / 2]);
-
-   // --- Direction decision ---
-   QM_OrderType side;
-   if(median > pattern_return_threshold)
+   const double threshold = strategy_return_threshold_atr_mult * atr_h1;
+   QM_OrderType side = QM_BUY;
+   if(median_return > threshold)
       side = QM_BUY;
-   else if(median < -pattern_return_threshold)
+   else if(median_return < -threshold)
       side = QM_SELL;
    else
       return false;
 
-   // --- Build entry. Framework sizes lots (no lots field). ---
-   const double entry = (side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                         : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
+   if(strategy_body_confirm_enabled)
+     {
+      const int body_dir = Strategy_CurrentPriorBodyDirection();
+      if(side == QM_BUY && body_dir < 0)
+         return false;
+      if(side == QM_SELL && body_dir > 0)
+         return false;
+     }
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   const double tp_dist = tp_atr_h1_mult * atr_h1;
-   const double sl_dist = MathMax(sl_tp_multiple * tp_dist, sl_atr_h1_floor_mult * atr_h1);
+   const double entry = (side == QM_BUY) ? ask : bid;
+   const double min_tp_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_min_tp_pips);
+   const double max_tp_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_tp_pips);
+   if(min_tp_dist <= 0.0 || max_tp_dist <= 0.0 || max_tp_dist < min_tp_dist)
+      return false;
+
+   const double tp_dist = Strategy_ClampDouble(strategy_tp_atr_mult * atr_h1,
+                                               min_tp_dist,
+                                               max_tp_dist);
+   const double sl_dist = MathMax(strategy_sl_tp_multiple * tp_dist,
+                                  strategy_sl_atr_mult * atr_h1);
    if(tp_dist <= 0.0 || sl_dist <= 0.0)
       return false;
 
-   // SL/TP as ATR-value-derived prices (mult applied to a 1-unit ATR value).
-   const double sl = QM_StopATRFromValue(_Symbol, side, entry, sl_dist, 1.0);
-   const double tp = QM_TakeATRFromValue(_Symbol, side, entry, tp_dist, 1.0);
-   if(sl <= 0.0 || tp <= 0.0)
-      return false;
-
-   req.type   = side;
-   req.price  = 0.0;   // framework fills market price at send
-   req.sl     = sl;
-   req.tp     = tp;
-   req.reason = (side == QM_BUY) ? "azxy_analog_long" : "azxy_analog_short";
-   return true;
+   req.type = side;
+   req.price = 0.0;
+   req.sl = QM_StopRulesStopFromDistance(_Symbol, side, entry, sl_dist);
+   req.tp = QM_StopRulesTakeFromDistance(_Symbol, side, entry, tp_dist);
+   req.reason = (side == QM_BUY) ? "ATC_AZXY_DAILY_LONG" : "ATC_AZXY_DAILY_SHORT";
+   return (req.sl > 0.0 && req.tp > 0.0);
   }
 
-// No active trade management beyond the fixed ATR stop/target. The time exit
-// lives in Strategy_ExitSignal.
+// Called every tick when an open position exists for this EA's magic.
+// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
+   // Card specifies fixed TP/SL plus time exit only; no trailing, BE, scale-in, or partial close.
   }
 
-// Time exit: close any open position at/after the broker-time exit hour. In the
-// MT5 tester TimeCurrent() IS broker/server time, so a wall-clock server-time
-// exit reads the hour directly (no UTC conversion for a fixed server hour).
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
-      return false;
-
    MqlDateTime dt;
    TimeToStruct(TimeCurrent(), dt);
-   return (dt.hour >= time_exit_hour_broker);
+   return (dt.hour >= strategy_time_exit_hour_broker);
   }
 
-// Defer to the central news filter.
+// Optional news-filter override. Return TRUE to suppress trading regardless
+// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
+// custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false;
+   return false; // defer to QM_NewsAllowsTrade(...)
   }
 
 // -----------------------------------------------------------------------------
@@ -389,6 +465,8 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults.
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -402,8 +480,10 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -414,13 +494,18 @@ void OnTick()
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
 
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
 
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
@@ -440,6 +525,8 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
   {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
