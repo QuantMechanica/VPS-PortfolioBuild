@@ -4,7 +4,7 @@
 **Slug:** `atc-lr-slope`
 **Source:** `9441393d-5ffc-5b43-87be-bd532110f204` (Andrey Barinov, Interview ATC 2012, MQL5 Articles)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-17
+**Last revised:** 2026-06-18
 
 ---
 
@@ -107,4 +107,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-17 | Initial build from card | board-advisor build |
+| v1 | 2026-06-18 | Initial build from card | 5ed6d3a5-ccf9-45e6-802a-f7cb61a90aa7 |

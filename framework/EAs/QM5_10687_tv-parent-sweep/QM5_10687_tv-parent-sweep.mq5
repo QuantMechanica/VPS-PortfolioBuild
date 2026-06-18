@@ -29,27 +29,27 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_asia_start_hour       = 0;
-input int    strategy_asia_end_hour         = 8;
-input int    strategy_london_start_hour     = 8;
-input int    strategy_london_end_hour       = 16;
-input int    strategy_newyork_start_hour    = 13;
-input int    strategy_newyork_end_hour      = 21;
-input double strategy_min_rr                = 1.5;
-input bool   strategy_reclaim_filter        = true;
-input int    strategy_atr_period            = 14;
-input double strategy_stop_atr_buffer       = 0.10;
-input int    strategy_max_spread_points     = 60;
-input int    strategy_rollover_start_hhmm   = 2355;
-input int    strategy_rollover_end_hhmm     = 5;
+input int    strategy_asia_start_hour_utc       = 0;
+input int    strategy_asia_end_hour_utc         = 8;
+input int    strategy_london_start_hour_utc     = 8;
+input int    strategy_london_end_hour_utc       = 16;
+input int    strategy_newyork_start_hour_utc    = 13;
+input int    strategy_newyork_end_hour_utc      = 21;
+input double strategy_min_rr                    = 1.5;
+input bool   strategy_reclaim_filter            = true;
+input int    strategy_atr_period                = 14;
+input double strategy_stop_atr_buffer           = 0.10;
+input int    strategy_max_spread_points         = 60;
+input int    strategy_rollover_start_hhmm_utc   = 2355;
+input int    strategy_rollover_end_hhmm_utc     = 5;
 
 struct SessionRange
   {
    bool     active;
    bool     ready;
    int      key;
-   datetime start_time;
-   datetime end_time;
+   datetime start_utc;
+   datetime end_utc;
    double   high;
    double   low;
   };
@@ -57,7 +57,7 @@ struct SessionRange
 SessionRange g_current_sessions[3];
 SessionRange g_done_sessions[3];
 int          g_last_trade_parent_key = -1;
-datetime     g_active_exit_time = 0;
+datetime     g_active_exit_utc = 0;
 
 int Hhmm(const datetime t)
   {
@@ -73,22 +73,22 @@ int MinutesOfDay(const datetime t)
    return dt.hour * 60 + dt.min;
   }
 
-int SessionStartHour(const int idx)
+int SessionStartHourUtc(const int idx)
   {
    if(idx == 0)
-      return strategy_asia_start_hour;
+      return strategy_asia_start_hour_utc;
    if(idx == 1)
-      return strategy_london_start_hour;
-   return strategy_newyork_start_hour;
+      return strategy_london_start_hour_utc;
+   return strategy_newyork_start_hour_utc;
   }
 
-int SessionEndHour(const int idx)
+int SessionEndHourUtc(const int idx)
   {
    if(idx == 0)
-      return strategy_asia_end_hour;
+      return strategy_asia_end_hour_utc;
    if(idx == 1)
-      return strategy_london_end_hour;
-   return strategy_newyork_end_hour;
+      return strategy_london_end_hour_utc;
+   return strategy_newyork_end_hour_utc;
   }
 
 string SessionName(const int idx)
@@ -110,47 +110,47 @@ datetime DateAtMinutes(const datetime t, const int minutes)
    return StructToTime(dt);
   }
 
-bool SessionWindow(const datetime t,
-                   const int idx,
-                   datetime &session_start,
-                   datetime &session_end)
+bool SessionWindowUtc(const datetime utc_time,
+                      const int idx,
+                      datetime &session_start_utc,
+                      datetime &session_end_utc)
   {
-   const int start_min = MathMax(0, MathMin(23, SessionStartHour(idx))) * 60;
-   const int end_min = MathMax(0, MathMin(24, SessionEndHour(idx))) * 60;
-   const int minute_now = MinutesOfDay(t);
+   const int start_min = MathMax(0, MathMin(23, SessionStartHourUtc(idx))) * 60;
+   const int end_min = MathMax(0, MathMin(24, SessionEndHourUtc(idx))) * 60;
+   const int minute_now = MinutesOfDay(utc_time);
    if(start_min == end_min)
       return false;
 
    if(start_min < end_min)
      {
-      session_start = DateAtMinutes(t, start_min);
-      session_end = DateAtMinutes(t, end_min);
+      session_start_utc = DateAtMinutes(utc_time, start_min);
+      session_end_utc = DateAtMinutes(utc_time, end_min);
       return (minute_now >= start_min && minute_now < end_min);
      }
 
    if(minute_now >= start_min)
      {
-      session_start = DateAtMinutes(t, start_min);
-      session_end = DateAtMinutes(t, end_min) + 86400;
+      session_start_utc = DateAtMinutes(utc_time, start_min);
+      session_end_utc = DateAtMinutes(utc_time, end_min) + 86400;
       return true;
      }
 
    if(minute_now < end_min)
      {
-      session_start = DateAtMinutes(t, start_min) - 86400;
-      session_end = DateAtMinutes(t, end_min);
+      session_start_utc = DateAtMinutes(utc_time, start_min) - 86400;
+      session_end_utc = DateAtMinutes(utc_time, end_min);
       return true;
      }
 
-   session_start = 0;
-   session_end = 0;
+   session_start_utc = 0;
+   session_end_utc = 0;
    return false;
   }
 
-int SessionKey(const datetime session_start, const int idx)
+int SessionKey(const datetime session_start_utc, const int idx)
   {
    MqlDateTime dt;
-   TimeToStruct(session_start, dt);
+   TimeToStruct(session_start_utc, dt);
    return (dt.year * 1000 + dt.day_of_year) * 10 + idx;
   }
 
@@ -168,21 +168,21 @@ void FinalizeSession(const int idx)
   }
 
 void UpdateOneSession(const int idx,
-                      const datetime bar_time,
+                      const datetime bar_utc,
                       const double bar_high,
                       const double bar_low)
   {
-   datetime session_start = 0;
-   datetime session_end = 0;
-   const bool in_session = SessionWindow(bar_time, idx, session_start, session_end);
+   datetime session_start_utc = 0;
+   datetime session_end_utc = 0;
+   const bool in_session = SessionWindowUtc(bar_utc, idx, session_start_utc, session_end_utc);
 
-   if(g_current_sessions[idx].active && bar_time >= g_current_sessions[idx].end_time)
+   if(g_current_sessions[idx].active && bar_utc >= g_current_sessions[idx].end_utc)
       FinalizeSession(idx);
 
    if(!in_session)
       return;
 
-   const int key = SessionKey(session_start, idx);
+   const int key = SessionKey(session_start_utc, idx);
    if(!g_current_sessions[idx].active || g_current_sessions[idx].key != key)
      {
       if(g_current_sessions[idx].active)
@@ -191,8 +191,8 @@ void UpdateOneSession(const int idx,
       g_current_sessions[idx].active = true;
       g_current_sessions[idx].ready = false;
       g_current_sessions[idx].key = key;
-      g_current_sessions[idx].start_time = session_start;
-      g_current_sessions[idx].end_time = session_end;
+      g_current_sessions[idx].start_utc = session_start_utc;
+      g_current_sessions[idx].end_utc = session_end_utc;
       g_current_sessions[idx].high = bar_high;
       g_current_sessions[idx].low = bar_low;
       return;
@@ -206,24 +206,25 @@ void UpdateOneSession(const int idx,
 
 void AdvanceSessionState()
   {
-   const datetime bar_time = iTime(_Symbol, _Period, 1);
-   if(bar_time <= 0)
+   const datetime bar_time_broker = iTime(_Symbol, _Period, 1); // perf-allowed: one closed-bar timestamp read inside framework QM_IsNewBar-gated EntrySignal.
+   if(bar_time_broker <= 0)
       return;
 
-   const double bar_high = iHigh(_Symbol, _Period, 1);
-   const double bar_low = iLow(_Symbol, _Period, 1);
+   const double bar_high = iHigh(_Symbol, _Period, 1); // perf-allowed: bespoke session-range OHLC update, called once per closed bar.
+   const double bar_low = iLow(_Symbol, _Period, 1); // perf-allowed: bespoke session-range OHLC update, called once per closed bar.
    if(bar_high <= 0.0 || bar_low <= 0.0 || bar_high < bar_low)
       return;
 
+   const datetime bar_utc = QM_BrokerToUTC(bar_time_broker);
    for(int idx = 0; idx < 3; ++idx)
-      UpdateOneSession(idx, bar_time, bar_high, bar_low);
+      UpdateOneSession(idx, bar_utc, bar_high, bar_low);
   }
 
 bool ParentContainsChild(const int parent_idx, const int child_idx)
   {
    if(!g_done_sessions[parent_idx].ready || !g_done_sessions[child_idx].ready)
       return false;
-   if(g_done_sessions[child_idx].end_time <= g_done_sessions[parent_idx].end_time)
+   if(g_done_sessions[child_idx].end_utc <= g_done_sessions[parent_idx].end_utc)
       return false;
    return (g_done_sessions[parent_idx].high >= g_done_sessions[child_idx].high &&
            g_done_sessions[parent_idx].low <= g_done_sessions[child_idx].low);
@@ -231,7 +232,7 @@ bool ParentContainsChild(const int parent_idx, const int child_idx)
 
 bool SelectParentRange(SessionRange &parent, string &pair_name)
   {
-   int best_child_end = 0;
+   datetime best_child_end_utc = 0;
    int best_pair = -1;
 
    for(int pair = 0; pair < 3; ++pair)
@@ -241,10 +242,10 @@ bool SelectParentRange(SessionRange &parent, string &pair_name)
       if(!ParentContainsChild(parent_idx, child_idx))
          continue;
 
-      const int child_end = (int)g_done_sessions[child_idx].end_time;
-      if(child_end > best_child_end)
+      const datetime child_end_utc = g_done_sessions[child_idx].end_utc;
+      if(child_end_utc > best_child_end_utc)
         {
-         best_child_end = child_end;
+         best_child_end_utc = child_end_utc;
          best_pair = pair;
         }
      }
@@ -281,24 +282,25 @@ bool HasOurOpenPosition()
 
 bool RolloverBlocked(const int hhmm)
   {
-   if(strategy_rollover_start_hhmm == strategy_rollover_end_hhmm)
+   if(strategy_rollover_start_hhmm_utc == strategy_rollover_end_hhmm_utc)
       return false;
-   if(strategy_rollover_start_hhmm < strategy_rollover_end_hhmm)
-      return (hhmm >= strategy_rollover_start_hhmm && hhmm < strategy_rollover_end_hhmm);
-   return (hhmm >= strategy_rollover_start_hhmm || hhmm < strategy_rollover_end_hhmm);
+   if(strategy_rollover_start_hhmm_utc < strategy_rollover_end_hhmm_utc)
+      return (hhmm >= strategy_rollover_start_hhmm_utc && hhmm < strategy_rollover_end_hhmm_utc);
+   return (hhmm >= strategy_rollover_start_hhmm_utc || hhmm < strategy_rollover_end_hhmm_utc);
   }
 
-datetime NextSessionEnd(const datetime broker_time)
+datetime NextSessionEndUtc(const datetime broker_time)
   {
+   const datetime utc_now = QM_BrokerToUTC(broker_time);
    datetime best = 0;
    for(int idx = 0; idx < 3; ++idx)
      {
-      datetime session_start = 0;
-      datetime session_end = 0;
-      if(SessionWindow(broker_time, idx, session_start, session_end) && session_end > broker_time)
+      datetime session_start_utc = 0;
+      datetime session_end_utc = 0;
+      if(SessionWindowUtc(utc_now, idx, session_start_utc, session_end_utc) && session_end_utc > utc_now)
         {
-         if(best == 0 || session_end < best)
-            best = session_end;
+         if(best == 0 || session_end_utc < best)
+            best = session_end_utc;
         }
      }
 
@@ -307,9 +309,9 @@ datetime NextSessionEnd(const datetime broker_time)
 
    for(int idx = 0; idx < 3; ++idx)
      {
-      const int end_min = MathMax(0, MathMin(24, SessionEndHour(idx))) * 60;
-      datetime candidate = DateAtMinutes(broker_time, end_min);
-      if(candidate <= broker_time)
+      const int end_min = MathMax(0, MathMin(24, SessionEndHourUtc(idx))) * 60;
+      datetime candidate = DateAtMinutes(utc_now, end_min);
+      if(candidate <= utc_now)
          candidate += 86400;
       if(best == 0 || candidate < best)
          best = candidate;
@@ -323,8 +325,7 @@ double NormalizedPrice(const double price)
    return NormalizeDouble(price, (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS));
   }
 
-bool ProjectedRRPasses(const QM_OrderType side,
-                       const double entry,
+bool ProjectedRRPasses(const double entry,
                        const double sl,
                        const double tp)
   {
@@ -341,7 +342,8 @@ bool Strategy_NoTradeFilter()
    if(strategy_max_spread_points > 0 && spread_points > strategy_max_spread_points)
       return true;
 
-   if(RolloverBlocked(Hhmm(TimeCurrent())))
+   const datetime utc_now = QM_BrokerToUTC(TimeCurrent());
+   if(RolloverBlocked(Hhmm(utc_now)))
       return true;
 
    return false;
@@ -369,12 +371,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(parent.key == g_last_trade_parent_key)
       return false;
 
-   const double open1 = iOpen(_Symbol, _Period, 1);
-   const double high1 = iHigh(_Symbol, _Period, 1);
-   const double low1 = iLow(_Symbol, _Period, 1);
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0 || point <= 0.0)
+   const double open1 = iOpen(_Symbol, _Period, 1); // perf-allowed: reclaim candle geometry, called only from QM_IsNewBar-gated EntrySignal.
+   const double high1 = iHigh(_Symbol, _Period, 1); // perf-allowed: sweep high geometry, called only from QM_IsNewBar-gated EntrySignal.
+   const double low1 = iLow(_Symbol, _Period, 1); // perf-allowed: sweep low geometry, called only from QM_IsNewBar-gated EntrySignal.
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: closed-bar reclaim confirmation, called only from QM_IsNewBar-gated EntrySignal.
+   if(open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0)
       return false;
 
    const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
@@ -391,7 +392,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const double sl = NormalizedPrice(low1 - buffer);
       const double tp = NormalizedPrice(parent.high);
       if(entry > 0.0 && sl > 0.0 && tp > entry && sl < entry &&
-         ProjectedRRPasses(QM_BUY, entry, sl, tp))
+         ProjectedRRPasses(entry, sl, tp))
         {
          req.type = QM_BUY;
          req.price = 0.0;
@@ -399,7 +400,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          req.tp = tp;
          req.reason = "PARENT_SWEEP_LONG_" + pair_name;
          g_last_trade_parent_key = parent.key;
-         g_active_exit_time = NextSessionEnd(TimeCurrent());
+         g_active_exit_utc = NextSessionEndUtc(TimeCurrent());
          return true;
         }
      }
@@ -410,7 +411,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const double sl = NormalizedPrice(high1 + buffer);
       const double tp = NormalizedPrice(parent.low);
       if(entry > 0.0 && sl > entry && tp > 0.0 && tp < entry &&
-         ProjectedRRPasses(QM_SELL, entry, sl, tp))
+         ProjectedRRPasses(entry, sl, tp))
         {
          req.type = QM_SELL;
          req.price = 0.0;
@@ -418,7 +419,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          req.tp = tp;
          req.reason = "PARENT_SWEEP_SHORT_" + pair_name;
          g_last_trade_parent_key = parent.key;
-         g_active_exit_time = NextSessionEnd(TimeCurrent());
+         g_active_exit_utc = NextSessionEndUtc(TimeCurrent());
          return true;
         }
      }
@@ -433,11 +434,11 @@ void Strategy_ManageOpenPosition()
 
 bool Strategy_ExitSignal()
   {
-   if(g_active_exit_time <= 0)
+   if(g_active_exit_utc <= 0)
       return false;
    if(!HasOurOpenPosition())
       return false;
-   return (TimeCurrent() >= g_active_exit_time);
+   return (QM_BrokerToUTC(TimeCurrent()) >= g_active_exit_utc);
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)

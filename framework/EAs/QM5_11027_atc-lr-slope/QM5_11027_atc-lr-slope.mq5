@@ -87,7 +87,7 @@ bool LRSlopePerBar(const string sym, const ENUM_TIMEFRAMES tf, const int period,
   {
    if(period < 2)
       return false;
-   if(Bars(sym, tf) < period + 2)
+   if(Bars(sym, tf) < period + 2) // perf-allowed: bounded LR warmup check for bespoke regression signal
       return false;
 
    // x = 0..period-1 (oldest..newest among the closed bars). Closed bars are at
@@ -97,7 +97,7 @@ bool LRSlopePerBar(const string sym, const ENUM_TIMEFRAMES tf, const int period,
    for(int x = 0; x < period; ++x)
      {
       const int shift = period - x;                       // shift period..1
-      const double y = iClose(sym, tf, shift);            // perf-allowed: single closed-bar read
+      const double y = iClose(sym, tf, shift);            // perf-allowed: bounded LR closed-bar read
       if(y <= 0.0)
          return false;
       sum_x  += (double)x;
@@ -172,6 +172,14 @@ bool Strategy_NoTradeFilter()
 // LR-slope trend entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
