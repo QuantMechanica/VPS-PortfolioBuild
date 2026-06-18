@@ -76,11 +76,15 @@ input group "Strategy"
 input double strategy_signal_open_level = 1.0;
 input int    strategy_signal_open_method = 0;
 input int    strategy_tenkan_period     = 30;
+input int    strategy_kijun_period      = 10;
+input int    strategy_senkou_span_b_period = 30;
 input int    strategy_stop_loss_pips    = 80;
 input int    strategy_take_profit_pips  = 80;
 input int    strategy_close_after_bars  = 30;
 input int    strategy_max_spread_pips   = 4;
 input bool   strategy_opposite_exit_enabled = true;
+
+int g_last_closed_bar_signal = 0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -121,97 +125,79 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_tenkan_period < 2 ||
-      strategy_signal_open_level <= 0.0 ||
+   g_last_closed_bar_signal = 0;
+
+   if(strategy_signal_open_level <= 0.0 ||
+      strategy_tenkan_period < 2 ||
+      strategy_kijun_period < 2 ||
+      strategy_senkou_span_b_period < 2 ||
       strategy_stop_loss_pips <= 0 ||
       strategy_take_profit_pips <= 0)
       return false;
 
-   // perf-allowed: source-default Ichimoku Tenkan and candle/D1 ranges are bespoke OHLC logic; caller gates this hook with QM_IsNewBar().
-   const double open1 = iOpen(_Symbol, _Period, 1); // perf-allowed
-   const double high1 = iHigh(_Symbol, _Period, 1); // perf-allowed
-   const double low1 = iLow(_Symbol, _Period, 1); // perf-allowed
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed
-   const double open2 = iOpen(_Symbol, _Period, 2); // perf-allowed
-   const double high2 = iHigh(_Symbol, _Period, 2); // perf-allowed
-   const double low2 = iLow(_Symbol, _Period, 2); // perf-allowed
-   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed
-   const double d1_high1 = iHigh(_Symbol, PERIOD_D1, 1); // perf-allowed
-   const double d1_low1 = iLow(_Symbol, PERIOD_D1, 1); // perf-allowed
-   const double d1_high2 = iHigh(_Symbol, PERIOD_D1, 2); // perf-allowed
-   const double d1_low2 = iLow(_Symbol, PERIOD_D1, 2); // perf-allowed
-
-   if(open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0 ||
-      open2 <= 0.0 || high2 <= 0.0 || low2 <= 0.0 || close2 <= 0.0 ||
-      d1_high1 <= 0.0 || d1_low1 <= 0.0 || d1_high2 <= 0.0 || d1_low2 <= 0.0)
+   MqlRates chart_rates[];
+   ArraySetAsSeries(chart_rates, true);
+   if(CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, 2, chart_rates) != 2) // perf-allowed
       return false;
 
-   const double range_candles = (high1 - low1) + (high2 - low2);
-   const double range_d1 = (d1_high1 - d1_low1) + (d1_high2 - d1_low2);
-   int tf_minutes = PeriodSeconds((ENUM_TIMEFRAMES)_Period) / 60;
-   if(tf_minutes < 1)
-      tf_minutes = 1;
-   if(range_candles <= 0.0 || range_d1 <= 0.0)
+   MqlRates daily_rates[];
+   ArraySetAsSeries(daily_rates, true);
+   if(CopyRates(_Symbol, PERIOD_D1, 1, 2, daily_rates) != 2) // perf-allowed
       return false;
 
-   const double normalized_range = 100.0 * range_candles / range_d1 / (double)tf_minutes;
+   const double range_candles = (chart_rates[0].high - chart_rates[0].low) +
+                                (chart_rates[1].high - chart_rates[1].low);
+   const double range_d1 = (daily_rates[0].high - daily_rates[0].low) +
+                           (daily_rates[1].high - daily_rates[1].low);
+   const int seconds_per_bar = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
+   if(range_candles <= 0.0 || range_d1 <= 0.0 || seconds_per_bar <= 0)
+      return false;
+
+   const double tf_fraction_of_day = (double)seconds_per_bar / 86400.0;
+   if(tf_fraction_of_day <= 0.0)
+      return false;
+
+   const double normalized_range = range_candles / (range_d1 * tf_fraction_of_day);
    if(normalized_range <= strategy_signal_open_level)
       return false;
 
-   double tenkan_high1 = -DBL_MAX;
-   double tenkan_low1 = DBL_MAX;
-   double tenkan_high2 = -DBL_MAX;
-   double tenkan_low2 = DBL_MAX;
-   double tenkan_high3 = -DBL_MAX;
-   double tenkan_low3 = DBL_MAX;
-   double tenkan_high4 = -DBL_MAX;
-   double tenkan_low4 = DBL_MAX;
-
-   for(int i = 0; i < strategy_tenkan_period; ++i)
-     {
-      const double h1 = iHigh(_Symbol, _Period, 1 + i); // perf-allowed
-      const double l1 = iLow(_Symbol, _Period, 1 + i); // perf-allowed
-      const double h2 = iHigh(_Symbol, _Period, 2 + i); // perf-allowed
-      const double l2 = iLow(_Symbol, _Period, 2 + i); // perf-allowed
-      const double h3 = iHigh(_Symbol, _Period, 3 + i); // perf-allowed
-      const double l3 = iLow(_Symbol, _Period, 3 + i); // perf-allowed
-      const double h4 = iHigh(_Symbol, _Period, 4 + i); // perf-allowed
-      const double l4 = iLow(_Symbol, _Period, 4 + i); // perf-allowed
-      if(h1 <= 0.0 || l1 <= 0.0 || h2 <= 0.0 || l2 <= 0.0 ||
-         h3 <= 0.0 || l3 <= 0.0 || h4 <= 0.0 || l4 <= 0.0)
-         return false;
-      tenkan_high1 = MathMax(tenkan_high1, h1);
-      tenkan_low1 = MathMin(tenkan_low1, l1);
-      tenkan_high2 = MathMax(tenkan_high2, h2);
-      tenkan_low2 = MathMin(tenkan_low2, l2);
-      tenkan_high3 = MathMax(tenkan_high3, h3);
-      tenkan_low3 = MathMin(tenkan_low3, l3);
-      tenkan_high4 = MathMax(tenkan_high4, h4);
-      tenkan_low4 = MathMin(tenkan_low4, l4);
-     }
-
-   const double ma1 = (tenkan_high1 + tenkan_low1) * 0.5;
-   const double ma2 = (tenkan_high2 + tenkan_low2) * 0.5;
-   const double ma3 = (tenkan_high3 + tenkan_low3) * 0.5;
-   const double ma4 = (tenkan_high4 + tenkan_low4) * 0.5;
+   const double ma1 = QM_Ichimoku_TenkanSen(_Symbol,
+                                            (ENUM_TIMEFRAMES)_Period,
+                                            strategy_tenkan_period,
+                                            strategy_kijun_period,
+                                            strategy_senkou_span_b_period,
+                                            1);
+   const double ma2 = QM_Ichimoku_TenkanSen(_Symbol,
+                                            (ENUM_TIMEFRAMES)_Period,
+                                            strategy_tenkan_period,
+                                            strategy_kijun_period,
+                                            strategy_senkou_span_b_period,
+                                            2);
+   const double ma3 = QM_Ichimoku_TenkanSen(_Symbol,
+                                            (ENUM_TIMEFRAMES)_Period,
+                                            strategy_tenkan_period,
+                                            strategy_kijun_period,
+                                            strategy_senkou_span_b_period,
+                                            3);
+   const double ma4 = QM_Ichimoku_TenkanSen(_Symbol,
+                                            (ENUM_TIMEFRAMES)_Period,
+                                            strategy_tenkan_period,
+                                            strategy_kijun_period,
+                                            strategy_senkou_span_b_period,
+                                            4);
    if(ma1 <= 0.0 || ma2 <= 0.0 || ma3 <= 0.0 || ma4 <= 0.0)
       return false;
 
-   const bool ma_inside_candles = (low1 < ma1 && high1 > ma1) || (low2 < ma1 && high2 > ma1);
+   const bool ma_inside_candles =
+      (chart_rates[0].low < ma1 && chart_rates[0].high > ma1) ||
+      (chart_rates[1].low < ma2 && chart_rates[1].high > ma2);
    if(!ma_inside_candles)
       return false;
 
-   bool long_ok = (close1 > open1) || (close2 > open2);
-   bool short_ok = (close1 < open1) || (close2 < open2);
-   if(long_ok && short_ok)
-     {
-      if(close1 > open1)
-         short_ok = false;
-      else if(close1 < open1)
-         long_ok = false;
-      else
-         return false;
-     }
+   bool long_ok = (chart_rates[0].close > chart_rates[0].open) ||
+                  (chart_rates[1].close > chart_rates[1].open);
+   bool short_ok = (chart_rates[0].close < chart_rates[0].open) ||
+                   (chart_rates[1].close < chart_rates[1].open);
 
    if(strategy_signal_open_method != 0)
      {
@@ -232,12 +218,33 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
         }
      }
 
+   if(long_ok && short_ok)
+     {
+      if(chart_rates[0].close > chart_rates[0].open)
+         short_ok = false;
+      else if(chart_rates[0].close < chart_rates[0].open)
+         long_ok = false;
+      else
+         return false;
+     }
+
+   if(long_ok)
+      g_last_closed_bar_signal = 1;
+   else if(short_ok)
+      g_last_closed_bar_signal = -1;
+   else
+      return false;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic > 0 && QM_TM_OpenPositionCount(magic) > 0)
+      return false;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   if(long_ok)
+   if(g_last_closed_bar_signal > 0)
      {
       req.type = QM_BUY;
       req.sl = QM_StopFixedPips(_Symbol, req.type, ask, strategy_stop_loss_pips);
@@ -246,16 +253,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return (req.sl > 0.0 && req.tp > 0.0);
      }
 
-   if(short_ok)
-     {
-      req.type = QM_SELL;
-      req.sl = QM_StopFixedPips(_Symbol, req.type, bid, strategy_stop_loss_pips);
-      req.tp = QM_TakeFixedPips(_Symbol, req.type, bid, strategy_take_profit_pips);
-      req.reason = "EA31337_MABRK_SHORT";
-      return (req.sl > 0.0 && req.tp > 0.0);
-     }
-
-   return false;
+   req.type = QM_SELL;
+   req.sl = QM_StopFixedPips(_Symbol, req.type, bid, strategy_stop_loss_pips);
+   req.tp = QM_TakeFixedPips(_Symbol, req.type, bid, strategy_take_profit_pips);
+   req.reason = "EA31337_MABRK_SHORT";
+   return (req.sl > 0.0 && req.tp > 0.0);
   }
 
 // Called every tick when an open position exists for this EA's magic.
@@ -292,17 +294,13 @@ bool Strategy_ExitSignal()
             return true;
         }
 
-      if(strategy_opposite_exit_enabled)
+      if(strategy_opposite_exit_enabled && g_last_closed_bar_signal != 0)
         {
-         QM_EntryRequest opposite_req;
-         if(Strategy_EntrySignal(opposite_req))
-           {
-            const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-            if(pos_type == POSITION_TYPE_BUY && opposite_req.type == QM_SELL)
-               return true;
-            if(pos_type == POSITION_TYPE_SELL && opposite_req.type == QM_BUY)
-               return true;
-           }
+         const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+         if(pos_type == POSITION_TYPE_BUY && g_last_closed_bar_signal < 0)
+            return true;
+         if(pos_type == POSITION_TYPE_SELL && g_last_closed_bar_signal > 0)
+            return true;
         }
      }
 

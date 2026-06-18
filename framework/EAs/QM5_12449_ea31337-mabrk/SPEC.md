@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA trades the EA31337 Moving Average Candle Breakout rule on closed H1 bars. It uses the source default Ichimoku selector as a fixed Tenkan-line baseline: the current and prior closed candle ranges are normalized by the current and prior D1 ranges and chart timeframe, the Tenkan value must sit inside either closed candle, and candle direction decides long or short. The EA enters one market position with fixed 80-pip SL and 80-pip TP, exits after 30 bars, and closes early when the opposite breakout signal appears.
+This EA trades the EA31337 Moving Average Candle Breakout rule on closed H1 bars. It fixes the source default indicator selector to Ichimoku Tenkan using source-default `30/10/30` periods: the current and prior closed candle ranges are normalized by the current and prior D1 ranges and chart timeframe, the Tenkan value must sit inside either closed candle, and candle direction decides long or short. The EA enters one market position with fixed 80-pip SL and 80-pip TP, exits after 30 bars, and closes early when the opposite breakout signal appears.
 
 ---
 
@@ -21,6 +21,8 @@ This EA trades the EA31337 Moving Average Candle Breakout rule on closed H1 bars
 | `strategy_signal_open_level` | 1.0 | >0 | Minimum normalized two-candle range required for entry. |
 | `strategy_signal_open_method` | 0 | 0-7 | Optional source bitmask for Tenkan slope and four-bar extreme confirmation. |
 | `strategy_tenkan_period` | 30 | >=2 | Source default Ichimoku Tenkan lookback used as the breakout line. |
+| `strategy_kijun_period` | 10 | >=2 | Source default Ichimoku Kijun period used by the framework Ichimoku reader. |
+| `strategy_senkou_span_b_period` | 30 | >=2 | Source default Ichimoku Senkou Span B period used by the framework Ichimoku reader. |
 | `strategy_stop_loss_pips` | 80 | >0 | Fixed protective stop distance in pips. |
 | `strategy_take_profit_pips` | 80 | >0 | Fixed profit target distance in pips. |
 | `strategy_close_after_bars` | 30 | >0 | Time exit after this many chart bars. |
