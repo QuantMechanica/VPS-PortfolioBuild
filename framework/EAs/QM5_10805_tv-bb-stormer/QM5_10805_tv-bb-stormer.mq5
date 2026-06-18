@@ -3,7 +3,6 @@
 #property description "QM5_10805 TradingView Bollinger Bands Modified Stormer"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -119,26 +118,29 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
 
-   const double upper_1 = QM_BB_Upper(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1);
-   const double upper_2 = QM_BB_Upper(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 2);
-   const double lower_1 = QM_BB_Lower(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1);
-   const double lower_2 = QM_BB_Lower(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 2);
-   if(upper_1 <= 0.0 || upper_2 <= 0.0 || lower_1 <= 0.0 || lower_2 <= 0.0)
+   const double upper1 = QM_BB_Upper(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1);
+   const double upper2 = QM_BB_Upper(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 2);
+   const double lower1 = QM_BB_Lower(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1);
+   const double lower2 = QM_BB_Lower(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 2);
+   if(upper1 <= 0.0 || upper2 <= 0.0 || lower1 <= 0.0 || lower2 <= 0.0)
       return false;
 
-   const int bb_now = QM_Sig_BB_MeanRev(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1);
-   const int bb_prev = QM_Sig_BB_MeanRev(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 2);
-   bool long_signal = (bb_now < 0 && bb_prev >= 0);
-   bool short_signal = (bb_now > 0 && bb_prev <= 0);
+   const double close1 = iClose(_Symbol, tf, 1); // perf-allowed: single closed-bar crossover read inside framework new-bar gate.
+   const double close2 = iClose(_Symbol, tf, 2); // perf-allowed: single closed-bar crossover read inside framework new-bar gate.
+   if(close1 <= 0.0 || close2 <= 0.0)
+      return false;
+
+   bool long_signal = (close2 <= upper2 && close1 > upper1);
+   bool short_signal = (close2 >= lower2 && close1 < lower1);
 
    if(strategy_ema_filter_period > 0)
      {
-      const int ema_side = QM_Sig_Price_Above_MA(_Symbol, tf, strategy_ema_filter_period, 0.0, 1);
-      if(ema_side == 0)
+      const double ema1 = QM_EMA(_Symbol, tf, strategy_ema_filter_period, 1);
+      if(ema1 <= 0.0)
          return false;
-      if(long_signal && ema_side <= 0)
+      if(long_signal && close1 <= ema1)
          long_signal = false;
-      if(short_signal && ema_side >= 0)
+      if(short_signal && close1 >= ema1)
          short_signal = false;
      }
 
@@ -180,17 +182,20 @@ bool Strategy_ExitSignal()
    const int magic = QM_FrameworkMagic();
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
 
-   const double upper_1 = QM_BB_Upper(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1);
-   const double upper_2 = QM_BB_Upper(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 2);
-   const double lower_1 = QM_BB_Lower(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1);
-   const double lower_2 = QM_BB_Lower(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 2);
-   if(upper_1 <= 0.0 || upper_2 <= 0.0 || lower_1 <= 0.0 || lower_2 <= 0.0)
+   const double upper1 = QM_BB_Upper(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1);
+   const double upper2 = QM_BB_Upper(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 2);
+   const double lower1 = QM_BB_Lower(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1);
+   const double lower2 = QM_BB_Lower(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 2);
+   if(upper1 <= 0.0 || upper2 <= 0.0 || lower1 <= 0.0 || lower2 <= 0.0)
       return false;
 
-   const int bb_now = QM_Sig_BB_MeanRev(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1);
-   const int bb_prev = QM_Sig_BB_MeanRev(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 2);
-   const bool long_opposite_breakout = (bb_now > 0 && bb_prev <= 0);
-   const bool short_opposite_breakout = (bb_now < 0 && bb_prev >= 0);
+   const double close1 = iClose(_Symbol, tf, 1); // perf-allowed: single closed-bar opposite-breakout read.
+   const double close2 = iClose(_Symbol, tf, 2); // perf-allowed: single closed-bar opposite-breakout read.
+   if(close1 <= 0.0 || close2 <= 0.0)
+      return false;
+
+   const bool long_opposite_breakout = (close2 >= lower2 && close1 < lower1);
+   const bool short_opposite_breakout = (close2 <= upper2 && close1 > upper1);
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {

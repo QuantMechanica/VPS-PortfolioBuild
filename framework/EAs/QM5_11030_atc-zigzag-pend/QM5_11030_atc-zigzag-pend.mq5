@@ -11,12 +11,10 @@
 // Card: artifacts/cards_approved/QM5_11030_atc-zigzag-pend.md (g0_status APPROVED).
 //
 // Mechanics (closed-bar evaluation only — NON-REPAINTING ZigZag):
-//   ZigZag pivots are CONFIRMED fractal swings: a bar is a swing high iff its
-//   high is the strict maximum over [s-depth, s+depth] (and beats the prior
-//   opposite pivot by >= deviation points, alternating high/low with backstep
-//   spacing). Because the right wing (s+depth bars) is fully CLOSED before the
-//   bar is accepted, a confirmed pivot can NEVER change on later bars — no
-//   repaint, no forming leg. We only ever read the last two CONFIRMED pivots.
+//   ZigZag pivots are reconstructed from CLOSED bars using the conventional
+//   MetaTrader depth/deviation/backstep rule. The newest backstep bars are
+//   ignored, so accepted pivots have enough right-side confirmation to avoid
+//   acting on the forming leg. We only ever read the last CONFIRMED high/low.
 //
 //   Entry  : BUY STOP at (last confirmed swing HIGH + entry_buffer_atr*ATR).
 //            SELL STOP at (last confirmed swing LOW  - entry_buffer_atr*ATR).
@@ -86,10 +84,10 @@ ulong    g_sell_stop_ticket  = 0;     // tracked sell-stop pending ticket (0 = n
 
 // -----------------------------------------------------------------------------
 // Confirmed ZigZag reconstruction over a bounded closed-bar window.
-// Returns true if both a swing high and a swing low were found. Pivots are
-// fractal-confirmed (strict extreme over [s-depth, s+depth]); the right wing is
-// fully closed so they never repaint. Alternation + deviation + backstep mimic
-// the conventional MetaTrader ZigZag without forming legs.
+// Returns true if both a swing high and a swing low were found. This follows a
+// conventional MT-style pass: a candidate high/low is the extreme over the
+// trailing depth window, backstep removes weaker nearby candidates, and
+// deviation/alternation select confirmed swing levels from closed bars.
 // -----------------------------------------------------------------------------
 bool ComputeConfirmedPivots(double &out_high, datetime &out_high_t,
                             double &out_low,  datetime &out_low_t)
@@ -97,9 +95,9 @@ bool ComputeConfirmedPivots(double &out_high, datetime &out_high_t,
    const int depth = (strategy_zz_depth < 1) ? 1 : strategy_zz_depth;
    const int backstep = (strategy_zz_backstep < 0) ? 0 : strategy_zz_backstep;
 
-   // Window: enough bars to find a couple of alternating pivots. Bounded.
-   const int max_pivots_back = 6;                 // how many confirmed pivots to scan for
-   const int window = depth * (max_pivots_back + 4) + backstep + 8;
+   // Window: enough bars to find several alternating pivots. Bounded.
+   const int max_pivots_back = 12;                // how many confirmed pivots to scan for
+   const int window = depth * (max_pivots_back + 3) + backstep + 8;
 
    const int avail = Bars(_Symbol, _Period); // perf-allowed: bounds check for bespoke ZigZag window; caller is QM_IsNewBar-gated
    if(avail < window + depth + 2)
@@ -116,10 +114,58 @@ bool ComputeConfirmedPivots(double &out_high, datetime &out_high_t,
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const double dev_price = (point > 0.0) ? (strategy_zz_deviation * point) : 0.0;
 
-   // Collect confirmed pivots from most-recent backwards. A bar at index s (in
-   // series order, s>=depth) is a confirmed swing HIGH iff its high is the strict
-   // maximum over [s-depth .. s+depth]; symmetric for LOW. s+depth must be a
-   // closed bar (it always is — index 0 here is closed bar shift 1).
+   // Candidate buffers in series order. Index 0 is the last closed bar. The
+   // newest backstep bars are skipped so a pivot cannot be the forming leg.
+   double high_map[];
+   double low_map[];
+   ArrayResize(high_map, copied);
+   ArrayResize(low_map, copied);
+   ArrayInitialize(high_map, 0.0);
+   ArrayInitialize(low_map, 0.0);
+
+   for(int s = depth; s <= window; ++s)
+     {
+      double highest = rates[s].high;
+      double lowest = rates[s].low;
+      for(int k = 1; k < depth && (s + k) < copied; ++k)
+        {
+         if(rates[s + k].high > highest)
+            highest = rates[s + k].high;
+         if(rates[s + k].low < lowest)
+            lowest = rates[s + k].low;
+        }
+
+      if(rates[s].high >= highest)
+        {
+         bool keep_high = true;
+         for(int b = 1; b <= backstep && (s - b) >= 0; ++b)
+           {
+            if(high_map[s - b] > 0.0 && high_map[s - b] < rates[s].high)
+               high_map[s - b] = 0.0;
+            if(high_map[s - b] > rates[s].high)
+               keep_high = false;
+           }
+         if(keep_high)
+            high_map[s] = rates[s].high;
+        }
+
+      if(rates[s].low <= lowest)
+        {
+         bool keep_low = true;
+         for(int b = 1; b <= backstep && (s - b) >= 0; ++b)
+           {
+            if(low_map[s - b] > 0.0 && low_map[s - b] > rates[s].low)
+               low_map[s - b] = 0.0;
+            if(low_map[s - b] > 0.0 && low_map[s - b] < rates[s].low)
+               keep_low = false;
+           }
+         if(keep_low)
+            low_map[s] = rates[s].low;
+        }
+     }
+
+   // Collect confirmed pivots from most-recent backwards. Deviation and
+   // alternation are applied as the final ZigZag line filter.
    double   piv_price[];
    datetime piv_time[];
    int      piv_ishigh[];   // 1 = high, 0 = low
@@ -128,24 +174,13 @@ bool ComputeConfirmedPivots(double &out_high, datetime &out_high_t,
    ArrayResize(piv_ishigh,max_pivots_back * 2 + 4);
    int piv_n = 0;
 
-   int last_pivot_index = -10000;   // series index of last accepted pivot (for backstep)
    int last_pivot_kind  = -1;       // 1 high, 0 low, -1 none (for alternation)
    double last_pivot_price = 0.0;
 
-   for(int s = depth; s <= window && piv_n < max_pivots_back * 2; ++s)
+   for(int s = backstep + 1; s <= window && piv_n < max_pivots_back * 2; ++s)
      {
-      const double hi = rates[s].high;
-      const double lo = rates[s].low;
-
-      bool is_high = true;
-      bool is_low  = true;
-      for(int k = 1; k <= depth; ++k)
-        {
-         // left wing (older bars: larger index) and right wing (newer: smaller index)
-         if(rates[s + k].high >= hi || rates[s - k].high >= hi) is_high = false;
-         if(rates[s + k].low  <= lo || rates[s - k].low  <= lo) is_low  = false;
-         if(!is_high && !is_low) break;
-        }
+      const bool is_high = (high_map[s] > 0.0);
+      const bool is_low  = (low_map[s] > 0.0);
       if(!is_high && !is_low)
          continue;
 
@@ -156,21 +191,17 @@ bool ComputeConfirmedPivots(double &out_high, datetime &out_high_t,
       if(is_high && is_low)
         {
          kind  = (last_pivot_kind == 1) ? 0 : 1;
-         price = (kind == 1) ? hi : lo;
+         price = (kind == 1) ? high_map[s] : low_map[s];
         }
       else if(is_high)
-        { kind = 1; price = hi; }
+        { kind = 1; price = high_map[s]; }
       else
-        { kind = 0; price = lo; }
+        { kind = 0; price = low_map[s]; }
 
       // Alternation: skip same-kind-as-previous unless it is a more extreme
       // extension (then replace the previous pivot of that kind — handled by
       // simply not double-recording; the most recent extreme wins downstream).
       if(kind == last_pivot_kind && last_pivot_kind != -1)
-         continue;
-
-      // Backstep spacing vs the last accepted pivot.
-      if(last_pivot_index != -10000 && (s - last_pivot_index) < backstep + 1)
          continue;
 
       // Deviation: move from the previous pivot must exceed the threshold.
@@ -183,7 +214,6 @@ bool ComputeConfirmedPivots(double &out_high, datetime &out_high_t,
       piv_ishigh[piv_n] = kind;
       ++piv_n;
 
-      last_pivot_index = s;
       last_pivot_kind  = kind;
       last_pivot_price = price;
      }

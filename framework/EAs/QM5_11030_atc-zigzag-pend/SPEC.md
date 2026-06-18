@@ -10,12 +10,11 @@
 
 ## 1. Strategy Logic
 
-On each closed H1 bar the EA reconstructs a deterministic, non-repainting ZigZag
-from confirmed fractal swings: a bar is a swing high only when its high is the
-strict maximum over the window `[bar-depth, bar+depth]` (symmetric for swing
-lows), with alternation, a `deviation`-point minimum move versus the prior
-pivot, and a `backstep` minimum bar spacing. Because the right wing of `depth`
-bars is fully closed before a pivot is accepted, confirmed pivots never repaint.
+On each closed H1 bar the EA reconstructs a deterministic, non-repainting
+ZigZag from the conventional MetaTrader-style `depth`, `deviation`, and
+`backstep` rules. A candidate swing is the extreme over the trailing depth
+window; weaker nearby candidates are removed by backstep; and the newest
+backstep bars are ignored so the EA does not act on an unconfirmed forming leg.
 
 It then places a BUY STOP at `last confirmed swing high + entry_buffer_atr*ATR`
 and a SELL STOP at `last confirmed swing low - entry_buffer_atr*ATR`, but only
