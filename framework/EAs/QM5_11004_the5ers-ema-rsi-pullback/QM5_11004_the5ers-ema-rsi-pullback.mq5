@@ -106,10 +106,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // --- Session filter: only enter inside [start, end) broker-time hours. ---
-   // TimeCurrent() is broker time in the tester; key off the closed-bar open
-   // time so the gate is deterministic per bar, not per tick.
-   const datetime bar_open = iTime(_Symbol, _Period, 0); // perf-allowed: current bar open time
+   // EntrySignal is called only after the framework new-bar gate, so this is
+   // deterministic per bar without maintaining a local timestamp gate.
+   const datetime bar_open = TimeCurrent();
    MqlDateTime dt;
    TimeToStruct(bar_open, dt);
    if(dt.hour < strategy_session_start_h || dt.hour >= strategy_session_end_h)
@@ -121,9 +129,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ema_fast <= 0.0 || ema_slow <= 0.0)
       return false;
 
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0)
-      return false;
+   const int price_vs_slow = QM_Sig_Price_Above_MA(_Symbol, _Period, strategy_ema_slow_period, 0.0, 1);
 
    // --- RSI recovery EVENT (shift 2 outside the band, shift 1 back inside). ---
    const double rsi_now  = QM_RSI(_Symbol, _Period, strategy_rsi_period, 1);
@@ -135,12 +141,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    bool is_short = false;
 
    // Long: bullish stack + price above slow EMA + RSI recovers up through lo.
-   if(ema_fast > ema_slow && close1 > ema_slow &&
+   if(ema_fast > ema_slow && price_vs_slow > 0 &&
       rsi_prev < strategy_rsi_lo && rsi_now >= strategy_rsi_lo)
       is_long = true;
 
    // Short: bearish stack + price below slow EMA + RSI recovers down through hi.
-   if(ema_fast < ema_slow && close1 < ema_slow &&
+   if(ema_fast < ema_slow && price_vs_slow < 0 &&
       rsi_prev > strategy_rsi_hi && rsi_now <= strategy_rsi_hi)
       is_short = true;
 
@@ -159,10 +165,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(sl <= 0.0 || tp <= 0.0)
       return false;
 
-   req.type   = side;
-   req.price  = 0.0;   // framework fills market price at send
-   req.sl     = sl;
-   req.tp     = tp;
+   req.type = side;
+   req.price = 0.0;   // framework fills market price at send
+   req.sl = sl;
+   req.tp = tp;
    req.reason = is_long ? "ema_rsi_pb_long" : "ema_rsi_pb_short";
    return true;
   }
@@ -190,6 +196,10 @@ bool Strategy_ExitSignal()
      {
       const ulong ticket = PositionGetTicket(i);
       if(ticket == 0)
+         continue;
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
