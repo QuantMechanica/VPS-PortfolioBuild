@@ -173,19 +173,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    // OnTick already gates this hook behind QM_IsNewBar() (consumed once), so it
    // runs exactly once per closed M5 bar — no per-EA new-bar reimplementation.
-   // We read the forming bar's open time only as an absolute timestamp to map
-   // the just-closed bar onto the event window (strategy-time math, not cadence).
-   const datetime bar_open_broker = iTime(_Symbol, PERIOD_M5, 0);
-   if(bar_open_broker <= 0)
+   // Use current broker time as the closed-bar decision timestamp. The framework
+   // has already consumed QM_IsNewBar(), so this runs once per M5 bar.
+   const datetime decision_broker = TimeCurrent();
+   if(decision_broker <= 0)
       return false;
 
    // Already positioned around an event — let the time-stop / SL run it out.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // The bar that just CLOSED opened at iTime(...,1); its close timestamp is the
-   // open of the current forming bar (bar_open_broker). Decide in UTC.
-   const datetime closed_bar_close_utc = QM_BrokerToUTC(bar_open_broker);
+   // Decide in UTC so the calendar event timestamps and price trigger align.
+   const datetime closed_bar_close_utc = QM_BrokerToUTC(decision_broker);
    if(closed_bar_close_utc <= 0)
       return false;
 
@@ -240,6 +239,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.tp     = 0.0;                                  // no TP — time-stop is primary
    req.reason = "zuck_event_rebound";
    req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
 
    // Latch the event so the time-stop exit knows when to close.
    g_active_event_utc = ev_utc;
