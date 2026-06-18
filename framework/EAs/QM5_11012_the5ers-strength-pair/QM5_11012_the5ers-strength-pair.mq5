@@ -172,11 +172,11 @@ void QM_AdvanceStrength()
       const int qi = g_pair_quote[i];
       if(bi < 0 || qi < 0)
          continue;
-      if(Bars(g_pair[i], PERIOD_D1) < strategy_min_d1_bars)
+      if(Bars(g_pair[i], PERIOD_D1) < strategy_min_d1_bars) // perf-allowed
          continue;
       // perf-allowed: two closed-bar foreign-symbol close reads per pair (basket leg).
-      const double c_now  = iClose(g_pair[i], PERIOD_D1, 1);
-      const double c_past = iClose(g_pair[i], PERIOD_D1, 1 + L);
+      const double c_now  = iClose(g_pair[i], PERIOD_D1, 1); // perf-allowed
+      const double c_past = iClose(g_pair[i], PERIOD_D1, 1 + L); // perf-allowed
       if(c_now <= 0.0 || c_past <= 0.0)
          continue;                       // missing pair data -> skip this pair (card rule)
       const double ret = (c_now - c_past) / c_past * 100.0;  // % return over L D1 bars
@@ -286,7 +286,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(magic) > 0)
       return false;
 
-   if(Bars(_Symbol, PERIOD_H1) < strategy_min_d1_bars)
+   if(Bars(_Symbol, PERIOD_H1) < strategy_min_d1_bars) // perf-allowed
       return false;
 
    // Strength is advanced once per closed H1 bar in OnTick (before this call).
@@ -300,8 +300,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ema_now <= 0.0 || ema_prev <= 0.0)
       return false;
    // perf-allowed: two closed-bar close reads for price/return confirmation.
-   const double close1 = iClose(_Symbol, PERIOD_H1, 1);
-   const double close2 = iClose(_Symbol, PERIOD_H1, 2);
+   const double close1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed
+   const double close2 = iClose(_Symbol, PERIOD_H1, 2); // perf-allowed
    if(close1 <= 0.0 || close2 <= 0.0)
       return false;
    const double h1_return = close1 - close2;
@@ -381,7 +381,7 @@ bool Strategy_ExitSignal()
    // Momentum exit: H1 close crosses to the wrong side of EMA50.
    const double ema_now = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_period, 1);
    // perf-allowed: single closed-bar close read for the momentum exit.
-   const double close1  = iClose(_Symbol, PERIOD_H1, 1);
+   const double close1  = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed
    if(ema_now > 0.0 && close1 > 0.0)
      {
       if(pos_dir > 0 && close1 < ema_now) return true;
@@ -398,8 +398,8 @@ bool Strategy_ExitSignal()
    if(open_time > 0)
      {
       // perf-allowed: single bar-open time read for the time-stop bar count.
-      const datetime cur_bar = iTime(_Symbol, PERIOD_H1, 0);
-      const int held = Bars(_Symbol, PERIOD_H1, open_time, cur_bar) - 1;
+      const datetime cur_bar = iTime(_Symbol, PERIOD_H1, 0); // perf-allowed
+      const int held = Bars(_Symbol, PERIOD_H1, open_time, cur_bar) - 1; // perf-allowed
       if(held >= strategy_time_stop_bars)
          return true;
      }
