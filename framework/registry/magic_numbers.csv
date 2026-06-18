@@ -10221,3 +10221,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12406,btc-22utc,2,NDX.DWX,124060002,2026-06-18,Development,active
 12406,btc-22utc,3,WS30.DWX,124060003,2026-06-18,Development,active
 12406,btc-22utc,4,EURUSD.DWX,124060004,2026-06-18,Development,active
+12373,tmom-alpha-rot,0,GDAXI.DWX,123730000,2026-06-18,Development,active
+12373,tmom-alpha-rot,1,NDX.DWX,123730001,2026-06-18,Development,active
+12373,tmom-alpha-rot,2,WS30.DWX,123730002,2026-06-18,Development,active
+12373,tmom-alpha-rot,3,SP500.DWX,123730003,2026-06-18,Development,active
