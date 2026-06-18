@@ -10318,3 +10318,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12404,stock-lowvol,4,UK100.DWX,124040004,2026-06-18,Development,active
 12404,stock-lowvol,5,XAUUSD.DWX,124040005,2026-06-18,Development,active
 12404,stock-lowvol,6,XTIUSD.DWX,124040006,2026-06-18,Development,active
+12407,oil-pred-eq,0,SP500.DWX,124070000,2026-06-18,Development,active
+12407,oil-pred-eq,1,NDX.DWX,124070001,2026-06-18,Development,active
+12407,oil-pred-eq,2,WS30.DWX,124070002,2026-06-18,Development,active
