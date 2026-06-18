@@ -74,8 +74,8 @@ input double strategy_rsi_short_level    = 30.0;   // RSI must be below this for
 input double strategy_rsi_exit_level     = 50.0;   // RSI fade-to-50 exit threshold
 input int    strategy_adx_period         = 14;     // ADX period (trend-vs-range filter)
 input double strategy_adx_min            = 20.0;   // require ADX above this (trending)
-input double strategy_sl_pips            = 15.0;   // fixed stop distance, in pips
-input double strategy_tp_pips            = 20.0;   // fixed take-profit distance, in pips
+input int    strategy_sl_pips            = 15;     // fixed stop distance, in pips
+input int    strategy_tp_pips            = 20;     // fixed take-profit distance, in pips
 input double strategy_spread_cap_pips    = 5.0;    // skip only if spread exceeds this many pips
 input int    strategy_session_start_utc  = 13;     // London+NY window start hour, UTC (inclusive)
 input int    strategy_session_end_utc    = 22;     // London+NY window end hour, UTC (exclusive)
@@ -176,7 +176,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const double sl = QM_StopFixedPips(_Symbol, QM_BUY, entry, strategy_sl_pips);
       if(sl <= 0.0)
          return false;
-      const double rr = (strategy_sl_pips > 0.0) ? (strategy_tp_pips / strategy_sl_pips) : 1.0;
+      const double rr = (strategy_sl_pips > 0) ? ((double)strategy_tp_pips / (double)strategy_sl_pips) : 1.0;
       const double tp = QM_TakeRR(_Symbol, QM_BUY, entry, sl, rr);
       if(tp <= 0.0)
          return false;
@@ -198,7 +198,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const double sl = QM_StopFixedPips(_Symbol, QM_SELL, entry, strategy_sl_pips);
       if(sl <= 0.0)
          return false;
-      const double rr = (strategy_sl_pips > 0.0) ? (strategy_tp_pips / strategy_sl_pips) : 1.0;
+      const double rr = (strategy_sl_pips > 0) ? ((double)strategy_tp_pips / (double)strategy_sl_pips) : 1.0;
       const double tp = QM_TakeRR(_Symbol, QM_SELL, entry, sl, rr);
       if(tp <= 0.0)
          return false;
