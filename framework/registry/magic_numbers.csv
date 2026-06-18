@@ -10263,3 +10263,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11889,lien-xtreme-fade-double-bb-adx,4,USDCHF.DWX,118890004,2026-06-18,Development,active
 11889,lien-xtreme-fade-double-bb-adx,5,AUDUSD.DWX,118890005,2026-06-18,Development,active
 11889,lien-xtreme-fade-double-bb-adx,6,NZDUSD.DWX,118890006,2026-06-18,Development,active
+12448,ea31337-env,0,EURUSD.DWX,124480000,2026-06-18,Development,active
+12448,ea31337-env,1,GBPUSD.DWX,124480001,2026-06-18,Development,active
+12448,ea31337-env,2,USDJPY.DWX,124480002,2026-06-18,Development,active
+12448,ea31337-env,3,XAUUSD.DWX,124480003,2026-06-18,Development,active
+12448,ea31337-env,4,GDAXI.DWX,124480004,2026-06-18,Development,active
