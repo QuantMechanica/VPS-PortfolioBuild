@@ -283,7 +283,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             sl = QM_StopRulesNormalizePrice(_Symbol, g_bull_swing_low - buf);
            }
          if(sl <= 0.0 || sl >= entry)
-            sl = QM_StopFixedPips(_Symbol, QM_BUY, entry, strategy_sl_fixed_pips);
+            sl = QM_StopFixedPips(_Symbol, QM_BUY, entry, (int)strategy_sl_fixed_pips);
          if(sl <= 0.0 || sl >= entry)
             return false;
 
@@ -318,7 +318,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             sl = QM_StopRulesNormalizePrice(_Symbol, g_bear_swing_high + buf);
            }
          if(sl <= entry)
-            sl = QM_StopFixedPips(_Symbol, QM_SELL, entry, strategy_sl_fixed_pips);
+            sl = QM_StopFixedPips(_Symbol, QM_SELL, entry, (int)strategy_sl_fixed_pips);
          if(sl <= entry)
             return false;
 
