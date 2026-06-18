@@ -250,8 +250,9 @@ int HTFBias()
 // zero modeled spread (never block on zero spread).
 bool Strategy_NoTradeFilter()
   {
-   if(!InLondonSession(TimeCurrent()))
-      return true;
+   // Session is checked in Strategy_EntrySignal so management and time-stop
+   // exits can still run outside the entry windows.
+   const datetime broker_now = TimeCurrent();
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
@@ -275,6 +276,17 @@ bool Strategy_NoTradeFilter()
 // at shift >= 1 (confirmed); bounded single-pass scan once per closed M30 bar.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(!InLondonSession(TimeCurrent()))
+      return false;
+
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
    // Suppress a fresh limit while one is already pending for this magic/symbol.
@@ -302,11 +314,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(bias > 0)
      {
       // ---- LONG: sweep BELOW the lowest swing-low of prior sweep_lookback bars ----
-      // Swept reference = lowest LOW over shifts [1 .. sweep_lookback].
+      // Swept reference = lowest confirmed swing-low in the prior lookback.
       double swept_low = 0.0;
       bool have = false;
-      for(int s = 1; s <= strategy_sweep_lookback; ++s)
+      for(int s = k + 1; s <= strategy_sweep_lookback + k; ++s)
         {
+         if(!IsSwingLow(_Period, s, k))
+            continue;
          const double lo = iLow(_Symbol, _Period, s); // perf-allowed
          if(lo <= 0.0) continue;
          if(!have || lo < swept_low) { swept_low = lo; have = true; }
@@ -328,7 +342,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
       // BOS: the stop-hunt bar (shift 1) closes ABOVE the last M30 swing high formed
       // BEFORE the sweep (search from shift 2 outward).
-      const int sh = RecentSwingHighShift(_Period, k, 2, strategy_sweep_lookback + 2 * k + 2);
+      const int sh = RecentSwingHighShift(_Period, k, k + 1, strategy_sweep_lookback + 2 * k + 2);
       if(sh < 0) return false;
       const double pre_swing_high = iHigh(_Symbol, _Period, sh); // perf-allowed
       if(pre_swing_high <= 0.0) return false;
@@ -336,10 +350,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
 
       // Origin = last opposite-colour (bearish) M30 candle before the BOS impulse,
-      // searched from shift 1 back through the impulse leg.
+      // searched from the candle before the BOS bar back through the impulse leg.
       double origin_open = 0.0, origin_close = 0.0;
       bool found_origin = false;
-      for(int s = 1; s <= sh + 2; ++s)
+      for(int s = 2; s <= sh + 2; ++s)
         {
          const double o = iOpen(_Symbol, _Period, s);  // perf-allowed
          const double c = iClose(_Symbol, _Period, s);  // perf-allowed
@@ -372,8 +386,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       // ---- SHORT: sweep ABOVE the highest swing-high of prior sweep_lookback bars ----
       double swept_high = 0.0;
       bool have = false;
-      for(int s = 1; s <= strategy_sweep_lookback; ++s)
+      for(int s = k + 1; s <= strategy_sweep_lookback + k; ++s)
         {
+         if(!IsSwingHigh(_Period, s, k))
+            continue;
          const double hi = iHigh(_Symbol, _Period, s); // perf-allowed
          if(hi <= 0.0) continue;
          if(!have || hi > swept_high) { swept_high = hi; have = true; }
@@ -390,7 +406,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if((hunt_high - hunt_low) > strategy_max_range_atr_mult * atr_m30)
          return false;
 
-      const int sl_shift = RecentSwingLowShift(_Period, k, 2, strategy_sweep_lookback + 2 * k + 2);
+      const int sl_shift = RecentSwingLowShift(_Period, k, k + 1, strategy_sweep_lookback + 2 * k + 2);
       if(sl_shift < 0) return false;
       const double pre_swing_low = iLow(_Symbol, _Period, sl_shift); // perf-allowed
       if(pre_swing_low <= 0.0) return false;
@@ -400,7 +416,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       // Origin = last opposite-colour (bullish) M30 candle before the BOS impulse.
       double origin_open = 0.0, origin_close = 0.0;
       bool found_origin = false;
-      for(int s = 1; s <= sl_shift + 2; ++s)
+      for(int s = 2; s <= sl_shift + 2; ++s)
         {
          const double o = iOpen(_Symbol, _Period, s);  // perf-allowed
          const double c = iClose(_Symbol, _Period, s);  // perf-allowed
