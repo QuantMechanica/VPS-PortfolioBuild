@@ -132,12 +132,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    // --- Fixed symmetric pip stop / target ---
    const double sl = QM_StopFixedPips(_Symbol, side, entry, strategy_sl_pips);
-   const double tp = QM_StopFixedPips(_Symbol, side,
-                       entry,
-                       // TP is the same fixed-pip distance on the profit side:
-                       // reuse the fixed-pip stop helper on the OPPOSITE side to
-                       // get a symmetric profit price.
-                       -strategy_tp_pips);
+   const double tp = QM_TakeFixedPips(_Symbol, side, entry, strategy_tp_pips);
    if(sl <= 0.0 || tp <= 0.0)
       return false;
 
