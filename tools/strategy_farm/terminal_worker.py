@@ -15,6 +15,7 @@ import random
 import shutil
 import signal
 import sqlite3
+import subprocess
 import threading
 import time
 from pathlib import Path
@@ -25,6 +26,15 @@ import farmctl
 
 POLL_SLEEP_SECONDS = 2.0
 MAX_WORK_ITEM_RETRIES = 3
+# Disk circuit-breaker (2026-06-19 incident): if free space on the runtime drive
+# drops below this, workers must NOT claim+run backtests (MT5 fails ticks
+# generation with "no disk space" -> fleet-wide INFRA_FAIL). Pause + trigger the
+# cache-purge task instead of burning the queue.
+DISK_MIN_FREE_GB = 40.0
+DISK_GUARD_SLEEP_SECONDS = 60
+DISK_PURGE_TASK = "QM_StrategyFarm_TesterCachePurge"
+_DISK_PURGE_COOLDOWN_SECONDS = 600.0
+_last_disk_purge_trigger = [0.0]
 SQLITE_WRITE_RETRIES = 12
 SQLITE_WRITE_RETRY_SLEEP_SECONDS = 1.5
 SMOKE_TERMINAL_EXIT_GRACE_SECONDS = 60.0
@@ -864,6 +874,31 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
     return {"action": "finished", "item_id": item["id"], **_finish_work_item(root, item["id"], exit_code)}
 
 
+def _disk_free_gb(root: Path) -> float:
+    """Free space (GB) on the runtime drive. Fail-open (inf) on error so a
+    measurement glitch never wedges the worker."""
+    try:
+        return shutil.disk_usage(root.anchor or str(root)).free / (1024 ** 3)
+    except Exception:
+        return float("inf")
+
+
+def _trigger_disk_purge() -> None:
+    """Best-effort kick of the cache-purge task, cooldown-guarded to avoid spam."""
+    now = time.monotonic()
+    if now - _last_disk_purge_trigger[0] < _DISK_PURGE_COOLDOWN_SECONDS:
+        return
+    _last_disk_purge_trigger[0] = now
+    try:
+        subprocess.run(
+            ["schtasks", "/run", "/TN", DISK_PURGE_TASK],
+            capture_output=True, timeout=15,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+    except Exception:
+        pass
+
+
 def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
     signal.signal(signal.SIGINT, _handle_stop)
     signal.signal(signal.SIGTERM, _handle_stop)
@@ -871,6 +906,13 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
     if released:
         print(json.dumps({"event": "released_stale_claims", "terminal": terminal, "item_ids": released}), flush=True)
     while not _STOP:
+        free_gb = _disk_free_gb(root)
+        if free_gb < DISK_MIN_FREE_GB:
+            print(json.dumps({"event": "disk_low_pause", "terminal": terminal,
+                              "free_gb": round(free_gb, 1), "threshold_gb": DISK_MIN_FREE_GB}), flush=True)
+            _trigger_disk_purge()
+            time.sleep(DISK_GUARD_SLEEP_SECONDS)
+            continue
         claim = claim_atomic(root, terminal)
         if not claim.get("claimed"):
             if claim.get("reason") == "sqlite_locked":
