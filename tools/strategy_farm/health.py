@@ -1164,16 +1164,21 @@ def chk_disk_free_space(con) -> dict:
     """D: free-space watchdog for reports/log growth."""
     free_gb = shutil.disk_usage("D:/").free / (1024 ** 3)
     value = round(free_gb, 1)
-    if free_gb < 10:
-        return _check("disk_free_gb", "FAIL", value, 10,
-                      f"D: free {free_gb:.1f}GB < 10GB threshold",
-                      "Investigate D:/QM/reports + D:/QM/strategy_farm/logs for cleanup. "
-                      "NEVER delete state/farm_state.sqlite or cards_approved/.")
-    if free_gb < 25:
-        return _check("disk_free_gb", "WARN", value, 25,
-                      f"D: free {free_gb:.1f}GB < 25GB warn",
-                      "Consider rotating logs older than 30 days.")
-    return _check("disk_free_gb", "OK", value, 25,
+    # Thresholds raised after the 2026-06-19 disk-full meltdown: MT5 fails tick
+    # generation ("no disk space", exit 100018) well before 0GB, so alarm early.
+    # FAIL aligns with the worker disk circuit-breaker (DISK_MIN_FREE_GB=40): below
+    # it workers pause-purge instead of running, i.e. the factory is stalling.
+    if free_gb < 40:
+        return _check("disk_free_gb", "FAIL", value, 40,
+                      f"D: free {free_gb:.1f}GB < 40GB (workers pause-purge below this; MT5 tick-gen at risk)",
+                      "Tester tick-caches are filling D:. Hourly purge (QM_StrategyFarm_TesterCachePurge) "
+                      "should hold it; if free keeps dropping run it now and check D:/QM/mt5/T*/Tester + "
+                      "reports/logs. NEVER delete state/farm_state.sqlite or cards_approved/.")
+    if free_gb < 80:
+        return _check("disk_free_gb", "WARN", value, 80,
+                      f"D: free {free_gb:.1f}GB < 80GB warn",
+                      "Disk filling — watch tester caches; the hourly purge should hold it.")
+    return _check("disk_free_gb", "OK", value, 80,
                   f"D: free {free_gb:.1f}GB", "")
 
 
