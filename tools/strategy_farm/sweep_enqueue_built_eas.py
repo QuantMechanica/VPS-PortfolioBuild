@@ -49,7 +49,7 @@ if "--queue-ceiling" in sys.argv:
 # accumulated this many INFRA_FAIL rows. Bounds hourly churn for EAs with a
 # permanent infra defect (non-DWX symbol, M1 gaps, German-locale terminal,
 # skeleton id) while still giving transient meltdown casualties ample retries.
-MAX_INFRA_ATTEMPTS = 5
+MAX_INFRA_ATTEMPTS = 12
 if "--max-infra-attempts" in sys.argv:
     MAX_INFRA_ATTEMPTS = int(sys.argv[sys.argv.index("--max-infra-attempts") + 1])
 # Part-2 per-run rate limit: drip-feed the stranded-INFRA backlog instead of
