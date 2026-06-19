@@ -89,6 +89,12 @@ $daemons = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='p
              Where-Object { $_.CommandLine -match 'terminal_worker\.py' })
 $nWorkers = $daemons.Count
 
+# 2a. Disk free on the runtime drive (2026-06-19 meltdown awareness). When D: is
+# critically low MT5 cannot generate ticks; the worker disk circuit-breaker pauses
+# rather than burning items as INFRA. The watchdog must treat that as a disk problem
+# to purge, NOT a worker wedge to respawn (respawned workers would also just pause).
+$diskFreeGb = try { [math]::Round((Get-PSDrive D -ErrorAction Stop).Free / 1GB, 1) } catch { 999.0 }
+
 # 2b. DISPATCH-STALL detection (added 2026-06-09 after an ~8.5h wedge stall).
 # Worker COUNT alone misses the case where workers are alive but WEDGED: after an
 # RDP disconnect/reconnect they hold a dead session handle, so they claim work but
@@ -205,6 +211,14 @@ elseif (-not $factoryEnabled) {
     $action = 'noop_factory_off'
     $detail = "FACTORY tasks disabled (OWNER OFF); workers=$nWorkers - leaving alone"
 }
+elseif ($diskFreeGb -lt 40) {
+    # Disk circuit-breaker awareness: workers correctly pause when D: is low, so a
+    # respawn here would just loop fresh workers that also pause. Kick the cache
+    # purge and wait for it to free space; the next run heals workers if needed.
+    $action = 'noop_disk_low_purge'
+    $detail = "D: free ${diskFreeGb}GB < 40GB while factory ON - workers pausing by design; kicking cache purge, NOT respawning"
+    try { Start-ScheduledTask -TaskName 'QM_StrategyFarm_TesterCachePurge' -ErrorAction SilentlyContinue } catch {}
+}
 elseif ($nWorkers -ge $MinWorkers -and -not $dispatchStalled) {
     $action = 'noop_healthy'
     $detail = "workers=$nWorkers/$ExpectWorkers (>= $MinWorkers); $stallInfo"
@@ -287,6 +301,7 @@ $record = [ordered]@{
     factory_enabled  = $factoryEnabled
     workers          = $nWorkers
     expect           = $ExpectWorkers
+    disk_free_gb     = $diskFreeGb
     dispatch_stalled = $dispatchStalled
     session_lost     = $sessionLost
     action           = $action
