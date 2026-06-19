@@ -177,7 +177,7 @@ for phase in ("Q02", "Q03", "Q08"):
         SELECT ea_id FROM work_items WHERE phase=? GROUP BY ea_id
         HAVING SUM(CASE WHEN status IN ('pending','active') THEN 1 ELSE 0 END)=0
            AND SUM(CASE WHEN status='done' AND verdict!='INFRA_FAIL' THEN 1 ELSE 0 END)=0
-           AND SUM(CASE WHEN status='done' AND verdict='INFRA_FAIL' THEN 1 ELSE 0 END)>0
+           AND SUM(CASE WHEN verdict='INFRA_FAIL' THEN 1 ELSE 0 END)>0
         """, (phase,))]
     for ea_id in stranded:
         num = int(ea_id.split("_")[1]) if ea_id.startswith("QM5_") else None
