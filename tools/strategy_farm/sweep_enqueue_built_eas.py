@@ -52,6 +52,14 @@ if "--queue-ceiling" in sys.argv:
 MAX_INFRA_ATTEMPTS = 5
 if "--max-infra-attempts" in sys.argv:
     MAX_INFRA_ATTEMPTS = int(sys.argv[sys.argv.index("--max-infra-attempts") + 1])
+# Part-2 per-run rate limit: drip-feed the stranded-INFRA backlog instead of
+# dumping the whole pool (~4400) at once. 2026-06-19: an unbounded Part-2 re-dump
+# every hour flooded Q02 (13k INFRA / 0 PASS in 6h, graveyard FAIL). Re-enqueued
+# items become pending/active and are excluded next run, so successive runs walk
+# the backlog without re-flooding. Tune via --max-part2-per-run.
+MAX_PART2_PER_RUN = 250
+if "--max-part2-per-run" in sys.argv:
+    MAX_PART2_PER_RUN = int(sys.argv[sys.argv.index("--max-part2-per-run") + 1])
 NOW = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00")
 
 sys.path.insert(0, r"C:\QM\repo\tools\strategy_farm")
@@ -179,7 +187,11 @@ for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
              "priority_track": ea_id in PRIORITY_EAS})
 
 # ---------- Part 2: stranded INFRA_FAIL at Q02/Q03/Q08 ----------
+part2_count = 0
+report["part2_stranded"]["rate_limited"] = False
 for phase in ("Q02", "Q03", "Q08"):
+    if part2_count >= MAX_PART2_PER_RUN:
+        break
     stranded = [r[0] for r in cur.execute(f"""
         SELECT ea_id FROM work_items WHERE phase=? GROUP BY ea_id
         HAVING SUM(CASE WHEN status IN ('pending','active') THEN 1 ELSE 0 END)=0
@@ -187,6 +199,8 @@ for phase in ("Q02", "Q03", "Q08"):
            AND SUM(CASE WHEN verdict='INFRA_FAIL' THEN 1 ELSE 0 END)>0
         """, (phase,))]
     for ea_id in stranded:
+        if part2_count >= MAX_PART2_PER_RUN:
+            break
         num = int(ea_id.split("_")[1]) if ea_id.startswith("QM5_") else None
         status, _slug = reg.get(num, (None, None))
         if status != "active":
@@ -221,6 +235,10 @@ for phase in ("Q02", "Q03", "Q08"):
             report["part2_stranded"]["enqueued"].append(
                 {"ea_id": ea_id, "phase": phase, "symbol": symbol,
                  "setfile": Path(setfile).name})
+            part2_count += 1
+            if part2_count >= MAX_PART2_PER_RUN:
+                report["part2_stranded"]["rate_limited"] = True
+                break
 
 # ---------- Part 3: promote deferred symbols (gate-acceleration #2) ----------
 report["part3_deferred_promotion"] = {"promoted": [], "kept_deferred": 0}
