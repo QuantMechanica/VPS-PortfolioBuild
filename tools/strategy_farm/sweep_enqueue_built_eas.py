@@ -45,6 +45,13 @@ APPLY = "--apply" in sys.argv
 QUEUE_CEILING = 7000
 if "--queue-ceiling" in sys.argv:
     QUEUE_CEILING = int(sys.argv[sys.argv.index("--queue-ceiling") + 1])
+# Part-2 retry cap: stop re-enqueuing a (ea,phase,symbol,setfile) once it has
+# accumulated this many INFRA_FAIL rows. Bounds hourly churn for EAs with a
+# permanent infra defect (non-DWX symbol, M1 gaps, German-locale terminal,
+# skeleton id) while still giving transient meltdown casualties ample retries.
+MAX_INFRA_ATTEMPTS = 5
+if "--max-infra-attempts" in sys.argv:
+    MAX_INFRA_ATTEMPTS = int(sys.argv[sys.argv.index("--max-infra-attempts") + 1])
 NOW = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00")
 
 sys.path.insert(0, r"C:\QM\repo\tools\strategy_farm")
@@ -188,10 +195,15 @@ for phase in ("Q02", "Q03", "Q08"):
             continue
         # one re-run per distinct (symbol, setfile), most recent INFRA_FAIL row
         rows = cur.execute(
-            "SELECT symbol, setfile_path, MAX(updated_at) FROM work_items "
+            "SELECT symbol, setfile_path, MAX(updated_at), COUNT(*) FROM work_items "
             "WHERE ea_id=? AND phase=? AND verdict='INFRA_FAIL' "
             "GROUP BY symbol, setfile_path", (ea_id, phase)).fetchall()
-        for symbol, setfile, _ts in rows:
+        for symbol, setfile, _ts, infra_attempts in rows:
+            if infra_attempts >= MAX_INFRA_ATTEMPTS:
+                report["part2_stranded"]["skipped"].append(
+                    {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                     "reason": "infra_retry_cap_reached", "attempts": infra_attempts})
+                continue
             if not setfile or not Path(setfile).is_file():
                 report["part2_stranded"]["skipped"].append(
                     {"ea_id": ea_id, "phase": phase, "symbol": symbol,
