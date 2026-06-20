@@ -10,16 +10,16 @@
 // Source: RoboForex "Strategy Bollinger Bands and RSI" (M15).
 // Card: artifacts/cards_approved/QM5_11352_rbt-bb-rsi11-breakout-m15.md (APPROVED).
 //
-// Mechanics (momentum CONTINUATION, NOT reversal; closed-bar reads at shift 1):
+// Mechanics (momentum CONTINUATION, NOT reversal; indicator reads at shift 1):
 //   LONG:
-//     EVENT  : close crosses ABOVE BB(period,dev) upper band — i.e. the prior
-//              closed bar (shift 2) was at/below the upper band and the trigger
-//              closed bar (shift 1) is above it. ONE fresh breakout event/bar.
+//     STATE  : current price is ABOVE BB(period,dev) upper band.
 //     STATE  : RSI(11) at shift 1 is above rsi_long_level (momentum strong).
 //     STATE  : ADX(period) > adx_min (trending, not ranging).
-//   SHORT  : mirror — close crosses BELOW BB lower band (EVENT),
+//     STATE  : BB width is expanding versus the previous closed bar.
+//   SHORT  : mirror — current price BELOW BB lower band,
 //            RSI(11) < rsi_short_level (STATE), ADX > adx_min (STATE).
-//   Stop   : fixed sl_pips from entry (scale-correct via QM_StopFixedPips).
+//   Stop   : ATR(14,M15) x 1.0 for P2, with fixed-pip mode exposed for the
+//            card's alternate fixed 15-pip statement.
 //   Target : RR multiple = tp_pips / sl_pips on the same stop distance.
 //   Exit   : RSI(11) faded back through 50 (long: RSI<exit_level;
 //            short: RSI>exit_level) — momentum gone.
@@ -31,9 +31,9 @@
 //   * No swap gating.
 //   * QM_IsNewBar consumed ONCE by the framework before entry; exit/manage read
 //     no new-bar event.
-//   * Breakout uses prior CLOSED bars (shift 2 -> shift 1), NOT the live range.
-//   * Single EVENT (BB cross on close) + STATES (RSI level, ADX, session) — two
-//     simultaneous cross EVENTS never required.
+//   * Signal uses one live bid/ask read plus closed-bar framework indicators.
+//   * Single trigger state (price outside band) + confirming states (RSI level,
+//     ADX, BB width, session) — two simultaneous cross EVENTS never required.
 //   * Session window converted from broker time to UTC via QM_BrokerToUTC.
 //   * Pips->price via QM_StopFixedPips / QM_TakeRR (scale-correct on 5-digit/JPY).
 //
@@ -74,7 +74,10 @@ input double strategy_rsi_short_level    = 30.0;   // RSI must be below this for
 input double strategy_rsi_exit_level     = 50.0;   // RSI fade-to-50 exit threshold
 input int    strategy_adx_period         = 14;     // ADX period (trend-vs-range filter)
 input double strategy_adx_min            = 20.0;   // require ADX above this (trending)
-input int    strategy_sl_pips            = 15;     // fixed stop distance, in pips
+input bool   strategy_use_atr_stop       = true;   // P2 stop: ATR(14,M15) x 1.0
+input int    strategy_atr_period         = 14;     // ATR stop period
+input double strategy_atr_sl_mult        = 1.0;    // ATR stop multiplier
+input int    strategy_sl_pips            = 15;     // alternate fixed stop distance, pips
 input int    strategy_tp_pips            = 20;     // fixed take-profit distance, in pips
 input double strategy_spread_cap_pips    = 5.0;    // skip only if spread exceeds this many pips
 input int    strategy_session_start_utc  = 13;     // London+NY window start hour, UTC (inclusive)
@@ -84,15 +87,26 @@ input int    strategy_session_end_utc    = 22;     // London+NY window end hour,
 // Helpers
 // -----------------------------------------------------------------------------
 
-// Pip size for the current symbol (5-digit / 3-digit JPY aware): one pip = 10
-// points on 3/5-digit quotes, 1 point on 2/4-digit.
-double QM5_11352_PipSize()
+double Strategy_PipDistance(const int pips)
   {
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const int    digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   if(digits == 3 || digits == 5)
-      return point * 10.0;
-   return point;
+   return QM_StopRulesPipsToPriceDistance(_Symbol, pips);
+  }
+
+double Strategy_BuildStop(const QM_OrderType side, const double entry)
+  {
+   if(strategy_use_atr_stop)
+      return QM_StopATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_sl_mult);
+   return QM_StopFixedPips(_Symbol, side, entry, strategy_sl_pips);
+  }
+
+double Strategy_BuildTakeProfit(const QM_OrderType side, const double entry, const double sl)
+  {
+   const double target_distance = Strategy_PipDistance(strategy_tp_pips);
+   const double risk_distance = MathAbs(entry - sl);
+   if(target_distance <= 0.0 || risk_distance <= 0.0)
+      return 0.0;
+   const double rr = target_distance / risk_distance;
+   return QM_TakeRR(_Symbol, side, entry, sl, rr);
   }
 
 // -----------------------------------------------------------------------------
@@ -128,7 +142,7 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block
    const double spread = ask - bid;
-   const double cap    = strategy_spread_cap_pips * QM5_11352_PipSize();
+   const double cap    = Strategy_PipDistance((int)MathRound(strategy_spread_cap_pips));
    if(spread > 0.0 && cap > 0.0 && spread > cap)
       return true; // genuinely wide spread — block
 
@@ -138,6 +152,14 @@ bool Strategy_NoTradeFilter()
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -149,12 +171,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(adx <= strategy_adx_min)
       return false;
 
-   // --- Closed-bar reads: trigger bar = shift 1, prior bar = shift 2 ---
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0 || close2 <= 0.0)
-      return false;
-
    const double bb_up_1  = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
    const double bb_up_2  = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 2);
    const double bb_lo_1  = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
@@ -162,22 +178,28 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(bb_up_1 <= 0.0 || bb_up_2 <= 0.0 || bb_lo_1 <= 0.0 || bb_lo_2 <= 0.0)
       return false;
 
+   const double width_1 = bb_up_1 - bb_lo_1;
+   const double width_2 = bb_up_2 - bb_lo_2;
+   if(width_1 <= 0.0 || width_2 <= 0.0 || width_1 <= width_2)
+      return false;
+
    const double rsi1 = QM_RSI(_Symbol, _Period, strategy_rsi_period, 1);
    if(rsi1 <= 0.0)
       return false;
 
-   // --- LONG: close crosses ABOVE upper band (EVENT) + RSI strong (STATE) ---
-   const bool long_break = (close2 <= bb_up_2 && close1 > bb_up_1);
-   if(long_break && rsi1 > strategy_rsi_long_level)
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   // --- LONG: price ABOVE upper band + RSI strong + expanding BB width ---
+   if(ask > bb_up_1 && rsi1 > strategy_rsi_long_level)
      {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if(entry <= 0.0)
-         return false;
-      const double sl = QM_StopFixedPips(_Symbol, QM_BUY, entry, strategy_sl_pips);
+      const double entry = ask;
+      const double sl = Strategy_BuildStop(QM_BUY, entry);
       if(sl <= 0.0)
          return false;
-      const double rr = (strategy_sl_pips > 0) ? ((double)strategy_tp_pips / (double)strategy_sl_pips) : 1.0;
-      const double tp = QM_TakeRR(_Symbol, QM_BUY, entry, sl, rr);
+      const double tp = Strategy_BuildTakeProfit(QM_BUY, entry, sl);
       if(tp <= 0.0)
          return false;
       req.type   = QM_BUY;
@@ -185,21 +207,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl     = sl;
       req.tp     = tp;
       req.reason = "bb_rsi11_break_long";
-      return true;
+     return true;
      }
 
-   // --- SHORT: close crosses BELOW lower band (EVENT) + RSI weak (STATE) ---
-   const bool short_break = (close2 >= bb_lo_2 && close1 < bb_lo_1);
-   if(short_break && rsi1 < strategy_rsi_short_level)
+   // --- SHORT: price BELOW lower band + RSI weak + expanding BB width ---
+   if(bid < bb_lo_1 && rsi1 < strategy_rsi_short_level)
      {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      if(entry <= 0.0)
-         return false;
-      const double sl = QM_StopFixedPips(_Symbol, QM_SELL, entry, strategy_sl_pips);
+      const double entry = bid;
+      const double sl = Strategy_BuildStop(QM_SELL, entry);
       if(sl <= 0.0)
          return false;
-      const double rr = (strategy_sl_pips > 0) ? ((double)strategy_tp_pips / (double)strategy_sl_pips) : 1.0;
-      const double tp = QM_TakeRR(_Symbol, QM_SELL, entry, sl, rr);
+      const double tp = Strategy_BuildTakeProfit(QM_SELL, entry, sl);
       if(tp <= 0.0)
          return false;
       req.type   = QM_SELL;

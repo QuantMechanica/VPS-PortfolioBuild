@@ -4,7 +4,7 @@
 **Slug:** `lasker-triple-bb-mean-reversion-gbpjpy-m15`
 **Source:** `84b1cd3f-0cb4-5cf1-92ac-e41ba15b7c93` (see `strategy-seeds/sources/84b1cd3f-0cb4-5cf1-92ac-e41ba15b7c93/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-20
 
 ---
 
@@ -16,13 +16,12 @@ last closed bar's close pushes past the midpoint between the inner (2σ) and mid
 (3σ) bands, price has reached a statistically extreme extension and is expected to
 revert toward the SMA50 midline.
 
-The single trade EVENT is a fresh extension into that middle zone: SHORT when
-`close[1] >= (bb1_upper + bb2_upper)/2` AND the prior bar `close[2]` was still
-below its own threshold (a genuine cross this bar, not a persistent state). LONG
-is the mirror below the lower bands. Take profit is the Bollinger midline (SMA50).
-Stop loss is the 4σ outer band plus a small buffer (capped at 30 pips). Trading is
-restricted to the active Tokyo+London+NY broker-time window, excluding the dead
-NY-close→Tokyo-open hours.
+The trade signal is a closed-bar extension into that middle zone: SHORT when
+`close[1] >= (bb1_upper + bb2_upper)/2`. LONG is the mirror below the lower
+bands. Take profit is the Bollinger midline (SMA50). Stop loss is the 4σ outer
+band plus a small buffer (capped at 30 pips). Trading is restricted to the active
+Tokyo+London+NY broker-time window, excluding the dead NY-close to Tokyo-open
+hours.
 
 ---
 
@@ -39,7 +38,7 @@ NY-close→Tokyo-open hours.
 | `strategy_session_enabled` | true | true/false | Restrict to active session hours |
 | `strategy_session_start_hour` | 2 | 0-23 | Broker hour: session start (Tokyo open) |
 | `strategy_session_end_hour` | 23 | 0-23 | Broker hour: session end (NY close) |
-| `strategy_spread_pct_of_stop` | 25.0 | 10-50 | Skip if spread > this % of stop buffer distance |
+| `strategy_spread_cap_pips` | 30 | 1-100 | Skip if spread is wider than this pip cap |
 
 > Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_*, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
@@ -52,7 +51,7 @@ NY-close→Tokyo-open hours.
 **Designed for:**
 - `GBPJPY.DWX` — primary instrument; high volatility produces wide bands and
   frequent extreme extensions, the core edge of the strategy.
-- `EURUSD.DWX` — secondary instrument named in the card's R3 portable basket;
+- `EURUSD.DWX` — secondary instrument named in the card's additional filters;
   tighter bands but liquid and clean for a mean-reversion baseline.
 
 **Explicitly NOT for:**
@@ -111,3 +110,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v2 | 2026-06-20 | Align entry and spread cap to literal card | e265280a-59cc-4057-870a-71a25ec0d208 |

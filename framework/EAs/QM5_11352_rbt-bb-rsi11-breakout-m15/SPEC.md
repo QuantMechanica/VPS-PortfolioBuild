@@ -4,23 +4,23 @@
 **Slug:** `rbt-bb-rsi11-breakout-m15`
 **Source:** `ed246754-1f4d-5bed-8dd3-3b5cbf1b420d` (see `strategy-seeds/sources/ed246754-1f4d-5bed-8dd3-3b5cbf1b420d/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-20
 
 ---
 
 ## 1. Strategy Logic
 
-A Bollinger Band breakout with RSI momentum confirmation on M15 — a momentum
-*continuation* read, not a reversal. The single trigger EVENT is the close
-crossing through a band: a LONG fires when the prior closed bar (shift 2) sat at
-or below the BB(20,2) upper band and the trigger closed bar (shift 1) closes
-above it, AND RSI(11) at shift 1 is above 70 (momentum strong, STATE), AND
-ADX(14) > 20 (trending, not ranging, STATE). The SHORT is the mirror: close
-crosses below the BB lower band (EVENT) with RSI(11) < 30 and ADX > 20. Stop is
-a fixed 15 pips; take-profit is 20 pips (RR = tp/sl on the stop distance).
-A position is also closed early if RSI(11) fades back through 50 (momentum gone).
-Trading is restricted to the London+NY session (13:00–22:00 UTC) with a 5-pip
-spread cap that fails open on the .DWX zero-spread tester.
+A Bollinger Band breakout with RSI momentum confirmation on M15 is traded as a
+momentum continuation signal, not a reversal. A LONG can fire when current price
+is above the BB(20,2) upper band, RSI(11) on the last closed bar is above 70,
+ADX(14) is above 20, and Bollinger width is expanding versus the prior closed
+bar. The SHORT is the mirror: current price below the BB lower band with RSI(11)
+below 30, ADX above 20, and expanding band width. P2 stop placement uses
+ATR(14) x 1.0, with the card's fixed 15-pip stop also exposed as an alternate
+input; take-profit is the card's fixed 20-pip target. A position is also closed
+early if RSI(11) fades back through 50. Trading is restricted to the London+NY
+session (13:00-22:00 UTC) with a 5-pip spread cap that fails open on the .DWX
+zero-spread tester.
 
 ---
 
@@ -36,7 +36,10 @@ spread cap that fails open on the .DWX zero-spread tester.
 | `strategy_rsi_exit_level` | 50.0 | 40-60 | RSI fade-to-midline exit threshold |
 | `strategy_adx_period` | 14 | 10-20 | ADX period (trend-vs-range filter) |
 | `strategy_adx_min` | 20.0 | 15-30 | Require ADX above this (trending) |
-| `strategy_sl_pips` | 15 | 8-40 | Fixed stop distance, pips |
+| `strategy_use_atr_stop` | true | true/false | Use P2 ATR stop when true; fixed pip stop when false |
+| `strategy_atr_period` | 14 | 8-30 | ATR stop period |
+| `strategy_atr_sl_mult` | 1.0 | 0.5-3.0 | ATR stop multiplier |
+| `strategy_sl_pips` | 15 | 8-40 | Alternate fixed stop distance, pips |
 | `strategy_tp_pips` | 20 | 10-60 | Fixed take-profit distance, pips |
 | `strategy_spread_cap_pips` | 5.0 | 1-15 | Block only if spread exceeds this many pips |
 | `strategy_session_start_utc` | 13 | 0-23 | Session window start hour, UTC (inclusive) |
@@ -107,4 +110,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v1 | 2026-06-20 | Initial build from card | 5218fa99-a4e8-4e9f-b2aa-63befbd9963d |

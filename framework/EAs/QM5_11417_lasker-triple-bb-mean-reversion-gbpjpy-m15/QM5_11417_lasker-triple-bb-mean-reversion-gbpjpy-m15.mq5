@@ -19,13 +19,10 @@
 //     BB3 (outer)  = period 50, deviation 4.0  -> bb3_upper / bb3_lower
 //     BB midline   = SMA50 (BB_Middle, any deviation; same value) = take-profit.
 //
-//   The single EVENT is the band touch / recapture into the middle zone:
+//   The signal is the band touch / extension into the middle zone:
 //     SHORT: close[1] >= (bb1_upper + bb2_upper)/2  -- price extended above the
 //            2-3 sigma midpoint, statistically extreme, expected to revert.
 //     LONG : close[1] <= (bb1_lower + bb2_lower)/2  -- mirror.
-//     To make this an EVENT (a fresh extension, not a persistent state that
-//     re-fires every bar while extended), require the PRIOR closed bar (shift 2)
-//     was NOT already past the threshold -> a fresh cross into the extreme zone.
 //
 //   Take profit : BB midline (SMA50) -- the mean-reversion target.
 //   Stop loss   : outer band + buffer. SHORT: bb3_upper + buffer_pips; the
@@ -78,7 +75,7 @@ input bool   strategy_session_enabled    = true;   // restrict to active Tokyo+L
 // dead ~23:00..02:00 gap. Per-symbol session tuning lives in the setfile.
 input int    strategy_session_start_hour = 2;      // broker hour: Tokyo open
 input int    strategy_session_end_hour   = 23;     // broker hour: NY close
-input double strategy_spread_pct_of_stop = 25.0;   // skip if spread > this % of stop distance
+input int    strategy_spread_cap_pips    = 30;     // card spread cap
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -98,19 +95,19 @@ bool Strategy_NoTradeFilter()
          return true; // outside the active session -> block
      }
 
-   // --- Spread guard. Reference the BB3-buffer stop distance so the cap scales.
+   // --- Spread guard. Card cap is 30 pips; zero .DWX modeled spread passes.
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double buffer_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_buffer_pips);
-   if(buffer_distance <= 0.0)
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(spread_cap <= 0.0)
       return false; // cannot size the cap — defer to entry gate
 
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * buffer_distance)
+   if(spread > 0.0 && spread > spread_cap)
       return true;
 
    return false;
@@ -136,31 +133,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       bb1_lower <= 0.0 || bb2_lower <= 0.0 || bb3_lower <= 0.0 || bb_mid <= 0.0)
       return false;
 
-   // Prior closed bar's inner/middle midpoints (shift 2) — to require a FRESH
-   // extension (EVENT), not a persistent state that re-fires every bar.
-   const double bb1_upper_p = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_inner,  2);
-   const double bb2_upper_p = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_middle, 2);
-   const double bb1_lower_p = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_inner,  2);
-   const double bb2_lower_p = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_middle, 2);
-   if(bb1_upper_p <= 0.0 || bb2_upper_p <= 0.0 || bb1_lower_p <= 0.0 || bb2_lower_p <= 0.0)
-      return false;
-
    const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0 || close2 <= 0.0)
+   if(close1 <= 0.0)
       return false;
 
    // Upper / lower middle-zone thresholds (midpoint of 2 sigma and 3 sigma bands).
    const double upper_threshold   = (bb1_upper + bb2_upper) / 2.0;
    const double lower_threshold   = (bb1_lower + bb2_lower) / 2.0;
-   const double upper_threshold_p = (bb1_upper_p + bb2_upper_p) / 2.0;
-   const double lower_threshold_p = (bb1_lower_p + bb2_lower_p) / 2.0;
 
-   // SHORT EVENT: a FRESH extension above the upper middle-zone midpoint.
-   //   close[1] >= threshold[1] AND close[2] < threshold[2]  (cross this bar).
-   const bool short_event = (close1 >= upper_threshold && close2 < upper_threshold_p);
+   // SHORT: price extended above the upper middle-zone midpoint.
+   const bool short_event = (close1 >= upper_threshold);
    // LONG EVENT: mirror below the lower midpoint.
-   const bool long_event  = (close1 <= lower_threshold && close2 > lower_threshold_p);
+   const bool long_event  = (close1 <= lower_threshold);
 
    if(!short_event && !long_event)
       return false;
@@ -218,6 +202,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = short_event ? "triple_bb_meanrev_short" : "triple_bb_meanrev_long";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
