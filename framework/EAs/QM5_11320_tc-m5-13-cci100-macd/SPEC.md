@@ -18,7 +18,8 @@ MACD(12,26,9) acts as a confirming STATE (not a second cross event, to avoid the
 two-cross-same-bar zero-trade trap): LONG requires `macd_main[1] > macd_signal[1]`
 with a rising histogram (`(main-signal)[1] > (main-signal)[2]`); SHORT requires the
 mirror. MACD main may be negative — its sign is never gated. Exit is a fixed stop
-(14 pips) and fixed target (8 pips baseline); no discretionary or trailing exit.
+(14 pips) and fixed target by source pair (EURUSD 8 pips, GBPUSD 10 pips,
+AUDUSD 7 pips; 8 pips fallback); no discretionary or trailing exit.
 
 ---
 
@@ -32,7 +33,10 @@ mirror. MACD main may be negative — its sign is never gated. Exit is a fixed s
 | `strategy_macd_slow` | 26 | 20-34 | MACD slow EMA period |
 | `strategy_macd_signal` | 9 | 5-12 | MACD signal SMA period |
 | `strategy_sl_pips` | 14 | 12-15 | Stop-loss distance in pips |
-| `strategy_tp_pips` | 8 | 7-12 | Take-profit distance in pips (baseline) |
+| `strategy_tp_pips_default` | 8 | 7-12 | Take-profit distance in pips for non-listed FX pairs |
+| `strategy_tp_pips_eurusd` | 8 | 7-12 | Source EURUSD take-profit distance in pips |
+| `strategy_tp_pips_gbpusd` | 10 | 7-12 | Source GBPUSD take-profit distance in pips |
+| `strategy_tp_pips_audusd` | 7 | 7-12 | Source AUDUSD take-profit distance in pips |
 | `strategy_spread_cap_points` | 15 | 5-30 | Block entry only if modeled spread exceeds this many points |
 
 ---

@@ -62,7 +62,10 @@ input int    strategy_macd_fast         = 12;     // MACD fast EMA
 input int    strategy_macd_slow         = 26;     // MACD slow EMA
 input int    strategy_macd_signal       = 9;      // MACD signal SMA
 input int    strategy_sl_pips           = 14;     // stop-loss distance in pips
-input int    strategy_tp_pips           = 8;      // take-profit distance in pips (baseline)
+input int    strategy_tp_pips_default   = 8;      // take-profit distance in pips for non-listed FX pairs
+input int    strategy_tp_pips_eurusd    = 8;      // source EURUSD target
+input int    strategy_tp_pips_gbpusd    = 10;     // source GBPUSD target
+input int    strategy_tp_pips_audusd    = 7;      // source AUDUSD target
 input int    strategy_spread_cap_points = 15;     // block only if modeled spread exceeds this many points
 
 // -----------------------------------------------------------------------------
@@ -93,9 +96,25 @@ bool Strategy_NoTradeFilter()
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
+
+   int target_pips = strategy_tp_pips_default;
+   if(StringFind(_Symbol, "EURUSD") >= 0)
+      target_pips = strategy_tp_pips_eurusd;
+   else if(StringFind(_Symbol, "GBPUSD") >= 0)
+      target_pips = strategy_tp_pips_gbpusd;
+   else if(StringFind(_Symbol, "AUDUSD") >= 0)
+      target_pips = strategy_tp_pips_audusd;
 
    // --- CCI values: shift 1 = last closed bar, shift 2 = prior closed bar ---
    const double cci_now  = QM_CCI(_Symbol, _Period, strategy_cci_period, 1);
@@ -124,7 +143,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          if(entry <= 0.0)
             return false;
          const double sl = QM_StopFixedPips(_Symbol, QM_BUY, entry, strategy_sl_pips);
-         const double tp = QM_TakeFixedPips(_Symbol, QM_BUY, entry, strategy_tp_pips);
+         const double tp = QM_TakeFixedPips(_Symbol, QM_BUY, entry, target_pips);
          if(sl <= 0.0 || tp <= 0.0)
             return false;
          req.type   = QM_BUY;
@@ -147,7 +166,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          if(entry <= 0.0)
             return false;
          const double sl = QM_StopFixedPips(_Symbol, QM_SELL, entry, strategy_sl_pips);
-         const double tp = QM_TakeFixedPips(_Symbol, QM_SELL, entry, strategy_tp_pips);
+         const double tp = QM_TakeFixedPips(_Symbol, QM_SELL, entry, target_pips);
          if(sl <= 0.0 || tp <= 0.0)
             return false;
          req.type   = QM_SELL;

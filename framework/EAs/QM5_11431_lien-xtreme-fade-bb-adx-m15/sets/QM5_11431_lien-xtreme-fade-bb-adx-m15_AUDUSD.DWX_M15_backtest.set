@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11320
-; ea_slug:      tc-m5-13-cci100-macd
+; ea_id:        11431
+; ea_slug:      lien-xtreme-fade-bb-adx-m15
 ; ea_version:   v5.0
 ; set_version:  s20260620-001
 ; symbol:       AUDUSD.DWX
-; timeframe:    M5
+; timeframe:    M15
 ; environment:  backtest
-; magic_slot:   2
+; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   bbe2f09585bd86021b5b639a0b3bb5d9cd8d45d8f87de71e585f7618c02552a5
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-20
 ;==========================================================
-qm_magic_slot_offset=2
+qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
