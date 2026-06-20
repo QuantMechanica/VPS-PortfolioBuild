@@ -35,6 +35,14 @@ DISK_GUARD_SLEEP_SECONDS = 60
 DISK_PURGE_TASK = "QM_StrategyFarm_TesterCachePurge"
 _DISK_PURGE_COOLDOWN_SECONDS = 600.0
 _last_disk_purge_trigger = [0.0]
+# Launch-fault guard (2026-06-20): the spawned phase-runner child vanishing far
+# faster than any real backtest (terminal64 startup + sync alone is ~6-10s) means
+# the run never actually started — a transient pwsh/host launch fault, NOT a clean
+# exit. Don't record it as exit_code=0 (success), and back off so a host hiccup
+# can't burn a whole re-fed batch through all its retries in seconds (observed
+# 2026-06-19: 250 work_items INFRA_FAIL in 14s).
+LAUNCH_FAULT_MIN_SECONDS = 10.0
+LAUNCH_FAULT_BACKOFF_SECONDS = 30.0
 SQLITE_WRITE_RETRIES = 12
 SQLITE_WRITE_RETRY_SLEEP_SECONDS = 1.5
 SMOKE_TERMINAL_EXIT_GRACE_SECONDS = 60.0
@@ -846,7 +854,8 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
 
     _with_sqlite_retry(_record_spawn)
 
-    deadline = time.monotonic() + timeout_seconds
+    spawn_started = time.monotonic()
+    deadline = spawn_started + timeout_seconds
     while time.monotonic() < deadline and farmctl._pid_tree_exists(spawn["pid"]):
         if _STOP:
             return {"action": "shutdown_waiting_for_child", "item_id": item["id"], "pid": spawn["pid"]}
@@ -866,10 +875,23 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
             farmctl._stop_pid_tree(spawn["pid"])
             break
         time.sleep(2.0)
+    ran_seconds = time.monotonic() - spawn_started
     if farmctl._pid_tree_exists(spawn["pid"]):
+        # Timed out — kill and treat as no-result (no clean exit code).
         farmctl._stop_pid_tree(spawn["pid"])
         exit_code = None
+    elif ran_seconds < LAUNCH_FAULT_MIN_SECONDS:
+        # Child vanished far too fast to be a real run (terminal64 startup alone
+        # is ~6-10s) -> transient launch fault, NOT a clean exit_code=0. Record as
+        # no-result and back off so a host hiccup can't burn the whole batch
+        # through its retries in seconds.
+        print(json.dumps({"event": "launch_fault", "terminal": terminal,
+                          "item_id": item["id"], "pid": spawn["pid"],
+                          "ran_seconds": round(ran_seconds, 2)}), flush=True)
+        exit_code = None
+        time.sleep(LAUNCH_FAULT_BACKOFF_SECONDS)
     else:
+        # Child exited on its own after a plausible runtime.
         exit_code = 0
     return {"action": "finished", "item_id": item["id"], **_finish_work_item(root, item["id"], exit_code)}
 
