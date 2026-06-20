@@ -4,7 +4,7 @@
 **Slug:** `carter-multitf-candle-color-h1`
 **Source:** `96b1d6a2-d0af-5fa2-abbc-865a08f82ef2` (see `strategy-seeds/sources/96b1d6a2-d0af-5fa2-abbc-865a08f82ef2/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-20
 
 ---
 
@@ -12,20 +12,16 @@
 
 Pure price-action multi-timeframe candle-direction alignment, no indicators. On
 each closed H1 bar the EA reads the direction of the most recently completed
-candle on four timeframes — M5, M15, M30, H1 — where direction is bullish if
-close > open and bearish if close < open. A doji (|close − open| below 1 pip) on
-any timeframe voids the signal. This running per-timeframe close-vs-open
-agreement is the STATE.
+candle on M5, M15, M30, and H1, where direction is bullish if close > open and
+bearish if close < open. A doji body below 1 pip on any timeframe voids the
+signal.
 
-The single EVENT is the completion of a fully aligned sequence: when all four
-timeframes share the same direction AND the current price has followed through
-past the prior H1 close by a 3-pip confirmation buffer. All-bullish alignment
-with upward follow-through opens a long; all-bearish alignment with downward
-follow-through opens a short. The follow-through is referenced against the prior
-H1 CLOSE (not a range) so it remains valid on gapless .DWX CFDs. Stop-loss is a
-fixed 20 pips and take-profit a fixed 35 pips from entry. A defensive early exit
-closes the position when the higher-timeframe (M30 or H1) last closed candle
-flips against the open trade. One position per magic.
+The EA opens long when all four timeframes are bullish and the current ask is at
+least 3 pips above the prior closed H1 close. It opens short when all four are
+bearish and the current bid is at least 3 pips below the prior closed H1 close.
+Stop-loss is a fixed 20 pips and take-profit is a fixed 35 pips from entry. The
+optional early exit closes the position when the M30 or H1 closed candle flips
+against the open trade.
 
 ---
 
@@ -33,13 +29,12 @@ flips against the open trade. One position per magic.
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_confirm_pips` | 3 | 1-5 | Follow-through buffer past the prior H1 close required to confirm the alignment EVENT (pips) |
-| `strategy_doji_pips` | 1 | 1-3 | Bodies smaller than this are doji and void the signal on that TF (pips) |
-| `strategy_sl_pips` | 20 | 15-25 | Stop-loss distance from entry (pips) |
-| `strategy_tp_pips` | 35 | 25-45 | Take-profit distance from entry (pips) |
-| `strategy_spread_pct_of_stop` | 15.0 | 5-30 | Block entry only if spread exceeds this percent of the stop distance (fail-open on .DWX zero spread) |
-| `strategy_use_m5` | true | true/false | Include M5 in the alignment set (P3 sweep: drop M5 for a 3-TF variant) |
-| `strategy_exit_on_htf_flip` | true | true/false | Enable the defensive M30/H1 candle-flip early exit |
+| `strategy_confirmation_pips` | 3 | 1-5 | Follow-through buffer past the prior H1 close required to confirm the alignment |
+| `strategy_doji_threshold_pips` | 1 | 1-3 | Bodies smaller than this are doji and void the signal on that timeframe |
+| `strategy_stop_loss_pips` | 20 | 15-25 | Stop-loss distance from entry |
+| `strategy_take_profit_pips` | 35 | 25-45 | Take-profit distance from entry |
+| `strategy_spread_cap_pips` | 15 | 5-30 | Maximum allowed spread; zero spread is allowed for .DWX tester symbols |
+| `strategy_exit_on_higher_tf_flip` | true | true/false | Enable the M30/H1 candle-flip early exit |
 
 ---
 
@@ -71,9 +66,9 @@ flips against the open trade. One position per magic.
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | ~150 |
-| Typical hold time | hours (intraday H1 momentum follow-through) |
-| Expected drawdown profile | moderate; many small stops between aligned-momentum winners |
-| Regime preference | breakout / momentum-continuation |
+| Typical hold time | hours |
+| Expected drawdown profile | moderate fixed-stop FX intraday profile |
+| Regime preference | momentum-continuation |
 | Win rate target (qualitative) | medium |
 
 ---
@@ -105,4 +100,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor worktree |
+| v1 | 2026-06-20 | Initial build from card | 9eae72a4-78cf-47de-a17d-9529d651af67 |
