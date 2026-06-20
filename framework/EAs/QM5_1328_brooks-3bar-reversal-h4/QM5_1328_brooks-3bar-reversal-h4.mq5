@@ -301,8 +301,6 @@ bool QM1328_SellPattern(const MqlRates &rates[], double &sl, double &tp)
 bool Strategy_NoTradeFilter()
   {
    QM1328_RefreshPositionState();
-   if(QM1328_SpreadTooWide())
-      return true;
    return false;
   }
 
@@ -320,6 +318,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    QM1328_RefreshPositionState();
    QM1328_AdvanceRearm();
    if(g_qm1328_active_ticket != 0)
+      return false;
+   if(QM1328_SpreadTooWide())
       return false;
 
    MqlRates rates[];

@@ -3,6 +3,7 @@
 #property description "QM5_11663 fps-ema25-50-100-m1 — Triple EMA(25/50/100) M1 scalp, session-timed"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA — QM5_11663 fps-ema25-50-100-m1
@@ -145,14 +146,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // --- Trigger STATE: just-closed price relative to EMA25 ---
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0)
-      return false;
+   const int price_vs_fast = QM_Sig_Price_Above_MA(_Symbol, _Period, strategy_ema_fast_period, 0.0, 1);
 
    QM_OrderType side;
-   if(stacked_long && close1 > ema_fast)
+   if(stacked_long && price_vs_fast > 0)
       side = QM_BUY;
-   else if(stacked_short && close1 < ema_fast)
+   else if(stacked_short && price_vs_fast < 0)
       side = QM_SELL;
    else
       return false;
