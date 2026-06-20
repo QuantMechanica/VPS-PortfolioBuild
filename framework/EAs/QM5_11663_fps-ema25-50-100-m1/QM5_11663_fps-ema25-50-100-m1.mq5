@@ -14,12 +14,10 @@
 // Mechanics (closed-bar reads at shift 1, M1):
 //   Trend STATE (long) : EMA(25) > EMA(50) > EMA(100)   (stacked-bullish)
 //   Trend STATE (short): EMA(25) < EMA(50) < EMA(100)   (stacked-bearish)
-//   Trigger EVENT      : ONE cross only — prior closed bar's close was on/below
-//                        EMA(25) and the just-closed bar's close is above EMA(25)
-//                        (long); mirror for short. The EMA stack is a STATE held
-//                        across both bars; the price/EMA25 cross is the single
-//                        fresh EVENT. This deliberately avoids the two-cross trap
-//                        (we do NOT also require an EMA25/50 cross on the same bar).
+//   Trigger STATE      : just-closed bar's close is above EMA(25) for long,
+//                        or below EMA(25) for short, while the EMA stack is
+//                        aligned in the same direction. The card does not require
+//                        a fresh EMA cross event.
 //   Stop Loss          : fixed 10 pips (QM_StopFixedPips, pip-scale correct).
 //   Take Profit        : fixed 7 pips  (QM_StopFixedPips on the opposite side).
 //   Exit               : SL/TP only (fixed-pip scalp); no discretionary exit.
@@ -27,8 +25,8 @@
 //                        NY-open 12:00-15:00 UTC. Window evaluated in UTC via
 //                        QM_BrokerToUTC (broker = DXZ NY-Close GMT+2/+3 DST-aware),
 //                        so the windows track the card's stated UTC hours under DST.
-//   Spread guard       : block only a genuinely wide spread (> spread_pct_of_stop
-//                        of the 10-pip stop distance). Fail-open on .DWX zero spread.
+//   Spread guard       : block only a genuinely wide spread (>1.5 pips, expressed
+//                        as 15% of the 10-pip stop). Fail-open on .DWX zero spread.
 //
 // NOTE (M1 history): M1 EAs require M1 history in the tester window. DWX M1
 // availability is limited pre-2023 — Q02/Q03 setfiles should use a >=2023 window.
@@ -68,7 +66,7 @@ input int    strategy_ema_mid_period     = 50;     // mid EMA (stack middle)
 input int    strategy_ema_slow_period    = 100;    // slow EMA (stack bottom)
 input int    strategy_sl_pips            = 10;     // fixed stop-loss distance, pips
 input int    strategy_tp_pips            = 7;      // fixed take-profit distance, pips
-input double strategy_spread_pct_of_stop = 25.0;   // block if spread > this % of stop distance
+input double strategy_spread_pct_of_stop = 15.0;   // block if spread > this % of stop distance
 // Session windows in UTC (card: London open + NY open). Wrap-safe half-open [start,end).
 input int    strategy_sess1_start_utc    = 7;      // London open window start (UTC hour)
 input int    strategy_sess1_end_utc      = 10;     // London open window end   (UTC hour)
@@ -146,23 +144,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!stacked_long && !stacked_short)
       return false;
 
-   // --- Single trigger EVENT: price/EMA25 cross on the just-closed bar ---
-   // close[2] vs EMA25[2] = prior side; close[1] vs EMA25[1] = current side.
+   // --- Trigger STATE: just-closed price relative to EMA25 ---
    const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed: single closed-bar read
-   const double ema_fast_prev = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 2);
-   if(close1 <= 0.0 || close2 <= 0.0 || ema_fast_prev <= 0.0)
+   if(close1 <= 0.0)
       return false;
 
-   // Fresh upward cross of price through EMA25 (long), within bullish stack.
-   const bool cross_up   = (close2 <= ema_fast_prev && close1 > ema_fast);
-   // Fresh downward cross of price through EMA25 (short), within bearish stack.
-   const bool cross_down = (close2 >= ema_fast_prev && close1 < ema_fast);
-
    QM_OrderType side;
-   if(stacked_long && cross_up)
+   if(stacked_long && close1 > ema_fast)
       side = QM_BUY;
-   else if(stacked_short && cross_down)
+   else if(stacked_short && close1 < ema_fast)
       side = QM_SELL;
    else
       return false;
@@ -174,10 +164,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double sl = QM_StopFixedPips(_Symbol, side, entry, strategy_sl_pips);
-   // TP sits on the opposite side at tp_pips. QM_StopFixedPips with the OPPOSITE
-   // order type yields the correctly-signed take-profit price.
-   const QM_OrderType tp_side = (side == QM_BUY) ? QM_SELL : QM_BUY;
-   const double tp = QM_StopFixedPips(_Symbol, tp_side, entry, strategy_tp_pips);
+   const double tp = QM_TakeFixedPips(_Symbol, side, entry, strategy_tp_pips);
    if(sl <= 0.0 || tp <= 0.0)
       return false;
 
