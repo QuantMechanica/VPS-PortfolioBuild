@@ -69,49 +69,6 @@ input double strategy_spread_cap_pips   = 15.0;   // block only a wider-than-thi
 input bool   strategy_no_friday_entry   = true;   // card filter: no Friday entry
 
 // -----------------------------------------------------------------------------
-// Helpers
-// -----------------------------------------------------------------------------
-
-// One pip in price terms (scale-correct on 5-digit / JPY symbols).
-double Strategy_PipSize()
-  {
-   return QM_StopRulesPipsToPriceDistance(_Symbol, 1);
-  }
-
-// Detect a fresh EMA-fast/EMA-slow cross within the last `lookback` closed bars.
-// dir = +1 -> look for an upward cross (fast crosses above slow)
-// dir = -1 -> look for a downward cross (fast crosses below slow)
-// One cross EVENT only; this is the sole trigger (no two-cross requirement).
-bool Strategy_EmaCrossWithin(const int dir, const int lookback)
-  {
-   // Scan cross transitions over shifts [1 .. lookback]. A cross at shift s
-   // means fast/slow flipped relative side between shift s+1 and shift s.
-   for(int s = 1; s <= lookback; ++s)
-     {
-      const double fast_s  = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, s);
-      const double slow_s  = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, s);
-      const double fast_p  = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, s + 1);
-      const double slow_p  = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, s + 1);
-      if(fast_s <= 0.0 || slow_s <= 0.0 || fast_p <= 0.0 || slow_p <= 0.0)
-         continue;
-
-      if(dir > 0)
-        {
-         // upward cross: was at/below, now above
-         if(fast_p <= slow_p && fast_s > slow_s)
-            return true;
-        }
-      else
-        {
-         // downward cross: was at/above, now below
-         if(fast_p >= slow_p && fast_s < slow_s)
-            return true;
-        }
-     }
-   return false;
-  }
-
-// -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
@@ -123,12 +80,8 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double pip = Strategy_PipSize();
-   if(pip <= 0.0)
-      return false;
-
    const double spread = ask - bid;
-   const double cap    = strategy_spread_cap_pips * pip;
+   const double cap    = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
    if(spread > 0.0 && cap > 0.0 && spread > cap)
       return true;
@@ -173,10 +126,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                                          strategy_macd_signal, 1);
 
    // --- LONG: upward EMA cross (trigger) + +DI>-DI + MACD>0 ---
-   const bool long_di   = (plus_di > minus_di);
+   bool crossed_up = false;
+   bool crossed_down = false;
+   for(int s = 1; s <= strategy_cross_lookback; ++s)
+     {
+      const double fast_s = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, s);
+      const double slow_s = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, s);
+      const double fast_p = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, s + 1);
+      const double slow_p = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, s + 1);
+      if(fast_s <= 0.0 || slow_s <= 0.0 || fast_p <= 0.0 || slow_p <= 0.0)
+         continue;
+
+      if(fast_p <= slow_p && fast_s > slow_s)
+         crossed_up = true;
+      if(fast_p >= slow_p && fast_s < slow_s)
+         crossed_down = true;
+     }
+
+   const bool long_di = (plus_di > minus_di);
    const bool long_macd = (macd_main > 0.0);
-   if(long_di && long_macd &&
-      Strategy_EmaCrossWithin(+1, strategy_cross_lookback))
+   if(long_di && long_macd && crossed_up)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
@@ -195,10 +164,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    // --- SHORT: downward EMA cross (trigger) + -DI>+DI + MACD<0 ---
-   const bool short_di   = (minus_di > plus_di);
+   const bool short_di = (minus_di > plus_di);
    const bool short_macd = (macd_main < 0.0);
-   if(short_di && short_macd &&
-      Strategy_EmaCrossWithin(-1, strategy_cross_lookback))
+   if(short_di && short_macd && crossed_down)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(entry <= 0.0)

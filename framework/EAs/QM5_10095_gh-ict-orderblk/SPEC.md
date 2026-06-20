@@ -1,16 +1,16 @@
 # QM5_10095_gh-ict-orderblk - Strategy Spec
 
 **EA ID:** QM5_10095
-**Slug:** `gh-ict-orderblk`
-**Source:** `3b3ec48a-0755-5187-9331-afb36e174175`
+**Slug:** gh-ict-orderblk
+**Source:** 3b3ec48a-0755-5187-9331-afb36e174175
 **Author of this spec:** Codex
-**Last revised:** 2026-06-11
+**Last revised:** 2026-06-20
 
 ---
 
 ## 1. Strategy Logic
 
-The EA trades H1 order-block reversals in the direction of the weekly open bias. A long setup requires price above the Monday H1 open, a bearish previous H1 candle whose body is more than 10 percent of its range, the previous close to be the lowest close in the shifted 24-bar window, price to trade back to the previous candle open, and SMA(5) to have stayed above SMA(30) for 24 bars. A short setup mirrors those rules below the weekly open with a bullish previous candle, the previous close as the highest close in the shifted window, and SMA(5) below SMA(30). Initial stops use the previous H1 low or high, take profit is 3R or 4R based on the five-day average daily body, and the stop moves to entry plus or minus 1R after price reaches 2R.
+This EA trades H1 order-block reversals in the direction of a weekly-open bias. A buy can open when price is above the current week's Monday open, the previous H1 candle is a bearish order-block candle, its close is the lowest close across the shifted lookback window, price has traded back above that candle's open, and SMA(5) has stayed above SMA(30) for the lookback. A sell mirrors the rule below the weekly open with a bullish order-block candle, highest shifted close, price back below the candle open, and SMA(5) below SMA(30). The EA blocks oversized H1 candles when the previous H1 range exceeds 80% of the five-day average D1 body, opens at market with the previous H1 low/high as stop, sets 3R or 4R take profit from the average daily body threshold, and moves the stop one initial-risk distance beyond entry after price reaches 2R.
 
 ---
 
@@ -18,27 +18,31 @@ The EA trades H1 order-block reversals in the direction of the weekly open bias.
 
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
-| `strategy_look_back` | 24 | 1+ bars | Shifted H1 close and SMA state lookback. |
-| `strategy_order_block_threshold` | 10.0 | 0-100 | Minimum previous candle body as percent of H1 range. |
-| `strategy_h1_range_adr_ratio` | 0.80 | 0+ | Blocks entries when the previous H1 range exceeds this fraction of average D1 body. |
-| `strategy_daily_body_days` | 5 | 1+ days | D1 open-close body averaging window. |
-| `strategy_fast_sma` | 5 | 1+ bars | Fast SMA period for trend-state filter. |
-| `strategy_slow_sma` | 30 | 1+ bars | Slow SMA period for trend-state filter. |
-| `strategy_rr_low_range` | 3.0 | 0+ | Reward multiple when average daily body is below the source threshold. |
-| `strategy_rr_high_range` | 4.0 | 0+ | Reward multiple when average daily body is at or above the source threshold. |
-| `strategy_high_range_threshold` | 10.0 | 0+ price units | Average daily body threshold that selects the 4R target. |
+| strategy_order_block_threshold_pct | 10 | >0 | Minimum previous-candle body as percent of total H1 range. |
+| strategy_lookback | 24 | >=1 | Shifted H1 close window and SMA trend-state window. |
+| strategy_fast_sma | 5 | >=1 | Fast H1 SMA period. |
+| strategy_slow_sma | 30 | >=1 | Slow H1 SMA period. |
+| strategy_daily_body_days | 5 | >=1 | Number of closed D1 bars used for average absolute open-close body. |
+| strategy_h1_range_to_d1_body_max | 0.80 | >0 | Blocks entries when previous H1 range is greater than this fraction of average D1 body. |
+| strategy_tp_body_threshold | 10.0 | >=0 | Raw source-unit average D1 body threshold for selecting 4R instead of 3R. |
+| strategy_tp_rr_low_body | 3.0 | >0 | Take-profit R multiple when average D1 body is below the threshold. |
+| strategy_tp_rr_high_body | 4.0 | >0 | Take-profit R multiple when average D1 body is at or above the threshold. |
+| strategy_weekly_open_lookback_bars | 240 | >=30 recommended | H1 bars searched to find the current week's first Monday/broker-week open. |
+
+Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not repeated here.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` - card target; major FX pair with H1 and D1 OHLC available in the DWX matrix.
-- `XAUUSD.DWX` - card target; gold CFD with H1 and D1 OHLC available in the DWX matrix.
-- `GDAXI.DWX` - canonical DWX DAX symbol used for the card's `GER40.DWX` target.
+- EURUSD.DWX - card-listed DWX forex target using H1/D1 OHLC and SMA only.
+- XAUUSD.DWX - card-listed DWX metals target using the same OHLC/SMA mechanics.
+- GDAXI.DWX - DWX matrix DAX equivalent for the card's GER40.DWX target.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `dwx_symbol_matrix.csv`; mapped to `GDAXI.DWX`.
+- GER40.DWX - card-stated name is not present in `framework/registry/dwx_symbol_matrix.csv`; registered as GDAXI.DWX instead.
+- Non-DWX symbols - V5 research and backtest registry requires `.DWX` symbols.
 
 ---
 
@@ -47,8 +51,8 @@ The EA trades H1 order-block reversals in the direction of the weekly open bias.
 | Aspect | Value |
 |---|---|
 | Base timeframe | H1 |
-| Multi-timeframe refs | D1 average body over five closed daily bars |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` through the V5 skeleton |
+| Multi-timeframe refs | D1 average absolute open-close body over 5 closed bars |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` via framework OnTick gate |
 
 ---
 
@@ -57,10 +61,10 @@ The EA trades H1 order-block reversals in the direction of the weekly open bias.
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 80 |
-| Typical hold time | Not specified in card frontmatter; bounded by SL, TP, 2R stop movement, and Friday close. |
-| Expected drawdown profile | Not specified in card frontmatter. |
-| Regime preference | Weekly-open-biased order-block reversal with SMA trend-state filter. |
-| Win rate target (qualitative) | Not specified in card frontmatter. |
+| Typical hold time | Not specified in card; expected H1 intraday to multi-day until SL, TP, 2R stop move, or Friday close |
+| Expected drawdown profile | Not specified in card; fixed-risk single-position reversal profile |
+| Regime preference | Weekly-open directional bias with H1 order-block reversal and SMA trend-state confirmation |
+| Win rate target (qualitative) | Not specified in card; 3R/4R target implies medium-to-low win rate tolerance |
 
 ---
 
@@ -68,10 +72,10 @@ The EA trades H1 order-block reversals in the direction of the weekly open bias.
 
 This card was mechanised from:
 
-**Source ID:** `3b3ec48a-0755-5187-9331-afb36e174175`
+**Source ID:** 3b3ec48a-0755-5187-9331-afb36e174175
 **Source type:** GitHub repository
-**Pointer:** `artifacts/cards_approved/QM5_10095_gh-ict-orderblk.md`
-**R1-R4 verdict (Q00):** all PASS per `artifacts/cards_approved/QM5_10095_gh-ict-orderblk.md`
+**Pointer:** https://github.com/darula-hpp/ict-ea, file `ICT_EA.mq5`
+**R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_10095_gh-ict-orderblk.md`
 
 ---
 
@@ -91,4 +95,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-11 | Initial build from card | b8e40060-abf9-40ef-a91b-f2e64487ca89 |
+| v1 | 2026-06-20 | Initial build from card | 7322e316-c498-475e-975f-49d16bdfbe3d |
