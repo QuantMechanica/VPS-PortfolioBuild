@@ -13119,3 +13119,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9267,mql5-fractal-level-break,0,EURUSD.DWX,92670000,2026-06-20,Development,active
 9267,mql5-fractal-level-break,1,GBPJPY.DWX,92670001,2026-06-20,Development,active
 9267,mql5-fractal-level-break,2,WS30.DWX,92670002,2026-06-20,Development,active
+9274,mql5-five-drives,0,EURUSD.DWX,92740000,2026-06-20,Development,active
+9274,mql5-five-drives,1,GBPJPY.DWX,92740001,2026-06-20,Development,active
+9274,mql5-five-drives,2,XAUUSD.DWX,92740002,2026-06-20,Development,active
+9274,mql5-five-drives,3,NDX.DWX,92740003,2026-06-20,Development,active
