@@ -1,185 +1,210 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11525 ciurea-stoch1435-bounce-h4 — Stoch(14,3,5) OB/OS bounce (H4)"
+#property description "QM5_11525 Ciurea Stoch(14,3,5) bounce H4"
 
 #include <QM/QM_Common.mqh>
 
-// =============================================================================
-// QuantMechanica V5 EA — QM5_11525 ciurea-stoch1435-bounce-h4
-// -----------------------------------------------------------------------------
-// Source: Cristina Ciurea, "The Truth Behind Commonly Used Indicators",
-//         ScientificForex.com, ~2012.
-// Card: artifacts/cards_approved/QM5_11525_ciurea-stoch1435-bounce-h4.md
-//       (g0_status APPROVED).
-//
-// Mechanics (H4, closed-bar reads at shift 1; %K = MODE_MAIN = buffer 0):
-//   Stochastic params : K=14, D=3, slowing=5 (card "Stochastic(14,3,5)" →
-//                       iStochastic(...,14,3,5,...) = Kperiod,Dperiod,slowing).
-//   Trigger EVENT LONG : %K crosses UP through the oversold level (was <= OS on
-//                        the prior closed bar, now > OS). One fresh cross/bar.
-//   Trigger EVENT SHORT: %K crosses DOWN through the overbought level (was >= OB
-//                        on the prior closed bar, now < OB). One fresh cross/bar.
-//   The cross IS the single entry event — there is no second cross requirement,
-//   so the two-cross-same-bar zero-trade trap does not apply here.
-//   Stop  LONG : (3-bar low extreme) - 3 pips.
-//   Stop  SHORT: (3-bar high extreme) + 3 pips.
-//   Take       : 2R (TP distance = 2 × SL distance) via QM_TakeRR.
-//   No-trade   : Friday entries blocked; only a genuinely wide spread blocks
-//                (fail-open on .DWX zero modeled spread).
-//
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
-// else is framework wiring and MUST stay intact.
-// =============================================================================
-
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11525;
-input int    qm_magic_slot_offset       = 0;
-input uint   qm_rng_seed                = 42;
+input int    qm_ea_id                     = 11525;
+input int    qm_magic_slot_offset         = 0;
+input uint   qm_rng_seed                  = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.0;
-input double RISK_FIXED                 = 1000.0;
-input double PORTFOLIO_WEIGHT           = 1.0;
+input double RISK_PERCENT                 = 0.0;
+input double RISK_FIXED                   = 1000.0;
+input double PORTFOLIO_WEIGHT             = 1.0;
 
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled    = true;
-input int    qm_friday_close_hour_broker = 21;
+input bool   qm_friday_close_enabled      = true;
+input int    qm_friday_close_hour_broker  = 21;
 
 input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_stoch_k_period    = 14;    // Stochastic %K period
-input int    strategy_stoch_d_period    = 3;     // Stochastic %D (signal) period
-input int    strategy_stoch_slowing     = 5;     // Stochastic slowing
-input double strategy_oversold_level    = 20.0;  // oversold threshold (long cross-up)
-input double strategy_overbought_level  = 80.0;  // overbought threshold (short cross-down)
-input int    strategy_sl_lookback_bars  = 3;     // bars for the structural SL extreme
-input int    strategy_sl_buffer_pips    = 3;     // pips beyond the 3-bar extreme
-input double strategy_tp_rr             = 2.0;   // TP distance = rr × SL distance
-input bool   strategy_block_friday      = true;  // no new entries on Friday
-input double strategy_spread_cap_pips   = 15.0;  // skip if real spread > this many pips
+input int    strategy_stoch_k_period      = 14;
+input int    strategy_stoch_d_period      = 3;
+input int    strategy_stoch_slowing       = 5;
+input double strategy_oversold_level      = 20.0;
+input double strategy_overbought_level    = 80.0;
+input int    strategy_structure_bars      = 3;
+input int    strategy_sl_buffer_pips      = 3;
+input int    strategy_max_sl_pips         = 80;
+input double strategy_tp_rr               = 2.0;
+input int    strategy_spread_cap_pips     = 15;
+input bool   strategy_skip_friday_entry   = true;
 
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
-
-// Cheap O(1) per-tick gate. Friday block + spread guard only. Fail-open on the
-// .DWX zero modeled spread; only a genuinely wide spread blocks.
-bool Strategy_NoTradeFilter()
+bool IsFridayBrokerTime(const datetime broker_time)
   {
-   // No new entries on Friday (card: "No Friday entry").
-   if(strategy_block_friday)
-     {
-      MqlDateTime dt;
-      TimeToStruct(TimeCurrent(), dt);
-      if(dt.day_of_week == 5) // Friday
-         return true;
-     }
-
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   // Zero/invalid price → do not block; zero spread on .DWX must NOT fail-closed.
-   if(ask > 0.0 && bid > 0.0 && ask > bid)
-     {
-      const double spread     = ask - bid;
-      const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
-      if(spread_cap > 0.0 && spread > spread_cap)
-         return true; // genuinely wide spread — block
-     }
-
-   return false;
+   MqlDateTime dt;
+   TimeToStruct(broker_time, dt);
+   return (dt.day_of_week == 5);
   }
 
-// Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate). The %K cross
-// out of the OB/OS zone is the single trigger EVENT.
-bool Strategy_EntrySignal(QM_EntryRequest &req)
+double EntryPriceForSide(const QM_OrderType side)
   {
-   // One open position per symbol/magic.
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+   if(side == QM_BUY)
+      return SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(side == QM_SELL)
+      return SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   return 0.0;
+  }
+
+bool BuildStructureStopAndTarget(const QM_OrderType side,
+                                 const double entry,
+                                 double &out_sl,
+                                 double &out_tp)
+  {
+   out_sl = 0.0;
+   out_tp = 0.0;
+
+   double lowest = 0.0;
+   double highest = 0.0;
+   if(!QM_StopRulesReadStructureExtremes(_Symbol, strategy_structure_bars, lowest, highest))
       return false;
 
-   // %K (MODE_MAIN) on the two most-recent closed bars.
-   const double k_now  = QM_Stoch_K(_Symbol, _Period,
-                                    strategy_stoch_k_period, strategy_stoch_d_period,
-                                    strategy_stoch_slowing, 1);
-   const double k_prev = QM_Stoch_K(_Symbol, _Period,
-                                    strategy_stoch_k_period, strategy_stoch_d_period,
-                                    strategy_stoch_slowing, 2);
-   if(k_now <= 0.0 || k_prev <= 0.0)
+   const double buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_buffer_pips);
+   if(buffer <= 0.0)
       return false;
 
-   // Fresh cross UP through the oversold level → LONG (oversold bounce).
-   const bool cross_up_os   = (k_prev <= strategy_oversold_level &&
-                               k_now  >  strategy_oversold_level);
-   // Fresh cross DOWN through the overbought level → SHORT (overbought drop).
-   const bool cross_down_ob = (k_prev >= strategy_overbought_level &&
-                               k_now  <  strategy_overbought_level);
+   double sl = 0.0;
+   if(side == QM_BUY)
+      sl = lowest - buffer;
+   else
+      sl = highest + buffer;
 
-   if(!cross_up_os && !cross_down_ob)
-      return false;
-
-   const QM_OrderType side = cross_up_os ? QM_BUY : QM_SELL;
-
-   const double entry = (side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                         : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
-      return false;
-
-   // Structural stop: 3-bar extreme, then nudge buffer pips beyond it.
-   double sl = QM_StopStructure(_Symbol, side, entry, strategy_sl_lookback_bars);
-   if(sl <= 0.0)
-      return false;
-
-   const double buffer_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_buffer_pips);
-   if(buffer_dist > 0.0)
+   const double max_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_sl_pips);
+   if(max_dist > 0.0 && MathAbs(entry - sl) > max_dist)
      {
-      // LONG stop sits below the low → push it further down; SHORT above → up.
-      sl = (side == QM_BUY) ? (sl - buffer_dist) : (sl + buffer_dist);
-      sl = QM_StopRulesNormalizePrice(_Symbol, sl);
+      if(side == QM_BUY)
+         sl = entry - max_dist;
+      else
+         sl = entry + max_dist;
      }
+
+   sl = QM_StopRulesNormalizePrice(_Symbol, sl);
    if(sl <= 0.0)
+      return false;
+   if(side == QM_BUY && sl >= entry)
+      return false;
+   if(side == QM_SELL && sl <= entry)
       return false;
 
    const double tp = QM_TakeRR(_Symbol, side, entry, sl, strategy_tp_rr);
    if(tp <= 0.0)
       return false;
 
-   req.type   = side;
-   req.price  = 0.0; // framework fills market price at send
-   req.sl     = sl;
-   req.tp     = tp;
-   req.reason = (side == QM_BUY) ? "stoch_os_bounce_long" : "stoch_ob_bounce_short";
+   out_sl = sl;
+   out_tp = tp;
    return true;
   }
 
-// Fixed SL/TP only — no active management.
-void Strategy_ManageOpenPosition()
+// No Trade Filter (time, spread, news)
+bool Strategy_NoTradeFilter()
   {
-  }
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return true;
 
-// No discretionary exit; SL/TP (2R) handle the trade.
-bool Strategy_ExitSignal()
-  {
+   const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(cap > 0.0 && ask > bid && (ask - bid) > cap)
+      return true;
+
+   if(strategy_skip_friday_entry && IsFridayBrokerTime(TimeCurrent()))
+      return true;
+
    return false;
   }
 
-// Defer to the central news filter.
+// Trade Entry
+bool Strategy_EntrySignal(QM_EntryRequest &req)
+  {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(strategy_stoch_k_period <= 0 || strategy_stoch_d_period <= 0 || strategy_stoch_slowing <= 0)
+      return false;
+   if(strategy_structure_bars <= 0 || strategy_sl_buffer_pips <= 0 || strategy_tp_rr <= 0.0)
+      return false;
+
+   const double stoch_1 = QM_Stoch_K(_Symbol, PERIOD_H4,
+                                     strategy_stoch_k_period,
+                                     strategy_stoch_d_period,
+                                     strategy_stoch_slowing,
+                                     1);
+   const double stoch_2 = QM_Stoch_K(_Symbol, PERIOD_H4,
+                                     strategy_stoch_k_period,
+                                     strategy_stoch_d_period,
+                                     strategy_stoch_slowing,
+                                     2);
+   if(stoch_1 <= 0.0 || stoch_2 <= 0.0)
+      return false;
+
+   QM_OrderType side = QM_BUY;
+   string reason = "";
+   if(stoch_1 > strategy_oversold_level && stoch_2 <= strategy_oversold_level)
+     {
+      side = QM_BUY;
+      reason = "STOCH1435_CROSS_UP_20";
+     }
+   else if(stoch_1 < strategy_overbought_level && stoch_2 >= strategy_overbought_level)
+     {
+      side = QM_SELL;
+      reason = "STOCH1435_CROSS_DOWN_80";
+     }
+   else
+      return false;
+
+   const double entry = EntryPriceForSide(side);
+   if(entry <= 0.0)
+      return false;
+
+   double sl = 0.0;
+   double tp = 0.0;
+   if(!BuildStructureStopAndTarget(side, entry, sl, tp))
+      return false;
+
+   req.type = side;
+   req.price = 0.0;
+   req.sl = sl;
+   req.tp = tp;
+   req.reason = reason;
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+   return true;
+  }
+
+// Trade Management
+void Strategy_ManageOpenPosition()
+  {
+   // Card specifies no break-even, trailing, partial close, or scale-in logic.
+  }
+
+// Trade Close
+bool Strategy_ExitSignal()
+  {
+   // Card exits only through initial SL, 2R TP, and framework Friday close.
+   return false;
+  }
+
+// News Filter Hook (callable for P8 News Impact phase)
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
-
-// -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
-// -----------------------------------------------------------------------------
 
 int OnInit()
   {
@@ -188,20 +213,20 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_11525\",\"source_id\":\"0192e348-5570-531c-9110-7954a36caca2\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -219,6 +244,7 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -226,6 +252,7 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows)
       return;
+
    if(QM_FrameworkHandleFridayClose())
       return;
 
