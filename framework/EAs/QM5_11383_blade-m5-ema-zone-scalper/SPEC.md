@@ -4,7 +4,7 @@
 **Slug:** `blade-m5-ema-zone-scalper`
 **Source:** `f4fa8966-3aa0-5df0-9d8f-3872df92309a` (see `strategy-seeds/sources/f4fa8966-3aa0-5df0-9d8f-3872df92309a/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-20
 
 ---
 
@@ -37,7 +37,7 @@ no Asian session.
 | `strategy_be_trigger_pips` | 5 | 3-10 | Move SL to break-even at +this many pips |
 | `strategy_session_start_utc` | 8 | 0-23 | London open hour (UTC) |
 | `strategy_session_end_utc` | 22 | 0-23 | NY close hour (UTC) |
-| `strategy_spread_pct_of_stop` | 50.0 | 10-200 | Skip only if spread > this % of stop distance (fail-open) |
+| `strategy_spread_cap_pips` | 8 | 1-10 | Skip only if spread exceeds this many pips (fail-open on zero modeled spread) |
 
 ---
 
@@ -101,4 +101,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v1 | 2026-06-20 | Initial build from card | cc54e364-be54-4150-85f5-cc9db41a43a5 |

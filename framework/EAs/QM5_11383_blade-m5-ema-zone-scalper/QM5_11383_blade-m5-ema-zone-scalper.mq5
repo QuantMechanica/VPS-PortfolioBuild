@@ -46,8 +46,8 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -70,7 +70,7 @@ input int    strategy_be_trigger_pips   = 5;      // move SL to break-even at +t
 // Session windows in UTC (card states London/NY in GMT == UTC; 08:00-22:00 GMT).
 input int    strategy_session_start_utc = 8;      // London open hour (UTC)
 input int    strategy_session_end_utc   = 22;     // NY close hour (UTC)
-input double strategy_spread_pct_of_stop = 50.0;  // skip only if spread > this % of stop distance
+input int    strategy_spread_cap_pips   = 8;      // skip only if spread exceeds this many pips
 
 // -----------------------------------------------------------------------------
 // Helpers (EA-local, pure)
@@ -100,19 +100,18 @@ bool Strategy_NoTradeFilter()
    if(!BladeSessionActive(TimeCurrent()))
       return true;
 
-   // Fail-open spread guard. .DWX models 0 spread; only a genuinely wide spread
-   // blocks. Reference distance = the fixed pip stop distance.
+   // Fail-open spread guard. .DWX models 0 spread; only a genuinely wide spread blocks.
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
-   if(stop_distance <= 0.0)
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(spread_cap <= 0.0)
       return false;
 
    const double spread = ask - bid;
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread > spread_cap)
       return true;
 
    return false;
