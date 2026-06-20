@@ -1,56 +1,19 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11489 suhr-s-bank-stop-run-reversal-d1 — Bank Stop-Run Reversal (liquidity sweep, D1)"
+#property description "QM5_11489 suhr-s-bank-stop-run-reversal-d1"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA — QM5_11489 suhr-s-bank-stop-run-reversal-d1
 // -----------------------------------------------------------------------------
+// Card: D:\QM\strategy_farm\artifacts\cards_approved\QM5_11489_suhr-s-bank-stop-run-reversal-d1.md
 // Source: Sterling Suhr, "The Bank Trading Forex Strategy" in TradingPub
-//   "6 Simple Strategies for Trading Forex" (2014).
-// Card: artifacts/cards_approved/QM5_11489_suhr-s-bank-stop-run-reversal-d1.md
-//   (g0_status APPROVED).
+// "6 Simple Strategies for Trading Forex" (2014).
 //
-// Concept — "Bank stop-run reversal" / liquidity grab / stop hunt:
-//   Banks push price beyond a prior swing extreme to trigger retail stops
-//   clustered there (the liquidity pool), fill against them, then reverse.
-//   Mechanically this is the same family as a liquidity-sweep bar / Wyckoff
-//   spring: price SWEEPS beyond a prior swing high/low (runs the stops) and
-//   then CLOSES back inside the prior range on the SAME closed bar = the
-//   reversal trigger.
-//
-// D1-NATIVE realization (card framing was H1-intraday with D1 levels; the
-//   build brief specifies a D1-native realization of the same mechanical
-//   family). Swing levels are computed in-EA from closed-bar D1 OHLC, bounded
-//   to swing_lookback bars (perf-allowed: a single closed-bar-gated scan).
-//
-//   Prior swing extremes (STATE): over the swing_lookback closed bars that
-//     PRECEDE the candidate sweep bar (shift 2 .. swing_lookback+1), take the
-//     highest high (swing_high) and the lowest low (swing_low). Measuring the
-//     level over bars before the sweep bar means the sweep bar never defines
-//     its own level.
-//
-//   SHORT trigger EVENT (stop run above the swing high): the last closed bar
-//     (shift 1) pierced ABOVE swing_high by >= sweep_pips (high[1] >=
-//     swing_high + sweep) AND CLOSED back BELOW swing_high (close[1] <
-//     swing_high). One bar both sweeps and rejects = a SINGLE event, so the
-//     two-cross-same-bar zero-trade trap does not apply.
-//
-//   LONG trigger EVENT (stop run below the swing low): low[1] <= swing_low -
-//     sweep AND close[1] > swing_low.
-//
-//   Stop : beyond the sweep bar's extreme by sl_buffer_pips (clears the
-//          stop-run candle, per the card's "stop just beyond the stop-run
-//          candle extreme").
-//   Take : reward_rr multiple of the stop distance (card P2 = 3R asymmetric).
-//
-// Gapless-safe: every comparison uses prior-bar high/low/close, never a gap
-//   open (.DWX CFDs are gapless: open[0]==close[1]). Spread guard fails OPEN on
-//   .DWX zero modeled spread.
-//
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
-// else is framework wiring and MUST stay intact.
+// Implementation boundary: only strategy inputs and the five Strategy_* hooks
+// are strategy-specific. Framework lifecycle, risk, magic, news, Friday close,
+// kill-switch, and entry dispatch stay as provided by EA_Skeleton.mq5.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -66,8 +29,8 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -78,155 +41,223 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_swing_lookback    = 10;    // prior closed D1 bars defining the swing extreme
-input int    strategy_sweep_pips        = 3;     // min penetration beyond the swing extreme (the stop run)
-input int    strategy_sl_buffer_pips    = 5;     // SL placed this many pips beyond the sweep bar extreme
-input double strategy_reward_rr         = 3.0;   // take-profit = reward_rr * stop distance (card 3R)
-input double strategy_spread_pct_of_stop = 15.0; // skip if spread > this % of stop distance
-input bool   strategy_block_friday      = true;  // card: no Friday entry
+input int    strategy_stop_run_break_pips = 3;
+input int    strategy_pullback_window_pips = 15;
+input int    strategy_stop_loss_pips      = 20;
+input double strategy_reward_rr           = 3.0;
+input int    strategy_spread_cap_pips     = 20;
+input bool   strategy_block_friday_entries = true;
 
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
+enum SuhrSetupState
+  {
+   SUHR_IDLE = 0,
+   SUHR_STOP_RUN_SEEN = 1,
+   SUHR_CONFIRMATION_SEEN = 2,
+   SUHR_DONE = 3
+  };
 
-// Cheap O(1) per-tick gate. Spread guard only — sweep/reversal work is in
-// Strategy_EntrySignal on the closed-bar path. Fail-OPEN on .DWX zero spread.
+int      g_suhr_day_of_year = -1;
+int      g_suhr_year = -1;
+double   g_manip_high = 0.0;
+double   g_manip_low = 0.0;
+int      g_short_state = SUHR_IDLE;
+int      g_long_state = SUHR_IDLE;
+datetime g_short_stop_bar_time = 0;
+datetime g_long_stop_bar_time = 0;
+
+bool ReadClosedBar(const ENUM_TIMEFRAMES tf, MqlRates &bar)
+  {
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, tf, 1, 1, rates); // perf-allowed: one closed bar inside framework new-bar gate
+   if(copied != 1)
+      return false;
+
+   bar = rates[0];
+   return (bar.high > 0.0 && bar.low > 0.0 && bar.close > 0.0);
+  }
+
+bool RefreshDailyState(const datetime closed_h1_time)
+  {
+   MqlDateTime dt;
+   TimeToStruct(closed_h1_time, dt);
+
+   if(dt.year == g_suhr_year && dt.day_of_year == g_suhr_day_of_year)
+      return (g_manip_high > 0.0 && g_manip_low > 0.0);
+
+   MqlRates day_bar;
+   if(!ReadClosedBar(PERIOD_D1, day_bar))
+      return false;
+
+   g_suhr_year = dt.year;
+   g_suhr_day_of_year = dt.day_of_year;
+   g_manip_high = day_bar.high;
+   g_manip_low = day_bar.low;
+   g_short_state = SUHR_IDLE;
+   g_long_state = SUHR_IDLE;
+   g_short_stop_bar_time = 0;
+   g_long_stop_bar_time = 0;
+
+   return (g_manip_high > 0.0 && g_manip_low > 0.0);
+  }
+
+bool IsFridayEntryBlocked(const datetime closed_h1_time)
+  {
+   if(!strategy_block_friday_entries)
+      return false;
+
+   MqlDateTime dt;
+   TimeToStruct(closed_h1_time, dt);
+   return (dt.day_of_week == 5);
+  }
+
+void ResetEntryRequest(QM_EntryRequest &req)
+  {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+  }
+
+// Return TRUE to block trading this tick. Spread guard is .DWX-safe:
+// zero modeled spread passes, only genuinely wide spread blocks.
 bool Strategy_NoTradeFilter()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
+      return true;
 
-   // Reference stop distance for the spread cap: the SL buffer scaled to price.
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_buffer_pips);
-   if(stop_distance <= 0.0)
+   const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(cap <= 0.0)
       return false;
 
    const double spread = ask - bid;
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread > cap)
       return true;
 
    return false;
   }
 
-// Stop-run reversal entry. Caller guarantees QM_IsNewBar() == true (closed bar).
+// Caller guarantees QM_IsNewBar() == true. This implements the card's daily
+// state machine: IDLE -> STOP_RUN_SEEN -> CONFIRMATION_SEEN -> ENTRY/DONE.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
+   ResetEntryRequest(req);
+
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // Card filter: no Friday entry (last closed bar's open day == Friday).
-   if(strategy_block_friday)
-     {
-      MqlDateTime dt;
-      TimeToStruct(iTime(_Symbol, _Period, 1), dt); // perf-allowed: single closed-bar time read
-      if(dt.day_of_week == 5)
-         return false;
-     }
-
-   if(strategy_swing_lookback < 1 || strategy_sweep_pips < 0)
+   if(strategy_stop_run_break_pips < 0 ||
+      strategy_pullback_window_pips < 1 ||
+      strategy_stop_loss_pips < 1 ||
+      strategy_reward_rr <= 0.0)
       return false;
 
-   const double pip = QM_StopRulesPipsToPriceDistance(_Symbol, 1); // one pip in price terms
+   MqlRates h1;
+   if(!ReadClosedBar(PERIOD_H1, h1))
+      return false;
+
+   if(IsFridayEntryBlocked(h1.time))
+      return false;
+
+   if(!RefreshDailyState(h1.time))
+      return false;
+
+   const double pip = QM_StopRulesPipsToPriceDistance(_Symbol, 1);
    if(pip <= 0.0)
       return false;
-   const double sweep = strategy_sweep_pips * pip;
 
-   // --- Prior swing extremes (STATE): bounded scan over the closed bars that
-   //     PRECEDE the candidate sweep bar (shift 2 .. swing_lookback+1). The
-   //     sweep bar (shift 1) is excluded so it never defines its own level. ---
-   double swing_high = -1.0;
-   double swing_low  = -1.0;
-   const int first_shift = 2;
-   const int last_shift  = strategy_swing_lookback + 1;
-   for(int s = first_shift; s <= last_shift; ++s)
+   const double stop_run_break = strategy_stop_run_break_pips * pip;
+   const double pullback_window = strategy_pullback_window_pips * pip;
+
+   if(g_short_state == SUHR_IDLE &&
+      h1.high >= g_manip_high + stop_run_break)
      {
-      const double h = iHigh(_Symbol, _Period, s); // perf-allowed: bounded closed-bar structural scan
-      const double l = iLow(_Symbol, _Period, s);
-      if(h <= 0.0 || l <= 0.0)
-         return false; // insufficient history for the swing window
-      if(swing_high < 0.0 || h > swing_high)
-         swing_high = h;
-      if(swing_low < 0.0 || l < swing_low)
-         swing_low = l;
+      g_short_state = SUHR_STOP_RUN_SEEN;
+      g_short_stop_bar_time = h1.time;
      }
-   if(swing_high <= 0.0 || swing_low <= 0.0)
-      return false;
 
-   // --- Candidate sweep bar (the last closed bar, shift 1). ---
-   const double sweep_high  = iHigh(_Symbol, _Period, 1);  // perf-allowed: single closed-bar read
-   const double sweep_low   = iLow(_Symbol, _Period, 1);
-   const double sweep_close = iClose(_Symbol, _Period, 1);
-   if(sweep_high <= 0.0 || sweep_low <= 0.0 || sweep_close <= 0.0)
-      return false;
-
-   const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid   = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0 || bid <= 0.0)
-      return false;
-
-   // --- SHORT trigger EVENT: swept above swing_high then closed back below. ---
-   const bool short_sweep  = (sweep_high  >= swing_high + sweep);
-   const bool short_reject = (sweep_close <  swing_high);
-   if(short_sweep && short_reject)
+   if(g_long_state == SUHR_IDLE &&
+      h1.low <= g_manip_low - stop_run_break)
      {
-      const double s_entry = bid; // sell at market (framework fills at send)
-      // SL beyond the sweep bar's high (clears the stop-run candle extreme).
-      const double sl = QM_StopRulesNormalizePrice(_Symbol, sweep_high + strategy_sl_buffer_pips * pip);
-      if(sl <= s_entry)
-         return false; // degenerate geometry — skip
-      const double tp = QM_TakeRR(_Symbol, QM_SELL, s_entry, sl, strategy_reward_rr);
-      if(tp <= 0.0)
+      g_long_state = SUHR_STOP_RUN_SEEN;
+      g_long_stop_bar_time = h1.time;
+     }
+
+   if(g_short_state == SUHR_STOP_RUN_SEEN &&
+      h1.time != g_short_stop_bar_time &&
+      h1.close < g_manip_high)
+      g_short_state = SUHR_CONFIRMATION_SEEN;
+
+   if(g_long_state == SUHR_STOP_RUN_SEEN &&
+      h1.time != g_long_stop_bar_time &&
+      h1.close > g_manip_low)
+      g_long_state = SUHR_CONFIRMATION_SEEN;
+
+   if(g_short_state == SUHR_CONFIRMATION_SEEN &&
+      h1.low >= g_manip_high - pullback_window)
+     {
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(entry <= 0.0)
          return false;
 
-      req.type   = QM_SELL;
-      req.price  = 0.0;   // framework fills market price at send
-      req.sl     = sl;
-      req.tp     = tp;
-      req.reason = "stop_run_reversal_short";
+      const double sl = QM_StopFixedPips(_Symbol, QM_SELL, entry, strategy_stop_loss_pips);
+      const double tp = QM_TakeRR(_Symbol, QM_SELL, entry, sl, strategy_reward_rr);
+      if(sl <= 0.0 || tp <= 0.0 || sl <= entry || tp >= entry)
+         return false;
+
+      req.type = QM_SELL;
+      req.price = 0.0;
+      req.sl = sl;
+      req.tp = tp;
+      req.reason = "prev_day_high_stop_run_reversal";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
+      g_short_state = SUHR_DONE;
       return true;
      }
 
-   // --- LONG trigger EVENT: swept below swing_low then closed back above. ---
-   const bool long_sweep  = (sweep_low   <= swing_low - sweep);
-   const bool long_reject = (sweep_close >  swing_low);
-   if(long_sweep && long_reject)
+   if(g_long_state == SUHR_CONFIRMATION_SEEN &&
+      h1.high <= g_manip_low + pullback_window)
      {
-      const double l_entry = entry; // buy at market
-      // SL beyond the sweep bar's low (clears the stop-run candle extreme).
-      const double sl = QM_StopRulesNormalizePrice(_Symbol, sweep_low - strategy_sl_buffer_pips * pip);
-      if(sl >= l_entry)
-         return false; // degenerate geometry — skip
-      const double tp = QM_TakeRR(_Symbol, QM_BUY, l_entry, sl, strategy_reward_rr);
-      if(tp <= 0.0)
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(entry <= 0.0)
          return false;
 
-      req.type   = QM_BUY;
-      req.price  = 0.0;
-      req.sl     = sl;
-      req.tp     = tp;
-      req.reason = "stop_run_reversal_long";
+      const double sl = QM_StopFixedPips(_Symbol, QM_BUY, entry, strategy_stop_loss_pips);
+      const double tp = QM_TakeRR(_Symbol, QM_BUY, entry, sl, strategy_reward_rr);
+      if(sl <= 0.0 || tp <= 0.0 || sl >= entry || tp <= entry)
+         return false;
+
+      req.type = QM_BUY;
+      req.price = 0.0;
+      req.sl = sl;
+      req.tp = tp;
+      req.reason = "prev_day_low_stop_run_reversal";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
+      g_long_state = SUHR_DONE;
       return true;
      }
 
    return false;
   }
 
-// Fixed SL/TP only — no active trade management.
 void Strategy_ManageOpenPosition()
   {
+   // Card specifies fixed SL/TP only; no trailing, partial close, or break-even.
   }
 
-// No discretionary exit; the fixed SL/TP handle the trade.
 bool Strategy_ExitSignal()
   {
+   // Exits are fixed SL/TP plus framework Friday close.
    return false;
   }
 
-// Defer to the central news filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
@@ -243,17 +274,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -274,6 +305,7 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -281,6 +313,7 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows)
       return;
+
    if(QM_FrameworkHandleFridayClose())
       return;
 
