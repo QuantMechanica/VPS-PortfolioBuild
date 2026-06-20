@@ -3,16 +3,16 @@
 ; ea_id:        10575
 ; ea_slug:      mql5-volqual
 ; ea_version:   v5.0
-; set_version:  s20260611-001
+; set_version:  s20260620-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   179c70153a0bdcb45de0fb50e2f1cd460cc6950884fd4c0c22ddaef96827c625
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-11
+; date:         2026-06-20
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000
