@@ -1,73 +1,27 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11548 Carter-T — 08:00 EST Session Box Breakout (M5)"
+#property description "QM5_11548 Carter-T M5 Session Box Breakout"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QM5_11548 — Carter-T 08:00 EST Session Box Breakout (M5)
+// QuantMechanica V5 EA — QM5_11548 carter-t-m5-session-box-breakout
 // -----------------------------------------------------------------------------
-// Card: artifacts/cards_approved/QM5_11548_carter-t-m5-session-box-breakout.md
-//       (g0_status: APPROVED)
+// Card: D:\QM\strategy_farm\artifacts\cards_approved\QM5_11548_carter-t-m5-session-box-breakout.md
 // Source: Thomas Carter, "20 Forex Trading Strategies (5 Minute Time Frame)",
-//         System #7 (2014).
+//         System #7.
 //
-// Mechanic (mechanical, deterministic):
-//   - The hour just BEFORE the NY open (07:00-08:00 ET = the H1 bar that closes
-//     at 08:00 ET / 15:00 DWX broker) builds a range "box":
-//       box_high = max(High) of the box-window M5 bars,
-//       box_low  = min(Low)  of the box-window M5 bars,
-//       box_height = box_high - box_low (must be >= box_min_pips).
-//     This M5-aggregation over [07:00,08:00) ET is exactly the OHLC of the
-//     14:00-15:00 DWX H1 box the card describes, derived per-bar so it stays
-//     DST-correct in both EST and EDT regimes (no hard-coded broker hour).
-//   - In the 60-minute signal window AFTER the box closes (08:00-09:00 ET),
-//     a breakout fires on the CLOSE of an M5 bar:
-//       LONG  when bar close > box_high + entry_buffer_frac * box_height,
-//       SHORT when bar close < box_low  - entry_buffer_frac * box_height.
-//     The accumulated box is STATE; the close crossing the buffered boundary is
-//     the single trigger EVENT. Referencing the closed-bar CLOSE (not an opening
-//     gap, not an intrabar two-way range) avoids the two-cross-same-bar
-//     zero-trade trap and is gapless-CFD correct on .DWX.
-//   - Entry is a MARKET order on that closed breakout bar (one position per
-//     symbol/magic, no pyramiding). Whichever side breaks out first takes the
-//     trade; a per-session latch blocks any re-entry that day ("once per day
-//     per symbol", card filter).
-//   - SL = opposite box side -/+ sl_buffer_pips, capped at sl_cap_pips (card P2
-//     cap: 50 pips) measured from the broken boundary.
-//   - TP = tp_box_mult * box_height from the broken box BOUNDARY
-//          (LONG: box_high + tp_box_mult*h ; SHORT: box_low - tp_box_mult*h).
-//   - Time stop: any open position is closed at/after cancel_et_hour (card:
-//     "cancel pending orders at 16:00 DWX" → the order is only valid 1 hour;
-//     here a market fill can only occur in [08:00,09:00) ET, and an unresolved
-//     position is flattened from time_stop_et_hour onward).
-//   - No Friday entry (card filter): the breakout gate is skipped on Fridays.
-//
-// Broker time / session note (.DWX, DXZ NY-Close GMT+2/+3 DST-aware):
-//   The card frames the session on the US (ET) clock: 08:00 EST = 15:00 DWX
-//   broker year-round (winter UTC-5→13:00 UTC=15:00 GMT+2; summer UTC-4→12:00
-//   UTC=15:00 GMT+3). MT5 bar timestamps are in BROKER time. We convert every
-//   evaluated bar's OPEN timestamp:
-//       broker_open -> UTC via QM_BrokerToUTC -> ET via (UTC - 5h, or -4h when
-//       US DST is active per QM_IsUSDSTUTC).
-//   Deriving ET per bar (rather than hard-coding a broker hour) keeps the window
-//   correct in both standard and DST regimes. Only US DST exists in the
-//   framework — exactly the calendar the ET session frame needs. No wall-clock
-//   TimeCurrent() gating drives the session frame; everything keys off the bar
-//   OPEN timestamp.
-//
-// .DWX invariants honoured:
-//   - Spread guard fails OPEN on zero modeled spread (only blocks a genuinely
-//     wide spread when ask>bid).
-//   - QM_IsNewBar(M5) consumed exactly ONCE per tick by the framework; the entry
-//     hook runs only on a fresh closed M5 bar.
-//   - Buffers/SL/cap are expressed in PIPS and converted via
-//     QM_StopRulesPipsToPriceDistance (scale-correct on 5-digit GBPUSD /
-//     3-digit GBPJPY).
-//   - Box OHLC + bar-timestamp reads are bespoke structural data with no
-//     framework reader; they run once per fresh M5 bar (perf-allowed), bounded
-//     by box_lookback_bars (~12), O(1) per bar — no per-tick loop.
-//   - No external macro/CSV feed: box is built purely from M5 OHLC.
+// Mechanics:
+//   - On the M5 bar whose broker-time open is 15:00, read the just-closed H1
+//     bar (14:00-15:00 DWX broker time) as the session box.
+//   - Place both a BuyStop at box_high + 20% of box_height and a SellStop at
+//     box_low - 20% of box_height.
+//   - Pending orders expire after one hour and are also explicitly removed
+//     after 16:00 broker time.
+//   - TP is measured from the box extreme: long box_high + 4x height, short
+//     box_low - 4x height. SL is the opposite side of the box.
+//   - No Friday entries. No discretionary exit beyond SL/TP, pending expiry,
+//     one-position cleanup, and framework Friday close.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -95,283 +49,262 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-// Box window on the ET (US) clock: [box_start_et_hour, box_end_et_hour).
-// 07:00-08:00 ET = the H1 box bar that closes at 08:00 EST / 15:00 DWX.
-input int    box_start_et_hour          = 7;    // 07:00 ET — one hour before NY open
-input int    box_end_et_hour            = 8;    // 08:00 ET — NY open (box closes)
-// Signal (breakout) window on the ET clock: [box_end_et_hour, signal_end_et_hour).
-// Card: signal valid 1 hour only → 08:00-09:00 ET.
-input int    signal_end_et_hour         = 9;    // 09:00 ET — last breakout opportunity
-// In-trade time stop: close any open position at/after this ET hour. Card cancels
-// the unfilled order at 16:00 DWX (=09:00 ET, the signal-window end); an open
-// position is held to a conservative session end and flattened here.
-input int    time_stop_et_hour          = 12;   // 12:00 ET
-// Box-window M5 bar count: 60 min / 5 min = 12 bars. Upper bound for the scan.
-input int    box_lookback_bars          = 12;
-// Minimum box height to accept (filters degenerate tiny boxes), pips.
-input double box_min_pips               = 5.0;
-// Breakout buffer beyond the box edge, as a fraction of box height (card: 20%).
-input double entry_buffer_frac          = 0.20;
-// Take profit = tp_box_mult * box_height, measured from the broken boundary.
-input double tp_box_mult                = 4.0;
-// Stop loss buffer beyond the opposite box side, pips.
-input double sl_buffer_pips             = 1.0;
-// Stop loss cap for very wide boxes, pips (card P2 cap: 50 pips).
-input double sl_cap_pips                = 50.0;
-// Maximum spread allowed (pips). Fails OPEN on zero modeled spread (.DWX).
-input double max_spread_pips            = 15.0;
-// No-Friday-entry filter (card: "No Friday entry").
-input bool   no_friday_entry            = true;
+input int    strategy_signal_hour_broker      = 15;
+input int    strategy_signal_minute_broker    = 0;
+input double strategy_breakout_box_pct        = 0.20;
+input double strategy_tp_box_mult             = 4.0;
+input int    strategy_pending_expiry_minutes  = 60;
+input int    strategy_max_box_pips            = 50;
+input int    strategy_max_spread_pips         = 5;
 
-// -----------------------------------------------------------------------------
-// File-scope session state (advanced once per fresh M5 bar).
-// -----------------------------------------------------------------------------
-datetime g_box_session_day   = 0;     // ET-midnight datetime of the cached box's day
-bool     g_box_valid         = false; // box built & passed min-height for the session
-double   g_box_high          = 0.0;
-double   g_box_low           = 0.0;
-double   g_box_height        = 0.0;
-bool     g_traded_session    = false; // already opened a trade this session (no re-entry)
+int      g_orders_placed_day_broker = 0;
+datetime g_pending_expiry_broker    = 0;
 
-// -----------------------------------------------------------------------------
-// Broker-bar timestamp -> ET conversion helpers.
-// -----------------------------------------------------------------------------
-
-// Convert a BROKER-time bar timestamp to Eastern Time (US), DST-aware.
-datetime BrokerBarToET(const datetime broker_time)
-  {
-   const datetime utc = QM_BrokerToUTC(broker_time);
-   const int et_offset = QM_IsUSDSTUTC(utc) ? 4 : 5;   // EDT=UTC-4, EST=UTC-5
-   return utc - (et_offset * 3600);
-  }
-
-// ET-midnight (00:00 ET) of the day containing this ET timestamp.
-datetime ETMidnight(const datetime et_time)
+int Strategy_DateKey(const datetime t)
   {
    MqlDateTime dt;
-   ZeroMemory(dt);
-   TimeToStruct(et_time, dt);
-   dt.hour = 0;
-   dt.min  = 0;
-   dt.sec  = 0;
-   return StructToTime(dt);
+   TimeToStruct(t, dt);
+   return dt.year * 10000 + dt.mon * 100 + dt.day;
   }
 
-int ETHour(const datetime et_time)
+bool Strategy_IsFriday(const datetime t)
   {
    MqlDateTime dt;
-   ZeroMemory(dt);
-   TimeToStruct(et_time, dt);
-   return dt.hour;
+   TimeToStruct(t, dt);
+   return (dt.day_of_week == 5);
   }
 
-int ETDayOfWeek(const datetime et_time)
+bool Strategy_IsSignalBarOpen(const datetime bar_open)
   {
    MqlDateTime dt;
-   ZeroMemory(dt);
-   TimeToStruct(et_time, dt);
-   return dt.day_of_week;   // 0=Sun .. 5=Fri .. 6=Sat
+   TimeToStruct(bar_open, dt);
+   return (dt.hour == strategy_signal_hour_broker &&
+           dt.min == strategy_signal_minute_broker);
   }
 
-// Build the box for the ET session day of the just-closed bar, scanning back
-// over the M5 bars whose ET OPEN time falls in [box_start_et_hour, box_end_et_hour)
-// on that same ET calendar day. perf-allowed bespoke structural read, bounded by
-// box_lookback_bars + small margin, run once per fresh M5 bar.
-void BuildBoxForSession(const datetime session_day_et)
+bool Strategy_SpreadAllows()
   {
-   double hi = 0.0;
-   double lo = 0.0;
-   bool   have = false;
+   if(strategy_max_spread_pips <= 0)
+      return true;
 
-   const int max_scan = (box_lookback_bars > 0 ? box_lookback_bars : 12) + 8;
-   for(int shift = 1; shift <= max_scan; shift++)
-     {
-      const datetime bar_broker = iTime(_Symbol, PERIOD_M5, shift);  // perf-allowed
-      if(bar_broker <= 0)
-         break;
-
-      const datetime bar_et = BrokerBarToET(bar_broker);
-      if(ETMidnight(bar_et) != session_day_et)
-        {
-         // A bar from an older ET day ends the relevant scan window.
-         if(bar_et < session_day_et)
-            break;
-         continue;
-        }
-
-      const int h = ETHour(bar_et);
-      if(h < box_start_et_hour)
-         break;                       // walked before the box window — done
-      if(h >= box_end_et_hour)
-         continue;                    // bar at/after box close — not in box
-
-      const double bar_hi = iHigh(_Symbol, PERIOD_M5, shift);  // perf-allowed
-      const double bar_lo = iLow(_Symbol, PERIOD_M5, shift);   // perf-allowed
-      if(bar_hi <= 0.0 || bar_lo <= 0.0)
-         continue;
-
-      if(!have)
-        {
-         hi = bar_hi;
-         lo = bar_lo;
-         have = true;
-        }
-      else
-        {
-         if(bar_hi > hi) hi = bar_hi;
-         if(bar_lo < lo) lo = bar_lo;
-        }
-     }
-
-   g_box_high   = hi;
-   g_box_low    = lo;
-   g_box_height = (have ? (hi - lo) : 0.0);
-
-   const double min_h = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathRound(box_min_pips));
-   g_box_valid = (have && g_box_height > 0.0 && (min_h <= 0.0 || g_box_height >= min_h));
-  }
-
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
-
-// Block trading only on a genuinely wide spread. .DWX quotes ask==bid (spread 0)
-// in the tester, so this MUST fail open on zero spread.
-bool Strategy_NoTradeFilter()
-  {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask > 0.0 && bid > 0.0 && ask > bid)
-     {
-      const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathRound(max_spread_pips));
-      if(cap > 0.0 && (ask - bid) > cap)
-         return true;   // genuinely wide spread → block
-     }
-   return false;
+   if(ask <= 0.0 || bid <= 0.0)
+      return true;
+
+   const double spread = ask - bid;
+   if(spread <= 0.0)
+      return true;
+
+   const double max_spread = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_spread_pips);
+   if(max_spread <= 0.0)
+      return true;
+
+   return (spread <= max_spread);
   }
 
-// New entry on a freshly-closed M5 bar. Caller guarantees QM_IsNewBar()==true.
+bool Strategy_IsStopPendingType(const ENUM_ORDER_TYPE type)
+  {
+   return (type == ORDER_TYPE_BUY_STOP || type == ORDER_TYPE_SELL_STOP);
+  }
+
+int Strategy_PendingStopCount()
+  {
+   int count = 0;
+   const int magic = QM_FrameworkMagic();
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      if(Strategy_IsStopPendingType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
+         count++;
+     }
+   return count;
+  }
+
+void Strategy_RemoveOurPendingStops(const string reason)
+  {
+   const int magic = QM_FrameworkMagic();
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      if(!Strategy_IsStopPendingType((ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE)))
+         continue;
+      QM_TM_RemovePendingOrder(ticket, reason);
+     }
+  }
+
+bool Strategy_ReadH1Box(double &box_high, double &box_low)
+  {
+   box_high = 0.0;
+   box_low = 0.0;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, PERIOD_H1, 1, 1, rates); // perf-allowed: one closed H1 box bar inside QM_IsNewBar-gated EntrySignal.
+   if(copied != 1)
+      return false;
+
+   box_high = rates[0].high;
+   box_low = rates[0].low;
+   return (box_high > 0.0 && box_low > 0.0 && box_high > box_low);
+  }
+
+bool Strategy_BoxWithinCap(const double box_height)
+  {
+   if(strategy_max_box_pips <= 0)
+      return true;
+
+   const double max_height = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_box_pips);
+   if(max_height <= 0.0)
+      return true;
+
+   return (box_height <= max_height);
+  }
+
+bool Strategy_BuildStopRequest(const QM_OrderType side,
+                               const double box_high,
+                               const double box_low,
+                               QM_EntryRequest &req)
+  {
+   const double box_height = box_high - box_low;
+   if(box_height <= 0.0 ||
+      strategy_breakout_box_pct <= 0.0 ||
+      strategy_tp_box_mult <= 0.0)
+      return false;
+
+   int expiry_seconds = strategy_pending_expiry_minutes * 60;
+   if(expiry_seconds < 60)
+      expiry_seconds = 60;
+
+   const bool is_buy = (side == QM_BUY_STOP);
+   const double offset = box_height * strategy_breakout_box_pct;
+   const double entry = is_buy ? (box_high + offset) : (box_low - offset);
+   const double sl = is_buy ? box_low : box_high;
+   const double tp = is_buy ? (box_high + strategy_tp_box_mult * box_height)
+                            : (box_low - strategy_tp_box_mult * box_height);
+
+   if(entry <= 0.0 || sl <= 0.0 || tp <= 0.0)
+      return false;
+
+   req.type = side;
+   req.price = QM_TM_NormalizePrice(_Symbol, entry);
+   req.sl = QM_TM_NormalizePrice(_Symbol, sl);
+   req.tp = QM_TM_NormalizePrice(_Symbol, tp);
+   req.reason = is_buy ? "carter_session_box_buy_stop" : "carter_session_box_sell_stop";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = expiry_seconds;
+   return (req.price > 0.0 && req.sl > 0.0 && req.tp > 0.0);
+  }
+
+bool Strategy_HasOpenPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   return (QM_TM_OpenPositionCount(magic) > 0);
+  }
+
+// -----------------------------------------------------------------------------
+// Strategy hooks — implement these against the card mechanically.
+// -----------------------------------------------------------------------------
+
+// No Trade Filter (time, spread, news)
+bool Strategy_NoTradeFilter()
+  {
+   if(g_pending_expiry_broker > 0 && TimeCurrent() >= g_pending_expiry_broker)
+      Strategy_RemoveOurPendingStops("session_box_1600_expiry");
+
+   return !Strategy_SpreadAllows();
+  }
+
+// Trade Entry
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One active position per symbol/magic — no pyramiding.
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+   req.type = QM_BUY_STOP;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(_Period != PERIOD_M5)
       return false;
 
-   // --- Locate the just-closed M5 bar in ET. ---
-   const datetime bar_broker = iTime(_Symbol, PERIOD_M5, 1);   // perf-allowed
-   if(bar_broker <= 0)
+   const datetime current_bar_open = iTime(_Symbol, _Period, 0); // perf-allowed: current M5 bar open for exact 15:00 broker-time gate.
+   if(current_bar_open <= 0)
       return false;
-   const datetime bar_et   = BrokerBarToET(bar_broker);
-   const datetime day_et   = ETMidnight(bar_et);
-   const int      hour_et  = ETHour(bar_et);
+   if(Strategy_IsFriday(current_bar_open))
+      return false;
+   if(!Strategy_IsSignalBarOpen(current_bar_open))
+      return false;
+   if(!Strategy_SpreadAllows())
+      return false;
 
-   // --- Session roll: new ET day resets box + per-session trade latch. ---
-   if(day_et != g_box_session_day)
+   const int today_key = Strategy_DateKey(current_bar_open);
+   if(g_orders_placed_day_broker == today_key)
+      return false;
+   if(Strategy_HasOpenPosition() || Strategy_PendingStopCount() > 0)
+      return false;
+
+   double box_high = 0.0;
+   double box_low = 0.0;
+   if(!Strategy_ReadH1Box(box_high, box_low))
+      return false;
+
+   const double box_height = box_high - box_low;
+   if(!Strategy_BoxWithinCap(box_height))
+      return false;
+
+   QM_EntryRequest buy_req;
+   if(Strategy_BuildStopRequest(QM_BUY_STOP, box_high, box_low, buy_req))
      {
-      g_box_session_day = day_et;
-      g_box_valid       = false;
-      g_traded_session  = false;
+      ulong buy_ticket = 0;
+      QM_TM_OpenPosition(buy_req, buy_ticket);
      }
 
-   // --- Only act inside the breakout signal window [box_end, signal_end) ET. ---
-   if(hour_et < box_end_et_hour || hour_et >= signal_end_et_hour)
+   if(!Strategy_BuildStopRequest(QM_SELL_STOP, box_high, box_low, req))
       return false;
 
-   // No-Friday-entry filter (card).
-   if(no_friday_entry && ETDayOfWeek(bar_et) == 5)   // 5 = Friday
-      return false;
-
-   // No re-entry after a trade has been taken this session.
-   if(g_traded_session)
-      return false;
-
-   // --- Build the box once per session (on first signal-window bar). ---
-   if(!g_box_valid)
-      BuildBoxForSession(day_et);
-   if(!g_box_valid)
-      return false;
-
-   // --- Breakout trigger off the just-closed bar CLOSE. ---
-   const double bar_close = iClose(_Symbol, PERIOD_M5, 1);   // perf-allowed
-   if(bar_close <= 0.0)
-      return false;
-
-   const double buf = entry_buffer_frac * g_box_height;
-   const double up_level = g_box_high + buf;
-   const double dn_level = g_box_low  - buf;
-
-   QM_OrderType side;
-   if(bar_close > up_level)
-      side = QM_BUY;
-   else if(bar_close < dn_level)
-      side = QM_SELL;
-   else
-      return false;
-
-   // --- Stop loss: opposite box side -/+ sl_buffer_pips, capped at sl_cap_pips.
-   const double sl_buf  = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathRound(sl_buffer_pips));
-   const double sl_cap  = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathRound(sl_cap_pips));
-   const double boundary = (side == QM_BUY) ? g_box_high : g_box_low;  // broken edge
-
-   double sl_price;
-   if(side == QM_BUY)
-      sl_price = g_box_low - sl_buf;     // opposite (lower) box side
-   else
-      sl_price = g_box_high + sl_buf;    // opposite (upper) box side
-
-   // Apply the cap on the SL DISTANCE from the broken boundary.
-   if(sl_cap > 0.0)
-     {
-      const double sl_dist = MathAbs(boundary - sl_price);
-      if(sl_dist > sl_cap)
-         sl_price = (side == QM_BUY) ? (boundary - sl_cap) : (boundary + sl_cap);
-     }
-   sl_price = QM_StopRulesNormalizePrice(_Symbol, sl_price);
-   if(sl_price <= 0.0)
-      return false;
-
-   // --- Take profit: tp_box_mult * box_height from the broken boundary. ---
-   const double tp_dist  = tp_box_mult * g_box_height;
-   const double tp_price = QM_StopRulesTakeFromDistance(_Symbol, side, boundary, tp_dist);
-
-   req.type   = side;
-   req.price  = 0.0;        // market entry on the breakout-bar close
-   req.sl     = sl_price;
-   req.tp     = tp_price;   // 0.0 if tp_dist invalid → no TP
-   req.reason = "QM5_11548 session_box_breakout";
-
-   g_traded_session = true; // latch: no re-entry this session even if closed early
+   g_orders_placed_day_broker = today_key;
+   g_pending_expiry_broker = current_bar_open + strategy_pending_expiry_minutes * 60;
    return true;
   }
 
-// No active SL/TP management beyond the fixed exits (card P2 baseline). Trailing /
-// validity-window tweaks are P3 sweep dimensions only — OFF here.
+// Trade Management
 void Strategy_ManageOpenPosition()
   {
+   if(g_pending_expiry_broker > 0 && TimeCurrent() >= g_pending_expiry_broker)
+      Strategy_RemoveOurPendingStops("session_box_1600_expiry");
+
+   if(Strategy_HasOpenPosition())
+      Strategy_RemoveOurPendingStops("session_box_one_position_cleanup");
   }
 
-// In-trade time stop: close any open position once the ET clock of the latest
-// closed M5 bar reaches time_stop_et_hour. Cheap O(1) read.
+// Trade Close
 bool Strategy_ExitSignal()
   {
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
-      return false;
-
-   const datetime bar_broker = iTime(_Symbol, PERIOD_M5, 0);  // current bar open, perf-allowed
-   if(bar_broker <= 0)
-      return false;
-   const int hour_et = ETHour(BrokerBarToET(bar_broker));
-   return (hour_et >= time_stop_et_hour);
+   return false;
   }
 
-// Defer to the central two-axis news filter.
+// News Filter Hook
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
 
 // -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line.
+// Framework wiring — do NOT edit below this line unless you know why.
 // -----------------------------------------------------------------------------
 
 int OnInit()
@@ -412,6 +345,7 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -437,7 +371,7 @@ void OnTick()
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
 
