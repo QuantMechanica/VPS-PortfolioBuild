@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   874039762470fd3556056f51521f07dd52a3158886504698a98a587fe467c863
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-20
 ;==========================================================
@@ -31,24 +31,4 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11726_tc-m5-s13-cci-macd-breakthrough.md
-qm_ea_id=11726
-qm_rng_seed=42
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=1
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
-strategy_cci_period=14
-strategy_cci_level=100.0
-strategy_macd_fast=12
-strategy_macd_slow=26
-strategy_macd_signal=9
-strategy_sl_pips=13
-strategy_tp_pips=9
-strategy_eurusd_tp_pips=8
-strategy_gbpusd_tp_pips=10
-strategy_spread_pct_of_stop=25.0
+; card_defaults_source=not_found

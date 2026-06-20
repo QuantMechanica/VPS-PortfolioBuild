@@ -1,40 +1,22 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11708 anon-market-squeeze-d1 — TTM-style squeeze release breakout (D1)"
+#property description "QM5_11708 anon-market-squeeze-d1"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA — QM5_11708 anon-market-squeeze-d1
 // -----------------------------------------------------------------------------
+// Card: D:\QM\strategy_farm\artifacts\cards_approved\QM5_11708_anon-market-squeeze-d1.md
 // Source: Anonymous, "Scalping Forex Strategies — Forex Market Squeeze",
-//   self-published PDF (93933996), ~2014.
-// Card: artifacts/cards_approved/QM5_11708_anon-market-squeeze-d1.md (g0_status APPROVED).
+// self-published PDF (93933996), ~2014.
 //
-// Realization (per build directive — TTM-squeeze-style, framework-native):
-//   The card's "market squeeze" concept is built as a volatility-compression
-//   regime + release breakout. The raw 2-day OHLC pending-sell-stop wording in
-//   the card body cannot be expressed cleanly with the .DWX-gapless tester and
-//   QM_* helpers, so the squeeze is realized the canonical TTM way:
-//
-//   Bollinger Bands : QM_BB_Upper/Lower(bb_period, bb_dev)  (deviation MANDATORY).
-//   Keltner Channel : EMA(kc_period) +/- kc_atr_mult * ATR(atr_period).
-//
-//   Squeeze STATE   : BB strictly INSIDE KC
-//                       (BB_Upper < KC_Upper) AND (BB_Lower > KC_Lower).
-//                     = low-volatility compression regime.
-//   Release EVENT   : squeeze was ON one bar ago (shift 2) and is OFF on the
-//                     last closed bar (shift 1). This single on->off transition
-//                     is the ONE trigger event (no two-cross-same-bar trap).
-//   Direction STATE : close[1] vs BB_Middle[1] — break up => long, down => short.
-//   Stop            : QM_StopATR(atr_period, sl_atr_mult) from entry.
-//   Take profit     : QM_TakeRR(rr) off entry/SL (R-multiple).
-//
-//   All reads are closed-bar (shift 1 latest, shift 2 prior). One position per
-//   magic. RISK_FIXED in tester, RISK_PERCENT live. No ML, no external feed.
-//
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
-// else is framework wiring and MUST stay intact.
+// Implements the card-literal bearish D1 market squeeze:
+// - two consecutive higher closes
+// - Day 1 close in the lower half of Day 2's range
+// - Variant A sell stop at Day 2 close minus Day 2 range
+// - Variant B sell stop one pip below Day 3 close if A was not filled
+// - close the short after the first completed bearish daily candle post-entry
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -50,8 +32,8 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -62,134 +44,207 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_bb_period          = 20;    // Bollinger period
-input double strategy_bb_dev             = 2.0;    // Bollinger deviation (MANDATORY arg)
-input int    strategy_kc_period          = 20;    // Keltner EMA midline period
-input int    strategy_atr_period         = 20;    // ATR period (Keltner width + stop)
-input double strategy_kc_atr_mult        = 1.5;   // Keltner channel = EMA +/- mult*ATR
-input double strategy_sl_atr_mult        = 2.0;   // stop distance = mult * ATR
-input double strategy_rr                 = 2.0;   // take-profit R-multiple
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input double strategy_range_fraction     = 0.50;
+input double strategy_sl_range_mult      = 1.50;
+input int    strategy_fallback_pips      = 1;
+input int    strategy_order_valid_days   = 1;
+input bool   strategy_enable_variant_b   = true;
 
 // -----------------------------------------------------------------------------
-// Strategy helpers
+// Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// Squeeze-ON STATE at the given closed-bar shift: Bollinger Bands strictly
-// inside the Keltner Channel (low-volatility compression). Returns false on any
-// unavailable buffer read (warmup) so the gate fails closed safely.
-bool SqueezeOnAt(const int shift)
-  {
-   const double bb_up = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_dev, shift);
-   const double bb_lo = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_dev, shift);
-   if(bb_up <= 0.0 || bb_lo <= 0.0)
-      return false;
-
-   const double mid = QM_EMA(_Symbol, _Period, strategy_kc_period, shift);
-   const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, shift);
-   if(mid <= 0.0 || atr <= 0.0)
-      return false;
-
-   const double kc_up = mid + strategy_kc_atr_mult * atr;
-   const double kc_lo = mid - strategy_kc_atr_mult * atr;
-
-   // BB inside KC => compression.
-   return (bb_up < kc_up && bb_lo > kc_lo);
-  }
-
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
-
-// Cheap O(1) per-tick gate. Spread guard only; regime/signal work is on the
-// closed-bar path in Strategy_EntrySignal. Fail-open on .DWX zero modeled spread.
+// No Trade Filter (time, spread, news)
+// The card has no additional time/session/spread filter beyond framework gates.
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to entry gate
-
-   const double stop_distance = strategy_sl_atr_mult * atr_value;
-   if(stop_distance <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
-      return true;
-
    return false;
   }
 
-// Squeeze-release breakout entry. Caller guarantees QM_IsNewBar() == true.
+// Trade Entry
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+   req.type = QM_SELL_STOP;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
 
-   // --- Release EVENT: squeeze ON at shift 2, OFF at shift 1 (single transition) ---
-   const bool sq_prev = SqueezeOnAt(2);
-   const bool sq_now  = SqueezeOnAt(1);
-   if(!(sq_prev && !sq_now))
-      return false; // not a fresh release this bar
-
-   // --- Direction STATE: last closed bar vs the BB midline ---
-   const double mid1   = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_dev, 1);
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   if(mid1 <= 0.0 || close1 <= 0.0)
-      return false;
-
-   QM_OrderType dir;
-   double entry;
-   if(close1 > mid1)
+   for(int i = 0; i < PositionsTotal(); ++i)
      {
-      dir   = QM_BUY;
-      entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
      }
-   else if(close1 < mid1)
+
+   for(int i = 0; i < OrdersTotal(); ++i)
      {
-      dir   = QM_SELL;
-      entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type == ORDER_TYPE_SELL_STOP)
+         return false;
      }
-   else
-      return false; // exactly on the midline — no directional break
 
-   if(entry <= 0.0)
+   const int valid_days = (strategy_order_valid_days > 0) ? strategy_order_valid_days : 1;
+   const int expiration_seconds = valid_days * 86400;
+   double one_pip = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_fallback_pips);
+   if(one_pip <= 0.0)
+      one_pip = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(one_pip <= 0.0)
       return false;
 
-   const double sl = QM_StopATR(_Symbol, dir, entry, strategy_atr_period, strategy_sl_atr_mult);
-   if(sl <= 0.0)
-      return false;
-   const double tp = QM_TakeRR(_Symbol, dir, entry, sl, strategy_rr);
-   if(tp <= 0.0)
+   // perf-allowed: this strategy is bespoke D1 OHLC structure; each read is a
+   // single fixed closed-bar value inside the framework's once-per-bar gate.
+   const double close_1 = iClose(_Symbol, PERIOD_D1, 1);
+   const double open_1  = iOpen(_Symbol, PERIOD_D1, 1);
+   const double high_1  = iHigh(_Symbol, PERIOD_D1, 1);
+   const double low_1   = iLow(_Symbol, PERIOD_D1, 1);
+   const double close_2 = iClose(_Symbol, PERIOD_D1, 2);
+   const double high_2  = iHigh(_Symbol, PERIOD_D1, 2);
+   const double low_2   = iLow(_Symbol, PERIOD_D1, 2);
+   const double close_3 = iClose(_Symbol, PERIOD_D1, 3);
+   const double close_4 = iClose(_Symbol, PERIOD_D1, 4);
+
+   if(close_1 <= 0.0 || open_1 <= 0.0 || high_1 <= 0.0 || low_1 <= 0.0 ||
+      close_2 <= 0.0 || high_2 <= 0.0 || low_2 <= 0.0 ||
+      close_3 <= 0.0 || close_4 <= 0.0)
       return false;
 
-   req.type   = dir;
-   req.price  = 0.0;   // framework fills market price at send
-   req.sl     = sl;
-   req.tp     = tp;
-   req.reason = "squeeze_release_breakout";
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(bid <= 0.0)
+      return false;
+
+   if(strategy_enable_variant_b)
+     {
+      const double prior_range = high_2 - low_2;
+      const bool prior_setup = (prior_range > 0.0 &&
+                                close_3 > close_4 &&
+                                close_2 > close_3 &&
+                                (high_2 - close_3) >= strategy_range_fraction * prior_range);
+      if(prior_setup)
+        {
+         const double entry_b = QM_StopRulesNormalizePrice(_Symbol, close_1 - one_pip);
+         const double sl_b = QM_StopRulesNormalizePrice(_Symbol, high_1 + strategy_sl_range_mult * (high_1 - low_1));
+         if(entry_b > 0.0 && sl_b > entry_b && entry_b < bid)
+           {
+            req.type = QM_SELL_STOP;
+            req.price = entry_b;
+            req.sl = sl_b;
+            req.tp = 0.0;
+            req.reason = "market_squeeze_variant_b";
+            req.expiration_seconds = expiration_seconds;
+            return true;
+           }
+        }
+     }
+
+   const double day2_range = high_1 - low_1;
+   const bool setup_a = (day2_range > 0.0 &&
+                         close_2 > close_3 &&
+                         close_1 > close_2 &&
+                         (high_1 - close_2) >= strategy_range_fraction * day2_range);
+   if(!setup_a)
+      return false;
+
+   const double entry_a = QM_StopRulesNormalizePrice(_Symbol, close_1 - day2_range);
+   const double sl_a = QM_StopRulesNormalizePrice(_Symbol, high_1 + strategy_sl_range_mult * day2_range);
+   const double tp_dist_a = close_1 - low_1;
+   const double tp_a = (tp_dist_a > 0.0) ? QM_StopRulesNormalizePrice(_Symbol, entry_a - tp_dist_a) : 0.0;
+
+   if(entry_a <= 0.0 || sl_a <= entry_a || entry_a >= bid)
+      return false;
+
+   req.type = QM_SELL_STOP;
+   req.price = entry_a;
+   req.sl = sl_a;
+   req.tp = (tp_a > 0.0 && tp_a < entry_a) ? tp_a : 0.0;
+   req.reason = "market_squeeze_variant_a";
+   req.expiration_seconds = expiration_seconds;
    return true;
   }
 
-// Fixed ATR stop + RR target manage the trade; no active management.
+// Trade Management
 void Strategy_ManageOpenPosition()
   {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return;
+
+   const datetime now = TimeCurrent();
+   const int valid_days = (strategy_order_valid_days > 0) ? strategy_order_valid_days : 1;
+   const int max_age_seconds = valid_days * 86400;
+
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type != ORDER_TYPE_SELL_STOP)
+         continue;
+
+      const datetime setup_time = (datetime)OrderGetInteger(ORDER_TIME_SETUP);
+      if(setup_time > 0 && (now - setup_time) >= max_age_seconds)
+         QM_TM_RemovePendingOrder(ticket, "market_squeeze_pending_expired");
+     }
   }
 
-// No discretionary exit beyond SL/TP.
+// Trade Close
 bool Strategy_ExitSignal()
   {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   // perf-allowed: fixed D1 closed-bar exit check for the card's first
+   // downward daily movement after entry.
+   const datetime current_daily_open = iTime(_Symbol, PERIOD_D1, 0);
+   const double open_1 = iOpen(_Symbol, PERIOD_D1, 1);
+   const double close_1 = iClose(_Symbol, PERIOD_D1, 1);
+   if(current_daily_open <= 0 || open_1 <= 0.0 || close_1 <= 0.0 || close_1 >= open_1)
+      return false;
+
+   for(int i = 0; i < PositionsTotal(); ++i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) != POSITION_TYPE_SELL)
+         continue;
+
+      const datetime position_time = (datetime)PositionGetInteger(POSITION_TIME);
+      if(position_time > 0 && position_time < current_daily_open)
+         return true;
+     }
+
    return false;
   }
 
-// Defer to the central news filter.
+// News Filter Hook (callable for P8 News Impact phase)
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
@@ -206,17 +261,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");

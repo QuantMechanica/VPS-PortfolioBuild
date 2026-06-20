@@ -19,14 +19,9 @@
 //   Stochastic STATE  : %K heading in trade direction AND not at the far
 //                       extreme (long: rising & <80; short: falling & >20).
 //   ADX STATE         : QM_ADX(14) > adx_threshold — trend present.
-//   SINGLE EVENT      : EITHER a fresh HA colour flip into the trade direction
-//                       on the trigger bar (shift1) OR a fresh Stochastic %K
-//                       cross of its mid level in the trade direction. Exactly
-//                       ONE fresh event is required (the other conditions are
-//                       STATES). This avoids the "two crossovers on the same
-//                       bar" zero-trade trap.
 //   Stop / Take       : fixed pips (card 10 SL / 15 TP), pip-scaled.
-//   Defensive exit    : first opposite-colour HA bar closes the position.
+//   Defensive exit    : first opposite-colour HA bar or Stoch reaching the
+//                       trade-side extreme closes the position.
 //   Session           : card "London + NY 13:00-22:00 GMT" — gated in UTC via
 //                       QM_BrokerToUTC so it is DST-correct on the .DWX feed.
 //   Spread guard      : fail-OPEN on .DWX zero modeled spread; only a genuinely
@@ -71,7 +66,6 @@ input double strategy_adx_threshold     = 22.0;   // ADX must exceed this (trend
 input int    strategy_stoch_k           = 5;      // Stochastic %K period
 input int    strategy_stoch_d           = 3;      // Stochastic %D period
 input int    strategy_stoch_slow        = 3;      // Stochastic slowing
-input double strategy_stoch_mid         = 50.0;   // %K mid level for the cross EVENT
 input double strategy_stoch_ob          = 80.0;   // overbought guard (long blocked above)
 input double strategy_stoch_os          = 20.0;   // oversold guard (short blocked below)
 input int    strategy_sl_pips           = 10;     // fixed stop, pips
@@ -121,10 +115,10 @@ void AdvanceHAState_OnNewBar()
    for(int s = seed_shift; s >= 1; --s)
      {
       // perf-allowed: bounded warmup fold, runs once per closed bar only.
-      const double o = iOpen(_Symbol, _Period, s);
-      const double h = iHigh(_Symbol, _Period, s);
-      const double l = iLow(_Symbol, _Period, s);
-      const double c = iClose(_Symbol, _Period, s);
+      const double o = iOpen(_Symbol, _Period, s);  // perf-allowed: HA reconstruction, gated once per new bar
+      const double h = iHigh(_Symbol, _Period, s);  // perf-allowed: HA reconstruction, gated once per new bar
+      const double l = iLow(_Symbol, _Period, s);   // perf-allowed: HA reconstruction, gated once per new bar
+      const double c = iClose(_Symbol, _Period, s); // perf-allowed: HA reconstruction, gated once per new bar
       if(o <= 0.0 || c <= 0.0)
          return;
 
@@ -239,30 +233,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double ha_mid1 = (g_ha_open[1] + g_ha_close[1]) / 2.0;
 
    // ---------------- LONG ----------------
-   // SINGLE EVENT (long): EITHER a fresh HA colour flip into bullish on the
-   // trigger bar (bar1 bullish, bar2 NOT bullish) OR a fresh Stoch %K cross up
-   // through mid. Exactly one fresh event is required; everything else is a
-   // STATE. This is the anti-"two-cross-same-bar" guard.
-   const bool ha_flip_up_evt = HABullish(1) && !HABullish(2);        // bar2 was not bullish
-   const bool stoch_cross_up = (k_prev <= strategy_stoch_mid && k_now > strategy_stoch_mid);
-   const bool long_event     = ha_flip_up_evt || stoch_cross_up;
-
-   // STATES (long): current HA colour bullish + HA mid above the HA-close SMA +
-   //   Stoch heading up & below OB + (settled 2-consec OR this is the flip bar).
-   //   The consecutive-bar requirement is satisfied either by two settled
-   //   bullish HA bars (card literal) OR by the flip bar that just turned
-   //   bullish — so the flip EVENT and the HA STATE do not contradict.
+   // Card literal: two consecutive bullish HA bars, HA mid above the HA-close
+   // MA proxy, ADX above threshold, and Stoch %K rising while below OB.
    bool long_ha_ok = HABullish(1);
    if(strategy_ha_consec_bars >= 2)
-      long_ha_ok = HABullish(1) && (HABullish(2) || ha_flip_up_evt);
+      long_ha_ok = HABullish(1) && HABullish(2);
    if(strategy_ha_consec_bars >= 3)
-      long_ha_ok = long_ha_ok && (HABullish(3) || ha_flip_up_evt);
+      long_ha_ok = long_ha_ok && HABullish(3);
 
    const bool long_states = long_ha_ok &&
                             (ha_mid1 > g_ha_ma) &&
                             (k_now > k_prev) && (k_now < strategy_stoch_ob);
 
-   if(long_states && long_event)
+   if(long_states)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
@@ -280,21 +263,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    // ---------------- SHORT (mirror) ----------------
-   const bool ha_flip_dn_evt = HABearish(1) && !HABearish(2);       // bar2 was not bearish
-   const bool stoch_cross_dn = (k_prev >= strategy_stoch_mid && k_now < strategy_stoch_mid);
-   const bool short_event    = ha_flip_dn_evt || stoch_cross_dn;
-
    bool short_ha_ok = HABearish(1);
    if(strategy_ha_consec_bars >= 2)
-      short_ha_ok = HABearish(1) && (HABearish(2) || ha_flip_dn_evt);
+      short_ha_ok = HABearish(1) && HABearish(2);
    if(strategy_ha_consec_bars >= 3)
-      short_ha_ok = short_ha_ok && (HABearish(3) || ha_flip_dn_evt);
+      short_ha_ok = short_ha_ok && HABearish(3);
 
    const bool short_states = short_ha_ok &&
                              (ha_mid1 < g_ha_ma) &&
                              (k_now < k_prev) && (k_now > strategy_stoch_os);
 
-   if(short_states && short_event)
+   if(short_states)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(entry <= 0.0)
@@ -319,13 +298,16 @@ void Strategy_ManageOpenPosition()
   {
   }
 
-// Defensive exit: first opposite-colour HA bar closes the position.
+// Defensive exit: first opposite-colour HA bar or Stoch reaching the
+// trade-side extreme closes the position.
 bool Strategy_ExitSignal()
   {
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
       return false;
    if(!g_ha_valid)
       return false;
+
+   const double k_now = QM_Stoch_K(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slow, 1);
 
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -338,8 +320,12 @@ bool Strategy_ExitSignal()
       const long ptype = PositionGetInteger(POSITION_TYPE);
       if(ptype == POSITION_TYPE_BUY && HABearish(1))
          return true;  // first bearish HA -> exit LONG
+      if(ptype == POSITION_TYPE_BUY && k_now >= strategy_stoch_ob)
+         return true;  // Stoch reaches upper extreme -> exit LONG
       if(ptype == POSITION_TYPE_SELL && HABullish(1))
          return true;  // first bullish HA -> exit SHORT
+      if(ptype == POSITION_TYPE_SELL && k_now <= strategy_stoch_os)
+         return true;  // Stoch reaches lower extreme -> exit SHORT
      }
    return false;
   }

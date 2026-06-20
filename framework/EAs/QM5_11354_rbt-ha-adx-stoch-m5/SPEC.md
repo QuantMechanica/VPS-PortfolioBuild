@@ -4,7 +4,7 @@
 **Slug:** `rbt-ha-adx-stoch-m5`
 **Source:** `ed246754-1f4d-5bed-8dd3-3b5cbf1b420d` (RoboForex Strategy Collection PDF)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-20
 
 ---
 
@@ -13,18 +13,14 @@
 Intraday Heikin-Ashi trend-confirmation on M5. The EA reconstructs Heikin-Ashi
 candles deterministically from raw OHLC over a bounded warmup window (no HA
 indicator reader), caching the last few closed-bar HA opens/closes once per new
-bar. It then trades a confluence of three forces: a Heikin-Ashi STATE (two
-consecutive same-colour HA bars plus HA-mid on the correct side of an SMA of the
-HA close line), an ADX(14) STATE (ADX above 22 = a trend is present), and a
-Stochastic(5,3,3) STATE (%K heading in the trade direction and not at the far
-extreme). To avoid the "two crossovers on the same bar never coincide"
-zero-trade trap, exactly ONE fresh EVENT is required to fire: either a Heikin-Ashi
-colour flip into the trade direction on the last closed bar, OR a Stochastic %K
-cross of its mid level (50) in the trade direction. Long fires when the bullish
-states hold and one bullish event occurs; short is the mirror. Stop is a fixed 10
-pips and take-profit a fixed 15 pips (both pip-scaled). A defensive exit closes
-the position on the first opposite-colour Heikin-Ashi bar. Trading is restricted
-to the London+NY session (13:00-22:00 UTC, DST-correct via broker→UTC conversion).
+bar. A long opens when the last two closed Heikin-Ashi candles are bullish, the
+HA mid is above the HA-close moving-average proxy, ADX(14) is above 22, and
+Stochastic(5,3,3) %K is rising while below 80. A short is the mirror: two bearish
+HA candles, HA mid below the proxy, ADX above 22, and %K falling while above 20.
+Stop is a fixed 10 pips and take-profit a fixed 15 pips (both pip-scaled). A
+defensive exit closes the position on the first opposite-colour Heikin-Ashi bar
+or when Stochastic reaches the trade-side extreme. Trading is restricted to the
+London+NY session (13:00-22:00 UTC, DST-correct via broker to UTC conversion).
 
 ---
 
@@ -40,7 +36,6 @@ to the London+NY session (13:00-22:00 UTC, DST-correct via broker→UTC conversi
 | `strategy_stoch_k` | 5 | 3-21 | Stochastic %K period |
 | `strategy_stoch_d` | 3 | 2-9 | Stochastic %D period |
 | `strategy_stoch_slow` | 3 | 1-9 | Stochastic slowing |
-| `strategy_stoch_mid` | 50.0 | 40-60 | %K mid level for the cross EVENT |
 | `strategy_stoch_ob` | 80.0 | 70-90 | Overbought guard — long blocked above |
 | `strategy_stoch_os` | 20.0 | 10-30 | Oversold guard — short blocked below |
 | `strategy_sl_pips` | 10 | 5-40 | Fixed stop-loss, pips (pip-scaled) |
@@ -113,4 +108,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | (pending build commit) |
+| v1 | 2026-06-20 | Initial build from card | f13da32b-7a3a-42aa-a536-c4ae9f56f25d |
