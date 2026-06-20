@@ -11254,14 +11254,14 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11522,carter-t-ema4-10-adx28-macd5104-h4,3,USDCHF.DWX,115220003,2026-06-18,Claude,reserved
 11523,ciurea-sma100-price-cross-h4,0,EURUSD.DWX,115230000,2026-06-18,Claude,reserved
 11523,ciurea-sma100-price-cross-h4,1,GBPUSD.DWX,115230001,2026-06-18,Claude,reserved
-11524,ciurea-ema200-price-cross-m30,0,EURUSD.DWX,115240000,2026-06-18,Claude,reserved
+11524,ciurea-ema200-price-cross-m30,0,EURUSD.DWX,115240000,2026-06-18,Development,active
 11525,ciurea-stoch1435-bounce-h4,0,GBPUSD.DWX,115250000,2026-06-18,Claude,reserved
 11525,ciurea-stoch1435-bounce-h4,1,EURUSD.DWX,115250001,2026-06-18,Claude,reserved
 11526,ciurea-rsi10-50-d1,0,GBPUSD.DWX,115260000,2026-06-18,Claude,reserved
 11527,ciurea-engulfing-m30,0,EURUSD.DWX,115270000,2026-06-18,Claude,reserved
 11527,ciurea-engulfing-m30,1,GBPUSD.DWX,115270001,2026-06-18,Claude,reserved
-11528,ciurea-inv-hammer-shooting-star-m30,0,EURUSD.DWX,115280000,2026-06-18,Claude,reserved
-11528,ciurea-inv-hammer-shooting-star-m30,1,GBPUSD.DWX,115280001,2026-06-18,Claude,reserved
+11528,ciurea-inv-hammer-shooting-star-m30,0,EURUSD.DWX,115280000,2026-06-20,Development,active
+11528,ciurea-inv-hammer-shooting-star-m30,1,GBPUSD.DWX,115280001,2026-06-20,Development,active
 11529,ciurea-hammer-hanging-man-m15,0,EURUSD.DWX,115290000,2026-06-18,Claude,reserved
 11529,ciurea-hammer-hanging-man-m15,1,GBPUSD.DWX,115290001,2026-06-18,Claude,reserved
 11530,carter-t-h1-sma9-100-cross,0,GBPUSD.DWX,115300000,2026-06-18,Claude,reserved
@@ -13038,3 +13038,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1399,classical-double-top-h4,13,GDAXI.DWX,13990013,2026-06-18,Claude,reserved
 1399,classical-double-top-h4,14,UK100.DWX,13990014,2026-06-18,Claude,reserved
 1399,classical-double-top-h4,15,XTIUSD.DWX,13990015,2026-06-18,Claude,reserved
+9285,mql5-gator-ad-trap,0,GBPJPY.DWX,92850000,2026-06-20,Development,active
+9285,mql5-gator-ad-trap,1,EURJPY.DWX,92850001,2026-06-20,Development,active
+9285,mql5-gator-ad-trap,2,XAUUSD.DWX,92850002,2026-06-20,Development,active
