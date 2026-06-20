@@ -11246,8 +11246,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11520,carter-t-ema18-adx12-pullback,0,EURUSD.DWX,115200000,2026-06-18,Claude,reserved
 11520,carter-t-ema18-adx12-pullback,1,GBPUSD.DWX,115200001,2026-06-18,Claude,reserved
 11520,carter-t-ema18-adx12-pullback,2,USDJPY.DWX,115200002,2026-06-18,Claude,reserved
-11521,carter-t-ema6-13-macd-psar-h4-gbp,0,GBPUSD.DWX,115210000,2026-06-18,Claude,reserved
-11521,carter-t-ema6-13-macd-psar-h4-gbp,1,GBPJPY.DWX,115210001,2026-06-18,Claude,reserved
+11521,carter-t-ema6-13-macd-psar-h4-gbp,0,GBPUSD.DWX,115210000,2026-06-20,Development,active
+11521,carter-t-ema6-13-macd-psar-h4-gbp,1,GBPJPY.DWX,115210001,2026-06-20,Development,active
 11522,carter-t-ema4-10-adx28-macd5104-h4,0,EURUSD.DWX,115220000,2026-06-18,Claude,active
 11522,carter-t-ema4-10-adx28-macd5104-h4,1,GBPUSD.DWX,115220001,2026-06-18,Claude,active
 11522,carter-t-ema4-10-adx28-macd5104-h4,2,USDJPY.DWX,115220002,2026-06-18,Claude,active
@@ -13165,3 +13165,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9237,mql5-gm-band-cross,0,EURUSD.DWX,92370000,2026-06-20,Development,active
 9237,mql5-gm-band-cross,1,GBPJPY.DWX,92370001,2026-06-20,Development,active
 9237,mql5-gm-band-cross,2,XAUUSD.DWX,92370002,2026-06-20,Development,active
+9460,gh-gold-orb,0,XAUUSD.DWX,94600000,2026-06-20,Development,active
+9460,gh-gold-orb,1,XAGUSD.DWX,94600001,2026-06-20,Development,active
+9460,gh-gold-orb,2,GDAXI.DWX,94600002,2026-06-20,Development,active
+9460,gh-gold-orb,3,WS30.DWX,94600003,2026-06-20,Development,active
