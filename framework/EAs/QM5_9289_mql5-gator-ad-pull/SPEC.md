@@ -26,7 +26,7 @@ This EA trades the MQL5 Part 77 Gator Oscillator plus Accumulation/Distribution 
 | `strategy_gator_lips_shift` | 3 | 0-50 | Lips forward shift mirrored as a closed-bar lookback offset |
 | `strategy_ad_fast_ema` | 5 | 2-50 | Fast EMA period applied to the ADL series |
 | `strategy_ad_slow_ema` | 13 | 3-100 | Slow EMA period applied to the ADL series |
-| `strategy_ad_warmup_bars` | 80 | 20-500 | Bounded closed-bar window for ADL EMA state |
+| `strategy_ad_warmup_bars` | 40 | 20-500 | Bounded closed-bar window for ADL EMA state |
 | `strategy_atr_period` | 14 | 2-100 | ATR period for initial stop distance |
 | `strategy_atr_sl_mult` | 1.0 | 0.1-10.0 | ATR multiple placed beyond signal-bar low or high |
 | `strategy_take_profit_rr` | 2.0 | 0.1-10.0 | Initial take-profit multiple of initial risk |
