@@ -11287,7 +11287,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11547,carter-t-m5-bb20-midband-pullback,1,GBPUSD.DWX,115470001,2026-06-18,Claude,reserved
 11548,carter-t-m5-session-box-breakout,0,GBPUSD.DWX,115480000,2026-06-18,Claude,reserved
 11548,carter-t-m5-session-box-breakout,1,GBPJPY.DWX,115480001,2026-06-18,Claude,reserved
-11549,carter-t-m5-bb503234-rsi3-stoch633,0,EURUSD.DWX,115490000,2026-06-18,Claude,reserved
+11549,carter-t-m5-bb503234-rsi3-stoch633,0,EURUSD.DWX,115490000,2026-06-18,Development,active
 11550,carter-t-m5-ema50-100-macd-partial,0,EURUSD.DWX,115500000,2026-06-18,Claude,reserved
 11551,carter-t-m5-ema40-80-cci21,0,EURUSD.DWX,115510000,2026-06-18,Claude,reserved
 11552,carter-t-m5-ema5-10-mtf4h-rsi-stoch-macd,0,EURUSD.DWX,115520000,2026-06-18,Claude,reserved
@@ -13091,3 +13091,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9935,bandy-mn1-rsi-setup-w1-rsi-trigger-mr-index,0,SP500.DWX,99350000,2026-06-20,Development,active
 9935,bandy-mn1-rsi-setup-w1-rsi-trigger-mr-index,1,NDX.DWX,99350001,2026-06-20,Development,active
 9935,bandy-mn1-rsi-setup-w1-rsi-trigger-mr-index,2,WS30.DWX,99350002,2026-06-20,Development,active
+9982,bandy-h1-setup-m15-trigger-mr-index,0,SP500.DWX,99820000,2026-06-20,Development,active
+9982,bandy-h1-setup-m15-trigger-mr-index,1,NDX.DWX,99820001,2026-06-20,Development,active
+9982,bandy-h1-setup-m15-trigger-mr-index,2,WS30.DWX,99820002,2026-06-20,Development,active
+9962,bandy-h4-rsi-setup-m30-trigger-mr-index,0,SP500.DWX,99620000,2026-06-20,Development,active
+9962,bandy-h4-rsi-setup-m30-trigger-mr-index,1,NDX.DWX,99620001,2026-06-20,Development,active
+9962,bandy-h4-rsi-setup-m30-trigger-mr-index,2,WS30.DWX,99620002,2026-06-20,Development,active

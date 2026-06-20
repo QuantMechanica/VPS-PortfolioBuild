@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11527 Ciurea Engulfing Pattern M30"
+#property description "QM5_9962 Bandy H4 RSI setup + M30 RSI trigger MR"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11527;
+input int    qm_ea_id                   = 9962;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -52,8 +52,8 @@ input group "News"
 //   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
 //   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE60_POST60;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 // Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
@@ -73,13 +73,36 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_timeframe       = PERIOD_M30;
-input int             strategy_structure_bars  = 3;
-input int             strategy_stop_buffer_pips = 3;
-input double          strategy_reward_risk     = 2.0;
-input int             strategy_max_stop_pips   = 30;
-input int             strategy_spread_cap_pips = 12;
-input bool            strategy_no_friday_entry = true;
+input int    strategy_h4_rsi_period     = 4;
+input double strategy_h4_rsi_max        = 30.0;
+input int    strategy_h4_sma_period     = 200;
+input int    strategy_m30_rsi_period    = 2;
+input double strategy_m30_rsi_entry_max = 10.0;
+input double strategy_m30_rsi_exit_min  = 70.0;
+input int    strategy_atr_period_m30    = 14;
+input double strategy_atr_sl_mult       = 2.5;
+input int    strategy_time_stop_bars    = 36;
+
+bool Strategy_HasOpenPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      return true;
+     }
+
+   return false;
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -89,12 +112,7 @@ input bool            strategy_no_friday_entry = true;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double max_spread = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
-   if(ask > 0.0 && bid > 0.0 && ask > bid && max_spread > 0.0 && (ask - bid) > max_spread)
-      return true;
-
+   // Framework handles news, Friday close, kill-switch, and closed-bar entry gating.
    return false;
   }
 
@@ -111,98 +129,94 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(_Period != strategy_timeframe)
-      return false;
-   if(strategy_structure_bars < 3 || strategy_stop_buffer_pips <= 0 || strategy_reward_risk <= 0.0)
+   if(Strategy_HasOpenPosition())
       return false;
 
-   if(strategy_no_friday_entry)
-     {
-      MqlDateTime dt;
-      TimeToStruct(TimeCurrent(), dt);
-      if(dt.day_of_week == 5)
-         return false;
-     }
-
-   const int bars_needed = MathMax(strategy_structure_bars, 3);
-   MqlRates bars[];
-   ArrayResize(bars, bars_needed);
-   ArraySetAsSeries(bars, false);
-   // perf-allowed: bounded OHLC read for a bespoke candlestick pattern; caller gates this hook with QM_IsNewBar().
-   const int copied = CopyRates(_Symbol, strategy_timeframe, 1, bars_needed, bars);
-   if(copied < bars_needed)
+   if(strategy_h4_rsi_period < 2 ||
+      strategy_h4_sma_period < 2 ||
+      strategy_m30_rsi_period < 2 ||
+      strategy_atr_period_m30 < 2 ||
+      strategy_atr_sl_mult <= 0.0 ||
+      strategy_time_stop_bars <= 0)
       return false;
 
-   const int bar1 = copied - 1;
-   const int bar2 = copied - 2;
-   if(bars[bar1].high <= 0.0 || bars[bar1].low <= 0.0 || bars[bar1].open <= 0.0 || bars[bar1].close <= 0.0 ||
-      bars[bar2].high <= 0.0 || bars[bar2].low <= 0.0 || bars[bar2].open <= 0.0 || bars[bar2].close <= 0.0)
-      return false;
+   const double h4_rsi = QM_RSI(_Symbol, PERIOD_H4, strategy_h4_rsi_period, 1, PRICE_CLOSE);
+   const double h4_close = QM_SMA(_Symbol, PERIOD_H4, 1, 1, PRICE_CLOSE);
+   const double h4_sma = QM_SMA(_Symbol, PERIOD_H4, strategy_h4_sma_period, 1, PRICE_CLOSE);
+   const double m30_rsi = QM_RSI(_Symbol, PERIOD_M30, strategy_m30_rsi_period, 1, PRICE_CLOSE);
+   const double atr_m30 = QM_ATR(_Symbol, PERIOD_M30, strategy_atr_period_m30, 1);
 
-   const bool range_engulf = (bars[bar1].high > bars[bar2].high && bars[bar1].low < bars[bar2].low);
-   const bool engulf_long = range_engulf && (bars[bar1].close > bars[bar1].open) && (bars[bar2].close < bars[bar2].open);
-   const bool engulf_short = range_engulf && (bars[bar1].close < bars[bar1].open) && (bars[bar2].close > bars[bar2].open);
-   if(!engulf_long && !engulf_short)
+   if(h4_rsi <= 0.0 || h4_close <= 0.0 || h4_sma <= 0.0 || m30_rsi <= 0.0 || atr_m30 <= 0.0)
       return false;
-
-   double lowest = DBL_MAX;
-   double highest = -DBL_MAX;
-   for(int i = copied - strategy_structure_bars; i < copied; ++i)
-     {
-      if(i < 0)
-         continue;
-      lowest = MathMin(lowest, bars[i].low);
-      highest = MathMax(highest, bars[i].high);
-     }
-   if(lowest <= 0.0 || highest <= 0.0 || lowest == DBL_MAX || highest == -DBL_MAX)
+   if(h4_rsi > strategy_h4_rsi_max)
       return false;
-
-   const double buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_stop_buffer_pips);
-   const double max_stop = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_stop_pips);
-   if(buffer <= 0.0 || max_stop <= 0.0)
+   if(h4_close <= h4_sma)
+      return false;
+   if(m30_rsi > strategy_m30_rsi_entry_max)
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const QM_OrderType side = engulf_long ? QM_BUY : QM_SELL;
-   const double entry = engulf_long ? ask : bid;
-   if(entry <= 0.0)
+   double entry_price = ask;
+   if(entry_price <= 0.0)
+      entry_price = bid;
+   if(entry_price <= 0.0)
       return false;
 
-   double sl = engulf_long ? (lowest - buffer) : (highest + buffer);
-   sl = QM_StopRulesNormalizePrice(_Symbol, sl);
-   if(sl <= 0.0)
-      return false;
-
-   const double risk_distance = MathAbs(entry - sl);
-   if(risk_distance <= 0.0 || risk_distance > max_stop)
-      return false;
-
-   const double tp = QM_TakeRR(_Symbol, side, entry, sl, strategy_reward_risk);
-   if(tp <= 0.0)
-      return false;
-
-   req.type = side;
+   req.type = QM_BUY;
    req.price = 0.0;
-   req.sl = sl;
-   req.tp = tp;
-   req.reason = engulf_long ? "CIUREA_ENGULF_LONG" : "CIUREA_ENGULF_SHORT";
-   return true;
+   req.sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry_price, atr_m30, strategy_atr_sl_mult);
+   req.tp = 0.0;
+   req.reason = "BANDY_H4_M30_RSI_MR_LONG";
+   return (req.sl > 0.0 && req.sl < entry_price);
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies fixed SL/TP only; no trailing, break-even, partial close, or pyramiding.
+   if(strategy_time_stop_bars <= 0)
+      return;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return;
+
+   const int seconds_per_bar = PeriodSeconds(PERIOD_M30);
+   if(seconds_per_bar <= 0)
+      return;
+   const long hold_seconds = (long)strategy_time_stop_bars * seconds_per_bar;
+   const datetime now = TimeCurrent();
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) != POSITION_TYPE_BUY)
+         continue;
+
+      const datetime opened_at = (datetime)PositionGetInteger(POSITION_TIME);
+      if(opened_at > 0 && (long)(now - opened_at) >= hold_seconds)
+         QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
+     }
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // Card exits only via structure SL, 2R TP, and framework Friday close.
-   return false;
+   if(!Strategy_HasOpenPosition())
+      return false;
+
+   const double m30_rsi = QM_RSI(_Symbol, PERIOD_M30, strategy_m30_rsi_period, 1, PRICE_CLOSE);
+   if(m30_rsi <= 0.0)
+      return false;
+   return (m30_rsi >= strategy_m30_rsi_exit_min);
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless
