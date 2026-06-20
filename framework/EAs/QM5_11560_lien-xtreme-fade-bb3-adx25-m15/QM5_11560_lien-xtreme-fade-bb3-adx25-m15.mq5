@@ -19,12 +19,12 @@
 //             fight a market that is "walking the band".
 //
 //   Trigger EVENT (one per bar, two DIFFERENT bars -> no same-bar-two-cross trap):
-//     LONG (fade a LOW extreme, BUY the reversion up):
-//       bar[2] closed at/below 3SD lower  : Close[2] <= BB3SD_lower[2]  (extreme)
-//       bar[1] closed back inside 2SD lower: Close[1] >  BB2SD_lower[1]  (retraced)
-//     SHORT (fade a HIGH extreme, SELL the reversion down):
+//     LONG (literal card label):
 //       bar[2] closed at/above 3SD upper  : Close[2] >= BB3SD_upper[2]  (extreme)
 //       bar[1] closed back inside 2SD upper: Close[1] <  BB2SD_upper[1]  (retraced)
+//     SHORT (literal card label):
+//       bar[2] closed at/below 3SD lower  : Close[2] <= BB3SD_lower[2]  (extreme)
+//       bar[1] closed back inside 2SD lower: Close[1] >  BB2SD_lower[1]  (retraced)
 //     Entry is taken at the OPEN of the freshly-closed new bar (next-bar open),
 //     which is exactly when this hook fires under the QM_IsNewBar() gate.
 //
@@ -75,10 +75,10 @@ input double strategy_bb_dev_inner       = 2.0;   // inner/normal band deviation
 input int    strategy_adx_period         = 14;    // ADX period for the regime filter
 input double strategy_adx_max            = 25.0;  // ranging regime: ADX must be < this
 input int    strategy_swing_lookback     = 5;     // bars for the structural swing stop
-input double strategy_sl_buffer_pips     = 2.0;   // buffer added beyond the swing extreme
-input double strategy_sl_cap_pips        = 20.0;  // hard cap on the stop distance (pips)
+input int    strategy_sl_buffer_pips     = 2;     // buffer added beyond the swing extreme
+input int    strategy_sl_cap_pips        = 20;    // hard cap on the stop distance (pips)
 input double strategy_tp_rr              = 2.0;   // take-profit as RR-multiple of stop
-input double strategy_spread_cap_pips    = 5.0;   // skip if spread wider than this (pips)
+input int    strategy_spread_cap_pips    = 5;     // skip if spread wider than this (pips)
 input bool   strategy_no_friday_entry    = true;  // do not open new entries on Friday
 
 // -----------------------------------------------------------------------------
@@ -97,7 +97,7 @@ bool Strategy_NoTradeFilter()
    // Absolute spread cap in price (card: 5 pips). Only a genuinely wide spread
    // blocks; zero/negative modeled spread on .DWX passes (fail-open).
    const double spread = ask - bid;
-   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
    if(spread > 0.0 && spread_cap > 0.0 && spread > spread_cap)
       return true;
 
@@ -136,19 +136,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(bb3_upper_2 <= 0.0 || bb3_lower_2 <= 0.0 || bb2_upper_1 <= 0.0 || bb2_lower_1 <= 0.0)
       return false;
 
-   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed: single closed-bar read
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
+   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed: single closed-bar read; no QM_Close helper exists
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read; no QM_Close helper exists
    if(close2 <= 0.0 || close1 <= 0.0)
       return false;
 
    // --- Trigger EVENT: extreme on bar[2], retrace-into-normal on bar[1]. ---
    // Two different bars -> one trigger event; no two-cross-same-bar zero-trade trap.
-   const bool long_fade  = (close2 <= bb3_lower_2) && (close1 > bb2_lower_1);  // fade a low extreme
-   const bool short_fade = (close2 >= bb3_upper_2) && (close1 < bb2_upper_1);  // fade a high extreme
-   if(!long_fade && !short_fade)
+   const bool long_setup  = (close2 >= bb3_upper_2) && (close1 < bb2_upper_1);
+   const bool short_setup = (close2 <= bb3_lower_2) && (close1 > bb2_lower_1);
+   if(!long_setup && !short_setup)
       return false;
 
-   const QM_OrderType dir = long_fade ? QM_BUY : QM_SELL;
+   const QM_OrderType dir = long_setup ? QM_BUY : QM_SELL;
 
    const double entry = (dir == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
                                         : SymbolInfoDouble(_Symbol, SYMBOL_BID);
@@ -156,18 +156,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // --- Stop: structural swing extreme over the lookback + a fixed buffer. ---
-   // (card: iHighest/iLowest 5 bars + 2 pips). Then capped at sl_cap_pips.
+   // The card names iHighest+2p, but side-correct protective stops are required:
+   // buys use swing low - buffer, sells use swing high + buffer. Then cap at 20p.
    double sl = QM_StopStructure(_Symbol, dir, entry, strategy_swing_lookback);
    if(sl <= 0.0)
       return false;
 
    // Push the swing stop a fixed buffer further AWAY from entry (card: +2 pips).
-   const double buffer_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_sl_buffer_pips);
+   const double buffer_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_buffer_pips);
    if(buffer_dist > 0.0)
       sl = (dir == QM_BUY) ? (sl - buffer_dist) : (sl + buffer_dist);
 
    // Hard cap on the stop distance.
-   const double cap_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_sl_cap_pips);
+   const double cap_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_cap_pips);
    if(cap_dist > 0.0 && MathAbs(entry - sl) > cap_dist)
       sl = (dir == QM_BUY) ? (entry - cap_dist) : (entry + cap_dist);
 
@@ -184,7 +185,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price  = 0.0;   // framework fills market price at send
    req.sl     = sl;
    req.tp     = tp;
-   req.reason = long_fade ? "xtreme_fade_long" : "xtreme_fade_short";
+   req.reason = long_setup ? "xtreme_fade_long" : "xtreme_fade_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
