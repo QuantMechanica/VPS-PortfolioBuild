@@ -111,13 +111,22 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // --- Prior daily candle OHLC (closed bar, shift 1). perf-allowed: bespoke
-   //     candle-direction logic the QM readers do not cover; single closed-bar
-   //     reads, no per-tick loop. ---
-   const double open1  = iOpen(_Symbol, _Period, 1);
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double high1  = iHigh(_Symbol, _Period, 1);
-   const double low1   = iLow(_Symbol, _Period, 1);
+   // --- Current/prior D1 OHLC. perf-allowed: bespoke candle-direction and
+   //     prior-extreme stop logic the QM readers do not cover; one bounded
+   //     two-bar read inside the framework's closed-bar entry hook.
+   MqlRates bars[];
+   ArraySetAsSeries(bars, true);
+   const int copied = CopyRates(_Symbol, _Period, 0, 2, bars); // perf-allowed: bounded two-bar OHLC read after QM_IsNewBar gate
+   if(copied != 2)
+      return false;
+
+   const double open0  = bars[0].open;
+   const double open1  = bars[1].open;
+   const double close1 = bars[1].close;
+   const double high1  = bars[1].high;
+   const double low1   = bars[1].low;
+   if(open0 <= 0.0)
+      return false;
    if(open1 <= 0.0 || close1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0)
       return false;
 
@@ -141,7 +150,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // --- Raw stop distance from prior-day structure (Low for long / High for short). ---
-   double raw_sl_dist = (dir == QM_BUY) ? (entry - low1) : (high1 - entry);
+   double raw_sl_dist = (dir == QM_BUY) ? (open0 - low1) : (high1 - open0);
    if(raw_sl_dist <= 0.0)
       return false; // entry already beyond the prior extreme — no valid stop
 
@@ -170,13 +179,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double sl_price, tp_price;
    if(dir == QM_BUY)
      {
-      sl_price = entry - sl_dist;
-      tp_price = entry + tp_dist;
+      sl_price = open0 - sl_dist;
+      tp_price = open0 + tp_dist;
      }
    else
      {
-      sl_price = entry + sl_dist;
-      tp_price = entry - tp_dist;
+      sl_price = open0 + sl_dist;
+      tp_price = open0 - tp_dist;
      }
 
    sl_price = QM_StopRulesNormalizePrice(_Symbol, sl_price);
@@ -189,6 +198,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl_price;
    req.tp     = tp_price;
    req.reason = (dir == QM_BUY) ? "gm_asia_cont_long" : "gm_asia_cont_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
