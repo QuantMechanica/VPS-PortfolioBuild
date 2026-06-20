@@ -7103,20 +7103,39 @@ def pump(root: Path) -> dict[str, Any]:
                             continue
                     except Exception:
                         continue
-                    cards_without_task.append((ea_id, f))
+                    cards_without_task.append((ea_id, f, fm))
             slots_left = min(spawn_budget - actually_spawned, MAX_AUTO_CREATED_BUILDS_PER_PUMP)
-            # PT13 2026-05-25 — advance past prebuild-failed cards instead of
-            # capping the iteration at slots_left. The old code took the first
-            # N cards alphabetically; if the head of the list was all broken
-            # (missing frontmatter, r3 not PASS, etc.) pump emitted 0 spawns
-            # every cycle even though OK cards existed further down. Now we
-            # iterate the full list, counting only successful spawns toward
-            # the budget. Cap on attempts prevents pathological lists from
-            # burning a whole cycle on rejections.
+            # Build the highest-value cards first (mirror _card_build_priority:
+            # strategy_priority score, then R-passes, then expected frequency).
+            def _cwt_priority(item):
+                _ea, _f, _fm = item
+                try:
+                    _exp = int(str(_fm.get("expected_trades_per_year_per_symbol") or 0))
+                except (TypeError, ValueError):
+                    _exp = 0
+                _rp = sum(1 for _k in ("r1_track_record", "r2_mechanical", "r3_data_available", "r4_ml_forbidden")
+                          if str(_fm.get(_k) or "").upper() == "PASS")
+                try:
+                    _ps = float((_build_score_map or {}).get(_ea, {}).get("score", 0.0))
+                except Exception:
+                    _ps = 0.0
+                return (-_ps, -_rp, -_exp, _f.name)
+            cards_without_task.sort(key=_cwt_priority)
+            # PT13 2026-05-25 / fixed 2026-06-20 — advance past prebuild-failed
+            # cards instead of capping the iteration at slots_left. The old code
+            # took the first N cards alphabetically; if the head of the list was
+            # all broken (filename-id drift, missing/implausible frequency, r3
+            # not PASS, etc.) pump emitted 0 spawns every cycle even though OK
+            # cards existed further down — and the prior attempts_cap=30 gave up
+            # ONE card before the first buildable one (observed at index 30,
+            # starving all builds). Scan the FULL eligible list; the
+            # spawned_here>=slots_left break keeps the normal case cheap (stops
+            # once the budget is filled), and we only walk the whole list in the
+            # pathological case where nothing is currently buildable.
             spawned_here = 0
-            attempts_cap = max(slots_left * 6, 30)
+            attempts_cap = len(cards_without_task)
             attempts = 0
-            for ea_id, card_path in cards_without_task:
+            for ea_id, card_path, _fm in cards_without_task:
                 if spawned_here >= slots_left:
                     break
                 if attempts >= attempts_cap:
