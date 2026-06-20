@@ -1,11 +1,11 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11704 fsr-macd-stoch-m5-scalp — MACD-state + Stochastic-cross M5 scalp"
+#property description "QM5_11704 fsr-macd-stoch-m5-scalp - MACD-state + Stochastic-cross M5 scalp"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11704 fsr-macd-stoch-m5-scalp
+// QuantMechanica V5 EA - QM5_11704 fsr-macd-stoch-m5-scalp
 // -----------------------------------------------------------------------------
 // Source: Anonymous, "M1/M5 Forex Scalping Strategy", self-published PDF (~2014).
 // Card: artifacts/cards_approved/QM5_11704_fsr-macd-stoch-m5-scalp.md (g0 APPROVED).
@@ -71,7 +71,7 @@ input double strategy_stoch_oversold    = 20.0;   // oversold level (long trigge
 input double strategy_stoch_overbought  = 80.0;   // overbought level (short trigger)
 input int    strategy_atr_period        = 14;     // ATR period for the stop
 input double strategy_sl_atr_mult       = 2.0;    // stop distance = mult * ATR
-input double strategy_tp_pips           = 25.0;   // fixed take-profit in pips
+input int    strategy_tp_pips           = 25;     // fixed take-profit in pips
 input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
 
 // -----------------------------------------------------------------------------
@@ -87,7 +87,7 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+   const double atr_value = QM_ATR(_Symbol, PERIOD_M5, strategy_atr_period, 1);
    if(atr_value <= 0.0)
       return false; // no ATR yet — defer to the entry gate, do not block here
 
@@ -107,24 +107,32 @@ bool Strategy_NoTradeFilter()
 // EVENT = Stochastic %K cross out of OB/OS; STATE = MACD line sign.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
    // --- Confirming STATE: MACD main line sign on the last closed bar ---
-   const double macd_main = QM_MACD_Main(_Symbol, _Period,
+   const double macd_main = QM_MACD_Main(_Symbol, PERIOD_M5,
                                          strategy_macd_fast, strategy_macd_slow,
                                          strategy_macd_signal, 1);
 
    // --- Trigger EVENT: Stochastic %K cross of the OB/OS level (one per bar) ---
    // Use %K at shift 1 (just-closed bar) vs shift 2 (prior closed bar).
-   const double k_now  = QM_Stoch_K(_Symbol, _Period,
+   const double k_now  = QM_Stoch_K(_Symbol, PERIOD_M5,
                                     strategy_stoch_k, strategy_stoch_d,
                                     strategy_stoch_slowing, 1);
-   const double k_prev = QM_Stoch_K(_Symbol, _Period,
+   const double k_prev = QM_Stoch_K(_Symbol, PERIOD_M5,
                                     strategy_stoch_k, strategy_stoch_d,
                                     strategy_stoch_slowing, 2);
-   if(k_now <= 0.0 || k_prev <= 0.0)
+   if(k_now < 0.0 || k_now > 100.0 || k_prev < 0.0 || k_prev > 100.0)
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -132,11 +140,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+   const double atr_value = QM_ATR(_Symbol, PERIOD_M5, strategy_atr_period, 1);
    if(atr_value <= 0.0)
       return false;
 
-   const double tp_distance = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_tp_pips);
+   const double tp_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_tp_pips);
    if(tp_distance <= 0.0)
       return false;
 
