@@ -1,30 +1,25 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11628 cat-dualma — Catalyst Dual Moving Average cross (long-only, M1)"
+#property description "QM5_11628 cat-dualma - Catalyst Dual Moving Average (long-only, M1)"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11628 cat-dualma
+// QuantMechanica V5 EA - QM5_11628 cat-dualma
 // -----------------------------------------------------------------------------
 // Source: Enigma MPC scrtlabs/catalyst, catalyst/examples/dual_moving_average.py
 //   https://github.com/scrtlabs/catalyst/blob/master/catalyst/examples/dual_moving_average.py
 // Card: artifacts/cards_approved/QM5_11628_cat-dualma.md (g0_status APPROVED).
 //
-// Mechanics (long-only, closed-bar reads at shift 1 vs 2, M1 timeframe):
-//   Trigger EVENT (entry): SMA(fast) crosses ABOVE SMA(slow). ONE cross only —
-//                          prev bar fast<=slow, this bar fast>slow. Not a state.
-//   Exit EVENT           : SMA(fast) crosses BELOW SMA(slow) -> close manually.
+// Mechanics (long-only, closed-bar reads at shift 1, M1 timeframe):
+//   Entry STATE: SMA(fast) > SMA(slow) and no position is open.
+//   Exit STATE : SMA(fast) < SMA(slow) -> close manually.
 //   Stop                 : source has NO protective stop; V5 adds an ATR
 //                          catastrophic stop (entry - sl_atr_mult * ATR).
-//   Take profit          : none — the source holds exposure until the bearish
+//   Take profit          : none - the source holds exposure until the bearish
 //                          cross. The cross-down exit is the structural close.
 //   Sizing               : framework RISK_FIXED ($1000 backtest) via SL distance.
-//   Spread guard         : skip only a genuinely wide spread (> spread_pct_of_stop
-//                          of the stop distance). Fail-open on .DWX zero spread.
-//
-// Two-cross trap avoided: the bullish cross is the SOLE entry trigger; there is
-// no second simultaneous cross/oscillator condition. One event per bar.
+//   Filters              : completed bars only and one position per magic.
 //
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
 // else is framework wiring and MUST stay intact.
@@ -55,63 +50,50 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_sma_fast_period    = 50;    // fast SMA period (cross trigger)
-input int    strategy_sma_slow_period    = 200;   // slow SMA period (cross trigger)
+input int    strategy_sma_fast_period    = 50;    // fast SMA period
+input int    strategy_sma_slow_period    = 200;   // slow SMA period
 input int    strategy_atr_period         = 14;    // ATR period for catastrophic stop
 input double strategy_sl_atr_mult        = 3.0;   // catastrophic stop = mult * ATR
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only — cross logic is on the closed-bar
-// path in Strategy_EntrySignal. Fail-open on .DWX zero modeled spread.
+// The card specifies no time/session/spread regime filter. Framework-level
+// news, kill-switch, and Friday-close gates remain active outside this hook.
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to the entry gate, do not block here
-
-   const double stop_distance = strategy_sl_atr_mult * atr_value;
-   if(stop_distance <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
-      return true;
-
    return false;
   }
 
 // Long-only entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
-// Trigger EVENT: SMA(fast) crosses above SMA(slow) — one cross only.
+// Entry STATE: SMA(fast) > SMA(slow), with no open position for this magic.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic; no pyramiding.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // --- Dual-SMA cross (closed bars): prev = shift 2, now = shift 1. ---
-   const double fast_now  = QM_SMA(_Symbol, _Period, strategy_sma_fast_period, 1);
-   const double slow_now  = QM_SMA(_Symbol, _Period, strategy_sma_slow_period, 1);
-   const double fast_prev = QM_SMA(_Symbol, _Period, strategy_sma_fast_period, 2);
-   const double slow_prev = QM_SMA(_Symbol, _Period, strategy_sma_slow_period, 2);
-   if(fast_now <= 0.0 || slow_now <= 0.0 || fast_prev <= 0.0 || slow_prev <= 0.0)
+   if(strategy_sma_fast_period <= 0 || strategy_sma_slow_period <= 0 ||
+      strategy_atr_period <= 0 || strategy_sl_atr_mult <= 0.0)
       return false;
 
-   // Trigger EVENT: a fresh bullish cross. ONE event per bar.
-   const bool crossed_up = (fast_prev <= slow_prev && fast_now > slow_now);
-   if(!crossed_up)
+   const double fast_now = QM_SMA(_Symbol, _Period, strategy_sma_fast_period, 1);
+   const double slow_now = QM_SMA(_Symbol, _Period, strategy_sma_slow_period, 1);
+   if(fast_now <= 0.0 || slow_now <= 0.0)
       return false;
 
-   // --- ATR catastrophic stop (V5 addition; source has none). ---
+   if(fast_now <= slow_now)
+      return false;
+
    const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
    if(atr_value <= 0.0)
       return false;
@@ -124,35 +106,32 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(sl <= 0.0)
       return false;
 
-   req.type   = QM_BUY;
-   req.price  = 0.0;   // framework fills market price at send
-   req.sl     = sl;
-   req.tp     = 0.0;   // no take-profit; bearish cross is the structural exit
-   req.reason = "cat_dualma_cross_long";
+   req.sl = sl;
+   req.reason = "cat_dualma_sma_state_long";
    return true;
   }
 
 // No active trade management beyond the fixed ATR catastrophic stop. The
-// structural exit (bearish SMA cross) lives in Strategy_ExitSignal.
+// structural exit (bearish SMA state) lives in Strategy_ExitSignal.
 void Strategy_ManageOpenPosition()
   {
   }
 
-// Structural exit EVENT: SMA(fast) crosses BELOW SMA(slow). One event at shift 1.
+// Structural exit STATE: close while SMA(fast) is below SMA(slow).
 bool Strategy_ExitSignal()
   {
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
       return false;
 
-   const double fast_now  = QM_SMA(_Symbol, _Period, strategy_sma_fast_period, 1);
-   const double slow_now  = QM_SMA(_Symbol, _Period, strategy_sma_slow_period, 1);
-   const double fast_prev = QM_SMA(_Symbol, _Period, strategy_sma_fast_period, 2);
-   const double slow_prev = QM_SMA(_Symbol, _Period, strategy_sma_slow_period, 2);
-   if(fast_now <= 0.0 || slow_now <= 0.0 || fast_prev <= 0.0 || slow_prev <= 0.0)
+   if(strategy_sma_fast_period <= 0 || strategy_sma_slow_period <= 0)
       return false;
 
-   const bool crossed_down = (fast_prev >= slow_prev && fast_now < slow_now);
-   return crossed_down;
+   const double fast_now = QM_SMA(_Symbol, _Period, strategy_sma_fast_period, 1);
+   const double slow_now = QM_SMA(_Symbol, _Period, strategy_sma_slow_period, 1);
+   if(fast_now <= 0.0 || slow_now <= 0.0)
+      return false;
+
+   return (fast_now < slow_now);
   }
 
 // Defer to the central news filter.
@@ -162,7 +141,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
   }
 
 // -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
+// Framework wiring - do NOT edit below this line unless you know why.
 // -----------------------------------------------------------------------------
 
 int OnInit()
