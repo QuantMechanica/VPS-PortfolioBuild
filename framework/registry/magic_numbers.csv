@@ -11255,8 +11255,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11523,ciurea-sma100-price-cross-h4,0,EURUSD.DWX,115230000,2026-06-20,Development,active
 11523,ciurea-sma100-price-cross-h4,1,GBPUSD.DWX,115230001,2026-06-20,Development,active
 11524,ciurea-ema200-price-cross-m30,0,EURUSD.DWX,115240000,2026-06-18,Development,active
-11525,ciurea-stoch1435-bounce-h4,0,GBPUSD.DWX,115250000,2026-06-18,Claude,reserved
-11525,ciurea-stoch1435-bounce-h4,1,EURUSD.DWX,115250001,2026-06-18,Claude,reserved
+11525,ciurea-stoch1435-bounce-h4,0,GBPUSD.DWX,115250000,2026-06-20,Development,active
+11525,ciurea-stoch1435-bounce-h4,1,EURUSD.DWX,115250001,2026-06-20,Development,active
 11526,ciurea-rsi10-50-d1,0,GBPUSD.DWX,115260000,2026-06-18,Claude,reserved
 11527,ciurea-engulfing-m30,0,EURUSD.DWX,115270000,2026-06-20,Development,active
 11527,ciurea-engulfing-m30,1,GBPUSD.DWX,115270001,2026-06-20,Development,active
