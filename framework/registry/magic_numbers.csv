@@ -13088,3 +13088,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9508,carver-carrybook,5,EURUSD.DWX,95080005,2026-06-20,Development,active
 9508,carver-carrybook,6,GBPJPY.DWX,95080006,2026-06-20,Development,active
 9508,carver-carrybook,7,XAUUSD.DWX,95080007,2026-06-20,Development,active
+9935,bandy-mn1-rsi-setup-w1-rsi-trigger-mr-index,0,SP500.DWX,99350000,2026-06-20,Development,active
+9935,bandy-mn1-rsi-setup-w1-rsi-trigger-mr-index,1,NDX.DWX,99350001,2026-06-20,Development,active
+9935,bandy-mn1-rsi-setup-w1-rsi-trigger-mr-index,2,WS30.DWX,99350002,2026-06-20,Development,active
