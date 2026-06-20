@@ -95,6 +95,11 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
+double Strategy_CloseValue(const int shift)
+  {
+   return QM_SMA(_Symbol, PERIOD_CURRENT, 1, shift, PRICE_CLOSE);
+  }
+
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
 // should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
@@ -141,26 +146,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(atr_now > strategy_atr_max_mult * median_atr)
       return false;
 
-   const double close_1 = iClose(_Symbol, PERIOD_CURRENT, 1); // perf-allowed: fixed closed-bar close; no QM_Close reader exists.
-   const double close_2 = iClose(_Symbol, PERIOD_CURRENT, 2); // perf-allowed: fixed closed-bar close; no QM_Close reader exists.
-   const double close_3 = iClose(_Symbol, PERIOD_CURRENT, 3); // perf-allowed: fixed closed-bar close; no QM_Close reader exists.
-   const double close_4 = iClose(_Symbol, PERIOD_CURRENT, 4); // perf-allowed: fixed closed-bar close; no QM_Close reader exists.
+   const double close_1 = Strategy_CloseValue(1);
+   const double close_2 = Strategy_CloseValue(2);
+   const double close_3 = Strategy_CloseValue(3);
+   const double close_4 = Strategy_CloseValue(4);
    if(close_1 <= 0.0 || close_2 <= 0.0 || close_3 <= 0.0 || close_4 <= 0.0)
       return false;
-
-   double lowest_low = DBL_MAX;
-   double highest_high = -DBL_MAX;
-   for(int bar_shift = 1; bar_shift <= 4; ++bar_shift)
-     {
-      const double low_value = iLow(_Symbol, PERIOD_CURRENT, bar_shift);   // perf-allowed: bounded four-bar stop window; no QM_Low reader exists.
-      const double high_value = iHigh(_Symbol, PERIOD_CURRENT, bar_shift); // perf-allowed: bounded four-bar stop window; no QM_High reader exists.
-      if(low_value <= 0.0 || high_value <= 0.0)
-         return false;
-      if(low_value < lowest_low)
-         lowest_low = low_value;
-      if(high_value > highest_high)
-         highest_high = high_value;
-     }
 
    const bool long_signal = (close_1 < close_2 && close_2 < close_3 && close_3 < close_4);
    const bool short_signal = (close_1 > close_2 && close_2 > close_3 && close_3 > close_4);
@@ -179,7 +170,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(long_signal)
      {
       const double entry_price = ask;
-      const double sl_price = QM_StopRulesNormalizePrice(_Symbol, lowest_low - stop_buffer);
+      const double structure_stop = QM_StopStructure(_Symbol, QM_BUY, entry_price, strategy_signal_bars);
+      const double sl_price = QM_StopRulesNormalizePrice(_Symbol, structure_stop - stop_buffer);
       const double tp_price = QM_TakeRR(_Symbol, QM_BUY, entry_price, sl_price, strategy_take_rr);
       if(sl_price <= 0.0 || tp_price <= 0.0 || sl_price >= entry_price)
          return false;
@@ -191,7 +183,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    const double entry_price = bid;
-   const double sl_price = QM_StopRulesNormalizePrice(_Symbol, highest_high + stop_buffer);
+   const double structure_stop = QM_StopStructure(_Symbol, QM_SELL, entry_price, strategy_signal_bars);
+   const double sl_price = QM_StopRulesNormalizePrice(_Symbol, structure_stop + stop_buffer);
    const double tp_price = QM_TakeRR(_Symbol, QM_SELL, entry_price, sl_price, strategy_take_rr);
    if(sl_price <= 0.0 || tp_price <= 0.0 || sl_price <= entry_price)
       return false;
@@ -251,7 +244,7 @@ bool Strategy_ExitSignal()
       return false;
 
    const int magic = QM_FrameworkMagic();
-   const double close_1 = iClose(_Symbol, PERIOD_CURRENT, 1); // perf-allowed: fixed closed-bar SMA exit close; no QM_Close reader exists.
+   const double close_1 = Strategy_CloseValue(1);
    const double sma_1 = QM_SMA(_Symbol, PERIOD_CURRENT, strategy_sma_exit_period, 1, PRICE_CLOSE);
    const int hold_seconds = strategy_max_hold_bars * PeriodSeconds(PERIOD_H1);
    if(close_1 <= 0.0 || sma_1 <= 0.0 || hold_seconds <= 0)
