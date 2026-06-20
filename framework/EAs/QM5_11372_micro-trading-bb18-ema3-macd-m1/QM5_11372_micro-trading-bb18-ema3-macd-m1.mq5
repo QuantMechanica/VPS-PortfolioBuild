@@ -56,8 +56,8 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_bb_period          = 18;    // Bollinger basis period (EMA-based)
-input double strategy_bb_deviation       = 2.0;   // BB deviation (mandatory arg; midline = basis)
+input int    strategy_bb_period          = 18;    // BB middle basis period (EMA-based per card)
+input double strategy_bb_deviation       = 2.0;   // BB outer-band deviation retained for P3/secondary TP sweeps
 input int    strategy_ema_fast_period    = 3;     // fast EMA crossing the BB midline
 input int    strategy_macd_fast          = 12;    // MACD fast EMA
 input int    strategy_macd_slow          = 26;    // MACD slow EMA
@@ -115,8 +115,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // --- Closed-bar reads (shift 1 = last closed bar, shift 2 = prior). ---
    const double ema_now  = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 1);
    const double ema_prev = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 2);
-   const double mid_now  = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
-   const double mid_prev = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 2);
+   const double mid_now  = QM_EMA(_Symbol, _Period, strategy_bb_period, 1);
+   const double mid_prev = QM_EMA(_Symbol, _Period, strategy_bb_period, 2);
    if(ema_now <= 0.0 || ema_prev <= 0.0 || mid_now <= 0.0 || mid_prev <= 0.0)
       return false;
 
@@ -148,11 +148,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                         QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_tp_pips));
       if(sl <= 0.0 || tp <= 0.0)
          return false;
-      req.type   = QM_BUY;
-      req.price  = 0.0;
-      req.sl     = sl;
-      req.tp     = tp;
-      req.reason = "micro_bb_ema_macd_long";
+      req.type               = QM_BUY;
+      req.price              = 0.0;
+      req.sl                 = sl;
+      req.tp                 = tp;
+      req.reason             = "micro_bb_ema_macd_long";
+      req.symbol_slot        = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
       return true;
      }
 
@@ -164,11 +166,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                      QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_tp_pips));
    if(sl <= 0.0 || tp <= 0.0)
       return false;
-   req.type   = QM_SELL;
-   req.price  = 0.0;
-   req.sl     = sl;
-   req.tp     = tp;
-   req.reason = "micro_bb_ema_macd_short";
+   req.type               = QM_SELL;
+   req.price              = 0.0;
+   req.sl                 = sl;
+   req.tp                 = tp;
+   req.reason             = "micro_bb_ema_macd_short";
+   req.symbol_slot        = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
@@ -186,7 +190,7 @@ bool Strategy_ExitSignal()
       return false;
 
    const double ema_now = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 1);
-   const double mid_now = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
+   const double mid_now = QM_EMA(_Symbol, _Period, strategy_bb_period, 1);
    if(ema_now <= 0.0 || mid_now <= 0.0)
       return false;
 

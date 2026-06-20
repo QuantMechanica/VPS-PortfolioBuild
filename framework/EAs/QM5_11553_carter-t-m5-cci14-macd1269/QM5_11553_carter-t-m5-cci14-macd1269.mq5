@@ -18,15 +18,12 @@
 //                   SHORT -> cci@1 <= -100 AND cci@2 > -100 (fresh downward cross).
 //                   ONE cross is the event; the MACD condition below is a STATE,
 //                   never a second same-bar cross (two-cross-trap avoidance).
-//   Confirm STATE : MACD histogram = (MACD main - MACD signal).
-//                   LONG  -> histogram > 0 (signal below main) AND histogram
-//                            expanding up: hist@1 > hist@2.
-//                   SHORT -> histogram < 0 (signal above main) AND histogram
-//                            expanding down: hist@1 < hist@2.
+//   Confirm STATE : LONG  -> MACD signal@1 < main@1 AND main@1 > main@2.
+//                   SHORT -> MACD signal@1 > main@1 AND main@1 < main@2.
 //   Stop          : fixed sl_pips (card 13p; P2 cap 15p) via pip-correct helper.
 //   Take profit   : fixed tp_pips (card 8p).
-//   Spread guard  : skip only a genuinely wide spread (fail-open on .DWX zero
-//                   modeled spread).
+//   Spread guard  : 5 pip cap; skip only a genuinely wide spread (fail-open on
+//                   .DWX zero modeled spread).
 //   No-Friday-entry: card filter — block new entries on Friday (broker time).
 //
 // MACD params: card frontmatter + Implementation Notes specify MACD(12,26,9)
@@ -68,7 +65,7 @@ input int    strategy_macd_slow         = 26;     // MACD slow EMA period
 input int    strategy_macd_signal       = 9;      // MACD signal period
 input int    strategy_sl_pips           = 13;     // stop-loss distance, pips (P2 cap 15)
 input int    strategy_tp_pips           = 8;      // take-profit distance, pips
-input double strategy_spread_pct_of_stop = 25.0;  // skip if spread > this % of stop distance
+input int    strategy_spread_cap_pips  = 5;      // skip if spread is wider than this cap
 input bool   strategy_no_friday_entry   = true;   // card filter: no new entries on Friday
 
 // -----------------------------------------------------------------------------
@@ -84,13 +81,13 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
-   if(stop_distance <= 0.0)
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(spread_cap <= 0.0)
       return false;
 
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread > spread_cap)
       return true;
 
    return false;
@@ -99,6 +96,14 @@ bool Strategy_NoTradeFilter()
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -120,19 +125,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double main1 = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
    const double main2 = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
    const double sig1  = QM_MACD_Signal(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-   const double sig2  = QM_MACD_Signal(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
-   const double hist1 = main1 - sig1;
-   const double hist2 = main2 - sig2;
 
    QM_OrderType dir;
 
-   // --- LONG: fresh CCI cross above +level + bullish expanding histogram ---
+   // --- LONG: fresh CCI cross above +level + bullish MACD state ---
    const bool cci_cross_up   = (cci1 >= strategy_cci_level && cci2 < strategy_cci_level);
-   const bool macd_long_ok   = (hist1 > 0.0 && hist1 > hist2);
+   const bool macd_long_ok   = (sig1 < main1 && main1 > main2);
 
-   // --- SHORT: fresh CCI cross below -level + bearish expanding histogram ---
+   // --- SHORT: fresh CCI cross below -level + bearish MACD state ---
    const bool cci_cross_down = (cci1 <= -strategy_cci_level && cci2 > -strategy_cci_level);
-   const bool macd_short_ok  = (hist1 < 0.0 && hist1 < hist2);
+   const bool macd_short_ok  = (sig1 > main1 && main1 < main2);
 
    if(cci_cross_up && macd_long_ok)
       dir = QM_BUY;
@@ -148,8 +150,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double sl = QM_StopFixedPips(_Symbol, dir, entry, strategy_sl_pips);
-   const double tp = QM_TakeRR(_Symbol, dir, entry, sl,
-                               (double)strategy_tp_pips / (double)strategy_sl_pips);
+   const double tp = QM_TakeFixedPips(_Symbol, dir, entry, strategy_tp_pips);
    if(sl <= 0.0 || tp <= 0.0)
       return false;
 
