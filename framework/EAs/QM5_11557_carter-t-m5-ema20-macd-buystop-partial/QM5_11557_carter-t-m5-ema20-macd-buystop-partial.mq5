@@ -13,16 +13,14 @@
 //       (g0_status APPROVED).
 //
 // Mechanics (M5, closed-bar reads at shift 1/2):
-//   The confirming conditions are STATES; the pending-order FILL is the entry
-//   EVENT. This avoids the "two crosses on one bar" zero-trade trap — nothing
-//   requires two fresh cross events to coincide on a single bar.
+//   The confirming condition is the literal card price cross on the last
+//   closed M5 bar, with a recent MACD zero-line cross used as a lookback filter.
 //
 //   LONG:
-//     EMA20 STATE : EMA20(shift1) > EMA20(shift2)              (EMA20 rising;
-//                   price-above-EMA confirmation comes via the BUY STOP above it).
-//     MACD STATE  : MACD main(shift1) > 0  AND MACD main crossed UP through zero
-//                   within the last macd_recency_bars closed bars.
-//     Trigger     : BUY STOP placed entry_offset_pips above EMA20(shift1),
+//     Price cross: close(shift2) <= EMA20(shift2) and close(shift1) > EMA20(shift1).
+//     MACD state : MACD main(shift1) > 0 and MACD main crossed UP through zero
+//                  within the last macd_recency_bars closed bars.
+//     Trigger    : BUY STOP placed entry_offset_pips above current EMA20,
 //                   expiring after pending_expiry_bars M5 bars. The break above
 //                   EMA20+offset (the fill) is the entry event.
 //     Stop        : entry - sl_pips         (card: conservative 20p, P2 cap 25p).
@@ -33,7 +31,7 @@
 //     1. Partial close partial_close_pct of the original volume at +1R
 //        (price moved sl_distance in favour). Latched once (volume shrinks).
 //     2. On the partial, move the remaining stop to break-even (entry price).
-//     3. Trail the remaining stop each NEW closed bar by EMA20 -/+ trail_offset_pips
+//     3. Trail the remaining stop by EMA20 -/+ trail_offset_pips
 //        (long: ema20 - offset; short: ema20 + offset), monotonic only.
 //
 //   One pending OR position per magic/symbol at a time (OCO by construction:
@@ -42,10 +40,8 @@
 //   Stale pendings self-expire after pending_expiry_bars via ORDER_TIME_SPECIFIED.
 //
 // .DWX invariants honoured: fail-OPEN spread guard (zero modeled spread passes);
-// no swap gate; QM_IsNewBar consumed ONCE (entry path only — management/trail use
-// a separate latched-bar timestamp via QM_IsNewBar(sym,tf) overload is avoided;
-// trail is gated by the SAME entry new-bar event through g_trail_due); confirmations
-// are STATES with the FILL as the event; pip-scaled offsets via
+// no swap gate; QM_IsNewBar consumed once on the entry path only;
+// confirmations are based on fixed closed-bar shifts; pip-scaled offsets via
 // QM_StopRulesPipsToPriceDistance; no external feed; closed-bar reads only.
 //
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything else
@@ -100,8 +96,6 @@ ulong  g_managed_ticket   = 0;     // ticket currently being managed
 double g_initial_volume   = 0.0;   // original volume at fill (to detect partial)
 double g_sl_distance      = 0.0;   // |entry - sl| captured at fill = 1R reference
 bool   g_partial_done     = false; // +1R partial already taken
-bool   g_trail_due        = false; // a new closed bar arrived -> trail allowed this tick
-
 // -----------------------------------------------------------------------------
 // Helpers
 // -----------------------------------------------------------------------------
@@ -156,6 +150,11 @@ bool HasLivePending(const int magic)
    return false;
   }
 
+double ClosedBarClose(const int shift)
+  {
+   return iClose(_Symbol, _Period, shift); // perf-allowed: fixed single closed-bar close for literal card EMA cross; no QM close reader exists.
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
@@ -181,10 +180,18 @@ bool Strategy_NoTradeFilter()
   }
 
 // Entry on the closed-bar path (QM_IsNewBar() == true guaranteed by caller).
-// EMA20 rising + MACD positive & recently crossed zero = confirming STATES;
-// the BUY/SELL STOP fill is the entry EVENT. One pending/open per magic/symbol.
+// Last closed-bar price cross plus recent MACD zero-cross filter; the
+// BUY/SELL STOP fill is the breakout entry event.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type               = QM_BUY;
+   req.price              = 0.0;
+   req.sl                 = 0.0;
+   req.tp                 = 0.0;
+   req.reason             = "";
+   req.symbol_slot        = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    const int magic = QM_FrameworkMagic();
    // One position per magic; do not stack a pending on top of an open position
    // or another pending (OCO by construction).
@@ -202,9 +209,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
+   const double ema0 = QM_EMA(_Symbol, _Period, strategy_ema_period, 0);
    const double ema1 = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
    const double ema2 = QM_EMA(_Symbol, _Period, strategy_ema_period, 2);
-   if(ema1 <= 0.0 || ema2 <= 0.0)
+   const double close1 = ClosedBarClose(1);
+   const double close2 = ClosedBarClose(2);
+   if(ema0 <= 0.0 || ema1 <= 0.0 || ema2 <= 0.0 || close1 <= 0.0 || close2 <= 0.0)
       return false;
 
    const double macd1 = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
@@ -216,11 +226,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
    const int expiry_seconds = strategy_pending_expiry_bars * PeriodSeconds(_Period);
 
-   // ---- LONG: EMA20 rising + MACD positive + recent up-cross of zero ----
-   const bool ema_rising = (ema1 > ema2);
-   if(ema_rising && macd1 > 0.0 && MacdCrossedUpRecently(strategy_macd_recency_bars))
+   // ---- LONG: price just crossed above EMA20 + recent MACD up-cross of zero ----
+   const bool crossed_above_ema = (close2 <= ema2 && close1 > ema1);
+   if(crossed_above_ema && macd1 > 0.0 && MacdCrossedUpRecently(strategy_macd_recency_bars))
      {
-      const double entry_price = QM_TM_NormalizePrice(_Symbol, ema1 + offset);
+      const double entry_price = QM_TM_NormalizePrice(_Symbol, ema0 + offset);
       const double sl_price    = QM_TM_NormalizePrice(_Symbol, entry_price - sl_dist);
       if(entry_price <= 0.0 || sl_price <= 0.0 || sl_price >= entry_price)
          return false;
@@ -234,11 +244,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return true;
      }
 
-   // ---- SHORT: EMA20 falling + MACD negative + recent down-cross of zero ----
-   const bool ema_falling = (ema1 < ema2);
-   if(ema_falling && macd1 < 0.0 && MacdCrossedDownRecently(strategy_macd_recency_bars))
+   // ---- SHORT: price just crossed below EMA20 + recent MACD down-cross of zero ----
+   const bool crossed_below_ema = (close2 >= ema2 && close1 < ema1);
+   if(crossed_below_ema && macd1 < 0.0 && MacdCrossedDownRecently(strategy_macd_recency_bars))
      {
-      const double entry_price = QM_TM_NormalizePrice(_Symbol, ema1 - offset);
+      const double entry_price = QM_TM_NormalizePrice(_Symbol, ema0 - offset);
       const double sl_price    = QM_TM_NormalizePrice(_Symbol, entry_price + sl_dist);
       if(entry_price <= 0.0 || sl_price <= 0.0 || sl_price <= entry_price)
          return false;
@@ -256,8 +266,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
   }
 
 // Active management: +1R partial -> breakeven -> EMA-trail of the remainder.
-// Runs every tick when an open position exists for this magic. The EMA-trail
-// step is gated to one update per closed bar via g_trail_due (set in OnTick).
+// Runs every tick when an open position exists for this magic.
 void Strategy_ManageOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
@@ -340,10 +349,7 @@ void Strategy_ManageOpenPosition()
         }
      }
 
-   // ---- Step 2: EMA-trail the remaining stop, once per closed bar ----
-   if(!g_trail_due)
-      return;
-
+   // ---- Step 2: EMA-trail the remaining stop ----
    const double ema1 = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
    if(ema1 <= 0.0)
       return;
@@ -431,11 +437,6 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
-   // Single new-bar consume for this tick. Used both to gate entry (below) and
-   // to permit one EMA-trail step per closed bar (g_trail_due, read in manage).
-   const bool new_bar = QM_IsNewBar();
-   g_trail_due = new_bar;
-
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -452,7 +453,7 @@ void OnTick()
         }
      }
 
-   if(!new_bar)
+   if(!QM_IsNewBar())
       return;
 
    QM_EquityStreamOnNewBar();
