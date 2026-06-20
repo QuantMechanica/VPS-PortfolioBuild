@@ -46,6 +46,7 @@ input int    stoch_d_period             = 1;
 input int    stoch_slowing              = 7;
 input double stoch_lo                   = 20.0;
 input double stoch_hi                   = 80.0;
+input int    signal_lookback_bars       = 3;
 input int    swing_lookback_bars        = 8;
 input int    atr_period                 = 14;
 input double sl_atr_mult                = 2.0;
@@ -56,7 +57,7 @@ input int    breakeven_buffer_pips      = 2;
 input int    session_start_utc_hour     = 7;
 input double spread_pct_of_stop         = 15.0;
 
-double g_smi[2];
+double g_smi[8];
 double g_ha_open[2];
 double g_ha_close[2];
 double g_smi_ema1_num = 0.0;
@@ -153,7 +154,8 @@ void Strategy_AdvanceState_OnNewBar()
       ha_open = 0.5 * (g_ha_open_run + g_ha_close[0]);
    g_ha_open_run = ha_open;
 
-   g_smi[1] = g_smi[0];
+   for(int i = 7; i > 0; --i)
+      g_smi[i] = g_smi[i - 1];
    g_ha_open[1] = g_ha_open[0];
    g_ha_close[1] = g_ha_close[0];
 
@@ -161,6 +163,93 @@ void Strategy_AdvanceState_OnNewBar()
    g_ha_open[0] = ha_open;
    g_ha_close[0] = ha_close;
    g_state_bars++;
+  }
+
+bool Strategy_SMIRecentLong()
+  {
+   int max_lookback = signal_lookback_bars;
+   if(max_lookback > g_state_bars - 1)
+      max_lookback = g_state_bars - 1;
+   if(max_lookback > 6)
+      max_lookback = 6;
+   for(int i = 0; i < max_lookback; ++i)
+     {
+      const double smi_now = g_smi[i];
+      const double smi_prev = g_smi[i + 1];
+      if((smi_prev <= -smi_extreme && smi_now > smi_prev) ||
+         (smi_prev <= 0.0 && smi_now > 0.0))
+         return true;
+     }
+   return false;
+  }
+
+bool Strategy_SMIRecentShort()
+  {
+   int max_lookback = signal_lookback_bars;
+   if(max_lookback > g_state_bars - 1)
+      max_lookback = g_state_bars - 1;
+   if(max_lookback > 6)
+      max_lookback = 6;
+   for(int i = 0; i < max_lookback; ++i)
+     {
+      const double smi_now = g_smi[i];
+      const double smi_prev = g_smi[i + 1];
+      if((smi_prev >= smi_extreme && smi_now < smi_prev) ||
+         (smi_prev >= 0.0 && smi_now < 0.0))
+         return true;
+     }
+   return false;
+  }
+
+bool Strategy_EMACrossRecent(const bool want_long)
+  {
+   int max_lookback = signal_lookback_bars;
+   if(max_lookback > 6)
+      max_lookback = 6;
+   for(int shift = 1; shift <= max_lookback; ++shift)
+     {
+      const double fast_now = QM_EMA(_Symbol, _Period, ema_fast_period, shift);
+      const double slow_now = QM_EMA(_Symbol, _Period, ema_slow_period, shift);
+      const double fast_prev = QM_EMA(_Symbol, _Period, ema_fast_period, shift + 1);
+      const double slow_prev = QM_EMA(_Symbol, _Period, ema_slow_period, shift + 1);
+      if(fast_now <= 0.0 || slow_now <= 0.0 || fast_prev <= 0.0 || slow_prev <= 0.0)
+         continue;
+      if(want_long && fast_now > slow_now && fast_prev <= slow_prev)
+         return true;
+      if(!want_long && fast_now < slow_now && fast_prev >= slow_prev)
+         return true;
+     }
+   return false;
+  }
+
+bool Strategy_StochRecentLong()
+  {
+   int max_lookback = signal_lookback_bars;
+   if(max_lookback > 6)
+      max_lookback = 6;
+   for(int shift = 1; shift <= max_lookback; ++shift)
+     {
+      const double stoch_now = QM_Stoch_K(_Symbol, _Period, stoch_k_period, stoch_d_period, stoch_slowing, shift);
+      const double stoch_prev = QM_Stoch_K(_Symbol, _Period, stoch_k_period, stoch_d_period, stoch_slowing, shift + 1);
+      if(stoch_prev <= stoch_lo && stoch_now > stoch_prev)
+         return true;
+     }
+   return false;
+  }
+
+bool Strategy_StochRecentShort()
+  {
+   int max_lookback = signal_lookback_bars;
+   if(max_lookback > 6)
+      max_lookback = 6;
+   for(int shift = 1; shift <= max_lookback; ++shift)
+     {
+      const double stoch_now = QM_Stoch_K(_Symbol, _Period, stoch_k_period, stoch_d_period, stoch_slowing, shift);
+      const double stoch_prev = QM_Stoch_K(_Symbol, _Period, stoch_k_period, stoch_d_period, stoch_slowing, shift + 1);
+      if(stoch_prev >= stoch_hi && stoch_now < stoch_prev)
+         return true;
+     }
+   return false;
   }
 
 double Strategy_StopPrice(const QM_OrderType side, const double entry, const double atr_value)
@@ -219,31 +308,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(atr_value <= 0.0)
       return false;
 
-   const double ema_fast_1 = QM_EMA(_Symbol, _Period, ema_fast_period, 1);
-   const double ema_slow_1 = QM_EMA(_Symbol, _Period, ema_slow_period, 1);
-   const double ema_fast_2 = QM_EMA(_Symbol, _Period, ema_fast_period, 2);
-   const double ema_slow_2 = QM_EMA(_Symbol, _Period, ema_slow_period, 2);
    const double ema_trend_1 = QM_EMA(_Symbol, _Period, ema_trend_period, 1);
-   if(ema_fast_1 <= 0.0 || ema_slow_1 <= 0.0 || ema_fast_2 <= 0.0 || ema_slow_2 <= 0.0 || ema_trend_1 <= 0.0)
+   if(ema_trend_1 <= 0.0)
       return false;
 
-   const double stoch_1 = QM_Stoch_K(_Symbol, _Period, stoch_k_period, stoch_d_period, stoch_slowing, 1);
-   const double stoch_2 = QM_Stoch_K(_Symbol, _Period, stoch_k_period, stoch_d_period, stoch_slowing, 2);
-   const bool stoch_long = (stoch_2 <= stoch_lo && stoch_1 > stoch_2);
-   const bool stoch_short = (stoch_2 >= stoch_hi && stoch_1 < stoch_2);
-
-   const double smi_1 = g_smi[0];
-   const double smi_2 = g_smi[1];
    const bool ha_white = (g_ha_close[0] > g_ha_open[0]);
    const bool ha_red = (g_ha_close[0] < g_ha_open[0]);
 
-   const bool smi_long = ((smi_2 <= -smi_extreme && smi_1 > smi_2) ||
-                          (smi_2 <= 0.0 && smi_1 > 0.0));
-   const bool smi_short = ((smi_2 >= smi_extreme && smi_1 < smi_2) ||
-                           (smi_2 >= 0.0 && smi_1 < 0.0));
-
-   const bool ema_cross_long = (ema_fast_1 > ema_slow_1 && ema_fast_2 <= ema_slow_2);
-   const bool ema_cross_short = (ema_fast_1 < ema_slow_1 && ema_fast_2 >= ema_slow_2);
+   const bool smi_long = Strategy_SMIRecentLong();
+   const bool smi_short = Strategy_SMIRecentShort();
+   const bool ema_cross_long = Strategy_EMACrossRecent(true);
+   const bool ema_cross_short = Strategy_EMACrossRecent(false);
+   const bool stoch_long = Strategy_StochRecentLong();
+   const bool stoch_short = Strategy_StochRecentShort();
 
    if(smi_long && ema_cross_long && ha_white && stoch_long)
      {
@@ -371,6 +448,15 @@ int OnInit()
 
    g_state_bars = 0;
    g_ha_seeded = false;
+   ArrayInitialize(g_smi, 0.0);
+   ArrayInitialize(g_ha_open, 0.0);
+   ArrayInitialize(g_ha_close, 0.0);
+   g_smi_ema1_num = 0.0;
+   g_smi_ema2_num = 0.0;
+   g_smi_ema1_den = 0.0;
+   g_smi_ema2_den = 0.0;
+   g_smi_signal = 0.0;
+   g_ha_open_run = 0.0;
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }

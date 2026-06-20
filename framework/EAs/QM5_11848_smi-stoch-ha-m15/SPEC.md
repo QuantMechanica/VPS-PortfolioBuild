@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA trades M15 momentum reversals on JPY crosses. A long setup requires the custom SMI line to curl upward from the -40 zone or cross upward through zero, EMA(5) to be above EMA(6), the closed Heiken Ashi candle to be white, and Stochastic(10,1,7) to be rising from 20 or lower. A short setup mirrors those rules from the +40 zone or a zero-line cross, with EMA(5) below EMA(6), a red Heiken Ashi candle, and Stochastic falling from 80 or higher. Exits occur when SMI reaches the opposite target zone, price touches EMA(60), the fixed 30-50 pip target is hit, the swing/volatility stop is hit, or the framework Friday close fires.
+This EA trades M15 momentum reversals on JPY crosses. A long setup requires the custom SMI line to curl upward from the -40 zone or cross upward through zero, EMA(5) to cross above EMA(6), the closed Heiken Ashi candle to be white, and Stochastic(10,1,7) to be rising from 20 or lower; the oscillator and EMA trigger events may occur within a short closed-bar lookback to avoid exact same-bar starvation. A short setup mirrors those rules from the +40 zone or a zero-line cross, with EMA(5) crossing below EMA(6), a red Heiken Ashi candle, and Stochastic falling from 80 or higher. Exits occur when SMI reaches the opposite target zone, price touches EMA(60), the fixed 30-50 pip target is hit, the swing/volatility stop is hit, or the framework Friday close fires.
 
 ---
 
@@ -32,6 +32,7 @@ This EA trades M15 momentum reversals on JPY crosses. A long setup requires the 
 | stoch_slowing | 7 | 1-20 | Stochastic slowing period. |
 | stoch_lo | 20.0 | 1-50 | Oversold threshold for long confirmation. |
 | stoch_hi | 80.0 | 50-99 | Overbought threshold for short confirmation. |
+| signal_lookback_bars | 3 | 1-6 | Closed bars over which EMA, SMI, and Stochastic trigger events may align. |
 | swing_lookback_bars | 8 | 2-30 | Closed bars used for previous swing stop placement. |
 | atr_period | 14 | 2-100 | ATR period for the volatility stop floor. |
 | sl_atr_mult | 2.0 | 0.5-10.0 | ATR multiplier for the minimum stop distance. |
