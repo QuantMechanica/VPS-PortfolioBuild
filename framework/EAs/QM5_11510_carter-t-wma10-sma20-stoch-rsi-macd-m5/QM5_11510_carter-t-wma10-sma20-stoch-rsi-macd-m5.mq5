@@ -22,10 +22,11 @@
 //       RSI    : RSI(28) > 50  (medium-term momentum up)
 //       MACD   : MACD_Main - MACD_Signal > 0  (histogram positive)
 //   Confirm STATE (SHORT): K < D, RSI(28) < 50, histogram < 0.
-//   Stop          : fixed pips (card 10, P2 cap 15) via QM_StopFixedPips.
+//   Stop          : fixed 10 pips via QM_StopFixedPips.
 //   Take profit   : 1:1 R/R via QM_TakeRR (rr = 1.0).
 //   No-Friday      : optional entry block on Fridays (card filter).
-//   Spread guard  : block only a genuinely wide spread (fail-open on .DWX
+//   Spread guard  : block only a genuinely wide spread over 10 pips
+//                   (fail-open on .DWX
 //                   zero modeled spread).
 //
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
@@ -67,10 +68,10 @@ input double strategy_rsi_level         = 50.0;   // RSI momentum dividing line
 input int    strategy_macd_fast         = 24;     // MACD fast EMA period
 input int    strategy_macd_slow         = 52;     // MACD slow EMA period
 input int    strategy_macd_signal       = 18;     // MACD signal SMA period
-input int    strategy_sl_pips           = 15;     // stop distance in pips (card 10, P2 cap 15)
+input int    strategy_sl_pips           = 10;     // fixed stop distance in pips
 input double strategy_tp_rr             = 1.0;    // take-profit R/R multiple (1:1 source)
 input bool   strategy_no_friday_entry   = true;   // suppress new entries on Friday
-input double strategy_spread_pct_of_stop = 50.0;  // skip if spread > this % of stop distance
+input int    strategy_spread_cap_pips   = 10;     // skip if spread exceeds this cap in pips
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -86,13 +87,13 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
-   if(stop_distance <= 0.0)
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(spread_cap <= 0.0)
       return false;
 
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread > spread_cap)
       return true;
 
    return false;
