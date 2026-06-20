@@ -3,7 +3,6 @@
 #property description "QM5_11014 the5ers-mprof-va — Market Profile Value-Area Rejection (M30, intraday MR)"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_DSTAware.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA — QM5_11014 the5ers-mprof-va
