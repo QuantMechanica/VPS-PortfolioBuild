@@ -4,13 +4,13 @@
 **Slug:** mql5-volqual
 **Source:** b8b5125a-c67f-5bbc-baff-33456e08f5b2 (see `strategy-seeds/sources/b8b5125a-c67f-5bbc-baff-33456e08f5b2/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-11
+**Last revised:** 2026-06-20
 
 ---
 
 ## 1. Strategy Logic
 
-The EA trades the closed-bar color changes of the VolatilityQuality line. It enters long when the latest closed H4 VolatilityQuality state changes from bearish to bullish, and enters short when it changes from bullish to bearish. Open long positions close on a bearish color change, and open short positions close on a bullish color change. Each entry uses an ATR(14) hard stop at 2.0 ATR and a 1.5R target.
+The EA trades the closed-bar color changes of the VolatilityQuality line. It enters long when the latest closed H4 VolatilityQuality state changes from bearish to bullish, and enters short when it changes from bullish to bearish. Open long positions close on a bearish color change, and open short positions close on a bullish color change. The color-change signal is calculated once per closed bar and cached for the per-tick close hook. Each entry uses an ATR(14) hard stop at 2.0 ATR and a 1.5R target.
 
 ---
 
@@ -92,3 +92,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-11 | Initial build from card | 5feb21b0-0779-4c67-a8c5-1ad3a8031b5a |
+| v2 | 2026-06-20 | Rebuild from card; cached closed-bar exit signal to remove per-tick VolatilityQuality recompute | 4cc26e5a-011f-4f16-b0ab-9865c0a9d954 |
