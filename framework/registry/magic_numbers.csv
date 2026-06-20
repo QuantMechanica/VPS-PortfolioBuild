@@ -11542,10 +11542,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11662,fps-ema10-25-50-h1,3,USDCHF.DWX,116620003,2026-06-18,Claude,reserved
 11662,fps-ema10-25-50-h1,4,AUDUSD.DWX,116620004,2026-06-18,Claude,reserved
 11662,fps-ema10-25-50-h1,5,USDCAD.DWX,116620005,2026-06-18,Claude,reserved
-11663,fps-ema25-50-100-m1,0,EURUSD.DWX,116630000,2026-06-18,Claude,reserved
-11663,fps-ema25-50-100-m1,1,GBPUSD.DWX,116630001,2026-06-18,Claude,reserved
-11663,fps-ema25-50-100-m1,2,USDJPY.DWX,116630002,2026-06-18,Claude,reserved
-11663,fps-ema25-50-100-m1,3,USDCHF.DWX,116630003,2026-06-18,Claude,reserved
+11663,fps-ema25-50-100-m1,0,EURUSD.DWX,116630000,2026-06-20,Development,active
+11663,fps-ema25-50-100-m1,1,GBPUSD.DWX,116630001,2026-06-20,Development,active
+11663,fps-ema25-50-100-m1,2,USDJPY.DWX,116630002,2026-06-20,Development,active
+11663,fps-ema25-50-100-m1,3,USDCHF.DWX,116630003,2026-06-20,Development,active
 11664,ma11-macd-m30,0,EURUSD.DWX,116640000,2026-06-18,Claude,reserved
 11664,ma11-macd-m30,1,GBPUSD.DWX,116640001,2026-06-18,Claude,reserved
 11664,ma11-macd-m30,2,USDJPY.DWX,116640002,2026-06-18,Claude,reserved
