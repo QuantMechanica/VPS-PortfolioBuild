@@ -15,10 +15,12 @@ Long-only RSI + EMA-crossover confirmation strategy ported from the
 a long when, on a closed H2 bar, RSI(14) is below 30 and a bullish EMA(12) >
 EMA(26) crossover occurred at any point within the last 10 closed bars. It
 exits the long when RSI(14) is at or above 70 and a bearish EMA(12) < EMA(26)
-crossunder occurred within the last 10 closed bars. Risk is bounded by an
-ATR(14)-scaled stop (2x ATR) as the V5 fixed-risk translation of the source's
-percent stop, with a take-profit at 2x the stop distance. Friday-close and news
-guards are framework-supplied.
+crossunder occurred within the last 10 closed bars. Risk is bounded by the
+source's 5% fixed stop translated into a V5 stop price so the framework can size
+fixed $1,000 risk; ATR(14) x 2 is used only if the percent stop cannot produce a
+valid stop. The source's 10% trailing take-profit is implemented as a trailing
+stop that begins once price has moved at least 10% above the entry. Friday-close
+and news guards are framework-supplied.
 
 ---
 
@@ -32,9 +34,10 @@ guards are framework-supplied.
 | `strategy_rsi_period` | 14 | 5-30 | RSI lookback period |
 | `strategy_rsi_oversold` | 30.0 | 10-45 | Entry trigger: RSI cross DOWN through this level |
 | `strategy_rsi_overbought` | 70.0 | 55-90 | Exit gate: RSI at/above this level |
-| `strategy_atr_period` | 14 | 5-30 | ATR period for stop sizing |
-| `strategy_sl_atr_mult` | 2.0 | 0.5-5.0 | Stop distance = mult x ATR |
-| `strategy_tp_rr` | 2.0 | 0.5-5.0 | Take-profit = tp_rr x stop distance (RR) |
+| `strategy_stop_loss_pct` | 5.0 | 0.1-20.0 | Source fixed stop distance as percent of entry price |
+| `strategy_trailing_tp_pct` | 10.0 | 0.1-50.0 | Source trailing take-profit distance as percent of entry price |
+| `strategy_atr_fallback_period` | 14 | 5-30 | ATR period used only if the percent stop is invalid |
+| `strategy_atr_fallback_mult` | 2.0 | 0.5-5.0 | ATR multiplier used only if the percent stop is invalid |
 
 ---
 
@@ -66,7 +69,7 @@ guards are framework-supplied.
 |---|---|
 | Trades / year / symbol | `~35` |
 | Typical hold time | `hours to a few days (H2 swing)` |
-| Expected drawdown profile | `moderate; ATR-bounded per-trade risk, one position per magic` |
+| Expected drawdown profile | `moderate; fixed-risk stop, one position per magic` |
 | Regime preference | `momentum-reversal (oversold dip inside an established uptrend)` |
 | Win rate target (qualitative) | `medium` |
 

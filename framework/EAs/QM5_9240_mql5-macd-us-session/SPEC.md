@@ -24,17 +24,17 @@ This EA trades closed-bar H1 MACD histogram crosses during the US index session.
 | `strategy_macd_signal` | `9` | `1+` | MACD signal period. |
 | `strategy_ema_period` | `200` | `1+` | Trend filter EMA period. |
 | `strategy_adx_period` | `14` | `1+` | ADX regime period. |
-| `strategy_adx_trend_min` | `25.0` | `0+` | ADX level that classifies the regime as trend. |
+| `strategy_adx_trend_min` | `25.0` | `0+` | ADX level that classifies the non-volatile regime as trend. |
+| `strategy_adx_range_max` | `20.0` | `0+` | ADX level below which low-ATR-percentile bars are classified as range. |
 | `strategy_atr_period` | `14` | `1+` | ATR period for regime, stop, and target. |
-| `strategy_atr_percentile_lookback` | `100` | `2+` | Closed ATR samples used for the rolling percentile classifier. |
-| `strategy_atr_normal_min_pct` | `20.0` | `0-100` | Lower bound for normal ATR percentile. |
-| `strategy_atr_normal_max_pct` | `80.0` | `0-100` | Upper bound for normal ATR percentile. |
+| `strategy_atr_percentile_lookback` | `500` | `2+` | Closed ATR-percent samples used for the rolling percentile classifier. |
+| `strategy_atr_normal_min_pct` | `20.0` | `0-100` | Lower ATR-percentile bound; below it with ADX under range max is range. |
+| `strategy_atr_normal_max_pct` | `80.0` | `0-100` | Upper ATR-percentile bound; above it is volatile and skipped. |
 | `strategy_atr_sl_mult` | `2.5` | `>0` | Initial stop distance in ATR multiples. |
 | `strategy_atr_tp_mult` | `3.0` | `>0` | Initial take-profit distance in ATR multiples. |
 | `strategy_session_start_hour` | `14` | `0-23` | First broker-time hour allowed for the closed signal bar. |
 | `strategy_session_end_hour` | `20` | `0-23` | Last broker-time hour allowed for the closed signal bar. |
 | `strategy_max_hold_bars` | `48` | `1+` | Maximum H1 bars to hold before time exit. |
-| `strategy_max_spread_points` | `0.0` | `0+` | Optional spread cap in points; zero disables the cap and allows DWX zero spread. |
 
 ---
 

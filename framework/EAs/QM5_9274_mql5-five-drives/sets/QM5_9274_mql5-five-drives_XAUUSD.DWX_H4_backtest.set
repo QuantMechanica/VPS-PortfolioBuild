@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11274
-; ea_slug:      iaf-rsi-ema
+; ea_id:        9274
+; ea_slug:      mql5-five-drives
 ; ea_version:   v5.0
 ; set_version:  s20260620-001
 ; symbol:       XAUUSD.DWX
-; timeframe:    H2
+; timeframe:    H4
 ; environment:  backtest
-; magic_slot:   1
+; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   c7733a64300f6cba2833c844011f9bc4c3b610254cf7f4e9461c49e8ffbb9da5
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-20
 ;==========================================================
-qm_magic_slot_offset=1
+qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
@@ -32,13 +32,3 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-strategy_ema_fast_period=12
-strategy_ema_slow_period=26
-strategy_ema_lookback=10
-strategy_rsi_period=14
-strategy_rsi_oversold=30.0
-strategy_rsi_overbought=70.0
-strategy_stop_loss_pct=5.0
-strategy_trailing_tp_pct=10.0
-strategy_atr_fallback_period=14
-strategy_atr_fallback_mult=2.0

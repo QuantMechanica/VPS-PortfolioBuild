@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f6f4c1637e6164d276dd04ef85e9811fbeec2be609028ac3e2ef4231f60d22a8
+; build_hash:   7b1ec76d3f38c0e832df3453366db203a93064cea2858ec32a6c75c56e55be95
 ; author:       Development
 ; date:         2026-06-20
 ;==========================================================
@@ -38,6 +38,7 @@ strategy_ema_lookback=10
 strategy_rsi_period=14
 strategy_rsi_oversold=30.0
 strategy_rsi_overbought=70.0
-strategy_atr_period=14
-strategy_sl_atr_mult=2.0
-strategy_tp_rr=2.0
+strategy_stop_loss_pct=5.0
+strategy_trailing_tp_pct=10.0
+strategy_atr_fallback_period=14
+strategy_atr_fallback_mult=2.0

@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_9240 MQL5 MACD US Session Filter"
+#property description "QM5_9274 MQL5 5 Drives Harmonic Pattern"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 9240;
+input int    qm_ea_id                   = 9274;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,23 +73,205 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_signal_tf = PERIOD_H1;
-input int    strategy_macd_fast          = 12;
-input int    strategy_macd_slow          = 26;
-input int    strategy_macd_signal        = 9;
-input int    strategy_ema_period         = 200;
-input int    strategy_adx_period         = 14;
-input double strategy_adx_trend_min      = 25.0;
-input double strategy_adx_range_max      = 20.0;
-input int    strategy_atr_period         = 14;
-input int    strategy_atr_percentile_lookback = 500;
-input double strategy_atr_normal_min_pct = 20.0;
-input double strategy_atr_normal_max_pct = 80.0;
-input double strategy_atr_sl_mult        = 2.5;
-input double strategy_atr_tp_mult        = 3.0;
-input int    strategy_session_start_hour = 14;
-input int    strategy_session_end_hour   = 20;
-input int    strategy_max_hold_bars      = 48;
+input int    strategy_pivot_left        = 5;
+input int    strategy_pivot_right       = 5;
+input int    strategy_min_span_bars     = 30;
+input int    strategy_max_span_bars     = 160;
+input int    strategy_pivot_scan_bars   = 190;
+input double strategy_drive_min         = 1.13;
+input double strategy_drive_max         = 1.618;
+input double strategy_mid_ext_min       = 1.618;
+input double strategy_mid_ext_max       = 2.24;
+input double strategy_final_retrace     = 0.50;
+input double strategy_ratio_tolerance   = 0.10;
+input int    strategy_atr_period        = 14;
+input double strategy_atr_cap_mult      = 3.0;
+input double strategy_stop_fib_ext      = 1.618;
+input double strategy_tp_fraction       = 0.6666666667;
+input int    strategy_time_exit_bars    = 30;
+
+struct FiveDrivesPattern
+  {
+   bool     bullish;
+   int      a_shift;
+   int      f_shift;
+   double   b_price;
+   double   e_price;
+   double   f_price;
+   datetime a_time;
+   datetime f_time;
+   string   key;
+  };
+
+string g_traded_pattern_key = "";
+
+bool RatioInRange(const double value, const double reference, const double lo, const double hi)
+  {
+   if(value <= 0.0 || reference <= 0.0 || lo <= 0.0 || hi <= 0.0)
+      return false;
+   const double ratio = value / reference;
+   return (ratio >= lo && ratio <= hi);
+  }
+
+bool RatioNear(const double value, const double reference, const double target, const double tolerance)
+  {
+   if(value <= 0.0 || reference <= 0.0 || target <= 0.0 || tolerance < 0.0)
+      return false;
+   const double ideal = target * reference;
+   return (MathAbs(value - ideal) <= tolerance * reference);
+  }
+
+bool DetectFiveDrivesPattern(FiveDrivesPattern &pattern)
+  {
+   pattern.bullish = true;
+   pattern.a_shift = 0;
+   pattern.f_shift = 0;
+   pattern.b_price = 0.0;
+   pattern.e_price = 0.0;
+   pattern.f_price = 0.0;
+   pattern.a_time = 0;
+   pattern.f_time = 0;
+   pattern.key = "";
+
+   if(strategy_pivot_left < 1 || strategy_pivot_right < 1 ||
+      strategy_min_span_bars < 1 || strategy_max_span_bars < strategy_min_span_bars)
+      return false;
+
+   int scan_bars = strategy_pivot_scan_bars;
+   const int min_scan = strategy_max_span_bars + strategy_pivot_left + strategy_pivot_right + 20;
+   if(scan_bars < min_scan)
+      scan_bars = min_scan;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, _Period, 1, scan_bars, rates); // perf-allowed: closed-bar harmonic pivot scan; caller gates EntrySignal with QM_IsNewBar().
+   if(copied < strategy_pivot_left + strategy_pivot_right + strategy_min_span_bars)
+      return false;
+
+   int piv_type[64];
+   int piv_shift[64];
+   double piv_price[64];
+   datetime piv_time[64];
+   int piv_count = 0;
+
+   const int oldest_idx = copied - strategy_pivot_left - 1;
+   const int newest_idx = strategy_pivot_right + 1;
+   for(int idx = oldest_idx; idx >= newest_idx; --idx)
+     {
+      bool is_high = true;
+      bool is_low = true;
+      const double current_high = rates[idx].high;
+      const double current_low = rates[idx].low;
+      if(current_high <= 0.0 || current_low <= 0.0)
+         continue;
+
+      for(int j = 1; j <= strategy_pivot_left; ++j)
+        {
+         if(rates[idx + j].high > current_high)
+            is_high = false;
+         if(rates[idx + j].low < current_low)
+            is_low = false;
+        }
+      for(int j = 1; j <= strategy_pivot_right; ++j)
+        {
+         if(rates[idx - j].high > current_high)
+            is_high = false;
+         if(rates[idx - j].low < current_low)
+            is_low = false;
+        }
+
+      if(is_high == is_low)
+         continue;
+
+      const int ptype = is_high ? 1 : -1;
+      const double price = is_high ? current_high : current_low;
+      if(piv_count > 0 && piv_type[piv_count - 1] == ptype)
+        {
+         const bool replace = (ptype == 1 && price > piv_price[piv_count - 1]) ||
+                              (ptype == -1 && price < piv_price[piv_count - 1]);
+         if(replace)
+           {
+            piv_shift[piv_count - 1] = idx + 1;
+            piv_price[piv_count - 1] = price;
+            piv_time[piv_count - 1] = rates[idx].time;
+           }
+         continue;
+        }
+
+      if(piv_count >= 64)
+         break;
+      piv_type[piv_count] = ptype;
+      piv_shift[piv_count] = idx + 1;
+      piv_price[piv_count] = price;
+      piv_time[piv_count] = rates[idx].time;
+      piv_count++;
+     }
+
+   if(piv_count < 6)
+      return false;
+
+   const int s = piv_count - 6;
+   const int type_a = piv_type[s];
+   const int type_b = piv_type[s + 1];
+   const int type_c = piv_type[s + 2];
+   const int type_d = piv_type[s + 3];
+   const int type_e = piv_type[s + 4];
+   const int type_f = piv_type[s + 5];
+
+   const double price_b = piv_price[s + 1];
+   const double price_c = piv_price[s + 2];
+   const double price_d = piv_price[s + 3];
+   const double price_e = piv_price[s + 4];
+   const double price_f = piv_price[s + 5];
+   const int span_bars = piv_shift[s] - piv_shift[s + 5];
+   if(span_bars < strategy_min_span_bars || span_bars > strategy_max_span_bars)
+      return false;
+
+   bool found = false;
+   bool bullish = false;
+   if(type_a == 1 && type_b == -1 && type_c == 1 && type_d == -1 && type_e == 1 && type_f == -1)
+     {
+      const double xa_length = price_c - price_b;
+      const double ab_length = price_c - price_d;
+      const double bc_length = price_e - price_d;
+      const double cd_length = price_e - price_f;
+      found = RatioInRange(ab_length, xa_length, strategy_drive_min, strategy_drive_max) &&
+              RatioInRange(bc_length, ab_length, strategy_mid_ext_min, strategy_mid_ext_max) &&
+              RatioNear(cd_length, bc_length, strategy_final_retrace, strategy_ratio_tolerance) &&
+              RatioNear(cd_length, ab_length, 1.0, strategy_ratio_tolerance) &&
+              price_e > price_c &&
+              price_f > price_b;
+      bullish = found;
+     }
+   else if(type_a == -1 && type_b == 1 && type_c == -1 && type_d == 1 && type_e == -1 && type_f == 1)
+     {
+      const double xa_length = price_b - price_c;
+      const double ab_length = price_d - price_c;
+      const double bc_length = price_d - price_e;
+      const double cd_length = price_f - price_e;
+      found = RatioInRange(ab_length, xa_length, strategy_drive_min, strategy_drive_max) &&
+              RatioInRange(bc_length, ab_length, strategy_mid_ext_min, strategy_mid_ext_max) &&
+              RatioNear(cd_length, bc_length, strategy_final_retrace, strategy_ratio_tolerance) &&
+              RatioNear(cd_length, ab_length, 1.0, strategy_ratio_tolerance) &&
+              price_e < price_c &&
+              price_f < price_b;
+      bullish = false;
+     }
+
+   if(!found)
+      return false;
+
+   pattern.bullish = bullish;
+   pattern.a_shift = piv_shift[s];
+   pattern.f_shift = piv_shift[s + 5];
+   pattern.b_price = price_b;
+   pattern.e_price = price_e;
+   pattern.f_price = price_f;
+   pattern.a_time = piv_time[s];
+   pattern.f_time = piv_time[s + 5];
+   pattern.key = IntegerToString((long)pattern.a_time) + "_" + IntegerToString((long)pattern.f_time);
+   return true;
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -115,95 +297,44 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_macd_fast <= 0 || strategy_macd_slow <= strategy_macd_fast || strategy_macd_signal <= 0)
+   FiveDrivesPattern pattern;
+   if(!DetectFiveDrivesPattern(pattern))
       return false;
-   if(strategy_atr_period <= 0 || strategy_ema_period <= 0 || strategy_adx_period <= 0)
-      return false;
-   if(strategy_atr_sl_mult <= 0.0 || strategy_atr_tp_mult <= 0.0)
-      return false;
-   if(strategy_atr_percentile_lookback < 2 ||
-      strategy_atr_normal_min_pct < 0.0 ||
-      strategy_atr_normal_max_pct > 100.0 ||
-      strategy_atr_normal_min_pct >= strategy_atr_normal_max_pct)
+   if(pattern.key == g_traded_pattern_key)
       return false;
 
-   MqlDateTime now_dt;
-   TimeToStruct(TimeCurrent(), now_dt);
-   int signal_hour = now_dt.hour - 1;
-   if(signal_hour < 0)
-      signal_hour += 24;
-   if(signal_hour < strategy_session_start_hour || signal_hour > strategy_session_end_hour)
+   const bool is_buy = pattern.bullish;
+   req.type = is_buy ? QM_BUY : QM_SELL;
+   const double entry = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                               : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(entry <= 0.0)
       return false;
 
-   const double macd_main_1 = QM_MACD_Main(_Symbol, strategy_signal_tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-   const double macd_sig_1  = QM_MACD_Signal(_Symbol, strategy_signal_tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-   const double macd_main_2 = QM_MACD_Main(_Symbol, strategy_signal_tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
-   const double macd_sig_2  = QM_MACD_Signal(_Symbol, strategy_signal_tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
-   const double hist_1 = macd_main_1 - macd_sig_1;
-   const double hist_2 = macd_main_2 - macd_sig_2;
-
-   const bool long_cross = (hist_2 < 0.0 && hist_1 > 0.0);
-   const bool short_cross = (hist_2 > 0.0 && hist_1 < 0.0);
-   if(!long_cross && !short_cross)
+   const double final_drive = MathAbs(pattern.e_price - pattern.f_price);
+   const double stop_offset = (strategy_stop_fib_ext - 1.0) * final_drive;
+   if(final_drive <= 0.0 || stop_offset <= 0.0)
       return false;
 
-   const double atr_now = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
-   const double adx_now = QM_ADX(_Symbol, strategy_signal_tf, strategy_adx_period, 1);
-   const double close_now = QM_EMA(_Symbol, strategy_signal_tf, 1, 1, PRICE_CLOSE);
-   if(atr_now <= 0.0 || adx_now <= 0.0 || close_now <= 0.0)
+   const double raw_sl = is_buy ? (pattern.f_price - stop_offset)
+                                : (pattern.f_price + stop_offset);
+   const double raw_tp = is_buy ? (entry + strategy_tp_fraction * (pattern.e_price - entry))
+                                : (entry - strategy_tp_fraction * (entry - pattern.e_price));
+   req.sl = QM_StopRulesNormalizePrice(_Symbol, raw_sl);
+   req.tp = QM_StopRulesNormalizePrice(_Symbol, raw_tp);
+   if(req.sl <= 0.0 || req.tp <= 0.0)
+      return false;
+   if(is_buy && (req.sl >= entry || req.tp <= entry))
+      return false;
+   if(!is_buy && (req.sl <= entry || req.tp >= entry))
       return false;
 
-   const double atr_pct_now = 100.0 * atr_now / close_now;
-   int valid = 0;
-   int below_or_equal = 0;
-   for(int i = 2; i < 2 + strategy_atr_percentile_lookback; ++i)
-     {
-      const double sample_atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, i);
-      const double sample_close = QM_EMA(_Symbol, strategy_signal_tf, 1, i, PRICE_CLOSE);
-      if(sample_atr <= 0.0 || sample_close <= 0.0)
-         continue;
-      valid++;
-      if((100.0 * sample_atr / sample_close) <= atr_pct_now)
-         below_or_equal++;
-     }
-   if(valid <= 0)
+   const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
+   const double stop_distance = MathAbs(entry - req.sl);
+   if(atr <= 0.0 || stop_distance <= 0.0 || stop_distance > strategy_atr_cap_mult * atr)
       return false;
 
-   const double atr_percentile = 100.0 * (double)below_or_equal / (double)valid;
-   if(atr_percentile > strategy_atr_normal_max_pct)
-      return false;
-   if(adx_now < strategy_adx_range_max && atr_percentile < strategy_atr_normal_min_pct)
-      return false;
-
-   const double ema_filter = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_period, 1, PRICE_CLOSE);
-   if(ema_filter <= 0.0)
-      return false;
-   if(long_cross && close_now <= ema_filter)
-      return false;
-   if(short_cross && close_now >= ema_filter)
-      return false;
-
-   const QM_OrderType order_type = long_cross ? QM_BUY : QM_SELL;
-   double entry_price = 0.0;
-   if(order_type == QM_BUY)
-      entry_price = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   else
-      entry_price = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry_price <= 0.0)
-      entry_price = SymbolInfoDouble(_Symbol, SYMBOL_LAST);
-   if(entry_price <= 0.0)
-      return false;
-
-   const double sl = QM_StopATRFromValue(_Symbol, order_type, entry_price, atr_now, strategy_atr_sl_mult);
-   const double tp = QM_TakeATRFromValue(_Symbol, order_type, entry_price, atr_now, strategy_atr_tp_mult);
-   if(sl <= 0.0 || tp <= 0.0)
-      return false;
-
-   req.type = order_type;
-   req.price = 0.0;
-   req.sl = sl;
-   req.tp = tp;
-   req.reason = long_cross ? "MACD_US_SESSION_LONG" : "MACD_US_SESSION_SHORT";
+   req.reason = is_buy ? "5DRIVES_BULLISH_TP2" : "5DRIVES_BEARISH_TP2";
+   g_traded_pattern_key = pattern.key;
    return true;
   }
 
@@ -211,16 +342,25 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no break-even, trailing, partial close, or scale logic.
+   // Card specifies no break-even, trailing, partial close, or pyramiding.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
+   if(strategy_time_exit_bars <= 0)
+      return false;
+
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return false;
+
+   const int seconds_per_bar = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
+   if(seconds_per_bar <= 0)
+      return false;
+   const datetime now = TimeCurrent();
+   const long max_seconds = (long)strategy_time_exit_bars * seconds_per_bar;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -231,23 +371,8 @@ bool Strategy_ExitSignal()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-
-      const datetime opened_at = (datetime)PositionGetInteger(POSITION_TIME);
-      const int hold_seconds = PeriodSeconds(strategy_signal_tf) * strategy_max_hold_bars;
-      if(opened_at > 0 && hold_seconds > 0 && TimeCurrent() - opened_at >= hold_seconds)
-         return true;
-
-      const double macd_main_1 = QM_MACD_Main(_Symbol, strategy_signal_tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-      const double macd_sig_1  = QM_MACD_Signal(_Symbol, strategy_signal_tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-      const double macd_main_2 = QM_MACD_Main(_Symbol, strategy_signal_tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
-      const double macd_sig_2  = QM_MACD_Signal(_Symbol, strategy_signal_tf, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
-      const double hist_1 = macd_main_1 - macd_sig_1;
-      const double hist_2 = macd_main_2 - macd_sig_2;
-      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-
-      if(pos_type == POSITION_TYPE_BUY && hist_2 > 0.0 && hist_1 < 0.0)
-         return true;
-      if(pos_type == POSITION_TYPE_SELL && hist_2 < 0.0 && hist_1 > 0.0)
+      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
+      if(opened > 0 && (long)(now - opened) >= max_seconds)
          return true;
      }
 

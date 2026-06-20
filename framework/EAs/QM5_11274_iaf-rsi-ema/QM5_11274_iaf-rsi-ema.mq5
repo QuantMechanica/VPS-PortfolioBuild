@@ -35,9 +35,10 @@ input int    strategy_ema_lookback      = 10;
 input int    strategy_rsi_period        = 14;
 input double strategy_rsi_oversold      = 30.0;
 input double strategy_rsi_overbought    = 70.0;
-input int    strategy_atr_period        = 14;
-input double strategy_sl_atr_mult       = 2.0;
-input double strategy_tp_rr             = 2.0;
+input double strategy_stop_loss_pct     = 5.0;
+input double strategy_trailing_tp_pct   = 10.0;
+input int    strategy_atr_fallback_period = 14;
+input double strategy_atr_fallback_mult = 2.0;
 
 bool Strategy_NoTradeFilter()
   {
@@ -71,26 +72,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!bullish_cross_recent)
       return false;
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false;
-
    const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    if(entry <= 0.0)
       return false;
 
-   const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr_value, strategy_sl_atr_mult);
+   double stop_distance = entry * (strategy_stop_loss_pct / 100.0);
+   double sl = QM_StopRulesStopFromDistance(_Symbol, QM_BUY, entry, stop_distance);
+   if(sl <= 0.0 || sl >= entry)
+     {
+      const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_fallback_period, 1);
+      if(atr_value <= 0.0)
+         return false;
+      sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr_value, strategy_atr_fallback_mult);
+     }
    if(sl <= 0.0)
-      return false;
-
-   const double tp = QM_TakeRR(_Symbol, QM_BUY, entry, sl, strategy_tp_rr);
-   if(tp <= 0.0)
       return false;
 
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = sl;
-   req.tp = tp;
+   req.tp = 0.0;
    req.reason = "iaf_rsi_ema_long";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
@@ -99,6 +100,42 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
   {
+   if(strategy_trailing_tp_pct <= 0.0)
+      return;
+
+   const int magic = QM_FrameworkMagic();
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(magic <= 0 || bid <= 0.0)
+      return;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if(PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) != POSITION_TYPE_BUY)
+         continue;
+
+      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double current_sl = PositionGetDouble(POSITION_SL);
+      const double trail_distance = open_price * (strategy_trailing_tp_pct / 100.0);
+      if(open_price <= 0.0 || trail_distance <= 0.0)
+         continue;
+      if((bid - open_price) < trail_distance)
+         continue;
+
+      const double new_sl = QM_StopRulesNormalizePrice(_Symbol, bid - trail_distance);
+      if(new_sl <= open_price)
+         continue;
+      if(current_sl > 0.0 && new_sl <= current_sl)
+         continue;
+
+      QM_TM_MoveSL(ticket, new_sl, "iaf_10pct_trailing_take_profit");
+     }
   }
 
 bool Strategy_ExitSignal()
