@@ -1,11 +1,11 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11524 ciurea-ema200-price-cross-m30 — EMA(200) price cross (M30)"
+#property description "QM5_11524 ciurea-ema200-price-cross-m30 - EMA(200) price cross (M30)"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11524 ciurea-ema200-price-cross-m30
+// QuantMechanica V5 EA - QM5_11524 ciurea-ema200-price-cross-m30
 // -----------------------------------------------------------------------------
 // Source: Cristina Ciurea, "The Truth Behind Commonly Used Indicators",
 //   ScientificForex.com, ~2012. Card:
@@ -14,7 +14,7 @@
 //
 // Mechanics (closed-bar reads at shift 1; M30; one position per magic):
 //   Trigger EVENT (LONG) : close[1] > EMA200[1]  AND  close[2] <= EMA200[2]
-//                          (price just closed above the EMA200 — a single
+//                          (price just closed above the EMA200 - a single
 //                          fresh cross EVENT; the prior-bar side is a STATE,
 //                          not a second cross, so no two-cross zero-trade trap).
 //   Trigger EVENT (SHORT): close[1] < EMA200[1]  AND  close[2] >= EMA200[2].
@@ -103,47 +103,34 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   // --- EMA(200) on the two most recent closed bars (shift 1 and 2) ---
-   const double ema1 = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
-   const double ema2 = QM_EMA(_Symbol, _Period, strategy_ema_period, 2);
-   if(ema1 <= 0.0 || ema2 <= 0.0)
+   // --- EMA(200) price side on the two most recent closed bars. ---
+   const int side1 = QM_Sig_Price_Above_MA(_Symbol, _Period, strategy_ema_period, 0.0, 1);
+   const int side2 = QM_Sig_Price_Above_MA(_Symbol, _Period, strategy_ema_period, 0.0, 2);
+   if(side1 == 0)
       return false;
 
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0 || close2 <= 0.0)
-      return false;
-
-   // --- Single cross EVENT: price closed across the EMA200 on bar 1. The
-   //     prior-bar side (close2 vs ema2) is a STATE, not a second cross. ---
-   const bool cross_up   = (close1 > ema1 && close2 <= ema2);
-   const bool cross_down = (close1 < ema1 && close2 >= ema2);
+   // --- Single cross EVENT: price closed across the EMA200 on bar 1. ---
+   const bool cross_up   = (side1 > 0 && side2 <= 0);
+   const bool cross_down = (side1 < 0 && side2 >= 0);
    if(!cross_up && !cross_down)
       return false;
 
    const QM_OrderType side = cross_up ? QM_BUY : QM_SELL;
-
-   // --- 3-bar extreme for the structural stop (closed bars 1..lookback). ---
-   const int lookback = (strategy_sl_lookback_bars > 0) ? strategy_sl_lookback_bars : 3;
-   // perf-allowed: bespoke structural extreme over a tiny fixed window (3 bars),
-   // gated to one evaluation per closed bar by the framework new-bar gate.
-   const int lo_idx = iLowest(_Symbol, _Period, MODE_LOW, lookback, 1);
-   const int hi_idx = iHighest(_Symbol, _Period, MODE_HIGH, lookback, 1);
-   if(lo_idx < 0 || hi_idx < 0)
-      return false;
-   const double extreme_low  = iLow(_Symbol, _Period, lo_idx);
-   const double extreme_high = iHigh(_Symbol, _Period, hi_idx);
-   if(extreme_low <= 0.0 || extreme_high <= 0.0)
-      return false;
 
    const double entry = (side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
                                          : SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(entry <= 0.0)
       return false;
 
+   // --- 3-bar extreme for the structural stop (closed bars 1..lookback). ---
+   const int lookback = (strategy_sl_lookback_bars > 0) ? strategy_sl_lookback_bars : 3;
+   const double structure_stop = QM_StopStructure(_Symbol, side, entry, lookback);
+   if(structure_stop <= 0.0)
+      return false;
+
    // SL = extreme +/- buffer pips beyond it (scale-correct pip conversion).
    const double buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_buffer_pips);
-   double sl = (side == QM_BUY) ? (extreme_low - buffer) : (extreme_high + buffer);
+   double sl = (side == QM_BUY) ? (structure_stop - buffer) : (structure_stop + buffer);
    sl = QM_StopRulesNormalizePrice(_Symbol, sl);
    if(sl <= 0.0)
       return false;
@@ -174,6 +161,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = cross_up ? "ema200_cross_up" : "ema200_cross_down";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
