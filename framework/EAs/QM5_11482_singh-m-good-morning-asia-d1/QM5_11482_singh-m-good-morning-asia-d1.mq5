@@ -208,21 +208,12 @@ void Strategy_ManageOpenPosition()
   {
   }
 
-// Time stop: close the position once it survives into a NEW D1 bar (it did not
-// hit TP or SL within ~24h). The entry was placed at a D1 bar open, so any open
-// position whose entry time precedes the current D1 bar's open time has lived a
-// full bar. iTime(...,0) is a single structural read (perf-allowed), NOT a per-EA
-// new-bar gate — the framework's QM_IsNewBar drives bar cadence.
+// Time stop: called only after OnTick latches a NEW D1 bar with QM_IsNewBar().
+// Any still-open position for this magic has survived the prior D1 bar without
+// hitting TP or SL, so close it at the new bar open.
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   if(QM_TM_OpenPositionCount(magic) <= 0)
-      return false;
-
-   const datetime cur_bar_open = iTime(_Symbol, _Period, 0); // perf-allowed: structural time read
-   if(cur_bar_open <= 0)
-      return false;
-
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -230,10 +221,7 @@ bool Strategy_ExitSignal()
          continue;
       if(PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      // Position opened on an earlier D1 bar -> a full bar has elapsed -> time stop.
-      if(open_time < cur_bar_open)
-         return true;
+      return true;
      }
    return false;
   }
@@ -299,9 +287,11 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   const bool new_bar = QM_IsNewBar();
+
    Strategy_ManageOpenPosition();
 
-   if(Strategy_ExitSignal())
+   if(new_bar && Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
       for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -315,7 +305,7 @@ void OnTick()
         }
      }
 
-   if(!QM_IsNewBar())
+   if(!new_bar)
       return;
 
    QM_EquityStreamOnNewBar();

@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11730 Carter M5 Strategy 19 PSAR MACD EMA100"
+#property description "QM5_9403 Williams Pro-Go Composite Cross H4"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11730;
+input int    qm_ea_id                   = 9403;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,23 +73,102 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input double strategy_psar_step         = 0.01;
-input double strategy_psar_maximum      = 0.01;
-input int    strategy_ema_period        = 100;
-input int    strategy_macd_fast         = 64;
-input int    strategy_macd_slow         = 128;
-input int    strategy_macd_signal       = 9;
-input int    strategy_sl_buffer_pips    = 3;
-input int    strategy_tp_pips           = 10;
+input int    strategy_pro_period             = 14;
+input int    strategy_sma_period             = 50;
+input int    strategy_atr_period             = 14;
+input double strategy_max_extension_atr      = 1.5;
+input double strategy_sl_atr_mult            = 1.0;
+input double strategy_tp_atr_mult            = 2.0;
+input int    strategy_time_stop_bars         = 30;
+input int    strategy_weekly_open_skip_hours = 4;
+input double strategy_spread_atr_mult        = 0.20;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
+bool Strategy_ProSum(const int shift, double &pro_sum)
+  {
+   pro_sum = 0.0;
+   if(strategy_pro_period < 1)
+      return false;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, false);
+   // perf-allowed: Williams Pro is a bespoke closed-OHLC sum; EntrySignal is framework-new-bar gated,
+   // and ExitSignal calls it only while this EA has an open position.
+   const int copied = CopyRates(_Symbol, PERIOD_H4, shift, strategy_pro_period, rates);
+   if(copied != strategy_pro_period)
+      return false;
+
+   for(int i = 0; i < copied; ++i)
+      pro_sum += (rates[i].close - rates[i].open);
+
+   return true;
+  }
+
+bool Strategy_ClosedBar(const int shift, MqlRates &bar)
+  {
+   MqlRates rates[];
+   ArraySetAsSeries(rates, false);
+   // perf-allowed: single closed H4 OHLC bar for the card's close-anchored SL/TP.
+   if(CopyRates(_Symbol, PERIOD_H4, shift, 1, rates) != 1)
+      return false;
+   bar = rates[0];
+   return true;
+  }
+
+int Strategy_PositionDirection(datetime &opened_at)
+  {
+   opened_at = 0;
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return 0;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      opened_at = (datetime)PositionGetInteger(POSITION_TIME);
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(ptype == POSITION_TYPE_BUY)
+         return 1;
+      if(ptype == POSITION_TYPE_SELL)
+         return -1;
+     }
+
+   return 0;
+  }
+
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   if(_Period != PERIOD_H4)
+      return true;
+
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   if(dt.day_of_week == 0)
+      return true;
+   if(dt.day_of_week == 1 && dt.hour < strategy_weekly_open_skip_hours)
+      return true;
+
+   const double atr = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
+   if(atr <= 0.0 || strategy_spread_atr_mult <= 0.0)
+      return false;
+
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(ask > 0.0 && bid > 0.0 && ask > bid && (ask - bid) > (strategy_spread_atr_mult * atr))
+      return true;
+
    return false;
   }
 
@@ -106,65 +185,52 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_psar_step <= 0.0 || strategy_psar_maximum <= 0.0 ||
-      strategy_ema_period <= 0 || strategy_macd_fast <= 0 ||
-      strategy_macd_slow <= strategy_macd_fast || strategy_macd_signal <= 0 ||
-      strategy_sl_buffer_pips <= 0 || strategy_tp_pips <= 0)
+   if(strategy_pro_period < 1 ||
+      strategy_sma_period < 1 ||
+      strategy_atr_period < 1 ||
+      strategy_sl_atr_mult <= 0.0 ||
+      strategy_tp_atr_mult <= 0.0 ||
+      strategy_max_extension_atr < 0.0)
       return false;
 
-   double close1_buf[1];
-   double close2_buf[1];
-   if(CopyClose(_Symbol, PERIOD_M5, 1, 1, close1_buf) != 1) // perf-allowed: closed-bar PSAR flip needs close[1].
-      return false;
-   if(CopyClose(_Symbol, PERIOD_M5, 2, 1, close2_buf) != 1) // perf-allowed: closed-bar PSAR flip needs close[2].
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   const double close1 = close1_buf[0];
-   const double close2 = close2_buf[0];
-   const double sar1 = QM_SAR(_Symbol, PERIOD_M5, strategy_psar_step, strategy_psar_maximum, 1);
-   const double sar2 = QM_SAR(_Symbol, PERIOD_M5, strategy_psar_step, strategy_psar_maximum, 2);
-   const double ema1 = QM_EMA(_Symbol, PERIOD_M5, strategy_ema_period, 1, PRICE_CLOSE);
-   const double macd1 = QM_MACD_Main(_Symbol, PERIOD_M5,
-                                     strategy_macd_fast,
-                                     strategy_macd_slow,
-                                     strategy_macd_signal,
-                                     1,
-                                     PRICE_CLOSE);
-   if(close1 <= 0.0 || close2 <= 0.0 || sar1 <= 0.0 || sar2 <= 0.0 || ema1 <= 0.0)
+   MqlRates signal_bar;
+   if(!Strategy_ClosedBar(1, signal_bar))
       return false;
 
-   const double sl_buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_buffer_pips);
-   if(sl_buffer <= 0.0)
+   double pro_now = 0.0;
+   double pro_prev = 0.0;
+   if(!Strategy_ProSum(1, pro_now) || !Strategy_ProSum(2, pro_prev))
       return false;
 
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
+   const double sma = QM_SMA(_Symbol, PERIOD_H4, strategy_sma_period, 1, PRICE_CLOSE);
+   const double atr = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
+   if(signal_bar.close <= 0.0 || sma <= 0.0 || atr <= 0.0)
       return false;
 
-   const bool psar_flip_up = (sar2 > close2 && sar1 < close1);
-   if(close1 > ema1 && psar_flip_up && macd1 > 0.0)
+   const double extension = MathAbs(signal_bar.close - sma);
+   if(extension > strategy_max_extension_atr * atr)
+      return false;
+
+   if(pro_now > 0.0 && pro_prev <= 0.0 && signal_bar.close > sma)
      {
       req.type = QM_BUY;
       req.price = 0.0;
-      req.sl = QM_StopRulesNormalizePrice(_Symbol, sar1 - sl_buffer);
-      req.tp = QM_TakeFixedPips(_Symbol, QM_BUY, ask, strategy_tp_pips);
-      req.reason = "PSAR_FLIP_UP_MACD_POS_EMA100";
-      if(req.sl <= 0.0 || req.tp <= 0.0 || req.sl >= ask)
-         return false;
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, signal_bar.close - (strategy_sl_atr_mult * atr));
+      req.tp = QM_StopRulesNormalizePrice(_Symbol, signal_bar.close + (strategy_tp_atr_mult * atr));
+      req.reason = "PRO_CROSS_LONG";
       return true;
      }
 
-   const bool psar_flip_down = (sar2 < close2 && sar1 > close1);
-   if(close1 < ema1 && psar_flip_down && macd1 < 0.0)
+   if(pro_now < 0.0 && pro_prev >= 0.0 && signal_bar.close < sma)
      {
       req.type = QM_SELL;
       req.price = 0.0;
-      req.sl = QM_StopRulesNormalizePrice(_Symbol, sar1 + sl_buffer);
-      req.tp = QM_TakeFixedPips(_Symbol, QM_SELL, bid, strategy_tp_pips);
-      req.reason = "PSAR_FLIP_DOWN_MACD_NEG_EMA100";
-      if(req.sl <= 0.0 || req.tp <= 0.0 || req.sl <= bid)
-         return false;
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, signal_bar.close + (strategy_sl_atr_mult * atr));
+      req.tp = QM_StopRulesNormalizePrice(_Symbol, signal_bar.close - (strategy_tp_atr_mult * atr));
+      req.reason = "PRO_CROSS_SHORT";
       return true;
      }
 
@@ -175,56 +241,33 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
+   // Card specifies no trailing, partial close, break-even, or scale-in logic.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const int magic = QM_FrameworkMagic();
-   bool have_long = false;
-   bool have_short = false;
+   datetime opened_at = 0;
+   const int direction = Strategy_PositionDirection(opened_at);
+   if(direction == 0)
+      return false;
 
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   double pro_now = 0.0;
+   if(Strategy_ProSum(1, pro_now))
      {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(ptype == POSITION_TYPE_BUY)
-         have_long = true;
-      if(ptype == POSITION_TYPE_SELL)
-         have_short = true;
+      if(direction > 0 && pro_now < 0.0)
+         return true;
+      if(direction < 0 && pro_now > 0.0)
+         return true;
      }
 
-   if(!have_long && !have_short)
-      return false;
-
-   double close1_buf[1];
-   double close2_buf[1];
-   if(CopyClose(_Symbol, PERIOD_M5, 1, 1, close1_buf) != 1) // perf-allowed: opposite PSAR flip exit needs close[1].
-      return false;
-   if(CopyClose(_Symbol, PERIOD_M5, 2, 1, close2_buf) != 1) // perf-allowed: opposite PSAR flip exit needs close[2].
-      return false;
-
-   const double close1 = close1_buf[0];
-   const double close2 = close2_buf[0];
-   const double sar1 = QM_SAR(_Symbol, PERIOD_M5, strategy_psar_step, strategy_psar_maximum, 1);
-   const double sar2 = QM_SAR(_Symbol, PERIOD_M5, strategy_psar_step, strategy_psar_maximum, 2);
-   if(close1 <= 0.0 || close2 <= 0.0 || sar1 <= 0.0 || sar2 <= 0.0)
-      return false;
-
-   const bool psar_flip_up = (sar2 > close2 && sar1 < close1);
-   const bool psar_flip_down = (sar2 < close2 && sar1 > close1);
-   if(have_long && psar_flip_down)
-      return true;
-   if(have_short && psar_flip_up)
-      return true;
+   const int h4_seconds = PeriodSeconds(PERIOD_H4);
+   if(opened_at > 0 && h4_seconds > 0 && strategy_time_stop_bars > 0)
+     {
+      if((TimeCurrent() - opened_at) >= (long)strategy_time_stop_bars * h4_seconds)
+         return true;
+     }
 
    return false;
   }
