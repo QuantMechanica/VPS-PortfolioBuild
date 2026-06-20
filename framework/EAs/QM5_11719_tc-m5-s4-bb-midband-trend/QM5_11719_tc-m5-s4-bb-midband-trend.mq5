@@ -33,9 +33,8 @@
 //           opposite band (lower for LONG / upper for SHORT) captured at entry.
 //   Target: factory default fixed 15 pips. Optional card variant uses the
 //           same-direction outer band (upper for LONG / lower for SHORT).
-//   Spread guard : optional, skip only a genuinely wide spread (fail-open on
-//                  .DWX zero modeled spread). Disabled by default because the
-//                  card does not specify a spread filter.
+//   Filters: none specified by the card. Framework news, kill-switch, and
+//            Friday close guards remain active.
 //
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything else
 // is framework wiring and MUST stay intact.
@@ -69,47 +68,20 @@ input group "Strategy"
 input int    strategy_bb_period         = 20;     // Bollinger period (sweep 14/20/25)
 input double strategy_bb_deviation      = 2.0;    // Bollinger deviation
 input int    strategy_slope_lookback    = 5;      // bars back for band slope (card: [0] vs [5])
-input double strategy_slope_min_pips    = 0.0;    // optional min band slope magnitude, in pips
 input bool   strategy_require_candle    = true;   // require bullish/bearish trigger candle close
 input bool   strategy_use_band_sl       = false;  // false = factory fixed 15-pip SL
-input double strategy_sl_fixed_pips     = 15.0;   // fixed SL distance in pips (card factory default)
+input int    strategy_sl_fixed_pips     = 15;     // fixed SL distance in pips (card factory default)
 input bool   strategy_use_band_tp       = false;  // false = factory fixed 15-pip TP
-input double strategy_tp_fixed_pips     = 15.0;   // fixed-pip TP distance (card default 15)
-input bool   strategy_no_friday_entry   = false;  // optional reviewer toggle; framework still handles Friday close
-input double strategy_spread_max_pips    = 0.0;   // optional max spread; 0 disables
+input int    strategy_tp_fixed_pips     = 15;     // fixed-pip TP distance (card default 15)
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. No-Friday-entry + spread guard only; the band /
-// slope / pullback work lives in Strategy_EntrySignal on the closed-bar path.
-// Fail-open on .DWX zero modeled spread.
+// No strategy-specific no-trade filter is specified by the card. Framework
+// kill-switch, news, and Friday-close gates remain active.
 bool Strategy_NoTradeFilter()
   {
-   // No-Friday-entry filter. Friday = day-of-week 5 in broker time.
-   if(strategy_no_friday_entry)
-     {
-      MqlDateTime dt;
-      TimeToStruct(TimeCurrent(), dt);
-      if(dt.day_of_week == 5)
-         return true;
-     }
-
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   if(strategy_spread_max_pips > 0.0)
-     {
-      // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-      const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathCeil(strategy_spread_max_pips));
-      const double spread     = ask - bid;
-      if(spread_cap > 0.0 && spread > 0.0 && spread > spread_cap)
-         return true;
-     }
-
    return false;
   }
 
@@ -134,27 +106,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(upper_ref <= 0.0 || lower_ref <= 0.0)
       return false;
 
-   double slope_min_dist = 0.0;
-   if(strategy_slope_min_pips > 0.0)
-      slope_min_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathCeil(strategy_slope_min_pips));
-
-   // Closed bar[1] OHLC for the touch-and-resume event (perf-allowed: single
-   // closed-bar reads, no loops).
-   const double open1  = iOpen(_Symbol, _Period, 1);   // perf-allowed
-   const double low1   = iLow(_Symbol, _Period, 1);    // perf-allowed
-   const double high1  = iHigh(_Symbol, _Period, 1);   // perf-allowed
-   const double close1 = iClose(_Symbol, _Period, 1);  // perf-allowed
+   // Closed bar[1] OHLC for the touch-and-resume event. Strategy_EntrySignal
+   // is called only after the framework QM_IsNewBar() gate, so this is one
+   // single-bar read per closed bar, not a per-tick history scan.
+   MqlRates bar[1];
+   if(CopyRates(_Symbol, _Period, 1, 1, bar) != 1) // perf-allowed
+      return false;
+   const double open1  = bar[0].open;
+   const double low1   = bar[0].low;
+   const double high1  = bar[0].high;
+   const double close1 = bar[0].close;
    if(open1 <= 0.0 || low1 <= 0.0 || high1 <= 0.0 || close1 <= 0.0)
       return false;
 
-   const double sl_fixed_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathCeil(strategy_sl_fixed_pips));
-   const double tp_fixed_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathCeil(strategy_tp_fixed_pips));
+   const double sl_fixed_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_fixed_pips);
+   const double tp_fixed_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_tp_fixed_pips);
    if(sl_fixed_dist <= 0.0 || tp_fixed_dist <= 0.0)
       return false;
 
    // --- LONG: both bands rising + bar touched mid from above, closed back above ---
-   const bool slope_up = ((upper1 - upper_ref) >= slope_min_dist) &&
-                         ((lower1 - lower_ref) >= slope_min_dist);
+   const bool slope_up = (upper1 > upper_ref) && (lower1 > lower_ref);
    bool long_event = (low1 <= mid1 && close1 > mid1);
    if(strategy_require_candle)
       long_event = long_event && (close1 > open1);
@@ -187,8 +158,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    // --- SHORT: both bands falling + bar touched mid from below, closed back below ---
-   const bool slope_down = ((upper_ref - upper1) >= slope_min_dist) &&
-                           ((lower_ref - lower1) >= slope_min_dist);
+   const bool slope_down = (upper1 < upper_ref) && (lower1 < lower_ref);
    bool short_event = (high1 >= mid1 && close1 < mid1);
    if(strategy_require_candle)
       short_event = short_event && (close1 < open1);

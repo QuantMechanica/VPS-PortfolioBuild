@@ -12,10 +12,9 @@
 //
 // Mechanics (long AND short, closed-bar reads at shift >= 1, D1):
 //   Per completed daily bar, forecast the prior open-close move scaled by
-//   return-volatility:
-//       raw       = close[s] - open[s]                  (prior CLOSED bar)
-//       vol       = ATR(atr_period) at the same shift    (return-vol proxy)
-//       forecast  = forecast_scalar * raw / vol          (normalized, PyTF-style)
+//   return-volatility and normalized using the source norm_forecast convention:
+//       raw       = (close[s] - open[s]) / ATR[s]        (prior CLOSED bar)
+//       forecast  = raw * 10 / trailing_abs_mean(raw)    (clipped to +/-20)
 //
 //   The (close - open) of a CLOSED daily bar is a pure bar feature derived from
 //   the bar timestamp/data - NOT a wall-clock open/close. No intraday timing.
@@ -59,7 +58,8 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_atr_period        = 14;     // return-volatility / stop ATR period
-input double strategy_forecast_scalar   = 4.0;    // fixed no-lookahead norm_forecast scale
+input int    strategy_norm_lookback     = 40;     // trailing abs-mean window for norm_forecast
+input int    strategy_min_norm_samples  = 20;     // minimum samples before a normalized forecast is valid
 input double strategy_entry_threshold   = 5.0;    // |forecast| cross level for entry (card +/-5)
 input double strategy_exit_level        = 0.0;    // forecast level for the mean-revert exit (card: 0)
 input int    strategy_max_hold_bars     = 5;      // time-stop in completed daily bars (card: 5)
@@ -70,18 +70,73 @@ input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of 
 // Helpers
 // -----------------------------------------------------------------------------
 
-// Normalized open-close forecast for the CLOSED bar at `shift` (shift >= 1).
-// Returns 0.0 when data/ATR are not yet available (treated as "no signal").
+double ClampForecast(const double value)
+  {
+   if(value > 20.0)
+      return 20.0;
+   if(value < -20.0)
+      return -20.0;
+   return value;
+  }
+
+// Raw open-close forecast for a CLOSED D1 bar. CopyRates is used because the
+// V5 indicator helpers expose indicators, not raw daily open/close fields.
+bool RawForecastFromRates(MqlRates &rates[], const int copied, const int shift, double &out_raw)
+  {
+   out_raw = 0.0;
+   if(shift < 1 || shift >= copied)
+      return false;
+
+   const double open_s = rates[shift].open;
+   const double close_s = rates[shift].close;
+   if(open_s <= 0.0 || close_s <= 0.0)
+      return false;
+
+   const double atr_s = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, shift);
+   if(atr_s <= 0.0)
+      return false;
+
+   out_raw = (close_s - open_s) / atr_s;
+   return true;
+  }
+
+// Source norm_forecast: scale so mean absolute forecast is 10, then clip
+// to +/-20. This build uses only trailing closed bars to avoid source lookahead.
 double ForecastAt(const int shift)
   {
-   const double open_s  = iOpen(_Symbol,  _Period, shift); // perf-allowed: closed-bar feature
-   const double close_s = iClose(_Symbol, _Period, shift); // perf-allowed: closed-bar feature
-   if(open_s <= 0.0 || close_s <= 0.0)
+   const int norm_lookback = MathMax(strategy_norm_lookback, strategy_min_norm_samples);
+   const int needed = shift + norm_lookback + 2;
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   // perf-allowed: bounded D1 OHLC window required by open_close() source rule.
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 0, needed, rates);
+   if(copied <= shift + strategy_min_norm_samples)
       return 0.0;
-   const double atr_s = QM_ATR(_Symbol, _Period, strategy_atr_period, shift);
-   if(atr_s <= 0.0)
+
+   double raw_now = 0.0;
+   if(!RawForecastFromRates(rates, copied, shift, raw_now))
       return 0.0;
-   return strategy_forecast_scalar * (close_s - open_s) / atr_s;
+
+   double abs_sum = 0.0;
+   int samples = 0;
+   const int last_shift = MathMin(copied - 1, shift + strategy_norm_lookback - 1);
+   for(int s = shift; s <= last_shift; ++s)
+     {
+      double raw_s = 0.0;
+      if(!RawForecastFromRates(rates, copied, s, raw_s))
+         continue;
+      abs_sum += MathAbs(raw_s);
+      samples++;
+     }
+
+   if(samples < strategy_min_norm_samples || abs_sum <= 0.0)
+      return 0.0;
+
+   const double abs_mean = abs_sum / (double)samples;
+   if(abs_mean <= 0.0)
+      return 0.0;
+
+   return ClampForecast(raw_now * 10.0 / abs_mean);
   }
 
 // Completed daily bars elapsed since the open position was filled. Derived from
@@ -89,19 +144,23 @@ double ForecastAt(const int shift)
 // arithmetic in broker time, never a fixed wall-clock rule.
 int BarsHeld(const datetime position_open_time)
   {
-   // Count CLOSED bars (shift 1..N) whose bar-open time is at or after the
-   // entry bar's open. The card exits after 5 bars, so scanning a small bounded
-   // horizon covers all valid time-stop settings without a per-tick history walk.
    const int max_scan = MathMax(strategy_max_hold_bars + 2, 10);
-   for(int s = 1; s <= max_scan; ++s)
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   // perf-allowed: small bounded D1 window for 5-bar time stop accounting.
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 0, max_scan + 2, rates);
+   if(copied <= 1)
+      return 0;
+
+   const int seconds = PeriodSeconds(PERIOD_D1);
+   int held = 0;
+   for(int s = 1; s < copied; ++s)
      {
-      const datetime bt = iTime(_Symbol, _Period, s); // perf-allowed: bar-open timestamp
-      if(bt == 0)
-         return s - 1;          // ran out of history
-      if(bt < position_open_time)
-         return s - 1;          // older than the entry bar - stop counting
+      const datetime close_time = rates[s].time + seconds;
+      if(close_time > position_open_time)
+         held++;
      }
-   return max_scan;
+   return held;
   }
 
 // -----------------------------------------------------------------------------
@@ -229,8 +288,21 @@ bool Strategy_ExitSignal()
       if(BarsHeld(open_time) >= strategy_max_hold_bars)
          return true;
 
+      double f_now = 0.0;
+      if(strategy_exit_level == 0.0)
+        {
+         MqlRates rates[];
+         ArraySetAsSeries(rates, true);
+         const int copied = CopyRates(_Symbol, PERIOD_D1, 0, 3, rates);
+         if(copied <= 2 || !RawForecastFromRates(rates, copied, 1, f_now))
+            return false;
+        }
+      else
+        {
+         f_now = ForecastAt(1);
+        }
+
       // Forecast-revert exit on the last closed bar.
-      const double f_now = ForecastAt(1);
       if(pos_type == POSITION_TYPE_BUY)
         {
          if(f_now <= strategy_exit_level)

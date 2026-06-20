@@ -21,14 +21,11 @@ The EA trades a Bollinger Band trend-continuation pullback on M5. A long setup r
 | `strategy_bb_period` | 20 | >= 2 | Bollinger Band lookback period. |
 | `strategy_bb_deviation` | 2.0 | > 0 | Bollinger Band standard-deviation multiplier. |
 | `strategy_slope_lookback` | 5 | >= 1 | Closed-bar distance used for the BB slope test. |
-| `strategy_slope_min_pips` | 0.0 | >= 0 | Optional minimum BB slope distance; 0 means card literal greater-than test. |
 | `strategy_require_candle` | true | true/false | Require bullish long candle or bearish short candle. |
 | `strategy_use_band_sl` | false | true/false | Use dynamic opposite-band SL instead of fixed factory SL. |
-| `strategy_sl_fixed_pips` | 15.0 | > 0 | Fixed SL distance in pips. |
+| `strategy_sl_fixed_pips` | 15 | > 0 | Fixed SL distance in pips. |
 | `strategy_use_band_tp` | false | true/false | Use dynamic outer-band TP instead of fixed factory TP. |
-| `strategy_tp_fixed_pips` | 15.0 | > 0 | Fixed TP distance in pips. |
-| `strategy_no_friday_entry` | false | true/false | Optional no-new-entry Friday filter; framework Friday close remains active. |
-| `strategy_spread_max_pips` | 0.0 | >= 0 | Optional max spread in pips; 0 disables the strategy spread guard. |
+| `strategy_tp_fixed_pips` | 15 | > 0 | Fixed TP distance in pips. |
 
 ---
 

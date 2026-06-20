@@ -10,12 +10,12 @@
 
 ## 1. Strategy Logic
 
-On each completed daily (D1) bar the EA forecasts the prior open-close move,
-scaled by return volatility: `forecast = forecast_scalar * (close - open) / ATR(atr_period)`,
-read from prior closed bars only (shift >= 1). The source `norm_forecast`
-normalizes with in-sample lookahead, so this build uses a fixed no-lookahead
-scaling input while preserving the card's threshold crossing rule. The EA goes
-long at the next bar when the normalized forecast crosses above `+entry_threshold`
+On each completed daily (D1) bar the EA forecasts the prior open-close move
+scaled by return volatility: `raw = (close - open) / ATR(atr_period)`, read
+from prior closed bars only (shift >= 1). The source `norm_forecast` scales
+forecasts to absolute mean 10 and clips them to +/-20; this build applies that
+normalization with a trailing closed-bar absolute-mean window to avoid source
+lookahead. The EA goes long at the next bar when the normalized forecast crosses above `+entry_threshold`
 (default +5) and short when it crosses below `-entry_threshold` (default -5);
 only one fresh threshold cross per bar triggers. It exits when the forecast
 reverts through `exit_level` (0), or after `max_hold_bars` completed daily bars,
@@ -29,7 +29,8 @@ each position. One position per symbol/magic.
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
 | `strategy_atr_period` | 14 | 5-50 | ATR period used as return-volatility proxy and stop basis |
-| `strategy_forecast_scalar` | 4.0 | 1.0-20.0 | Fixed no-lookahead scale approximating PyTrendFollow `norm_forecast` |
+| `strategy_norm_lookback` | 40 | 20-252 | Trailing closed-bar abs-mean window for source-style `norm_forecast` |
+| `strategy_min_norm_samples` | 20 | 10-252 | Minimum valid raw forecasts before normalized forecast is tradable |
 | `strategy_entry_threshold` | 5.0 | 2.0-15.0 | `\|forecast\|` cross level that fires an entry (card +/-5) |
 | `strategy_exit_level` | 0.0 | 0.0-3.0 | Forecast level for the mean-revert exit (card: 0) |
 | `strategy_max_hold_bars` | 5 | 1-30 | Time-stop in completed daily bars (card: 5) |
