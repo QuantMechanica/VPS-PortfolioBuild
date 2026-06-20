@@ -11262,8 +11262,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11527,ciurea-engulfing-m30,1,GBPUSD.DWX,115270001,2026-06-18,Claude,reserved
 11528,ciurea-inv-hammer-shooting-star-m30,0,EURUSD.DWX,115280000,2026-06-20,Development,active
 11528,ciurea-inv-hammer-shooting-star-m30,1,GBPUSD.DWX,115280001,2026-06-20,Development,active
-11529,ciurea-hammer-hanging-man-m15,0,EURUSD.DWX,115290000,2026-06-18,Claude,reserved
-11529,ciurea-hammer-hanging-man-m15,1,GBPUSD.DWX,115290001,2026-06-18,Claude,reserved
+11529,ciurea-hammer-hanging-man-m15,0,EURUSD.DWX,115290000,2026-06-18,Development,active
+11529,ciurea-hammer-hanging-man-m15,1,GBPUSD.DWX,115290001,2026-06-18,Development,active
 11530,carter-t-h1-sma9-100-cross,0,GBPUSD.DWX,115300000,2026-06-18,Claude,reserved
 11534,carter-t-h1-bb20-ema3-macd617-rsi14,0,EURUSD.DWX,115340000,2026-06-18,Claude,reserved
 11534,carter-t-h1-bb20-ema3-macd617-rsi14,1,GBPUSD.DWX,115340001,2026-06-18,Claude,reserved
@@ -11293,7 +11293,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11552,carter-t-m5-ema5-10-mtf4h-rsi-stoch-macd,0,EURUSD.DWX,115520000,2026-06-18,Claude,reserved
 11553,carter-t-m5-cci14-macd1269,0,EURUSD.DWX,115530000,2026-06-18,Development,active
 11553,carter-t-m5-cci14-macd1269,1,GBPUSD.DWX,115530001,2026-06-18,Development,active
-11557,carter-t-m5-ema20-macd-buystop-partial,0,EURUSD.DWX,115570000,2026-06-18,Claude,reserved
+11557,carter-t-m5-ema20-macd-buystop-partial,0,EURUSD.DWX,115570000,2026-06-20,Development,active
 11558,carter-t-m5-psar-macd64128-ema100,0,EURUSD.DWX,115580000,2026-06-18,Claude,reserved
 11558,carter-t-m5-psar-macd64128-ema100,1,GBPUSD.DWX,115580001,2026-06-18,Claude,reserved
 11558,carter-t-m5-psar-macd64128-ema100,2,AUDUSD.DWX,115580002,2026-06-18,Claude,reserved

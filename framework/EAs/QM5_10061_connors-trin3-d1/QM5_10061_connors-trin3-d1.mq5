@@ -168,6 +168,16 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   string warmup_symbols[];
+   ArrayResize(warmup_symbols, 2);
+   warmup_symbols[0] = _Symbol;
+   warmup_symbols[1] = strategy_trin_symbol;
+   QM_SymbolGuardInit(warmup_symbols);
+   QM_BasketWarmupHistory(warmup_symbols,
+                          strategy_signal_tf,
+                          MathMax(strategy_regime_sma_period + strategy_atr_period + 10,
+                                  strategy_trin_days + 10));
+
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10061_connors_trin3_d1\"}");
    return INIT_SUCCEEDED;
   }
