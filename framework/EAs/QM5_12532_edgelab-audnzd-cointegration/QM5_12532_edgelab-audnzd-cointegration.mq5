@@ -3,7 +3,6 @@
 #property description "QM5_12532 Edge Lab AUDUSD NZDUSD Cointegration"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_BasketOrder.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 12532;
@@ -234,7 +233,7 @@ double Strategy_NormalizedLotsForLeg(const string symbol, const double sl_points
 bool Strategy_BuildLegRequest(const string symbol,
                               const bool buy_leg,
                               const string reason,
-                              QM_BasketOrderRequest &req)
+                              QM_EntryRequest &req)
   {
    const QM_OrderType type = buy_leg ? QM_BUY : QM_SELL;
    const double entry = buy_leg ? SymbolInfoDouble(symbol, SYMBOL_ASK)
@@ -255,44 +254,26 @@ bool Strategy_BuildLegRequest(const string symbol,
    req.sl = buy_leg ? NormalizeDouble(entry - stop_dist, digits)
                     : NormalizeDouble(entry + stop_dist, digits);
    req.tp = 0.0;
-   req.lots = Strategy_NormalizedLotsForLeg(symbol, sl_points);
    req.reason = reason;
    req.symbol_slot = Strategy_SlotForSymbol(symbol);
    req.expiration_seconds = 0;
-   req.symbol = symbol;
-   return (req.lots > 0.0);
+   return (Strategy_NormalizedLotsForLeg(symbol, sl_points) > 0.0);
   }
 
-bool Strategy_OpenPair(const int spread_direction)
+bool Strategy_BuildCurrentLegRequest(const int spread_direction, QM_EntryRequest &req)
   {
    if(spread_direction == 0 || Strategy_OpenPairLegCount() > 0)
+      return false;
+   const int idx = Strategy_SymbolIndex(_Symbol);
+   if(idx < 0)
       return false;
 
    const bool buy_aud = (spread_direction > 0);
    const bool buy_nzd = !buy_aud;
+   const bool buy_leg = (idx == 0) ? buy_aud : buy_nzd;
    const string reason = (spread_direction > 0) ? "QM5_12532_LONG_SPREAD_Z_NEG"
                                                 : "QM5_12532_SHORT_SPREAD_Z_POS";
-
-   QM_BasketOrderRequest aud_req;
-   QM_BasketOrderRequest nzd_req;
-   if(!Strategy_BuildLegRequest(g_pair_symbols[0], buy_aud, reason, aud_req))
-      return false;
-   if(!Strategy_BuildLegRequest(g_pair_symbols[1], buy_nzd, reason, nzd_req))
-      return false;
-
-   ulong aud_ticket = 0;
-   if(!QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, aud_req, aud_ticket))
-      return false;
-
-   ulong nzd_ticket = 0;
-   if(!QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, nzd_req, nzd_ticket))
-     {
-      Strategy_ClosePair(QM_EXIT_STRATEGY);
-      return false;
-     }
-
-   g_pair_entry_time = TimeCurrent();
-   return true;
+   return Strategy_BuildLegRequest(_Symbol, buy_leg, reason, req);
   }
 
 // No Trade Filter (time, spread, news).
@@ -312,7 +293,7 @@ bool Strategy_NoTradeFilter()
       for(int i = 0; i < STRATEGY_SYMBOL_COUNT; ++i)
         {
          const long spread = SymbolInfoInteger(g_pair_symbols[i], SYMBOL_SPREAD);
-         if(spread <= 0 || spread > strategy_max_spread_points)
+         if(spread > strategy_max_spread_points)
             return true;
         }
      }
@@ -338,8 +319,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    else
       return false;
 
-   Strategy_OpenPair(spread_direction);
-   return false;
+   if(!Strategy_BuildCurrentLegRequest(spread_direction, req))
+      return false;
+
+   g_pair_entry_time = TimeCurrent();
+   return true;
   }
 
 // Trade Management.

@@ -1,23 +1,24 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        12532
-; ea_slug:      edgelab-audnzd-cointegration
+; ea_id:        11179
+; ea_slug:      ft001-ema-ha
 ; ea_version:   v5.0
-; set_version:  s20260610-001
-; symbol:       AUDUSD.DWX
-; timeframe:    D1
-; environment:  backtest
-; magic_slot:   0
+; set_version:  s20260620-stress-harsh
+; symbol:       XAUUSD.DWX
+; timeframe:    M5
+; environment:  q06_stress_harsh
+; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   6166ca8e7a011ec90d19479f094e367bdfd3c4a6d3ee7514be5710952171a8da
+; build_hash:   ca6cad24fe82bcff6fd215dc78770ec69358fc65052747089a9497f186f53a4b
 ; author:       Development
-; date:         2026-06-10
+; date:         2026-06-20
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
