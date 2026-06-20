@@ -4,26 +4,24 @@
 **Slug:** `nico-smi-vq-m15-eurjpy`
 **Source:** `5071d002-b640-5386-a182-9c7dd3551d60` (see `strategy-seeds/sources/5071d002-b640-5386-a182-9c7dd3551d60/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-20
 
 ---
 
 ## 1. Strategy Logic
 
-Multi-indicator confluence on M15 EURJPY. The trade trigger is a Stochastic
-Momentum Index (SMI) curl out of an extreme zone; three states must confirm.
+Multi-indicator confluence on M15 EURJPY. Long entries require SMI curling up
+from below `-40` or up from the zero-line zone, EMA(5) crossing above EMA(6), a
+white Heiken Ashi candle, rising VQ, and Stochastic %K crossing above 20 within
+the prior three closed bars. Short entries are the mirror: SMI curling down from
+above `+40`, EMA(5) crossing below EMA(6), a red Heiken Ashi candle, falling VQ,
+and Stochastic %K crossing below 80.
 
-Long: on a closed M15 bar, SMI must have been below `-smi_extreme` two bars ago
-and be turning up (`SMI[2] < -40 AND SMI[1] > SMI[2]`), AND EMA(5) > EMA(6), AND
-the Heiken-Ashi candle is white (`HA_Close > HA_Open`), AND the VQ (Volatility
-Quality) value is rising. Short is the mirror: SMI curling down out of the
-`+smi_extreme` zone with EMA(5) < EMA(6), a red Heiken-Ashi candle, and a falling
-VQ. Entries are only taken from `smi_session_start_h` (broker hour) onward. Stop
-is `sl_atr_mult × ATR(14)`; take-profit is `tp_rr ×` the stop distance. The SMI
-trigger is the single cross EVENT; EMA bias, HA color, VQ direction and session
-are STATES — this avoids the two-cross-same-bar zero-trade trap. SMI and VQ are
-not native MT5 indicators, so both are computed in-EA via recursive double-EMA /
-ATR-normalized accumulators, advanced once per closed bar and cached.
+The EA only considers entries from 07:00 GMT onward. It opens at market on the
+next bar, uses a 2xATR(14) stop, and uses the card's factory fixed 35-pip
+take-profit. SMI is implemented as a bounded Blau-style double-smoothed
+high/low-range oscillator; VQ is implemented as the card-authorized simplified
+ATR/range-normalized directional proxy.
 
 ---
 
@@ -37,12 +35,17 @@ ATR-normalized accumulators, advanced once per closed bar and cached.
 | `smi_extreme` | 40.0 | 20-60 | SMI extreme zone threshold (±) |
 | `ema_fast_period` | 5 | 2-20 | MA-crossover fast EMA |
 | `ema_slow_period` | 6 | 3-30 | MA-crossover slow EMA |
-| `vq_period` | 5 | 2-20 | VQ ATR-normalization / damping period |
+| `stoch_k_period` | 10 | 5-30 | Stochastic %K period |
+| `stoch_d_period` | 1 | 1-10 | Stochastic %D period |
+| `stoch_slowing` | 7 | 1-20 | Stochastic slowing |
+| `vq_length` | 5 | 2-20 | VQ range-normalization period |
+| `vq_smoothing` | 3 | 1-20 | VQ smoothing period |
+| `vq_filter_threshold` | 0.0 | 0-5 | Minimum absolute VQ proxy value |
 | `atr_period` | 14 | 5-30 | ATR period (stop sizing + VQ scaling) |
 | `sl_atr_mult` | 2.0 | 0.5-5 | Stop distance = mult × ATR |
-| `tp_rr` | 1.5 | 0.5-5 | Take-profit = tp_rr × stop distance |
-| `smi_session_start_h` | 7 | 0-23 | Earliest broker hour to take entries |
-| `spread_pct_of_stop` | 15.0 | 1-100 | Skip if spread > this % of stop distance |
+| `take_profit_pips` | 35 | 10-80 | Factory fixed take-profit in pips |
+| `session_start_gmt_hour` | 7 | 0-23 | Earliest GMT hour to take entries |
+| `max_spread_pips` | 8 | 1-50 | Skip only if modeled spread is wider than this |
 
 ---
 
@@ -105,4 +108,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v1 | 2026-06-20 | Initial build from card | b60df2bd-3168-4a22-a72a-87bad8c389ca |

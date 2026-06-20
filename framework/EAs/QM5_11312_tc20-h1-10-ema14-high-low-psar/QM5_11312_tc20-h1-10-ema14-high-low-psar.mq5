@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11312 tc20-h1-10-ema14-high-low-psar — EMA(14,High)/EMA(14,Low) channel + PSAR flip (H1)"
+#property description "QM5_11312 tc20-h1-10-ema14-high-low-psar - EMA(14,High)/EMA(14,Low) channel + PSAR (H1)"
 
 #include <QM/QM_Common.mqh>
 
@@ -18,18 +18,14 @@
 //                     SHORT state = close[1] < EMA14_low
 //   Direction STATE: Parabolic SAR(step, max) position relative to the candle.
 //                     bullish = SAR below close ; bearish = SAR above close.
-//   Trigger EVENT  : the PSAR FLIP is the single event. SAR was on the opposite
-//                    side on the prior closed bar (shift 2) and flipped on the
-//                    trigger bar (shift 1). The channel position is a STATE that
-//                    must already hold — NOT a second simultaneous event (per the
-//                    .DWX "don't require two events on one bar" invariant).
+//   Trigger        : closed-bar channel breakout with PSAR confirmation.
 //   Stop           : ATR(14) * sl_atr_mult  (card P2: ATR(14) x 1.5).
 //   Take profit    : fixed tp_pips (card: 60-100, P2 midpoint 80), pip-scaled
 //                    via QM_StopRulesPipsToPriceDistance (5-digit / JPY safe).
 //   Reverse exit   : close crosses back through the channel
 //                     (LONG closed if close[1] < EMA14_high ; inverse for SHORT).
-//   Spread guard   : skip only a genuinely wide spread > spread_pct_of_stop of
-//                    the stop distance; fail-open on .DWX zero modeled spread.
+//   Spread guard   : skip only a genuinely wide spread > spread_cap_pips;
+//                    fail-open on .DWX zero modeled spread.
 //
 // One position per magic. Only the 5 Strategy_* hooks + Strategy inputs are
 // EA-specific; everything else is framework wiring and MUST stay intact.
@@ -63,10 +59,10 @@ input group "Strategy"
 input int    strategy_ema_period         = 14;    // EMA period for the High/Low channel
 input double strategy_sar_step           = 0.02;  // Parabolic SAR acceleration step
 input double strategy_sar_max            = 0.2;   // Parabolic SAR maximum acceleration
-input double strategy_sl_atr_period      = 14;    // ATR period for the stop
+input int    strategy_sl_atr_period      = 14;    // ATR period for the stop
 input double strategy_sl_atr_mult        = 1.5;   // stop distance = mult * ATR (card P2)
 input int    strategy_tp_pips            = 80;    // fixed take-profit, pips (card 60-100)
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input int    strategy_spread_cap_pips    = 20;    // card spread cap
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -81,18 +77,13 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const int atr_p = (int)strategy_sl_atr_period;
-   const double atr_value = QM_ATR(_Symbol, _Period, atr_p, 1);
-   if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to the entry gate, do not block here
-
-   const double stop_distance = strategy_sl_atr_mult * atr_value;
-   if(stop_distance <= 0.0)
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(spread_cap <= 0.0)
       return false;
 
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread > spread_cap)
       return true;
 
    return false;
@@ -115,25 +106,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(close1 <= 0.0)
       return false;
 
-   // --- Direction STATE + FLIP EVENT: Parabolic SAR(step, max) ---
-   // Card literal: SAR below the candle (SAR < Low) => bullish ; SAR above the
-   // candle (SAR > High) => bearish. The FLIP (opposite side on shift 2, this
-   // side on shift 1) is the single trigger event. The channel breakout is a
-   // STATE that must already hold — never a second simultaneous event.
-   const double sar_now  = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 1);
-   const double sar_prev = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 2);
-   const double high1    = iHigh(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   const double low1     = iLow (_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   const double high2    = iHigh(_Symbol, _Period, 2); // perf-allowed: single closed-bar read
-   const double low2     = iLow (_Symbol, _Period, 2); // perf-allowed: single closed-bar read
-   if(sar_now <= 0.0 || sar_prev <= 0.0 ||
-      high1 <= 0.0 || low1 <= 0.0 || high2 <= 0.0 || low2 <= 0.0)
+   // --- Direction STATE: Parabolic SAR(step, max) ---
+   // Card literal: SAR below the candle (SAR < Low) => bullish; SAR above the
+   // candle (SAR > High) => bearish.
+   const double sar_now = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 1);
+   const double high1   = iHigh(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
+   const double low1    = iLow (_Symbol, _Period, 1); // perf-allowed: single closed-bar read
+   if(sar_now <= 0.0 || high1 <= 0.0 || low1 <= 0.0)
       return false;
 
-   const bool sar_flip_bull = (sar_prev > high2 && sar_now < low1);  // bearish -> bullish
-   const bool sar_flip_bear = (sar_prev < low2  && sar_now > high1); // bullish -> bearish
+   const bool sar_bull = (sar_now < low1);
+   const bool sar_bear = (sar_now > high1);
 
-   const double atr_value = QM_ATR(_Symbol, _Period, (int)strategy_sl_atr_period, 1);
+   const double atr_value = QM_ATR(_Symbol, _Period, strategy_sl_atr_period, 1);
    if(atr_value <= 0.0)
       return false;
 
@@ -141,8 +126,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(tp_distance <= 0.0)
       return false;
 
-   // --- LONG: bullish SAR flip while price is above the upper (High) EMA ---
-   if(sar_flip_bull && close1 > ema_high)
+   // --- LONG: close above upper (High) EMA while PSAR confirms bullish ---
+   if(sar_bull && close1 > ema_high)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
@@ -159,8 +144,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return true;
      }
 
-   // --- SHORT: bearish SAR flip while price is below the lower (Low) EMA ---
-   if(sar_flip_bear && close1 < ema_low)
+   // --- SHORT: close below lower (Low) EMA while PSAR confirms bearish ---
+   if(sar_bear && close1 < ema_low)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(entry <= 0.0)
