@@ -48,7 +48,7 @@ bool   g_signal_cache_ok = false;
 
 bool ReadCloseWindow(const int start_shift, const int count, double &values[])
   {
-   if(start_shift < 1 || count <= 1)
+   if(start_shift < 1 || count < 1)
       return false;
 
    ArrayResize(values, count);
