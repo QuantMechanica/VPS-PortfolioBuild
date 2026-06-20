@@ -15,19 +15,17 @@
 // Mechanics (closed-bar reads at shift 1; M5):
 //   TRIGGER EVENT  : EMA(ema_period) crosses the BB(bb_period, bb_dev) MIDDLE
 //                    band (= SMA(bb_period)). Up cross -> long bias, down cross
-//                    -> short bias. ONE fresh cross is the event (shift 2 -> 1),
-//                    OR a cross within the last `macd_lookback` closed bars so
-//                    EVENT + STATE need not coincide on a single bar (.DWX
-//                    invariant #4: two fresh events almost never share a bar).
+//                    -> short bias. The EMA/BB cross is the current closed-bar
+//                    event (shift 2 -> 1), exactly as stated in the card.
 //   STATE (filter) : MACD(macd_fast, macd_slow, macd_signal) main line is
 //                    "approaching or crossing zero" in the trade direction.
 //                    LONG  : macd<0 trending up (macd[1] > macd[2])  OR  a fresh
-//                            upward zero cross (macd[2] <= 0 < macd[1]).
+//                            upward zero cross within macd_lookback bars.
 //                    SHORT : mirror. MACD MAY be negative — no swap/sign reject.
 //   STOP / TAKE    : fixed sl_pips / tp_pips (default 12 each), pip-scale-correct
 //                    via QM_StopFixedPips / QM_TakeFixedPips (5-digit / JPY safe).
-//   Spread guard   : skip only a genuinely wide spread > spread_pct_of_stop of
-//                    the stop distance (fail-OPEN on .DWX zero modeled spread).
+//   Spread guard   : skip only a genuinely wide spread > max_spread_pips
+//                    (default 8 pips; fail-OPEN on .DWX zero modeled spread).
 //
 // One position per symbol/magic. Only the 5 Strategy_* hooks + Strategy inputs
 // are EA-specific; everything else is framework wiring and MUST stay intact.
@@ -64,16 +62,17 @@ input double strategy_bb_dev              = 3.0;   // Bollinger deviation (band 
 input int    strategy_macd_fast           = 12;    // MACD fast EMA
 input int    strategy_macd_slow           = 26;    // MACD slow EMA
 input int    strategy_macd_signal         = 9;     // MACD signal EMA
-input int    strategy_macd_lookback       = 3;     // bars to allow EMA/BB cross before the MACD state (P3: 0/1/3)
+input int    strategy_macd_lookback       = 3;     // bars to search for MACD zero-cross confirmation (P3: 0/1/3)
 input int    strategy_sl_pips             = 12;    // fixed stop in pips (card 10-15 midpoint)
 input int    strategy_tp_pips             = 12;    // fixed target in pips (card 10-15 midpoint)
-input double strategy_spread_pct_of_stop  = 50.0;  // skip if spread > this % of stop distance (scalp-wide cap)
+input int    strategy_max_spread_pips     = 8;     // card spread cap; zero modeled spread passes
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only — fail-OPEN on .DWX zero spread.
+// No Trade Filter (time, spread, news). Central framework handles news, kill
+// switch, and Friday time gates; this hook adds the card's spread cap.
 bool Strategy_NoTradeFilter()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -81,13 +80,13 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
-   if(stop_distance <= 0.0)
+   const double max_spread = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_spread_pips);
+   if(max_spread <= 0.0)
       return false;
 
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread > max_spread)
       return true;
 
    return false;
@@ -110,55 +109,64 @@ bool EmaBBMiddleCrossAt(const int dir, const int cross_shift)
    return (ema_prev >= mid_prev && ema_now < mid_now);      // fresh down cross
   }
 
-// MACD "approaching or crossing zero" STATE in the trade direction, read at the
-// trigger (shift 1) closed bar. MACD may be negative (long) / positive (short).
+// MACD "approaching or crossing zero" STATE in the trade direction. The
+// approach test is on the trigger bar; the zero-cross event may occur within
+// the configured lookback window. MACD may be negative/positive by design.
 bool MacdZeroApproach(const int dir)
   {
    const double macd_now  = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
    const double macd_prev = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
+   const int last_extra = (strategy_macd_lookback > 0) ? strategy_macd_lookback : 0;
 
    if(dir > 0)
      {
-      // below zero but trending UP toward it, OR a fresh upward zero cross.
+      // Below zero but trending UP toward it.
       const bool approaching = (macd_now < 0.0 && macd_now > macd_prev);
-      const bool crossed_up  = (macd_prev <= 0.0 && macd_now > 0.0);
-      return (approaching || crossed_up);
+      if(approaching)
+         return true;
+
+      // Or a zero cross from below within the last N closed bars.
+      for(int s = 1; s <= 1 + last_extra; ++s)
+        {
+         const double m_now  = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, s);
+         const double m_prev = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, s + 1);
+         if(m_prev <= 0.0 && m_now > 0.0)
+            return true;
+        }
+      return false;
      }
 
-   // SHORT mirror: above zero but trending DOWN toward it, OR fresh downward cross.
+   // SHORT mirror: above zero but trending DOWN toward it.
    const bool approaching = (macd_now > 0.0 && macd_now < macd_prev);
-   const bool crossed_dn  = (macd_prev >= 0.0 && macd_now < 0.0);
-   return (approaching || crossed_dn);
+   if(approaching)
+      return true;
+
+   for(int s = 1; s <= 1 + last_extra; ++s)
+     {
+      const double m_now  = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, s);
+      const double m_prev = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, s + 1);
+      if(m_prev >= 0.0 && m_now < 0.0)
+         return true;
+     }
+   return false;
   }
 
 // Returns +1 long / -1 short / 0 no signal for the current closed bar.
 int DirectionalSignal()
   {
-   // STATE first (cheap, one read pair each direction is decided by the cross).
-   // EVENT: EMA/BB-middle cross within the last `macd_lookback` closed bars,
-   // ending at the trigger bar (shift 1). lookback 0 => cross must be on bar 1.
-   const int last_extra = (strategy_macd_lookback > 0) ? strategy_macd_lookback : 0;
-
-   // --- LONG: any up cross in [shift 1 .. shift 1+last_extra] + MACD up-state ---
-   for(int s = 1; s <= 1 + last_extra; ++s)
+   // Trade Entry: the EMA/BB-middle cross is the event on the latest closed bar.
+   if(EmaBBMiddleCrossAt(+1, 1))
      {
-      if(EmaBBMiddleCrossAt(+1, s))
-        {
-         if(MacdZeroApproach(+1))
-            return +1;
-         break; // an up cross was found but MACD state failed — do not also short
-        }
+      if(MacdZeroApproach(+1))
+         return +1;
+      return 0;
      }
 
-   // --- SHORT: any down cross in the same window + MACD down-state ---
-   for(int s = 1; s <= 1 + last_extra; ++s)
+   if(EmaBBMiddleCrossAt(-1, 1))
      {
-      if(EmaBBMiddleCrossAt(-1, s))
-        {
-         if(MacdZeroApproach(-1))
-            return -1;
-         break;
-        }
+      if(MacdZeroApproach(-1))
+         return -1;
+      return 0;
      }
 
    return 0;
@@ -189,6 +197,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl     = sl;
       req.tp     = tp;
       req.reason = "ema3_bb_mid_up_macd_zero";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
       return true;
      }
 
@@ -205,21 +215,23 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = "ema3_bb_mid_dn_macd_zero";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
-// Fixed SL/TP only — no active management.
+// Trade Management: fixed SL/TP only; no active management in the card.
 void Strategy_ManageOpenPosition()
   {
   }
 
-// No discretionary exit beyond the fixed SL/TP (scalp profile).
+// Trade Close: no discretionary exit beyond the fixed SL/TP scalp bracket.
 bool Strategy_ExitSignal()
   {
    return false;
   }
 
-// Defer to the central news filter.
+// News Filter Hook: defer to the central news filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
