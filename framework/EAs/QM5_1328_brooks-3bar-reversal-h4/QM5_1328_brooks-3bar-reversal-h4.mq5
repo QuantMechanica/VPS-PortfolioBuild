@@ -44,6 +44,7 @@ input int    strategy_time_stop_bars     = 12;
 input int    strategy_rearm_bars         = 3;
 input double strategy_spread_mult        = 2.0;
 input int    strategy_spread_lookback    = 20;
+input int    strategy_news_blackout_minutes = 120;
 
 ulong    g_qm1328_active_ticket      = 0;
 int      g_qm1328_active_direction   = 0;
@@ -153,7 +154,7 @@ void QM1328_RefreshPositionState()
    if(g_qm1328_had_position)
      {
       g_qm1328_rearm_direction = g_qm1328_active_direction;
-      g_qm1328_rearm_remaining = MathMax(strategy_rearm_bars, 0);
+      g_qm1328_rearm_remaining = MathMax(strategy_rearm_bars, 0) + 1;
      }
 
    g_qm1328_active_ticket = 0;
@@ -217,6 +218,27 @@ bool QM1328_SpreadTooWide()
       median = 0.5 * (spreads[n / 2 - 1] + spreads[n / 2]);
 
    return ((double)current_spread > strategy_spread_mult * median);
+  }
+
+bool QM1328_ClusterNewsBlocked(const MqlRates &rates[])
+  {
+   if(strategy_news_blackout_minutes <= 0)
+      return false;
+
+   int cluster_bars = ArraySize(rates);
+   if(cluster_bars > 3)
+      cluster_bars = 3;
+   for(int i = 0; i < cluster_bars; ++i)
+     {
+      const datetime utc_time = QM_BrokerToUTC(rates[i].time);
+      if(QM_NewsInWindow(utc_time,
+                         _Symbol,
+                         strategy_news_blackout_minutes,
+                         strategy_news_blackout_minutes,
+                         "high"))
+         return true;
+     }
+   return false;
   }
 
 bool QM1328_BuyPattern(const MqlRates &rates[], double &sl, double &tp)
@@ -324,6 +346,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    MqlRates rates[];
    if(!QM1328_ReadClosedBars(rates))
+      return false;
+   if(QM1328_ClusterNewsBlocked(rates))
       return false;
 
    double sl = 0.0;

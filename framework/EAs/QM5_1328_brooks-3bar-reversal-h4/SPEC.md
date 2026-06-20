@@ -33,6 +33,7 @@ This EA trades the Brooks/ForexFactory three-bar reversal pattern on closed H4 b
 | strategy_rearm_bars | 3 | >=0 | Fresh H4 bars required before same-direction re-entry after close. |
 | strategy_spread_mult | 2.0 | >=0.0 | Blocks only genuinely wide spread above the median multiple. |
 | strategy_spread_lookback | 20 | >=1 | Closed-bar spread samples for median spread. |
+| strategy_news_blackout_minutes | 120 | >=0 | Blocks entries when any signal-cluster bar overlaps high-impact news by this many minutes before/after. |
 
 ---
 
@@ -76,6 +77,8 @@ This EA trades the Brooks/ForexFactory three-bar reversal pattern on closed H4 b
 - XAUUSD.DWX - DWX gold symbol explicitly listed by the card.
 - XNGUSD.DWX - DWX commodity symbol registered in the portable matrix.
 - XTIUSD.DWX - DWX commodity symbol registered in the portable matrix.
+
+Note: the active registry for QM5_1328 already contained the full DWX matrix before this build. The card explicitly names FX majors, XAUUSD, and index CFDs; the extra registered FX crosses and commodities are retained because the magic registry is the build source of truth for Q02 setfile generation.
 
 **Explicitly NOT for:**
 - Non-DWX symbols - V5 backtests use the `.DWX` registry and deploy stripping happens outside the EA build.
