@@ -3,6 +3,7 @@
 #property description "QM5_11347 RoboForex ADX + Momentum M5 scalp"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -164,12 +165,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(strategy_ema55_filter)
      {
-      const double ema = QM_EMA(_Symbol, _Period, strategy_ema_period, 1, PRICE_CLOSE);
-      if(ema <= 0.0)
+      const int price_vs_ema = QM_Sig_Price_Above_MA(_Symbol, _Period, strategy_ema_period, 0.0, 1);
+      if(long_signal && price_vs_ema <= 0)
          return false;
-      if(long_signal && bid <= ema)
-         return false;
-      if(short_signal && ask >= ema)
+      if(short_signal && price_vs_ema >= 0)
          return false;
      }
 

@@ -48,8 +48,8 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -68,7 +68,9 @@ input int    strategy_macd_fast          = 12;     // MACD fast EMA period
 input int    strategy_macd_slow          = 26;     // MACD slow EMA period
 input int    strategy_macd_signal        = 9;      // MACD signal EMA period
 input int    strategy_sl_pips            = 13;     // stop-loss distance, pips (card 12-15)
-input int    strategy_tp_pips            = 9;      // take-profit distance, pips (EURUSD 8 / GBPUSD 10)
+input int    strategy_tp_pips            = 9;      // fallback take-profit distance, pips
+input int    strategy_eurusd_tp_pips     = 8;      // EURUSD take-profit distance, pips
+input int    strategy_gbpusd_tp_pips     = 10;     // GBPUSD take-profit distance, pips
 input double strategy_spread_pct_of_stop = 25.0;   // skip if spread > this % of stop distance
 
 // -----------------------------------------------------------------------------
@@ -94,6 +96,15 @@ bool Strategy_NoTradeFilter()
       return true;
 
    return false;
+  }
+
+int Strategy_TakeProfitPips()
+  {
+   if(_Symbol == "EURUSD.DWX")
+      return strategy_eurusd_tp_pips;
+   if(_Symbol == "GBPUSD.DWX")
+      return strategy_gbpusd_tp_pips;
+   return strategy_tp_pips;
   }
 
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
@@ -143,8 +154,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double sl = QM_StopFixedPips(_Symbol, dir, entry, strategy_sl_pips);
    if(sl <= 0.0)
       return false;
+   const int tp_pips = Strategy_TakeProfitPips();
+   if(tp_pips <= 0 || strategy_sl_pips <= 0)
+      return false;
    const double tp = QM_TakeRR(_Symbol, dir, entry, sl,
-                               (double)strategy_tp_pips / (double)strategy_sl_pips);
+                               (double)tp_pips / (double)strategy_sl_pips);
    if(tp <= 0.0)
       return false;
 
@@ -153,6 +167,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = (dir == QM_BUY) ? "cci_macd_break_long" : "cci_macd_break_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
