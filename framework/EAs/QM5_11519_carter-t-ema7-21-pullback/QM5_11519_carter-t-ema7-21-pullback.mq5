@@ -126,6 +126,14 @@ bool Strategy_NoTradeFilter()
 // state aligns. One pending order OR one open position per magic.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    const int magic = QM_FrameworkMagic();
 
    // Single-entry discipline: never stack. If a position OR a live pending
