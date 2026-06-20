@@ -13243,3 +13243,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 2132,pring-kst-histogram-h4,7,GDAXI.DWX,21320007,2026-06-20,Development,active
 2132,pring-kst-histogram-h4,8,UK100.DWX,21320008,2026-06-20,Development,active
 2132,pring-kst-histogram-h4,9,SP500.DWX,21320009,2026-06-20,Development,active
+9998,tv-hull-suite-hma-color-flip,0,EURUSD.DWX,99980000,2026-06-20,Development,active
+9998,tv-hull-suite-hma-color-flip,1,GBPUSD.DWX,99980001,2026-06-20,Development,active
+9998,tv-hull-suite-hma-color-flip,2,USDJPY.DWX,99980002,2026-06-20,Development,active
+9998,tv-hull-suite-hma-color-flip,3,XAUUSD.DWX,99980003,2026-06-20,Development,active
+9998,tv-hull-suite-hma-color-flip,4,XTIUSD.DWX,99980004,2026-06-20,Development,active
+9998,tv-hull-suite-hma-color-flip,5,NDX.DWX,99980005,2026-06-20,Development,active
+9998,tv-hull-suite-hma-color-flip,6,WS30.DWX,99980006,2026-06-20,Development,active
+9998,tv-hull-suite-hma-color-flip,7,SP500.DWX,99980007,2026-06-20,Development,active

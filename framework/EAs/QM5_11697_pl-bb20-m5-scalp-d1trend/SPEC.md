@@ -78,7 +78,7 @@ This card was mechanised from:
 **Source ID:** 53a42802-5c56-515a-af4e-2c89ce420488
 **Source type:** book
 **Pointer:** Paul Langer, "A Scalping Strategy", in The Black Book of Forex Trading, Alura Publishing, 2015, pp. 64-70; local PDF archive.
-**R1-R4 verdict (Q00):** all R1-R4 PASS per `artifacts/cards_approved/QM5_11697_pl-bb20-m5-scalp-d1trend.md` frontmatter.
+**R1-R4 verdict (Q00):** frontmatter marks R1-R4 PASS and `g0_status: APPROVED`; the body table/source citation still contain stale R1 FAIL wording.
 
 ---
 

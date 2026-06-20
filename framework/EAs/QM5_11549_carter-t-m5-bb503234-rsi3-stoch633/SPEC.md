@@ -20,6 +20,7 @@ This EA trades a Carter M5 mean-reversion setup after price stretches into a Bol
 |---|---|---|---|
 | `strategy_bb_period` | 50 | 30-75 planned P3 sweep | Shared Bollinger Band center period. |
 | `strategy_bb_entry_dev` | 2.0 | 2.0-3.0 planned P3 sweep | Bollinger deviation used as the touch/re-entry trigger band. |
+| `strategy_bb_mid_dev` | 3.0 | fixed by card | Intermediate Bollinger deviation declared and warmed for the card's three-band layout. |
 | `strategy_bb_stop_dev` | 4.0 | fixed by card | Bollinger deviation used as the outer stop reference. |
 | `strategy_rsi_period` | 3 | fixed by card | RSI period for the extreme and recovery filter. |
 | `strategy_rsi_long_lo` | 20.0 | 15.0-25.0 planned P3 sweep | Long oversold threshold and recovery level. |

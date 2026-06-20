@@ -71,6 +71,7 @@ input double qm_stress_reject_probability = 0.0;
 input group "Strategy"
 input int    strategy_bb_period         = 50;    // common center period for all three BBs
 input double strategy_bb_entry_dev      = 2.0;   // 2sigma entry band
+input double strategy_bb_mid_dev        = 3.0;   // 3sigma intermediate band from the card
 input double strategy_bb_stop_dev       = 4.0;   // 4sigma outer band -> raw stop reference
 input int    strategy_rsi_period        = 3;     // RSI(3)
 input double strategy_rsi_long_lo       = 20.0;  // long: oversold RSI threshold
@@ -138,10 +139,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double bb2_mid_1= QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_entry_dev, 1);
    const double bb2_lo_2 = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_entry_dev, 2);
    const double bb2_up_2 = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_entry_dev, 2);
+   const double bb3_lo_1 = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_mid_dev, 1);
+   const double bb3_up_1 = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_mid_dev, 1);
    const double bb4_lo_1 = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_stop_dev, 1);
    const double bb4_up_1 = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_stop_dev, 1);
    if(bb2_lo_1 <= 0.0 || bb2_up_1 <= 0.0 || bb2_mid_1 <= 0.0 ||
-      bb2_lo_2 <= 0.0 || bb2_up_2 <= 0.0 || bb4_lo_1 <= 0.0 || bb4_up_1 <= 0.0)
+      bb2_lo_2 <= 0.0 || bb2_up_2 <= 0.0 ||
+      bb3_lo_1 <= 0.0 || bb3_up_1 <= 0.0 ||
+      bb4_lo_1 <= 0.0 || bb4_up_1 <= 0.0)
       return false;
 
    // --- RSI(3) at push (2) and confirmation (1) ---

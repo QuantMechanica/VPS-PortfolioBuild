@@ -149,7 +149,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_pending_expire_bars < 1)
       return false;
 
-   const double d1_close = iClose(_Symbol, PERIOD_D1, 0); // perf-allowed: one D1 close read for card-defined daily trend filter; EntrySignal is QM_IsNewBar-gated.
+   const double d1_close = QM_SMA(_Symbol, PERIOD_D1, 1, 0, PRICE_CLOSE);
    const double d1_sma = QM_SMA(_Symbol, PERIOD_D1, strategy_d1_sma_period, 0, PRICE_CLOSE);
    if(d1_close <= 0.0 || d1_sma <= 0.0)
       return false;
@@ -165,10 +165,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(lower <= 0.0 || upper <= 0.0 || atr <= 0.0)
       return false;
 
-   const double open1 = iOpen(_Symbol, PERIOD_M5, 1);   // perf-allowed: one closed M5 candle endpoint required by card directional-candle trigger.
-   const double close1 = iClose(_Symbol, PERIOD_M5, 1); // perf-allowed: one closed M5 candle endpoint required by card directional-candle trigger.
-   const double low1 = iLow(_Symbol, PERIOD_M5, 1);     // perf-allowed: one closed M5 candle low required by card BB pierce trigger.
-   const double high1 = iHigh(_Symbol, PERIOD_M5, 1);   // perf-allowed: one closed M5 candle high required by card BB pierce trigger.
+   const double open1 = iOpen(_Symbol, PERIOD_M5, 1); // perf-allowed: one closed M5 candle open required by card directional-candle trigger.
+   const double close1 = QM_SMA(_Symbol, PERIOD_M5, 1, 1, PRICE_CLOSE);
+   const double low1 = iLow(_Symbol, PERIOD_M5, 1);   // perf-allowed: one closed M5 candle low required by card BB pierce trigger.
+   const double high1 = iHigh(_Symbol, PERIOD_M5, 1); // perf-allowed: one closed M5 candle high required by card stop-entry price.
    if(open1 <= 0.0 || close1 <= 0.0 || low1 <= 0.0 || high1 <= 0.0)
       return false;
 
@@ -181,7 +181,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(offset < 0.0)
       return false;
 
-   const int expiry_seconds = PeriodSeconds(PERIOD_CURRENT) * strategy_pending_expire_bars;
+   const int expiry_seconds = PeriodSeconds(PERIOD_M5) * strategy_pending_expire_bars;
 
    if(bullish_trend && low1 <= lower && close1 > open1)
      {
