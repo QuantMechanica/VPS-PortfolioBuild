@@ -63,7 +63,7 @@ input group "Strategy"
 input int    strategy_bb_period         = 20;    // Bollinger period (sweep 14/20/25)
 input double strategy_bb_deviation      = 2.0;   // Bollinger deviation
 input int    strategy_slope_lookback    = 5;     // bars back for midband slope (sweep 3/5/8)
-input double strategy_slope_min_pips    = 1.0;   // min midband slope magnitude, in pips
+input double strategy_slope_min_pips    = 0.0;   // optional min midband slope magnitude, in pips
 input double strategy_sl_max_pips       = 15.0;  // max stop distance cap, in pips
 input bool   strategy_no_friday_entry   = true;  // skip new entries on Friday
 input double strategy_spread_max_pips   = 5.0;   // skip only genuinely wide spreads
@@ -77,15 +77,6 @@ input double strategy_spread_max_pips   = 5.0;   // skip only genuinely wide spr
 // Fail-open on .DWX zero modeled spread.
 bool Strategy_NoTradeFilter()
   {
-   // No-Friday-entry filter (card). Friday = day-of-week 5 in broker time.
-   if(strategy_no_friday_entry)
-     {
-      MqlDateTime dt;
-      TimeToStruct(TimeCurrent(), dt);
-      if(dt.day_of_week == 5)
-         return true;
-     }
-
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
@@ -107,6 +98,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
+   // No-Friday-entry filter (card). Friday = day-of-week 5 in broker time.
+   if(strategy_no_friday_entry)
+     {
+      MqlDateTime dt;
+      TimeToStruct(TimeCurrent(), dt);
+      if(dt.day_of_week == 5)
+         return false;
+     }
+
    // --- Bands at the last closed bar (shift 1). deviation arg is MANDATORY. ---
    const double mid1   = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
    const double upper1 = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
@@ -120,13 +120,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(mid_slope_ref <= 0.0)
       return false;
 
-   const double slope_min_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_slope_min_pips);
+   const int slope_min_pips = (strategy_slope_min_pips > 0.0) ? (int)strategy_slope_min_pips : 0;
+   const double slope_min_dist = QM_StopRulesPipsToPriceDistance(_Symbol, slope_min_pips);
 
-   // Closed bar[1] OHLC for the touch-and-resume event (perf-allowed: single
-   // closed-bar reads, no loops).
-   const double low1   = iLow(_Symbol, _Period, 1);    // perf-allowed
-   const double high1  = iHigh(_Symbol, _Period, 1);   // perf-allowed
-   const double close1 = iClose(_Symbol, _Period, 1);  // perf-allowed
+   // perf-allowed: one closed-bar snapshot inside the framework new-bar gate.
+   MqlRates bars[];
+   ArraySetAsSeries(bars, true);
+   const int copied = CopyRates(_Symbol, _Period, 1, 1, bars);
+   if(copied != 1)
+      return false;
+
+   const double low1   = bars[0].low;
+   const double high1  = bars[0].high;
+   const double close1 = bars[0].close;
    if(low1 <= 0.0 || high1 <= 0.0 || close1 <= 0.0)
       return false;
 
@@ -135,7 +141,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // --- LONG: rising midband + bar touched mid from above, closed back above ---
-   const bool slope_up   = (mid1 - mid_slope_ref) >= slope_min_dist;
+   const bool slope_up   = (mid1 - mid_slope_ref) > slope_min_dist;
    const bool long_event = (low1 <= mid1 && close1 > mid1);
    if(slope_up && long_event)
      {
@@ -164,7 +170,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    // --- SHORT: falling midband + bar touched mid from below, closed back below ---
-   const bool slope_down  = (mid_slope_ref - mid1) >= slope_min_dist;
+   const bool slope_down  = (mid_slope_ref - mid1) > slope_min_dist;
    const bool short_event = (high1 >= mid1 && close1 < mid1);
    if(slope_down && short_event)
      {
