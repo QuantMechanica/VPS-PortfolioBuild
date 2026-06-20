@@ -3,8 +3,8 @@
 **EA ID:** QM5_11320
 **Slug:** `tc-m5-13-cci100-macd`
 **Source:** `e78a9f1f-4e6a-563c-a080-915133d6ed28` (see `strategy-seeds/sources/e78a9f1f-4e6a-563c-a080-915133d6ed28/`)
-**Author of this spec:** Claude
-**Last revised:** 2026-06-18
+**Author of this spec:** Codex
+**Last revised:** 2026-06-20
 
 ---
 
@@ -98,4 +98,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | (central build step to record commit) |
+| v1 | 2026-06-20 | Initial build from card | 56bc6133-6c44-43c6-a3ff-d92ffd57158d |

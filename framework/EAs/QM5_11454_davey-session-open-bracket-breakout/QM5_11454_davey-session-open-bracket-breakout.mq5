@@ -1,46 +1,8 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11454 davey-session-open-bracket-breakout — Session-open opening-range bracket breakout (H1)"
+#property description "QM5_11454 Davey session-open bracket breakout"
 
 #include <QM/QM_Common.mqh>
-
-// =============================================================================
-// QuantMechanica V5 EA — QM5_11454 davey-session-open-bracket-breakout
-// -----------------------------------------------------------------------------
-// Source: Kevin J. Davey, "My 5 Favorite Entries" (Entry #2 — opening-range
-// bracket breakout). Card: artifacts/cards_approved/
-// QM5_11454_davey-session-open-bracket-breakout.md (g0_status APPROVED).
-//
-// MECHANICS (H1, all reads on CLOSED bars at shift >= 1):
-//   Session open : a fixed UTC session-open hour (default 08:00 GMT London),
-//                  converted to BROKER time per bar via QM_BrokerToUTC. The
-//                  "opening bar" is the FIRST CLOSED H1 bar whose bar-open
-//                  timestamp (UTC, derived from the broker bar time) equals
-//                  the session-open hour on the current calendar day.
-//   Bracket      : high/low of that single CLOSED opening bar. Captured once
-//                  per day from the prior closed bar — never from a forming bar.
-//   Filter       : skip the day if (bracket_high - bracket_low) > max_pips.
-//   Single EVENT : on each subsequent CLOSED H1 bar of the same trading day,
-//                  a breakout is confirmed by the bar CLOSE (not an intrabar
-//                  stop touch — .DWX index/FX CFDs are gapless so a
-//                  close-confirmed breakout is the faithful, fillable form of
-//                  Davey's stop-entry on this data). The FIRST side to close
-//                  beyond its bracket level fires; one-position-per-magic makes
-//                  this the OCO winner (the opposite side is moot thereafter).
-//       LONG  : close > bracket_high + offset_pips
-//       SHORT : close < bracket_low  - offset_pips
-//   Stop         : opposite bracket level (+/- offset). If the bracket breaks
-//                  back through after a fill, the framework SL exits.
-//   Target       : entry +/- ATR(D1, atr_period)[shift 1] * tp_atr_mult.
-//   Time stop    : flatten any open position at/after the session-close hour
-//                  (broker time, DST-aware) — Davey's EOD exit.
-//   Spread guard : fail-OPEN — block only a genuinely wide spread on a real
-//                  (ask>bid) quote; .DWX models 0 spread so this never blocks.
-//
-// Only the 5 Strategy_* hooks + Strategy inputs + the small per-day bracket
-// cache are EA-specific. Everything else is framework wiring and MUST stay
-// intact. No external feed; broker-time sessions only.
-// =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 11454;
@@ -55,9 +17,9 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
-input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
+input int    qm_news_stale_max_hours    = 336;
+input string qm_news_min_impact         = "high";
+input QM_NewsMode qm_news_mode_legacy   = QM_NEWS_OFF;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
@@ -67,236 +29,326 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-// Session open expressed in UTC/GMT hour. Default 8 = London open (08:00 GMT).
-// NY open = 13 (13:30 GMT rounds to the 13:00 H1 bar). Per-symbol via setfile.
-input int    strategy_session_open_utc_hour  = 8;
-// Session close expressed in UTC/GMT hour for the EOD time stop. Default 21 =
-// 21:00 GMT (= 17:00 ET, Davey's EOD). Converted to broker time DST-aware.
-input int    strategy_session_close_utc_hour = 21;
-// Breakout / stop offset beyond the bracket edge, in pips (Davey "1 tick").
-input int    strategy_offset_pips            = 1;
-// Bracket-width filter: skip the day if the opening bar is wider than this.
-input int    strategy_max_bracket_pips       = 60;
-// Target = entry +/- ATR(D1, period)[1] * mult. Davey daily-ATR context.
-input int    strategy_atr_period             = 14;
-input double strategy_tp_atr_mult            = 1.5;
-// Spread guard: block only if spread exceeds this % of the stop distance.
-input double strategy_spread_pct_of_stop     = 20.0;
+input int    strategy_session_open_utc_hour    = 8;
+input int    strategy_session_open_utc_minute  = 0;
+input int    strategy_session_close_utc_hour   = 21;
+input int    strategy_session_close_utc_minute = 0;
+input int    strategy_offset_pips              = 1;
+input int    strategy_max_bracket_pips         = 60;
+input int    strategy_atr_period               = 14;
+input double strategy_tp_atr_mult              = 1.5;
+input int    strategy_spread_cap_pips          = 20;
 
-// -----------------------------------------------------------------------------
-// Per-day bracket cache (advanced once per new CLOSED H1 bar). This is strategy
-// state, NOT a new-bar reimplementation: the framework QM_IsNewBar() gate drives
-// AdvanceBracket_OnNewBar(); we never maintain our own timestamp gate for the
-// entry cadence.
-// -----------------------------------------------------------------------------
-int      g_bracket_day        = -1;     // UTC day-of-year the bracket belongs to
-bool     g_bracket_valid      = false;  // opening bar captured this day
-bool     g_bracket_skipped    = false;  // bracket too wide -> skip the day
-double   g_bracket_high       = 0.0;
-double   g_bracket_low        = 0.0;
+int    g_session_day_key       = -1;
+bool   g_bracket_ready         = false;
+bool   g_day_skipped           = false;
+bool   g_oco_orders_placed     = false;
+bool   g_trade_triggered_today = false;
+double g_bracket_high          = 0.0;
+double g_bracket_low           = 0.0;
+ulong  g_buy_stop_ticket       = 0;
+ulong  g_sell_stop_ticket      = 0;
 
-// UTC calendar-day key (year*1000 + day-of-year) so day rollover is unambiguous.
-int UtcDayKey(const datetime utc)
+int UtcDayKey(const datetime utc_time)
   {
    MqlDateTime dt;
    ZeroMemory(dt);
-   TimeToStruct(utc, dt);
+   TimeToStruct(utc_time, dt);
    return dt.year * 1000 + dt.day_of_year;
   }
 
-int UtcHour(const datetime utc)
+datetime SessionTimeUTC(const datetime utc_ref, const int hour_value, const int minute_value)
   {
    MqlDateTime dt;
    ZeroMemory(dt);
-   TimeToStruct(utc, dt);
-   return dt.hour;
+   TimeToStruct(utc_ref, dt);
+   dt.hour = MathMax(0, MathMin(23, hour_value));
+   dt.min = MathMax(0, MathMin(59, minute_value));
+   dt.sec = 0;
+   return StructToTime(dt);
   }
 
-// Called ONCE per new CLOSED H1 bar (after OnTick passes QM_IsNewBar()).
-// Detects the session-open opening bar from the bar TIMESTAMP in broker time
-// (converted to UTC) and latches the bracket from that single closed bar.
-void AdvanceBracket_OnNewBar()
+void ResetDayState(const int day_key)
   {
-   // Bar-open broker timestamp of the just-closed bar (shift 1). perf-allowed:
-   // bespoke session-timing structural read, single closed-bar shift.
-   const datetime bar_open_broker = iTime(_Symbol, PERIOD_H1, 1);
-   if(bar_open_broker <= 0)
-      return;
-
-   const datetime bar_open_utc = QM_BrokerToUTC(bar_open_broker);
-   const int day_key = UtcDayKey(bar_open_utc);
-
-   // New UTC day -> reset the bracket state.
-   if(day_key != g_bracket_day)
-     {
-      g_bracket_day     = day_key;
-      g_bracket_valid   = false;
-      g_bracket_skipped = false;
-      g_bracket_high    = 0.0;
-      g_bracket_low     = 0.0;
-     }
-
-   // Already have (or skipped) today's bracket — nothing more to latch.
-   if(g_bracket_valid || g_bracket_skipped)
-      return;
-
-   // Is THIS closed bar the session-open opening bar?
-   if(UtcHour(bar_open_utc) != strategy_session_open_utc_hour)
-      return;
-
-   const double hi = iHigh(_Symbol, PERIOD_H1, 1); // perf-allowed: opening-bar range
-   const double lo = iLow(_Symbol, PERIOD_H1, 1);  // perf-allowed: opening-bar range
-   if(hi <= 0.0 || lo <= 0.0 || hi <= lo)
-      return;
-
-   const double width   = hi - lo;
-   const double max_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_bracket_pips);
-   if(max_dist > 0.0 && width > max_dist)
-     {
-      // Too wide -> no edge; skip the rest of the day.
-      g_bracket_skipped = true;
-      return;
-     }
-
-   g_bracket_high  = hi;
-   g_bracket_low   = lo;
-   g_bracket_valid = true;
+   g_session_day_key       = day_key;
+   g_bracket_ready         = false;
+   g_day_skipped           = false;
+   g_oco_orders_placed     = false;
+   g_trade_triggered_today = false;
+   g_bracket_high          = 0.0;
+   g_bracket_low           = 0.0;
+   g_buy_stop_ticket       = 0;
+   g_sell_stop_ticket      = 0;
   }
 
-// Is the current broker time at/after the session-close hour for the EOD stop?
-bool IsAtOrAfterSessionClose(const datetime broker_now)
+bool IsAtOrAfterSessionClose(const datetime broker_time)
   {
-   const datetime utc_now = QM_BrokerToUTC(broker_now);
-   return (UtcHour(utc_now) >= strategy_session_close_utc_hour);
+   const datetime utc_now = QM_BrokerToUTC(broker_time);
+   const datetime close_utc = SessionTimeUTC(utc_now,
+                                             strategy_session_close_utc_hour,
+                                             strategy_session_close_utc_minute);
+   return (utc_now >= close_utc);
   }
 
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
+bool IsOpeningBarClosed(const datetime bar_open_utc)
+  {
+   const datetime session_open_utc = SessionTimeUTC(bar_open_utc,
+                                                    strategy_session_open_utc_hour,
+                                                    strategy_session_open_utc_minute);
+   const datetime bar_close_utc = bar_open_utc + PeriodSeconds(PERIOD_H1);
+   return (bar_open_utc <= session_open_utc && bar_close_utc > session_open_utc);
+  }
 
-// Cheap O(1) per-tick gate. Spread guard only — fail-OPEN on .DWX zero spread.
-bool Strategy_NoTradeFilter()
+bool SpreadTooWide()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote — never block on it
+      return false;
 
-   // Stop distance reference = current bracket width (opposite-edge stop). Use a
-   // pip floor if no bracket is latched yet, so the cap still scales correctly.
-   double stop_distance = 0.0;
-   if(g_bracket_valid && g_bracket_high > g_bracket_low)
-      stop_distance = g_bracket_high - g_bracket_low;
-   if(stop_distance <= 0.0)
-      stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_bracket_pips);
-   if(stop_distance <= 0.0)
+   const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(cap <= 0.0)
       return false;
 
    const double spread = ask - bid;
-   // Only a genuinely wide spread on a real ask>bid quote blocks. Zero/negative
-   // modeled spread (.DWX) passes through — fail-OPEN.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   return (spread > 0.0 && spread > cap);
+  }
+
+bool HasOurOpenPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
       return true;
+     }
 
    return false;
   }
 
-// Opening-range bracket breakout. Caller guarantees QM_IsNewBar() == true, so
-// this is evaluated once per CLOSED H1 bar. The close-confirmed breakout is the
-// single OCO event; one-position-per-magic enforces the OCO.
-bool Strategy_EntrySignal(QM_EntryRequest &req)
+bool IsOurPendingStopOrderSelected()
   {
-   // One open position per symbol/magic (OCO winner already live -> no re-entry).
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+   if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+      return false;
+   if((int)OrderGetInteger(ORDER_MAGIC) != magic)
       return false;
 
-   // Need a valid, non-skipped bracket for the current day.
-   if(!g_bracket_valid)
+   const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+   return (order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP);
+  }
+
+int CountOurPendingStopOrders()
+  {
+   int count = 0;
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(IsOurPendingStopOrderSelected())
+         count++;
+     }
+   return count;
+  }
+
+void RemoveOurPendingStopOrders(const string reason)
+  {
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(!IsOurPendingStopOrderSelected())
+         continue;
+      QM_TM_RemovePendingOrder(ticket, reason);
+     }
+
+   if(CountOurPendingStopOrders() == 0)
+     {
+      g_buy_stop_ticket = 0;
+      g_sell_stop_ticket = 0;
+     }
+  }
+
+bool CaptureOpeningBracketFromClosedBar()
+  {
+   // perf-allowed: fixed-session structural OHLC read from one closed H1 bar.
+   const datetime bar_open_broker = iTime(_Symbol, PERIOD_H1, 1);
+   if(bar_open_broker <= 0)
       return false;
 
-   // Do not arm new entries once we are in the EOD time-stop window.
-   if(IsAtOrAfterSessionClose(iTime(_Symbol, PERIOD_H1, 0)))
+   const datetime bar_open_utc = QM_BrokerToUTC(bar_open_broker);
+   const int day_key = UtcDayKey(bar_open_utc);
+   if(day_key != g_session_day_key)
+      ResetDayState(day_key);
+
+   if(g_bracket_ready || g_day_skipped)
+      return g_bracket_ready;
+   if(!IsOpeningBarClosed(bar_open_utc))
       return false;
+
+   const double high_price = iHigh(_Symbol, PERIOD_H1, 1); // perf-allowed
+   const double low_price = iLow(_Symbol, PERIOD_H1, 1);   // perf-allowed
+   if(high_price <= 0.0 || low_price <= 0.0 || high_price <= low_price)
+      return false;
+
+   const double max_width = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_bracket_pips);
+   if(max_width > 0.0 && (high_price - low_price) > max_width)
+     {
+      g_day_skipped = true;
+      return false;
+     }
+
+   g_bracket_high = high_price;
+   g_bracket_low = low_price;
+   g_bracket_ready = true;
+   return true;
+  }
+
+bool BuildBracketOrder(const QM_OrderType order_type,
+                       const double entry_price,
+                       const double sl_price,
+                       const double atr_value,
+                       const string reason,
+                       QM_EntryRequest &req)
+  {
+   req.type = order_type;
+   req.price = QM_StopRulesNormalizePrice(_Symbol, entry_price);
+   req.sl = QM_StopRulesNormalizePrice(_Symbol, sl_price);
+   req.tp = QM_TakeATRFromValue(_Symbol, order_type, req.price, atr_value, strategy_tp_atr_mult);
+   req.reason = reason;
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(req.price <= 0.0 || req.sl <= 0.0 || req.tp <= 0.0)
+      return false;
+   if(QM_OrderTypeIsBuy(order_type) && !(req.sl < req.price && req.tp > req.price))
+      return false;
+   if(!QM_OrderTypeIsBuy(order_type) && !(req.sl > req.price && req.tp < req.price))
+      return false;
+
+   return true;
+  }
+
+bool PlaceDailyOCOBracket()
+  {
+   if(g_oco_orders_placed || g_trade_triggered_today)
+      return false;
+   if(!g_bracket_ready || g_day_skipped)
+      return false;
+   if(HasOurOpenPosition() || CountOurPendingStopOrders() > 0)
+      return false;
+   if(SpreadTooWide())
+     {
+      g_day_skipped = true;
+      return false;
+     }
 
    const double offset = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_offset_pips);
-   const double long_trigger  = g_bracket_high + offset;
-   const double short_trigger = g_bracket_low  - offset;
-
-   // Breakout confirmed by the just-closed bar's CLOSE (shift 1). perf-allowed:
-   // bespoke breakout structural read, single closed-bar shift.
-   const double close1 = iClose(_Symbol, PERIOD_H1, 1);
-   if(close1 <= 0.0)
-      return false;
-
    const double atr_value = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
+   if(offset <= 0.0 || atr_value <= 0.0)
       return false;
 
-   // LONG breakout: close above the upper bracket edge.
-   if(close1 > long_trigger)
+   QM_EntryRequest buy_req;
+   QM_EntryRequest sell_req;
+   if(!BuildBracketOrder(QM_BUY_STOP,
+                         g_bracket_high + offset,
+                         g_bracket_low - offset,
+                         atr_value,
+                         "davey_oco_buy_stop",
+                         buy_req))
+      return false;
+   if(!BuildBracketOrder(QM_SELL_STOP,
+                         g_bracket_low - offset,
+                         g_bracket_high + offset,
+                         atr_value,
+                         "davey_oco_sell_stop",
+                         sell_req))
+      return false;
+
+   ulong buy_ticket = 0;
+   if(!QM_TM_OpenPosition(buy_req, buy_ticket))
+      return false;
+
+   ulong sell_ticket = 0;
+   if(!QM_TM_OpenPosition(sell_req, sell_ticket))
      {
-      const double entry_ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if(entry_ask <= 0.0)
-         return false;
-      // Stop = opposite (lower) bracket edge, minus the offset.
-      const double sl = QM_StopRulesNormalizePrice(_Symbol, short_trigger);
-      const double tp = QM_TakeATRFromValue(_Symbol, QM_BUY, entry_ask, atr_value, strategy_tp_atr_mult);
-      if(sl <= 0.0 || tp <= 0.0 || !(sl < entry_ask))
-         return false;
-      req.type   = QM_BUY;
-      req.price  = 0.0;   // framework fills market price at send
-      req.sl     = sl;
-      req.tp     = tp;
-      req.reason = "davey_bracket_long";
-      return true;
+      if(buy_ticket > 0)
+         QM_TM_RemovePendingOrder(buy_ticket, "oco_second_leg_failed");
+      return false;
      }
 
-   // SHORT breakout: close below the lower bracket edge.
-   if(close1 < short_trigger)
-     {
-      const double entry_bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      if(entry_bid <= 0.0)
-         return false;
-      // Stop = opposite (upper) bracket edge, plus the offset.
-      const double sl = QM_StopRulesNormalizePrice(_Symbol, long_trigger);
-      const double tp = QM_TakeATRFromValue(_Symbol, QM_SELL, entry_bid, atr_value, strategy_tp_atr_mult);
-      if(sl <= 0.0 || tp <= 0.0 || !(sl > entry_bid))
-         return false;
-      req.type   = QM_SELL;
-      req.price  = 0.0;
-      req.sl     = sl;
-      req.tp     = tp;
-      req.reason = "davey_bracket_short";
-      return true;
-     }
+   g_buy_stop_ticket = buy_ticket;
+   g_sell_stop_ticket = sell_ticket;
+   g_oco_orders_placed = true;
+   return true;
+  }
 
+// No Trade Filter (time, spread, news)
+bool Strategy_NoTradeFilter()
+  {
+   if(HasOurOpenPosition() || CountOurPendingStopOrders() > 0)
+      return false;
+   if(IsAtOrAfterSessionClose(TimeCurrent()))
+      return true;
+   if(g_bracket_ready && !g_oco_orders_placed && SpreadTooWide())
+      return true;
    return false;
   }
 
-// No active trade management — the bracket SL / ATR TP / EOD time stop define
-// the trade. (EOD flatten is handled in Strategy_ExitSignal.)
-void Strategy_ManageOpenPosition()
+// Trade Entry
+bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   if(IsAtOrAfterSessionClose(TimeCurrent()))
+      return false;
+   if(!CaptureOpeningBracketFromClosedBar())
+      return false;
+
+   PlaceDailyOCOBracket();
+   return false;
   }
 
-// EOD time stop: flatten any open position at/after the session-close hour
-// (broker time, DST-aware) — Davey's end-of-day exit.
+// Trade Management
+void Strategy_ManageOpenPosition()
+  {
+   if(IsAtOrAfterSessionClose(TimeCurrent()))
+     {
+      RemoveOurPendingStopOrders("session_close_cancel");
+      return;
+     }
+
+   if(HasOurOpenPosition())
+     {
+      g_trade_triggered_today = true;
+      RemoveOurPendingStopOrders("oco_opposite_cancel");
+     }
+  }
+
+// Trade Close
 bool Strategy_ExitSignal()
   {
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
+   if(!HasOurOpenPosition())
       return false;
    return IsAtOrAfterSessionClose(TimeCurrent());
   }
 
-// Defer to the central news filter.
+// News Filter Hook
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
-
-// -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
-// -----------------------------------------------------------------------------
 
 int OnInit()
   {
@@ -305,17 +357,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -336,6 +388,7 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -343,16 +396,14 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows)
       return;
+
    if(QM_FrameworkHandleFridayClose())
       return;
-
    if(Strategy_NoTradeFilter())
       return;
 
-   // Per-tick: trade management (no-op here; bracket SL/TP + EOD stop drive it).
    Strategy_ManageOpenPosition();
 
-   // Per-tick: EOD time-stop exit (checked every tick so the flatten is prompt).
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -361,17 +412,16 @@ void OnTick()
          const ulong ticket = PositionGetTicket(i);
          if(!PositionSelectByTicket(ticket))
             continue;
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+            continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
         }
      }
 
-   // Per-closed-bar: advance the bracket cache, then evaluate the breakout.
    if(!QM_IsNewBar())
       return;
-
-   AdvanceBracket_OnNewBar();
 
    QM_EquityStreamOnNewBar();
 
