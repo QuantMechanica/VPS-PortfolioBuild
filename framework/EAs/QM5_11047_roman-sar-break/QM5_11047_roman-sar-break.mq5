@@ -94,24 +94,9 @@ input int    strategy_breakeven_buffer_points = 2;
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-int Strategy_SARHandle()
-  {
-   const string key = StringFormat("SAR|%s|%d|%.5f|%.5f",
-                                   _Symbol,
-                                   (int)PERIOD_H1,
-                                   strategy_sar_step,
-                                   strategy_sar_maximum);
-   int handle = QM_IndicatorsLookup(key);
-   if(handle != INVALID_HANDLE)
-      return handle;
-
-   handle = iSAR(_Symbol, PERIOD_H1, strategy_sar_step, strategy_sar_maximum);
-   return QM_IndicatorsRegister(key, handle);
-  }
-
 double Strategy_SAR(const int shift)
   {
-   return QM_IndicatorReadBuffer(Strategy_SARHandle(), 0, shift);
+   return QM_SAR(_Symbol, PERIOD_H1, strategy_sar_step, strategy_sar_maximum, shift);
   }
 
 bool Strategy_ReadOpen(const int shift, double &open_price)

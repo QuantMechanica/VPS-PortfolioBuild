@@ -11634,8 +11634,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11719,tc-m5-s4-bb-midband-trend,1,GBPUSD.DWX,117190001,2026-06-18,Claude,reserved
 11719,tc-m5-s4-bb-midband-trend,2,GBPJPY.DWX,117190002,2026-06-18,Claude,reserved
 11720,tc-m5-s6-mtf-ema-bb,0,EURUSD.DWX,117200000,2026-06-18,Claude,reserved
-11721,tc-m5-s7-london-box-breakout,0,GBPJPY.DWX,117210000,2026-06-18,Claude,reserved
-11721,tc-m5-s7-london-box-breakout,1,GBPUSD.DWX,117210001,2026-06-18,Claude,reserved
+11721,tc-m5-s7-london-box-breakout,0,GBPJPY.DWX,117210000,2026-06-18,Claude,active
+11721,tc-m5-s7-london-box-breakout,1,GBPUSD.DWX,117210001,2026-06-18,Claude,active
 11722,tc-m5-s8-triple-bb-rsi-stoch,0,EURUSD.DWX,117220000,2026-06-18,Claude,reserved
 11722,tc-m5-s8-triple-bb-rsi-stoch,1,GBPUSD.DWX,117220001,2026-06-18,Claude,reserved
 11722,tc-m5-s8-triple-bb-rsi-stoch,2,USDJPY.DWX,117220002,2026-06-18,Claude,reserved
@@ -12079,8 +12079,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11847,trix14-zero-cross-h1,1,GBPUSD.DWX,118470001,2026-06-18,Claude,reserved
 11847,trix14-zero-cross-h1,2,USDJPY.DWX,118470002,2026-06-18,Claude,reserved
 11847,trix14-zero-cross-h1,3,AUDUSD.DWX,118470003,2026-06-18,Claude,reserved
-11848,smi-stoch-ha-m15,0,EURJPY.DWX,118480000,2026-06-18,Claude,reserved
-11848,smi-stoch-ha-m15,1,GBPJPY.DWX,118480001,2026-06-18,Claude,reserved
+11848,smi-stoch-ha-m15,0,EURJPY.DWX,118480000,2026-06-20,Development,active
+11848,smi-stoch-ha-m15,1,GBPJPY.DWX,118480001,2026-06-20,Development,active
 11850,vegas-wave-ema144169-h1,0,EURUSD.DWX,118500000,2026-06-18,Claude,reserved
 11850,vegas-wave-ema144169-h1,1,GBPUSD.DWX,118500001,2026-06-18,Claude,reserved
 11850,vegas-wave-ema144169-h1,2,GBPJPY.DWX,118500002,2026-06-18,Claude,reserved
@@ -13097,3 +13097,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9962,bandy-h4-rsi-setup-m30-trigger-mr-index,0,SP500.DWX,99620000,2026-06-20,Development,active
 9962,bandy-h4-rsi-setup-m30-trigger-mr-index,1,NDX.DWX,99620001,2026-06-20,Development,active
 9962,bandy-h4-rsi-setup-m30-trigger-mr-index,2,WS30.DWX,99620002,2026-06-20,Development,active
+9286,mql5-gator-ad-range,0,EURGBP.DWX,92860000,2026-06-20,Development,active
+9286,mql5-gator-ad-range,1,GBPJPY.DWX,92860001,2026-06-20,Development,active
+9286,mql5-gator-ad-range,2,EURUSD.DWX,92860002,2026-06-20,Development,active

@@ -1,23 +1,24 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11047
-; ea_slug:      roman-sar-break
+; ea_id:        11179
+; ea_slug:      ft001-ema-ha
 ; ea_version:   v5.0
-; set_version:  s20260607-001
-; symbol:       USDJPY.DWX
-; timeframe:    H1
-; environment:  backtest
+; set_version:  s20260620-stress-harsh
+; symbol:       XAUUSD.DWX
+; timeframe:    M5
+; environment:  q06_stress_harsh
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   9bc110b6c3bf9cc4caae911a566c40f7465405319079269f076ac527d64a3939
+; build_hash:   ca6cad24fe82bcff6fd215dc78770ec69358fc65052747089a9497f186f53a4b
 ; author:       Development
-; date:         2026-06-07
+; date:         2026-06-20
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
