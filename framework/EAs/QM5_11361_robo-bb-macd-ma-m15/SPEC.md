@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA trades a M15 Bollinger middle-band crossover with a fast SMA(2) signal line and a MACD sign filter. It opens long when SMA(2) crosses above the BB(20,2) middle line on the last closed bar and MACD(11,27,4) main is below zero. It opens short when SMA(2) crosses below the BB(20,2) middle line and MACD main is above zero. Exits are only the fixed 12-pip take profit, fixed 13-pip stop loss, and framework Friday close.
+This EA trades a M15 Bollinger middle-band crossover with a fast SMA(2) signal line and a MACD sign/direction filter. It opens long when SMA(2) crosses above the BB(20,2) middle line on the last closed bar and MACD(11,27,4) main is below zero but rising versus the prior closed bar. It opens short when SMA(2) crosses below the BB(20,2) middle line and MACD main is above zero but falling versus the prior closed bar. Exits are only the fixed 12-pip take profit, fixed 13-pip stop loss, and framework Friday close.
 
 ---
 

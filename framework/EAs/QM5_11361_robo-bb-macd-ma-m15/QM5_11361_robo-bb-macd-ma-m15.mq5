@@ -15,10 +15,10 @@
 //   EVENT  (trigger) : fast SMA(2) crosses the BB(20,2) middle band (= SMA20).
 //                      Cross UP  -> long candidate; cross DOWN -> short candidate.
 //                      Exactly ONE fresh cross event per bar (shift 2 vs 1).
-//   STATE  (filter)  : MACD(11,27,4) main line sign. RoboForex uses the
+//   STATE  (filter)  : MACD(11,27,4) main line sign/direction. RoboForex uses the
 //                      counter-intuitive recovery reading:
-//                        LONG  requires MACD main  <  0  (rising from negative).
-//                        SHORT requires MACD main  >  0  (falling from positive).
+//                        LONG  requires MACD main  <  0 and rising.
+//                        SHORT requires MACD main  >  0 and falling.
 //                      MACD main can be negative — the readers return a signed
 //                      double; never gate on a wide-spread / swap proxy.
 //   Stop / Target    : fixed pips (pip-scaled, 5-digit / JPY safe via
@@ -102,7 +102,7 @@ bool Strategy_NoTradeFilter()
 
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 //   EVENT : SMA(2) crosses the BB middle band (one fresh cross per bar).
-//   STATE : MACD(11,27,4) main sign (long: <0, short: >0).
+//   STATE : MACD(11,27,4) main sign/direction (long: <0 and rising, short: >0 and falling).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    // One open position per symbol/magic.
@@ -127,22 +127,24 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!crossed_up && !crossed_down)
       return false;
 
-   // STATE: MACD main sign at the last closed bar. MACD main can be negative.
+   // STATE: MACD main sign and direction at the last two closed bars.
    const double macd_main = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
                                          strategy_macd_slow, strategy_macd_signal, 1);
+   const double macd_prev = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
+                                         strategy_macd_slow, strategy_macd_signal, 2);
 
    QM_OrderType side;
    if(crossed_up)
      {
-      // LONG: cross up + MACD main below zero (recovery from negative).
-      if(!(macd_main < 0.0))
+      // LONG: cross up + MACD main below zero and rising from negative.
+      if(!(macd_main < 0.0 && macd_main > macd_prev))
          return false;
       side = QM_BUY;
      }
    else
      {
-      // SHORT: cross down + MACD main above zero (falling from positive).
-      if(!(macd_main > 0.0))
+      // SHORT: cross down + MACD main above zero and falling from positive.
+      if(!(macd_main > 0.0 && macd_main < macd_prev))
          return false;
       side = QM_SELL;
      }
