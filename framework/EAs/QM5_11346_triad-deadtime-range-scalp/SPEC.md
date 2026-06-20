@@ -4,7 +4,7 @@
 **Slug:** `triad-deadtime-range-scalp`
 **Source:** `581facd5-aecc-5b86-8121-1eaa3eaf1a45` (see `strategy-seeds/sources/581facd5-aecc-5b86-8121-1eaa3eaf1a45/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-20
 
 ---
 
@@ -100,4 +100,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor worktree |
+| v1 | 2026-06-20 | Initial build from card | 5b9762a5-cc82-495f-a5c1-f8c8aa877c7d |

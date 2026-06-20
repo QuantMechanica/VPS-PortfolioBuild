@@ -94,7 +94,7 @@ bool     g_traded_session   = false;   // 1-trade-per-session latch
 // -----------------------------------------------------------------------------
 
 // Convert a broker-time stamp to its US-Eastern wall-clock components.
-void ETComponents(const datetime broker_time, int &et_hour, int &et_day)
+void ETComponents(const datetime broker_time, int &et_hour, int &et_day_key)
   {
    const datetime utc = QM_BrokerToUTC(broker_time);
    // US Eastern = UTC-5 (EST) outside US DST, UTC-4 (EDT) during US DST.
@@ -103,8 +103,8 @@ void ETComponents(const datetime broker_time, int &et_hour, int &et_day)
    MqlDateTime dt;
    ZeroMemory(dt);
    TimeToStruct(et, dt);
-   et_hour = dt.hour;
-   et_day  = dt.day;
+   et_hour    = dt.hour;
+   et_day_key = dt.year * 10000 + dt.mon * 100 + dt.day;
   }
 
 // ET bar-open hour of a closed bar at the given shift.
@@ -205,6 +205,9 @@ void AdvanceState_OnNewBar()
 // Cheap O(1) per-tick gate. Spread guard only — fail-OPEN on .DWX zero spread.
 bool Strategy_NoTradeFilter()
   {
+   if(_Period != PERIOD_H1)
+      return true;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
@@ -225,6 +228,14 @@ bool Strategy_NoTradeFilter()
 // Dead-time range fade entry. Caller guarantees QM_IsNewBar() == true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic, one trade per session.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -277,6 +288,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = (dir == QM_BUY) ? "deadtime_fade_long" : "deadtime_fade_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    g_traded_session = true; // latch: one trade per session
    return true;
   }
@@ -366,6 +379,14 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   const bool new_bar = QM_IsNewBar();
+   if(new_bar)
+     {
+      // FIRST on a new closed bar: advance the cached dead-time-range state.
+      AdvanceState_OnNewBar();
+      QM_EquityStreamOnNewBar();
+     }
+
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -382,13 +403,8 @@ void OnTick()
         }
      }
 
-   if(!QM_IsNewBar())
+   if(!new_bar)
       return;
-
-   // FIRST on a new closed bar: advance the cached dead-time-range state.
-   AdvanceState_OnNewBar();
-
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
