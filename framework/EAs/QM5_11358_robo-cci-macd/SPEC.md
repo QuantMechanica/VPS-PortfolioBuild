@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades momentum continuation on M5 bars. It opens long when CCI(14) crosses upward through +100 and MACD(12,26,2) main line is above zero on the same closed bar. It opens short when CCI(14) crosses downward through -100 and MACD(12,26,2) main line is below zero. Positions exit through a 12-pip stop, a 15-pip take-profit, Friday close, or when CCI returns inside the threshold that triggered the trade.
+The EA trades momentum continuation on M5 bars. It opens long when CCI(14) crosses upward through +100 and MACD(12,26,2) main line is above zero on the same closed bar. It opens short when CCI(14) crosses downward through -100 and MACD(12,26,2) main line is below zero. Positions exit through a 12-pip stop, a 15-pip take-profit, Friday close, or when CCI returns inside the threshold that triggered the trade. The card's CCI-vs-MACD-line exit is scale-ambiguous, so the P2 fixed take-profit is used as the unambiguous alternative named by the approved card.
 
 ---
 
@@ -36,6 +36,31 @@ The EA trades momentum continuation on M5 bars. It opens long when CCI(14) cross
 - EURUSD.DWX - named directly in the card's FX instrument list.
 - GBPUSD.DWX - named directly in the card's FX instrument list.
 - AUDUSD.DWX - named directly in the card's FX instrument list.
+- AUDCAD.DWX - included by the card's P2 broad DWX FX basket note.
+- AUDCHF.DWX - included by the card's P2 broad DWX FX basket note.
+- AUDJPY.DWX - included by the card's P2 broad DWX FX basket note.
+- AUDNZD.DWX - included by the card's P2 broad DWX FX basket note.
+- CADCHF.DWX - included by the card's P2 broad DWX FX basket note.
+- CADJPY.DWX - included by the card's P2 broad DWX FX basket note.
+- CHFJPY.DWX - included by the card's P2 broad DWX FX basket note.
+- EURAUD.DWX - included by the card's P2 broad DWX FX basket note.
+- EURCAD.DWX - included by the card's P2 broad DWX FX basket note.
+- EURCHF.DWX - included by the card's P2 broad DWX FX basket note.
+- EURGBP.DWX - included by the card's P2 broad DWX FX basket note.
+- EURJPY.DWX - included by the card's P2 broad DWX FX basket note.
+- EURNZD.DWX - included by the card's P2 broad DWX FX basket note.
+- GBPAUD.DWX - included by the card's P2 broad DWX FX basket note.
+- GBPCAD.DWX - included by the card's P2 broad DWX FX basket note.
+- GBPCHF.DWX - included by the card's P2 broad DWX FX basket note.
+- GBPJPY.DWX - included by the card's P2 broad DWX FX basket note.
+- GBPNZD.DWX - included by the card's P2 broad DWX FX basket note.
+- NZDCAD.DWX - included by the card's P2 broad DWX FX basket note.
+- NZDCHF.DWX - included by the card's P2 broad DWX FX basket note.
+- NZDJPY.DWX - included by the card's P2 broad DWX FX basket note.
+- NZDUSD.DWX - included by the card's P2 broad DWX FX basket note.
+- USDCAD.DWX - included by the card's P2 broad DWX FX basket note.
+- USDCHF.DWX - included by the card's P2 broad DWX FX basket note.
+- USDJPY.DWX - included by the card's P2 broad DWX FX basket note.
 
 **Explicitly NOT for:**
 - Non-DWX symbols - the build and backtest pipeline require canonical `.DWX` custom symbols.
