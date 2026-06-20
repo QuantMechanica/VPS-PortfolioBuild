@@ -25,7 +25,7 @@
 //   in-zone), the BB re-entry is the single triggering EVENT — never two fresh
 //   crosses required on the same bar.
 //   Stop  : entry  -/+  sl_atr_mult * ATR(atr_period)   (2x ATR factory default)
-//   Take  : entry  +/-  tp_atr_mult * ATR(atr_period)   (4x ATR factory default)
+//   Exit  : close at BB(10,2.3) middle band; 4x ATR target is a protective cap
 //   Spread guard : block only a genuinely wide spread (fail-open on .DWX zero
 //                  modeled spread).
 //
@@ -63,7 +63,7 @@ input int    strategy_bb_period          = 10;    // Bollinger Band period
 input double strategy_bb_deviation       = 2.3;   // Bollinger Band deviation (non-standard 2.3)
 input int    strategy_atr_period         = 14;    // ATR period (stop / target)
 input double strategy_sl_atr_mult        = 2.0;   // stop distance = mult * ATR
-input double strategy_tp_atr_mult        = 4.0;   // target distance = mult * ATR
+input double strategy_tp_atr_mult        = 4.0;   // protective cap = mult * ATR
 input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
 
 // -----------------------------------------------------------------------------
@@ -98,6 +98,14 @@ bool Strategy_NoTradeFilter()
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -140,7 +148,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type   = QM_BUY;
       req.price  = 0.0;   // framework fills market price at send
       req.sl     = sl;
-      req.tp     = tp;
+      req.tp     = tp;    // protective 4x ATR cap; BB middle handled in Strategy_ExitSignal
       req.reason = "ema100hl_bb_reversal_long";
       return true;
      }
@@ -160,7 +168,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type   = QM_SELL;
       req.price  = 0.0;   // framework fills market price at send
       req.sl     = sl;
-      req.tp     = tp;
+      req.tp     = tp;    // protective 4x ATR cap; BB middle handled in Strategy_ExitSignal
       req.reason = "ema100hl_bb_reversal_short";
       return true;
      }
@@ -173,9 +181,32 @@ void Strategy_ManageOpenPosition()
   {
   }
 
-// Exit handled by SL/TP (BB-middle/ATR target). No discretionary exit.
+// Exit at the current BB middle band, per card. Protective SL/TP remains broker-side.
 bool Strategy_ExitSignal()
   {
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const double middle = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
+      if(middle <= 0.0)
+         return false;
+
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(ptype == POSITION_TYPE_BUY && bid > 0.0 && bid >= middle)
+         return true;
+      if(ptype == POSITION_TYPE_SELL && ask > 0.0 && ask <= middle)
+         return true;
+     }
    return false;
   }
 
