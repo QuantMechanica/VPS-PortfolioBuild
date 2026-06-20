@@ -26,8 +26,8 @@
 //
 // .DWX INVARIANTS honoured:
 //   * Session window derived from the BAR TIMESTAMP in BROKER time via
-//     QM_BrokerToUTC + a configurable NY-vs-UTC offset, US-DST aware
-//     (QM_IsUSDSTUTC). No raw-ET/UTC window on a broker-time chart.
+//     QM_BrokerToUTC. The card equates 08:00 NY with fixed 13:00 GMT and
+//     gives broker-hour examples for that GMT anchor, so this EA uses UTC 13.
 //   * Breakout uses the bar CLOSE (the single EVENT), not an intrabar range
 //     touch — robust on gapless .DWX CFDs.
 //   * Spread guard fails OPEN on .DWX zero-modeled spread (only a genuinely
@@ -64,12 +64,11 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-// Session anchored in NY time per the card (08:00 NY = 13:00 GMT). The box is
-// the hour immediately PRECEDING session start (07:00-07:59 NY). The NY-vs-UTC
-// offset is US-DST driven: EST = UTC-5, EDT = UTC-4. We convert the bar's
-// broker time -> UTC -> NY using this offset so the window stays correct across
-// the year and across the DXZ broker GMT+2/+3 switch.
-input int    strategy_session_start_ny_hour = 8;     // NY hour the box "fires" (card: 08:00 NY)
+// Session anchored to fixed 13:00 GMT/UTC per the card's implementation notes.
+// The box is the hour immediately PRECEDING session start (12:00-12:59 UTC).
+// Broker time is converted to UTC through QM_BrokerToUTC so DXZ GMT+2/+3 shifts
+// are handled without hard-coding broker hours.
+input int    strategy_session_start_utc_hour = 13;    // UTC hour the box "fires" (card: 13:00 GMT)
 input int    strategy_box_hours             = 1;     // box = this many hours before session start
 input int    strategy_session_window_hours  = 1;     // signal valid for this many hours after start
 input double strategy_breakout_threshold    = 0.20;  // breakout = thr * box_height beyond the box
@@ -78,12 +77,12 @@ input double strategy_max_box_pips          = 80.0;  // skip session if box heig
 input double strategy_min_box_pips          = 5.0;   // skip session if box height < this many pips
 input double strategy_trail_activate_mult   = 1.00;  // start trailing once +this * box_height in profit
 input double strategy_trail_distance_mult   = 1.00;  // trail SL by this * box_height behind price
-input double strategy_spread_pct_of_box     = 25.0;  // skip if spread > this % of box height
+input double strategy_spread_cap_pips        = 20.0;  // skip if spread > this many pips
 
 // -----------------------------------------------------------------------------
 // File-scope cached session/box state (advanced once per closed bar).
 // -----------------------------------------------------------------------------
-datetime g_box_session_day   = 0;     // NY calendar day (midnight NY) of the active box
+datetime g_box_session_day   = 0;     // UTC calendar day of the active box
 bool     g_box_valid         = false; // a tradeable box exists for the current session
 double   g_box_high          = 0.0;
 double   g_box_low           = 0.0;
@@ -94,35 +93,22 @@ bool     g_session_traded    = false; // one trade per session latch
 // Helpers (file-scope, non-framework, bespoke session math).
 // -----------------------------------------------------------------------------
 
-// NY offset from UTC in hours (negative). EDT = -4 during US DST, EST = -5 else.
-int NY_UTCOffsetHours(const datetime utc)
-  {
-   return QM_IsUSDSTUTC(utc) ? -4 : -5;
-  }
-
-// Convert a broker-time stamp to New York wall-clock time.
-datetime BrokerToNY(const datetime broker_time)
-  {
-   const datetime utc = QM_BrokerToUTC(broker_time);
-   return utc + (NY_UTCOffsetHours(utc) * 3600);
-  }
-
-// Midnight (00:00) of the NY calendar day containing ny_time.
-datetime NYMidnight(const datetime ny_time)
+// Midnight (00:00) of the UTC calendar day containing utc_time.
+datetime UTCMidnight(const datetime utc_time)
   {
    MqlDateTime dt;
    ZeroMemory(dt);
-   TimeToStruct(ny_time, dt);
+   TimeToStruct(utc_time, dt);
    dt.hour = 0;
    dt.min  = 0;
    dt.sec  = 0;
    return StructToTime(dt);
   }
 
-// Rebuild the box for the session whose start hour is on the NY day of ny_now.
+// Rebuild the box for the session whose start hour is on the UTC day of utc_now.
 // Scans the prior strategy_box_hours of M5 bars (closed bars only). Sets the
 // file-scope cache. Called ONCE per session-start bar from AdvanceState.
-void BuildBoxForSession(const datetime ny_now)
+void BuildBoxForSession()
   {
    g_box_valid      = false;
    g_session_traded = false;
@@ -133,7 +119,7 @@ void BuildBoxForSession(const datetime ny_now)
    // The box covers the strategy_box_hours immediately before the session
    // start hour. On M5 that is (12 * box_hours) bars, ending with the bar that
    // closed at session start. The most recently CLOSED bar (shift 1) is the
-   // 07:55 NY bar (its close stamps 08:00 NY = session start). Scan shifts
+   // 12:55 UTC bar (its close stamps 13:00 UTC = session start). Scan shifts
    // 1 .. 12*box_hours for the prior-hour high/low.
    const int box_bars = 12 * strategy_box_hours;
    if(box_bars <= 0)
@@ -146,8 +132,8 @@ void BuildBoxForSession(const datetime ny_now)
      {
       // perf-allowed: bounded session-frame structural read (<=12*box_hours
       // bars), executed once per session-start bar on the new-bar path.
-      const double bh = iHigh(_Symbol, _Period, s);
-      const double bl = iLow(_Symbol, _Period, s);
+      const double bh = iHigh(_Symbol, _Period, s); // perf-allowed
+      const double bl = iLow(_Symbol, _Period, s); // perf-allowed
       if(bh <= 0.0 || bl <= 0.0)
          continue;
       if(!have)
@@ -187,35 +173,35 @@ void BuildBoxForSession(const datetime ny_now)
 
 // Advance cached session state. Called ONCE per new closed bar (caller already
 // passed QM_IsNewBar()). Detects the session-start bar by the BAR'S broker-time
-// timestamp converted to NY, and (re)builds the box on that bar.
+// timestamp converted to UTC, and (re)builds the box on that bar.
 void AdvanceState_OnNewBar()
   {
    // Broker time of the bar that just CLOSED (its close == open of bar 0).
-   const datetime bar_open_broker = iTime(_Symbol, _Period, 0); // current forming bar's open = last close
-   const datetime ny_now          = BrokerToNY(bar_open_broker);
+   const datetime bar_open_broker = iTime(_Symbol, _Period, 0); // perf-allowed
+   const datetime utc_now         = QM_BrokerToUTC(bar_open_broker);
 
-   MqlDateTime nydt;
-   ZeroMemory(nydt);
-   TimeToStruct(ny_now, nydt);
-   const datetime ny_day = NYMidnight(ny_now);
+   MqlDateTime utcdt;
+   ZeroMemory(utcdt);
+   TimeToStruct(utc_now, utcdt);
+   const datetime utc_day = UTCMidnight(utc_now);
 
-   // Session-start bar: the first M5 bar whose NY open hour == session start
+   // Session-start bar: the first M5 bar whose UTC open hour == session start
    // hour and minute == 0. That bar's open coincides with the close of the
-   // 07:55 NY bar, i.e. the box (07:00-07:59) is complete. Build once per day.
-   if(nydt.hour == strategy_session_start_ny_hour && nydt.min == 0 && ny_day != g_box_session_day)
+   // 12:55 UTC bar, i.e. the box (12:00-12:59 UTC) is complete. Build once per day.
+   if(utcdt.hour == strategy_session_start_utc_hour && utcdt.min == 0 && utc_day != g_box_session_day)
      {
-      g_box_session_day = ny_day;
-      BuildBoxForSession(ny_now);
+      g_box_session_day = utc_day;
+      BuildBoxForSession();
      }
   }
 
-// True while the current bar's NY time is inside the signal window.
-bool InSessionWindow(const datetime ny_now)
+// True while the current bar's UTC time is inside the signal window.
+bool InSessionWindow(const datetime utc_now)
   {
    MqlDateTime dt;
    ZeroMemory(dt);
-   TimeToStruct(ny_now, dt);
-   const int start_h = strategy_session_start_ny_hour;
+   TimeToStruct(utc_now, dt);
+   const int start_h = strategy_session_start_utc_hour;
    const int end_h   = start_h + strategy_session_window_hours; // exclusive
    return (dt.hour >= start_h && dt.hour < end_h);
   }
@@ -225,19 +211,17 @@ bool InSessionWindow(const datetime ny_now)
 // -----------------------------------------------------------------------------
 
 // Cheap O(1) per-tick gate: spread guard only. Fail-OPEN on .DWX zero spread;
-// only a genuinely wide spread (relative to the active box height) blocks.
+// only a genuinely wide spread above the card's 20-pip cap blocks.
 bool Strategy_NoTradeFilter()
   {
-   if(!g_box_valid || g_box_height <= 0.0)
-      return false; // no active box reference — defer to the entry gate
-
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote — never block on a missing quote
 
    const double spread = ask - bid;
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_box / 100.0) * g_box_height)
+   const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathRound(strategy_spread_cap_pips));
+   if(cap > 0.0 && spread > 0.0 && spread > cap)
       return true; // genuinely wide spread
 
    return false;
@@ -246,6 +230,16 @@ bool Strategy_NoTradeFilter()
 // Box breakout entry on the CLOSE of a bar. Caller guarantees QM_IsNewBar().
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   AdvanceState_OnNewBar();
+
    if(!g_box_valid || g_box_height <= 0.0)
       return false;
    if(g_session_traded)
@@ -253,14 +247,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false; // one position per magic
 
-   // Must be inside the NY signal window (derived from the bar timestamp).
-   const datetime bar_open_broker = iTime(_Symbol, _Period, 0);
-   const datetime ny_now          = BrokerToNY(bar_open_broker);
-   if(!InSessionWindow(ny_now))
+   // Must be inside the UTC signal window (derived from the bar timestamp).
+   const datetime bar_open_broker = iTime(_Symbol, _Period, 0); // perf-allowed
+   const datetime utc_now         = QM_BrokerToUTC(bar_open_broker);
+   if(!InSessionWindow(utc_now))
       return false;
 
    // The EVENT: the just-CLOSED bar (shift 1) closes beyond the extended box.
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed
    if(close1 <= 0.0)
       return false;
 
@@ -283,6 +277,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl     = sl;
       req.tp     = tp;
       req.reason = "box_break_long";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
       g_session_traded = true;
       return true;
      }
@@ -303,6 +299,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl     = sl;
       req.tp     = tp;
       req.reason = "box_break_short";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
       g_session_traded = true;
       return true;
      }
@@ -447,9 +445,6 @@ void OnTick()
 
    if(!QM_IsNewBar())
       return;
-
-   // FIRST on the new-bar path: advance cached session/box state.
-   AdvanceState_OnNewBar();
 
    QM_EquityStreamOnNewBar();
 

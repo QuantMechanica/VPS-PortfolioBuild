@@ -4,7 +4,7 @@
 **Slug:** `tc-m5-7-london-open-box-breakout`
 **Source:** `e78a9f1f-4e6a-563c-a080-915133d6ed28` (see `strategy-seeds/sources/e78a9f1f-4e6a-563c-a080-915133d6ed28/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-20
 
 ---
 
@@ -12,11 +12,11 @@
 
 A previous-hour opening-range (box) breakout on M5. At the session start (the
 card anchors this to 08:00 New York time = 13:00 GMT), the EA builds a box from
-the prior hour's M5 bars (07:00-07:59 NY): `box_high` = highest high, `box_low`
-= lowest low, `box_height = box_high - box_low`. The session/box window is
-derived purely from the bar TIMESTAMP in broker time (DXZ broker = NY-Close
-GMT+2/+3), converted broker→UTC via `QM_BrokerToUTC` and then to NY wall-clock
-using the US-DST-aware offset (EDT -4 / EST -5).
+the prior hour's M5 bars: `box_high` = highest high, `box_low` = lowest low,
+`box_height = box_high - box_low`. The card equates the session with fixed
+13:00-14:00 GMT and gives broker-hour examples for that GMT anchor, so the EA
+converts broker time to UTC via `QM_BrokerToUTC` and uses 13:00 UTC as the
+session start.
 
 A LONG fires when a closed M5 bar CLOSES above `box_high + 0.20 × box_height`;
 a SHORT fires when a closed M5 bar CLOSES below `box_low - 0.20 × box_height`.
@@ -26,7 +26,8 @@ and at most one trade fires per session. Stop-loss is the opposite side of the
 box (LONG SL = box_low, SHORT SL = box_high); take-profit is `box_high + 4.00 ×
 box_height` (LONG) / `box_low - 4.00 × box_height` (SHORT). Once price is 1×
 box_height in profit, the stop trails 1× box_height behind price. Sessions whose
-box height is > 80 pips or < 5 pips are skipped.
+box height is > 80 pips or < 5 pips are skipped, and spread only blocks when it
+is genuinely wider than the card's 20-pip cap.
 
 ---
 
@@ -34,7 +35,7 @@ box height is > 80 pips or < 5 pips are skipped.
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_session_start_ny_hour` | 8 | 0-23 | NY hour at which the box "fires" (card: 08:00 NY) |
+| `strategy_session_start_utc_hour` | 13 | 0-23 | UTC hour at which the box "fires" (card: 13:00 GMT) |
 | `strategy_box_hours` | 1 | 1-3 | Box = this many hours immediately before session start |
 | `strategy_session_window_hours` | 1 | 1-3 | Signal valid for this many hours after session start |
 | `strategy_breakout_threshold` | 0.20 | 0.05-0.50 | Breakout level = this × box_height beyond the box edge |
@@ -43,7 +44,7 @@ box height is > 80 pips or < 5 pips are skipped.
 | `strategy_min_box_pips` | 5.0 | 1-30 | Skip session if box height < this many pips |
 | `strategy_trail_activate_mult` | 1.00 | 0.5-3.0 | Begin trailing once +this × box_height in profit |
 | `strategy_trail_distance_mult` | 1.00 | 0.5-3.0 | Trail SL by this × box_height behind price |
-| `strategy_spread_pct_of_box` | 25.0 | 5-100 | Skip if spread > this % of box height (fail-open on zero spread) |
+| `strategy_spread_cap_pips` | 20.0 | 1-100 | Skip if spread > this many pips (fail-open on zero spread) |
 
 ---
 
@@ -108,4 +109,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | broker-time-derived box; central step (resolver/compile/setfile/smoke) deferred |
+| v1 | 2026-06-20 | Initial build from card | b294af01-0b88-4066-b5a3-f98d72ba7fd5 |

@@ -13179,3 +13179,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 2131,ehlers-laguerre-filter-h4,7,GDAXI.DWX,21310007,2026-06-20,Development,active
 2131,ehlers-laguerre-filter-h4,8,UK100.DWX,21310008,2026-06-20,Development,active
 2131,ehlers-laguerre-filter-h4,9,SP500.DWX,21310009,2026-06-20,Development,active
+9987,tv-ict-session-break-reentry-retest,0,EURUSD.DWX,99870000,2026-06-20,Development,active
+9987,tv-ict-session-break-reentry-retest,1,GBPUSD.DWX,99870001,2026-06-20,Development,active
+9987,tv-ict-session-break-reentry-retest,2,USDJPY.DWX,99870002,2026-06-20,Development,active
+9987,tv-ict-session-break-reentry-retest,3,AUDUSD.DWX,99870003,2026-06-20,Development,active
+9987,tv-ict-session-break-reentry-retest,4,XAUUSD.DWX,99870004,2026-06-20,Development,active
+9987,tv-ict-session-break-reentry-retest,5,NDX.DWX,99870005,2026-06-20,Development,active
+9987,tv-ict-session-break-reentry-retest,6,WS30.DWX,99870006,2026-06-20,Development,active
+9987,tv-ict-session-break-reentry-retest,7,SP500.DWX,99870007,2026-06-20,Development,active

@@ -1,8 +1,19 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11358 RoboForex CCI + MACD dual oscillator"
+#property description "QM5_9987 TradingView ICT Session Break-Reentry-Retest"
 
 #include <QM/QM_Common.mqh>
+
+enum StrategySessionState
+  {
+   ST_WAITING = 0,
+   ST_BREAK_HIGH = 1,
+   ST_BREAK_LOW = 2,
+   ST_REENTRY_HIGH = 3,
+   ST_REENTRY_LOW = 4,
+   ST_ARMED_SHORT = 5,
+   ST_ARMED_LONG = 6
+  };
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -35,7 +46,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11358;
+input int    qm_ea_id                   = 9999;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,15 +84,154 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_cci_period        = 14;
-input double strategy_cci_long_level    = 100.0;
-input double strategy_cci_short_level   = -100.0;
-input int    strategy_macd_fast         = 12;
-input int    strategy_macd_slow         = 26;
-input int    strategy_macd_signal       = 2;
-input int    strategy_stop_pips         = 12;
-input int    strategy_take_pips         = 15;
-input int    strategy_spread_cap_pips   = 3;
+input bool   strategy_trade_asia        = true;
+input bool   strategy_trade_london      = true;
+input bool   strategy_trade_nyam        = true;
+input int    strategy_asia_start_min    = 0;
+input int    strategy_asia_end_min      = 420;
+input int    strategy_london_start_min  = 480;
+input int    strategy_london_end_min    = 720;
+input int    strategy_nyam_start_min    = 810;
+input int    strategy_nyam_end_min      = 1020;
+input int    strategy_wait_bars         = 2;
+input int    strategy_sl_pips           = 15;
+input int    strategy_tp_pips           = 30;
+input int    strategy_session_end_buffer_bars = 2;
+input double strategy_spread_filter_mult = 0.30;
+
+StrategySessionState g_state = ST_WAITING;
+int      g_session_key = -1;
+int      g_reentry_bars = 0;
+bool     g_range_ready = false;
+bool     g_range_frozen = false;
+bool     g_trade_taken_this_session = false;
+double   g_session_high = 0.0;
+double   g_session_low = 0.0;
+datetime g_position_session_exit_at = 0;
+
+int MinutesOfDay(const datetime t)
+  {
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   return dt.hour * 60 + dt.min;
+  }
+
+int DayKey(const datetime t)
+  {
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   return dt.year * 10000 + dt.mon * 100 + dt.day;
+  }
+
+int ClampMinute(const int minute_value)
+  {
+   if(minute_value < 0)
+      return 0;
+   if(minute_value > 1439)
+      return 1439;
+   return minute_value;
+  }
+
+bool InMinuteWindow(const int minute_of_day, const int start_min, const int end_min)
+  {
+   const int start = ClampMinute(start_min);
+   const int finish = ClampMinute(end_min);
+   if(start == finish)
+      return false;
+   if(start < finish)
+      return minute_of_day >= start && minute_of_day < finish;
+   return minute_of_day >= start || minute_of_day < finish;
+  }
+
+int ActiveSessionIndex(const datetime t)
+  {
+   const int minute_of_day = MinutesOfDay(t);
+   if(strategy_trade_asia && InMinuteWindow(minute_of_day, strategy_asia_start_min, strategy_asia_end_min))
+      return 0;
+   if(strategy_trade_london && InMinuteWindow(minute_of_day, strategy_london_start_min, strategy_london_end_min))
+      return 1;
+   if(strategy_trade_nyam && InMinuteWindow(minute_of_day, strategy_nyam_start_min, strategy_nyam_end_min))
+      return 2;
+   return -1;
+  }
+
+int SessionStartMin(const int session_index)
+  {
+   if(session_index == 0)
+      return strategy_asia_start_min;
+   if(session_index == 1)
+      return strategy_london_start_min;
+   return strategy_nyam_start_min;
+  }
+
+int SessionEndMin(const int session_index)
+  {
+   if(session_index == 0)
+      return strategy_asia_end_min;
+   if(session_index == 1)
+      return strategy_london_end_min;
+   return strategy_nyam_end_min;
+  }
+
+datetime DateAtMinute(const datetime t, const int minute_of_day)
+  {
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   const int minute = ClampMinute(minute_of_day);
+   dt.hour = minute / 60;
+   dt.min = minute % 60;
+   dt.sec = 0;
+   return StructToTime(dt);
+  }
+
+datetime SessionEndTime(const datetime bar_time, const int session_index)
+  {
+   datetime end_time = DateAtMinute(bar_time, SessionEndMin(session_index));
+   if(SessionEndMin(session_index) <= SessionStartMin(session_index) &&
+      MinutesOfDay(bar_time) >= SessionStartMin(session_index))
+      end_time += 86400;
+   return end_time;
+  }
+
+void ResetSessionState(const int session_key)
+  {
+   g_state = ST_WAITING;
+   g_session_key = session_key;
+   g_reentry_bars = 0;
+   g_range_ready = false;
+   g_range_frozen = false;
+   g_trade_taken_this_session = false;
+   g_session_high = 0.0;
+   g_session_low = 0.0;
+   g_position_session_exit_at = 0;
+  }
+
+bool HasOpenPosition()
+  {
+   return QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0;
+  }
+
+bool LoadLastClosedBar(MqlRates &bar)
+  {
+   MqlRates rates[];
+   ArrayResize(rates, 1);
+   const int copied = CopyRates(_Symbol, PERIOD_CURRENT, 1, 1, rates); // perf-allowed: one closed bar inside framework QM_IsNewBar gate.
+   if(copied != 1)
+      return false;
+   bar = rates[0];
+   return bar.time > 0 && bar.high > 0.0 && bar.low > 0.0 && bar.close > 0.0;
+  }
+
+void PrepareMarketRequest(QM_EntryRequest &req, const QM_OrderType side, const double entry_price, const int session_index)
+  {
+   req.type = side;
+   req.price = 0.0;
+   req.sl = QM_StopFixedPips(_Symbol, side, entry_price, strategy_sl_pips);
+   req.tp = QM_TakeFixedPips(_Symbol, side, entry_price, strategy_tp_pips);
+   req.reason = StringFormat("ICT_SESSION_RETEST_%d", session_index);
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -91,13 +241,13 @@ input int    strategy_spread_cap_pips   = 3;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double max_spread = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
-
-   if(ask <= 0.0 || bid <= 0.0)
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(bid <= 0.0 || ask <= 0.0)
       return true;
-   if(max_spread > 0.0 && ask > bid && (ask - bid) > max_spread)
+
+   const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_tp_pips) * strategy_spread_filter_mult;
+   if(cap > 0.0 && ask > bid && (ask - bid) > cap)
       return true;
 
    return false;
@@ -116,47 +266,128 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_cci_period <= 0 || strategy_macd_fast <= 0 ||
-      strategy_macd_slow <= strategy_macd_fast || strategy_macd_signal <= 0 ||
-      strategy_stop_pips <= 0 || strategy_take_pips <= 0)
+   if(strategy_wait_bars < 0 || strategy_sl_pips <= 0 || strategy_tp_pips <= 0)
+      return false;
+   if(HasOpenPosition() || g_trade_taken_this_session)
       return false;
 
-   const double cci_1 = QM_CCI(_Symbol, PERIOD_CURRENT, strategy_cci_period, 1);
-   const double cci_2 = QM_CCI(_Symbol, PERIOD_CURRENT, strategy_cci_period, 2);
-   const double macd_1 = QM_MACD_Main(_Symbol, PERIOD_CURRENT,
-                                      strategy_macd_fast,
-                                      strategy_macd_slow,
-                                      strategy_macd_signal,
-                                      1);
-
-   if(cci_1 == 0.0 && cci_2 == 0.0 && macd_1 == 0.0)
+   MqlRates bar;
+   if(!LoadLastClosedBar(bar))
       return false;
 
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
+   const int session_index = ActiveSessionIndex(bar.time);
+   if(session_index < 0)
       return false;
 
-   if(cci_2 < strategy_cci_long_level &&
-      cci_1 >= strategy_cci_long_level &&
-      macd_1 > 0.0)
+   const int session_key = DayKey(bar.time) * 10 + session_index;
+   if(session_key != g_session_key)
+      ResetSessionState(session_key);
+
+   if(!g_range_ready)
      {
-      req.type = QM_BUY;
-      req.sl = QM_StopFixedPips(_Symbol, req.type, ask, strategy_stop_pips);
-      req.tp = QM_TakeFixedPips(_Symbol, req.type, ask, strategy_take_pips);
-      req.reason = "CCI_MACD_LONG";
-      return (req.sl > 0.0 && req.tp > 0.0);
+      g_session_high = bar.high;
+      g_session_low = bar.low;
+      g_range_ready = true;
+      return false;
      }
 
-   if(cci_2 > strategy_cci_short_level &&
-      cci_1 <= strategy_cci_short_level &&
-      macd_1 < 0.0)
+   if(g_state == ST_WAITING && !g_range_frozen)
      {
-      req.type = QM_SELL;
-      req.sl = QM_StopFixedPips(_Symbol, req.type, bid, strategy_stop_pips);
-      req.tp = QM_TakeFixedPips(_Symbol, req.type, bid, strategy_take_pips);
-      req.reason = "CCI_MACD_SHORT";
-      return (req.sl > 0.0 && req.tp > 0.0);
+      const double prior_high = g_session_high;
+      const double prior_low = g_session_low;
+
+      if(bar.close > prior_high)
+        {
+         g_state = ST_BREAK_HIGH;
+         g_range_frozen = true;
+         return false;
+        }
+      if(bar.close < prior_low)
+        {
+         g_state = ST_BREAK_LOW;
+         g_range_frozen = true;
+         return false;
+        }
+
+      g_session_high = MathMax(g_session_high, bar.high);
+      g_session_low = MathMin(g_session_low, bar.low);
+      return false;
+     }
+
+   if(g_state == ST_BREAK_HIGH)
+     {
+      if(bar.close < g_session_high)
+        {
+         g_state = ST_REENTRY_HIGH;
+         g_reentry_bars = 0;
+        }
+      return false;
+     }
+
+   if(g_state == ST_BREAK_LOW)
+     {
+      if(bar.close > g_session_low)
+        {
+         g_state = ST_REENTRY_LOW;
+         g_reentry_bars = 0;
+        }
+      return false;
+     }
+
+   if(g_state == ST_REENTRY_HIGH)
+     {
+      if(bar.close >= g_session_high)
+        {
+         g_state = ST_BREAK_HIGH;
+         g_reentry_bars = 0;
+         return false;
+        }
+      g_reentry_bars++;
+      if(g_reentry_bars >= strategy_wait_bars)
+         g_state = ST_ARMED_SHORT;
+      return false;
+     }
+
+   if(g_state == ST_REENTRY_LOW)
+     {
+      if(bar.close <= g_session_low)
+        {
+         g_state = ST_BREAK_LOW;
+         g_reentry_bars = 0;
+         return false;
+        }
+      g_reentry_bars++;
+      if(g_reentry_bars >= strategy_wait_bars)
+         g_state = ST_ARMED_LONG;
+      return false;
+     }
+
+   if(g_state == ST_ARMED_SHORT && bar.high >= g_session_high)
+     {
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(bid <= 0.0)
+         return false;
+      PrepareMarketRequest(req, QM_SELL, bid, session_index);
+      if(req.sl <= 0.0 || req.tp <= 0.0)
+         return false;
+      g_trade_taken_this_session = true;
+      g_position_session_exit_at = SessionEndTime(bar.time, session_index) +
+                                   strategy_session_end_buffer_bars * PeriodSeconds(PERIOD_CURRENT);
+      return true;
+     }
+
+   if(g_state == ST_ARMED_LONG && bar.low <= g_session_low)
+     {
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(ask <= 0.0)
+         return false;
+      PrepareMarketRequest(req, QM_BUY, ask, session_index);
+      if(req.sl <= 0.0 || req.tp <= 0.0)
+         return false;
+      g_trade_taken_this_session = true;
+      g_position_session_exit_at = SessionEndTime(bar.time, session_index) +
+                                   strategy_session_end_buffer_bars * PeriodSeconds(PERIOD_CURRENT);
+      return true;
      }
 
    return false;
@@ -166,36 +397,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card baseline has no break-even, trailing, partial close, or scaling.
+   // Card specifies no trailing, break-even, partial-close, or scale-in logic.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
+   if(g_position_session_exit_at <= 0)
       return false;
-
-   const double cci_1 = QM_CCI(_Symbol, PERIOD_CURRENT, strategy_cci_period, 1);
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(position_type == POSITION_TYPE_BUY && cci_1 < strategy_cci_long_level)
-         return true;
-      if(position_type == POSITION_TYPE_SELL && cci_1 > strategy_cci_short_level)
-         return true;
-     }
-
+   if(!HasOpenPosition())
+      return false;
+   if(TimeCurrent() >= g_position_session_exit_at)
+      return true;
    return false;
   }
 

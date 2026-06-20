@@ -111,15 +111,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    // perf-allowed: this strategy is bespoke D1 OHLC structure; each read is a
    // single fixed closed-bar value inside the framework's once-per-bar gate.
-   const double close_1 = iClose(_Symbol, PERIOD_D1, 1);
-   const double open_1  = iOpen(_Symbol, PERIOD_D1, 1);
-   const double high_1  = iHigh(_Symbol, PERIOD_D1, 1);
-   const double low_1   = iLow(_Symbol, PERIOD_D1, 1);
-   const double close_2 = iClose(_Symbol, PERIOD_D1, 2);
-   const double high_2  = iHigh(_Symbol, PERIOD_D1, 2);
-   const double low_2   = iLow(_Symbol, PERIOD_D1, 2);
-   const double close_3 = iClose(_Symbol, PERIOD_D1, 3);
-   const double close_4 = iClose(_Symbol, PERIOD_D1, 4);
+   const double close_1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed
+   const double open_1  = iOpen(_Symbol, PERIOD_D1, 1);  // perf-allowed
+   const double high_1  = iHigh(_Symbol, PERIOD_D1, 1);  // perf-allowed
+   const double low_1   = iLow(_Symbol, PERIOD_D1, 1);   // perf-allowed
+   const double close_2 = iClose(_Symbol, PERIOD_D1, 2); // perf-allowed
+   const double high_2  = iHigh(_Symbol, PERIOD_D1, 2);  // perf-allowed
+   const double low_2   = iLow(_Symbol, PERIOD_D1, 2);   // perf-allowed
+   const double close_3 = iClose(_Symbol, PERIOD_D1, 3); // perf-allowed
+   const double close_4 = iClose(_Symbol, PERIOD_D1, 4); // perf-allowed
 
    if(close_1 <= 0.0 || open_1 <= 0.0 || high_1 <= 0.0 || low_1 <= 0.0 ||
       close_2 <= 0.0 || high_2 <= 0.0 || low_2 <= 0.0 ||
@@ -218,9 +218,9 @@ bool Strategy_ExitSignal()
 
    // perf-allowed: fixed D1 closed-bar exit check for the card's first
    // downward daily movement after entry.
-   const datetime current_daily_open = iTime(_Symbol, PERIOD_D1, 0);
-   const double open_1 = iOpen(_Symbol, PERIOD_D1, 1);
-   const double close_1 = iClose(_Symbol, PERIOD_D1, 1);
+   const datetime current_daily_open = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed
+   const double open_1 = iOpen(_Symbol, PERIOD_D1, 1);               // perf-allowed
+   const double close_1 = iClose(_Symbol, PERIOD_D1, 1);             // perf-allowed
    if(current_daily_open <= 0 || open_1 <= 0.0 || close_1 <= 0.0 || close_1 >= open_1)
       return false;
 
