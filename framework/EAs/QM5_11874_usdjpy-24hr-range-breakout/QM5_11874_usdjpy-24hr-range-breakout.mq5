@@ -58,7 +58,7 @@ bool QM11874_IsSetupBar()
   {
    // perf-allowed: bar-open time is required to avoid exact tick-minute gates;
    // no framework helper exposes current bar open time.
-   const datetime bar_open_broker = iTime(_Symbol, _Period, 0);
+   const datetime bar_open_broker = iTime(_Symbol, _Period, 0); // perf-allowed
    if(bar_open_broker <= 0)
       return false;
 
@@ -85,8 +85,8 @@ bool QM11874_ReadPriorRange(double &range_high, double &range_low)
      {
       // perf-allowed: bounded 24-bar H1 range scan at setup only; no QM_High
       // or QM_Low reader exists in the framework.
-      const double h = iHigh(_Symbol, _Period, shift);
-      const double l = iLow(_Symbol, _Period, shift);
+      const double h = iHigh(_Symbol, _Period, shift); // perf-allowed
+      const double l = iLow(_Symbol, _Period, shift); // perf-allowed
       if(h <= 0.0 || l <= 0.0 || h < l)
          return false;
 
@@ -200,11 +200,14 @@ bool QM11874_BuildStopRequest(const QM_OrderType type,
    return true;
   }
 
+// No Trade Filter (time, spread, news): the card adds no extra session or spread
+// gate beyond the daily setup hour and central framework news/Friday filters.
 bool Strategy_NoTradeFilter()
   {
    return false;
   }
 
+// Trade Entry: daily 6pm EST prior-24-hour range breakout stop straddle.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY_STOP;
@@ -258,17 +261,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return false;
   }
 
+// Trade Management: cancel the opposite pending stop after either side triggers.
 void Strategy_ManageOpenPosition()
   {
    if(QM11874_HasOpenPosition())
       QM11874_RemovePendingStops("oco_triggered");
   }
 
+// Trade Close: no discretionary close; fixed SL/TP and framework Friday close.
 bool Strategy_ExitSignal()
   {
    return false;
   }
 
+// News Filter Hook: central framework news filter handles configured blackout.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;

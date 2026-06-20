@@ -11282,7 +11282,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11544,carter-t-h1-psar02-adx50,0,EURUSD.DWX,115440000,2026-06-18,Claude,reserved
 11544,carter-t-h1-psar02-adx50,1,GBPUSD.DWX,115440001,2026-06-18,Claude,reserved
 11545,carter-t-h1-ema18-28-wma5-12-rsi21,0,EURUSD.DWX,115450000,2026-06-18,Claude,reserved
-11546,carter-t-m5-macd1226-stoch533-ema5oc,0,EURUSD.DWX,115460000,2026-06-18,Claude,reserved
+11546,carter-t-m5-macd1226-stoch533-ema5oc,0,EURUSD.DWX,115460000,2026-06-20,Development,active
 11547,carter-t-m5-bb20-midband-pullback,0,EURUSD.DWX,115470000,2026-06-18,Claude,reserved
 11547,carter-t-m5-bb20-midband-pullback,1,GBPUSD.DWX,115470001,2026-06-18,Claude,reserved
 11548,carter-t-m5-session-box-breakout,0,GBPUSD.DWX,115480000,2026-06-18,Development,active
@@ -13162,3 +13162,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9985,tv-mes-mr-ema9-200ma,0,SP500.DWX,99850000,2026-06-20,Development,active
 9985,tv-mes-mr-ema9-200ma,1,NDX.DWX,99850001,2026-06-20,Development,active
 9985,tv-mes-mr-ema9-200ma,2,WS30.DWX,99850002,2026-06-20,Development,active
+9237,mql5-gm-band-cross,0,EURUSD.DWX,92370000,2026-06-20,Development,active
+9237,mql5-gm-band-cross,1,GBPJPY.DWX,92370001,2026-06-20,Development,active
+9237,mql5-gm-band-cross,2,XAUUSD.DWX,92370002,2026-06-20,Development,active
