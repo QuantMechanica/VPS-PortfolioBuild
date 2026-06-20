@@ -55,8 +55,8 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -74,6 +74,7 @@ input int    strategy_tp_pips             = 35;   // take profit distance (pips)
 input int    strategy_sl_pips             = 28;   // stop loss distance (pips)
 input int    strategy_pending_expiry_hours = 23;  // pending lifetime; 0 = GTC (new-bar sweep still cancels)
 input int    strategy_friday_cutoff_hour  = 21;   // do not arm a bracket on Friday at/after this broker hour
+input int    strategy_spread_cap_tenths_pips = 25; // 25 = 2.5 pips; zero .DWX spread is allowed
 
 // -----------------------------------------------------------------------------
 // Internal helpers
@@ -119,12 +120,20 @@ void Strategy_CancelAllPendings(const int magic, const string reason)
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. No spread cap is applied here: the card's 2.5-pip
-// EURUSD spread cap cannot be enforced on .DWX (zero modeled spread → would
-// fail-closed and block every trade). Return false = never blocks at tick level;
-// all gating happens on the closed-bar entry path.
+// Cheap O(1) per-tick gate. The card's 2.5-pip EURUSD spread cap is enforced
+// without fail-closing on zero .DWX modeled spread: only a genuinely wide
+// positive spread blocks.
 bool Strategy_NoTradeFilter()
   {
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return true;
+
+   const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_tenths_pips) / 10.0;
+   if(cap > 0.0 && ask > bid && (ask - bid) > cap)
+      return true;
+
    return false;
   }
 
@@ -152,7 +161,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // --- prev_close = the just-closed D1 candle (shift 1). ---
-   const double prev_close = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
+   const double prev_close = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: single closed D1 close required by card; EntrySignal is QM_IsNewBar-gated
    if(prev_close <= 0.0)
       return false;
 

@@ -11315,7 +11315,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11574,robo-ichi-awesome-h1,1,GBPUSD.DWX,115740001,2026-06-18,Claude,reserved
 11574,robo-ichi-awesome-h1,2,USDJPY.DWX,115740002,2026-06-18,Claude,reserved
 11574,robo-ichi-awesome-h1,3,GBPJPY.DWX,115740003,2026-06-18,Claude,reserved
-11575,robo-32points-d1,0,EURUSD.DWX,115750000,2026-06-18,Claude,reserved
+11575,robo-32points-d1,0,EURUSD.DWX,115750000,2026-06-20,Development,active
 11575,robo-32points-d1,1,GBPUSD.DWX,115750001,2026-06-18,Claude,reserved
 11575,robo-32points-d1,2,USDJPY.DWX,115750002,2026-06-18,Claude,reserved
 11576,robo-daily-break-ma-d1,0,EURUSD.DWX,115760000,2026-06-18,Claude,reserved
@@ -11610,8 +11610,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11702,fsr-trix14-signalcross,1,GBPUSD.DWX,117020001,2026-06-18,Claude,reserved
 11702,fsr-trix14-signalcross,2,USDJPY.DWX,117020002,2026-06-18,Claude,reserved
 11702,fsr-trix14-signalcross,3,AUDUSD.DWX,117020003,2026-06-18,Claude,reserved
-11704,fsr-macd-stoch-m5-scalp,0,EURUSD.DWX,117040000,2026-06-18,Claude,reserved
-11704,fsr-macd-stoch-m5-scalp,1,GBPUSD.DWX,117040001,2026-06-18,Claude,reserved
+11704,fsr-macd-stoch-m5-scalp,0,EURUSD.DWX,117040000,2026-06-18,Development,active
+11704,fsr-macd-stoch-m5-scalp,1,GBPUSD.DWX,117040001,2026-06-18,Development,active
 11705,fsr-ema5-13-cross-h1,0,EURUSD.DWX,117050000,2026-06-18,Claude,reserved
 11705,fsr-ema5-13-cross-h1,1,GBPUSD.DWX,117050001,2026-06-18,Claude,reserved
 11705,fsr-ema5-13-cross-h1,2,USDCHF.DWX,117050002,2026-06-18,Claude,reserved
