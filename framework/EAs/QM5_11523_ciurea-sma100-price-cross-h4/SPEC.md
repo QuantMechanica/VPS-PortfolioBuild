@@ -19,7 +19,7 @@ The EA trades H4 closes crossing SMA(100). It buys when the last closed H4 candl
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
 | `strategy_sma_period` | `100` | `2+` | SMA period used for the H4 close cross. |
-| `strategy_extreme_bars` | `3` | `3` | Number of closed H4 bars used for the structural stop extreme. |
+| `strategy_extreme_bars` | `3` | `2+` | Number of closed H4 bars used for the structural stop extreme. |
 | `strategy_sl_buffer_pips` | `3` | `1+` | Pip buffer beyond the 3-bar high or low. |
 | `strategy_max_sl_pips` | `80` | `1+` | Maximum allowed initial stop distance in pips for P2. |
 | `strategy_take_profit_rr` | `2.0` | `>0` | Take-profit multiple of initial risk. |

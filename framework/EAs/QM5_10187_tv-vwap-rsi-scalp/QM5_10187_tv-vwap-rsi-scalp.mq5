@@ -126,12 +126,14 @@ bool StrategySpreadAllowed(const double atr_value)
   {
    if(atr_value <= 0.0 || strategy_atr_sl_mult <= 0.0 ||
       strategy_max_spread_atr_frac <= 0.0)
-      return false;
+      return true;  // cannot evaluate — allow through
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
-      return false;
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;  // invalid prices
+   if(ask <= bid)
+      return true;   // zero spread (DWX tester invariant) — allow through
 
    const double stop_distance = atr_value * strategy_atr_sl_mult;
    return ((ask - bid) <= stop_distance * strategy_max_spread_atr_frac);

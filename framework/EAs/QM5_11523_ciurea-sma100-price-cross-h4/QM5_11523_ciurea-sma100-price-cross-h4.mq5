@@ -100,38 +100,6 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
-bool Strategy_IsFridayEntryBlocked()
-  {
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   return (dt.day_of_week == 5);
-  }
-
-bool Strategy_ReadRecentBars(MqlRates &rates[])
-  {
-   ArrayResize(rates, 3);
-   ArraySetAsSeries(rates, true);
-   return (CopyRates(_Symbol, PERIOD_H4, 1, 3, rates) == 3); // perf-allowed: bounded structural read inside the closed-bar entry hook.
-  }
-
-double Strategy_LowestLow(const MqlRates &rates[])
-  {
-   double lowest = rates[0].low;
-   for(int i = 1; i < 3; ++i)
-      if(rates[i].low < lowest)
-         lowest = rates[i].low;
-   return lowest;
-  }
-
-double Strategy_HighestHigh(const MqlRates &rates[])
-  {
-   double highest = rates[0].high;
-   for(int i = 1; i < 3; ++i)
-      if(rates[i].high > highest)
-         highest = rates[i].high;
-   return highest;
-  }
-
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
 // should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
@@ -146,17 +114,21 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.expiration_seconds = 0;
 
    if(strategy_sma_period <= 1 ||
-      strategy_extreme_bars != 3 ||
+      strategy_extreme_bars < 2 ||
       strategy_sl_buffer_pips <= 0 ||
       strategy_max_sl_pips <= 0 ||
       strategy_take_profit_rr <= 0.0)
       return false;
 
-   if(Strategy_IsFridayEntryBlocked())
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   if(dt.day_of_week == 5)
       return false;
 
    MqlRates rates[];
-   if(!Strategy_ReadRecentBars(rates))
+   ArrayResize(rates, strategy_extreme_bars);
+   ArraySetAsSeries(rates, true);
+   if(CopyRates(_Symbol, PERIOD_H4, 1, strategy_extreme_bars, rates) != strategy_extreme_bars) // perf-allowed: bounded structural read inside the closed-bar entry hook.
       return false;
 
    const double close_1 = rates[0].close;
@@ -171,10 +143,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(buffer <= 0.0 || max_sl_distance <= 0.0)
       return false;
 
+   double lowest_low = rates[0].low;
+   double highest_high = rates[0].high;
+   for(int i = 1; i < strategy_extreme_bars; ++i)
+     {
+      if(rates[i].low < lowest_low)
+         lowest_low = rates[i].low;
+      if(rates[i].high > highest_high)
+         highest_high = rates[i].high;
+     }
+
    if(close_1 > sma_1 && close_2 <= sma_2)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      const double raw_sl = Strategy_LowestLow(rates) - buffer;
+      const double raw_sl = lowest_low - buffer;
       double sl_distance = entry - raw_sl;
       if(entry <= 0.0 || sl_distance <= 0.0)
          return false;
@@ -191,7 +173,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(close_1 < sma_1 && close_2 >= sma_2)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      const double raw_sl = Strategy_HighestHigh(rates) + buffer;
+      const double raw_sl = highest_high + buffer;
       double sl_distance = raw_sl - entry;
       if(entry <= 0.0 || sl_distance <= 0.0)
          return false;

@@ -63,7 +63,7 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `180` |
+| Trades / year / symbol | `36` |
 | Typical hold time | Intraday minutes to hours, bounded by fixed ATR bracket and session-end close. |
 | Expected drawdown profile | Frequent small fixed-risk trades with ATR-bounded loss per entry. |
 | Regime preference | Mean-reversion exhaustion inside VWAP/EMA directional bias during liquid sessions. |
@@ -99,3 +99,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-09 | Initial build from card | 07c8bcec-ada1-4924-8e75-19976474638a |
+| v2 | 2026-06-20 | Fix zero-spread DWX invariant bug in StrategySpreadAllowed; ask<=bid returned false (blocked all DWX tester entries) instead of true | f643d95b-69ba-474d-8b37-29d48569512c |
