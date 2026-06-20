@@ -3,23 +3,20 @@
 **EA ID:** QM5_11395
 **Slug:** `connors-rsi2-sma200-pullback-h4`
 **Source:** `ea4596d1-24e0-5e43-9106-66fd575a5370` (see `strategy-seeds/sources/ea4596d1-24e0-5e43-9106-66fd575a5370/`)
-**Author of this spec:** Claude
-**Last revised:** 2026-06-18
+**Author of this spec:** Codex
+**Last revised:** 2026-06-20
 
 ---
 
 ## 1. Strategy Logic
 
 Larry Connors' RSI(2) mean-reversion pullback, adapted to Forex H4. The SMA(200)
-defines a trend STATE: trade longs only when the last closed H4 close is above
-SMA(200), shorts only when below. Within that trend, the EVENT is the RSI(2)
-crossing INTO an extreme on the prior closed bar — LONG when RSI(2) falls below 5
-(`rsi@1 < 5 AND rsi@2 >= 5`), SHORT when RSI(2) rises above 95
-(`rsi@1 > 95 AND rsi@2 <= 95`). Modelling the trigger as a cross (not a level
-test) prevents re-firing every bar RSI stays pinned at the extreme — important
-because RSI(2) is ultra-sensitive. Exit when RSI(2) reverts (LONG: RSI > 70;
-SHORT: RSI < 30) or the SMA(200) trend breaks. Protective stop is ATR(14) × 2.0,
-capped at 50 pips. No fixed take-profit — the RSI revert is the primary exit.
+defines the trend state: trade longs only when the last closed H4 close is above
+SMA(200), and shorts only when below. Within that trend, enter long when the last
+closed H4 RSI(2) is below 5, and enter short when RSI(2) is above 95. Exit long
+when RSI(2) closes above 70, and exit short when RSI(2) closes below 30.
+Protective stop is ATR(14) x 2.0 from entry, capped at 50 pips. There is no
+fixed take-profit because the RSI revert is the card's primary exit.
 
 ---
 
@@ -38,7 +35,7 @@ capped at 50 pips. No fixed take-profit — the RSI revert is the primary exit.
 | `strategy_atr_stop_mult` | 2.0 | 1.0-3.0 | Stop distance = mult × ATR(14) |
 | `strategy_max_sl_pips` | 50.0 | 20-80 | P2 cap: stop distance never wider than this (pips) |
 | `strategy_enable_shorts` | true | bool | Mirror shorts below SMA(200) |
-| `strategy_spread_pct_of_stop` | 15.0 | 5-30 | Block only if spread > this % of stop distance (fail-OPEN) |
+| `strategy_spread_cap_pips` | 20 | 1-50 | Card spread cap; block only genuinely wide spread and allow zero-spread `.DWX` tests |
 
 ---
 
@@ -104,4 +101,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | H4 sibling of D1 QM5_11365 |
+| v1 | 2026-06-20 | Initial build from card | 378b97af-48a0-46be-b882-e393f8a4756f |

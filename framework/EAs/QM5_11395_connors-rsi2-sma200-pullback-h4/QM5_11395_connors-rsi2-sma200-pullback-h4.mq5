@@ -14,20 +14,12 @@
 //
 // Mechanics (H4, all reads on CLOSED bars at shift >= 1):
 //   Trend STATE  : close > SMA(200)  -> macro uptrend  (mirror for downtrend).
-//   Entry EVENT  : RSI(2) crosses INTO the extreme on the prior closed bar:
-//                  LONG  -> rsi@1 < entry_long  AND  rsi@2 >= entry_long.
-//                  SHORT -> rsi@1 > entry_short AND  rsi@2 <= entry_short.
-//                  The SMA200 trend is the STATE; the RSI(2) extreme cross is
-//                  the single EVENT (card NOTE). Modelling it as a cross (not a
-//                  re-firing level test) avoids re-firing on every bar RSI stays
-//                  extreme. RSI(2) is ultra-sensitive, so the cross discipline
-//                  matters even more on H4 than on the D1 sibling.
+//   Entry        : RSI(2) is beyond the card threshold on the prior closed bar:
+//                  LONG rsi@1 < 5 in an uptrend; SHORT rsi@1 > 95 in a downtrend.
 //   Stop         : entry -/+ atr_stop_mult * ATR(14)  (card: ATR x 2.0), capped
 //                  at strategy_max_sl_pips (card P2 cap = 50 pips).
 //   Exit         : RSI(2) reverts past the exit level (LONG rsi > exit_long = 70,
-//                  SHORT rsi < exit_short = 30), OR the macro trend breaks
-//                  (LONG close < SMA200, SHORT close > SMA200). Connors exit;
-//                  no fixed TP.
+//                  SHORT rsi < exit_short = 30). No fixed TP.
 //   Spread guard : fail-OPEN — block only a genuinely wide spread (.DWX quotes
 //                  ask==bid, modeled spread 0; never block on zero spread).
 //
@@ -46,8 +38,8 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -71,7 +63,7 @@ input double strategy_exit_rsi_short     = 30.0;  // RSI(2) < this -> exit short
 input double strategy_atr_stop_mult      = 2.0;   // stop distance = mult * ATR(14)
 input double strategy_max_sl_pips        = 50.0;  // P2 cap: SL distance never wider than this (pips)
 input bool   strategy_enable_shorts      = true;  // mirror shorts below SMA200
-input double strategy_spread_pct_of_stop = 15.0;  // block only if spread > this % of stop distance
+input int    strategy_spread_cap_pips    = 20;    // card spread cap; zero spread passes on .DWX
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -89,52 +81,13 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double atr_value = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to the entry gate, do not block here
-
-   const double stop_distance = strategy_atr_stop_mult * atr_value;
-   if(stop_distance <= 0.0)
-      return false;
-
    const double spread = ask - bid;
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
    // Fail-OPEN: only a genuinely wide spread blocks; zero/negative passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread_cap > 0.0 && spread > spread_cap)
       return true;
 
    return false;
-  }
-
-// Compute the protective stop PRICE for a side, applying the card's pip cap.
-// Returns 0.0 if no valid stop can be formed.
-double ComputeStopPrice(const QM_OrderType side, const double entry, const double atr)
-  {
-   double sl = QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_atr_stop_mult);
-   if(sl <= 0.0)
-      return 0.0;
-
-   // P2 cap: clamp the stop DISTANCE to strategy_max_sl_pips (scale-correct).
-   if(strategy_max_sl_pips > 0.0)
-     {
-      const double cap_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_max_sl_pips);
-      if(cap_dist > 0.0)
-        {
-         if(side == QM_BUY)
-           {
-            const double capped = entry - cap_dist;  // nearer stop = smaller distance
-            if(capped > sl)                           // ATR stop wider than cap -> tighten
-               sl = capped;
-           }
-         else
-           {
-            const double capped = entry + cap_dist;
-            if(capped < sl)
-               sl = capped;
-           }
-        }
-     }
-
-   return QM_TM_NormalizePrice(_Symbol, sl);
   }
 
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
@@ -149,20 +102,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double sma_200 = QM_SMA(_Symbol, strategy_timeframe, strategy_sma_trend_period, 1);
    const double atr     = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
    const double rsi_1   = QM_RSI(_Symbol, strategy_timeframe, strategy_rsi_period, 1);
-   const double rsi_2   = QM_RSI(_Symbol, strategy_timeframe, strategy_rsi_period, 2);
-   if(close_1 <= 0.0 || sma_200 <= 0.0 || atr <= 0.0 || rsi_1 <= 0.0 || rsi_2 <= 0.0)
+   if(close_1 <= 0.0 || sma_200 <= 0.0 || atr <= 0.0 || rsi_1 <= 0.0)
       return false;
 
-   // LONG: macro uptrend STATE + RSI(2) crosses INTO the oversold extreme EVENT.
+   const double cap_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_max_sl_pips);
+
+   // LONG: macro uptrend STATE + RSI(2) oversold threshold on the closed bar.
    const bool long_trend = (close_1 > sma_200);
-   const bool long_event = (rsi_1 < strategy_entry_rsi_long &&
-                            rsi_2 >= strategy_entry_rsi_long);
-   if(long_trend && long_event)
+   if(long_trend && rsi_1 < strategy_entry_rsi_long)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
          return false;
-      const double sl = ComputeStopPrice(QM_BUY, entry, atr);
+      double sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr, strategy_atr_stop_mult);
+      if(strategy_max_sl_pips > 0.0 && cap_dist > 0.0)
+        {
+         const double capped = entry - cap_dist;
+         if(capped > sl)
+            sl = capped;
+        }
+      sl = QM_TM_NormalizePrice(_Symbol, sl);
       if(sl <= 0.0 || sl >= entry)
          return false;
       req.type   = QM_BUY;
@@ -173,18 +132,23 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return true;
      }
 
-   // SHORT (mirror): macro downtrend STATE + RSI(2) crosses INTO overbought.
+   // SHORT (mirror): macro downtrend STATE + RSI(2) overbought threshold.
    if(strategy_enable_shorts)
      {
       const bool short_trend = (close_1 < sma_200);
-      const bool short_event = (rsi_1 > strategy_entry_rsi_short &&
-                                rsi_2 <= strategy_entry_rsi_short);
-      if(short_trend && short_event)
+      if(short_trend && rsi_1 > strategy_entry_rsi_short)
         {
          const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
          if(entry <= 0.0)
             return false;
-         const double sl = ComputeStopPrice(QM_SELL, entry, atr);
+         double sl = QM_StopATRFromValue(_Symbol, QM_SELL, entry, atr, strategy_atr_stop_mult);
+         if(strategy_max_sl_pips > 0.0 && cap_dist > 0.0)
+           {
+            const double capped = entry + cap_dist;
+            if(capped < sl)
+               sl = capped;
+           }
+         sl = QM_TM_NormalizePrice(_Symbol, sl);
          if(sl <= entry)
             return false;
          req.type   = QM_SELL;
@@ -205,17 +169,15 @@ void Strategy_ManageOpenPosition()
   {
   }
 
-// Rule exit: RSI(2) reverts past the exit level OR the macro trend breaks.
+// Rule exit: RSI(2) reverts past the card's exit level.
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
    if(QM_TM_OpenPositionCount(magic) <= 0)
       return false;
 
-   const double close_1 = iClose(_Symbol, strategy_timeframe, 1); // perf-allowed: single closed-bar read
-   const double sma_200 = QM_SMA(_Symbol, strategy_timeframe, strategy_sma_trend_period, 1);
-   const double rsi_1   = QM_RSI(_Symbol, strategy_timeframe, strategy_rsi_period, 1);
-   if(close_1 <= 0.0 || sma_200 <= 0.0 || rsi_1 <= 0.0)
+   const double rsi_1 = QM_RSI(_Symbol, strategy_timeframe, strategy_rsi_period, 1);
+   if(rsi_1 <= 0.0)
       return false;
 
    // Determine our open side (one position per magic on this symbol).
@@ -232,14 +194,12 @@ bool Strategy_ExitSignal()
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       if(ptype == POSITION_TYPE_BUY)
         {
-         // Exit long: RSI(2) recovered above exit level OR trend broke down.
-         if(rsi_1 > strategy_exit_rsi_long || close_1 < sma_200)
+         if(rsi_1 > strategy_exit_rsi_long)
             return true;
         }
       else if(ptype == POSITION_TYPE_SELL)
         {
-         // Exit short: RSI(2) fell below exit level OR trend broke up.
-         if(rsi_1 < strategy_exit_rsi_short || close_1 > sma_200)
+         if(rsi_1 < strategy_exit_rsi_short)
             return true;
         }
       return false;
