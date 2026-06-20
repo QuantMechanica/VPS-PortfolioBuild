@@ -11,31 +11,23 @@
 //   pages 48-49 (local PDF archive, source_id e78a9f1f-4e6a-563c-a080-915133d6ed28).
 // Card: artifacts/cards_approved/QM5_11577_robo-psar-awesome2-m30.md (APPROVED).
 //
-// Mechanics (closed-bar reads at shift 1; M30):
+// Mechanics (closed-bar signal reads at shift 1; M30):
 //   Trend STATE  : Parabolic SAR(step, max) vs price.
-//                  LONG state  = SAR below price (sar1 < close1).
-//                  SHORT state = SAR above price (sar1 > close1).
+//                  LONG state  = SAR below current price.
+//                  SHORT state = SAR above current price.
 //   AO definition: AO = SMA(fast=5, median price) - SMA(slow=34, median price),
 //                  median price = (High+Low)/2 == PRICE_MEDIAN. Computed in-EA
 //                  via QM_SMA(..., PRICE_MEDIAN) (no QM_AO helper exists).
-//   Trigger EVENT: a fresh AO zero-line cross in the trend direction — ONE event
-//                  per bar. LONG: AO crossed up through 0 (ao_prev<=0, ao_now>0).
-//                  SHORT: AO crossed down through 0 (ao_prev>=0, ao_now<0).
-//                  The zero-cross is the single EVENT; the SAR side, the AO
-//                  "green/red above/below 0" colour, and the EMA5 price side are
-//                  all STATES — so we never require two cross events on one bar
-//                  (.DWX two-cross zero-trade trap avoided).
 //   AO colour    : card "green & above 0" = ao_now>0 AND rising (ao_now>ao_prev);
-//                  "red & below 0" = ao_now<0 AND falling. The zero-cross already
-//                  implies the >0/<0 side; colour adds the rising/falling STATE.
-//   EMA5 STATE   : LONG needs EMA5 below price (close1 > ema5); SHORT needs EMA5
-//                  above price (close1 < ema5).
-//   Stop / Take  : FIXED pips per card ("EURUSD TP 60/SL 20", default 55/20).
-//                  RoboForex "points" on 5-digit FX == pips; QM_StopFixedPips /
-//                  QM_TakeFixedPips scale pips->price correctly per symbol.
+//                  "red & below 0" = ao_now<0 AND falling.
+//   EMA5 STATE   : LONG needs EMA5 below current price; SHORT needs EMA5 above.
+//   Stop / Take  : Fixed pip stops/takes per card by symbol:
+//                  EURUSD TP 60 / SL 20, USDCHF TP 50 / SL 18, other FX TP 55 / SL 20.
+//                  QM_StopFixedPips / QM_TakeFixedPips scale pips->price correctly.
 //   Defensive exit: Parabolic SAR flips against the open trade -> close manually
 //                  (card "Close early if Parabolic SAR flips against the position").
-//   Spread guard : block only a genuinely wide spread (fail-open on .DWX zero).
+//   Filters      : one position per magic, spread cap 3 pips, London/New York
+//                  session gate in broker time, plus the framework news hook.
 //
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
 // else is framework wiring and MUST stay intact.
@@ -71,10 +63,17 @@ input double strategy_sar_max           = 0.10;   // Parabolic SAR maximum (card
 input int    strategy_ema_period        = 5;      // fast EMA trend-line (card EMA5)
 input int    strategy_ao_fast_period    = 5;      // Awesome Oscillator fast SMA (median price)
 input int    strategy_ao_slow_period    = 34;     // Awesome Oscillator slow SMA (median price)
-input bool   strategy_ao_require_colour = true;   // require AO momentum colour (rising long / falling short)
-input int    strategy_sl_pips           = 20;     // stop loss in pips (card EURUSD default 20)
-input int    strategy_tp_pips           = 60;     // take profit in pips (card EURUSD default 60)
-input double strategy_spread_cap_pips    = 3.0;   // skip genuinely wide spread (card spread cap 3 pips)
+input int    strategy_eurusd_sl_pips    = 20;     // EURUSD stop loss from card
+input int    strategy_eurusd_tp_pips    = 60;     // EURUSD take profit from card
+input int    strategy_usdchf_sl_pips    = 18;     // USDCHF stop loss from card
+input int    strategy_usdchf_tp_pips    = 50;     // USDCHF take profit from card
+input int    strategy_other_sl_pips     = 20;     // other FX stop loss for P2 baseline
+input int    strategy_other_tp_pips     = 55;     // other FX take profit for P2 baseline
+input int    strategy_spread_cap_pips   = 3;      // skip genuinely wide spread (card spread cap 3 pips)
+input int    strategy_london_start_hour_broker = 8;
+input int    strategy_london_end_hour_broker   = 17;
+input int    strategy_newyork_start_hour_broker = 13;
+input int    strategy_newyork_end_hour_broker   = 23;
 
 // -----------------------------------------------------------------------------
 // AO helper — Awesome Oscillator on the median price at a given closed-bar shift.
@@ -84,7 +83,44 @@ double AO_Value(const int shift)
   {
    const double fast = QM_SMA(_Symbol, _Period, strategy_ao_fast_period, shift, PRICE_MEDIAN);
    const double slow = QM_SMA(_Symbol, _Period, strategy_ao_slow_period, shift, PRICE_MEDIAN);
+   if(fast <= 0.0 || slow <= 0.0)
+      return 0.0;
    return fast - slow;
+  }
+
+bool HourInRange(const int hour, const int start_hour, const int end_hour)
+  {
+   if(start_hour == end_hour)
+      return true;
+   if(start_hour < end_hour)
+      return (hour >= start_hour && hour < end_hour);
+   return (hour >= start_hour || hour < end_hour);
+  }
+
+bool InTradingSession(const datetime broker_time)
+  {
+   MqlDateTime dt;
+   TimeToStruct(broker_time, dt);
+   return HourInRange(dt.hour, strategy_london_start_hour_broker, strategy_london_end_hour_broker) ||
+          HourInRange(dt.hour, strategy_newyork_start_hour_broker, strategy_newyork_end_hour_broker);
+  }
+
+int Strategy_StopPips()
+  {
+   if(_Symbol == "EURUSD.DWX")
+      return strategy_eurusd_sl_pips;
+   if(_Symbol == "USDCHF.DWX")
+      return strategy_usdchf_sl_pips;
+   return strategy_other_sl_pips;
+  }
+
+int Strategy_TakePips()
+  {
+   if(_Symbol == "EURUSD.DWX")
+      return strategy_eurusd_tp_pips;
+   if(_Symbol == "USDCHF.DWX")
+      return strategy_usdchf_tp_pips;
+   return strategy_other_tp_pips;
   }
 
 // -----------------------------------------------------------------------------
@@ -94,13 +130,26 @@ double AO_Value(const int shift)
 // Cheap O(1) per-tick gate. Spread guard only. Fail-open on .DWX zero spread.
 bool Strategy_NoTradeFilter()
   {
+   if(strategy_sar_step <= 0.0 ||
+      strategy_sar_max <= strategy_sar_step ||
+      strategy_ema_period <= 0 ||
+      strategy_ao_fast_period <= 0 ||
+      strategy_ao_slow_period <= strategy_ao_fast_period ||
+      Strategy_StopPips() <= 0 ||
+      Strategy_TakePips() <= 0 ||
+      strategy_spread_cap_pips <= 0)
+      return true;
+
+   if(!InTradingSession(TimeCurrent()))
+      return true;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
+      return true;
 
    const double spread = ask - bid;
-   const double cap    = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
+   const double cap    = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
    if(spread > 0.0 && cap > 0.0 && spread > cap)
       return true;
@@ -111,62 +160,63 @@ bool Strategy_NoTradeFilter()
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0)
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   // --- Trend STATE: Parabolic SAR side vs price (closed bar) ---
+   // --- Trend STATE: Parabolic SAR side vs current price at the new bar. ---
    const double sar1 = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 1);
    if(sar1 <= 0.0)
       return false;
-   const bool sar_long_state  = (sar1 < close1); // SAR below price -> bullish
-   const bool sar_short_state = (sar1 > close1); // SAR above price -> bearish
+   const bool sar_long_state  = (sar1 < bid);
+   const bool sar_short_state = (sar1 > ask);
    if(!sar_long_state && !sar_short_state)
       return false;
 
-   // --- EMA5 STATE: price side of the fast trend line ---
+   // --- EMA5 STATE: current price side of the fast trend line. ---
    const double ema5 = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
    if(ema5 <= 0.0)
       return false;
-   const bool ema_long_state  = (close1 > ema5); // EMA5 below price
-   const bool ema_short_state = (close1 < ema5); // EMA5 above price
+   const bool ema_long_state  = (bid > ema5);
+   const bool ema_short_state = (ask < ema5);
 
    // --- Awesome Oscillator at the last two closed bars ---
    const double ao_now  = AO_Value(1);
    const double ao_prev = AO_Value(2);
 
-   // --- Trigger EVENT: fresh AO zero-line cross in the trend direction.
-   //     One event per bar; SAR / EMA5 / AO-colour are STATES (no two-cross trap). ---
-   const bool ao_cross_up   = (ao_prev <= 0.0 && ao_now > 0.0);
-   const bool ao_cross_down = (ao_prev >= 0.0 && ao_now < 0.0);
-
-   // --- AO colour STATE: green = rising, red = falling. ---
-   const bool ao_rising  = (ao_now > ao_prev);
-   const bool ao_falling = (ao_now < ao_prev);
+   // --- AO colour/sign STATE from the card: green and above zero, red and below zero. ---
+   const bool ao_green_above_zero = (ao_now > 0.0 && ao_now > ao_prev);
+   const bool ao_red_below_zero   = (ao_now < 0.0 && ao_now < ao_prev);
 
    QM_OrderType side;
-   if(sar_long_state && ema_long_state && ao_cross_up &&
-      (!strategy_ao_require_colour || ao_rising))
+   if(sar_long_state && ema_long_state && ao_green_above_zero)
       side = QM_BUY;
-   else if(sar_short_state && ema_short_state && ao_cross_down &&
-           (!strategy_ao_require_colour || ao_falling))
+   else if(sar_short_state && ema_short_state && ao_red_below_zero)
       side = QM_SELL;
    else
       return false;
 
    // --- Entry price ---
-   const double entry = (side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                         : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double entry = (side == QM_BUY) ? ask : bid;
    if(entry <= 0.0)
       return false;
 
    // --- Fixed-pip stop / take (pip-scale correct per symbol) ---
-   const double sl = QM_StopFixedPips(_Symbol, side, entry, strategy_sl_pips);
-   const double tp = QM_TakeFixedPips(_Symbol, side, entry, strategy_tp_pips);
+   const double sl = QM_StopFixedPips(_Symbol, side, entry, Strategy_StopPips());
+   const double tp = QM_TakeFixedPips(_Symbol, side, entry, Strategy_TakePips());
    if(sl <= 0.0 || tp <= 0.0)
       return false;
 
@@ -181,6 +231,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = (side == QM_BUY) ? "psar_ao_ema5_long" : "psar_ao_ema5_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
@@ -197,8 +249,9 @@ bool Strategy_ExitSignal()
    if(QM_TM_OpenPositionCount(magic) <= 0)
       return false;
 
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0)
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
       return false;
    const double sar1 = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 1);
    if(sar1 <= 0.0)
@@ -213,9 +266,9 @@ bool Strategy_ExitSignal()
       if(PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
       const long ptype = PositionGetInteger(POSITION_TYPE);
-      if(ptype == POSITION_TYPE_BUY && sar1 > close1)
+      if(ptype == POSITION_TYPE_BUY && sar1 > bid)
          return true;   // long but SAR flipped above price
-      if(ptype == POSITION_TYPE_SELL && sar1 < close1)
+      if(ptype == POSITION_TYPE_SELL && sar1 < ask)
          return true;   // short but SAR flipped below price
      }
    return false;

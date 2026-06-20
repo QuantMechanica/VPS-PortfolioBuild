@@ -110,6 +110,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double proximity = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_proximity_pips);
    if(proximity <= 0.0 || MathAbs(close_1 - lwma_1) > proximity)
       return false;
+   if(long_cross && close_1 < lwma_1)
+      return false;
+   if(short_cross && close_1 > lwma_1)
+      return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);

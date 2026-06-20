@@ -1,29 +1,26 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11382 sma10-15-50-trend-cross-m5 — Triple-SMA trend + band-breakout scalper (M5)"
+#property description "QM5_11382 sma10-15-50-trend-cross-m5 - Triple-SMA trend + band-breakout scalper (M5)"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11382 sma10-15-50-trend-cross-m5
+// QuantMechanica V5 EA - QM5_11382 sma10-15-50-trend-cross-m5
 // -----------------------------------------------------------------------------
 // Source: "5 Minute Forex Scalping Strategy (SMA 10/15/50)" (anonymous LQDFX
 //   broker promotional ebook, local PDF). Card:
 //   artifacts/cards_approved/QM5_11382_sma10-15-50-trend-cross-m5.md (APPROVED).
 //
 // Mechanics (M5, closed-bar reads):
-//   Trend STATE    : close[1] > SMA50  (bullish)  /  close[1] < SMA50 (bearish).
-//   Alignment STATE: SMA10 > SMA50 AND SMA15 > SMA50 (long); inverse (short).
-//   Trigger EVENT  : the M5 candle TRANSITIONS to "completely above" BOTH SMA10
-//                    and SMA15 (long): prior closed bar [2] was NOT completely
-//                    above the band, current closed bar [1] IS
-//                    (low[1] > max(SMA10,SMA15)). The SMA10/15 cross is the one
-//                    EVENT; the SMA50 trend + alignment are STATES — this avoids
-//                    the two-cross-same-bar zero-trade trap (DWX invariant #4).
-//   Stop           : entry -/+ min( ATR(14)*sl_atr_mult , sl_cap_pips ).
-//   Take profit    : entry +/- ATR(14)*tp_atr_mult (same ATR as the stop).
+//   Trend state    : close[1] > SMA50  (bullish)  /  close[1] < SMA50 (bearish).
+//   Alignment state: SMA10 > SMA50 AND SMA15 > SMA50 (long); inverse (short).
+//   Trigger        : the closed M5 candle is completely above BOTH SMA10 and
+//                    SMA15 (long): low[1] > max(SMA10,SMA15). Short is the
+//                    mirror: high[1] < min(SMA10,SMA15).
+//   Stop           : entry -/+ min(ATR(14)*sl_atr_mult, sl_cap_pips).
+//   Take profit    : entry +/- ATR(14)*tp_atr_mult.
 //   Defensive exit : price candle closes back below SMA10 OR SMA15 (long) /
-//                    above SMA10 OR SMA15 (short) — the source "re-cross" exit.
+//                    above SMA10 OR SMA15 (short) - the source "re-cross" exit.
 //   Session        : London + NY only, broker-time window [sess_start,sess_end).
 //   Spread guard   : block only a genuinely wide spread > spread_cap_pips
 //                    (fail-OPEN on .DWX zero modeled spread, invariant #1).
@@ -63,24 +60,10 @@ input int    strategy_sma_trend_period  = 50;     // trend-filter SMA
 input int    strategy_atr_period        = 14;     // ATR period (stop / target)
 input double strategy_sl_atr_mult       = 1.0;    // stop distance = mult * ATR
 input double strategy_tp_atr_mult       = 1.5;    // target distance = mult * ATR
-input double strategy_sl_cap_pips       = 20.0;   // P2 hard cap on stop distance (pips)
-input double strategy_spread_cap_pips   = 12.0;   // block only spread wider than this (pips)
+input int    strategy_sl_cap_pips       = 20;     // P2 hard cap on stop distance (pips)
+input int    strategy_spread_cap_pips   = 12;     // block only spread wider than this (pips)
 input int    strategy_sess_start_broker = 13;     // London+NY window open hour (broker time)
 input int    strategy_sess_end_broker   = 22;     // window close hour (exclusive, broker time)
-
-// -----------------------------------------------------------------------------
-// Helpers
-// -----------------------------------------------------------------------------
-
-// Pip size for the symbol (5-digit FX → 10 points/pip; 3-digit JPY → 10 points/pip).
-double SmaPipSize()
-  {
-   const double pt     = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const int    digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   if(pt <= 0.0)
-      return 0.0;
-   return (digits == 3 || digits == 5) ? pt * 10.0 : pt;
-  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -103,21 +86,21 @@ bool Strategy_NoTradeFilter()
    else
       in_session = (h >= s || h < e); // overnight wrap
    if(!in_session)
-      return true; // outside London+NY window — block
+      return true; // outside London+NY window - block
 
    // --- Spread guard: fail-OPEN on zero/negative modeled spread. ---
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
+      return false; // no valid quote yet - do not block on it
 
-   const double pip = SmaPipSize();
-   if(pip <= 0.0)
+   const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(cap <= 0.0)
       return false;
 
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > strategy_spread_cap_pips * pip)
+   if(spread > 0.0 && spread > cap)
       return true;
 
    return false;
@@ -130,23 +113,40 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // --- SMAs at the trigger bar [1] and the prior bar [2] ---
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(strategy_sma_fast_period <= 0 ||
+      strategy_sma_mid_period <= 0 ||
+      strategy_sma_trend_period <= 0 ||
+      strategy_atr_period <= 0 ||
+      strategy_sl_atr_mult <= 0.0 ||
+      strategy_tp_atr_mult <= 0.0 ||
+      strategy_sl_cap_pips <= 0 ||
+      strategy_spread_cap_pips <= 0 ||
+      strategy_sess_start_broker < 0 ||
+      strategy_sess_start_broker > 23 ||
+      strategy_sess_end_broker < 0 ||
+      strategy_sess_end_broker > 23)
+      return false;
+
+   // --- SMAs at the trigger bar [1] ---
    const double sma10_1 = QM_SMA(_Symbol, _Period, strategy_sma_fast_period, 1);
    const double sma15_1 = QM_SMA(_Symbol, _Period, strategy_sma_mid_period, 1);
    const double sma50_1 = QM_SMA(_Symbol, _Period, strategy_sma_trend_period, 1);
-   const double sma10_2 = QM_SMA(_Symbol, _Period, strategy_sma_fast_period, 2);
-   const double sma15_2 = QM_SMA(_Symbol, _Period, strategy_sma_mid_period, 2);
-   if(sma10_1 <= 0.0 || sma15_1 <= 0.0 || sma50_1 <= 0.0 ||
-      sma10_2 <= 0.0 || sma15_2 <= 0.0)
+   if(sma10_1 <= 0.0 || sma15_1 <= 0.0 || sma50_1 <= 0.0)
       return false;
 
    // --- Bespoke OHLC reads (perf-allowed: single closed-bar reads) ---
    const double low1   = iLow(_Symbol, _Period, 1);   // perf-allowed
    const double high1  = iHigh(_Symbol, _Period, 1);  // perf-allowed
    const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed
-   const double low2   = iLow(_Symbol, _Period, 2);   // perf-allowed
-   const double high2  = iHigh(_Symbol, _Period, 2);  // perf-allowed
-   if(low1 <= 0.0 || high1 <= 0.0 || close1 <= 0.0 || low2 <= 0.0 || high2 <= 0.0)
+   if(low1 <= 0.0 || high1 <= 0.0 || close1 <= 0.0)
       return false;
 
    const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
@@ -155,34 +155,24 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const double band_top_1 = MathMax(sma10_1, sma15_1);
    const double band_bot_1 = MathMin(sma10_1, sma15_1);
-   const double band_top_2 = MathMax(sma10_2, sma15_2);
-   const double band_bot_2 = MathMin(sma10_2, sma15_2);
 
-   const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid   = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0 || bid <= 0.0)
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
       return false;
 
    // ---------------- LONG ----------------
-   // STATE : bullish trend + alignment (10 & 15 above 50).
-   // EVENT : bar [1] becomes completely above the band; bar [2] was not.
    const bool long_state =
       (close1 > sma50_1) && (sma10_1 > sma50_1) && (sma15_1 > sma50_1);
-   const bool long_above_now  = (low1  > band_top_1);
-   const bool long_above_prev = (low2  > band_top_2);
-   const bool long_event = (long_above_now && !long_above_prev);
+   const bool long_trigger = (low1 > band_top_1);
 
-   if(long_state && long_event)
+   if(long_state && long_trigger)
      {
-      double stop_dist = strategy_sl_atr_mult * atr_value;
-      const double cap = strategy_sl_cap_pips * SmaPipSize();
-      if(cap > 0.0 && stop_dist > cap)
-         stop_dist = cap;
-      if(stop_dist <= 0.0)
-         return false;
-
-      const double sl = QM_TM_NormalizePrice(_Symbol, entry - stop_dist);
-      const double tp = QM_TM_NormalizePrice(_Symbol, entry + strategy_tp_atr_mult * atr_value);
+      double sl = QM_StopATRFromValue(_Symbol, QM_BUY, ask, atr_value, strategy_sl_atr_mult);
+      const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_cap_pips);
+      if(cap > 0.0 && MathAbs(ask - sl) > cap)
+         sl = QM_StopRulesNormalizePrice(_Symbol, ask - cap);
+      const double tp = QM_TakeATRFromValue(_Symbol, QM_BUY, ask, atr_value, strategy_tp_atr_mult);
       if(sl <= 0.0 || tp <= 0.0)
          return false;
 
@@ -197,21 +187,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // ---------------- SHORT ----------------
    const bool short_state =
       (close1 < sma50_1) && (sma10_1 < sma50_1) && (sma15_1 < sma50_1);
-   const bool short_below_now  = (high1 < band_bot_1);
-   const bool short_below_prev = (high2 < band_bot_2);
-   const bool short_event = (short_below_now && !short_below_prev);
+   const bool short_trigger = (high1 < band_bot_1);
 
-   if(short_state && short_event)
+   if(short_state && short_trigger)
      {
-      double stop_dist = strategy_sl_atr_mult * atr_value;
-      const double cap = strategy_sl_cap_pips * SmaPipSize();
-      if(cap > 0.0 && stop_dist > cap)
-         stop_dist = cap;
-      if(stop_dist <= 0.0)
-         return false;
-
-      const double sl = QM_TM_NormalizePrice(_Symbol, bid + stop_dist);
-      const double tp = QM_TM_NormalizePrice(_Symbol, bid - strategy_tp_atr_mult * atr_value);
+      double sl = QM_StopATRFromValue(_Symbol, QM_SELL, bid, atr_value, strategy_sl_atr_mult);
+      const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_cap_pips);
+      if(cap > 0.0 && MathAbs(sl - bid) > cap)
+         sl = QM_StopRulesNormalizePrice(_Symbol, bid + cap);
+      const double tp = QM_TakeATRFromValue(_Symbol, QM_SELL, bid, atr_value, strategy_tp_atr_mult);
       if(sl <= 0.0 || tp <= 0.0)
          return false;
 
@@ -226,13 +210,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return false;
   }
 
-// Fixed ATR stop/target — no active management beyond the defensive re-cross
+// Fixed ATR stop/target - no active management beyond the defensive re-cross
 // exit in Strategy_ExitSignal.
 void Strategy_ManageOpenPosition()
   {
   }
 
-// Defensive exit: price candle closes back inside/through the band — close
+// Defensive exit: price candle closes back inside/through the band - close
 // below SMA10 OR SMA15 for a long; above SMA10 OR SMA15 for a short. One
 // closed-bar read at shift 1.
 bool Strategy_ExitSignal()
@@ -279,7 +263,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
   }
 
 // -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
+// Framework wiring - do NOT edit below this line unless you know why.
 // -----------------------------------------------------------------------------
 
 int OnInit()
