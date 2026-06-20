@@ -39,7 +39,7 @@ The EA trades H4 trend-following entries on GBP pairs when three closed-bar sign
 
 **Designed for:**
 - GBPUSD.DWX - Source-specified GBP/USD H4 market with the default 40 pip stop and 100 pip target.
-- GBPJPY.DWX - Source-specified GBP/JPY H4 market included in the card's R3 portable DWX basket.
+- GBPJPY.DWX - Source-specified GBP/JPY H4 market included in the card's R3 portable DWX basket; its backtest setfile uses the source H4 60 pip stop with the same 2.5R target.
 
 **Explicitly NOT for:**
 - Non-GBP FX symbols - The source system and card specifically name GBP/USD and GBP/JPY.

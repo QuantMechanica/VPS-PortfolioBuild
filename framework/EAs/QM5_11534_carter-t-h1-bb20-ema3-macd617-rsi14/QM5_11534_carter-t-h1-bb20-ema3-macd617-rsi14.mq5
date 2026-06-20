@@ -13,14 +13,10 @@
 //       (g0_status APPROVED).
 //
 // Mechanics (closed-bar reads at shift 1; H1):
-//   Trigger EVENT : EMA(3) crosses the Bollinger middle band (SMA20).
-//                   LONG  = EMA3 crosses UP over BB_mid.
-//                   SHORT = EMA3 crosses DOWN under BB_mid.
-//                   Exactly ONE cross event per direction — avoids the
-//                   two-cross-same-bar zero-trade trap (the MACD/RSI conditions
-//                   below are confirming STATES, not second cross events).
-//   Confirm STATE : MACD(6,17,1) main  > 0 (long) / < 0 (short).
-//                   RSI(14)            > 50 (long) / < 50 (short).
+//   Trigger       : EMA(3), MACD(6,17,1), and RSI(14) each crossed their
+//                   threshold within the recent closed-bar window.
+//                   Crosses may occur on different bars inside the window;
+//                   the EA never requires multiple fresh crosses on one bar.
 //   Stop          : LONG  = lower BB, capped at sl_cap_pips below entry.
 //                   SHORT = upper BB, capped at sl_cap_pips above entry.
 //   Take profit   : closer of (opposite BB distance) and tp_fixed_pips —
@@ -66,10 +62,11 @@ input int    strategy_macd_slow          = 17;     // MACD slow EMA period
 input int    strategy_macd_signal        = 1;      // MACD signal period (1 = no smoothing)
 input int    strategy_rsi_period         = 14;     // RSI lookback period
 input double strategy_rsi_mid            = 50.0;   // RSI trend midline
-input double strategy_sl_cap_pips        = 40.0;   // max stop distance (card cap 40 pips)
-input double strategy_tp_fixed_pips      = 50.0;   // fixed TP alternative (card 50 pips)
+input int    strategy_recent_cross_bars  = 2;      // card: all crosses recently within 2 bars
+input int    strategy_sl_cap_pips        = 40;     // max stop distance (card cap 40 pips)
+input int    strategy_tp_fixed_pips      = 50;     // fixed TP alternative (card 50 pips)
 input bool   strategy_no_friday_entry    = true;   // card: no Friday entry
-input double strategy_spread_cap_pips    = 15.0;   // skip if spread > cap (card 15p)
+input int    strategy_spread_cap_pips    = 15;     // skip if spread > cap (card 15p)
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -85,7 +82,7 @@ bool Strategy_NoTradeFilter()
       return false; // no valid quote yet — do not block on it
 
    const double spread = ask - bid;
-   const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
+   const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
    if(spread > 0.0 && cap_distance > 0.0 && spread > cap_distance)
       return true;
@@ -112,51 +109,67 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // --- Bollinger bands (closed bar; deviation arg is MANDATORY) ---
    const double bb_mid_now   = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
    const double bb_mid_prev  = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 2);
+   const double bb_mid_two   = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 3);
    const double bb_lower_now = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
    const double bb_upper_now = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
-   if(bb_mid_now <= 0.0 || bb_mid_prev <= 0.0 || bb_lower_now <= 0.0 || bb_upper_now <= 0.0)
+   if(bb_mid_now <= 0.0 || bb_mid_prev <= 0.0 || bb_mid_two <= 0.0 || bb_lower_now <= 0.0 || bb_upper_now <= 0.0)
       return false;
 
-   // --- Trigger EVENT: EMA(3) cross of the BB middle band (one event/bar) ---
+   // --- Recent crosses: allow each condition to cross on either of the last 2 closed bars. ---
    const double ema_now  = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
    const double ema_prev = QM_EMA(_Symbol, _Period, strategy_ema_period, 2);
-   if(ema_now <= 0.0 || ema_prev <= 0.0)
+   const double ema_two  = QM_EMA(_Symbol, _Period, strategy_ema_period, 3);
+   if(ema_now <= 0.0 || ema_prev <= 0.0 || ema_two <= 0.0)
       return false;
 
-   const bool crossed_up   = (ema_prev <= bb_mid_prev && ema_now >  bb_mid_now);
-   const bool crossed_down = (ema_prev >= bb_mid_prev && ema_now <  bb_mid_now);
-   if(!crossed_up && !crossed_down)
-      return false; // no trigger this bar
-
-   // --- Confirming STATES: MACD side + RSI side (closed bar) ---
-   const double macd = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow,
-                                    strategy_macd_signal, 1);
-   const double rsi  = QM_RSI(_Symbol, _Period, strategy_rsi_period, 1);
-   if(rsi <= 0.0)
+   const double macd_now  = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow,
+                                         strategy_macd_signal, 1);
+   const double macd_prev = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow,
+                                         strategy_macd_signal, 2);
+   const double macd_two  = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow,
+                                         strategy_macd_signal, 3);
+   const double rsi_now   = QM_RSI(_Symbol, _Period, strategy_rsi_period, 1);
+   const double rsi_prev  = QM_RSI(_Symbol, _Period, strategy_rsi_period, 2);
+   const double rsi_two   = QM_RSI(_Symbol, _Period, strategy_rsi_period, 3);
+   if(rsi_now <= 0.0 || rsi_prev <= 0.0 || rsi_two <= 0.0)
       return false;
+
+   const bool use_two_bar_window = (strategy_recent_cross_bars >= 2);
+   const bool ema_crossed_up     = (ema_prev <= bb_mid_prev && ema_now > bb_mid_now) ||
+                                   (use_two_bar_window && ema_two <= bb_mid_two && ema_prev > bb_mid_prev);
+   const bool ema_crossed_down   = (ema_prev >= bb_mid_prev && ema_now < bb_mid_now) ||
+                                   (use_two_bar_window && ema_two >= bb_mid_two && ema_prev < bb_mid_prev);
+   const bool macd_crossed_up    = (macd_prev <= 0.0 && macd_now > 0.0) ||
+                                   (use_two_bar_window && macd_two <= 0.0 && macd_prev > 0.0);
+   const bool macd_crossed_down  = (macd_prev >= 0.0 && macd_now < 0.0) ||
+                                   (use_two_bar_window && macd_two >= 0.0 && macd_prev < 0.0);
+   const bool rsi_crossed_up     = (rsi_prev <= strategy_rsi_mid && rsi_now > strategy_rsi_mid) ||
+                                   (use_two_bar_window && rsi_two <= strategy_rsi_mid && rsi_prev > strategy_rsi_mid);
+   const bool rsi_crossed_down   = (rsi_prev >= strategy_rsi_mid && rsi_now < strategy_rsi_mid) ||
+                                   (use_two_bar_window && rsi_two >= strategy_rsi_mid && rsi_prev < strategy_rsi_mid);
 
    QM_OrderType dir;
    double sl_band;     // structural stop = BB band
    double tp_band;     // structural TP   = opposite BB band
 
-   if(crossed_up)
+   if(ema_crossed_up && macd_crossed_up && rsi_crossed_up)
      {
-      // LONG confirmation: MACD main > 0 AND RSI > mid.
-      if(!(macd > 0.0 && rsi > strategy_rsi_mid))
+      if(!(ema_now > bb_mid_now && macd_now > 0.0 && rsi_now > strategy_rsi_mid))
          return false;
       dir     = QM_BUY;
       sl_band = bb_lower_now;
       tp_band = bb_upper_now;
      }
-   else // crossed_down
+   else if(ema_crossed_down && macd_crossed_down && rsi_crossed_down)
      {
-      // SHORT confirmation: MACD main < 0 AND RSI < mid.
-      if(!(macd < 0.0 && rsi < strategy_rsi_mid))
+      if(!(ema_now < bb_mid_now && macd_now < 0.0 && rsi_now < strategy_rsi_mid))
          return false;
       dir     = QM_SELL;
       sl_band = bb_upper_now;
       tp_band = bb_lower_now;
      }
+   else
+      return false;
 
    // --- Entry price + structural stop capped at sl_cap_pips ---
    const double entry = (dir == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
@@ -164,7 +177,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry <= 0.0)
       return false;
 
-   const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_sl_cap_pips);
+   const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_cap_pips);
    double sl;
    if(dir == QM_BUY)
      {
@@ -185,7 +198,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // --- Take profit: closer of opposite-BB distance and tp_fixed_pips ---
-   const double tp_fixed_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_tp_fixed_pips);
+   const double tp_fixed_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_tp_fixed_pips);
    double tp;
    if(dir == QM_BUY)
      {
