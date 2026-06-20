@@ -15,12 +15,14 @@ hours (3pm-5pm ET — the two H1 bars opening at 15:00 and 16:00 ET) the EA reco
 a range: `range_high`/`range_low` = the max/min of those two CLOSED bars, and
 `range_mid` = (high + low) / 2. The window is located from each bar's TIMESTAMP
 converted to US-Eastern time with the DST-aware broker→UTC helpers, never a fixed
-wall-clock. From the 5pm-ET arm bar through the 9pm-ET cutoff, on each new closed
-H1 bar the EA fades price back toward the midpoint: if the prior close is below
-`range_mid` it BUYs, if above it SELLs. Take-profit is `range_mid`; stop-loss is a
-fixed 12-pip distance (scale-correct for 5-digit / JPY). Trades are skipped when
-the range is degenerate (< 5 pips) or too volatile (> 40 pips). Maximum one trade
-per session; any open position is force-closed at/after the 9pm-ET bar.
+wall-clock. At the 5pm-ET arm bar the EA fades price back toward the midpoint
+with one pending limit order: if the prior close is below `range_mid` it places
+a buy limit at `range_low`; if the prior close is above `range_mid` it places a
+sell limit at `range_high`. Take-profit is `range_mid`; stop-loss is a fixed
+12-pip distance beyond the entry edge (scale-correct for 5-digit / JPY). Trades
+are skipped when the range is degenerate (< 5 pips) or too volatile (> 40 pips).
+Maximum one order per session; any unfilled pending order expires by 9pm ET and
+any open position is force-closed at/after the 9pm-ET cutoff.
 
 ---
 
@@ -30,8 +32,8 @@ per session; any open position is force-closed at/after the 9pm-ET bar.
 |---|---|---|---|
 | `strategy_range_start_et_hour` | 15 | 0-23 | ET bar-open hour of the first dead-time range bar (3pm ET) |
 | `strategy_range_bars` | 2 | 1-4 | Number of H1 bars composing the dead-time range |
-| `strategy_active_start_et_hour` | 17 | 0-23 | ET hour the fade window arms (5pm ET) |
-| `strategy_active_end_et_hour` | 21 | 0-23 | ET hour the session hard-closes (9pm ET) |
+| `strategy_active_start_et_hour` | 17 | 0-23 | ET hour the pending fade order is placed (5pm ET) |
+| `strategy_active_end_et_hour` | 21 | 0-23 | ET hour pending orders expire and positions hard-close (9pm ET) |
 | `strategy_sl_pips` | 12 | 5-40 | Fixed stop-loss distance in pips |
 | `strategy_min_range_pips` | 5 | 1-20 | Skip session if range width below this (degenerate) |
 | `strategy_max_range_pips` | 40 | 20-100 | Skip session if range width above this (too volatile) |

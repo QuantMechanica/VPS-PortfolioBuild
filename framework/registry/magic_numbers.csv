@@ -13212,3 +13212,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11358,robo-cci-macd,25,USDCAD.DWX,113580025,2026-06-20,Development,active
 11358,robo-cci-macd,26,USDCHF.DWX,113580026,2026-06-20,Development,active
 11358,robo-cci-macd,27,USDJPY.DWX,113580027,2026-06-20,Development,active
+9236,mql5-hm-divergence,0,EURUSD.DWX,92360000,2026-06-20,Development,active
+9236,mql5-hm-divergence,1,GBPJPY.DWX,92360001,2026-06-20,Development,active
+9236,mql5-hm-divergence,2,XAUUSD.DWX,92360002,2026-06-20,Development,active

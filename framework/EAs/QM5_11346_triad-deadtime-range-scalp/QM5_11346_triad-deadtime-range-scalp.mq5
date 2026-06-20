@@ -17,14 +17,14 @@
 //     DST-aware) is 15:00 and 16:00 ET — i.e. the 3pm-5pm ET dead-time window,
 //     the lowest-liquidity hours. range_high / range_low = max/min of those two
 //     CLOSED bars; range_mid = (high + low) / 2.
-//   ARM event: the first closed H1 bar whose ET open-hour == 17:00 (5pm ET).
-//     At that bar both range bars (15:00, 16:00 ET) are already CLOSED, so the
-//     range is read from shift 1 (16:00 bar) and shift 2 (15:00 bar).
+//   ARM event: the first tick of the 17:00 ET H1 bar. At that point both range
+//     bars (15:00, 16:00 ET) are already CLOSED, so the range is read from
+//     shift 2 (15:00 bar) and shift 1 (16:00 bar).
 //   ACTIVE window: ET 17:00 .. 20:00 bar-open (the 5pm-9pm ET fade window).
 //   Entry EVENT (mean-reversion fade toward midpoint), max 1 trade / session:
-//     Close[1] < range_mid -> BUY  (fade up toward mid)   TP = range_mid
-//     Close[1] > range_mid -> SELL (fade down toward mid)  TP = range_mid
-//     SL = fixed sl_pips from entry (card: 12 pips, scale-correct via pips->price).
+//     Close[1] < range_mid -> BUY LIMIT at range_low; TP = range_mid
+//     Close[1] > range_mid -> SELL LIMIT at range_high; TP = range_mid
+//     SL = fixed sl_pips beyond the entry edge (card: 12 pips, scale-correct).
 //   Range filters: skip if width < min_range_pips (degenerate, ~no edge) or
 //                  width > max_range_pips (not dead-time — too volatile).
 //   Hard session exit: flatten at / past the 21:00-ET (9pm ET) bar regardless.
@@ -119,35 +119,33 @@ int BarOpenETHour(const int shift)
   }
 
 // -----------------------------------------------------------------------------
-// AdvanceState_OnNewBar — called ONCE per new closed bar (after QM_IsNewBar()).
+// AdvanceState_OnNewBar — called ONCE per new H1 bar (after QM_IsNewBar()).
 // Builds / refreshes the dead-time range at the 5pm-ET arm bar and resets the
 // per-session trade latch on a new ET session day. O(1): reads shift 1..N only.
 // -----------------------------------------------------------------------------
 void AdvanceState_OnNewBar()
   {
-   // The just-closed bar is shift 1. Its ET open hour drives the state machine.
-   const datetime closed_open = iTime(_Symbol, _Period, 1); // perf-allowed: closed-bar timestamp
-   if(closed_open <= 0)
+   // The current bar's open time drives the state machine. On the first tick of
+   // the 17:00 ET bar, the 15:00 and 16:00 range bars are closed at shifts 2/1.
+   const datetime current_open = iTime(_Symbol, _Period, 0); // perf-allowed: new-bar timestamp
+   if(current_open <= 0)
       return;
-   int closed_et_hour, closed_et_day;
-   ETComponents(closed_open, closed_et_hour, closed_et_day);
+   int current_et_hour, current_et_day;
+   ETComponents(current_open, current_et_hour, current_et_day);
 
    // New ET session day -> clear the trade latch (range is rebuilt at the arm bar).
-   if(closed_et_day != g_session_day)
+   if(current_et_day != g_session_day)
      {
       g_traded_session = false;
-      // Do not clear g_range_ready here; it is (re)set when the arm bar lands.
+      g_range_ready = false;
      }
 
-   // ARM bar: the closed 5pm-ET bar means the 3pm & 4pm ET range bars are now
-   // CLOSED. Walk back from shift 1 to find the two consecutive bars whose ET
-   // open hours are 16:00 then 15:00 (i.e. the dead-time window). We locate the
-   // most recent bar whose ET open hour == range_start (15:00) within a bounded
-   // lookback and read the range across strategy_range_bars from there.
-   if(closed_et_hour == strategy_active_start_et_hour)
+   // ARM bar: current 17:00 ET means the 15:00 and 16:00 ET range bars are now
+   // CLOSED. Locate the first range bar inside a bounded scan, then read the
+   // consecutive range bars. Bounded scan (<= 6 bars) covers the 3pm..5pm span
+   // with margin; O(1).
+   if(current_et_hour == strategy_active_start_et_hour)
      {
-      // Find the shift of the FIRST range bar (ET open hour == range_start).
-      // Bounded scan (<= 6 bars) covers the 3pm..5pm span with margin; O(1).
       int start_shift = -1;
       const int max_scan = 6;
       for(int s = 1; s <= max_scan; ++s)
@@ -191,7 +189,7 @@ void AdvanceState_OnNewBar()
             g_range_low    = rng_low;
             g_range_mid    = (rng_high + rng_low) / 2.0;
             g_range_ready  = true;
-            g_session_day  = closed_et_day;
+            g_session_day  = current_et_day;
             g_traded_session = false; // fresh session range -> allow one trade
            }
         }
@@ -211,7 +209,7 @@ bool Strategy_NoTradeFilter()
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — never block on a zero price
+      return true; // invalid price; zero spread remains allowed below
 
    const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
    if(stop_distance <= 0.0)
@@ -244,12 +242,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!g_range_ready)
       return false;
 
-   // Active fade window: the just-closed bar (shift 1) must open in ET
-   // [active_start .. active_end). Outside the window -> no entry.
-   const int et_hour = BarOpenETHour(1);
-   if(et_hour < 0)
+   // Entry is placed once at the 5pm ET arm bar, after the 3pm/4pm range bars
+   // are closed. The pending limit may fill any time until the 9pm ET cutoff.
+   const datetime current_open = iTime(_Symbol, _Period, 0); // perf-allowed: new-bar timestamp
+   if(current_open <= 0)
       return false;
-   if(et_hour < strategy_active_start_et_hour || et_hour >= strategy_active_end_et_hour)
+   int current_et_hour, current_et_day;
+   ETComponents(current_open, current_et_hour, current_et_day);
+   if(current_et_hour != strategy_active_start_et_hour || current_et_day != g_session_day)
       return false;
 
    // Range-width filters (degenerate / too-volatile dead-time range).
@@ -263,17 +263,21 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(close1 <= 0.0)
       return false;
 
-   // Fade toward the midpoint.
+   // Fade toward the midpoint with pending limit orders at the range edge.
    QM_OrderType dir;
+   double entry = 0.0;
    if(close1 < g_range_mid)
-      dir = QM_BUY;
+     {
+      dir = QM_BUY_LIMIT;
+      entry = g_range_low;
+     }
    else if(close1 > g_range_mid)
-      dir = QM_SELL;
+     {
+      dir = QM_SELL_LIMIT;
+      entry = g_range_high;
+     }
    else
       return false; // exactly at mid — no edge
-
-   const double entry = (dir == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                        : SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(entry <= 0.0)
       return false;
 
@@ -284,20 +288,38 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.type   = dir;
-   req.price  = 0.0;   // framework fills market price at send
+   req.price  = QM_StopRulesNormalizePrice(_Symbol, entry);
    req.sl     = sl;
    req.tp     = tp;
-   req.reason = (dir == QM_BUY) ? "deadtime_fade_long" : "deadtime_fade_short";
+   req.reason = (dir == QM_BUY_LIMIT) ? "deadtime_fade_buy_limit" : "deadtime_fade_sell_limit";
    req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
+   req.expiration_seconds = (strategy_active_end_et_hour - strategy_active_start_et_hour) * 3600;
    g_traded_session = true; // latch: one trade per session
    return true;
   }
 
-// No active management — fixed SL + midpoint TP. Hard session exit lives in
-// Strategy_ExitSignal.
+// Remove stale pending orders after the 9pm ET cutoff. Filled positions are
+// handled by fixed SL/TP and Strategy_ExitSignal's hard session close.
 void Strategy_ManageOpenPosition()
   {
+   const datetime broker_now = TimeCurrent();
+   int et_hour, et_day;
+   ETComponents(broker_now, et_hour, et_day);
+   if(et_day == g_session_day && et_hour < strategy_active_end_et_hour)
+      return;
+
+   const int magic = QM_FrameworkMagic();
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      QM_TM_RemovePendingOrder(ticket, "deadtime_session_expired");
+     }
   }
 
 // Hard session close: flatten at / past the 9pm-ET (active_end) bar regardless.
@@ -306,16 +328,11 @@ bool Strategy_ExitSignal()
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
       return false;
 
-   const int et_hour = BarOpenETHour(1);
-   if(et_hour < 0)
-      return false;
+   const datetime broker_now = TimeCurrent();
+   int et_hour, et_day;
+   ETComponents(broker_now, et_hour, et_day);
 
-   // Outside the active fade window (>= 9pm ET, or before 5pm ET next session)
-   // -> force-close. The fade window is 17:00..21:00 ET; anything at or after
-   // the end hour, or wrapped past midnight before the next arm, is stale.
-   const bool inside = (et_hour >= strategy_active_start_et_hour &&
-                        et_hour <  strategy_active_end_et_hour);
-   return !inside;
+   return (et_day == g_session_day && et_hour >= strategy_active_end_et_hour);
   }
 
 // Defer to the central news filter.
