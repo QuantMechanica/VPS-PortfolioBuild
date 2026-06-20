@@ -2,7 +2,7 @@
 
 **EA ID:** QM5_11736
 **Slug:** rfs-cutting-points-bb-rsi-adx-m5
-**Source:** b5a932a2-40b6-5628-840b-d5069ac35c4a (see approved card and source PDF reference)
+**Source:** b5a932a2-40b6-5628-840b-d5069ac35c4a
 **Author of this spec:** Codex
 **Last revised:** 2026-06-20
 
@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA trades a Bollinger Band mean-reversion scalp on M5. A long setup requires the previous closed bar to have closed at or below the lower BB(20,2), RSI(7) on that over-extension bar below 30, ADX(14) below 30, and the next closed bar back above the lower band. A short setup mirrors the rule at the upper band with RSI above 70 and a close back below the upper band. Entries are market orders on the next bar, with the stop placed 3 pips beyond the relevant Bollinger outer band and the take-profit at the Bollinger middle line.
+This EA trades a Bollinger Band mean-reversion scalp on M5. A long setup requires the previous setup bar to close at or below the lower BB(20,2), RSI(7) below 30, ADX(14) below 30, and the next closed bar to return above the lower band; the EA then buys at the following bar open. A short setup mirrors the logic at the upper band with RSI above 70 and a return-close below the upper band. The stop is placed three pips beyond the signal-side outer band, and the take-profit is the BB middle line, updated while the trade is open.
 
 ---
 
@@ -18,29 +18,27 @@ This EA trades a Bollinger Band mean-reversion scalp on M5. A long setup require
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| strategy_bb_period | 20 | 2-200 | Bollinger Band period using the close price. |
-| strategy_bb_deviation | 2.0 | 0.1-5.0 | Standard-deviation multiplier for the Bollinger Bands. |
-| strategy_rsi_period | 7 | 2-100 | RSI lookback period used to confirm the band over-extension. |
-| strategy_rsi_oversold | 30.0 | 1.0-50.0 | Maximum RSI value for long setups. |
-| strategy_rsi_overbought | 70.0 | 50.0-99.0 | Minimum RSI value for short setups. |
-| strategy_adx_period | 14 | 2-100 | ADX lookback period for the flat-market filter. |
-| strategy_adx_cap | 30.0 | 1.0-60.0 | Maximum ADX value allowed for entry. |
-| strategy_sl_buffer_pips | 3 | 1-50 | Stop buffer beyond the Bollinger outer band in pips. |
-
-Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
+| `strategy_bb_period` | 20 | `> 1` | Bollinger Band moving-average period. |
+| `strategy_bb_deviation` | 2.0 | `> 0` | Bollinger Band standard-deviation multiplier. |
+| `strategy_rsi_period` | 7 | `> 1` | RSI period used to confirm overbought or oversold extremes. |
+| `strategy_rsi_oversold` | 30.0 | `> 0` and `< overbought` | Long-side RSI threshold. |
+| `strategy_rsi_overbought` | 70.0 | `> oversold` | Short-side RSI threshold. |
+| `strategy_adx_period` | 14 | `> 1` | ADX period used to require non-trending conditions. |
+| `strategy_adx_max` | 30.0 | `> 0` | Maximum ADX allowed for entry. |
+| `strategy_sl_buffer_pips` | 3 | `> 0` | Stop distance beyond the entry-side Bollinger outer band, in pips. |
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- EURUSD.DWX - card-listed liquid FX pair available in the DWX matrix.
-- GBPUSD.DWX - card-listed liquid FX pair available in the DWX matrix.
-- AUDUSD.DWX - card-listed liquid FX pair available in the DWX matrix.
-- USDCAD.DWX - card-listed liquid FX pair available in the DWX matrix.
+- `EURUSD.DWX` - card target and liquid DWX M5 major FX pair.
+- `GBPUSD.DWX` - card target and liquid DWX M5 major FX pair.
+- `AUDUSD.DWX` - card target and liquid DWX M5 major FX pair.
+- `USDCAD.DWX` - card target and liquid DWX M5 major FX pair.
 
 **Explicitly NOT for:**
-- Indices, metals, energy, and non-card FX crosses - the approved card targets only the four listed FX pairs.
+- Index, metal, energy, and non-target FX `.DWX` symbols - the approved card names only these four FX pairs.
 
 ---
 
@@ -50,7 +48,7 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
 |---|---|
 | Base timeframe | M5 |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` through the framework entry gate |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
 
@@ -59,11 +57,10 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 200 |
-| Expected trade frequency | Card frontmatter omits this field; M5 scalp cadence inferred from the card body. |
-| Typical hold time | Intraday, usually minutes to a few M5 bars until BB middle line or SL. |
-| Expected drawdown profile | Mean-reversion scalp losses cluster when ranging filter fails during trend transitions. |
-| Regime preference | Ranging / calm mean-reversion markets with ADX(14) below 30. |
-| Win rate target (qualitative) | medium-high |
+| Typical hold time | Intraday M5 scalp, usually minutes to hours. |
+| Expected drawdown profile | Frequent small losses from mean-reversion failures, bounded by fixed pip-buffer stops. |
+| Regime preference | Mean-revert, sideways or calm markets with ADX below 30. |
+| Win rate target (qualitative) | medium |
 
 ---
 
@@ -72,8 +69,8 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
 This card was mechanised from:
 
 **Source ID:** b5a932a2-40b6-5628-840b-d5069ac35c4a
-**Source type:** anonymous strategy compilation PDF
-**Pointer:** Anonymous, "Cutting Points", Robo-forex Strategy Compilation, robofx.com, about 2015; PDF `362359657-Robo-forex-strategy.pdf`, pages 17-18.
+**Source type:** online compilation PDF
+**Pointer:** Anonymous, "Cutting Points", Robo-forex Strategy Compilation, robofx.com, pages 17-18.
 **R1-R4 verdict (Q00):** all R1-R4 PASS per `artifacts/cards_approved/QM5_11736_rfs-cutting-points-bb-rsi-adx-m5.md`.
 
 ---
