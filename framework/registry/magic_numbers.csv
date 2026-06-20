@@ -11082,9 +11082,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11462,goodwin-j-kangaroo-tail-breakout-d1,0,USDJPY.DWX,114620000,2026-06-18,Claude,reserved
 11462,goodwin-j-kangaroo-tail-breakout-d1,1,EURUSD.DWX,114620001,2026-06-18,Claude,reserved
 11462,goodwin-j-kangaroo-tail-breakout-d1,2,GBPUSD.DWX,114620002,2026-06-18,Claude,reserved
-11463,goodwin-j-session-high-breakout-usdjpy,0,USDJPY.DWX,114630000,2026-06-18,Claude,reserved
-11463,goodwin-j-session-high-breakout-usdjpy,1,EURUSD.DWX,114630001,2026-06-18,Claude,reserved
-11463,goodwin-j-session-high-breakout-usdjpy,2,GBPUSD.DWX,114630002,2026-06-18,Claude,reserved
+11463,goodwin-j-session-high-breakout-usdjpy,0,USDJPY.DWX,114630000,2026-06-18,Claude,active
+11463,goodwin-j-session-high-breakout-usdjpy,1,EURUSD.DWX,114630001,2026-06-18,Claude,active
+11463,goodwin-j-session-high-breakout-usdjpy,2,GBPUSD.DWX,114630002,2026-06-18,Claude,active
 11464,robles-continuation-ema50-williams-h4d1,0,EURUSD.DWX,114640000,2026-06-18,Claude,reserved
 11464,robles-continuation-ema50-williams-h4d1,1,GBPUSD.DWX,114640001,2026-06-18,Claude,reserved
 11464,robles-continuation-ema50-williams-h4d1,2,USDJPY.DWX,114640002,2026-06-18,Claude,reserved

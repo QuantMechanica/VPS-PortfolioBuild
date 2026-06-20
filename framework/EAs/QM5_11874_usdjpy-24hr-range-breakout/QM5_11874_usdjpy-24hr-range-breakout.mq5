@@ -235,6 +235,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(offset <= 0.0)
       return false;
 
+   if(!QM11874_BuildStopRequest(QM_BUY_STOP,
+                                range_high + offset,
+                                "range_breakout_buy_stop",
+                                req))
+      return false;
+
    QM_EntryRequest sell_req;
    if(!QM11874_BuildStopRequest(QM_SELL_STOP,
                                 range_low - offset,
@@ -242,16 +248,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                                 sell_req))
       return false;
 
-   if(!QM11874_BuildStopRequest(QM_BUY_STOP,
-                                range_high + offset,
-                                "range_breakout_buy_stop",
-                                req))
-      return false;
-
    ulong sell_ticket = 0;
-   QM_TM_OpenPosition(sell_req, sell_ticket);
+   ulong buy_ticket = 0;
+   const bool sell_ok = QM_TM_OpenPosition(sell_req, sell_ticket);
+   const bool buy_ok = QM_TM_OpenPosition(req, buy_ticket);
+   if(!sell_ok || !buy_ok)
+      QM11874_RemovePendingStops("incomplete_oco_pair");
 
-   return true;
+   return false;
   }
 
 void Strategy_ManageOpenPosition()
