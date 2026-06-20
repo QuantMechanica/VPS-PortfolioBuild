@@ -15,12 +15,9 @@
 // Mechanics (closed-bar reads at shift 1; TF = M30):
 //   Band       : SMA(32) on HIGH = upper channel, SMA(32) on LOW = lower channel.
 //   Trend STATE: SMA100/SMA200 macro structure + price relative to both, and a
-//                bullish/bearish closed bar. These describe the regime — they are
-//                STATES, currently-true conditions, not events.
-//   Trigger EVENT (the single fresh event per bar, avoids the two-cross trap):
-//     LONG  : close crosses ABOVE the SMA(32,High) upper channel
-//             (close[2] <= upper[2]  AND  close[1] > upper[1]).
-//     SHORT : close crosses BELOW the SMA(32,Low) lower channel.
+//                bullish/bearish closed bar.
+//   Entry STATE : LONG when close[1] is above SMA(32,High); SHORT when close[1]
+//                is below SMA(32,Low), exactly as the approved card states.
 //   PSAR       : STATE confirmation of momentum direction
 //                LONG  -> SAR below the prior low ; SHORT -> SAR above prior high.
 //   Stop       : PSAR dot at the trigger bar, capped at sl_cap_pips (card: 20p).
@@ -43,8 +40,8 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -62,10 +59,10 @@ input int    strategy_sma_trend_fast    = 100;    // macro trend filter fast SMA
 input int    strategy_sma_trend_slow    = 200;    // macro trend filter slow SMA
 input double strategy_sar_step          = 0.02;   // Parabolic SAR acceleration step
 input double strategy_sar_max           = 0.2;    // Parabolic SAR acceleration cap
-input double strategy_tp_pips           = 13.0;   // fixed take-profit (M30 default per card)
-input double strategy_sl_cap_pips       = 20.0;   // P2 cap on the PSAR-derived stop distance
+input int    strategy_tp_pips           = 13;     // fixed take-profit (M30 default per card)
+input int    strategy_sl_cap_pips       = 20;     // P2 cap on the PSAR-derived stop distance
 input bool   strategy_no_friday_entry   = true;   // card: no Friday entries
-input double strategy_spread_cap_pips   = 12.0;   // card spread cap (only blocks genuinely wide spread)
+input int    strategy_spread_cap_pips   = 12;     // card spread cap (only blocks genuinely wide spread)
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -84,7 +81,7 @@ bool Strategy_NoTradeFilter()
    const double spread = ask - bid;
    if(spread > 0.0)
      {
-      const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
+      const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
       if(cap_distance > 0.0 && spread > cap_distance)
          return true;
      }
@@ -94,25 +91,31 @@ bool Strategy_NoTradeFilter()
 // Long/short entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // Card: no Friday entries. Bar-open time of the forming bar (shift 0).
+   // Card: no Friday entries, evaluated in broker time.
    if(strategy_no_friday_entry)
      {
       MqlDateTime dt;
-      TimeToStruct(iTime(_Symbol, _Period, 0), dt); // perf-allowed: single bar-open read
+      TimeToStruct(TimeCurrent(), dt);
       if(dt.day_of_week == 5)
          return false;
      }
 
-   // --- SMA(32) High/Low band, at the trigger bar (shift 1) and prior (shift 2) ---
+   // --- SMA(32) High/Low band at the closed signal bar (shift 1) ---
    const double upper1 = QM_SMA(_Symbol, _Period, strategy_sma_band_period, 1, PRICE_HIGH);
-   const double upper2 = QM_SMA(_Symbol, _Period, strategy_sma_band_period, 2, PRICE_HIGH);
    const double lower1 = QM_SMA(_Symbol, _Period, strategy_sma_band_period, 1, PRICE_LOW);
-   const double lower2 = QM_SMA(_Symbol, _Period, strategy_sma_band_period, 2, PRICE_LOW);
-   if(upper1 <= 0.0 || upper2 <= 0.0 || lower1 <= 0.0 || lower2 <= 0.0)
+   if(upper1 <= 0.0 || lower1 <= 0.0)
       return false;
 
    // --- Macro trend SMA(100)/SMA(200) (closed bar) ---
@@ -121,79 +124,77 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(sma_fast <= 0.0 || sma_slow <= 0.0)
       return false;
 
-   // --- Parabolic SAR at the trigger bar (shift 1) ---
+   // --- Parabolic SAR at the signal bar (shift 1) and entry bar (shift 0 for SL) ---
    const double sar1 = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 1);
-   if(sar1 <= 0.0)
+   const double sar0 = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 0);
+   if(sar1 <= 0.0 || sar0 <= 0.0)
       return false;
 
-   // --- Closed-bar OHLC at the trigger bar / prior bar (perf-allowed single reads) ---
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double close2 = iClose(_Symbol, _Period, 2);
-   const double open1  = iOpen (_Symbol, _Period, 1);
-   const double high1  = iHigh (_Symbol, _Period, 1);
-   const double low1   = iLow  (_Symbol, _Period, 1);
-   if(close1 <= 0.0 || close2 <= 0.0 || open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0)
+   // --- Closed-bar OHLC at the signal bar. SMA(1) is the framework-safe price reader. ---
+   const double close1 = QM_SMA(_Symbol, _Period, 1, 1, PRICE_CLOSE);
+   const double open1  = iOpen(_Symbol, _Period, 1); // perf-allowed: card requires bullish/bearish closed-bar open comparison.
+   const double high1  = QM_SMA(_Symbol, _Period, 1, 1, PRICE_HIGH);
+   const double low1   = QM_SMA(_Symbol, _Period, 1, 1, PRICE_LOW);
+   if(close1 <= 0.0 || open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0)
       return false;
 
    // ===== LONG =====================================================
-   // Trigger EVENT: close crosses ABOVE the SMA(32,High) upper channel.
-   // STATES: bullish bar, price above SMA100 & SMA200, PSAR below price.
-   const bool long_cross   = (close2 <= upper2 && close1 > upper1);
+   // Card state: close above SMA(32,High), bullish bar, price above SMA100/200, PSAR below low.
+   const bool long_band    = (close1 > upper1);
    const bool long_bull    = (close1 > open1);
    const bool long_trend   = (close1 > sma_fast && close1 > sma_slow);
    const bool long_psar    = (sar1 < low1);
-   if(long_cross && long_bull && long_trend && long_psar)
+   if(long_band && long_bull && long_trend && long_psar)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
          return false;
 
       // Stop = PSAR dot, capped at sl_cap_pips below entry.
-      const double cap_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_sl_cap_pips);
-      double sl = sar1;
+      const double cap_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_cap_pips);
+      double sl = sar0;
       if(sl >= entry)                          // SAR not below price — fall back to cap
          sl = entry - cap_dist;
       else if(cap_dist > 0.0 && (entry - sl) > cap_dist)
          sl = entry - cap_dist;                // clamp an over-wide PSAR stop to the cap
-      const double tp = entry + QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_tp_pips);
+      const double tp = entry + QM_StopRulesPipsToPriceDistance(_Symbol, strategy_tp_pips);
       if(sl <= 0.0 || tp <= 0.0 || sl >= entry || tp <= entry)
          return false;
 
-      req.type   = QM_BUY;
-      req.price  = 0.0;   // framework fills market price at send
-      req.sl     = QM_StopRulesNormalizePrice(_Symbol, sl);
-      req.tp     = QM_StopRulesNormalizePrice(_Symbol, tp);
+      req.type = QM_BUY;
+      req.price = 0.0;   // framework fills market price at send
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, sl);
+      req.tp = QM_StopRulesNormalizePrice(_Symbol, tp);
       req.reason = "carter_sma32band_psar_long";
       return true;
      }
 
    // ===== SHORT ====================================================
-   // Trigger EVENT: close crosses BELOW the SMA(32,Low) lower channel.
-   // STATES: bearish bar, price below SMA100 & SMA200, PSAR above price.
-   const bool short_cross  = (close2 >= lower2 && close1 < lower1);
+   // Card state: close below SMA(32,Low), bearish bar, price below SMA100/200, PSAR above high.
+   const bool short_band   = (close1 < lower1);
    const bool short_bear   = (close1 < open1);
    const bool short_trend  = (close1 < sma_fast && close1 < sma_slow);
    const bool short_psar   = (sar1 > high1);
-   if(short_cross && short_bear && short_trend && short_psar)
+   if(short_band && short_bear && short_trend && short_psar)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(entry <= 0.0)
          return false;
 
-      const double cap_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_sl_cap_pips);
-      double sl = sar1;
+      const double cap_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_cap_pips);
+      double sl = sar0;
       if(sl <= entry)                          // SAR not above price — fall back to cap
          sl = entry + cap_dist;
       else if(cap_dist > 0.0 && (sl - entry) > cap_dist)
          sl = entry + cap_dist;                // clamp an over-wide PSAR stop to the cap
-      const double tp = entry - QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_tp_pips);
+      const double tp = entry - QM_StopRulesPipsToPriceDistance(_Symbol, strategy_tp_pips);
       if(sl <= 0.0 || tp <= 0.0 || sl <= entry || tp >= entry)
          return false;
 
-      req.type   = QM_SELL;
-      req.price  = 0.0;
-      req.sl     = QM_StopRulesNormalizePrice(_Symbol, sl);
-      req.tp     = QM_StopRulesNormalizePrice(_Symbol, tp);
+      req.type = QM_SELL;
+      req.price = 0.0;
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, sl);
+      req.tp = QM_StopRulesNormalizePrice(_Symbol, tp);
       req.reason = "carter_sma32band_psar_short";
       return true;
      }

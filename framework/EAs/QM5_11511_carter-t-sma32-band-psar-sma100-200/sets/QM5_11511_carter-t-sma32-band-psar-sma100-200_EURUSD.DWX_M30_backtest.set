@@ -1,7 +1,7 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11524
-; ea_slug:      ciurea-ema200-price-cross-m30
+; ea_id:        11511
+; ea_slug:      carter-t-sma32-band-psar-sma100-200
 ; ea_version:   v5.0
 ; set_version:  s20260620-001
 ; symbol:       EURUSD.DWX
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   ca7821e8861c2b40c5fe21ce77ace2677ab167e86111f5c688d6bb6dc924dffc
+; build_hash:   2713754d274515ee4fd261e804387b5d1d32f68e70d18a1cf6cfb34527e37096
 ; author:       Development
 ; date:         2026-06-20
 ;==========================================================
@@ -18,8 +18,6 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_news_temporal=0
-qm_news_compliance=0
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
@@ -33,4 +31,16 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11511_carter-t-sma32-band-psar-sma100-200.md
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+strategy_sma_band_period=32
+strategy_sma_trend_fast=100
+strategy_sma_trend_slow=200
+strategy_sar_step=0.02
+strategy_sar_max=0.2
+strategy_tp_pips=13
+strategy_sl_cap_pips=20
+strategy_no_friday_entry=1
+strategy_spread_cap_pips=12
