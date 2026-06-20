@@ -11215,9 +11215,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11504,goodwin-kangaroo-tail-d1,2,GBPUSD.DWX,115040002,2026-06-18,Claude,reserved
 11505,goodwin-hourly-breakout-h1,0,USDJPY.DWX,115050000,2026-06-18,Claude,reserved
 11505,goodwin-hourly-breakout-h1,1,GBPUSD.DWX,115050001,2026-06-18,Claude,reserved
-11506,carter-t-ema10-25-50-psar-m30,0,EURUSD.DWX,115060000,2026-06-18,Claude,reserved
-11506,carter-t-ema10-25-50-psar-m30,1,GBPUSD.DWX,115060001,2026-06-18,Claude,reserved
-11506,carter-t-ema10-25-50-psar-m30,2,AUDUSD.DWX,115060002,2026-06-18,Claude,reserved
+11506,carter-t-ema10-25-50-psar-m30,0,EURUSD.DWX,115060000,2026-06-20,Development,active
+11506,carter-t-ema10-25-50-psar-m30,1,GBPUSD.DWX,115060001,2026-06-20,Development,active
+11506,carter-t-ema10-25-50-psar-m30,2,AUDUSD.DWX,115060002,2026-06-20,Development,active
 11507,carter-t-ema20-macd-buystop-m15,0,EURUSD.DWX,115070000,2026-06-18,Claude,reserved
 11507,carter-t-ema20-macd-buystop-m15,1,GBPUSD.DWX,115070001,2026-06-18,Claude,reserved
 11507,carter-t-ema20-macd-buystop-m15,2,AUDUSD.DWX,115070002,2026-06-18,Claude,reserved
