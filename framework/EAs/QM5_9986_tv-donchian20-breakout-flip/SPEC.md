@@ -25,7 +25,7 @@ On each H1 close, the EA checks whether the just-closed candle closed above the 
 | `strategy_atr_sl_mult` | 1.0 | 1.0-2.0 P3 sweep candidate | Initial stop distance in ATR multiples. |
 | `strategy_atr_tp_mult` | 2.0 | 1.5-4.0 P3 sweep candidate | Static take-profit distance in ATR multiples. |
 | `strategy_use_flat_range_filter` | false | true/false | Enables the optional Donchian-width chop filter. |
-| `strategy_flat_atr_mult` | 0.5 | 0.5-0.7 P3 sweep candidate | Blocks entries when channel width is below this ATR multiple. |
+| `strategy_flat_atr_mult` | 0.5 | 0.5-0.7 P3 sweep candidate | Blocks entries when channel width is below this multiple of ATR scaled by `sqrt(strategy_donchian_period)`. |
 | `strategy_use_session_filter` | false | true/false | Enables the optional broker-time session filter. |
 | `strategy_session_start_hour` | 0 | 0-23 | Broker-time session start hour when the session filter is enabled. |
 | `strategy_session_end_hour` | 24 | 1-24 | Broker-time session end hour when the session filter is enabled. |

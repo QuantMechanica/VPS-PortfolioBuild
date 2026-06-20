@@ -165,8 +165,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             lowest = range_rates[i].low;
         }
       const double atr_width = QM_ATR(_Symbol, PERIOD_H1, strategy_donchian_period, 1);
+      const double scaled_atr_width = atr_width * MathSqrt((double)strategy_donchian_period);
       if(highest <= lowest || atr_width <= 0.0 ||
-         (highest - lowest) < strategy_flat_atr_mult * atr_width)
+         (highest - lowest) < strategy_flat_atr_mult * scaled_atr_width)
          return false;
      }
 
@@ -208,10 +209,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry <= 0.0)
       return false;
 
+   const double atr_value = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
+   if(atr_value <= 0.0)
+      return false;
+
    req.type = side;
    req.price = 0.0;
-   req.sl = QM_StopATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_sl_mult);
-   req.tp = QM_TakeATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_tp_mult);
+   req.sl = QM_StopATRFromValue(_Symbol, side, entry, atr_value, strategy_atr_sl_mult);
+   req.tp = QM_TakeATRFromValue(_Symbol, side, entry, atr_value, strategy_atr_tp_mult);
    req.reason = (side == QM_BUY) ? "DONCHIAN20_CLOSE_BREAK_LONG"
                                  : "DONCHIAN20_CLOSE_BREAK_SHORT";
 

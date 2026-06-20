@@ -11289,7 +11289,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11548,carter-t-m5-session-box-breakout,1,GBPJPY.DWX,115480001,2026-06-18,Development,active
 11549,carter-t-m5-bb503234-rsi3-stoch633,0,EURUSD.DWX,115490000,2026-06-18,Development,active
 11550,carter-t-m5-ema50-100-macd-partial,0,EURUSD.DWX,115500000,2026-06-18,Development,active
-11551,carter-t-m5-ema40-80-cci21,0,EURUSD.DWX,115510000,2026-06-18,Claude,reserved
+11551,carter-t-m5-ema40-80-cci21,0,EURUSD.DWX,115510000,2026-06-20,Development,active
 11552,carter-t-m5-ema5-10-mtf4h-rsi-stoch-macd,0,EURUSD.DWX,115520000,2026-06-18,Claude,reserved
 11553,carter-t-m5-cci14-macd1269,0,EURUSD.DWX,115530000,2026-06-18,Development,active
 11553,carter-t-m5-cci14-macd1269,1,GBPUSD.DWX,115530001,2026-06-18,Development,active
@@ -11596,11 +11596,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11693,strat-mom,0,EURUSD.DWX,116930000,2026-06-18,Claude,reserved
 11693,strat-mom,1,XAUUSD.DWX,116930001,2026-06-18,Claude,reserved
 11693,strat-mom,2,GDAXI.DWX,116930002,2026-06-18,Claude,reserved
-11697,pl-bb20-m5-scalp-d1trend,0,EURUSD.DWX,116970000,2026-06-18,Claude,reserved
-11697,pl-bb20-m5-scalp-d1trend,1,GBPUSD.DWX,116970001,2026-06-18,Claude,reserved
-11697,pl-bb20-m5-scalp-d1trend,2,USDJPY.DWX,116970002,2026-06-18,Claude,reserved
-11697,pl-bb20-m5-scalp-d1trend,3,AUDUSD.DWX,116970003,2026-06-18,Claude,reserved
-11697,pl-bb20-m5-scalp-d1trend,4,USDCAD.DWX,116970004,2026-06-18,Claude,reserved
+11697,pl-bb20-m5-scalp-d1trend,0,EURUSD.DWX,116970000,2026-06-18,Claude,active
+11697,pl-bb20-m5-scalp-d1trend,1,GBPUSD.DWX,116970001,2026-06-18,Claude,active
+11697,pl-bb20-m5-scalp-d1trend,2,USDJPY.DWX,116970002,2026-06-18,Claude,active
+11697,pl-bb20-m5-scalp-d1trend,3,AUDUSD.DWX,116970003,2026-06-18,Claude,active
+11697,pl-bb20-m5-scalp-d1trend,4,USDCAD.DWX,116970004,2026-06-18,Claude,active
 11698,pl-daily-engulfing-swing-d1,0,EURUSD.DWX,116980000,2026-06-18,Claude,reserved
 11698,pl-daily-engulfing-swing-d1,1,GBPUSD.DWX,116980001,2026-06-18,Claude,reserved
 11698,pl-daily-engulfing-swing-d1,2,USDJPY.DWX,116980002,2026-06-18,Claude,reserved
