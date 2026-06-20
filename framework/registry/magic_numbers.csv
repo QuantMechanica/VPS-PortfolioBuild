@@ -11248,12 +11248,12 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11520,carter-t-ema18-adx12-pullback,2,USDJPY.DWX,115200002,2026-06-18,Claude,reserved
 11521,carter-t-ema6-13-macd-psar-h4-gbp,0,GBPUSD.DWX,115210000,2026-06-18,Claude,reserved
 11521,carter-t-ema6-13-macd-psar-h4-gbp,1,GBPJPY.DWX,115210001,2026-06-18,Claude,reserved
-11522,carter-t-ema4-10-adx28-macd5104-h4,0,EURUSD.DWX,115220000,2026-06-18,Claude,reserved
-11522,carter-t-ema4-10-adx28-macd5104-h4,1,GBPUSD.DWX,115220001,2026-06-18,Claude,reserved
-11522,carter-t-ema4-10-adx28-macd5104-h4,2,USDJPY.DWX,115220002,2026-06-18,Claude,reserved
-11522,carter-t-ema4-10-adx28-macd5104-h4,3,USDCHF.DWX,115220003,2026-06-18,Claude,reserved
-11523,ciurea-sma100-price-cross-h4,0,EURUSD.DWX,115230000,2026-06-18,Claude,reserved
-11523,ciurea-sma100-price-cross-h4,1,GBPUSD.DWX,115230001,2026-06-18,Claude,reserved
+11522,carter-t-ema4-10-adx28-macd5104-h4,0,EURUSD.DWX,115220000,2026-06-18,Claude,active
+11522,carter-t-ema4-10-adx28-macd5104-h4,1,GBPUSD.DWX,115220001,2026-06-18,Claude,active
+11522,carter-t-ema4-10-adx28-macd5104-h4,2,USDJPY.DWX,115220002,2026-06-18,Claude,active
+11522,carter-t-ema4-10-adx28-macd5104-h4,3,USDCHF.DWX,115220003,2026-06-18,Claude,active
+11523,ciurea-sma100-price-cross-h4,0,EURUSD.DWX,115230000,2026-06-20,Development,active
+11523,ciurea-sma100-price-cross-h4,1,GBPUSD.DWX,115230001,2026-06-20,Development,active
 11524,ciurea-ema200-price-cross-m30,0,EURUSD.DWX,115240000,2026-06-18,Development,active
 11525,ciurea-stoch1435-bounce-h4,0,GBPUSD.DWX,115250000,2026-06-18,Claude,reserved
 11525,ciurea-stoch1435-bounce-h4,1,EURUSD.DWX,115250001,2026-06-18,Claude,reserved
@@ -13055,3 +13055,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9997,tv-pmax-atr-ma-flip,5,NDX.DWX,99970005,2026-06-20,Development,active
 9997,tv-pmax-atr-ma-flip,6,WS30.DWX,99970006,2026-06-20,Development,active
 9997,tv-pmax-atr-ma-flip,7,SP500.DWX,99970007,2026-06-20,Development,active
+9259,mql5-struct-pull,0,EURUSD.DWX,92590000,2026-06-20,Development,active
+9259,mql5-struct-pull,1,GBPJPY.DWX,92590001,2026-06-20,Development,active
+9259,mql5-struct-pull,2,WS30.DWX,92590002,2026-06-20,Development,active
