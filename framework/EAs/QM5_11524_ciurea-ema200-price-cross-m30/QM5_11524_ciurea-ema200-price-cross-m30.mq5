@@ -23,6 +23,8 @@
 //   Stop  SHORT : (highest HIGH over last 3 closed bars) + sl_buffer_pips.
 //                 SL distance capped at sl_max_pips (card P2 cap 30 pips).
 //   Take profit : 2R from entry (tp_rr * SL distance) via QM_TakeRR.
+//   Opposite cross: close the current position so the mirrored card entry can
+//                   be taken under the one-position-per-magic framework rule.
 //   Spread guard: skip only a genuinely wide spread > spread_cap_pips
 //                 (fail-open on .DWX zero modeled spread).
 //
@@ -171,9 +173,37 @@ void Strategy_ManageOpenPosition()
   {
   }
 
-// No discretionary exit beyond the structural SL / 2R TP.
+// Close on a fresh opposite EMA cross so the next mirrored entry can fire.
 bool Strategy_ExitSignal()
   {
+   const int magic = QM_FrameworkMagic();
+   int position_type = -1;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      position_type = (int)PositionGetInteger(POSITION_TYPE);
+      break;
+     }
+
+   if(position_type < 0)
+      return false;
+
+   const int side1 = QM_Sig_Price_Above_MA(_Symbol, _Period, strategy_ema_period, 0.0, 1);
+   const int side2 = QM_Sig_Price_Above_MA(_Symbol, _Period, strategy_ema_period, 0.0, 2);
+   const bool cross_up   = (side1 > 0 && side2 <= 0);
+   const bool cross_down = (side1 < 0 && side2 >= 0);
+
+   if(position_type == POSITION_TYPE_BUY && cross_down)
+      return true;
+   if(position_type == POSITION_TYPE_SELL && cross_up)
+      return true;
+
    return false;
   }
 
