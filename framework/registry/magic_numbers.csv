@@ -10921,11 +10921,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11449,macd-psar-atr-trend-h4,2,USDJPY.DWX,114490002,2026-06-18,Claude,reserved
 11449,macd-psar-atr-trend-h4,3,AUDUSD.DWX,114490003,2026-06-18,Claude,reserved
 11449,macd-psar-atr-trend-h4,4,USDCAD.DWX,114490004,2026-06-18,Claude,reserved
-11450,london-breakfast-asian-range-m15,0,EURUSD.DWX,114500000,2026-06-18,Claude,reserved
-11450,london-breakfast-asian-range-m15,1,GBPUSD.DWX,114500001,2026-06-18,Claude,reserved
-11450,london-breakfast-asian-range-m15,2,USDJPY.DWX,114500002,2026-06-18,Claude,reserved
-11450,london-breakfast-asian-range-m15,3,AUDUSD.DWX,114500003,2026-06-18,Claude,reserved
-11450,london-breakfast-asian-range-m15,4,USDCAD.DWX,114500004,2026-06-18,Claude,reserved
+11450,london-breakfast-asian-range-m15,0,EURUSD.DWX,114500000,2026-06-18,Development,active
+11450,london-breakfast-asian-range-m15,1,GBPUSD.DWX,114500001,2026-06-18,Development,active
+11450,london-breakfast-asian-range-m15,2,USDJPY.DWX,114500002,2026-06-18,Development,active
+11450,london-breakfast-asian-range-m15,3,AUDUSD.DWX,114500003,2026-06-18,Development,active
+11450,london-breakfast-asian-range-m15,4,USDCAD.DWX,114500004,2026-06-18,Development,active
 11451,vegas-wave-ema144ema169-fractal-h1,0,EURUSD.DWX,114510000,2026-06-18,Claude,reserved
 11451,vegas-wave-ema144ema169-fractal-h1,1,GBPUSD.DWX,114510001,2026-06-18,Claude,reserved
 11451,vegas-wave-ema144ema169-fractal-h1,2,USDJPY.DWX,114510002,2026-06-18,Claude,reserved
