@@ -4,7 +4,7 @@
 **Slug:** `tc-m5-20-ema3-bb-macd`
 **Source:** `e78a9f1f-4e6a-563c-a080-915133d6ed28` (Thomas Carter, 20 Forex Trading Strategies — 5 Min System #20, p.48)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-20
 
 ---
 
@@ -34,7 +34,7 @@ M5 bars if neither stop nor target is hit. One position per magic.
 | `strategy_macd_fast` | 12 | 5-20 | MACD fast EMA period |
 | `strategy_macd_slow` | 26 | 15-40 | MACD slow EMA period |
 | `strategy_macd_signal` | 9 | 5-15 | MACD signal EMA period |
-| `strategy_macd_approach_bars` | 2 | 1-3 | Consecutive closed bars of |MACD| decreasing to count as "approaching zero" |
+| `strategy_macd_approach_bars` | 2 | 1-3 | Consecutive closed bars of absolute MACD decreasing to count as "approaching zero" |
 | `strategy_sl_pips` | 12 | 10-15 | Stop loss in pips |
 | `strategy_tp_pips` | 12 | 10-15 | Take profit in pips |
 | `strategy_time_stop_bars` | 12 | 0-18 | Close after this many closed M5 bars (0 = off) |
@@ -104,4 +104,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | EMA3/BB-mid cross EVENT + MACD zero-line STATE; fixed 12-pip SL/TP + 12-bar time stop |
+| v1 | 2026-06-20 | Initial build from card | abd57f7b-b0ed-4d29-9390-b2607df28caf |
