@@ -22,7 +22,7 @@
 //     (slope_min_price = slope_min_pips converted scale-correct; default 0 pips =
 //      any non-flat slope in the trade direction qualifies.)
 //   Stop  : fixed 5 pips from entry (scale-correct via QM_StopFixedPips).
-//   Take  : fixed 5 pips from entry (1:1 RR via QM_TakeRR).
+//   Take  : fixed 5 pips from entry (scale-correct via QM_TakeFixedPips).
 //   Position: max one per symbol/magic; a cross only fires when flat, so a
 //             reversal naturally requires a fresh opposite cross after the prior
 //             position has closed on its TP/SL.
@@ -66,7 +66,7 @@ input int    strategy_sma_slow_period    = 20;    // slow SMA period (cross trig
 input int    strategy_slope_lookback     = 3;     // bars back to measure SMA20 slope (trend filter)
 input double strategy_slope_min_pips     = 0.0;   // min SMA20 slope magnitude in the trade dir, pips (0 = any non-flat)
 input int    strategy_sl_pips            = 5;     // fixed stop-loss distance, pips
-input double strategy_tp_rr              = 1.0;   // take-profit as RR multiple of the stop (1:1)
+input int    strategy_tp_pips            = 5;     // fixed take-profit distance, pips
 input double strategy_spread_pct_of_stop = 50.0;  // skip if spread > this % of stop distance
 
 // -----------------------------------------------------------------------------
@@ -143,17 +143,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry <= 0.0)
       return false;
 
-   // Fixed 5-pip stop (scale-correct) and 1:1 RR take-profit.
+   // Fixed 5-pip stop and take-profit (scale-correct).
    const double sl = QM_StopFixedPips(_Symbol, dir, entry, strategy_sl_pips);
-   const double tp = QM_TakeRR(_Symbol, dir, entry, sl, strategy_tp_rr);
+   const double tp = QM_TakeFixedPips(_Symbol, dir, entry, strategy_tp_pips);
    if(sl <= 0.0 || tp <= 0.0)
       return false;
 
-   req.type   = dir;
-   req.price  = 0.0;   // framework fills market price at send
-   req.sl     = sl;
-   req.tp     = tp;
+   req.type = dir;
+   req.price = 0.0;   // framework fills market price at send
+   req.sl = sl;
+   req.tp = tp;
    req.reason = crossed_up ? "sma520_cross_long" : "sma520_cross_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 

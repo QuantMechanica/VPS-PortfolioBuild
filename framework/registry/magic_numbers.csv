@@ -12102,10 +12102,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11870,dead-time-range-fade,1,GBPUSD.DWX,118700001,2026-06-18,Claude,reserved
 11870,dead-time-range-fade,2,USDJPY.DWX,118700002,2026-06-18,Claude,reserved
 11870,dead-time-range-fade,3,AUDUSD.DWX,118700003,2026-06-18,Claude,reserved
-11871,sma5-20-cross-m15-scalp,0,EURUSD.DWX,118710000,2026-06-18,Claude,reserved
-11871,sma5-20-cross-m15-scalp,1,GBPUSD.DWX,118710001,2026-06-18,Claude,reserved
-11871,sma5-20-cross-m15-scalp,2,USDJPY.DWX,118710002,2026-06-18,Claude,reserved
-11871,sma5-20-cross-m15-scalp,3,AUDUSD.DWX,118710003,2026-06-18,Claude,reserved
+11871,sma5-20-cross-m15-scalp,0,EURUSD.DWX,118710000,2026-06-20,Development,active
+11871,sma5-20-cross-m15-scalp,1,GBPUSD.DWX,118710001,2026-06-20,Development,active
+11871,sma5-20-cross-m15-scalp,2,USDJPY.DWX,118710002,2026-06-20,Development,active
+11871,sma5-20-cross-m15-scalp,3,AUDUSD.DWX,118710003,2026-06-20,Development,active
 11872,rsi-80-20-fade-m15,0,EURUSD.DWX,118720000,2026-06-18,Claude,reserved
 11872,rsi-80-20-fade-m15,1,GBPUSD.DWX,118720001,2026-06-18,Claude,reserved
 11872,rsi-80-20-fade-m15,2,USDJPY.DWX,118720002,2026-06-18,Claude,reserved
@@ -12114,9 +12114,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11873,trix-signal-line-cross,1,GBPUSD.DWX,118730001,2026-06-18,Claude,reserved
 11873,trix-signal-line-cross,2,USDJPY.DWX,118730002,2026-06-18,Claude,reserved
 11873,trix-signal-line-cross,3,AUDUSD.DWX,118730003,2026-06-18,Claude,reserved
-11874,usdjpy-24hr-range-breakout,0,USDJPY.DWX,118740000,2026-06-18,Claude,reserved
-11874,usdjpy-24hr-range-breakout,1,GBPJPY.DWX,118740001,2026-06-18,Claude,reserved
-11874,usdjpy-24hr-range-breakout,2,AUDJPY.DWX,118740002,2026-06-18,Claude,reserved
+11874,usdjpy-24hr-range-breakout,0,USDJPY.DWX,118740000,2026-06-18,Claude,active
+11874,usdjpy-24hr-range-breakout,1,GBPJPY.DWX,118740001,2026-06-18,Claude,active
+11874,usdjpy-24hr-range-breakout,2,AUDJPY.DWX,118740002,2026-06-18,Claude,active
 11880,continuation-method-ema50-williams,0,EURUSD.DWX,118800000,2026-06-18,Claude,reserved
 11880,continuation-method-ema50-williams,1,GBPUSD.DWX,118800001,2026-06-18,Claude,reserved
 11880,continuation-method-ema50-williams,2,USDJPY.DWX,118800002,2026-06-18,Claude,reserved
@@ -13159,3 +13159,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9988,tv-opening-range-breakout-dual,25,SP500.DWX,99880025,2026-06-20,Development,active
 9988,tv-opening-range-breakout-dual,26,SP500.DWX,99880026,2026-06-20,Development,active
 9988,tv-opening-range-breakout-dual,27,SP500.DWX,99880027,2026-06-20,Development,active
+9985,tv-mes-mr-ema9-200ma,0,SP500.DWX,99850000,2026-06-20,Development,active
+9985,tv-mes-mr-ema9-200ma,1,NDX.DWX,99850001,2026-06-20,Development,active
+9985,tv-mes-mr-ema9-200ma,2,WS30.DWX,99850002,2026-06-20,Development,active
