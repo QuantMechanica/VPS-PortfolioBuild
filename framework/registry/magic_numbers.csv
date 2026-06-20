@@ -1,4 +1,4 @@
-ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
+﻿ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1641,aa-qend-mom-season,0,NDX.DWX,16410000,2026-06-18,Development,active
 1641,aa-qend-mom-season,1,WS30.DWX,16410001,2026-06-18,Development,active
 1641,aa-qend-mom-season,2,SP500.DWX,16410002,2026-06-18,Development,active
@@ -11294,9 +11294,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11553,carter-t-m5-cci14-macd1269,0,EURUSD.DWX,115530000,2026-06-18,Development,active
 11553,carter-t-m5-cci14-macd1269,1,GBPUSD.DWX,115530001,2026-06-18,Development,active
 11557,carter-t-m5-ema20-macd-buystop-partial,0,EURUSD.DWX,115570000,2026-06-20,Development,active
-11558,carter-t-m5-psar-macd64128-ema100,0,EURUSD.DWX,115580000,2026-06-18,Claude,reserved
-11558,carter-t-m5-psar-macd64128-ema100,1,GBPUSD.DWX,115580001,2026-06-18,Claude,reserved
-11558,carter-t-m5-psar-macd64128-ema100,2,AUDUSD.DWX,115580002,2026-06-18,Claude,reserved
 11559,carter-t-m5-ema3-bb203-macd,0,EURUSD.DWX,115590000,2026-06-18,Development,active
 11560,lien-xtreme-fade-bb3-adx25-m15,0,EURUSD.DWX,115600000,2026-06-20,Development,active
 11560,lien-xtreme-fade-bb3-adx25-m15,1,GBPUSD.DWX,115600001,2026-06-20,Development,active
