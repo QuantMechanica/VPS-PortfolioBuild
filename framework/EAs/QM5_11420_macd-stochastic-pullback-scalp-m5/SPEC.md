@@ -4,7 +4,7 @@
 **Slug:** `macd-stochastic-pullback-scalp-m5`
 **Source:** `faf6561d-007a-547f-8d4c-429ab021a7cc`
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-20
 
 ---
 
@@ -104,4 +104,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v1 | 2026-06-20 | Initial build from card | aa7fe2fd-2a5f-4494-81a6-20599388acd5 |

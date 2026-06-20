@@ -10936,11 +10936,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11452,big-ben-fade-asian-range-m5,2,USDJPY.DWX,114520002,2026-06-20,Development,active
 11452,big-ben-fade-asian-range-m5,3,AUDUSD.DWX,114520003,2026-06-20,Development,active
 11452,big-ben-fade-asian-range-m5,4,USDCAD.DWX,114520004,2026-06-20,Development,active
-11454,davey-session-open-bracket-breakout,0,EURUSD.DWX,114540000,2026-06-18,Claude,reserved
-11454,davey-session-open-bracket-breakout,1,GBPUSD.DWX,114540001,2026-06-18,Claude,reserved
-11454,davey-session-open-bracket-breakout,2,USDJPY.DWX,114540002,2026-06-18,Claude,reserved
-11454,davey-session-open-bracket-breakout,3,AUDUSD.DWX,114540003,2026-06-18,Claude,reserved
-11454,davey-session-open-bracket-breakout,4,USDCAD.DWX,114540004,2026-06-18,Claude,reserved
+11454,davey-session-open-bracket-breakout,0,EURUSD.DWX,114540000,2026-06-20,Development,active
+11454,davey-session-open-bracket-breakout,1,GBPUSD.DWX,114540001,2026-06-20,Development,active
+11454,davey-session-open-bracket-breakout,2,USDJPY.DWX,114540002,2026-06-20,Development,active
+11454,davey-session-open-bracket-breakout,3,AUDUSD.DWX,114540003,2026-06-20,Development,active
+11454,davey-session-open-bracket-breakout,4,USDCAD.DWX,114540004,2026-06-20,Development,active
 1157,plastun-crude-oil-autumn,0,XTIUSD.DWX,11570000,2026-06-18,Claude,reserved
 1223,bhatti-fx-zscore-mr,0,EURUSD.DWX,12230000,2026-06-18,Claude,reserved
 1223,bhatti-fx-zscore-mr,1,GBPUSD.DWX,12230001,2026-06-18,Claude,reserved
