@@ -75,21 +75,6 @@ input int    strategy_sess2_start_utc    = 12;     // NY open window start      
 input int    strategy_sess2_end_utc      = 15;     // NY open window end        (UTC hour)
 
 // -----------------------------------------------------------------------------
-// Helpers
-// -----------------------------------------------------------------------------
-
-// True if `hour` is inside the half-open [start,end) window (wrap-safe).
-bool HourInWindow(const int hour, const int start_h, const int end_h)
-  {
-   if(start_h == end_h)
-      return false;
-   if(start_h < end_h)
-      return (hour >= start_h && hour < end_h);
-   // wrap across midnight
-   return (hour >= start_h || hour < end_h);
-  }
-
-// -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
@@ -103,8 +88,21 @@ bool Strategy_NoTradeFilter()
    MqlDateTime dt;
    TimeToStruct(utc_now, dt);
    const int h = dt.hour;
-   const bool in_session = HourInWindow(h, strategy_sess1_start_utc, strategy_sess1_end_utc) ||
-                           HourInWindow(h, strategy_sess2_start_utc, strategy_sess2_end_utc);
+   bool in_session = false;
+   if(strategy_sess1_start_utc != strategy_sess1_end_utc)
+     {
+      if(strategy_sess1_start_utc < strategy_sess1_end_utc)
+         in_session = (h >= strategy_sess1_start_utc && h < strategy_sess1_end_utc);
+      else
+         in_session = (h >= strategy_sess1_start_utc || h < strategy_sess1_end_utc);
+     }
+   if(!in_session && strategy_sess2_start_utc != strategy_sess2_end_utc)
+     {
+      if(strategy_sess2_start_utc < strategy_sess2_end_utc)
+         in_session = (h >= strategy_sess2_start_utc && h < strategy_sess2_end_utc);
+      else
+         in_session = (h >= strategy_sess2_start_utc || h < strategy_sess2_end_utc);
+     }
    if(!in_session)
       return true; // outside both open windows — block
 
@@ -171,7 +169,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double sl = QM_StopFixedPips(_Symbol, side, entry, strategy_sl_pips);
-   const double tp = QM_TakeFixedPips(_Symbol, side, entry, strategy_tp_pips);
+   const double tp_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_tp_pips);
+   if(tp_distance <= 0.0)
+      return false;
+   const double tp_raw = (side == QM_BUY) ? (entry + tp_distance) : (entry - tp_distance);
+   const double tp = QM_StopRulesNormalizePrice(_Symbol, tp_raw);
    if(sl <= 0.0 || tp <= 0.0)
       return false;
 
