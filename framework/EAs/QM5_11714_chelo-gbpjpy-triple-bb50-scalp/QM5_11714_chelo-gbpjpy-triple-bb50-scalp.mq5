@@ -12,7 +12,7 @@
 // Card: artifacts/cards_approved/QM5_11714_chelo-gbpjpy-triple-bb50-scalp.md
 //       (g0_status APPROVED).
 //
-// Mechanics (mean-reversion fade, closed-bar reads at shift 1/2):
+// Mechanics (mean-reversion fade, closed-bar reads at shift 1):
 //   Three BB(50) with escalating deviations 2 / 3 / 4 sigma build a multi-zone
 //   band structure around the shared SMA(50) basis. Price extending beyond the
 //   inner band (dev 2) and at least halfway to the middle band (dev 3) is
@@ -22,17 +22,12 @@
 //        thr_up = (BB(50,dev2).upper + BB(50,dev3).upper) / 2
 //   lower side symmetric with the lower bands.
 //
-//   Single TRIGGER EVENT (avoids the two-cross-same-bar trap): the close
-//   RE-CROSSES back inside the threshold after having been beyond it on the
-//   prior closed bar.
-//     SHORT: close[2] >= thr_up[2]  AND  close[1] <  thr_up[1]   (faded down)
-//     LONG : close[2] <= thr_dn[2]  AND  close[1] >  thr_dn[1]   (faded up)
-//   The zone-occupancy is the STATE (bar 2); the return cross is the ONE EVENT
-//   (bar 1). They live on different bars so they cannot collide.
+//   Literal card trigger:
+//     SHORT: close[1] >= thr_up[1]
+//     LONG : close[1] <= thr_dn[1]
 //
-//   Take profit  : SMA(50) center (BB middle) -> ~5-10 pips on GBPJPY M5,
-//                  capped to the card's fixed 7-pip target. We take the TIGHTER
-//                  of {center distance, 7 pips} so TP never exceeds the cushion.
+//   Take profit  : fixed 7 pips, the factory target for the SMA(50) mean
+//                  reversion move on GBPJPY M5.
 //   Stop loss    : fixed 10 pips (card default; JPY-scaled via QM_StopFixedPips).
 //   Session      : London-open to Tokyo-close, 08:00-17:00 broker time (param).
 //   Spread guard : fail-open on .DWX zero modeled spread; only a genuinely wide
@@ -117,6 +112,14 @@ bool Strategy_NoTradeFilter()
 // Mean-reversion fade entry. Caller guarantees QM_IsNewBar() == true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -126,32 +129,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double bb3u_1 = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_middle, 1);
    const double bb2l_1 = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_inner,  1);
    const double bb3l_1 = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_middle, 1);
-   const double bbmid_1 = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_inner, 1);
-
-   const double bb2u_2 = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_inner,  2);
-   const double bb3u_2 = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_middle, 2);
-   const double bb2l_2 = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_inner,  2);
-   const double bb3l_2 = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_middle, 2);
-
-   if(bb2u_1 <= 0.0 || bb3u_1 <= 0.0 || bb2l_1 <= 0.0 || bb3l_1 <= 0.0 || bbmid_1 <= 0.0 ||
-      bb2u_2 <= 0.0 || bb3u_2 <= 0.0 || bb2l_2 <= 0.0 || bb3l_2 <= 0.0)
+   if(bb2u_1 <= 0.0 || bb3u_1 <= 0.0 || bb2l_1 <= 0.0 || bb3l_1 <= 0.0)
       return false;
 
-   // Overextension thresholds (STATE): halfway between dev2 and dev3 bands.
+   // Overextension thresholds: halfway between dev2 and dev3 bands.
    const double thr_up_1 = (bb2u_1 + bb3u_1) / 2.0;
-   const double thr_up_2 = (bb2u_2 + bb3u_2) / 2.0;
    const double thr_dn_1 = (bb2l_1 + bb3l_1) / 2.0;
-   const double thr_dn_2 = (bb2l_2 + bb3l_2) / 2.0;
 
    const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0 || close2 <= 0.0)
+   if(close1 <= 0.0)
       return false;
 
-   // --- Single TRIGGER EVENT: return-cross of the overextension threshold ---
-   // Prior bar overextended (STATE on bar 2), current bar back inside (EVENT bar 1).
-   const bool short_fade = (close2 >= thr_up_2 && close1 < thr_up_1);
-   const bool long_fade  = (close2 <= thr_dn_2 && close1 > thr_dn_1);
+   const bool short_fade = (close1 >= thr_up_1);
+   const bool long_fade  = (close1 <= thr_dn_1);
 
    if(!short_fade && !long_fade)
       return false;
@@ -161,21 +151,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   // TP cap distance toward the SMA(50) center, scale-correct in price units.
-   const double tp_cap_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_tp_pips);
-
    if(short_fade && !long_fade)
      {
       const double entry = bid;
       const double sl = QM_StopFixedPips(_Symbol, QM_SELL, entry, strategy_sl_pips);
-      // TP toward SMA(50) center (below price for a short), capped to the fixed
-      // pip target so a far center never inflates the target. Tighter wins.
-      const double tp_cap = QM_StopRulesTakeFromDistance(_Symbol, QM_SELL, entry, tp_cap_dist); // entry - dist
-      double tp = bbmid_1;
-      if(tp <= 0.0 || tp >= entry)        // center not below price -> use fixed cap
-         tp = tp_cap;
-      else if(tp < tp_cap)                // center further (below) than cap -> clamp up to cap
-         tp = tp_cap;
+      const double tp = QM_TakeFixedPips(_Symbol, QM_SELL, entry, strategy_tp_pips);
       if(sl <= 0.0 || tp <= 0.0)
          return false;
       req.type   = QM_SELL;
@@ -190,12 +170,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      {
       const double entry = ask;
       const double sl = QM_StopFixedPips(_Symbol, QM_BUY, entry, strategy_sl_pips);
-      const double tp_cap = QM_StopRulesTakeFromDistance(_Symbol, QM_BUY, entry, tp_cap_dist); // entry + dist
-      double tp = bbmid_1;
-      if(tp <= 0.0 || tp <= entry)        // center not above price -> use fixed cap
-         tp = tp_cap;
-      else if(tp > tp_cap)                // center further (above) than cap -> clamp down to cap
-         tp = tp_cap;
+      const double tp = QM_TakeFixedPips(_Symbol, QM_BUY, entry, strategy_tp_pips);
       if(sl <= 0.0 || tp <= 0.0)
          return false;
       req.type   = QM_BUY;
