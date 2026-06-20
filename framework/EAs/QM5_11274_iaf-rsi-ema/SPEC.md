@@ -4,25 +4,21 @@
 **Slug:** `iaf-rsi-ema`
 **Source:** `72f9fcfa-6c75-5544-80c4-31e15c9817ab` (see `strategy-seeds/sources/72f9fcfa-6c75-5544-80c4-31e15c9817ab/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-20
 
 ---
 
 ## 1. Strategy Logic
 
 Long-only RSI + EMA-crossover confirmation strategy ported from the
-`investing-algorithm-framework` `RSIEMACrossoverStrategy` example. The RSI
-threshold cross is the entry EVENT; the EMA trend is a STATE. The EA opens a
-long when, on a closed H2 bar, RSI(14) crosses DOWN through the oversold level
-(RSI was >= 30 on the prior bar and < 30 now) AND a bullish EMA(12) > EMA(26)
-crossover occurred at any point within the last 10 closed bars (the trend
-confirmation window). It exits the long when RSI(14) >= 70 AND a bearish EMA(12)
-< EMA(26) crossunder occurred within the last 10 closed bars. The trigger and
-the confirmation are deliberately decoupled across a lookback window so two
-fresh crosses are never required on the same bar. Risk is bounded by an
-ATR(14)-scaled stop (2× ATR) translating the source's fixed-percent stop, with
-a take-profit at 2× the stop distance (RR) translating the source's trailing
-take-profit. Friday-close and news guards are framework-supplied.
+`investing-algorithm-framework` `RSIEMACrossoverStrategy` example. The EA opens
+a long when, on a closed H2 bar, RSI(14) is below 30 and a bullish EMA(12) >
+EMA(26) crossover occurred at any point within the last 10 closed bars. It
+exits the long when RSI(14) is at or above 70 and a bearish EMA(12) < EMA(26)
+crossunder occurred within the last 10 closed bars. Risk is bounded by an
+ATR(14)-scaled stop (2x ATR) as the V5 fixed-risk translation of the source's
+percent stop, with a take-profit at 2x the stop distance. Friday-close and news
+guards are framework-supplied.
 
 ---
 
@@ -37,9 +33,8 @@ take-profit. Friday-close and news guards are framework-supplied.
 | `strategy_rsi_oversold` | 30.0 | 10-45 | Entry trigger: RSI cross DOWN through this level |
 | `strategy_rsi_overbought` | 70.0 | 55-90 | Exit gate: RSI at/above this level |
 | `strategy_atr_period` | 14 | 5-30 | ATR period for stop sizing |
-| `strategy_sl_atr_mult` | 2.0 | 0.5-5.0 | Stop distance = mult × ATR |
-| `strategy_tp_rr` | 2.0 | 0.5-5.0 | Take-profit = tp_rr × stop distance (RR) |
-| `strategy_spread_pct_of_stop` | 15.0 | 1-100 | Skip entry if spread > this % of stop distance |
+| `strategy_sl_atr_mult` | 2.0 | 0.5-5.0 | Stop distance = mult x ATR |
+| `strategy_tp_rr` | 2.0 | 0.5-5.0 | Take-profit = tp_rr x stop distance (RR) |
 
 ---
 
@@ -104,4 +99,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v1 | 2026-06-20 | Initial build from card | 6bead079-d4fa-43bb-8c43-80a872e4e063 |
