@@ -786,20 +786,41 @@ def ready_strategy_card_inventory(root: Path) -> dict[str, Any]:
     }
 
 
+_FREQ_COMPARATIVE_PREFIX = re.compile(
+    r"(?:[<>~]=?\s*|\b(?:more than|greater than|at least|no fewer than|over|up to|"
+    r"fewer than|less than|plausibly|about|approx(?:imately)?|around|roughly|than)\s+)\s*$",
+    re.IGNORECASE,
+)
+
+
 def _infer_expected_trades_per_year_per_symbol(card_text: str) -> int | None:
-    """Conservative trade-frequency estimate from card text."""
-    patterns = [
-        r"expected_trades_per_year_per_symbol\s*:\s*(\d+)",
-        r"expected[_ -]?trades.*?(?:per[_ -]?symbol).*?(\d+)",
-        r"(\d+)\s*(?:trades|signals|entries)\s*(?:/|per)\s*(?:year|yr|annum)",
-    ]
-    for pat in patterns:
-        m = re.search(pat, card_text, re.IGNORECASE | re.DOTALL)
-        if m:
-            try:
-                return max(1, int(m.group(1)))
-            except ValueError:
-                pass
+    """Conservative trade-frequency estimate from card text.
+
+    Matches only a GENUINE frequency declaration, never an incidental/comparative
+    aside. 2026-06-20: the old greedy `expected.*?trades.*?per.*?symbol.*?(\\d+)`
+    pattern (DOTALL) captured digits anywhere in the doc, and `(\\d+) trades/year`
+    matched qualitative phrases like "plausibly >2 trades/year/symbol" -> inferred 2
+    and falsely flagged plausible declared values (e.g. 180) as
+    entry_frequency_implausible. Now: skip a number when the immediately preceding
+    text is a comparison ("> 2", "at least 2", "plausibly 2", "~2", ...)."""
+    # Explicit field declaration first (most authoritative when present).
+    m = re.search(r"^\s*expected_trades_per_year_per_symbol\s*:\s*(\d+)\s*$",
+                  card_text, re.IGNORECASE | re.MULTILINE)
+    if m:
+        try:
+            return max(1, int(m.group(1)))
+        except ValueError:
+            pass
+    # "N trades/signals/entries per year" — but not a comparative/qualitative aside.
+    for m in re.finditer(r"(\d+)\s*(?:trades|signals|entries)\s*(?:/|per)\s*(?:year|yr|annum)",
+                         card_text, re.IGNORECASE):
+        pre = card_text[max(0, m.start() - 30):m.start()]
+        if _FREQ_COMPARATIVE_PREFIX.search(pre):
+            continue
+        try:
+            return max(1, int(m.group(1)))
+        except ValueError:
+            pass
     if re.search(r"\b(daily|every day|each day)\b", card_text, re.IGNORECASE):
         return 100
     if re.search(r"\b(weekly|week of month|day of week)\b", card_text, re.IGNORECASE):
