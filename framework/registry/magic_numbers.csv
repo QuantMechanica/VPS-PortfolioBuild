@@ -11552,10 +11552,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11664,ma11-macd-m30,3,USDCHF.DWX,116640003,2026-06-18,Claude,reserved
 11664,ma11-macd-m30,4,AUDUSD.DWX,116640004,2026-06-18,Claude,reserved
 11664,ma11-macd-m30,5,USDCAD.DWX,116640005,2026-06-18,Claude,reserved
-11665,micro-bb18-ema3-macd-rsi-m1,0,EURUSD.DWX,116650000,2026-06-18,Claude,reserved
-11665,micro-bb18-ema3-macd-rsi-m1,1,GBPUSD.DWX,116650001,2026-06-18,Claude,reserved
-11665,micro-bb18-ema3-macd-rsi-m1,2,USDJPY.DWX,116650002,2026-06-18,Claude,reserved
-11665,micro-bb18-ema3-macd-rsi-m1,3,USDCHF.DWX,116650003,2026-06-18,Claude,reserved
+11665,micro-bb18-ema3-macd-rsi-m1,0,EURUSD.DWX,116650000,2026-06-18,Claude,active
+11665,micro-bb18-ema3-macd-rsi-m1,1,GBPUSD.DWX,116650001,2026-06-18,Claude,active
+11665,micro-bb18-ema3-macd-rsi-m1,2,USDJPY.DWX,116650002,2026-06-18,Claude,active
+11665,micro-bb18-ema3-macd-rsi-m1,3,USDCHF.DWX,116650003,2026-06-18,Claude,active
 11666,td-ema9-30-momentum-h1,0,EURUSD.DWX,116660000,2026-06-18,Claude,reserved
 11666,td-ema9-30-momentum-h1,1,GBPUSD.DWX,116660001,2026-06-18,Claude,reserved
 11666,td-ema9-30-momentum-h1,2,USDJPY.DWX,116660002,2026-06-18,Claude,reserved
