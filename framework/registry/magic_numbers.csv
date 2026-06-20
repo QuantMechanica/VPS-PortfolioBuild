@@ -13222,3 +13222,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9722,ff-thv-6lights-m1,1,GBPUSD.DWX,97220001,2026-06-20,Development,active
 9722,ff-thv-6lights-m1,2,AUDUSD.DWX,97220002,2026-06-20,Development,active
 9722,ff-thv-6lights-m1,3,XAUUSD.DWX,97220003,2026-06-20,Development,active
+9248,mql5-atr-reversal,0,EURCHF.DWX,92480000,2026-06-20,Development,active
+9248,mql5-atr-reversal,1,EURUSD.DWX,92480001,2026-06-20,Development,active
+9248,mql5-atr-reversal,2,XAUUSD.DWX,92480002,2026-06-20,Development,active
