@@ -11283,12 +11283,12 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11544,carter-t-h1-psar02-adx50,1,GBPUSD.DWX,115440001,2026-06-18,Claude,reserved
 11545,carter-t-h1-ema18-28-wma5-12-rsi21,0,EURUSD.DWX,115450000,2026-06-18,Claude,reserved
 11546,carter-t-m5-macd1226-stoch533-ema5oc,0,EURUSD.DWX,115460000,2026-06-20,Development,active
-11547,carter-t-m5-bb20-midband-pullback,0,EURUSD.DWX,115470000,2026-06-18,Claude,reserved
-11547,carter-t-m5-bb20-midband-pullback,1,GBPUSD.DWX,115470001,2026-06-18,Claude,reserved
+11547,carter-t-m5-bb20-midband-pullback,0,EURUSD.DWX,115470000,2026-06-20,Development,active
+11547,carter-t-m5-bb20-midband-pullback,1,GBPUSD.DWX,115470001,2026-06-20,Development,active
 11548,carter-t-m5-session-box-breakout,0,GBPUSD.DWX,115480000,2026-06-18,Development,active
 11548,carter-t-m5-session-box-breakout,1,GBPJPY.DWX,115480001,2026-06-18,Development,active
 11549,carter-t-m5-bb503234-rsi3-stoch633,0,EURUSD.DWX,115490000,2026-06-18,Development,active
-11550,carter-t-m5-ema50-100-macd-partial,0,EURUSD.DWX,115500000,2026-06-18,Claude,reserved
+11550,carter-t-m5-ema50-100-macd-partial,0,EURUSD.DWX,115500000,2026-06-18,Development,active
 11551,carter-t-m5-ema40-80-cci21,0,EURUSD.DWX,115510000,2026-06-18,Claude,reserved
 11552,carter-t-m5-ema5-10-mtf4h-rsi-stoch-macd,0,EURUSD.DWX,115520000,2026-06-18,Claude,reserved
 11553,carter-t-m5-cci14-macd1269,0,EURUSD.DWX,115530000,2026-06-18,Development,active
