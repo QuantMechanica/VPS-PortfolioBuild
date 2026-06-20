@@ -172,6 +172,7 @@ def main() -> int:
         prev = {}
 
     out: dict = {"ts": _now().strftime("%Y-%m-%dT%H:%M:%SZ"), "agents": {}}
+    decisions: dict = {}
     for agent, flag in FLAGS.items():
         m = _agent_metrics(snap, agent)
         if m is None:
@@ -209,8 +210,45 @@ def main() -> int:
             owned = False
 
         out["agents"][agent] = {**m, "want_throttle": want, "flag_exists": flag.exists() if not args.dry_run else (want or (flag_exists and not (action=="RELEASE"))), "owned": owned, "action": action, "why": why}
+        decisions[agent] = want
         _log(f"{agent}: used={m['used_pct']}% elapsed={m['elapsed_pct']}% diff={m['diff']:+}pts "
              f"projEOW~{m['projected_eow_pct']:.0f}% -> {action} ({why})")
+
+    # --- build-lane boost: the agent WITH buffer absorbs the slack while its
+    #     counterpart is throttled (OWNER: "der mit Puffer baut mehr"). The
+    #     headless Claude lane runs Sonnet (separate cheap quota), so boosting it
+    #     while Codex rests builds the card backlog without touching Opus budget.
+    PAR = {"codex": ROOT / "state" / "codex_parallel.txt",
+           "claude": ROOT / "state" / "claude_parallel.txt"}
+    BASE = {"codex": 6, "claude": 3}   # restore target after a boost cycle
+    BOOST = 10
+    boost_want = {
+        "claude": bool(decisions.get("codex")) and not bool(decisions.get("claude")),
+        "codex": bool(decisions.get("claude")) and not bool(decisions.get("codex")),
+    }
+    par_prev = prev.get("parallel", {}) if isinstance(prev.get("parallel"), dict) else {}
+    out["parallel"] = {}
+    for agent, pf in PAR.items():
+        want_boost = boost_want.get(agent, False)
+        was_boosted = bool((par_prev.get(agent) or {}).get("boosted", False))
+        par_action = "leave"
+        if want_boost and not was_boosted:
+            par_action = f"BOOST->{BOOST}"
+            if not args.dry_run:
+                try:
+                    pf.write_text(str(BOOST), encoding="utf-8")
+                except Exception as e:
+                    _log(f"{agent}: parallel boost write failed: {e}")
+        elif (not want_boost) and was_boosted:
+            par_action = f"RESTORE->{BASE[agent]}"
+            if not args.dry_run:
+                try:
+                    pf.write_text(str(BASE[agent]), encoding="utf-8")
+                except Exception as e:
+                    _log(f"{agent}: parallel restore write failed: {e}")
+        out["parallel"][agent] = {"boosted": want_boost}
+        if par_action != "leave":
+            _log(f"{agent}: build-lane {par_action} (counterpart throttled={boost_want.get(agent)})")
 
     if not args.dry_run:
         try:
