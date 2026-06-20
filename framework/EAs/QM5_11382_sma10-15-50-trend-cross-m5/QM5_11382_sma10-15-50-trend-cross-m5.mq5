@@ -142,10 +142,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(sma10_1 <= 0.0 || sma15_1 <= 0.0 || sma50_1 <= 0.0)
       return false;
 
-   // --- Bespoke OHLC reads (perf-allowed: single closed-bar reads) ---
-   const double low1   = iLow(_Symbol, _Period, 1);   // perf-allowed
-   const double high1  = iHigh(_Symbol, _Period, 1);  // perf-allowed
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed
+   // --- Bespoke OHLC read (perf-allowed: one closed M5 bar, caller is QM_IsNewBar-gated) ---
+   MqlRates bar1[1];
+   if(CopyRates(_Symbol, _Period, 1, 1, bar1) != 1) // perf-allowed
+      return false;
+   const double low1   = bar1[0].low;
+   const double high1  = bar1[0].high;
+   const double close1 = bar1[0].close;
    if(low1 <= 0.0 || high1 <= 0.0 || close1 <= 0.0)
       return false;
 
@@ -227,7 +230,10 @@ bool Strategy_ExitSignal()
 
    const double sma10_1 = QM_SMA(_Symbol, _Period, strategy_sma_fast_period, 1);
    const double sma15_1 = QM_SMA(_Symbol, _Period, strategy_sma_mid_period, 1);
-   const double close1  = iClose(_Symbol, _Period, 1); // perf-allowed
+   MqlRates bar1[1];
+   if(CopyRates(_Symbol, _Period, 1, 1, bar1) != 1) // perf-allowed
+      return false;
+   const double close1 = bar1[0].close;
    if(sma10_1 <= 0.0 || sma15_1 <= 0.0 || close1 <= 0.0)
       return false;
 

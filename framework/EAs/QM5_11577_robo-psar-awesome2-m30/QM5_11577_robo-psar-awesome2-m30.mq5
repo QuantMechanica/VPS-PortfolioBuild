@@ -76,84 +76,12 @@ input int    strategy_newyork_start_hour_broker = 13;
 input int    strategy_newyork_end_hour_broker   = 23;
 
 // -----------------------------------------------------------------------------
-// AO helper — Awesome Oscillator on the median price at a given closed-bar shift.
-// AO = SMA(fast, median) - SMA(slow, median). PRICE_MEDIAN == (High+Low)/2.
-// -----------------------------------------------------------------------------
-double AO_Value(const int shift)
-  {
-   const double fast = QM_SMA(_Symbol, _Period, strategy_ao_fast_period, shift, PRICE_MEDIAN);
-   const double slow = QM_SMA(_Symbol, _Period, strategy_ao_slow_period, shift, PRICE_MEDIAN);
-   if(fast <= 0.0 || slow <= 0.0)
-      return 0.0;
-   return fast - slow;
-  }
-
-bool HourInRange(const int hour, const int start_hour, const int end_hour)
-  {
-   if(start_hour == end_hour)
-      return true;
-   if(start_hour < end_hour)
-      return (hour >= start_hour && hour < end_hour);
-   return (hour >= start_hour || hour < end_hour);
-  }
-
-bool InTradingSession(const datetime broker_time)
-  {
-   MqlDateTime dt;
-   TimeToStruct(broker_time, dt);
-   return HourInRange(dt.hour, strategy_london_start_hour_broker, strategy_london_end_hour_broker) ||
-          HourInRange(dt.hour, strategy_newyork_start_hour_broker, strategy_newyork_end_hour_broker);
-  }
-
-int Strategy_StopPips()
-  {
-   if(_Symbol == "EURUSD.DWX")
-      return strategy_eurusd_sl_pips;
-   if(_Symbol == "USDCHF.DWX")
-      return strategy_usdchf_sl_pips;
-   return strategy_other_sl_pips;
-  }
-
-int Strategy_TakePips()
-  {
-   if(_Symbol == "EURUSD.DWX")
-      return strategy_eurusd_tp_pips;
-   if(_Symbol == "USDCHF.DWX")
-      return strategy_usdchf_tp_pips;
-   return strategy_other_tp_pips;
-  }
-
-// -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only. Fail-open on .DWX zero spread.
+// Keep exits reachable; entry-specific time/spread filters are applied in EntrySignal.
 bool Strategy_NoTradeFilter()
   {
-   if(strategy_sar_step <= 0.0 ||
-      strategy_sar_max <= strategy_sar_step ||
-      strategy_ema_period <= 0 ||
-      strategy_ao_fast_period <= 0 ||
-      strategy_ao_slow_period <= strategy_ao_fast_period ||
-      Strategy_StopPips() <= 0 ||
-      Strategy_TakePips() <= 0 ||
-      strategy_spread_cap_pips <= 0)
-      return true;
-
-   if(!InTradingSession(TimeCurrent()))
-      return true;
-
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return true;
-
-   const double spread = ask - bid;
-   const double cap    = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && cap > 0.0 && spread > cap)
-      return true;
-
    return false;
   }
 
@@ -168,6 +96,42 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
+   if(strategy_sar_step <= 0.0 ||
+      strategy_sar_max <= strategy_sar_step ||
+      strategy_ema_period <= 0 ||
+      strategy_ao_fast_period <= 0 ||
+      strategy_ao_slow_period <= strategy_ao_fast_period ||
+      strategy_spread_cap_pips <= 0)
+      return false;
+
+   int stop_pips = strategy_other_sl_pips;
+   int take_pips = strategy_other_tp_pips;
+   if(_Symbol == "EURUSD.DWX")
+     {
+      stop_pips = strategy_eurusd_sl_pips;
+      take_pips = strategy_eurusd_tp_pips;
+     }
+   else if(_Symbol == "USDCHF.DWX")
+     {
+      stop_pips = strategy_usdchf_sl_pips;
+      take_pips = strategy_usdchf_tp_pips;
+     }
+   if(stop_pips <= 0 || take_pips <= 0)
+      return false;
+
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   const bool london_wrap = (strategy_london_start_hour_broker > strategy_london_end_hour_broker);
+   const bool newyork_wrap = (strategy_newyork_start_hour_broker > strategy_newyork_end_hour_broker);
+   const bool in_london = (strategy_london_start_hour_broker == strategy_london_end_hour_broker) ||
+                          (!london_wrap && dt.hour >= strategy_london_start_hour_broker && dt.hour < strategy_london_end_hour_broker) ||
+                          (london_wrap && (dt.hour >= strategy_london_start_hour_broker || dt.hour < strategy_london_end_hour_broker));
+   const bool in_newyork = (strategy_newyork_start_hour_broker == strategy_newyork_end_hour_broker) ||
+                           (!newyork_wrap && dt.hour >= strategy_newyork_start_hour_broker && dt.hour < strategy_newyork_end_hour_broker) ||
+                           (newyork_wrap && (dt.hour >= strategy_newyork_start_hour_broker || dt.hour < strategy_newyork_end_hour_broker));
+   if(!in_london && !in_newyork)
+      return false;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -175,6 +139,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   const double spread = ask - bid;
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   // Only a genuinely wide spread blocks; zero modeled .DWX spread is tradeable.
+   if(spread > 0.0 && spread_cap > 0.0 && spread > spread_cap)
       return false;
 
    // --- Trend STATE: Parabolic SAR side vs current price at the new bar. ---
@@ -194,8 +164,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const bool ema_short_state = (ask < ema5);
 
    // --- Awesome Oscillator at the last two closed bars ---
-   const double ao_now  = AO_Value(1);
-   const double ao_prev = AO_Value(2);
+   const double ao_fast_now  = QM_SMA(_Symbol, _Period, strategy_ao_fast_period, 1, PRICE_MEDIAN);
+   const double ao_slow_now  = QM_SMA(_Symbol, _Period, strategy_ao_slow_period, 1, PRICE_MEDIAN);
+   const double ao_fast_prev = QM_SMA(_Symbol, _Period, strategy_ao_fast_period, 2, PRICE_MEDIAN);
+   const double ao_slow_prev = QM_SMA(_Symbol, _Period, strategy_ao_slow_period, 2, PRICE_MEDIAN);
+   if(ao_fast_now <= 0.0 || ao_slow_now <= 0.0 || ao_fast_prev <= 0.0 || ao_slow_prev <= 0.0)
+      return false;
+   const double ao_now  = ao_fast_now - ao_slow_now;
+   const double ao_prev = ao_fast_prev - ao_slow_prev;
 
    // --- AO colour/sign STATE from the card: green and above zero, red and below zero. ---
    const bool ao_green_above_zero = (ao_now > 0.0 && ao_now > ao_prev);
@@ -215,8 +191,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // --- Fixed-pip stop / take (pip-scale correct per symbol) ---
-   const double sl = QM_StopFixedPips(_Symbol, side, entry, Strategy_StopPips());
-   const double tp = QM_TakeFixedPips(_Symbol, side, entry, Strategy_TakePips());
+   const double sl = QM_StopFixedPips(_Symbol, side, entry, stop_pips);
+   const double tp = QM_TakeFixedPips(_Symbol, side, entry, take_pips);
    if(sl <= 0.0 || tp <= 0.0)
       return false;
 
