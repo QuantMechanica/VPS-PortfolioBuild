@@ -61,9 +61,10 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 150 |
+| Expected trade frequency | Not specified in card frontmatter; inferred from 150 trades/year/symbol as frequent M5 scalping. |
 | Typical hold time | Card does not specify; expected to be short M5 scalp holds governed by a 12-pip bracket. |
 | Expected drawdown profile | Tight fixed SL/TP scalp profile; drawdown should be trade-frequency driven. |
-| Regime preference | Trend-following / moving-average crossover with MACD zero-line confirmation. |
+| Regime preference | Trend-following / moving-average crossover with MACD zero-line confirmation; card frontmatter does not provide a separate regime field. |
 | Win rate target (qualitative) | Not specified by card; fixed 1R bracket implies medium target. |
 
 ---

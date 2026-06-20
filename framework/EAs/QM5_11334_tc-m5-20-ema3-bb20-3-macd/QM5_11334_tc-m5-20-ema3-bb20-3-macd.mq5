@@ -1,35 +1,8 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11334 tc-m5-20-ema3-bb20-3-macd — EMA3 cross BB(20,3) middle + MACD zero-approach (M5)"
+#property description "QM5_11334 Carter M5 EMA3/BB20/MACD scalp"
 
 #include <QM/QM_Common.mqh>
-
-// =============================================================================
-// QuantMechanica V5 EA — QM5_11334 tc-m5-20-ema3-bb20-3-macd
-// -----------------------------------------------------------------------------
-// Source: Thomas Carter, "20 Forex Trading Strategies (5 Minute Time Frame)",
-//         5 Min Trading System #20. Card:
-//         artifacts/cards_approved/QM5_11334_tc-m5-20-ema3-bb20-3-macd.md
-//         (g0_status APPROVED).
-//
-// Mechanics (closed-bar reads at shift 1; M5):
-//   TRIGGER EVENT  : EMA(ema_period) crosses the BB(bb_period, bb_dev) MIDDLE
-//                    band (= SMA(bb_period)). Up cross -> long bias, down cross
-//                    -> short bias. The EMA/BB cross is the current closed-bar
-//                    event (shift 2 -> 1), exactly as stated in the card.
-//   STATE (filter) : MACD(macd_fast, macd_slow, macd_signal) main line is
-//                    "approaching or crossing zero" in the trade direction.
-//                    LONG  : macd<0 trending up (macd[1] > macd[2])  OR  a fresh
-//                            upward zero cross within macd_lookback bars.
-//                    SHORT : mirror. MACD MAY be negative — no swap/sign reject.
-//   STOP / TAKE    : fixed sl_pips / tp_pips (default 12 each), pip-scale-correct
-//                    via QM_StopFixedPips / QM_TakeFixedPips (5-digit / JPY safe).
-//   Spread guard   : skip only a genuinely wide spread > max_spread_pips
-//                    (default 8 pips; fail-OPEN on .DWX zero modeled spread).
-//
-// One position per symbol/magic. Only the 5 Strategy_* hooks + Strategy inputs
-// are EA-specific; everything else is framework wiring and MUST stay intact.
-// =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 11334;
@@ -44,8 +17,8 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -56,134 +29,89 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_ema_period          = 3;     // fast EMA crossing the BB middle
-input int    strategy_bb_period           = 20;    // Bollinger period (middle = SMA20)
-input double strategy_bb_dev              = 3.0;   // Bollinger deviation (band width; middle is dev-independent)
-input int    strategy_macd_fast           = 12;    // MACD fast EMA
-input int    strategy_macd_slow           = 26;    // MACD slow EMA
-input int    strategy_macd_signal         = 9;     // MACD signal EMA
-input int    strategy_macd_lookback       = 3;     // bars to search for MACD zero-cross confirmation (P3: 0/1/3)
-input int    strategy_sl_pips             = 12;    // fixed stop in pips (card 10-15 midpoint)
-input int    strategy_tp_pips             = 12;    // fixed target in pips (card 10-15 midpoint)
-input int    strategy_max_spread_pips     = 8;     // card spread cap; zero modeled spread passes
+input int    strategy_ema_period          = 3;
+input int    strategy_bb_period           = 20;
+input double strategy_bb_dev              = 3.0;
+input int    strategy_macd_fast           = 12;
+input int    strategy_macd_slow           = 26;
+input int    strategy_macd_signal         = 9;
+input int    strategy_macd_lookback       = 3;
+input int    strategy_sl_pips             = 12;
+input int    strategy_tp_pips             = 12;
+input int    strategy_max_spread_pips     = 8;
 
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
-
-// No Trade Filter (time, spread, news). Central framework handles news, kill
-// switch, and Friday time gates; this hook adds the card's spread cap.
+// Return TRUE to block trading this tick. Framework gates time, news, kill
+// switch, and Friday close; this hook adds the card's spread cap.
 bool Strategy_NoTradeFilter()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
+      return true;
 
    const double max_spread = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_spread_pips);
    if(max_spread <= 0.0)
       return false;
 
    const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
    if(spread > 0.0 && spread > max_spread)
       return true;
 
    return false;
   }
 
-// Detect an EMA-vs-BB-middle cross at a given closed-bar pair (cross_shift is the
-// "now" bar; cross_shift+1 is the "prev" bar). dir=+1 wants an up cross, dir=-1
-// wants a down cross. Returns true if that exact cross occurred at that pair.
-bool EmaBBMiddleCrossAt(const int dir, const int cross_shift)
-  {
-   const double ema_now  = QM_EMA(_Symbol, _Period, strategy_ema_period, cross_shift);
-   const double ema_prev = QM_EMA(_Symbol, _Period, strategy_ema_period, cross_shift + 1);
-   const double mid_now  = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_dev, cross_shift);
-   const double mid_prev = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_dev, cross_shift + 1);
-   if(ema_now <= 0.0 || ema_prev <= 0.0 || mid_now <= 0.0 || mid_prev <= 0.0)
-      return false;
-
-   if(dir > 0)
-      return (ema_prev <= mid_prev && ema_now > mid_now);   // fresh up cross
-   return (ema_prev >= mid_prev && ema_now < mid_now);      // fresh down cross
-  }
-
-// MACD "approaching or crossing zero" STATE in the trade direction. The
-// approach test is on the trigger bar; the zero-cross event may occur within
-// the configured lookback window. MACD may be negative/positive by design.
-bool MacdZeroApproach(const int dir)
-  {
-   const double macd_now  = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-   const double macd_prev = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
-   const int last_extra = (strategy_macd_lookback > 0) ? strategy_macd_lookback : 0;
-
-   if(dir > 0)
-     {
-      // Below zero but trending UP toward it.
-      const bool approaching = (macd_now < 0.0 && macd_now > macd_prev);
-      if(approaching)
-         return true;
-
-      // Or a zero cross from below within the last N closed bars.
-      for(int s = 1; s <= 1 + last_extra; ++s)
-        {
-         const double m_now  = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, s);
-         const double m_prev = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, s + 1);
-         if(m_prev <= 0.0 && m_now > 0.0)
-            return true;
-        }
-      return false;
-     }
-
-   // SHORT mirror: above zero but trending DOWN toward it.
-   const bool approaching = (macd_now > 0.0 && macd_now < macd_prev);
-   if(approaching)
-      return true;
-
-   for(int s = 1; s <= 1 + last_extra; ++s)
-     {
-      const double m_now  = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, s);
-      const double m_prev = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, s + 1);
-      if(m_prev >= 0.0 && m_now < 0.0)
-         return true;
-     }
-   return false;
-  }
-
-// Returns +1 long / -1 short / 0 no signal for the current closed bar.
-int DirectionalSignal()
-  {
-   // Trade Entry: the EMA/BB-middle cross is the event on the latest closed bar.
-   if(EmaBBMiddleCrossAt(+1, 1))
-     {
-      if(MacdZeroApproach(+1))
-         return +1;
-      return 0;
-     }
-
-   if(EmaBBMiddleCrossAt(-1, 1))
-     {
-      if(MacdZeroApproach(-1))
-         return -1;
-      return 0;
-     }
-
-   return 0;
-  }
-
-// Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
+// Trade Entry. Caller guarantees QM_IsNewBar() == true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(strategy_ema_period < 1 ||
+      strategy_bb_period < 2 ||
+      strategy_bb_dev <= 0.0 ||
+      strategy_macd_fast < 1 ||
+      strategy_macd_slow <= strategy_macd_fast ||
+      strategy_macd_signal < 1 ||
+      strategy_macd_lookback < 0 ||
+      strategy_sl_pips < 1 ||
+      strategy_tp_pips < 1)
+      return false;
+
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   const int dir = DirectionalSignal();
-   if(dir == 0)
+   const double ema_now  = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
+   const double ema_prev = QM_EMA(_Symbol, _Period, strategy_ema_period, 2);
+   const double mid_now  = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_dev, 1);
+   const double mid_prev = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_dev, 2);
+   if(ema_now <= 0.0 || ema_prev <= 0.0 || mid_now <= 0.0 || mid_prev <= 0.0)
       return false;
 
-   if(dir > 0)
+   const double macd_now  = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
+   const double macd_prev = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
+
+   bool macd_long_ok = (macd_now < 0.0 && macd_now > macd_prev);
+   bool macd_short_ok = (macd_now > 0.0 && macd_now < macd_prev);
+   const int macd_cross_bars = (strategy_macd_lookback > 0 ? strategy_macd_lookback : 1);
+   for(int shift = 1; shift <= macd_cross_bars; ++shift)
+     {
+      const double m_now = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, shift);
+      const double m_prev = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, shift + 1);
+      if(m_prev <= 0.0 && m_now > 0.0)
+         macd_long_ok = true;
+      if(m_prev >= 0.0 && m_now < 0.0)
+         macd_short_ok = true;
+     }
+
+   const bool long_cross = (ema_prev <= mid_prev && ema_now > mid_now);
+   const bool short_cross = (ema_prev >= mid_prev && ema_now < mid_now);
+
+   if(long_cross && macd_long_ok)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
@@ -192,54 +120,52 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const double tp = QM_TakeFixedPips(_Symbol, QM_BUY, entry, strategy_tp_pips);
       if(sl <= 0.0 || tp <= 0.0)
          return false;
-      req.type   = QM_BUY;
-      req.price  = 0.0;   // framework fills market price at send
-      req.sl     = sl;
-      req.tp     = tp;
-      req.reason = "ema3_bb_mid_up_macd_zero";
-      req.symbol_slot = qm_magic_slot_offset;
-      req.expiration_seconds = 0;
+
+      req.type = QM_BUY;
+      req.price = 0.0;
+      req.sl = sl;
+      req.tp = tp;
+      req.reason = "ema3_bbmid_up_macd_zero";
       return true;
      }
 
-   // dir < 0 — short
-   const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
-      return false;
-   const double sl = QM_StopFixedPips(_Symbol, QM_SELL, entry, strategy_sl_pips);
-   const double tp = QM_TakeFixedPips(_Symbol, QM_SELL, entry, strategy_tp_pips);
-   if(sl <= 0.0 || tp <= 0.0)
-      return false;
-   req.type   = QM_SELL;
-   req.price  = 0.0;
-   req.sl     = sl;
-   req.tp     = tp;
-   req.reason = "ema3_bb_mid_dn_macd_zero";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-   return true;
+   if(short_cross && macd_short_ok)
+     {
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(entry <= 0.0)
+         return false;
+      const double sl = QM_StopFixedPips(_Symbol, QM_SELL, entry, strategy_sl_pips);
+      const double tp = QM_TakeFixedPips(_Symbol, QM_SELL, entry, strategy_tp_pips);
+      if(sl <= 0.0 || tp <= 0.0)
+         return false;
+
+      req.type = QM_SELL;
+      req.price = 0.0;
+      req.sl = sl;
+      req.tp = tp;
+      req.reason = "ema3_bbmid_down_macd_zero";
+      return true;
+     }
+
+   return false;
   }
 
-// Trade Management: fixed SL/TP only; no active management in the card.
+// Trade Management. Card specifies fixed SL/TP only.
 void Strategy_ManageOpenPosition()
   {
   }
 
-// Trade Close: no discretionary exit beyond the fixed SL/TP scalp bracket.
+// Trade Close. Card exits via the protective stop and fixed target.
 bool Strategy_ExitSignal()
   {
    return false;
   }
 
-// News Filter Hook: defer to the central news filter.
+// News Filter Hook. Defer to the framework news filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
-
-// -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
-// -----------------------------------------------------------------------------
 
 int OnInit()
   {
@@ -248,17 +174,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -279,6 +205,7 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -286,6 +213,7 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows)
       return;
+
    if(QM_FrameworkHandleFridayClose())
       return;
 

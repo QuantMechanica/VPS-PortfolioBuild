@@ -1,60 +1,50 @@
-# QM5_11339_tc20-h1-15-ema5-21-rsi21-candle-pattern — Strategy Spec
+# QM5_11339_tc20-h1-15-ema5-21-rsi21-candle-pattern - Strategy Spec
 
 **EA ID:** QM5_11339
-**Slug:** `tc20-h1-15-ema5-21-rsi21-candle-pattern`
-**Source:** `e78a9f1f-4e6a-563c-a080-915133d6ed28` (Thomas Carter, 20 Forex Trading Strategies — 1H, Strategy #15)
-**Author of this spec:** Claude
-**Last revised:** 2026-06-18
+**Slug:** tc20-h1-15-ema5-21-rsi21-candle-pattern
+**Source:** e78a9f1f-4e6a-563c-a080-915133d6ed28
+**Author of this spec:** Codex
+**Last revised:** 2026-06-20
 
 ---
 
 ## 1. Strategy Logic
 
-A trend-following H1 EA on FX majors. A trade fires on a single trigger EVENT —
-either a fresh EMA(5)/EMA(21) cross OR a directional candlestick pattern on the
-last closed bar — provided two STATE filters agree on direction: RSI(21) on the
-correct side of 50, and the EMA(5)/EMA(21) stack already pointing that way.
-Bullish candle patterns are Engulfing (current bullish body engulfs the prior
-bearish body, evaluated gapless-safe via prior open/close rather than a gap) or
-Hammer (long lower wick, tiny upper wick, bullish close); the bearish mirror is
-Bearish Engulfing or Inverted Hammer. The stop is the recent swing low (long) or
-swing high (short) over a 10-bar lookback plus a small pip buffer; the take
-profit is an RR multiple (default 2R) of that structural stop distance. The
-position also exits defensively if EMA(5)/EMA(21) crosses in the opposite
-direction or RSI(21) crosses back through 50 against the trade. One position per
-magic; RISK_FIXED in the tester.
+This H1 FX EA opens a long trade when EMA(5) has crossed above EMA(21) on the last closed bar or the bar before it, RSI(21) is above 50, EMA(5) remains above EMA(21), and a bullish engulfing or hammer pattern appears within that same one-bar window. It opens a short trade on the mirrored conditions: EMA(5) crosses below EMA(21), RSI(21) is below 50, EMA(5) remains below EMA(21), and a bearish engulfing or inverted hammer appears within one bar.
+
+The stop is placed beyond the recent 10-bar swing low/high with a 2-pip buffer and is kept at least ATR(14) x 1.5 away from entry for the P2 stop instruction. There is no fixed take-profit because the card specifies EMA/RSI reversal exits: open positions close when EMA(5) recrosses EMA(21) against the trade or RSI(21) crosses back through 50 against the trade.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `strategy_ema_fast_period` | 5 | 3-15 | Fast EMA for cross trigger + direction state |
-| `strategy_ema_slow_period` | 21 | 15-50 | Slow EMA for cross trigger + direction state |
-| `strategy_rsi_period` | 21 | 7-30 | RSI period (direction state + exit) |
-| `strategy_rsi_mid_level` | 50.0 | 40-60 | RSI midline for state filter and exit cross |
-| `strategy_use_candle` | true | bool | Enable candle-pattern trigger (B) |
-| `strategy_use_ema_cross` | true | bool | Enable EMA-cross trigger (A) |
-| `strategy_engulf_min_ratio` | 1.0 | 0.5-2.0 | Current body must be >= ratio × prior body to engulf |
-| `strategy_hammer_wick_mult` | 2.0 | 1.5-3.0 | Long wick >= mult × body for hammer / inverted hammer |
-| `strategy_hammer_oppwick_pct` | 10.0 | 5-25 | Opposite wick <= this % of bar range for hammer |
-| `strategy_swing_lookback` | 10 | 5-20 | Bars for structural swing-low/high stop |
-| `strategy_swing_buffer_pips` | 2.0 | 0-10 | Extra buffer beyond the swing extreme (pips) |
-| `strategy_tp_rr` | 2.0 | 1.0-4.0 | Take-profit = RR × structural stop distance |
-| `strategy_spread_cap_pips` | 20.0 | 5-40 | Block only a genuinely wide spread (card: 20 pips) |
+|---|---:|---|---|
+| strategy_ema_fast_period | 5 | 3-15 | Fast EMA used for the cross trigger and trend state |
+| strategy_ema_slow_period | 21 | 15-50 | Slow EMA used for the cross trigger and trend state |
+| strategy_rsi_period | 21 | 7-30 | RSI period used for entry state and reversal exit |
+| strategy_rsi_mid_level | 50.0 | 40-60 | RSI threshold for long/short state and exit recross |
+| strategy_swing_lookback | 10 | 5-20 | Number of closed bars used for recent swing stop |
+| strategy_swing_buffer_pips | 2 | 0-10 | Extra pips beyond the swing high/low for the stop |
+| strategy_atr_period | 14 | 7-30 | ATR period for the P2 minimum stop distance |
+| strategy_atr_sl_mult | 1.5 | 0.5-5.0 | ATR multiplier for the P2 minimum stop distance |
+| strategy_hammer_wick_mult | 2.0 | 1.0-4.0 | Required long wick to body ratio for hammer patterns |
+| strategy_hammer_oppwick_pct | 10.0 | 0-30 | Maximum opposite wick as percent of candle range |
+| strategy_spread_cap_pips | 20 | 1-50 | Blocks only genuinely wide non-zero spreads |
+
+Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are intentionally not repeated here.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — most liquid major; tight spread suits a 20-pip cap and H1 trend cadence.
-- `GBPUSD.DWX` — liquid major with enough H1 trend/volatility for EMA-cross + candle entries.
-- `USDJPY.DWX` — major with distinct trend behaviour; pip-scaling handled via `QM_StopRules*` helpers.
+- EURUSD.DWX - Card primary FX major; H1 EMA, RSI, and OHLC data are available in the DWX matrix.
+- GBPUSD.DWX - Card primary FX major; H1 EMA, RSI, and OHLC data are available in the DWX matrix.
+- USDJPY.DWX - P2 expansion symbol from the card; pip scaling is handled through framework stop helpers.
 
 **Explicitly NOT for:**
-- Index / commodity `.DWX` symbols — the card mechanises an FX-majors 1H strategy; trend/candle geometry and the 20-pip spread cap are calibrated for FX.
+- Index, commodity, and crypto `.DWX` symbols - the approved card is an H1 forex strategy with a 20-pip spread cap and FX candlestick assumptions.
 
 ---
 
@@ -62,9 +52,9 @@ magic; RISK_FIXED in the tester.
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `H1` |
-| Multi-timeframe refs | `none` |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Base timeframe | H1 |
+| Multi-timeframe refs | none |
+| Bar gating | QM_IsNewBar(_Symbol, PERIOD_CURRENT) |
 
 ---
 
@@ -72,11 +62,11 @@ magic; RISK_FIXED in the tester.
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | ~70 |
-| Typical hold time | hours to a few days (H1 trend leg) |
-| Expected drawdown profile | moderate; structural stop caps per-trade risk, RR target 2R |
-| Regime preference | trend |
-| Win rate target (qualitative) | medium |
+| Trades / year / symbol | 70 |
+| Typical hold time | Not specified in card; expected to be hours to a few days from H1 reversal exits |
+| Expected drawdown profile | Not specified in card; fixed $1,000 risk per backtest trade via framework sizing |
+| Regime preference | Trend-following EMA crossover with candlestick confirmation |
+| Win rate target (qualitative) | Not specified in card |
 
 ---
 
@@ -84,10 +74,10 @@ magic; RISK_FIXED in the tester.
 
 This card was mechanised from:
 
-**Source ID:** `e78a9f1f-4e6a-563c-a080-915133d6ed28`
-**Source type:** book
-**Pointer:** Thomas Carter, "20 Forex Trading Strategies (1 Hour Time Frame)", 2014, Strategy #15 (local PDF archive per card frontmatter)
-**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_11339_tc20-h1-15-ema5-21-rsi21-candle-pattern.md`
+**Source ID:** e78a9f1f-4e6a-563c-a080-915133d6ed28
+**Source type:** book / local PDF archive
+**Pointer:** Thomas Carter, `20 Forex Trading Strategies (1 Hour Time Frame)`, Forex Trading Strategy #15, local PDF path cited in the approved card.
+**R1-R4 verdict (Q00):** all R1-R4 PASS per `artifacts/cards_approved/QM5_11339_tc20-h1-15-ema5-21-rsi21-candle-pattern.md`.
 
 ---
 
@@ -95,11 +85,11 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
@@ -107,4 +97,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | EMA5/21 cross OR candle pattern EVENT; RSI21 state |
+| v1 | 2026-06-20 | Initial build from card | 83184d24-4234-457f-8bd4-f42959bb2f5f |
