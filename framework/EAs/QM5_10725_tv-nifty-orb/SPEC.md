@@ -4,7 +4,7 @@
 **Slug:** `tv-nifty-orb`
 **Source:** `d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7` (see `strategy-seeds/sources/d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-01
+**Last revised:** 2026-06-20
 
 ---
 
@@ -100,4 +100,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-01 | Initial build from card | 267dd257-eb3d-44b4-ae8f-93ce66694db3 |
+| v1 | 2026-06-20 | Initial build from card | 2d2eb85b-a075-4ae5-844d-3eaf425ef01f |

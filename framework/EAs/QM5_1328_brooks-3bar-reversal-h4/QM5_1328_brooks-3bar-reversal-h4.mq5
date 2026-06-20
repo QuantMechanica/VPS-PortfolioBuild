@@ -7,6 +7,7 @@
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                    = 1328;
 input int    qm_magic_slot_offset        = 0;
+input uint   qm_rng_seed                 = 42;
 
 input group "Risk"
 input double RISK_PERCENT                = 0.0;
@@ -14,11 +15,20 @@ input double RISK_FIXED                  = 1000.0;
 input double PORTFOLIO_WEIGHT            = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode           = QM_NEWS_PAUSE;
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled     = true;
 input int    qm_friday_close_hour_broker = 21;
+
+input group "Stress"
+// FW2 2026-05-23 — Q06 HARSH sets to 0.10; default 0.0 = no rejection.
+input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input ENUM_TIMEFRAMES strategy_tf        = PERIOD_H4;
@@ -37,6 +47,7 @@ input int    strategy_rearm_bars         = 3;
 input double strategy_spread_mult        = 2.0;
 input int    strategy_spread_lookback    = 20;
 
+// File-scope state
 double   g_median_spread_points   = 0.0;
 ulong    g_active_ticket          = 0;
 int      g_active_direction       = 0;
@@ -84,6 +95,8 @@ double HighestHigh(const int first_shift, const int count)
 
 void RefreshSpreadMedian()
   {
+   // .DWX symbols quote bid==ask (0 modeled spread); median will be 0.0
+   // and the guard below is skipped — correct behaviour, no spread blocking on .DWX.
    if(!g_strategy_cadence_ready && g_median_spread_points > 0.0)
       return;
 
@@ -92,7 +105,7 @@ void RefreshSpreadMedian()
    int n = 0;
    for(int shift = 1; shift <= strategy_spread_lookback; ++shift)
      {
-      const long spread = iSpread(_Symbol, strategy_tf, shift);
+      const long spread = iSpread(_Symbol, strategy_tf, shift); // perf-allowed: fixed closed-bar spread sample
       if(spread > 0)
         {
          spreads[n] = (double)spread;
@@ -202,12 +215,11 @@ bool PatternBuy(double &entry_sl, double &entry_tp)
    const double pip = PipDistance();
    if(atr <= 0.0 || sma <= 0.0 || pip <= 0.0)
       return false;
-   // perf-allowed: fixed closed-bar OHLC structural pattern
+
    const double o3 = iOpen(_Symbol, strategy_tf, 3);  // perf-allowed: fixed closed-bar OHLC structural pattern
    const double c3 = iClose(_Symbol, strategy_tf, 3); // perf-allowed: fixed closed-bar OHLC structural pattern
    const double h3 = iHigh(_Symbol, strategy_tf, 3);  // perf-allowed: fixed closed-bar OHLC structural pattern
    const double l3 = iLow(_Symbol, strategy_tf, 3);   // perf-allowed: fixed closed-bar OHLC structural pattern
-   const double o2 = iOpen(_Symbol, strategy_tf, 2);  // perf-allowed: fixed closed-bar OHLC structural pattern
    const double h2 = iHigh(_Symbol, strategy_tf, 2);  // perf-allowed: fixed closed-bar OHLC structural pattern
    const double l2 = iLow(_Symbol, strategy_tf, 2);   // perf-allowed: fixed closed-bar OHLC structural pattern
    const double o1 = iOpen(_Symbol, strategy_tf, 1);  // perf-allowed: fixed closed-bar OHLC structural pattern
@@ -219,16 +231,21 @@ bool PatternBuy(double &entry_sl, double &entry_tp)
    if(r3 <= 0.0 || r2 <= 0.0)
       return false;
 
+   // Trend bar: clean bearish with dominant body
    if(!(c3 < o3 && BodySize(3) >= strategy_trend_body_min * r3))
       return false;
+   // Stall bar: small body, contained around trend bar range (allow wick poke)
    if(!(BodySize(2) <= strategy_stall_body_max * r2 && h2 <= h3 && l2 >= l3 - strategy_stall_atr_poke * atr))
       return false;
+   // Reversal bar: closes above trend bar close and is bullish
    if(!(c1 > c3 && c1 > o1))
       return false;
 
+   // Swing-low test: cluster contains the 10-bar swing low
    const double cluster_low = MathMin(MathMin(l3, l2), l1);
    if(cluster_low > LowestLow(1, strategy_swing_lookback) + _Point * 0.5)
       return false;
+   // Macro-trend filter: close is above SMA(50) minus ATR buffer
    if(c1 <= sma - strategy_sma_atr_buffer * atr)
       return false;
 
@@ -248,12 +265,11 @@ bool PatternSell(double &entry_sl, double &entry_tp)
    const double pip = PipDistance();
    if(atr <= 0.0 || sma <= 0.0 || pip <= 0.0)
       return false;
-   // perf-allowed: fixed closed-bar OHLC structural pattern
+
    const double o3 = iOpen(_Symbol, strategy_tf, 3);  // perf-allowed: fixed closed-bar OHLC structural pattern
    const double c3 = iClose(_Symbol, strategy_tf, 3); // perf-allowed: fixed closed-bar OHLC structural pattern
    const double h3 = iHigh(_Symbol, strategy_tf, 3);  // perf-allowed: fixed closed-bar OHLC structural pattern
    const double l3 = iLow(_Symbol, strategy_tf, 3);   // perf-allowed: fixed closed-bar OHLC structural pattern
-   const double o2 = iOpen(_Symbol, strategy_tf, 2);  // perf-allowed: fixed closed-bar OHLC structural pattern
    const double h2 = iHigh(_Symbol, strategy_tf, 2);  // perf-allowed: fixed closed-bar OHLC structural pattern
    const double l2 = iLow(_Symbol, strategy_tf, 2);   // perf-allowed: fixed closed-bar OHLC structural pattern
    const double o1 = iOpen(_Symbol, strategy_tf, 1);  // perf-allowed: fixed closed-bar OHLC structural pattern
@@ -265,16 +281,21 @@ bool PatternSell(double &entry_sl, double &entry_tp)
    if(r3 <= 0.0 || r2 <= 0.0)
       return false;
 
+   // Trend bar: clean bullish with dominant body
    if(!(c3 > o3 && BodySize(3) >= strategy_trend_body_min * r3))
       return false;
+   // Stall bar: small body, contained around trend bar range (allow wick poke above)
    if(!(BodySize(2) <= strategy_stall_body_max * r2 && l2 >= l3 && h2 <= h3 + strategy_stall_atr_poke * atr))
       return false;
+   // Reversal bar: closes below trend bar close and is bearish
    if(!(c1 < c3 && c1 < o1))
       return false;
 
+   // Swing-high test: cluster contains the 10-bar swing high
    const double cluster_high = MathMax(MathMax(h3, h2), h1);
    if(cluster_high < HighestHigh(1, strategy_swing_lookback) - _Point * 0.5)
       return false;
+   // Macro-trend filter: close is below SMA(50) plus ATR buffer
    if(c1 >= sma + strategy_sma_atr_buffer * atr)
       return false;
 
@@ -293,10 +314,11 @@ bool Strategy_NoTradeFilter()
    RefreshPositionLifecycle();
    RefreshSpreadMedian();
 
+   // Only block on a genuinely wide spread; zero spread on .DWX is NOT a block
    if(g_median_spread_points > 0.0 && strategy_spread_mult > 0.0)
      {
       const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if((double)current_spread > strategy_spread_mult * g_median_spread_points)
+      if(current_spread > 0 && (double)current_spread > strategy_spread_mult * g_median_spread_points)
          return true;
      }
 
@@ -377,8 +399,10 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    RefreshPositionLifecycle();
+   // Time-stop only applies before TP1 is hit
    if(g_active_ticket == 0 || g_tp1_done)
       return false;
+   // Only evaluate at bar close (cadence gate)
    if(!g_strategy_cadence_ready)
       return false;
 
@@ -386,25 +410,19 @@ bool Strategy_ExitSignal()
       return false;
 
    const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
-   const int bars_since_open = iBarShift(_Symbol, strategy_tf, open_time, false);
+   const int bars_since_open = iBarShift(_Symbol, strategy_tf, open_time, false); // perf-allowed: bar-count time-stop
    return (bars_since_open >= strategy_time_stop_bars);
   }
 
 // News Filter Hook (callable for P8 News Impact phase)
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   if(!QM_NewsAllowsTrade(_Symbol, broker_time, qm_news_mode))
-      return true;
-
-   for(int shift = 1; shift <= 3; ++shift)
-     {
-      const datetime bar_time = iTime(_Symbol, strategy_tf, shift); // perf-allowed: fixed 3-bar news overlap check
-      if(bar_time > 0 && !QM_NewsAllowsTrade(_Symbol, bar_time, qm_news_mode))
-         return true;
-     }
-
-   return false;
+   return false; // defer to QM_NewsAllowsTrade2 in OnTick (FW1 axes)
   }
+
+// -----------------------------------------------------------------------------
+// Framework wiring
+// -----------------------------------------------------------------------------
 
 int OnInit()
   {
@@ -413,9 +431,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode,
+                        qm_news_mode_legacy,           // legacy back-compat
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,                            // pause-before (legacy hint)
+                        30,                            // pause-after (legacy hint)
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,              // FW1 Axis A
+                        qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1328\",\"ea\":\"brooks-3bar-reversal-h4\"}");
@@ -438,20 +464,33 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+   // FW1 — 2-axis check. Falls through to legacy qm_news_mode_legacy only
+   // when both new axes are at their OFF defaults.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
+   // Advance closed-bar state once per new H4 bar
    g_strategy_cadence_ready = QM_IsNewBar(_Symbol, strategy_tf);
    if(g_strategy_cadence_ready)
+     {
+      QM_EquityStreamOnNewBar();
       AdvanceRearmCountdown();
+     }
 
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: TP1 partial close + break-even shift
    Strategy_ManageOpenPosition();
 
+   // Time-stop: evaluated at bar close (cadence-gated inside ExitSignal)
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -462,7 +501,7 @@ void OnTick()
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+         QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
         }
      }
 
@@ -480,6 +519,14 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
 double OnTester()

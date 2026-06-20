@@ -3,16 +3,16 @@
 ; ea_id:        10725
 ; ea_slug:      tv-nifty-orb
 ; ea_version:   v5.0
-; set_version:  s20260601-001
+; set_version:  s20260620-001
 ; symbol:       NDX.DWX
 ; timeframe:    M1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   95f9e4eb6d698090cfe3d421539e30fe5c4f91f35e24e32b569e0e822c7068b5
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-01
+; date:         2026-06-20
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000

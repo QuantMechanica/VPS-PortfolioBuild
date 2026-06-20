@@ -4,7 +4,7 @@
 **Slug:** `ff-bb-demarker-adx-m5`
 **Source:** `6e967762-b26d-59a3-b076-35c17f2e7c36` (see approved card)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-09
+**Last revised:** 2026-06-20
 
 ---
 
@@ -101,4 +101,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-09 | Initial build from card | 9ca49224-9691-4cad-bdcc-a6fec4fc6973 |
+| v1 | 2026-06-20 | Initial build from card | 7772fc5f-c2f6-44d3-96e2-cf50fa6ce62b |

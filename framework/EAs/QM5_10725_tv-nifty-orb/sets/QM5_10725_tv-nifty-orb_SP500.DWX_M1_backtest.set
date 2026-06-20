@@ -3,16 +3,16 @@
 ; ea_id:        10725
 ; ea_slug:      tv-nifty-orb
 ; ea_version:   v5.0
-; set_version:  s20260601-001
+; set_version:  s20260620-001
 ; symbol:       SP500.DWX
 ; timeframe:    M1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2414f2725c39abeceaa8affd555c9141d8a96212d245c6972efbecfa56349d20
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-01
+; date:         2026-06-20
 ;==========================================================
 qm_magic_slot_offset=4
 RISK_FIXED=1000

@@ -3,16 +3,16 @@
 ; ea_id:        10041
 ; ea_slug:      ff-bb-demarker-adx-m5
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260620-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   485759af4a887f7b0e44f5f3202ddfa547224729144d1338313de1b18fd5be05
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-06-20
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000

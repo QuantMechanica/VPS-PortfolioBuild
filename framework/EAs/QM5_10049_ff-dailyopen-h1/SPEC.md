@@ -4,7 +4,7 @@
 **Slug:** ff-dailyopen-h1
 **Source:** 6e967762-b26d-59a3-b076-35c17f2e7c36 (see `strategy-seeds/sources/6e967762-b26d-59a3-b076-35c17f2e7c36/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-11
+**Last revised:** 2026-06-20
 
 ---
 
@@ -90,4 +90,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-11 | Initial build from card | 8e7db77d-5c59-4eed-8b40-4936fa667564 |
+| v1 | 2026-06-20 | Initial build from card | 142652be-4c35-4bfb-b8e6-b9a407c09964 |

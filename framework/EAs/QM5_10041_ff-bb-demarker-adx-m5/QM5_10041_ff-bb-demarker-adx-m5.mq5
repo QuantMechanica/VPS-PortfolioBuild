@@ -47,6 +47,14 @@ input double strategy_d1_atr_cap_mult    = 6.0;
 input int    strategy_time_stop_days     = 5;
 input int    strategy_max_spread_points  = 35;
 
+double Strategy_Close(const ENUM_TIMEFRAMES tf, const int shift)
+  {
+   double values[1];
+   if(CopyClose(_Symbol, tf, shift, 1, values) != 1) // perf-allowed: single closed-bar close read; no framework close reader exists.
+      return 0.0;
+   return values[0];
+  }
+
 bool Strategy_NoTradeFilter()
   {
    if(_Period != PERIOD_M5)
@@ -83,14 +91,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(pip <= 0.0)
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_M5, 1); // perf-allowed: single closed-bar close read inside framework QM_IsNewBar-gated EntrySignal.
+   const double close1 = Strategy_Close(PERIOD_M5, 1);
    const double upper = QM_BB_Upper(_Symbol, PERIOD_M5, strategy_bb_period, strategy_bb_deviation, 1, PRICE_LOW);
    const double lower = QM_BB_Lower(_Symbol, PERIOD_M5, strategy_bb_period, strategy_bb_deviation, 1, PRICE_HIGH);
-   const string demarker_key = StringFormat("DEMARKER|%s|%d|%d", _Symbol, (int)PERIOD_M5, strategy_demarker_period);
-   int demarker_handle = QM_IndicatorsLookup(demarker_key);
-   if(demarker_handle == INVALID_HANDLE)
-      demarker_handle = QM_IndicatorsRegister(demarker_key, iDeMarker(_Symbol, PERIOD_M5, strategy_demarker_period));
-   const double demarker = QM_IndicatorReadBuffer(demarker_handle, 0, 1);
+   const double demarker = QM_DeMarker(_Symbol, PERIOD_M5, strategy_demarker_period, 1);
    const double adx = QM_ADX(_Symbol, PERIOD_M5, strategy_adx_period, 1);
    if(close1 <= 0.0 || upper <= 0.0 || lower <= 0.0 || demarker <= 0.0 || adx <= 0.0)
       return false;
@@ -148,7 +152,7 @@ bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
    const double ema = QM_EMA(_Symbol, PERIOD_M5, strategy_ema_period, 1, PRICE_TYPICAL);
-   const double close1 = iClose(_Symbol, PERIOD_M5, 1); // perf-allowed: single closed-bar close read for card EMA exit; no loops or history copy.
+   const double close1 = Strategy_Close(PERIOD_M5, 1);
    if(ema <= 0.0 || close1 <= 0.0)
       return false;
 
