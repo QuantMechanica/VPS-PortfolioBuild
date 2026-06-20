@@ -11265,8 +11265,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11529,ciurea-hammer-hanging-man-m15,0,EURUSD.DWX,115290000,2026-06-18,Development,active
 11529,ciurea-hammer-hanging-man-m15,1,GBPUSD.DWX,115290001,2026-06-18,Development,active
 11530,carter-t-h1-sma9-100-cross,0,GBPUSD.DWX,115300000,2026-06-18,Claude,reserved
-11534,carter-t-h1-bb20-ema3-macd617-rsi14,0,EURUSD.DWX,115340000,2026-06-18,Claude,reserved
-11534,carter-t-h1-bb20-ema3-macd617-rsi14,1,GBPUSD.DWX,115340001,2026-06-18,Claude,reserved
+11534,carter-t-h1-bb20-ema3-macd617-rsi14,0,EURUSD.DWX,115340000,2026-06-20,Development,active
+11534,carter-t-h1-bb20-ema3-macd617-rsi14,1,GBPUSD.DWX,115340001,2026-06-20,Development,active
 11535,carter-t-h1-psar01-ema5-12-34,0,EURUSD.DWX,115350000,2026-06-18,Claude,reserved
 12475,gh-macd-cross,0,EURUSD.DWX,124750000,2026-06-18,Development,active
 12475,gh-macd-cross,1,GBPUSD.DWX,124750001,2026-06-18,Development,active
@@ -11648,8 +11648,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11725,tc-m5-s12-ema-laguerre,1,GBPUSD.DWX,117250001,2026-06-18,Claude,reserved
 11725,tc-m5-s12-ema-laguerre,2,USDJPY.DWX,117250002,2026-06-18,Claude,reserved
 11725,tc-m5-s12-ema-laguerre,3,AUDUSD.DWX,117250003,2026-06-18,Claude,reserved
-11726,tc-m5-s13-cci-macd-breakthrough,0,EURUSD.DWX,117260000,2026-06-18,Claude,reserved
-11726,tc-m5-s13-cci-macd-breakthrough,1,GBPUSD.DWX,117260001,2026-06-18,Claude,reserved
+11726,tc-m5-s13-cci-macd-breakthrough,0,EURUSD.DWX,117260000,2026-06-18,Claude,active
+11726,tc-m5-s13-cci-macd-breakthrough,1,GBPUSD.DWX,117260001,2026-06-18,Claude,active
 11728,tc-m5-s16-wma-psar-adx,0,EURUSD.DWX,117280000,2026-06-18,Claude,reserved
 11728,tc-m5-s16-wma-psar-adx,1,GBPUSD.DWX,117280001,2026-06-18,Claude,reserved
 11728,tc-m5-s16-wma-psar-adx,2,USDJPY.DWX,117280002,2026-06-18,Claude,reserved
@@ -13169,3 +13169,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9460,gh-gold-orb,1,XAGUSD.DWX,94600001,2026-06-20,Development,active
 9460,gh-gold-orb,2,GDAXI.DWX,94600002,2026-06-20,Development,active
 9460,gh-gold-orb,3,WS30.DWX,94600003,2026-06-20,Development,active
+2131,ehlers-laguerre-filter-h4,0,EURUSD.DWX,21310000,2026-06-20,Development,active
+2131,ehlers-laguerre-filter-h4,1,GBPUSD.DWX,21310001,2026-06-20,Development,active
+2131,ehlers-laguerre-filter-h4,2,USDJPY.DWX,21310002,2026-06-20,Development,active
+2131,ehlers-laguerre-filter-h4,3,XAUUSD.DWX,21310003,2026-06-20,Development,active
+2131,ehlers-laguerre-filter-h4,4,XTIUSD.DWX,21310004,2026-06-20,Development,active
+2131,ehlers-laguerre-filter-h4,5,NDX.DWX,21310005,2026-06-20,Development,active
+2131,ehlers-laguerre-filter-h4,6,WS30.DWX,21310006,2026-06-20,Development,active
+2131,ehlers-laguerre-filter-h4,7,GDAXI.DWX,21310007,2026-06-20,Development,active
+2131,ehlers-laguerre-filter-h4,8,UK100.DWX,21310008,2026-06-20,Development,active
+2131,ehlers-laguerre-filter-h4,9,SP500.DWX,21310009,2026-06-20,Development,active

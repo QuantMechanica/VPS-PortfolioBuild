@@ -2409,7 +2409,7 @@ QM5_10386,et-lunch-brk,d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe,active,Research,2026
 11531,carter-t-h1-ema6-23-stoch-macd,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
 11532,carter-t-h1-ema5-15-60-pullback,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
 11533,carter-t-h1-ema3-5-13-21-80-rsi21,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
-11534,carter-t-h1-bb20-ema3-macd617-rsi14,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
+11534,carter-t-h1-bb20-ema3-macd617-rsi14,3001a121-97a0-5db0-b6ff-69b89a0fc07d,active,Development,2026-06-20
 11535,carter-t-h1-psar01-ema5-12-34,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
 11536,carter-t-h1-ema14hl-psar,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
 11537,carter-t-h1-ema5s5-ema75-bb-rsi,3001a121-97a0-5db0-b6ff-69b89a0fc07d,pending,Claude,2026-05-23
@@ -3482,3 +3482,4 @@ QM5_12552,ema-stretch-mr-bounded-grid,owner-yt-ioynBnSofU4-2026-06-16,active,Cla
 QM5_1258,hopwood-bermaui-rsi-h1,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Development,2026-06-18
 QM5_10575,mql5-volqual,b8b5125a-c67f-5bbc-baff-33456e08f5b2,active,Claude,2026-06-20
 QM5_9572,chande-stochrsi-vr-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Development,2026-06-20
+QM5_2131,ehlers-laguerre-filter-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Development,2026-06-20
