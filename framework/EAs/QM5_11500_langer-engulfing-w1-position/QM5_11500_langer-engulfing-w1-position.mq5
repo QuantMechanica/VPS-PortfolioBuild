@@ -18,10 +18,6 @@
 //                   AND the body engulfs the prior body in the same direction.
 //                     Bullish: h1>h2 && l1<l2 && c1>o1 && o1<c2 && c1>o2
 //                     Bearish: h1>h2 && l1<l2 && c1<o1 && o1>c2 && c1<o2
-//   Trend STATE   : (optional) price vs a long SMA on W1 — only take longs when
-//                   close1 >= SMA(trend), shorts when close1 <= SMA(trend).
-//                   Disabled by default (qm_trend_filter_enabled=false) so the
-//                   pure pattern is the P2 baseline; P3 can sweep it on.
 //   Entry         : pending STOP order beyond the engulfing extreme —
 //                     BuyStop  at h1 + entry_offset_pips  (bullish)
 //                     SellStop at l1 - entry_offset_pips  (bearish)
@@ -65,9 +61,7 @@ input string qm_news_min_impact           = "high";  // high / medium / low
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
-// Position trade — holds span weeks, so Friday-close MUST stay OFF or it would
-// flatten every open W1 position each Friday and destroy the edge. Flagged.
-input bool   qm_friday_close_enabled    = false;
+input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
@@ -78,18 +72,22 @@ input double strategy_entry_offset_pips  = 5.0;    // stop placed this far beyon
 input double strategy_tp_candle_mult     = 1.5;    // TP = entry +/- mult * (h1-l1)
 input double strategy_sl_cap_pips        = 200.0;  // P2 cap on the engulfing-extreme stop distance
 input double strategy_be_trigger_frac    = 0.5;    // move SL to BE after this fraction of candle in favour
-input bool   strategy_trend_filter_on    = false;  // require close vs long SMA agreement (P3 sweep)
-input int    strategy_trend_sma_period   = 40;     // long W1 SMA for the trend STATE filter
+input double strategy_spread_cap_pips    = 30.0;   // block only genuinely wide positive spread
 input int    strategy_signal_expiry_weeks = 1;     // pending order lifetime in weeks (stale-signal cancel)
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. No spread guard needed for a W1 pending-stop entry
-// (broker fills at the stop price); nothing to block here.
+// Cheap O(1) per-tick gate. .DWX tester spread can be exactly zero, so only
+// block genuinely wide positive spread.
 bool Strategy_NoTradeFilter()
   {
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double cap = strategy_spread_cap_pips * LangerPipSize();
+   if(ask > 0.0 && bid > 0.0 && ask > bid && cap > 0.0 && (ask - bid) > cap)
+      return true;
    return false;
   }
 
@@ -168,18 +166,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double tp_dist  = strategy_tp_candle_mult * candle_size;
    const double sl_cap   = strategy_sl_cap_pips * pip;
 
-   // Optional trend STATE filter: only trade in the SMA-agreeing direction.
-   if(strategy_trend_filter_on)
-     {
-      const double sma = QM_SMA(_Symbol, PERIOD_W1, strategy_trend_sma_period, 1);
-      if(sma <= 0.0)
-         return false;
-      if(bullish && !(c1 >= sma))
-         return false;
-      if(bearish && !(c1 <= sma))
-         return false;
-     }
-
    double entry = 0.0;
    double sl    = 0.0;
    double tp    = 0.0;
@@ -215,6 +201,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = QM_TM_NormalizePrice(_Symbol, sl);
    req.tp     = QM_TM_NormalizePrice(_Symbol, tp);
    req.reason = bullish ? "langer_w1_engulf_long" : "langer_w1_engulf_short";
+   req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = weeks * 7 * 24 * 60 * 60;
    return true;
   }

@@ -4,7 +4,7 @@
 **Slug:** katz-fx-hhll-limit-pullback
 **Source:** katz-encyclopedia-2000-ch5
 **Author of this spec:** Codex
-**Last revised:** 2026-06-12
+**Last revised:** 2026-06-20
 
 ---
 
@@ -62,9 +62,11 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 15 |
+| Trade frequency | Low daily-frequency system; about 15 trades per year per symbol |
 | Typical hold time | Up to 10 D1 bars |
 | Expected drawdown profile | Around 12% expected drawdown from card frontmatter |
 | Regime preference | Breakout / trend-following with pullback entry |
+| Expected profit factor | 1.3 from card frontmatter |
 | Win rate target (qualitative) | Medium-low, with payoff skew from 4.0 x ATR target versus 1.0 x ATR stop |
 
 ---
@@ -96,4 +98,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-12 | Initial build from card | 88243b40-3e7b-4335-866a-371e87d99355 |
+| v1 | 2026-06-20 | Initial build from card | 42961700-0ebc-47cc-9111-ace703ffeebb |

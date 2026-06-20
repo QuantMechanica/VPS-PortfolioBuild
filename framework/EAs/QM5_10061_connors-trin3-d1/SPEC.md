@@ -4,7 +4,7 @@
 **Slug:** connors-trin3-d1
 **Source:** ef14a5d7-e3f1-52be-910a-3ca6b736a152 (see `sources/connors-research-traders-journal`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-11
+**Last revised:** 2026-06-20
 
 ---
 
@@ -93,4 +93,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-11 | Initial build from card | 81d037bc-0c30-4d20-96fd-2f1041d72123 |
+| v1 | 2026-06-20 | Initial build from card | 418aa5d9-f11b-4183-927b-92a9a189c746 |

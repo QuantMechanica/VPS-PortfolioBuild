@@ -142,9 +142,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             return false;
         }
       req.type = QM_BUY_LIMIT;
-      req.price = highest_high;
-      req.sl = req.price - (strategy_stop_atr_mult * atr);
-      req.tp = req.price + (strategy_target_atr_mult * atr);
+      req.price = QM_StopRulesNormalizePrice(_Symbol, highest_high);
+      req.sl = QM_StopATRFromValue(_Symbol, req.type, req.price, atr, strategy_stop_atr_mult);
+      req.tp = QM_TakeATRFromValue(_Symbol, req.type, req.price, atr, strategy_target_atr_mult);
+      if(req.sl <= 0.0 || req.tp <= 0.0)
+         return false;
       req.reason = "KATZ_HHLL_LONG_LIMIT";
       return true;
      }
@@ -159,9 +161,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             return false;
         }
       req.type = QM_SELL_LIMIT;
-      req.price = lowest_low;
-      req.sl = req.price + (strategy_stop_atr_mult * atr);
-      req.tp = req.price - (strategy_target_atr_mult * atr);
+      req.price = QM_StopRulesNormalizePrice(_Symbol, lowest_low);
+      req.sl = QM_StopATRFromValue(_Symbol, req.type, req.price, atr, strategy_stop_atr_mult);
+      req.tp = QM_TakeATRFromValue(_Symbol, req.type, req.price, atr, strategy_target_atr_mult);
+      if(req.sl <= 0.0 || req.tp <= 0.0)
+         return false;
       req.reason = "KATZ_HHLL_SHORT_LIMIT";
       return true;
      }
@@ -235,10 +239,8 @@ bool Strategy_ExitSignal()
    if(!have_position)
       return false;
 
-   int day_seconds = PeriodSeconds(PERIOD_D1);
-   if(day_seconds <= 0)
-      day_seconds = 86400;
-   if(open_time > 0 && TimeCurrent() - open_time >= strategy_max_hold_bars * day_seconds)
+   const int entry_shift = iBarShift(_Symbol, PERIOD_D1, open_time, false);
+   if(entry_shift > strategy_max_hold_bars)
       return true;
 
    // Opposite breakout reversal is evaluated inside Strategy_EntrySignal(),
@@ -249,7 +251,6 @@ bool Strategy_ExitSignal()
 // P8 News Impact hook. Return false to defer to the central framework filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   (void)broker_time;
    return false;
   }
 
