@@ -8812,6 +8812,10 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
         setfiles = [basket_setfile] if basket_setfile else []
     else:
         setfiles = _ensure_p2_target_setfiles(root, ea_id) if is_q02 else _find_ea_setfiles(ea_id, phase)
+        # OWNER directive 2026-06-20: only .DWX custom symbols. Bare broker
+        # symbols have no local history -> tester history-sync error [32] and a
+        # guaranteed INFRA_FAIL with no result. Never enqueue them.
+        setfiles = [(s, p) for s, p in setfiles if str(s).upper().endswith(".DWX")]
     if not setfiles:
         return [], []
     if surviving_symbols:

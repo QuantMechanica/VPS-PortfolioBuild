@@ -108,6 +108,13 @@ def pending_active_exists(ea_id, symbol, phase):
     ).fetchone() is not None
 
 def insert_wi(phase, ea_id, symbol, setfile, payload):
+    # OWNER directive 2026-06-20: only ever enqueue .DWX custom symbols. Bare
+    # broker symbols have no local history -> the tester fails history sync with
+    # "file opening or reading error [32]" and the item INFRA_FAILs without ever
+    # producing a result. Refuse non-.DWX outright.
+    if not str(symbol).upper().endswith(".DWX"):
+        report.setdefault("non_dwx_refused", []).append({"ea_id": ea_id, "symbol": symbol})
+        return
     if APPLY:
         cur.execute(
             "INSERT INTO work_items (id, kind, phase, ea_id, symbol, setfile_path, "
