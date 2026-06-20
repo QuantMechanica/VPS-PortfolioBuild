@@ -1,166 +1,150 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11721 Carter Strategy 7 London box breakout"
+#property description "QM5_11721 TC M5 S7 London Box Breakout"
 
 #include <QM/QM_Common.mqh>
 
-// =============================================================================
-// QM5_11721 — Thomas Carter M5 Strategy #7: broker-time box breakout
-// -----------------------------------------------------------------------------
-// Card: D:\QM\strategy_farm\artifacts\cards_approved\
-//       QM5_11721_tc-m5-s7-london-box-breakout.md
-//
-// Literal card mapping:
-//   - At 15:00 DWX broker time, build the prior-hour box from M5 bars whose
-//     broker open time is 14:00-14:55.
-//   - During 15:00-15:55 broker time, enter at the next M5 bar open when the
-//     just-closed M5 close breaks beyond the box by 20% of box height.
-//   - Long SL = box low; short SL = box high.
-//   - Long TP = box high + 4.0 * box height; short TP = box low - 4.0 * height.
-//   - Trail open positions by one box height from the favorable tick extreme.
-//
-// perf-allowed: this strategy needs a small structural OHLC scan over one M5
-// hour. It runs only inside Strategy_EntrySignal, which the framework calls
-// after the single QM_IsNewBar() gate. No timestamp gate is reimplemented here.
-// =============================================================================
-
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11721;
-input int    qm_magic_slot_offset       = 0;
-input uint   qm_rng_seed                = 42;
+input int    qm_ea_id                       = 11721;
+input int    qm_magic_slot_offset           = 0;
+input uint   qm_rng_seed                    = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.0;
-input double RISK_FIXED                 = 1000.0;
-input double PORTFOLIO_WEIGHT           = 1.0;
+input double RISK_PERCENT                   = 0.0;
+input double RISK_FIXED                     = 1000.0;
+input double PORTFOLIO_WEIGHT               = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;
-input string qm_news_min_impact           = "high";
-input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
+input int    qm_news_stale_max_hours        = 336;
+input string qm_news_min_impact             = "high";
+input QM_NewsMode qm_news_mode_legacy       = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled    = true;
-input int    qm_friday_close_hour_broker = 21;
+input bool   qm_friday_close_enabled        = true;
+input int    qm_friday_close_hour_broker    = 21;
 
 input group "Stress"
-input double qm_stress_reject_probability = 0.0;
+input double qm_stress_reject_probability   = 0.0;
 
 input group "Strategy"
-input int    strategy_box_hour_broker       = 14;
-input int    strategy_entry_hour_broker     = 15;
-input int    strategy_expiry_hour_broker    = 16;
-input int    strategy_box_bars              = 12;
-input double strategy_breakout_fraction     = 0.20;
-input double strategy_take_profit_box_mult  = 4.0;
-input double strategy_max_spread_pips       = 15.0;
+input int    strategy_session_start_hour_broker = 15;
+input int    strategy_signal_valid_hours         = 1;
+input double strategy_breakout_pct              = 0.20;
+input double strategy_tp_box_multiple           = 4.0;
+input double strategy_trail_box_multiple        = 1.0;
+input int    strategy_box_minutes               = 60;
+input int    strategy_min_box_points            = 5;
+input int    strategy_max_spread_pips           = 8;
 
-datetime g_box_day_broker = 0;
-bool     g_box_ready = false;
-bool     g_session_signal_consumed = false;
-double   g_box_high = 0.0;
-double   g_box_low = 0.0;
-double   g_box_height = 0.0;
-double   g_trail_high = 0.0;
-double   g_trail_low = 0.0;
+double g_box_high = 0.0;
+double g_box_low = 0.0;
+double g_box_height = 0.0;
+int    g_box_session_key = 0;
 
-datetime BrokerMidnight(const datetime broker_time)
+int DateKey(const datetime t)
   {
    MqlDateTime dt;
-   ZeroMemory(dt);
-   TimeToStruct(broker_time, dt);
-   dt.hour = 0;
+   TimeToStruct(t, dt);
+   return dt.year * 10000 + dt.mon * 100 + dt.day;
+  }
+
+int Hhmm(const datetime t)
+  {
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   return dt.hour * 100 + dt.min;
+  }
+
+datetime SessionStartForBar(const datetime bar_time)
+  {
+   MqlDateTime dt;
+   TimeToStruct(bar_time, dt);
+   dt.hour = strategy_session_start_hour_broker;
    dt.min = 0;
    dt.sec = 0;
    return StructToTime(dt);
   }
 
-int BrokerHour(const datetime broker_time)
+bool ReadOneRate(const int shift, MqlRates &rate)
   {
-   MqlDateTime dt;
-   ZeroMemory(dt);
-   TimeToStruct(broker_time, dt);
-   return dt.hour;
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   // perf-allowed: Strategy_EntrySignal is called only after the skeleton QM_IsNewBar gate.
+   const int copied = CopyRates(_Symbol, _Period, shift, 1, rates);
+   if(copied != 1)
+      return false;
+   rate = rates[0];
+   return true;
   }
 
-bool BuildPriorHourBox(const datetime session_day)
+bool RefreshSessionBox(const datetime current_bar_time)
   {
-   double hi = 0.0;
-   double lo = 0.0;
-   bool have = false;
+   const datetime session_start = SessionStartForBar(current_bar_time);
+   const datetime box_start = session_start - strategy_box_minutes * 60;
+   const datetime box_end = session_start - 1;
+   const int session_key = DateKey(session_start);
 
-   const int scan_limit = (strategy_box_bars > 0 ? strategy_box_bars : 12) + 18;
-   for(int shift = 1; shift <= scan_limit; ++shift)
+   if(g_box_session_key == session_key && g_box_height > 0.0)
+      return true;
+
+   MqlRates box_rates[];
+   ArraySetAsSeries(box_rates, true);
+   // perf-allowed: bounded 60-minute session-box read, advanced only on the closed-bar entry gate.
+   const int copied = CopyRates(_Symbol, _Period, box_start, box_end, box_rates);
+   if(copied <= 0)
+      return false;
+
+   double high = -DBL_MAX;
+   double low = DBL_MAX;
+   for(int i = 0; i < copied; ++i)
      {
-      const datetime bar_time = iTime(_Symbol, PERIOD_M5, shift); // perf-allowed structural read
-      if(bar_time <= 0)
-         break;
-      if(BrokerMidnight(bar_time) != session_day)
-        {
-         if(bar_time < session_day)
-            break;
-         continue;
-        }
-
-      const int hour = BrokerHour(bar_time);
-      if(hour < strategy_box_hour_broker)
-         break;
-      if(hour != strategy_box_hour_broker)
-         continue;
-
-      const double bh = iHigh(_Symbol, PERIOD_M5, shift); // perf-allowed structural read
-      const double bl = iLow(_Symbol, PERIOD_M5, shift);  // perf-allowed structural read
-      if(bh <= 0.0 || bl <= 0.0)
-         continue;
-
-      if(!have)
-        {
-         hi = bh;
-         lo = bl;
-         have = true;
-        }
-      else
-        {
-         if(bh > hi) hi = bh;
-         if(bl < lo) lo = bl;
-        }
+      if(box_rates[i].high > high)
+         high = box_rates[i].high;
+      if(box_rates[i].low < low)
+         low = box_rates[i].low;
      }
 
-   g_box_high = hi;
-   g_box_low = lo;
-   g_box_height = have ? (hi - lo) : 0.0;
-   g_box_ready = (have && g_box_height > 0.0);
-   return g_box_ready;
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(high <= low || point <= 0.0)
+      return false;
+   if((high - low) / point < strategy_min_box_points)
+      return false;
+
+   g_box_high = QM_StopRulesNormalizePrice(_Symbol, high);
+   g_box_low = QM_StopRulesNormalizePrice(_Symbol, low);
+   g_box_height = g_box_high - g_box_low;
+   g_box_session_key = session_key;
+   return (g_box_height > 0.0);
   }
 
-void ResetSessionIfNeeded(const datetime bar_time)
+bool IsSignalWindow(const datetime current_bar_time)
   {
-   const datetime day = BrokerMidnight(bar_time);
-   if(day == g_box_day_broker)
-      return;
+   const datetime session_start = SessionStartForBar(current_bar_time);
+   const datetime session_end = session_start + strategy_signal_valid_hours * 3600;
+   return (current_bar_time >= session_start && current_bar_time < session_end);
+  }
 
-   g_box_day_broker = day;
-   g_box_ready = false;
-   g_session_signal_consumed = false;
-   g_box_high = 0.0;
-   g_box_low = 0.0;
-   g_box_height = 0.0;
-   g_trail_high = 0.0;
-   g_trail_low = 0.0;
+bool HasOurOpenPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+   return (QM_TM_OpenPositionCount(magic) > 0);
   }
 
 bool Strategy_NoTradeFilter()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask > 0.0 && bid > 0.0 && ask > bid)
-     {
-      const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathRound(strategy_max_spread_pips));
-      if(cap > 0.0 && (ask - bid) > cap)
-         return true;
-     }
+   if(ask <= 0.0 || bid <= 0.0)
+      return true;
+
+   const double max_spread = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_spread_pips);
+   if(max_spread > 0.0 && ask > bid && (ask - bid) > max_spread)
+      return true;
+
    return false;
   }
 
@@ -174,52 +158,47 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const datetime closed_bar_time = iTime(_Symbol, PERIOD_M5, 1); // perf-allowed structural read
-   if(closed_bar_time <= 0)
+   if(HasOurOpenPosition())
       return false;
 
-   ResetSessionIfNeeded(closed_bar_time);
-
-   const int closed_hour = BrokerHour(closed_bar_time);
-   if(closed_hour < strategy_entry_hour_broker || closed_hour >= strategy_expiry_hour_broker)
-      return false;
-   if(g_session_signal_consumed)
-      return false;
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+   MqlRates current_bar;
+   if(!ReadOneRate(0, current_bar))
       return false;
 
-   if(!g_box_ready && !BuildPriorHourBox(g_box_day_broker))
+   if(!IsSignalWindow(current_bar.time))
+      return false;
+   if(!RefreshSessionBox(current_bar.time))
       return false;
 
-   const double close_price = iClose(_Symbol, PERIOD_M5, 1); // perf-allowed structural read
-   if(close_price <= 0.0)
+   MqlRates signal_bar;
+   if(!ReadOneRate(1, signal_bar))
       return false;
 
-   const double long_trigger = g_box_high + strategy_breakout_fraction * g_box_height;
-   const double short_trigger = g_box_low - strategy_breakout_fraction * g_box_height;
+   const double long_trigger = g_box_high + strategy_breakout_pct * g_box_height;
+   const double short_trigger = g_box_low - strategy_breakout_pct * g_box_height;
+   const double long_tp = QM_StopRulesNormalizePrice(_Symbol, g_box_high + strategy_tp_box_multiple * g_box_height);
+   const double short_tp = QM_StopRulesNormalizePrice(_Symbol, g_box_low - strategy_tp_box_multiple * g_box_height);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
 
-   if(close_price > long_trigger)
+   if(signal_bar.close > long_trigger && ask > 0.0 && ask < long_tp)
      {
       req.type = QM_BUY;
+      req.price = 0.0;
       req.sl = QM_StopRulesNormalizePrice(_Symbol, g_box_low);
-      req.tp = QM_StopRulesNormalizePrice(_Symbol, g_box_high + strategy_take_profit_box_mult * g_box_height);
-      req.reason = "QM5_11721_LONG_BOX_BREAKOUT";
-      g_session_signal_consumed = true;
-      g_trail_high = close_price;
-      g_trail_low = 0.0;
-      return (req.sl > 0.0 && req.tp > 0.0);
+      req.tp = long_tp;
+      req.reason = "TC_S7_LONG_BOX_BREAKOUT";
+      return (req.sl > 0.0 && req.tp > 0.0 && req.sl < ask && req.tp > ask);
      }
 
-   if(close_price < short_trigger)
+   if(signal_bar.close < short_trigger && bid > 0.0 && bid > short_tp)
      {
       req.type = QM_SELL;
+      req.price = 0.0;
       req.sl = QM_StopRulesNormalizePrice(_Symbol, g_box_high);
-      req.tp = QM_StopRulesNormalizePrice(_Symbol, g_box_low - strategy_take_profit_box_mult * g_box_height);
-      req.reason = "QM5_11721_SHORT_BOX_BREAKOUT";
-      g_session_signal_consumed = true;
-      g_trail_high = 0.0;
-      g_trail_low = close_price;
-      return (req.sl > 0.0 && req.tp > 0.0);
+      req.tp = short_tp;
+      req.reason = "TC_S7_SHORT_BOX_BREAKOUT";
+      return (req.sl > 0.0 && req.tp > 0.0 && req.sl > bid && req.tp < bid);
      }
 
    return false;
@@ -227,10 +206,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
   {
-   if(g_box_height <= 0.0)
+   if(g_box_height <= 0.0 || strategy_trail_box_multiple <= 0.0)
       return;
 
    const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return;
+
+   const double trail_distance = g_box_height * strategy_trail_box_multiple;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -241,31 +224,22 @@ void Strategy_ManageOpenPosition()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const double current_sl = PositionGetDouble(POSITION_SL);
+      const double market = (pos_type == POSITION_TYPE_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                                                            : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(market <= 0.0)
+         continue;
 
-      if(ptype == POSITION_TYPE_BUY)
-        {
-         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         if(bid <= 0.0)
-            continue;
-         if(g_trail_high <= 0.0 || bid > g_trail_high)
-            g_trail_high = bid;
-         const double new_sl = QM_StopRulesNormalizePrice(_Symbol, g_trail_high - g_box_height);
-         if(new_sl > 0.0 && new_sl < bid && (current_sl <= 0.0 || new_sl > current_sl))
-            QM_TM_MoveSL(ticket, new_sl, "box_height_trail");
-        }
-      else if(ptype == POSITION_TYPE_SELL)
-        {
-         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         if(ask <= 0.0)
-            continue;
-         if(g_trail_low <= 0.0 || ask < g_trail_low)
-            g_trail_low = ask;
-         const double new_sl = QM_StopRulesNormalizePrice(_Symbol, g_trail_low + g_box_height);
-         if(new_sl > ask && (current_sl <= 0.0 || new_sl < current_sl))
-            QM_TM_MoveSL(ticket, new_sl, "box_height_trail");
-        }
+      const double target_sl = QM_StopRulesNormalizePrice(_Symbol,
+         (pos_type == POSITION_TYPE_BUY) ? (market - trail_distance) : (market + trail_distance));
+      if(target_sl <= 0.0)
+         continue;
+
+      const bool improves = (current_sl <= 0.0) ||
+                            (pos_type == POSITION_TYPE_BUY ? (target_sl > current_sl) : (target_sl < current_sl));
+      if(improves)
+         QM_TM_MoveSL(ticket, target_sl, "box_height_trailing_stop");
      }
   }
 
@@ -278,10 +252,6 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
-
-// -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line.
-// -----------------------------------------------------------------------------
 
 int OnInit()
   {
@@ -303,7 +273,7 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_11721_tc-m5-s7-london-box-breakout\"}");
    return INIT_SUCCEEDED;
   }
 

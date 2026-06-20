@@ -69,7 +69,7 @@ input double strategy_macd_zero_tol_pips = 1.0;   // MACD "approaching zero" tol
 input int    strategy_sl_pips           = 12;     // stop distance in pips
 input double strategy_tp_rr             = 1.0;    // take-profit as RR multiple of the stop
 input bool   strategy_no_friday_entry   = true;   // suppress new entries on Friday
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input int    strategy_spread_cap_pips   = 5;      // card spread cap in pips
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -84,13 +84,13 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
-   if(stop_distance <= 0.0)
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(spread_cap <= 0.0)
       return false;
 
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread > spread_cap)
       return true;
 
    return false;
@@ -99,6 +99,14 @@ bool Strategy_NoTradeFilter()
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -113,23 +121,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    // --- Trigger leg: EMA(3) at the last two closed bars (shift 1, shift 2) ---
-   const double ema_1 = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
-   const double ema_2 = QM_EMA(_Symbol, _Period, strategy_ema_period, 2);
+   const double ema_1 = QM_EMA(_Symbol, PERIOD_M5, strategy_ema_period, 1);
+   const double ema_2 = QM_EMA(_Symbol, PERIOD_M5, strategy_ema_period, 2);
    if(ema_1 <= 0.0 || ema_2 <= 0.0)
       return false;
 
    // --- BB(period, deviation) MIDDLE band at the same two closed bars ---
-   const double bb_mid_1 = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
-   const double bb_mid_2 = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 2);
+   const double bb_mid_1 = QM_BB_Middle(_Symbol, PERIOD_M5, strategy_bb_period, strategy_bb_deviation, 1);
+   const double bb_mid_2 = QM_BB_Middle(_Symbol, PERIOD_M5, strategy_bb_period, strategy_bb_deviation, 2);
    if(bb_mid_1 <= 0.0 || bb_mid_2 <= 0.0)
       return false;
 
    // --- Confirm STATE: MACD MAIN line on the trigger side of zero (within tol) ---
-   const double macd_main = QM_MACD_Main(_Symbol, _Period,
+   const double macd_main = QM_MACD_Main(_Symbol, PERIOD_M5,
                                          strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
 
    // Tolerance band around zero, scaled to a pip price distance.
-   const double tol = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathMax(1.0, strategy_macd_zero_tol_pips));
+   const double one_pip = QM_StopRulesPipsToPriceDistance(_Symbol, 1);
+   const double tol = one_pip * MathMax(0.0, strategy_macd_zero_tol_pips);
+   if(tol <= 0.0)
+      return false;
 
    // Trigger EVENT: EMA3 crosses the BB middle band. ONE event per bar.
    const bool crossed_up   = (ema_2 <= bb_mid_2 && ema_1 >  bb_mid_1);
