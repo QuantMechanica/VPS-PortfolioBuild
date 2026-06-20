@@ -4,7 +4,7 @@
 **Slug:** `robo-range-wma-ema-rsi`
 **Source:** `ed246754-1f4d-5bed-8dd3-3b5cbf1b420d` (RoboForex Strategy Collection, "Strategy The Range")
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-20
 
 ---
 
@@ -21,7 +21,9 @@ position and the RSI level are evaluated as standing states. The stop is anchore
 to the EMA(30) far edge of the channel (pushed 5 pips beyond it) but capped at a
 maximum of 20 pips from entry. There is no fixed target — the position is closed
 defensively when WMA(5) crosses back into the range (below EMA(16) for a long,
-above for a short).
+above for a short) or when RSI crosses back through 50 against the position.
+The card's London plus New York session filter is implemented as a broker-time
+hour window from 10:00 through 22:59.
 
 ---
 
@@ -38,6 +40,8 @@ above for a short).
 | `strategy_sl_buffer_pips` | 5 | 0-15 | Push SL this many pips beyond EMA(30) |
 | `strategy_sl_max_pips` | 20 | 10-40 | Hard cap on SL distance from entry |
 | `strategy_spread_cap_pips` | 5.0 | 1.0-15.0 | Block entry only if spread exceeds this many pips |
+| `strategy_session_start_hour` | 10 | 0-23 | Broker hour at which the London plus NY session window opens |
+| `strategy_session_end_hour` | 23 | 0-23 | Broker hour at which the London plus NY session window closes |
 
 ---
 
@@ -102,4 +106,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v1 | 2026-06-20 | Initial build from card | 509240b5-345a-4736-973f-34e28c0cdb57 |

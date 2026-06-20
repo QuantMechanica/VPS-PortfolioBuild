@@ -69,21 +69,38 @@ input double strategy_rsi_level          = 50.0;  // RSI trend-confirmation thre
 input int    strategy_sl_buffer_pips     = 5;     // push SL this many pips beyond EMA(30)
 input int    strategy_sl_max_pips        = 20;    // hard cap on SL distance from entry
 input double strategy_spread_cap_pips    = 5.0;   // skip only if spread exceeds this many pips
+input int    strategy_session_start_hour = 10;    // London open in DXZ broker time
+input int    strategy_session_end_hour   = 23;    // NY afternoon cutoff in DXZ broker time
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
+// No Trade Filter (time, spread, news)
 // Cheap O(1) per-tick gate. Spread guard only. Fail-OPEN on .DWX zero spread.
 bool Strategy_NoTradeFilter()
   {
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   if(strategy_session_start_hour < strategy_session_end_hour)
+     {
+      if(dt.hour < strategy_session_start_hour || dt.hour >= strategy_session_end_hour)
+         return true;
+     }
+   else if(strategy_session_start_hour > strategy_session_end_hour)
+     {
+      if(dt.hour < strategy_session_start_hour && dt.hour >= strategy_session_end_hour)
+         return true;
+     }
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
    const double spread       = ask - bid;
-   const double spread_cap   = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
+   const int spread_cap_pips = (int)MathRound(strategy_spread_cap_pips);
+   const double spread_cap   = QM_StopRulesPipsToPriceDistance(_Symbol, spread_cap_pips);
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
    if(spread > 0.0 && spread_cap > 0.0 && spread > spread_cap)
       return true;
@@ -93,8 +110,17 @@ bool Strategy_NoTradeFilter()
 
 // Confluence entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 // ONE trigger EVENT (WMA12 x EMA30 cross), two STATES (WMA5 out of range, RSI).
+// Trade Entry
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -124,10 +150,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(long_cross && long_state_wma && long_state_rsi)
      {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if(entry <= 0.0)
+     const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+     if(entry <= 0.0)
          return false;
-      const double sl = ComputeStopPrice(QM_BUY, entry, ema_slow);
+      const double buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_buffer_pips);
+      const double maxdist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_max_pips);
+      if(maxdist <= 0.0)
+         return false;
+      double sl = ema_slow - buffer;
+      const double floor_price = entry - maxdist;
+      if(sl < floor_price || sl >= entry)
+         sl = floor_price;
+      sl = QM_StopRulesNormalizePrice(_Symbol, sl);
       if(sl <= 0.0 || sl >= entry)
          return false;
       req.type   = QM_BUY;
@@ -148,10 +182,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(short_cross && short_state_wma && short_state_rsi)
      {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      if(entry <= 0.0)
+     const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+     if(entry <= 0.0)
          return false;
-      const double sl = ComputeStopPrice(QM_SELL, entry, ema_slow);
+      const double buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_buffer_pips);
+      const double maxdist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_max_pips);
+      if(maxdist <= 0.0)
+         return false;
+      double sl = ema_slow + buffer;
+      const double ceil_price = entry + maxdist;
+      if(sl > ceil_price || sl <= entry)
+         sl = ceil_price;
+      sl = QM_StopRulesNormalizePrice(_Symbol, sl);
       if(sl <= 0.0 || sl <= entry)
          return false;
       req.type   = QM_SELL;
@@ -165,44 +207,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return false;
   }
 
-// Stop = EMA(30) edge of the channel, pushed sl_buffer_pips beyond it, clamped
-// to a maximum of sl_max_pips from entry. Pip-correct distances (5-digit/JPY).
-double ComputeStopPrice(const QM_OrderType type, const double entry, const double ema_slow)
-  {
-   const double buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_buffer_pips);
-   const double maxdist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_max_pips);
-   if(maxdist <= 0.0)
-      return 0.0;
-
-   double sl;
-   if(type == QM_BUY)
-     {
-      sl = ema_slow - buffer;                 // far edge below entry, plus buffer
-      const double floor_price = entry - maxdist;  // never further than max cap
-      if(sl < floor_price)
-         sl = floor_price;
-      if(sl >= entry)                          // EMA30 above entry → use max cap
-         sl = entry - maxdist;
-     }
-   else
-     {
-      sl = ema_slow + buffer;
-      const double ceil_price = entry + maxdist;
-      if(sl > ceil_price)
-         sl = ceil_price;
-      if(sl <= entry)
-         sl = entry + maxdist;
-     }
-   return QM_StopRulesNormalizePrice(_Symbol, sl);
-  }
-
 // No active trade management beyond the fixed stop. Exit handled in ExitSignal.
+// Trade Management
 void Strategy_ManageOpenPosition()
   {
   }
 
 // Defensive exit: WMA(5) crosses back INTO the red range — i.e. WMA5 crosses
 // below EMA(16) for a LONG, above EMA(16) for a SHORT. One event at shift 1.
+// P2 card addendum: also close when RSI crosses back through 50.
+// Trade Close
 bool Strategy_ExitSignal()
   {
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
@@ -212,7 +226,10 @@ bool Strategy_ExitSignal()
    const double ema_fast2 = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 2);
    const double wma_fast1 = QM_WMA(_Symbol, _Period, strategy_wma_fast_period, 1);
    const double wma_fast2 = QM_WMA(_Symbol, _Period, strategy_wma_fast_period, 2);
-   if(ema_fast1 <= 0.0 || ema_fast2 <= 0.0 || wma_fast1 <= 0.0 || wma_fast2 <= 0.0)
+   const double rsi1 = QM_RSI(_Symbol, _Period, strategy_rsi_period, 1);
+   const double rsi2 = QM_RSI(_Symbol, _Period, strategy_rsi_period, 2);
+   if(ema_fast1 <= 0.0 || ema_fast2 <= 0.0 || wma_fast1 <= 0.0 || wma_fast2 <= 0.0 ||
+      rsi1 <= 0.0 || rsi2 <= 0.0)
       return false;
 
    // Determine the direction of the currently open position for this magic.
@@ -238,13 +255,18 @@ bool Strategy_ExitSignal()
    if(is_long)
      {
       // WMA5 crosses below EMA16 — re-enters the range from above.
-      return (wma_fast2 >= ema_fast2 && wma_fast1 < ema_fast1);
+      if(wma_fast2 >= ema_fast2 && wma_fast1 < ema_fast1)
+         return true;
+      return (rsi2 >= strategy_rsi_level && rsi1 < strategy_rsi_level);
      }
    // SHORT: WMA5 crosses above EMA16 — re-enters the range from below.
-   return (wma_fast2 <= ema_fast2 && wma_fast1 > ema_fast1);
+   if(wma_fast2 <= ema_fast2 && wma_fast1 > ema_fast1)
+      return true;
+   return (rsi2 <= strategy_rsi_level && rsi1 > strategy_rsi_level);
   }
 
 // Defer to the central news filter.
+// News Filter Hook (callable for P8 News Impact phase)
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
