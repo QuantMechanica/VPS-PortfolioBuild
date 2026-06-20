@@ -27,8 +27,8 @@
 //   Stop  : fixed sl_pips (10), widened to sl_atr_mult * ATR(M1) if that is wider.
 //   Take  : fixed tp_pips (7).
 //   Exit  : SL/TP only (whichever hits first); no discretionary exit.
-//   Spread: skip a genuinely wide spread > spread_pct_of_stop of stop distance
-//           (fail-open on .DWX zero modeled spread).
+//   Spread: skip a genuinely wide spread > 1.0 pip (fail-open on .DWX zero
+//           modeled spread).
 //
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
 // else is framework wiring and MUST stay intact.
@@ -45,8 +45,8 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -70,7 +70,7 @@ input int    strategy_sl_pips           = 10;    // fixed stop in pips
 input int    strategy_tp_pips           = 7;     // fixed take in pips
 input int    strategy_atr_period        = 14;    // ATR period for the floor-widened stop
 input double strategy_sl_atr_mult       = 2.0;   // stop = max(sl_pips, mult*ATR)
-input double strategy_spread_pct_of_stop = 25.0; // skip if spread > this % of stop distance
+input double strategy_max_spread_pips   = 1.0;   // skip if modeled spread is wider than this
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -85,14 +85,13 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   // Stop-distance reference for the spread cap (use the fixed-pip stop, scale-correct).
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
-   if(stop_distance <= 0.0)
+   const double max_spread = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_max_spread_pips);
+   if(max_spread <= 0.0)
       return false;
 
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread > max_spread)
       return true;
 
    return false;
@@ -179,6 +178,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = QM_StopRulesNormalizePrice(_Symbol, sl);
    req.tp     = QM_StopRulesNormalizePrice(_Symbol, tp);
    req.reason = (side == QM_BUY) ? "micro_bb18_ema3_long" : "micro_bb18_ema3_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
