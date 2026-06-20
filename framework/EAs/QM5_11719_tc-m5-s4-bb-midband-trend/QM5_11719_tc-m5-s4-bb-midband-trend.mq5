@@ -29,12 +29,13 @@
 //   The touch-and-resume off the midline is the ONE trigger EVENT. The two band
 //   slopes and the band geometry are STATES — we never demand two fresh cross
 //   EVENTS on the same bar (the .DWX two-cross-same-bar zero-trade trap).
-//   Stop  : opposite band (lower for LONG / upper for SHORT) at entry, capped to
-//           sl_max_pips so the modeled loss never exceeds it (TIGHTER of the two).
-//   Target: same-direction band (upper for LONG / lower for SHORT), captured at
-//           entry. Optional fixed-pip TP via use_fixed_tp / tp_fixed_pips.
-//   Spread guard : skip only a genuinely wide spread (fail-open on .DWX zero
-//                  modeled spread). Optional no-Friday-entry filter.
+//   Stop  : factory default fixed 15 pips. Optional card variant uses the
+//           opposite band (lower for LONG / upper for SHORT) captured at entry.
+//   Target: factory default fixed 15 pips. Optional card variant uses the
+//           same-direction outer band (upper for LONG / lower for SHORT).
+//   Spread guard : optional, skip only a genuinely wide spread (fail-open on
+//                  .DWX zero modeled spread). Disabled by default because the
+//                  card does not specify a spread filter.
 //
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything else
 // is framework wiring and MUST stay intact.
@@ -68,13 +69,14 @@ input group "Strategy"
 input int    strategy_bb_period         = 20;     // Bollinger period (sweep 14/20/25)
 input double strategy_bb_deviation      = 2.0;    // Bollinger deviation
 input int    strategy_slope_lookback    = 5;      // bars back for band slope (card: [0] vs [5])
-input double strategy_slope_min_pips    = 0.5;    // min band slope magnitude, in pips
+input double strategy_slope_min_pips    = 0.0;    // optional min band slope magnitude, in pips
 input bool   strategy_require_candle    = true;   // require bullish/bearish trigger candle close
-input double strategy_sl_max_pips       = 15.0;   // max stop distance cap, in pips (card default)
-input bool   strategy_use_fixed_tp      = false;  // true = fixed-pip TP instead of opposite band
+input bool   strategy_use_band_sl       = false;  // false = factory fixed 15-pip SL
+input double strategy_sl_fixed_pips     = 15.0;   // fixed SL distance in pips (card factory default)
+input bool   strategy_use_band_tp       = false;  // false = factory fixed 15-pip TP
 input double strategy_tp_fixed_pips     = 15.0;   // fixed-pip TP distance (card default 15)
-input bool   strategy_no_friday_entry   = true;   // skip new entries on Friday
-input double strategy_spread_max_pips    = 5.0;   // skip only genuinely wide spreads
+input bool   strategy_no_friday_entry   = false;  // optional reviewer toggle; framework still handles Friday close
+input double strategy_spread_max_pips    = 0.0;   // optional max spread; 0 disables
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -99,11 +101,14 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_max_pips);
-   const double spread     = ask - bid;
-   if(spread_cap > 0.0 && spread > 0.0 && spread > spread_cap)
-      return true;
+   if(strategy_spread_max_pips > 0.0)
+     {
+      // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
+      const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathCeil(strategy_spread_max_pips));
+      const double spread     = ask - bid;
+      if(spread_cap > 0.0 && spread > 0.0 && spread > spread_cap)
+         return true;
+     }
 
    return false;
   }
@@ -129,7 +134,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(upper_ref <= 0.0 || lower_ref <= 0.0)
       return false;
 
-   const double slope_min_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_slope_min_pips);
+   double slope_min_dist = 0.0;
+   if(strategy_slope_min_pips > 0.0)
+      slope_min_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathCeil(strategy_slope_min_pips));
 
    // Closed bar[1] OHLC for the touch-and-resume event (perf-allowed: single
    // closed-bar reads, no loops).
@@ -140,8 +147,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(open1 <= 0.0 || low1 <= 0.0 || high1 <= 0.0 || close1 <= 0.0)
       return false;
 
-   const double sl_cap_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_sl_max_pips);
-   if(sl_cap_dist <= 0.0)
+   const double sl_fixed_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathCeil(strategy_sl_fixed_pips));
+   const double tp_fixed_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathCeil(strategy_tp_fixed_pips));
+   if(sl_fixed_dist <= 0.0 || tp_fixed_dist <= 0.0)
       return false;
 
    // --- LONG: both bands rising + bar touched mid from above, closed back above ---
@@ -156,18 +164,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(entry <= 0.0)
          return false;
 
-      // Stop: lower band, but never wider than the pip cap (tighter of the two).
-      double sl = lower1;
-      const double cap_sl = entry - sl_cap_dist;
-      if(sl < cap_sl)
-         sl = cap_sl;          // lower band too far → tighten to the cap
+      double sl = entry - sl_fixed_dist;
+      if(strategy_use_band_sl)
+         sl = lower1;
       if(sl >= entry)
          return false;         // degenerate geometry, skip
 
-      // Target: opposite (upper) band at entry, or a fixed-pip TP.
-      double tp = upper1;
-      if(strategy_use_fixed_tp)
-         tp = entry + QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_tp_fixed_pips);
+      double tp = entry + tp_fixed_dist;
+      if(strategy_use_band_tp)
+         tp = upper1;
       if(tp <= entry)
          return false;
 
@@ -176,6 +181,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl     = QM_TM_NormalizePrice(_Symbol, sl);
       req.tp     = QM_TM_NormalizePrice(_Symbol, tp);
       req.reason = "bb_mid_trend_long";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
       return true;
      }
 
@@ -191,18 +198,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(entry <= 0.0)
          return false;
 
-      // Stop: upper band, but never wider than the pip cap (tighter of the two).
-      double sl = upper1;
-      const double cap_sl = entry + sl_cap_dist;
-      if(sl > cap_sl)
-         sl = cap_sl;          // upper band too far → tighten to the cap
+      double sl = entry + sl_fixed_dist;
+      if(strategy_use_band_sl)
+         sl = upper1;
       if(sl <= entry)
          return false;
 
-      // Target: opposite (lower) band at entry, or a fixed-pip TP.
-      double tp = lower1;
-      if(strategy_use_fixed_tp)
-         tp = entry - QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_tp_fixed_pips);
+      double tp = entry - tp_fixed_dist;
+      if(strategy_use_band_tp)
+         tp = lower1;
       if(tp >= entry)
          return false;
 
@@ -211,6 +215,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl     = QM_TM_NormalizePrice(_Symbol, sl);
       req.tp     = QM_TM_NormalizePrice(_Symbol, tp);
       req.reason = "bb_mid_trend_short";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
       return true;
      }
 

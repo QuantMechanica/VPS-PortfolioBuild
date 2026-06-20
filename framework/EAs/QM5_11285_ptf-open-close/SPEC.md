@@ -4,7 +4,7 @@
 **Slug:** `ptf-open-close`
 **Source:** `72f9fcfa-6c75-5544-80c4-31e15c9817ab` (see `strategy-seeds/sources/72f9fcfa-6c75-5544-80c4-31e15c9817ab/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-20
 
 ---
 
@@ -12,16 +12,15 @@
 
 On each completed daily (D1) bar the EA forecasts the prior open-close move,
 scaled by return volatility: `forecast = forecast_scalar * (close - open) / ATR(atr_period)`,
-read from prior CLOSED bars only (shift >= 1). The `(close - open)` term is a
-pure bar feature derived from the bar's own data, not a wall-clock open/close,
-so no intraday timing is involved. The EA goes LONG at the next bar when the
-normalized forecast crosses above `+entry_threshold` (default +5) and SHORT when
-it crosses below `-entry_threshold` (default -5); only one fresh threshold cross
-per bar triggers. It exits when the forecast reverts through `exit_level` (0) —
-i.e. long forecast <= 0 or short forecast >= 0 — or after `max_hold_bars`
-completed daily bars, whichever comes first, measured from the entry bar's
-broker-time bar-open timestamp. A catastrophic `sl_atr_mult * ATR(atr_period)`
-(default 1.5 * ATR(14)) stop guards each position. One position per symbol/magic.
+read from prior closed bars only (shift >= 1). The source `norm_forecast`
+normalizes with in-sample lookahead, so this build uses a fixed no-lookahead
+scaling input while preserving the card's threshold crossing rule. The EA goes
+long at the next bar when the normalized forecast crosses above `+entry_threshold`
+(default +5) and short when it crosses below `-entry_threshold` (default -5);
+only one fresh threshold cross per bar triggers. It exits when the forecast
+reverts through `exit_level` (0), or after `max_hold_bars` completed daily bars,
+whichever comes first. A catastrophic `sl_atr_mult * ATR(atr_period)` stop guards
+each position. One position per symbol/magic.
 
 ---
 
@@ -30,7 +29,7 @@ broker-time bar-open timestamp. A catastrophic `sl_atr_mult * ATR(atr_period)`
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
 | `strategy_atr_period` | 14 | 5-50 | ATR period used as return-volatility proxy and stop basis |
-| `strategy_forecast_scalar` | 4.0 | 1.0-20.0 | PyTrendFollow `norm_forecast` scaling constant |
+| `strategy_forecast_scalar` | 4.0 | 1.0-20.0 | Fixed no-lookahead scale approximating PyTrendFollow `norm_forecast` |
 | `strategy_entry_threshold` | 5.0 | 2.0-15.0 | `\|forecast\|` cross level that fires an entry (card +/-5) |
 | `strategy_exit_level` | 0.0 | 0.0-3.0 | Forecast level for the mean-revert exit (card: 0) |
 | `strategy_max_hold_bars` | 5 | 1-30 | Time-stop in completed daily bars (card: 5) |
@@ -72,6 +71,7 @@ broker-time bar-open timestamp. A catastrophic `sl_atr_mult * ATR(atr_period)`
 | Typical hold time | `1-5 days` (forecast-revert or 5-bar time-stop) |
 | Expected drawdown profile | `moderate; momentum entries with a tight ATR catastrophic stop` |
 | Regime preference | `momentum / intraday-seasonality (prior open-close persistence)` |
+| Expected trade frequency | `daily signal checks with about 90 trades/year/symbol` |
 | Win rate target (qualitative) | `low-to-medium` |
 
 ---
@@ -103,4 +103,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor worktree |
+| v1 | 2026-06-20 | Initial build from card | 970edb68-97ce-48ee-a505-2232d489104e |

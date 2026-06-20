@@ -1,14 +1,13 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11285 ptf-open-close — PyTrendFollow prior open-close forecast (long/short, D1)"
+#property description "QM5_11285 ptf-open-close - PyTrendFollow prior open-close forecast (long/short, D1)"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11285 ptf-open-close
+// QuantMechanica V5 EA - QM5_11285 ptf-open-close
 // -----------------------------------------------------------------------------
-// Source: chrism2671/PyTrendFollow, trading/rules.py open_close(),
-//   https://github.com/chrism2671/PyTrendFollow/blob/master/trading/rules.py
+// Source: chrism2671/PyTrendFollow, trading/rules.py open_close().
 // Card: artifacts/cards_approved/QM5_11285_ptf-open-close.md (g0_status APPROVED).
 //
 // Mechanics (long AND short, closed-bar reads at shift >= 1, D1):
@@ -16,10 +15,10 @@
 //   return-volatility:
 //       raw       = close[s] - open[s]                  (prior CLOSED bar)
 //       vol       = ATR(atr_period) at the same shift    (return-vol proxy)
-//       forecast  = forecast_scalar * raw / vol          (normalized, ~PyTF norm)
+//       forecast  = forecast_scalar * raw / vol          (normalized, PyTF-style)
 //
 //   The (close - open) of a CLOSED daily bar is a pure bar feature derived from
-//   the bar timestamp/data — NOT a wall-clock open/close. No intraday timing.
+//   the bar timestamp/data - NOT a wall-clock open/close. No intraday timing.
 //   On gapless .DWX CFDs open[0] == close[1]; we read prior CLOSED bars only.
 //
 //   Entry EVENT (one trigger per bar):
@@ -60,7 +59,7 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_atr_period        = 14;     // return-volatility / stop ATR period
-input double strategy_forecast_scalar   = 4.0;    // PyTF norm_forecast scaling constant
+input double strategy_forecast_scalar   = 4.0;    // fixed no-lookahead norm_forecast scale
 input double strategy_entry_threshold   = 5.0;    // |forecast| cross level for entry (card +/-5)
 input double strategy_exit_level        = 0.0;    // forecast level for the mean-revert exit (card: 0)
 input int    strategy_max_hold_bars     = 5;      // time-stop in completed daily bars (card: 5)
@@ -86,22 +85,23 @@ double ForecastAt(const int shift)
   }
 
 // Completed daily bars elapsed since the open position was filled. Derived from
-// the bar-open timestamp of the entry bar vs the latest closed bar — pure bar
+// the bar-open timestamp of the entry bar vs the latest closed bar - pure bar
 // arithmetic in broker time, never a fixed wall-clock rule.
 int BarsHeld(const datetime position_open_time)
   {
    // Count CLOSED bars (shift 1..N) whose bar-open time is at or after the
-   // entry bar's open. Bar 1 is the most recent CLOSED bar. Pure bar
-   // arithmetic in broker time — never a fixed wall-clock rule.
-   for(int s = 1; s < 5000; ++s)
+   // entry bar's open. The card exits after 5 bars, so scanning a small bounded
+   // horizon covers all valid time-stop settings without a per-tick history walk.
+   const int max_scan = MathMax(strategy_max_hold_bars + 2, 10);
+   for(int s = 1; s <= max_scan; ++s)
      {
       const datetime bt = iTime(_Symbol, _Period, s); // perf-allowed: bar-open timestamp
       if(bt == 0)
          return s - 1;          // ran out of history
       if(bt < position_open_time)
-         return s - 1;          // older than the entry bar — stop counting
+         return s - 1;          // older than the entry bar - stop counting
      }
-   return 0;
+   return max_scan;
   }
 
 // -----------------------------------------------------------------------------
@@ -114,11 +114,11 @@ bool Strategy_NoTradeFilter()
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — never block on a zero price
+      return false; // no valid quote yet - never block on a zero price
 
    const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
    if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to the entry gate
+      return false; // no ATR yet - defer to the entry gate
 
    const double stop_distance = strategy_sl_atr_mult * atr_value;
    if(stop_distance <= 0.0)
@@ -245,7 +245,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
   }
 
 // -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
+// Framework wiring - do NOT edit below this line unless you know why.
 // -----------------------------------------------------------------------------
 
 int OnInit()

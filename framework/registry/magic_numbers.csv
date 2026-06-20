@@ -11630,9 +11630,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11715,tradingwalk-abc-fib-extension,2,GBPUSD.DWX,117150002,2026-06-18,Claude,reserved
 11715,tradingwalk-abc-fib-extension,3,USDJPY.DWX,117150003,2026-06-18,Claude,reserved
 11716,nico-smi-vq-m15-eurjpy,0,EURJPY.DWX,117160000,2026-06-18,Claude,active
-11719,tc-m5-s4-bb-midband-trend,0,EURUSD.DWX,117190000,2026-06-18,Claude,reserved
-11719,tc-m5-s4-bb-midband-trend,1,GBPUSD.DWX,117190001,2026-06-18,Claude,reserved
-11719,tc-m5-s4-bb-midband-trend,2,GBPJPY.DWX,117190002,2026-06-18,Claude,reserved
+11719,tc-m5-s4-bb-midband-trend,0,EURUSD.DWX,117190000,2026-06-18,Claude,active
+11719,tc-m5-s4-bb-midband-trend,1,GBPUSD.DWX,117190001,2026-06-18,Claude,active
+11719,tc-m5-s4-bb-midband-trend,2,GBPJPY.DWX,117190002,2026-06-18,Claude,active
 11720,tc-m5-s6-mtf-ema-bb,0,EURUSD.DWX,117200000,2026-06-18,Claude,reserved
 11721,tc-m5-s7-london-box-breakout,0,GBPJPY.DWX,117210000,2026-06-18,Claude,active
 11721,tc-m5-s7-london-box-breakout,1,GBPUSD.DWX,117210001,2026-06-18,Claude,active
@@ -13251,3 +13251,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9998,tv-hull-suite-hma-color-flip,5,NDX.DWX,99980005,2026-06-20,Development,active
 9998,tv-hull-suite-hma-color-flip,6,WS30.DWX,99980006,2026-06-20,Development,active
 9998,tv-hull-suite-hma-color-flip,7,SP500.DWX,99980007,2026-06-20,Development,active
+11558,carter-t-m5-psar-macd64128-ema100,0,EURUSD.DWX,115580000,2026-06-20,Development,active
+11558,carter-t-m5-psar-macd64128-ema100,1,GBPUSD.DWX,115580001,2026-06-20,Development,active
+11558,carter-t-m5-psar-macd64128-ema100,2,AUDUSD.DWX,115580002,2026-06-20,Development,active

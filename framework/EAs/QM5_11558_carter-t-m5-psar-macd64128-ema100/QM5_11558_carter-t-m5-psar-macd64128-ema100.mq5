@@ -1,11 +1,11 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11558 carter-t-m5-psar-macd64128-ema100 — PSAR flip + MACD(64,128,9) + EMA(100) trend (M5)"
+#property description "QM5_11558 carter-t-m5-psar-macd64128-ema100 - PSAR + MACD(64,128,9) + EMA(100) trend (M5)"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11558 carter-t-m5-psar-macd64128-ema100
+// QuantMechanica V5 EA - QM5_11558 carter-t-m5-psar-macd64128-ema100
 // -----------------------------------------------------------------------------
 // Source: Thomas Carter, "20 Forex Trading Strategies (5 Minute Time Frame)",
 //   System #19, self-published 2014.
@@ -17,19 +17,13 @@
 //                  SHORT close[1] < EMA(100)[1]
 //   MACD STATE   : LONG  MACD_Main(64,128,9) > 0   (above zero)
 //                  SHORT MACD_Main(64,128,9) < 0   (below zero)
-//   Trigger EVENT: PSAR FLIP — exactly one event/bar.
-//                  LONG : PSAR was >= High[2] (dot above) AND now <  Low[1]
-//                         (dot below price) -> fresh flip to bullish.
-//                  SHORT: PSAR was <= Low[2]  (dot below) AND now >  High[1]
-//                         (dot above price) -> fresh flip to bearish.
+//   PSAR STATE   : LONG  PSAR(0.01,0.1)[1] < Low[1]
+//                  SHORT PSAR(0.01,0.1)[1] > High[1]
 //   Stop         : 3 pips + |close[1] - PSAR[1]|, capped at sl_cap_pips (15).
 //   Take profit  : tp_pips (9) fixed.
 //   Spread guard : skip only a genuinely wide spread > spread_cap_pips
 //                  (fail-open on .DWX zero modeled spread).
 //   No-Friday-entry: per card; broker-time day-of-week gate.
-//
-// The EMA + MACD are STATES; the PSAR flip is the single trigger EVENT. This
-// avoids the two-cross-same-bar zero-trade trap (only one fresh event needed).
 //
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
 // else is framework wiring and MUST stay intact.
@@ -66,33 +60,17 @@ input double strategy_sar_max            = 0.10;    // PSAR acceleration maximum
 input int    strategy_macd_fast          = 64;      // MACD fast EMA period
 input int    strategy_macd_slow          = 128;     // MACD slow EMA period
 input int    strategy_macd_signal        = 9;       // MACD signal SMA period
-input double strategy_sl_buffer_pips     = 3.0;     // pips beyond PSAR for the stop
-input double strategy_sl_cap_pips        = 15.0;    // max stop distance (pips)
-input double strategy_tp_pips            = 9.0;     // fixed take-profit (pips)
-input double strategy_spread_cap_pips    = 5.0;     // skip if spread wider than this (pips)
+input int    strategy_sl_buffer_pips     = 3;       // pips beyond PSAR for the stop
+input int    strategy_sl_cap_pips        = 15;      // max stop distance (pips)
+input int    strategy_tp_pips            = 9;       // fixed take-profit (pips)
+input int    strategy_spread_cap_pips    = 5;       // skip if spread wider than this (pips)
 input bool   strategy_no_friday_entry    = true;    // block new entries on Friday
-
-// -----------------------------------------------------------------------------
-// Helpers
-// -----------------------------------------------------------------------------
-
-// One pip in price units (5-digit FX => 0.0001, JPY 3-digit => 0.01).
-double StrategyPip()
-  {
-   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   double pt = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(pt <= 0.0)
-      return 0.0;
-   if(digits == 3 || digits == 5)
-      return pt * 10.0;
-   return pt;
-  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard + no-Friday-entry only — regime /
+// Cheap O(1) per-tick gate. Spread guard only - regime /
 // signal work is on the closed-bar path in Strategy_EntrySignal. Fail-open on
 // .DWX zero modeled spread.
 bool Strategy_NoTradeFilter()
@@ -100,25 +78,15 @@ bool Strategy_NoTradeFilter()
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
+      return false; // no valid quote yet - do not block on it
 
-   // No-Friday-entry (card filter). Use broker time -> UTC for a stable DOW.
-   if(strategy_no_friday_entry)
-     {
-      const datetime utc_now = QM_BrokerToUTC(TimeCurrent());
-      MqlDateTime dt;
-      TimeToStruct(utc_now, dt);
-      if(dt.day_of_week == 5) // Friday
-         return true;
-     }
-
-   // Spread guard — only a genuinely wide spread blocks; zero modeled spread
+   // Spread guard - only a genuinely wide spread blocks; zero modeled spread
    // (ask == bid on .DWX) passes through.
-   const double pip = StrategyPip();
-   if(pip > 0.0)
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(spread_cap > 0.0)
      {
       const double spread = ask - bid;
-      if(spread > 0.0 && spread > strategy_spread_cap_pips * pip)
+      if(spread > 0.0 && spread > spread_cap)
          return true;
      }
 
@@ -128,12 +96,30 @@ bool Strategy_NoTradeFilter()
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   const double pip = StrategyPip();
-   if(pip <= 0.0)
+   if(strategy_no_friday_entry)
+     {
+      MqlDateTime dt;
+      TimeToStruct(TimeCurrent(), dt);
+      if(dt.day_of_week == 5)
+         return false;
+     }
+
+   const double buffer_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_buffer_pips);
+   const double cap_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_cap_pips);
+   const double tp_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_tp_pips);
+   if(buffer_dist <= 0.0 || cap_dist <= 0.0 || tp_dist <= 0.0)
       return false;
 
    // --- Trend STATE: close[1] vs EMA(100)[1] ---
@@ -148,45 +134,32 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double macd = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
                                     strategy_macd_slow, strategy_macd_signal, 1);
 
-   // --- Trigger EVENT: PSAR flip between bar 2 (prev) and bar 1 (now) ---
-   const double sar_now  = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 1);
-   const double sar_prev = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 2);
-   if(sar_now <= 0.0 || sar_prev <= 0.0)
+   // --- PSAR STATE: dot below/above the closed signal bar ---
+   const double sar_now = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 1);
+   if(sar_now <= 0.0)
       return false;
 
    const double high1 = iHigh(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
    const double low1  = iLow(_Symbol, _Period, 1);  // perf-allowed: single closed-bar read
-   const double high2 = iHigh(_Symbol, _Period, 2); // perf-allowed: single closed-bar read
-   const double low2  = iLow(_Symbol, _Period, 2);  // perf-allowed: single closed-bar read
-   if(high1 <= 0.0 || low1 <= 0.0 || high2 <= 0.0 || low2 <= 0.0)
+   if(high1 <= 0.0 || low1 <= 0.0)
       return false;
-
-   // Bullish flip: dot was above price (bar 2) and is now below price (bar 1).
-   const bool flip_up   = (sar_prev >= high2 && sar_now < low1);
-   // Bearish flip: dot was below price (bar 2) and is now above price (bar 1).
-   const bool flip_down = (sar_prev <= low2  && sar_now > high1);
 
    bool is_long  = false;
    bool is_short = false;
 
-   if(flip_up && close1 > ema && macd > 0.0)
+   if(close1 > ema && sar_now < low1 && macd > 0.0)
       is_long = true;
-   else if(flip_down && close1 < ema && macd < 0.0)
+   else if(close1 < ema && sar_now > high1 && macd < 0.0)
       is_short = true;
 
    if(!is_long && !is_short)
       return false;
 
    // --- Stop distance: buffer pips beyond the PSAR dot, capped ---
-   double stop_dist = strategy_sl_buffer_pips * pip + MathAbs(close1 - sar_now);
-   const double cap = strategy_sl_cap_pips * pip;
-   if(stop_dist > cap)
-      stop_dist = cap;
+   double stop_dist = buffer_dist + MathAbs(close1 - sar_now);
+   if(stop_dist > cap_dist)
+      stop_dist = cap_dist;
    if(stop_dist <= 0.0)
-      return false;
-
-   const double tp_dist = strategy_tp_pips * pip;
-   if(tp_dist <= 0.0)
       return false;
 
    if(is_long)
