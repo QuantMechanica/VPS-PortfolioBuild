@@ -113,7 +113,7 @@ double LaguerreRSI(const int shift)
    // bounded copy under the new-bar gate, reused buffer.
    if(ArraySize(g_lag_close) < want)
       ArrayResize(g_lag_close, want);
-   const int copied = CopyClose(_Symbol, _Period, shift, want, g_lag_close);
+   const int copied = CopyClose(_Symbol, _Period, shift, want, g_lag_close); // perf-allowed: bounded Laguerre seed window; Strategy_EntrySignal is called only after the framework QM_IsNewBar gate.
    if(copied < want)
       return -1.0;
 
@@ -177,6 +177,14 @@ bool Strategy_NoTradeFilter()
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
