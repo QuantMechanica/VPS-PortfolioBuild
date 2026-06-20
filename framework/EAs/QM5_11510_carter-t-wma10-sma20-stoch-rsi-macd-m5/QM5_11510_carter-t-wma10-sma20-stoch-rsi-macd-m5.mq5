@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11510 Carter-T WMA10/SMA20 Stoch RSI MACD M5"
+#property description "QM5_11510 Carter-T WMA/SMA Stoch RSI MACD M5"
 
 #include <QM/QM_Common.mqh>
 
@@ -96,18 +96,13 @@ input int    strategy_spread_cap_pips   = 10;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   MqlDateTime dt;
-   TimeToStruct(TimeCurrent(), dt);
-   if(dt.day_of_week == 5)
-      return true;
-
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    if(bid <= 0.0 || ask <= 0.0)
       return true;
 
-   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
-   if(spread_cap > 0.0 && ask > bid && (ask - bid) > spread_cap)
+   const double max_spread = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(max_spread > 0.0 && ask > bid && (ask - bid) > max_spread)
       return true;
 
    return false;
@@ -126,84 +121,82 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_wma_period < 1 || strategy_sma_period < 1 ||
-      strategy_stoch_k < 1 || strategy_stoch_d < 1 || strategy_stoch_slowing < 1 ||
-      strategy_rsi_period < 1 || strategy_macd_fast < 1 ||
-      strategy_macd_slow <= strategy_macd_fast || strategy_macd_signal < 1 ||
-      strategy_sl_pips < 1 || strategy_rr <= 0.0)
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   if(dt.day_of_week == 5)
+      return false;
+   if(strategy_wma_period <= 0 || strategy_sma_period <= 0 ||
+      strategy_stoch_k <= 0 || strategy_stoch_d <= 0 || strategy_stoch_slowing <= 0 ||
+      strategy_rsi_period <= 0 || strategy_macd_fast <= 0 || strategy_macd_slow <= 0 ||
+      strategy_macd_signal <= 0 || strategy_sl_pips <= 0 || strategy_rr <= 0.0)
       return false;
 
-   const double wma = QM_WMA(_Symbol, PERIOD_M5, strategy_wma_period, 1);
-   const double sma = QM_SMA(_Symbol, PERIOD_M5, strategy_sma_period, 1);
-   if(wma == 0.0 || sma == 0.0)
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   const double stoch_k = QM_Stoch_K(_Symbol, PERIOD_M5, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
+   const double stoch_d = QM_Stoch_D(_Symbol, PERIOD_M5, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
+   const double rsi = QM_RSI(_Symbol, PERIOD_M5, strategy_rsi_period, 1, PRICE_CLOSE);
+   const double macd_main = QM_MACD_Main(_Symbol, PERIOD_M5, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1, PRICE_CLOSE);
+   const double macd_signal = QM_MACD_Signal(_Symbol, PERIOD_M5, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1, PRICE_CLOSE);
+   const double macd_hist = macd_main - macd_signal;
+
+   if(stoch_k <= 0.0 || stoch_d <= 0.0 || rsi <= 0.0)
       return false;
 
    bool crossed_up = false;
    bool crossed_down = false;
-   for(int shift = 1; shift <= strategy_cross_lookback; ++shift)
+   const int lookback = (strategy_cross_lookback < 1) ? 1 : strategy_cross_lookback;
+   for(int shift = 1; shift <= lookback; ++shift)
      {
-      const double w_now = QM_WMA(_Symbol, PERIOD_M5, strategy_wma_period, shift);
-      const double s_now = QM_SMA(_Symbol, PERIOD_M5, strategy_sma_period, shift);
-      const double w_prev = QM_WMA(_Symbol, PERIOD_M5, strategy_wma_period, shift + 1);
-      const double s_prev = QM_SMA(_Symbol, PERIOD_M5, strategy_sma_period, shift + 1);
-      if(w_now == 0.0 || s_now == 0.0 || w_prev == 0.0 || s_prev == 0.0)
+      const double wma_now = QM_WMA(_Symbol, PERIOD_M5, strategy_wma_period, shift, PRICE_CLOSE);
+      const double sma_now = QM_SMA(_Symbol, PERIOD_M5, strategy_sma_period, shift, PRICE_CLOSE);
+      const double wma_prev = QM_WMA(_Symbol, PERIOD_M5, strategy_wma_period, shift + 1, PRICE_CLOSE);
+      const double sma_prev = QM_SMA(_Symbol, PERIOD_M5, strategy_sma_period, shift + 1, PRICE_CLOSE);
+      if(wma_now <= 0.0 || sma_now <= 0.0 || wma_prev <= 0.0 || sma_prev <= 0.0)
          continue;
 
-      if(w_now > s_now && w_prev <= s_prev)
+      if(wma_now > sma_now && wma_prev <= sma_prev)
          crossed_up = true;
-      if(w_now < s_now && w_prev >= s_prev)
+      if(wma_now < sma_now && wma_prev >= sma_prev)
          crossed_down = true;
      }
 
-   const double k1 = QM_Stoch_K(_Symbol, PERIOD_M5, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
-   const double d1 = QM_Stoch_D(_Symbol, PERIOD_M5, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
-   const double k2 = QM_Stoch_K(_Symbol, PERIOD_M5, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 2);
-   const double rsi = QM_RSI(_Symbol, PERIOD_M5, strategy_rsi_period, 1);
-   const double macd = QM_MACD_Main(_Symbol, PERIOD_M5, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-   const double macd_signal = QM_MACD_Signal(_Symbol, PERIOD_M5, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-   const double hist = macd - macd_signal;
-   if(k1 == 0.0 || d1 == 0.0 || k2 == 0.0 || rsi == 0.0)
-      return false;
+   if(crossed_up && stoch_k > stoch_d && rsi > strategy_rsi_midline && macd_hist > 0.0)
+     {
+      req.type = QM_BUY;
+      req.sl = QM_StopFixedPips(_Symbol, req.type, ask, strategy_sl_pips);
+      req.tp = QM_TakeRR(_Symbol, req.type, ask, req.sl, strategy_rr);
+      req.reason = "WMA_SMA_STOCH_RSI_MACD_LONG";
+      return (req.sl > 0.0 && req.tp > 0.0);
+     }
 
-   const bool go_long = (wma > sma && crossed_up && k1 > d1 && k1 > k2 &&
-                         rsi > strategy_rsi_midline && hist > 0.0);
-   const bool go_short = (wma < sma && crossed_down && k1 < d1 && k1 < k2 &&
-                          rsi < strategy_rsi_midline && hist < 0.0);
+   if(crossed_down && stoch_k < stoch_d && rsi < strategy_rsi_midline && macd_hist < 0.0)
+     {
+      req.type = QM_SELL;
+      req.sl = QM_StopFixedPips(_Symbol, req.type, bid, strategy_sl_pips);
+      req.tp = QM_TakeRR(_Symbol, req.type, bid, req.sl, strategy_rr);
+      req.reason = "WMA_SMA_STOCH_RSI_MACD_SHORT";
+      return (req.sl > 0.0 && req.tp > 0.0);
+     }
 
-   if(!go_long && !go_short)
-      return false;
-
-   const QM_OrderType side = (go_long ? QM_BUY : QM_SELL);
-   const double entry = (go_long ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                 : SymbolInfoDouble(_Symbol, SYMBOL_BID));
-   if(entry <= 0.0)
-      return false;
-
-   const double sl = QM_StopFixedPips(_Symbol, side, entry, strategy_sl_pips);
-   const double tp = QM_TakeRR(_Symbol, side, entry, sl, strategy_rr);
-   if(sl <= 0.0 || tp <= 0.0)
-      return false;
-
-   req.type = side;
-   req.price = 0.0;
-   req.sl = sl;
-   req.tp = tp;
-   req.reason = (go_long ? "CARTER_T_WMA_SMA_LONG" : "CARTER_T_WMA_SMA_SHORT");
-   return true;
+   return false;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no trailing, break-even, partial close, or scale-in logic.
+   // Card specifies no trailing stop, break-even, partial close, or scale-in.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // Card exits are fixed SL/TP only; framework Friday close remains active.
+   // Card exits via fixed 10-pip SL, 1R TP, and framework Friday close.
    return false;
   }
 
