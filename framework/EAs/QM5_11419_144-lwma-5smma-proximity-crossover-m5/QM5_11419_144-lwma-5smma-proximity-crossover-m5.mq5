@@ -21,10 +21,8 @@
 //   Proximity STATE        : |Close[1] - LWMA144[1]| <= proximity_pips (in pips,
 //       scale-correct via QM_StopRulesPipsToPriceDistance). Keeps entries near
 //       the trend anchor instead of chasing extended moves.
-//   Stop loss              : recent structural low (LONG) / high (SHORT) over a
-//       lookback window (QM_StopStructure — the framework structural-stop helper;
-//       stands in for the card's "most recent fractal low" intent), then clamped
-//       to [min_sl_pips, max_sl_pips].
+//   Stop loss              : nearest confirmed fractal low (LONG) / high (SHORT)
+//       within the lookback window, then clamped to [min_sl_pips, max_sl_pips].
 //   Take profit            : 2:1 R:R off the realised stop distance (QM_TakeRR).
 //   One position per magic; no new signal while a position is open.
 //   Spread guard           : fail-OPEN on .DWX zero modeled spread; only a
@@ -66,11 +64,59 @@ input int    strategy_sl_lookback_bars  = 15;     // structural-low/high lookbac
 input int    strategy_min_sl_pips       = 5;      // floor on SL distance (noise guard)
 input int    strategy_max_sl_pips       = 20;     // cap on SL distance (card P2 cap)
 input double strategy_tp_rr             = 2.0;    // take-profit R:R multiple
-input double strategy_spread_cap_pips   = 15.0;   // skip only if spread > this many pips
+input int    strategy_spread_cap_pips   = 15;     // skip only if spread > this many pips
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
+
+bool FindFractalStop(const QM_OrderType side,
+                     const double entry,
+                     const int lookback_bars,
+                     double &out_stop)
+  {
+   out_stop = 0.0;
+   if(entry <= 0.0 || lookback_bars < 2)
+      return false;
+
+   for(int shift = 2; shift <= lookback_bars; shift++)
+     {
+      const double fractal = QM_OrderTypeIsBuy(side)
+                             ? QM_FractalLower(_Symbol, _Period, shift)
+                             : QM_FractalUpper(_Symbol, _Period, shift);
+      if(fractal <= 0.0)
+         continue;
+      if(QM_OrderTypeIsBuy(side) && fractal < entry)
+        {
+         out_stop = fractal;
+         return true;
+        }
+      if(!QM_OrderTypeIsBuy(side) && fractal > entry)
+        {
+         out_stop = fractal;
+         return true;
+        }
+     }
+
+   return false;
+  }
+
+double ClampStopPrice(const QM_OrderType side, const double entry, const double fractal_stop)
+  {
+   const double min_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_min_sl_pips);
+   const double max_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_sl_pips);
+   if(entry <= 0.0 || fractal_stop <= 0.0 || min_dist <= 0.0 || max_dist <= 0.0)
+      return 0.0;
+
+   double stop_dist = MathAbs(entry - fractal_stop);
+   if(stop_dist < min_dist)
+      stop_dist = min_dist;
+   if(stop_dist > max_dist)
+      stop_dist = max_dist;
+
+   const double stop = QM_OrderTypeIsBuy(side) ? (entry - stop_dist) : (entry + stop_dist);
+   return QM_StopRulesNormalizePrice(_Symbol, stop);
+  }
 
 // Cheap O(1) per-tick gate. Spread guard only. Fail-OPEN on .DWX zero spread:
 // only a genuinely wide spread above the cap blocks.
@@ -85,7 +131,7 @@ bool Strategy_NoTradeFilter()
    if(spread <= 0.0)
       return false; // .DWX zero modeled spread — fail open
 
-   const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
+   const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
    if(cap <= 0.0)
       return false;
 
@@ -98,13 +144,21 @@ bool Strategy_NoTradeFilter()
 // Closed-bar entry. Caller guarantees QM_IsNewBar() == true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic — no new signal while in a trade.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
    // --- Indicators on closed bars (shift 1 = last closed, shift 2 = prior) ---
-   const double lwma_1 = QM_WMA(_Symbol, _Period, strategy_lwma_period, 1);   // LWMA144[1]
-   const double lwma_2 = QM_WMA(_Symbol, _Period, strategy_lwma_period, 2);   // LWMA144[2]
+   const double lwma_1 = QM_LWMA(_Symbol, _Period, strategy_lwma_period, 1);  // LWMA144[1]
+   const double lwma_2 = QM_LWMA(_Symbol, _Period, strategy_lwma_period, 2);  // LWMA144[2]
    const double smma_1 = QM_SMMA(_Symbol, _Period, strategy_smma_period, 1);  // SMMA5[1]
    const double smma_2 = QM_SMMA(_Symbol, _Period, strategy_smma_period, 2);  // SMMA5[2]
    if(lwma_1 <= 0.0 || lwma_2 <= 0.0 || smma_1 <= 0.0 || smma_2 <= 0.0)
@@ -117,7 +171,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // --- Proximity STATE: price within proximity_pips of the 144-LWMA ---
-   const double close_1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
+   const double close_1 = QM_SMA(_Symbol, _Period, 1, 1, PRICE_CLOSE);
    if(close_1 <= 0.0)
       return false;
    const double prox_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_proximity_pips);
@@ -134,22 +188,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry <= 0.0)
       return false;
 
-   // --- Stop loss: structural low/high, then clamp to [min, max] pips ---
-   double sl = QM_StopStructure(_Symbol, side, entry, strategy_sl_lookback_bars);
-   const double min_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_min_sl_pips);
-   const double max_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_sl_pips);
-
-   double sl_dist = (sl > 0.0) ? MathAbs(entry - sl) : 0.0;
-   // Clamp the stop distance; fall back to min distance if structure unusable.
-   if(sl_dist < min_dist || sl <= 0.0)
-      sl_dist = min_dist;
-   if(max_dist > 0.0 && sl_dist > max_dist)
-      sl_dist = max_dist;
-   if(sl_dist <= 0.0)
+   // --- Stop loss: confirmed fractal low/high, then clamp to [min, max] pips ---
+   double fractal_stop = 0.0;
+   if(!FindFractalStop(side, entry, strategy_sl_lookback_bars, fractal_stop))
       return false;
 
-   sl = QM_StopFixedPips(_Symbol, side, entry,
-                         (int)MathRound(sl_dist / QM_StopRulesPipsToPriceDistance(_Symbol, 1)));
+   const double sl = ClampStopPrice(side, entry, fractal_stop);
    if(sl <= 0.0)
       return false;
 
@@ -163,6 +207,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = cross_up ? "lwma_smma_cross_long" : "lwma_smma_cross_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
