@@ -4,7 +4,7 @@
 **Slug:** tc-m5-s12-ema-laguerre
 **Source:** 40a4454c-64ff-5015-8538-9f7b32abc0e9 (see `sources/tc-20-forex-strategies-m5-367145560`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-20
+**Last revised:** 2026-06-21
 
 ---
 

@@ -4,7 +4,7 @@
 **Slug:** `fps-ema25-50-100-m1`
 **Source:** `c6118ff9-b7f0-5cb1-95cd-7cb0fff06f35` (see `strategy-seeds/sources/c6118ff9-b7f0-5cb1-95cd-7cb0fff06f35/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-20
+**Last revised:** 2026-06-21
 
 ---
 
@@ -98,4 +98,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-20 | Initial build from card | 08500eb3-9657-4ff5-9292-9277305c05b5 |
+| v1 | 2026-06-21 | Initial build from card | 08500eb3-9657-4ff5-9292-9277305c05b5 |

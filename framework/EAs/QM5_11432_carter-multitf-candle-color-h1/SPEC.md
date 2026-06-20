@@ -4,7 +4,7 @@
 **Slug:** `carter-multitf-candle-color-h1`
 **Source:** `96b1d6a2-d0af-5fa2-abbc-865a08f82ef2` (see `strategy-seeds/sources/96b1d6a2-d0af-5fa2-abbc-865a08f82ef2/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-20
+**Last revised:** 2026-06-21
 
 ---
 

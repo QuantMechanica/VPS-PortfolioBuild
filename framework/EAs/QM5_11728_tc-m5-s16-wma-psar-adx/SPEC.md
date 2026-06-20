@@ -4,7 +4,7 @@
 **Slug:** tc-m5-s16-wma-psar-adx
 **Source:** 40a4454c-64ff-5015-8538-9f7b32abc0e9 (see `strategy-seeds/sources/40a4454c-64ff-5015-8538-9f7b32abc0e9/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-20
+**Last revised:** 2026-06-21
 
 ---
 
@@ -92,4 +92,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-20 | Initial build from card | 463829e8-5e02-46b6-be00-ecbe719275d8 |
+| v1 | 2026-06-21 | Initial build from card | 463829e8-5e02-46b6-be00-ecbe719275d8 |

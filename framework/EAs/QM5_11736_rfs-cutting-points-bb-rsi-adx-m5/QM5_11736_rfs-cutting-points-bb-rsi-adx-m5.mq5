@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11736 rfs-cutting-points-bb-rsi-adx-m5"
+#property description "QM5_11736 RFS Cutting Points BB RSI ADX M5"
 
 #include <QM/QM_Common.mqh>
 
@@ -80,7 +80,10 @@ input double strategy_rsi_oversold      = 30.0;
 input double strategy_rsi_overbought    = 70.0;
 input int    strategy_adx_period        = 14;
 input double strategy_adx_max           = 30.0;
-input int    strategy_sl_buffer_pips    = 3;
+input int    strategy_sl_pips           = 3;
+input int    strategy_trade_start_hour  = 0;
+input int    strategy_trade_end_hour    = 24;
+input int    strategy_max_spread_pips   = 0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -90,15 +93,29 @@ input int    strategy_sl_buffer_pips    = 3;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   if(_Period != PERIOD_M5)
-      return true;
+   if(strategy_trade_start_hour != 0 || strategy_trade_end_hour != 24)
+     {
+      MqlDateTime dt;
+      TimeToStruct(TimeCurrent(), dt);
+      const int start_hour = MathMax(0, MathMin(23, strategy_trade_start_hour));
+      const int end_hour = MathMax(0, MathMin(24, strategy_trade_end_hour));
+      bool in_session = true;
+      if(start_hour < end_hour)
+         in_session = (dt.hour >= start_hour && dt.hour < end_hour);
+      else if(start_hour > end_hour)
+         in_session = (dt.hour >= start_hour || dt.hour < end_hour);
+      if(!in_session)
+         return true;
+     }
 
-   if(strategy_bb_period <= 1 || strategy_bb_deviation <= 0.0 ||
-      strategy_rsi_period <= 1 || strategy_adx_period <= 1 ||
-      strategy_rsi_oversold <= 0.0 ||
-      strategy_rsi_overbought <= strategy_rsi_oversold ||
-      strategy_adx_max <= 0.0 || strategy_sl_buffer_pips <= 0)
-      return true;
+   if(strategy_max_spread_pips > 0)
+     {
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double max_spread = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_spread_pips);
+      if(ask > 0.0 && bid > 0.0 && ask > bid && max_spread > 0.0 && (ask - bid) > max_spread)
+         return true;
+     }
 
    return false;
   }
@@ -116,62 +133,56 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
+   if(strategy_bb_period <= 1 || strategy_rsi_period <= 1 || strategy_adx_period <= 1 ||
+      strategy_bb_deviation <= 0.0 || strategy_sl_pips <= 0)
+      return false;
+
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
-
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, tf, 1, 2, rates); // perf-allowed: two closed-bar closes; Strategy_EntrySignal is framework new-bar gated.
-   if(copied != 2 || rates[0].close <= 0.0 || rates[1].close <= 0.0)
-      return false;
-
-   const double close_1 = rates[0].close;
-   const double close_2 = rates[1].close;
-
-   const double lower_1 = QM_BB_Lower(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
-   const double lower_2 = QM_BB_Lower(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 2, PRICE_CLOSE);
-   const double upper_1 = QM_BB_Upper(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
-   const double upper_2 = QM_BB_Upper(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 2, PRICE_CLOSE);
-   const double middle_1 = QM_BB_Middle(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
-   const double rsi_2 = QM_RSI(_Symbol, tf, strategy_rsi_period, 2, PRICE_CLOSE);
-   const double adx_2 = QM_ADX(_Symbol, tf, strategy_adx_period, 2);
-   if(lower_1 <= 0.0 || lower_2 <= 0.0 || upper_1 <= 0.0 ||
-      upper_2 <= 0.0 || middle_1 <= 0.0 || rsi_2 <= 0.0 || adx_2 <= 0.0)
-      return false;
-
-   const double buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_buffer_pips);
-   if(buffer <= 0.0)
-      return false;
-
+   const double lower_setup = QM_BB_Lower(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 2, PRICE_CLOSE);
+   const double upper_setup = QM_BB_Upper(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 2, PRICE_CLOSE);
+   const double lower_return = QM_BB_Lower(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
+   const double upper_return = QM_BB_Upper(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
+   const double middle_return = QM_BB_Middle(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
+   const double rsi_setup = QM_RSI(_Symbol, tf, strategy_rsi_period, 2, PRICE_CLOSE);
+   const double adx_setup = QM_ADX(_Symbol, tf, strategy_adx_period, 2);
+   // perf-allowed: single closed-bar close reads implement the card's return-close trigger; no QM close reader exists.
+   const double close_setup = iClose(_Symbol, tf, 2);
+   const double close_return = iClose(_Symbol, tf, 1);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
+   const double sl_buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+
+   if(lower_setup <= 0.0 || upper_setup <= 0.0 || lower_return <= 0.0 ||
+      upper_return <= 0.0 || middle_return <= 0.0 || close_setup <= 0.0 ||
+      close_return <= 0.0 || sl_buffer <= 0.0 || point <= 0.0)
       return false;
 
-   if(close_2 <= lower_2 &&
-      rsi_2 < strategy_rsi_oversold &&
-      adx_2 < strategy_adx_max &&
-      close_1 > lower_1)
+   if(close_setup <= lower_setup && rsi_setup < strategy_rsi_oversold &&
+      adx_setup < strategy_adx_max && close_return > lower_return && ask > 0.0)
      {
-      req.type = QM_BUY;
-      req.sl = QM_StopRulesNormalizePrice(_Symbol, lower_1 - buffer);
-      req.tp = QM_StopRulesNormalizePrice(_Symbol, middle_1);
-      req.reason = "CUTTING_POINTS_LONG_RETURN_BB";
-      if(req.sl <= 0.0 || req.sl >= ask || req.tp <= ask)
+      const double sl = QM_StopRulesNormalizePrice(_Symbol, lower_return - sl_buffer);
+      const double tp = QM_StopRulesNormalizePrice(_Symbol, middle_return);
+      if(sl <= 0.0 || tp <= 0.0 || sl >= ask - point || tp <= ask + point)
          return false;
+      req.type = QM_BUY;
+      req.sl = sl;
+      req.tp = tp;
+      req.reason = "cutting_points_bb_rsi_adx_long";
       return true;
      }
 
-   if(close_2 >= upper_2 &&
-      rsi_2 > strategy_rsi_overbought &&
-      adx_2 < strategy_adx_max &&
-      close_1 < upper_1)
+   if(close_setup >= upper_setup && rsi_setup > strategy_rsi_overbought &&
+      adx_setup < strategy_adx_max && close_return < upper_return && bid > 0.0)
      {
-      req.type = QM_SELL;
-      req.sl = QM_StopRulesNormalizePrice(_Symbol, upper_1 + buffer);
-      req.tp = QM_StopRulesNormalizePrice(_Symbol, middle_1);
-      req.reason = "CUTTING_POINTS_SHORT_RETURN_BB";
-      if(req.sl <= 0.0 || req.sl <= bid || req.tp >= bid)
+      const double sl = QM_StopRulesNormalizePrice(_Symbol, upper_return + sl_buffer);
+      const double tp = QM_StopRulesNormalizePrice(_Symbol, middle_return);
+      if(sl <= 0.0 || tp <= 0.0 || sl <= bid + point || tp >= bid - point)
          return false;
+      req.type = QM_SELL;
+      req.sl = sl;
+      req.tp = tp;
+      req.reason = "cutting_points_bb_rsi_adx_short";
       return true;
      }
 
@@ -183,16 +194,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 void Strategy_ManageOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
+   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   const double mid = QM_BB_Middle(_Symbol, tf, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const double middle = QM_BB_Middle(_Symbol, (ENUM_TIMEFRAMES)_Period,
-                                      strategy_bb_period, strategy_bb_deviation,
-                                      1, PRICE_CLOSE);
-   if(magic <= 0 || point <= 0.0 || middle <= 0.0)
-      return;
-
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(bid <= 0.0 || ask <= 0.0)
+   if(magic <= 0 || mid <= 0.0 || point <= 0.0)
       return;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -205,19 +210,29 @@ void Strategy_ManageOpenPosition()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const double current_tp = PositionGetDouble(POSITION_TP);
-      const double target_tp = QM_StopRulesNormalizePrice(_Symbol, middle);
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double target_tp = QM_StopRulesNormalizePrice(_Symbol, mid);
       if(target_tp <= 0.0)
          continue;
 
-      if(position_type == POSITION_TYPE_BUY && target_tp > bid &&
-         (current_tp <= 0.0 || MathAbs(current_tp - target_tp) > point * 0.5))
-         QM_TM_MoveTP(ticket, target_tp, "bb_midband_dynamic_tp");
+      if(pos_type == POSITION_TYPE_BUY)
+        {
+         if(bid <= 0.0 || target_tp <= bid + point)
+            continue;
+        }
+      else if(pos_type == POSITION_TYPE_SELL)
+        {
+         if(ask <= 0.0 || target_tp >= ask - point)
+            continue;
+        }
+      else
+         continue;
 
-      if(position_type == POSITION_TYPE_SELL && target_tp < ask &&
-         (current_tp <= 0.0 || MathAbs(current_tp - target_tp) > point * 0.5))
-         QM_TM_MoveTP(ticket, target_tp, "bb_midband_dynamic_tp");
+      if(current_tp <= 0.0 || MathAbs(current_tp - target_tp) > point * 0.5)
+         QM_TM_MoveTP(ticket, target_tp, "bb_middle_dynamic_tp");
      }
   }
 
@@ -225,32 +240,6 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const int magic = QM_FrameworkMagic();
-   const double middle = QM_BB_Middle(_Symbol, (ENUM_TIMEFRAMES)_Period,
-                                      strategy_bb_period, strategy_bb_deviation,
-                                      1, PRICE_CLOSE);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(magic <= 0 || middle <= 0.0 || bid <= 0.0 || ask <= 0.0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(position_type == POSITION_TYPE_BUY && bid >= middle)
-         return true;
-      if(position_type == POSITION_TYPE_SELL && ask <= middle)
-         return true;
-     }
-
    return false;
   }
 
@@ -259,7 +248,7 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false; // defer to QM_NewsAllowsTrade(...)
+   return false; // framework enforces the card's 30-minute high-impact news blackout
   }
 
 // -----------------------------------------------------------------------------
