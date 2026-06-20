@@ -11291,8 +11291,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11550,carter-t-m5-ema50-100-macd-partial,0,EURUSD.DWX,115500000,2026-06-18,Claude,reserved
 11551,carter-t-m5-ema40-80-cci21,0,EURUSD.DWX,115510000,2026-06-18,Claude,reserved
 11552,carter-t-m5-ema5-10-mtf4h-rsi-stoch-macd,0,EURUSD.DWX,115520000,2026-06-18,Claude,reserved
-11553,carter-t-m5-cci14-macd1269,0,EURUSD.DWX,115530000,2026-06-18,Claude,reserved
-11553,carter-t-m5-cci14-macd1269,1,GBPUSD.DWX,115530001,2026-06-18,Claude,reserved
+11553,carter-t-m5-cci14-macd1269,0,EURUSD.DWX,115530000,2026-06-18,Development,active
+11553,carter-t-m5-cci14-macd1269,1,GBPUSD.DWX,115530001,2026-06-18,Development,active
 11557,carter-t-m5-ema20-macd-buystop-partial,0,EURUSD.DWX,115570000,2026-06-18,Claude,reserved
 11558,carter-t-m5-psar-macd64128-ema100,0,EURUSD.DWX,115580000,2026-06-18,Claude,reserved
 11558,carter-t-m5-psar-macd64128-ema100,1,GBPUSD.DWX,115580001,2026-06-18,Claude,reserved
@@ -11624,7 +11624,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11709,anon-h4-macd513-extreme-reversal,1,GBPUSD.DWX,117090001,2026-06-18,Claude,reserved
 11713,blade-macd-divergence-stoch,0,GBPUSD.DWX,117130000,2026-06-18,Claude,reserved
 11713,blade-macd-divergence-stoch,1,EURUSD.DWX,117130001,2026-06-18,Claude,reserved
-11714,chelo-gbpjpy-triple-bb50-scalp,0,GBPJPY.DWX,117140000,2026-06-18,Claude,reserved
+11714,chelo-gbpjpy-triple-bb50-scalp,0,GBPJPY.DWX,117140000,2026-06-20,Development,active
 11715,tradingwalk-abc-fib-extension,0,GBPJPY.DWX,117150000,2026-06-18,Claude,reserved
 11715,tradingwalk-abc-fib-extension,1,EURUSD.DWX,117150001,2026-06-18,Claude,reserved
 11715,tradingwalk-abc-fib-extension,2,GBPUSD.DWX,117150002,2026-06-18,Claude,reserved
