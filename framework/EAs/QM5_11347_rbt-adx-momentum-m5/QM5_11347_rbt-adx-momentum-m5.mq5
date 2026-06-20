@@ -1,46 +1,45 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11347 rbt-adx-momentum-m5 — RoboForex ADX + Momentum M5 scalp"
+#property description "QM5_11347 RoboForex ADX + Momentum M5 scalp"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_Signals.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11347 rbt-adx-momentum-m5
+// QuantMechanica V5 EA SKELETON
 // -----------------------------------------------------------------------------
-// Source: RoboForex "Strategy ADX and Momentum" (institutional, R1 CONDITIONAL).
-// Card: artifacts/cards_approved/QM5_11347_rbt-adx-momentum-m5.md (g0_status APPROVED).
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails). The framework provides:
 //
-// Mechanics (M5, closed-bar reads at shift 1; one position per magic):
-//   Trigger EVENT : Momentum(period) crosses the 100 baseline (one event/bar).
-//                   LONG  = Momentum crosses UP through 100 (mom@2<=100, mom@1>100).
-//                   SHORT = Momentum crosses DOWN through 100 (mom@2>=100, mom@1<100).
-//   Trend STATE   : ADX(period) > adx_threshold (strong trend present).
-//   Direction STATE: +DI > -DI for LONG  /  -DI > +DI for SHORT  (closed bar).
-//   Macro STATE   : optional EMA(ema_period) gate — price above EMA for LONG,
-//                   below for SHORT (input ema_filter, default OFF per card).
-//   Session STATE : trade only inside London+NY (default UTC 13:00-22:00, card
-//                   "GMT"). Window evaluated in UTC via QM_BrokerToUTC so the
-//                   broker DST offset (GMT+2/+3) cannot drift it into dead hours.
-//   Stop          : fixed sl_pips from entry (scale-correct via pip factor).
-//   Take profit   : fixed tp_pips from entry, expressed as an RR multiple of the
-//                   stop distance so it stays scale-correct on 5-digit / JPY.
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
+//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
+//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
+//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
+//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
+//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
+//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
 //
-// DWX-correctness notes:
-//   - Momentum CROSS is the single EVENT; ADX/DI/EMA are confirming STATES, so we
-//     never require two fresh crosses on the same bar (zero-trade trap, inv #4).
-//   - Spread guard fails OPEN on .DWX zero modeled spread (inv #1): only a
-//     genuinely wide spread > spread_cap_pips blocks.
-//   - No swap gate (inv #2). No external-macro CSV (inv #11). Pip-scaled
-//     SL/TP via the framework pip-factor helpers (inv #14).
-//
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything else
-// is framework wiring and MUST stay intact.
+// DO NOT
+//   - Write per-EA IsNewBar() — use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//     use the QM_* readers above. The framework pools handles and releases them
+//     on shutdown.
+//   - CopyRates over warmup windows on every tick. If you genuinely need raw
+//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
+//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
+//     to magic_numbers.csv, run:
+//         python framework/scripts/update_magic_resolver.py
+//     This is idempotent and preserves all rows.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 11347;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -49,10 +48,16 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
+//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -60,160 +65,151 @@ input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_adx_period        = 14;     // ADX + DI period
-input double strategy_adx_threshold     = 25.0;   // ADX strong-trend floor
-input int    strategy_mom_period        = 14;     // Momentum period
-input double strategy_mom_baseline      = 100.0;  // Momentum cross baseline
-input bool   strategy_ema_filter        = false;  // optional EMA macro gate (card: optional)
-input int    strategy_ema_period        = 55;     // EMA period for the macro gate
-input int    strategy_sl_pips           = 6;      // fixed stop, pips (card 5-7 midpoint)
-input int    strategy_tp_pips           = 15;     // fixed target, pips (card 14-16 midpoint)
-input int    strategy_session_start_utc = 13;     // London+NY window start (UTC/GMT)
-input int    strategy_session_end_utc   = 22;     // London+NY window end (UTC/GMT)
-input double strategy_spread_cap_pips   = 3.0;    // skip genuinely wide spread (card cap)
+input int    strategy_adx_period        = 14;
+input double strategy_adx_threshold     = 25.0;
+input int    strategy_momentum_period   = 14;
+input double strategy_momentum_level    = 100.0;
+input bool   strategy_ema55_filter      = true;
+input int    strategy_ema_period        = 55;
+input int    strategy_stop_pips         = 6;
+input int    strategy_take_pips         = 15;
+input int    strategy_spread_cap_pips   = 3;
+input int    strategy_session_start_gmt = 13;
+input int    strategy_session_end_gmt   = 22;
 
 // -----------------------------------------------------------------------------
-// Strategy hooks
+// Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate: spread guard only. Session/signal work is on the
-// closed-bar path in Strategy_EntrySignal. Fail-OPEN on .DWX zero spread.
+// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
+// regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   // No Trade Filter (time, spread, news): news is handled by the framework;
+   // this hook applies the card's GMT session and spread cap.
+   const datetime utc_now = QM_BrokerToUTC(TimeCurrent());
+   MqlDateTime utc_dt;
+   TimeToStruct(utc_now, utc_dt);
+
+   const int now_minutes = utc_dt.hour * 60 + utc_dt.min;
+   const int start_minutes = strategy_session_start_gmt * 60;
+   const int end_minutes = strategy_session_end_gmt * 60;
+   if(now_minutes < start_minutes || now_minutes >= end_minutes)
+      return true;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
+      return true;
 
-   const double spread = ask - bid;
-   if(spread <= 0.0)
-      return false; // zero/negative modeled spread on .DWX — never block
-
-   // Convert the pip cap to a price distance so it scales on 5-digit / JPY.
-   const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
-   if(cap_distance <= 0.0)
-      return false;
-
-   // Only a genuinely wide spread blocks.
-   if(spread > cap_distance)
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(spread_cap > 0.0 && ask > bid && (ask - bid) > spread_cap)
       return true;
 
    return false;
   }
 
-// Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
+// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+   // Trade Entry: closed-bar ADX/DI + Momentum confirmation, market entry.
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(strategy_adx_period <= 0 || strategy_momentum_period <= 0 ||
+      strategy_stop_pips <= 0 || strategy_take_pips <= 0)
       return false;
 
-   // --- Session STATE: London+NY only, evaluated in UTC (card "GMT"). ---
-   const datetime broker_now = TimeCurrent();
-   const datetime utc_now    = QM_BrokerToUTC(broker_now);
-   if(QM_Sig_Session(utc_now, strategy_session_start_utc, strategy_session_end_utc) != 1)
-      return false;
-
-   // --- Trend STATE: ADX above the strong-trend threshold (closed bar). ---
    const double adx = QM_ADX(_Symbol, _Period, strategy_adx_period, 1);
-   if(adx <= 0.0)
-      return false;
-   if(!(adx > strategy_adx_threshold))
-      return false;
-
-   // --- Direction STATE: +DI vs -DI (closed bar). ---
-   const double plus_di  = QM_ADX_PlusDI(_Symbol, _Period, strategy_adx_period, 1);
+   const double plus_di = QM_ADX_PlusDI(_Symbol, _Period, strategy_adx_period, 1);
    const double minus_di = QM_ADX_MinusDI(_Symbol, _Period, strategy_adx_period, 1);
-   if(plus_di <= 0.0 || minus_di <= 0.0)
+   const double momentum = QM_Momentum(_Symbol, _Period, strategy_momentum_period, 1, PRICE_CLOSE);
+   if(adx <= 0.0 || plus_di <= 0.0 || minus_di <= 0.0 || momentum <= 0.0)
       return false;
 
-   // --- Trigger EVENT: Momentum crosses the baseline (one fresh event/bar). ---
-   const double mom_now  = QM_Momentum(_Symbol, _Period, strategy_mom_period, 1);
-   const double mom_prev = QM_Momentum(_Symbol, _Period, strategy_mom_period, 2);
-   if(mom_now <= 0.0 || mom_prev <= 0.0)
+   const bool long_signal =
+      adx > strategy_adx_threshold &&
+      plus_di > strategy_adx_threshold &&
+      plus_di > minus_di &&
+      momentum > strategy_momentum_level;
+
+   const bool short_signal =
+      adx > strategy_adx_threshold &&
+      minus_di > strategy_adx_threshold &&
+      minus_di > plus_di &&
+      momentum < strategy_momentum_level;
+
+   if(!long_signal && !short_signal)
       return false;
 
-   const bool mom_cross_up   = (mom_prev <= strategy_mom_baseline && mom_now > strategy_mom_baseline);
-   const bool mom_cross_down = (mom_prev >= strategy_mom_baseline && mom_now < strategy_mom_baseline);
-
-   // --- Optional macro STATE: price vs EMA (closed bar). ---
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0)
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   double ema = 0.0;
-   if(strategy_ema_filter)
+   if(strategy_ema55_filter)
      {
-      ema = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
+      const double ema = QM_EMA(_Symbol, _Period, strategy_ema_period, 1, PRICE_CLOSE);
       if(ema <= 0.0)
+         return false;
+      if(long_signal && bid <= ema)
+         return false;
+      if(short_signal && ask >= ema)
          return false;
      }
 
-   bool go_long  = false;
-   bool go_short = false;
-
-   // LONG: momentum crosses up + strong trend + +DI dominance (+ optional EMA).
-   if(mom_cross_up && (plus_di > minus_di))
-     {
-      if(!strategy_ema_filter || close1 > ema)
-         go_long = true;
-     }
-   // SHORT: momentum crosses down + strong trend + -DI dominance (+ optional EMA).
-   else if(mom_cross_down && (minus_di > plus_di))
-     {
-      if(!strategy_ema_filter || close1 < ema)
-         go_short = true;
-     }
-
-   if(!go_long && !go_short)
+   const QM_OrderType side = long_signal ? QM_BUY : QM_SELL;
+   const double entry = long_signal ? ask : bid;
+   const double sl = QM_StopFixedPips(_Symbol, side, entry, strategy_stop_pips);
+   const double tp = QM_TakeFixedPips(_Symbol, side, entry, strategy_take_pips);
+   if(sl <= 0.0 || tp <= 0.0)
       return false;
 
-   const QM_OrderType side = go_long ? QM_BUY : QM_SELL;
-
-   const double entry = (side == QM_BUY)
-                        ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                        : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
-      return false;
-
-   // Fixed-pip stop; fixed-pip target expressed as an RR multiple of the stop
-   // distance so both stay scale-correct on 5-digit / JPY symbols.
-   const double sl = QM_StopFixedPips(_Symbol, side, entry, strategy_sl_pips);
-   if(sl <= 0.0)
-      return false;
-   const double rr = (strategy_sl_pips > 0)
-                     ? ((double)strategy_tp_pips / (double)strategy_sl_pips)
-                     : 0.0;
-   const double tp = QM_TakeRR(_Symbol, side, entry, sl, rr);
-   if(tp <= 0.0)
-      return false;
-
-   req.type   = side;
-   req.price  = 0.0;   // framework fills market price at send
-   req.sl     = sl;
-   req.tp     = tp;
-   req.reason = go_long ? "adx_mom_long" : "adx_mom_short";
+   req.type = side;
+   req.price = 0.0;
+   req.sl = sl;
+   req.tp = tp;
+   req.reason = long_signal ? "ADX_MOMENTUM_LONG" : "ADX_MOMENTUM_SHORT";
    return true;
   }
 
-// Fixed SL/TP only — no active trade management for this scalp.
+// Called every tick when an open position exists for this EA's magic.
+// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
+   // Trade Management: the card specifies fixed SL/TP only.
   }
 
-// No discretionary exit beyond the fixed SL/TP.
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
+   // Trade Close: exits are handled by fixed SL/TP and framework Friday close.
    return false;
   }
 
-// Defer to the central news filter.
+// Optional news-filter override. Return TRUE to suppress trading regardless
+// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
+// custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false;
+   // News Filter Hook: no strategy-specific override; central filter decides.
+   return false; // defer to QM_NewsAllowsTrade(...)
   }
 
 // -----------------------------------------------------------------------------
@@ -258,6 +254,8 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults.
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -271,8 +269,10 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -287,9 +287,14 @@ void OnTick()
         }
      }
 
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
 
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
@@ -309,6 +314,8 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
   {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 

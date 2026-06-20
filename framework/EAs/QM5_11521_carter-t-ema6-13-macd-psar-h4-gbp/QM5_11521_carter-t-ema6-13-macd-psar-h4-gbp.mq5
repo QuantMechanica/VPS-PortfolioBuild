@@ -13,10 +13,9 @@
 //       (g0_status APPROVED).
 //
 // Mechanics (closed-bar reads at shift 1; one position per magic):
-//   Trigger EVENT : EMA(6) crosses EMA(13). One fresh cross per bar
-//                   (ema_fast vs ema_slow at shift 1 vs shift 2). This is the
-//                   single trigger — the other two are confirming STATES, so we
-//                   avoid the "two cross events on the same bar" zero-trade trap.
+//   Trigger EVENT : EMA(6) crosses EMA(13) within the last N closed bars.
+//                   N defaults to 3 per card. This is the single trigger; MACD
+//                   and PSAR are confirming states.
 //   MACD STATE    : LONG needs MACD main > 0 ; SHORT needs MACD main < 0.
 //   PSAR STATE    : LONG needs PSAR below the prior bar's low (dot under price);
 //                   SHORT needs PSAR above the prior bar's high (dot over price).
@@ -63,14 +62,35 @@ input int    strategy_macd_slow         = 26;     // MACD slow EMA
 input int    strategy_macd_signal       = 9;      // MACD signal EMA
 input double strategy_sar_step          = 0.02;   // ParabolicSAR acceleration step
 input double strategy_sar_max           = 0.2;    // ParabolicSAR acceleration max
+input int    strategy_ema_cross_lookback = 3;     // cross must occur within last N closed bars
 input int    strategy_sl_pips           = 40;     // stop distance in pips (GBPUSD H4 source)
 input double strategy_tp_rr             = 2.5;    // take = RR * stop (100/40 = 60/150 = 2.5)
 input bool   strategy_no_friday_entry   = true;   // source: no Friday entry
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input int    strategy_spread_cap_pips   = 20;     // source spread cap
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
+
+int Strategy_EmaCrossWithinLookback()
+  {
+   const int lookback = (strategy_ema_cross_lookback < 1) ? 1 : strategy_ema_cross_lookback;
+   for(int shift = 1; shift <= lookback; ++shift)
+     {
+      const double ema_fast_now = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, shift);
+      const double ema_slow_now = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, shift);
+      const double ema_fast_prev = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, shift + 1);
+      const double ema_slow_prev = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, shift + 1);
+      if(ema_fast_now <= 0.0 || ema_slow_now <= 0.0 || ema_fast_prev <= 0.0 || ema_slow_prev <= 0.0)
+         continue;
+
+      if(ema_fast_prev <= ema_slow_prev && ema_fast_now > ema_slow_now)
+         return +1;
+      if(ema_fast_prev >= ema_slow_prev && ema_fast_now < ema_slow_now)
+         return -1;
+     }
+   return 0;
+  }
 
 // Cheap O(1) per-tick gate. Spread guard only — signal work is on the closed-bar
 // path in Strategy_EntrySignal. Fail-open on .DWX zero modeled spread.
@@ -81,13 +101,13 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
-   if(stop_distance <= 0.0)
+   const double max_spread = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(max_spread <= 0.0)
       return false;
 
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread > max_spread)
       return true;
 
    return false;
@@ -96,6 +116,14 @@ bool Strategy_NoTradeFilter()
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -110,17 +138,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   // --- Trigger EVENT: EMA(6) crosses EMA(13) on the just-closed bar ---
-   const double ema_fast_1 = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 1);
-   const double ema_slow_1 = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 1);
-   const double ema_fast_2 = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 2);
-   const double ema_slow_2 = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 2);
-   if(ema_fast_1 <= 0.0 || ema_slow_1 <= 0.0 || ema_fast_2 <= 0.0 || ema_slow_2 <= 0.0)
-      return false;
-
-   const bool cross_up   = (ema_fast_2 <= ema_slow_2 && ema_fast_1 >  ema_slow_1);
-   const bool cross_down = (ema_fast_2 >= ema_slow_2 && ema_fast_1 <  ema_slow_1);
-   if(!cross_up && !cross_down)
+   // --- Trigger EVENT: EMA(6) crosses EMA(13) within the last N closed bars ---
+   const int cross_dir = Strategy_EmaCrossWithinLookback();
+   if(cross_dir == 0)
       return false;
 
    // --- Confirming STATE: MACD main side ---
@@ -134,8 +154,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(sar <= 0.0 || low1 <= 0.0 || high1 <= 0.0)
       return false;
 
-   const bool long_ok  = (cross_up   && macd > 0.0 && sar < low1);
-   const bool short_ok = (cross_down && macd < 0.0 && sar > high1);
+   const bool long_ok  = (cross_dir > 0 && macd > 0.0 && sar < low1);
+   const bool short_ok = (cross_dir < 0 && macd < 0.0 && sar > high1);
    if(!long_ok && !short_ok)
       return false;
 
