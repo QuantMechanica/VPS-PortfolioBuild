@@ -96,7 +96,7 @@ struct Strategy_OrderBlock
    double midpoint;
   };
 
-int g_last_closed_bar_signal = 0;
+int g_latest_signal_direction = 0;
 
 double Strategy_NormalizePrice(const double price)
   {
@@ -306,7 +306,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
-   g_last_closed_bar_signal = 0;
+   g_latest_signal_direction = 0;
 
    Strategy_OrderBlock bull;
    Strategy_OrderBlock bear;
@@ -342,7 +342,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       selected = bear;
      }
 
-   g_last_closed_bar_signal = direction;
+   g_latest_signal_direction = direction;
    if(direction == 0)
       return false;
 
@@ -367,16 +367,16 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   if(g_last_closed_bar_signal == 0)
+   if(g_latest_signal_direction == 0)
       return false;
 
    ENUM_POSITION_TYPE existing_type = POSITION_TYPE_BUY;
    if(!Strategy_HasOurOpenPosition(existing_type))
       return false;
 
-   if(existing_type == POSITION_TYPE_BUY && g_last_closed_bar_signal < 0)
+   if(existing_type == POSITION_TYPE_BUY && g_latest_signal_direction < 0)
       return true;
-   if(existing_type == POSITION_TYPE_SELL && g_last_closed_bar_signal > 0)
+   if(existing_type == POSITION_TYPE_SELL && g_latest_signal_direction > 0)
       return true;
    return false;
   }

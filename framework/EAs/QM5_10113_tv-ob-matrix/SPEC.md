@@ -4,7 +4,7 @@
 **Slug:** tv-ob-matrix
 **Source:** 30591366-874b-5bee-b47c-da2fca20b728 (see TradingView citation in approved card)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-12
+**Last revised:** 2026-06-20
 
 ---
 
@@ -94,4 +94,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-12 | Initial build from card | 0228baa6-00d0-4814-b597-0061445b8198 |
+| v1 | 2026-06-20 | Initial build from card | b6158d78-1412-49f4-ba6a-dc7b72e2ffbf |

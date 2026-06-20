@@ -4,17 +4,17 @@
 ; ea_slug:      tv-ob-matrix
 ; ea_version:   v5.0
 ; set_version:  s20260620-001
-; symbol:       GER40.DWX
+; symbol:       GDAXI.DWX
 ; timeframe:    M15
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   eb5c0dd2331fcdd17a0fab199a693b9848b2dbea9d517cc73755bb7af786bbcc
 ; author:       Development
 ; date:         2026-06-20
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
