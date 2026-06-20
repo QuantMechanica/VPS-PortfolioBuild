@@ -3,16 +3,16 @@
 ; ea_id:        10079
 ; ea_slug:      gh-victor-kumo
 ; ea_version:   v5.0
-; set_version:  s20260610-001
+; set_version:  s20260620-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   c18b5e422a8f14c11a6fd8c16ffed08926ab99ad7da7015d441cb437183594a7
+; build_hash:   0c79031d20efa4ca16320b8000001ef48d2d8fe20f3346e2c2225d33c6e05bfe
 ; author:       Development
-; date:         2026-06-10
+; date:         2026-06-20
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000
