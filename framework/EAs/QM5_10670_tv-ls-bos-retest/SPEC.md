@@ -4,7 +4,7 @@
 **Slug:** tv-ls-bos-retest
 **Source:** d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-20
 
 ---
 
@@ -54,7 +54,7 @@ The EA looks for a confirmed swing low or swing high, then waits for a closed ba
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | M15 |
+| Base timeframe | M15 for smoke; M1, M5, and M15 setfiles generated from the card's M1-M15 range |
 | Multi-timeframe refs | none |
 | Bar gating | QM_IsNewBar(_Symbol, PERIOD_CURRENT) (default) |
 
@@ -101,3 +101,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 |---|---|---|---|
 | v1 | 2026-05-31 | Initial build from card | 5da6fe9f-affa-46fd-b42c-89fec5bbe68d |
 | v2 | 2026-06-18 | Rebuild in place from card | 663949c9-095b-4cfe-b113-3203d0894c0b |
+| v3 | 2026-06-20 | Rebuild in place from card | 79e14aca-c2aa-4961-92a5-b159a6bb412d |
