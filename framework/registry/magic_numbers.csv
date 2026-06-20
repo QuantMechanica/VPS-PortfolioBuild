@@ -11124,11 +11124,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11477,williams-l-fakeout-day-d1,2,USDJPY.DWX,114770002,2026-06-18,Claude,reserved
 11477,williams-l-fakeout-day-d1,3,AUDUSD.DWX,114770003,2026-06-18,Claude,reserved
 11477,williams-l-fakeout-day-d1,4,USDCAD.DWX,114770004,2026-06-18,Claude,reserved
-11481,carter-t-ny-open-box-m5,0,GBPJPY.DWX,114810000,2026-06-18,Claude,reserved
-11481,carter-t-ny-open-box-m5,1,GBPUSD.DWX,114810001,2026-06-18,Claude,reserved
-11481,carter-t-ny-open-box-m5,2,EURUSD.DWX,114810002,2026-06-18,Claude,reserved
-11481,carter-t-ny-open-box-m5,3,USDJPY.DWX,114810003,2026-06-18,Claude,reserved
-11481,carter-t-ny-open-box-m5,4,AUDUSD.DWX,114810004,2026-06-18,Claude,reserved
+11481,carter-t-ny-open-box-m5,0,GBPJPY.DWX,114810000,2026-06-20,Development,active
+11481,carter-t-ny-open-box-m5,1,GBPUSD.DWX,114810001,2026-06-20,Development,active
+11481,carter-t-ny-open-box-m5,2,EURUSD.DWX,114810002,2026-06-20,Development,active
+11481,carter-t-ny-open-box-m5,3,USDJPY.DWX,114810003,2026-06-20,Development,active
+11481,carter-t-ny-open-box-m5,4,AUDUSD.DWX,114810004,2026-06-20,Development,active
 11482,singh-m-good-morning-asia-d1,0,USDJPY.DWX,114820000,2026-06-18,Claude,reserved
 11484,carter-t-40-80-ema-cci-zero-m5,0,EURUSD.DWX,114840000,2026-06-18,Claude,reserved
 11484,carter-t-40-80-ema-cci-zero-m5,1,GBPUSD.DWX,114840001,2026-06-18,Claude,reserved
@@ -13100,3 +13100,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9286,mql5-gator-ad-range,0,EURGBP.DWX,92860000,2026-06-20,Development,active
 9286,mql5-gator-ad-range,1,GBPJPY.DWX,92860001,2026-06-20,Development,active
 9286,mql5-gator-ad-range,2,EURUSD.DWX,92860002,2026-06-20,Development,active
+9288,mql5-gator-ad-mtf,0,GBPJPY.DWX,92880000,2026-06-20,Development,active
+9288,mql5-gator-ad-mtf,1,EURJPY.DWX,92880001,2026-06-20,Development,active
+9288,mql5-gator-ad-mtf,2,UK100.DWX,92880002,2026-06-20,Development,active

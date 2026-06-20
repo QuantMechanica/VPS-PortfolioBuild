@@ -83,22 +83,30 @@ double Strategy_PipDistance(const int pips)
 
 void Strategy_AdvanceState_OnNewBar()
   {
-   // perf-allowed: SMI and Heiken Ashi are bespoke card indicators not exposed
-   // by the framework; this block runs once per closed bar only.
-   const double o1 = iOpen(_Symbol, _Period, 1);
-   const double h1 = iHigh(_Symbol, _Period, 1);
-   const double l1 = iLow(_Symbol, _Period, 1);
-   const double c1 = iClose(_Symbol, _Period, 1);
+   // SMI and Heiken Ashi are bespoke card indicators; this block runs once per closed bar only.
+   const int bars_needed = MathMax(smi_hl_period, 2);
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, _Period, 1, bars_needed, rates); // perf-allowed
+   if(copied < bars_needed)
+      return;
+
+   const double o1 = rates[0].open;
+   const double h1 = rates[0].high;
+   const double l1 = rates[0].low;
+   const double c1 = rates[0].close;
    if(o1 <= 0.0 || h1 <= 0.0 || l1 <= 0.0 || c1 <= 0.0)
       return;
 
-   const int hh_idx = iHighest(_Symbol, _Period, MODE_HIGH, smi_hl_period, 1);
-   const int ll_idx = iLowest(_Symbol, _Period, MODE_LOW, smi_hl_period, 1);
-   if(hh_idx < 0 || ll_idx < 0)
-      return;
-
-   const double hh = iHigh(_Symbol, _Period, hh_idx);
-   const double ll = iLow(_Symbol, _Period, ll_idx);
+   double hh = -DBL_MAX;
+   double ll = DBL_MAX;
+   for(int i = 0; i < smi_hl_period; ++i)
+     {
+      if(rates[i].high > hh)
+         hh = rates[i].high;
+      if(rates[i].low < ll)
+         ll = rates[i].low;
+     }
    if(hh <= 0.0 || ll <= 0.0 || hh <= ll)
       return;
 
@@ -213,8 +221,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const double ema_fast_1 = QM_EMA(_Symbol, _Period, ema_fast_period, 1);
    const double ema_slow_1 = QM_EMA(_Symbol, _Period, ema_slow_period, 1);
+   const double ema_fast_2 = QM_EMA(_Symbol, _Period, ema_fast_period, 2);
+   const double ema_slow_2 = QM_EMA(_Symbol, _Period, ema_slow_period, 2);
    const double ema_trend_1 = QM_EMA(_Symbol, _Period, ema_trend_period, 1);
-   if(ema_fast_1 <= 0.0 || ema_slow_1 <= 0.0 || ema_trend_1 <= 0.0)
+   if(ema_fast_1 <= 0.0 || ema_slow_1 <= 0.0 || ema_fast_2 <= 0.0 || ema_slow_2 <= 0.0 || ema_trend_1 <= 0.0)
       return false;
 
    const double stoch_1 = QM_Stoch_K(_Symbol, _Period, stoch_k_period, stoch_d_period, stoch_slowing, 1);
@@ -232,7 +242,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const bool smi_short = ((smi_2 >= smi_extreme && smi_1 < smi_2) ||
                            (smi_2 >= 0.0 && smi_1 < 0.0));
 
-   if(smi_long && ema_fast_1 > ema_slow_1 && ha_white && stoch_long)
+   const bool ema_cross_long = (ema_fast_1 > ema_slow_1 && ema_fast_2 <= ema_slow_2);
+   const bool ema_cross_short = (ema_fast_1 < ema_slow_1 && ema_fast_2 >= ema_slow_2);
+
+   if(smi_long && ema_cross_long && ha_white && stoch_long)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
@@ -248,7 +261,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return true;
      }
 
-   if(smi_short && ema_fast_1 < ema_slow_1 && ha_red && stoch_short)
+   if(smi_short && ema_cross_short && ha_red && stoch_short)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(entry <= 0.0)
