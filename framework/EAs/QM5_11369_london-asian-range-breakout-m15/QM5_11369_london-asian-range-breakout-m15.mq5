@@ -47,7 +47,7 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE60_POST60;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
@@ -131,7 +131,7 @@ bool InAsianWindow(const int hour)
 // -----------------------------------------------------------------------------
 void AdvanceState_OnNewBar()
   {
-   const datetime t1 = iTime(_Symbol, _Period, 1); // open time of the just-closed bar
+   const datetime t1 = iTime(_Symbol, _Period, 1); // perf-allowed: closed-bar structural session state
    if(t1 <= 0)
       return;
 
@@ -160,7 +160,7 @@ void AdvanceState_OnNewBar()
       bool entered = false;
       for(int s = 2; s <= max_scan; ++s)
         {
-         const datetime ts = iTime(_Symbol, _Period, s);
+         const datetime ts = iTime(_Symbol, _Period, s); // perf-allowed: bounded once/day box build
          if(ts <= 0)
             break;
          const int hs = BrokerHour(ts);
@@ -168,7 +168,7 @@ void AdvanceState_OnNewBar()
            {
             entered = true;
             const double bh = iHigh(_Symbol, _Period, s); // perf-allowed: bounded once/day box build
-            const double bl = iLow(_Symbol, _Period, s);
+            const double bl = iLow(_Symbol, _Period, s);  // perf-allowed: bounded once/day box build
             if(bh <= 0.0 || bl <= 0.0)
                continue;
             if(!found)
@@ -227,6 +227,14 @@ bool Strategy_NoTradeFilter()
 // and AdvanceState_OnNewBar() has already run for this closed bar.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -236,7 +244,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(g_breakout_done)
       return false; // only the first breakout per day
 
-   const datetime t1 = iTime(_Symbol, _Period, 1); // breakout-candidate = just-closed bar
+   const datetime t1 = iTime(_Symbol, _Period, 1); // perf-allowed: single closed-bar breakout timestamp
    if(t1 <= 0)
       return false;
 
@@ -249,9 +257,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(strategy_skip_monday && BrokerDayOfWeek(t1) == 1) // Mon=1
       return false;
 
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   const double high1  = iHigh(_Symbol, _Period, 1);
-   const double low1   = iLow(_Symbol, _Period, 1);
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar breakout read
+   const double high1  = iHigh(_Symbol, _Period, 1);  // perf-allowed: single closed-bar breakout read
+   const double low1   = iLow(_Symbol, _Period, 1);   // perf-allowed: single closed-bar breakout read
    if(close1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0)
       return false;
 

@@ -10931,11 +10931,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11451,vegas-wave-ema144ema169-fractal-h1,2,USDJPY.DWX,114510002,2026-06-18,Claude,reserved
 11451,vegas-wave-ema144ema169-fractal-h1,3,AUDUSD.DWX,114510003,2026-06-18,Claude,reserved
 11451,vegas-wave-ema144ema169-fractal-h1,4,USDCAD.DWX,114510004,2026-06-18,Claude,reserved
-11452,big-ben-fade-asian-range-m5,0,EURUSD.DWX,114520000,2026-06-18,Claude,reserved
-11452,big-ben-fade-asian-range-m5,1,GBPUSD.DWX,114520001,2026-06-18,Claude,reserved
-11452,big-ben-fade-asian-range-m5,2,USDJPY.DWX,114520002,2026-06-18,Claude,reserved
-11452,big-ben-fade-asian-range-m5,3,AUDUSD.DWX,114520003,2026-06-18,Claude,reserved
-11452,big-ben-fade-asian-range-m5,4,USDCAD.DWX,114520004,2026-06-18,Claude,reserved
+11452,big-ben-fade-asian-range-m5,0,EURUSD.DWX,114520000,2026-06-20,Development,active
+11452,big-ben-fade-asian-range-m5,1,GBPUSD.DWX,114520001,2026-06-20,Development,active
+11452,big-ben-fade-asian-range-m5,2,USDJPY.DWX,114520002,2026-06-20,Development,active
+11452,big-ben-fade-asian-range-m5,3,AUDUSD.DWX,114520003,2026-06-20,Development,active
+11452,big-ben-fade-asian-range-m5,4,USDCAD.DWX,114520004,2026-06-20,Development,active
 11454,davey-session-open-bracket-breakout,0,EURUSD.DWX,114540000,2026-06-18,Claude,reserved
 11454,davey-session-open-bracket-breakout,1,GBPUSD.DWX,114540001,2026-06-18,Claude,reserved
 11454,davey-session-open-bracket-breakout,2,USDJPY.DWX,114540002,2026-06-18,Claude,reserved
@@ -11258,8 +11258,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11525,ciurea-stoch1435-bounce-h4,0,GBPUSD.DWX,115250000,2026-06-18,Claude,reserved
 11525,ciurea-stoch1435-bounce-h4,1,EURUSD.DWX,115250001,2026-06-18,Claude,reserved
 11526,ciurea-rsi10-50-d1,0,GBPUSD.DWX,115260000,2026-06-18,Claude,reserved
-11527,ciurea-engulfing-m30,0,EURUSD.DWX,115270000,2026-06-18,Claude,reserved
-11527,ciurea-engulfing-m30,1,GBPUSD.DWX,115270001,2026-06-18,Claude,reserved
+11527,ciurea-engulfing-m30,0,EURUSD.DWX,115270000,2026-06-20,Development,active
+11527,ciurea-engulfing-m30,1,GBPUSD.DWX,115270001,2026-06-20,Development,active
 11528,ciurea-inv-hammer-shooting-star-m30,0,EURUSD.DWX,115280000,2026-06-20,Development,active
 11528,ciurea-inv-hammer-shooting-star-m30,1,GBPUSD.DWX,115280001,2026-06-20,Development,active
 11529,ciurea-hammer-hanging-man-m15,0,EURUSD.DWX,115290000,2026-06-18,Development,active

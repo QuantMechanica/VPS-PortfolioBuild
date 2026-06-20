@@ -4,7 +4,7 @@
 **Slug:** `big-ben-fade-asian-range-m5`
 **Source:** `13c7b215-7691-51e6-9d93-c51116b3c98d` (see `strategy-seeds/sources/13c7b215-7691-51e6-9d93-c51116b3c98d/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-20
 
 ---
 
@@ -109,4 +109,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor worktree |
+| v1 | 2026-06-20 | Initial build from card | 6c8431c6-35d6-4378-9af7-fcc04e099b76 |
