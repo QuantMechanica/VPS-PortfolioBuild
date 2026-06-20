@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades EURUSD.DWX on M30 when the most recent closed candle crosses the EMA(200). A long entry fires when closed-bar price moves from at-or-below the EMA(200) to above it; a short entry fires when price moves from at-or-above the EMA(200) to below it. The stop is placed 3 pips beyond the 3-bar closed-bar extreme, capped at 30 pips, and the take profit is fixed at 2R. The EA does not enter on Fridays and has no discretionary exit beyond SL, TP, and framework Friday close.
+The EA trades EURUSD.DWX on M30 when the most recent closed candle crosses the EMA(200). A long entry fires when closed-bar price moves from at-or-below the EMA(200) to above it; a short entry fires when price moves from at-or-above the EMA(200) to below it. The stop is placed 3 pips beyond the 3-bar closed-bar extreme, capped at 30 pips, and the take profit is fixed at 2R. The EA suppresses new entries during the broker Friday close window and has no discretionary exit beyond SL, TP, and framework Friday close.
 
 ---
 
@@ -24,7 +24,7 @@ The EA trades EURUSD.DWX on M30 when the most recent closed candle crosses the E
 | `strategy_sl_max_pips` | 30 | >= 1 | Maximum allowed stop distance for the P2 baseline. |
 | `strategy_tp_rr` | 2.0 | > 0 | Take-profit multiple of initial stop distance. |
 | `strategy_spread_cap_pips` | 12 | >= 1 | Maximum modeled spread allowed before blocking an entry. |
-| `strategy_no_friday_entry` | true | true / false | Blocks new entries on Fridays as required by the card. |
+| `strategy_no_friday_entry` | true | true / false | Blocks new entries during the broker Friday close window. |
 
 ---
 

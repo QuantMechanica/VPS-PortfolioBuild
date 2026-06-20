@@ -75,7 +75,7 @@ input double qm_stress_reject_probability = 0.0;
 input group "Strategy"
 input int    strategy_atr_period        = 14;
 input double strategy_atr_stop_mult     = 0.25;
-input double strategy_reward_r          = 2.0;
+input double strategy_reward_r_multiple = 2.0;
 input int    strategy_min_stop_ticks    = 5;
 input int    strategy_range_start_hhmm  = 300;
 input int    strategy_range_end_hhmm    = 900;
@@ -83,100 +83,6 @@ input int    strategy_entry_start_hhmm  = 930;
 input int    strategy_entry_end_hhmm    = 1100;
 input int    strategy_exit_grace_minutes = 15;
 input int    strategy_range_scan_bars   = 220;
-
-int g_last_signal_ny_day_key = -1;
-
-int HhmmFromStruct(const MqlDateTime &dt)
-  {
-   return dt.hour * 100 + dt.min;
-  }
-
-int DayKeyFromStruct(const MqlDateTime &dt)
-  {
-   return dt.year * 1000 + dt.day_of_year;
-  }
-
-datetime BrokerToNewYork(const datetime broker_time)
-  {
-   const datetime utc = QM_BrokerToUTC(broker_time);
-   const int ny_offset_hours = QM_IsUSDSTUTC(utc) ? -4 : -5;
-   return utc + ny_offset_hours * 3600;
-  }
-
-int CurrentNYDayKey()
-  {
-   MqlDateTime ny;
-   TimeToStruct(BrokerToNewYork(TimeCurrent()), ny);
-   return DayKeyFromStruct(ny);
-  }
-
-int CurrentNYHhmm()
-  {
-   MqlDateTime ny;
-   TimeToStruct(BrokerToNewYork(TimeCurrent()), ny);
-   return HhmmFromStruct(ny);
-  }
-
-int AddMinutesToHhmm(const int hhmm, const int minutes)
-  {
-   const int total = (hhmm / 100) * 60 + (hhmm % 100) + minutes;
-   const int wrapped = ((total % 1440) + 1440) % 1440;
-   return (wrapped / 60) * 100 + (wrapped % 60);
-  }
-
-bool HasOurOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      return true;
-     }
-   return false;
-  }
-
-bool BuildLondonRange(const int ny_day_key, double &range_high, double &range_low, int &range_bars)
-  {
-   range_high = -DBL_MAX;
-   range_low = DBL_MAX;
-   range_bars = 0;
-
-   const int scan_bars = MathMax(80, strategy_range_scan_bars);
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, PERIOD_M5, 1, scan_bars, rates);
-   if(copied <= 0)
-      return false;
-
-   for(int i = 0; i < copied; ++i)
-     {
-      MqlDateTime ny;
-      TimeToStruct(BrokerToNewYork(rates[i].time), ny);
-      if(DayKeyFromStruct(ny) != ny_day_key)
-         continue;
-
-      const int hhmm = HhmmFromStruct(ny);
-      if(hhmm < strategy_range_start_hhmm || hhmm >= strategy_range_end_hhmm)
-         continue;
-
-      if(rates[i].high > range_high)
-         range_high = rates[i].high;
-      if(rates[i].low < range_low)
-         range_low = rates[i].low;
-      range_bars++;
-     }
-
-   return (range_bars > 0 && range_high > range_low && range_low > 0.0);
-  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -186,6 +92,24 @@ bool BuildLondonRange(const int ny_day_key, double &range_high, double &range_lo
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(bid <= 0.0 || ask <= 0.0)
+      return true;
+
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+      return false;
+
+   const datetime utc_now = QM_BrokerToUTC(TimeCurrent());
+   const datetime ny_now = utc_now + (QM_IsUSDSTUTC(utc_now) ? -4 : -5) * 3600;
+   MqlDateTime ny_dt;
+   TimeToStruct(ny_now, ny_dt);
+   const int now_minutes = ny_dt.hour * 60 + ny_dt.min;
+   const int entry_start_minutes = (strategy_entry_start_hhmm / 100) * 60 + (strategy_entry_start_hhmm % 100);
+   const int entry_end_minutes = (strategy_entry_end_hhmm / 100) * 60 + (strategy_entry_end_hhmm % 100);
+   if(now_minutes < entry_start_minutes || now_minutes > entry_end_minutes)
+      return true;
+
    return false;
   }
 
@@ -194,6 +118,8 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   static int last_signal_ny_day_key = -1;
+
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = 0.0;
@@ -205,61 +131,97 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(_Period != PERIOD_M5)
       return false;
 
-   if(HasOurOpenPosition())
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   const datetime closed_bar_time = iTime(_Symbol, PERIOD_M5, 1);
-   if(closed_bar_time <= 0)
+   if(strategy_atr_period <= 0 ||
+      strategy_atr_stop_mult <= 0.0 ||
+      strategy_reward_r_multiple <= 0.0 ||
+      strategy_min_stop_ticks <= 0)
       return false;
 
+   // perf-allowed: bounded session-structure scan runs only after the framework
+   // closed-bar gate and is required to build the card's 03:00-09:00 NY range.
+   const int scan_bars = (strategy_range_scan_bars < 100) ? 100 : strategy_range_scan_bars;
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, PERIOD_M5, 1, scan_bars, rates);
+   if(copied <= 0)
+      return false;
+
+   const datetime closed_bar_utc = QM_BrokerToUTC(rates[0].time);
+   const datetime closed_bar_ny = closed_bar_utc + (QM_IsUSDSTUTC(closed_bar_utc) ? -4 : -5) * 3600;
    MqlDateTime ny_bar;
-   TimeToStruct(BrokerToNewYork(closed_bar_time), ny_bar);
-   const int ny_day_key = DayKeyFromStruct(ny_bar);
-   const int ny_hhmm = HhmmFromStruct(ny_bar);
+   TimeToStruct(closed_bar_ny, ny_bar);
+   const int ny_day_key = ny_bar.year * 1000 + ny_bar.day_of_year;
+   const int ny_hhmm = ny_bar.hour * 100 + ny_bar.min;
    if(ny_hhmm < strategy_entry_start_hhmm || ny_hhmm >= strategy_entry_end_hhmm)
       return false;
-   if(g_last_signal_ny_day_key == ny_day_key)
+   if(last_signal_ny_day_key == ny_day_key)
       return false;
 
-   double range_high = 0.0;
-   double range_low = 0.0;
+   double range_high = -DBL_MAX;
+   double range_low = DBL_MAX;
    int range_bars = 0;
-   if(!BuildLondonRange(ny_day_key, range_high, range_low, range_bars))
+   const int range_start_min = (strategy_range_start_hhmm / 100) * 60 + (strategy_range_start_hhmm % 100);
+   const int range_end_min = (strategy_range_end_hhmm / 100) * 60 + (strategy_range_end_hhmm % 100);
+   const int expected_range_bars = (range_end_min - range_start_min) / 5;
+   if(expected_range_bars <= 0)
+      return false;
+   for(int i = 0; i < copied; ++i)
+     {
+      const datetime bar_utc = QM_BrokerToUTC(rates[i].time);
+      const datetime bar_ny = bar_utc + (QM_IsUSDSTUTC(bar_utc) ? -4 : -5) * 3600;
+      MqlDateTime bar_dt;
+      TimeToStruct(bar_ny, bar_dt);
+      if((bar_dt.year * 1000 + bar_dt.day_of_year) != ny_day_key)
+         continue;
+
+      const int bar_minutes = bar_dt.hour * 60 + bar_dt.min;
+      if(bar_minutes < range_start_min || bar_minutes >= range_end_min)
+         continue;
+
+      if(rates[i].high > range_high)
+         range_high = rates[i].high;
+      if(rates[i].low < range_low)
+         range_low = rates[i].low;
+      range_bars++;
+     }
+
+   if(range_bars < expected_range_bars || range_high <= range_low || range_low <= 0.0)
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_M5, 1);
+   const double close1 = rates[0].close;
    if(close1 <= 0.0)
       return false;
 
    const double atr = QM_ATR(_Symbol, PERIOD_M5, strategy_atr_period, 1);
    const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(atr <= 0.0 || tick_size <= 0.0 || point <= 0.0)
+   if(atr <= 0.0 || tick_size <= 0.0)
       return false;
 
-   const double stop_distance = MathMax(strategy_atr_stop_mult * atr,
-                                        strategy_min_stop_ticks * tick_size);
-   if(stop_distance <= 0.0)
+   const double stop_buffer = MathMax(strategy_atr_stop_mult * atr,
+                                      strategy_min_stop_ticks * tick_size);
+   if(stop_buffer <= 0.0)
       return false;
 
-   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
    if(close1 > range_high)
      {
       req.type = QM_BUY;
-      req.sl = NormalizeDouble(close1 - stop_distance, digits);
-      req.tp = NormalizeDouble(close1 + strategy_reward_r * stop_distance, digits);
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, rates[0].low - stop_buffer);
+      req.tp = QM_TakeRR(_Symbol, req.type, close1, req.sl, strategy_reward_r_multiple);
       req.reason = "LONDON_SESSION_BREAK_LONG";
-      g_last_signal_ny_day_key = ny_day_key;
+      last_signal_ny_day_key = ny_day_key;
       return true;
      }
 
    if(close1 < range_low)
      {
       req.type = QM_SELL;
-      req.sl = NormalizeDouble(close1 + stop_distance, digits);
-      req.tp = NormalizeDouble(close1 - strategy_reward_r * stop_distance, digits);
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, rates[0].high + stop_buffer);
+      req.tp = QM_TakeRR(_Symbol, req.type, close1, req.sl, strategy_reward_r_multiple);
       req.reason = "LONDON_SESSION_BREAK_SHORT";
-      g_last_signal_ny_day_key = ny_day_key;
+      last_signal_ny_day_key = ny_day_key;
       return true;
      }
 
@@ -277,12 +239,18 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   if(!HasOurOpenPosition())
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
       return false;
 
-   const int exit_hhmm = AddMinutesToHhmm(strategy_entry_end_hhmm,
-                                          strategy_exit_grace_minutes);
-   return (CurrentNYHhmm() >= exit_hhmm);
+   const int entry_end_minutes = (strategy_entry_end_hhmm / 100) * 60 + (strategy_entry_end_hhmm % 100);
+   const int exit_minutes = entry_end_minutes + strategy_exit_grace_minutes;
+
+   const datetime utc_now = QM_BrokerToUTC(TimeCurrent());
+   const datetime ny_now = utc_now + (QM_IsUSDSTUTC(utc_now) ? -4 : -5) * 3600;
+   MqlDateTime ny_dt;
+   TimeToStruct(ny_now, ny_dt);
+   const int now_minutes = ny_dt.hour * 60 + ny_dt.min;
+   return (now_minutes >= exit_minutes);
   }
 
 // Optional news-filter override. Return TRUE to suppress trading regardless

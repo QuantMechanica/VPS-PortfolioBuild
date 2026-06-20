@@ -18,7 +18,7 @@
 //                          fresh cross EVENT; the prior-bar side is a STATE,
 //                          not a second cross, so no two-cross zero-trade trap).
 //   Trigger EVENT (SHORT): close[1] < EMA200[1]  AND  close[2] >= EMA200[2].
-//   Direction filter STATE: no new entry on a Friday (card "No Friday entry").
+//   Direction filter STATE: no new entry in the broker Friday close window.
 //   Stop  LONG  : (lowest LOW over last 3 closed bars)  - sl_buffer_pips.
 //   Stop  SHORT : (highest HIGH over last 3 closed bars) + sl_buffer_pips.
 //                 SL distance capped at sl_max_pips (card P2 cap 30 pips).
@@ -61,7 +61,7 @@ input int    strategy_sl_buffer_pips    = 3;     // pips beyond the 3-bar extrem
 input int    strategy_sl_max_pips       = 30;    // P2 cap on SL distance (pips)
 input double strategy_tp_rr             = 2.0;   // TP = 2R (2x SL distance)
 input int    strategy_spread_cap_pips   = 12;    // skip only if spread wider than this
-input bool   strategy_no_friday_entry   = true;  // card: no Friday entry
+input bool   strategy_no_friday_entry   = true;  // block entries during Friday close window
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -99,7 +99,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      {
       MqlDateTime dt;
       TimeToStruct(TimeCurrent(), dt);
-      if(dt.day_of_week == 5) // Friday
+      if(dt.day_of_week == 5 && dt.hour >= qm_friday_close_hour_broker) // Friday close window
          return false;
      }
 

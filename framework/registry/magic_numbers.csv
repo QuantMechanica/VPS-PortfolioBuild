@@ -13047,3 +13047,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9242,mql5-fvg-retest,0,EURUSD.DWX,92420000,2026-06-20,Development,active
 9242,mql5-fvg-retest,1,GBPJPY.DWX,92420001,2026-06-20,Development,active
 9242,mql5-fvg-retest,2,XAUUSD.DWX,92420002,2026-06-20,Development,active
+10575,mql5-volqual,0,GBPJPY.DWX,105750000,2026-06-20,Claude,active
+10575,mql5-volqual,1,EURUSD.DWX,105750001,2026-06-20,Claude,active
+10575,mql5-volqual,2,GBPUSD.DWX,105750002,2026-06-20,Claude,active
