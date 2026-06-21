@@ -47,8 +47,10 @@ LAUNCH_FAULT_BACKOFF_SECONDS = 30.0
 # (framework symbol_slot resolver logging on every tick), producing 50-60GB
 # .log files that burn D: at ~10GB/min. Kill any backtest whose journal exceeds
 # the cap mid-run, before it floods the disk. See ops_issue f6769583.
-LOG_BOMB_JOURNAL_CAP_BYTES = 2 * 1024 ** 3   # 2 GB
-LOG_BOMB_CHECK_EVERY_ITERS = 10              # ~every 20s (loop sleeps 2s)
+LOG_BOMB_JOURNAL_CAP_BYTES = 512 * 1024 ** 2  # 512 MB (2026-06-21: tightened from 2GB
+                                              # after disk dipped to 11GB — concurrent
+                                              # bombs grew multi-GB between checks)
+LOG_BOMB_CHECK_EVERY_ITERS = 5                # ~every 10s (loop sleeps 2s)
 SQLITE_WRITE_RETRIES = 12
 SQLITE_WRITE_RETRY_SLEEP_SECONDS = 1.5
 SMOKE_TERMINAL_EXIT_GRACE_SECONDS = 60.0
