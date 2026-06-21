@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+  "host_symbol": "EURJPY.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "EURJPY.DWX",
+    "GBPJPY.DWX"
+  ],
+  "notes": [
+    "Two-leg EURJPY/GBPJPY cointegration pair from the approved card (strongest survivor of Claude's 66-pair scan: DEV net Sharpe 0.59 AND OOS 1.53). The EA runs from the EURJPY.DWX host setfile and reads both D1 close series to compute ln(EURJPY) - beta * ln(GBPJPY). Manifest was missing -> the gate fell back to per-symbol Q02 evaluation, which fails because each leg is unprofitable standalone (the edge is the market-neutral spread). Added 2026-06-21."
+  ]
+}
