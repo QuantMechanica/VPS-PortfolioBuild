@@ -21,7 +21,7 @@ The EA looks for a confirmed swing low or swing high, then waits for a closed ba
 | strategy_pivot_left | 3 | >=1 | Older bars required to confirm a swing pivot. |
 | strategy_pivot_right | 3 | >=1 | Newer closed bars required to confirm a swing pivot. |
 | strategy_pivot_lookback | 48 | >=8 | Closed-bar search depth for recent pivots. |
-| strategy_setup_timeout_bars | 16 | >=1 | Bars allowed between sweep, BOS, and retest before reset. |
+| strategy_setup_timeout_bars | 96 | >=1 | Bars allowed for the full sweep→BOS→retest sequence before reset (96 = 24h on M15). |
 | strategy_displacement_body_min | 0.55 | 0.0-1.0 | Minimum body share of the BOS candle range. |
 | strategy_displacement_edge_max | 0.30 | 0.0-1.0 | Maximum close distance from the BOS candle edge. |
 | strategy_retest_edge_max | 0.35 | 0.0-1.0 | Maximum close distance from the retest candle edge. |
@@ -104,3 +104,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | v3 | 2026-06-20 | Rebuild in place from card | 79e14aca-c2aa-4961-92a5-b159a6bb412d |
 | v4 | 2026-06-20 | Rebuild in place from card | cbd055fd-f416-430b-be06-6509121d5e61 |
 | v5 | 2026-06-21 | Re-run smoke (code unchanged); zero_trades confirmed — session/pivot-lookback mismatch; rework required | 79e14aca-c2aa-4961-92a5-b159a6bb412d |
+| v6 | 2026-06-21 | Fix: session gate moved from Strategy_NoTradeFilter to retest-entry only; state machine now runs all-bar; timeout raised to 96 | cbd055fd-f416-430b-be06-6509121d5e61 |

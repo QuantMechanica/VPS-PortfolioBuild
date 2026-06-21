@@ -32,7 +32,8 @@ input group "Strategy"
 input int    strategy_pivot_left             = 3;
 input int    strategy_pivot_right            = 3;
 input int    strategy_pivot_lookback         = 48;
-input int    strategy_setup_timeout_bars     = 16;
+// 96 bars = 24h on M15, allows cross-session sweep→BOS→retest sequences.
+input int    strategy_setup_timeout_bars     = 96;
 input double strategy_displacement_body_min  = 0.55;
 input double strategy_displacement_edge_max  = 0.30;
 input double strategy_retest_edge_max        = 0.35;
@@ -40,6 +41,7 @@ input int    strategy_atr_period             = 14;
 input double strategy_atr_stop_buffer_mult   = 0.10;
 input double strategy_max_stop_atr           = 2.50;
 input double strategy_rr_target              = 2.00;
+// Session gate applies only to retest entry; sweep+BOS detection is all-bar.
 input bool   strategy_session_filter_enabled = true;
 input int    strategy_session_start_hhmm_broker = 1530;
 input int    strategy_session_end_hhmm_broker   = 1700;
@@ -59,7 +61,6 @@ int ClampHhmm(const int value)
       hhmm = 0;
    if(hhmm > 2359)
       hhmm = 2359;
-
    int hour = hhmm / 100;
    int minute = hhmm % 100;
    if(hour > 23)
@@ -75,7 +76,7 @@ bool IsInBrokerSession(const datetime broker_time)
       return true;
 
    const int start_hhmm = ClampHhmm(strategy_session_start_hhmm_broker);
-   const int end_hhmm = ClampHhmm(strategy_session_end_hhmm_broker);
+   const int end_hhmm   = ClampHhmm(strategy_session_end_hhmm_broker);
    if(start_hhmm == end_hhmm)
       return true;
 
@@ -90,44 +91,25 @@ bool SpreadAllowed()
    if(strategy_max_spread_points <= 0)
       return true;
 
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ask   = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid   = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
       return false;
 
+   // DWX tester: ask==bid (zero spread) is normal; only block a genuinely wide spread.
    if(ask > bid && ((ask - bid) / point) > (double)strategy_max_spread_points)
       return false;
    return true;
   }
 
 // perf-allowed: bespoke closed-bar swing/sweep/BOS structure needs raw OHLC.
-// These wrappers are called only from Strategy_EntrySignal, which the framework
-// invokes after QM_IsNewBar() has advanced, so scans run once per closed bar.
-double BarOpen(const int shift)
-  {
-   return iOpen(_Symbol, _Period, shift); // perf-allowed
-  }
-
-double BarHigh(const int shift)
-  {
-   return iHigh(_Symbol, _Period, shift); // perf-allowed
-  }
-
-double BarLow(const int shift)
-  {
-   return iLow(_Symbol, _Period, shift); // perf-allowed
-  }
-
-double BarClose(const int shift)
-  {
-   return iClose(_Symbol, _Period, shift); // perf-allowed
-  }
-
-int BarCount()
-  {
-   return Bars(_Symbol, _Period); // perf-allowed
-  }
+// Called only from Strategy_EntrySignal (post QM_IsNewBar gate), once per bar.
+double BarHigh(const int shift)  { return iHigh(_Symbol, _Period, shift); }  // perf-allowed
+double BarLow(const int shift)   { return iLow(_Symbol, _Period, shift);  }  // perf-allowed
+double BarOpen(const int shift)  { return iOpen(_Symbol, _Period, shift); }  // perf-allowed
+double BarClose(const int shift) { return iClose(_Symbol, _Period, shift);}  // perf-allowed
+int    BarCount()                { return Bars(_Symbol, _Period);          }  // perf-allowed
 
 bool FindConfirmedPivotHigh(double &pivot_high)
   {
@@ -136,7 +118,7 @@ bool FindConfirmedPivotHigh(double &pivot_high)
       return false;
 
    const int first_shift = 2 + strategy_pivot_right;
-   const int last_shift = strategy_pivot_lookback;
+   const int last_shift  = strategy_pivot_lookback;
    for(int shift = first_shift; shift <= last_shift; ++shift)
      {
       const double candidate = BarHigh(shift);
@@ -167,7 +149,7 @@ bool FindConfirmedPivotLow(double &pivot_low)
       return false;
 
    const int first_shift = 2 + strategy_pivot_right;
-   const int last_shift = strategy_pivot_lookback;
+   const int last_shift  = strategy_pivot_lookback;
    for(int shift = first_shift; shift <= last_shift; ++shift)
      {
       const double candidate = BarLow(shift);
@@ -193,16 +175,16 @@ bool FindConfirmedPivotLow(double &pivot_low)
 
 bool BullishDisplacement(const double level)
   {
-   const double open1 = BarOpen(1);
-   const double high1 = BarHigh(1);
-   const double low1 = BarLow(1);
+   const double open1  = BarOpen(1);
+   const double high1  = BarHigh(1);
+   const double low1   = BarLow(1);
    const double close1 = BarClose(1);
-   const double range = high1 - low1;
+   const double range  = high1 - low1;
    if(open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0 || range <= 0.0)
       return false;
 
-   const double body_ratio = MathAbs(close1 - open1) / range;
-   const double upper_edge = (high1 - close1) / range;
+   const double body_ratio  = MathAbs(close1 - open1) / range;
+   const double upper_edge  = (high1 - close1) / range;
    return (close1 > open1 &&
            close1 > level &&
            body_ratio >= strategy_displacement_body_min &&
@@ -211,11 +193,11 @@ bool BullishDisplacement(const double level)
 
 bool BearishDisplacement(const double level)
   {
-   const double open1 = BarOpen(1);
-   const double high1 = BarHigh(1);
-   const double low1 = BarLow(1);
+   const double open1  = BarOpen(1);
+   const double high1  = BarHigh(1);
+   const double low1   = BarLow(1);
    const double close1 = BarClose(1);
-   const double range = high1 - low1;
+   const double range  = high1 - low1;
    if(open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0 || range <= 0.0)
       return false;
 
@@ -229,11 +211,11 @@ bool BearishDisplacement(const double level)
 
 bool BullishRetest(const double bos_level)
   {
-   const double open1 = BarOpen(1);
-   const double high1 = BarHigh(1);
-   const double low1 = BarLow(1);
+   const double open1  = BarOpen(1);
+   const double high1  = BarHigh(1);
+   const double low1   = BarLow(1);
    const double close1 = BarClose(1);
-   const double range = high1 - low1;
+   const double range  = high1 - low1;
    if(open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0 || range <= 0.0)
       return false;
 
@@ -246,11 +228,11 @@ bool BullishRetest(const double bos_level)
 
 bool BearishRetest(const double bos_level)
   {
-   const double open1 = BarOpen(1);
-   const double high1 = BarHigh(1);
-   const double low1 = BarLow(1);
+   const double open1  = BarOpen(1);
+   const double high1  = BarHigh(1);
+   const double low1   = BarLow(1);
    const double close1 = BarClose(1);
-   const double range = high1 - low1;
+   const double range  = high1 - low1;
    if(open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0 || range <= 0.0)
       return false;
 
@@ -264,19 +246,19 @@ bool BearishRetest(const double bos_level)
 void ResetSetup(int &setup_state, int &setup_age, double &setup_swept, double &setup_bos)
   {
    setup_state = 0;
-   setup_age = 0;
+   setup_age   = 0;
    setup_swept = 0.0;
-   setup_bos = 0.0;
+   setup_bos   = 0.0;
   }
 
 void ClearRequest(QM_EntryRequest &req)
   {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
+   req.type               = QM_BUY;
+   req.price              = 0.0;
+   req.sl                 = 0.0;
+   req.tp                 = 0.0;
+   req.reason             = "";
+   req.symbol_slot        = qm_magic_slot_offset;
    req.expiration_seconds = 0;
   }
 
@@ -299,7 +281,7 @@ bool BuildTrade(QM_EntryRequest &req,
 
    if(entry_price <= 0.0 || sl <= 0.0)
       return false;
-   if(side == QM_BUY && sl >= entry_price)
+   if(side == QM_BUY  && sl >= entry_price)
       return false;
    if(side == QM_SELL && sl <= entry_price)
       return false;
@@ -310,26 +292,25 @@ bool BuildTrade(QM_EntryRequest &req,
    const double tp = QM_TakeRR(_Symbol, side, entry_price, sl, strategy_rr_target);
    if(tp <= 0.0)
       return false;
-   if(side == QM_BUY && tp <= entry_price)
+   if(side == QM_BUY  && tp <= entry_price)
       return false;
    if(side == QM_SELL && tp >= entry_price)
       return false;
 
-   req.type = side;
-   req.price = 0.0;
-   req.sl = sl;
-   req.tp = tp;
+   req.type   = side;
+   req.price  = 0.0;
+   req.sl     = sl;
+   req.tp     = tp;
    req.reason = reason;
    return true;
   }
 
+// Spread-only filter. Session filter is NOT here — it applies only to the
+// retest entry inside Strategy_EntrySignal, so the sweep+BOS state machine
+// can advance on all closed bars regardless of session.
 bool Strategy_NoTradeFilter()
   {
-   if(!SpreadAllowed())
-      return true;
-   if(!IsInBrokerSession(TimeCurrent()))
-      return true;
-   return false;
+   return !SpreadAllowed();
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
@@ -348,19 +329,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(BarCount() < min_bars)
       return false;
 
-   static int setup_state = 0;       // 1 long BOS, 2 long retest, -1 short BOS, -2 short retest
-   static int setup_age = 0;
-   static double setup_swept = 0.0;
-   static double setup_bos = 0.0;
-   static double used_long_sweep = 0.0;
+   // State machine (runs every closed bar regardless of session):
+   //   0  = looking for new sweep setup
+   //   1  = sweep detected, waiting for bullish BOS displacement
+   //   2  = BOS confirmed, waiting for bullish retest entry (session-gated)
+   //  -1  = sweep detected, waiting for bearish BOS displacement
+   //  -2  = BOS confirmed, waiting for bearish retest entry (session-gated)
+   static int    setup_state      = 0;
+   static int    setup_age        = 0;
+   static double setup_swept      = 0.0;
+   static double setup_bos        = 0.0;
+   static double used_long_sweep  = 0.0;
    static double used_short_sweep = 0.0;
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ask   = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid   = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(point <= 0.0 || ask <= 0.0 || bid <= 0.0)
       return false;
 
+   // Advance age on every bar; expire stale setups.
    if(setup_state != 0)
      {
       setup_age++;
@@ -368,9 +356,32 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          ResetSetup(setup_state, setup_age, setup_swept, setup_bos);
      }
 
+   // Stage BOS-wait: look for bullish displacement on all bars.
+   if(setup_state == 1)
+     {
+      if(BullishDisplacement(setup_bos))
+        {
+         setup_state = 2;
+         setup_age   = 0;
+        }
+      return false;
+     }
+
+   // Stage BOS-wait: look for bearish displacement on all bars.
+   if(setup_state == -1)
+     {
+      if(BearishDisplacement(setup_bos))
+        {
+         setup_state = -2;
+         setup_age   = 0;
+        }
+      return false;
+     }
+
+   // Stage retest-entry (long): session-gated final trigger.
    if(setup_state == 2)
      {
-      if(BullishRetest(setup_bos))
+      if(IsInBrokerSession(TimeCurrent()) && BullishRetest(setup_bos))
         {
          if(BuildTrade(req, QM_BUY, setup_swept, ask, "LS_BOS_RETEST_LONG"))
            {
@@ -383,9 +394,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
      }
 
+   // Stage retest-entry (short): session-gated final trigger.
    if(setup_state == -2)
      {
-      if(BearishRetest(setup_bos))
+      if(IsInBrokerSession(TimeCurrent()) && BearishRetest(setup_bos))
         {
          if(BuildTrade(req, QM_SELL, setup_swept, bid, "LS_BOS_RETEST_SHORT"))
            {
@@ -398,54 +410,37 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
      }
 
-   if(setup_state == 1)
-     {
-      if(BullishDisplacement(setup_bos))
-        {
-         setup_state = 2;
-         setup_age = 0;
-        }
-      return false;
-     }
-
-   if(setup_state == -1)
-     {
-      if(BearishDisplacement(setup_bos))
-        {
-         setup_state = -2;
-         setup_age = 0;
-        }
-      return false;
-     }
-
+   // State 0: look for a new sweep.
    double pivot_high = 0.0;
-   double pivot_low = 0.0;
+   double pivot_low  = 0.0;
    if(!FindConfirmedPivotHigh(pivot_high) || !FindConfirmedPivotLow(pivot_low))
       return false;
 
-   const double high1 = BarHigh(1);
-   const double low1 = BarLow(1);
+   const double high1  = BarHigh(1);
+   const double low1   = BarLow(1);
    const double close1 = BarClose(1);
    if(high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0)
       return false;
 
+   // Long sweep: low dips below pivot_low, closes back above it.
    if(low1 < pivot_low && close1 > pivot_low &&
       (used_long_sweep <= 0.0 || MathAbs(low1 - used_long_sweep) > point * 2.0))
      {
       setup_state = 1;
-      setup_age = 0;
+      setup_age   = 0;
       setup_swept = low1;
-      setup_bos = pivot_high;
+      setup_bos   = pivot_high;
       return false;
      }
 
+   // Short sweep: high pokes above pivot_high, closes back below it.
    if(high1 > pivot_high && close1 < pivot_high &&
       (used_short_sweep <= 0.0 || MathAbs(high1 - used_short_sweep) > point * 2.0))
      {
       setup_state = -1;
-      setup_age = 0;
+      setup_age   = 0;
       setup_swept = high1;
-      setup_bos = pivot_low;
+      setup_bos   = pivot_low;
       return false;
      }
 
@@ -454,7 +449,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
   {
-   // Card management is fixed stop plus fixed 2R target; no trailing or partial close.
+   // Fixed stop + 2R TP; no trailing or partial close per card.
   }
 
 bool Strategy_ExitSignal()
