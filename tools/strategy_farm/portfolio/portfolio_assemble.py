@@ -55,7 +55,7 @@ def assemble_portfolio(
     weighting: str = "equal",
     starting_capital: float = 10_000.0,
 ) -> dict[str, Any]:
-    if weighting != "equal":
+    if weighting not in SUPPORTED_WEIGHTINGS:
         raise ValueError(f"unsupported weighting mode {weighting!r}")
 
     model = load_model()
@@ -97,6 +97,69 @@ def assemble_portfolio(
     }
 
 
+SUPPORTED_WEIGHTINGS = ("equal", "inverse_vol")
+
+
+def _column(matrix: object, col: int) -> list[float]:
+    """Extract one sleeve's daily-PnL column as a plain list (numpy-optional)."""
+    if hasattr(matrix, "shape"):
+        return [float(v) for v in matrix[:, col]]  # type: ignore[index]
+    return [float(row[col]) for row in matrix]  # type: ignore[union-attr]
+
+
+def _std(values: Sequence[float]) -> float:
+    n = len(values)
+    if n < 2:
+        return 0.0
+    mean = sum(values) / n
+    var = sum((v - mean) ** 2 for v in values) / n
+    return var ** 0.5
+
+
+def weights_for(
+    trial: Sequence[Key],
+    all_keys: Sequence[Key],
+    matrix: object,
+    weighting: str,
+) -> dict[Key, float]:
+    """Equal-capital or inverse-volatility (risk-parity) weights over `trial`.
+
+    Inverse-vol is required for the diversification math to work: the FAIL_SOFT
+    sleeves sit on very different RISK_FIXED lot sizes, so naive equal weight lets
+    the highest-$ sleeve dominate the combined drawdown. 1/sigma weighting balances
+    each sleeve's risk contribution. Degenerate (zero-variance) sleeves fall back to
+    equal weight so the book is never empty.
+    """
+    if weighting == "equal":
+        return equal_weights(trial)
+    if weighting != "inverse_vol":
+        raise ValueError(f"unsupported weighting mode {weighting!r}")
+    index = {key: i for i, key in enumerate(all_keys)}
+    inv: dict[Key, float] = {}
+    for key in trial:
+        sigma = _std(_column(matrix, index[key]))
+        inv[key] = (1.0 / sigma) if sigma > 0 else 0.0
+    total = sum(inv.values())
+    if total <= 0:  # all degenerate -> equal weight fallback
+        return equal_weights(trial)
+    return {key: value / total for key, value in inv.items()}
+
+
+def _book_metrics(
+    trial: Sequence[Key],
+    all_keys: Sequence[Key],
+    matrix: object,
+    weighting: str,
+    starting_capital: float,
+) -> tuple[dict[Key, float], dict[str, float | int | None]]:
+    weights = weights_for(trial, all_keys, matrix, weighting)
+    daily_pnl = _daily_pnl_for_keys(all_keys, matrix, sorted(trial), weights)
+    metrics = metrics_from_daily_pnl(
+        daily_pnl, n_sleeves=len(trial), starting_capital=starting_capital
+    )
+    return weights, metrics
+
+
 def greedy_select(
     keys: Sequence[Key],
     matrix: object,
@@ -105,21 +168,20 @@ def greedy_select(
     weighting: str = "equal",
     starting_capital: float = 10_000.0,
 ) -> tuple[list[Key], dict[Key, float], dict[str, float | int | None]]:
-    if weighting != "equal":
+    if weighting not in SUPPORTED_WEIGHTINGS:
         raise ValueError(f"unsupported weighting mode {weighting!r}")
 
     all_keys = list(keys)
-    pnl_matrix = matrix
-    n_days = _matrix_n_days(pnl_matrix)
+    n_days = _matrix_n_days(matrix)
     selected: list[Key] = []
     current_score = float("-inf")
     current_metrics = metrics_from_daily_pnl(
-        [],
-        n_sleeves=0,
-        starting_capital=starting_capital,
-        n_days=n_days,
+        [], n_sleeves=0, starting_capital=starting_capital, n_days=n_days
     )
 
+    # Phase 1 - forward greedy that RESPECTS the cap: add the sleeve maximizing
+    # combined Sharpe while keeping combined DD <= cap. Yields the best book that
+    # is feasible under the cap (this is the path the unit tests exercise).
     while True:
         best_candidate: Key | None = None
         best_metrics: dict[str, float | int | None] | None = None
@@ -128,22 +190,14 @@ def greedy_select(
         for candidate in all_keys:
             if candidate in selected:
                 continue
-            trial = sorted([*selected, candidate])
-            weights = equal_weights(trial)
-            daily_pnl = _daily_pnl_for_keys(all_keys, pnl_matrix, trial, weights)
-            metrics = metrics_from_daily_pnl(
-                daily_pnl,
-                n_sleeves=len(trial),
-                starting_capital=starting_capital,
+            _, metrics = _book_metrics(
+                [*selected, candidate], all_keys, matrix, weighting, starting_capital
             )
             if float(metrics["max_drawdown_pct"]) > max_dd_pct:
                 continue
-
             score = _sharpe_score(metrics["sharpe"])
             if score > best_score:
-                best_candidate = candidate
-                best_metrics = metrics
-                best_score = score
+                best_candidate, best_metrics, best_score = candidate, metrics, score
 
         if best_candidate is None or best_metrics is None:
             break
@@ -151,8 +205,69 @@ def greedy_select(
         current_metrics = best_metrics
         current_score = best_score
 
-    selected_weights = equal_weights(selected)
-    return selected, selected_weights, current_metrics
+    if selected:
+        weights = weights_for(selected, all_keys, matrix, weighting)
+        current_metrics["cap_met"] = True
+        current_metrics["weighting"] = weighting
+        return selected, weights, current_metrics
+
+    # Phase 2 - FALLBACK: no book fits under the cap (every sleeve's standalone DD
+    # already exceeds it, as with the FAIL_SOFT pool). Instead of returning an empty
+    # portfolio, build the minimum-drawdown book: seed with the lowest-DD sleeve and
+    # keep adding the sleeve that most REDUCES combined DD (the diversification
+    # benefit). Flag cap_met=False so the caller knows it grazes/exceeds the target.
+    book, weights, metrics = _min_dd_book(all_keys, matrix, weighting, starting_capital)
+    metrics["cap_met"] = float(metrics["max_drawdown_pct"]) <= max_dd_pct
+    metrics["weighting"] = weighting
+    return book, weights, metrics
+
+
+def _min_dd_book(
+    all_keys: Sequence[Key],
+    matrix: object,
+    weighting: str,
+    starting_capital: float,
+) -> tuple[list[Key], dict[Key, float], dict[str, float | int | None]]:
+    if not all_keys:
+        empty = metrics_from_daily_pnl([], n_sleeves=0, starting_capital=starting_capital)
+        return [], {}, empty
+
+    # seed with the lowest standalone-DD sleeve
+    seed = min(
+        all_keys,
+        key=lambda k: float(
+            _book_metrics([k], all_keys, matrix, weighting, starting_capital)[1][
+                "max_drawdown_pct"
+            ]
+        ),
+    )
+    selected = [seed]
+    _, current_metrics = _book_metrics(
+        selected, all_keys, matrix, weighting, starting_capital
+    )
+    current_dd = float(current_metrics["max_drawdown_pct"])
+
+    while True:
+        best_candidate: Key | None = None
+        best_metrics: dict[str, float | int | None] | None = None
+        best_dd = current_dd
+        for candidate in all_keys:
+            if candidate in selected:
+                continue
+            _, metrics = _book_metrics(
+                [*selected, candidate], all_keys, matrix, weighting, starting_capital
+            )
+            dd = float(metrics["max_drawdown_pct"])
+            if dd < best_dd:  # only accept additions that REDUCE combined DD
+                best_candidate, best_metrics, best_dd = candidate, metrics, dd
+        if best_candidate is None or best_metrics is None:
+            break
+        selected = sorted([*selected, best_candidate])
+        current_metrics = best_metrics
+        current_dd = best_dd
+
+    weights = weights_for(selected, all_keys, matrix, weighting)
+    return selected, weights, current_metrics
 
 
 def write_manifest(manifest: dict[str, Any], out_path: Path) -> None:
@@ -168,7 +283,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--candidates-db", type=Path, default=DEFAULT_CANDIDATES_DB)
     parser.add_argument("--all-streams", action="store_true")
     parser.add_argument("--max-dd-pct", type=float, default=6.0)
-    parser.add_argument("--weighting", choices=("equal",), default="equal")
+    parser.add_argument("--weighting", choices=("equal", "inverse_vol"), default="equal")
     parser.add_argument(
         "--out",
         type=Path,
