@@ -2,6 +2,7 @@
 #property version   "5.0"
 #property description "QM5_10960 FTMO HMA RSI volatility stop"
 // rework v2 2026-06-16 — decoupled RSI cross-back from shift-1 to scan the full lookback window so RSI recovery and HMA cross need not coincide on one bar (was ~0 trades / Q02 MIN_TRADES)
+// rework v3 2026-06-21 — fixed DWX spread guard: ask==bid on .DWX (0 modeled spread) so ask<=bid gate was fail-closed → 0 trades. Now only checks spread_pct when ask>bid.
 
 #include <QM/QM_Common.mqh>
 
@@ -267,12 +268,16 @@ bool Strategy_NoTradeFilter()
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
+   if(ask <= 0.0 || bid <= 0.0)
       return true;
 
-   const double spread_pct = ((ask - bid) / planned_stop_distance) * 100.0;
-   if(spread_pct > strategy_max_spread_stop_pct)
-      return true;
+   // DWX invariant: .DWX symbols have ask==bid (0 modeled spread); never fail-closed on zero spread.
+   if(ask > bid)
+     {
+      const double spread_pct = ((ask - bid) / planned_stop_distance) * 100.0;
+      if(spread_pct > strategy_max_spread_stop_pct)
+         return true;
+     }
 
    return false;
   }
