@@ -143,15 +143,15 @@ bool Strategy_ParamsOK()
 bool Strategy_IsPivotLow(const int shift, const int left, const int right)
   {
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
-   const double v = iLow(_Symbol, tf, shift);
+   const double v = iLow(_Symbol, tf, shift); // perf-allowed: pivot scan, per-bar gate, no QM_ helper for multi-shift OHLC
    if(v <= 0.0)
       return false;
 
    for(int i = 1; i <= left; ++i)
-      if(iLow(_Symbol, tf, shift + i) <= v)
+      if(iLow(_Symbol, tf, shift + i) <= v) // perf-allowed: pivot scan multi-shift lookback
          return false;
    for(int i = 1; i <= right; ++i)
-      if(iLow(_Symbol, tf, shift - i) <= v)
+      if(iLow(_Symbol, tf, shift - i) <= v) // perf-allowed: pivot scan multi-shift lookback
          return false;
    return true;
   }
@@ -159,15 +159,15 @@ bool Strategy_IsPivotLow(const int shift, const int left, const int right)
 bool Strategy_IsPivotHigh(const int shift, const int left, const int right)
   {
    const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
-   const double v = iHigh(_Symbol, tf, shift);
+   const double v = iHigh(_Symbol, tf, shift); // perf-allowed: pivot scan, per-bar gate, no QM_ helper for multi-shift OHLC
    if(v <= 0.0)
       return false;
 
    for(int i = 1; i <= left; ++i)
-      if(iHigh(_Symbol, tf, shift + i) >= v)
+      if(iHigh(_Symbol, tf, shift + i) >= v) // perf-allowed: pivot scan multi-shift lookback
          return false;
    for(int i = 1; i <= right; ++i)
-      if(iHigh(_Symbol, tf, shift - i) >= v)
+      if(iHigh(_Symbol, tf, shift - i) >= v) // perf-allowed: pivot scan multi-shift lookback
          return false;
    return true;
   }
@@ -177,7 +177,7 @@ bool Strategy_FindSupport(const double price, const double max_distance, double 
    support = 0.0;
    const int left = strategy_pivot_left;
    const int right = strategy_pivot_right;
-   const int bars = Bars(_Symbol, (ENUM_TIMEFRAMES)_Period);
+   const int bars = Bars(_Symbol, (ENUM_TIMEFRAMES)_Period); // perf-allowed: bar count for loop bound, per-bar gate
    int max_shift = strategy_scan_bars;
    const int available = bars - left - 1;
    if(max_shift > available)
@@ -192,7 +192,7 @@ bool Strategy_FindSupport(const double price, const double max_distance, double 
       if(!Strategy_IsPivotLow(shift, left, right))
          continue;
       levels++;
-      const double level = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, shift);
+      const double level = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, shift); // perf-allowed: pivot level read, per-bar gate
       if(level < price && price - level <= max_distance && level > best)
          best = level;
      }
@@ -208,7 +208,7 @@ bool Strategy_FindResistance(const double price, const double max_distance, doub
    resistance = 0.0;
    const int left = strategy_pivot_left;
    const int right = strategy_pivot_right;
-   const int bars = Bars(_Symbol, (ENUM_TIMEFRAMES)_Period);
+   const int bars = Bars(_Symbol, (ENUM_TIMEFRAMES)_Period); // perf-allowed: bar count for loop bound, per-bar gate
    int max_shift = strategy_scan_bars;
    const int available = bars - left - 1;
    if(max_shift > available)
@@ -223,7 +223,7 @@ bool Strategy_FindResistance(const double price, const double max_distance, doub
       if(!Strategy_IsPivotHigh(shift, left, right))
          continue;
       levels++;
-      const double level = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, shift);
+      const double level = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, shift); // perf-allowed: pivot level read, per-bar gate
       if(level > price && level - price <= max_distance && level < best)
          best = level;
      }
@@ -240,7 +240,7 @@ double Strategy_VolumeSMA(const int period)
    int samples = 0;
    for(int shift = 2; shift < 2 + period; ++shift)
      {
-      const long v = iVolume(_Symbol, (ENUM_TIMEFRAMES)_Period, shift);
+      const long v = iVolume(_Symbol, (ENUM_TIMEFRAMES)_Period, shift); // perf-allowed: tick-volume SMA, optional filter, per-bar gate
       if(v <= 0)
          continue;
       sum += (double)v;
@@ -257,10 +257,10 @@ double Strategy_VwapLike(const int period)
    double vol_sum = 0.0;
    for(int shift = 1; shift <= period; ++shift)
      {
-      const double h = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, shift);
-      const double l = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, shift);
-      const double c = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, shift);
-      const long v = iVolume(_Symbol, (ENUM_TIMEFRAMES)_Period, shift);
+      const double h = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, shift); // perf-allowed: VWAP-like rolling calc, optional filter, per-bar gate
+      const double l = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, shift);  // perf-allowed: VWAP-like rolling calc
+      const double c = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, shift); // perf-allowed: VWAP-like rolling calc
+      const long v = iVolume(_Symbol, (ENUM_TIMEFRAMES)_Period, shift);  // perf-allowed: VWAP-like rolling calc
       if(h <= 0.0 || l <= 0.0 || c <= 0.0 || v <= 0)
          continue;
       const double typical = (h + l + c) / 3.0;
@@ -301,7 +301,7 @@ bool Strategy_FiltersPass(const bool is_long, const double close_price)
 
    if(strategy_filter_volume)
      {
-      const long vol = iVolume(_Symbol, tf, 1);
+      const long vol = iVolume(_Symbol, tf, 1); // perf-allowed: closed-bar tick volume read, per-bar gate
       const double avg = Strategy_VolumeSMA(strategy_volume_sma_bars);
       if(vol <= 0 || avg <= 0.0 || (double)vol <= avg * strategy_volume_mult)
          return false;
@@ -370,10 +370,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(atr <= 0.0)
       return false;
 
-   const double o1 = iOpen(_Symbol, tf, 1);
-   const double h1 = iHigh(_Symbol, tf, 1);
-   const double l1 = iLow(_Symbol, tf, 1);
-   const double c1 = iClose(_Symbol, tf, 1);
+   const double o1 = iOpen(_Symbol, tf, 1);  // perf-allowed: last closed bar OHLC for candle direction + wick check
+   const double h1 = iHigh(_Symbol, tf, 1);  // perf-allowed: last closed bar OHLC
+   const double l1 = iLow(_Symbol, tf, 1);   // perf-allowed: last closed bar OHLC
+   const double c1 = iClose(_Symbol, tf, 1); // perf-allowed: last closed bar OHLC
    if(o1 <= 0.0 || h1 <= 0.0 || l1 <= 0.0 || c1 <= 0.0)
       return false;
 
