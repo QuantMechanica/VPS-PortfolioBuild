@@ -103,3 +103,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | v2 | 2026-06-18 | Rebuild in place from card | 663949c9-095b-4cfe-b113-3203d0894c0b |
 | v3 | 2026-06-20 | Rebuild in place from card | 79e14aca-c2aa-4961-92a5-b159a6bb412d |
 | v4 | 2026-06-20 | Rebuild in place from card | cbd055fd-f416-430b-be06-6509121d5e61 |
+| v5 | 2026-06-21 | Re-run smoke (code unchanged); zero_trades confirmed — session/pivot-lookback mismatch; rework required | 79e14aca-c2aa-4961-92a5-b159a6bb412d |
