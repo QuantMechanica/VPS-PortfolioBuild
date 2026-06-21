@@ -100,3 +100,5 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-06 | Initial build from card | ac8ad4c0-7aa8-4b62-ae65-acf183a9536b |
+| v2 | 2026-06-16 | Decoupled RSI cross-back scan from shift=1 to full lookback window (prior run ~0 trades) | ac8ad4c0-7aa8-4b62-ae65-acf183a9536b |
+| v3 | 2026-06-21 | Fixed DWX spread guard: ask<=bid fails-closed on zero-spread .DWX; now only checks spread_pct when ask>bid | ac8ad4c0-7aa8-4b62-ae65-acf183a9536b |
