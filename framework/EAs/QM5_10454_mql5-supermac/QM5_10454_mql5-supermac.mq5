@@ -108,7 +108,7 @@ bool Strategy_NoTradeFilter()
       strategy_tp_rr <= 0.0)
       return true;
 
-   return (Bars(_Symbol, (ENUM_TIMEFRAMES)_Period) < strategy_min_bars);
+   return (Bars(_Symbol, (ENUM_TIMEFRAMES)_Period) < strategy_min_bars); // perf-allowed: warmup bar count guard, no QM_ equivalent
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
