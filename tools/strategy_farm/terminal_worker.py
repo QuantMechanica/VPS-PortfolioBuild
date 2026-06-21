@@ -43,6 +43,12 @@ _last_disk_purge_trigger = [0.0]
 # 2026-06-19: 250 work_items INFRA_FAIL in 14s).
 LAUNCH_FAULT_MIN_SECONDS = 10.0
 LAUNCH_FAULT_BACKOFF_SECONDS = 30.0
+# Log-bomb guard (2026-06-21): some EAs spam the MT5 tester journal per-tick
+# (framework symbol_slot resolver logging on every tick), producing 50-60GB
+# .log files that burn D: at ~10GB/min. Kill any backtest whose journal exceeds
+# the cap mid-run, before it floods the disk. See ops_issue f6769583.
+LOG_BOMB_JOURNAL_CAP_BYTES = 2 * 1024 ** 3   # 2 GB
+LOG_BOMB_CHECK_EVERY_ITERS = 10              # ~every 20s (loop sleeps 2s)
 SQLITE_WRITE_RETRIES = 12
 SQLITE_WRITE_RETRY_SLEEP_SECONDS = 1.5
 SMOKE_TERMINAL_EXIT_GRACE_SECONDS = 60.0
@@ -744,6 +750,27 @@ def _fail_work_item_preflight(root: Path, item: sqlite3.Row, failure: dict[str, 
     }
 
 
+def _find_oversized_journal(report_root: str | None, cap_bytes: int = LOG_BOMB_JOURNAL_CAP_BYTES) -> str | None:
+    """Return the path of a tester .log journal under report_root that exceeds
+    cap_bytes, or None. Fail-open (None) on any error so a measurement glitch
+    never kills a legitimate run. Used by the log-bomb guard."""
+    if not report_root:
+        return None
+    try:
+        for dirpath, _dirs, files in os.walk(report_root):
+            for fn in files:
+                if fn.lower().endswith(".log"):
+                    fp = os.path.join(dirpath, fn)
+                    try:
+                        if os.path.getsize(fp) > cap_bytes:
+                            return fp
+                    except OSError:
+                        continue
+    except Exception:
+        return None
+    return None
+
+
 def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_seconds: int) -> dict[str, Any]:
     with farmctl.connect(root) as conn:
         row = conn.execute("SELECT * FROM work_items WHERE id=?", (item["id"],)).fetchone()
@@ -856,6 +883,8 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
 
     spawn_started = time.monotonic()
     deadline = spawn_started + timeout_seconds
+    log_bomb_path: str | None = None
+    _lb_iter = 0
     while time.monotonic() < deadline and farmctl._pid_tree_exists(spawn["pid"]):
         if _STOP:
             return {"action": "shutdown_waiting_for_child", "item_id": item["id"], "pid": spawn["pid"]}
@@ -874,7 +903,40 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         if _smoke_terminal_exit_stalled(item, payload):
             farmctl._stop_pid_tree(spawn["pid"])
             break
+        # Log-bomb guard: kill a backtest whose tester journal balloons past the
+        # cap (framework per-tick spam -> 50-60GB .log -> ~10GB/min disk burn).
+        _lb_iter += 1
+        if _lb_iter % LOG_BOMB_CHECK_EVERY_ITERS == 0:
+            log_bomb_path = _find_oversized_journal(spawn.get("report_root"))
+            if log_bomb_path:
+                farmctl._stop_pid_tree(spawn["pid"])
+                break
         time.sleep(2.0)
+    if log_bomb_path:
+        # Reclaim the disk immediately and record a terminal verdict with a high
+        # attempt_count so the sweep does NOT re-enqueue (it would re-bomb).
+        try:
+            gb = round(os.path.getsize(log_bomb_path) / 1024 ** 3, 1)
+        except OSError:
+            gb = 0.0
+        try:
+            os.remove(log_bomb_path)
+        except OSError:
+            pass
+        print(json.dumps({"event": "log_bomb", "terminal": terminal, "item_id": item["id"],
+                          "ea_id": item.get("ea_id"), "journal_gb": gb,
+                          "path": log_bomb_path}), flush=True)
+        def _record_log_bomb() -> None:
+            with farmctl.connect(root) as conn:
+                conn.execute(
+                    "UPDATE work_items SET status='done', verdict='INFRA_FAIL', "
+                    "attempt_count=99, claimed_by=NULL, updated_at=? WHERE id=?",
+                    (farmctl.utc_now(), item["id"]),
+                )
+                conn.commit()
+        _with_sqlite_retry(_record_log_bomb)
+        return {"action": "log_bomb_killed", "item_id": item["id"],
+                "ea_id": item.get("ea_id"), "journal_gb": gb}
     ran_seconds = time.monotonic() - spawn_started
     if farmctl._pid_tree_exists(spawn["pid"]):
         # Timed out — kill and treat as no-result (no clean exit code).
