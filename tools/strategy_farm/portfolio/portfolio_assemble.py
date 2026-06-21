@@ -76,6 +76,13 @@ def assemble_portfolio(
         weighting=weighting,
         starting_capital=starting_capital,
     )
+    oos = select_and_validate(
+        keys,
+        matrix,
+        max_dd_pct=max_dd_pct,
+        weighting=weighting,
+        starting_capital=starting_capital,
+    )
 
     return {
         "generated_at_utc": dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat(),
@@ -94,6 +101,7 @@ def assemble_portfolio(
         "selected_keys": [key_label(key) for key in selected_keys],
         "weights": {key_label(key): _round_float(selected_weights[key]) for key in selected_keys},
         "kpis": metrics,
+        "oos_validation": oos,
     }
 
 
@@ -268,6 +276,81 @@ def _min_dd_book(
 
     weights = weights_for(selected, all_keys, matrix, weighting)
     return selected, weights, current_metrics
+
+
+def _slice_rows(matrix: object, start: int, stop: int) -> object:
+    """Row (date) slice that works for both numpy arrays and list-of-lists."""
+    return matrix[start:stop]  # type: ignore[index]
+
+
+def evaluate_book(
+    all_keys: Sequence[Key],
+    matrix: object,
+    selected: Sequence[Key],
+    weights: dict[Key, float],
+    *,
+    starting_capital: float = 10_000.0,
+) -> dict[str, float | int | None]:
+    """KPIs of a FIXED book (keys+weights) on an arbitrary date window."""
+    if not selected:
+        return metrics_from_daily_pnl([], n_sleeves=0, starting_capital=starting_capital)
+    daily_pnl = _daily_pnl_for_keys(all_keys, matrix, sorted(selected), weights)
+    return metrics_from_daily_pnl(
+        daily_pnl, n_sleeves=len(selected), starting_capital=starting_capital
+    )
+
+
+def select_and_validate(
+    keys: Sequence[Key],
+    matrix: object,
+    *,
+    max_dd_pct: float = 6.0,
+    weighting: str = "equal",
+    train_frac: float = 0.7,
+    starting_capital: float = 10_000.0,
+) -> dict[str, Any]:
+    """Out-of-sample guard against SELECTION overfit.
+
+    The greedy maximizes in-sample Sharpe over many candidates, so on a large pool it
+    will cherry-pick a handful of curves that look spectacular in-sample (the Sharpe-8 /
+    DD-0.4% mirage seen on the Q04 cohort). This selects the book on the first
+    `train_frac` of the calendar, then re-scores that FIXED book on the held-out tail.
+    If the selection is overfit, test KPIs collapse vs train. Caller gates on
+    oos_cap_met / oos_sharpe_positive, not on the in-sample numbers.
+    """
+    n_days = _matrix_n_days(matrix)
+    cut = max(1, min(n_days - 1, int(n_days * train_frac))) if n_days >= 2 else n_days
+    train = _slice_rows(matrix, 0, cut)
+    test = _slice_rows(matrix, cut, n_days)
+
+    selected, weights, train_kpis = greedy_select(
+        keys, train, max_dd_pct=max_dd_pct, weighting=weighting,
+        starting_capital=starting_capital,
+    )
+    test_kpis = evaluate_book(keys, test, selected, weights, starting_capital=starting_capital)
+    full_kpis = evaluate_book(keys, matrix, selected, weights, starting_capital=starting_capital)
+
+    oos_dd = float(test_kpis["max_drawdown_pct"])
+    oos_sharpe = test_kpis["sharpe"]
+    train_sharpe = train_kpis.get("sharpe")
+    sharpe_retention = (
+        float(oos_sharpe) / float(train_sharpe)
+        if (oos_sharpe is not None and train_sharpe not in (None, 0))
+        else None
+    )
+    return {
+        "train_frac": float(train_frac),
+        "train_days": int(cut),
+        "test_days": int(n_days - cut),
+        "selected_on_train": [key_label(k) for k in selected],
+        "weights_on_train": {key_label(k): _round_float(weights[k]) for k in selected},
+        "train_kpis": train_kpis,
+        "test_kpis": test_kpis,
+        "full_kpis": full_kpis,
+        "oos_cap_met": oos_dd <= max_dd_pct,
+        "oos_sharpe_positive": bool(oos_sharpe is not None and oos_sharpe > 0),
+        "sharpe_retention": None if sharpe_retention is None else _round_float(sharpe_retention),
+    }
 
 
 def write_manifest(manifest: dict[str, Any], out_path: Path) -> None:
