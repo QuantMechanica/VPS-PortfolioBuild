@@ -461,6 +461,18 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
         if status == "PASS":
             classification[name] = "PASS"
             continue
+        # Portfolio reframe (DL-075, 2026-06-21, OWNER): seasonal (8.4), chopping-block
+        # (8.6) and regime/crisis (8.10) measure SINGLE-EA robustness across conditions —
+        # exactly the risk the Q09 anti-correlation portfolio absorbs by diversification.
+        # Requiring each EA to individually survive every season/regime double-counts the
+        # robustness bar and walls off low-freq/regime-dependent edges. So these three
+        # gates can only contribute a SOFT signal here: never HARD-fail, never block as
+        # INVALID. The EA flows to the Q09 portfolio track where combined robustness is
+        # the real gate. Profitability (portfolio_net_pf, cost_cushion) stays HARD below.
+        if name.startswith(("8.4", "8.6", "8.10")):
+            classification[name] = "EDGE_SOFT"
+            soft = True
+            continue
         if status == "INVALID" and not any(
             token in _detail_text(result).lower() for token in LOW_SAMPLE_DETAIL_TOKENS
         ):
