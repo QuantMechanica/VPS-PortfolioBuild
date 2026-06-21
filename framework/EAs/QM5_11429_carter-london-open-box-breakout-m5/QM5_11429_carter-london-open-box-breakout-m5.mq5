@@ -361,16 +361,30 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
   {
+   // Per-tick only: cancel pending orders when the entry window expires.
+   // Trailing SL is handled per-bar in AdvanceTrail_OnNewBar().
    const datetime broker_now = TimeCurrent();
    ResetSessionIfNeeded(broker_now);
 
    const int entry_end = EntryEndMinute();
    if(entry_end > 0 && EasternMinuteOfDay(broker_now) >= entry_end)
       CancelOurPendingOrders("london_box_entry_window_expired");
+  }
+
+void AdvanceTrail_OnNewBar()
+  {
+   // Per-bar trailing SL. Called only after QM_IsNewBar() gate in OnTick.
+   const datetime broker_now = TimeCurrent();
+   ResetSessionIfNeeded(broker_now);
+
+   if(!BuildLondonBox(broker_now))
+      return;
 
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return;
+
+   const double min_step = QM_StopRulesPipsToPriceDistance(_Symbol, 5);
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -383,14 +397,9 @@ void Strategy_ManageOpenPosition()
          continue;
 
       g_trade_attempted_this_session = true;
-      if(!BuildLondonBox(broker_now))
-         continue;
 
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const double current_sl = PositionGetDouble(POSITION_SL);
-      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-      if(point <= 0.0)
-         continue;
 
       if(ptype == POSITION_TYPE_BUY)
         {
@@ -398,7 +407,7 @@ void Strategy_ManageOpenPosition()
          if(bid <= g_box_high + strategy_trail_trigger_mult * g_box_height)
             continue;
          const double new_sl = QM_StopRulesNormalizePrice(_Symbol, bid - strategy_trail_distance_mult * g_box_height);
-         if(current_sl <= 0.0 || new_sl > current_sl + point * 0.5)
+         if(current_sl <= 0.0 || new_sl > current_sl + min_step)
             QM_TM_MoveSL(ticket, new_sl, "trail_by_london_box_height");
         }
       else if(ptype == POSITION_TYPE_SELL)
@@ -407,7 +416,7 @@ void Strategy_ManageOpenPosition()
          if(ask >= g_box_low - strategy_trail_trigger_mult * g_box_height)
             continue;
          const double new_sl = QM_StopRulesNormalizePrice(_Symbol, ask + strategy_trail_distance_mult * g_box_height);
-         if(current_sl <= 0.0 || new_sl < current_sl - point * 0.5)
+         if(current_sl <= 0.0 || new_sl < current_sl - min_step)
             QM_TM_MoveSL(ticket, new_sl, "trail_by_london_box_height");
         }
      }
@@ -500,6 +509,8 @@ void OnTick()
 
    if(!QM_IsNewBar())
       return;
+
+   AdvanceTrail_OnNewBar();
 
    QM_EquityStreamOnNewBar();
 
