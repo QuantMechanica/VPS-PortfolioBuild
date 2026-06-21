@@ -140,6 +140,26 @@ keep the assumptions feeding it documented and correct.
 - `terminal64.exe` is transient per backtest — never start it manually. After a VPS
   reboot, check the `QM_StrategyFarm_TerminalWorkers_AT_STARTUP` scheduled task.
 
+## Quota Governance & Factory Recovery (current runbooks)
+
+Read **`docs/ops/QUOTA_GOVERNOR_AND_FACTORY_RECOVERY_2026-06-21.md`** for the live
+operational state. Essentials:
+
+- **Quota governor (automated):** `tools/strategy_farm/quota_governor.py` + task
+  `QM_StrategyFarm_QuotaGovernor` (SYSTEM, 15min; reinstall via
+  `install_quota_governor_scheduled_task.ps1`) steers Codex+Claude spend along their
+  **weekly** limits — buffer → build EAs, ahead-of-pace → throttle build/research lanes
+  (`CODEX_LOW_TOKENS.flag` / `CLAUDE_DISABLED.flag` + lane-boost). **Backtests are never
+  throttled.** State: `D:/QM/reports/state/quota_governor_state.json` + `.log`. Headless
+  Claude builds run Sonnet (separate cheap quota) — Claude can build while Codex rests.
+- **Factory wedged / `launch_fault` (terminal64 instant-exits, real-rate ~0, host idle):**
+  recover with **`Factory_OFF.ps1` then `Factory_ON.ps1 -NoPause`** (admin, visible
+  session; `echo '' |` pipes Enter past OFF's Read-Host). A worker-only restart does NOT
+  fix it. **Do NOT VPS-reboot** (stops T_Live live trading) unless OFF/ON fails.
+- **Disk (D:) fast-burn:** `tester_cache_purge.ps1` runs every **20min** (no-op >80GB).
+  `NO_HISTORY;INCOMPLETE_RUNS` = first-attempt cold-cache transient (self-heals; do NOT
+  re-import .DWX history — ops 6e26c61f for the worker-retry fix).
+
 ## Repo Map (orientation)
 
 ```

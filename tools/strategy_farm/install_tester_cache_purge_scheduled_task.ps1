@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$RepoRoot = "C:\QM\repo",
-    [int]$EveryHours = 3,
+    [int]$EveryMinutes = 20,   # 2026-06-21: 60->20min after a fast cache-burn breached 40GB between hourly runs
     [string]$UserId = "qm-admin"
 )
 Set-StrictMode -Version Latest
@@ -12,7 +12,7 @@ $script   = Join-Path $RepoRoot "tools\strategy_farm\tester_cache_purge.ps1"
 if (-not (Test-Path -LiteralPath $script)) { throw "purge script not found: $script" }
 
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).Date `
-    -RepetitionInterval (New-TimeSpan -Hours $EveryHours) `
+    -RepetitionInterval (New-TimeSpan -Minutes $EveryMinutes) `
     -RepetitionDuration (New-TimeSpan -Days 3650)
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries `
     -StartWhenAvailable -MultipleInstances IgnoreNew -ExecutionTimeLimit (New-TimeSpan -Minutes 30)
@@ -25,7 +25,7 @@ $action = New-ScheduledTaskAction -Execute "powershell.exe" `
 
 Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger `
     -Settings $settings -Principal $principal -Force `
-    -Description "Every ${EveryHours}h: if D: free < 80GB, stop factory, purge regenerable MT5 tester caches (T*\Tester\bases + Agent-*), restart factory in the user's visible session. Permanent fix for D: fill-up (incident 2026-06-02). Source tick data + reports never touched." | Out-Null
+    -Description "Every ${EveryMinutes}min: if D: free < 80GB, stop factory, purge regenerable MT5 tester caches (T*\Tester\bases + Agent-*), restart factory in the user's visible session. Permanent fix for D: fill-up (incident 2026-06-02; cadence tightened 2026-06-21). Source tick data + reports never touched." | Out-Null
 Enable-ScheduledTask -TaskName $taskName | Out-Null
 
 Get-ScheduledTask -TaskName $taskName | Select-Object TaskName, State,
