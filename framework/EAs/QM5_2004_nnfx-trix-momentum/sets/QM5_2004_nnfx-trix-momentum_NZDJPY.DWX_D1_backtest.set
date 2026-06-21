@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        2004
 ; ea_slug:      nnfx-trix-momentum
@@ -10,7 +10,7 @@
 ; magic_slot:   25
 ; risk_mode:    FIXED
 ; portfolio_weight: 1.0
-; build_hash:   16f5a7e258ac5864fd528dfb7fea361096f691853fccb9a33a58b8c8952c5760
+; build_hash:   40a0bc2c2a43fb24e327a1794b0145c15d74bade770dace424ed1d95f6eee888
 ; author:       Development
 ; date:         2026-05-19
 ;==========================================================

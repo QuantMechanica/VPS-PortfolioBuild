@@ -69,8 +69,8 @@ double ChopValue(const int shift)
    for(int i = 0; i < strategy_chop_period; ++i)
       atr_sum += QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, shift + i);
    
-   const double high = iHigh(_Symbol, _Period, iHighest(_Symbol, _Period, MODE_HIGH, strategy_chop_period, shift));
-   const double low  = iLow(_Symbol, _Period, iLowest(_Symbol, _Period, MODE_LOW, strategy_chop_period, shift));
+   const double high = iHigh(_Symbol, _Period, iHighest(_Symbol, _Period, MODE_HIGH, strategy_chop_period, shift)); // perf-allowed: N-bar highest-high for CHOP numerator; no QM_* helper covers multi-bar range
+   const double low  = iLow(_Symbol, _Period, iLowest(_Symbol, _Period, MODE_LOW,  strategy_chop_period, shift)); // perf-allowed: N-bar lowest-low for CHOP numerator; no QM_* helper covers multi-bar range
    const double range = high - low;
    
    if(range <= 0.0) return 100.0;
@@ -105,7 +105,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    if(HasOpenPosition()) return false;
 
-   const double close_1 = iClose(_Symbol, _Period, 1);
+   const double close_1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar price read for ZLEMA baseline comparison; shift-1 only
    const double zlema_1 = ZlemaValue(1);
    const int trix_1 = TrixSignal(1);
    const double chop_1 = ChopValue(1);
