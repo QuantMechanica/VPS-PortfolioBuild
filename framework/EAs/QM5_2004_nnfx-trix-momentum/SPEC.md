@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-Enter long on the D1 close when: (1) the prior bar's close is above the 34-period Zero-Lag EMA (approximated via single-pass EMA), (2) the 14-period TRIX oscillator is positive (line > 0, i.e., trending up), and (3) the 14-period Choppiness Index is below 61.8 (indicating a trending rather than ranging market). Enter short on the mirror conditions. Stop-loss is set at 1.5× ATR(14) from entry price; take-profit at 1.5R. Exit when the TRIX oscillator changes sign (line crosses from positive to negative for a long, or negative to positive for a short).
+Enter long on the D1 close when: (1) the prior bar's close is above the 34-period Zero-Lag EMA (ZLEMA — two-pass: EMA of lag-adjusted close), (2) the 14-period TRIX line is above its 9-period signal EMA, and (3) the 14-period Choppiness Index is below 38 (strongly trending). Enter short on the mirror conditions. Stop-loss is set at 1.5× ATR(14) from entry price; take-profit at 1.5R. Exit when the TRIX line crosses its signal EMA in the opposite direction. ZLEMA and TRIX state is bootstrapped from 300 historical bars in OnInit and advanced per closed bar.
 
 ---
 
@@ -20,12 +20,12 @@ Enter long on the D1 close when: (1) the prior bar's close is above the 34-perio
 |---|---|---|---|
 | `strategy_zlema_period` | 34 | 10–100 | Period of the ZLEMA baseline indicator |
 | `strategy_trix_period` | 14 | 5–50 | Period of the TRIX oscillator |
+| `strategy_trix_signal_period` | 9 | 3–21 | Signal EMA period for TRIX line |
 | `strategy_chop_period` | 14 | 5–50 | Lookback period for Choppiness Index |
-| `strategy_chop_threshold` | 61.8 | 38–80 | CHOP must be below this to allow entry (trending regime) |
+| `strategy_chop_threshold` | 38.0 | 20–62 | CHOP must be below this to allow entry (< 38 = strongly trending) |
 | `strategy_atr_period` | 14 | 7–28 | ATR period used for stop calculation |
 | `strategy_atr_sl_mult` | 1.5 | 0.5–3.0 | ATR multiplier for stop distance |
 | `strategy_rr` | 1.5 | 1.0–4.0 | Risk-to-reward ratio for take-profit |
-| `strategy_spread_cap_points` | 25 | 0–200 | Block entry if spread exceeds this (0 = disabled) |
 
 ---
 
@@ -86,3 +86,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-21 | Initial build from card | a3a87c74-452c-4e7d-85ea-0b152942b495 |
+| v2 | 2026-06-21 | Rebuild: correct TRIX signal line (proper triple-EMA, not ROC proxy), CHOP threshold 61.8→38.0 per card, updated to FW1 dual-axis news init | a3a87c74-452c-4e7d-85ea-0b152942b495 |
