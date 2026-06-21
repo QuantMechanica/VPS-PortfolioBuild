@@ -50,7 +50,8 @@ $QM_ALWAYSON_TASKS = @(
     'QM_StrategyFarm_HourlyMonitor_60min',    # deterministic health triage (auto-fix drift + escalate)
     'QM_StrategyFarm_TesterCachePurge',       # every 20min: purge MT5 tester caches if D:<80GB (interactive, visible-session restart)
     'QM_StrategyFarm_QuotaPull',              # every 5min: headless Codex+Claude limit pull -> quota_snapshot.json (no browser)
-    'QM_StrategyFarm_QuotaGovernor'           # every 15min: weekly-pace throttle (CODEX_LOW_TOKENS/CLAUDE_DISABLED + lane-boost); reads quota_snapshot.json
+    'QM_StrategyFarm_QuotaGovernor',          # every 15min: weekly-pace throttle (CODEX_LOW_TOKENS/CLAUDE_DISABLED + lane-boost); reads quota_snapshot.json
+    'QM_StrategyFarm_PortfolioReport'         # every 6h: R-064-5 portfolio re-fit report on the stress-gated robust pool (Q08 FAIL_SOFT) -> portfolio_latest.json
 )
 
 # --- must stay disabled: session-0 daemon respawn hazards -----------
