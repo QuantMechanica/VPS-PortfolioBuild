@@ -149,35 +149,43 @@ int QM_Magic(const int ea_id, const int symbol_slot)
    static int cache_ea_id = -1;
    static int cache_slot  = -1;
    static int cache_magic = -1;
+   // Log-bomb guard (2026-06-21, ops f6769583): a misconfigured slot is hit on
+   // EVERY tick, so an unguarded PrintFormat writes a 50GB+ tester journal and
+   // burns the disk. Warn ONCE per (ea_id,slot) and suppress the per-tick
+   // repeat. Paired with the worker journal-size guard in terminal_worker.py.
+   static int warn_ea    = -2147483647;
+   static int warn_slot  = -2147483647;
 
    if(ea_id == cache_ea_id && symbol_slot == cache_slot)
      {{
       return cache_magic;
      }}
 
+   const bool warn_new = (ea_id != warn_ea || symbol_slot != warn_slot);
+
    if(ea_id < QM_MAGIC_EA_ID_MIN || ea_id > QM_MAGIC_EA_ID_MAX)
      {{
-      PrintFormat("%s: invalid ea_id=%d", EA_MAGIC_NOT_REGISTERED, ea_id);
+      if(warn_new) {{ PrintFormat("%s: invalid ea_id=%d", EA_MAGIC_NOT_REGISTERED, ea_id); warn_ea = ea_id; warn_slot = symbol_slot; }}
       return -1;
      }}
 
    if(symbol_slot < QM_MAGIC_SLOT_MIN || symbol_slot > QM_MAGIC_SLOT_MAX)
      {{
-      PrintFormat("%s: invalid symbol_slot=%d", EA_MAGIC_NOT_REGISTERED, symbol_slot);
+      if(warn_new) {{ PrintFormat("%s: invalid symbol_slot=%d", EA_MAGIC_NOT_REGISTERED, symbol_slot); warn_ea = ea_id; warn_slot = symbol_slot; }}
       return -1;
      }}
 
    const long magic64 = (long)ea_id * 10000L + (long)symbol_slot;
    if(magic64 <= 0 || magic64 > 2147483647L)
      {{
-      PrintFormat("%s: magic out of range ea_id=%d slot=%d", EA_MAGIC_NOT_REGISTERED, ea_id, symbol_slot);
+      if(warn_new) {{ PrintFormat("%s: magic out of range ea_id=%d slot=%d", EA_MAGIC_NOT_REGISTERED, ea_id, symbol_slot); warn_ea = ea_id; warn_slot = symbol_slot; }}
       return -1;
      }}
 
    const int magic = (int)magic64;
    if(magic == 0)
      {{
-      PrintFormat("%s: computed magic is zero ea_id=%d slot=%d", EA_MAGIC_NOT_REGISTERED, ea_id, symbol_slot);
+      if(warn_new) {{ PrintFormat("%s: computed magic is zero ea_id=%d slot=%d", EA_MAGIC_NOT_REGISTERED, ea_id, symbol_slot); warn_ea = ea_id; warn_slot = symbol_slot; }}
       return -1;
      }}
 
@@ -253,6 +261,9 @@ bool QM_MagicCollisionWithForeignOpenPositions(const int magic, const string exp
 
 int QM_MagicChecked(const int ea_id, const int symbol_slot, const string expected_symbol = "")
   {{
+   // Log-bomb guard: dedupe the per-tick "not registered" warning (see QM_Magic).
+   static int chk_warn_ea   = -2147483647;
+   static int chk_warn_slot = -2147483647;
    const int magic = QM_Magic(ea_id, symbol_slot);
    if(magic <= 0)
      {{
@@ -261,7 +272,11 @@ int QM_MagicChecked(const int ea_id, const int symbol_slot, const string expecte
 
    if(!QM_MagicRegistered(ea_id, symbol_slot))
      {{
-      PrintFormat("%s: ea_id=%d slot=%d magic=%d", EA_MAGIC_NOT_REGISTERED, ea_id, symbol_slot, magic);
+      if(ea_id != chk_warn_ea || symbol_slot != chk_warn_slot)
+        {{
+         PrintFormat("%s: ea_id=%d slot=%d magic=%d", EA_MAGIC_NOT_REGISTERED, ea_id, symbol_slot, magic);
+         chk_warn_ea = ea_id; chk_warn_slot = symbol_slot;
+        }}
       return -1;
      }}
 
