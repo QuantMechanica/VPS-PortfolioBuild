@@ -104,3 +104,29 @@ FX cointegration, on the precious-metals complex.
 All four are anticorrelated to the current US-index-MR + metal-trend book and respect the Hard
 Rules (cited cause, mechanical, DWX-testable, no ML/grid/martingale). The pipeline (DL-072/073
 cost + recalibrated gates) remains the honest judge.
+
+---
+
+## CORRECTION (2026-06-21, OWNER: "London ORB — isn't that already a card? surprised Asian
+## breakout on USDJPY isn't a sleeve")
+
+OWNER is right — Cells 3 & 4 are NOT card-empty, only **sleeve-empty**. The session/breakout
+family is heavily carded and **already exists**: QM5_10140 tv-london-session-break, 10355
+et-session-orb, 10003 morning-breakout (Cell 3); and Asian/Tokyo USDJPY: 10678 tv-tokyo-lsb,
+10707 asian-reclaim, 10710 tv-asian-retbrk, 10715 asian-box, 10506 nightflat (Cell 3/4).
+
+**Why they aren't sleeves — NOT lack of edge, a BUILD defect.** Their Q02/Q04 deaths are almost
+all `INFRA_FAIL` with `reason_classes = ['ONINIT_FAILED','INCOMPLETE_RUNS']` (10710: 60×). The EA
+fails `OnInit()` (`magic = QM_FrameworkMagic(); if(magic<=0) -> INIT_FAILED`) → never trades → 0
+trades → INFRA (and the RETIRED_LOW_FREQ kills are the same symptom: few bars → "low freq").
+**76 distinct EAs hit ONINIT_FAILED** in the last 3 days — the fail-closed twin of the log-bomb
+resolver (ops f6769583). Root cause for the session family: their .ex5 was STALE (pre-resolver/
+registration); they were never tested on a good build — exactly the Q08 stale-.ex5 class.
+
+**Action taken:** my 2026-06-21 bulk recompile already rebuilt these (10710.ex5 = 16:04 today,
+registered for its test symbols). **Re-enqueued 120 Q02 work_items across the 13-EA session/forex
+family** (status=pending on the fresh .ex5) to confirm OnInit now passes → real verdicts. If it
+does, the forex/seasonality cell fills from EXISTING carded edges, no new builds needed. Broader
+76-EA ONINIT_FAILED cohort + the QM_FrameworkMagic root-cause: route to Codex (ties to f6769583).
+**Revised priority: re-test the recompiled session family FIRST (free, edges already exist) before
+building any new Cell-3/4 card.**
