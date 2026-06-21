@@ -3,16 +3,16 @@
 ; ea_id:        11320
 ; ea_slug:      tc-m5-13-cci100-macd
 ; ea_version:   v5.0
-; set_version:  s20260620-001
+; set_version:  s20260621-001
 ; symbol:       AUDUSD.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b0edbb31ead36eae905cabced99e36f1c7c12a814ae1d31673096eaf01a8b860
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-20
+; date:         2026-06-21
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000
