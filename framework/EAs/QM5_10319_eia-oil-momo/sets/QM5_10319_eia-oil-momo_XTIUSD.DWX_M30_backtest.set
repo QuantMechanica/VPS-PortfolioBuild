@@ -3,16 +3,16 @@
 ; ea_id:        10319
 ; ea_slug:      eia-oil-momo
 ; ea_version:   v5.0
-; set_version:  s20260612-001
+; set_version:  s20260621-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    M30
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b2bdcf90335ed54142b23f4478ab8b09a603fc72b7c2a49defaa73df1cea13fa
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-12
+; date:         2026-06-21
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000

@@ -99,3 +99,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-12 | Initial build from card | 88468531-9e6e-4f22-bdb9-3ee82924399c |
+| v2 | 2026-06-21 | Fix DWX zero-spread invariant in spread filter — skip filter when no non-zero historical samples; never block on zero spread | 88468531-9e6e-4f22-bdb9-3ee82924399c |

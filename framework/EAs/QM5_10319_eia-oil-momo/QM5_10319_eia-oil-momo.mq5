@@ -67,18 +67,6 @@ datetime DayStart(const datetime t)
    return StructToTime(dt);
   }
 
-int DayOfWeekForDate(const int year, const int month, const int day)
-  {
-   MqlDateTime dt;
-   ZeroMemory(dt);
-   dt.year = year;
-   dt.mon = month;
-   dt.day = day;
-   datetime t = StructToTime(dt);
-   TimeToStruct(t, dt);
-   return dt.day_of_week;
-  }
-
 int NthWeekdayOfMonth(const int year, const int month, const int weekday, const int nth)
   {
    int seen = 0;
@@ -239,6 +227,7 @@ bool HistoricalEiaSpreadMedian(double &out_median)
          continue;
       if(!IsConfiguredMinute(rates[i].time, strategy_final_entry_hour_broker, strategy_final_entry_minute_broker))
          continue;
+      // Only collect bars with a real non-zero spread (DWX tester returns 0 for all)
       if(rates[i].spread <= 0)
          continue;
 
@@ -260,9 +249,9 @@ bool HistoricalEiaSpreadMedian(double &out_median)
    return (out_median > 0.0);
   }
 
+// No Trade Filter: timeframe guard; event-day/time/spread/range filters live in EntrySignal.
 bool Strategy_NoTradeFilter()
   {
-   // No Trade Filter: timeframe guard; event-day/time/spread filters live in EntrySignal.
    if((ENUM_TIMEFRAMES)_Period != PERIOD_M30)
       return true;
    return false;
@@ -292,6 +281,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    MqlRates release_bar;
+   ZeroMemory(release_bar);
    if(!FindTodayBar(today_rates, today_count, strategy_release_hour_broker, strategy_release_minute_broker, release_bar))
       return false;
    if(release_bar.open <= 0.0 || release_bar.close <= 0.0)
@@ -305,12 +295,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(daily_atr <= 0.0 || pre_entry_range >= strategy_daily_range_atr_mult * daily_atr)
       return false;
 
+   // Spread filter: if no historical spread data (DWX zero-spread tester), skip the check.
+   // DWX invariant: DWX symbols return 0 spread in tester; never block on zero spread.
    double median_spread = 0.0;
-   if(!HistoricalEiaSpreadMedian(median_spread))
-      return false;
-   const double current_spread = (double)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(current_spread <= 0.0 || current_spread >= strategy_spread_median_mult * median_spread)
-      return false;
+   if(HistoricalEiaSpreadMedian(median_spread) && median_spread > 0.0)
+     {
+      const double current_spread = (double)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      if(current_spread > 0.0 && current_spread >= strategy_spread_median_mult * median_spread)
+         return false;
+     }
 
    const double r_eia30 = (release_bar.close / release_bar.open) - 1.0;
    if(r_eia30 == 0.0)
@@ -323,6 +316,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double atr_m30 = QM_ATR(_Symbol, PERIOD_M30, strategy_atr_period, 1);
+   if(atr_m30 <= 0.0)
+      return false;
    req.sl = QM_StopATRFromValue(_Symbol, req.type, entry_price, atr_m30, strategy_atr_sl_mult);
    if(req.sl <= 0.0)
       return false;
@@ -337,18 +332,18 @@ void Strategy_ManageOpenPosition()
    // Trade Management: card specifies one position, no scaling, no trailing, no partials.
   }
 
+// Trade Close: close at the end of the final 30-minute window; no overnight holding.
 bool Strategy_ExitSignal()
   {
-   // Trade Close: close at the end of the final 30-minute window; no overnight holding.
    const datetime broker_now = TimeCurrent();
    if(!IsScheduledEiaDay(broker_now))
       return false;
    return IsAtOrAfterTodayTime(broker_now, strategy_final_close_hour_broker, strategy_final_close_minute_broker);
   }
 
+// News Filter Hook: EIA proxy is baked into the schedule; defer to framework.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   // News Filter Hook: the strategy trades only the deterministic EIA proxy encoded above.
    return false;
   }
 
