@@ -125,12 +125,100 @@ def next_research_target(cards_dir: Path, *, registry_path: Path = COMMISSION_RE
     return {"logic": target["logic"], "market": target["market"], "count": str(target["count"])}
 
 
+DEFAULT_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
+DEFAULT_CARDS_DIR = Path(r"D:\QM\strategy_farm\artifacts\cards_approved")
+_BOMBERS = ("10809", "11072", "11092")
+
+
+def robust_sleeves(db_path: Path = DEFAULT_DB) -> list[tuple[int, str]]:
+    """Distinct (ea_int, symbol) of the robust book = Q08 FAIL_SOFT, minus bombers."""
+    import sqlite3
+    try:
+        conn = sqlite3.connect(db_path)
+    except sqlite3.Error:
+        return []
+    try:
+        rows = conn.execute(
+            "SELECT DISTINCT ea_id, symbol FROM work_items "
+            "WHERE phase='Q08' AND verdict='FAIL_SOFT' AND symbol IS NOT NULL"
+        ).fetchall()
+    except sqlite3.Error:
+        return []
+    finally:
+        conn.close()
+    out: list[tuple[int, str]] = []
+    for ea_id, symbol in rows:
+        if any(b in str(ea_id) for b in _BOMBERS):
+            continue
+        # match QM5_(\d+), NOT \d+ (the latter grabs the '5' in the 'QM5' prefix)
+        m = re.search(r"QM5_(\d+)", str(ea_id)) or re.fullmatch(r"\s*(\d+)\s*", str(ea_id))
+        if m:
+            out.append((int(m.group(1)), str(symbol)))
+    return sorted(set(out))
+
+
+def sleeve_coverage(
+    *,
+    db_path: Path = DEFAULT_DB,
+    cards_dir: Path = DEFAULT_CARDS_DIR,
+    registry_path: Path = COMMISSION_REGISTRY,
+) -> dict[str, Any]:
+    """Logic x Market coverage of the robust BOOK (sleeves), not the card reservoir.
+
+    This is the DL-064 'portfolio matrix': what diversification the book actually HAS,
+    classified per sleeve using the sleeve's traded symbol (not all card target_symbols).
+    Empty cells are ranked thinnest-market-first — the directed-research shopping list.
+    """
+    clusters = load_symbol_clusters(registry_path)
+    grid: dict[tuple[str, str], list[str]] = {
+        (lt, mc): [] for lt in LOGIC_TYPES for mc in MARKET_CLUSTERS
+    }
+    for ea_id, symbol in robust_sleeves(db_path):
+        cards = sorted(cards_dir.glob(f"QM5_{ea_id}_*.md")) if cards_dir.is_dir() else []
+        if cards:
+            text = cards[0].read_text(encoding="utf-8", errors="ignore")
+            logic = classify_logic(cards[0].stem, text)
+        else:
+            logic = "trend"
+        market = classify_market([symbol], clusters)
+        if market and (logic, market) in grid:
+            grid[(logic, market)].append(f"{ea_id}:{symbol}")
+    market_counts = {mc: sum(len(v) for (lt, m), v in grid.items() if m == mc) for mc in MARKET_CLUSTERS}
+    logic_counts = {lt: sum(len(v) for (l, m), v in grid.items() if l == lt) for lt in LOGIC_TYPES}
+    empty = [k for k, v in grid.items() if not v]
+    ranked = sorted(empty, key=lambda k: (market_counts[k[1]], logic_counts[k[0]],
+                                          MARKET_CLUSTERS.index(k[1]), LOGIC_TYPES.index(k[0])))
+    return {
+        "n_sleeves": sum(len(v) for v in grid.values()),
+        "filled": {f"{lt}|{mc}": v for (lt, mc), v in grid.items() if v},
+        "empty_cells": [{"logic": lt, "market": mc} for (lt, mc) in empty],
+        "ranked_targets": [{"logic": lt, "market": mc} for (lt, mc) in ranked],
+        "market_counts": market_counts,
+        "logic_counts": logic_counts,
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Logic x Market research coverage (DL-064 R-064-1)")
-    ap.add_argument("--cards-dir", type=Path,
-                    default=Path(r"D:\QM\strategy_farm\artifacts\cards_approved"))
+    ap.add_argument("--cards-dir", type=Path, default=DEFAULT_CARDS_DIR)
+    ap.add_argument("--sleeves", action="store_true",
+                    help="show the BOOK (robust sleeve) matrix instead of card-reservoir coverage")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
+    if args.sleeves:
+        sc = sleeve_coverage(cards_dir=args.cards_dir)
+        if args.json:
+            print(json.dumps(sc, indent=2))
+        else:
+            print(f"=== BOOK matrix ({sc['n_sleeves']} robust sleeves) ===")
+            for lt in LOGIC_TYPES:
+                row = " ".join(
+                    f"{mc[:4]}={len(sc['filled'].get(f'{lt}|{mc}', [])):>2}" for mc in MARKET_CLUSTERS
+                )
+                print(f"  {lt:<24} {row}")
+            print("ranked empty target cells: "
+                  + ", ".join(f"{t['logic']}/{t['market']}" for t in sc["ranked_targets"]))
+        return 0
     cov = coverage(args.cards_dir)
     if args.json:
         print(json.dumps(cov, indent=2))

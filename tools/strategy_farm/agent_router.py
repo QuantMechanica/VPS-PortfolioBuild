@@ -551,6 +551,107 @@ def replenish(
     }
 
 
+def directed_research_targets(root: Path = DEFAULT_ROOT) -> dict[str, Any]:
+    """DL-064 R-064-1: ranked empty (logic x market) cells of the robust sleeve pool.
+
+    The "shopping list" for anticorrelated edges. Lazy-imports the portfolio matrix so the
+    router still works if the portfolio package is unavailable.
+    """
+    try:
+        import research_matrix
+    except Exception as exc:  # pragma: no cover - defensive
+        return {"available": False, "ranked_targets": [], "reason": f"matrix_unavailable:{exc}"}
+    try:
+        sc = research_matrix.sleeve_coverage()
+    except Exception as exc:  # pragma: no cover - defensive
+        return {"available": False, "ranked_targets": [], "reason": f"matrix_error:{exc}"}
+    return {
+        "available": True,
+        "ranked_targets": sc["ranked_targets"],
+        "filled": sc["filled"],
+        "n_sleeves": sc["n_sleeves"],
+    }
+
+
+def replenish_directed(
+    root: Path = DEFAULT_ROOT,
+    *,
+    max_open_directed: int = 6,
+    max_seed_per_run: int = 3,
+    claude_disabled_flag: Path = CLAUDE_DISABLED_FLAG,
+) -> dict[str, Any]:
+    """DL-064 R-064-1: seed matrix-DIRECTED research for the most under-filled,
+    anticorrelated portfolio cells (Forex / SeasonalVol are empty today).
+
+    Replaces the frozen generic reservoir replenishment with targeted demand. Idempotent
+    and self-limiting: at most one open task per empty cell, capped at max_open_directed
+    total and max_seed_per_run per cycle, so running it every router tick is safe.
+    """
+    targets = directed_research_targets(root)
+    if not targets.get("available"):
+        return {"created": [], "skipped": [], "reason": targets.get("reason")}
+    ranked = targets.get("ranked_targets") or []
+    if not ranked:
+        return {"created": [], "skipped": [], "reason": "no_empty_cells", "n_sleeves": targets.get("n_sleeves")}
+
+    open_cells: set[tuple[str, str]] = set()
+    with closing(connect(root)) as conn:
+        for row in conn.execute(
+            """
+            SELECT payload_json FROM agent_tasks
+            WHERE state IN ('BACKLOG', 'TODO', 'IN_PROGRESS', 'REVIEW')
+              AND payload_json LIKE '%portfolio_matrix_directed_research%'
+            """
+        ).fetchall():
+            try:
+                p = json.loads(row["payload_json"] or "{}")
+            except json.JSONDecodeError:
+                continue
+            open_cells.add((str(p.get("target_logic")), str(p.get("target_market"))))
+
+    created: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+    for t in ranked:
+        if len(created) >= max_seed_per_run:
+            break
+        if (len(open_cells) + len(created)) >= max_open_directed:
+            break
+        cell = (t["logic"], t["market"])
+        if cell in open_cells:
+            skipped.append({"cell": cell, "reason": "already_open"})
+            continue
+        brief = (
+            f"Find or mechanize a {t['logic']} strategy for {t['market']} markets "
+            f"(DWX-testable) that is ANTICORRELATED to the current book "
+            f"({targets.get('filled')}). Low parameter freedom, V5-framework-encodable, "
+            f"no ML/grid/martingale, one position per magic. This fills an empty "
+            f"portfolio diversification cell (DL-064 R-064-1)."
+        )
+        created.append(
+            enqueue_task(
+                root,
+                "research_strategy",
+                state="TODO",
+                priority=70,
+                required_capabilities=RESEARCH_PERSPECTIVES["gemini"]["required_capabilities"],
+                payload={
+                    "reason": "portfolio_matrix_directed_research",
+                    "target_logic": t["logic"],
+                    "target_market": t["market"],
+                    "perspective": "portfolio_diversification_R064_1",
+                    "brief": brief,
+                },
+            )
+        )
+    return {
+        "created": created,
+        "skipped": skipped,
+        "open_before": len(open_cells),
+        "ranked_targets": ranked,
+        "n_sleeves": targets.get("n_sleeves"),
+    }
+
+
 def enqueue_friday_smoke_tasks(
     root: Path = DEFAULT_ROOT,
     *,
@@ -624,10 +725,14 @@ def run_once(
         min_ready_strategy_cards=min_ready_strategy_cards,
         claude_disabled_flag=claude_disabled_flag,
     )
+    # DL-064 R-064-1: matrix-directed research toward empty anticorrelated cells
+    # (replaces the frozen generic replenishment). Idempotent + self-limiting.
+    directed = replenish_directed(root, claude_disabled_flag=claude_disabled_flag)
     routed = route_many(root, max_routes=max_routes, claude_disabled_flag=claude_disabled_flag)
     return {
         "registry": registry,
         "replenish": replenished,
+        "replenish_directed": directed,
         "routes": routed,
         "status": status(root),
     }
