@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11831 scalp-macd1269-stoch833-m5 — MACD(12,26,9) state + Stochastic(8,3,3) cross scalp (M5)"
+#property description "QM5_11831 scalp-macd1269-stoch833-m5 - MACD(12,26,9) histogram + Stochastic(8,3,3) cross scalp (M5)"
 
 #include <QM/QM_Common.mqh>
 
@@ -11,21 +11,16 @@
 // Card: artifacts/cards_approved/QM5_11831_scalp-macd1269-stoch833-m5.md
 //       (g0_status APPROVED). Source-id cea07ead-613e-5767-89b6-9b9ec98b84ee.
 //
-// Mechanics (M5, closed-bar reads at shift 1; one event + state design to avoid
-// the two-cross-same-bar zero-trade trap):
-//   MACD STATE (confirm) : QM_MACD_Main(12,26,9) > 0  -> long bias
-//                          QM_MACD_Main(12,26,9) < 0  -> short bias
+// Mechanics (M5, closed-bar reads at shift 1):
+//   MACD STATE (confirm) : MACD main above signal -> long bias
+//                          MACD main below signal -> short bias
 //   Stochastic EVENT     : trigger = %K crosses %D once on the trigger bar.
 //     LONG  : %K crosses ABOVE %D AND the cross happens out of the oversold
 //             zone (prior %K below stoch_os).
 //     SHORT : %K crosses BELOW %D AND the cross happens out of the overbought
 //             zone (prior %K above stoch_ob).
-//   The MACD side is a STATE evaluated on the same closed bar; the Stochastic
-//   cross is the single trigger EVENT. They are never both fresh crossings.
 //   Stop        : entry -/+ sl_atr_mult * ATR(atr_period)   (2xATR(14) default).
-//   Take profit : entry +/- tp_atr_mult * ATR(atr_period)   (ATR-scaled, replaces
-//                 raw-pip TP for correct scaling across 5-digit / JPY pairs).
-//   Spread guard: skip only a genuinely wide spread (fail-open on .DWX 0 spread).
+//   Take profit : fixed take_profit_pips from the card (25 pips default).
 //
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
 // else is framework wiring and MUST stay intact.
@@ -66,8 +61,7 @@ input double strategy_stoch_os          = 20.0;   // oversold threshold (long tr
 input double strategy_stoch_ob          = 80.0;   // overbought threshold (short trigger zone)
 input int    strategy_atr_period        = 14;     // ATR period (stop / target)
 input double strategy_sl_atr_mult       = 2.0;    // stop distance = mult * ATR
-input double strategy_tp_atr_mult       = 2.0;    // target distance = mult * ATR
-input double strategy_spread_pct_of_stop = 25.0;  // skip if spread > this % of stop distance
+input int    strategy_take_profit_pips = 25;      // fixed M5 take profit in pips
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -76,40 +70,32 @@ input double strategy_spread_pct_of_stop = 25.0;  // skip if spread > this % of 
 // Cheap O(1) per-tick gate. Spread guard only; fail-open on .DWX zero spread.
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to the entry gate, do not block here
-
-   const double stop_distance = strategy_sl_atr_mult * atr_value;
-   if(stop_distance <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
-      return true;
-
    return false;
   }
 
 // MACD(state) + Stochastic(event) entry. Caller guarantees QM_IsNewBar()==true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // --- MACD STATE (confirming side) on the closed bar ---
+   // --- MACD histogram STATE (confirming side) on the closed bar ---
    const double macd_main = QM_MACD_Main(_Symbol, _Period,
                                          strategy_macd_fast, strategy_macd_slow,
                                          strategy_macd_signal, 1);
-   // (no early reject on 0.0: the line legitimately sits near zero; direction
-   //  alone determines the bias and the cross test below gates the entry.)
+   const double macd_signal = QM_MACD_Signal(_Symbol, _Period,
+                                             strategy_macd_fast, strategy_macd_slow,
+                                             strategy_macd_signal, 1);
+   const double macd_hist = macd_main - macd_signal;
 
    // --- Stochastic EVENT (single trigger cross) on the closed bar ---
    // prev = shift 2 (bar before trigger), now = shift 1 (trigger bar).
@@ -120,9 +106,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(k_now <= 0.0 || d_now <= 0.0 || k_prev <= 0.0 || d_prev <= 0.0)
       return false;
 
-   // LONG: fresh %K-above-%D cross emerging out of the oversold zone, MACD>0.
+   // LONG: fresh %K-above-%D cross emerging out of the oversold zone, MACD histogram > 0.
    const bool cross_up = (k_prev <= d_prev && k_now > d_now);
-   if(cross_up && k_prev < strategy_stoch_os && macd_main > 0.0)
+   if(cross_up && k_prev < strategy_stoch_os && macd_hist > 0.0)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
@@ -131,7 +117,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(atr_value <= 0.0)
          return false;
       const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr_value, strategy_sl_atr_mult);
-      const double tp = QM_TakeATRFromValue(_Symbol, QM_BUY, entry, atr_value, strategy_tp_atr_mult);
+      const double tp = QM_TakeFixedPips(_Symbol, QM_BUY, entry, strategy_take_profit_pips);
       if(sl <= 0.0 || tp <= 0.0)
          return false;
       req.type   = QM_BUY;
@@ -142,9 +128,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return true;
      }
 
-   // SHORT: fresh %K-below-%D cross emerging out of the overbought zone, MACD<0.
+   // SHORT: fresh %K-below-%D cross emerging out of the overbought zone, MACD histogram < 0.
    const bool cross_down = (k_prev >= d_prev && k_now < d_now);
-   if(cross_down && k_prev > strategy_stoch_ob && macd_main < 0.0)
+   if(cross_down && k_prev > strategy_stoch_ob && macd_hist < 0.0)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(entry <= 0.0)
@@ -153,7 +139,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(atr_value <= 0.0)
          return false;
       const double sl = QM_StopATRFromValue(_Symbol, QM_SELL, entry, atr_value, strategy_sl_atr_mult);
-      const double tp = QM_TakeATRFromValue(_Symbol, QM_SELL, entry, atr_value, strategy_tp_atr_mult);
+      const double tp = QM_TakeFixedPips(_Symbol, QM_SELL, entry, strategy_take_profit_pips);
       if(sl <= 0.0 || tp <= 0.0)
          return false;
       req.type   = QM_SELL;
