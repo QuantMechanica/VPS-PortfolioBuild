@@ -2064,6 +2064,36 @@ def collect_ea_lead_kpis(root: Path, ea_ids: list[str]) -> dict[str, dict[str, A
         }
         by_ea[r["ea_id"]].append(item)
 
+    # Headline numbers (best P&L / trades / worst DD) come from the normalized
+    # ea_metrics layer, not the latest-per-cell work_item — the latest attempt is
+    # frequently an INFRA_FAIL re-run or ablation perturbation that buries the real
+    # PASS run. Ablation perturbations are excluded from "best" by design.
+    mx: dict[str, dict[str, Any]] = {}
+    try:
+        with sqlite3.connect(db) as conn2:
+            conn2.row_factory = sqlite3.Row
+            mrows = conn2.execute(
+                f"SELECT ea_id, phase, symbol, net_profit, trades, drawdown_money "
+                f"FROM ea_metrics WHERE ea_id IN ({placeholders}) "
+                f"AND COALESCE(is_ablation,0)=0",
+                ea_ids,
+            ).fetchall()
+        agg: dict[str, dict[str, Any]] = defaultdict(
+            lambda: {"best": None, "trades": [], "dds": []})
+        for r in mrows:
+            a = agg[r["ea_id"]]
+            net = r["net_profit"]
+            if isinstance(net, (int, float)):
+                if a["best"] is None or net > a["best"][0]:
+                    a["best"] = (net, r["phase"], r["symbol"])
+            if isinstance(r["trades"], (int, float)):
+                a["trades"].append(r["trades"])
+            if isinstance(r["drawdown_money"], (int, float)):
+                a["dds"].append(r["drawdown_money"])
+        mx = agg
+    except sqlite3.OperationalError:
+        mx = {}  # ea_metrics not built yet → fall back to work_item stats below
+
     for ea_id, items in by_ea.items():
         nets = [(i["net_profit"], i["phase"], i["symbol"]) for i in items if isinstance(i.get("net_profit"), (int, float))]
         trades = [i["trades"] for i in items if isinstance(i.get("trades"), (int, float))]
@@ -2084,7 +2114,11 @@ def collect_ea_lead_kpis(root: Path, ea_ids: list[str]) -> dict[str, dict[str, A
         if pass_phases:
             highest_pass_phase = max(pass_phases, key=lambda p: PHASE_ORDER.index(p))
 
-        best = max(nets, key=lambda x: x[0]) if nets else None
+        # Prefer the normalized ea_metrics aggregate; fall back to work_item stats.
+        m_agg = mx.get(ea_id) or {}
+        best = m_agg.get("best") or (max(nets, key=lambda x: x[0]) if nets else None)
+        m_trades = m_agg.get("trades") or trades
+        m_dds = m_agg.get("dds") or dds
         # latest phase any work_item touched
         try:
             latest_phase_idx = max(
@@ -2099,8 +2133,8 @@ def collect_ea_lead_kpis(root: Path, ea_ids: list[str]) -> dict[str, dict[str, A
             "best_net": best[0] if best else None,
             "best_phase": best[1] if best else None,
             "best_symbol": best[2] if best else None,
-            "trades_mean": (sum(trades) / len(trades)) if trades else None,
-            "dd_worst": max(dds) if dds else None,
+            "trades_mean": (sum(m_trades) / len(m_trades)) if m_trades else None,
+            "dd_worst": max(m_dds) if m_dds else None,
             "n_symbols": len({i["symbol"] for i in items if i.get("symbol")}),
             "n_pass": n_pass,
             "n_fail": n_fail,
@@ -2535,6 +2569,23 @@ def collect_ea_detail(ea_id: str, root: Path) -> dict[str, Any]:
                 "SELECT * FROM work_items WHERE ea_id = ? ORDER BY phase, symbol, updated_at DESC",
                 (ea_id,)
             )]
+            # Normalized metric layer (ea_metrics): the headline scalars and
+            # phase-specific detail (folds/seeds/sub-gates) parsed ONCE from each
+            # work_item's evidence file. work_items itself stores no numbers, and
+            # payload.recovered_stats is empty for most rows — so without this the
+            # per-row tables fall back to "no parsed evidence / $0.00 / —" even for
+            # genuine survivors (e.g. QM5_10440: +$49,991 net / PF 1.22 / WF all PASS).
+            metrics_by_wid: dict[str, dict[str, Any]] = {}
+            try:
+                metrics_by_wid = {
+                    r["work_item_id"]: dict(r)
+                    for r in conn.execute(
+                        "SELECT * FROM ea_metrics WHERE ea_id = ?", (ea_id,)
+                    )
+                }
+            except sqlite3.OperationalError:
+                # ea_metrics not built yet — degrade to legacy recovered_stats path.
+                metrics_by_wid = {}
         # Collect ALL chronological attempts per (phase, symbol) — needed for
         # the expandable timeline (OWNER call 2026-05-23: latest-only display
         # hid that NDX Q02 had 30+ historical PASS attempts, making the
@@ -2549,15 +2600,17 @@ def collect_ea_detail(ea_id: str, root: Path) -> dict[str, Any]:
             rs = pl.get("recovered_stats") or {}
             reason = (pl.get("blocked_reason") or pl.get("verdict_reason")
                       or pl.get("reason") or "")
+            m = metrics_by_wid.get(w.get("id")) or {}
             attempts_by_key[key].append({
                 "created_at": w.get("created_at") or w.get("updated_at"),
                 "updated_at": w.get("updated_at"),
                 "status": w.get("status"),
                 "verdict": w.get("verdict"),
                 "reason": str(reason) if reason else "",
-                "net_profit": rs.get("net_profit"),
-                "trades": rs.get("total_trades"),
-                "drawdown": rs.get("max_dd") or rs.get("drawdown"),
+                "net_profit": m.get("net_profit") if m.get("net_profit") is not None else rs.get("net_profit"),
+                "trades": m.get("trades") if m.get("trades") is not None else rs.get("total_trades"),
+                "drawdown": m.get("drawdown_money") if m.get("drawdown_money") is not None else (rs.get("max_dd") or rs.get("drawdown")),
+                "is_ablation": bool(m.get("is_ablation")),
                 "evidence": w.get("evidence_path"),
                 "setfile": w.get("setfile_path"),
             })
@@ -2565,19 +2618,43 @@ def collect_ea_detail(ea_id: str, root: Path) -> dict[str, Any]:
         for k in attempts_by_key:
             attempts_by_key[k].sort(key=lambda a: a.get("created_at") or "")
 
-        # Keep the latest record per (phase, symbol) for the summary row
-        seen: set[tuple[str, str]] = set()
-        items: list[dict[str, Any]] = []
+        # Headline row per (phase, symbol): pick the most REPRESENTATIVE attempt,
+        # not merely the latest. The latest attempt is frequently an INFRA_FAIL
+        # re-run or an ablation perturbation (net≈0) that hid genuine PASS numbers
+        # (this is why QM5_10440/NDX Q02 showed $0 while a +$49,991 PASS run sat
+        # one attempt back). Rank: non-ablation > has-graded-metrics > PASS-verdict
+        # > net_profit. The full chronological history stays in the timeline below.
+        def _headline_score(w: dict[str, Any]) -> tuple:
+            mm = metrics_by_wid.get(w.get("id")) or {}
+            net = mm.get("net_profit")
+            pf = mm.get("profit_factor")
+            graded = 1 if (net is not None or pf is not None) else 0
+            nonabl = 0 if mm.get("is_ablation") else 1
+            passish = 1 if (w.get("verdict") in ("PASS", "PASS_SOFT", "MULTI_SEED_PASS")) else 0
+            rankval = net if net is not None else (pf if pf is not None else float("-inf"))
+            return (nonabl, graded, passish, rankval, w.get("updated_at") or "")
+
+        best_by_key: dict[tuple[str, str], dict[str, Any]] = {}
         for w in rows:
             key = (w.get("phase") or "?", w.get("symbol") or "?")
-            if key in seen:
-                continue
-            seen.add(key)
+            cur = best_by_key.get(key)
+            if cur is None or _headline_score(w) > _headline_score(cur):
+                best_by_key[key] = w
+
+        items: list[dict[str, Any]] = []
+        for key, w in best_by_key.items():
             try:
                 payload = json.loads(w.get("payload_json") or "{}")
             except Exception:
                 payload = {}
             rs = payload.get("recovered_stats") or {}
+            m = metrics_by_wid.get(w.get("id")) or {}
+
+            def _pick(metric_key: str, rs_val: Any) -> Any:
+                """Prefer the normalized ea_metrics value; fall back to recovered_stats."""
+                mv = m.get(metric_key)
+                return mv if mv is not None else rs_val
+
             item = {
                 "phase": w.get("phase") or "?",
                 "symbol": w.get("symbol") or "?",
@@ -2586,11 +2663,13 @@ def collect_ea_detail(ea_id: str, root: Path) -> dict[str, Any]:
                 "updated_at": w.get("updated_at"),
                 "setfile": w.get("setfile_path"),
                 "evidence": w.get("evidence_path"),
-                "net_profit": rs.get("net_profit"),
-                "trades": rs.get("total_trades"),
-                "drawdown": rs.get("max_dd") or rs.get("drawdown"),
-                "profit_factor": rs.get("profit_factor"),
-                "sharpe": None,
+                "net_profit": _pick("net_profit", rs.get("net_profit")),
+                "trades": _pick("trades", rs.get("total_trades")),
+                "drawdown": _pick("drawdown_money", rs.get("max_dd") or rs.get("drawdown")),
+                "drawdown_pct": m.get("drawdown_pct"),
+                "profit_factor": _pick("profit_factor", rs.get("profit_factor")),
+                "sharpe": m.get("sharpe"),
+                "is_ablation": bool(m.get("is_ablation")),
                 "report_htm": None,
                 "deals": [],
                 "fail_reason": None,
@@ -4195,6 +4274,20 @@ def main() -> int:
     root = Path(args.root).resolve()
     dashboards_dir = root / "dashboards"
     dashboards_dir.mkdir(parents=True, exist_ok=True)
+
+    # Refresh the normalized metric layer before rendering so the Strategy Archive
+    # surfaces (strategies.html + ea_<id>.html) read current numbers. Incremental
+    # (mtime-gated) so it is cheap; a failure here must never block rendering.
+    try:
+        from tools.strategy_farm import ea_metrics as _ea_metrics
+        db_for_metrics = root / "state" / "farm_state.sqlite"
+        if db_for_metrics.exists():
+            with sqlite3.connect(db_for_metrics) as _mcon:
+                _mres = _ea_metrics.build(_mcon, full=False)
+            print(f"ea_metrics refreshed: {_mres.get('upserts')} upserts, "
+                  f"{_mres.get('skipped')} unchanged", file=sys.stderr)
+    except Exception as _exc:  # noqa: BLE001 — never block the render
+        print(f"WARN: ea_metrics refresh skipped: {_exc!r}", file=sys.stderr)
 
     # Sync style.css from repo template into output dir if newer
     src_css = Path(__file__).parent / "style.css"
