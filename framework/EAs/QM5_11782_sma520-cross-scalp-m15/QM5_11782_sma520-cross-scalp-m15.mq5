@@ -59,32 +59,15 @@ input int    strategy_sma_fast_period    = 5;     // fast SMA period (cross trig
 input int    strategy_sma_slow_period    = 20;    // slow SMA period (cross trigger)
 input int    strategy_sl_pips            = 5;     // fixed stop-loss distance, pips
 input double strategy_tp_rr              = 1.0;   // take-profit as RR multiple of the stop (1:1)
-input double strategy_spread_pct_of_stop = 50.0;  // skip if spread > this % of stop distance
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only. Fails OPEN on .DWX zero spread:
-// a genuinely wide spread relative to the 5-pip stop blocks; zero/negative
-// modeled spread passes through.
+// No extra filters in the card. Framework-level kill-switch, news, Friday close,
+// and risk gates still apply before entry.
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   // Stop distance reference (price units) for the spread cap, scale-correct.
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
-   if(stop_distance <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
-      return true;
-
    return false;
   }
 
@@ -92,6 +75,14 @@ bool Strategy_NoTradeFilter()
 // The SMA(5)/SMA(20) cross is the SINGLE trigger event (one cross per direction).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic. A cross only fires when flat, so this
    // also enforces "reverse only after a fresh opposite cross with no position".
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
