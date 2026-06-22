@@ -171,6 +171,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = 0.0;   // no fixed TP (card: no TP)
    req.reason = (side == QM_BUY) ? "fsr_egudu_long" : "fsr_egudu_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
