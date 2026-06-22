@@ -87,6 +87,8 @@ input int    strategy_stoch_d           = 3;     // Stochastic %D period
 input int    strategy_stoch_slow        = 3;     // Stochastic slowing
 input double strategy_stoch_oversold    = 20.0;  // Stoch long-side extreme threshold
 input double strategy_stoch_overbought  = 80.0;  // Stoch short-side extreme threshold
+input double strategy_stoch_long_confirm  = 40.0;  // long confirm: %K near/above this and above %D
+input double strategy_stoch_short_confirm = 60.0;  // short confirm: %K near/below this and below %D
 input int    strategy_sl_max_pips       = 25;    // hard SL cap, pips (P2 cap; tighter wins)
 input double strategy_width_spread_mult = 1.5;   // dead-band: red width >= mult * spread
 input double strategy_spread_cap_pips   = 15.0;  // block only a wider spread, pips
@@ -168,7 +170,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double rsi_c = QM_RSI(_Symbol, _Period, strategy_rsi_period, 1);
    const double k_t   = QM_Stoch_K(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slow, 2);
    const double k_c   = QM_Stoch_K(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slow, 1);
-   if(rsi_t <= 0.0 || rsi_c <= 0.0 || k_t <= 0.0 || k_c <= 0.0)
+   const double d_c   = QM_Stoch_D(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slow, 1);
+   if(rsi_t <= 0.0 || rsi_c <= 0.0 || k_t <= 0.0 || k_c <= 0.0 || d_c <= 0.0)
       return false;
 
    // --- Closed-bar OHLC. perf-allowed: single closed-bar reads, shifts 1 & 2. ---
@@ -193,7 +196,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const bool long_recapture    = (close_t < red_lo_t) &&           // touch bar below band (STATE)
                                   (close_c > red_lo_c);              // confirm bar closed back above (EVENT)
    const bool long_osc_confirm  = (rsi_c > strategy_rsi_oversold) && // RSI recovered above threshold
-                                  (k_c   > k_t);                     // Stoch turning up
+                                  (k_c   >= strategy_stoch_long_confirm) &&
+                                  (k_c   > d_c);                     // Stoch upward state near/above 40
 
    // ---------------- SHORT: reversal off the upper red band ----------------
    const bool short_touch_state = (high_t >= red_up_t) &&
@@ -202,7 +206,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const bool short_recapture   = (close_t > red_up_t) &&
                                   (close_c < red_up_c);
    const bool short_osc_confirm = (rsi_c < strategy_rsi_overbought) &&
-                                  (k_c   < k_t);
+                                  (k_c   <= strategy_stoch_short_confirm) &&
+                                  (k_c   < d_c);
 
    if(long_touch_state && long_recapture && long_osc_confirm)
      {
@@ -256,6 +261,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.tp     = tp;
    req.reason = (side == QM_BUY) ? "triple_bb_redband_reversal_long"
                                  : "triple_bb_redband_reversal_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
