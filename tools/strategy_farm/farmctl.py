@@ -7684,21 +7684,45 @@ def pump(root: Path) -> dict[str, Any]:
     # catch them after the first PASS goes through normal auto-enqueue).
     result["p3_promotions"] = []
     result["p3_promotions_skipped"] = []
+    # Refresh the normalized metric layer so the profit pre-filter below sees
+    # current numbers (incremental, mtime-gated; must never break the pump).
+    try:
+        import ea_metrics as _ea_metrics  # parent dir already on sys.path above
+        with connect(root) as _mconn:
+            _ea_metrics.build(_mconn, full=False)
+    except Exception:
+        pass
     with connect(root) as conn:
-        promotable = conn.execute(
-            """
-            SELECT w.* FROM work_items w
-            WHERE w.status='done' AND w.verdict='PASS' AND w.phase in ('Q02', 'P2')
-              AND NOT EXISTS (
-                SELECT 1 FROM work_items w2
-                WHERE w2.ea_id = w.ea_id
-                  AND w2.symbol = w.symbol
-                  AND w2.setfile_path = w.setfile_path
-                  AND w2.phase in ('Q03', 'P3')
-              )
-            ORDER BY w.updated_at ASC LIMIT 5000
-            """
-        ).fetchall()
+        # §10c starvation fix (2026-06-22): the candidate set is every Q02-PASS
+        # without a Q03 sibling. The overwhelming majority are permanently
+        # UNPROFITABLE (correctly never promoted) yet were never removed, so
+        # 5000+ of them saturated the old `LIMIT 5000 ORDER BY updated_at ASC`
+        # window and starved the handful of genuinely-promotable PROFITABLE rows
+        # — which are always the newest, hence forever beyond the window (this is
+        # why p2_pass_no_p3 sat at a permanent FAIL). Pre-filter to profitable
+        # candidates via ea_metrics so unprofitable rows never consume the window;
+        # the loop below still applies the authoritative evidence-based gate.
+        _base_q = (
+            "SELECT w.* FROM work_items w "
+            "WHERE w.status='done' AND w.verdict='PASS' AND w.phase in ('Q02', 'P2') "
+            "AND NOT EXISTS ("
+            "  SELECT 1 FROM work_items w2 "
+            "  WHERE w2.ea_id = w.ea_id AND w2.symbol = w.symbol "
+            "    AND w2.setfile_path = w.setfile_path AND w2.phase in ('Q03', 'P3'))"
+        )
+        _profit_prefilter = (
+            " AND EXISTS (SELECT 1 FROM ea_metrics m "
+            "WHERE m.work_item_id = w.id AND m.net_profit > 0)"
+        )
+        try:
+            promotable = conn.execute(
+                _base_q + _profit_prefilter + " ORDER BY w.updated_at ASC LIMIT 5000"
+            ).fetchall()
+        except sqlite3.OperationalError:
+            # ea_metrics table not built yet — degrade to the legacy full scan.
+            promotable = conn.execute(
+                _base_q + " ORDER BY w.updated_at ASC LIMIT 5000"
+            ).fetchall()
         reopened_parents: set[str] = set()
         for wi in promotable:
             if len(result["p3_promotions"]) >= 250:
