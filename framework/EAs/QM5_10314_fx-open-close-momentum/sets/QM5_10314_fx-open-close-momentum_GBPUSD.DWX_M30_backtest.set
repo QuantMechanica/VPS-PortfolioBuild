@@ -3,16 +3,16 @@
 ; ea_id:        10314
 ; ea_slug:      fx-open-close-momentum
 ; ea_version:   v5.0
-; set_version:  s20260525-001
+; set_version:  s20260622-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    M30
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   c8ad687f6610546b3983a7680917dbb7fdb2831e954a332bd59b77ab4cb66861
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-25
+; date:         2026-06-22
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000

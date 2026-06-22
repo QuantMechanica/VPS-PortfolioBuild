@@ -3,16 +3,16 @@
 ; ea_id:        10314
 ; ea_slug:      fx-open-close-momentum
 ; ea_version:   v5.0
-; set_version:  s20260525-001
+; set_version:  s20260622-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    M30
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   4560d22e05782b860eb52f4a737c87bafe3d1ce6ed13fd2ab05cab8d21fb3640
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-25
+; date:         2026-06-22
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000
