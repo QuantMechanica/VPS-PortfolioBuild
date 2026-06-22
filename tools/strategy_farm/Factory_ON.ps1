@@ -42,6 +42,19 @@ if (-not $pr.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
 $ErrorActionPreference = 'Continue'
 . (Join-Path $PSScriptRoot 'qm_tasks.manifest.ps1')
 
+# Operator concurrency cap awareness (2026-06-22). disabled_terminals.txt removes
+# terminals (e.g. T8,T9,T10 for the RAM cap, commit 050829f9b) so the fleet is < 10.
+# Derive the expected worker count from it; otherwise the fixed "/10" + ">= 8"
+# success check mislabels a correct capped fleet (7) as "PARTIAL START 7/10".
+$disabledTerminalsPath = 'D:\QM\strategy_farm\state\disabled_terminals.txt'
+$disabledCount = 0
+if (Test-Path $disabledTerminalsPath) {
+    $disabledCount = @(Get-Content $disabledTerminalsPath -ErrorAction SilentlyContinue |
+        ForEach-Object { $_.Trim() } |
+        Where-Object { $_ -match '^T(?:[1-9]|10)$' }).Count
+}
+$expectWorkers = [math]::Max(1, 10 - $disabledCount)
+
 $mySession = (Get-Process -Id $PID).SessionId
 Write-Host ''
 Write-Host '=====================================================' -ForegroundColor Cyan
@@ -104,7 +117,7 @@ if ($daemonsBefore.Count -gt 0 -or $termsBefore.Count -gt 0) {
 }
 
 # 5. spawn the 10 worker daemons IN THIS interactive session
-Write-Host '  spawning T1-T10 worker daemons in your session (visible mode) ...'
+Write-Host ("  spawning worker daemons in your session (visible mode, cap={0}) ..." -f $expectWorkers)
 $py = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe'
 & $py 'C:\QM\repo\tools\strategy_farm\start_terminal_workers.py' --repo-root 'C:\QM\repo' --farm-root 'D:\QM\strategy_farm' --dedupe | Out-Null
 Start-Sleep -Seconds 12
@@ -112,7 +125,7 @@ Start-Sleep -Seconds 12
 $daemons = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue |
              Where-Object { $_.CommandLine -match 'terminal_worker\.py' })
 $inMySession = @($daemons | Where-Object { $_.SessionId -eq $mySession })
-Write-Host ("  worker daemons up : {0} / 10  (in session {1}: {2})" -f $daemons.Count, $mySession, $inMySession.Count)
+Write-Host ("  worker daemons up : {0} / {1}  (in session {2}: {3})" -f $daemons.Count, $expectWorkers, $mySession, $inMySession.Count)
 
 # 6. run farmctl repair ONCE synchronously (replaces recurring Repair_Hourly)
 Write-Host '  running farmctl repair (one-shot, this session) ...'
@@ -126,11 +139,11 @@ Start-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyC
 Write-Host '  AI router/quota pull started; pump triggered (dispatching queued backtests)'
 
 Write-Host ''
-if ($inMySession.Count -ge 8) {
-    Write-Host ("  FACTORY STARTED - {0}/10 daemons live in your session." -f $inMySession.Count) -ForegroundColor Green
+if ($inMySession.Count -ge $expectWorkers) {
+    Write-Host ("  FACTORY STARTED - {0}/{1} daemons live in your session." -f $inMySession.Count, $expectWorkers) -ForegroundColor Green
     Write-Host '  terminal64 windows will appear on the desktop as backtests start.'
 } else {
-    Write-Host ("  PARTIAL START - only {0}/10 daemons in your session. Re-run if needed." -f $inMySession.Count) -ForegroundColor Yellow
+    Write-Host ("  PARTIAL START - only {0}/{1} daemons in your session. Re-run if needed." -f $inMySession.Count, $expectWorkers) -ForegroundColor Yellow
 }
 Write-Host ''
 Write-Host '  NOTE: The factory runs while this RDP session is alive (disconnect is OK).'
