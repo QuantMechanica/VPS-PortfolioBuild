@@ -1040,9 +1040,14 @@ def chk_unbuilt_cards_count(con) -> dict:
         active_codex = int((out.stdout or "0").strip() or "0")
     except Exception:
         active_codex = 0
-    if n > 10 and pending_work_items >= 1000:
+    # Only report a genuine backpressure pause when the REAL build gate would trip
+    # (farmctl BUILD_BACKPRESSURE_PENDING_SOFT_LIMIT, currently 8000). The old fixed
+    # 1000 threshold falsely claimed "paused by backpressure" at any deep-ish queue,
+    # masking the real reason builds were idle (Codex throttle / no buildable cards).
+    _bp_soft = getattr(farmctl, "BUILD_BACKPRESSURE_PENDING_SOFT_LIMIT", 8000)
+    if n > 10 and pending_work_items >= _bp_soft:
         return _check("unbuilt_cards_count", "OK", n, 10,
-                      f"{n} approved cards await build, paused by MT5 backpressure ({pending_work_items} pending work_items; {detail})",
+                      f"{n} approved cards await build, paused by MT5 backpressure ({pending_work_items} pending work_items >= {_bp_soft}; {detail})",
                       "")
     if n > 10 and (pending_builds > 0 or active_codex >= getattr(farmctl, "MAX_PARALLEL_CODEX", 3)):
         return _check("unbuilt_cards_count", "WARN", n, 10,
