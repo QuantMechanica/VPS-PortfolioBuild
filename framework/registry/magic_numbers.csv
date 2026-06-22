@@ -11755,8 +11755,8 @@
 11759,continuation-ema50-williamsr-w1d1,3,USDCHF.DWX,117590003,2026-06-18,Claude,reserved
 11759,continuation-ema50-williamsr-w1d1,4,AUDUSD.DWX,117590004,2026-06-18,Claude,reserved
 11759,continuation-ema50-williamsr-w1d1,5,USDCAD.DWX,117590005,2026-06-18,Claude,reserved
-11760,144-trend-shift-sma5-lwma144-m5,0,EURUSD.DWX,117600000,2026-06-18,Claude,reserved
-11760,144-trend-shift-sma5-lwma144-m5,1,GBPUSD.DWX,117600001,2026-06-18,Claude,reserved
+11760,144-trend-shift-sma5-lwma144-m5,0,EURUSD.DWX,117600000,2026-06-18,Development,active
+11760,144-trend-shift-sma5-lwma144-m5,1,GBPUSD.DWX,117600001,2026-06-18,Development,active
 11764,ichimoku-cloud-tenkan-kijun,0,EURUSD.DWX,117640000,2026-06-18,Claude,reserved
 11764,ichimoku-cloud-tenkan-kijun,1,GBPUSD.DWX,117640001,2026-06-18,Claude,reserved
 11764,ichimoku-cloud-tenkan-kijun,2,USDJPY.DWX,117640002,2026-06-18,Claude,reserved
@@ -11959,7 +11959,7 @@
 11813,carter-h1-s19-psar-adx50-di-h1,3,USDCHF.DWX,118130003,2026-06-18,Claude,reserved
 11813,carter-h1-s19-psar-adx50-di-h1,4,AUDUSD.DWX,118130004,2026-06-18,Claude,reserved
 11813,carter-h1-s19-psar-adx50-di-h1,5,USDCAD.DWX,118130005,2026-06-18,Claude,reserved
-11814,carter-m5-s1-macd1-stoch-ema5oc-m5,0,EURUSD.DWX,118140000,2026-06-18,Claude,reserved
+11814,carter-m5-s1-macd1-stoch-ema5oc-m5,0,EURUSD.DWX,118140000,2026-06-18,Development,active
 11815,carter-m5-s2-ema102150-zone-pullback-m5,0,EURUSD.DWX,118150000,2026-06-18,Claude,reserved
 11816,carter-m5-s3-bb20-stoch-trend-reversal-m5,0,EURUSD.DWX,118160000,2026-06-18,Claude,reserved
 11816,carter-m5-s3-bb20-stoch-trend-reversal-m5,1,GBPUSD.DWX,118160001,2026-06-18,Claude,reserved
@@ -13265,3 +13265,7 @@
 9403,williams-pro-go-h4,11,WS30.DWX,94030011,2026-06-21,Development,active
 9403,williams-pro-go-h4,12,GDAXI.DWX,94030012,2026-06-21,Development,active
 9403,williams-pro-go-h4,13,UK100.DWX,94030013,2026-06-21,Development,active
+9355,mql5-daily-range,0,EURUSD.DWX,93550000,2026-06-23,Development,active
+9355,mql5-daily-range,1,GBPUSD.DWX,93550001,2026-06-23,Development,active
+9355,mql5-daily-range,2,XAUUSD.DWX,93550002,2026-06-23,Development,active
+9355,mql5-daily-range,3,GDAXI.DWX,93550003,2026-06-23,Development,active

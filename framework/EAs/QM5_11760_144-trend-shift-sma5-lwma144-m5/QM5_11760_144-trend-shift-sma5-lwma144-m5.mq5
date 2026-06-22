@@ -18,11 +18,10 @@
 //                   Exactly ONE cross is the trigger; everything else is a STATE.
 //   Proximity STATE: |close[1] - lwma144[1]| <= proximity_pips (pip-scaled).
 //                   Reject entries that already ran far from the trend MA.
-//   Stop          : structural extreme of the last sl_lookback closed bars —
-//                   lowest low (long) / highest high (short). This is the card's
-//                   "fractal below/above the entry bar" rule, using the factory
-//                   fallback (lowest low / highest high of recent bars) for a
-//                   deterministic, always-present stop.
+//   Stop          : most recent confirmed Bill Williams fractal in the last
+//                   fractal_lookback closed bars. If no valid fractal exists,
+//                   use the card's factory fallback: lowest low / highest high
+//                   of the last sl_lookback closed bars.
 //   Take profit   : 2R from entry to the structural stop (tp_rr, default 2.0).
 //
 // One position per symbol/magic. No active management beyond the fixed SL/TP.
@@ -58,6 +57,7 @@ input group "Strategy"
 input int    strategy_sma_period        = 5;     // fast SMA trigger period
 input int    strategy_lwma_period       = 144;   // slow LWMA trend-state period
 input int    strategy_proximity_pips    = 10;    // max distance of close from LWMA at the cross (pips)
+input int    strategy_fractal_lookback  = 20;    // confirmed fractal scan depth for SL
 input int    strategy_sl_lookback       = 5;     // bars for the structural stop (lowest low / highest high)
 input double strategy_tp_rr             = 2.0;   // take-profit risk multiple (2R)
 
@@ -77,6 +77,28 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
+double Strategy_FractalStop(const QM_OrderType side, const double entry)
+  {
+   if(entry <= 0.0 || strategy_fractal_lookback < 3)
+      return 0.0;
+
+   const int scan_to = MathMax(3, strategy_fractal_lookback);
+   for(int shift = 3; shift <= scan_to; ++shift)
+     {
+      const double fractal = (side == QM_BUY)
+                             ? QM_FractalLower(_Symbol, _Period, shift)
+                             : QM_FractalUpper(_Symbol, _Period, shift);
+      if(fractal <= 0.0 || fractal == EMPTY_VALUE)
+         continue;
+      if(side == QM_BUY && fractal < entry)
+         return QM_StopRulesNormalizePrice(_Symbol, fractal);
+      if(side == QM_SELL && fractal > entry)
+         return QM_StopRulesNormalizePrice(_Symbol, fractal);
+     }
+
+   return 0.0;
+  }
+
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
@@ -88,8 +110,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    //     closed bars (shift 1 = just-closed bar, shift 2 = bar before). ---
    const double sma_now   = QM_SMA(_Symbol, _Period, strategy_sma_period, 1);
    const double sma_prev  = QM_SMA(_Symbol, _Period, strategy_sma_period, 2);
-   const double lwma_now  = QM_WMA(_Symbol, _Period, strategy_lwma_period, 1); // LWMA = linear-weighted
-   const double lwma_prev = QM_WMA(_Symbol, _Period, strategy_lwma_period, 2);
+   const double lwma_now  = QM_LWMA(_Symbol, _Period, strategy_lwma_period, 1);
+   const double lwma_prev = QM_LWMA(_Symbol, _Period, strategy_lwma_period, 2);
    if(sma_now <= 0.0 || sma_prev <= 0.0 || lwma_now <= 0.0 || lwma_prev <= 0.0)
       return false;
 
@@ -119,10 +141,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry <= 0.0)
       return false;
 
-   // Structural stop: lowest low (long) / highest high (short) of the last
-   // sl_lookback closed bars — the card's fractal-below/above-entry rule via the
-   // documented factory fallback.
-   const double sl = QM_StopStructure(_Symbol, side, entry, strategy_sl_lookback);
+   // Primary stop: most recent confirmed fractal. Fallback: lowest low / highest
+   // high of the last sl_lookback closed bars per card.
+   double sl = Strategy_FractalStop(side, entry);
+   if(sl <= 0.0)
+      sl = QM_StopStructure(_Symbol, side, entry, strategy_sl_lookback);
    if(sl <= 0.0)
       return false;
    // Reject a degenerate stop on the wrong side of entry (no risk distance).
@@ -139,6 +162,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = cross_up ? "trend_shift_long" : "trend_shift_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
