@@ -1,28 +1,16 @@
-# QM5_11384_blade-h4-ema30-breakout-retrace — Strategy Spec
+# QM5_11384_blade-h4-ema30-breakout-retrace - Strategy Spec
 
 **EA ID:** QM5_11384
 **Slug:** `blade-h4-ema30-breakout-retrace`
 **Source:** `f4fa8966-3aa0-5df0-9d8f-3872df92309a` (see `strategy-seeds/sources/f4fa8966-3aa0-5df0-9d8f-3872df92309a/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-23
 
 ---
 
 ## 1. Strategy Logic
 
-On H4, EMA(30) defines the trend STATE: a rising EMA(30) (now above its value
-`slope_lookback` bars ago) with the last closed price above the EMA is a long
-bias; the mirror (falling EMA, price below) is a short bias. The EA then finds a
-swing S/R level — the highest High (long bias) or lowest Low (short bias) over
-the last `sr_lookback` closed bars — and waits for a closed bar to break BEYOND
-it in the trend direction. That breakout is latched (the broken level becomes
-the new support/resistance). Entry is the single EVENT: a LATER closed bar
-retraces back to within `retrace_tol_pips` of the broken level while its close
-still holds on the breakout side. Stop is `sl_pips` behind the broken level
-(hard-capped at `sl_cap_pips`); take-profit is `tp_rr`× the risk distance. The
-latch is cancelled if price closes `cancel_pips` against the breakout or no
-retrace arrives within `max_wait_bars`. Breakout and retrace touch occur on
-different bars, so there is no two-events-same-bar zero-trade trap.
+The EA trades the Blade H4 breakout-retrace pattern. A long setup requires EMA(30) on H4 to slope upward over 20 bars, the last closed H4 close to be above EMA(30), and that same closed candle to close above the highest high from shifts 10 through 30 with a range at least 1.5 times ATR(14). It then places a BUY LIMIT at the broken resistance level; shorts mirror the rule with a falling EMA(30), a close below the lowest low from shifts 10 through 30, and a SELL LIMIT at the broken support level. The stop is 25 pips behind the broken level, capped at 40 pips, and the target is the nearest EMA(150/200/365) in the trade direction when available, otherwise 2.5R. Pending orders expire after six H4 bars or are cancelled if price breaks 30 pips back through the level.
 
 ---
 
@@ -30,29 +18,34 @@ different bars, so there is no two-events-same-bar zero-trade trap.
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_ema_period` | 30 | 20-50 | Trend EMA period (Blade EMA30) |
-| `strategy_slope_lookback` | 20 | 10-40 | Bars back to measure EMA slope/direction |
-| `strategy_sr_lookback` | 20 | 10-30 | Bars defining the swing S/R level |
-| `strategy_retrace_tol_pips` | 10 | 5-20 | Touch tolerance to the broken level on retrace |
-| `strategy_sl_pips` | 25 | 20-30 | Stop distance behind the broken level |
-| `strategy_sl_cap_pips` | 40 | 30-50 | P2 hard cap on stop distance |
-| `strategy_tp_rr` | 2.0 | 2.0-3.0 | Take-profit as a multiple of risk distance |
-| `strategy_max_wait_bars` | 12 | 6-24 | Bars to wait for the retrace after a breakout |
-| `strategy_cancel_pips` | 30 | 20-40 | Adverse move past the level that cancels the latch |
-| `strategy_spread_pct_of_stop` | 15.0 | 5-30 | Skip if spread exceeds this % of stop distance |
+| `strategy_ema_period` | 30 | 30-50 | Trend EMA period; default is the card's EMA(30). |
+| `strategy_slope_lookback` | 20 | 10-40 | Bars back used to measure EMA slope. |
+| `strategy_sr_start_shift` | 10 | 5-20 | First historical closed H4 shift in the S/R window. |
+| `strategy_sr_end_shift` | 30 | 20-40 | Last historical closed H4 shift in the S/R window. |
+| `strategy_atr_period` | 14 | 10-30 | ATR period for the breakout candle range filter. |
+| `strategy_breakout_atr_mult` | 1.5 | 1.0-2.5 | Minimum breakout candle range as ATR multiple. |
+| `strategy_retrace_tol_pips` | 5 | 3-15 | Documented retrace touch tolerance around the broken level. |
+| `strategy_sl_pips` | 25 | 20-30 | Stop distance behind the broken S/R level. |
+| `strategy_sl_cap_pips` | 40 | 20-40 | P2 maximum stop cap. |
+| `strategy_tp_rr` | 2.5 | 2.0-3.0 | Fallback target when no major EMA target is ahead. |
+| `strategy_pending_expiry_bars` | 6 | 1-12 | H4 bars before an unfilled pending order expires. |
+| `strategy_cancel_pips` | 30 | 20-40 | Adverse move through the level that cancels a pending order. |
+| `strategy_spread_cap_pips` | 20 | 5-30 | Maximum allowed modeled spread; zero spread remains tradable. |
+| `strategy_be_buffer_pips` | 1 | 0-5 | Buffer added when moving stop to breakeven. |
+| `strategy_trail_trigger_pips` | 35 | 20-80 | Profit in pips before step trailing starts. |
+| `strategy_trail_step_pips` | 15 | 5-40 | Distance used by fixed pip step trailing. |
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — primary card target; deep liquidity, clean H4 S/R structure.
-- `GBPUSD.DWX` — card target; trends well on H4 with clear breakout-retrace legs.
-- `USDJPY.DWX` — card target; JPY pip scaling handled via `QM_StopRulesPipsToPriceDistance`.
+- `EURUSD.DWX` - card target and primary major FX pair.
+- `GBPUSD.DWX` - card target with liquid H4 trend and retrace structure.
+- `USDJPY.DWX` - card target; JPY pip scaling is handled through framework pip conversion.
 
 **Explicitly NOT for:**
-- Index / commodity `.DWX` symbols — the card specifies major FX pairs and the
-  pip-based S/R / stop logic is calibrated for forex.
+- Index and commodity `.DWX` symbols - the card specifies major FX pairs and the pip stop/retrace logic is calibrated for forex.
 
 ---
 
@@ -61,7 +54,7 @@ different bars, so there is no two-events-same-bar zero-trade trap.
 | Aspect | Value |
 |---|---|
 | Base timeframe | `H4` |
-| Multi-timeframe refs | `none` (card mentions H1 entry timing; baseline keeps the entry on H4 closed bars) |
+| Multi-timeframe refs | none in code; card's H1 retrace timing is represented by the H4-generated pending limit triggering intrabar on Model 4 ticks |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
@@ -70,10 +63,10 @@ different bars, so there is no two-events-same-bar zero-trade trap.
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | ~40 |
-| Typical hold time | hours to a few days (H4 swing) |
-| Expected drawdown profile | moderate; trend-aligned with capped pip stops |
-| Regime preference | trend-following breakout (with retrace entry) |
+| Trades / year / symbol | 40 |
+| Typical hold time | hours to a few days |
+| Expected drawdown profile | moderate, trend-following with fixed pip stops |
+| Regime preference | breakout / trend-following |
 | Win rate target (qualitative) | medium |
 
 ---
@@ -83,9 +76,9 @@ different bars, so there is no two-events-same-bar zero-trade trap.
 This card was mechanised from:
 
 **Source ID:** `f4fa8966-3aa0-5df0-9d8f-3872df92309a`
-**Source type:** book / PDF
-**Pointer:** "The Blade Forex Strategies" — 4H Breakout System (anonymous, ForexSuccessSecrets.com); local PDF archive
-**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_11384_blade-h4-ema30-breakout-retrace.md`
+**Source type:** local PDF / strategy book
+**Pointer:** `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\219755537-Blade-Forex-Strategies.pdf`
+**R1-R4 verdict (Q00):** all R1-R4 PASS per `artifacts/cards_approved/QM5_11384_blade-h4-ema30-breakout-retrace.md`
 
 ---
 
@@ -93,11 +86,11 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
@@ -105,4 +98,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v1 | 2026-06-23 | Initial build from card | 6dec6292-03a2-46e6-a976-3f67c37c3ffe |
