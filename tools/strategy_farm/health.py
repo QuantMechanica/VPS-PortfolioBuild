@@ -635,6 +635,45 @@ def chk_p2_pass_no_p3(con) -> dict:
     return _check("p2_pass_no_p3", "OK", n, 10, f"{n} pending promotion", "")
 
 
+def chk_ea_metrics_fresh(con) -> dict:
+    """ea_metrics is the normalized metric layer that powers the Strategy Archive
+    (real Net/PF/trades on ea_<id>.html + strategies.html) AND the §10c Q02->Q03
+    promotion profit pre-filter. It is refreshed inline by the 5-min pump and the
+    hourly dashboard render — both wrapped in try/except, so a silent extractor
+    failure would leave it stale: blank archive numbers and (worse) missed
+    profitable promotions. This makes that staleness observable.
+
+    Docs: docs/ops/EA_METRICS_ARCHIVE_LAYER_2026-06-22.md.
+    """
+    STALE_MIN = 90  # pump refreshes every 5min; >90min ⇒ both refreshers failing
+    tbl = con.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='ea_metrics'"
+    ).fetchone()
+    if not tbl:
+        return _check("ea_metrics_fresh", "WARN", None, STALE_MIN,
+                      "ea_metrics table absent — Strategy Archive numbers blank, "
+                      "Q02→Q03 promotion falls back to legacy scan",
+                      "python tools/strategy_farm/ea_metrics.py build --full")
+    row = con.execute(
+        "SELECT COUNT(1) AS n, MAX(extracted_at) AS last FROM ea_metrics"
+    ).fetchone()
+    count = row["n"] or 0
+    last = _parse_utc_ts(row["last"])
+    if count == 0 or last is None:
+        return _check("ea_metrics_fresh", "WARN", count, STALE_MIN,
+                      "ea_metrics empty / no extracted_at — extractor has not run",
+                      "python tools/strategy_farm/ea_metrics.py build --full")
+    age_min = int((_utc_now() - last).total_seconds() // 60)
+    if age_min > STALE_MIN:
+        return _check("ea_metrics_fresh", "WARN", age_min, STALE_MIN,
+                      f"ea_metrics last refreshed {age_min}m ago (>{STALE_MIN}m); "
+                      f"pump §10c / render refresh likely failing ({count} rows)",
+                      "Run python tools/strategy_farm/ea_metrics.py build and check "
+                      "pump logs; see docs/ops/EA_METRICS_ARCHIVE_LAYER_2026-06-22.md")
+    return _check("ea_metrics_fresh", "OK", age_min, STALE_MIN,
+                  f"{count} rows, refreshed {age_min}m ago", "")
+
+
 def chk_ablation_grandchildren(con) -> dict:
     """work_items whose setfile_path has TWO `_ablation_` or `_grid_` tokens
     = depth-tracker bug, ablation child got re-ablated."""
@@ -1482,6 +1521,7 @@ ALL_CHECKS = [
     ("cards_ready_stagnation", chk_cards_ready_stagnation, True),
     ("pump_task_health",       chk_pump_task_health,       False),
     ("p2_pass_no_p3",          chk_p2_pass_no_p3,          True),
+    ("ea_metrics_fresh",       chk_ea_metrics_fresh,       True),
     ("ablation_grandchildren", chk_ablation_grandchildren, True),
     ("claude_review_starved",  chk_claude_review_starved,  True),
     ("mt5_dispatch_idle",      chk_mt5_dispatch_idle,      True),
