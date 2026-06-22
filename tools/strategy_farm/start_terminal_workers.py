@@ -78,11 +78,36 @@ def _scan_running_workers() -> dict[str, list[int]]:
     return {terminal: pids for terminal, pids in found.items() if pids}
 
 
+# Operator-controlled concurrency cap. One terminal name per line (e.g. "T9").
+# Lets the factory run fewer than the 10 installed terminals when RAM/disk headroom
+# is the binding constraint (heavy tick backtests use ~6-7GB RAM each; 10 concurrent
+# exhaust the 63GB box and wedge terminal64 launches). Reversible: empty/delete the
+# file -> back to all installed terminals. Honored by Factory_ON + watchdog respawns
+# because they all route through _installed_terminals.
+_DISABLED_TERMINALS_FILE = Path(r"D:\QM\strategy_farm\state\disabled_terminals.txt")
+
+
+def _disabled_terminals() -> set[str]:
+    try:
+        text = _DISABLED_TERMINALS_FILE.read_text(encoding="utf-8-sig")
+    except (OSError, UnicodeDecodeError):
+        return set()
+    out: set[str] = set()
+    for line in text.splitlines():
+        name = line.strip().upper()
+        if name and FACTORY_TERMINAL_RE.fullmatch(name):
+            out.add(name)
+    return out
+
+
 def _installed_terminals(mt5_root: Path) -> tuple[str, ...]:
+    disabled = _disabled_terminals()
     return tuple(
         terminal
         for terminal in TERMINALS
-        if FACTORY_TERMINAL_RE.fullmatch(terminal) and (mt5_root / terminal / "terminal64.exe").exists()
+        if FACTORY_TERMINAL_RE.fullmatch(terminal)
+        and terminal.upper() not in disabled
+        and (mt5_root / terminal / "terminal64.exe").exists()
     )
 
 
