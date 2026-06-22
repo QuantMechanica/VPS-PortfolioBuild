@@ -42,6 +42,28 @@ $now    = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
 $action = 'none'
 $detail = ''
 
+# -------------------------------------------------------------------
+# Operator concurrency cap awareness (2026-06-22 — fixes a 5-min flap loop).
+# disabled_terminals.txt removes terminals (e.g. T8,T9,T10 for the RAM cap,
+# commit 050829f9b) from the fleet, so start_terminal_workers spawns only the
+# remaining N. The watchdog target MUST track that cap: with the old fixed
+# defaults (MinWorkers=8, ExpectWorkers=10) a capped fleet of 7 satisfies
+# 7 < 8 on EVERY run -> endless "clean-slate respawn" that kills every
+# in-flight terminal64 -> any backtest > 5 min (every cold-cache run after a
+# reboot) is sawn off -> METATESTER_HUNG/REPORT_MISSING -> INFRA_FAIL, while
+# real-verdict yield collapses to ~0. Derive the target from the cap instead.
+$disabledTerminalsPath = 'D:\QM\strategy_farm\state\disabled_terminals.txt'
+$disabledCount = 0
+if (Test-Path $disabledTerminalsPath) {
+    $disabledCount = @(Get-Content $disabledTerminalsPath -ErrorAction SilentlyContinue |
+        ForEach-Object { $_.Trim() } |
+        Where-Object { $_ -match '^T(?:[1-9]|10)$' }).Count
+}
+$ExpectWorkers = [math]::Max(1, 10 - $disabledCount)
+# Heal only when BELOW the capped target (workers == cap reads healthy). Never
+# require more workers than the operator cap allows.
+$MinWorkers = [math]::Min($MinWorkers, $ExpectWorkers)
+
 function Invoke-StallDumpCapture {
     param(
         [string]$RequestPath,
