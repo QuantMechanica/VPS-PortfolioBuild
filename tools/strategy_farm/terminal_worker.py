@@ -67,6 +67,18 @@ SMOKE_TERMINAL_EXIT_GRACE_SECONDS = 60.0
 SQLITE_LOCK_BACKOFF_SECONDS = 10.0
 STALLDUMP_REQUEST_PATH = Path("D:/QM/reports/state/STALLDUMP_REQUEST")
 STALLDUMP_DIR = Path("D:/QM/reports/state/worker_stalldump")
+# Launch-admission gate (2026-06-22): concurrent terminal64 DLL-init contends on a
+# session-global resource (desktop heap / CSRSS). When N workers launch terminal64 in
+# the same ~8s init window, some fail 0xC0000142 -> the 0.05s "launch_fault". An
+# ISOLATED launch always succeeds, so the cure is to serialize the *init window* (not
+# the whole minutes-long backtest). TTL leaky-semaphore: drop a timestamped lock file,
+# proceed only when fewer than MAX recent locks exist; files age out after the window
+# (crash-safe — a dead worker never blocks others) and the gate is fail-open (never
+# blocks the factory if anything goes wrong or the wait times out).
+LAUNCH_GATE_DIR = Path("D:/QM/strategy_farm/state/launch_slots")
+LAUNCH_GATE_WINDOW_SECONDS = 8.0          # terminal64 startup+DLL-init window to protect
+LAUNCH_GATE_MAX_CONCURRENT = 2            # max overlapping inits (override: launch_gate_max.txt)
+LAUNCH_GATE_WAIT_TIMEOUT_SECONDS = 90.0   # fail-open after this so the factory never stalls
 
 _STOP = False
 
@@ -420,6 +432,58 @@ def _mirror_real_phase_artifacts(item: sqlite3.Row, summary_path: Path, verdict:
         if not source.is_file():
             continue
         shutil.copy2(source, target_dir / source.name)
+
+
+def _launch_gate_max() -> int:
+    """Concurrent-launch cap, overridable at runtime via launch_gate_max.txt."""
+    try:
+        override = LAUNCH_GATE_DIR.parent / "launch_gate_max.txt"
+        if override.exists():
+            return max(1, int(override.read_text(encoding="utf-8").strip()))
+    except (OSError, ValueError):
+        pass
+    return LAUNCH_GATE_MAX_CONCURRENT
+
+
+def _acquire_launch_slot(terminal: str) -> None:
+    """Block until fewer than _launch_gate_max() terminal64 inits are in flight.
+
+    TTL-based: stale lock files (older than the init window) are swept and a fresh
+    timestamped lock is dropped, which then ages out on its own — no explicit release,
+    so a crashed worker can never deadlock the gate. Fail-open: any error or a wait
+    past the timeout proceeds anyway, so the gate can only ever slow a launch storm,
+    never stop the factory.
+    """
+    try:
+        LAUNCH_GATE_DIR.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        return
+    deadline = time.monotonic() + LAUNCH_GATE_WAIT_TIMEOUT_SECONDS
+    maxc = _launch_gate_max()
+    while True:
+        now = time.time()
+        active = 0
+        try:
+            for p in list(LAUNCH_GATE_DIR.glob("*.lock")):
+                try:
+                    if now - p.stat().st_mtime > LAUNCH_GATE_WINDOW_SECONDS:
+                        p.unlink(missing_ok=True)
+                    else:
+                        active += 1
+                except OSError:
+                    pass
+        except OSError:
+            return
+        if active < maxc:
+            try:
+                slot = LAUNCH_GATE_DIR / f"{terminal}_{os.getpid()}_{int(now * 1000)}.lock"
+                slot.write_text(str(now), encoding="utf-8")
+            except OSError:
+                pass
+            return
+        if time.monotonic() >= deadline:
+            return
+        time.sleep(0.5 + random.uniform(0, 0.5))
 
 
 def _smoke_terminal_exit_stalled(item: dict[str, Any], payload: dict[str, Any]) -> bool:
@@ -795,6 +859,10 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
             "item_id": item["id"],
             **_fail_work_item_preflight(root, row, preflight_failure),
         }
+    # Serialize the terminal64 DLL-init window across workers to kill the 0xC0000142
+    # launch_fault storm that hits when many terminals launch at once (TTL leaky
+    # semaphore, fail-open — see LAUNCH_GATE_* and _acquire_launch_slot).
+    _acquire_launch_slot(terminal)
     spawn = farmctl._spawn_work_item_runner(root, row, terminal)
     now = farmctl.utc_now()
     if not spawn.get("spawned"):
