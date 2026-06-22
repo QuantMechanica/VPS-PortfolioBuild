@@ -1,51 +1,45 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11409 big-ben-london-fade-asian-range-m15 — London fade of the Asian-range false breakout (M15)"
+#property description "QM5_11409 Big Ben London fade of Asian-range false breakout, M15"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11409 big-ben-london-fade-asian-range-m15
+// QuantMechanica V5 EA SKELETON
 // -----------------------------------------------------------------------------
-// Source: "Big Ben Breakout Strategy" (TradingStrategyGuides.com, ~2017).
-// Card: artifacts/cards_approved/QM5_11409_big-ben-london-fade-asian-range-m15.md
-//       (g0_status APPROVED).
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails). The framework provides:
 //
-// Concept (London "fade" of the Asian-range false breakout):
-//   Pre-London, price sweeps the Asian-session range to grab stops, then reverses
-//   ("fades") back into the range at the London open. We fade that sweep.
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  - closed-bar gate
+//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
+//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
+//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
+//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
+//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
+//   - QM_LotsForRisk(symbol, sl_points)        - risk model lot sizing
+//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
+//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
 //
-// All session windows come from the bar TIMESTAMP in BROKER time. The DXZ broker
-// clock is NY-close (GMT+2 winter / GMT+3 summer) and shifts with US DST itself,
-// so the broker-hour constants from the card are constant year-round and are
-// compared directly against the closed-bar open time. NO wall-clock, NO UTC math
-// is needed for the gating — the chart already runs on broker time.
-//
-//   Asian session (body range)   : 01:00 <= broker_hour < 09:00 broker time.
-//   Pre-London sweep window      : 09:00 <= broker_hour < 10:00 broker time.
-//   London open / fade window    : 10:00 <= broker_hour < 11:00 broker time.
-//   Time stop (force close)      : broker_hour >= 11:00 broker time.
-//
-//   Asian range : BODY-based — asian_high = max(open,close) over Asian bars,
-//                 asian_low  = min(open,close) over Asian bars. Built from PRIOR
-//                 CLOSED bars only (shift >= 1); never the live forming bar.
-//   Sweep EVENT : during the pre-London window a bar's Low < asian_low (=> bias
-//                 LONG, a false breakdown) OR High > asian_high (=> bias SHORT).
-//   Fade EVENT  : the single trigger — the first M15 bar in the London window that
-//                 CLOSES back through the swept boundary (close > asian_low for a
-//                 LONG, close < asian_high for a SHORT). Enter at that bar.
-//   Stop loss   : reversal-bar extreme (Low for long / High for short), capped at
-//                 sl_cap_pips (M15 bars are small). Fail-open spread guard.
-//   Target      : Asian-range height projected from entry (TP = entry +/- range).
-//   Time stop   : any open position is flat-closed at/after 11:00 broker.
-//
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything else
-// is framework wiring and MUST stay intact.
+// DO NOT
+//   - Write per-EA IsNewBar() - use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly -
+//     use the QM_* readers above. The framework pools handles and releases them
+//     on shutdown.
+//   - CopyRates over warmup windows on every tick. If you genuinely need raw
+//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
+//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
+//     to magic_numbers.csv, run:
+//         python framework/scripts/update_magic_resolver.py
+//     This is idempotent and preserves all rows.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 11409;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -54,10 +48,16 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
+// FW1 2026-05-23 - Two-axis news filter per Vault Q09.
+//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
+//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -65,284 +65,294 @@ input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
+// FW2 2026-05-23 - only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-// Session windows in BROKER time (hour-of-day). Card: Asian 01:00-09:00,
-// pre-London sweep 09:00-10:00, London open 10:00, time stop 11:00 broker.
-input int    strategy_asian_start_hour    = 1;     // Asian session start (broker hour, inclusive)
-input int    strategy_asian_end_hour      = 9;     // Asian session end   (broker hour, exclusive)
-input int    strategy_london_open_hour    = 10;    // London open / fade window start (broker hour)
-input int    strategy_time_stop_hour      = 11;    // force-close hour (broker hour, >= => exit)
-input double strategy_tp_range_mult       = 1.0;   // TP = entry +/- range * this mult
-input int    strategy_sl_cap_pips         = 40;    // SL distance cap (pips); M15 bars are small
-input double strategy_spread_pct_of_stop  = 25.0;  // skip only if spread > this % of stop distance
+// TODO: declare strategy-specific input params here, e.g.:
+//   input int    strategy_atr_period   = 14;
+//   input double strategy_atr_sl_mult  = 2.0;
+//   input double strategy_atr_tp_mult  = 3.0;
+input int    strategy_asian_start_hour  = 1;      // broker hour, inclusive
+input int    strategy_asian_end_hour    = 9;      // broker hour, exclusive
+input int    strategy_london_open_hour  = 10;     // broker hour
+input int    strategy_time_stop_hour    = 11;     // broker hour
+input int    strategy_spread_cap_pips   = 20;     // card spread cap
+input int    strategy_sl_cap_pips       = 40;     // P2 cap
+input int    strategy_fallback_sl_pips  = 30;     // card alternate fixed stop
+input double strategy_tp_range_mult     = 1.0;    // card default: Asian range
 
-// -----------------------------------------------------------------------------
-// File-scope per-day session state (advanced once per closed M15 bar).
-// -----------------------------------------------------------------------------
-// Phase of the daily state machine.
-#define BB_PHASE_IDLE        0   // before / outside the trading window for today
-#define BB_PHASE_ASIAN       1   // accumulating the Asian body range
-#define BB_PHASE_PRE_LONDON  2   // Asian frozen, watching for the pre-London sweep
-#define BB_PHASE_FADE_WAIT   3   // sweep seen, waiting for the fade close at London open
-#define BB_PHASE_DONE        4   // entry taken or window closed for today
-
-int      g_phase            = BB_PHASE_IDLE;
-int      g_session_day      = -1;     // day-of-year the current Asian session belongs to
-double   g_asian_high       = 0.0;    // body high of the Asian range
-double   g_asian_low        = 0.0;    // body low  of the Asian range
-bool     g_asian_seen       = false;  // at least one Asian bar accumulated
-int      g_sweep_dir        = 0;      // +1 = swept low (bias LONG), -1 = swept high (bias SHORT)
-datetime g_last_state_bar   = 0;      // open-time of the last bar folded into the state machine
-
-// Broker MqlDateTime helpers ------------------------------------------------
-int BB_BrokerHour(const datetime broker_bar_open)
+int BB_Hour(const datetime broker_time)
   {
    MqlDateTime dt;
    ZeroMemory(dt);
-   TimeToStruct(broker_bar_open, dt);
+   TimeToStruct(broker_time, dt);
    return dt.hour;
   }
 
-int BB_BrokerDayOfYear(const datetime broker_bar_open)
+datetime BB_DayStart(const datetime broker_time)
   {
    MqlDateTime dt;
    ZeroMemory(dt);
-   TimeToStruct(broker_bar_open, dt);
-   return dt.day_of_year;
+   TimeToStruct(broker_time, dt);
+   dt.hour = 0;
+   dt.min = 0;
+   dt.sec = 0;
+   return StructToTime(dt);
   }
 
-// Reset the daily state machine for a fresh Asian session.
-void BB_ResetForDay(const int doy)
+bool BB_LoadLastClosedBar(MqlRates &bar)
   {
-   g_phase       = BB_PHASE_ASIAN;
-   g_session_day = doy;
-   g_asian_high  = 0.0;
-   g_asian_low   = 0.0;
-   g_asian_seen  = false;
-   g_sweep_dir   = 0;
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, PERIOD_CURRENT, 1, 1, rates); // perf-allowed: called only from the framework new-bar entry hook
+   if(copied != 1)
+      return false;
+   bar = rates[0];
+   return (bar.time > 0 && bar.open > 0.0 && bar.high > 0.0 && bar.low > 0.0 && bar.close > 0.0);
   }
 
-// -----------------------------------------------------------------------------
-// State advance — called ONCE per new closed bar (shift 1 is the bar that just
-// closed). Reads only that one closed bar; no history scans. This advances the
-// Asian-range / sweep state machine by exactly one bar.
-// -----------------------------------------------------------------------------
-void BB_AdvanceState_OnNewBar()
+bool BB_LoadSessionContext(const MqlRates &last_bar,
+                           double &asian_high,
+                           double &asian_low,
+                           int &sweep_dir,
+                           datetime &first_long_fade,
+                           datetime &first_short_fade)
   {
-   const datetime bar_open = iTime(_Symbol, _Period, 1);   // perf-allowed: closed-bar open time
-   if(bar_open <= 0 || bar_open == g_last_state_bar)
-      return;
-   g_last_state_bar = bar_open;
+   asian_high = 0.0;
+   asian_low = 0.0;
+   sweep_dir = 0;
+   first_long_fade = 0;
+   first_short_fade = 0;
 
-   const int hour = BB_BrokerHour(bar_open);
-   const int doy  = BB_BrokerDayOfYear(bar_open);
+   const datetime day_start = BB_DayStart(last_bar.time);
+   const datetime asian_start = day_start + strategy_asian_start_hour * 3600;
+   const datetime asian_end = day_start + strategy_asian_end_hour * 3600;
+   const datetime london_open = day_start + strategy_london_open_hour * 3600;
+   const datetime time_stop = day_start + strategy_time_stop_hour * 3600;
 
-   const double o = iOpen(_Symbol, _Period, 1);            // perf-allowed: closed-bar OHLC
-   const double h = iHigh(_Symbol, _Period, 1);            // perf-allowed: closed-bar OHLC
-   const double l = iLow(_Symbol, _Period, 1);             // perf-allowed: closed-bar OHLC
-   const double c = iClose(_Symbol, _Period, 1);           // perf-allowed: closed-bar OHLC
-   if(o <= 0.0 || h <= 0.0 || l <= 0.0 || c <= 0.0)
-      return;
+   MqlRates rates[];
+   const int copied = CopyRates(_Symbol, PERIOD_CURRENT, day_start, last_bar.time, rates); // perf-allowed: bounded same-day scan inside framework new-bar entry hook
+   if(copied <= 0)
+      return false;
 
-   // A bar inside the Asian window starts (or continues) the session for its day.
-   const bool in_asian = (hour >= strategy_asian_start_hour && hour < strategy_asian_end_hour);
+   bool have_asian = false;
+   bool ambiguous_sweep_bar = false;
 
-   if(in_asian && doy != g_session_day)
-      BB_ResetForDay(doy);          // fresh Asian session begins
-
-   // ---- Phase: accumulate the Asian BODY range ----
-   if(g_phase == BB_PHASE_ASIAN && in_asian && doy == g_session_day)
+   for(int i = 0; i < copied; ++i)
      {
-      const double body_hi = MathMax(o, c);
-      const double body_lo = MathMin(o, c);
-      if(!g_asian_seen)
+      const datetime t = rates[i].time;
+      if(t <= 0 || t > last_bar.time)
+         continue;
+
+      if(t >= asian_start && t < asian_end)
         {
-         g_asian_high = body_hi;
-         g_asian_low  = body_lo;
-         g_asian_seen = true;
+         const double body_hi = MathMax(rates[i].open, rates[i].close);
+         const double body_lo = MathMin(rates[i].open, rates[i].close);
+         if(body_hi <= 0.0 || body_lo <= 0.0)
+            continue;
+
+         if(!have_asian)
+           {
+            asian_high = body_hi;
+            asian_low = body_lo;
+            have_asian = true;
+           }
+         else
+           {
+            if(body_hi > asian_high)
+               asian_high = body_hi;
+            if(body_lo < asian_low)
+               asian_low = body_lo;
+           }
         }
-      else
-        {
-         if(body_hi > g_asian_high) g_asian_high = body_hi;
-         if(body_lo < g_asian_low)  g_asian_low  = body_lo;
-        }
-      return;
      }
 
-   // Only act on the rest of the machine for the day we have a range for.
-   if(doy != g_session_day || !g_asian_seen)
-      return;
+   if(!have_asian || asian_high <= asian_low)
+      return false;
 
-   // Asian window has ended -> arm the pre-London sweep watch.
-   if(g_phase == BB_PHASE_ASIAN && hour >= strategy_asian_end_hour)
-      g_phase = BB_PHASE_PRE_LONDON;
-
-   // ---- Phase: watch for the pre-London sweep (false breakout) ----
-   if(g_phase == BB_PHASE_PRE_LONDON)
+   for(int i = 0; i < copied; ++i)
      {
-      const bool in_pre_london = (hour >= strategy_asian_end_hour && hour < strategy_london_open_hour);
-      if(in_pre_london)
+      const datetime t = rates[i].time;
+      if(t < asian_end || t >= london_open)
+         continue;
+
+      const bool swept_low = (rates[i].low < asian_low);
+      const bool swept_high = (rates[i].high > asian_high);
+      if(swept_low && swept_high)
         {
-         if(l < g_asian_low)        g_sweep_dir = +1;   // swept the low  -> fade LONG
-         else if(h > g_asian_high)  g_sweep_dir = -1;   // swept the high -> fade SHORT
+         ambiguous_sweep_bar = true;
+         continue;
         }
-      // London open reached: if a sweep occurred, wait for the fade; else stand down.
-      if(hour >= strategy_london_open_hour)
-         g_phase = (g_sweep_dir != 0) ? BB_PHASE_FADE_WAIT : BB_PHASE_DONE;
+      if(swept_low)
+         sweep_dir = +1;
+      else if(swept_high)
+         sweep_dir = -1;
      }
 
-   // Past the time-stop hour -> the day's opportunity is over.
-   if(hour >= strategy_time_stop_hour && g_phase != BB_PHASE_DONE)
-      g_phase = BB_PHASE_DONE;
+   if(ambiguous_sweep_bar || sweep_dir == 0)
+      return false;
+
+   for(int i = 0; i < copied; ++i)
+     {
+      const datetime t = rates[i].time;
+      if(t < london_open || t >= time_stop || t > last_bar.time)
+         continue;
+
+      if(first_long_fade == 0 && rates[i].close > asian_low)
+         first_long_fade = t;
+      if(first_short_fade == 0 && rates[i].close < asian_high)
+         first_short_fade = t;
+     }
+
+   return true;
+  }
+
+void BB_InitRequest(QM_EntryRequest &req)
+  {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
   }
 
 // -----------------------------------------------------------------------------
-// Strategy hooks
+// Strategy hooks - implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only; fail-open on .DWX zero spread.
+// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
+// regime filter). Cheap O(1) checks only - runs on every tick.
 bool Strategy_NoTradeFilter()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_cap_pips);
-   if(stop_distance <= 0.0)
       return false;
 
    const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(spread > 0.0 && cap > 0.0 && spread > cap)
       return true;
 
    return false;
   }
 
-// London fade entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
-// The closed bar (shift 1) is the candidate reversal/fade bar.
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
+// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
+   BB_InitRequest(req);
+
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   if(g_phase != BB_PHASE_FADE_WAIT || g_sweep_dir == 0 || !g_asian_seen)
+   MqlRates last_bar;
+   if(!BB_LoadLastClosedBar(last_bar))
       return false;
 
-   const datetime bar_open = iTime(_Symbol, _Period, 1);   // perf-allowed: closed-bar open time
-   const int hour = BB_BrokerHour(bar_open);
-
-   // Fade only inside the London window [london_open, time_stop).
+   const int hour = BB_Hour(last_bar.time);
    if(hour < strategy_london_open_hour || hour >= strategy_time_stop_hour)
       return false;
 
-   const double c = iClose(_Symbol, _Period, 1);           // perf-allowed: reversal-bar close
-   const double h = iHigh(_Symbol, _Period, 1);            // perf-allowed: reversal-bar high
-   const double l = iLow(_Symbol, _Period, 1);             // perf-allowed: reversal-bar low
-   if(c <= 0.0 || h <= 0.0 || l <= 0.0)
+   double asian_high = 0.0;
+   double asian_low = 0.0;
+   int sweep_dir = 0;
+   datetime first_long_fade = 0;
+   datetime first_short_fade = 0;
+   if(!BB_LoadSessionContext(last_bar, asian_high, asian_low, sweep_dir, first_long_fade, first_short_fade))
       return false;
 
-   const double range = g_asian_high - g_asian_low;
-   if(range <= 0.0)
+   const double range = asian_high - asian_low;
+   if(range <= 0.0 || strategy_tp_range_mult <= 0.0)
       return false;
 
-   // SL cap as a price distance (pip-scaled, correct on 5-digit / JPY symbols).
-   const double sl_cap_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_cap_pips);
+   const double sl_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_cap_pips);
+   const double fallback_sl = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_fallback_sl_pips);
+   if(sl_cap <= 0.0 || fallback_sl <= 0.0)
+      return false;
 
-   if(g_sweep_dir > 0)
+   if(sweep_dir > 0)
      {
-      // Fade LONG: the false breakdown closed back ABOVE the Asian low.
-      if(!(c > g_asian_low))
+      if(first_long_fade != last_bar.time || !(last_bar.close > asian_low))
          return false;
 
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
          return false;
 
-      // SL = reversal-bar low, but no farther than the pip cap.
-      double sl = l;
-      if(sl_cap_dist > 0.0 && (entry - sl) > sl_cap_dist)
-         sl = entry - sl_cap_dist;
+      double sl = last_bar.low;
       if(!(sl < entry))
-         return false;
+         sl = entry - fallback_sl;
+      if((entry - sl) > sl_cap)
+         sl = entry - sl_cap;
 
-      const double tp = entry + range * strategy_tp_range_mult;
-
-      req.type   = QM_BUY;
-      req.price  = 0.0;   // framework fills market price at send
-      req.sl     = QM_TM_NormalizePrice(_Symbol, sl);
-      req.tp     = QM_TM_NormalizePrice(_Symbol, tp);
+      req.type = QM_BUY;
+      req.sl = QM_TM_NormalizePrice(_Symbol, sl);
+      req.tp = QM_TM_NormalizePrice(_Symbol, entry + range * strategy_tp_range_mult);
       req.reason = "bigben_london_fade_long";
-      g_phase    = BB_PHASE_DONE;     // one fade per day
-      return true;
+      return (req.sl > 0.0 && req.tp > entry);
      }
-   else
+
+   if(sweep_dir < 0)
      {
-      // Fade SHORT: the false breakout closed back BELOW the Asian high.
-      if(!(c < g_asian_high))
+      if(first_short_fade != last_bar.time || !(last_bar.close < asian_high))
          return false;
 
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(entry <= 0.0)
          return false;
 
-      // SL = reversal-bar high, but no farther than the pip cap.
-      double sl = h;
-      if(sl_cap_dist > 0.0 && (sl - entry) > sl_cap_dist)
-         sl = entry + sl_cap_dist;
+      double sl = last_bar.high;
       if(!(sl > entry))
-         return false;
+         sl = entry + fallback_sl;
+      if((sl - entry) > sl_cap)
+         sl = entry + sl_cap;
 
-      const double tp = entry - range * strategy_tp_range_mult;
-      if(tp <= 0.0)
-         return false;
-
-      req.type   = QM_SELL;
-      req.price  = 0.0;
-      req.sl     = QM_TM_NormalizePrice(_Symbol, sl);
-      req.tp     = QM_TM_NormalizePrice(_Symbol, tp);
+      req.type = QM_SELL;
+      req.sl = QM_TM_NormalizePrice(_Symbol, sl);
+      req.tp = QM_TM_NormalizePrice(_Symbol, entry - range * strategy_tp_range_mult);
       req.reason = "bigben_london_fade_short";
-      g_phase    = BB_PHASE_DONE;
-      return true;
+      return (req.sl > entry && req.tp > 0.0 && req.tp < entry);
      }
+
+   return false;
   }
 
-// No active trade management beyond the fixed SL/TP. Time stop is in Strategy_ExitSignal.
+// Called every tick when an open position exists for this EA's magic.
+// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
   }
 
-// Time stop: flat-close any open position at/after the time-stop broker hour.
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
       return false;
 
-   // Use the current (live) broker time for the time stop so the position is
-   // closed promptly once the cutoff hour is reached, not only on a new bar.
-   const datetime broker_now = TimeCurrent();
-   const int hour = BB_BrokerHour(broker_now);
-
-   // Close inside the daily cutoff band [time_stop, friday_close_hour). A bare
-   // ">= time_stop" would also fire in the evening; bound it to the morning.
-   if(hour >= strategy_time_stop_hour && hour < qm_friday_close_hour_broker)
-      return true;
-
-   return false;
+   const int hour = BB_Hour(TimeCurrent());
+   return (hour >= strategy_time_stop_hour && hour < qm_friday_close_hour_broker);
   }
 
-// Defer to the central news filter.
+// Optional news-filter override. Return TRUE to suppress trading regardless
+// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
+// custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false;
+   return false; // defer to QM_NewsAllowsTrade(...)
   }
 
 // -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
+// Framework wiring - do NOT edit below this line unless you know why.
 // -----------------------------------------------------------------------------
 
 int OnInit()
@@ -383,6 +393,8 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+   // FW1 - 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults.
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -396,8 +408,10 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -408,16 +422,18 @@ void OnTick()
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
 
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes - EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
 
-   // FIRST on the closed-bar path: advance the Asian-range / sweep state machine.
-   BB_AdvanceState_OnNewBar();
-
+   // FW6 2026-05-23 - emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
@@ -437,6 +453,8 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
   {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
@@ -445,3 +463,4 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
+

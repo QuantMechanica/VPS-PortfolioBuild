@@ -1,31 +1,16 @@
-# QM5_11409_big-ben-london-fade-asian-range-m15 — Strategy Spec
+# QM5_11409_big-ben-london-fade-asian-range-m15 - Strategy Spec
 
 **EA ID:** QM5_11409
 **Slug:** `big-ben-london-fade-asian-range-m15`
 **Source:** `b771d955-5033-500a-bb6b-98bd284b5b79` (see `strategy-seeds/sources/b771d955-5033-500a-bb6b-98bd284b5b79/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-23
 
 ---
 
 ## 1. Strategy Logic
 
-Big Ben "London fade" of the Asian-range false breakout, on M15. All session
-windows are read from the bar timestamp in BROKER time (DXZ NY-close, GMT+2
-winter / GMT+3 summer; the broker clock shifts with US DST itself, so the
-broker-hour constants are constant year-round). During the Asian session
-(01:00–09:00 broker) the EA builds a BODY-based range from prior CLOSED bars:
-`asian_high = max(open,close)` and `asian_low = min(open,close)` over the Asian
-bars. In the pre-London window (09:00–10:00 broker) it watches for a single
-sweep EVENT: a bar whose Low pierces `asian_low` (false breakdown → fade LONG
-bias) or whose High pierces `asian_high` (false breakout → fade SHORT bias). At
-the London open (10:00 broker) the fade trigger is the first M15 bar that CLOSES
-back through the swept boundary — `close > asian_low` for a LONG, `close <
-asian_high` for a SHORT — and the EA enters at that bar. Stop loss is the
-reversal-bar extreme (Low for long / High for short) capped at 40 pips; take
-profit projects the Asian-range height from entry. Any open position is
-flat-closed at the time stop (11:00 broker). No sweep → no trade. One position
-per magic, one fade attempt per day.
+The EA trades the Big Ben London fade on M15. It builds a body-based Asian range from broker-time 01:00 through 09:00 by taking the maximum of open/close as `asian_high` and the minimum of open/close as `asian_low`. Between 09:00 and 10:00 broker time it requires a pre-London sweep: low below `asian_low` for a long fade, or high above `asian_high` for a short fade. From 10:00 until the 11:00 time stop it enters only on the first M15 close back through the swept range boundary, then uses the reversal-bar extreme as SL capped at 40 pips and projects the Asian range as TP. Open positions are force-closed at 11:00 broker time.
 
 ---
 
@@ -33,26 +18,29 @@ per magic, one fade attempt per day.
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_asian_start_hour` | 1 | 0-23 | Asian session start, broker hour (inclusive) |
-| `strategy_asian_end_hour` | 9 | 0-23 | Asian session end, broker hour (exclusive) |
-| `strategy_london_open_hour` | 10 | 0-23 | London open / fade-window start, broker hour |
-| `strategy_time_stop_hour` | 11 | 0-23 | Force-close hour, broker (>= ⇒ time-stop exit) |
-| `strategy_tp_range_mult` | 1.0 | 0.5-1.5 | TP = entry ± Asian-range × this multiple |
-| `strategy_sl_cap_pips` | 40 | 10-80 | SL distance cap in pips (M15 bars are small) |
-| `strategy_spread_pct_of_stop` | 25.0 | 5-50 | Skip only if spread > this % of stop distance (fail-open) |
+| `strategy_asian_start_hour` | 1 | 0-23 | Asian session start, broker hour inclusive |
+| `strategy_asian_end_hour` | 9 | 0-23 | Asian session end, broker hour exclusive |
+| `strategy_london_open_hour` | 10 | 0-23 | London fade window start, broker hour |
+| `strategy_time_stop_hour` | 11 | 0-23 | Force-close hour, broker time |
+| `strategy_spread_cap_pips` | 20 | 1-100 | Entry is blocked only when spread is genuinely wider than this pip cap |
+| `strategy_sl_cap_pips` | 40 | 1-200 | Maximum stop distance in pips |
+| `strategy_fallback_sl_pips` | 30 | 1-200 | Fixed fallback stop when the reversal-bar extreme is invalid |
+| `strategy_tp_range_mult` | 1.0 | 0.1-3.0 | TP equals Asian range height times this multiple |
+
+> Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `GBPUSD.DWX` — GBP cross, most sensitive to the London open liquidity sweep (card-preferred)
-- `GBPJPY.DWX` — high-volatility GBP cross, exaggerated London-open fades (card-preferred)
-- `EURUSD.DWX` — deepest FX pair, clean Asian-range definition and London reversion
-- `USDJPY.DWX` — Asian-session-active JPY pair with a well-formed overnight range
+- `GBPUSD.DWX` - card-preferred GBP cross, directly tied to London liquidity.
+- `GBPJPY.DWX` - card-preferred GBP cross with active Asian and London sessions.
+- `EURUSD.DWX` - liquid London-session FX major with clean overnight range formation.
+- `USDJPY.DWX` - active Asian-session FX major listed by the card.
 
 **Explicitly NOT for:**
-- Index / metal `.DWX` symbols — the edge is the FX London-open liquidity sweep; index cash sessions and gold do not share the Asian-range / London-fade microstructure.
+- Index, metal, energy, and crypto `.DWX` symbols - the card defines an FX London-open false-breakout fade.
 
 ---
 
@@ -70,11 +58,11 @@ per magic, one fade attempt per day.
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `~100` |
-| Typical hold time | `minutes to ~1 hour (intraday, time-stopped at 11:00 broker)` |
-| Expected drawdown profile | `frequent small intraday losses; bounded per-trade by the 40-pip SL cap` |
-| Regime preference | `mean-revert (session false-breakout reversion)` |
-| Win rate target (qualitative) | `medium` |
+| Trades / year / symbol | `100` from card frontmatter |
+| Typical hold time | `intraday; minutes to 1 hour, with forced exit at 11:00 broker` |
+| Expected drawdown profile | `small, bounded intraday losses from false-break fade failures` |
+| Regime preference | `session mean-reversion after pre-London false breakout` |
+| Win rate target (qualitative) | `not specified in card` |
 
 ---
 
@@ -83,9 +71,9 @@ per magic, one fade attempt per day.
 This card was mechanised from:
 
 **Source ID:** `b771d955-5033-500a-bb6b-98bd284b5b79`
-**Source type:** `forum` (anonymous website team — TradingStrategyGuides.com)
+**Source type:** `website / local PDF`
 **Pointer:** `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\450251566-Big-Ben-Breakout-Strategy-pdf.pdf`
-**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_11409_big-ben-london-fade-asian-range-m15.md`
+**R1-R4 verdict (Q00):** all R1-R4 PASS per `artifacts/cards_approved/QM5_11409_big-ben-london-fade-asian-range-m15.md`
 
 ---
 
@@ -93,11 +81,11 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
@@ -105,4 +93,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor worktree |
+| v1 | 2026-06-23 | Initial build from card | 2faafd3a-0e2d-4f01-8608-2b375c905bba |
