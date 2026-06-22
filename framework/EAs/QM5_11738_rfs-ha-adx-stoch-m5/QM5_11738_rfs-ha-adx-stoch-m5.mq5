@@ -1,41 +1,25 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11738 rfs-ha-adx-stoch-m5 — Heikin-Ashi + ADX + Stochastic confluence (M5)"
+#property description "QM5_11738 rfs-ha-adx-stoch-m5"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11738 rfs-ha-adx-stoch-m5
+// QuantMechanica V5 EA - QM5_11738 rfs-ha-adx-stoch-m5
 // -----------------------------------------------------------------------------
-// Source: Anonymous, "Heiken Ashi + ADX + Stochastic", Robo-forex Strategy
-//         Compilation (robofx.com, ~2015), source PDF page 23.
-// Card: artifacts/cards_approved/QM5_11738_rfs-ha-adx-stoch-m5.md (g0_status APPROVED).
+// Card: D:\QM\strategy_farm\artifacts\cards_approved\QM5_11738_rfs-ha-adx-stoch-m5.md
+// Source: Robo-forex Strategy Compilation, "Heiken Ashi + ADX + Stochastic".
 //
-// Three-way confluence. To avoid the .DWX two-cross-same-bar zero-trade trap,
-// exactly ONE component is the trigger EVENT; the rest are persistent STATEs:
+// Entry is evaluated once per closed M5 bar by the framework QM_IsNewBar gate:
+//   Long  = two bullish Heiken Ashi closed bars, ADX(14)>22 and rising,
+//           +DI>-DI, and Stoch(5,3,3) K rising.
+//   Short = two bearish Heiken Ashi closed bars, ADX(14)>22 and rising,
+//           -DI>+DI, and Stoch(5,3,3) K falling.
+// SL/TP are fixed pips from the card factory defaults: SL 7 pips, TP 12 pips.
 //
-//   Trend STATE  : Heikin-Ashi color — two consecutive same-color HA candles at
-//                  shifts 2 and 1 (bull-bull for long, bear-bear for short).
-//                  HA candles computed in-EA from real OHLC, recursive from a
-//                  bounded seed (perf-allowed bounded closed-bar reads, only on
-//                  the QM_IsNewBar-gated closed-bar path).
-//   Strength STATE: ADX(14) > threshold AND ADX rising (ADX[1] > ADX[2]).
-//                  Directional bias confirmed by DI: +DI>-DI for longs,
-//                  -DI>+DI for shorts (resolves the card's ambiguous "ADX below
-//                  22 for shorts" note — Implementation Notes direct: ADX>thr
-//                  with directional bias, consistent with longs).
-//   Trigger EVENT: Stochastic(5,3,3) %K crosses UP out of oversold for longs
-//                  (K[2] <= os && K[1] > os), or crosses DOWN out of overbought
-//                  for shorts (K[2] >= ob && K[1] < ob). One single momentum
-//                  event per bar. HA color + ADX are STATES, never EVENTS, so we
-//                  never require two fresh crosses on one bar.
-//   Stop / Take  : fixed pips (card default SL 7 pips / TP 12 pips), scaled
-//                  correctly via QM_StopFixedPips / QM_StopRulesPipsToPriceDistance.
-//   Spread guard : block only a genuinely wide spread (fail-open on .DWX zero
-//                  modeled spread).
-//
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything else
-// is framework wiring and MUST stay intact.
+// Heiken Ashi is bespoke structural candle math with no QM_* reader. It uses a
+// bounded closed-bar CopyRates window only inside Strategy_EntrySignal, which is
+// called after the framework new-bar gate, so it is not on the per-tick path.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -51,8 +35,8 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -63,225 +47,185 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_adx_period          = 14;    // ADX period
-input double strategy_adx_threshold       = 22.0;  // ADX trend-strength floor
-input int    strategy_stoch_k             = 5;     // Stochastic %K period
-input int    strategy_stoch_d             = 3;     // Stochastic %D period
-input int    strategy_stoch_slowing       = 3;     // Stochastic slowing
-input double strategy_stoch_oversold      = 20.0;  // %K oversold level (long trigger)
-input double strategy_stoch_overbought    = 80.0;  // %K overbought level (short trigger)
-input int    strategy_ha_seed_bars        = 200;   // HA recursion seed depth (bounded)
-input int    strategy_sl_pips             = 7;     // stop loss, pips
-input int    strategy_tp_pips             = 12;    // take profit, pips
-input double strategy_spread_pct_of_stop  = 30.0;  // skip if spread > this % of stop distance
+input int    strategy_ha_seed_bars      = 80;
+input int    strategy_adx_period        = 14;
+input double strategy_adx_threshold     = 22.0;
+input int    strategy_stoch_k           = 5;
+input int    strategy_stoch_d           = 3;
+input int    strategy_stoch_slowing     = 3;
+input int    strategy_sl_pips           = 7;
+input int    strategy_tp_pips           = 12;
+input int    strategy_max_spread_pips   = 0;
 
-// -----------------------------------------------------------------------------
-// Heikin-Ashi helper — compute HA open/close at a given closed-bar shift by
-// recursing from a bounded seed. perf-allowed: bounded closed-bar OHLC reads,
-// only run on the closed-bar entry/exit path (QM_IsNewBar-gated by the framework).
-// -----------------------------------------------------------------------------
-
-// Fills ha_open / ha_close for the candle at `shift` (1 = last closed bar).
-// Returns false if history is not yet available.
-bool ComputeHA(const int shift, double &ha_open, double &ha_close)
+bool ComputeHeikenAshi(const int shift,
+                       double &ha_open,
+                       double &ha_high,
+                       double &ha_low,
+                       double &ha_close)
   {
-   const int seed = (strategy_ha_seed_bars < 10 ? 10 : strategy_ha_seed_bars);
-   const int start = shift + seed; // oldest bar of the recursion seed
+   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
+   const int seed = (strategy_ha_seed_bars < 20) ? 20 : strategy_ha_seed_bars;
+   const int count = seed + shift + 1;
 
-   if(Bars(_Symbol, _Period) <= start + 1)
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, tf, 0, count, rates); // perf-allowed: bounded Heiken Ashi OHLC window, called only from the framework QM_IsNewBar-gated entry hook.
+   if(copied < count)
       return false;
 
-   // Seed at the oldest bar: HA_open = (O+C)/2, HA_close = (O+H+L+C)/4.
-   double o = iOpen(_Symbol, _Period, start);   // perf-allowed: bounded closed-bar read
-   double h = iHigh(_Symbol, _Period, start);   // perf-allowed
-   double l = iLow(_Symbol, _Period, start);    // perf-allowed
-   double c = iClose(_Symbol, _Period, start);  // perf-allowed
-   if(o <= 0.0 || c <= 0.0)
+   const int oldest = count - 1;
+   double raw_open = rates[oldest].open;
+   double raw_high = rates[oldest].high;
+   double raw_low = rates[oldest].low;
+   double raw_close = rates[oldest].close;
+   if(raw_open <= 0.0 || raw_high <= 0.0 || raw_low <= 0.0 || raw_close <= 0.0)
       return false;
 
-   double prev_ha_open  = (o + c) / 2.0;
-   double prev_ha_close = (o + h + l + c) / 4.0;
+   double prev_ha_open = (raw_open + raw_close) * 0.5;
+   double prev_ha_close = (raw_open + raw_high + raw_low + raw_close) * 0.25;
 
-   // Recurse forward from start-1 down to `shift`.
-   for(int s = start - 1; s >= shift; --s)
+   double current_ha_open = prev_ha_open;
+   double current_ha_close = prev_ha_close;
+   double current_ha_high = MathMax(raw_high, MathMax(current_ha_open, current_ha_close));
+   double current_ha_low = MathMin(raw_low, MathMin(current_ha_open, current_ha_close));
+
+   for(int i = oldest - 1; i >= shift; --i)
      {
-      o = iOpen(_Symbol, _Period, s);   // perf-allowed: bounded closed-bar read
-      h = iHigh(_Symbol, _Period, s);   // perf-allowed
-      l = iLow(_Symbol, _Period, s);    // perf-allowed
-      c = iClose(_Symbol, _Period, s);  // perf-allowed
-      if(o <= 0.0 || c <= 0.0)
+      raw_open = rates[i].open;
+      raw_high = rates[i].high;
+      raw_low = rates[i].low;
+      raw_close = rates[i].close;
+      if(raw_open <= 0.0 || raw_high <= 0.0 || raw_low <= 0.0 || raw_close <= 0.0)
          return false;
 
-      const double cur_ha_close = (o + h + l + c) / 4.0;
-      const double cur_ha_open  = (prev_ha_open + prev_ha_close) / 2.0;
+      current_ha_close = (raw_open + raw_high + raw_low + raw_close) * 0.25;
+      current_ha_open = (prev_ha_open + prev_ha_close) * 0.5;
+      current_ha_high = MathMax(raw_high, MathMax(current_ha_open, current_ha_close));
+      current_ha_low = MathMin(raw_low, MathMin(current_ha_open, current_ha_close));
 
-      prev_ha_open  = cur_ha_open;
-      prev_ha_close = cur_ha_close;
+      prev_ha_open = current_ha_open;
+      prev_ha_close = current_ha_close;
      }
 
-   ha_open  = prev_ha_open;
-   ha_close = prev_ha_close;
+   ha_open = current_ha_open;
+   ha_high = current_ha_high;
+   ha_low = current_ha_low;
+   ha_close = current_ha_close;
    return true;
   }
 
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
-
-// Cheap O(1) per-tick gate. Spread guard only — regime/signal work is on the
-// closed-bar path. Fail-open on .DWX zero modeled spread.
 bool Strategy_NoTradeFilter()
   {
+   if(strategy_max_spread_pips <= 0)
+      return false;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
-   if(stop_distance <= 0.0)
       return false;
 
    const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_spread_pips);
+   if(spread > 0.0 && cap > 0.0 && spread > cap)
       return true;
 
    return false;
   }
 
-// Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
-
-   // --- Heikin-Ashi candles at shift 1 (last closed) and shift 2 (prior). ---
-   double ha_open_1, ha_close_1, ha_open_2, ha_close_2;
-   if(!ComputeHA(1, ha_open_1, ha_close_1))
-      return false;
-   if(!ComputeHA(2, ha_open_2, ha_close_2))
-      return false;
-
-   const bool bull_1 = (ha_close_1 > ha_open_1);
-   const bool bear_1 = (ha_close_1 < ha_open_1);
-   const bool bull_2 = (ha_close_2 > ha_open_2);
-   const bool bear_2 = (ha_close_2 < ha_open_2);
-
-   // Trend STATE: two consecutive same-color HA candles.
-   const bool ha_long_state  = (bull_2 && bull_1);
-   const bool ha_short_state = (bear_2 && bear_1);
-   if(!ha_long_state && !ha_short_state)
+   if(strategy_adx_period <= 0 ||
+      strategy_stoch_k <= 0 ||
+      strategy_stoch_d <= 0 ||
+      strategy_stoch_slowing <= 0 ||
+      strategy_sl_pips <= 0 ||
+      strategy_tp_pips <= 0)
       return false;
 
-   // --- Strength STATE: ADX > threshold AND rising, with DI directional bias. ---
-   const double adx_now  = QM_ADX(_Symbol, _Period, strategy_adx_period, 1);
-   const double adx_prev = QM_ADX(_Symbol, _Period, strategy_adx_period, 2);
-   if(adx_now <= 0.0 || adx_prev <= 0.0)
-      return false;
-   const bool adx_strong_rising = (adx_now > strategy_adx_threshold && adx_now > adx_prev);
-   if(!adx_strong_rising)
-      return false;
+   const ENUM_TIMEFRAMES tf = (ENUM_TIMEFRAMES)_Period;
 
-   const double plus_di  = QM_ADX_PlusDI(_Symbol, _Period, strategy_adx_period, 1);
-   const double minus_di = QM_ADX_MinusDI(_Symbol, _Period, strategy_adx_period, 1);
-   if(plus_di <= 0.0 || minus_di <= 0.0)
+   double ha_open_1 = 0.0;
+   double ha_high_1 = 0.0;
+   double ha_low_1 = 0.0;
+   double ha_close_1 = 0.0;
+   double ha_open_2 = 0.0;
+   double ha_high_2 = 0.0;
+   double ha_low_2 = 0.0;
+   double ha_close_2 = 0.0;
+   if(!ComputeHeikenAshi(1, ha_open_1, ha_high_1, ha_low_1, ha_close_1))
       return false;
-
-   // --- Trigger EVENT: Stochastic %K crosses out of OS/OB (one event/bar). ---
-   const double k_now  = QM_Stoch_K(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
-   const double k_prev = QM_Stoch_K(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 2);
-   if(k_now <= 0.0 || k_prev <= 0.0)
+   if(!ComputeHeikenAshi(2, ha_open_2, ha_high_2, ha_low_2, ha_close_2))
       return false;
 
-   const bool stoch_cross_up   = (k_prev <= strategy_stoch_oversold   && k_now > strategy_stoch_oversold);
-   const bool stoch_cross_down = (k_prev >= strategy_stoch_overbought && k_now < strategy_stoch_overbought);
+   const double adx_1 = QM_ADX(_Symbol, tf, strategy_adx_period, 1);
+   const double adx_2 = QM_ADX(_Symbol, tf, strategy_adx_period, 2);
+   const double plus_di = QM_ADX_PlusDI(_Symbol, tf, strategy_adx_period, 1);
+   const double minus_di = QM_ADX_MinusDI(_Symbol, tf, strategy_adx_period, 1);
+   const double stoch_1 = QM_Stoch_K(_Symbol, tf, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
+   const double stoch_2 = QM_Stoch_K(_Symbol, tf, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 2);
+   if(adx_1 <= 0.0 || adx_2 <= 0.0 || plus_di <= 0.0 || minus_di <= 0.0)
+      return false;
 
-   // --- Long: HA bull state + ADX strong/rising + +DI dominant + Stoch up-cross. ---
-   if(ha_long_state && plus_di > minus_di && stoch_cross_up)
+   const bool ha_bullish = (ha_close_1 > ha_open_1 && ha_close_2 > ha_open_2);
+   const bool ha_bearish = (ha_close_1 < ha_open_1 && ha_close_2 < ha_open_2);
+   const bool adx_strong_rising = (adx_1 > strategy_adx_threshold && adx_1 > adx_2);
+   const bool stoch_rising = (stoch_1 > stoch_2);
+   const bool stoch_falling = (stoch_1 < stoch_2);
+
+   if(ha_bullish && adx_strong_rising && plus_di > minus_di && stoch_rising)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
          return false;
-      const double sl = QM_StopFixedPips(_Symbol, QM_BUY, entry, strategy_sl_pips);
-      const double tp = QM_StopFixedPips(_Symbol, QM_SELL, entry, strategy_tp_pips); // tp = entry + tp_pips (mirror)
-      if(sl <= 0.0 || tp <= 0.0)
-         return false;
-      req.type   = QM_BUY;
-      req.price  = 0.0;   // framework fills market price at send
-      req.sl     = sl;
-      req.tp     = tp;
-      req.reason = "ha_adx_stoch_long";
-      return true;
+      req.type = QM_BUY;
+      req.price = 0.0;
+      req.sl = QM_StopFixedPips(_Symbol, req.type, entry, strategy_sl_pips);
+      req.tp = QM_TakeRR(_Symbol, req.type, entry, req.sl, (double)strategy_tp_pips / (double)strategy_sl_pips);
+      req.reason = "HA_ADX_STOCH_LONG";
+      return (req.sl > 0.0 && req.tp > 0.0);
      }
 
-   // --- Short: HA bear state + ADX strong/rising + -DI dominant + Stoch down-cross. ---
-   if(ha_short_state && minus_di > plus_di && stoch_cross_down)
+   if(ha_bearish && adx_strong_rising && minus_di > plus_di && stoch_falling)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(entry <= 0.0)
          return false;
-      const double sl = QM_StopFixedPips(_Symbol, QM_SELL, entry, strategy_sl_pips);
-      const double tp = QM_StopFixedPips(_Symbol, QM_BUY, entry, strategy_tp_pips); // tp = entry - tp_pips (mirror)
-      if(sl <= 0.0 || tp <= 0.0)
-         return false;
-      req.type   = QM_SELL;
-      req.price  = 0.0;
-      req.sl     = sl;
-      req.tp     = tp;
-      req.reason = "ha_adx_stoch_short";
-      return true;
+      req.type = QM_SELL;
+      req.price = 0.0;
+      req.sl = QM_StopFixedPips(_Symbol, req.type, entry, strategy_sl_pips);
+      req.tp = QM_TakeRR(_Symbol, req.type, entry, req.sl, (double)strategy_tp_pips / (double)strategy_sl_pips);
+      req.reason = "HA_ADX_STOCH_SHORT";
+      return (req.sl > 0.0 && req.tp > 0.0);
      }
 
    return false;
   }
 
-// Fixed pip stop/target only — no active trailing. Defensive HA-flip exit is in
-// Strategy_ExitSignal.
 void Strategy_ManageOpenPosition()
   {
+   // Card specifies fixed SL/TP only; no trailing, break-even, partial, or scale-in.
   }
 
-// Defensive exit: close long when the last closed HA candle turns bearish;
-// close short when it turns bullish.
 bool Strategy_ExitSignal()
   {
-   const int magic = QM_FrameworkMagic();
-   if(QM_TM_OpenPositionCount(magic) <= 0)
-      return false;
-
-   double ha_open_1, ha_close_1;
-   if(!ComputeHA(1, ha_open_1, ha_close_1))
-      return false;
-
-   const bool ha_bull = (ha_close_1 > ha_open_1);
-   const bool ha_bear = (ha_close_1 < ha_open_1);
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      const long ptype = PositionGetInteger(POSITION_TYPE);
-      if(ptype == POSITION_TYPE_BUY && ha_bear)
-         return true;
-      if(ptype == POSITION_TYPE_SELL && ha_bull)
-         return true;
-     }
+   // Card exits through fixed SL/TP; framework Friday close remains active.
    return false;
   }
 
-// Defer to the central news filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
-
-// -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
-// -----------------------------------------------------------------------------
 
 int OnInit()
   {
@@ -290,20 +234,20 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"ea\":\"QM5_11738_rfs-ha-adx-stoch-m5\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -321,6 +265,7 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
