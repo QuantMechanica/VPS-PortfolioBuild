@@ -13269,3 +13269,13 @@
 9355,mql5-daily-range,1,GBPUSD.DWX,93550001,2026-06-23,Development,active
 9355,mql5-daily-range,2,XAUUSD.DWX,93550002,2026-06-23,Development,active
 9355,mql5-daily-range,3,GDAXI.DWX,93550003,2026-06-23,Development,active
+2133,demark-td-trend-factor-h4,0,EURUSD.DWX,21330000,2026-06-23,Development,active
+2133,demark-td-trend-factor-h4,1,GBPUSD.DWX,21330001,2026-06-23,Development,active
+2133,demark-td-trend-factor-h4,2,USDJPY.DWX,21330002,2026-06-23,Development,active
+2133,demark-td-trend-factor-h4,3,XAUUSD.DWX,21330003,2026-06-23,Development,active
+2133,demark-td-trend-factor-h4,4,XTIUSD.DWX,21330004,2026-06-23,Development,active
+2133,demark-td-trend-factor-h4,5,NDX.DWX,21330005,2026-06-23,Development,active
+2133,demark-td-trend-factor-h4,6,WS30.DWX,21330006,2026-06-23,Development,active
+2133,demark-td-trend-factor-h4,7,GDAXI.DWX,21330007,2026-06-23,Development,active
+2133,demark-td-trend-factor-h4,8,UK100.DWX,21330008,2026-06-23,Development,active
+2133,demark-td-trend-factor-h4,9,SP500.DWX,21330009,2026-06-23,Development,active
