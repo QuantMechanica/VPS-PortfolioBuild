@@ -16,6 +16,7 @@ import shutil
 import signal
 import sqlite3
 import subprocess
+import sys
 import threading
 import time
 from pathlib import Path
@@ -35,6 +36,15 @@ DISK_GUARD_SLEEP_SECONDS = 60
 DISK_PURGE_TASK = "QM_StrategyFarm_TesterCachePurge"
 _DISK_PURGE_COOLDOWN_SECONDS = 600.0
 _last_disk_purge_trigger = [0.0]
+# RAM circuit-breaker (2026-06-22 incident): heavy real-tick backtests use ~6-7GB
+# RAM each. When too many run concurrently, free RAM hits ~0 and the NEXT terminal64
+# cannot allocate at startup -> it instant-exits in ~0.05s, logged as launch_fault,
+# burning the queue to INFRA_FAIL without ever running. Don't claim+launch when free
+# RAM is below this floor — let the in-flight terminals finish and release RAM first.
+# This dynamically caps concurrency by RAM availability (complements the static
+# terminal cap in start_terminal_workers disabled_terminals.txt). Fail-open.
+RAM_MIN_FREE_GB = 4.0
+RAM_GUARD_SLEEP_SECONDS = 20
 # Launch-fault guard (2026-06-20): the spawned phase-runner child vanishing far
 # faster than any real backtest (terminal64 startup + sync alone is ~6-10s) means
 # the run never actually started — a transient pwsh/host launch fault, NOT a clean
@@ -969,6 +979,37 @@ def _disk_free_gb(root: Path) -> float:
         return float("inf")
 
 
+def _free_ram_gb() -> float:
+    """Free physical RAM (GB) via the Win32 API (no psutil dependency — the SYSTEM
+    Python has none). Fail-open (inf) on any error so a measurement glitch can never
+    wedge the worker."""
+    if sys.platform != "win32":
+        return float("inf")
+    try:
+        import ctypes
+
+        class _MEMSTATEX(ctypes.Structure):
+            _fields_ = [
+                ("dwLength", ctypes.c_ulong),
+                ("dwMemoryLoad", ctypes.c_ulong),
+                ("ullTotalPhys", ctypes.c_ulonglong),
+                ("ullAvailPhys", ctypes.c_ulonglong),
+                ("ullTotalPageFile", ctypes.c_ulonglong),
+                ("ullAvailPageFile", ctypes.c_ulonglong),
+                ("ullTotalVirtual", ctypes.c_ulonglong),
+                ("ullAvailVirtual", ctypes.c_ulonglong),
+                ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+            ]
+
+        stat = _MEMSTATEX()
+        stat.dwLength = ctypes.sizeof(_MEMSTATEX)
+        if not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
+            return float("inf")
+        return stat.ullAvailPhys / (1024 ** 3)
+    except Exception:
+        return float("inf")
+
+
 def _trigger_disk_purge() -> None:
     """Best-effort kick of the cache-purge task, cooldown-guarded to avoid spam."""
     now = time.monotonic()
@@ -998,6 +1039,13 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
                               "free_gb": round(free_gb, 1), "threshold_gb": DISK_MIN_FREE_GB}), flush=True)
             _trigger_disk_purge()
             time.sleep(DISK_GUARD_SLEEP_SECONDS)
+            continue
+        free_ram = _free_ram_gb()
+        if free_ram < RAM_MIN_FREE_GB:
+            print(json.dumps({"event": "ram_low_pause", "terminal": terminal,
+                              "free_ram_gb": round(free_ram, 1), "threshold_gb": RAM_MIN_FREE_GB}), flush=True)
+            # jitter so the fleet doesn't wake in lockstep and re-spike RAM together
+            time.sleep(RAM_GUARD_SLEEP_SECONDS + random.uniform(0, 10))
             continue
         claim = claim_atomic(root, terminal)
         if not claim.get("claimed"):

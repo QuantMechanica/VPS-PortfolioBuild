@@ -204,6 +204,49 @@ if ($factoryEnabled -and $sessionLost) {
     } catch {}
 }
 
+# 2b2. REAL-VERDICT-STALL detection (2026-06-22, after a ~3h launch_fault wedge).
+# The dispatch-stall check (2b) misses the launch_fault wedge: workers are ALIVE and DO
+# spawn terminal64, but every launch instant-exits (~0.05s — RAM exhaustion, or leaked OS
+# resources after repeated purge force-kills), so terminal64 + active oscillate >0 and the
+# watchdog reads 'noop_healthy' for hours while 0 real verdicts complete. Signal: factory
+# ON, workers healthy, NOT a dispatch stall, disk+RAM OK, queue has work, but ZERO real
+# (non-INFRA) verdicts in the last 15 min AND no cache-purge fired recently (a purge ->
+# cold-cache window self-heals; never escalate into it). Confirmed on 2 consecutive runs
+# (~30 min) -> full OFF/ON-equivalent reset (the only thing that cleared the wedge).
+$realStall = $false
+$realStallInfo = ''
+if ($factoryEnabled -and -not $dispatchStalled -and -not $sessionLost -and $nWorkers -ge $MinWorkers -and $diskFreeGb -ge 40) {
+    $ramFreeGb = 999.0
+    try { $ramFreeGb = [math]::Round((Get-CimInstance Win32_OperatingSystem -ErrorAction Stop).FreePhysicalMemory/1MB,1) } catch {}
+    $recentPurge = $false
+    try {
+        $plog = 'D:\QM\reports\state\tester_cache_purge.log'
+        if (Test-Path $plog) {
+            foreach ($ln in (Get-Content $plog -Tail 6 -ErrorAction SilentlyContinue)) {
+                if ($ln -match 'TRIGGER' -and $ln -match '(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z)') {
+                    try {
+                        $pt = [datetime]::ParseExact($matches[1],'yyyy-MM-ddTHH:mm:ssZ',[Globalization.CultureInfo]::InvariantCulture,([Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal))
+                        if (((Get-Date).ToUniversalTime() - $pt).TotalMinutes -lt 15) { $recentPurge = $true }
+                    } catch {}
+                }
+            }
+        }
+    } catch {}
+    # RAM critically low => workers correctly self-pausing (RAM guard), not wedged.
+    if ($ramFreeGb -ge 3 -and -not $recentPurge) {
+        $rq = @'
+import sqlite3
+c=sqlite3.connect(r"D:/QM/strategy_farm/state/farm_state.sqlite")
+n=c.execute("SELECT COUNT(*) FROM work_items WHERE status='done' AND attempt_count<99 AND verdict IN ('PASS','FAIL','FAIL_SOFT') AND datetime(updated_at)>=datetime('now','-15 minutes')").fetchone()[0]
+print(n)
+'@
+        $realN = -1
+        try { $realN = [int](($rq | & $py - 2>$null) -join '').Trim() } catch {}
+        $realStallInfo = "realDone15m=$realN ramFreeGb=$ramFreeGb pending=$nPending recentPurge=$recentPurge"
+        if ($realN -eq 0 -and $nPending -ge $StallPendingThreshold) { $realStall = $true }
+    }
+}
+
 if ($factoryEnabled -and $sessionLost) {
     # handled above; fall through to logging
 }
@@ -219,9 +262,58 @@ elseif ($diskFreeGb -lt 40) {
     $detail = "D: free ${diskFreeGb}GB < 40GB while factory ON - workers pausing by design; kicking cache purge, NOT respawning"
     try { Start-ScheduledTask -TaskName 'QM_StrategyFarm_TesterCachePurge' -ErrorAction SilentlyContinue } catch {}
 }
+elseif ($factoryEnabled -and $realStall) {
+    # REAL-VERDICT-STALL (launch_fault wedge): workers look healthy but 0 real verdicts.
+    # A plain respawn may not clear a leaked-resource wedge -> do the full OFF/ON-equiv
+    # (disable factory tasks + kill all + longer settle + re-enable + farmctl repair +
+    # clean respawn). 2-run confirm + 6h cooldown to avoid acting on a transient lull.
+    $rsState = 'D:\QM\reports\state\watchdog_realstall.json'
+    $rst = $null; try { $rst = Get-Content $rsState -Raw -ErrorAction Stop | ConvertFrom-Json } catch {}
+    $nowDt = (Get-Date).ToUniversalTime()
+    $rsSince = $null;  if ($rst -and $rst.pending_since) { try { $rsSince = [datetime]$rst.pending_since } catch {} }
+    $rsLast  = $null;  if ($rst -and $rst.last_reset)    { try { $rsLast  = [datetime]$rst.last_reset } catch {} }
+    if ($rsLast -and ($nowDt - $rsLast).TotalHours -lt 6) {
+        $action = 'realstall_cooldown'
+        $detail = "REAL-STALL ($realStallInfo) but full-reset on 6h cooldown (last $($rst.last_reset))"
+    } elseif (-not $rsSince) {
+        $action = 'realstall_confirm'
+        $detail = "REAL-STALL suspected ($realStallInfo); confirming on next run (~15min) before full reset"
+        @{ pending_since = $nowDt.ToString('yyyy-MM-ddTHH:mm:ssZ'); last_reset = $rst.last_reset } | ConvertTo-Json -Compress | Set-Content -Path $rsState -Encoding UTF8
+    } else {
+        $action = 'healed_full_reset'
+        $detail = "REAL-STALL confirmed 2x (since $($rst.pending_since)) ($realStallInfo) -> full OFF/ON-equivalent reset"
+        @{ pending_since = $null; last_reset = $nowDt.ToString('yyyy-MM-ddTHH:mm:ssZ') } | ConvertTo-Json -Compress | Set-Content -Path $rsState -Encoding UTF8
+        try {
+            foreach ($t in $QM_FACTORY_TASKS) { Disable-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue | Out-Null }
+            foreach ($d in $daemons) { Stop-Process -Id $d.ProcessId -Force -ErrorAction SilentlyContinue }
+            @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
+              Where-Object { $_.CommandLine -match '\\mt5\\T(?:[1-9]|10)\\' }) |
+              ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+            Start-Sleep -Seconds 8   # longer settle so the OS releases leaked handles
+            foreach ($t in $QM_FACTORY_TASKS) { Enable-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue | Out-Null }
+            & $py (Join-Path $repo 'tools\strategy_farm\farmctl.py') repair 2>$null | Out-Null
+            $launcher = Join-Path $repo 'tools\strategy_farm\run_in_console_session.ps1'
+            $swArgs = '"' + (Join-Path $repo 'tools\strategy_farm\start_terminal_workers.py') + '" --repo-root "' + $repo + '" --farm-root "D:\QM\strategy_farm" --dedupe'
+            & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $launcher -Exe $py -Arguments $swArgs -WorkDir $repo 2>$null | Out-Null
+            Start-Sleep -Seconds 12
+            Start-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue
+            $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
+                       Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
+            $detail += " -> after=$after workers"
+        } catch { $action = 'heal_failed'; $detail += " -> ERROR: $_" }
+    }
+}
 elseif ($nWorkers -ge $MinWorkers -and -not $dispatchStalled) {
     $action = 'noop_healthy'
     $detail = "workers=$nWorkers/$ExpectWorkers (>= $MinWorkers); $stallInfo"
+    # clear any stale real-stall confirm flag once real verdicts are flowing again
+    $rsState = 'D:\QM\reports\state\watchdog_realstall.json'
+    if (Test-Path $rsState) {
+        try {
+            $rst = Get-Content $rsState -Raw | ConvertFrom-Json
+            if ($rst.pending_since) { @{ pending_since = $null; last_reset = $rst.last_reset } | ConvertTo-Json -Compress | Set-Content -Path $rsState -Encoding UTF8 }
+        } catch {}
+    }
 }
 else {
     # 3. heal: factory meant ON but workers are dead/short OR alive-but-wedged
@@ -303,6 +395,7 @@ $record = [ordered]@{
     expect           = $ExpectWorkers
     disk_free_gb     = $diskFreeGb
     dispatch_stalled = $dispatchStalled
+    real_stall       = $realStall
     session_lost     = $sessionLost
     action           = $action
     detail           = $detail

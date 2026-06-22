@@ -42,11 +42,30 @@ Stop-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyCo
 Disable-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue | Out-Null
 Stop-ScheduledTask -TaskName 'QM_StrategyFarm_Tick_5min' -ErrorAction SilentlyContinue | Out-Null
 Disable-ScheduledTask -TaskName 'QM_StrategyFarm_Tick_5min' -ErrorAction SilentlyContinue | Out-Null
-@(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" |
-    Where-Object CommandLine -match 'terminal_worker\.py') | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
-@(Get-Process terminal64 -ErrorAction SilentlyContinue) | ForEach-Object { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue }
-Start-Sleep -Seconds 3
-Log "factory stopped (workers + terminal64 killed; in-flight backtests re-queue)"
+# Gentler teardown (2026-06-22): verify a TRUE clean slate before clearing/restarting.
+# Repeated abrupt force-kills in quick succession leaked OS resources (handles /
+# window-station / single-instance state) and eventually wedged terminal64 launches
+# (instant-exit ~0.06s) for hours — a state only Factory_OFF/ON could clear. Killing in
+# a verify-loop + a longer settle lets Windows fully release those resources, and
+# guarantees 0 survivors so the respawn can't over-provision on top of stragglers.
+function Kill-FactoryProcs {
+    @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue |
+        Where-Object CommandLine -match 'terminal_worker\.py') | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+    # ONLY factory T1-T10 terminals — NEVER T_Live (live trading) or T_Export.
+    @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
+        Where-Object { $_.CommandLine -match '\\mt5\\T(?:[1-9]|10)\\' }) | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+}
+$killPass = 0
+while ($killPass -lt 4) {
+    Kill-FactoryProcs
+    Start-Sleep -Seconds 3
+    $liveW = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue | Where-Object CommandLine -match 'terminal_worker\.py').Count
+    $liveT = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue | Where-Object { $_.CommandLine -match '\\mt5\\T(?:[1-9]|10)\\' }).Count
+    if ($liveW -eq 0 -and $liveT -eq 0) { break }
+    $killPass++
+}
+Start-Sleep -Seconds 5   # extra settle so the OS releases handles before respawn
+Log "factory stopped (clean slate, $killPass extra kill pass(es); workers + factory terminal64 killed; in-flight backtests re-queue)"
 
 # 2. clear regenerable tester caches
 foreach ($n in 1..10) {
@@ -71,6 +90,25 @@ $launcher = Join-Path $RepoRoot 'tools\strategy_farm\run_in_console_session.ps1'
 $swArgs = '"' + (Join-Path $RepoRoot 'tools\strategy_farm\start_terminal_workers.py') + '" --repo-root "' + $RepoRoot + '" --farm-root "' + $FarmRoot + '" --dedupe'
 & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $launcher -Exe $py -Arguments $swArgs -WorkDir $RepoRoot | Out-Null
 Start-Sleep -Seconds 12
-$daemons = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" | Where-Object CommandLine -match 'terminal_worker\.py')
+
+# G (2026-06-22): defend against the over-provision bug. start_terminal_workers' --dedupe
+# scans for existing workers via CIM, which can return nothing inside the
+# CreateProcessAsUser'd console-session context -> it spawns a full set ON TOP of any
+# survivors (observed 20 workers once). The verify-loop kill above makes survivors
+# unlikely, but trim defensively: keep exactly ONE daemon per ENABLED terminal and kill
+# any daemon on a disabled/unknown terminal. "Enabled" = installed (T<n>\terminal64.exe)
+# minus disabled_terminals.txt — same source of truth as _installed_terminals.
+$disabled = @()
+$disabledFile = Join-Path $FarmRoot 'state\disabled_terminals.txt'
+if (Test-Path $disabledFile) { $disabled = (Get-Content $disabledFile -ErrorAction SilentlyContinue | ForEach-Object { $_.Trim().ToUpper() } | Where-Object { $_ -match '^T(?:[1-9]|10)$' }) }
+$enabled = @(1..10 | ForEach-Object { "T$_" } | Where-Object { (Test-Path "D:\QM\mt5\$_\terminal64.exe") -and ($disabled -notcontains $_.ToUpper()) })
+$seen = @{}
+foreach ($p in @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue | Where-Object CommandLine -match 'terminal_worker\.py')) {
+    $tname = if ($p.CommandLine -match '--terminal\s+(T(?:[1-9]|10))\b') { $matches[1].ToUpper() } else { '?' }
+    $keep = ($enabled -contains $tname) -and (-not $seen.ContainsKey($tname))
+    if ($keep) { $seen[$tname] = $p.ProcessId } else { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
+}
+Start-Sleep -Seconds 2
+$daemons = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue | Where-Object CommandLine -match 'terminal_worker\.py')
 Start-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue
-Log "factory restarted: $($daemons.Count)/10 workers (console-session launcher); pump triggered; D: free $(FreeGB)GB"
+Log "factory restarted: $($daemons.Count)/$($enabled.Count) workers (trimmed to one per enabled terminal; disabled=$($disabled -join ',')); pump triggered; D: free $(FreeGB)GB"
