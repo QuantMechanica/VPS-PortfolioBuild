@@ -1,11 +1,11 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_12495 lean-lunch-rev — Lunch-break mean reversion (H1, US indices)"
+#property description "QM5_12495 lean-lunch-rev - Lunch-break mean reversion (H1, US indices)"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_12495 lean-lunch-rev
+// QuantMechanica V5 EA - QM5_12495 lean-lunch-rev
 // -----------------------------------------------------------------------------
 // Source: QuantConnect Lean Algorithm.Python/Alphas/MeanReversionLunchBreakAlpha.py
 //         (commit 261366a7...). Card: artifacts/cards_approved/QM5_12495_lean-lunch-rev.md
@@ -27,7 +27,7 @@
 //                        ROC > +deadband  -> SHORT (fade the up move).
 //                        ROC < -deadband  -> LONG  (fade the down move).
 //   Stop               : ATR(atr_period) * atr_stop_mult hard stop.
-//   Exit               : time stop — close after hold_hours closed H1 bars.
+//   Exit               : time stop - close after hold_hours closed H1 bars.
 //   Spread guard       : block only a genuinely wide spread (fail-open on the
 //                        .DWX zero-modeled-spread tester).
 //
@@ -141,7 +141,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // ET calendar-day key = midnight-of-the-ET-day.
    const datetime et_day = bar_open_et - (et.hour * 3600 + et.min * 60 + et.sec);
    if(g_last_entry_et_day == et_day)
-      return false; // already entered (or attempted) today
+      return false; // already entered or attempted today
 
    // --- Morning move: ROC(period) over closed H1 bars (close-to-noon proxy). ---
    const double close_now  = iClose(_Symbol, _Period, 1);                       // perf-allowed: single closed-bar read

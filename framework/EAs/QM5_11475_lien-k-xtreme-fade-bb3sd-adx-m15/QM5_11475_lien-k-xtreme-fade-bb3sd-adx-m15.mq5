@@ -73,7 +73,8 @@ input int    strategy_swing_lookback     = 5;     // bars for the structural swi
 input double strategy_sl_fixed_pips      = 20.0;  // fixed-pip stop alternative
 input double strategy_sl_cap_pips        = 25.0;  // hard cap on the stop distance (pips)
 input double strategy_tp_rr              = 1.0;   // take-profit as RR-multiple of stop
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input double strategy_spread_cap_pips    = 15.0;  // skip if spread exceeds this many pips
+input double strategy_fast_adx_max       = 25.0;  // M1/M5 strong-against filter threshold
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -88,17 +89,32 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   // Reference stop distance for the spread cap: the fixed-pip stop, in price.
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_sl_fixed_pips);
-   if(stop_distance <= 0.0)
+   const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
+   if(cap_distance <= 0.0)
       return false;
 
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread > cap_distance)
       return true;
 
    return false;
+  }
+
+bool Strategy_FastTrendAgainst(const QM_OrderType dir, const ENUM_TIMEFRAMES tf)
+  {
+   const double adx = QM_ADX(_Symbol, tf, strategy_adx_period, 1);
+   if(adx < strategy_fast_adx_max)
+      return false;
+
+   const double plus_di = QM_ADX_PlusDI(_Symbol, tf, strategy_adx_period, 1);
+   const double minus_di = QM_ADX_MinusDI(_Symbol, tf, strategy_adx_period, 1);
+   if(plus_di <= 0.0 || minus_di <= 0.0)
+      return false;
+
+   if(dir == QM_BUY)
+      return (minus_di > plus_di);
+   return (plus_di > minus_di);
   }
 
 // Mean-reversion fade entry. Caller guarantees QM_IsNewBar() == true.
@@ -138,6 +154,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const QM_OrderType dir = long_fade ? QM_BUY : QM_SELL;
 
+   if(Strategy_FastTrendAgainst(dir, PERIOD_M1) || Strategy_FastTrendAgainst(dir, PERIOD_M5))
+      return false;
+
    const double entry = (dir == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
                                         : SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(entry <= 0.0)
@@ -173,12 +192,61 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = long_fade ? "xtreme_fade_long" : "xtreme_fade_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
-// Fixed SL/TP only — no active management.
+// Once 1R is reached, trail the stop toward the opposite 2SD band if it improves.
 void Strategy_ManageOpenPosition()
   {
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const bool is_buy = (pos_type == POSITION_TYPE_BUY);
+      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double current_sl = PositionGetDouble(POSITION_SL);
+      if(open_price <= 0.0 || current_sl <= 0.0)
+         continue;
+
+      const double risk_distance = MathAbs(open_price - current_sl);
+      if(risk_distance <= 0.0)
+         continue;
+
+      const double market_price = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                                         : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(market_price <= 0.0)
+         continue;
+
+      const double moved = is_buy ? (market_price - open_price) : (open_price - market_price);
+      if(moved < risk_distance)
+         continue;
+
+      const double band_sl = is_buy
+                             ? QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_inner, 1)
+                             : QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_dev_inner, 1);
+      if(band_sl <= 0.0)
+         continue;
+
+      const double normalized = QM_TM_NormalizePrice(_Symbol, band_sl);
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      if(normalized <= 0.0 || point <= 0.0)
+         continue;
+
+      const bool improves = is_buy ? (normalized > current_sl + point * 0.5 && normalized < market_price)
+                                   : (normalized < current_sl - point * 0.5 && normalized > market_price);
+      if(improves)
+         QM_TM_MoveSL(ticket, normalized, "trail_to_2sd_opposite_band_after_1r");
+     }
   }
 
 // No discretionary exit beyond the fixed SL/TP.
