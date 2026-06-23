@@ -143,15 +143,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // --- Manipulation points (STATE): prior-day high/low, last CLOSED D1 bar.
    //     Single closed-bar D1 read; recomputed once per closed M5 bar. ---
    const double prev_day_high = iHigh(_Symbol, PERIOD_D1, 1); // perf-allowed: single closed-bar D1 read
-   const double prev_day_low  = iLow(_Symbol, PERIOD_D1, 1);
+   const double prev_day_low  = iLow(_Symbol, PERIOD_D1, 1);  // perf-allowed: single closed-bar D1 read
    if(prev_day_high <= 0.0 || prev_day_low <= 0.0 || prev_day_high <= prev_day_low)
       return false;
 
    // --- Confirmation bar (the single trigger): the last closed M5 bar (shift 1). ---
    const double conf_close = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   const double conf_open  = iOpen(_Symbol, _Period, 1);
-   const double conf_high  = iHigh(_Symbol, _Period, 1);
-   const double conf_low   = iLow(_Symbol, _Period, 1);
+   const double conf_open  = iOpen(_Symbol, _Period, 1);   // perf-allowed: single closed-bar read
+   const double conf_high  = iHigh(_Symbol, _Period, 1);   // perf-allowed: single closed-bar read
+   const double conf_low   = iLow(_Symbol, _Period, 1);    // perf-allowed: single closed-bar read
    if(conf_close <= 0.0 || conf_open <= 0.0 || conf_high <= 0.0 || conf_low <= 0.0)
       return false;
 
@@ -178,8 +178,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       for(int s = first_shift; s <= last_shift; ++s)
         {
          const double h = iHigh(_Symbol, _Period, s);  // perf-allowed: bounded closed-bar structural scan
-         const double o = iOpen(_Symbol, _Period, s);
-         const double c = iClose(_Symbol, _Period, s);
+         const double o = iOpen(_Symbol, _Period, s);  // perf-allowed: bounded closed-bar structural scan
+         const double c = iClose(_Symbol, _Period, s); // perf-allowed: bounded closed-bar structural scan
          if(h <= 0.0 || o <= 0.0 || c <= 0.0)
             break; // insufficient history
 
@@ -246,8 +246,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       for(int s = first_shift; s <= last_shift; ++s)
         {
          const double l = iLow(_Symbol, _Period, s);   // perf-allowed: bounded closed-bar structural scan
-         const double o = iOpen(_Symbol, _Period, s);
-         const double c = iClose(_Symbol, _Period, s);
+         const double o = iOpen(_Symbol, _Period, s);  // perf-allowed: bounded closed-bar structural scan
+         const double c = iClose(_Symbol, _Period, s); // perf-allowed: bounded closed-bar structural scan
          if(l <= 0.0 || o <= 0.0 || c <= 0.0)
             break;
 

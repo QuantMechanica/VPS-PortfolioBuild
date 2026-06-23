@@ -11333,7 +11333,7 @@
 11578,neely-weller-pct-filter-rule-d1,2,USDJPY.DWX,115780002,2026-06-18,Claude,reserved
 11578,neely-weller-pct-filter-rule-d1,3,USDCHF.DWX,115780003,2026-06-18,Claude,reserved
 11581,goodwin-kangaroo-tail-breakout-d1,0,USDJPY.DWX,115810000,2026-06-18,Claude,reserved
-11582,goodwin-asian-session-breakout-usdjpy-h1,0,USDJPY.DWX,115820000,2026-06-18,Claude,reserved
+11582,goodwin-asian-session-breakout-usdjpy-h1,0,USDJPY.DWX,115820000,2026-06-18,Development,active
 11584,watthana-hammer-rsi-stoch-d1,0,EURUSD.DWX,115840000,2026-06-18,Claude,reserved
 11584,watthana-hammer-rsi-stoch-d1,1,GBPUSD.DWX,115840001,2026-06-18,Claude,reserved
 11584,watthana-hammer-rsi-stoch-d1,2,USDJPY.DWX,115840002,2026-06-18,Claude,reserved
@@ -12147,12 +12147,12 @@
 11882,connors-double-7s,9,NDX.DWX,118820009,2026-06-18,Claude,reserved
 11882,connors-double-7s,10,WS30.DWX,118820010,2026-06-18,Claude,reserved
 11882,connors-double-7s,11,SP500.DWX,118820011,2026-06-18,Claude,reserved
-11886,floor-pivot-intraday-breakout-retest,0,EURUSD.DWX,118860000,2026-06-18,Claude,reserved
-11886,floor-pivot-intraday-breakout-retest,1,GBPUSD.DWX,118860001,2026-06-18,Claude,reserved
-11886,floor-pivot-intraday-breakout-retest,2,USDJPY.DWX,118860002,2026-06-18,Claude,reserved
-11886,floor-pivot-intraday-breakout-retest,3,USDCHF.DWX,118860003,2026-06-18,Claude,reserved
-11886,floor-pivot-intraday-breakout-retest,4,USDCAD.DWX,118860004,2026-06-18,Claude,reserved
-11886,floor-pivot-intraday-breakout-retest,5,AUDUSD.DWX,118860005,2026-06-18,Claude,reserved
+11886,floor-pivot-intraday-breakout-retest,0,EURUSD.DWX,118860000,2026-06-18,Claude,active
+11886,floor-pivot-intraday-breakout-retest,1,GBPUSD.DWX,118860001,2026-06-18,Claude,active
+11886,floor-pivot-intraday-breakout-retest,2,USDJPY.DWX,118860002,2026-06-18,Claude,active
+11886,floor-pivot-intraday-breakout-retest,3,USDCHF.DWX,118860003,2026-06-18,Claude,active
+11886,floor-pivot-intraday-breakout-retest,4,USDCAD.DWX,118860004,2026-06-18,Claude,active
+11886,floor-pivot-intraday-breakout-retest,5,AUDUSD.DWX,118860005,2026-06-18,Claude,active
 11887,lien-double-bollinger-bands-regime,0,EURUSD.DWX,118870000,2026-06-18,Claude,reserved
 11887,lien-double-bollinger-bands-regime,1,GBPUSD.DWX,118870001,2026-06-18,Claude,reserved
 11887,lien-double-bollinger-bands-regime,2,USDJPY.DWX,118870002,2026-06-18,Claude,reserved
@@ -13322,3 +13322,6 @@
 11901,london-asia-range-breakout-m15,2,EURJPY.DWX,119010002,2026-06-23,Development,active
 11901,london-asia-range-breakout-m15,3,GBPJPY.DWX,119010003,2026-06-23,Development,active
 11901,london-asia-range-breakout-m15,4,AUDJPY.DWX,119010004,2026-06-23,Development,active
+9263,mql5-chaikin-zero,0,EURUSD.DWX,92630000,2026-06-23,Development,active
+9263,mql5-chaikin-zero,1,GBPJPY.DWX,92630001,2026-06-23,Development,active
+9263,mql5-chaikin-zero,2,GDAXI.DWX,92630002,2026-06-23,Development,active
