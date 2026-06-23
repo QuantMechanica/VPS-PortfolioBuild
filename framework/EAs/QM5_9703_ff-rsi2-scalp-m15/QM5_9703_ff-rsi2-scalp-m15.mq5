@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11724 tc-m5-s11-mtf-h4-ema-macd-stoch"
+#property description "QM5_9703 ForexFactory RSI(2) M15 Scalper"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11724;
+input int    qm_ea_id                   = 9703;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -52,8 +52,8 @@ input group "News"
 //   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
 //   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 // Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
@@ -73,22 +73,84 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_h4_fast_ema       = 5;
-input int    strategy_h4_slow_ema       = 10;
-input int    strategy_m5_fast_ema       = 5;
-input int    strategy_m5_slow_ema       = 10;
-input int    strategy_rsi_period        = 14;
-input double strategy_rsi_midline       = 50.0;
-input int    strategy_stoch_k           = 5;
-input int    strategy_stoch_d           = 3;
-input int    strategy_stoch_slowing     = 3;
-input double strategy_stoch_overbought  = 80.0;
-input double strategy_stoch_oversold    = 20.0;
-input int    strategy_macd_fast         = 12;
-input int    strategy_macd_slow         = 26;
-input int    strategy_macd_signal       = 9;
-input int    strategy_sl_pips           = 25;
-input int    strategy_tp_pips           = 25;
+input int    strategy_rsi_period              = 2;
+input double strategy_rsi_long_threshold      = 30.0;
+input double strategy_rsi_short_threshold     = 70.0;
+input double strategy_rsi_midline             = 50.0;
+input int    strategy_atr_period              = 14;
+input int    strategy_stop_pips               = 25;
+input int    strategy_take_pips               = 10;
+input int    strategy_be_trigger_pips         = 5;
+input int    strategy_be_plus_trigger_pips    = 6;
+input int    strategy_be_plus_buffer_pips     = 1;
+input double strategy_spread_atr_fraction     = 0.20;
+input double strategy_min_stop_atr_mult       = 0.35;
+input double strategy_max_stop_atr_mult       = 2.50;
+input int    strategy_time_stop_bars          = 12;
+input int    strategy_london_start_hour       = 8;
+input int    strategy_london_end_hour         = 12;
+input int    strategy_newyork_start_hour      = 13;
+input int    strategy_newyork_end_hour        = 22;
+
+ulong g_rsi_exit_ticket = 0;
+bool  g_rsi_crossed_midline = false;
+
+bool HourInWindow(const int hour, const int start_hour, const int end_hour)
+  {
+   if(start_hour == end_hour)
+      return true;
+   if(start_hour < end_hour)
+      return (hour >= start_hour && hour < end_hour);
+   return (hour >= start_hour || hour < end_hour);
+  }
+
+bool InLiquidSession(const datetime broker_time)
+  {
+   MqlDateTime dt;
+   TimeToStruct(broker_time, dt);
+   return HourInWindow(dt.hour, strategy_london_start_hour, strategy_london_end_hour) ||
+          HourInWindow(dt.hour, strategy_newyork_start_hour, strategy_newyork_end_hour);
+  }
+
+bool SpreadWithinAtrCap(const double atr_value)
+  {
+   if(atr_value <= 0.0 || strategy_spread_atr_fraction <= 0.0)
+      return false;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   if(ask > bid)
+     {
+      const double spread = ask - bid;
+      if(spread > atr_value * strategy_spread_atr_fraction)
+         return false;
+     }
+   return true;
+  }
+
+bool SelectOurPosition(ENUM_POSITION_TYPE &position_type, datetime &open_time, ulong &ticket)
+  {
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong candidate = PositionGetTicket(i);
+      if(candidate == 0 || !PositionSelectByTicket(candidate))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      ticket = candidate;
+      return true;
+     }
+   return false;
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -98,8 +160,13 @@ input int    strategy_tp_pips           = 25;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // No Trade Filter: card defines no additional time or spread filter.
-   // Framework news, kill-switch, Friday-close, and broker guards apply.
+   if(!InLiquidSession(TimeCurrent()))
+      return true;
+
+   const double atr = QM_ATR(_Symbol, PERIOD_M15, strategy_atr_period, 1);
+   if(!SpreadWithinAtrCap(atr))
+      return true;
+
    return false;
   }
 
@@ -108,7 +175,6 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // Trade Entry: H4 EMA trend state + M5 EMA cross + RSI/Stoch/MACD confirmation.
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = 0.0;
@@ -117,100 +183,47 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_h4_fast_ema <= 0 || strategy_h4_slow_ema <= 0 ||
-      strategy_m5_fast_ema <= 0 || strategy_m5_slow_ema <= 0 ||
-      strategy_rsi_period <= 0 || strategy_stoch_k <= 0 ||
-      strategy_stoch_d <= 0 || strategy_stoch_slowing <= 0 ||
-      strategy_macd_fast <= 0 || strategy_macd_slow <= 0 ||
-      strategy_macd_signal <= 0 || strategy_sl_pips <= 0 ||
-      strategy_tp_pips <= 0)
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   const double h4_fast = QM_EMA(_Symbol, PERIOD_H4, strategy_h4_fast_ema, 1);
-   const double h4_slow = QM_EMA(_Symbol, PERIOD_H4, strategy_h4_slow_ema, 1);
-   const double m5_fast_now = QM_EMA(_Symbol, PERIOD_M5, strategy_m5_fast_ema, 1);
-   const double m5_slow_now = QM_EMA(_Symbol, PERIOD_M5, strategy_m5_slow_ema, 1);
-   const double m5_fast_prev = QM_EMA(_Symbol, PERIOD_M5, strategy_m5_fast_ema, 2);
-   const double m5_slow_prev = QM_EMA(_Symbol, PERIOD_M5, strategy_m5_slow_ema, 2);
-   const double rsi_now = QM_RSI(_Symbol, PERIOD_M5, strategy_rsi_period, 1);
-   const double stoch_now = QM_Stoch_K(_Symbol, PERIOD_M5,
-                                       strategy_stoch_k,
-                                       strategy_stoch_d,
-                                       strategy_stoch_slowing,
-                                       1);
-   const double stoch_prev = QM_Stoch_K(_Symbol, PERIOD_M5,
-                                        strategy_stoch_k,
-                                        strategy_stoch_d,
-                                        strategy_stoch_slowing,
-                                        2);
-   const double macd_main_now = QM_MACD_Main(_Symbol, PERIOD_M5,
-                                             strategy_macd_fast,
-                                             strategy_macd_slow,
-                                             strategy_macd_signal,
-                                             1);
-   const double macd_signal_now = QM_MACD_Signal(_Symbol, PERIOD_M5,
-                                                 strategy_macd_fast,
-                                                 strategy_macd_slow,
-                                                 strategy_macd_signal,
-                                                 1);
-   const double macd_main_prev = QM_MACD_Main(_Symbol, PERIOD_M5,
-                                              strategy_macd_fast,
-                                              strategy_macd_slow,
-                                              strategy_macd_signal,
-                                              2);
-   const double macd_signal_prev = QM_MACD_Signal(_Symbol, PERIOD_M5,
-                                                  strategy_macd_fast,
-                                                  strategy_macd_slow,
-                                                  strategy_macd_signal,
-                                                  2);
-
-   if(h4_fast <= 0.0 || h4_slow <= 0.0 ||
-      m5_fast_now <= 0.0 || m5_slow_now <= 0.0 ||
-      m5_fast_prev <= 0.0 || m5_slow_prev <= 0.0 ||
-      rsi_now <= 0.0 || stoch_now <= 0.0 || stoch_prev <= 0.0)
+   const double atr = QM_ATR(_Symbol, PERIOD_M15, strategy_atr_period, 1);
+   if(atr <= 0.0 || !SpreadWithinAtrCap(atr))
       return false;
 
-   const double macd_hist_now = macd_main_now - macd_signal_now;
-   const double macd_hist_prev = macd_main_prev - macd_signal_prev;
+   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_stop_pips);
+   if(stop_distance <= 0.0)
+      return false;
+   if(stop_distance > atr * strategy_max_stop_atr_mult)
+      return false;
+   if(stop_distance < atr * strategy_min_stop_atr_mult)
+      return false;
 
-   const bool h4_uptrend = (h4_fast > h4_slow);
-   const bool h4_downtrend = (h4_fast < h4_slow);
-   const bool m5_cross_up = (m5_fast_prev <= m5_slow_prev && m5_fast_now > m5_slow_now);
-   const bool m5_cross_down = (m5_fast_prev >= m5_slow_prev && m5_fast_now < m5_slow_now);
-   const bool macd_long_ok = (macd_hist_prev < macd_hist_now &&
-                              (macd_hist_now >= 0.0 ||
-                               (macd_hist_now < 0.0 && macd_hist_now > macd_hist_prev)));
-   const bool macd_short_ok = (macd_hist_prev > macd_hist_now &&
-                               (macd_hist_now <= 0.0 ||
-                                (macd_hist_now > 0.0 && macd_hist_now < macd_hist_prev)));
+   const double rsi = QM_RSI(_Symbol, PERIOD_M15, strategy_rsi_period, 1, PRICE_CLOSE);
+   if(rsi <= 0.0)
+      return false;
 
-   if(h4_uptrend && m5_cross_up && rsi_now > strategy_rsi_midline &&
-      stoch_now > stoch_prev && stoch_now < strategy_stoch_overbought &&
-      macd_long_ok)
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   if(rsi < strategy_rsi_long_threshold)
      {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if(entry <= 0.0)
-         return false;
       req.type = QM_BUY;
-      req.price = 0.0;
-      req.sl = QM_StopFixedPips(_Symbol, req.type, entry, strategy_sl_pips);
-      req.tp = QM_TakeFixedPips(_Symbol, req.type, entry, strategy_tp_pips);
-      req.reason = "H4_EMA_UP_M5_EMA_MACD_STOCH_LONG";
+      const double entry = ask;
+      req.sl = QM_StopFixedPips(_Symbol, req.type, entry, strategy_stop_pips);
+      req.tp = QM_TakeFixedPips(_Symbol, req.type, entry, strategy_take_pips);
+      req.reason = "RSI2_M15_OVERSOLD";
       return (req.sl > 0.0 && req.tp > 0.0);
      }
 
-   if(h4_downtrend && m5_cross_down && rsi_now < strategy_rsi_midline &&
-      stoch_now < stoch_prev && stoch_now > strategy_stoch_oversold &&
-      macd_short_ok)
+   if(rsi > strategy_rsi_short_threshold)
      {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      if(entry <= 0.0)
-         return false;
       req.type = QM_SELL;
-      req.price = 0.0;
-      req.sl = QM_StopFixedPips(_Symbol, req.type, entry, strategy_sl_pips);
-      req.tp = QM_TakeFixedPips(_Symbol, req.type, entry, strategy_tp_pips);
-      req.reason = "H4_EMA_DOWN_M5_EMA_MACD_STOCH_SHORT";
+      const double entry = bid;
+      req.sl = QM_StopFixedPips(_Symbol, req.type, entry, strategy_stop_pips);
+      req.tp = QM_TakeFixedPips(_Symbol, req.type, entry, strategy_take_pips);
+      req.reason = "RSI2_M15_OVERBOUGHT";
       return (req.sl > 0.0 && req.tp > 0.0);
      }
 
@@ -221,14 +234,70 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Trade Management: card defines no trailing, break-even, partial, or scale logic.
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      QM_TM_MoveToBreakEven(ticket, strategy_be_trigger_pips, 0);
+      QM_TM_MoveToBreakEven(ticket, strategy_be_plus_trigger_pips, strategy_be_plus_buffer_pips);
+     }
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // Trade Close: card exits only by fixed SL/TP, plus framework Friday close.
+   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
+   datetime open_time = 0;
+   ulong ticket = 0;
+   if(!SelectOurPosition(position_type, open_time, ticket))
+     {
+      g_rsi_exit_ticket = 0;
+      g_rsi_crossed_midline = false;
+      return false;
+     }
+
+   if(ticket != g_rsi_exit_ticket)
+     {
+      g_rsi_exit_ticket = ticket;
+      g_rsi_crossed_midline = false;
+     }
+
+   const int seconds_per_bar = PeriodSeconds(PERIOD_M15);
+   if(seconds_per_bar > 0 && open_time > 0)
+     {
+      const int held_bars = (int)((TimeCurrent() - open_time) / seconds_per_bar);
+      if(held_bars >= strategy_time_stop_bars)
+         return true;
+     }
+
+   const double rsi_closed = QM_RSI(_Symbol, PERIOD_M15, strategy_rsi_period, 1, PRICE_CLOSE);
+   const double rsi_prior = QM_RSI(_Symbol, PERIOD_M15, strategy_rsi_period, 2, PRICE_CLOSE);
+   if(rsi_closed <= 0.0 || rsi_prior <= 0.0)
+      return false;
+
+   if(position_type == POSITION_TYPE_BUY)
+     {
+      if(rsi_closed > strategy_rsi_midline)
+         g_rsi_crossed_midline = true;
+      if(g_rsi_crossed_midline && rsi_prior >= strategy_rsi_midline && rsi_closed < strategy_rsi_midline)
+         return true;
+     }
+   else if(position_type == POSITION_TYPE_SELL)
+     {
+      if(rsi_closed < strategy_rsi_midline)
+         g_rsi_crossed_midline = true;
+      if(g_rsi_crossed_midline && rsi_prior <= strategy_rsi_midline && rsi_closed > strategy_rsi_midline)
+         return true;
+     }
+
    return false;
   }
 
@@ -237,7 +306,6 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   // News Filter Hook: no card-specific override; central framework filter decides.
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 
