@@ -15,11 +15,11 @@ input double RISK_FIXED                  = 1000.0;
 input double PORTFOLIO_WEIGHT            = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal    = QM_NEWS_TEMPORAL_SKIP_DAY;
+input QM_NewsTemporalMode      qm_news_temporal    = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance  = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;
 input string qm_news_min_impact           = "high";
-input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_SKIP_DAY;
+input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_PAUSE;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled      = true;
@@ -41,10 +41,14 @@ input int    strategy_max_spread_points   = 250;
 
 const string STRATEGY_SYMBOL = "XAUUSD.DWX";
 
-datetime g_last_signal_bar = 0;
+bool   g_exit_signal_pending = false;
+string g_exit_signal_reason  = "";
 
-bool HasOpenPositionForMagic()
+bool GetOurPositionInfo(ENUM_POSITION_TYPE &position_type, datetime &opened_at)
   {
+   position_type = POSITION_TYPE_BUY;
+   opened_at = 0;
+
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return false;
@@ -56,10 +60,22 @@ bool HasOpenPositionForMagic()
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return true;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      opened_at = (datetime)PositionGetInteger(POSITION_TIME);
+      return true;
      }
+
    return false;
+  }
+
+bool HasOpenPositionForMagic()
+  {
+   ENUM_POSITION_TYPE position_type;
+   datetime opened_at = 0;
+   return GetOurPositionInfo(position_type, opened_at);
   }
 
 bool InBrokerSession(const datetime broker_time)
@@ -67,22 +83,58 @@ bool InBrokerSession(const datetime broker_time)
    if(strategy_start_hour_broker == strategy_end_hour_broker)
       return true;
 
+   int start_hour = strategy_start_hour_broker;
+   int end_hour = strategy_end_hour_broker;
+   if(start_hour < 0)
+      start_hour = 0;
+   if(start_hour > 23)
+      start_hour = 23;
+   if(end_hour < 0)
+      end_hour = 0;
+   if(end_hour > 23)
+      end_hour = 23;
+
    MqlDateTime dt;
    TimeToStruct(broker_time, dt);
-   const int hour = dt.hour;
-   const int start_hour = MathMax(0, MathMin(23, strategy_start_hour_broker));
-   const int end_hour = MathMax(0, MathMin(23, strategy_end_hour_broker));
    if(end_hour > start_hour)
-      return (hour >= start_hour && hour < end_hour);
-   return (hour >= start_hour || hour < end_hour);
+      return (dt.hour >= start_hour && dt.hour < end_hour);
+   return (dt.hour >= start_hour || dt.hour < end_hour);
   }
 
 bool SpreadAllowsEntry()
   {
    if(strategy_max_spread_points <= 0)
       return true;
-   const int spread = (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   return (spread > 0 && spread <= strategy_max_spread_points);
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+      return false;
+
+   if(ask > bid)
+     {
+      const double spread_points = (ask - bid) / point;
+      if(spread_points > (double)strategy_max_spread_points)
+         return false;
+     }
+
+   return true;
+  }
+
+bool ReadClosedClose(const int shift, double &close_price)
+  {
+   close_price = 0.0;
+   if(shift < 1)
+      return false;
+
+   double value[1];
+   // perf-allowed: bespoke regression channel, called only from EntrySignal
+   // after the framework's single QM_IsNewBar gate.
+   if(CopyClose(_Symbol, PERIOD_H1, shift, 1, value) != 1)
+      return false;
+   close_price = value[0];
+   return (close_price > 0.0);
   }
 
 bool LinearRegressionStats(const int first_closed_shift, double &line_value, double &resid_stdev)
@@ -91,17 +143,18 @@ bool LinearRegressionStats(const int first_closed_shift, double &line_value, dou
    resid_stdev = 0.0;
 
    const int n = strategy_lr_period;
-   if(n < 2 || n > 256)
+   if(n < 2 || n > 256 || first_closed_shift < 1)
       return false;
 
    double y[];
    ArrayResize(y, n);
+
    double sum_y = 0.0;
    for(int k = 0; k < n; ++k)
      {
       const int shift = first_closed_shift + (n - 1 - k);
-      const double close_price = iClose(_Symbol, PERIOD_H1, shift);
-      if(close_price <= 0.0)
+      double close_price = 0.0;
+      if(!ReadClosedClose(shift, close_price))
          return false;
       y[k] = close_price;
       sum_y += close_price;
@@ -111,6 +164,7 @@ bool LinearRegressionStats(const int first_closed_shift, double &line_value, dou
    const double mean_y = sum_y / (double)n;
    double numerator = 0.0;
    double denominator = 0.0;
+
    for(int k = 0; k < n; ++k)
      {
       const double x_dev = (double)k - mean_x;
@@ -152,6 +206,30 @@ bool StopDistanceAllowed(const QM_OrderType side, const double entry, const doub
    return (stops_level <= 0 || stop_points > (double)stops_level);
   }
 
+void RefreshExitCache(const double line_value, const double close_price)
+  {
+   g_exit_signal_pending = false;
+   g_exit_signal_reason = "";
+
+   ENUM_POSITION_TYPE position_type;
+   datetime opened_at = 0;
+   if(!GetOurPositionInfo(position_type, opened_at))
+      return;
+
+   if(position_type == POSITION_TYPE_BUY && close_price < line_value)
+     {
+      g_exit_signal_pending = true;
+      g_exit_signal_reason = "close_below_regression_line";
+      return;
+     }
+
+   if(position_type == POSITION_TYPE_SELL && close_price > line_value)
+     {
+      g_exit_signal_pending = true;
+      g_exit_signal_reason = "close_above_regression_line";
+     }
+  }
+
 bool Strategy_NoTradeFilter()
   {
    if(_Symbol != STRATEGY_SYMBOL)
@@ -166,8 +244,6 @@ bool Strategy_NoTradeFilter()
       return true;
    if(strategy_max_hold_bars <= 0)
       return true;
-   if(Bars(_Symbol, PERIOD_H1) < strategy_lr_period + 5)
-      return true;
    return false;
   }
 
@@ -181,21 +257,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const datetime signal_bar = iTime(_Symbol, PERIOD_H1, 1);
-   if(signal_bar <= 0 || signal_bar == g_last_signal_bar)
-      return false;
-   g_last_signal_bar = signal_bar;
-
-   if(!InBrokerSession(signal_bar) || HasOpenPositionForMagic() || !SpreadAllowsEntry())
-      return false;
-
    double line1 = 0.0, stdev1 = 0.0, line2 = 0.0, stdev2 = 0.0;
    if(!LinearRegressionStats(1, line1, stdev1) || !LinearRegressionStats(2, line2, stdev2))
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_H1, 1);
-   const double close2 = iClose(_Symbol, PERIOD_H1, 2);
-   if(close1 <= 0.0 || close2 <= 0.0)
+   double close1 = 0.0, close2 = 0.0;
+   if(!ReadClosedClose(1, close1) || !ReadClosedClose(2, close2))
+      return false;
+
+   RefreshExitCache(line1, close1);
+
+   if(HasOpenPositionForMagic())
+      return false;
+   if(!InBrokerSession(TimeCurrent()) || !SpreadAllowsEntry())
       return false;
 
    const double upper1 = line1 + strategy_lr_dev * stdev1;
@@ -218,7 +292,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    else
       return false;
 
-   const double atr = QM_ATR(_Symbol, PERIOD_H1, MathMax(1, strategy_atr_period), 1);
+   const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
    const double entry = QM_EntryMarketPrice(side);
    if(atr <= 0.0 || entry <= 0.0)
       return false;
@@ -239,37 +313,27 @@ void Strategy_ManageOpenPosition()
 
 bool Strategy_ExitSignal()
   {
-   if(_Period != PERIOD_H1)
-      return false;
-
-   double line1 = 0.0, stdev1 = 0.0;
-   if(!LinearRegressionStats(1, line1, stdev1))
-      return false;
-
-   const double close1 = iClose(_Symbol, PERIOD_H1, 1);
-   if(close1 <= 0.0)
-      return false;
-
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   ENUM_POSITION_TYPE position_type;
+   datetime opened_at = 0;
+   if(!GetOurPositionInfo(position_type, opened_at))
      {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
+      g_exit_signal_pending = false;
+      g_exit_signal_reason = "";
+      return false;
+     }
 
-      const long pos_type = PositionGetInteger(POSITION_TYPE);
-      if(pos_type == POSITION_TYPE_BUY && close1 < line1)
-         return true;
-      if(pos_type == POSITION_TYPE_SELL && close1 > line1)
-         return true;
+   if(g_exit_signal_pending)
+      return true;
 
-      const datetime opened_at = (datetime)PositionGetInteger(POSITION_TIME);
-      if(opened_at > 0 && iBarShift(_Symbol, PERIOD_H1, opened_at, false) >= strategy_max_hold_bars)
+   const int seconds_per_bar = PeriodSeconds(PERIOD_H1);
+   if(opened_at > 0 && seconds_per_bar > 0)
+     {
+      const int held_bars = (int)((TimeCurrent() - opened_at) / seconds_per_bar);
+      if(held_bars >= strategy_max_hold_bars)
+        {
+         g_exit_signal_reason = "max_hold_bars";
          return true;
+        }
      }
 
    return false;

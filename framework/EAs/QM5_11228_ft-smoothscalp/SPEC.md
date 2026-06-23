@@ -4,7 +4,7 @@
 **Slug:** `ft-smoothscalp`
 **Source:** `1580128f-e465-5454-bb97-a7572a6cfd6d` (SmoothScalp.py, freqtrade-strategies)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-17
+**Last revised:** 2026-06-23
 
 ---
 
@@ -112,4 +112,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-17 | Initial build from card | board-advisor worktree |
+| v1 | 2026-06-23 | Initial build from card | a983834c-3253-4f75-85b2-8f32b91f8187 |
