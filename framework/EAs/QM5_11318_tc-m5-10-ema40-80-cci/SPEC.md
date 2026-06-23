@@ -4,7 +4,7 @@
 **Slug:** `tc-m5-10-ema40-80-cci`
 **Source:** `e78a9f1f-4e6a-563c-a080-915133d6ed28`
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-23
 
 ---
 
@@ -18,8 +18,8 @@ direction. LONG fires when the just-closed bar has CCI crossing up through 0
 (`cci[2] <= 0 && cci[1] > 0`) inside an up-trend; SHORT mirrors it
 (`cci[2] >= 0 && cci[1] < 0`) inside a down-trend. The EMA stack is the
 confirming STATE, not a second event, so the two-cross-same-bar zero-trade trap
-is avoided. Stop and take are symmetric fixed-pip distances (baseline 12/12,
-RR ~1.0). There is no separate indicator exit — the fixed SL/TP closes the
+is avoided. Stop and take are symmetric fixed-pip distances (baseline 12/12).
+There is no separate indicator exit — the fixed SL/TP closes the
 position. One open position per symbol/magic.
 
 ---
@@ -33,8 +33,8 @@ position. One open position per symbol/magic.
 | `strategy_cci_period` | 21 | 10-30 | CCI period for the zero-cross trigger |
 | `strategy_cci_zero_level` | 0.0 | -20-20 | CCI cross level (zero line) |
 | `strategy_sl_pips` | 12 | 10-15 | Stop-loss distance in pips |
-| `strategy_tp_rr` | 1.0 | 0.8-1.5 | Take-profit as R-multiple of the stop (12/12 = 1.0) |
-| `strategy_spread_pct_of_stop` | 20.0 | 5-50 | Skip entry if spread exceeds this % of stop distance (fail-open on .DWX) |
+| `strategy_tp_pips` | 12 | 10-15 | Take-profit distance in pips |
+| `strategy_spread_cap_points` | 20 | 5-50 | Skip entry if spread exceeds this point cap (fail-open on .DWX zero spread) |
 
 ---
 
@@ -64,11 +64,10 @@ position. One open position per symbol/magic.
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `~160` |
-| Typical hold time | `minutes to a few hours (M5, 12-pip targets)` |
-| Expected drawdown profile | `frequent small wins/losses; symmetric 12/12 → ~50% win rate needed plus cost edge` |
-| Regime preference | `trend` |
-| Win rate target (qualitative) | `medium` |
+| Trades / year / symbol | `160` |
+| Expected trade frequency | `not specified in card frontmatter; inferred medium-high from M5 CCI zero-cross cadence` |
+| Typical hold time | `not specified in card frontmatter; inferred minutes to a few hours from M5 and 12-pip fixed exits` |
+| Regime preference | `not specified in card frontmatter; inferred trend from EMA40/80 direction filter` |
 
 ---
 
@@ -99,4 +98,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v1 | 2026-06-23 | Initial build from card | d3a052d0-145d-4a20-99b5-2399a7f432ef |

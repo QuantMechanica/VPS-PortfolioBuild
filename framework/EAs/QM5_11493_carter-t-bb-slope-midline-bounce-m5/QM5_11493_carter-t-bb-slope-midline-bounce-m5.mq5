@@ -60,8 +60,8 @@ input int    strategy_bb_period          = 20;     // Bollinger period (basis SM
 input double strategy_bb_deviation       = 2.0;    // Bollinger std-dev multiple
 input int    strategy_slope_lookback     = 3;      // bars back for midline slope (state)
 input double strategy_sl_pip_cap         = 15.0;   // SL cap in pips (tighter of band/cap)
+input double strategy_spread_cap_pips    = 15.0;   // card spread cap in pips
 input bool   strategy_block_friday       = true;   // no new entries on Friday
-input double strategy_spread_pct_of_stop = 25.0;   // skip if spread > this % of stop distance
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -86,13 +86,12 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   // Stop-distance reference for the cap: the pip-cap distance scales with symbol.
-   const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_sl_pip_cap);
-   if(cap_distance <= 0.0)
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
+   if(spread_cap <= 0.0)
       return false;
 
    const double spread = ask - bid;
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * cap_distance)
+   if(spread > 0.0 && spread > spread_cap)
       return true;
 
    return false;
@@ -122,10 +121,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(upper1 <= 0.0 || lower1 <= 0.0)
       return false;
 
-   // Last closed-bar OHLC for the bounce test (perf-allowed single closed-bar reads).
-   const double low1   = iLow(_Symbol, _Period, 1);
-   const double high1  = iHigh(_Symbol, _Period, 1);
-   const double close1 = iClose(_Symbol, _Period, 1);
+   // perf-allowed: no framework OHLC reader exists; one closed bar is read after the framework QM_IsNewBar gate.
+   MqlRates last_bar[1];
+   if(CopyRates(_Symbol, _Period, 1, 1, last_bar) != 1) // perf-allowed
+      return false;
+   const double low1   = last_bar[0].low;
+   const double high1  = last_bar[0].high;
+   const double close1 = last_bar[0].close;
    if(low1 <= 0.0 || high1 <= 0.0 || close1 <= 0.0)
       return false;
 

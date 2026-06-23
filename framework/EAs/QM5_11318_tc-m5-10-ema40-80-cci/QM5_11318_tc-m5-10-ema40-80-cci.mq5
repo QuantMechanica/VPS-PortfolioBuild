@@ -19,10 +19,10 @@
 //                     cci[1] > 0; SHORT = cci[2] >= 0 and cci[1] < 0. ONE event
 //                     per bar; the EMA stack is the confirming state (avoids the
 //                     two-cross-same-bar zero-trade trap).
-//   Stop / Take     : symmetric fixed pips (baseline 12/12 → RR ~1.0), scale-
-//                     correct via QM_StopFixedPips / QM_TakeRR.
+//   Stop / Take     : symmetric fixed pips (baseline 12/12), scale-correct via
+//                     QM_StopFixedPips / QM_TakeFixedPips.
 //   Spread guard    : skip only a genuinely wide spread (fail-open on .DWX zero
-//                     modeled spread).
+//                     modeled spread); baseline cap is 20 points.
 //
 // One open position per symbol/magic. Only the 5 Strategy_* hooks + Strategy
 // inputs are EA-specific; the rest is framework wiring and MUST stay intact.
@@ -58,8 +58,8 @@ input int    strategy_ema_slow_period    = 80;    // trend-direction slow EMA
 input int    strategy_cci_period         = 21;    // CCI zero-cross trigger period
 input double strategy_cci_zero_level     = 0.0;   // CCI cross level (zero line)
 input int    strategy_sl_pips            = 12;    // stop-loss distance (pips)
-input double strategy_tp_rr              = 1.0;   // take-profit as R-multiple (12/12 = 1.0)
-input double strategy_spread_pct_of_stop = 20.0;  // skip if spread > this % of stop distance
+input int    strategy_tp_pips            = 12;    // take-profit distance (pips)
+input int    strategy_spread_cap_points  = 20;    // skip if spread exceeds this many points
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -74,14 +74,13 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   // Stop distance reference for the spread cap (fixed-pips → price distance).
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
-   if(stop_distance <= 0.0)
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0 || strategy_spread_cap_points <= 0)
       return false;
 
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread > (double)strategy_spread_cap_points * point)
       return true;
 
    return false;
@@ -134,15 +133,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double sl = QM_StopFixedPips(_Symbol, side, entry, strategy_sl_pips);
    if(sl <= 0.0)
       return false;
-   const double tp = QM_TakeRR(_Symbol, side, entry, sl, strategy_tp_rr);
+   const double tp = QM_TakeFixedPips(_Symbol, side, entry, strategy_tp_pips);
    if(tp <= 0.0)
       return false;
 
-   req.type   = side;
-   req.price  = 0.0;   // framework fills market price at send
-   req.sl     = sl;
-   req.tp     = tp;
-   req.reason = (side == QM_BUY) ? "ema40_80_cci_long" : "ema40_80_cci_short";
+   req.type               = side;
+   req.price              = 0.0;   // framework fills market price at send
+   req.sl                 = sl;
+   req.tp                 = tp;
+   req.reason             = (side == QM_BUY) ? "ema40_80_cci_long" : "ema40_80_cci_short";
+   req.symbol_slot        = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
