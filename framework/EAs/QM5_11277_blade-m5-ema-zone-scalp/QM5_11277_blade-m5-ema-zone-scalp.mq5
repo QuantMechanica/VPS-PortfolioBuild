@@ -1,43 +1,45 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11277 blade-m5-ema-zone-scalp — Blade M5 EMA-Zone Trend Scalp"
+#property description "QM5_11277 blade-m5-ema-zone-scalp"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11277 blade-m5-ema-zone-scalp
+// QuantMechanica V5 EA SKELETON
 // -----------------------------------------------------------------------------
-// Source: "The Blade Forex Strategies" (ForexSuccessSecrets.com), M5 Scalping
-// System, pp.11-25. Card: artifacts/cards_approved/QM5_11277_blade-m5-ema-zone-scalp.md
-// (g0_status APPROVED, source_id e78a9f1f-4e6a-563c-a080-915133d6ed28).
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails). The framework provides:
 //
-// Mechanics (M5, closed-bar reads at shift 1; long + short symmetric):
-//   Trend STATE  : EMA(10/21/50) stacked in trend direction AND EMA(50) sloping.
-//                  Long  -> ema10 > ema21 > ema50  AND  ema50[1] > ema50[slope_bars].
-//                  Short -> ema10 < ema21 < ema50  AND  ema50[1] < ema50[slope_bars].
-//   Zone STATE   : the band between EMA(10) and EMA(21). Long midpoint touch =
-//                  close at/below the zone midpoint and still >= EMA(21).
-//   Entry EVENT  : the closed bar FRESHLY retraces into the zone — the prior
-//                  closed bar was OUTSIDE the zone on the trend side (long: prior
-//                  close above the zone top), this bar's close is inside the zone
-//                  at/below midpoint. One event per retrace, not a per-bar state.
-//   Session STATE: London or New York only, in BROKER time converted to UTC,
-//                  with a 30-min buffer off each session open/close (card rule).
-//   Stop         : structural — 5 pips beyond EMA(21) on the opposite side
-//                  (".DWX models 0 spread"; the card's "+ spread" term is 0 here).
-//   Take profit  : +tp_pips (default 10). Weak-trend reduction handled by tuning,
-//                  not by adaptive logic.
-//   Break-even   : SL -> entry once price is +be_trigger_pips in profit.
-//   Session exit : close an open position when both sessions are inactive
-//                  (card: "close position at session end if still open").
-//   One position per magic (card: "max 1 trade per session").
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
+//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
+//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
+//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
+//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
+//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
+//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
 //
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific.
+// DO NOT
+//   - Write per-EA IsNewBar() — use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//     use the QM_* readers above. The framework pools handles and releases them
+//     on shutdown.
+//   - CopyRates over warmup windows on every tick. If you genuinely need raw
+//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
+//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
+//     to magic_numbers.csv, run:
+//         python framework/scripts/update_magic_resolver.py
+//     This is idempotent and preserves all rows.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 11277;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -46,10 +48,16 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
+//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -57,180 +65,177 @@ input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_ema_zone_fast     = 10;     // EMA(10) — fast zone edge
-input int    strategy_ema_zone_slow     = 21;     // EMA(21) — slow zone edge / stop anchor
-input int    strategy_ema_trend         = 50;     // EMA(50) — trend / slope filter
-input int    strategy_slope_lookback    = 5;      // EMA(50) slope proxy: compare shift 1 vs this
-input int    strategy_sl_pips           = 5;      // stop placed this many pips beyond EMA(21)
-input int    strategy_tp_pips           = 10;     // take profit, fixed pips
-input int    strategy_be_trigger_pips   = 5;      // move SL to break-even at +this many pips
-// Session windows in UTC (the card's London/NY windows are stated in GMT=UTC).
-input int    strategy_london_start_utc  = 8;      // London session open hour (UTC)
-input int    strategy_london_end_utc    = 17;     // London session close hour (UTC)
-input int    strategy_ny_start_utc      = 13;     // New York session open hour (UTC)
-input int    strategy_ny_end_utc        = 22;     // New York session close hour (UTC)
-input int    strategy_session_buffer_min = 30;    // no entries within this many min of open/close
-input double strategy_spread_pct_of_stop = 50.0;  // skip only if spread > this % of stop distance
+input int    strategy_ema_fast          = 10;
+input int    strategy_ema_slow          = 21;
+input int    strategy_ema_trend         = 50;
+input int    strategy_slope_lookback    = 5;
+input double strategy_min_slope_pips    = 1.0;
+input double strategy_weak_slope_pips   = 2.0;
+input int    strategy_sl_pips           = 5;
+input int    strategy_tp_pips           = 10;
+input int    strategy_weak_tp_pips      = 5;
+input int    strategy_be_trigger_pips   = 5;
+input int    strategy_session_buffer_min = 30;
+input int    strategy_spread_cap_pips   = 3;
 
 // -----------------------------------------------------------------------------
-// Helpers (EA-local, pure)
+// Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// True if `utc` lies within [start_hour, end_hour) shrunk by buffer_min at both
-// ends. Hours are whole UTC hours; the buffer trims the first/last buffer_min.
-bool BladeInBufferedWindow(const datetime utc,
-                           const int start_hour,
-                           const int end_hour,
-                           const int buffer_min)
-  {
-   const datetime day0 = utc - (utc % 86400);            // UTC midnight of this day
-   const datetime open_t  = day0 + start_hour * 3600;
-   const datetime close_t = day0 + end_hour   * 3600;
-   const datetime buf     = buffer_min * 60;
-   const datetime lo = open_t + buf;
-   const datetime hi = close_t - buf;
-   if(hi <= lo)
-      return false;
-   return (utc >= lo && utc < hi);
-  }
-
-// True if the broker timestamp is inside an active (buffered) London or NY window.
-bool BladeSessionActive(const datetime broker_now)
-  {
-   const datetime utc = QM_BrokerToUTC(broker_now);
-   if(BladeInBufferedWindow(utc, strategy_london_start_utc, strategy_london_end_utc,
-                            strategy_session_buffer_min))
-      return true;
-   if(BladeInBufferedWindow(utc, strategy_ny_start_utc, strategy_ny_end_utc,
-                            strategy_session_buffer_min))
-      return true;
-   return false;
-  }
-
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
-
-// Cheap O(1) per-tick gate: session window + fail-open spread guard.
+// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
+// regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // Session filter (broker time -> UTC). Outside London/NY buffered windows: block.
-   if(!BladeSessionActive(TimeCurrent()))
-      return true;
-
-   // Fail-open spread guard. .DWX models 0 spread; only a genuinely wide spread
-   // blocks. Reference distance = the fixed pip stop distance.
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
-   if(stop_distance <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
-      return true;
-
-   return false;
-  }
-
-// Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
-bool Strategy_EntrySignal(QM_EntryRequest &req)
-  {
-   // One open position per symbol/magic (card: max 1 trade per session).
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // --- Closed-bar EMA reads (shift 1 = last closed bar) ---
-   const double ema10_1 = QM_EMA(_Symbol, _Period, strategy_ema_zone_fast, 1);
-   const double ema21_1 = QM_EMA(_Symbol, _Period, strategy_ema_zone_slow, 1);
-   const double ema50_1 = QM_EMA(_Symbol, _Period, strategy_ema_trend,     1);
-   if(ema10_1 <= 0.0 || ema21_1 <= 0.0 || ema50_1 <= 0.0)
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   const int minute_of_day = dt.hour * 60 + dt.min;
+   const int buffer = (strategy_session_buffer_min > 0) ? strategy_session_buffer_min : 0;
+   const bool london = (minute_of_day >= 8 * 60 + buffer &&
+                        minute_of_day < 17 * 60 - buffer);
+   const bool new_york = (minute_of_day >= 13 * 60 + buffer &&
+                          minute_of_day < 22 * 60 - buffer);
+   if(!london && !new_york)
+      return true;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   // EMA(50) slope proxy: shift 1 versus shift slope_lookback (card "visibly sloping").
-   const double ema50_back = QM_EMA(_Symbol, _Period, strategy_ema_trend,
-                                    strategy_slope_lookback + 1);
-   if(ema50_back <= 0.0)
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   const double spread = ask - bid;
+   if(spread_cap > 0.0 && spread > 0.0 && spread > spread_cap)
+      return true;
+
+   return false;
+  }
+
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
+// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
+bool Strategy_EntrySignal(QM_EntryRequest &req)
+  {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0 || close2 <= 0.0)
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   const int minute_of_day = dt.hour * 60 + dt.min;
+   const int buffer = (strategy_session_buffer_min > 0) ? strategy_session_buffer_min : 0;
+   const bool london = (minute_of_day >= 8 * 60 + buffer &&
+                        minute_of_day < 17 * 60 - buffer);
+   const bool new_york = (minute_of_day >= 13 * 60 + buffer &&
+                          minute_of_day < 22 * 60 - buffer);
+   if(!london && !new_york)
       return false;
 
-   // Zone edges and midpoint (shift 1).
-   const double zone_hi  = MathMax(ema10_1, ema21_1);
-   const double zone_lo  = MathMin(ema10_1, ema21_1);
-   const double zone_mid = (ema10_1 + ema21_1) / 2.0;
-
-   // ---------------- LONG ----------------
-   // Trend STATE: bullish EMA stack + EMA(50) rising.
-   const bool long_stack = (ema10_1 > ema21_1 && ema21_1 > ema50_1);
-   const bool long_slope = (ema50_1 > ema50_back);
-   if(long_stack && long_slope)
+   const int active_session = new_york ? 2 : 1;
+   const int session_key = dt.year * 100000 + dt.day_of_year * 10 + active_session;
+   static int last_session_key = -1;
+   static bool trade_taken_session = false;
+   if(session_key != last_session_key)
      {
-      // Zone STATE: close inside the zone, at/below midpoint, not through EMA(21).
-      const bool in_zone_now = (close1 <= zone_mid && close1 >= zone_lo);
-      // Entry EVENT: fresh retrace — prior closed bar was ABOVE the zone top.
-      const bool fresh_retrace = (close2 > zone_hi);
-      if(in_zone_now && fresh_retrace)
-        {
-         const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         if(entry <= 0.0)
-            return false;
-         // Stop: sl_pips beyond EMA(21) (below for longs). "+ spread" = 0 on .DWX.
-         const double sl_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
-         const double sl = QM_StopRulesNormalizePrice(_Symbol, ema21_1 - sl_dist);
-         const double tp = QM_TakeFixedPips(_Symbol, QM_BUY, entry, strategy_tp_pips);
-         if(sl <= 0.0 || tp <= 0.0 || sl >= entry)
-            return false;
-         req.type   = QM_BUY;
-         req.price  = 0.0;   // framework fills market price at send
-         req.sl     = sl;
-         req.tp     = tp;
-         req.reason = "blade_zone_long";
-         return true;
-        }
+      last_session_key = session_key;
+      trade_taken_session = false;
+     }
+   if(trade_taken_session)
+      return false;
+
+   if(strategy_ema_fast <= 1 || strategy_ema_slow <= 1 ||
+      strategy_ema_trend <= 1 || strategy_slope_lookback <= 0 ||
+      strategy_sl_pips <= 0 || strategy_tp_pips <= 0 ||
+      strategy_weak_tp_pips <= 0 || strategy_be_trigger_pips <= 0)
+      return false;
+
+   const double ema_fast_1 = QM_EMA(_Symbol, _Period, strategy_ema_fast, 1);
+   const double ema_slow_1 = QM_EMA(_Symbol, _Period, strategy_ema_slow, 1);
+   const double ema_trend_1 = QM_EMA(_Symbol, _Period, strategy_ema_trend, 1);
+   const double ema_trend_back = QM_EMA(_Symbol, _Period, strategy_ema_trend,
+                                        strategy_slope_lookback + 1);
+   if(ema_fast_1 <= 0.0 || ema_slow_1 <= 0.0 ||
+      ema_trend_1 <= 0.0 || ema_trend_back <= 0.0)
+      return false;
+
+   const double close_1 = QM_SMA(_Symbol, _Period, 1, 1);
+   if(close_1 <= 0.0)
+      return false;
+
+   const double zone_mid = (ema_fast_1 + ema_slow_1) / 2.0;
+   const int slope_pips = (strategy_min_slope_pips > 1.0) ? (int)strategy_min_slope_pips : 1;
+   const double slope_distance = QM_StopRulesPipsToPriceDistance(_Symbol, slope_pips);
+   if(slope_distance <= 0.0)
+      return false;
+
+   const int weak_slope_pips = (strategy_weak_slope_pips > 1.0) ? (int)strategy_weak_slope_pips : 1;
+   const double weak_distance = QM_StopRulesPipsToPriceDistance(_Symbol, weak_slope_pips);
+   const int take_pips_long = ((ema_trend_1 - ema_trend_back) < weak_distance) ? strategy_weak_tp_pips : strategy_tp_pips;
+   const int take_pips_short = ((ema_trend_back - ema_trend_1) < weak_distance) ? strategy_weak_tp_pips : strategy_tp_pips;
+   const double sl_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
+   if(sl_distance <= 0.0)
+      return false;
+
+   if(ema_fast_1 > ema_slow_1 &&
+      ema_trend_1 > ema_trend_back + slope_distance &&
+      close_1 <= zone_mid &&
+      close_1 >= ema_slow_1)
+     {
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double sl = QM_StopRulesNormalizePrice(_Symbol, ema_slow_1 - sl_distance);
+      const double tp = QM_TakeFixedPips(_Symbol, QM_BUY, entry, take_pips_long);
+      if(entry <= 0.0 || sl <= 0.0 || tp <= 0.0 || sl >= entry)
+         return false;
+      req.type = QM_BUY;
+      req.price = 0.0;
+      req.sl = sl;
+      req.tp = tp;
+      req.reason = new_york ? "blade_m5_ny_long" : "blade_m5_london_long";
+      trade_taken_session = true;
+      return true;
      }
 
-   // ---------------- SHORT ----------------
-   const bool short_stack = (ema10_1 < ema21_1 && ema21_1 < ema50_1);
-   const bool short_slope = (ema50_1 < ema50_back);
-   if(short_stack && short_slope)
+   if(ema_fast_1 < ema_slow_1 &&
+      ema_trend_1 < ema_trend_back - slope_distance &&
+      close_1 >= zone_mid &&
+      close_1 <= ema_slow_1)
      {
-      // Zone STATE: close inside the zone, at/above midpoint, not through EMA(21).
-      const bool in_zone_now = (close1 >= zone_mid && close1 <= zone_hi);
-      // Entry EVENT: fresh retrace — prior closed bar was BELOW the zone bottom.
-      const bool fresh_retrace = (close2 < zone_lo);
-      if(in_zone_now && fresh_retrace)
-        {
-         const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         if(entry <= 0.0)
-            return false;
-         const double sl_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
-         const double sl = QM_StopRulesNormalizePrice(_Symbol, ema21_1 + sl_dist);
-         const double tp = QM_TakeFixedPips(_Symbol, QM_SELL, entry, strategy_tp_pips);
-         if(sl <= 0.0 || tp <= 0.0 || sl <= entry)
-            return false;
-         req.type   = QM_SELL;
-         req.price  = 0.0;
-         req.sl     = sl;
-         req.tp     = tp;
-         req.reason = "blade_zone_short";
-         return true;
-        }
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double sl = QM_StopRulesNormalizePrice(_Symbol, ema_slow_1 + sl_distance);
+      const double tp = QM_TakeFixedPips(_Symbol, QM_SELL, entry, take_pips_short);
+      if(entry <= 0.0 || sl <= 0.0 || tp <= 0.0 || sl <= entry)
+         return false;
+      req.type = QM_SELL;
+      req.price = 0.0;
+      req.sl = sl;
+      req.tp = tp;
+      req.reason = new_york ? "blade_m5_ny_short" : "blade_m5_london_short";
+      trade_taken_session = true;
+      return true;
      }
 
    return false;
   }
 
-// Break-even management: move SL to entry once +be_trigger_pips in profit.
+// Called every tick when an open position exists for this EA's magic.
+// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
@@ -245,18 +250,43 @@ void Strategy_ManageOpenPosition()
      }
   }
 
-// Session-end exit: close any open position once both sessions are inactive.
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
       return false;
-   return !BladeSessionActive(TimeCurrent());
+
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   const int minute_of_day = dt.hour * 60 + dt.min;
+   const bool london_open = (minute_of_day < 17 * 60);
+   const bool ny_open = (minute_of_day < 22 * 60);
+
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      const string comment = PositionGetString(POSITION_COMMENT);
+      if(StringFind(comment, "london") >= 0)
+         return !london_open;
+      if(StringFind(comment, "ny") >= 0)
+         return !ny_open;
+     }
+
+   return !(london_open || ny_open);
   }
 
-// Defer to the central news filter.
+// Optional news-filter override. Return TRUE to suppress trading regardless
+// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
+// custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false;
+   return false; // defer to QM_NewsAllowsTrade(...)
   }
 
 // -----------------------------------------------------------------------------
@@ -301,6 +331,8 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults.
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -314,8 +346,10 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -330,9 +364,14 @@ void OnTick()
         }
      }
 
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
 
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
@@ -352,6 +391,8 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
   {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
