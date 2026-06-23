@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades a gold H1 opening-range breakout on XAUUSD.DWX. The first H1 bar at the configured broker session-start hour seeds the opening range high and low; later H1 bars either expand that range or count as consolidation bars inside it. Once the required number of inside bars has formed, a bullish candle body breaking above the range creates signal 11 for a long entry, and a bearish candle body breaking below the range creates signal 10 for a short entry. Entries use fixed source point distances for SL and TP, with no adaptive equity-slope or losing-streak resume logic.
+The EA trades a gold H1 opening-range breakout on XAUUSD.DWX. The first H1 bar at the configured broker session-start hour seeds the opening range high and low; later H1 bars either expand that range or count as consolidation bars inside it. Once the required number of inside bars has formed, a closed H1 bar whose high breaks above the range creates signal 11 for a long entry, and a closed H1 bar whose low breaks below the range creates signal 10 for a short entry. Entries use fixed source point distances for SL and TP, with no adaptive equity-slope or losing-streak resume logic.
 
 ---
 

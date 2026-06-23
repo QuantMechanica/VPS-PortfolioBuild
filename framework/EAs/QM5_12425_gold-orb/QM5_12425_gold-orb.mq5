@@ -23,11 +23,13 @@
 //     The range becomes FINAL once consolidation_count >= range_consolidation
 //     (card PriceActionORB_CandleComposition = 3 subsequent in-range candles).
 //   - After the range is final, the breakout fires on the CLOSE of an H1 bar:
-//       LONG  (signal 11) when bar close > range_high   and enable_long  == true,
-//       SHORT (signal 10) when bar close < range_low    and enable_short == true.
-//     The close-cross is the single trigger EVENT; the accumulated range is the
-//     STATE. (Gapless .DWX CFDs: we reference the bar CLOSE crossing the level,
-//     never an intrabar gap.)
+//       LONG  (signal 11) when the closed bar high breaks range_high and
+//              enable_long == true,
+//       SHORT (signal 10) when the closed bar low breaks range_low and
+//              enable_short == true.
+//     The range break is the single trigger EVENT; the accumulated range is the
+//     STATE. (Gapless .DWX CFDs: we reference a closed H1 bar breaking the
+//     level, never an opening gap.)
 //   - At most ONE long and ONE short per trading day (card MaxTradePerDay=2 split
 //     into one per side), AND at most one open position per symbol/magic at any
 //     time (V5 one-position rule). A side already taken today is not re-armed.
@@ -207,10 +209,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double bar_close = iClose(_Symbol, PERIOD_H1, 1);   // perf-allowed
    if(bar_open <= 0.0 || bar_high <= 0.0 || bar_low <= 0.0 || bar_close <= 0.0)
       return false;
-   const double body_high = MathMax(bar_open, bar_close);
-   const double body_low  = MathMin(bar_open, bar_close);
-   const bool   bullish   = (bar_close > bar_open);
-   const bool   bearish   = (bar_close < bar_open);
 
    // --- Seed the range on the trading-day anchor bar. ---
    if(!g_range_seeded)
@@ -253,12 +251,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    // --- Range is final: evaluate the source breakout from the just-closed
-   //     candle body. Signal 11 requires a bullish body above resistance;
-   //     signal 10 requires a bearish body below support.
+   //     candle range. Signal 11 breaks above resistance; signal 10 breaks
+   //     below support.
    QM_OrderType side;
-   if(enable_long && !g_long_taken && bullish && body_high > g_range_high)
+   if(enable_long && !g_long_taken && bar_high > g_range_high)
       side = QM_BUY;
-   else if(enable_short && !g_short_taken && bearish && body_low < g_range_low)
+   else if(enable_short && !g_short_taken && bar_low < g_range_low)
       side = QM_SELL;
    else
       return false;
