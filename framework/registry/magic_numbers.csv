@@ -4002,7 +4002,7 @@
 1208,carver-normmom,0,EURUSD.DWX,12080000,2026-05-26,Development,active
 1208,carver-normmom,1,GBPUSD.DWX,12080001,2026-05-26,Development,active
 1208,carver-normmom,2,USDJPY.DWX,12080002,2026-05-26,Development,active
-1208,carver-normmom,3,GER40.DWX,12080003,2026-05-26,Development,active
+1208,carver-normmom,3,GDAXI.DWX,12080003,2026-06-23,Development,active
 1208,carver-normmom,4,NDX.DWX,12080004,2026-05-26,Development,active
 1208,carver-normmom,5,WS30.DWX,12080005,2026-05-26,Development,active
 1208,carver-normmom,6,XAUUSD.DWX,12080006,2026-05-26,Development,active
@@ -11298,7 +11298,7 @@
 11549,carter-t-m5-bb503234-rsi3-stoch633,0,EURUSD.DWX,115490000,2026-06-18,Development,active
 11550,carter-t-m5-ema50-100-macd-partial,0,EURUSD.DWX,115500000,2026-06-18,Development,active
 11551,carter-t-m5-ema40-80-cci21,0,EURUSD.DWX,115510000,2026-06-20,Development,active
-11552,carter-t-m5-ema5-10-mtf4h-rsi-stoch-macd,0,EURUSD.DWX,115520000,2026-06-18,Claude,reserved
+11552,carter-t-m5-ema5-10-mtf4h-rsi-stoch-macd,0,EURUSD.DWX,115520000,2026-06-18,Development,active
 11553,carter-t-m5-cci14-macd1269,0,EURUSD.DWX,115530000,2026-06-18,Development,active
 11553,carter-t-m5-cci14-macd1269,1,GBPUSD.DWX,115530001,2026-06-18,Development,active
 11557,carter-t-m5-ema20-macd-buystop-partial,0,EURUSD.DWX,115570000,2026-06-20,Development,active
@@ -11969,10 +11969,10 @@
 11813,carter-h1-s19-psar-adx50-di-h1,5,USDCAD.DWX,118130005,2026-06-18,Claude,reserved
 11814,carter-m5-s1-macd1-stoch-ema5oc-m5,0,EURUSD.DWX,118140000,2026-06-18,Development,active
 11815,carter-m5-s2-ema102150-zone-pullback-m5,0,EURUSD.DWX,118150000,2026-06-18,Claude,reserved
-11816,carter-m5-s3-bb20-stoch-trend-reversal-m5,0,EURUSD.DWX,118160000,2026-06-18,Claude,reserved
-11816,carter-m5-s3-bb20-stoch-trend-reversal-m5,1,GBPUSD.DWX,118160001,2026-06-18,Claude,reserved
-11816,carter-m5-s3-bb20-stoch-trend-reversal-m5,2,USDJPY.DWX,118160002,2026-06-18,Claude,reserved
-11816,carter-m5-s3-bb20-stoch-trend-reversal-m5,3,USDCHF.DWX,118160003,2026-06-18,Claude,reserved
+11816,carter-m5-s3-bb20-stoch-trend-reversal-m5,0,EURUSD.DWX,118160000,2026-06-18,Claude,active
+11816,carter-m5-s3-bb20-stoch-trend-reversal-m5,1,GBPUSD.DWX,118160001,2026-06-18,Claude,active
+11816,carter-m5-s3-bb20-stoch-trend-reversal-m5,2,USDJPY.DWX,118160002,2026-06-18,Claude,active
+11816,carter-m5-s3-bb20-stoch-trend-reversal-m5,3,USDCHF.DWX,118160003,2026-06-18,Claude,active
 11818,carter-m5-s6-mtf-ema142150-bb20-m5h1,0,EURUSD.DWX,118180000,2026-06-18,Claude,reserved
 11819,carter-m5-s8-bb50-rsi3-stoch-reversal-m5,0,EURUSD.DWX,118190000,2026-06-18,Claude,reserved
 11819,carter-m5-s8-bb50-rsi3-stoch-reversal-m5,1,GBPUSD.DWX,118190001,2026-06-18,Claude,reserved
