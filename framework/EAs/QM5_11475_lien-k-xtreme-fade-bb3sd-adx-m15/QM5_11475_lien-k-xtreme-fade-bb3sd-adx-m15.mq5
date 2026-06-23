@@ -101,22 +101,6 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
-bool Strategy_FastTrendAgainst(const QM_OrderType dir, const ENUM_TIMEFRAMES tf)
-  {
-   const double adx = QM_ADX(_Symbol, tf, strategy_adx_period, 1);
-   if(adx < strategy_fast_adx_max)
-      return false;
-
-   const double plus_di = QM_ADX_PlusDI(_Symbol, tf, strategy_adx_period, 1);
-   const double minus_di = QM_ADX_MinusDI(_Symbol, tf, strategy_adx_period, 1);
-   if(plus_di <= 0.0 || minus_di <= 0.0)
-      return false;
-
-   if(dir == QM_BUY)
-      return (minus_di > plus_di);
-   return (plus_di > minus_di);
-  }
-
 // Mean-reversion fade entry. Caller guarantees QM_IsNewBar() == true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
@@ -154,7 +138,25 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const QM_OrderType dir = long_fade ? QM_BUY : QM_SELL;
 
-   if(Strategy_FastTrendAgainst(dir, PERIOD_M1) || Strategy_FastTrendAgainst(dir, PERIOD_M5))
+   const double m1_adx = QM_ADX(_Symbol, PERIOD_M1, strategy_adx_period, 1);
+   const double m1_plus_di = QM_ADX_PlusDI(_Symbol, PERIOD_M1, strategy_adx_period, 1);
+   const double m1_minus_di = QM_ADX_MinusDI(_Symbol, PERIOD_M1, strategy_adx_period, 1);
+   const bool m1_strong_against = (m1_adx >= strategy_fast_adx_max &&
+                                  m1_plus_di > 0.0 &&
+                                  m1_minus_di > 0.0 &&
+                                  ((dir == QM_BUY && m1_minus_di > m1_plus_di) ||
+                                   (dir == QM_SELL && m1_plus_di > m1_minus_di)));
+
+   const double m5_adx = QM_ADX(_Symbol, PERIOD_M5, strategy_adx_period, 1);
+   const double m5_plus_di = QM_ADX_PlusDI(_Symbol, PERIOD_M5, strategy_adx_period, 1);
+   const double m5_minus_di = QM_ADX_MinusDI(_Symbol, PERIOD_M5, strategy_adx_period, 1);
+   const bool m5_strong_against = (m5_adx >= strategy_fast_adx_max &&
+                                  m5_plus_di > 0.0 &&
+                                  m5_minus_di > 0.0 &&
+                                  ((dir == QM_BUY && m5_minus_di > m5_plus_di) ||
+                                   (dir == QM_SELL && m5_plus_di > m5_minus_di)));
+
+   if(m1_strong_against || m5_strong_against)
       return false;
 
    const double entry = (dir == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)

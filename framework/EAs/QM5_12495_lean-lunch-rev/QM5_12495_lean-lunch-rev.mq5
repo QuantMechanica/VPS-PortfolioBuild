@@ -184,6 +184,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = 0.0;   // time-stop exit, no take-profit
    req.reason = (side == QM_BUY) ? "lunch_rev_long" : "lunch_rev_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
 
    // Latch the day and the entry bar for the time stop.
    g_last_entry_et_day = et_day;
@@ -201,21 +203,29 @@ bool Strategy_ExitSignal()
   {
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
       return false;
-   if(g_entry_bar_time <= 0)
-      return false;
-
-   const datetime bar_open_broker = iTime(_Symbol, _Period, 0); // perf-allowed: bar-open timestamp
-   if(bar_open_broker <= 0)
-      return false;
 
    const int hold = (strategy_hold_hours > 0 ? strategy_hold_hours : 1);
-   // PeriodSeconds gives the H1 bar length; close once `hold` bars have elapsed.
-   const int bars_elapsed = (int)((bar_open_broker - g_entry_bar_time) / PeriodSeconds(_Period));
-   if(bars_elapsed >= hold)
+   const datetime broker_now = TimeCurrent();
+   const int magic = QM_FrameworkMagic();
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      g_entry_bar_time = 0;
-      return true;
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if(PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const datetime opened_at = (datetime)PositionGetInteger(POSITION_TIME);
+      if(opened_at > 0 && (broker_now - opened_at) >= hold * 3600)
+        {
+         g_entry_bar_time = 0;
+         return true;
+        }
      }
+
    return false;
   }
 

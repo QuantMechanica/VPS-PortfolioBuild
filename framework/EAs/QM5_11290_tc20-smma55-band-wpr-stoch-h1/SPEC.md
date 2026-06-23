@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA trades the H1 close crossing a smoothed moving-average price channel. A long setup requires the latest closed bar to cross above SMMA(55) applied to high prices, Williams %R(55) to cross above -25, and Stochastic(5,5,5) %K to be above %D. A short setup mirrors the rule with a close below SMMA(55) applied to low prices, Williams %R(55) crossing below -75, and Stochastic %K below %D. Entries use ATR(14) x 1.5 stop loss and a 2R take-profit; discretionary exits close a long when the latest closed bar falls back below the high-band SMMA and close a short when it rises back above the low-band SMMA.
+This EA trades H1 closed-bar momentum through a smoothed moving-average price channel. A long setup requires the latest closed bar to be above SMMA(55) applied to high prices, Williams %R(55) to cross above -25, and Stochastic(5,5,5) %K to be above %D. A short setup mirrors the rule with the latest closed bar below SMMA(55) applied to low prices, Williams %R(55) crossing below -75, and Stochastic %K below %D. Entries use ATR(14) x 1.5 stop loss and a 2R take-profit; discretionary exits close a long when the latest closed bar falls back below the high-band SMMA and close a short when it rises back above the low-band SMMA.
 
 ---
 

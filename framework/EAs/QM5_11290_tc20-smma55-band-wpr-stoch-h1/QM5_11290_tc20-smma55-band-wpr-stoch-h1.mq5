@@ -43,17 +43,8 @@ input int    strategy_spread_cap_pips     = 20;
 
 bool Strategy_ReadClosedCloses(double &close_1, double &close_2)
   {
-   close_1 = 0.0;
-   close_2 = 0.0;
-
-   double closes[];
-   ArraySetAsSeries(closes, true);
-   const int copied = CopyClose(_Symbol, PERIOD_CURRENT, 1, 2, closes);
-   if(copied != 2)
-      return false;
-
-   close_1 = closes[0];
-   close_2 = closes[1];
+   close_1 = QM_SMA(_Symbol, PERIOD_CURRENT, 1, 1, PRICE_CLOSE);
+   close_2 = QM_SMA(_Symbol, PERIOD_CURRENT, 1, 2, PRICE_CLOSE);
    return (close_1 > 0.0 && close_2 > 0.0);
   }
 
@@ -92,32 +83,30 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double smma_high_1 = QM_SMMA(_Symbol, PERIOD_CURRENT, strategy_smma_period, 1, PRICE_HIGH);
-   const double smma_high_2 = QM_SMMA(_Symbol, PERIOD_CURRENT, strategy_smma_period, 2, PRICE_HIGH);
    const double smma_low_1  = QM_SMMA(_Symbol, PERIOD_CURRENT, strategy_smma_period, 1, PRICE_LOW);
-   const double smma_low_2  = QM_SMMA(_Symbol, PERIOD_CURRENT, strategy_smma_period, 2, PRICE_LOW);
    const double wpr_1 = QM_WPR(_Symbol, PERIOD_CURRENT, strategy_wpr_period, 1);
    const double wpr_2 = QM_WPR(_Symbol, PERIOD_CURRENT, strategy_wpr_period, 2);
    const double stoch_k_1 = QM_Stoch_K(_Symbol, PERIOD_CURRENT, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
    const double stoch_d_1 = QM_Stoch_D(_Symbol, PERIOD_CURRENT, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
-   if(smma_high_1 <= 0.0 || smma_high_2 <= 0.0 || smma_low_1 <= 0.0 || smma_low_2 <= 0.0)
+   if(smma_high_1 <= 0.0 || smma_low_1 <= 0.0)
       return false;
 
-   const bool long_channel_cross = (close_2 <= smma_high_2 && close_1 > smma_high_1);
+   const bool long_channel_state = (close_1 > smma_high_1);
    const bool long_wpr_cross = (wpr_2 <= strategy_wpr_long_level && wpr_1 > strategy_wpr_long_level);
    const bool long_stoch = (stoch_k_1 > stoch_d_1);
 
-   const bool short_channel_cross = (close_2 >= smma_low_2 && close_1 < smma_low_1);
+   const bool short_channel_state = (close_1 < smma_low_1);
    const bool short_wpr_cross = (wpr_2 >= strategy_wpr_short_level && wpr_1 < strategy_wpr_short_level);
    const bool short_stoch = (stoch_k_1 < stoch_d_1);
 
    QM_OrderType side = QM_BUY;
    string reason = "";
-   if(long_channel_cross && long_wpr_cross && long_stoch)
+   if(long_channel_state && long_wpr_cross && long_stoch)
      {
       side = QM_BUY;
       reason = "TC20_S5_LONG";
      }
-   else if(short_channel_cross && short_wpr_cross && short_stoch)
+   else if(short_channel_state && short_wpr_cross && short_stoch)
      {
       side = QM_SELL;
       reason = "TC20_S5_SHORT";
