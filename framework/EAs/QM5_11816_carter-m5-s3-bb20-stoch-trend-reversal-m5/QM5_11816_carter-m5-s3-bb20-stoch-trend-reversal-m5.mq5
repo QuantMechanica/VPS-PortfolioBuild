@@ -17,17 +17,12 @@
 //                         (bbmid[1] > bbmid[3]) = uptrend -> longs only.
 //                         Falling (bbmid[1] < bbmid[3]) = downtrend -> shorts only.
 //   Overextension STATE : Long  -> prior bar low pierced the BB lower band
-//                         (Low[1] <= BB_Lower[1]).
+//                         (Low[1] <= BB_Lower[1]) and Stoch %K[1] < 20.
 //                         Short -> prior bar high pierced the BB upper band
-//                         (High[1] >= BB_Upper[1]).
-//   Trigger EVENT (single): Stochastic(%K) crosses back OUT of the extreme.
-//                         Long  -> K[2] <= os_level AND K[1] > os_level.
-//                         Short -> K[2] >= ob_level AND K[1] < ob_level.
-//   The Stoch cross is the only EVENT; band-pierce + trend are STATES — they are
-//   never required to coincide as two same-bar cross events (two-cross trap).
+//                         (High[1] >= BB_Upper[1]) and Stoch %K[1] > 80.
 //   Stop        : QM_StopATR, sl_atr_mult * ATR(atr_period).
-//   Take profit : QM_TakeRR at tp_rr (RR multiple of the stop distance; with
-//                 sl_atr_mult=2 / tp_rr=2 this equals the card's 4*ATR target).
+//   Take profit : QM_TakeATR at tp_atr_mult * ATR(atr_period); discretionary
+//                 exit closes at BB midline/opposite band when reached.
 //
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
 // else is framework wiring and MUST stay intact.
@@ -68,7 +63,7 @@ input double strategy_stoch_overbought  = 80.0;   // Stochastic overbought thres
 input int    strategy_trend_lookback    = 2;      // midline slope lookback (bars before shift 1)
 input int    strategy_atr_period        = 14;     // ATR period for stop/target
 input double strategy_sl_atr_mult       = 2.0;    // stop distance = mult * ATR
-input double strategy_tp_rr             = 2.0;    // take-profit RR multiple of the stop
+input double strategy_tp_atr_mult       = 4.0;    // take-profit distance = mult * ATR
 input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
 
 // -----------------------------------------------------------------------------
@@ -129,21 +124,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const bool pierced_lower = (low1  <= bb_lower);
    const bool pierced_upper = (high1 >= bb_upper);
 
-   // --- Trigger EVENT: single Stochastic %K cross out of the extreme zone ---
-   const double k_now  = QM_Stoch_K(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d,
-                                    strategy_stoch_slowing, 1);
-   const double k_prev = QM_Stoch_K(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d,
-                                    strategy_stoch_slowing, 2);
-   if(k_now < 0.0 || k_prev < 0.0)
+   // --- Stochastic STATE: card requires %K in the extreme zone on the closed bar ---
+   const double k_now = QM_Stoch_K(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d,
+                                   strategy_stoch_slowing, 1);
+   if(k_now < 0.0)
       return false;
-   const bool cross_up_oversold   = (k_prev <= strategy_stoch_oversold &&
-                                     k_now  >  strategy_stoch_oversold);
-   const bool cross_down_overbought = (k_prev >= strategy_stoch_overbought &&
-                                       k_now  <  strategy_stoch_overbought);
+   const bool stoch_oversold   = (k_now < strategy_stoch_oversold);
+   const bool stoch_overbought = (k_now > strategy_stoch_overbought);
 
    // --- Compose: long fade in an uptrend, short fade in a downtrend ---
-   const bool long_setup  = trend_up   && pierced_lower && cross_up_oversold;
-   const bool short_setup = trend_down && pierced_upper && cross_down_overbought;
+   const bool long_setup  = trend_up   && pierced_lower && stoch_oversold;
+   const bool short_setup = trend_down && pierced_upper && stoch_overbought;
    if(!long_setup && !short_setup)
       return false;
 
@@ -153,18 +144,24 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry <= 0.0)
       return false;
 
-   const double sl = QM_StopATR(_Symbol, side, entry, strategy_atr_period, strategy_sl_atr_mult);
+   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+   if(atr_value <= 0.0)
+      return false;
+
+   const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr_value, strategy_sl_atr_mult);
    if(sl <= 0.0)
       return false;
-   const double tp = QM_TakeRR(_Symbol, side, entry, sl, strategy_tp_rr);
+   const double tp = QM_TakeATRFromValue(_Symbol, side, entry, atr_value, strategy_tp_atr_mult);
    if(tp <= 0.0)
       return false;
 
-   req.type   = side;
-   req.price  = 0.0;   // framework fills market price at send
-   req.sl     = sl;
-   req.tp     = tp;
+   req.type = side;
+   req.price = 0.0;   // framework fills market price at send
+   req.sl = sl;
+   req.tp = tp;
    req.reason = long_setup ? "bb_stoch_rev_long" : "bb_stoch_rev_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
@@ -173,9 +170,42 @@ void Strategy_ManageOpenPosition()
   {
   }
 
-// No discretionary exit beyond SL/TP (TP = opposite-band proxy via RR).
+// Close at BB midline or opposite band; SL/TP remain broker-side safeguards.
 bool Strategy_ExitSignal()
   {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   const double bb_mid = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
+   const double bb_upper = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
+   const double bb_lower = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
+   if(bb_mid <= 0.0 || bb_upper <= 0.0 || bb_lower <= 0.0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(ptype == POSITION_TYPE_BUY)
+        {
+         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+         return (bid > 0.0 && (bid >= bb_mid || bid >= bb_upper));
+        }
+      if(ptype == POSITION_TYPE_SELL)
+        {
+         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+         return (ask > 0.0 && (ask <= bb_mid || ask <= bb_lower));
+        }
+     }
+
    return false;
   }
 

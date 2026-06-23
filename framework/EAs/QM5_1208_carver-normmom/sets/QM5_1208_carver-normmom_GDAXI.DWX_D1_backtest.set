@@ -4,17 +4,17 @@
 ; ea_slug:      carver-normmom
 ; ea_version:   v5.0
 ; set_version:  s20260623-001
-; symbol:       USDJPY.DWX
+; symbol:       GDAXI.DWX
 ; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   2
+; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   34dcb1ac82245de575406d9cf5b9093ef3bc9d97eac4b2fb7ad37398b4123194
+; build_hash:   4c59cdcf96f6ec2d71ed7eefd747ba6f4ba4f14f576163b2376e8f58ad440c67
 ; author:       Development
 ; date:         2026-06-23
 ;==========================================================
-qm_magic_slot_offset=2
+qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

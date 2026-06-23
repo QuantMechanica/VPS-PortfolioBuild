@@ -3,39 +3,32 @@
 ; ea_id:        1208
 ; ea_slug:      carver-normmom
 ; ea_version:   v5.0
-; set_version:  s20260526-001
+; set_version:  s20260623-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   6
 ; risk_mode:    FIXED
-; portfolio_weight: 0.142857
-; build_hash:   89f04b97a83c3fd656bf47041709c163a8941cca077354841ce4c15b9b41f867
+; portfolio_weight: 1
+; build_hash:   b0473a606029c9684bc1b0944a7cf1ff9a87d05de2c97f92ff60864996d53ed9
 ; author:       Development
-; date:         2026-05-26
+; date:         2026-06-23
 ;==========================================================
-qm_ea_id=1208
 qm_magic_slot_offset=6
-qm_rng_seed=42
-RISK_PERCENT=0
 RISK_FIXED=1000
-PORTFOLIO_WEIGHT=0.142857
-qm_news_temporal=1
-qm_news_compliance=1
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=true
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0
-strategy_fast_period=16
-strategy_slow_period=64
-strategy_vol_lookback=25
-strategy_normret_cap=6.0
-strategy_forecast_scalar=10.0
-strategy_entry_forecast=2.0
-strategy_forecast_cap=20.0
-strategy_atr_period=20
-strategy_stop_atr_mult=2.5
-strategy_max_spread_points=80
-strategy_allow_ports=true
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found
