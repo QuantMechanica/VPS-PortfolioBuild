@@ -12,25 +12,21 @@
 //         QM5_11368_macd-psar-atr-h4.md (g0_status APPROVED).
 //
 // Mechanics (H4, closed-bar reads at shift 1):
-//   Direction is driven by ONE EVENT confirmed by ONE STATE. To avoid the
-//   "two crosses on the same bar never coincide" zero-trade trap, EITHER the
-//   MACD MAIN-line zero-cross OR the Parabolic SAR flip can be the trigger
-//   EVENT; whichever fires, the OTHER indicator must merely AGREE as a STATE.
+//   Direction is driven by ONE EVENT confirmed by ONE STATE. The card's entry
+//   event is the MACD MAIN-line zero-cross; Parabolic SAR is the confirmation
+//   state and trailing stop. The same-bar PSAR reversal is noted by the card as
+//   ideal, but not required.
 //
 //   LONG:
 //     EVENT  = MACD MAIN crosses ABOVE zero  (main[2] <= 0 && main[1] > 0)
-//              OR  PSAR flips below price     (sar[2] >= close[2] && sar[1] < close[1])
 //     STATE  = PSAR below price (sar[1] < close[1]) AND MACD MAIN > 0 (main[1] > 0)
 //   SHORT (mirror):
 //     EVENT  = MACD MAIN crosses BELOW zero   (main[2] >= 0 && main[1] < 0)
-//              OR  PSAR flips above price      (sar[2] <= close[2] && sar[1] > close[1])
 //     STATE  = PSAR above price (sar[1] > close[1]) AND MACD MAIN < 0 (main[1] < 0)
 //   MACD MAIN may be negative — the cross is about SIGN, not magnitude.
 //
-//   Stop  : Parabolic SAR value at entry (structural trailing stop). An ATR
-//           floor caps the SL distance so a SAR sitting on top of price still
-//           yields a usable, risk-sane stop.
-//   Take  : entry + tp_atr_mult * ATR (single TP, per card P2 note).
+//   Stop  : Parabolic SAR value at entry, capped to max 50 pips per P2 note.
+//   Take  : single TP at max(tp_atr_mult * ATR, min_rr * stop_distance).
 //   Trail : each H4 bar, ratchet SL toward the current SAR (never backward).
 //
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
@@ -74,10 +70,11 @@ input int    strategy_macd_slow         = 26;     // MACD slow EMA period
 input int    strategy_macd_signal       = 9;      // MACD signal SMA period
 input double strategy_sar_step          = 0.02;   // Parabolic SAR step (AF)
 input double strategy_sar_max           = 0.2;    // Parabolic SAR max AF
-input int    strategy_atr_period        = 14;     // ATR period (stop floor + target)
+input int    strategy_atr_period        = 14;     // ATR period for target distance
 input double strategy_tp_atr_mult       = 2.0;    // take-profit distance = mult * ATR
-input double strategy_sl_atr_floor_mult = 1.0;    // min SL distance = mult * ATR (SAR cap)
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input double strategy_min_rr            = 2.0;    // minimum reward:risk target
+input int    strategy_stop_cap_pips     = 50;     // P2 max stop distance
+input int    strategy_spread_cap_pips   = 20;     // card spread cap
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -92,17 +89,13 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to the entry gate, do not block here
-
-   const double stop_distance = strategy_sl_atr_floor_mult * atr_value;
-   if(stop_distance <= 0.0)
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(spread_cap <= 0.0)
       return false;
 
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread > spread_cap)
       return true;
 
    return false;
@@ -111,6 +104,14 @@ bool Strategy_NoTradeFilter()
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -135,17 +136,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // --- LONG ---
-   // EVENT: MACD MAIN crosses above zero, OR PSAR flips below price.
+   // EVENT: MACD MAIN crosses above zero.
    const bool macd_cross_up = (macd2 <= 0.0 && macd1 > 0.0);
-   const bool sar_flip_up   = (sar2 >= close2 && sar1 < close1);
-   const bool long_event    = (macd_cross_up || sar_flip_up);
+   const bool long_event    = macd_cross_up;
    // STATE: PSAR below price AND MACD MAIN positive (both agree bullish).
    const bool long_state    = (sar1 < close1 && macd1 > 0.0);
 
    // --- SHORT (mirror) ---
    const bool macd_cross_dn = (macd2 >= 0.0 && macd1 < 0.0);
-   const bool sar_flip_dn   = (sar2 <= close2 && sar1 > close1);
-   const bool short_event   = (macd_cross_dn || sar_flip_dn);
+   const bool short_event   = macd_cross_dn;
    const bool short_state   = (sar1 > close1 && macd1 < 0.0);
 
    const bool go_long  = (long_event  && long_state);
@@ -161,13 +160,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(entry <= 0.0)
          return false;
 
-      // SL = PSAR value at entry, but never closer than the ATR floor.
+      // SL = PSAR value at entry, capped to max stop distance per card.
       double sl = sar1;
-      const double atr_floor_sl = entry - strategy_sl_atr_floor_mult * atr_value;
-      if(sl >= entry || sl > atr_floor_sl)
-         sl = atr_floor_sl;
+      const double stop_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_stop_cap_pips);
+      if(stop_cap <= 0.0)
+         return false;
+      if(sl >= entry)
+         return false;
+      if(entry - sl > stop_cap)
+         sl = entry - stop_cap;
 
-      const double tp = entry + strategy_tp_atr_mult * atr_value;
+      const double risk_distance = entry - sl;
+      const double tp_distance = MathMax(strategy_tp_atr_mult * atr_value, strategy_min_rr * risk_distance);
+      const double tp = entry + tp_distance;
       sl = QM_TM_NormalizePrice(_Symbol, sl);
       if(sl <= 0.0 || sl >= entry || tp <= entry)
          return false;
@@ -186,13 +191,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(entry <= 0.0)
          return false;
 
-      // SL = PSAR value at entry, but never closer than the ATR floor.
+      // SL = PSAR value at entry, capped to max stop distance per card.
       double sl = sar1;
-      const double atr_floor_sl = entry + strategy_sl_atr_floor_mult * atr_value;
-      if(sl <= entry || sl < atr_floor_sl)
-         sl = atr_floor_sl;
+      const double stop_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_stop_cap_pips);
+      if(stop_cap <= 0.0)
+         return false;
+      if(sl <= entry)
+         return false;
+      if(sl - entry > stop_cap)
+         sl = entry + stop_cap;
 
-      const double tp = entry - strategy_tp_atr_mult * atr_value;
+      const double risk_distance = sl - entry;
+      const double tp_distance = MathMax(strategy_tp_atr_mult * atr_value, strategy_min_rr * risk_distance);
+      const double tp = entry - tp_distance;
       sl = QM_TM_NormalizePrice(_Symbol, sl);
       if(sl <= 0.0 || sl <= entry || tp <= 0.0 || tp >= entry)
          return false;

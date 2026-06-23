@@ -4,22 +4,20 @@
 **Slug:** `macd-psar-atr-h4`
 **Source:** `59508e92-3f5c-50ea-80e6-f96fec946283` (see `strategy-seeds/sources/59508e92-3f5c-50ea-80e6-f96fec946283/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-23
 
 ---
 
 ## 1. Strategy Logic
 
 H4 trend-following system combining MACD(12,26,9), Parabolic SAR(0.02/0.2) and
-ATR(14). Direction is decided by ONE trigger EVENT confirmed by ONE agreeing
-STATE, deliberately avoiding the "two crossovers on the same bar" zero-trade
-trap. Long when EITHER the MACD MAIN line crosses above zero OR the Parabolic
-SAR flips from above to below price (the EVENT), AND the SAR is below price AND
-the MACD MAIN line is positive (the STATE). Short is the mirror. The MACD MAIN
-value may be negative — only its zero-cross sign matters. The stop is the
-Parabolic SAR value at entry (capped no closer than 1×ATR), trailed toward the
-current SAR each H4 bar and never moved backward. Take-profit is a single target
-at 2×ATR from entry. All signal reads are on the closed bar (shift 1).
+ATR(14). Long when the MACD MAIN line crosses above zero on the just-closed H4
+bar and the Parabolic SAR is below that bar's close. Short is the mirror: MACD
+crosses below zero and SAR is above the close. The stop is the Parabolic SAR
+value at entry, capped to 50 pips for P2, then trailed toward the current SAR
+and never moved backward. Take-profit is a single P2 target at the larger of
+2×ATR from entry or 2× the stop distance. All signal reads are on the closed
+bar (shift 1).
 
 ---
 
@@ -32,10 +30,11 @@ at 2×ATR from entry. All signal reads are on the closed bar (shift 1).
 | `strategy_macd_signal` | 9 | 5-12 | MACD signal SMA period |
 | `strategy_sar_step` | 0.02 | 0.01-0.05 | Parabolic SAR acceleration step |
 | `strategy_sar_max` | 0.2 | 0.1-0.3 | Parabolic SAR max acceleration factor |
-| `strategy_atr_period` | 14 | 10-20 | ATR period for stop floor and target |
+| `strategy_atr_period` | 14 | 10-20 | ATR period for target distance |
 | `strategy_tp_atr_mult` | 2.0 | 1.5-3.0 | Take-profit distance = mult × ATR |
-| `strategy_sl_atr_floor_mult` | 1.0 | 0.5-2.0 | Min SL distance = mult × ATR (SAR cap) |
-| `strategy_spread_pct_of_stop` | 15.0 | 5-30 | Skip if spread > this % of stop distance |
+| `strategy_min_rr` | 2.0 | 1.0-3.0 | Minimum reward:risk target multiple |
+| `strategy_stop_cap_pips` | 50 | 20-100 | Maximum stop distance for P2 |
+| `strategy_spread_cap_pips` | 20 | 5-30 | Skip if spread is above this cap |
 
 ---
 
@@ -69,6 +68,7 @@ at 2×ATR from entry. All signal reads are on the closed bar (shift 1).
 | Typical hold time | `hours to a few days` |
 | Expected drawdown profile | `trend-follower: many small losses, fewer larger trend wins` |
 | Regime preference | `trend` |
+| Expected trade frequency | `roughly weekly per symbol` |
 | Win rate target (qualitative) | `low/medium` |
 
 ---
@@ -100,4 +100,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v1 | 2026-06-23 | Initial build from card | a9c9c2af-6fde-475b-b65b-702598fbf880 |
