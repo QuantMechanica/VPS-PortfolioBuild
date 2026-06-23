@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA trades Al Brooks' H4 Major Trend Reversal pattern. For a long, it finds the strongest down leg in the last 200 H4 bars, requires a 50%-78% counter-trend rally, requires a later higher-low pullback, and buys only after a closed H4 bar breaks and closes above the rally high with a body of at least 0.8 ATR(20). Shorts use the exact mirror sequence after an up leg. The initial stop is 0.5 ATR(20) beyond leg-3, target 1 is the original leg-1 extreme, target 2 is the symmetric leg-1 extension, and positions also close on an L3/H3 failure or a 100-H4-bar time stop.
+This EA trades Al Brooks' H4 Major Trend Reversal pattern. For a long, it finds the strongest qualified down-leg sequence in the last 200 H4 bars, first from confirmed swing pivots and then from bounded swing extrema when the same card thresholds are present, requires a 50%-78% counter-trend rally, requires a later higher-low pullback, and buys only after a closed H4 bar breaks and closes above the rally high with a body of at least 0.8 ATR(20). Shorts use the exact mirror sequence after an up leg. The initial stop is 0.5 ATR(20) beyond leg-3, target 1 is the original leg-1 extreme, target 2 is the symmetric leg-1 extension, and positions also close on an L3/H3 failure or a 100-H4-bar time stop.
 
 ---
 
@@ -106,3 +106,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-23 | Initial build from card | 85856952-38a1-48e4-bf30-31647a6d1ead |
+| v2 | 2026-06-23 | Rework active setup scan and extrema fallback after smoke zero-trade review | 6f2363d7-3fa7-48c9-8d62-97242f50839c |

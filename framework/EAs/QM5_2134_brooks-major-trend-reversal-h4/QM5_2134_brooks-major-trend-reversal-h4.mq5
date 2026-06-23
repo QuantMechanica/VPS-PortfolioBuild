@@ -231,6 +231,190 @@ bool FindStrongestUpLeg(const MqlRates &rates[],
    return (hh_idx >= 0 && ll_idx >= 0 && hh > ll);
   }
 
+bool FindLongExtremaSetup(const MqlRates &rates[],
+                          const int copied,
+                          const double atr20,
+                          const double atr50,
+                          const double d1_ema,
+                          MtrSetup &setup)
+  {
+   ClearSetup(setup);
+
+   const MqlRates breakout = rates[0];
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(ask <= 0.0 || breakout.close <= breakout.open)
+      return false;
+   if((breakout.close - breakout.open) < strategy_breakout_body_atr_mult * atr20)
+      return false;
+
+   MtrSetup best;
+   ClearSetup(best);
+   double best_range = 0.0;
+   const int max_h2_idx = (strategy_leg_max_h4_bars < copied - 3) ? strategy_leg_max_h4_bars : (copied - 3);
+
+   for(int h2_idx = 1; h2_idx <= max_h2_idx; ++h2_idx)
+     {
+      const double h2 = rates[h2_idx].high;
+      if(breakout.high <= h2 || breakout.close <= h2)
+         continue;
+
+      int l3_idx = -1;
+      double l3 = DBL_MAX;
+      for(int idx = 1; idx < h2_idx; ++idx)
+        {
+         if(rates[idx].low < l3)
+           {
+            l3 = rates[idx].low;
+            l3_idx = idx;
+           }
+        }
+      if(l3_idx < 0 || rates[l3_idx].time == g_consumed_pattern_time)
+         continue;
+
+      const int ll_ceiling = (h2_idx + strategy_leg_max_h4_bars < copied - 2) ? (h2_idx + strategy_leg_max_h4_bars) : (copied - 2);
+      for(int ll_idx = h2_idx + 1; ll_idx <= ll_ceiling; ++ll_idx)
+        {
+         const double ll = rates[ll_idx].low;
+         if(l3 <= ll || l3 >= h2)
+            continue;
+
+         for(int hh_idx = ll_idx + 1; hh_idx < copied - 1; ++hh_idx)
+           {
+            const double hh = rates[hh_idx].high;
+            const double leg_range = hh - ll;
+            if(leg_range < strategy_min_leg1_atr_mult * atr50)
+               continue;
+
+            const double retrace = (h2 - ll) / leg_range;
+            if(retrace < strategy_leg2_retrace_min || retrace > strategy_leg2_retrace_max)
+               continue;
+            if(leg_range < best_range)
+               continue;
+
+            MtrSetup candidate;
+            ClearSetup(candidate);
+            candidate.valid = true;
+            candidate.side = 1;
+            candidate.hh = hh;
+            candidate.ll = ll;
+            candidate.h2 = h2;
+            candidate.l3 = l3;
+            candidate.target1 = hh;
+            candidate.target2 = hh + leg_range;
+            candidate.stop = l3 - strategy_initial_stop_atr_mult * atr20;
+            candidate.pattern_time = rates[l3_idx].time;
+            candidate.d1_aligned = (breakout.close > d1_ema);
+
+            if(candidate.stop <= 0.0 || candidate.stop >= ask)
+               continue;
+            if(leg_range == best_range && candidate.pattern_time <= best.pattern_time)
+               continue;
+
+            best = candidate;
+            best_range = leg_range;
+           }
+        }
+     }
+
+   if(!best.valid)
+      return false;
+
+   setup = best;
+   return true;
+  }
+
+bool FindShortExtremaSetup(const MqlRates &rates[],
+                           const int copied,
+                           const double atr20,
+                           const double atr50,
+                           const double d1_ema,
+                           MtrSetup &setup)
+  {
+   ClearSetup(setup);
+
+   const MqlRates breakout = rates[0];
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(bid <= 0.0 || breakout.close >= breakout.open)
+      return false;
+   if((breakout.open - breakout.close) < strategy_breakout_body_atr_mult * atr20)
+      return false;
+
+   MtrSetup best;
+   ClearSetup(best);
+   double best_range = 0.0;
+   const int max_l2_idx = (strategy_leg_max_h4_bars < copied - 3) ? strategy_leg_max_h4_bars : (copied - 3);
+
+   for(int l2_idx = 1; l2_idx <= max_l2_idx; ++l2_idx)
+     {
+      const double l2 = rates[l2_idx].low;
+      if(breakout.low >= l2 || breakout.close >= l2)
+         continue;
+
+      int h3_idx = -1;
+      double h3 = 0.0;
+      for(int idx = 1; idx < l2_idx; ++idx)
+        {
+         if(rates[idx].high > h3)
+           {
+            h3 = rates[idx].high;
+            h3_idx = idx;
+           }
+        }
+      if(h3_idx < 0 || rates[h3_idx].time == g_consumed_pattern_time)
+         continue;
+
+      const int hh_ceiling = (l2_idx + strategy_leg_max_h4_bars < copied - 2) ? (l2_idx + strategy_leg_max_h4_bars) : (copied - 2);
+      for(int hh_idx = l2_idx + 1; hh_idx <= hh_ceiling; ++hh_idx)
+        {
+         const double hh = rates[hh_idx].high;
+         if(h3 >= hh || h3 <= l2)
+            continue;
+
+         for(int ll_idx = hh_idx + 1; ll_idx < copied - 1; ++ll_idx)
+           {
+            const double ll = rates[ll_idx].low;
+            const double leg_range = hh - ll;
+            if(leg_range < strategy_min_leg1_atr_mult * atr50)
+               continue;
+
+            const double retrace = (hh - l2) / leg_range;
+            if(retrace < strategy_leg2_retrace_min || retrace > strategy_leg2_retrace_max)
+               continue;
+            if(leg_range < best_range)
+               continue;
+
+            MtrSetup candidate;
+            ClearSetup(candidate);
+            candidate.valid = true;
+            candidate.side = -1;
+            candidate.hh = hh;
+            candidate.ll = ll;
+            candidate.l2 = l2;
+            candidate.h3 = h3;
+            candidate.target1 = ll;
+            candidate.target2 = ll - leg_range;
+            candidate.stop = h3 + strategy_initial_stop_atr_mult * atr20;
+            candidate.pattern_time = rates[h3_idx].time;
+            candidate.d1_aligned = (breakout.close < d1_ema);
+
+            if(candidate.stop <= bid || candidate.target2 <= 0.0)
+               continue;
+            if(leg_range == best_range && candidate.pattern_time <= best.pattern_time)
+               continue;
+
+            best = candidate;
+            best_range = leg_range;
+           }
+        }
+     }
+
+   if(!best.valid)
+      return false;
+
+   setup = best;
+   return true;
+  }
+
 bool FindLongSetup(const MqlRates &rates[],
                    const int copied,
                    const double atr20,
@@ -240,75 +424,107 @@ bool FindLongSetup(const MqlRates &rates[],
   {
    ClearSetup(setup);
 
-   int hh_idx = -1;
-   int ll_idx = -1;
-   double hh = 0.0;
-   double ll = 0.0;
    const int wing = strategy_pivot_wing_bars;
-   if(!FindStrongestDownLeg(rates, copied, wing, hh, ll, hh_idx, ll_idx))
-      return false;
-
-   const double leg_range = hh - ll;
-   if(leg_range < strategy_min_leg1_atr_mult * atr50)
-      return false;
-
-   int h2_idx = -1;
-   double h2 = 0.0;
-   const int h2_floor = (ll_idx - strategy_leg_max_h4_bars > wing) ? (ll_idx - strategy_leg_max_h4_bars) : wing;
-   for(int idx = ll_idx - 1; idx >= h2_floor; --idx)
-     {
-      if(!IsPivotHigh(rates, idx, wing, copied))
-         continue;
-      const double retrace = (rates[idx].high - ll) / leg_range;
-      if(retrace < strategy_leg2_retrace_min || retrace > strategy_leg2_retrace_max)
-         continue;
-      if(rates[idx].high > h2)
-        {
-         h2 = rates[idx].high;
-         h2_idx = idx;
-        }
-     }
-   if(h2_idx < 0)
-      return false;
-
-   int l3_idx = -1;
-   double l3 = 0.0;
-   const int l3_floor = (h2_idx - strategy_leg_max_h4_bars > wing) ? (h2_idx - strategy_leg_max_h4_bars) : wing;
-   for(int idx = h2_idx - 1; idx >= l3_floor; --idx)
-     {
-      if(!IsPivotLow(rates, idx, wing, copied))
-         continue;
-      if(rates[idx].low <= ll || rates[idx].low >= h2)
-         continue;
-      if(l3_idx < 0 || rates[idx].low < l3)
-        {
-         l3 = rates[idx].low;
-         l3_idx = idx;
-        }
-     }
-   if(l3_idx < 0)
-      return false;
-
    const MqlRates breakout = rates[0];
-   if(breakout.high <= h2 || breakout.close <= h2 || breakout.close <= breakout.open)
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(ask <= 0.0)
+      return false;
+
+   if(breakout.close <= breakout.open)
       return false;
    if((breakout.close - breakout.open) < strategy_breakout_body_atr_mult * atr20)
       return false;
-   if(rates[l3_idx].time == g_consumed_pattern_time)
-      return false;
 
-   setup.valid = true;
-   setup.side = 1;
-   setup.hh = hh;
-   setup.ll = ll;
-   setup.h2 = h2;
-   setup.l3 = l3;
-   setup.target1 = hh;
-   setup.target2 = hh + leg_range;
-   setup.stop = l3 - strategy_initial_stop_atr_mult * atr20;
-   setup.pattern_time = rates[l3_idx].time;
-   setup.d1_aligned = (breakout.close > d1_ema);
-   return (setup.stop > 0.0 && setup.stop < SymbolInfoDouble(_Symbol, SYMBOL_ASK));
+   bool pivot_high[];
+   bool pivot_low[];
+   ArrayResize(pivot_high, copied);
+   ArrayResize(pivot_low, copied);
+   for(int idx = 0; idx < copied; ++idx)
+     {
+      pivot_high[idx] = IsPivotHigh(rates, idx, wing, copied);
+      pivot_low[idx] = IsPivotLow(rates, idx, wing, copied);
+     }
+
+   double best_range = 0.0;
+   MtrSetup best;
+   ClearSetup(best);
+   const int max_idx = copied - wing - 1;
+
+   for(int hh_idx = max_idx; hh_idx >= wing + 3; --hh_idx)
+     {
+      if(!pivot_high[hh_idx])
+         continue;
+
+      const double hh = rates[hh_idx].high;
+      for(int ll_idx = hh_idx - 1; ll_idx >= wing + 2; --ll_idx)
+        {
+         if(!pivot_low[ll_idx])
+            continue;
+
+         const double ll = rates[ll_idx].low;
+         const double leg_range = hh - ll;
+         if(leg_range < strategy_min_leg1_atr_mult * atr50)
+            continue;
+
+         const int h2_floor = (ll_idx - strategy_leg_max_h4_bars > wing + 1) ? (ll_idx - strategy_leg_max_h4_bars) : (wing + 1);
+         for(int h2_idx = ll_idx - 1; h2_idx >= h2_floor; --h2_idx)
+           {
+            if(!pivot_high[h2_idx])
+               continue;
+
+            const double h2 = rates[h2_idx].high;
+            const double retrace = (h2 - ll) / leg_range;
+            if(retrace < strategy_leg2_retrace_min || retrace > strategy_leg2_retrace_max)
+               continue;
+            if(breakout.high <= h2 || breakout.close <= h2)
+               continue;
+
+            const int l3_floor = (h2_idx - strategy_leg_max_h4_bars > wing) ? (h2_idx - strategy_leg_max_h4_bars) : wing;
+            for(int l3_idx = h2_idx - 1; l3_idx >= l3_floor; --l3_idx)
+              {
+               if(!pivot_low[l3_idx])
+                  continue;
+
+               const double l3 = rates[l3_idx].low;
+               if(l3 <= ll || l3 >= h2)
+                  continue;
+               if(rates[l3_idx].time == g_consumed_pattern_time)
+                  continue;
+
+               if(leg_range < best_range)
+                  continue;
+
+               MtrSetup candidate;
+               ClearSetup(candidate);
+               candidate.valid = true;
+               candidate.side = 1;
+               candidate.hh = hh;
+               candidate.ll = ll;
+               candidate.h2 = h2;
+               candidate.l3 = l3;
+               candidate.target1 = hh;
+               candidate.target2 = hh + leg_range;
+               candidate.stop = l3 - strategy_initial_stop_atr_mult * atr20;
+               candidate.pattern_time = rates[l3_idx].time;
+               candidate.d1_aligned = (breakout.close > d1_ema);
+
+               if(candidate.stop <= 0.0 || candidate.stop >= ask)
+                  continue;
+               if(leg_range == best_range && candidate.pattern_time <= best.pattern_time)
+                  continue;
+
+               best = candidate;
+               best_range = leg_range;
+              }
+           }
+        }
+     }
+
+   if(!best.valid)
+      return FindLongExtremaSetup(rates, copied, atr20, atr50, d1_ema, setup);
+
+   setup = best;
+   return true;
   }
 
 bool FindShortSetup(const MqlRates &rates[],
@@ -320,75 +536,107 @@ bool FindShortSetup(const MqlRates &rates[],
   {
    ClearSetup(setup);
 
-   int hh_idx = -1;
-   int ll_idx = -1;
-   double hh = 0.0;
-   double ll = 0.0;
    const int wing = strategy_pivot_wing_bars;
-   if(!FindStrongestUpLeg(rates, copied, wing, hh, ll, hh_idx, ll_idx))
-      return false;
-
-   const double leg_range = hh - ll;
-   if(leg_range < strategy_min_leg1_atr_mult * atr50)
-      return false;
-
-   int l2_idx = -1;
-   double l2 = 0.0;
-   const int l2_floor = (hh_idx - strategy_leg_max_h4_bars > wing) ? (hh_idx - strategy_leg_max_h4_bars) : wing;
-   for(int idx = hh_idx - 1; idx >= l2_floor; --idx)
-     {
-      if(!IsPivotLow(rates, idx, wing, copied))
-         continue;
-      const double retrace = (hh - rates[idx].low) / leg_range;
-      if(retrace < strategy_leg2_retrace_min || retrace > strategy_leg2_retrace_max)
-         continue;
-      if(l2_idx < 0 || rates[idx].low < l2)
-        {
-         l2 = rates[idx].low;
-         l2_idx = idx;
-        }
-     }
-   if(l2_idx < 0)
-      return false;
-
-   int h3_idx = -1;
-   double h3 = 0.0;
-   const int h3_floor = (l2_idx - strategy_leg_max_h4_bars > wing) ? (l2_idx - strategy_leg_max_h4_bars) : wing;
-   for(int idx = l2_idx - 1; idx >= h3_floor; --idx)
-     {
-      if(!IsPivotHigh(rates, idx, wing, copied))
-         continue;
-      if(rates[idx].high >= hh || rates[idx].high <= l2)
-         continue;
-      if(rates[idx].high > h3)
-        {
-         h3 = rates[idx].high;
-         h3_idx = idx;
-        }
-     }
-   if(h3_idx < 0)
-      return false;
-
    const MqlRates breakout = rates[0];
-   if(breakout.low >= l2 || breakout.close >= l2 || breakout.close >= breakout.open)
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(bid <= 0.0)
+      return false;
+
+   if(breakout.close >= breakout.open)
       return false;
    if((breakout.open - breakout.close) < strategy_breakout_body_atr_mult * atr20)
       return false;
-   if(rates[h3_idx].time == g_consumed_pattern_time)
-      return false;
 
-   setup.valid = true;
-   setup.side = -1;
-   setup.hh = hh;
-   setup.ll = ll;
-   setup.l2 = l2;
-   setup.h3 = h3;
-   setup.target1 = ll;
-   setup.target2 = ll - leg_range;
-   setup.stop = h3 + strategy_initial_stop_atr_mult * atr20;
-   setup.pattern_time = rates[h3_idx].time;
-   setup.d1_aligned = (breakout.close < d1_ema);
-   return (setup.stop > SymbolInfoDouble(_Symbol, SYMBOL_BID));
+   bool pivot_high[];
+   bool pivot_low[];
+   ArrayResize(pivot_high, copied);
+   ArrayResize(pivot_low, copied);
+   for(int idx = 0; idx < copied; ++idx)
+     {
+      pivot_high[idx] = IsPivotHigh(rates, idx, wing, copied);
+      pivot_low[idx] = IsPivotLow(rates, idx, wing, copied);
+     }
+
+   double best_range = 0.0;
+   MtrSetup best;
+   ClearSetup(best);
+   const int max_idx = copied - wing - 1;
+
+   for(int ll_idx = max_idx; ll_idx >= wing + 3; --ll_idx)
+     {
+      if(!pivot_low[ll_idx])
+         continue;
+
+      const double ll = rates[ll_idx].low;
+      for(int hh_idx = ll_idx - 1; hh_idx >= wing + 2; --hh_idx)
+        {
+         if(!pivot_high[hh_idx])
+            continue;
+
+         const double hh = rates[hh_idx].high;
+         const double leg_range = hh - ll;
+         if(leg_range < strategy_min_leg1_atr_mult * atr50)
+            continue;
+
+         const int l2_floor = (hh_idx - strategy_leg_max_h4_bars > wing + 1) ? (hh_idx - strategy_leg_max_h4_bars) : (wing + 1);
+         for(int l2_idx = hh_idx - 1; l2_idx >= l2_floor; --l2_idx)
+           {
+            if(!pivot_low[l2_idx])
+               continue;
+
+            const double l2 = rates[l2_idx].low;
+            const double retrace = (hh - l2) / leg_range;
+            if(retrace < strategy_leg2_retrace_min || retrace > strategy_leg2_retrace_max)
+               continue;
+            if(breakout.low >= l2 || breakout.close >= l2)
+               continue;
+
+            const int h3_floor = (l2_idx - strategy_leg_max_h4_bars > wing) ? (l2_idx - strategy_leg_max_h4_bars) : wing;
+            for(int h3_idx = l2_idx - 1; h3_idx >= h3_floor; --h3_idx)
+              {
+               if(!pivot_high[h3_idx])
+                  continue;
+
+               const double h3 = rates[h3_idx].high;
+               if(h3 >= hh || h3 <= l2)
+                  continue;
+               if(rates[h3_idx].time == g_consumed_pattern_time)
+                  continue;
+
+               if(leg_range < best_range)
+                  continue;
+
+               MtrSetup candidate;
+               ClearSetup(candidate);
+               candidate.valid = true;
+               candidate.side = -1;
+               candidate.hh = hh;
+               candidate.ll = ll;
+               candidate.l2 = l2;
+               candidate.h3 = h3;
+               candidate.target1 = ll;
+               candidate.target2 = ll - leg_range;
+               candidate.stop = h3 + strategy_initial_stop_atr_mult * atr20;
+               candidate.pattern_time = rates[h3_idx].time;
+               candidate.d1_aligned = (breakout.close < d1_ema);
+
+               if(candidate.stop <= bid || candidate.target2 <= 0.0)
+                  continue;
+               if(leg_range == best_range && candidate.pattern_time <= best.pattern_time)
+                  continue;
+
+               best = candidate;
+               best_range = leg_range;
+              }
+           }
+        }
+     }
+
+   if(!best.valid)
+      return FindShortExtremaSetup(rates, copied, atr20, atr50, d1_ema, setup);
+
+   setup = best;
+   return true;
   }
 
 bool FindOurPosition(ulong &ticket,
