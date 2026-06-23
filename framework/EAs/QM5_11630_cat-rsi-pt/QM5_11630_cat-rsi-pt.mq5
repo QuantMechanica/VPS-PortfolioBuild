@@ -1,38 +1,8 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11630 cat-rsi-pt — Catalyst RSI oversold + profit-target exit (long-only, M30)"
+#property description "QM5_11630 cat-rsi-pt"
 
 #include <QM/QM_Common.mqh>
-
-// =============================================================================
-// QuantMechanica V5 EA — QM5_11630 cat-rsi-pt
-// -----------------------------------------------------------------------------
-// Source: scrtlabs/catalyst, catalyst/examples/rsi_profit_target.py
-//   https://github.com/scrtlabs/catalyst/blob/master/catalyst/examples/rsi_profit_target.py
-// Card: artifacts/cards_approved/QM5_11630_cat-rsi-pt.md (g0_status APPROVED).
-//
-// Mechanics (long-only mean-reversion, closed-bar reads at shift 1, M30):
-//   Entry EVENT  : RSI(period) crosses DOWN through the oversold level
-//                  (rsi@2 >= lo  AND  rsi@1 < lo). The cross is one event per
-//                  bar — using the cross (not the bare "RSI < lo" state) avoids
-//                  the zero-trade two-cross trap and stops re-firing every bar
-//                  while RSI sits below the level.
-//   Stop         : ATR-normalized stop below entry (source 10% initial stop,
-//                  expressed as sl_atr_mult * ATR so it scales per-symbol).
-//   Profit target: RR-multiple take-profit (source 15% ratchet target, mapped
-//                  to tp_rr * stop-distance). This is the "pt" exit.
-//   Ratchet/trail: once price has advanced trail_arm_rr * stop-distance in
-//                  profit, an ATR trailing stop is armed (source resets the
-//                  cost basis at the target then trails 3% — expressed as an
-//                  ATR trail so gains are protected after the target zone).
-//   One position per symbol/magic; no pyramiding; no new order while open.
-//
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
-// else is framework wiring and MUST stay intact.
-//
-// Symbol porting: all card symbols (EURUSD/GBPUSD/USDJPY/XAUUSD/NDX) are
-// present in dwx_symbol_matrix.csv as *.DWX — no ports required.
-// =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 11630;
@@ -47,8 +17,8 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -59,148 +29,117 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_rsi_period         = 16;    // Catalyst RSI(16)
-input double strategy_rsi_oversold       = 30.0;  // oversold entry level
-input int    strategy_atr_period         = 14;    // ATR for stop/target scaling
-input double strategy_sl_atr_mult        = 2.0;   // stop distance = mult * ATR (source 10% initial)
-input double strategy_tp_rr              = 1.5;   // take-profit = tp_rr * stop dist (source 15% target vs 10% stop)
-input double strategy_trail_arm_rr       = 1.0;   // arm ATR trail once price gains this * stop dist
-input double strategy_trail_atr_mult     = 1.5;   // ATR trailing-stop distance after target zone
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input int    strategy_rsi_period              = 16;
+input double strategy_rsi_oversold            = 30.0;
+input double strategy_initial_stop_pct        = 10.0;
+input double strategy_profit_target_pct       = 15.0;
+input double strategy_trailing_stop_pct       = 3.0;
+input double strategy_slippage_allowance_pct  = 3.0;
 
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
-
-// Cheap O(1) per-tick gate. Spread guard only — signal work is on the closed-bar
-// path in Strategy_EntrySignal. Fail-open on .DWX zero modeled spread.
 bool Strategy_NoTradeFilter()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to entry gate, do not block here
-
-   const double stop_distance = strategy_sl_atr_mult * atr_value;
-   if(stop_distance <= 0.0)
       return false;
 
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
-      return true;
+   if(ask > bid)
+     {
+      const double mid = (ask + bid) * 0.5;
+      const double spread_pct = (mid > 0.0) ? ((ask - bid) / mid * 100.0) : 0.0;
+      if(spread_pct > strategy_slippage_allowance_pct)
+         return true;
+     }
 
    return false;
   }
 
-// Long-only entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic; no pyramiding.
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+   const int magic = QM_FrameworkMagic();
+   if(QM_TM_OpenPositionCount(magic) > 0)
       return false;
 
-   // --- Entry EVENT: RSI crosses DOWN through the oversold level ---
-   // rsi@2 >= level (was at/above), rsi@1 < level (now oversold): a single
-   // fresh downward cross per bar. Using the cross — not the bare "RSI < level"
-   // state — avoids re-firing every bar while RSI stays oversold and avoids
-   // the two-cross same-bar zero-trade trap.
-   const double rsi_now  = QM_RSI(_Symbol, _Period, strategy_rsi_period, 1);
-   const double rsi_prev = QM_RSI(_Symbol, _Period, strategy_rsi_period, 2);
-   if(rsi_now <= 0.0 || rsi_prev <= 0.0)
-      return false;
-   const bool crossed_down = (rsi_prev >= strategy_rsi_oversold &&
-                              rsi_now  <  strategy_rsi_oversold);
-   if(!crossed_down)
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong order_ticket = OrderGetTicket(i);
+      if(order_ticket == 0 || !OrderSelect(order_ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) == magic)
+         return false;
+     }
+
+   const double rsi = QM_RSI(_Symbol, _Period, strategy_rsi_period, 1, PRICE_CLOSE);
+   if(rsi <= 0.0 || rsi >= strategy_rsi_oversold)
       return false;
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false;
-
-   // --- Build the long entry. Framework sizes lots (no lots field). ---
    const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(entry <= 0.0)
+   if(entry <= 0.0 || strategy_initial_stop_pct <= 0.0)
       return false;
 
-   const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr_value, strategy_sl_atr_mult);
-   if(sl <= 0.0)
+   const double stop_distance = entry * (strategy_initial_stop_pct / 100.0);
+   if(stop_distance <= 0.0)
       return false;
 
-   const double tp = QM_TakeRR(_Symbol, QM_BUY, entry, sl, strategy_tp_rr);
-   if(tp <= 0.0)
+   const double sl = QM_StopRulesNormalizePrice(_Symbol, entry - stop_distance);
+   if(sl <= 0.0 || sl >= entry)
       return false;
 
-   req.type   = QM_BUY;
-   req.price  = 0.0;   // framework fills market price at send
-   req.sl     = sl;
-   req.tp     = tp;
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = sl;
+   req.tp = 0.0;
    req.reason = "cat_rsi_pt_long";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
-// Profit-target ratchet: once price has advanced trail_arm_rr * stop-distance
-// in our favour, arm an ATR trailing stop to protect the gain (source resets
-// the cost basis at the 15% target then trails 3%). Runs per tick on open
-// positions belonging to this magic.
 void Strategy_ManageOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
-   if(QM_TM_OpenPositionCount(magic) <= 0)
-      return;
-
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
-      if(PositionGetInteger(POSITION_MAGIC) != magic)
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
-      if(PositionGetInteger(POSITION_TYPE) != POSITION_TYPE_BUY)
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-
-      const double entry_price = PositionGetDouble(POSITION_PRICE_OPEN);
-      const double sl_price     = PositionGetDouble(POSITION_SL);
-      if(entry_price <= 0.0 || sl_price <= 0.0)
+      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) != POSITION_TYPE_BUY)
          continue;
 
+      const double entry = PositionGetDouble(POSITION_PRICE_OPEN);
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      if(bid <= 0.0)
+      if(entry <= 0.0 || bid <= 0.0)
          continue;
 
-      // Stop-distance reference is the original risk (entry - initial SL).
-      const double stop_distance = entry_price - sl_price;
-      if(stop_distance <= 0.0)
+      const double target_price = entry * (1.0 + strategy_profit_target_pct / 100.0);
+      if(bid < target_price)
          continue;
 
-      // Arm the ATR trail only after price has advanced far enough in profit.
-      const double gain = bid - entry_price;
-      if(gain < strategy_trail_arm_rr * stop_distance)
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      const double current_sl = PositionGetDouble(POSITION_SL);
+      const double target_sl = QM_StopRulesNormalizePrice(_Symbol, bid * (1.0 - strategy_trailing_stop_pct / 100.0));
+      if(point <= 0.0 || target_sl <= 0.0)
          continue;
-
-      QM_TM_TrailATR(ticket, strategy_atr_period, strategy_trail_atr_mult);
+      if(current_sl <= 0.0 || target_sl > current_sl + point * 0.5)
+         QM_TM_MoveSL(ticket, target_sl, "cat_rsi_pt_3pct_trail");
      }
   }
 
-// No discretionary close beyond the SL / profit-target TP / armed ATR trail.
 bool Strategy_ExitSignal()
   {
    return false;
   }
 
-// Defer to the central news filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
-
-// -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
-// -----------------------------------------------------------------------------
 
 int OnInit()
   {
@@ -209,17 +148,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");

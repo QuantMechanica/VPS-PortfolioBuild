@@ -65,7 +65,7 @@ input double strategy_magnitude_thresh  = 1.0;    // min |bulls_z| magnitude
 input int    strategy_sl_pips           = 40;     // hard stop, pips
 input int    strategy_tp_pips           = 80;     // take profit, pips (2x SL)
 input int    strategy_atr_period        = 14;     // ATR liquidity-floor period
-input double strategy_atr_floor_pips    = 5.0;    // min ATR in pips (noise floor)
+input int    strategy_atr_floor_pips    = 5;      // min ATR in pips (noise floor)
 input double strategy_spread_pct_of_stop = 25.0;  // skip if spread > this % of stop distance
 
 // -----------------------------------------------------------------------------
@@ -111,6 +111,14 @@ bool Strategy_NoTradeFilter()
 // Bulls Power trend + magnitude entry. Caller guarantees QM_IsNewBar() == true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -119,7 +127,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
    if(atr_value <= 0.0)
       return false;
-   const double atr_floor_price = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_atr_floor_pips);
+   const double atr_floor_price = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_atr_floor_pips);
    if(atr_floor_price > 0.0 && atr_value < atr_floor_price)
       return false;
 
@@ -198,6 +206,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = is_long ? "bulls_trend_long" : "bulls_trend_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
