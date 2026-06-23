@@ -68,6 +68,8 @@ input double strategy_spread_cap_pips   = 15.0;   // skip if spread exceeds this
 // closed-bar path in Strategy_EntrySignal. Fail-open on .DWX zero modeled spread.
 bool Strategy_NoTradeFilter()
   {
+   // Card time filter is entry-only: no Friday entry. Management and framework
+   // Friday close must still run for positions carried into Friday.
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
@@ -88,6 +90,21 @@ bool Strategy_NoTradeFilter()
 // direction. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(strategy_ema_fast_period <= 0 ||
+      strategy_ema_slow_period <= 0 ||
+      strategy_cci_period <= 0 ||
+      strategy_sl_pips <= 0 ||
+      strategy_tp_pips <= 0)
+      return false;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -123,7 +140,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!long_trigger && !short_trigger)
       return false;
 
-   const QM_OrderType side = long_trigger ? QM_BUY : QM_SELL;
+   QM_OrderType side = QM_BUY;
+   if(short_trigger)
+      side = QM_SELL;
 
    const double entry = (side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
                                          : SymbolInfoDouble(_Symbol, SYMBOL_BID);
@@ -141,6 +160,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = long_trigger ? "ema4080_cci_zero_long" : "ema4080_cci_zero_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 

@@ -134,6 +134,23 @@ bool WilliamsProGo(const int shift, double &pro_value, double &go_value)
    return true;
   }
 
+bool RefreshSignalCache(double &go_now, double &go_prev)
+  {
+   double pro_now = 0.0;
+   double pro_prev = 0.0;
+   go_now = 0.0;
+   go_prev = 0.0;
+   g_signal_cache_ready = false;
+
+   if(!WilliamsProGo(1, pro_now, go_now) || !WilliamsProGo(2, pro_prev, go_prev))
+      return false;
+
+   g_signal_pro_now = pro_now;
+   g_signal_pro_prev = pro_prev;
+   g_signal_cache_ready = true;
+   return true;
+  }
+
 bool SpreadTooWide()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -184,15 +201,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_extension_atr_mult <= 0.0)
       return false;
 
-   double pro_now = 0.0;
    double go_now = 0.0;
-   double pro_prev = 0.0;
    double go_prev = 0.0;
-   if(!WilliamsProGo(1, pro_now, go_now) || !WilliamsProGo(2, pro_prev, go_prev))
+   if(!RefreshSignalCache(go_now, go_prev))
       return false;
-   g_signal_pro_now = pro_now;
-   g_signal_pro_prev = pro_prev;
-   g_signal_cache_ready = true;
 
    MqlRates closed_bar;
    if(!ReadClosedBar(1, closed_bar))
@@ -208,7 +220,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   if(go_prev < 0.0 && go_now >= 0.0 && pro_now > 0.0 &&
+   if(go_prev < 0.0 && go_now >= 0.0 && g_signal_pro_now > 0.0 &&
       closed_bar.close > sma && (closed_bar.close - sma) <= strategy_extension_atr_mult * atr)
      {
       req.type = QM_BUY;
@@ -218,7 +230,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return (req.sl > 0.0);
      }
 
-   if(go_prev > 0.0 && go_now <= 0.0 && pro_now < 0.0 &&
+   if(go_prev > 0.0 && go_now <= 0.0 && g_signal_pro_now < 0.0 &&
       closed_bar.close < sma && (sma - closed_bar.close) <= strategy_extension_atr_mult * atr)
      {
       req.type = QM_SELL;
@@ -319,6 +331,16 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   const bool is_new_bar = QM_IsNewBar();
+   QM_EntryRequest req;
+   bool has_entry_signal = false;
+
+   if(is_new_bar)
+     {
+      QM_EquityStreamOnNewBar();
+      has_entry_signal = Strategy_EntrySignal(req);
+     }
+
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -335,13 +357,10 @@ void OnTick()
         }
      }
 
-   if(!QM_IsNewBar())
+   if(!is_new_bar)
       return;
 
-   QM_EquityStreamOnNewBar();
-
-   QM_EntryRequest req;
-   if(Strategy_EntrySignal(req))
+   if(has_entry_signal)
      {
       ulong out_ticket = 0;
       QM_TM_OpenPosition(req, out_ticket);
