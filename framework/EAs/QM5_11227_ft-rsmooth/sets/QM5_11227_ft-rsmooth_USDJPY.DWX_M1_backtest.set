@@ -3,16 +3,16 @@
 ; ea_id:        11227
 ; ea_slug:      ft-rsmooth
 ; ea_version:   v5.0
-; set_version:  s20260620-001
+; set_version:  s20260623-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    M1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   c31e7527da27c64d343e9b94d5165d39679b868c8d257a2ee7cdaef41a3fff79
 ; author:       Development
-; date:         2026-06-20
+; date:         2026-06-23
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=1000

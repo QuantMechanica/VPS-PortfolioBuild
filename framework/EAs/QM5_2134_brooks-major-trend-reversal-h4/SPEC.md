@@ -69,7 +69,7 @@ This EA trades Al Brooks' H4 Major Trend Reversal pattern. For a long, it finds 
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 100 |
+| Trades / year / symbol | 2 |
 | Expected trade frequency | H4 structural reversal breakouts after qualified three-leg setup |
 | Typical hold time | Up to 100 H4 bars, about 25 trading days |
 | Expected drawdown profile | Medium; reversal entries use structural ATR stops and partial profit-taking. |
@@ -107,3 +107,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 |---|---|---|---|
 | v1 | 2026-06-23 | Initial build from card | 85856952-38a1-48e4-bf30-31647a6d1ead |
 | v2 | 2026-06-23 | Rework active setup scan and extrema fallback after smoke zero-trade review | 6f2363d7-3fa7-48c9-8d62-97242f50839c |
+| v3 | 2026-06-23 | Correct expected-trade metadata to card approval reasoning for Q01 smoke sanity | 31abba1b-0d96-4c40-9354-54a4d55b3bc6 |

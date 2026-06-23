@@ -18,15 +18,15 @@
 //                  RSI buy guard is provided (off by default) for the P3 sweep.
 //   Exit   STATE : MFI(14) > mfi_exit  AND  Close(1) > upper BB(20, bb_exit_std).
 //                  Both source signal-exit conditions must hold (logical AND).
+//   ROI / trail  : Source ROI ladder and trailing stop are implemented as
+//                  percentage-profit exits and SL ratchets.
 //   Stop         : QM_StopATR(atr_period, atr_stop_mult) — MT5 baseline per card
 //                  (the source -34.5% stoploss is a crypto figure, not ported).
 //   Spread guard : skip only a genuinely wide spread (fail-open on .DWX zero
 //                  modeled spread).
 //
-// The source ROI ladder and 1% trailing-after-5.8% offset are crypto-tuned and
-// expressed as percentage-of-price; the card's MT5 baseline replaces them with
-// the ATR stop above plus the deterministic MFI/Bollinger signal exit. No TP is
-// set — the position closes on the signal exit or the ATR stop.
+// No fixed TP is set — the position closes on source ROI, source signal exit,
+// source trailing stop, framework Friday close, or the ATR stop.
 //
 // MFI is computed on TICK volume (QM_MFI) because .DWX symbols carry no real
 // exchange volume in the tester (card: "map exchange volume to tick volume").
@@ -70,7 +70,16 @@ input int    strategy_rsi_period         = 14;    // RSI period for optional buy
 input double strategy_rsi_guard_max      = 50.0;  // if guard on: require RSI(1) < this
 input int    strategy_atr_period         = 14;    // ATR period for the stop
 input double strategy_atr_stop_mult      = 2.0;   // stop distance = mult * ATR
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input double strategy_spread_pct_of_stop = 8.0;   // card filter: spread <= 8% of planned stop
+input int    strategy_warmup_bars        = 999;   // card filter: require 999-bar warmup
+input double strategy_roi_pct_0          = 16.2;  // source ROI ladder from trade open
+input int    strategy_roi_min_1          = 69;
+input double strategy_roi_pct_1          = 9.7;
+input int    strategy_roi_min_2          = 229;
+input double strategy_roi_pct_2          = 6.1;
+input int    strategy_roi_min_flat       = 566;
+input double strategy_trail_offset_pct   = 5.8;   // activate source trailing after this profit
+input double strategy_trail_distance_pct = 1.0;   // trail 1.0% below current price once active
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -80,6 +89,10 @@ input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of 
 // path in Strategy_EntrySignal. Fail-open on .DWX zero modeled spread.
 bool Strategy_NoTradeFilter()
   {
+   const int bars_ready = Bars(_Symbol, _Period); // perf-allowed: card warmup guard
+   if(bars_ready > 0 && bars_ready < strategy_warmup_bars)
+      return true;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
@@ -106,6 +119,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+      return false;
+
+   const long volume1 = iVolume(_Symbol, _Period, 1); // perf-allowed: card tick-volume guard
+   if(volume1 <= 0)
       return false;
 
    const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
@@ -145,20 +162,92 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = 0.0;   // no fixed TP — exit on signal or ATR stop
    req.reason = "bandtastic_bb_long";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
-// No active trade management beyond the fixed ATR stop. Signal exit is in
-// Strategy_ExitSignal.
+// Source trailing stop: after +5.8% profit, trail SL 1.0% below current price.
 void Strategy_ManageOpenPosition()
   {
+   const int magic = QM_FrameworkMagic();
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(bid <= 0.0)
+      return;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) != POSITION_TYPE_BUY)
+         continue;
+
+      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      if(open_price <= 0.0)
+         continue;
+
+      const double profit_pct = 100.0 * (bid - open_price) / open_price;
+      if(profit_pct < strategy_trail_offset_pct)
+         continue;
+
+      double new_sl = bid * (1.0 - strategy_trail_distance_pct / 100.0);
+      new_sl = QM_TM_NormalizePrice(_Symbol, new_sl);
+      const double current_sl = PositionGetDouble(POSITION_SL);
+      if(new_sl > 0.0 && new_sl < bid && (current_sl <= 0.0 || new_sl > current_sl))
+         QM_TM_MoveSL(ticket, new_sl, "bandtastic_source_trailing");
+     }
   }
 
-// Signal exit (source AND of both conditions): MFI above threshold AND close
-// above the upper Bollinger band. Evaluated on the closed bar.
+// Source exits: ROI ladder OR signal exit. Signal exit is the source AND of
+// both conditions: MFI above threshold AND close above the upper Bollinger band.
 bool Strategy_ExitSignal()
   {
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
+      return false;
+
+   const int magic = QM_FrameworkMagic();
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(bid > 0.0)
+     {
+      for(int i = PositionsTotal() - 1; i >= 0; --i)
+        {
+         const ulong ticket = PositionGetTicket(i);
+         if(!PositionSelectByTicket(ticket))
+            continue;
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+            continue;
+         if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+            continue;
+         if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) != POSITION_TYPE_BUY)
+            continue;
+
+         const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+         const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
+         if(open_price <= 0.0 || open_time <= 0)
+            continue;
+
+         const int held_minutes = (int)((TimeCurrent() - open_time) / 60);
+         double roi_target = strategy_roi_pct_0;
+         if(held_minutes >= strategy_roi_min_flat)
+            roi_target = 0.0;
+         else if(held_minutes >= strategy_roi_min_2)
+            roi_target = strategy_roi_pct_2;
+         else if(held_minutes >= strategy_roi_min_1)
+            roi_target = strategy_roi_pct_1;
+
+         const double profit_pct = 100.0 * (bid - open_price) / open_price;
+         if(profit_pct >= roi_target)
+            return true;
+        }
+     }
+
+   const long volume1 = iVolume(_Symbol, _Period, 1); // perf-allowed: card tick-volume guard
+   if(volume1 <= 0)
       return false;
 
    const double mfi1 = QM_MFI(_Symbol, _Period, strategy_mfi_period, 1);

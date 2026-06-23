@@ -4,7 +4,7 @@
 **Slug:** `ft-bandtastic`
 **Source:** `1580128f-e465-5454-bb97-a7572a6cfd6d` (see `strategy-seeds/sources/1580128f-e465-5454-bb97-a7572a6cfd6d/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-17
+**Last revised:** 2026-06-23
 
 ---
 
@@ -17,12 +17,13 @@ close prints below the lower Bollinger Band(20) at `bb_entry_std` deviations
 "volume > 0" guard is a no-op on `.DWX` (tick volume is always positive on a
 closed bar) and is omitted; the RSI/MFI/EMA buy guards are disabled by source
 default (an optional RSI buy guard is provided, off by default, for the P3
-sweep). Exit when BOTH source signal-exit conditions hold: MFI(14) on tick
-volume is above `mfi_exit` (source 46) AND the close is above the upper
-Bollinger Band(20) at `bb_exit_std` deviations (source 2). A protective ATR
-stop, `QM_StopATR(14, atr_stop_mult)` (MT5 baseline replacing the source's
-crypto-tuned -34.5% stoploss / ROI ladder / percentage trailing stop), plus the
-framework Friday-close, close the position otherwise. No fixed take-profit.
+sweep). Exit when the source ROI ladder is reached, or when BOTH source
+signal-exit conditions hold: MFI(14) on tick volume is above `mfi_exit` (source
+46) AND the close is above the upper Bollinger Band(20) at `bb_exit_std`
+deviations (source 2). A source trailing stop activates after the configured
+profit offset and ratchets the stop below current price. A protective ATR stop,
+`QM_StopATR(14, atr_stop_mult)`, is the MT5 baseline for the source stoploss;
+framework Friday close also applies. No fixed take-profit is set.
 
 ---
 
@@ -40,7 +41,16 @@ framework Friday-close, close the position otherwise. No fixed take-profit.
 | `strategy_rsi_guard_max` | 50.0 | 30-70 | If guard on: require RSI(1) below this |
 | `strategy_atr_period` | 14 | 7-28 | ATR period for the protective stop |
 | `strategy_atr_stop_mult` | 2.0 | 1.5-2.5 | Stop distance = mult × ATR |
-| `strategy_spread_pct_of_stop` | 15.0 | 5-30 | Skip if spread > this % of stop distance |
+| `strategy_spread_pct_of_stop` | 8.0 | 1-20 | Skip if spread > this % of stop distance |
+| `strategy_warmup_bars` | 999 | 999+ | Minimum bars before trading |
+| `strategy_roi_pct_0` | 16.2 | fixed/source | Immediate ROI exit threshold |
+| `strategy_roi_min_1` | 69 | fixed/source | Minutes before first lower ROI threshold |
+| `strategy_roi_pct_1` | 9.7 | fixed/source | ROI threshold after `strategy_roi_min_1` |
+| `strategy_roi_min_2` | 229 | fixed/source | Minutes before second lower ROI threshold |
+| `strategy_roi_pct_2` | 6.1 | fixed/source | ROI threshold after `strategy_roi_min_2` |
+| `strategy_roi_min_flat` | 566 | fixed/source | Minutes before breakeven-or-better ROI exit |
+| `strategy_trail_offset_pct` | 5.8 | fixed/source | Profit offset before trailing activates |
+| `strategy_trail_distance_pct` | 1.0 | fixed/source | Trail distance below current price |
 
 > Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_*, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
@@ -112,3 +122,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-17 | Initial build from card | board-advisor worktree |
+| v2 | 2026-06-23 | Rebuild in place from card | aea278d6-866d-4f58-8fc4-e9d3a36d3c38 |

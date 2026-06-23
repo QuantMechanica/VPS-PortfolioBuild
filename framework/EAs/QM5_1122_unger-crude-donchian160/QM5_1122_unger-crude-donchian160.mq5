@@ -50,7 +50,6 @@ input bool   strategy_allow_same_bar_reversal  = false;
 double   g_channel_high = 0.0;
 double   g_channel_low = 0.0;
 double   g_last_closed_close = 0.0;
-datetime g_opposite_exit_bar_time = 0;
 
 int Strategy_MinutesOfDay(const datetime t)
   {
@@ -242,13 +241,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(g_last_closed_close <= 0.0)
       return false;
 
-   if(!strategy_allow_same_bar_reversal)
-     {
-      const datetime closed_bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: same-bar reversal suppression inside the framework closed-bar entry hook.
-      if(closed_bar_time > 0 && closed_bar_time == g_opposite_exit_bar_time)
-         return false;
-     }
-
    if(!Strategy_D1VolatilityAllows())
       return false;
 
@@ -326,20 +318,11 @@ bool Strategy_ExitSignal()
    if(g_channel_high <= 0.0 || g_channel_low <= 0.0 || g_last_closed_close <= 0.0)
       return false;
 
-   const datetime closed_bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: one timestamp read for opposite-signal reversal suppression.
    if(ptype == POSITION_TYPE_BUY && g_last_closed_close < g_channel_low)
-     {
-      if(closed_bar_time > 0)
-         g_opposite_exit_bar_time = closed_bar_time;
       return true;
-     }
 
    if(ptype == POSITION_TYPE_SELL && g_last_closed_close > g_channel_high)
-     {
-      if(closed_bar_time > 0)
-         g_opposite_exit_bar_time = closed_bar_time;
       return true;
-     }
 
    return false;
   }
@@ -404,8 +387,10 @@ void OnTick()
 
    Strategy_ManageOpenPosition();
 
+   bool strategy_exit_triggered = false;
    if(Strategy_ExitSignal())
      {
+      strategy_exit_triggered = true;
       const int magic = QM_FrameworkMagic();
       for(int i = PositionsTotal() - 1; i >= 0; --i)
         {
@@ -422,6 +407,9 @@ void OnTick()
       return;
 
    QM_EquityStreamOnNewBar();
+
+   if(strategy_exit_triggered && !strategy_allow_same_bar_reversal)
+      return;
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

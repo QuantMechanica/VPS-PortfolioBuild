@@ -1,45 +1,13 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11062 pst-scalper — pysystemtrade bracket mean-reversion (intraday, M5)"
+#property description "QM5_11062 pst-scalper - pysystemtrade bracket mean-reversion"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11062 pst-scalper
-// -----------------------------------------------------------------------------
-// Source: Rob Carver / pysystemtrade provided `scalper` system
-//   (systems/provided/scalper/components.py — get_bracket_orders,
-//    buy_bracket_price, sell_bracket_price, get_stop_loss_order_given_current_trade).
-// Card: artifacts/cards_approved/QM5_11062_pst-scalper.md (g0_status APPROVED).
-//
-// CARD MECHANIC (literal):
-//   Estimate a short-horizon price range R = mean of the last `R_bars` completed
-//   bar ranges at the strategy horizon, clamped to [min_R, max_R]. While flat,
-//   place a SYMMETRIC pair of resting limit orders around the current mid:
-//     buy-limit  = mid - F*(R/2)
-//     sell-limit = mid + F*(R/2)      with F = limit_mult_F (0.75 default)
-//   When one bracket fills, the OPPOSITE bracket price is the take-profit and a
-//   protective stop is attached at K_to_L*R = (stop_mult_K - limit_mult_F)*R
-//   (default (0.875-0.75)=0.125 * R) from the opening price, at least min_stop_ticks
-//   away. Spread filter: trade only when spread < spread_mult * R. Stop opening
-//   new brackets when less than session_cutoff_horizons*horizon remains in the
-//   session; cancel outstanding orders at session close.
-//
-// FRAMEWORK REALISATION (flagged — see SPEC.md §1 and build flags):
-//   The V5 corset is single-entry / one-position-per-magic: Strategy_EntrySignal
-//   returns ONE req per closed bar and the framework sends exactly one order. A
-//   simultaneous TWO-sided resting bracket is therefore expressed as a single
-//   resting LIMIT that FADES the most recent bar displacement (mean-reversion):
-//     - bar closed DOWN vs its open  -> place BUY_LIMIT at mid - F*(R/2)
-//     - bar closed UP   vs its open  -> place SELL_LIMIT at mid + F*(R/2)
-//   The opposite-bracket price is attached as the order's TP and the K_to_L*R
-//   stop is attached as the order's SL, so a fill reproduces the card's
-//   fill->opposite-bracket-TP / stop geometry EXACTLY for that direction. The
-//   order carries an expiration of horizon_seconds (the card cancels unmatched
-//   brackets each horizon). This is a faithful single-leg port of a symmetric
-//   two-leg rule; the symmetric-pair simplification is the only deviation.
-//
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific.
+// QuantMechanica V5 EA - QM5_11062 pst-scalper
+// Source: Rob Carver / pst-group pysystemtrade provided scalper system.
+// Card: D:\QM\strategy_farm\artifacts\cards_approved\QM5_11062_pst-scalper.md
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -55,8 +23,8 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -67,219 +35,301 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-// Range / bracket geometry (from configuration.py StratParameters).
-input int    strategy_R_bars             = 4;      // completed bars used to estimate R
-input double strategy_limit_mult_F       = 0.75;   // bracket offset fraction F: limit = mid +/- F*(R/2)
-input double strategy_stop_mult_K        = 0.875;  // stop multiple K; stop distance = (K - F)*R from open
-input double strategy_min_R_points       = 50.0;   // min clamp for R, in raw points (per-symbol via setfile)
-input double strategy_max_R_points       = 5000.0; // max clamp for R, in raw points (per-symbol via setfile)
-input int    strategy_min_stop_ticks     = 3;      // stop at least this many ticks from entry
-input double strategy_spread_mult        = 0.25;   // skip if spread > spread_mult * R (fail-open on zero spread)
-input int    strategy_horizon_seconds    = 600;    // bracket horizon -> pending-order expiration
-input int    strategy_session_start_h    = 7;      // broker-hour: first hour brackets may be placed
-input int    strategy_session_end_h      = 20;     // broker-hour: last hour brackets may be placed
-input int    strategy_cutoff_horizons    = 3;      // stop new brackets within cutoff_horizons*horizon of session end
+input int    strategy_horizon_seconds          = 600;
+input int    strategy_range_segments           = 4;
+input double strategy_limit_mult_F             = 0.75;
+input double strategy_stop_mult_K              = 0.875;
+input double strategy_spread_mult              = 0.25;
+input double strategy_slippage_ticks           = 1.0;
+input int    strategy_min_slippage_units_L_to_K = 5;
+input int    strategy_min_stop_ticks           = 3;
+input double strategy_std_dev_budget_ccy       = 150.0;
+input double strategy_min_R_override_points    = 0.0;
+input double strategy_max_R_override_points    = 0.0;
+input int    strategy_session_start_h          = 7;
+input int    strategy_session_end_h            = 20;
+input int    strategy_cutoff_horizons          = 3;
 
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
-
-// Cheap O(1) per-tick gate. Spread guard only; regime/range work is on the
-// closed-bar entry path. Fail-OPEN on .DWX zero modeled spread.
+// Return TRUE to BLOCK trading this tick. This hook handles the card's session
+// gate and session-close pending-order cancellation. Exact spread-vs-R gating is
+// done in Strategy_EntrySignal after R is estimated on the closed-bar path.
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — never block on a missing quote
+   const int magic = QM_FrameworkMagic();
+   const datetime broker_now = TimeCurrent();
+   MqlDateTime dt;
+   TimeToStruct(broker_now, dt);
 
-   const double spread = ask - bid;
-   if(spread <= 0.0)
-      return false; // zero / negative modeled spread (.DWX) — fail-open
+   int start_h = strategy_session_start_h;
+   int end_h = strategy_session_end_h;
+   if(start_h < 0)
+      start_h = 0;
+   if(start_h > 23)
+      start_h = 23;
+   if(end_h < 0)
+      end_h = 0;
+   if(end_h > 23)
+      end_h = 23;
 
-   // Range R reference for the spread cap, scaled to the symbol via points.
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0)
-      return false;
-
-   double r_value = 0.0;
-   if(!ComputeRangeR(r_value))
-      return false; // no R yet — defer to the entry gate, do not block here
-
-   const double spread_cap = strategy_spread_mult * r_value;
-   if(spread_cap > 0.0 && spread > spread_cap)
-      return true; // genuinely wide spread relative to the bracket range
-
-   return false;
-  }
-
-// Estimate R = mean of the last `strategy_R_bars` completed bar ranges
-// (high-low) at the current timeframe, clamped to [min_R, max_R] (points->price).
-// Returns false until enough completed bars exist.
-bool ComputeRangeR(double &out_r)
-  {
-   out_r = 0.0;
-   if(strategy_R_bars <= 0)
-      return false;
-
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0)
-      return false;
-
-   double sum = 0.0;
-   int    n   = 0;
-   for(int s = 1; s <= strategy_R_bars; ++s)
+   const int secs_now = dt.hour * 3600 + dt.min * 60 + dt.sec;
+   int secs_end = end_h * 3600;
+   bool inside_session = false;
+   if(start_h < end_h)
      {
-      const double hi = iHigh(_Symbol, _Period, s); // perf-allowed: bounded closed-bar range read
-      const double lo = iLow(_Symbol, _Period, s);
-      if(hi <= 0.0 || lo <= 0.0 || hi < lo)
-         continue;
-      sum += (hi - lo);
-      n++;
+      inside_session = (dt.hour >= start_h && dt.hour < end_h);
      }
-   if(n < strategy_R_bars) // require all horizon bars present (card: >=R_bars)
-      return false;
+   else if(start_h > end_h)
+     {
+      inside_session = (dt.hour >= start_h || dt.hour < end_h);
+      if(dt.hour >= start_h)
+         secs_end += 24 * 3600;
+     }
+   else
+     {
+      inside_session = true;
+      secs_end = secs_now + 24 * 3600;
+     }
 
-   double r = sum / n;
-
-   const double min_r = strategy_min_R_points * point;
-   const double max_r = strategy_max_R_points * point;
-   if(min_r > 0.0 && r < min_r)
-      r = min_r;
-   if(max_r > 0.0 && r > max_r)
-      r = max_r;
-
-   if(r <= 0.0)
-      return false;
-   out_r = r;
-   return true;
-  }
-
-// Broker-hour session window with a horizon-aware cutoff before the close.
-// Brackets are only placed inside [session_start_h, session_end_h), and not
-// within cutoff_horizons*horizon of session_end_h.
-bool InsideBracketWindow(const datetime broker_now)
-  {
-   MqlDateTime t;
-   TimeToStruct(broker_now, t);
-   const int hour = t.hour;
-   if(hour < strategy_session_start_h || hour >= strategy_session_end_h)
-      return false;
-
-   // Seconds remaining until the session-end hour boundary on this broker day.
-   const int secs_now      = hour * 3600 + t.min * 60 + t.sec;
-   const int secs_end      = strategy_session_end_h * 3600;
+   int cutoff_secs = strategy_cutoff_horizons * strategy_horizon_seconds;
+   if(cutoff_secs < 0)
+      cutoff_secs = 0;
    const int secs_to_close = secs_end - secs_now;
-   const int cutoff_secs   = strategy_cutoff_horizons * strategy_horizon_seconds;
-   if(secs_to_close <= cutoff_secs)
-      return false;
+   const bool too_close_to_close = (secs_to_close <= cutoff_secs);
+   const bool block_now = (!inside_session || too_close_to_close);
 
-   return true;
+   if(block_now && magic > 0)
+     {
+      for(int i = OrdersTotal() - 1; i >= 0; --i)
+        {
+         const ulong order_ticket = OrderGetTicket(i);
+         if(order_ticket == 0 || !OrderSelect(order_ticket))
+            continue;
+         if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+            continue;
+         if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+            continue;
+         QM_TM_RemovePendingOrder(order_ticket, "pst_session_close_cancel");
+        }
+     }
+
+   return block_now;
   }
 
-// Entry: place ONE resting limit fading the last closed bar's displacement.
-// Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic (no pyramiding).
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+   req.type = QM_BUY_LIMIT;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
 
-   // Only place brackets inside the liquid session, away from the close.
-   if(!InsideBracketWindow(TimeCurrent()))
+   if(QM_TM_OpenPositionCount(magic) > 0)
       return false;
 
-   double r_value = 0.0;
-   if(!ComputeRangeR(r_value))
+   int pending_count = 0;
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong order_ticket = OrderGetTicket(i);
+      if(order_ticket == 0 || !OrderSelect(order_ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      pending_count++;
+     }
+   if(pending_count > 0)
       return false;
 
-   // Last closed bar displacement decides which side we fade (mean-reversion).
-   const double open1  = iOpen(_Symbol, _Period, 1);  // perf-allowed: single closed-bar read
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   if(open1 <= 0.0 || close1 <= 0.0)
+   const int period_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
+   if(period_seconds <= 0 || strategy_horizon_seconds <= 0 || strategy_range_segments <= 0)
+      return false;
+
+   int bars_per_horizon = (int)MathCeil((double)strategy_horizon_seconds / (double)period_seconds);
+   if(bars_per_horizon < 1)
+      bars_per_horizon = 1;
+   const int bars_needed = bars_per_horizon * strategy_range_segments;
+   if(bars_needed <= 0 || bars_needed > 240)
+      return false;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, PERIOD_CURRENT, 1, bars_needed, rates); // perf-allowed: bounded closed-bar horizon range inside EntrySignal's QM_IsNewBar gate
+   if(copied < bars_needed)
+      return false;
+
+   double range_sum = 0.0;
+   for(int seg = 0; seg < strategy_range_segments; ++seg)
+     {
+      double high_value = -DBL_MAX;
+      double low_value = DBL_MAX;
+      for(int j = 0; j < bars_per_horizon; ++j)
+        {
+         const int idx = seg * bars_per_horizon + j;
+         if(rates[idx].high > high_value)
+            high_value = rates[idx].high;
+         if(rates[idx].low < low_value)
+            low_value = rates[idx].low;
+        }
+      if(high_value <= 0.0 || low_value <= 0.0 || high_value <= low_value)
+         return false;
+      range_sum += (high_value - low_value);
+     }
+
+   double r_value = range_sum / strategy_range_segments;
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double tick_size_raw = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   const double tick_value = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE);
+   if(point <= 0.0)
+      return false;
+   const double tick_size = (tick_size_raw > 0.0) ? tick_size_raw : point;
+
+   const double stop_gap_ratio = strategy_stop_mult_K - strategy_limit_mult_F;
+   if(stop_gap_ratio <= 0.0)
+      return false;
+
+   double min_r = 0.0;
+   if(strategy_min_R_override_points > 0.0)
+      min_r = strategy_min_R_override_points * point;
+   else
+     {
+      double slippage_ticks = strategy_slippage_ticks;
+      if(slippage_ticks < 0.5)
+         slippage_ticks = 0.5;
+      min_r = (tick_size * strategy_min_slippage_units_L_to_K * slippage_ticks) / stop_gap_ratio;
+     }
+
+   double max_r = 0.0;
+   if(strategy_max_R_override_points > 0.0)
+      max_r = strategy_max_R_override_points * point;
+   else if(tick_value > 0.0 && tick_size > 0.0 && strategy_std_dev_budget_ccy > 0.0)
+     {
+      const double horizons_per_day = (60.0 * 60.0 * 8.0) / (double)strategy_horizon_seconds;
+      if(horizons_per_day > 0.0)
+        {
+         const double budget_per_trade = (2.0 * strategy_std_dev_budget_ccy) / MathSqrt(horizons_per_day);
+         const double value_of_one_price_unit = tick_value / tick_size;
+         if(value_of_one_price_unit > 0.0)
+            max_r = budget_per_trade / (stop_gap_ratio * value_of_one_price_unit);
+        }
+     }
+
+   if(min_r > 0.0 && r_value < min_r)
+      r_value = min_r;
+   if(max_r > 0.0 && r_value > max_r)
+      r_value = max_r;
+   if(r_value <= 0.0)
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
       return false;
-   const double mid = 0.5 * (ask + bid);
 
-   const double half_offset = strategy_limit_mult_F * (r_value * 0.5); // F*(R/2)
-   if(half_offset <= 0.0)
+   const double spread = ask - bid;
+   if(spread > 0.0 && spread > strategy_spread_mult * r_value)
       return false;
 
-   // Stop distance = (K - F) * R from the opening (fill) price; min ticks floor.
-   const double tick_size = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
-   const double point     = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const double tick       = (tick_size > 0.0) ? tick_size : point;
-   double stop_distance = (strategy_stop_mult_K - strategy_limit_mult_F) * r_value;
-   const double min_stop  = strategy_min_stop_ticks * tick;
+   const double mid = 0.5 * (ask + bid);
+   const double bracket_offset = strategy_limit_mult_F * (r_value * 0.5);
+   if(mid <= 0.0 || bracket_offset <= 0.0)
+      return false;
+
+   double stop_distance = stop_gap_ratio * r_value;
+   const double min_stop = strategy_min_stop_ticks * tick_size;
    if(stop_distance < min_stop)
       stop_distance = min_stop;
    if(stop_distance <= 0.0)
       return false;
 
-   QM_OrderType side;
-   double limit_price;
-   double tp_price;   // opposite bracket price
-   double sl_price;
-
-   if(close1 < open1)
-     {
-      // Down move -> fade up: BUY_LIMIT below mid; TP at the opposite (sell) bracket.
-      side        = QM_BUY_LIMIT;
-      limit_price = mid - half_offset;
-      tp_price    = mid + half_offset;
-      sl_price    = limit_price - stop_distance;
-     }
-   else if(close1 > open1)
-     {
-      // Up move -> fade down: SELL_LIMIT above mid; TP at the opposite (buy) bracket.
-      side        = QM_SELL_LIMIT;
-      limit_price = mid + half_offset;
-      tp_price    = mid - half_offset;
-      sl_price    = limit_price + stop_distance;
-     }
-   else
-     {
-      return false; // doji-flat bar: no displacement to fade
-     }
-
-   limit_price = QM_TM_NormalizePrice(_Symbol, limit_price);
-   tp_price    = QM_TM_NormalizePrice(_Symbol, tp_price);
-   sl_price    = QM_TM_NormalizePrice(_Symbol, sl_price);
-   if(limit_price <= 0.0 || tp_price <= 0.0 || sl_price <= 0.0)
+   const double buy_price = QM_TM_NormalizePrice(_Symbol, mid - bracket_offset);
+   const double sell_price = QM_TM_NormalizePrice(_Symbol, mid + bracket_offset);
+   const double buy_sl = QM_TM_NormalizePrice(_Symbol, buy_price - stop_distance);
+   const double sell_sl = QM_TM_NormalizePrice(_Symbol, sell_price + stop_distance);
+   if(buy_price <= 0.0 || sell_price <= 0.0 || buy_sl <= 0.0 || sell_sl <= 0.0)
       return false;
 
-   req.type               = side;
-   req.price              = limit_price;            // resting pending limit
-   req.sl                 = sl_price;
-   req.tp                 = tp_price;
-   req.reason             = "pst_bracket_meanrev";
-   req.expiration_seconds = strategy_horizon_seconds; // cancel unmatched bracket after one horizon
+   QM_EntryRequest buy_req;
+   buy_req.type = QM_BUY_LIMIT;
+   buy_req.price = buy_price;
+   buy_req.sl = buy_sl;
+   buy_req.tp = 0.0;
+   buy_req.reason = "pst_buy_bracket";
+   buy_req.symbol_slot = qm_magic_slot_offset;
+   buy_req.expiration_seconds = strategy_horizon_seconds;
+
+   ulong buy_ticket = 0;
+   if(!QM_TM_OpenPosition(buy_req, buy_ticket))
+      return false;
+
+   req.type = QM_SELL_LIMIT;
+   req.price = sell_price;
+   req.sl = sell_sl;
+   req.tp = 0.0;
+   req.reason = "pst_sell_bracket";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = strategy_horizon_seconds;
    return true;
   }
 
-// Stop/TP ride on the resting order; no active management beyond the bracket.
 void Strategy_ManageOpenPosition()
   {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return;
+
+   int position_count = 0;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      position_count++;
+     }
+
+   int pending_count = 0;
+   ulong single_pending_ticket = 0;
+   for(int j = OrdersTotal() - 1; j >= 0; --j)
+     {
+      const ulong order_ticket = OrderGetTicket(j);
+      if(order_ticket == 0 || !OrderSelect(order_ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      pending_count++;
+      single_pending_ticket = order_ticket;
+     }
+
+   // Card state cleanup: flat with a single leftover bracket/stop order is
+   // an unmatched order state, so cancel it before placing a new bracket pair.
+   if(position_count == 0 && pending_count == 1 && single_pending_ticket > 0)
+      QM_TM_RemovePendingOrder(single_pending_ticket, "pst_flat_unmatched_cancel");
   }
 
-// No discretionary exit beyond the attached opposite-bracket TP and stop.
 bool Strategy_ExitSignal()
   {
    return false;
   }
 
-// Defer to the central news filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
 
 // -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
+// Framework wiring - do NOT edit below this line unless you know why.
 // -----------------------------------------------------------------------------
 
 int OnInit()
@@ -289,17 +339,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");

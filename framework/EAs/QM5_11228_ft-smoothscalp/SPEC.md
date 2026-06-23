@@ -1,8 +1,8 @@
-# QM5_11228_ft-smoothscalp — Strategy Spec
+# QM5_11228_ft-smoothscalp - Strategy Spec
 
 **EA ID:** QM5_11228
-**Slug:** `ft-smoothscalp`
-**Source:** `1580128f-e465-5454-bb97-a7572a6cfd6d` (SmoothScalp.py, freqtrade-strategies)
+**Slug:** ft-smoothscalp
+**Source:** 1580128f-e465-5454-bb97-a7572a6cfd6d (see `strategy-seeds/sources/1580128f-e465-5454-bb97-a7572a6cfd6d/`)
 **Author of this spec:** Codex
 **Last revised:** 2026-06-23
 
@@ -10,58 +10,46 @@
 
 ## 1. Strategy Logic
 
-Long-only M1 oversold-reversal scalp ported from freqtrade's SmoothScalp.py. On
-each closed M1 bar the EA goes long when ALL of the following hold: the bar opened
-below the 5-period EMA of lows; ADX(14) is above 30 (trend strength present);
-MFI(14) is below 30 (money-flow oversold); CCI(20) is below -150 (deeply
-oversold); and the Fast Stochastic %K and %D are both below 30 after at least
-100 warmup bars are available. The single fresh
-trigger is %K crossing above %D on that bar — all other conditions are evaluated
-as states, so the entry never requires two simultaneous cross events. The stop is
-1× ATR(14) below entry and the take-profit is the source 1% ROI target. The
-position is closed early when CCI(20) rises above 150 AND either the bar opened
-at/above the 5-period EMA of highs or Fast %K and %D cross above 70. One open
-position per symbol/magic — the source's many-parallel-trades
-assumption is deliberately not adopted.
+The EA trades a long-only M1 scalp reversal. On each closed M1 bar it requires the bar open below EMA(5) of low, ADX above 30, MFI below 30, stochastic K and D below 30, a bullish K-over-D stochastic cross, and CCI(20) below -150. It enters at the next bar's market price with an ATR(14) x 1.0 stop and a 1% ROI target. It closes early when CCI rises above 150 and either the bar open is above EMA(5) of high or stochastic K/D crosses above 70.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `strategy_ema_period` | 5 | 3-10 | EMA period applied to highs/lows (EMA5) |
-| `strategy_stoch_k` | 5 | 3-14 | Fast Stochastic %K period |
-| `strategy_stoch_d` | 3 | 2-5 | Fast Stochastic %D period |
-| `strategy_stoch_slowing` | 3 | 1-5 | Fast Stochastic slowing |
-| `strategy_adx_period` | 14 | 7-21 | ADX period |
-| `strategy_adx_min` | 30.0 | 25-35 | ADX trend-strength floor |
-| `strategy_mfi_period` | 14 | 7-21 | MFI period |
-| `strategy_mfi_max` | 30.0 | 20-40 | MFI oversold ceiling (entry) |
-| `strategy_stoch_max` | 30.0 | 20-40 | FastK/FastD oversold ceiling (entry) |
-| `strategy_cci_period` | 20 | 14-30 | CCI period |
-| `strategy_cci_entry_max` | -150.0 | -200 to -100 | CCI entry oversold ceiling |
-| `strategy_cci_exit_min` | 150.0 | 100-200 | CCI exit overbought floor |
-| `strategy_stoch_exit_hi` | 70.0 | 60-80 | FastK overbought exit level |
-| `strategy_atr_period` | 14 | 7-21 | ATR period (stop) |
-| `strategy_sl_atr_mult` | 1.0 | 0.5-3.0 | Stop distance = mult × ATR |
-| `strategy_roi_target_pct` | 1.0 | 0.25-2.0 | Source ROI target percent used for take-profit |
-| `strategy_spread_pct_of_stop` | 4.0 | 2-15 | Skip if spread > this % of stop distance |
-| `strategy_warmup_bars` | 100 | 100-500 | Minimum bars before signals |
+|---|---:|---|---|
+| strategy_ema_period | 5 | fixed from card | EMA period for low/high entry and exit bands |
+| strategy_stoch_k_period | 5 | fixed from card | Fast stochastic K period |
+| strategy_stoch_d_period | 3 | fixed from card | Fast stochastic D period |
+| strategy_stoch_slowing | 3 | fixed from card | Fast stochastic slowing |
+| strategy_adx_period | 14 | fixed platform default | ADX period used for trend-strength filter |
+| strategy_mfi_period | 14 | fixed platform default | MFI period using MT5 tick volume |
+| strategy_cci_period | 20 | fixed from card | CCI period for entry and exit |
+| strategy_atr_period | 14 | fixed by MT5 baseline | ATR period for stop placement |
+| strategy_atr_sl_mult | 1.0 | fixed by MT5 baseline | ATR multiple for stop placement |
+| strategy_roi_pct | 1.0 | source ROI target | Percent target from entry price |
+| strategy_adx_min | 30.0 | 25.0-35.0 | Minimum ADX for entry |
+| strategy_mfi_max | 30.0 | 20.0-40.0 | Maximum MFI for entry |
+| strategy_stoch_max | 30.0 | 20.0-40.0 | Maximum stochastic K and D for entry |
+| strategy_cci_entry_max | -150.0 | -200.0--100.0 | Maximum CCI value for oversold entry |
+| strategy_cci_exit_min | 150.0 | 100.0-200.0 | Minimum CCI value for discretionary exit |
+| strategy_exit_stoch_level | 70.0 | fixed from card | Overbought stochastic crossing level for exit |
+| strategy_warmup_bars | 100 | card minimum | Minimum indicator warmup depth |
+| strategy_max_spread_stop_pct | 4.0 | card maximum | Maximum modeled spread as percent of planned stop distance |
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — deep, liquid FX major; tight cost base suits an M1 scalp
-- `GBPUSD.DWX` — liquid FX major with enough M1 volatility for reversal scalps
-- `USDJPY.DWX` — liquid FX major; pip-factor handled by QM stop helpers
-- `XAUUSD.DWX` — high intraday volatility metal; card flags high M1 cost sensitivity
+- EURUSD.DWX - card primary FX scalp basket member with DWX M1 tick data.
+- GBPUSD.DWX - card primary FX scalp basket member with DWX M1 tick data.
+- USDJPY.DWX - card primary FX scalp basket member with DWX M1 tick data.
+- XAUUSD.DWX - card metal scalp basket member with DWX M1 tick data.
 
 **Explicitly NOT for:**
-- Index CFDs (NDX/WS30/etc.) — not in the card's portable basket; the M1 EMA-low
-  reversal edge is FX/metals-calibrated, not validated on index microstructure
+- Non-DWX symbols - research and backtest artifacts must retain the `.DWX` suffix.
+- Equity-index symbols - not listed in the approved R3 SmoothScalp basket.
 
 ---
 
@@ -69,9 +57,9 @@ assumption is deliberately not adopted.
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `M1` |
-| Multi-timeframe refs | `none` |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Base timeframe | M1 |
+| Multi-timeframe refs | none |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (framework default) |
 
 ---
 
@@ -79,11 +67,11 @@ assumption is deliberately not adopted.
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `~300` |
-| Typical hold time | `minutes (M1 scalp)` |
-| Expected drawdown profile | `high-frequency small wins; M1 cost sensitivity is the main risk` |
-| Regime preference | `mean-revert (oversold reversal within an ADX-confirmed move)` |
-| Win rate target (qualitative) | `medium` |
+| Trades / year / symbol | 300 |
+| Typical hold time | Minutes to intraday |
+| Expected drawdown profile | High scalp-risk profile controlled by ATR stop and one-position-per-magic constraint |
+| Regime preference | M1 oversold scalp reversal with ADX trend-strength filter |
+| Win rate target (qualitative) | Medium to high, with small ROI target and bounded stop risk |
 
 ---
 
@@ -91,10 +79,10 @@ assumption is deliberately not adopted.
 
 This card was mechanised from:
 
-**Source ID:** `1580128f-e465-5454-bb97-a7572a6cfd6d`
-**Source type:** `forum` (open-source GitHub strategy repository)
-**Pointer:** `https://github.com/freqtrade/freqtrade-strategies/blob/main/user_data/strategies/berlinguyinca/SmoothScalp.py` (commit `dbd5b0b21cfbf5ee80588d37458ace2467b7f8a4`)
-**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_11228_ft-smoothscalp.md`
+**Source ID:** 1580128f-e465-5454-bb97-a7572a6cfd6d
+**Source type:** GitHub strategy source
+**Pointer:** https://github.com/freqtrade/freqtrade-strategies/blob/main/user_data/strategies/berlinguyinca/SmoothScalp.py
+**R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_11228_ft-smoothscalp.md`
 
 ---
 
@@ -102,11 +90,11 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
@@ -115,3 +103,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-23 | Initial build from card | a983834c-3253-4f75-85b2-8f32b91f8187 |
+
