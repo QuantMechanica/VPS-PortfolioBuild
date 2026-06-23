@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11493
-; ea_slug:      carter-t-bb-slope-midline-bounce-m5
+; ea_id:        11886
+; ea_slug:      floor-pivot-intraday-breakout-retest
 ; ea_version:   v5.0
 ; set_version:  s20260623-001
-; symbol:       GBPJPY.DWX
+; symbol:       USDCAD.DWX
 ; timeframe:    M5
 ; environment:  backtest
-; magic_slot:   2
+; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   665813f7b1f1c481bb054409bb27da459b0554ed050ca90ad23161b31825d949
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-23
 ;==========================================================
-qm_magic_slot_offset=2
+qm_magic_slot_offset=4
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

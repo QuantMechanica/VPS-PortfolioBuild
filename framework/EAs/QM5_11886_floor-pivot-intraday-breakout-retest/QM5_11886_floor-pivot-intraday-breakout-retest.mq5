@@ -138,8 +138,8 @@ bool ComputePivotsForToday()
       return false;
 
    const double H = iHigh(_Symbol, PERIOD_D1, 1);  // perf-allowed: prior D1 OHLC
-   const double L = iLow(_Symbol, PERIOD_D1, 1);
-   const double C = iClose(_Symbol, PERIOD_D1, 1);
+   const double L = iLow(_Symbol, PERIOD_D1, 1);   // perf-allowed: prior D1 OHLC
+   const double C = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: prior D1 OHLC
    if(H <= 0.0 || L <= 0.0 || C <= 0.0 || H < L)
       return false;
 
@@ -214,10 +214,9 @@ void AdvanceState_OnNewBar()
    if(!g_levels_valid)
       return;
 
-   // Last closed M5 bar (shift 1). perf-allowed: single closed-bar OHLC reads.
-   const double c1 = iClose(_Symbol, _Period, 1);
-   const double h1 = iHigh(_Symbol, _Period, 1);
-   const double l1 = iLow(_Symbol, _Period, 1);
+   const double c1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar OHLC read
+   const double h1 = iHigh(_Symbol, _Period, 1);  // perf-allowed: single closed-bar OHLC read
+   const double l1 = iLow(_Symbol, _Period, 1);   // perf-allowed: single closed-bar OHLC read
    if(c1 <= 0.0 || h1 <= 0.0 || l1 <= 0.0)
       return;
 
