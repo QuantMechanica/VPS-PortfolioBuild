@@ -1,49 +1,8 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11582 goodwin-asian-session-breakout-usdjpy-h1 — session-range breakout + prior-D1-color filter (H1)"
+#property description "QM5_11582 Goodwin Asian Session Breakout USDJPY H1"
 
 #include <QM/QM_Common.mqh>
-
-// =============================================================================
-// QuantMechanica V5 EA — QM5_11582 goodwin-asian-session-breakout-usdjpy-h1
-// -----------------------------------------------------------------------------
-// Source: Jarrod Goodwin, "Beat the Markets Strategy Guidebook"
-//         (thetransparenttrader.com, ~2020), Strategy 3.
-// Card: artifacts/cards_approved/QM5_11582_goodwin-asian-session-breakout-usdjpy-h1.md
-//       (g0_status APPROVED).
-//
-// Mechanics (USDJPY primary; H1) — implemented LITERALLY from the card body:
-//   The session opens 17:00 EST and the market builds a range over the first
-//   4.5 hours. At 21:30 EST a stop order is armed at the session high (if the
-//   prior D1 bar was bullish) or at the session low (if the prior D1 bar was
-//   bearish). The prior-D1-bar color filter aligns the trade with the day's
-//   direction. Exit is EOD at 16:50 EST. Fixed 150-pip stop, no take-profit.
-//   One trade per side per session; reset daily via the session anchor.
-//
-//   NOTE (card title vs body): the card slug/title says "Asian Session" but its
-//   mechanical body specifies the 17:00-21:30 EST window (NY-session evening,
-//   which overlaps the Tokyo/Asian session open). We implement the body's
-//   literal time window per HR9 (most-literal reading); all windows are
-//   parameterised so the operator can retune to a pure Tokyo window if desired.
-//
-// EST -> broker mapping: DXZ broker uses the NY-Close convention (GMT+2 outside
-//   US DST, GMT+3 during US DST). Both EST/EDT and the broker clock shift with
-//   US DST together, so the EST->broker hour offset is CONSTANT year-round
-//   (+6h here). We therefore operate directly on the BROKER clock (TimeCurrent)
-//   using broker-hour inputs, which is inherently DST-correct. Defaults
-//   (broker, GMT+2 reference):
-//     session open      17:00 EST -> 23:00 broker
-//     accumulation end  21:30 EST -> 03:30 broker  (order armed)
-//     EOD exit          16:50 EST -> 22:50 broker
-//
-// STATE   : the session high/low accumulated across the open->accum-end window.
-// EVENT   : the single break of that session extreme, in the prior-bar-color
-//           direction, after the window has closed. Latched once per session so
-//           we never re-fire and never trigger two crosses on the same tick.
-//
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
-// else is framework wiring and MUST stay intact.
-// =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 11582;
@@ -58,8 +17,8 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -70,166 +29,211 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-// Session window + order/exit timing, all in BROKER time (minutes since midnight).
-// Defaults map EST -> broker at the GMT+2 reference (DST-constant offset, see header).
-input int    strategy_session_open_min    = 23 * 60 + 0;   // 23:00 broker (17:00 EST)
-input int    strategy_accum_end_min       = 3 * 60 + 30;   // 03:30 broker (21:30 EST) — order armed
-input int    strategy_eod_exit_min        = 22 * 60 + 50;  // 22:50 broker (16:50 EST) — EOD exit
-input bool   strategy_use_prior_bar_filter = true;         // require prior-D1-bar color alignment
-input double strategy_sl_pips             = 150.0;         // fixed stop, in pips
-input double strategy_spread_cap_pips     = 20.0;          // skip a genuinely wide spread only
+input int    strategy_session_start_broker_minute = 0;     // 17:00 ET = 00:00 broker
+input int    strategy_range_cutoff_broker_minute  = 270;   // 21:30 ET = 04:30 broker
+input int    strategy_h1_order_gate_broker_minute = 300;   // first H1 gate after 04:30
+input int    strategy_pending_expiry_broker_minute = 390;  // 23:30 ET = 06:30 broker
+input int    strategy_eod_exit_broker_minute      = 1430;  // 16:50 ET = 23:50 broker
+input int    strategy_sl_pips                     = 150;
+input int    strategy_spread_cap_pips             = 20;
 
-// -----------------------------------------------------------------------------
-// File-scope session state. Advanced once per closed H1 bar.
-//   The window wraps midnight (open 23:00 -> accum-end 03:30 next day), so we
-//   anchor each session by its OPEN datetime and reset cleanly when a new
-//   session opens.
-// -----------------------------------------------------------------------------
-datetime g_session_anchor   = 0;     // broker datetime of the current session open
-double   g_session_high     = 0.0;   // accumulated session high (STATE)
-double   g_session_low      = 0.0;   // accumulated session low  (STATE)
-bool     g_window_open      = false; // currently inside the accumulation window
-bool     g_armed            = false; // accumulation closed, breakout level locked
-bool     g_fired            = false; // breakout already taken this session (EVENT latch)
-int      g_dir              = 0;     // +1 long (prior bull), -1 short (prior bear), 0 none
-double   g_break_level      = 0.0;   // locked session extreme to break
+int g_order_session_key = 0;
 
-// Minutes since broker midnight for a broker datetime.
-int BrokerMinuteOfDay(const datetime t)
+int Strategy_MinuteOfDay(const datetime value)
   {
-   MqlDateTime st;
-   TimeToStruct(t, st);
-   return st.hour * 60 + st.min;
+   MqlDateTime dt;
+   ZeroMemory(dt);
+   TimeToStruct(value, dt);
+   return dt.hour * 60 + dt.min;
   }
 
-// True if `m` lies inside the wrap-safe window [start, end) in minute-of-day.
-bool InWrapWindow(const int m, const int start, const int end)
+int Strategy_DateKey(const datetime value)
   {
-   if(start == end)
+   MqlDateTime dt;
+   ZeroMemory(dt);
+   TimeToStruct(value, dt);
+   return dt.year * 10000 + dt.mon * 100 + dt.day;
+  }
+
+datetime Strategy_TimeAtMinute(datetime reference_time, const int minute_of_day)
+  {
+   int minute = minute_of_day;
+   if(minute < 0)
+      minute = 0;
+   if(minute > 1439)
+      minute = 1439;
+
+   MqlDateTime dt;
+   ZeroMemory(dt);
+   TimeToStruct(reference_time, dt);
+   dt.hour = minute / 60;
+   dt.min = minute % 60;
+   dt.sec = 0;
+   return StructToTime(dt);
+  }
+
+datetime Strategy_SessionTime(datetime reference_time, const int minute_of_day)
+  {
+   datetime session_time = Strategy_TimeAtMinute(reference_time, minute_of_day);
+   const int now_min = Strategy_MinuteOfDay(reference_time);
+
+   if(strategy_session_start_broker_minute > strategy_range_cutoff_broker_minute &&
+      now_min < strategy_range_cutoff_broker_minute)
+      session_time -= 86400;
+
+   return session_time;
+  }
+
+bool Strategy_InWrapWindow(const int minute_now, const int start_minute, const int end_minute)
+  {
+   if(start_minute == end_minute)
       return false;
-   if(start < end)
-      return (m >= start && m < end);
-   // wraps midnight
-   return (m >= start || m < end);
+   if(start_minute < end_minute)
+      return (minute_now >= start_minute && minute_now < end_minute);
+   return (minute_now >= start_minute || minute_now < end_minute);
   }
 
-// -----------------------------------------------------------------------------
-// Closed-bar session-state advance. Called ONCE per new H1 bar (post new-bar
-// gate). Reads only the last closed bar; advances the range by one step.
-// -----------------------------------------------------------------------------
-void AdvanceSession_OnNewBar()
+bool Strategy_HasOurPendingOrder()
   {
-   // Last closed bar (shift 1) — perf-allowed single-bar reads for session range.
-   const datetime t1   = iTime(_Symbol, _Period, 1);   // perf-allowed
-   const double   hi1  = iHigh(_Symbol, _Period, 1);   // perf-allowed
-   const double   lo1  = iLow(_Symbol, _Period, 1);    // perf-allowed
-   if(t1 == 0 || hi1 <= 0.0 || lo1 <= 0.0)
-      return;
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
 
-   const int mod = BrokerMinuteOfDay(t1);
-   const bool in_accum = InWrapWindow(mod, strategy_session_open_min, strategy_accum_end_min);
-
-   // --- New session start: the just-closed bar is the first accumulation bar. ---
-   if(in_accum && !g_window_open)
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
      {
-      g_session_anchor = t1;
-      g_session_high   = hi1;
-      g_session_low    = lo1;
-      g_window_open    = true;
-      g_armed          = false;
-      g_fired          = false;
-      g_dir            = 0;
-      g_break_level    = 0.0;
-      return;
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP)
+         return true;
      }
 
-   // --- Inside the window: accumulate the range. ---
-   if(in_accum && g_window_open)
-     {
-      if(hi1 > g_session_high) g_session_high = hi1;
-      if(lo1 < g_session_low)  g_session_low  = lo1;
+   return false;
+  }
+
+void Strategy_RemoveOurPendingOrders(const string reason)
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return;
-     }
 
-   // --- Window just closed: lock the breakout level + prior-bar direction. ---
-   if(!in_accum && g_window_open)
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
      {
-      g_window_open = false;
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
 
-      // Prior D1 bar color (closed daily bar, shift 1).
-      const double d1_open  = iOpen(_Symbol, PERIOD_D1, 1);   // perf-allowed
-      const double d1_close = iClose(_Symbol, PERIOD_D1, 1);  // perf-allowed
-      int dir = 0;
-      if(d1_close > d1_open)      dir = +1;   // bullish -> break the high (long)
-      else if(d1_close < d1_open) dir = -1;   // bearish -> break the low (short)
-
-      if(!strategy_use_prior_bar_filter)
-        {
-         // Filter off: still need a side; fall back to prior-bar color but treat
-         // a doji as long-bias so a tradable side always exists.
-         if(dir == 0) dir = +1;
-        }
-
-      if(dir == +1)
-        {
-         g_dir         = +1;
-         g_break_level = g_session_high;
-         g_armed       = (g_session_high > 0.0);
-        }
-      else if(dir == -1)
-        {
-         g_dir         = -1;
-         g_break_level = g_session_low;
-         g_armed       = (g_session_low > 0.0);
-        }
-      else
-        {
-         g_dir   = 0;
-         g_armed = false; // doji prior bar with filter on -> no trade this session
-        }
-      return;
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP)
+         QM_TM_RemovePendingOrder(ticket, reason);
      }
   }
 
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
+bool Strategy_ReadPriorD1Direction(int &direction)
+  {
+   direction = 0;
+   MqlRates d1[];
+   ArraySetAsSeries(d1, true);
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, 1, d1); // perf-allowed: one closed D1 bar for card direction filter
+   if(copied != 1)
+      return false;
+   if(d1[0].close > d1[0].open)
+      direction = 1;
+   else if(d1[0].close < d1[0].open)
+      direction = -1;
+   return (direction != 0);
+  }
 
-// Cheap O(1) per-tick gate. Spread guard only (fail-open on .DWX zero spread).
+bool Strategy_ReadSessionRange(const datetime range_start,
+                               const datetime range_end,
+                               double &session_high,
+                               double &session_low)
+  {
+   session_high = 0.0;
+   session_low = 0.0;
+   if(range_end <= range_start)
+      return false;
+
+   MqlRates rates[];
+   const int copied = CopyRates(_Symbol, PERIOD_M1, range_start, range_end, rates); // perf-allowed: bounded M1 structural range scan once per H1 gate
+   if(copied <= 0)
+      return false;
+
+   for(int i = 0; i < copied; ++i)
+     {
+      if(rates[i].high <= 0.0 || rates[i].low <= 0.0)
+         continue;
+      if(session_high <= 0.0 || rates[i].high > session_high)
+         session_high = rates[i].high;
+      if(session_low <= 0.0 || rates[i].low < session_low)
+         session_low = rates[i].low;
+     }
+
+   return (session_high > 0.0 && session_low > 0.0 && session_high > session_low);
+  }
+
+// No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
+      return false;
 
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
+   const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
    if(ask > bid && cap > 0.0 && (ask - bid) > cap)
       return true;
 
    return false;
   }
 
-// Breakout entry. Caller invokes this every tick (the high/low can be pierced
-// intrabar). The session range is STATE (already accumulated). The break of the
-// locked extreme is the single EVENT — latched via g_fired so it never re-fires
-// and never produces two crosses on one tick.
+// Trade Entry
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0 || Strategy_HasOurPendingOrder())
       return false;
 
-   // Must be armed (window closed, level + direction locked) and not yet fired.
-   if(!g_armed || g_fired || g_dir == 0 || g_break_level <= 0.0)
+   const datetime now = TimeCurrent();
+   const int now_min = Strategy_MinuteOfDay(now);
+   if(now_min != strategy_h1_order_gate_broker_minute)
       return false;
 
-   // Only consider the breakout AFTER the accumulation window has closed and
-   // BEFORE the EOD exit time — i.e. the active trading leg of the session.
-   const int mod_now = BrokerMinuteOfDay(TimeCurrent());
-   const bool in_trade_leg = InWrapWindow(mod_now, strategy_accum_end_min, strategy_eod_exit_min);
-   if(!in_trade_leg)
+   const datetime range_start = Strategy_SessionTime(now, strategy_session_start_broker_minute);
+   const datetime range_cutoff = Strategy_SessionTime(now, strategy_range_cutoff_broker_minute);
+   const datetime range_end = range_cutoff - 60;
+   const datetime expiry_time = Strategy_SessionTime(now, strategy_pending_expiry_broker_minute);
+   if(expiry_time <= now)
+      return false;
+
+   const int session_key = Strategy_DateKey(range_cutoff);
+   if(g_order_session_key == session_key)
+      return false;
+
+   int direction = 0;
+   if(!Strategy_ReadPriorD1Direction(direction))
+      return false;
+
+   double session_high = 0.0;
+   double session_low = 0.0;
+   if(!Strategy_ReadSessionRange(range_start, range_end, session_high, session_low))
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -237,73 +241,74 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   if(g_dir == +1)
+   if(direction > 0)
      {
-      // Long breakout: price trades through the session high (stop-order fill).
-      if(ask < g_break_level)
-         return false;
-      const double entry = ask;
-      const double sl = QM_StopFixedPips(_Symbol, QM_BUY, entry, (int)strategy_sl_pips);
+      const bool already_triggered = (ask >= session_high);
+      const double entry = already_triggered ? ask : session_high;
+      const QM_OrderType order_type = already_triggered ? QM_BUY : QM_BUY_STOP;
+      const double sl = QM_StopFixedPips(_Symbol, QM_BUY, entry, strategy_sl_pips);
       if(sl <= 0.0)
          return false;
-      req.type   = QM_BUY;
-      req.price  = 0.0;   // framework fills market price at send
-      req.sl     = sl;
-      req.tp     = 0.0;   // no TP — EOD/stop exit only
-      req.reason = "goodwin_asian_session_break_long";
-      g_fired    = true;  // latch the EVENT
+
+      req.type = order_type;
+      req.price = already_triggered ? 0.0 : QM_StopRulesNormalizePrice(_Symbol, entry);
+      req.sl = sl;
+      req.tp = 0.0;
+      req.reason = already_triggered ? "goodwin_long_stop_filled_before_h1_gate" : "goodwin_long_buy_stop";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = already_triggered ? 0 : (int)(expiry_time - now);
+      g_order_session_key = session_key;
       return true;
      }
 
-   if(g_dir == -1)
+   if(direction < 0)
      {
-      // Short breakout: price trades through the session low (stop-order fill).
-      if(bid > g_break_level)
-         return false;
-      const double entry = bid;
-      const double sl = QM_StopFixedPips(_Symbol, QM_SELL, entry, (int)strategy_sl_pips);
+      const bool already_triggered = (bid <= session_low);
+      const double entry = already_triggered ? bid : session_low;
+      const QM_OrderType order_type = already_triggered ? QM_SELL : QM_SELL_STOP;
+      const double sl = QM_StopFixedPips(_Symbol, QM_SELL, entry, strategy_sl_pips);
       if(sl <= 0.0)
          return false;
-      req.type   = QM_SELL;
-      req.price  = 0.0;
-      req.sl     = sl;
-      req.tp     = 0.0;
-      req.reason = "goodwin_asian_session_break_short";
-      g_fired    = true;
+
+      req.type = order_type;
+      req.price = already_triggered ? 0.0 : QM_StopRulesNormalizePrice(_Symbol, entry);
+      req.sl = sl;
+      req.tp = 0.0;
+      req.reason = already_triggered ? "goodwin_short_stop_filled_before_h1_gate" : "goodwin_short_sell_stop";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = already_triggered ? 0 : (int)(expiry_time - now);
+      g_order_session_key = session_key;
       return true;
      }
 
    return false;
   }
 
-// No active management — fixed stop + EOD time exit only.
+// Trade Management
 void Strategy_ManageOpenPosition()
   {
+   const int now_min = Strategy_MinuteOfDay(TimeCurrent());
+   if(!Strategy_InWrapWindow(now_min, strategy_h1_order_gate_broker_minute, strategy_pending_expiry_broker_minute))
+      Strategy_RemoveOurPendingOrders("goodwin_pending_expired");
   }
 
-// EOD time exit: close any open position once we leave the active trade leg —
-// i.e. at/after the EOD exit minute (broker).
+// Trade Close
 bool Strategy_ExitSignal()
   {
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
       return false;
 
-   const int mod_now = BrokerMinuteOfDay(TimeCurrent());
-   // The trade leg runs [accum_end, eod_exit). Once we leave that window, it is
-   // EOD (or beyond) -> flatten.
-   const bool in_trade_leg = InWrapWindow(mod_now, strategy_accum_end_min, strategy_eod_exit_min);
-   return !in_trade_leg;
+   const int now_min = Strategy_MinuteOfDay(TimeCurrent());
+   return !Strategy_InWrapWindow(now_min,
+                                 strategy_h1_order_gate_broker_minute,
+                                 strategy_eod_exit_broker_minute);
   }
 
-// Defer to the central news filter.
+// News Filter Hook
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
-
-// -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
-// -----------------------------------------------------------------------------
 
 int OnInit()
   {
@@ -312,17 +317,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -343,6 +348,7 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -358,7 +364,6 @@ void OnTick()
 
    Strategy_ManageOpenPosition();
 
-   // Time-based exit (EOD) — evaluated every tick, independent of new bars.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -373,16 +378,11 @@ void OnTick()
         }
      }
 
-   // Advance session state once per closed bar (single new-bar consume).
-   if(QM_IsNewBar())
-     {
-      QM_EquityStreamOnNewBar();
-      AdvanceSession_OnNewBar();
-     }
+   if(!QM_IsNewBar())
+      return;
 
-   // Breakout EVENT must be checked intrabar (the high/low can be pierced mid-
-   // bar), so the entry gate runs every tick — but only fires once per session
-   // via the g_fired latch and the one-position guard.
+   QM_EquityStreamOnNewBar();
+
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
