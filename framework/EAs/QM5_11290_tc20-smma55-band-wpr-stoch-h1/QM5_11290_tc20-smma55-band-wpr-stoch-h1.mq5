@@ -48,6 +48,28 @@ bool Strategy_ReadClosedCloses(double &close_1, double &close_2)
    return (close_1 > 0.0 && close_2 > 0.0);
   }
 
+bool Strategy_WPRCrossRecent(const bool long_side)
+  {
+   const int lookback = 4;
+   for(int shift = 1; shift <= lookback; ++shift)
+     {
+      const double wpr_curr = QM_WPR(_Symbol, PERIOD_CURRENT, strategy_wpr_period, shift);
+      const double wpr_prev = QM_WPR(_Symbol, PERIOD_CURRENT, strategy_wpr_period, shift + 1);
+      if(long_side)
+        {
+         if(wpr_prev <= strategy_wpr_long_level && wpr_curr > strategy_wpr_long_level)
+            return true;
+        }
+      else
+        {
+         if(wpr_prev >= strategy_wpr_short_level && wpr_curr < strategy_wpr_short_level)
+            return true;
+        }
+     }
+
+   return false;
+  }
+
 bool Strategy_NoTradeFilter()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -84,19 +106,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const double smma_high_1 = QM_SMMA(_Symbol, PERIOD_CURRENT, strategy_smma_period, 1, PRICE_HIGH);
    const double smma_low_1  = QM_SMMA(_Symbol, PERIOD_CURRENT, strategy_smma_period, 1, PRICE_LOW);
-   const double wpr_1 = QM_WPR(_Symbol, PERIOD_CURRENT, strategy_wpr_period, 1);
-   const double wpr_2 = QM_WPR(_Symbol, PERIOD_CURRENT, strategy_wpr_period, 2);
    const double stoch_k_1 = QM_Stoch_K(_Symbol, PERIOD_CURRENT, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
    const double stoch_d_1 = QM_Stoch_D(_Symbol, PERIOD_CURRENT, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
    if(smma_high_1 <= 0.0 || smma_low_1 <= 0.0)
       return false;
 
    const bool long_channel_state = (close_1 > smma_high_1);
-   const bool long_wpr_cross = (wpr_2 <= strategy_wpr_long_level && wpr_1 > strategy_wpr_long_level);
+   const bool long_wpr_cross = Strategy_WPRCrossRecent(true);
    const bool long_stoch = (stoch_k_1 > stoch_d_1);
 
    const bool short_channel_state = (close_1 < smma_low_1);
-   const bool short_wpr_cross = (wpr_2 >= strategy_wpr_short_level && wpr_1 < strategy_wpr_short_level);
+   const bool short_wpr_cross = Strategy_WPRCrossRecent(false);
    const bool short_stoch = (stoch_k_1 < stoch_d_1);
 
    QM_OrderType side = QM_BUY;

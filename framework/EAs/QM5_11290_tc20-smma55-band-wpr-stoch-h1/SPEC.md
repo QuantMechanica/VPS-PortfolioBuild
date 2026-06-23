@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA trades H1 closed-bar momentum through a smoothed moving-average price channel. A long setup requires the latest closed bar to be above SMMA(55) applied to high prices, Williams %R(55) to cross above -25, and Stochastic(5,5,5) %K to be above %D. A short setup mirrors the rule with the latest closed bar below SMMA(55) applied to low prices, Williams %R(55) crossing below -75, and Stochastic %K below %D. Entries use ATR(14) x 1.5 stop loss and a 2R take-profit; discretionary exits close a long when the latest closed bar falls back below the high-band SMMA and close a short when it rises back above the low-band SMMA.
+This EA trades H1 closed-bar momentum through a smoothed moving-average price channel. A long setup requires the latest closed bar to be above SMMA(55) applied to high prices, Williams %R(55) to have crossed above -25 within the last four closed bars, and Stochastic(5,5,5) %K to be above %D. A short setup mirrors the rule with the latest closed bar below SMMA(55) applied to low prices, Williams %R(55) crossing below -75 within the last four closed bars, and Stochastic %K below %D. Entries use ATR(14) x 1.5 stop loss and a 2R take-profit; discretionary exits close a long when the latest closed bar falls back below the high-band SMMA and close a short when it rises back above the low-band SMMA.
 
 ---
 
@@ -99,3 +99,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-23 | Initial build from card | 7d45908a-8730-48b5-b7ee-ec56d6bf6b2a |
+| v2 | 2026-06-23 | Rework WPR cross timing for Q01 smoke trade generation | 13c6e2d1-c186-401d-b36e-0aeccb5a571a |
