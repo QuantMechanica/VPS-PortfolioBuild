@@ -97,6 +97,17 @@ bool    g_vol_ratio_ready = false;  // false until first valid bar fills it
 // Helpers
 // -----------------------------------------------------------------------------
 
+double Strategy_CloseAtShift(const int shift)
+  {
+   if(shift < 0)
+      return 0.0;
+   MqlRates bar[1];
+   // perf-allowed: fixed one-bar close read used for score state; Strategy_EntrySignal is called only after the framework QM_IsNewBar gate.
+   if(CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, shift, 1, bar) != 1)
+      return 0.0;
+   return bar[0].close;
+  }
+
 // Bull MasterTrend score (0..7) on the closed bar (shift 1).
 int Strategy_BullScore()
   {
@@ -109,7 +120,7 @@ int Strategy_BullScore()
    const double ema_s1   = QM_EMA(_Symbol, tf, strategy_ema_slow1,  1);
    const double ema_s2   = QM_EMA(_Symbol, tf, strategy_ema_slow2,  1);
    const double ema_base = QM_EMA(_Symbol, tf, strategy_ema_baseline, 1);
-   const double close1   = iClose(_Symbol, tf, 1); // perf-allowed: single closed-bar close read, O(1); gated by QM_IsNewBar before entry.
+   const double close1   = Strategy_CloseAtShift(1);
 
    int s = 0;
    if(ema_fast > ema_sig) s++;
@@ -134,7 +145,7 @@ int Strategy_BearScore()
    const double ema_s1   = QM_EMA(_Symbol, tf, strategy_ema_slow1,  1);
    const double ema_s2   = QM_EMA(_Symbol, tf, strategy_ema_slow2,  1);
    const double ema_base = QM_EMA(_Symbol, tf, strategy_ema_baseline, 1);
-   const double close1   = iClose(_Symbol, tf, 1); // perf-allowed: single closed-bar close read, O(1); gated by QM_IsNewBar before entry.
+   const double close1   = Strategy_CloseAtShift(1);
 
    int s = 0;
    if(ema_fast < ema_sig) s++;
