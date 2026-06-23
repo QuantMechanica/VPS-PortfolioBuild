@@ -14,13 +14,14 @@ Long-only M1 oversold-reversal scalp ported from freqtrade's SmoothScalp.py. On
 each closed M1 bar the EA goes long when ALL of the following hold: the bar opened
 below the 5-period EMA of lows; ADX(14) is above 30 (trend strength present);
 MFI(14) is below 30 (money-flow oversold); CCI(20) is below -150 (deeply
-oversold); and the Fast Stochastic %K and %D are both below 30. The single fresh
+oversold); and the Fast Stochastic %K and %D are both below 30 after at least
+100 warmup bars are available. The single fresh
 trigger is %K crossing above %D on that bar — all other conditions are evaluated
 as states, so the entry never requires two simultaneous cross events. The stop is
-1× ATR(14) below entry and the take-profit is a 1:1 reward:risk target (a proxy
-for the source's 1% ROI). The position is closed early when CCI(20) rises above
-150 AND either the bar opened at/above the 5-period EMA of highs or Fast %K is
-above 70. One open position per symbol/magic — the source's many-parallel-trades
+1× ATR(14) below entry and the take-profit is the source 1% ROI target. The
+position is closed early when CCI(20) rises above 150 AND either the bar opened
+at/above the 5-period EMA of highs or Fast %K and %D cross above 70. One open
+position per symbol/magic — the source's many-parallel-trades
 assumption is deliberately not adopted.
 
 ---
@@ -44,8 +45,9 @@ assumption is deliberately not adopted.
 | `strategy_stoch_exit_hi` | 70.0 | 60-80 | FastK overbought exit level |
 | `strategy_atr_period` | 14 | 7-21 | ATR period (stop) |
 | `strategy_sl_atr_mult` | 1.0 | 0.5-3.0 | Stop distance = mult × ATR |
-| `strategy_tp_rr` | 1.0 | 0.5-3.0 | Take-profit reward:risk multiple |
+| `strategy_roi_target_pct` | 1.0 | 0.25-2.0 | Source ROI target percent used for take-profit |
 | `strategy_spread_pct_of_stop` | 4.0 | 2-15 | Skip if spread > this % of stop distance |
+| `strategy_warmup_bars` | 100 | 100-500 | Minimum bars before signals |
 
 ---
 

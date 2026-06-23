@@ -20,10 +20,10 @@
 //     EVENT  FastK crosses above FastD   -- the single fresh-cross trigger
 //     STATE  CCI(20)  < cci_entry_max    -- deep CCI oversold
 //   Stop  : QM_StopATR(atr_period, sl_atr_mult)  (baseline ATR(14) x 1.0).
-//   Take  : QM_TakeRR(rr) relative to the ATR stop distance (source 1% ROI proxy).
+//   Take  : source ROI target, default +1% from entry.
 //   Exit  : CCI(20) > cci_exit_min  AND ( open(1) >= EMA5(high) OR FastK > stoch_exit_hi )
-//           Source's "cross above 70" relaxed to a >70 STATE to avoid requiring two
-//           cross EVENTS on one bar (.DWX zero-trade invariant #4).
+//           Stochastic exit is a threshold EVENT: K and D are above 70 after at
+//           least one of them was not above 70 on the prior closed bar.
 //   Spread: fail-open on .DWX zero modeled spread; block only a genuinely wide
 //           spread > spread_pct_of_stop of the ATR stop distance.
 //
@@ -74,8 +74,9 @@ input double strategy_cci_exit_min       = 150.0;  // CCI exit overbought floor
 input double strategy_stoch_exit_hi      = 70.0;   // FastK overbought exit level
 input int    strategy_atr_period         = 14;     // ATR period (stop)
 input double strategy_sl_atr_mult        = 1.0;    // stop distance = mult * ATR
-input double strategy_tp_rr              = 1.0;    // take-profit reward:risk multiple
+input double strategy_roi_target_pct     = 1.0;    // source ROI target percent
 input double strategy_spread_pct_of_stop = 4.0;    // skip if spread > this % of stop distance
+input int    strategy_warmup_bars        = 100;    // minimum bars before signals
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -85,6 +86,9 @@ input double strategy_spread_pct_of_stop = 4.0;    // skip if spread > this % of
 // closed-bar path in Strategy_EntrySignal. Fail-open on .DWX zero spread.
 bool Strategy_NoTradeFilter()
   {
+   if(Bars(_Symbol, _Period) < strategy_warmup_bars) // perf-allowed: O(1) warmup guard; no QM_Bars helper exists.
+      return true;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
@@ -111,6 +115,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+      return false;
+   if(Bars(_Symbol, _Period) < strategy_warmup_bars) // perf-allowed: O(1) warmup guard; no QM_Bars helper exists.
       return false;
 
    // --- STATE: bar opened below the EMA of lows (EMA5 on PRICE_LOW) ---
@@ -164,7 +170,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double sl = QM_StopATR(_Symbol, QM_BUY, entry, strategy_atr_period, strategy_sl_atr_mult);
    if(sl <= 0.0)
       return false;
-   const double tp = QM_TakeRR(_Symbol, QM_BUY, entry, sl, strategy_tp_rr);
+   const double tp = QM_StopRulesNormalizePrice(_Symbol, entry * (1.0 + strategy_roi_target_pct / 100.0));
    if(tp <= 0.0)
       return false;
 
@@ -184,7 +190,7 @@ void Strategy_ManageOpenPosition()
   {
   }
 
-// Signal exit: CCI overbought AND (bar opened above EMA5(high) OR FastK overbought).
+// Signal exit: CCI overbought AND (bar opened above EMA5(high) OR K/D cross above 70).
 bool Strategy_ExitSignal()
   {
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
@@ -198,8 +204,13 @@ bool Strategy_ExitSignal()
    const double open1    = iOpen(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
    const bool   above_ema_high = (ema_high > 0.0 && open1 > 0.0 && open1 >= ema_high);
 
-   const double k_now = QM_Stoch_K(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
-   const bool   stoch_overbought = (k_now > strategy_stoch_exit_hi);
+   const double k_now  = QM_Stoch_K(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
+   const double d_now  = QM_Stoch_D(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
+   const double k_prev = QM_Stoch_K(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 2);
+   const double d_prev = QM_Stoch_D(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 2);
+   const bool   stoch_overbought = (k_now > strategy_stoch_exit_hi &&
+                                    d_now > strategy_stoch_exit_hi &&
+                                    (k_prev <= strategy_stoch_exit_hi || d_prev <= strategy_stoch_exit_hi));
 
    return (above_ema_high || stoch_overbought);
   }
