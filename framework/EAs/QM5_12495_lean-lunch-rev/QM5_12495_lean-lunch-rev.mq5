@@ -16,8 +16,8 @@
 //
 // Mechanics (H1, closed-bar reads at shift 1; all session math in BROKER time
 // converted to US Eastern via QM_BrokerToUTC + QM_IsUSDSTUTC):
-//   Lunch-window STATE : bar-open hour, expressed in US Eastern time, equals
-//                        strategy_lunch_hour_et (default 12). DXZ broker time is
+//   Lunch-window STATE : the framework-gated new-bar tick, expressed in US
+//                        Eastern time, equals strategy_lunch_hour_et (default 12). DXZ broker time is
 //                        UTC+2 / UTC+3 (US-DST-aware), ET is UTC-5 / UTC-4, so
 //                        the window is derived robustly via UTC, not a raw offset.
 //   Morning-move ROC   : RateOfChangePercent(roc_period) on closed H1 closes =
@@ -73,7 +73,7 @@ input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of 
 // -----------------------------------------------------------------------------
 // One-trade-per-day latch: the ET calendar day on which we last entered.
 datetime g_last_entry_et_day  = 0;
-// Bar-open broker time of the bar on which the open position was entered.
+// Broker time of the framework-gated new-bar tick on which the position was entered.
 datetime g_entry_bar_time     = 0;
 
 // -----------------------------------------------------------------------------
@@ -123,23 +123,21 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // --- Lunch-window STATE: this bar opens in the lunch hour (US Eastern). ---
-   // Key off the bar-open time (shift 0), not the per-tick clock, so the gate
-   // is exact on the .DWX tester.
-   const datetime bar_open_broker = iTime(_Symbol, _Period, 0); // perf-allowed: bar-open timestamp
-   if(bar_open_broker <= 0)
+   // --- Lunch-window STATE: the framework-gated new-bar tick is in the lunch hour (US Eastern). ---
+   const datetime signal_time_broker = TimeCurrent();
+   if(signal_time_broker <= 0)
       return false;
-   const datetime bar_open_et = BrokerToEastern(bar_open_broker);
+   const datetime signal_time_et = BrokerToEastern(signal_time_broker);
 
    MqlDateTime et;
    ZeroMemory(et);
-   TimeToStruct(bar_open_et, et);
+   TimeToStruct(signal_time_et, et);
    if(et.hour != strategy_lunch_hour_et)
       return false;
 
    // --- Trigger EVENT: one entry per ET trading day (first lunch bar). ---
    // ET calendar-day key = midnight-of-the-ET-day.
-   const datetime et_day = bar_open_et - (et.hour * 3600 + et.min * 60 + et.sec);
+   const datetime et_day = signal_time_et - (et.hour * 3600 + et.min * 60 + et.sec);
    if(g_last_entry_et_day == et_day)
       return false; // already entered or attempted today
 
@@ -187,9 +185,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   // Latch the day and the entry bar for the time stop.
+   // Latch the day and entry tick for the time stop.
    g_last_entry_et_day = et_day;
-   g_entry_bar_time    = bar_open_broker;
+   g_entry_bar_time    = signal_time_broker;
    return true;
   }
 
