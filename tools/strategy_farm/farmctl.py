@@ -7234,6 +7234,15 @@ def pump(root: Path) -> dict[str, Any]:
             cea = cp.get("ea_id")
             if cea in already_spawned_eas or cea in claude_seen or cea in perma_blocked_eas:
                 continue
+            # A task with neither card_path (to render a prompt from) nor a
+            # previously-rendered prompt_path can only bounce in
+            # _spawn_claude_for_build ("no card_path in payload"). Skipping it
+            # here — instead of letting the bounce append to claude_build_spawns
+            # and consume a build-budget slot — lets Claude advance to genuinely
+            # buildable tasks. (Codex front-runs §3 and tends to leave Claude the
+            # card_path-less dregs; 2026-06-23 audit saw 168 such bounces/day.)
+            if not cp.get("card_path") and not cp.get("prompt_path"):
+                continue
             claude_seen.add(cea)
             result["claude_build_spawns"].append(_spawn_claude_for_build(root, row))
 
