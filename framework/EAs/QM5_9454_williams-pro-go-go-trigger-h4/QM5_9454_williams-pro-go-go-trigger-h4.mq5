@@ -77,10 +77,7 @@ bool IsWeeklyGapTerm(const MqlRates &bar, const MqlRates &prev_bar)
    const int sec = PeriodSeconds(strategy_tf);
    if(sec > 0 && (bar.time - prev_bar.time) > sec * 2)
       return true;
-
-   MqlDateTime dt;
-   TimeToStruct(bar.time, dt);
-   return (dt.day_of_week == 0);
+   return false;
   }
 
 bool ReadClosedBar(const int shift, MqlRates &bar)
@@ -102,23 +99,25 @@ bool WilliamsProGo(const int shift, double &pro_value, double &go_value)
       return false;
 
    MqlRates rates[];
-   ArraySetAsSeries(rates, true);
    const int need = strategy_pro_go_period + 1;
    const int copied = CopyRates(_Symbol, strategy_tf, shift, need, rates); // perf-allowed: bounded 14-bar Williams Pro/Go window, called from closed-bar strategy hooks.
    if(copied < need)
       return false;
 
-   for(int i = 0; i < strategy_pro_go_period; ++i)
+   // CopyRates stores the oldest physical element at index 0. Index 1..N is
+   // the card window, with index-1 as the prior close for each Go term.
+   for(int i = 1; i <= strategy_pro_go_period; ++i)
      {
-      if(rates[i].open <= 0.0 || rates[i].close <= 0.0 || rates[i + 1].close <= 0.0)
+      if(rates[i].open <= 0.0 || rates[i].close <= 0.0 || rates[i - 1].close <= 0.0)
          return false;
 
       pro_value += rates[i].close - rates[i].open;
 
-      double gap = rates[i].open - rates[i + 1].close;
-      if(IsWeeklyGapTerm(rates[i], rates[i + 1]))
+      double gap = rates[i].open - rates[i - 1].close;
+      if(IsWeeklyGapTerm(rates[i], rates[i - 1]))
         {
-         const double atr_prev = QM_ATR(_Symbol, strategy_tf, strategy_atr_period, shift + i + 1);
+         const int bar_shift = shift + (strategy_pro_go_period - i);
+         const double atr_prev = QM_ATR(_Symbol, strategy_tf, strategy_atr_period, bar_shift + 1);
          const double cap = atr_prev * strategy_gap_clip_atr_mult;
          if(cap > 0.0)
            {
