@@ -1,59 +1,48 @@
-# QM5_11068_ma-limit-pull — Strategy Spec
+# QM5_11068_ma-limit-pull - Strategy Spec
 
 **EA ID:** QM5_11068
-**Slug:** `ma-limit-pull`
-**Source:** `429e4612-2e1d-57be-b12e-ff8b94d42117` (see `strategy-seeds/sources/429e4612-2e1d-57be-b12e-ff8b94d42117/`)
+**Slug:** ma-limit-pull
+**Source:** 429e4612-2e1d-57be-b12e-ff8b94d42117
 **Author of this spec:** Codex
-**Last revised:** 2026-06-17
+**Last revised:** 2026-06-23
 
 ---
 
 ## 1. Strategy Logic
 
-Short-term EMA trend-pullback EA entered with a dynamically-refreshed pending
-limit order. On each closed M5 bar it reads the fast EMA(12) and slow EMA(36):
-the trend is bullish when fast > slow AND the fast EMA has risen over the last
-`slope_lookback` bars, bearish when the mirror holds. A regime gate requires
-ADX(14) >= 18 and rejects explosive volatility (ATR(14)/ATR(96) must stay at or
-below `max_vol_expansion`). While bullish and flat it places/refreshes a BUY
-LIMIT at `Bid - pullback_atr * ATR(14)`; while bearish and flat a SELL LIMIT at
-`Ask + pullback_atr * ATR(14)`. The pending order is re-priced once per closed
-bar, auto-expires after `pending_expiry_bars`, and is cancelled when the trend
-flips or dies. A filled position carries a hard SL = 1.2 * ATR and TP = 1.8 *
-ATR measured from the limit price, and is closed early if the EMA trend reverses
-against it.
+This EA trades EURUSD.DWX pullbacks on M5 using a short-term EMA trend state. A long setup exists when EMA(12) is above EMA(36) and the fast EMA is rising; a short setup exists when EMA(12) is below EMA(36) and the fast EMA is falling. While the trend remains valid, the EA refreshes one pending limit order per closed M5 bar: Buy Limit at Bid minus 0.35 ATR(14), or Sell Limit at Ask plus 0.35 ATR(14). The EA skips flat or explosive regimes using ADX(14) and ATR(14)/ATR(96), places ATR-based SL/TP, and closes an open position if the EMA trend reverses against it.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `strategy_fast_ma_period` | 12 | 5-50 | Fast EMA period (close) |
-| `strategy_slow_ma_period` | 36 | 20-200 | Slow EMA period (close) |
-| `strategy_slope_lookback` | 3 | 1-20 | Bars over which fast-EMA slope is measured |
-| `strategy_atr_period` | 14 | 5-50 | ATR period for offset / stop / target |
-| `strategy_atr_long_period` | 96 | 30-300 | Long ATR baseline for vol-expansion gate |
-| `strategy_pullback_atr` | 0.35 | 0.05-2.0 | Pullback limit offset = mult * ATR |
-| `strategy_sl_atr_mult` | 1.2 | 0.3-5.0 | Stop distance = mult * ATR from limit price |
-| `strategy_tp_atr_mult` | 1.8 | 0.5-8.0 | Target distance = mult * ATR from limit price |
-| `strategy_pending_expiry_bars` | 12 | 1-100 | Cancel unfilled pending after N bars |
-| `strategy_adx_min` | 18.0 | 0-50 | ADX trend-strength floor (0 disables) |
-| `strategy_adx_period` | 14 | 5-50 | ADX period |
-| `strategy_max_vol_expansion` | 2.0 | 0-10 | Skip if ATR/ATR_long exceeds this (0 disables) |
-| `strategy_spread_pct_of_stop` | 15.0 | 1-100 | Skip if spread > this % of stop distance |
+|---|---:|---|---|
+| strategy_fast_ma_period | 12 | 2+ | Fast EMA period on close. |
+| strategy_slow_ma_period | 36 | 2+ | Slow EMA period on close. |
+| strategy_slope_lookback | 3 | 1+ | Bars used to confirm the fast EMA slope. |
+| strategy_atr_period | 14 | 2+ | ATR period for pullback offset, SL, and TP. |
+| strategy_atr_long_period | 96 | 2+ | Long ATR baseline for volatility expansion filter. |
+| strategy_pullback_atr | 0.35 | greater than 0 | Pending limit offset in ATR multiples. |
+| strategy_sl_atr_mult | 1.2 | greater than 0 | Stop distance in ATR multiples from pending entry. |
+| strategy_tp_atr_mult | 1.8 | greater than 0 | Take-profit distance in ATR multiples from pending entry. |
+| strategy_order_expiry_bars | 12 | 0+ | Pending order expiry in current-chart bars; 0 disables explicit expiry. |
+| strategy_adx_period | 14 | 2+ | ADX period for the flat-regime filter. |
+| strategy_min_adx | 18.0 | 0+ | Minimum ADX required; 0 disables the ADX floor. |
+| strategy_max_vol_expansion | 2.0 | 0+ | Maximum ATR(14)/ATR(96) ratio; 0 disables the filter. |
+| strategy_max_spread_stop_pct | 15.0 | 0+ | Blocks only genuinely wide spread above this percent of stop distance. |
+
+Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are intentionally not repeated here.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — card primary and only symbol; deepest-liquidity FX major where
-  the short-term MA-trend pullback edge from the ATC 2010 source was observed.
+- EURUSD.DWX - Direct R3 mapping from the approved card; liquid FX major with available DarwinexZero history.
 
 **Explicitly NOT for:**
-- Index / metal CFDs — the card scopes EURUSD M5 only; the R3 PASS row names no
-  portable basket, so P2 registers the single named symbol (1 terminal).
+- Other `.DWX` symbols - The approved card's R3 section names only EURUSD.DWX, so no broader portable basket is registered for this build.
 
 ---
 
@@ -61,9 +50,9 @@ against it.
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `M5` |
-| Multi-timeframe refs | `none` |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Base timeframe | M5 |
+| Multi-timeframe refs | none |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` through the framework OnTick gate |
 
 ---
 
@@ -71,11 +60,11 @@ against it.
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `~220` |
-| Typical hold time | `minutes to a few hours (M5 intraday)` |
-| Expected drawdown profile | `moderate; bounded by 1.2*ATR hard stop per trade` |
-| Regime preference | `trend (pullback continuation), vol-filtered` |
-| Win rate target (qualitative) | `medium` |
+| Trades / year / symbol | 220 |
+| Typical hold time | Not specified in frontmatter; expected intraday M5 holding because SL/TP and MA-reversal exits are M5-native. |
+| Expected drawdown profile | Not specified in frontmatter; bounded per-trade risk through hard ATR stop and fixed-risk sizing. |
+| Regime preference | Trend pullback; skips flat ADX and high ATR-expansion regimes. |
+| Win rate target (qualitative) | Not specified in card. |
 
 ---
 
@@ -83,10 +72,10 @@ against it.
 
 This card was mechanised from:
 
-**Source ID:** `429e4612-2e1d-57be-b12e-ff8b94d42117`
-**Source type:** `forum` (MQL5 Articles interview)
-**Pointer:** `https://www.mql5.com/en/articles/532` (Boris Odintsov interview, ATC 2010)
-**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_11068_ma-limit-pull.md`
+**Source ID:** 429e4612-2e1d-57be-b12e-ff8b94d42117
+**Source type:** MQL5 article interview
+**Pointer:** Boris Odintsov interview, MQL5 Articles, 2010-10-21, https://www.mql5.com/en/articles/532
+**R1-R4 verdict (Q00):** all R1-R4 PASS per `artifacts/cards_approved/QM5_11068_ma-limit-pull.md`.
 
 ---
 
@@ -98,7 +87,7 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
@@ -106,4 +95,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-17 | Initial build from card | board-advisor build |
+| v1 | 2026-06-23 | Initial build from card | a219ccad-bae6-46f1-b9f0-219705a1d0e2 |
