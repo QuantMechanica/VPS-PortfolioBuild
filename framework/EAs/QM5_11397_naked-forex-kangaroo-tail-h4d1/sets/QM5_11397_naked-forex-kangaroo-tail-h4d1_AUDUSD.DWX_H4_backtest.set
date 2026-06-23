@@ -1,11 +1,11 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11192
-; ea_slug:      ft-bandtastic
+; ea_id:        11397
+; ea_slug:      naked-forex-kangaroo-tail-h4d1
 ; ea_version:   v5.0
 ; set_version:  s20260623-001
-; symbol:       XAUUSD.DWX
-; timeframe:    M15
+; symbol:       AUDUSD.DWX
+; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED

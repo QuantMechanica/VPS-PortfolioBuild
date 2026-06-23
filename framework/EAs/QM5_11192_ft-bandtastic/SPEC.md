@@ -14,10 +14,10 @@ Long-only Bollinger mean reversion ported from Robert Roman's freqtrade
 `Bandtastic.py`. On the close of an M15 bar, enter long when the closed-bar
 close prints below the lower Bollinger Band(20) at `bb_entry_std` deviations
 (source default 1 std) — a stretched-below-the-band reversion buy. The source
-"volume > 0" guard is a no-op on `.DWX` (tick volume is always positive on a
-closed bar) and is omitted; the RSI/MFI/EMA buy guards are disabled by source
-default (an optional RSI buy guard is provided, off by default, for the P3
-sweep). Exit when the source ROI ladder is reached, or when BOTH source
+"volume > 0" guard is implemented as a single closed-bar tick-volume check.
+The RSI/MFI/EMA buy guards are disabled by source default (an optional RSI buy
+guard is provided, off by default, for the P3 sweep). Exit when the source ROI
+ladder is reached, or when BOTH source
 signal-exit conditions hold: MFI(14) on tick volume is above `mfi_exit` (source
 46) AND the close is above the upper Bollinger Band(20) at `bb_exit_std`
 deviations (source 2). A source trailing stop activates after the configured

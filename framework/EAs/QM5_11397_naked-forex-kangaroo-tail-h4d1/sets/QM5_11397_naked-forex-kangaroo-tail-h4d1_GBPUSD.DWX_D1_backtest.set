@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11192
-; ea_slug:      ft-bandtastic
+; ea_id:        11397
+; ea_slug:      naked-forex-kangaroo-tail-h4d1
 ; ea_version:   v5.0
 ; set_version:  s20260623-001
-; symbol:       XAUUSD.DWX
-; timeframe:    M15
+; symbol:       GBPUSD.DWX
+; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   3
+; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-23
 ;==========================================================
-qm_magic_slot_offset=3
+qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

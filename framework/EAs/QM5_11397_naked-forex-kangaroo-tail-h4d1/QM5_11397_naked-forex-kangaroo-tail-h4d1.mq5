@@ -25,18 +25,12 @@
 //                 (pin pierces an N-bar low extreme — replaces visual S/R)
 //   SHORT (bearish, long UPPER tail): mirror of the above.
 //
+//   Entry : one-bar-expiring stop order at high1/low1 +/- entry_buffer_pips.
 //   Stop  : tail extreme +/- sl_buffer_pips (LONG: low1 - buf; SHORT: high1 + buf),
 //           capped to sl_cap_pips of stop distance.
 //   Take  : entry +/- tp_atr_mult * ATR(atr_period) (same closed-bar ATR).
 //   Manage: move to break-even once price has advanced be_trigger_atr * ATR.
 //   Spread: skip only a genuinely WIDE spread (fail-open on .DWX zero spread).
-//
-// .DWX note: index/FX CFDs are gapless (open[0]==close[1]); the card's
-// "BUYSTOP at high+5pips on next bar" reduces to a market entry on the bar
-// AFTER the completed pin (the bar has already closed in the reversal
-// direction). We enter market on the new closed bar — most literal
-// deterministic realization, avoids the .DWX gap-entry zero-trade pitfall.
-// See open_questions / SPEC.md.
 //
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific.
 // =============================================================================
@@ -68,12 +62,13 @@ input double qm_stress_reject_probability = 0.0;
 input group "Strategy"
 input double strategy_tail_min_ratio     = 0.60;  // tail length >= 60% of range
 input int    strategy_ctx_lookback       = 20;    // N-bar extreme context window
+input int    strategy_entry_buffer_pips  = 5;     // stop-entry offset beyond signal bar
 input int    strategy_sl_buffer_pips     = 5;     // SL beyond tail extreme (pips)
 input int    strategy_sl_cap_pips        = 60;    // P2 cap on SL distance (pips)
 input int    strategy_atr_period         = 14;    // ATR period for take-profit
 input double strategy_tp_atr_mult        = 2.0;   // TP distance = mult * ATR
 input double strategy_be_trigger_atr     = 1.0;   // move to BE at +mult * ATR
-input double strategy_spread_cap_pips    = 20.0;  // skip if spread wider than this (pips)
+input int    strategy_spread_cap_pips    = 20;    // skip if spread wider than this (pips)
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -92,7 +87,7 @@ bool Strategy_NoTradeFilter()
    if(spread <= 0.0)
       return false; // zero/negative modeled spread (.DWX) — fail open
 
-   const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
+   const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
    if(cap > 0.0 && spread > cap)
       return true;  // genuinely wide spread — block
 
@@ -103,9 +98,46 @@ bool Strategy_NoTradeFilter()
 // QM_IsNewBar() == true. Long and short are mirror images.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
+
+   // Enforce "entry only if triggered on next bar" by removing stale stop
+   // orders before evaluating the newly closed bar.
+   for(int oi = OrdersTotal() - 1; oi >= 0; --oi)
+     {
+      const ulong order_ticket = OrderGetTicket(oi);
+      if(order_ticket == 0 || !OrderSelect(order_ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP)
+         QM_TM_RemovePendingOrder(order_ticket, "kangaroo_tail_next_bar_expired");
+     }
+
+   // One open position per symbol/magic.
+   for(int pi = PositionsTotal() - 1; pi >= 0; --pi)
+     {
+      const ulong pos_ticket = PositionGetTicket(pi);
+      if(pos_ticket == 0 || !PositionSelectByTicket(pos_ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
 
    // Pattern bar = shift 1 ("[0]" in the card); prior bar = shift 2 ("[1]").
    const double high1 = iHigh(_Symbol, _Period, 1);  // perf-allowed: closed-bar OHLC geometry
@@ -137,7 +169,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double sl_buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_buffer_pips);
+   const double entry_buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_entry_buffer_pips);
    const double sl_cap    = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_cap_pips);
+   if(entry_buffer <= 0.0 || sl_buffer <= 0.0)
+      return false;
 
    // --- LONG: bullish kangaroo tail (long LOWER tail) ---
    const double lower_tail_ratio = (body_lo - low1) / range;
@@ -164,9 +199,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
         }
       if(have && low1 < lowest)
         {
-         const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         if(entry <= 0.0)
-            return false;
+         const double entry = QM_StopRulesNormalizePrice(_Symbol, high1 + entry_buffer);
 
          double sl = low1 - sl_buffer;                 // 5 pips beyond tail low
          // Cap the stop distance to sl_cap_pips.
@@ -178,11 +211,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          if(sl <= 0.0 || tp <= 0.0 || sl >= entry)
             return false;
 
-         req.type   = QM_BUY;
-         req.price  = 0.0;   // framework fills market price at send
+         req.type   = QM_BUY_STOP;
+         req.price  = entry;
          req.sl     = sl;
          req.tp     = tp;
          req.reason = "kangaroo_tail_long";
+         req.expiration_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
          return true;
         }
      }
@@ -210,9 +244,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
         }
       if(have && high1 > highest)
         {
-         const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         if(entry <= 0.0)
-            return false;
+         const double entry = QM_StopRulesNormalizePrice(_Symbol, low1 - entry_buffer);
 
          double sl = high1 + sl_buffer;                // 5 pips beyond tail high
          if(sl_cap > 0.0 && (sl - entry) > sl_cap)
@@ -223,11 +255,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          if(sl <= 0.0 || tp <= 0.0 || sl <= entry)
             return false;
 
-         req.type   = QM_SELL;
-         req.price  = 0.0;
+         req.type   = QM_SELL_STOP;
+         req.price  = entry;
          req.sl     = sl;
          req.tp     = tp;
          req.reason = "kangaroo_tail_short";
+         req.expiration_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
          return true;
         }
      }
@@ -239,7 +272,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 void Strategy_ManageOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
-   if(QM_TM_OpenPositionCount(magic) <= 0)
+   if(magic <= 0)
       return;
 
    const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
@@ -250,22 +283,38 @@ void Strategy_ManageOpenPosition()
    if(trigger_dist <= 0.0)
       return;
 
-   // Convert the ATR trigger distance to pips for the framework BE helper.
-   const double pip = QM_StopRulesPipsToPriceDistance(_Symbol, 1);
-   if(pip <= 0.0)
-      return;
-   const int trigger_pips = (int)MathRound(trigger_dist / pip);
-   if(trigger_pips <= 0)
-      return;
-
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
       if(PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-      QM_TM_MoveToBreakEven(ticket, trigger_pips, strategy_sl_buffer_pips);
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+
+      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double current_sl = PositionGetDouble(POSITION_SL);
+      if(open_price <= 0.0)
+         continue;
+
+      if(pos_type == POSITION_TYPE_BUY)
+        {
+         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+         if(bid <= 0.0 || bid - open_price < trigger_dist)
+            continue;
+         if(current_sl <= 0.0 || current_sl < open_price)
+            QM_TM_MoveSL(ticket, QM_StopRulesNormalizePrice(_Symbol, open_price), "kangaroo_tail_atr_break_even");
+        }
+      else if(pos_type == POSITION_TYPE_SELL)
+        {
+         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+         if(ask <= 0.0 || open_price - ask < trigger_dist)
+            continue;
+         if(current_sl <= 0.0 || current_sl > open_price)
+            QM_TM_MoveSL(ticket, QM_StopRulesNormalizePrice(_Symbol, open_price), "kangaroo_tail_atr_break_even");
+        }
      }
   }
 

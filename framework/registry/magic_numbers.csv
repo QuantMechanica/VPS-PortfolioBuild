@@ -13317,3 +13317,8 @@
 11915,fielder-deadtime-midpoint-reversion-h1,7,EURJPY.DWX,119150007,2026-06-23,Development,active
 11915,fielder-deadtime-midpoint-reversion-h1,8,GBPJPY.DWX,119150008,2026-06-23,Development,active
 11915,fielder-deadtime-midpoint-reversion-h1,9,AUDJPY.DWX,119150009,2026-06-23,Development,active
+11901,london-asia-range-breakout-m15,0,GBPUSD.DWX,119010000,2026-06-23,Development,active
+11901,london-asia-range-breakout-m15,1,EURUSD.DWX,119010001,2026-06-23,Development,active
+11901,london-asia-range-breakout-m15,2,EURJPY.DWX,119010002,2026-06-23,Development,active
+11901,london-asia-range-breakout-m15,3,GBPJPY.DWX,119010003,2026-06-23,Development,active
+11901,london-asia-range-breakout-m15,4,AUDJPY.DWX,119010004,2026-06-23,Development,active

@@ -12,8 +12,8 @@
 //
 // Mechanics (long-only mean reversion, closed-bar reads at shift 1):
 //   Entry  EVENT : Close(1) < lower Bollinger Band(20, bb_entry_std). The source
-//                  "volume > 0" guard is a no-op on .DWX (tick volume is always
-//                  positive on closed bars) and is therefore omitted. Source
+//                  "volume > 0" guard is implemented as a single closed-bar
+//                  tick-volume check. Source
 //                  defaults disable the RSI / MFI / EMA buy guards; an OPTIONAL
 //                  RSI buy guard is provided (off by default) for the P3 sweep.
 //   Exit   STATE : MFI(14) > mfi_exit  AND  Close(1) > upper BB(20, bb_exit_std).
@@ -125,7 +125,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(volume1 <= 0)
       return false;
 
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
+   const double close1 = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, 1);
    if(close1 <= 0.0)
       return false;
 
@@ -256,7 +256,7 @@ bool Strategy_ExitSignal()
    if(!(mfi1 > strategy_mfi_exit))
       return false;
 
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
+   const double close1 = QM_SMA(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, 1);
    if(close1 <= 0.0)
       return false;
 

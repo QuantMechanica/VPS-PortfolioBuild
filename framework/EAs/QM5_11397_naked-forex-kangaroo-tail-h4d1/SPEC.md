@@ -4,7 +4,7 @@
 **Slug:** `naked-forex-kangaroo-tail-h4d1`
 **Source:** `94a3a139-a123-57c2-ae40-b5513532e244` (see `strategy-seeds/sources/94a3a139-a123-57c2-ae40-b5513532e244/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-23
 
 ---
 
@@ -12,14 +12,14 @@
 
 Trades the "Kangaroo Tail" single-bar pin-bar reversal from Naked Forex (Ch.8).
 The signal is evaluated on the just-closed bar (shift 1). A bullish kangaroo
-tail goes LONG when: the lower tail is at least 60% of the bar range, both open
+tail goes LONG when the lower tail is at least 60% of the bar range, both open
 and close sit in the top third of the range, the body lies entirely within the
 prior bar's high/low range, and the bar's low pierces the lowest low of the
-preceding 20 bars (an N-bar-extreme context proxy that replaces visual support
-zones). The bearish mirror goes SHORT on a long upper tail piercing a 20-bar
-high. Entry is a market order on the bar after the completed pin; the stop is 5
-pips beyond the tail extreme (capped at 60 pips), the take-profit is 2× ATR(14)
-from entry, and the position is moved to break-even once price advances 1× ATR.
+preceding 20 bars. The bearish mirror goes SHORT on a long upper tail piercing a
+20-bar high. Entry is a one-bar-expiring stop order 5 pips beyond the signal
+bar extreme; the stop is 5 pips beyond the tail extreme (capped at 60 pips), the
+take-profit is 2× ATR(14) from entry, and the position is moved to break-even
+once price advances 1× ATR.
 
 ---
 
@@ -29,12 +29,13 @@ from entry, and the position is moved to break-even once price advances 1× ATR.
 |---|---|---|---|
 | `strategy_tail_min_ratio` | 0.60 | 0.50-0.70 | Min tail length as a fraction of the bar range |
 | `strategy_ctx_lookback` | 20 | 10-30 | N-bar extreme window for the context (S/R proxy) filter |
+| `strategy_entry_buffer_pips` | 5 | 1-15 | Stop-entry offset beyond the signal bar extreme, in pips |
 | `strategy_sl_buffer_pips` | 5 | 2-15 | Stop distance beyond the tail extreme, in pips |
 | `strategy_sl_cap_pips` | 60 | 30-100 | P2 cap on total stop distance, in pips |
 | `strategy_atr_period` | 14 | 7-28 | ATR period for the take-profit distance |
 | `strategy_tp_atr_mult` | 2.0 | 1.5-2.5 | Take-profit distance as a multiple of ATR |
 | `strategy_be_trigger_atr` | 1.0 | 0.5-2.0 | Move to break-even once price advances this × ATR |
-| `strategy_spread_cap_pips` | 20.0 | 5-40 | Block entry only if spread exceeds this many pips (fail-open on zero) |
+| `strategy_spread_cap_pips` | 20 | 5-40 | Block entry only if spread exceeds this many pips (fail-open on zero) |
 
 ---
 
@@ -101,3 +102,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v2 | 2026-06-23 | Rebuild from card with one-bar stop-entry semantics | ecf6c2b6-fd7f-4a94-af87-8a34992aed5b |
