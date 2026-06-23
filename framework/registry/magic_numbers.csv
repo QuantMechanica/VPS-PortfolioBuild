@@ -9480,6 +9480,9 @@
 10658,tv-orb-vwap,1,SP500.DWX,106580001,2026-06-17,Claude,active
 10658,tv-orb-vwap,2,WS30.DWX,106580002,2026-06-17,Claude,active
 10658,tv-orb-vwap,3,GDAXI.DWX,106580003,2026-06-17,Claude,active
+10658,tv-orb-vwap,4,XAUUSD.DWX,106580004,2026-06-23,Development,active
+10658,tv-orb-vwap,5,EURUSD.DWX,106580005,2026-06-23,Development,active
+10658,tv-orb-vwap,6,GBPUSD.DWX,106580006,2026-06-23,Development,active
 10659,tv-orb-retest,0,NDX.DWX,106590000,2026-06-17,Claude,active
 10659,tv-orb-retest,1,SP500.DWX,106590001,2026-06-17,Claude,active
 10659,tv-orb-retest,2,WS30.DWX,106590002,2026-06-17,Claude,active
