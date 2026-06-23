@@ -205,9 +205,13 @@ def _summarize(results: dict) -> str:
     for src in ("codex", "claude"):
         r = results.get(src) or {}
         if r.get("ok"):
+            # Show BOTH windows with their OWN reset time. Previously this printed the
+            # WEEKLY % next to the 5h reset, which read as "week=87% (reset 16:25)" and
+            # was repeatedly misread as the weekly reset. Governance keys off the WEEKLY
+            # window (quota_governor), so the weekly limit + weekly reset are primary.
             parts.append(
-                f"{src}: 5h={r.get('hour_pct')}% week={r.get('week_pct')}% "
-                f"(reset {r.get('hour_reset')})"
+                f"{src}: week={r.get('week_pct')}% (weekly reset {r.get('week_reset')}) "
+                f"· 5h={r.get('hour_pct')}% (5h reset {r.get('hour_reset')})"
             )
         else:
             parts.append(f"{src}: FAIL {r.get('error')}")
