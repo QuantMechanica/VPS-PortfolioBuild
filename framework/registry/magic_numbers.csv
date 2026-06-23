@@ -1042,6 +1042,8 @@
 1119,fps-toms-ma-rsi-h1,4,USDCAD.DWX,11190004,2026-05-17,Development,active
 1119,fps-toms-ma-rsi-h1,5,EURJPY.DWX,11190005,2026-05-17,Development,active
 1159,qp-spy-overnight-ma20,0,SP500.DWX,11590000,2026-05-17,Development,active
+1159,qp-spy-overnight-ma20,1,NDX.DWX,11590001,2026-06-23,Development,active
+1159,qp-spy-overnight-ma20,2,WS30.DWX,11590002,2026-06-23,Development,active
 1160,qp-gold-christmas-drift,0,XAUUSD.DWX,11600000,2026-05-26,Development,active
 1086,aa-dpm-tmom-ma_v2,100,SP500.DWX,10860100,2026-05-17,Development,active
 1086,aa-dpm-tmom-ma_v2,101,NDX.DWX,10860101,2026-05-17,Development,active
