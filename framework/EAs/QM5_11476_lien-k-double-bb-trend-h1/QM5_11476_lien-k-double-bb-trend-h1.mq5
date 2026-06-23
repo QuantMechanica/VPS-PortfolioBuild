@@ -82,19 +82,10 @@ input bool   strategy_no_friday_entry      = true; // card: no Friday entry
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard (fail-open on .DWX zero spread) + the
-// card's no-Friday-entry rule. All zone work is on the closed-bar entry path.
+// Cheap O(1) per-tick gate. Spread guard fails open on .DWX zero modeled spread.
+// The card's no-Friday-entry rule lives in Strategy_EntrySignal so exits still run.
 bool Strategy_NoTradeFilter()
   {
-   // No Friday entries (broker time). Open positions still manage/exit normally.
-   if(strategy_no_friday_entry)
-     {
-      MqlDateTime dt;
-      TimeToStruct(TimeCurrent(), dt);
-      if(dt.day_of_week == 5) // Friday
-         return true;
-     }
-
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
@@ -112,6 +103,23 @@ bool Strategy_NoTradeFilter()
 // Double-BB zone entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   // No Friday entries (broker time). Open positions still manage/exit normally.
+   if(strategy_no_friday_entry)
+     {
+      MqlDateTime dt;
+      TimeToStruct(TimeCurrent(), dt);
+      if(dt.day_of_week == 5)
+         return false;
+     }
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -187,6 +195,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl     = QM_StopRulesNormalizePrice(_Symbol, sl);
       req.tp     = 0.0;   // no fixed TP — zone-exit rule rides the trend
       req.reason = "double_bb_buy_zone";
+      req.symbol_slot = qm_magic_slot_offset;
       return true;
      }
 
@@ -211,6 +220,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = QM_StopRulesNormalizePrice(_Symbol, sl_s);
    req.tp     = 0.0;
    req.reason = "double_bb_sell_zone";
+   req.symbol_slot = qm_magic_slot_offset;
    return true;
   }
 
