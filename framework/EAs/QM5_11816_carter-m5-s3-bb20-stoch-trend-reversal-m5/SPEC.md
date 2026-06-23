@@ -1,8 +1,8 @@
 # QM5_11816_carter-m5-s3-bb20-stoch-trend-reversal-m5 - Strategy Spec
 
 **EA ID:** QM5_11816
-**Slug:** `carter-m5-s3-bb20-stoch-trend-reversal-m5`
-**Source:** `f4430cee-7efb-592e-bf0f-e469ef156b2d` (see `sources/20-forex-trading-strategies-5min-carter-367145560`)
+**Slug:** carter-m5-s3-bb20-stoch-trend-reversal-m5
+**Source:** f4430cee-7efb-592e-bf0f-e469ef156b2d (see approved card artifact)
 **Author of this spec:** Codex
 **Last revised:** 2026-06-23
 
@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades M5 reversals at Bollinger Band extremes when the reversal is aligned with the local Bollinger midline slope. A long signal requires the prior closed bar to touch or break the lower BB(20,2), Stochastic(5,3,3) %K to be below 20, and the BB midline to be rising versus the configured lookback. A short signal requires the prior closed bar to touch or break the upper band, %K to be above 80, and the BB midline to be falling. Stops are 2x ATR(14), take-profit is 4x ATR(14), and the trade-close hook exits if price reaches the BB midline or opposite band first.
+This EA trades M5 Bollinger Band reversal setups only when the reversal is aligned with the Bollinger midline trend proxy. A long setup requires the last closed bar to touch or close below the lower BB(20,2), Stochastic(5,3,3) %K below 20, and a rising BB midline from two bars earlier. A short setup mirrors this at the upper band with %K above 80 and a falling BB midline. Entries use market orders with a 2x ATR(14) stop and a 4x ATR(14) target; discretionary exits close open trades when price reaches the BB midline or opposite band.
 
 ---
 
@@ -18,18 +18,18 @@ The EA trades M5 reversals at Bollinger Band extremes when the reversal is align
 
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
-| `strategy_bb_period` | 20 | 5-100 | Bollinger Band period. |
-| `strategy_bb_deviation` | 2.0 | 0.5-5.0 | Bollinger Band deviation multiplier. |
-| `strategy_stoch_k` | 5 | 2-50 | Stochastic %K period. |
-| `strategy_stoch_d` | 3 | 1-20 | Stochastic %D period. |
-| `strategy_stoch_slowing` | 3 | 1-20 | Stochastic slowing period. |
-| `strategy_stoch_oversold` | 20.0 | 1-50 | Long-side oversold threshold. |
-| `strategy_stoch_overbought` | 80.0 | 50-99 | Short-side overbought threshold. |
-| `strategy_trend_lookback` | 2 | 1-20 | Closed-bar lookback for BB midline slope. |
-| `strategy_atr_period` | 14 | 2-100 | ATR period for stop and target distance. |
-| `strategy_sl_atr_mult` | 2.0 | 0.5-10.0 | Stop distance in ATR multiples. |
-| `strategy_tp_atr_mult` | 4.0 | 0.5-20.0 | Take-profit distance in ATR multiples. |
-| `strategy_spread_pct_of_stop` | 15.0 | 0-100 | Blocks only genuinely wide modeled spread versus stop distance. |
+| strategy_bb_period | 20 | 5-100 | Bollinger Band period from the card. |
+| strategy_bb_deviation | 2.0 | 0.5-5.0 | Bollinger Band standard-deviation multiplier. |
+| strategy_stoch_k | 5 | 2-50 | Stochastic %K period. |
+| strategy_stoch_d | 3 | 1-20 | Stochastic %D period. |
+| strategy_stoch_slowing | 3 | 1-20 | Stochastic slowing period. |
+| strategy_stoch_oversold | 20.0 | 0-50 | Long entry requires %K below this level. |
+| strategy_stoch_overbought | 80.0 | 50-100 | Short entry requires %K above this level. |
+| strategy_trend_slope_bars | 2 | 1-10 | BB midline slope lookback; default implements midline[1] vs midline[3]. |
+| strategy_atr_period | 14 | 2-100 | ATR period for stop and target distance. |
+| strategy_sl_atr_mult | 2.0 | 0.25-10.0 | Stop-loss distance in ATR multiples. |
+| strategy_tp_atr_mult | 4.0 | 0.25-20.0 | Take-profit distance in ATR multiples. |
+| strategy_max_spread_points | 35 | 0-500 | Entry block for genuinely wide positive spread; zero modeled spread remains tradeable. |
 
 Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not re-listed here.
 
@@ -38,13 +38,13 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` - Card target FX pair with M5 DWX data available.
-- `GBPUSD.DWX` - Card target FX pair with M5 DWX data available.
-- `USDJPY.DWX` - Card target FX pair with M5 DWX data available.
-- `USDCHF.DWX` - Card target FX pair with M5 DWX data available.
+- EURUSD.DWX - Card target FX pair with M5 DWX data available.
+- GBPUSD.DWX - Card target FX pair with M5 DWX data available.
+- USDJPY.DWX - Card target FX pair with M5 DWX data available.
+- USDCHF.DWX - Card target FX pair with M5 DWX data available.
 
 **Explicitly NOT for:**
-- Non-card symbols - The approved card names only the four FX pairs above.
+- Non-FX `.DWX` symbols - The approved card names four FX pairs only and does not authorize index, metal, energy, or crypto ports.
 
 ---
 
@@ -52,9 +52,9 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `M5` |
+| Base timeframe | M5 |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` via framework OnTick gate |
 
 ---
 
@@ -63,10 +63,10 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 150 |
-| Typical hold time | not specified in card frontmatter |
-| Expected drawdown profile | not specified in card frontmatter |
-| Regime preference | mean-reversion with trend filter |
-| Win rate target (qualitative) | not specified in card frontmatter |
+| Typical hold time | Card frontmatter does not specify; expected intraday M5 holds until BB midline/opposite band, 4x ATR target, or 2x ATR stop. |
+| Expected drawdown profile | Card frontmatter does not specify; ATR-bounded single-position mean-reversion losses. |
+| Regime preference | Mean-reversion entries aligned with a local BB-midline trend. |
+| Win rate target (qualitative) | Card frontmatter does not specify; medium expected from frequent M5 reversal profile. |
 
 ---
 
@@ -74,10 +74,10 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 
 This card was mechanised from:
 
-**Source ID:** `f4430cee-7efb-592e-bf0f-e469ef156b2d`
-**Source type:** book / local PDF
-**Pointer:** `367145560-20-forex-trading-strategies-5-minute-time-frame-pdf.pdf`, Thomas Carter, "20 Forex Trading Strategies (5 Minute Time Frame)", Strategy 3
-**R1-R4 verdict (Q00):** all R1-R4 PASS per frontmatter in `artifacts/cards_approved/QM5_11816_carter-m5-s3-bb20-stoch-trend-reversal-m5.md`; the body table contains an R1 conflict noted in the build result.
+**Source ID:** f4430cee-7efb-592e-bf0f-e469ef156b2d
+**Source type:** book/PDF
+**Pointer:** Thomas Carter, "20 Forex Trading Strategies (5 Minute Time Frame)", 2014, Strategy 3; local PDF `367145560-20-forex-trading-strategies-5-minute-time-frame-pdf.pdf`
+**R1-R4 verdict (Q00):** all PASS per `artifacts/cards_approved/QM5_11816_carter-m5-s3-bb20-stoch-trend-reversal-m5.md`
 
 ---
 

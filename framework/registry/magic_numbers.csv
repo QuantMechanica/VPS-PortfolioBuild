@@ -11645,10 +11645,10 @@
 11722,tc-m5-s8-triple-bb-rsi-stoch,1,GBPUSD.DWX,117220001,2026-06-18,Development,active
 11722,tc-m5-s8-triple-bb-rsi-stoch,2,USDJPY.DWX,117220002,2026-06-18,Development,active
 11722,tc-m5-s8-triple-bb-rsi-stoch,3,AUDUSD.DWX,117220003,2026-06-18,Development,active
-11724,tc-m5-s11-mtf-h4-ema-macd-stoch,0,EURUSD.DWX,117240000,2026-06-18,Claude,reserved
-11724,tc-m5-s11-mtf-h4-ema-macd-stoch,1,GBPUSD.DWX,117240001,2026-06-18,Claude,reserved
-11724,tc-m5-s11-mtf-h4-ema-macd-stoch,2,USDJPY.DWX,117240002,2026-06-18,Claude,reserved
-11724,tc-m5-s11-mtf-h4-ema-macd-stoch,3,AUDUSD.DWX,117240003,2026-06-18,Claude,reserved
+11724,tc-m5-s11-mtf-h4-ema-macd-stoch,0,EURUSD.DWX,117240000,2026-06-18,Claude,active
+11724,tc-m5-s11-mtf-h4-ema-macd-stoch,1,GBPUSD.DWX,117240001,2026-06-18,Claude,active
+11724,tc-m5-s11-mtf-h4-ema-macd-stoch,2,USDJPY.DWX,117240002,2026-06-18,Claude,active
+11724,tc-m5-s11-mtf-h4-ema-macd-stoch,3,AUDUSD.DWX,117240003,2026-06-18,Claude,active
 11725,tc-m5-s12-ema-laguerre,0,EURUSD.DWX,117250000,2026-06-18,Development,active
 11725,tc-m5-s12-ema-laguerre,1,GBPUSD.DWX,117250001,2026-06-18,Development,active
 11725,tc-m5-s12-ema-laguerre,2,USDJPY.DWX,117250002,2026-06-18,Development,active
@@ -13345,3 +13345,7 @@
 9293,mql5-trix-wpr-cross,0,EURUSD.DWX,92930000,2026-06-23,Development,active
 9293,mql5-trix-wpr-cross,1,GBPJPY.DWX,92930001,2026-06-23,Development,active
 9293,mql5-trix-wpr-cross,2,CHFJPY.DWX,92930002,2026-06-23,Development,active
+9703,ff-rsi2-scalp-m15,0,EURUSD.DWX,97030000,2026-06-23,Development,active
+9703,ff-rsi2-scalp-m15,1,GBPUSD.DWX,97030001,2026-06-23,Development,active
+9703,ff-rsi2-scalp-m15,2,USDJPY.DWX,97030002,2026-06-23,Development,active
+9703,ff-rsi2-scalp-m15,3,XAUUSD.DWX,97030003,2026-06-23,Development,active

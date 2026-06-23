@@ -1,36 +1,45 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11816 carter-m5-s3-bb20-stoch-trend-reversal-m5 — BB(20) band extreme + Stoch reversal, trend-filtered (M5)"
+#property description "QM5_11816 Carter M5 S3 BB20 Stoch Trend Reversal"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11816 carter-m5-s3-bb20-stoch-trend-reversal-m5
+// QuantMechanica V5 EA SKELETON
 // -----------------------------------------------------------------------------
-// Source: Thomas Carter, "20 Forex Trading Strategies (5 Minute Time Frame)",
-//         2014, Strategy 3.
-// Card: artifacts/cards_approved/QM5_11816_carter-m5-s3-bb20-stoch-trend-reversal-m5.md
-//       (g0_status APPROVED).
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails). The framework provides:
 //
-// Mechanics (closed-bar reads at shift 1; M5):
-//   Trend STATE (filter): BB(period) midline slope. Rising midline
-//                         (bbmid[1] > bbmid[3]) = uptrend -> longs only.
-//                         Falling (bbmid[1] < bbmid[3]) = downtrend -> shorts only.
-//   Overextension STATE : Long  -> prior bar low pierced the BB lower band
-//                         (Low[1] <= BB_Lower[1]) and Stoch %K[1] < 20.
-//                         Short -> prior bar high pierced the BB upper band
-//                         (High[1] >= BB_Upper[1]) and Stoch %K[1] > 80.
-//   Stop        : QM_StopATR, sl_atr_mult * ATR(atr_period).
-//   Take profit : QM_TakeATR at tp_atr_mult * ATR(atr_period); discretionary
-//                 exit closes at BB midline/opposite band when reached.
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
+//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
+//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
+//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
+//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
+//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
+//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
 //
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
-// else is framework wiring and MUST stay intact.
+// DO NOT
+//   - Write per-EA IsNewBar() — use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//     use the QM_* readers above. The framework pools handles and releases them
+//     on shutdown.
+//   - CopyRates over warmup windows on every tick. If you genuinely need raw
+//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
+//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
+//     to magic_numbers.csv, run:
+//         python framework/scripts/update_magic_resolver.py
+//     This is idempotent and preserves all rows.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 11816;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -39,10 +48,16 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
+//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -50,143 +65,187 @@ input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_bb_period         = 20;     // Bollinger Band period
-input double strategy_bb_deviation      = 2.0;    // Bollinger Band deviation
-input int    strategy_stoch_k           = 5;      // Stochastic %K period
-input int    strategy_stoch_d           = 3;      // Stochastic %D period
-input int    strategy_stoch_slowing     = 3;      // Stochastic slowing
-input double strategy_stoch_oversold    = 20.0;   // Stochastic oversold threshold
-input double strategy_stoch_overbought  = 80.0;   // Stochastic overbought threshold
-input int    strategy_trend_lookback    = 2;      // midline slope lookback (bars before shift 1)
-input int    strategy_atr_period        = 14;     // ATR period for stop/target
-input double strategy_sl_atr_mult       = 2.0;    // stop distance = mult * ATR
-input double strategy_tp_atr_mult       = 4.0;    // take-profit distance = mult * ATR
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input int    strategy_bb_period          = 20;
+input double strategy_bb_deviation       = 2.0;
+input int    strategy_stoch_k            = 5;
+input int    strategy_stoch_d            = 3;
+input int    strategy_stoch_slowing      = 3;
+input double strategy_stoch_oversold     = 20.0;
+input double strategy_stoch_overbought   = 80.0;
+input int    strategy_trend_slope_bars   = 2;
+input int    strategy_atr_period         = 14;
+input double strategy_sl_atr_mult        = 2.0;
+input double strategy_tp_atr_mult        = 4.0;
+input int    strategy_max_spread_points  = 35;
 
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
-
-// Cheap O(1) per-tick gate. Spread guard only — fail-open on .DWX zero spread.
-bool Strategy_NoTradeFilter()
+double Strategy_Close(const ENUM_TIMEFRAMES tf, const int shift)
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
+   double values[1];
+   if(CopyClose(_Symbol, tf, shift, 1, values) != 1) // perf-allowed: single closed-bar OHLC read; no framework OHLC reader exists.
+      return 0.0;
+   return values[0];
+  }
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to the entry gate, do not block here
+double Strategy_High(const ENUM_TIMEFRAMES tf, const int shift)
+  {
+   double values[1];
+   if(CopyHigh(_Symbol, tf, shift, 1, values) != 1) // perf-allowed: single closed-bar OHLC read; no framework OHLC reader exists.
+      return 0.0;
+   return values[0];
+  }
 
-   const double stop_distance = strategy_sl_atr_mult * atr_value;
-   if(stop_distance <= 0.0)
+double Strategy_Low(const ENUM_TIMEFRAMES tf, const int shift)
+  {
+   double values[1];
+   if(CopyLow(_Symbol, tf, shift, 1, values) != 1) // perf-allowed: single closed-bar OHLC read; no framework OHLC reader exists.
+      return 0.0;
+   return values[0];
+  }
+
+void Strategy_ResetRequest(QM_EntryRequest &req)
+  {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+  }
+
+bool Strategy_LongSignal()
+  {
+   const int slope_shift = 1 + MathMax(1, strategy_trend_slope_bars);
+   const double lower1 = QM_BB_Lower(_Symbol, PERIOD_M5, strategy_bb_period, strategy_bb_deviation, 1);
+   const double middle1 = QM_BB_Middle(_Symbol, PERIOD_M5, strategy_bb_period, strategy_bb_deviation, 1);
+   const double middle_old = QM_BB_Middle(_Symbol, PERIOD_M5, strategy_bb_period, strategy_bb_deviation, slope_shift);
+   const double k1 = QM_Stoch_K(_Symbol, PERIOD_M5, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
+   const double low1 = Strategy_Low(PERIOD_M5, 1);
+   const double close1 = Strategy_Close(PERIOD_M5, 1);
+   if(lower1 <= 0.0 || middle1 <= 0.0 || middle_old <= 0.0 || low1 <= 0.0 || close1 <= 0.0)
       return false;
 
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   const bool band_touch = (low1 <= lower1 || close1 <= lower1);
+   const bool stochastic_extreme = (k1 < strategy_stoch_oversold);
+   const bool trend_up = (middle1 > middle_old);
+   return (band_touch && stochastic_extreme && trend_up);
+  }
+
+bool Strategy_ShortSignal()
+  {
+   const int slope_shift = 1 + MathMax(1, strategy_trend_slope_bars);
+   const double upper1 = QM_BB_Upper(_Symbol, PERIOD_M5, strategy_bb_period, strategy_bb_deviation, 1);
+   const double middle1 = QM_BB_Middle(_Symbol, PERIOD_M5, strategy_bb_period, strategy_bb_deviation, 1);
+   const double middle_old = QM_BB_Middle(_Symbol, PERIOD_M5, strategy_bb_period, strategy_bb_deviation, slope_shift);
+   const double k1 = QM_Stoch_K(_Symbol, PERIOD_M5, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
+   const double high1 = Strategy_High(PERIOD_M5, 1);
+   const double close1 = Strategy_Close(PERIOD_M5, 1);
+   if(upper1 <= 0.0 || middle1 <= 0.0 || middle_old <= 0.0 || high1 <= 0.0 || close1 <= 0.0)
+      return false;
+
+   const bool band_touch = (high1 >= upper1 || close1 >= upper1);
+   const bool stochastic_extreme = (k1 > strategy_stoch_overbought);
+   const bool trend_down = (middle1 < middle_old);
+   return (band_touch && stochastic_extreme && trend_down);
+  }
+
+// -----------------------------------------------------------------------------
+// Strategy hooks — implement these against the card mechanically.
+// -----------------------------------------------------------------------------
+
+// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
+// regime filter). Cheap O(1) checks only — runs on every tick.
+bool Strategy_NoTradeFilter()
+  {
+   if(_Period != PERIOD_M5)
       return true;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+      return true;
+
+   if(strategy_max_spread_points > 0 && ask > bid)
+     {
+      const double spread_points = (ask - bid) / point;
+      if(spread_points > strategy_max_spread_points)
+         return true;
+     }
 
    return false;
   }
 
-// Reversal entry (both directions). Caller guarantees QM_IsNewBar() == true.
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
+// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+   Strategy_ResetRequest(req);
+
+   const double atr = QM_ATR(_Symbol, PERIOD_M5, strategy_atr_period, 1);
+   if(atr <= 0.0)
       return false;
 
-   // --- Bollinger bands at the prior closed bar (deviation arg mandatory) ---
-   const double bb_upper = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
-   const double bb_lower = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
-   if(bb_upper <= 0.0 || bb_lower <= 0.0)
-      return false;
+   if(Strategy_LongSignal())
+     {
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(entry <= 0.0)
+         return false;
+      req.type = QM_BUY;
+      req.sl = QM_StopATRFromValue(_Symbol, req.type, entry, atr, strategy_sl_atr_mult);
+      req.tp = QM_TakeATRFromValue(_Symbol, req.type, entry, atr, strategy_tp_atr_mult);
+      req.reason = "CARTER_M5_S3_BB_STOCH_LONG";
+      return (req.sl > 0.0 && req.tp > 0.0);
+     }
 
-   // --- Trend STATE: BB midline slope over the trend lookback window ---
-   const double bb_mid_now  = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
-   const double bb_mid_prev = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation,
-                                           1 + strategy_trend_lookback);
-   if(bb_mid_now <= 0.0 || bb_mid_prev <= 0.0)
-      return false;
-   const bool trend_up   = (bb_mid_now > bb_mid_prev);
-   const bool trend_down = (bb_mid_now < bb_mid_prev);
+   if(Strategy_ShortSignal())
+     {
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(entry <= 0.0)
+         return false;
+      req.type = QM_SELL;
+      req.sl = QM_StopATRFromValue(_Symbol, req.type, entry, atr, strategy_sl_atr_mult);
+      req.tp = QM_TakeATRFromValue(_Symbol, req.type, entry, atr, strategy_tp_atr_mult);
+      req.reason = "CARTER_M5_S3_BB_STOCH_SHORT";
+      return (req.sl > 0.0 && req.tp > 0.0);
+     }
 
-   // --- Overextension STATE: prior bar pierced a band (perf-allowed single reads) ---
-   const double low1  = iLow(_Symbol, _Period, 1);  // perf-allowed: single closed-bar read
-   const double high1 = iHigh(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   if(low1 <= 0.0 || high1 <= 0.0)
-      return false;
-   const bool pierced_lower = (low1  <= bb_lower);
-   const bool pierced_upper = (high1 >= bb_upper);
-
-   // --- Stochastic STATE: card requires %K in the extreme zone on the closed bar ---
-   const double k_now = QM_Stoch_K(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d,
-                                   strategy_stoch_slowing, 1);
-   if(k_now < 0.0)
-      return false;
-   const bool stoch_oversold   = (k_now < strategy_stoch_oversold);
-   const bool stoch_overbought = (k_now > strategy_stoch_overbought);
-
-   // --- Compose: long fade in an uptrend, short fade in a downtrend ---
-   const bool long_setup  = trend_up   && pierced_lower && stoch_oversold;
-   const bool short_setup = trend_down && pierced_upper && stoch_overbought;
-   if(!long_setup && !short_setup)
-      return false;
-
-   const QM_OrderType side = long_setup ? QM_BUY : QM_SELL;
-   const double entry = long_setup ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                   : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
-      return false;
-
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false;
-
-   const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr_value, strategy_sl_atr_mult);
-   if(sl <= 0.0)
-      return false;
-   const double tp = QM_TakeATRFromValue(_Symbol, side, entry, atr_value, strategy_tp_atr_mult);
-   if(tp <= 0.0)
-      return false;
-
-   req.type = side;
-   req.price = 0.0;   // framework fills market price at send
-   req.sl = sl;
-   req.tp = tp;
-   req.reason = long_setup ? "bb_stoch_rev_long" : "bb_stoch_rev_short";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-   return true;
+   return false;
   }
 
-// Fixed ATR stop/target only; no active management.
+// Called every tick when an open position exists for this EA's magic.
+// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
+   // Card specifies fixed ATR SL/TP only; no trailing, break-even, or partial close.
   }
 
-// Close at BB midline or opposite band; SL/TP remain broker-side safeguards.
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   const double bb_mid = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
-   const double bb_upper = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
-   const double bb_lower = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1);
-   if(bb_mid <= 0.0 || bb_upper <= 0.0 || bb_lower <= 0.0)
+   const double middle1 = QM_BB_Middle(_Symbol, PERIOD_M5, strategy_bb_period, strategy_bb_deviation, 1);
+   const double upper1 = QM_BB_Upper(_Symbol, PERIOD_M5, strategy_bb_period, strategy_bb_deviation, 1);
+   const double lower1 = QM_BB_Lower(_Symbol, PERIOD_M5, strategy_bb_period, strategy_bb_deviation, 1);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(middle1 <= 0.0 || upper1 <= 0.0 || lower1 <= 0.0 || bid <= 0.0 || ask <= 0.0)
       return false;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
@@ -194,25 +253,22 @@ bool Strategy_ExitSignal()
          continue;
 
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(ptype == POSITION_TYPE_BUY)
-        {
-         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         return (bid > 0.0 && (bid >= bb_mid || bid >= bb_upper));
-        }
-      if(ptype == POSITION_TYPE_SELL)
-        {
-         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         return (ask > 0.0 && (ask <= bb_mid || ask <= bb_lower));
-        }
+      if(ptype == POSITION_TYPE_BUY && (bid >= middle1 || bid >= upper1))
+         return true;
+      if(ptype == POSITION_TYPE_SELL && (ask <= middle1 || ask <= lower1))
+         return true;
      }
 
    return false;
   }
 
-// Defer to the central news filter.
+// Optional news-filter override. Return TRUE to suppress trading regardless
+// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
+// custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false;
+   // News filtering is delegated to the framework's configured P8-compatible hook.
+   return false; // defer to QM_NewsAllowsTrade(...)
   }
 
 // -----------------------------------------------------------------------------
@@ -257,6 +313,8 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults.
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -270,8 +328,10 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -286,9 +346,14 @@ void OnTick()
         }
      }
 
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
 
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
@@ -308,6 +373,8 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
   {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
