@@ -3,18 +3,18 @@
 ; ea_id:        11901
 ; ea_slug:      london-asia-range-breakout-m15
 ; ea_version:   v5.0
-; set_version:  s20260620-001
+; set_version:  s20260623-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    M15
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   127ea2dbca587a15222c84079a73be1bd856eead0803ce33b01b704a553921e6
+; build_hash:   af49be61534cfa71a42920f8bb3a90ad793cc3cddd06753b63fde9b60812e203
 ; author:       Development
-; date:         2026-06-20
+; date:         2026-06-23
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
