@@ -4,24 +4,22 @@
 **Slug:** `tc20-h1-11-ema5shift-75ema-bb-rsi14`
 **Source:** `e78a9f1f-4e6a-563c-a080-915133d6ed28` (see `strategy-seeds/sources/e78a9f1f-4e6a-563c-a080-915133d6ed28/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-23
 
 ---
 
 ## 1. Strategy Logic
 
-On the close of each H1 bar the EA looks for a single trigger: a forward-shifted
-EMA(5) (the "5EMA shift=5", read by adding the 5-bar ma-shift to the bar offset)
-crossing the EMA(75). An upward cross arms a LONG; a downward cross arms a SHORT.
-The cross only becomes a trade when three trend/momentum STATES agree on the last
-closed bar: for a long, the close is above EMA(75), above the Bollinger(20,2)
-middle band, and RSI(14) is above 50 (mirror for shorts). The single cross EVENT
-plus three confirming STATES avoids the two-cross-same-bar zero-trade trap.
+On the close of each H1 bar the EA checks whether the candle closed above
+EMA(75) and above the Bollinger(20,2) middle band for a long setup, or below
+both levels for a short setup. The entry trigger is RSI(14) breaking above 50
+for a long or below 50 for a short on that same closed signal bar.
 
-Stop-loss is placed 2 pips beyond EMA(75) on the signal bar (card P2
-simplification), capped so the stop distance never exceeds 1.5×ATR(14). Take
-profit is a fixed multiple (default 2×) of the stop distance. Positions exit only
-on stop or target — no discretionary exit. One position per magic.
+Stop-loss is placed 2 pips beyond EMA(75) on the signal bar using the card's P2
+simplification, capped so the stop distance never exceeds 1.5x ATR(14). Take
+profit is a fixed multiple of the initial stop distance, defaulting to 2x because
+the card allows 1x or 2x. Positions exit only on stop or target; the EA has no
+discretionary exit rule.
 
 ---
 
@@ -29,8 +27,6 @@ on stop or target — no discretionary exit. One position per magic.
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_ema_fast_period` | 5 | 3-20 | Fast EMA period |
-| `strategy_ema_fast_shift` | 5 | 0-20 | Forward ma-shift of the fast EMA (the "shift=5") |
 | `strategy_ema_slow_period` | 75 | 30-200 | Slow EMA period — trend level |
 | `strategy_bb_period` | 20 | 10-30 | Bollinger period (middle band = SMA) |
 | `strategy_bb_deviation` | 2.0 | 1.0-3.0 | Bollinger deviation (state filter) |
@@ -40,7 +36,7 @@ on stop or target — no discretionary exit. One position per magic.
 | `strategy_atr_period` | 14 | 7-28 | ATR period for the SL cap |
 | `strategy_atr_sl_cap_mult` | 1.5 | 0.5-4.0 | SL distance capped at this × ATR |
 | `strategy_tp_rr` | 2.0 | 0.5-4.0 | TP = this × SL distance (1× or 2× per card) |
-| `strategy_spread_pct_of_stop` | 20.0 | 1-100 | Skip if spread > this % of stop distance |
+| `strategy_spread_cap_pips` | 20 | 1-100 | Skip if modeled spread exceeds this many pips |
 
 ---
 
@@ -72,8 +68,8 @@ on stop or target — no discretionary exit. One position per magic.
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | `~80` |
-| Typical hold time | `hours (intraday to ~1 day on H1)` |
-| Expected drawdown profile | `moderate; trend-follow with fixed ATR-capped stop` |
+| Typical hold time | `not specified in frontmatter; H1 SL/TP strategy implies hours to days` |
+| Expected drawdown profile | `not specified in frontmatter; fixed ATR-capped stop per trade` |
 | Regime preference | `trend` |
 | Win rate target (qualitative) | `medium` |
 
@@ -106,4 +102,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v1 | 2026-06-23 | Initial build from card | 5b6a8990-3506-415c-8b09-390d1de346d1 |

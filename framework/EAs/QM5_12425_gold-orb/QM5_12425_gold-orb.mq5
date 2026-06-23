@@ -99,6 +99,12 @@ input int    tp_points                  = 1200;
 // Enable long / short breakouts (card LongPosition / ShortPosition).
 input bool   enable_long                = true;
 input bool   enable_short               = true;
+// Source trailing stop sweep controls. Baseline default is OFF per the card's
+// V5 baseline; P3 can enable the source-style trail without code changes.
+input bool   strategy_trailing_enabled  = false;
+input int    trail_activate_points      = 700;
+input int    trail_lock_points          = 100;
+input int    trail_step_points          = 10;
 // Maximum H1 bars to spend forming the range before abandoning the session
 // (defensive bound; the range is normally final within a few bars).
 input int    max_forming_bars           = 24;
@@ -195,11 +201,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(day_broker != g_session_day)
       ResetSession(day_broker);
 
+   const double bar_open  = iOpen(_Symbol, PERIOD_H1, 1);    // perf-allowed
    const double bar_high  = iHigh(_Symbol, PERIOD_H1, 1);    // perf-allowed
    const double bar_low   = iLow(_Symbol, PERIOD_H1, 1);     // perf-allowed
    const double bar_close = iClose(_Symbol, PERIOD_H1, 1);   // perf-allowed
-   if(bar_high <= 0.0 || bar_low <= 0.0 || bar_close <= 0.0)
+   if(bar_open <= 0.0 || bar_high <= 0.0 || bar_low <= 0.0 || bar_close <= 0.0)
       return false;
+   const double body_high = MathMax(bar_open, bar_close);
+   const double body_low  = MathMin(bar_open, bar_close);
+   const bool   bullish   = (bar_close > bar_open);
+   const bool   bearish   = (bar_close < bar_open);
 
    // --- Seed the range on the trading-day anchor bar. ---
    if(!g_range_seeded)
@@ -241,11 +252,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;                       // no breakout while forming
      }
 
-   // --- Range is final: evaluate the breakout off the just-closed bar CLOSE. ---
+   // --- Range is final: evaluate the source breakout from the just-closed
+   //     candle body. Signal 11 requires a bullish body above resistance;
+   //     signal 10 requires a bearish body below support.
    QM_OrderType side;
-   if(enable_long && !g_long_taken && bar_close > g_range_high)
+   if(enable_long && !g_long_taken && bullish && body_high > g_range_high)
       side = QM_BUY;
-   else if(enable_short && !g_short_taken && bar_close < g_range_low)
+   else if(enable_short && !g_short_taken && bearish && body_low < g_range_low)
       side = QM_SELL;
    else
       return false;
@@ -283,10 +296,59 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return true;
   }
 
-// No active SL/TP management beyond the fixed exits (card V5 baseline). The
-// source trailing stop is a P3 sweep dimension only — OFF here.
+// Optional source-style trailing stop. Default OFF for the V5 baseline; when
+// enabled, it activates after 700 points, locks at least 100 points, and only
+// moves in 10-point steps.
 void Strategy_ManageOpenPosition()
   {
+   if(!strategy_trailing_enabled)
+      return;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0 || trail_activate_points <= 0 || trail_lock_points < 0 || trail_step_points <= 0)
+      return;
+
+   const double trail_distance = (trail_activate_points - trail_lock_points) * point;
+   const double step_distance = trail_step_points * point;
+   if(trail_distance <= 0.0 || step_distance <= 0.0)
+      return;
+
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double current_sl = PositionGetDouble(POSITION_SL);
+      if(open_price <= 0.0)
+         continue;
+
+      if(ptype == POSITION_TYPE_BUY)
+        {
+         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+         if(bid <= 0.0 || (bid - open_price) < trail_activate_points * point)
+            continue;
+         const double target_sl = QM_StopRulesNormalizePrice(_Symbol, bid - trail_distance);
+         if(target_sl > 0.0 && (current_sl <= 0.0 || target_sl > current_sl + step_distance))
+            QM_TM_MoveSL(ticket, target_sl, "gold_orb_trail_long");
+        }
+      else if(ptype == POSITION_TYPE_SELL)
+        {
+         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+         if(ask <= 0.0 || (open_price - ask) < trail_activate_points * point)
+            continue;
+         const double target_sl = QM_StopRulesNormalizePrice(_Symbol, ask + trail_distance);
+         if(target_sl > 0.0 && (current_sl <= 0.0 || target_sl < current_sl - step_distance))
+            QM_TM_MoveSL(ticket, target_sl, "gold_orb_trail_short");
+        }
+     }
   }
 
 // Exits are handled entirely by the fixed SL/TP attached at entry (card V5
