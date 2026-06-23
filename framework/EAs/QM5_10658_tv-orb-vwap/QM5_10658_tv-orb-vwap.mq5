@@ -81,7 +81,6 @@ int      g_vwap_hist_count    = 0;
 int      g_trades_today       = 0;
 bool     g_long_taken        = false;
 bool     g_short_taken       = false;
-datetime g_last_bar_session_open = 0;     // broker time of session open for current day
 
 // -----------------------------------------------------------------------------
 // Helpers
@@ -173,7 +172,7 @@ int VwapSlopeSign()
 // -----------------------------------------------------------------------------
 void AdvanceState_OnNewBar()
   {
-   const datetime bar_open_broker = iTime(_Symbol, _Period, 1);
+   const datetime bar_open_broker = iTime(_Symbol, _Period, 1); // perf-allowed: OR/VWAP structural state advances once per framework new-bar gate.
    if(bar_open_broker <= 0)
       return;
 
@@ -197,11 +196,11 @@ void AdvanceState_OnNewBar()
      }
 
    // --- session VWAP accumulation (typical price * tick volume) ---
-   const double h = iHigh(_Symbol, _Period, 1);
-   const double l = iLow(_Symbol, _Period, 1);
-   const double c = iClose(_Symbol, _Period, 1);
+   const double h = iHigh(_Symbol, _Period, 1); // perf-allowed: closed-bar OHLC for opening-range/VWAP structural state.
+   const double l = iLow(_Symbol, _Period, 1); // perf-allowed: closed-bar OHLC for opening-range/VWAP structural state.
+   const double c = iClose(_Symbol, _Period, 1); // perf-allowed: closed-bar OHLC for opening-range/VWAP structural state.
    const double typ = (h + l + c) / 3.0;
-   const double vol = (double)iVolume(_Symbol, _Period, 1);
+   const double vol = (double)iVolume(_Symbol, _Period, 1); // perf-allowed: closed-bar tick-volume proxy for VWAP, once per new bar.
    g_vwap_cum_pv  += typ * vol;
    g_vwap_cum_vol += vol;
    if(g_vwap_cum_vol > 0.0)
@@ -237,7 +236,7 @@ double VolBaseline()
    int cnt = 0;
    for(int s = 2; s <= n + 1; ++s)
      {
-      double v = (double)iVolume(_Symbol, _Period, s);
+      double v = (double)iVolume(_Symbol, _Period, s); // perf-allowed: bounded closed-bar volume baseline, once per new bar.
       if(v <= 0.0)
          continue;
       sum += v;
@@ -253,9 +252,9 @@ double VolBaseline()
 //   short-strength = (high - close) / (high - low) -> 1 = strong bear close
 double CandleClosePosition()
   {
-   const double h = iHigh(_Symbol, _Period, 1);
-   const double l = iLow(_Symbol, _Period, 1);
-   const double c = iClose(_Symbol, _Period, 1);
+   const double h = iHigh(_Symbol, _Period, 1); // perf-allowed: closed-bar candle-strength structural read.
+   const double l = iLow(_Symbol, _Period, 1); // perf-allowed: closed-bar candle-strength structural read.
+   const double c = iClose(_Symbol, _Period, 1); // perf-allowed: closed-bar candle-strength structural read.
    const double rng = h - l;
    if(rng <= 0.0)
       return 0.5;
@@ -283,6 +282,14 @@ bool Strategy_NoTradeFilter()
 // AdvanceState_OnNewBar() has already run this bar.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    if(!g_or_ready)
       return false;
    if(g_trades_today >= InpMaxTradesPerDay)
@@ -294,8 +301,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(or_range <= 0.0)
       return false;
 
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double vol1   = (double)iVolume(_Symbol, _Period, 1);
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: closed-bar breakout confirmation after framework new-bar gate.
+   const double vol1   = (double)iVolume(_Symbol, _Period, 1); // perf-allowed: closed-bar breakout volume after framework new-bar gate.
    const double vol_base = VolBaseline();
    const bool vol_ok = (vol_base <= 0.0) ? true : (vol1 > vol_base * InpVolMult);
    const int slope = VwapSlopeSign();

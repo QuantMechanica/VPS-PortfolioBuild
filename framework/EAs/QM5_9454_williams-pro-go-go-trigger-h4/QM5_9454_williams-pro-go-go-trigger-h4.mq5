@@ -39,6 +39,10 @@ input double strategy_gap_clip_atr_mult           = 0.5;
 input double strategy_spread_atr_mult             = 0.20;
 input int    strategy_time_stop_bars              = 18;
 
+double g_signal_pro_now = 0.0;
+double g_signal_pro_prev = 0.0;
+bool   g_signal_cache_ready = false;
+
 bool SelectOurPosition(ENUM_POSITION_TYPE &pos_type, ulong &ticket, datetime &open_time)
   {
    pos_type = POSITION_TYPE_BUY;
@@ -136,7 +140,9 @@ bool SpreadTooWide()
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
       return true;
-   if(ask <= bid)
+   if(ask < bid)
+      return true;
+   if(ask == bid)
       return false;
 
    const double atr = QM_ATR(_Symbol, strategy_tf, strategy_atr_period, 1);
@@ -171,6 +177,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
+   g_signal_cache_ready = false;
 
    if(strategy_pro_go_period < 2 || strategy_sma_period < 2 ||
       strategy_atr_period < 1 || strategy_stop_atr_mult <= 0.0 ||
@@ -183,6 +190,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double go_prev = 0.0;
    if(!WilliamsProGo(1, pro_now, go_now) || !WilliamsProGo(2, pro_prev, go_prev))
       return false;
+   g_signal_pro_now = pro_now;
+   g_signal_pro_prev = pro_prev;
+   g_signal_cache_ready = true;
 
    MqlRates closed_bar;
    if(!ReadClosedBar(1, closed_bar))
@@ -241,16 +251,12 @@ bool Strategy_ExitSignal()
          return true;
      }
 
-   double pro_now = 0.0;
-   double go_now = 0.0;
-   double pro_prev = 0.0;
-   double go_prev = 0.0;
-   if(!WilliamsProGo(1, pro_now, go_now) || !WilliamsProGo(2, pro_prev, go_prev))
+   if(!g_signal_cache_ready)
       return false;
 
-   if(pos_type == POSITION_TYPE_BUY && pro_prev > 0.0 && pro_now <= 0.0)
+   if(pos_type == POSITION_TYPE_BUY && g_signal_pro_prev > 0.0 && g_signal_pro_now <= 0.0)
       return true;
-   if(pos_type == POSITION_TYPE_SELL && pro_prev < 0.0 && pro_now >= 0.0)
+   if(pos_type == POSITION_TYPE_SELL && g_signal_pro_prev < 0.0 && g_signal_pro_now >= 0.0)
       return true;
 
    return false;
