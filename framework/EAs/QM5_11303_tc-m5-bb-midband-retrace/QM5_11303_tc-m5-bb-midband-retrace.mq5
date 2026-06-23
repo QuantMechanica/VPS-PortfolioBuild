@@ -48,8 +48,8 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -80,7 +80,7 @@ bool Strategy_NoTradeFilter()
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
+      return true;  // no valid quote yet
 
    const double spread = ask - bid;
    if(spread <= 0.0)
@@ -130,9 +130,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    // --- Touch EVENT on the just-closed bar (single event/bar). ---
    // perf-allowed: single closed-bar OHLC reads (shift 1).
-   const double low1   = iLow(_Symbol, _Period, 1);
-   const double high1  = iHigh(_Symbol, _Period, 1);
-   const double close1 = iClose(_Symbol, _Period, 1);
+   const double low1   = iLow(_Symbol, _Period, 1);   // perf-allowed: fixed closed-bar touch read
+   const double high1  = iHigh(_Symbol, _Period, 1);  // perf-allowed: fixed closed-bar touch read
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: fixed closed-bar touch read
    if(low1 <= 0.0 || high1 <= 0.0 || close1 <= 0.0)
       return false;
 
@@ -197,6 +197,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.tp     = tp;
    req.reason = (side == QM_BUY) ? "bb_midband_retrace_long"
                                  : "bb_midband_retrace_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
