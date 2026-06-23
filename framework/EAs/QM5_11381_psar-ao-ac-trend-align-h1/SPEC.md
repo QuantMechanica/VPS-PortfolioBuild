@@ -4,25 +4,24 @@
 **Slug:** `psar-ao-ac-trend-align-h1`
 **Source:** `875997e6-a398-5eb7-a5ee-75e75a020ad6` (see `strategy-seeds/sources/875997e6-a398-5eb7-a5ee-75e75a020ad6/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-23
 
 ---
 
 ## 1. Strategy Logic
 
-Three-indicator Bill Williams trend-alignment on H1. The single trigger EVENT is a
-Parabolic SAR flip on the just-closed bar; the Awesome Oscillator (AO) and
-Accelerator Oscillator (AC) act as confirming STATES so the EA does not require
-two oscillator color-turns plus a SAR flip on the same bar (the .DWX zero-trade
-trap). AO = SMA(5) of hl2 minus SMA(34) of hl2; AC = AO minus SMA(5) of AO, both
-computed from `QM_SMA` on `PRICE_MEDIAN`.
+Three-indicator Bill Williams trend-alignment on H1. The EA reads the just-closed
+signal candle and trades only when Parabolic SAR position, Awesome Oscillator
+(AO), and Accelerator Oscillator (AC) all point the same way. AO = SMA(5) of hl2
+minus SMA(34) of hl2; AC = AO minus SMA(5) of AO, both computed from `QM_SMA` on
+`PRICE_MEDIAN`.
 
-Long when SAR moved from above price (shift 2) to below price (shift 1) AND AO is
-rising (AO[1] > AO[2]) AND AC is rising (AC[1] > AC[2]). Short is the mirror (SAR
-flips above price, AO and AC both falling). Stop = signal-bar low (long) or high
-(short), capped at 25 pips; take-profit = 1:1 reward:risk off the realised stop
-distance. Discretionary exit closes the position when both AO and AC reverse color
-against the open direction.
+Long when the PSAR dot is below the signal candle, AO is rising (AO[1] > AO[2]),
+and AC is rising (AC[1] > AC[2]). Short is the mirror: PSAR dot above the signal
+candle, AO falling, and AC falling. Stop = signal-bar low (long) or high (short),
+capped at 25 pips; take-profit = 1:1 reward:risk off the realised stop distance.
+Discretionary exit closes the position when both AO and AC reverse color against
+the open direction.
 
 ---
 
@@ -104,3 +103,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v2 | 2026-06-23 | Rebuild from approved card; implement literal PSAR position plus AO/AC color alignment | 1a440d81-04fe-4d51-bd2d-abe8e1bc7c56 |

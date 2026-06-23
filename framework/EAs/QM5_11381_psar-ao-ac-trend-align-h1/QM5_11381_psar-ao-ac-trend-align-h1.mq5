@@ -17,14 +17,14 @@
 //   AC    : AO - SMA5(AO). SMA5(AO) is a 5-bar mean of AO values (manual, since
 //           no handle takes AO as input). AC "green" when AC[s] > AC[s+1].
 //
-// TRIGGER (single EVENT) — PSAR flip on the just-closed bar:
-//   LONG  : PSAR was ABOVE price at shift 2 and is now BELOW price at shift 1.
-//   SHORT : PSAR was BELOW price at shift 2 and is now ABOVE price at shift 1.
-// Requiring two oscillator color-turn EVENTS plus the PSAR flip on the SAME bar
-// is the classic .DWX zero-trade trap (build prompt invariant #4). So AO/AC are
-// STATES confirming the flip, not coincident events:
-//   LONG  confirm : AO rising (AO[1] > AO[2]) AND AC rising (AC[1] > AC[2]).
-//   SHORT confirm : AO falling (AO[1] < AO[2]) AND AC falling (AC[1] < AC[2]).
+// ENTRY (closed signal bar = shift 1):
+//   LONG  : PSAR dot is below the signal candle AND AO is green/rising
+//           AND AC is green/rising.
+//   SHORT : PSAR dot is above the signal candle AND AO is red/falling
+//           AND AC is red/falling.
+// The card describes a same-bar PSAR flip as the "best signal", but the hard
+// entry bullets only require PSAR position. This build implements the hard
+// bullets literally and does not require multiple fresh cross events on one bar.
 //
 // STOP   : LONG = low of the signal (just-closed) bar; SHORT = high of it.
 //          Capped at strategy_sl_cap_pips (card P2 cap: 25 pips), pip-scaled.
@@ -76,26 +76,36 @@ input double strategy_spread_cap_pips   = 20.0;   // skip only if spread > this 
 // AC[shift] = AO[shift] - mean_{k=0..ac_sma-1} AO[shift+k].
 // All reads are closed-bar (shift >= 1). Bounded loops (ac_sma small).
 // -----------------------------------------------------------------------------
-double AO_Value(const int shift)
+bool AO_ValueAt(const int shift, double &ao_out)
   {
+   ao_out = 0.0;
+   if(strategy_ao_fast <= 0 || strategy_ao_slow <= strategy_ao_fast)
+      return false;
+
    const double fast = QM_SMA(_Symbol, _Period, strategy_ao_fast, shift, PRICE_MEDIAN);
    const double slow = QM_SMA(_Symbol, _Period, strategy_ao_slow, shift, PRICE_MEDIAN);
-   if(fast == 0.0 || slow == 0.0)
-      return 0.0;
-   return fast - slow;
+   if(fast <= 0.0 || slow <= 0.0)
+      return false;
+
+   ao_out = fast - slow;
+   return true;
   }
 
 // Returns false (and ao/ac unset) if any underlying SMA read is unavailable.
 bool AO_AC_At(const int shift, double &ao_out, double &ac_out)
   {
-   const double ao = AO_Value(shift);
-   if(ao == 0.0)
+   if(strategy_ac_sma <= 0)
       return false;
+
+   double ao = 0.0;
+   if(!AO_ValueAt(shift, ao))
+      return false;
+
    double sum = 0.0;
    for(int k = 0; k < strategy_ac_sma; ++k)
      {
-      const double ao_k = AO_Value(shift + k);
-      if(ao_k == 0.0)
+      double ao_k = 0.0;
+      if(!AO_ValueAt(shift + k, ao_k))
          return false;
       sum += ao_k;
      }
@@ -113,6 +123,12 @@ bool AO_AC_At(const int shift, double &ao_out, double &ac_out)
 // only a genuinely wide quoted spread blocks; zero/equal ask==bid passes.
 bool Strategy_NoTradeFilter()
   {
+   if(strategy_sar_step <= 0.0 || strategy_sar_max <= strategy_sar_step ||
+      strategy_ao_fast <= 0 || strategy_ao_slow <= strategy_ao_fast ||
+      strategy_ac_sma <= 0 || strategy_sl_cap_pips <= 0 ||
+      strategy_tp_rr <= 0.0 || strategy_spread_cap_pips <= 0.0)
+      return true;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
@@ -130,34 +146,33 @@ bool Strategy_NoTradeFilter()
   }
 
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
-// PSAR flip is the single EVENT; AO/AC alignment are confirming STATES.
+// PSAR position plus AO/AC direction implement the card's closed-candle entry.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // --- PSAR at the two most-recent closed bars (shift 1 = signal bar) ---
+   // --- PSAR at the signal bar (shift 1) ---
    const double sar1 = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 1);
-   const double sar2 = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 2);
-   if(sar1 <= 0.0 || sar2 <= 0.0)
+   if(sar1 <= 0.0)
       return false;
 
    const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0 || close2 <= 0.0)
+   if(close1 <= 0.0)
       return false;
 
    // PSAR position relative to price (dot below = bullish, above = bearish).
-   const bool sar_below_now  = (sar1 < close1);
-   const bool sar_above_now  = (sar1 > close1);
-   const bool sar_below_prev = (sar2 < close2);
-   const bool sar_above_prev = (sar2 > close2);
-
-   const bool flip_long  = (sar_above_prev && sar_below_now); // dot moved below = new bullish
-   const bool flip_short = (sar_below_prev && sar_above_now); // dot moved above = new bearish
-   if(!flip_long && !flip_short)
-      return false;
+   const bool sar_below = (sar1 < close1);
+   const bool sar_above = (sar1 > close1);
 
    // --- AO / AC states at the signal bar (shift 1) and prior bar (shift 2) ---
    double ao1 = 0.0, ac1 = 0.0, ao2 = 0.0, ac2 = 0.0;
@@ -173,12 +188,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    QM_OrderType dir;
    double stop_anchor;
-   if(flip_long && ao_rising && ac_rising)
+   if(sar_below && ao_rising && ac_rising)
      {
       dir = QM_BUY;
       stop_anchor = iLow(_Symbol, _Period, 1);  // perf-allowed: signal-bar low
      }
-   else if(flip_short && ao_falling && ac_falling)
+   else if(sar_above && ao_falling && ac_falling)
      {
       dir = QM_SELL;
       stop_anchor = iHigh(_Symbol, _Period, 1); // perf-allowed: signal-bar high
