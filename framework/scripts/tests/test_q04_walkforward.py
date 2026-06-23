@@ -97,5 +97,67 @@ class Q04WalkForwardTests(unittest.TestCase):
         self.assertIn("F1:trades=0", reason)
 
 
+class Q04LowFreqTests(unittest.TestCase):
+    """DL-076 low-freq pooled rescue."""
+
+    @staticmethod
+    def _fold(fid, trades, nets, completed=True):
+        return {"id": fid, "summary_path": "summary.json" if completed else None,
+                "trades": trades, "oos_nets": nets}
+
+    def test_eligibility_low_vs_high_frequency(self):
+        mod = _load_module()
+        # 3 folds, 9 trades total = 3/yr → eligible (< 15/yr)
+        low = [self._fold("F1", 3, [1, 1, -1]), self._fold("F2", 3, [1, 1, -1]),
+               self._fold("F3", 3, [1, 1, -1])]
+        self.assertTrue(mod.is_lowfreq_eligible(low))
+        # 60 trades total = 20/yr → NOT eligible (strict gate stays)
+        high = [self._fold("F1", 20, [1] * 20), self._fold("F2", 20, [1] * 20),
+                self._fold("F3", 20, [1] * 20)]
+        self.assertFalse(mod.is_lowfreq_eligible(high))
+        # an incomplete fold is never reclassified as low-freq
+        incomplete = [self._fold("F1", 3, [1]), self._fold("F2", 0, [], completed=False),
+                      self._fold("F3", 3, [1])]
+        self.assertFalse(mod.is_lowfreq_eligible(incomplete))
+
+    def test_pooled_pass_when_thin_years_pool_to_real_edge(self):
+        mod = _load_module()
+        # each year thin & one losing year (strict FAIL), but pooled is clearly profitable
+        folds = [self._fold("F1", 5, [3, 3, 3, -1, -1]),    # +7
+                 self._fold("F2", 4, [-1, -1, 2, 1]),        # +1, a weak year
+                 self._fold("F3", 5, [2, 2, 2, -1, -1])]     # +4
+        verdict, reason = mod.aggregate_verdict_lowfreq(folds)
+        self.assertEqual(verdict, "PASS_LOWFREQ")
+        self.assertIn("pool:pf_net=", reason)
+
+    def test_single_year_wonder_fails(self):
+        mod = _load_module()
+        # all the edge is in one year; other two had zero trades → robustness guard fails
+        folds = [self._fold("F1", 14, [5] * 10 + [-1] * 4),
+                 self._fold("F2", 0, []),
+                 self._fold("F3", 0, [])]
+        verdict, reason = mod.aggregate_verdict_lowfreq(folds)
+        self.assertEqual(verdict, "FAIL")
+        self.assertIn("single_year_wonder", reason)
+
+    def test_insufficient_pooled_trades_is_invalid(self):
+        mod = _load_module()
+        folds = [self._fold("F1", 2, [1, 1]), self._fold("F2", 2, [1, -1]),
+                 self._fold("F3", 2, [1, 1])]  # 6 pooled < 12 → INVALID, never a free pass
+        verdict, reason = mod.aggregate_verdict_lowfreq(folds)
+        self.assertEqual(verdict, "INVALID")
+        self.assertIn("insufficient_pooled_trades", reason)
+
+    def test_pooled_below_floor_fails(self):
+        mod = _load_module()
+        # enough trades, active in >=2 years, but pooled is a net loser → FAIL (bar unchanged)
+        folds = [self._fold("F1", 6, [1, 1, -3, -3, 1, 1]),
+                 self._fold("F2", 6, [1, 1, -3, -3, 1, 1]),
+                 self._fold("F3", 2, [1, -3])]
+        verdict, reason = mod.aggregate_verdict_lowfreq(folds)
+        self.assertEqual(verdict, "FAIL")
+        self.assertIn("below_floor", reason)
+
+
 if __name__ == "__main__":
     unittest.main()

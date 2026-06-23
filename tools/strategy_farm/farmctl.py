@@ -1475,6 +1475,16 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
     if verdict_upper in {"PASS", "AUTO_PASS", "MULTI_SEED_PASS"}:
         return "PASS", reason
 
+    # Q04 soft / low-freq pass tiers (DL-071 + DL-076): trust the runner's own
+    # aggregate verdict string. Q04 normalises to phase_key 'P3.5', which matches no
+    # branch below, so PASS_SOFT/PASS_LOWFREQ fell through to the
+    # `unknown_phase_runner_verdict` FAIL at the tail — latent since 2026-06-09 (zero
+    # live PASS_SOFT produced despite DL-071 being ratified). The per-phase
+    # cascade_pass_verdicts set is the real advance gate; here we only preserve the
+    # honest verdict string so the soft tiers stop silently degrading to FAIL.
+    if verdict_upper in {"PASS_SOFT", "PASS_LOWFREQ"}:
+        return verdict_upper, reason
+
     if phase_key == "P4":
         folds = int(summary.get("wf_folds_completed") or summary.get("fold_count") or 0)
         trades = int(summary.get("oos_total_trades") or summary.get("total_trades") or 0)
@@ -7827,7 +7837,7 @@ def pump(root: Path) -> dict[str, Any]:
     }
     cascade_pass_verdicts = {
         "Q03": {"PASS"},
-        "Q04": {"PASS", "PASS_SOFT"},  # DL-071: net-positive-with-variance soft-pass advances
+        "Q04": {"PASS", "PASS_SOFT", "PASS_LOWFREQ"},  # DL-071 soft-pass + DL-076 low-freq pooled pass advance
         "Q05": {"PASS"},
         "Q06": {"PASS"},
         "Q07": {"PASS"},
@@ -8027,7 +8037,7 @@ def pump(root: Path) -> dict[str, Any]:
             q04_ok = conn.execute(
                 "SELECT 1 FROM work_items WHERE ea_id=? AND symbol=? "
                 "AND phase IN ('Q04', 'P4') AND status='done' "
-                "AND verdict IN ('PASS', 'PASS_SOFT') LIMIT 1",
+                "AND verdict IN ('PASS', 'PASS_SOFT', 'PASS_LOWFREQ') LIMIT 1",
                 (wi["ea_id"], wi["symbol"]),
             ).fetchone()
             if not q04_ok:

@@ -2630,7 +2630,7 @@ def collect_ea_detail(ea_id: str, root: Path) -> dict[str, Any]:
             pf = mm.get("profit_factor")
             graded = 1 if (net is not None or pf is not None) else 0
             nonabl = 0 if mm.get("is_ablation") else 1
-            passish = 1 if (w.get("verdict") in ("PASS", "PASS_SOFT", "MULTI_SEED_PASS")) else 0
+            passish = 1 if (w.get("verdict") in ("PASS", "PASS_SOFT", "PASS_LOWFREQ", "MULTI_SEED_PASS")) else 0
             rankval = net if net is not None else (pf if pf is not None else float("-inf"))
             return (nonabl, graded, passish, rankval, w.get("updated_at") or "")
 

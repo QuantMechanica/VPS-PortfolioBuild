@@ -49,6 +49,23 @@ Q04_SOFT_MEAN_FLOOR = 1.10        # mean PF-net across folds must exceed this
 Q04_SOFT_MIN_FOLD_FLOOR = 0.80    # no fold may be below this (no catastrophic year)
 Q04_SOFT_MIN_POS_FRACTION = 2.0 / 3.0  # >= this fraction of folds must have PF-net > floor
 
+# Low-freq-aware Q04 (DL-076, OWNER-ratified 2026-06-23). A strategy firing only a few
+# times per year is sliced too thin by the 3×1yr OOS folds: a per-year PF from 5-10
+# trades is noise, not a robustness signal, and one thin year tanks the strict gate. For
+# LOW-FREQUENCY EAs only, additionally evaluate a single POOLED OOS window (all OOS years
+# concatenated) under the SAME PF-net > 1.0 bar — the statistically correct unit at that
+# sample size, NOT a softened threshold. The pooled stream is the concatenation of the 3
+# strict folds' realistic-net per-trade streams (no extra backtest; identical cost model).
+# Guards keep quality identical:
+#   (1) eligibility — avg < Q04_LOWFREQ_MAX_TRADES_PER_YEAR OOS trades/yr across the folds
+#   (2) Q04_LOWFREQ_MIN_POOLED_TRADES min pooled trades, else INVALID (never a free pass)
+#   (3) trades in >= Q04_LOWFREQ_MIN_ACTIVE_YEARS of the OOS years (no single-year wonder)
+# High-frequency EAs are untouched: the strict 3-fold is their only path. Only attempted
+# when the strict verdict is FAIL with every fold completed — never rescues INFRA/INVALID.
+Q04_LOWFREQ_MAX_TRADES_PER_YEAR = 15
+Q04_LOWFREQ_MIN_POOLED_TRADES = 12
+Q04_LOWFREQ_MIN_ACTIVE_YEARS = 2
+
 # Anchored expanding-window fold geometry. 2025 is the latest closed year
 # (per OWNER 2026-05-23). New full folds auto-add when a new year closes —
 # this list is the source of truth for *available* folds today.
@@ -188,18 +205,20 @@ def _gross_before_commission(trade: dict) -> float:
 
 
 def pf_net_from_stream(ea_id: int, symbol: str, fold: dict,
-                       model=None) -> tuple[float | None, int, float | None, float | None]:
+                       model=None) -> tuple[float | None, int, float | None, float | None, list[float]]:
     """DL-073 grading source: PF-net under the realistic %-notional commission model,
     computed post-hoc from the per-trade stream the fold backtest just emitted.
 
-    Returns (pf_net, n_trades, commission_total, gross_total), or (None, 0, None, None)
-    when no usable stream exists (caller falls back to the EA's flat-$7 self-report).
+    Returns (pf_net, n_trades, commission_total, gross_total, nets) where `nets` is the
+    list of realistic-net per-trade P&L inside the fold's OOS window (used by the DL-076
+    low-freq pooled verdict). Returns (None, 0, None, None, []) when no usable stream
+    exists (caller falls back to the EA's flat-$7 self-report).
     """
     from framework.scripts.q08_davey import common as q08common
     model = model or _commission_model()
     trades = q08common.load_trades_from_log(_q08_trade_stream_path(ea_id, symbol))
     if not trades:
-        return None, 0, None, None
+        return None, 0, None, None, []
     # Defensive OOS windowing: a fold backtest only runs its OOS year, but a stale stream
     # could carry other dates. Keep trades whose close ts is inside [oos_start, oos_end].
     oos_start = dt.datetime.fromisoformat(fold["oos_start"]).replace(tzinfo=dt.timezone.utc)
@@ -221,11 +240,11 @@ def pf_net_from_stream(ea_id: int, symbol: str, fold: dict,
         cost_total += cost
         gross_total += gross
     if not nets:
-        return None, 0, None, None
+        return None, 0, None, None, []
     pf = q08common.profit_factor(nets)
     if pf == float("inf"):      # no losing trades after cost → cap for a finite verdict
         pf = 999.0
-    return pf, len(nets), round(cost_total, 4), round(gross_total, 4)
+    return pf, len(nets), round(cost_total, 4), round(gross_total, 4), nets
 
 
 def resolve_ea_expert_path(repo_root: Path, ea_label: str) -> str | None:
@@ -286,6 +305,55 @@ def aggregate_verdict(fold_results: list[dict]) -> tuple[str, str]:
         return "PASS_SOFT", (f"soft:{n_pos}/{n}>floor,mean={mean_pf:.3f},"
                              f"min={min_pf:.3f};{detail}")
     return "FAIL", detail
+
+
+def is_lowfreq_eligible(strict_folds: list[dict]) -> bool:
+    """DL-076: True iff every strict fold completed AND the average OOS trades/yr is below
+    the low-freq threshold. Completed folds are required so the trade counts (and thus the
+    frequency classification) are trustworthy — an incomplete/INFRA fold must be re-run,
+    not reclassified as low-freq."""
+    if not strict_folds:
+        return False
+    if any(not f.get("summary_path") for f in strict_folds):
+        return False
+    total = sum(int(f.get("trades") or 0) for f in strict_folds)
+    return total < Q04_LOWFREQ_MAX_TRADES_PER_YEAR * len(strict_folds)
+
+
+def aggregate_verdict_lowfreq(strict_folds: list[dict]) -> tuple[str, str]:
+    """DL-076 pooled low-freq verdict. The pooled stream is the concatenation of the strict
+    folds' realistic-net per-trade P&L (oos_nets) — mathematically identical to one pooled
+    OOS backtest under the same DL-073 cost model, with no extra MT5 run. Same PF-net > 1.0
+    bar as the strict gate; only the windowing differs.
+
+      PASS_LOWFREQ : pooled PF-net > floor, >= MIN_POOLED_TRADES pooled trades, and trades
+                     in >= MIN_ACTIVE_YEARS of the OOS years (no single-year wonder).
+      INVALID      : too few pooled trades to compute a meaningful PF, or no per-trade
+                     stream available (a flat-$7 fallback fold cannot be pooled).
+      FAIL         : single-year wonder, or pooled PF-net <= floor.
+    """
+    from framework.scripts.q08_davey import common as q08common
+    if any(f.get("oos_nets") is None for f in strict_folds) or \
+            any(not f.get("summary_path") for f in strict_folds):
+        return "INVALID", "lowfreq_no_pooled_stream"
+    pooled_nets: list[float] = []
+    for f in strict_folds:
+        pooled_nets.extend(float(x) for x in (f.get("oos_nets") or []))
+    n_trades = len(pooled_nets)
+    active_years = sum(1 for f in strict_folds if int(f.get("trades") or 0) > 0)
+    if n_trades < Q04_LOWFREQ_MIN_POOLED_TRADES:
+        return "INVALID", (f"lowfreq_insufficient_pooled_trades:"
+                           f"{n_trades}<{Q04_LOWFREQ_MIN_POOLED_TRADES}")
+    pf = q08common.profit_factor(pooled_nets)
+    if pf == float("inf"):       # no losing trades after cost → cap for a finite verdict
+        pf = 999.0
+    detail = (f"pool:pf_net={pf:.3f},pooled_trades={n_trades},"
+              f"active_years={active_years}/{len(strict_folds)}")
+    if active_years < Q04_LOWFREQ_MIN_ACTIVE_YEARS:
+        return "FAIL", f"lowfreq_single_year_wonder;{detail}"
+    if pf > PF_NET_FLOOR_PER_FOLD:
+        return "PASS_LOWFREQ", f"lowfreq_pooled_pass;{detail}"
+    return "FAIL", f"lowfreq_pooled_pf_below_floor;{detail}"
 
 
 def _mt5_date(iso_date: str) -> str:
@@ -382,11 +450,12 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
     # DL-073: grade from the realistic %-notional model applied post-hoc to the per-trade
     # stream this fold just emitted (preferred). Fall back to the EA's flat-$7 self-report
     # only when the stream is unavailable (older EA / stream skipped).
-    pf_net, trades, comm_total, gross_total = pf_net_from_stream(ea_id, symbol, fold)
+    pf_net, trades, comm_total, gross_total, oos_nets = pf_net_from_stream(ea_id, symbol, fold)
     commission_basis = "worst_case_dxz_ftmo_notional"
     if pf_net is None:
         pf_net, trades, comm_total = read_pf_net_from_ea(ea_id, symbol)
         gross_total = None
+        oos_nets = []  # flat-$7 fallback has no per-trade stream → no low-freq pooling
         commission_basis = "flat_7_ea_side_fallback"
     summary_path = _summary_from_log(log_path) or report_root / f"QM5_{ea_id}" / "Q04" / fold["id"] / "summary.json"
     status = "OK" if (pf_net is not None and proc.returncode == 0) else "FAIL"
@@ -397,6 +466,7 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
         "sim_commission_total": comm_total,
         "gross_total": gross_total,
         "commission_basis": commission_basis,
+        "oos_nets": oos_nets,
         "status": status,
         "summary_path": str(summary_path) if summary_path.exists() else None,
         "exit_code": proc.returncode,
@@ -448,6 +518,21 @@ def main() -> int:
         fold_results.append(res)
 
     verdict, reason = aggregate_verdict(fold_results)
+
+    # DL-076: low-freq pooled rescue. Only when the strict gate FAILed with every fold
+    # completed and the EA is genuinely low-frequency. Pools the strict folds' realistic-net
+    # per-trade streams (no extra backtest) and re-judges on the SAME PF-net > 1.0 bar.
+    lowfreq_verdict = lowfreq_reason = None
+    if verdict == "FAIL" and is_lowfreq_eligible(fold_results):
+        total_oos = sum(int(f.get("trades") or 0) for f in fold_results)
+        lowfreq_verdict, lowfreq_reason = aggregate_verdict_lowfreq(fold_results)
+        print(f"  low-freq EA ({total_oos} OOS trades / {len(folds)}yr) "
+              f"→ pooled verdict={lowfreq_verdict} ({lowfreq_reason})")
+        if lowfreq_verdict == "PASS_LOWFREQ":
+            verdict, reason = lowfreq_verdict, lowfreq_reason
+        else:
+            reason = f"{reason} || lowfreq:{lowfreq_verdict}:{lowfreq_reason}"
+
     out_dir = ensure_dir(args.report_root / f"QM5_{ea_id}" / "Q04" / args.symbol)
     # DL-073: report the basis actually used across folds (notional model unless a fold
     # had to fall back to the flat-$7 self-report).
@@ -462,13 +547,17 @@ def main() -> int:
         "commission_per_lot_round_trip_fallback": COMMISSION_PER_LOT_ROUND_TRIP,
         "verdict": verdict,
         "reason": reason,
+        "lowfreq_verdict": lowfreq_verdict,       # DL-076: pooled tier outcome if attempted
+        "lowfreq_reason": lowfreq_reason,
         "generated_at_utc": utc_now_iso(),
         "fold_count": len(fold_results),
-        "folds": fold_results,
+        # Drop the in-memory per-trade `oos_nets` (only used for the pooled computation;
+        # persisting it would balloon aggregate.json for high-frequency EAs).
+        "folds": [{k: v for k, v in f.items() if k != "oos_nets"} for f in fold_results],
     })
     print(f"Q04 verdict for {args.ea} {args.symbol}: {verdict}")
     print(f"  reason: {reason}")
-    return 0 if verdict == "PASS" else (1 if verdict == "FAIL" else 3)
+    return 0 if verdict in ("PASS", "PASS_LOWFREQ") else (1 if verdict == "FAIL" else 3)
 
 
 if __name__ == "__main__":
