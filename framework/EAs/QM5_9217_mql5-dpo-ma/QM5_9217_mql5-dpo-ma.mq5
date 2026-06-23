@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11410 London Free Breakfast Asian Range Breakout M15"
+#property description "QM5_9217 MQL5 DPO MA Trend Validation"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 11410;
+input int    qm_ea_id                   = 9217;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,49 +73,38 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_asian_start_hour_broker  = 1;
-input int    strategy_asian_end_hour_broker    = 9;
-input int    strategy_london_start_hour_broker = 9;
-input int    strategy_london_end_hour_broker   = 10;
-input int    strategy_range_scan_bars          = 80;
-input int    strategy_min_asian_bars           = 24;
-input int    strategy_tp_pips                  = 40;
-input int    strategy_sl_cap_pips              = 40;
-input int    strategy_spread_cap_pips          = 20;
+input int    strategy_dpo_period        = 20;
+input int    strategy_sma_period        = 20;
+input int    strategy_atr_period        = 14;
+input double strategy_atr_sl_mult       = 1.4;
+input double strategy_rr_tp             = 2.0;
+input int    strategy_max_hold_bars     = 48;
+input int    strategy_max_spread_points = 50;
 
-int  g_trade_day_key = -1;
-bool g_trade_taken_today = false;
+// -----------------------------------------------------------------------------
+// Strategy hooks — implement these against the card mechanically.
+// -----------------------------------------------------------------------------
 
-int Strategy_DateKey(const datetime t)
+double Strategy_Close(const int shift)
   {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return (dt.year * 10000 + dt.mon * 100 + dt.day);
+   return iClose(_Symbol, _Period, shift); // perf-allowed: DPO needs closed-bar close minus displaced SMA.
   }
 
-int Strategy_Hhmm(const datetime t)
+double Strategy_DPO(const int shift)
   {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return (dt.hour * 100 + dt.min);
+   if(strategy_dpo_period <= 1)
+      return 0.0;
+
+   const int displaced_shift = shift + strategy_dpo_period / 2 + 1;
+   const double close_price = Strategy_Close(shift);
+   const double displaced_sma = QM_SMA(_Symbol, PERIOD_CURRENT, strategy_dpo_period, displaced_shift, PRICE_CLOSE);
+   if(close_price <= 0.0 || displaced_sma <= 0.0)
+      return 0.0;
+
+   return close_price - displaced_sma;
   }
 
-bool Strategy_SameDay(const datetime a, const datetime b)
-  {
-   return (Strategy_DateKey(a) == Strategy_DateKey(b));
-  }
-
-void Strategy_ResetDayIfNeeded(const datetime broker_time)
-  {
-   const int key = Strategy_DateKey(broker_time);
-   if(key != g_trade_day_key)
-     {
-      g_trade_day_key = key;
-      g_trade_taken_today = false;
-     }
-  }
-
-bool Strategy_HasOpenPosition()
+bool Strategy_FindPosition(ENUM_POSITION_TYPE &position_type, datetime &opened_at)
   {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
@@ -130,85 +119,36 @@ bool Strategy_HasOpenPosition()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
+
+      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      opened_at = (datetime)PositionGetInteger(POSITION_TIME);
       return true;
      }
 
    return false;
   }
 
-bool Strategy_BuildAsianRange(const datetime day_ref,
-                              const MqlRates &rates[],
-                              const int copied,
-                              double &asian_high,
-                              double &asian_low,
-                              int &bars_found)
-  {
-   asian_high = -1.0e100;
-   asian_low = 1.0e100;
-   bars_found = 0;
-
-   const int start_hhmm = strategy_asian_start_hour_broker * 100;
-   const int end_hhmm = strategy_asian_end_hour_broker * 100;
-   for(int i = 0; i < copied; ++i)
-     {
-      if(!Strategy_SameDay(rates[i].time, day_ref))
-         continue;
-
-      const int hhmm = Strategy_Hhmm(rates[i].time);
-      if(hhmm < start_hhmm || hhmm >= end_hhmm)
-         continue;
-
-      if(rates[i].high > asian_high)
-         asian_high = rates[i].high;
-      if(rates[i].low < asian_low)
-         asian_low = rates[i].low;
-      ++bars_found;
-     }
-
-   return (bars_found >= strategy_min_asian_bars && asian_high > 0.0 && asian_low > 0.0 && asian_high > asian_low);
-  }
-
-double Strategy_NormalizedStop(const QM_OrderType side,
-                               const double entry,
-                               const double breakout_extreme)
-  {
-   const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_cap_pips);
-   double sl = breakout_extreme;
-   if(cap_distance > 0.0)
-     {
-      if(side == QM_BUY)
-         sl = MathMax(breakout_extreme, entry - cap_distance);
-      else
-         sl = MathMin(breakout_extreme, entry + cap_distance);
-     }
-   return QM_StopRulesNormalizePrice(_Symbol, sl);
-  }
-
-// -----------------------------------------------------------------------------
-// Strategy hooks — implement these against the card mechanically.
-// -----------------------------------------------------------------------------
-
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   // No Trade Filter (time, spread, news): framework handles news and Friday close.
+   if((ENUM_TIMEFRAMES)_Period != PERIOD_M15)
+      return true;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
       return true;
 
-   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
-   if(ask > bid && spread_cap > 0.0 && (ask - bid) > spread_cap)
-      return true;
-
-   const datetime broker_now = TimeCurrent();
-   Strategy_ResetDayIfNeeded(broker_now);
-
-   const int now_hhmm = Strategy_Hhmm(broker_now);
-   const int start_hhmm = strategy_london_start_hour_broker * 100;
-   const int end_eval_hhmm = strategy_london_end_hour_broker * 100 + 15;
-   if(now_hhmm < start_hhmm || now_hhmm > end_eval_hhmm)
-      return true;
+   if(strategy_max_spread_points > 0)
+     {
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      if(point <= 0.0)
+         return true;
+      if(ask > bid && ((ask - bid) / point) > (double)strategy_max_spread_points)
+         return true;
+     }
 
    return false;
   }
@@ -218,6 +158,7 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   // Trade Entry: SMA cross on the just-closed M15 bar, validated by DPO sign.
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = 0.0;
@@ -226,77 +167,79 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   MqlRates rates[];
-   ArraySetAsSeries(rates, true);
-   const int requested = MathMax(strategy_range_scan_bars, strategy_min_asian_bars + 4);
-   const int copied = CopyRates(_Symbol, PERIOD_M15, 1, requested, rates); // perf-allowed: bounded M15 session range scan; EntrySignal is called only after QM_IsNewBar().
-   if(copied < strategy_min_asian_bars + 2)
+   if(strategy_dpo_period <= 1 || strategy_sma_period <= 1 || strategy_atr_period <= 0)
+      return false;
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   const MqlRates breakout = rates[0];
-   const MqlRates previous = rates[1];
-   Strategy_ResetDayIfNeeded(breakout.time);
-
-   if(g_trade_taken_today || Strategy_HasOpenPosition())
-     {
-      g_trade_taken_today = true;
-      return false;
-     }
-
-   const int breakout_hhmm = Strategy_Hhmm(breakout.time);
-   const int start_hhmm = strategy_london_start_hour_broker * 100;
-   const int end_hhmm = strategy_london_end_hour_broker * 100;
-   if(breakout_hhmm < start_hhmm || breakout_hhmm >= end_hhmm)
+   const double close_1 = Strategy_Close(1);
+   const double close_2 = Strategy_Close(2);
+   const double sma_1 = QM_SMA(_Symbol, PERIOD_CURRENT, strategy_sma_period, 1, PRICE_CLOSE);
+   const double sma_2 = QM_SMA(_Symbol, PERIOD_CURRENT, strategy_sma_period, 2, PRICE_CLOSE);
+   const double dpo_1 = Strategy_DPO(1);
+   const double atr_1 = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_atr_period, 1);
+   if(close_1 <= 0.0 || close_2 <= 0.0 || sma_1 <= 0.0 || sma_2 <= 0.0 || atr_1 <= 0.0)
       return false;
 
-   double asian_high = 0.0;
-   double asian_low = 0.0;
-   int asian_bars = 0;
-   if(!Strategy_BuildAsianRange(breakout.time, rates, copied, asian_high, asian_low, asian_bars))
+   const bool long_signal = (close_2 < sma_2 && close_1 > sma_1 && dpo_1 > 0.0);
+   const bool short_signal = (close_2 > sma_2 && close_1 < sma_1 && dpo_1 < 0.0);
+   if(!long_signal && !short_signal)
       return false;
 
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
+   req.type = long_signal ? QM_BUY : QM_SELL;
+   const double entry_price = long_signal ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                          : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(entry_price <= 0.0)
       return false;
 
-   if(breakout.close > asian_high && previous.close <= asian_high)
-     {
-      req.type = QM_BUY;
-      req.price = 0.0;
-      req.sl = Strategy_NormalizedStop(QM_BUY, ask, breakout.low);
-      req.tp = QM_TakeFixedPips(_Symbol, QM_BUY, ask, strategy_tp_pips);
-      req.reason = "asian_range_breakout_long";
-      g_trade_taken_today = true;
-      return true;
-     }
+   req.sl = QM_StopATRFromValue(_Symbol, req.type, entry_price, atr_1, strategy_atr_sl_mult);
+   req.tp = QM_TakeRR(_Symbol, req.type, entry_price, req.sl, strategy_rr_tp);
+   if(req.sl <= 0.0 || req.tp <= 0.0)
+      return false;
 
-   if(breakout.close < asian_low && previous.close >= asian_low)
-     {
-      req.type = QM_SELL;
-      req.price = 0.0;
-      req.sl = Strategy_NormalizedStop(QM_SELL, bid, breakout.high);
-      req.tp = QM_TakeFixedPips(_Symbol, QM_SELL, bid, strategy_tp_pips);
-      req.reason = "asian_range_breakout_short";
-      g_trade_taken_today = true;
-      return true;
-     }
-
-   return false;
+   req.reason = long_signal ? "DPO_MA_LONG" : "DPO_MA_SHORT";
+   return true;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no break-even, trailing, partial, or scale-in management.
+   // Trade Management: card defines no trailing, break-even, partial, or scale-in rule.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // Card exits only through fixed TP, breakout-candle SL, and framework Friday close.
+   // Trade Close: DPO zero cross, close crossing back through SMA, or 48-bar time stop.
+   ENUM_POSITION_TYPE position_type;
+   datetime opened_at = 0;
+   if(!Strategy_FindPosition(position_type, opened_at))
+      return false;
+
+   if(strategy_max_hold_bars > 0)
+     {
+      const int seconds_per_bar = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
+      if(seconds_per_bar > 0 && opened_at > 0 &&
+         TimeCurrent() >= opened_at + strategy_max_hold_bars * seconds_per_bar)
+         return true;
+     }
+
+   const double close_1 = Strategy_Close(1);
+   const double close_2 = Strategy_Close(2);
+   const double sma_1 = QM_SMA(_Symbol, PERIOD_CURRENT, strategy_sma_period, 1, PRICE_CLOSE);
+   const double sma_2 = QM_SMA(_Symbol, PERIOD_CURRENT, strategy_sma_period, 2, PRICE_CLOSE);
+   const double dpo_1 = Strategy_DPO(1);
+   const double dpo_2 = Strategy_DPO(2);
+   if(close_1 <= 0.0 || close_2 <= 0.0 || sma_1 <= 0.0 || sma_2 <= 0.0)
+      return false;
+
+   if(position_type == POSITION_TYPE_BUY)
+      return ((dpo_2 >= 0.0 && dpo_1 < 0.0) || (close_2 >= sma_2 && close_1 < sma_1));
+   if(position_type == POSITION_TYPE_SELL)
+      return ((dpo_2 <= 0.0 && dpo_1 > 0.0) || (close_2 <= sma_2 && close_1 > sma_1));
+
    return false;
   }
 
@@ -305,6 +248,7 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
+   // News Filter Hook: no card-specific override; central V5 news filter applies.
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 
@@ -332,7 +276,7 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"ea\":\"QM5_9217_mql5-dpo-ma\"}");
    return INIT_SUCCEEDED;
   }
 

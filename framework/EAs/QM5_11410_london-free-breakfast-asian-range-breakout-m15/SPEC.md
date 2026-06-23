@@ -1,56 +1,45 @@
-# QM5_11410_london-free-breakfast-asian-range-breakout-m15 — Strategy Spec
+# QM5_11410_london-free-breakfast-asian-range-breakout-m15 - Strategy Spec
 
 **EA ID:** QM5_11410
-**Slug:** `london-free-breakfast-asian-range-breakout-m15`
-**Source:** `8b4188d8-fda3-5633-965f-da707fcb5b4b` (see `strategy-seeds/sources/8b4188d8-fda3-5633-965f-da707fcb5b4b/`)
-**Author of this spec:** Claude
-**Last revised:** 2026-06-18
+**Slug:** london-free-breakfast-asian-range-breakout-m15
+**Source:** 8b4188d8-fda3-5633-965f-da707fcb5b4b (see `strategy-seeds/sources/8b4188d8-fda3-5633-965f-da707fcb5b4b/`)
+**Author of this spec:** Codex
+**Last revised:** 2026-06-23
 
 ---
 
 ## 1. Strategy Logic
 
-The Asian (Tokyo) session is quiet and prints a well-defined range; when London
-opens, volatility expands and price breaks out. On M15, the EA marks the High and
-Low of the prior Asian session (broker-time 01:00–09:00) using only CLOSED bars.
-During the London breakout window (broker-time 09:00–10:00), the first M15 bar
-whose CLOSE breaks the Asian range is the single trigger event: `close > asian_high`
-opens a BUY at market, `close < asian_low` opens a SELL. The stop is the breakout
-candle's extreme (Low for long / High for short), capped at 40 pips; the take-profit
-is a fixed 40-pip distance. One trade per calendar day (first confirmed direction
-only). Session windows are evaluated from the bar TIMESTAMP in broker time (DXZ
-NY-Close GMT+2/+3), never wall-clock; the Asian range is built from prior closed
-bars only.
+The EA marks the broker-time Asian session from 01:00 through 09:00 on M15 bars and stores the wick high and wick low for that same trading day. During the London open window, a long entry fires when the most recently closed M15 bar closes above the Asian high and the prior closed bar had not already closed above it. A short entry mirrors this rule below the Asian low. The stop is the breakout candle low for longs or high for shorts, capped at 40 pips, and the take-profit is fixed at 40 pips.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `strategy_asian_start_h` | 1 | 0-23 | Asian session start hour (broker time) |
-| `strategy_asian_end_h` | 9 | 0-23 | Asian session end hour (broker, exclusive) |
-| `strategy_london_start_h` | 9 | 0-23 | London breakout-window start hour (broker) |
-| `strategy_london_end_h` | 10 | 0-23 | London breakout-window end hour (broker, exclusive) |
-| `strategy_tp_pips` | 40 | 25-55 | Fixed take-profit distance in pips |
-| `strategy_sl_cap_pips` | 40 | 15-60 | Max stop distance; breakout-candle extreme capped to this |
-| `strategy_min_range_pips` | 5 | 1-30 | Ignore degenerate Asian ranges smaller than this |
-| `strategy_spread_cap_pips` | 20 | 5-50 | Skip a genuinely wide spread (fail-open on zero spread) |
+|---|---:|---|---|
+| `strategy_asian_start_hour_broker` | 1 | 0-23 | Broker-time hour where the Asian range begins. |
+| `strategy_asian_end_hour_broker` | 9 | 1-24 | Broker-time hour where the Asian range ends, exclusive. |
+| `strategy_london_start_hour_broker` | 9 | 0-23 | Broker-time hour where breakout entries may begin. |
+| `strategy_london_end_hour_broker` | 10 | 1-24 | Broker-time hour where breakout-bar eligibility ends, exclusive. |
+| `strategy_range_scan_bars` | 80 | 36-160 | Closed M15 bars scanned to recover the current day's Asian range. |
+| `strategy_min_asian_bars` | 24 | 16-32 | Minimum valid M15 bars required in the Asian range. |
+| `strategy_tp_pips` | 40 | 25-55 | Fixed take-profit in pips. |
+| `strategy_sl_cap_pips` | 40 | 20-60 | Maximum stop distance in pips from market entry. |
+| `strategy_spread_cap_pips` | 20 | 1-50 | Maximum modeled spread before entry is blocked. |
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `GBPUSD.DWX` — primary; the card's lead pair, most active at London open.
-- `EURUSD.DWX` — major with a clean Asian range and strong London expansion.
-- `USDJPY.DWX` — Tokyo-session pair with a well-formed Asian range.
-- `AUDUSD.DWX` — liquid major; Asian-session pair with London follow-through.
+- `GBPUSD.DWX` - Primary card instrument for London-session FX breakout behavior.
+- `EURUSD.DWX` - Liquid European-major FX pair with DWX M15 history.
+- `USDJPY.DWX` - Liquid major FX pair listed by the card as portable.
+- `AUDUSD.DWX` - Liquid major FX pair listed by the card as portable.
 
 **Explicitly NOT for:**
-- Index / commodity `.DWX` symbols — the strategy is calibrated to FX session
-  structure (Tokyo range → London expansion); index cash sessions do not map to
-  these broker-time windows.
+- `SP500.DWX` - Index symbol, not part of the card's FX London-breakout basket.
 
 ---
 
@@ -59,7 +48,7 @@ bars only.
 | Aspect | Value |
 |---|---|
 | Base timeframe | `M15` |
-| Multi-timeframe refs | `none` |
+| Multi-timeframe refs | none |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
@@ -68,11 +57,11 @@ bars only.
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `~100` |
-| Typical hold time | `minutes to a few hours (intraday, SL/TP exit)` |
-| Expected drawdown profile | `clustered losses in choppy / false-breakout regimes` |
-| Regime preference | `breakout / volatility-expansion` |
-| Win rate target (qualitative) | `medium` |
+| Trades / year / symbol | 100 |
+| Typical hold time | 1-2 hours, bounded by fixed SL/TP and Friday close |
+| Expected drawdown profile | Breakout false-start losses clustered in low-volatility London opens |
+| Regime preference | Volatility-expansion breakout |
+| Win rate target (qualitative) | medium |
 
 ---
 
@@ -80,10 +69,10 @@ bars only.
 
 This card was mechanised from:
 
-**Source ID:** `8b4188d8-fda3-5633-965f-da707fcb5b4b`
-**Source type:** `book` (local PDF, anonymous author)
+**Source ID:** 8b4188d8-fda3-5633-965f-da707fcb5b4b
+**Source type:** local PDF / anonymous strategy note
 **Pointer:** `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\423041768-London-Free-Breakfast-Forex-Trading-Strategy-1.pdf`
-**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_11410_london-free-breakfast-asian-range-breakout-m15.md`
+**R1-R4 verdict (Q00):** all R1-R4 PASS per `artifacts/cards_approved/QM5_11410_london-free-breakfast-asian-range-breakout-m15.md`
 
 ---
 
@@ -91,11 +80,11 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
@@ -103,4 +92,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | central-step registration pending |
+| v1 | 2026-06-23 | Initial build from card | 48c8b531-fe93-4c46-9740-89b70d67fb62 |
