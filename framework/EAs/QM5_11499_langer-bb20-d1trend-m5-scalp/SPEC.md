@@ -1,8 +1,8 @@
 # QM5_11499_langer-bb20-d1trend-m5-scalp - Strategy Spec
 
 **EA ID:** QM5_11499
-**Slug:** langer-bb20-d1trend-m5-scalp
-**Source:** 8ca13fce-d951-53be-9c60-35620d56354d (see `strategy-seeds/sources/8ca13fce-d951-53be-9c60-35620d56354d/`)
+**Slug:** `langer-bb20-d1trend-m5-scalp`
+**Source:** `8ca13fce-d951-53be-9c60-35620d56354d` (see `strategy-seeds/sources/8ca13fce-d951-53be-9c60-35620d56354d/`)
 **Author of this spec:** Codex
 **Last revised:** 2026-06-25
 
@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades M5 Bollinger Band reversions only in the direction of the D1 trend. Long setup requires yesterday's D1 close above the D1 SMA(200), an M5 close below the lower Bollinger Band, and a bullish reversal candle; short setup mirrors this below the D1 SMA(200), above the upper Bollinger Band, and with a bearish reversal candle. Entry is a pending stop beyond the reversal candle extreme with a spread offset, a prior-five-bar structural stop capped at 20 pips, a fixed 20-pip take profit, and a break-even shift after 10 pips.
+The EA trades M5 Bollinger Band reversions only in the direction of the D1 trend. A long setup requires the previous D1 close to be above the D1 SMA(200), the just-closed M5 candle to close below the lower BB(20,2), and that same M5 candle to be bullish; it then places a buy stop above the signal candle high plus current spread. The short side mirrors this with D1 close below SMA(200), a bearish M5 signal candle closing above the upper band, and a sell stop below the signal candle low minus spread. Exits are the fixed 20-pip TP, a structure SL capped to 20 pips, break-even after 10 pips, and the framework Friday close.
 
 ---
 
@@ -18,33 +18,37 @@ The EA trades M5 Bollinger Band reversions only in the direction of the D1 trend
 
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
-| `strategy_bb_period` | 20 | 14-26 P3 sweep noted by card | M5 Bollinger Band lookback. |
-| `strategy_bb_deviation` | 2.0 | >0 | M5 Bollinger Band standard-deviation multiplier. |
-| `strategy_d1_sma_period` | 200 | 100-300 P3 sweep noted by card | D1 SMA trend-filter period. |
-| `strategy_sl_lookback_bars` | 5 | 3-7 P3 sweep noted by card | Closed M5 bars used for structural stop. |
-| `strategy_sl_cap_pips` | 20 | >0 | Maximum allowed stop distance in pips. |
-| `strategy_tp_pips` | 20 | 10-20 P3 sweep noted by card | Fixed take-profit distance in pips. |
-| `strategy_be_trigger_pips` | 10 | >0 | Move SL to break-even once price moves this many pips in favor. |
-| `strategy_be_buffer_pips` | 1 | >=0 | Break-even lock-in buffer in pips. |
-| `strategy_pending_expiry_bars` | 3 | >0 | Pending stop lifetime in M5 bars. |
-| `strategy_spread_cap_pips` | 15.0 | >0 | Blocks only genuinely wide positive spread. |
-| `strategy_london_start_hour_broker` | 9 | 0-23 | Broker-time London-open session start. |
-| `strategy_london_end_hour_broker` | 12 | 1-24 | Broker-time London-open session end. |
-| `strategy_ny_start_hour_broker` | 15 | 0-23 | Broker-time NY-session start. |
-| `strategy_ny_end_hour_broker` | 22 | 1-24 | Broker-time NY-session end. |
+| `strategy_bb_period` | 20 | 2+ | M5 Bollinger Band period. |
+| `strategy_bb_deviation` | 2.0 | >0 | M5 Bollinger Band deviation. |
+| `strategy_d1_sma_period` | 200 | 2+ | D1 SMA trend filter period. |
+| `strategy_sl_lookback_bars` | 5 | 1+ | M5 bars used for structure SL. |
+| `strategy_sl_cap_pips` | 20 | 1+ | Maximum stop distance in pips for P2. |
+| `strategy_tp_pips` | 20 | 1+ | Fixed take-profit distance in pips. |
+| `strategy_be_trigger_pips` | 10 | 1+ | Profit threshold for break-even movement. |
+| `strategy_be_buffer_pips` | 1 | 0+ | Pip buffer beyond entry after break-even. |
+| `strategy_spread_cap_pips` | 15 | 1+ | Maximum real spread in pips; zero spread is accepted. |
+| `strategy_block_friday_entries` | true | true/false | Blocks new entries on Friday. |
+| `strategy_london_session` | true | true/false | Enables the broker-time London window. |
+| `strategy_london_start_hour` | 9 | 0-23 | Broker-time London session start hour. |
+| `strategy_london_end_hour` | 12 | 0-23 | Broker-time London session end hour. |
+| `strategy_newyork_session` | true | true/false | Enables the broker-time New York window. |
+| `strategy_newyork_start_hour` | 15 | 0-23 | Broker-time New York session start hour. |
+| `strategy_newyork_end_hour` | 21 | 0-23 | Broker-time New York session end hour. |
+| `strategy_order_expiration_bars` | 1 | 0+ | Pending stop order expiration in M5 bars; 0 means GTC. |
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` - card-listed major FX pair with M5 and D1 DWX data.
-- `GBPUSD.DWX` - card-listed major FX pair with M5 and D1 DWX data.
-- `USDJPY.DWX` - card-listed major FX pair with M5 and D1 DWX data.
-- `AUDUSD.DWX` - card-listed major FX pair with M5 and D1 DWX data.
+- `EURUSD.DWX` - Card-listed DWX major FX symbol with M5 and D1 data.
+- `GBPUSD.DWX` - Card-listed DWX major FX symbol with M5 and D1 data.
+- `USDJPY.DWX` - Card-listed DWX major FX symbol with M5 and D1 data.
+- `AUDUSD.DWX` - Card-listed DWX major FX symbol with M5 and D1 data.
 
 **Explicitly NOT for:**
-- Non-card `.DWX` symbols - the approved card names only the four FX pairs above.
+- Non-FX `.DWX` symbols - The card specifies FX majors and pip-based exits.
+- FX symbols outside `dwx_symbol_matrix.csv` - Not valid for DWX backtest registration.
 
 ---
 
@@ -52,8 +56,8 @@ The EA trades M5 Bollinger Band reversions only in the direction of the D1 trend
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | M5 |
-| Multi-timeframe refs | D1 close and D1 SMA(200) trend filter |
+| Base timeframe | `M5` |
+| Multi-timeframe refs | `PERIOD_D1` close and SMA(200) trend filter |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
@@ -62,11 +66,11 @@ The EA trades M5 Bollinger Band reversions only in the direction of the D1 trend
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 100 |
-| Typical hold time | Not specified in card frontmatter; intraday scalp expected from M5 TP/BE mechanics. |
-| Expected drawdown profile | Not specified in card frontmatter. |
-| Regime preference | Bollinger Band mean reversion with D1 trend filter. |
-| Win rate target (qualitative) | Not specified in card frontmatter. |
+| Trades / year / symbol | `100` |
+| Typical hold time | Intraday scalp; minutes to hours |
+| Expected drawdown profile | Short-term mean-reversion scalps with capped 20-pip stop distance |
+| Regime preference | D1 trend context with M5 mean reversion |
+| Win rate target (qualitative) | Medium to high |
 
 ---
 
@@ -74,9 +78,9 @@ The EA trades M5 Bollinger Band reversions only in the direction of the D1 trend
 
 This card was mechanised from:
 
-**Source ID:** 8ca13fce-d951-53be-9c60-35620d56354d
-**Source type:** book
-**Pointer:** Paul Langer, The Black Book of Forex Trading (Alura Publishing/CreateSpace, 2015), local PDF `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\559219887-The-Black-Book-of-Forex-Trading.pdf`
+**Source ID:** `8ca13fce-d951-53be-9c60-35620d56354d`
+**Source type:** `book`
+**Pointer:** Paul Langer, The Black Book of Forex Trading (Alura Publishing/CreateSpace, 2015), local PDF: `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\559219887-The-Black-Book-of-Forex-Trading.pdf`
 **R1-R4 verdict (Q00):** all R1-R4 PASS per `artifacts/cards_approved/QM5_11499_langer-bb20-d1trend-m5-scalp.md`
 
 ---
