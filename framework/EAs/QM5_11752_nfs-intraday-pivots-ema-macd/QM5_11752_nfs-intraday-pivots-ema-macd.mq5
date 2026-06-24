@@ -86,6 +86,7 @@ input int    strategy_macd_fast         = 12;    // H1 MACD fast EMA
 input int    strategy_macd_slow         = 26;    // H1 MACD slow EMA
 input int    strategy_macd_signal       = 9;     // H1 MACD signal SMA
 input double strategy_pivot_zone_pips   = 5.0;   // proximity zone around a pivot level (pips)
+input double strategy_hold_above_pips   = 3.0;   // close must hold this far back beyond pivot after penetration
 input int    strategy_sl_pips           = 15;    // stop distance beyond the level (pips)
 input int    strategy_min_tp_pips       = 20;    // minimum take-profit distance (pips)
 
@@ -111,15 +112,15 @@ void RefreshPivots()
   {
    // perf-allowed: prior-day classic-pivot inputs need raw D1 OHLC; one read,
    // only when the prior-D1 bar changes. Broker time is the chart/tester time.
-   const datetime prior_day = iTime(_Symbol, PERIOD_D1, 1);
+   const datetime prior_day = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: prior-day pivot cache refresh, called only from QM_IsNewBar-gated entry hook.
    if(prior_day <= 0)
       return;
    if(g_pivots_ready && prior_day == g_pivot_day)
       return; // same prior-D1 bar — pivots already current
 
-   const double H = iHigh(_Symbol, PERIOD_D1, 1);
-   const double L = iLow(_Symbol, PERIOD_D1, 1);
-   const double C = iClose(_Symbol, PERIOD_D1, 1);
+   const double H = iHigh(_Symbol, PERIOD_D1, 1);   // perf-allowed: prior-day classic-pivot input, cached by D1 bar.
+   const double L = iLow(_Symbol, PERIOD_D1, 1);    // perf-allowed: prior-day classic-pivot input, cached by D1 bar.
+   const double C = iClose(_Symbol, PERIOD_D1, 1);  // perf-allowed: prior-day classic-pivot input, cached by D1 bar.
    if(H <= 0.0 || L <= 0.0 || C <= 0.0 || H <= L)
       return; // bad/empty prior bar — keep previous pivots
 
@@ -225,6 +226,14 @@ bool Strategy_NoTradeFilter()
 // Pivot-reclaim long / pivot-rejection short. Caller guarantees QM_IsNewBar().
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -250,14 +259,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    // Closed-bar prices: shift 2 is the penetration bar, shift 1 the reclaim bar.
    // perf-allowed: classic-pivot reclaim needs the prior two closed bars' OHLC.
-   const double close_1 = iClose(_Symbol, _Period, 1);
-   const double low_2   = iLow(_Symbol, _Period, 2);
-   const double high_2  = iHigh(_Symbol, _Period, 2);
+   const double close_1 = iClose(_Symbol, _Period, 1); // perf-allowed: closed-bar pivot reclaim/rejection confirmation, entry hook is new-bar gated.
+   const double low_2   = iLow(_Symbol, _Period, 2);   // perf-allowed: closed-bar pivot penetration test, entry hook is new-bar gated.
+   const double high_2  = iHigh(_Symbol, _Period, 2);  // perf-allowed: closed-bar pivot penetration test, entry hook is new-bar gated.
    if(close_1 <= 0.0 || low_2 <= 0.0 || high_2 <= 0.0)
       return false;
 
    const double zone = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathRound(strategy_pivot_zone_pips));
+   const double hold = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathRound(strategy_hold_above_pips));
+   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
    if(zone <= 0.0)
+      return false;
+   if(hold <= 0.0 || stop_distance <= 0.0)
       return false;
 
    // ============================= LONG =============================
@@ -277,7 +290,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          // Trigger EVENT: penetration bar dipped to/under the level, reclaim
          // bar closed back above it. One event; EMA/MACD are the states.
          const bool penetrated = (low_2 <= level + zone);
-         const bool reclaimed  = (close_1 > level);
+         const bool reclaimed  = (close_1 >= level + hold);
          if(!(penetrated && reclaimed))
             continue;
 
@@ -285,7 +298,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          if(entry <= 0.0)
             return false;
 
-         const double sl = QM_StopFixedPips(_Symbol, QM_BUY, entry, strategy_sl_pips);
+         const double sl = QM_StopRulesNormalizePrice(_Symbol, level - stop_distance);
 
          // TP = next pivot above entry, floored to the min-pip distance.
          double tp = NextLevelAbove(entry);
@@ -319,7 +332,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          if(level <= 0.0)
             continue;
          const bool penetrated = (high_2 >= level - zone);
-         const bool rejected   = (close_1 < level);
+         const bool rejected   = (close_1 <= level - hold);
          if(!(penetrated && rejected))
             continue;
 
@@ -327,7 +340,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          if(entry <= 0.0)
             return false;
 
-         const double sl = QM_StopFixedPips(_Symbol, QM_SELL, entry, strategy_sl_pips);
+         const double sl = QM_StopRulesNormalizePrice(_Symbol, level + stop_distance);
 
          double tp = NextLevelBelow(entry);
          const double min_tp = QM_TakeFixedPips(_Symbol, QM_SELL, entry, strategy_min_tp_pips);

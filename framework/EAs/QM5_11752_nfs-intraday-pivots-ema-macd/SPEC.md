@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA trades M5 candle closes that reclaim or reject daily pivot levels computed from the prior D1 bar. A long is opened when the prior closed M5 bar has reclaimed a support level after penetration, EMA(9) is above EMA(18), and both H1 MACD lines are above zero. A short is opened when the prior closed M5 bar has rejected a resistance level after penetration, EMA(9) is below EMA(18), and both H1 MACD lines are below zero. Stop loss is a fixed 15 pips by default, and take profit is the next pivot level in the trade direction with a 20-pip minimum distance.
+This EA trades M5 candle closes that reclaim or reject daily pivot levels computed from the prior D1 bar. A long is opened when the prior closed M5 bar has reclaimed a support level after penetration and closed at least 3 pips back above it, EMA(9) is above EMA(18), and both H1 MACD lines are above zero. A short is opened when the prior closed M5 bar has rejected a resistance level after penetration and closed at least 3 pips back below it, EMA(9) is below EMA(18), and both H1 MACD lines are below zero. Stop loss is fixed 15 pips beyond the pivot level by default, and take profit is the next pivot level in the trade direction with a 20-pip minimum distance.
 
 ---
 
@@ -24,6 +24,7 @@ This EA trades M5 candle closes that reclaim or reject daily pivot levels comput
 | `strategy_macd_slow` | 26 | 3-200 | H1 MACD slow EMA period. |
 | `strategy_macd_signal` | 9 | 2-100 | H1 MACD signal period. |
 | `strategy_pivot_zone_pips` | 5.0 | 1.0-50.0 | Distance around a pivot that counts as penetration proximity. |
+| `strategy_hold_above_pips` | 3.0 | 1.0-50.0 | Minimum close distance back beyond the pivot after penetration. |
 | `strategy_sl_pips` | 15 | 1-300 | Fixed stop distance in pips. |
 | `strategy_min_tp_pips` | 20 | 1-500 | Minimum take-profit distance if the next pivot is closer. |
 
