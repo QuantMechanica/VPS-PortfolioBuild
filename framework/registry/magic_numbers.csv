@@ -11265,7 +11265,7 @@
 11524,ciurea-ema200-price-cross-m30,0,EURUSD.DWX,115240000,2026-06-18,Development,active
 11525,ciurea-stoch1435-bounce-h4,0,GBPUSD.DWX,115250000,2026-06-20,Development,active
 11525,ciurea-stoch1435-bounce-h4,1,EURUSD.DWX,115250001,2026-06-20,Development,active
-11526,ciurea-rsi10-50-d1,0,GBPUSD.DWX,115260000,2026-06-18,Claude,reserved
+11526,ciurea-rsi10-50-d1,0,GBPUSD.DWX,115260000,2026-06-18,Claude,active
 11527,ciurea-engulfing-m30,0,EURUSD.DWX,115270000,2026-06-20,Development,active
 11527,ciurea-engulfing-m30,1,GBPUSD.DWX,115270001,2026-06-20,Development,active
 11528,ciurea-inv-hammer-shooting-star-m30,0,EURUSD.DWX,115280000,2026-06-20,Development,active
@@ -11598,9 +11598,9 @@
 11692,strat-macd,0,EURUSD.DWX,116920000,2026-06-18,Claude,reserved
 11692,strat-macd,1,XAUUSD.DWX,116920001,2026-06-18,Claude,reserved
 11692,strat-macd,2,GDAXI.DWX,116920002,2026-06-18,Claude,reserved
-11693,strat-mom,0,EURUSD.DWX,116930000,2026-06-18,Claude,reserved
-11693,strat-mom,1,XAUUSD.DWX,116930001,2026-06-18,Claude,reserved
-11693,strat-mom,2,GDAXI.DWX,116930002,2026-06-18,Claude,reserved
+11693,strat-mom,0,EURUSD.DWX,116930000,2026-06-25,Development,active
+11693,strat-mom,1,XAUUSD.DWX,116930001,2026-06-25,Development,active
+11693,strat-mom,2,GDAXI.DWX,116930002,2026-06-25,Development,active
 11697,pl-bb20-m5-scalp-d1trend,0,EURUSD.DWX,116970000,2026-06-18,Claude,active
 11697,pl-bb20-m5-scalp-d1trend,1,GBPUSD.DWX,116970001,2026-06-18,Claude,active
 11697,pl-bb20-m5-scalp-d1trend,2,USDJPY.DWX,116970002,2026-06-18,Claude,active
@@ -13352,3 +13352,4 @@
 9260,mql5-force-ema,0,EURUSD.DWX,92600000,2026-06-25,Development,active
 9260,mql5-force-ema,1,GBPJPY.DWX,92600001,2026-06-25,Development,active
 9260,mql5-force-ema,2,XAUUSD.DWX,92600002,2026-06-25,Development,active
+10659,tv-orb-retest,6,GBPUSD.DWX,106590006,2026-06-25,Development,active

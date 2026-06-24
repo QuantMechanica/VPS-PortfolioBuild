@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades Thomas Carter's M5 Strategy 2 EMA zone pullback on EURUSD.DWX. A long setup requires EMA10 > EMA21 > EMA50, the last closed bar's low to touch or pass through EMA21, and that same closed bar to close back above EMA10. A short setup mirrors the rule with EMA10 < EMA21 < EMA50, the last closed bar's high touching or passing through EMA21, and the bar closing back below EMA10. Exits use the card's fixed 5 pip stop, 10 pip target, framework Friday close, or a discretionary close when the last closed bar breaks back through EMA10 against the position.
+The EA trades Thomas Carter's M5 Strategy 2 EMA zone pullback on EURUSD.DWX. A long setup requires EMA10 > EMA21 > EMA50, the last closed bar's low to touch or pass through EMA21, and that same closed bar to close back above EMA10. A short setup mirrors the rule with EMA10 < EMA21 < EMA50, the last closed bar's high touching or passing through EMA21, and the bar closing back below EMA10. Exits use the card's fixed 5 pip stop, 10 pip target, framework Friday close, or a discretionary close when price breaks the far side of the EMA10/EMA21 zone against the position.
 
 ---
 
@@ -23,7 +23,6 @@ The EA trades Thomas Carter's M5 Strategy 2 EMA zone pullback on EURUSD.DWX. A l
 | `strategy_ema_slow_period` | 50 | 2-500 | Slow EMA used to confirm trend direction. |
 | `strategy_sl_pips` | 5 | 1-100 | Fixed stop loss in pips from the card. |
 | `strategy_tp_pips` | 10 | 1-200 | Fixed take profit in pips from the card. |
-| `strategy_spread_pct_of_stop` | 25.0 | 0-100 | Blocks only genuinely wide positive spread relative to stop distance. |
 
 ---
 

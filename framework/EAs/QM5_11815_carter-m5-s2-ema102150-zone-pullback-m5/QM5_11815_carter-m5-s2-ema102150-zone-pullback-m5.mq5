@@ -34,23 +34,9 @@ input int    strategy_ema_mid_period     = 21;
 input int    strategy_ema_slow_period    = 50;
 input int    strategy_sl_pips            = 5;
 input int    strategy_tp_pips            = 10;
-input double strategy_spread_pct_of_stop = 25.0;
 
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false;
-
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
-   if(stop_distance <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
-      return true;
-
    return false;
   }
 
@@ -127,13 +113,13 @@ bool Strategy_ExitSignal()
    if(QM_TM_OpenPositionCount(magic) <= 0)
       return false;
 
-   const double ema_fast = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 1);
-   if(ema_fast <= 0.0)
+   const double ema_mid = QM_EMA(_Symbol, _Period, strategy_ema_mid_period, 1);
+   if(ema_mid <= 0.0)
       return false;
 
-   // perf-allowed: the card's discretionary exit is a closed-bar EMA10 break.
-   const double close1 = iClose(_Symbol, _Period, 1);
-   if(close1 <= 0.0)
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(bid <= 0.0 || ask <= 0.0)
       return false;
 
    bool have_long = false;
@@ -155,9 +141,9 @@ bool Strategy_ExitSignal()
          have_short = true;
      }
 
-   if(have_long && close1 < ema_fast)
+   if(have_long && bid < ema_mid)
       return true;
-   if(have_short && close1 > ema_fast)
+   if(have_short && ask > ema_mid)
       return true;
 
    return false;
