@@ -95,10 +95,10 @@ bool BurkeInsideDay(double &idh, double &idl)
    idh = 0.0;
    idl = 0.0;
    // perf-allowed: bespoke structural cross-TF OHLC reads of CLOSED daily bars.
-   const double h1 = iHigh(_Symbol, PERIOD_D1, 1);  // inside day (yesterday)
-   const double l1 = iLow(_Symbol,  PERIOD_D1, 1);
-   const double h2 = iHigh(_Symbol, PERIOD_D1, 2);  // day before
-   const double l2 = iLow(_Symbol,  PERIOD_D1, 2);
+   const double h1 = iHigh(_Symbol, PERIOD_D1, 1);  // perf-allowed: inside day (yesterday)
+   const double l1 = iLow(_Symbol,  PERIOD_D1, 1);  // perf-allowed: inside day (yesterday)
+   const double h2 = iHigh(_Symbol, PERIOD_D1, 2);  // perf-allowed: day before
+   const double l2 = iLow(_Symbol,  PERIOD_D1, 2);  // perf-allowed: day before
    if(h1 <= 0.0 || l1 <= 0.0 || h2 <= 0.0 || l2 <= 0.0)
       return false;
    if(!(h1 < h2 && l1 > l2))   // inside-day containment
@@ -162,8 +162,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // --- Breakout EVENT: fresh close through the inside-day range in EMA dir ---
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: closed-bar reads
-   const double close2 = iClose(_Symbol, _Period, 2);
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: closed-bar breakout read
+   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed: prior closed-bar breakout read
    if(close1 <= 0.0 || close2 <= 0.0)
       return false;
 
@@ -217,6 +217,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = is_long ? "burke_inside_day_long" : "burke_inside_day_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
