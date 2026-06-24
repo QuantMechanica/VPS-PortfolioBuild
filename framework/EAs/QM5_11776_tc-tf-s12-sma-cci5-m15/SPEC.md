@@ -4,7 +4,7 @@
 **Slug:** `tc-tf-s12-sma-cci5-m15`
 **Source:** `3afb28d0-5993-527a-b039-5eef9c0e62e8` (see `sources/thomas-carter-20-trend-following-systems`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-24
+**Last revised:** 2026-06-25
 
 ---
 
@@ -95,4 +95,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-24 | Initial build from card | b9cb4aab-e784-48b9-9066-8d27e5c4e650 |
+| v1 | 2026-06-25 | Initial build from card | b9cb4aab-e784-48b9-9066-8d27e5c4e650 |
