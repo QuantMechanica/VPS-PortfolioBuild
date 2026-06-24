@@ -17,6 +17,8 @@
 //       P  = (H + L + C) / 3
 //       R1 = 2*P - L     R2 = P + (H - L)
 //       S1 = 2*P - H     S2 = P - (H - L)
+//       M1=(P+S1)/2      M2=(P+S2)/2
+//       M3=(P+R1)/2      M4=(P+R2)/2
 //   Pivots are cached in file-scope and refreshed only when the prior-D1 bar
 //   changes (i.e. at the broker-time daily roll). No per-tick recompute.
 //
@@ -35,8 +37,8 @@
 //     SHORT — a pivot-resistance REJECTION: the bar at shift 2 traded at/above
 //             a resistance level (high_2 >= level - zone) while the bar at
 //             shift 1 CLOSED back below that level (close_1 < level).
-//     Support levels  : S2, S1, P (a long from S1 targets P, from P targets R1).
-//     Resistance levels: R2, R1, P.
+//     Support levels  : S2, M2, S1, M1, P.
+//     Resistance levels: R2, M4, R1, M3, P.
 //
 //   Stop  : fixed pips on the far side of the reclaimed/rejected level
 //           (card factory default 15 pips), scale-correct via QM_StopFixedPips.
@@ -95,6 +97,10 @@ double   g_pivot_R1 = 0.0;
 double   g_pivot_R2 = 0.0;
 double   g_pivot_S1 = 0.0;
 double   g_pivot_S2 = 0.0;
+double   g_pivot_M1 = 0.0;
+double   g_pivot_M2 = 0.0;
+double   g_pivot_M3 = 0.0;
+double   g_pivot_M4 = 0.0;
 datetime g_pivot_day = 0;     // broker-time open of the prior D1 bar the pivots were built from
 bool     g_pivots_ready = false;
 
@@ -123,6 +129,10 @@ void RefreshPivots()
    g_pivot_R2 = P + (H - L);
    g_pivot_S1 = 2.0 * P - H;
    g_pivot_S2 = P - (H - L);
+   g_pivot_M1 = (P + g_pivot_S1) / 2.0;
+   g_pivot_M2 = (P + g_pivot_S2) / 2.0;
+   g_pivot_M3 = (P + g_pivot_R1) / 2.0;
+   g_pivot_M4 = (P + g_pivot_R2) / 2.0;
    g_pivot_day = prior_day;
    g_pivots_ready = true;
   }
@@ -131,11 +141,17 @@ void RefreshPivots()
 double NextLevelAbove(const double price)
   {
    double best = 0.0;
-   double levels[3];
-   levels[0] = g_pivot_P;
-   levels[1] = g_pivot_R1;
-   levels[2] = g_pivot_R2;
-   for(int i = 0; i < 3; ++i)
+   double levels[9];
+   levels[0] = g_pivot_S2;
+   levels[1] = g_pivot_M2;
+   levels[2] = g_pivot_S1;
+   levels[3] = g_pivot_M1;
+   levels[4] = g_pivot_P;
+   levels[5] = g_pivot_M3;
+   levels[6] = g_pivot_R1;
+   levels[7] = g_pivot_M4;
+   levels[8] = g_pivot_R2;
+   for(int i = 0; i < 9; ++i)
      {
       if(levels[i] > price)
          if(best == 0.0 || levels[i] < best)
@@ -148,11 +164,17 @@ double NextLevelAbove(const double price)
 double NextLevelBelow(const double price)
   {
    double best = 0.0;
-   double levels[3];
-   levels[0] = g_pivot_P;
-   levels[1] = g_pivot_S1;
-   levels[2] = g_pivot_S2;
-   for(int i = 0; i < 3; ++i)
+   double levels[9];
+   levels[0] = g_pivot_S2;
+   levels[1] = g_pivot_M2;
+   levels[2] = g_pivot_S1;
+   levels[3] = g_pivot_M1;
+   levels[4] = g_pivot_P;
+   levels[5] = g_pivot_M3;
+   levels[6] = g_pivot_R1;
+   levels[7] = g_pivot_M4;
+   levels[8] = g_pivot_R2;
+   for(int i = 0; i < 9; ++i)
      {
       if(levels[i] < price)
          if(best == 0.0 || levels[i] > best)
@@ -241,11 +263,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // ============================= LONG =============================
    if(ema_side > 0 && macd_bias > 0)
      {
-      double support[3];
+      double support[5];
       support[0] = g_pivot_S2;
-      support[1] = g_pivot_S1;
-      support[2] = g_pivot_P;
-      for(int i = 0; i < 3; ++i)
+      support[1] = g_pivot_M2;
+      support[2] = g_pivot_S1;
+      support[3] = g_pivot_M1;
+      support[4] = g_pivot_P;
+      for(int i = 0; i < 5; ++i)
         {
          const double level = support[i];
          if(level <= 0.0)
@@ -283,11 +307,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // ============================= SHORT ============================
    if(ema_side < 0 && macd_bias < 0)
      {
-      double resistance[3];
+      double resistance[5];
       resistance[0] = g_pivot_R2;
-      resistance[1] = g_pivot_R1;
-      resistance[2] = g_pivot_P;
-      for(int i = 0; i < 3; ++i)
+      resistance[1] = g_pivot_M4;
+      resistance[2] = g_pivot_R1;
+      resistance[3] = g_pivot_M3;
+      resistance[4] = g_pivot_P;
+      for(int i = 0; i < 5; ++i)
         {
          const double level = resistance[i];
          if(level <= 0.0)
