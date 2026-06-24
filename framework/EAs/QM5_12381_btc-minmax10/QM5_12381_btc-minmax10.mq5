@@ -116,14 +116,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_min_warmup_bars < strategy_lookback_days)
       return false;
 
-   // perf-allowed: card requires D1 close extrema and missing-data checks;
-   // this bounded D1 read runs only inside the framework closed-bar entry gate.
-   if(iClose(_Symbol, PERIOD_D1, strategy_min_warmup_bars) <= 0.0)
+   const int bars_needed = MathMax(strategy_min_warmup_bars,
+                         MathMax(strategy_lookback_days, strategy_spread_median_days));
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   // perf-allowed: the card requires D1 close extrema, spread median, and
+   // missing-data checks. This bounded read runs only after QM_IsNewBar().
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, bars_needed, rates);
+   if(copied < bars_needed)
       return false;
 
-   const double high_last = iHigh(_Symbol, PERIOD_D1, 1);
-   const double low_last = iLow(_Symbol, PERIOD_D1, 1);
-   const long volume_last = iVolume(_Symbol, PERIOD_D1, 1);
+   const double high_last = rates[0].high;
+   const double low_last = rates[0].low;
+   const long volume_last = rates[0].tick_volume;
    if(high_last <= 0.0 || low_last <= 0.0)
       return false;
    if(high_last == low_last && volume_last == 0)
@@ -133,7 +138,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double lowest_close = DBL_MAX;
    for(int i = 1; i <= strategy_lookback_days; ++i)
      {
-      const double close_i = iClose(_Symbol, PERIOD_D1, i);
+      const double close_i = rates[i - 1].close;
       if(close_i <= 0.0)
          return false;
       highest_close = MathMax(highest_close, close_i);
@@ -147,7 +152,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       ArrayResize(spreads, 0);
       for(int i = 1; i <= strategy_spread_median_days; ++i)
         {
-         const int spread_i = iSpread(_Symbol, PERIOD_D1, i);
+         const int spread_i = rates[i - 1].spread;
          if(spread_i < 0)
             continue;
          const int n = ArraySize(spreads);
@@ -168,7 +173,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
         }
      }
 
-   const double signal_close = iClose(_Symbol, PERIOD_D1, 1);
+   const double signal_close = rates[0].close;
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(signal_close <= 0.0 || point <= 0.0)
       return false;

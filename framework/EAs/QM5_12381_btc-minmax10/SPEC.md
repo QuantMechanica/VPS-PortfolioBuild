@@ -32,7 +32,7 @@ The EA evaluates D1 bars after the prior D1 bar has closed. It goes long when th
 **Designed for:**
 - `NDX.DWX` - Liquid index CFD for ported high-volatility continuation/rebound testing.
 - `WS30.DWX` - Liquid index CFD for ported high-volatility continuation/rebound testing.
-- `GER40.DWX` - Liquid European index CFD for ported high-volatility continuation/rebound testing.
+- `GDAXI.DWX` - Matrix-verified DAX CFD port for the card's `GER40.DWX` target.
 - `XAUUSD.DWX` - Volatile metal CFD for ported price-action testing.
 - `EURUSD.DWX` - Liquid FX major for ported price-action testing.
 - `GBPJPY.DWX` - Volatile FX cross for ported price-action testing.

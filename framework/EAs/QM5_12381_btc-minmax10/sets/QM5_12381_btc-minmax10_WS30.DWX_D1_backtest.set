@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11734
-; ea_slug:      tc-m5-s18-ema20-macd-cross
+; ea_id:        12381
+; ea_slug:      btc-minmax10
 ; ea_version:   v5.0
 ; set_version:  s20260624-001
-; symbol:       USDCHF.DWX
-; timeframe:    M5
+; symbol:       WS30.DWX
+; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   3
+; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   4eaf006df1ad973c409c757b6fa0561aed9d1487f2fc6b901d34541d30c2d924
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-24
 ;==========================================================
-qm_magic_slot_offset=3
+qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
