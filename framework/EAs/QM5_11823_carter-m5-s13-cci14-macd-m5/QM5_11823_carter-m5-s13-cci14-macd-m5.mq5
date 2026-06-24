@@ -73,8 +73,9 @@ input double strategy_spread_pct_of_stop = 25.0;   // skip if spread > this % of
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only — signal work is on the closed-bar
-// path in Strategy_EntrySignal. Fail-open on .DWX zero modeled spread.
+// Cheap O(1) per-tick gate. The card has no session filter. News is handled by
+// Strategy_NewsFilterHook plus the framework. Spread guard fails open on .DWX
+// zero modeled spread.
 bool Strategy_NoTradeFilter()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -97,6 +98,17 @@ bool Strategy_NoTradeFilter()
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(_Period != PERIOD_M5)
+      return false;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -134,8 +146,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double sl = QM_StopFixedPips(_Symbol, dir, entry, strategy_sl_pips);
-   const double tp = QM_TakeRR(_Symbol, dir, entry, sl,
-                               (double)strategy_tp_pips / (double)strategy_sl_pips);
+   const double tp = QM_TakeFixedPips(_Symbol, dir, entry, strategy_tp_pips);
    if(sl <= 0.0 || tp <= 0.0)
       return false;
 
