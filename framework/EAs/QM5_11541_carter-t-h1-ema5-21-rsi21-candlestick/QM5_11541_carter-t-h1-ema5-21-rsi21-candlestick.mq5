@@ -13,23 +13,19 @@
 //   (g0_status APPROVED). Source ID 3001a121-97a0-5db0-b6ff-69b89a0fc07d.
 //
 // Mechanics (H1, closed-bar reads at shift 1; one position per magic):
-//   TRIGGER EVENT : a completed candlestick reversal pattern on bar[1].
+//   TRIGGER EVENT : EMA(5) crosses EMA(21) within the last 3 closed bars.
+//                     LONG  -> bullish cross. SHORT -> bearish cross.
+//   CONFIRMATION  : a completed candlestick reversal pattern on bar[1].
 //                     LONG  -> Bullish Engulfing OR Hammer.
 //                     SHORT -> Bearish Engulfing OR Inverted Hammer.
-//   STATE (trend) : EMA(5) vs EMA(21) stack side at shift 1.
-//                     LONG  -> ema5 > ema21.   SHORT -> ema5 < ema21.
 //   STATE (mom.)  : RSI(21) at shift 1.
 //                     LONG  -> rsi > rsi_mid.  SHORT -> rsi < rsi_mid.
 //
-//   The candlestick pattern is the single fresh EVENT; the EMA stack side and
-//   RSI side are confirming STATES. This deliberately avoids the .DWX
-//   two-cross-same-bar zero-trade trap (requiring a fresh EMA cross AND a
-//   fresh RSI cross on the same bar almost never fires).
-//
 //   STOP   : 5-bar swing low (long) / swing high (short), capped at sl_cap_pips.
 //   TARGET : SL distance * tp_rr (2R default).
-//   EXIT   : EMA(5) crosses back through EMA(21) against the trade, OR RSI
-//            crosses back through rsi_mid against the trade.
+//   EXIT   : EMA(5) crosses back through EMA(21) against the trade, OR RSI is
+//            back through rsi_mid against the trade. Card source typo says
+//            EMA12 on exit; implementation uses EMA21 as the literal system pair.
 //   FILTERS: no-Friday-entry (card), spread cap (fail-open on .DWX zero spread).
 //
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
@@ -69,6 +65,7 @@ input int    strategy_sl_lookback       = 5;      // swing-low/high lookback for
 input double strategy_sl_cap_pips       = 40.0;   // SL cap in pips (card P2)
 input double strategy_tp_rr             = 2.0;    // TP = tp_rr * SL distance
 input double strategy_hammer_body_pips  = 3.0;    // min hammer/inv-hammer body (pips)
+input int    strategy_cross_lookback    = 3;      // EMA cross must occur within this many closed bars
 input bool   strategy_block_friday      = true;   // card: no Friday entries
 input double strategy_spread_cap_pips   = 15.0;   // skip genuinely wide spread (pips)
 
@@ -128,6 +125,26 @@ bool Cdl_InvertedHammer(const double o1, const double h1, const double l1, const
    return true;
   }
 
+bool EmaCrossWithin(const int direction, const int lookback_bars)
+  {
+   if(lookback_bars <= 0)
+      return false;
+
+   const int max_shift = MathMin(lookback_bars, 10);
+   for(int shift = 1; shift <= max_shift; ++shift)
+     {
+      const int cross = QM_Sig_MA_Cross(_Symbol,
+                                        (ENUM_TIMEFRAMES)_Period,
+                                        strategy_ema_fast_period,
+                                        strategy_ema_slow_period,
+                                        shift);
+      if(cross == direction)
+         return true;
+     }
+
+   return false;
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
@@ -141,7 +158,7 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double cap_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
+   const double cap_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathRound(strategy_spread_cap_pips));
    if(cap_dist <= 0.0)
       return false;
 
@@ -156,6 +173,14 @@ bool Strategy_NoTradeFilter()
 // Confluence entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -163,17 +188,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // --- Card filter: no Friday entries (use bar-open time of the new bar) ---
    if(strategy_block_friday)
      {
-      const datetime bar_open = iTime(_Symbol, _Period, 1); // perf-allowed: bar timestamp
       MqlDateTime dt;
-      TimeToStruct(bar_open, dt);
+      TimeToStruct(TimeCurrent(), dt);
       if(dt.day_of_week == 5) // Friday
          return false;
      }
 
-   // --- Trend STATE: EMA(5)/EMA(21) stack side at the closed bar ---
-   const double ema_fast = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 1);
-   const double ema_slow = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 1);
-   if(ema_fast <= 0.0 || ema_slow <= 0.0)
+   // --- Trend TRIGGER: EMA(5)/EMA(21) cross within the last 3 closed bars ---
+   const bool cross_up = EmaCrossWithin(+1, strategy_cross_lookback);
+   const bool cross_down = EmaCrossWithin(-1, strategy_cross_lookback);
+   if(!cross_up && !cross_down)
       return false;
 
    // --- Momentum STATE: RSI(21) side at the closed bar ---
@@ -194,24 +218,22 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       o2 <= 0.0 || h2 <= 0.0 || l2 <= 0.0 || c2 <= 0.0)
       return false;
 
-   const double min_body = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_hammer_body_pips);
+   const double min_body = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathRound(strategy_hammer_body_pips));
 
    // --- LONG: EMA stack up + RSI > mid + (Bullish Engulfing OR Hammer) ---
-   const bool trend_up   = (ema_fast > ema_slow);
    const bool rsi_up     = (rsi > strategy_rsi_mid);
    const bool cdl_long   = Cdl_BullishEngulfing(o1, h1, l1, c1, o2, h2, l2, c2) ||
                            Cdl_Hammer(o1, h1, l1, c1, min_body);
 
    // --- SHORT: EMA stack down + RSI < mid + (Bearish Engulfing OR Inv Hammer) ---
-   const bool trend_down = (ema_fast < ema_slow);
    const bool rsi_down   = (rsi < strategy_rsi_mid);
    const bool cdl_short  = Cdl_BearishEngulfing(o1, h1, l1, c1, o2, h2, l2, c2) ||
                            Cdl_InvertedHammer(o1, h1, l1, c1, min_body);
 
    QM_OrderType dir;
-   if(trend_up && rsi_up && cdl_long)
+   if(cross_up && rsi_up && cdl_long)
       dir = QM_BUY;
-   else if(trend_down && rsi_down && cdl_short)
+   else if(cross_down && rsi_down && cdl_short)
       dir = QM_SELL;
    else
       return false;
@@ -223,17 +245,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry <= 0.0)
       return false;
 
-   const double cap_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_sl_cap_pips);
+   const double cap_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathRound(strategy_sl_cap_pips));
    if(cap_dist <= 0.0)
       return false;
 
    double swing = 0.0;
    if(dir == QM_BUY)
      {
-      const int idx = iLowest(_Symbol, _Period, MODE_LOW, strategy_sl_lookback, 1);
-      if(idx < 0)
-         return false;
-      swing = iLow(_Symbol, _Period, idx); // perf-allowed: structural swing read
+      swing = QM_StopStructure(_Symbol, QM_BUY, entry, strategy_sl_lookback);
       if(swing <= 0.0 || swing >= entry)
          return false;
       double sl = swing;
@@ -253,10 +272,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
    else
      {
-      const int idx = iHighest(_Symbol, _Period, MODE_HIGH, strategy_sl_lookback, 1);
-      if(idx < 0)
-         return false;
-      swing = iHigh(_Symbol, _Period, idx); // perf-allowed: structural swing read
+      swing = QM_StopStructure(_Symbol, QM_SELL, entry, strategy_sl_lookback);
       if(swing <= 0.0 || swing <= entry)
          return false;
       double sl = swing;
@@ -283,7 +299,7 @@ void Strategy_ManageOpenPosition()
   }
 
 // Defensive exit: EMA(5) crosses back through EMA(21) against the open trade,
-// OR RSI crosses back through the midline against it. Direction-aware.
+// OR RSI is back through the midline against it. Direction-aware.
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
@@ -320,14 +336,14 @@ bool Strategy_ExitSignal()
    if(have_long)
      {
       const bool ema_cross_down = (fast_prev >= slow_prev && fast_now < slow_now);
-      const bool rsi_cross_down = (rsi_prev >= strategy_rsi_mid && rsi_now < strategy_rsi_mid);
-      return (ema_cross_down || rsi_cross_down);
+      const bool rsi_below_mid = (rsi_now < strategy_rsi_mid);
+      return (ema_cross_down || rsi_below_mid);
      }
 
    // have_short
    const bool ema_cross_up = (fast_prev <= slow_prev && fast_now > slow_now);
-   const bool rsi_cross_up = (rsi_prev <= strategy_rsi_mid && rsi_now > strategy_rsi_mid);
-   return (ema_cross_up || rsi_cross_up);
+   const bool rsi_above_mid = (rsi_now > strategy_rsi_mid);
+   return (ema_cross_up || rsi_above_mid);
   }
 
 // Defer to the central news filter.
