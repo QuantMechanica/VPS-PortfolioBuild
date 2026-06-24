@@ -1,40 +1,16 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11734 tc-m5-s18-ema20-macd-cross — EMA20 price-cross + MACD-state (M5 FX)"
+#property description "QM5_11734 tc-m5-s18-ema20-macd-cross"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_Signals.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11734 tc-m5-s18-ema20-macd-cross
+// QuantMechanica V5 EA - QM5_11734 tc-m5-s18-ema20-macd-cross
 // -----------------------------------------------------------------------------
-// Source: Thomas Carter, "20 Forex Trading Strategies (5 Minute Time Frame)",
-//         Strategy #18, 2013.
-// Card: artifacts/cards_approved/QM5_11734_tc-m5-s18-ema20-macd-cross.md (APPROVED).
-//
-// Two-cross-trap avoidance (build prompt §.DWX rule 4):
-//   The price/EMA20 cross is the single TRIGGER EVENT (one per bar).
-//   The MACD relationship is a confirmation STATE (main vs signal), NOT a
-//   second fresh cross on the same bar. Requiring two coincident crossovers
-//   almost never fires on .DWX -> zero trades. So:
-//     EVENT (long): close[2] <= EMA20[2] AND close[1] > EMA20[1].
-//     STATE (long): MACD_main[1] > MACD_signal[1]  (bullish momentum).
-//   Mirror for short.
-//
-// Mechanics (closed-bar reads at shift 1/2; market entry on the trigger bar):
-//   Long  : fresh upward price/EMA20 cross + MACD main above signal.
-//   Short : fresh downward price/EMA20 cross + MACD main below signal.
-//   Stop  : conservative — strategy_sl_pips beyond the EMA20 level
-//           (card default 20 pips from EMA20), scale-correct via pip helper.
-//   Target: strategy_tp_rr * risk (R-multiple TP off the entry/stop distance).
-//   Manage: EMA20-based trailing stop once price has advanced — trail stop to
-//           EMA20 -/+ strategy_trail_pips, only ever tightening (card: trail
-//           remainder at EMA20-15 pips). Single position per magic, so no
-//           partial-exit bookkeeping is carried; the 2R TP captures the
-//           card's "partial at 2x risk" intent in one exit.
-//   Spread guard: block only a genuinely wide spread (fail-open on .DWX 0).
-//
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
-// else is framework wiring and MUST stay intact.
+// Card: D:\QM\strategy_farm\artifacts\cards_approved\
+//       QM5_11734_tc-m5-s18-ema20-macd-cross.md
+// Strategy: EMA(20) price cross with MACD(12,26,9) cross confirmation.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -50,8 +26,8 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -62,190 +38,242 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_ema_period        = 20;     // trend EMA (price-cross trigger)
-input int    strategy_macd_fast         = 12;     // MACD fast EMA
-input int    strategy_macd_slow         = 26;     // MACD slow EMA
-input int    strategy_macd_signal       = 9;      // MACD signal EMA
-input int    strategy_sl_pips           = 20;     // conservative stop, pips beyond EMA20
-input double strategy_tp_rr             = 2.0;    // take-profit as R-multiple of stop
-input int    strategy_trail_pips        = 15;     // trail stop to EMA20 -/+ this many pips
-input double strategy_spread_pct_of_stop = 25.0;  // skip if spread > this % of stop distance
+input int    strategy_ema_period          = 20;
+input int    strategy_macd_fast           = 12;
+input int    strategy_macd_slow           = 26;
+input int    strategy_macd_signal         = 9;
+input int    strategy_macd_cross_lookback = 5;
+input int    strategy_entry_buffer_pips   = 10;
+input int    strategy_sl_from_ema_pips    = 20;
+input int    strategy_trail_from_ema_pips = 15;
+input double strategy_partial_rr          = 2.0;
+input double strategy_partial_fraction    = 0.50;
 
 // -----------------------------------------------------------------------------
-// Strategy hooks
+// Strategy hooks - implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only. Fail-open on .DWX zero spread.
+// No card-level session or spread filter. Time/news are handled by framework
+// wiring; Strategy_NewsFilterHook defers to the central news filter.
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
-   if(stop_distance <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
-      return true;
-
    return false;
   }
 
-// Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
-      return false;
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
 
-   // EMA20 at the two most-recent closed bars (shift 2 = before, shift 1 = cross bar).
-   const double ema_prev = QM_EMA(_Symbol, _Period, strategy_ema_period, 2);
-   const double ema_now  = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
-   if(ema_prev <= 0.0 || ema_now <= 0.0)
-      return false;
-
-   const double close_prev = iClose(_Symbol, _Period, 2); // perf-allowed: single closed-bar read
-   const double close_now  = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   if(close_prev <= 0.0 || close_now <= 0.0)
-      return false;
-
-   // MACD STATE at the trigger (cross) bar — confirmation, not a 2nd event.
-   const double macd_main = QM_MACD_Main(_Symbol, _Period,
-                                         strategy_macd_fast, strategy_macd_slow,
-                                         strategy_macd_signal, 1);
-   const double macd_sig  = QM_MACD_Signal(_Symbol, _Period,
-                                           strategy_macd_fast, strategy_macd_slow,
-                                           strategy_macd_signal, 1);
-
-   const double pip = QM_StopRulesPipsToPriceDistance(_Symbol, 1);
-   if(pip <= 0.0)
-      return false;
-
-   // --- LONG: fresh upward price/EMA20 cross + bullish MACD state ---
-   const bool cross_up   = (close_prev <= ema_prev && close_now > ema_now);
-   const bool macd_bull  = (macd_main > macd_sig);
-   if(cross_up && macd_bull)
-     {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if(entry <= 0.0)
-         return false;
-      // Conservative stop: strategy_sl_pips below the EMA20 level.
-      const double sl = QM_StopRulesNormalizePrice(_Symbol,
-                                                   ema_now - strategy_sl_pips * pip);
-      if(sl <= 0.0 || sl >= entry)
-         return false;
-      const double tp = QM_TakeRR(_Symbol, QM_BUY, entry, sl, strategy_tp_rr);
-      if(tp <= 0.0)
-         return false;
-      req.type   = QM_BUY;
-      req.price  = 0.0;   // framework fills market price at send
-      req.sl     = sl;
-      req.tp     = tp;
-      req.reason = "ema20_macd_cross_long";
-      return true;
-     }
-
-   // --- SHORT: fresh downward price/EMA20 cross + bearish MACD state ---
-   const bool cross_dn   = (close_prev >= ema_prev && close_now < ema_now);
-   const bool macd_bear  = (macd_main < macd_sig);
-   if(cross_dn && macd_bear)
-     {
-      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      if(entry <= 0.0)
-         return false;
-      // Conservative stop: strategy_sl_pips above the EMA20 level.
-      const double sl = QM_StopRulesNormalizePrice(_Symbol,
-                                                   ema_now + strategy_sl_pips * pip);
-      if(sl <= 0.0 || sl <= entry)
-         return false;
-      const double tp = QM_TakeRR(_Symbol, QM_SELL, entry, sl, strategy_tp_rr);
-      if(tp <= 0.0)
-         return false;
-      req.type   = QM_SELL;
-      req.price  = 0.0;
-      req.sl     = sl;
-      req.tp     = tp;
-      req.reason = "ema20_macd_cross_short";
-      return true;
-     }
-
-   return false;
-  }
-
-// EMA20-based trailing stop. Trail the SL toward EMA20 -/+ strategy_trail_pips,
-// only ever tightening (never loosening). Runs per tick but uses the closed-bar
-// EMA20 value (handle-pooled reader) + cheap position reads — O(1).
-void Strategy_ManageOpenPosition()
-  {
    const int magic = QM_FrameworkMagic();
-   if(QM_TM_OpenPositionCount(magic) <= 0)
-      return;
+   if(QM_TM_OpenPositionCount(magic) > 0)
+      return false;
+
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong order_ticket = OrderGetTicket(i);
+      if(order_ticket == 0 || !OrderSelect(order_ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      return false;
+     }
+
+   const int price_prev = QM_Sig_Price_Above_MA(_Symbol, _Period, strategy_ema_period, 0.0, 2);
+   const int price_now  = QM_Sig_Price_Above_MA(_Symbol, _Period, strategy_ema_period, 0.0, 1);
+   const bool price_cross_up = (price_prev < 0 && price_now > 0);
+   const bool price_cross_dn = (price_prev > 0 && price_now < 0);
+   if(!price_cross_up && !price_cross_dn)
+      return false;
 
    const double ema_now = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
    if(ema_now <= 0.0)
-      return;
-   const double pip = QM_StopRulesPipsToPriceDistance(_Symbol, 1);
-   if(pip <= 0.0)
+      return false;
+
+   const double macd_main_prev = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
+                                              strategy_macd_slow, strategy_macd_signal, 2);
+   const double macd_sig_prev = QM_MACD_Signal(_Symbol, _Period, strategy_macd_fast,
+                                               strategy_macd_slow, strategy_macd_signal, 2);
+
+   bool macd_cross_up = false;
+   bool macd_cross_dn = false;
+   const int lookback = MathMax(1, strategy_macd_cross_lookback);
+   for(int shift = 1; shift <= lookback; ++shift)
+     {
+      const double main_now = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
+                                           strategy_macd_slow, strategy_macd_signal, shift);
+      const double sig_now = QM_MACD_Signal(_Symbol, _Period, strategy_macd_fast,
+                                            strategy_macd_slow, strategy_macd_signal, shift);
+      const double main_prev = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
+                                            strategy_macd_slow, strategy_macd_signal, shift + 1);
+      const double sig_prev = QM_MACD_Signal(_Symbol, _Period, strategy_macd_fast,
+                                             strategy_macd_slow, strategy_macd_signal, shift + 1);
+      if(main_now > sig_now && main_prev <= sig_prev)
+         macd_cross_up = true;
+      if(main_now < sig_now && main_prev >= sig_prev)
+         macd_cross_dn = true;
+     }
+
+   const double entry_buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_entry_buffer_pips);
+   const double stop_buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_from_ema_pips);
+   if(entry_buffer <= 0.0 || stop_buffer <= 0.0)
+      return false;
+
+   if(price_cross_up && macd_main_prev < 0.0 && macd_sig_prev < 0.0 && macd_cross_up)
+     {
+      const double entry = QM_StopRulesNormalizePrice(_Symbol, ema_now + entry_buffer);
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(entry <= 0.0 || ask <= 0.0 || entry <= ask)
+         return false;
+      req.type = QM_BUY_STOP;
+      req.price = entry;
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, ema_now - stop_buffer);
+      req.tp = 0.0;
+      req.reason = "ema20_macd_cross_buy_stop";
+      return (req.sl > 0.0 && req.sl < req.price);
+     }
+
+   if(price_cross_dn && macd_main_prev > 0.0 && macd_sig_prev > 0.0 && macd_cross_dn)
+     {
+      const double entry = QM_StopRulesNormalizePrice(_Symbol, ema_now - entry_buffer);
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(entry <= 0.0 || bid <= 0.0 || entry >= bid)
+         return false;
+      req.type = QM_SELL_STOP;
+      req.price = entry;
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, ema_now + stop_buffer);
+      req.tp = 0.0;
+      req.reason = "ema20_macd_cross_sell_stop";
+      return (req.sl > req.price);
+     }
+
+   return false;
+  }
+
+// Partial exit at 2R, then trail the remaining position at EMA20 +/- 15 pips.
+void Strategy_ManageOpenPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   const double ema_now = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
+   const double trail_buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_trail_from_ema_pips);
+   if(ema_now <= 0.0 || trail_buffer <= 0.0)
       return;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket))
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
       const long pos_type = PositionGetInteger(POSITION_TYPE);
+      const bool is_buy = (pos_type == POSITION_TYPE_BUY);
+      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
       const double cur_sl = PositionGetDouble(POSITION_SL);
-      const double open_p = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double volume = PositionGetDouble(POSITION_VOLUME);
+      const double market_price = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                                         : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(open_price <= 0.0 || cur_sl <= 0.0 || volume <= 0.0 || market_price <= 0.0)
+         continue;
 
-      if(pos_type == POSITION_TYPE_BUY)
+      const string partial_key = StringFormat("QM5_11734_partial_%I64u", ticket);
+      bool partial_done = GlobalVariableCheck(partial_key);
+      const double risk_distance = MathAbs(open_price - cur_sl);
+      const double profit_distance = is_buy ? (market_price - open_price)
+                                            : (open_price - market_price);
+
+      if(!partial_done && risk_distance > 0.0 &&
+         profit_distance >= strategy_partial_rr * risk_distance)
         {
-         const double trail_sl = QM_StopRulesNormalizePrice(_Symbol,
-                                    ema_now - strategy_trail_pips * pip);
-         // Only tighten: new SL must be above current SL and below current bid,
-         // and never below the original entry-derived stop is not required —
-         // the trail simply ratchets up as the EMA rises.
-         const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         if(trail_sl > 0.0 && trail_sl < bid &&
-            (cur_sl <= 0.0 || trail_sl > cur_sl) && trail_sl > open_p)
-            QM_TM_MoveSL(ticket, trail_sl, "ema20_trail_long");
+         const double requested = volume * strategy_partial_fraction;
+         const double close_lots = QM_TM_NormalizeVolume(_Symbol, requested);
+         if(close_lots > 0.0 && close_lots < volume)
+           {
+            if(QM_TM_PartialClose(ticket, close_lots, QM_EXIT_PARTIAL))
+              {
+               GlobalVariableSet(partial_key, 1.0);
+               partial_done = true;
+              }
+           }
+         else
+           {
+            GlobalVariableSet(partial_key, 1.0);
+            partial_done = true;
+           }
         }
-      else if(pos_type == POSITION_TYPE_SELL)
+
+      if(!partial_done)
+         continue;
+
+      if(is_buy)
         {
-         const double trail_sl = QM_StopRulesNormalizePrice(_Symbol,
-                                    ema_now + strategy_trail_pips * pip);
-         const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         if(trail_sl > 0.0 && trail_sl > ask &&
-            (cur_sl <= 0.0 || trail_sl < cur_sl) && trail_sl < open_p)
-            QM_TM_MoveSL(ticket, trail_sl, "ema20_trail_short");
+         const double trail_sl = QM_StopRulesNormalizePrice(_Symbol, ema_now - trail_buffer);
+         if(trail_sl > 0.0 && trail_sl < market_price &&
+            (cur_sl <= 0.0 || trail_sl > cur_sl))
+            QM_TM_MoveSL(ticket, trail_sl, "ema20_partial_remainder_trail_long");
+        }
+      else
+        {
+         const double trail_sl = QM_StopRulesNormalizePrice(_Symbol, ema_now + trail_buffer);
+         if(trail_sl > 0.0 && trail_sl > market_price &&
+            (cur_sl <= 0.0 || trail_sl < cur_sl))
+            QM_TM_MoveSL(ticket, trail_sl, "ema20_partial_remainder_trail_short");
         }
      }
   }
 
-// No discretionary close beyond SL/TP and the EMA20 trail. The card's
-// "exit on opposite EMA20 cross" is captured implicitly: an opposite cross
-// only occurs after the EMA20 trail has ratcheted the stop to the EMA, so the
-// trail removes the position around the same level. Keep this empty to avoid a
-// second new-bar gate / double-cross interaction.
+// Close on opposite price/EMA20 cross. SL/trailing and Friday close are handled
+// elsewhere by the framework and trade-management hook.
 bool Strategy_ExitSignal()
   {
+   const int magic = QM_FrameworkMagic();
+   const int price_prev = QM_Sig_Price_Above_MA(_Symbol, _Period, strategy_ema_period, 0.0, 2);
+   const int price_now = QM_Sig_Price_Above_MA(_Symbol, _Period, strategy_ema_period, 0.0, 1);
+   const bool cross_up = (price_prev < 0 && price_now > 0);
+   const bool cross_dn = (price_prev > 0 && price_now < 0);
+   if(!cross_up && !cross_dn)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const long pos_type = PositionGetInteger(POSITION_TYPE);
+      if(pos_type == POSITION_TYPE_BUY && cross_dn)
+         return true;
+      if(pos_type == POSITION_TYPE_SELL && cross_up)
+         return true;
+     }
+
    return false;
   }
 
-// Defer to the central news filter.
+// Defer to the central framework news filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
 
 // -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
+// Framework wiring - do NOT edit below this line unless you know why.
 // -----------------------------------------------------------------------------
 
 int OnInit()
@@ -255,17 +283,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
