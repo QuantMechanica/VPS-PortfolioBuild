@@ -99,6 +99,21 @@ function Invoke-StallDumpCapture {
     }
 }
 
+# Parse a 'yyyy-MM-ddTHH:mm:ssZ' stamp as UTC. PowerShell's `[datetime]"...Z"` cast
+# converts the value to LOCAL time (Kind=Local); subtracting that from a UTC `$nowDt`
+# (Get-Date).ToUniversalTime() compares mismatched frames and skews cooldowns by the
+# local UTC offset (observed 2026-06-24: a 6h realstall cooldown effectively became 8h,
+# blocking auto-heal for a ~6.5h launch_fault wedge). Always parse stored stamps as UTC.
+function ConvertFrom-UtcStamp {
+    param([string]$Stamp)
+    if (-not $Stamp) { return $null }
+    try {
+        return [datetime]::ParseExact($Stamp, 'yyyy-MM-ddTHH:mm:ssZ',
+            [Globalization.CultureInfo]::InvariantCulture,
+            ([Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal))
+    } catch { return $null }
+}
+
 # 1. OWNER intent: is the factory meant to be ON? (FACTORY tasks enabled?)
 $factoryEnabled = $false
 foreach ($t in $QM_FACTORY_TASKS) {
@@ -182,11 +197,9 @@ if ($factoryEnabled -and $sessionLost) {
     $healState = 'D:\QM\reports\state\watchdog_session_heal.json'
     $st = $null
     try { $st = Get-Content $healState -Raw -ErrorAction Stop | ConvertFrom-Json } catch {}
-    $nowDt = Get-Date
-    $pendingSince = $null
-    if ($st -and $st.pending_since) { try { $pendingSince = [datetime]$st.pending_since } catch {} }
-    $lastReboot = $null
-    if ($st -and $st.last_reboot) { try { $lastReboot = [datetime]$st.last_reboot } catch {} }
+    $nowDt = (Get-Date).ToUniversalTime()
+    $pendingSince = ConvertFrom-UtcStamp $st.pending_since
+    $lastReboot   = ConvertFrom-UtcStamp $st.last_reboot
 
     $secretOk = $false
     try { $secretOk = $null -ne [Microsoft.Win32.RegistryKey]::OpenBaseKey('LocalMachine','Default').OpenSubKey('SECURITY\Policy\Secrets\DefaultPassword') } catch {}
@@ -288,15 +301,17 @@ elseif ($factoryEnabled -and $realStall) {
     # REAL-VERDICT-STALL (launch_fault wedge): workers look healthy but 0 real verdicts.
     # A plain respawn may not clear a leaked-resource wedge -> do the full OFF/ON-equiv
     # (disable factory tasks + kill all + longer settle + re-enable + farmctl repair +
-    # clean respawn). 2-run confirm + 6h cooldown to avoid acting on a transient lull.
+    # clean respawn). 2-run confirm + 45min cooldown to avoid acting on a transient lull
+    # (45min: a cheap/safe OFF/ON-equiv, not a VPS reboot, so it may retry far sooner than
+    # the 6h session-reboot heal; long enough to clear the post-reset cold-cache warm-up).
     $rsState = 'D:\QM\reports\state\watchdog_realstall.json'
     $rst = $null; try { $rst = Get-Content $rsState -Raw -ErrorAction Stop | ConvertFrom-Json } catch {}
     $nowDt = (Get-Date).ToUniversalTime()
-    $rsSince = $null;  if ($rst -and $rst.pending_since) { try { $rsSince = [datetime]$rst.pending_since } catch {} }
-    $rsLast  = $null;  if ($rst -and $rst.last_reset)    { try { $rsLast  = [datetime]$rst.last_reset } catch {} }
-    if ($rsLast -and ($nowDt - $rsLast).TotalHours -lt 6) {
+    $rsSince = ConvertFrom-UtcStamp $rst.pending_since
+    $rsLast  = ConvertFrom-UtcStamp $rst.last_reset
+    if ($rsLast -and ($nowDt - $rsLast).TotalMinutes -lt 45) {
         $action = 'realstall_cooldown'
-        $detail = "REAL-STALL ($realStallInfo) but full-reset on 6h cooldown (last $($rst.last_reset))"
+        $detail = "REAL-STALL ($realStallInfo) but full-reset on 45min cooldown (last $($rst.last_reset))"
     } elseif (-not $rsSince) {
         $action = 'realstall_confirm'
         $detail = "REAL-STALL suspected ($realStallInfo); confirming on next run (~15min) before full reset"
