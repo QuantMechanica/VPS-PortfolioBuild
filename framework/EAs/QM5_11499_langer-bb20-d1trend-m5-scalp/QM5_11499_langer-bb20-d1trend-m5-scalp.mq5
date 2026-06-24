@@ -79,36 +79,13 @@ input int    strategy_sl_lookback_bars   = 5;      // M5 swing lookback for SL
 input int    strategy_sl_cap_pips        = 20;     // hard cap on SL distance (pips)
 input int    strategy_tp_pips            = 20;     // fixed take-profit (pips)
 input int    strategy_be_trigger_pips    = 10;     // move SL to BE after this many pips
-input int    strategy_entry_buffer_pips  = 1;      // pending stop offset beyond bar extreme
+input int    strategy_be_buffer_pips     = 1;      // BE lock-in buffer
 input int    strategy_pending_expiry_bars = 3;     // pending order lifetime in M5 bars
 input double strategy_spread_cap_pips    = 15.0;   // skip a genuinely wide spread (pips)
-
-// -----------------------------------------------------------------------------
-// Local helpers (framework-state reads only — no strategy indicator math here).
-// -----------------------------------------------------------------------------
-
-// Count this EA's working pending orders so we never stack a second STOP order
-// while one is still live. Orders (not positions) are framework state, read the
-// same way the reference EA reads PositionsTotal()/PositionGetTicket().
-int QM_LocalPendingCount(const int magic)
-  {
-   int count = 0;
-   const int total = OrdersTotal();
-   for(int i = total - 1; i >= 0; --i)
-     {
-      const ulong ticket = OrderGetTicket(i);
-      if(ticket == 0)
-         continue;
-      if(!OrderSelect(ticket))
-         continue;
-      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
-         continue;
-      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
-         continue;
-      count++;
-     }
-   return count;
-  }
+input int    strategy_london_start_hour_broker = 9;   // broker-time London-open window start
+input int    strategy_london_end_hour_broker   = 12;  // broker-time London-open window end
+input int    strategy_ny_start_hour_broker     = 15;  // broker-time NY-session window start
+input int    strategy_ny_end_hour_broker       = 22;  // broker-time NY-session window end
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -117,6 +94,18 @@ int QM_LocalPendingCount(const int magic)
 // Cheap O(1) per-tick gate. Spread guard only — fail-open on .DWX zero spread.
 bool Strategy_NoTradeFilter()
   {
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   if(dt.day_of_week == 5)
+      return true;
+
+   const bool in_london = (dt.hour >= strategy_london_start_hour_broker &&
+                           dt.hour < strategy_london_end_hour_broker);
+   const bool in_ny = (dt.hour >= strategy_ny_start_hour_broker &&
+                       dt.hour < strategy_ny_end_hour_broker);
+   if(!in_london && !in_ny)
+      return true;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
@@ -134,13 +123,31 @@ bool Strategy_NoTradeFilter()
 // Entry. Caller guarantees QM_IsNewBar() == true (closed M5 bar).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    const int magic = QM_FrameworkMagic();
 
    // One position per magic; and at most one live pending STOP at a time.
    if(QM_TM_OpenPositionCount(magic) > 0)
       return false;
-   if(QM_LocalPendingCount(magic) > 0)
-      return false;
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0)
+         continue;
+      if(!OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) == magic)
+         return false;
+     }
 
    // --- D1 BIAS STATE: yesterday's D1 close vs D1 SMA(200) (closed bar) ---
    const double sma200_d1 = QM_SMA(_Symbol, PERIOD_D1, strategy_d1_sma_period, 1);
@@ -167,7 +174,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(open1 <= 0.0 || close1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0)
       return false;
 
-   const double buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_entry_buffer_pips);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double spread_offset = (ask > 0.0 && bid > 0.0 && ask > bid) ? (ask - bid) : 0.0;
 
    QM_OrderType side;
    double entry_price = 0.0;
@@ -180,7 +189,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(!(iClose(_Symbol, _Period, 2) < bb_lower2)) // pierce STATE on prior bar
          return false;
       side        = QM_BUY_STOP;
-      entry_price = high1 + buffer;           // stop above the reversal bar's high
+      entry_price = high1 + spread_offset;    // stop above the reversal bar's high plus spread
      }
    else
      {
@@ -190,7 +199,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(!(iClose(_Symbol, _Period, 2) > bb_upper2)) // pierce STATE on prior bar
          return false;
       side        = QM_SELL_STOP;
-      entry_price = low1 - buffer;            // stop below the reversal bar's low
+      entry_price = low1 - spread_offset;     // stop below the reversal bar's low minus spread
      }
 
    entry_price = QM_TM_NormalizePrice(_Symbol, entry_price);
@@ -237,7 +246,7 @@ void Strategy_ManageOpenPosition()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-      QM_TM_MoveToBreakEven(ticket, strategy_be_trigger_pips, strategy_entry_buffer_pips);
+      QM_TM_MoveToBreakEven(ticket, strategy_be_trigger_pips, strategy_be_buffer_pips);
      }
   }
 

@@ -3,7 +3,6 @@
 #property description "QM5_11734 tc-m5-s18-ema20-macd-cross"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA - QM5_11734 tc-m5-s18-ema20-macd-cross
