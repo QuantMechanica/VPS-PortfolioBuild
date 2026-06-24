@@ -235,7 +235,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                               strategy_psar_step, strategy_psar_maximum, 1);
    const double stddev = QM_StdDev(_Symbol, strategy_signal_tf,
                                    strategy_stddev_period, 1, PRICE_CLOSE, MODE_SMA);
-   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1); // perf-allowed: fixed closed-bar PSAR side check
+   const double close_1 = QM_SMA(_Symbol, strategy_signal_tf, 1, 1, PRICE_CLOSE);
    if(ema_fast <= 0.0 || ema_slow <= 0.0 || psar <= 0.0 || close_1 <= 0.0)
       return false;
    if(stddev < Strategy_StdDevThreshold())
@@ -296,7 +296,7 @@ bool Strategy_ExitSignal()
    const double ema_slow = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_slow, 1, PRICE_CLOSE);
    const double psar = QM_SAR(_Symbol, strategy_signal_tf,
                               strategy_psar_step, strategy_psar_maximum, 1);
-   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1); // perf-allowed: fixed closed-bar PSAR side check
+   const double close_1 = QM_SMA(_Symbol, strategy_signal_tf, 1, 1, PRICE_CLOSE);
    if(ema_fast <= 0.0 || ema_slow <= 0.0 || psar <= 0.0 || close_1 <= 0.0)
       return false;
 

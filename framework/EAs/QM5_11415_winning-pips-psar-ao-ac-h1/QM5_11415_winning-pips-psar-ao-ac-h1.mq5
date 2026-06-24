@@ -1,47 +1,45 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11415 winning-pips-psar-ao-ac-h1 — PSAR flip + AO/AC confluence (H1)"
+#property description "QuantMechanica V5 EA skeleton template"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11415 winning-pips-psar-ao-ac-h1
+// QuantMechanica V5 EA SKELETON
 // -----------------------------------------------------------------------------
-// Source: "Winning Pips System" (fxmiracle.com, anonymous), local PDF.
-// Card: artifacts/cards_approved/QM5_11415_winning-pips-psar-ao-ac-h1.md
-//       (g0_status APPROVED).
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails). The framework provides:
 //
-// Triple-indicator confluence on H1. All reads on the closed bar (shift >= 1).
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
+//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
+//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
+//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
+//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
+//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
+//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
 //
-//   PSAR  : QM_SAR(step, max). Below price = bullish state, above = bearish.
-//   AO    : Awesome Oscillator = SMA(fast, hl2) - SMA(slow, hl2), defaults 5/34.
-//           Computed deterministically from QM_SMA on PRICE_MEDIAN (hl2).
-//   AC    : Accelerator = AO - SMA(ac_smooth, AO), default ac_smooth = 5.
-//           SMA(AO) is reconstructed by averaging AO over ac_smooth shifts.
-//
-//   The PSAR FLIP is the single EVENT (was-bearish->now-bullish for long, and
-//   the mirror for short). AO and AC sign/alignment are STATES that must agree
-//   with the flip direction on the same closed bar. Making the flip the lone
-//   trigger (states, not two separate cross events) avoids the .DWX
-//   two-cross-same-bar zero-trade trap (build prompt invariant #4).
-//
-//   "Green" per the card = the oscillator is RISING bar-to-bar:
-//       AO green : AO[1] > AO[2]      AC green : AC[1] > AC[2]
-//   We additionally require the oscillator SIGN to agree with the flip
-//   direction (AO > 0 for long, AO < 0 for short) so the confluence is real
-//   momentum confirmation, not a transient up-tick in a down move.
-//
-//   Stop  : signal-bar extreme (Low[1] long / High[1] short), capped at
-//           sl_cap_pips (card P2 cap 40 pips).
-//   Take  : tp_rr * stop distance (card: 2x SL distance).
-//   Exit  : both AO and AC flip RED simultaneously (long) / GREEN (short).
-//
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific.
+// DO NOT
+//   - Write per-EA IsNewBar() — use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//     use the QM_* readers above. The framework pools handles and releases them
+//     on shutdown.
+//   - CopyRates over warmup windows on every tick. If you genuinely need raw
+//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
+//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
+//     to magic_numbers.csv, run:
+//         python framework/scripts/update_magic_resolver.py
+//     This is idempotent and preserves all rows.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 11415;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -50,10 +48,16 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
+//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -61,178 +65,178 @@ input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input double strategy_sar_step          = 0.02;   // PSAR acceleration step
-input double strategy_sar_max           = 0.20;   // PSAR acceleration maximum
-input int    strategy_ao_fast           = 5;      // AO fast SMA on hl2
-input int    strategy_ao_slow           = 34;     // AO slow SMA on hl2
-input int    strategy_ac_smooth         = 5;      // AC = AO - SMA(ac_smooth, AO)
-input double strategy_tp_rr             = 2.0;    // TP = tp_rr * stop distance
-input double strategy_sl_cap_pips       = 40.0;   // P2 stop cap (H1 bars)
-input double strategy_spread_cap_pips   = 20.0;   // skip only genuinely wide spread
+input double strategy_psar_step         = 0.02;
+input double strategy_psar_max          = 0.20;
+input int    strategy_ao_fast_period    = 5;
+input int    strategy_ao_slow_period    = 34;
+input int    strategy_ac_smooth_period  = 5;
+input double strategy_tp_rr             = 2.0;
+input int    strategy_sl_cap_pips       = 40;
+input int    strategy_spread_cap_pips   = 20;
 
 // -----------------------------------------------------------------------------
-// AO / AC deterministic helpers (computed from QM_SMA on hl2 = PRICE_MEDIAN).
-// All reads on closed bars; shift is the bar index (1 = last closed bar).
+// Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// Awesome Oscillator at a given closed-bar shift: SMA(fast,hl2) - SMA(slow,hl2).
-double AO_At(const int shift)
-  {
-   const double fast = QM_SMA(_Symbol, _Period, strategy_ao_fast, shift, PRICE_MEDIAN);
-   const double slow = QM_SMA(_Symbol, _Period, strategy_ao_slow, shift, PRICE_MEDIAN);
-   return fast - slow;
-  }
-
-// Accelerator at a given closed-bar shift: AO[shift] - mean(AO over the
-// ac_smooth bars ending at `shift`). SMA(AO) is reconstructed by averaging AO
-// across the smoothing window — there is no buffer-input MA helper, so we
-// recompute AO at each shift. Window is small (default 5) and only evaluated
-// on the closed-bar entry path, so this stays well within the perf budget.
-double AC_At(const int shift)
-  {
-   const double ao_here = AO_At(shift);
-   double sum = 0.0;
-   for(int k = 0; k < strategy_ac_smooth; ++k)
-      sum += AO_At(shift + k);
-   const double ao_sma = sum / (double)strategy_ac_smooth;
-   return ao_here - ao_sma;
-  }
-
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
-
-// Cheap O(1) per-tick gate. Spread guard only. Fail-OPEN on .DWX zero spread:
-// only a genuinely wide spread (> cap) blocks; ask==bid (modeled 0) passes.
+// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
+// regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block
+      return true;
 
-   const double cap_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
-   if(cap_dist <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   if(spread > 0.0 && spread > cap_dist)
-      return true; // genuinely wide spread — block
+   const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(cap > 0.0 && ask > bid && (ask - bid) > cap)
+      return true;
 
    return false;
   }
 
-// Triple-confluence entry. Caller guarantees QM_IsNewBar() == true.
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
+// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(strategy_psar_step <= 0.0 || strategy_psar_max <= 0.0)
+      return false;
+   if(strategy_ao_fast_period < 1 || strategy_ao_slow_period <= strategy_ao_fast_period)
+      return false;
+   if(strategy_ac_smooth_period < 1 || strategy_tp_rr <= 0.0)
+      return false;
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // --- Closed-bar references (shift 1 = last closed signal bar) ---
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed: single closed-bar read
-   const double low1   = iLow(_Symbol, _Period, 1);   // perf-allowed: signal-bar low (stop)
-   const double high1  = iHigh(_Symbol, _Period, 1);  // perf-allowed: signal-bar high (stop)
-   if(close1 <= 0.0 || close2 <= 0.0 || low1 <= 0.0 || high1 <= 0.0)
+   const ENUM_TIMEFRAMES tf = PERIOD_H1;
+   const double close1 = iClose(_Symbol, tf, 1); // perf-allowed: card PSAR/close rule uses one closed signal bar.
+   const double low1 = iLow(_Symbol, tf, 1);     // perf-allowed: card stop is signal-bar low.
+   const double high1 = iHigh(_Symbol, tf, 1);   // perf-allowed: card stop is signal-bar high.
+   if(close1 <= 0.0 || low1 <= 0.0 || high1 <= 0.0)
       return false;
 
-   // --- PSAR: the FLIP is the single trigger EVENT ---
-   const double sar1 = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 1);
-   const double sar2 = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 2);
-   if(sar1 <= 0.0 || sar2 <= 0.0)
+   const double psar1 = QM_SAR(_Symbol, tf, strategy_psar_step, strategy_psar_max, 1);
+   if(psar1 <= 0.0)
       return false;
 
-   const bool sar_bull_now  = (sar1 < close1); // PSAR below price = bullish
-   const bool sar_bear_prev = (sar2 > close2); // was bearish on the prior bar
-   const bool sar_bear_now  = (sar1 > close1); // PSAR above price = bearish
-   const bool sar_bull_prev = (sar2 < close2); // was bullish on the prior bar
+   const double ao1 = QM_SMA(_Symbol, tf, strategy_ao_fast_period, 1, PRICE_MEDIAN) -
+                      QM_SMA(_Symbol, tf, strategy_ao_slow_period, 1, PRICE_MEDIAN);
+   const double ao2 = QM_SMA(_Symbol, tf, strategy_ao_fast_period, 2, PRICE_MEDIAN) -
+                      QM_SMA(_Symbol, tf, strategy_ao_slow_period, 2, PRICE_MEDIAN);
 
-   const bool flip_long  = (sar_bull_now && sar_bear_prev); // bearish -> bullish flip
-   const bool flip_short = (sar_bear_now && sar_bull_prev); // bullish -> bearish flip
-   if(!flip_long && !flip_short)
-      return false;
-
-   // --- AO / AC STATES (must agree with the flip direction) ---
-   const double ao1 = AO_At(1);
-   const double ao2 = AO_At(2);
-   const double ac1 = AC_At(1);
-   const double ac2 = AC_At(2);
-
-   const bool ao_green = (ao1 > ao2) && (ao1 > 0.0); // rising AND positive momentum
-   const bool ao_red   = (ao1 < ao2) && (ao1 < 0.0); // falling AND negative momentum
-   const bool ac_green = (ac1 > ac2) && (ac1 > 0.0);
-   const bool ac_red   = (ac1 < ac2) && (ac1 < 0.0);
-
-   QM_OrderType side;
-   double sl_price;
-   if(flip_long && ao_green && ac_green)
+   double ao_sum1 = 0.0;
+   double ao_sum2 = 0.0;
+   for(int k = 0; k < strategy_ac_smooth_period; ++k)
      {
-      side = QM_BUY;
-      sl_price = low1; // signal-bar low
+      const int shift1 = 1 + k;
+      const int shift2 = 2 + k;
+      const double ao_k1 = QM_SMA(_Symbol, tf, strategy_ao_fast_period, shift1, PRICE_MEDIAN) -
+                           QM_SMA(_Symbol, tf, strategy_ao_slow_period, shift1, PRICE_MEDIAN);
+      const double ao_k2 = QM_SMA(_Symbol, tf, strategy_ao_fast_period, shift2, PRICE_MEDIAN) -
+                           QM_SMA(_Symbol, tf, strategy_ao_slow_period, shift2, PRICE_MEDIAN);
+      ao_sum1 += ao_k1;
+      ao_sum2 += ao_k2;
      }
-   else if(flip_short && ao_red && ac_red)
-     {
+   const double ac1 = ao1 - (ao_sum1 / (double)strategy_ac_smooth_period);
+   const double ac2 = ao2 - (ao_sum2 / (double)strategy_ac_smooth_period);
+
+   const bool long_signal = (psar1 < close1 && ao1 > ao2 && ac1 > ac2);
+   const bool short_signal = (psar1 > close1 && ao1 < ao2 && ac1 < ac2);
+   if(!long_signal && !short_signal)
+      return false;
+
+   QM_OrderType side = QM_BUY;
+   if(short_signal)
       side = QM_SELL;
-      sl_price = high1; // signal-bar high
-     }
-   else
-      return false;
-
-   // --- Entry price + stop distance (with P2 pip cap) ---
-   const double entry = (side == QM_BUY)
-                        ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                        : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double entry = (side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                         : SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(entry <= 0.0)
       return false;
 
-   double stop_dist = MathAbs(entry - sl_price);
-   const double cap_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_sl_cap_pips);
-   if(cap_dist > 0.0 && stop_dist > cap_dist)
-      stop_dist = cap_dist; // cap the stop at sl_cap_pips
-   if(stop_dist <= 0.0)
+   double stop_distance = 0.0;
+   if(side == QM_BUY)
+      stop_distance = entry - low1;
+   else
+      stop_distance = high1 - entry;
+   if(stop_distance <= 0.0)
       return false;
 
-   const double sl = (side == QM_BUY) ? (entry - stop_dist) : (entry + stop_dist);
-   const double tp = (side == QM_BUY) ? (entry + strategy_tp_rr * stop_dist)
-                                      : (entry - strategy_tp_rr * stop_dist);
+   const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_cap_pips);
+   if(cap_distance > 0.0 && stop_distance > cap_distance)
+      stop_distance = cap_distance;
 
-   req.type   = side;
-   req.price  = 0.0; // framework fills market price at send
-   req.sl     = QM_TM_NormalizePrice(_Symbol, sl);
-   req.tp     = QM_TM_NormalizePrice(_Symbol, tp);
-   req.reason = (side == QM_BUY) ? "wp_psar_ao_ac_long" : "wp_psar_ao_ac_short";
+   const double raw_sl = (side == QM_BUY) ? (entry - stop_distance) : (entry + stop_distance);
+   const double raw_tp = (side == QM_BUY) ? (entry + strategy_tp_rr * stop_distance)
+                                          : (entry - strategy_tp_rr * stop_distance);
+
+   req.type = side;
+   req.price = 0.0;
+   req.sl = QM_StopRulesNormalizePrice(_Symbol, raw_sl);
+   req.tp = QM_StopRulesNormalizePrice(_Symbol, raw_tp);
+   req.reason = (side == QM_BUY) ? "psar_ao_ac_long" : "psar_ao_ac_short";
    return true;
   }
 
-// Fixed stop/target after entry — no active trail. Discretionary exit lives in
-// Strategy_ExitSignal.
+// Called every tick when an open position exists for this EA's magic.
+// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
   }
 
-// Early exit: both AO and AC flip to the opposite colour on the same bar,
-// against the open position's direction.
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
    if(QM_TM_OpenPositionCount(magic) <= 0)
       return false;
+   if(strategy_ao_fast_period < 1 || strategy_ao_slow_period <= strategy_ao_fast_period ||
+      strategy_ac_smooth_period < 1)
+      return false;
 
-   const double ao1 = AO_At(1);
-   const double ao2 = AO_At(2);
-   const double ac1 = AC_At(1);
-   const double ac2 = AC_At(2);
+   const ENUM_TIMEFRAMES tf = PERIOD_H1;
+   const double ao1 = QM_SMA(_Symbol, tf, strategy_ao_fast_period, 1, PRICE_MEDIAN) -
+                      QM_SMA(_Symbol, tf, strategy_ao_slow_period, 1, PRICE_MEDIAN);
+   const double ao2 = QM_SMA(_Symbol, tf, strategy_ao_fast_period, 2, PRICE_MEDIAN) -
+                      QM_SMA(_Symbol, tf, strategy_ao_slow_period, 2, PRICE_MEDIAN);
 
-   const bool ao_red   = (ao1 < ao2);
-   const bool ac_red   = (ac1 < ac2);
+   double ao_sum1 = 0.0;
+   double ao_sum2 = 0.0;
+   for(int k = 0; k < strategy_ac_smooth_period; ++k)
+     {
+      const int shift1 = 1 + k;
+      const int shift2 = 2 + k;
+      const double ao_k1 = QM_SMA(_Symbol, tf, strategy_ao_fast_period, shift1, PRICE_MEDIAN) -
+                           QM_SMA(_Symbol, tf, strategy_ao_slow_period, shift1, PRICE_MEDIAN);
+      const double ao_k2 = QM_SMA(_Symbol, tf, strategy_ao_fast_period, shift2, PRICE_MEDIAN) -
+                           QM_SMA(_Symbol, tf, strategy_ao_slow_period, shift2, PRICE_MEDIAN);
+      ao_sum1 += ao_k1;
+      ao_sum2 += ao_k2;
+     }
+   const double ac1 = ao1 - (ao_sum1 / (double)strategy_ac_smooth_period);
+   const double ac2 = ao2 - (ao_sum2 / (double)strategy_ac_smooth_period);
+
+   const bool ao_red = (ao1 < ao2);
+   const bool ac_red = (ac1 < ac2);
    const bool ao_green = (ao1 > ao2);
    const bool ac_green = (ac1 > ac2);
 
-   // Determine the side of the open position for this magic.
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -240,19 +244,23 @@ bool Strategy_ExitSignal()
          continue;
       if(PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-      const long ptype = PositionGetInteger(POSITION_TYPE);
-      if(ptype == POSITION_TYPE_BUY && ao_red && ac_red)
-         return true;  // long: both flipped red
-      if(ptype == POSITION_TYPE_SELL && ao_green && ac_green)
-         return true;  // short: both flipped green
+
+      const long position_type = PositionGetInteger(POSITION_TYPE);
+      if(position_type == POSITION_TYPE_BUY && ao_red && ac_red)
+         return true;
+      if(position_type == POSITION_TYPE_SELL && ao_green && ac_green)
+         return true;
      }
+
    return false;
   }
 
-// Defer to the central news filter.
+// Optional news-filter override. Return TRUE to suppress trading regardless
+// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
+// custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false;
+   return false; // defer to QM_NewsAllowsTrade(...)
   }
 
 // -----------------------------------------------------------------------------
@@ -297,6 +305,8 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults.
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -310,8 +320,10 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -326,9 +338,14 @@ void OnTick()
         }
      }
 
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
 
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
@@ -348,6 +365,8 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
   {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 

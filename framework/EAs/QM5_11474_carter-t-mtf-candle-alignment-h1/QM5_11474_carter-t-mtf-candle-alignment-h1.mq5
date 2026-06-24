@@ -12,21 +12,13 @@
 // Card: artifacts/cards_approved/QM5_11474_carter-t-mtf-candle-alignment-h1.md
 //   (g0_status APPROVED).
 //
-// Mechanics (all reads on CLOSED bars, shift 1, per HTF):
-//   Confluence STATE : the last completed candle on every alignment timeframe
-//                      (M5, M15, M30) closes the SAME color (all bullish or all
-//                      bearish). Pure OHLC: close > open (bull) / close < open
-//                      (bear). This is a multi-timeframe momentum filter — a
-//                      STATE, not an event.
-//   Trigger  EVENT   : on the H1 closed-bar gate (one event per H1 bar), the
-//                      just-completed H1 candle (shift 1) closes the SAME color
-//                      as the aligned lower TFs AND has extended at least
-//                      `strategy_trigger_pips` beyond its own open (close - open
-//                      for longs, open - close for shorts). The extension is
-//                      Carter's "price continuing in the direction rather than
-//                      stalling" — modelled as the H1 trigger bar's net body so
-//                      the rule fires once per bar and never needs an intrabar
-//                      stop order (gapless .DWX, market-on-confirmation).
+// Mechanics (all reads on CLOSED bars, shift 1):
+//   Alignment STATE : the last completed candles on M5, M15, M30, and H1 all
+//                     close the SAME color. Bullish means close > open; bearish
+//                     means close < open.
+//   Entry           : at the H1 closed-bar gate, place a stop order 3 pips
+//                     beyond the H1 close in the aligned direction. The pending
+//                     order expires after 3 H1 bars.
 //   Direction        : all bullish -> BUY ; all bearish -> SELL.
 //   Stop / Take      : fixed pips (50 / 50 by default, card defaults). Scaled to
 //                      price distance via QM_StopRulesPipsToPriceDistance so it
@@ -35,12 +27,9 @@
 //                      no-Friday-entry (card "No Friday entry").
 //   One open position per symbol/magic.
 //
-// Two-cross trap avoided: alignment of 3 lower TFs is a pure STATE; the single
-// EVENT is the H1 trigger bar completing with a same-color net body >= trigger.
-//
-// HTF candle reads use bounded, closed-bar iClose/iOpen with an explicit TF —
-// perf-allowed bespoke structural reads (no QM indicator helper covers raw
-// candle color), each a single shift-1 access, evaluated once per H1 closed bar.
+// Candle reads use bounded CopyRates calls for one closed bar per timeframe.
+// perf-allowed: no QM helper exposes raw candle color, and this structural rule
+// runs only inside the framework H1 new-bar entry gate.
 //
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything else
 // is framework wiring and MUST stay intact.
@@ -76,10 +65,11 @@ input group "Strategy"
 input ENUM_TIMEFRAMES strategy_tf_a       = PERIOD_M5;   // alignment TF 1
 input ENUM_TIMEFRAMES strategy_tf_b       = PERIOD_M15;  // alignment TF 2
 input ENUM_TIMEFRAMES strategy_tf_c       = PERIOD_M30;  // alignment TF 3
-input double strategy_trigger_pips        = 3.0;    // min H1 trigger-bar net body (pips) to confirm
-input double strategy_sl_pips             = 50.0;   // fixed stop loss (pips)
-input double strategy_tp_pips             = 50.0;   // fixed take profit (pips)
-input double strategy_spread_cap_pips     = 20.0;   // skip if genuine spread wider than this (pips)
+input int    strategy_trigger_pips        = 3;      // stop-order offset beyond H1 close (pips)
+input int    strategy_sl_pips             = 50;     // fixed stop loss (pips)
+input int    strategy_tp_pips             = 50;     // fixed take profit (pips)
+input int    strategy_expire_hours        = 3;      // pending stop order expiration (hours)
+input int    strategy_spread_cap_pips     = 20;     // skip if genuine spread wider than this (pips)
 input bool   strategy_no_friday_entry     = true;   // card: no Friday entries
 
 // -----------------------------------------------------------------------------
@@ -88,36 +78,81 @@ input bool   strategy_no_friday_entry     = true;   // card: no Friday entries
 
 // Candle color of the last completed bar on a given TF.
 //   +1 bullish (close > open), -1 bearish (close < open), 0 doji/no-data.
-// perf-allowed: single closed-bar (shift 1) raw OHLC read per TF — no QM helper
-// exposes raw candle color, and this is bounded structural logic gated to the
-// H1 new-bar path.
+// perf-allowed: single closed-bar CopyRates read per TF; no QM helper exposes
+// raw candle color, and this is bounded structural logic gated to the H1 path.
 int CandleColor(const ENUM_TIMEFRAMES tf)
   {
-   const double o = iOpen(_Symbol, tf, 1);   // perf-allowed: closed-bar candle color
-   const double c = iClose(_Symbol, tf, 1);  // perf-allowed: closed-bar candle color
-   if(o <= 0.0 || c <= 0.0)
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, tf, 1, 1, rates); // perf-allowed: one closed bar
+   if(copied != 1)
       return 0;
-   if(c > o)
+   if(rates[0].open <= 0.0 || rates[0].close <= 0.0)
+      return 0;
+   if(rates[0].close > rates[0].open)
       return 1;
-   if(c < o)
+   if(rates[0].close < rates[0].open)
       return -1;
    return 0;
+  }
+
+double ClosedBarClose(const ENUM_TIMEFRAMES tf)
+  {
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, tf, 1, 1, rates); // perf-allowed: one closed bar
+   if(copied != 1 || rates[0].close <= 0.0)
+      return 0.0;
+   return rates[0].close;
+  }
+
+bool HasOurPendingOrder()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP)
+         return true;
+     }
+
+   return false;
   }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only (fail-open on .DWX zero spread).
+// No Trade Filter: time, spread, news. News is delegated to Strategy_NewsFilterHook.
+// Cheap O(1) per-tick gate. Spread guard fail-opens on .DWX zero spread.
 bool Strategy_NoTradeFilter()
   {
+   if(strategy_no_friday_entry)
+     {
+      MqlDateTime dt;
+      TimeToStruct(TimeCurrent(), dt);
+      if(dt.day_of_week == 5) // Friday broker time
+         return true;
+     }
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
    // Convert the pip cap to a price distance (scale-correct on 5-digit / JPY).
-   const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
+   const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
    if(cap_distance > 0.0 && spread > 0.0 && spread > cap_distance)
@@ -126,83 +161,76 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
-// Entry. Caller guarantees QM_IsNewBar() == true on H1 (closed-bar gate).
+// Trade Entry. Caller guarantees QM_IsNewBar() == true on H1 (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // Optional no-Friday-entry filter (card). Broker time = TimeCurrent().
-   if(strategy_no_friday_entry)
-     {
-      MqlDateTime dt;
-      TimeToStruct(TimeCurrent(), dt);
-      if(dt.day_of_week == 5) // Friday
-         return false;
-     }
+   if(HasOurPendingOrder())
+      return false;
 
-   // --- Confluence STATE: all 3 lower alignment TFs same color (closed bars) ---
+   // --- Alignment STATE: all 4 TFs same candle color (closed bars) ---
    const int col_a = CandleColor(strategy_tf_a);
    const int col_b = CandleColor(strategy_tf_b);
    const int col_c = CandleColor(strategy_tf_c);
-   if(col_a == 0 || col_b == 0 || col_c == 0)
+   const int col_h1 = CandleColor(PERIOD_H1);
+   if(col_a == 0 || col_b == 0 || col_c == 0 || col_h1 == 0)
       return false;
-   if(!(col_a == col_b && col_b == col_c))
+   if(!(col_a == col_b && col_b == col_c && col_c == col_h1))
       return false;
    const int align_dir = col_a; // +1 all bullish, -1 all bearish
 
-   // --- Trigger EVENT: the just-closed H1 bar agrees AND extends >= trigger ---
-   const double h1_open  = iOpen(_Symbol, _Period, 1);  // perf-allowed: closed H1 trigger bar
-   const double h1_close = iClose(_Symbol, _Period, 1); // perf-allowed: closed H1 trigger bar
-   if(h1_open <= 0.0 || h1_close <= 0.0)
+   const double h1_close = ClosedBarClose(PERIOD_H1);
+   if(h1_close <= 0.0)
       return false;
 
-   const int h1_col = (h1_close > h1_open ? 1 : (h1_close < h1_open ? -1 : 0));
-   if(h1_col == 0 || h1_col != align_dir)
-      return false; // H1 trigger bar must agree with the aligned direction
-
-   // Net body of the H1 trigger bar, in price distance, vs the pip threshold.
-   const double trigger_distance = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_trigger_pips);
+   const double trigger_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_trigger_pips);
    if(trigger_distance <= 0.0)
       return false;
-   const double net_body = MathAbs(h1_close - h1_open);
-   if(net_body < trigger_distance)
-      return false; // price stalled — not enough momentum extension
 
-   // --- Build the entry. Framework sizes lots (no lots field). ---
-   const QM_OrderType order_type = (align_dir > 0 ? QM_BUY : QM_SELL);
-   const double entry = (align_dir > 0 ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                       : SymbolInfoDouble(_Symbol, SYMBOL_BID));
+   const QM_OrderType order_type = (align_dir > 0 ? QM_BUY_STOP : QM_SELL_STOP);
+   const double entry = (align_dir > 0 ? h1_close + trigger_distance
+                                       : h1_close - trigger_distance);
    if(entry <= 0.0)
       return false;
 
    const double sl = QM_StopFixedPips(_Symbol, order_type, entry, strategy_sl_pips);
-   const double tp = QM_TakeRR(_Symbol, order_type, entry, sl,
-                               (strategy_sl_pips > 0.0 ? strategy_tp_pips / strategy_sl_pips : 1.0));
+   const double tp = QM_TakeFixedPips(_Symbol, order_type, entry, strategy_tp_pips);
    if(sl <= 0.0 || tp <= 0.0)
       return false;
 
-   req.type   = order_type;
-   req.price  = 0.0;   // framework fills market price at send
-   req.sl     = sl;
-   req.tp     = tp;
-   req.reason = (align_dir > 0 ? "mtf_align_long" : "mtf_align_short");
+   req.type = order_type;
+   req.price = QM_StopRulesNormalizePrice(_Symbol, entry);
+   req.sl = sl;
+   req.tp = tp;
+   req.reason = (align_dir > 0 ? "mtf_align_buystop" : "mtf_align_sellstop");
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = strategy_expire_hours * 3600;
    return true;
   }
 
-// Fixed SL/TP only; no active trade management.
+// Trade Management. Fixed SL/TP and pending-order expiration only.
 void Strategy_ManageOpenPosition()
   {
   }
 
-// No discretionary exit — positions close on the fixed SL/TP.
+// Trade Close. No discretionary exit — positions close on the fixed SL/TP.
 bool Strategy_ExitSignal()
   {
    return false;
   }
 
-// Defer to the central news filter.
+// News Filter Hook. Defer to the central news filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
