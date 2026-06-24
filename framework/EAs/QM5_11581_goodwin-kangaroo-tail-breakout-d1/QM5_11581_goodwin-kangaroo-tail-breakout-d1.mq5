@@ -1,65 +1,45 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11581 goodwin-kangaroo-tail-breakout-d1 — Kangaroo Tail 3-Bar Breakout (USDJPY D1)"
+#property description "QM5_11581 Goodwin Kangaroo Tail Breakout D1"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11581 goodwin-kangaroo-tail-breakout-d1
+// QuantMechanica V5 EA SKELETON
 // -----------------------------------------------------------------------------
-// Source: Jarrod Goodwin, "Beat the Markets Strategy Guidebook" (~2020), Strategy 2.
-// Card: artifacts/cards_approved/QM5_11581_goodwin-kangaroo-tail-breakout-d1.md
-//       (g0_status APPROVED).
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails). The framework provides:
 //
-// The "Kangaroo Tail" here is Goodwin's 3-bar reversal pattern (not the single
-// pin-bar variant). The MIDDLE of the last three closed bars (shift 2) must hold
-// the lowest low (long setup) or the highest high (short setup) of the three —
-// a long-wicked rejection extreme protruding from the prior two bars. The pattern
-// is a STATE confirmed once the bar at shift 1 closes; the single EVENT is the
-// BREAK of that bar's extreme, expressed as a STOP pending order so price must
-// resume in the breakout direction to fill.
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
+//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
+//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
+//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
+//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
+//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
+//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
 //
-// Mechanics (D1, closed-bar reads at shift 1..3; one EVENT per new daily bar):
-//   Card bar naming -> framework shifts: Bar3=shift1 (last closed), Bar2=shift2
-//   (middle), Bar1=shift3 (oldest of the three).
-//     LONG  (tail low) : Low[2] < Low[3]  AND  Low[2] < Low[1]   (shift-2 = local min)
-//     SHORT (tail high): High[2] > High[3] AND  High[2] > High[1] (shift-2 = local max)
-//   Continuation (0.5%) filter, per card Implementation Notes:
-//     LONG  skip if (Close[1] - Close[2]) / Close[2] * 100 >  filter_pct
-//     SHORT skip if (Close[2] - Close[1]) / Close[2] * 100 >  filter_pct
-//   Entry / stop on the new bar:
-//     LONG  : BUY_STOP  at High[1] + offset ; SL = Low[1]  - offset
-//     SHORT : SELL_STOP at Low[1]  - offset ; SL = High[1] + offset
-//   SL minimum floor (card): if the structural stop is closer than sl_floor_pips,
-//   widen it to the floor so a small-range breakout bar never produces a near-zero
-//   stop (JPY pip = 0.01, so 20 pips = 0.20).
-//   The pending order auto-expires at the end of the current D1 bar (EOD) so an
-//   un-filled setup never carries to the next day. A FILLED position is held
-//   intraday and time-exited when a new D1 bar forms (same-session EOD proxy).
-//   No fixed take-profit.
-//
-// Filters (card):
-//   - 0.5% continuation filter (above).
-//   - No-Friday entry: the breakout (current D1) bar must not be a Friday.
-//   - Bar-range cap: skip if breakout bar[1] range exceeds range_cap_pips.
-//   - Spread cap: block only a genuinely wide spread (fail-open on .DWX zero spread).
-//
-// .DWX invariants honoured:
-//   - Gapless CFDs/FX (open[0]==close[1]): a STOP above High[1] / below Low[1]
-//     requires fresh continuation — no gap rule (#6).
-//   - Spread guard fails OPEN on zero modeled spread (#1).
-//   - All pip thresholds via QM_StopRulesPipsToPriceDistance (pip_factor) so the
-//     offset / range cap / SL floor are scale-correct on JPY (#14).
-//   - QM_IsNewBar() consumed once by the framework; one entry EVENT per D1 bar (#3,#4).
-//   - No swap gate (#2); no exact-minute gate (#12).
-//
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything else
-// is framework wiring and MUST stay intact.
+// DO NOT
+//   - Write per-EA IsNewBar() — use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//     use the QM_* readers above. The framework pools handles and releases them
+//     on shutdown.
+//   - CopyRates over warmup windows on every tick. If you genuinely need raw
+//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
+//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
+//     to magic_numbers.csv, run:
+//         python framework/scripts/update_magic_resolver.py
+//     This is idempotent and preserves all rows.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 11581;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -68,10 +48,16 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
+//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -79,213 +65,181 @@ input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input double strategy_filter_pct        = 0.5;   // skip if breakout bar close ran >this% past the tail bar close
-input int    strategy_offset_pips       = 1;     // pip offset added beyond High[1]/Low[1] for entry & stop
-input int    strategy_sl_floor_pips     = 20;    // minimum stop distance (card floor; JPY 20 pips = 0.20)
-input int    strategy_range_cap_pips    = 200;   // skip if breakout bar[1] range exceeds this (pips)
-input int    strategy_spread_cap_pips   = 10;    // block only a genuinely wide spread (pips)
-input bool   strategy_block_friday      = true;  // no entries on a Friday breakout bar
+input double strategy_close_filter_pct      = 0.5;
+input int    strategy_min_sl_pips           = 20;
+input int    strategy_eod_close_hour_broker = 23;
+input int    strategy_eod_close_min_broker  = 55;
 
 // -----------------------------------------------------------------------------
-// Strategy helpers
+// Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// Count pending orders for this EA's magic (structural; not indicator math).
-int CountPendingForMagic(const int magic)
-  {
-   int count = 0;
-   const int total = OrdersTotal();
-   for(int i = 0; i < total; ++i)
-     {
-      const ulong ticket = OrderGetTicket(i);
-      if(ticket == 0)
-         continue;
-      if((int)OrderGetInteger(ORDER_MAGIC) == magic)
-         count++;
-     }
-   return count;
-  }
-
-// Seconds remaining until the end of the current D1 bar (EOD expiry for pending).
-int SecondsToEndOfDay()
-  {
-   const datetime bar_open = iTime(_Symbol, _Period, 0); // perf-allowed: single bar-open read
-   if(bar_open <= 0)
-      return 0;
-   const int period_secs = PeriodSeconds(_Period);
-   const int remaining = (int)((bar_open + period_secs) - TimeCurrent());
-   return (remaining > 0) ? remaining : 0;
-  }
-
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
-
-// Cheap O(1) per-tick gate. Spread guard only. Fail-OPEN on .DWX zero spread.
+// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
+// regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote — defer, do not block
-
-   const double spread = ask - bid;
-   const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
-   // Block only a genuinely wide, positive spread; zero modeled spread passes.
-   if(cap > 0.0 && spread > 0.0 && spread > cap)
-      return true;
-
    return false;
   }
 
-// Entry. Caller guarantees QM_IsNewBar() == true (one closed-bar EVENT per day).
-// Detects the kangaroo-tail 3-bar pattern and places a STOP pending order whose
-// break of bar[1]'s extreme is the single trigger.
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
+// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY_STOP;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   if(dt.day_of_week == 5)
+      return false;
+
+   const int close_seconds = strategy_eod_close_hour_broker * 3600 + strategy_eod_close_min_broker * 60;
+   const int now_seconds = dt.hour * 3600 + dt.min * 60 + dt.sec;
+   const int seconds_to_eod = close_seconds - now_seconds;
+   if(seconds_to_eod <= 60)
+      return false;
+
    const int magic = QM_FrameworkMagic();
-   // One working order per magic: no new pending while a position OR pending exists.
-   if(QM_TM_OpenPositionCount(magic) > 0)
-      return false;
-   if(CountPendingForMagic(magic) > 0)
+   if(magic <= 0)
       return false;
 
-   // No-Friday entry: the breakout (current D1) bar must not be a Friday.
-   if(strategy_block_friday)
+   for(int i = 0; i < OrdersTotal(); ++i)
      {
-      MqlDateTime dt;
-      TimeToStruct(iTime(_Symbol, _Period, 0), dt); // perf-allowed: single bar-open read
-      if(dt.day_of_week == FRIDAY)
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP)
          return false;
      }
 
-   // Closed-bar OHLC for the 3-bar pattern (shifts 1,2,3). perf-allowed:
-   // bespoke structural pattern, fixed single-shift reads (no loops, no warmup).
-   const double low1  = iLow(_Symbol, _Period, 1);
-   const double low2  = iLow(_Symbol, _Period, 2);
-   const double low3  = iLow(_Symbol, _Period, 3);
-   const double high1 = iHigh(_Symbol, _Period, 1);
-   const double high2 = iHigh(_Symbol, _Period, 2);
-   const double high3 = iHigh(_Symbol, _Period, 3);
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double close2 = iClose(_Symbol, _Period, 2);
-   if(low1 <= 0.0 || low2 <= 0.0 || low3 <= 0.0 ||
-      high1 <= 0.0 || high2 <= 0.0 || high3 <= 0.0 ||
-      close1 <= 0.0 || close2 <= 0.0)
+   MqlRates bars[];
+   ArraySetAsSeries(bars, true);
+   if(CopyRates(_Symbol, PERIOD_D1, 1, 3, bars) != 3) // perf-allowed: fixed 3-bar OHLC pattern; EntrySignal is called only after the framework QM_IsNewBar gate.
       return false;
 
-   // Range cap on the breakout bar[1] (stop width control).
-   const double range_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_range_cap_pips);
-   if(range_cap > 0.0 && (high1 - low1) > range_cap)
+   const MqlRates latest = bars[0];
+   const MqlRates middle = bars[1];
+   const MqlRates oldest = bars[2];
+   if(latest.high <= 0.0 || latest.low <= 0.0 || latest.close <= 0.0 ||
+      middle.high <= 0.0 || middle.low <= 0.0 || middle.close <= 0.0 ||
+      oldest.high <= 0.0 || oldest.low <= 0.0 || oldest.close <= 0.0)
       return false;
 
-   const double offset    = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_offset_pips);
-   const double sl_floor  = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_floor_pips);
-
-   // --- LONG: kangaroo tail LOW (shift-2 = local minimum of the 3 bars) ---
-   const bool tail_low = (low2 < low3 && low2 < low1);
-   // --- SHORT: kangaroo tail HIGH (shift-2 = local maximum of the 3 bars) ---
-   const bool tail_high = (high2 > high3 && high2 > high1);
-
-   // The two setups are mutually exclusive in practice; if both/none, take none.
-   if(tail_low == tail_high)
+   const double min_stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_min_sl_pips);
+   if(min_stop_distance <= 0.0)
       return false;
 
-   const double filter_frac = strategy_filter_pct / 100.0;
-
-   if(tail_low)
+   if(middle.low < oldest.low && middle.low < latest.low)
      {
-      // Continuation filter: skip if bar[1] already closed >filter_pct ABOVE bar[2].
-      if(close2 > 0.0 && (close1 - close2) / close2 > filter_frac)
-         return false;
+      const double close_move_pct = (latest.close - middle.close) / middle.close * 100.0;
+      if(close_move_pct <= strategy_close_filter_pct)
+        {
+         const double entry = QM_StopRulesNormalizePrice(_Symbol, latest.high);
+         double sl = latest.low;
+         if(entry - sl < min_stop_distance)
+            sl = entry - min_stop_distance;
 
-      double entry_price = high1 + offset;
-      double sl_price    = low1  - offset;
-      // SL floor: widen the stop down if it is closer than the floor to entry.
-      if(sl_floor > 0.0 && (entry_price - sl_price) < sl_floor)
-         sl_price = entry_price - sl_floor;
-
-      entry_price = QM_StopRulesNormalizePrice(_Symbol, entry_price);
-      sl_price    = QM_StopRulesNormalizePrice(_Symbol, sl_price);
-      if(entry_price <= 0.0 || sl_price <= 0.0 || entry_price <= sl_price)
-         return false;
-
-      req.type    = QM_BUY_STOP;
-      req.price   = entry_price;
-      req.sl      = sl_price;
-      req.tp      = 0.0;                 // time-exit only; no fixed target
-      req.reason  = "kangaroo_tail_long";
-      req.expiration_seconds = SecondsToEndOfDay(); // cancel un-filled by EOD
-      return true;
+         req.type = QM_BUY_STOP;
+         req.price = entry;
+         req.sl = QM_StopRulesNormalizePrice(_Symbol, sl);
+         req.tp = 0.0;
+         req.reason = "goodwin_kangaroo_tail_long";
+         req.symbol_slot = qm_magic_slot_offset;
+         req.expiration_seconds = seconds_to_eod;
+         return (req.price > 0.0 && req.sl > 0.0 && req.sl < req.price);
+        }
      }
 
-   // tail_high -> SHORT
-   // Continuation filter: skip if bar[1] already closed >filter_pct BELOW bar[2].
-   if(close2 > 0.0 && (close2 - close1) / close2 > filter_frac)
-      return false;
+   if(middle.high > oldest.high && middle.high > latest.high)
+     {
+      const double close_move_pct = (middle.close - latest.close) / middle.close * 100.0;
+      if(close_move_pct <= strategy_close_filter_pct)
+        {
+         const double entry = QM_StopRulesNormalizePrice(_Symbol, latest.low);
+         double sl = latest.high;
+         if(sl - entry < min_stop_distance)
+            sl = entry + min_stop_distance;
 
-   double entry_price_s = low1  - offset;
-   double sl_price_s    = high1 + offset;
-   // SL floor: widen the stop up if it is closer than the floor to entry.
-   if(sl_floor > 0.0 && (sl_price_s - entry_price_s) < sl_floor)
-      sl_price_s = entry_price_s + sl_floor;
+         req.type = QM_SELL_STOP;
+         req.price = entry;
+         req.sl = QM_StopRulesNormalizePrice(_Symbol, sl);
+         req.tp = 0.0;
+         req.reason = "goodwin_kangaroo_tail_short";
+         req.symbol_slot = qm_magic_slot_offset;
+         req.expiration_seconds = seconds_to_eod;
+         return (req.price > 0.0 && req.sl > 0.0 && req.sl > req.price);
+        }
+     }
 
-   entry_price_s = QM_StopRulesNormalizePrice(_Symbol, entry_price_s);
-   sl_price_s    = QM_StopRulesNormalizePrice(_Symbol, sl_price_s);
-   if(entry_price_s <= 0.0 || sl_price_s <= 0.0 || sl_price_s <= entry_price_s)
-      return false;
-
-   req.type    = QM_SELL_STOP;
-   req.price   = entry_price_s;
-   req.sl      = sl_price_s;
-   req.tp      = 0.0;
-   req.reason  = "kangaroo_tail_short";
-   req.expiration_seconds = SecondsToEndOfDay();
-   return true;
+   return false;
   }
 
-// No active management beyond the protective stop; time-exit lives in ExitSignal.
+// Called every tick when an open position exists for this EA's magic.
+// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   const int close_minute = strategy_eod_close_hour_broker * 60 + strategy_eod_close_min_broker;
+   const int now_minute = dt.hour * 60 + dt.min;
+   if(now_minute < close_minute)
+      return;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return;
+
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP)
+         QM_TM_RemovePendingOrder(ticket, "goodwin_eod_pending_expire");
+     }
   }
 
-// Time exit (EOD same-session proxy): close any position that was opened on a
-// PRIOR D1 bar. POSITION_TIME is the fill time; if a new D1 bar has formed since
-// then the same-session hold is over -> close. Reads position metadata only.
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   const int magic = QM_FrameworkMagic();
-   if(QM_TM_OpenPositionCount(magic) <= 0)
-      return false;
-
-   const datetime cur_bar_open = iTime(_Symbol, _Period, 0); // perf-allowed: single read
-   if(cur_bar_open <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-      // Filled before the current D1 bar opened -> a new session has begun.
-      if(opened > 0 && opened < cur_bar_open)
-         return true;
-     }
-   return false;
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   const int close_minute = strategy_eod_close_hour_broker * 60 + strategy_eod_close_min_broker;
+   const int now_minute = dt.hour * 60 + dt.min;
+   return (now_minute >= close_minute);
   }
 
-// Defer to the central news filter.
+// Optional news-filter override. Return TRUE to suppress trading regardless
+// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
+// custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false;
+   return false; // defer to QM_NewsAllowsTrade(...)
   }
 
 // -----------------------------------------------------------------------------
@@ -330,6 +284,8 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults.
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -343,8 +299,10 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -355,13 +313,18 @@ void OnTick()
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
 
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
 
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
@@ -381,6 +344,8 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
   {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
