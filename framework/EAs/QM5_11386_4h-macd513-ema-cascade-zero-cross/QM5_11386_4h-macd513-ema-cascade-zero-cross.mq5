@@ -22,9 +22,11 @@
 //     SHORT : macd@2 >= 0  AND  macd@1 < 0   (fresh cross DOWN through zero).
 //   The EMA cascade is a STATE, the MACD zero-cross is the one EVENT — never two
 //   cross-events on the same bar (avoids the two-cross zero-trade trap).
-//   Stop         : ATR(14) * sl_atr_mult from entry.
-//   Take profit  : ATR(14) * tp_atr_mult from entry (same ATR value as the stop).
-//   Management   : move SL to breakeven once price has advanced +be_trigger_atr * ATR.
+//   Stop         : min(ATR(14) * sl_atr_mult, sl_cap_pips) from entry.
+//   TP ladder    : 50% at EMA(21) zone, 25% at EMA(200) zone, with ATR minimum
+//                  distances when the EMA target is too close.
+//   Management   : move SL to breakeven once price has advanced +be_trigger_atr * ATR,
+//                  then use ATR(14) * trail_atr_mult as the TP3 trailing stop.
 //   Spread guard : block ONLY a genuinely wide spread (> spread_pct_of_stop of the
 //                  stop distance). Fail-OPEN on .DWX zero modeled spread.
 //
@@ -49,8 +51,8 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -70,9 +72,17 @@ input int    strategy_ema_trend_period  = 365;    // EMA(365) trend filter / cas
 input int    strategy_ema_slope_bars    = 5;      // slope window (bars) for the EMA(365) trend
 input int    strategy_atr_period        = 14;     // ATR period (stop / target / management)
 input double strategy_sl_atr_mult       = 1.5;    // stop distance = mult * ATR
-input double strategy_tp_atr_mult       = 3.0;    // target distance = mult * ATR
+input int    strategy_sl_cap_pips       = 40;     // P2 cap: max stop distance in pips
+input double strategy_tp1_min_atr_mult  = 1.5;    // TP1 minimum distance if EMA(21) is too close
+input double strategy_tp2_min_atr_mult  = 3.0;    // TP2 minimum distance if EMA(200) is too close
 input double strategy_be_trigger_atr    = 1.0;    // move SL to breakeven at +mult * ATR
+input double strategy_trail_atr_mult    = 1.0;    // TP3 trailing stop distance
 input double strategy_spread_pct_of_stop = 15.0;  // skip only if spread > this % of stop distance
+
+ulong  g_managed_ticket = 0;
+double g_entry_volume   = 0.0;
+bool   g_tp1_done       = false;
+bool   g_tp2_done       = false;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -91,7 +101,10 @@ bool Strategy_NoTradeFilter()
    if(atr_value <= 0.0)
       return false; // no ATR yet — defer to the entry gate, do not block here
 
-   const double stop_distance = strategy_sl_atr_mult * atr_value;
+   double stop_distance = strategy_sl_atr_mult * atr_value;
+   const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_cap_pips);
+   if(cap_distance > 0.0 && stop_distance > cap_distance)
+      stop_distance = cap_distance;
    if(stop_distance <= 0.0)
       return false;
 
@@ -151,37 +164,40 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry <= 0.0)
       return false;
 
-   const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr_value, strategy_sl_atr_mult);
-   const double tp = QM_TakeATRFromValue(_Symbol, side, entry, atr_value, strategy_tp_atr_mult);
-   if(sl <= 0.0 || tp <= 0.0)
+   double stop_distance = strategy_sl_atr_mult * atr_value;
+   const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_cap_pips);
+   if(cap_distance > 0.0 && stop_distance > cap_distance)
+      stop_distance = cap_distance;
+
+   const double sl = QM_StopRulesStopFromDistance(_Symbol, side, entry, stop_distance);
+   if(sl <= 0.0)
       return false;
 
    req.type   = side;
    req.price  = 0.0;   // framework fills market price at send
    req.sl     = sl;
-   req.tp     = tp;
+   req.tp     = 0.0;   // final exit is managed by EMA partials + ATR trailing stop
    req.reason = (side == QM_BUY) ? "macd513_zerocross_long" : "macd513_zerocross_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
-// Move SL to breakeven once price has advanced +be_trigger_atr * ATR.
+// Manage the card's partial target ladder, breakeven shift, and TP3 ATR trail.
 void Strategy_ManageOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
    if(QM_TM_OpenPositionCount(magic) <= 0)
+     {
+      g_managed_ticket = 0;
+      g_entry_volume = 0.0;
+      g_tp1_done = false;
+      g_tp2_done = false;
       return;
+     }
 
    const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
    if(atr_value <= 0.0)
-      return;
-
-   // Breakeven trigger expressed in pips so the framework helper can scale it.
-   const double trig_dist = strategy_be_trigger_atr * atr_value;
-   const double pip = QM_StopRulesPipsToPriceDistance(_Symbol, 1);
-   if(pip <= 0.0)
-      return;
-   const int trig_pips = (int)MathRound(trig_dist / pip);
-   if(trig_pips <= 0)
       return;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -191,7 +207,72 @@ void Strategy_ManageOpenPosition()
          continue;
       if(PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
+
+      if(ticket != g_managed_ticket)
+        {
+         g_managed_ticket = ticket;
+         g_entry_volume = PositionGetDouble(POSITION_VOLUME);
+         g_tp1_done = false;
+         g_tp2_done = false;
+        }
+
+      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const bool is_buy = (pos_type == POSITION_TYPE_BUY);
+      const double entry = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double volume = PositionGetDouble(POSITION_VOLUME);
+      const double market = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                                   : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(entry <= 0.0 || volume <= 0.0 || market <= 0.0)
+         continue;
+
+      const double ema21 = QM_EMA(_Symbol, _Period, 21, 1);
+      const double ema200 = QM_EMA(_Symbol, _Period, 200, 1);
+      if(ema21 > 0.0 && !g_tp1_done)
+        {
+         double tp1_dist = MathAbs(ema21 - entry);
+         const double tp1_min = atr_value * strategy_tp1_min_atr_mult;
+         if(tp1_dist < tp1_min)
+            tp1_dist = tp1_min;
+         const double tp1_price = is_buy ? entry + tp1_dist : entry - tp1_dist;
+         const bool hit_tp1 = is_buy ? (market >= tp1_price) : (market <= tp1_price);
+         if(hit_tp1)
+           {
+            double close_lots = QM_TM_NormalizeVolume(_Symbol, g_entry_volume * 0.50);
+            if(close_lots > 0.0 && close_lots < volume)
+               g_tp1_done = QM_TM_PartialClose(ticket, close_lots, QM_EXIT_PARTIAL);
+            else
+               g_tp1_done = true;
+           }
+        }
+
+      if(ema200 > 0.0 && g_tp1_done && !g_tp2_done)
+        {
+         double tp2_dist = MathAbs(ema200 - entry);
+         const double tp2_min = atr_value * strategy_tp2_min_atr_mult;
+         if(tp2_dist < tp2_min)
+            tp2_dist = tp2_min;
+         const double tp2_price = is_buy ? entry + tp2_dist : entry - tp2_dist;
+         const bool hit_tp2 = is_buy ? (market >= tp2_price) : (market <= tp2_price);
+         if(hit_tp2)
+           {
+            double close_lots = QM_TM_NormalizeVolume(_Symbol, g_entry_volume * 0.25);
+            if(close_lots > 0.0 && close_lots < volume)
+               g_tp2_done = QM_TM_PartialClose(ticket, close_lots, QM_EXIT_PARTIAL);
+            else
+               g_tp2_done = true;
+           }
+        }
+
+      const double trig_dist = strategy_be_trigger_atr * atr_value;
+      const double pip = QM_StopRulesPipsToPriceDistance(_Symbol, 1);
+      if(pip <= 0.0)
+         continue;
+      const int trig_pips = (int)MathRound(trig_dist / pip);
+      if(trig_pips <= 0)
+         continue;
+
       QM_TM_MoveToBreakEven(ticket, trig_pips, 2);
+      QM_TM_TrailATR(ticket, strategy_atr_period, strategy_trail_atr_mult);
      }
   }
 
