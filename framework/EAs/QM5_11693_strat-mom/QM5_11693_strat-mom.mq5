@@ -140,6 +140,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = 0.0;   // no fixed target; momentum sign-flip is the exit
    req.reason = (go_long ? "mom_long" : "mom_short");
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
