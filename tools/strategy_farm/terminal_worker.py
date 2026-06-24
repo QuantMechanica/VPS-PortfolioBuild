@@ -207,11 +207,45 @@ def _p2_history_claimable(item: sqlite3.Row) -> tuple[bool, dict[str, Any] | Non
     return not bool(window.get("skip")), window
 
 
+MULTISYMBOL_REGISTRY_PATH = Path("D:/QM/strategy_farm/state/multisymbol_eas.txt")
+_multisym_cache: dict[str, Any] = {"mtime": -1.0, "ids": frozenset()}
+
+
+def _multisymbol_ea_ids() -> frozenset:
+    """EA ids that load MULTIPLE symbols' history (basket / cross-sectional /
+    relative-momentum). In the real-tick tester each such backtest loads EVERY
+    member symbol's full tick history -> 20-44GB working set (vs ~6-7GB for a
+    normal single-symbol EA). Running several concurrently spikes system commit
+    to the pagefile/commit limit (~122GB) -> CreateProcess fails (0xC0000142) ->
+    launch_fault wedge (2026-06-24 incident, EA QM5_1218 = 44GB x3 = 90GB).
+
+    Populated by scanning EA .mq5 for basket markers (g_symbols[], QM_Basket,
+    _SYMBOL_COUNT, Strategy_GroupMembers). Cached, refreshed on file mtime change.
+    Fail-open: an unreadable/missing registry returns an empty set -> NO gating,
+    so the factory is never blocked by this feature going wrong.
+    """
+    try:
+        st = MULTISYMBOL_REGISTRY_PATH.stat().st_mtime
+        if st != _multisym_cache["mtime"]:
+            ids = frozenset(
+                ln.strip()
+                for ln in MULTISYMBOL_REGISTRY_PATH.read_text(encoding="utf-8").splitlines()
+                if ln.strip() and not ln.lstrip().startswith("#")
+            )
+            _multisym_cache["mtime"] = st
+            _multisym_cache["ids"] = ids
+        return _multisym_cache["ids"]
+    except Exception:
+        return frozenset()
+
+
 def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     """Atomically claim one pending work_item for a terminal.
 
     The transaction serializes competing worker daemons. A symbol already active
-    anywhere in the farm blocks another item with the same symbol.
+    anywhere in the farm blocks another item with the same symbol. Multi-symbol
+    (basket) EAs are additionally serialized to AT MOST ONE active farm-wide, so
+    their oversized tick-history working sets never stack and exhaust commit.
     """
     def _claim() -> dict[str, Any]:
         farmctl.init_db(root)
@@ -274,12 +308,27 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         "SELECT DISTINCT ea_id FROM work_items WHERE status='active' AND phase='Q04'"
                     )
                 }
+                # Multi-symbol (basket) serialization: at most ONE multi-symbol
+                # backtest active farm-wide (their 20-44GB tick-history working
+                # sets must not stack and exhaust commit). BEGIN IMMEDIATE (above)
+                # makes this active-check + claim atomic across workers, so two
+                # daemons can't both pass the gate. OWNER 2026-06-24.
+                multisym_ids = _multisymbol_ea_ids()
+                multisym_active = bool(multisym_ids) and any(
+                    str(row["ea_id"]) in multisym_ids
+                    for row in conn.execute("SELECT DISTINCT ea_id FROM work_items WHERE status='active'")
+                )
                 skipped_history: list[dict[str, Any]] = []
                 for item in conn.execute(_priority_pending_query()).fetchall():
                     symbol_key = str(item["symbol"] or "").upper()
                     if symbol_key and symbol_key in active_symbols:
                         continue
                     if str(item["phase"]).upper() == "Q04" and str(item["ea_id"]) in active_q04_eas:
+                        continue
+                    # Skip a multi-symbol item while another multi-symbol backtest
+                    # is already running anywhere in the farm (serialize the heavy
+                    # basket loads). Non-multi-symbol items are unaffected.
+                    if multisym_active and str(item["ea_id"]) in multisym_ids:
                         continue
                     history_ok, history = _p2_history_claimable(item)
                     if not history_ok:
