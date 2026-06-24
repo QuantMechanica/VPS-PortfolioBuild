@@ -122,36 +122,14 @@ bool Strategy_GetPositionType(ENUM_POSITION_TYPE &position_type)
    return false;
   }
 
-double Strategy_SwingStopDistance(const bool is_long, const double entry_price)
+double Strategy_StopPrice(const QM_OrderType side, const double entry_price)
   {
    const int lookback = MathMax(1, strategy_swing_lookback);
-   double stop_distance = 0.0;
+   const double structure_stop = QM_StopStructure(_Symbol, side, entry_price, lookback);
+   if(structure_stop <= 0.0)
+      return 0.0;
 
-   if(is_long)
-     {
-      double swing_low = iLow(_Symbol, strategy_signal_tf, 1); // perf-allowed: bounded structural stop scan
-      for(int i = 2; i <= lookback; ++i)
-        {
-         const double low_i = iLow(_Symbol, strategy_signal_tf, i); // perf-allowed: bounded structural stop scan
-         if(low_i > 0.0 && low_i < swing_low)
-            swing_low = low_i;
-        }
-      if(swing_low > 0.0)
-         stop_distance = entry_price - swing_low;
-     }
-   else
-     {
-      double swing_high = iHigh(_Symbol, strategy_signal_tf, 1); // perf-allowed: bounded structural stop scan
-      for(int i = 2; i <= lookback; ++i)
-        {
-         const double high_i = iHigh(_Symbol, strategy_signal_tf, i); // perf-allowed: bounded structural stop scan
-         if(high_i > swing_high)
-            swing_high = high_i;
-        }
-      if(swing_high > 0.0)
-         stop_distance = swing_high - entry_price;
-     }
-
+   double stop_distance = MathAbs(entry_price - structure_stop);
    if(stop_distance <= 0.0)
       return 0.0;
 
@@ -161,7 +139,11 @@ double Strategy_SwingStopDistance(const bool is_long, const double entry_price)
       stop_distance = min_distance;
    if(max_distance > 0.0 && stop_distance > max_distance)
       stop_distance = max_distance;
-   return stop_distance;
+
+   const bool is_long = (side == QM_BUY);
+   const double stop_price = is_long ? (entry_price - stop_distance)
+                                     : (entry_price + stop_distance);
+   return QM_StopRulesNormalizePrice(_Symbol, stop_price);
   }
 
 // -----------------------------------------------------------------------------
@@ -255,13 +237,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const bool is_long = (side == QM_BUY);
-   const double stop_distance = Strategy_SwingStopDistance(is_long, entry);
-   if(stop_distance <= 0.0)
+   const double sl = Strategy_StopPrice(side, entry);
+   if(sl <= 0.0)
       return false;
 
-   const double sl = is_long
-                     ? QM_TM_NormalizePrice(_Symbol, entry - stop_distance)
-                     : QM_TM_NormalizePrice(_Symbol, entry + stop_distance);
    const double tp = QM_TakeRR(_Symbol, side, entry, sl, strategy_tp_rr);
    if(sl <= 0.0 || tp <= 0.0)
       return false;

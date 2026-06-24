@@ -4,7 +4,7 @@
 **Slug:** tc-m5-s17-ema-macd-psar-stddev
 **Source:** 40a4454c-64ff-5015-8538-9f7b32abc0e9 (see `strategy-seeds/sources/40a4454c-64ff-5015-8538-9f7b32abc0e9/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-24
+**Last revised:** 2026-06-25
 
 ---
 
@@ -31,7 +31,7 @@ The EA trades the M5 Thomas Carter Strategy #17 six-indicator confluence. A long
 | strategy_psar_maximum | 0.20 | > strategy_psar_step | Parabolic SAR maximum acceleration. |
 | strategy_stddev_period | 20 | >0 | Standard deviation lookback on close. |
 | strategy_stddev_override | 0.0 | >=0 | Optional explicit StdDev threshold; 0 uses card symbol-family thresholds. |
-| strategy_swing_lookback | 5 | >0 | Closed bars scanned for recent swing high or low. |
+| strategy_swing_lookback | 5 | >0 | Closed bars used by QM_StopStructure for the recent swing stop. |
 | strategy_min_sl_pips | 8 | >0 | Minimum stop distance from the card's 8-12 pip convention. |
 | strategy_max_sl_pips | 12 | >= strategy_min_sl_pips | Maximum stop distance from the card's 8-12 pip convention. |
 | strategy_tp_rr | 2.0 | >0 | Hard take profit as R multiple of the stop. |
@@ -104,4 +104,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-24 | Initial build from card | 8f1cddbc-ee4b-417c-b045-a47517c2db98 |
+| v1 | 2026-06-25 | Initial build from card | 8f1cddbc-ee4b-417c-b045-a47517c2db98 |

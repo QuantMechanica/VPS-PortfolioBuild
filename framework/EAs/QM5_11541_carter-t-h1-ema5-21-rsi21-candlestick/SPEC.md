@@ -4,7 +4,7 @@
 **Slug:** carter-t-h1-ema5-21-rsi21-candlestick
 **Source:** 3001a121-97a0-5db0-b6ff-69b89a0fc07d (see `sources/carter-thomas-20-forex-strategies-1h`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-24
+**Last revised:** 2026-06-25
 
 ---
 
@@ -96,4 +96,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-24 | Initial build from card | 42b5447b-9cb0-443f-936b-5e448c71b7f6 |
+| v1 | 2026-06-25 | Initial build from card | 42b5447b-9cb0-443f-936b-5e448c71b7f6 |

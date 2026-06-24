@@ -4,7 +4,7 @@
 **Slug:** carter-t-mtf-candle-alignment-h1
 **Source:** a7bd19cd-cae9-5c58-8b7c-a411bac7598a (see `sources/carter-t-20-forex-strategies-1h-collection`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-24
+**Last revised:** 2026-06-25
 
 ---
 
@@ -90,4 +90,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-24 | Initial build from card | d8c53903-b084-4e29-8ac6-764f5f2e7bf0 |
+| v1 | 2026-06-25 | Initial build from card | d8c53903-b084-4e29-8ac6-764f5f2e7bf0 |

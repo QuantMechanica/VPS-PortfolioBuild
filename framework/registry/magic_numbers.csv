@@ -13349,3 +13349,6 @@
 9703,ff-rsi2-scalp-m15,1,GBPUSD.DWX,97030001,2026-06-23,Development,active
 9703,ff-rsi2-scalp-m15,2,USDJPY.DWX,97030002,2026-06-23,Development,active
 9703,ff-rsi2-scalp-m15,3,XAUUSD.DWX,97030003,2026-06-23,Development,active
+9260,mql5-force-ema,0,EURUSD.DWX,92600000,2026-06-25,Development,active
+9260,mql5-force-ema,1,GBPJPY.DWX,92600001,2026-06-25,Development,active
+9260,mql5-force-ema,2,XAUUSD.DWX,92600002,2026-06-25,Development,active

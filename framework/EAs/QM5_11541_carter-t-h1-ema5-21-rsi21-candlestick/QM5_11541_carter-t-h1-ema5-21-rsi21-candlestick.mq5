@@ -206,14 +206,21 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // --- Closed-bar OHLC for the pattern bar (shift 1) and prior bar (shift 2) ---
-   const double o1 = iOpen(_Symbol, _Period, 1);   // perf-allowed: single closed-bar reads
-   const double h1 = iHigh(_Symbol, _Period, 1);
-   const double l1 = iLow(_Symbol, _Period, 1);
-   const double c1 = iClose(_Symbol, _Period, 1);
-   const double o2 = iOpen(_Symbol, _Period, 2);
-   const double h2 = iHigh(_Symbol, _Period, 2);
-   const double l2 = iLow(_Symbol, _Period, 2);
-   const double c2 = iClose(_Symbol, _Period, 2);
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   ArrayResize(rates, 2);
+   const int copied = CopyRates(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, 2, rates); // perf-allowed: bounded closed-bar OHLC for candlestick geometry inside new-bar hook.
+   if(copied != 2)
+      return false;
+
+   const double o1 = rates[0].open;
+   const double h1 = rates[0].high;
+   const double l1 = rates[0].low;
+   const double c1 = rates[0].close;
+   const double o2 = rates[1].open;
+   const double h2 = rates[1].high;
+   const double l2 = rates[1].low;
+   const double c2 = rates[1].close;
    if(o1 <= 0.0 || h1 <= 0.0 || l1 <= 0.0 || c1 <= 0.0 ||
       o2 <= 0.0 || h2 <= 0.0 || l2 <= 0.0 || c2 <= 0.0)
       return false;
