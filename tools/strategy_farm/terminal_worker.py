@@ -1027,9 +1027,27 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
         # is ~6-10s) -> transient launch fault, NOT a clean exit_code=0. Record as
         # no-result and back off so a host hiccup can't burn the whole batch
         # through its retries in seconds.
+        # Capture the child's log tail so a launch_fault wedge is diagnosable: a
+        # session-resource exhaustion fault (0xC0000142 STATUS_DLL_INIT_FAILED, the
+        # phase-runner/terminal64 failing to init) looks identical in the metrics to
+        # a clean EA/data error, and the child process is already gone so its exit
+        # code is unrecoverable here. The log tail is the only surviving evidence.
+        # Fail-open: never let tail capture affect the launch_fault handling.
+        child_tail = ""
+        try:
+            lp = spawn.get("log_path")
+            if lp and os.path.exists(lp):
+                with open(lp, "rb") as _ltf:
+                    _ltf.seek(0, os.SEEK_END)
+                    _ltsz = _ltf.tell()
+                    _ltf.seek(max(0, _ltsz - 2000))
+                    child_tail = _ltf.read().decode("utf-8", "replace").strip().replace("\n", " | ")[-700:]
+        except Exception:
+            child_tail = "<tail-read-failed>"
         print(json.dumps({"event": "launch_fault", "terminal": terminal,
                           "item_id": item["id"], "pid": spawn["pid"],
-                          "ran_seconds": round(ran_seconds, 2)}), flush=True)
+                          "ran_seconds": round(ran_seconds, 2),
+                          "child_log_tail": child_tail}), flush=True)
         exit_code = None
         time.sleep(LAUNCH_FAULT_BACKOFF_SECONDS)
     else:
