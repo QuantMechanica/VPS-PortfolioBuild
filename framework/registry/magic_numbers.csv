@@ -11677,10 +11677,10 @@
 11733,tc-m5-s15-ema-bb-channel-macd,1,GBPUSD.DWX,117330001,2026-06-18,Claude,active
 11733,tc-m5-s15-ema-bb-channel-macd,2,USDJPY.DWX,117330002,2026-06-18,Claude,active
 11733,tc-m5-s15-ema-bb-channel-macd,3,AUDUSD.DWX,117330003,2026-06-18,Claude,active
-11734,tc-m5-s18-ema20-macd-cross,0,EURUSD.DWX,117340000,2026-06-18,Claude,reserved
-11734,tc-m5-s18-ema20-macd-cross,1,GBPUSD.DWX,117340001,2026-06-18,Claude,reserved
-11734,tc-m5-s18-ema20-macd-cross,2,USDJPY.DWX,117340002,2026-06-18,Claude,reserved
-11734,tc-m5-s18-ema20-macd-cross,3,USDCHF.DWX,117340003,2026-06-18,Claude,reserved
+11734,tc-m5-s18-ema20-macd-cross,0,EURUSD.DWX,117340000,2026-06-18,Claude,active
+11734,tc-m5-s18-ema20-macd-cross,1,GBPUSD.DWX,117340001,2026-06-18,Claude,active
+11734,tc-m5-s18-ema20-macd-cross,2,USDJPY.DWX,117340002,2026-06-18,Claude,active
+11734,tc-m5-s18-ema20-macd-cross,3,USDCHF.DWX,117340003,2026-06-18,Claude,active
 12356,orev-ma-break,0,SP500.DWX,123560000,2026-06-18,Development,active
 12356,orev-ma-break,1,NDX.DWX,123560001,2026-06-18,Development,active
 12356,orev-ma-break,2,WS30.DWX,123560002,2026-06-18,Development,active
@@ -11968,7 +11968,7 @@
 11813,carter-h1-s19-psar-adx50-di-h1,4,AUDUSD.DWX,118130004,2026-06-18,Claude,reserved
 11813,carter-h1-s19-psar-adx50-di-h1,5,USDCAD.DWX,118130005,2026-06-18,Claude,reserved
 11814,carter-m5-s1-macd1-stoch-ema5oc-m5,0,EURUSD.DWX,118140000,2026-06-18,Development,active
-11815,carter-m5-s2-ema102150-zone-pullback-m5,0,EURUSD.DWX,118150000,2026-06-18,Claude,reserved
+11815,carter-m5-s2-ema102150-zone-pullback-m5,0,EURUSD.DWX,118150000,2026-06-25,Development,active
 11816,carter-m5-s3-bb20-stoch-trend-reversal-m5,0,EURUSD.DWX,118160000,2026-06-18,Claude,active
 11816,carter-m5-s3-bb20-stoch-trend-reversal-m5,1,GBPUSD.DWX,118160001,2026-06-18,Claude,active
 11816,carter-m5-s3-bb20-stoch-trend-reversal-m5,2,USDJPY.DWX,118160002,2026-06-18,Claude,active
@@ -11994,8 +11994,8 @@
 11822,carter-m5-s11-mtf-ema510-rsi-stoch-macd-m5h4,2,USDJPY.DWX,118220002,2026-06-18,Claude,reserved
 11822,carter-m5-s11-mtf-ema510-rsi-stoch-macd-m5h4,3,USDCHF.DWX,118220003,2026-06-18,Claude,reserved
 11822,carter-m5-s11-mtf-ema510-rsi-stoch-macd-m5h4,4,AUDUSD.DWX,118220004,2026-06-18,Claude,reserved
-11823,carter-m5-s13-cci14-macd-m5,0,EURUSD.DWX,118230000,2026-06-18,Claude,reserved
-11823,carter-m5-s13-cci14-macd-m5,1,GBPUSD.DWX,118230001,2026-06-18,Claude,reserved
+11823,carter-m5-s13-cci14-macd-m5,0,EURUSD.DWX,118230000,2026-06-18,Claude,active
+11823,carter-m5-s13-cci14-macd-m5,1,GBPUSD.DWX,118230001,2026-06-18,Claude,active
 11824,carter-m5-s14-wma10-sma20-stoch-rsi-macd-m5,0,EURUSD.DWX,118240000,2026-06-18,Claude,reserved
 11824,carter-m5-s14-wma10-sma20-stoch-rsi-macd-m5,1,GBPUSD.DWX,118240001,2026-06-18,Claude,reserved
 11824,carter-m5-s14-wma10-sma20-stoch-rsi-macd-m5,2,USDJPY.DWX,118240002,2026-06-18,Claude,reserved

@@ -229,7 +229,7 @@ void Strategy_ManageOpenPosition()
 
       const double close_volume = QM_TM_NormalizeVolume(_Symbol, volume * strategy_partial_fraction);
       if(close_volume > 0.0 && close_volume < volume)
-         QM_TM_PartialClose(ticket, close_volume, QM_EXIT_STRATEGY);
+         QM_TM_PartialClose(ticket, close_volume, QM_EXIT_PARTIAL);
 
       QM_TM_MoveSL(ticket, open_price, "sma_cci_partial_breakeven");
      }
