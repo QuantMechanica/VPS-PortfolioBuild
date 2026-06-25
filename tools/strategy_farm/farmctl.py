@@ -2223,13 +2223,16 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         to_date = None
         p2_run_stage = None
         timeout_seconds = 1800
-    # .DWX custom-symbol history begins 2017.10.02 — clamp the backtest start so we
-    # never request a window that predates the data. A pre-data window yields
-    # NO_HISTORY: single-symbol EAs auto-clamp to the data start, but multi-symbol /
-    # basket EAs that read member symbols across the gap hard-fail (that is why the
-    # carver-relmomentum / cross-sectional class never got a fair test). 2026-06-25.
+    # Clamp the backtest start to where .DWX data actually exists, else NO_HISTORY.
+    # FX/metals/energy .DWX history begins 2017.10.02, but the index .DWX symbols
+    # (NDX/WS30/SP500/UK100/GDAXI) begin only 2018.07.02. Single-symbol EAs auto-clamp
+    # to their own chart symbol's begin, but MULTI-SYMBOL/basket EAs read member symbols
+    # (often indices) across the gap and hard-fail (that is why the carver-relmomentum /
+    # cross-sectional class never got a fair test). Floor at the LATEST common start
+    # (2018.07.02) so every possible member has data — costs ~9 months of FX history
+    # (6.5y remains, ample) for guaranteed multi-symbol correctness. 2026-06-25.
     # Date strings are "YYYY.MM.DD" so lexical < is chronological <.
-    DWX_HISTORY_START = "2017.10.02"
+    DWX_HISTORY_START = "2018.07.02"
     if from_date and from_date < DWX_HISTORY_START:
         from_date = DWX_HISTORY_START
     year = 2024
