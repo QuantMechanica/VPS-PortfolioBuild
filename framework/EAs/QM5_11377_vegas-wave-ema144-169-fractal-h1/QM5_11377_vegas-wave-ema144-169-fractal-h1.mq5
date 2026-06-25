@@ -1,44 +1,12 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11377 vegas-wave-ema144-169-fractal-h1 — Vegas Wave EMA144/169 tunnel + Williams fractal breakout (H1)"
+#property description "QM5_11377 Vegas Wave EMA144/169 tunnel fractal breakout H1"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11377 vegas-wave-ema144-169-fractal-h1
-// -----------------------------------------------------------------------------
-// Source: "Forex Strategy Vegas Wave" (anonymous "Vegas", ForexFactory ~2004-06).
-// Card: artifacts/cards_approved/QM5_11377_vegas-wave-ema144-169-fractal-h1.md
-//       (g0_status: APPROVED).
-//
-// Mechanics (H1, closed-bar reads at shift 1+):
-//   Trend STATE  : the EMA(144)/EMA(169) "tunnel".
-//                  LONG  state  = last closed bar CLOSED ABOVE EMA(169).
-//                  SHORT state  = last closed bar CLOSED BELOW EMA(144).
-//   Entry EVENT  : a single Williams fractal that JUST confirmed this bar.
-//                  A fractal centred at shift 3 is confirmed now (its two
-//                  right-hand bars are shifts 1 and 2). Exactly ONE event per
-//                  bar — never two crossings on the same bar (zero-trade trap).
-//                  LONG  : a DOWN fractal (local low) confirmed -> BUY STOP
-//                          1 pip above that fractal bar's HIGH.
-//                  SHORT : an UP fractal (local high) confirmed -> SELL STOP
-//                          1 pip below that fractal bar's LOW.
-//   Pending life : order expires after `strategy_pending_bars` H1 candles
-//                  (framework ORDER_TIME_SPECIFIED via req.expiration_seconds).
-//   Stop loss    : opposite EMA boundary at placement (EMA169 for LONG,
-//                  EMA144 for SHORT), capped at `strategy_sl_max_pips`.
-//   Take profit  : ATR(14) * strategy_tp_atr_mult from the stop entry price
-//                  (the runner target; see open_questions re TP1/TP2 split).
-//   Break-even   : after price has moved `strategy_be_atr_mult` * ATR in favour,
-//                  shift SL to entry (+buffer) — proxy for the card's
-//                  "move to BE after TP1".
-//   Session      : trade only inside [session_start, session_end) BROKER hours
-//                  (London + NY). DXZ broker = NY-Close GMT+2/+3 (DST-aware).
-//   Spread guard : fail-OPEN on .DWX zero modeled spread; block only a
-//                  genuinely wide spread > strategy_spread_cap_pips.
-//
-// One position per magic; one live pending order per magic at a time. Only the
-// 5 Strategy_* hooks + Strategy inputs are EA-specific.
+// QuantMechanica V5 EA - QM5_11377 vegas-wave-ema144-169-fractal-h1
+// Card: D:\QM\strategy_farm\artifacts\cards_approved\QM5_11377_vegas-wave-ema144-169-fractal-h1.md
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -54,8 +22,8 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -66,225 +34,179 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_ema_fast_period   = 144;   // Vegas tunnel fast EMA (SHORT boundary)
-input int    strategy_ema_slow_period   = 169;   // Vegas tunnel slow EMA (LONG boundary)
-input int    strategy_fractal_side_bars = 2;     // Williams fractal: bars on EACH side
-input int    strategy_atr_period        = 14;    // ATR period (TP / BE distance)
-input double strategy_tp_atr_mult       = 5.0;   // TP distance = mult * ATR (runner target)
-input double strategy_be_atr_mult       = 3.0;   // move SL to BE after price moves mult*ATR
-input double strategy_entry_buffer_pips = 1.0;   // stop trigger offset beyond the fractal extreme
-input double strategy_sl_max_pips       = 30.0;  // P2 cap on the EMA-boundary stop distance
-input int    strategy_pending_bars      = 4;     // cancel pending after N H1 candles
-input int    strategy_session_start_hr  = 8;     // session open  (BROKER hour, inclusive)
-input int    strategy_session_end_hr    = 19;    // session close (BROKER hour, exclusive)
-input double strategy_spread_cap_pips   = 20.0;  // skip only a genuinely WIDE spread (pips)
+input int    strategy_ema_fast_period      = 144;
+input int    strategy_ema_slow_period      = 169;
+input int    strategy_fractal_side_bars    = 2;
+input int    strategy_atr_period           = 14;
+input double strategy_tp1_atr_mult         = 3.0;
+input double strategy_tp2_atr_mult         = 5.0;
+input double strategy_entry_buffer_pips    = 1.0;
+input double strategy_sl_max_pips          = 30.0;
+input int    strategy_pending_bars         = 4;
+input int    strategy_session_start_hr     = 8;
+input int    strategy_session_end_hr       = 19;
+input double strategy_spread_cap_pips      = 20.0;
 
-// -----------------------------------------------------------------------------
-// Helpers
-// -----------------------------------------------------------------------------
-
-// Pip size for the current symbol (10 * point on 3/5-digit quotes, else point).
-double Vegas_PipSize()
+// Return TRUE to BLOCK trading this tick.
+bool Strategy_NoTradeFilter()
   {
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const int    digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   if(point <= 0.0)
-      return 0.0;
-   return (digits == 3 || digits == 5) ? point * 10.0 : point;
-  }
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   const int hour = dt.hour;
 
-// Cheap O(1) wide-spread guard, fail-OPEN on .DWX zero modeled spread.
-bool Vegas_WideSpread()
-  {
+   bool in_session = false;
+   if(strategy_session_start_hr <= strategy_session_end_hr)
+      in_session = (hour >= strategy_session_start_hr && hour < strategy_session_end_hr);
+   else
+      in_session = (hour >= strategy_session_start_hr || hour < strategy_session_end_hr);
+   if(!in_session)
+      return true;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false;                 // no valid quote — never block on it
-   const double pip = Vegas_PipSize();
-   if(pip <= 0.0)
-      return false;
-   const double spread = ask - bid;
-   // Only a genuinely wide positive spread blocks; zero/negative passes.
-   return (spread > 0.0 && spread > strategy_spread_cap_pips * pip);
-  }
-
-// Inside the trading session, in BROKER time (wrap-safe within a single day).
-bool Vegas_InSession(const datetime broker_now)
-  {
-   MqlDateTime dt;
-   TimeToStruct(broker_now, dt);
-   const int h = dt.hour;
-   if(strategy_session_start_hr <= strategy_session_end_hr)
-      return (h >= strategy_session_start_hr && h < strategy_session_end_hr);
-   // Wrapped window (e.g. 22..6): inside if before end OR at/after start.
-   return (h >= strategy_session_start_hr || h < strategy_session_end_hr);
-  }
-
-// Count this EA's live PENDING orders (stop orders awaiting trigger).
-int Vegas_PendingCount(const int magic)
-  {
-   int count = 0;
-   const int total = OrdersTotal();
-   for(int i = 0; i < total; ++i)
-     {
-      const ulong ticket = OrderGetTicket(i);
-      if(ticket == 0)
-         continue;
-      if((int)OrderGetInteger(ORDER_MAGIC) == magic)
-         count++;
-     }
-   return count;
-  }
-
-// Williams DOWN fractal centred at `shift`: local LOW with `side` lower-bounded
-// bars on each side. Uses raw bar reads (perf-allowed: bounded structural pivot,
-// closed-bar only, gated by QM_IsNewBar in OnTick).
-bool Vegas_IsDownFractal(const int shift, const int side)
-  {
-   const double center = iLow(_Symbol, _Period, shift); // perf-allowed: structural pivot
-   if(center <= 0.0)
-      return false;
-   for(int k = 1; k <= side; ++k)
-     {
-      if(!(center < iLow(_Symbol, _Period, shift - k)))  // right side (newer bars)
-         return false;
-      if(!(center < iLow(_Symbol, _Period, shift + k)))  // left side (older bars)
-         return false;
-     }
-   return true;
-  }
-
-// Williams UP fractal centred at `shift`: local HIGH with `side` higher-bounded
-// bars on each side.
-bool Vegas_IsUpFractal(const int shift, const int side)
-  {
-   const double center = iHigh(_Symbol, _Period, shift); // perf-allowed: structural pivot
-   if(center <= 0.0)
-      return false;
-   for(int k = 1; k <= side; ++k)
-     {
-      if(!(center > iHigh(_Symbol, _Period, shift - k)))
-         return false;
-      if(!(center > iHigh(_Symbol, _Period, shift + k)))
-         return false;
-     }
-   return true;
-  }
-
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
-
-// Cheap O(1) per-tick gate: session window (broker time) + wide-spread guard.
-bool Strategy_NoTradeFilter()
-  {
-   if(!Vegas_InSession(TimeCurrent()))
       return true;
-   if(Vegas_WideSpread())
+
+   const int spread_cap_pips = (int)MathRound(strategy_spread_cap_pips);
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, spread_cap_pips);
+   if(spread_cap > 0.0 && ask > bid && (ask - bid) > spread_cap)
       return true;
+
    return false;
   }
 
-// Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
-// The tunnel break is a STATE; the freshly-confirmed fractal is the single EVENT.
+// Caller guarantees QM_IsNewBar() == true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    const int magic = QM_FrameworkMagic();
-   // One position per magic; and only one resting pending order at a time.
    if(QM_TM_OpenPositionCount(magic) > 0)
       return false;
-   if(Vegas_PendingCount(magic) > 0)
-      return false;
 
-   const double pip = Vegas_PipSize();
-   if(pip <= 0.0)
-      return false;
-
-   const double ema_fast = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 1); // EMA144
-   const double ema_slow = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 1); // EMA169
-   if(ema_fast <= 0.0 || ema_slow <= 0.0)
-      return false;
-
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0)
-      return false;
-
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false;
-
-   // The fractal centre sits `side` bars back from the last closed bar so its
-   // right-hand confirming bars (shifts 1..side) all exist => ONE event/bar.
-   const int center_shift = strategy_fractal_side_bars + 1;
-
-   const double buffer = strategy_entry_buffer_pips * pip;
-   const double sl_cap = strategy_sl_max_pips * pip;
-
-   // --- LONG: tunnel broken UP (closed above EMA169) + DOWN fractal confirmed ---
-   if(close1 > ema_slow && Vegas_IsDownFractal(center_shift, strategy_fractal_side_bars))
+   for(int order_i = OrdersTotal() - 1; order_i >= 0; --order_i)
      {
-      const double fr_high = iHigh(_Symbol, _Period, center_shift); // perf-allowed
-      if(fr_high <= 0.0)
+      const ulong order_ticket = OrderGetTicket(order_i);
+      if(order_ticket == 0)
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP)
          return false;
-      const double entry = fr_high + buffer;            // BUY STOP trigger
-      double sl = ema_slow;                             // opposite boundary (EMA169)
-      // Stop must sit below entry; cap distance at sl_max_pips.
-      if(!(sl < entry))
+     }
+
+   if(strategy_fractal_side_bars < 2)
+      return false;
+
+   const double ema_fast = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 1);
+   const double ema_slow = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 1);
+   const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar state read
+   if(ema_fast <= 0.0 || ema_slow <= 0.0 || atr <= 0.0 || close1 <= 0.0)
+      return false;
+
+   const int center_shift = strategy_fractal_side_bars + 1;
+   const double center_low = iLow(_Symbol, _Period, center_shift); // perf-allowed: bounded Williams fractal pivot
+   const double center_high = iHigh(_Symbol, _Period, center_shift); // perf-allowed: bounded Williams fractal pivot
+   if(center_low <= 0.0 || center_high <= 0.0)
+      return false;
+
+   bool down_fractal = true;
+   bool up_fractal = true;
+   for(int k = 1; k <= strategy_fractal_side_bars; ++k)
+     {
+      const double low_newer = iLow(_Symbol, _Period, center_shift - k); // perf-allowed: bounded Williams fractal pivot
+      const double low_older = iLow(_Symbol, _Period, center_shift + k); // perf-allowed: bounded Williams fractal pivot
+      const double high_newer = iHigh(_Symbol, _Period, center_shift - k); // perf-allowed: bounded Williams fractal pivot
+      const double high_older = iHigh(_Symbol, _Period, center_shift + k); // perf-allowed: bounded Williams fractal pivot
+      if(low_newer <= 0.0 || low_older <= 0.0 || high_newer <= 0.0 || high_older <= 0.0)
+         return false;
+      if(!(center_low < low_newer && center_low < low_older))
+         down_fractal = false;
+      if(!(center_high > high_newer && center_high > high_older))
+         up_fractal = false;
+     }
+
+   const int buffer_pips = (int)MathRound(strategy_entry_buffer_pips);
+   const int sl_cap_pips = (int)MathRound(strategy_sl_max_pips);
+   const double buffer = QM_StopRulesPipsToPriceDistance(_Symbol, buffer_pips);
+   const double sl_cap = QM_StopRulesPipsToPriceDistance(_Symbol, sl_cap_pips);
+   if(buffer <= 0.0 || sl_cap <= 0.0)
+      return false;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double modeled_spread = (ask > bid) ? (ask - bid) : 0.0;
+
+   if(close1 > ema_slow && down_fractal)
+     {
+      const double entry = center_high + buffer + modeled_spread;
+      if(ask > 0.0 && entry <= ask)
+         return false;
+      double sl = ema_slow;
+      if(sl >= entry)
          return false;
       if((entry - sl) > sl_cap)
          sl = entry - sl_cap;
-      const double tp = entry + strategy_tp_atr_mult * atr_value;
-      req.type   = QM_BUY_STOP;
-      req.price  = QM_TM_NormalizePrice(_Symbol, entry);
-      req.sl     = QM_TM_NormalizePrice(_Symbol, sl);
-      req.tp     = QM_TM_NormalizePrice(_Symbol, tp);
-      req.reason = "vegas_long_buystop";
+
+      req.type = QM_BUY_STOP;
+      req.price = QM_TM_NormalizePrice(_Symbol, entry);
+      req.sl = QM_TM_NormalizePrice(_Symbol, sl);
+      req.tp = QM_TakeATRFromValue(_Symbol, req.type, req.price, atr, strategy_tp2_atr_mult);
+      req.reason = "vegas_long_down_fractal_breakout";
+      req.symbol_slot = qm_magic_slot_offset;
       req.expiration_seconds = strategy_pending_bars * PeriodSeconds(_Period);
-      return true;
+      return (req.price > 0.0 && req.sl > 0.0 && req.tp > 0.0);
      }
 
-   // --- SHORT: tunnel broken DOWN (closed below EMA144) + UP fractal confirmed ---
-   if(close1 < ema_fast && Vegas_IsUpFractal(center_shift, strategy_fractal_side_bars))
+   if(close1 < ema_fast && up_fractal)
      {
-      const double fr_low = iLow(_Symbol, _Period, center_shift); // perf-allowed
-      if(fr_low <= 0.0)
+      const double entry = center_low - buffer;
+      if(bid > 0.0 && entry >= bid)
          return false;
-      const double entry = fr_low - buffer;             // SELL STOP trigger
-      double sl = ema_fast;                             // opposite boundary (EMA144)
-      if(!(sl > entry))
+      double sl = ema_fast;
+      if(sl <= entry)
          return false;
       if((sl - entry) > sl_cap)
          sl = entry + sl_cap;
-      const double tp = entry - strategy_tp_atr_mult * atr_value;
-      req.type   = QM_SELL_STOP;
-      req.price  = QM_TM_NormalizePrice(_Symbol, entry);
-      req.sl     = QM_TM_NormalizePrice(_Symbol, sl);
-      req.tp     = QM_TM_NormalizePrice(_Symbol, tp);
-      req.reason = "vegas_short_sellstop";
+
+      req.type = QM_SELL_STOP;
+      req.price = QM_TM_NormalizePrice(_Symbol, entry);
+      req.sl = QM_TM_NormalizePrice(_Symbol, sl);
+      req.tp = QM_TakeATRFromValue(_Symbol, req.type, req.price, atr, strategy_tp2_atr_mult);
+      req.reason = "vegas_short_up_fractal_breakout";
+      req.symbol_slot = qm_magic_slot_offset;
       req.expiration_seconds = strategy_pending_bars * PeriodSeconds(_Period);
-      return true;
+      return (req.price > 0.0 && req.sl > 0.0 && req.tp > 0.0);
      }
 
    return false;
   }
 
-// Break-even shift after price moves strategy_be_atr_mult * ATR in favour
-// (proxy for the card's "move to BE after TP1"). Operates on the open position.
+// Partial close 50% at ATR x 3 and then move the remainder to break-even.
 void Strategy_ManageOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
-   if(QM_TM_OpenPositionCount(magic) <= 0)
+   const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+   if(atr <= 0.0)
       return;
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return;
-   const double pip = Vegas_PipSize();
-   if(pip <= 0.0)
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
       return;
 
-   // Trigger distance (ATR*mult) and a tiny 1-pip BE buffer, in pip units.
-   const int trigger_pips = (int)MathRound((strategy_be_atr_mult * atr_value) / pip);
+   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
+   const int pip_factor = (digits == 3 || digits == 5) ? 10 : 1;
+   const int trigger_pips = (int)MathRound((strategy_tp1_atr_mult * atr) / (point * pip_factor));
    if(trigger_pips <= 0)
       return;
 
@@ -293,26 +215,50 @@ void Strategy_ManageOpenPosition()
       const ulong ticket = PositionGetTicket(i);
       if(!PositionSelectByTicket(ticket))
          continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-      QM_TM_MoveToBreakEven(ticket, trigger_pips, /*buffer_pips=*/1);
+
+      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double current_sl = PositionGetDouble(POSITION_SL);
+      const double volume = PositionGetDouble(POSITION_VOLUME);
+      const bool is_buy = (position_type == POSITION_TYPE_BUY);
+      const double market_price = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                                         : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(open_price <= 0.0 || market_price <= 0.0 || volume <= 0.0)
+         continue;
+
+      const bool already_be = (current_sl > 0.0 &&
+                               (is_buy ? (current_sl >= open_price - point * 0.5)
+                                       : (current_sl <= open_price + point * 0.5)));
+      if(already_be)
+         continue;
+
+      const double moved = is_buy ? (market_price - open_price) : (open_price - market_price);
+      if(moved < strategy_tp1_atr_mult * atr)
+         continue;
+
+      QM_TM_PartialClose(ticket, volume * 0.5, QM_EXIT_PARTIAL);
+      QM_TM_MoveToBreakEven(ticket, trigger_pips, 1);
      }
   }
 
-// No discretionary exit — exits are SL (EMA boundary) / TP (ATR) / break-even.
+// No discretionary close beyond SL, TP2, TP1 partial, break-even, and framework Friday close.
 bool Strategy_ExitSignal()
   {
    return false;
   }
 
-// Defer to the central news filter.
+// Defer to the central two-axis news filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
 
 // -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
+// Framework wiring - do NOT edit below this line.
 // -----------------------------------------------------------------------------
 
 int OnInit()
@@ -322,17 +268,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -353,6 +299,7 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -360,6 +307,7 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows)
       return;
+
    if(QM_FrameworkHandleFridayClose())
       return;
 
