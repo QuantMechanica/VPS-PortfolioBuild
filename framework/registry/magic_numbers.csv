@@ -13390,3 +13390,7 @@
 9702,ff-mtf-rsi-stack-m5,1,GBPUSD.DWX,97020001,2026-06-25,Development,active
 9702,ff-mtf-rsi-stack-m5,2,USDJPY.DWX,97020002,2026-06-25,Development,active
 9702,ff-mtf-rsi-stack-m5,3,XAUUSD.DWX,97020003,2026-06-25,Development,active
+9585,ff-ch-stoch-m15,0,EURUSD.DWX,95850000,2026-06-25,Development,active
+9585,ff-ch-stoch-m15,1,GBPUSD.DWX,95850001,2026-06-25,Development,active
+9585,ff-ch-stoch-m15,2,USDJPY.DWX,95850002,2026-06-25,Development,active
+9585,ff-ch-stoch-m15,3,EURJPY.DWX,95850003,2026-06-25,Development,active

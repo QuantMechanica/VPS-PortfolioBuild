@@ -1,0 +1,59 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11445
+; ea_slug:      burke-low-hanging-fruit-m5
+; ea_version:   v5.0
+; set_version:  s20260625-001
+; symbol:       EURUSD.DWX
+; timeframe:    M5
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   e32ea9fe80cfd95b8081144e8c2d01fb7632bd109cb53c51ec3ca7ec554ec3bd
+; author:       Development
+; date:         2026-06-25
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found
+qm_ea_id=11445
+qm_rng_seed=42
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy_signal_tf=5
+strategy_london_start_utc=7
+strategy_london_end_utc=12
+strategy_ny_start_utc=13
+strategy_ny_end_utc=17
+strategy_ema_period=20
+strategy_pullback_min_pips=25
+strategy_pullback_max_pips=50
+strategy_sl_pips=20
+strategy_tp_primary_pips=50
+strategy_use_d1_atr_tp=1
+strategy_d1_atr_period=14
+strategy_tp_min_pips=25
+strategy_tp_max_pips=100
+strategy_spread_cap_pips=15
