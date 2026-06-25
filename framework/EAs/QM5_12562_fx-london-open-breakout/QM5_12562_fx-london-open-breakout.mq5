@@ -60,8 +60,10 @@ datetime g_or_end_broker        = 0;   // london_open + 4*15min
 datetime g_entry_window_end     = 0;   // or_end + strategy_entry_window_h hours
 datetime g_session_exit_broker  = 0;   // 17:00 London = london_open + 9h
 
-double   g_or_high              = 0.0;
-double   g_or_low               = 1e20;
+double   g_or_high              = 0.0;   // wick-based max HIGH of OR bars (width filter + SL)
+double   g_or_low               = 1e20;  // wick-based min LOW of OR bars (width filter + SL)
+double   g_or_close_high        = 0.0;   // max CLOSE of OR bars (entry trigger)
+double   g_or_close_low         = 1e20;  // min CLOSE of OR bars (entry trigger)
 bool     g_or_complete          = false;
 bool     g_entered_today        = false;
 
@@ -154,6 +156,8 @@ void AdvanceState_OnNewBar()
       g_session_exit_broker = g_london_open_broker + (datetime)(9 * 3600); // 08:00+9h = 17:00 London
       g_or_high             = 0.0;
       g_or_low              = 1e20;
+      g_or_close_high       = 0.0;
+      g_or_close_low        = 1e20;
       g_or_complete         = false;
       g_entered_today       = false;
      }
@@ -164,13 +168,17 @@ void AdvanceState_OnNewBar()
    if(bar1_open <= 0) return;
 
    // Accumulate OR: bar must have opened inside the OR window.
-   // OR extremes use CLOSE prices so that "closes above OR_high" is achievable (wick-based OR_high
-   // is almost never exceeded by a subsequent close, killing all entries).
+   // g_or_high/g_or_low = wick extremes (for OR width filter and SL placement).
+   // g_or_close_high/g_or_close_low = close extremes (for entry trigger: close > OR_close).
    if(!g_or_complete && bar1_open >= g_london_open_broker && bar1_open < g_or_end_broker)
      {
-      double c = iClose(_Symbol, PERIOD_M15, 1); // perf-allowed: OR close-extreme accumulation
-      if(c > g_or_high) g_or_high = c;
-      if(c < g_or_low)  g_or_low  = c;
+      double h = iHigh(_Symbol,  PERIOD_M15, 1); // perf-allowed: OR wick high
+      double l = iLow(_Symbol,   PERIOD_M15, 1); // perf-allowed: OR wick low
+      double c = iClose(_Symbol, PERIOD_M15, 1); // perf-allowed: OR close extreme
+      if(h > g_or_high)        g_or_high       = h;
+      if(l < g_or_low)         g_or_low        = l;
+      if(c > g_or_close_high)  g_or_close_high = c;
+      if(c < g_or_close_low)   g_or_close_low  = c;
      }
 
    // OR is complete once a bar opens at or after or_end with a valid accumulated range
@@ -236,25 +244,27 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(atr_m15 <= 0.0 || atr_d1 <= 0.0) return false;
 
    double bar_range = bar_high - bar_low;
-   double or_width  = g_or_high - g_or_low;
+   double or_width  = g_or_high - g_or_low;  // wick-based: true range of the OR period
 
    // Confirmation filters (dead-opening / fakeout rejection)
    if(bar_range < strategy_bb_atr_mult * atr_m15) return false;
+   // OR width uses wick range (structural measure of the opening's volatility)
    if(or_width < strategy_or_width_atr_mult * atr_d1 / 4.0) return false;
 
-   // Breakout direction from OR (close-based OR, so close > OR_close_high fires a genuine breakout)
-   bool is_long  = (bar_close > g_or_high);
-   bool is_short = (bar_close < g_or_low);
+   // Breakout direction: close > OR_close_high (long) or < OR_close_low (short).
+   // Uses CLOSE extremes so a close-above-OR-close fires; wick range is used for SL/filter only.
+   bool is_long  = (bar_close > g_or_close_high);
+   bool is_short = (bar_close < g_or_close_low);
    if(!is_long && !is_short) return false;
 
    double entry = 0.0;  // market order
 
-   // Compute SL
+   // SL at OR close extreme with ATR buffer (close-based, consistent with close-based entry trigger)
    double sl_price;
    if(is_long)
-      sl_price = g_or_low - strategy_sl_buffer_atr * atr_m15;
+      sl_price = g_or_close_low - strategy_sl_buffer_atr * atr_m15;
    else
-      sl_price = g_or_high + strategy_sl_buffer_atr * atr_m15;
+      sl_price = g_or_close_high + strategy_sl_buffer_atr * atr_m15;
 
    // Entry for SL distance calculation (use ask for long, bid for short as approximate)
    double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
