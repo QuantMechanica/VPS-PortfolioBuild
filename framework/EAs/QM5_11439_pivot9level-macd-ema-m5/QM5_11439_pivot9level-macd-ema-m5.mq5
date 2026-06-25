@@ -73,7 +73,7 @@ input int    strategy_prox_pips         = 5;      // proximity to pivot (pips) +
 input int    strategy_sl_cap_pips       = 30;     // P2 max stop distance (pips)
 input int    strategy_ema_trail_period  = 9;      // M5 EMA trail-exit period
 input double strategy_tp_rr_fallback    = 2.0;    // RR-multiple TP if no next pivot exists
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input int    strategy_spread_cap_pips   = 15;     // skip if spread exceeds this pip cap
 
 // -----------------------------------------------------------------------------
 // File-scope cached pivot STATES — recomputed once per closed M5 bar from the
@@ -98,10 +98,9 @@ bool   g_pivots_valid = false;
 // reads + arithmetic. Called once per new M5 bar (closed-bar gate upstream).
 void AdvancePivots_OnNewBar()
   {
-   // perf-allowed: single prior-CLOSED-day OHLC reads (D1 shift 1 = prior day).
-   const double H = iHigh(_Symbol, PERIOD_D1, 1);
-   const double L = iLow(_Symbol, PERIOD_D1, 1);
-   const double C = iClose(_Symbol, PERIOD_D1, 1);
+   const double H = iHigh(_Symbol, PERIOD_D1, 1);  // perf-allowed: prior closed D1 pivot high
+   const double L = iLow(_Symbol, PERIOD_D1, 1);   // perf-allowed: prior closed D1 pivot low
+   const double C = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: prior closed D1 pivot close
    if(H <= 0.0 || L <= 0.0 || C <= 0.0 || H < L)
      {
       g_pivots_valid = false;
@@ -145,7 +144,9 @@ double NearestSupportWithin(const double ref, const double tol, int &out_idx)
    double best_dist = tol; // strict: must be within tol
    for(int i = PV_S2; i <= PV_P; ++i)
      {
-      const double d = MathAbs(ref - g_pivots[i]);
+      if(ref > g_pivots[i])
+         continue;
+      const double d = g_pivots[i] - ref;
       if(d <= best_dist)
         {
          best_dist = d;
@@ -164,7 +165,9 @@ double NearestResistanceWithin(const double ref, const double tol, int &out_idx)
    double best_dist = tol;
    for(int i = PV_P; i <= PV_R2; ++i)
      {
-      const double d = MathAbs(ref - g_pivots[i]);
+      if(ref < g_pivots[i])
+         continue;
+      const double d = ref - g_pivots[i];
       if(d <= best_dist)
         {
          best_dist = d;
@@ -225,17 +228,15 @@ bool Strategy_NoTradeFilter()
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
+      return true;
 
-   // Stop-distance reference = configured stop in price terms (prox+buffer,
-   // capped). Scales the spread cap with the symbol.
-   const double stop_distance = PipPriceDistance(strategy_sl_cap_pips);
-   if(stop_distance <= 0.0)
+   const double spread_cap = PipPriceDistance(strategy_spread_cap_pips);
+   if(spread_cap <= 0.0)
       return false;
 
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(ask > 0.0 && bid > 0.0 && ask > bid && spread > spread_cap)
       return true;
 
    return false;
@@ -311,6 +312,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl     = sl;
       req.tp     = tp;
       req.reason = "pivot9_macd_long";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
       return true;
      }
 
@@ -352,6 +355,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = "pivot9_macd_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
