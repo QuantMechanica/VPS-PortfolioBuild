@@ -238,13 +238,34 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double or_width  = g_or_high - g_or_low;
 
    // Confirmation filters (dead-opening / fakeout rejection)
-   if(bar_range < strategy_bb_atr_mult * atr_m15)              return false;
-   if(or_width  < strategy_or_width_atr_mult * atr_d1 / 4.0)  return false;
+   if(bar_range < strategy_bb_atr_mult * atr_m15)
+     {
+      if(TimeYear(bar1_open) == 2024 && TimeMonth(bar1_open) <= 2)
+         PrintFormat("DBG RANGE_FAIL bar1=%s range=%.5f need=%.5f or_h=%.5f or_l=%.5f",
+                     TimeToString(bar1_open,TIME_DATE|TIME_MINUTES),
+                     bar_range, strategy_bb_atr_mult*atr_m15, g_or_high, g_or_low);
+      return false;
+     }
+   if(or_width < strategy_or_width_atr_mult * atr_d1 / 4.0)
+     {
+      if(TimeYear(bar1_open) == 2024 && TimeMonth(bar1_open) <= 2)
+         PrintFormat("DBG ORWIDTH_FAIL bar1=%s orW=%.5f need=%.5f(atr_d1=%.5f)",
+                     TimeToString(bar1_open,TIME_DATE|TIME_MINUTES),
+                     or_width, strategy_or_width_atr_mult*atr_d1/4.0, atr_d1);
+      return false;
+     }
 
    // Breakout direction from OR
    bool is_long  = (bar_close > g_or_high);
    bool is_short = (bar_close < g_or_low);
-   if(!is_long && !is_short) return false;
+   if(!is_long && !is_short)
+     {
+      if(TimeYear(bar1_open) == 2024 && TimeMonth(bar1_open) <= 2)
+         PrintFormat("DBG NO_BREAK bar1=%s close=%.5f or_h=%.5f or_l=%.5f",
+                     TimeToString(bar1_open,TIME_DATE|TIME_MINUTES),
+                     bar_close, g_or_high, g_or_low);
+      return false;
+     }
 
    double entry = 0.0;  // market order
 
