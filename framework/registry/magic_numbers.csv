@@ -11251,9 +11251,9 @@
 11519,carter-t-ema7-21-pullback,0,EURUSD.DWX,115190000,2026-06-18,Claude,active
 11519,carter-t-ema7-21-pullback,1,GBPUSD.DWX,115190001,2026-06-18,Claude,active
 11519,carter-t-ema7-21-pullback,2,AUDUSD.DWX,115190002,2026-06-18,Claude,active
-11520,carter-t-ema18-adx12-pullback,0,EURUSD.DWX,115200000,2026-06-18,Claude,reserved
-11520,carter-t-ema18-adx12-pullback,1,GBPUSD.DWX,115200001,2026-06-18,Claude,reserved
-11520,carter-t-ema18-adx12-pullback,2,USDJPY.DWX,115200002,2026-06-18,Claude,reserved
+11520,carter-t-ema18-adx12-pullback,0,EURUSD.DWX,115200000,2026-06-18,Claude,active
+11520,carter-t-ema18-adx12-pullback,1,GBPUSD.DWX,115200001,2026-06-18,Claude,active
+11520,carter-t-ema18-adx12-pullback,2,USDJPY.DWX,115200002,2026-06-18,Claude,active
 11521,carter-t-ema6-13-macd-psar-h4-gbp,0,GBPUSD.DWX,115210000,2026-06-20,Development,active
 11521,carter-t-ema6-13-macd-psar-h4-gbp,1,GBPJPY.DWX,115210001,2026-06-20,Development,active
 11522,carter-t-ema4-10-adx28-macd5104-h4,0,EURUSD.DWX,115220000,2026-06-18,Claude,active
