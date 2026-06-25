@@ -13485,6 +13485,15 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12568,ichimoku-jpy-xag-trend,3,XAGUSD.DWX,125680003,2026-06-25,Claude,active
 12569,r2-euro-index,0,GDAXI.DWX,125690000,2026-06-25,Claude,active
 12569,r2-euro-index,1,UK100.DWX,125690001,2026-06-25,Claude,active
+2080,pring-special-k-h4,0,EURUSD.DWX,20800000,2026-06-26,Development,active
+2080,pring-special-k-h4,1,GBPUSD.DWX,20800001,2026-06-26,Development,active
+2080,pring-special-k-h4,2,USDJPY.DWX,20800002,2026-06-26,Development,active
+2080,pring-special-k-h4,3,XAUUSD.DWX,20800003,2026-06-26,Development,active
+2080,pring-special-k-h4,4,SP500.DWX,20800004,2026-06-26,Development,active
+2080,pring-special-k-h4,5,NDX.DWX,20800005,2026-06-26,Development,active
+2080,pring-special-k-h4,6,WS30.DWX,20800006,2026-06-26,Development,active
+2080,pring-special-k-h4,7,GDAXI.DWX,20800007,2026-06-26,Development,active
+2080,pring-special-k-h4,8,UK100.DWX,20800008,2026-06-26,Development,active
 2078,ehlers-sine-wave-h4,0,EURUSD.DWX,20780000,2026-06-26,Development,active
 2078,ehlers-sine-wave-h4,1,GBPUSD.DWX,20780001,2026-06-26,Development,active
 2078,ehlers-sine-wave-h4,2,USDJPY.DWX,20780002,2026-06-26,Development,active
