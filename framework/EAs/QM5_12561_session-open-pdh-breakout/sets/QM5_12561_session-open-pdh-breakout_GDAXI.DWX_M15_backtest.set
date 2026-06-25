@@ -1,0 +1,40 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12561
+; ea_slug:      session-open-pdh-breakout
+; ea_version:   v5.0
+; set_version:  s20260625-001
+; symbol:       GDAXI.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   b8cc61b130325d980add96b26f4e17750ab386f4c0bba2ecc8df86f1cba5b4e4
+; author:       Development
+; date:         2026-06-25
+;==========================================================
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=manual
+; Xetra open 09:00 CET = ~10:00 broker (DXZ GMT+2 winter / GMT+3 US-DST)
+; EOD exit 15 min before 18:30 broker (Xetra close 17:30 CET = ~18:30 broker)
+strategy_session_open_hour=10
+strategy_session_open_minute=0
+strategy_eod_exit_hour=18
+strategy_eod_exit_minute=15

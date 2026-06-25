@@ -13457,3 +13457,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12562,fx-london-open-breakout,0,EURUSD.DWX,125620000,2026-06-25,Development,active
 12562,fx-london-open-breakout,1,GBPUSD.DWX,125620001,2026-06-25,Development,active
 12562,fx-london-open-breakout,2,USDJPY.DWX,125620002,2026-06-25,Development,active
+12561,session-open-pdh-breakout,0,NDX.DWX,125610000,2026-06-25,Development,active
+12561,session-open-pdh-breakout,1,WS30.DWX,125610001,2026-06-25,Development,active
+12561,session-open-pdh-breakout,2,GDAXI.DWX,125610002,2026-06-25,Development,active

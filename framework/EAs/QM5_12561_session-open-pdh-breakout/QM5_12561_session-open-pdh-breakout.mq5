@@ -35,7 +35,7 @@ input int    qm_friday_close_hour_broker   = 21;
 input group "Stress"
 input double qm_stress_reject_probability  = 0.0;
 
-input group "Strategy — Signal"
+input group "Strategy"
 input int    strategy_atr_period_m15       = 14;    // ATR lookback on M15
 input int    strategy_atr_period_d1        = 14;    // ATR lookback on D1 for gap filter
 input double strategy_sl_atr_buffer        = 0.3;   // SL beyond OR boundary: buffer_mult × ATR
@@ -47,8 +47,10 @@ input double strategy_time_stop_min_r      = 0.5;   // price must have reached t
 input double strategy_entry_bar_min_range  = 0.5;   // breakout bar range >= this × ATR(M15)
 input double strategy_session_range_factor = 0.8;   // current session range >= this × prior-day range
 input double strategy_gap_atr_d1_mult      = 1.5;   // skip day if session gap > this × ATR(D1)
-
-input group "Strategy — Session (override in setfile per symbol)"
+// Session open and EOD exit in broker time — override in setfile per symbol
+// US indices (NDX/WS30): open 16:30, eod_exit 22:45
+// GDAXI: open 10:00, eod_exit 18:15
+input group "Strategy — Session"
 // US indices (NDX.DWX, WS30.DWX): session_open_hour=16, session_open_minute=30
 //   US equity open 09:30 ET = 16:30 broker (DXZ GMT+2/+3 and ET DST cancel out)
 //   EOD exit 15 min before 23:00 broker (US close 16:00 ET = 23:00 broker)
@@ -120,13 +122,12 @@ bool Strategy_NoTradeFilter()
 // Called once per new bar, after new-session reset.
 void AdvancePerBarState(const datetime sess_open)
 {
-   // perf-allowed: bespoke structural OR / session state from raw OHLC
-   datetime bar_time = iTime(_Symbol, PERIOD_M15, 1);
+   datetime bar_time = iTime(_Symbol, PERIOD_M15, 1); // perf-allowed: bespoke structural OR/session state
    if(bar_time < sess_open)
       return;
 
-   double bar_high = iHigh(_Symbol, PERIOD_M15, 1);
-   double bar_low  = iLow(_Symbol,  PERIOD_M15, 1);
+   double bar_high = iHigh(_Symbol, PERIOD_M15, 1); // perf-allowed
+   double bar_low  = iLow(_Symbol,  PERIOD_M15, 1); // perf-allowed
 
    // Track session range
    if(bar_high > g_session_high) g_session_high = bar_high;
@@ -176,9 +177,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       g_gap_skip_today = false;
       g_peak_r_100     = 0;
 
-      // Load previous D1 bar's high/low (perf-allowed: bespoke structural)
-      g_prev_day_high = iHigh(_Symbol, PERIOD_D1, 1);
-      g_prev_day_low  = iLow(_Symbol,  PERIOD_D1, 1);
+      g_prev_day_high = iHigh(_Symbol, PERIOD_D1, 1); // perf-allowed: bespoke structural (PDH/PDL)
+      g_prev_day_low  = iLow(_Symbol,  PERIOD_D1, 1); // perf-allowed
 
       // Gap filter: skip day if overnight gap > gap_atr_d1_mult × ATR(D1)
       // Note: .DWX CFDs are continuous so this rarely fires, but is correct per card
@@ -215,10 +215,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(atr <= 0.0)
       return false;
 
-   // perf-allowed: bespoke structural OHLC reads for breakout confirmation
-   double bar_high  = iHigh(_Symbol,  PERIOD_M15, 1);
-   double bar_low   = iLow(_Symbol,   PERIOD_M15, 1);
-   double bar_close = iClose(_Symbol, PERIOD_M15, 1);
+   double bar_high  = iHigh(_Symbol,  PERIOD_M15, 1); // perf-allowed: bespoke structural breakout check
+   double bar_low   = iLow(_Symbol,   PERIOD_M15, 1); // perf-allowed
+   double bar_close = iClose(_Symbol, PERIOD_M15, 1); // perf-allowed
    double bar_range = bar_high - bar_low;
 
    // Expansion filter: breakout bar range must be meaningful
