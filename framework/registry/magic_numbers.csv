@@ -13411,3 +13411,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9295,mql5-cmf-zero,1,GBPUSD.DWX,92950001,2026-06-25,Development,active
 9295,mql5-cmf-zero,2,XAUUSD.DWX,92950002,2026-06-25,Development,active
 9295,mql5-cmf-zero,3,GDAXI.DWX,92950003,2026-06-25,Development,active
+9995,tv-halftrend-channel-reversal,0,EURUSD.DWX,99950000,2026-06-25,Development,active
+9995,tv-halftrend-channel-reversal,1,GBPUSD.DWX,99950001,2026-06-25,Development,active
+9995,tv-halftrend-channel-reversal,2,USDJPY.DWX,99950002,2026-06-25,Development,active
+9995,tv-halftrend-channel-reversal,3,XAUUSD.DWX,99950003,2026-06-25,Development,active
+9995,tv-halftrend-channel-reversal,4,XTIUSD.DWX,99950004,2026-06-25,Development,active
+9995,tv-halftrend-channel-reversal,5,NDX.DWX,99950005,2026-06-25,Development,active
+9995,tv-halftrend-channel-reversal,6,WS30.DWX,99950006,2026-06-25,Development,active
+9995,tv-halftrend-channel-reversal,7,SP500.DWX,99950007,2026-06-25,Development,active
