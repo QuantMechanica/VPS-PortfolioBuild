@@ -15,8 +15,8 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;
 input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -39,14 +39,15 @@ input int    strategy_distance_pips       = 10;    // minimum close distance bey
 input int    strategy_structure_bars      = 5;     // initial SL: 5-bar low/high
 input double strategy_tp_r_multiple       = 2.0;   // V5 baseline full exit at 2R
 input int    strategy_exit_break_pips     = 10;    // EMA(50) failure distance
-input int    strategy_spread_cap_pips     = 20;    // card M5 spread cap baseline
+input int    strategy_spread_cap_points   = 20;    // card M5 spread cap baseline
 
 // No Trade Filter (time, spread, news)
 bool Strategy_NoTradeFilter()
   {
-   const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
-   if(cap <= 0.0)
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0 || strategy_spread_cap_points <= 0)
       return false;
+   const double cap = point * strategy_spread_cap_points;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);

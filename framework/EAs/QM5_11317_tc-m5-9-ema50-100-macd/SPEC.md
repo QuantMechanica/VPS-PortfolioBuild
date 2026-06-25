@@ -28,7 +28,7 @@ This EA trades Thomas Carter's M5 System #9 as a trend-continuation scalp. A lon
 | `strategy_structure_bars` | 5 | 1+ | Lookback for the structure stop low or high. |
 | `strategy_tp_r_multiple` | 2.0 | >0 | Full baseline take profit at 2R. |
 | `strategy_exit_break_pips` | 10 | 1+ | EMA(50) failure distance for discretionary close. |
-| `strategy_spread_cap_pips` | 20 | 1+ | Spread cap; zero modeled DWX spread is allowed. |
+| `strategy_spread_cap_points` | 20 | 1+ | Spread cap in broker points; zero modeled DWX spread is allowed. |
 
 ---
 
