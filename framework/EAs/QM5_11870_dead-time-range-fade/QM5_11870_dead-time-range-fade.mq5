@@ -83,6 +83,76 @@ input int    strategy_stop_pips = 12;
 input int    strategy_take_pips = 12;
 input int    strategy_max_spread_pips = 0;
 
+double g_deadtime_reference_price = 0.0;
+int    g_deadtime_reference_side = 0;       // +1 = buy limit, -1 = sell limit
+int    g_deadtime_reference_session = -1;
+int    g_deadtime_order_session = -1;
+
+int Strategy_NormalizeHour(const int hour)
+  {
+   int normalized = hour % 24;
+   if(normalized < 0)
+      normalized += 24;
+   return normalized;
+  }
+
+int Strategy_EffectiveHour(const int configured_hour, const datetime utc_time)
+  {
+   if(QM_IsUSDSTUTC(utc_time))
+      return Strategy_NormalizeHour(configured_hour - 1);
+   return Strategy_NormalizeHour(configured_hour);
+  }
+
+int Strategy_SessionKey(const datetime utc_time)
+  {
+   MqlDateTime dt;
+   ZeroMemory(dt);
+   TimeToStruct(utc_time, dt);
+   return (dt.year * 1000) + dt.day_of_year;
+  }
+
+bool Strategy_HourInWindow(const int hour, const int start_hour, const int end_hour)
+  {
+   if(start_hour == end_hour)
+      return false;
+   if(start_hour < end_hour)
+      return (hour >= start_hour && hour < end_hour);
+   return (hour >= start_hour || hour < end_hour);
+  }
+
+int Strategy_SecondsUntilWindowEnd(const datetime utc_time, const int end_hour)
+  {
+   MqlDateTime dt;
+   ZeroMemory(dt);
+   TimeToStruct(utc_time, dt);
+
+   int seconds = ((end_hour - dt.hour) * 3600) - (dt.min * 60) - dt.sec;
+   if(seconds <= 0)
+      seconds += 24 * 3600;
+   return seconds;
+  }
+
+bool Strategy_HasPendingOrder()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0)
+         continue;
+      if(OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      return true;
+     }
+
+   return false;
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -134,12 +204,34 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    MqlDateTime utc_dt;
    ZeroMemory(utc_dt);
    TimeToStruct(current_bar_utc, utc_dt);
-   if(utc_dt.hour != strategy_reference_utc_hour || utc_dt.min != 0)
-      return false;
+   const int reference_hour = Strategy_EffectiveHour(strategy_reference_utc_hour, current_bar_utc);
+   const int window_end_hour = Strategy_EffectiveHour(strategy_window_end_utc_hour, current_bar_utc);
+   const int session_key = Strategy_SessionKey(current_bar_utc);
 
-   const double reference_open = rates[1].open;
-   const double reference_close = rates[1].close;
-   if(reference_open <= 0.0 || reference_close <= 0.0 || reference_open == reference_close)
+   if(utc_dt.hour == reference_hour && utc_dt.min == 0)
+     {
+      const double reference_open = rates[1].open;
+      const double reference_close = rates[1].close;
+      if(reference_open <= 0.0 || reference_close <= 0.0 || reference_open == reference_close)
+        {
+         g_deadtime_reference_price = 0.0;
+         g_deadtime_reference_side = 0;
+         g_deadtime_reference_session = session_key;
+        }
+      else
+        {
+         g_deadtime_reference_price = reference_close;
+         g_deadtime_reference_side = (reference_close > reference_open) ? -1 : 1;
+         g_deadtime_reference_session = session_key;
+        }
+     }
+
+   if(g_deadtime_reference_session != session_key ||
+      g_deadtime_reference_price <= 0.0 ||
+      g_deadtime_reference_side == 0 ||
+      g_deadtime_order_session == session_key ||
+      !Strategy_HourInWindow(utc_dt.hour, reference_hour, window_end_hour) ||
+      Strategy_HasPendingOrder())
       return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -150,28 +242,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    QM_OrderType side = QM_BUY_LIMIT;
    string reason = "";
-   if(reference_close > reference_open)
+   if(g_deadtime_reference_side < 0)
      {
-      if(ask >= reference_close - point)
+      if(ask >= g_deadtime_reference_price - point)
          return false;
       side = QM_SELL_LIMIT;
       reason = "DEADTIME_RANGE_FADE_SHORT";
      }
    else
      {
-      if(bid <= reference_close + point)
+      if(bid <= g_deadtime_reference_price + point)
          return false;
       side = QM_BUY_LIMIT;
       reason = "DEADTIME_RANGE_FADE_LONG";
      }
 
-   const int seconds_to_expiry = (strategy_window_end_utc_hour > strategy_reference_utc_hour)
-                                 ? (strategy_window_end_utc_hour - strategy_reference_utc_hour) * 3600
-                                 : (24 - strategy_reference_utc_hour + strategy_window_end_utc_hour) * 3600;
+   const int seconds_to_expiry = Strategy_SecondsUntilWindowEnd(current_bar_utc, window_end_hour);
    if(seconds_to_expiry <= 0)
       return false;
 
-   const double entry = QM_StopRulesNormalizePrice(_Symbol, reference_close);
+   const double entry = QM_StopRulesNormalizePrice(_Symbol, g_deadtime_reference_price);
    const double sl = QM_StopFixedPips(_Symbol, side, entry, strategy_stop_pips);
    const double tp = QM_TakeFixedPips(_Symbol, side, entry, strategy_take_pips);
    if(entry <= 0.0 || sl <= 0.0 || tp <= 0.0)
@@ -184,6 +274,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.reason = reason;
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = seconds_to_expiry;
+   g_deadtime_order_session = session_key;
    return true;
   }
 

@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-On the H1 bar that opens at 20:00 UTC, the EA reads the just-closed H1 candle and uses its close as the session reference level. If that reference candle closed above its open, the EA places a sell limit at the reference close for a fade from below; if it closed below its open, the EA places a buy limit at the reference close for a fade from above. The pending order expires at 00:00 UTC, and any filled trade exits by the fixed 12-pip stop loss or fixed 12-pip take profit.
+On the H1 bar that opens at the configured New York 3pm reference time, the EA reads the just-closed H1 candle and uses its close as the session reference level. The default input is 20:00 UTC, and the EA shifts that to 19:00 UTC during US DST per the card note. If that reference candle closed above its open, the EA waits for price to move below the anchor and places a sell limit at the reference close for a fade from below; if it closed below its open, the EA waits for price to move above the anchor and places a buy limit at the reference close for a fade from above. The pending order expires at the configured window end, shifted the same way during US DST, and any filled trade exits by the fixed 12-pip stop loss or fixed 12-pip take profit.
 
 ---
 
@@ -18,8 +18,8 @@ On the H1 bar that opens at 20:00 UTC, the EA reads the just-closed H1 candle an
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_reference_utc_hour` | 20 | 0-23 | UTC hour when the just-closed H1 candle provides the reference close. |
-| `strategy_window_end_utc_hour` | 0 | 0-23 | UTC hour when the unfilled limit order expires. |
+| `strategy_reference_utc_hour` | 20 | 0-23 | UTC hour when the just-closed H1 candle provides the reference close; shifted one hour earlier during US DST. |
+| `strategy_window_end_utc_hour` | 0 | 0-23 | UTC hour when the unfilled limit order expires; shifted one hour earlier during US DST. |
 | `strategy_stop_pips` | 12 | >0 | Fixed stop loss distance in pips. |
 | `strategy_take_pips` | 12 | >0 | Fixed take profit distance in pips. |
 | `strategy_max_spread_pips` | 0 | >=0 | Optional spread cap; 0 disables the cap and zero modeled spread never blocks trading. |
@@ -59,7 +59,7 @@ On the H1 bar that opens at 20:00 UTC, the EA reads the just-closed H1 candle an
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | `100` |
-| Typical hold time | Up to 4 hours between 20:00 UTC and 00:00 UTC, often shorter by SL/TP. |
+| Typical hold time | Up to 4 hours between the New York 3pm reference and 7pm window end, often shorter by SL/TP. |
 | Expected drawdown profile | Mean-reversion fade with fixed 1:1 bracket risk. |
 | Regime preference | Quiet off-hours mean reversion. |
 | Win rate target (qualitative) | medium |
