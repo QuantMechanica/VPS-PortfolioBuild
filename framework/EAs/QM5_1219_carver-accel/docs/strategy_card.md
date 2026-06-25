@@ -14,10 +14,14 @@ indicators:
   - "[[indicators/forecast-difference]]"
   - "[[indicators/atr-stop]]"
 g0_status: APPROVED
-r1_track_record: UNKNOWN
-r2_mechanical: UNKNOWN
-r3_data_available: UNKNOWN
-r4_ml_forbidden: UNKNOWN
+r1_track_record: PASS
+r1_reasoning: "Single source_id present; named author Rob Carver with exact qoppac URL and linked open-source accel.py rule implementation."
+r2_mechanical: PASS
+r2_reasoning: "Acceleration defined as EWMAC_t minus lagged EWMAC_t is explicit in open-source code, with fixed ForecastScalar and cap — fully deterministic."
+r3_data_available: PASS
+r3_reasoning: "Uses D1 OHLC-derived EMA and StdDev; universe (EURUSD, GBPUSD, USDJPY, GER40, NDX, WS30, XAUUSD, XTIUSD) is entirely DWX broker-routable."
+r4_ml_forbidden: PASS
+r4_reasoning: "Fixed Lfast/Lslow lookbacks, one position per magic, no adaptive PnL parameters, no ML or martingale."
 pipeline_phase: G0
 last_updated: 2026-05-19
 expected_trades_per_year_per_symbol: 140
