@@ -283,6 +283,9 @@ double Strategy_NormalizePrice(const double price)
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   if(_Period != PERIOD_M15)
+      return true;
+
    if(!Strategy_InEntryWindow(TimeCurrent()))
       Strategy_RemoveOurPendingOrders("entry_window_closed");
 

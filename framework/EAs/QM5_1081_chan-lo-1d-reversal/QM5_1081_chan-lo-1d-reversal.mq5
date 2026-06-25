@@ -1,12 +1,12 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_1081 Chan Lo 1D Cross-Sectional Reversal"
-// rework v2 2026-06-16 — BUG: basket EA read foreign-symbol iClose without
-//   tester history sync, so all non-_Symbol returns were 0/stale -> only
-//   _Symbol valid -> valid_count<2 -> GetCurrentSymbolRank() always false ->
-//   0 trades. Fix: parse universe in OnInit, register basket guard, and
-//   QM_BasketWarmupHistory() to force per-symbol D1 sync (same pattern as
-//   QM5_1057 / QM5_10717-10718). Logic otherwise unchanged.
+#property description "QM5_1081 Chan Lo 1-Day Cross-Sectional Reversal"
+// v3 2026-06-25 — rebuild from Strategy Card on QM_* readers only (no raw
+//   iClose/CopyBuffer for the rank universe): foreign-symbol 1-day returns are
+//   read via QM_SMA(sym,D1,1,shift) (period-1 SMA == that bar's close). Keeps
+//   the proven basket-warmup wiring (QM_SymbolGuardInit + QM_BasketWarmupHistory,
+//   same pattern as QM5_10717/10718) so the tester syncs each universe symbol's
+//   D1 history before it is ranked. NoTradeFilter gates _Period != D1.
 
 #include <QM/QM_Common.mqh>
 
@@ -79,8 +79,22 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input string strategy_universe_symbols  = "SP500.DWX,NDX.DWX,WS30.DWX,GDAXI.DWX,XAUUSD.DWX,XAGUSD.DWX,EURUSD.DWX,GBPUSD.DWX,USDJPY.DWX,AUDUSD.DWX,USDCAD.DWX,USDCHF.DWX,NZDUSD.DWX,UK100.DWX";
+// Chan (2007) cross-sectional 1-day reversal. Each EA instance trades ONE
+// symbol (_Symbol) but ranks it against a FIXED cross-sectional universe by
+// prior 1-day close-to-close return. Long the worst-N performers, short the
+// best-N, exit at the next daily close (hold strategy_max_hold_bars closed D1
+// bars; the framework re-ranks and re-enters into the new set each day).
+//   strategy_universe_symbols  — comma list of DWX symbols forming the rank set.
+//   strategy_rank_count        — N: go long the worst N, short the best N.
+//   strategy_max_hold_bars     — exit after this many closed D1 bars (1 = next close).
+//   strategy_atr_period        — ATR period for the protective per-leg stop.
+//   strategy_atr_sl_mult       — ATR multiple for the protective stop.
+//   strategy_max_spread_points — O(1) liquidity/spread guard.
+//   strategy_use_atr_regime_filter / lookback / percentile — optional card filter:
+//     skip entries when the universe-average ATR percentile exceeds the threshold.
+input string strategy_universe_symbols  = "SP500.DWX,NDX.DWX,WS30.DWX,GDAXI.DWX,UK100.DWX,XAUUSD.DWX,XAGUSD.DWX";
 input int    strategy_rank_count        = 1;
+input int    strategy_max_hold_bars     = 1;
 input int    strategy_atr_period        = 14;
 input double strategy_atr_sl_mult       = 2.0;
 input int    strategy_max_spread_points = 300;
@@ -95,10 +109,10 @@ string TrimToken(string value)
    return value;
   }
 
-// rework v2 2026-06-16 — parsed universe basket (built once in OnInit) used to
-// register the symbol guard and force the MT5 tester to sync each foreign
-// symbol's D1 history. Without this the per-symbol iClose in GetD1Return()
-// returns 0/stale in the tester and the EA never trades.
+// Parsed universe basket (built once in OnInit) used to register the symbol
+// guard and force the MT5 tester to sync each foreign symbol's D1 history.
+// Without the warmup the per-symbol QM_* reads return 0/stale in the tester and
+// the EA never trades (same failure class fixed for QM5_10717 / QM5_10718).
 string g_universe_basket[];
 int    g_universe_basket_count = 0;
 
@@ -119,17 +133,25 @@ void QM5_1081_BuildUniverseBasket()
    ArrayResize(g_universe_basket, g_universe_basket_count);
   }
 
+// 1-day close-to-close return for `symbol` on the last closed D1 bar.
+// QM_SMA(period=1) returns that bar's close — a QM_* reader, never raw iClose.
 bool GetD1Return(const string symbol, double &ret)
   {
    ret = 0.0;
-   const double close_last = iClose(symbol, PERIOD_D1, 1);
-   const double close_prev = iClose(symbol, PERIOD_D1, 2);
+   const double close_last = QM_SMA(symbol, PERIOD_D1, 1, 1, PRICE_CLOSE); // shift 1 = last closed bar
+   const double close_prev = QM_SMA(symbol, PERIOD_D1, 1, 2, PRICE_CLOSE); // shift 2 = prior closed bar
    if(close_last <= 0.0 || close_prev <= 0.0)
       return false;
    ret = (close_last / close_prev) - 1.0;
    return true;
   }
 
+// Rank _Symbol within the configured universe by prior 1-day return.
+//   worse_count  = universe symbols with a strictly lower 1-day return
+//   better_count = universe symbols with a strictly higher 1-day return
+//   valid_count  = universe symbols whose returns are readable this bar
+// Returns true only when _Symbol itself is in the universe and >= 2 symbols
+// have valid returns (otherwise no cross-section exists -> stand aside).
 bool GetCurrentSymbolRank(double &own_return,
                           int &valid_count,
                           int &worse_count,
@@ -143,15 +165,10 @@ bool GetCurrentSymbolRank(double &own_return,
    if(!GetD1Return(_Symbol, own_return))
       return false;
 
-   string symbols[];
-   const int count = StringSplit(strategy_universe_symbols, ',', symbols);
-   if(count <= 0)
-      return false;
-
    bool symbol_listed = false;
-   for(int i = 0; i < count; ++i)
+   for(int i = 0; i < g_universe_basket_count; ++i)
      {
-      const string candidate = TrimToken(symbols[i]);
+      const string candidate = g_universe_basket[i];
       if(candidate == "")
          continue;
 
@@ -161,16 +178,23 @@ bool GetCurrentSymbolRank(double &own_return,
 
       valid_count++;
       if(candidate == _Symbol)
+        {
          symbol_listed = true;
-      if(candidate_return < own_return)
+         continue; // never compare the symbol against itself
+        }
+      // Deterministic tie-break by symbol name so bottom/top sets are stable.
+      if(candidate_return < own_return ||
+         (candidate_return == own_return && candidate < _Symbol))
          worse_count++;
-      if(candidate_return > own_return)
+      else
          better_count++;
      }
 
    return (symbol_listed && valid_count >= 2);
   }
 
+// Optional card filter: skip entries when the universe-average ATR percentile
+// over `strategy_regime_lookback` closed bars exceeds `strategy_regime_percentile`.
 bool AtrRegimeBlocked()
   {
    if(!strategy_use_atr_regime_filter)
@@ -178,16 +202,11 @@ bool AtrRegimeBlocked()
    if(strategy_regime_lookback < 20 || strategy_regime_percentile <= 0.0)
       return false;
 
-   string symbols[];
-   const int symbol_count = StringSplit(strategy_universe_symbols, ',', symbols);
-   if(symbol_count <= 0)
-      return false;
-
    double current_sum = 0.0;
    int current_samples = 0;
-   for(int i = 0; i < symbol_count; ++i)
+   for(int i = 0; i < g_universe_basket_count; ++i)
      {
-      const string candidate = TrimToken(symbols[i]);
+      const string candidate = g_universe_basket[i];
       if(candidate == "")
          continue;
       const double atr = QM_ATR(candidate, PERIOD_D1, strategy_atr_period, 1);
@@ -207,9 +226,9 @@ bool AtrRegimeBlocked()
      {
       double hist_sum = 0.0;
       int hist_count = 0;
-      for(int i = 0; i < symbol_count; ++i)
+      for(int i = 0; i < g_universe_basket_count; ++i)
         {
-         const string candidate = TrimToken(symbols[i]);
+         const string candidate = g_universe_basket[i];
          if(candidate == "")
             continue;
          const double atr = QM_ATR(candidate, PERIOD_D1, strategy_atr_period, shift);
@@ -241,10 +260,13 @@ bool AtrRegimeBlocked()
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   if(_Period != PERIOD_D1)
+      return true;
+
    if(strategy_max_spread_points > 0)
      {
-      const int spread = (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread > strategy_max_spread_points)
+      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      if(spread_points > strategy_max_spread_points)
          return true;
      }
    return false;
@@ -263,8 +285,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_rank_count < 1)
+   if(strategy_rank_count < 1 ||
+      strategy_max_hold_bars < 1 ||
+      strategy_atr_period <= 0 ||
+      strategy_atr_sl_mult <= 0.0)
       return false;
+
    if(AtrRegimeBlocked())
       return false;
 
@@ -275,19 +301,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!GetCurrentSymbolRank(own_return, valid_count, worse_count, better_count))
       return false;
 
+   // Cap N so the two legs never overlap on a small/partially-warmed universe.
    const int effective_n = MathMin(strategy_rank_count, valid_count / 2);
    if(effective_n < 1)
       return false;
 
-   const bool is_worst_bucket = (worse_count < effective_n);
-   const bool is_best_bucket = (better_count < effective_n);
-   if(!is_worst_bucket && !is_best_bucket)
-      return false;
+   const bool is_worst_bucket = (worse_count < effective_n);   // among worst N -> long losers
+   const bool is_best_bucket  = (better_count < effective_n);  // among best  N -> short winners
+   if(is_worst_bucket == is_best_bucket)
+      return false; // neither bucket, or (degenerate) both -> no trade
 
    req.type = is_worst_bucket ? QM_BUY : QM_SELL;
-   const double entry = (req.type == QM_BUY)
-                        ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                        : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double entry = QM_EntryMarketPrice(req.type);
    if(entry <= 0.0)
       return false;
 
@@ -308,14 +333,13 @@ void Strategy_ManageOpenPosition()
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
+// Chan exit: close at the NEXT daily close — i.e. after holding
+// strategy_max_hold_bars closed D1 bars (default 1). The framework re-ranks
+// and re-enters the new long/short set on the next closed bar.
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
-      return false;
-
-   const datetime current_d1_open = iTime(_Symbol, PERIOD_D1, 0);
-   if(current_d1_open <= 0)
       return false;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -328,8 +352,9 @@ bool Strategy_ExitSignal()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      const datetime opened_at = (datetime)PositionGetInteger(POSITION_TIME);
-      if(opened_at < current_d1_open)
+      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      const int bars_since_open = iBarShift(_Symbol, PERIOD_D1, open_time, false);
+      if(bars_since_open >= strategy_max_hold_bars)
          return true;
      }
 
@@ -368,8 +393,9 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
-   // rework v2 2026-06-16 — register the cross-sectional basket and force the
-   // tester to load each symbol's D1 history before GetD1Return() reads it.
+   // Register the cross-sectional basket and force the tester to load each
+   // symbol's D1 history before the rank reads it. Same pattern as the
+   // reference basket EAs (QM5_10717 / QM5_10718).
    QM5_1081_BuildUniverseBasket();
    if(g_universe_basket_count > 0)
      {

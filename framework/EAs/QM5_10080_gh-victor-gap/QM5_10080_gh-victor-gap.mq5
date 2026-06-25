@@ -83,6 +83,7 @@ input int    strategy_sma_period        = 250;
 input int    strategy_atr_period        = 250;
 input double strategy_atr_sl_mult       = 1.0;
 input double strategy_atr_tp_mult       = 1.0;
+input int    strategy_max_spread_points = 300;   // skip when spread above this
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -92,6 +93,18 @@ input double strategy_atr_tp_mult       = 1.0;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   // Card baseline test period is H1: the EA runs on the H1 chart and detects
+   // the gap on the DAILY scale (see Strategy_EntrySignal). Refuse any other TF.
+   if(_Period != PERIOD_H1)
+      return true;
+
+   if(strategy_max_spread_points > 0)
+     {
+      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      if(spread_points > strategy_max_spread_points)
+         return true;
+     }
+
    return false;
   }
 

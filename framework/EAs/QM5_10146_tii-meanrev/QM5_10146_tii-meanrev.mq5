@@ -92,7 +92,10 @@ bool g_exit_signal_pending = false;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // No Trade Filter: time, spread, news. Card has no session window; framework handles news.
+   // No Trade Filter: TF gate, parameter sanity, warmup, spread. Card TF = D1.
+   if(_Period != PERIOD_D1)
+      return true;
+
    if(strategy_tii_period < 2 || strategy_atr_period <= 0 || strategy_atr_stop_mult <= 0.0)
       return true;
 

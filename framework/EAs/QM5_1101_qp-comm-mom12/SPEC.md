@@ -1,8 +1,8 @@
-# QM5_10427_et-3bar-xma — Strategy Spec
+# QM5_1101_qp-comm-mom12 — Strategy Spec
 
-**EA ID:** QM5_10427
-**Slug:** `et-3bar-xma`
-**Source:** `d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe` (see `strategy-seeds/sources/d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe/`)
+**EA ID:** QM5_1101
+**Slug:** `qp-comm-mom12`
+**Source:** `7ede58dd-d184-5099-9d48-7a65de230853` (see `strategy-seeds/sources/7ede58dd-d184-5099-9d48-7a65de230853/`)
 **Author of this spec:** auto-generated ex-post by gen_spec_md.py
 **Last revised:** 2026-06-25
 
@@ -11,12 +11,12 @@
 ## 1. Strategy Logic
 
 Mechanical strategy implemented per the approved card
-`artifacts/cards_approved/QM5_10427_et-3bar-xma.md`. See that card's body for
+`artifacts/cards_approved/QM5_1101_qp-comm-mom12.md`. See that card's body for
 the full entry/exit/stop/sizing rules; this SPEC summarises the
 implementation surface.
 
 Entry/exit logic is encoded in the five `Strategy_*` hooks in
-`QM5_10427_et-3bar-xma.mq5`. Framework wiring (risk, magic, news, Friday close)
+`QM5_1101_qp-comm-mom12.mq5`. Framework wiring (risk, magic, news, Friday close)
 is inherited from `QM_Common.mqh` and is not redocumented here.
 
 ---
@@ -25,20 +25,13 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_xma_period` | 200 | (see source) | (see strategy logic) |
+| `strategy_lookback_d1_bars` | 252 | (see source) | (see strategy logic) |
+| `strategy_min_history_d1_bars` | 270 | (see source) | (see strategy logic) |
+| `strategy_rank_slots_each_side` | 2 | (see source) | (see strategy logic) |
 | `strategy_atr_period` | 20 | (see source) | (see strategy logic) |
-| `strategy_max_range_atr_mult` | 0.75 | (see source) | (see strategy logic) |
-| `strategy_min_stop_atr_mult` | 0.75 | (see source) | (see strategy logic) |
-| `strategy_body_range_min` | 0.65 | (see source) | (see strategy logic) |
-| `strategy_target_range_mult` | 0.50 | (see source) | (see strategy logic) |
-| `strategy_entry_buffer_points` | 0 | (see source) | (see strategy logic) |
-| `strategy_window1_start_hhmm` | 0 | (see source) | (see strategy logic) |
-| `strategy_window1_end_hhmm` | 2359 | (see source) | (see strategy logic) |
-| `strategy_window2_start_hhmm` | -1 | (see source) | (see strategy logic) |
-| `strategy_window2_end_hhmm` | -1 | (see source) | (see strategy logic) |
-| `strategy_window3_start_hhmm` | -1 | (see source) | (see strategy logic) |
-| `strategy_window3_end_hhmm` | -1 | (see source) | (see strategy logic) |
-| `strategy_session_close_hhmm` | 2359 | (see source) | (see strategy logic) |
+| `strategy_atr_sl_mult` | 5.0 | (see source) | (see strategy logic) |
+| `strategy_spread_median_days` | 20 | (see source) | (see strategy logic) |
+| `strategy_spread_mult` | 3.0 | (see source) | (see strategy logic) |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
@@ -50,11 +43,10 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 ## 3. Symbol Universe
 
 **Designed for:**
-- `SP500.DWX` — registered in magic_numbers.csv for this EA
 - `NDX.DWX` — registered in magic_numbers.csv for this EA
 - `WS30.DWX` — registered in magic_numbers.csv for this EA
 - `GDAXI.DWX` — registered in magic_numbers.csv for this EA
-- `XAUUSD.DWX` — registered in magic_numbers.csv for this EA
+- `UK100.DWX` — registered in magic_numbers.csv for this EA
 
 **Explicitly NOT for:** any symbol not in the list above (no implicit
 universe expansion at runtime; the `QM_SymbolGuard` framework helper
@@ -66,7 +58,7 @@ rejects foreign symbols).
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `M15` |
+| Base timeframe | `D1` |
 | Multi-timeframe refs | see `Strategy_*` hooks in the .mq5 |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
@@ -76,8 +68,8 @@ rejects foreign symbols).
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 30 |
-| Cadence note | "Windowed intraday three-bar setup with one flat-to-flat trade per session; the triple-same-color + sub-0.75xATR(20) range-compression confluence plus trend/body filters and breakout fill make this sparse — realistic estimate ~30 trades/year/symbol (CARD_OVERCLAIM correction 2026-06-16, was 160)." |
+| Trades / year / symbol | 12  # backfilled-inferred 2026-06-20 |
+| Cadence note | see card body |
 | Typical hold time | see card body |
 | Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
 | Regime preference | per card thesis |
@@ -89,10 +81,10 @@ rejects foreign symbols).
 
 This card was mechanised from:
 
-**Source ID:** `d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe`
-**Pointer:** `strategy-seeds/sources/d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe/`
+**Source ID:** `7ede58dd-d184-5099-9d48-7a65de230853`
+**Pointer:** `strategy-seeds/sources/7ede58dd-d184-5099-9d48-7a65de230853/`
 **R1–R4 verdict (Q00):** all PASS — see
-`artifacts/cards_approved/QM5_10427_et-3bar-xma.md`
+`artifacts/cards_approved/QM5_1101_qp-comm-mom12.md`
 
 ---
 
