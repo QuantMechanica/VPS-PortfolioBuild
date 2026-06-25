@@ -1,4 +1,4 @@
-﻿ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
+ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1641,aa-qend-mom-season,0,NDX.DWX,16410000,2026-06-18,Development,active
 1641,aa-qend-mom-season,1,WS30.DWX,16410001,2026-06-18,Development,active
 1641,aa-qend-mom-season,2,SP500.DWX,16410002,2026-06-18,Development,active
@@ -11416,11 +11416,11 @@
 11615,robo-dual-sma-band-rsi11-m15,1,GBPUSD.DWX,116150001,2026-06-18,Claude,reserved
 11615,robo-dual-sma-band-rsi11-m15,2,USDJPY.DWX,116150002,2026-06-18,Claude,reserved
 11615,robo-dual-sma-band-rsi11-m15,3,USDCHF.DWX,116150003,2026-06-18,Claude,reserved
-11616,robo-ema8-28-cci30-m30,0,EURUSD.DWX,116160000,2026-06-18,Claude,reserved
-11616,robo-ema8-28-cci30-m30,1,GBPUSD.DWX,116160001,2026-06-18,Claude,reserved
-11616,robo-ema8-28-cci30-m30,2,USDJPY.DWX,116160002,2026-06-18,Claude,reserved
-11616,robo-ema8-28-cci30-m30,3,USDCHF.DWX,116160003,2026-06-18,Claude,reserved
-11616,robo-ema8-28-cci30-m30,4,AUDUSD.DWX,116160004,2026-06-18,Claude,reserved
+11616,robo-ema8-28-cci30-m30,0,EURUSD.DWX,116160000,2026-06-25,Development,active
+11616,robo-ema8-28-cci30-m30,1,GBPUSD.DWX,116160001,2026-06-25,Development,active
+11616,robo-ema8-28-cci30-m30,2,USDJPY.DWX,116160002,2026-06-25,Development,active
+11616,robo-ema8-28-cci30-m30,3,USDCHF.DWX,116160003,2026-06-25,Development,active
+11616,robo-ema8-28-cci30-m30,4,AUDUSD.DWX,116160004,2026-06-25,Development,active
 11618,robo-lwma-low-macd1526-m30,0,EURUSD.DWX,116180000,2026-06-18,Claude,reserved
 11618,robo-lwma-low-macd1526-m30,1,GBPUSD.DWX,116180001,2026-06-18,Claude,reserved
 11618,robo-lwma-low-macd1526-m30,2,USDJPY.DWX,116180002,2026-06-18,Claude,reserved
@@ -11595,9 +11595,9 @@
 11690,strat-ma-trend,0,EURUSD.DWX,116900000,2026-06-18,Claude,reserved
 11690,strat-ma-trend,1,XAUUSD.DWX,116900001,2026-06-18,Claude,reserved
 11690,strat-ma-trend,2,GDAXI.DWX,116900002,2026-06-18,Claude,reserved
-11692,strat-macd,0,EURUSD.DWX,116920000,2026-06-18,Claude,reserved
-11692,strat-macd,1,XAUUSD.DWX,116920001,2026-06-18,Claude,reserved
-11692,strat-macd,2,GDAXI.DWX,116920002,2026-06-18,Claude,reserved
+11692,strat-macd,0,EURUSD.DWX,116920000,2026-06-25,Development,active
+11692,strat-macd,1,XAUUSD.DWX,116920001,2026-06-25,Development,active
+11692,strat-macd,2,GDAXI.DWX,116920002,2026-06-25,Development,active
 11693,strat-mom,0,EURUSD.DWX,116930000,2026-06-25,Development,active
 11693,strat-mom,1,XAUUSD.DWX,116930001,2026-06-25,Development,active
 11693,strat-mom,2,GDAXI.DWX,116930002,2026-06-25,Development,active
@@ -13407,3 +13407,7 @@
 9255,mql5-ema50-bounce,0,EURUSD.DWX,92550000,2026-06-25,Development,active
 9255,mql5-ema50-bounce,1,GBPUSD.DWX,92550001,2026-06-25,Development,active
 9255,mql5-ema50-bounce,2,GDAXI.DWX,92550002,2026-06-25,Development,active
+9295,mql5-cmf-zero,0,EURUSD.DWX,92950000,2026-06-25,Development,active
+9295,mql5-cmf-zero,1,GBPUSD.DWX,92950001,2026-06-25,Development,active
+9295,mql5-cmf-zero,2,XAUUSD.DWX,92950002,2026-06-25,Development,active
+9295,mql5-cmf-zero,3,GDAXI.DWX,92950003,2026-06-25,Development,active

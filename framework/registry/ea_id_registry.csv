@@ -1,4 +1,4 @@
-﻿ea_id,slug,strategy_id,status,owner,created_at
+ea_id,slug,strategy_id,status,owner,created_at
 11429,carter-london-open-box-breakout-m5,ec63ff86-b6dd-522b-ac8e-d90de82e2dee,active,Development,2026-06-21
 11548,carter-t-m5-session-box-breakout,42530cb3-0265-534a-89cc-150f80733ff5,active,Development,2026-06-20
 1128,daniel-momentum-crash-vol-scale,afab7a6f-c3c8-51ae-a609-f376744beb8e,active,Research,2026-05-18
@@ -2492,7 +2492,7 @@ QM5_11560,lien-xtreme-fade-bb3-adx25-m15,f8b7c68d-870a-5568-81ff-9b825dcddd32,ac
 11613,robo-bb-wpr25-rsi5-m15,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
 11614,robo-sma11-21-momentum30-rsi14-m15,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
 11615,robo-dual-sma-band-rsi11-m15,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
-11616,robo-ema8-28-cci30-m30,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
+11616,robo-ema8-28-cci30-m30,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,active,Development,2026-06-25
 11617,robo-psar001-ao-ema5-m30,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
 11618,robo-lwma-low-macd1526-m30,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
 11619,robo-psar01-ema6-11-34-h1,ed246754-1f4d-5bed-8dd3-3b5cbf1b420d,pending,Claude,2026-05-23
