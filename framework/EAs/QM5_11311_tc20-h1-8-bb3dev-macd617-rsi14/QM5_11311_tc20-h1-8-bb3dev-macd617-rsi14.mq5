@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11311 tc20-h1-8-bb3dev-macd617-rsi14 — EMA(3) x BB(20,3) middle, MACD(6,17,1) + RSI(14) states (H1)"
+#property description "QM5_11311 tc20-h1-8-bb3dev-macd617-rsi14 — EMA(3) x BB(20,3) middle, MACD(6,17,1) + RSI(14) crosses (H1)"
 
 #include <QM/QM_Common.mqh>
 
@@ -12,13 +12,10 @@
 // Card: artifacts/cards_approved/QM5_11311_tc20-h1-8-bb3dev-macd617-rsi14.md
 //       (g0_status APPROVED).
 //
-// Mechanics (closed-bar reads at shift 1, all on the same trigger bar):
-//   Trigger EVENT (ONE event): EMA(3) crosses the BB(20,3) middle band (SMA20).
-//                 LONG  : EMA3[2] <= mid[2] AND EMA3[1] > mid[1].
-//                 SHORT : EMA3[2] >= mid[2] AND EMA3[1] < mid[1].
-//   STATE 1 (MACD sign): MACD(6,17,1) main > 0 (long) / < 0 (short). MACD can be
-//                        negative — this is a level/sign STATE, not a cross event.
-//   STATE 2 (RSI level): RSI(14) > 50 (long) / < 50 (short).
+// Mechanics (closed-bar reads at shift 1, all crosses on the same trigger bar):
+//   LONG  : EMA(3) crosses above BB(20,3) middle, MACD(6,17,1) main crosses
+//           above zero, and RSI(14) crosses above 50 on the same closed H1 bar.
+//   SHORT : exact mirror below BB middle / zero / 50.
 //   Stop : nearest of swing-structure (lookback) or the BB(20,3) band on the
 //          entry side, whichever is CLOSER to entry; ATR(14)*sl_atr_mult fallback
 //          if neither yields a valid stop on the correct side.
@@ -121,29 +118,34 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ema_1 <= 0.0 || ema_2 <= 0.0)
       return false;
 
-   // --- Trigger EVENT: EMA(3) crosses the BB middle band (one event/bar) ---
-   const bool cross_up   = (ema_2 <= mid_2 && ema_1 > mid_1);
-   const bool cross_down = (ema_2 >= mid_2 && ema_1 < mid_1);
-   if(!cross_up && !cross_down)
+   // --- Cross 1: EMA(3) through BB middle ---
+   const bool ema_cross_up   = (ema_2 <= mid_2 && ema_1 > mid_1);
+   const bool ema_cross_down = (ema_2 >= mid_2 && ema_1 < mid_1);
+   if(!ema_cross_up && !ema_cross_down)
       return false;
 
-   // --- STATE 1: MACD(6,17,1) main sign on the trigger bar (can be negative) ---
-   const double macd_main = QM_MACD_Main(_Symbol, _Period,
-                                         strategy_macd_fast, strategy_macd_slow,
-                                         strategy_macd_signal, 1);
+   // --- Cross 2: MACD(6,17,1) main through zero on the same closed bar ---
+   const double macd_1 = QM_MACD_Main(_Symbol, _Period,
+                                      strategy_macd_fast, strategy_macd_slow,
+                                      strategy_macd_signal, 1);
+   const double macd_2 = QM_MACD_Main(_Symbol, _Period,
+                                      strategy_macd_fast, strategy_macd_slow,
+                                      strategy_macd_signal, 2);
+   const bool macd_cross_up   = (macd_2 <= 0.0 && macd_1 > 0.0);
+   const bool macd_cross_down = (macd_2 >= 0.0 && macd_1 < 0.0);
 
-   // --- STATE 2: RSI(14) relative to the midline on the trigger bar ---
+   // --- Cross 3: RSI(14) through 50 on the same closed bar ---
    const double rsi_1 = QM_RSI(_Symbol, _Period, strategy_rsi_period, 1);
-   if(rsi_1 <= 0.0)
+   const double rsi_2 = QM_RSI(_Symbol, _Period, strategy_rsi_period, 2);
+   if(rsi_1 <= 0.0 || rsi_2 <= 0.0)
       return false;
-
-   const bool long_states  = (macd_main > 0.0 && rsi_1 > strategy_rsi_level);
-   const bool short_states = (macd_main < 0.0 && rsi_1 < strategy_rsi_level);
+   const bool rsi_cross_up   = (rsi_2 <= strategy_rsi_level && rsi_1 > strategy_rsi_level);
+   const bool rsi_cross_down = (rsi_2 >= strategy_rsi_level && rsi_1 < strategy_rsi_level);
 
    QM_OrderType side;
-   if(cross_up && long_states)
+   if(ema_cross_up && macd_cross_up && rsi_cross_up)
       side = QM_BUY;
-   else if(cross_down && short_states)
+   else if(ema_cross_down && macd_cross_down && rsi_cross_down)
       side = QM_SELL;
    else
       return false;

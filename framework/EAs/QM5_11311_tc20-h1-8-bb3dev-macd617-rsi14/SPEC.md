@@ -3,24 +3,22 @@
 **EA ID:** QM5_11311
 **Slug:** `tc20-h1-8-bb3dev-macd617-rsi14`
 **Source:** `e78a9f1f-4e6a-563c-a080-915133d6ed28` (see `strategy-seeds/sources/e78a9f1f-4e6a-563c-a080-915133d6ed28/`)
-**Author of this spec:** Claude
-**Last revised:** 2026-06-18
+**Author of this spec:** Codex
+**Last revised:** 2026-06-25
 
 ---
 
 ## 1. Strategy Logic
 
-On the close of each H1 bar, the EA looks for a fresh crossover of the fast EMA(3)
-through the middle line of a 3-sigma Bollinger Band (the 20-period SMA). That
-crossover is the single trigger event: a cross above the middle line arms a long,
-a cross below arms a short. Two confirmation states must already hold on the same
-closed bar — MACD(6,17,1) main must be positive for a long (negative for a short),
-and RSI(14) must be above 50 for a long (below 50 for a short). MACD may be
-negative; only its sign is read, never a second cross. The stop is the nearer of
-the recent swing structure or the Bollinger band on the trade's side, with an
+On the close of each H1 bar, the EA looks for three same-bar crossover events:
+EMA(3) crossing the middle line of a 3-sigma Bollinger Band (SMA20),
+MACD(6,17,1) main crossing zero, and RSI(14) crossing 50. All three must cross in
+the same direction on the same closed bar; a cross above opens a long and a cross
+below opens a short at the next bar's market price. The stop is the nearer of
+recent swing structure or the Bollinger band on the trade's side, with an
 ATR(14)x1.5 fallback. The take-profit is the opposite 3-sigma Bollinger band, or
-a fixed 50-pip target if that band is not yet beyond entry. Exit is by static
-SL/TP only.
+a fixed 50-pip target if that band is not beyond entry. Exit is by static SL/TP
+only.
 
 ---
 
@@ -107,3 +105,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | central-step registration/compile pending |
+| v2 | 2026-06-25 | Rebuild from card with literal same-bar triple-cross rule | 7dd2e4db-555a-4456-a1a9-6777dcfb31b7 |
