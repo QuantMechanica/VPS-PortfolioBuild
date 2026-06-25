@@ -3,7 +3,7 @@ ea_id: QM5_10223
 slug: tv-bb-wd-break
 type: strategy
 source_id: 30591366-874b-5bee-b47c-da2fca20b728
-target_symbols: [NDX.DWX, GER40.DWX, WS30.DWX, SP500.DWX, XAUUSD.DWX]
+target_symbols: [NDX.DWX, GDAXI.DWX, WS30.DWX, SP500.DWX, XAUUSD.DWX]
 sources:
   - "[[sources/tradingview-popular-pine-scripts]]"
 concepts:

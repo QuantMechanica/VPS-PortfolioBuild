@@ -65,7 +65,7 @@ g0_approval_reasoning: "R1 TradingView URL+author cited; R2 mechanical SMA/RSI/M
 ### Zusaetzliche Filter
 - Optional source session filter: baseline uses London/NY overlap for FX and regular liquid hours for indices.
 - Standard V5 spread, news, kill-switch, Friday-close, and max-DD filters.
-- Best DWX ports: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX.
+- Best DWX ports: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX, NDX.DWX.
 
 ## Concepts
 - [[concepts/scalping]] - primary; intraday 1m-5m source usage.

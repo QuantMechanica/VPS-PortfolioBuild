@@ -36,7 +36,7 @@ g0_approval_reasoning: "Carver qoppac 2020 kurtS_rv higher-moment RV rule (qoppa
 
 Relative-value higher-moment rule. It measures each symbol's excess kurtosis relative to its asset class and only keeps the signal direction when relative skew has the same sign condition, aiming to trade tail-shape differences inside comparable DWX groups.
 
-Suggested DWX universe for P2: FX majors group (EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, USDCAD.DWX, USDCHF.DWX) and index group (GER40.DWX, NDX.DWX, WS30.DWX, UK100.DWX, FRA40.DWX).
+Suggested DWX universe for P2: FX majors group (EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, USDCAD.DWX, USDCHF.DWX) and index group (GDAXI.DWX, NDX.DWX, WS30.DWX, UK100.DWX).
 
 ### Entry
 - On each closed D1 bar for every symbol in its asset group:

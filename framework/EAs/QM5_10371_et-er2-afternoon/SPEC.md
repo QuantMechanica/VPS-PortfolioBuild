@@ -38,7 +38,7 @@ The EA reads the regular-session open price and, at 13:00 Chicago-equivalent bro
 - `GDAXI.DWX` - DAX custom symbol available in the DWX matrix; used as the GER40/DAX equivalent.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; mapped to `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; mapped to `GDAXI.DWX`.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - not canonical DWX S&P 500 symbols.
 
 ---

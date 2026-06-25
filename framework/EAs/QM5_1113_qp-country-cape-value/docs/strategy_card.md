@@ -31,7 +31,7 @@ g0_approval_reasoning: "Quantpedia country-CAPE value (Faber 2012 SSRN + Klement
 
 ### Entry
 At the final trading day of each calendar year:
-1. Universe: DWX broad equity-index CFDs mapped to countries with a deterministic external CAPE input table, candidate set `NDX.DWX`, `WS30.DWX`, `GER40.DWX`, `UK100.DWX`, `JPN225.DWX`, `AUS200.DWX`, plus `SP500.DWX` for backtest-only research if needed.
+1. Universe: DWX broad equity-index CFDs mapped to countries with a deterministic external CAPE input table, candidate set `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`, `UK100.DWX`, `JPN225.DWX`, plus `SP500.DWX` for backtest-only research if needed.
 2. For each country/index, read the latest available country CAPE ratio from a versioned CSV input generated before the backtest starts.
 3. Rank countries ascending by CAPE ratio.
 4. Open LONG positions in the cheapest 33% of rank-eligible countries only if CAPE < 15.

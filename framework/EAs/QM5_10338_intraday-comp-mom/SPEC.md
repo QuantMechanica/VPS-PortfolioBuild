@@ -41,10 +41,10 @@ On each D1 bar, the EA ranks the registered index basket by the rolling 20-sessi
 - SP500.DWX - S&P 500 custom symbol, part of the approved index momentum basket.
 - NDX.DWX - Nasdaq 100 index CFD, part of the approved US large-cap basket.
 - WS30.DWX - Dow 30 index CFD, part of the approved US large-cap basket.
-- GDAXI.DWX - DAX 40 index CFD, used as the available matrix equivalent for the card's GER40.DWX target.
+- GDAXI.DWX - DAX 40 index CFD, used as the available matrix equivalent for the card's GDAXI.DWX target.
 
 **Explicitly NOT for:**
-- GER40.DWX - not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is the registered DAX equivalent.
+- GDAXI.DWX - not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is the registered DAX equivalent.
 - SPX500.DWX - not a canonical DWX custom symbol for the S&P 500.
 
 ---

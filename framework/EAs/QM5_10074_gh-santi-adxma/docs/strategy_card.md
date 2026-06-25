@@ -29,7 +29,7 @@ g0_approval_reasoning: "R1 linked GitHub source/author; R2 mechanical EMA+ADX+DI
 - Page / Timestamp: `santiago-cruzlopez/MQL5`, `1_Expert_Advisors_EA/019_ADX_EA.mq5`, https://github.com/santiago-cruzlopez/MQL5/blob/master/1_Expert_Advisors_EA/019_ADX_EA.mq5
 - Source-code author/institution: Santiago Cruz, https://www.mql5.com/en/users/algo-trader/
 - Source citation URL 2026: https://github.com/santiago-cruzlopez/MQL5/blob/master/1_Expert_Advisors_EA/019_ADX_EA.mq5
-- Target symbols: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX.
+- Target symbols: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX.
 - Period: H1 baseline.
 
 ## Mechanik

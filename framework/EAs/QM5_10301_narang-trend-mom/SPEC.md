@@ -42,10 +42,10 @@ The EA trades H4 trend breakouts. It enters long when the last completed H4 clos
 - `GBPUSD.DWX` - card-listed major FX pair with H4 OHLC history.
 - `USDJPY.DWX` - card-listed major FX pair with H4 OHLC history.
 - `XAUUSD.DWX` - card-listed liquid metal CFD with H4 OHLC history.
-- `GDAXI.DWX` - canonical DWX DAX symbol used in place of card-listed `GER40.DWX`, which is not in `dwx_symbol_matrix.csv`.
+- `GDAXI.DWX` - canonical DWX DAX symbol used in place of card-listed `GDAXI.DWX`, which is not in `dwx_symbol_matrix.csv`.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - absent from `dwx_symbol_matrix.csv`; use `GDAXI.DWX` for DAX exposure.
+- `GDAXI.DWX` - absent from `dwx_symbol_matrix.csv`; use `GDAXI.DWX` for DAX exposure.
 
 ---
 

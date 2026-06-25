@@ -14,7 +14,7 @@ indicators:
   - "[[indicators/spread-percentile]]"
   - "[[indicators/turnover-proxy]]"
   - "[[indicators/atr]]"
-target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GER40.DWX, XAUUSD.DWX]
+target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX, XAUUSD.DWX]
 period: H1
 expected_trade_frequency: "Short-run reversal only after high-turnover/high-spread pressure events; conservative estimate 40-80 trades/year/symbol."
 expected_trades_per_year_per_symbol: 60
@@ -79,7 +79,7 @@ g0_approval_reasoning: "R1 PASS SSRN paper URL/attribution; R2 PASS deterministi
 | R4 No ML | PASS | Fixed thresholds and no adaptive online parameter changes, grid, or martingale. |
 
 ## R3
-Primary P2 basket: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GER40.DWX`, `XAUUSD.DWX`. SP500.DWX caveat if used: "Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable."
+Primary P2 basket: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`, `XAUUSD.DWX`. SP500.DWX caveat if used: "Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable."
 
 ## Author Claims
 - "strong relationship between short-run reversals and stock return illiquidity" (SSRN abstract).

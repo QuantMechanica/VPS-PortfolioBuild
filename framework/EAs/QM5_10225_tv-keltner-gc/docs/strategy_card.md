@@ -51,7 +51,7 @@ g0_approval_reasoning: "R1 URL+author cited; R2 mechanical MA/Keltner breakout w
 - One open position per magic number.
 
 ### Zusätzliche Filter
-- Run on liquid DWX CFDs where ATR/Keltner bands are stable: XAUUSD.DWX, GER40.DWX, NDX.DWX, EURUSD.DWX.
+- Run on liquid DWX CFDs where ATR/Keltner bands are stable: XAUUSD.DWX, GDAXI.DWX, NDX.DWX, EURUSD.DWX.
 - Recommended test timeframes: M15, H1, H4, following the source's 15m/H1/H4/Daily guidance.
 - Standard spread and news filters from the V5 framework.
 

@@ -32,10 +32,10 @@ This EA trades long-only H1 EMA pullbacks. On each closed bar it requires EMA 8 
 **Designed for:**
 - EURUSD.DWX - card-targeted forex pair with DWX custom data available.
 - XAUUSD.DWX - card-targeted gold CFD with DWX custom data available.
-- GDAXI.DWX - matrix-supported DAX CFD used as the available DWX equivalent for the card's GER40.DWX target.
+- GDAXI.DWX - matrix-supported DAX CFD used as the available DWX equivalent for the card's GDAXI.DWX target.
 
 **Explicitly NOT for:**
-- GER40.DWX - card-stated name is not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is registered instead.
+- GDAXI.DWX - card-stated name is not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is registered instead.
 
 ---
 

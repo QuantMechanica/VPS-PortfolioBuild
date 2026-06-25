@@ -12,7 +12,7 @@ indicators:
 g0_status: APPROVED
 pipeline_phase: G0
 last_updated: 2026-05-18
-g0_approval_reasoning: "R1 PASS SSRN URL/title/authors; R2 PASS deterministic BB+ADX entry and mean/timeout/stop exits; R3 PASS testable on GER40.DWX/DWX indices; R4 PASS fixed rules no ML/grid/martingale."
+g0_approval_reasoning: "R1 PASS SSRN URL/title/authors; R2 PASS deterministic BB+ADX entry and mean/timeout/stop exits; R3 PASS testable on GDAXI.DWX/DWX indices; R4 PASS fixed rules no ML/grid/martingale."
 ---
 
 # Bollinger Band Breakout With ADX Index Filter
@@ -27,7 +27,7 @@ g0_approval_reasoning: "R1 PASS SSRN URL/title/authors; R2 PASS deterministic BB
 
 ### Entry
 
-At each `GER40.DWX` D1 close:
+At each `GDAXI.DWX` D1 close:
 
 1. Compute Bollinger Bands using `SMA(20)` and `2.0 * stdev(20)`.
 2. Compute `ADX(14)`.
@@ -49,7 +49,7 @@ At each `GER40.DWX` D1 close:
 
 - P2 baseline: `RISK_FIXED = 1000` USD.
 - Live: `RISK_PERCENT = 0.25`.
-- Primary symbol is `GER40.DWX`; P2 may also test `UK100.DWX` and `JPN225.DWX`.
+- Primary symbol is `GDAXI.DWX`; P2 may also test `UK100.DWX` and `JPN225.DWX`.
 
 ### Additional Filters
 

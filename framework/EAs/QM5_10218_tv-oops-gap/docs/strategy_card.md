@@ -3,7 +3,7 @@ ea_id: QM5_10218
 slug: tv-oops-gap
 type: strategy
 source_id: 30591366-874b-5bee-b47c-da2fca20b728
-target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GER40.DWX, XAUUSD.DWX]
+target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX, XAUUSD.DWX]
 sources:
   - "[[sources/tradingview-popular-pine-scripts]]"
 concepts:

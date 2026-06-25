@@ -37,11 +37,11 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 - `SP500.DWX` - S&P 500 exposure requested by the card; valid as a backtest-only custom symbol.
 - `NDX.DWX` - Nasdaq 100 member of the card's portable US index basket.
 - `WS30.DWX` - Dow 30 member of the card's portable US index basket.
-- `GDAXI.DWX` - DAX proxy for card-stated `GER40.DWX`, which is not in the DWX matrix.
+- `GDAXI.DWX` - DAX proxy for card-stated `GDAXI.DWX`, which is not in the DWX matrix.
 - `XAUUSD.DWX` - Gold CFD requested directly in the card target symbol list.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - unavailable in `dwx_symbol_matrix.csv`; this build uses `GDAXI.DWX`.
+- `GDAXI.DWX` - unavailable in `dwx_symbol_matrix.csv`; this build uses `GDAXI.DWX`.
 - Any symbol not registered for this EA in `magic_numbers.csv`.
 
 ---

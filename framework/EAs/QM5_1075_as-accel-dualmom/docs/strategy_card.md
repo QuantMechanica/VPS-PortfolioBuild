@@ -30,7 +30,7 @@ At the beginning of each month using prior month-end data:
 
 DWX port:
 - US stocks: `SP500.DWX` backtest-only and/or `NDX.DWX` / `WS30.DWX` live-tradable validation.
-- International small-cap stocks: no exact DWX proxy; test `GER40.DWX` or broad non-US index proxy.
+- International small-cap stocks: no exact DWX proxy; test `GDAXI.DWX` or broad non-US index proxy.
 - Long-term Treasuries: no direct DWX bond ETF; default defensive state is flat/cash unless CEO approves another defensive proxy.
 
 ### Exit

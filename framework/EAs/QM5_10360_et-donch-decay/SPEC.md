@@ -36,11 +36,11 @@ The EA places a stop-entry straddle around the most recent 30 closed H1 bars: a 
 - `EURUSD.DWX` - liquid FX major from the card basket.
 - `GBPUSD.DWX` - liquid FX major from the card basket.
 - `XAUUSD.DWX` - liquid gold CFD from the card basket.
-- `GDAXI.DWX` - canonical DWX DAX symbol used in place of card text `GER40.DWX`.
+- `GDAXI.DWX` - canonical DWX DAX symbol used in place of card text `GDAXI.DWX`.
 - `SP500.DWX` - S&P 500 custom symbol approved for backtest use.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable S&P variants; use `SP500.DWX`.
 
 ---

@@ -62,7 +62,7 @@ g0_approval_reasoning: "R1 public TradingView URL cited; R2 stochastic/RSI/MACD 
 ### Zusaetzliche Filter
 - Reject trades where swing-stop distance is below 0.5 * ATR(14) or above 3.0 * ATR(14), to avoid tiny/noisy stops and excessive risk width.
 - Standard V5 spread, news, kill-switch, Friday-close, and max-DD filters.
-- Best DWX ports: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD.DWX, GER40.DWX.
+- Best DWX ports: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD.DWX, GDAXI.DWX.
 
 ## Concepts
 - [[concepts/momentum-confluence]] - primary; stochastic exhaustion, RSI bias, and MACD direction must agree.

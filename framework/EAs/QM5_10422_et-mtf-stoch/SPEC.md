@@ -39,10 +39,10 @@ The EA trades on M30 using a completed H4 stochastic cross. It opens long when H
 - `GBPUSD.DWX` - Card-listed FX major with DWX data available.
 - `XAUUSD.DWX` - Card-listed gold CFD with DWX data available.
 - `SP500.DWX` - Card-listed S&P 500 proxy; valid for backtest with T6 routability caveat.
-- `GDAXI.DWX` - Canonical DWX DAX symbol used for the card's `GER40.DWX` target.
+- `GDAXI.DWX` - Canonical DWX DAX symbol used for the card's `GDAXI.DWX` target.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - Not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
+- `GDAXI.DWX` - Not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - Not canonical DWX S&P 500 symbols.
 
 ---

@@ -38,11 +38,11 @@ The EA samples a fixed intraday M1 time window and records that window's high an
 - `SP500.DWX` - card primary S&P 500 index target; valid backtest-only custom symbol.
 - `NDX.DWX` - Nasdaq 100 index exposure from the card's US index basket.
 - `WS30.DWX` - Dow 30 index exposure from the card's US index basket.
-- `GDAXI.DWX` - verified DWX DAX custom symbol used in place of card text `GER40.DWX`.
+- `GDAXI.DWX` - verified DWX DAX custom symbol used in place of card text `GDAXI.DWX`.
 - `XAUUSD.DWX` - gold/metals symbol explicitly named by the card.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the verified DAX equivalent.
+- `GDAXI.DWX` - not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the verified DAX equivalent.
 
 ---
 

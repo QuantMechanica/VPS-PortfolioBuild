@@ -3,7 +3,7 @@ ea_id: QM5_10222
 slug: tv-bbsr-jma-atr
 type: strategy
 source_id: 30591366-874b-5bee-b47c-da2fca20b728
-target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX]
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX, NDX.DWX]
 sources:
   - "[[sources/tradingview-popular-pine-scripts]]"
 concepts:
@@ -31,7 +31,7 @@ g0_approval_reasoning: "R1 exact TradingView URL/author; R2 mechanical Bollinger
 - Page / Timestamp: TradingView script `BBSR Extreme Strategy [nachodog]`, author handle `ryanwhitham`, published 2024-04-11, updated 2024-05-03, https://www.tradingview.com/script/59farSw2-BBSR-Extreme-Strategy-nachodog/
 
 ## Target Symbols
-EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX.
+EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX, NDX.DWX.
 
 ## Mechanik
 

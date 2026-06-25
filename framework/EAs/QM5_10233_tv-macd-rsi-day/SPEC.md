@@ -47,13 +47,13 @@ This EA trades a New York morning day-trading momentum setup on M5 bars. A long 
 
 **Designed for:**
 - `NDX.DWX` - Nasdaq 100 index proxy listed by the card as a best DWX port.
-- `GDAXI.DWX` - DAX index matrix symbol used in place of the card's `GER40.DWX` wording.
+- `GDAXI.DWX` - DAX index matrix symbol used in place of the card's `GDAXI.DWX` wording.
 - `WS30.DWX` - Dow 30 index proxy listed by the card as a best DWX port.
 - `XAUUSD.DWX` - Gold CFD listed by the card as a best DWX port.
 - `SP500.DWX` - S&P 500 custom symbol listed by the card for analog tests; backtest-only per company discipline.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; `GDAXI.DWX` is the available DAX port.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; `GDAXI.DWX` is the available DAX port.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable S&P variants; use `SP500.DWX`.
 
 ---

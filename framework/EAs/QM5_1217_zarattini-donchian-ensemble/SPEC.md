@@ -20,7 +20,7 @@
 | 1 | GBPUSD.DWX |
 | 2 | USDJPY.DWX |
 | 3 | XAUUSD.DWX |
-| 4 | GER40.DWX |
+| 4 | GDAXI.DWX |
 | 5 | NDX.DWX |
 
 ## Parameters

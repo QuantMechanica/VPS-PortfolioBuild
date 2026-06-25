@@ -41,10 +41,10 @@ This EA trades the PMax flip rule from the approved card on closed H1 bars. It c
 - `EURUSD.DWX` - FX major from the card's P2 basket; liquid H1 trend-following test market.
 - `GBPUSD.DWX` - FX major from the card's P2 basket; liquid H1 trend-following test market.
 - `XAUUSD.DWX` - Gold CFD from the card's P2 basket; volatile trend-following market.
-- `GDAXI.DWX` - Canonical DWX DAX symbol used in place of card-stated `GER40.DWX`, which is not present in the DWX matrix.
+- `GDAXI.DWX` - Canonical DWX DAX symbol used in place of card-stated `GDAXI.DWX`, which is not present in the DWX matrix.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
 - Any unregistered symbol - the framework magic resolver only permits active registry rows for this EA.
 
 ---

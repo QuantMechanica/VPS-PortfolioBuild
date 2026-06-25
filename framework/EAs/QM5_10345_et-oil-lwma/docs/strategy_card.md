@@ -14,7 +14,7 @@ indicators:
   - "[[indicators/lwma]]"
   - "[[indicators/rsi]]"
   - "[[indicators/atr]]"
-target_symbols: [XTIUSD.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX]
+target_symbols: [XTIUSD.DWX, XAUUSD.DWX, GDAXI.DWX, NDX.DWX]
 period: M1
 expected_trade_frequency: "M1 trend-stack scalp on liquid CFDs; conservative estimate 120 trades/year/symbol after session, spread, and one-position filters."
 expected_trades_per_year_per_symbol: 120
@@ -81,7 +81,7 @@ g0_approval_reasoning: "R1 PASS Elite Trader URL/handle; R2 PASS deterministic L
 | R4 No ML | PASS | Fixed indicators and stops; no ML, adaptive online parameters, grid, or martingale. |
 
 ## R3
-Primary P2 basket: `XTIUSD.DWX`, `XAUUSD.DWX`, `GER40.DWX`, `NDX.DWX`.
+Primary P2 basket: `XTIUSD.DWX`, `XAUUSD.DWX`, `GDAXI.DWX`, `NDX.DWX`.
 
 ## Author Claims
 - The source describes the method as a "1 minute crude oil trading system."

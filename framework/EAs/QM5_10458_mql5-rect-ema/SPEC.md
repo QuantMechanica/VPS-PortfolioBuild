@@ -35,11 +35,11 @@ The EA trades confirmed H1 closes outside a rectangle built from the prior compl
 - `EURUSD.DWX` — card-listed liquid FX symbol with full DWX matrix support.
 - `GBPUSD.DWX` — card-listed liquid FX symbol with full DWX matrix support.
 - `USDJPY.DWX` — card-listed liquid FX symbol with full DWX matrix support.
-- `GDAXI.DWX` — available DWX DAX custom symbol used as the matrix-backed port for card-listed `GER40.DWX`.
+- `GDAXI.DWX` — available DWX DAX custom symbol used as the matrix-backed port for card-listed `GDAXI.DWX`.
 - `NDX.DWX` — card-listed liquid US index custom symbol with full DWX matrix support.
 
 **Explicitly NOT for:**
-- `GER40.DWX` — not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX` for DAX exposure.
+- `GDAXI.DWX` — not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX` for DAX exposure.
 
 ---
 

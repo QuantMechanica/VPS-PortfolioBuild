@@ -14,7 +14,7 @@ indicators:
   - "[[indicators/daily-return]]"
   - "[[indicators/tick-volume-delta]]"
   - "[[indicators/atr]]"
-target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GER40.DWX]
+target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX]
 period: D1
 expected_trade_frequency: "Daily reversal after large same-direction return and tick-volume-imbalance proxy; conservative estimate 30-60 trades/year/symbol."
 expected_trades_per_year_per_symbol: 45
@@ -25,7 +25,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 r1_reasoning: "Single source_id with SSRN URL and named authors (Chordia, Subrahmanyam, Roll 2001)."
 r2_reasoning: "Daily return and tick-volume percentile rules, next-close exit, ATR stop are deterministic."
-r3_reasoning: "Signed tick-volume proxy is available in MT5; NDX.DWX, WS30.DWX, GER40.DWX are testable DWX instruments."
+r3_reasoning: "Signed tick-volume proxy is available in MT5; NDX.DWX, WS30.DWX, GDAXI.DWX are testable DWX instruments."
 r4_reasoning: "Fixed percentile thresholds and stops; no ML, adaptive sizing, or martingale."
 pipeline_phase: G0
 last_updated: 2026-05-21
@@ -79,7 +79,7 @@ g0_approval_reasoning: "R1 PASS SSRN paper URL/attribution; R2 PASS deterministi
 | R4 No ML | PASS | Fixed percentile rules and stops; no ML, adaptive online parameters, grid, or martingale. |
 
 ## R3
-Primary P2 basket: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GER40.DWX`. SP500.DWX caveat if used: "Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable."
+Primary P2 basket: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`. SP500.DWX caveat if used: "Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable."
 
 ## Author Claims
 - "buy orders less sell orders" (SSRN abstract).

@@ -35,7 +35,7 @@ g0_approval_reasoning: "R1 SSRN URL/authors; R2 SMA/ATR entry-exit trail is mech
 1. On each D1 close, compute `SMA(Close, 200)` on each target symbol.
 2. If flat and `Close[D1] > SMA200[D1]`, open LONG at the next D1 open.
 3. Initialize `trail_high = entry_price` and `dynamic_threshold = trail_high - 2.0 * ATR(20)`.
-4. Trade target set for P2: `SP500.DWX`, `NDX.DWX`, `GER40.DWX`, `EURUSD.DWX`, `GBPUSD.DWX`.
+4. Trade target set for P2: `SP500.DWX`, `NDX.DWX`, `GDAXI.DWX`, `EURUSD.DWX`, `GBPUSD.DWX`.
 
 ### Exit
 - Update `trail_high = max(trail_high, Close[D1])` while in position.

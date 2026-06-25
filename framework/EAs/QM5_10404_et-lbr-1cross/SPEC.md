@@ -42,10 +42,10 @@ The EA trades the Elite Trader LBR first-cross pullback on M1 index CFDs. It com
 - `SP500.DWX` - canonical S&P 500 custom symbol for the source ES logic; backtest-only per DWX discipline.
 - `NDX.DWX` - liquid US large-cap index fallback for live-routable validation.
 - `WS30.DWX` - liquid US large-cap index fallback for live-routable validation.
-- `GDAXI.DWX` - available DAX custom symbol used in place of the card's unavailable `GER40.DWX` name.
+- `GDAXI.DWX` - available DAX custom symbol used in place of the card's unavailable `GDAXI.DWX` name.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `dwx_symbol_matrix.csv`; mapped to `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `dwx_symbol_matrix.csv`; mapped to `GDAXI.DWX`.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable S&P 500 variants; `SP500.DWX` is canonical.
 
 ---

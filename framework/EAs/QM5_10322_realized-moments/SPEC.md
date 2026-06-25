@@ -43,7 +43,7 @@ At the weekly entry window, the EA reads the configured H1 basket and computes f
 **Designed for:**
 - WS30.DWX - Dow 30 CFD from the card's DWX index basket.
 - NDX.DWX - Nasdaq 100 CFD from the card's DWX index basket.
-- GDAXI.DWX - DAX CFD port for the card's GER40 reference; GER40.DWX is not in the DWX matrix.
+- GDAXI.DWX - DAX CFD port for the card's GER40 reference; GDAXI.DWX is not in the DWX matrix.
 - XAUUSD.DWX - Gold CFD from the card's metals basket.
 - EURUSD.DWX - Major FX pair from the card's major FX basket.
 - GBPUSD.DWX - Major FX pair from the card's major FX basket.
@@ -54,7 +54,7 @@ At the weekly entry window, the EA reads the configured H1 basket and computes f
 - NZDUSD.DWX - Major FX pair from the card's major FX basket.
 
 **Explicitly NOT for:**
-- GER40.DWX - Not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is the registered DAX equivalent.
+- GDAXI.DWX - Not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is the registered DAX equivalent.
 - SP500.DWX - Not named by this card's R3 basket.
 
 ---

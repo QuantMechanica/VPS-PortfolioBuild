@@ -10,7 +10,6 @@ Implements the approved Quantpedia commodity 12-month SMA filter card as a V5 lo
 - XAGUSD.DWX slot 1
 - XTIUSD.DWX slot 2
 - XNGUSD.DWX slot 3
-- XCUUSD.DWX slot 4
 
 ## Signal Mapping
 

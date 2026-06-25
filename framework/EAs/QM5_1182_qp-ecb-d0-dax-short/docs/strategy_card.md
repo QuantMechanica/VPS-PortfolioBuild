@@ -12,7 +12,7 @@ indicators:
 g0_status: APPROVED
 pipeline_phase: G0
 last_updated: 2026-05-17
-g0_approval_reasoning: "R1 URL+author cited; R2 deterministic ECB D0 session-open short to same-day close exit; R3 GER40.DWX DAX proxy testable; R4 fixed rules no ML/grid/martingale."
+g0_approval_reasoning: "R1 URL+author cited; R2 deterministic ECB D0 session-open short to same-day close exit; R3 GDAXI.DWX DAX proxy testable; R4 fixed rules no ML/grid/martingale."
 ---
 
 # Quantpedia ECB Announcement-Day DAX Fade
@@ -30,7 +30,7 @@ g0_approval_reasoning: "R1 URL+author cited; R2 deterministic ECB D0 session-ope
 
 On each confirmed ECB press-conference trading day `D0`:
 
-1. At the regular cash-session open proxy for `GER40.DWX`, open SHORT `GER40.DWX`.
+1. At the regular cash-session open proxy for `GDAXI.DWX`, open SHORT `GDAXI.DWX`.
 2. Require the `D-1` pre-ECB drift window to have closed; do not carry a position from QM5_1181 into this card.
 3. Skip if the scheduled ECB announcement time cannot be mapped to the broker session calendar.
 

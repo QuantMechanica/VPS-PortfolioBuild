@@ -51,7 +51,7 @@ g0_approval_reasoning: "R1 exact TradingView URL cited; R2 DI cross entries with
 
 ### Zusätzliche Filter
 - Recommended timeframe: D1 from source; H4 may be tested only if D1 cadence is too low.
-- Test on trend-capable and liquid DWX CFDs: XAUUSD.DWX, GER40.DWX, NDX.DWX, GBPJPY.DWX, USDJPY.DWX.
+- Test on trend-capable and liquid DWX CFDs: XAUUSD.DWX, GDAXI.DWX, NDX.DWX, GBPJPY.DWX, USDJPY.DWX.
 - Standard V5 spread and news filters.
 
 ## Concepts (was ist das für eine Strategie)

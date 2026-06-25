@@ -35,12 +35,12 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
 - `SP500.DWX` - S&P 500 custom symbol; fits the card's US large-cap index breakout basket.
 - `NDX.DWX` - Nasdaq 100 index exposure; fits the same liquid US index breakout logic.
 - `WS30.DWX` - Dow 30 index exposure; fits the same liquid US index breakout logic.
-- `GDAXI.DWX` - DAX custom symbol used as the available DWX port for card-stated `GER40.DWX`.
+- `GDAXI.DWX` - DAX custom symbol used as the available DWX port for card-stated `GDAXI.DWX`.
 - `EURUSD.DWX` - Liquid FX major; the card states the rules use only OHLC session bars.
 - `XAUUSD.DWX` - Liquid metal symbol; the card states the rules use only OHLC session bars.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; `GDAXI.DWX` is registered instead.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; `GDAXI.DWX` is registered instead.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - not canonical DWX custom symbols for S&P 500 in this framework.
 
 ---

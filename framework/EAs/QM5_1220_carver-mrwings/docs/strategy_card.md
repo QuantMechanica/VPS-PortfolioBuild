@@ -37,7 +37,7 @@ g0_approval_reasoning: "Carver qoppac 2021 live mrwrings4 + 2020 forecast-linear
 
 Extreme-trend mean reversion rule. It remains flat for ordinary trend readings and only fades unusually large EWMAC forecasts, using the thesis that very strong slow-momentum signals can be exhausted in the distribution tails.
 
-Suggested DWX universe for P2: GER40.DWX, NDX.DWX, WS30.DWX, EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD.
+Suggested DWX universe for P2: GDAXI.DWX, NDX.DWX, WS30.DWX, EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD.
 
 ### Entry
 - On each closed D1 bar:

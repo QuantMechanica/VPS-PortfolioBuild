@@ -39,10 +39,10 @@ The EA evaluates each closed M15 bar. It computes a 20-bar close-to-close return
 - SP500.DWX - S&P 500 index proxy named in the card; valid backtest-only custom symbol.
 - NDX.DWX - Nasdaq 100 index proxy named in the card and available in the DWX matrix.
 - WS30.DWX - Dow 30 index proxy named in the card and available in the DWX matrix.
-- GDAXI.DWX - DWX matrix canonical DAX symbol used for the card's GER40.DWX target.
+- GDAXI.DWX - DWX matrix canonical DAX symbol used for the card's GDAXI.DWX target.
 
 **Explicitly NOT for:**
-- GER40.DWX - Not present in `framework/registry/dwx_symbol_matrix.csv`; mapped to GDAXI.DWX.
+- GDAXI.DWX - Not present in `framework/registry/dwx_symbol_matrix.csv`; mapped to GDAXI.DWX.
 
 ---
 

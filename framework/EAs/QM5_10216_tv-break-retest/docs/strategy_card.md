@@ -3,7 +3,7 @@ ea_id: QM5_10216
 slug: tv-break-retest
 type: strategy
 source_id: 30591366-874b-5bee-b47c-da2fca20b728
-target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, NDX.DWX, GER40.DWX]
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, NDX.DWX, GDAXI.DWX]
 sources:
   - "[[sources/tradingview-popular-pine-scripts]]"
 concepts:
@@ -31,7 +31,7 @@ g0_approval_reasoning: "R1 URL+author cited; R2 pivot breakout-retest entries wi
 
 ## Mechanik
 
-Target symbols: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, NDX.DWX, GER40.DWX.
+Target symbols: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, NDX.DWX, GDAXI.DWX.
 
 ### Entry
 Use H1 baseline. Detect support and resistance from pivot levels over the source lookback range. Mark a bullish breakout when price closes above resistance, then wait for price to retest the broken resistance and hold it as support. Enter long after a valid retest in Long Only or Both mode. Mark a bearish breakout when price closes below support, then wait for price to retest the broken support and hold it as resistance. Enter short after a valid retest in Short Only or Both mode.

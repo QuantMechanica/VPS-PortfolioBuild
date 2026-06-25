@@ -11,7 +11,7 @@ concepts:
   - "[[concepts/close-exit]]"
   - "[[concepts/daily-pattern]]"
 indicators: []
-target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GER40.DWX, EURUSD.DWX]
+target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX, EURUSD.DWX]
 period: D1
 expected_trade_frequency: "Two consecutive down gaps on daily bars are intermittent; conservative estimate 18 trades/year/symbol."
 expected_trades_per_year_per_symbol: 18
@@ -76,7 +76,7 @@ g0_approval_reasoning: "R1 linked Elite Trader source; R2 mechanical two-gap dai
 | R4 No ML | PASS | Fixed daily rule; no ML, adaptive parameters, grid, martingale, or multiple positions. |
 
 ## R3
-Primary P2 basket: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GER40.DWX`, `EURUSD.DWX`.
+Primary P2 basket: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`, `EURUSD.DWX`.
 
 Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
 

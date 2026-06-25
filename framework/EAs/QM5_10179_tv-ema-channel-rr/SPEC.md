@@ -30,7 +30,7 @@ are closed by the strategy exit hook.
 ## Symbol Universe
 
 Card symbols: `EURUSD.DWX`, `GBPUSD.DWX`, `USDJPY.DWX`, `XAUUSD.DWX`,
-`GER40.DWX`. The DWX matrix does not contain `GER40.DWX`; this build registers
+`GDAXI.DWX`. The DWX matrix does not contain `GDAXI.DWX`; this build registers
 `GDAXI.DWX`, the available DAX 40 canonical symbol.
 
 ## Timeframe

@@ -38,11 +38,11 @@ The card references an "adjusted DEMA" but does not define the exact envelope ad
 - `EURUSD.DWX` - card target; liquid DWX FX major.
 - `GBPUSD.DWX` - card target; liquid DWX FX major.
 - `XAUUSD.DWX` - card target; DWX gold CFD supports the ATR trend logic.
-- `GDAXI.DWX` - registered DAX port for card-stated `GER40.DWX`, which is not present in the DWX matrix.
+- `GDAXI.DWX` - registered DAX port for card-stated `GDAXI.DWX`, which is not present in the DWX matrix.
 - `NDX.DWX` - card target; liquid DWX Nasdaq 100 index CFD.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - card-stated name is not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
+- `GDAXI.DWX` - card-stated name is not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
 - Any symbol without an active row for `QM5_10202` in `magic_numbers.csv`.
 
 ---

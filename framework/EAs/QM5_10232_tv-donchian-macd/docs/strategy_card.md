@@ -51,7 +51,7 @@ g0_approval_reasoning: "R1 source URL cited; R2 mechanical Donchian breakout plu
 
 ### Zusätzliche Filter
 - Source describes a daily 50-day high/low system. For QM cadence, test D1 and H4 with the same 50-bar breakout length.
-- Recommended symbols: XAUUSD.DWX, GER40.DWX, NDX.DWX, GBPJPY.DWX, EURJPY.DWX.
+- Recommended symbols: XAUUSD.DWX, GDAXI.DWX, NDX.DWX, GBPJPY.DWX, EURJPY.DWX.
 - Standard V5 spread and news filters.
 
 ## Concepts (was ist das für eine Strategie)

@@ -39,7 +39,7 @@ The EA trades intraday index bars on M5. When the last closed bar crosses above 
 - GDAXI.DWX - Matrix-backed DAX custom symbol used as the DWX equivalent for the card's GER40 target.
 
 **Explicitly NOT for:**
-- GER40.DWX - Not present in `framework/registry/dwx_symbol_matrix.csv`; ported to GDAXI.DWX.
+- GDAXI.DWX - Not present in `framework/registry/dwx_symbol_matrix.csv`; ported to GDAXI.DWX.
 - SPX500.DWX / SPY.DWX / ES.DWX - Not canonical DWX custom symbols for S&P 500 exposure.
 
 ---

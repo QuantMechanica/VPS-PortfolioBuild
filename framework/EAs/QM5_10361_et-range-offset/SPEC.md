@@ -41,7 +41,7 @@ On each new D1 bar, the EA measures the highest high and lowest low over the rec
 - NDX.DWX - card-listed liquid US index CFD with daily OHLC history.
 
 **Explicitly NOT for:**
-- GER40.DWX - card target name is not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is used instead.
+- GDAXI.DWX - card target name is not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is used instead.
 - Non-DWX symbols - registry and backtest artifacts must use canonical `.DWX` names.
 
 ---

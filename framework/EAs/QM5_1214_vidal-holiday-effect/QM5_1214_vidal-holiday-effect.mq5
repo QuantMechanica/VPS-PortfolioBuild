@@ -41,7 +41,7 @@ input int    strategy_max_spread_points   = 300;
 
 #define QM5_1214_SYMBOL_COUNT 4
 
-string g_symbols[QM5_1214_SYMBOL_COUNT] = {"SP500.DWX", "NDX.DWX", "WS30.DWX", "GER40.DWX"};
+string g_symbols[QM5_1214_SYMBOL_COUNT] = {"SP500.DWX", "NDX.DWX", "WS30.DWX", "GDAXI.DWX"};
 int    g_slots[QM5_1214_SYMBOL_COUNT]   = {0, 1, 2, 3};
 
 int g_last_entry_event_key = 0;
@@ -138,7 +138,7 @@ bool Strategy_IsUsSymbol()
 
 bool Strategy_IsEuSymbol()
   {
-   return (_Symbol == "GER40.DWX");
+   return (_Symbol == "GDAXI.DWX");
   }
 
 bool Strategy_KeyInArray(const int key, const int &values[])

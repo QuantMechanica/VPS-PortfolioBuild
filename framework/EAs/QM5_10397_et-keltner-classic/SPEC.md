@@ -34,12 +34,12 @@ The EA runs on D1 bars. It computes a moving average from closing prices and a r
 - SP500.DWX - S&P 500 index exposure named directly by the card; backtest-only at T6 gate.
 - NDX.DWX - Nasdaq 100 index exposure named directly by the card.
 - WS30.DWX - Dow 30 index exposure named directly by the card.
-- GDAXI.DWX - DAX custom symbol port for the card's GER40.DWX target.
+- GDAXI.DWX - DAX custom symbol port for the card's GDAXI.DWX target.
 - EURUSD.DWX - major FX pair named directly by the card.
 - XAUUSD.DWX - gold metal exposure named directly by the card.
 
 **Explicitly NOT for:**
-- GER40.DWX - not present in `framework/registry/dwx_symbol_matrix.csv`; mapped to GDAXI.DWX.
+- GDAXI.DWX - not present in `framework/registry/dwx_symbol_matrix.csv`; mapped to GDAXI.DWX.
 
 ---
 

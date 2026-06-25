@@ -50,7 +50,7 @@ g0_approval_reasoning: "R1 source URL cited; R2 mechanical EMA/Stoch RSI pullbac
 - One open position per magic number; no pyramiding.
 
 ### Zusätzliche Filter
-- Recommended DWX test set: XAUUSD.DWX, NDX.DWX, GER40.DWX, GBPJPY.DWX, EURUSD.DWX.
+- Recommended DWX test set: XAUUSD.DWX, NDX.DWX, GDAXI.DWX, GBPJPY.DWX, EURUSD.DWX.
 - Default timeframe H1 for cadence; include H4 in P3 if H1 is noisy.
 - Standard V5 spread and news filters.
 

@@ -55,7 +55,7 @@ This EA trades long-only post-open resistance breakouts on intraday bars. It onl
 - `EURUSD.DWX` - Major FX pair explicitly listed by the card as a portable DWX baseline market.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
 - Any symbol not registered above - magic resolution blocks unregistered symbols.
 
 ---

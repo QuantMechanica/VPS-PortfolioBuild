@@ -42,11 +42,11 @@ The EA records the high and low of M1 bars from 09:30 through 09:44 broker time 
 - `SP500.DWX` - S&P 500 index proxy for the source's US index opening range scalp; backtest-only per DWX discipline.
 - `NDX.DWX` - Nasdaq 100 index proxy with active DWX coverage and US regular-session index behavior.
 - `WS30.DWX` - Dow 30 index proxy with active DWX coverage and US regular-session index behavior.
-- `GDAXI.DWX` - DAX index proxy used as the available DWX equivalent for the card's `GER40.DWX` target.
+- `GDAXI.DWX` - DAX index proxy used as the available DWX equivalent for the card's `GDAXI.DWX` target.
 
 **Explicitly NOT for:**
 - Non-index forex or commodity symbols - the card is a regular-session index opening-range scalp.
-- `GER40.DWX` - card alias is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DWX DAX symbol.
+- `GDAXI.DWX` - card alias is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DWX DAX symbol.
 
 ---
 

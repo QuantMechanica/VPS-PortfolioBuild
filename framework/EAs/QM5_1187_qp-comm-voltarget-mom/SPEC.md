@@ -12,7 +12,6 @@ The EA trades a DWX commodity proxy basket using monthly cross-sectional momentu
 - `XAGUSD.DWX`
 - `XTIUSD.DWX`
 - `XNGUSD.DWX`
-- `XCUUSD.DWX`
 
 ## Strategy Mapping
 

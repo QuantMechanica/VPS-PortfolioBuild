@@ -47,10 +47,10 @@ The EA trades H1 mean reversion when the last completed bar closes far from its 
 - `GBPUSD.DWX` - card-listed DWX FX symbol with H1 OHLC, SMA, and ATR support.
 - `USDJPY.DWX` - card-listed DWX FX symbol with H1 OHLC, SMA, and ATR support.
 - `XAUUSD.DWX` - card-listed DWX metal symbol with H1 OHLC, SMA, and ATR support.
-- `GDAXI.DWX` - DWX matrix DAX custom symbol used as the available port for card-listed `GER40.DWX`.
+- `GDAXI.DWX` - DWX matrix DAX custom symbol used as the available port for card-listed `GDAXI.DWX`.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - card-listed name is not present in `framework/registry/dwx_symbol_matrix.csv`.
+- `GDAXI.DWX` - card-listed name is not present in `framework/registry/dwx_symbol_matrix.csv`.
 
 ---
 

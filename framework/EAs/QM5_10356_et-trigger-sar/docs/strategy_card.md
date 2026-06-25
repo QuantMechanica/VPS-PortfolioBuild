@@ -11,7 +11,7 @@ concepts:
   - "[[concepts/trailing-stop]]"
   - "[[concepts/stop-and-reverse]]"
 indicators: []
-target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GER40.DWX]
+target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX]
 period: M1
 expected_trade_frequency: "Intraday high/low trigger system active during core session; conservative estimate 100 trades/year/symbol after one-position and session filters."
 expected_trades_per_year_per_symbol: 100
@@ -80,7 +80,7 @@ g0_approval_reasoning: "R1 linked Elite Trader source; R2 mechanical intraday hi
 | R4 No ML | PASS | No ML; V5 disables simultaneous stop-and-reverse stacking to preserve one-position-per-magic. |
 
 ## R3
-Primary P2 basket: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GER40.DWX`.
+Primary P2 basket: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`.
 
 Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
 

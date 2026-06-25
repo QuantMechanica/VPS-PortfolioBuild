@@ -42,10 +42,10 @@ The EA trades closed-bar breaks of automatic swing trendlines on M1 index-CFD ba
 - `SP500.DWX` — direct S&P 500 custom-symbol port of ES logic; backtest-only per DWX discipline.
 - `NDX.DWX` — live-tradable US large-cap index CFD for P2 saturation.
 - `WS30.DWX` — live-tradable US large-cap index CFD for P2 saturation.
-- `GDAXI.DWX` — DAX index CFD fallback for the card's unavailable `GER40.DWX` target.
+- `GDAXI.DWX` — DAX index CFD fallback for the card's unavailable `GDAXI.DWX` target.
 
 **Explicitly NOT for:**
-- `GER40.DWX` — not present in `framework/registry/dwx_symbol_matrix.csv`; registered as `GDAXI.DWX` instead.
+- `GDAXI.DWX` — not present in `framework/registry/dwx_symbol_matrix.csv`; registered as `GDAXI.DWX` instead.
 - `ES.DWX` — not present in the DWX symbol matrix.
 
 ---

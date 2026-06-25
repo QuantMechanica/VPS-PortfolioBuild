@@ -58,7 +58,7 @@ g0_approval_reasoning: "R1 PASS: exact TradingView URL/author cited; R2 PASS: Su
 
 ### Zusätzliche Filter
 - Baseline timeframe: H4, as source-designed; optional P3 tests M30/H1 for FX/index cadence.
-- Best DWX ports: BTCUSD.DWX if available, XAUUSD.DWX, XTIUSD.DWX, NDX.DWX, GER40.DWX, EURUSD.DWX.
+- Best DWX ports: BTCUSD.DWX if available, XAUUSD.DWX, XTIUSD.DWX, NDX.DWX, GDAXI.DWX, EURUSD.DWX.
 - Standard V5 spread and news filters.
 
 ## Concepts (was ist das für eine Strategie)

@@ -46,10 +46,10 @@ This EA trades long-only H4 cloud breakouts. It opens a long when the active Ich
 - `GBPJPY.DWX` - liquid FX cross with sustained directional H4 moves.
 - `XAUUSD.DWX` - liquid gold CFD explicitly called out by the card as a preferred port.
 - `NDX.DWX` - liquid US index CFD suitable for the trend-following concept.
-- `GDAXI.DWX` - DWX matrix DAX symbol used as the available port for the card's `GER40.DWX` target.
+- `GDAXI.DWX` - DWX matrix DAX symbol used as the available port for the card's `GDAXI.DWX` target.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX` instead.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX` instead.
 
 ---
 

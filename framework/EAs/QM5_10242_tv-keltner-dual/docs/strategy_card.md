@@ -56,7 +56,7 @@ g0_approval_reasoning: "R1 URL cited; R2 mechanical Keltner/EMA entries and exit
 - One open position per magic number.
 
 ### Zusätzliche Filter
-- Source highlights XAUUSD, NASDAQ/NQ, crude oil, and trending assets; DWX ports: XAUUSD.DWX, XTIUSD.DWX, NDX.DWX, GER40.DWX, SP500.DWX.
+- Source highlights XAUUSD, NASDAQ/NQ, crude oil, and trending assets; DWX ports: XAUUSD.DWX, XTIUSD.DWX, NDX.DWX, GDAXI.DWX, SP500.DWX.
 - Recommended source timeframes: M15, H1, H4, D1. P2 baseline should start with H1/H4 to avoid excessive noise.
 - Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
 

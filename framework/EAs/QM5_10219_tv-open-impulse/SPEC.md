@@ -33,13 +33,13 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 **Designed for:**
 - `NDX.DWX` - Nasdaq 100 market-open volatility target from the card.
 - `WS30.DWX` - Dow 30 market-open volatility target from the card.
-- `GDAXI.DWX` - available DWX DAX symbol used in place of card-stated `GER40.DWX`.
+- `GDAXI.DWX` - available DWX DAX symbol used in place of card-stated `GDAXI.DWX`.
 - `SP500.DWX` - S&P 500 market-open analog; valid for backtest, not T6 live routing.
 - `XAUUSD.DWX` - volatility cross-check target from the card.
 
 **Explicitly NOT for:**
 - Any symbol not registered above in `magic_numbers.csv`.
-- `GER40.DWX` - not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
 
 ---
 

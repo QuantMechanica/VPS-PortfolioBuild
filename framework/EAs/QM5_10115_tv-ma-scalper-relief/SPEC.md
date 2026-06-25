@@ -42,10 +42,10 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 - `EURUSD.DWX` - Card-listed FX symbol with DWX matrix coverage.
 - `GBPUSD.DWX` - Card-listed FX symbol with DWX matrix coverage.
 - `XAUUSD.DWX` - Card-listed gold symbol with DWX matrix coverage.
-- `GDAXI.DWX` - Available DWX DAX custom symbol used for the card's `GER40.DWX` target.
+- `GDAXI.DWX` - Available DWX DAX custom symbol used for the card's `GDAXI.DWX` target.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - Not present in `framework/registry/dwx_symbol_matrix.csv`; mapped to `GDAXI.DWX`.
+- `GDAXI.DWX` - Not present in `framework/registry/dwx_symbol_matrix.csv`; mapped to `GDAXI.DWX`.
 - Any other unregistered symbol - magic resolution is limited to the registered basket.
 
 ---

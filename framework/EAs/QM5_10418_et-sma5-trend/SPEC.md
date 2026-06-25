@@ -38,11 +38,11 @@ This EA trades closed M2 bars during two intraday session windows. It enters lon
 - `SP500.DWX` - S&P 500 custom symbol specified by the card for S&P-specific behavior.
 - `NDX.DWX` - Nasdaq 100 index exposure included in the card's portable DWX basket.
 - `WS30.DWX` - Dow 30 index exposure included in the card's portable DWX basket.
-- `GDAXI.DWX` - Matrix-valid DAX custom symbol used as the port for card-stated `GER40.DWX`.
+- `GDAXI.DWX` - Matrix-valid DAX custom symbol used as the port for card-stated `GDAXI.DWX`.
 - `XAUUSD.DWX` - Gold symbol specified by the card for metals testing.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable S&P 500 variants; use `SP500.DWX`.
 
 ---

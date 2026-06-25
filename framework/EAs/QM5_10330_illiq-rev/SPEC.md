@@ -41,12 +41,12 @@ The EA trades H1 short-run reversal after a liquidity-pressure event. A long sig
 - `SP500.DWX` - S&P 500 index proxy named in the card, valid for backtest.
 - `NDX.DWX` - Nasdaq 100 index proxy named in the card.
 - `WS30.DWX` - Dow 30 index proxy named in the card.
-- `GDAXI.DWX` - canonical DWX DAX symbol used for the card's `GER40.DWX` target.
+- `GDAXI.DWX` - canonical DWX DAX symbol used for the card's `GDAXI.DWX` target.
 - `XAUUSD.DWX` - liquid metals proxy named in the card.
 
 **Explicitly NOT for:**
 - Symbols outside `framework/registry/dwx_symbol_matrix.csv` - not available in the DWX backtest universe.
-- `GER40.DWX` - card-stated alias is not present in the DWX matrix; `GDAXI.DWX` is the available DAX symbol.
+- `GDAXI.DWX` - card-stated alias is not present in the DWX matrix; `GDAXI.DWX` is the available DAX symbol.
 
 ---
 

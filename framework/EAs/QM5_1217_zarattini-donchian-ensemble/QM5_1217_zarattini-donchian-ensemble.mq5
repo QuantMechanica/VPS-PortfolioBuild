@@ -48,7 +48,7 @@ const string STRATEGY_SYMBOLS[6] =
    "GBPUSD.DWX",
    "USDJPY.DWX",
    "XAUUSD.DWX",
-   "GER40.DWX",
+   "GDAXI.DWX",
    "NDX.DWX"
   };
 

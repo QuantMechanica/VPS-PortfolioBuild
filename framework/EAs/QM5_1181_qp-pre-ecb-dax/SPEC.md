@@ -2,16 +2,16 @@
 
 ## Strategy
 
-Quantpedia Pre-ECB DAX Drift. On confirmed ECB press-conference windows, the EA opens a long `GER40.DWX` position immediately after the `D-2` daily close and exits immediately after the `D-1` daily close, before the announcement day.
+Quantpedia Pre-ECB DAX Drift. On confirmed ECB press-conference windows, the EA opens a long `GDAXI.DWX` position immediately after the `D-2` daily close and exits immediately after the `D-1` daily close, before the announcement day.
 
 ## Framework Alignment
 
 - No-Trade: V5 kill switch, news, Friday-close, D1 timeframe, symbol, spread, and D1 history gates.
-- Entry: long-only `GER40.DWX` when the next trading day is an embedded ECB press-conference date.
+- Entry: long-only `GDAXI.DWX` when the next trading day is an embedded ECB press-conference date.
 - Management: no trailing, partial, or break-even logic.
 - Close: event-window exit on `D0` daily open, with a time-stop safety fallback.
 - Risk: `RISK_FIXED=1000` for backtest sets; `RISK_PERCENT=0.25` for live set.
-- Magic: `ea_id=1181`, slot `0`, `GER40.DWX`, magic `11810000`.
+- Magic: `ea_id=1181`, slot `0`, `GDAXI.DWX`, magic `11810000`.
 
 ## Calendar
 

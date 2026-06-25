@@ -41,13 +41,13 @@ This EA is a long-only multi-timeframe reversal strategy. It opens a market buy 
 **Designed for:**
 - `NDX.DWX` - primary card symbol and liquid Nasdaq 100 index port for the source index strategy.
 - `WS30.DWX` - liquid Dow 30 index port from the card's portable DWX basket.
-- `GDAXI.DWX` - canonical local DAX symbol; used in place of the card text `GER40.DWX`, which is not in `dwx_symbol_matrix.csv`.
+- `GDAXI.DWX` - canonical local DAX symbol; used in place of the card text `GDAXI.DWX`, which is not in `dwx_symbol_matrix.csv`.
 - `XAUUSD.DWX` - card-listed liquid gold CFD port with DWX history in the matrix.
 - `EURUSD.DWX` - card-listed liquid FX port with DWX history in the matrix.
 
 **Explicitly NOT for:**
 - Symbols outside the registered set above - this EA has no symbol-agnostic universe expansion.
-- `GER40.DWX` - not present in the local DWX matrix; `GDAXI.DWX` is the registered canonical DAX port.
+- `GDAXI.DWX` - not present in the local DWX matrix; `GDAXI.DWX` is the registered canonical DAX port.
 
 ---
 

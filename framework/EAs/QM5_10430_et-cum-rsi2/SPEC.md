@@ -38,11 +38,11 @@ The EA trades a completed-bar D1 long-only pullback rule. It sums the last two c
 - `SP500.DWX` - canonical S&P 500 custom-symbol port for the source's US equity exposure; backtest-only per symbol discipline.
 - `NDX.DWX` - live-tradable US large-cap index CFD for portable US equity exposure.
 - `WS30.DWX` - live-tradable US large-cap index CFD for portable US equity exposure.
-- `GDAXI.DWX` - matrix-valid DAX CFD used for the card's `GER40.DWX` basket item.
+- `GDAXI.DWX` - matrix-valid DAX CFD used for the card's `GDAXI.DWX` basket item.
 - `EURUSD.DWX` - matrix-valid FX port included by the approved card's R3 basket.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - card-stated name is not present in the DWX symbol matrix; this build registers `GDAXI.DWX`.
+- `GDAXI.DWX` - card-stated name is not present in the DWX symbol matrix; this build registers `GDAXI.DWX`.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable S&P 500 variants; `SP500.DWX` is the canonical custom symbol.
 
 ---

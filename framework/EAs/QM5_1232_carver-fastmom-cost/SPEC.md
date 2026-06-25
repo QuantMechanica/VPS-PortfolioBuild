@@ -64,7 +64,7 @@
 | 3 | AUDUSD.DWX |
 | 4 | USDCAD.DWX |
 | 5 | NZDUSD.DWX |
-| 6 | GER40.DWX |
+| 6 | GDAXI.DWX |
 | 7 | UK100.DWX |
 | 8 | NDX.DWX |
 | 9 | WS30.DWX |

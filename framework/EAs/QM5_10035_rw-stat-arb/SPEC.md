@@ -43,11 +43,11 @@ On each D1 close, the EA computes a 5-day log return for the five registered ind
 - `SP500.DWX` - S&P 500 custom symbol proxy for the US large-cap leg; backtest-only per DWX discipline.
 - `NDX.DWX` - Nasdaq 100 proxy for US large-cap technology/growth exposure.
 - `WS30.DWX` - Dow 30 proxy for US large-cap value/industrial exposure.
-- `GDAXI.DWX` - available DWX DAX proxy used in place of card-stated `GER40.DWX`, which is not in the current matrix.
+- `GDAXI.DWX` - available DWX DAX proxy used in place of card-stated `GDAXI.DWX`, which is not in the current matrix.
 - `UK100.DWX` - FTSE 100 proxy for the UK large-cap index leg.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - card-stated DAX name, but absent from `framework/registry/dwx_symbol_matrix.csv`.
+- `GDAXI.DWX` - card-stated DAX name, but absent from `framework/registry/dwx_symbol_matrix.csv`.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable S&P variants; the canonical custom symbol is `SP500.DWX`.
 
 ---

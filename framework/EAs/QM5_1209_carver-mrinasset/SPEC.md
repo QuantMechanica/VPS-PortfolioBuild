@@ -17,7 +17,7 @@
 
 ## Universe And Slots
 
-Slots `0..2` are the equity-index group: `GER40.DWX`, `NDX.DWX`, `WS30.DWX`.
+Slots `0..2` are the equity-index group: `GDAXI.DWX`, `NDX.DWX`, `WS30.DWX`.
 
 Slots `3..8` are the FX-major group: `EURUSD.DWX`, `GBPUSD.DWX`, `AUDUSD.DWX`, `USDJPY.DWX`, `USDCHF.DWX`, `USDCAD.DWX`.
 

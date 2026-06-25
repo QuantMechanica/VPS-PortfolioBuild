@@ -40,10 +40,10 @@ The EA trades the closed-bar arrow signals from the MQL5 OsMA Four Colors Arrow 
 - `EURUSD.DWX` - card-listed liquid DWX FX major with OHLC history suitable for OsMA/MACD signals.
 - `GBPUSD.DWX` - card-listed liquid DWX FX major with OHLC history suitable for OsMA/MACD signals.
 - `USDJPY.DWX` - card-listed liquid DWX FX major with OHLC history suitable for OsMA/MACD signals.
-- `GDAXI.DWX` - canonical DWX DAX symbol used as the matrix-verified port for card-listed `GER40.DWX`.
+- `GDAXI.DWX` - canonical DWX DAX symbol used as the matrix-verified port for card-listed `GDAXI.DWX`.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - card-listed name is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX equivalent.
+- `GDAXI.DWX` - card-listed name is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX equivalent.
 
 ---
 

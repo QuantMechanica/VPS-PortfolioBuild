@@ -39,10 +39,10 @@ This EA trades an intraday mean-reversion fade on M15 bars. It builds a same-ses
 - SP500.DWX - S&P 500 custom symbol matches the card's US index port; backtest-only live caveat remains for T6.
 - NDX.DWX - Liquid US large-cap index CFD suitable for intraday VWAP and tick-volume filters.
 - WS30.DWX - Liquid US large-cap index CFD suitable for intraday VWAP and tick-volume filters.
-- GDAXI.DWX - Available DAX custom symbol used as the DWX matrix equivalent for the card's GER40.DWX target.
+- GDAXI.DWX - Available DAX custom symbol used as the DWX matrix equivalent for the card's GDAXI.DWX target.
 
 **Explicitly NOT for:**
-- GER40.DWX - Card-stated symbol is not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is registered instead.
+- GDAXI.DWX - Card-stated symbol is not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is registered instead.
 
 ---
 

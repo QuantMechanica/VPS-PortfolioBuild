@@ -44,10 +44,10 @@ The EA trades M5 index data during the mapped regular session. A long entry is t
 - SP500.DWX - S&P 500 custom symbol matching the source's ES/SPX-style index exposure; backtest-only per DWX discipline.
 - NDX.DWX - Nasdaq 100 live-tradable US large-cap index analogue.
 - WS30.DWX - Dow 30 live-tradable US large-cap index analogue.
-- GDAXI.DWX - available DAX custom symbol used as the matrix-valid port for the card's GER40.DWX target.
+- GDAXI.DWX - available DAX custom symbol used as the matrix-valid port for the card's GDAXI.DWX target.
 
 **Explicitly NOT for:**
-- GER40.DWX - not present in `dwx_symbol_matrix.csv`; ported to GDAXI.DWX.
+- GDAXI.DWX - not present in `dwx_symbol_matrix.csv`; ported to GDAXI.DWX.
 - SPX500.DWX, SPY.DWX, ES.DWX - unavailable phantom S&P variants; SP500.DWX is the only registered S&P 500 custom symbol.
 
 ---

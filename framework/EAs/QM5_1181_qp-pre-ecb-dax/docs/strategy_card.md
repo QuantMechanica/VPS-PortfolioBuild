@@ -18,7 +18,7 @@ r3_data_available: UNKNOWN
 r4_ml_forbidden: UNKNOWN
 pipeline_phase: G0
 last_updated: 2026-05-17
-g0_approval_reasoning: "R1 URL+author cited; R2 deterministic ECB D-2 close long to D-1 close exit; R3 GER40.DWX DAX proxy testable; R4 fixed rules no ML/grid/martingale."
+g0_approval_reasoning: "R1 URL+author cited; R2 deterministic ECB D-2 close long to D-1 close exit; R3 GDAXI.DWX DAX proxy testable; R4 fixed rules no ML/grid/martingale."
 ---
 
 # Quantpedia Pre-ECB DAX Drift
@@ -34,12 +34,12 @@ g0_approval_reasoning: "R1 URL+author cited; R2 deterministic ECB D-2 close long
 ### Entry
 On each confirmed European Central Bank press-conference date:
 1. Let `D0` be the ECB press-conference trading day.
-2. At `GER40.DWX` D1 close on `D-2`, open LONG `GER40.DWX`.
-3. Trade only if `GER40.DWX` has valid D1 bars for `D-3` through `D-2` and spread is within P1 defaults.
+2. At `GDAXI.DWX` D1 close on `D-2`, open LONG `GDAXI.DWX`.
+3. Trade only if `GDAXI.DWX` has valid D1 bars for `D-3` through `D-2` and spread is within P1 defaults.
 4. Hold exactly one position per magic number; ignore overlapping ECB events.
 
 ### Exit
-- Close at `GER40.DWX` D1 close on `D-1`, before the ECB announcement day.
+- Close at `GDAXI.DWX` D1 close on `D-1`, before the ECB announcement day.
 - Safety exit: close at the next available D1 close if the `D-1` bar is missing.
 
 ### Stop Loss
@@ -52,7 +52,7 @@ On each confirmed European Central Bank press-conference date:
 
 ### Zusaetzliche Filter
 - Requires checked-in ECB press-conference calendar.
-- Use `GER40.DWX` as DAX proxy. Optional confirmation route: `STOXX50.DWX` if available.
+- Use `GDAXI.DWX` as DAX proxy. Optional confirmation route: `STOXX50.DWX` if available.
 - No macro surprise, NLP, or policy-text input is used.
 
 ## Concepts
@@ -64,7 +64,7 @@ On each confirmed European Central Bank press-conference date:
 |-----------|--------|------------|
 | R1 Track Record | UNKNOWN | Quantpedia source is verifiable and names Cyril Dujava as article author. |
 | R2 Mechanical | UNKNOWN | ECB calendar date, D-2 close entry, and D-1 close exit are deterministic. |
-| R3 Data Available | UNKNOWN | Source studies DAX/STOXX and European ETFs; `GER40.DWX` is the direct DAX CFD proxy if present in the test matrix. |
+| R3 Data Available | UNKNOWN | Source studies DAX/STOXX and European ETFs; `GDAXI.DWX` is the direct DAX CFD proxy if present in the test matrix. |
 | R4 ML Forbidden | UNKNOWN | Fixed event window only; no ML, adaptive parameters, grid, or martingale. |
 
 ## Pipeline-Verlauf

@@ -41,10 +41,10 @@ On each M30 bar in the liquid U.S./Europe overlap session, the EA measures the j
 - `SP500.DWX` - S&P 500 custom symbol, matching the card's U.S. index basket.
 - `NDX.DWX` - Nasdaq 100 index CFD, part of the U.S. large-cap basket.
 - `WS30.DWX` - Dow 30 index CFD, part of the U.S. large-cap basket.
-- `GDAXI.DWX` - DAX proxy available in `dwx_symbol_matrix.csv`; used for the card's unavailable `GER40.DWX`.
+- `GDAXI.DWX` - DAX proxy available in `dwx_symbol_matrix.csv`; used for the card's unavailable `GDAXI.DWX`.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - Card-stated name is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the available DAX symbol.
+- `GDAXI.DWX` - Card-stated name is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the available DAX symbol.
 
 ---
 

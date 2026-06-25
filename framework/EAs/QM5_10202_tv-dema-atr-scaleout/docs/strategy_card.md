@@ -3,7 +3,7 @@ ea_id: QM5_10202
 slug: tv-dema-atr-scaleout
 type: strategy
 source_id: 30591366-874b-5bee-b47c-da2fca20b728
-target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX]
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX, NDX.DWX]
 sources:
   - "[[sources/tradingview-popular-pine-scripts]]"
 concepts:
@@ -54,7 +54,7 @@ Initial stop = 1.5 * ATR(14) from entry, opposite trade direction. P3 may test 1
 V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number.
 
 ### Zusatzliche Filter
-- Target symbols: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX.
+- Target symbols: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX, NDX.DWX.
 - Trade only after ATR(14) and DEMA warmup are complete.
 - Spread must be <= 15% of stop distance.
 

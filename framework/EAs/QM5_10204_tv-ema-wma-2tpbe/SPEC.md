@@ -41,7 +41,7 @@ This EA trades an EMA/WMA crossover on the current tester timeframe, intended fo
 - `GBPUSD.DWX` - Card-listed FX symbol; pip stop and target apply directly.
 - `USDJPY.DWX` - Card-listed FX symbol; pip stop and target apply directly.
 - `XAUUSD.DWX` - Card-listed metal; ATR stop and target conversion applies.
-- `GDAXI.DWX` - Matrix-available DAX custom symbol used for the card's `GER40.DWX` exposure.
+- `GDAXI.DWX` - Matrix-available DAX custom symbol used for the card's `GDAXI.DWX` exposure.
 
 **Explicitly NOT for:**
 - Symbols outside the active magic-number rows for this EA - no implicit runtime universe expansion.

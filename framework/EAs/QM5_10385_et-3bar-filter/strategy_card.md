@@ -11,7 +11,7 @@ concepts:
   - "[[concepts/trend-filter]]"
   - "[[concepts/range-compression]]"
 indicators: [EMA, Range]
-target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GER40.DWX]
+target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX]
 period: M15
 expected_trade_frequency: "Time-windowed M15 setup requiring three directional candles, EMA(200), range compression, and prior-bar body filter; conservative estimate 90 trades/year/symbol."
 expected_trades_per_year_per_symbol: 90
@@ -88,7 +88,7 @@ g0_approval_reasoning: "R1 source URL/handle present; R2 mechanical 3-bar breako
 | R4 No ML | PASS | Fixed thresholds and one-position V5 implementation; no ML, adaptive logic, grid, martingale, or pyramiding. |
 
 ## R3
-Primary P2 basket: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GER40.DWX`.
+Primary P2 basket: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`.
 
 Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
 

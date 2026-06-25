@@ -33,11 +33,11 @@ The EA trades M1 completed-bar crosses of a static completed-D1 EMA(13) level. I
 - EURUSD.DWX - Liquid major FX pair from the card's R3 P2 basket.
 - GBPUSD.DWX - Liquid major FX pair from the card's R3 P2 basket.
 - XAUUSD.DWX - Gold DWX symbol from the card's R3 P2 basket.
-- GDAXI.DWX - Available DWX DAX symbol used as the nearest matrix-valid port for card target GER40.DWX.
+- GDAXI.DWX - Available DWX DAX symbol used as the nearest matrix-valid port for card target GDAXI.DWX.
 - NDX.DWX - Nasdaq 100 DWX index CFD from the card's R3 P2 basket.
 
 **Explicitly NOT for:**
-- GER40.DWX - Not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is used instead.
+- GDAXI.DWX - Not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is used instead.
 
 ---
 

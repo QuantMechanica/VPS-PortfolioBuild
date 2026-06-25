@@ -42,13 +42,13 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 **Designed for:**
 - `XAUUSD.DWX` - card-listed liquid metal CFD with clean EMA/Stochastic RSI/ATR data.
 - `NDX.DWX` - card-listed US index CFD with trend-pullback suitability.
-- `GDAXI.DWX` - canonical DWX DAX symbol used for the card's `GER40.DWX` target.
+- `GDAXI.DWX` - canonical DWX DAX symbol used for the card's `GDAXI.DWX` target.
 - `GBPJPY.DWX` - card-listed volatile FX pair suitable for pullback continuation testing.
 - `EURUSD.DWX` - card-listed major FX pair suitable for baseline cross-asset testing.
 
 **Explicitly NOT for:**
 - Symbols outside `framework/registry/dwx_symbol_matrix.csv` - no DWX data guarantee.
-- `GER40.DWX` - not present in the DWX matrix; use `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in the DWX matrix; use `GDAXI.DWX`.
 
 ---
 

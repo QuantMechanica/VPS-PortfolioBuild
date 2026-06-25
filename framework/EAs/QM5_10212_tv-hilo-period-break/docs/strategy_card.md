@@ -3,7 +3,7 @@ ea_id: QM5_10212
 slug: tv-hilo-period-break
 type: strategy
 source_id: 30591366-874b-5bee-b47c-da2fca20b728
-target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX]
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX, NDX.DWX]
 sources:
   - "[[sources/tradingview-popular-pine-scripts]]"
 concepts:
@@ -43,7 +43,7 @@ Source is a statistical breakout shell without explicit stop. Add V5 protective 
 V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number.
 
 ### Zusatzliche Filter
-Target symbols: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX. Skip entries if spread exceeds 15% of stop distance. Do not open new positions in the final two bars of the broker day.
+Target symbols: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX, NDX.DWX. Skip entries if spread exceeds 15% of stop distance. Do not open new positions in the final two bars of the broker day.
 
 ## Concepts (was ist das fur eine Strategie)
 - [[concepts/breakout]] - trades breach of a prior period high/low.

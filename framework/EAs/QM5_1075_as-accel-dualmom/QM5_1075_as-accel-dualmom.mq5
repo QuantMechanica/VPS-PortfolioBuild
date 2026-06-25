@@ -32,7 +32,7 @@ input group "Strategy"
 input string strategy_us_proxy_1        = "SP500.DWX";
 input string strategy_us_proxy_2        = "NDX.DWX";
 input string strategy_us_proxy_3        = "WS30.DWX";
-input string strategy_international_proxy = "GER40.DWX";
+input string strategy_international_proxy = "GDAXI.DWX";
 input int    strategy_m1_bars           = 22;
 input int    strategy_m3_bars           = 63;
 input int    strategy_m6_bars           = 126;

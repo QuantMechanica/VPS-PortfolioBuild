@@ -40,10 +40,10 @@ This EA evaluates completed H1 bars for Turtle-style Donchian breakouts. System 
 - GBPUSD.DWX - liquid major FX pair with native DWX data and enough intraday trend behavior for Donchian tests.
 - USDJPY.DWX - liquid major FX pair with native DWX data and distinct session participation.
 - XAUUSD.DWX - liquid metal CFD with native DWX data and trend-following suitability.
-- GDAXI.DWX - available DWX DAX custom symbol used as the matrix-valid port of the card's GER40.DWX leg.
+- GDAXI.DWX - available DWX DAX custom symbol used as the matrix-valid port of the card's GDAXI.DWX leg.
 
 **Explicitly NOT for:**
-- GER40.DWX - card-stated DAX name, but absent from `framework/registry/dwx_symbol_matrix.csv`.
+- GDAXI.DWX - card-stated DAX name, but absent from `framework/registry/dwx_symbol_matrix.csv`.
 
 ---
 

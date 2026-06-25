@@ -43,11 +43,11 @@ The EA builds two fixed CET opening ranges each day, 12:00-13:00 and 14:00-15:00
 **Designed for:**
 - `XTIUSD.DWX` - direct crude-oil CFD target from the card.
 - `XAUUSD.DWX` - liquid commodity CFD port with ATR-normalized buffer and stop.
-- `GDAXI.DWX` - matrix-verified DAX custom symbol used for the card's `GER40.DWX` intent.
+- `GDAXI.DWX` - matrix-verified DAX custom symbol used for the card's `GDAXI.DWX` intent.
 - `NDX.DWX` - liquid index CFD port with ATR-normalized buffer and stop.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - card-stated name is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX equivalent.
+- `GDAXI.DWX` - card-stated name is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX equivalent.
 
 ---
 

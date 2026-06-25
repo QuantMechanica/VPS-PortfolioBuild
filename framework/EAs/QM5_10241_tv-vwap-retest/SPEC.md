@@ -43,7 +43,7 @@ This EA trades an intraday continuation pattern around the session VWAP. A long 
 **Designed for:**
 - `NDX.DWX` - Nasdaq 100 intraday index port named by the card.
 - `WS30.DWX` - Dow 30 intraday index port named by the card.
-- `GDAXI.DWX` - Verified DWX DAX custom symbol; used as the canonical port for the card's `GER40.DWX` wording.
+- `GDAXI.DWX` - Verified DWX DAX custom symbol; used as the canonical port for the card's `GDAXI.DWX` wording.
 - `XAUUSD.DWX` - Gold CFD port named by the card.
 - `EURUSD.DWX` - Major FX port named by the card.
 - `SP500.DWX` - S&P 500 analog named by the card; valid for backtest only per DWX discipline.

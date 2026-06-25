@@ -38,12 +38,12 @@ The EA trades M5 RSI(2) exhaustion on completed bars. It enters long on the next
 - `SP500.DWX` - direct S&P 500 custom-symbol port of the ES/SPX exposure in the card; backtest-only per symbol discipline.
 - `NDX.DWX` - live-tradable US large-cap index CFD used for portable US equity-index exposure.
 - `WS30.DWX` - live-tradable US large-cap index CFD used for portable US equity-index exposure.
-- `GDAXI.DWX` - matrix-valid DAX CFD used for the card's `GER40.DWX` DAX basket item.
+- `GDAXI.DWX` - matrix-valid DAX CFD used for the card's `GDAXI.DWX` DAX basket item.
 
 **Explicitly NOT for:**
 - `ES.DWX` - not present in the DWX symbol matrix.
 - `SPX500.DWX` - unavailable; `SP500.DWX` is the canonical S&P 500 custom symbol.
-- `GER40.DWX` - card-stated name is not present in the DWX symbol matrix; this build registers `GDAXI.DWX`.
+- `GDAXI.DWX` - card-stated name is not present in the DWX symbol matrix; this build registers `GDAXI.DWX`.
 
 ---
 

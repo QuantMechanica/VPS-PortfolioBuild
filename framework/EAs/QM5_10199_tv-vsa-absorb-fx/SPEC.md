@@ -41,11 +41,11 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 - `EURUSD.DWX` - card-listed liquid FX target for the OHLCV absorption proxy.
 - `GBPUSD.DWX` - card-listed liquid FX target for the OHLCV absorption proxy.
 - `XAUUSD.DWX` - card-listed gold target with tick-volume proxy support.
-- `GDAXI.DWX` - registered DAX equivalent because card-listed `GER40.DWX` is not in the DWX matrix.
+- `GDAXI.DWX` - registered DAX equivalent because card-listed `GDAXI.DWX` is not in the DWX matrix.
 - `NDX.DWX` - card-listed index CFD target with tick-volume proxy support.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; registered as `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; registered as `GDAXI.DWX`.
 - Any unregistered symbol - magic resolution is defined only for the symbols above.
 
 ---

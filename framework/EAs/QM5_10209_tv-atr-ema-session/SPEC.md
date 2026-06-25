@@ -24,7 +24,7 @@ Positions exit through broker TP/SL or at session end.
 
 ## Symbol Universe
 
-Approved card symbols are `GER40.DWX`, `NDX.DWX`, `WS30.DWX`, `XAUUSD.DWX`, and `EURUSD.DWX`. `GER40.DWX` is not in the DWX matrix, so the build registers canonical DAX `GDAXI.DWX` plus the remaining card symbols.
+Approved card symbols are `GDAXI.DWX`, `NDX.DWX`, `WS30.DWX`, `XAUUSD.DWX`, and `EURUSD.DWX`. `GDAXI.DWX` is not in the DWX matrix, so the build registers canonical DAX `GDAXI.DWX` plus the remaining card symbols.
 
 ## Timeframe
 

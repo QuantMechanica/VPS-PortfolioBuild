@@ -48,11 +48,11 @@ distance is below four spreads.
 - `SP500.DWX` - card-listed S&P 500 custom symbol; clean liquid RTH opening range (backtest-only).
 - `NDX.DWX` - card-listed Nasdaq 100; high-beta US index, strong opening-range breakouts.
 - `WS30.DWX` - card-listed Dow 30; liquid US index, same NY cash session mapping.
-- `GDAXI.DWX` - canonical DWX DAX symbol replacing card text `GER40.DWX` (not in the DWX matrix).
+- `GDAXI.DWX` - canonical DWX DAX symbol replacing card text `GDAXI.DWX` (not in the DWX matrix).
 - `XAUUSD.DWX` - card-listed gold; volatility-driven intraday breakouts on its own window.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; `GDAXI.DWX` is the verified DWX equivalent.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; `GDAXI.DWX` is the verified DWX equivalent.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable S&P variants; `SP500.DWX` is the canonical custom-symbol target.
 
 ---

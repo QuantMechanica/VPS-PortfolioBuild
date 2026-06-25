@@ -3,7 +3,7 @@ ea_id: QM5_10209
 slug: tv-atr-ema-session
 type: strategy
 source_id: 30591366-874b-5bee-b47c-da2fca20b728
-target_symbols: [GER40.DWX, NDX.DWX, WS30.DWX, XAUUSD.DWX, EURUSD.DWX]
+target_symbols: [GDAXI.DWX, NDX.DWX, WS30.DWX, XAUUSD.DWX, EURUSD.DWX]
 sources:
   - "[[sources/tradingview-popular-pine-scripts]]"
 concepts:
@@ -59,7 +59,7 @@ Use the source ATR stop: 10.0 * ATR(25) from entry. Cap in P1 smoke if broker st
 V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number.
 
 ### Zusatzliche Filter
-- Target symbols: GER40.DWX, NDX.DWX, WS30.DWX, XAUUSD.DWX, EURUSD.DWX.
+- Target symbols: GDAXI.DWX, NDX.DWX, WS30.DWX, XAUUSD.DWX, EURUSD.DWX.
 - Because source ATR thresholds are price-unit dependent, P1/P2 should normalize thresholds by symbol point value or run an initial conservative threshold mapping per symbol. The source logic itself remains fixed: low ATR permits longs, high ATR permits shorts.
 - Spread must be <= 10% of ATR stop distance.
 

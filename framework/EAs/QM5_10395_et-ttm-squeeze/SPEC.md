@@ -41,10 +41,10 @@ This EA trades the H1 TTM squeeze breakout described in the approved Elite Trade
 - `EURJPY.DWX` - liquid JPY FX port using the same fixed-pip convention.
 - `EURUSD.DWX` - liquid FX major port using ATR-based stop and target.
 - `XAUUSD.DWX` - liquid metal port using ATR-based stop and target.
-- `GDAXI.DWX` - canonical DWX DAX symbol; used as the available matrix-valid port for the card's `GER40.DWX`.
+- `GDAXI.DWX` - canonical DWX DAX symbol; used as the available matrix-valid port for the card's `GDAXI.DWX`.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
 - `SPX500.DWX` - not a canonical DWX custom symbol.
 
 ---

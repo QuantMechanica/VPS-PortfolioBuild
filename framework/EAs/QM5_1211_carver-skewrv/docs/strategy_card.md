@@ -28,7 +28,7 @@ Relative-value version of the skew rule. It compares an instrument's rolling ske
 
 ## Universe
 
-- Index group: `GER40.DWX`, `NDX.DWX`, `WS30.DWX`.
+- Index group: `GDAXI.DWX`, `NDX.DWX`, `WS30.DWX`.
 - FX-major group: `EURUSD.DWX`, `GBPUSD.DWX`, `AUDUSD.DWX`, `USDJPY.DWX`, `USDCHF.DWX`, `USDCAD.DWX`.
 
 ## Exit

@@ -18,7 +18,7 @@
 | --- | --- | --- |
 | 0 | SP500.DWX | P2 target, T6 broker-routability caveat |
 | 1 | NDX.DWX | P2 target |
-| 2 | GER40.DWX | P2 target |
+| 2 | GDAXI.DWX | P2 target |
 | 3 | EURUSD.DWX | P2 target |
 | 4 | GBPUSD.DWX | P2 target |
 

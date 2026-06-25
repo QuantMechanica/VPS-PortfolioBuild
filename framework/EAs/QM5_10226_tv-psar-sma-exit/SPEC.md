@@ -37,11 +37,11 @@ This EA trades long only. It enters when Parabolic SAR flips from above the prio
 **Designed for:**
 - `EURUSD.DWX` - Card-listed forex target with native DWX coverage.
 - `XAUUSD.DWX` - Card-listed gold target with native DWX coverage.
-- `GDAXI.DWX` - DAX-compatible DWX symbol used because `GER40.DWX` is not in `dwx_symbol_matrix.csv`.
+- `GDAXI.DWX` - DAX-compatible DWX symbol used because `GDAXI.DWX` is not in `dwx_symbol_matrix.csv`.
 - `NDX.DWX` - Card-listed Nasdaq index target with native DWX coverage.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - Card-stated name is not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is registered instead.
+- `GDAXI.DWX` - Card-stated name is not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is registered instead.
 
 ---
 

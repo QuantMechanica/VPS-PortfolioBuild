@@ -13,7 +13,7 @@
 - Stop: emergency stop at `3.0 * ATR(20, D1)`.
 
 ## Universe And Slots
-- Slot 0: `GER40.DWX`
+- Slot 0: `GDAXI.DWX`
 - Slot 1: `NDX.DWX`
 - Slot 2: `WS30.DWX`
 - Slot 3: `EURUSD.DWX`

@@ -34,10 +34,10 @@ The EA evaluates completed daily bars on index CFDs. It fades the prior day's ex
 - `SP500.DWX` - S&P 500 custom-symbol port of the source ES/index logic.
 - `NDX.DWX` - liquid US large-cap index CFD for Nasdaq exposure.
 - `WS30.DWX` - liquid US large-cap index CFD for Dow exposure.
-- `GDAXI.DWX` - canonical DWX DAX symbol, used as the available port for the card's `GER40.DWX`.
+- `GDAXI.DWX` - canonical DWX DAX symbol, used as the available port for the card's `GDAXI.DWX`.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX port.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX port.
 - Forex, metals, and energy `.DWX` symbols - outside the card's index-CFD scope.
 
 ---

@@ -37,10 +37,10 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
 - EURUSD.DWX - Card-listed major FX symbol with DWX matrix support.
 - GBPUSD.DWX - Card-listed major FX symbol with DWX matrix support.
 - XAUUSD.DWX - Card-listed gold CFD with DWX matrix support.
-- GDAXI.DWX - DWX matrix DAX symbol used as the available equivalent for card-listed GER40.DWX.
+- GDAXI.DWX - DWX matrix DAX symbol used as the available equivalent for card-listed GDAXI.DWX.
 
 **Explicitly NOT for:**
-- GER40.DWX - Not present in `framework/registry/dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX equivalent.
+- GDAXI.DWX - Not present in `framework/registry/dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX equivalent.
 - Symbols outside the registered basket - Not validated for this card's P2 baseline.
 
 ---

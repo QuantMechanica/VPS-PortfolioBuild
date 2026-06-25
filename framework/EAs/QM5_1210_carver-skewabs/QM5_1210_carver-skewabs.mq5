@@ -45,7 +45,7 @@ input int    strategy_max_lookback_guard      = 768;
 #define QM5_1210_SYMBOL_COUNT 8
 
 string g_symbols[QM5_1210_SYMBOL_COUNT] = {
-   "GER40.DWX",
+   "GDAXI.DWX",
    "NDX.DWX",
    "WS30.DWX",
    "EURUSD.DWX",

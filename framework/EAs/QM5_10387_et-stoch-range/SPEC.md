@@ -42,7 +42,7 @@ The EA runs on M1 bars and treats each broker day as a session. It tracks the se
 - `XAUUSD.DWX` - Liquid metals symbol named in the approved card.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `dwx_symbol_matrix.csv`; mapped to `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `dwx_symbol_matrix.csv`; mapped to `GDAXI.DWX`.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable S&P 500 variants; use `SP500.DWX`.
 
 ---

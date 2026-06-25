@@ -32,7 +32,7 @@ g0_approval_reasoning: "R1 SSRN URL and named SFI paper source; R2 deterministic
 ## Mechanik
 
 ### Entry
-1. Trade a DWX trend basket: `EURUSD.DWX`, `GBPUSD.DWX`, `USDJPY.DWX`, `XAUUSD.DWX`, `GER40.DWX`, `NDX.DWX`.
+1. Trade a DWX trend basket: `EURUSD.DWX`, `GBPUSD.DWX`, `USDJPY.DWX`, `XAUUSD.DWX`, `GDAXI.DWX`, `NDX.DWX`.
 2. On each D1 close, compute Donchian signals for lookbacks `{20, 55, 100}`.
 3. For each lookback, score `+1` if `Close > highest_high(lookback)[1]`, `-1` if `Close < lowest_low(lookback)[1]`, else keep that lookback's prior score.
 4. Aggregate score = average of the three lookback scores.

@@ -36,10 +36,10 @@ This EA trades an opening-gap fade on M5 index bars. On the first completed prim
 - SP500.DWX - S&P 500 index proxy explicitly named in R3; backtest-only per platform caveat.
 - NDX.DWX - Nasdaq 100 index proxy matching the source's Nasdaq futures origin.
 - WS30.DWX - Dow 30 liquid US index CFD in the approved R3 basket.
-- GDAXI.DWX - Matrix-valid DAX custom symbol used as the available port for the card's GER40.DWX basket item.
+- GDAXI.DWX - Matrix-valid DAX custom symbol used as the available port for the card's GDAXI.DWX basket item.
 
 **Explicitly NOT for:**
-- GER40.DWX - Card-stated DAX name is not present in `dwx_symbol_matrix.csv`; GDAXI.DWX is registered instead.
+- GDAXI.DWX - Card-stated DAX name is not present in `dwx_symbol_matrix.csv`; GDAXI.DWX is registered instead.
 - SPX500.DWX, SPY.DWX, ES.DWX - Not canonical DWX symbols for this platform.
 
 ---

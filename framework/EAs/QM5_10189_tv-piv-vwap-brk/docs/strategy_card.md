@@ -3,7 +3,7 @@ ea_id: QM5_10189
 slug: tv-piv-vwap-brk
 type: strategy
 source_id: 30591366-874b-5bee-b47c-da2fca20b728
-target_symbols: [XAUUSD.DWX, EURUSD.DWX, GBPUSD.DWX, GER40.DWX, NDX.DWX]
+target_symbols: [XAUUSD.DWX, EURUSD.DWX, GBPUSD.DWX, GDAXI.DWX, NDX.DWX]
 sources:
   - "[[sources/tradingview-popular-pine-scripts]]"
 concepts:
@@ -61,7 +61,7 @@ V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number.
 ### Zusatzliche Filter
 - Do not run on 1-second data in QM baseline; use M5/M15 to keep MT5 tick-test runtime bounded.
 - Spread must be <= 15% of ATR stop distance.
-- DWX targets: XAUUSD.DWX, EURUSD.DWX, GBPUSD.DWX, GER40.DWX, NDX.DWX.
+- DWX targets: XAUUSD.DWX, EURUSD.DWX, GBPUSD.DWX, GDAXI.DWX, NDX.DWX.
 
 ## Concepts (was ist das fur eine Strategie)
 - [[concepts/breakout]] - confirmed pivot level breakout.

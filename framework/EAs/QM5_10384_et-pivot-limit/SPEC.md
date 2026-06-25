@@ -34,12 +34,12 @@ On each completed M15 bar, the EA computes typical price as `(close + high + low
 - `SP500.DWX` - S&P 500 large-cap index exposure from the card's R3 basket; backtest-only per DWX symbol discipline.
 - `NDX.DWX` - Nasdaq 100 liquid US index exposure from the card's R3 basket.
 - `WS30.DWX` - Dow 30 liquid US index exposure from the card's R3 basket.
-- `GDAXI.DWX` - Verified DWX DAX symbol used for the card's `GER40.DWX` target.
+- `GDAXI.DWX` - Verified DWX DAX symbol used for the card's `GDAXI.DWX` target.
 - `EURUSD.DWX` - Major FX pair from the card's R3 basket.
 - `XAUUSD.DWX` - Gold/metals exposure from the card's R3 basket.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - Not present in `framework/registry/dwx_symbol_matrix.csv`; mapped to `GDAXI.DWX`.
+- `GDAXI.DWX` - Not present in `framework/registry/dwx_symbol_matrix.csv`; mapped to `GDAXI.DWX`.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - Not canonical DWX S&P 500 symbols.
 
 ---

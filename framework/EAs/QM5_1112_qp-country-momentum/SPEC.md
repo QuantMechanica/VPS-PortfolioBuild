@@ -5,7 +5,7 @@
 - Source card: `docs/strategy_card.md`
 - Status: APPROVED / G0
 - Concept: long-only country equity-index momentum rotation
-- Universe: `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`, `UK100.DWX`, `JPN225.DWX`, `AUS200.DWX`, `SP500.DWX`
+- Universe: `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`, `UK100.DWX`, `JPN225.DWX`, `SP500.DWX`
 - Timeframe: D1
 
 ## Framework Alignment
@@ -38,7 +38,6 @@
 | 2 | `GDAXI.DWX` |
 | 3 | `UK100.DWX` |
 | 4 | `JPN225.DWX` |
-| 5 | `AUS200.DWX` |
 | 6 | `SP500.DWX` |
 
 ## Risk Contract
@@ -49,6 +48,6 @@
 
 ## Notes
 
-- `GER40.DWX` in the card mechanics is mapped to `GDAXI.DWX`, matching the local Darwinex/index registry convention and adjacent Country Index V5 EAs.
+- `GDAXI.DWX` in the card mechanics is mapped to `GDAXI.DWX`, matching the local Darwinex/index registry convention and adjacent Country Index V5 EAs.
 - `SP500.DWX` is included as a research/backtest leg per the card caveat. T6 promotion must honor the caveat if SP500 is the only passing live leg.
 - The default card universe has seven symbols, so the default build selects the top 2 rather than top 5.

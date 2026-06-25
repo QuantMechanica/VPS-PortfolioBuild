@@ -31,7 +31,7 @@ g0_approval_reasoning: "R1 MQL5 CodeBase URL/title/author/date cited; R2 determi
 ## Mechanik
 
 ### Entry
-- Target symbols: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, GER40.DWX, NDX.DWX.
+- Target symbols: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, GDAXI.DWX, NDX.DWX.
 - Timeframe: H1 baseline; M15 can be a P3 variant because the source includes a time filter and fixed point exits.
 - Build a rectangle support/resistance zone from the source rectangle settings.
 - Long setup:

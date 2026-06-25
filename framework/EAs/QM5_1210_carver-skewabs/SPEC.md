@@ -26,7 +26,7 @@ Implements the approved V5 Strategy Card `QM5_1210_carver-skewabs`.
 
 Backtest and live templates are generated for:
 
-- `GER40.DWX`
+- `GDAXI.DWX`
 - `NDX.DWX`
 - `WS30.DWX`
 - `EURUSD.DWX`

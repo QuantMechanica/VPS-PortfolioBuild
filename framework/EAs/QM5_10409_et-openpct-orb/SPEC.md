@@ -42,7 +42,7 @@ The EA records the mapped day-session open for each index CFD. At the afternoon 
 - `GDAXI.DWX` - DAX index custom symbol; nearest available DWX matrix symbol for the card's GER40 target.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - card-stated name is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is used instead.
+- `GDAXI.DWX` - card-stated name is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is used instead.
 - `SPX500.DWX` - unavailable phantom S&P 500 variant; canonical symbol is `SP500.DWX`.
 
 ---

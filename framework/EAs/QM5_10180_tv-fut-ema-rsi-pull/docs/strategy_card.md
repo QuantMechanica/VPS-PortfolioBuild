@@ -57,7 +57,7 @@ Use M15 or M30 bars, long and short.
 V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number.
 
 ### Zusatzliche Filter
-- Primary DWX port: NDX.DWX, WS30.DWX, GER40.DWX, XAUUSD.DWX.
+- Primary DWX port: NDX.DWX, WS30.DWX, GDAXI.DWX, XAUUSD.DWX.
 - Optional SP500.DWX backtest analog is allowed.
 - Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
 - Skip high-impact US macro release windows for index/gold tests.

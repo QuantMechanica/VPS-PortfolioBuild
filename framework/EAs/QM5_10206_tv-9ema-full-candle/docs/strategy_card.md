@@ -3,7 +3,7 @@ ea_id: QM5_10206
 slug: tv-9ema-full-candle
 type: strategy
 source_id: 30591366-874b-5bee-b47c-da2fca20b728
-target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GER40.DWX, XAUUSD.DWX]
+target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX, XAUUSD.DWX]
 sources:
   - "[[sources/tradingview-popular-pine-scripts]]"
 concepts:
@@ -51,7 +51,7 @@ Source does not define a protective stop beyond the EMA exit. Add V5 emergency s
 V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number.
 
 ### Zusatzliche Filter
-- Target symbols: SP500.DWX, NDX.DWX, WS30.DWX, GER40.DWX, XAUUSD.DWX.
+- Target symbols: SP500.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX, XAUUSD.DWX.
 - Trade only during the most liquid session for the symbol: US RTH for US index analogs, London/NY overlap for GER40/XAUUSD.
 - Spread must be <= 10% of emergency stop distance.
 

@@ -11,7 +11,7 @@ concepts:
   - "[[concepts/moving-average-crossover]]"
 indicators:
   - "[[indicators/sma]]"
-target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX]
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX]
 period: M15
 expected_trade_frequency: "M15 MA relief-rally scalper can trigger repeatedly in downtrend regimes; conservative estimate 45-90 trades/year/symbol."
 expected_trades_per_year_per_symbol: 60
@@ -73,7 +73,7 @@ g0_approval_reasoning: "R1 TradingView URL/author cited; R2 MA stack entry and M
 | R4 No ML | PASS | Fixed MA rules and one position at a time; no ML/grid/martingale. |
 
 ## R3
-Primary P2 basket: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX.
+Primary P2 basket: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX.
 
 ## Pipeline-Verlauf
 - G0: 2026-05-19, PENDING.

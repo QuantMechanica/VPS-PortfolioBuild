@@ -39,10 +39,10 @@ This EA trades the TDSGlobal pending-limit reversal pattern from the approved ca
 - `GBPUSD.DWX` - card-listed liquid DWX FX major.
 - `USDJPY.DWX` - card-listed liquid DWX FX major.
 - `XAUUSD.DWX` - card-listed gold/commodity DWX symbol.
-- `GDAXI.DWX` - matrix-verified DAX custom symbol used for the card's `GER40.DWX` target.
+- `GDAXI.DWX` - matrix-verified DAX custom symbol used for the card's `GDAXI.DWX` target.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
 
 ---
 

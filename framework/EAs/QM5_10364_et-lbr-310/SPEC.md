@@ -43,10 +43,10 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 - `SP500.DWX` - Closest available ES/S&P 500 backtest proxy named in the approved card.
 - `NDX.DWX` - Liquid US large-cap index CFD live-port candidate named in the approved card.
 - `WS30.DWX` - Liquid US large-cap index CFD live-port candidate named in the approved card.
-- `GDAXI.DWX` - Verified DAX custom symbol in `dwx_symbol_matrix.csv`; used as the available DWX port for card-stated `GER40.DWX`.
+- `GDAXI.DWX` - Verified DAX custom symbol in `dwx_symbol_matrix.csv`; used as the available DWX port for card-stated `GDAXI.DWX`.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - Card-stated DAX label, but not present in `dwx_symbol_matrix.csv`; no registry row was created for this unavailable name.
+- `GDAXI.DWX` - Card-stated DAX label, but not present in `dwx_symbol_matrix.csv`; no registry row was created for this unavailable name.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - Unavailable S&P/ES variants; `SP500.DWX` is the canonical custom symbol.
 
 ---

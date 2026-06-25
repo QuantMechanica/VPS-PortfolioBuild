@@ -6,7 +6,7 @@ Build-only V5 Expert Advisor for approved strategy card `QM5_1211_carver-skewrv`
 
 ## Card Mapping
 
-- Universe: index group `GER40.DWX`, `NDX.DWX`, `WS30.DWX`; FX group `EURUSD.DWX`, `GBPUSD.DWX`, `AUDUSD.DWX`, `USDJPY.DWX`, `USDCHF.DWX`, `USDCAD.DWX`.
+- Universe: index group `GDAXI.DWX`, `NDX.DWX`, `WS30.DWX`; FX group `EURUSD.DWX`, `GBPUSD.DWX`, `AUDUSD.DWX`, `USDJPY.DWX`, `USDCHF.DWX`, `USDCAD.DWX`.
 - Timeframe: closed D1 bars only.
 - Entry: compute log returns, rolling skew over `strategy_lookback_days`, group median skew, relative-value signal, rolling MAD over `strategy_mad_days`, capped forecast. Open long above `strategy_entry_forecast`, short below negative threshold.
 - Rank cap: only symbols ranked within `strategy_max_slots_per_group` by absolute forecast are eligible.

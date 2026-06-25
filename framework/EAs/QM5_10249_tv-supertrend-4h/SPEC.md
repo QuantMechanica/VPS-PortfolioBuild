@@ -52,7 +52,7 @@ out of oversold for longs or out of overbought for shorts.
 
 **Explicitly NOT for:**
 - `BTCUSD.DWX` — card names it only "if available"; it is not present in `dwx_symbol_matrix.csv`.
-- `GER40.DWX` — not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
+- `GDAXI.DWX` — not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
 - Any symbol not listed above — no implicit universe expansion at runtime.
 
 ---

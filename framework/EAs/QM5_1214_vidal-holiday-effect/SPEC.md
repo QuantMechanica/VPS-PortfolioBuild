@@ -19,7 +19,7 @@
 | 0 | SP500.DWX | U.S. pre-holiday, backtest/T6 caveat |
 | 1 | NDX.DWX | U.S. pre-holiday |
 | 2 | WS30.DWX | U.S. pre-holiday |
-| 3 | GER40.DWX | German/Euronext post-holiday |
+| 3 | GDAXI.DWX | German/Euronext post-holiday |
 
 ## Parameters
 

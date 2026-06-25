@@ -11,7 +11,7 @@ concepts:
   - "[[concepts/intraday-session-pattern]]"
   - "[[concepts/fixed-risk-reward]]"
 indicators: [EMA, MACD]
-target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GER40.DWX]
+target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX]
 period: M1
 expected_trade_frequency: "Source reports 3-10 ES signals/day on 1000-tick bars; V5 bar-port and session filters conservatively estimate 250 trades/year/symbol."
 expected_trades_per_year_per_symbol: 250
@@ -61,7 +61,7 @@ g0_approval_reasoning: "R1 source URL/handle present; R2 MACD/EMA pullback entri
 - Live: V5 default risk after approval.
 
 ### Zusaetzliche Filter
-- `SP500.DWX` is the closest ES proxy for backtest-only; live-port candidates are `NDX.DWX`, `WS30.DWX`, and `GER40.DWX`.
+- `SP500.DWX` is the closest ES proxy for backtest-only; live-port candidates are `NDX.DWX`, `WS30.DWX`, and `GDAXI.DWX`.
 - Skip when spread exceeds 2.5x rolling median spread.
 
 ## Concepts
@@ -78,7 +78,7 @@ g0_approval_reasoning: "R1 source URL/handle present; R2 MACD/EMA pullback entri
 | R4 No ML | PASS | Fixed indicator rules; no ML, adaptive parameters, grid, martingale, or multi-position requirement. |
 
 ## R3
-Primary P2 basket: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GER40.DWX`.
+Primary P2 basket: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`.
 
 Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
 

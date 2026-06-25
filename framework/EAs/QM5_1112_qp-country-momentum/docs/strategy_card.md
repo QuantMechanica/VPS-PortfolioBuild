@@ -31,7 +31,7 @@ g0_approval_reasoning: "Quantpedia country-index momentum (Muller/Ward 2010 IAJ 
 
 ### Entry
 At each month-end:
-1. Universe: DWX broad equity-index CFDs with sufficient D1 history, candidate set `NDX.DWX`, `WS30.DWX`, `GER40.DWX`, `UK100.DWX`, `JPN225.DWX`, `AUS200.DWX`, plus `SP500.DWX` for backtest-only research if needed.
+1. Universe: DWX broad equity-index CFDs with sufficient D1 history, candidate set `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`, `UK100.DWX`, `JPN225.DWX`, plus `SP500.DWX` for backtest-only research if needed.
 2. For each index, compute total return over the prior 10, 11, or 12 months. Default: 11 months per Muller/Ward source abstract.
 3. Rank indexes descending by lookback return.
 4. Open LONG positions in the top 5 indexes if the universe has at least 10 symbols; otherwise open LONG positions in the top 2 indexes.

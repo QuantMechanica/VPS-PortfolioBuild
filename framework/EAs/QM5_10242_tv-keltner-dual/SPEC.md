@@ -39,11 +39,11 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
 - XAUUSD.DWX - card highlights XAUUSD and volatility-channel behaviour suits gold.
 - XTIUSD.DWX - card highlights crude oil and DWX provides the oil custom symbol.
 - NDX.DWX - card highlights NASDAQ/NQ and DWX provides Nasdaq 100 exposure.
-- GDAXI.DWX - DAX port for the card's GER40.DWX reference; `GER40.DWX` is not in the DWX matrix.
+- GDAXI.DWX - DAX port for the card's GDAXI.DWX reference; `GDAXI.DWX` is not in the DWX matrix.
 - SP500.DWX - card names SP500.DWX; build-time registration is valid for backtest-only S&P 500 exposure.
 
 **Explicitly NOT for:**
-- GER40.DWX - not present in `framework/registry/dwx_symbol_matrix.csv`; use GDAXI.DWX for DAX exposure.
+- GDAXI.DWX - not present in `framework/registry/dwx_symbol_matrix.csv`; use GDAXI.DWX for DAX exposure.
 - SPX500.DWX, SPY.DWX, ES.DWX - unavailable aliases; SP500.DWX is the canonical S&P 500 custom symbol.
 
 ---

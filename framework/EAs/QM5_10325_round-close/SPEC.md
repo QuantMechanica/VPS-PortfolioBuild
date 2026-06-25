@@ -33,10 +33,10 @@ At the start of each new D1 bar, the EA reads the just-closed D1 close and finds
 - `SP500.DWX` - S&P 500 index CFD/custom symbol named in the approved R3 basket.
 - `NDX.DWX` - Nasdaq 100 index CFD named in the approved R3 basket.
 - `WS30.DWX` - Dow 30 index CFD named in the approved R3 basket.
-- `GDAXI.DWX` - available DWX DAX custom symbol; used as the matrix-valid port for card `GER40.DWX`.
+- `GDAXI.DWX` - available DWX DAX custom symbol; used as the matrix-valid port for card `GDAXI.DWX`.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - not canonical DWX symbols for the S&P 500 basket.
 
 ---

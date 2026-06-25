@@ -37,12 +37,12 @@ On each closed H1 bar, the EA compares the breakout candle against the previous 
 **Designed for:**
 - `XAUUSD.DWX` - card-listed high-volatility gold CFD with native DWX tick volume.
 - `NDX.DWX` - card-listed index CFD proxy for high-volatility large-cap technology exposure.
-- `GDAXI.DWX` - canonical DWX DAX symbol used for the card's `GER40.DWX` DAX exposure.
+- `GDAXI.DWX` - canonical DWX DAX symbol used for the card's `GDAXI.DWX` DAX exposure.
 - `EURUSD.DWX` - card-listed major FX pair with DWX OHLC and tick-volume coverage.
 - `GBPJPY.DWX` - card-listed high-volatility FX cross with DWX OHLC and tick-volume coverage.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
 - Any symbol outside the registered list above - magic resolution rejects unregistered symbols.
 
 ---

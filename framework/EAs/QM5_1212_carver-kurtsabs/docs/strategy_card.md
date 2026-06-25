@@ -21,7 +21,7 @@ expected_trades_per_year_per_symbol: 20
 
 Higher-moment rule that trades skew only when the distribution also has meaningful kurtosis. The intent is to capture asymmetric tail behaviour while avoiding redundant skew variants.
 
-Suggested DWX universe for P2: GER40.DWX, NDX.DWX, WS30.DWX, EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD.DWX, XTIUSD.DWX.
+Suggested DWX universe for P2: GDAXI.DWX, NDX.DWX, WS30.DWX, EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD.DWX, XTIUSD.DWX.
 
 ### Entry
 - On each closed D1 bar:

@@ -40,13 +40,13 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `GDAXI.DWX` - DAX proxy registered because `GER40.DWX` is not present in `dwx_symbol_matrix.csv`.
+- `GDAXI.DWX` - DAX proxy registered because `GDAXI.DWX` is not present in `dwx_symbol_matrix.csv`.
 - `SP500.DWX` - US large-cap index proxy named in the card's portable basket; backtest-only caveat applies at T6.
 - `NDX.DWX` - Nasdaq 100 liquid index proxy named in the card's portable basket.
 - `WS30.DWX` - Dow 30 liquid index proxy named in the card's portable basket.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - named by card frontmatter but absent from the DWX matrix, so it is not registered.
+- `GDAXI.DWX` - named by card frontmatter but absent from the DWX matrix, so it is not registered.
 - `DE30.DWX` - DAX naming variant absent from the current DWX matrix.
 
 ---

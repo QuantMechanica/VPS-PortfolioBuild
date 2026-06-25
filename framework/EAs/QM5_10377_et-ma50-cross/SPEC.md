@@ -40,7 +40,7 @@ The EA evaluates completed H4 bars and compares the last two closes to SMA(50) o
 - `SP500.DWX` - card-listed S&P 500 custom symbol; valid for backtest registration.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
 - `SPX500.DWX` - not the canonical S&P 500 custom symbol.
 
 ---

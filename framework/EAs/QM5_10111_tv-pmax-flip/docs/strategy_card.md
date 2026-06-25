@@ -13,7 +13,7 @@ indicators:
   - "[[indicators/atr]]"
   - "[[indicators/moving-average]]"
   - "[[indicators/supertrend]]"
-target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX]
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX]
 period: H1
 expected_trade_frequency: "H1 trailing-stop reversal signals are less frequent than bar-by-bar momentum; conservative estimate 25-55 trades/year/symbol."
 expected_trades_per_year_per_symbol: 40
@@ -77,7 +77,7 @@ g0_approval_reasoning: "R1 TradingView URL/author present; R2 ATR/MA PMax cross 
 | R4 No ML | PASS | Fixed indicator parameters and one-position flip logic; no ML/grid/martingale/adaptive online learning. |
 
 ## R3
-Primary P2 basket / period: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX on H1.
+Primary P2 basket / period: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX on H1.
 
 ## Pipeline-Verlauf
 - G0: 2026-05-19, PENDING.

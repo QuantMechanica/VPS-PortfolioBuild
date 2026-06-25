@@ -3,7 +3,7 @@ ea_id: QM5_10205
 slug: tv-chop-dmi-psar
 type: strategy
 source_id: 30591366-874b-5bee-b47c-da2fca20b728
-target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX]
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX, NDX.DWX]
 sources:
   - "[[sources/tradingview-popular-pine-scripts]]"
 concepts:
@@ -63,7 +63,7 @@ Use PSAR as the source trailing stop. Add V5 emergency stop at 3.0 * ATR(14) fro
 V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number.
 
 ### Zusatzliche Filter
-- Target symbols: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX.
+- Target symbols: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX, NDX.DWX.
 - Spread must be <= 15% of current PSAR/ATR stop distance.
 - Disable CHOP offset for the baseline to avoid forward/backward displacement ambiguity.
 

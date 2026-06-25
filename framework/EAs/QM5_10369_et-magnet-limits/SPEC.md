@@ -39,10 +39,10 @@ The EA builds one intraday bracket around the 08:30 Chicago-equivalent broker op
 - SP500.DWX - closest ES/S&P 500 proxy and explicitly approved for backtest-only use.
 - NDX.DWX - live-tradable US large-cap index CFD in the approved R3 basket.
 - WS30.DWX - live-tradable Dow 30 index CFD in the approved R3 basket.
-- GDAXI.DWX - matrix-available DAX proxy used for the card's GER40.DWX exposure.
+- GDAXI.DWX - matrix-available DAX proxy used for the card's GDAXI.DWX exposure.
 
 **Explicitly NOT for:**
-- GER40.DWX - not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is registered instead.
+- GDAXI.DWX - not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is registered instead.
 - SPX500.DWX, SPY.DWX, ES.DWX - not canonical DWX symbols for this build.
 
 ---

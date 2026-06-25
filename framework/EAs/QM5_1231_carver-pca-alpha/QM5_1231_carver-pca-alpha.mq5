@@ -40,13 +40,13 @@ input double strategy_atr_sl_mult         = 2.5;
 input int    strategy_spread_median_days  = 20;
 input double strategy_spread_mult         = 2.0;
 
-#define QM5_1231_SYMBOL_COUNT 11
+#define QM5_1231_SYMBOL_COUNT 10
 #define QM5_1231_MAX_LOOKBACK 300
 #define QM5_1231_MAX_PC       3
 
 string g_symbols[QM5_1231_SYMBOL_COUNT] =
   {
-   "GER40.DWX", "NDX.DWX", "WS30.DWX", "UK100.DWX", "FRA40.DWX",
+   "GDAXI.DWX", "NDX.DWX", "WS30.DWX", "UK100.DWX",
    "EURUSD.DWX", "GBPUSD.DWX", "AUDUSD.DWX", "USDJPY.DWX", "USDCHF.DWX", "USDCAD.DWX"
   };
 

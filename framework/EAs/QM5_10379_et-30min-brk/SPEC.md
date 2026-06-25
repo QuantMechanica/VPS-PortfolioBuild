@@ -42,10 +42,10 @@ The EA runs on an M5 chart and records the high and low of the first 30 minutes 
 - `SP500.DWX` - S&P 500 custom symbol matching the ES/SPX opening-range source logic; backtest-only per DWX discipline.
 - `NDX.DWX` - liquid US large-cap index CFD analog for Nasdaq 100.
 - `WS30.DWX` - liquid US large-cap index CFD analog for Dow 30.
-- `GDAXI.DWX` - verified DAX custom symbol used as the nearest available DWX port for the card's `GER40.DWX`.
+- `GDAXI.DWX` - verified DAX custom symbol used as the nearest available DWX port for the card's `GDAXI.DWX`.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - card-stated name is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the verified DAX symbol.
+- `GDAXI.DWX` - card-stated name is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the verified DAX symbol.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable variants; `SP500.DWX` is the canonical S&P 500 custom symbol.
 
 ---

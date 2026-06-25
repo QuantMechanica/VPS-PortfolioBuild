@@ -47,7 +47,7 @@ input double strategy_spread_mult        = 2.0;
 
 string g_symbols[QM5_1220_SYMBOL_COUNT] =
   {
-   "GER40.DWX", "NDX.DWX", "WS30.DWX",
+   "GDAXI.DWX", "NDX.DWX", "WS30.DWX",
    "EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX", "XAUUSD.DWX"
   };
 

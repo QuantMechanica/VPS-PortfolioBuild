@@ -40,10 +40,10 @@ This EA trades M5 index bars using a 150-period simple moving average as the reg
 - `SP500.DWX` - Direct S&P 500 / ES-equivalent backtest port from the source strategy.
 - `NDX.DWX` - Liquid US large-cap index CFD analog for live-eligible validation.
 - `WS30.DWX` - Liquid US large-cap index CFD analog for live-eligible validation.
-- `GDAXI.DWX` - Matrix-verified DAX 40 proxy for the card's `GER40.DWX` basket member.
+- `GDAXI.DWX` - Matrix-verified DAX 40 proxy for the card's `GDAXI.DWX` basket member.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - Card-listed symbol is not present in `dwx_symbol_matrix.csv`; ported to `GDAXI.DWX`.
+- `GDAXI.DWX` - Card-listed symbol is not present in `dwx_symbol_matrix.csv`; ported to `GDAXI.DWX`.
 - `SPY.DWX`, `ES.DWX`, `SPX500.DWX` - Not canonical DWX symbols for this framework.
 
 ---

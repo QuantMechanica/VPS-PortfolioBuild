@@ -45,11 +45,11 @@ The EA evaluates only the last closed candle. It opens long when the close is ab
 - `EURUSD.DWX` - card target; major FX pair with DWX custom symbol coverage.
 - `GBPUSD.DWX` - card target; major FX pair with DWX custom symbol coverage.
 - `USDJPY.DWX` - card target; major FX pair with DWX custom symbol coverage.
-- `GDAXI.DWX` - DAX-equivalent DWX custom symbol used because `GER40.DWX` is not in the matrix.
+- `GDAXI.DWX` - DAX-equivalent DWX custom symbol used because `GDAXI.DWX` is not in the matrix.
 - `XAUUSD.DWX` - card target; gold custom symbol with DWX coverage.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - card name is not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
+- `GDAXI.DWX` - card name is not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
 - Non-DWX symbols - research and backtest artifacts must keep the `.DWX` suffix.
 
 ---

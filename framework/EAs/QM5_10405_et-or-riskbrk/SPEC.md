@@ -39,11 +39,11 @@ The EA builds an opening range from the first three M5 bars of the mapped tradin
 - `SP500.DWX` - S&P 500 index proxy named by the card; backtest-only custom symbol.
 - `NDX.DWX` - Nasdaq 100 index leg from the card's portable US basket.
 - `WS30.DWX` - Dow 30 index leg from the card's portable US basket.
-- `GDAXI.DWX` - available DAX custom symbol used for the card's `GER40.DWX` leg.
+- `GDAXI.DWX` - available DAX custom symbol used for the card's `GDAXI.DWX` leg.
 - `XAUUSD.DWX` - metal leg named by the card's target symbol list.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; ported to `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; ported to `GDAXI.DWX`.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable S&P aliases; `SP500.DWX` is the canonical custom symbol.
 
 ---

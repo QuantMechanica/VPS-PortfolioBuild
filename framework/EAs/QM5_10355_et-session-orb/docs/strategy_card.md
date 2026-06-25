@@ -11,7 +11,7 @@ concepts:
   - "[[concepts/range-stop]]"
   - "[[concepts/fixed-profit-target]]"
 indicators: []
-target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GER40.DWX, EURUSD.DWX]
+target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX, EURUSD.DWX]
 period: M15
 expected_trade_frequency: "One opening-range breakout per session with max one entry per day; conservative estimate 150 trades/year/symbol after filters."
 expected_trades_per_year_per_symbol: 150
@@ -80,7 +80,7 @@ g0_approval_reasoning: "R1 PASS Elite Trader URL/handles cited; R2 PASS mechanic
 | R4 No ML | PASS | Fixed breakout rules; one-position-per-magic compatible; no ML, grid, or martingale. |
 
 ## R3
-Primary P2 basket: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GER40.DWX`, `EURUSD.DWX`.
+Primary P2 basket: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`, `EURUSD.DWX`.
 
 Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
 

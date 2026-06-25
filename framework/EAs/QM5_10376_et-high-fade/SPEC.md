@@ -40,11 +40,11 @@ The EA evaluates completed H1 bars. It buys when the last closed bar made the hi
 - `EURUSD.DWX` - card names EURUSD and DWX matrix confirms the forex symbol.
 - `GBPUSD.DWX` - card names GBPUSD and DWX matrix confirms the forex symbol.
 - `XAUUSD.DWX` - card names XAUUSD.DWX and DWX matrix confirms the metals symbol.
-- `GDAXI.DWX` - DAX exposure port for the card's GER40.DWX target; DWX matrix canonical DAX symbol.
+- `GDAXI.DWX` - DAX exposure port for the card's GDAXI.DWX target; DWX matrix canonical DAX symbol.
 - `SP500.DWX` - card names SP500.DWX and DWX matrix confirms the backtest-only S&P 500 custom symbol.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX` for DAX exposure.
+- `GDAXI.DWX` - not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX` for DAX exposure.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable S&P variants; canonical custom symbol is `SP500.DWX`.
 
 ---

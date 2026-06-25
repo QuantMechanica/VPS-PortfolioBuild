@@ -47,7 +47,7 @@ The EA trades M1 index lead-lag moves during the US cash open and European close
 - `NDX.DWX` - Nasdaq 100 leader and alternate US index leader.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the verified DAX symbol.
+- `GDAXI.DWX` - not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the verified DAX symbol.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable aliases; the canonical S&P 500 custom symbol is `SP500.DWX`.
 
 ---

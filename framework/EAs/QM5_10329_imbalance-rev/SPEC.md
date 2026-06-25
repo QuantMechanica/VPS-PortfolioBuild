@@ -35,10 +35,10 @@ The EA evaluates once per D1 closed bar. It measures the prior daily return agai
 - `SP500.DWX` - S&P 500 broad US index exposure named in the card and available as a backtest-only custom symbol.
 - `NDX.DWX` - Nasdaq 100 large-cap US index exposure named in the card.
 - `WS30.DWX` - Dow 30 large-cap US index exposure named in the card.
-- `GDAXI.DWX` - DAX custom symbol in the DWX matrix, used as the available DAX equivalent for the card's `GER40.DWX` reference.
+- `GDAXI.DWX` - DAX custom symbol in the DWX matrix, used as the available DAX equivalent for the card's `GDAXI.DWX` reference.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; DAX exposure is registered as `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; DAX exposure is registered as `GDAXI.DWX`.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable S&P 500 aliases; the canonical custom symbol is `SP500.DWX`.
 
 ---

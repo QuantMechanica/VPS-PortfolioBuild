@@ -42,10 +42,10 @@ The EA trades the RSI regime rule from the Elite Trader source on the M15 chart.
 - `SP500.DWX` - S&P 500 custom symbol matching the source ES/e-mini index intent; backtest-only per DWX discipline.
 - `NDX.DWX` - Nasdaq 100 live-tradable US large-cap index analog.
 - `WS30.DWX` - Dow 30 live-tradable US large-cap index analog.
-- `GDAXI.DWX` - verified DWX DAX symbol used as the available port for the card's `GER40.DWX` target.
+- `GDAXI.DWX` - verified DWX DAX symbol used as the available port for the card's `GDAXI.DWX` target.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; `GDAXI.DWX` is registered instead.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; `GDAXI.DWX` is registered instead.
 
 ---
 

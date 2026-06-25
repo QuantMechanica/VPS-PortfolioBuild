@@ -44,11 +44,11 @@ The EA trades a stochastic reversal scalp on the close of M15 bars. A long setup
 - `SP500.DWX` — card-stated S&P 500 proxy and available custom backtest symbol.
 - `NDX.DWX` — card-stated Nasdaq 100 proxy using the same index CFD scalp mechanics.
 - `WS30.DWX` — card-stated Dow 30 proxy using the same index CFD scalp mechanics.
-- `GDAXI.DWX` — available DWX DAX custom symbol used as the matrix-valid port for card-stated `GER40.DWX`.
+- `GDAXI.DWX` — available DWX DAX custom symbol used as the matrix-valid port for card-stated `GDAXI.DWX`.
 - `XAUUSD.DWX` — card-stated liquid metal symbol with stochastic/OHLC/SMA data available in DWX.
 
 **Explicitly NOT for:**
-- `GER40.DWX` — not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX proxy.
+- `GDAXI.DWX` — not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX proxy.
 
 ---
 

@@ -40,11 +40,11 @@ This EA trades M5 bars during the 08:30-11:30 session window. It calculates a 10
 - `SP500.DWX` - S&P 500 custom symbol specified by the card for the US large-cap basket.
 - `NDX.DWX` - Nasdaq 100 index exposure specified by the card.
 - `WS30.DWX` - Dow 30 index exposure specified by the card.
-- `GDAXI.DWX` - Verified DWX DAX symbol used as the matrix-valid port for card-stated `GER40.DWX`.
+- `GDAXI.DWX` - Verified DWX DAX symbol used as the matrix-valid port for card-stated `GDAXI.DWX`.
 - `XAUUSD.DWX` - Gold symbol specified by the card.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable S&P 500 variants; use `SP500.DWX`.
 
 ---

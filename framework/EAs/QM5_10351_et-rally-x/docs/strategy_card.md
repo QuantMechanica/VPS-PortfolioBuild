@@ -12,7 +12,7 @@ concepts:
   - "[[concepts/event-window-entry]]"
 indicators:
   - "[[indicators/price-change-percent]]"
-target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX]
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX, NDX.DWX]
 period: M1
 expected_trade_frequency: "Intraday percent-rally retest rule with max one setup per direction per session; conservative estimate 60 trades/year/symbol."
 expected_trades_per_year_per_symbol: 60
@@ -80,7 +80,7 @@ g0_approval_reasoning: "R1 source URL/author present; R2 mechanical percent-rall
 | R4 No ML | PASS | Fixed thresholds and time windows; no ML, adaptive parameters, grid, or martingale. |
 
 ## R3
-Primary P2 basket: `EURUSD.DWX`, `GBPUSD.DWX`, `XAUUSD.DWX`, `GER40.DWX`, `NDX.DWX`.
+Primary P2 basket: `EURUSD.DWX`, `GBPUSD.DWX`, `XAUUSD.DWX`, `GDAXI.DWX`, `NDX.DWX`.
 
 ## Author Claims
 - The source states the same principle used for entry should govern exit.

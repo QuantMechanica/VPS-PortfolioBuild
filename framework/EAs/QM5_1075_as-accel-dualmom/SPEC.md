@@ -15,7 +15,7 @@
 
 ## DWX Proxy Mapping
 - US stock proxies: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`
-- International small-cap proxy: `GER40.DWX`
+- International small-cap proxy: `GDAXI.DWX`
 - Defensive bond/Treasury leg: flat/cash by default, per card R3 note.
 
 ## Parameters

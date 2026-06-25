@@ -37,10 +37,10 @@ The EA runs on M15 index data and looks for three consecutive closed candles in 
 - `SP500.DWX` - S&P 500 index exposure named by the card; valid backtest-only custom symbol.
 - `NDX.DWX` - Nasdaq 100 large-cap US index analogue from the card's R3 basket.
 - `WS30.DWX` - Dow 30 large-cap US index analogue from the card's R3 basket.
-- `GDAXI.DWX` - DAX index proxy for card-stated `GER40.DWX`, which is not present in `dwx_symbol_matrix.csv`.
+- `GDAXI.DWX` - DAX index proxy for card-stated `GDAXI.DWX`, which is not present in `dwx_symbol_matrix.csv`.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - card-stated name is not in the DWX matrix; registered as `GDAXI.DWX` instead.
+- `GDAXI.DWX` - card-stated name is not in the DWX matrix; registered as `GDAXI.DWX` instead.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable S&P variants; the canonical custom symbol is `SP500.DWX`.
 
 ---

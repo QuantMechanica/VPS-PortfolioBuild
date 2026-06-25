@@ -32,12 +32,12 @@ Long when the fast EMA is above the slow EMA and the confirmed bar close crosses
 
 **Designed for:**
 - `XAUUSD.DWX` - card-listed liquid gold CFD with stable ATR/Keltner bands.
-- `GDAXI.DWX` - DWX matrix equivalent for the card's `GER40.DWX` index target.
+- `GDAXI.DWX` - DWX matrix equivalent for the card's `GDAXI.DWX` index target.
 - `NDX.DWX` - card-listed liquid US index CFD.
 - `EURUSD.DWX` - card-listed liquid FX pair.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
 - Non-DWX symbols - research and backtest artifacts must keep the `.DWX` suffix.
 
 ---

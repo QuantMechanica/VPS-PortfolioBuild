@@ -40,10 +40,10 @@ The EA trades M5 index CFDs when the MACD main line crosses the zero line. It op
 - `SP500.DWX` - S&P 500 custom symbol matching the ES/SPX-style index exposure from the source.
 - `NDX.DWX` - Nasdaq 100 index CFD in the approved US large-cap basket.
 - `WS30.DWX` - Dow 30 index CFD in the approved US large-cap basket.
-- `GDAXI.DWX` - verified DAX custom symbol used as the DWX matrix equivalent for the card's `GER40.DWX`.
+- `GDAXI.DWX` - verified DAX custom symbol used as the DWX matrix equivalent for the card's `GDAXI.DWX`.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - card-stated symbol is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX equivalent.
+- `GDAXI.DWX` - card-stated symbol is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX equivalent.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable S&P variants; `SP500.DWX` is the canonical custom symbol.
 
 ---

@@ -3,7 +3,7 @@ ea_id: QM5_10200
 slug: tv-bhd-trend-tp
 type: strategy
 source_id: 30591366-874b-5bee-b47c-da2fca20b728
-target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, NDX.DWX, GER40.DWX]
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, NDX.DWX, GDAXI.DWX]
 sources:
   - "[[sources/tradingview-popular-pine-scripts]]"
 concepts:
@@ -54,7 +54,7 @@ Use H1 bars in baseline.
 V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number.
 
 ### Zusatzliche Filter
-- Target symbols: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, NDX.DWX, GER40.DWX.
+- Target symbols: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, NDX.DWX, GDAXI.DWX.
 - Source was optimized for crypto H1. DWX port uses the same trend-pullback logic on liquid FX, gold, and index CFDs.
 - Disable any source dollar/order-size assumptions.
 

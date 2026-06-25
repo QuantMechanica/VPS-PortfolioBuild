@@ -6,7 +6,7 @@ Build-only V5 Expert Advisor for approved strategy card `QM5_1221_carver-kurtsrv
 
 ## Card Mapping
 
-- Universe: FX group `EURUSD.DWX`, `GBPUSD.DWX`, `USDJPY.DWX`, `AUDUSD.DWX`, `USDCAD.DWX`, `USDCHF.DWX`; index group `GER40.DWX`, `NDX.DWX`, `WS30.DWX`, `UK100.DWX`, `FRA40.DWX`.
+- Universe: FX group `EURUSD.DWX`, `GBPUSD.DWX`, `USDJPY.DWX`, `AUDUSD.DWX`, `USDCAD.DWX`, `USDCHF.DWX`; index group `GDAXI.DWX`, `NDX.DWX`, `WS30.DWX`, `UK100.DWX`.
 - Timeframe: closed D1 bars only.
 - Entry: compute rolling log-return skew and excess kurtosis, demean both against same-group averages, scale relative kurtosis by rolling robust volatility, condition direction by the sign of relative skew, smooth with EMA, cap forecast to `[-20,+20]`.
 - Signal: long above `strategy_entry_forecast`, short below negative threshold.

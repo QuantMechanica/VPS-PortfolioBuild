@@ -35,10 +35,10 @@ The EA runs on M1 bars and reads EMA(200) on closed prices. If the prior close w
 - `SP500.DWX` - S&P 500 custom symbol; direct SP500/SPX/ES-style index port for backtest.
 - `NDX.DWX` - Nasdaq 100 index CFD, part of the portable US large-cap basket.
 - `WS30.DWX` - Dow 30 index CFD, part of the portable US large-cap basket.
-- `GDAXI.DWX` - DAX 40 custom symbol; canonical DWX replacement for card-stated `GER40.DWX`.
+- `GDAXI.DWX` - DAX 40 custom symbol; canonical DWX replacement for card-stated `GDAXI.DWX`.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the available DAX symbol.
+- `GDAXI.DWX` - not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the available DAX symbol.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable S&P variants; `SP500.DWX` is the canonical custom symbol.
 
 ---

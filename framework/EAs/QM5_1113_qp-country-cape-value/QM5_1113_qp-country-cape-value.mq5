@@ -37,7 +37,7 @@ input int    strategy_csv_stale_days      = 800;
 input int    strategy_atr_period_d1       = 20;
 input double strategy_atr_sl_mult         = 5.0;
 
-#define QM5_1113_SYMBOL_COUNT 7
+#define QM5_1113_SYMBOL_COUNT 6
 
 string g_symbols[QM5_1113_SYMBOL_COUNT] = {
    "NDX.DWX",
@@ -45,7 +45,6 @@ string g_symbols[QM5_1113_SYMBOL_COUNT] = {
    "GDAXI.DWX",
    "UK100.DWX",
    "JPN225.DWX",
-   "AUS200.DWX",
    "SP500.DWX"
 };
 string g_countries[QM5_1113_SYMBOL_COUNT] = {
@@ -54,10 +53,9 @@ string g_countries[QM5_1113_SYMBOL_COUNT] = {
    "GERMANY",
    "UK",
    "JAPAN",
-   "AUSTRALIA",
    "US_SP500"
 };
-int g_slots[QM5_1113_SYMBOL_COUNT] = {0, 1, 2, 3, 4, 5, 6};
+int g_slots[QM5_1113_SYMBOL_COUNT] = {0, 1, 2, 3, 4, 6};
 
 datetime g_last_entry_rebalance_day = 0;
 datetime g_last_exit_rebalance_day = 0;

@@ -43,7 +43,7 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 **Designed for:**
 - `XAUUSD.DWX` - primary gold market named by the card.
 - `XAGUSD.DWX` - approved metals cross-check listed in card frontmatter.
-- `GDAXI.DWX` - matrix-valid DAX custom symbol used for the card's `GER40.DWX` target.
+- `GDAXI.DWX` - matrix-valid DAX custom symbol used for the card's `GDAXI.DWX` target.
 - `NDX.DWX` - approved liquid index cross-check listed in card frontmatter.
 
 **Explicitly NOT for:**

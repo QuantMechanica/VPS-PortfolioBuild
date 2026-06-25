@@ -59,7 +59,7 @@ Use M5 or M15 bars, long-only.
 V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number.
 
 ### Zusatzliche Filter
-- Long-only baseline: prioritize NDX.DWX, WS30.DWX, GER40.DWX, XAUUSD.DWX, EURUSD.DWX.
+- Long-only baseline: prioritize NDX.DWX, WS30.DWX, GDAXI.DWX, XAUUSD.DWX, EURUSD.DWX.
 - Spread must be <= 15% of ATR stop distance.
 - No overnight holding.
 

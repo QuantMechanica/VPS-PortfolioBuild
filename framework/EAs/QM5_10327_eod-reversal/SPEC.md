@@ -45,10 +45,10 @@ The EA trades the final U.S. cash-session M30 reversal proxy. At the configured 
 - `SP500.DWX` - S&P 500 custom symbol named in the approved R3 basket; backtest-only T6 caveat remains outside build scope.
 - `NDX.DWX` - Nasdaq 100 index CFD named in the approved R3 basket.
 - `WS30.DWX` - Dow 30 index CFD named in the approved R3 basket.
-- `GDAXI.DWX` - available DAX custom symbol used as the DWX matrix port for card-stated `GER40.DWX`.
+- `GDAXI.DWX` - available DAX custom symbol used as the DWX matrix port for card-stated `GDAXI.DWX`.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - card-stated DAX name is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DWX equivalent.
+- `GDAXI.DWX` - card-stated DAX name is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DWX equivalent.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - not canonical DWX symbols for the S&P 500 basket.
 - FX, metals, and energy symbols - they do not share the same U.S. equity-index close-window reversal structure.
 

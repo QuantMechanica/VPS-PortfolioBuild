@@ -34,10 +34,10 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 - EURUSD.DWX - card-listed liquid forex target with EMA and ADX data available in the DWX matrix.
 - GBPUSD.DWX - card-listed liquid forex target with EMA and ADX data available in the DWX matrix.
 - XAUUSD.DWX - card-listed metals target with EMA and ADX data available in the DWX matrix.
-- GDAXI.DWX - canonical DWX DAX symbol used for the card's GER40.DWX target, because GER40.DWX is not present in `dwx_symbol_matrix.csv`.
+- GDAXI.DWX - canonical DWX DAX symbol used for the card's GDAXI.DWX target, because GDAXI.DWX is not present in `dwx_symbol_matrix.csv`.
 
 **Explicitly NOT for:**
-- GER40.DWX - card-stated name is not in `dwx_symbol_matrix.csv`; use GDAXI.DWX for DAX exposure.
+- GDAXI.DWX - card-stated name is not in `dwx_symbol_matrix.csv`; use GDAXI.DWX for DAX exposure.
 - Any symbol without an active `magic_numbers.csv` row for QM5_10074.
 
 ---

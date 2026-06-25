@@ -47,7 +47,7 @@ The EA evaluates D1 bars for a breakout from a multi-week congestion range. A lo
 - `GDAXI.DWX` - Verified DWX DAX symbol used for the card's GER40/DAX exposure.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - Not present in `dwx_symbol_matrix.csv`; mapped to verified `GDAXI.DWX`.
+- `GDAXI.DWX` - Not present in `dwx_symbol_matrix.csv`; mapped to verified `GDAXI.DWX`.
 - `SPX500.DWX` - Not the canonical available S&P 500 custom symbol.
 
 ---

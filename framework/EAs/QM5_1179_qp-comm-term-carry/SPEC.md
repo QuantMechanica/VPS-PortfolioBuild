@@ -13,7 +13,7 @@ Quantpedia commodity term-structure carry implementation for approved DWX commod
 - Management: no trailing, break-even, partial close, hedge ratio, futures-curve optimization, grid, or martingale.
 - Close: monthly rebalance closes open positions before the next monthly rank can open fresh legs.
 - Risk: `PORTFOLIO_WEIGHT=0.50` in setfiles so the expected two active legs split `RISK_FIXED=1000` in backtest and `RISK_PERCENT=0.25` in live.
-- Magic: `ea_id=1179`, slots `0..4` for `XAUUSD.DWX`, `XTIUSD.DWX`, `XNGUSD.DWX`, `XAGUSD.DWX`, `XCUUSD.DWX`.
+- Magic: `ea_id=1179`, slots `0..4` for `XAUUSD.DWX`, `XTIUSD.DWX`, `XNGUSD.DWX`, `XAGUSD.DWX`.
 
 ## Parameters
 

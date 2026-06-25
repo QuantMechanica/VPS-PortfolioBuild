@@ -39,11 +39,11 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 - `EURUSD.DWX` - liquid DWX forex major with native OHLC data for EMA, RSI, and ATR.
 - `GBPUSD.DWX` - liquid DWX forex major with the same indicator data requirements.
 - `XAUUSD.DWX` - DWX gold CFD; trend and ATR bracket logic are portable to metals.
-- `GDAXI.DWX` - canonical DWX DAX custom symbol, used as the matrix-available port for the card's `GER40.DWX` target.
+- `GDAXI.DWX` - canonical DWX DAX custom symbol, used as the matrix-available port for the card's `GDAXI.DWX` target.
 - `NDX.DWX` - DWX Nasdaq 100 index CFD; trend/momentum/ATR logic is portable to this index.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
 
 ---
 

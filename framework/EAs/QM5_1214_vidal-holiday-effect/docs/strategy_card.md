@@ -15,7 +15,7 @@ Approved build copy of `D:\QM\strategy_farm\artifacts\cards_approved\QM5_1214_vi
 ## Mechanik
 
 - For `SP500.DWX`, `NDX.DWX`, and `WS30.DWX`, open LONG at the open of the last full trading day before a U.S. market holiday.
-- For `GER40.DWX`, open LONG at the open of the first full trading day after a major German/Euronext holiday.
+- For `GDAXI.DWX`, open LONG at the open of the first full trading day after a major German/Euronext holiday.
 - Skip holidays with a missing calendar row, unscheduled closure, or fewer than 4 H1 bars in the intended hold window.
 - U.S. pre-holiday leg exits at the final tradable bar before the holiday closure.
 - European post-holiday leg exits at the end of the first full trading day after the holiday.

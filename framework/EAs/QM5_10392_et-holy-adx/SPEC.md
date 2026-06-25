@@ -41,7 +41,7 @@ The EA trades H1 pullbacks during strong ADX regimes. A long setup requires ADX(
 - `NDX.DWX` — liquid US index CFD from the approved card basket.
 
 **Explicitly NOT for:**
-- `GER40.DWX` — not present in `framework/registry/dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX equivalent.
+- `GDAXI.DWX` — not present in `framework/registry/dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX equivalent.
 
 ---
 

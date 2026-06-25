@@ -3,7 +3,7 @@ ea_id: QM5_10217
 slug: tv-price-vol-brk
 type: strategy
 source_id: 30591366-874b-5bee-b47c-da2fca20b728
-target_symbols: [XAUUSD.DWX, NDX.DWX, GER40.DWX, EURUSD.DWX, GBPJPY.DWX]
+target_symbols: [XAUUSD.DWX, NDX.DWX, GDAXI.DWX, EURUSD.DWX, GBPJPY.DWX]
 sources:
   - "[[sources/tradingview-popular-pine-scripts]]"
 concepts:
@@ -31,7 +31,7 @@ g0_approval_reasoning: "R1 URL+author cited; R2 price+volume breakout entries wi
 
 ## Mechanik
 
-Target symbols: XAUUSD.DWX, NDX.DWX, GER40.DWX, EURUSD.DWX, GBPJPY.DWX.
+Target symbols: XAUUSD.DWX, NDX.DWX, GDAXI.DWX, EURUSD.DWX, GBPJPY.DWX.
 
 ### Entry
 Use H1 baseline. Define an examination window of N candles for price and volume. Long when close exceeds the maximum close/high benchmark from that window, current volume exceeds the maximum volume benchmark from the same window, and price is above the designated trend moving average. Short mode was added in the source release notes: short when close breaks below the corresponding price benchmark, volume breaks above the volume benchmark, and price is below the trend moving average.

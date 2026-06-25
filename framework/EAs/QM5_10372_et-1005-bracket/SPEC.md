@@ -37,10 +37,10 @@ The EA records the session high and low from the configured regular-session open
 - `SP500.DWX` — S&P 500 index port named in the card, backtest-only per DWX discipline.
 - `NDX.DWX` — Nasdaq 100 live-tradable index CFD from the card basket.
 - `WS30.DWX` — Dow 30 live-tradable index CFD from the card basket.
-- `GDAXI.DWX` — canonical DAX Custom Symbol available in the matrix; used for the card's `GER40.DWX` basket member.
+- `GDAXI.DWX` — canonical DAX Custom Symbol available in the matrix; used for the card's `GDAXI.DWX` basket member.
 
 **Explicitly NOT for:**
-- `GER40.DWX` — card-stated alias is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX equivalent.
+- `GDAXI.DWX` — card-stated alias is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX equivalent.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` — unavailable S&P 500 variants; `SP500.DWX` is the only approved Custom Symbol.
 
 ---

@@ -22,7 +22,7 @@ The entry is a market buy on the next session open. The EA uses a protective ATR
 
 ## Symbol universe
 
-Designed for the R3 basket from the approved card: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`, and `EURUSD.DWX`. The card names `GER40.DWX`; the registered DWX matrix has `GDAXI.DWX` for DAX exposure, so that is the build-time port.
+Designed for the R3 basket from the approved card: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`, and `EURUSD.DWX`. The card names `GDAXI.DWX`; the registered DWX matrix has `GDAXI.DWX` for DAX exposure, so that is the build-time port.
 
 ## Timeframe
 

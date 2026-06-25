@@ -38,7 +38,7 @@ The EA calculates a Donchian channel from the previous closed bars. It opens a l
 - EURJPY.DWX - trend-capable FX cross named in the card.
 
 **Explicitly NOT for:**
-- GER40.DWX - card label was ported to GDAXI.DWX because the matrix exposes GDAXI.DWX as the DAX custom symbol.
+- GDAXI.DWX - card label was ported to GDAXI.DWX because the matrix exposes GDAXI.DWX as the DAX custom symbol.
 - Any symbol outside the five registered rows - no implicit universe expansion at runtime.
 
 ---

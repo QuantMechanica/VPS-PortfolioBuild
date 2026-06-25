@@ -45,7 +45,7 @@ The EA evaluates fixed candidate pairs on M15 bars using a 90-trading-day format
 - `NDX.DWX` - Registered as pair B for the SP500/NDX index cointegration candidate.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - Card candidate not registered because it is not in the current DWX matrix under that name.
+- `GDAXI.DWX` - Card candidate not registered because it is not in the current DWX matrix under that name.
 - `FRA40.DWX` - Card candidate not registered because it is not in the current DWX matrix under that name.
 
 ---

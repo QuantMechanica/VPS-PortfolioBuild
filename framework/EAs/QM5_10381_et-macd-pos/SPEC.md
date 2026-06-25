@@ -45,10 +45,10 @@ The EA trades M5 MACD signal-line crosses during the regular index session. A lo
 - `SP500.DWX` - S&P 500 index exposure named by the card and available as a backtest-only custom symbol.
 - `NDX.DWX` - Nasdaq 100 index CFD fallback in the card's portable index basket.
 - `WS30.DWX` - Dow 30 index CFD fallback in the card's portable index basket.
-- `GDAXI.DWX` - Available DWX DAX symbol used for the card's `GER40.DWX` DAX exposure.
+- `GDAXI.DWX` - Available DWX DAX symbol used for the card's `GDAXI.DWX` DAX exposure.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; DAX exposure is registered as `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; DAX exposure is registered as `GDAXI.DWX`.
 
 ---
 

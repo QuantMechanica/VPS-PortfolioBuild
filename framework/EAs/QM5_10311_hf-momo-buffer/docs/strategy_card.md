@@ -75,7 +75,7 @@ Fixed $1,000 P2 risk equivalent using stop distance. Live sizing deferred to V5 
 | R4 ML Forbidden | PASS | Fixed thresholds; no ML, no adaptive online parameters, no grid/martingale. |
 
 ## R3
-Candidate DWX symbols: `EURUSD.DWX`, `GBPUSD.DWX`, `USDJPY.DWX`, `XAUUSD.DWX`, `GER40.DWX`, `NDX.DWX`. Avoid illiquid symbols until Q03 sweep proves spread robustness.
+Candidate DWX symbols: `EURUSD.DWX`, `GBPUSD.DWX`, `USDJPY.DWX`, `XAUUSD.DWX`, `GDAXI.DWX`, `NDX.DWX`. Avoid illiquid symbols until Q03 sweep proves spread robustness.
 
 ## Pipeline-Verlauf
 - G0: 2026-05-21, PENDING, drafted from SSRN microstructure/HFT batch 1.

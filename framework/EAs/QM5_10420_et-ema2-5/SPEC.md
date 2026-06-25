@@ -35,10 +35,10 @@ The EA trades a completed-bar EMA crossover on the chart timeframe. It opens lon
 - GBPUSD.DWX - Liquid major FX pair from the card's R3 P2 basket.
 - SP500.DWX - S&P 500 custom symbol explicitly allowed for backtest-only index exposure.
 - NDX.DWX - Nasdaq 100 DWX index CFD from the card's R3 P2 basket.
-- GDAXI.DWX - Available DWX DAX proxy for the card's GER40.DWX target.
+- GDAXI.DWX - Available DWX DAX proxy for the card's GDAXI.DWX target.
 
 **Explicitly NOT for:**
-- GER40.DWX - Not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is used instead.
+- GDAXI.DWX - Not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is used instead.
 
 ---
 

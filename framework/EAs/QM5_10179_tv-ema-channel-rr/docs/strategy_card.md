@@ -53,7 +53,7 @@ Use H1 bars, long and short.
 V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number.
 
 ### Zusatzliche Filter
-- Primary DWX symbols: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD.DWX, GER40.DWX.
+- Primary DWX symbols: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD.DWX, GDAXI.DWX.
 - No pyramiding; ignore additional crosses while a position is open.
 
 ## Concepts (was ist das fur eine Strategie)

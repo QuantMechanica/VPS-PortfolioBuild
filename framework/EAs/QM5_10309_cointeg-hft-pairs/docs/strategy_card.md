@@ -73,7 +73,7 @@ Dollar-neutral synthetic package. Fixed $1,000 P2 risk equivalent across both le
 | R4 ML Forbidden | PASS | Fixed econometric rules; no ML/neural/adaptive online parameter updates. |
 
 ## R3
-Candidate DWX tests: `EURUSD.DWX`/`GBPUSD.DWX`, `AUDUSD.DWX`/`NZDUSD.DWX`, `GER40.DWX`/`FRA40.DWX` if available, and `SP500.DWX`/`NDX.DWX`. SP500.DWX caveat if used: "Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable."
+Candidate DWX tests: `EURUSD.DWX`/`GBPUSD.DWX`, `AUDUSD.DWX`/`NZDUSD.DWX`, `GDAXI.DWX`/`FRA40.DWX` if available, and `SP500.DWX`/`NDX.DWX`. SP500.DWX caveat if used: "Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable."
 
 ## Pipeline-Verlauf
 - G0: 2026-05-21, PENDING, drafted from SSRN microstructure/HFT batch 1.

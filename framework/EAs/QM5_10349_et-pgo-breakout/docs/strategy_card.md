@@ -14,7 +14,7 @@ indicators:
   - "[[indicators/pretty-good-oscillator]]"
   - "[[indicators/atr]]"
   - "[[indicators/moving-average]]"
-target_symbols: [EURUSD.DWX, USDJPY.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX]
+target_symbols: [EURUSD.DWX, USDJPY.DWX, XAUUSD.DWX, GDAXI.DWX, NDX.DWX]
 period: H1
 expected_trade_frequency: "Volatility-distance threshold on completed H1 bars; conservative estimate 45 trades/year/symbol after spread and one-position filters."
 expected_trades_per_year_per_symbol: 45
@@ -80,7 +80,7 @@ g0_approval_reasoning: "R1 source URL present; R2 mechanical PGO threshold entry
 | R4 No ML | PASS | Fixed oscillator thresholds; no ML, adaptive parameters, grid, or martingale. |
 
 ## R3
-Primary P2 basket: `EURUSD.DWX`, `USDJPY.DWX`, `XAUUSD.DWX`, `GER40.DWX`, `NDX.DWX`.
+Primary P2 basket: `EURUSD.DWX`, `USDJPY.DWX`, `XAUUSD.DWX`, `GDAXI.DWX`, `NDX.DWX`.
 
 ## Author Claims
 - The source describes the PGO system as simple threshold logic around zero.

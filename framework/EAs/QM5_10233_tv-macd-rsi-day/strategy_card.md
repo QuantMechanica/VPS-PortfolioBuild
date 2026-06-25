@@ -53,7 +53,7 @@ g0_approval_reasoning: "R1 verifiable TradingView URL; R2 mechanical EMA/MACD/RS
 
 ### Zusätzliche Filter
 - Source mentions Bollinger Bands in title/tags, but public entry text does not expose a Bollinger trigger; P1 should not add a BB condition unless verified from Pine source.
-- Best DWX ports: NDX.DWX, GER40.DWX, WS30.DWX, XAUUSD.DWX. For SP500 analog tests, use SP500.DWX.
+- Best DWX ports: NDX.DWX, GDAXI.DWX, WS30.DWX, XAUUSD.DWX. For SP500 analog tests, use SP500.DWX.
 - Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
 
 ## Concepts (was ist das für eine Strategie)

@@ -60,7 +60,7 @@ Use M30 or H1 bars, long and short.
 V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number.
 
 ### Zusatzliche Filter
-- Source targets crypto majors; DWX port uses NDX.DWX, WS30.DWX, GER40.DWX, XAUUSD.DWX, and EURUSD.DWX.
+- Source targets crypto majors; DWX port uses NDX.DWX, WS30.DWX, GDAXI.DWX, XAUUSD.DWX, and EURUSD.DWX.
 - Spread must be <= 15% of stop distance.
 - No pyramiding, no breakeven move, no trailing stop.
 

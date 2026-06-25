@@ -28,17 +28,16 @@ input int    strategy_atr_period          = 20;
 input double strategy_atr_sl_mult         = 2.5;
 input int    strategy_max_spread_points   = 0;
 
-#define QM5_1179_SYMBOL_COUNT 5
+#define QM5_1179_SYMBOL_COUNT 4
 
 string g_symbols[QM5_1179_SYMBOL_COUNT] = {
    "XAUUSD.DWX",
    "XTIUSD.DWX",
    "XNGUSD.DWX",
-   "XAGUSD.DWX",
-   "XCUUSD.DWX"
+   "XAGUSD.DWX"
 };
 
-int g_slots[QM5_1179_SYMBOL_COUNT] = {0, 1, 2, 3, 4};
+int g_slots[QM5_1179_SYMBOL_COUNT] = {0, 1, 2, 3};
 
 int g_last_entry_rebalance_key = 0;
 int g_last_exit_rebalance_key = 0;

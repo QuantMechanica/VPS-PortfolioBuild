@@ -53,7 +53,7 @@ V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number.
 ### Zusatzliche Filter
 - Long-only baseline because source describes only +DI long logic.
 - Spread must be <= 15% of protective stop distance.
-- DWX port targets EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD.DWX, and GER40.DWX.
+- DWX port targets EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD.DWX, and GDAXI.DWX.
 
 ## Concepts (was ist das fur eine Strategie)
 - [[concepts/trend-following]] - EMA trend filter gates long entries.

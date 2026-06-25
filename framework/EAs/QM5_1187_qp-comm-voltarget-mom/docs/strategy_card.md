@@ -20,7 +20,6 @@ Monthly bars for the approved DWX commodity proxy basket. Candidate assets are p
 - `XAGUSD.DWX`
 - `XTIUSD.DWX`
 - `XNGUSD.DWX`
-- `XCUUSD.DWX`
 
 At each monthly rebalance:
 

@@ -37,11 +37,11 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
 - `USDJPY.DWX` - card-listed FX target with RSI OHLC data available in the DWX matrix.
 - `EURUSD.DWX` - card-listed FX target with RSI OHLC data available in the DWX matrix.
 - `GBPUSD.DWX` - card-listed FX target with RSI OHLC data available in the DWX matrix.
-- `GDAXI.DWX` - registered DAX custom symbol; used as the DWX matrix equivalent for card-listed `GER40.DWX`.
+- `GDAXI.DWX` - registered DAX custom symbol; used as the DWX matrix equivalent for card-listed `GDAXI.DWX`.
 - `XAUUSD.DWX` - card-listed metal CFD target with RSI OHLC data available in the DWX matrix.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - card-listed name is not present in `framework/registry/dwx_symbol_matrix.csv`; `GDAXI.DWX` is the available DAX symbol.
+- `GDAXI.DWX` - card-listed name is not present in `framework/registry/dwx_symbol_matrix.csv`; `GDAXI.DWX` is the available DAX symbol.
 
 ---
 

@@ -59,7 +59,7 @@ V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number.
 ### Zusatzliche Filter
 - Spread must be <= 15% of stop distance.
 - Rollover blackout: no new entries 21:55-22:10 UTC.
-- DWX port targets NDX.DWX, XAUUSD.DWX, XTIUSD.DWX, GER40.DWX, and EURUSD.DWX.
+- DWX port targets NDX.DWX, XAUUSD.DWX, XTIUSD.DWX, GDAXI.DWX, and EURUSD.DWX.
 
 ## Concepts (was ist das fur eine Strategie)
 - [[concepts/breakout]] - stop entry through ATR-filtered swing highs/lows.

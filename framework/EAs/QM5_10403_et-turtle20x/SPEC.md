@@ -42,7 +42,7 @@ The EA trades a D1 Turtle-style Donchian breakout. It places stop entries at the
 
 **Explicitly NOT for:**
 - Symbols outside `framework/registry/dwx_symbol_matrix.csv` - unavailable for DWX backtest registration.
-- `GER40.DWX` - not present in the DWX matrix; use `GDAXI.DWX` for DAX exposure.
+- `GDAXI.DWX` - not present in the DWX matrix; use `GDAXI.DWX` for DAX exposure.
 
 ---
 

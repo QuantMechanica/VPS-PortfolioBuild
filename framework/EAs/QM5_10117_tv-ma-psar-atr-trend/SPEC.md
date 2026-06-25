@@ -40,7 +40,7 @@ The EA trades the H1 trend state from a fast EMA(20) and slow EMA(50). It enters
 - `GDAXI.DWX` - DWX matrix DAX symbol used for the card's German index exposure.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - Card-stated name is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the available DAX port.
+- `GDAXI.DWX` - Card-stated name is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the available DAX port.
 
 ---
 

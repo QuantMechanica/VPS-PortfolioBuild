@@ -5,7 +5,7 @@
 - Source card: `docs/strategy_card.md`
 - Status: APPROVED / G0
 - Concept: yearly country-index value allocation by CAPE ratio
-- Universe: `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`, `UK100.DWX`, `JPN225.DWX`, `AUS200.DWX`, `SP500.DWX`
+- Universe: `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`, `UK100.DWX`, `JPN225.DWX`, `SP500.DWX`
 - Timeframe: D1
 
 ## Framework Alignment
@@ -49,7 +49,6 @@ date,country,symbol,cape
 | 2 | `GDAXI.DWX` |
 | 3 | `UK100.DWX` |
 | 4 | `JPN225.DWX` |
-| 5 | `AUS200.DWX` |
 | 6 | `SP500.DWX` |
 
 ## Risk Contract
@@ -60,5 +59,5 @@ date,country,symbol,cape
 
 ## Notes
 
-- `GER40.DWX` in the card mechanics is mapped to the existing Darwinex/index registry symbol `GDAXI.DWX`, matching adjacent country-index V5 EAs.
+- `GDAXI.DWX` in the card mechanics is mapped to the existing Darwinex/index registry symbol `GDAXI.DWX`, matching adjacent country-index V5 EAs.
 - `SP500.DWX` is included as a backtest/research leg per the card caveat. If it is the only passing leg, T6 promotion requires the card's parallel-validation condition.

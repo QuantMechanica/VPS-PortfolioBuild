@@ -57,7 +57,7 @@ V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number.
 
 ### Zusatzliche Filter
 - Primary DWX symbol: XAUUSD.DWX.
-- Secondary robustness ports: NDX.DWX, WS30.DWX, GER40.DWX.
+- Secondary robustness ports: NDX.DWX, WS30.DWX, GDAXI.DWX.
 - Skip NFP, FOMC, CPI, and other high-impact USD release windows.
 
 ## Concepts (was ist das fur eine Strategie)

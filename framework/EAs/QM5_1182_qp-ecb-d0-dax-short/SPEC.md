@@ -2,16 +2,16 @@
 
 ## Strategy
 
-Quantpedia ECB announcement-day DAX fade. On embedded ECB press-conference dates, the EA opens a short `GER40.DWX` position at the configured cash-session open proxy and exits at the same-day cash-session close proxy.
+Quantpedia ECB announcement-day DAX fade. On embedded ECB press-conference dates, the EA opens a short `GDAXI.DWX` position at the configured cash-session open proxy and exits at the same-day cash-session close proxy.
 
 ## Framework Alignment
 
 - No-Trade: V5 kill switch, news, Friday-close, M15 timeframe, symbol, spread, D1 history, optional gap, and no-open-1181-position gates.
-- Entry: short-only `GER40.DWX` when today is an embedded ECB D0 date and broker time is inside the open-to-close window.
+- Entry: short-only `GDAXI.DWX` when today is an embedded ECB D0 date and broker time is inside the open-to-close window.
 - Management: no trailing, partial, or break-even logic.
 - Close: same-day configured cash-session close, with next-day safety exit if intraday close mapping is missed after entry.
 - Risk: `RISK_FIXED=1000` for backtest sets; `RISK_PERCENT=0.25` for live set.
-- Magic: `ea_id=1182`, slot `0`, `GER40.DWX`, magic `11820000`.
+- Magic: `ea_id=1182`, slot `0`, `GDAXI.DWX`, magic `11820000`.
 
 ## Calendar
 

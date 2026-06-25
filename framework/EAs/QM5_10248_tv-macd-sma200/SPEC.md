@@ -37,11 +37,11 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 - SP500.DWX - S&P 500 index port named by the approved card; valid backtest-only custom symbol.
 - NDX.DWX - Nasdaq 100 index port named by the approved card.
 - WS30.DWX - Dow 30 index port named by the approved card.
-- GDAXI.DWX - DAX custom-symbol port; used because the card names GER40.DWX but the DWX matrix canonical DAX symbol is GDAXI.DWX.
+- GDAXI.DWX - DAX custom-symbol port; used because the card names GDAXI.DWX but the DWX matrix canonical DAX symbol is GDAXI.DWX.
 - EURUSD.DWX - Forex major port named by the approved card.
 
 **Explicitly NOT for:**
-- GER40.DWX - Card-stated DAX alias is not present in `dwx_symbol_matrix.csv`; this build uses GDAXI.DWX.
+- GDAXI.DWX - Card-stated DAX alias is not present in `dwx_symbol_matrix.csv`; this build uses GDAXI.DWX.
 - Any unregistered `.DWX` symbol - magic resolution is registered only for the five symbols above.
 
 ---

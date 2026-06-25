@@ -38,10 +38,10 @@ The EA builds an opening range from the first 210 minutes of the regular broker-
 - `SP500.DWX` - S&P 500 index exposure, matching the source index-futures ORB concept; backtest-only per DWX symbol discipline.
 - `NDX.DWX` - Nasdaq 100 index CFD analog for US large-cap index breakout behaviour.
 - `WS30.DWX` - Dow 30 index CFD analog for US large-cap index breakout behaviour.
-- `GDAXI.DWX` - DAX 40 index analog, used as the available DWX DAX equivalent for card-stated `GER40.DWX`.
+- `GDAXI.DWX` - DAX 40 index analog, used as the available DWX DAX equivalent for card-stated `GDAXI.DWX`.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `dwx_symbol_matrix.csv`; ported to `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `dwx_symbol_matrix.csv`; ported to `GDAXI.DWX`.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable or non-canonical S&P 500 variants.
 
 ---

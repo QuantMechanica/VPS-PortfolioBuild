@@ -50,7 +50,7 @@ ENUM_TIMEFRAMES Strategy_Timeframe()
 
 int Strategy_SymbolSlot()
   {
-   if(_Symbol == "GER40.DWX")
+   if(_Symbol == "GDAXI.DWX")
       return 0;
    if(strategy_allow_ports && _Symbol == "UK100.DWX")
       return 1;

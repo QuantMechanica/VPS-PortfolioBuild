@@ -34,10 +34,10 @@ This EA trades long-only D1 index pullbacks. On a new D1 bar it checks the last 
 - `NDX.DWX` - primary Nasdaq 100 proxy for the QQQ source rule.
 - `SP500.DWX` - S&P 500 large-cap index port, valid for backtest-only baseline coverage.
 - `WS30.DWX` - Dow 30 large-cap index port for cross-index robustness.
-- `GDAXI.DWX` - available DAX 40 equivalent for the card's `GER40.DWX` target.
+- `GDAXI.DWX` - available DAX 40 equivalent for the card's `GDAXI.DWX` target.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - card-stated DAX symbol is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered equivalent.
+- `GDAXI.DWX` - card-stated DAX symbol is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered equivalent.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable S&P variants; `SP500.DWX` is the canonical custom symbol.
 
 ---

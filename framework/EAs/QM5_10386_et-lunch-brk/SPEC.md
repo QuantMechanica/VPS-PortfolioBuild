@@ -39,10 +39,10 @@ The EA runs on M5 index data. At the first eligible closed bar at or after broke
 - `SP500.DWX` - S&P 500 custom symbol matches the card's US index breakout target.
 - `NDX.DWX` - Nasdaq 100 is a live index CFD analog for US large-cap intraday breakout behaviour.
 - `WS30.DWX` - Dow 30 is the closest live CFD analog to the source YM index contract.
-- `GDAXI.DWX` - DAX custom symbol is the available DWX equivalent for the card's `GER40.DWX` target.
+- `GDAXI.DWX` - DAX custom symbol is the available DWX equivalent for the card's `GDAXI.DWX` target.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is used instead.
+- `GDAXI.DWX` - not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is used instead.
 
 ---
 

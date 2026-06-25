@@ -22,7 +22,7 @@ Trades a futures-style trend pullback continuation on the chart timeframe. EMA(1
 
 ## Symbol Universe
 
-Primary DWX port: `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`, `XAUUSD.DWX`. The card states `GER40.DWX`; this build uses `GDAXI.DWX` because it is the matrix-valid DAX symbol. `SP500.DWX` is noted by the card as optional and backtest-only, but is not part of the primary registered basket.
+Primary DWX port: `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`, `XAUUSD.DWX`. The card states `GDAXI.DWX`; this build uses `GDAXI.DWX` because it is the matrix-valid DAX symbol. `SP500.DWX` is noted by the card as optional and backtest-only, but is not part of the primary registered basket.
 
 ## Timeframe
 

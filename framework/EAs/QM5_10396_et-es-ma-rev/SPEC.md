@@ -41,10 +41,10 @@ The EA trades an M30 index moving-average reversal system. A long entry is opene
 - `SP500.DWX` — direct S&P 500 custom-symbol port for ES/SPX-style index exposure.
 - `NDX.DWX` — liquid US large-cap index analogue for Nasdaq 100 exposure.
 - `WS30.DWX` — liquid US large-cap index analogue for Dow 30 exposure.
-- `GDAXI.DWX` — available DWX DAX custom symbol used as the matrix-valid port for card-stated `GER40.DWX`.
+- `GDAXI.DWX` — available DWX DAX custom symbol used as the matrix-valid port for card-stated `GDAXI.DWX`.
 
 **Explicitly NOT for:**
-- `GER40.DWX` — not present in `framework/registry/dwx_symbol_matrix.csv`; ported to `GDAXI.DWX`.
+- `GDAXI.DWX` — not present in `framework/registry/dwx_symbol_matrix.csv`; ported to `GDAXI.DWX`.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` — not canonical available DWX symbols for this build.
 
 ---

@@ -3,7 +3,7 @@ ea_id: QM5_10213
 slug: tv-wpr-macd-scalp
 type: strategy
 source_id: 30591366-874b-5bee-b47c-da2fca20b728
-target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX]
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX, NDX.DWX]
 sources:
   - "[[sources/tradingview-popular-pine-scripts]]"
 concepts:
@@ -45,7 +45,7 @@ Source uses indicator exits only. Add V5 emergency stop at 1.2 * ATR(14) on M1 a
 V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number.
 
 ### Zusatzliche Filter
-Target symbols: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX. Trade only liquid sessions: London and New York for FX/gold, cash-session overlap for indices. Skip when spread exceeds 20% of the emergency stop.
+Target symbols: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX, NDX.DWX. Trade only liquid sessions: London and New York for FX/gold, cash-session overlap for indices. Skip when spread exceeds 20% of the emergency stop.
 
 ## Concepts (was ist das fur eine Strategie)
 - [[concepts/scalping]] - M1 high-cadence oscillator / momentum entries.

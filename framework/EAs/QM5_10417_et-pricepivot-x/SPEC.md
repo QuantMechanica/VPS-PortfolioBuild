@@ -34,11 +34,11 @@ This EA computes the prior-day floor pivot as `(PriorDayHigh + PriorDayLow + Pri
 - SP500.DWX - S&P 500 custom symbol named in the card R3 basket.
 - NDX.DWX - Nasdaq 100 index exposure named in the card R3 basket.
 - WS30.DWX - Dow 30 index exposure named in the card R3 basket.
-- GDAXI.DWX - Canonical DWX DAX symbol used for the card's GER40.DWX target.
+- GDAXI.DWX - Canonical DWX DAX symbol used for the card's GDAXI.DWX target.
 - XAUUSD.DWX - Gold exposure named in the card R3 basket.
 
 **Explicitly NOT for:**
-- GER40.DWX - Not present in `framework/registry/dwx_symbol_matrix.csv`; ported to GDAXI.DWX.
+- GDAXI.DWX - Not present in `framework/registry/dwx_symbol_matrix.csv`; ported to GDAXI.DWX.
 
 ---
 

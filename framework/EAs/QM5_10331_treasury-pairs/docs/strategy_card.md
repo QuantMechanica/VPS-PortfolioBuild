@@ -14,7 +14,7 @@ indicators:
   - "[[indicators/zscore-spread]]"
   - "[[indicators/rolling-hedge-ratio]]"
   - "[[indicators/atr]]"
-target_symbols: [GER40.DWX, FRA40.DWX, SP500.DWX, NDX.DWX, WS30.DWX]
+target_symbols: [GDAXI.DWX, FRA40.DWX, SP500.DWX, NDX.DWX, WS30.DWX]
 period: M15
 expected_trade_frequency: "Pairs spread entries on liquid correlated index-CFD pairs; conservative estimate 50-100 spread trades/year/pair, reported as 70 per primary symbol."
 expected_trades_per_year_per_symbol: 70
@@ -48,7 +48,7 @@ g0_approval_reasoning: "R1 PASS SSRN paper URL/attribution; R2 PASS deterministi
 - Compute spread `A - hedge_ratio * B` and its 20-day rolling z-score.
 - If z-score is above `+2.0`, short spread: short A and long hedge-adjusted B.
 - If z-score is below `-2.0`, long spread: long A and short hedge-adjusted B.
-- Preferred first P2 pair: `GER40.DWX` versus `FRA40.DWX`; secondary: `SP500.DWX` versus `NDX.DWX`, and `SP500.DWX` versus `WS30.DWX`.
+- Preferred first P2 pair: `GDAXI.DWX` versus `FRA40.DWX`; secondary: `SP500.DWX` versus `NDX.DWX`, and `SP500.DWX` versus `WS30.DWX`.
 
 ### Exit
 - Exit when spread z-score crosses 0.
@@ -82,7 +82,7 @@ g0_approval_reasoning: "R1 PASS SSRN paper URL/attribution; R2 PASS deterministi
 | R4 No ML | PASS | Fixed spread rules; no ML, online learning, martingale, or unbounded grid. |
 
 ## R3
-Primary P2 pairs: `GER40.DWX/FRA40.DWX`, `SP500.DWX/NDX.DWX`, `SP500.DWX/WS30.DWX`. SP500.DWX caveat if used: "Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable."
+Primary P2 pairs: `GDAXI.DWX/FRA40.DWX`, `SP500.DWX/NDX.DWX`, `SP500.DWX/WS30.DWX`. SP500.DWX caveat if used: "Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable."
 
 ## Author Claims
 - "simple pairs trading strategy" (SSRN abstract).

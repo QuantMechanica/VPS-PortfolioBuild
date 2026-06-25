@@ -36,7 +36,7 @@ g0_approval_reasoning: "carver-mrinasset Rob Carver qoppac 2017 within-asset dis
 
 Cross-sectional mean-reversion rule inside one asset class. If an instrument outperforms the asset-class normalised price over a medium horizon, the strategy shorts the outperformer; if it underperforms, the strategy goes long, expecting the idiosyncratic move to revert while the shared asset-class trend is stripped out.
 
-Suggested DWX groups for P2: equity-index group `{GER40.DWX, NDX.DWX, WS30.DWX}` and FX-major group `{EURUSD.DWX, GBPUSD.DWX, AUDUSD.DWX, USDJPY.DWX, USDCHF.DWX, USDCAD.DWX}`.
+Suggested DWX groups for P2: equity-index group `{GDAXI.DWX, NDX.DWX, WS30.DWX}` and FX-major group `{EURUSD.DWX, GBPUSD.DWX, AUDUSD.DWX, USDJPY.DWX, USDCHF.DWX, USDCAD.DWX}`.
 
 ### Entry
 - On each closed D1 bar for each asset-class group:

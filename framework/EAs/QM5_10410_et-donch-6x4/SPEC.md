@@ -34,11 +34,11 @@ The EA trades a short Donchian breakout on the active chart timeframe. When flat
 - `EURUSD.DWX` - liquid FX major named by the approved R3 basket.
 - `GBPUSD.DWX` - liquid FX major named by the approved R3 basket.
 - `XAUUSD.DWX` - liquid metal market named by the approved R3 basket.
-- `GDAXI.DWX` - verified DWX DAX custom symbol used for the card's `GER40.DWX` intent.
+- `GDAXI.DWX` - verified DWX DAX custom symbol used for the card's `GDAXI.DWX` intent.
 - `NDX.DWX` - liquid equity index CFD named by the approved R3 basket.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; substituted with `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; substituted with `GDAXI.DWX`.
 
 ---
 

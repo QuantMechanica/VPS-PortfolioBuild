@@ -37,7 +37,7 @@ g0_approval_reasoning: "R1 named Rob Carver blog plus code URL; R2 deterministic
 
 Cross-sectional momentum rule within a DWX asset group. The rule compares each instrument's cumulative volatility-normalised price to the asset-class normalised price and buys persistent outperformers while selling persistent underperformers.
 
-Suggested DWX universe for P2: FX majors group (EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, USDCAD.DWX, USDCHF.DWX) and index group (GER40.DWX, NDX.DWX, WS30.DWX, UK100.DWX, FRA40.DWX).
+Suggested DWX universe for P2: FX majors group (EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, USDCAD.DWX, USDCHF.DWX) and index group (GDAXI.DWX, NDX.DWX, WS30.DWX, UK100.DWX).
 
 ### Entry
 - On each closed D1 bar for every symbol in its asset group:

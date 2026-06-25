@@ -40,7 +40,7 @@ const string STRATEGY_SYMBOLS[5] =
   {
    "SP500.DWX",
    "NDX.DWX",
-   "GER40.DWX",
+   "GDAXI.DWX",
    "EURUSD.DWX",
    "GBPUSD.DWX"
   };

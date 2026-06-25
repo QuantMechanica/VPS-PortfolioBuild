@@ -53,7 +53,7 @@ g0_approval_reasoning: "R1 URL+author cited; R2 mechanical triple-Supertrend/ADX
 - One open position per magic number.
 
 ### Zusätzliche Filter
-- Test H1/H4 on trend-capable DWX symbols: XAUUSD.DWX, GER40.DWX, NDX.DWX, GBPJPY.DWX, EURJPY.DWX.
+- Test H1/H4 on trend-capable DWX symbols: XAUUSD.DWX, GDAXI.DWX, NDX.DWX, GBPJPY.DWX, EURJPY.DWX.
 - Standard spread and news filters.
 
 ## Concepts (was ist das für eine Strategie)

@@ -62,7 +62,7 @@ V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number. So
 - Baseline MA = EMA(100); P3 may test SMA/EMA/WMA/VWMA/HMA as source variants.
 - Session baseline for indices: 09:30-16:00 New York; for FX: London/New York overlap.
 - Spread must be <= 15% of stop distance.
-- DWX port targets NDX.DWX, WS30.DWX, GER40.DWX, XAUUSD.DWX, and EURUSD.DWX.
+- DWX port targets NDX.DWX, WS30.DWX, GDAXI.DWX, XAUUSD.DWX, and EURUSD.DWX.
 
 ## Concepts (was ist das fur eine Strategie)
 - [[concepts/breakout]] - close beyond confirmed pivot high/low.

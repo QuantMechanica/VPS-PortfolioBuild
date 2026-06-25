@@ -43,7 +43,7 @@ The EA trades a M15 three-bar exhaustion pattern during the liquid session. A lo
 - `XAUUSD.DWX` - card includes metals and the matrix provides gold as XAUUSD.DWX.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `dwx_symbol_matrix.csv`; ported to `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `dwx_symbol_matrix.csv`; ported to `GDAXI.DWX`.
 
 ---
 

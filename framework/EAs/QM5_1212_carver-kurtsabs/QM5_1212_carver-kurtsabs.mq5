@@ -46,7 +46,7 @@ input bool   strategy_allow_ports            = true;
 #define QM5_1212_SYMBOL_COUNT 8
 
 string g_symbols[QM5_1212_SYMBOL_COUNT] = {
-   "GER40.DWX",
+   "GDAXI.DWX",
    "NDX.DWX",
    "WS30.DWX",
    "EURUSD.DWX",

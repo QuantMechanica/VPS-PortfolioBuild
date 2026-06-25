@@ -40,11 +40,11 @@ This EA trades the first M5 candle that fully clears EMA(9). It enters long when
 - `SP500.DWX` - S&P 500 custom symbol called by the card; backtest-only per DWX discipline.
 - `NDX.DWX` - Nasdaq 100 live-tradable US large-cap index analog from the card.
 - `WS30.DWX` - Dow 30 live-tradable US large-cap index analog from the card.
-- `GDAXI.DWX` - Matrix-supported DAX symbol used for the card-stated `GER40.DWX`.
+- `GDAXI.DWX` - Matrix-supported DAX symbol used for the card-stated `GDAXI.DWX`.
 - `XAUUSD.DWX` - Gold symbol explicitly targeted by the card.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - card-stated name is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX equivalent.
+- `GDAXI.DWX` - card-stated name is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX equivalent.
 - Any symbol not registered above - magic resolution blocks unregistered symbols.
 
 ---

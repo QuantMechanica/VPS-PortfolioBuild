@@ -40,7 +40,7 @@ The EA evaluates completed H1 bars. A long setup starts when SMA(60) is above SM
 
 **Explicitly NOT for:**
 - Symbols outside `framework/registry/dwx_symbol_matrix.csv` - not available to the broker/test matrix.
-- `GER40.DWX` - card-stated alias is not in the matrix; `GDAXI.DWX` is registered instead.
+- `GDAXI.DWX` - card-stated alias is not in the matrix; `GDAXI.DWX` is registered instead.
 
 ---
 

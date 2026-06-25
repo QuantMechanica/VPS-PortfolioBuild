@@ -40,7 +40,7 @@ The EA trades a 20-SMA pullback in the direction of the 200-SMA trend on the cha
 - `EURUSD.DWX` - card-listed FX major; OHLC-derived SMA pullback logic ports directly.
 - `GBPUSD.DWX` - card-listed FX major; same trend-pullback mechanics as EURUSD.
 - `NDX.DWX` - card-listed liquid index CFD; uses fixed index-point TP.
-- `GDAXI.DWX` - canonical available DWX DAX symbol used in place of card-stated `GER40.DWX`.
+- `GDAXI.DWX` - canonical available DWX DAX symbol used in place of card-stated `GDAXI.DWX`.
 
 **Explicitly NOT for:**
 - Any symbol outside the active registry rows above - no runtime universe expansion is intended.

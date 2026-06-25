@@ -54,7 +54,7 @@ g0_approval_reasoning: "R1 URL cited; R2 mechanical VWAP break/retest/confirmati
 
 ### Zusätzliche Filter
 - Maximum trades per day: 2 in baseline to preserve the source's selective framework.
-- Best DWX ports: NDX.DWX, WS30.DWX, GER40.DWX, XAUUSD.DWX, EURUSD.DWX.
+- Best DWX ports: NDX.DWX, WS30.DWX, GDAXI.DWX, XAUUSD.DWX, EURUSD.DWX.
 - For SP500 analog tests, use SP500.DWX.
 - Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
 

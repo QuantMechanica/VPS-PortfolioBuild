@@ -39,11 +39,11 @@ At the start of each broker trading day, the EA records the high and low of the 
 - `SP500.DWX` - S&P 500 custom symbol listed in the card and available for backtest.
 - `NDX.DWX` - Nasdaq 100 index CFD from the card's portable basket.
 - `WS30.DWX` - Dow 30 index CFD from the card's portable basket.
-- `GDAXI.DWX` - DAX equivalent available in the DWX matrix; used in place of unavailable `GER40.DWX`.
+- `GDAXI.DWX` - DAX equivalent available in the DWX matrix; used in place of unavailable `GDAXI.DWX`.
 - `XAUUSD.DWX` - Gold CFD listed in the card's portable basket.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `dwx_symbol_matrix.csv`; mapped to `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `dwx_symbol_matrix.csv`; mapped to `GDAXI.DWX`.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable S&P variants; `SP500.DWX` is the canonical custom symbol.
 
 ---

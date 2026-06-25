@@ -3,7 +3,7 @@ ea_id: QM5_10199
 slug: tv-vsa-absorb-fx
 type: strategy
 source_id: 30591366-874b-5bee-b47c-da2fca20b728
-target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX]
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX, NDX.DWX]
 sources:
   - "[[sources/tradingview-popular-pine-scripts]]"
 concepts:
@@ -59,7 +59,7 @@ Use source fixed-percent stop, capped by a V5 sanity bound of 3.0 * ATR(14) wher
 V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number.
 
 ### Zusatzliche Filter
-- Target symbols: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX.
+- Target symbols: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX, NDX.DWX.
 - Session filter: London/NY overlap for FX; US regular/opening hours for index CFDs and gold.
 - Do not use real bid/ask delta; this card intentionally freezes the source's OHLCV proxy.
 - Spread must be <= 15% of stop distance.

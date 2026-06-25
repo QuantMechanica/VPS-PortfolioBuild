@@ -39,7 +39,7 @@ g0_approval_reasoning: "R1 PASS SSRN source URL/title; R2 PASS deterministic lea
 
 ### Entry
 Use liquid index CFDs as slower, MT5-testable analogs of the source futures:
-- Candidate pairs: leader `SP500.DWX` or `NDX.DWX`; follower `GER40.DWX` or `UK100.DWX`.
+- Candidate pairs: leader `SP500.DWX` or `NDX.DWX`; follower `GDAXI.DWX` or `UK100.DWX`.
 - On M1 bars, compute leader return over the last 1 bar: `R_lead = close_leader[0] / close_leader[1] - 1`.
 - Compute follower return over the same bar: `R_follow`.
 - Trade only in scheduled overlap windows: US cash open first 60 minutes, European close last 60 minutes, and major macro-announcement windows if calendar data is available.

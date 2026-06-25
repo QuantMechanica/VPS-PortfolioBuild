@@ -24,7 +24,7 @@ Long entry requires the prior close to cross above the active pivot high and clo
 
 ## Symbol Universe
 
-Registered symbols are `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`, `XAUUSD.DWX`, and `EURUSD.DWX`. The approved card listed `GER40.DWX`; the verified DWX matrix symbol for DAX is `GDAXI.DWX`, so the build uses `GDAXI.DWX`.
+Registered symbols are `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`, `XAUUSD.DWX`, and `EURUSD.DWX`. The approved card listed `GDAXI.DWX`; the verified DWX matrix symbol for DAX is `GDAXI.DWX`, so the build uses `GDAXI.DWX`.
 
 ## Timeframe
 

@@ -48,12 +48,12 @@ The EA trades the M1 Williams %R, MACD histogram, and SMA scalping rules from th
 - `EURUSD.DWX` - card target; liquid major FX pair suitable for London/New York M1 scalping.
 - `GBPUSD.DWX` - card target; liquid major FX pair suitable for London/New York M1 scalping.
 - `XAUUSD.DWX` - card target; liquid gold CFD with DWX OHLC data for WPR, MACD, SMA, and ATR.
-- `GDAXI.DWX` - DAX 40 DWX matrix equivalent for card target `GER40.DWX`, which is not in the matrix.
+- `GDAXI.DWX` - DAX 40 DWX matrix equivalent for card target `GDAXI.DWX`, which is not in the matrix.
 - `NDX.DWX` - card target; liquid US index CFD suitable for cash-session overlap tests.
 
 **Explicitly NOT for:**
 - Symbols outside the registered list above - no implicit universe expansion at runtime.
-- `GER40.DWX` - card-stated alias is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX equivalent.
+- `GDAXI.DWX` - card-stated alias is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX equivalent.
 
 ---
 

@@ -20,7 +20,7 @@
 
 | Slot | Symbol | Purpose |
 | --- | --- | --- |
-| 0 | `GER40.DWX` | Primary DAX proxy |
+| 0 | `GDAXI.DWX` | Primary DAX proxy |
 | 1 | `UK100.DWX` | Optional source-index test route |
 | 2 | `JPN225.DWX` | Optional source-index test route |
 

@@ -3,7 +3,7 @@ ea_id: QM5_10192
 slug: tv-ma922-trail
 type: strategy
 source_id: 30591366-874b-5bee-b47c-da2fca20b728
-target_symbols: [NDX.DWX, GER40.DWX, WS30.DWX, SP500.DWX]
+target_symbols: [NDX.DWX, GDAXI.DWX, WS30.DWX, SP500.DWX]
 sources:
   - "[[sources/tradingview-popular-pine-scripts]]"
 concepts:
@@ -59,7 +59,7 @@ Initial stop = max(1.5% price distance, 1.0 * ATR(14)) from entry, then trail by
 V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number.
 
 ### Zusatzliche Filter
-- Source instrument is BANKNIFTY; DWX port uses index CFDs: NDX.DWX, GER40.DWX, WS30.DWX, SP500.DWX backtest-only analog.
+- Source instrument is BANKNIFTY; DWX port uses index CFDs: NDX.DWX, GDAXI.DWX, WS30.DWX, SP500.DWX backtest-only analog.
 - Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
 - Spread must be <= 15% of initial stop distance.
 

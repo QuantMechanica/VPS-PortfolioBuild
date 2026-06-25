@@ -11,7 +11,7 @@ concepts:
   - "[[concepts/session-time-gate]]"
   - "[[concepts/fixed-risk-reward]]"
 indicators: []
-target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GER40.DWX]
+target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX]
 period: M1
 expected_trade_frequency: "Daily index session setup, but cancelled if the open is outside the bracket or no fill before 11:00; conservative estimate 120 trades/year/symbol."
 expected_trades_per_year_per_symbol: 120
@@ -77,7 +77,7 @@ g0_approval_reasoning: "R1 PASS: Elite Trader URL/handle cited; R2 PASS: mechani
 | R4 No ML | PASS | Fixed intraday rules; source two-contract partial exit is converted to a single-position full exit. |
 
 ## R3
-Primary P2 basket: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GER40.DWX`.
+Primary P2 basket: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`.
 
 Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
 

@@ -41,11 +41,11 @@ The EA watches completed M15 bars for three consecutive same-direction candles i
 - SP500.DWX - Card-listed S&P 500 exposure; backtest-only custom symbol is available in the DWX matrix.
 - NDX.DWX - Card-listed Nasdaq 100 exposure and available in the DWX matrix.
 - WS30.DWX - Card-listed Dow 30 exposure and available in the DWX matrix.
-- GDAXI.DWX - DAX exposure mapped from card-listed GER40.DWX because GDAXI.DWX is the DWX matrix symbol.
+- GDAXI.DWX - DAX exposure mapped from card-listed GDAXI.DWX because GDAXI.DWX is the DWX matrix symbol.
 - XAUUSD.DWX - Card-listed gold exposure and available in the DWX matrix.
 
 **Explicitly NOT for:**
-- GER40.DWX - Card-listed name is not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is registered instead.
+- GDAXI.DWX - Card-listed name is not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is registered instead.
 
 ---
 

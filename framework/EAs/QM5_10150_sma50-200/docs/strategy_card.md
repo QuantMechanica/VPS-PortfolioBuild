@@ -55,7 +55,7 @@ g0_approval_reasoning: "R1 verifiable Raposa/Medium article URLs; R2 determinist
 ### Zusaetzliche Filter
 - Require at least 200 completed daily bars before trading.
 - Skip if spread exceeds symbol default.
-- Best initial DWX tests: SP500.DWX, NDX.DWX, WS30.DWX, GER40.DWX, XAUUSD.DWX; FX majors optional but lower expected trend persistence.
+- Best initial DWX tests: SP500.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX, XAUUSD.DWX; FX majors optional but lower expected trend persistence.
 
 ## Concepts
 - [[concepts/trend-following]] - primary
@@ -70,7 +70,7 @@ g0_approval_reasoning: "R1 verifiable Raposa/Medium article URLs; R2 determinist
 | R4 ML Forbidden | PASS | Fixed moving-average crossover; no ML, adaptive parameter update, grid, or martingale. |
 
 ## R3
-The source tests equities/SPY; the closest DWX analog is SP500.DWX for backtest-only index behavior plus live-routable NDX.DWX/WS30.DWX/GER40.DWX cross-checks. Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
+The source tests equities/SPY; the closest DWX analog is SP500.DWX for backtest-only index behavior plus live-routable NDX.DWX/WS30.DWX/GDAXI.DWX cross-checks. Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
 
 ## Author Claims
 - Source presents the 50/200 moving-average relationship as a basic systematic trading rule.

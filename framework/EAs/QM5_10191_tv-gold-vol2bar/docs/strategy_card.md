@@ -3,7 +3,7 @@ ea_id: QM5_10191
 slug: tv-gold-vol2bar
 type: strategy
 source_id: 30591366-874b-5bee-b47c-da2fca20b728
-target_symbols: [XAUUSD.DWX, XAGUSD.DWX, XTIUSD.DWX, GER40.DWX, NDX.DWX]
+target_symbols: [XAUUSD.DWX, XAGUSD.DWX, XTIUSD.DWX, GDAXI.DWX, NDX.DWX]
 sources:
   - "[[sources/tradingview-popular-pine-scripts]]"
 concepts:
@@ -58,7 +58,7 @@ V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number.
 
 ### Zusatzliche Filter
 - Primary symbol: XAUUSD.DWX.
-- Optional ports: XAGUSD.DWX, XTIUSD.DWX, GER40.DWX, NDX.DWX.
+- Optional ports: XAGUSD.DWX, XTIUSD.DWX, GDAXI.DWX, NDX.DWX.
 - Do not run on timeframes above M30; source explicitly recommends 1M-30M.
 - Spread must be <= 15% of ATR stop distance.
 

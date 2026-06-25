@@ -33,10 +33,10 @@ Note: framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md
 - `EURUSD.DWX` - card-listed FX major with full OHLC data in the DWX matrix.
 - `GBPUSD.DWX` - card-listed FX major with full OHLC data in the DWX matrix.
 - `XAUUSD.DWX` - card-listed gold symbol with full OHLC data in the DWX matrix.
-- `GDAXI.DWX` - available DWX DAX equivalent for the card-listed `GER40.DWX`, which is not present in the matrix.
+- `GDAXI.DWX` - available DWX DAX equivalent for the card-listed `GDAXI.DWX`, which is not present in the matrix.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX` for DAX exposure.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX` for DAX exposure.
 - Symbols outside the DWX matrix - unavailable for deterministic P2 backtests.
 
 ---

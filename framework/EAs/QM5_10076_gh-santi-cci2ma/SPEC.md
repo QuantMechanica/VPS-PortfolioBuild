@@ -36,7 +36,7 @@ The EA watches closed H1 bars for two independent signals: CCI(14, close) crossi
 - `GDAXI.DWX` - available DWX DAX equivalent for the card's GER40 target.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - card-stated target is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is used instead.
+- `GDAXI.DWX` - card-stated target is not present in `dwx_symbol_matrix.csv`; `GDAXI.DWX` is used instead.
 
 ---
 

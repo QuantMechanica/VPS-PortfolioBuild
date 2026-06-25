@@ -48,7 +48,7 @@ At the first tradable day of each month:
 
 ### Zusaetzliche Filter
 
-- Target symbols: XAUUSD.DWX, XTIUSD.DWX, XNGUSD.DWX, XAGUSD.DWX, XCUUSD.DWX, only where approved DWX trade legs and roll-yield signal rows exist.
+- Target symbols: XAUUSD.DWX, XTIUSD.DWX, XNGUSD.DWX, XAGUSD.DWX, only where approved DWX trade legs and roll-yield signal rows exist.
 - Source trades futures; DWX implementation trades spot/CFD proxies using external roll-yield signal data.
 - Exclude any commodity without approved DWX trade leg or approved signal-only proxy.
 - No dynamic hedge ratio, no futures-curve optimization, no grid/martingale.

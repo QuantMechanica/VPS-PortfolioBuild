@@ -48,7 +48,7 @@ The EA trades Bollinger Band re-entry signals with Stochastic confirmation and a
 - NDX.DWX - card target; liquid US index CFD with volatility/reversal behavior.
 
 **Explicitly NOT for:**
-- GER40.DWX - not present in `framework/registry/dwx_symbol_matrix.csv`; mapped to GDAXI.DWX.
+- GDAXI.DWX - not present in `framework/registry/dwx_symbol_matrix.csv`; mapped to GDAXI.DWX.
 - SPX500.DWX, SPY.DWX, ES.DWX - unavailable phantom symbols under DWX discipline.
 
 ---

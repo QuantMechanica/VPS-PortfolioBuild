@@ -43,11 +43,11 @@ This EA trades H1 trend entries from the TradingView CHOP Zone Entry Strategy wi
 - EURUSD.DWX - card-stated DWX forex target.
 - GBPUSD.DWX - card-stated DWX forex target.
 - XAUUSD.DWX - card-stated DWX gold target.
-- GDAXI.DWX - DWX matrix DAX equivalent used for card-stated GER40.DWX, which is not present in the matrix.
+- GDAXI.DWX - DWX matrix DAX equivalent used for card-stated GDAXI.DWX, which is not present in the matrix.
 - NDX.DWX - card-stated DWX index target.
 
 **Explicitly NOT for:**
-- GER40.DWX - not present in `framework/registry/dwx_symbol_matrix.csv`; replaced by GDAXI.DWX for build registration.
+- GDAXI.DWX - not present in `framework/registry/dwx_symbol_matrix.csv`; replaced by GDAXI.DWX for build registration.
 
 ---
 

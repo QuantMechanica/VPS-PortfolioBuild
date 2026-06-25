@@ -38,7 +38,7 @@ The EA trades TD Camouflage reversal bars on H1. A long signal occurs when the l
 - `EURUSD.DWX` - Card R3 includes this liquid FX major for portable OHLC reversal testing.
 - `GBPUSD.DWX` - Card R3 includes this liquid FX major for portable OHLC reversal testing.
 - `XAUUSD.DWX` - Card R3 includes gold, where range-location reversal bars are directly measurable.
-- `GDAXI.DWX` - DWX matrix DAX symbol used for the card's `GER40.DWX` target.
+- `GDAXI.DWX` - DWX matrix DAX symbol used for the card's `GDAXI.DWX` target.
 - `NDX.DWX` - Card R3 includes Nasdaq 100 index CFD exposure.
 
 **Explicitly NOT for:**

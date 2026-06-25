@@ -46,7 +46,7 @@ input bool   strategy_allow_xtiusd       = true;
 string g_symbols[QM5_1232_SYMBOL_COUNT] =
   {
    "EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX", "AUDUSD.DWX", "USDCAD.DWX", "NZDUSD.DWX",
-   "GER40.DWX", "UK100.DWX", "NDX.DWX", "WS30.DWX", "XAUUSD.DWX", "XTIUSD.DWX"
+   "GDAXI.DWX", "UK100.DWX", "NDX.DWX", "WS30.DWX", "XAUUSD.DWX", "XTIUSD.DWX"
   };
 
 int g_slots[QM5_1232_SYMBOL_COUNT] =

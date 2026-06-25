@@ -37,14 +37,14 @@ The EA trades mean reversion in highly correlated index-CFD pairs. On each M15 c
 ## 3. Symbol Universe
 
 **Designed for:**
-- GDAXI.DWX - matrix-valid DAX leg used as the portable replacement for card-stated GER40.DWX.
+- GDAXI.DWX - matrix-valid DAX leg used as the portable replacement for card-stated GDAXI.DWX.
 - UK100.DWX - matrix-valid liquid European index leg used as the fallback for unavailable FRA40.DWX.
 - SP500.DWX - card-stated S&P 500 index leg, backtest-only per DWX discipline.
 - NDX.DWX - card-stated Nasdaq 100 index leg for SP500/NDX pair.
 - WS30.DWX - card-stated Dow 30 index leg for SP500/WS30 pair.
 
 **Explicitly NOT for:**
-- GER40.DWX - not present in `framework/registry/dwx_symbol_matrix.csv`.
+- GDAXI.DWX - not present in `framework/registry/dwx_symbol_matrix.csv`.
 - FRA40.DWX - not present in `framework/registry/dwx_symbol_matrix.csv`.
 - SPX500.DWX, SPY.DWX, ES.DWX - non-canonical S&P 500 variants; SP500.DWX is the only allowed matrix symbol.
 

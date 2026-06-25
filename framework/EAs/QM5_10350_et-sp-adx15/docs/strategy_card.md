@@ -13,7 +13,7 @@ concepts:
 indicators:
   - "[[indicators/donchian-channel]]"
   - "[[indicators/adx]]"
-target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GER40.DWX, STOXX50.DWX]
+target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX, STOXX50.DWX]
 period: M30
 expected_trade_frequency: "30-minute 15-bar breakout gated by ADX<25; conservative estimate 75 trades/year/symbol after session and one-position filters."
 expected_trades_per_year_per_symbol: 75
@@ -80,7 +80,7 @@ g0_approval_reasoning: "R1 source URL present; R2 mechanical ADX/channel entry/e
 | R4 No ML | PASS | Fixed ADX and channel rules; no ML, adaptive parameters, grid, or martingale. |
 
 ## R3
-Primary P2 basket: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GER40.DWX`, `STOXX50.DWX`.
+Primary P2 basket: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`, `STOXX50.DWX`.
 
 Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
 

@@ -38,10 +38,10 @@ On each closed M5 bar, the EA approximates order imbalance with signed tick volu
 - `SP500.DWX` - S&P 500 custom symbol specified by the card's R3 basket; backtest-only caveat applies at T6.
 - `NDX.DWX` - Nasdaq 100 index CFD in the card's R3 basket.
 - `WS30.DWX` - Dow 30 index CFD in the card's R3 basket.
-- `GDAXI.DWX` - DWX matrix DAX symbol used as the available port for the card's `GER40.DWX` leg.
+- `GDAXI.DWX` - DWX matrix DAX symbol used as the available port for the card's `GDAXI.DWX` leg.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - non-canonical or unavailable S&P 500 variants.
 
 ---

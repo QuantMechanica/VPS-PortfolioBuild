@@ -116,7 +116,7 @@ void Strategy_ResolveSession(int &start_hour, int &start_min, int &end_hour, int
       return;
 
    // DAX cash session 09:00-17:30 CET == broker ~10:00-18:30.
-   if(_Symbol == "GDAXI.DWX" || _Symbol == "GER40.DWX" || _Symbol == "DE30.DWX")
+   if(_Symbol == "GDAXI.DWX")
      {
       start_hour = 10; start_min = 0;
       end_hour   = 18; end_min   = 30;

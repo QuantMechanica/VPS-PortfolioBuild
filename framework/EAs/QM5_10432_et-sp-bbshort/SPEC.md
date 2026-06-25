@@ -34,13 +34,13 @@ The EA trades a short-only daily Bollinger reversal. On each completed D1 bar, i
 - `SP500.DWX` — primary S&P 500 custom symbol named by the card and available for backtest.
 - `NDX.DWX` — portable US large-cap index CFD fallback from the card basket.
 - `WS30.DWX` — portable US large-cap index CFD fallback from the card basket.
-- `GDAXI.DWX` — verified DAX custom symbol used because `GER40.DWX` is not in `dwx_symbol_matrix.csv`.
+- `GDAXI.DWX` — verified DAX custom symbol used because `GDAXI.DWX` is not in `dwx_symbol_matrix.csv`.
 
 **Explicitly NOT for:**
 - `SPX500.DWX` — not a canonical available custom symbol.
 - `SPY.DWX` — not a canonical available custom symbol.
 - `ES.DWX` — not a canonical available custom symbol.
-- `GER40.DWX` — card-stated DAX alias, but not present in `dwx_symbol_matrix.csv`.
+- `GDAXI.DWX` — card-stated DAX alias, but not present in `dwx_symbol_matrix.csv`.
 
 ---
 

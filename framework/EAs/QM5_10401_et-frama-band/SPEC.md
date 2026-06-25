@@ -34,11 +34,11 @@ The EA runs on H1 bars and computes price as the average of each bar's high and 
 - EURUSD.DWX - card-listed liquid FX major with OHLC data.
 - GBPJPY.DWX - card-listed liquid FX cross with OHLC data.
 - XAUUSD.DWX - card-listed metal with OHLC data.
-- GDAXI.DWX - verified local DAX custom symbol used as the DWX port for card target GER40.DWX.
+- GDAXI.DWX - verified local DAX custom symbol used as the DWX port for card target GDAXI.DWX.
 - NDX.DWX - card-listed index CFD with OHLC data.
 
 **Explicitly NOT for:**
-- GER40.DWX - card-listed name is not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is the verified DAX equivalent.
+- GDAXI.DWX - card-listed name is not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is the verified DAX equivalent.
 
 ---
 

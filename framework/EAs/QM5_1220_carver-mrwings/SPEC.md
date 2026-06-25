@@ -18,7 +18,7 @@
 
 ## Universe And Slots
 
-Slots `0..6`: `GER40.DWX`, `NDX.DWX`, `WS30.DWX`, `EURUSD.DWX`, `GBPUSD.DWX`, `USDJPY.DWX`, `XAUUSD.DWX`.
+Slots `0..6`: `GDAXI.DWX`, `NDX.DWX`, `WS30.DWX`, `EURUSD.DWX`, `GBPUSD.DWX`, `USDJPY.DWX`, `XAUUSD.DWX`.
 
 ## Notes
 

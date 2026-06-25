@@ -42,11 +42,11 @@ The EA trades the completed-bar MACD(5,13,6) signal on M5. It opens long when bo
 - `SP500.DWX` - card primary S&P 500 index proxy; backtest-only custom symbol is available.
 - `NDX.DWX` - Nasdaq 100 index CFD fits the liquid US large-cap index basket.
 - `WS30.DWX` - Dow 30 index CFD fits the liquid US large-cap index basket.
-- `GDAXI.DWX` - available DAX custom symbol used as the DWX equivalent for the card's `GER40.DWX`.
+- `GDAXI.DWX` - available DAX custom symbol used as the DWX equivalent for the card's `GDAXI.DWX`.
 - `XAUUSD.DWX` - liquid metal symbol explicitly listed by the card.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; ported to `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; ported to `GDAXI.DWX`.
 
 ---
 

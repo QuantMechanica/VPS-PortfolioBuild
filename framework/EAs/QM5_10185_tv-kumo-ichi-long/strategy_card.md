@@ -63,7 +63,7 @@ V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number.
 ### Zusatzliche Filter
 - Use completed higher-timeframe daily EMA values only; no lookahead.
 - Volume filter baseline: tick volume > SMA(tick volume, 20).
-- DWX port targets EURJPY.DWX, GBPJPY.DWX, XAUUSD.DWX, NDX.DWX, and GER40.DWX.
+- DWX port targets EURJPY.DWX, GBPJPY.DWX, XAUUSD.DWX, NDX.DWX, and GDAXI.DWX.
 
 ## Concepts (was ist das fur eine Strategie)
 - [[concepts/trend-following]] - Ichimoku cloud and daily EMA bias identify bullish trend regimes.

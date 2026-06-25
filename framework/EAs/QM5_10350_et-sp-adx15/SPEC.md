@@ -22,7 +22,7 @@ Long exits use a break below the lowest low of the previous 5 completed bars. Sh
 | strategy_session_end_h | 23 | Broker-hour liquid-session end. |
 
 ## Symbol Universe
-Registered P2 basket: SP500.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX, UK100.DWX. Card aliases GER40.DWX and STOXX50.DWX are not present in the matrix; GDAXI.DWX and UK100.DWX are used as available DWX index ports.
+Registered P2 basket: SP500.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX, UK100.DWX. Card aliases GDAXI.DWX and STOXX50.DWX are not present in the matrix; GDAXI.DWX and UK100.DWX are used as available DWX index ports.
 
 ## Timeframe
 M30 only.

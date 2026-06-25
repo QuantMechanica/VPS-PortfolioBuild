@@ -3,7 +3,7 @@ ea_id: QM5_10193
 slug: tv-asia-gc-brk
 type: strategy
 source_id: 30591366-874b-5bee-b47c-da2fca20b728
-target_symbols: [XAUUSD.DWX, XAGUSD.DWX, GER40.DWX, NDX.DWX]
+target_symbols: [XAUUSD.DWX, XAGUSD.DWX, GDAXI.DWX, NDX.DWX]
 sources:
   - "[[sources/tradingview-popular-pine-scripts]]"
 concepts:
@@ -56,7 +56,7 @@ ATR(14) stop at 1.0x ATR from entry, trailed only if the optional trailing mode 
 V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number.
 
 ### Zusatzliche Filter
-- Primary symbol: XAUUSD.DWX. Optional cross-checks: XAGUSD.DWX, GER40.DWX, NDX.DWX.
+- Primary symbol: XAUUSD.DWX. Optional cross-checks: XAGUSD.DWX, GDAXI.DWX, NDX.DWX.
 - Spread must be <= 15% of ATR stop distance.
 - Skip days where Asia range height < 0.5 * ATR(14) or > 3.0 * ATR(14) to avoid dead/noisy sessions.
 

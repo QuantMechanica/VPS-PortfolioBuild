@@ -24,7 +24,6 @@ No intramonth alpha stop is specified by the source concept. The EA uses an ATR 
 - XAGUSD.DWX
 - XTIUSD.DWX
 - XNGUSD.DWX
-- XCUUSD.DWX
 
 ## Constraints
 

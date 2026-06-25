@@ -45,10 +45,10 @@ This EA trades the Elite Trader Hershey Beginner Rocket setup on M5 index data. 
 - `SP500.DWX` - S&P 500 custom symbol matching the ES/SPX baseline; backtest-only per platform caveat.
 - `NDX.DWX` - Nasdaq 100 large-cap index CFD analog for US index momentum.
 - `WS30.DWX` - Dow 30 large-cap index CFD analog for US index momentum.
-- `GDAXI.DWX` - DAX index equivalent used because the card names `GER40.DWX`, which is not present in `dwx_symbol_matrix.csv`.
+- `GDAXI.DWX` - DAX index equivalent used because the card names `GDAXI.DWX`, which is not present in `dwx_symbol_matrix.csv`.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - card-stated DAX label is not in the DWX symbol matrix; `GDAXI.DWX` is the registered matrix symbol.
+- `GDAXI.DWX` - card-stated DAX label is not in the DWX symbol matrix; `GDAXI.DWX` is the registered matrix symbol.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable aliases; the canonical S&P 500 custom symbol is `SP500.DWX`.
 
 ---

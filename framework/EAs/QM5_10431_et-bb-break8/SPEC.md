@@ -36,11 +36,11 @@ The EA trades a completed-bar D1 long-only Bollinger breakout rule. It enters lo
 - `SP500.DWX` - canonical S&P 500 custom-symbol port for US large-cap breakout exposure; backtest-only per symbol discipline.
 - `NDX.DWX` - live-tradable Nasdaq 100 index CFD for portable US large-cap breakout exposure.
 - `WS30.DWX` - live-tradable Dow 30 index CFD for portable US large-cap breakout exposure.
-- `GDAXI.DWX` - matrix-valid DAX CFD used for the card's `GER40.DWX` basket item.
+- `GDAXI.DWX` - matrix-valid DAX CFD used for the card's `GDAXI.DWX` basket item.
 - `XAUUSD.DWX` - matrix-valid gold CFD included by the approved card's R3 basket.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - card-stated name is not present in the DWX symbol matrix; this build registers `GDAXI.DWX`.
+- `GDAXI.DWX` - card-stated name is not present in the DWX symbol matrix; this build registers `GDAXI.DWX`.
 - `SPX500.DWX`, `SPY.DWX`, `ES.DWX` - unavailable S&P 500 variants; `SP500.DWX` is the canonical custom symbol.
 
 ---

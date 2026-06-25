@@ -38,10 +38,10 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 **Designed for:**
 - EURUSD.DWX - card-listed DWX forex target using H1/D1 OHLC and SMA only.
 - XAUUSD.DWX - card-listed DWX metals target using the same OHLC/SMA mechanics.
-- GDAXI.DWX - DWX matrix DAX equivalent for the card's GER40.DWX target.
+- GDAXI.DWX - DWX matrix DAX equivalent for the card's GDAXI.DWX target.
 
 **Explicitly NOT for:**
-- GER40.DWX - card-stated name is not present in `framework/registry/dwx_symbol_matrix.csv`; registered as GDAXI.DWX instead.
+- GDAXI.DWX - card-stated name is not present in `framework/registry/dwx_symbol_matrix.csv`; registered as GDAXI.DWX instead.
 - Non-DWX symbols - V5 research and backtest registry requires `.DWX` symbols.
 
 ---

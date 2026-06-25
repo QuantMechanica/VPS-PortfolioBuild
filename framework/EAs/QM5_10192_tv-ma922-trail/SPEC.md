@@ -39,12 +39,12 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 
 **Designed for:**
 - `NDX.DWX` - Nasdaq 100 index CFD; fits the card's DWX index-CFD port of the BANKNIFTY source instrument.
-- `GDAXI.DWX` - DAX index custom symbol; matrix-valid replacement for the card's unavailable `GER40.DWX` label.
+- `GDAXI.DWX` - DAX index custom symbol; matrix-valid replacement for the card's unavailable `GDAXI.DWX` label.
 - `WS30.DWX` - Dow 30 index CFD; fits the liquid index-CFD basket.
 - `SP500.DWX` - S&P 500 custom symbol; valid for backtest registration and included by the card's DWX index-CFD port.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
 - Any unregistered symbol - this EA relies on active magic-number rows for the symbols above.
 
 ---

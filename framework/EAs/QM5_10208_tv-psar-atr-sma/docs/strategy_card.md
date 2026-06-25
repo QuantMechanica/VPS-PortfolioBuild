@@ -3,7 +3,7 @@ ea_id: QM5_10208
 slug: tv-psar-atr-sma
 type: strategy
 source_id: 30591366-874b-5bee-b47c-da2fca20b728
-target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX]
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX, NDX.DWX]
 sources:
   - "[[sources/tradingview-popular-pine-scripts]]"
 concepts:
@@ -59,7 +59,7 @@ Initial and trailing stop = 6.0 * ATR from entry in the adverse direction, updat
 V5 default: fixed-risk $1,000 for P2 baseline, one position per magic number. Source 0.5% equity risk is replaced by V5 fixed-risk sizing.
 
 ### Zusatzliche Filter
-- Target symbols: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX.
+- Target symbols: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX, NDX.DWX.
 - Spread must be <= 15% of ATR stop distance.
 - Optional P3 parameter sweep: SMA length 50/100/200, ATR stop 3/4.5/6, standard PSAR settings around source defaults.
 

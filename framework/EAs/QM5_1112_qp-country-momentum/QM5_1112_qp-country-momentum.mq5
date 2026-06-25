@@ -39,7 +39,7 @@ input double strategy_atr_sl_mult            = 4.0;
 input bool   strategy_spread_filter_enabled  = true;
 input double strategy_max_spread_median_mult = 3.0;
 
-#define QM5_1112_SYMBOL_COUNT 7
+#define QM5_1112_SYMBOL_COUNT 6
 
 string g_symbols[QM5_1112_SYMBOL_COUNT] =
   {
@@ -48,10 +48,9 @@ string g_symbols[QM5_1112_SYMBOL_COUNT] =
    "GDAXI.DWX",
    "UK100.DWX",
    "JPN225.DWX",
-   "AUS200.DWX",
    "SP500.DWX"
   };
-int g_slots[QM5_1112_SYMBOL_COUNT] = {0, 1, 2, 3, 4, 5, 6};
+int g_slots[QM5_1112_SYMBOL_COUNT] = {0, 1, 2, 3, 4, 6};
 
 int g_last_entry_rebalance_key = 0;
 int g_last_exit_rebalance_key = 0;

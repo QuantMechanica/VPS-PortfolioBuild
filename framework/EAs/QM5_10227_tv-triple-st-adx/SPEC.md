@@ -46,7 +46,7 @@ This EA trades the closed-bar direction of three Supertrend calculations. A long
 
 **Designed for:**
 - `XAUUSD.DWX` — trend-capable gold CFD named directly in the approved card.
-- `GDAXI.DWX` — canonical DWX DAX symbol used for the card's `GER40.DWX` target because `GER40.DWX` is not in the DWX matrix.
+- `GDAXI.DWX` — canonical DWX DAX symbol used for the card's `GDAXI.DWX` target because `GDAXI.DWX` is not in the DWX matrix.
 - `NDX.DWX` — trend-capable Nasdaq 100 CFD named directly in the approved card.
 - `GBPJPY.DWX` — trend-capable JPY cross named directly in the approved card.
 - `EURJPY.DWX` — trend-capable JPY cross named directly in the approved card.

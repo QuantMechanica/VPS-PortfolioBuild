@@ -35,11 +35,11 @@ The EA trades a previous-bar breakout. On each new bar, if flat, it places a buy
 - SP500.DWX - S&P 500 custom symbol named in the card's R3 basket.
 - NDX.DWX - Nasdaq 100 index exposure named in the card's R3 basket.
 - WS30.DWX - Dow 30 index exposure named in the card's R3 basket.
-- GDAXI.DWX - canonical DAX custom symbol in the DWX matrix, used for the card's GER40.DWX intent.
+- GDAXI.DWX - canonical DAX custom symbol in the DWX matrix, used for the card's GDAXI.DWX intent.
 - EURUSD.DWX - canonical DWX-suffixed form of the card's EURUSD FX target.
 
 **Explicitly NOT for:**
-- GER40.DWX - not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is the registered DAX equivalent.
+- GDAXI.DWX - not present in `framework/registry/dwx_symbol_matrix.csv`; GDAXI.DWX is the registered DAX equivalent.
 - EURUSD - no `.DWX` suffix; backtest registry and setfiles use EURUSD.DWX.
 
 ---

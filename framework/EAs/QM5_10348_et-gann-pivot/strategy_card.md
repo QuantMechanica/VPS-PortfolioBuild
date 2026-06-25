@@ -14,7 +14,7 @@ indicators:
   - "[[indicators/pivot-high-low]]"
   - "[[indicators/atr]]"
   - "[[indicators/sma]]"
-target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX]
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GDAXI.DWX, NDX.DWX]
 period: M15
 expected_trade_frequency: "Pivot signal with 50-bar expiration and max daily trades; conservative estimate 60 trades/year/symbol after filters."
 expected_trades_per_year_per_symbol: 60
@@ -81,7 +81,7 @@ g0_approval_reasoning: "R1 source URL present; R2 mechanical pivot breakout/exit
 | R4 No ML | PASS | Fixed pivot/risk inputs; no ML, adaptive parameters, grid, or martingale. |
 
 ## R3
-Primary P2 basket: `EURUSD.DWX`, `GBPUSD.DWX`, `XAUUSD.DWX`, `GER40.DWX`, `NDX.DWX`. Optional SP500.DWX backtest-only index variant must carry the standard T6 caveat if promoted from SP500-only evidence.
+Primary P2 basket: `EURUSD.DWX`, `GBPUSD.DWX`, `XAUUSD.DWX`, `GDAXI.DWX`, `NDX.DWX`. Optional SP500.DWX backtest-only index variant must carry the standard T6 caveat if promoted from SP500-only evidence.
 
 ## Author Claims
 - The source code names the strategy "Gann Pivot Trading System."

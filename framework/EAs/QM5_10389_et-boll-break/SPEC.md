@@ -36,11 +36,11 @@ This EA trades H1 close breakouts beyond a 35-period Bollinger Band envelope. It
 - `EURUSD.DWX` - liquid major FX pair named by the card.
 - `GBPUSD.DWX` - liquid major FX pair named by the card.
 - `XAUUSD.DWX` - liquid metals CFD named by the card.
-- `GDAXI.DWX` - canonical DWX DAX symbol used for the card's `GER40.DWX` target.
+- `GDAXI.DWX` - canonical DWX DAX symbol used for the card's `GDAXI.DWX` target.
 - `NDX.DWX` - liquid US index CFD named by the card.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX equivalent.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; `GDAXI.DWX` is the registered DAX equivalent.
 - Symbols outside `framework/registry/dwx_symbol_matrix.csv` - no DWX tick-data registration.
 
 ---

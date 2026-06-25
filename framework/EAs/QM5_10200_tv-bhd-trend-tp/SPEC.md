@@ -38,10 +38,10 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 - `GBPUSD.DWX` - liquid major FX pair from the approved card target basket.
 - `XAUUSD.DWX` - liquid gold CFD from the approved card target basket.
 - `NDX.DWX` - liquid Nasdaq 100 index CFD from the approved card target basket.
-- `GDAXI.DWX` - canonical DWX DAX symbol; used as the matrix-verified port of the card's `GER40.DWX`.
+- `GDAXI.DWX` - canonical DWX DAX symbol; used as the matrix-verified port of the card's `GDAXI.DWX`.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
+- `GDAXI.DWX` - not present in `framework/registry/dwx_symbol_matrix.csv`; use `GDAXI.DWX`.
 - Any symbol not registered for this EA in `magic_numbers.csv`.
 
 ---

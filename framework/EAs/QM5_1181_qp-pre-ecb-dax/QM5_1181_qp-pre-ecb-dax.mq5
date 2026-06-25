@@ -29,7 +29,7 @@ input double strategy_spread_mult        = 3.0;
 input int    strategy_min_d1_bars        = 80;
 input int    strategy_time_stop_days     = 3;
 
-const string STRATEGY_SYMBOL = "GER40.DWX";
+const string STRATEGY_SYMBOL = "GDAXI.DWX";
 const int    STRATEGY_SLOT   = 0;
 
 const int ECB_DATE_COUNT = 50;

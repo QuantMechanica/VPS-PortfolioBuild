@@ -3,7 +3,7 @@ ea_id: QM5_10221
 slug: tv-ichi-ema-rsi
 type: strategy
 source_id: 30591366-874b-5bee-b47c-da2fca20b728
-target_symbols: [EURUSD.DWX, GBPJPY.DWX, XAUUSD.DWX, NDX.DWX, GER40.DWX]
+target_symbols: [EURUSD.DWX, GBPJPY.DWX, XAUUSD.DWX, NDX.DWX, GDAXI.DWX]
 sources:
   - "[[sources/tradingview-popular-pine-scripts]]"
 concepts:
@@ -31,7 +31,7 @@ g0_approval_reasoning: "R1 exact TradingView URL/author; R2 mechanical Ichimoku/
 - Page / Timestamp: TradingView script `Ichimoku EMA RSI - Crypto only long Strategy`, author handle `TradingStrategyCheck`, published 2021-06-02, updated 2021-07-05, https://www.tradingview.com/script/IYQMk5fS/
 
 ## Target Symbols
-EURUSD.DWX, GBPJPY.DWX, XAUUSD.DWX, NDX.DWX, GER40.DWX.
+EURUSD.DWX, GBPJPY.DWX, XAUUSD.DWX, NDX.DWX, GDAXI.DWX.
 
 ## Mechanik
 

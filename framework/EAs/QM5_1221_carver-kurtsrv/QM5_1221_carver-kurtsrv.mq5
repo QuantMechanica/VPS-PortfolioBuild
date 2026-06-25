@@ -44,20 +44,20 @@ input double strategy_spread_mult         = 2.0;
 input bool   strategy_allow_fx_group      = true;
 input bool   strategy_allow_index_group   = true;
 
-#define QM5_1221_SYMBOL_COUNT 11
+#define QM5_1221_SYMBOL_COUNT 10
 #define QM5_1221_INDEX_GROUP  1
 #define QM5_1221_FX_GROUP     2
 
 string g_symbols[QM5_1221_SYMBOL_COUNT] =
   {
-   "GER40.DWX", "NDX.DWX", "WS30.DWX", "UK100.DWX", "FRA40.DWX",
+   "GDAXI.DWX", "NDX.DWX", "WS30.DWX", "UK100.DWX",
    "EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX", "AUDUSD.DWX", "USDCAD.DWX", "USDCHF.DWX"
   };
 
 int g_groups[QM5_1221_SYMBOL_COUNT] =
   {
    QM5_1221_INDEX_GROUP, QM5_1221_INDEX_GROUP, QM5_1221_INDEX_GROUP,
-   QM5_1221_INDEX_GROUP, QM5_1221_INDEX_GROUP,
+   QM5_1221_INDEX_GROUP,
    QM5_1221_FX_GROUP, QM5_1221_FX_GROUP, QM5_1221_FX_GROUP,
    QM5_1221_FX_GROUP, QM5_1221_FX_GROUP, QM5_1221_FX_GROUP
   };

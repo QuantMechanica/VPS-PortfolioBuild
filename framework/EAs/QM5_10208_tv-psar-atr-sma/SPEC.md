@@ -41,7 +41,7 @@ This EA trades H1 trend-following reversals from the approved TradingView PSAR A
 - `EURUSD.DWX` - card target; liquid FX pair with SMA, ATR, and PSAR available from DWX OHLC
 - `GBPUSD.DWX` - card target; liquid FX pair with the same indicator surface
 - `XAUUSD.DWX` - card target; gold CFD with DWX OHLC and ATR/PSAR portability
-- `GDAXI.DWX` - DWX matrix DAX custom symbol used in place of card-stated `GER40.DWX`
+- `GDAXI.DWX` - DWX matrix DAX custom symbol used in place of card-stated `GDAXI.DWX`
 - `NDX.DWX` - card target; Nasdaq 100 index CFD with DWX OHLC and trend-following fit
 
 **Explicitly NOT for:**

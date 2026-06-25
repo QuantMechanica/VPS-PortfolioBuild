@@ -50,14 +50,14 @@ Long-only Bollinger breakout on the selected signal timeframe, default H4. The E
 
 **Designed for:**
 - `NDX.DWX` - Nasdaq 100 index exposure from the approved card basket.
-- `GDAXI.DWX` - DAX 40 proxy; used because `GER40.DWX` is not in the DWX matrix.
+- `GDAXI.DWX` - DAX 40 proxy; used because `GDAXI.DWX` is not in the DWX matrix.
 - `WS30.DWX` - Dow 30 index exposure from the approved card basket.
 - `SP500.DWX` - S&P 500 custom symbol; valid for backtest, with live-promotion caveat.
 - `XAUUSD.DWX` - Gold CFD exposure from the approved card basket.
 
 **Explicitly NOT for:**
 - Symbols outside the registered list above - no implicit universe expansion.
-- `GER40.DWX` - unavailable in `dwx_symbol_matrix.csv`; ported to `GDAXI.DWX`.
+- `GDAXI.DWX` - unavailable in `dwx_symbol_matrix.csv`; ported to `GDAXI.DWX`.
 
 ---
 

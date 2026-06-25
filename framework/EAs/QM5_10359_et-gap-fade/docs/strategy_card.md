@@ -11,7 +11,7 @@ concepts:
   - "[[concepts/mean-reversion]]"
   - "[[concepts/time-stop]]"
 indicators: []
-target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GER40.DWX]
+target_symbols: [SP500.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX]
 period: M5
 expected_trade_frequency: "Opening gap fade only when the index gaps beyond 0.6%; conservative estimate 45 trades/year/symbol after spread and session filters."
 expected_trades_per_year_per_symbol: 45
@@ -78,7 +78,7 @@ g0_approval_reasoning: "R1 Elite Trader URL+handle; R2 mechanical gap fade entry
 | R4 No ML | PASS | Fixed rules; no ML, adaptive parameters, martingale, grid, or pyramiding. |
 
 ## R3
-Primary P2 basket: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GER40.DWX`.
+Primary P2 basket: `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`.
 
 Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
 

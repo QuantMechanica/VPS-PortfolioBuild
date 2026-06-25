@@ -34,7 +34,7 @@ input int    strategy_entry_min_broker   = 0;
 input int    strategy_exit_hour_broker   = 17;
 input int    strategy_exit_min_broker    = 30;
 
-const string STRATEGY_SYMBOL = "GER40.DWX";
+const string STRATEGY_SYMBOL = "GDAXI.DWX";
 const int    STRATEGY_SLOT   = 0;
 
 const int ECB_DATE_COUNT = 50;

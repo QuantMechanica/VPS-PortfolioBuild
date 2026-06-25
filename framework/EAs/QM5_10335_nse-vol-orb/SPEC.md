@@ -36,13 +36,13 @@ The EA defines the opening range as the first fifteen minutes of the configured 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `GDAXI.DWX` - canonical DAX custom symbol available in the DWX symbol matrix; used as the port for card-stated `GER40.DWX`.
+- `GDAXI.DWX` - canonical DAX custom symbol available in the DWX symbol matrix; used as the port for card-stated `GDAXI.DWX`.
 - `NDX.DWX` - Nasdaq 100 index CFD with liquid intraday tick-volume data.
 - `SP500.DWX` - canonical S&P 500 custom symbol for U.S. large-cap index ORB tests.
 - `WS30.DWX` - Dow 30 index CFD with liquid intraday tick-volume data.
 
 **Explicitly NOT for:**
-- `GER40.DWX` - card-stated name is not present in the DWX symbol matrix; `GDAXI.DWX` is registered instead.
+- `GDAXI.DWX` - card-stated name is not present in the DWX symbol matrix; `GDAXI.DWX` is registered instead.
 - `SPX500.DWX` - not present in the DWX symbol matrix.
 - `SPY.DWX` - not present in the DWX symbol matrix.
 

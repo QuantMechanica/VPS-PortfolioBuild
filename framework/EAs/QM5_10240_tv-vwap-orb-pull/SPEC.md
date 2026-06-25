@@ -36,7 +36,7 @@ The EA defines the opening range during the first configurable minutes after the
 **Designed for:**
 - `NDX.DWX` - Nasdaq 100 intraday CFD port named by the card.
 - `WS30.DWX` - Dow 30 intraday CFD port named by the card.
-- `GDAXI.DWX` - available DAX custom symbol used in place of card-stated `GER40.DWX`, which is not in the DWX matrix.
+- `GDAXI.DWX` - available DAX custom symbol used in place of card-stated `GDAXI.DWX`, which is not in the DWX matrix.
 - `XAUUSD.DWX` - liquid gold CFD port named by the card.
 - `SP500.DWX` - S&P 500 custom symbol named by the card; backtest-only per owner note.
 

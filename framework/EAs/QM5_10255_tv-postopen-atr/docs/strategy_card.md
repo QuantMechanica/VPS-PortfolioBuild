@@ -20,7 +20,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: G0
-primary_symbol: GER40.DWX
+primary_symbol: GDAXI.DWX
 expected_trades_per_year_per_symbol: 90
 last_updated: 2026-05-19
 g0_approval_reasoning: "R1 TradingView URL+author cited; R2 mechanical post-open breakout with ATR exit and ~90 trades/year/symbol; R3 DWX FX/index CFDs testable; R4 fixed-rule non-ML one-position logic."
@@ -67,7 +67,7 @@ g0_approval_reasoning: "R1 TradingView URL+author cited; R2 mechanical post-open
 
 ### Zusaetzliche Filter
 - Standard V5 spread, news, kill-switch, Friday-close, and max-DD filters.
-- Best DWX ports: GER40.DWX, NDX.DWX, WS30.DWX, EURUSD.DWX, GBPUSD.DWX.
+- Best DWX ports: GDAXI.DWX, NDX.DWX, WS30.DWX, EURUSD.DWX, GBPUSD.DWX.
 
 ## Concepts
 - [[concepts/opening-range-breakout]] - primary; post-open breakout after low-volatility consolidation.
