@@ -11143,9 +11143,9 @@
 11484,carter-t-40-80-ema-cci-zero-m5,2,USDJPY.DWX,114840002,2026-06-18,Development,active
 11484,carter-t-40-80-ema-cci-zero-m5,3,AUDUSD.DWX,114840003,2026-06-18,Development,active
 11484,carter-t-40-80-ema-cci-zero-m5,4,USDCAD.DWX,114840004,2026-06-18,Development,active
-11485,carter-t-cci100-macd-momentum-m5,0,EURUSD.DWX,114850000,2026-06-18,Claude,reserved
-11485,carter-t-cci100-macd-momentum-m5,1,GBPUSD.DWX,114850001,2026-06-18,Claude,reserved
-11485,carter-t-cci100-macd-momentum-m5,2,AUDUSD.DWX,114850002,2026-06-18,Claude,reserved
+11485,carter-t-cci100-macd-momentum-m5,0,EURUSD.DWX,114850000,2026-06-25,Development,active
+11485,carter-t-cci100-macd-momentum-m5,1,GBPUSD.DWX,114850001,2026-06-25,Development,active
+11485,carter-t-cci100-macd-momentum-m5,2,AUDUSD.DWX,114850002,2026-06-25,Development,active
 11486,carter-t-20ema-macd-zero-m5,0,EURUSD.DWX,114860000,2026-06-25,Development,active
 11486,carter-t-20ema-macd-zero-m5,1,GBPUSD.DWX,114860001,2026-06-25,Development,active
 11486,carter-t-20ema-macd-zero-m5,2,USDJPY.DWX,114860002,2026-06-25,Development,active
@@ -11221,8 +11221,8 @@
 11504,goodwin-kangaroo-tail-d1,0,USDJPY.DWX,115040000,2026-06-18,Claude,reserved
 11504,goodwin-kangaroo-tail-d1,1,EURUSD.DWX,115040001,2026-06-18,Claude,reserved
 11504,goodwin-kangaroo-tail-d1,2,GBPUSD.DWX,115040002,2026-06-18,Claude,reserved
-11505,goodwin-hourly-breakout-h1,0,USDJPY.DWX,115050000,2026-06-18,Claude,reserved
-11505,goodwin-hourly-breakout-h1,1,GBPUSD.DWX,115050001,2026-06-18,Claude,reserved
+11505,goodwin-hourly-breakout-h1,0,USDJPY.DWX,115050000,2026-06-18,Development,active
+11505,goodwin-hourly-breakout-h1,1,GBPUSD.DWX,115050001,2026-06-18,Development,active
 11506,carter-t-ema10-25-50-psar-m30,0,EURUSD.DWX,115060000,2026-06-20,Development,active
 11506,carter-t-ema10-25-50-psar-m30,1,GBPUSD.DWX,115060001,2026-06-20,Development,active
 11506,carter-t-ema10-25-50-psar-m30,2,AUDUSD.DWX,115060002,2026-06-20,Development,active
@@ -13404,3 +13404,6 @@
 9520,mql5-entropy,1,EURUSD.DWX,95200001,2026-06-25,Development,active
 9520,mql5-entropy,2,GBPUSD.DWX,95200002,2026-06-25,Development,active
 9520,mql5-entropy,3,GDAXI.DWX,95200003,2026-06-25,Development,active
+9255,mql5-ema50-bounce,0,EURUSD.DWX,92550000,2026-06-25,Development,active
+9255,mql5-ema50-bounce,1,GBPUSD.DWX,92550001,2026-06-25,Development,active
+9255,mql5-ema50-bounce,2,GDAXI.DWX,92550002,2026-06-25,Development,active

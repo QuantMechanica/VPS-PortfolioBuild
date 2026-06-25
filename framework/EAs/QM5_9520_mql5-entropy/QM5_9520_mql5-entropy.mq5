@@ -350,6 +350,25 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(g_cached_signal < 0 && g_bars_since_sell_signal < strategy_min_signal_gap_bars)
       return false;
 
+   const int current_direction = CurrentPositionDirection();
+   if(current_direction == g_cached_signal)
+      return false;
+   if(strategy_reverse_on_opposite && current_direction != 0 && current_direction != g_cached_signal)
+     {
+      const int magic = QM_FrameworkMagic();
+      for(int i = PositionsTotal() - 1; i >= 0; --i)
+        {
+         const ulong ticket = PositionGetTicket(i);
+         if(!PositionSelectByTicket(ticket))
+            continue;
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+            continue;
+         if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+            continue;
+         QM_TM_ClosePosition(ticket, QM_EXIT_OPPOSITE_SIGNAL);
+        }
+     }
+
    const QM_OrderType type = (g_cached_signal > 0) ? QM_BUY : QM_SELL;
    const double entry = (type == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
                                          : SymbolInfoDouble(_Symbol, SYMBOL_BID);
