@@ -110,18 +110,19 @@ bool IsUKBST(datetime utc_time)
    return (d < sun_oct || (d == sun_oct && utc_h < 1));
   }
 
-// Compute 08:00 London local time in broker time for today
-datetime ComputeLondonOpenBroker()
+// Compute 08:00 London local time in broker time for today.
+// utc_midnight_today = g_today_broker_date = UTC midnight of the current broker calendar day.
+// For DXZ (UTC+2/+3): broker midnight raw == UTC midnight raw of the same calendar day,
+// so g_today_broker_date is a valid UTC midnight input here.
+datetime ComputeLondonOpenBroker(datetime utc_midnight_today)
   {
-   datetime utc_now   = TimeGMT();
-   datetime utc_mid   = utc_now - (utc_now % 86400);     // UTC midnight
    // London 08:00 local: UTC 07:00 in BST, UTC 08:00 in GMT
-   datetime utc_check = utc_mid + 7 * 3600 + 30 * 60;    // 07:30 UTC (before open in any case)
-   bool is_bst        = IsUKBST(utc_check);
-   int  london_utc_h  = is_bst ? 7 : 8;
-   datetime london_utc = utc_mid + (datetime)(london_utc_h * 3600);
-   bool is_us_dst     = QM_IsUSDSTUTC(london_utc);
-   int  broker_off    = is_us_dst ? 3 : 2;
+   datetime utc_check  = utc_midnight_today + 7 * 3600 + 30 * 60;  // 07:30 UTC
+   bool     is_bst     = IsUKBST(utc_check);
+   int      london_utc_h = is_bst ? 7 : 8;
+   datetime london_utc   = utc_midnight_today + (datetime)(london_utc_h * 3600);
+   bool     is_us_dst  = QM_IsUSDSTUTC(london_utc);
+   int      broker_off = is_us_dst ? 3 : 2;
    return london_utc + (datetime)(broker_off * 3600);
   }
 
@@ -147,7 +148,7 @@ void AdvanceState_OnNewBar()
    if(broker_date != g_today_broker_date)
      {
       g_today_broker_date   = broker_date;
-      g_london_open_broker  = ComputeLondonOpenBroker();
+      g_london_open_broker  = ComputeLondonOpenBroker(g_today_broker_date);
       g_or_end_broker       = g_london_open_broker + (datetime)(strategy_or_bars * 15 * 60);
       g_entry_window_end    = g_or_end_broker + (datetime)(strategy_entry_window_h * 3600);
       g_session_exit_broker = g_london_open_broker + (datetime)(9 * 3600); // 08:00+9h = 17:00 London
