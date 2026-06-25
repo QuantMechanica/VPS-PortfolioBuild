@@ -3,16 +3,16 @@
 ; ea_id:        10427
 ; ea_slug:      et-3bar-xma
 ; ea_version:   v5.0
-; set_version:  s20260527-001
+; set_version:  s20260625-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   030da3a911e9ca0445840d24259fd5130c08539d44d9e4e2bfe5543d45281124
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-27
+; date:         2026-06-25
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000
