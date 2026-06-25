@@ -73,8 +73,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double rsi      = QM_RSI(_Symbol, _Period, strategy_rsi_period, 1);
    const double stoch_k  = QM_Stoch_K(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slow, 1);
 
-   // perf-allowed: one closed-bar close is required by the card and no QM close reader exists.
-   const double close_1 = iClose(_Symbol, _Period, 1);
+   const double close_1 = iClose(_Symbol, _Period, 1); // perf-allowed: one closed-bar close is required by the card and no QM close reader exists.
    if(bb_lower <= 0.0 || bb_upper <= 0.0 || bb_mid <= 0.0 ||
       rsi <= 0.0 || stoch_k < 0.0 || close_1 <= 0.0)
       return false;

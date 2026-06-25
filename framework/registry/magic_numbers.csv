@@ -12319,7 +12319,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12488,myh-turtle60,3,XAUUSD.DWX,124880003,2026-06-18,Claude,reserved
 12488,myh-turtle60,4,NDX.DWX,124880004,2026-06-18,Claude,reserved
 12488,myh-turtle60,5,WS30.DWX,124880005,2026-06-18,Claude,reserved
-12493,lean-fx-sma-rev,0,EURUSD.DWX,124930000,2026-06-18,Claude,reserved
+12493,lean-fx-sma-rev,0,EURUSD.DWX,124930000,2026-06-25,Development,active
 12494,lean-gap-fade,0,SP500.DWX,124940000,2026-06-18,Claude,reserved
 12494,lean-gap-fade,1,NDX.DWX,124940001,2026-06-18,Claude,reserved
 12494,lean-gap-fade,2,WS30.DWX,124940002,2026-06-18,Claude,reserved
@@ -13436,3 +13436,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9948,bandy-d1-setup-h1-trigger-mr-index,0,SP500.DWX,99480000,2026-06-25,Development,active
 9948,bandy-d1-setup-h1-trigger-mr-index,1,NDX.DWX,99480001,2026-06-25,Development,active
 9948,bandy-d1-setup-h1-trigger-mr-index,2,WS30.DWX,99480002,2026-06-25,Development,active
+9356,mql5-ema-rsi-revert,0,EURUSD.DWX,93560000,2026-06-25,Development,active
+9356,mql5-ema-rsi-revert,1,GBPUSD.DWX,93560001,2026-06-25,Development,active
+9356,mql5-ema-rsi-revert,2,XAUUSD.DWX,93560002,2026-06-25,Development,active
+9356,mql5-ema-rsi-revert,3,GDAXI.DWX,93560003,2026-06-25,Development,active
