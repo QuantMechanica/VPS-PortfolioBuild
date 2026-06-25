@@ -3,25 +3,24 @@
 **EA ID:** QM5_11359
 **Slug:** `robo-adx-mom`
 **Source:** `e78a9f1f-4e6a-563c-a080-915133d6ed28` (RoboForex strategy collection, "Strategy ADX and Momentum")
-**Author of this spec:** Claude
-**Last revised:** 2026-06-18
+**Author of this spec:** Codex
+**Last revised:** 2026-06-25
 
 ---
 
 ## 1. Strategy Logic
 
-An M5 trend-strength scalper on liquid FX majors. The single entry EVENT is a fresh
-Directional-Index dominance flip on the just-closed bar: long when +DI crosses above
--DI (+DI@2 ≤ -DI@2 and +DI@1 > -DI@1), short when -DI crosses above +DI. Per the build
-NOTE and the .DWX two-cross-same-bar trap, only this one cross is the trigger — ADX
-strength, the dominant-DI floor, the Momentum regime, Parabolic SAR side, and the EMA
-filter are confirming STATES read on the same closed bar, never a second same-bar cross.
+An M5 trend-strength scalper on liquid FX majors. A long entry is allowed when the
+just-closed bar has ADX(14) > 25, +DI > 25, +DI above -DI, Momentum(14) above 100, the
+Parabolic SAR dot below the close, and the close above EMA(55) when the baseline filter
+is enabled. A short entry is the mirror image: -DI > 25 and above +DI, Momentum below
+100, SAR above the close, and close below EMA(55).
 
-A long confirms when ADX(14) > 25, +DI > 25, Momentum(14) > 100, the SAR dot is below
-the close, and (filter on) close > EMA(55); the short side is the mirror. Stop and target
-are fixed pip distances (7 SL / 15 TP baseline), scale-corrected per symbol digits. The
-position exits early if the opposite DI becomes dominant or Momentum crosses back through
-100 against the trade; otherwise it runs to SL/TP or the framework Friday-close.
+Entries are market orders at the next M5 bar after the closed-bar state is read, with
+one open position per magic number. Stop and target are fixed pip distances (7 SL / 15
+TP baseline), scale-corrected per symbol digits. The position exits early if the opposite
+DI becomes dominant or Momentum crosses back through 100 against the trade; otherwise it
+runs to SL/TP or the framework Friday-close.
 
 ---
 
@@ -41,6 +40,8 @@ position exits early if the opposite DI becomes dominant or Momentum crosses bac
 | `strategy_sl_pips` | 7 | 5-15 | Stop-loss distance in pips |
 | `strategy_tp_pips` | 15 | 10-20 | Take-profit distance in pips |
 | `strategy_spread_cap_pips` | 1.5 | 0.5-5 | Skip entry only if spread wider than this (fail-open) |
+| `strategy_session_start_hour_broker` | 10 | 0-23 | Broker-time start of London + New York session |
+| `strategy_session_end_hour_broker` | 0 | 0-23 | Broker-time end of London + New York session; wraps midnight |
 
 ---
 
@@ -109,3 +110,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | DI-flip = single EVENT; ADX/Mom/PSAR/EMA = confirming STATES |
+| v2 | 2026-06-25 | Rebuild from current approved card | Literal state entry; broker-time London+NY session filter |
