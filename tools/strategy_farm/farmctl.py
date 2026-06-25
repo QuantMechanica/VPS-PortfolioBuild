@@ -2223,6 +2223,15 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         to_date = None
         p2_run_stage = None
         timeout_seconds = 1800
+    # .DWX custom-symbol history begins 2017.10.02 — clamp the backtest start so we
+    # never request a window that predates the data. A pre-data window yields
+    # NO_HISTORY: single-symbol EAs auto-clamp to the data start, but multi-symbol /
+    # basket EAs that read member symbols across the gap hard-fail (that is why the
+    # carver-relmomentum / cross-sectional class never got a fair test). 2026-06-25.
+    # Date strings are "YYYY.MM.DD" so lexical < is chronological <.
+    DWX_HISTORY_START = "2017.10.02"
+    if from_date and from_date < DWX_HISTORY_START:
+        from_date = DWX_HISTORY_START
     year = 2024
     min_trade_info = _effective_min_trades(root, ea_id, from_date, to_date, year)
     effective_min_trades = str(min_trade_info["effective_min_trades"])
