@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11821 carter-m5-s10-ema4080-cci21-m5 — 40/80 EMA trend + CCI(21) zero-cross (M5)"
+#property description "QM5_11821 carter-m5-s10-ema4080-cci21-m5 - 40/80 EMA trend + CCI(21) zero-cross (M5)"
 
 #include <QM/QM_Common.mqh>
 
@@ -135,6 +135,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = long_trigger ? "ema4080_cci21_zero_long" : "ema4080_cci21_zero_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 

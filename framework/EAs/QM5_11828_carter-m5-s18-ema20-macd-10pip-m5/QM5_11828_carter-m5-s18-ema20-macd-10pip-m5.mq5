@@ -1,11 +1,11 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11828 carter-m5-s18-ema20-macd-10pip-m5 — EMA20 state + MACD cross, fixed 10-pip TP (M5)"
+#property description "QM5_11828 carter-m5-s18-ema20-macd-10pip-m5 - EMA20 + MACD histogram offset entry (M5)"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11828 carter-m5-s18-ema20-macd-10pip-m5
+// QuantMechanica V5 EA - QM5_11828 carter-m5-s18-ema20-macd-10pip-m5
 // -----------------------------------------------------------------------------
 // Source: Thomas Carter, "20 Forex Trading Strategies (5 Minute Time Frame)",
 //         2014, Strategy 18.
@@ -14,20 +14,15 @@
 //
 // Mechanics (closed-bar reads at shift 1; one position per magic):
 //   Trend STATE  : price clearly on one side of EMA(20) by an offset cushion.
-//                  Long  -> close[1] > EMA20[1] + offset_pips (uptrend).
-//                  Short -> close[1] < EMA20[1] - offset_pips (downtrend).
-//                  The 10-pip offset (Carter's offset-entry idea) is expressed
-//                  as a STATE cushion so we don't trigger right at the EMA touch.
-//   Trigger EVENT: ONE event — MACD(12,26,9) main crosses signal in the trend
-//                  direction. Long = main crosses up over signal; short = down.
-//                  STATE (EMA side) + single EVENT (one cross) avoids the
-//                  two-cross-same-bar zero-trade trap.
-//   Take profit  : FIXED ~10-pip target via QM_TakeFixedPips (Carter's quick
-//                  5-min scalp target). Scale-correct on 5-digit / JPY symbols.
-//   Stop loss    : QM_StopFixedPips, sl_pips cushion (initial protective stop).
-//   Trade mgmt   : EMA-referenced trailing stop — tighten SL toward
-//                  EMA20 -/+ trail_pips while the position runs (source's
-//                  EMA-trailing exit), never loosening.
+//                  Long  -> close[1] > EMA20[1] + 10 pips.
+//                  Short -> close[1] < EMA20[1] - 10 pips.
+//   Momentum     : MACD(12,26,9) histogram state.
+//                  Long  -> MACD main - signal > 0.
+//                  Short -> MACD main - signal < 0.
+//   Stop loss    : initial SL at 2x ATR(14), per card factory rule.
+//   Take profit  : maximum TP at 4x ATR(14), per card factory rule.
+//   Trade mgmt   : EMA-referenced trailing stop: tighten SL toward
+//                  EMA20 -/+ 15 pips while the position runs, never loosening.
 //   Spread guard : block only a genuinely wide spread (fail-open on .DWX zero
 //                  modeled spread).
 //
@@ -65,32 +60,32 @@ input int    strategy_macd_fast          = 12;    // MACD fast EMA
 input int    strategy_macd_slow          = 26;    // MACD slow EMA
 input int    strategy_macd_signal        = 9;     // MACD signal SMA
 input int    strategy_offset_pips        = 10;    // STATE cushion: price beyond EMA by this many pips
-input int    strategy_tp_pips            = 10;    // fixed ~10-pip take profit
-input int    strategy_sl_pips            = 15;    // initial protective stop distance (pips)
+input int    strategy_atr_period         = 14;    // ATR period for initial SL and maximum TP
+input double strategy_atr_sl_mult        = 2.0;   // initial protective stop in ATR multiples
+input double strategy_atr_tp_mult        = 4.0;   // maximum TP in ATR multiples
 input int    strategy_trail_pips         = 15;    // EMA-referenced trailing stop offset (pips)
-input double strategy_spread_pct_of_tp   = 25.0;  // skip if spread > this % of TP distance
+input int    strategy_spread_cap_pips    = 5;     // skip only if spread wider than this cap
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only — fail-open on .DWX zero spread.
+// Cheap O(1) per-tick gate. Spread guard only; fail-open on .DWX zero spread.
 bool Strategy_NoTradeFilter()
   {
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
+      return false; // no valid quote yet - do not block on it
 
-   // Cap reference: the fixed TP distance in price terms (scale-correct).
-   const double tp_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_tp_pips);
-   if(tp_distance <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_tp / 100.0) * tp_distance)
-      return true;
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(spread_cap > 0.0)
+     {
+      const double spread = ask - bid;
+      // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
+      if(spread > 0.0 && spread > spread_cap)
+         return true;
+     }
 
    return false;
   }
@@ -98,6 +93,20 @@ bool Strategy_NoTradeFilter()
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(strategy_ema_period <= 0 || strategy_macd_fast <= 0 ||
+      strategy_macd_slow <= strategy_macd_fast || strategy_macd_signal <= 0 ||
+      strategy_offset_pips <= 0 || strategy_atr_period <= 0 ||
+      strategy_atr_sl_mult <= 0.0 || strategy_atr_tp_mult <= 0.0)
+      return false;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -114,34 +123,28 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(offset <= 0.0)
       return false;
 
-   // --- Trigger EVENT: ONE MACD main/signal cross (shift 2 -> shift 1) ---
-   const double macd_main_now  = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
-                                              strategy_macd_slow, strategy_macd_signal, 1);
-   const double macd_sig_now   = QM_MACD_Signal(_Symbol, _Period, strategy_macd_fast,
-                                                strategy_macd_slow, strategy_macd_signal, 1);
-   const double macd_main_prev = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
-                                              strategy_macd_slow, strategy_macd_signal, 2);
-   const double macd_sig_prev  = QM_MACD_Signal(_Symbol, _Period, strategy_macd_fast,
-                                                strategy_macd_slow, strategy_macd_signal, 2);
-
-   const bool macd_cross_up   = (macd_main_prev <= macd_sig_prev && macd_main_now > macd_sig_now);
-   const bool macd_cross_down = (macd_main_prev >= macd_sig_prev && macd_main_now < macd_sig_now);
+   // --- Momentum STATE: MACD histogram side (main - signal) ---
+   const double macd_main = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
+                                         strategy_macd_slow, strategy_macd_signal, 1);
+   const double macd_sig = QM_MACD_Signal(_Symbol, _Period, strategy_macd_fast,
+                                          strategy_macd_slow, strategy_macd_signal, 1);
+   const double macd_hist = macd_main - macd_sig;
 
    // --- Trend STATE: price clearly above/below EMA by the offset cushion ---
    const bool uptrend_state   = (close1 > ema + offset);
    const bool downtrend_state = (close1 < ema - offset);
 
-   QM_OrderType side;
-   string reason;
-   if(uptrend_state && macd_cross_up)        // STATE long + single EVENT
+   QM_OrderType side = QM_BUY;
+   string reason = "";
+   if(uptrend_state && macd_hist > 0.0)
      {
       side   = QM_BUY;
-      reason = "ema20_up_macd_cross_up";
+      reason = "ema20_offset_macd_hist_long";
      }
-   else if(downtrend_state && macd_cross_down) // STATE short + single EVENT
+   else if(downtrend_state && macd_hist < 0.0)
      {
       side   = QM_SELL;
-      reason = "ema20_dn_macd_cross_dn";
+      reason = "ema20_offset_macd_hist_short";
      }
    else
       return false;
@@ -151,8 +154,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry <= 0.0)
       return false;
 
-   const double sl = QM_StopFixedPips(_Symbol, side, entry, strategy_sl_pips);
-   const double tp = QM_TakeFixedPips(_Symbol, side, entry, strategy_tp_pips);
+   const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+   if(atr <= 0.0)
+      return false;
+
+   const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_atr_sl_mult);
+   const double tp = QM_TakeATRFromValue(_Symbol, side, entry, atr, strategy_atr_tp_mult);
    if(sl <= 0.0 || tp <= 0.0)
       return false;
 
@@ -208,7 +215,7 @@ void Strategy_ManageOpenPosition()
      }
   }
 
-// No discretionary exit beyond the fixed TP, protective SL, and the EMA trail.
+// No discretionary exit beyond the ATR TP, protective SL, and the EMA trail.
 bool Strategy_ExitSignal()
   {
    return false;
@@ -221,7 +228,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
   }
 
 // -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
+// Framework wiring - do NOT edit below this line unless you know why.
 // -----------------------------------------------------------------------------
 
 int OnInit()

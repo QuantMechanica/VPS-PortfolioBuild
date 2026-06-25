@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11485
-; ea_slug:      carter-t-cci100-macd-momentum-m5
+; ea_id:        11828
+; ea_slug:      carter-m5-s18-ema20-macd-10pip-m5
 ; ea_version:   v5.0
 ; set_version:  s20260625-001
-; symbol:       EURUSD.DWX
+; symbol:       USDCHF.DWX
 ; timeframe:    M5
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b8f600124f170097124cb552027d2666c61d73a397e868ea04551fb2cf538063
+; build_hash:   67898b360e4b7c6fef50d9a5f10dcc902b5c35a78ab337c6d0be68d0d883a2d8
 ; author:       Development
 ; date:         2026-06-25
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
