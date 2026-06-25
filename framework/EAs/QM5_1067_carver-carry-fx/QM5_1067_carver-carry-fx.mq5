@@ -5,10 +5,11 @@
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QM5_1067 carver-carry-fx
-// Source: Rob Carver blog / Systematic Trading ch.7
-// Card: artifacts/cards_approved/QM5_1067_carver-carry-fx.md
-// G0 APPROVED 2026-05-17
+// QuantMechanica V5 EA SKELETON
+// -----------------------------------------------------------------------------
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails).
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -36,173 +37,255 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-// InpCarryBpsAnnual: annualised carry in bps (1bp=0.01%). 0=broker swap (=0 in DWX; set here for backtest).
-// Positive=long base earns carry; negative=short earns carry. Card fallback: rate differential.
-input double InpCarryBpsAnnual   = 100.0;
-input int    InpEWMASpan         = 25;     // EWMA span for daily-return vol (bars)
-input double InpForecastScalar   = 30.0;   // Carver forecast scalar
-input double InpForecastCap      = 20.0;   // forecast cap ±
-input double InpEntryForecast    = 2.0;    // min |forecast| to enter
-input int    InpAtrPeriod        = 20;     // ATR period for emergency stop (D1 bars)
-input double InpAtrSlMult        = 2.5;    // ATR multiplier for SL distance
-input double InpSpreadCapPips    = 5.0;    // max spread pips for entry (0=off; DWX spread=0)
+input double strategy_entry_forecast       = 2.0;
+input int    strategy_vol_span_days        = 25;
+input int    strategy_atr_period           = 20;
+input double strategy_atr_stop_mult        = 2.5;
+input double strategy_forecast_scalar      = 30.0;
+input double strategy_forecast_cap         = 20.0;
+input double strategy_swap_days_per_year   = 256.0;
+// Fallback annual carry in basis points when broker swap is unavailable (DWX tester).
+// Positive = long base currency earns carry (e.g. AUDJPY, USDJPY long).
+// Negative = short base currency earns carry.
+// Zero = no carry direction for this symbol; set per-symbol in the setfile.
+// Default 150 bps suits AUD/NZD vs JPY high-yielder pairs.
+input double strategy_carry_fallback_bps   = 150.0;
+// Max spread in pips for new entry.  DWX tester spread = 0, so zero spread is
+// always allowed through (DWX zero-spread invariant: never fail-closed on 0 spread).
+input int    strategy_spread_cap_pips      = 5;
+
+double g_long_forecast  = 0.0;
+double g_short_forecast = 0.0;
+bool   g_forecast_valid = false;
 
 // -----------------------------------------------------------------------------
-// File-scope carry/vol state (advanced once per closed D1 bar)
-// -----------------------------------------------------------------------------
-double g_ewma_var    = 0.0;
-bool   g_ewma_seeded = false;
-double g_forecast    = 0.0;
-
-// Seed EWMA from closed-bar history — called once in OnInit.
-// perf-allowed: bespoke EWMA-of-returns initialisation, no QM_* equivalent.
-void SeedEWMA()
-  {
-   const double alpha = 2.0 / (InpEWMASpan + 1.0);
-   const int warmup = InpEWMASpan * 3 + 1;
-   g_ewma_var    = 0.0;
-   g_ewma_seeded = false;
-   for(int i = warmup; i >= 1; i--)
-     {
-      double c1 = iClose(_Symbol, PERIOD_D1, i);     // perf-allowed: EWMA seed in OnInit, not OnTick
-      double c2 = iClose(_Symbol, PERIOD_D1, i + 1); // perf-allowed: EWMA seed in OnInit, not OnTick
-      if(c1 <= 0.0 || c2 <= 0.0) continue;
-      double ret = (c1 - c2) / c2;
-      if(!g_ewma_seeded)
-        { g_ewma_var = ret * ret; g_ewma_seeded = true; }
-      else
-         g_ewma_var = alpha * (ret * ret) + (1.0 - alpha) * g_ewma_var;
-     }
-  }
-
-// Advance EWMA one step and recompute carry forecast.
-// Called from Strategy_EntrySignal which runs only after QM_IsNewBar() == true.
-// perf-allowed: bespoke EWMA-of-returns on new-bar gate, no QM_* equivalent.
-void AdvanceState_OnNewBar()
-  {
-   double c1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: bespoke EWMA-of-returns, no QM_* equivalent
-   double c2 = iClose(_Symbol, PERIOD_D1, 2); // perf-allowed: bespoke EWMA-of-returns, no QM_* equivalent
-   if(c1 <= 0.0 || c2 <= 0.0) return;
-
-   const double alpha = 2.0 / (InpEWMASpan + 1.0);
-   double ret = (c1 - c2) / c2;
-
-   if(!g_ewma_seeded)
-     { g_ewma_var = ret * ret; g_ewma_seeded = true; }
-   else
-      g_ewma_var = alpha * (ret * ret) + (1.0 - alpha) * g_ewma_var;
-
-   const double daily_vol = MathSqrt(g_ewma_var);
-   const double ann_vol   = daily_vol * MathSqrt(256.0);
-   if(ann_vol <= 0.0) { g_forecast = 0.0; return; }
-
-   // Carry source: user InpCarryBpsAnnual first (required for DWX tester where swap=0).
-   // Fallback to broker swap only if user left the override at 0.
-   double carry_bps = InpCarryBpsAnnual;
-   if(carry_bps == 0.0)
-     {
-      double swap_long = SymbolInfoDouble(_Symbol, SYMBOL_SWAP_LONG);
-      double pt        = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-      double contract  = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_CONTRACT_SIZE);
-      // Approximate annualised bps from swap points/lot/night (DWX tester: always 0).
-      if(pt > 0.0 && contract > 0.0 && c1 > 0.0)
-         carry_bps = (swap_long * pt / c1) * 365.0 * 10000.0;
-     }
-
-   const double carry_dec = carry_bps / 10000.0;
-   double raw_carry = carry_dec / ann_vol;
-   g_forecast = InpForecastScalar * raw_carry;
-   g_forecast = MathMax(-InpForecastCap, MathMin(InpForecastCap, g_forecast));
-  }
-
-// -----------------------------------------------------------------------------
-// Strategy hooks
+// Strategy hooks - implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// Spread guard (DWX: spread=0, never blocks in tester).
+// No Trade Filter: time, spread, news.
 bool Strategy_NoTradeFilter()
   {
-   if(InpSpreadCapPips > 0.0)
+   return false;
+  }
+
+// Trade Entry.
+bool Strategy_EntrySignal(QM_EntryRequest &req)
+  {
+   req.type              = QM_BUY;
+   req.price             = 0.0;
+   req.sl                = 0.0;
+   req.tp                = 0.0;
+   req.reason            = "";
+   req.symbol_slot       = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(strategy_entry_forecast <= 0.0  ||
+      strategy_vol_span_days  < 2     ||
+      strategy_atr_period     < 1     ||
+      strategy_atr_stop_mult  <= 0.0  ||
+      strategy_forecast_scalar <= 0.0 ||
+      strategy_forecast_cap   <= 0.0  ||
+      strategy_swap_days_per_year <= 0.0)
+      return false;
+
+   // Spread check: DWX zero-spread invariant.
+   // Only block a genuinely wide spread; zero spread (DWX tester) passes through.
+   if(strategy_spread_cap_pips > 0)
      {
-      double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      if(ask > 0.0 && bid > 0.0 && ask > bid)
+      const double ask_chk = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double bid_chk = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(ask_chk > 0.0 && bid_chk > 0.0 && ask_chk > bid_chk)
         {
-         double pt = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-         if(pt > 0.0)
+         const double spread_pt = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+         if(spread_pt > 0.0)
            {
-            int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-            double pip_pts = (digits >= 4) ? 10.0 : 1.0;
-            double spread_pts = (ask - bid) / pt;
-            if(spread_pts > InpSpreadCapPips * pip_pts)
-               return true;
+            const double spread_pips = (ask_chk - bid_chk) / (spread_pt * 10.0);
+            if(spread_pips > (double)strategy_spread_cap_pips)
+               return false;
            }
         }
      }
-   return false;
-  }
 
-// Advance EWMA state then check carry forecast threshold.
-bool Strategy_EntrySignal(QM_EntryRequest &req)
-  {
-   AdvanceState_OnNewBar();
-
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+   // Load D1 history for EWMA vol computation.
+   // perf-allowed: bounded D1 carry/vol window; called only after QM_IsNewBar() gate.
+   const int bars_needed = strategy_vol_span_days + 1;
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, bars_needed, rates);
+   if(copied < bars_needed)
       return false;
 
-   if(MathAbs(g_forecast) < InpEntryForecast)
+   // EWMA variance of daily close-change returns (Carver span-25 default).
+   double ewma_mean = 0.0;
+   double ewma_var  = 0.0;
+   bool   init_done = false;
+   const double alpha = 2.0 / ((double)strategy_vol_span_days + 1.0);
+
+   for(int i = strategy_vol_span_days; i >= 1; --i)
+     {
+      const double ret = rates[i - 1].close - rates[i].close;
+      if(!init_done)
+        {
+         ewma_mean = ret;
+         ewma_var  = 0.0;
+         init_done = true;
+         continue;
+        }
+      const double prev_mean = ewma_mean;
+      ewma_mean              = alpha * ret + (1.0 - alpha) * ewma_mean;
+      const double diff      = ret - prev_mean;
+      ewma_var               = (1.0 - alpha) * (ewma_var + alpha * diff * diff);
+     }
+
+   const double close_1   = rates[0].close;
+   const double pt        = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   const double daily_vol = MathSqrt(MathMax(0.0, ewma_var));
+   if(close_1 <= 0.0 || pt <= 0.0)
+      return false;
+   const double ann_vol = (daily_vol / close_1) * MathSqrt(strategy_swap_days_per_year);
+   if(ann_vol <= 0.0)
       return false;
 
-   bool go_long  = (g_forecast >  InpEntryForecast);
-   bool go_short = (g_forecast < -InpEntryForecast);
-   if(!go_long && !go_short) return false;
+   // Carry input: prefer broker swap; fall back to card-specified bps when swap = 0.
+   // DWX tester applies $0 swap to all symbols — using the fallback avoids the
+   // swap-gate zero-trade trap (DWX backtest invariant #2: never gate on swap <= 0).
+   const double swap_long  = SymbolInfoDouble(_Symbol, SYMBOL_SWAP_LONG);
+   const double swap_short = SymbolInfoDouble(_Symbol, SYMBOL_SWAP_SHORT);
 
-   req.type             = go_long ? QM_BUY : QM_SELL;
-   req.price            = 0.0;
-   req.symbol_slot      = qm_magic_slot_offset;
-   req.reason           = StringFormat("carry_fx f=%.2f bps=%.0f", g_forecast, InpCarryBpsAnnual);
-   req.expiration_seconds = 0;
+   if(swap_long != 0.0 || swap_short != 0.0)
+     {
+      // Broker swap available (live / demo with real pricing).
+      if(swap_long > 0.0)
+        {
+         const double ann_long = (swap_long * pt * strategy_swap_days_per_year) / close_1;
+         g_long_forecast = strategy_forecast_scalar * (ann_long / ann_vol);
+         g_long_forecast = MathMax(-strategy_forecast_cap, MathMin(strategy_forecast_cap, g_long_forecast));
+        }
+      else
+         g_long_forecast = -0.0001;
 
-   double entry_price = go_long
-      ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-      : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(swap_short > 0.0)
+        {
+         const double ann_short = (swap_short * pt * strategy_swap_days_per_year) / close_1;
+         g_short_forecast = -strategy_forecast_scalar * (ann_short / ann_vol);
+         g_short_forecast = MathMax(-strategy_forecast_cap, MathMin(strategy_forecast_cap, g_short_forecast));
+        }
+      else
+         g_short_forecast = 0.0001;
+     }
+   else
+     {
+      // DWX tester: swap = 0.  Use hardcoded fallback carry direction.
+      // Positive bps = long base earns (AUDJPY, NZDJPY, USDJPY, GBPJPY etc.).
+      // Negative bps = short base earns (set in setfile for low-yielder base pairs).
+      if(strategy_carry_fallback_bps > 0.0)
+        {
+         const double ann = strategy_carry_fallback_bps / 10000.0;
+         g_long_forecast  = strategy_forecast_scalar * (ann / ann_vol);
+         g_long_forecast  = MathMax(-strategy_forecast_cap, MathMin(strategy_forecast_cap, g_long_forecast));
+         g_short_forecast = 0.0001;
+        }
+      else if(strategy_carry_fallback_bps < 0.0)
+        {
+         const double ann = (-strategy_carry_fallback_bps) / 10000.0;
+         g_short_forecast = -strategy_forecast_scalar * (ann / ann_vol);
+         g_short_forecast = MathMax(-strategy_forecast_cap, MathMin(strategy_forecast_cap, g_short_forecast));
+         g_long_forecast  = -0.0001;
+        }
+      else
+        {
+         // fallback_bps = 0: no carry direction configured for this symbol.
+         // Preserve last g_forecast_valid so ExitSignal can still manage open positions.
+         return false;
+        }
+     }
 
-   req.sl = QM_StopATR(_Symbol, req.type, entry_price, InpAtrPeriod, InpAtrSlMult);
-   req.tp = 0.0;
-   return true;
-  }
+   g_forecast_valid = true;
 
-// No active position management — carry exits via forecast sign flip.
-void Strategy_ManageOpenPosition()
-  {
-  }
-
-// Close when existing position direction contradicts current forecast sign.
-bool Strategy_ExitSignal()
-  {
+   // Skip if a position for this magic is already open.
    const int magic = QM_FrameworkMagic();
-   if(QM_TM_OpenPositionCount(magic) == 0)
-      return false;
-   for(int i = PositionsTotal() - 1; i >= 0; i--)
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
-      if(!PositionSelectByTicket(ticket)) continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic) continue;
-      int pos_type = (int)PositionGetInteger(POSITION_TYPE);
-      if(pos_type == POSITION_TYPE_BUY  && g_forecast < 0.0) return true;
-      if(pos_type == POSITION_TYPE_SELL && g_forecast > 0.0) return true;
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
      }
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   if(g_long_forecast > strategy_entry_forecast &&
+      MathAbs(g_long_forecast) >= MathAbs(g_short_forecast))
+     {
+      req.type   = QM_BUY;
+      req.price  = 0.0;
+      req.sl     = QM_StopATR(_Symbol, QM_BUY, ask, strategy_atr_period, strategy_atr_stop_mult);
+      req.tp     = 0.0;
+      req.reason = "CARVER_CARRY_LONG";
+      return (req.sl > 0.0 && req.sl < ask);
+     }
+
+   if(g_short_forecast < -strategy_entry_forecast)
+     {
+      req.type   = QM_SELL;
+      req.price  = 0.0;
+      req.sl     = QM_StopATR(_Symbol, QM_SELL, bid, strategy_atr_period, strategy_atr_stop_mult);
+      req.tp     = 0.0;
+      req.reason = "CARVER_CARRY_SHORT";
+      return (req.sl > bid);
+     }
+
    return false;
   }
 
-// Defer central-bank news handling to framework qm_news_temporal.
+// Trade Management.
+void Strategy_ManageOpenPosition()
+  {
+   // Carry is managed via the emergency ATR stop set at entry and forecast-sign exits.
+  }
+
+// Trade Close.
+bool Strategy_ExitSignal()
+  {
+   if(!g_forecast_valid)
+      return false;
+
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(ptype == POSITION_TYPE_BUY  && (g_long_forecast  < 0.0 || g_short_forecast < -strategy_entry_forecast))
+         return true;
+      if(ptype == POSITION_TYPE_SELL && (g_short_forecast > 0.0 || g_long_forecast  >  strategy_entry_forecast))
+         return true;
+     }
+
+   return false;
+  }
+
+// News Filter Hook (callable for P8 News Impact phase).
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
+   // Central-bank rate decision handling delegated to the framework news calendar.
    return false;
   }
 
 // -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line.
+// Framework wiring - do NOT edit below this line unless you know why.
 // -----------------------------------------------------------------------------
 
 int OnInit()
@@ -224,9 +307,8 @@ int OnInit()
                         qm_news_temporal,
                         qm_news_compliance))
       return INIT_FAILED;
-   SeedEWMA();
-   QM_LogEvent(QM_INFO, "INIT_OK",
-               StringFormat("{\"carry_bps\":%.1f,\"ewma_span\":%d}", InpCarryBpsAnnual, InpEWMASpan));
+
+   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
 
@@ -266,8 +348,10 @@ void OnTick()
       for(int i = PositionsTotal() - 1; i >= 0; --i)
         {
          const ulong ticket = PositionGetTicket(i);
-         if(!PositionSelectByTicket(ticket)) continue;
-         if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
+         if(!PositionSelectByTicket(ticket))
+            continue;
+         if(PositionGetInteger(POSITION_MAGIC) != magic)
+            continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
