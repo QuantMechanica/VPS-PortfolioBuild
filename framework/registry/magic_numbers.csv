@@ -11289,7 +11289,7 @@
 11543,carter-t-h1-ema100-smma28-macd3060,0,EURUSD.DWX,115430000,2026-06-18,Claude,reserved
 11544,carter-t-h1-psar02-adx50,0,EURUSD.DWX,115440000,2026-06-18,Claude,reserved
 11544,carter-t-h1-psar02-adx50,1,GBPUSD.DWX,115440001,2026-06-18,Claude,reserved
-11545,carter-t-h1-ema18-28-wma5-12-rsi21,0,EURUSD.DWX,115450000,2026-06-18,Claude,reserved
+11545,carter-t-h1-ema18-28-wma5-12-rsi21,0,EURUSD.DWX,115450000,2026-06-25,Development,active
 11546,carter-t-m5-macd1226-stoch533-ema5oc,0,EURUSD.DWX,115460000,2026-06-20,Development,active
 11547,carter-t-m5-bb20-midband-pullback,0,EURUSD.DWX,115470000,2026-06-20,Development,active
 11547,carter-t-m5-bb20-midband-pullback,1,GBPUSD.DWX,115470001,2026-06-20,Development,active
@@ -13397,3 +13397,6 @@
 9585,ff-ch-stoch-m15,1,GBPUSD.DWX,95850001,2026-06-25,Development,active
 9585,ff-ch-stoch-m15,2,USDJPY.DWX,95850002,2026-06-25,Development,active
 9585,ff-ch-stoch-m15,3,EURJPY.DWX,95850003,2026-06-25,Development,active
+9261,mql5-rvi-ma-cross,0,EURUSD.DWX,92610000,2026-06-25,Development,active
+9261,mql5-rvi-ma-cross,1,GBPJPY.DWX,92610001,2026-06-25,Development,active
+9261,mql5-rvi-ma-cross,2,GDAXI.DWX,92610002,2026-06-25,Development,active
