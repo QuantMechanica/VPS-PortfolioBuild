@@ -277,8 +277,23 @@ print(n)
 '@
         $realN = -1
         try { $realN = [int](($rq | & $py - 2>$null) -join '').Trim() } catch {}
-        $realStallInfo = "realDone15m=$realN ramFreeGb=$ramFreeGb pending=$nPending recentPurge=$recentPurge"
-        if ($realN -eq 0 -and $nPending -ge $StallPendingThreshold) { $realStall = $true }
+        # Fresh-backtest-progress signal (2026-06-25): realDone15m above is MASKED when the
+        # funnel processes late gates -- Q04 pooled / Q05/Q06 derived verdicts + delayed
+        # aggregation of pre-wedge Q02/Q03 results keep realN>0 while FRESH backtests are
+        # wedged (launch_fault, no metatester64). So ALSO detect 'no compute': metatester64.exe
+        # (the agent doing the actual tick crunch) absent across 2 samples ~4s apart while the
+        # queue has work. Max() of the 2 samples ignores a brief between-runs gap; the 2-run
+        # confirm + 45min cooldown guard against a transient. This is what made the 2026-06-25
+        # wedge invisible to the watchdog (real_stall:false) so the auto-heal never fired.
+        $mt = 99
+        try {
+            $m1 = @(Get-CimInstance Win32_Process -Filter "Name='metatester64.exe'" -ErrorAction SilentlyContinue).Count
+            Start-Sleep -Seconds 4
+            $m2 = @(Get-CimInstance Win32_Process -Filter "Name='metatester64.exe'" -ErrorAction SilentlyContinue).Count
+            $mt = [math]::Max($m1, $m2)
+        } catch {}
+        $realStallInfo = "realDone15m=$realN metatester64=$mt ramFreeGb=$ramFreeGb pending=$nPending recentPurge=$recentPurge"
+        if ((($realN -eq 0) -or ($mt -eq 0)) -and $nPending -ge $StallPendingThreshold) { $realStall = $true }
     }
 }
 
