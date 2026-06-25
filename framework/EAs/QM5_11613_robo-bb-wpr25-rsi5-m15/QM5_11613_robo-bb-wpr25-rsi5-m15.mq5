@@ -1,37 +1,15 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11613 robo-bb-wpr25-rsi5-m15 — BB+WPR(25)+RSI(5) mean-reversion (M15)"
+#property description "QM5_11613 RoboForex BB WPR RSI M15 mean reversion"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11613 robo-bb-wpr25-rsi5-m15
+// QuantMechanica V5 EA SKELETON
 // -----------------------------------------------------------------------------
-// Source: RoboForex Educational Team, "Forex Strategy Collection" (~2015),
-//         "The right moment", pages 30-33.
-// Card: artifacts/cards_approved/QM5_11613_robo-bb-wpr25-rsi5-m15.md (g0 APPROVED).
-//
-// Mechanics (mean-reversion at Bollinger extremes, closed-bar reads at shift 1):
-//   Confirming STATE (band) : last closed bar's Low <= BB lower (long) /
-//                             High >= BB upper (short).
-//   Confirming STATE (RSI)  : RSI(5) oversold < rsi_lo (long) /
-//                             overbought > rsi_hi (short).
-//   Trigger  EVENT (WPR)    : WPR(25) exits its extreme — crosses back UP through
-//                             wpr_lo i.e. -80 (long) / crosses back DOWN through
-//                             wpr_hi i.e. -20 (short). ONE event per bar; the
-//                             band touch + RSI state are confirmations observed on
-//                             the SAME closed bar, never a second fresh cross.
-//   Stop     : entry -/+ sl_atr_mult * ATR(atr_period).
-//   Take     : BB middle band at signal time, if it is beyond the entry by at
-//              least the SL distance; otherwise tp_atr_mult * ATR fallback.
-//   Spread guard : skip only a genuinely wide spread (> spread_pct_of_stop of the
-//                  stop distance); fail-open on .DWX zero modeled spread.
-//
-// WPR scale note: iWPR/QM_WPR return 0 (top) to -100 (bottom). -80 = oversold,
-// -20 = overbought. "Exit oversold" => value rises THROUGH -80 from below.
-//
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
-// else is framework wiring and MUST stay intact.
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails).
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -47,8 +25,8 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -59,163 +37,150 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_bb_period         = 20;     // Bollinger period
-input double strategy_bb_deviation      = 2.0;    // Bollinger deviation
-input int    strategy_wpr_period        = 25;     // Williams %R period (card: 25)
-input double strategy_wpr_lo            = -80.0;  // WPR oversold level (long trigger)
-input double strategy_wpr_hi            = -20.0;  // WPR overbought level (short trigger)
-input int    strategy_rsi_period        = 5;      // RSI period (card: 5)
-input double strategy_rsi_lo            = 30.0;   // RSI oversold state (long)
-input double strategy_rsi_hi            = 70.0;   // RSI overbought state (short)
-input int    strategy_atr_period        = 14;     // ATR period for stop/target
-input double strategy_sl_atr_mult       = 2.0;    // stop distance = mult * ATR
-input double strategy_tp_atr_mult       = 4.0;    // target fallback if BB-mid too near
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop
+input ENUM_TIMEFRAMES strategy_signal_tf = PERIOD_M15;
+input int    strategy_bb_period         = 20;
+input double strategy_bb_deviation      = 2.0;
+input int    strategy_wpr_period        = 25;
+input double strategy_wpr_oversold      = -80.0;
+input double strategy_wpr_overbought    = -20.0;
+input int    strategy_rsi_period        = 5;
+input double strategy_rsi_oversold      = 30.0;
+input double strategy_rsi_overbought    = 70.0;
+input int    strategy_atr_period        = 14;
+input double strategy_atr_sl_mult       = 2.0;
+input double strategy_atr_fallback_tp_mult = 4.0;
 
 // -----------------------------------------------------------------------------
-// Strategy hooks
+// Strategy hooks.
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only; fail-open on .DWX zero spread.
+// No Trade Filter (time, spread, news): the card specifies no strategy-local
+// time or spread filter. Central framework news and Friday-close gates remain on.
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to the entry gate, do not block here
-
-   const double stop_distance = strategy_sl_atr_mult * atr_value;
-   if(stop_distance <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
-      return true;
-
    return false;
   }
 
-// Mean-reversion entry. Caller guarantees QM_IsNewBar() == true (closed bar).
+// Trade Entry: BB(20,2) band touch plus RSI(5) and WPR(25) oversold/overbought.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(strategy_bb_period < 2 || strategy_wpr_period < 2 ||
+      strategy_rsi_period < 2 || strategy_atr_period < 1 ||
+      strategy_atr_sl_mult <= 0.0 || strategy_atr_fallback_tp_mult <= 0.0)
       return false;
 
-   // --- Bollinger bands on the last closed bar (deviation arg MANDATORY) ---
-   const double bb_upper = QM_BB_Upper(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
-   const double bb_lower = QM_BB_Lower(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
-   const double bb_mid   = QM_BB_Middle(_Symbol, _Period, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
-   if(bb_upper <= 0.0 || bb_lower <= 0.0 || bb_mid <= 0.0)
+   MqlRates rates[2];
+   ArraySetAsSeries(rates, true);
+   if(CopyRates(_Symbol, strategy_signal_tf, 1, 2, rates) != 2) // perf-allowed: fixed 2-bar card OHLC read inside framework new-bar entry hook.
       return false;
 
-   // --- WPR(25): now (shift 1) and prior (shift 2) for the cross EVENT ---
-   const double wpr_now  = QM_WPR(_Symbol, _Period, strategy_wpr_period, 1);
-   const double wpr_prev = QM_WPR(_Symbol, _Period, strategy_wpr_period, 2);
-
-   // --- RSI(5) state on the last closed bar ---
-   const double rsi_now = QM_RSI(_Symbol, _Period, strategy_rsi_period, 1);
-   if(rsi_now <= 0.0)
+   const double rsi_1 = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, 1, PRICE_CLOSE);
+   const double rsi_2 = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, 2, PRICE_CLOSE);
+   const double wpr_1 = QM_WPR(_Symbol, strategy_signal_tf, strategy_wpr_period, 1);
+   const double lower = QM_BB_Lower(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
+   const double upper = QM_BB_Upper(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
+   const double middle = QM_BB_Middle(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
+   const double atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
+   if(rsi_1 <= 0.0 || rsi_2 <= 0.0 || lower <= 0.0 || upper <= 0.0 || middle <= 0.0 || atr <= 0.0)
       return false;
 
-   // --- Band-touch STATE on the last closed bar (perf-allowed single read) ---
-   const double low1  = iLow(_Symbol, _Period, 1);
-   const double high1 = iHigh(_Symbol, _Period, 1);
-   if(low1 <= 0.0 || high1 <= 0.0)
+   const bool long_signal =
+      (rsi_1 < strategy_rsi_oversold && rsi_2 >= strategy_rsi_oversold &&
+       wpr_1 < strategy_wpr_oversold &&
+       rates[0].low <= lower);
+
+   const bool short_signal =
+      (rsi_1 > strategy_rsi_overbought && rsi_2 <= strategy_rsi_overbought &&
+       wpr_1 > strategy_wpr_overbought &&
+       rates[0].high >= upper);
+
+   if(!long_signal && !short_signal)
       return false;
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
+   const QM_OrderType side = long_signal ? QM_BUY : QM_SELL;
+   const double entry = (side == QM_BUY)
+      ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+      : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(entry <= 0.0)
       return false;
 
-   const double entry_ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double entry_bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry_ask <= 0.0 || entry_bid <= 0.0)
+   const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr, strategy_atr_sl_mult);
+   if(sl <= 0.0)
       return false;
 
-   // ---------------- LONG ----------------
-   // Trigger EVENT: WPR exits oversold — rises back THROUGH wpr_lo (-80).
-   const bool wpr_exit_oversold = (wpr_prev <= strategy_wpr_lo && wpr_now > strategy_wpr_lo);
-   // Confirming STATES on the same closed bar: RSI oversold + price touched lower band.
-   const bool rsi_oversold      = (rsi_now < strategy_rsi_lo);
-   const bool touched_lower     = (low1 <= bb_lower);
+   double tp = 0.0;
+   if(side == QM_BUY)
+      tp = (middle > entry) ? middle : QM_TakeATRFromValue(_Symbol, side, entry, atr, strategy_atr_fallback_tp_mult);
+   else
+      tp = (middle < entry) ? middle : QM_TakeATRFromValue(_Symbol, side, entry, atr, strategy_atr_fallback_tp_mult);
 
-   if(wpr_exit_oversold && rsi_oversold && touched_lower)
-     {
-      const double entry = entry_ask;
-      const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr_value, strategy_sl_atr_mult);
-      if(sl <= 0.0)
-         return false;
-      const double sl_dist = entry - sl;
-      // TP = BB middle if it is at least one stop-distance above entry, else ATR fallback.
-      double tp = bb_mid;
-      if(!(tp > entry + sl_dist))
-         tp = QM_TakeATRFromValue(_Symbol, QM_BUY, entry, atr_value, strategy_tp_atr_mult);
-      if(tp <= 0.0)
-         return false;
-
-      req.type   = QM_BUY;
-      req.price  = 0.0;   // framework fills market price at send
-      req.sl     = sl;
-      req.tp     = tp;
-      req.reason = "bb_wpr_rsi_long";
-      return true;
-     }
-
-   // ---------------- SHORT ----------------
-   // Trigger EVENT: WPR exits overbought — falls back THROUGH wpr_hi (-20).
-   const bool wpr_exit_overbought = (wpr_prev >= strategy_wpr_hi && wpr_now < strategy_wpr_hi);
-   const bool rsi_overbought      = (rsi_now > strategy_rsi_hi);
-   const bool touched_upper       = (high1 >= bb_upper);
-
-   if(wpr_exit_overbought && rsi_overbought && touched_upper)
-     {
-      const double entry = entry_bid;
-      const double sl = QM_StopATRFromValue(_Symbol, QM_SELL, entry, atr_value, strategy_sl_atr_mult);
-      if(sl <= 0.0)
-         return false;
-      const double sl_dist = sl - entry;
-      double tp = bb_mid;
-      if(!(tp < entry - sl_dist))
-         tp = QM_TakeATRFromValue(_Symbol, QM_SELL, entry, atr_value, strategy_tp_atr_mult);
-      if(tp <= 0.0)
-         return false;
-
-      req.type   = QM_SELL;
-      req.price  = 0.0;
-      req.sl     = sl;
-      req.tp     = tp;
-      req.reason = "bb_wpr_rsi_short";
-      return true;
-     }
-
-   return false;
+   req.type = side;
+   req.sl = sl;
+   req.tp = tp;
+   req.reason = long_signal ? "BB_WPR_RSI_LONG" : "BB_WPR_RSI_SHORT";
+   return true;
   }
 
-// Fixed ATR stop + BB-mid/ATR target manage the trade; no active trailing.
+// Trade Management: the card specifies no trailing, partial close, or break-even.
 void Strategy_ManageOpenPosition()
   {
   }
 
-// No discretionary exit beyond SL/TP. The BB-mid target captures the reversion.
+// Trade Close: close at the current BB(20,2) middle band.
 bool Strategy_ExitSignal()
   {
+   if(strategy_bb_period < 2)
+      return false;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   MqlRates rates[1];
+   ArraySetAsSeries(rates, true);
+   if(CopyRates(_Symbol, strategy_signal_tf, 1, 1, rates) != 1) // perf-allowed: fixed 1-bar close read inside strategy exit hook.
+      return false;
+
+   const double middle = QM_BB_Middle(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
+   if(middle <= 0.0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(ptype == POSITION_TYPE_BUY && rates[0].close >= middle)
+         return true;
+      if(ptype == POSITION_TYPE_SELL && rates[0].close <= middle)
+         return true;
+     }
+
    return false;
   }
 
-// Defer to the central news filter.
+// News Filter Hook: no card-specific override; defer to the framework.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
   }
 
 // -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
+// Framework wiring — do NOT edit below this line.
 // -----------------------------------------------------------------------------
 
 int OnInit()
@@ -225,20 +190,20 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_11613_robo_bb_wpr25_rsi5_m15\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -256,6 +221,7 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);

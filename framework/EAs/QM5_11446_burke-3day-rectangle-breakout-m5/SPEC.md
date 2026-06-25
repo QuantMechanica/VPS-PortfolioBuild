@@ -4,25 +4,21 @@
 **Slug:** `burke-3day-rectangle-breakout-m5`
 **Source:** `04305b6c-b4ce-522b-87b5-71708b6b8327` (see `strategy-seeds/sources/04305b6c-b4ce-522b-87b5-71708b6b8327/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-26
 
 ---
 
 ## 1. Strategy Logic
 
-The EA detects a three-day price consolidation ("rectangle") on the daily chart,
-then trades the M5 breakout out of it. From the three prior CLOSED daily bars, the
-oldest bar (D1 shift 3) defines a box: its High is the rectangle top and its Low is
-the rectangle bottom. The two following daily bars (shift 2 and shift 1) must each
-trade fully inside that box (High not above the top, Low not below the bottom). The
-box height must sit between a minimum and maximum pip filter. On the next ("Day 4")
-session, a long fires when an M5 bar closes above the rectangle top AND above the M5
-EMA(20); a short fires when an M5 bar closes below the rectangle bottom AND below the
-EMA(20). Entry is restricted to a broker-time session window (London open through NY
-close). The stop is placed a small buffer back inside the rectangle (capped, and
-floored at a fraction of box height); the take-profit projects the rectangle height
-from entry (measured move). One trade per rectangle per day. On gapless .DWX CFDs the
-rectangle is built from closed daily-bar extremes, so no real price gap is required.
+The EA detects a three-day price consolidation on the daily chart, then trades
+the M5 breakout out of it. The oldest of the three prior closed D1 bars defines
+the rectangle high and low; the next two prior closed D1 bars must remain inside
+that range. A long fires when the last closed M5 candle closes above the
+rectangle high and above EMA(20); a short fires when it closes below the
+rectangle low and below EMA(20). Entry is restricted to a broker-time London/NY
+session window. The stop is placed back inside the rectangle with the card's
+5-pip buffer, 50-pip cap, and 0.5 rectangle-height floor; the target projects
+the rectangle height from entry.
 
 ---
 
@@ -39,7 +35,7 @@ rectangle is built from closed daily-bar extremes, so no real price gap is requi
 | `strategy_sl_floor_frac` | 0.5 | 0.3-0.7 | Stop distance must be >= this fraction of rectangle height |
 | `strategy_session_start_hr` | 9 | 0-23 | Session window start, broker-time hour (London open) |
 | `strategy_session_end_hr` | 22 | 0-23 | Session window end, broker-time hour (NY close) |
-| `strategy_spread_pct_of_stop` | 15.0 | 5-30 | Skip only if spread exceeds this % of the stop distance (fail-open on zero) |
+| `strategy_spread_cap_pips` | 15 | 1-30 | Skip only if spread exceeds this pip cap (fail-open on zero) |
 
 ---
 
@@ -73,7 +69,7 @@ rectangle is built from closed daily-bar extremes, so no real price gap is requi
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | `~25` |
-| Typical hold time | `hours (intraday — TP/SL within the Day-4 session)` |
+| Typical hold time | `hours` |
 | Expected drawdown profile | `clustered small losses on failed breakouts; wins = full measured move` |
 | Regime preference | `volatility-expansion / breakout (after a consolidation squeeze)` |
 | Win rate target (qualitative) | `medium` |
@@ -107,4 +103,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v1 | 2026-06-26 | Initial build from card | b9af56a4-1970-42ea-ab97-ead401ada595 |
