@@ -12019,11 +12019,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11829,carter-m5-s19-psar-macd64128-ema100-m5,0,EURUSD.DWX,118290000,2026-06-18,Claude,reserved
 11829,carter-m5-s19-psar-macd64128-ema100-m5,1,GBPUSD.DWX,118290001,2026-06-18,Claude,reserved
 11829,carter-m5-s19-psar-macd64128-ema100-m5,2,AUDUSD.DWX,118290002,2026-06-18,Claude,reserved
-11830,carter-m5-s20-ema3-bb20-macd-m5,0,EURUSD.DWX,118300000,2026-06-18,Claude,reserved
-11830,carter-m5-s20-ema3-bb20-macd-m5,1,GBPUSD.DWX,118300001,2026-06-18,Claude,reserved
-11830,carter-m5-s20-ema3-bb20-macd-m5,2,USDJPY.DWX,118300002,2026-06-18,Claude,reserved
-11830,carter-m5-s20-ema3-bb20-macd-m5,3,USDCHF.DWX,118300003,2026-06-18,Claude,reserved
-11830,carter-m5-s20-ema3-bb20-macd-m5,4,AUDUSD.DWX,118300004,2026-06-18,Claude,reserved
+11830,carter-m5-s20-ema3-bb20-macd-m5,0,EURUSD.DWX,118300000,2026-06-18,Claude,active
+11830,carter-m5-s20-ema3-bb20-macd-m5,1,GBPUSD.DWX,118300001,2026-06-18,Claude,active
+11830,carter-m5-s20-ema3-bb20-macd-m5,2,USDJPY.DWX,118300002,2026-06-18,Claude,active
+11830,carter-m5-s20-ema3-bb20-macd-m5,3,USDCHF.DWX,118300003,2026-06-18,Claude,active
+11830,carter-m5-s20-ema3-bb20-macd-m5,4,AUDUSD.DWX,118300004,2026-06-18,Claude,active
 11831,scalp-macd1269-stoch833-m5,0,EURUSD.DWX,118310000,2026-06-18,Claude,active
 11831,scalp-macd1269-stoch833-m5,1,GBPUSD.DWX,118310001,2026-06-18,Claude,active
 11831,scalp-macd1269-stoch833-m5,2,USDJPY.DWX,118310002,2026-06-18,Claude,active
