@@ -13427,3 +13427,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9581,ff-dibs-breakout,1,GBPUSD.DWX,95810001,2026-06-25,Development,active
 9581,ff-dibs-breakout,2,USDJPY.DWX,95810002,2026-06-25,Development,active
 9581,ff-dibs-breakout,3,XAUUSD.DWX,95810003,2026-06-25,Development,active
+9931,bandy-turn-of-month-overlay-index,0,SP500.DWX,99310000,2026-06-25,Development,active
+9931,bandy-turn-of-month-overlay-index,1,NDX.DWX,99310001,2026-06-25,Development,active
+9931,bandy-turn-of-month-overlay-index,2,WS30.DWX,99310002,2026-06-25,Development,active

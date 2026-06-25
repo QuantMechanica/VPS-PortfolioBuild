@@ -33,11 +33,9 @@
 //     LONG : Close[M5,1] > EMA20[M5,1] AND Close[M5,2] <= EMA20[M5,2]
 //     One cross event per bar; the trap is the STATE, the cross is the trigger.
 //
-//   SESSION FILTER (broker time): only inside London or NY window. The card
-//     states London 07:00-12:00 GMT and NY 13:00-17:00 GMT (UTC). DXZ broker
-//     clock is UTC+2 / UTC+3 (US-DST aware), so windows are evaluated by
-//     converting the bar's broker time to UTC via QM_BrokerToUTC and comparing
-//     against the UTC hour windows. No raw broker-hour windows (Invariant #5).
+//   SESSION FILTER: only inside London or NY window. The card states London
+//     07:00-12:00 GMT and NY 13:00-17:00 GMT. Evaluate by converting current
+//     broker time to UTC via QM_BrokerToUTC and comparing against UTC hours.
 //
 //   STOP / TAKE (pips, scale-correct via QM_StopFixedPips/QM_TakeFixedPips):
 //     SL = 20 pips, TP = 50 pips (card P2 SL cap 25; 20 is within cap).
@@ -60,8 +58,8 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -83,88 +81,37 @@ input int    strategy_london_start_utc   = 7;      // London window start hour (
 input int    strategy_london_end_utc     = 12;     // London window end hour (UTC, exclusive)
 input int    strategy_ny_start_utc       = 13;     // NY window start hour (UTC, inclusive)
 input int    strategy_ny_end_utc         = 17;     // NY window end hour (UTC, exclusive)
-input double strategy_spread_pct_of_stop = 15.0;   // skip if spread > this % of stop distance
-
-// -----------------------------------------------------------------------------
-// Helpers (file-scope, cheap)
-// -----------------------------------------------------------------------------
-
-// True when the bar's broker time falls inside the London or NY UTC window.
-bool InSessionWindow(const datetime broker_now)
-  {
-   const datetime utc = QM_BrokerToUTC(broker_now);
-   MqlDateTime dt;
-   ZeroMemory(dt);
-   TimeToStruct(utc, dt);
-   const int h = dt.hour;
-
-   const bool in_london = (h >= strategy_london_start_utc && h < strategy_london_end_utc);
-   const bool in_ny     = (h >= strategy_ny_start_utc     && h < strategy_ny_end_utc);
-   return (in_london || in_ny);
-  }
-
-// D1 three-bar trap pattern read from CLOSED daily bars (shift >= 1).
-// Returns +1 bullish trap (fade UP / BUY), -1 bearish trap (fade DOWN / SELL),
-// 0 = no pattern. Uses prior CLOSE vs prior HIGH/LOW (gapless-safe).
-int TrapDirection()
-  {
-   const int n = strategy_pattern_bars;     // consecutive bars to confirm
-   if(n < 1)
-      return 0;
-
-   // Bearish trap: each of the last n D1 closes is above the prior day's high.
-   bool bear = true;
-   for(int k = 1; k <= n; ++k)
-     {
-      const double c = iClose(_Symbol, PERIOD_D1, k);     // perf-allowed: fixed closed-bar reads
-      const double hi_prev = iHigh(_Symbol, PERIOD_D1, k + 1);
-      if(c <= 0.0 || hi_prev <= 0.0 || !(c > hi_prev))
-        {
-         bear = false;
-         break;
-        }
-     }
-   if(bear)
-      return -1;   // fade the up-extension -> SELL
-
-   // Bullish trap: each of the last n D1 closes is below the prior day's low.
-   bool bull = true;
-   for(int k = 1; k <= n; ++k)
-     {
-      const double c = iClose(_Symbol, PERIOD_D1, k);     // perf-allowed: fixed closed-bar reads
-      const double lo_prev = iLow(_Symbol, PERIOD_D1, k + 1);
-      if(c <= 0.0 || lo_prev <= 0.0 || !(c < lo_prev))
-        {
-         bull = false;
-         break;
-        }
-     }
-   if(bull)
-      return +1;   // fade the down-extension -> BUY
-
-   return 0;
-  }
+input int    strategy_spread_cap_pips   = 15;     // skip only if spread exceeds this pip cap
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate: spread guard only. Fail-OPEN on .DWX zero spread.
-// Session/pattern work is on the closed-bar path in Strategy_EntrySignal.
+// Cheap O(1) per-tick gate: UTC session + spread. Fail-OPEN on .DWX zero spread.
 bool Strategy_NoTradeFilter()
   {
+   const datetime utc = QM_BrokerToUTC(TimeCurrent());
+   MqlDateTime dt;
+   ZeroMemory(dt);
+   TimeToStruct(utc, dt);
+   const int hour_utc = dt.hour;
+   const bool in_london = (hour_utc >= strategy_london_start_utc && hour_utc < strategy_london_end_utc);
+   const bool in_ny = (hour_utc >= strategy_ny_start_utc && hour_utc < strategy_ny_end_utc);
+   if(!in_london && !in_ny)
+      return true;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
-   if(stop_distance <= 0.0)
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(spread_cap <= 0.0)
       return false;
 
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread > spread_cap)
       return true;
 
    return false;
@@ -178,15 +125,45 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // --- Session window (broker -> UTC), evaluated on the just-closed M5 bar ---
-   const datetime bar_open = iTime(_Symbol, _Period, 1);   // perf-allowed: closed-bar time
-   if(bar_open <= 0)
-      return false;
-   if(!InSessionWindow(bar_open))
+   // --- D1 trap STATE ---
+   int dir = 0;
+   const int n = strategy_pattern_bars;
+   if(n < 1)
       return false;
 
-   // --- D1 trap STATE ---
-   const int dir = TrapDirection();
+   // perf-allowed: fixed closed-bar OHLC reads for bespoke multi-day trap
+   // structure; bounded by strategy_pattern_bars (default 3, P3 sweep max 4).
+   bool bear = true;
+   for(int k = 1; k <= n; ++k)
+     {
+      const double c = iClose(_Symbol, PERIOD_D1, k);
+      const double o = iOpen(_Symbol, PERIOD_D1, k);
+      const double hi_prev = iHigh(_Symbol, PERIOD_D1, k + 1);
+      if(c <= 0.0 || o <= 0.0 || hi_prev <= 0.0 || !(c > o && c > hi_prev))
+        {
+         bear = false;
+         break;
+        }
+     }
+   if(bear)
+      dir = -1;
+   else
+     {
+      bool bull = true;
+      for(int k = 1; k <= n; ++k)
+        {
+         const double c = iClose(_Symbol, PERIOD_D1, k);
+         const double o = iOpen(_Symbol, PERIOD_D1, k);
+         const double lo_prev = iLow(_Symbol, PERIOD_D1, k + 1);
+         if(c <= 0.0 || o <= 0.0 || lo_prev <= 0.0 || !(c < o && c < lo_prev))
+           {
+            bull = false;
+            break;
+           }
+        }
+      if(bull)
+         dir = +1;
+     }
    if(dir == 0)
       return false;
 
@@ -232,6 +209,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = (side == QM_BUY) ? "burke_day3_trap_long" : "burke_day3_trap_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
