@@ -273,7 +273,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl                = sl_price;
    req.tp                = tp_price;
    req.reason            = "OR_PDH_BO";
-   req.symbol_slot       = 0;
+   req.symbol_slot       = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
    // Cache entry metadata for management functions

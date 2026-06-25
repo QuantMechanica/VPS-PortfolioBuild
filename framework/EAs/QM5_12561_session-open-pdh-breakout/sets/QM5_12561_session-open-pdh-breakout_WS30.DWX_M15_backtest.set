@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   007039401d7904b89f12fe7cc6333f33c24afd4144d89b01955f3820b6dd3345
+; build_hash:   b8282a2532c792a63bad0eca9b2c7b444bae9796daeff437389863c9fdb6094a
 ; author:       Development
 ; date:         2026-06-25
 ;==========================================================
@@ -31,4 +31,9 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; US equity open 09:30 ET = 16:30 broker (DXZ DST and US DST cancel; always 16:30)
+; EOD exit 15 min before 23:00 broker (US close 16:00 ET = 23:00 broker)
+strategy_session_open_hour=16
+strategy_session_open_minute=30
+strategy_eod_exit_hour=22
+strategy_eod_exit_minute=45
