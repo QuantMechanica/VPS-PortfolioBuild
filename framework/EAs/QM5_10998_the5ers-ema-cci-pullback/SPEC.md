@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA trades H4 forex trend pullbacks. A long setup requires EMA20 above EMA50, a recent CCI(20) reading at or below -75, the just-closed candle touching the EMA20/50 zone, and that candle closing back above EMA20. A short setup mirrors this with EMA20 below EMA50, a recent CCI(20) reading at or above +75, an EMA-zone touch, and a close back below EMA20. The stop is placed beyond the recent 5-bar swing with a 0.25 ATR buffer, profit target is the closer of 1.5R or the recent 20-bar structure target, and any remaining position is closed after 8 H4 bars.
+The EA trades H4 forex trend pullbacks. A long setup requires EMA20 above EMA50, a recent CCI(20) reading at or below -75, the just-closed candle touching the EMA20/50 zone, and that candle closing back above EMA20. A short setup mirrors this with EMA20 below EMA50, a recent CCI(20) reading at or above +75 within the configured pullback-state window, an EMA-zone touch, and a close back below EMA20. The stop is placed beyond the recent 5-bar swing with a 0.25 ATR buffer, profit target is the closer of 1.5R or the recent 20-bar structure target, and any remaining position is closed after 8 H4 bars.
 
 ---
 
@@ -22,7 +22,7 @@ The EA trades H4 forex trend pullbacks. A long setup requires EMA20 above EMA50,
 | strategy_ema_slow_period | 50 | 1+ | Slow EMA used with the fast EMA to form the pullback zone |
 | strategy_cci_period | 20 | 1+ | CCI lookback period using typical price |
 | strategy_cci_threshold | 75.0 | 0+ | Oversold/overbought CCI threshold |
-| strategy_cci_state_lookback | 6 | 1+ | Closed H4 bars over which CCI pullback state may occur |
+| strategy_cci_state_lookback | 10 | 1+ | Closed H4 bars over which CCI pullback state may occur |
 | strategy_atr_period | 14 | 1+ | ATR period for filters and stop buffer |
 | strategy_sep_atr_mult | 0.25 | 0+ | Minimum EMA20/50 separation in ATR units |
 | strategy_swing_lookback | 5 | 1+ | Closed bars used for swing stop placement |

@@ -10,7 +10,7 @@
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   e274ac52733ce1762f50d54a294b7bad2699012eeb34a15a9dff515d388afd8c
+; build_hash:   97805bc188aa2d2c98a32698978c279e2122eec25212bae0be18c453466550c6
 ; author:       Development
 ; date:         2026-06-25
 ;==========================================================
@@ -36,7 +36,7 @@ strategy_ema_fast_period=20
 strategy_ema_slow_period=50
 strategy_cci_period=20
 strategy_cci_threshold=75.0
-strategy_cci_state_lookback=6
+strategy_cci_state_lookback=10
 strategy_atr_period=14
 strategy_sep_atr_mult=0.25
 strategy_swing_lookback=5
