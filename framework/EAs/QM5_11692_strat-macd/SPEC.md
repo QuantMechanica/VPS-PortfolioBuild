@@ -23,7 +23,6 @@ This EA computes the MACD histogram on completed H1 bars using MACD(12,26,9). It
 | `strategy_macd_signal` | 9 | 2-100 | Signal EMA period used by the MACD histogram. |
 | `strategy_atr_period` | 14 | 2-200 | ATR period used for the catastrophic stop. |
 | `strategy_sl_atr_mult` | 2.0 | 0.5-10.0 | ATR multiplier for the catastrophic stop distance. |
-| `strategy_spread_pct_of_stop` | 15.0 | 0-100 | Blocks only genuinely wide modeled spreads above this percent of stop distance. |
 
 > Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)

@@ -64,46 +64,15 @@ input int    strategy_macd_slow         = 26;    // MACD window_slow (Stratestic
 input int    strategy_macd_signal       = 9;     // MACD window_sign (Stratestic default)
 input int    strategy_atr_period        = 14;    // ATR period for catastrophic stop / target
 input double strategy_sl_atr_mult       = 2.0;   // stop distance = mult * ATR
-input double strategy_spread_pct_of_stop = 15.0; // skip if spread > this % of stop distance
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// macd_diff (histogram) at a given closed-bar shift = MACD line - signal line.
-double MacdDiff(const int shift)
-  {
-   const double main_v = QM_MACD_Main(_Symbol, _Period,
-                                      strategy_macd_fast, strategy_macd_slow,
-                                      strategy_macd_signal, shift);
-   const double sig_v  = QM_MACD_Signal(_Symbol, _Period,
-                                        strategy_macd_fast, strategy_macd_slow,
-                                        strategy_macd_signal, shift);
-   return (main_v - sig_v);
-  }
-
-// Cheap O(1) per-tick gate. Spread guard only — signal work is on the
-// closed-bar path. Fail-open on .DWX zero modeled spread.
+// Card has no time/session/spread filter; framework-level news and Friday-close
+// gates run outside this hook.
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to the entry gate, do not block here
-
-   const double stop_distance = strategy_sl_atr_mult * atr_value;
-   if(stop_distance <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
-      return true;
-
    return false;
   }
 
@@ -114,8 +83,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // Card rule: long when macd_diff > 0, short when macd_diff < 0.
-   const double diff_now = MacdDiff(1);
+   const double macd_main = QM_MACD_Main(_Symbol, _Period,
+                                         strategy_macd_fast,
+                                         strategy_macd_slow,
+                                         strategy_macd_signal,
+                                         1);
+   const double macd_signal = QM_MACD_Signal(_Symbol, _Period,
+                                             strategy_macd_fast,
+                                             strategy_macd_slow,
+                                             strategy_macd_signal,
+                                             1);
+   const double diff_now = macd_main - macd_signal;
    if(diff_now == 0.0)
       return false;
 
@@ -145,7 +123,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return true;
   }
 
-// No active trade management beyond the fixed ATR stop/target. The defensive
+// No active trade management beyond the fixed ATR catastrophic stop. The
 // macd_diff zero-cross exit lives in Strategy_ExitSignal.
 void Strategy_ManageOpenPosition()
   {
@@ -179,8 +157,31 @@ bool Strategy_ExitSignal()
    if(!is_long && !is_short)
       return false;
 
-   const double diff_now  = MacdDiff(1);
-   const double diff_prev = MacdDiff(2);
+   const double macd_main_now = QM_MACD_Main(_Symbol, _Period,
+                                             strategy_macd_fast,
+                                             strategy_macd_slow,
+                                             strategy_macd_signal,
+                                             1);
+   const double macd_signal_now = QM_MACD_Signal(_Symbol, _Period,
+                                                 strategy_macd_fast,
+                                                 strategy_macd_slow,
+                                                 strategy_macd_signal,
+                                                 1);
+   const double macd_main_prev = QM_MACD_Main(_Symbol, _Period,
+                                              strategy_macd_fast,
+                                              strategy_macd_slow,
+                                              strategy_macd_signal,
+                                              2);
+   const double macd_signal_prev = QM_MACD_Signal(_Symbol, _Period,
+                                                  strategy_macd_fast,
+                                                  strategy_macd_slow,
+                                                  strategy_macd_signal,
+                                                  2);
+   const double diff_now  = macd_main_now - macd_signal_now;
+   const double diff_prev = macd_main_prev - macd_signal_prev;
+
+   if(diff_now == 0.0)
+      return true;
 
    const bool crossed_up   = (diff_prev <= 0.0 && diff_now > 0.0);
    const bool crossed_down = (diff_prev >= 0.0 && diff_now < 0.0);
