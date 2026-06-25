@@ -31,8 +31,9 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 | `strategy_stop_max_atr_mult` | 2.50 | (see source) | (see strategy logic) |
 | `strategy_take_profit_r` | 2.00 | (see source) | (see strategy logic) |
 | `strategy_role_reversal_bars` | 3 | (see source) | (see strategy logic) |
-| `strategy_pending_expiry_minutes` | 240 | (see source) | (see strategy logic) |
-| `strategy_day_blackout_minutes` | 30 | (see source) | (see strategy logic) |
+| `strategy_pending_expiry_minutes` | 240 | (see source) | Minutes before an unfilled stop order is cancelled |
+| `strategy_day_blackout_minutes` | 30 | (see source) | Minutes at start/end of broker day during which no new entries are placed |
+| `strategy_time_exit_h1_bars` | 40 | (see source) | H1 bars elapsed before an open position is force-closed via time stop |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
