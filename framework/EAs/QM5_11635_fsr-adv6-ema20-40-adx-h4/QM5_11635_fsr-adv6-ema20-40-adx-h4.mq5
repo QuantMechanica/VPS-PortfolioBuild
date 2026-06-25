@@ -11,26 +11,21 @@
 //   anonymous community contribution (source_id 5e9e8c4d-0c88-5dc6-a550-b3b070a5b44d).
 // Card: artifacts/cards_approved/QM5_11635_fsr-adv6-ema20-40-adx-h4.md (g0_status APPROVED).
 //
-// Mechanics (closed-bar reads at shift 1; H4 default):
-//   Trend STATE  : ADX(14) > adx_threshold  AND  EMA(20) vs EMA(40) stacked in
-//                  the trade direction  AND  prior close on the trend side of
-//                  EMA(40). (LONG = EMA20 > EMA40 & close1 > EMA40;
-//                  SHORT = EMA20 < EMA40 & close1 < EMA40.)
-//   Trigger EVENT: the just-closed bar PULLED BACK to EMA(20) — i.e. the bar's
-//                  Low dipped to/through EMA(20) (LONG) or High poked up to/through
-//                  EMA(20) (SHORT) — yet the bar CLOSED back on the trend side of
-//                  EMA(20). One pullback-bounce event per bar.
-//   Stop         : EMA(40) at entry +/- a buffer (sl_buffer_pips), with a minimum
-//                  stop-distance floor of sl_min_floor_pips.
-//   Take profit  : none fixed; structural EMA(40)-based stop + ADX exit only.
-//                  An optional R-multiple TP (tp_rr > 0) can be enabled per setfile.
-//   Exit         : ADX(14) < adx_exit_threshold (trend weakens) -> close manually.
+// Mechanics (H4 default; framework calls entry once per new bar):
+//   Trend STATE : ADX(14) > adx_threshold and current price on the trade side of
+//                 EMA(40). LONG = price > EMA40; SHORT = price < EMA40.
+//   Entry       : place a pending limit order at EMA(20): BUY_LIMIT in an uptrend,
+//                 SELL_LIMIT in a downtrend. Pending orders expire after one H4
+//                 bar by default so the next bar can refresh the EMA20 level.
+//   Stop        : EMA(40) at signal time +/- a buffer, with a minimum stop-distance
+//                 floor of 20 pips by default.
+//   Take profit : none fixed; structural EMA(40)-based stop + ADX exit only.
+//   Exit        : ADX(14) < adx_exit_threshold (trend weakens) -> close manually.
 //   Spread guard : block only a genuinely wide spread > spread_pct_of_stop of the
 //                  stop distance (fail-open on .DWX zero modeled spread).
 //
-// The trend is a STATE; the pullback-bounce is the single trigger EVENT, so the
-// two-cross-same-bar zero-trade trap is avoided. Only the five Strategy_* hooks
-// and the Strategy inputs are EA-specific; everything else is framework wiring.
+// Only the five Strategy_* hooks and the Strategy inputs are EA-specific;
+// everything else is framework wiring.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -63,9 +58,9 @@ input int    strategy_ema_slow_period   = 40;     // trend EMA (slow); SL bounda
 input int    strategy_adx_period        = 14;     // ADX period
 input double strategy_adx_threshold     = 30.0;   // trend STATE: ADX must exceed this to enter
 input double strategy_adx_exit_threshold = 30.0;  // exit: close when ADX falls below this
-input double strategy_sl_buffer_pips    = 10.0;   // buffer beyond EMA(40) for the stop
-input double strategy_sl_min_floor_pips = 20.0;   // minimum stop distance (pips)
-input double strategy_tp_rr             = 0.0;    // optional R-multiple TP; 0 = no fixed TP
+input int    strategy_sl_buffer_pips    = 10;     // buffer beyond EMA(40) for the stop
+input int    strategy_sl_min_floor_pips = 20;     // minimum stop distance (pips)
+input int    strategy_pending_expiration_hours = 4; // H4 default: refresh limit after one bar
 input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
 
 // -----------------------------------------------------------------------------
@@ -94,13 +89,28 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
-// Entry: trade the first pullback-bounce to EMA(20) inside an ADX-confirmed
-// trend. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
+// Entry: place one pending limit at EMA(20) inside an ADX-confirmed trend.
+// Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    // One open position per symbol/magic.
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+   const int magic = QM_FrameworkMagic();
+   if(QM_TM_OpenPositionCount(magic) > 0)
       return false;
+
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong order_ticket = OrderGetTicket(i);
+      if(order_ticket == 0 || !OrderSelect(order_ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type == ORDER_TYPE_BUY_LIMIT || order_type == ORDER_TYPE_SELL_LIMIT)
+         return false;
+     }
 
    // --- Trend STATE: ADX above threshold ---
    const double adx = QM_ADX(_Symbol, _Period, strategy_adx_period, 1);
@@ -109,83 +119,69 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(adx <= strategy_adx_threshold)
       return false;
 
-   // --- EMA stack + price side (closed bar at shift 1) ---
-   const double ema_fast = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 1);
-   const double ema_slow = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 1);
+   // --- EMA levels at signal time ---
+   const double ema_fast = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 0);
+   const double ema_slow = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 0);
    if(ema_fast <= 0.0 || ema_slow <= 0.0)
       return false;
 
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   const double low1   = iLow(_Symbol, _Period, 1);   // perf-allowed: single closed-bar read
-   const double high1  = iHigh(_Symbol, _Period, 1);  // perf-allowed: single closed-bar read
-   if(close1 <= 0.0 || low1 <= 0.0 || high1 <= 0.0)
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   const bool uptrend   = (ema_fast > ema_slow) && (close1 > ema_slow);
-   const bool downtrend = (ema_fast < ema_slow) && (close1 < ema_slow);
+   const bool uptrend   = (ask > ema_slow);
+   const bool downtrend = (bid < ema_slow);
    if(!uptrend && !downtrend)
       return false;
 
-   QM_OrderType type;
-   double sl;
+   const double sl_buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_buffer_pips);
+   const double sl_floor  = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_min_floor_pips);
+   if(sl_buffer <= 0.0 || sl_floor <= 0.0)
+      return false;
 
    if(uptrend)
      {
-      // --- Trigger EVENT: pullback-bounce to EMA(20). The just-closed bar dipped
-      //     down to/through EMA(20) (Low <= EMA20) but CLOSED back above it. ---
-      const bool pulled_back = (low1 <= ema_fast);
-      const bool bounced     = (close1 > ema_fast);
-      if(!(pulled_back && bounced))
+      const double entry = QM_StopRulesNormalizePrice(_Symbol, ema_fast);
+      if(entry <= 0.0 || entry >= ask)
          return false;
 
-      type = QM_BUY;
-      // SL below EMA(40) by a buffer; honour a minimum stop-distance floor.
-      double sl_buffer    = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_sl_buffer_pips);
-      double sl_min_floor = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_sl_min_floor_pips);
-      const double entry  = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if(entry <= 0.0)
-         return false;
-      sl = ema_slow - sl_buffer;
-      if(entry - sl < sl_min_floor)
-         sl = entry - sl_min_floor;
+      double sl = ema_slow - sl_buffer;
+      if(entry - sl < sl_floor)
+         sl = entry - sl_floor;
       sl = QM_StopRulesNormalizePrice(_Symbol, sl);
       if(sl <= 0.0 || sl >= entry)
          return false;
 
-      req.type   = QM_BUY;
-      req.price  = 0.0; // framework fills market price at send
+      req.type   = QM_BUY_LIMIT;
+      req.price  = entry;
       req.sl     = sl;
-      req.tp     = (strategy_tp_rr > 0.0) ? QM_TakeRR(_Symbol, QM_BUY, entry, sl, strategy_tp_rr) : 0.0;
-      req.reason = "fsr_adv6_ema_pullback_long";
+      req.tp     = 0.0;
+      req.reason = "fsr_adv6_ema20_limit_long";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = ((strategy_pending_expiration_hours > 1) ? strategy_pending_expiration_hours : 1) * 3600;
       return true;
      }
    else // downtrend
      {
-      // --- Trigger EVENT: pullback-bounce to EMA(20) from below. The just-closed
-      //     bar poked up to/through EMA(20) (High >= EMA20) but CLOSED back below. ---
-      const bool pulled_back = (high1 >= ema_fast);
-      const bool bounced     = (close1 < ema_fast);
-      if(!(pulled_back && bounced))
+      const double entry = QM_StopRulesNormalizePrice(_Symbol, ema_fast);
+      if(entry <= 0.0 || entry <= bid)
          return false;
 
-      type = QM_SELL;
-      double sl_buffer    = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_sl_buffer_pips);
-      double sl_min_floor = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_sl_min_floor_pips);
-      const double entry  = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      if(entry <= 0.0)
-         return false;
-      sl = ema_slow + sl_buffer;
-      if(sl - entry < sl_min_floor)
-         sl = entry + sl_min_floor;
+      double sl = ema_slow + sl_buffer;
+      if(sl - entry < sl_floor)
+         sl = entry + sl_floor;
       sl = QM_StopRulesNormalizePrice(_Symbol, sl);
       if(sl <= entry)
          return false;
 
-      req.type   = QM_SELL;
-      req.price  = 0.0;
+      req.type   = QM_SELL_LIMIT;
+      req.price  = entry;
       req.sl     = sl;
-      req.tp     = (strategy_tp_rr > 0.0) ? QM_TakeRR(_Symbol, QM_SELL, entry, sl, strategy_tp_rr) : 0.0;
-      req.reason = "fsr_adv6_ema_pullback_short";
+      req.tp     = 0.0;
+      req.reason = "fsr_adv6_ema20_limit_short";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = ((strategy_pending_expiration_hours > 1) ? strategy_pending_expiration_hours : 1) * 3600;
       return true;
      }
   }
