@@ -25,13 +25,13 @@
 //                         macd_recency_bars closed bars (or is crossing now).
 //     Entry             : BUY STOP at EMA20(shift1) + entry_offset_pips,
 //                         expiring after pending_expiry_bars M5 bars.
-//     Stop              : entry - sl_pips (card: EMA20 - 20p; applied from entry).
+//     Stop              : EMA20(shift1) - sl_pips.
 //   SHORT is the mirror image.
 //
 //   Management (post-fill):
 //     Partial            : close partial_close_pct at +1R (RR=1), once.
 //     Break-even         : after the partial, shift SL to entry + be_buffer_pips.
-//     Trail              : trail remainder by trail_pips behind price.
+//     Trail              : trail remainder against EMA20 +/- trail_pips.
 //
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything else
 // is framework wiring and MUST stay intact.
@@ -211,7 +211,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
 
       const double entry_price = QM_TM_NormalizePrice(_Symbol, ema1 + offset);
-      const double sl_price    = QM_TM_NormalizePrice(_Symbol, entry_price - sl_dist);
+      const double sl_price    = QM_TM_NormalizePrice(_Symbol, ema1 - sl_dist);
       if(entry_price <= 0.0 || sl_price <= 0.0 || sl_price >= entry_price)
          return false;
 
@@ -220,6 +220,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl                 = sl_price;
       req.tp                 = 0.0;   // managed by partial+trail, no fixed TP
       req.reason             = "ema20_reclaim_macd_up";
+      req.symbol_slot        = qm_magic_slot_offset;
       req.expiration_seconds = expiry_seconds;
       return true;
      }
@@ -243,7 +244,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
 
       const double entry_price = QM_TM_NormalizePrice(_Symbol, ema1 - offset);
-      const double sl_price    = QM_TM_NormalizePrice(_Symbol, entry_price + sl_dist);
+      const double sl_price    = QM_TM_NormalizePrice(_Symbol, ema1 + sl_dist);
       if(entry_price <= 0.0 || sl_price <= 0.0 || sl_price <= entry_price)
          return false;
 
@@ -252,6 +253,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl                 = sl_price;
       req.tp                 = 0.0;
       req.reason             = "ema20_reclaim_macd_down";
+      req.symbol_slot        = qm_magic_slot_offset;
       req.expiration_seconds = expiry_seconds;
       return true;
      }
@@ -288,9 +290,8 @@ void Strategy_ManageOpenPosition()
       if(open_price <= 0.0)
          continue;
 
-      // 1R in price terms = |entry - initial SL|. After BE shift the SL moves,
-      // so derive R from the configured stop distance, not the live SL.
-      const double r_dist = PipsToPrice(strategy_sl_pips);
+      // 1R in price terms = |entry - initial SL| before the BE shift.
+      const double r_dist = MathAbs(open_price - sl_price);
       if(r_dist <= 0.0)
          continue;
 
@@ -321,14 +322,15 @@ void Strategy_ManageOpenPosition()
             QM_TM_MoveSL(ticket, be_sl, "breakeven_after_partial");
         }
 
-      // --- Trail the remainder by trail_pips behind market (after partial) ---
+      // --- Trail the remainder against EMA20 +/- trail_pips (after partial) ---
       if(g_partial_done_ticket == ticket)
         {
          const double trail_dist = PipsToPrice(strategy_trail_pips);
-         if(trail_dist > 0.0)
+         const double ema1 = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
+         if(trail_dist > 0.0 && ema1 > 0.0)
            {
             const double trail_sl = QM_TM_NormalizePrice(_Symbol,
-                                       is_buy ? (market - trail_dist) : (market + trail_dist));
+                                       is_buy ? (ema1 - trail_dist) : (ema1 + trail_dist));
             const double cur_sl = PositionGetDouble(POSITION_SL);
             const bool improves = (cur_sl <= 0.0) ||
                                   (is_buy ? (trail_sl > cur_sl) : (trail_sl < cur_sl));

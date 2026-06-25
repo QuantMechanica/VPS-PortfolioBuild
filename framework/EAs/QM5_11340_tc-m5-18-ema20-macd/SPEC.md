@@ -3,22 +3,22 @@
 **EA ID:** QM5_11340
 **Slug:** `tc-m5-18-ema20-macd`
 **Source:** `e78a9f1f-4e6a-563c-a080-915133d6ed28`
-**Author of this spec:** Claude
-**Last revised:** 2026-06-18
+**Author of this spec:** Codex
+**Last revised:** 2026-06-25
 
 ---
 
 ## 1. Strategy Logic
 
 M5 continuation setup (Thomas Carter, 20 Forex Trading Strategies, 5 Min System #18).
-The EMA(20) reclaim is the single fresh TRIGGER event; the MACD zero-cross is a recency
-STATE (recent or current), so the two are never required to coincide on one bar. LONG:
+The EMA(20) reclaim is the single fresh trigger event; the MACD zero-cross is a recency
+state (recent or current), so the two are never required to coincide on one bar. LONG:
 after price has traded below EMA(20) within the prior lookback window, the bar closes
 crossing up through EMA(20) (close[2] <= EMA20[2] and close[1] > EMA20[1]) while MACD(12,26,9)
 main has crossed up through zero within the last 5 closed bars; a BUY STOP is placed at
 EMA(20) + 10 pips, expiring after 3 M5 bars. SHORT is the mirror image. The initial stop
-is 20 pips from the entry. After +1R the EA closes 50% of the position, shifts the remainder
-to break-even (+1 pip buffer), then trails the remainder 15 pips behind price. MACD main may
+is 20 pips beyond EMA(20). After +1R the EA closes 50% of the position, shifts the remainder
+to break-even (+1 pip buffer), then trails the remainder against EMA(20) +/- 15 pips. MACD main may
 be negative — only its sign / zero-cross is used, never a positivity requirement.
 
 ---
@@ -72,6 +72,7 @@ be negative — only its sign / zero-cross is used, never a positivity requireme
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | `~100` |
+| Expected trade frequency | `M5 intraday; roughly weekly to several times per week per symbol` |
 | Typical hold time | `minutes to a few hours (M5 intraday continuation)` |
 | Expected drawdown profile | `frequent small stops; partial+trail caps individual losers` |
 | Regime preference | `trend / breakout-continuation` |
@@ -106,4 +107,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | claude board-advisor |
+| v1 | 2026-06-25 | Initial build from card | ca93bcf0-2f43-41d2-bfa2-98bcd3da88cb |

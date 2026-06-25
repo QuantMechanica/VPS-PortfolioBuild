@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10998
-; ea_slug:      the5ers-ema-cci-pullback
+; ea_id:        11882
+; ea_slug:      connors-double-7s
 ; ea_version:   v5.0
 ; set_version:  s20260625-001
-; symbol:       GBPUSD.DWX
-; timeframe:    H4
+; symbol:       AUDUSD.DWX
+; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   5
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   43ee03e340a51264bd46d5fee82476c98ff400377f3527942b53a11796b03798
+; build_hash:   14950bbe0adeb97c7c59061cd2642182fabb766bdb31267af17563a0de873f0f
 ; author:       Development
 ; date:         2026-06-25
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=5
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
@@ -32,17 +32,3 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-strategy_ema_fast_period=20
-strategy_ema_slow_period=50
-strategy_cci_period=20
-strategy_cci_threshold=75.0
-strategy_cci_state_lookback=6
-strategy_atr_period=14
-strategy_sep_atr_mult=0.25
-strategy_swing_lookback=5
-strategy_sl_atr_buffer=0.25
-strategy_tp_rr=1.5
-strategy_struct_lookback=20
-strategy_time_stop_bars=8
-strategy_vol_pctile_lookback=120
-strategy_vol_pctile=20.0

@@ -28,8 +28,6 @@
 //                  Skip the trade when the stop distance exceeds max_sl_pips.
 //   Max hold     : exit at the close of the `max_hold_bars`-th bar if neither
 //                  the 7-day-extreme exit nor the stop has triggered (14 bars).
-//   No-trade     : optional skip of new entries on Friday (broker time);
-//                  spread cap fail-OPEN on .DWX zero modeled spread.
 //
 // The 7-day extreme is computed in-EA from bounded closed-bar closes (shift
 // 1..extreme_lookback) — a tiny fixed loop, no CopyRates, no raw indicator
@@ -61,15 +59,11 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_sma_period        = 200;   // SMA200 regime / trend filter
-input int    strategy_extreme_lookback  = 7;     // 7-day closing extreme (Double 7's)
-input int    strategy_atr_period        = 14;    // ATR period for the protective stop
+input int    strategy_lookback          = 7;     // 7-day closing extreme (Double 7's)
+input int    strategy_regime_sma_period = 200;   // SMA200 regime / trend filter
 input double strategy_sl_atr_mult       = 2.0;   // stop distance = mult * ATR
-input int    strategy_max_sl_pips       = 100;   // skip trade if ATR stop wider than this
-input int    strategy_max_hold_bars     = 14;    // force exit after this many D1 bars
-input bool   strategy_allow_short       = true;  // symmetric short below SMA200
-input bool   strategy_block_friday      = true;  // no new entries on Friday (broker time)
-input double strategy_spread_cap_pips   = 30.0;  // skip a genuinely wide spread
+input int    strategy_atr_period        = 14;    // ATR period for the protective stop
+input int    strategy_max_holding_bars  = 14;    // force exit after this many D1 bars
 
 // -----------------------------------------------------------------------------
 // Internal helpers
@@ -114,22 +108,10 @@ bool IsNewHighestClose(const int lookback)
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only; fail-open on .DWX zero spread.
-// The Friday-entry block lives in Strategy_EntrySignal (closed-bar path) so it
-// does not interfere with exits / trade management on Fridays.
+// The card does not define additional time/spread filters. Framework-level
+// kill switch, news, and Friday-close checks run outside this hook.
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
-
-   const double spread       = ask - bid;
-   const double spread_limit = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread_limit > 0.0 && spread > spread_limit)
-      return true;
-
    return false;
   }
 
@@ -138,21 +120,16 @@ bool Strategy_NoTradeFilter()
 // SHORT : close[1] < SMA AND close[1] is a new 7-day closing high.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   if(strategy_lookback < 2 || strategy_regime_sma_period < 2 ||
+      strategy_atr_period < 1 || strategy_sl_atr_mult <= 0.0)
+      return false;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // No new entries on Friday (broker time) — exits still run normally.
-   if(strategy_block_friday)
-     {
-      MqlDateTime dt;
-      TimeToStruct(TimeCurrent(), dt);
-      if(dt.day_of_week == 5)
-         return false;
-     }
-
    // --- Trend STATE: price vs SMA200 on the closed bar ---
-   const double sma    = QM_SMA(_Symbol, _Period, strategy_sma_period, 1);
+   const double sma    = QM_SMA(_Symbol, _Period, strategy_regime_sma_period, 1);
    const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
    if(sma <= 0.0 || close1 <= 0.0)
       return false;
@@ -161,10 +138,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(atr_value <= 0.0)
       return false;
 
-   const double max_sl_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_sl_pips);
-
    // LONG: uptrend (close > SMA200) + new 7-day closing low (mean-reversion buy).
-   if(close1 > sma && IsNewLowestClose(strategy_extreme_lookback))
+   if(close1 > sma && IsNewLowestClose(strategy_lookback))
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
@@ -172,20 +147,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr_value, strategy_sl_atr_mult);
       if(sl <= 0.0)
          return false;
-      // P2 cap: skip if the ATR stop is wider than max_sl_pips.
-      if(max_sl_dist > 0.0 && (entry - sl) > max_sl_dist)
-         return false;
 
       req.type   = QM_BUY;
       req.price  = 0.0;   // framework fills market price at send
       req.sl     = sl;
       req.tp     = 0.0;   // dynamic exit: new 7-day high close (Strategy_ExitSignal)
       req.reason = "double7s_long";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
       return true;
      }
 
    // SHORT: downtrend (close < SMA200) + new 7-day closing high (symmetric sell).
-   if(strategy_allow_short && close1 < sma && IsNewHighestClose(strategy_extreme_lookback))
+   if(close1 < sma && IsNewHighestClose(strategy_lookback))
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(entry <= 0.0)
@@ -193,14 +167,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const double sl = QM_StopATRFromValue(_Symbol, QM_SELL, entry, atr_value, strategy_sl_atr_mult);
       if(sl <= 0.0)
          return false;
-      if(max_sl_dist > 0.0 && (sl - entry) > max_sl_dist)
-         return false;
 
       req.type   = QM_SELL;
       req.price  = 0.0;
       req.sl     = sl;
       req.tp     = 0.0;   // dynamic exit: new 7-day low close (Strategy_ExitSignal)
       req.reason = "double7s_short";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
       return true;
      }
 
@@ -245,18 +219,18 @@ bool Strategy_ExitSignal()
       return false;
 
    // Max-hold time stop: count closed D1 bars elapsed since the entry bar.
-   if(strategy_max_hold_bars > 0)
+   if(strategy_max_holding_bars > 0)
      {
       const int bars_since = iBarShift(_Symbol, _Period, open_tm, false); // perf-allowed: time stop
-      if(bars_since >= strategy_max_hold_bars)
+      if(bars_since >= strategy_max_holding_bars)
          return true;
      }
 
    // 7-day-extreme exit (mean reversion completed).
    if(is_long)
-      return IsNewHighestClose(strategy_extreme_lookback);
+      return IsNewHighestClose(strategy_lookback);
    else
-      return IsNewLowestClose(strategy_extreme_lookback);
+      return IsNewLowestClose(strategy_lookback);
   }
 
 // Defer to the central news filter.

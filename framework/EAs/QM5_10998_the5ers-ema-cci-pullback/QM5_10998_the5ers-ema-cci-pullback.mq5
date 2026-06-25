@@ -38,14 +38,15 @@ input group "Strategy"
 input int    strategy_ema_fast_period     = 20;
 input int    strategy_ema_slow_period     = 50;
 input int    strategy_cci_period          = 20;
-input double strategy_cci_threshold       = 100.0;
+input double strategy_cci_threshold       = 75.0;
+input int    strategy_cci_state_lookback  = 6;
 input int    strategy_atr_period          = 14;
 input double strategy_sep_atr_mult        = 0.25;
 input int    strategy_swing_lookback      = 5;
 input double strategy_sl_atr_buffer       = 0.25;
 input double strategy_tp_rr               = 1.5;
 input int    strategy_struct_lookback     = 20;
-input int    strategy_time_stop_bars      = 12;
+input int    strategy_time_stop_bars      = 8;
 input int    strategy_vol_pctile_lookback = 120;
 input double strategy_vol_pctile          = 20.0;
 
@@ -77,6 +78,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(strategy_ema_fast_period <= 0 ||
       strategy_ema_slow_period <= 0 ||
       strategy_cci_period <= 0 ||
+      strategy_cci_state_lookback <= 0 ||
       strategy_atr_period <= 0 ||
       strategy_swing_lookback <= 0 ||
       strategy_struct_lookback <= 0 ||
@@ -86,7 +88,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double ema_fast = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 1);
    const double ema_slow = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 1);
    const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   const double cci_value = QM_CCI(_Symbol, _Period, strategy_cci_period, 1, PRICE_TYPICAL);
    if(ema_fast <= 0.0 || ema_slow <= 0.0 || atr_value <= 0.0)
       return false;
 
@@ -125,14 +126,25 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!(low1 <= zone_high && high1 >= zone_low))
       return false;
 
+   bool cci_oversold_recent = false;
+   bool cci_overbought_recent = false;
+   for(int s = 1; s <= strategy_cci_state_lookback; ++s)
+     {
+      const double cci_sample = QM_CCI(_Symbol, _Period, strategy_cci_period, s, PRICE_TYPICAL);
+      if(cci_sample <= -strategy_cci_threshold)
+         cci_oversold_recent = true;
+      if(cci_sample >= strategy_cci_threshold)
+         cci_overbought_recent = true;
+     }
+
    bool is_long = false;
    QM_OrderType side = QM_BUY;
-   if(ema_fast > ema_slow && cci_value <= -strategy_cci_threshold && close1 > ema_fast)
+   if(ema_fast > ema_slow && cci_oversold_recent && close1 > ema_fast)
      {
       is_long = true;
       side = QM_BUY;
      }
-   else if(ema_fast < ema_slow && cci_value >= strategy_cci_threshold && close1 < ema_fast)
+   else if(ema_fast < ema_slow && cci_overbought_recent && close1 < ema_fast)
      {
       is_long = false;
       side = QM_SELL;
