@@ -12,18 +12,9 @@
 //   QM5_11333_tc-m5-19-psar-macd64128-ema100.md (g0_status APPROVED).
 //
 // Mechanics (M5, closed-bar reads at shift 1; LONG shown, SHORT mirrored):
-//   Trend STATE  : close(1) > EMA(100)            [macro trend filter]
-//   MACD  STATE  : MACD(64,128,9) main > 0        [very slow MACD = trend filter,
-//                  can be negative -> sign is a STATE, not a magnitude gate]
-//   PSAR  STATE  : SAR(0.01,0.01) below the bar   [SAR(1) < close(1)]
-//   Trigger EVENT: ONE fresh event, EITHER --
-//                  (a) PSAR flips to bullish this bar
-//                      (SAR(2) >= close(2) AND SAR(1) < close(1)), OR
-//                  (b) MACD main crosses up through 0 this bar
-//                      (MACD(2) <= 0 AND MACD(1) > 0).
-//                  Requiring a fresh event on BOTH the SAR and the MACD on the
-//                  same bar almost never coincides (the .DWX two-cross-same-bar
-//                  zero-trade trap) -> EITHER event triggers, the rest are STATES.
+//   Trend STATE : close(1) > EMA(100)             [macro trend filter]
+//   MACD STATE  : MACD(64,128,9) main > 0         [very slow MACD trend filter]
+//   PSAR STATE  : SAR(0.01,0.01) below the bar    [SAR(1) < close(1)]
 //   Stop (LONG)  : SAR(1) - sl_buffer_pips, scale-correct (pips->price distance).
 //   Take profit  : entry + tp_pips (fixed pip target).
 //   One position per magic. RISK_FIXED in tester / RISK_PERCENT live.
@@ -67,7 +58,7 @@ input int    strategy_macd_slow         = 128;    // very-slow MACD slow EMA
 input int    strategy_macd_signal       = 9;      // MACD signal period (unused for zero-cross)
 input int    strategy_sl_buffer_pips    = 3;      // SL buffer beyond the PSAR dot (pips)
 input int    strategy_tp_pips           = 10;     // fixed take-profit (pips); card 7-12, P2=10
-input double strategy_spread_cap_pips   = 8.0;    // skip only a genuinely wide spread (pips)
+input int    strategy_spread_cap_pips   = 8;      // skip only a genuinely wide spread (pips)
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -82,7 +73,7 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
+   const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
    if(cap_distance <= 0.0)
       return false; // cannot scale a cap — defer to entry gate, do not block
 
@@ -97,48 +88,42 @@ bool Strategy_NoTradeFilter()
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // --- Closed-bar reads (shift 1 = last closed bar, shift 2 = prior) ---
+   // --- Closed-bar reads (shift 1 = last closed bar) ---
    const double ema1   = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
    if(ema1 <= 0.0)
       return false;
 
    const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0 || close2 <= 0.0)
+   if(close1 <= 0.0)
       return false;
 
    const double sar1 = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 1);
-   const double sar2 = QM_SAR(_Symbol, _Period, strategy_sar_step, strategy_sar_max, 2);
-   if(sar1 <= 0.0 || sar2 <= 0.0)
+   if(sar1 <= 0.0)
       return false;
 
-   // MACD main can be negative — its SIGN is a state, its zero-cross an event.
+   // MACD main can be negative; the card uses its sign as the momentum state.
    const double macd1 = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
                                      strategy_macd_slow, strategy_macd_signal, 1);
-   const double macd2 = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
-                                     strategy_macd_slow, strategy_macd_signal, 2);
 
-   // PSAR side as a STATE on the trigger bar.
+   // PSAR side as a state on the closed bar.
    const bool sar_below_long  = (sar1 < close1);   // bullish PSAR
    const bool sar_above_short = (sar1 > close1);   // bearish PSAR
 
-   // Fresh PSAR flip EVENTS (side changed between bar 2 and bar 1).
-   const bool sar_flip_bull = (sar2 >= close2 && sar1 < close1);
-   const bool sar_flip_bear = (sar2 <= close2 && sar1 > close1);
-
-   // Fresh MACD zero-cross EVENTS.
-   const bool macd_cross_up   = (macd2 <= 0.0 && macd1 > 0.0);
-   const bool macd_cross_down = (macd2 >= 0.0 && macd1 < 0.0);
-
    // ----------------------------- LONG -----------------------------
-   // STATES: price > EMA100, MACD > 0, PSAR below price.
-   // EVENT : a fresh PSAR bullish flip OR a fresh MACD up-cross of zero.
-   if(close1 > ema1 && macd1 > 0.0 && sar_below_long &&
-      (sar_flip_bull || macd_cross_up))
+   // Card states: price > EMA100, MACD > 0, PSAR below price.
+   if(close1 > ema1 && macd1 > 0.0 && sar_below_long)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
@@ -161,10 +146,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    // ----------------------------- SHORT ----------------------------
-   // STATES: price < EMA100, MACD < 0, PSAR above price.
-   // EVENT : a fresh PSAR bearish flip OR a fresh MACD down-cross of zero.
-   if(close1 < ema1 && macd1 < 0.0 && sar_above_short &&
-      (sar_flip_bear || macd_cross_down))
+   // Card states: price < EMA100, MACD < 0, PSAR above price.
+   if(close1 < ema1 && macd1 < 0.0 && sar_above_short)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(entry <= 0.0)

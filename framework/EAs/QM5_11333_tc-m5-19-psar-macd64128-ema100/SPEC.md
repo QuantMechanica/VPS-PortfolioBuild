@@ -4,24 +4,18 @@
 **Slug:** `tc-m5-19-psar-macd64128-ema100`
 **Source:** `e78a9f1f-4e6a-563c-a080-915133d6ed28` (see `strategy-seeds/sources/e78a9f1f-4e6a-563c-a080-915133d6ed28/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-25
 
 ---
 
 ## 1. Strategy Logic
 
-Thomas Carter "5 Minute Trading System #19" on M5. The macro trend is a STATE
-read from price versus EMA(100); the MACD(64,128,9) sign is a second STATE (the
-MACD line is a very-slow trend filter on M5 and may be negative — only its sign
-matters); the Parabolic SAR(0.01,0.01) side relative to price is a third STATE.
-A single fresh EVENT triggers entry: EITHER the PSAR flips to the trade side on
-the just-closed bar, OR the MACD main line crosses zero on the just-closed bar.
-Requiring both a fresh PSAR flip and a fresh MACD cross on the same bar almost
-never coincides (the .DWX two-cross-same-bar zero-trade trap), so only one is
-the trigger and the rest are confirming states. Long when close(1) > EMA(100)
-AND MACD(1) > 0 AND PSAR below price AND (fresh bullish PSAR flip OR MACD
-up-cross of zero). Short is the mirror. Stop is 3 pips beyond the PSAR dot;
-take-profit is a fixed 10-pip target. One position per magic.
+Thomas Carter "5 Minute Trading System #19" on M5. Long entries require the
+last closed candle to close above EMA(100), Parabolic SAR(0.01,0.01) to sit
+below that candle, and MACD(64,128,9) main to be above zero. Short entries use
+the mirror: close below EMA(100), SAR above the candle, and MACD main below
+zero. Stop is 3 pips beyond the nearest closed-bar SAR dot; take-profit is a
+fixed 10-pip target. One position per magic.
 
 ---
 
@@ -37,7 +31,7 @@ take-profit is a fixed 10-pip target. One position per magic.
 | `strategy_macd_signal` | 9 | 9-9 | MACD signal period (entry uses zero-cross, not signal) |
 | `strategy_sl_buffer_pips` | 3 | 1-10 | SL buffer beyond the PSAR dot, in pips |
 | `strategy_tp_pips` | 10 | 7-12 | Fixed take-profit in pips (card range 7-12, P2 = 10) |
-| `strategy_spread_cap_pips` | 8.0 | 5-15 | Skip a genuinely wide spread above this many pips |
+| `strategy_spread_cap_pips` | 8 | 5-15 | Skip a genuinely wide spread above this many pips |
 
 ---
 
@@ -104,3 +98,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v2 | 2026-06-25 | Rebuild from card with literal three-state entry | e1e10c4d-128b-4659-85d7-de385f482434 |
