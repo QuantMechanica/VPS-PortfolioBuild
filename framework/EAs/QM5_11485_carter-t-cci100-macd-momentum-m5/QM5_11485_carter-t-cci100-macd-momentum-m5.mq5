@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11485 carter-t-cci100-macd-momentum-m5 — CCI(100) breakout + MACD momentum confirmation (M5)"
+#property description "QM5_11485 carter-t-cci100-macd-momentum-m5 - CCI +/-100 breakout + MACD momentum confirmation (M5)"
 
 #include <QM/QM_Common.mqh>
 

@@ -17,17 +17,15 @@
 //   Card rule : long while macd_diff > 0, short while macd_diff < 0,
 //               exit/reverse when macd_diff crosses zero.
 //
-//   To avoid the two-cross same-bar zero-trade trap, the SINGLE trigger EVENT is
-//   the macd_diff zero-cross:
-//     Long  ENTRY : diff_prev <= 0  AND  diff_now > 0  (histogram crosses up).
-//     Short ENTRY : diff_prev >= 0  AND  diff_now < 0  (histogram crosses down).
-//   The directional STATE (diff sign) is implied by that same cross — no second
-//   independent event is required. One position per magic; an opposite zero-cross
-//   first flattens via Strategy_ExitSignal, then a fresh cross opens the reverse.
+//   Entry uses the histogram SIGN state:
+//     Long  ENTRY : diff_now > 0.
+//     Short ENTRY : diff_now < 0.
+//   One position per magic; an opposite zero-cross first flattens via
+//   Strategy_ExitSignal, then a fresh sign state opens the reverse.
 //
 //   Stop  : ATR catastrophic stop (source has none) at sl_atr_mult * ATR.
-//   Take  : ATR target at tp_atr_mult * ATR (same ATR value as the stop).
-//   Exit  : macd_diff crosses zero against the open position (defensive exit).
+//   Take  : none; the card exits by zero-cross.
+//   Exit  : macd_diff crosses zero against the open position.
 //
 // Symbols (card R3): EURUSD.DWX, XAUUSD.DWX, GER40 -> GDAXI.DWX (ported; GER40
 //   is not a DWX matrix name, GDAXI.DWX is the DAX 40 custom index symbol).
@@ -66,7 +64,6 @@ input int    strategy_macd_slow         = 26;    // MACD window_slow (Stratestic
 input int    strategy_macd_signal       = 9;     // MACD window_sign (Stratestic default)
 input int    strategy_atr_period        = 14;    // ATR period for catastrophic stop / target
 input double strategy_sl_atr_mult       = 2.0;   // stop distance = mult * ATR
-input double strategy_tp_atr_mult       = 4.0;   // target distance = mult * ATR
 input double strategy_spread_pct_of_stop = 15.0; // skip if spread > this % of stop distance
 
 // -----------------------------------------------------------------------------
@@ -117,21 +114,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // macd_diff now (shift 1) and previous (shift 2): a fresh zero-cross is the
-   // single trigger EVENT for entry; the sign defines direction.
-   const double diff_now  = MacdDiff(1);
-   const double diff_prev = MacdDiff(2);
-
-   const bool crossed_up   = (diff_prev <= 0.0 && diff_now > 0.0); // long
-   const bool crossed_down = (diff_prev >= 0.0 && diff_now < 0.0); // short
-   if(!crossed_up && !crossed_down)
+   // Card rule: long when macd_diff > 0, short when macd_diff < 0.
+   const double diff_now = MacdDiff(1);
+   if(diff_now == 0.0)
       return false;
 
    const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
    if(atr_value <= 0.0)
       return false;
 
-   const QM_OrderType side = crossed_up ? QM_BUY : QM_SELL;
+   const QM_OrderType side = (diff_now > 0.0) ? QM_BUY : QM_SELL;
 
    const double entry = (side == QM_BUY)
                         ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
@@ -140,15 +132,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr_value, strategy_sl_atr_mult);
-   const double tp = QM_TakeATRFromValue(_Symbol, side, entry, atr_value, strategy_tp_atr_mult);
-   if(sl <= 0.0 || tp <= 0.0)
+   if(sl <= 0.0)
       return false;
 
    req.type   = side;
    req.price  = 0.0;   // framework fills market price at send
    req.sl     = sl;
-   req.tp     = tp;
-   req.reason = (side == QM_BUY) ? "macd_diff_cross_long" : "macd_diff_cross_short";
+   req.tp     = 0.0;   // no fixed target; zero-cross is the strategy exit
+   req.reason = (side == QM_BUY) ? "macd_diff_long" : "macd_diff_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
