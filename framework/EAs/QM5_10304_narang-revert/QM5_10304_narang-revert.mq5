@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10304 Narang Price Reversion Band Fade"
+#property description "QM5_10304 Narang Price Reversion Band Fade (H4 BB/RSI fade, EMA200 proximity, ADX trend filter, ATR stop, 12-bar time exit)"
 
 #include <QM/QM_Common.mqh>
 
@@ -59,7 +59,10 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_signal_tf       = PERIOD_H4;
+// Narang Price Reversion Band Fade — H4 Bollinger/RSI band-fade reversion.
+// Card: Bollinger(20,2.0), RSI(14), ATR(14), EMA(200), ADX(14); long when
+// Close < lower band & RSI<=30 & within 1.5*ATR of EMA200; short symmetric.
+// Exit at BB middle or after 12 H4 bars or ATR stop; skip when ADX>28.
 input int             strategy_bb_period       = 20;
 input double          strategy_bb_deviation    = 2.0;
 input int             strategy_rsi_period      = 14;
@@ -78,8 +81,13 @@ input int             strategy_warmup_bars     = 230;
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
+// Return TRUE to BLOCK trading this tick. Card runs on completed H4 bars only,
+// so refuse to act on any other chart timeframe.
 bool Strategy_NoTradeFilter()
   {
+   if(_Period != PERIOD_H4)
+      return true;
+
    return false;
   }
 
@@ -105,26 +113,29 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_warmup_bars <= strategy_ema_period)
       return false;
 
-   if(Bars(_Symbol, strategy_signal_tf) < strategy_warmup_bars)
+   if(Bars(_Symbol, PERIOD_H4) < strategy_warmup_bars)
       return false;
 
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   const double close_1 = QM_SMA(_Symbol, strategy_signal_tf, 1, 1, PRICE_CLOSE);
-   const double lower_1 = QM_BB_Lower(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 1);
-   const double upper_1 = QM_BB_Upper(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 1);
-   const double rsi_1 = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, 1);
-   const double atr_1 = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
-   const double ema_1 = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_period, 1);
-   const double adx_1 = QM_ADX(_Symbol, strategy_signal_tf, strategy_adx_period, 1);
+   // Closed-bar reads only (shift >= 1).
+   const double close_1 = QM_SMA(_Symbol, PERIOD_H4, 1, 1, PRICE_CLOSE);
+   const double lower_1 = QM_BB_Lower(_Symbol, PERIOD_H4, strategy_bb_period, strategy_bb_deviation, 1);
+   const double upper_1 = QM_BB_Upper(_Symbol, PERIOD_H4, strategy_bb_period, strategy_bb_deviation, 1);
+   const double rsi_1   = QM_RSI(_Symbol, PERIOD_H4, strategy_rsi_period, 1);
+   const double atr_1   = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
+   const double ema_1   = QM_EMA(_Symbol, PERIOD_H4, strategy_ema_period, 1);
+   const double adx_1   = QM_ADX(_Symbol, PERIOD_H4, strategy_adx_period, 1);
    if(close_1 <= 0.0 || lower_1 <= 0.0 || upper_1 <= 0.0 ||
       rsi_1 <= 0.0 || atr_1 <= 0.0 || ema_1 <= 0.0 || adx_1 <= 0.0)
       return false;
 
+   // Filter: skip strong-trend regimes.
    if(adx_1 > strategy_adx_max)
       return false;
 
+   // Filter: only fade near the long-run EMA (within 1.5*ATR of EMA200).
    if(MathAbs(close_1 - ema_1) > strategy_ema_atr_band * atr_1)
       return false;
 
@@ -158,7 +169,7 @@ bool Strategy_ExitSignal()
       strategy_max_hold_bars <= 0)
       return false;
 
-   const double middle_1 = QM_BB_Middle(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 1);
+   const double middle_1 = QM_BB_Middle(_Symbol, PERIOD_H4, strategy_bb_period, strategy_bb_deviation, 1);
    if(middle_1 <= 0.0)
       return false;
 
@@ -175,12 +186,15 @@ bool Strategy_ExitSignal()
          continue;
 
       const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+
+      // Time exit: at most 12 completed H4 bars in the trade.
       const datetime opened_at = (datetime)PositionGetInteger(POSITION_TIME);
-      const int open_shift = iBarShift(_Symbol, strategy_signal_tf, opened_at, false);
+      const int open_shift = iBarShift(_Symbol, PERIOD_H4, opened_at, false);
       if(open_shift >= strategy_max_hold_bars)
          return true;
 
-      const double close_1 = QM_SMA(_Symbol, strategy_signal_tf, 1, 1, PRICE_CLOSE);
+      // Mean-reversion exit at the Bollinger middle band (closed bar).
+      const double close_1 = QM_SMA(_Symbol, PERIOD_H4, 1, 1, PRICE_CLOSE);
       if(close_1 <= 0.0)
          continue;
 
