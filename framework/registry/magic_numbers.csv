@@ -13378,3 +13378,11 @@
 9244,mql5-matrix-score,0,EURUSD.DWX,92440000,2026-06-25,Development,active
 9244,mql5-matrix-score,1,GBPJPY.DWX,92440001,2026-06-25,Development,active
 9244,mql5-matrix-score,2,GDAXI.DWX,92440002,2026-06-25,Development,active
+9515,lt-multi-rule,0,EURUSD.DWX,95150000,2026-06-25,Development,active
+9515,lt-multi-rule,1,GBPUSD.DWX,95150001,2026-06-25,Development,active
+9515,lt-multi-rule,2,USDJPY.DWX,95150002,2026-06-25,Development,active
+9515,lt-multi-rule,3,AUDUSD.DWX,95150003,2026-06-25,Development,active
+9515,lt-multi-rule,4,NZDUSD.DWX,95150004,2026-06-25,Development,active
+9515,lt-multi-rule,5,NDX.DWX,95150005,2026-06-25,Development,active
+9515,lt-multi-rule,6,WS30.DWX,95150006,2026-06-25,Development,active
+9515,lt-multi-rule,7,XAUUSD.DWX,95150007,2026-06-25,Development,active

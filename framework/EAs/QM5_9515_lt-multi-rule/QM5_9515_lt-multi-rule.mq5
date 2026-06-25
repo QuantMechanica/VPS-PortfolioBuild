@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_9244 MQL5 Matrix Market Score"
+#property description "QM5_9515 lt-multi-rule — Leveraged Trading Combined Momentum Breakout Carry"
 
 #include <QM/QM_Common.mqh>
 
@@ -35,7 +35,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 9244;
+input int    qm_ea_id                   = 9515;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,106 +73,202 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_score_window      = 50;
-input double strategy_trend_weight      = 0.4;
-input double strategy_momentum_weight   = 0.3;
-input double strategy_volatility_weight = -0.3;
-input double strategy_buy_threshold     = -10.0;
-input double strategy_sell_threshold    = 10.0;
-input int    strategy_ema_period        = 200;
-input int    strategy_cooldown_bars     = 3;
-input int    strategy_atr_period        = 14;
-input double strategy_atr_sl_mult       = 2.0;
-input double strategy_take_rr           = 2.4;
-input int    strategy_max_hold_bars     = 48;
+input int    strategy_risk_atr_period       = 25;
+input int    strategy_sl_atr_period         = 20;
+input double strategy_sl_atr_mult           = 2.5;
+input double strategy_entry_threshold       = 2.0;
+input int    strategy_min_valid_blocks      = 2;
+input int    strategy_min_momentum_pairs    = 3;
+input int    strategy_min_breakout_horizons = 3;
+input int    strategy_spread_lookback       = 20;
+input double strategy_spread_cap_mult       = 2.0;
+input double strategy_mom_scalar_2_8        = 180.8;
+input double strategy_mom_scalar_4_16       = 124.32;
+input double strategy_mom_scalar_8_32       = 83.84;
+input double strategy_mom_scalar_16_64      = 57.12;
+input double strategy_mom_scalar_32_128     = 38.24;
+input double strategy_mom_scalar_64_256     = 25.28;
+input double strategy_breakout_scalar_10    = 28.6;
+input double strategy_breakout_scalar_20    = 31.6;
+input double strategy_breakout_scalar_40    = 32.7;
+input double strategy_breakout_scalar_80    = 33.5;
+input double strategy_breakout_scalar_160   = 33.5;
+input double strategy_breakout_scalar_320   = 33.5;
 
-int g_bars_since_signal = 1000000;
+double g_combined_forecast = 0.0;
+int    g_valid_blocks      = 0;
+double g_spread_history[20];
+int    g_spread_idx        = 0;
+int    g_spread_count      = 0;
 
-bool CalculateMatrixScore(const int shift, double &score, double &last_close)
+double ForecastClamp(const double value)
   {
-   score = 0.0;
-   last_close = 0.0;
-
-   const int window = strategy_score_window;
-   if(window < 3 || shift < 1)
-      return false;
-
-   double closes[];
-   ArrayResize(closes, window);
-   ArraySetAsSeries(closes, true);
-   const int copied = CopyClose(_Symbol, _Period, shift, window, closes); // perf-allowed: closed-bar 50-close matrix from card
-   if(copied != window)
-      return false;
-
-   last_close = closes[0];
-   const double first_close = closes[window - 1];
-   if(last_close <= 0.0 || first_close <= 0.0)
-      return false;
-
-   double sum_x = 0.0;
-   double sum_y = 0.0;
-   double sum_xy = 0.0;
-   double sum_x2 = 0.0;
-   for(int i = 0; i < window; ++i)
-     {
-      const double x = (double)i;
-      const double y = closes[window - 1 - i];
-      if(y <= 0.0)
-         return false;
-      sum_x += x;
-      sum_y += y;
-      sum_xy += x * y;
-      sum_x2 += x * x;
-     }
-
-   const double n = (double)window;
-   const double denom = n * sum_x2 - sum_x * sum_x;
-   if(MathAbs(denom) <= 0.0)
-      return false;
-
-   const double trend = (n * sum_xy - sum_x * sum_y) / denom;
-   const double momentum = last_close - first_close;
-   const double mean = sum_y / n;
-
-   double variance_sum = 0.0;
-   for(int j = 0; j < window; ++j)
-     {
-      const double diff = closes[j] - mean;
-      variance_sum += diff * diff;
-     }
-
-   const double volatility = MathSqrt(variance_sum / (n - 1.0));
-   score = strategy_trend_weight * trend +
-           strategy_momentum_weight * momentum +
-           strategy_volatility_weight * volatility;
-   return true;
+   if(value > 20.0)
+      return 20.0;
+   if(value < -20.0)
+      return -20.0;
+   return value;
   }
 
-bool SelectOurPosition(ENUM_POSITION_TYPE &ptype, datetime &open_time)
+bool HasOpenPosition()
   {
-   ptype = POSITION_TYPE_BUY;
-   open_time = 0;
-
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+      if(!PositionSelectByTicket(ticket))
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-
-      ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
       return true;
      }
-
    return false;
+  }
+
+void UpdateSpreadHistory()
+  {
+   const double spread_pts = (double)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   g_spread_history[g_spread_idx] = spread_pts;
+   g_spread_idx = (g_spread_idx + 1) % 20;
+   if(g_spread_count < strategy_spread_lookback && g_spread_count < 20)
+      g_spread_count++;
+  }
+
+double MedianSpread()
+  {
+   if(g_spread_count <= 0)
+      return 0.0;
+
+   double values[20];
+   const int n = g_spread_count;
+   for(int i = 0; i < n; ++i)
+      values[i] = g_spread_history[i];
+
+   for(int i = 0; i < n - 1; ++i)
+      for(int j = i + 1; j < n; ++j)
+         if(values[j] < values[i])
+           {
+            const double tmp = values[i];
+            values[i] = values[j];
+            values[j] = tmp;
+           }
+
+   if((n % 2) == 0)
+      return (values[n / 2 - 1] + values[n / 2]) / 2.0;
+   return values[n / 2];
+  }
+
+double ComputeMomentumForecast(int &valid_pairs)
+  {
+   valid_pairs = 0;
+   const int fast_periods[6] = {2, 4, 8, 16, 32, 64};
+   const int slow_periods[6] = {8, 16, 32, 64, 128, 256};
+   const double scalars[6] = {strategy_mom_scalar_2_8,
+                              strategy_mom_scalar_4_16,
+                              strategy_mom_scalar_8_32,
+                              strategy_mom_scalar_16_64,
+                              strategy_mom_scalar_32_128,
+                              strategy_mom_scalar_64_256};
+
+   const double risk_units = QM_ATR(_Symbol, PERIOD_D1, strategy_risk_atr_period, 1);
+   if(risk_units <= 0.0 || risk_units > 1e8)
+      return 0.0;
+
+   double sum = 0.0;
+   for(int i = 0; i < 6; ++i)
+     {
+      const double sma_fast = QM_SMA(_Symbol, PERIOD_D1, fast_periods[i], 1);
+      const double sma_slow = QM_SMA(_Symbol, PERIOD_D1, slow_periods[i], 1);
+      if(sma_fast <= 0.0 || sma_fast > 1e8 || sma_slow <= 0.0 || sma_slow > 1e8)
+         continue;
+
+      sum += ForecastClamp((sma_fast - sma_slow) / risk_units * scalars[i]);
+      valid_pairs++;
+     }
+
+   if(valid_pairs < strategy_min_momentum_pairs)
+      return 0.0;
+   return sum / (double)valid_pairs;
+  }
+
+double ComputeBreakoutForecast(int &valid_horizons)
+  {
+   valid_horizons = 0;
+   const int lookbacks[6] = {10, 20, 40, 80, 160, 320};
+   const double scalars[6] = {strategy_breakout_scalar_10,
+                              strategy_breakout_scalar_20,
+                              strategy_breakout_scalar_40,
+                              strategy_breakout_scalar_80,
+                              strategy_breakout_scalar_160,
+                              strategy_breakout_scalar_320};
+
+   const int total_bars = Bars(_Symbol, PERIOD_D1); // perf-allowed: rolling close-window forecast, called only on D1 rebalance.
+   if(total_bars < 321)
+      return 0.0;
+
+   const double close_now = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: closed D1 close for rolling breakout forecast.
+   if(close_now <= 0.0)
+      return 0.0;
+
+   double sum = 0.0;
+   for(int k = 0; k < 6; ++k)
+     {
+      const int lookback = lookbacks[k];
+      if(total_bars < lookback + 1)
+         continue;
+
+      double roll_max = -DBL_MAX;
+      double roll_min = DBL_MAX;
+      for(int i = 1; i <= lookback; ++i)
+        {
+         const double close_i = iClose(_Symbol, PERIOD_D1, i); // perf-allowed: bounded D1 rolling close-window forecast.
+         if(close_i <= 0.0)
+            continue;
+         if(close_i > roll_max)
+            roll_max = close_i;
+         if(close_i < roll_min)
+            roll_min = close_i;
+        }
+
+      if(roll_max <= roll_min || roll_max <= 0.0)
+         continue;
+
+      const double roll_avg = (roll_max + roll_min) / 2.0;
+      sum += ForecastClamp((close_now - roll_avg) / (roll_max - roll_min) * scalars[k]);
+      valid_horizons++;
+     }
+
+   if(valid_horizons < strategy_min_breakout_horizons)
+      return 0.0;
+   return sum / (double)valid_horizons;
+  }
+
+void RefreshForecastState()
+  {
+   UpdateSpreadHistory();
+
+   int valid_pairs = 0;
+   int valid_horizons = 0;
+   const double momentum = ComputeMomentumForecast(valid_pairs);
+   const double breakout = ComputeBreakoutForecast(valid_horizons);
+
+   double sum = 0.0;
+   int blocks = 0;
+   if(valid_pairs >= strategy_min_momentum_pairs)
+     {
+      sum += momentum;
+      blocks++;
+     }
+   if(valid_horizons >= strategy_min_breakout_horizons)
+     {
+      sum += breakout;
+      blocks++;
+     }
+
+   g_valid_blocks = blocks;
+   g_combined_forecast = (blocks > 0) ? ForecastClamp(sum / (double)blocks) : 0.0;
   }
 
 // -----------------------------------------------------------------------------
@@ -183,6 +279,14 @@ bool SelectOurPosition(ENUM_POSITION_TYPE &ptype, datetime &open_time)
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   if(g_spread_count >= 5)
+     {
+      const double current_spread = (double)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      const double median_spread = MedianSpread();
+      if(current_spread > 0.0 && median_spread > 0.0 &&
+         current_spread > strategy_spread_cap_mult * median_spread)
+         return true;
+     }
    return false;
   }
 
@@ -191,6 +295,8 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   RefreshForecastState();
+
    req.type = QM_BUY;
    req.price = 0.0;
    req.sl = 0.0;
@@ -199,104 +305,74 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(g_bars_since_signal < 1000000)
-      g_bars_since_signal++;
-
-   if(strategy_score_window < 3 ||
-      strategy_ema_period <= 0 ||
-      strategy_cooldown_bars < 0 ||
-      strategy_atr_period <= 0 ||
-      strategy_atr_sl_mult <= 0.0 ||
-      strategy_take_rr <= 0.0)
+   if(g_valid_blocks < strategy_min_valid_blocks)
+      return false;
+   if(HasOpenPosition())
       return false;
 
-   if(g_bars_since_signal < strategy_cooldown_bars)
-      return false;
-
-   double current_score = 0.0;
-   double previous_score = 0.0;
-   double current_close = 0.0;
-   double previous_close = 0.0;
-   if(!CalculateMatrixScore(1, current_score, current_close))
-      return false;
-   if(!CalculateMatrixScore(2, previous_score, previous_close))
-      return false;
-
-   const double ema = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_period, 1, PRICE_CLOSE);
-   const double atr = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_atr_period, 1);
-   if(ema <= 0.0 || atr <= 0.0 || current_close <= 0.0)
-      return false;
-
-   const bool long_signal = (previous_score > 0.0 &&
-                             previous_score > strategy_buy_threshold &&
-                             current_score <= strategy_buy_threshold &&
-                             current_close > ema);
-   const bool short_signal = (previous_score < 0.0 &&
-                              previous_score < strategy_sell_threshold &&
-                              current_score >= strategy_sell_threshold &&
-                              current_close < ema);
-   if(!long_signal && !short_signal)
-      return false;
-
-   req.type = long_signal ? QM_BUY : QM_SELL;
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   double entry_price = long_signal ? ask : bid;
-   if(entry_price <= 0.0)
-      entry_price = current_close;
-
-   req.sl = QM_StopATRFromValue(_Symbol, req.type, entry_price, atr, strategy_atr_sl_mult);
-   req.tp = QM_TakeRR(_Symbol, req.type, entry_price, req.sl, strategy_take_rr);
-   if(req.sl <= 0.0 || req.tp <= 0.0)
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
       return false;
 
-   req.reason = long_signal ? "MATRIX_SCORE_LONG" : "MATRIX_SCORE_SHORT";
-   g_bars_since_signal = 0;
-   return true;
+   if(g_combined_forecast > strategy_entry_threshold)
+     {
+      req.type = QM_BUY;
+      req.price = ask;
+      req.sl = QM_StopATR(_Symbol, req.type, req.price, strategy_sl_atr_period, strategy_sl_atr_mult);
+      req.tp = 0.0;
+      req.reason = "LT_MULTI_RULE_LONG";
+      return (req.sl > 0.0);
+     }
+
+   if(g_combined_forecast < -strategy_entry_threshold)
+     {
+      req.type = QM_SELL;
+      req.price = bid;
+      req.sl = QM_StopATR(_Symbol, req.type, req.price, strategy_sl_atr_period, strategy_sl_atr_mult);
+      req.tp = 0.0;
+      req.reason = "LT_MULTI_RULE_SHORT";
+      return (req.sl > 0.0);
+     }
+
+   return false;
   }
 
 // Called every tick when an open position exists for this EA's magic.
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no trailing, break-even, partial close, or scale-in logic.
+   if(!HasOpenPosition())
+      return;
+
+   if(QM_IsNewBar(_Symbol, PERIOD_D1))
+      RefreshForecastState();
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   ENUM_POSITION_TYPE ptype;
-   datetime open_time;
-   if(!SelectOurPosition(ptype, open_time))
+   if(g_valid_blocks < strategy_min_valid_blocks)
       return false;
 
-   const int period_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
-   if(strategy_max_hold_bars > 0 && period_seconds > 0 && open_time > 0)
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      const long max_hold_seconds = (long)strategy_max_hold_bars * (long)period_seconds;
-      if((long)(TimeCurrent() - open_time) >= max_hold_seconds)
+      const ulong ticket = PositionGetTicket(i);
+      if(!PositionSelectByTicket(ticket))
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(ptype == POSITION_TYPE_BUY && g_combined_forecast <= 0.0)
+         return true;
+      if(ptype == POSITION_TYPE_SELL && g_combined_forecast >= 0.0)
          return true;
      }
-
-   double current_score = 0.0;
-   double previous_score = 0.0;
-   double current_close = 0.0;
-   double previous_close = 0.0;
-   if(!CalculateMatrixScore(1, current_score, current_close))
-      return false;
-   if(!CalculateMatrixScore(2, previous_score, previous_close))
-      return false;
-
-   const double ema = QM_EMA(_Symbol, PERIOD_CURRENT, strategy_ema_period, 1, PRICE_CLOSE);
-   if(ema <= 0.0 || current_close <= 0.0)
-      return false;
-
-   if(ptype == POSITION_TYPE_BUY)
-      return ((previous_score <= 0.0 && current_score > 0.0) || current_close < ema);
-   if(ptype == POSITION_TYPE_SELL)
-      return ((previous_score >= 0.0 && current_score < 0.0) || current_close > ema);
-
    return false;
   }
 
