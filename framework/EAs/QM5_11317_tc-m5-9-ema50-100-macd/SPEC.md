@@ -1,28 +1,16 @@
-# QM5_11317_tc-m5-9-ema50-100-macd — Strategy Spec
+# QM5_11317_tc-m5-9-ema50-100-macd - Strategy Spec
 
 **EA ID:** QM5_11317
-**Slug:** `tc-m5-9-ema50-100-macd`
-**Source:** `e78a9f1f-4e6a-563c-a080-915133d6ed28` (see `strategy-seeds/sources/e78a9f1f-4e6a-563c-a080-915133d6ed28/`)
+**Slug:** tc-m5-9-ema50-100-macd
+**Source:** e78a9f1f-4e6a-563c-a080-915133d6ed28 (see `strategy-seeds/sources/e78a9f1f-4e6a-563c-a080-915133d6ed28/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-25
 
 ---
 
 ## 1. Strategy Logic
 
-Trend-continuation scalp on M5 from Thomas Carter "20 Forex Trading Strategies
-(5 Minute Time Frame)", 5 Min Trading System #9. EMA(50) and EMA(100) form the
-trend regime gate. Go LONG when the closed M5 bar closes above both EMAs, is at
-least 10 pips above EMA(50), and sits above the higher of the two EMAs (price is
-not inside the EMA band) — AND the MACD(12,26,9) main line has crossed zero from
-below within the last 5 closed bars and is still positive. SHORT is the mirror
-image (below both EMAs, ≥10 pips below EMA(50), below the lower EMA, MACD crossed
-zero downward within 5 bars and still negative). The MACD zero-cross is the single
-entry EVENT; the EMA stack and distance are STATES on the trigger bar — this
-avoids the "two fresh crosses on one bar" zero-trade trap. Initial stop is the
-5-bar low (long) / 5-bar high (short). Take 50% partial profit at 2R and move the
-remainder's stop to breakeven. Final exit when the closed bar breaks EMA(50) by
-10 pips against the position. Spread filter (fail-open) and Friday-close guard apply.
+This EA trades Thomas Carter's M5 System #9 as a trend-continuation scalp. A long entry requires the last closed M5 candle to close above EMA(50) and EMA(100), at least 10 pips above EMA(50), while MACD main(12,26,9) has crossed from non-positive to positive within the last five closed bars. A short entry mirrors the rule below both EMAs with a recent MACD zero-cross down. The initial stop is the prior five-bar structure low or high, the baseline take profit is a full 2R exit, and a defensive exit closes any remainder when price closes 10 pips through EMA(50) against the trade.
 
 ---
 
@@ -30,31 +18,29 @@ remainder's stop to breakeven. Final exit when the closed bar breaks EMA(50) by
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_ema_fast_period` | 50 | 20-100 | Fast EMA: trend gate + exit anchor |
-| `strategy_ema_slow_period` | 100 | 50-200 | Slow EMA: trend gate |
-| `strategy_macd_fast` | 12 | 5-20 | MACD fast EMA period |
-| `strategy_macd_slow` | 26 | 15-40 | MACD slow EMA period |
-| `strategy_macd_signal` | 9 | 5-15 | MACD signal EMA period |
-| `strategy_macd_cross_lookback` | 5 | 3-8 | MACD zero-cross EVENT recency (closed bars) |
-| `strategy_distance_pips` | 10 | 5-15 | Min distance of close beyond EMA(50) |
-| `strategy_structure_bars` | 5 | 3-10 | Initial SL = N-bar low (long) / high (short) |
-| `strategy_tp1_r_multiple` | 2.0 | 1.0-3.0 | R-multiple for partial take-profit |
-| `strategy_partial_close_ratio` | 0.50 | 0.25-0.75 | Fraction closed at TP1 |
-| `strategy_be_buffer_pips` | 0 | 0-10 | Breakeven offset after partial |
-| `strategy_exit_break_pips` | 10 | 5-20 | EMA(50)-break distance for final exit |
-| `strategy_spread_cap_pips` | 20 | 10-30 | Max spread (fail-open; M5 baseline) |
+| `strategy_ema_fast_period` | 50 | 1+ | EMA(50) trend gate and defensive exit anchor. |
+| `strategy_ema_slow_period` | 100 | > fast | EMA(100) trend gate. |
+| `strategy_macd_fast` | 12 | 1+ | MACD fast EMA period. |
+| `strategy_macd_slow` | 26 | > fast | MACD slow EMA period. |
+| `strategy_macd_signal` | 9 | 1+ | MACD signal period. |
+| `strategy_macd_cross_lookback` | 5 | 1+ | Closed-bar lookback for a MACD main-line zero-cross. |
+| `strategy_distance_pips` | 10 | 1+ | Minimum closed-bar distance beyond EMA(50). |
+| `strategy_structure_bars` | 5 | 1+ | Lookback for the structure stop low or high. |
+| `strategy_tp_r_multiple` | 2.0 | >0 | Full baseline take profit at 2R. |
+| `strategy_exit_break_pips` | 10 | 1+ | EMA(50) failure distance for discretionary close. |
+| `strategy_spread_cap_pips` | 20 | 1+ | Spread cap; zero modeled DWX spread is allowed. |
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — deepest-liquidity major; tight spreads suit M5 scalping.
-- `GBPUSD.DWX` — liquid major with directional intraday trends.
-- `USDJPY.DWX` — liquid major; pip-factor handled via QM_StopRules pip scaling.
+- EURUSD.DWX - card-listed liquid FX major for M5 trend-continuation testing.
+- GBPUSD.DWX - card-listed liquid FX major with intraday movement suitable for M5 signals.
+- USDJPY.DWX - card-listed liquid FX major; pip scaling is handled by QM_StopRules.
 
 **Explicitly NOT for:**
-- Index / metal CFDs — card is a forex M5 system; EMA-distance in pips is tuned for FX.
+- Index, metal, energy, and unavailable symbols - the approved card names only the three DWX FX majors above.
 
 ---
 
@@ -62,9 +48,9 @@ remainder's stop to breakeven. Final exit when the closed bar breaks EMA(50) by
 
 | Aspect | Value |
 |---|---|
-| Base timeframe | `M5` |
-| Multi-timeframe refs | `none` |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_M5)` |
+| Base timeframe | M5 |
+| Multi-timeframe refs | none |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
 
@@ -72,11 +58,11 @@ remainder's stop to breakeven. Final exit when the closed bar breaks EMA(50) by
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `~120` |
-| Typical hold time | `minutes to a few hours` |
-| Expected drawdown profile | `moderate; structure stop + breakeven after 2R caps single-trade loss` |
-| Regime preference | `trend / breakout` |
-| Win rate target (qualitative) | `medium` |
+| Trades / year / symbol | 120 |
+| Typical hold time | Minutes to a few hours. |
+| Expected drawdown profile | Moderate whipsaw risk during non-trending M5 regimes. |
+| Regime preference | Trend-continuation / momentum. |
+| Win rate target (qualitative) | Medium. |
 
 ---
 
@@ -84,10 +70,10 @@ remainder's stop to breakeven. Final exit when the closed bar breaks EMA(50) by
 
 This card was mechanised from:
 
-**Source ID:** `e78a9f1f-4e6a-563c-a080-915133d6ed28`
-**Source type:** `book`
-**Pointer:** Thomas Carter, "20 Forex Trading Strategies (5 Minute Time Frame)" (2014), 5 Min Trading System #9, pp. 24-25 (local PDF archive)
-**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_11317_tc-m5-9-ema50-100-macd.md`
+**Source ID:** e78a9f1f-4e6a-563c-a080-915133d6ed28
+**Source type:** book
+**Pointer:** Thomas Carter, "20 Forex Trading Strategies (5 Minute Time Frame)" (2014), 5 Min Trading System #9, pages 24-25, local PDF archive.
+**R1-R4 verdict (Q00):** all PASS per `artifacts/cards_approved/QM5_11317_tc-m5-9-ema50-100-macd.md`
 
 ---
 
@@ -95,11 +81,11 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
@@ -107,4 +93,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v1 | 2026-06-25 | Initial build from card | 2360fa1f-0353-4d46-807a-136db4c5618b |
