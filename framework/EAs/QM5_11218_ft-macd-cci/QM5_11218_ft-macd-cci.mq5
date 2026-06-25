@@ -11,22 +11,20 @@
 // Card: artifacts/cards_approved/QM5_11218_ft-macd-cci.md (g0_status APPROVED).
 //
 // Mechanics (long-only, closed-bar reads at shift 1; M5):
-//   Trigger EVENT : MACD line crosses ABOVE the MACD signal line (one event/bar).
-//                   MACD values can be negative — there is NO sign guard on them.
-//   Gate STATE    : CCI <= buy_cci (source uptrend filter, default -48).
+//   Entry STATE   : MACD line > MACD signal line and CCI <= buy_cci.
 //   Entry         : market long at next bar open.
 //   Stop          : entry - sl_atr_mult * ATR  (QM_StopATR, default 14 / 1.5).
-//   Take profit   : entry + tp_atr_mult * ATR  (same ATR value as the stop).
-//   Defensive exit: MACD line crosses BELOW signal (EVENT) AND CCI >= sell_cci
-//                   (STATE, source downtrend filter) -> close manually.
+//   Profit exits  : source ROI ladder: 5% immediately, 4% after 20 minutes,
+//                   3% after 30 minutes, 1% after 60 minutes.
+//   Signal exit   : MACD line < signal and CCI >= sell_cci -> close manually.
 //   Spread guard  : block only a genuinely wide spread > spread_pct_of_stop of
 //                   the stop distance (fail-open on .DWX zero modeled spread).
 //   News / Friday : handled by the framework wiring (do not duplicate here).
 //
 // .DWX invariants honoured: fail-OPEN spread (never block on zero spread), no
-// swap gate, no external feeds, cross is the EVENT + CCI is the STATE (never two
-// cross events on one bar), QM_IsNewBar consumed once on the entry path. MACD
-// line may be negative so no <=0 guard is applied to MACD readings.
+// swap gate, no external feeds, no coincident double-cross requirement,
+// QM_IsNewBar consumed once on the entry path. MACD line may be negative so no
+// <=0 guard is applied to MACD readings.
 //
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific.
 // =============================================================================
@@ -64,8 +62,12 @@ input double strategy_buy_cci           = -48.0;  // long gate: CCI <= this (sou
 input double strategy_sell_cci          = 687.0;  // exit gate: CCI >= this (source sell_params)
 input int    strategy_atr_period        = 14;     // ATR period (stop / target)
 input double strategy_sl_atr_mult       = 1.5;    // stop distance = mult * ATR
-input double strategy_tp_atr_mult       = 3.0;    // target distance = mult * ATR
 input double strategy_spread_pct_of_stop = 6.0;   // skip if spread > this % of stop distance
+input double strategy_roi_0_min_pct     = 5.0;    // ROI exit from 0 minutes
+input double strategy_roi_20_min_pct    = 4.0;    // ROI exit after 20 minutes
+input double strategy_roi_30_min_pct    = 3.0;    // ROI exit after 30 minutes
+input double strategy_roi_60_min_pct    = 1.0;    // ROI exit after 60 minutes
+input double strategy_disaster_loss_pct = 30.0;   // source stoploss disaster cap
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -103,19 +105,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // --- Trigger EVENT: MACD line crosses ABOVE its signal line (one event). ---
+   const long closed_volume = iVolume(_Symbol, _Period, 1); // perf-allowed: card requires closed-bar volume > 0 and no QM volume helper exists.
+   if(closed_volume <= 0)
+      return false;
+
+   // --- Entry STATE: MACD line above its signal line. ---
    // MACD values can be negative; do NOT apply a <=0 sanity guard to them.
    const double macd_now  = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
                                          strategy_macd_slow, strategy_macd_signal, 1);
-   const double macd_prev = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
-                                         strategy_macd_slow, strategy_macd_signal, 2);
    const double sig_now   = QM_MACD_Signal(_Symbol, _Period, strategy_macd_fast,
                                            strategy_macd_slow, strategy_macd_signal, 1);
-   const double sig_prev  = QM_MACD_Signal(_Symbol, _Period, strategy_macd_fast,
-                                           strategy_macd_slow, strategy_macd_signal, 2);
 
-   const bool macd_cross_up = (macd_prev <= sig_prev && macd_now > sig_now);
-   if(!macd_cross_up)
+   if(!(macd_now > sig_now))
       return false;
 
    // --- Gate STATE: CCI at/below the source uptrend threshold. ---
@@ -132,16 +133,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry <= 0.0)
       return false;
 
-   const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr_value, strategy_sl_atr_mult);
-   const double tp = QM_TakeATRFromValue(_Symbol, QM_BUY, entry, atr_value, strategy_tp_atr_mult);
-   if(sl <= 0.0 || tp <= 0.0)
+   const double sl = QM_StopATR(_Symbol, QM_BUY, entry, strategy_atr_period, strategy_sl_atr_mult);
+   if(sl <= 0.0)
       return false;
 
-   req.type   = QM_BUY;
-   req.price  = 0.0;   // framework fills market price at send
-   req.sl     = sl;
-   req.tp     = tp;
-   req.reason = "ft_macd_cci_long";
+   req.type               = QM_BUY;
+   req.price              = 0.0;   // framework fills market price at send
+   req.sl                 = sl;
+   req.tp                 = 0.0;   // source exits via ROI ladder / signal exit
+   req.reason             = "ft_macd_cci_long";
+   req.symbol_slot        = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
@@ -151,24 +153,60 @@ void Strategy_ManageOpenPosition()
   {
   }
 
-// Defensive exit: MACD line crosses BELOW signal (EVENT) AND CCI >= sell_cci
-// (source downtrend STATE). One cross event/bar; CCI is the confirming state.
+// Exit on source ROI ladder, disaster cap, or MACD/CCI downtrend state.
 bool Strategy_ExitSignal()
   {
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
       return false;
 
+   const int magic = QM_FrameworkMagic();
+   const datetime now = TimeCurrent();
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(bid > 0.0)
+     {
+      for(int i = PositionsTotal() - 1; i >= 0; --i)
+        {
+         const ulong ticket = PositionGetTicket(i);
+         if(!PositionSelectByTicket(ticket))
+            continue;
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+            continue;
+         if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+            continue;
+         if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) != POSITION_TYPE_BUY)
+            continue;
+
+         const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+         if(open_price <= 0.0)
+            continue;
+
+         const int hold_minutes = (int)((now - (datetime)PositionGetInteger(POSITION_TIME)) / 60);
+         double required_roi = strategy_roi_0_min_pct;
+         if(hold_minutes >= 60)
+            required_roi = strategy_roi_60_min_pct;
+         else if(hold_minutes >= 30)
+            required_roi = strategy_roi_30_min_pct;
+         else if(hold_minutes >= 20)
+            required_roi = strategy_roi_20_min_pct;
+
+         const double pnl_pct = 100.0 * (bid - open_price) / open_price;
+         if(required_roi > 0.0 && pnl_pct >= required_roi)
+            return true;
+         if(strategy_disaster_loss_pct > 0.0 && pnl_pct <= -MathAbs(strategy_disaster_loss_pct))
+            return true;
+        }
+     }
+
+   const long closed_volume = iVolume(_Symbol, _Period, 1); // perf-allowed: card requires closed-bar volume > 0 and no QM volume helper exists.
+   if(closed_volume <= 0)
+      return false;
+
    const double macd_now  = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
                                          strategy_macd_slow, strategy_macd_signal, 1);
-   const double macd_prev = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast,
-                                         strategy_macd_slow, strategy_macd_signal, 2);
    const double sig_now   = QM_MACD_Signal(_Symbol, _Period, strategy_macd_fast,
                                            strategy_macd_slow, strategy_macd_signal, 1);
-   const double sig_prev  = QM_MACD_Signal(_Symbol, _Period, strategy_macd_fast,
-                                           strategy_macd_slow, strategy_macd_signal, 2);
 
-   const bool macd_cross_down = (macd_prev >= sig_prev && macd_now < sig_now);
-   if(!macd_cross_down)
+   if(!(macd_now < sig_now))
       return false;
 
    const double cci = QM_CCI(_Symbol, _Period, strategy_cci_period, 1);
