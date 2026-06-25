@@ -11979,11 +11979,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11819,carter-m5-s8-bb50-rsi3-stoch-reversal-m5,2,USDJPY.DWX,118190002,2026-06-18,Claude,active
 11819,carter-m5-s8-bb50-rsi3-stoch-reversal-m5,3,USDCHF.DWX,118190003,2026-06-18,Claude,active
 11819,carter-m5-s8-bb50-rsi3-stoch-reversal-m5,4,AUDUSD.DWX,118190004,2026-06-18,Claude,active
-11820,carter-m5-s9-ema50100-macd-m5,0,EURUSD.DWX,118200000,2026-06-18,Claude,reserved
-11820,carter-m5-s9-ema50100-macd-m5,1,GBPUSD.DWX,118200001,2026-06-18,Claude,reserved
-11820,carter-m5-s9-ema50100-macd-m5,2,USDJPY.DWX,118200002,2026-06-18,Claude,reserved
-11820,carter-m5-s9-ema50100-macd-m5,3,USDCHF.DWX,118200003,2026-06-18,Claude,reserved
-11820,carter-m5-s9-ema50100-macd-m5,4,AUDUSD.DWX,118200004,2026-06-18,Claude,reserved
+11820,carter-m5-s9-ema50100-macd-m5,0,EURUSD.DWX,118200000,2026-06-26,Development,active
+11820,carter-m5-s9-ema50100-macd-m5,1,GBPUSD.DWX,118200001,2026-06-26,Development,active
+11820,carter-m5-s9-ema50100-macd-m5,2,USDJPY.DWX,118200002,2026-06-26,Development,active
+11820,carter-m5-s9-ema50100-macd-m5,3,USDCHF.DWX,118200003,2026-06-26,Development,active
+11820,carter-m5-s9-ema50100-macd-m5,4,AUDUSD.DWX,118200004,2026-06-26,Development,active
 11821,carter-m5-s10-ema4080-cci21-m5,0,EURUSD.DWX,118210000,2026-06-25,Development,active
 11821,carter-m5-s10-ema4080-cci21-m5,1,GBPUSD.DWX,118210001,2026-06-25,Development,active
 11821,carter-m5-s10-ema4080-cci21-m5,2,USDJPY.DWX,118210002,2026-06-25,Development,active
@@ -13520,3 +13520,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9239,mql5-dma-angle-band,0,EURUSD.DWX,92390000,2026-06-26,Development,active
 9239,mql5-dma-angle-band,1,GBPJPY.DWX,92390001,2026-06-26,Development,active
 9239,mql5-dma-angle-band,2,XAUUSD.DWX,92390002,2026-06-26,Development,active
+9258,mql5-liq-flip,0,EURUSD.DWX,92580000,2026-06-26,Development,active
+9258,mql5-liq-flip,1,GBPUSD.DWX,92580001,2026-06-26,Development,active
+9258,mql5-liq-flip,2,XAUUSD.DWX,92580002,2026-06-26,Development,active
