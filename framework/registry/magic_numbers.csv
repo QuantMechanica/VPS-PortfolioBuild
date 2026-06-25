@@ -11146,11 +11146,11 @@
 11485,carter-t-cci100-macd-momentum-m5,0,EURUSD.DWX,114850000,2026-06-18,Claude,reserved
 11485,carter-t-cci100-macd-momentum-m5,1,GBPUSD.DWX,114850001,2026-06-18,Claude,reserved
 11485,carter-t-cci100-macd-momentum-m5,2,AUDUSD.DWX,114850002,2026-06-18,Claude,reserved
-11486,carter-t-20ema-macd-zero-m5,0,EURUSD.DWX,114860000,2026-06-18,Claude,reserved
-11486,carter-t-20ema-macd-zero-m5,1,GBPUSD.DWX,114860001,2026-06-18,Claude,reserved
-11486,carter-t-20ema-macd-zero-m5,2,USDJPY.DWX,114860002,2026-06-18,Claude,reserved
-11486,carter-t-20ema-macd-zero-m5,3,AUDUSD.DWX,114860003,2026-06-18,Claude,reserved
-11486,carter-t-20ema-macd-zero-m5,4,USDCAD.DWX,114860004,2026-06-18,Claude,reserved
+11486,carter-t-20ema-macd-zero-m5,0,EURUSD.DWX,114860000,2026-06-25,Development,active
+11486,carter-t-20ema-macd-zero-m5,1,GBPUSD.DWX,114860001,2026-06-25,Development,active
+11486,carter-t-20ema-macd-zero-m5,2,USDJPY.DWX,114860002,2026-06-25,Development,active
+11486,carter-t-20ema-macd-zero-m5,3,AUDUSD.DWX,114860003,2026-06-25,Development,active
+11486,carter-t-20ema-macd-zero-m5,4,USDCAD.DWX,114860004,2026-06-25,Development,active
 11487,carter-t-50-100-ema-macd-breakout-m5,0,EURUSD.DWX,114870000,2026-06-18,Development,active
 11487,carter-t-50-100-ema-macd-breakout-m5,1,GBPUSD.DWX,114870001,2026-06-18,Development,active
 11487,carter-t-50-100-ema-macd-breakout-m5,2,USDJPY.DWX,114870002,2026-06-18,Development,active
