@@ -3,16 +3,16 @@
 ; ea_id:        10241
 ; ea_slug:      tv-vwap-retest
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260625-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   e819c319c182a5fcd6b95f9d3941034acafbb699340eca581d98117f67ab8d4e
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-25
 ;==========================================================
 qm_magic_slot_offset=4
 RISK_FIXED=1000

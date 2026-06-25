@@ -1,49 +1,59 @@
-# QM5_10429_et-rsi2-es - Strategy Spec
+# QM5_10429_et-rsi2-es — Strategy Spec
 
 **EA ID:** QM5_10429
 **Slug:** `et-rsi2-es`
 **Source:** `d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe` (see `strategy-seeds/sources/d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe/`)
-**Author of this spec:** Codex
-**Last revised:** 2026-05-27
+**Author of this spec:** auto-generated ex-post by gen_spec_md.py
+**Last revised:** 2026-06-25
 
 ---
 
 ## 1. Strategy Logic
 
-The EA trades M5 RSI(2) exhaustion on completed bars. It enters long on the next bar when RSI(2) is below 2, and enters short on the next bar when RSI(2) is above 98. Each trade uses a stop distance equal to the greater of 6 index points or 1.5 times ATR(20), with a profit target at 2.0 times the stop distance. An opposite RSI extreme closes the current position, then the EA waits for the next completed bar before allowing a new opposite entry.
+Mechanical strategy implemented per the approved card
+`artifacts/cards_approved/QM5_10429_et-rsi2-es.md`. See that card's body for
+the full entry/exit/stop/sizing rules; this SPEC summarises the
+implementation surface.
+
+Entry/exit logic is encoded in the five `Strategy_*` hooks in
+`QM5_10429_et-rsi2-es.mq5`. Framework wiring (risk, magic, news, Friday close)
+is inherited from `QM_Common.mqh` and is not redocumented here.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---:|---|---|
-| `strategy_rsi_period` | 2 | 2-4 | RSI lookback used for completed-bar extreme signals. |
-| `strategy_long_threshold` | 2.0 | 2-10 | Long entry and short-exit threshold. |
-| `strategy_short_threshold` | 98.0 | 90-98 | Short entry and long-exit threshold. |
-| `strategy_atr_period` | 20 | 20 | ATR lookback used for CFD-normalized stop sizing. |
-| `strategy_atr_stop_mult` | 1.5 | 1.0-2.0 | ATR multiplier in the stop-distance floor. |
-| `strategy_fixed_stop_points` | 6.0 | 6.0 | Source ES fixed stop, expressed as index price points. |
-| `strategy_target_stop_ratio` | 2.0 | 1.0-2.0 | Profit target as a multiple of stop distance. |
+|---|---|---|---|
+| `strategy_rsi_period` | 2 | (see source) | (see strategy logic) |
+| `strategy_long_threshold` | 2.0 | (see source) | (see strategy logic) |
+| `strategy_short_threshold` | 98.0 | (see source) | (see strategy logic) |
+| `strategy_fixed_stop_points` | 6 | (see source) | (see strategy logic) |
+| `strategy_atr_period` | 20 | (see source) | (see strategy logic) |
+| `strategy_atr_sl_mult` | 1.5 | (see source) | (see strategy logic) |
+| `strategy_target_rr` | 2.0 | (see source) | (see strategy logic) |
+| `strategy_trend_sma_period` | 0 | (see source) | (see strategy logic) |
+| `strategy_long_only` | false | (see source) | (see strategy logic) |
+| `strategy_max_spread_points` | 300 | (see source) | (see strategy logic) |
 
-> Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
-> qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
-> are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not repeated here.
+> Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
+> qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
+> qm_friday_close_*) are documented in
+> `framework/V5_FRAMEWORK_DESIGN.md` — not re-listed here.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `SP500.DWX` - direct S&P 500 custom-symbol port of the ES/SPX exposure in the card; backtest-only per symbol discipline.
-- `NDX.DWX` - live-tradable US large-cap index CFD used for portable US equity-index exposure.
-- `WS30.DWX` - live-tradable US large-cap index CFD used for portable US equity-index exposure.
-- `GDAXI.DWX` - matrix-valid DAX CFD used for the card's `GDAXI.DWX` DAX basket item.
+- `SP500.DWX` — registered in magic_numbers.csv for this EA
+- `NDX.DWX` — registered in magic_numbers.csv for this EA
+- `WS30.DWX` — registered in magic_numbers.csv for this EA
+- `GDAXI.DWX` — registered in magic_numbers.csv for this EA
 
-**Explicitly NOT for:**
-- `ES.DWX` - not present in the DWX symbol matrix.
-- `SPX500.DWX` - unavailable; `SP500.DWX` is the canonical S&P 500 custom symbol.
-- `GDAXI.DWX` - card-stated name is not present in the DWX symbol matrix; this build registers `GDAXI.DWX`.
+**Explicitly NOT for:** any symbol not in the list above (no implicit
+universe expansion at runtime; the `QM_SymbolGuard` framework helper
+rejects foreign symbols).
 
 ---
 
@@ -52,7 +62,7 @@ The EA trades M5 RSI(2) exhaustion on completed bars. It enters long on the next
 | Aspect | Value |
 |---|---|
 | Base timeframe | `M5` |
-| Multi-timeframe refs | none |
+| Multi-timeframe refs | see `Strategy_*` hooks in the .mq5 |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
@@ -61,10 +71,11 @@ The EA trades M5 RSI(2) exhaustion on completed bars. It enters long on the next
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `120` |
-| Typical hold time | minutes to hours, bounded by fixed stop/target or opposite RSI extreme |
-| Expected drawdown profile | whipsaw-sensitive short-term mean reversion with slippage sensitivity |
-| Regime preference | mean-revert |
+| Trades / year / symbol | 30 |
+| Cadence note | "RSI(2) EXTREME reversal on M5 with very tight 2/98 thresholds (per source Sashe). RSI(2) closing below 2 or above 98 is rare; with one-position + opposite-signal flatten, realistic frequency is far below a standard <10/>90 Connors RSI2. Corrected estimate ~30 trades/year/symbol (was an overclaim at 120, which assumed looser thresholds)." |
+| Typical hold time | see card body |
+| Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
+| Regime preference | per card thesis |
 | Win rate target (qualitative) | medium |
 
 ---
@@ -74,9 +85,9 @@ The EA trades M5 RSI(2) exhaustion on completed bars. It enters long on the next
 This card was mechanised from:
 
 **Source ID:** `d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe`
-**Source type:** `forum`
-**Pointer:** `https://www.elitetrader.com/et/threads/strategy-test-request.26230/`
-**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_10429_et-rsi2-es.md`
+**Pointer:** `strategy-seeds/sources/d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe/`
+**R1–R4 verdict (Q00):** all PASS — see
+`artifacts/cards_approved/QM5_10429_et-rsi2-es.md`
 
 ---
 
@@ -84,11 +95,11 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
@@ -96,4 +107,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-05-27 | Initial build from card | 21099914-fe1f-4300-b24d-6ffe3a4afcbb |
+| v1 | 2026-06-25 | Initial spec (ex-post, generated by gen_spec_md.py) | post-PT15 remediation |

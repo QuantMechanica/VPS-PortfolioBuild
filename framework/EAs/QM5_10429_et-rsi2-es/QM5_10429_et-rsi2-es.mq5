@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10429 Elite Trader RSI2 ES Extreme"
+#property description "QM5_10429 Elite Trader RSI2 ES Extreme (M5 mean reversion)"
 
 #include <QM/QM_Common.mqh>
 
@@ -73,15 +73,24 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
+// Elite Trader RSI2 ES Extreme (Sashe, 2003). M5 RSI(2) mean reversion:
+//   Long  when RSI(2) < strategy_long_threshold   (extreme oversold).
+//   Short when RSI(2) > strategy_short_threshold  (extreme overbought).
+//   Stop  = max(strategy_fixed_stop_points , strategy_atr_sl_mult * ATR(20)).
+//   Target = strategy_target_rr * Stop.
+//   Opposite-extreme RSI signal flattens the open position (then a new
+//   opposite entry may fire on the next completed bar).
+//   Optional SMA trend filter (off by default; long above SMA, short below).
 input int    strategy_rsi_period        = 2;
 input double strategy_long_threshold    = 2.0;
 input double strategy_short_threshold   = 98.0;
+input int    strategy_fixed_stop_points = 6;
 input int    strategy_atr_period        = 20;
-input double strategy_atr_stop_mult     = 1.5;
-input double strategy_fixed_stop_points = 6.0;
-input double strategy_target_stop_ratio = 2.0;
-
-bool g_skip_entry_after_opposite_exit = false;
+input double strategy_atr_sl_mult       = 1.5;
+input double strategy_target_rr         = 2.0;
+input int    strategy_trend_sma_period  = 0;     // 0 = trend filter OFF; else SMA(N)
+input bool   strategy_long_only         = false; // P3 long-only-in-uptrend variant
+input int    strategy_max_spread_points = 300;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -94,28 +103,37 @@ bool Strategy_NoTradeFilter()
    if(_Period != PERIOD_M5)
       return true;
 
-   return false;
-  }
-
-bool Strategy_HasOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   if(strategy_max_spread_points > 0)
      {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      return true;
+      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      if(spread_points > strategy_max_spread_points)
+         return true;
      }
 
    return false;
+  }
+
+// Build the SL price for a given side: the wider of a fixed-points stop and an
+// ATR(period)*mult stop, per the card's max() normalization.
+double EtComputeStop(const QM_OrderType side, const double entry)
+  {
+   const double fixed_sl = QM_StopFixedPips(_Symbol, side, entry, strategy_fixed_stop_points);
+   const double atr_sl   = QM_StopATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_sl_mult);
+
+   double sl = 0.0;
+   if(fixed_sl > 0.0 && atr_sl > 0.0)
+     {
+      // Pick whichever stop sits farther from entry (the wider distance).
+      const double fixed_dist = MathAbs(entry - fixed_sl);
+      const double atr_dist   = MathAbs(entry - atr_sl);
+      sl = (atr_dist >= fixed_dist) ? atr_sl : fixed_sl;
+     }
+   else if(fixed_sl > 0.0)
+      sl = fixed_sl;
+   else
+      sl = atr_sl;
+
+   return sl;
   }
 
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
@@ -131,66 +149,63 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(g_skip_entry_after_opposite_exit)
-     {
-      g_skip_entry_after_opposite_exit = false;
-      return false;
-     }
-
-   if(Strategy_HasOpenPosition())
-      return false;
    if(strategy_rsi_period <= 0 ||
+      strategy_long_threshold <= 0.0 ||
+      strategy_long_threshold >= 100.0 ||
+      strategy_short_threshold <= 0.0 ||
+      strategy_short_threshold >= 100.0 ||
+      strategy_long_threshold >= strategy_short_threshold ||
+      strategy_fixed_stop_points < 0 ||
       strategy_atr_period <= 0 ||
-      strategy_atr_stop_mult <= 0.0 ||
-      strategy_fixed_stop_points <= 0.0 ||
-      strategy_target_stop_ratio <= 0.0)
+      strategy_atr_sl_mult <= 0.0 ||
+      strategy_target_rr <= 0.0 ||
+      strategy_trend_sma_period < 0)
       return false;
 
-   const double rsi = QM_RSI(_Symbol, PERIOD_M5, strategy_rsi_period, 1);
-   const double atr = QM_ATR(_Symbol, PERIOD_M5, strategy_atr_period, 1);
-   if(rsi < 0.0 || atr <= 0.0)
+   const double rsi_last = QM_RSI(_Symbol, PERIOD_M5, strategy_rsi_period, 1, PRICE_CLOSE);
+   if(rsi_last <= 0.0)
       return false;
 
-   QM_OrderType side = QM_BUY;
-   bool has_signal = false;
-   if(rsi < strategy_long_threshold)
+   bool want_long  = (rsi_last < strategy_long_threshold);
+   bool want_short = (rsi_last > strategy_short_threshold);
+   if(!want_long && !want_short)
+      return false;
+
+   // Optional SMA trend filter: long only above SMA, short only below.
+   if(strategy_trend_sma_period > 0)
      {
-      side = QM_BUY;
-      has_signal = true;
+      const double close_last = QM_SMA(_Symbol, PERIOD_M5, 1, 1, PRICE_CLOSE);
+      const double sma_last   = QM_SMA(_Symbol, PERIOD_M5, strategy_trend_sma_period, 1, PRICE_CLOSE);
+      if(close_last <= 0.0 || sma_last <= 0.0)
+         return false;
+      if(want_long && close_last <= sma_last)
+         return false;
+      if(want_short && close_last >= sma_last)
+         return false;
      }
-   else if(rsi > strategy_short_threshold)
-     {
-      side = QM_SELL;
-      has_signal = true;
-     }
 
-   if(!has_signal)
+   // P3 long-only variant: suppress short entries entirely.
+   if(strategy_long_only && want_short)
       return false;
 
-   const double entry = (side == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
-                                         : SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(entry <= 0.0)
+   const QM_OrderType side = want_long ? QM_BUY : QM_SELL;
+
+   const double entry_price = QM_EntryMarketPrice(side);
+   if(entry_price <= 0.0)
       return false;
 
-   const double stop_distance = MathMax(strategy_fixed_stop_points, strategy_atr_stop_mult * atr);
-   const double sl = (side == QM_BUY) ? QM_TM_NormalizePrice(_Symbol, entry - stop_distance)
-                                      : QM_TM_NormalizePrice(_Symbol, entry + stop_distance);
-   const double tp = QM_TakeRR(_Symbol, side, entry, sl, strategy_target_stop_ratio);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0 || sl <= 0.0 || tp <= 0.0)
-      return false;
-   if(side == QM_BUY && (sl >= entry || tp <= entry))
-      return false;
-   if(side == QM_SELL && (sl <= entry || tp >= entry))
+   const double sl = EtComputeStop(side, entry_price);
+   if(sl <= 0.0)
       return false;
 
-   req.type = side;
-   req.price = 0.0;
-   req.sl = sl;
-   req.tp = tp;
-   req.reason = (side == QM_BUY) ? "ET_RSI2_EXTREME_LONG" : "ET_RSI2_EXTREME_SHORT";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
+   const double tp = QM_TakeRR(_Symbol, side, entry_price, sl, strategy_target_rr);
+   if(tp <= 0.0)
+      return false;
+
+   req.type   = side;
+   req.sl     = sl;
+   req.tp     = tp;
+   req.reason = want_long ? "ET_RSI2_LONG" : "ET_RSI2_SHORT";
    return true;
   }
 
@@ -198,7 +213,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // Card specifies no trailing, break-even, or partial-close management.
+   // Card specifies no trailing, break-even, pyramiding, or partial close.
+   // Exits are fixed stop, fixed target, or opposite-signal flatten.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
@@ -209,8 +225,8 @@ bool Strategy_ExitSignal()
    if(magic <= 0)
       return false;
 
-   const double rsi = QM_RSI(_Symbol, PERIOD_M5, strategy_rsi_period, 1);
-   if(rsi < 0.0)
+   const double rsi_last = QM_RSI(_Symbol, PERIOD_M5, strategy_rsi_period, 1, PRICE_CLOSE);
+   if(rsi_last <= 0.0)
       return false;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -224,16 +240,12 @@ bool Strategy_ExitSignal()
          continue;
 
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(ptype == POSITION_TYPE_BUY && rsi > strategy_short_threshold)
-        {
-         g_skip_entry_after_opposite_exit = true;
+
+      // Opposite-extreme RSI signal flattens the position.
+      if(ptype == POSITION_TYPE_BUY && rsi_last > strategy_short_threshold)
          return true;
-        }
-      if(ptype == POSITION_TYPE_SELL && rsi < strategy_long_threshold)
-        {
-         g_skip_entry_after_opposite_exit = true;
+      if(ptype == POSITION_TYPE_SELL && rsi_last < strategy_long_threshold)
          return true;
-        }
      }
 
    return false;
