@@ -3,16 +3,16 @@
 ; ea_id:        1081
 ; ea_slug:      chan-lo-1d-reversal
 ; ea_version:   v5.0
-; set_version:  s20260525-001
+; set_version:  s20260625-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   7
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   762a24c098085c110bbccbdc9a2de15dee22435964ed5fe51159dc0b27f74f00
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-25
+; date:         2026-06-25
 ;==========================================================
 qm_magic_slot_offset=7
 RISK_FIXED=1000

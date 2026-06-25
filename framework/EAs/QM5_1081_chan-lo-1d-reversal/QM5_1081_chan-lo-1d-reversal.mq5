@@ -92,7 +92,7 @@ input group "Strategy"
 //   strategy_max_spread_points — O(1) liquidity/spread guard.
 //   strategy_use_atr_regime_filter / lookback / percentile — optional card filter:
 //     skip entries when the universe-average ATR percentile exceeds the threshold.
-input string strategy_universe_symbols  = "SP500.DWX,NDX.DWX,WS30.DWX,GDAXI.DWX,UK100.DWX,XAUUSD.DWX,XAGUSD.DWX";
+input string strategy_universe_symbols  = "SP500.DWX,NDX.DWX,WS30.DWX,GDAXI.DWX,XAUUSD.DWX,XAGUSD.DWX,EURUSD.DWX,GBPUSD.DWX,USDJPY.DWX,AUDUSD.DWX,USDCAD.DWX,USDCHF.DWX,NZDUSD.DWX,UK100.DWX";
 input int    strategy_rank_count        = 1;
 input int    strategy_max_hold_bars     = 1;
 input int    strategy_atr_period        = 14;
