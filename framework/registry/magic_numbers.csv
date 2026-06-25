@@ -11170,8 +11170,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11490,robles-c-continuation-50ema-wpr-d1,2,USDJPY.DWX,114900002,2026-06-18,Claude,reserved
 11490,robles-c-continuation-50ema-wpr-d1,3,AUDUSD.DWX,114900003,2026-06-18,Claude,reserved
 11490,robles-c-continuation-50ema-wpr-d1,4,USDCAD.DWX,114900004,2026-06-18,Claude,reserved
-11491,watthana-candlestick-rsi-stochastic-h4,0,EURUSD.DWX,114910000,2026-06-18,Claude,reserved
-11491,watthana-candlestick-rsi-stochastic-h4,1,GBPUSD.DWX,114910001,2026-06-18,Claude,reserved
+11491,watthana-candlestick-rsi-stochastic-h4,0,EURUSD.DWX,114910000,2026-06-26,Development,active
+11491,watthana-candlestick-rsi-stochastic-h4,1,GBPUSD.DWX,114910001,2026-06-26,Development,active
 11492,carter-t-bb-stoch-outside-reversal-m5,0,EURUSD.DWX,114920000,2026-06-18,Claude,active
 11492,carter-t-bb-stoch-outside-reversal-m5,1,GBPUSD.DWX,114920001,2026-06-18,Claude,active
 11492,carter-t-bb-stoch-outside-reversal-m5,2,USDJPY.DWX,114920002,2026-06-18,Claude,active
@@ -13517,3 +13517,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9266,mql5-fractal-chain,0,EURUSD.DWX,92660000,2026-06-26,Development,active
 9266,mql5-fractal-chain,1,GBPJPY.DWX,92660001,2026-06-26,Development,active
 9266,mql5-fractal-chain,2,GDAXI.DWX,92660002,2026-06-26,Development,active
+9239,mql5-dma-angle-band,0,EURUSD.DWX,92390000,2026-06-26,Development,active
+9239,mql5-dma-angle-band,1,GBPJPY.DWX,92390001,2026-06-26,Development,active
+9239,mql5-dma-angle-band,2,XAUUSD.DWX,92390002,2026-06-26,Development,active
