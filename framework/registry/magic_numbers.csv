@@ -13451,3 +13451,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9994,tv-ut-bot-atr-trailing-flip,5,NDX.DWX,99940005,2026-06-25,Development,active
 9994,tv-ut-bot-atr-trailing-flip,6,WS30.DWX,99940006,2026-06-25,Development,active
 9994,tv-ut-bot-atr-trailing-flip,7,SP500.DWX,99940007,2026-06-25,Development,active
+12563,donchian-turtle-trend-commodity,0,XTIUSD.DWX,125630000,2026-06-25,Development,active
+12563,donchian-turtle-trend-commodity,1,XAGUSD.DWX,125630001,2026-06-25,Development,active
+12563,donchian-turtle-trend-commodity,2,XAUUSD.DWX,125630002,2026-06-25,Development,active
+12562,fx-london-open-breakout,0,EURUSD.DWX,125620000,2026-06-25,Development,active
+12562,fx-london-open-breakout,1,GBPUSD.DWX,125620001,2026-06-25,Development,active
+12562,fx-london-open-breakout,2,USDJPY.DWX,125620002,2026-06-25,Development,active
