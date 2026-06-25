@@ -62,6 +62,9 @@ input int    strategy_session_end_hour     = 22;
 // news blackout entries, and spread <= 0.25 ATR. News is handled centrally.
 bool Strategy_NoTradeFilter()
   {
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+      return false;
+
    const datetime broker_now = TimeCurrent();
    MqlDateTime dt;
    TimeToStruct(broker_now, dt);

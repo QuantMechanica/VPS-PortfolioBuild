@@ -13400,3 +13400,7 @@
 9261,mql5-rvi-ma-cross,0,EURUSD.DWX,92610000,2026-06-25,Development,active
 9261,mql5-rvi-ma-cross,1,GBPJPY.DWX,92610001,2026-06-25,Development,active
 9261,mql5-rvi-ma-cross,2,GDAXI.DWX,92610002,2026-06-25,Development,active
+9520,mql5-entropy,0,XAUUSD.DWX,95200000,2026-06-25,Development,active
+9520,mql5-entropy,1,EURUSD.DWX,95200001,2026-06-25,Development,active
+9520,mql5-entropy,2,GBPUSD.DWX,95200002,2026-06-25,Development,active
+9520,mql5-entropy,3,GDAXI.DWX,95200003,2026-06-25,Development,active
