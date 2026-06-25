@@ -1,27 +1,17 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11337 TC20 #13 — EMA(5/10) Cross + RSI(10,Median/hl2) 50-state (H1)"
+#property description "QM5_11337 TC20 #13 - EMA(5/10) Cross + RSI(10,Median/hl2) Cross 50 (H1)"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11337
+// QuantMechanica V5 EA - QM5_11337
 // -----------------------------------------------------------------------------
 // Strategy (Thomas Carter, "20 Forex Trading Strategies" #13, H1):
-//   - EVENT  : EMA(5) crosses EMA(10) on the last closed bar (the trigger).
-//   - STATE  : RSI(10) on Median price (H+L)/2 == PRICE_MEDIAN confirms the
-//              direction by being on the correct side of the 50 midline.
+//   - EMA(5) crosses EMA(10) on the last closed bar.
+//   - RSI(10) on Median price (H+L)/2 crosses the 50 midline in the same
+//     direction on the same closed bar.
 //   - Stops  : fixed 30-pip SL, fixed 50-pip TP (pip-scale correct).
-//
-// DESIGN NOTE (zero-trade trap avoidance — DWX invariant #4):
-//   The card prose says the RSI should "approach and cross 50 in the same
-//   direction" simultaneously with the EMA cross. Two fresh cross EVENTS on
-//   the same bar almost never coincide on .DWX → 0 trades. So the EMA cross is
-//   the single EVENT and RSI-vs-50 is a directional STATE filter:
-//     LONG  : EMA5 crosses ABOVE EMA10  AND  RSI(10,median)[1] >= 50
-//     SHORT : EMA5 crosses BELOW EMA10  AND  RSI(10,median)[1] <= 50
-//   This preserves the card's intent (momentum confirms the trend trigger)
-//   without the impossible double-cross requirement. Flagged in build output.
 //
 // Framework corset: only the five Strategy_* hooks + inputs are EA-specific.
 // All per-tick scaffolding, risk, magic, news, Friday-close live in framework.
@@ -57,8 +47,8 @@ input int    strategy_fast_ema_period         = 5;          // EMA fast (yellow)
 input int    strategy_slow_ema_period         = 10;         // EMA slow (red)
 input int    strategy_rsi_period              = 10;         // RSI period
 input double strategy_rsi_midline             = 50.0;       // RSI directional state threshold
-input double strategy_sl_pips                 = 30.0;       // fixed SL (card)
-input double strategy_tp_pips                 = 50.0;       // fixed TP (card)
+input int    strategy_sl_pips                 = 30;         // fixed SL (card)
+input int    strategy_tp_pips                 = 50;         // fixed TP (card)
 input double strategy_max_spread_pips         = 20.0;       // spread cap (card); fail-OPEN on 0 spread
 
 // -----------------------------------------------------------------------------
@@ -74,13 +64,9 @@ bool Strategy_NoTradeFilter()
    if(strategy_max_spread_pips <= 0.0)
       return false;
 
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0)
-      return false; // fail-OPEN: bad point data is not a "wide spread"
-
-   const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   const int pip_factor = (digits == 3 || digits == 5) ? 10 : 1;
-   const double cap_price = strategy_max_spread_pips * point * pip_factor;
+   const double cap_price = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_max_spread_pips);
+   if(cap_price <= 0.0)
+      return false;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
@@ -108,27 +94,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_slow_ema_period <= 0 ||
       strategy_fast_ema_period >= strategy_slow_ema_period ||
       strategy_rsi_period <= 1 ||
-      strategy_sl_pips <= 0.0 ||
-      strategy_tp_pips <= 0.0)
+      strategy_sl_pips <= 0 ||
+      strategy_tp_pips <= 0)
       return false;
 
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   // One position per magic: bail if we already hold one on this symbol+magic.
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return false;
-     }
-
-   // --- EVENT: EMA(5) cross EMA(10) on the last closed bar (shift 1 vs 2) ---
+   // Last closed bar (shift 1) must cross from the previous closed bar (shift 2).
    const double fast_last = QM_EMA(_Symbol, strategy_signal_tf, strategy_fast_ema_period, 1);
    const double slow_last = QM_EMA(_Symbol, strategy_signal_tf, strategy_slow_ema_period, 1);
    const double fast_prev = QM_EMA(_Symbol, strategy_signal_tf, strategy_fast_ema_period, 2);
@@ -141,13 +111,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!bullish_cross && !bearish_cross)
       return false;
 
-   // --- STATE: RSI(10) on Median price (H+L)/2 vs the 50 midline ---
-   const double rsi = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, 1, PRICE_MEDIAN);
-   if(rsi <= 0.0)
+   const double rsi_last = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, 1, PRICE_MEDIAN);
+   const double rsi_prev = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, 2, PRICE_MEDIAN);
+   if(rsi_last <= 0.0 || rsi_prev <= 0.0)
       return false;
 
-   const bool long_ok  = bullish_cross && (rsi >= strategy_rsi_midline);
-   const bool short_ok = bearish_cross && (rsi <= strategy_rsi_midline);
+   const bool rsi_cross_up = (rsi_prev < strategy_rsi_midline && rsi_last >= strategy_rsi_midline);
+   const bool rsi_cross_down = (rsi_prev > strategy_rsi_midline && rsi_last <= strategy_rsi_midline);
+   const bool long_ok  = bullish_cross && rsi_cross_up;
+   const bool short_ok = bearish_cross && rsi_cross_down;
    if(!long_ok && !short_ok)
       return false;
 
@@ -160,8 +132,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // Fixed pip SL/TP, pip-scale correct (3/5-digit & JPY safe).
-   const double sl = QM_StopFixedPips(_Symbol, side, entry, (int)strategy_sl_pips);
-   const double tp = QM_TakeRR(_Symbol, side, entry, sl, strategy_tp_pips / strategy_sl_pips);
+   const double sl = QM_StopFixedPips(_Symbol, side, entry, strategy_sl_pips);
+   const double tp = QM_TakeRR(_Symbol, side, entry, sl, (double)strategy_tp_pips / (double)strategy_sl_pips);
    if(sl <= 0.0 || tp <= 0.0)
       return false;
 
