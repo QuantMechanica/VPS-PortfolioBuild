@@ -9,6 +9,28 @@ sleeve (QM5_12567:XNGUSD)** — near-zero correlation (+0.007), net-positive, DD
 Sharpe higher than survivors-only. The book grows by sleeves clearing the **cost gates**
 (Q04 walk-forward + Q08 cost-cushion), NOT by Q02 build volume.
 
+## VALIDATED RESULT (production `build_real_portfolio.py`, Q08 FAIL_SOFT pool)
+
+QM5_12567:XNGUSD cleared the FULL cascade (Q02→Q03→Q04 walk-forward→Q05→Q06→Q07→Q08
+FAIL_SOFT) — XTIUSD/XAGUSD on the same EA died at Q04, exactly as their negative
+after-cost net predicted. It is now a real Q08 FAIL_SOFT portfolio sleeve.
+
+| Book (risk-parity, real commission) | 4 survivors | **5 (+ XNGUSD)** |
+|---|---|---|
+| Distinct instrument classes | 2 (XAU, SP500) | **3 (+ natural gas)** |
+| Conservative MaxDD | 19.94% | **9.02%** (clears 20% cap *and* FTMO 10%) |
+| Sharpe | 1.94 | **3.41** |
+| Net of cost | +$3,674 | **+$4,327 (43%)** |
+
+XNGUSD is anti-correlated to every survivor (−0.027 vs SP500, −0.022/−0.012 vs XAU) and has
+the best standalone profile of all sleeves (DD 1.16%, net +$5,208). Mean pairwise correlation
++0.059. The single energy sleeve nearly halved conservative DD and nearly doubled Sharpe.
+
+**Caveat — still thin:** 5 sleeves, concentrated (2×XAU, 2×SP500, 1×XNG). Robust live
+deployment wants ≥8 net-positive-after-cost sleeves across more instruments. This is the
+first materially-improved validated book and the proof the diverse-port strategy works; it
+grows as more in-flight EAs clear the cost gates.
+
 ## The central finding
 
 Q02 PASS is **gross of commission** (.DWX custom symbols apply $0 commission/swap in the
