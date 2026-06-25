@@ -317,27 +317,37 @@ elseif ($factoryEnabled -and $realStall) {
         $detail = "REAL-STALL suspected ($realStallInfo); confirming on next run (~15min) before full reset"
         @{ pending_since = $nowDt.ToString('yyyy-MM-ddTHH:mm:ssZ'); last_reset = $rst.last_reset } | ConvertTo-Json -Compress | Set-Content -Path $rsState -Encoding UTF8
     } else {
-        $action = 'healed_full_reset'
-        $detail = "REAL-STALL confirmed 2x (since $($rst.pending_since)) ($realStallInfo) -> full OFF/ON-equivalent reset"
-        @{ pending_since = $null; last_reset = $nowDt.ToString('yyyy-MM-ddTHH:mm:ssZ') } | ConvertTo-Json -Compress | Set-Content -Path $rsState -Encoding UTF8
-        try {
-            foreach ($t in $QM_FACTORY_TASKS) { Disable-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue | Out-Null }
-            foreach ($d in $daemons) { Stop-Process -Id $d.ProcessId -Force -ErrorAction SilentlyContinue }
-            @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
-              Where-Object { $_.CommandLine -match '\\mt5\\T(?:[1-9]|10)\\' }) |
-              ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
-            Start-Sleep -Seconds 8   # longer settle so the OS releases leaked handles
-            foreach ($t in $QM_FACTORY_TASKS) { Enable-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue | Out-Null }
-            & $py (Join-Path $repo 'tools\strategy_farm\farmctl.py') repair 2>$null | Out-Null
-            $launcher = Join-Path $repo 'tools\strategy_farm\run_in_console_session.ps1'
-            $swArgs = '"' + (Join-Path $repo 'tools\strategy_farm\start_terminal_workers.py') + '" --repo-root "' + $repo + '" --farm-root "D:\QM\strategy_farm" --dedupe'
-            & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $launcher -Exe $py -Arguments $swArgs -WorkDir $repo 2>$null | Out-Null
-            Start-Sleep -Seconds 12
-            Start-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue
-            $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
-                       Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
-            $detail += " -> after=$after workers"
-        } catch { $action = 'heal_failed'; $detail += " -> ERROR: $_" }
+        # 2026-06-24 (diagnostic A): the OLD self-respawn (run_in_console_session /
+        # CreateProcessAsUser as SYSTEM) was conclusively found to produce worker
+        # daemons whose terminal64 children instant-exit 0xC0000142 (degraded
+        # winsta/desktop-access state since the Hetzner hard reset) -> metatester64=0,
+        # recovery silently failed EVERY cycle all day while the log still said
+        # 'healed_full_reset'. A kernel time-series proved it's NOT a resource leak
+        # (handles/pool/threads flat over 2 resets). A manual Factory_ON.ps1 (direct
+        # in-session interactive spawn as qm-admin) recovers instantly. So delegate
+        # recovery to the QM_StrategyFarm_FactoryON_AtLogon task (RunAs qm-admin,
+        # Interactive, RunLevel Highest): with qm-admin logged on, Start-ScheduledTask
+        # runs Factory_ON.ps1 -NoPause in that interactive session = the WORKING path
+        # (enable tasks + kill stale daemons/terminals + spawn workers in-session +
+        # farmctl repair + trigger pump). T_Live guard: Factory_ON's kill-all-terminal64
+        # would hit a live terminal, so never auto-recover while T_Live runs (Hard Rule).
+        $tLiveRunning = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
+                          Where-Object { $_.CommandLine -match 'T_Live' }).Count -gt 0
+        if ($tLiveRunning) {
+            $action = 'realstall_tlive_guard'
+            $detail = "REAL-STALL confirmed but a T_Live terminal is running - refusing auto-recovery (Hard Rule); OWNER must recover manually"
+        } else {
+            $action = 'healed_full_reset'
+            $detail = "REAL-STALL confirmed 2x (since $($rst.pending_since)) ($realStallInfo) -> Start FactoryON_AtLogon (interactive recovery)"
+            @{ pending_since = $null; last_reset = $nowDt.ToString('yyyy-MM-ddTHH:mm:ssZ') } | ConvertTo-Json -Compress | Set-Content -Path $rsState -Encoding UTF8
+            try {
+                Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop
+                Start-Sleep -Seconds 25
+                $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
+                           Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
+                $detail += " -> after=$after workers (via FactoryON_AtLogon)"
+            } catch { $action = 'heal_failed'; $detail += " -> ERROR: $_" }
+        }
     }
 }
 elseif ($nWorkers -ge $MinWorkers -and -not $dispatchStalled) {
