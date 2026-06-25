@@ -4,7 +4,7 @@
 **Slug:** `carter-tf16-ema7-21-pullback`
 **Source:** `29c77a02-59bd-52f7-bcb3-b3108d5f1e79` (Thomas Carter, *20 Trend Following Systems* (2014), Strategy #16)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-25
 
 ---
 
@@ -18,7 +18,8 @@ last few closed bars a bar's Low touched or pierced EMA21. On the most recent su
 "touch bar" the EA places a BUYSTOP one point above that bar's high, so it only
 fills if price breaks out and confirms the bounce off the dynamic EMA21 support.
 The stop-loss is the lowest low of the touch bar and the bars around it (risk
-capped at 70 pips); the take-profit is twice the risk distance. If the trend
+capped at 70 pips); the take-profit is twice the risk distance. Once an open
+trade has moved by one ATR in profit, the stop is moved to breakeven. If the trend
 flips (EMA7 crosses to the wrong side of EMA21) before the pending order fires,
 the order is cancelled. SHORT is the exact mirror. One position or one pending
 order per symbol at a time.
@@ -36,6 +37,7 @@ order per symbol at a time.
 | `strategy_sl_lookback` | 5 | 3-10 | Structure-stop window (extreme over N bars to touch bar) |
 | `strategy_sl_cap_pips` | 70 | 20-120 | Hard cap on risk distance (pips) |
 | `strategy_tp_rr` | 2.0 | 1.5-3.0 | Take-profit as RR multiple of risk |
+| `strategy_be_atr_period` | 14 | 5-30 | ATR period for moving SL to breakeven after +1 ATR |
 | `strategy_entry_buffer_pips` | 0 | 0-5 | Extra buffer past the trigger (0 = +1 point) |
 | `strategy_pending_expiry_bars` | 3 | 1-10 | Cancel un-triggered pending after N bars |
 | `strategy_spread_pct_of_stop` | 15.0 | 5-50 | Block only if spread exceeds this % of stop distance |
@@ -109,3 +111,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v2 | 2026-06-25 | Rebuild from card | d3bc19ac-bde3-458d-94e9-384a2181794a |

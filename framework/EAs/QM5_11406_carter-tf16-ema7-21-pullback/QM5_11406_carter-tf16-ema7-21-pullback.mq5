@@ -70,6 +70,7 @@ input int    strategy_pullback_lookback   = 3;     // bars (shift 1..N) scanned 
 input int    strategy_sl_lookback         = 5;     // structure stop: extreme over N bars to touch bar
 input int    strategy_sl_cap_pips         = 70;    // P2 hard cap on risk distance (pips)
 input double strategy_tp_rr               = 2.0;   // take-profit = RR x risk distance
+input int    strategy_be_atr_period       = 14;    // move SL to BE after +1x ATR
 input int    strategy_entry_buffer_pips   = 0;     // extra buffer above/below trigger (0 = +1 point)
 input int    strategy_pending_expiry_bars = 3;     // cancel un-triggered pending after N bars
 input double strategy_spread_pct_of_stop  = 15.0;  // block only spread > this % of stop distance
@@ -119,6 +120,51 @@ int PendingOrderSide()
    return 0;
   }
 
+// Card-specific structure stop: extreme over `bars` closed bars starting at the
+// touch bar. The framework StopStructure helper is most-recent-window based, so
+// this bounded raw OHLC read is a documented structural exception.
+double StructureStopFromTouch(const QM_OrderType type, const int touch_shift, const int bars)
+  {
+   if(touch_shift < 1 || bars < 1)
+      return 0.0;
+
+   double extreme = QM_OrderTypeIsBuy(type) ? DBL_MAX : -DBL_MAX;
+   bool have_bar = false;
+   for(int s = touch_shift; s < touch_shift + bars; ++s)
+     {
+      const double value = QM_OrderTypeIsBuy(type)
+                           ? iLow(_Symbol, _Period, s)    // perf-allowed: bounded structure read
+                           : iHigh(_Symbol, _Period, s);  // perf-allowed: bounded structure read
+      if(value <= 0.0)
+         continue;
+
+      if(QM_OrderTypeIsBuy(type))
+        {
+         if(value < extreme)
+            extreme = value;
+        }
+      else
+        {
+         if(value > extreme)
+            extreme = value;
+        }
+      have_bar = true;
+     }
+
+   if(!have_bar)
+      return 0.0;
+   return QM_StopRulesNormalizePrice(_Symbol, extreme);
+  }
+
+int AtrTriggerPips()
+  {
+   const double atr_value = QM_ATR(_Symbol, _Period, strategy_be_atr_period, 1);
+   const double one_pip = QM_StopRulesPipsToPriceDistance(_Symbol, 1);
+   if(atr_value <= 0.0 || one_pip <= 0.0)
+      return 0;
+   return (int)MathMax(1.0, MathCeil(atr_value / one_pip));
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
@@ -151,6 +197,14 @@ bool Strategy_NoTradeFilter()
 // Caller guarantees QM_IsNewBar() == true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One position OR one pending order per symbol/magic — never stack.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -212,10 +266,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             // BUYSTOP must sit above the current ask, else broker rejects it.
             if(entry > ask)
               {
-               // Structure stop = lowest Low over sl_lookback bars ending at the
-               // touch bar (shifts touch .. touch+sl_lookback-1).
-               double sl = QM_StopStructure(_Symbol, QM_BUY, entry,
-                                            touch + strategy_sl_lookback - 1);
+                  // Structure stop = lowest Low over sl_lookback bars from the
+                  // touch bar (shifts touch .. touch+sl_lookback-1).
+                  double sl = StructureStopFromTouch(QM_BUY, touch, strategy_sl_lookback);
                if(sl > 0.0 && sl < entry)
                  {
                   // Cap risk distance at sl_cap_pips.
@@ -271,8 +324,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
             // SELLSTOP must sit below the current bid, else broker rejects it.
             if(entry > 0.0 && entry < bid)
               {
-               double sl = QM_StopStructure(_Symbol, QM_SELL, entry,
-                                            touch + strategy_sl_lookback - 1);
+               double sl = StructureStopFromTouch(QM_SELL, touch, strategy_sl_lookback);
                if(sl > entry)
                  {
                   const double cap_dist = QM_StopRulesPipsToPriceDistance(_Symbol,
@@ -306,6 +358,24 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // position management is needed. This runs per tick but is O(1)+cheap.
 void Strategy_ManageOpenPosition()
   {
+   const int be_trigger_pips = AtrTriggerPips();
+   if(be_trigger_pips > 0)
+     {
+      const int magic = QM_FrameworkMagic();
+      for(int i = PositionsTotal() - 1; i >= 0; --i)
+        {
+         const ulong ticket = PositionGetTicket(i);
+         if(ticket == 0 || !PositionSelectByTicket(ticket))
+            continue;
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+            continue;
+         if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+            continue;
+
+         QM_TM_MoveToBreakEven(ticket, be_trigger_pips, 0);
+        }
+     }
+
    const int side = PendingOrderSide();
    if(side == 0)
       return; // no pending order to police
