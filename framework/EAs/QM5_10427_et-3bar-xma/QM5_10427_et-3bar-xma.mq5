@@ -99,13 +99,6 @@ int Strategy_Hhmm(const datetime t)
    return dt.hour * 100 + dt.min;
   }
 
-int Strategy_DateKey(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 10000 + dt.mon * 100 + dt.day;
-  }
-
 bool Strategy_HhmmInWindow(const int hhmm, const int start_hhmm, const int end_hhmm)
   {
    if(start_hhmm < 0 || end_hhmm < 0)
@@ -185,8 +178,8 @@ bool Strategy_HasOurPendingOrder()
       if(OrderGetString(ORDER_SYMBOL) != _Symbol ||
          (int)OrderGetInteger(ORDER_MAGIC) != magic)
          continue;
-      const ENUM_ORDER_TYPE type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
-      if(type == ORDER_TYPE_BUY_STOP || type == ORDER_TYPE_SELL_STOP)
+      const ENUM_ORDER_TYPE otype = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(otype == ORDER_TYPE_BUY_STOP || otype == ORDER_TYPE_SELL_STOP)
          return true;
      }
    return false;
@@ -203,8 +196,8 @@ void Strategy_RemoveOurPendingOrders(const string reason)
       if(OrderGetString(ORDER_SYMBOL) != _Symbol ||
          (int)OrderGetInteger(ORDER_MAGIC) != magic)
          continue;
-      const ENUM_ORDER_TYPE type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
-      if(type == ORDER_TYPE_BUY_STOP || type == ORDER_TYPE_SELL_STOP)
+      const ENUM_ORDER_TYPE otype = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(otype == ORDER_TYPE_BUY_STOP || otype == ORDER_TYPE_SELL_STOP)
          QM_TM_RemovePendingOrder(ticket, reason);
      }
   }
@@ -237,40 +230,55 @@ bool Strategy_HasFilledTradeThisSession(const datetime t)
    return false;
   }
 
+// perf-allowed: bespoke 3-bar structural OHLC reads — no QM_* reader covers multi-bar shift
 double Strategy_HighestHigh3()
   {
-   return MathMax(iHigh(_Symbol, _Period, 1),
-                  MathMax(iHigh(_Symbol, _Period, 2), iHigh(_Symbol, _Period, 3)));
+   const double h1 = iHigh(_Symbol, _Period, 1); // perf-allowed
+   const double h2 = iHigh(_Symbol, _Period, 2); // perf-allowed
+   const double h3 = iHigh(_Symbol, _Period, 3); // perf-allowed
+   return MathMax(h1, MathMax(h2, h3));
   }
 
 double Strategy_LowestLow3()
   {
-   return MathMin(iLow(_Symbol, _Period, 1),
-                  MathMin(iLow(_Symbol, _Period, 2), iLow(_Symbol, _Period, 3)));
+   const double l1 = iLow(_Symbol, _Period, 1); // perf-allowed
+   const double l2 = iLow(_Symbol, _Period, 2); // perf-allowed
+   const double l3 = iLow(_Symbol, _Period, 3); // perf-allowed
+   return MathMin(l1, MathMin(l2, l3));
   }
 
 bool Strategy_Bullish3()
   {
-   return (iClose(_Symbol, _Period, 1) > iOpen(_Symbol, _Period, 1) &&
-           iClose(_Symbol, _Period, 2) > iOpen(_Symbol, _Period, 2) &&
-           iClose(_Symbol, _Period, 3) > iOpen(_Symbol, _Period, 3));
+   const double c1 = iClose(_Symbol, _Period, 1); // perf-allowed
+   const double o1 = iOpen(_Symbol, _Period, 1);  // perf-allowed
+   const double c2 = iClose(_Symbol, _Period, 2); // perf-allowed
+   const double o2 = iOpen(_Symbol, _Period, 2);  // perf-allowed
+   const double c3 = iClose(_Symbol, _Period, 3); // perf-allowed
+   const double o3 = iOpen(_Symbol, _Period, 3);  // perf-allowed
+   return (c1 > o1 && c2 > o2 && c3 > o3);
   }
 
 bool Strategy_Bearish3()
   {
-   return (iClose(_Symbol, _Period, 1) < iOpen(_Symbol, _Period, 1) &&
-           iClose(_Symbol, _Period, 2) < iOpen(_Symbol, _Period, 2) &&
-           iClose(_Symbol, _Period, 3) < iOpen(_Symbol, _Period, 3));
+   const double c1 = iClose(_Symbol, _Period, 1); // perf-allowed
+   const double o1 = iOpen(_Symbol, _Period, 1);  // perf-allowed
+   const double c2 = iClose(_Symbol, _Period, 2); // perf-allowed
+   const double o2 = iOpen(_Symbol, _Period, 2);  // perf-allowed
+   const double c3 = iClose(_Symbol, _Period, 3); // perf-allowed
+   const double o3 = iOpen(_Symbol, _Period, 3);  // perf-allowed
+   return (c1 < o1 && c2 < o2 && c3 < o3);
   }
 
 bool Strategy_PriorBodyFilter()
   {
-   const double high2 = iHigh(_Symbol, _Period, 2);
-   const double low2 = iLow(_Symbol, _Period, 2);
+   const double high2  = iHigh(_Symbol, _Period, 2);  // perf-allowed
+   const double low2   = iLow(_Symbol, _Period, 2);   // perf-allowed
+   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed
+   const double open2  = iOpen(_Symbol, _Period, 2);  // perf-allowed
    const double range2 = high2 - low2;
    if(range2 <= 0.0)
       return false;
-   const double body2 = MathAbs(iClose(_Symbol, _Period, 2) - iOpen(_Symbol, _Period, 2));
+   const double body2 = MathAbs(close2 - open2);
    return (body2 / range2 > strategy_body_range_min);
   }
 
@@ -316,16 +324,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Strategy_HasFilledTradeThisSession(now))
       return false;
 
-   if(Bars(_Symbol, _Period) < strategy_xma_period + 5)
+   const int bar_count = Bars(_Symbol, _Period); // perf-allowed: warmup guard
+   if(bar_count < strategy_xma_period + 5)
       return false;
    if(strategy_xma_period < 1 || strategy_atr_period < 1 ||
       strategy_max_range_atr_mult <= 0.0 || strategy_min_stop_atr_mult <= 0.0 ||
       strategy_body_range_min <= 0.0 || strategy_target_range_mult <= 0.0)
       return false;
 
-   const double high1 = iHigh(_Symbol, _Period, 1);
-   const double low1 = iLow(_Symbol, _Period, 1);
-   const double close1 = iClose(_Symbol, _Period, 1);
+   const double high1  = iHigh(_Symbol, _Period, 1);  // perf-allowed: single-bar read for DWX_ADVISORY_INVARIANT_6
+   const double low1   = iLow(_Symbol, _Period, 1);   // perf-allowed
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed
    if(high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0)
       return false;
    if(!Strategy_PriorBodyFilter())

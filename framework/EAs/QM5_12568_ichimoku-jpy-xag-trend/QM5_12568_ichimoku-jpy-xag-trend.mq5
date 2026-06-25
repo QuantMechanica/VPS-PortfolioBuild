@@ -103,8 +103,8 @@ bool Strategy_Midpoint(const ENUM_TIMEFRAMES tf,
    if(hi_shift < 0 || lo_shift < 0)
       return false;
 
-   const double high = iHigh(_Symbol, tf, hi_shift);
-   const double low = iLow(_Symbol, tf, lo_shift);
+   const double high = iHigh(_Symbol, tf, hi_shift); // perf-allowed: Ichimoku midpoint — no QM wrapper for iHighest/iLowest index reads
+   const double low = iLow(_Symbol, tf, lo_shift);  // perf-allowed: Ichimoku midpoint — no QM wrapper for iHighest/iLowest index reads
    if(high <= 0.0 || low <= 0.0 || high < low)
       return false;
 
@@ -137,7 +137,7 @@ bool Strategy_IchimokuSnapshot(const int card_shift,
    if(!Strategy_Midpoint(tf, strategy_senkou_b_period, mt5_shift, span_b))
       return false;
 
-   close_price = iClose(_Symbol, tf, mt5_shift);
+   close_price = iClose(_Symbol, tf, mt5_shift); // perf-allowed: closed-bar close read for Ichimoku cloud filter — no QM_Close helper
    return (close_price > 0.0);
   }
 

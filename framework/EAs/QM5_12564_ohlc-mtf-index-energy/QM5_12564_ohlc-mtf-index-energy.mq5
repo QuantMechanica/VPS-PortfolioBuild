@@ -37,6 +37,7 @@ input double strategy_take_profit_r           = 2.00;
 input int    strategy_role_reversal_bars      = 3;
 input int    strategy_pending_expiry_minutes  = 240;
 input int    strategy_day_blackout_minutes    = 30;
+input int    strategy_time_exit_h1_bars       = 40;
 
 void Strategy_ResetRequest(QM_EntryRequest &req)
   {
@@ -122,14 +123,17 @@ void Strategy_CancelOurPendingStops(const string reason)
      }
   }
 
+// Checks whether the prior resistance level at `level` was retested as support
+// within the last `strategy_role_reversal_bars` H1 bars.
+// Sets rr_low = the lowest low of bars that wicked below `level` but closed above it.
 bool Strategy_LongRoleReversal(const double level, double &rr_low)
   {
    rr_low = DBL_MAX;
    const int bars = MathMax(1, strategy_role_reversal_bars);
    for(int shift = 1; shift <= bars; ++shift)
      {
-      const double low = iLow(_Symbol, PERIOD_H1, shift);
-      const double close = iClose(_Symbol, PERIOD_H1, shift);
+      const double low   = iLow(_Symbol, PERIOD_H1, shift);    // perf-allowed — bespoke structural role-reversal scan, per-bar O(role_reversal_bars) max 3 bars, gated by QM_IsNewBar
+      const double close = iClose(_Symbol, PERIOD_H1, shift);  // perf-allowed — bespoke structural role-reversal scan, gated by QM_IsNewBar
       if(low <= 0.0 || close <= 0.0)
          return false;
       if(low <= level && close > level)
@@ -138,14 +142,16 @@ bool Strategy_LongRoleReversal(const double level, double &rr_low)
    return (rr_low < DBL_MAX);
   }
 
+// Checks whether the prior support level at `level` was retested as resistance
+// within the last `strategy_role_reversal_bars` H1 bars.
 bool Strategy_ShortRoleReversal(const double level, double &rr_high)
   {
    rr_high = -DBL_MAX;
    const int bars = MathMax(1, strategy_role_reversal_bars);
    for(int shift = 1; shift <= bars; ++shift)
      {
-      const double high = iHigh(_Symbol, PERIOD_H1, shift);
-      const double close = iClose(_Symbol, PERIOD_H1, shift);
+      const double high  = iHigh(_Symbol, PERIOD_H1, shift);   // perf-allowed — bespoke structural role-reversal scan, per-bar O(role_reversal_bars) max 3 bars, gated by QM_IsNewBar
+      const double close = iClose(_Symbol, PERIOD_H1, shift);  // perf-allowed — bespoke structural role-reversal scan, gated by QM_IsNewBar
       if(high <= 0.0 || close <= 0.0)
          return false;
       if(high >= level && close < level)
@@ -170,37 +176,44 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Strategy_HasOurOpenPosition())
       return false;
 
-   const double h1_high = iHigh(_Symbol, PERIOD_H1, 1);
-   const double h1_low = iLow(_Symbol, PERIOD_H1, 1);
-   const double h4_high = iHigh(_Symbol, PERIOD_H4, 1);
-   const double h4_low = iLow(_Symbol, PERIOD_H4, 1);
-   const double m5_close = iClose(_Symbol, PERIOD_M5, 1);
-   const double m30_close = iClose(_Symbol, PERIOD_M30, 1);
-   const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   // Read prior closed bars from multiple timeframes for structure analysis.
+   // Shift=1 reads the last fully-closed bar; all reads are inside QM_IsNewBar gate.
+   const double h1_high   = iHigh(_Symbol,  PERIOD_H1,  1);    // perf-allowed — bespoke MTF structural read, shift=1 closed bar, gated by QM_IsNewBar in OnTick
+   const double h1_low    = iLow(_Symbol,   PERIOD_H1,  1);    // perf-allowed — bespoke MTF structural read, shift=1 closed bar, gated by QM_IsNewBar in OnTick
+   const double h4_high   = iHigh(_Symbol,  PERIOD_H4,  1);    // perf-allowed — bespoke MTF structural read, shift=1 closed bar, gated by QM_IsNewBar in OnTick
+   const double h4_low    = iLow(_Symbol,   PERIOD_H4,  1);    // perf-allowed — bespoke MTF structural read, shift=1 closed bar, gated by QM_IsNewBar in OnTick
+   const double m5_close  = iClose(_Symbol, PERIOD_M5,  1);    // perf-allowed — bespoke MTF structural read, shift=1 closed bar, gated by QM_IsNewBar in OnTick
+   const double m30_close = iClose(_Symbol, PERIOD_M30, 1);    // perf-allowed — bespoke MTF structural read, shift=1 closed bar, gated by QM_IsNewBar in OnTick
+   const double atr       = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
+   const double point     = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+
    if(h1_high <= 0.0 || h1_low <= 0.0 || h4_high <= 0.0 || h4_low <= 0.0 ||
       m5_close <= 0.0 || m30_close <= 0.0 || atr <= 0.0 || point <= 0.0)
       return false;
 
+   // MTF structure: H1 range is inside an H4 breakout direction
    const bool bullish_structure = (h1_high > h4_high && h1_low > h4_low);
-   const bool bearish_structure = (h1_low < h4_low && h1_high < h4_high);
+   const bool bearish_structure = (h1_low  < h4_low  && h1_high < h4_high);
 
+   // If a pending stop already exists, check whether to cancel it
    if(Strategy_HasOurPendingStop())
      {
-      const bool opposite_for_pending = (bullish_structure && (m5_close > h4_high || m30_close > h4_high)) ||
-                                        (bearish_structure && (m5_close < h4_low || m30_close < h4_low));
-      if(opposite_for_pending)
+      const bool cancel_long  = bearish_structure && (m5_close < h4_low  || m30_close < h4_low);
+      const bool cancel_short = bullish_structure && (m5_close > h4_high || m30_close > h4_high);
+      if(cancel_long || cancel_short)
          Strategy_CancelOurPendingStops("opposite_structure");
       return false;
      }
 
-   const double offset = atr * strategy_entry_atr_offset_mult;
-   const double min_stop = atr * strategy_stop_min_atr_mult;
-   const double max_stop = atr * strategy_stop_max_atr_mult;
-   const double stop_level = (double)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL) * point;
+   const double offset    = atr * strategy_entry_atr_offset_mult;
+   const double min_stop  = atr * strategy_stop_min_atr_mult;
+   const double max_stop  = atr * strategy_stop_max_atr_mult;
+   const double stop_dist_min = (double)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL) * point;
+
    if(offset <= 0.0 || min_stop <= 0.0 || max_stop <= 0.0)
       return false;
 
+   // LONG: M5 or M30 close breaks above H4 high in a bullish-structure bar
    if(bullish_structure && (m5_close > h4_high || m30_close > h4_high))
      {
       double rr_low = 0.0;
@@ -208,8 +221,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
 
       const double entry = h4_high + offset;
-      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      if(ask <= 0.0 || entry <= ask + stop_level)
+      const double ask   = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(ask <= 0.0 || entry <= ask + stop_dist_min)
          return false;
 
       const double structural_dist = entry - rr_low;
@@ -217,15 +230,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
 
       const double stop_dist = MathMin(structural_dist, max_stop);
-      req.type = QM_BUY_STOP;
-      req.price = NormalizeDouble(entry, _Digits);
-      req.sl = NormalizeDouble(entry - stop_dist, _Digits);
-      req.tp = NormalizeDouble(entry + stop_dist * strategy_take_profit_r, _Digits);
-      req.reason = "QM5_10440_LONG_MTF_STRUCTURE";
+      req.type               = QM_BUY_STOP;
+      req.price              = NormalizeDouble(entry,                             _Digits);
+      req.sl                 = NormalizeDouble(entry - stop_dist,                 _Digits);
+      req.tp                 = NormalizeDouble(entry + stop_dist * strategy_take_profit_r, _Digits);
+      req.reason             = "MTF_OHLC_LONG_STRUCTURE";
       req.expiration_seconds = MathMax(1, strategy_pending_expiry_minutes) * 60;
       return true;
      }
 
+   // SHORT: M5 or M30 close breaks below H4 low in a bearish-structure bar
    if(bearish_structure && (m5_close < h4_low || m30_close < h4_low))
      {
       double rr_high = 0.0;
@@ -233,8 +247,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
 
       const double entry = h4_low - offset;
-      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      if(bid <= 0.0 || entry >= bid - stop_level)
+      const double bid   = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(bid <= 0.0 || entry >= bid - stop_dist_min)
          return false;
 
       const double structural_dist = rr_high - entry;
@@ -242,11 +256,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
 
       const double stop_dist = MathMin(structural_dist, max_stop);
-      req.type = QM_SELL_STOP;
-      req.price = NormalizeDouble(entry, _Digits);
-      req.sl = NormalizeDouble(entry + stop_dist, _Digits);
-      req.tp = NormalizeDouble(entry - stop_dist * strategy_take_profit_r, _Digits);
-      req.reason = "QM5_10440_SHORT_MTF_STRUCTURE";
+      req.type               = QM_SELL_STOP;
+      req.price              = NormalizeDouble(entry,                             _Digits);
+      req.sl                 = NormalizeDouble(entry + stop_dist,                 _Digits);
+      req.tp                 = NormalizeDouble(entry - stop_dist * strategy_take_profit_r, _Digits);
+      req.reason             = "MTF_OHLC_SHORT_STRUCTURE";
       req.expiration_seconds = MathMax(1, strategy_pending_expiry_minutes) * 60;
       return true;
      }
@@ -256,10 +270,33 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
   {
+   // No trailing stop on this strategy (exit is TP, SL, or time exit via ExitSignal).
   }
 
 bool Strategy_ExitSignal()
   {
+   // Time exit: close after strategy_time_exit_h1_bars H1 bars have elapsed since open.
+   const int max_bars = MathMax(1, strategy_time_exit_h1_bars);
+   const int magic    = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const datetime open_time   = (datetime)PositionGetInteger(POSITION_TIME);
+      const datetime broker_now  = TimeCurrent();
+      const int bars_elapsed     = (int)((broker_now - open_time) / (PeriodSeconds(PERIOD_H1)));
+      if(bars_elapsed >= max_bars)
+         return true;
+     }
    return false;
   }
 
@@ -288,7 +325,7 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10440_mql5-ohlc-mtf\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12564_ohlc-mtf-index-energy\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -334,7 +371,7 @@ void OnTick()
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+         QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
         }
      }
 
