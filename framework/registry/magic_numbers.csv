@@ -11210,11 +11210,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11500,langer-engulfing-w1-position,3,AUDUSD.DWX,115000003,2026-06-20,Development,active
 11500,langer-engulfing-w1-position,4,USDCAD.DWX,115000004,2026-06-20,Development,active
 11500,langer-engulfing-w1-position,5,EURJPY.DWX,115000005,2026-06-20,Development,active
-11501,langer-engulfing-d1-swing,0,EURUSD.DWX,115010000,2026-06-18,Claude,reserved
-11501,langer-engulfing-d1-swing,1,GBPUSD.DWX,115010001,2026-06-18,Claude,reserved
-11501,langer-engulfing-d1-swing,2,USDJPY.DWX,115010002,2026-06-18,Claude,reserved
-11501,langer-engulfing-d1-swing,3,AUDUSD.DWX,115010003,2026-06-18,Claude,reserved
-11501,langer-engulfing-d1-swing,4,USDCAD.DWX,115010004,2026-06-18,Claude,reserved
+11501,langer-engulfing-d1-swing,0,EURUSD.DWX,115010000,2026-06-18,Development,active
+11501,langer-engulfing-d1-swing,1,GBPUSD.DWX,115010001,2026-06-18,Development,active
+11501,langer-engulfing-d1-swing,2,USDJPY.DWX,115010002,2026-06-18,Development,active
+11501,langer-engulfing-d1-swing,3,AUDUSD.DWX,115010003,2026-06-18,Development,active
+11501,langer-engulfing-d1-swing,4,USDCAD.DWX,115010004,2026-06-18,Development,active
 11503,goodwin-outside-daily-bar-d1,0,EURUSD.DWX,115030000,2026-06-18,Claude,reserved
 11503,goodwin-outside-daily-bar-d1,1,GBPUSD.DWX,115030001,2026-06-18,Claude,reserved
 11503,goodwin-outside-daily-bar-d1,2,AUDUSD.DWX,115030002,2026-06-18,Claude,reserved
@@ -13514,3 +13514,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 2079,williams-ultimate-oscillator-h4,7,GDAXI.DWX,20790007,2026-06-26,Development,active
 2079,williams-ultimate-oscillator-h4,8,UK100.DWX,20790008,2026-06-26,Development,active
 2079,williams-ultimate-oscillator-h4,9,SP500.DWX,20790009,2026-06-26,Development,active
+9266,mql5-fractal-chain,0,EURUSD.DWX,92660000,2026-06-26,Development,active
+9266,mql5-fractal-chain,1,GBPJPY.DWX,92660001,2026-06-26,Development,active
+9266,mql5-fractal-chain,2,GDAXI.DWX,92660002,2026-06-26,Development,active
