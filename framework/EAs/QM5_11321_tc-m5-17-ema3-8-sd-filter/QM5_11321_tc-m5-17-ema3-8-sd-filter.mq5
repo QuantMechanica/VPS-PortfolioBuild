@@ -110,50 +110,6 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
-double Strategy_StdDevFloor(const bool strong_floor)
-  {
-   if(StringFind(_Symbol, "JPY") >= 0)
-      return strong_floor ? 0.20 : 0.10;
-   if(StringFind(_Symbol, "AUD") >= 0 || StringFind(_Symbol, "NZD") >= 0)
-      return strong_floor ? 0.0010 : 0.0005;
-   return strong_floor ? 0.020 : 0.010;
-  }
-
-bool Strategy_StdDevAllowsTrade()
-  {
-   const double stddev = QM_StdDev(_Symbol, _Period, strategy_stddev_period, 1);
-   if(stddev <= 0.0)
-      return false;
-   const double floor = Strategy_StdDevFloor(strategy_stddev_strong_only);
-   return (stddev >= floor);
-  }
-
-double Strategy_SwingStop(const QM_OrderType type)
-  {
-   if(strategy_swing_lookback <= 0)
-      return 0.0;
-
-   double level = 0.0;
-   for(int shift = 2; shift <= strategy_swing_lookback + 1; ++shift)
-     {
-      // perf-allowed: bounded 10-bar structure stop on closed bars, excluding signal bar.
-      const double low = iLow(_Symbol, _Period, shift);
-      const double high = iHigh(_Symbol, _Period, shift);
-      if(low <= 0.0 || high <= 0.0)
-         continue;
-      if(level <= 0.0)
-         level = QM_OrderTypeIsBuy(type) ? low : high;
-      else if(QM_OrderTypeIsBuy(type) && low < level)
-         level = low;
-      else if(!QM_OrderTypeIsBuy(type) && high > level)
-         level = high;
-     }
-
-   if(level <= 0.0)
-      return 0.0;
-   return QM_StopRulesNormalizePrice(_Symbol, level);
-  }
-
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -208,12 +164,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
    if(stoch_k1 <= 0.0 || stoch_d1 <= 0.0 || stoch_k2 <= 0.0 || stoch_d2 <= 0.0)
       return false;
-   if(!Strategy_StdDevAllowsTrade())
+   const double stddev = QM_StdDev(_Symbol, _Period, strategy_stddev_period, 1);
+   if(stddev <= 0.0)
       return false;
 
-   // perf-allowed: single closed-bar high/low read for SAR candle-position test.
-   const double signal_low = iLow(_Symbol, _Period, 1);
-   const double signal_high = iHigh(_Symbol, _Period, 1);
+   double stddev_floor = strategy_stddev_strong_only ? 0.020 : 0.010;
+   if(StringFind(_Symbol, "JPY") >= 0)
+      stddev_floor = strategy_stddev_strong_only ? 0.20 : 0.10;
+   else if(StringFind(_Symbol, "AUD") >= 0 || StringFind(_Symbol, "NZD") >= 0)
+      stddev_floor = strategy_stddev_strong_only ? 0.0010 : 0.0005;
+   if(stddev < stddev_floor)
+      return false;
+
+   const double signal_low = iLow(_Symbol, _Period, 1); // perf-allowed: single closed-bar low for SAR candle-position test.
+   const double signal_high = iHigh(_Symbol, _Period, 1); // perf-allowed: single closed-bar high for SAR candle-position test.
    if(signal_low <= 0.0 || signal_high <= 0.0)
       return false;
 
@@ -226,7 +190,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       stoch_cross_up)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      const double sl = Strategy_SwingStop(QM_BUY);
+      double swing_low = 0.0;
+      for(int shift = 2; shift <= strategy_swing_lookback + 1; ++shift)
+        {
+         const double low = iLow(_Symbol, _Period, shift); // perf-allowed: bounded structure stop on closed bars, excluding signal bar.
+         if(low <= 0.0)
+            continue;
+         if(swing_low <= 0.0 || low < swing_low)
+            swing_low = low;
+        }
+      const double sl = QM_StopRulesNormalizePrice(_Symbol, swing_low);
       if(entry <= 0.0 || sl <= 0.0 || sl >= entry)
          return false;
       req.type = QM_BUY;
@@ -241,7 +214,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       stoch_cross_down)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      const double sl = Strategy_SwingStop(QM_SELL);
+      double swing_high = 0.0;
+      for(int shift = 2; shift <= strategy_swing_lookback + 1; ++shift)
+        {
+         const double high = iHigh(_Symbol, _Period, shift); // perf-allowed: bounded structure stop on closed bars, excluding signal bar.
+         if(high <= 0.0)
+            continue;
+         if(swing_high <= 0.0 || high > swing_high)
+            swing_high = high;
+        }
+      const double sl = QM_StopRulesNormalizePrice(_Symbol, swing_high);
       if(entry <= 0.0 || sl <= 0.0 || sl <= entry)
          return false;
       req.type = QM_SELL;
