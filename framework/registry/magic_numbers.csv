@@ -12103,10 +12103,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11853,wpr-ema50-pullback-h1,4,USDCAD.DWX,118530004,2026-06-18,Claude,reserved
 11865,ema5-15-60-pullback-h1,0,EURUSD.DWX,118650000,2026-06-18,Claude,reserved
 11865,ema5-15-60-pullback-h1,1,GBPUSD.DWX,118650001,2026-06-18,Claude,reserved
-11870,dead-time-range-fade,0,EURUSD.DWX,118700000,2026-06-18,Claude,reserved
-11870,dead-time-range-fade,1,GBPUSD.DWX,118700001,2026-06-18,Claude,reserved
-11870,dead-time-range-fade,2,USDJPY.DWX,118700002,2026-06-18,Claude,reserved
-11870,dead-time-range-fade,3,AUDUSD.DWX,118700003,2026-06-18,Claude,reserved
+11870,dead-time-range-fade,0,EURUSD.DWX,118700000,2026-06-18,Claude,active
+11870,dead-time-range-fade,1,GBPUSD.DWX,118700001,2026-06-18,Claude,active
+11870,dead-time-range-fade,2,USDJPY.DWX,118700002,2026-06-18,Claude,active
+11870,dead-time-range-fade,3,AUDUSD.DWX,118700003,2026-06-18,Claude,active
 11871,sma5-20-cross-m15-scalp,0,EURUSD.DWX,118710000,2026-06-20,Development,active
 11871,sma5-20-cross-m15-scalp,1,GBPUSD.DWX,118710001,2026-06-20,Development,active
 11871,sma5-20-cross-m15-scalp,2,USDJPY.DWX,118710002,2026-06-20,Development,active
@@ -13430,3 +13430,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9931,bandy-turn-of-month-overlay-index,0,SP500.DWX,99310000,2026-06-25,Development,active
 9931,bandy-turn-of-month-overlay-index,1,NDX.DWX,99310001,2026-06-25,Development,active
 9931,bandy-turn-of-month-overlay-index,2,WS30.DWX,99310002,2026-06-25,Development,active
+9287,mql5-gator-ad-flip,0,GBPJPY.DWX,92870000,2026-06-25,Development,active
+9287,mql5-gator-ad-flip,1,XAUUSD.DWX,92870001,2026-06-25,Development,active
+9287,mql5-gator-ad-flip,2,GDAXI.DWX,92870002,2026-06-25,Development,active
+9948,bandy-d1-setup-h1-trigger-mr-index,0,SP500.DWX,99480000,2026-06-25,Development,active
+9948,bandy-d1-setup-h1-trigger-mr-index,1,NDX.DWX,99480001,2026-06-25,Development,active
+9948,bandy-d1-setup-h1-trigger-mr-index,2,WS30.DWX,99480002,2026-06-25,Development,active
