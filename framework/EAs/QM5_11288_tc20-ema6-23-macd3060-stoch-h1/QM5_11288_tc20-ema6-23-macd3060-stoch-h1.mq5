@@ -26,7 +26,8 @@
 //   CONFIRM — Stochastic(5,3,3) crossed in the trade direction within
 //             strategy_stoch_cross_lookback closed bars.
 //
-//   Stop  : fixed pips (card 20-30; default 25), pip-scale-correct.
+//   Stop  : ATR(14) x 1.0 for P2 by default; fixed 25-pip stop remains exposed
+//           as the card's 20-30 pip fixed-stop variant.
 //   Take  : fixed pips (card 50-60; default 55), pip-scale-correct.
 //   Defensive exit: reverse EMA(6/23) cross closes the open position.
 //   Spread guard : block only a genuinely wide spread > cap pips
@@ -69,38 +70,13 @@ input int    strategy_macd_signal        = 30;    // MACD signal EMA (zero-line 
 input int    strategy_stoch_k            = 5;     // Stochastic %K period
 input int    strategy_stoch_d            = 3;     // Stochastic %D period
 input int    strategy_stoch_slowing      = 3;     // Stochastic slowing
+input bool   strategy_use_atr_stop       = true;  // P2 stop: ATR(14) x 1.0
+input int    strategy_atr_period         = 14;    // ATR period for P2 stop
+input double strategy_atr_mult           = 1.0;   // ATR multiple for P2 stop
 input double strategy_sl_pips            = 25.0;  // fixed stop distance (pips) — card 20-30
 input double strategy_tp_pips            = 55.0;  // fixed take distance (pips) — card 50-60
 input double strategy_spread_cap_pips    = 20.0;  // skip only a genuinely wide spread (card cap)
 input int    strategy_stoch_cross_lookback = 3;   // recent-bar window for card's Stoch cross confirmation
-
-bool Strategy_StochCrossed(const int direction)
-  {
-   const int lookback = (strategy_stoch_cross_lookback < 1) ? 1 : strategy_stoch_cross_lookback;
-   for(int shift = 1; shift <= lookback; ++shift)
-     {
-      const double k_now  = QM_Stoch_K(_Symbol, _Period,
-                                       strategy_stoch_k, strategy_stoch_d,
-                                       strategy_stoch_slowing, shift);
-      const double d_now  = QM_Stoch_D(_Symbol, _Period,
-                                       strategy_stoch_k, strategy_stoch_d,
-                                       strategy_stoch_slowing, shift);
-      const double k_prev = QM_Stoch_K(_Symbol, _Period,
-                                       strategy_stoch_k, strategy_stoch_d,
-                                       strategy_stoch_slowing, shift + 1);
-      const double d_prev = QM_Stoch_D(_Symbol, _Period,
-                                       strategy_stoch_k, strategy_stoch_d,
-                                       strategy_stoch_slowing, shift + 1);
-      if(k_now <= 0.0 && d_now <= 0.0 && k_prev <= 0.0 && d_prev <= 0.0)
-         continue;
-
-      if(direction > 0 && k_prev <= d_prev && k_now > d_now)
-         return true;
-      if(direction < 0 && k_prev >= d_prev && k_now < d_now)
-         return true;
-     }
-   return false;
-  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -116,7 +92,7 @@ bool Strategy_NoTradeFilter()
       return false; // no valid quote yet — do not block on it
 
    const double spread = ask - bid;
-   if(spread <= 0.0)
+   if(!(spread > 0.0))
       return false; // zero / negative modeled spread on .DWX — fail-OPEN
 
    const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
@@ -160,24 +136,56 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // history is warm — treat 0.0 as a neutral boundary (passes both sides).
 
    QM_OrderType dir;
+   int direction = 0;
    if(cross_up)
      {
       // LONG: MACD not bearish (>=0) AND stochastic crossed upward recently.
       if(macd_main < 0.0)
          return false;
-      if(!Strategy_StochCrossed(1))
-         return false;
       dir = QM_BUY;
+      direction = 1;
      }
    else
      {
       // SHORT: MACD not bullish (<=0) AND stochastic crossed downward recently.
       if(macd_main > 0.0)
          return false;
-      if(!Strategy_StochCrossed(-1))
-         return false;
       dir = QM_SELL;
+      direction = -1;
      }
+
+   bool stoch_confirms = false;
+   const int lookback = (strategy_stoch_cross_lookback < 1) ? 1 : strategy_stoch_cross_lookback;
+   for(int shift = 1; shift <= lookback; ++shift)
+     {
+      const double k_now  = QM_Stoch_K(_Symbol, _Period,
+                                       strategy_stoch_k, strategy_stoch_d,
+                                       strategy_stoch_slowing, shift);
+      const double d_now  = QM_Stoch_D(_Symbol, _Period,
+                                       strategy_stoch_k, strategy_stoch_d,
+                                       strategy_stoch_slowing, shift);
+      const double k_prev = QM_Stoch_K(_Symbol, _Period,
+                                       strategy_stoch_k, strategy_stoch_d,
+                                       strategy_stoch_slowing, shift + 1);
+      const double d_prev = QM_Stoch_D(_Symbol, _Period,
+                                       strategy_stoch_k, strategy_stoch_d,
+                                       strategy_stoch_slowing, shift + 1);
+      if(k_now <= 0.0 && d_now <= 0.0 && k_prev <= 0.0 && d_prev <= 0.0)
+         continue;
+
+      if(direction > 0 && k_prev <= d_prev && k_now > d_now)
+        {
+         stoch_confirms = true;
+         break;
+        }
+      if(direction < 0 && k_prev >= d_prev && k_now < d_now)
+        {
+         stoch_confirms = true;
+         break;
+        }
+     }
+   if(!stoch_confirms)
+      return false;
 
    // --- Build the entry. Framework sizes lots (no lots field). ---
    const double entry = (dir == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
@@ -185,7 +193,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry <= 0.0)
       return false;
 
-   const double sl = QM_StopFixedPips(_Symbol, dir, entry, (int)strategy_sl_pips);
+   const double sl = strategy_use_atr_stop
+                     ? QM_StopATR(_Symbol, dir, entry, strategy_atr_period, strategy_atr_mult)
+                     : QM_StopFixedPips(_Symbol, dir, entry, (int)strategy_sl_pips);
    const double tp = QM_TakeFixedPips(_Symbol, dir, entry, (int)strategy_tp_pips);
    if(sl <= 0.0 || tp <= 0.0)
       return false;

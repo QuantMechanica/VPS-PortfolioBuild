@@ -23,7 +23,7 @@
 //     LONG : MACD main > signal  AND  MACD main rising   (main@1 > main@2)
 //     SHORT: MACD main < signal  AND  MACD main falling  (main@1 < main@2)
 //   Stop  : fixed pips (scale-correct via QM_StopFixedPips).
-//   Take  : RR multiple of the stop distance (QM_TakeRR).
+//   Take  : fixed pips, pair-specific per Carter's specification.
 //   No-Friday-entry filter (card "No Friday entry").
 //   Spread guard: only a genuinely wide spread blocks (fail-open on .DWX zero
 //                 modeled spread).
@@ -63,30 +63,40 @@ input int    strategy_macd_fast         = 12;     // MACD fast EMA
 input int    strategy_macd_slow         = 26;     // MACD slow EMA
 input int    strategy_macd_signal       = 9;      // MACD signal SMA
 input int    strategy_sl_pips           = 15;     // stop distance in pips (P2 cap)
-input double strategy_tp_rr             = 0.667;  // take = RR * stop (10/15 pips ~= 0.667R)
+input int    strategy_eurusd_audusd_tp_pips = 8;  // EURUSD/AUDUSD TP in pips
+input int    strategy_gbpusd_tp_pips     = 10;    // GBPUSD TP in pips
+input int    strategy_default_tp_pips    = 8;     // fallback TP for portable FX extensions
 input bool   strategy_no_friday_entry   = true;   // card: no Friday entry
-input double strategy_spread_pct_of_stop = 25.0;  // skip if spread > this % of stop distance
+input int    strategy_spread_cap_pips    = 15;    // card spread cap in pips
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only — entry logic is on the closed-bar
+// Cheap O(1) per-tick gate. Time + spread only; entry logic is on the closed-bar
 // path in Strategy_EntrySignal. Fail-open on .DWX zero modeled spread.
 bool Strategy_NoTradeFilter()
   {
+   if(strategy_no_friday_entry)
+     {
+      MqlDateTime dt;
+      TimeToStruct(TimeCurrent(), dt);
+      if(dt.day_of_week == 5)
+         return true;
+     }
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
-   if(stop_distance <= 0.0)
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(spread_cap <= 0.0)
       return false;
 
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread > spread_cap)
       return true;
 
    return false;
@@ -98,15 +108,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
-
-   // No-Friday-entry filter (card).
-   if(strategy_no_friday_entry)
-     {
-      MqlDateTime dt;
-      TimeToStruct(TimeCurrent(), dt);
-      if(dt.day_of_week == 5) // Friday
-         return false;
-     }
 
    // --- CCI trigger EVENT (one fresh cross per bar) ---
    const double cci_now  = QM_CCI(_Symbol, _Period, strategy_cci_period, 1);
@@ -150,7 +151,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double sl = QM_StopFixedPips(_Symbol, dir, entry, strategy_sl_pips);
    if(sl <= 0.0)
       return false;
-   const double tp = QM_TakeRR(_Symbol, dir, entry, sl, strategy_tp_rr);
+
+   int tp_pips = strategy_default_tp_pips;
+   if(_Symbol == "EURUSD.DWX" || _Symbol == "AUDUSD.DWX")
+      tp_pips = strategy_eurusd_audusd_tp_pips;
+   else if(_Symbol == "GBPUSD.DWX")
+      tp_pips = strategy_gbpusd_tp_pips;
+   if(tp_pips <= 0)
+      return false;
+
+   const double tp = QM_TakeFixedPips(_Symbol, dir, entry, tp_pips);
    if(tp <= 0.0)
       return false;
 
@@ -159,6 +169,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = (dir == QM_BUY) ? "cci100_macd_long" : "cci100_macd_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 

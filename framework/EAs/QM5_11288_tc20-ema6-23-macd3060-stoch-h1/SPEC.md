@@ -15,8 +15,9 @@ Trading Strategies", Strategy #3. The EMA(6/23) crossover is the primary trigger
 long when EMA(6) crosses above EMA(23), short when EMA(6) crosses below EMA(23).
 MACD(30,60,30) confirms trend direction with the main line above or below zero,
 and Stochastic(5,3,3) must have crossed in the trade direction within the recent
-closed-bar confirmation window. Stop is a fixed 25 pips, take-profit a fixed 55
-pips. A reverse EMA(6/23) cross closes the open position early.
+closed-bar confirmation window. P2 uses an ATR(14) x 1.0 stop by default, with
+the card's fixed 25-pip stop retained as an input variant; take-profit is a fixed
+55 pips. A reverse EMA(6/23) cross closes the open position early.
 
 ---
 
@@ -32,6 +33,9 @@ pips. A reverse EMA(6/23) cross closes the open position early.
 | `strategy_stoch_k` | 5 | 3-14 | Stochastic %K period |
 | `strategy_stoch_d` | 3 | 2-5 | Stochastic %D period |
 | `strategy_stoch_slowing` | 3 | 1-5 | Stochastic slowing |
+| `strategy_use_atr_stop` | true | true/false | Use the card's P2 ATR(14) x 1.0 stop instead of fixed pips |
+| `strategy_atr_period` | 14 | 5-50 | ATR period for the P2 stop |
+| `strategy_atr_mult` | 1.0 | 0.5-5.0 | ATR multiple for the P2 stop |
 | `strategy_sl_pips` | 25.0 | 20-30 | Fixed stop-loss distance in pips |
 | `strategy_tp_pips` | 55.0 | 50-60 | Fixed take-profit distance in pips |
 | `strategy_spread_cap_pips` | 20.0 | 5-40 | Block only a genuinely wide spread (fail-open on zero) |
@@ -69,7 +73,7 @@ pips. A reverse EMA(6/23) cross closes the open position early.
 | Trades / year / symbol | `~100` |
 | Trade frequency | `not separately specified in card frontmatter; inferred frequent H1` |
 | Typical hold time | `hours (intraday-to-multi-bar H1)` |
-| Expected drawdown profile | `moderate; fixed 25-pip stop caps per-trade loss` |
+| Expected drawdown profile | `moderate; ATR(14) x 1.0 or fixed 25-pip stop caps per-trade loss` |
 | Regime preference | `trend` |
 | Win rate target (qualitative) | `medium` |
 
