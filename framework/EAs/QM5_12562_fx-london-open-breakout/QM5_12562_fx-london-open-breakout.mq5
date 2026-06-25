@@ -42,10 +42,10 @@ input group "Strategy"
 input int    strategy_or_bars             = 4;     // Number of M15 bars for Opening Range
 input int    strategy_entry_window_h      = 3;     // Entry window hours after OR forms
 input int    strategy_atr_period          = 14;    // ATR period (M15 and D1)
-input double strategy_bb_atr_mult         = 0.5;   // Breakout bar range >= mult * ATR(14,M15)
+input double strategy_bb_atr_mult         = 0.2;   // Breakout bar range >= mult * ATR(14,M15)
 input double strategy_or_width_atr_mult   = 0.6;   // OR width >= mult * ATR(14,D1)/4
 input double strategy_sl_buffer_atr       = 0.2;   // SL buffer = mult * ATR(14,M15) beyond OR extreme
-input double strategy_sl_cap_atr          = 1.6;   // Max SL distance in ATR(14,M15) multiples
+input double strategy_sl_cap_atr          = 3.0;   // Max SL distance in ATR(14,M15) multiples
 input double strategy_tp_rr               = 2.0;   // Take profit R-multiple
 input double strategy_be_r                = 1.0;   // Breakeven trigger R-multiple
 input int    strategy_time_stop_bars      = 10;    // Exit if profit < 0.5R within N bars
@@ -273,7 +273,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    double sl_dist = MathAbs(entry_approx - sl_price);
    double sl_cap  = strategy_sl_cap_atr * atr_m15;
-   if(sl_dist > sl_cap) return false;  // oversized stop; skip
+   if(sl_dist > sl_cap) return false;
 
    // TP at 2R
    QM_OrderType otype = is_long ? QM_BUY : QM_SELL;
