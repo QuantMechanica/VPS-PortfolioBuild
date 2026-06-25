@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA computes the classic nine daily pivot levels from the prior completed D1 bar: S2, M1, S1, M2, P, M3, R1, M4, and R2. On each M5 closed bar it buys when the close is within the configured pip distance below a support pivot, M5 MACD histogram crosses above zero, and H1 MACD histogram is positive. It sells when the close is within the configured pip distance above a resistance pivot, M5 MACD histogram crosses below zero, and H1 MACD histogram is negative. Initial stop is the configured pip buffer beyond the triggering pivot with a 30-pip cap, take profit is the next pivot level in the trade direction, and discretionary exit occurs when close crosses EMA9 against the open position.
+The EA computes the classic nine daily pivot levels from the prior completed D1 bar: S2, M1, S1, M2, P, M3, R1, M4, and R2. On each M5 closed bar it buys when the close is within the configured pip distance above a support pivot, M5 MACD histogram crosses above zero, and H1 MACD histogram is positive. It sells when the close is within the configured pip distance below a resistance pivot, M5 MACD histogram crosses below zero, and H1 MACD histogram is negative. Initial stop is the configured pip buffer beyond the triggering pivot with a 30-pip cap, take profit is the next pivot level in the trade direction, and discretionary exit occurs when close crosses EMA9 against the open position.
 
 ---
 

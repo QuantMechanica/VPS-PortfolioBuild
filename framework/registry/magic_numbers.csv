@@ -11484,10 +11484,10 @@
 11634,fsr-double-stoch21-9-h1,1,GBPUSD.DWX,116340001,2026-06-20,Development,active
 11634,fsr-double-stoch21-9-h1,2,USDJPY.DWX,116340002,2026-06-20,Development,active
 11634,fsr-double-stoch21-9-h1,3,XAUUSD.DWX,116340003,2026-06-20,Development,active
-11635,fsr-adv6-ema20-40-adx-h4,0,EURUSD.DWX,116350000,2026-06-18,Claude,reserved
-11635,fsr-adv6-ema20-40-adx-h4,1,GBPUSD.DWX,116350001,2026-06-18,Claude,reserved
-11635,fsr-adv6-ema20-40-adx-h4,2,USDJPY.DWX,116350002,2026-06-18,Claude,reserved
-11635,fsr-adv6-ema20-40-adx-h4,3,XAUUSD.DWX,116350003,2026-06-18,Claude,reserved
+11635,fsr-adv6-ema20-40-adx-h4,0,EURUSD.DWX,116350000,2026-06-18,Claude,active
+11635,fsr-adv6-ema20-40-adx-h4,1,GBPUSD.DWX,116350001,2026-06-18,Claude,active
+11635,fsr-adv6-ema20-40-adx-h4,2,USDJPY.DWX,116350002,2026-06-18,Claude,active
+11635,fsr-adv6-ema20-40-adx-h4,3,XAUUSD.DWX,116350003,2026-06-18,Claude,active
 11636,fsr-ema7-21-adx14-macd-h1,0,EURUSD.DWX,116360000,2026-06-18,Claude,active
 11636,fsr-ema7-21-adx14-macd-h1,1,GBPUSD.DWX,116360001,2026-06-18,Claude,active
 11636,fsr-ema7-21-adx14-macd-h1,2,USDJPY.DWX,116360002,2026-06-18,Claude,active

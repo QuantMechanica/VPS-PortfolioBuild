@@ -135,7 +135,7 @@ double PipPriceDistance(const int pips)
    return QM_StopRulesPipsToPriceDistance(_Symbol, pips);
   }
 
-// Find the support pivot (index <= PV_P) nearest to `ref` within `tol` price
+// Find the support pivot (index <= PV_P) nearest below `ref` within `tol` price
 // distance. Returns the level price, or -1.0 if none. Sets out_idx.
 double NearestSupportWithin(const double ref, const double tol, int &out_idx)
   {
@@ -144,9 +144,9 @@ double NearestSupportWithin(const double ref, const double tol, int &out_idx)
    double best_dist = tol; // strict: must be within tol
    for(int i = PV_S2; i <= PV_P; ++i)
      {
-      if(ref > g_pivots[i])
+      if(ref < g_pivots[i])
          continue;
-      const double d = g_pivots[i] - ref;
+      const double d = ref - g_pivots[i];
       if(d <= best_dist)
         {
          best_dist = d;
@@ -157,7 +157,7 @@ double NearestSupportWithin(const double ref, const double tol, int &out_idx)
    return best;
   }
 
-// Find the resistance pivot (index >= PV_P) nearest to `ref` within `tol`.
+// Find the resistance pivot (index >= PV_P) nearest above `ref` within `tol`.
 double NearestResistanceWithin(const double ref, const double tol, int &out_idx)
   {
    out_idx = -1;
@@ -165,9 +165,9 @@ double NearestResistanceWithin(const double ref, const double tol, int &out_idx)
    double best_dist = tol;
    for(int i = PV_P; i <= PV_R2; ++i)
      {
-      if(ref < g_pivots[i])
+      if(ref > g_pivots[i])
          continue;
-      const double d = ref - g_pivots[i];
+      const double d = g_pivots[i] - ref;
       if(d <= best_dist)
         {
          best_dist = d;
