@@ -25,10 +25,9 @@
 //   Stop         : QM_StopATR(atr_period, sl_atr_mult). Source -5% retained as a
 //                  disaster cap via the framework's fixed-fraction stop; the ATR
 //                  stop is the operative MT5 baseline.
-//   Take profit  : ATR-multiple TP. The source ROI ladder (5% / 10%@30m /
-//                  7.5%@60m) is NON-MONOTONIC and not portable to a single MT5
-//                  TP; per the card's "normalize or disable" note it is replaced
-//                  by a clean monotonic ATR target. ADX exit + stop carry exits.
+//   Take profit  : none. The source ROI ladder (5% / 10%@30m / 7.5%@60m) is
+//                  NON-MONOTONIC and not portable to a single MT5 TP; per the
+//                  card's "normalize or disable" note it is disabled here.
 //   Spread guard : skip only a genuinely wide spread > spread_pct_of_stop of the
 //                  stop distance (fail-OPEN on .DWX zero modeled spread).
 //
@@ -66,10 +65,10 @@ input int    strategy_ema_long_period    = 21;      // slow EMA on M5 (source de
 input int    strategy_adx_period         = 14;      // ADX period on M5
 input double strategy_adx_exit_max       = 30.0;    // exit when ADX < this (source pos_entry_adx)
 input int    strategy_resample_sma_period = 50;     // SMA period on the H1 (resampled) series
-input int    strategy_atr_period         = 14;      // ATR period (stop / target)
+input int    strategy_atr_period         = 14;      // ATR period for stop
 input double strategy_sl_atr_mult        = 1.5;     // stop distance = mult * ATR (card baseline)
-input double strategy_tp_atr_mult        = 3.0;     // target distance = mult * ATR (monotonic ROI replacement)
-input double strategy_spread_pct_of_stop = 15.0;    // skip if spread > this % of stop distance
+input double strategy_spread_pct_of_stop = 6.0;     // skip if spread > this % of stop distance
+input int    strategy_warmup_bars        = 650;     // minimum M5 bars for H1 SMA stability
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -103,6 +102,17 @@ bool Strategy_NoTradeFilter()
 // Long/short symmetric entry. Caller guarantees QM_IsNewBar() == true (M5 close).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(Bars(_Symbol, _Period) < strategy_warmup_bars) // perf-allowed: O(1) warmup guard; no QM_Bars helper exists.
+      return false;
+
    // One open position per symbol/magic (no simultaneous long + short).
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -125,7 +135,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(h1_sma <= 0.0)
       return false;
 
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
+   // QM_SMA period=1 is the framework-pathed closed-bar close.
+   const double close1 = QM_SMA(_Symbol, _Period, 1, 1);
    if(close1 <= 0.0)
       return false;
 
@@ -142,13 +153,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(crossed_up && close1 > h1_sma)
      {
       const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr_value, strategy_sl_atr_mult);
-      const double tp = QM_TakeATRFromValue(_Symbol, QM_BUY, entry, atr_value, strategy_tp_atr_mult);
-      if(sl <= 0.0 || tp <= 0.0)
+      if(sl <= 0.0)
          return false;
       req.type   = QM_BUY;
       req.price  = 0.0;   // framework fills market price at send
       req.sl     = sl;
-      req.tp     = tp;
+      req.tp     = 0.0;   // source ROI ladder disabled per card note
       req.reason = "ft_freinforced_long";
       return true;
      }
@@ -157,13 +167,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(crossed_down && close1 < h1_sma)
      {
       const double sl = QM_StopATRFromValue(_Symbol, QM_SELL, entry, atr_value, strategy_sl_atr_mult);
-      const double tp = QM_TakeATRFromValue(_Symbol, QM_SELL, entry, atr_value, strategy_tp_atr_mult);
-      if(sl <= 0.0 || tp <= 0.0)
+      if(sl <= 0.0)
          return false;
       req.type   = QM_SELL;
       req.price  = 0.0;
       req.sl     = sl;
-      req.tp     = tp;
+      req.tp     = 0.0;   // source ROI ladder disabled per card note
       req.reason = "ft_freinforced_short";
       return true;
      }

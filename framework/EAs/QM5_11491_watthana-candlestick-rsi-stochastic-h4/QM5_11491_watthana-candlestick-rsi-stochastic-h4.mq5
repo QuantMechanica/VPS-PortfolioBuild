@@ -49,10 +49,13 @@ input int    strategy_spread_cap_pips     = 20;
 // every tick before the framework reaches management, exit, or entry logic.
 bool Strategy_NoTradeFilter()
   {
+   if(_Period != PERIOD_H4)
+      return true;
+
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false;
+      return true;
 
    const double spread = ask - bid;
    const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
