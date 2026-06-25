@@ -1,47 +1,146 @@
-# QM5_10304 narang-revert
+# QM5_10304_narang-revert — Strategy Spec
 
-## Strategy logic
+**EA ID:** QM5_10304
+**Slug:** `narang-revert`
+**Source:** `0f051e46-12b2-51f3-aad5-d6d8bd3e9b35` (see `strategy-seeds/sources/0f051e46-12b2-51f3-aad5-d6d8bd3e9b35/`)
+**Author of this spec:** auto-generated ex-post by gen_spec_md.py
+**Last revised:** 2026-06-25
 
-This EA implements the approved Narang Price Reversion Band Fade card. On each completed H4 bar it computes Bollinger Bands(20, 2.0), RSI(14), ATR(14), EMA(200), and ADX(14). It enters long when the close is below the lower Bollinger band, RSI is <= 30, ADX is <= 28, and the close is within 1.5 ATR of the EMA(200). It enters short on the symmetric upper-band condition with RSI >= 70. It holds at most one open position per magic number.
+---
 
-Long positions exit when the completed H4 close reaches or exceeds the Bollinger middle band, or after 12 H4 bars. Short positions exit when the completed H4 close reaches or falls below the Bollinger middle band, or after 12 H4 bars. Broker stop loss is placed at 1.8 ATR from entry. The EA does not average down, grid, trail, scale, or use adaptive parameters.
+## 1. Strategy Logic
 
-## Parameters
+Mechanical strategy implemented per the approved card
+`artifacts/cards_approved/QM5_10304_narang-revert.md`. See that card's body for
+the full entry/exit/stop/sizing rules; this SPEC summarises the
+implementation surface.
 
-| Input | Default | Range | Meaning |
-|---|---:|---|---|
-| `strategy_signal_tf` | `PERIOD_H4` | H4 expected | Signal timeframe. |
-| `strategy_bb_period` | 20 | > 1 | Bollinger lookback. |
-| `strategy_bb_deviation` | 2.0 | > 0 | Bollinger deviation multiplier. |
-| `strategy_rsi_period` | 14 | > 1 | RSI lookback. |
-| `strategy_rsi_long_level` | 30.0 | 0-100 | Long oversold threshold. |
-| `strategy_rsi_short_level` | 70.0 | 0-100 | Short overbought threshold. |
-| `strategy_atr_period` | 14 | > 0 | ATR lookback for stop and EMA distance. |
-| `strategy_atr_stop_mult` | 1.8 | > 0 | Initial ATR stop multiplier. |
-| `strategy_ema_period` | 200 | > 1 | Mean anchor EMA. |
-| `strategy_ema_atr_band` | 1.5 | > 0 | Maximum close-to-EMA distance in ATR units. |
-| `strategy_adx_period` | 14 | > 0 | ADX trend-filter lookback. |
-| `strategy_adx_max` | 28.0 | > 0 | Skip entries above this ADX. |
-| `strategy_max_hold_bars` | 12 | > 0 | Maximum H4 bars in trade. |
-| `strategy_warmup_bars` | 230 | > EMA period | Minimum available bars before trading. |
-| `strategy_max_spread_points` | 0 | >= 0 | Optional spread block; 0 leaves framework defaults. |
+Entry/exit logic is encoded in the five `Strategy_*` hooks in
+`QM5_10304_narang-revert.mq5`. Framework wiring (risk, magic, news, Friday close)
+is inherited from `QM_Common.mqh` and is not redocumented here.
 
-## Symbol universe
+---
 
-The approved card says the best initial universe is range-prone FX majors/crosses and selected indices. Build registration uses all available DWX forex symbols plus SP500.DWX, NDX.DWX, WS30.DWX, GDAXI.DWX, and UK100.DWX. Commodities and energy symbols are not registered for this EA because the card did not name them in its preferred initial universe.
+## 2. Parameters
 
-## Timeframe
+| Parameter | Default | Range | Meaning |
+|---|---|---|---|
+| `strategy_bb_period` | 20 | (see source) | (see strategy logic) |
+| `strategy_bb_deviation` | 2.0 | (see source) | (see strategy logic) |
+| `strategy_rsi_period` | 14 | (see source) | (see strategy logic) |
+| `strategy_rsi_long_level` | 30.0 | (see source) | (see strategy logic) |
+| `strategy_rsi_short_level` | 70.0 | (see source) | (see strategy logic) |
+| `strategy_atr_period` | 14 | (see source) | (see strategy logic) |
+| `strategy_atr_stop_mult` | 1.8 | (see source) | (see strategy logic) |
+| `strategy_ema_period` | 200 | (see source) | (see strategy logic) |
+| `strategy_ema_atr_band` | 1.5 | (see source) | (see strategy logic) |
+| `strategy_adx_period` | 14 | (see source) | (see strategy logic) |
+| `strategy_adx_max` | 28.0 | (see source) | (see strategy logic) |
+| `strategy_max_hold_bars` | 12 | (see source) | (see strategy logic) |
+| `strategy_warmup_bars` | 230 | (see source) | (see strategy logic) |
 
-Base timeframe is H4. Entries, middle-band exits, ATR stops, EMA distance, RSI, Bollinger, and ADX are all read from H4 by default.
+> Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
+> qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
+> qm_friday_close_*) are documented in
+> `framework/V5_FRAMEWORK_DESIGN.md` — not re-listed here.
 
-## Expected behaviour
+---
 
-The card estimates about 35 trades per year per symbol. The strategy is a mean-reversion profile: it seeks stretched prices in non-strong-trend regimes and exits on reversion to the Bollinger middle band or after a 12-bar time stop. Tail risk is persistent trend continuation, mitigated by the ADX filter and ATR stop.
+## 3. Symbol Universe
 
-## Source citation
+**Designed for:**
+- `AUDCAD.DWX` — registered in magic_numbers.csv for this EA
+- `AUDCHF.DWX` — registered in magic_numbers.csv for this EA
+- `AUDJPY.DWX` — registered in magic_numbers.csv for this EA
+- `AUDNZD.DWX` — registered in magic_numbers.csv for this EA
+- `AUDUSD.DWX` — registered in magic_numbers.csv for this EA
+- `CADCHF.DWX` — registered in magic_numbers.csv for this EA
+- `CADJPY.DWX` — registered in magic_numbers.csv for this EA
+- `CHFJPY.DWX` — registered in magic_numbers.csv for this EA
+- `EURAUD.DWX` — registered in magic_numbers.csv for this EA
+- `EURCAD.DWX` — registered in magic_numbers.csv for this EA
+- `EURCHF.DWX` — registered in magic_numbers.csv for this EA
+- `EURGBP.DWX` — registered in magic_numbers.csv for this EA
+- `EURJPY.DWX` — registered in magic_numbers.csv for this EA
+- `EURNZD.DWX` — registered in magic_numbers.csv for this EA
+- `EURUSD.DWX` — registered in magic_numbers.csv for this EA
+- `GBPAUD.DWX` — registered in magic_numbers.csv for this EA
+- `GBPCAD.DWX` — registered in magic_numbers.csv for this EA
+- `GBPCHF.DWX` — registered in magic_numbers.csv for this EA
+- `GBPJPY.DWX` — registered in magic_numbers.csv for this EA
+- `GBPNZD.DWX` — registered in magic_numbers.csv for this EA
+- `GBPUSD.DWX` — registered in magic_numbers.csv for this EA
+- `GDAXI.DWX` — registered in magic_numbers.csv for this EA
+- `NDX.DWX` — registered in magic_numbers.csv for this EA
+- `NZDCAD.DWX` — registered in magic_numbers.csv for this EA
+- `NZDCHF.DWX` — registered in magic_numbers.csv for this EA
+- `NZDJPY.DWX` — registered in magic_numbers.csv for this EA
+- `NZDUSD.DWX` — registered in magic_numbers.csv for this EA
+- `SP500.DWX` — registered in magic_numbers.csv for this EA
+- `UK100.DWX` — registered in magic_numbers.csv for this EA
+- `USDCAD.DWX` — registered in magic_numbers.csv for this EA
+- `USDCHF.DWX` — registered in magic_numbers.csv for this EA
+- `USDJPY.DWX` — registered in magic_numbers.csv for this EA
+- `WS30.DWX` — registered in magic_numbers.csv for this EA
+- `XAGUSD.DWX` — registered in magic_numbers.csv for this EA
+- `XAUUSD.DWX` — registered in magic_numbers.csv for this EA
+- `XNGUSD.DWX` — registered in magic_numbers.csv for this EA
+- `XTIUSD.DWX` — registered in magic_numbers.csv for this EA
 
-Source ID: `0f051e46-12b2-51f3-aad5-d6d8bd3e9b35`. Approved source: Rishi K. Narang, *Inside the Black Box*, Chapter 3 section 3.2, O'Reilly preview.
+**Explicitly NOT for:** any symbol not in the list above (no implicit
+universe expansion at runtime; the `QM_SymbolGuard` framework helper
+rejects foreign symbols).
 
-## Risk model
+---
 
-Backtests use fixed risk through `RISK_FIXED = 1000.0` and `RISK_PERCENT = 0.0`. Live promotion uses the V5 live convention of percent risk, set by deploy manifest and live setfile, with `RISK_PERCENT = 0.5` and fixed risk disabled.
+## 4. Timeframe
+
+| Aspect | Value |
+|---|---|
+| Base timeframe | `H4` |
+| Multi-timeframe refs | see `Strategy_*` hooks in the .mq5 |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+
+---
+
+## 5. Expected Behaviour
+
+| Metric | Expected |
+|---|---|
+| Trades / year / symbol | 6 |
+| Cadence note | see card body |
+| Typical hold time | see card body |
+| Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
+| Regime preference | per card thesis |
+| Win rate target (qualitative) | medium |
+
+---
+
+## 6. Source Citation
+
+This card was mechanised from:
+
+**Source ID:** `0f051e46-12b2-51f3-aad5-d6d8bd3e9b35`
+**Pointer:** `strategy-seeds/sources/0f051e46-12b2-51f3-aad5-d6d8bd3e9b35/`
+**R1–R4 verdict (Q00):** all PASS — see
+`artifacts/cards_approved/QM5_10304_narang-revert.md`
+
+---
+
+## 7. Risk Model
+
+| Phase | Risk mode | Value |
+|---|---|---|
+| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
+
+ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+
+---
+
+## Revision History
+
+| Version | Date | Reason | Notes |
+|---|---|---|---|
+| v1 | 2026-06-25 | Initial spec (ex-post, generated by gen_spec_md.py) | post-PT15 remediation |

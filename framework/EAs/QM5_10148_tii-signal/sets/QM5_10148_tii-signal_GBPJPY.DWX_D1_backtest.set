@@ -3,16 +3,16 @@
 ; ea_id:        10148
 ; ea_slug:      tii-signal
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260625-001
 ; symbol:       GBPJPY.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   18
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   55530cfb3f294b48254e28d13897313072d108599fec0e00ebd2da53a1f91bcc
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-25
 ;==========================================================
 qm_magic_slot_offset=18
 RISK_FIXED=1000

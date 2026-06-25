@@ -1,37 +1,33 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_10218 TradingView Larry Williams Oops Gap"
+#property description "QM5_10218 TradingView Larry Williams Oops Gap-Reversal (intraday M15)"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA SKELETON
+// QuantMechanica V5 EA — QM5_10218_tv-oops-gap
 // -----------------------------------------------------------------------------
-// Fill in only the five Strategy_* hooks below. Everything else is framework
-// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
-// risk + magic + news + Friday-close guard rails). The framework provides:
+// Larry Williams "Oops" gap-reversal. Daily bars drive the setup; the M15
+// chart drives intraday execution, the day-extreme trailing stop and the
+// session exit.
 //
-//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
-//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
-//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
-//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
-//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
-//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
-//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
-//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
-//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
+//   Long  setup: today's D1 open < yesterday's D1 low  AND yesterday bearish.
+//                A buy-stop is staged at yesterday's low + tick filter so the
+//                fill only happens when price reclaims the prior-day low.
+//   Short setup: today's D1 open > yesterday's D1 high AND yesterday bullish.
+//                A sell-stop is staged at yesterday's high - tick filter so the
+//                fill only happens when price reclaims the prior-day high.
 //
-// DO NOT
-//   - Write per-EA IsNewBar() — use QM_IsNewBar()
-//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
-//     use the QM_* readers above. The framework pools handles and releases them
-//     on shutdown.
-//   - CopyRates over warmup windows on every tick. If you genuinely need raw
-//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
-//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
-//     to magic_numbers.csv, run:
-//         python framework/scripts/update_magic_resolver.py
-//     This is idempotent and preserves all rows.
+// Stop: trails the current day's extreme (low for longs, high for shorts) with
+// an emergency cap at strategy_atr_emergency_mult * ATR(14) from entry so the
+// baseline risk is never blown out on a wide day. No fixed take-profit.
+// Force-close at session end — no overnight carry.
+//
+// Helpers: QM_IsNewBar, QM_ATR, QM_FrameworkMagic, QM_TM_OpenPosition,
+// QM_TM_ClosePosition, QM_TM_MoveSL. Raw OHLC of CLOSED daily/intraday bars via
+// iOpen/iClose/iHigh/iLow (shift>=1) is permitted; today's forming day-bar
+// (shift 0) is read for the running intraday extreme, which is raw OHLC and not
+// an indicator read.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -52,8 +48,8 @@ input group "News"
 //   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
 //   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
 // A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 // Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
@@ -73,74 +69,162 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_session_start_hhmm = 1630;
-input int    strategy_session_end_hhmm   = 2300;
-input int    strategy_tick_filter_points = 2;
-input int    strategy_atr_period         = 14;
-input double strategy_atr_emergency_mult = 3.0;
-input int    strategy_max_spread_points  = 80;
+// Larry Williams Oops gap-reversal parameters (from Strategy Card).
+input int    strategy_tick_filter_points  = 2;     // ticks beyond prior extreme to confirm the reclaim
+input int    strategy_atr_period          = 14;    // ATR period for the emergency stop cap
+input double strategy_atr_emergency_mult  = 3.0;   // emergency stop cap = mult * ATR(14)
+input int    strategy_session_close_hour  = 21;    // broker hour to force-close (no overnight carry)
+input int    strategy_max_spread_points   = 80;    // skip entries when spread exceeds this
 
-MqlRates g_today_bar;
-MqlRates g_yesterday_bar;
-bool     g_daily_bars_ready = false;
-int      g_daily_bars_day_key = 0;
+// -----------------------------------------------------------------------------
+// Strategy hooks — implemented against the card mechanically.
+// -----------------------------------------------------------------------------
 
-int DateKey(const datetime t)
+// Return TRUE to BLOCK trading this tick (wrong TF, wide spread). Cheap O(1).
+bool Strategy_NoTradeFilter()
   {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 10000 + dt.mon * 100 + dt.day;
-  }
-
-int HHMM(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.hour * 100 + dt.min;
-  }
-
-bool IsEntryWindow(const datetime broker_time)
-  {
-   const int hhmm = HHMM(broker_time);
-   return (hhmm >= strategy_session_start_hhmm && hhmm < strategy_session_end_hhmm);
-  }
-
-int SecondsUntilSessionEnd(const datetime broker_time)
-  {
-   MqlDateTime dt;
-   TimeToStruct(broker_time, dt);
-   const int end_hour = strategy_session_end_hhmm / 100;
-   const int end_min = strategy_session_end_hhmm % 100;
-   const int seconds_left = (end_hour - dt.hour) * 3600 + (end_min - dt.min) * 60 - dt.sec;
-   return MathMax(60, seconds_left);
-  }
-
-bool RefreshDailyBars()
-  {
-   const datetime now = TimeCurrent();
-   const int today_key = DateKey(now);
-   if(g_daily_bars_ready && g_daily_bars_day_key == today_key)
+   if(_Period != PERIOD_M15)
       return true;
 
-   MqlRates bars[];
-   ArraySetAsSeries(bars, true);
-   const int copied = CopyRates(_Symbol, PERIOD_D1, 0, 2, bars); // perf-allowed: bounded 2-bar daily setup cache for Oops gap structural OHLC
-   if(copied < 2)
-      return false;
+   if(strategy_max_spread_points > 0)
+     {
+      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      if(spread_points > strategy_max_spread_points)
+         return true;
+     }
 
-   g_today_bar = bars[0];
-   g_yesterday_bar = bars[1];
-   g_daily_bars_ready = true;
-   g_daily_bars_day_key = today_key;
-   return true;
+   return false;
   }
 
-bool HasOurPendingOrder()
+// Day-extreme protective stop with a mult*ATR(14) emergency cap. Longs trail
+// the current day's low; shorts trail the current day's high. If the day-extreme
+// stop is wider than the ATR cap, the stop is tightened to the ATR cap.
+double OopsDayExtremeStop(const ENUM_POSITION_TYPE ptype, const double entry)
   {
+   // perf-allowed: raw OHLC of the forming day-bar (shift 0) for the running
+   // intraday extreme; OHLC, not an indicator read.
+   const double day_low  = iLow(_Symbol, PERIOD_D1, 0);
+   const double day_high = iHigh(_Symbol, PERIOD_D1, 0);
+   if(day_low <= 0.0 || day_high <= 0.0 || entry <= 0.0)
+      return 0.0;
+
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(atr <= 0.0 || strategy_atr_emergency_mult <= 0.0)
+      return 0.0;
+   const double cap_dist = atr * strategy_atr_emergency_mult;
+
+   if(ptype == POSITION_TYPE_BUY)
+     {
+      double stop = day_low;
+      const double cap_stop = entry - cap_dist;     // never further than ATR cap
+      if(stop <= 0.0 || stop >= entry)
+         stop = cap_stop;
+      stop = MathMax(stop, cap_stop);               // tighten if day-extreme too wide
+      return (stop > 0.0 && stop < entry) ? stop : 0.0;
+     }
+
+   double stop = day_high;
+   const double cap_stop = entry + cap_dist;
+   if(stop <= 0.0 || stop <= entry)
+      stop = cap_stop;
+   stop = MathMin(stop, cap_stop);
+   return (stop > entry) ? stop : 0.0;
+  }
+
+// Populate `req` and return TRUE if a NEW entry should fire on this closed bar.
+// Caller guarantees QM_IsNewBar() == true (one closed M15 bar per call). The
+// entry is a stop order at the prior-day extreme +/- the tick filter, so the
+// fill only triggers when price reclaims that extreme intraday.
+bool Strategy_EntrySignal(QM_EntryRequest &req)
+  {
+   req.type = QM_BUY_STOP;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(strategy_tick_filter_points < 0 ||
+      strategy_atr_period <= 0 ||
+      strategy_atr_emergency_mult <= 0.0)
+      return false;
+
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return false;
 
+   // One position per magic, one staged stop per magic — no pyramiding.
+   if(QM_TM_OpenPositionCount(magic) > 0 || OopsHasPendingOrder(magic))
+      return false;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
+      return false;
+
+   // --- Daily setup (yesterday body + extremes, today's open) ----------------
+   // perf-allowed: raw OHLC of closed/forming daily bars; no QM OHLC reader.
+   const double y_open  = iOpen(_Symbol, PERIOD_D1, 1);
+   const double y_close = iClose(_Symbol, PERIOD_D1, 1);
+   const double y_high  = iHigh(_Symbol, PERIOD_D1, 1);
+   const double y_low   = iLow(_Symbol, PERIOD_D1, 1);
+   const double t_open  = iOpen(_Symbol, PERIOD_D1, 0); // today's daily open
+   if(y_open <= 0.0 || y_close <= 0.0 || y_high <= 0.0 || y_low <= 0.0 || t_open <= 0.0)
+      return false;
+
+   const bool yesterday_bearish = (y_close < y_open);
+   const bool yesterday_bullish = (y_close > y_open);
+   const bool down_gap = (t_open < y_low);   // gapped below prior low -> long setup
+   const bool up_gap   = (t_open > y_high);  // gapped above prior high -> short setup
+   if(!(down_gap && yesterday_bearish) && !(up_gap && yesterday_bullish))
+      return false;
+
+   const double offset = strategy_tick_filter_points * point;
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   const int stop_level_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   const double min_dist = MathMax(1, stop_level_points) * point;
+
+   // Long: buy-stop at yesterday's low + filter. Only valid as a stop above ask.
+   if(down_gap && yesterday_bearish)
+     {
+      const double entry = y_low + offset;
+      if(entry <= ask + min_dist)
+         return false;
+
+      const double sl = OopsDayExtremeStop(POSITION_TYPE_BUY, entry);
+      if(sl <= 0.0 || sl >= entry)
+         return false;
+
+      req.type = QM_BUY_STOP;
+      req.price = NormalizeDouble(entry, _Digits);
+      req.sl = NormalizeDouble(sl, _Digits);
+      req.reason = "oops_down_gap_reclaim_long";
+      return true;
+     }
+
+   // Short: sell-stop at yesterday's high - filter. Only valid as a stop below bid.
+   const double entry = y_high - offset;
+   if(entry >= bid - min_dist)
+      return false;
+
+   const double sl = OopsDayExtremeStop(POSITION_TYPE_SELL, entry);
+   if(sl <= 0.0 || sl <= entry)
+      return false;
+
+   req.type = QM_SELL_STOP;
+   req.price = NormalizeDouble(entry, _Digits);
+   req.sl = NormalizeDouble(sl, _Digits);
+   req.reason = "oops_up_gap_reclaim_short";
+   return true;
+  }
+
+// TRUE if this EA's magic already has a staged stop order on this symbol.
+bool OopsHasPendingOrder(const int magic)
+  {
    for(int i = OrdersTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = OrderGetTicket(i);
@@ -158,152 +242,9 @@ bool HasOurPendingOrder()
    return false;
   }
 
-bool HasOurOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return true;
-     }
-   return false;
-  }
-
-// -----------------------------------------------------------------------------
-// Strategy hooks — implement these against the card mechanically.
-// -----------------------------------------------------------------------------
-
-// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
-// regime filter). Cheap O(1) checks only — runs on every tick.
-bool Strategy_NoTradeFilter()
-  {
-   // News is handled by the framework before this hook. Session and spread are
-   // enforced in Strategy_EntrySignal so end-session exits are never blocked.
-   return false;
-  }
-
-// Populate `req` with entry order parameters and return TRUE if a NEW entry
-// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
-// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
-bool Strategy_EntrySignal(QM_EntryRequest &req)
-  {
-   req.type = QM_BUY_STOP;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-
-   static int last_setup_day = 0;
-
-   const datetime broker_now = TimeCurrent();
-   const int today_key = DateKey(broker_now);
-   if(!IsEntryWindow(broker_now))
-      return false;
-   if(last_setup_day == today_key)
-      return false;
-   if(HasOurPendingOrder() || HasOurOpenPosition())
-      return false;
-
-   const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(strategy_max_spread_points > 0 && spread_points > strategy_max_spread_points)
-      return false;
-
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(point <= 0.0 || strategy_tick_filter_points < 0)
-      return false;
-
-   if(!RefreshDailyBars())
-      return false;
-
-   const double y_open = g_yesterday_bar.open;
-   const double y_high = g_yesterday_bar.high;
-   const double y_low = g_yesterday_bar.low;
-   const double y_close = g_yesterday_bar.close;
-   const double today_open = g_today_bar.open;
-   if(y_open <= 0.0 || y_high <= 0.0 || y_low <= 0.0 || y_close <= 0.0 || today_open <= 0.0)
-      return false;
-
-   const bool bearish_yesterday = (y_close < y_open);
-   const bool bullish_yesterday = (y_close > y_open);
-   const bool long_setup = (today_open < y_low && bearish_yesterday);
-   const bool short_setup = (today_open > y_high && bullish_yesterday);
-   if(!long_setup && !short_setup)
-      return false;
-
-   const double offset = strategy_tick_filter_points * point;
-   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   if(atr <= 0.0 || strategy_atr_emergency_mult <= 0.0)
-      return false;
-
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(bid <= 0.0 || ask <= 0.0)
-      return false;
-
-   const int stop_level_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
-   const double min_stop_distance = MathMax(1, stop_level_points) * point;
-   const int seconds_left = SecondsUntilSessionEnd(broker_now);
-
-   if(long_setup)
-     {
-      const double entry = y_low + offset;
-      if(entry <= ask + min_stop_distance)
-         return false;
-
-      double day_stop = g_today_bar.low;
-      if(day_stop <= 0.0 || day_stop >= entry)
-         day_stop = entry - atr * strategy_atr_emergency_mult;
-
-      const double cap_stop = entry - atr * strategy_atr_emergency_mult;
-      req.type = QM_BUY_STOP;
-      req.price = NormalizeDouble(entry, _Digits);
-      req.sl = NormalizeDouble(MathMax(day_stop, cap_stop), _Digits);
-      req.tp = 0.0;
-      req.reason = "TV_OOPS_GAP_LONG_RECLAIM";
-      req.expiration_seconds = seconds_left;
-      if(req.sl > 0.0 && req.sl < req.price)
-        {
-         last_setup_day = today_key;
-         return true;
-        }
-      return false;
-     }
-
-   const double entry = y_high - offset;
-   if(entry >= bid - min_stop_distance)
-      return false;
-
-   double day_stop = g_today_bar.high;
-   if(day_stop <= 0.0 || day_stop <= entry)
-      day_stop = entry + atr * strategy_atr_emergency_mult;
-
-   const double cap_stop = entry + atr * strategy_atr_emergency_mult;
-   req.type = QM_SELL_STOP;
-   req.price = NormalizeDouble(entry, _Digits);
-   req.sl = NormalizeDouble(MathMin(day_stop, cap_stop), _Digits);
-   req.tp = 0.0;
-   req.reason = "TV_OOPS_GAP_SHORT_RECLAIM";
-   req.expiration_seconds = seconds_left;
-   if(req.sl > req.price)
-     {
-      last_setup_day = today_key;
-      return true;
-     }
-   return false;
-  }
-
-// Called every tick when an open position exists for this EA's magic.
-// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
+// Called every tick when an open position exists. Trail the protective stop to
+// the current day's extreme (low for longs, high for shorts), ATR-capped, only
+// ever in the protective direction.
 void Strategy_ManageOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
@@ -322,37 +263,44 @@ void Strategy_ManageOpenPosition()
          continue;
 
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const double current_sl = PositionGetDouble(POSITION_SL);
-      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double entry = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double cur_sl = PositionGetDouble(POSITION_SL);
+
+      const double new_sl = OopsDayExtremeStop(ptype, entry);
+      if(new_sl <= 0.0)
+         continue;
+
       if(ptype == POSITION_TYPE_BUY)
         {
-         const double day_low = g_daily_bars_ready ? g_today_bar.low : 0.0;
-         if(day_low > 0.0 && day_low < bid && (current_sl <= 0.0 || day_low > current_sl + point * 0.5))
-            QM_TM_MoveSL(ticket, day_low, "trail_current_day_low");
+         if(new_sl < entry && (cur_sl <= 0.0 || new_sl > cur_sl + point * 0.5))
+            QM_TM_MoveSL(ticket, new_sl, "trail_current_day_low");
         }
       else if(ptype == POSITION_TYPE_SELL)
         {
-         const double day_high = g_daily_bars_ready ? g_today_bar.high : 0.0;
-         if(day_high > 0.0 && day_high > ask && (current_sl <= 0.0 || day_high < current_sl - point * 0.5))
-            QM_TM_MoveSL(ticket, day_high, "trail_current_day_high");
+         if(new_sl > entry && (cur_sl <= 0.0 || new_sl < cur_sl - point * 0.5))
+            QM_TM_MoveSL(ticket, new_sl, "trail_current_day_high");
         }
      }
   }
 
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
+// Return TRUE to force-close the open position now — session end / no overnight.
 bool Strategy_ExitSignal()
   {
-   return (HHMM(TimeCurrent()) >= strategy_session_end_hhmm);
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+   if(QM_TM_OpenPositionCount(magic) <= 0)
+      return false;
+
+   MqlDateTime dt;
+   TimeToStruct(TimeCurrent(), dt);
+   return (dt.hour >= strategy_session_close_hour);
   }
 
-// Optional news-filter override. Return TRUE to suppress trading regardless
-// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
-// custom high-impact-event handling beyond the central filter.
+// Optional news-filter override. Defer to the central two-axis filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false;
+   return false; // defer to QM_NewsAllowsTrade(...)
   }
 
 // -----------------------------------------------------------------------------

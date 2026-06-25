@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10148
-; ea_slug:      tii-signal
+; ea_id:        12538
+; ea_slug:      nnfx-canonical-stack2-st-vortex
 ; ea_version:   v5.0
 ; set_version:  s20260625-001
-; symbol:       CHFJPY.DWX
+; symbol:       GBPUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   7
+; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-25
 ;==========================================================
-qm_magic_slot_offset=7
+qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

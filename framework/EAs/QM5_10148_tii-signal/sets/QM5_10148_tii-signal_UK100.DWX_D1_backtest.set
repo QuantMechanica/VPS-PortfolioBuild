@@ -3,16 +3,16 @@
 ; ea_id:        10148
 ; ea_slug:      tii-signal
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260625-001
 ; symbol:       UK100.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   28
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   9b550c09e2fb32bfd31cb1ce808202bc6bb8a39f4f7d027bd7b32a404cc42688
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-25
 ;==========================================================
 qm_magic_slot_offset=28
 RISK_FIXED=1000

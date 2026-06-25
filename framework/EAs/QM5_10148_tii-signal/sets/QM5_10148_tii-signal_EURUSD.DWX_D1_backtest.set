@@ -3,16 +3,16 @@
 ; ea_id:        10148
 ; ea_slug:      tii-signal
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260625-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   14
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   01134fa5b088c33ad795317200da0f2391f6d4ee12822dfc495f62715e761493
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-25
 ;==========================================================
 qm_magic_slot_offset=14
 RISK_FIXED=1000

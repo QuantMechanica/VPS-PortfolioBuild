@@ -3,16 +3,16 @@
 ; ea_id:        10148
 ; ea_slug:      tii-signal
 ; ea_version:   v5.0
-; set_version:  s20260524-001
+; set_version:  s20260625-001
 ; symbol:       EURGBP.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   11
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   1b6e9db1e514d5b48a61ecdb397170a79117b6072db1a26dbecea5c1ceaad9f0
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-24
+; date:         2026-06-25
 ;==========================================================
 qm_magic_slot_offset=11
 RISK_FIXED=1000

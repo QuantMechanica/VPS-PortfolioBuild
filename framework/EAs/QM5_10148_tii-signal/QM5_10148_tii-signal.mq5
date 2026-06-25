@@ -73,31 +73,38 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_timeframe = PERIOD_D1;
-input int    strategy_tii_period        = 60;
-input int    strategy_signal_ema        = 9;
-input bool   strategy_shorts_enabled    = false;
-input int    strategy_atr_period        = 14;
-input double strategy_atr_stop_mult     = 3.0;
-input int    strategy_max_spread_points = 0;
+// Card mechanic (Raposa "Adding a Signal Line"): TII from SMA(Close, P);
+// SignalLine = EMA(TII, N). Long when TII crosses up through SignalLine; exit
+// long when TII crosses below. Optional short mode mirrors the rule. TF = D1.
+input int    strategy_tii_period        = 60;    // P: SMA window for TII
+input int    strategy_signal_ema        = 9;     // N: EMA period of the signal line
+input bool   strategy_shorts_enabled    = false; // optional short mode
+input int    strategy_atr_period        = 14;    // emergency ATR stop period
+input double strategy_atr_stop_mult     = 3.0;   // emergency ATR stop multiple
+input int    strategy_max_spread_points = 0;     // 0 = disabled
 
-double g_tii_last = 0.0;
+double g_tii_last    = 0.0;
 double g_signal_last = 0.0;
-double g_tii_prev = 0.0;
+double g_tii_prev    = 0.0;
 double g_signal_prev = 0.0;
 bool   g_tii_cache_ready = false;
 
+// Trend Intensity Index at a given closed-bar shift (shift >= 1).
+// Over the SMA(P) window, deviation = Close - SMA(Close, P) at each bar.
+// TII = 100 * sum(positive deviations) / sum(|deviations|).
 bool Strategy_CalcTiiAtShift(const int shift, double &tii_value)
   {
    tii_value = 0.0;
+   if(strategy_tii_period < 2 || shift < 1)
+      return false;
+
    double pos_sum = 0.0;
    double abs_sum = 0.0;
-
    for(int lookback = 0; lookback < strategy_tii_period; ++lookback)
      {
       const int bar_shift = shift + lookback;
-      const double close_value = iClose(_Symbol, strategy_timeframe, bar_shift); // perf-allowed: bespoke TII deviation loop; gated by QM_IsNewBar via Strategy_EntrySignal path
-      const double sma_value = QM_SMA(_Symbol, strategy_timeframe, strategy_tii_period, bar_shift);
+      const double close_value = iClose(_Symbol, PERIOD_D1, bar_shift); // perf-allowed: bespoke TII deviation loop; gated to one closed-bar refresh
+      const double sma_value = QM_SMA(_Symbol, PERIOD_D1, strategy_tii_period, bar_shift);
       if(close_value <= 0.0 || sma_value <= 0.0)
          return false;
 
@@ -111,10 +118,14 @@ bool Strategy_CalcTiiAtShift(const int shift, double &tii_value)
    return true;
   }
 
+// EMA(TII, N) signal line ending at current_shift, plus the TII at that shift.
+// Seeds the EMA on the oldest TII in the window and recurses toward current_shift.
 bool Strategy_CalcTiiSignal(const int current_shift, double &tii_value, double &signal_value)
   {
    tii_value = 0.0;
    signal_value = 0.0;
+   if(strategy_signal_ema < 2)
+      return false;
 
    const double alpha = 2.0 / (strategy_signal_ema + 1.0);
    for(int ema_step = strategy_signal_ema - 1; ema_step >= 0; --ema_step)
@@ -124,17 +135,18 @@ bool Strategy_CalcTiiSignal(const int current_shift, double &tii_value, double &
          return false;
 
       if(ema_step == strategy_signal_ema - 1)
-         signal_value = tii_step;
+         signal_value = tii_step;                         // seed
       else
          signal_value = signal_value + alpha * (tii_step - signal_value);
 
       if(ema_step == 0)
          tii_value = tii_step;
      }
-
    return true;
   }
 
+// Refresh TII + signal-line at the last two closed bars (shift 1 and 2) so the
+// crossover can be evaluated. Runs once per closed bar via Strategy_EntrySignal.
 bool Strategy_RefreshTiiCache()
   {
    g_tii_cache_ready = false;
@@ -158,7 +170,10 @@ bool Strategy_RefreshTiiCache()
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // No Trade Filter: no session filter in card; framework handles news/time.
+   // No Trade Filter: hard TF gate (card TF = D1), parameter sanity, spread.
+   if(_Period != PERIOD_D1)
+      return true;
+
    if(strategy_tii_period < 2 ||
       strategy_signal_ema < 2 ||
       strategy_atr_period <= 0 ||
@@ -172,6 +187,25 @@ bool Strategy_NoTradeFilter()
          return true;
      }
 
+   return false;
+  }
+
+bool Strategy_HasOurOpenPosition(ENUM_POSITION_TYPE &pos_type)
+  {
+   pos_type = POSITION_TYPE_BUY;
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      return true;
+     }
    return false;
   }
 
@@ -189,30 +223,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(strategy_tii_period < 2 || strategy_signal_ema < 2)
-      return false;
-
    if(!Strategy_RefreshTiiCache())
       return false;
 
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
+   ENUM_POSITION_TYPE pos_type = POSITION_TYPE_BUY;
+   if(Strategy_HasOurOpenPosition(pos_type))
       return false;
-     }
 
    QM_OrderType side = QM_BUY;
    if(g_tii_prev < g_signal_prev && g_tii_last >= g_signal_last)
-      side = QM_BUY;
+      side = QM_BUY;                                       // TII crosses up over SignalLine
    else if(strategy_shorts_enabled && g_tii_prev >= g_signal_prev && g_tii_last < g_signal_last)
-      side = QM_SELL;
+      side = QM_SELL;                                      // TII crosses down under SignalLine
    else
       return false;
 
@@ -251,29 +273,12 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // Trade Close: close/reverse when TII crosses to the other side of its signal line.
-   if(strategy_tii_period < 2 || strategy_signal_ema < 2)
-      return false;
+   // Trade Close: exit long when TII < SignalLine; exit short when TII >= SignalLine.
    if(!g_tii_cache_ready)
       return false;
 
-   const int magic = QM_FrameworkMagic();
-   bool have_position = false;
    ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      have_position = true;
-      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      break;
-     }
-   if(!have_position)
+   if(!Strategy_HasOurOpenPosition(position_type))
       return false;
 
    if(position_type == POSITION_TYPE_BUY && g_tii_last < g_signal_last)
