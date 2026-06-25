@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-On each closed D1 bar the EA computes an EWMA standard deviation of daily price returns (span=25 bars), annualises it by √256, then divides the user-supplied annualised carry in basis points by the annualised vol to get a raw carry ratio. The ratio is scaled by a forecast scalar (30) and capped at ±20. If the capped forecast exceeds +2 the EA goes long; below −2 it goes short. The position is closed when the forecast crosses zero (carry signal reverses); a 2.5×ATR(20,D1) emergency stop is placed at entry. One position per symbol/magic at a time; no trailing stop.
+On each closed D1 bar the EA computes an EWMA variance of daily close-change returns (span 25), annualises it by √256, and divides the annualised carry by that vol to get a raw carry ratio. Carry input is broker swap when non-zero; otherwise a per-symbol fallback in basis points (strategy_carry_fallback_bps, set in the setfile) is used — this makes the strategy testable in the DWX tester where broker swap = 0. The ratio is multiplied by scalar 30 and capped at ±20 to get the forecast. If forecast > +2 the EA goes long; if forecast < −2 it goes short. The position closes when the forecast crosses zero or the opposite threshold; a 2.5×ATR(20,D1) emergency stop is placed at entry. One position per symbol/magic at a time.
 
 ---
 
@@ -18,14 +18,15 @@ On each closed D1 bar the EA computes an EWMA standard deviation of daily price 
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `InpCarryBpsAnnual` | 100.0 | any | Annualised carry in bps (+long earns, −short earns). 0=broker swap (=0 in DWX). Set per-symbol in setfile. |
-| `InpEWMASpan` | 25 | 5–100 | EWMA span (bars) for daily-return vol. Carver default = 25. |
-| `InpForecastScalar` | 30.0 | 10–50 | Multiplies raw carry ratio to get forecast. |
-| `InpForecastCap` | 20.0 | 5–50 | Forecast capped at ±this value. |
-| `InpEntryForecast` | 2.0 | 0.5–10 | Min |forecast| to enter. |
-| `InpAtrPeriod` | 20 | 5–50 | D1 ATR period for emergency stop distance. |
-| `InpAtrSlMult` | 2.5 | 1.0–5.0 | ATR multiplier for SL. |
-| `InpSpreadCapPips` | 5.0 | 0–20 | Max spread in pips to allow entry (0=off). DWX spread=0, never blocks. |
+| `strategy_entry_forecast` | 2.0 | > 0 | Forecast threshold required to open a new position. |
+| `strategy_vol_span_days` | 25 | >= 2 | EWMA span (bars) for daily close-change volatility. Carver default = 25. |
+| `strategy_forecast_scalar` | 30.0 | > 0 | Scalar applied to carry / annualised vol to get forecast. |
+| `strategy_forecast_cap` | 20.0 | > 0 | Absolute cap applied to the signed forecast. |
+| `strategy_atr_period` | 20 | >= 1 | D1 ATR period for the emergency stop. |
+| `strategy_atr_stop_mult` | 2.5 | > 0 | ATR multiple for the emergency stop. |
+| `strategy_swap_days_per_year` | 256.0 | > 0 | Annualisation factor for swap and volatility. |
+| `strategy_carry_fallback_bps` | 150.0 | any | Fallback annual carry in bps when broker swap = 0 (DWX tester). Positive = long base earns; negative = short base earns; 0 = no trades. Set per-symbol in the setfile. |
+| `strategy_spread_cap_pips` | 5 | >= 0 | Max spread in pips for new entry. DWX tester spread = 0 always passes through. |
 
 ---
 
@@ -95,4 +96,5 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-25 | Initial build from card | 649b99a9-4264-408d-b27c-74c343bc97b0 |
+| v1 | 2026-06-14 | Initial build from card | 1d91729a-96ea-4175-abf0-284731ba90f3 |
+| v2 | 2026-06-25 | Zero-trade fix: replaced median-spread-count=0 early-exit and swap=0 early-exit with DWX-invariant-compliant spread cap + carry fallback bps | 649b99a9-4264-408d-b27c-74c343bc97b0 |

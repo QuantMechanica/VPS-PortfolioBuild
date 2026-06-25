@@ -163,13 +163,14 @@ void AdvanceState_OnNewBar()
    datetime bar1_open = iTime(_Symbol, PERIOD_M15, 1); // perf-allowed: OR structural scan
    if(bar1_open <= 0) return;
 
-   // Accumulate OR: bar must have opened inside the OR window
+   // Accumulate OR: bar must have opened inside the OR window.
+   // OR extremes use CLOSE prices so that "closes above OR_high" is achievable (wick-based OR_high
+   // is almost never exceeded by a subsequent close, killing all entries).
    if(!g_or_complete && bar1_open >= g_london_open_broker && bar1_open < g_or_end_broker)
      {
-      double h = iHigh(_Symbol, PERIOD_M15, 1); // perf-allowed: OR high accumulation
-      double l = iLow(_Symbol, PERIOD_M15, 1);  // perf-allowed: OR low accumulation
-      if(h > g_or_high) g_or_high = h;
-      if(l < g_or_low)  g_or_low  = l;
+      double c = iClose(_Symbol, PERIOD_M15, 1); // perf-allowed: OR close-extreme accumulation
+      if(c > g_or_high) g_or_high = c;
+      if(c < g_or_low)  g_or_low  = c;
      }
 
    // OR is complete once a bar opens at or after or_end with a valid accumulated range
@@ -237,38 +238,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double bar_range = bar_high - bar_low;
    double or_width  = g_or_high - g_or_low;
 
-   MqlDateTime _dbg_dt; TimeToStruct(bar1_open, _dbg_dt);
-   bool _dbg_2024q1 = (_dbg_dt.year == 2024 && _dbg_dt.mon <= 2);
-
    // Confirmation filters (dead-opening / fakeout rejection)
-   if(bar_range < strategy_bb_atr_mult * atr_m15)
-     {
-      if(_dbg_2024q1)
-         PrintFormat("DBG RANGE_FAIL bar1=%s range=%.5f need=%.5f or_h=%.5f or_l=%.5f",
-                     TimeToString(bar1_open,TIME_DATE|TIME_MINUTES),
-                     bar_range, strategy_bb_atr_mult*atr_m15, g_or_high, g_or_low);
-      return false;
-     }
-   if(or_width < strategy_or_width_atr_mult * atr_d1 / 4.0)
-     {
-      if(_dbg_2024q1)
-         PrintFormat("DBG ORWIDTH_FAIL bar1=%s orW=%.5f need=%.5f(atr_d1=%.5f)",
-                     TimeToString(bar1_open,TIME_DATE|TIME_MINUTES),
-                     or_width, strategy_or_width_atr_mult*atr_d1/4.0, atr_d1);
-      return false;
-     }
+   if(bar_range < strategy_bb_atr_mult * atr_m15) return false;
+   if(or_width < strategy_or_width_atr_mult * atr_d1 / 4.0) return false;
 
-   // Breakout direction from OR
+   // Breakout direction from OR (close-based OR, so close > OR_close_high fires a genuine breakout)
    bool is_long  = (bar_close > g_or_high);
    bool is_short = (bar_close < g_or_low);
-   if(!is_long && !is_short)
-     {
-      if(_dbg_2024q1)
-         PrintFormat("DBG NO_BREAK bar1=%s close=%.5f or_h=%.5f or_l=%.5f",
-                     TimeToString(bar1_open,TIME_DATE|TIME_MINUTES),
-                     bar_close, g_or_high, g_or_low);
-      return false;
-     }
+   if(!is_long && !is_short) return false;
 
    double entry = 0.0;  // market order
 
