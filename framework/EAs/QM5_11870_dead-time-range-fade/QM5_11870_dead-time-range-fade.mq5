@@ -1,42 +1,45 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11870 dead-time-range-fade — Dead-Time Range Fade (3pm EST anchor, H1)"
+#property description "QM5_11870 Dead-Time Range Fade"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11870 dead-time-range-fade
+// QuantMechanica V5 EA SKELETON
 // -----------------------------------------------------------------------------
-// Source: Jason Fielder, Forex Trading Cheat Sheets (TriadFormula.com, ~2010).
-// Card: artifacts/cards_approved/QM5_11870_dead-time-range-fade.md (g0 APPROVED).
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails). The framework provides:
 //
-// Idea: during the quiet off-hours "dead time" after the US banks close, major
-// FX pairs tend to range and revert to the 3pm-EST H1 close (a magnetic anchor)
-// rather than trend. We FADE the range extreme: when the anchor candle was
-// bullish (close > open) the anchor is a HIGH water mark -> we SHORT when price
-// revisits it from below; when bearish (close < open) the anchor is a LOW water
-// mark -> we LONG when price revisits it from above. One trade per session.
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
+//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
+//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
+//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
+//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
+//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
+//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
 //
-// STATE  (dead-time window + anchor):
-//   * Window in UTC = [ref_hour_utc, ref_hour_utc + window_hours).
-//     ref_hour_utc = 20 normally, 19 during US DST (3pm EST tracks US DST).
-//   * Anchor level + direction captured from the H1 closed bar whose UTC open
-//     hour == ref_hour_utc (the "3pm EST" candle): bull -> high water mark,
-//     bear -> low water mark.
-// EVENT  (single trigger, one per closed bar, one fill per session):
-//   * Bull anchor: bar HIGH of a closed window bar >= anchor  -> SHORT fade.
-//   * Bear anchor: bar LOW  of a closed window bar <= anchor  -> LONG  fade.
-//   The touch is the lone trigger EVENT; the window+anchor are STATE. No
-//   two-cross-same-bar trap: a single inequality on one bar fires the entry.
-// EXIT   : fixed SL/TP in pips (12/12, 1:1) via QM_StopFixedPips + QM_TakeRR.
-//
-// Broker time -> UTC via QM_BrokerToUTC; US DST via QM_IsUSDSTUTC. Only the 5
-// Strategy_* hooks + Strategy inputs are EA-specific; framework wiring is intact.
+// DO NOT
+//   - Write per-EA IsNewBar() — use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//     use the QM_* readers above. The framework pools handles and releases them
+//     on shutdown.
+//   - CopyRates over warmup windows on every tick. If you genuinely need raw
+//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
+//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
+//     to magic_numbers.csv, run:
+//         python framework/scripts/update_magic_resolver.py
+//     This is idempotent and preserves all rows.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 11870;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -45,10 +48,16 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
+//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -56,229 +65,149 @@ input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-// Dead-time window in UTC. 3pm EST = 20:00 UTC (non-DST) / 19:00 UTC (US DST);
-// the window runs 3pm-7pm EST = 4 hours. ref_hour is the non-DST UTC anchor
-// hour; during US DST the anchor + window shift one hour earlier automatically.
-input int    strategy_ref_hour_utc        = 20;    // anchor UTC hour (non-DST 3pm EST)
-input int    strategy_window_hours        = 4;     // dead-time window length (hours)
-input bool   strategy_dst_shift           = true;  // shift anchor/window -1h during US DST
-input int    strategy_sl_pips             = 12;    // fixed stop distance in pips
-input int    strategy_tp_pips             = 12;    // fixed target distance in pips (1:1)
-input int    strategy_touch_buffer_pips   = 0;     // extra pips past anchor required to trigger
+// TODO: declare strategy-specific input params here, e.g.:
+//   input int    strategy_atr_period   = 14;
+//   input double strategy_atr_sl_mult  = 2.0;
+//   input double strategy_atr_tp_mult  = 3.0;
+input int    strategy_reference_utc_hour = 20;
+input int    strategy_window_end_utc_hour = 0;
+input int    strategy_stop_pips = 12;
+input int    strategy_take_pips = 12;
+input int    strategy_max_spread_pips = 0;
 
 // -----------------------------------------------------------------------------
-// File-scope session STATE (advanced once per closed bar via the new-bar gate).
-// -----------------------------------------------------------------------------
-int      g_session_day        = -1;     // day-of-year of the current session's anchor
-double   g_anchor_level       = 0.0;    // captured anchor (3pm EST close)
-int      g_anchor_dir         = 0;      // +1 bull (high water mark) / -1 bear / 0 none
-bool     g_anchor_set         = false;  // anchor captured for the current session?
-bool     g_traded_session     = false;  // already fired one entry this session?
-
-// -----------------------------------------------------------------------------
-// Helpers
+// Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// Effective anchor UTC hour, shifted -1h during US DST when enabled.
-int Strategy_AnchorHourUTC(const datetime utc_now)
-  {
-   int h = strategy_ref_hour_utc;
-   if(strategy_dst_shift && QM_IsUSDSTUTC(utc_now))
-      h -= 1;
-   if(h < 0)  h += 24;
-   if(h > 23) h -= 24;
-   return h;
-  }
-
-// UTC hour of a given UTC datetime.
-int Strategy_HourOfUTC(const datetime utc_time)
-  {
-   MqlDateTime mdt;
-   TimeToStruct(utc_time, mdt);
-   return mdt.hour;
-  }
-
-// True if utc_hour lies inside [anchor_hour, anchor_hour + window_hours),
-// wrap-safe across midnight.
-bool Strategy_InWindow(const int utc_hour, const int anchor_hour)
-  {
-   const int span = strategy_window_hours;
-   for(int k = 0; k < span; ++k)
-     {
-      int hh = anchor_hour + k;
-      if(hh > 23) hh -= 24;
-      if(hh == utc_hour)
-         return true;
-     }
-   return false;
-  }
-
-// Advance per-closed-bar session state. Called once per new closed bar AFTER
-// the framework QM_IsNewBar() gate passes — no second timestamp gate here.
-// Reads the just-closed bar (shift 1) only.
-void Strategy_AdvanceState_OnNewBar()
-  {
-   // perf-allowed: single closed-bar reads at fixed shift 1 (no history scan).
-   const datetime bar_open_broker = iTime(_Symbol, _Period, 1);
-   if(bar_open_broker <= 0)
-      return;
-   datetime bar_open_utc = QM_BrokerToUTC(bar_open_broker);
-   if(bar_open_utc <= 0)
-      bar_open_utc = bar_open_broker; // defensive fallback; broker~UTC ordering
-
-   MqlDateTime mdt;
-   TimeToStruct(bar_open_utc, mdt);
-   const int bar_hour = mdt.hour;
-   const int bar_doy  = mdt.day_of_year;
-
-   const int anchor_hour = Strategy_AnchorHourUTC(bar_open_utc);
-
-   // New session begins when the anchor bar (the "3pm EST" candle) closes.
-   if(bar_hour == anchor_hour)
-     {
-      const double o = iOpen(_Symbol, _Period, 1);
-      const double c = iClose(_Symbol, _Period, 1);
-      if(o > 0.0 && c > 0.0)
-        {
-         g_anchor_level    = c;            // anchor = 3pm-EST candle CLOSE
-         g_anchor_dir      = (c > o) ? +1 : ((c < o) ? -1 : 0);
-         g_anchor_set      = (g_anchor_dir != 0);
-         g_session_day     = bar_doy;
-         g_traded_session  = false;        // fresh session; one trade allowed
-        }
-      else
-        {
-         g_anchor_set = false;
-        }
-     }
-  }
-
-// -----------------------------------------------------------------------------
-// Strategy hooks
-// -----------------------------------------------------------------------------
-
-// Cheap O(1) per-tick gate. Block when outside the dead-time UTC window so the
-// per-tick path stays trivial. Fail-open on missing quote/time.
+// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
+// regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   const datetime broker_now = TimeCurrent();
-   datetime utc_now = QM_BrokerToUTC(broker_now);
-   if(utc_now <= 0)
-      utc_now = broker_now;
+   if(_Period != PERIOD_H1)
+      return true;
 
-   const int anchor_hour = Strategy_AnchorHourUTC(utc_now);
-   const int utc_hour    = Strategy_HourOfUTC(utc_now);
-   if(!Strategy_InWindow(utc_hour, anchor_hour))
-      return true; // outside dead-time window -> block
+   if(strategy_reference_utc_hour < 0 || strategy_reference_utc_hour > 23 ||
+      strategy_window_end_utc_hour < 0 || strategy_window_end_utc_hour > 23 ||
+      strategy_stop_pips <= 0 || strategy_take_pips <= 0)
+      return true;
+
+   if(strategy_max_spread_pips > 0)
+     {
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_spread_pips);
+      if(ask > 0.0 && bid > 0.0 && ask > bid && cap > 0.0 && (ask - bid) > cap)
+         return true;
+     }
+
    return false;
   }
 
-// Counter-trend fade entry. Caller guarantees QM_IsNewBar()==true (closed bar).
-// One trade per session; window membership already checked per-bar here too.
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
+// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   // perf-allowed: card requires the H1 candle that closed at the UTC reference time; caller already gated this to one read per new bar.
+   if(CopyRates(_Symbol, PERIOD_H1, 0, 2, rates) != 2)
       return false;
 
-   if(!g_anchor_set || g_traded_session)
+   const datetime current_bar_utc = QM_BrokerToUTC(rates[0].time);
+   MqlDateTime utc_dt;
+   ZeroMemory(utc_dt);
+   TimeToStruct(current_bar_utc, utc_dt);
+   if(utc_dt.hour != strategy_reference_utc_hour || utc_dt.min != 0)
       return false;
 
-   // Confirm the just-closed bar sits inside the dead-time window (in UTC).
-   // perf-allowed: single closed-bar timestamp read at shift 1.
-   const datetime bar_open_broker = iTime(_Symbol, _Period, 1);
-   if(bar_open_broker <= 0)
-      return false;
-   datetime bar_open_utc = QM_BrokerToUTC(bar_open_broker);
-   if(bar_open_utc <= 0)
-      bar_open_utc = bar_open_broker;
-
-   const int anchor_hour = Strategy_AnchorHourUTC(bar_open_utc);
-   const int bar_hour    = Strategy_HourOfUTC(bar_open_utc);
-   if(!Strategy_InWindow(bar_hour, anchor_hour))
+   const double reference_open = rates[1].open;
+   const double reference_close = rates[1].close;
+   if(reference_open <= 0.0 || reference_close <= 0.0 || reference_open == reference_close)
       return false;
 
-   // Do not trade on the anchor bar itself — touch must be a LATER window bar.
-   if(bar_hour == anchor_hour)
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
       return false;
 
-   const double buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_touch_buffer_pips);
-
-   // perf-allowed: single closed-bar high/low reads at shift 1.
-   const double bar_high = iHigh(_Symbol, _Period, 1);
-   const double bar_low  = iLow(_Symbol, _Period, 1);
-   if(bar_high <= 0.0 || bar_low <= 0.0)
-      return false;
-
-   QM_OrderType side = QM_BUY;
-   bool triggered = false;
-
-   if(g_anchor_dir > 0)
+   QM_OrderType side = QM_BUY_LIMIT;
+   string reason = "";
+   if(reference_close > reference_open)
      {
-      // Bull anchor = HIGH water mark. Price revisits from below -> fade SHORT
-      // when the closed bar's high reaches (or pierces by buffer) the anchor.
-      if(bar_high >= g_anchor_level + buffer)
-        {
-         side = QM_SELL;
-         triggered = true;
-        }
+      if(ask >= reference_close - point)
+         return false;
+      side = QM_SELL_LIMIT;
+      reason = "DEADTIME_RANGE_FADE_SHORT";
      }
-   else if(g_anchor_dir < 0)
+   else
      {
-      // Bear anchor = LOW water mark. Price revisits from above -> fade LONG
-      // when the closed bar's low reaches (or pierces by buffer) the anchor.
-      if(bar_low <= g_anchor_level - buffer)
-        {
-         side = QM_BUY;
-         triggered = true;
-        }
+      if(bid <= reference_close + point)
+         return false;
+      side = QM_BUY_LIMIT;
+      reason = "DEADTIME_RANGE_FADE_LONG";
      }
 
-   if(!triggered)
+   const int seconds_to_expiry = (strategy_window_end_utc_hour > strategy_reference_utc_hour)
+                                 ? (strategy_window_end_utc_hour - strategy_reference_utc_hour) * 3600
+                                 : (24 - strategy_reference_utc_hour + strategy_window_end_utc_hour) * 3600;
+   if(seconds_to_expiry <= 0)
       return false;
 
-   const double entry = (side == QM_SELL) ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
-                                          : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(entry <= 0.0)
+   const double entry = QM_StopRulesNormalizePrice(_Symbol, reference_close);
+   const double sl = QM_StopFixedPips(_Symbol, side, entry, strategy_stop_pips);
+   const double tp = QM_TakeFixedPips(_Symbol, side, entry, strategy_take_pips);
+   if(entry <= 0.0 || sl <= 0.0 || tp <= 0.0)
       return false;
 
-   if(strategy_sl_pips <= 0)
-      return false;
-   const double rr = (double)strategy_tp_pips / (double)strategy_sl_pips;
-   const double sl = QM_StopFixedPips(_Symbol, side, entry, strategy_sl_pips);
-   const double tp = QM_TakeRR(_Symbol, side, entry, sl, rr);
-   if(sl <= 0.0 || tp <= 0.0)
-      return false;
-
-   req.type   = side;
-   req.price  = 0.0; // framework fills market price at send
-   req.sl     = sl;
-   req.tp     = tp;
-   req.reason = (side == QM_SELL) ? "deadtime_fade_short" : "deadtime_fade_long";
-
-   g_traded_session = true; // one trade per session
+   req.type = side;
+   req.price = entry;
+   req.sl = sl;
+   req.tp = tp;
+   req.reason = reason;
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = seconds_to_expiry;
    return true;
   }
 
-// Fixed SL/TP only — no active management.
+// Called every tick when an open position exists for this EA's magic.
+// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
+   // Card specifies no trailing stop, break-even move, partial close, or scale-in.
   }
 
-// No discretionary exit beyond SL/TP. (Open position rides to SL or TP; any
-// unfilled-by-window concept is moot here — we enter at market on the touch.)
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
+   // Card exits are fixed SL/TP; unfilled limit orders expire at 00:00 UTC.
    return false;
   }
 
-// Defer to the central news filter.
+// Optional news-filter override. Return TRUE to suppress trading regardless
+// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
+// custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false;
+   return false; // Card has no strategy-specific news blackout; defer to the framework.
   }
 
 // -----------------------------------------------------------------------------
@@ -323,6 +252,8 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults.
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -336,8 +267,10 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -352,14 +285,15 @@ void OnTick()
         }
      }
 
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
 
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
-
-   // Advance closed-bar session state (anchor capture / session reset) FIRST,
-   // then evaluate the single entry trigger for this new closed bar.
-   Strategy_AdvanceState_OnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
@@ -378,6 +312,8 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
   {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
