@@ -4,7 +4,7 @@
 **Slug:** `cs-sma9-cross`
 **Source:** `72f9fcfa-6c75-5544-80c4-31e15c9817ab` (see `strategy-seeds/sources/72f9fcfa-6c75-5544-80c4-31e15c9817ab/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-25
 
 ---
 
@@ -103,4 +103,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | (uncommitted) |
+| v1 | 2026-06-25 | Initial build from card | 406d62f8-7d8a-492d-a630-d4ddefad461a |

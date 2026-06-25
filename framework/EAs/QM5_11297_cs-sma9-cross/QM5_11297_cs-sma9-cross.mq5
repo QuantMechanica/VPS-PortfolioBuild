@@ -79,8 +79,8 @@ int Sma9_CrossDirection()
    if(sma_now <= 0.0 || sma_prev <= 0.0)
       return 0;
 
-   const double close_now  = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   const double close_prev = iClose(_Symbol, _Period, 2); // perf-allowed: single closed-bar read
+   const double close_now  = QM_SMA(_Symbol, _Period, 1, 1, PRICE_CLOSE);
+   const double close_prev = QM_SMA(_Symbol, _Period, 1, 2, PRICE_CLOSE);
    if(close_now <= 0.0 || close_prev <= 0.0)
       return 0;
 
@@ -122,6 +122,14 @@ bool Strategy_NoTradeFilter()
 // Entry on the SMA(9) reverse-cross EVENT. Caller guarantees QM_IsNewBar()==true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic; reverse only after flat.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
