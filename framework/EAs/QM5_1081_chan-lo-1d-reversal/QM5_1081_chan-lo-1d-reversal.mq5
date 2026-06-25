@@ -115,6 +115,8 @@ string TrimToken(string value)
 // the EA never trades (same failure class fixed for QM5_10717 / QM5_10718).
 string g_universe_basket[];
 int    g_universe_basket_count = 0;
+bool   g_rebalance_bar_active = false;
+int    g_open_hold_bars = 0;
 
 void QM5_1081_BuildUniverseBasket()
   {
@@ -333,11 +335,14 @@ void Strategy_ManageOpenPosition()
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
-// Chan exit: close at the NEXT daily close — i.e. after holding
-// strategy_max_hold_bars closed D1 bars (default 1). The framework re-ranks
-// and re-enters the new long/short set on the next closed bar.
+// Chan exit: close at the NEXT daily close. OnTick calls this only after the
+// framework D1 new-bar gate, so each held leg is closed once per rebalance bar
+// before the new rank set is entered.
 bool Strategy_ExitSignal()
   {
+   if(!g_rebalance_bar_active)
+      return false;
+
    const int magic = QM_FrameworkMagic();
    if(magic <= 0)
       return false;
@@ -351,13 +356,11 @@ bool Strategy_ExitSignal()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-
-      const datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
-      const int bars_since_open = iBarShift(_Symbol, PERIOD_D1, open_time, false);
-      if(bars_since_open >= strategy_max_hold_bars)
-         return true;
+      g_open_hold_bars++;
+      return (g_open_hold_bars >= strategy_max_hold_bars);
      }
 
+   g_open_hold_bars = 0;
    return false;
   }
 
@@ -439,7 +442,16 @@ void OnTick()
    // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
+   // Per-closed-D1-bar: rebalance, close old legs, then enter the new rank set.
+   // Exit and entry share this single QM_IsNewBar call.
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
+      return;
+
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
+   QM_EquityStreamOnNewBar();
+
+   g_rebalance_bar_active = true;
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -453,22 +465,14 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
-
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
-   if(!QM_IsNewBar())
-      return;
-
-   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
-   // since last tick. Cheap: most calls early-return on same-day check.
-   QM_EquityStreamOnNewBar();
+   g_rebalance_bar_active = false;
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
+      if(QM_TM_OpenPosition(req, out_ticket))
+         g_open_hold_bars = 0;
      }
   }
 

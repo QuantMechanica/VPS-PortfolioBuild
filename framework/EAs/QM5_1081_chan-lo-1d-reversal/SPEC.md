@@ -61,7 +61,7 @@ Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and 
 |---|---|
 | Base timeframe | `D1` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_D1)` |
 
 ---
 
