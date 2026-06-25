@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA trades M5 closed bars using a symmetric long and short EMA crossover rule. A long entry requires the M5 close to be above the H1 SMA50 regime line and EMA8 to cross above EMA21; a short entry requires the M5 close to be below the H1 SMA50 regime line and EMA8 to cross below EMA21. Positions use an ATR14 stop at 1.5 times ATR and close when ADX14 falls below 30, with the source ROI ladder disabled because the card notes its non-monotonic behavior must be normalized or disabled for MT5.
+This EA trades M5 closed bars using a symmetric long and short EMA crossover rule. A long entry requires the M5 close to be above the H1 SMA50 regime line and EMA8 to cross above EMA21; a short entry requires the M5 close to be below the H1 SMA50 regime line and EMA8 to cross below EMA21. Positions use the nearer of an ATR14 stop at 1.5 times ATR and the source -5% disaster stop cap, then close when ADX14 falls below 30. The source ROI ladder is disabled because the card notes its non-monotonic behavior must be normalized or disabled for MT5.
 
 ---
 
@@ -25,6 +25,7 @@ This EA trades M5 closed bars using a symmetric long and short EMA crossover rul
 | strategy_resample_sma_period | 50 | 25, 50, 100 | H1 SMA period used as the higher-timeframe regime filter. |
 | strategy_atr_period | 14 | 10-20 | ATR period used for the baseline stop. |
 | strategy_sl_atr_mult | 1.5 | Fixed by card | Stop distance multiplier applied to ATR. |
+| strategy_disaster_stop_pct | 5.0 | Fixed by source | Maximum source stop-loss cap as a percent of entry price. |
 | strategy_spread_pct_of_stop | 6.0 | Fixed by card | Maximum modeled spread as a percent of planned stop distance. |
 | strategy_warmup_bars | 650 | Fixed by card | Minimum M5 bars before trading for resampled SMA stability. |
 

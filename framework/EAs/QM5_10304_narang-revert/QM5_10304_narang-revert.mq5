@@ -75,7 +75,6 @@ input double          strategy_ema_atr_band    = 1.5;
 input int             strategy_adx_period      = 14;
 input double          strategy_adx_max         = 28.0;
 input int             strategy_max_hold_bars   = 12;
-input int             strategy_warmup_bars     = 230;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -109,11 +108,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_ema_period <= 1 ||
       strategy_ema_atr_band <= 0.0 ||
       strategy_adx_period <= 0 ||
-      strategy_max_hold_bars <= 0 ||
-      strategy_warmup_bars <= strategy_ema_period)
-      return false;
-
-   if(Bars(_Symbol, PERIOD_H4) < strategy_warmup_bars)
+      strategy_max_hold_bars <= 0)
       return false;
 
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)

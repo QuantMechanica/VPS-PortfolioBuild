@@ -23,8 +23,7 @@
 //   Exit  EVENT  : ADX14 (M5) < adx_exit_max (source uses pos_entry_adx=30).
 //                  Mirrors the freqtrade signal exit for both directions.
 //   Stop         : QM_StopATR(atr_period, sl_atr_mult). Source -5% retained as a
-//                  disaster cap via the framework's fixed-fraction stop; the ATR
-//                  stop is the operative MT5 baseline.
+//                  disaster cap; the nearer of ATR stop and 5% cap is used.
 //   Take profit  : none. The source ROI ladder (5% / 10%@30m / 7.5%@60m) is
 //                  NON-MONOTONIC and not portable to a single MT5 TP; per the
 //                  card's "normalize or disable" note it is disabled here.
@@ -67,8 +66,34 @@ input double strategy_adx_exit_max       = 30.0;    // exit when ADX < this (sou
 input int    strategy_resample_sma_period = 50;     // SMA period on the H1 (resampled) series
 input int    strategy_atr_period         = 14;      // ATR period for stop
 input double strategy_sl_atr_mult        = 1.5;     // stop distance = mult * ATR (card baseline)
+input double strategy_disaster_stop_pct  = 5.0;     // source stoploss cap (-5%)
 input double strategy_spread_pct_of_stop = 6.0;     // skip if spread > this % of stop distance
 input int    strategy_warmup_bars        = 650;     // minimum M5 bars for H1 SMA stability
+
+double Strategy_CappedStop(const QM_OrderType order_type,
+                           const double entry,
+                           const double atr_value)
+  {
+   const double atr_stop = QM_StopATRFromValue(_Symbol, order_type, entry, atr_value, strategy_sl_atr_mult);
+   if(atr_stop <= 0.0)
+      return 0.0;
+   if(strategy_disaster_stop_pct <= 0.0)
+      return atr_stop;
+
+   const double cap_fraction = strategy_disaster_stop_pct / 100.0;
+   double cap_stop = 0.0;
+   if(order_type == QM_BUY)
+      cap_stop = entry * (1.0 - cap_fraction);
+   else
+      cap_stop = entry * (1.0 + cap_fraction);
+   cap_stop = QM_StopRulesNormalizePrice(_Symbol, cap_stop);
+   if(cap_stop <= 0.0)
+      return atr_stop;
+
+   if(order_type == QM_BUY)
+      return MathMax(atr_stop, cap_stop);
+   return MathMin(atr_stop, cap_stop);
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -152,7 +177,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // --- Long: close above H1 regime AND fresh bullish cross ---
    if(crossed_up && close1 > h1_sma)
      {
-      const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr_value, strategy_sl_atr_mult);
+      const double sl = Strategy_CappedStop(QM_BUY, entry, atr_value);
       if(sl <= 0.0)
          return false;
       req.type   = QM_BUY;
@@ -166,7 +191,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // --- Short: close below H1 regime AND fresh bearish cross ---
    if(crossed_down && close1 < h1_sma)
      {
-      const double sl = QM_StopATRFromValue(_Symbol, QM_SELL, entry, atr_value, strategy_sl_atr_mult);
+      const double sl = Strategy_CappedStop(QM_SELL, entry, atr_value);
       if(sl <= 0.0)
          return false;
       req.type   = QM_SELL;
