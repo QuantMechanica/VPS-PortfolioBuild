@@ -19,10 +19,11 @@
 //   Doji guard : skip when High[1] - Low[1] <= 0 (zero-range bar -> div by zero).
 //   LONG       : IBR < ibr_long_threshold (weak close) AND Close[1] > SMA(regime).
 //   SHORT      : IBR > ibr_short_threshold (strong close) AND Close[1] < SMA(regime).
-//   Stop       : entry -/+ sl_atr_mult * ATR  (1.5 * ATR per card).
+//   Stop       : entry -/+ sl_atr_mult * ATR, capped at 100 pips for P2.
 //   Take profit: entry +/- tp_atr_mult * ATR  (2.0 * ATR per card, same ATR value).
-//   Spread guard: skip only a genuinely wide spread > spread_pct_of_stop of the
-//                 stop distance (fail-OPEN on .DWX zero modeled spread).
+//   Secondary exit: close when IBR normalizes into the 0.30..0.70 band.
+//   Spread guard: skip only a genuinely wide spread > spread_cap_pips
+//                 (fail-OPEN on .DWX zero modeled spread).
 //
 // Single entry per magic; hold until SL or TP. Only the 5 Strategy_* hooks +
 // Strategy inputs are EA-specific. All else is framework wiring (keep intact).
@@ -61,7 +62,10 @@ input int    strategy_sma_period          = 200;    // regime filter SMA period 
 input int    strategy_atr_period          = 14;     // ATR period (stop / target)
 input double strategy_sl_atr_mult         = 1.5;    // stop distance  = mult * ATR
 input double strategy_tp_atr_mult         = 2.0;    // target distance = mult * ATR
-input double strategy_spread_pct_of_stop  = 15.0;   // skip if spread > this % of stop distance
+input int    strategy_sl_cap_pips         = 100;    // P2 cap on ATR stop distance
+input int    strategy_spread_cap_pips     = 25;     // card spread cap in pips
+input double strategy_exit_ibr_low        = 0.30;   // exit if IBR normalizes at/above this
+input double strategy_exit_ibr_high       = 0.70;   // exit if IBR normalizes at/below this
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -76,17 +80,13 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to the entry gate, do not block here
-
-   const double stop_distance = strategy_sl_atr_mult * atr_value;
-   if(stop_distance <= 0.0)
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(spread_cap <= 0.0)
       return false;
 
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread > spread_cap)
       return true;
 
    return false;
@@ -100,9 +100,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // --- Prior CLOSED bar OHLC (shift 1). Single closed-bar reads. ---
-   const double high1  = iHigh(_Symbol,  _Period, 1); // perf-allowed: single closed-bar read
-   const double low1   = iLow(_Symbol,   _Period, 1); // perf-allowed: single closed-bar read
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
+   const double high1  = iHigh(_Symbol,  PERIOD_D1, 1); // perf-allowed: single closed D1 bar read for IBR
+   const double low1   = iLow(_Symbol,   PERIOD_D1, 1); // perf-allowed: single closed D1 bar read for IBR
+   const double close1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: single closed D1 bar read for IBR
    if(high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0)
       return false;
 
@@ -115,12 +115,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double ibr = (close1 - low1) / bar_range;
 
    // --- Regime filter: SMA(period) on closed bar. ---
-   const double sma = QM_SMA(_Symbol, _Period, strategy_sma_period, 1, PRICE_CLOSE);
+   const double sma = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 1, PRICE_CLOSE);
    if(sma <= 0.0)
       return false;
 
    // --- ATR for stop / target (same value used for both). ---
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
+   const double atr_value = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if(atr_value <= 0.0)
       return false;
 
@@ -147,16 +147,25 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry <= 0.0)
       return false;
 
-   const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr_value, strategy_sl_atr_mult);
+   double sl = 0.0;
+   const double atr_stop_distance = atr_value * strategy_sl_atr_mult;
+   const double cap_stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_cap_pips);
+   if(cap_stop_distance > 0.0 && atr_stop_distance > cap_stop_distance)
+      sl = QM_StopFixedPips(_Symbol, side, entry, strategy_sl_cap_pips);
+   else
+      sl = QM_StopATRFromValue(_Symbol, side, entry, atr_value, strategy_sl_atr_mult);
+
    const double tp = QM_TakeATRFromValue(_Symbol, side, entry, atr_value, strategy_tp_atr_mult);
    if(sl <= 0.0 || tp <= 0.0)
       return false;
 
-   req.type   = side;
-   req.price  = 0.0;   // framework fills market price at send
-   req.sl     = sl;
-   req.tp     = tp;
+   req.type = side;
+   req.price = 0.0;   // framework fills market price at send
+   req.sl = sl;
+   req.tp = tp;
    req.reason = reason;
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
@@ -165,9 +174,26 @@ void Strategy_ManageOpenPosition()
   {
   }
 
-// No discretionary exit — position is held until SL or TP per the card.
+// Secondary card exit: close after IBR normalizes into the middle of the range.
 bool Strategy_ExitSignal()
   {
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
+      return false;
+
+   const double high1  = iHigh(_Symbol,  PERIOD_D1, 1); // perf-allowed: single closed D1 bar read for IBR exit
+   const double low1   = iLow(_Symbol,   PERIOD_D1, 1); // perf-allowed: single closed D1 bar read for IBR exit
+   const double close1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: single closed D1 bar read for IBR exit
+   if(high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0)
+      return false;
+
+   const double bar_range = high1 - low1;
+   if(bar_range <= 0.0)
+      return false;
+
+   const double ibr = (close1 - low1) / bar_range;
+   if(ibr >= strategy_exit_ibr_low && ibr <= strategy_exit_ibr_high)
+      return true;
+
    return false;
   }
 

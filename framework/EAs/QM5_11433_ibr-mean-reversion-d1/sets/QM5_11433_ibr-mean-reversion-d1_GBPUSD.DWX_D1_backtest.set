@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11520
-; ea_slug:      carter-t-ema18-adx12-pullback
+; ea_id:        11433
+; ea_slug:      ibr-mean-reversion-d1
 ; ea_version:   v5.0
 ; set_version:  s20260625-001
-; symbol:       EURUSD.DWX
-; timeframe:    H1
+; symbol:       GBPUSD.DWX
+; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   bcf9c8a749d89be55c643391f414a3b734a634c95e676efd7943466216912d07
 ; author:       Development
 ; date:         2026-06-25
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

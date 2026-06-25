@@ -1,11 +1,11 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11520
-; ea_slug:      carter-t-ema18-adx12-pullback
+; ea_id:        9702
+; ea_slug:      ff-mtf-rsi-stack-m5
 ; ea_version:   v5.0
 ; set_version:  s20260625-001
 ; symbol:       EURUSD.DWX
-; timeframe:    H1
+; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED

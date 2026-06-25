@@ -84,75 +84,6 @@ input int    strategy_expiry_bars       = 3;
 input double strategy_spread_cap_pips   = 15.0;
 input bool   strategy_no_friday_entry   = true;
 
-bool Strategy_HasOurPendingOrder()
-  {
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = OrdersTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = OrderGetTicket(i);
-      if(ticket == 0 || !OrderSelect(ticket))
-         continue;
-      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
-         continue;
-      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
-         continue;
-      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
-      if(order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP)
-         return true;
-     }
-
-   return false;
-  }
-
-bool Strategy_IsFridayClosedBar()
-  {
-   const datetime bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: one closed-bar timestamp for the card's Friday-entry filter.
-   if(bar_time <= 0)
-      return false;
-
-   MqlDateTime dt;
-   TimeToStruct(bar_time, dt);
-   return (dt.day_of_week == 5);
-  }
-
-bool Strategy_ReadRecentRates(MqlRates &rates[], const int count)
-  {
-   if(count <= 0)
-      return false;
-   ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, _Period, 1, count, rates); // perf-allowed: bounded closed-bar OHLC window; Strategy_EntrySignal is framework QM_IsNewBar-gated.
-   return (copied == count);
-  }
-
-double Strategy_HighestHigh(const MqlRates &rates[], const int count)
-  {
-   double highest = 0.0;
-   for(int i = 0; i < count; ++i)
-     {
-      if(rates[i].high <= 0.0)
-         continue;
-      if(highest <= 0.0 || rates[i].high > highest)
-         highest = rates[i].high;
-     }
-   return highest;
-  }
-
-double Strategy_LowestLow(const MqlRates &rates[], const int count)
-  {
-   double lowest = 0.0;
-   for(int i = 0; i < count; ++i)
-     {
-      if(rates[i].low <= 0.0)
-         continue;
-      if(lowest <= 0.0 || rates[i].low < lowest)
-         lowest = rates[i].low;
-     }
-   return lowest;
-  }
-
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -190,14 +121,48 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
-   if(Strategy_HasOurPendingOrder())
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
-   if(strategy_no_friday_entry && Strategy_IsFridayClosedBar())
+
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0 || !OrderSelect(ticket))
+         continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
+      if((int)OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      const ENUM_ORDER_TYPE order_type = (ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
+      if(order_type == ORDER_TYPE_BUY_STOP || order_type == ORDER_TYPE_SELL_STOP)
+         return false;
+     }
+
+   if(strategy_no_friday_entry)
+     {
+      const datetime bar_time = iTime(_Symbol, _Period, 1); // perf-allowed: one closed-bar timestamp for the card's Friday-entry filter.
+      if(bar_time > 0)
+        {
+         MqlDateTime dt;
+         TimeToStruct(bar_time, dt);
+         if(dt.day_of_week == 5)
+            return false;
+        }
+     }
+
+   if(strategy_ema_period < 2 || strategy_adx_period < 2 ||
+      strategy_swing_lookback < 1 || strategy_sl_pips < 1 ||
+      strategy_entry_offset_pips < 1 || strategy_expiry_bars < 1)
       return false;
 
    const int bars_needed = MathMax(strategy_swing_lookback, 1);
    MqlRates rates[];
-   if(!Strategy_ReadRecentRates(rates, bars_needed))
+   ArraySetAsSeries(rates, true);
+   // perf-allowed: bounded closed-bar OHLC window for card-defined pullback and swing-extreme rules; caller is QM_IsNewBar-gated.
+   const int copied = CopyRates(_Symbol, _Period, 1, bars_needed, rates);
+   if(copied != bars_needed)
       return false;
 
    const double ema = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
@@ -212,8 +177,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double entry_expiry_seconds = (double)PeriodSeconds((ENUM_TIMEFRAMES)_Period) * (double)strategy_expiry_bars;
    const int expiry_seconds = (entry_expiry_seconds > 0.0) ? (int)entry_expiry_seconds : 0;
 
-   const double swing_high = Strategy_HighestHigh(rates, bars_needed);
-   const double swing_low = Strategy_LowestLow(rates, bars_needed);
+   double swing_high = 0.0;
+   double swing_low = 0.0;
+   for(int bar = 0; bar < bars_needed; ++bar)
+     {
+      if(rates[bar].high > 0.0 && (swing_high <= 0.0 || rates[bar].high > swing_high))
+         swing_high = rates[bar].high;
+      if(rates[bar].low > 0.0 && (swing_low <= 0.0 || rates[bar].low < swing_low))
+         swing_low = rates[bar].low;
+     }
+
    const double fallback_tp_dist = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_tp_fallback_pips);
    if(fallback_tp_dist <= 0.0)
       return false;
