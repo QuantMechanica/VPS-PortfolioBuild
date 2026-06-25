@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f613ba7574566a5802eb02e02b3efdde7479217f49b18b76a3bbf025030afcd6
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-06-25
 ;==========================================================
@@ -18,9 +18,6 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_mode_legacy=0
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
@@ -35,11 +32,3 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-strategy_sma_period=200
-strategy_extreme_lookback=7
-strategy_atr_period=14
-strategy_sl_atr_mult=2.0
-strategy_max_sl_pips=150
-strategy_allow_short=1
-strategy_block_friday=1
-strategy_spread_cap_pips=15.0

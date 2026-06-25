@@ -4017,7 +4017,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1219,carver-accel,0,EURUSD.DWX,12190000,2026-05-26,Development,active
 1219,carver-accel,1,GBPUSD.DWX,12190001,2026-05-26,Development,active
 1219,carver-accel,2,USDJPY.DWX,12190002,2026-05-26,Development,active
-1219,carver-accel,3,GER40.DWX,12190003,2026-05-26,Development,active
+1219,carver-accel,3,GDAXI.DWX,12190003,2026-05-26,Development,active
 1219,carver-accel,4,NDX.DWX,12190004,2026-05-26,Development,active
 1219,carver-accel,5,WS30.DWX,12190005,2026-05-26,Development,active
 1219,carver-accel,6,XAUUSD.DWX,12190006,2026-05-26,Development,active

@@ -111,16 +111,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   const double ema = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
-   if(ema <= 0.0)
-      return false;
-
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0)
-      return false;
-
    const double offset = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_offset_pips);
    if(offset <= 0.0)
+      return false;
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
       return false;
 
    // --- Momentum STATE: MACD histogram side (main - signal) ---
@@ -131,8 +126,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double macd_hist = macd_main - macd_sig;
 
    // --- Trend STATE: price clearly above/below EMA by the offset cushion ---
-   const bool uptrend_state   = (close1 > ema + offset);
-   const bool downtrend_state = (close1 < ema - offset);
+   const int price_ma_state = QM_Sig_Price_Above_MA(_Symbol, _Period, strategy_ema_period, offset / point, 1);
+   const bool uptrend_state   = (price_ma_state > 0);
+   const bool downtrend_state = (price_ma_state < 0);
 
    QM_OrderType side = QM_BUY;
    string reason = "";
