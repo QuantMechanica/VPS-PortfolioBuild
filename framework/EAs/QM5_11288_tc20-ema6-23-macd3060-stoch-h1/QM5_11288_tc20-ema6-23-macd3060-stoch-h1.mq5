@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11288 tc20-ema6-23-macd3060-stoch-h1 — EMA(6/23) cross + MACD(30,60,30) state + Stoch state (H1)"
+#property description "QM5_11288 tc20-ema6-23-macd3060-stoch-h1 - EMA(6/23) cross + MACD(30,60,30) + Stoch cross (H1)"
 
 #include <QM/QM_Common.mqh>
 
@@ -13,8 +13,9 @@
 //       (g0_status APPROVED).
 //
 // Multi-indicator confluence. To avoid the .DWX "two fresh crosses on the same
-// bar => zero trades" trap, exactly ONE indicator supplies the trigger EVENT;
-// the others are directional STATES checked on the same closed bar:
+// bar => zero trades" trap, EMA(6/23) supplies the primary trigger EVENT.
+// Stochastic must still cross in the trade direction, but may have crossed
+// within the recent closed-bar lookback declared below.
 //
 //   Trigger EVENT (LONG)  : EMA(6) crosses ABOVE EMA(23) at shift 1
 //                           (ema_fast_prev <= ema_slow_prev && ema_fast_now > ema_slow_now)
@@ -22,8 +23,8 @@
 //
 //   STATE — MACD(30,60,30) main sign (zero-line filter, MAY be negative):
 //           LONG  needs MACD_Main >= 0 ; SHORT needs MACD_Main <= 0.
-//   STATE — Stochastic(5,3,3) directional position on the trigger bar:
-//           LONG  needs K > D ; SHORT needs K < D.
+//   CONFIRM — Stochastic(5,3,3) crossed in the trade direction within
+//             strategy_stoch_cross_lookback closed bars.
 //
 //   Stop  : fixed pips (card 20-30; default 25), pip-scale-correct.
 //   Take  : fixed pips (card 50-60; default 55), pip-scale-correct.
@@ -71,6 +72,35 @@ input int    strategy_stoch_slowing      = 3;     // Stochastic slowing
 input double strategy_sl_pips            = 25.0;  // fixed stop distance (pips) — card 20-30
 input double strategy_tp_pips            = 55.0;  // fixed take distance (pips) — card 50-60
 input double strategy_spread_cap_pips    = 20.0;  // skip only a genuinely wide spread (card cap)
+input int    strategy_stoch_cross_lookback = 3;   // recent-bar window for card's Stoch cross confirmation
+
+bool Strategy_StochCrossed(const int direction)
+  {
+   const int lookback = (strategy_stoch_cross_lookback < 1) ? 1 : strategy_stoch_cross_lookback;
+   for(int shift = 1; shift <= lookback; ++shift)
+     {
+      const double k_now  = QM_Stoch_K(_Symbol, _Period,
+                                       strategy_stoch_k, strategy_stoch_d,
+                                       strategy_stoch_slowing, shift);
+      const double d_now  = QM_Stoch_D(_Symbol, _Period,
+                                       strategy_stoch_k, strategy_stoch_d,
+                                       strategy_stoch_slowing, shift);
+      const double k_prev = QM_Stoch_K(_Symbol, _Period,
+                                       strategy_stoch_k, strategy_stoch_d,
+                                       strategy_stoch_slowing, shift + 1);
+      const double d_prev = QM_Stoch_D(_Symbol, _Period,
+                                       strategy_stoch_k, strategy_stoch_d,
+                                       strategy_stoch_slowing, shift + 1);
+      if(k_now <= 0.0 && d_now <= 0.0 && k_prev <= 0.0 && d_prev <= 0.0)
+         continue;
+
+      if(direction > 0 && k_prev <= d_prev && k_now > d_now)
+         return true;
+      if(direction < 0 && k_prev >= d_prev && k_now < d_now)
+         return true;
+     }
+   return false;
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -101,7 +131,7 @@ bool Strategy_NoTradeFilter()
   }
 
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
-// EMA(6/23) cross is the TRIGGER EVENT; MACD sign + Stoch position are STATES.
+// EMA(6/23) cross is the trigger EVENT; MACD sign and recent Stoch cross confirm.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    // One open position per symbol/magic.
@@ -129,30 +159,22 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // too, but the EMA-cross trigger already required valid bars so the indicator
    // history is warm — treat 0.0 as a neutral boundary (passes both sides).
 
-   // --- STATE: Stochastic(5,3,3) directional position on the trigger bar ---
-   const double stoch_k = QM_Stoch_K(_Symbol, _Period,
-                                     strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
-   const double stoch_d = QM_Stoch_D(_Symbol, _Period,
-                                     strategy_stoch_k, strategy_stoch_d, strategy_stoch_slowing, 1);
-   if(stoch_k <= 0.0 && stoch_d <= 0.0)
-      return false; // no valid stochastic read
-
    QM_OrderType dir;
    if(cross_up)
      {
-      // LONG: MACD not bearish (>=0) AND stochastic %K above %D.
+      // LONG: MACD not bearish (>=0) AND stochastic crossed upward recently.
       if(macd_main < 0.0)
          return false;
-      if(!(stoch_k > stoch_d))
+      if(!Strategy_StochCrossed(1))
          return false;
       dir = QM_BUY;
      }
    else
      {
-      // SHORT: MACD not bullish (<=0) AND stochastic %K below %D.
+      // SHORT: MACD not bullish (<=0) AND stochastic crossed downward recently.
       if(macd_main > 0.0)
          return false;
-      if(!(stoch_k < stoch_d))
+      if(!Strategy_StochCrossed(-1))
          return false;
       dir = QM_SELL;
      }
@@ -173,6 +195,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = (dir == QM_BUY) ? "ema_cross_long" : "ema_cross_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 

@@ -4,21 +4,19 @@
 **Slug:** `tc20-ema6-23-macd3060-stoch-h1`
 **Source:** `e78a9f1f-4e6a-563c-a080-915133d6ed28` (see `strategy-seeds/sources/e78a9f1f-4e6a-563c-a080-915133d6ed28/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-25
 
 ---
 
 ## 1. Strategy Logic
 
 A multi-indicator H1 trend-confluence system from Thomas Carter's "20 Forex
-Trading Strategies", Strategy #3. The EMA(6/23) crossover is the single trigger
-EVENT; the other indicators act as same-bar directional STATES so two fresh
-crosses are never required on one bar. LONG fires when EMA(6) crosses above
-EMA(23) on the close of an H1 bar AND MACD(30,60,30) main line is non-negative
-(zero-line filter, may be negative for shorts) AND Stochastic(5,3,3) %K is above
-%D. SHORT is the mirror: EMA(6) crosses below EMA(23), MACD main non-positive,
-and %K below %D. Stop is a fixed 25 pips, take-profit a fixed 55 pips. A reverse
-EMA(6/23) cross closes the open position early.
+Trading Strategies", Strategy #3. The EMA(6/23) crossover is the primary trigger:
+long when EMA(6) crosses above EMA(23), short when EMA(6) crosses below EMA(23).
+MACD(30,60,30) confirms trend direction with the main line above or below zero,
+and Stochastic(5,3,3) must have crossed in the trade direction within the recent
+closed-bar confirmation window. Stop is a fixed 25 pips, take-profit a fixed 55
+pips. A reverse EMA(6/23) cross closes the open position early.
 
 ---
 
@@ -37,6 +35,7 @@ EMA(6/23) cross closes the open position early.
 | `strategy_sl_pips` | 25.0 | 20-30 | Fixed stop-loss distance in pips |
 | `strategy_tp_pips` | 55.0 | 50-60 | Fixed take-profit distance in pips |
 | `strategy_spread_cap_pips` | 20.0 | 5-40 | Block only a genuinely wide spread (fail-open on zero) |
+| `strategy_stoch_cross_lookback` | 3 | 1-5 | Closed-bar window for the required Stochastic cross confirmation |
 
 ---
 
@@ -68,6 +67,7 @@ EMA(6/23) cross closes the open position early.
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | `~100` |
+| Trade frequency | `not separately specified in card frontmatter; inferred frequent H1` |
 | Typical hold time | `hours (intraday-to-multi-bar H1)` |
 | Expected drawdown profile | `moderate; fixed 25-pip stop caps per-trade loss` |
 | Regime preference | `trend` |
@@ -102,4 +102,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | EMA(6/23) trigger + MACD/Stoch states |
+| v1 | 2026-06-25 | Initial build from card | 46cb22f9-7d15-4de7-87d2-aee9718be904 |
