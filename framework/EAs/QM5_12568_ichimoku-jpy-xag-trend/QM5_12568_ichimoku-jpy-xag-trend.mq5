@@ -213,6 +213,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_tp_rr <= 0.0)
       return false;
 
+   // Card: one active position per symbol/magic
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+      return false;
+
    const int signal = Strategy_OppositeSignal();
    if(signal == 0)
       return false;
