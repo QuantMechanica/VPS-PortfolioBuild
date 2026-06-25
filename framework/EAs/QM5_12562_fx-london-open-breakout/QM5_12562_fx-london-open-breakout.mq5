@@ -237,10 +237,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double bar_range = bar_high - bar_low;
    double or_width  = g_or_high - g_or_low;
 
+   MqlDateTime _dbg_dt; TimeToStruct(bar1_open, _dbg_dt);
+   bool _dbg_2024q1 = (_dbg_dt.year == 2024 && _dbg_dt.mon <= 2);
+
    // Confirmation filters (dead-opening / fakeout rejection)
    if(bar_range < strategy_bb_atr_mult * atr_m15)
      {
-      if(TimeYear(bar1_open) == 2024 && TimeMonth(bar1_open) <= 2)
+      if(_dbg_2024q1)
          PrintFormat("DBG RANGE_FAIL bar1=%s range=%.5f need=%.5f or_h=%.5f or_l=%.5f",
                      TimeToString(bar1_open,TIME_DATE|TIME_MINUTES),
                      bar_range, strategy_bb_atr_mult*atr_m15, g_or_high, g_or_low);
@@ -248,7 +251,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
    if(or_width < strategy_or_width_atr_mult * atr_d1 / 4.0)
      {
-      if(TimeYear(bar1_open) == 2024 && TimeMonth(bar1_open) <= 2)
+      if(_dbg_2024q1)
          PrintFormat("DBG ORWIDTH_FAIL bar1=%s orW=%.5f need=%.5f(atr_d1=%.5f)",
                      TimeToString(bar1_open,TIME_DATE|TIME_MINUTES),
                      or_width, strategy_or_width_atr_mult*atr_d1/4.0, atr_d1);
@@ -260,7 +263,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    bool is_short = (bar_close < g_or_low);
    if(!is_long && !is_short)
      {
-      if(TimeYear(bar1_open) == 2024 && TimeMonth(bar1_open) <= 2)
+      if(_dbg_2024q1)
          PrintFormat("DBG NO_BREAK bar1=%s close=%.5f or_h=%.5f or_l=%.5f",
                      TimeToString(bar1_open,TIME_DATE|TIME_MINUTES),
                      bar_close, g_or_high, g_or_low);
