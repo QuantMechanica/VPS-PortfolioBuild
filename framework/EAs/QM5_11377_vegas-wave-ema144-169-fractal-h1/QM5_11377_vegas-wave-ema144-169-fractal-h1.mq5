@@ -47,6 +47,10 @@ input int    strategy_session_start_hr     = 8;
 input int    strategy_session_end_hr       = 19;
 input double strategy_spread_cap_pips      = 20.0;
 
+int   g_watch_direction = 0;
+int   g_bars_since_breakout = 0;
+ulong g_tp1_processed_ticket = 0;
+
 // Return TRUE to BLOCK trading this tick.
 bool Strategy_NoTradeFilter()
   {
@@ -109,9 +113,39 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const double ema_fast = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 1);
    const double ema_slow = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 1);
+   const double ema_fast_prev = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 2);
+   const double ema_slow_prev = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 2);
    const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
    const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar state read
-   if(ema_fast <= 0.0 || ema_slow <= 0.0 || atr <= 0.0 || close1 <= 0.0)
+   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed: breakout-state confirmation
+   if(ema_fast <= 0.0 || ema_slow <= 0.0 || ema_fast_prev <= 0.0 || ema_slow_prev <= 0.0 ||
+      atr <= 0.0 || close1 <= 0.0 || close2 <= 0.0)
+      return false;
+
+   const bool long_breakout = (close1 > ema_slow && close2 <= ema_slow_prev);
+   const bool short_breakout = (close1 < ema_fast && close2 >= ema_fast_prev);
+   if(long_breakout)
+     {
+      g_watch_direction = 1;
+      g_bars_since_breakout = 0;
+     }
+   else if(short_breakout)
+     {
+      g_watch_direction = -1;
+      g_bars_since_breakout = 0;
+     }
+   else if(g_watch_direction != 0)
+     {
+      g_bars_since_breakout++;
+      if((g_watch_direction == 1 && close1 <= ema_slow) ||
+         (g_watch_direction == -1 && close1 >= ema_fast))
+        {
+         g_watch_direction = 0;
+         g_bars_since_breakout = 0;
+        }
+     }
+
+   if(g_watch_direction == 0 || g_bars_since_breakout <= strategy_fractal_side_bars)
       return false;
 
    const int center_shift = strategy_fractal_side_bars + 1;
@@ -147,7 +181,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double modeled_spread = (ask > bid) ? (ask - bid) : 0.0;
 
-   if(close1 > ema_slow && down_fractal)
+   if(g_watch_direction == 1 && close1 > ema_slow && down_fractal)
      {
       const double entry = center_high + buffer + modeled_spread;
       if(ask > 0.0 && entry <= ask)
@@ -165,10 +199,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.reason = "vegas_long_down_fractal_breakout";
       req.symbol_slot = qm_magic_slot_offset;
       req.expiration_seconds = strategy_pending_bars * PeriodSeconds(_Period);
+      g_watch_direction = 0;
+      g_bars_since_breakout = 0;
       return (req.price > 0.0 && req.sl > 0.0 && req.tp > 0.0);
      }
 
-   if(close1 < ema_fast && up_fractal)
+   if(g_watch_direction == -1 && close1 < ema_fast && up_fractal)
      {
       const double entry = center_low - buffer;
       if(bid > 0.0 && entry >= bid)
@@ -186,6 +222,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.reason = "vegas_short_up_fractal_breakout";
       req.symbol_slot = qm_magic_slot_offset;
       req.expiration_seconds = strategy_pending_bars * PeriodSeconds(_Period);
+      g_watch_direction = 0;
+      g_bars_since_breakout = 0;
       return (req.price > 0.0 && req.sl > 0.0 && req.tp > 0.0);
      }
 
@@ -240,7 +278,11 @@ void Strategy_ManageOpenPosition()
       if(moved < strategy_tp1_atr_mult * atr)
          continue;
 
-      QM_TM_PartialClose(ticket, volume * 0.5, QM_EXIT_PARTIAL);
+      if(g_tp1_processed_ticket != ticket)
+        {
+         QM_TM_PartialClose(ticket, volume * 0.5, QM_EXIT_PARTIAL);
+         g_tp1_processed_ticket = ticket;
+        }
       QM_TM_MoveToBreakEven(ticket, trigger_pips, 1);
      }
   }
