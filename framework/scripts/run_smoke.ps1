@@ -614,6 +614,21 @@ function Write-TesterIni {
     $leverage = [int]$defaults.leverage
     if (-not [string]::IsNullOrWhiteSpace($CurrencyOverride)) {
         $currency = $CurrencyOverride.Trim().ToUpperInvariant()
+    } elseif (-not [string]::IsNullOrWhiteSpace($SetFilePath)) {
+        $setDir = Split-Path -Parent $SetFilePath
+        $eaDir = Split-Path -Parent $setDir
+        $manifestPath = Join-Path $eaDir "basket_manifest.json"
+        if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
+            try {
+                $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+                $manifestCurrency = [string]$manifest.tester_currency
+                if (-not [string]::IsNullOrWhiteSpace($manifestCurrency)) {
+                    $currency = $manifestCurrency.Trim().ToUpperInvariant()
+                }
+            } catch {
+                Write-Host ("run_smoke.warn=basket_manifest_currency_unreadable path='{0}' err='{1}'" -f $manifestPath, $_.Exception.Message)
+            }
+        }
     }
     if ($deposit -le 0 -or [string]::IsNullOrWhiteSpace($currency) -or $leverage -le 0) {
         throw "tester_defaults.json invalid: initial_deposit=$deposit currency=$currency leverage=$leverage"
