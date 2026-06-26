@@ -4,7 +4,7 @@
 **Slug:** `tc-m5-17-ema3-8-macd-stoch-psar-stddev`
 **Source:** `e78a9f1f-4e6a-563c-a080-915133d6ed28` (Thomas Carter, 20 Forex Trading Strategies — 5 Min Trading System #17)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-26
 
 ---
 
@@ -18,10 +18,9 @@ SAR sits below price, MACD main is above zero, Standard Deviation(20) is at or
 above the per-symbol "medium" threshold (flat markets are skipped), AND %K
 crosses above %D on the just-closed bar. SHORT is the exact mirror (EMA3 below
 EMA8, SAR above price, MACD main below zero, StdDev medium-or-stronger, %K
-crosses below %D). The stop is the recent swing low (long) / swing high (short)
-over a lookback window, falling back to ATR(14)×1.5 if the structure level is on
-the wrong side of entry. There is no fixed take-profit: the position is closed
-when EMA(3) crosses back through EMA(8) against the trade.
+crosses below %D). The P2 stop uses ATR(14)×1.5, matching the card's explicit
+P2 stop-loss note. There is no fixed take-profit: the position is closed when
+EMA(3) crosses back through EMA(8) against the trade.
 
 ---
 
@@ -41,10 +40,9 @@ when EMA(3) crosses back through EMA(8) against the trade.
 | `strategy_psar_max` | 0.20 | 0.1-0.5 | Parabolic SAR maximum |
 | `strategy_stddev_period` | 20 | 10-40 | Standard Deviation period |
 | `strategy_stddev_medium_min` | 0.010 | 0.0001-1.0 | Min StdDev for "medium" regime (per-symbol; USDJPY→0.10) |
-| `strategy_swing_lookback` | 10 | 5-30 | Bars for swing-low/high stop |
-| `strategy_atr_period` | 14 | 7-30 | ATR period (fallback stop + spread reference) |
-| `strategy_atr_sl_mult` | 1.5 | 0.5-3.0 | Fallback stop = mult × ATR |
-| `strategy_spread_pct_of_stop` | 20.0 | 5-50 | Skip if spread exceeds this % of stop distance |
+| `strategy_atr_period` | 14 | 7-30 | ATR period for the P2 stop |
+| `strategy_atr_sl_mult` | 1.5 | 0.5-3.0 | P2 stop = mult × ATR |
+| `strategy_spread_cap_pips` | 12 | 1-50 | Skip only when modeled spread exceeds the card cap |
 
 ---
 
@@ -110,3 +108,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v2 | 2026-06-26 | Rebuilt in place for Q01 handoff | 1bc16d17-8dbe-4a52-9bc2-4294b97fae92 |

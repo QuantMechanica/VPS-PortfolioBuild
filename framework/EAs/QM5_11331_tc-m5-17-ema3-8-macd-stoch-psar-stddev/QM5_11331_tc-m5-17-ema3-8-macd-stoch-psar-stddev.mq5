@@ -25,8 +25,7 @@
 //   STATE (vol)   : StdDev(20) >= medium threshold (per-symbol; flat markets
 //                   below the threshold are skipped).
 //
-//   Stop          : recent swing low/high over swing_lookback bars (card §SL).
-//                   ATR(14)*1.5 fallback if structure stop is unusable.
+//   Stop          : ATR(14)*1.5 for P2, per the card's Stop Loss section.
 //   Exit          : EMA(3) crosses back through EMA(8) against the position
 //                   (long closes when EMA3 < EMA8). No fixed TP — exit is the
 //                   EMA-reverse per the card.
@@ -77,10 +76,9 @@ input double strategy_stddev_medium_min = 0.010;   // min StdDev for "medium" re
                                                    // EURUSD/GBPUSD majors: 0.010
                                                    // USDJPY: override to 0.10 in setfile
                                                    // AUD/NZD: override to 0.0005
-input int    strategy_swing_lookback    = 10;      // bars for swing-low/high stop
 input int    strategy_atr_period        = 14;      // ATR period (fallback stop)
-input double strategy_atr_sl_mult       = 1.5;     // fallback stop = mult * ATR (card P2)
-input double strategy_spread_pct_of_stop = 20.0;   // skip if spread > this % of stop distance
+input double strategy_atr_sl_mult       = 1.5;     // P2 stop = mult * ATR (card P2)
+input int    strategy_spread_cap_pips   = 12;      // card spread cap
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -94,17 +92,10 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block
 
-   const double atr_value = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to entry gate
-
-   const double stop_distance = strategy_atr_sl_mult * atr_value;
-   if(stop_distance <= 0.0)
-      return false;
-
    const double spread = ask - bid;
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread_cap > 0.0 && spread > spread_cap)
       return true;
 
    return false;
@@ -113,6 +104,14 @@ bool Strategy_NoTradeFilter()
 // Confluence entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type               = QM_BUY;
+   req.price              = 0.0;
+   req.sl                 = 0.0;
+   req.tp                 = 0.0;
+   req.reason             = "";
+   req.symbol_slot        = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -123,8 +122,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(ema_fast <= 0.0 || ema_slow <= 0.0)
       return false;
 
-   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0)
+   const double high1 = iHigh(_Symbol, _Period, 1); // perf-allowed: fixed closed-bar PSAR side read
+   const double low1  = iLow(_Symbol, _Period, 1);  // perf-allowed: fixed closed-bar PSAR side read
+   if(high1 <= 0.0 || low1 <= 0.0)
       return false;
 
    const double sar1 = QM_SAR(_Symbol, _Period, strategy_psar_step, strategy_psar_max, 1);
@@ -150,10 +150,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const bool stoch_cross_up   = (k_prev <= d_prev && k_now >  d_now);
    const bool stoch_cross_down = (k_prev >= d_prev && k_now <  d_now);
 
-   // --- LONG: trend up STATE + PSAR below STATE + MACD>0 STATE + stoch cross up EVENT ---
-   const bool long_states = (ema_fast > ema_slow) && (sar1 < close1) && (macd_main > 0.0);
-   // --- SHORT: trend down STATE + PSAR above STATE + MACD<0 STATE + stoch cross down EVENT ---
-   const bool short_states = (ema_fast < ema_slow) && (sar1 > close1) && (macd_main < 0.0);
+   // --- LONG: trend up STATE + PSAR below candle STATE + MACD>0 STATE + stoch cross up EVENT ---
+   const bool long_states = (ema_fast > ema_slow) && (sar1 < low1) && (macd_main > 0.0);
+   // --- SHORT: trend down STATE + PSAR above candle STATE + MACD<0 STATE + stoch cross down EVENT ---
+   const bool short_states = (ema_fast < ema_slow) && (sar1 > high1) && (macd_main < 0.0);
 
    QM_OrderType side;
    if(long_states && stoch_cross_up)
@@ -169,13 +169,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry <= 0.0)
       return false;
 
-   // --- Stop: recent swing low (long) / high (short); ATR fallback ---
-   double sl = QM_StopStructure(_Symbol, side, entry, strategy_swing_lookback);
-   // Structure stop must sit on the correct side of entry; else fall back to ATR.
-   bool sl_ok = (sl > 0.0) &&
-                ((side == QM_BUY && sl < entry) || (side == QM_SELL && sl > entry));
-   if(!sl_ok)
-      sl = QM_StopATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_sl_mult);
+   // --- Stop: P2 uses ATR(14) x 1.5 per the card's Stop Loss section. ---
+   double sl = QM_StopATR(_Symbol, side, entry, strategy_atr_period, strategy_atr_sl_mult);
    if(sl <= 0.0)
       return false;
 
@@ -184,6 +179,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = 0.0;   // no fixed TP — exit is the EMA-reverse (Strategy_ExitSignal)
    req.reason = (side == QM_BUY) ? "tc_m5_17_long" : "tc_m5_17_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 

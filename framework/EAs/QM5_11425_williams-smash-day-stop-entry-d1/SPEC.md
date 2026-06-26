@@ -4,7 +4,7 @@
 **Slug:** `williams-smash-day-stop-entry-d1`
 **Source:** `bb9e26af-ebd1-5a26-b1a8-cc4d78835f03` (Larry Williams, Inner Circle Workshop Trading Method)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-26
 
 ---
 
@@ -35,7 +35,7 @@ closed bars, so the rule is gapless-safe on .DWX CFDs.
 | `strategy_sl_cap_pips` | 80 | 40-120 | Max stop distance from entry (card P2 cap), in pips |
 | `strategy_tp_rr` | 2.0 | 1.5-3.0 | Take-profit as a multiple of the entry→SL risk distance |
 | `strategy_min_range_pips` | 15 | 5-30 | Skip degenerate small smash bars (min bar[1] range) |
-| `strategy_spread_pct_of_stop` | 25.0 | 10-50 | Skip only if spread > this % of the stop distance (fail-open on zero spread) |
+| `strategy_spread_cap_pips` | 25 | 5-50 | Skip only if modeled spread exceeds this pip cap (fail-open on zero spread) |
 
 ---
 
@@ -101,4 +101,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v1 | 2026-06-26 | Initial build from card | a362d804-a5c2-481a-9263-8060776d0dd4 |

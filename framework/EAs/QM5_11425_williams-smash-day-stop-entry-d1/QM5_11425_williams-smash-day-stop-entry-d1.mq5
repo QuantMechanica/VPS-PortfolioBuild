@@ -78,7 +78,7 @@ input int    strategy_entry_buffer_pips = 1;      // stop-entry offset beyond pr
 input int    strategy_sl_cap_pips       = 80;     // max stop distance from entry (card P2 cap), in pips
 input double strategy_tp_rr             = 2.0;    // take profit = this multiple of entry->SL risk
 input int    strategy_min_range_pips    = 15;     // skip degenerate small smash bars (bar[1] range)
-input double strategy_spread_pct_of_stop = 25.0;  // skip if spread > this % of stop distance
+input int    strategy_spread_cap_pips   = 25;     // skip only if modeled spread exceeds this pip cap
 
 // -----------------------------------------------------------------------------
 // Helpers
@@ -131,13 +131,10 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_cap_pips);
-   if(stop_distance <= 0.0)
-      return false;
-
    const double spread = ask - bid;
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread_cap > 0.0 && spread > spread_cap)
       return true;
 
    return false;
@@ -147,6 +144,14 @@ bool Strategy_NoTradeFilter()
 // QM_IsNewBar()==true, so this fires once per closed D1 bar.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // Each new closed bar: cancel any stale pending level from the prior bar
    // ("cancel if not filled by end of the day"). A fresh smash replaces it.
    CancelOwnPendingOrders();
@@ -251,6 +256,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl                 = sl;
    req.tp                 = tp;
    req.reason             = (otype == QM_BUY_STOP) ? "smash_day_buystop" : "smash_day_sellstop";
+   req.symbol_slot        = qm_magic_slot_offset;
    // Day-only order: expires after one D1 window if unfilled.
    req.expiration_seconds = 86400;
    return true;
