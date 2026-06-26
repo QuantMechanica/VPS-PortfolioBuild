@@ -111,6 +111,52 @@ class PortfolioAdmissionTests(unittest.TestCase):
         self.assertTrue(verdict["corr_insufficient"])
         self.assertEqual(verdict["reason"], "insufficient_overlap")
 
+    def test_monthly_fallback_admits_sparse_uncorrelated_low_freq(self) -> None:
+        # Two structural low-freq sleeves trade once a month on DIFFERENT days, so they
+        # never share a daily bar (daily overlap = 0 -> the daily gate alone would reject
+        # them as insufficient_overlap). On a monthly basis they are anti-correlated and
+        # the book improves -> the fallback must admit them.
+        with tempfile.TemporaryDirectory() as tmp:
+            common_dir = Path(tmp)
+            stream_dir = self._stream_dir(common_dir)
+            start = dt.datetime(2022, 1, 1, tzinfo=dt.UTC)
+            cost = self._cost()
+
+            # book sleeve drops -40 every odd month; candidate makes +120 in exactly those
+            # months (and only +20 in the others) -> anti-correlated monthly and fills the
+            # book's drawdowns, so the combined book is both higher-Sharpe and lower-DD.
+            self._write_monthly_stream(stream_dir / "100_EURUSD_DWX.jsonl", start, [100.0, -40.0] * 12, 1, cost)
+            self._write_monthly_stream(stream_dir / "101_EURUSD_DWX.jsonl", start, [20.0, 120.0] * 12, 15, cost)
+
+            verdict = evaluate_candidate((101, "EURUSD.DWX"), [(100, "EURUSD.DWX")], common_dir)
+
+        self.assertEqual(verdict["corr_basis"], "monthly")
+        self.assertFalse(verdict["corr_insufficient"])
+        self.assertLessEqual(verdict["max_corr_to_book"], 0.30)
+        self.assertTrue(verdict["admit"])
+        self.assertEqual(verdict["reason"], "admitted")
+
+    def test_monthly_fallback_rejects_sparse_correlated_low_freq(self) -> None:
+        # Same sparsity, but the two sleeves move in phase monthly. The daily gate would
+        # have mislabelled them insufficient_overlap (and parked them on the watchlist);
+        # the monthly fallback correctly catches the correlation and rejects.
+        with tempfile.TemporaryDirectory() as tmp:
+            common_dir = Path(tmp)
+            stream_dir = self._stream_dir(common_dir)
+            start = dt.datetime(2022, 1, 1, tzinfo=dt.UTC)
+            cost = self._cost()
+
+            self._write_monthly_stream(stream_dir / "100_EURUSD_DWX.jsonl", start, [100.0, -40.0] * 12, 1, cost)
+            self._write_monthly_stream(stream_dir / "101_EURUSD_DWX.jsonl", start, [200.0, -80.0] * 12, 15, cost)
+
+            verdict = evaluate_candidate((101, "EURUSD.DWX"), [(100, "EURUSD.DWX")], common_dir)
+
+        self.assertEqual(verdict["corr_basis"], "monthly")
+        self.assertFalse(verdict["corr_insufficient"])
+        self.assertGreater(verdict["max_corr_to_book"], 0.30)
+        self.assertFalse(verdict["admit"])
+        self.assertEqual(verdict["reason"], "correlation_above_max_corr")
+
     def _stream_dir(self, common_dir: Path) -> Path:
         stream_dir = common_dir / "QM" / "q08_trades"
         stream_dir.mkdir(parents=True)
@@ -132,6 +178,31 @@ class PortfolioAdmissionTests(unittest.TestCase):
                 row = {
                     "event": "TRADE_CLOSED",
                     "time": int((start + dt.timedelta(days=offset)).timestamp()),
+                    "net": net_of_cost + cost,
+                    "profit": net_of_cost + cost,
+                    "swap": 0.0,
+                    "commission": 0.0,
+                    "volume": 1.0,
+                    "notional": 10000.0,
+                }
+                fh.write(json.dumps(row, sort_keys=True) + "\n")
+
+    def _write_monthly_stream(
+        self,
+        path: Path,
+        start: dt.datetime,
+        monthly_pnl: list[float],
+        day_of_month: int,
+        cost: float,
+    ) -> None:
+        with path.open("w", encoding="utf-8") as fh:
+            for index, net_of_cost in enumerate(monthly_pnl):
+                year = start.year + (start.month - 1 + index) // 12
+                month = (start.month - 1 + index) % 12 + 1
+                stamp = dt.datetime(year, month, day_of_month, tzinfo=dt.UTC)
+                row = {
+                    "event": "TRADE_CLOSED",
+                    "time": int(stamp.timestamp()),
                     "net": net_of_cost + cost,
                     "profit": net_of_cost + cost,
                     "swap": 0.0,

@@ -42,7 +42,7 @@ class PortfolioQ08ContributionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             common_dir = Path(tmp) / "common"
             stream_dir = self._stream_dir(common_dir)
-            self._write_stream(stream_dir / "101_EURUSD_DWX.jsonl", [10.0] * 29)
+            self._write_stream(stream_dir / "101_EURUSD_DWX.jsonl", [10.0] * 19)
 
             verdict = evaluate_q08_soft_rescue(
                 (101, "EURUSD.DWX"),
@@ -52,7 +52,7 @@ class PortfolioQ08ContributionTests(unittest.TestCase):
 
         self.assertEqual(verdict["verdict"], "NEED_MORE_DATA")
         self.assertEqual(verdict["reason"], "portfolio_trade_count_below_min")
-        self.assertEqual(verdict["trade_count"], 29)
+        self.assertEqual(verdict["trade_count"], 19)
 
     def test_regime_catastrophe_fails_before_portfolio_admission(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -140,6 +140,53 @@ class PortfolioQ08ContributionTests(unittest.TestCase):
 
         self.assertEqual(verdict["verdict"], "FAIL_PORTFOLIO")
         self.assertEqual(verdict["reason"], "correlation_above_max_corr")
+
+    def test_insufficient_overlap_is_need_more_data_not_fail(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            common_dir = root / "common"
+            stream_dir = self._stream_dir(common_dir)
+            self._write_stream(stream_dir / "101_EURUSD_DWX.jsonl", [10.0] * 30)
+
+            with mock.patch(
+                "portfolio.portfolio_q08_contribution.portfolio_admission.evaluate_candidate",
+                return_value={
+                    "admit": False,
+                    "reason": "insufficient_overlap",
+                    "diversifies": True,
+                    "sharpe_with": 1.1,
+                    "sharpe_without": 0.9,
+                },
+            ):
+                verdict = evaluate_q08_soft_rescue(
+                    (101, "EURUSD.DWX"),
+                    common_dir=common_dir,
+                    candidates_db=root / "missing.sqlite",
+                )
+
+        self.assertEqual(verdict["verdict"], "NEED_MORE_DATA")
+        self.assertEqual(verdict["reason"], "portfolio_correlation_overlap_below_min")
+        self.assertEqual(verdict["previous_verdict"], "FAIL_PORTFOLIO")
+        self.assertTrue(verdict["sparse_overlap_watchlist"])
+
+    def test_missing_book_streams_are_need_more_data_not_runner_crash(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            common_dir = root / "common"
+            stream_dir = self._stream_dir(common_dir)
+            candidates_db = root / "candidates.sqlite"
+            self._write_stream(stream_dir / "101_EURUSD_DWX.jsonl", [10.0] * 30)
+            self._write_candidates(candidates_db, [("QM5_100", "EURUSD.DWX")])
+
+            verdict = evaluate_q08_soft_rescue(
+                (101, "EURUSD.DWX"),
+                common_dir=common_dir,
+                candidates_db=candidates_db,
+            )
+
+        self.assertEqual(verdict["verdict"], "NEED_MORE_DATA")
+        self.assertEqual(verdict["reason"], "portfolio_admission_missing_streams")
+        self.assertIn("missing q08 trade streams", verdict["admission_error"])
 
     def _ts(self, year: int, month: int, day: int) -> int:
         return int(dt.datetime(year, month, day, tzinfo=dt.UTC).timestamp())

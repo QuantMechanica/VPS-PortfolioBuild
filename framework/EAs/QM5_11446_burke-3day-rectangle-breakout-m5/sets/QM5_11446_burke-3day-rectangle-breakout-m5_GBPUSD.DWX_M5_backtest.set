@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   6fe13cd56481f5bd6dd81b58af75579ebaffed46cfc13741f25941f87272d513
+; build_hash:   dc4a11a8e7f6ae44edc899714e8e4bd21ee8f2f97790bfe40a7886fb8314d59d
 ; author:       Development
 ; date:         2026-06-25
 ;==========================================================
@@ -31,4 +31,14 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=QM5_11446_burke-3day-rectangle-breakout-m5.md
+strategy_rect_bars=3
+strategy_ema_period=20
+strategy_height_min_pips=20
+strategy_height_max_pips=100
+strategy_sl_buffer_pips=5
+strategy_sl_cap_pips=50
+strategy_sl_floor_frac=0.5
+strategy_session_start_hr=9
+strategy_session_end_hr=22
+strategy_spread_cap_pips=15

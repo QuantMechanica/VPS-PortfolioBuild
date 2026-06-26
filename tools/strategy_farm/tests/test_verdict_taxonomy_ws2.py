@@ -281,6 +281,52 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
         finally:
             conn.close()
 
+    def test_q09_portfolio_admission_dedupes_same_ea_symbol_preferring_default(self) -> None:
+        conn = _memory_work_items_conn()
+        try:
+            rows = [
+                (
+                    "q09-ablation",
+                    "C:/QM/repo/framework/EAs/QM5_11132/sets/QM5_11132_SP500.DWX_D1_backtest_ablation_01.set",
+                    "2026-06-03T00:00:00Z",
+                ),
+                (
+                    "q09-default",
+                    "C:/QM/repo/framework/EAs/QM5_11132/sets/QM5_11132_SP500.DWX_D1_backtest.set",
+                    "2026-06-03T00:01:00Z",
+                ),
+            ]
+            conn.executemany(
+                """
+                INSERT INTO work_items(
+                    id, kind, phase, ea_id, symbol, setfile_path, status,
+                    verdict, attempt_count, parent_task_id, evidence_path,
+                    payload_json, created_at, updated_at
+                )
+                VALUES (
+                    ?, 'backtest', 'Q09_PORTFOLIO', 'QM5_11132',
+                    'SP500.DWX', ?, 'done', 'PASS_PORTFOLIO', 1,
+                    NULL, 'D:/QM/reports/work_items/q09/aggregate.json',
+                    '{}', ?, ?
+                )
+                """,
+                [(row_id, setfile, ts, ts) for row_id, setfile, ts in rows],
+            )
+
+            result = {"q09_portfolio_admissions": []}
+            changed = farmctl._admit_q09_portfolio_passes(conn, result)
+
+            self.assertEqual(changed, 1)
+            admitted = conn.execute(
+                """
+                SELECT q11_work_item_id FROM portfolio_candidates
+                WHERE ea_id='QM5_11132' AND symbol='SP500.DWX'
+                """
+            ).fetchall()
+            self.assertEqual([row["q11_work_item_id"] for row in admitted], ["q09-default"])
+        finally:
+            conn.close()
+
     def test_invalid_missing_summary_remains_infra_fail(self) -> None:
         verdict, reason = farmctl._derive_phase_runner_verdict(
             {"phase": "Q05", "verdict": "INVALID", "reason": "summary_missing"},

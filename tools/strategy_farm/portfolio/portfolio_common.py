@@ -148,6 +148,20 @@ def to_daily_pnl(trades: Iterable[Trade]) -> dict[dt.date, float]:
     return dict(sorted(daily.items()))
 
 
+def to_monthly_pnl(trades: Iterable[Trade]) -> dict[str, float]:
+    """Calendar-month buckets ('YYYY-MM' -> summed net_of_cost). Used as the
+    diversification-correlation basis for structural low-frequency sleeves whose
+    daily series almost never overlap (a few trades per year => ~0 co-active days),
+    where daily-PnL correlation is statistically empty."""
+    monthly: dict[str, float] = {}
+    for trade in trades:
+        stamp = dt.datetime.fromtimestamp(trade.time, tz=dt.UTC)
+        monthly[f"{stamp.year:04d}-{stamp.month:02d}"] = (
+            monthly.get(f"{stamp.year:04d}-{stamp.month:02d}", 0.0) + trade.net_of_cost
+        )
+    return dict(sorted(monthly.items()))
+
+
 def align(
     series_by_key: dict[tuple[int, str], dict[dt.date, float]],
 ) -> tuple[list[tuple[int, str]], list[dt.date], Any]:

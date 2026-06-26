@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA reconstructs Ehlers' Hilbert phase on closed H4 bars, transforms the phase into `Sine = sin(Phase)`, and compares it to the fixed 45-degree lead line `Lead = sin(Phase + pi/4)`. A long entry fires when Sine crosses above Lead in confirmed cycle mode, the dominant period is within the active input bounds, and the Sine value is positive. A short entry mirrors that rule when Sine crosses below Lead and the Sine value is negative. Exits occur on the opposite Sine/Lead cross, trend-mode dissipation for 3 closed H4 bars, the ATR high/low trail, or the natural cycle time stop.
+The EA reconstructs Ehlers' Hilbert phase on closed H4 bars (Smooth+Detrender+I1/Q1 FIR with fixed coefficients), transforms the phase into `Sine = sin(Phase)` and the 45-degree lead line `Lead = sin(Phase + pi/4)`. A long entry fires when Sine crosses above Lead in confirmed cycle mode (DPhase in [6,60] degrees for >= 2 consecutive bars), the dominant period is within [10,40] bars, the Sine value is positive (lower half-cycle), the Sine/Lead separation exceeds 0.05, and the H4 close is above EMA(50, D1). A short mirrors those conditions. Exits occur on the opposite Sine/Lead cross, trend-mode detected for >= 3 bars, the ATR high/low trailing stop after a 1.5 ATR favorable move, or the natural cycle time stop at 1.2x the dominant period at entry.
 
 ---
 
@@ -21,13 +21,13 @@ The EA reconstructs Ehlers' Hilbert phase on closed H4 bars, transforms the phas
 | `strategy_warmup_h4_bars` | 200 | 100-500 | H4 history used to settle the Hilbert phase reconstruction. |
 | `strategy_atr_period` | 20 | 5-100 | ATR period for spread filter, initial stop, and trailing stop. |
 | `strategy_spread_atr_mult` | 0.30 | 0.05-2.00 | Blocks only genuinely wide spreads above this ATR fraction. |
-| `strategy_d1_ema_period` | 50 | 10-200 | Reserved D1 EMA regime period from the card; not applied as a hard Q01 smoke gate in this rework. |
-| `strategy_cycle_min_dphase_deg` | 0.0 | 0.0-30.0 | Minimum absolute phase rotation for cycle mode; relaxed for Q01 trade-generation rework. |
-| `strategy_cycle_max_dphase_deg` | 180.0 | 20.0-180.0 | Maximum absolute phase rotation for cycle mode; relaxed for Q01 trade-generation rework. |
-| `strategy_trade_min_period` | 6 | 6-30 | Minimum dominant period accepted for entries. |
-| `strategy_trade_max_period` | 50 | 20-50 | Maximum dominant period accepted for entries. |
-| `strategy_sine_lead_sep_min` | 0.0 | 0.00-0.50 | Minimum Sine/Lead separation after a cross. |
-| `strategy_cycle_stability_bars` | 1 | 1-8 | Closed H4 bars that must already be in cycle mode. |
+| `strategy_d1_ema_period` | 50 | 10-200 | D1 EMA period for regime alignment; long requires Close > EMA(50,D1), short requires Close < EMA(50,D1). |
+| `strategy_cycle_min_dphase_deg` | 6.0 | 0.0-30.0 | Minimum absolute phase rotation for cycle mode per Ehlers 2001 p. 96 (+6 deg lower bound). |
+| `strategy_cycle_max_dphase_deg` | 60.0 | 20.0-180.0 | Maximum absolute phase rotation for cycle mode per Ehlers 2001 p. 96 (+60 deg upper bound). |
+| `strategy_trade_min_period` | 10 | 6-30 | Minimum dominant period accepted for entries (card: 10). |
+| `strategy_trade_max_period` | 40 | 20-50 | Maximum dominant period accepted for entries (card: 40). |
+| `strategy_sine_lead_sep_min` | 0.05 | 0.00-0.50 | Minimum Sine/Lead separation gate per Ehlers 2001 p. 99 noise-cross avoidance. |
+| `strategy_cycle_stability_bars` | 2 | 1-8 | Closed H4 bars that must already be in cycle mode per Ehlers 2001 p. 99 one-bar confirmation. |
 | `strategy_trend_exit_bars` | 3 | 1-8 | Consecutive non-cycle H4 bars that trigger trend-mode exit. |
 | `strategy_initial_stop_atr` | 0.50 | 0.10-3.00 | Initial stop offset from the entry bar high/low in ATR units. |
 | `strategy_trail_trigger_atr` | 1.50 | 0.50-5.00 | Favorable move required before the ATR trail can move the stop. |
@@ -105,3 +105,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-26 | Initial build from card | d86f2983-8fa0-4273-904b-f3c32791ea2e |
+| v2 | 2026-06-26 | Fixed card-faithful defaults: cycle dphase [6,60], period [10,40], sep_min 0.05, stability 2 bars; added D1 EMA(50) regime filter | d86f2983-8fa0-4273-904b-f3c32791ea2e |
