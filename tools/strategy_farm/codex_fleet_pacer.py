@@ -24,8 +24,8 @@ STATE = Path(r"D:/QM/reports/state/codex_fleet_pacer_state.json")
 LOG = Path(r"D:/QM/reports/state/codex_fleet_pacer.log")
 
 # Pacing parameters
-SOFT_CEIL_PCT = 88.0     # stop spawning at/above this weekly-used %
-HARD_CEIL_PCT = 94.0     # kill our agents at/above this (guarantee no 100% cap-stop)
+SOFT_CEIL_PCT = 92.0     # stop spawning at/above this weekly-used % (OWNER 2026-06-26: higher utilization)
+HARD_CEIL_PCT = 94.0     # kill our agents at/above this (guarantee no 100% cap-stop); 6% buffer to the cap
 DEFAULT_MAX_AGENTS = 4   # concurrency cap (CPU/backtest + safety)
 AGENT_FRESH_SEC = 240    # a live-log written within this window => agent still running
 MIN_HOURS_TO_RESET = 0.25
