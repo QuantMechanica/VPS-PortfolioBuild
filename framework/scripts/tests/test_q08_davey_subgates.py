@@ -284,5 +284,53 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         self.assertTrue(hasattr(aggregate, "_latest_structured_qm_log"))
 
 
+class Q08DurableSleeveStreamTests(unittest.TestCase):
+    """The durable portfolio-stream persistence fidelity rule (copy / serialise / skip)."""
+
+    def test_copies_live_common_stream_verbatim_when_present(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            common_log = root / "common" / "1234_EURUSD_DWX.jsonl"
+            common_log.parent.mkdir(parents=True)
+            payload = ('{"event":"TRADE_CLOSED","time":1,"net":5.0,"volume":0.1,'
+                       '"notional":1000.0,"symbol":"EURUSD.DWX"}\n')
+            common_log.write_text(payload, encoding="utf-8")
+            with patch.object(aggregate, "DURABLE_STREAM_ROOT", root / "durable"), \
+                 patch.object(aggregate, "_common_q08_trade_log", return_value=common_log):
+                res = aggregate._persist_durable_sleeve_stream(
+                    1234, "EURUSD.DWX", [{"volume": 0.1, "net": 5.0}])
+            self.assertTrue(res["persisted"])
+            self.assertEqual(res["source"], "common_copy")
+            self.assertEqual(Path(res["path"]).read_text(encoding="utf-8"), payload)
+
+    def test_serialises_in_memory_trades_when_volume_present_and_no_common(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            absent = root / "nope.jsonl"
+            trades = [{"time": 10, "net": 3.0, "profit": 3.0, "swap": 0.0,
+                       "commission": 0.0, "volume": 0.2, "notional": 2000.0,
+                       "symbol": "NDX.DWX"}]
+            with patch.object(aggregate, "DURABLE_STREAM_ROOT", root / "durable"), \
+                 patch.object(aggregate, "_common_q08_trade_log", return_value=absent):
+                res = aggregate._persist_durable_sleeve_stream(99, "NDX.DWX", trades)
+            self.assertTrue(res["persisted"])
+            self.assertEqual(res["source"], "serialized")
+            line = Path(res["path"]).read_text(encoding="utf-8").strip()
+            self.assertIn('"event": "TRADE_CLOSED"', line)
+            self.assertIn('"volume": 0.2', line)
+
+    def test_skips_volume_less_report_fallback_trades(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            absent = root / "nope.jsonl"
+            # HTML-report-fallback shape: no volume / notional.
+            trades = [{"time": 10, "net": 3.0, "profit": 3.0, "swap": 0.0, "commission": 0.0}]
+            with patch.object(aggregate, "DURABLE_STREAM_ROOT", root / "durable"), \
+                 patch.object(aggregate, "_common_q08_trade_log", return_value=absent):
+                res = aggregate._persist_durable_sleeve_stream(99, "NDX.DWX", trades)
+            self.assertFalse(res["persisted"])
+            self.assertEqual(res["reason"], "report_fallback_no_volume")
+
+
 if __name__ == "__main__":
     unittest.main()
