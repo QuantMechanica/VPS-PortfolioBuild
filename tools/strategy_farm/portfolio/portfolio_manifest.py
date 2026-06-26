@@ -191,7 +191,7 @@ def _selected_book(
         candidates_db=candidates_db,
         all_streams=all_streams,
         max_dd_pct=max_dd_pct,
-        weighting="equal",
+        weighting="inverse_vol",
         starting_capital=starting_capital,
     )
     keys = [_parse_key_label(label) for label in assembled["selected_keys"]]
