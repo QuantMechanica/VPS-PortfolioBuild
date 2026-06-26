@@ -13596,3 +13596,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12576,eia-wti-season,0,XTIUSD.DWX,125760000,2026-06-26,Development,active
 12577,cme-xauxag-ratio,0,XAUUSD.DWX,125770000,2026-06-26,Development,active
 12577,cme-xauxag-ratio,1,XAGUSD.DWX,125770001,2026-06-26,Development,active
+12578,eia-oilgas-ratio,0,XTIUSD.DWX,125780000,2026-06-26,Development,active
+12578,eia-oilgas-ratio,1,XNGUSD.DWX,125780001,2026-06-26,Development,active
