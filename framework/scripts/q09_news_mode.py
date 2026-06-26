@@ -149,7 +149,11 @@ def main() -> int:
             "-EAId", str(ea_id),
             "-Expert", ea_expert,
             "-Symbol", args.symbol,
-            "-Year", "0",
+            # Full-history window (same -Year 0 bug as Q08.5: run_smoke's -Year is
+            # ValidateRange(2000,2100), so "-Year 0" aborted at param binding -> 0 trades).
+            "-Year", "2025",
+            "-FromDate", "2017.01.01",
+            "-ToDate", "2025.12.31",
             "-Terminal", args.terminal,
             "-Period", period,
             "-DispatchSubGateHash", run_tag,

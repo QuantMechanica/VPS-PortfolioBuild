@@ -56,6 +56,15 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         self.assertFalse(result["passed"])
         self.assertIn("degenerate_baseline", result["detail"])
 
+    def test_neighborhood_empty_perturbations_is_invalid_not_vacuous_pass(self) -> None:
+        # 141 historical runs "PASSed" with an empty perturbation list (tested nothing).
+        # That must be INVALID, not a vacuous PASS. 2026-06-26.
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write_perturbations(tmp, {"trades": 220, "pf": 1.42, "dd": 8500}, [])
+            result = sub_8_5_neighborhood.run(perturbations_path=path)
+        self.assertEqual(result["status"], "INVALID")
+        self.assertIn("vacuous", result["detail"])
+
     def test_neighborhood_real_breach_fails(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = self._write_perturbations(

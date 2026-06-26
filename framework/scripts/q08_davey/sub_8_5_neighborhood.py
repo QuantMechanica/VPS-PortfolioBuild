@@ -69,6 +69,15 @@ def run(ea_id: int | None = None, symbol: str | None = None,
                            detail=f"degenerate_baseline:trades={base_trades}:pf={baseline.get('pf')}",
                            evidence={"baseline": baseline})
 
+    # No perturbations recorded = the gate tested nothing -> a PASS here would be a VACUOUS
+    # pass (claims a robust plateau that was never probed). 141 historical runs passed this
+    # way. INVALID, not PASS — the gate must actually perturb the parameters to give a verdict.
+    if not perturbs:
+        return make_result(GATE_NAME, "INVALID",
+                           value=0, threshold=None,
+                           detail="no_perturbations_tested_vacuous_pass",
+                           evidence={"baseline": baseline})
+
     baseline_dd = float(baseline.get("dd", 0) or 0)
     breaches: list[dict] = []
 
