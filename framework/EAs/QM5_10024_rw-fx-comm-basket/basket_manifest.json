@@ -1,0 +1,14 @@
+{
+  "logical_symbol": "QM5_10024_RW_FX_COMM_BASKET_D1",
+  "host_symbol": "_per_instance",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "USDCAD.DWX",
+    "AUDNZD.DWX"
+  ],
+  "notes": [
+    "Four-leg Robot Wealth commodity-FX basket stat-arb. Each registered .DWX symbol is a host instance with qm_magic_slot_offset matching its active magic_numbers.csv slot; the EA reads all four D1 close series and opens/closes all basket legs together using QM_BasketOpenPosition. Spread = log(AUDUSD) + log(NZDUSD) - log(USDCAD) - log(AUDNZD), z-score lookback 60 D1 bars, entry |z|>2.0, exit |z|<0.5, 20 D1 bar time stop, 2.5 sigma basket safety exit, per-leg ATR(14)*2 platform stops. Backtests use RISK_FIXED=1000 and RISK_PERCENT=0."
+  ]
+}
