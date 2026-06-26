@@ -227,7 +227,7 @@ bool RefreshState()
    const int formation = MathMax(30, strategy_formation_days);
    const int z_bars = MathMax(10, strategy_zscore_days);
    const int required = MathMax(formation, z_bars + 2);
-   if(Bars(g_pair_a, PERIOD_D1) < required + 5 || Bars(g_pair_b, PERIOD_D1) < required + 5)
+   if(Bars(g_pair_a, PERIOD_D1) < required + 5 || Bars(g_pair_b, PERIOD_D1) < required + 5) // perf-allowed: D1 formation-history guard for two-leg cointegration state.
      {
       g_state_ready = false;
       return false;
@@ -240,7 +240,7 @@ bool RefreshState()
       return false;
      }
 
-   const datetime last_d1 = iTime(g_pair_a, PERIOD_D1, 1);
+   const datetime last_d1 = iTime(g_pair_a, PERIOD_D1, 1); // perf-allowed: closed D1 bar timestamp drives weekly OLS refresh.
    const int week_key = WeekKey(last_d1);
    if(g_estimate_week_key < 0 || (week_key != g_estimate_week_key && IsFriday(last_d1)))
      {
