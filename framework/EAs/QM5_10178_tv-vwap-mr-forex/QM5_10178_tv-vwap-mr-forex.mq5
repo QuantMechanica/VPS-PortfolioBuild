@@ -135,7 +135,7 @@ bool Strategy_RollingVwapBands(const int shift,
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
    const int needed = shift + period;
-   if(CopyRates(_Symbol, tf, 0, needed, rates) < needed)
+   if(CopyRates(_Symbol, tf, 0, needed, rates) < needed) // perf-allowed: called only from Strategy_EntrySignal after the framework new-bar gate.
       return false;
 
    double pv_sum = 0.0;
@@ -188,7 +188,7 @@ double Strategy_VolumeSMA(const int shift)
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
    const int needed = shift + period;
-   if(CopyRates(_Symbol, tf, 0, needed, rates) < needed)
+   if(CopyRates(_Symbol, tf, 0, needed, rates) < needed) // perf-allowed: called only from Strategy_EntrySignal after the framework new-bar gate.
       return 0.0;
 
    double sum = 0.0;
@@ -283,7 +283,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const ENUM_TIMEFRAMES tf = Strategy_TF();
    MqlRates recent[];
    ArraySetAsSeries(recent, true);
-   if(CopyRates(_Symbol, tf, 0, 3, recent) < 3)
+   if(CopyRates(_Symbol, tf, 0, 3, recent) < 3) // perf-allowed: called only from Strategy_EntrySignal after the framework new-bar gate.
       return false;
 
    const double close_1 = recent[1].close;
