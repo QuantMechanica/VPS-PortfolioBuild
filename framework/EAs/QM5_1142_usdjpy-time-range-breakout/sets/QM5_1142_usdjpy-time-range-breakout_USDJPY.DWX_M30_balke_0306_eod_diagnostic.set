@@ -30,9 +30,12 @@ qm_friday_close_hour_broker=21
 ; Cancel pending orders and close any open strategy position at EOD.
 strategy_range_start_hour_broker=3
 strategy_range_start_minute=0
+strategy_range_end_hour_broker=6
+strategy_range_end_minute=0
 strategy_range_duration_minutes=180
 strategy_hold_minutes_max=720
 strategy_exit_hour_broker=22
+strategy_exit_minute_broker=0
 strategy_atr_period=14
 strategy_atr_stop_mult=2.0
 strategy_atr_target_mult=0.0
@@ -45,3 +48,4 @@ strategy_enable_friday=false
 strategy_skip_news_hour=false
 strategy_breakout_buffer_points=5
 strategy_session_filter_hour_to=22
+strategy_session_filter_minute_to=59
