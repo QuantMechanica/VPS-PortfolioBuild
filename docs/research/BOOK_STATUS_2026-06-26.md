@@ -35,8 +35,21 @@ grows as more in-flight EAs clear the cost gates.
 
 Q02 PASS is **gross of commission** (.DWX custom symbols apply $0 commission/swap in the
 MT5 tester). After REAL commission (`live_commission.json`) is applied to the per-trade
-streams, **most Q02-passing sleeves are net-negative** — they only "passed" because the
-backtest was cost-free. This is the 0.2% funnel yield made visible at the portfolio layer.
+streams, **FX sleeves often go net-negative** — but this is **asset-class specific**, NOT
+universal.
+
+> **CORRECTION (2026-06-26, OWNER caught the error):** commission is per asset class —
+> measured **forex ≈ $45/trade (HIGH), index ≈ $4.4, commodity ≈ $0.4–6.7 (LOW)**. So
+> high-frequency strategies die on commission **only on FX**. For index/commodity the gross
+> ≈ real net. The earlier blanket claim "most Q02-passing sleeves are net-negative after
+> commission" was wrong — it holds for FX, not for index/commodity. This reopens high-freq
+> index/commodity EAs as book candidates (e.g. 10440:NDX, gross +$72k over 451 index trades,
+> likely ~+$70k net — under validation). Also: some "net-negative" FX sleeves had negative
+> GROSS (strategy loss), commission only added to it — don't conflate the two.
+>
+> Caveat: the book streams are **Q08 full-history (in-sample-ish)**; OOS validation was the
+> Q04 walk-forward gate. Book DD/Sharpe/net are optimistic vs pure OOS — large nets must be
+> robustness-checked, not trusted at face value.
 
 ### Per-sleeve net (real commission, risk-parity book inputs)
 
