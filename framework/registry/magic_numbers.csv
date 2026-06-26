@@ -13588,3 +13588,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1403,harmonic-5-0-pattern-h4,10,UK100.DWX,14030010,2026-06-26,Development,active
 1403,harmonic-5-0-pattern-h4,11,SP500.DWX,14030011,2026-06-26,Development,active
 1403,harmonic-5-0-pattern-h4,12,XAUUSD.DWX,14030012,2026-06-26,Development,active
+12571,ict-silver-bullet-fvg,0,EURUSD.DWX,125710000,2026-06-26,Claude,active
+12571,ict-silver-bullet-fvg,1,NDX.DWX,125710001,2026-06-26,Claude,active
+12571,ict-silver-bullet-fvg,2,WS30.DWX,125710002,2026-06-26,Claude,active
+12571,ict-silver-bullet-fvg,3,GER40.DWX,125710003,2026-06-26,Claude,active
