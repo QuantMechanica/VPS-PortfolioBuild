@@ -17,24 +17,18 @@
 //   outside that channel, aligned with the SMA100/200 trend stack and a PSAR
 //   that sits on the correct side of price, is the trend-resumption signal.
 //
-// Anti-zero-trade design (per build note + DWX invariant #4):
-//   The CHANNEL BREAK is the single EVENT — the close must have been at/inside
-//   the channel on the PRIOR closed bar and OUTSIDE it on the trigger bar
-//   (one fresh break per bar). PSAR side, SMA100/200 stack and the bullish/
-//   bearish body are STATES, not co-incident events. We never require two
-//   fresh crosses on the same bar.
-//
+// Card mechanics (closed-bar reads, shift 1 = last closed trigger bar):
 //   LONG (mirror for SHORT):
-//     EVENT  : close[1] > SMA(period, HIGH)[1]  AND  close[2] <= SMA(period, HIGH)[2]
-//     STATE  : close[1] > SMA100[1] AND close[1] > SMA200[1]   (trend stack)
-//     STATE  : close[1] > open[1]                              (bullish body)
-//     STATE  : PSAR[1] < close[1]                              (PSAR bullish)
+//     close[1] > SMA(period, HIGH)[1]
+//     close[1] > SMA100[1] AND close[1] > SMA200[1]
+//     close[1] > open[1]
+//     PSAR[1] < close[1]
 //
 //   Stop   : 5-bar swing low/high (QM_StopStructure, lookback = swing_bars).
 //   Take   : entry +/- tp_atr_mult * ATR(atr_period)  (Carter TP ~ATR*1.5).
 //   Manage : optional break-even shift at +1 * ATR (QM_TM_MoveToBreakEven).
-//   Spread : skip only a genuinely WIDE spread (> spread_pct_of_stop of the
-//            stop distance). Fail-OPEN on .DWX zero modeled spread.
+//   Spread : skip only a genuinely WIDE spread (> 20 pips by default).
+//            Fail-OPEN on .DWX zero modeled spread.
 //
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
 // else is framework wiring and MUST stay intact.
@@ -74,13 +68,14 @@ input int    strategy_swing_bars         = 5;     // swing-low/high lookback for
 input int    strategy_atr_period         = 14;    // ATR period (take-profit / break-even reference)
 input double strategy_tp_atr_mult        = 1.5;   // take-profit distance = mult * ATR
 input bool   strategy_use_breakeven      = true;  // shift to break-even at +1*ATR
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input int    strategy_spread_cap_pips    = 20;    // skip only if modeled spread exceeds this cap
+input int    strategy_max_stop_pips      = 50;    // P2 cap: structural stop cannot exceed this distance
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only — channel/PSAR/trend work is on
+// Cheap O(1) per-tick gate. Spread guard only; channel/PSAR/trend work is on
 // the closed-bar path in Strategy_EntrySignal. Fail-OPEN on .DWX zero spread.
 bool Strategy_NoTradeFilter()
   {
@@ -89,19 +84,12 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   // Scale the spread cap to the structural stop distance at the current ask.
-   const double entry_ref = ask;
-   const double sl_ref = QM_StopStructure(_Symbol, QM_BUY, entry_ref, strategy_swing_bars);
-   if(sl_ref <= 0.0)
-      return false; // no structure yet — defer to entry gate, do not block here
-
-   const double stop_distance = MathAbs(entry_ref - sl_ref);
-   if(stop_distance <= 0.0)
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(spread_cap <= 0.0)
       return false;
 
    const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread > spread_cap)
       return true;
 
    return false;
@@ -114,19 +102,24 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // Closed-bar prices: shift 1 = trigger bar, shift 2 = prior bar.
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   // Closed-bar prices: shift 1 = trigger bar.
    const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: single closed-bar read
    const double open1  = iOpen(_Symbol,  _Period, 1); // perf-allowed: single closed-bar read
-   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed: single closed-bar read
-   if(close1 <= 0.0 || open1 <= 0.0 || close2 <= 0.0)
+   if(close1 <= 0.0 || open1 <= 0.0)
       return false;
 
    // --- Channel rails: SMA on the HIGH series (upper) and LOW series (lower) ---
    const double upper1 = QM_SMA(_Symbol, _Period, strategy_channel_period, 1, PRICE_HIGH);
-   const double upper2 = QM_SMA(_Symbol, _Period, strategy_channel_period, 2, PRICE_HIGH);
    const double lower1 = QM_SMA(_Symbol, _Period, strategy_channel_period, 1, PRICE_LOW);
-   const double lower2 = QM_SMA(_Symbol, _Period, strategy_channel_period, 2, PRICE_LOW);
-   if(upper1 <= 0.0 || upper2 <= 0.0 || lower1 <= 0.0 || lower2 <= 0.0)
+   if(upper1 <= 0.0 || lower1 <= 0.0)
       return false;
 
    // --- Trend filter STATE: close vs SMA100 / SMA200 ---
@@ -140,19 +133,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(sar1 <= 0.0)
       return false;
 
-   // --- LONG: fresh upper-channel break EVENT + bullish trend/body/PSAR STATE ---
-   const bool break_up   = (close2 <= upper2 && close1 > upper1);   // single EVENT
-   const bool trend_up   = (close1 > sma_mid && close1 > sma_slow); // STATE
-   const bool body_up    = (close1 > open1);                        // STATE
-   const bool psar_up    = (sar1 < close1);                         // STATE
-   const bool long_ok    = (break_up && trend_up && body_up && psar_up);
+   const bool long_ok = (close1 > upper1 &&
+                         close1 > sma_mid &&
+                         close1 > sma_slow &&
+                         close1 > open1 &&
+                         sar1 < close1);
 
-   // --- SHORT: fresh lower-channel break EVENT + bearish trend/body/PSAR STATE ---
-   const bool break_dn   = (close2 >= lower2 && close1 < lower1);   // single EVENT
-   const bool trend_dn   = (close1 < sma_mid && close1 < sma_slow); // STATE
-   const bool body_dn    = (close1 < open1);                        // STATE
-   const bool psar_dn    = (sar1 > close1);                         // STATE
-   const bool short_ok   = (break_dn && trend_dn && body_dn && psar_dn);
+   const bool short_ok = (close1 < lower1 &&
+                          close1 < sma_mid &&
+                          close1 < sma_slow &&
+                          close1 < open1 &&
+                          sar1 > close1);
 
    if(!long_ok && !short_ok)
       return false;
@@ -167,8 +158,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // Stop: 5-bar swing low (long) / swing high (short) structural stop.
-   const double sl = QM_StopStructure(_Symbol, side, entry, strategy_swing_bars);
+   double sl = QM_StopStructure(_Symbol, side, entry, strategy_swing_bars);
    if(sl <= 0.0)
+      return false;
+
+   const double max_stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_max_stop_pips);
+   if(max_stop_distance > 0.0 && MathAbs(entry - sl) > max_stop_distance)
+     {
+      const double capped_sl = QM_StopFixedPips(_Symbol, side, entry, strategy_max_stop_pips);
+      if(capped_sl <= 0.0)
+         return false;
+      sl = capped_sl;
+     }
+
+   if((side == QM_BUY && sl >= entry) || (side == QM_SELL && sl <= entry))
       return false;
 
    // Take: ATR * tp_atr_mult from entry, same direction.
@@ -184,6 +187,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = (side == QM_BUY) ? "carter_sma32hl_break_long" : "carter_sma32hl_break_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 

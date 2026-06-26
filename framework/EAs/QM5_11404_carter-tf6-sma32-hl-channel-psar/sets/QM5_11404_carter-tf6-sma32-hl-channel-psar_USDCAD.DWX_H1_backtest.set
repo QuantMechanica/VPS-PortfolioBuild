@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        1536
-; ea_slug:      aa-mrat-21-200
+; ea_id:        11404
+; ea_slug:      carter-tf6-sma32-hl-channel-psar
 ; ea_version:   v5.0
 ; set_version:  s20260626-001
-; symbol:       GDAXI.DWX
-; timeframe:    D1
+; symbol:       USDCAD.DWX
+; timeframe:    H1
 ; environment:  backtest
-; magic_slot:   3
+; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   467070114d38c7f8ee7b01f9cc8b5f83f85c86b1cac112aea641e5ac11a88c44
+; build_hash:   20aeef33b775d0799f3c8c86f8bb0dd16e840f1fd617e8e6a4266553fee79dfe
 ; author:       Development
 ; date:         2026-06-26
 ;==========================================================
-qm_magic_slot_offset=3
+qm_magic_slot_offset=4
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
@@ -32,3 +32,14 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+strategy_channel_period=32
+strategy_sma_mid_period=100
+strategy_sma_slow_period=200
+strategy_psar_step=0.02
+strategy_psar_max=0.2
+strategy_swing_bars=5
+strategy_atr_period=14
+strategy_tp_atr_mult=1.5
+strategy_use_breakeven=true
+strategy_spread_cap_pips=20
+strategy_max_stop_pips=50

@@ -1,16 +1,16 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        1536
-; ea_slug:      aa-mrat-21-200
+; ea_id:        11404
+; ea_slug:      carter-tf6-sma32-hl-channel-psar
 ; ea_version:   v5.0
 ; set_version:  s20260626-001
-; symbol:       GDAXI.DWX
-; timeframe:    D1
+; symbol:       AUDUSD.DWX
+; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   467070114d38c7f8ee7b01f9cc8b5f83f85c86b1cac112aea641e5ac11a88c44
+; build_hash:   d830a022f9e79e6c2def1d5dfa74c29ac8d7f4b5a4055cc0215656d7a2582774
 ; author:       Development
 ; date:         2026-06-26
 ;==========================================================
@@ -32,3 +32,14 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+strategy_channel_period=32
+strategy_sma_mid_period=100
+strategy_sma_slow_period=200
+strategy_psar_step=0.02
+strategy_psar_max=0.2
+strategy_swing_bars=5
+strategy_atr_period=14
+strategy_tp_atr_mult=1.5
+strategy_use_breakeven=true
+strategy_spread_cap_pips=20
+strategy_max_stop_pips=50
