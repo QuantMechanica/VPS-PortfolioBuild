@@ -16,9 +16,10 @@ try:
         load_streams,
         read_candidates,
         to_daily_pnl,
+        to_monthly_pnl,
         align,
     )
-    from .portfolio_correlation import COMMISSION_BASIS, correlation_matrix
+    from .portfolio_correlation import COMMISSION_BASIS, correlation_matrix, _pearson
     from .portfolio_kpi import equal_weights, portfolio_metrics
 except ImportError:  # pragma: no cover - direct script execution
     from commission import describe_model, load_model  # type: ignore
@@ -30,15 +31,25 @@ except ImportError:  # pragma: no cover - direct script execution
         load_streams,
         read_candidates,
         to_daily_pnl,
+        to_monthly_pnl,
         align,
     )
-    from portfolio_correlation import COMMISSION_BASIS, correlation_matrix  # type: ignore
+    from portfolio_correlation import COMMISSION_BASIS, correlation_matrix, _pearson  # type: ignore
     from portfolio_kpi import equal_weights, portfolio_metrics  # type: ignore
 
 
 Key = tuple[int, str]
 DEFAULT_MAX_CORR = 0.30
 DEFAULT_MIN_OVERLAP_DAYS = 60
+# Low-frequency fallback: structural edges trade a few times a year, so two sleeves
+# almost never share >=60 active days. When daily overlap is insufficient, retry the
+# diversification test on calendar-month buckets, correlating over the window where both
+# sleeves were live (0-filled) — the textbook returns-correlation basis. NB: do NOT gate on
+# *co-active* months: genuine cross-asset diversifiers trade in different months by nature,
+# so a co-active guard perversely certifies redundant same-instrument pairs (many shared
+# months) while rejecting the diversifying ones. Gate on shared live-span instead.
+DEFAULT_MIN_SHARED_SPAN_MONTHS = 24
+DEFAULT_MIN_ACTIVE_MONTHS = 6
 
 
 def current_book(candidates_db: Path = DEFAULT_CANDIDATES_DB) -> list[Key]:
@@ -65,6 +76,7 @@ def evaluate_candidate(
             "standalone_pf": standalone_pf,
             "max_corr_to_book": None,
             "corr_insufficient": False,
+            "corr_basis": "n/a",
             "sharpe_with": None,
             "sharpe_without": None,
             "maxdd_with": None,
@@ -88,6 +100,15 @@ def evaluate_candidate(
         aligned_keys,
         correlations,
     )
+    corr_basis = "daily"
+    if corr_insufficient:
+        # Sparse low-frequency sleeves never overlap enough on a daily basis. Retry the
+        # diversification test on calendar-month buckets before giving up (the daily
+        # gate alone would reject every structural edge as insufficient_overlap).
+        monthly_max, monthly_insufficient = _monthly_candidate_corr(candidate, book, streams)
+        if not monthly_insufficient:
+            max_corr_to_book, corr_insufficient = monthly_max, monthly_insufficient
+            corr_basis = "monthly"
 
     without_metrics = portfolio_metrics(
         book,
@@ -136,6 +157,7 @@ def evaluate_candidate(
         "standalone_pf": _profit_factor(streams[candidate]),
         "max_corr_to_book": max_corr_to_book,
         "corr_insufficient": corr_insufficient,
+        "corr_basis": corr_basis,
         "sharpe_with": sharpe_with,
         "sharpe_without": sharpe_without,
         "maxdd_with": maxdd_with,
@@ -253,6 +275,75 @@ def _candidate_corr(
             insufficient = True
         else:
             corr_values.append(float(value))
+    max_corr = max(corr_values) if corr_values else None
+    return max_corr, insufficient
+
+
+def _months_between(lo: str, hi: str) -> list[str]:
+    """Inclusive 'YYYY-MM' calendar range."""
+    year, month = int(lo[:4]), int(lo[5:7])
+    end_year, end_month = int(hi[:4]), int(hi[5:7])
+    out: list[str] = []
+    while (year, month) <= (end_year, end_month):
+        out.append(f"{year:04d}-{month:02d}")
+        month += 1
+        if month > 12:
+            month = 1
+            year += 1
+    return out
+
+
+def _monthly_candidate_corr(
+    candidate: Key,
+    book: Sequence[Key],
+    streams: dict[Key, Sequence[Any]],
+) -> tuple[float | None, bool]:
+    """Monthly-bucket fallback for the candidate-vs-book correlation.
+
+    For each book member, Pearson-correlate the candidate over the calendar window where
+    BOTH sleeves were live — from the later of their first active months to the earlier of
+    their last — with no-trade months filled as 0 return (a flat month is genuine zero PnL,
+    not missing data). A pair is trusted only when that shared window spans at least
+    DEFAULT_MIN_SHARED_SPAN_MONTHS and each sleeve is active in at least
+    DEFAULT_MIN_ACTIVE_MONTHS of it (so the correlation is not an all-zeros artifact).
+    Conservative: any unmeasurable book pair marks the whole candidate insufficient.
+    """
+    monthly = {key: to_monthly_pnl(streams[key]) for key in [candidate, *book]}
+    candidate_series = monthly[candidate]
+    candidate_active = sorted(m for m, v in candidate_series.items() if v != 0.0)
+    if not candidate_active:
+        return None, True
+
+    corr_values: list[float] = []
+    insufficient = False
+    for book_key in book:
+        book_series = monthly[book_key]
+        book_active = sorted(m for m, v in book_series.items() if v != 0.0)
+        if not book_active:
+            insufficient = True
+            continue
+        lo = max(candidate_active[0], book_active[0])
+        hi = min(candidate_active[-1], book_active[-1])
+        if lo > hi:
+            insufficient = True
+            continue
+        window = _months_between(lo, hi)
+        if len(window) < DEFAULT_MIN_SHARED_SPAN_MONTHS:
+            insufficient = True
+            continue
+        cand_vec = [float(candidate_series.get(m, 0.0)) for m in window]
+        book_vec = [float(book_series.get(m, 0.0)) for m in window]
+        cand_active_n = sum(1 for v in cand_vec if v != 0.0)
+        book_active_n = sum(1 for v in book_vec if v != 0.0)
+        if cand_active_n < DEFAULT_MIN_ACTIVE_MONTHS or book_active_n < DEFAULT_MIN_ACTIVE_MONTHS:
+            insufficient = True
+            continue
+        value = _pearson(cand_vec, book_vec)
+        if value is None:
+            insufficient = True
+        else:
+            corr_values.append(float(value))
+
     max_corr = max(corr_values) if corr_values else None
     return max_corr, insufficient
 
