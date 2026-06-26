@@ -29,7 +29,7 @@ except ImportError:  # pragma: no cover - direct script execution
 
 
 Key = tuple[int, str]
-DEFAULT_MIN_PORTFOLIO_TRADES = 30
+DEFAULT_MIN_PORTFOLIO_TRADES = 20
 
 
 def monthly_returns(trades: Sequence[Trade]) -> dict[str, float]:

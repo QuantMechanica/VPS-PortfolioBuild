@@ -78,7 +78,7 @@ PHASE_RUNNER_SCRIPTS = {
     "Q09_PORTFOLIO": "q09_portfolio.py",
     "Q10": "q10_confirmation.py",       # NEW: full-history canonical + baseline capture
 }
-Q09_PORTFOLIO_MIN_TRADES = 30
+Q09_PORTFOLIO_MIN_TRADES = 20
 NEWS_MATRIX_FALLBACK = Path(r"D:\QM\data\news_calendar\news_matrix.csv")
 NEWS_CALENDAR_CANDIDATES = (
     Path(r"D:\QM\data\news_calendar\news_calendar.csv"),

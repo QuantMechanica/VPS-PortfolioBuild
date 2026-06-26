@@ -42,7 +42,7 @@ class PortfolioQ08ContributionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             common_dir = Path(tmp) / "common"
             stream_dir = self._stream_dir(common_dir)
-            self._write_stream(stream_dir / "101_EURUSD_DWX.jsonl", [10.0] * 29)
+            self._write_stream(stream_dir / "101_EURUSD_DWX.jsonl", [10.0] * 19)
 
             verdict = evaluate_q08_soft_rescue(
                 (101, "EURUSD.DWX"),
@@ -52,7 +52,7 @@ class PortfolioQ08ContributionTests(unittest.TestCase):
 
         self.assertEqual(verdict["verdict"], "NEED_MORE_DATA")
         self.assertEqual(verdict["reason"], "portfolio_trade_count_below_min")
-        self.assertEqual(verdict["trade_count"], 29)
+        self.assertEqual(verdict["trade_count"], 19)
 
     def test_regime_catastrophe_fails_before_portfolio_admission(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
