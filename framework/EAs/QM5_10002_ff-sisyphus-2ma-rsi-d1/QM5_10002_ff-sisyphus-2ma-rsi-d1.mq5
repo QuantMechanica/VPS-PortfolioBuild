@@ -84,6 +84,42 @@ input int    strategy_atr_percentile_bars   = 252;
 input double strategy_atr_percentile_limit  = 90.0;
 input int    strategy_time_stop_bars        = 15;
 
+bool ReadD1Close(const int shift, double &value)
+  {
+   value = 0.0;
+   double buf[];
+   ArraySetAsSeries(buf, true);
+   const int got = CopyClose(_Symbol, PERIOD_D1, shift, 1, buf); // perf-allowed: single closed D1 value read behind the framework new-bar gate.
+   if(got != 1 || buf[0] <= 0.0)
+      return false;
+   value = buf[0];
+   return true;
+  }
+
+bool ReadD1High(const int shift, double &value)
+  {
+   value = 0.0;
+   double buf[];
+   ArraySetAsSeries(buf, true);
+   const int got = CopyHigh(_Symbol, PERIOD_D1, shift, 1, buf); // perf-allowed: single closed D1 value read for EMA(5) touch exit.
+   if(got != 1 || buf[0] <= 0.0)
+      return false;
+   value = buf[0];
+   return true;
+  }
+
+bool ReadD1Low(const int shift, double &value)
+  {
+   value = 0.0;
+   double buf[];
+   ArraySetAsSeries(buf, true);
+   const int got = CopyLow(_Symbol, PERIOD_D1, shift, 1, buf); // perf-allowed: single closed D1 value read for EMA(5) touch exit.
+   if(got != 1 || buf[0] <= 0.0)
+      return false;
+   value = buf[0];
+   return true;
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -119,7 +155,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_atr_sl_mult <= 0.0)
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
+   double close1 = 0.0;
+   if(!ReadD1Close(1, close1))
+      return false;
    const double ema200 = QM_EMA(_Symbol, PERIOD_D1, strategy_trend_ema_period, 1);
    const double ema5 = QM_EMA(_Symbol, PERIOD_D1, strategy_fast_ema_period, 1);
    const double rsi2 = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 1);
@@ -217,8 +255,10 @@ bool Strategy_ExitSignal()
          continue;
 
       const double ema5 = QM_EMA(_Symbol, PERIOD_D1, strategy_fast_ema_period, 1);
-      const double high1 = iHigh(_Symbol, PERIOD_D1, 1);
-      const double low1 = iLow(_Symbol, PERIOD_D1, 1);
+      double high1 = 0.0;
+      double low1 = 0.0;
+      if(!ReadD1High(1, high1) || !ReadD1Low(1, low1))
+         return false;
       if(ema5 <= 0.0 || high1 <= 0.0 || low1 <= 0.0)
          return false;
 
