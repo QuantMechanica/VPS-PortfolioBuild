@@ -24,8 +24,8 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: G0
 last_updated: 2026-06-26
-g0_approval_reasoning: "R1 PASS Chan/Wiley source and prior SRC02 CEO ratification; R2 PASS deterministic annual date window with SMA/ATR rules; R3 PASS XNGUSD.DWX available; R4 PASS no ML/grid/martingale and one magic position."
-expected_pf: 1.10
+g0_approval_reasoning: "R1 PASS Chan/Wiley SRC02; R2 deterministic annual XNG spring date window with SMA/ATR exits; R3 XNGUSD.DWX available; R4 no ML/grid/martingale."
+expected_pf: 1.1
 expected_dd_pct: 20.0
 ---
 
