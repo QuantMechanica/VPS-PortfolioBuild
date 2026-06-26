@@ -191,6 +191,7 @@ class BasketWorkItemsTests(unittest.TestCase):
                 "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
                 "host_symbol": "EURJPY.DWX",
                 "host_timeframe": "D1",
+                "tester_currency": "JPY",
                 "basket_symbols": ["EURJPY.DWX", "GBPJPY.DWX"],
             }
             (ea_dir / "basket_manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
@@ -234,6 +235,7 @@ class BasketWorkItemsTests(unittest.TestCase):
             payload = json.loads(rows[0][2])
             self.assertEqual(payload["host_symbol"], "EURJPY.DWX")
             self.assertEqual(payload["portfolio_scope"], "basket")
+            self.assertEqual(payload["tester_currency"], "JPY")
 
 
 if __name__ == "__main__":

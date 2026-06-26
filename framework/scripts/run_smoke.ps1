@@ -31,7 +31,9 @@ param(
     # Q04 commission gate: round-trip USD/lot to apply via the tester groups file.
     # 0 (default) = restore the canonical real Darwinex schedule unchanged (Q02/Q03).
     [ValidateRange(0, 1000)]
-    [double]$CommissionPerLot = 0
+    [double]$CommissionPerLot = 0,
+    [ValidatePattern('^[A-Z]{3}$')]
+    [string]$TesterCurrencyOverride
 )
 
 Set-StrictMode -Version Latest
@@ -594,7 +596,8 @@ function Write-TesterIni {
         [string]$ReportValue,
         [Parameter(Mandatory = $true)]
         [string]$TerminalRoot,
-        [string]$SetFilePath
+        [string]$SetFilePath,
+        [string]$CurrencyOverride
     )
 
     # Load canonical tester defaults (DL-054 G2 source of truth).
@@ -609,6 +612,9 @@ function Write-TesterIni {
     $deposit = [int]$defaults.initial_deposit
     $currency = [string]$defaults.deposit_currency
     $leverage = [int]$defaults.leverage
+    if (-not [string]::IsNullOrWhiteSpace($CurrencyOverride)) {
+        $currency = $CurrencyOverride.Trim().ToUpperInvariant()
+    }
     if ($deposit -le 0 -or [string]::IsNullOrWhiteSpace($currency) -or $leverage -le 0) {
         throw "tester_defaults.json invalid: initial_deposit=$deposit currency=$currency leverage=$leverage"
     }
@@ -1291,9 +1297,13 @@ for ($i = 1; $i -le $Runs; $i++) {
         -ToDate $toDate `
         -ReportValue $relativeReportFile `
         -TerminalRoot $terminalRoot `
-        -SetFilePath $SetFile
+        -SetFilePath $SetFile `
+        -CurrencyOverride $TesterCurrencyOverride
 
     Write-Host ("run_smoke.stage=ini_written run={0} ini='{1}'" -f $runName, $iniPath)
+    if (-not [string]::IsNullOrWhiteSpace($TesterCurrencyOverride)) {
+        Write-Host ("run_smoke.tester_currency_override={0} run={1}" -f $TesterCurrencyOverride.Trim().ToUpperInvariant(), $runName)
+    }
     Write-Host ("run_smoke.stage=start_terminal terminal={0} run={1} ini='{2}'" -f $effectiveTerminal, $runName, $iniPath)
     try {
         $runExec = Start-TesterRun -TerminalExe $terminalExe -IniPath $iniPath -TimeoutSec $TimeoutSeconds -TerminalName $effectiveTerminal

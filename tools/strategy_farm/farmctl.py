@@ -2285,6 +2285,9 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         "-AllowMissingRealTicksLogMarker",
         "-TimeoutSeconds", str(timeout_seconds),
     ]
+    tester_currency = str(item_payload.get("tester_currency") or "").strip().upper()
+    if tester_currency:
+        cmd.extend(["-TesterCurrencyOverride", tester_currency])
     if from_date:
         cmd.extend(["-FromDate", from_date])
     if to_date:
@@ -9023,6 +9026,9 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
                 "logical_symbol": basket_manifest["logical_symbol"],
                 "portfolio_scope": "basket",
             }
+            tester_currency = str(basket_manifest.get("tester_currency") or "").strip().upper()
+            if tester_currency:
+                payload["tester_currency"] = tester_currency
         elif is_q02 and history_registry:
             window = _p2_history_window_for_symbol(
                 sym,
@@ -10868,6 +10874,9 @@ def _q02_build_setfile_basket_match(
         "logical_symbol": basket_manifest["logical_symbol"],
         "portfolio_scope": "basket",
     }
+    tester_currency = str(basket_manifest.get("tester_currency") or "").strip().upper()
+    if tester_currency:
+        payload_extra["tester_currency"] = tester_currency
     return logical_symbol, host_timeframe, payload_extra
 
 
