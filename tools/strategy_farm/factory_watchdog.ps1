@@ -292,8 +292,18 @@ print(n)
             $m2 = @(Get-CimInstance Win32_Process -Filter "Name='metatester64.exe'" -ErrorAction SilentlyContinue).Count
             $mt = [math]::Max($m1, $m2)
         } catch {}
-        $realStallInfo = "realDone15m=$realN metatester64=$mt ramFreeGb=$ramFreeGb pending=$nPending recentPurge=$recentPurge"
-        if ((($realN -eq 0) -or ($mt -eq 0)) -and $nPending -ge $StallPendingThreshold) { $realStall = $true }
+        # PARTIAL-WEDGE detection (2026-06-26, OWNER "harden"). The realN==0 / mt==0 checks miss
+        # the case where SOME terminals work but MOST are stuck: the 22:00 restart launch_fault
+        # left 4 of 7 worker daemons idle (metatester64=3) for 40+ min while 875 items pended.
+        # Daemon COUNT read healthy (7) so the worker-shortage heal never fired; the 3 working
+        # terminals kept realN>0 so the realN==0/mt==0 checks never fired -> the fleet ran at ~43%
+        # indefinitely until a manual restart. Add: metatester64 stuck below (ExpectWorkers-2)
+        # while the queue is deep = most of the fleet wedged. Tolerates up to 2 idle terminals
+        # (normal between-backtest churn); the SAME 2-run (~30 min) confirm + 45-min cooldown +
+        # FactoryON_AtLogon recovery below guards against a transient dip or post-restart ramp.
+        $mtFloor = [math]::Max(1, $ExpectWorkers - 2)
+        $realStallInfo = "realDone15m=$realN metatester64=$mt/$ExpectWorkers (floor=$mtFloor) ramFreeGb=$ramFreeGb pending=$nPending recentPurge=$recentPurge"
+        if ((($realN -eq 0) -or ($mt -lt $mtFloor)) -and $nPending -ge $StallPendingThreshold) { $realStall = $true }
     }
 }
 
