@@ -13575,3 +13575,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9221,mql5-stddev-ma,0,EURUSD.DWX,92210000,2026-06-26,Development,active
 9221,mql5-stddev-ma,1,XAUUSD.DWX,92210001,2026-06-26,Development,active
 9221,mql5-stddev-ma,2,GDAXI.DWX,92210002,2026-06-26,Development,active
+1403,harmonic-5-0-pattern-h4,0,EURUSD.DWX,14030000,2026-06-26,Development,active
+1403,harmonic-5-0-pattern-h4,1,GBPUSD.DWX,14030001,2026-06-26,Development,active
+1403,harmonic-5-0-pattern-h4,2,USDJPY.DWX,14030002,2026-06-26,Development,active
+1403,harmonic-5-0-pattern-h4,3,AUDUSD.DWX,14030003,2026-06-26,Development,active
+1403,harmonic-5-0-pattern-h4,4,USDCAD.DWX,14030004,2026-06-26,Development,active
+1403,harmonic-5-0-pattern-h4,5,USDCHF.DWX,14030005,2026-06-26,Development,active
+1403,harmonic-5-0-pattern-h4,6,NZDUSD.DWX,14030006,2026-06-26,Development,active
+1403,harmonic-5-0-pattern-h4,7,NDX.DWX,14030007,2026-06-26,Development,active
+1403,harmonic-5-0-pattern-h4,8,WS30.DWX,14030008,2026-06-26,Development,active
+1403,harmonic-5-0-pattern-h4,9,GDAXI.DWX,14030009,2026-06-26,Development,active
+1403,harmonic-5-0-pattern-h4,10,UK100.DWX,14030010,2026-06-26,Development,active
+1403,harmonic-5-0-pattern-h4,11,SP500.DWX,14030011,2026-06-26,Development,active
+1403,harmonic-5-0-pattern-h4,12,XAUUSD.DWX,14030012,2026-06-26,Development,active
