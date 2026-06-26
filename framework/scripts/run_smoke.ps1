@@ -880,19 +880,25 @@ function Start-TesterRun {
     $proc = Start-Process -FilePath $TerminalExe -ArgumentList $args -PassThru -WindowStyle Hidden
     $childTerminal = Wait-TerminalSpawn -TerminalExe $TerminalExe -IniPath $IniPath -TerminalName $TerminalName -StartedAfter $spawnStartedAfter
     Write-Host ("run_smoke.stage=terminal_spawn_confirmed terminal_pid={0} start_time='{1:o}'" -f $childTerminal.Id, $childTerminal.StartTime)
-    $finished = $proc.WaitForExit($TimeoutSec * 1000)
+    $finished = $childTerminal.WaitForExit($TimeoutSec * 1000)
     $timedOut = -not $finished
     if ($timedOut) {
         try {
-            Stop-Process -Id $proc.Id -Force -ErrorAction Stop
+            Stop-Process -Id $childTerminal.Id -Force -ErrorAction Stop
         } catch {
         }
+        if ($proc.Id -ne $childTerminal.Id) {
+            try {
+                Stop-Process -Id $proc.Id -Force -ErrorAction Stop
+            } catch {
+            }
+        }
     }
-    $loggedExitCode = if ($finished) { $proc.ExitCode } else { "<timeout>" }
+    $loggedExitCode = if ($finished) { $childTerminal.ExitCode } else { "<timeout>" }
     Write-Host ("run_smoke.stage=terminal_exit terminal_pid={0} exit_code={1} timed_out={2}" -f $childTerminal.Id, $loggedExitCode, $timedOut)
 
     return [pscustomobject]@{
-        exit_code = $(if ($finished) { $proc.ExitCode } else { $null })
+        exit_code = $(if ($finished) { $childTerminal.ExitCode } else { $null })
         timed_out = $timedOut
         terminal_pid = $childTerminal.Id
     }
