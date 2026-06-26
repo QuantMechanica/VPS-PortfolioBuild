@@ -30,7 +30,7 @@
 //   card's "signal line crosses zero" reduces to a single MACD-main zero-cross.
 //   We use ONE event (the MACD zero-cross); the WMA-band relations are STATES.
 //
-//   Stop loss : entry -/+ sl_atr_mult * ATR(atr_period)   (factory ATR default).
+//   Stop loss : longs use WMA(85,Low); shorts use sl_atr_mult * ATR(atr_period).
 //   Take prof.: entry +/- tp_atr_mult * ATR(atr_period)   (same ATR value).
 //   Exit      : managed by SL / TP only; one position per magic.
 //   Spread    : block only a genuinely wide spread (fail-open on .DWX 0 spread).
@@ -71,7 +71,7 @@ input int    strategy_macd_fast         = 15;    // MACD fast EMA
 input int    strategy_macd_slow         = 26;    // MACD slow EMA
 input int    strategy_macd_signal       = 1;     // MACD signal SMA (1 -> main=signal)
 input int    strategy_atr_period        = 14;    // ATR period (stop / target)
-input double strategy_sl_atr_mult       = 2.0;   // stop distance  = mult * ATR
+input double strategy_short_sl_atr_mult = 2.0;   // short stop distance = mult * ATR
 input double strategy_tp_atr_mult       = 4.0;   // target distance = mult * ATR
 input double strategy_spread_pct_of_stop = 15.0; // skip if spread > this % of stop distance
 
@@ -92,7 +92,7 @@ bool Strategy_NoTradeFilter()
    if(atr_value <= 0.0)
       return false; // no ATR yet — defer to the entry gate, do not block here
 
-   const double stop_distance = strategy_sl_atr_mult * atr_value;
+   const double stop_distance = strategy_short_sl_atr_mult * atr_value;
    if(stop_distance <= 0.0)
       return false;
 
@@ -153,9 +153,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry <= 0.0)
       return false;
 
-   const double sl = QM_StopATRFromValue(_Symbol, dir, entry, atr_value, strategy_sl_atr_mult);
+   double sl = 0.0;
+   if(dir == QM_BUY)
+      sl = QM_StopRulesNormalizePrice(_Symbol, wma_outer);
+   else
+      sl = QM_StopATRFromValue(_Symbol, dir, entry, atr_value, strategy_short_sl_atr_mult);
+
    const double tp = QM_TakeATRFromValue(_Symbol, dir, entry, atr_value, strategy_tp_atr_mult);
    if(sl <= 0.0 || tp <= 0.0)
+      return false;
+   if((dir == QM_BUY && sl >= entry) || (dir == QM_SELL && sl <= entry))
       return false;
 
    req.type   = dir;
@@ -163,6 +170,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = (dir == QM_BUY) ? "lwma_low_macd_long" : "lwma_low_macd_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
