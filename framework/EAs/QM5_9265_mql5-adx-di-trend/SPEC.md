@@ -24,6 +24,7 @@ This EA trades the ADX directional-movement trend rule from the approved card on
 | `strategy_atr_period` | 14 | 1+ | ATR lookback period for initial stop placement. |
 | `strategy_atr_sl_mult` | 2.0 | >0 | ATR multiple used for the initial stop loss. |
 | `strategy_take_profit_rr` | 2.4 | >0 | Initial take-profit as an R multiple from the stop. |
+| `strategy_adx_weak_bars` | 2 | 1-2 | Consecutive closed ADX weakening bars required for the ADX-weakness exit. |
 | `strategy_max_hold_h1_bars` | 72 | 1+ | Failsafe maximum hold measured in H1 bars. |
 
 ---

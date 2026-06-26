@@ -79,54 +79,8 @@ input double strategy_adx_exit_floor    = 20.0;
 input int    strategy_atr_period        = 14;
 input double strategy_atr_sl_mult       = 2.0;
 input double strategy_take_profit_rr    = 2.4;
+input int    strategy_adx_weak_bars     = 2;
 input int    strategy_max_hold_h1_bars  = 72;
-
-bool Strategy_SelectOurPosition(ENUM_POSITION_TYPE &position_type,
-                                datetime &opened_at)
-  {
-   position_type = POSITION_TYPE_BUY;
-   opened_at = 0;
-
-   const int magic = QM_FrameworkMagic();
-   if(magic <= 0)
-      return false;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      opened_at = (datetime)PositionGetInteger(POSITION_TIME);
-      return true;
-     }
-
-   return false;
-  }
-
-bool Strategy_ReadAdxDi(double &adx_1,
-                        double &adx_2,
-                        double &adx_3,
-                        double &plus_di_1,
-                        double &minus_di_1)
-  {
-   adx_1 = QM_ADX(_Symbol, PERIOD_H1, strategy_adx_period, 1);
-   adx_2 = QM_ADX(_Symbol, PERIOD_H1, strategy_adx_period, 2);
-   adx_3 = QM_ADX(_Symbol, PERIOD_H1, strategy_adx_period, 3);
-   plus_di_1 = QM_ADX_PlusDI(_Symbol, PERIOD_H1, strategy_adx_period, 1);
-   minus_di_1 = QM_ADX_MinusDI(_Symbol, PERIOD_H1, strategy_adx_period, 1);
-
-   return (adx_1 > 0.0 &&
-           adx_2 > 0.0 &&
-           adx_3 > 0.0 &&
-           plus_di_1 > 0.0 &&
-           minus_di_1 > 0.0);
-  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -159,17 +113,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_take_profit_rr <= 0.0)
       return false;
 
-   ENUM_POSITION_TYPE position_type;
-   datetime opened_at = 0;
-   if(Strategy_SelectOurPosition(position_type, opened_at))
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
       return false;
 
-   double adx_1 = 0.0;
-   double adx_2 = 0.0;
-   double adx_3 = 0.0;
-   double plus_di_1 = 0.0;
-   double minus_di_1 = 0.0;
-   if(!Strategy_ReadAdxDi(adx_1, adx_2, adx_3, plus_di_1, minus_di_1))
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return false;
+     }
+
+   const double adx_1 = QM_ADX(_Symbol, PERIOD_H1, strategy_adx_period, 1);
+   const double adx_2 = QM_ADX(_Symbol, PERIOD_H1, strategy_adx_period, 2);
+   const double plus_di_1 = QM_ADX_PlusDI(_Symbol, PERIOD_H1, strategy_adx_period, 1);
+   const double minus_di_1 = QM_ADX_MinusDI(_Symbol, PERIOD_H1, strategy_adx_period, 1);
+   if(adx_1 <= 0.0 || adx_2 <= 0.0 || plus_di_1 <= 0.0 || minus_di_1 <= 0.0)
       return false;
 
    if(adx_1 <= strategy_adx_entry_min || adx_1 <= adx_2)
@@ -219,9 +182,31 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   ENUM_POSITION_TYPE position_type;
+   ENUM_POSITION_TYPE position_type = POSITION_TYPE_BUY;
    datetime opened_at = 0;
-   if(!Strategy_SelectOurPosition(position_type, opened_at))
+   bool have_position = false;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      opened_at = (datetime)PositionGetInteger(POSITION_TIME);
+      have_position = true;
+      break;
+     }
+
+   if(!have_position)
       return false;
 
    if(strategy_max_hold_h1_bars > 0 && opened_at > 0)
@@ -231,15 +216,17 @@ bool Strategy_ExitSignal()
          return true;
      }
 
-   double adx_1 = 0.0;
-   double adx_2 = 0.0;
-   double adx_3 = 0.0;
-   double plus_di_1 = 0.0;
-   double minus_di_1 = 0.0;
-   if(!Strategy_ReadAdxDi(adx_1, adx_2, adx_3, plus_di_1, minus_di_1))
+   const double adx_1 = QM_ADX(_Symbol, PERIOD_H1, strategy_adx_period, 1);
+   const double adx_2 = QM_ADX(_Symbol, PERIOD_H1, strategy_adx_period, 2);
+   const double adx_3 = QM_ADX(_Symbol, PERIOD_H1, strategy_adx_period, 3);
+   const double plus_di_1 = QM_ADX_PlusDI(_Symbol, PERIOD_H1, strategy_adx_period, 1);
+   const double minus_di_1 = QM_ADX_MinusDI(_Symbol, PERIOD_H1, strategy_adx_period, 1);
+   if(adx_1 <= 0.0 || adx_2 <= 0.0 || adx_3 <= 0.0 || plus_di_1 <= 0.0 || minus_di_1 <= 0.0)
       return false;
 
-   const bool adx_weakened_two_bars = (adx_1 <= adx_2 && adx_2 <= adx_3);
+   const bool adx_weakened_two_bars = (strategy_adx_weak_bars <= 1)
+                                      ? (adx_1 <= adx_2)
+                                      : (adx_1 <= adx_2 && adx_2 <= adx_3);
    if(adx_weakened_two_bars || adx_1 < strategy_adx_exit_floor)
       return true;
 

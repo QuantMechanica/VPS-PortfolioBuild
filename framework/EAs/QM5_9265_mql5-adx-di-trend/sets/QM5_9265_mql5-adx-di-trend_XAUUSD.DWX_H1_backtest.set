@@ -31,4 +31,12 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9265_mql5-adx-di-trend.md
+strategy_adx_period=14
+strategy_adx_entry_min=25.0
+strategy_adx_exit_floor=20.0
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_take_profit_rr=2.4
+strategy_adx_weak_bars=2
+strategy_max_hold_h1_bars=72
