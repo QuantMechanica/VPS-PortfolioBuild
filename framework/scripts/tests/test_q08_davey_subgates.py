@@ -225,10 +225,45 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         self.assertNotEqual(result["status"], "INVALID")
         self.assertIn("DSR_TIER1_FAIL", result["detail"])
 
-    def test_aggregate_invalid_has_precedence_over_fail_for_infra_separation(self) -> None:
-        self.assertEqual(aggregate._aggregate_verdict(["PASS", "FAIL", "INVALID"]), "INVALID")
-        self.assertEqual(aggregate._aggregate_verdict(["PASS", "FAIL"]), "FAIL")
-        self.assertEqual(aggregate._aggregate_verdict(["PASS", "PASS"]), "PASS")
+    def test_dl077_invalid_davey_gates_route_profitable_edge_to_soft(self) -> None:
+        # DL-077: a profitable low-freq edge with a real PBO pass but INVALID high-freq Davey
+        # gates routes to FAIL_SOFT (portfolio track), NOT the old blocking INVALID verdict.
+        trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
+        trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
+        subs = [
+            {"name": "8.1_correlation", "status": "PASS"},
+            {"name": "8.3_tail_dependence", "status": "PASS"},
+            {"name": "8.7_pbo", "status": "PASS"},
+            {"name": "8.2_dsr_mc_fdr", "status": "INVALID", "detail": "degenerate_baseline"},
+            {"name": "8.5_neighborhood", "status": "INVALID", "detail": "degenerate_baseline"},
+            {"name": "8.9_runs_test", "status": "INVALID", "detail": "too_few_for_runs"},
+        ]
+        verdict, _ = aggregate._aggregate_verdict(subs, trades=trades)
+        self.assertEqual(verdict, "FAIL_SOFT")
+
+    def test_dl077_no_real_quality_pass_is_invalid(self) -> None:
+        # Only the trivial 8.1/8.3 passed; nothing real validated the edge -> INVALID.
+        trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
+        trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
+        subs = [
+            {"name": "8.1_correlation", "status": "PASS"},
+            {"name": "8.3_tail_dependence", "status": "PASS"},
+            {"name": "8.7_pbo", "status": "INVALID", "detail": "degenerate"},
+            {"name": "8.2_dsr_mc_fdr", "status": "INVALID", "detail": "degenerate"},
+        ]
+        verdict, _ = aggregate._aggregate_verdict(subs, trades=trades)
+        self.assertEqual(verdict, "INVALID")
+
+    def test_dl077_real_hard_fail_still_fail_hard(self) -> None:
+        # An INVALID Davey gate does not rescue a genuine HARD failure (PBO fail stays hard).
+        trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
+        trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
+        subs = [
+            {"name": "8.7_pbo", "status": "FAIL", "detail": "pbo_0.88_above_floor"},
+            {"name": "8.2_dsr_mc_fdr", "status": "INVALID", "detail": "degenerate"},
+        ]
+        verdict, _ = aggregate._aggregate_verdict(subs, trades=trades)
+        self.assertEqual(verdict, "FAIL_HARD")
 
     def test_structured_qm_log_loader_finds_tester_agent_equity_stream(self) -> None:
         # Guard the helper's contract directly without requiring a live MT5 tree.

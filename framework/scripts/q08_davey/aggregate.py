@@ -74,6 +74,11 @@ LOW_SAMPLE_DETAIL_TOKENS = (
     "regimes_with_zero_trades",
 )
 
+# DL-077: minimum number of NON-TRIVIAL quality sub-gates that must actually PASS for a
+# low-freq edge to advance (to the SOFT/portfolio track or a clean PASS). Below this, nothing
+# real validated the edge and the result is INVALID. PBO (8.7) is the canonical such gate.
+DL077_MIN_QUALITY_PASSES = 1
+
 
 def _ensure_sub_gate_inputs(ea_id: int, symbol: str, terminal: str | None = None) -> dict:
     """PT4 2026-05-23 — pre-invoke Q08.5 + Q08.7 supporting runners if their
@@ -503,14 +508,32 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
     elif cost_cushion_tier == "PASS":
         classification["cost_cushion"] = "PASS"
 
-    # HARD dominates: a definitive edge failure (e.g. PBO 88%, 4-consecutive losing
-    # months) means the EA is not robust regardless of a single non-evaluable gate.
-    # INVALID (genuine infra/join gap) only decides when no hard fail is present.
+    # HARD dominates: a definitive edge failure (e.g. PBO 88%, net PF < 1.0) means the EA is
+    # not robust regardless of a non-evaluable gate.
     if hard:
         return "FAIL_HARD", classification
-    if invalid:
+
+    # DL-077 (2026-06-26, OWNER): the Davey statistical battery mostly CANNOT COMPUTE for the
+    # low-frequency structural edges this funnel selects (8.2 DSR, 8.6, 8.8, 8.9, 8.10 go
+    # INVALID at low trade/daily-return counts). An INVALID sub-gate means "could not test",
+    # NOT "failed" -- it must never block a PROFITABLE edge with real evidence (e.g. PBO) from
+    # the Q09 portfolio track. Pre-DL-077 a single non-low-sample INVALID returned the blocking
+    # INVALID verdict -> every low-freq sleeve INFRA_FAILed at Q08 and the book could not grow.
+    if pf is None:
+        # Profitability itself could not be computed (no baseline trades) -> genuinely invalid.
         return "INVALID", classification
-    if soft:
+    # Require at least one NON-TRIVIAL quality gate to actually pass (8.1/8.3 are trivial
+    # first-portfolio passes); otherwise nothing real validated the edge -> too thin to advance.
+    real_quality_passes = sum(
+        1 for gate_name, verdict in classification.items()
+        if verdict == "PASS" and not str(gate_name).startswith(("8.1", "8.3"))
+    )
+    if real_quality_passes < DL077_MIN_QUALITY_PASSES:
+        return "INVALID", classification
+    # Profitable, has real evidence, no hard failure: INVALID Davey gates and soft signals
+    # both route to the portfolio track (FAIL_SOFT), never block. Clean gold PASS only when
+    # there are no soft/invalid signals at all.
+    if soft or invalid:
         return "FAIL_SOFT", classification
     return "PASS", classification
 
