@@ -13599,3 +13599,15 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12578,eia-oilgas-ratio,0,XTIUSD.DWX,125780000,2026-06-26,Development,active
 12578,eia-oilgas-ratio,1,XNGUSD.DWX,125780001,2026-06-26,Development,active
 12579,eia-wti-aftershock,0,XTIUSD.DWX,125790000,2026-06-26,Development,active
+1505,connors-cumulative-rsi-h4,0,EURUSD.DWX,15050000,2026-06-26,Development,active
+1505,connors-cumulative-rsi-h4,1,GBPUSD.DWX,15050001,2026-06-26,Development,active
+1505,connors-cumulative-rsi-h4,2,USDJPY.DWX,15050002,2026-06-26,Development,active
+1505,connors-cumulative-rsi-h4,3,AUDUSD.DWX,15050003,2026-06-26,Development,active
+1505,connors-cumulative-rsi-h4,4,USDCAD.DWX,15050004,2026-06-26,Development,active
+1505,connors-cumulative-rsi-h4,5,NDX.DWX,15050005,2026-06-26,Development,active
+1505,connors-cumulative-rsi-h4,6,WS30.DWX,15050006,2026-06-26,Development,active
+1505,connors-cumulative-rsi-h4,7,GDAXI.DWX,15050007,2026-06-26,Development,active
+1505,connors-cumulative-rsi-h4,8,UK100.DWX,15050008,2026-06-26,Development,active
+1505,connors-cumulative-rsi-h4,9,SP500.DWX,15050009,2026-06-26,Development,active
+1505,connors-cumulative-rsi-h4,10,XAUUSD.DWX,15050010,2026-06-26,Development,active
+1505,connors-cumulative-rsi-h4,11,XTIUSD.DWX,15050011,2026-06-26,Development,active
