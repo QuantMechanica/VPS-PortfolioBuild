@@ -78,16 +78,26 @@ input group "Strategy"
 //   input double strategy_atr_sl_mult  = 2.0;
 //   input double strategy_atr_tp_mult  = 3.0;
 input int    strategy_threshold_start_hour_broker = 9;
+input int    strategy_threshold_start_minute_broker = 0;
 input int    strategy_threshold_minutes           = 60;
 input int    strategy_london_open_hour_broker     = 10;
+input int    strategy_london_open_minute_broker   = 0;
 input int    strategy_open_minutes                = 30;
 input int    strategy_london_close_hour_broker    = 19;
+input int    strategy_london_close_minute_broker  = 0;
 input double strategy_risky_stop_price            = 0.0100;
 input int    strategy_max_spread_points           = 0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
+
+int Strategy_ConfigMinuteOfDay(const int hour_value, const int minute_value)
+  {
+   const int hour = MathMax(0, MathMin(23, hour_value));
+   const int minute = MathMax(0, MathMin(59, minute_value));
+   return hour * 60 + minute;
+  }
 
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.
@@ -115,8 +125,10 @@ bool Strategy_NoTradeFilter()
       return true;
 
    const int minute_of_day = dt.hour * 60 + dt.min;
-   const int range_start = strategy_threshold_start_hour_broker * 60;
-   const int entry_end = strategy_london_open_hour_broker * 60 + strategy_open_minutes;
+   const int range_start = Strategy_ConfigMinuteOfDay(strategy_threshold_start_hour_broker,
+                                                      strategy_threshold_start_minute_broker);
+   const int entry_end = Strategy_ConfigMinuteOfDay(strategy_london_open_hour_broker,
+                                                    strategy_london_open_minute_broker) + strategy_open_minutes;
    if(minute_of_day < range_start || minute_of_day > entry_end)
       return true;
 
@@ -166,7 +178,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const int minute_of_day = now_dt.hour * 60 + now_dt.min;
-   const int open_start = strategy_london_open_hour_broker * 60;
+   const int open_start = Strategy_ConfigMinuteOfDay(strategy_london_open_hour_broker,
+                                                     strategy_london_open_minute_broker);
    const int open_end = open_start + strategy_open_minutes;
    if(minute_of_day < open_start || minute_of_day > open_end)
       return false;
@@ -175,7 +188,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      {
       MqlDateTime start_dt = now_dt;
       start_dt.hour = strategy_threshold_start_hour_broker;
-      start_dt.min = 0;
+      start_dt.min = MathMax(0, MathMin(59, strategy_threshold_start_minute_broker));
       start_dt.sec = 0;
       const datetime threshold_start = StructToTime(start_dt);
       const datetime threshold_end = threshold_start + strategy_threshold_minutes * 60;
@@ -193,7 +206,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          MqlDateTime bar_dt;
          TimeToStruct(rates[i].time, bar_dt);
          const int bar_minute = bar_dt.hour * 60 + bar_dt.min;
-         const int range_start = strategy_threshold_start_hour_broker * 60;
+         const int range_start = Strategy_ConfigMinuteOfDay(strategy_threshold_start_hour_broker,
+                                                            strategy_threshold_start_minute_broker);
          const int range_end = range_start + strategy_threshold_minutes;
          if(bar_dt.year != now_dt.year || bar_dt.day_of_year != now_dt.day_of_year ||
             bar_minute < range_start || bar_minute >= range_end)
@@ -257,7 +271,8 @@ bool Strategy_ExitSignal()
    const datetime broker_now = TimeCurrent();
    MqlDateTime dt;
    TimeToStruct(broker_now, dt);
-   const int close_minute = strategy_london_close_hour_broker * 60;
+   const int close_minute = Strategy_ConfigMinuteOfDay(strategy_london_close_hour_broker,
+                                                       strategy_london_close_minute_broker);
    if((dt.hour * 60 + dt.min) < close_minute)
       return false;
 

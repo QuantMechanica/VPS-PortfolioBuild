@@ -19,10 +19,13 @@ The EA builds the pre-London range from M1 bars in the hour before London open. 
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
 | `strategy_threshold_start_hour_broker` | 9 | 0-23 | Broker hour used for the pre-London range start. |
+| `strategy_threshold_start_minute_broker` | 0 | 0-59 | Broker minute used for the pre-London range start. |
 | `strategy_threshold_minutes` | 60 | 1-240 | Number of M1 minutes used to build the opening range. |
 | `strategy_london_open_hour_broker` | 10 | 0-23 | Broker hour treated as London open for the entry window. |
+| `strategy_london_open_minute_broker` | 0 | 0-59 | Broker minute treated as London open for the entry window. |
 | `strategy_open_minutes` | 30 | 1-240 | Minutes after the open during which the first breakout can be traded. |
 | `strategy_london_close_hour_broker` | 19 | 0-23 | Broker hour used for forced same-session time exit. |
+| `strategy_london_close_minute_broker` | 0 | 0-59 | Broker minute used for forced same-session time exit. |
 | `strategy_risky_stop_price` | 0.0100 | >0 | Source absolute price interval; SL and TP each use half this distance. |
 | `strategy_max_spread_points` | 0 | 0+ | Optional spread gate in points; 0 disables the spread cap. |
 

@@ -30,9 +30,13 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_asian_start_gmt_hour     = 23;
+input int    strategy_asian_start_gmt_minute   = 0;
 input int    strategy_asian_end_gmt_hour       = 3;
+input int    strategy_asian_end_gmt_minute     = 0;
 input int    strategy_london_start_gmt_hour    = 7;
+input int    strategy_london_start_gmt_minute  = 0;
 input int    strategy_london_end_gmt_hour      = 9;
+input int    strategy_london_end_gmt_minute    = 0;
 input int    strategy_session_scan_bars        = 160;
 input int    strategy_min_asian_bars           = 12;
 input int    strategy_judas_max_bars           = 8;
@@ -91,34 +95,50 @@ int DateKeyFromUTC(const datetime utc)
    return dt.year * 10000 + dt.mon * 100 + dt.day;
   }
 
-datetime UTCFromKeyHour(const int key, const int hour)
+int ConfigMinuteOfDay(const int hour_value, const int minute_value)
+  {
+   const int hour = MathMax(0, MathMin(23, hour_value));
+   const int minute = MathMax(0, MathMin(59, minute_value));
+   return hour * 60 + minute;
+  }
+
+int UTCMinuteOfDay(const datetime utc)
+  {
+   MqlDateTime dt;
+   ZeroMemory(dt);
+   TimeToStruct(utc, dt);
+   return dt.hour * 60 + dt.min;
+  }
+
+datetime UTCFromKeyMinute(const int key, const int minute_of_day)
   {
    MqlDateTime dt;
    ZeroMemory(dt);
    dt.year = key / 10000;
    dt.mon = (key / 100) % 100;
    dt.day = key % 100;
-   dt.hour = hour;
+   const int minute = MathMax(0, MathMin(23 * 60 + 59, minute_of_day));
+   dt.hour = minute / 60;
+   dt.min = minute % 60;
    return StructToTime(dt);
   }
 
 int SessionKeyForUTC(const datetime utc)
   {
-   MqlDateTime dt;
-   ZeroMemory(dt);
-   TimeToStruct(utc, dt);
-   if(dt.hour >= strategy_asian_start_gmt_hour)
+   const int start_minute = ConfigMinuteOfDay(strategy_asian_start_gmt_hour, strategy_asian_start_gmt_minute);
+   const int end_minute = ConfigMinuteOfDay(strategy_asian_end_gmt_hour, strategy_asian_end_gmt_minute);
+   const int minute = UTCMinuteOfDay(utc);
+   if(start_minute > end_minute && minute >= start_minute)
       return DateKeyFromUTC(utc + 86400);
    return DateKeyFromUTC(utc);
   }
 
 bool IsUTCInLondonKZ(const datetime utc)
   {
-   MqlDateTime dt;
-   ZeroMemory(dt);
-   TimeToStruct(utc, dt);
-   return (dt.hour >= strategy_london_start_gmt_hour &&
-           dt.hour < strategy_london_end_gmt_hour);
+   const int minute = UTCMinuteOfDay(utc);
+   const int start_minute = ConfigMinuteOfDay(strategy_london_start_gmt_hour, strategy_london_start_gmt_minute);
+   const int end_minute = ConfigMinuteOfDay(strategy_london_end_gmt_hour, strategy_london_end_gmt_minute);
+   return (minute >= start_minute && minute < end_minute);
   }
 
 void ResetSessionState(const int session_key)
@@ -144,8 +164,12 @@ void ResetSessionState(const int session_key)
 
 bool ComputeAsianRangeForSession(const int session_key)
   {
-   const datetime session_end_utc = UTCFromKeyHour(session_key, strategy_asian_end_gmt_hour);
-   const datetime session_start_utc = session_end_utc - 4 * 3600;
+   const int start_minute = ConfigMinuteOfDay(strategy_asian_start_gmt_hour, strategy_asian_start_gmt_minute);
+   const int end_minute = ConfigMinuteOfDay(strategy_asian_end_gmt_hour, strategy_asian_end_gmt_minute);
+   const datetime session_end_utc = UTCFromKeyMinute(session_key, end_minute);
+   datetime session_start_utc = UTCFromKeyMinute(session_key, start_minute);
+   if(session_start_utc >= session_end_utc)
+      session_start_utc -= 86400;
 
    double hi = -DBL_MAX;
    double lo = DBL_MAX;
@@ -191,7 +215,8 @@ void AdvanceSessionState(const datetime closed_bar_broker)
    if(session_key != g_session_key)
       ResetSessionState(session_key);
 
-   if(!g_range_ready && closed_bar_utc >= UTCFromKeyHour(session_key, strategy_asian_end_gmt_hour))
+   const int end_minute = ConfigMinuteOfDay(strategy_asian_end_gmt_hour, strategy_asian_end_gmt_minute);
+   if(!g_range_ready && closed_bar_utc >= UTCFromKeyMinute(session_key, end_minute))
       ComputeAsianRangeForSession(session_key);
   }
 

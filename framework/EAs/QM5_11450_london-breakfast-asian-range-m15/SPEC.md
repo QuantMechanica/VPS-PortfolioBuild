@@ -19,10 +19,14 @@ The EA builds the Asian session range from closed M15 bars whose UTC bar-open ti
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
 | `strategy_asian_start_hour` | 0 | 0-23 | UTC hour that starts Asian-range accumulation. |
+| `strategy_asian_start_minute` | 0 | 0-59 | UTC minute that starts Asian-range accumulation. |
 | `strategy_asian_end_hour` | 8 | 1-23 | UTC hour that ends Asian-range accumulation. |
+| `strategy_asian_end_minute` | 0 | 0-59 | UTC minute that ends Asian-range accumulation. |
 | `strategy_london_open_hour` | 8 | 0-23 | UTC hour for the first London breakout bar. |
+| `strategy_london_open_minute` | 0 | 0-59 | UTC minute for the first London breakout bar. |
 | `strategy_entry_bars_to_check` | 3 | 1-12 | Number of M15 bars checked after London open. |
 | `strategy_time_stop_hour` | 10 | 0-23 | UTC hour to close any still-open trade. |
+| `strategy_time_stop_minute` | 0 | 0-59 | UTC minute to close any still-open trade. |
 | `strategy_range_min_pips` | 15 | 1-200 | Minimum Asian range width required. |
 | `strategy_range_max_pips` | 80 | 1-300 | Maximum Asian range width allowed. |
 | `strategy_sl_inside_pips` | 10 | 1-100 | Stop offset back inside the Asian range. |

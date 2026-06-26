@@ -84,9 +84,13 @@ input group "Strategy"
 // across US-DST transitions. Card: Asian 00:00-07:00, pre-London probe
 // 07:00-08:00, London fade 08:00-09:00, time stop 09:00 GMT.
 input int    strategy_asian_start_hour    = 0;     // Asian range start (GMT hour, inclusive)
+input int    strategy_asian_start_minute  = 0;     // Asian range start (GMT minute)
 input int    strategy_asian_end_hour      = 7;     // Asian range end / probe start (GMT hour, exclusive)
+input int    strategy_asian_end_minute    = 0;     // Asian range end / probe start (GMT minute)
 input int    strategy_london_open_hour    = 8;     // London open / fade window start (GMT hour)
+input int    strategy_london_open_minute  = 0;     // London open / fade window start (GMT minute)
 input int    strategy_time_stop_hour      = 9;     // force-close hour (GMT hour, >= => exit)
+input int    strategy_time_stop_minute    = 0;     // force-close minute (GMT minute, >= => exit)
 input double strategy_probe_pips          = 3.0;   // probe must extend this far beyond the range
 input double strategy_range_min_pips      = 15.0;  // Asian range minimum width (pips)
 input double strategy_range_max_pips      = 70.0;  // Asian range maximum width (pips)
@@ -116,13 +120,20 @@ datetime g_last_state_bar   = 0;      // open-time of the last bar folded into t
 
 // UTC (GMT) hour/day of a broker-time bar timestamp. The bar timestamp is broker
 // time; convert to UTC so the GMT card windows gate correctly across DST.
-int BB_UtcHour(const datetime broker_bar_open)
+int BB_UtcMinuteOfDay(const datetime broker_bar_open)
   {
    const datetime utc = QM_BrokerToUTC(broker_bar_open);
    MqlDateTime dt;
    ZeroMemory(dt);
    TimeToStruct(utc, dt);
-   return dt.hour;
+   return dt.hour * 60 + dt.min;
+  }
+
+int BB_ConfigMinuteOfDay(const int hour, const int minute)
+  {
+   const int h = MathMax(0, MathMin(23, hour));
+   const int m = MathMax(0, MathMin(59, minute));
+   return h * 60 + m;
   }
 
 int BB_UtcDayOfYear(const datetime broker_bar_open)
@@ -158,8 +169,8 @@ void BB_AdvanceState_OnNewBar()
       return;
    g_last_state_bar = bar_open;
 
-   const int hour = BB_UtcHour(bar_open);      // GMT hour-of-day of the closed bar
-   const int doy  = BB_UtcDayOfYear(bar_open); // GMT day-of-year of the closed bar
+   const int minute = BB_UtcMinuteOfDay(bar_open); // GMT minute-of-day of the closed bar
+   const int doy    = BB_UtcDayOfYear(bar_open);   // GMT day-of-year of the closed bar
 
    const double h = iHigh(_Symbol, _Period, 1);            // perf-allowed: closed-bar OHLC
    const double l = iLow(_Symbol, _Period, 1);             // perf-allowed: closed-bar OHLC
@@ -167,7 +178,12 @@ void BB_AdvanceState_OnNewBar()
    if(h <= 0.0 || l <= 0.0 || c <= 0.0)
       return;
 
-   const bool in_asian = (hour >= strategy_asian_start_hour && hour < strategy_asian_end_hour);
+   const int asian_start = BB_ConfigMinuteOfDay(strategy_asian_start_hour, strategy_asian_start_minute);
+   const int asian_end = BB_ConfigMinuteOfDay(strategy_asian_end_hour, strategy_asian_end_minute);
+   const int london_open = BB_ConfigMinuteOfDay(strategy_london_open_hour, strategy_london_open_minute);
+   const int time_stop = BB_ConfigMinuteOfDay(strategy_time_stop_hour, strategy_time_stop_minute);
+
+   const bool in_asian = (minute >= asian_start && minute < asian_end);
 
    // A bar inside the Asian window starts (or continues) the session for its day.
    if(in_asian && doy != g_session_day)
@@ -195,7 +211,7 @@ void BB_AdvanceState_OnNewBar()
       return;
 
    // Asian window has ended -> arm the pre-London probe watch.
-   if(g_phase == BB_PHASE_ASIAN && hour >= strategy_asian_end_hour)
+   if(g_phase == BB_PHASE_ASIAN && minute >= asian_end)
       g_phase = BB_PHASE_PRE_LONDON;
 
    const double probe_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)MathRound(strategy_probe_pips));
@@ -203,7 +219,7 @@ void BB_AdvanceState_OnNewBar()
    // ---- Phase: watch for the pre-London probe (false breakout) ----
    if(g_phase == BB_PHASE_PRE_LONDON)
      {
-      const bool in_pre_london = (hour >= strategy_asian_end_hour && hour < strategy_london_open_hour);
+      const bool in_pre_london = (minute >= asian_end && minute < london_open);
       if(in_pre_london)
         {
          const bool broke_low  = (l < g_asian_low  - probe_dist);   // false breakdown -> fade LONG
@@ -220,12 +236,12 @@ void BB_AdvanceState_OnNewBar()
            }
         }
       // London open reached: arm the fade only if exactly one side probed.
-      if(hour >= strategy_london_open_hour)
+      if(minute >= london_open)
          g_phase = (g_probe_dir != 0 && !g_probe_both) ? BB_PHASE_FADE_WAIT : BB_PHASE_DONE;
      }
 
    // Past the time-stop hour -> the day's opportunity is over.
-   if(hour >= strategy_time_stop_hour && g_phase != BB_PHASE_DONE)
+   if(minute >= time_stop && g_phase != BB_PHASE_DONE)
       g_phase = BB_PHASE_DONE;
   }
 
@@ -278,10 +294,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const datetime bar_open = iTime(_Symbol, _Period, 1);   // perf-allowed: closed-bar open time (broker)
-   const int hour = BB_UtcHour(bar_open);                  // GMT hour of the closed bar
+   const int minute = BB_UtcMinuteOfDay(bar_open);         // GMT minute-of-day of the closed bar
+   const int london_open = BB_ConfigMinuteOfDay(strategy_london_open_hour, strategy_london_open_minute);
+   const int time_stop = BB_ConfigMinuteOfDay(strategy_time_stop_hour, strategy_time_stop_minute);
 
    // Fade only inside the London window [london_open, time_stop) GMT.
-   if(hour < strategy_london_open_hour || hour >= strategy_time_stop_hour)
+   if(minute < london_open || minute >= time_stop)
       return false;
 
    const double c = iClose(_Symbol, _Period, 1);           // perf-allowed: fade-bar close
@@ -378,11 +396,12 @@ bool Strategy_ExitSignal()
 
    // Current (live) broker time -> UTC so the GMT time-stop fires promptly,
    // not only on a new bar.
-   const int hour = BB_UtcHour(TimeCurrent());
+   const int minute = BB_UtcMinuteOfDay(TimeCurrent());
+   const int time_stop = BB_ConfigMinuteOfDay(strategy_time_stop_hour, strategy_time_stop_minute);
 
    // Close inside the daily cutoff band [time_stop, friday_close]. A bare
    // ">= time_stop" would also fire in the evening; bound it to the morning.
-   if(hour >= strategy_time_stop_hour && hour < 20)
+   if(minute >= time_stop && minute < 20 * 60)
       return true;
 
    return false;

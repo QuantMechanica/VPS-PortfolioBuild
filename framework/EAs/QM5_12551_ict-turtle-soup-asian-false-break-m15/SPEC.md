@@ -19,9 +19,13 @@ The EA records the fixed Asian-session high and low from 23:00 to 03:00 GMT on M
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
 | `strategy_asian_start_gmt_hour` | 23 | 0-23 | GMT hour where the Asian range window starts. |
+| `strategy_asian_start_gmt_minute` | 0 | 0-59 | GMT minute where the Asian range window starts. |
 | `strategy_asian_end_gmt_hour` | 3 | 0-23 | GMT hour where the Asian range window ends and is fixed. |
+| `strategy_asian_end_gmt_minute` | 0 | 0-59 | GMT minute where the Asian range window ends and is fixed. |
 | `strategy_london_start_gmt_hour` | 7 | 0-23 | GMT hour where London kill-zone detection starts. |
+| `strategy_london_start_gmt_minute` | 0 | 0-59 | GMT minute where London kill-zone detection starts. |
 | `strategy_london_end_gmt_hour` | 9 | 0-23 | GMT hour where London kill-zone detection ends. |
+| `strategy_london_end_gmt_minute` | 0 | 0-59 | GMT minute where London kill-zone detection ends. |
 | `strategy_session_scan_bars` | 160 | 32-240 | Maximum M15 bars scanned to rebuild the Asian range. |
 | `strategy_min_asian_bars` | 12 | 1-16 | Minimum Asian-session bars required before a range is valid. |
 | `strategy_judas_max_bars` | 8 | 1-16 | Maximum bars after fake-out confirmation for the opposite break. |

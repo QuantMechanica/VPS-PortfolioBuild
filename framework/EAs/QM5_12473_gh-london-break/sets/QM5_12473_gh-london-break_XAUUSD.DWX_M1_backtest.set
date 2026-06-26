@@ -31,4 +31,24 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+qm_ea_id=12473
+qm_rng_seed=42
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0
+strategy_threshold_start_hour_broker=9
+strategy_threshold_start_minute_broker=0
+strategy_threshold_minutes=60
+strategy_london_open_hour_broker=10
+strategy_london_open_minute_broker=0
+strategy_open_minutes=30
+strategy_london_close_hour_broker=19
+strategy_london_close_minute_broker=0
+strategy_risky_stop_price=0.0100
+strategy_max_spread_points=0
+

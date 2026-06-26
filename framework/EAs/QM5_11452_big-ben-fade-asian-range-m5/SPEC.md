@@ -31,9 +31,13 @@ so the GMT windows stay correct across US-DST transitions.
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
 | `strategy_asian_start_hour` | 0 | 0-23 | Asian range start (GMT hour, inclusive) |
+| `strategy_asian_start_minute` | 0 | 0-59 | Asian range start (GMT minute, inclusive) |
 | `strategy_asian_end_hour` | 7 | 0-23 | Asian range end / probe start (GMT hour, exclusive) |
+| `strategy_asian_end_minute` | 0 | 0-59 | Asian range end / probe start (GMT minute, exclusive) |
 | `strategy_london_open_hour` | 8 | 0-23 | London open / fade window start (GMT hour) |
+| `strategy_london_open_minute` | 0 | 0-59 | London open / fade window start (GMT minute) |
 | `strategy_time_stop_hour` | 9 | 0-23 | Force-close hour (GMT hour, >= => exit) |
+| `strategy_time_stop_minute` | 0 | 0-59 | Force-close minute (GMT minute, >= => exit) |
 | `strategy_probe_pips` | 3.0 | 1-10 | Probe must extend this far beyond the Asian range |
 | `strategy_range_min_pips` | 15.0 | 5-40 | Asian range minimum width (pips) |
 | `strategy_range_max_pips` | 70.0 | 40-150 | Asian range maximum width (pips) |
