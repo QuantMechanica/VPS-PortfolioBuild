@@ -90,13 +90,13 @@ double Strategy_McGinley(const string sym, const int period, const int shift)
    if(period <= 0 || shift < 1)
       return 0.0;
    const int start = shift + strategy_warmup_bars;          // oldest bar index
-   double seed = iClose(sym, PERIOD_D1, start);
+   double seed = iClose(sym, PERIOD_D1, start); // perf-allowed: closed-bar McGinley seed
    if(seed <= 0.0)
       return 0.0;
    double md = seed;
    for(int s = start - 1; s >= shift; --s)
      {
-      const double c = iClose(sym, PERIOD_D1, s);
+      const double c = iClose(sym, PERIOD_D1, s); // perf-allowed: closed-bar McGinley recursion
       if(c <= 0.0 || md <= 0.0)
          return 0.0;
       const double ratio = c / md;
@@ -122,9 +122,9 @@ int Strategy_SuperTrendDir(const string sym, const int period, const double mult
    bool   seeded = false;
    for(int s = start; s >= shift; --s)
      {
-      const double hi = iHigh(sym, PERIOD_D1, s);
-      const double lo = iLow(sym, PERIOD_D1, s);
-      const double cl = iClose(sym, PERIOD_D1, s);
+      const double hi = iHigh(sym, PERIOD_D1, s); // perf-allowed: closed-bar SuperTrend recursion
+      const double lo = iLow(sym, PERIOD_D1, s); // perf-allowed: closed-bar SuperTrend recursion
+      const double cl = iClose(sym, PERIOD_D1, s); // perf-allowed: closed-bar SuperTrend recursion
       const double atr = QM_ATR(sym, PERIOD_D1, period, s);
       if(hi <= 0.0 || lo <= 0.0 || cl <= 0.0 || atr <= 0.0)
          return 0;
@@ -139,7 +139,7 @@ int Strategy_SuperTrendDir(const string sym, const int period, const double mult
          seeded = true;
          continue;
         }
-      const double cl_prev = iClose(sym, PERIOD_D1, s + 1);
+      const double cl_prev = iClose(sym, PERIOD_D1, s + 1); // perf-allowed: closed-bar SuperTrend recursion
       if(cl_prev <= 0.0)
          return 0;
       // Final band recursion (standard SuperTrend).
@@ -173,11 +173,11 @@ bool Strategy_Vortex(const string sym, const int period, const int shift,
    for(int k = 0; k < period; ++k)
      {
       const int s = shift + k;
-      const double hi   = iHigh(sym, PERIOD_D1, s);
-      const double lo   = iLow(sym, PERIOD_D1, s);
-      const double hi_p = iHigh(sym, PERIOD_D1, s + 1);
-      const double lo_p = iLow(sym, PERIOD_D1, s + 1);
-      const double cl_p = iClose(sym, PERIOD_D1, s + 1);
+      const double hi   = iHigh(sym, PERIOD_D1, s); // perf-allowed: closed-bar Vortex range
+      const double lo   = iLow(sym, PERIOD_D1, s); // perf-allowed: closed-bar Vortex range
+      const double hi_p = iHigh(sym, PERIOD_D1, s + 1); // perf-allowed: closed-bar Vortex prior range
+      const double lo_p = iLow(sym, PERIOD_D1, s + 1); // perf-allowed: closed-bar Vortex prior range
+      const double cl_p = iClose(sym, PERIOD_D1, s + 1); // perf-allowed: closed-bar Vortex true range
       if(hi <= 0.0 || lo <= 0.0 || hi_p <= 0.0 || lo_p <= 0.0 || cl_p <= 0.0)
          return false;
       sum_vmp += MathAbs(hi - lo_p);
@@ -202,8 +202,8 @@ int Strategy_BaselineCross(const string sym, const int period, const int shift, 
    for(int k = 0; k < lookback; ++k)
      {
       const int s = shift + k;
-      const double c_now  = iClose(sym, PERIOD_D1, s);
-      const double c_prev = iClose(sym, PERIOD_D1, s + 1);
+      const double c_now  = iClose(sym, PERIOD_D1, s); // perf-allowed: closed-bar baseline cross
+      const double c_prev = iClose(sym, PERIOD_D1, s + 1); // perf-allowed: closed-bar baseline cross
       const double md_now  = Strategy_McGinley(sym, period, s);
       const double md_prev = Strategy_McGinley(sym, period, s + 1);
       if(c_now <= 0.0 || c_prev <= 0.0 || md_now <= 0.0 || md_prev <= 0.0)
@@ -261,7 +261,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // Stack inputs on the last closed bar (shift = 1).
-   const double close_last = iClose(_Symbol, PERIOD_D1, 1);
+   const double close_last = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: closed-bar stack input
    const double md_last    = Strategy_McGinley(_Symbol, strategy_baseline_period, 1);
    const double atr_last   = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if(close_last <= 0.0 || md_last <= 0.0 || atr_last <= 0.0)
@@ -382,7 +382,7 @@ bool Strategy_ExitSignal()
    if(magic <= 0)
       return false;
 
-   const double close_last = iClose(_Symbol, PERIOD_D1, 1);
+   const double close_last = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: closed-bar exit input
    const double md_last    = Strategy_McGinley(_Symbol, strategy_baseline_period, 1);
    const int    st_dir     = Strategy_SuperTrendDir(_Symbol, strategy_supertrend_period,
                                                     strategy_supertrend_mult, 1);
