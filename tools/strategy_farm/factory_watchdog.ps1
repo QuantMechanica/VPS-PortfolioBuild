@@ -410,42 +410,39 @@ else {
             }
         } catch { $detail += " | tscon_err=$($_.Exception.Message)" }
     }
-    try {
-        # CLEAN-SLATE respawn INTO the autologon console session (visible-mode).
-        # Why clean-slate (kill-all then spawn 10) instead of --dedupe gap-fill:
-        # start_terminal_workers' --dedupe detects existing workers via a CIM
-        # (Get-CimInstance) query that FAILS inside a CreateProcessAsUser'd
-        # disconnected-session process -> it would see 0 existing and spawn a full
-        # 10 ON TOP of survivors (observed 7 -> 17 over-provision). So we first
-        # kill every worker + terminal64 from THIS SYSTEM/session-0 context (where
-        # CIM works), then launch a fresh set of exactly 10 (nothing to dedupe).
-        #
-        # This watchdog runs as SYSTEM (SeTcb) so the launcher can WTSQueryUserToken
-        # + CreateProcessAsUser into qm-admin's session even when RDP is DISCONNECTED.
-        # A plain `& $py ...` here would land workers in SYSTEM's session-0 (hazard).
-        if ($dispatchStalled) {
-            $dumpDetail = Invoke-StallDumpCapture -RequestPath $stallDumpRequest -DumpDir $stallDumpDir
-            $detail += " | $dumpDetail"
+    # 2026-06-26 (OWNER "harden the watchdog"): the old clean-slate respawn here used
+    # run_in_console_session (CreateProcessAsUser as SYSTEM) -- the SAME mechanism the realStall
+    # path was moved OFF on 2026-06-24 because it yields worker daemons whose terminal64 children
+    # instant-exit 0xC0000142, so metatester64 stays 0 and the factory never actually recovers
+    # while the log reads 'healed_respawn_workers'. That asymmetry was the 2026-06-26 stall:
+    # workers fell to 1, the worker-shortage heal "succeeded" cleanly, yet 0 compute -> needed a
+    # MANUAL FactoryON kick. Unify the worker-shortage / dispatch-stall heal onto the SAME
+    # working recovery as realStall: delegate to QM_StrategyFarm_FactoryON_AtLogon (RunAs
+    # qm-admin, Interactive, RunLevel Highest) = a direct in-session Factory_ON.ps1 (kill stale
+    # daemons/terminals + spawn workers in-session + farmctl repair + trigger pump) that recovers
+    # instantly. T_Live guard: Factory_ON kills ALL terminal64 incl a live T_Live terminal, so
+    # never auto-recover while T_Live runs (Hard Rule -- OWNER recovers manually).
+    $tLiveRunning = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
+                      Where-Object { $_.CommandLine -match 'T_Live' }).Count -gt 0
+    if ($tLiveRunning) {
+        $action = 'heal_tlive_guard'
+        $detail += " -> a T_Live terminal is running; refusing auto-recovery (Hard Rule), OWNER must recover manually"
+    } else {
+        try {
+            if ($dispatchStalled) {
+                $dumpDetail = Invoke-StallDumpCapture -RequestPath $stallDumpRequest -DumpDir $stallDumpDir
+                $detail += " | $dumpDetail"
+            }
+            Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop
+            Start-Sleep -Seconds 25
+            $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
+                       Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
+            $action = 'healed_via_factoryon'
+            $detail += " -> Start FactoryON_AtLogon (interactive recovery) -> after=$after/$ExpectWorkers"
+        } catch {
+            $action = 'heal_failed'
+            $detail += " -> ERROR: $_"
         }
-        foreach ($d in $daemons) { Stop-Process -Id $d.ProcessId -Force -ErrorAction SilentlyContinue }
-        # Kill ONLY factory T1-T10 terminals. NEVER terminate T_Live (live trading —
-        # OWNER+Claude authority, Hard Rule) or T_Export (analysis); matching by the
-        # T1-T10 path keeps the clean-slate respawn from ever touching them.
-        @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
-          Where-Object { $_.CommandLine -match '\\mt5\\T(?:[1-9]|10)\\' }) |
-          ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
-        Start-Sleep -Seconds 4
-        $launcher = Join-Path $repo 'tools\strategy_farm\run_in_console_session.ps1'
-        $swArgs = '"' + (Join-Path $repo 'tools\strategy_farm\start_terminal_workers.py') + '" --repo-root "' + $repo + '" --farm-root "D:\QM\strategy_farm" --dedupe'
-        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $launcher -Exe $py -Arguments $swArgs -WorkDir $repo 2>$null | Out-Null
-        Start-Sleep -Seconds 12
-        $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
-                   Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
-        $action = 'healed_respawn_workers'
-        $detail += " -> after=$after/$ExpectWorkers"
-    } catch {
-        $action = 'heal_failed'
-        $detail += " -> ERROR: $_"
     }
 }
 
