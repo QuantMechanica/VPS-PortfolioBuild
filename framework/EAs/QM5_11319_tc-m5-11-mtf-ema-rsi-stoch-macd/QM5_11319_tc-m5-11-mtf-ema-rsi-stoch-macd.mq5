@@ -26,9 +26,10 @@
 //   Momentum STATE 2  : Stoch %K rising and < cap (long); falling and > floor (short).
 //                       Slope = %K@1 vs %K@2. Cap/floor on %K@1.
 //   Momentum STATE 3  : MACD histogram per card disjunction (hist = main-signal):
-//                       long  -> (hist1<=0 && hist0... ) collapses to "hist rising"
-//                       i.e. cross-up OR negative-but-increasing => hist@1 > hist@2.
-//                       MACD may be negative; we never gate on its sign alone.
+//                       long  -> crosses from negative to positive OR remains
+//                                negative and increases vs the previous bar.
+//                       short -> crosses from positive to negative OR remains
+//                                positive and decreases vs the previous bar.
 //   Stop / Take       : fixed pips (card baseline 25 / 25), scale-correct via
 //                       QM_StopFixedPips / explicit pip-distance TP.
 //   Exit              : SL/TP only (source has no indicator exit).
@@ -150,12 +151,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double hist_2 = macd_main_2 - macd_signal_2;
 
    // LONG: H4 bias up, M5 EMA cross up (EVENT), RSI>50, %K rising and < cap,
-   //       MACD histogram rising (cross-up OR negative-but-increasing).
+   //       MACD histogram crosses up OR stays negative and increases.
    if(bias > 0 && cross_up)
      {
       const bool rsi_ok   = (rsi_1 > strategy_rsi_mid);
       const bool stoch_ok = (k1 > k2 && k1 < strategy_stoch_cap);
-      const bool macd_ok  = (hist_1 > hist_2);   // card disjunction collapses to rising hist
+      const bool macd_ok  = ((hist_2 <= 0.0 && hist_1 > 0.0) ||
+                             (hist_1 < 0.0 && hist_1 > hist_2));
       if(rsi_ok && stoch_ok && macd_ok)
         {
          const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -181,7 +183,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      {
       const bool rsi_ok   = (rsi_1 < strategy_rsi_mid);
       const bool stoch_ok = (k1 < k2 && k1 > strategy_stoch_floor);
-      const bool macd_ok  = (hist_1 < hist_2);   // cross-down OR positive-but-decreasing
+      const bool macd_ok  = ((hist_2 >= 0.0 && hist_1 < 0.0) ||
+                             (hist_1 > 0.0 && hist_1 < hist_2));
       if(rsi_ok && stoch_ok && macd_ok)
         {
          const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);

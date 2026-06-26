@@ -4,7 +4,7 @@
 **Slug:** `tc-m5-11-mtf-ema-rsi-stoch-macd`
 **Source:** `e78a9f1f-4e6a-563c-a080-915133d6ed28` (Thomas Carter, 20 Forex Trading Strategies — 5 Min System #11)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-26
 
 ---
 
@@ -17,9 +17,10 @@ fresh trigger EVENT is the M5 EMA(5)/EMA(10) crossover; every other condition is
 STATE read on the same closed M5 bar, so two cross events are never required on one
 bar. A long fires when, on the just-closed M5 bar: H4 bias is up, M5 EMA(5) crosses
 above M5 EMA(10), RSI(14) > 50, Stochastic(5,3,3) %K is rising (%K@1 > %K@2) and
-below the cap, and the MACD(12,26,9) histogram is rising (hist@1 > hist@2 — this
-single condition captures the card's "cross from negative to positive OR negative
-but increasing" disjunction; MACD may be negative). Shorts are the exact mirror.
+below the cap, and the MACD(12,26,9) histogram either crosses from negative to
+positive or remains negative while increasing versus the previous closed bar.
+Shorts are the exact mirror: histogram crosses from positive to negative or
+remains positive while decreasing.
 Exit is by fixed stop-loss / take-profit only (source defines no indicator exit);
 baseline 25 pips each. One position per magic.
 
@@ -111,3 +112,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v2 | 2026-06-26 | Rebuild from card; literal MACD disjunction | 2128020b-f95d-406a-b64c-314929065b96 |
