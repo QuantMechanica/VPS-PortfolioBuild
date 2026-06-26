@@ -860,7 +860,7 @@ def _parse_utc_datetime(value: str | None) -> dt.datetime | None:
 def chk_active_row_age(con) -> dict:
     rows = con.execute(
         """
-        SELECT id, phase, ea_id, symbol, claimed_by, updated_at
+        SELECT id, phase, ea_id, symbol, claimed_by, payload_json, updated_at
         FROM work_items
         WHERE status='active'
         """
@@ -869,7 +869,7 @@ def chk_active_row_age(con) -> dict:
     offenders = []
     for r in rows:
         phase = str(r["phase"] or "")
-        timeout_min = PHASE_ACTIVE_TIMEOUT_MIN.get(phase)
+        timeout_min = farmctl._active_timeout_min_for_work_item(phase, r["payload_json"])
         if timeout_min is None:
             continue
         updated = _parse_utc_datetime(r["updated_at"])

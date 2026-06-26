@@ -139,6 +139,7 @@ PHASE_ACTIVE_TIMEOUT_MIN = {
     "Q09": 120,    # news-mode sweep (1 or 7 modes)
     "Q10": 60,     # full-history canonical confirmation
 }
+BASKET_Q02_ACTIVE_TIMEOUT_MIN = 120
 
 
 def is_factory_terminal_name(value: Any) -> bool:
@@ -3168,7 +3169,7 @@ def _detect_active_age_timeout(con: sqlite3.Connection) -> list[dict[str, Any]]:
     flagged: list[dict[str, Any]] = []
     for r in rows:
         phase = str(r["phase"] or "")
-        timeout_min = PHASE_ACTIVE_TIMEOUT_MIN.get(phase)
+        timeout_min = _active_timeout_min_for_work_item(phase, r["payload_json"])
         if timeout_min is None:
             continue
         updated = _parse_utc_datetime(r["updated_at"])
@@ -3219,6 +3220,22 @@ def _detect_active_age_timeout(con: sqlite3.Connection) -> list[dict[str, Any]]:
     if flagged:
         con.commit()
     return flagged
+
+
+def _active_timeout_min_for_work_item(phase: str, payload_json: str | None) -> int | None:
+    timeout_min = PHASE_ACTIVE_TIMEOUT_MIN.get(str(phase or ""))
+    if timeout_min is None:
+        return None
+    try:
+        payload = json.loads(payload_json or "{}")
+    except json.JSONDecodeError:
+        payload = {}
+    if (
+        str(phase or "").upper() == "Q02"
+        and str(payload.get("portfolio_scope") or "").lower() == "basket"
+    ):
+        return max(int(timeout_min), BASKET_Q02_ACTIVE_TIMEOUT_MIN)
+    return int(timeout_min)
 
 
 def _normalize_pending_work_item_verdicts(con: sqlite3.Connection) -> int:

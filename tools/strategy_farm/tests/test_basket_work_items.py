@@ -4,6 +4,7 @@ import sqlite3
 import sys
 import tempfile
 import unittest
+import datetime as dt
 from pathlib import Path
 
 
@@ -14,6 +15,68 @@ import farmctl  # noqa: E402
 
 
 class BasketWorkItemsTests(unittest.TestCase):
+    def _insert_active_basket_q02(self, root: Path, *, item_id: str, age_minutes: int) -> None:
+        farmctl.init_db(root)
+        updated = (
+            dt.datetime.now(dt.UTC).replace(microsecond=0)
+            - dt.timedelta(minutes=age_minutes)
+        ).isoformat()
+        payload = {
+            "portfolio_scope": "basket",
+            "logical_symbol": "QM5_9001_EUR_GBP_BASKET_D1",
+            "pid": None,
+        }
+        with sqlite3.connect(root / farmctl.DB_REL) as conn:
+            conn.execute(
+                """
+                INSERT INTO work_items
+                  (id, kind, phase, ea_id, symbol, setfile_path, status, verdict,
+                   attempt_count, parent_task_id, evidence_path, claimed_by,
+                   payload_json, created_at, updated_at)
+                VALUES
+                  (?, 'backtest', 'Q02', 'QM5_9001', 'QM5_9001_EUR_GBP_BASKET_D1',
+                   'basket.set', 'active', NULL, 0, NULL, NULL, 'T5', ?, ?, ?)
+                """,
+                (item_id, json.dumps(payload), updated, updated),
+            )
+            conn.commit()
+
+    def test_basket_q02_active_timeout_uses_longer_window(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            self._insert_active_basket_q02(root, item_id="wi-basket-60m", age_minutes=60)
+            with farmctl.connect(root) as conn:
+                flagged = farmctl._detect_active_age_timeout(conn)
+                status = conn.execute(
+                    "SELECT status FROM work_items WHERE id='wi-basket-60m'"
+                ).fetchone()[0]
+            self.assertEqual(flagged, [])
+            self.assertEqual(status, "active")
+
+    def test_basket_q02_active_timeout_still_reaps_after_basket_window(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            self._insert_active_basket_q02(root, item_id="wi-basket-130m", age_minutes=130)
+            old_stop_pid = farmctl._stop_pid
+            old_stop_terminal_slot = farmctl._stop_terminal_slot
+            try:
+                farmctl._stop_pid = lambda _pid: False
+                farmctl._stop_terminal_slot = lambda _terminal: False
+                with farmctl.connect(root) as conn:
+                    flagged = farmctl._detect_active_age_timeout(conn)
+                    row = conn.execute(
+                        "SELECT status, verdict, payload_json FROM work_items WHERE id='wi-basket-130m'"
+                    ).fetchone()
+            finally:
+                farmctl._stop_pid = old_stop_pid
+                farmctl._stop_terminal_slot = old_stop_terminal_slot
+
+            self.assertEqual(len(flagged), 1)
+            self.assertEqual(flagged[0]["timeout_min"], farmctl.BASKET_Q02_ACTIVE_TIMEOUT_MIN)
+            self.assertEqual(row[0], "failed")
+            self.assertEqual(row[1], "FAIL")
+            self.assertEqual(json.loads(row[2])["verdict_reason"], "ACTIVE_TIMEOUT")
+
     def test_p2_enqueue_uses_one_logical_basket_work_item(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp) / "farm"
