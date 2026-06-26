@@ -13598,3 +13598,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12577,cme-xauxag-ratio,1,XAGUSD.DWX,125770001,2026-06-26,Development,active
 12578,eia-oilgas-ratio,0,XTIUSD.DWX,125780000,2026-06-26,Development,active
 12578,eia-oilgas-ratio,1,XNGUSD.DWX,125780001,2026-06-26,Development,active
+12579,eia-wti-aftershock,0,XTIUSD.DWX,125790000,2026-06-26,Development,active
