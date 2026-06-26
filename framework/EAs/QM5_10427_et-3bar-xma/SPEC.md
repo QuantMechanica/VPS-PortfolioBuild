@@ -1,23 +1,18 @@
-# QM5_10427_et-3bar-xma — Strategy Spec
+# QM5_10427_et-3bar-xma - Strategy Spec
 
 **EA ID:** QM5_10427
 **Slug:** `et-3bar-xma`
 **Source:** `d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe` (see `strategy-seeds/sources/d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe/`)
-**Author of this spec:** auto-generated ex-post by gen_spec_md.py
-**Last revised:** 2026-06-25
+**Author of this spec:** Codex
+**Last revised:** 2026-06-26
 
 ---
 
 ## 1. Strategy Logic
 
-Mechanical strategy implemented per the approved card
-`artifacts/cards_approved/QM5_10427_et-3bar-xma.md`. See that card's body for
-the full entry/exit/stop/sizing rules; this SPEC summarises the
-implementation surface.
+The EA trades an M15 stop-entry breakout after three consecutive same-color completed bars. Long setups require the last three completed bars to close above their opens, the latest close to remain below its high, the latest close to be above EMA(200), a three-bar high-low range below 0.75 ATR(20), and a latest-bar body/range ratio above 0.65. Short setups mirror the same rules below EMA(200) and place a sell stop at the three-bar low.
 
-Entry/exit logic is encoded in the five `Strategy_*` hooks in
-`QM5_10427_et-3bar-xma.mq5`. Framework wiring (risk, magic, news, Friday close)
-is inherited from `QM_Common.mqh` and is not redocumented here.
+Stops use the larger of the setup range and 0.75 ATR(20). Targets use 0.5 times the setup range, and discretionary exits close at the configured broker-time session close. The framework handles risk sizing, magic validation, news, kill switch, and Friday close.
 
 ---
 
@@ -25,20 +20,20 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_xma_period` | 200 | (see source) | (see strategy logic) |
-| `strategy_atr_period` | 20 | (see source) | (see strategy logic) |
-| `strategy_max_range_atr_mult` | 0.75 | (see source) | (see strategy logic) |
-| `strategy_min_stop_atr_mult` | 0.75 | (see source) | (see strategy logic) |
-| `strategy_body_range_min` | 0.65 | (see source) | (see strategy logic) |
-| `strategy_target_range_mult` | 0.50 | (see source) | (see strategy logic) |
-| `strategy_entry_buffer_points` | 0 | (see source) | (see strategy logic) |
-| `strategy_window1_start_hhmm` | 0 | (see source) | (see strategy logic) |
-| `strategy_window1_end_hhmm` | 2359 | (see source) | (see strategy logic) |
-| `strategy_window2_start_hhmm` | -1 | (see source) | (see strategy logic) |
-| `strategy_window2_end_hhmm` | -1 | (see source) | (see strategy logic) |
-| `strategy_window3_start_hhmm` | -1 | (see source) | (see strategy logic) |
-| `strategy_window3_end_hhmm` | -1 | (see source) | (see strategy logic) |
-| `strategy_session_close_hhmm` | 2359 | (see source) | (see strategy logic) |
+| `strategy_xma_period` | 200 | 1+ | EMA trend-filter length from the card's XAverage(200). |
+| `strategy_atr_period` | 20 | 1+ | ATR period for range cap and V5 stop floor. |
+| `strategy_max_range_atr_mult` | 0.75 | >0 | Maximum three-bar setup range as a multiple of ATR(20). |
+| `strategy_min_stop_atr_mult` | 0.75 | >0 | Minimum stop distance as a multiple of ATR(20). |
+| `strategy_body_range_min` | 0.65 | >0 | Latest completed bar body/range threshold. |
+| `strategy_target_range_mult` | 0.50 | >0 | Target distance as a multiple of the setup range. |
+| `strategy_entry_buffer_points` | 0 | 0+ | Optional stop-entry offset beyond the three-bar high/low. |
+| `strategy_window1_start_hhmm` | 0 | 0-2359 | First allowed broker-time entry window start. |
+| `strategy_window1_end_hhmm` | 2359 | 0-2359 | First allowed broker-time entry window end. |
+| `strategy_window2_start_hhmm` | -1 | -1 or 0-2359 | Second allowed entry window start; -1 disables it. |
+| `strategy_window2_end_hhmm` | -1 | -1 or 0-2359 | Second allowed entry window end; -1 disables it. |
+| `strategy_window3_start_hhmm` | -1 | -1 or 0-2359 | Third allowed entry window start; -1 disables it. |
+| `strategy_window3_end_hhmm` | -1 | -1 or 0-2359 | Third allowed entry window end; -1 disables it. |
+| `strategy_session_close_hhmm` | 2359 | 0-2359 | Broker-time session close exit threshold. |
 
 > Framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability,
@@ -50,15 +45,14 @@ is inherited from `QM_Common.mqh` and is not redocumented here.
 ## 3. Symbol Universe
 
 **Designed for:**
-- `SP500.DWX` — registered in magic_numbers.csv for this EA
-- `NDX.DWX` — registered in magic_numbers.csv for this EA
-- `WS30.DWX` — registered in magic_numbers.csv for this EA
-- `GDAXI.DWX` — registered in magic_numbers.csv for this EA
-- `XAUUSD.DWX` — registered in magic_numbers.csv for this EA
+- `SP500.DWX` - card-stated S&P 500 exposure; valid backtest-only custom symbol.
+- `NDX.DWX` - card-stated US index basket member and liquid Nasdaq 100 proxy.
+- `WS30.DWX` - card-stated US index basket member and liquid Dow 30 proxy.
+- `GDAXI.DWX` - valid matrix DAX symbol used for the card's GER40.DWX intent.
+- `XAUUSD.DWX` - card-stated metals member with portable OHLC/EMA/ATR data.
 
 **Explicitly NOT for:** any symbol not in the list above (no implicit
-universe expansion at runtime; the `QM_SymbolGuard` framework helper
-rejects foreign symbols).
+universe expansion at runtime).
 
 ---
 
@@ -67,7 +61,7 @@ rejects foreign symbols).
 | Aspect | Value |
 |---|---|
 | Base timeframe | `M15` |
-| Multi-timeframe refs | see `Strategy_*` hooks in the .mq5 |
+| Multi-timeframe refs | none |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
@@ -77,10 +71,9 @@ rejects foreign symbols).
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | 30 |
-| Cadence note | "Windowed intraday three-bar setup with one flat-to-flat trade per session; the triple-same-color + sub-0.75xATR(20) range-compression confluence plus trend/body filters and breakout fill make this sparse — realistic estimate ~30 trades/year/symbol (CARD_OVERCLAIM correction 2026-06-16, was 160)." |
-| Typical hold time | see card body |
-| Expected drawdown profile | bounded by RISK_FIXED + FTMO 10% total DD ceiling |
-| Regime preference | per card thesis |
+| Typical hold time | Intraday, flat by configured session close |
+| Expected drawdown profile | Asymmetric 0.5R target versus 1.0R setup stop, bounded by fixed-risk sizing |
+| Regime preference | Volatility-expansion breakout after compact range and trend filter |
 | Win rate target (qualitative) | medium |
 
 ---
@@ -90,9 +83,9 @@ rejects foreign symbols).
 This card was mechanised from:
 
 **Source ID:** `d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe`
-**Pointer:** `strategy-seeds/sources/d6ae8bae-7b94-5209-9be7-fb72a1c3e3fe/`
-**R1–R4 verdict (Q00):** all PASS — see
-`artifacts/cards_approved/QM5_10427_et-3bar-xma.md`
+**Source type:** forum
+**Pointer:** `https://www.elitetrader.com/et/threads/working-system-needs-improvement.14001/page-4`
+**R1-R4 verdict (Q00):** all PASS per `artifacts/cards_approved/QM5_10427_et-3bar-xma.md`
 
 ---
 
@@ -112,4 +105,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-25 | Initial spec (ex-post, generated by gen_spec_md.py) | post-PT15 remediation |
+| v1 | 2026-06-26 | Initial build from card | 60b49d1e-662e-4986-b3ed-513c79890058 |

@@ -271,15 +271,15 @@ bool Strategy_Bearish3()
 
 bool Strategy_PriorBodyFilter()
   {
-   const double high2  = iHigh(_Symbol, _Period, 2);  // perf-allowed
-   const double low2   = iLow(_Symbol, _Period, 2);   // perf-allowed
-   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed
-   const double open2  = iOpen(_Symbol, _Period, 2);  // perf-allowed
-   const double range2 = high2 - low2;
-   if(range2 <= 0.0)
+   const double high1  = iHigh(_Symbol, _Period, 1);  // perf-allowed
+   const double low1   = iLow(_Symbol, _Period, 1);   // perf-allowed
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed
+   const double open1  = iOpen(_Symbol, _Period, 1);  // perf-allowed
+   const double range1 = high1 - low1;
+   if(range1 <= 0.0)
       return false;
-   const double body2 = MathAbs(close2 - open2);
-   return (body2 / range2 > strategy_body_range_min);
+   const double body1 = MathAbs(close1 - open1);
+   return (body1 / range1 > strategy_body_range_min);
   }
 
 double Strategy_NormalizePrice(const double price)

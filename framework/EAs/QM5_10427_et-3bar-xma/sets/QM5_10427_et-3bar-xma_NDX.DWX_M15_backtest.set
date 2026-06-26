@@ -3,16 +3,16 @@
 ; ea_id:        10427
 ; ea_slug:      et-3bar-xma
 ; ea_version:   v5.0
-; set_version:  s20260625-001
+; set_version:  s20260626-001
 ; symbol:       NDX.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   ea641101f8dbaa7e45c88d8481ffda310c9e878a25801c91e8c199b295f2c1c7
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-25
+; date:         2026-06-26
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000
