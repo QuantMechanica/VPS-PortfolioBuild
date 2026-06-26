@@ -127,9 +127,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    MqlRates closed_bar[1];
-   ArraySetAsSeries(closed_bar, true);
-   // perf-allowed: the card needs closed-bar OHLC and the framework has no OHLC reader.
-   if(CopyRates(_Symbol, PERIOD_H1, 1, 1, closed_bar) != 1)
+   if(CopyRates(_Symbol, PERIOD_H1, 1, 1, closed_bar) != 1) // perf-allowed: closed-bar OHLC, Strategy_EntrySignal only called post QM_IsNewBar()
       return false;
 
    const double close1 = closed_bar[0].close;
