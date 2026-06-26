@@ -19,10 +19,8 @@
 //   Pullback-resume EVENT (LONG) — the SINGLE trigger, one per bar:
 //     - Trigger bar (shift 1) wick TOUCHED EMA60 from above: Low@1 <= EMA60@1
 //     - Close held above the slow EMA: Close@1 > EMA60@1
-//     - It is a genuine pullback (not a hover): the PRIOR bar did not touch,
-//       Low@2 > EMA60@2  (price was away, came down, tagged EMA60, resumed).
 //   SHORT is the exact mirror (cascade inverted, EMA falling, High@1 >= EMA60@1,
-//   Close@1 < EMA60@1, High@2 < EMA60@2).
+//   Close@1 < EMA60@1).
 //
 // The cascade + rising/falling EMAs are STATES; the pullback-touch-and-resume
 // is the ONE event. No two coincident crosses are required (avoids the
@@ -101,6 +99,14 @@ bool Strategy_NoTradeFilter()
 // Long + short entry. Caller guarantees QM_IsNewBar() == true (closed bar).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -119,13 +125,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       ema15_2 <= 0.0 || ema60_2 <= 0.0)
       return false;
 
-   // Prior + trigger bar OHLC (single closed-bar reads — perf-allowed).
+   // Trigger bar OHLC (single closed-bar reads — perf-allowed).
    const double low1  = iLow(_Symbol, _Period, 1);   // perf-allowed: single closed-bar read
    const double high1 = iHigh(_Symbol, _Period, 1);  // perf-allowed: single closed-bar read
    const double close1 = iClose(_Symbol, _Period, 1);// perf-allowed: single closed-bar read
-   const double low2  = iLow(_Symbol, _Period, 2);   // perf-allowed: single closed-bar read
-   const double high2 = iHigh(_Symbol, _Period, 2);  // perf-allowed: single closed-bar read
-   if(low1 <= 0.0 || high1 <= 0.0 || close1 <= 0.0 || low2 <= 0.0 || high2 <= 0.0)
+   if(low1 <= 0.0 || high1 <= 0.0 || close1 <= 0.0)
       return false;
 
    // --- LONG ----------------------------------------------------------------
@@ -133,8 +137,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const bool long_cascade = (ema5_1 > ema15_1 && ema15_1 > ema60_1);
    const bool long_rising  = (ema60_1 > ema60_2 && ema15_1 > ema15_2);
    // EVENT (single, one per bar): trigger bar tagged EMA60 from above and
-   // closed back above it, while the prior bar had NOT yet tagged it.
-   const bool long_touch   = (low1 <= ema60_1 && close1 > ema60_1 && low2 > ema60_2);
+   // closed back above it.
+   const bool long_touch   = (low1 <= ema60_1 && close1 > ema60_1);
    if(long_cascade && long_rising && long_touch)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -150,13 +154,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl     = sl;
       req.tp     = tp;
       req.reason = "ema_cascade_pullback_long";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
       return true;
      }
 
    // --- SHORT (mirror) ------------------------------------------------------
    const bool short_cascade = (ema5_1 < ema15_1 && ema15_1 < ema60_1);
    const bool short_falling = (ema60_1 < ema60_2 && ema15_1 < ema15_2);
-   const bool short_touch   = (high1 >= ema60_1 && close1 < ema60_1 && high2 < ema60_2);
+   const bool short_touch   = (high1 >= ema60_1 && close1 < ema60_1);
    if(short_cascade && short_falling && short_touch)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
@@ -172,6 +178,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl     = sl;
       req.tp     = tp;
       req.reason = "ema_cascade_pullback_short";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
       return true;
      }
 

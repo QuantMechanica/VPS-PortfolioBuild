@@ -4,7 +4,7 @@
 **Slug:** `tc20-h1-6-ema5-15-60-pullback`
 **Source:** `e78a9f1f-4e6a-563c-a080-915133d6ed28` (Thomas Carter, "20 Forex Trading Strategies (1 Hour Time Frame)", Strategy #6)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-26
 
 ---
 
@@ -17,12 +17,10 @@ trade EVENT.
 Long: the EMA stack is fully aligned up — EMA5 > EMA15 > EMA60 — and both the
 EMA60 and EMA15 are rising (value on the last closed bar above the prior bar's
 value). The entry fires on the closed bar whose low pulled back and TOUCHED
-EMA60 (Low <= EMA60) while the close held back above it (Close > EMA60), and
-where the prior bar had not yet touched EMA60 (prior Low > prior EMA60) — so the
-touch is a genuine one-shot pullback event, not a hover at the line. Short is the
-exact mirror (stack down, EMAs falling, the bar's high tags EMA60 from below and
-the close stays under it). Exit is purely the fixed stop or target; there is no
-discretionary or trailing exit.
+EMA60 (Low <= EMA60) while the close held back above it (Close > EMA60). Short is
+the exact mirror (stack down, EMAs falling, the bar's high tags EMA60 from below
+and the close stays under it). Exit is purely the fixed stop or target; there is
+no discretionary or trailing exit.
 
 ---
 
@@ -101,4 +99,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v1 | 2026-06-26 | Initial build from card | c98f7e23-ee29-4638-a153-2cc74456af6a |
