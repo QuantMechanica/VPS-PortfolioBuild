@@ -93,13 +93,15 @@ input double strategy_be_atr_mult        = 2.0;   // move SL to BE after price m
 input double strategy_entry_buffer_pips  = 1.0;   // stop trigger offset beyond the fractal extreme
 input double strategy_sl_max_pips        = 80.0;  // P2 cap on the stop distance (card cap)
 input int    strategy_pending_bars       = 24;    // cancel pending after N H1 candles (card: 24H)
-input int    strategy_session_start_hr   = 9;     // session open  (BROKER hour, inclusive; ~07 GMT +2)
-input int    strategy_session_end_hr     = 20;    // session close (BROKER hour, exclusive; ~18 GMT +2)
+input int    strategy_session_start_hr   = 7;     // GMT session open hour, inclusive (card: 07:00 GMT)
+input int    strategy_session_end_hr     = 18;    // GMT session close hour, exclusive (card: 18:00 GMT)
 input double strategy_spread_cap_pips    = 20.0;  // skip only a genuinely WIDE spread (card cap)
 
 // -----------------------------------------------------------------------------
 // Helpers
 // -----------------------------------------------------------------------------
+
+ulong g_vegas_partial_ticket = 0;
 
 // Pip size for the current symbol (10 * point on 3/5-digit quotes, else point).
 double Vegas_PipSize()
@@ -126,11 +128,12 @@ bool Vegas_WideSpread()
    return (spread > 0.0 && spread > strategy_spread_cap_pips * pip);
   }
 
-// Inside the trading session, in BROKER time (wrap-safe within a single day).
+// Inside the trading session, in card GMT/UTC time (wrap-safe within a single day).
 bool Vegas_InSession(const datetime broker_now)
   {
+   const datetime utc_now = QM_BrokerToUTC(broker_now);
    MqlDateTime dt;
-   TimeToStruct(broker_now, dt);
+   TimeToStruct(utc_now, dt);
    const int h = dt.hour;
    if(strategy_session_start_hr <= strategy_session_end_hr)
       return (h >= strategy_session_start_hr && h < strategy_session_end_hr);
@@ -148,45 +151,17 @@ int Vegas_PendingCount(const int magic)
       const ulong ticket = OrderGetTicket(i);
       if(ticket == 0)
          continue;
+      if(OrderGetString(ORDER_SYMBOL) != _Symbol)
+         continue;
       if((int)OrderGetInteger(ORDER_MAGIC) == magic)
          count++;
      }
    return count;
   }
 
-// Williams UP fractal centred at `shift`: local HIGH with `side` strictly
-// higher-bounded bars on each side. Raw bar reads (perf-allowed: bounded
-// structural pivot, closed-bar only, gated by QM_IsNewBar in OnTick).
-bool Vegas_IsUpFractal(const int shift, const int side)
+bool Vegas_ValidFractalLevel(const double level)
   {
-   const double center = iHigh(_Symbol, _Period, shift); // perf-allowed: structural pivot
-   if(center <= 0.0)
-      return false;
-   for(int k = 1; k <= side; ++k)
-     {
-      if(!(center > iHigh(_Symbol, _Period, shift - k)))  // right side (newer bars)
-         return false;
-      if(!(center > iHigh(_Symbol, _Period, shift + k)))  // left side (older bars)
-         return false;
-     }
-   return true;
-  }
-
-// Williams DOWN fractal centred at `shift`: local LOW with `side` strictly
-// lower-bounded bars on each side.
-bool Vegas_IsDownFractal(const int shift, const int side)
-  {
-   const double center = iLow(_Symbol, _Period, shift); // perf-allowed: structural pivot
-   if(center <= 0.0)
-      return false;
-   for(int k = 1; k <= side; ++k)
-     {
-      if(!(center < iLow(_Symbol, _Period, shift - k)))
-         return false;
-      if(!(center < iLow(_Symbol, _Period, shift + k)))
-         return false;
-     }
-   return true;
+   return (level > 0.0 && level < DBL_MAX / 2.0);
   }
 
 // True if any of the last `lookback` closed bars dipped within `pips` of the
@@ -239,6 +214,14 @@ bool Strategy_NoTradeFilter()
 // single EVENT. Pullback proximity gates against chasing extended price.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    const int magic = QM_FrameworkMagic();
    // One position per magic; and only one resting pending order at a time.
    if(QM_TM_OpenPositionCount(magic) > 0)
@@ -266,6 +249,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // The fractal centre sits `side` bars back from the last closed bar so its
    // right-hand confirming bars (shifts 1..side) all exist => ONE event/bar.
    const int center_shift = strategy_fractal_side_bars + 1;
+   const double upper_fractal = QM_FractalUpper(_Symbol, _Period, center_shift);
+   const double lower_fractal = QM_FractalLower(_Symbol, _Period, center_shift);
 
    const double buffer       = strategy_entry_buffer_pips * pip;
    const double sl_cap       = strategy_sl_max_pips * pip;
@@ -276,12 +261,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // --- LONG: bullish tunnel stack + recent pullback + UP fractal confirmed ---
    if(close1 > ema_slow && ema_fast > ema_slow &&
       Vegas_PullbackLong(ema_slow, pullback_d, strategy_pullback_lookback) &&
-      Vegas_IsUpFractal(center_shift, strategy_fractal_side_bars))
+      Vegas_ValidFractalLevel(upper_fractal))
      {
-      const double fr_high = iHigh(_Symbol, _Period, center_shift); // perf-allowed
-      if(fr_high <= 0.0)
-         return false;
-      const double entry = fr_high + buffer;            // BUY STOP trigger
+      const double entry = upper_fractal + buffer;      // BUY STOP trigger
       double sl_d = sl_dist;
       if(sl_d > sl_cap)                                 // cap stop distance
          sl_d = sl_cap;
@@ -301,12 +283,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // --- SHORT: bearish tunnel stack + recent pullback + DOWN fractal confirmed ---
    if(close1 < ema_fast && ema_fast < ema_slow &&
       Vegas_PullbackShort(ema_fast, pullback_d, strategy_pullback_lookback) &&
-      Vegas_IsDownFractal(center_shift, strategy_fractal_side_bars))
+      Vegas_ValidFractalLevel(lower_fractal))
      {
-      const double fr_low = iLow(_Symbol, _Period, center_shift); // perf-allowed
-      if(fr_low <= 0.0)
-         return false;
-      const double entry = fr_low - buffer;             // SELL STOP trigger
+      const double entry = lower_fractal - buffer;      // SELL STOP trigger
       double sl_d = sl_dist;
       if(sl_d > sl_cap)
          sl_d = sl_cap;
@@ -326,9 +305,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return false;
   }
 
-// Break-even shift after price moves strategy_be_atr_mult * ATR in favour
-// (proxy for the card's "trail Lot2 SL to breakeven after TP1 fills", where
-// TP1 distance == strategy_be_atr_mult * ATR). Operates on the open position.
+// Take 50% at the TP1 distance, then shift the runner to break-even.
 void Strategy_ManageOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
@@ -354,6 +331,31 @@ void Strategy_ManageOpenPosition()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
+
+      const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double current_sl = PositionGetDouble(POSITION_SL);
+      const double volume = PositionGetDouble(POSITION_VOLUME);
+      const double min_lot = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
+      const bool is_buy = (position_type == POSITION_TYPE_BUY);
+      const double market_price = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                                         : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(market_price <= 0.0 || open_price <= 0.0)
+         continue;
+      const double moved = is_buy ? (market_price - open_price) : (open_price - market_price);
+      const double be_buffer = QM_StopRulesPipsToPriceDistance(_Symbol, 1);
+      const double be_sl = is_buy ? open_price + be_buffer : open_price - be_buffer;
+      const bool be_already_set = (current_sl > 0.0) &&
+                                  (is_buy ? (current_sl >= be_sl) : (current_sl <= be_sl));
+
+      if(moved >= strategy_be_atr_mult * atr_value &&
+         !be_already_set && g_vegas_partial_ticket != ticket && volume >= min_lot * 2.0)
+        {
+         const double partial_lots = QM_TM_NormalizeVolume(_Symbol, volume * 0.5);
+         if(partial_lots >= min_lot && QM_TM_PartialClose(ticket, partial_lots, QM_EXIT_PARTIAL))
+            g_vegas_partial_ticket = ticket;
+        }
+
       QM_TM_MoveToBreakEven(ticket, trigger_pips, /*buffer_pips=*/1);
      }
   }
