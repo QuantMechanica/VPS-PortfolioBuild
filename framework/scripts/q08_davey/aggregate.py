@@ -23,6 +23,7 @@ import argparse
 import datetime as dt
 import json
 import re
+import shutil
 import sys
 import time
 from pathlib import Path
@@ -175,6 +176,60 @@ def _common_q08_trade_log(ea_id: int, symbol: str) -> Path:
     (the tester writes the EA's own log to the agent sandbox, which Q08 can't find)."""
     return (Path(r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files")
             / "QM" / "q08_trades" / f"{ea_id}_{symbol.replace('.', '_')}.jsonl")
+
+
+# Durable per-sleeve portfolio stream store. The Common\Files q08_trades dir is a
+# VOLATILE working area: the aggregator unlink-clears it on every re-run and the EA
+# only rewrites it on the fresh-baseline code path, so with heavy re-validation churn
+# a valid FAIL_SOFT sleeve frequently has NO stream there by the time the portfolio
+# builder looks. We therefore persist a durable copy here at verdict time, keyed by
+# the VERDICT symbol, that no Q08 re-run ever clears. Structured as <root>/QM/q08_trades/
+# so portfolio_common.load_streams(<root>) reads it with zero new parsing code.
+DURABLE_STREAM_ROOT = Path(r"D:\QM\reports\portfolio\sleeve_streams")
+
+
+def _persist_durable_sleeve_stream(ea_id: int, symbol: str,
+                                   raw_trades: list[dict]) -> dict:
+    """Persist a builder-compatible per-trade stream to the durable store.
+
+    Fidelity rule: the portfolio commission model needs per-trade volume/notional.
+    The live Common\\Files stream carries those, so copy it verbatim when present.
+    Otherwise serialise the in-memory trades ONLY when every trade carries volume
+    (i.e. it came from a TRADE_CLOSED source, not the volume-less HTML report
+    fallback) — feeding the builder volume-less rows would silently zero commission.
+    """
+    sym_clean = symbol.replace(".", "_")
+    dst = DURABLE_STREAM_ROOT / "QM" / "q08_trades" / f"{ea_id}_{sym_clean}.jsonl"
+    if not raw_trades:
+        return {"persisted": False, "reason": "no_trades", "n": 0}
+    try:
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        common_log = _common_q08_trade_log(ea_id, symbol)
+        if common_log.exists() and common_log.stat().st_size > 0:
+            shutil.copyfile(common_log, dst)
+            return {"persisted": True, "source": "common_copy",
+                    "path": str(dst), "n": len(raw_trades)}
+        if all("volume" in t for t in raw_trades):
+            lines = []
+            for t in raw_trades:
+                lines.append(json.dumps({
+                    "event": "TRADE_CLOSED",
+                    "time": int(t.get("time") or 0),
+                    "net": float(t.get("net") or 0.0),
+                    "profit": float(t.get("profit") or 0.0),
+                    "swap": float(t.get("swap") or 0.0),
+                    "commission": float(t.get("commission") or 0.0),
+                    "volume": float(t.get("volume") or 0.0),
+                    "notional": t.get("notional"),
+                    "symbol": t.get("symbol") or symbol,
+                }))
+            dst.write_text("\n".join(lines) + "\n", encoding="utf-8")
+            return {"persisted": True, "source": "serialized",
+                    "path": str(dst), "n": len(lines)}
+        return {"persisted": False, "reason": "report_fallback_no_volume",
+                "n": len(raw_trades)}
+    except OSError as exc:
+        return {"persisted": False, "reason": f"oserror:{exc}", "n": len(raw_trades)}
 
 
 def _latest_structured_qm_log(ea_id: int, symbol: str, terminal: str | None = None) -> Path | None:
@@ -590,6 +645,11 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         if not trades and baseline_run and baseline_run.get("baseline_report_path"):
             trades = common.load_trades_from_mt5_report(Path(str(baseline_run["baseline_report_path"])))
 
+    # Snapshot the per-trade list BEFORE worst-case commission mutates it; the durable
+    # portfolio stream carries gross-of-worst-case net (the builder reapplies its own
+    # commission model), matching the raw Common\Files stream format.
+    raw_trades = [dict(t) for t in trades]
+
     trades, commission_info = _apply_worst_case_commission(trades, symbol)
 
     # PT4 — best-effort pre-run of Q08.5 + Q08.7 supporting runners
@@ -654,6 +714,11 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         sym_clean = symbol.replace(".", "_")
         out_dir = Path(f"D:/QM/reports/pipeline/QM5_{ea_id}/Q08/{sym_clean}")
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Persist a durable, builder-compatible per-trade stream so the portfolio layer can
+    # always assemble this sleeve, independent of the volatile Common\Files working dir.
+    aggregate["portfolio_stream"] = _persist_durable_sleeve_stream(ea_id, symbol, raw_trades)
+
     (out_dir / "aggregate.json").write_text(
         json.dumps(aggregate, indent=2, default=str), encoding="utf-8"
     )
