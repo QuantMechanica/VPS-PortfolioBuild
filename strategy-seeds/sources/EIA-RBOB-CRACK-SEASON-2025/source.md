@@ -18,15 +18,16 @@ uri: https://www.eia.gov/petroleum/weekly/archive/2025/250312/includes/analysis_
 
 ## Mining Scope
 
-One card was extracted for a structural WTI sleeve:
+Two cards were extracted for structural WTI sleeves:
 
 - `eia-rbob-crack`: XTIUSD.DWX D1 gasoline crack-spread seasonal breakout proxy.
+- `eia-rbob-shoulder`: XTIUSD.DWX D1 autumn shoulder failed-rally short proxy.
 
 ## Evidence Notes
 
 - EIA describes RBOB gasoline crack spreads as a refiner-margin proxy for converting crude oil into gasoline.
 - The article documents a recurring gasoline-season structure: crack spreads typically rise in March as refiners increase summer-grade gasoline production, stay elevated through the summer driving season, and decline when winter-grade gasoline specification starts on September 1.
-- The QM implementation does not ingest EIA spreads, RBOB futures, refinery utilization, inventories, or any external data at runtime. It uses the EIA source only for structural lineage and trades XTIUSD.DWX D1 OHLC breakouts during the documented gasoline crack-spread seasonal windows.
+- The QM implementation does not ingest EIA spreads, RBOB futures, refinery utilization, inventories, or any external data at runtime. It uses the EIA source only for structural lineage and trades XTIUSD.DWX D1 OHLC patterns during the documented gasoline crack-spread seasonal windows.
 
 ## Guardrails
 
