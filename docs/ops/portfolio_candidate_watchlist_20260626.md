@@ -88,11 +88,12 @@ to avoid unilateral DB mutation.
   decision). The remaining blocker for NDX admission is the daily-equal-weight `diversifies`
   metric — the next review-gated PR.
 
-## 6. Post-merge update (diversifies→risk-parity merged to main `e63542f92`)
+## 6. Post-merge update (diversifies→risk-parity merged to board-advisor `39381c7fe`)
 
 OWNER reviewed + corrected the PR (manifest book also moved to `weighting="inverse_vol"` so gate
 and T_Live deploy manifest stay aligned; `test_selected_book_uses_risk_parity_weighting` added;
-23 tests OK) and merged `e63542f92` to main. Post-merge actions executed:
+23 tests OK) and cherry-picked the review commit into `agents/board-advisor` as `39381c7fe`.
+Post-merge actions executed:
 
 - **Q09 re-run (merged code) for NDX + watchlist:**
   - `10692:NDX` → **PASS_PORTFOLIO** (admitted, corr_basis monthly, 443 trades; book DD 19.91→16.92%)
@@ -101,10 +102,13 @@ and T_Live deploy manifest stay aligned; `test_selected_book_uses_risk_parity_we
   - `12567:XNGUSD` → NEED_MORE_DATA (14 < 20 trade floor — unchanged)
 - Mutual NDX check: `10692:NDX` vs `10440:NDX` monthly corr **−0.13** (≤0.30) → both legitimately
   admissible (10692 still admits against the 4-book incl 10440).
-- `10692:NDX` `EVIDENCE_STALE` row **removed** (OWNER-directed) so re-admission isn't blocked.
+- `10692:NDX` `EVIDENCE_STALE` row **restored to Q12_REVIEW_READY** with the fresh
+  risk-parity Q09 evidence path so re-admission isn't blocked.
 - Both NDX **admitted → Q12_REVIEW_READY**.
 
 **Certified book: 3 → 5 sleeves.** Distinct Q12_REVIEW_READY = **5** (10513:XAU, 10940:XAU,
-11132:SP500, 10440:NDX, 10692:NDX), **0 duplicate ready rows**. Certified 5-sleeve risk-parity
-book (2018–2025): **MaxDD 7.31%, Sharpe 1.49, ~12.4%/yr ungeared, max pairwise |corr| 0.14**
-(every pair ≤0.30). Evidence: `D:\QM\reports\pipeline\QM5_{10692,10440}\Q09_PORTFOLIO\NDX_DWX\aggregate.json`.
+11132:SP500, 10440:NDX, 10692:NDX), **0 duplicate ready rows**. Explicit 5-sleeve Q12-ready
+risk-parity draft manifest (2018–2025 streams): **MaxDD 13.83%, Sharpe 1.49, total net
+profit 9598.11**, no missing `.ex5` files. Evidence:
+`D:\QM\reports\pipeline\QM5_{10692,10440}\Q09_PORTFOLIO\NDX_DWX\aggregate.json` and
+`D:\QM\reports\portfolio\portfolio_manifest_q12_ready_5sleeve_DRAFT_20260626.json`.
