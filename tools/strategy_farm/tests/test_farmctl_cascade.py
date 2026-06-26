@@ -12,6 +12,30 @@ sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 import farmctl  # noqa: E402
 
 
+class SymbolAliasTests(unittest.TestCase):
+    def test_known_aliases_canonicalize_to_dwx(self) -> None:
+        cases = {
+            "GER40": "GDAXI.DWX", "DAX": "GDAXI.DWX",
+            "USOIL": "XTIUSD.DWX", "WTI": "XTIUSD.DWX",
+            "FTSE100": "UK100.DWX", "US500": "SP500.DWX",
+            "US30": "WS30.DWX", "NAS100": "NDX.DWX", "USTEC": "NDX.DWX",
+            "EURUSD": "EURUSD.DWX", "EURUSD.DWX": "EURUSD.DWX",  # passthrough
+        }
+        for raw, canon in cases.items():
+            self.assertEqual(farmctl._normalise_card_symbol(raw), canon, raw)
+
+    def test_card_universe_canonicalizes_alias_tickers(self) -> None:
+        text = "Universe: GER40, USOIL, FTSE100, NAS100.\n"
+        self.assertEqual(
+            farmctl._card_universe_symbols(text),
+            {"GDAXI.DWX", "XTIUSD.DWX", "UK100.DWX", "NDX.DWX"},
+        )
+
+    def test_no_canonical_equivalent_is_not_misrouted(self) -> None:
+        # instruments we have no .DWX data for must NOT masquerade as another symbol
+        self.assertEqual(farmctl._normalise_card_symbol("AUS200"), "AUS200.DWX")
+
+
 class CascadePromotionTests(unittest.TestCase):
     def test_min_trades_floor_is_flat_rate_not_card_coupled(self) -> None:
         # OWNER 2026-06-26: the Q02 floor is a flat 5 trades/yr * window-years, decoupled

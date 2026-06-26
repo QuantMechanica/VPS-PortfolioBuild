@@ -869,17 +869,32 @@ def _card_build_priority(root: Path, task_row: sqlite3.Row,
     return (-pscore, -r_passes, -expected, str(task_row["updated_at"] or ""))
 
 
+# Map every known broker-ticker alias to the ONE canonical .DWX symbol we hold data for
+# (the canonical set = framework/registry/live_commission.json keys). Without this the same
+# instrument fragments across tickers in work_items (e.g. GDAXI 5219 rows vs GER40 508; UK100
+# 1078 vs FTSE100 12), splitting the funnel and dispatching to data-less aliases that INFRA_FAIL
+# (QM5_12571 was tested on GER40, not GDAXI). Instruments with NO canonical .DWX equivalent
+# (AUS200/FRA40/JP225...) are deliberately left unmapped — we have no data, so they must not
+# masquerade as a different symbol.
+_SYMBOL_ALIASES = {
+    "DAX": "GDAXI.DWX", "GER40": "GDAXI.DWX", "GER30": "GDAXI.DWX",
+    "WTI": "XTIUSD.DWX", "USOIL": "XTIUSD.DWX", "CRUDE": "XTIUSD.DWX",
+    "BRENT": "XBRUSD.DWX", "UKOIL": "XBRUSD.DWX",
+    "FTSE100": "UK100.DWX", "FTSE": "UK100.DWX", "UK100GBP": "UK100.DWX",
+    "US500": "SP500.DWX", "SPX500": "SP500.DWX", "SPX": "SP500.DWX",
+    "US30": "WS30.DWX", "DJ30": "WS30.DWX", "DJI30": "WS30.DWX", "WALLSTREET30": "WS30.DWX",
+    "NAS100": "NDX.DWX", "USTEC": "NDX.DWX", "US100": "NDX.DWX", "NASDAQ": "NDX.DWX",
+    "NATGAS": "XNGUSD.DWX", "NGAS": "XNGUSD.DWX",
+    "GOLD": "XAUUSD.DWX", "SILVER": "XAGUSD.DWX", "COPPER": "XCUUSD.DWX",
+}
+
+
 def _normalise_card_symbol(symbol: str) -> str:
     s = symbol.upper()
     if s.endswith(".DWX"):
         s = s[:-4]
-    aliases = {
-        "DAX": "GDAXI.DWX",
-        "GER40": "GDAXI.DWX",
-        "WTI": "XTIUSD.DWX",
-    }
-    if s in aliases:
-        return aliases[s]
+    if s in _SYMBOL_ALIASES:
+        return _SYMBOL_ALIASES[s]
     return f"{s}.DWX"
 
 
@@ -891,8 +906,10 @@ def _card_universe_symbols(card_text: str) -> set[str]:
     search_text = "\n".join(universe_lines) if universe_lines else card_text
     symbol_re = re.compile(
         r"\b("
-        r"[A-Z]{3}USD|USD[A-Z]{3}|EURJPY|GBPJPY|AUDJPY|CADJPY|CHFJPY|NZDJPY|"
-        r"XAUUSD|XTIUSD|WTI|NDX|WS30|GDAXI|GER40|DAX|UK100|SP500"
+        r"[A-Z]{3}USD|USD[A-Z]{3}|EURJPY|GBPJPY|AUDJPY|CADJPY|CHFJPY|NZDJPY|EURGBP|"
+        r"XAUUSD|XAGUSD|XTIUSD|XBRUSD|XNGUSD|XCUUSD|WTI|USOIL|BRENT|UKOIL|NATGAS|"
+        r"NDX|NAS100|USTEC|US100|WS30|US30|DJ30|GDAXI|GER40|GER30|DAX|"
+        r"UK100|FTSE100|FTSE|SP500|US500|SPX500"
         r")(?:\.DWX)?\b"
     )
     return {_normalise_card_symbol(m.group(0)) for m in symbol_re.finditer(search_text)}
