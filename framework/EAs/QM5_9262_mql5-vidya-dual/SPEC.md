@@ -1,16 +1,16 @@
-# QM5_9262_mql5-vidya-dual - Strategy Spec
+# QM5_9262_mql5-vidya-dual — Strategy Spec
 
 **EA ID:** QM5_9262
 **Slug:** `mql5-vidya-dual`
-**Source:** `ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb`
-**Author of this spec:** Codex
+**Source:** `ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb` (see `strategy-seeds/sources/ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb/`)
+**Author of this spec:** Claude
 **Last revised:** 2026-06-26
 
 ---
 
 ## 1. Strategy Logic
 
-The EA trades a dual VIDYA crossover on closed H1 bars. It calculates a fast VIDYA with CMO period 9 and EMA period 12, and a slow VIDYA with CMO period 20 and EMA period 50. A fast cross above slow opens a long; a fast cross below slow opens a short. Open positions close on the opposite crossover or after 96 H1 bars, with a 3-bar cooldown after exits.
+On each closed H1 bar, the EA computes two Variable Index Dynamic Averages (VIDYA): a fast line (CMO period 9, EMA period 12) and a slow line (CMO period 20, EMA period 50). VIDYA smooths price using a Chande Momentum Oscillator-based adaptive coefficient, giving it faster response during trending periods and slower response during ranging ones. A long position is opened when the fast VIDYA crosses above the slow VIDYA; a short position is opened when the fast VIDYA crosses below the slow VIDYA. The initial stop is set at 2.2 × ATR(14) from entry and the take profit is placed at 2.4R. Positions are also closed when the fast VIDYA crosses back through the slow VIDYA in the opposite direction, or after a failsafe 96-bar hold limit. A 3-bar cooldown after any exit prevents immediate re-entry.
 
 ---
 
@@ -18,30 +18,27 @@ The EA trades a dual VIDYA crossover on closed H1 bars. It calculates a fast VID
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_signal_tf` | `PERIOD_H1` | H1 expected | Timeframe used for VIDYA and ATR signals. |
-| `strategy_fast_cmo_period` | `9` | 1-100 | CMO period for the fast VIDYA line. |
-| `strategy_fast_ema_period` | `12` | 2-200 | EMA smoothing period for the fast VIDYA line. |
-| `strategy_slow_cmo_period` | `20` | 1-200 | CMO period for the slow VIDYA line. |
-| `strategy_slow_ema_period` | `50` | 2-300 | EMA smoothing period for the slow VIDYA line. |
-| `strategy_atr_period` | `14` | 1-100 | ATR period used for the initial stop. |
-| `strategy_atr_sl_mult` | `2.2` | 0.1-10.0 | ATR multiple for initial stop distance. |
-| `strategy_take_profit_rr` | `2.4` | 0.1-20.0 | Initial take profit in R multiples. |
-| `strategy_max_hold_bars` | `96` | 1-1000 | Failsafe time exit in H1 bars. |
-| `strategy_cooldown_bars` | `3` | 0-100 | Closed-bar cooldown after an exit before re-entry. |
-| `strategy_vidya_warmup_bars` | `180` | 80-1000 | Warmup history used to seed deterministic VIDYA calculation. |
+| `strategy_fast_cmo_period` | 9 | 3–20 | CMO lookback period for the fast VIDYA |
+| `strategy_fast_ema_period` | 12 | 5–30 | EMA smoothing period for the fast VIDYA alpha |
+| `strategy_slow_cmo_period` | 20 | 10–50 | CMO lookback period for the slow VIDYA |
+| `strategy_slow_ema_period` | 50 | 20–200 | EMA smoothing period for the slow VIDYA alpha |
+| `strategy_atr_period` | 14 | 7–28 | ATR period for stop-loss sizing |
+| `strategy_atr_sl_mult` | 2.2 | 1.0–5.0 | ATR multiplier for stop-loss distance |
+| `strategy_rr_tp` | 2.4 | 1.0–5.0 | Risk:reward ratio for take-profit placement |
+| `strategy_max_hold_bars` | 96 | 24–240 | Failsafe maximum bars in trade (H1 bars) |
+| `strategy_cooldown_bars` | 3 | 1–10 | Bars to skip after any exit before new entry |
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` - card-listed major FX pair with DWX OHLC and ATR data.
-- `GBPJPY.DWX` - card-listed JPY cross with DWX OHLC and ATR data.
-- `XAUUSD.DWX` - card-listed gold symbol with DWX OHLC and ATR data.
+- `EURUSD.DWX` — Major liquid forex pair; stable VIDYA trending behaviour with low noise
+- `GBPJPY.DWX` — Highly volatile forex cross; strong trending moves suit VIDYA adaptive smoothing
+- `XAUUSD.DWX` — Gold; displays strong trend regimes where adaptive MA crossover excels
 
 **Explicitly NOT for:**
-- Symbols outside `framework/registry/dwx_symbol_matrix.csv` - no DWX tester data guarantee.
-- Non-H1 deployments - the card specifies closed H1 bars.
+- Index CFDs (NDX, WS30) — not in card's R3 basket; may be added via future rework after symbol expansion analysis
 
 ---
 
@@ -51,7 +48,7 @@ The EA trades a dual VIDYA crossover on closed H1 bars. It calculates a fast VID
 |---|---|
 | Base timeframe | `H1` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` via the V5 skeleton entry gate |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
 
@@ -59,10 +56,10 @@ The EA trades a dual VIDYA crossover on closed H1 bars. It calculates a fast VID
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `60` |
-| Typical hold time | `hours to 96 H1 bars` |
-| Expected drawdown profile | Crossover whipsaws in sideways regimes; bounded by ATR stop and fixed 2.4R take profit. |
-| Regime preference | trend-following |
+| Trades / year / symbol | ~60 |
+| Typical hold time | Hours to days (H1 bars; failsafe at 96 bars = 4 days) |
+| Expected drawdown profile | Trend-following; moderate drawdown in ranging markets |
+| Regime preference | trend |
 | Win rate target (qualitative) | medium |
 
 ---
@@ -72,9 +69,9 @@ The EA trades a dual VIDYA crossover on closed H1 bars. It calculates a fast VID
 This card was mechanised from:
 
 **Source ID:** `ba57d97a-0ee0-5a87-aa6d-fb5a37f08bdb`
-**Source type:** MQL5 article
-**Pointer:** `https://www.mql5.com/en/articles/11341`
-**R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_9262_mql5-vidya-dual.md`
+**Source type:** forum
+**Pointer:** Mohamed Abdelmaaboud, "Learn how to design a trading system by VIDYA", MQL5 Articles, 2022-08-31, https://www.mql5.com/en/articles/11341
+**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_9262_mql5-vidya-dual.md`
 
 ---
 
@@ -82,11 +79,11 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 

@@ -5,37 +5,41 @@
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QM5_10656 — Order Block Volumatic FVG (TradingView, author TagsTrading)
+// QuantMechanica V5 EA SKELETON
 // -----------------------------------------------------------------------------
-// Mechanik (card QM5_10656_tv-ob-vol-fvg):
-//   - M15 baseline. Detect bullish/bearish FVG boxes with the standard
-//     three-candle imbalance rule (gap between bar[k+1] and bar[k-1]).
-//   - Maintain the NEWEST still-active box per direction; track its age in
-//     closed bars and the deepest mitigation reached (how far price has
-//     re-entered the gap, 0..1).
-//   - Arm an entry on a LATER retest bar (NOT the formation bar): box age must
-//     be >= min-age, current price must intersect the active box, and
-//     mitigation must reach the threshold. Volume filter (DWX tick volume):
-//     total tick volume of the trigger bar >= rolling average * factor AND the
-//     directional share (bull/bear body location proxy) passes. Optional candle
-//     confirmation: the trigger closed bar must close in the trade direction.
-//   - One position per symbol/magic (framework dedupes). Cooldown between
-//     entries. Pyramiding disabled.
-//   - Exit: fixed-percent stop from entry, capped at 1.5*ATR(14). Trailing stop
-//     arms only after a profit trigger (QM_TM_TrailStep). No fixed TP (P2
-//     baseline closes at trailing/fixed stop).
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails). The framework provides:
 //
-// Per the .DWX backtest invariants this is a "detect FVG, then arm on a later
-// retest bar" design — formation and entry are on different bars, never a
-// same-bar conjunction. Spread checks fail-open on zero modeled spread. No swap
-// gate. QM_IsNewBar() is consumed once (framework OnTick gate); the cached
-// closed-bar state is advanced inside Strategy_EntrySignal which the framework
-// only calls on a fresh closed bar.
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
+//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
+//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
+//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
+//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
+//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
+//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
+//
+// DO NOT
+//   - Write per-EA IsNewBar() — use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//     use the QM_* readers above. The framework pools handles and releases them
+//     on shutdown.
+//   - CopyRates over warmup windows on every tick. If you genuinely need raw
+//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
+//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
+//     to magic_numbers.csv, run:
+//         python framework/scripts/update_magic_resolver.py
+//     This is idempotent and preserves all rows.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 10656;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -44,10 +48,16 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;
-input string qm_news_min_impact           = "high";
+// FW1 2026-05-23 — Two-axis news filter per Vault Q09.
+//   AXIS A (temporal): per-event behaviour. Default mode 3 = pause 30min pre+post.
+//   AXIS B (compliance): prop-firm blackout overlay. Default DXZ = no extra rules.
+// A trade is allowed only if BOTH axes allow. See Vault `Q09 News Impact Mode`.
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
+input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
+input string qm_news_min_impact           = "high";  // high / medium / low
+// Legacy single-mode input kept for back-compat with pre-FW1 setfiles.
+// New EAs use qm_news_temporal + qm_news_compliance above and leave this OFF.
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -55,108 +65,225 @@ input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
+// FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-// --- FVG detection / mitigation (card defaults) ---
-input int    strategy_atr_period            = 14;      // ATR(14) for SL cap + width floor
-input double strategy_fvg_min_width_atr     = 0.10;    // ignore micro-gaps below this * ATR
-input int    strategy_min_fvg_age_bars      = 20;      // box must be at least this old (card default)
-input int    strategy_max_fvg_age_bars      = 200;     // drop stale boxes beyond this age
-input double strategy_mitigation_threshold  = 0.60;    // long & short, card default 60%
-// --- Volume filter (DWX tick volume proxy) ---
-input bool   strategy_volume_filter_enabled = true;
-input int    strategy_volume_avg_period     = 20;      // rolling tick-volume average window
-input double strategy_volume_min_factor     = 1.00;    // trigger bar tick-vol >= avg * factor
-input double strategy_bull_share_min        = 0.50;    // directional close-location share floor
-// --- Confirmation / cooldown ---
-input bool   strategy_candle_confirmation   = true;    // trigger bar must close in trade dir
-input int    strategy_cooldown_bars         = 4;       // min closed bars between entries
-// --- Exit ---
-input double strategy_sl_percent            = 0.75;    // fixed % stop from entry
-input double strategy_sl_atr_cap_mult       = 1.50;    // cap fixed % by 1.5 * ATR(14)
-input int    strategy_trail_trigger_pips    = 60;      // arm trailing only after this profit
-input int    strategy_trail_step_pips       = 40;      // trail distance once armed
+input int    strategy_fvg_lookback_bars       = 240;
+input int    strategy_min_fvg_age_bars        = 20;
+input double strategy_long_mitigation_pct     = 60.0;
+input double strategy_short_mitigation_pct    = 60.0;
+input bool   strategy_candle_confirmation     = false;
+input int    strategy_volume_filter_mode      = 2;      // 0=off, 1=min total, 2=min total + directional share
+input double strategy_min_tick_volume         = 0.0;
+input double strategy_min_directional_share   = 0.55;
+input double strategy_stop_percent            = 1.0;
+input int    strategy_atr_period              = 14;
+input double strategy_atr_stop_cap_mult       = 1.5;
+input int    strategy_trailing_trigger_mode   = 1;      // 0=percent, 1=R multiple
+input double strategy_trailing_trigger_pct    = 1.0;
+input double strategy_trailing_trigger_r      = 1.0;
+input double strategy_trailing_atr_mult       = 1.0;
+input int    strategy_cooldown_bars           = 5;
 
-// File-scope closed-bar cached state. The framework advances Strategy_EntrySignal
-// once per fresh closed M15 bar; we read fixed shifts (>=1) so all reads are on
-// closed bars only.
-static datetime g_last_entry_bar_time = 0;   // cooldown anchor (bar-open time of last entry)
-static double   g_active_buy_sl_dist  = 0.0; // last computed buy SL distance (for reference)
+datetime g_cooldown_until = 0;
 
-// -----------------------------------------------------------------------------
-// Helpers (file-scope, plain MQL5 — no STL/auto/nullptr).
-// -----------------------------------------------------------------------------
-
-// Tick volume of a closed bar at the given shift, as double.
-double TickVolAt(const int shift)
+struct FvgCandidate
   {
-   long v = iVolume(_Symbol, PERIOD_M15, shift); // perf-allowed: closed-bar tick volume
-   return (v > 0) ? (double)v : 0.0;
+   bool   found;
+   int    direction;
+   int    age_bars;
+   double lower;
+   double upper;
+   double mitigation_pct;
+   double directional_share;
+   double tick_volume;
+  };
+
+double Strategy_Clamp(const double value, const double lo, const double hi)
+  {
+   if(value < lo)
+      return lo;
+   if(value > hi)
+      return hi;
+   return value;
   }
 
-// Rolling average tick volume over [from_shift .. from_shift+period-1].
-double AvgTickVol(const int from_shift, const int period)
+void Strategy_ResetCandidate(FvgCandidate &candidate)
   {
-   if(period <= 0)
-      return 0.0;
-   double sum = 0.0;
-   int n = 0;
-   for(int s = from_shift; s < from_shift + period; ++s)
+   candidate.found = false;
+   candidate.direction = 0;
+   candidate.age_bars = 0;
+   candidate.lower = 0.0;
+   candidate.upper = 0.0;
+   candidate.mitigation_pct = 0.0;
+   candidate.directional_share = 0.0;
+   candidate.tick_volume = 0.0;
+  }
+
+double Strategy_DirectionalShare(const MqlRates &bar, const int direction)
+  {
+   const double range = bar.high - bar.low;
+   double bull_share = 0.5;
+   if(range > 0.0)
+      bull_share = Strategy_Clamp((bar.close - bar.low) / range, 0.0, 1.0);
+   else if(bar.close > bar.open)
+      bull_share = 1.0;
+   else if(bar.close < bar.open)
+      bull_share = 0.0;
+
+   if(direction > 0)
+      return bull_share;
+   return 1.0 - bull_share;
+  }
+
+bool Strategy_VolumePasses(const MqlRates &bar, const int direction, double &directional_share)
+  {
+   directional_share = Strategy_DirectionalShare(bar, direction);
+   const double total_volume = (double)bar.tick_volume;
+
+   if(strategy_volume_filter_mode >= 1 && total_volume < strategy_min_tick_volume)
+      return false;
+
+   if(strategy_volume_filter_mode >= 2 && directional_share < strategy_min_directional_share)
+      return false;
+
+   return true;
+  }
+
+bool Strategy_CandlePasses(const MqlRates &bar, const int direction)
+  {
+   if(!strategy_candle_confirmation)
+      return true;
+   if(direction > 0)
+      return (bar.close > bar.open);
+   return (bar.close < bar.open);
+  }
+
+bool Strategy_FindNewestFvg(const int direction, FvgCandidate &candidate)
+  {
+   Strategy_ResetCandidate(candidate);
+   if(strategy_fvg_lookback_bars < strategy_min_fvg_age_bars + 3)
+      return false;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   const int bars_needed = strategy_fvg_lookback_bars + 4;
+   const int copied = CopyRates(_Symbol, PERIOD_CURRENT, 0, bars_needed, rates); // perf-allowed: bounded structural FVG scan, called only from the skeleton's post-QM_IsNewBar entry hook.
+   if(copied < strategy_min_fvg_age_bars + 4)
+      return false;
+
+   const MqlRates current = rates[1];
+   const int max_shift = MathMin(strategy_fvg_lookback_bars, copied - 3);
+   for(int shift = strategy_min_fvg_age_bars + 1; shift <= max_shift; ++shift)
      {
-      double v = TickVolAt(s);
-      if(v > 0.0)
+      const MqlRates right = rates[shift];
+      const MqlRates left = rates[shift + 2];
+
+      double lower = 0.0;
+      double upper = 0.0;
+      if(direction > 0)
         {
-         sum += v;
-         n++;
+         if(right.low <= left.high)
+            continue;
+         lower = left.high;
+         upper = right.low;
         }
+      else
+        {
+         if(right.high >= left.low)
+            continue;
+         lower = right.high;
+         upper = left.low;
+        }
+
+      if(lower <= 0.0 || upper <= lower)
+         continue;
+      if(current.low > upper || current.high < lower)
+         continue;
+
+      const double height = upper - lower;
+      double mitigation = 0.0;
+      if(direction > 0)
+         mitigation = Strategy_Clamp((upper - current.low) / height * 100.0, 0.0, 100.0);
+      else
+         mitigation = Strategy_Clamp((current.high - lower) / height * 100.0, 0.0, 100.0);
+
+      const double threshold = (direction > 0) ? strategy_long_mitigation_pct : strategy_short_mitigation_pct;
+      if(mitigation < threshold)
+         continue;
+
+      double share = 0.0;
+      if(!Strategy_VolumePasses(current, direction, share))
+         continue;
+      if(!Strategy_CandlePasses(current, direction))
+         continue;
+
+      candidate.found = true;
+      candidate.direction = direction;
+      candidate.age_bars = shift - 1;
+      candidate.lower = lower;
+      candidate.upper = upper;
+      candidate.mitigation_pct = mitigation;
+      candidate.directional_share = share;
+      candidate.tick_volume = (double)current.tick_volume;
+      return true;
      }
-   return (n > 0) ? (sum / n) : 0.0;
+
+   return false;
   }
 
-// Directional close-location share of a closed bar (0..1): where the close sits
-// inside the bar's high-low range. ~1.0 = strong bull bar, ~0.0 = strong bear.
-double BullShareAt(const int shift)
+bool Strategy_HasOpenPosition()
   {
-   double h = iHigh(_Symbol, PERIOD_M15, shift);  // perf-allowed
-   double l = iLow(_Symbol, PERIOD_M15, shift);   // perf-allowed
-   double c = iClose(_Symbol, PERIOD_M15, shift); // perf-allowed
-   double range = h - l;
-   if(range <= 0.0)
-      return 0.5;
-   double share = (c - l) / range;
-   if(share < 0.0)
-      share = 0.0;
-   if(share > 1.0)
-      share = 1.0;
-   return share;
+   return (QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0);
   }
 
-// Cooldown: at least strategy_cooldown_bars closed M15 bars since the last entry.
-bool CooldownElapsed()
+double Strategy_StopDistance(const QM_OrderType type, const double entry_price)
   {
-   if(g_last_entry_bar_time <= 0 || strategy_cooldown_bars <= 0)
-      return true;
-   datetime now_bar = iTime(_Symbol, PERIOD_M15, 1); // perf-allowed: last closed bar open time
-   if(now_bar <= 0)
-      return true;
-   int elapsed = (int)((now_bar - g_last_entry_bar_time) / PeriodSeconds(PERIOD_M15));
-   return (elapsed >= strategy_cooldown_bars);
+   if(entry_price <= 0.0 || strategy_stop_percent <= 0.0)
+      return 0.0;
+
+   double stop_distance = entry_price * strategy_stop_percent * 0.01;
+   const double atr = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_atr_period, 1);
+   if(atr > 0.0 && strategy_atr_stop_cap_mult > 0.0)
+     {
+      const double atr_cap = atr * strategy_atr_stop_cap_mult;
+      if(atr_cap > 0.0 && atr_cap < stop_distance)
+         stop_distance = atr_cap;
+     }
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point > 0.0 && stop_distance < point * 5.0)
+      stop_distance = point * 5.0;
+
+   return stop_distance;
+  }
+
+void Strategy_SetCooldown()
+  {
+   const int seconds_per_bar = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
+   if(seconds_per_bar > 0 && strategy_cooldown_bars > 0)
+      g_cooldown_until = TimeCurrent() + seconds_per_bar * strategy_cooldown_bars;
   }
 
 // -----------------------------------------------------------------------------
-// Strategy hooks.
+// Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// No cheap O(1) regime/time gate beyond framework news/Friday handling.
+// Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
+// regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
    return false;
   }
 
-// Detect the newest still-active FVG box (scan back from old to recent so the
-// last assignment is the newest), validate age/mitigation/volume/confirmation,
-// and arm a market entry on this retest bar. Caller guarantees QM_IsNewBar().
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
+// Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -167,221 +294,102 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!CooldownElapsed())
+   if(TimeCurrent() < g_cooldown_until)
+      return false;
+   if(Strategy_HasOpenPosition())
       return false;
 
-   const int avail = Bars(_Symbol, PERIOD_M15); // perf-allowed
-   const int scan_max = strategy_max_fvg_age_bars + 4;
-   const int needed = MathMax(scan_max + 2, strategy_volume_avg_period + 4);
-   if(avail < needed)
+   FvgCandidate bull;
+   FvgCandidate bear;
+   Strategy_FindNewestFvg(1, bull);
+   Strategy_FindNewestFvg(-1, bear);
+   if(!bull.found && !bear.found)
       return false;
 
-   const double atr = QM_ATR(_Symbol, PERIOD_M15, strategy_atr_period, 1);
-   if(atr <= 0.0)
+   FvgCandidate chosen;
+   Strategy_ResetCandidate(chosen);
+   if(bull.found && (!bear.found || bull.age_bars <= bear.age_bars))
+      chosen = bull;
+   else
+      chosen = bear;
+
+   req.type = (chosen.direction > 0) ? QM_BUY : QM_SELL;
+   req.price = 0.0;
+   const double entry_price = (req.type == QM_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_ASK)
+                                                   : SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double stop_distance = Strategy_StopDistance(req.type, entry_price);
+   if(entry_price <= 0.0 || stop_distance <= 0.0)
       return false;
 
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
-      return false;
-
-   const double min_width = strategy_fvg_min_width_atr * atr;
-   // Current price reference for "price intersects the box" and mitigation depth.
-   const double px_close = iClose(_Symbol, PERIOD_M15, 1); // perf-allowed: last closed bar
-   if(px_close <= 0.0)
-      return false;
-
-   // Newest qualifying boxes, one per direction. A three-candle FVG anchored at
-   // formation-middle index m uses bar[m-1] and bar[m+1] in shift terms:
-   //   bullish gap : low(m-1) > high(m+1)  -> gap = [high(m+1), low(m-1)]
-   //   bearish gap : high(m-1) < low(m+1)  -> gap = [high(m-1), low(m+1)]
-   // box age = m (the middle bar's shift); we require age >= min and <= max.
-   // We scan from the oldest allowed middle shift down to the youngest so the
-   // last match kept is the NEWEST box (card: "use the newest one").
-   bool   have_bull = false;
-   double bull_low = 0.0, bull_high = 0.0;
-   int    bull_age = 0;
-   bool   have_bear = false;
-   double bear_low = 0.0, bear_high = 0.0;
-   int    bear_age = 0;
-
-   const int oldest_mid = strategy_max_fvg_age_bars;
-   const int youngest_mid = MathMax(strategy_min_fvg_age_bars, 2);
-   for(int m = oldest_mid; m >= youngest_mid; --m)
-     {
-      const double high_up = iHigh(_Symbol, PERIOD_M15, m + 1); // perf-allowed: candle before middle
-      const double low_up  = iLow(_Symbol, PERIOD_M15, m + 1);  // perf-allowed
-      const double low_dn  = iLow(_Symbol, PERIOD_M15, m - 1);  // perf-allowed: candle after middle
-      const double high_dn = iHigh(_Symbol, PERIOD_M15, m - 1); // perf-allowed
-      if(high_up <= 0.0 || low_up <= 0.0 || low_dn <= 0.0 || high_dn <= 0.0)
-         continue;
-
-      // Bullish FVG: gap between high of the older bar and low of the newer bar.
-      if(low_dn > high_up)
-        {
-         const double g_low = high_up;
-         const double g_high = low_dn;
-         if((g_high - g_low) >= min_width)
-           {
-            // Active = not fully filled: price has not closed back through the
-            // far edge (below g_low) since formation. Cheap proxy: current close
-            // still at/above the gap low.
-            if(px_close >= g_low)
-              {
-               bull_low = g_low;
-               bull_high = g_high;
-               bull_age = m;
-               have_bull = true; // keep scanning; newer matches overwrite
-              }
-           }
-        }
-
-      // Bearish FVG: gap between low of the older bar and high of the newer bar.
-      if(high_dn < low_up)
-        {
-         const double g_low = high_dn;
-         const double g_high = low_up;
-         if((g_high - g_low) >= min_width)
-           {
-            if(px_close <= g_high)
-              {
-               bear_low = g_low;
-               bear_high = g_high;
-               bear_age = m;
-               have_bear = true;
-              }
-           }
-        }
-     }
-
-   // Volume gate inputs for the trigger (last closed) bar.
-   const double trig_vol = TickVolAt(1);
-   const double avg_vol = AvgTickVol(2, strategy_volume_avg_period);
-   const bool vol_total_ok = (!strategy_volume_filter_enabled) ||
-                             (avg_vol > 0.0 && trig_vol >= avg_vol * strategy_volume_min_factor);
-   const double bull_share = BullShareAt(1);
-
-   // --- LONG setup ---
-   if(have_bull && bull_age >= strategy_min_fvg_age_bars)
-     {
-      const double width = bull_high - bull_low;
-      // Mitigation = how deep price has entered the box from its top edge,
-      // measured by the current close. 0 at the top edge, 1 at the bottom edge.
-      double mitig = (width > 0.0) ? ((bull_high - px_close) / width) : 0.0;
-      if(mitig < 0.0)
-         mitig = 0.0;
-      if(mitig > 1.0)
-         mitig = 1.0;
-      const bool intersects = (px_close <= bull_high && px_close >= bull_low);
-      const bool share_ok = (!strategy_volume_filter_enabled) || (bull_share >= strategy_bull_share_min);
-      const bool confirm_ok = (!strategy_candle_confirmation) ||
-                              (iClose(_Symbol, PERIOD_M15, 1) > iOpen(_Symbol, PERIOD_M15, 1)); // perf-allowed
-      if(intersects && mitig >= strategy_mitigation_threshold &&
-         vol_total_ok && share_ok && confirm_ok)
-        {
-         const double entry = ask;
-         double sl_dist = strategy_sl_percent * 0.01 * entry;
-         const double atr_cap = strategy_sl_atr_cap_mult * atr;
-         if(atr_cap > 0.0 && sl_dist > atr_cap)
-            sl_dist = atr_cap;
-         if(sl_dist > 0.0)
-           {
-            const double sl = QM_StopRulesStopFromDistance(_Symbol, QM_BUY, entry, sl_dist);
-            if(sl > 0.0 && sl < entry)
-              {
-               req.type = QM_BUY;
-               req.price = 0.0;          // framework fills market
-               req.sl = sl;
-               req.tp = 0.0;             // exit via fixed/trailing stop only
-               req.reason = "tv-ob-vol-fvg-long";
-               req.symbol_slot = qm_magic_slot_offset;
-               g_active_buy_sl_dist = sl_dist;
-               g_last_entry_bar_time = iTime(_Symbol, PERIOD_M15, 1); // perf-allowed
-               return true;
-              }
-           }
-        }
-     }
-
-   // --- SHORT setup (mirror) ---
-   if(have_bear && bear_age >= strategy_min_fvg_age_bars)
-     {
-      const double width = bear_high - bear_low;
-      // Mitigation from the box bottom edge upward: 0 at bottom, 1 at top.
-      double mitig = (width > 0.0) ? ((px_close - bear_low) / width) : 0.0;
-      if(mitig < 0.0)
-         mitig = 0.0;
-      if(mitig > 1.0)
-         mitig = 1.0;
-      const bool intersects = (px_close <= bear_high && px_close >= bear_low);
-      const double bear_share = 1.0 - bull_share;
-      const bool share_ok = (!strategy_volume_filter_enabled) || (bear_share >= strategy_bull_share_min);
-      const bool confirm_ok = (!strategy_candle_confirmation) ||
-                              (iClose(_Symbol, PERIOD_M15, 1) < iOpen(_Symbol, PERIOD_M15, 1)); // perf-allowed
-      if(intersects && mitig >= strategy_mitigation_threshold &&
-         vol_total_ok && share_ok && confirm_ok)
-        {
-         const double entry = bid;
-         double sl_dist = strategy_sl_percent * 0.01 * entry;
-         const double atr_cap = strategy_sl_atr_cap_mult * atr;
-         if(atr_cap > 0.0 && sl_dist > atr_cap)
-            sl_dist = atr_cap;
-         if(sl_dist > 0.0)
-           {
-            const double sl = QM_StopRulesStopFromDistance(_Symbol, QM_SELL, entry, sl_dist);
-            if(sl > entry)
-              {
-               req.type = QM_SELL;
-               req.price = 0.0;
-               req.sl = sl;
-               req.tp = 0.0;
-               req.reason = "tv-ob-vol-fvg-short";
-               req.symbol_slot = qm_magic_slot_offset;
-               g_active_buy_sl_dist = sl_dist;
-               g_last_entry_bar_time = iTime(_Symbol, PERIOD_M15, 1); // perf-allowed
-               return true;
-              }
-           }
-        }
-     }
-
-   return false;
+   req.sl = (req.type == QM_BUY)
+            ? QM_StopRulesNormalizePrice(_Symbol, entry_price - stop_distance)
+            : QM_StopRulesNormalizePrice(_Symbol, entry_price + stop_distance);
+   req.tp = 0.0;
+   req.reason = StringFormat("TV_OB_VOL_FVG_%s_age%d_mit%.1f_share%.2f",
+                             (chosen.direction > 0) ? "LONG" : "SHORT",
+                             chosen.age_bars,
+                             chosen.mitigation_pct,
+                             chosen.directional_share);
+   Strategy_SetCooldown();
+   return true;
   }
 
-// Trailing stop arms only after the profit trigger (card: "trailing stop
-// activates only after a configured profit trigger"). QM_TM_TrailStep is a
-// no-op until price has moved trigger_pips in favour, then trails by step_pips.
+// Called every tick when an open position exists for this EA's magic.
+// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0 || strategy_trail_trigger_pips <= 0 || strategy_trail_step_pips <= 0)
-      return;
-
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
       if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-      QM_TM_TrailStep(ticket, strategy_trail_trigger_pips, strategy_trail_step_pips);
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+
+      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const bool is_buy = (pos_type == POSITION_TYPE_BUY);
+      const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double current_sl = PositionGetDouble(POSITION_SL);
+      if(open_price <= 0.0 || current_sl <= 0.0)
+         continue;
+
+      const double market_price = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                                         : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(market_price <= 0.0)
+         continue;
+
+      const double risk_distance = MathAbs(open_price - current_sl);
+      if(risk_distance <= 0.0)
+         continue;
+
+      double trigger_distance = risk_distance * strategy_trailing_trigger_r;
+      if(strategy_trailing_trigger_mode == 0)
+         trigger_distance = open_price * strategy_trailing_trigger_pct * 0.01;
+      if(trigger_distance <= 0.0)
+         continue;
+
+      const double moved = is_buy ? (market_price - open_price) : (open_price - market_price);
+      if(moved >= trigger_distance)
+         QM_TM_TrailATR(ticket, strategy_atr_period, strategy_trailing_atr_mult);
      }
   }
 
-// No discretionary exit beyond the fixed/trailing stop handled by SL + trade
-// management. Returning false leaves SL/trail in charge.
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
    return false;
   }
 
-// News Filter Hook: defer to the framework two-axis news filter.
+// Optional news-filter override. Return TRUE to suppress trading regardless
+// of qm_news_mode (defaults to "ask the framework"). Used by EAs that need
+// custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false;
+   return false; // defer to QM_NewsAllowsTrade(...)
   }
 
 // -----------------------------------------------------------------------------
@@ -395,17 +403,17 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,
+                        qm_news_mode_legacy,           // legacy back-compat
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,
-                        30,
+                        30,                            // pause-before (legacy hint)
+                        30,                            // pause-after (legacy hint)
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,
-                        qm_news_compliance))
+                        qm_news_temporal,              // FW1 Axis A
+                        qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -426,7 +434,8 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults.
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -440,8 +449,10 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
+   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -456,9 +467,14 @@ void OnTick()
         }
      }
 
+   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
+   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
+   // call, not every incoming tick.
    if(!QM_IsNewBar())
       return;
 
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
@@ -478,6 +494,8 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
   {
+   // FW4: feeds closing-deal net-profits to the KS kill-switch.
+   // No-op outside Q13 (when no baseline.json exists).
    QM_FrameworkOnTradeTransaction(trans, request, result);
   }
 
