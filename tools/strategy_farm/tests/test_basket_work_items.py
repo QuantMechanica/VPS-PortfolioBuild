@@ -180,6 +180,61 @@ class BasketWorkItemsTests(unittest.TestCase):
             self.assertEqual(payload["basket_symbol_count"], 2)
             self.assertEqual(payload["portfolio_scope"], "basket")
 
+    def test_record_build_auto_q02_skips_basket_leg_setfiles(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            repo_root = Path(tmp) / "repo"
+            ea_dir = repo_root / "framework" / "EAs" / "QM5_12533_edgelab-eurjpy-gbpjpy-cointegration"
+            sets_dir = ea_dir / "sets"
+            sets_dir.mkdir(parents=True)
+            manifest = {
+                "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+                "host_symbol": "EURJPY.DWX",
+                "host_timeframe": "D1",
+                "basket_symbols": ["EURJPY.DWX", "GBPJPY.DWX"],
+            }
+            (ea_dir / "basket_manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+            logical_setfile = sets_dir / (
+                "QM5_12533_edgelab-eurjpy-gbpjpy-cointegration_"
+                "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1_D1_backtest.set"
+            )
+            leg_a = sets_dir / "QM5_12533_edgelab-eurjpy-gbpjpy-cointegration_EURJPY.DWX_D1_backtest.set"
+            leg_b = sets_dir / "QM5_12533_edgelab-eurjpy-gbpjpy-cointegration_GBPJPY.DWX_D1_backtest.set"
+            for setfile in (logical_setfile, leg_a, leg_b):
+                setfile.write_text("; setfile\n", encoding="utf-8")
+
+            farmctl.init_db(root)
+            old_repo_root = farmctl.REPO_ROOT
+            try:
+                farmctl.REPO_ROOT = repo_root
+                result = farmctl._auto_enqueue_q02_for_build(root, {
+                    "task_id": "build-task",
+                    "ea_id": "QM5_12533",
+                    "setfiles_generated": [str(leg_a), str(leg_b), str(logical_setfile)],
+                })
+            finally:
+                farmctl.REPO_ROOT = old_repo_root
+
+            self.assertEqual(len(result["enqueued"]), 1)
+            self.assertEqual(result["enqueued"][0]["symbol"], "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1")
+            self.assertEqual(
+                [item["reason"] for item in result["skipped"]],
+                [
+                    "basket_manifest_logical_setfile_preferred",
+                    "basket_manifest_logical_setfile_preferred",
+                ],
+            )
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                rows = conn.execute(
+                    "SELECT symbol, setfile_path, payload_json FROM work_items ORDER BY created_at"
+                ).fetchall()
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0][0], "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1")
+            self.assertEqual(rows[0][1], str(logical_setfile))
+            payload = json.loads(rows[0][2])
+            self.assertEqual(payload["host_symbol"], "EURJPY.DWX")
+            self.assertEqual(payload["portfolio_scope"], "basket")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -10833,6 +10833,13 @@ def _q02_build_setfile_basket_match(
     return logical_symbol, host_timeframe, payload_extra
 
 
+def _same_path(left: Path, right: Path) -> bool:
+    try:
+        return left.resolve() == right.resolve()
+    except OSError:
+        return str(left) == str(right)
+
+
 def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dict[str, Any]:
     """Create Q02 work_items for every setfile the Codex build produced.
 
@@ -10854,10 +10861,40 @@ def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dic
     now_iso = utc_now()
 
     basket_manifest = _load_basket_manifest(str(ea_id))
+    basket_only_setfiles: list[Path] | None = None
+    if basket_manifest:
+        basket_setfile = _find_basket_setfile(str(ea_id), basket_manifest)
+        if not basket_setfile:
+            return {
+                "enqueued": [],
+                "skipped": [
+                    {
+                        "setfile": Path(str(item)).name,
+                        "reason": "basket_manifest_missing_logical_setfile",
+                    }
+                    for item in setfiles
+                ],
+                "ea_id": ea_id,
+            }
+        logical_path = Path(basket_setfile[1])
+        supplied_logical = next(
+            (
+                Path(str(item))
+                for item in setfiles
+                if _same_path(Path(str(item)), logical_path)
+            ),
+            logical_path,
+        )
+        basket_only_setfiles = [supplied_logical]
 
     # Parse all setfiles first so staging can pick a diverse stage-1 wave.
     parsed: list[tuple[Path, str, str, dict[str, Any]]] = []
-    for setfile_str in setfiles:
+    iter_setfiles = (
+        basket_only_setfiles
+        if basket_only_setfiles is not None
+        else [Path(str(item)) for item in setfiles]
+    )
+    for setfile_str in iter_setfiles:
         setfile_path = Path(str(setfile_str))
         # Filename pattern: <ea_label>_<SYMBOL>_<TF>_backtest.set
         # Symbol may contain '.' (e.g. EURUSD.DWX); use regex to extract.
@@ -10873,6 +10910,15 @@ def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dic
                             "reason": "setfile_name_parse_failed"})
             continue
         parsed.append((setfile_path, m.group(1), m.group(2), {}))
+    if basket_only_setfiles is not None:
+        logical_path = basket_only_setfiles[0]
+        for setfile_str in setfiles:
+            setfile_path = Path(str(setfile_str))
+            if not _same_path(setfile_path, logical_path):
+                skipped.append({
+                    "setfile": setfile_path.name,
+                    "reason": "basket_manifest_logical_setfile_preferred",
+                })
 
     # OWNER gate-acceleration #2 (2026-06-10): diverse stage-1 wave, rest
     # deferred to the sidecar (promoted on any stage-1 PASS / spare capacity).
