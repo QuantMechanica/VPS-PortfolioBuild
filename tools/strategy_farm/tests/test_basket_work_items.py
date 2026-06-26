@@ -1,4 +1,5 @@
 import json
+import os
 import sqlite3
 import sys
 import tempfile
@@ -48,11 +49,17 @@ class BasketWorkItemsTests(unittest.TestCase):
                 conn.commit()
 
             old_repo_root = farmctl.REPO_ROOT
+            old_agent = os.environ.get("QM_AGENT_ID")
             try:
                 farmctl.REPO_ROOT = repo_root
+                os.environ["QM_AGENT_ID"] = "controller"
                 result = farmctl.enqueue_backtest(root, "review-task", "P2")
             finally:
                 farmctl.REPO_ROOT = old_repo_root
+                if old_agent is None:
+                    os.environ.pop("QM_AGENT_ID", None)
+                else:
+                    os.environ["QM_AGENT_ID"] = old_agent
 
             self.assertTrue(result["enqueued"])
             self.assertEqual(len(result["work_items_created"]), 1)

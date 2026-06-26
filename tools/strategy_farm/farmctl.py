@@ -5892,29 +5892,50 @@ def _detect_unenqueued_eas(con: sqlite3.Connection) -> list[dict[str, Any]]:
         verdict_doc = review_payload.get("verdict") or {}
         if verdict_doc.get("verdict") != "APPROVE_FOR_BACKTEST":
             continue
-        wi_count = con.execute(
-            "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND phase in ('Q02', 'P2')",
-            (ea_id,),
-        ).fetchone()[0]
-        if wi_count > 0:
-            continue
-        # 2026-05-19: also skip if a terminal Q02/backtest_p2 task already exists
-        # for this EA (done OR failed). Prevents pump from re-enqueuing
-        # unactionable EAs (e.g. M1 EAs without DWX history in default
-        # 2017-2022 window) on every cycle.
-        terminal_task_exists = con.execute(
-            "SELECT 1 FROM tasks WHERE kind IN ('backtest_p2', 'backtest_q02') AND card_id=? "
-            "AND status in ('done', 'failed') LIMIT 1",
-            (ea_id,),
-        ).fetchone()
-        if terminal_task_exists:
-            continue
         candidates = sorted(p for p in FRAMEWORK_EAS_DIR.glob(f"{ea_id}_*") if p.is_dir())
         if not candidates:
             continue
         ea_dir = candidates[0]
         ex5 = ea_dir / f"{ea_dir.name}.ex5"
         if not ex5.exists():
+            continue
+        basket_manifest = _load_basket_manifest(ea_id)
+        if basket_manifest:
+            logical_symbol = str(basket_manifest["logical_symbol"])
+            wi_count = con.execute(
+                "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND phase in ('Q02', 'P2') AND symbol=?",
+                (ea_id, logical_symbol),
+            ).fetchone()[0]
+        else:
+            logical_symbol = ""
+            wi_count = con.execute(
+                "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND phase in ('Q02', 'P2')",
+                (ea_id,),
+            ).fetchone()[0]
+        if wi_count > 0:
+            continue
+        # 2026-05-19: also skip if a terminal Q02/backtest_p2 task already exists
+        # for this EA (done OR failed). Prevents pump from re-enqueuing
+        # unactionable EAs (e.g. M1 EAs without DWX history in default
+        # 2017-2022 window) on every cycle.
+        #
+        # Basket EAs are special: legacy auto-enqueue sometimes created only
+        # physical-leg Q02 rows, which then masked the missing logical basket
+        # work item. Only a terminal task that names the logical basket symbol
+        # is sufficient to suppress repair for a basket EA.
+        if basket_manifest:
+            terminal_task_exists = con.execute(
+                "SELECT 1 FROM tasks WHERE kind IN ('backtest_p2', 'backtest_q02') AND card_id=? "
+                "AND status in ('done', 'failed') AND payload_json LIKE ? LIMIT 1",
+                (ea_id, f"%{logical_symbol}%"),
+            ).fetchone()
+        else:
+            terminal_task_exists = con.execute(
+                "SELECT 1 FROM tasks WHERE kind IN ('backtest_p2', 'backtest_q02') AND card_id=? "
+                "AND status in ('done', 'failed') LIMIT 1",
+                (ea_id,),
+            ).fetchone()
+        if terminal_task_exists:
             continue
         needs.append({
             "ea_id": ea_id,

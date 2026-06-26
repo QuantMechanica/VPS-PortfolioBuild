@@ -1129,30 +1129,59 @@ def chk_unenqueued_eas_count(con) -> dict:
         verdict_doc = review_payload.get("verdict") or {}
         if verdict_doc.get("verdict") != "APPROVE_FOR_BACKTEST":
             continue
-        wi_count = con.execute(
-            "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND phase IN ('P2', 'Q02')",
-            (ea_id,),
-        ).fetchone()[0]
-        if wi_count > 0:
-            continue
-        terminal_task_exists = con.execute(
-            """
-            SELECT 1 FROM tasks
-            WHERE kind IN ('backtest_p2', 'backtest_q02')
-              AND card_id=?
-              AND status IN ('done', 'failed')
-            LIMIT 1
-            """,
-            (ea_id,),
-        ).fetchone()
-        if terminal_task_exists:
-            continue
         candidates = sorted(p for p in FRAMEWORK_EAS_DIR.glob(f"{ea_id}_*") if p.is_dir())
         if not candidates:
             continue
-        ex5 = candidates[0] / f"{candidates[0].name}.ex5"
-        if ex5.exists():
-            waiting.append(ea_id)
+        ea_dir = candidates[0]
+        ex5 = ea_dir / f"{ea_dir.name}.ex5"
+        if not ex5.exists():
+            continue
+        logical_symbol = ""
+        manifest_path = ea_dir / "basket_manifest.json"
+        if manifest_path.exists():
+            try:
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+            except (OSError, json.JSONDecodeError):
+                manifest = {}
+            logical_symbol = str(manifest.get("logical_symbol") or "").strip() if isinstance(manifest, dict) else ""
+        if logical_symbol:
+            wi_count = con.execute(
+                "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND phase IN ('P2', 'Q02') AND symbol=?",
+                (ea_id, logical_symbol),
+            ).fetchone()[0]
+        else:
+            wi_count = con.execute(
+                "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND phase IN ('P2', 'Q02')",
+                (ea_id,),
+            ).fetchone()[0]
+        if wi_count > 0:
+            continue
+        if logical_symbol:
+            terminal_task_exists = con.execute(
+                """
+                SELECT 1 FROM tasks
+                WHERE kind IN ('backtest_p2', 'backtest_q02')
+                  AND card_id=?
+                  AND status IN ('done', 'failed')
+                  AND payload_json LIKE ?
+                LIMIT 1
+                """,
+                (ea_id, f"%{logical_symbol}%"),
+            ).fetchone()
+        else:
+            terminal_task_exists = con.execute(
+                """
+                SELECT 1 FROM tasks
+                WHERE kind IN ('backtest_p2', 'backtest_q02')
+                  AND card_id=?
+                  AND status IN ('done', 'failed')
+                LIMIT 1
+                """,
+                (ea_id,),
+            ).fetchone()
+        if terminal_task_exists:
+            continue
+        waiting.append(ea_id)
     n = len(waiting)
     detail = ", ".join(waiting[:10]) if waiting else "no reviewed built EAs waiting for P2 enqueue"
     if n > 10:
