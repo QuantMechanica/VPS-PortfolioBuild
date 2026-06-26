@@ -13630,3 +13630,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12590,eia-wti-wpsr-fade,0,XTIUSD.DWX,125900000,2026-06-26,Development,active
 11909,singh-good-morning-asia-usdjpy-d1,0,USDJPY.DWX,119090000,2026-06-26,Codex,active
 12591,eia-wti-hurr-brk,0,XTIUSD.DWX,125910000,2026-06-27,Development,active
+12592,eia-wti-prewpsr,0,XTIUSD.DWX,125920000,2026-06-27,Development,active
