@@ -1,0 +1,34 @@
+{
+  "task_id": "2799ece2-3ec8-40d6-b185-352e1185b7b2",
+  "ea_id": "QM5_10029",
+  "ea_dir": "framework/EAs/QM5_10029_rw-fx-ny-rev",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10029_rw-fx-ny-rev\\QM5_10029_rw-fx-ny-rev.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10029_rw-fx-ny-rev\\QM5_10029_rw-fx-ny-rev.ex5",
+  "magic_base": 100290000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "USDCAD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10029_rw-fx-ny-rev\\sets\\QM5_10029_rw-fx-ny-rev_EURUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10029_rw-fx-ny-rev\\sets\\QM5_10029_rw-fx-ny-rev_GBPUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10029_rw-fx-ny-rev\\sets\\QM5_10029_rw-fx-ny-rev_USDJPY.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10029_rw-fx-ny-rev\\sets\\QM5_10029_rw-fx-ny-rev_AUDUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10029_rw-fx-ny-rev\\sets\\QM5_10029_rw-fx-ny-rev_NZDUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10029_rw-fx-ny-rev\\sets\\QM5_10029_rw-fx-ny-rev_USDCAD.DWX_H1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10029_rw-fx-ny-rev\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "smoke_skipped_reason": "mt5_backtest_cpu_ceiling_active_work_items_7",
+  "open_questions": [
+    "Q02 smoke was not run interactively because farmctl mt5-slots showed 7 active terminal jobs; Q02 was queued for paced workers instead."
+  ]
+}
