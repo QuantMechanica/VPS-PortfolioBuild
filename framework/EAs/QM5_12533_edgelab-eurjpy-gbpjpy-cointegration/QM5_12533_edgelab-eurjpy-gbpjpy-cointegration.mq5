@@ -84,6 +84,7 @@ input int    strategy_deviation_points  = 20;
 
 string   g_leg_eurjpy = "EURJPY.DWX";
 string   g_leg_gbpjpy = "GBPJPY.DWX";
+bool     g_basket_scope_ready = false;
 double   g_spread_z = 0.0;
 double   g_spread_mean = 0.0;
 double   g_spread_sd = 0.0;
@@ -112,6 +113,23 @@ bool Strategy_IsPairPosition()
    if(slot < 0)
       return false;
    return ((int)PositionGetInteger(POSITION_MAGIC) == QM_MagicChecked(qm_ea_id, slot, symbol));
+  }
+
+bool Strategy_EnsureBasketScope()
+  {
+   if(g_basket_scope_ready)
+      return true;
+
+   // The two traded legs are JPY crosses; MT5 also needs USD conversion
+   // history to value profit/margin in the account currency during tests.
+   string allowed[5] = {"EURJPY.DWX", "GBPJPY.DWX", "EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX"};
+   for(int i = 0; i < 5; ++i)
+      SymbolSelect(allowed[i], true);
+
+   QM_SymbolGuardInit(allowed);
+   QM_BasketWarmupHistory(allowed, PERIOD_D1, MathMax(300, strategy_z_lookback_d1 + strategy_atr_period_d1 + 10));
+   g_basket_scope_ready = true;
+   return true;
   }
 
 int Strategy_OpenPairLegCount()
@@ -144,6 +162,11 @@ bool Strategy_RefreshSpreadState()
   {
    g_state_ready = false;
    const int lookback = MathMax(20, strategy_z_lookback_d1);
+
+   if(!Strategy_EnsureBasketScope())
+      return false;
+   if(!QM_SymbolAssertOrLog(g_leg_eurjpy) || !QM_SymbolAssertOrLog(g_leg_gbpjpy))
+      return false;
 
    double eur[];
    double gbp[];
@@ -282,6 +305,8 @@ bool Strategy_OpenPair(const int spread_direction)
 // No Trade Filter (time, spread, news).
 bool Strategy_NoTradeFilter()
   {
+   Strategy_EnsureBasketScope();
+
    if(!Strategy_IsHostSymbol())
       return true;
    if(Strategy_SlotForSymbol(_Symbol) != qm_magic_slot_offset)
@@ -397,9 +422,7 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
-   string basket_symbols[2] = {g_leg_eurjpy, g_leg_gbpjpy};
-   QM_SymbolGuardInit(basket_symbols);
-   QM_BasketWarmupHistory(basket_symbols, PERIOD_D1, MathMax(120, strategy_z_lookback_d1 + strategy_atr_period_d1 + 10));
+   Strategy_EnsureBasketScope();
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
