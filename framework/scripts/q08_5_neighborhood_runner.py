@@ -150,7 +150,13 @@ def fire_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         "-EAId", str(ea_id),
         "-Expert", ea_expert,
         "-Symbol", symbol,
-        "-Year", "0",
+        # Full-history window — matches the canonical Q08 baseline (q08_davey/aggregate.py).
+        # Was "-Year 0" with no date range, which made run_smoke build fromDate="0.01.01"
+        # (an invalid year-0 window) -> 0 trades on EVERY perturbation INCLUDING the baseline
+        # -> 8.5 FAILed every EA falsely (167/167 runs had a 0-trade baseline). 2026-06-26 fix.
+        "-Year", "2025",
+        "-FromDate", "2017.01.01",
+        "-ToDate", "2025.12.31",
         "-Terminal", terminal,
         "-Period", "H1",
         "-DispatchSubGateHash", run_tag,

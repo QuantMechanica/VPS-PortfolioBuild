@@ -11,6 +11,7 @@ from framework.scripts.q08_davey import (
     sub_8_2_dsr_mc_fdr,
     sub_8_3_tail_dependence,
     sub_8_4_seasonal,
+    sub_8_5_neighborhood,
     sub_8_6_chopping_block,
     sub_8_7_pbo,
     sub_8_8_edge_decay,
@@ -34,6 +35,48 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         self.assertEqual(tail["status"], "PASS")
         self.assertTrue(tail["passed"])
         self.assertIn("trivial_pass", tail["detail"])
+
+    def _write_perturbations(self, tmp, baseline, perturbs) -> Path:
+        import json
+        p = Path(tmp) / "perturbations.json"
+        p.write_text(json.dumps({"baseline": baseline, "perturbations": perturbs}), encoding="utf-8")
+        return p
+
+    def test_neighborhood_degenerate_baseline_is_invalid_not_fail(self) -> None:
+        # The -Year 0 runner bug gave every EA a 0-trade baseline; that must be INVALID,
+        # never FAIL (failing on a degenerate runner is a false negative). 2026-06-26.
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write_perturbations(
+                tmp,
+                {"trades": 0, "pf": None, "dd": None},
+                [{"param": "x", "delta": "-10pct", "pf": 0.0, "dd": 0.0}],
+            )
+            result = sub_8_5_neighborhood.run(perturbations_path=path)
+        self.assertEqual(result["status"], "INVALID")
+        self.assertFalse(result["passed"])
+        self.assertIn("degenerate_baseline", result["detail"])
+
+    def test_neighborhood_real_breach_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write_perturbations(
+                tmp,
+                {"trades": 220, "pf": 1.42, "dd": 8500},
+                [{"param": "fast_ema", "delta": "-10pct", "pf": 0.85, "dd": 9000}],
+            )
+            result = sub_8_5_neighborhood.run(perturbations_path=path)
+        self.assertEqual(result["status"], "FAIL")
+        self.assertIn("perturbation_breaches", result["detail"])
+
+    def test_neighborhood_robust_plateau_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._write_perturbations(
+                tmp,
+                {"trades": 220, "pf": 1.42, "dd": 8500},
+                [{"param": "fast_ema", "delta": "-10pct", "pf": 1.35, "dd": 8800},
+                 {"param": "fast_ema", "delta": "+10pct", "pf": 1.38, "dd": 9000}],
+            )
+            result = sub_8_5_neighborhood.run(perturbations_path=path)
+        self.assertEqual(result["status"], "PASS")
 
     def test_pbo_missing_scores_is_invalid_not_fail(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

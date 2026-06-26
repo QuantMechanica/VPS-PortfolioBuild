@@ -56,6 +56,19 @@ def run(ea_id: int | None = None, symbol: str | None = None,
 
     baseline = data.get("baseline") or {}
     perturbs = data.get("perturbations") or []
+
+    # Defensive guard: if the BASELINE run itself produced no trades (or no PF), the
+    # neighborhood backtests did not reproduce the strategy — the gate did not actually
+    # test parameter stability. Return INVALID, never FAIL: failing an EA because the
+    # runner is degenerate is a false negative (this masked a -Year 0 window bug that gave
+    # every EA a 0-trade baseline and falsely FAILED them all). 2026-06-26.
+    base_trades = int(baseline.get("trades", 0) or 0)
+    if base_trades <= 0 or baseline.get("pf") is None:
+        return make_result(GATE_NAME, "INVALID",
+                           value=base_trades, threshold=None,
+                           detail=f"degenerate_baseline:trades={base_trades}:pf={baseline.get('pf')}",
+                           evidence={"baseline": baseline})
+
     baseline_dd = float(baseline.get("dd", 0) or 0)
     breaches: list[dict] = []
 
