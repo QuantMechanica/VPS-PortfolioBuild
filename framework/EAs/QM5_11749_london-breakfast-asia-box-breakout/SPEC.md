@@ -19,9 +19,13 @@ The EA builds an Asia session box from M15 bars between 00:00 and 07:00 UTC. Fro
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
 | `strategy_asia_start_hour_utc` | 0 | 0-23 | UTC hour when Asia-box collection starts. |
+| `strategy_asia_start_minute_utc` | 0 | 0-59 | UTC minute when Asia-box collection starts. |
 | `strategy_asia_end_hour_utc` | 7 | 1-24 | UTC hour when Asia-box collection ends; bars at this hour are excluded. |
+| `strategy_asia_end_minute_utc` | 0 | 0-59 | UTC minute when Asia-box collection ends. |
 | `strategy_breakout_start_hour_utc` | 7 | 0-23 | UTC hour when closed-bar breakout detection begins. |
+| `strategy_breakout_start_minute_utc` | 0 | 0-59 | UTC minute when closed-bar breakout detection begins. |
 | `strategy_session_cutoff_hour_utc` | 16 | 1-24 | UTC hour when open positions are closed and new entries stop. |
+| `strategy_session_cutoff_minute_utc` | 0 | 0-59 | UTC minute when open positions are closed and new entries stop. |
 | `strategy_take_profit_pips` | 40 | 1+ | Fixed take-profit distance from market entry. |
 | `strategy_history_bars_m15` | 96 | 32-192 enforced | Bounded M15 bar window used for same-day box and breakout scan. |
 | `strategy_min_asia_bars` | 20 | 1+ | Minimum count of M15 Asia bars required before a box is valid. |
@@ -97,4 +101,3 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-11 | Initial build from card | 7e4afeb3-ed2a-4ead-a7e5-8f4c149a8d98 |
-

@@ -19,8 +19,11 @@ The EA builds an Asian-session box from M15 bars between 22:00 and 07:00 broker 
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
 | `strategy_asian_start_hour` | 22 | 0-23 | Broker-hour start of the Asian range window, inclusive. |
+| `strategy_asian_start_minute` | 0 | 0-59 | Broker minute for the Asian range start. |
 | `strategy_asian_end_hour` | 7 | 0-23 | Broker-hour end of the Asian range and London-open watch start, exclusive. |
+| `strategy_asian_end_minute` | 0 | 0-59 | Broker minute for the Asian range end and London-open watch start. |
 | `strategy_london_close_hour` | 12 | 0-23 | Broker hour for the discretionary time exit. |
+| `strategy_london_close_minute` | 0 | 0-59 | Broker minute for the discretionary time exit. |
 | `strategy_tp_pips` | 40.0 | 25-55 for P3 sweep | Fixed take-profit distance in pips. |
 | `strategy_sl_cap_pips` | 25.0 | 20-35 for P3 sweep | Maximum allowed breakout-candle stop distance in pips. |
 | `strategy_skip_monday` | true | true/false | Skip Monday entries because the weekend gap can distort the Asian range. |

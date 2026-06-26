@@ -20,8 +20,13 @@ At the London session open (08:00 London local, DST-aware broker time), the EA r
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
+| `strategy_london_open_hour_local` | 8 | 0-23 | London local hour when the Opening Range starts |
+| `strategy_london_open_minute_local` | 0 | 0-59 | London local minute when the Opening Range starts |
+| `strategy_session_exit_hour_local` | 17 | 0-23 | London local hour for the session-flat exit |
+| `strategy_session_exit_minute_local` | 0 | 0-59 | London local minute for the session-flat exit |
 | `strategy_or_bars` | 4 | 2–8 | M15 bars that form the Opening Range (4 = 60 min) |
 | `strategy_entry_window_h` | 3 | 1–5 | Hours after OR forms during which entries are valid |
+| `strategy_entry_window_minutes` | 0 | 0+ | Optional minute-based entry window; 0 uses `strategy_entry_window_h` |
 | `strategy_atr_period` | 14 | 7–20 | ATR lookback used for confirmation, SL sizing, and cap |
 | `strategy_bb_atr_mult` | 0.2 | 0.1–1.0 | Breakout bar range must be >= mult × ATR(14, M15) |
 | `strategy_or_width_atr_mult` | 0.6 | 0.2–1.0 | OR wick width must be >= mult × ATR(14, D1)/4 |

@@ -39,8 +39,13 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
+input int    strategy_london_open_hour_local = 8;     // London local hour where Opening Range starts
+input int    strategy_london_open_minute_local = 0;   // London local minute where Opening Range starts
+input int    strategy_session_exit_hour_local = 17;   // London local hour for session-flat exit
+input int    strategy_session_exit_minute_local = 0;  // London local minute for session-flat exit
 input int    strategy_or_bars             = 4;     // Number of M15 bars for Opening Range
 input int    strategy_entry_window_h      = 3;     // Entry window hours after OR forms
+input int    strategy_entry_window_minutes = 0;    // Optional entry window minutes; 0 = use hours input
 input int    strategy_atr_period          = 14;    // ATR period (M15 and D1)
 input double strategy_bb_atr_mult         = 0.2;   // Breakout bar range >= mult * ATR(14,M15)
 input double strategy_or_width_atr_mult   = 0.6;   // OR width >= mult * ATR(14,D1)/4
@@ -55,10 +60,10 @@ input double strategy_time_stop_r         = 0.5;   // Minimum R for time-stop ch
 // Per-day state (reset each broker trading day)
 // -----------------------------------------------------------------------------
 datetime g_today_broker_date    = 0;
-datetime g_london_open_broker   = 0;   // 08:00 London in broker time (DST-aware)
+datetime g_london_open_broker   = 0;   // configured London local open in broker time (DST-aware)
 datetime g_or_end_broker        = 0;   // london_open + 4*15min
-datetime g_entry_window_end     = 0;   // or_end + strategy_entry_window_h hours
-datetime g_session_exit_broker  = 0;   // 17:00 London = london_open + 9h
+datetime g_entry_window_end     = 0;   // or_end + configured entry window
+datetime g_session_exit_broker  = 0;   // configured London local session-flat time
 
 double   g_or_high              = 0.0;   // wick-based max HIGH of OR bars (width filter + SL)
 double   g_or_low               = 1e20;  // wick-based min LOW of OR bars (width filter + SL)
@@ -112,17 +117,28 @@ bool IsUKBST(datetime utc_time)
    return (d < sun_oct || (d == sun_oct && utc_h < 1));
   }
 
-// Compute 08:00 London local time in broker time for today.
+int StrategyMinuteOfDay(const int hour, const int minute)
+  {
+   return MathMax(0, MathMin(23, hour)) * 60 + MathMax(0, MathMin(59, minute));
+  }
+
+int StrategyEntryWindowSeconds()
+  {
+   if(strategy_entry_window_minutes > 0)
+      return MathMax(15, strategy_entry_window_minutes) * 60;
+   return MathMax(1, strategy_entry_window_h) * 3600;
+  }
+
+// Compute configured London local wall-clock time in broker time for today.
 // utc_midnight_today = g_today_broker_date = UTC midnight of the current broker calendar day.
 // For DXZ (UTC+2/+3): broker midnight raw == UTC midnight raw of the same calendar day,
 // so g_today_broker_date is a valid UTC midnight input here.
-datetime ComputeLondonOpenBroker(datetime utc_midnight_today)
+datetime ComputeLondonLocalBroker(datetime utc_midnight_today, const int local_hour, const int local_minute)
   {
-   // London 08:00 local: UTC 07:00 in BST, UTC 08:00 in GMT
-   datetime utc_check  = utc_midnight_today + 7 * 3600 + 30 * 60;  // 07:30 UTC
+   datetime utc_check  = utc_midnight_today + 12 * 3600;
    bool     is_bst     = IsUKBST(utc_check);
-   int      london_utc_h = is_bst ? 7 : 8;
-   datetime london_utc   = utc_midnight_today + (datetime)(london_utc_h * 3600);
+   int      utc_minutes = StrategyMinuteOfDay(local_hour, local_minute) - (is_bst ? 60 : 0);
+   datetime london_utc = utc_midnight_today + (datetime)(utc_minutes * 60);
    bool     is_us_dst  = QM_IsUSDSTUTC(london_utc);
    int      broker_off = is_us_dst ? 3 : 2;
    return london_utc + (datetime)(broker_off * 3600);
@@ -150,10 +166,16 @@ void AdvanceState_OnNewBar()
    if(broker_date != g_today_broker_date)
      {
       g_today_broker_date   = broker_date;
-      g_london_open_broker  = ComputeLondonOpenBroker(g_today_broker_date);
+      g_london_open_broker  = ComputeLondonLocalBroker(g_today_broker_date,
+                                                       strategy_london_open_hour_local,
+                                                       strategy_london_open_minute_local);
       g_or_end_broker       = g_london_open_broker + (datetime)(strategy_or_bars * 15 * 60);
-      g_entry_window_end    = g_or_end_broker + (datetime)(strategy_entry_window_h * 3600);
-      g_session_exit_broker = g_london_open_broker + (datetime)(9 * 3600); // 08:00+9h = 17:00 London
+      g_entry_window_end    = g_or_end_broker + (datetime)StrategyEntryWindowSeconds();
+      g_session_exit_broker = ComputeLondonLocalBroker(g_today_broker_date,
+                                                       strategy_session_exit_hour_local,
+                                                       strategy_session_exit_minute_local);
+      if(g_session_exit_broker <= g_london_open_broker)
+         g_session_exit_broker += 86400;
       g_or_high             = 0.0;
       g_or_low              = 1e20;
       g_or_close_high       = 0.0;

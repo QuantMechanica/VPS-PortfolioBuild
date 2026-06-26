@@ -60,9 +60,13 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_asia_start_hour_utc     = 0;
+input int    strategy_asia_start_minute_utc   = 0;
 input int    strategy_asia_end_hour_utc       = 7;
+input int    strategy_asia_end_minute_utc     = 0;
 input int    strategy_breakout_start_hour_utc = 7;
+input int    strategy_breakout_start_minute_utc = 0;
 input int    strategy_session_cutoff_hour_utc = 16;
+input int    strategy_session_cutoff_minute_utc = 0;
 input int    strategy_take_profit_pips        = 40;
 input int    strategy_history_bars_m15        = 96;
 input int    strategy_min_asia_bars           = 20;
@@ -86,6 +90,13 @@ int UtcMinuteOfDay(const datetime utc_time)
    ZeroMemory(dt);
    TimeToStruct(utc_time, dt);
    return dt.hour * 60 + dt.min;
+  }
+
+int StrategyUtcMinuteOfDay(const int hour, const int minute)
+  {
+   if(hour >= 24)
+      return 1440;
+   return MathMax(0, MathMin(23, hour)) * 60 + MathMax(0, MathMin(59, minute));
   }
 
 bool HasOurOpenPosition()
@@ -119,8 +130,8 @@ bool Strategy_NoTradeFilter()
       return true;
 
    const int minute = UtcMinuteOfDay(QM_BrokerToUTC(TimeCurrent()));
-   const int watch_start = strategy_breakout_start_hour_utc * 60;
-   const int cutoff = strategy_session_cutoff_hour_utc * 60;
+   const int watch_start = StrategyUtcMinuteOfDay(strategy_breakout_start_hour_utc, strategy_breakout_start_minute_utc);
+   const int cutoff = StrategyUtcMinuteOfDay(strategy_session_cutoff_hour_utc, strategy_session_cutoff_minute_utc);
    if(minute < watch_start || minute >= cutoff)
       return true;
 
@@ -139,10 +150,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(_Period != PERIOD_M15)
       return false;
+   const int asia_start = StrategyUtcMinuteOfDay(strategy_asia_start_hour_utc, strategy_asia_start_minute_utc);
+   const int asia_end = StrategyUtcMinuteOfDay(strategy_asia_end_hour_utc, strategy_asia_end_minute_utc);
+   const int breakout_start = StrategyUtcMinuteOfDay(strategy_breakout_start_hour_utc, strategy_breakout_start_minute_utc);
+   const int session_cutoff = StrategyUtcMinuteOfDay(strategy_session_cutoff_hour_utc, strategy_session_cutoff_minute_utc);
    if(strategy_asia_start_hour_utc < 0 || strategy_asia_start_hour_utc > 23 ||
-      strategy_asia_end_hour_utc <= strategy_asia_start_hour_utc || strategy_asia_end_hour_utc > 24 ||
-      strategy_breakout_start_hour_utc < strategy_asia_end_hour_utc || strategy_breakout_start_hour_utc > 23 ||
-      strategy_session_cutoff_hour_utc <= strategy_breakout_start_hour_utc || strategy_session_cutoff_hour_utc > 24 ||
+      strategy_asia_end_hour_utc < 0 || strategy_asia_end_hour_utc > 24 ||
+      strategy_breakout_start_hour_utc < 0 || strategy_breakout_start_hour_utc > 23 ||
+      strategy_session_cutoff_hour_utc < 0 || strategy_session_cutoff_hour_utc > 24 ||
+      asia_end <= asia_start ||
+      breakout_start < asia_end ||
+      session_cutoff <= breakout_start ||
       strategy_take_profit_pips <= 0 || strategy_min_asia_bars <= 0)
       return false;
 
@@ -161,11 +179,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const datetime current_bar_utc = QM_BrokerToUTC(rates[0].time);
    const int current_day = UtcDayKey(current_bar_utc);
    const int current_minute = UtcMinuteOfDay(current_bar_utc);
-   const int asia_start = strategy_asia_start_hour_utc * 60;
-   const int asia_end = strategy_asia_end_hour_utc * 60;
-   const int breakout_start = strategy_breakout_start_hour_utc * 60;
-   const int session_cutoff = strategy_session_cutoff_hour_utc * 60;
-
    static int session_day = -1;
    static bool trade_taken_today = false;
    if(current_day != session_day)
@@ -282,7 +295,7 @@ bool Strategy_ExitSignal()
       return false;
 
    const int minute = UtcMinuteOfDay(QM_BrokerToUTC(TimeCurrent()));
-   return (minute >= strategy_session_cutoff_hour_utc * 60);
+   return (minute >= StrategyUtcMinuteOfDay(strategy_session_cutoff_hour_utc, strategy_session_cutoff_minute_utc));
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
@@ -392,4 +405,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
