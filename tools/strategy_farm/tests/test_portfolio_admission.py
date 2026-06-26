@@ -11,6 +11,7 @@ sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 
 from portfolio.commission import CommissionModel  # noqa: E402
 from portfolio.portfolio_admission import evaluate_candidate  # noqa: E402
+from portfolio.portfolio_kpi import equal_weights, portfolio_metrics  # noqa: E402
 
 
 class PortfolioAdmissionTests(unittest.TestCase):
@@ -78,8 +79,14 @@ class PortfolioAdmissionTests(unittest.TestCase):
             start = dt.datetime(2024, 1, 1, tzinfo=dt.UTC)
             cost = self._cost()
 
+            # Candidate is net-LOSING and uncorrelated to the book (its even/odd-day means
+            # are equal, so zero period-2 correlation). Under risk-parity it can't help:
+            # it drags Sharpe down and adds its own drawdown, with no anti-correlation to
+            # smooth the book. (A net-negative ANTI-correlated sleeve would legitimately
+            # diversify under risk-parity by smoothing — so that is not a no-diversification
+            # case once the diversifies test uses the book's real risk-parity weighting.)
             self._write_stream(stream_dir / "100_EURUSD_DWX.jsonl", start, [20.0, 10.0] * 30, cost)
-            self._write_stream(stream_dir / "101_EURUSD_DWX.jsonl", start, [-40.0, -10.0] * 30, cost)
+            self._write_stream(stream_dir / "101_EURUSD_DWX.jsonl", start, [-30.0, -20.0, -10.0, -20.0] * 15, cost)
 
             verdict = evaluate_candidate(
                 (101, "EURUSD.DWX"),
@@ -90,6 +97,39 @@ class PortfolioAdmissionTests(unittest.TestCase):
         self.assertFalse(verdict["admit"])
         self.assertEqual(verdict["reason"], "no_diversification")
         self.assertFalse(verdict["diversifies"])
+
+    def test_risk_parity_admits_dense_diversifier_that_equal_weight_rejects(self) -> None:
+        # Regression for the diversifies-weighting fix. The candidate is a high-volatility,
+        # uncorrelated, net-positive sleeve (like a dense index EA next to sparse low-freq
+        # sleeves). Under EQUAL weight its big swings dominate the daily variance so it looks
+        # non-diversifying; under risk-parity (inverse-vol — how the book is actually built)
+        # it is down-weighted and reduces the book's drawdown, so it is admitted.
+        with tempfile.TemporaryDirectory() as tmp:
+            common_dir = Path(tmp)
+            stream_dir = self._stream_dir(common_dir)
+            start = dt.datetime(2024, 1, 1, tzinfo=dt.UTC)
+            cost = self._cost()
+
+            book = [(100, "EURUSD.DWX")]
+            with_book = [(100, "EURUSD.DWX"), (101, "EURUSD.DWX")]
+            self._write_stream(stream_dir / "100_EURUSD_DWX.jsonl", start, [12.0, -9.0] * 30, cost)
+            self._write_stream(stream_dir / "101_EURUSD_DWX.jsonl", start, [80.0, -50.0, -20.0] * 20, cost)
+
+            # Equal-weight would NOT have diversified (the old behaviour) ...
+            ew_without = portfolio_metrics(book, equal_weights(book), common_dir)
+            ew_with = portfolio_metrics(with_book, equal_weights(with_book), common_dir)
+            ew_diversifies = (ew_with["sharpe"] > ew_without["sharpe"]) or (
+                ew_with["max_drawdown_pct"] < ew_without["max_drawdown_pct"]
+            )
+            self.assertFalse(ew_diversifies)
+
+            # ... but the gate (now risk-parity weighted) admits it.
+            verdict = evaluate_candidate((101, "EURUSD.DWX"), book, common_dir)
+
+        self.assertTrue(verdict["admit"])
+        self.assertEqual(verdict["reason"], "admitted")
+        self.assertLessEqual(verdict["max_corr_to_book"], 0.30)
+        self.assertTrue(verdict["diversifies"])
 
     def test_insufficient_overlap_is_not_proven_uncorrelated(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -20,7 +20,7 @@ try:
         align,
     )
     from .portfolio_correlation import COMMISSION_BASIS, correlation_matrix, _pearson
-    from .portfolio_kpi import equal_weights, portfolio_metrics
+    from .portfolio_kpi import equal_weights, inverse_vol_weights, portfolio_metrics
 except ImportError:  # pragma: no cover - direct script execution
     from commission import describe_model, load_model  # type: ignore
     from portfolio_common import (  # type: ignore
@@ -35,7 +35,7 @@ except ImportError:  # pragma: no cover - direct script execution
         align,
     )
     from portfolio_correlation import COMMISSION_BASIS, correlation_matrix, _pearson  # type: ignore
-    from portfolio_kpi import equal_weights, portfolio_metrics  # type: ignore
+    from portfolio_kpi import equal_weights, inverse_vol_weights, portfolio_metrics  # type: ignore
 
 
 Key = tuple[int, str]
@@ -110,16 +110,22 @@ def evaluate_candidate(
             max_corr_to_book, corr_insufficient = monthly_max, monthly_insufficient
             corr_basis = "monthly"
 
+    # Risk-parity (inverse-vol) weighting — the SAME basis the production book is built on
+    # (book_monitor / build_real_portfolio). Equal weighting lets a dense, high-trade-count
+    # sleeve dominate the daily variance, so a genuinely diversifying low-vol sleeve looks
+    # non-diversifying (e.g. 10692:NDX drops book DD 10.27%->8.71% under risk-parity but
+    # *raises* it under equal weight). Gating diversification on a weighting the book never
+    # uses rejected real diversifiers; inverse-vol aligns the test with how the book trades.
     without_metrics = portfolio_metrics(
         book,
-        equal_weights(book),
+        inverse_vol_weights(book, common_dir),
         common_dir,
         starting_capital=starting_capital,
     )
     with_keys = sorted(set(book + [candidate]))
     with_metrics = portfolio_metrics(
         with_keys,
-        equal_weights(with_keys),
+        inverse_vol_weights(with_keys, common_dir),
         common_dir,
         starting_capital=starting_capital,
     )

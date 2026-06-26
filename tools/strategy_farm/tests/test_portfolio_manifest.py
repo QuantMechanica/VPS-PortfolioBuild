@@ -3,12 +3,14 @@ import json
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 
+from portfolio import portfolio_manifest  # noqa: E402
 from portfolio.portfolio_manifest import STATUS, build_manifest  # noqa: E402
 
 
@@ -55,6 +57,37 @@ class PortfolioManifestTests(unittest.TestCase):
         self.assertEqual(manifest["sleeves"], [])
         self.assertEqual(manifest["weights"], {})
         self.assertEqual(manifest["kpis"]["n_sleeves"], 0)
+
+    def test_selected_book_uses_risk_parity_weighting(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            common_dir = Path(tmp)
+            candidates_db = common_dir / "farm_state.sqlite"
+
+            with mock.patch.object(
+                portfolio_manifest,
+                "read_candidates",
+                return_value=[(100, "EURUSD.DWX")],
+            ), mock.patch.object(
+                portfolio_manifest,
+                "assemble_portfolio",
+                return_value={
+                    "selected_keys": ["100:EURUSD.DWX"],
+                    "weights": {"100:EURUSD.DWX": 1.0},
+                    "basis": "candidates",
+                },
+            ) as assemble:
+                keys, weights, basis = portfolio_manifest._selected_book(
+                    common_dir=common_dir,
+                    candidates_db=candidates_db,
+                    all_streams=False,
+                    max_dd_pct=6.0,
+                    starting_capital=10_000.0,
+                )
+
+        self.assertEqual(keys, [(100, "EURUSD.DWX")])
+        self.assertEqual(weights, {(100, "EURUSD.DWX"): 1.0})
+        self.assertEqual(basis, "candidates")
+        self.assertEqual(assemble.call_args.kwargs["weighting"], "inverse_vol")
 
     def _write_stream(
         self,

@@ -155,6 +155,45 @@ def equal_weights(keys: Sequence[Key]) -> dict[Key, float]:
     return {key: weight for key in keys}
 
 
+def _population_stddev(values: Sequence[float]) -> float:
+    n = len(values)
+    if n == 0:
+        return 0.0
+    mean = sum(values) / n
+    return math.sqrt(sum((value - mean) ** 2 for value in values) / n)
+
+
+def inverse_vol_weights(
+    keys: Sequence[Key],
+    common_dir: Path = DEFAULT_COMMON_DIR,
+    *,
+    commission_model: CommissionModel | None = None,
+) -> dict[Key, float]:
+    """Risk-parity (inverse daily-volatility) weights — the SAME weighting the production
+    book uses (book_monitor / build_real_portfolio risk-parity assembly). Equal weights let
+    a single high-trade-count sleeve dominate the daily variance, so a genuinely diversifying
+    low-vol sleeve looks non-diversifying under equal weight; inverse-vol corrects that.
+    Falls back to equal weights when no sleeve has positive daily volatility. Numpy-optional.
+    """
+    norm = _normalize_keys(keys)
+    if not norm:
+        return {}
+    streams = load_streams(common_dir, candidates=norm, commission_model=commission_model)
+    series = {key: to_daily_pnl(streams[key]) for key in norm if streams.get(key)}
+    if not series:
+        return equal_weights(norm)
+    aligned_keys, _dates, matrix = align(series)
+    inverse: list[float] = []
+    for col in range(len(aligned_keys)):
+        column = [float(matrix[row][col]) for row in range(len(matrix))]
+        std = _population_stddev(column)
+        inverse.append(1.0 / std if std > 0.0 else 0.0)
+    total = sum(inverse)
+    if total <= 0.0:
+        return equal_weights(aligned_keys)
+    return {aligned_keys[col]: inverse[col] / total for col in range(len(aligned_keys))}
+
+
 def _normalize_keys(keys: Sequence[Key]) -> list[Key]:
     return sorted((int(ea_id), str(symbol)) for ea_id, symbol in keys)
 
