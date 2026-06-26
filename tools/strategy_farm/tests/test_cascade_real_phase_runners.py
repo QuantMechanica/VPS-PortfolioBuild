@@ -14,10 +14,13 @@ import farmctl  # noqa: E402
 
 
 class CascadeRealPhaseRunnerTests(unittest.TestCase):
-    def _insert_work_item(self, root: Path, *, item_id: str, phase: str) -> None:
+    def _insert_work_item(self, root: Path, *, item_id: str, phase: str,
+                          symbol: str = "EURUSD.DWX",
+                          payload: dict | None = None) -> None:
         farmctl.init_db(root)
         db = root / "state" / "farm_state.sqlite"
         now = farmctl.utc_now()
+        payload_json = json.dumps(payload or {}, sort_keys=True)
         with sqlite3.connect(db) as conn:
             conn.execute(
                 """
@@ -26,10 +29,10 @@ class CascadeRealPhaseRunnerTests(unittest.TestCase):
                    attempt_count, parent_task_id, evidence_path, claimed_by,
                    payload_json, created_at, updated_at)
                 VALUES
-                  (?, 'backtest', ?, 'QM5_9999', 'EURUSD.DWX', 'dummy.set', 'pending', NULL,
-                   0, NULL, NULL, NULL, '{}', ?, ?)
+                  (?, 'backtest', ?, 'QM5_9999', ?, 'dummy.set', 'pending', NULL,
+                   0, NULL, NULL, NULL, ?, ?, ?)
                 """,
-                (item_id, phase, now, now),
+                (item_id, phase, symbol, payload_json, now, now),
             )
             conn.commit()
 
@@ -63,6 +66,43 @@ class CascadeRealPhaseRunnerTests(unittest.TestCase):
             self.assertIn("q04_walkforward.py", joined)
             self.assertNotIn("run_smoke.ps1", joined)
             self.assertEqual(result["actions"][0]["phase_runner"].replace("\\", "/").split("/")[-1], "q04_walkforward.py")
+
+    def test_q04_basket_dispatch_uses_host_symbol_and_keeps_logical_label(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            logical = "QM5_9999_EURJPY_GBPJPY_COINTEGRATION_D1"
+            self._insert_work_item(
+                root,
+                item_id="wi-q04-basket",
+                phase="Q04",
+                symbol=logical,
+                payload={"host_symbol": "EURJPY.DWX", "host_timeframe": "D1"},
+            )
+            spawned_cmds: list[list[str]] = []
+
+            class FakeProc:
+                pid = 4243
+
+                def __init__(self, cmd, **_kwargs):
+                    spawned_cmds.append([str(part) for part in cmd])
+
+            old_popen = farmctl.subprocess.Popen
+            old_terminals = farmctl.MT5_TERMINALS
+            old_running = farmctl._running_mt5_terminals
+            try:
+                farmctl.subprocess.Popen = FakeProc
+                farmctl.MT5_TERMINALS = ("T1",)
+                farmctl._running_mt5_terminals = lambda: set()
+                farmctl.dispatch_work_items(root, timeout_minutes=8)
+            finally:
+                farmctl.subprocess.Popen = old_popen
+                farmctl.MT5_TERMINALS = old_terminals
+                farmctl._running_mt5_terminals = old_running
+
+            self.assertEqual(len(spawned_cmds), 1)
+            cmd = spawned_cmds[0]
+            self.assertEqual(cmd[cmd.index("--symbol") + 1], "EURJPY.DWX")
+            self.assertEqual(cmd[cmd.index("--logical-symbol") + 1], logical)
 
     def test_missing_q06_runner_marks_pending_runner(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:

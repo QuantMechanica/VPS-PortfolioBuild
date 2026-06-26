@@ -505,6 +505,8 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Q04 walk-forward + commission runner")
     ap.add_argument("--ea", required=True, help="EA label, e.g. QM5_1056")
     ap.add_argument("--symbol", required=True, help="e.g. NDX.DWX")
+    ap.add_argument("--logical-symbol",
+                    help="Basket evidence symbol to record when --symbol is the MT5 host")
     ap.add_argument("--setfile", type=Path, required=True,
                     help="Q03 plateau-median setfile to use across all folds")
     ap.add_argument("--terminal", default="T2", help="MT5 terminal (T1-T10)")
@@ -526,16 +528,19 @@ def main() -> int:
         print(f"cannot resolve EA dir for {args.ea} under framework/EAs", file=sys.stderr)
         return 2
     period = period_from_setfile(args.setfile)
+    runner_symbol = args.symbol
+    evidence_symbol = args.logical_symbol or args.symbol
 
     folds = folds_for_year(args.latest_full_year)
-    print(f"Q04 {args.ea} {args.symbol} {period}  expert={ea_expert}  folds={[f['id'] for f in folds]}  "
+    label = evidence_symbol if evidence_symbol == runner_symbol else f"{evidence_symbol} via {runner_symbol}"
+    print(f"Q04 {args.ea} {label} {period}  expert={ea_expert}  folds={[f['id'] for f in folds]}  "
           f"comm=realistic %-notional worst-case{{DXZ,FTMO}} (DL-073; flat ${COMMISSION_PER_LOT_ROUND_TRIP}/lot fallback)")
 
     fold_results: list[dict] = []
     for fold in folds:
         print(f"  fold {fold['id']}: OOS {fold['oos_start']} -> {fold['oos_end']} ...")
         res = run_fold_via_smoke(
-            ea_id=ea_id, ea_expert=ea_expert, symbol=args.symbol,
+            ea_id=ea_id, ea_expert=ea_expert, symbol=runner_symbol,
             setfile=args.setfile, fold=fold,
             report_root=args.report_root, terminal=args.terminal,
             period=period, timeout_sec=args.timeout_sec,
@@ -560,7 +565,7 @@ def main() -> int:
         else:
             reason = f"{reason} || lowfreq:{lowfreq_verdict}:{lowfreq_reason}"
 
-    out_dir = ensure_dir(args.report_root / f"QM5_{ea_id}" / "Q04" / args.symbol)
+    out_dir = ensure_dir(args.report_root / f"QM5_{ea_id}" / "Q04" / evidence_symbol)
     # DL-073: report the basis actually used across folds (notional model unless a fold
     # had to fall back to the flat-$7 self-report).
     bases = sorted({f.get("commission_basis") for f in fold_results if f.get("commission_basis")})
@@ -568,7 +573,8 @@ def main() -> int:
         "phase": GATE_NAME,
         "ea_id": ea_id,
         "ea": args.ea,
-        "symbol": args.symbol,
+        "symbol": evidence_symbol,
+        "runner_symbol": runner_symbol,
         "commission_model": "worst_case_dxz_ftmo_notional (DL-073)",
         "commission_basis": bases,
         "commission_per_lot_round_trip_fallback": COMMISSION_PER_LOT_ROUND_TRIP,
@@ -582,7 +588,7 @@ def main() -> int:
         # persisting it would balloon aggregate.json for high-frequency EAs).
         "folds": [{k: v for k, v in f.items() if k != "oos_nets"} for f in fold_results],
     })
-    print(f"Q04 verdict for {args.ea} {args.symbol}: {verdict}")
+    print(f"Q04 verdict for {args.ea} {label}: {verdict}")
     print(f"  reason: {reason}")
     return 0 if verdict in ("PASS", "PASS_LOWFREQ") else (1 if verdict == "FAIL" else 3)
 

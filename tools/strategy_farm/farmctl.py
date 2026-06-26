@@ -2644,15 +2644,32 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
     ea_id = item_row["ea_id"]
     symbol = item_row["symbol"]
     period = _detect_ea_period(ea_id, item_row["setfile_path"])
+    runner_symbol = symbol
+    runner_period = period
+    try:
+        payload = json.loads(item_row["payload_json"] or "{}")
+    except json.JSONDecodeError:
+        payload = {}
+    if payload.get("host_symbol"):
+        runner_symbol = str(payload["host_symbol"])
+    if payload.get("host_timeframe"):
+        runner_period = str(payload["host_timeframe"])
+    if runner_symbol == symbol:
+        basket_manifest = _load_basket_manifest(ea_id)
+        if basket_manifest and str(basket_manifest.get("logical_symbol")) == str(symbol):
+            runner_symbol = str(basket_manifest["host_symbol"])
+            runner_period = str(basket_manifest["host_timeframe"])
     cmd = [
         _console_python_executable(),
         str(script_path),
         "--ea", ea_id,
         "--out-prefix", str(report_root),
-        "--symbol", symbol,
-        "--period", period,
+        "--symbol", runner_symbol,
+        "--period", runner_period,
         "--setfile", item_row["setfile_path"],
     ]
+    if phase == "Q04" and runner_symbol != symbol:
+        cmd.extend(["--logical-symbol", symbol])
     if phase == "P3.5":
         cmd.extend(["--symbols", symbol, "--from-year", "2017", "--to-year", "2022"])
         if Path(inputs["p2_report"]).exists():
