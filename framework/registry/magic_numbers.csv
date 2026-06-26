@@ -13564,3 +13564,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1540,aa-vix-trend-top2,6,EURUSD.DWX,15400006,2026-06-26,Development,active
 1540,aa-vix-trend-top2,7,GBPUSD.DWX,15400007,2026-06-26,Development,active
 1540,aa-vix-trend-top2,8,USDJPY.DWX,15400008,2026-06-26,Development,active
+9265,mql5-adx-di-trend,0,EURUSD.DWX,92650000,2026-06-26,Development,active
+9265,mql5-adx-di-trend,1,GBPJPY.DWX,92650001,2026-06-26,Development,active
+9265,mql5-adx-di-trend,2,XAUUSD.DWX,92650002,2026-06-26,Development,active

@@ -14,27 +14,21 @@
 ; author:       Development
 ; date:         2026-06-26
 ;==========================================================
-qm_ea_id=11618
 qm_magic_slot_offset=3
-qm_rng_seed=42
-RISK_PERCENT=0
 RISK_FIXED=1000
+RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_news_temporal=3
-qm_news_compliance=1
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=1
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
-strategy_wma_fast_period=5
-strategy_wma_mid_period=75
-strategy_wma_outer_period=85
-strategy_macd_fast=15
-strategy_macd_slow=26
-strategy_macd_signal=1
-strategy_atr_period=14
-strategy_short_sl_atr_mult=2.0
-strategy_tp_atr_mult=4.0
-strategy_spread_pct_of_stop=15.0
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found

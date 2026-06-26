@@ -150,14 +150,12 @@ bool QM2078_UpdateState()
    double q1[];
    double i1[];
    double phase[];
-   double ratio_phase[];
    double period[];
    ArrayResize(smooth, count);
    ArrayResize(detrender, count);
    ArrayResize(q1, count);
    ArrayResize(i1, count);
    ArrayResize(phase, count);
-   ArrayResize(ratio_phase, count);
    ArrayResize(period, count);
 
    for(int i = count - 1; i >= 0; --i)
@@ -191,11 +189,10 @@ bool QM2078_UpdateState()
         }
 
       phase[i] = QM2078_Atan2(q1[i], i1[i]);
-      ratio_phase[i] = (MathAbs(i1[i]) > 0.00000001) ? MathArctan(q1[i] / i1[i]) : 0.0;
 
       if(i + 1 < count)
         {
-         const double dphase = QM2078_WrapRadians(ratio_phase[i] - ratio_phase[i + 1]);
+         const double dphase = QM2078_WrapRadians(phase[i] - phase[i + 1]);
          const double abs_dphase = MathAbs(dphase);
          if(abs_dphase > 0.000001)
             period[i] = QM2078_Clamp((2.0 * QM2078_PI) / abs_dphase, 6.0, 50.0);
@@ -208,7 +205,7 @@ bool QM2078_UpdateState()
 
    for(int j = 0; j < keep; ++j)
      {
-      const double dphase = (j + 1 < count) ? QM2078_WrapRadians(ratio_phase[j] - ratio_phase[j + 1]) : 0.0;
+      const double dphase = (j + 1 < count) ? QM2078_WrapRadians(phase[j] - phase[j + 1]) : 0.0;
       const double dphase_deg = MathAbs(dphase) * 180.0 / QM2078_PI;
       g_sine[j] = MathSin(phase[j]);
       g_lead[j] = MathSin(phase[j] + 0.25 * QM2078_PI);
