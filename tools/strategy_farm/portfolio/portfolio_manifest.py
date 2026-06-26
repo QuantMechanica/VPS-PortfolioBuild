@@ -73,6 +73,8 @@ def _canonical_starting_capital() -> float:
 DEFAULT_STARTING_CAPITAL = _canonical_starting_capital()
 STATUS = "DRAFT_FOR_OWNER_APPROVAL"
 STATUS_DD_CAP_FAILED = "DRAFT_REJECTED_DD_CAP"
+# Hard Rule (OWNER 2026-06-26): never risk more than 1% of the account per trade.
+MAX_RISK_PCT_PER_TRADE = 1.0
 MANUAL_NOTE = (
     "Deploy-prep only: OWNER+Claude must verify this draft and manually perform any "
     "T_Live copy, terminal action, and AutoTrading flip."
@@ -186,7 +188,10 @@ def build_manifest(
     for slot, key in enumerate(keys):
         ea_id, symbol = key
         weight = normalized_weights[key]
-        risk_percent = float(account_risk_pct) * weight
+        # Hard Rule (OWNER 2026-06-26): never risk more than 1% per trade. RISK_PERCENT is
+        # the per-trade account risk for this sleeve's EA — cap it regardless of weight x
+        # account_risk_pct so a heavy sleeve can never exceed the per-trade limit.
+        risk_percent = min(float(account_risk_pct) * weight, MAX_RISK_PCT_PER_TRADE)
         ex5_path = _expected_ex5_path(ea_id)
         magic = _resolve_magic(magic_rows, ea_id, symbol)
         sleeves.append(

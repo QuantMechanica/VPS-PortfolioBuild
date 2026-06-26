@@ -31,9 +31,11 @@ class PortfolioManifestTests(unittest.TestCase):
             )
 
             keys = [(101, "EURUSD.DWX"), (100, "GBPUSD.DWX")]
+            # account_risk_pct=1.0 with 2 sleeves keeps each per-trade risk under the 1% cap
+            # (max weight < 1.0, so weight*1.0 < 1.0) — the split still sums to account_risk_pct.
             manifest = build_manifest(
                 keys,
-                account_risk_pct=2.5,
+                account_risk_pct=1.0,
                 common_dir=common_dir,
                 magic_registry=magic_registry,
             )
@@ -43,8 +45,10 @@ class PortfolioManifestTests(unittest.TestCase):
         self.assertAlmostEqual(sum(manifest["weights"].values()), 1.0)
         self.assertAlmostEqual(
             sum(sleeve["set_file_expectation"]["RISK_PERCENT"] for sleeve in manifest["sleeves"]),
-            2.5,
+            1.0,
         )
+        for sleeve in manifest["sleeves"]:
+            self.assertLessEqual(sleeve["set_file_expectation"]["RISK_PERCENT"], 1.0)
 
         slots = [sleeve["slot"] for sleeve in manifest["sleeves"]]
         self.assertEqual(slots, [0, 1])
@@ -241,6 +245,29 @@ class PortfolioManifestTests(unittest.TestCase):
         self.assertEqual(rc, 0)
         self.assertEqual(written["status"], STATUS_DD_CAP_FAILED)
         self.assertFalse(written["cap_met"])
+
+    def test_risk_percent_capped_at_1pct_per_trade(self) -> None:
+        # Hard Rule (OWNER 2026-06-26): never risk >1% per trade. A heavy sleeve at high
+        # account_risk_pct must still be capped at 1% RISK_PERCENT.
+        with tempfile.TemporaryDirectory() as tmp:
+            common_dir = Path(tmp)
+            (common_dir / "farm_state.sqlite").touch()
+            with mock.patch.object(portfolio_manifest, "load_streams", return_value={}), \
+                 mock.patch.object(portfolio_manifest, "load_model", return_value=mock.MagicMock(
+                     degraded=False, degraded_symbols=set())), \
+                 mock.patch.object(portfolio_manifest, "portfolio_metrics", return_value={"max_drawdown_pct": 1.0}), \
+                 mock.patch.object(portfolio_manifest, "_load_magic_registry", return_value={}), \
+                 mock.patch.object(portfolio_manifest, "_resolve_magic", return_value={"magic": 1, "symbol_slot": 0}), \
+                 mock.patch.object(portfolio_manifest, "describe_model", return_value={}):
+                m = portfolio_manifest.build_manifest(
+                    [(100, "EURUSD.DWX"), (200, "GBPUSD.DWX")],
+                    weights={(100, "EURUSD.DWX"): 0.9, (200, "GBPUSD.DWX"): 0.1},
+                    account_risk_pct=4.0,  # 0.9*4=3.6% would violate without the cap
+                    common_dir=common_dir,
+                )
+            for s in m["sleeves"]:
+                self.assertLessEqual(s["risk_percent"], 1.0, s)
+                self.assertLessEqual(s["set_file_expectation"]["RISK_PERCENT"], 1.0)
 
     def test_mc_p95_takes_conservative_max_across_methods(self) -> None:
         art = {
