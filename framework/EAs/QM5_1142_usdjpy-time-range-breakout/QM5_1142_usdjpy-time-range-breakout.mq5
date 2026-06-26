@@ -23,9 +23,12 @@ input int    qm_friday_close_hour_broker         = 21;
 input group "Strategy"
 input int    strategy_range_start_hour_broker    = 22;
 input int    strategy_range_start_minute         = 0;
+input int    strategy_range_end_hour_broker      = -1;    // -1 = use strategy_range_duration_minutes
+input int    strategy_range_end_minute           = 0;
 input int    strategy_range_duration_minutes     = 240;
 input int    strategy_hold_minutes_max           = 480;
 input int    strategy_exit_hour_broker           = 22;
+input int    strategy_exit_minute_broker         = 0;
 input int    strategy_atr_period                 = 14;
 input double strategy_atr_stop_mult              = 2.0;
 input double strategy_atr_target_mult            = 0.0;
@@ -38,6 +41,7 @@ input bool   strategy_enable_friday              = false;
 input bool   strategy_skip_news_hour             = true;
 input int    strategy_breakout_buffer_points     = 5;
 input int    strategy_session_filter_hour_to     = 22;
+input int    strategy_session_filter_minute_to   = 59;
 
 datetime g_last_order_session_close = 0;
 datetime g_last_evaluated_session_close = 0;
@@ -67,12 +71,32 @@ datetime BrokerMidnight(const datetime t)
 
 datetime BrokerDateTimeAtHour(const datetime anchor, const int hour)
   {
-   MqlDateTime dt;
-   TimeToStruct(anchor, dt);
-   dt.hour = ClampInt(hour, 0, 23);
-   dt.min = 0;
-   dt.sec = 0;
-   return StructToTime(dt);
+   return BrokerMidnight(anchor) + ClampInt(hour, 0, 23) * 3600;
+  }
+
+int MinuteOfDay(const int hour, const int minute)
+  {
+   return ClampInt(hour, 0, 23) * 60 + ClampInt(minute, 0, 59);
+  }
+
+datetime BrokerDateTimeAtMinute(const datetime anchor, const int hour, const int minute)
+  {
+   return BrokerMidnight(anchor) + MinuteOfDay(hour, minute) * 60;
+  }
+
+int ResolveRangeDurationMinutes(const int start_hour, const int start_min)
+  {
+   if(strategy_range_end_hour_broker >= 0)
+     {
+      const int start_offset = MinuteOfDay(start_hour, start_min);
+      const int end_offset = MinuteOfDay(strategy_range_end_hour_broker, strategy_range_end_minute);
+      int duration = end_offset - start_offset;
+      if(duration <= 0)
+         duration += 1440;
+      return ClampInt(duration, 30, 1440);
+     }
+
+   return ClampInt(strategy_range_duration_minutes, 30, 480);
   }
 
 bool HasOpenPositionForMagic()
@@ -178,7 +202,7 @@ bool ResolveLatestClosedRange(const datetime broker_now, datetime &range_start, 
   {
    const int start_hour = ClampInt(strategy_range_start_hour_broker, 0, 23);
    const int start_min = ClampInt(strategy_range_start_minute, 0, 59);
-   const int duration = ClampInt(strategy_range_duration_minutes, 30, 480);
+   const int duration = ResolveRangeDurationMinutes(start_hour, start_min);
    const int start_offset = start_hour * 60 + start_min;
 
    const datetime today_midnight = BrokerMidnight(broker_now);
@@ -209,7 +233,7 @@ datetime ResolveOrderExpiration(const datetime range_close)
    const int hold_minutes = ClampInt(strategy_hold_minutes_max, 60, 720);
    const datetime hold_expiry = range_close + hold_minutes * 60;
 
-   datetime exit_time = BrokerDateTimeAtHour(range_close, strategy_exit_hour_broker);
+   datetime exit_time = BrokerDateTimeAtMinute(range_close, strategy_exit_hour_broker, strategy_exit_minute_broker);
    if(exit_time <= range_close)
       exit_time += 86400;
 
@@ -221,9 +245,9 @@ bool IsEntryTimeAllowed(const datetime range_close, const datetime broker_now, c
    if(broker_now >= expiry_time)
       return false;
 
-   const int filter_hour = ClampInt(strategy_session_filter_hour_to, 0, 23);
+   const int filter_end_minutes = MinuteOfDay(strategy_session_filter_hour_to, strategy_session_filter_minute_to);
    const int now_minutes = TimeOfDayMinutes(broker_now);
-   if(now_minutes > filter_hour * 60 + 59)
+   if(now_minutes > filter_end_minutes)
       return false;
 
    if(!strategy_enable_friday)
@@ -375,12 +399,9 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    const datetime broker_now = TimeCurrent();
-   MqlDateTime dt;
-   TimeToStruct(broker_now, dt);
-   if(dt.hour < ClampInt(strategy_exit_hour_broker, 0, 23))
+   const datetime marker = BrokerDateTimeAtMinute(broker_now, strategy_exit_hour_broker, strategy_exit_minute_broker);
+   if(broker_now < marker)
       return false;
-
-   const datetime marker = BrokerDateTimeAtHour(broker_now, strategy_exit_hour_broker);
    if(marker == g_last_force_flat_marker)
       return false;
 
