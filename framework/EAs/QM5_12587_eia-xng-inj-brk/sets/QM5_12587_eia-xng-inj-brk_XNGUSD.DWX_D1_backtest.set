@@ -1,7 +1,7 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        12586
-; ea_slug:      eia-xng-winter-brk
+; ea_id:        12587
+; ea_slug:      eia-xng-inj-brk
 ; ea_version:   v5.0
 ; set_version:  s20260626-001
 ; symbol:       XNGUSD.DWX
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   42bdb6286a4fc822f44fb041f12e140d86b3bf4c6db1b9b407e9b9502d7004dd
+; build_hash:   PLACEHOLDER
 ; author:       Development
 ; date:         2026-06-26
 ;==========================================================

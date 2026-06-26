@@ -31,10 +31,15 @@ input double qm_stress_reject_probability = 0.0;
 input group "Strategy"
 input int    strategy_timeframe_minutes       = 15;
 input int    strategy_range_start_hour_broker = 0;
+input int    strategy_range_start_minute      = 0;
 input int    strategy_range_end_hour_broker   = 7;
+input int    strategy_range_end_minute        = 0;
 input int    strategy_entry_start_hour_broker = 7;
+input int    strategy_entry_start_minute      = 0;
 input int    strategy_cancel_hour_broker      = 11;
+input int    strategy_cancel_minute           = 0;
 input int    strategy_exit_hour_broker        = 19;
+input int    strategy_exit_minute             = 0;
 input int    strategy_breakout_buffer_points  = 5;
 input int    strategy_max_spread_points       = 25;
 input double strategy_rr_target               = 2.0;
@@ -67,12 +72,17 @@ datetime BrokerMidnight(const datetime t)
 
 datetime BrokerDateTimeAtHour(const datetime anchor, const int hour)
   {
-   MqlDateTime dt;
-   TimeToStruct(anchor, dt);
-   dt.hour = ClampInt(hour, 0, 23);
-   dt.min = 0;
-   dt.sec = 0;
-   return StructToTime(dt);
+   return BrokerMidnight(anchor) + ClampInt(hour, 0, 23) * 3600;
+  }
+
+int MinuteOfDay(const int hour, const int minute)
+  {
+   return ClampInt(hour, 0, 23) * 60 + ClampInt(minute, 0, 59);
+  }
+
+datetime BrokerDateTimeAtMinute(const datetime anchor, const int hour, const int minute)
+  {
+   return BrokerMidnight(anchor) + MinuteOfDay(hour, minute) * 60;
   }
 
 bool HasOpenPositionForMagic()
@@ -162,8 +172,8 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 bool ComputeAsianRange(const datetime day_midnight, double &range_high, double &range_low)
   {
-   const datetime range_start = BrokerDateTimeAtHour(day_midnight, strategy_range_start_hour_broker);
-   const datetime range_end = BrokerDateTimeAtHour(day_midnight, strategy_range_end_hour_broker);
+   const datetime range_start = BrokerDateTimeAtMinute(day_midnight, strategy_range_start_hour_broker, strategy_range_start_minute);
+   const datetime range_end = BrokerDateTimeAtMinute(day_midnight, strategy_range_end_hour_broker, strategy_range_end_minute);
    if(range_end <= range_start)
       return false;
 
@@ -232,8 +242,8 @@ bool BuildStopPair(QM_EntryRequest &long_req, QM_EntryRequest &short_req, dateti
    if(!TradingDayAllowed(day_midnight))
       return false;
 
-   const datetime entry_start = BrokerDateTimeAtHour(day_midnight, strategy_entry_start_hour_broker);
-   const datetime cancel_time = BrokerDateTimeAtHour(day_midnight, strategy_cancel_hour_broker);
+   const datetime entry_start = BrokerDateTimeAtMinute(day_midnight, strategy_entry_start_hour_broker, strategy_entry_start_minute);
+   const datetime cancel_time = BrokerDateTimeAtMinute(day_midnight, strategy_cancel_hour_broker, strategy_cancel_minute);
    if(broker_now < entry_start || broker_now >= cancel_time)
       return false;
    if(HasOpenPositionForMagic() || PendingOrderCountForMagic() > 0)
@@ -318,7 +328,7 @@ bool Strategy_ExitSignal()
   {
    const datetime broker_now = TimeCurrent();
    const datetime day_midnight = BrokerMidnight(broker_now);
-   const datetime exit_time = BrokerDateTimeAtHour(day_midnight, strategy_exit_hour_broker);
+   const datetime exit_time = BrokerDateTimeAtMinute(day_midnight, strategy_exit_hour_broker, strategy_exit_minute);
    if(broker_now < exit_time || g_last_exit_day == day_midnight)
       return false;
 
@@ -331,7 +341,7 @@ void Strategy_CancelExpiredPending()
   {
    const datetime broker_now = TimeCurrent();
    const datetime day_midnight = BrokerMidnight(broker_now);
-   const datetime cancel_time = BrokerDateTimeAtHour(day_midnight, strategy_cancel_hour_broker);
+   const datetime cancel_time = BrokerDateTimeAtMinute(day_midnight, strategy_cancel_hour_broker, strategy_cancel_minute);
    if(broker_now < cancel_time || g_last_cancel_day == day_midnight)
       return;
 
@@ -370,9 +380,15 @@ void Strategy_PlaceStopPair()
 
 int OnInit()
   {
-   if(strategy_range_end_hour_broker <= strategy_range_start_hour_broker ||
-      strategy_cancel_hour_broker <= strategy_entry_start_hour_broker ||
-      strategy_exit_hour_broker <= strategy_cancel_hour_broker)
+   const int range_start_min = MinuteOfDay(strategy_range_start_hour_broker, strategy_range_start_minute);
+   const int range_end_min = MinuteOfDay(strategy_range_end_hour_broker, strategy_range_end_minute);
+   const int entry_start_min = MinuteOfDay(strategy_entry_start_hour_broker, strategy_entry_start_minute);
+   const int cancel_min = MinuteOfDay(strategy_cancel_hour_broker, strategy_cancel_minute);
+   const int exit_min = MinuteOfDay(strategy_exit_hour_broker, strategy_exit_minute);
+   if(range_end_min <= range_start_min ||
+      entry_start_min < range_end_min ||
+      cancel_min <= entry_start_min ||
+      exit_min <= cancel_min)
      {
       Print("QM5_1120 invalid time inputs.");
       return INIT_PARAMETERS_INCORRECT;

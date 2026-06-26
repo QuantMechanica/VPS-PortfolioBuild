@@ -62,8 +62,11 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_asian_start_hour  = 22;     // Asian range start, broker hour (inclusive)
+input int    strategy_asian_start_minute = 0;     // Asian range start minute
 input int    strategy_asian_end_hour    = 7;      // Asian range end = London open, broker hour (exclusive)
+input int    strategy_asian_end_minute  = 0;      // Asian range end minute
 input int    strategy_london_close_hour = 12;     // time-stop: flat at/after this broker hour
+input int    strategy_london_close_minute = 0;    // time-stop minute
 input double strategy_tp_pips           = 40.0;   // fixed take-profit, pips
 input double strategy_sl_cap_pips       = 25.0;   // skip if breakout-bar SL distance exceeds this
 input bool   strategy_skip_monday       = true;   // skip Monday (weekend gap distorts Asian range)
@@ -94,6 +97,19 @@ int BrokerHour(const datetime broker_t)
    return dt.hour;
   }
 
+int BrokerMinuteOfDay(const datetime broker_t)
+  {
+   MqlDateTime dt;
+   ZeroMemory(dt);
+   TimeToStruct(broker_t, dt);
+   return dt.hour * 60 + dt.min;
+  }
+
+int StrategyMinuteOfDay(const int hour, const int minute)
+  {
+   return MathMax(0, MathMin(23, hour)) * 60 + MathMax(0, MathMin(59, minute));
+  }
+
 int BrokerDayOfYear(const datetime broker_t)
   {
    MqlDateTime dt;
@@ -110,23 +126,23 @@ int BrokerDayOfWeek(const datetime broker_t)
    return dt.day_of_week; // Sun=0 .. Sat=6
   }
 
-// True if a broker hour lies inside the Asian window [start .. end) with wrap
+// True if a broker minute lies inside the Asian window [start .. end) with wrap
 // (22:00 -> 07:00 crosses midnight).
-bool InAsianWindow(const int hour)
+bool InAsianWindow(const int minute_of_day)
   {
-   const int s = strategy_asian_start_hour;
-   const int e = strategy_asian_end_hour;
+   const int s = StrategyMinuteOfDay(strategy_asian_start_hour, strategy_asian_start_minute);
+   const int e = StrategyMinuteOfDay(strategy_asian_end_hour, strategy_asian_end_minute);
    if(s == e)
       return false;
    if(s < e)
-      return (hour >= s && hour < e);   // non-wrapping window
-   return (hour >= s || hour < e);      // wraps midnight
+      return (minute_of_day >= s && minute_of_day < e);   // non-wrapping window
+   return (minute_of_day >= s || minute_of_day < e);      // wraps midnight
   }
 
 // -----------------------------------------------------------------------------
 // AdvanceState_OnNewBar — runs ONCE per closed M15 bar (framework new-bar gate).
 // Rebuilds the Asian box when the bar that just closed is the FIRST London-open
-// bar of the day (broker hour == asian_end_hour), by scanning back over the
+// bar of the day (first bar outside the Asian window), by scanning back over the
 // prior CLOSED bars that fall in the Asian window. Caches max-high / min-low.
 // -----------------------------------------------------------------------------
 void AdvanceState_OnNewBar()
@@ -135,7 +151,7 @@ void AdvanceState_OnNewBar()
    if(t1 <= 0)
       return;
 
-   const int hour1 = BrokerHour(t1);
+   const int minute1 = BrokerMinuteOfDay(t1);
    const int doy1  = BrokerDayOfYear(t1);
 
    // Reset the per-day breakout latch on a new broker day.
@@ -145,9 +161,12 @@ void AdvanceState_OnNewBar()
       g_breakout_day  = doy1;
      }
 
-   // Rebuild the box exactly once: when the just-closed bar is the first bar
-   // of the London session (its broker hour equals the Asian window end).
-   if(hour1 == strategy_asian_end_hour && doy1 != g_box_day)
+   const datetime t2 = iTime(_Symbol, _Period, 2); // perf-allowed: closed-bar session transition check
+   const int minute2 = (t2 > 0) ? BrokerMinuteOfDay(t2) : -1;
+
+   // Rebuild the box exactly once when the just-closed bar is the first bar
+   // outside the Asian window after the contiguous Asian block.
+   if(!InAsianWindow(minute1) && minute2 >= 0 && InAsianWindow(minute2) && doy1 != g_box_day)
      {
       double hi = 0.0;
       double lo = 0.0;
@@ -163,8 +182,8 @@ void AdvanceState_OnNewBar()
          const datetime ts = iTime(_Symbol, _Period, s); // perf-allowed: bounded once/day box build
          if(ts <= 0)
             break;
-         const int hs = BrokerHour(ts);
-         if(InAsianWindow(hs))
+         const int ms = BrokerMinuteOfDay(ts);
+         if(InAsianWindow(ms))
            {
             entered = true;
             const double bh = iHigh(_Symbol, _Period, s); // perf-allowed: bounded once/day box build
@@ -249,8 +268,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // Must be the London session: at/after London open, before the time stop.
-   const int hour1 = BrokerHour(t1);
-   if(hour1 < strategy_asian_end_hour || hour1 >= strategy_london_close_hour)
+   const int minute1 = BrokerMinuteOfDay(t1);
+   const int london_open = StrategyMinuteOfDay(strategy_asian_end_hour, strategy_asian_end_minute);
+   const int london_close = StrategyMinuteOfDay(strategy_london_close_hour, strategy_london_close_minute);
+   if(minute1 < london_open || minute1 >= london_close)
       return false;
 
    // Skip Monday (weekend gap distorts the Asian range).
@@ -328,8 +349,8 @@ bool Strategy_ExitSignal()
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) <= 0)
       return false;
 
-   const int hour_now = BrokerHour(TimeCurrent());
-   return (hour_now >= strategy_london_close_hour);
+   const int minute_now = BrokerMinuteOfDay(TimeCurrent());
+   return (minute_now >= StrategyMinuteOfDay(strategy_london_close_hour, strategy_london_close_minute));
   }
 
 // Defer to the central news filter (card: avoid major UK/US news near London open).
