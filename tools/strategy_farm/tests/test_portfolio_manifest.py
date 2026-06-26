@@ -163,19 +163,70 @@ class PortfolioManifestTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "--all-streams cannot be combined"):
             portfolio_manifest.main(["--all-streams", "--book-source", "q12-ready-all"])
 
-    def test_main_marks_dd_cap_violation_not_owner_ready(self) -> None:
+    def test_main_de_levers_book_to_fit_dd_cap(self) -> None:
+        # D3 (deploy-cap memo, 2026-06-26): an over-cap book is de-levered to fit, NOT
+        # rejected and NOT shrunk by dropping sleeves. observed DD 12% with a 6% cap -> 0.5x.
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp) / "manifest.json"
             manifest = {
                 "status": STATUS,
                 "deployment_action": "NONE",
+                "account_risk_pct": 2.0,
                 "n_sleeves": 1,
-                "kpis": {"max_drawdown_pct": 13.0},
+                "kpis": {"max_drawdown_pct": 12.0},
+                "sleeves": [
+                    {"ea_id": 100, "risk_percent": 2.0,
+                     "set_file_expectation": {"RISK_PERCENT": 2.0}}
+                ],
             }
             with mock.patch.object(
                 portfolio_manifest,
                 "_selected_book",
                 return_value=([(100, "EURUSD.DWX")], {(100, "EURUSD.DWX"): 1.0}, "basis"),
+            ), mock.patch.object(
+                portfolio_manifest,
+                "build_manifest",
+                return_value=manifest,
+            ), mock.patch.object(
+                portfolio_manifest,
+                "mc_build_artifact",
+                side_effect=RuntimeError("no streams in test"),  # force observed-DD fallback
+            ):
+                rc = portfolio_manifest.main(
+                    ["--out", str(out), "--max-dd-pct", "6.0", "--book-source", "q12-ready-all"]
+                )
+
+            written = json.loads(out.read_text(encoding="utf-8"))
+
+        self.assertEqual(rc, 0)
+        self.assertTrue(written["cap_met"])
+        self.assertEqual(written["status"], STATUS)  # de-levered -> still owner-ready
+        self.assertEqual(written["dd_basis_for_cap"], "observed")
+        self.assertIn("de_levered_to_cap", written)
+        self.assertAlmostEqual(written["de_levered_to_cap"]["leverage_scale"], 0.5, places=3)
+        self.assertAlmostEqual(written["account_risk_pct"], 1.0, places=3)
+        self.assertAlmostEqual(written["sleeves"][0]["risk_percent"], 1.0, places=3)
+        self.assertAlmostEqual(
+            written["sleeves"][0]["set_file_expectation"]["RISK_PERCENT"], 1.0, places=3
+        )
+
+    def test_main_rejects_only_when_no_drawdown_available(self) -> None:
+        # The cap can only fail (DRAFT_REJECTED_DD_CAP) when there is NO drawdown to size on
+        # (empty book / missing KPI). With a DD present the book is always de-levered to fit.
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "manifest.json"
+            manifest = {
+                "status": STATUS,
+                "deployment_action": "NONE",
+                "account_risk_pct": 2.0,
+                "n_sleeves": 0,
+                "kpis": {},
+                "sleeves": [],
+            }
+            with mock.patch.object(
+                portfolio_manifest,
+                "_selected_book",
+                return_value=([], {}, "basis"),
             ), mock.patch.object(
                 portfolio_manifest,
                 "build_manifest",
@@ -190,7 +241,35 @@ class PortfolioManifestTests(unittest.TestCase):
         self.assertEqual(rc, 0)
         self.assertEqual(written["status"], STATUS_DD_CAP_FAILED)
         self.assertFalse(written["cap_met"])
-        self.assertEqual(written["book_source"], "q12-ready-all")
+
+    def test_mc_p95_takes_conservative_max_across_methods(self) -> None:
+        art = {
+            "block_bootstrap": {"max_drawdown_pct": {"p95": 8.0}},
+            "trade_order_shuffle": {"max_drawdown_pct": {"p95": 11.0}},
+        }
+        self.assertEqual(portfolio_manifest._mc_p95_max_drawdown_pct(art), 11.0)
+        self.assertIsNone(portfolio_manifest._mc_p95_max_drawdown_pct({}))
+
+    def test_apply_leverage_scale_scales_risk_keeps_weights(self) -> None:
+        manifest = {
+            "account_risk_pct": 2.0,
+            "weights": {"100:EURUSD.DWX": 0.5},
+            "sleeves": [
+                {"risk_percent": 1.0, "weight": 0.5,
+                 "set_file_expectation": {"RISK_PERCENT": 1.0, "PORTFOLIO_WEIGHT": 0.5}}
+            ],
+        }
+        portfolio_manifest.apply_leverage_scale(manifest, 0.5)
+        self.assertAlmostEqual(manifest["account_risk_pct"], 1.0, places=6)
+        self.assertAlmostEqual(manifest["sleeves"][0]["risk_percent"], 0.5, places=6)
+        self.assertAlmostEqual(
+            manifest["sleeves"][0]["set_file_expectation"]["RISK_PERCENT"], 0.5, places=6
+        )
+        # relative weights are leverage-invariant
+        self.assertEqual(manifest["sleeves"][0]["weight"], 0.5)
+        self.assertEqual(manifest["sleeves"][0]["set_file_expectation"]["PORTFOLIO_WEIGHT"], 0.5)
+        with self.assertRaises(ValueError):
+            portfolio_manifest.apply_leverage_scale(manifest, 0.0)
 
     def _write_stream(
         self,

@@ -27,6 +27,7 @@ try:
         metrics_from_daily_pnl,
         portfolio_metrics,
     )
+    from .portfolio_montecarlo import build_artifact as mc_build_artifact
 except ImportError:  # pragma: no cover - direct script execution
     from commission import describe_model, load_model  # type: ignore
     from portfolio_assemble import assemble_portfolio  # type: ignore
@@ -46,6 +47,7 @@ except ImportError:  # pragma: no cover - direct script execution
         metrics_from_daily_pnl,
         portfolio_metrics,
     )
+    from portfolio_montecarlo import build_artifact as mc_build_artifact  # type: ignore
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -75,6 +77,77 @@ MANUAL_NOTE = (
     "Deploy-prep only: OWNER+Claude must verify this draft and manually perform any "
     "T_Live copy, terminal action, and AutoTrading flip."
 )
+
+
+def _mc_p95_max_drawdown_pct(artifact: Mapping[str, Any]) -> float | None:
+    """Robust drawdown for the cap decision (deploy-cap memo D1): the conservative
+    (max) p95 max-drawdown across the Monte-Carlo block-bootstrap and trade-order-shuffle
+    resamples. This is a distribution estimate, NOT the single observed path the manifest
+    KPIs report — a low-frequency book's observed DD is one lucky equity curve."""
+    candidates: list[float] = []
+    for method in ("block_bootstrap", "trade_order_shuffle"):
+        try:
+            candidates.append(float(artifact[method]["max_drawdown_pct"]["p95"]))
+        except (KeyError, TypeError, ValueError):
+            continue
+    return max(candidates) if candidates else None
+
+
+def apply_leverage_scale(manifest: dict[str, Any], scale: float) -> None:
+    """De-lever (or lever) the WHOLE book by `scale`, keeping every sleeve and its relative
+    weight (deploy-cap memo D3). Drawdown% scales ~linearly with position size, so scaling
+    each sleeve's risk by `scale` scales the book's drawdown by `scale`. This fits a DD cap
+    WITHOUT dropping diversifying sleeves (the old greedy path met the cap by shrinking the
+    book to 2 sleeves, throwing away the diversification we built)."""
+    if scale <= 0.0:
+        raise ValueError("leverage scale must be > 0")
+    manifest["account_risk_pct"] = _round_float(float(manifest["account_risk_pct"]) * scale)
+    for sleeve in manifest.get("sleeves", []):
+        sleeve["risk_percent"] = _round_float(float(sleeve["risk_percent"]) * scale)
+        sfe = sleeve.get("set_file_expectation")
+        if isinstance(sfe, dict) and "RISK_PERCENT" in sfe:
+            sfe["RISK_PERCENT"] = _round_float(float(sfe["RISK_PERCENT"]) * scale)
+
+
+def finalize_cap_decision(
+    manifest: dict[str, Any],
+    *,
+    mc_p95_dd: float | None,
+    observed_dd: float | None,
+    cap_pct: float,
+) -> dict[str, Any]:
+    """Apply the DD cap to a built manifest (deploy-cap memo D1+D3).
+
+    D1: decide on the robust MC-p95 drawdown when available, never the single observed path.
+    D3: if over cap, de-lever the full book to fit (keep all sleeves) instead of rejecting.
+    """
+    manifest["max_dd_pct_constraint"] = float(cap_pct)
+    manifest["kpis"]["observed_max_drawdown_pct"] = observed_dd
+    manifest["kpis"]["mc_p95_max_drawdown_pct"] = mc_p95_dd
+    dd_for_cap = mc_p95_dd if mc_p95_dd is not None else observed_dd
+    manifest["dd_basis_for_cap"] = "mc_p95" if mc_p95_dd is not None else "observed"
+
+    if dd_for_cap is None:
+        manifest["cap_met"] = False
+        manifest["status"] = STATUS_DD_CAP_FAILED
+        manifest["deployment_action"] = "NONE"
+        return manifest
+    if float(dd_for_cap) <= float(cap_pct):
+        manifest["cap_met"] = True
+        return manifest
+
+    # D3: de-lever the full diversified book rather than drop sleeves.
+    scale = float(cap_pct) / float(dd_for_cap)
+    apply_leverage_scale(manifest, scale)
+    manifest["cap_met"] = True
+    manifest["de_levered_to_cap"] = {
+        "leverage_scale": _round_float(scale),
+        "dd_basis": manifest["dd_basis_for_cap"],
+        "pre_delever_dd_pct": _round_float(float(dd_for_cap)),
+        "target_cap_pct": float(cap_pct),
+        "note": "Full book de-levered to meet the DD cap; all sleeves retained (memo D3).",
+    }
+    return manifest
 
 
 def build_manifest(
@@ -180,6 +253,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         ),
     )
     parser.add_argument("--max-dd-pct", type=float, default=6.0)
+    parser.add_argument(
+        "--mc-runs",
+        type=int,
+        default=1000,
+        help="Monte-Carlo resamples for the robust p95 drawdown used in the DD-cap decision.",
+    )
     parser.add_argument("--account-risk-pct", type=float, default=2.0)
     parser.add_argument("--starting-capital", type=float, default=DEFAULT_STARTING_CAPITAL)
     parser.add_argument("--magic-registry", type=Path, default=DEFAULT_MAGIC_REGISTRY)
@@ -215,13 +294,28 @@ def main(argv: list[str] | None = None) -> int:
     manifest["basis"] = discovery_basis
     manifest["generated_basis"] = discovery_basis
     manifest["book_source"] = args.book_source
-    manifest["max_dd_pct_constraint"] = float(args.max_dd_pct)
-    max_dd = manifest["kpis"].get("max_drawdown_pct")
-    cap_met = isinstance(max_dd, (float, int)) and float(max_dd) <= float(args.max_dd_pct)
-    manifest["cap_met"] = bool(cap_met)
-    if not cap_met:
-        manifest["status"] = STATUS_DD_CAP_FAILED
-        manifest["deployment_action"] = "NONE"
+
+    # D1: robust MC-p95 drawdown (at the canonical starting capital) drives the cap decision,
+    # not the single observed equity path. Falls back to observed DD if the MC run is
+    # unavailable (e.g. a selected stream is missing on this host).
+    observed_dd = manifest["kpis"].get("max_drawdown_pct")
+    mc_p95 = None
+    if selected_keys:
+        try:
+            mc_artifact = mc_build_artifact(
+                common_dir=args.common_dir,
+                selected_keys=[(int(ea_id), str(symbol)) for ea_id, symbol in selected_keys],
+                weights=[float(weights[key]) for key in selected_keys],
+                runs=args.mc_runs,
+                seed=0,
+                starting_capital=args.starting_capital,
+            )
+            mc_p95 = _mc_p95_max_drawdown_pct(mc_artifact)
+        except Exception as exc:  # robust draft generation; never crash deploy-prep on MC
+            manifest["mc_dd_error"] = str(exc)
+    finalize_cap_decision(
+        manifest, mc_p95_dd=mc_p95, observed_dd=observed_dd, cap_pct=float(args.max_dd_pct)
+    )
     write_manifest(manifest, args.out)
     print(f"wrote {args.out} ({manifest['n_sleeves']} sleeves)")
     print(MANUAL_NOTE)
