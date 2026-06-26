@@ -500,8 +500,16 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
     # that IS net-positive but has a thin margin over realistic per-instrument cost
     # (< 2x). EDGE_HARD (cost > gross) is consistent with portfolio_net_pf above.
     if cost_cushion_tier == "EDGE_HARD":
-        classification["cost_cushion"] = "EDGE_HARD"
-        hard = True
+        # DL-077: cost_cushion goes EDGE_HARD when gross <= 0 — but that is ALSO the state of a
+        # 0-trade baseline (an infra failure: the Q08 baseline produced no trades), not a real
+        # cost failure. Never HARD-fail an EA on a baseline that did not run; mark INVALID so it
+        # re-runs. A genuine cost fail (traded, but gross <= cost) keeps EDGE_HARD.
+        if trades:
+            classification["cost_cushion"] = "EDGE_HARD"
+            hard = True
+        else:
+            classification["cost_cushion"] = "INVALID"
+            invalid = True
     elif cost_cushion_tier == "EDGE_SOFT":
         classification["cost_cushion"] = "EDGE_SOFT"
         soft = True

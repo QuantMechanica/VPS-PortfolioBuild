@@ -254,6 +254,20 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         verdict, _ = aggregate._aggregate_verdict(subs, trades=trades)
         self.assertEqual(verdict, "INVALID")
 
+    def test_dl077_zero_trade_baseline_cost_cushion_is_invalid_not_hard(self) -> None:
+        # A 0-trade baseline (gross<=0 -> cost_cushion EDGE_HARD) is an infra failure, NOT a
+        # cost fail -> INVALID so it re-runs, never FAIL_HARD.
+        subs = [{"name": "8.7_pbo", "status": "PASS"}]
+        verdict, _ = aggregate._aggregate_verdict(subs, trades=[], cost_cushion_tier="EDGE_HARD")
+        self.assertEqual(verdict, "INVALID")
+
+    def test_dl077_real_cost_fail_with_trades_still_hard(self) -> None:
+        # Traded but gross <= cost -> a genuine cost failure stays FAIL_HARD.
+        trades = [_trade(dt.datetime(2024, 1, 1), -5.0), _trade(dt.datetime(2024, 1, 2), 1.0)]
+        subs = [{"name": "8.7_pbo", "status": "PASS"}]
+        verdict, _ = aggregate._aggregate_verdict(subs, trades=trades, cost_cushion_tier="EDGE_HARD")
+        self.assertEqual(verdict, "FAIL_HARD")
+
     def test_dl077_real_hard_fail_still_fail_hard(self) -> None:
         # An INVALID Davey gate does not rescue a genuine HARD failure (PBO fail stays hard).
         trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
