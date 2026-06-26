@@ -74,9 +74,13 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_asian_start_hour_broker  = 1;
+input int    strategy_asian_start_minute_broker = 0;
 input int    strategy_asian_end_hour_broker    = 9;
+input int    strategy_asian_end_minute_broker  = 0;
 input int    strategy_london_start_hour_broker = 9;
+input int    strategy_london_start_minute_broker = 0;
 input int    strategy_london_end_hour_broker   = 10;
+input int    strategy_london_end_minute_broker = 0;
 input int    strategy_range_scan_bars          = 80;
 input int    strategy_min_asian_bars           = 24;
 input int    strategy_tp_pips                  = 40;
@@ -98,6 +102,20 @@ int Strategy_Hhmm(const datetime t)
    MqlDateTime dt;
    TimeToStruct(t, dt);
    return (dt.hour * 100 + dt.min);
+  }
+
+int Strategy_MinuteOfDay(const datetime t)
+  {
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   return (dt.hour * 60 + dt.min);
+  }
+
+int Strategy_ConfigMinuteOfDay(const int hour, const int minute)
+  {
+   if(hour >= 24)
+      return 1440;
+   return MathMax(0, MathMin(23, hour)) * 60 + MathMax(0, MathMin(59, minute));
   }
 
 bool Strategy_SameDay(const datetime a, const datetime b)
@@ -147,15 +165,17 @@ bool Strategy_BuildAsianRange(const datetime day_ref,
    asian_low = 1.0e100;
    bars_found = 0;
 
-   const int start_hhmm = strategy_asian_start_hour_broker * 100;
-   const int end_hhmm = strategy_asian_end_hour_broker * 100;
+   const int start_minute = Strategy_ConfigMinuteOfDay(strategy_asian_start_hour_broker,
+                                                       strategy_asian_start_minute_broker);
+   const int end_minute = Strategy_ConfigMinuteOfDay(strategy_asian_end_hour_broker,
+                                                     strategy_asian_end_minute_broker);
    for(int i = 0; i < copied; ++i)
      {
       if(!Strategy_SameDay(rates[i].time, day_ref))
          continue;
 
-      const int hhmm = Strategy_Hhmm(rates[i].time);
-      if(hhmm < start_hhmm || hhmm >= end_hhmm)
+      const int minute = Strategy_MinuteOfDay(rates[i].time);
+      if(minute < start_minute || minute >= end_minute)
          continue;
 
       if(rates[i].high > asian_high)
@@ -204,10 +224,12 @@ bool Strategy_NoTradeFilter()
    const datetime broker_now = TimeCurrent();
    Strategy_ResetDayIfNeeded(broker_now);
 
-   const int now_hhmm = Strategy_Hhmm(broker_now);
-   const int start_hhmm = strategy_london_start_hour_broker * 100;
-   const int end_eval_hhmm = strategy_london_end_hour_broker * 100 + 15;
-   if(now_hhmm < start_hhmm || now_hhmm > end_eval_hhmm)
+   const int now_minute = Strategy_MinuteOfDay(broker_now);
+   const int start_minute = Strategy_ConfigMinuteOfDay(strategy_london_start_hour_broker,
+                                                       strategy_london_start_minute_broker);
+   const int end_eval_minute = Strategy_ConfigMinuteOfDay(strategy_london_end_hour_broker,
+                                                          strategy_london_end_minute_broker) + 15;
+   if(now_minute < start_minute || now_minute > end_eval_minute)
       return true;
 
    return false;
@@ -243,10 +265,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
      }
 
-   const int breakout_hhmm = Strategy_Hhmm(breakout.time);
-   const int start_hhmm = strategy_london_start_hour_broker * 100;
-   const int end_hhmm = strategy_london_end_hour_broker * 100;
-   if(breakout_hhmm < start_hhmm || breakout_hhmm >= end_hhmm)
+   const int breakout_minute = Strategy_MinuteOfDay(breakout.time);
+   const int start_minute = Strategy_ConfigMinuteOfDay(strategy_london_start_hour_broker,
+                                                       strategy_london_start_minute_broker);
+   const int end_minute = Strategy_ConfigMinuteOfDay(strategy_london_end_hour_broker,
+                                                     strategy_london_end_minute_broker);
+   if(breakout_minute < start_minute || breakout_minute >= end_minute)
       return false;
 
    double asian_high = 0.0;

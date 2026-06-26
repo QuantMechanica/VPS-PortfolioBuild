@@ -19,9 +19,13 @@ The EA marks the broker-time Asian session from 01:00 through 09:00 on M15 bars 
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
 | `strategy_asian_start_hour_broker` | 1 | 0-23 | Broker-time hour where the Asian range begins. |
+| `strategy_asian_start_minute_broker` | 0 | 0-59 | Broker-time minute where the Asian range begins. |
 | `strategy_asian_end_hour_broker` | 9 | 1-24 | Broker-time hour where the Asian range ends, exclusive. |
+| `strategy_asian_end_minute_broker` | 0 | 0-59 | Broker-time minute where the Asian range ends. |
 | `strategy_london_start_hour_broker` | 9 | 0-23 | Broker-time hour where breakout entries may begin. |
+| `strategy_london_start_minute_broker` | 0 | 0-59 | Broker-time minute where breakout entries may begin. |
 | `strategy_london_end_hour_broker` | 10 | 1-24 | Broker-time hour where breakout-bar eligibility ends, exclusive. |
+| `strategy_london_end_minute_broker` | 0 | 0-59 | Broker-time minute where breakout-bar eligibility ends, exclusive. |
 | `strategy_range_scan_bars` | 80 | 36-160 | Closed M15 bars scanned to recover the current day's Asian range. |
 | `strategy_min_asian_bars` | 24 | 16-32 | Minimum valid M15 bars required in the Asian range. |
 | `strategy_tp_pips` | 40 | 25-55 | Fixed take-profit in pips. |

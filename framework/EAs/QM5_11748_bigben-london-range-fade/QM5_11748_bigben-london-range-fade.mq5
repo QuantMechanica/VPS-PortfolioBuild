@@ -74,17 +74,38 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_asia_start_hour_utc    = 0;
+input int    strategy_asia_start_minute_utc  = 0;
 input int    strategy_asia_end_hour_utc      = 7;
+input int    strategy_asia_end_minute_utc    = 0;
 input int    strategy_breakout_start_hour_utc = 7;
+input int    strategy_breakout_start_minute_utc = 0;
 input int    strategy_breakout_end_hour_utc   = 8;
+input int    strategy_breakout_end_minute_utc = 0;
 input int    strategy_fade_hour_utc           = 8;
+input int    strategy_fade_minute_utc         = 0;
 input int    strategy_time_stop_hour_utc      = 9;
+input int    strategy_time_stop_minute_utc    = 0;
 input int    strategy_history_bars_h1         = 16;
 input bool   strategy_use_body_range          = false;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
+
+int StrategyUtcMinuteOfDay(const int hour, const int minute)
+  {
+   if(hour >= 24)
+      return 1440;
+   return MathMax(0, MathMin(23, hour)) * 60 + MathMax(0, MathMin(59, minute));
+  }
+
+int UtcMinuteOfDay(const datetime utc_time)
+  {
+   MqlDateTime dt;
+   ZeroMemory(dt);
+   TimeToStruct(utc_time, dt);
+   return dt.hour * 60 + dt.min;
+  }
 
 // Return TRUE to BLOCK trading this tick (e.g. wrong session, news window,
 // regime filter). Cheap O(1) checks only — runs on every tick.
@@ -111,13 +132,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(_Period != PERIOD_H1)
       return false;
-   if(strategy_asia_start_hour_utc < 0 || strategy_asia_end_hour_utc > 24 ||
-      strategy_breakout_start_hour_utc < 0 || strategy_breakout_end_hour_utc > 24 ||
+   const int asia_start = StrategyUtcMinuteOfDay(strategy_asia_start_hour_utc, strategy_asia_start_minute_utc);
+   const int asia_end = StrategyUtcMinuteOfDay(strategy_asia_end_hour_utc, strategy_asia_end_minute_utc);
+   const int breakout_start = StrategyUtcMinuteOfDay(strategy_breakout_start_hour_utc, strategy_breakout_start_minute_utc);
+   const int breakout_end = StrategyUtcMinuteOfDay(strategy_breakout_end_hour_utc, strategy_breakout_end_minute_utc);
+   const int fade_minute = StrategyUtcMinuteOfDay(strategy_fade_hour_utc, strategy_fade_minute_utc);
+   if(strategy_asia_start_hour_utc < 0 || strategy_asia_end_hour_utc < 0 || strategy_asia_end_hour_utc > 24 ||
+      strategy_breakout_start_hour_utc < 0 || strategy_breakout_end_hour_utc < 0 || strategy_breakout_end_hour_utc > 24 ||
       strategy_fade_hour_utc < 0 || strategy_fade_hour_utc > 23 ||
       strategy_time_stop_hour_utc < 0 || strategy_time_stop_hour_utc > 23)
       return false;
-   if(strategy_asia_start_hour_utc >= strategy_asia_end_hour_utc ||
-      strategy_breakout_start_hour_utc >= strategy_breakout_end_hour_utc)
+   if(asia_start >= asia_end || breakout_start >= breakout_end)
       return false;
 
    MqlRates rates[];
@@ -131,7 +156,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    ZeroMemory(fade_dt);
    const datetime fade_utc = QM_BrokerToUTC(rates[0].time);
    TimeToStruct(fade_utc, fade_dt);
-   if(fade_dt.hour != strategy_fade_hour_utc)
+   if(UtcMinuteOfDay(fade_utc) != fade_minute)
       return false;
 
    const int fade_day_key = fade_dt.year * 10000 + fade_dt.mon * 100 + fade_dt.day;
@@ -147,7 +172,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const int day_key = dt.year * 10000 + dt.mon * 100 + dt.day;
       if(day_key != fade_day_key)
          continue;
-      if(dt.hour < strategy_asia_start_hour_utc || dt.hour >= strategy_asia_end_hour_utc)
+      const int minute = dt.hour * 60 + dt.min;
+      if(minute < asia_start || minute >= asia_end)
          continue;
 
       const double hi = strategy_use_body_range ? MathMax(rates[i].open, rates[i].close) : rates[i].high;
@@ -174,7 +200,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const int day_key = dt.year * 10000 + dt.mon * 100 + dt.day;
       if(day_key != fade_day_key)
          continue;
-      if(dt.hour < strategy_breakout_start_hour_utc || dt.hour >= strategy_breakout_end_hour_utc)
+      const int minute = dt.hour * 60 + dt.min;
+      if(minute < breakout_start || minute >= breakout_end)
          continue;
 
       if(rates[i].close > asia_high)
@@ -241,7 +268,8 @@ bool Strategy_ExitSignal()
    ZeroMemory(now_dt);
    const datetime now_utc = QM_BrokerToUTC(TimeCurrent());
    TimeToStruct(now_utc, now_dt);
-   if(now_dt.hour < strategy_time_stop_hour_utc)
+   const int now_minute = now_dt.hour * 60 + now_dt.min;
+   if(now_minute < StrategyUtcMinuteOfDay(strategy_time_stop_hour_utc, strategy_time_stop_minute_utc))
       return false;
 
    const int now_day_key = now_dt.year * 10000 + now_dt.mon * 100 + now_dt.day;

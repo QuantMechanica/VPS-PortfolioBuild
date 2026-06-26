@@ -19,11 +19,17 @@ The EA measures the Asian session range from 00:00 through 07:00 UTC on H1 bars.
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
 | `strategy_asia_start_hour_utc` | 0 | 0-23 | First UTC hour included in the Asia range. |
+| `strategy_asia_start_minute_utc` | 0 | 0-59 | First UTC minute included in the Asia range. |
 | `strategy_asia_end_hour_utc` | 7 | 1-24 | First UTC hour excluded after the Asia range. |
+| `strategy_asia_end_minute_utc` | 0 | 0-59 | First UTC minute excluded after the Asia range. |
 | `strategy_breakout_start_hour_utc` | 7 | 0-23 | First UTC hour included in the pre-London breakout window. |
+| `strategy_breakout_start_minute_utc` | 0 | 0-59 | First UTC minute included in the pre-London breakout window. |
 | `strategy_breakout_end_hour_utc` | 8 | 1-24 | First UTC hour excluded after the pre-London breakout window. |
+| `strategy_breakout_end_minute_utc` | 0 | 0-59 | First UTC minute excluded after the pre-London breakout window. |
 | `strategy_fade_hour_utc` | 8 | 0-23 | UTC hour of the completed fade candle to evaluate. |
+| `strategy_fade_minute_utc` | 0 | 0-59 | UTC minute of the completed fade candle to evaluate. |
 | `strategy_time_stop_hour_utc` | 9 | 0-23 | UTC hour from which same-day positions are closed by the time stop. |
+| `strategy_time_stop_minute_utc` | 0 | 0-59 | UTC minute from which same-day positions are closed by the time stop. |
 | `strategy_history_bars_h1` | 16 | 10-48 | Number of H1 bars copied for the bounded session-window calculation. |
 | `strategy_use_body_range` | false | true/false | If true, use candle bodies for the Asia range; default follows the factory simplified high-low interpretation. |
 

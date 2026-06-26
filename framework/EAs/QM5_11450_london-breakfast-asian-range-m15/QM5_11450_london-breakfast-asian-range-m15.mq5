@@ -49,10 +49,14 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_asian_start_hour    = 0;     // GMT/UTC Asian range start, inclusive
+input int    strategy_asian_start_minute  = 0;     // GMT/UTC Asian range start minute
 input int    strategy_asian_end_hour      = 8;     // GMT/UTC Asian range end, exclusive
+input int    strategy_asian_end_minute    = 0;     // GMT/UTC Asian range end minute
 input int    strategy_london_open_hour    = 8;     // GMT/UTC first breakout bar open
+input int    strategy_london_open_minute  = 0;     // GMT/UTC first breakout bar minute
 input int    strategy_entry_bars_to_check = 3;     // check 08:00, 08:15, 08:30 M15 bars
 input int    strategy_time_stop_hour      = 10;    // GMT/UTC close time if TP not reached
+input int    strategy_time_stop_minute    = 0;     // GMT/UTC close minute if TP not reached
 input int    strategy_range_min_pips      = 15;    // skip too-narrow Asian ranges
 input int    strategy_range_max_pips      = 80;    // skip too-wide Asian ranges
 input int    strategy_sl_inside_pips      = 10;    // SL back inside Asian range
@@ -75,9 +79,11 @@ bool     g_lb_asian_seen  = false;
 int      g_lb_signal_dir  = 0;       // +1 buy, -1 sell, 0 none
 datetime g_lb_signal_bar  = 0;
 
-int LB_MinutesFromHour(const int hour)
+int LB_ConfigMinuteOfDay(const int hour, const int minute)
   {
-   return MathMax(0, MathMin(23, hour)) * 60;
+   const int h = MathMax(0, MathMin(23, hour));
+   const int m = MathMax(0, MathMin(59, minute));
+   return h * 60 + m;
   }
 
 int LB_UtcMinuteOfDay(const datetime broker_bar_open)
@@ -149,9 +155,9 @@ void LB_AdvanceState_OnNewBar()
    const int minute = LB_UtcMinuteOfDay(bar_open);
    const int doy    = LB_UtcDayOfYear(bar_open);
 
-   const int asian_start = LB_MinutesFromHour(strategy_asian_start_hour);
-   const int asian_end   = LB_MinutesFromHour(strategy_asian_end_hour);
-   const int london_open = LB_MinutesFromHour(strategy_london_open_hour);
+   const int asian_start = LB_ConfigMinuteOfDay(strategy_asian_start_hour, strategy_asian_start_minute);
+   const int asian_end   = LB_ConfigMinuteOfDay(strategy_asian_end_hour, strategy_asian_end_minute);
+   const int london_open = LB_ConfigMinuteOfDay(strategy_london_open_hour, strategy_london_open_minute);
    const int entry_end   = london_open + MathMax(1, strategy_entry_bars_to_check) * PeriodSeconds(PERIOD_M15) / 60;
    const int abandon     = london_open + 60;
 
@@ -234,8 +240,8 @@ bool Strategy_NoTradeFilter()
       return false;
 
    const int minute = LB_UtcMinuteOfDay(TimeCurrent());
-   const int asian_start = LB_MinutesFromHour(strategy_asian_start_hour);
-   const int time_stop = LB_MinutesFromHour(strategy_time_stop_hour);
+   const int asian_start = LB_ConfigMinuteOfDay(strategy_asian_start_hour, strategy_asian_start_minute);
+   const int time_stop = LB_ConfigMinuteOfDay(strategy_time_stop_hour, strategy_time_stop_minute);
 
    if(minute >= asian_start && minute < time_stop)
       return false;
@@ -324,7 +330,7 @@ bool Strategy_ExitSignal()
       return false;
 
    const int minute = LB_UtcMinuteOfDay(TimeCurrent());
-   const int time_stop = LB_MinutesFromHour(strategy_time_stop_hour);
+   const int time_stop = LB_ConfigMinuteOfDay(strategy_time_stop_hour, strategy_time_stop_minute);
    return (minute >= time_stop && minute < 20 * 60);
   }
 
