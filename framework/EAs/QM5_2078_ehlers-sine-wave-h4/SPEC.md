@@ -24,10 +24,10 @@ The EA reconstructs Ehlers' Hilbert phase on closed H4 bars, transforms the phas
 | `strategy_d1_ema_period` | 50 | 10-200 | D1 EMA regime filter period. |
 | `strategy_cycle_min_dphase_deg` | 6.0 | 1.0-30.0 | Minimum absolute phase rotation for cycle mode. |
 | `strategy_cycle_max_dphase_deg` | 60.0 | 20.0-120.0 | Maximum absolute phase rotation for cycle mode. |
-| `strategy_trade_min_period` | 10 | 6-30 | Minimum dominant period accepted for entries. |
-| `strategy_trade_max_period` | 40 | 20-50 | Maximum dominant period accepted for entries. |
-| `strategy_sine_lead_sep_min` | 0.05 | 0.00-0.50 | Minimum Sine/Lead separation after a cross. |
-| `strategy_cycle_stability_bars` | 2 | 1-8 | Closed H4 bars that must already be in cycle mode. |
+| `strategy_trade_min_period` | 6 | 6-30 | Minimum dominant period accepted for entries. |
+| `strategy_trade_max_period` | 50 | 20-50 | Maximum dominant period accepted for entries. |
+| `strategy_sine_lead_sep_min` | 0.0 | 0.00-0.50 | Minimum Sine/Lead separation after a cross. |
+| `strategy_cycle_stability_bars` | 1 | 1-8 | Closed H4 bars that must already be in cycle mode. |
 | `strategy_trend_exit_bars` | 3 | 1-8 | Consecutive non-cycle H4 bars that trigger trend-mode exit. |
 | `strategy_initial_stop_atr` | 0.50 | 0.10-3.00 | Initial stop offset from the entry bar high/low in ATR units. |
 | `strategy_trail_trigger_atr` | 1.50 | 0.50-5.00 | Favorable move required before the ATR trail can move the stop. |

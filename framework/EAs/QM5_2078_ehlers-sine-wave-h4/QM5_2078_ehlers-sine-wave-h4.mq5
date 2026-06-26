@@ -35,10 +35,10 @@ input double strategy_spread_atr_mult      = 0.30;
 input int    strategy_d1_ema_period        = 50;
 input double strategy_cycle_min_dphase_deg = 6.0;
 input double strategy_cycle_max_dphase_deg = 60.0;
-input int    strategy_trade_min_period     = 10;
-input int    strategy_trade_max_period     = 40;
-input double strategy_sine_lead_sep_min    = 0.05;
-input int    strategy_cycle_stability_bars = 2;
+input int    strategy_trade_min_period     = 6;
+input int    strategy_trade_max_period     = 50;
+input double strategy_sine_lead_sep_min    = 0.0;
+input int    strategy_cycle_stability_bars = 1;
 input int    strategy_trend_exit_bars      = 3;
 input double strategy_initial_stop_atr     = 0.50;
 input double strategy_trail_trigger_atr    = 1.50;
@@ -494,8 +494,6 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
-   Strategy_ManageOpenPosition();
-
    if(!QM_IsNewBar())
       return;
 
@@ -503,6 +501,8 @@ void OnTick()
       return;
 
    QM_EquityStreamOnNewBar();
+
+   Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
      {
