@@ -51,6 +51,24 @@ except ImportError:  # pragma: no cover - direct script execution
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_OUT = DEFAULT_ARTIFACT_DIR / "portfolio_manifest_tlive_DRAFT.json"
 DEFAULT_MAGIC_REGISTRY = REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
+
+
+def _canonical_starting_capital() -> float:
+    """The q08_trades streams are generated on the canonical tester account
+    (framework/registry/tester_defaults.json initial_deposit = $100k, RISK_FIXED=$1000=1%/trade).
+    The manifest MaxDD must use that same base — the old $10k default overstated DD ~10x and made a
+    1.5% book look like 13.8%, breaking the DD-cap check. Single source of truth: tester_defaults."""
+    try:
+        defaults = json.loads(
+            (REPO_ROOT / "framework" / "registry" / "tester_defaults.json").read_text(encoding="utf-8")
+        )
+        value = float(defaults.get("initial_deposit", 100_000.0))
+        return value if value > 0.0 else 100_000.0
+    except Exception:
+        return 100_000.0
+
+
+DEFAULT_STARTING_CAPITAL = _canonical_starting_capital()
 STATUS = "DRAFT_FOR_OWNER_APPROVAL"
 STATUS_DD_CAP_FAILED = "DRAFT_REJECTED_DD_CAP"
 MANUAL_NOTE = (
@@ -64,7 +82,7 @@ def build_manifest(
     *,
     weights: Mapping[Key, float] | Mapping[str, float] | Sequence[float] | None = None,
     account_risk_pct: float = 2.0,
-    starting_capital: float = 10_000.0,
+    starting_capital: float = DEFAULT_STARTING_CAPITAL,
     common_dir: Path = DEFAULT_COMMON_DIR,
     magic_registry: Path = DEFAULT_MAGIC_REGISTRY,
 ) -> dict[str, Any]:
@@ -163,7 +181,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--max-dd-pct", type=float, default=6.0)
     parser.add_argument("--account-risk-pct", type=float, default=2.0)
-    parser.add_argument("--starting-capital", type=float, default=10_000.0)
+    parser.add_argument("--starting-capital", type=float, default=DEFAULT_STARTING_CAPITAL)
     parser.add_argument("--magic-registry", type=Path, default=DEFAULT_MAGIC_REGISTRY)
     parser.add_argument(
         "--out",
