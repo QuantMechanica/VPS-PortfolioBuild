@@ -122,7 +122,7 @@ No performance claim is taken from the EIA sources. The sources are used only fo
 
 ## Strategy Allowability Check
 
-- [x] R1 official source: EIA petroleum product seasonality and inventory-cycle URLs.
+- [x] R1 official source: EIA petroleum product seasonality URLs.
 - [x] R2 mechanical: fixed calendar windows, SMA/ROC confirmation, ATR stop, and deterministic exits.
 - [x] R3 testable: XTIUSD.DWX exists in `framework/registry/dwx_symbol_matrix.csv`.
 - [x] R4 compliant: no ML, no adaptive PnL fitting, no grid, no martingale, one position per magic.
