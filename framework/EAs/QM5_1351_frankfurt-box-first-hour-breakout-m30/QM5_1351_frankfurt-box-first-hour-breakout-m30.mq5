@@ -67,14 +67,19 @@ input group "Strategy"
 // cash session = 07:00-08:00 local. The two M30 bars 07:00 and 07:30 form the
 // box; the box "closes" at 08:00 local. Mapped to UTC/broker time internally.
 input int    strategy_box_start_local_hour   = 7;    // Frankfurt-local box open hour
+input int    strategy_box_start_local_minute = 0;    // Frankfurt-local box open minute
 input int    strategy_box_end_local_hour     = 8;    // Frankfurt-local box close hour (exclusive)
+input int    strategy_box_end_local_minute   = 0;    // Frankfurt-local box close minute
 // Entry trading window in Frankfurt-local hours (post-box-close -> pre-NY).
 // Card: broker 08:30-14:00 (out-DST) / 09:30-15:00 (in-DST). In Frankfurt-local
 // terms that is a stable 07:30-13:00 window (box-close .. early NY).
 input int    strategy_trade_start_local_hour = 8;    // entries allowed from (local), inclusive of box-close
+input int    strategy_trade_start_local_minute = 0;  // entries allowed from local minute
 input int    strategy_trade_end_local_hour   = 13;   // entries allowed until (local), exclusive
+input int    strategy_trade_end_local_minute = 0;    // entries allowed until local minute
 // Day-end mandatory flat, Frankfurt-local hour (card: 17:00 broker ~ 16:00 local).
 input int    strategy_dayend_local_hour      = 16;   // flatten all at/after this local hour
+input int    strategy_dayend_local_minute    = 0;    // flatten all at/after this local minute
 input int    strategy_max_hold_bars          = 12;   // intraday time-stop: M30 bars (~6h)
 
 input int    strategy_atr_m30_period         = 20;   // ATR(20,M30) for SL buffer + spread cap
@@ -168,6 +173,21 @@ int FrankfurtHour(const datetime frankfurt_time)
    return f.hour;
   }
 
+int FrankfurtMinuteOfDay(const datetime frankfurt_time)
+  {
+   MqlDateTime f;
+   ZeroMemory(f);
+   TimeToStruct(frankfurt_time, f);
+   return f.hour * 60 + f.min;
+  }
+
+int StrategyLocalMinuteOfDay(const int hour_value, const int minute_value)
+  {
+   const int hour = MathMax(0, MathMin(23, hour_value));
+   const int minute = MathMax(0, MathMin(59, minute_value));
+   return hour * 60 + minute;
+  }
+
 int MagicForThisEA() { return QM_FrameworkMagic(); }
 
 bool HasOpenPosition()
@@ -200,11 +220,15 @@ void AdvanceBoxState_OnNewBar()
       return;
 
    const datetime bar1_open_ffx = BrokerToFrankfurt(bar1_open_broker);
-   const int      bar1_hour     = FrankfurtHour(bar1_open_ffx);
+   const int      bar1_minute   = FrankfurtMinuteOfDay(bar1_open_ffx);
    const int      day_key       = FrankfurtDayKey(bar1_open_ffx);
+   const int      box_start     = StrategyLocalMinuteOfDay(strategy_box_start_local_hour,
+                                                           strategy_box_start_local_minute);
+   const int      box_end       = StrategyLocalMinuteOfDay(strategy_box_end_local_hour,
+                                                           strategy_box_end_local_minute);
 
    // New Frankfurt-local day -> reset the per-day state (box + traded flag).
-   if(day_key != g_box_day_key && bar1_hour < strategy_box_end_local_hour)
+   if(day_key != g_box_day_key)
      {
       g_box_day_key   = day_key;
       g_box_ready     = false;
@@ -214,30 +238,45 @@ void AdvanceBoxState_OnNewBar()
       g_traded_direction = 0;
      }
 
-   // The box is "first hour" = [box_start, box_end) local. With M30 bars the
-   // last box bar OPENS at (box_end - 0.5h), i.e. its open-hour == box_end-1.
-   // We finalise the box on the close of that last box bar: detect when the
-   // just-closed bar's open-hour is the last box half-hour-block's hour AND its
-   // close has reached box_end. Simpler robust rule: finalise once we see the
-   // first closed bar whose OPEN local hour == (box_end_local_hour - 1) and
-   // whose open MINUTE is 30 — that bar closes exactly at box_end:00 local.
+   // Finalise once the just-closed M30 bar's close crosses box_end. Then scan
+   // the closed M30 bars whose Frankfurt-local opens are inside [box_start, box_end).
    if(!g_box_ready && day_key == g_box_day_key)
      {
-      MqlDateTime fdt;
-      ZeroMemory(fdt);
-      TimeToStruct(bar1_open_ffx, fdt);
-      const bool is_last_box_bar = (fdt.hour == strategy_box_end_local_hour - 1 && fdt.min == 30);
+      const int period_minutes = PeriodSeconds((ENUM_TIMEFRAMES)_Period) / 60;
+      const bool is_last_box_bar = (period_minutes > 0 &&
+                                    bar1_minute < box_end &&
+                                    (bar1_minute + period_minutes) >= box_end);
       if(is_last_box_bar)
         {
-         // Box = the two M30 bars [box_end-1:00 .. box_end:00): shifts 2 and 1.
-         // shift 1 = the 07:30 bar (last box bar), shift 2 = the 07:00 bar.
-         const double h2 = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, 2); // perf-allowed: fixed box-bar high, post new-bar gate
-         const double h1 = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, 1); // perf-allowed: fixed box-bar high
-         const double l2 = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, 2);  // perf-allowed: fixed box-bar low
-         const double l1 = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, 1);  // perf-allowed: fixed box-bar low
-         g_box_high  = MathMax(h1, h2);
-         g_box_low   = MathMin(l1, l2);
-         g_box_ready = (g_box_high > 0.0 && g_box_low > 0.0 && g_box_high > g_box_low);
+         double hi = -DBL_MAX;
+         double lo = DBL_MAX;
+         int bars_seen = 0;
+         for(int shift = 1; shift <= 16; ++shift)
+           {
+            const datetime open_broker = iTime(_Symbol, (ENUM_TIMEFRAMES)_Period, shift); // perf-allowed: bounded box scan
+            if(open_broker <= 0)
+               break;
+            const datetime open_ffx = BrokerToFrankfurt(open_broker);
+            if(FrankfurtDayKey(open_ffx) != day_key)
+               break;
+            const int open_minute = FrankfurtMinuteOfDay(open_ffx);
+            if(open_minute < box_start)
+               break;
+            if(open_minute >= box_start && open_minute < box_end)
+              {
+               const double h = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, shift); // perf-allowed: bounded box scan
+               const double l = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, shift);  // perf-allowed: bounded box scan
+               if(h > 0.0 && l > 0.0)
+                 {
+                  hi = MathMax(hi, h);
+                  lo = MathMin(lo, l);
+                  bars_seen++;
+                 }
+              }
+           }
+         g_box_high  = hi;
+         g_box_low   = lo;
+         g_box_ready = (bars_seen >= 2 && g_box_high > 0.0 && g_box_low > 0.0 && g_box_high > g_box_low);
         }
      }
   }
@@ -286,14 +325,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const datetime now_ffx  = BrokerToFrankfurt(TimeCurrent());
    const int      day_key  = FrankfurtDayKey(now_ffx);
-   const int      hour_ffx = FrankfurtHour(now_ffx);
+   const int      minute_ffx = FrankfurtMinuteOfDay(now_ffx);
 
    // Box must belong to TODAY (Frankfurt-local) — no carry-over to the next day.
    if(day_key != g_box_day_key)
       return false;
 
    // Entry trading window (Frankfurt-local, post box-close): [start, end).
-   if(hour_ffx < strategy_trade_start_local_hour || hour_ffx >= strategy_trade_end_local_hour)
+   const int trade_start = StrategyLocalMinuteOfDay(strategy_trade_start_local_hour,
+                                                    strategy_trade_start_local_minute);
+   const int trade_end = StrategyLocalMinuteOfDay(strategy_trade_end_local_hour,
+                                                  strategy_trade_end_local_minute);
+   if(minute_ffx < trade_start || minute_ffx >= trade_end)
       return false;
 
    // One-direction-per-day whipsaw guard.
@@ -409,10 +452,12 @@ bool Strategy_ExitSignal()
       return false;
 
    const datetime now_ffx  = BrokerToFrankfurt(TimeCurrent());
-   const int      hour_ffx = FrankfurtHour(now_ffx);
+   const int      minute_ffx = FrankfurtMinuteOfDay(now_ffx);
 
    // (1) Day-end mandatory flat.
-   if(hour_ffx >= strategy_dayend_local_hour)
+   const int dayend = StrategyLocalMinuteOfDay(strategy_dayend_local_hour,
+                                               strategy_dayend_local_minute);
+   if(minute_ffx >= dayend)
       return true;
 
    // The remaining checks are per-closed-bar structural; only meaningful with a
