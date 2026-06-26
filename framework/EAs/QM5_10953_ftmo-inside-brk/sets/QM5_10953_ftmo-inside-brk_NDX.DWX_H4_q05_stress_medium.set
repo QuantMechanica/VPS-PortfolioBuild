@@ -3,7 +3,7 @@
 ; ea_id:        10953
 ; ea_slug:      ftmo-inside-brk
 ; ea_version:   v5.0
-; set_version:  s20260620-stress-med
+; set_version:  s20260626-stress-med
 ; symbol:       NDX.DWX
 ; timeframe:    H4
 ; environment:  q05_stress_medium
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   72500bad01b6a646fbbe521d0110138082f7d9ac129833ed6e776b7b41ec456c
 ; author:       Development
-; date:         2026-06-20
+; date:         2026-06-26
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000
