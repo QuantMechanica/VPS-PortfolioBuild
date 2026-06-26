@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA trades the M15 RoboForex "The right moment" mean-reversion setup. A long entry opens when the last closed bar touches or breaks the lower Bollinger Band(20, 2.0), RSI(5) crosses below 30, and WPR(25) is below -80. A short entry opens when the last closed bar touches or breaks the upper Bollinger Band(20, 2.0), RSI(5) crosses above 70, and WPR(25) is above -20. Each entry uses a 2 x ATR(14) protective stop and targets the current Bollinger middle band, with a 4 x ATR(14) fallback target if the middle band is not directionally valid at entry.
+This EA trades the M15 RoboForex "The right moment" mean-reversion setup. A long entry opens when WPR(25) crosses below -80, RSI(5) is below 30, and the last closed bar touches or breaks the lower Bollinger Band(20, 2.0). A short entry opens when WPR(25) crosses above -20, RSI(5) is above 70, and the last closed bar touches or breaks the upper Bollinger Band(20, 2.0). Each entry uses a 2 x ATR(14) protective stop and targets the current Bollinger middle band, with a 4 x ATR(14) fallback target if the middle band is not directionally valid at entry.
 
 ---
 

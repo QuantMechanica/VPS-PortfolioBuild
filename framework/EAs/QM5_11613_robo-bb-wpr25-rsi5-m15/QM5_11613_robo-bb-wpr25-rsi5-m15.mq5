@@ -23,8 +23,8 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;
 input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -83,23 +83,23 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double rsi_1 = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, 1, PRICE_CLOSE);
-   const double rsi_2 = QM_RSI(_Symbol, strategy_signal_tf, strategy_rsi_period, 2, PRICE_CLOSE);
    const double wpr_1 = QM_WPR(_Symbol, strategy_signal_tf, strategy_wpr_period, 1);
+   const double wpr_2 = QM_WPR(_Symbol, strategy_signal_tf, strategy_wpr_period, 2);
    const double lower = QM_BB_Lower(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
    const double upper = QM_BB_Upper(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
    const double middle = QM_BB_Middle(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
    const double atr = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
-   if(rsi_1 <= 0.0 || rsi_2 <= 0.0 || lower <= 0.0 || upper <= 0.0 || middle <= 0.0 || atr <= 0.0)
+   if(rsi_1 <= 0.0 || lower <= 0.0 || upper <= 0.0 || middle <= 0.0 || atr <= 0.0)
       return false;
 
    const bool long_signal =
-      (rsi_1 < strategy_rsi_oversold && rsi_2 >= strategy_rsi_oversold &&
-       wpr_1 < strategy_wpr_oversold &&
+      (wpr_1 < strategy_wpr_oversold && wpr_2 >= strategy_wpr_oversold &&
+       rsi_1 < strategy_rsi_oversold &&
        rates[0].low <= lower);
 
    const bool short_signal =
-      (rsi_1 > strategy_rsi_overbought && rsi_2 <= strategy_rsi_overbought &&
-       wpr_1 > strategy_wpr_overbought &&
+      (wpr_1 > strategy_wpr_overbought && wpr_2 <= strategy_wpr_overbought &&
+       rsi_1 > strategy_rsi_overbought &&
        rates[0].high >= upper);
 
    if(!long_signal && !short_signal)
@@ -144,13 +144,13 @@ bool Strategy_ExitSignal()
    if(magic <= 0)
       return false;
 
-   MqlRates rates[1];
-   ArraySetAsSeries(rates, true);
-   if(CopyRates(_Symbol, strategy_signal_tf, 1, 1, rates) != 1) // perf-allowed: fixed 1-bar close read inside strategy exit hook.
-      return false;
-
    const double middle = QM_BB_Middle(_Symbol, strategy_signal_tf, strategy_bb_period, strategy_bb_deviation, 1, PRICE_CLOSE);
    if(middle <= 0.0)
+      return false;
+
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(bid <= 0.0 || ask <= 0.0)
       return false;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -164,9 +164,9 @@ bool Strategy_ExitSignal()
          continue;
 
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      if(ptype == POSITION_TYPE_BUY && rates[0].close >= middle)
+      if(ptype == POSITION_TYPE_BUY && bid >= middle)
          return true;
-      if(ptype == POSITION_TYPE_SELL && rates[0].close <= middle)
+      if(ptype == POSITION_TYPE_SELL && ask <= middle)
          return true;
      }
 
