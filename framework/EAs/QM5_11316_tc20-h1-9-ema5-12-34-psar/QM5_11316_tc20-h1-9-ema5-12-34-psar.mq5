@@ -15,22 +15,21 @@
 //   Cascade STATE (long) : EMA(5) > EMA(12) > EMA(34).
 //   Cascade STATE (short): EMA(5) < EMA(12) < EMA(34).
 //   PSAR placement STATE : long needs SAR < EMA(5); short needs SAR > EMA(5).
-//   Trigger EVENT (long) : PSAR FLIPS to the bullish side this bar — SAR was
-//                          ABOVE EMA(5) on the prior closed bar (shift 2) and is
-//                          now BELOW EMA(5) on the trigger bar (shift 1).
-//   Trigger EVENT (short): PSAR flips bearish — SAR was below EMA(5) at shift 2,
-//                          now above EMA(5) at shift 1.
+//   Trigger EVENT (long) : SAR value is moving lower on this closed bar
+//                          (SAR[2] > SAR[1]).
+//   Trigger EVENT (short): SAR value is moving higher on this closed bar
+//                          (SAR[2] < SAR[1]).
 //
-//   The triple-EMA cascade is a STATE (alignment), the PSAR flip across EMA(5)
-//   is the single EVENT. This avoids the "two fresh crossovers on the same bar"
-//   zero-trade trap: only ONE fresh event is required, the cascade is a
-//   standing condition, not a same-bar cross.
+//   The triple-EMA cascade and SAR placement are STATES. The SAR direction
+//   change is the single EVENT. This avoids the "two fresh crossovers on the
+//   same bar" zero-trade trap while keeping the card's literal SAR direction
+//   wording.
 //
 //   Stop   : fixed 30 pips (source), pip-scaled per symbol.
 //   Target : fixed 50 pips (source), pip-scaled per symbol.
 //   Defensive exit: opposite cascade STATE + opposite SAR placement.
-//   Spread guard : block only a genuinely wide spread > spread_pct_of_stop of
-//                  the 30-pip stop distance (fail-open on .DWX zero spread).
+//   Spread guard : block only a genuinely wide spread > 20 points
+//                  (fail-open on .DWX zero spread).
 //
 // Only the 5 Strategy_* hooks + Strategy inputs are EA-specific. Everything
 // else is framework wiring and MUST stay intact.
@@ -68,7 +67,7 @@ input double strategy_sar_step          = 0.1;   // Parabolic SAR step (source: 
 input double strategy_sar_max           = 0.2;   // Parabolic SAR maximum (source: 0.2)
 input int    strategy_sl_pips           = 30;    // fixed stop (source: 30 pips)
 input int    strategy_tp_pips           = 50;    // fixed target (source: 50 pips)
-input double strategy_spread_pct_of_stop = 15.0; // skip if spread > this % of stop distance
+input int    strategy_spread_cap_points = 20;    // skip if spread exceeds 20 points on majors
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -82,13 +81,13 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_pips);
-   if(stop_distance <= 0.0)
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0 || strategy_spread_cap_points <= 0)
       return false;
 
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && (spread / point) > strategy_spread_cap_points)
       return true;
 
    return false;
@@ -97,6 +96,14 @@ bool Strategy_NoTradeFilter()
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -114,17 +121,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(sar_now <= 0.0 || sar_prev <= 0.0)
       return false;
 
-   // EMA(5) at the prior closed bar (shift 2) for the flip reference.
-   const double ema_fast_prev = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 2);
-   if(ema_fast_prev <= 0.0)
-      return false;
-
    // LONG: cascade STATE 5>12>34, SAR placement STATE under EMA(5),
-   //       and the PSAR FLIP EVENT (SAR above EMA5 last bar -> below now).
+   //       and the SAR direction EVENT (SAR moving lower: SAR[2] > SAR[1]).
    const bool cascade_long = (ema_fast > ema_mid && ema_mid > ema_slow);
    const bool sar_under_now = (sar_now < ema_fast);
-   const bool sar_flip_bull = (sar_prev >= ema_fast_prev && sar_now < ema_fast);
-   if(cascade_long && sar_under_now && sar_flip_bull)
+   const bool sar_moving_lower = (sar_prev > sar_now);
+   if(cascade_long && sar_under_now && sar_moving_lower)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
@@ -142,11 +144,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    // SHORT: cascade STATE 5<12<34, SAR placement STATE above EMA(5),
-   //        and the PSAR FLIP EVENT (SAR below EMA5 last bar -> above now).
+   //        and the SAR direction EVENT (SAR moving higher: SAR[2] < SAR[1]).
    const bool cascade_short = (ema_fast < ema_mid && ema_mid < ema_slow);
    const bool sar_above_now = (sar_now > ema_fast);
-   const bool sar_flip_bear = (sar_prev <= ema_fast_prev && sar_now > ema_fast);
-   if(cascade_short && sar_above_now && sar_flip_bear)
+   const bool sar_moving_higher = (sar_prev < sar_now);
+   if(cascade_short && sar_above_now && sar_moving_higher)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(entry <= 0.0)

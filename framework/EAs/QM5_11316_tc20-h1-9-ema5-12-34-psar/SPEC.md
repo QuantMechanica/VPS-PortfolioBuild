@@ -3,23 +3,20 @@
 **EA ID:** QM5_11316
 **Slug:** `tc20-h1-9-ema5-12-34-psar`
 **Source:** `e78a9f1f-4e6a-563c-a080-915133d6ed28` (Thomas Carter, 20 Forex Trading Strategies, H1 Strategy #9)
-**Author of this spec:** Claude
-**Last revised:** 2026-06-18
+**Author of this spec:** Codex
+**Last revised:** 2026-06-26
 
 ---
 
 ## 1. Strategy Logic
 
-Trend-following on H1 using a triple-EMA cascade as the directional STATE and a
-Parabolic SAR flip as the single entry EVENT. Go long when EMA(5) > EMA(12) >
-EMA(34) (bullish stack), the SAR sits below EMA(5), and on this closed bar the
-SAR has just flipped from above EMA(5) to below it. Go short on the mirror:
-EMA(5) < EMA(12) < EMA(34), SAR above EMA(5), and a fresh SAR flip from below
-EMA(5) to above it. Only the SAR flip is required to be a fresh same-bar event;
-the EMA stack is a standing alignment condition, which avoids the
-two-cross-same-bar zero-trade trap. Exit on a fixed 30-pip stop or 50-pip target
-(both pip-scaled per symbol), or defensively when the cascade and SAR placement
-both invert against the open position.
+Trend-following on H1 using a triple-EMA cascade plus Parabolic SAR direction
+confirmation. Go long when EMA(5) > EMA(12) > EMA(34), SAR is moving lower from
+the prior closed bar to the latest closed bar, and the latest SAR value is under
+EMA(5). Go short on the mirror: EMA(5) < EMA(12) < EMA(34), SAR is moving
+higher, and the latest SAR value is above EMA(5). Exit on a fixed 30-pip stop or
+50-pip target (both pip-scaled per symbol), or defensively when the cascade and
+SAR placement both invert against the open position.
 
 ---
 
@@ -34,7 +31,7 @@ both invert against the open position.
 | `strategy_sar_max` | 0.2 | 0.05-0.5 | Parabolic SAR maximum (source value) |
 | `strategy_sl_pips` | 30 | 5-200 | Fixed stop in pips (source) |
 | `strategy_tp_pips` | 50 | 5-300 | Fixed target in pips (source) |
-| `strategy_spread_pct_of_stop` | 15.0 | 1-100 | Block entry if spread exceeds this % of stop distance |
+| `strategy_spread_cap_points` | 20 | 1-200 | Block entry if spread exceeds this many points |
 
 ---
 
@@ -101,3 +98,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v2 | 2026-06-26 | Rebuild from card | 7b36cd4a-8f9f-4009-8b74-5a515b65ff08 |
