@@ -1,38 +1,15 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11427 connors-rsi2-sma200-pullback-d1 — Connors RSI(2) mean reversion (D1)"
+#property description "QM5_11427 Connors RSI2 SMA200 Pullback D1"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11427 connors-rsi2-sma200-pullback-d1
+// QuantMechanica V5 EA SKELETON
 // -----------------------------------------------------------------------------
-// Source: Larry Connors & Cesar Alvarez, "Short-Term Trading Strategies That
-//         Work" (2009), "The 2 Period RSI".
-//         source_id 4932e25a-fdfb-50cd-b5f5-18e55f3045c2.
-// Card: artifacts/cards_approved/QM5_11427_connors-rsi2-sma200-pullback-d1.md
-//       (g0_status APPROVED).
-//
-// Sibling QM5_11365 implements the same strategy under a different ea_id; this
-// EA is built to THIS card with qm_ea_id 11427 (distinct magic, no collision).
-//
-// Mechanics (D1, all reads on CLOSED bars at shift >= 1):
-//   Trend STATE  : close > SMA(200)  -> macro uptrend  (mirror for downtrend).
-//   Entry EVENT  : RSI(2) crosses INTO the extreme on the prior closed bar:
-//                  LONG  -> rsi@1 < entry_long  AND  rsi@2 >= entry_long.
-//                  SHORT -> rsi@1 > entry_short AND  rsi@2 <= entry_short.
-//                  The SMA200 trend is the STATE; the RSI(2) extreme cross is
-//                  the single EVENT (card NOTE). Modelling it as a cross (not a
-//                  level test) avoids re-firing on every bar RSI stays extreme.
-//   Stop         : entry -/+ atr_stop_mult * ATR(14)  (card: ATR x 1.5).
-//   Exit         : RSI(2) reverts past the exit level (LONG rsi > exit_long,
-//                  SHORT rsi < exit_short), OR the macro trend breaks
-//                  (LONG close < SMA200, SHORT close > SMA200). Connors exit.
-//   Spread guard : fail-OPEN — block only a genuinely wide spread (.DWX quotes
-//                  ask==bid, modeled spread 0; never block on zero spread).
-//
-// One position per magic. RISK_FIXED in backtest, RISK_PERCENT for live.
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific.
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails).
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -48,8 +25,8 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -60,132 +37,143 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_timeframe        = PERIOD_D1;  // card TF = D1
-input int    strategy_rsi_period         = 2;     // Connors RSI(2)
-input int    strategy_sma_trend_period   = 200;   // SMA(200) macro trend filter
-input int    strategy_atr_period         = 14;    // ATR for the protective stop
-input double strategy_entry_rsi_long     = 10.0;  // RSI(2) < this -> oversold pullback (long)
-input double strategy_entry_rsi_short    = 90.0;  // RSI(2) > this -> overbought rally (short)
-input double strategy_exit_rsi_long      = 65.0;  // RSI(2) > this -> exit long (Connors)
-input double strategy_exit_rsi_short     = 35.0;  // RSI(2) < this -> exit short (mirror)
-input double strategy_atr_stop_mult      = 1.5;   // stop distance = mult * ATR(14)
-input bool   strategy_enable_shorts      = true;  // mirror shorts below SMA200
-input double strategy_spread_pct_of_stop = 15.0;  // block only if spread > this % of stop distance
+input int    strategy_rsi_period          = 2;
+input double strategy_rsi_long_entry      = 5.0;
+input double strategy_rsi_short_entry     = 90.0;
+input double strategy_rsi_long_exit       = 65.0;
+input double strategy_rsi_short_exit      = 35.0;
+input int    strategy_trend_sma_period    = 200;
+input int    strategy_exit_sma_period     = 5;
+input int    strategy_atr_period          = 14;
+input double strategy_atr_sl_mult         = 1.5;
+input double strategy_take_profit_rr      = 2.0;
+input int    strategy_stop_cap_pips       = 80;
+input int    strategy_spread_cap_pips     = 25;
+input bool   strategy_shorts_enabled      = true;
 
 // -----------------------------------------------------------------------------
-// Strategy hooks
+// Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Wrong-timeframe guard + fail-OPEN spread guard.
+// Return TRUE to BLOCK trading this tick.
 bool Strategy_NoTradeFilter()
   {
-   // D1-native strategy: refuse to trade if attached to a non-D1 chart.
-   if(_Period != strategy_timeframe)
+   if(_Period != PERIOD_D1)
       return true;
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — do not block on it
+      return true;
 
-   const double atr_value = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
-   if(atr_value <= 0.0)
-      return false; // no ATR yet — defer to the entry gate, do not block here
-
-   const double stop_distance = strategy_atr_stop_mult * atr_value;
-   if(stop_distance <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   // Fail-OPEN: only a genuinely wide spread blocks; zero/negative passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(spread_cap > 0.0 && ask > bid && (ask - bid) > spread_cap)
       return true;
 
    return false;
   }
 
-// Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
+// Populate `req` with entry order parameters and return TRUE if a NEW entry
+// should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(strategy_rsi_period <= 0 ||
+      strategy_trend_sma_period <= 0 ||
+      strategy_exit_sma_period <= 0 ||
+      strategy_atr_period <= 0 ||
+      strategy_atr_sl_mult <= 0.0 ||
+      strategy_take_profit_rr <= 0.0)
+      return false;
+
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   // Closed-bar reads (shift 1 = last closed bar, shift 2 = the one before).
-   const double close_1 = iClose(_Symbol, strategy_timeframe, 1); // perf-allowed: single closed-bar read
-   const double sma_200 = QM_SMA(_Symbol, strategy_timeframe, strategy_sma_trend_period, 1);
-   const double atr     = QM_ATR(_Symbol, strategy_timeframe, strategy_atr_period, 1);
-   const double rsi_1   = QM_RSI(_Symbol, strategy_timeframe, strategy_rsi_period, 1);
-   const double rsi_2   = QM_RSI(_Symbol, strategy_timeframe, strategy_rsi_period, 2);
-   if(close_1 <= 0.0 || sma_200 <= 0.0 || atr <= 0.0 || rsi_1 <= 0.0 || rsi_2 <= 0.0)
+   const double close_1 = QM_SMA(_Symbol, PERIOD_D1, 1, 1, PRICE_CLOSE);
+   const double sma_200 = QM_SMA(_Symbol, PERIOD_D1, strategy_trend_sma_period, 1, PRICE_CLOSE);
+   const double rsi_1 = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 1, PRICE_CLOSE);
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   const double stop_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_stop_cap_pips);
+   if(close_1 <= 0.0 || sma_200 <= 0.0 || rsi_1 <= 0.0 || atr <= 0.0 || stop_cap <= 0.0)
       return false;
 
-   // LONG: macro uptrend STATE + RSI(2) crosses INTO the oversold extreme EVENT.
-   const bool long_trend = (close_1 > sma_200);
-   const bool long_event = (rsi_1 < strategy_entry_rsi_long &&
-                            rsi_2 >= strategy_entry_rsi_long);
-   if(long_trend && long_event)
+   double stop_distance = atr * strategy_atr_sl_mult;
+   if(stop_distance > stop_cap)
+      stop_distance = stop_cap;
+
+   if(close_1 > sma_200 && rsi_1 < strategy_rsi_long_entry)
      {
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
          return false;
-      const double sl = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr, strategy_atr_stop_mult);
+
+      const double sl = QM_StopRulesNormalizePrice(_Symbol, entry - stop_distance);
       if(sl <= 0.0 || sl >= entry)
          return false;
-      req.type   = QM_BUY;
-      req.price  = 0.0;   // framework fills market price at send
-      req.sl     = sl;
-      req.tp     = 0.0;   // exit is rule-based (RSI revert / trend break)
-      req.reason = "connors_rsi2_long";
+
+      const double tp = QM_TakeRR(_Symbol, QM_BUY, entry, sl, strategy_take_profit_rr);
+      if(tp <= entry)
+         return false;
+
+      req.type = QM_BUY;
+      req.price = 0.0;
+      req.sl = sl;
+      req.tp = tp;
+      req.reason = "connors_rsi2_sma200_long";
       return true;
      }
 
-   // SHORT (mirror): macro downtrend STATE + RSI(2) crosses INTO overbought.
-   if(strategy_enable_shorts)
+   if(strategy_shorts_enabled && close_1 < sma_200 && rsi_1 > strategy_rsi_short_entry)
      {
-      const bool short_trend = (close_1 < sma_200);
-      const bool short_event = (rsi_1 > strategy_entry_rsi_short &&
-                                rsi_2 <= strategy_entry_rsi_short);
-      if(short_trend && short_event)
-        {
-         const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         if(entry <= 0.0)
-            return false;
-         const double sl = QM_StopATRFromValue(_Symbol, QM_SELL, entry, atr, strategy_atr_stop_mult);
-         if(sl <= entry)
-            return false;
-         req.type   = QM_SELL;
-         req.price  = 0.0;
-         req.sl     = sl;
-         req.tp     = 0.0;
-         req.reason = "connors_rsi2_short";
-         return true;
-        }
+      const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(entry <= 0.0)
+         return false;
+
+      const double sl = QM_StopRulesNormalizePrice(_Symbol, entry + stop_distance);
+      if(sl <= entry)
+         return false;
+
+      const double tp = QM_TakeRR(_Symbol, QM_SELL, entry, sl, strategy_take_profit_rr);
+      if(tp <= 0.0 || tp >= entry)
+         return false;
+
+      req.type = QM_SELL;
+      req.price = 0.0;
+      req.sl = sl;
+      req.tp = tp;
+      req.reason = "connors_rsi2_sma200_short";
+      return true;
      }
 
    return false;
   }
 
-// No active trade management beyond the fixed ATR protective stop. The rule
-// exits (RSI revert / trend break) live in Strategy_ExitSignal.
+// Called every tick when an open position exists for this EA's magic.
 void Strategy_ManageOpenPosition()
   {
+   // Card specifies no trailing stop, break-even, partial close, or pyramiding.
   }
 
-// Rule exit: RSI(2) reverts past the exit level OR the macro trend breaks.
+// Return TRUE to close the open position now.
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   if(QM_TM_OpenPositionCount(magic) <= 0)
+   if(magic <= 0 || QM_TM_OpenPositionCount(magic) <= 0)
       return false;
 
-   const double close_1 = iClose(_Symbol, strategy_timeframe, 1); // perf-allowed: single closed-bar read
-   const double sma_200 = QM_SMA(_Symbol, strategy_timeframe, strategy_sma_trend_period, 1);
-   const double rsi_1   = QM_RSI(_Symbol, strategy_timeframe, strategy_rsi_period, 1);
-   if(close_1 <= 0.0 || sma_200 <= 0.0 || rsi_1 <= 0.0)
+   const double close_1 = QM_SMA(_Symbol, PERIOD_D1, 1, 1, PRICE_CLOSE);
+   const double sma_5 = QM_SMA(_Symbol, PERIOD_D1, strategy_exit_sma_period, 1, PRICE_CLOSE);
+   const double rsi_1 = QM_RSI(_Symbol, PERIOD_D1, strategy_rsi_period, 1, PRICE_CLOSE);
+   if(close_1 <= 0.0 || sma_5 <= 0.0 || rsi_1 <= 0.0)
       return false;
 
-   // Determine our open side (one position per magic on this symbol).
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -199,23 +187,21 @@ bool Strategy_ExitSignal()
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       if(ptype == POSITION_TYPE_BUY)
         {
-         // Exit long: RSI(2) recovered above exit level OR trend broke down.
-         if(rsi_1 > strategy_exit_rsi_long || close_1 < sma_200)
+         if(rsi_1 > strategy_rsi_long_exit || close_1 > sma_5)
             return true;
         }
       else if(ptype == POSITION_TYPE_SELL)
         {
-         // Exit short: RSI(2) fell below exit level OR trend broke up.
-         if(rsi_1 < strategy_exit_rsi_short || close_1 > sma_200)
+         if(rsi_1 < strategy_rsi_short_exit || close_1 < sma_5)
             return true;
         }
-      return false;
      }
 
    return false;
   }
 
-// Defer to the central news filter.
+// Optional news-filter override. Return TRUE to suppress trading regardless
+// of qm_news_mode.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
@@ -232,20 +218,20 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"ea\":\"QM5_11427_connors-rsi2-sma200-pullback-d1\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
 
@@ -286,15 +272,13 @@ void OnTick()
          const ulong ticket = PositionGetTicket(i);
          if(!PositionSelectByTicket(ticket))
             continue;
-         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-            continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
 
-   if(!QM_IsNewBar(_Symbol, strategy_timeframe))
+   if(!QM_IsNewBar())
       return;
 
    QM_EquityStreamOnNewBar();

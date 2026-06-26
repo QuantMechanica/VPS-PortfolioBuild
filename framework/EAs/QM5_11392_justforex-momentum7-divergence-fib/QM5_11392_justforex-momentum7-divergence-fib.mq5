@@ -30,9 +30,10 @@
 //                  oversold); SHORT requires RSI(7) < rsi_short_ceil.
 //   Stop loss    : swing extreme opposite the trade, padded sl_buffer_pips, then
 //                  capped at sl_cap_pips (card P2 cap 40 pips H4).
-//   Take profit  : Fibonacci extension of the divergence leg. LONG leg =
-//                  swing_high_between - L2_low; TP = entry + fib_tp_ext * leg.
-//                  fib_tp_ext default 1.618 (161.8% extension), per card TP1.
+//   Take profit  : Fibonacci extensions of the divergence leg. LONG leg =
+//                  swing_high_between - L1_low per card implementation notes.
+//                  TP1 = swing_high + 0.618*leg, TP2 = swing_high + 1.618*leg.
+//                  The EA partial-closes at TP1 and uses TP2 as broker TP.
 //   Spread guard : fail-OPEN on .DWX zero modeled spread; block only a genuinely
 //                  wide spread > spread_pct_of_stop of the stop distance.
 //
@@ -78,6 +79,8 @@ input double strategy_fib_tp_ext         = 1.618; // Fib extension multiple of d
 input int    strategy_sl_buffer_pips     = 5;     // pad beyond swing extreme (card: 5 pips)
 input int    strategy_sl_cap_pips        = 40;    // max stop distance (card P2 cap: 40 pips H4)
 input double strategy_spread_pct_of_stop = 25.0;  // skip if spread > this % of stop distance
+input double strategy_partial_pct_tp1    = 50.0;  // close this percent at TP1
+input int    strategy_trail_buffer_pips  = 10;    // after TP1, SL beyond second-to-last bar
 
 // -----------------------------------------------------------------------------
 // Bounded, non-repainting swing-pivot helpers.
@@ -218,6 +221,19 @@ double MomentumTroughBetween(const int newer_shift, const int older_shift)
    return trough;
   }
 
+double g_pending_tp1_price = 0.0;
+int    g_pending_side      = 0;     // 1 buy, -1 sell
+ulong  g_active_ticket     = 0;
+bool   g_tp1_partial_done  = false;
+
+void RememberNewEntryManagement(const double tp1_price, const int side)
+  {
+   g_pending_tp1_price = tp1_price;
+   g_pending_side = side;
+   g_active_ticket = 0;
+   g_tp1_partial_done = false;
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
@@ -247,6 +263,14 @@ bool Strategy_NoTradeFilter()
 // Entry. Caller guarantees QM_IsNewBar() == true (closed-bar gate).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
@@ -297,16 +321,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                      double sl = low_new - pad;
                      if(entry - sl > cap)
                         sl = entry - cap;
-                     // Fib extension TP off the divergence leg.
-                     const double leg = swing_high - low_new;
-                     const double tp = entry + strategy_fib_tp_ext * leg;
-                     if(sl > 0.0 && sl < entry && tp > entry)
+                     // Card formula: leg = swing_high - low1_price (older low).
+                     const double leg = swing_high - low_old;
+                     const double tp1 = swing_high + 0.618 * leg;
+                     const double tp = swing_high + strategy_fib_tp_ext * leg;
+                     if(sl > 0.0 && sl < entry && tp1 > entry && tp > entry)
                        {
                         req.type   = QM_BUY;
                         req.price  = 0.0;
                         req.sl     = QM_TM_NormalizePrice(_Symbol, sl);
                         req.tp     = QM_TM_NormalizePrice(_Symbol, tp);
                         req.reason = "mom7_div_fib_long";
+                        req.symbol_slot = qm_magic_slot_offset;
+                        req.expiration_seconds = 0;
+                        RememberNewEntryManagement(QM_TM_NormalizePrice(_Symbol, tp1), 1);
                         return true;
                        }
                     }
@@ -353,15 +381,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                      double sl = high_new + pad;
                      if(sl - entry > cap)
                         sl = entry + cap;
-                     const double leg = high_new - swing_low;
-                     const double tp = entry - strategy_fib_tp_ext * leg;
-                     if(sl > entry && tp > 0.0 && tp < entry)
+                     const double leg = high_old - swing_low;
+                     const double tp1 = swing_low - 0.618 * leg;
+                     const double tp = swing_low - strategy_fib_tp_ext * leg;
+                     if(sl > entry && tp1 > 0.0 && tp1 < entry && tp > 0.0 && tp < entry)
                        {
                         req.type   = QM_SELL;
                         req.price  = 0.0;
                         req.sl     = QM_TM_NormalizePrice(_Symbol, sl);
                         req.tp     = QM_TM_NormalizePrice(_Symbol, tp);
                         req.reason = "mom7_div_fib_short";
+                        req.symbol_slot = qm_magic_slot_offset;
+                        req.expiration_seconds = 0;
+                        RememberNewEntryManagement(QM_TM_NormalizePrice(_Symbol, tp1), -1);
                         return true;
                        }
                     }
@@ -374,9 +406,82 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return false;
   }
 
-// Fixed Fib TP + structural stop manage the trade; no active trailing here.
+// TP1 partial and post-TP1 structural trailing from the card. The broker TP is
+// TP2; the remainder is protected by second-to-last-bar trailing after TP1.
 void Strategy_ManageOpenPosition()
   {
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+
+      const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      const bool is_buy = (ptype == POSITION_TYPE_BUY);
+      const int side = is_buy ? 1 : -1;
+      const double market = is_buy ? SymbolInfoDouble(_Symbol, SYMBOL_BID)
+                                   : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(market <= 0.0)
+         continue;
+
+      if(g_active_ticket != ticket)
+        {
+         g_active_ticket = ticket;
+         g_tp1_partial_done = false;
+        }
+
+      if(g_pending_tp1_price <= 0.0 || g_pending_side != side)
+         continue;
+
+      const bool tp1_reached = is_buy ? (market >= g_pending_tp1_price)
+                                      : (market <= g_pending_tp1_price);
+      if(!tp1_reached)
+         continue;
+
+      if(!g_tp1_partial_done)
+        {
+         const double volume = PositionGetDouble(POSITION_VOLUME);
+         const double close_lots = QM_TM_NormalizeVolume(_Symbol, volume * strategy_partial_pct_tp1 / 100.0);
+         if(close_lots > 0.0 && close_lots < volume)
+            QM_TM_PartialClose(ticket, close_lots, QM_EXIT_PARTIAL);
+         g_tp1_partial_done = true;
+        }
+
+      const double buffer = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_trail_buffer_pips);
+      if(buffer <= 0.0)
+         continue;
+
+      double trail_sl = 0.0;
+      if(is_buy)
+        {
+         const double bar_low = iLow(_Symbol, _Period, 2); // perf-allowed: card-specific trailing anchor
+         if(bar_low > 0.0)
+            trail_sl = bar_low - buffer;
+        }
+      else
+        {
+         const double bar_high = iHigh(_Symbol, _Period, 2); // perf-allowed: card-specific trailing anchor
+         if(bar_high > 0.0)
+            trail_sl = bar_high + buffer;
+        }
+
+      if(trail_sl <= 0.0)
+         continue;
+      trail_sl = QM_TM_NormalizePrice(_Symbol, trail_sl);
+
+      const double current_sl = PositionGetDouble(POSITION_SL);
+      const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      const bool improves = (current_sl <= 0.0) ||
+                            (is_buy ? (trail_sl > current_sl + point * 0.5 && trail_sl < market)
+                                    : (trail_sl < current_sl - point * 0.5 && trail_sl > market));
+      if(improves)
+         QM_TM_MoveSL(ticket, trail_sl, "tp1_second_last_bar_trail");
+     }
   }
 
 // No discretionary exit beyond SL/TP. Divergence resolves into the Fib target
