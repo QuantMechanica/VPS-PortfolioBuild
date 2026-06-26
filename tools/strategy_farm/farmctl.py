@@ -6477,10 +6477,28 @@ def _admit_q09_portfolio_passes(
               AND pc.symbol = w.symbol
               AND pc.q11_work_item_id = w.id
           )
-        ORDER BY w.updated_at ASC LIMIT 20
+        ORDER BY
+          CASE WHEN w.setfile_path LIKE '%_ablation_%' THEN 1 ELSE 0 END,
+          w.updated_at ASC
+        LIMIT 20
         """
     ).fetchall()
+    admitted_keys: set[tuple[str, str]] = set()
     for wi in q09_pass_rows:
+        candidate_key = (str(wi["ea_id"]), str(wi["symbol"] or ""))
+        if candidate_key in admitted_keys:
+            continue
+        existing_ready = conn.execute(
+            """
+            SELECT 1 FROM portfolio_candidates
+            WHERE ea_id=? AND symbol=? AND state='Q12_REVIEW_READY'
+            LIMIT 1
+            """,
+            candidate_key,
+        ).fetchone()
+        if existing_ready:
+            admitted_keys.add(candidate_key)
+            continue
         conn.execute(
             """
             INSERT INTO portfolio_candidates(
@@ -6513,6 +6531,7 @@ def _admit_q09_portfolio_passes(
             "q09_portfolio_work_item_id": wi["id"],
             "state": "Q12_REVIEW_READY",
         })
+        admitted_keys.add(candidate_key)
         admitted += 1
     return admitted
 
@@ -9220,6 +9239,9 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                         "reason": "already_pending_or_active",
                     })
                     continue
+                archived_report_root = _archive_work_item_report_root_for_requeue(existing["id"], now)
+                if archived_report_root:
+                    payload["archived_report_root_on_requeue"] = archived_report_root
                 conn.execute(
                     """
                     UPDATE work_items
@@ -9310,6 +9332,24 @@ def _resolve_report(payload: dict[str, Any]) -> Path | None:
         if matches:
             return Path(matches[0])
     return None
+
+
+def _archive_work_item_report_root_for_requeue(work_item_id: str, now_iso: str) -> str | None:
+    """Move stale per-work-item evidence aside before requeueing a phase runner."""
+    report_root = Path(r"D:\QM\reports\work_items") / str(work_item_id)
+    if not report_root.exists():
+        return None
+    safe_stamp = re.sub(r"[^0-9A-Za-z]+", "", now_iso)[:32] or str(int(time.time()))
+    archive = report_root.with_name(f"{report_root.name}.requeued_{safe_stamp}")
+    suffix = 0
+    while archive.exists():
+        suffix += 1
+        archive = report_root.with_name(f"{report_root.name}.requeued_{safe_stamp}_{suffix}")
+    try:
+        report_root.rename(archive)
+    except OSError:
+        return None
+    return str(archive)
 
 
 def _detect_ea_period(ea_id: str, setfile_path: str | os.PathLike[str] | None = None) -> str:
