@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        1142
 ; ea_slug:      usdjpy-time-range-breakout
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   68014d38692462681ef67084088e5c58c89a6fc75246ee55f64c9267fd7d9d30
 ; author:       Development
 ; date:         2026-05-18
 ;==========================================================
