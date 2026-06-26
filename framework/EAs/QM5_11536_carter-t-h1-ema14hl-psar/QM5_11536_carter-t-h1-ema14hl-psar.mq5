@@ -126,13 +126,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   MqlRates closed_bar[1];
-   if(CopyRates(_Symbol, PERIOD_H1, 1, 1, closed_bar) != 1) // perf-allowed: closed-bar OHLC, Strategy_EntrySignal only called post QM_IsNewBar()
-      return false;
-
-   const double close1 = closed_bar[0].close;
-   const double high1 = closed_bar[0].high;
-   const double low1 = closed_bar[0].low;
+   const double close1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: closed-bar shift 1 inside Strategy_EntrySignal, gated by QM_IsNewBar in OnTick
+   const double high1  = iHigh(_Symbol, PERIOD_H1, 1);  // perf-allowed: closed-bar shift 1
+   const double low1   = iLow(_Symbol, PERIOD_H1, 1);   // perf-allowed: closed-bar shift 1
    if(close1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0)
       return false;
 
