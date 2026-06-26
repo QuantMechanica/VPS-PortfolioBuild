@@ -2,6 +2,7 @@
   "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
   "host_symbol": "EURJPY.DWX",
   "host_timeframe": "D1",
+  "tester_currency": "JPY",
   "basket_symbols": [
     "EURJPY.DWX",
     "GBPJPY.DWX"

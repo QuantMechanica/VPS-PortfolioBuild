@@ -82,6 +82,13 @@ This card was mechanised from:
 
 ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
+Q02 tester note: the manifest pins `tester_currency=JPY` for this two-leg JPY-cross
+basket. The 2026-06-26 logical basket runs opened both EURJPY/GBPJPY legs, then the
+MT5 tester invalidated the final report while trying to synchronize bare `USDJPY`
+for USD account conversion. Running the tester account in the legs' native profit
+currency keeps the Q02 setup focused on the basket trade path without changing the
+EA inputs or the `RISK_FIXED` setfile contract.
+
 ---
 
 ## Revision History
@@ -89,3 +96,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-09 | Initial build from card | 7fe478b5-35ec-4cfa-ab03-7df60d53ab95 |
+| v2 | 2026-06-26 | Q02 setup repair | Added JPY tester-currency manifest override for EURJPY/GBPJPY conversion-history INFRA_FAIL |
