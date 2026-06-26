@@ -33,6 +33,25 @@
       "stub_created_at": "2026-06-14T21:14:19+00:00",
       "stub_source": "farmctl_pump_p5_calibration_autostub"
     },
+    "AUDUSD.DWX": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-06-26T17:18:47+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
     "EURJPY.DWX": {
       "auto_stub": true,
       "commission_cents_per_lot": 700.0,

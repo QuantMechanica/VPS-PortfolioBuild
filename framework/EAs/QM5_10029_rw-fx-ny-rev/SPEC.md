@@ -100,3 +100,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-11 | Initial build from card | 3cb346d9-2491-449b-bc42-c1f5c2b31a4d |
+| v2 | 2026-06-26 | Q02 throughput repair | Reset two-axis news default to OFF so baseline trades are not suppressed before Q09 news-mode testing. |
