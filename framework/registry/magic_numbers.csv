@@ -13611,3 +13611,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1505,connors-cumulative-rsi-h4,9,SP500.DWX,15050009,2026-06-26,Development,active
 1505,connors-cumulative-rsi-h4,10,XAUUSD.DWX,15050010,2026-06-26,Development,active
 1505,connors-cumulative-rsi-h4,11,XTIUSD.DWX,15050011,2026-06-26,Development,active
+12580,fx-usd-exhaustion-reversal,0,EURUSD.DWX,125800000,2026-06-26,Codex,active
+12580,fx-usd-exhaustion-reversal,1,GBPUSD.DWX,125800001,2026-06-26,Codex,active
+12580,fx-usd-exhaustion-reversal,2,AUDUSD.DWX,125800002,2026-06-26,Codex,active
+12580,fx-usd-exhaustion-reversal,3,NZDUSD.DWX,125800003,2026-06-26,Codex,active
+12580,fx-usd-exhaustion-reversal,4,USDJPY.DWX,125800004,2026-06-26,Codex,active
+12580,fx-usd-exhaustion-reversal,5,USDCHF.DWX,125800005,2026-06-26,Codex,active
+12580,fx-usd-exhaustion-reversal,6,USDCAD.DWX,125800006,2026-06-26,Codex,active
