@@ -55,7 +55,14 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input string cutoff_time                    = "10:00";   // freeze day high/low at this broker HH:MM
+// ICT killzone is anchored to NEW YORK time. The Darwinex/DXZ broker is NY-Close aligned
+// (GMT+2 outside US DST, GMT+3 during) so NY = broker - 7h year-round, DST-stable. With the
+// default broker-time reading, cutoff "10:00" was 03:00 NY (pre-market) — for US indices the
+// frozen day-range was built on illiquid overnight ticks, suppressing setups (~4-8 trades/yr).
+// Anchoring "10:00" to NY (= 17:00 broker) puts the freeze at the NY AM killzone as intended.
+input bool   cutoff_anchor_ny               = true;      // interpret cutoff_time as New York time
+input int    broker_ny_offset_min           = 420;       // broker_minute = NY_minute + this (7h)
+input string cutoff_time                    = "10:00";   // freeze day high/low at this NY HH:MM (broker if cutoff_anchor_ny=false)
 input string closing_time                   = "00:00";   // EOD: cancel pendings + flat (00:00 = end of day)
 input bool   close_positions_at_closing_time = true;
 input int    liquidity_sweep_max_candles    = 10;        // bars to return inside range after a break
@@ -430,9 +437,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Bars(_Symbol, tf) < min_bars) // perf-allowed: bounded structure scan after closed-bar gate
       return false;
 
-   const int cutoff_min = QM_ParseHHMM(cutoff_time);
+   int cutoff_min = QM_ParseHHMM(cutoff_time);
    if(cutoff_min < 0)
       return false;
+   // Anchor the killzone cutoff to New York time (ICT intent). Broker is NY-Close aligned,
+   // so broker_minute = NY_minute + broker_ny_offset_min (7h, DST-stable). Wrap into [0,1440).
+   if(cutoff_anchor_ny)
+      cutoff_min = ((cutoff_min + broker_ny_offset_min) % 1440 + 1440) % 1440;
 
    // The just-closed bar is shift 1.
    const datetime bar_time = iTime(_Symbol, tf, 1); // perf-allowed: closed-bar timestamp
