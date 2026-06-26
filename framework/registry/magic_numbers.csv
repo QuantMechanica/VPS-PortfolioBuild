@@ -13569,3 +13569,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9265,mql5-adx-di-trend,2,XAUUSD.DWX,92650002,2026-06-26,Development,active
 9184,jstm-pair-cointegration-fx,0,AUDUSD.DWX,91840000,2026-06-26,Development,active
 9184,jstm-pair-cointegration-fx,1,NZDUSD.DWX,91840001,2026-06-26,Development,active
+9415,qs-kalman-pair,0,SP500.DWX,94150000,2026-06-26,Development,active
+9415,qs-kalman-pair,1,XAUUSD.DWX,94150001,2026-06-26,Development,active
+9415,qs-kalman-pair,2,NDX.DWX,94150002,2026-06-26,Development,active
+9221,mql5-stddev-ma,0,EURUSD.DWX,92210000,2026-06-26,Development,active
+9221,mql5-stddev-ma,1,XAUUSD.DWX,92210001,2026-06-26,Development,active
+9221,mql5-stddev-ma,2,GDAXI.DWX,92210002,2026-06-26,Development,active

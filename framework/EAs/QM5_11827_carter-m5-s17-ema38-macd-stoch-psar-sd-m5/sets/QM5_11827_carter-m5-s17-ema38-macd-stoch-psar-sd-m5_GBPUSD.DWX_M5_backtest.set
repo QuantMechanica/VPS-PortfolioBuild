@@ -3,16 +3,16 @@
 ; ea_id:        11827
 ; ea_slug:      carter-m5-s17-ema38-macd-stoch-psar-sd-m5
 ; ea_version:   v5.0
-; set_version:  s20260625-001
+; set_version:  s20260626-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   dd8545d47f1e354f519f41184bc9941c9b955ba7e7a7853b79fdeb585b447fcc
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-25
+; date:         2026-06-26
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000
