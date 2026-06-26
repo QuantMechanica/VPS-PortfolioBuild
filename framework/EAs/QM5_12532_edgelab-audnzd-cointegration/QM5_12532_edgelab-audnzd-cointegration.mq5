@@ -3,6 +3,7 @@
 #property description "QM5_12532 Edge Lab AUDUSD NZDUSD Cointegration"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_BasketOrder.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 12532;
@@ -276,12 +277,73 @@ bool Strategy_BuildCurrentLegRequest(const int spread_direction, QM_EntryRequest
    return Strategy_BuildLegRequest(_Symbol, buy_leg, reason, req);
   }
 
+bool Strategy_OpenBasketLeg(const string symbol,
+                            const bool buy_leg,
+                            const string reason)
+  {
+   const QM_OrderType type = buy_leg ? QM_BUY : QM_SELL;
+   const double entry = buy_leg ? SymbolInfoDouble(symbol, SYMBOL_ASK)
+                                : SymbolInfoDouble(symbol, SYMBOL_BID);
+   const double atr = QM_ATR(symbol, PERIOD_D1, strategy_atr_period_d1, 1);
+   const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
+   if(entry <= 0.0 || atr <= 0.0 || point <= 0.0)
+      return false;
+
+   const double stop_dist = strategy_atr_sl_mult * atr;
+   const double sl_points = stop_dist / point;
+   if(sl_points <= 0.0 || !MathIsValidNumber(sl_points))
+      return false;
+
+   const double lots = Strategy_NormalizedLotsForLeg(symbol, sl_points);
+   if(lots <= 0.0)
+      return false;
+
+   const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
+   QM_BasketOrderRequest basket_req;
+   basket_req.symbol = symbol;
+   basket_req.type = type;
+   basket_req.price = 0.0;
+   basket_req.sl = buy_leg ? NormalizeDouble(entry - stop_dist, digits)
+                           : NormalizeDouble(entry + stop_dist, digits);
+   basket_req.tp = 0.0;
+   basket_req.lots = lots;
+   basket_req.reason = reason;
+   basket_req.symbol_slot = Strategy_SlotForSymbol(symbol);
+   basket_req.expiration_seconds = 0;
+
+   ulong ticket = 0;
+   return QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, basket_req, ticket);
+  }
+
+bool Strategy_OpenPair(const int spread_direction)
+  {
+   if(spread_direction == 0 || Strategy_OpenPairLegCount() > 0)
+      return false;
+
+   const bool buy_aud = (spread_direction > 0);
+   const bool buy_nzd = !buy_aud;
+   const string reason = (spread_direction > 0) ? "QM5_12532_LONG_SPREAD_Z_NEG"
+                                                : "QM5_12532_SHORT_SPREAD_Z_POS";
+
+   const bool aud_ok = Strategy_OpenBasketLeg(g_pair_symbols[0], buy_aud, reason);
+   const bool nzd_ok = Strategy_OpenBasketLeg(g_pair_symbols[1], buy_nzd, reason);
+   if(aud_ok && nzd_ok)
+     {
+      g_pair_entry_time = TimeCurrent();
+      return true;
+     }
+
+   Strategy_ClosePair(QM_EXIT_STRATEGY);
+   return false;
+  }
+
 // No Trade Filter (time, spread, news).
 bool Strategy_NoTradeFilter()
   {
    Strategy_EnsureBasketScope();
 
-   if((ENUM_TIMEFRAMES)_Period != PERIOD_D1)
+   const ENUM_TIMEFRAMES chart_tf = (ENUM_TIMEFRAMES)_Period;
+   if(chart_tf != PERIOD_H1 && chart_tf != PERIOD_D1)
       return true;
    if(Strategy_SymbolIndex(_Symbol) < 0)
       return true;
@@ -319,11 +381,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    else
       return false;
 
-   if(!Strategy_BuildCurrentLegRequest(spread_direction, req))
-      return false;
-
-   g_pair_entry_time = TimeCurrent();
-   return true;
+   Strategy_OpenPair(spread_direction);
+   return false;
   }
 
 // Trade Management.

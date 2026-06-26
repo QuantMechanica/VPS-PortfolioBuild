@@ -3,6 +3,7 @@
 #property description "QM5_12533 Edge Lab EURJPY GBPJPY Cointegration"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_BasketOrder.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA SKELETON
@@ -222,18 +223,24 @@ bool Strategy_OpenLeg(const string symbol,
    const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
    const double stop_dist = strategy_atr_sl_mult * atr;
 
-   QM_EntryRequest req;
+   const double lots = Strategy_LotsForLeg(symbol, risk_weight, risk_weight_sum);
+   if(lots <= 0.0)
+      return false;
+
+   QM_BasketOrderRequest req;
+   req.symbol = symbol;
    req.type = type;
    req.price = 0.0;
    req.sl = QM_OrderTypeIsBuy(type) ? NormalizeDouble(entry - stop_dist, digits)
                                     : NormalizeDouble(entry + stop_dist, digits);
    req.tp = 0.0;
+   req.lots = lots;
    req.reason = reason;
    req.symbol_slot = slot;
    req.expiration_seconds = 0;
 
    ulong ticket = 0;
-   return QM_TM_OpenPosition(req, ticket);
+   return QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, strategy_deviation_points, req, ticket);
   }
 
 bool Strategy_OpenPair(const int spread_direction)
@@ -276,7 +283,8 @@ bool Strategy_NoTradeFilter()
       return true;
    if(Strategy_SlotForSymbol(_Symbol) != qm_magic_slot_offset)
       return true;
-   if((ENUM_TIMEFRAMES)_Period != PERIOD_D1)
+   const ENUM_TIMEFRAMES chart_tf = (ENUM_TIMEFRAMES)_Period;
+   if(chart_tf != PERIOD_H1 && chart_tf != PERIOD_D1)
       return true;
    return false;
   }
