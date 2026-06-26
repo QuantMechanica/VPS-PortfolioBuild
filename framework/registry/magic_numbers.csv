@@ -11421,10 +11421,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11616,robo-ema8-28-cci30-m30,2,USDJPY.DWX,116160002,2026-06-25,Development,active
 11616,robo-ema8-28-cci30-m30,3,USDCHF.DWX,116160003,2026-06-25,Development,active
 11616,robo-ema8-28-cci30-m30,4,AUDUSD.DWX,116160004,2026-06-25,Development,active
-11618,robo-lwma-low-macd1526-m30,0,EURUSD.DWX,116180000,2026-06-18,Claude,reserved
-11618,robo-lwma-low-macd1526-m30,1,GBPUSD.DWX,116180001,2026-06-18,Claude,reserved
-11618,robo-lwma-low-macd1526-m30,2,USDJPY.DWX,116180002,2026-06-18,Claude,reserved
-11618,robo-lwma-low-macd1526-m30,3,USDCHF.DWX,116180003,2026-06-18,Claude,reserved
+11618,robo-lwma-low-macd1526-m30,0,EURUSD.DWX,116180000,2026-06-26,Development,active
+11618,robo-lwma-low-macd1526-m30,1,GBPUSD.DWX,116180001,2026-06-26,Development,active
+11618,robo-lwma-low-macd1526-m30,2,USDJPY.DWX,116180002,2026-06-26,Development,active
+11618,robo-lwma-low-macd1526-m30,3,USDCHF.DWX,116180003,2026-06-26,Development,active
 11621,robo-ema100hl-bb10-23-reversal-h4,0,EURUSD.DWX,116210000,2026-06-18,Development,active
 11621,robo-ema100hl-bb10-23-reversal-h4,1,GBPUSD.DWX,116210001,2026-06-18,Development,active
 11621,robo-ema100hl-bb10-23-reversal-h4,2,USDJPY.DWX,116210002,2026-06-18,Development,active
