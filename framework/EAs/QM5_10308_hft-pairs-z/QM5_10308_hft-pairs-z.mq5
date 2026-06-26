@@ -49,6 +49,12 @@ double   g_last_z = 0.0;
 double   g_last_spread_sd = 0.0;
 double   g_last_corr = 0.0;
 bool     g_pair_state_ready = false;
+string   g_strategy_symbols[8] = {
+   "EURUSD.DWX", "GBPUSD.DWX",
+   "AUDUSD.DWX", "NZDUSD.DWX",
+   "SP500.DWX",  "NDX.DWX",
+   "XAUUSD.DWX", "XAGUSD.DWX"
+};
 
 string Strategy_PeerSymbol()
   {
@@ -327,6 +333,9 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
+   for(int i = 0; i < ArraySize(g_strategy_symbols); ++i)
+      SymbolSelect(g_strategy_symbols[i], true);
+
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -344,6 +353,10 @@ int OnInit()
                         qm_news_temporal,
                         qm_news_compliance))
       return INIT_FAILED;
+
+   const int warmup_bars = MathMax(strategy_formation_bars, strategy_z_bars) + 10;
+   QM_SymbolGuardInit(g_strategy_symbols);
+   QM_BasketWarmupHistory(g_strategy_symbols, strategy_tf, warmup_bars);
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10308_hft_pairs_z\"}");
    return INIT_SUCCEEDED;
