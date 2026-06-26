@@ -13627,4 +13627,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12587,eia-xng-inj-brk,0,XNGUSD.DWX,125870000,2026-06-26,Development,active
 12588,eia-xng-sum-sqz,0,XNGUSD.DWX,125880000,2026-06-26,Development,active
 12589,eia-rbob-shoulder,0,XTIUSD.DWX,125890000,2026-06-26,Development,active
+12590,eia-wti-wpsr-fade,0,XTIUSD.DWX,125900000,2026-06-26,Development,active
 11909,singh-good-morning-asia-usdjpy-d1,0,USDJPY.DWX,119090000,2026-06-26,Codex,active
