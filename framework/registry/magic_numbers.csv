@@ -13618,3 +13618,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12580,fx-usd-exhaustion-reversal,4,USDJPY.DWX,125800004,2026-06-26,Codex,active
 12580,fx-usd-exhaustion-reversal,5,USDCHF.DWX,125800005,2026-06-26,Codex,active
 12580,fx-usd-exhaustion-reversal,6,USDCAD.DWX,125800006,2026-06-26,Codex,active
+12582,chan-ng-spring,0,XNGUSD.DWX,125820000,2026-06-26,Development,active
