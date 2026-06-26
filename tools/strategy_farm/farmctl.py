@@ -10727,13 +10727,44 @@ def _record_q02_deferral(ea_id: str, deferred: list, source: str) -> None:
     entry = state.setdefault(ea_id, {"setfiles": [], "source": source,
                                      "deferred_at": utc_now()})
     known = {e["setfile"] for e in entry["setfiles"]}
-    for setfile, symbol, tf in deferred:
+    for item in deferred:
+        setfile, symbol, tf = item[0], item[1], item[2]
         if str(setfile) not in known:
             entry["setfiles"].append({"setfile": str(setfile), "symbol": symbol,
                                       "tf": tf})
     Q02_DEFERRED_SYMBOLS_FILE.parent.mkdir(parents=True, exist_ok=True)
     Q02_DEFERRED_SYMBOLS_FILE.write_text(json.dumps(state, indent=1),
                                          encoding="utf-8")
+
+
+def _q02_build_setfile_basket_match(
+    ea_id: str,
+    setfile_path: Path,
+    basket_manifest: dict[str, Any] | None,
+) -> tuple[str, str, dict[str, Any]] | None:
+    if not basket_manifest:
+        return None
+    basket_setfile = _find_basket_setfile(ea_id, basket_manifest)
+    if not basket_setfile:
+        return None
+    logical_symbol, expected_path = basket_setfile
+    try:
+        same_setfile = setfile_path.resolve() == Path(expected_path).resolve()
+    except OSError:
+        same_setfile = str(setfile_path) == str(expected_path)
+    if not same_setfile:
+        return None
+
+    host_timeframe = str(basket_manifest["host_timeframe"])
+    payload_extra = {
+        "basket_manifest": basket_manifest["manifest_path"],
+        "basket_symbol_count": len(basket_manifest.get("basket_symbols") or []),
+        "host_symbol": basket_manifest["host_symbol"],
+        "host_timeframe": host_timeframe,
+        "logical_symbol": basket_manifest["logical_symbol"],
+        "portfolio_scope": "basket",
+    }
+    return logical_symbol, host_timeframe, payload_extra
 
 
 def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dict[str, Any]:
@@ -10756,8 +10787,10 @@ def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dic
     skipped: list[dict[str, Any]] = []
     now_iso = utc_now()
 
+    basket_manifest = _load_basket_manifest(str(ea_id))
+
     # Parse all setfiles first so staging can pick a diverse stage-1 wave.
-    parsed: list[tuple[Path, str, str]] = []
+    parsed: list[tuple[Path, str, str, dict[str, Any]]] = []
     for setfile_str in setfiles:
         setfile_path = Path(str(setfile_str))
         # Filename pattern: <ea_label>_<SYMBOL>_<TF>_backtest.set
@@ -10765,22 +10798,27 @@ def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dic
         m = re.search(r"_([A-Z][A-Z0-9.]{2,})_([A-Z0-9]+)_backtest\.set$",
                       setfile_path.name)
         if not m:
+            basket_match = _q02_build_setfile_basket_match(str(ea_id), setfile_path, basket_manifest)
+            if basket_match:
+                symbol, tf, payload_extra = basket_match
+                parsed.append((setfile_path, symbol, tf, payload_extra))
+                continue
             skipped.append({"setfile": str(setfile_path),
                             "reason": "setfile_name_parse_failed"})
             continue
-        parsed.append((setfile_path, m.group(1), m.group(2)))
+        parsed.append((setfile_path, m.group(1), m.group(2), {}))
 
     # OWNER gate-acceleration #2 (2026-06-10): diverse stage-1 wave, rest
     # deferred to the sidecar (promoted on any stage-1 PASS / spare capacity).
     stage1, deferred = _stage_q02_setfiles(parsed)
     if deferred:
         _record_q02_deferral(ea_id, deferred, "auto_q02_for_build")
-        for setfile_path, symbol, tf in deferred:
+        for setfile_path, symbol, tf, _payload_extra in deferred:
             skipped.append({"setfile": setfile_path.name, "symbol": symbol,
                             "reason": "staged_deferred_symbol"})
 
     with connect(root) as conn:
-        for setfile_path, symbol, tf in stage1:
+        for setfile_path, symbol, tf, payload_extra in stage1:
             # Idempotency: skip if pending/active Q02 already exists
             existing = conn.execute(
                 "SELECT id, status FROM work_items "
@@ -10801,6 +10839,7 @@ def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dic
                 "enqueued_at_utc": now_iso,
                 "build_task_id": build_result.get("task_id"),
             }
+            payload.update(payload_extra)
             conn.execute(
                 "INSERT INTO work_items (id, kind, phase, ea_id, symbol, setfile_path, "
                 "status, attempt_count, payload_json, created_at, updated_at) "
