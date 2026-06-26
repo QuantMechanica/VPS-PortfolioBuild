@@ -4,7 +4,15 @@ Reviewer: Claude. Subject: `D:\QM\reports\portfolio\portfolio_manifest_q12_ready
 (Codex commit `c40505dcd` — q12-ready-all manifest mode). Scope: book review + OWNER-approval prep
 for the FIRST V5 live portfolio. **No deploy / no AutoTrading action taken.**
 
-## Verdict: book VERIFIED — but NOT deploy-ready (one T_Live-blocking magic-number defect)
+## Verdict: book VERIFIED — approvable AFTER one magic-number artifact fix (not a runtime mis-magic risk)
+
+> Correction (verified post-write): `gen_setfile.ps1` derives `qm_magic_slot_offset` from
+> `magic_numbers.csv` `symbol_slot` (L246–275), NOT from the manifest — so the *generated live
+> setfile* would carry the correct registry magic regardless of this manifest. The defect below is
+> therefore an **approval-artifact + deploy-verification consistency** problem (the manifest shows
+> wrong magics and its `set_file_expectation` would mismatch what gen_setfile produces), **not** a
+> "the EA would trade at the wrong magic" runtime risk. Still must-fix before OWNER signs — the
+> approval artifact must be correct and internally consistent — but it does not endanger live magic.
 
 ### ✅ Verified correct
 - **Commit `c40505dcd` logic:** `--book-source q12-ready-all` pulls every distinct
@@ -23,7 +31,7 @@ for the FIRST V5 live portfolio. **No deploy / no AutoTrading action taken.**
   10513 `ee92f1c6…`, 10692 `e28f8a1e…`, 10940 `363a2793…`, 11132 `7b48a34c…`.
 - **Tests:** full portfolio group 34 OK (incl. `test_portfolio_manifest` 5).
 
-### ❌ BLOCKER — magic numbers wrong for 4/5 sleeves (fails T_Live magic-consistency Hard Rule)
+### ❌ MUST-FIX before approval — manifest magic numbers wrong for 4/5 sleeves
 `build_manifest` sets `magic_number = ea_id*10000 + slot` and `set_file_expectation.qm_magic_slot_offset = slot`,
 where `slot = enumerate(book) position (0–4)`. But the live magic is
 `QM_MagicResolver.mqh:55 → ea_id*10000 + symbol_slot`, and each (ea, symbol) has a **registered**
@@ -37,10 +45,12 @@ slot in `framework/registry/magic_numbers.csv`:
 | 10940:XAU | 109400003 (3) | 109400003 (3) | ✅ (coincidence) |
 | 11132:SP500 | 111320000 (0) | 111320004 (4) | ❌ |
 
-Impact: a live setfile generated from this manifest would run the EA at the wrong magic, the magic
-would not match the registry (Hard Rule failure), and the manifest magics **collide** with existing
-registry reservations for OTHER symbols of the same EA (e.g. 106920002 is reserved for 10692 at
-symbol_slot 2, not NDX).
+Impact: the manifest (the artifact OWNER signs) shows wrong magics, and its `set_file_expectation`
+(qm_magic_slot_offset = book-position) **contradicts** the setfile gen_setfile.ps1 will actually
+produce (qm_magic_slot_offset = registry symbol_slot) — so the deploy-flow "set-file correct"
+verification would mismatch. The wrong manifest magics also overlap existing registry reservations
+for OTHER symbols of the same EA (e.g. 106920002 is reserved for 10692 at symbol_slot 2, not NDX).
+Live magic itself is safe (gen_setfile uses the registry), but the approval artifact must be correct.
 
 **Fix (routed to Codex, ops task — see below):** `build_manifest` must resolve each sleeve's
 `magic_number` and `qm_magic_slot_offset` from `magic_numbers.csv` (the active reservation for that
