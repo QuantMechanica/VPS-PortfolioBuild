@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11512 carter-t-ema2-4-stoch-d1 — fast EMA(2/4) cross + Stoch(5,3,3) confirm (D1)"
+#property description "QM5_11512 carter-t-ema2-4-stoch-d1 - fast EMA(2/4) cross + Stoch(5,3,3) confirm (D1)"
 
 #include <QM/QM_Common.mqh>
 
@@ -19,10 +19,8 @@
 //                    a second event (avoids the two-cross-same-bar zero-trade trap):
 //                    LONG  -> %K < stoch_threshold (not yet overbought, default 50)
 //                    SHORT -> %K > stoch_threshold (not yet oversold, default 50)
-//   Stop loss      : entry-bar extreme (last closed D1 bar low for long / high for
-//                    short) via QM_StopStructure(lookback=1), then capped so the
-//                    stop distance never exceeds sl_cap_pips (source: cap ~3% of
-//                    price / 100 pips on D1).
+//   Stop loss      : entry-bar extreme (last closed D1 bar low for long / high
+//                    for short), capped at both 3% of price and 100 pips.
 //   Take profit    : tp_rr * (entry - sl) via QM_TakeRR (source: 2-3x SL distance).
 //   No-trade filter: card forbids Friday entries; cheap O(1) per-tick spread guard
 //                    that fails OPEN on .DWX zero modeled spread.
@@ -42,8 +40,8 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -63,9 +61,10 @@ input int    strategy_stoch_d           = 3;      // Stochastic %D period
 input int    strategy_stoch_slowing     = 3;      // Stochastic slowing
 input double strategy_stoch_threshold   = 50.0;   // confirm zone boundary (long<thr, short>thr)
 input int    strategy_sl_cap_pips       = 100;    // cap on entry-bar-extreme stop distance
+input double strategy_sl_cap_percent    = 3.0;    // source cap as percent of entry price
 input double strategy_tp_rr             = 2.0;    // take profit as R multiple of SL distance
 input bool   strategy_no_friday_entry   = true;   // card: no Friday entries
-input double strategy_spread_pct_of_stop = 15.0;  // skip if spread > this % of stop distance
+input int    strategy_spread_cap_pips   = 30;     // card: spread cap 30 pips
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -89,14 +88,13 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   // Spread cap scaled to the cap-pip stop distance (per-symbol, scale-correct).
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_cap_pips);
-   if(stop_distance <= 0.0)
+   const double spread_cap = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
+   if(spread_cap <= 0.0)
       return false;
 
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread > spread_cap)
       return true;
 
    return false;
@@ -110,10 +108,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // --- Fast EMA values: shift 1 (just-closed bar) and shift 2 (prior bar) ---
-   const double ema2_1 = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 1);
-   const double ema4_1 = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 1);
-   const double ema2_2 = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 2);
-   const double ema4_2 = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 2);
+   const double ema2_1 = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_fast_period, 1);
+   const double ema4_1 = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_slow_period, 1);
+   const double ema2_2 = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_fast_period, 2);
+   const double ema4_2 = QM_EMA(_Symbol, PERIOD_D1, strategy_ema_slow_period, 2);
    if(ema2_1 <= 0.0 || ema4_1 <= 0.0 || ema2_2 <= 0.0 || ema4_2 <= 0.0)
       return false;
 
@@ -124,10 +122,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // Confirm STATE: Stochastic %K main line relative to the threshold.
-   const double stoch_k = QM_Stoch_K(_Symbol, _Period,
+   const double stoch_k = QM_Stoch_K(_Symbol, PERIOD_D1,
                                      strategy_stoch_k, strategy_stoch_d,
                                      strategy_stoch_slowing, 1);
-   if(stoch_k <= 0.0)
+   if(stoch_k < 0.0 || stoch_k > 100.0)
       return false;
 
    QM_OrderType side;
@@ -152,12 +150,26 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry <= 0.0)
       return false;
 
-   // --- Stop loss: entry-bar extreme (last closed bar low/high), capped at sl_cap_pips ---
-   double sl = QM_StopStructure(_Symbol, side, entry, 1); // lookback 1 = the just-closed bar
+   // Card stop is the just-closed D1 bar extreme. EntrySignal is already gated
+   // by QM_IsNewBar(), so these are fixed O(1) structural reads.
+   const double d1_low  = iLow(_Symbol, PERIOD_D1, 1);  // perf-allowed: card-required D1 entry-bar low
+   const double d1_high = iHigh(_Symbol, PERIOD_D1, 1); // perf-allowed: card-required D1 entry-bar high
+   if(d1_low <= 0.0 || d1_high <= 0.0)
+      return false;
+
+   double sl = (side == QM_BUY) ? d1_low : d1_high;
    if(sl <= 0.0)
       return false;
 
-   const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_cap_pips);
+   if((side == QM_BUY && sl >= entry) || (side == QM_SELL && sl <= entry))
+      return false;
+
+   const double cap_pip_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_sl_cap_pips);
+   const double cap_pct_distance = (strategy_sl_cap_percent > 0.0) ? entry * strategy_sl_cap_percent / 100.0 : 0.0;
+   double cap_distance = cap_pip_distance;
+   if(cap_pct_distance > 0.0 && (cap_distance <= 0.0 || cap_pct_distance < cap_distance))
+      cap_distance = cap_pct_distance;
+
    if(cap_distance > 0.0)
      {
       const double sl_distance = MathAbs(entry - sl);
@@ -181,6 +193,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = tp;
    req.reason = (side == QM_BUY) ? "ema2_4_cross_stoch_long" : "ema2_4_cross_stoch_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 

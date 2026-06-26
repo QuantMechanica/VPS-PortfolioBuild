@@ -10934,11 +10934,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11450,london-breakfast-asian-range-m15,2,USDJPY.DWX,114500002,2026-06-18,Development,active
 11450,london-breakfast-asian-range-m15,3,AUDUSD.DWX,114500003,2026-06-18,Development,active
 11450,london-breakfast-asian-range-m15,4,USDCAD.DWX,114500004,2026-06-18,Development,active
-11451,vegas-wave-ema144ema169-fractal-h1,0,EURUSD.DWX,114510000,2026-06-18,Claude,reserved
-11451,vegas-wave-ema144ema169-fractal-h1,1,GBPUSD.DWX,114510001,2026-06-18,Claude,reserved
-11451,vegas-wave-ema144ema169-fractal-h1,2,USDJPY.DWX,114510002,2026-06-18,Claude,reserved
-11451,vegas-wave-ema144ema169-fractal-h1,3,AUDUSD.DWX,114510003,2026-06-18,Claude,reserved
-11451,vegas-wave-ema144ema169-fractal-h1,4,USDCAD.DWX,114510004,2026-06-18,Claude,reserved
+11451,vegas-wave-ema144ema169-fractal-h1,0,EURUSD.DWX,114510000,2026-06-18,Claude,active
+11451,vegas-wave-ema144ema169-fractal-h1,1,GBPUSD.DWX,114510001,2026-06-18,Claude,active
+11451,vegas-wave-ema144ema169-fractal-h1,2,USDJPY.DWX,114510002,2026-06-18,Claude,active
+11451,vegas-wave-ema144ema169-fractal-h1,3,AUDUSD.DWX,114510003,2026-06-18,Claude,active
+11451,vegas-wave-ema144ema169-fractal-h1,4,USDCAD.DWX,114510004,2026-06-18,Claude,active
 11452,big-ben-fade-asian-range-m5,0,EURUSD.DWX,114520000,2026-06-20,Development,active
 11452,big-ben-fade-asian-range-m5,1,GBPUSD.DWX,114520001,2026-06-20,Development,active
 11452,big-ben-fade-asian-range-m5,2,USDJPY.DWX,114520002,2026-06-20,Development,active

@@ -1,20 +1,20 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11229
-; ea_slug:      ft-freinforced
+; ea_id:        11512
+; ea_slug:      carter-t-ema2-4-stoch-d1
 ; ea_version:   v5.0
 ; set_version:  s20260626-001
-; symbol:       EURUSD.DWX
-; timeframe:    M5
+; symbol:       GBPUSD.DWX
+; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   e3333de71075c1860085129d7e88f07a06ac1f8c4a8b74b2df5a8c4e2764481b
 ; author:       Development
 ; date:         2026-06-26
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

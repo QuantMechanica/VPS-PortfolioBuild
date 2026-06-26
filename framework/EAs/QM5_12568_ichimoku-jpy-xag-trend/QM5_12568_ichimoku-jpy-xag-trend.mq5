@@ -89,29 +89,6 @@ input int    strategy_session_end_hhmm   = 2359;
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
 
-bool Strategy_Midpoint(const ENUM_TIMEFRAMES tf,
-                       const int period,
-                       const int shift,
-                       double &out_value)
-  {
-   out_value = 0.0;
-   if(period <= 0 || shift < 0)
-      return false;
-
-   const int hi_shift = iHighest(_Symbol, tf, MODE_HIGH, period, shift);
-   const int lo_shift = iLowest(_Symbol, tf, MODE_LOW, period, shift);
-   if(hi_shift < 0 || lo_shift < 0)
-      return false;
-
-   const double high = iHigh(_Symbol, tf, hi_shift); // perf-allowed: Ichimoku midpoint — no QM wrapper for iHighest/iLowest index reads
-   const double low = iLow(_Symbol, tf, lo_shift);  // perf-allowed: Ichimoku midpoint — no QM wrapper for iHighest/iLowest index reads
-   if(high <= 0.0 || low <= 0.0 || high < low)
-      return false;
-
-   out_value = (high + low) * 0.5;
-   return true;
-  }
-
 bool Strategy_IchimokuSnapshot(const int card_shift,
                                double &tenkan,
                                double &kijun,
@@ -130,11 +107,25 @@ bool Strategy_IchimokuSnapshot(const int card_shift,
    const ENUM_TIMEFRAMES tf = strategy_signal_tf;
    const int mt5_shift = card_shift + 1; // card [0] is the latest completed bar
 
-   if(!Strategy_Midpoint(tf, strategy_tenkan_period, mt5_shift, tenkan))
-      return false;
-   if(!Strategy_Midpoint(tf, strategy_kijun_period, mt5_shift, kijun))
-      return false;
-   if(!Strategy_Midpoint(tf, strategy_senkou_b_period, mt5_shift, span_b))
+   tenkan = QM_Ichimoku_TenkanSen(_Symbol,
+                                  tf,
+                                  strategy_tenkan_period,
+                                  strategy_kijun_period,
+                                  strategy_senkou_b_period,
+                                  mt5_shift);
+   kijun = QM_Ichimoku_KijunSen(_Symbol,
+                                tf,
+                                strategy_tenkan_period,
+                                strategy_kijun_period,
+                                strategy_senkou_b_period,
+                                mt5_shift);
+   span_b = QM_Ichimoku_SenkouSpanB(_Symbol,
+                                    tf,
+                                    strategy_tenkan_period,
+                                    strategy_kijun_period,
+                                    strategy_senkou_b_period,
+                                    mt5_shift);
+   if(tenkan <= 0.0 || kijun <= 0.0 || span_b <= 0.0)
       return false;
 
    close_price = iClose(_Symbol, tf, mt5_shift); // perf-allowed: closed-bar close read for Ichimoku cloud filter — no QM_Close helper

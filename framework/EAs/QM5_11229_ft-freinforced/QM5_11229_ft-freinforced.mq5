@@ -70,31 +70,6 @@ input double strategy_disaster_stop_pct  = 5.0;     // source stoploss cap (-5%)
 input double strategy_spread_pct_of_stop = 6.0;     // skip if spread > this % of stop distance
 input int    strategy_warmup_bars        = 650;     // minimum M5 bars for H1 SMA stability
 
-double Strategy_CappedStop(const QM_OrderType order_type,
-                           const double entry,
-                           const double atr_value)
-  {
-   const double atr_stop = QM_StopATRFromValue(_Symbol, order_type, entry, atr_value, strategy_sl_atr_mult);
-   if(atr_stop <= 0.0)
-      return 0.0;
-   if(strategy_disaster_stop_pct <= 0.0)
-      return atr_stop;
-
-   const double cap_fraction = strategy_disaster_stop_pct / 100.0;
-   double cap_stop = 0.0;
-   if(order_type == QM_BUY)
-      cap_stop = entry * (1.0 - cap_fraction);
-   else
-      cap_stop = entry * (1.0 + cap_fraction);
-   cap_stop = QM_StopRulesNormalizePrice(_Symbol, cap_stop);
-   if(cap_stop <= 0.0)
-      return atr_stop;
-
-   if(order_type == QM_BUY)
-      return MathMax(atr_stop, cap_stop);
-   return MathMin(atr_stop, cap_stop);
-  }
-
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
@@ -135,7 +110,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(Bars(_Symbol, _Period) < strategy_warmup_bars) // perf-allowed: O(1) warmup guard; no QM_Bars helper exists.
+   const double warmup_sma = QM_SMA(_Symbol, _Period, strategy_warmup_bars, 1);
+   if(warmup_sma <= 0.0)
       return false;
 
    // One open position per symbol/magic (no simultaneous long + short).
@@ -177,7 +153,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // --- Long: close above H1 regime AND fresh bullish cross ---
    if(crossed_up && close1 > h1_sma)
      {
-      const double sl = Strategy_CappedStop(QM_BUY, entry, atr_value);
+      const double atr_stop = QM_StopATRFromValue(_Symbol, QM_BUY, entry, atr_value, strategy_sl_atr_mult);
+      if(atr_stop <= 0.0)
+         return false;
+      double sl = atr_stop;
+      if(strategy_disaster_stop_pct > 0.0)
+        {
+         const double cap_stop = QM_StopRulesNormalizePrice(_Symbol, entry * (1.0 - strategy_disaster_stop_pct / 100.0));
+         if(cap_stop > 0.0)
+            sl = MathMax(atr_stop, cap_stop);
+        }
       if(sl <= 0.0)
          return false;
       req.type   = QM_BUY;
@@ -191,7 +176,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // --- Short: close below H1 regime AND fresh bearish cross ---
    if(crossed_down && close1 < h1_sma)
      {
-      const double sl = Strategy_CappedStop(QM_SELL, entry, atr_value);
+      const double atr_stop = QM_StopATRFromValue(_Symbol, QM_SELL, entry, atr_value, strategy_sl_atr_mult);
+      if(atr_stop <= 0.0)
+         return false;
+      double sl = atr_stop;
+      if(strategy_disaster_stop_pct > 0.0)
+        {
+         const double cap_stop = QM_StopRulesNormalizePrice(_Symbol, entry * (1.0 + strategy_disaster_stop_pct / 100.0));
+         if(cap_stop > 0.0)
+            sl = MathMin(atr_stop, cap_stop);
+        }
       if(sl <= 0.0)
          return false;
       req.type   = QM_SELL;

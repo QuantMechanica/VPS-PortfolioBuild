@@ -3,16 +3,16 @@
 ; ea_id:        12568
 ; ea_slug:      ichimoku-jpy-xag-trend
 ; ea_version:   v5.0
-; set_version:  s20260625-001
+; set_version:  s20260626-001
 ; symbol:       XAGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   8ebd2d074446a8e56c9ce657dfd382b1736975a9420ab3f2b6977ae899621752
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-25
+; date:         2026-06-26
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=1000
