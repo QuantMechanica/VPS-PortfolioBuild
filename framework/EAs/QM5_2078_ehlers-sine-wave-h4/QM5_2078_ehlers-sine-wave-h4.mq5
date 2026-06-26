@@ -33,8 +33,8 @@ input int    strategy_warmup_h4_bars       = 200;
 input int    strategy_atr_period           = 20;
 input double strategy_spread_atr_mult      = 0.30;
 input int    strategy_d1_ema_period        = 50;
-input double strategy_cycle_min_dphase_deg = 6.0;
-input double strategy_cycle_max_dphase_deg = 60.0;
+input double strategy_cycle_min_dphase_deg = 0.0;
+input double strategy_cycle_max_dphase_deg = 180.0;
 input int    strategy_trade_min_period     = 6;
 input int    strategy_trade_max_period     = 50;
 input double strategy_sine_lead_sep_min    = 0.0;
@@ -337,15 +337,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double atr = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
-   const double d1_ema = QM_EMA(_Symbol, PERIOD_D1, strategy_d1_ema_period, 1, PRICE_CLOSE);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(atr <= 0.0 || d1_ema <= 0.0 || ask <= 0.0 || bid <= 0.0)
+   if(atr <= 0.0 || ask <= 0.0 || bid <= 0.0)
       return false;
 
    if(cross > 0)
      {
-      if(g_sine[0] <= 0.0 || g_close_h4[0] <= d1_ema)
+      if(g_sine[0] <= 0.0)
          return false;
       req.type = QM_BUY;
       req.sl = QM_StopRulesNormalizePrice(_Symbol, g_low_h4[0] - strategy_initial_stop_atr * atr);
@@ -353,7 +352,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
    else
      {
-      if(g_sine[0] >= 0.0 || g_close_h4[0] >= d1_ema)
+      if(g_sine[0] >= 0.0)
          return false;
       req.type = QM_SELL;
       req.sl = QM_StopRulesNormalizePrice(_Symbol, g_high_h4[0] + strategy_initial_stop_atr * atr);

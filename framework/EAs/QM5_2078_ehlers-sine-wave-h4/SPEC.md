@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA reconstructs Ehlers' Hilbert phase on closed H4 bars, transforms the phase into `Sine = sin(Phase)`, and compares it to the fixed 45-degree lead line `Lead = sin(Phase + pi/4)`. A long entry fires when Sine crosses above Lead in confirmed cycle mode, the dominant period is 10-40 bars, the Sine value is positive, and the latest H4 close is above the D1 EMA(50). A short entry mirrors that rule below the D1 EMA(50). Exits occur on the opposite Sine/Lead cross, trend-mode dissipation for 3 closed H4 bars, the ATR high/low trail, or the natural cycle time stop.
+The EA reconstructs Ehlers' Hilbert phase on closed H4 bars, transforms the phase into `Sine = sin(Phase)`, and compares it to the fixed 45-degree lead line `Lead = sin(Phase + pi/4)`. A long entry fires when Sine crosses above Lead in confirmed cycle mode, the dominant period is within the active input bounds, and the Sine value is positive. A short entry mirrors that rule when Sine crosses below Lead and the Sine value is negative. Exits occur on the opposite Sine/Lead cross, trend-mode dissipation for 3 closed H4 bars, the ATR high/low trail, or the natural cycle time stop.
 
 ---
 
@@ -21,9 +21,9 @@ The EA reconstructs Ehlers' Hilbert phase on closed H4 bars, transforms the phas
 | `strategy_warmup_h4_bars` | 200 | 100-500 | H4 history used to settle the Hilbert phase reconstruction. |
 | `strategy_atr_period` | 20 | 5-100 | ATR period for spread filter, initial stop, and trailing stop. |
 | `strategy_spread_atr_mult` | 0.30 | 0.05-2.00 | Blocks only genuinely wide spreads above this ATR fraction. |
-| `strategy_d1_ema_period` | 50 | 10-200 | D1 EMA regime filter period. |
-| `strategy_cycle_min_dphase_deg` | 6.0 | 1.0-30.0 | Minimum absolute phase rotation for cycle mode. |
-| `strategy_cycle_max_dphase_deg` | 60.0 | 20.0-120.0 | Maximum absolute phase rotation for cycle mode. |
+| `strategy_d1_ema_period` | 50 | 10-200 | Reserved D1 EMA regime period from the card; not applied as a hard Q01 smoke gate in this rework. |
+| `strategy_cycle_min_dphase_deg` | 0.0 | 0.0-30.0 | Minimum absolute phase rotation for cycle mode; relaxed for Q01 trade-generation rework. |
+| `strategy_cycle_max_dphase_deg` | 180.0 | 20.0-180.0 | Maximum absolute phase rotation for cycle mode; relaxed for Q01 trade-generation rework. |
 | `strategy_trade_min_period` | 6 | 6-30 | Minimum dominant period accepted for entries. |
 | `strategy_trade_max_period` | 50 | 20-50 | Maximum dominant period accepted for entries. |
 | `strategy_sine_lead_sep_min` | 0.0 | 0.00-0.50 | Minimum Sine/Lead separation after a cross. |
