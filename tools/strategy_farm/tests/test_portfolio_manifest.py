@@ -11,7 +11,7 @@ REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 
 from portfolio import portfolio_manifest  # noqa: E402
-from portfolio.portfolio_manifest import STATUS, build_manifest  # noqa: E402
+from portfolio.portfolio_manifest import STATUS, STATUS_DD_CAP_FAILED, build_manifest  # noqa: E402
 
 
 class PortfolioManifestTests(unittest.TestCase):
@@ -20,13 +20,23 @@ class PortfolioManifestTests(unittest.TestCase):
             common_dir = Path(tmp)
             stream_dir = common_dir / "QM" / "q08_trades"
             stream_dir.mkdir(parents=True)
+            magic_registry = common_dir / "magic_numbers.csv"
 
             start = dt.datetime(2024, 1, 1, tzinfo=dt.UTC)
             self._write_stream(stream_dir / "101_EURUSD_DWX.jsonl", start, [10.0, -2.0, 3.0])
             self._write_stream(stream_dir / "100_GBPUSD_DWX.jsonl", start, [5.0, 1.0, -1.0])
+            self._write_magic_registry(
+                magic_registry,
+                [(101, "EURUSD.DWX", 3), (100, "GBPUSD.DWX", 7)],
+            )
 
             keys = [(101, "EURUSD.DWX"), (100, "GBPUSD.DWX")]
-            manifest = build_manifest(keys, account_risk_pct=2.5, common_dir=common_dir)
+            manifest = build_manifest(
+                keys,
+                account_risk_pct=2.5,
+                common_dir=common_dir,
+                magic_registry=magic_registry,
+            )
 
         self.assertEqual(manifest["status"], STATUS)
         self.assertEqual(manifest["n_sleeves"], 2)
@@ -39,13 +49,17 @@ class PortfolioManifestTests(unittest.TestCase):
         slots = [sleeve["slot"] for sleeve in manifest["sleeves"]]
         self.assertEqual(slots, [0, 1])
         self.assertEqual(len(slots), len(set(slots)))
+        expected_slots = {"100:GBPUSD.DWX": 7, "101:EURUSD.DWX": 3}
         for sleeve in manifest["sleeves"]:
-            self.assertEqual(
-                sleeve["magic_number"],
-                sleeve["ea_id"] * 10000 + sleeve["slot"],
-            )
+            label = f"{sleeve['ea_id']}:{sleeve['symbol']}"
+            expected_slot = expected_slots[label]
+            self.assertEqual(sleeve["magic_number"], sleeve["ea_id"] * 10000 + expected_slot)
             self.assertEqual(sleeve["set_file_expectation"]["ENV"], "live")
             self.assertEqual(sleeve["set_file_expectation"]["RISK_FIXED"], 0.0)
+            self.assertEqual(
+                sleeve["set_file_expectation"]["qm_magic_slot_offset"],
+                expected_slot,
+            )
         self.assertIn("sharpe", manifest["kpis"])
         self.assertIn("max_drawdown_pct", manifest["kpis"])
 
@@ -57,6 +71,24 @@ class PortfolioManifestTests(unittest.TestCase):
         self.assertEqual(manifest["sleeves"], [])
         self.assertEqual(manifest["weights"], {})
         self.assertEqual(manifest["kpis"]["n_sleeves"], 0)
+
+    def test_missing_magic_registry_row_rejects_manifest(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            common_dir = Path(tmp)
+            stream_dir = common_dir / "QM" / "q08_trades"
+            stream_dir.mkdir(parents=True)
+            magic_registry = common_dir / "magic_numbers.csv"
+
+            start = dt.datetime(2024, 1, 1, tzinfo=dt.UTC)
+            self._write_stream(stream_dir / "100_EURUSD_DWX.jsonl", start, [1.0, 2.0])
+            self._write_magic_registry(magic_registry, [(100, "GBPUSD.DWX", 0)])
+
+            with self.assertRaisesRegex(ValueError, "no active magic registry row"):
+                build_manifest(
+                    [(100, "EURUSD.DWX")],
+                    common_dir=common_dir,
+                    magic_registry=magic_registry,
+                )
 
     def test_selected_book_uses_risk_parity_weighting(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -131,6 +163,35 @@ class PortfolioManifestTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "--all-streams cannot be combined"):
             portfolio_manifest.main(["--all-streams", "--book-source", "q12-ready-all"])
 
+    def test_main_marks_dd_cap_violation_not_owner_ready(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "manifest.json"
+            manifest = {
+                "status": STATUS,
+                "deployment_action": "NONE",
+                "n_sleeves": 1,
+                "kpis": {"max_drawdown_pct": 13.0},
+            }
+            with mock.patch.object(
+                portfolio_manifest,
+                "_selected_book",
+                return_value=([(100, "EURUSD.DWX")], {(100, "EURUSD.DWX"): 1.0}, "basis"),
+            ), mock.patch.object(
+                portfolio_manifest,
+                "build_manifest",
+                return_value=manifest,
+            ):
+                rc = portfolio_manifest.main(
+                    ["--out", str(out), "--max-dd-pct", "6.0", "--book-source", "q12-ready-all"]
+                )
+
+            written = json.loads(out.read_text(encoding="utf-8"))
+
+        self.assertEqual(rc, 0)
+        self.assertEqual(written["status"], STATUS_DD_CAP_FAILED)
+        self.assertFalse(written["cap_met"])
+        self.assertEqual(written["book_source"], "q12-ready-all")
+
     def _write_stream(
         self,
         path: Path,
@@ -150,6 +211,19 @@ class PortfolioManifestTests(unittest.TestCase):
                     "notional": 0.0,
                 }
                 fh.write(json.dumps(row, sort_keys=True) + "\n")
+
+    def _write_magic_registry(
+        self,
+        path: Path,
+        rows: list[tuple[int, str, int]],
+    ) -> None:
+        with path.open("w", encoding="utf-8") as fh:
+            fh.write("ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status\n")
+            for ea_id, symbol, slot in rows:
+                fh.write(
+                    f"{ea_id},test-ea,{slot},{symbol},{ea_id * 10000 + slot},"
+                    "2026-06-26,Test,active\n"
+                )
 
 
 if __name__ == "__main__":
