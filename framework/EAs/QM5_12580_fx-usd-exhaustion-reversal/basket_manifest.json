@@ -1,0 +1,15 @@
+{
+  "ea_id": 12580,
+  "slug": "fx-usd-exhaustion-reversal",
+  "timeframe": "D1",
+  "symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "USDJPY.DWX",
+    "USDCHF.DWX",
+    "USDCAD.DWX"
+  ],
+  "notes": "USD-major exhaustion reversal. Each EA instance trades only its host symbol/magic slot, but reads the full seven-symbol .DWX FX universe on D1 to compute a shared USD-basket z-score. Foreign reads are registered through QM_SymbolGuardInit and warmed with QM_BasketWarmupHistory."
+}
