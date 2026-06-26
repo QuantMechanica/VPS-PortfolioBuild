@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12533
 ; ea_slug:      edgelab-eurjpy-gbpjpy-cointegration
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   9eb2e547f27bb176784eabf85eed7d7e3e4fa0f634ff1b9df0204c63b05792ea
+; build_hash:   d0880a67891e15bba642810338d2b0d2fe0e6ee1ba966d67a824516a0bd71f3c
 ; author:       Development
 ; date:         2026-06-09
 ;==========================================================
