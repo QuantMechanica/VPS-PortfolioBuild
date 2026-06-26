@@ -221,14 +221,32 @@ class P2BaselineTests(unittest.TestCase):
         self.assertEqual(reason, "G1_NO_REAL_TICKS")
 
     def test_derive_verdict_pass_requires_g1_marker(self) -> None:
+        # 50 trades clears the trade floor (max(min_trades, Q02_TRADES_MIN=5)); pf/dd must be
+        # present and passing for a real PASS (the fixture previously omitted them and only
+        # ever failed — silently at the old 150 floor, then at the pf gate).
         summary = {
             "result": "PASS",
             "model4_log_marker_detected": True,
             "reason_classes": ["OK"],
-            "runs": [{"total_trades": 50}],
+            "runs": [{"total_trades": 50, "profit_factor": 1.5, "drawdown": 5000.0}],
             "report_dir": "/tmp/report",
         }
         verdict, reason, _ = p2_baseline.derive_verdict(summary, min_trades=20)
+        self.assertEqual(verdict, "PASS")
+        self.assertEqual(reason, "")
+
+    def test_derive_verdict_accepts_low_freq_trade_count(self) -> None:
+        # OWNER 2026-06-26: a low-freq edge passing >= 5 trades/yr clears Q02 (here min_trades
+        # is the rate-based 45 = 5/yr * 9y full history; 60 trades > 45 and the old flat 150
+        # floor would have wrongly failed it).
+        summary = {
+            "result": "PASS",
+            "model4_log_marker_detected": True,
+            "reason_classes": ["OK"],
+            "runs": [{"total_trades": 60, "profit_factor": 1.4, "drawdown": 8000.0}],
+            "report_dir": "/tmp/report",
+        }
+        verdict, reason, _ = p2_baseline.derive_verdict(summary, min_trades=45)
         self.assertEqual(verdict, "PASS")
         self.assertEqual(reason, "")
 

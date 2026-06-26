@@ -215,8 +215,18 @@ def parse_summary(summary_path: Path) -> dict:
 # Documented in Vault `03 Pipeline/Q02 Baseline Screening.md`.
 # Spec source: docs/ops/PIPELINE_REWRITE_PROPOSAL_2026-05-23.md §5 item 1.
 #
+# Q02_TRADES_MIN recalibrated 2026-06-26 (OWNER call): 5 trades/year is a
+# sufficient sample at Q02 for low-frequency structural edges — the real
+# frequency/robustness filtering happens on OOS (Q04 enforces >= 5 trades/yr on
+# the pooled OOS window). The old flat 150-trade full-history floor was coupled,
+# via the rate-scaled `min_trades` arg, to the card's *declared* frequency and
+# killed genuine ~10/yr edges whose cards over-declared (e.g. ICT Silver Bullet
+# QM5_12571: card said 100/yr, reality ~8-14/yr). The operative floor is now the
+# rate-based `min_trades` (= 5 * window_years) passed in by the caller; this
+# constant is only an absolute lower bound for sub-year windows.
+#
 Q02_PF_MIN = 1.20         # profit factor floor (per symbol)
-Q02_TRADES_MIN = 150      # sample-size floor (per symbol)
+Q02_TRADES_MIN = 5        # absolute sample-size floor (per symbol); 5/yr rate set by caller
 Q02_DD_PCT_MAX = 15.0     # max drawdown ceiling, % of starting equity
 Q02_STARTING_EQUITY = 100_000.0   # HR4: fixed-risk backtest deposit
 
@@ -253,13 +263,15 @@ def derive_verdict(summary: dict, min_trades: int) -> tuple[str, str, str]:
     """Return (verdict, reason, evidence_summary) per the new Q02 gate spec.
 
     Verdicts emitted (post-2026-05-23 rewrite):
-      - "PASS"           — meets PF > 1.20 AND trades > 150 AND DD < 15%
+      - "PASS"           — meets PF > 1.20 AND trades >= floor AND DD < 15%
       - "FAIL"           — strategy failed at least one threshold
       - "Q02_NO_TRADES"  — EA produced 0 trades; route back to Q01 revision loop
       - "INVALID"        — infrastructure issue, not a strategy verdict
 
-    The `min_trades` argument is kept for back-compat but the locked
-    Q02_TRADES_MIN constant is the operative threshold.
+    The operative trade floor is `max(min_trades, Q02_TRADES_MIN)`. Since
+    2026-06-26 the caller passes a rate-based `min_trades` (= 5 trades/yr * window
+    years); Q02_TRADES_MIN (5) is only the absolute lower bound for sub-year
+    windows. Frequency robustness is confirmed on OOS at Q04, not gated here.
     """
     report_dir = summary.get("report_dir", "")
 

@@ -13,7 +13,10 @@ import farmctl  # noqa: E402
 
 
 class CascadePromotionTests(unittest.TestCase):
-    def test_multi_asset_card_scales_min_trades_from_basket_frequency(self) -> None:
+    def test_min_trades_floor_is_flat_rate_not_card_coupled(self) -> None:
+        # OWNER 2026-06-26: the Q02 floor is a flat 5 trades/yr * window-years, decoupled
+        # from the card's declared frequency. The card-derived fields still compute (kept
+        # for diagnostics/priority), but effective_min_trades no longer scales from them.
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             cards_dir = root / "artifacts" / "cards_approved"
@@ -34,11 +37,13 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
 
             info = farmctl._effective_min_trades(root, "QM5_1056", None, None, 2024)
 
+            # card-derived diagnostics unchanged
             self.assertEqual(info["expected_trades_per_year_card"], 12)
             self.assertEqual(info["card_universe_symbol_count"], 9)
             self.assertEqual(info["min_trade_scope"], "basket_scaled_from_card")
             self.assertEqual(info["expected_trades_per_year_per_symbol"], 1)
-            self.assertEqual(info["effective_min_trades"], 1)
+            # floor is now flat 5/yr * 1 window-year = 5 (was card-coupled = 1)
+            self.assertEqual(info["effective_min_trades"], 5)
 
     def test_enqueue_cascade_distinguishes_setfiles_for_same_symbol(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:

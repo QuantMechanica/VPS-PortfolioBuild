@@ -58,12 +58,16 @@ Q04_SOFT_MIN_POS_FRACTION = 2.0 / 3.0  # >= this fraction of folds must have PF-
 # strict folds' realistic-net per-trade streams (no extra backtest; identical cost model).
 # Guards keep quality identical:
 #   (1) eligibility — avg < Q04_LOWFREQ_MAX_TRADES_PER_YEAR OOS trades/yr across the folds
-#   (2) Q04_LOWFREQ_MIN_POOLED_TRADES min pooled trades, else INVALID (never a free pass)
+#   (2) >= Q04_OOS_MIN_TRADES_PER_YEAR trades/yr sustained on the pooled OOS window, else
+#       INVALID (never a free pass). OWNER 2026-06-26: "5 Trades/Jahr genügen, WENN er auf
+#       den OOS-Daten min. 5/Jahr macht" — this is the OOS counterpart to the relaxed Q02
+#       trade floor (Q02 now accepts 5/yr in-sample; Q04 confirms 5/yr holds out-of-sample).
 #   (3) trades in >= Q04_LOWFREQ_MIN_ACTIVE_YEARS of the OOS years (no single-year wonder)
 # High-frequency EAs are untouched: the strict 3-fold is their only path. Only attempted
 # when the strict verdict is FAIL with every fold completed — never rescues INFRA/INVALID.
 Q04_LOWFREQ_MAX_TRADES_PER_YEAR = 15
-Q04_LOWFREQ_MIN_POOLED_TRADES = 12
+# OOS floor: pooled trades must be >= this rate * number of OOS years (e.g. 5 * 3 = 15).
+Q04_OOS_MIN_TRADES_PER_YEAR = 5
 Q04_LOWFREQ_MIN_ACTIVE_YEARS = 2
 
 # Anchored expanding-window fold geometry. 2025 is the latest closed year
@@ -341,9 +345,11 @@ def aggregate_verdict_lowfreq(strict_folds: list[dict]) -> tuple[str, str]:
         pooled_nets.extend(float(x) for x in (f.get("oos_nets") or []))
     n_trades = len(pooled_nets)
     active_years = sum(1 for f in strict_folds if int(f.get("trades") or 0) > 0)
-    if n_trades < Q04_LOWFREQ_MIN_POOLED_TRADES:
+    # OWNER 2026-06-26: require >= 5 trades/yr sustained on the pooled OOS window.
+    min_pooled = Q04_OOS_MIN_TRADES_PER_YEAR * len(strict_folds)
+    if n_trades < min_pooled:
         return "INVALID", (f"lowfreq_insufficient_pooled_trades:"
-                           f"{n_trades}<{Q04_LOWFREQ_MIN_POOLED_TRADES}")
+                           f"{n_trades}<{min_pooled}(>={Q04_OOS_MIN_TRADES_PER_YEAR}/yr)")
     pf = q08common.profit_factor(pooled_nets)
     if pf == float("inf"):       # no losing trades after cost → cap for a finite verdict
         pf = 999.0

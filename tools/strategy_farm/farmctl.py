@@ -953,18 +953,29 @@ def _smoke_year_count(from_date: str | None, to_date: str | None, default_year: 
         return 1
 
 
+# Q02 absolute trade floor (OWNER 2026-06-26): 5 trades/year is a sufficient sample at
+# Q02 for low-frequency structural edges; the per-window floor is this rate * window years.
+Q02_MIN_TRADES_PER_YEAR = 5
+
+
 def _effective_min_trades(root: Path, ea_id: str, from_date: str | None,
                           to_date: str | None, default_year: int) -> dict[str, int | str]:
     freq = _expected_trade_frequency_for_ea(root, ea_id)
     expected = int(freq["expected_trades_per_year_per_symbol"])
     years = _smoke_year_count(from_date, to_date, default_year)
+    # Q02 trade floor recalibrated 2026-06-26 (OWNER call): a flat 5 trades/year is
+    # sufficient at Q02. The floor is NO LONGER coupled to the card-declared expected
+    # frequency (`expected * years * 0.5`) — that coupling killed genuine low-freq edges
+    # whose cards over-declared (ICT Silver Bullet QM5_12571: card 100/yr, reality
+    # ~8-14/yr -> 50-floor -> FAIL). `expected` is retained for diagnostics/priority only.
+    # OOS frequency robustness (>= 5/yr) is enforced at Q04, not here.
     return {
         "expected_trades_per_year_per_symbol": expected,
         "expected_trades_per_year_card": int(freq["expected_trades_per_year_card"]),
         "card_universe_symbol_count": int(freq["card_universe_symbol_count"]),
         "min_trade_scope": str(freq["min_trade_scope"]),
         "smoke_year_count": years,
-        "effective_min_trades": max(1, int(expected * years * 0.5)),
+        "effective_min_trades": max(Q02_MIN_TRADES_PER_YEAR, Q02_MIN_TRADES_PER_YEAR * years),
     }
 
 

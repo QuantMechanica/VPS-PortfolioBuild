@@ -16,7 +16,7 @@ param(
     [ValidateRange(1, 10)]
     [int]$Runs = 2,
     [ValidateRange(0, 1000000)]
-    [int]$MinTrades = 20,
+    [int]$MinTrades = 5,
     [ValidateSet(4)]
     [int]$Model = 4,
     [ValidateRange(60, 7200)]
@@ -1236,15 +1236,19 @@ $fromDate = if ($FromDate) { $FromDate } else { "{0}.01.01" -f $Year }
 $toDate = if ($ToDate) { $ToDate } else { "{0}.12.31" -f $Year }
 $newsCalendarDiagnostics = Resolve-NewsCalendarDiagnostics
 Write-Host ("run_smoke.news_calendar_status={0} latest_modified_utc='{1}' age_hours={2} max_age_hours={3}" -f $newsCalendarDiagnostics.status, $newsCalendarDiagnostics.latest_modified_utc, $newsCalendarDiagnostics.age_hours, $newsCalendarDiagnostics.max_age_hours)
+# Q02 trade floor (OWNER 2026-06-26): flat 5 trades/year, NOT coupled to the card's
+# declared frequency. The old `expected * years * 0.5` rule killed genuine low-freq edges
+# whose cards over-declared (ICT Silver Bullet QM5_12571: card 100/yr, reality ~8-14/yr ->
+# 50-floor -> FAIL). OOS frequency robustness (>= 5/yr) is enforced at Q04, not here.
+$Q02MinTradesPerYear = 5
 $expectedTradeInfo = Get-ExpectedTradesPerYear -EAIdValue $EAId
-if ($null -ne $expectedTradeInfo) {
-    $expectedTradesPerYear = [int]$expectedTradeInfo.ExpectedTradesPerYearPerSymbol
-    $smokeYearCount = Get-SmokeYearCount -StartDate $fromDate -EndDate $toDate
-    $effectiveMinTrades = [Math]::Max(1, [int][Math]::Floor($expectedTradesPerYear * $smokeYearCount * 0.5))
-    if ($effectiveMinTrades -ne $MinTrades) {
-        Write-Host ("run_smoke.min_trades_override ea_id=QM5_{0:d4} expected_per_year={1} years={2} old={3} effective={4} scope={5} card_expected={6} card_symbols={7}" -f $EAId, $expectedTradesPerYear, $smokeYearCount, $MinTrades, $effectiveMinTrades, $expectedTradeInfo.MinTradeScope, $expectedTradeInfo.ExpectedTradesPerYearCard, $expectedTradeInfo.CardUniverseSymbolCount)
-        $MinTrades = $effectiveMinTrades
-    }
+$smokeYearCount = Get-SmokeYearCount -StartDate $fromDate -EndDate $toDate
+$effectiveMinTrades = [Math]::Max($Q02MinTradesPerYear, [int]($Q02MinTradesPerYear * $smokeYearCount))
+if ($effectiveMinTrades -ne $MinTrades) {
+    $cardExpected = if ($null -ne $expectedTradeInfo) { $expectedTradeInfo.ExpectedTradesPerYearCard } else { "n/a" }
+    $cardScope = if ($null -ne $expectedTradeInfo) { $expectedTradeInfo.MinTradeScope } else { "n/a" }
+    Write-Host ("run_smoke.min_trades_override ea_id=QM5_{0:d4} rate_per_year={1} years={2} old={3} effective={4} scope={5} card_expected={6}" -f $EAId, $Q02MinTradesPerYear, $smokeYearCount, $MinTrades, $effectiveMinTrades, $cardScope, $cardExpected)
+    $MinTrades = $effectiveMinTrades
 }
 
 # Apply (or reset) the tester commission for this run before launching. Q04 passes
