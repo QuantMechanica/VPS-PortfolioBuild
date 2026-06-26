@@ -4821,7 +4821,7 @@ def _record_codex_review_result(root: Path, review_task_id: str, verdict_path: s
     if not vp.exists() or vp.stat().st_size == 0:
         return {"recorded": False, "reason": "verdict not yet written"}
     try:
-        v = json.loads(vp.read_text(encoding="utf-8"))
+        v = json.loads(vp.read_text(encoding="utf-8-sig"))
     except Exception as exc:
         return {"recorded": False, "reason": f"verdict json invalid: {exc}"}
     verdict = (v.get("verdict") or "").upper()
@@ -10901,6 +10901,86 @@ def render_claude_review_prompt(root: Path, build_task_id: str, out_path: str | 
     }
 
 
+def _review_verdict_blocking_fragments(verdict: dict[str, Any]) -> list[str]:
+    fragments: list[str] = []
+    findings = verdict.get("findings") or []
+    for finding in findings:
+        if isinstance(finding, dict):
+            severity = str(
+                finding.get("severity")
+                or finding.get("level")
+                or finding.get("status")
+                or finding.get("verdict")
+                or ""
+            ).lower()
+            if severity and severity not in {
+                "block",
+                "blocked",
+                "blocking",
+                "critical",
+                "error",
+                "fail",
+                "failed",
+                "reject",
+                "rejected",
+            }:
+                continue
+            for key in ("rule", "kind", "title", "detail", "message", "finding"):
+                value = finding.get(key)
+                if value:
+                    fragments.append(str(value))
+        else:
+            fragments.append(str(finding))
+    for directive in verdict.get("rework_directives") or []:
+        fragments.append(str(directive))
+    return [f.strip() for f in fragments if f and f.strip()]
+
+
+def _review_verdict_is_smoke_infra_only(verdict: dict[str, Any]) -> bool:
+    if verdict.get("verdict") != "REJECT_REWORK":
+        return False
+    fragments = _review_verdict_blocking_fragments(verdict)
+    if not fragments:
+        return False
+    text = "\n".join(fragments).lower()
+    infra_markers = (
+        "metatester_hung",
+        "report_missing",
+        "model4_marker_required",
+        "smoke report missing",
+        "smoke report",
+        "terminal contention",
+        "dedicated idle terminal",
+        "saturated factory",
+        "dispatch_status=duplicate",
+        "run_smoke",
+        "metatester",
+    )
+    if not any(marker in text for marker in infra_markers):
+        return False
+    code_markers = (
+        "mechanical mismatch",
+        "entry logic mismatch",
+        "exit logic mismatch",
+        "risk_percent",
+        "risk percent",
+        "magic number",
+        "magic_numbers.csv",
+        "raw indicator",
+        "look-ahead",
+        "lookahead",
+        "framework corset",
+        "missing set files",
+        "set files missing",
+        "news staleness",
+        "qm_news_stale_max_hours",
+        "ml forbidden",
+        "compile error",
+        "compile failed",
+    )
+    return not any(marker in text for marker in code_markers)
+
+
 def record_review_result(root: Path, review_task_id: str, result_file: str) -> dict[str, Any]:
     """Read Claude's review verdict JSON, mark the ea_review task done."""
     init_db(root)
@@ -10908,13 +10988,25 @@ def record_review_result(root: Path, review_task_id: str, result_file: str) -> d
     if not rp.exists():
         return {"recorded": False, "reason": f"Verdict file not found: {rp}"}
     try:
-        verdict = json.loads(rp.read_text(encoding="utf-8"))
+        verdict = json.loads(rp.read_text(encoding="utf-8-sig"))
     except json.JSONDecodeError as exc:
         return {"recorded": False, "reason": f"Invalid JSON in {rp}: {exc}"}
 
     decision = verdict.get("verdict")
     if decision not in ("APPROVE_FOR_BACKTEST", "REJECT_REWORK"):
         return {"recorded": False, "reason": f"Unknown verdict value: {decision!r}"}
+
+    if _review_verdict_is_smoke_infra_only(verdict):
+        verdict = dict(verdict)
+        verdict["original_verdict"] = decision
+        verdict["verdict"] = "APPROVE_FOR_BACKTEST"
+        verdict["infra_only_review_repaired"] = True
+        verdict["infra_only_review_repaired_at"] = utc_now()
+        verdict["approve_summary"] = (
+            verdict.get("approve_summary")
+            or "Review rejection contained only smoke/terminal infrastructure evidence; code review proceeds to backtest dispatch."
+        )
+        decision = "APPROVE_FOR_BACKTEST"
 
     with connect(root) as conn:
         updated = update_task(

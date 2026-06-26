@@ -35,6 +35,9 @@ Repair handlers (each is idempotent, returns count of actions taken):
   R7  Codex_review tasks pending > 30 min with no live_log activity → reset
       to pending state so pump re-spawns. Avoids stuck reviews.
 
+  R8  Ea_review tasks pending > 30 min with no live_log activity and no
+      written verdict → delete the orphan task so pump re-spawns final review.
+
   R11 Pending work_items whose setfile/EA dir/.ex5 is missing → mark
       failed INVALID immediately, without waiting for a terminal slot.
 
@@ -453,6 +456,68 @@ def repair_stranded_codex_review_pending(con) -> list[dict]:
     return out
 
 
+def repair_stranded_ea_review_pending(con) -> list[dict]:
+    """R8: final ea_review status='pending' but no review worker/log/verdict.
+
+    Delete the orphan pending task so pump can recreate the final review task
+    from the completed build. If a verdict exists, leave it for pump to record;
+    if a live log is fresh, assume the worker is still active.
+    """
+    out = []
+    rows = con.execute(
+        "SELECT id, payload_json, updated_at FROM tasks WHERE kind='ea_review' AND status='pending'"
+    ).fetchall()
+    now_ts = time.time()
+    for r in rows:
+        try:
+            t = dt.datetime.fromisoformat(r["updated_at"].replace("Z", "+00:00"))
+            age_sec = (dt.datetime.now(dt.timezone.utc) - t).total_seconds()
+        except Exception:
+            continue
+        if age_sec < 1800:
+            continue
+
+        review_task_id = r["id"]
+        fresh_log = False
+        for prefix in ("claude_review", "codex_review"):
+            log_path = LOG_DIR / f"{prefix}_{review_task_id}.live.log"
+            if not log_path.exists():
+                continue
+            try:
+                if now_ts - log_path.stat().st_mtime < 600:
+                    fresh_log = True
+                    break
+            except OSError:
+                pass
+        if fresh_log:
+            continue
+
+        try:
+            payload = json.loads(r["payload_json"] or "{}")
+        except json.JSONDecodeError:
+            payload = {}
+        verdict_raw = payload.get("verdict_path")
+        verdict_path = Path(verdict_raw) if verdict_raw else ROOT / "artifacts" / "verdicts" / f"review_{review_task_id}.json"
+        if verdict_path.exists():
+            try:
+                if verdict_path.stat().st_size > 0:
+                    continue
+                verdict_path.unlink()
+            except OSError:
+                continue
+
+        con.execute("DELETE FROM tasks WHERE id=?", (review_task_id,))
+        out.append({
+            "handler": "R8_stranded_ea_review",
+            "target": review_task_id,
+            "action": "deleted pending ea_review task",
+            "detail": f"age_min={age_sec/60:.0f} build_task_id={payload.get('build_task_id','?')[:8]!r}",
+        })
+    if out:
+        con.commit()
+    return out
+
+
 def _pending_work_item_artifact_failure(row: sqlite3.Row) -> dict | None:
     setfile_path = Path(str(row["setfile_path"] or ""))
     if not setfile_path.exists():
@@ -837,6 +902,7 @@ def run_all() -> dict:
         repair_grandchildren_setfiles,
         repair_stale_active_work_items,
         repair_stranded_codex_review_pending,
+        repair_stranded_ea_review_pending,
         repair_orphan_g0_claims,
         repair_permanent_build_failures,
         repair_pending_unclaimable_work_items,
