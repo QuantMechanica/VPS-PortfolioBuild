@@ -13623,3 +13623,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12583,eia-distillate-winter,0,XTIUSD.DWX,125830000,2026-06-26,Development,active
 12584,eia-xng-storage,0,XNGUSD.DWX,125840000,2026-06-26,Development,active
 12585,eia-rbob-pullback,0,XTIUSD.DWX,125850000,2026-06-26,Development,active
+12586,eia-xng-winter-brk,0,XNGUSD.DWX,125860000,2026-06-26,Development,active
