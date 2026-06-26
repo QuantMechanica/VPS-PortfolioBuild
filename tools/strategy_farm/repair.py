@@ -48,6 +48,13 @@ Repair handlers (each is idempotent, returns count of actions taken):
       infra errors after a successful compile → clear the stale review and
       return the build to done for fresh review/P2 handling.
 
+  R15 Historical Q09_PORTFOLIO FAIL_PORTFOLIO caused by insufficient
+      correlation overlap → downgrade to NEED_MORE_DATA so sparse robust-pool
+      sleeves stay in the watchlist instead of being treated as hard rejects.
+
+  R16 Q12-ready portfolio_candidates whose Q08 trade stream is missing → mark
+      EVIDENCE_STALE so they no longer poison current portfolio admission.
+
 Output: {repairs_applied: [...], skipped: [...], errors: [...]}. Each
 repair record has {handler, target, action, detail}.
 """
@@ -72,6 +79,7 @@ REPORTS_DIR = ROOT / "reports"
 QUEUE_DIR = ROOT / "queue"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 REGISTRY_DIR = REPO_ROOT / "framework" / "registry"
+COMMON_Q08_STREAM_DIR = Path(r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files\QM\q08_trades")
 
 
 def _utc_now() -> str:
@@ -840,6 +848,125 @@ def repair_infra_only_codex_review_failures(con) -> list[dict]:
     return out
 
 
+def repair_sparse_q09_portfolio_overlap_fails(con) -> list[dict]:
+    """R15: Q09 insufficient-overlap is not a proof of portfolio failure.
+
+    Before 2026-06-26, sparse but improving Q08 FAIL_SOFT sleeves were recorded as
+    FAIL_PORTFOLIO when correlation overlap was below the 60-day minimum. Preserve
+    the evidence and downgrade those rows to NEED_MORE_DATA.
+    """
+    out: list[dict] = []
+    rows = con.execute(
+        """
+        SELECT id, ea_id, symbol, payload_json, evidence_path
+        FROM work_items
+        WHERE phase='Q09_PORTFOLIO'
+          AND status='done'
+          AND verdict='FAIL_PORTFOLIO'
+        """
+    ).fetchall()
+    now = _utc_now()
+    for r in rows:
+        evidence_raw = r["evidence_path"]
+        if not evidence_raw:
+            continue
+        evidence_path = Path(str(evidence_raw))
+        if not evidence_path.exists():
+            continue
+        try:
+            artifact = json.loads(evidence_path.read_text(encoding="utf-8-sig"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if artifact.get("verdict") != "FAIL_PORTFOLIO":
+            continue
+        if artifact.get("reason") != "insufficient_overlap":
+            continue
+
+        artifact["previous_verdict"] = "FAIL_PORTFOLIO"
+        artifact["previous_reason"] = "insufficient_overlap"
+        artifact["verdict"] = "NEED_MORE_DATA"
+        artifact["reason"] = "portfolio_correlation_overlap_below_min"
+        artifact["sparse_overlap_watchlist"] = bool(artifact.get("diversifies"))
+        artifact["repaired_at_utc"] = now
+        try:
+            evidence_path.write_text(
+                json.dumps(artifact, indent=2, sort_keys=True),
+                encoding="utf-8",
+            )
+        except OSError:
+            continue
+
+        try:
+            payload = json.loads(r["payload_json"] or "{}")
+        except json.JSONDecodeError:
+            payload = {}
+        payload["previous_verdict"] = "FAIL_PORTFOLIO"
+        payload["previous_reason"] = "insufficient_overlap"
+        payload["verdict_reason"] = "portfolio_correlation_overlap_below_min"
+        payload["sparse_overlap_watchlist"] = bool(artifact.get("sparse_overlap_watchlist"))
+        payload["sparse_overlap_repaired_at"] = now
+        con.execute(
+            "UPDATE work_items SET verdict='NEED_MORE_DATA', payload_json=?, updated_at=? WHERE id=?",
+            (json.dumps(payload, sort_keys=True), now, r["id"]),
+        )
+        out.append({
+            "handler": "R15_sparse_q09_portfolio_overlap",
+            "target": r["id"],
+            "action": "FAIL_PORTFOLIO → NEED_MORE_DATA",
+            "detail": f"ea={r['ea_id']} symbol={r['symbol']} reason=insufficient_overlap",
+        })
+    if out:
+        con.commit()
+    return out
+
+
+def _portfolio_stream_path(ea_id: str, symbol: str) -> Path | None:
+    m = re.search(r"QM5_(\d+)", str(ea_id))
+    if not m:
+        return None
+    symbol_token = str(symbol).replace(".", "_")
+    return COMMON_Q08_STREAM_DIR / f"{m.group(1)}_{symbol_token}.jsonl"
+
+
+def repair_stale_portfolio_candidates(con) -> list[dict]:
+    """R16: remove active-book candidates whose stream evidence is unavailable."""
+    out: list[dict] = []
+    table = con.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='portfolio_candidates'"
+    ).fetchone()
+    if not table:
+        return out
+    rows = con.execute(
+        """
+        SELECT ea_id, symbol, q11_work_item_id, state, evidence_path
+        FROM portfolio_candidates
+        WHERE state='Q12_REVIEW_READY'
+        """
+    ).fetchall()
+    now = _utc_now()
+    for r in rows:
+        stream_path = _portfolio_stream_path(r["ea_id"], r["symbol"])
+        if stream_path is not None and stream_path.exists() and stream_path.stat().st_size > 0:
+            continue
+        con.execute(
+            """
+            UPDATE portfolio_candidates
+            SET state='EVIDENCE_STALE', updated_at=?
+            WHERE ea_id=? AND symbol=? AND q11_work_item_id=?
+            """,
+            (now, r["ea_id"], r["symbol"], r["q11_work_item_id"]),
+        )
+        out.append({
+            "handler": "R16_stale_portfolio_candidate",
+            "target": f"{r['ea_id']}:{r['symbol']}",
+            "action": "Q12_REVIEW_READY → EVIDENCE_STALE",
+            "detail": f"missing_stream={stream_path}",
+        })
+    if out:
+        con.commit()
+    return out
+
+
 def repair_strategy_farm_gc(con) -> list[dict]:
     """R14: bounded farm garbage collection for old logs/prompts/tmp files."""
     del con
@@ -908,6 +1035,8 @@ def run_all() -> dict:
         repair_pending_unclaimable_work_items,
         repair_incomplete_p2_parent_fanout,
         repair_infra_only_codex_review_failures,
+        repair_sparse_q09_portfolio_overlap_fails,
+        repair_stale_portfolio_candidates,
         repair_strategy_farm_gc,
     ]
     try:

@@ -100,12 +100,34 @@ def evaluate_q08_soft_rescue(
 
     book = read_candidates(candidates_db)
     book = [key for key in book if key != candidate]
-    admission = portfolio_admission.evaluate_candidate(
-        candidate,
-        book,
-        common_dir,
-        max_corr=max_corr,
-    )
+    try:
+        admission = portfolio_admission.evaluate_candidate(
+            candidate,
+            book,
+            common_dir,
+            max_corr=max_corr,
+        )
+    except ValueError as exc:
+        if "missing q08 trade streams" not in str(exc):
+            raise
+        return {
+            **base,
+            "verdict": "NEED_MORE_DATA",
+            "reason": "portfolio_admission_missing_streams",
+            "admission_error": str(exc),
+        }
+
+    if admission.get("reason") == "insufficient_overlap":
+        return {
+            **base,
+            **admission,
+            "verdict": "NEED_MORE_DATA",
+            "reason": "portfolio_correlation_overlap_below_min",
+            "previous_verdict": "FAIL_PORTFOLIO",
+            "previous_reason": "insufficient_overlap",
+            "sparse_overlap_watchlist": bool(admission.get("diversifies")),
+        }
+
     # Trust portfolio_admission: it admits only when the candidate is sufficiently
     # uncorrelated AND actually improves the book (Sharpe up OR maxDD down). A standalone
     # net PF < 1 does NOT disqualify a portfolio sleeve - that is the whole point of the
