@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        1156
 ; ea_slug:      caldeira-cointegration-pairs-fx
@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   20c9a671e8f7b4907fc356026a0fd356813ab0473d7b6e4be3364b8517dbbf32
+; build_hash:   de1cd483ef8b6d175fa77d4103c558cc3c0cea814b631a4c0d9b39f217a22609
 ; author:       Development
 ; date:         2026-05-26
 ;==========================================================

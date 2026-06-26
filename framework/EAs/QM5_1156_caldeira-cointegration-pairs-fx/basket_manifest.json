@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_1156_EURUSD_GBPUSD_COINTEGRATION_M30",
+  "host_symbol": "EURUSD.DWX",
+  "host_timeframe": "M30",
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX"
+  ],
+  "notes": [
+    "Concrete slot-00 Caldeira/Moura FX cointegration pair from the approved QM5_1156 card. The EA runs from the EURUSD.DWX host setfile with strategy_pair_slot=0 and trades the EURUSD.DWX/GBPUSD.DWX market-neutral spread using rolling Engle-Granger OLS/ADF and residual z-score rules. Added 2026-06-26 because prior Q02 attempts treated the pair-slot files as component-symbol tests and produced terminal INFRA_FAIL rows; this logical basket route lets Q02 judge the pair package rather than either leg standalone."
+  ]
+}

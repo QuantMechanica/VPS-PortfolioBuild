@@ -31,6 +31,13 @@ The 15 slots enumerate the six-symbol universe in deterministic order:
 13. USDCHF.DWX / NZDUSD.DWX
 14. AUDUSD.DWX / NZDUSD.DWX
 
+## Basket Q02 Packaging
+
+`basket_manifest.json` declares the concrete slot-00 EURUSD.DWX / GBPUSD.DWX pair as logical symbol
+`QM5_1156_EURUSD_GBPUSD_COINTEGRATION_M30`, hosted on `EURUSD.DWX` M30 with `strategy_pair_slot=0`.
+This supersedes the old component-symbol Q02 attempts, which evaluated the pair-slot setfiles as standalone
+symbol rows and produced terminal infrastructure failures rather than a market-neutral package verdict.
+
 ## Notes
 - The card describes Engle-Granger ADF p-values. The EA implements the standard residual AR(1) ADF t-stat and maps requested p-thresholds to fixed critical values inline; no external packages or APIs are used.
 - Both legs of a pair use the same pair-slot magic, matching the card requirement of one position package per pair-magic.
