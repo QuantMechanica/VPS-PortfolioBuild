@@ -1,0 +1,26 @@
+{
+  "task_id": "f000e153-95a6-4489-be06-de819a0e27fb",
+  "ea_id": "QM5_12590",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12590_eia-wti-wpsr-fade",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12590_eia-wti-wpsr-fade\\QM5_12590_eia-wti-wpsr-fade.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12590_eia-wti-wpsr-fade\\QM5_12590_eia-wti-wpsr-fade.ex5",
+  "magic_base": 125900000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12590_eia-wti-wpsr-fade\\sets\\QM5_12590_eia-wti-wpsr-fade_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12590_eia-wti-wpsr-fade\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260626_215058\\QM5_12590_eia-wti-wpsr-fade.compile.log",
+  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260626_215111.json",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "q02_enqueued_for_paced_fleet_no_manual_backtest",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": [
+    "No manual backtest launched; Q02 is delegated to paced farm workers."
+  ]
+}
