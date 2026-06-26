@@ -11280,7 +11280,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12475,gh-macd-cross,1,GBPUSD.DWX,124750001,2026-06-18,Development,active
 12475,gh-macd-cross,2,XAUUSD.DWX,124750002,2026-06-18,Development,active
 12475,gh-macd-cross,3,NDX.DWX,124750003,2026-06-18,Development,active
-11536,carter-t-h1-ema14hl-psar,0,EURUSD.DWX,115360000,2026-06-18,Claude,reserved
+11536,carter-t-h1-ema14hl-psar,0,EURUSD.DWX,115360000,2026-06-26,Development,active
 11540,carter-t-h1-ema5-13-62-macd3060-sep,0,EURUSD.DWX,115400000,2026-06-18,Claude,reserved
 11541,carter-t-h1-ema5-21-rsi21-candlestick,0,EURUSD.DWX,115410000,2026-06-18,Claude,active
 11541,carter-t-h1-ema5-21-rsi21-candlestick,1,GBPUSD.DWX,115410001,2026-06-18,Claude,active

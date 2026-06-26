@@ -1,42 +1,14 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11319 tc-m5-11-mtf-ema-rsi-stoch-macd — H4 EMA bias + M5 momentum stack"
+#property description "QM5_11319 TC M5 System #11 - H4 EMA bias + M5 momentum stack"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QuantMechanica V5 EA — QM5_11319 tc-m5-11-mtf-ema-rsi-stoch-macd
-// -----------------------------------------------------------------------------
-// Source: Thomas Carter, "20 Forex Trading Strategies (5 Minute Time Frame)",
-//   5 Min Trading System #11 (pp. 28-29). Card:
-//   artifacts/cards_approved/QM5_11319_tc-m5-11-mtf-ema-rsi-stoch-macd.md
-//   (g0_status APPROVED).
-//
-// Multi-timeframe confluence (same-symbol higher-TF aggregation, NOT a basket):
-//   the higher timeframe (H4) is read on the SAME symbol via the QM_* readers —
-//   no foreign-symbol warmup / SymbolGuard needed.
-//
-// Mechanics (all reads on CLOSED bars; M5 entry TF, H4 bias TF):
-//   Bias STATE (H4)   : EMA(5) > EMA(10) -> longs only; EMA(5) < EMA(10) -> shorts.
-//   Trigger EVENT (M5): EMA(5) crosses EMA(10). This is the ONE fresh event; all
-//                       other conditions are STATES read on the same closed bar,
-//                       so we never require two crosses on the same bar (the
-//                       zero-trade trap the card NOTE warns about).
-//   Momentum STATE 1  : RSI(14) > 50 (long) / < 50 (short).
-//   Momentum STATE 2  : Stoch %K rising and < cap (long); falling and > floor (short).
-//                       Slope = %K@1 vs %K@2. Cap/floor on %K@1.
-//   Momentum STATE 3  : MACD histogram per card disjunction (hist = main-signal):
-//                       long  -> crosses from negative to positive OR remains
-//                                negative and increases vs the previous bar.
-//                       short -> crosses from positive to negative OR remains
-//                                positive and decreases vs the previous bar.
-//   Stop / Take       : fixed pips (card baseline 25 / 25), scale-correct via
-//                       QM_StopFixedPips / explicit pip-distance TP.
-//   Exit              : SL/TP only (source has no indicator exit).
-//   Spread guard      : skip only a genuinely wide spread (fail-open on .DWX
-//                       zero modeled spread).
-//
-// Only the 5 Strategy_* hooks + Strategy inputs are EA-specific.
+// QuantMechanica V5 EA
+// Strategy Card: QM5_11319_tc-m5-11-mtf-ema-rsi-stoch-macd
+// Source: Thomas Carter, 20 Forex Trading Strategies (5 Minute Time Frame),
+//         5 Min Trading System #11, pages 28-29.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -52,8 +24,8 @@ input double PORTFOLIO_WEIGHT           = 1.0;
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
-input string qm_news_min_impact           = "high";  // high / medium / low
+input int    qm_news_stale_max_hours      = 336;
+input string qm_news_min_impact           = "high";
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
 
 input group "Friday Close"
@@ -64,162 +36,166 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input ENUM_TIMEFRAMES strategy_bias_tf        = PERIOD_H4;  // higher-TF EMA bias
-input int    strategy_ema_fast_period         = 5;          // EMA fast (bias TF + entry TF)
-input int    strategy_ema_slow_period         = 10;         // EMA slow (bias TF + entry TF)
-input int    strategy_rsi_period              = 14;         // RSI period (entry TF)
-input double strategy_rsi_mid                 = 50.0;       // RSI midline filter
-input int    strategy_stoch_k                 = 5;          // Stochastic %K period
-input int    strategy_stoch_d                 = 3;          // Stochastic %D period
-input int    strategy_stoch_slow              = 3;          // Stochastic slowing
-input double strategy_stoch_cap               = 80.0;       // long: %K must be < cap
-input double strategy_stoch_floor             = 20.0;       // short: %K must be > floor
-input int    strategy_macd_fast               = 12;         // MACD fast EMA
-input int    strategy_macd_slow               = 26;         // MACD slow EMA
-input int    strategy_macd_signal             = 9;          // MACD signal EMA
-input double strategy_sl_pips                 = 25.0;       // stop loss (pips)
-input double strategy_tp_pips                 = 25.0;       // take profit (pips)
-input double strategy_spread_pct_of_stop      = 50.0;       // skip if spread > this % of stop distance
+input int    strategy_h4_ema_fast       = 5;
+input int    strategy_h4_ema_slow       = 10;
+input int    strategy_m5_ema_fast       = 5;
+input int    strategy_m5_ema_slow       = 10;
+input int    strategy_rsi_period        = 14;
+input double strategy_rsi_midline       = 50.0;
+input int    strategy_stoch_k           = 5;
+input int    strategy_stoch_d           = 3;
+input int    strategy_stoch_slowing     = 3;
+input double strategy_stoch_long_cap    = 80.0;
+input double strategy_stoch_short_floor = 20.0;
+input int    strategy_macd_fast         = 12;
+input int    strategy_macd_slow         = 26;
+input int    strategy_macd_signal       = 9;
+input int    strategy_stop_pips         = 25;
+input int    strategy_take_pips         = 25;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Cheap O(1) per-tick gate. Spread guard only. Fail-open on .DWX zero spread.
+// No Trade Filter: the card defines no extra time/spread/session filter beyond
+// framework news, Friday close, kill-switch, and H4 trend-bias entry state.
 bool Strategy_NoTradeFilter()
   {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0)
-      return false; // no valid quote yet — never block on a zero price
-
-   const double stop_distance = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_sl_pips);
-   if(stop_distance <= 0.0)
-      return false;
-
-   const double spread = ask - bid;
-   // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
-      return true;
-
    return false;
   }
 
-// Entry. Caller guarantees QM_IsNewBar() == true on the M5 entry TF.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // One open position per symbol/magic.
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(strategy_h4_ema_fast <= 0 || strategy_h4_ema_slow <= 0 ||
+      strategy_m5_ema_fast <= 0 || strategy_m5_ema_slow <= 0 ||
+      strategy_rsi_period <= 0 || strategy_stoch_k <= 0 ||
+      strategy_stoch_d <= 0 || strategy_stoch_slowing <= 0 ||
+      strategy_macd_fast <= 0 || strategy_macd_slow <= 0 ||
+      strategy_macd_signal <= 0 || strategy_stop_pips <= 0 ||
+      strategy_take_pips <= 0)
       return false;
 
-   // --- H4 bias STATE (closed H4 bar at shift 1) ---
-   const double h4_fast = QM_EMA(_Symbol, strategy_bias_tf, strategy_ema_fast_period, 1);
-   const double h4_slow = QM_EMA(_Symbol, strategy_bias_tf, strategy_ema_slow_period, 1);
-   if(h4_fast <= 0.0 || h4_slow <= 0.0)
-      return false;
-   const int bias = (h4_fast > h4_slow) ? 1 : ((h4_fast < h4_slow) ? -1 : 0);
-   if(bias == 0)
+   const ENUM_TIMEFRAMES exec_tf = (ENUM_TIMEFRAMES)_Period;
+
+   const double h4_ema_fast = QM_EMA(_Symbol, PERIOD_H4, strategy_h4_ema_fast, 1);
+   const double h4_ema_slow = QM_EMA(_Symbol, PERIOD_H4, strategy_h4_ema_slow, 1);
+   if(h4_ema_fast <= 0.0 || h4_ema_slow <= 0.0)
       return false;
 
-   // --- M5 entry-TF EMAs (closed bars at shift 1 and 2 for the cross EVENT) ---
-   const double ema_fast_1 = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 1);
-   const double ema_slow_1 = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 1);
-   const double ema_fast_2 = QM_EMA(_Symbol, _Period, strategy_ema_fast_period, 2);
-   const double ema_slow_2 = QM_EMA(_Symbol, _Period, strategy_ema_slow_period, 2);
+   const double ema_fast_1 = QM_EMA(_Symbol, exec_tf, strategy_m5_ema_fast, 1);
+   const double ema_slow_1 = QM_EMA(_Symbol, exec_tf, strategy_m5_ema_slow, 1);
+   const double ema_fast_2 = QM_EMA(_Symbol, exec_tf, strategy_m5_ema_fast, 2);
+   const double ema_slow_2 = QM_EMA(_Symbol, exec_tf, strategy_m5_ema_slow, 2);
    if(ema_fast_1 <= 0.0 || ema_slow_1 <= 0.0 || ema_fast_2 <= 0.0 || ema_slow_2 <= 0.0)
       return false;
 
-   const bool cross_up   = (ema_fast_2 <= ema_slow_2 && ema_fast_1 >  ema_slow_1);
-   const bool cross_down = (ema_fast_2 >= ema_slow_2 && ema_fast_1 <  ema_slow_1);
-
-   // --- Momentum STATES (all read on the same M5 closed bar) ---
-   const double rsi_1 = QM_RSI(_Symbol, _Period, strategy_rsi_period, 1);
+   const double rsi_1 = QM_RSI(_Symbol, exec_tf, strategy_rsi_period, 1, PRICE_CLOSE);
    if(rsi_1 <= 0.0)
       return false;
 
-   const double k1 = QM_Stoch_K(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slow, 1);
-   const double k2 = QM_Stoch_K(_Symbol, _Period, strategy_stoch_k, strategy_stoch_d, strategy_stoch_slow, 2);
-   if(k1 <= 0.0 || k2 <= 0.0)
+   const double stoch_k_1 = QM_Stoch_K(_Symbol, exec_tf,
+                                       strategy_stoch_k,
+                                       strategy_stoch_d,
+                                       strategy_stoch_slowing,
+                                       1);
+   const double stoch_k_2 = QM_Stoch_K(_Symbol, exec_tf,
+                                       strategy_stoch_k,
+                                       strategy_stoch_d,
+                                       strategy_stoch_slowing,
+                                       2);
+   if(stoch_k_1 < 0.0 || stoch_k_2 < 0.0)
       return false;
 
-   const double macd_main_1   = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-   const double macd_signal_1 = QM_MACD_Signal(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 1);
-   const double macd_main_2   = QM_MACD_Main(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
-   const double macd_signal_2 = QM_MACD_Signal(_Symbol, _Period, strategy_macd_fast, strategy_macd_slow, strategy_macd_signal, 2);
-   // Histogram = MACD line - signal line. May be negative — never gate on sign.
-   const double hist_1 = macd_main_1 - macd_signal_1;
-   const double hist_2 = macd_main_2 - macd_signal_2;
+   const double macd_main_1 = QM_MACD_Main(_Symbol, exec_tf,
+                                           strategy_macd_fast,
+                                           strategy_macd_slow,
+                                           strategy_macd_signal,
+                                           1,
+                                           PRICE_CLOSE);
+   const double macd_sig_1 = QM_MACD_Signal(_Symbol, exec_tf,
+                                            strategy_macd_fast,
+                                            strategy_macd_slow,
+                                            strategy_macd_signal,
+                                            1,
+                                            PRICE_CLOSE);
+   const double macd_main_2 = QM_MACD_Main(_Symbol, exec_tf,
+                                           strategy_macd_fast,
+                                           strategy_macd_slow,
+                                           strategy_macd_signal,
+                                           2,
+                                           PRICE_CLOSE);
+   const double macd_sig_2 = QM_MACD_Signal(_Symbol, exec_tf,
+                                            strategy_macd_fast,
+                                            strategy_macd_slow,
+                                            strategy_macd_signal,
+                                            2,
+                                            PRICE_CLOSE);
+   const double hist_1 = macd_main_1 - macd_sig_1;
+   const double hist_2 = macd_main_2 - macd_sig_2;
 
-   // LONG: H4 bias up, M5 EMA cross up (EVENT), RSI>50, %K rising and < cap,
-   //       MACD histogram crosses up OR stays negative and increases.
-   if(bias > 0 && cross_up)
+   const bool long_bias = (h4_ema_fast > h4_ema_slow);
+   const bool short_bias = (h4_ema_fast < h4_ema_slow);
+   const bool long_cross = (ema_fast_2 <= ema_slow_2 && ema_fast_1 > ema_slow_1);
+   const bool short_cross = (ema_fast_2 >= ema_slow_2 && ema_fast_1 < ema_slow_1);
+   const bool long_stoch = (stoch_k_1 > stoch_k_2 && stoch_k_1 < strategy_stoch_long_cap);
+   const bool short_stoch = (stoch_k_1 < stoch_k_2 && stoch_k_1 > strategy_stoch_short_floor);
+   const bool long_macd = ((hist_2 <= 0.0 && hist_1 > 0.0) ||
+                           (hist_1 < 0.0 && hist_1 > hist_2));
+   const bool short_macd = ((hist_2 >= 0.0 && hist_1 < 0.0) ||
+                            (hist_1 > 0.0 && hist_1 < hist_2));
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   if(long_bias && long_cross && rsi_1 > strategy_rsi_midline && long_stoch && long_macd)
      {
-      const bool rsi_ok   = (rsi_1 > strategy_rsi_mid);
-      const bool stoch_ok = (k1 > k2 && k1 < strategy_stoch_cap);
-      const bool macd_ok  = ((hist_2 <= 0.0 && hist_1 > 0.0) ||
-                             (hist_1 < 0.0 && hist_1 > hist_2));
-      if(rsi_ok && stoch_ok && macd_ok)
-        {
-         const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         if(entry <= 0.0)
-            return false;
-         const double sl = QM_StopFixedPips(_Symbol, QM_BUY, entry, (int)strategy_sl_pips);
-         const double tp_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_tp_pips);
-         const double tp = QM_StopRulesNormalizePrice(_Symbol, entry + tp_dist);
-         if(sl <= 0.0 || tp <= 0.0)
-            return false;
-         req.type   = QM_BUY;
-         req.price  = 0.0;   // framework fills market price at send
-         req.sl     = sl;
-         req.tp     = tp;
-         req.reason = "tc_m5_11_long";
-         return true;
-        }
-      return false;
+      const double entry = ask;
+      req.type = QM_BUY;
+      req.price = 0.0;
+      req.sl = QM_StopFixedPips(_Symbol, req.type, entry, strategy_stop_pips);
+      req.tp = QM_TakeFixedPips(_Symbol, req.type, entry, strategy_take_pips);
+      req.reason = "TC_M5_11_LONG";
+      return (req.sl > 0.0 && req.tp > 0.0);
      }
 
-   // SHORT: mirror image.
-   if(bias < 0 && cross_down)
+   if(short_bias && short_cross && rsi_1 < strategy_rsi_midline && short_stoch && short_macd)
      {
-      const bool rsi_ok   = (rsi_1 < strategy_rsi_mid);
-      const bool stoch_ok = (k1 < k2 && k1 > strategy_stoch_floor);
-      const bool macd_ok  = ((hist_2 >= 0.0 && hist_1 < 0.0) ||
-                             (hist_1 > 0.0 && hist_1 < hist_2));
-      if(rsi_ok && stoch_ok && macd_ok)
-        {
-         const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         if(entry <= 0.0)
-            return false;
-         const double sl = QM_StopFixedPips(_Symbol, QM_SELL, entry, (int)strategy_sl_pips);
-         const double tp_dist = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_tp_pips);
-         const double tp = QM_StopRulesNormalizePrice(_Symbol, entry - tp_dist);
-         if(sl <= 0.0 || tp <= 0.0)
-            return false;
-         req.type   = QM_SELL;
-         req.price  = 0.0;
-         req.sl     = sl;
-         req.tp     = tp;
-         req.reason = "tc_m5_11_short";
-         return true;
-        }
-      return false;
+      const double entry = bid;
+      req.type = QM_SELL;
+      req.price = 0.0;
+      req.sl = QM_StopFixedPips(_Symbol, req.type, entry, strategy_stop_pips);
+      req.tp = QM_TakeFixedPips(_Symbol, req.type, entry, strategy_take_pips);
+      req.reason = "TC_M5_11_SHORT";
+      return (req.sl > 0.0 && req.tp > 0.0);
      }
 
    return false;
   }
 
-// SL/TP only — source has no active management.
+// Trade Management: the card specifies fixed SL/TP only, with no trailing,
+// break-even, partial close, scale-in, or time stop.
 void Strategy_ManageOpenPosition()
   {
   }
 
-// No discretionary exit — source has no indicator exit (SL/TP handle it).
+// Trade Close: the card has no discretionary indicator exit; positions close by
+// SL/TP or framework-level Friday/news/kill-switch handling.
 bool Strategy_ExitSignal()
   {
    return false;
   }
 
-// Defer to the central news filter.
+// News Filter Hook: no strategy-specific news suppression beyond framework mode.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    return false;
@@ -236,20 +212,20 @@ int OnInit()
                         RISK_PERCENT,
                         RISK_FIXED,
                         PORTFOLIO_WEIGHT,
-                        qm_news_mode_legacy,           // legacy back-compat
+                        qm_news_mode_legacy,
                         qm_friday_close_enabled,
                         qm_friday_close_hour_broker,
-                        30,                            // pause-before (legacy hint)
-                        30,                            // pause-after (legacy hint)
+                        30,
+                        30,
                         qm_news_stale_max_hours,
                         qm_news_min_impact,
                         qm_rng_seed,
                         qm_stress_reject_probability,
-                        qm_news_temporal,              // FW1 Axis A
-                        qm_news_compliance))           // FW1 Axis B
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_11319\",\"strategy\":\"tc_m5_11_mtf_ema_rsi_stoch_macd\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -267,6 +243,7 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
