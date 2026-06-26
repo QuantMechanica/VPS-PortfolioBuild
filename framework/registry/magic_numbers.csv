@@ -13594,3 +13594,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12571,ict-silver-bullet-fvg,3,GER40.DWX,125710003,2026-06-26,Claude,active
 12575,eia-xng-season,0,XNGUSD.DWX,125750000,2026-06-26,Development,active
 12576,eia-wti-season,0,XTIUSD.DWX,125760000,2026-06-26,Development,active
+12577,cme-xauxag-ratio,0,XAUUSD.DWX,125770000,2026-06-26,Development,active
+12577,cme-xauxag-ratio,1,XAGUSD.DWX,125770001,2026-06-26,Development,active
