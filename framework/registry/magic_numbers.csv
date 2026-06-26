@@ -11238,9 +11238,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11511,carter-t-sma32-band-psar-sma100-200,0,EURUSD.DWX,115110000,2026-06-20,Development,active
 11511,carter-t-sma32-band-psar-sma100-200,1,GBPUSD.DWX,115110001,2026-06-20,Development,active
 11511,carter-t-sma32-band-psar-sma100-200,2,AUDUSD.DWX,115110002,2026-06-20,Development,active
-11512,carter-t-ema2-4-stoch-d1,0,EURUSD.DWX,115120000,2026-06-18,Claude,reserved
-11512,carter-t-ema2-4-stoch-d1,1,GBPUSD.DWX,115120001,2026-06-18,Claude,reserved
-11512,carter-t-ema2-4-stoch-d1,2,USDJPY.DWX,115120002,2026-06-18,Claude,reserved
+11512,carter-t-ema2-4-stoch-d1,0,EURUSD.DWX,115120000,2026-06-26,Development,active
+11512,carter-t-ema2-4-stoch-d1,1,GBPUSD.DWX,115120001,2026-06-26,Development,active
+11512,carter-t-ema2-4-stoch-d1,2,USDJPY.DWX,115120002,2026-06-26,Development,active
 11513,carter-t-ema4-11-adx13-d1,0,EURUSD.DWX,115130000,2026-06-18,Claude,reserved
 11513,carter-t-ema4-11-adx13-d1,1,GBPUSD.DWX,115130001,2026-06-18,Claude,reserved
 11514,carter-t-macd3916-adx16-d1,0,EURUSD.DWX,115140000,2026-06-18,Claude,reserved
@@ -13545,3 +13545,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1486,ehlers-cg-oscillator-cross-h4,0,EURUSD.DWX,14860000,2026-06-26,Development,active
 1486,ehlers-cg-oscillator-cross-h4,1,GBPUSD.DWX,14860001,2026-06-26,Development,active
 1486,ehlers-cg-oscillator-cross-h4,2,XAUUSD.DWX,14860002,2026-06-26,Development,active
+1536,aa-mrat-21-200,0,SP500.DWX,15360000,2026-06-26,Development,active
+1536,aa-mrat-21-200,1,NDX.DWX,15360001,2026-06-26,Development,active
+1536,aa-mrat-21-200,2,WS30.DWX,15360002,2026-06-26,Development,active
+1536,aa-mrat-21-200,3,GDAXI.DWX,15360003,2026-06-26,Development,active
+1536,aa-mrat-21-200,4,XAUUSD.DWX,15360004,2026-06-26,Development,active
+1536,aa-mrat-21-200,5,XAGUSD.DWX,15360005,2026-06-26,Development,active
+1536,aa-mrat-21-200,6,EURUSD.DWX,15360006,2026-06-26,Development,active
+1536,aa-mrat-21-200,7,GBPUSD.DWX,15360007,2026-06-26,Development,active
+1536,aa-mrat-21-200,8,USDJPY.DWX,15360008,2026-06-26,Development,active
+1536,aa-mrat-21-200,9,XTIUSD.DWX,15360009,2026-06-26,Development,active
