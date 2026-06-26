@@ -47,9 +47,16 @@ universal.
 > likely ~+$70k net — under validation). Also: some "net-negative" FX sleeves had negative
 > GROSS (strategy loss), commission only added to it — don't conflate the two.
 >
-> Caveat: the book streams are **Q08 full-history (in-sample-ish)**; OOS validation was the
-> Q04 walk-forward gate. Book DD/Sharpe/net are optimistic vs pure OOS — large nets must be
-> robustness-checked, not trusted at face value.
+> CORRECTION 2 (2026-06-26, OWNER caught it again): the book streams ARE the **full-history
+> canonical backtest, 2017→2025** (FULL_HISTORY_FROM/TO; the q08 baseline run reads the
+> complete tick data). EAs run **fixed card-default params** (never optimized per-fold — Q04
+> only *probes* the defaults), so the entire run is a **legitimate out-of-sample track
+> record**, NOT in-sample. My earlier "in-sample/optimistic" caveat was wrong. The real
+> remaining caveat is **selection bias / multiple testing** — we keep the survivors that
+> happened to work on this data — which is exactly what Q08's PBO / DSR / FDR sub-gates exist
+> to penalize. Late starts (e.g. SP500 2019-08) = no earlier signals (SMA warmup), not a
+> windowing bug. Q10 = the same full-history run reserved for hard-PASS EAs (FAIL_SOFT sleeves
+> skip it and use the equivalent q08 baseline stream).
 
 ### Per-sleeve net (real commission, risk-parity book inputs)
 
