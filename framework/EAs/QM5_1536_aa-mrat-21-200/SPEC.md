@@ -25,7 +25,6 @@ At the start of each month the EA computes MRAT for every registered basket symb
 | `strategy_spread_atr_mult` | 0.25 | >=0 | Blocks entry only when positive modeled spread exceeds this fraction of ATR. |
 | `strategy_sleeve_count_symbols` | 2 | 1+ | Number of top and bottom symbols selected in this 10-symbol universe. |
 | `strategy_min_valid_symbols` | 8 | 2-10 | Minimum symbols with valid SMA data before ranking. |
-| `strategy_rebalance_day_cutoff` | 5 | 1-10 | First broker-calendar days of a month treated as the monthly session-open rebalance window. |
 
 ---
 
