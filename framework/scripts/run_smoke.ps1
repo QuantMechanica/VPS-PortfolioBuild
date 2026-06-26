@@ -159,8 +159,10 @@ function Get-ReportInvalidReasons {
         }
     }
 
-    # Log-tail driven checks always run — they don't depend on report parsing.
-    if (Test-TesterLogShowsOnInitFailure -TesterLogTail $TesterLogTail) { $reasons.Add("ONINIT_FAILED") }
+    # Log-tail driven checks run only when the report did not prove execution.
+    # Busy terminals append unrelated later EA failures to the shared tester log;
+    # a current report with trades proves this run's OnInit succeeded.
+    if ($ReportTotalTrades -le 0 -and (Test-TesterLogShowsOnInitFailure -TesterLogTail $TesterLogTail)) { $reasons.Add("ONINIT_FAILED") }
     if (Test-TesterLogShowsSetupDataMissing -TesterLogTail $TesterLogTail) { $reasons.Add("SETUP_DATA_MISSING") }
     if (Test-TesterLogHasNoHistoryForRun -TesterLogTail $TesterLogTail -ExpectedSymbol $ExpectedSymbol -ExpectedFromDate $ExpectedFromDate -ExpectedToDate $ExpectedToDate) { $reasons.Add("NO_HISTORY_LOG") }
     if ($bars -ge 0 -and ($periodValue -match "(?i)\bM0\b" -or $bars -le 0) -and $TesterLogTail -match "(?im)\bhistory\b") { $reasons.Add("HISTORY_CONTEXT_INVALID") }
@@ -1480,7 +1482,10 @@ for ($i = 1; $i -le $Runs; $i++) {
         $testerLogTail = Get-TesterLogTailText -TesterLogPath $testerLogPath -LineCount 800
     }
 
-    $onInitFailure = Test-TesterLogShowsOnInitFailure -TesterLogTail $testerLogTail
+    $onInitFailure = $false
+    if ($totalTrades -le 0) {
+        $onInitFailure = Test-TesterLogShowsOnInitFailure -TesterLogTail $testerLogTail
+    }
 
     # Scan the FULL tester log, not just the tail. In large real-tick runs the
     # "generating based on real ticks" marker appears near the START (right after
