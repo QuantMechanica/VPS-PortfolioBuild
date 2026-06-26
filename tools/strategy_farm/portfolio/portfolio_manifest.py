@@ -19,7 +19,13 @@ try:
         read_candidates,
     )
     from .portfolio_correlation import COMMISSION_BASIS
-    from .portfolio_kpi import Key, equal_weights, metrics_from_daily_pnl, portfolio_metrics
+    from .portfolio_kpi import (
+        Key,
+        equal_weights,
+        inverse_vol_weights,
+        metrics_from_daily_pnl,
+        portfolio_metrics,
+    )
 except ImportError:  # pragma: no cover - direct script execution
     from commission import describe_model, load_model  # type: ignore
     from portfolio_assemble import assemble_portfolio  # type: ignore
@@ -32,7 +38,13 @@ except ImportError:  # pragma: no cover - direct script execution
         read_candidates,
     )
     from portfolio_correlation import COMMISSION_BASIS  # type: ignore
-    from portfolio_kpi import Key, equal_weights, metrics_from_daily_pnl, portfolio_metrics  # type: ignore
+    from portfolio_kpi import (  # type: ignore
+        Key,
+        equal_weights,
+        inverse_vol_weights,
+        metrics_from_daily_pnl,
+        portfolio_metrics,
+    )
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -133,6 +145,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--common-dir", type=Path, default=DEFAULT_COMMON_DIR)
     parser.add_argument("--candidates-db", type=Path, default=DEFAULT_CANDIDATES_DB)
     parser.add_argument("--all-streams", action="store_true")
+    parser.add_argument(
+        "--book-source",
+        choices=("selected", "q12-ready-all"),
+        default="selected",
+        help=(
+            "selected: greedy portfolio assembler; q12-ready-all: include every "
+            "distinct Q12_REVIEW_READY sleeve with inverse-vol weights."
+        ),
+    )
     parser.add_argument("--max-dd-pct", type=float, default=6.0)
     parser.add_argument("--account-risk-pct", type=float, default=2.0)
     parser.add_argument("--starting-capital", type=float, default=10_000.0)
@@ -147,10 +168,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    if args.all_streams and args.book_source == "q12-ready-all":
+        raise ValueError("--all-streams cannot be combined with --book-source q12-ready-all")
     selected_keys, weights, discovery_basis = _selected_book(
         common_dir=args.common_dir,
         candidates_db=args.candidates_db,
         all_streams=args.all_streams,
+        book_source=args.book_source,
         max_dd_pct=args.max_dd_pct,
         starting_capital=args.starting_capital,
     )
@@ -175,9 +199,19 @@ def _selected_book(
     common_dir: Path,
     candidates_db: Path,
     all_streams: bool,
+    book_source: str = "selected",
     max_dd_pct: float,
     starting_capital: float,
 ) -> tuple[list[Key], dict[Key, float], str]:
+    if book_source == "q12-ready-all":
+        keys = read_candidates(candidates_db)
+        if not keys:
+            return [], {}, "portfolio_candidates.Q12_REVIEW_READY_all"
+        weights = inverse_vol_weights(keys, common_dir)
+        return keys, weights, "portfolio_candidates.Q12_REVIEW_READY_all"
+    if book_source != "selected":
+        raise ValueError(f"unsupported book_source {book_source!r}")
+
     if all_streams:
         model = load_model()
         streams = load_streams(common_dir, commission_model=model)

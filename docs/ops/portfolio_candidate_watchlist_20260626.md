@@ -107,8 +107,8 @@ Post-merge actions executed:
 - Both NDX **admitted → Q12_REVIEW_READY**.
 
 **Certified book: 3 → 5 sleeves.** Distinct Q12_REVIEW_READY = **5** (10513:XAU, 10940:XAU,
-11132:SP500, 10440:NDX, 10692:NDX), **0 duplicate ready rows**. Explicit 5-sleeve Q12-ready
-risk-parity draft manifest (2018–2025 streams): **MaxDD 13.83%, Sharpe 1.49, total net
+11132:SP500, 10440:NDX, 10692:NDX), **0 duplicate ready rows**. Canonical 5-sleeve Q12-ready
+risk-parity draft manifest (`portfolio_manifest --book-source q12-ready-all`, 2018–2025 streams): **MaxDD 13.83%, Sharpe 1.49, total net
 profit 9598.11**, no missing `.ex5` files. Evidence:
 `D:\QM\reports\pipeline\QM5_{10692,10440}\Q09_PORTFOLIO\NDX_DWX\aggregate.json` and
-`D:\QM\reports\portfolio\portfolio_manifest_q12_ready_5sleeve_DRAFT_20260626.json`.
+`D:\QM\reports\portfolio\portfolio_manifest_q12_ready_all_DRAFT_20260626.json`.

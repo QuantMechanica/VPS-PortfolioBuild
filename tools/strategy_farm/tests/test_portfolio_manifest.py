@@ -89,6 +89,48 @@ class PortfolioManifestTests(unittest.TestCase):
         self.assertEqual(basis, "candidates")
         self.assertEqual(assemble.call_args.kwargs["weighting"], "inverse_vol")
 
+    def test_q12_ready_all_book_source_uses_all_candidates_with_risk_parity(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            common_dir = Path(tmp)
+            candidates_db = common_dir / "farm_state.sqlite"
+            ready_keys = [(10440, "NDX.DWX"), (10692, "NDX.DWX")]
+            ready_weights = {
+                (10440, "NDX.DWX"): 0.4,
+                (10692, "NDX.DWX"): 0.6,
+            }
+
+            with mock.patch.object(
+                portfolio_manifest,
+                "read_candidates",
+                return_value=ready_keys,
+            ) as read_candidates, mock.patch.object(
+                portfolio_manifest,
+                "inverse_vol_weights",
+                return_value=ready_weights,
+            ) as inverse_vol_weights, mock.patch.object(
+                portfolio_manifest,
+                "assemble_portfolio",
+            ) as assemble:
+                keys, weights, basis = portfolio_manifest._selected_book(
+                    common_dir=common_dir,
+                    candidates_db=candidates_db,
+                    all_streams=False,
+                    book_source="q12-ready-all",
+                    max_dd_pct=6.0,
+                    starting_capital=10_000.0,
+                )
+
+        self.assertEqual(keys, ready_keys)
+        self.assertEqual(weights, ready_weights)
+        self.assertEqual(basis, "portfolio_candidates.Q12_REVIEW_READY_all")
+        read_candidates.assert_called_once_with(candidates_db)
+        inverse_vol_weights.assert_called_once_with(ready_keys, common_dir)
+        assemble.assert_not_called()
+
+    def test_q12_ready_all_rejects_all_streams(self) -> None:
+        with self.assertRaisesRegex(ValueError, "--all-streams cannot be combined"):
+            portfolio_manifest.main(["--all-streams", "--book-source", "q12-ready-all"])
+
     def _write_stream(
         self,
         path: Path,
