@@ -94,6 +94,17 @@ function Get-ReportMetricValue {
     throw "Could not find metric label '$Label' in report."
 }
 
+function Test-ReportShowsRealTicks {
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$Html
+    )
+
+    $historyQuality = Get-ReportMetricValue -Html $Html -Label "History Quality" -AllowMissing
+    return ($null -ne $historyQuality -and $historyQuality -match "(?i)\breal\s+ticks\b")
+}
+
 # FW8-classifier 2026-05-23 — per-metric error isolation. Pre-fix, this
 # function wrapped 8 separate label reads in one try/catch — any single
 # missing label collapsed all 8 checks to REPORT_PARSE_ERROR, which the
@@ -1528,6 +1539,9 @@ for ($i = 1; $i -le $Runs; $i++) {
     }
     if (-not $hasRealTicksMarker -and $testerLogTail) {
         $hasRealTicksMarker = [regex]::IsMatch($testerLogTail, "(?im)generating based on real ticks")
+    }
+    if (-not $hasRealTicksMarker) {
+        $hasRealTicksMarker = Test-ReportShowsRealTicks -Html $reportHtml
     }
 
     $invalidReasons = Get-ReportInvalidReasons -Html $reportHtml -TesterLogTail $testerLogTail -ExpectedSymbol $Symbol -ExpectedFromDate $fromDate -ExpectedToDate $toDate -HasRealTicksMarker $hasRealTicksMarker -ReportTotalTrades $totalTrades
