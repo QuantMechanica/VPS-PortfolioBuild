@@ -58,7 +58,6 @@ double   g_high_h4[QM2078_RECENT_BARS];
 double   g_low_h4[QM2078_RECENT_BARS];
 bool     g_cycle_mode[QM2078_RECENT_BARS];
 bool     g_state_ready = false;
-datetime g_state_closed_bar = 0;
 double   g_entry_period_h4 = 0.0;
 
 double QM2078_Atan2(const double y, const double x)
@@ -139,12 +138,6 @@ int QM2078_H4BarsHeld(const datetime open_time)
 
 bool QM2078_UpdateState()
   {
-   const datetime closed_bar = iTime(_Symbol, PERIOD_H4, 1); // perf-allowed: bespoke Hilbert cache key, not a local new-bar gate.
-   if(closed_bar <= 0)
-      return false;
-   if(g_state_ready && g_state_closed_bar == closed_bar)
-      return true;
-
    const int keep = QM2078_RECENT_BARS;
    const int count = MathMax(strategy_warmup_h4_bars + keep + 16, 240);
    MqlRates rates[];
@@ -227,7 +220,6 @@ bool QM2078_UpdateState()
      }
 
    g_state_ready = true;
-   g_state_closed_bar = closed_bar;
    return true;
   }
 
@@ -235,7 +227,7 @@ int QM2078_SineLeadCross(const int shift)
   {
    if(shift < 0 || shift + 1 >= QM2078_RECENT_BARS)
       return 0;
-   if(!QM2078_UpdateState())
+   if(!g_state_ready)
       return 0;
 
    if(g_sine[shift + 1] <= g_lead[shift + 1] && g_sine[shift] > g_lead[shift])
@@ -247,7 +239,7 @@ int QM2078_SineLeadCross(const int shift)
 
 bool QM2078_CycleStable()
   {
-   if(!QM2078_UpdateState())
+   if(!g_state_ready)
       return false;
 
    const int bars = MathMax(1, MathMin(strategy_cycle_stability_bars, QM2078_RECENT_BARS));
@@ -259,7 +251,7 @@ bool QM2078_CycleStable()
 
 bool QM2078_TrendExitCondition(const ENUM_POSITION_TYPE position_type)
   {
-   if(!QM2078_UpdateState())
+   if(!g_state_ready)
       return false;
 
    const int bars = MathMax(1, MathMin(strategy_trend_exit_bars, QM2078_RECENT_BARS));
@@ -331,7 +323,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
-   if(!QM2078_UpdateState())
+   if(!g_state_ready)
       return false;
    if(!QM2078_CycleStable())
       return false;
@@ -426,7 +418,7 @@ bool Strategy_ExitSignal()
    if(!QM2078_FindOurPosition(ticket, position_type, open_price, open_time))
       return false;
 
-   if(!QM2078_UpdateState())
+   if(!g_state_ready)
       return false;
 
    const int cross = QM2078_SineLeadCross(0);
@@ -504,6 +496,14 @@ void OnTick()
 
    Strategy_ManageOpenPosition();
 
+   if(!QM_IsNewBar())
+      return;
+
+   if(!QM2078_UpdateState())
+      return;
+
+   QM_EquityStreamOnNewBar();
+
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -517,11 +517,6 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
-
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
