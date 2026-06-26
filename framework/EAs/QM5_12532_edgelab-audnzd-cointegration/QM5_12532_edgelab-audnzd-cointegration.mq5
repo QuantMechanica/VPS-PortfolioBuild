@@ -11,7 +11,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.0;
+input double RISK_PERCENT               = 0.0;     // Live setfiles carry 0.5; backtests keep RISK_FIXED active.
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -225,15 +225,22 @@ bool Strategy_NewsAllowsPair(const datetime broker_time)
    return true;
   }
 
-double Strategy_NormalizedLotsForLeg(const string symbol, const double sl_points)
+double Strategy_NormalizedLotsForLeg(const string symbol,
+                                     const double sl_points,
+                                     const double risk_weight,
+                                     const double risk_weight_sum)
   {
-   const double raw_lots = QM_LotsForRisk(symbol, sl_points) * 0.5;
+   if(risk_weight <= 0.0 || risk_weight_sum <= 0.0)
+      return 0.0;
+   const double raw_lots = QM_LotsForRisk(symbol, sl_points) * risk_weight / risk_weight_sum;
    return QM_TM_NormalizeVolume(symbol, raw_lots);
   }
 
 bool Strategy_BuildLegRequest(const string symbol,
                               const bool buy_leg,
                               const string reason,
+                              const double risk_weight,
+                              const double risk_weight_sum,
                               QM_EntryRequest &req)
   {
    const QM_OrderType type = buy_leg ? QM_BUY : QM_SELL;
@@ -258,7 +265,7 @@ bool Strategy_BuildLegRequest(const string symbol,
    req.reason = reason;
    req.symbol_slot = Strategy_SlotForSymbol(symbol);
    req.expiration_seconds = 0;
-   return (Strategy_NormalizedLotsForLeg(symbol, sl_points) > 0.0);
+   return (Strategy_NormalizedLotsForLeg(symbol, sl_points, risk_weight, risk_weight_sum) > 0.0);
   }
 
 bool Strategy_BuildCurrentLegRequest(const int spread_direction, QM_EntryRequest &req)
@@ -274,12 +281,18 @@ bool Strategy_BuildCurrentLegRequest(const int spread_direction, QM_EntryRequest
    const bool buy_leg = (idx == 0) ? buy_aud : buy_nzd;
    const string reason = (spread_direction > 0) ? "QM5_12532_LONG_SPREAD_Z_NEG"
                                                 : "QM5_12532_SHORT_SPREAD_Z_POS";
-   return Strategy_BuildLegRequest(_Symbol, buy_leg, reason, req);
+   const double aud_weight = 1.0;
+   const double nzd_weight = MathAbs(strategy_beta);
+   const double weight_sum = aud_weight + nzd_weight;
+   const double risk_weight = (idx == 0) ? aud_weight : nzd_weight;
+   return Strategy_BuildLegRequest(_Symbol, buy_leg, reason, risk_weight, weight_sum, req);
   }
 
 bool Strategy_OpenBasketLeg(const string symbol,
                             const bool buy_leg,
-                            const string reason)
+                            const string reason,
+                            const double risk_weight,
+                            const double risk_weight_sum)
   {
    const QM_OrderType type = buy_leg ? QM_BUY : QM_SELL;
    const double entry = buy_leg ? SymbolInfoDouble(symbol, SYMBOL_ASK)
@@ -294,7 +307,7 @@ bool Strategy_OpenBasketLeg(const string symbol,
    if(sl_points <= 0.0 || !MathIsValidNumber(sl_points))
       return false;
 
-   const double lots = Strategy_NormalizedLotsForLeg(symbol, sl_points);
+   const double lots = Strategy_NormalizedLotsForLeg(symbol, sl_points, risk_weight, risk_weight_sum);
    if(lots <= 0.0)
       return false;
 
@@ -324,9 +337,14 @@ bool Strategy_OpenPair(const int spread_direction)
    const bool buy_nzd = !buy_aud;
    const string reason = (spread_direction > 0) ? "QM5_12532_LONG_SPREAD_Z_NEG"
                                                 : "QM5_12532_SHORT_SPREAD_Z_POS";
+   const double aud_weight = 1.0;
+   const double nzd_weight = MathAbs(strategy_beta);
+   const double weight_sum = aud_weight + nzd_weight;
+   if(weight_sum <= 0.0)
+      return false;
 
-   const bool aud_ok = Strategy_OpenBasketLeg(g_pair_symbols[0], buy_aud, reason);
-   const bool nzd_ok = Strategy_OpenBasketLeg(g_pair_symbols[1], buy_nzd, reason);
+   const bool aud_ok = Strategy_OpenBasketLeg(g_pair_symbols[0], buy_aud, reason, aud_weight, weight_sum);
+   const bool nzd_ok = Strategy_OpenBasketLeg(g_pair_symbols[1], buy_nzd, reason, nzd_weight, weight_sum);
    if(aud_ok && nzd_ok)
      {
       g_pair_entry_time = TimeCurrent();
