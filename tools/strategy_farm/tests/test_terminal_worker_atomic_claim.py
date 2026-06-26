@@ -4,6 +4,7 @@ import sys
 import tempfile
 import unittest
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 
@@ -204,6 +205,28 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 row = conn.execute("SELECT status, claimed_by FROM work_items WHERE id='stale-1'").fetchone()
             self.assertEqual(row, ("active", "T1"))
 
+    def test_claim_skips_launch_fault_cooldown_item(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            future = (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat()
+            self._insert_work_item(
+                root,
+                "cooldown-1",
+                "EURUSD.DWX",
+                phase="Q02",
+                payload={"launch_not_before_utc": future},
+            )
+            self._insert_work_item(root, "ready-1", "GBPUSD.DWX", phase="Q02")
+
+            result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "ready-1")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                statuses = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
+            self.assertEqual(statuses["cooldown-1"], "pending")
+            self.assertEqual(statuses["ready-1"], "active")
+
     def test_orphan_same_terminal_claim_stops_child_and_reclaims(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"
@@ -241,6 +264,68 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             payload = json.loads(row[2])
             self.assertEqual(payload["prior_failure"], "worker_process_missing_released_stale_claim")
             self.assertTrue(payload["child_stopped_on_orphan_release"])
+
+    def test_launch_fault_defers_without_incrementing_attempt_count(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            self._insert_work_item(
+                root,
+                "wi-launch-fault",
+                "CADJPY.DWX",
+                phase="Q02",
+                status="active",
+                claimed_by="T4",
+                payload={},
+            )
+
+            old_spawn = terminal_worker.farmctl._spawn_work_item_runner
+            old_pid_tree_exists = terminal_worker.farmctl._pid_tree_exists
+            old_preflight = terminal_worker._work_item_preflight_failure
+            old_acquire = terminal_worker._acquire_launch_slot
+            old_sleep = terminal_worker.time.sleep
+            try:
+                terminal_worker.farmctl._spawn_work_item_runner = lambda _root, _row, _terminal: {
+                    "spawned": True,
+                    "pid": 123456,
+                    "log_path": str(root / "runner.log"),
+                    "report_root": str(root / "reports"),
+                    "ea_dir_name": "QM5_9999",
+                    "expected_trades_per_year_per_symbol": 10,
+                    "smoke_year_count": 6,
+                    "effective_min_trades": 5,
+                    "phase_runner": "run_smoke.ps1",
+                }
+                terminal_worker.farmctl._pid_tree_exists = lambda _pid: False
+                terminal_worker._work_item_preflight_failure = lambda _row: None
+                terminal_worker._acquire_launch_slot = lambda _terminal: None
+                terminal_worker.time.sleep = lambda _seconds: None
+
+                result = terminal_worker._run_claimed_item(
+                    root,
+                    {"id": "wi-launch-fault"},
+                    "T4",
+                    timeout_seconds=30,
+                )
+            finally:
+                terminal_worker.farmctl._spawn_work_item_runner = old_spawn
+                terminal_worker.farmctl._pid_tree_exists = old_pid_tree_exists
+                terminal_worker._work_item_preflight_failure = old_preflight
+                terminal_worker._acquire_launch_slot = old_acquire
+                terminal_worker.time.sleep = old_sleep
+
+            self.assertEqual(result["reason"], "launch_fault_deferred")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, verdict, claimed_by, attempt_count, payload_json FROM work_items WHERE id='wi-launch-fault'"
+                ).fetchone()
+            self.assertEqual(row[0], "pending")
+            self.assertIsNone(row[1])
+            self.assertIsNone(row[2])
+            self.assertEqual(row[3], 0)
+            payload = json.loads(row[4])
+            self.assertEqual(payload["prior_failure"], "launch_fault")
+            self.assertEqual(payload["launch_fault_count"], 1)
+            self.assertIn("launch_not_before_utc", payload)
 
     def test_summary_missing_release_stops_terminal_slot(self) -> None:
         with self._root() as tmp:

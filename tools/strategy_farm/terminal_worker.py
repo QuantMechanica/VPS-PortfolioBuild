@@ -19,6 +19,7 @@ import subprocess
 import sys
 import threading
 import time
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -76,9 +77,10 @@ STALLDUMP_DIR = Path("D:/QM/reports/state/worker_stalldump")
 # (crash-safe — a dead worker never blocks others) and the gate is fail-open (never
 # blocks the factory if anything goes wrong or the wait times out).
 LAUNCH_GATE_DIR = Path("D:/QM/strategy_farm/state/launch_slots")
-LAUNCH_GATE_WINDOW_SECONDS = 8.0          # terminal64 startup+DLL-init window to protect
-LAUNCH_GATE_MAX_CONCURRENT = 2            # max overlapping inits (override: launch_gate_max.txt)
+LAUNCH_GATE_WINDOW_SECONDS = 15.0         # terminal64 startup+DLL-init window to protect
+LAUNCH_GATE_MAX_CONCURRENT = 1            # max overlapping inits (override: launch_gate_max.txt)
 LAUNCH_GATE_WAIT_TIMEOUT_SECONDS = 90.0   # fail-open after this so the factory never stalls
+LAUNCH_FAULT_DEFER_SECONDS = 300.0        # host launch storm: defer without burning retries
 
 _STOP = False
 
@@ -96,6 +98,19 @@ def _json_loads(text: str | None) -> dict[str, Any]:
     except json.JSONDecodeError:
         return {}
     return value if isinstance(value, dict) else {}
+
+
+def _parse_utc_iso(value: object) -> datetime | None:
+    if not value:
+        return None
+    try:
+        text = str(value).replace("Z", "+00:00")
+        parsed = datetime.fromisoformat(text)
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc)
+    except ValueError:
+        return None
 
 
 def _with_sqlite_retry(fn):
@@ -322,7 +337,21 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     for row in conn.execute("SELECT DISTINCT ea_id FROM work_items WHERE status='active'")
                 )
                 skipped_history: list[dict[str, Any]] = []
+                skipped_launch_cooldown: list[dict[str, Any]] = []
                 for item in conn.execute(_priority_pending_query()).fetchall():
+                    payload = _json_loads(item["payload_json"])
+                    launch_not_before = _parse_utc_iso(payload.get("launch_not_before_utc"))
+                    if launch_not_before is not None:
+                        try:
+                            now_dt = datetime.fromisoformat(now).astimezone(timezone.utc)
+                        except ValueError:
+                            now_dt = datetime.now(timezone.utc)
+                        if launch_not_before > now_dt:
+                            skipped_launch_cooldown.append({
+                                "item_id": item["id"],
+                                "launch_not_before_utc": launch_not_before.isoformat(),
+                            })
+                            continue
                     symbol_key = str(item["symbol"] or "").upper()
                     if symbol_key and symbol_key in active_symbols:
                         continue
@@ -337,7 +366,6 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     if not history_ok:
                         skipped_history.append({"item_id": item["id"], **(history or {})})
                         continue
-                    payload = _json_loads(item["payload_json"])
                     payload.update({
                         "claimed_at_iso": now,
                         "claimed_by_worker_pid": os.getpid(),
@@ -356,7 +384,12 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         row = conn.execute("SELECT * FROM work_items WHERE id=?", (item["id"],)).fetchone()
                         return {"claimed": True, "item": dict(row)}
                 conn.commit()
-                return {"claimed": False, "reason": "no_pending_claimable", "history_skipped": skipped_history}
+                return {
+                    "claimed": False,
+                    "reason": "no_pending_claimable",
+                    "history_skipped": skipped_history,
+                    "launch_cooldown_skipped": skipped_launch_cooldown,
+                }
             except Exception:
                 conn.rollback()
                 raise
@@ -899,6 +932,59 @@ def _find_oversized_journal(report_root: str | None, cap_bytes: int = LOG_BOMB_J
     return None
 
 
+def _defer_launch_fault(root: Path, item_id: str, terminal: str, spawn: dict[str, Any], ran_seconds: float, child_tail: str) -> dict[str, Any]:
+    """Release a launch-faulted work item without consuming retry budget.
+
+    A sub-second child exit means terminal64 never reached a real tester run.
+    Marking that as final INFRA_FAIL burns good Q02 rows during host launch
+    storms, so the row is cooled down and left pending for a later clean launch.
+    """
+
+    now = farmctl.utc_now()
+    try:
+        now_dt = datetime.fromisoformat(now).astimezone(timezone.utc)
+    except ValueError:
+        now_dt = datetime.now(timezone.utc)
+    launch_not_before = now_dt + timedelta(seconds=LAUNCH_FAULT_DEFER_SECONDS)
+
+    def _update() -> None:
+        with farmctl.connect(root) as conn:
+            row = conn.execute("SELECT payload_json, attempt_count FROM work_items WHERE id=?", (item_id,)).fetchone()
+            if not row:
+                return
+            payload = _json_loads(row["payload_json"])
+            payload.update({
+                "prior_failure": "launch_fault",
+                "last_launch_fault_at": now,
+                "last_launch_fault_terminal": terminal,
+                "last_launch_fault_pid": spawn.get("pid"),
+                "last_launch_fault_seconds": round(ran_seconds, 2),
+                "last_launch_fault_child_tail": child_tail,
+                "launch_not_before_utc": launch_not_before.isoformat(),
+                "launch_fault_count": int(payload.get("launch_fault_count") or 0) + 1,
+                "run_smoke_exit_code": None,
+            })
+            conn.execute(
+                """
+                UPDATE work_items
+                SET status='pending', verdict=NULL, claimed_by=NULL,
+                    payload_json=?, updated_at=?
+                WHERE id=?
+                """,
+                (json.dumps(payload, sort_keys=True), now, item_id),
+            )
+            conn.commit()
+
+    _with_sqlite_retry(_update)
+    return {
+        "finished": True,
+        "status": "pending",
+        "verdict": None,
+        "reason": "launch_fault_deferred",
+        "launch_not_before_utc": launch_not_before.isoformat(),
+    }
+
+
 def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_seconds: int) -> dict[str, Any]:
     with farmctl.connect(root) as conn:
         row = conn.execute("SELECT * FROM work_items WHERE id=?", (item["id"],)).fetchone()
@@ -1100,8 +1186,13 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
                           "item_id": item["id"], "pid": spawn["pid"],
                           "ran_seconds": round(ran_seconds, 2),
                           "child_log_tail": child_tail}), flush=True)
-        exit_code = None
+        result = {
+            "action": "finished",
+            "item_id": item["id"],
+            **_defer_launch_fault(root, item["id"], terminal, spawn, ran_seconds, child_tail),
+        }
         time.sleep(LAUNCH_FAULT_BACKOFF_SECONDS)
+        return result
     else:
         # Child exited on its own after a plausible runtime.
         exit_code = 0
