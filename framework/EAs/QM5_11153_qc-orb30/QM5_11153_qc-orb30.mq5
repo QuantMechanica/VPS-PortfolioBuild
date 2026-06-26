@@ -23,7 +23,8 @@
 //                   one position per symbol/magic; one entry per session.
 //   Stop          : opposite side of the opening range +/- a spread/buffer that
 //                   is `stop_buffer_atr_mult` * ATR(atr_period, M30). Optional
-//                   P3 sweep widens via stop_range_mult on the range height.
+//                   P3 sweep may widen the distance from entry via
+//                   stop_range_mult on the range height.
 //   Exit          : timed liquidation at `exit_minute_broker` (13:30 ET ==
 //                   20:30 broker == 1230 min). Fallback: `hold_minutes_max`
 //                   (210) after the session open if the timed close did not
@@ -238,9 +239,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double buffer = (atr_m30 > 0.0) ? stop_buffer_atr_mult * atr_m30 : 0.0;
-   // Stop distance: at least the opposite range side + buffer; sweep can widen.
-   const double base_stop_dist = range_height + buffer;
-   const double stop_dist      = MathMax(base_stop_dist, stop_range_mult * range_height);
 
    // Long breakout: close above the range high.
    if(close1 > g_range_high)
@@ -248,7 +246,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
          return false;
-      const double sl = QM_StopRulesNormalizePrice(_Symbol, entry - stop_dist);
+      double sl_raw = g_range_low - buffer;
+      const double widened_sl = entry - (stop_range_mult * range_height + buffer);
+      if(widened_sl < sl_raw)
+         sl_raw = widened_sl;
+      const double sl = QM_StopRulesNormalizePrice(_Symbol, sl_raw);
       if(sl <= 0.0 || sl >= entry)
          return false;
       req.type   = QM_BUY;
@@ -266,7 +268,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(entry <= 0.0)
          return false;
-      const double sl = QM_StopRulesNormalizePrice(_Symbol, entry + stop_dist);
+      double sl_raw = g_range_high + buffer;
+      const double widened_sl = entry + (stop_range_mult * range_height + buffer);
+      if(widened_sl > sl_raw)
+         sl_raw = widened_sl;
+      const double sl = QM_StopRulesNormalizePrice(_Symbol, sl_raw);
       if(sl <= 0.0 || sl <= entry)
          return false;
       req.type   = QM_SELL;
