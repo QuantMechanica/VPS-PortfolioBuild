@@ -1,6 +1,12 @@
 # QM5_10024 rw-fx-comm-basket
 
-## Strategy Logic
+**EA ID:** QM5_10024
+**Slug:** `rw-fx-comm-basket`
+**Source:** Robot Wealth FX commodity basket / mean-reversion source family
+**Author of this spec:** Development
+**Last revised:** 2026-06-26
+
+## 1. Strategy Logic
 
 The EA mechanises the approved Robot Wealth FX commodity basket mean-reversion card on D1 bars. It reads AUDUSD.DWX, NZDUSD.DWX, USDCAD.DWX, and AUDNZD.DWX, builds a frozen-weight log spread, and computes a 60-bar z-score.
 
@@ -14,7 +20,7 @@ When z-score is above +2.0, the basket is treated as rich and each leg trades op
 
 Exit occurs when the cached spread z-score is back inside +/-0.50, when the position has been held for 20 trading days, or when the z-score reaches the card's catastrophic basket threshold of 2.5 standard deviations. Each leg also has a 2.0 * ATR(14,D1) platform stop.
 
-## Parameters
+## 2. Parameters
 
 | Input | Default | Range | Meaning |
 |---|---:|---|---|
@@ -31,24 +37,24 @@ Exit occurs when the cached spread z-score is back inside +/-0.50, when the posi
 | `strategy_weight_usdcad` | -1.0 | fixed/sweep | Frozen hedge weight for USDCAD.DWX. |
 | `strategy_weight_audnzd` | -1.0 | fixed/sweep | Frozen hedge weight for AUDNZD.DWX. |
 
-## Symbol Universe
+## 3. Symbol Universe
 
 Registered symbols are AUDUSD.DWX, NZDUSD.DWX, USDCAD.DWX, and AUDNZD.DWX. The EA intentionally rejects any chart symbol outside that four-leg basket and rejects a chart whose `qm_magic_slot_offset` does not match the registered symbol slot.
 
-## Timeframe
+## 4. Timeframe
 
 Base timeframe is D1. The EA rejects non-D1 tester periods because the card specifies daily close evaluation and a 60 D1 bar z-score.
 
-## Expected Behaviour
+## 5. Expected Behaviour
 
 The approved card estimates roughly 35 trades per year per symbol. This is a mean-reversion/stat-arb sleeve and should trade during dislocations in the commodity-currency basket, with typical holds up to 20 trading days unless the z-score normalises sooner.
 
-## Source Citation
+## 6. Source Citation
 
 Source ID: `dcbac84f-6ecf-5d21-9630-50faa69306ec`.
 
 Robot Wealth, "Index of Strategies" FX Commodity basket section, plus Kris Longmore's Robot Wealth posts on mean reversion and cointegration.
 
-## Risk Model
+## 7. Risk Model
 
 Backtests use fixed risk with `RISK_FIXED=1000` and `RISK_PERCENT=0`. Live deployment uses percent risk through a separate manifest/setfile with `RISK_PERCENT=0.5` and `RISK_FIXED=0`, subject to OWNER approval.

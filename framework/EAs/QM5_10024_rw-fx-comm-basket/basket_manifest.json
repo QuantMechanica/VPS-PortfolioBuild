@@ -1,6 +1,6 @@
 {
   "logical_symbol": "QM5_10024_RW_FX_COMM_BASKET_D1",
-  "host_symbol": "_per_instance",
+  "host_symbol": "AUDUSD.DWX",
   "host_timeframe": "D1",
   "basket_symbols": [
     "AUDUSD.DWX",
