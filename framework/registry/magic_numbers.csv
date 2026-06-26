@@ -13555,3 +13555,12 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1536,aa-mrat-21-200,7,GBPUSD.DWX,15360007,2026-06-26,Development,active
 1536,aa-mrat-21-200,8,USDJPY.DWX,15360008,2026-06-26,Development,active
 1536,aa-mrat-21-200,9,XTIUSD.DWX,15360009,2026-06-26,Development,active
+1540,aa-vix-trend-top2,0,SP500.DWX,15400000,2026-06-26,Development,active
+1540,aa-vix-trend-top2,1,NDX.DWX,15400001,2026-06-26,Development,active
+1540,aa-vix-trend-top2,2,WS30.DWX,15400002,2026-06-26,Development,active
+1540,aa-vix-trend-top2,3,GDAXI.DWX,15400003,2026-06-26,Development,active
+1540,aa-vix-trend-top2,4,XAUUSD.DWX,15400004,2026-06-26,Development,active
+1540,aa-vix-trend-top2,5,XTIUSD.DWX,15400005,2026-06-26,Development,active
+1540,aa-vix-trend-top2,6,EURUSD.DWX,15400006,2026-06-26,Development,active
+1540,aa-vix-trend-top2,7,GBPUSD.DWX,15400007,2026-06-26,Development,active
+1540,aa-vix-trend-top2,8,USDJPY.DWX,15400008,2026-06-26,Development,active
