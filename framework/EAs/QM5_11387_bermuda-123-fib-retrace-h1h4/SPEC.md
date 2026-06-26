@@ -4,7 +4,7 @@
 **Slug:** `bermuda-123-fib-retrace-h1h4`
 **Source:** `b763b137-82f3-52af-9003-426c2b10f780` (see `strategy-seeds/sources/b763b137-82f3-52af-9003-426c2b10f780/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-26
 
 ---
 
@@ -46,7 +46,7 @@ entries (off by default).
 | `strategy_pivot_scan_bars` | 240 | 60-500 | Bounded closed-bar window scanned for pivots |
 | `strategy_use_htf_filter` | false | bool | Gate entries by the same-symbol H4 EMA trend |
 | `strategy_htf_ema_period` | 50 | 20-200 | H4 EMA period when the HTF filter is enabled |
-| `strategy_spread_pct_of_stop` | 15 | 5-50 | Skip a trade if spread exceeds this % of the cap stop distance |
+| `strategy_spread_cap_pips` | 20 | 5-50 | Skip only if modeled spread is genuinely wider than this cap; zero `.DWX` spread is allowed |
 
 ---
 
@@ -92,7 +92,7 @@ This card was mechanised from:
 **Source ID:** `b763b137-82f3-52af-9003-426c2b10f780`
 **Source type:** `paper` (2012 PDF, "Forex Bermuda Trading Strategy", anonymous, superiorfxsignals.com)
 **Pointer:** `strategy-seeds/sources/b763b137-82f3-52af-9003-426c2b10f780/`
-**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_11387_bermuda-123-fib-retrace-h1h4.md`
+**R1–R4 verdict (Q00):** all R1–R4 PASS per `artifacts/cards_approved/QM5_11387_bermuda-123-fib-retrace-h1h4.md`
 
 ---
 
@@ -112,4 +112,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v1 | 2026-06-26 | Initial build from card | 8b9cae0e-61eb-4604-8221-d77bf0733b82 |

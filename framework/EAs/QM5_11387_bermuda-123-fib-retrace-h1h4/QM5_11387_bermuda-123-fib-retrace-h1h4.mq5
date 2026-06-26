@@ -65,8 +65,8 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
-input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_OFF;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_NONE;
 input int    qm_news_stale_max_hours      = 336;     // 14 days; SETUP_DATA_MISSING if older
 input string qm_news_min_impact           = "high";  // high / medium / low
 input QM_NewsMode qm_news_mode_legacy     = QM_NEWS_OFF;
@@ -93,7 +93,7 @@ input double strategy_trail_atr_mult     = 0.5;    // ATR multiple for the post-
 input int    strategy_pivot_scan_bars    = 240;    // closed-bar window scanned for pivots (bounded)
 input bool   strategy_use_htf_filter     = false;  // gate entries by H4 EMA trend (same symbol)
 input int    strategy_htf_ema_period     = 50;     // H4 EMA period when the HTF filter is enabled
-input double strategy_spread_pct_of_stop = 15.0;   // skip if spread > this % of stop distance
+input int    strategy_spread_cap_pips    = 20;     // skip only when modeled spread is genuinely wider than cap
 
 // -----------------------------------------------------------------------------
 // File-scope cached 1-2-3 structure (advanced once per closed bar).
@@ -281,13 +281,13 @@ bool Strategy_NoTradeFilter()
    if(ask <= 0.0 || bid <= 0.0)
       return false; // no valid quote yet — do not block on it
 
-   const double stop_distance = PipDistance(strategy_sl_cap_pips);
-   if(stop_distance <= 0.0)
+   const double spread_cap = PipDistance(strategy_spread_cap_pips);
+   if(spread_cap <= 0.0)
       return false;
 
    const double spread = ask - bid;
    // Only a genuinely wide spread blocks; zero/negative modeled spread passes.
-   if(spread > 0.0 && spread > (strategy_spread_pct_of_stop / 100.0) * stop_distance)
+   if(spread > 0.0 && spread > spread_cap)
       return true;
 
    return false;
@@ -301,6 +301,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
+
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    if(g_pattern_dir == 0 || g_p1 <= 0.0 || g_p2 <= 0.0 || g_p3 <= 0.0)
       return false;
    // Entry window: P3 must be recent enough that the breakout is timely.
