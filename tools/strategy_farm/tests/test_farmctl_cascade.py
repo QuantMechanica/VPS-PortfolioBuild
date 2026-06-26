@@ -35,6 +35,15 @@ class SymbolAliasTests(unittest.TestCase):
         # instruments we have no .DWX data for must NOT masquerade as another symbol
         self.assertEqual(farmctl._normalise_card_symbol("AUS200"), "AUS200.DWX")
 
+    def test_build_div_rank_diversifier_first(self) -> None:
+        # OWNER 2026-06-26: build sweep prioritizes NEW instruments; all-redundant cards last.
+        redundant = "Universe: XAUUSD, SP500, NDX.\n"
+        diversifying = "Universe: EURUSD, USDJPY.\n"
+        mixed = "Universe: XAUUSD, EURUSD.\n"
+        self.assertEqual(farmctl._card_build_div_rank(redundant), 1)
+        self.assertEqual(farmctl._card_build_div_rank(diversifying), 0)
+        self.assertEqual(farmctl._card_build_div_rank(mixed), 0)  # any new instrument -> build
+
 
 class CascadePromotionTests(unittest.TestCase):
     def test_min_trades_floor_is_flat_rate_not_card_coupled(self) -> None:

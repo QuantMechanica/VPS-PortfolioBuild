@@ -5577,6 +5577,20 @@ def _has_auto_build_task_file(root: Path, ea_id: str) -> bool:
     return False
 
 
+# Instruments the certified book is already concentrated in — building MORE of these adds no
+# diversification and only clogs the CPU-bound funnel. The build sweep prioritizes cards on
+# NEW instruments (FX/energy/other-index) first; all-redundant cards build last (OWNER 2026-06-26).
+_REDUNDANT_BUILD_INSTRUMENTS = {"XAUUSD.DWX", "SP500.DWX", "NDX.DWX"}
+
+
+def _card_build_div_rank(card_text: str) -> int:
+    """0 = diversifying (build first), 1 = all-redundant instruments (build last)."""
+    syms = _card_universe_symbols(card_text)
+    if syms and syms <= _REDUNDANT_BUILD_INSTRUMENTS:
+        return 1
+    return 0
+
+
 def _detect_unbuilt_cards(root: Path) -> list[dict[str, Any]]:
     """
     Find approved cards where the matching EA .ex5 does not exist yet and
@@ -5618,13 +5632,20 @@ def _detect_unbuilt_cards(root: Path) -> list[dict[str, Any]]:
                 continue
         except Exception:
             continue
+        try:
+            div_rank = _card_build_div_rank(card_md.read_text(encoding="utf-8", errors="ignore"))
+        except Exception:
+            div_rank = 0
         unbuilt.append({
             "ea_id": ea_id,
             "slug": slug,
             "label": label,
             "card_path": str(card_md),
             "expected_ex5": str(ex5),
+            "div_rank": div_rank,
         })
+    # Diversifiers (new instruments) first; all-redundant (XAU/SP500/NDX) cards build last.
+    unbuilt.sort(key=lambda u: (u["div_rank"], u["ea_id"]))
     return unbuilt
 
 
