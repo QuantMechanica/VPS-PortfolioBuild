@@ -27,6 +27,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
         phase: str = "P2",
         status: str = "pending",
         claimed_by: str | None = None,
+        verdict: str | None = None,
         payload: dict[str, object] | None = None,
         ea_id: str = "QM5_9999",
     ) -> None:
@@ -40,10 +41,10 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                    attempt_count, parent_task_id, evidence_path, claimed_by,
                    payload_json, created_at, updated_at)
                 VALUES
-                  (?, 'backtest', ?, ?, ?, 'dummy.set', ?, NULL,
+                  (?, 'backtest', ?, ?, ?, 'dummy.set', ?, ?,
                    0, NULL, NULL, ?, ?, ?, ?)
                 """,
-                (item_id, phase, ea_id, symbol, status, claimed_by, json.dumps(payload or {}), now, now),
+                (item_id, phase, ea_id, symbol, status, verdict, claimed_by, json.dumps(payload or {}), now, now),
             )
             conn.commit()
 
@@ -115,6 +116,43 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 statuses = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
             self.assertEqual(statuses["pending-q04-same-ea"], "pending")
             self.assertEqual(statuses["pending-q04-other-ea"], "active")
+
+    def test_q02_logical_basket_claims_before_ordinary_winner_pool(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "ordinary-pass",
+                "EURUSD.DWX",
+                phase="Q02",
+                status="done",
+                verdict="PASS",
+                ea_id="QM5_1001",
+            )
+            self._insert_work_item(
+                root,
+                "ordinary-q02",
+                "GBPUSD.DWX",
+                phase="Q02",
+                ea_id="QM5_1001",
+            )
+            self._insert_work_item(
+                root,
+                "basket-q02",
+                "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+                phase="Q02",
+                ea_id="QM5_12533",
+                payload={"portfolio_scope": "basket", "host_symbol": "EURJPY.DWX"},
+            )
+
+            result = terminal_worker.claim_atomic(root, "T2")
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "basket-q02")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                statuses = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
+            self.assertEqual(statuses["basket-q02"], "active")
+            self.assertEqual(statuses["ordinary-q02"], "pending")
 
     def test_dwx_history_range_registry_is_respected_for_p2_claims(self) -> None:
         with self._root() as tmp:

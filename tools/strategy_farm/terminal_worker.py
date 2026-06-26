@@ -177,13 +177,16 @@ def _priority_pending_query() -> str:
             WHEN 'P3'   THEN 8
             WHEN 'P2'   THEN 9
             ELSE 9 END AS _phase_rank,
+          CASE
+            WHEN w.phase='Q02' AND w.payload_json LIKE '%"portfolio_scope": "basket"%' THEN 0
+            ELSE 1 END AS _basket_q02_rank,
           CASE WHEN EXISTS (
             SELECT 1 FROM work_items wp
             WHERE wp.ea_id=w.ea_id AND wp.status='done' AND wp.verdict='PASS'
           ) THEN 0 ELSE 1 END AS _winner_rank
         FROM work_items w
         WHERE w.status='pending'
-        ORDER BY _priority_track_rank ASC, _phase_rank ASC, _winner_rank ASC, w.updated_at ASC, w.created_at ASC
+        ORDER BY _priority_track_rank ASC, _phase_rank ASC, _basket_q02_rank ASC, _winner_rank ASC, w.updated_at ASC, w.created_at ASC
     """
 
 
