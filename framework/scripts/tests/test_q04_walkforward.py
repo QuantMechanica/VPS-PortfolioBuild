@@ -20,6 +20,23 @@ def _load_module():
     return module
 
 
+class Q04CommissionFallbackTests(unittest.TestCase):
+    """OWNER 2026-06-26: the EA-side flat fallback must grade at the realistic per-class rate
+    (forex $5 / index $5.5 / commodity $0), not a blanket $7 that over-charged FX ~40%."""
+
+    def test_per_class_fallback_rates(self) -> None:
+        mod = _load_module()
+        self.assertEqual(mod._ea_side_sim_commission_per_lot("EURUSD.DWX"), 5.0)
+        self.assertEqual(mod._ea_side_sim_commission_per_lot("GBPJPY.DWX"), 5.0)
+        self.assertEqual(mod._ea_side_sim_commission_per_lot("NDX.DWX"), 5.5)
+        self.assertEqual(mod._ea_side_sim_commission_per_lot("XAUUSD.DWX"), 0.0)
+
+    def test_unknown_symbol_falls_back_to_conservative_constant(self) -> None:
+        mod = _load_module()
+        # unknown symbol -> default class (forex) -> registry flat, still NOT the blanket $7
+        self.assertEqual(mod._ea_side_sim_commission_per_lot("ZZZUSD.DWX"), 5.0)
+
+
 class Q04WalkForwardTests(unittest.TestCase):
     def test_run_fold_allows_worker_owned_terminal_and_logs_summary(self) -> None:
         mod = _load_module()

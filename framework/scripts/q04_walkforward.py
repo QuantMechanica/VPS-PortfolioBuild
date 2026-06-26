@@ -188,6 +188,25 @@ def _commission_model():
     return _COMMISSION_MODEL
 
 
+def _ea_side_sim_commission_per_lot(symbol: str) -> float:
+    """Per-class flat commission for the EA-side InpQMSimCommissionPerLot injection.
+
+    The fold backtest self-accounts this flat per-lot rate; it is the value the
+    `flat_..._ea_side_fallback` verdict grades on when no per-trade stream exists (~45% of
+    recent FX folds). A blanket $7/lot charged FX ~40% more than reality and over-charged
+    every class. Use the realistic worst-case-{DXZ,FTMO} per-class flat rate from
+    live_commission.json instead (forex $5 / index $5.5 / commodity $0). The primary DL-073
+    grading path already uses the full max(0.5bps*notional, flat) model on the stream; this
+    only makes the FALLBACK consistent with it. OWNER-ratified 2026-06-26. Falls back to the
+    conservative flat constant if the registry / symbol class is unavailable."""
+    try:
+        model = _commission_model()
+        cls = model.symbol_class.get(symbol, model.default_class)
+        return float(model.classes[cls]["flat_per_lot_rt"])
+    except Exception:
+        return float(COMMISSION_PER_LOT_ROUND_TRIP)
+
+
 def _q08_trade_stream_path(ea_id: int, symbol: str) -> Path:
     return _common_files_dir() / "QM" / "q08_trades" / f"{ea_id}_{symbol.replace('.', '_')}.jsonl"
 
@@ -216,7 +235,7 @@ def pf_net_from_stream(ea_id: int, symbol: str, fold: dict,
     Returns (pf_net, n_trades, commission_total, gross_total, nets) where `nets` is the
     list of realistic-net per-trade P&L inside the fold's OOS window (used by the DL-076
     low-freq pooled verdict). Returns (None, 0, None, None, []) when no usable stream
-    exists (caller falls back to the EA's flat-$7 self-report).
+    exists (caller falls back to the EA's per-class-flat self-report).
     """
     from framework.scripts.q08_davey import common as q08common
     model = model or _commission_model()
@@ -401,8 +420,9 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
     fold_dir.mkdir(parents=True, exist_ok=True)
     fold_set = fold_dir / f"{Path(setfile).stem}_q04comm.set"
     base_text = Path(setfile).read_text(encoding="utf-8", errors="ignore") if Path(setfile).exists() else ""
+    sim_comm_per_lot = _ea_side_sim_commission_per_lot(symbol)
     if "InpQMSimCommissionPerLot" not in base_text:
-        base_text = base_text.rstrip("\r\n") + f"\r\nInpQMSimCommissionPerLot={COMMISSION_PER_LOT_ROUND_TRIP}\r\n"
+        base_text = base_text.rstrip("\r\n") + f"\r\nInpQMSimCommissionPerLot={sim_comm_per_lot}\r\n"
     fold_set.write_text(base_text, encoding="utf-8")
 
     # Clear any stale EA result + per-trade stream before this fold (folds run
@@ -454,15 +474,16 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
                 "summary_path": None, "log_path": str(log_path)}
 
     # DL-073: grade from the realistic %-notional model applied post-hoc to the per-trade
-    # stream this fold just emitted (preferred). Fall back to the EA's flat-$7 self-report
-    # only when the stream is unavailable (older EA / stream skipped).
+    # stream this fold just emitted (preferred). Fall back to the EA's self-report (now graded
+    # at the realistic per-class flat rate, not a blanket $7) only when the stream is
+    # unavailable (older EA / stream skipped).
     pf_net, trades, comm_total, gross_total, oos_nets = pf_net_from_stream(ea_id, symbol, fold)
     commission_basis = "worst_case_dxz_ftmo_notional"
     if pf_net is None:
         pf_net, trades, comm_total = read_pf_net_from_ea(ea_id, symbol)
         gross_total = None
-        oos_nets = []  # flat-$7 fallback has no per-trade stream → no low-freq pooling
-        commission_basis = "flat_7_ea_side_fallback"
+        oos_nets = []  # per-class flat fallback has no per-trade stream → no low-freq pooling
+        commission_basis = "flat_per_class_ea_side_fallback"
     summary_path = _summary_from_log(log_path) or report_root / f"QM5_{ea_id}" / "Q04" / fold["id"] / "summary.json"
     status = "OK" if (pf_net is not None and proc.returncode == 0) else "FAIL"
     return {
