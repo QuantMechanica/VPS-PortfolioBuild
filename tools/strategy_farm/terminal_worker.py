@@ -289,9 +289,24 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     pid = payload.get("pid")
                     worker_pid = payload.get("claimed_by_worker_pid")
                     if worker_pid and not farmctl._pid_exists(worker_pid):
+                        if pid and farmctl._pid_tree_exists(pid):
+                            payload["prior_failure"] = payload.get("prior_failure") or "worker_process_missing_adopted_active_child"
+                            payload["orphan_worker_pid"] = worker_pid
+                            payload["orphan_child_adopted_at_iso"] = now
+                            payload["claimed_by_worker_pid"] = os.getpid()
+                            conn.execute(
+                                """
+                                UPDATE work_items
+                                SET payload_json=?, updated_at=?
+                                WHERE id=? AND status='active' AND claimed_by=?
+                                """,
+                                (json.dumps(payload, sort_keys=True), now, active_terminal["id"], terminal),
+                            )
+                            conn.commit()
+                            row = conn.execute("SELECT * FROM work_items WHERE id=?", (active_terminal["id"],)).fetchone()
+                            return {"claimed": True, "item": dict(row), "adopt_existing": True}
+
                         payload["prior_failure"] = payload.get("prior_failure") or "worker_process_missing_released_stale_claim"
-                        if pid:
-                            payload["child_stopped_on_orphan_release"] = farmctl._stop_pid_tree(pid)
                         terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
                         if terminal_stopped is not None:
                             payload["terminal_stopped_on_release"] = terminal_stopped
@@ -1006,6 +1021,147 @@ def _defer_launch_fault(root: Path, item_id: str, terminal: str, spawn: dict[str
     }
 
 
+def _monitor_timeout_seconds(payload: dict[str, Any], default_timeout_seconds: int) -> int:
+    timeout_seconds = int(default_timeout_seconds)
+    try:
+        payload_timeout_min = int(payload.get("timeout_min") or 0)
+        if payload_timeout_min > 0:
+            timeout_seconds = max(timeout_seconds, payload_timeout_min * 60)
+    except (TypeError, ValueError):
+        pass
+    return timeout_seconds
+
+
+def _monitor_deadline_monotonic(
+    payload: dict[str, Any],
+    default_timeout_seconds: int,
+    monitor_started: float,
+    *,
+    adopted: bool,
+) -> float:
+    timeout_seconds = _monitor_timeout_seconds(payload, default_timeout_seconds)
+    if adopted:
+        started_at = _parse_utc_iso(payload.get("started_at_iso") or payload.get("claimed_at_iso"))
+        if started_at:
+            elapsed_seconds = max(0.0, (datetime.now(timezone.utc) - started_at).total_seconds())
+            return monitor_started + max(0.0, timeout_seconds - elapsed_seconds)
+    return monitor_started + timeout_seconds
+
+
+def _monitor_spawned_work_item(
+    root: Path,
+    item: dict[str, Any],
+    terminal: str,
+    spawn: dict[str, Any],
+    payload: dict[str, Any],
+    timeout_seconds: int,
+    *,
+    adopted: bool = False,
+) -> dict[str, Any]:
+    pid = spawn["pid"]
+    spawn_started = time.monotonic()
+    deadline = _monitor_deadline_monotonic(payload, timeout_seconds, spawn_started, adopted=adopted)
+    log_bomb_path: str | None = None
+    _lb_iter = 0
+    while time.monotonic() < deadline and farmctl._pid_tree_exists(pid):
+        if _STOP:
+            return {"action": "shutdown_waiting_for_child", "item_id": item["id"], "pid": pid}
+        ownership = _work_item_ownership(root, item["id"], terminal)
+        if not ownership.get("owned"):
+            child_stopped = farmctl._stop_pid_tree(pid)
+            terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
+            return {
+                "action": "external_release_observed",
+                "item_id": item["id"],
+                "pid": pid,
+                "child_stopped": child_stopped,
+                "terminal_stopped": terminal_stopped,
+                **ownership,
+            }
+        if _smoke_terminal_exit_stalled(item, payload):
+            farmctl._stop_pid_tree(pid)
+            break
+        # Log-bomb guard: kill a backtest whose tester journal balloons past the
+        # cap (framework per-tick spam -> 50-60GB .log -> ~10GB/min disk burn).
+        _lb_iter += 1
+        if _lb_iter % LOG_BOMB_CHECK_EVERY_ITERS == 0:
+            log_bomb_path = _find_oversized_journal(spawn.get("report_root"))
+            if log_bomb_path:
+                farmctl._stop_pid_tree(pid)
+                break
+        time.sleep(2.0)
+    if log_bomb_path:
+        # Reclaim the disk immediately and record a terminal verdict with a high
+        # attempt_count so the sweep does NOT re-enqueue (it would re-bomb).
+        try:
+            gb = round(os.path.getsize(log_bomb_path) / 1024 ** 3, 1)
+        except OSError:
+            gb = 0.0
+        try:
+            os.remove(log_bomb_path)
+        except OSError:
+            pass
+        print(json.dumps({"event": "log_bomb", "terminal": terminal, "item_id": item["id"],
+                          "ea_id": item.get("ea_id"), "journal_gb": gb,
+                          "path": log_bomb_path}), flush=True)
+
+        def _record_log_bomb() -> None:
+            with farmctl.connect(root) as conn:
+                conn.execute(
+                    "UPDATE work_items SET status='done', verdict='INFRA_FAIL', "
+                    "attempt_count=99, claimed_by=NULL, updated_at=? WHERE id=?",
+                    (farmctl.utc_now(), item["id"]),
+                )
+                conn.commit()
+
+        _with_sqlite_retry(_record_log_bomb)
+        return {"action": "log_bomb_killed", "item_id": item["id"],
+                "ea_id": item.get("ea_id"), "journal_gb": gb}
+    ran_seconds = time.monotonic() - spawn_started
+    if farmctl._pid_tree_exists(pid):
+        # Timed out — kill and treat as no-result (no clean exit code).
+        farmctl._stop_pid_tree(pid)
+        exit_code = None
+    elif (not adopted) and ran_seconds < LAUNCH_FAULT_MIN_SECONDS:
+        # Child vanished far too fast to be a real run (terminal64 startup alone
+        # is ~6-10s) -> transient launch fault, NOT a clean exit_code=0. Record as
+        # no-result and back off so a host hiccup can't burn the whole batch
+        # through its retries in seconds.
+        # Capture the child's log tail so a launch_fault wedge is diagnosable: a
+        # session-resource exhaustion fault (0xC0000142 STATUS_DLL_INIT_FAILED, the
+        # phase-runner/terminal64 failing to init) looks identical in the metrics to
+        # a clean EA/data error, and the child process is already gone so its exit
+        # code is unrecoverable here. The log tail is the only surviving evidence.
+        # Fail-open: never let tail capture affect the launch_fault handling.
+        child_tail = ""
+        try:
+            lp = spawn.get("log_path")
+            if lp and os.path.exists(lp):
+                with open(lp, "rb") as _ltf:
+                    _ltf.seek(0, os.SEEK_END)
+                    _ltsz = _ltf.tell()
+                    _ltf.seek(max(0, _ltsz - 2000))
+                    child_tail = _ltf.read().decode("utf-8", "replace").strip().replace("\n", " | ")[-700:]
+        except Exception:
+            child_tail = "<tail-read-failed>"
+        print(json.dumps({"event": "launch_fault", "terminal": terminal,
+                          "item_id": item["id"], "pid": pid,
+                          "ran_seconds": round(ran_seconds, 2),
+                          "child_log_tail": child_tail}), flush=True)
+        result = {
+            "action": "finished",
+            "item_id": item["id"],
+            **_defer_launch_fault(root, item["id"], terminal, spawn, ran_seconds, child_tail),
+        }
+        time.sleep(LAUNCH_FAULT_BACKOFF_SECONDS)
+        return result
+    else:
+        # Child exited on its own after a plausible runtime, or this worker adopted
+        # an already-running child whose runtime began before adoption.
+        exit_code = 0
+    return {"action": "finished", "item_id": item["id"], **_finish_work_item(root, item["id"], exit_code)}
+
+
 def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_seconds: int) -> dict[str, Any]:
     with farmctl.connect(root) as conn:
         row = conn.execute("SELECT * FROM work_items WHERE id=?", (item["id"],)).fetchone()
@@ -1018,6 +1174,35 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
             "item_id": item["id"],
             **_fail_work_item_preflight(root, row, preflight_failure),
         }
+    existing_payload = _json_loads(row["payload_json"])
+    existing_pid = existing_payload.get("pid")
+    if existing_pid and farmctl._pid_tree_exists(existing_pid):
+        existing_payload["adopted_active_child_at_iso"] = farmctl.utc_now()
+        existing_payload["claimed_by_worker_pid"] = os.getpid()
+
+        def _record_adoption() -> None:
+            with farmctl.connect(root) as conn:
+                conn.execute(
+                    "UPDATE work_items SET payload_json=?, updated_at=? WHERE id=? AND status='active'",
+                    (json.dumps(existing_payload, sort_keys=True), farmctl.utc_now(), item["id"]),
+                )
+                conn.commit()
+
+        _with_sqlite_retry(_record_adoption)
+        existing_spawn = {
+            "pid": existing_pid,
+            "log_path": existing_payload.get("log_path"),
+            "report_root": existing_payload.get("report_root"),
+        }
+        return _monitor_spawned_work_item(
+            root,
+            item,
+            terminal,
+            existing_spawn,
+            existing_payload,
+            timeout_seconds,
+            adopted=True,
+        )
     # Serialize the terminal64 DLL-init window across workers to kill the 0xC0000142
     # launch_fault storm that hits when many terminals launch at once (TTL leaky
     # semaphore, fail-open — see LAUNCH_GATE_* and _acquire_launch_slot).
@@ -1120,104 +1305,7 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
 
     _with_sqlite_retry(_record_spawn)
 
-    spawn_started = time.monotonic()
-    deadline = spawn_started + timeout_seconds
-    log_bomb_path: str | None = None
-    _lb_iter = 0
-    while time.monotonic() < deadline and farmctl._pid_tree_exists(spawn["pid"]):
-        if _STOP:
-            return {"action": "shutdown_waiting_for_child", "item_id": item["id"], "pid": spawn["pid"]}
-        ownership = _work_item_ownership(root, item["id"], terminal)
-        if not ownership.get("owned"):
-            child_stopped = farmctl._stop_pid_tree(spawn["pid"])
-            terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
-            return {
-                "action": "external_release_observed",
-                "item_id": item["id"],
-                "pid": spawn["pid"],
-                "child_stopped": child_stopped,
-                "terminal_stopped": terminal_stopped,
-                **ownership,
-            }
-        if _smoke_terminal_exit_stalled(item, payload):
-            farmctl._stop_pid_tree(spawn["pid"])
-            break
-        # Log-bomb guard: kill a backtest whose tester journal balloons past the
-        # cap (framework per-tick spam -> 50-60GB .log -> ~10GB/min disk burn).
-        _lb_iter += 1
-        if _lb_iter % LOG_BOMB_CHECK_EVERY_ITERS == 0:
-            log_bomb_path = _find_oversized_journal(spawn.get("report_root"))
-            if log_bomb_path:
-                farmctl._stop_pid_tree(spawn["pid"])
-                break
-        time.sleep(2.0)
-    if log_bomb_path:
-        # Reclaim the disk immediately and record a terminal verdict with a high
-        # attempt_count so the sweep does NOT re-enqueue (it would re-bomb).
-        try:
-            gb = round(os.path.getsize(log_bomb_path) / 1024 ** 3, 1)
-        except OSError:
-            gb = 0.0
-        try:
-            os.remove(log_bomb_path)
-        except OSError:
-            pass
-        print(json.dumps({"event": "log_bomb", "terminal": terminal, "item_id": item["id"],
-                          "ea_id": item.get("ea_id"), "journal_gb": gb,
-                          "path": log_bomb_path}), flush=True)
-        def _record_log_bomb() -> None:
-            with farmctl.connect(root) as conn:
-                conn.execute(
-                    "UPDATE work_items SET status='done', verdict='INFRA_FAIL', "
-                    "attempt_count=99, claimed_by=NULL, updated_at=? WHERE id=?",
-                    (farmctl.utc_now(), item["id"]),
-                )
-                conn.commit()
-        _with_sqlite_retry(_record_log_bomb)
-        return {"action": "log_bomb_killed", "item_id": item["id"],
-                "ea_id": item.get("ea_id"), "journal_gb": gb}
-    ran_seconds = time.monotonic() - spawn_started
-    if farmctl._pid_tree_exists(spawn["pid"]):
-        # Timed out — kill and treat as no-result (no clean exit code).
-        farmctl._stop_pid_tree(spawn["pid"])
-        exit_code = None
-    elif ran_seconds < LAUNCH_FAULT_MIN_SECONDS:
-        # Child vanished far too fast to be a real run (terminal64 startup alone
-        # is ~6-10s) -> transient launch fault, NOT a clean exit_code=0. Record as
-        # no-result and back off so a host hiccup can't burn the whole batch
-        # through its retries in seconds.
-        # Capture the child's log tail so a launch_fault wedge is diagnosable: a
-        # session-resource exhaustion fault (0xC0000142 STATUS_DLL_INIT_FAILED, the
-        # phase-runner/terminal64 failing to init) looks identical in the metrics to
-        # a clean EA/data error, and the child process is already gone so its exit
-        # code is unrecoverable here. The log tail is the only surviving evidence.
-        # Fail-open: never let tail capture affect the launch_fault handling.
-        child_tail = ""
-        try:
-            lp = spawn.get("log_path")
-            if lp and os.path.exists(lp):
-                with open(lp, "rb") as _ltf:
-                    _ltf.seek(0, os.SEEK_END)
-                    _ltsz = _ltf.tell()
-                    _ltf.seek(max(0, _ltsz - 2000))
-                    child_tail = _ltf.read().decode("utf-8", "replace").strip().replace("\n", " | ")[-700:]
-        except Exception:
-            child_tail = "<tail-read-failed>"
-        print(json.dumps({"event": "launch_fault", "terminal": terminal,
-                          "item_id": item["id"], "pid": spawn["pid"],
-                          "ran_seconds": round(ran_seconds, 2),
-                          "child_log_tail": child_tail}), flush=True)
-        result = {
-            "action": "finished",
-            "item_id": item["id"],
-            **_defer_launch_fault(root, item["id"], terminal, spawn, ran_seconds, child_tail),
-        }
-        time.sleep(LAUNCH_FAULT_BACKOFF_SECONDS)
-        return result
-    else:
-        # Child exited on its own after a plausible runtime.
-        exit_code = 0
-    return {"action": "finished", "item_id": item["id"], **_finish_work_item(root, item["id"], exit_code)}
+    return _monitor_spawned_work_item(root, item, terminal, spawn, payload, timeout_seconds)
 
 
 def _disk_free_gb(root: Path) -> float:
