@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_12608_XTI_XNG_BREAKOUT_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg XTI/XNG energy ratio breakout basket from the approved EIA-OILGAS-BREAKOUT-2026 card. The EA runs from the XTIUSD.DWX host setfile and reads both D1 close series to compute ln(XTIUSD) - beta * ln(XNGUSD). Q02 must evaluate the logical basket, not the standalone legs."
+  ]
+}

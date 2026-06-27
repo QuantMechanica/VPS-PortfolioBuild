@@ -13662,3 +13662,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12606,oil-silver-ratio,0,XTIUSD.DWX,126060000,2026-06-27,Development,active
 12606,oil-silver-ratio,1,XAGUSD.DWX,126060001,2026-06-27,Development,active
 12607,wti-cad-confirm,0,XTIUSD.DWX,126070000,2026-06-27,Development,active
+12608,eia-oilgas-breakout,0,XTIUSD.DWX,126080000,2026-06-27,Development,active
+12608,eia-oilgas-breakout,1,XNGUSD.DWX,126080001,2026-06-27,Development,active
