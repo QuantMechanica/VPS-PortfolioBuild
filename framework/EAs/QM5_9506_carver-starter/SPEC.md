@@ -6,11 +6,13 @@
 **Author of this spec:** Codex
 **Last revised:** 2026-06-27
 
-## Strategy Logic
+## 1. Strategy Logic
 
-This EA mechanizes the approved Carver starter-system card as a daily symmetric trend follower. On each D1 closed bar it reads SMA(16) and SMA(64). A bullish crossover opens a long position; a bearish crossover opens a short position. Existing positions close on the opposite SMA state or after the configured maximum hold.
+This EA mechanizes the approved Carver starter-system card as a daily symmetric trend follower. On each D1 closed bar it reads SMA(16) and SMA(64). A bullish crossover opens one long position for the current magic slot; a bearish crossover opens one short position. Existing positions close when the opposite SMA state appears or when the configured maximum hold time is reached.
 
-## Parameters
+The entry path requires enough D1 history, a non-crossed quote, and current spread no higher than the configured multiple of recent median D1 spread. Stop distance uses annualized close-return volatility bounded by ATR(25) multiples.
+
+## 2. Parameters
 
 | Parameter | Default | Meaning |
 |---|---:|---|
@@ -26,7 +28,7 @@ This EA mechanizes the approved Carver starter-system card as a daily symmetric 
 | `strategy_spread_median_days` | 60 | D1 spread sample for entry filter. |
 | `strategy_spread_mult` | 2.0 | Maximum current spread relative to median spread. |
 
-## Symbol Universe
+## 3. Symbol Universe
 
 Registered Q02 basket:
 
@@ -39,19 +41,25 @@ Registered Q02 basket:
 - `NDX.DWX`
 - `WS30.DWX`
 
-The basket follows the approved card's DWX-native FX/metals/index universe and avoids unavailable proxy symbols.
+The basket follows the approved card's DWX-native FX, metal, and index universe and avoids unavailable proxy symbols.
 
-## Framework Mapping
+## 4. Timeframe
 
-- No-Trade: blocks non-D1 charts; framework handles kill-switch, news, and Friday close.
-- Entry: D1 SMA(16/64) crossover using `QM_SMA`; spread filter and risk stop are checked on the framework new-bar path.
-- Management: no trailing or add-on logic; initial SL carries the card's catastrophic stop.
-- Close: opposite SMA state or max-hold time stop.
-- News: default framework two-axis news gate.
+The strategy is D1-only. `Strategy_NoTradeFilter` blocks non-D1 charts. All signal, stop-sizing, history, and spread-sample reads use bounded D1 windows.
 
-## Risk Model
+## 5. Expected Behaviour
 
-Backtest setfiles use `RISK_FIXED=1000` and `RISK_PERCENT=0`. Live sizing remains disabled in these artifacts.
+The EA should place at most one open position per `(symbol, magic)` slot. It should trade infrequently on D1 trend transitions, remain flat until the fast and slow averages cross, and avoid entries when history or quote data are unavailable. It has no grid, martingale, pyramiding, intraday timing layer, ML input, or optimization-dependent parameter switch.
+
+## 6. Source Citation
+
+Approved card: `D:/QM/strategy_farm/artifacts/cards_approved/QM5_9506_carver-starter.md`.
+
+Source lineage from card frontmatter: Robert Carver, `Leveraged Trading` (Harriman House, 2019), source id `1a059d6d-84fa-5d0c-94c5-86dd0481637c`. The card records G0 approval for deterministic SMA entry/exit with ATR/volatility stop sizing and DWX-testable D1 symbols.
+
+## 7. Risk Model
+
+Backtest setfiles use `RISK_FIXED=1000`, `RISK_PERCENT=0`, and `PORTFOLIO_WEIGHT=1`. Position sizing is delegated to the V5 framework. The strategy supplies only direction, reason, magic slot, and initial stop-loss distance; live sizing remains disabled in these artifacts.
 
 ## Revision History
 

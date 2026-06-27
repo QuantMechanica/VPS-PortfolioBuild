@@ -48,7 +48,7 @@ double CurrentSpreadPoints()
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
       return -1.0;
-   if(ask <= bid)
+   if(ask < bid)
       return 0.0;
    return (ask - bid) / point;
   }
