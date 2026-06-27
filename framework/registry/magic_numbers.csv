@@ -13686,3 +13686,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1556,aa-zak-mom12,7,GBPUSD.DWX,15560007,2026-06-27,Development,active
 1556,aa-zak-mom12,8,USDJPY.DWX,15560008,2026-06-27,Development,active
 12720,ict-silver-bullet-grid,0,NDX.DWX,127200000,2026-06-27,Claude,active
+12620,comm-reversal-4wk-xngusd,0,XNGUSD.DWX,126200000,2026-06-27,Development,active
+12721,ict-silver-bullet-biasdol,0,NDX.DWX,127210000,2026-06-27,Claude,active
+12721,ict-silver-bullet-biasdol,1,EURUSD.DWX,127210001,2026-06-27,Claude,active
