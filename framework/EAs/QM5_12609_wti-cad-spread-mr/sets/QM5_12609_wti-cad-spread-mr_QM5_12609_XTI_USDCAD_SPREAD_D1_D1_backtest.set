@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12609
 ; ea_slug:      wti-cad-spread-mr
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   efd1fce883c63ac88ade37501be1e3aa9926a7d6fa0ccb10e156458dff1b5c37
+; build_hash:   c5a650d0ba7279071f8f768760a121c5b392d559bb124b53e204b02e0e5c42af
 ; author:       Development
 ; date:         2026-06-27
 ;==========================================================
