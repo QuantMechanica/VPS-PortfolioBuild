@@ -154,7 +154,7 @@ bool Strategy_NoTradeFilter()
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
-   if(bid <= 0.0 || ask <= bid || atr <= 0.0)
+   if(bid <= 0.0 || ask <= 0.0 || ask < bid || atr <= 0.0)
       return false;
 
    return ((ask - bid) > atr * strategy_max_spread_atr_frac);
