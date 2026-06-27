@@ -1,0 +1,33 @@
+{
+  "task_id": "d1e8a3b2-8cb9-44e9-b46e-9f51c2c0b119",
+  "ea_id": "QM5_12726",
+  "slug": "wti-nov-fade",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12726_wti-nov-fade",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12726_wti-nov-fade\\QM5_12726_wti-nov-fade.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12726_wti-nov-fade\\QM5_12726_wti-nov-fade.ex5",
+  "magic_base": 127260000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12726_wti-nov-fade\\sets\\QM5_12726_wti-nov-fade_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12726_wti-nov-fade\\SPEC.md",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260627_220908\\QM5_12726_wti-nov-fade.compile.log",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "symbol_scope_verdict": "SINGLE_SYMBOL_OK",
+  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260627_220927.json",
+  "build_check_failures": 0,
+  "build_check_warnings": 16,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Q02 enqueued for paced fleet; no manual backtest run in build wake",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": [],
+  "notes": "Codex built QM5_12726_wti-nov-fade as a D1 XTIUSD.DWX November calendar-fade sleeve. compile_ea PASS 0 errors/0 warnings; targeted build_check PASS with 16 existing shared-framework DWX advisory warnings after skipping unrelated global magic check. No live/T_Live/portfolio artifacts touched."
+}
