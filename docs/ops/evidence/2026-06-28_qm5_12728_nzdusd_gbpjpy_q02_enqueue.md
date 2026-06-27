@@ -65,7 +65,7 @@ existing `QM5_12728` work items:
 | Parent task | `qm5-12728-initial-q02-enqueue-20260627_235230Z` |
 | EA | `QM5_12728` |
 | Symbol | `QM5_12728_NZDUSD_GBPJPY_COINTEGRATION_D1` |
-| Status | `pending` |
+| Status | inserted as `pending`; observed `done` after paced worker completion |
 | Risk | `RISK_FIXED=1000`, `RISK_PERCENT=0` |
 | Tester currency/deposit | `USD` / `100000` |
 | Host | `NZDUSD.DWX`, `D1` |
@@ -73,3 +73,21 @@ existing `QM5_12728` work items:
 
 No manual MT5 backtest was launched. Q02 execution is left to the paced terminal
 worker fleet.
+
+## Q02 Result
+
+The paced worker claimed the row on T2 and completed it before handoff:
+
+| Field | Value |
+|---|---|
+| Status | `done` |
+| Verdict | `INFRA_FAIL` |
+| Terminal | `T2` |
+| Reason | `run_smoke_fail:NO_HISTORY;INCOMPLETE_RUNS` |
+| Summary | `D:/QM/reports/work_items/8ecabdc1-8f54-4eff-aa86-ddd4734ba1b0/QM5_12728/20260627_235413/summary.json` |
+| Evidence | `D:/QM/reports/framework/22/20260627_235413_QM5_12728_T2_NZDUSD_DWX_run_smoke.md` |
+
+The failure was not a backtest CPU ceiling. The summary shows `oninit_failure_detected=false`
+and an invalid report with `EMPTY_EXPERT`, `EMPTY_SYMBOL`, `M0_1970_PERIOD`,
+`BARS_ZERO`, and `HISTORY_CONTEXT_INVALID`. I did not insert a duplicate requeue;
+this needs terminal/history/report-harness triage before another Q02 attempt.
