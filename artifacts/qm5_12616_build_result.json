@@ -1,0 +1,28 @@
+{
+  "task_id": "1c97c9e4-dceb-428f-9fe8-695ecd9a54bb",
+  "ea_id": "QM5_12616",
+  "slug": "tsmom-9m-commodity-xtiusd",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12616_tsmom-9m-commodity-xtiusd",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12616_tsmom-9m-commodity-xtiusd\\QM5_12616_tsmom-9m-commodity-xtiusd.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12616_tsmom-9m-commodity-xtiusd\\QM5_12616_tsmom-9m-commodity-xtiusd.ex5",
+  "magic_base": 126160000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12616_tsmom-9m-commodity-xtiusd\\sets\\QM5_12616_tsmom-9m-commodity-xtiusd_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12616_tsmom-9m-commodity-xtiusd\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260627_202513\\QM5_12616_tsmom-9m-commodity-xtiusd.compile.log",
+  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260627_202443.json",
+  "build_check_warnings": 16,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": "",
+  "blocked_reason": "",
+  "open_questions": [
+    "No build-smoke was run locally; Q02 worker-side backtest is the intended low-frequency validation path for this D1 monthly WTI sleeve."
+  ],
+  "notes": "Codex built QM5_12616_tsmom-9m-commodity-xtiusd as a new XTIUSD.DWX D1 monthly 9-month time-series-momentum sleeve with 3-month confirmation. build_check PASS, compile PASS, SPEC PASS, RISK_FIXED backtest setfile generated. No live/T_Live/portfolio artifacts touched."
+}
