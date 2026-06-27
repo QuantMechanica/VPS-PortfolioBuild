@@ -69,6 +69,31 @@ Q04_LOWFREQ_MAX_TRADES_PER_YEAR = 15
 # OOS floor: pooled trades must be >= this rate * number of OOS years (e.g. 5 * 3 = 15).
 Q04_OOS_MIN_TRADES_PER_YEAR = 5
 Q04_LOWFREQ_MIN_ACTIVE_YEARS = 2
+INVALID_SUMMARY_REASON_CLASSES = {
+    "NO_HISTORY",
+    "NO_HISTORY_LOG",
+    "NO_REAL_TICKS",
+    "REPORT_MISSING",
+    "REPORT_PARSE_ERROR",
+    "REPORT_FORMAT_DRIFT",
+    "INVALID_REPORT",
+    "INCOMPLETE_RUNS",
+    "ONINIT_FAILED",
+    "BARS_ZERO",
+    "HISTORY_CONTEXT_INVALID",
+    "TIMEOUT",
+}
+INVALID_REPORT_MARKERS = {
+    "EMPTY_EXPERT",
+    "EMPTY_SYMBOL",
+    "M0_1970_PERIOD",
+    "BARS_ZERO",
+    "HISTORY_CONTEXT_INVALID",
+    "REPORT_METRIC_MISSING:EXPERT",
+    "REPORT_METRIC_MISSING:PERIOD",
+    "REPORT_METRIC_MISSING:BARS",
+    "ONINIT_FAILED",
+}
 
 # Anchored expanding-window fold geometry. 2025 is the latest closed year
 # (per OWNER 2026-05-23). New full folds auto-add when a new year closes —
@@ -112,6 +137,42 @@ def parse_pf_from_report_summary(summary_path: Path) -> tuple[float | None, int]
     except (TypeError, ValueError):
         return None, 0
     return pf_net, trades
+
+
+def _load_summary(summary_path: Path) -> dict | None:
+    if not summary_path.exists():
+        return None
+    try:
+        return json.loads(summary_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def summary_invalid_reason(summary_path: Path) -> str | None:
+    """Return infra/data invalidation markers from a run_smoke fold summary.
+
+    A Q04 fold can produce a run_smoke failure summary even when the real MT5
+    report was never exported. That is retryable infrastructure evidence, not a
+    completed zero-trade strategy fold.
+    """
+    sj = _load_summary(summary_path)
+    if sj is None:
+        return "summary_parse_error"
+    reasons = {str(r).upper() for r in (sj.get("reason_classes") or [])}
+    markers: set[str] = set()
+    for run in sj.get("runs") or []:
+        if str(run.get("status") or "").upper() == "INVALID":
+            markers.add("RUN_STATUS_INVALID")
+        for reason in run.get("invalid_report_reasons") or []:
+            markers.add(str(reason).upper())
+        if run.get("failure"):
+            markers.add(str(run.get("failure")).upper())
+    invalid = sorted((reasons & INVALID_SUMMARY_REASON_CLASSES) | (markers & INVALID_REPORT_MARKERS))
+    if markers and "RUN_STATUS_INVALID" in markers:
+        invalid.append("RUN_STATUS_INVALID")
+    if invalid:
+        return "invalid_summary:" + ",".join(dict.fromkeys(invalid))
+    return None
 
 
 def estimate_pf_gross(pf_net: float | None, trades: int, lots: float, commission_total: float | None) -> float | None:
@@ -302,10 +363,13 @@ def aggregate_verdict(fold_results: list[dict]) -> tuple[str, str]:
         return "INVALID", "no_folds_ran"
     incomplete = [
         f for f in fold_results
-        if not f.get("summary_path")
+        if not f.get("summary_path") or f.get("invalid_reason")
     ]
     if incomplete:
-        return "INVALID", ";".join(f"{f['id']}:incomplete_fold" for f in incomplete)
+        return "INVALID", ";".join(
+            f"{f['id']}:{f.get('invalid_reason') or 'incomplete_fold'}"
+            for f in incomplete
+        )
     failures = [f for f in fold_results if f.get("pf_net") is None or
                                             float(f["pf_net"]) <= PF_NET_FLOOR_PER_FOLD]
     detail = ";".join(
@@ -337,7 +401,7 @@ def is_lowfreq_eligible(strict_folds: list[dict]) -> bool:
     not reclassified as low-freq."""
     if not strict_folds:
         return False
-    if any(not f.get("summary_path") for f in strict_folds):
+    if any(not f.get("summary_path") or f.get("invalid_reason") for f in strict_folds):
         return False
     total = sum(int(f.get("trades") or 0) for f in strict_folds)
     return total < Q04_LOWFREQ_MAX_TRADES_PER_YEAR * len(strict_folds)
@@ -357,7 +421,7 @@ def aggregate_verdict_lowfreq(strict_folds: list[dict]) -> tuple[str, str]:
     """
     from framework.scripts.q08_davey import common as q08common
     if any(f.get("oos_nets") is None for f in strict_folds) or \
-            any(not f.get("summary_path") for f in strict_folds):
+            any(not f.get("summary_path") or f.get("invalid_reason") for f in strict_folds):
         return "INVALID", "lowfreq_no_pooled_stream"
     pooled_nets: list[float] = []
     for f in strict_folds:
@@ -471,7 +535,7 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
             )
     except subprocess.TimeoutExpired:
         return {**fold, "pf_net": None, "trades": 0, "status": "TIMEOUT",
-                "summary_path": None, "log_path": str(log_path)}
+                "summary_path": None, "invalid_reason": "timeout", "log_path": str(log_path)}
 
     # DL-073: grade from the realistic %-notional model applied post-hoc to the per-trade
     # stream this fold just emitted (preferred). Fall back to the EA's self-report (now graded
@@ -485,7 +549,8 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
         oos_nets = []  # per-class flat fallback has no per-trade stream → no low-freq pooling
         commission_basis = "flat_per_class_ea_side_fallback"
     summary_path = _summary_from_log(log_path) or report_root / f"QM5_{ea_id}" / "Q04" / fold["id"] / "summary.json"
-    status = "OK" if (pf_net is not None and proc.returncode == 0) else "FAIL"
+    invalid_reason = summary_invalid_reason(summary_path) if summary_path.exists() else None
+    status = "INVALID" if invalid_reason else ("OK" if (pf_net is not None and proc.returncode == 0) else "FAIL")
     return {
         **fold,
         "pf_net": pf_net,
@@ -496,6 +561,7 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
         "oos_nets": oos_nets,
         "status": status,
         "summary_path": str(summary_path) if summary_path.exists() else None,
+        "invalid_reason": invalid_reason,
         "exit_code": proc.returncode,
         "log_path": str(log_path),
     }

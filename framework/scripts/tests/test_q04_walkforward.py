@@ -38,6 +38,31 @@ class Q04CommissionFallbackTests(unittest.TestCase):
 
 
 class Q04WalkForwardTests(unittest.TestCase):
+    def test_report_missing_summary_is_invalid_evidence(self) -> None:
+        mod = _load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            summary = Path(tmp) / "summary.json"
+            summary.write_text(
+                """
+                {
+                  "result": "FAIL",
+                  "reason_classes": ["REPORT_MISSING", "METATESTER_HUNG", "INCOMPLETE_RUNS"],
+                  "runs": [{
+                    "status": "FAIL",
+                    "failure": "REPORT_MISSING",
+                    "total_trades": 0
+                  }]
+                }
+                """,
+                encoding="utf-8",
+            )
+
+            reason = mod.summary_invalid_reason(summary)
+
+        self.assertIsNotNone(reason)
+        self.assertIn("REPORT_MISSING", reason)
+        self.assertIn("INCOMPLETE_RUNS", reason)
+
     def test_run_fold_allows_worker_owned_terminal_and_logs_summary(self) -> None:
         mod = _load_module()
         with tempfile.TemporaryDirectory() as tmp:
@@ -90,6 +115,23 @@ class Q04WalkForwardTests(unittest.TestCase):
 
         self.assertEqual(verdict, "INVALID")
         self.assertIn("incomplete_fold", reason)
+
+    def test_invalid_fold_summary_is_invalid_not_strategy_fail(self) -> None:
+        mod = _load_module()
+        verdict, reason = mod.aggregate_verdict([
+            {"id": "F1", "summary_path": "summary.json", "pf_net": 1.4, "trades": 11},
+            {
+                "id": "F2",
+                "summary_path": "summary.json",
+                "invalid_reason": "invalid_summary:REPORT_MISSING,INCOMPLETE_RUNS",
+                "pf_net": None,
+                "trades": 0,
+            },
+            {"id": "F3", "summary_path": "summary.json", "pf_net": 0.4, "trades": 16},
+        ])
+
+        self.assertEqual(verdict, "INVALID")
+        self.assertIn("F2:invalid_summary", reason)
 
     def test_completed_low_pf_fold_remains_strategy_fail(self) -> None:
         mod = _load_module()
