@@ -1,17 +1,17 @@
-# QM5_12723_edgelab-nzdusd-eurjpy-cointegration - Strategy Spec
+# QM5_12728_edgelab-nzdusd-gbpjpy-cointegration - Strategy Spec
 
-**EA ID:** QM5_12723
-**Slug:** edgelab-nzdusd-eurjpy-cointegration
+**EA ID:** QM5_12728
+**Slug:** edgelab-nzdusd-gbpjpy-cointegration
 **Source:** claude_cross_asset_discovery_2026-06-09 plus Chan cointegration pair-trade method
 **Author of this spec:** Codex
-**Last revised:** 2026-06-27
+**Last revised:** 2026-06-28
 
 ---
 
 ## 1. Strategy Logic
 
-The EA trades the NZDUSD.DWX and EURJPY.DWX D1 cointegration spread. It computes
-`S = ln(NZDUSD) - beta * ln(EURJPY)` with beta defaulting to 0.04, then
+The EA trades the NZDUSD.DWX and GBPJPY.DWX D1 cointegration spread. It computes
+`S = ln(NZDUSD) - beta * ln(GBPJPY)` with beta defaulting to 0.04, then
 calculates a 60-bar rolling z-score of that spread.
 
 It opens a short-spread package when z is above +2.0 and a long-spread package
@@ -21,10 +21,10 @@ stop.
 
 This is an exploratory next-best basket, not a hard-bar scan survivor. The
 published 66-pair scan only certified QM5_12533 and QM5_12532. A rerun of the
-same script ranked NZDUSD/EURJPY as the strongest remaining unbuilt positive
-DEV/OOS candidate after the existing 12532/12533/12624/12712 baskets, with DEV
-Sharpe 0.06, OOS net Sharpe 0.68, OOS return +8.02%, 21 OOS state changes,
-beta 0.04, and 115-day half-life.
+same script ranked NZDUSD/GBPJPY as the strongest remaining unbuilt positive
+DEV/OOS candidate after the existing 12532/12533/12624/12712/12723 baskets, with
+DEV Sharpe 0.05, OOS net Sharpe 0.60, OOS return +6.88%, 21 OOS state changes,
+beta 0.04, and 116-day half-life.
 
 ---
 
@@ -33,7 +33,7 @@ beta 0.04, and 115-day half-life.
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
 | strategy_z_lookback_d1 | 60 | 20+ | D1 bars used for rolling spread mean and standard deviation |
-| strategy_beta | 0.04 | >0 | Hedge coefficient in `ln(NZDUSD) - beta * ln(EURJPY)` |
+| strategy_beta | 0.04 | >0 | Hedge coefficient in `ln(NZDUSD) - beta * ln(GBPJPY)` |
 | strategy_entry_z | 2.0 | >0 | Absolute z-score threshold for opening a spread package |
 | strategy_exit_z | 0.5 | >=0 | Absolute z-score threshold for closing the open package |
 | strategy_atr_period_d1 | 20 | 2+ | D1 ATR period for per-leg hard stop distance |
@@ -45,13 +45,13 @@ beta 0.04, and 115-day half-life.
 ## 3. Symbol Universe
 
 **Designed for:**
-- NZDUSD.DWX - leg 1 of the fixed NZDUSD/EURJPY spread and the spread numerator.
-- EURJPY.DWX - leg 2 of the fixed NZDUSD/EURJPY spread and the beta-weighted spread denominator.
+- NZDUSD.DWX - leg 1 of the fixed NZDUSD/GBPJPY spread and the spread numerator.
+- GBPJPY.DWX - leg 2 of the fixed NZDUSD/GBPJPY spread and the beta-weighted spread denominator.
 
 **Explicitly not for:**
 - Other `.DWX` symbols. This card is a fixed two-leg FX-cross basket, not a portable multi-pair strategy.
 
-The EA selects EURUSD.DWX and USDJPY.DWX as conversion history for the EURJPY leg
+The EA selects GBPUSD.DWX and USDJPY.DWX as conversion history for the GBPJPY leg
 under USD-denominated tester accounting.
 
 ---
@@ -91,7 +91,7 @@ Rerun excerpt for this candidate:
 
 | pair | DEV Sharpe | OOS net Sharpe | OOS ret | OOS state changes | hedge | half-life |
 |---|---:|---:|---:|---:|---:|---:|
-| NZDUSD~EURJPY | 0.06 | 0.68 | +8.02% | 21 | 0.04 | 115d |
+| NZDUSD~GBPJPY | 0.05 | 0.60 | +6.88% | 21 | 0.04 | 116d |
 
 ---
 
@@ -113,4 +113,4 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-27 | Initial next-best FX cointegration basket build | Built from the 12533/12624 basket pattern |
+| v1 | 2026-06-28 | Initial next-best FX cointegration basket build | Built from the 12723 basket pattern |

@@ -1,19 +1,19 @@
 ﻿;==========================================================
 ; QM5 Set File
-; ea_id:        12723
-; ea_slug:      edgelab-nzdusd-eurjpy-cointegration
+; ea_id:        12728
+; ea_slug:      edgelab-nzdusd-gbpjpy-cointegration
 ; ea_version:   v5.0
-; set_version:  s20260627-001
-; symbol:       QM5_12723_NZDUSD_EURJPY_COINTEGRATION_D1
+; set_version:  s20260628-001
+; symbol:       QM5_12728_NZDUSD_GBPJPY_COINTEGRATION_D1
 ; host_symbol:  NZDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3892fd475a71acd4f22f125b47f760ed43bf45e4c3e8789675d64b851befad9d
+; build_hash:   89e0eea13330d38eb8640435301af903cd316f51c4a092693bde2f378178e974
 ; author:       Development
-; date:         2026-06-27
+; date:         2026-06-28
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000
