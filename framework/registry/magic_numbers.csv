@@ -13646,3 +13646,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1023,chan-at-bb-pair,1,XAUUSD.DWX,10230001,2026-06-27,Development,active
 12596,wti-mon-fade,0,XTIUSD.DWX,125960000,2026-06-27,Development,active
 12597,wti-fri-prem,0,XTIUSD.DWX,125970000,2026-06-27,Development,active
+12598,opec-wti-brk,0,XTIUSD.DWX,125980000,2026-06-27,Development,active
