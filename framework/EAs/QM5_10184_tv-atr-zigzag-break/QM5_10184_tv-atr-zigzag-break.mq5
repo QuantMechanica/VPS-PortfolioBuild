@@ -182,8 +182,8 @@ bool Strategy_LevelMatches(const double a, const double b)
 int Strategy_AdvanceZigZag(const double atr_value, double &arm_level)
   {
    arm_level = 0.0;
-   const double high_1 = iHigh(_Symbol, strategy_signal_tf, 1);
-   const double low_1 = iLow(_Symbol, strategy_signal_tf, 1);
+   const double high_1 = iHigh(_Symbol, strategy_signal_tf, 1); // perf-allowed: ATR ZigZag structural pivot reads the latest closed-bar high only.
+   const double low_1 = iLow(_Symbol, strategy_signal_tf, 1); // perf-allowed: ATR ZigZag structural pivot reads the latest closed-bar low only.
    if(high_1 <= 0.0 || low_1 <= 0.0 || high_1 < low_1 || atr_value <= 0.0)
       return 0;
 
@@ -261,7 +261,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(Bars(_Symbol, strategy_signal_tf) < strategy_atr_period + 5)
+   if(Bars(_Symbol, strategy_signal_tf) < strategy_atr_period + 5) // perf-allowed: bounded warmup check before a closed-bar pivot update.
       return false;
 
    if(Strategy_InUtcWindow(Strategy_HhmmUtc(),
