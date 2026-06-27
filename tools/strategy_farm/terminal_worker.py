@@ -319,6 +319,14 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             """,
                             (json.dumps(payload, sort_keys=True), now, active_terminal["id"], terminal),
                         )
+                    elif worker_pid:
+                        conn.commit()
+                        return {
+                            "claimed": False,
+                            "reason": "terminal_worker_busy",
+                            "item_id": active_terminal["id"],
+                            "worker_pid": worker_pid,
+                        }
                     elif pid and farmctl._pid_tree_exists(pid):
                         conn.commit()
                         return {"claimed": False, "reason": "terminal_busy", "item_id": active_terminal["id"]}

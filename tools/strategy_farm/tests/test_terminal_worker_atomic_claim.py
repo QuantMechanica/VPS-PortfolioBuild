@@ -1,4 +1,5 @@
 import json
+import os
 import sqlite3
 import sys
 import tempfile
@@ -242,6 +243,37 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 row = conn.execute("SELECT status, claimed_by FROM work_items WHERE id='stale-1'").fetchone()
             self.assertEqual(row, ("active", "T1"))
 
+    def test_live_worker_without_child_pid_keeps_terminal_busy(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "launching-1",
+                "EURUSD.DWX",
+                phase="Q02",
+                status="active",
+                claimed_by="T4",
+                payload={"claimed_by_worker_pid": 424242},
+            )
+            self._insert_work_item(root, "pending-1", "GBPUSD.DWX", phase="Q02")
+
+            old_pid_exists = terminal_worker.farmctl._pid_exists
+            try:
+                terminal_worker.farmctl._pid_exists = lambda pid: int(pid) == 424242
+                result = terminal_worker.claim_atomic(root, "T4")
+            finally:
+                terminal_worker.farmctl._pid_exists = old_pid_exists
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result["reason"], "terminal_worker_busy")
+            self.assertEqual(result["item_id"], "launching-1")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                statuses = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
+                claimed = dict(conn.execute("SELECT id, claimed_by FROM work_items").fetchall())
+            self.assertEqual(statuses["launching-1"], "active")
+            self.assertEqual(statuses["pending-1"], "pending")
+            self.assertEqual(claimed["launching-1"], "T4")
+
     def test_claim_skips_launch_fault_cooldown_item(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"
@@ -264,7 +296,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(statuses["cooldown-1"], "pending")
             self.assertEqual(statuses["ready-1"], "active")
 
-    def test_orphan_same_terminal_claim_stops_child_and_reclaims(self) -> None:
+    def test_orphan_same_terminal_claim_adopts_live_child(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"
             self._insert_work_item(
@@ -293,14 +325,17 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
 
             self.assertTrue(result.get("claimed"))
             self.assertEqual(result["item"]["id"], "orphan-1")
-            self.assertEqual(stopped_children, [123456])
+            self.assertTrue(result.get("adopt_existing"))
+            self.assertEqual(stopped_children, [])
             with sqlite3.connect(root / farmctl.DB_REL) as conn:
                 row = conn.execute("SELECT status, claimed_by, payload_json FROM work_items WHERE id='orphan-1'").fetchone()
             self.assertEqual(row[0], "active")
             self.assertEqual(row[1], "T1")
             payload = json.loads(row[2])
-            self.assertEqual(payload["prior_failure"], "worker_process_missing_released_stale_claim")
-            self.assertTrue(payload["child_stopped_on_orphan_release"])
+            self.assertEqual(payload["prior_failure"], "worker_process_missing_adopted_active_child")
+            self.assertEqual(payload["orphan_worker_pid"], 654321)
+            self.assertEqual(payload["claimed_by_worker_pid"], os.getpid())
+            self.assertIn("orphan_child_adopted_at_iso", payload)
 
     def test_launch_fault_defers_without_incrementing_attempt_count(self) -> None:
         with self._root() as tmp:
