@@ -1,0 +1,26 @@
+{
+  "task_id": "eba2ee32-da67-477d-9cb7-7131b40c01ad",
+  "ea_id": "QM5_12599",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12599_wti-feb-prem",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12599_wti-feb-prem\\QM5_12599_wti-feb-prem.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12599_wti-feb-prem\\QM5_12599_wti-feb-prem.ex5",
+  "magic_base": 125990000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12599_wti-feb-prem\\sets\\QM5_12599_wti-feb-prem_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12599_wti-feb-prem\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260627_060752\\QM5_12599_wti-feb-prem.compile.log",
+  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260627_060812.json",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "q02_enqueued_for_paced_fleet_no_manual_backtest",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": [
+    "No manual backtest launched; Q02 is delegated to paced farm workers."
+  ]
+}
