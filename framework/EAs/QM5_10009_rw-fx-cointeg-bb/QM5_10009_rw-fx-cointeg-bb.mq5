@@ -219,7 +219,7 @@ bool RefreshState()
       return false;
      }
 
-   const datetime bar_time = iTime(_Symbol, PERIOD_D1, 1);
+   const datetime bar_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: D1 structural basket timestamp for monthly hedge freeze.
    const int month_key = MonthKey(bar_time);
    if(month_key != g_current_month_key)
      {
@@ -325,7 +325,7 @@ bool OpenBasket(const int signal_direction)
      }
 
    if(any_opened)
-      g_entry_bar_time = iTime(_Symbol, PERIOD_D1, 1);
+      g_entry_bar_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: D1 structural basket timestamp for max-hold accounting.
    return any_opened;
   }
 
@@ -383,7 +383,7 @@ bool Strategy_ExitSignal()
 
    if(g_entry_bar_time > 0)
      {
-      const datetime current_bar = iTime(_Symbol, PERIOD_D1, 1);
+      const datetime current_bar = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: D1 structural basket timestamp for max-hold accounting.
       const int max_hold = MathMin(strategy_max_hold_cap_bars, MathMax(1, (int)MathRound(3.0 * g_half_life)));
       const int held_seconds = (int)(current_bar - g_entry_bar_time);
       if(held_seconds >= max_hold * 86400)
