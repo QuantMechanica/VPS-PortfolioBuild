@@ -13685,3 +13685,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1556,aa-zak-mom12,6,EURUSD.DWX,15560006,2026-06-27,Development,active
 1556,aa-zak-mom12,7,GBPUSD.DWX,15560007,2026-06-27,Development,active
 1556,aa-zak-mom12,8,USDJPY.DWX,15560008,2026-06-27,Development,active
+12720,ict-silver-bullet-grid,0,NDX.DWX,127200000,2026-06-27,Claude,active
