@@ -1,23 +1,23 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        11132
-; ea_slug:      tm-cum-rsi2
+; ea_id:        11421
+; ea_slug:      ohlc-daily-squeeze-reversal-d1
 ; ea_version:   v5.0
 ; set_version:  s20260627-d2b
-; symbol:       SP500.DWX
+; symbol:       EURUSD.DWX
 ; timeframe:    D1
 ; environment:  live
 ; magic_slot:   0
 ; risk_mode:    PERCENT
-; portfolio_weight: 0.1245
-; build_hash:   pending
+; portfolio_weight: 0.0851
+; build_hash:   f0e51cffb345a100c9d3b81621d14550fec0a35fa4011093d5bec4230e032a8b
 ; author:       Claude
 ; date:         2026-06-27
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=0
-RISK_PERCENT=0.2490
-PORTFOLIO_WEIGHT=0.1245
+RISK_PERCENT=0.1701
+PORTFOLIO_WEIGHT=0.0851
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
@@ -31,13 +31,12 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=ea_input_defaults:QM5_11132_tm-cum-rsi2.mq5
-strategy_rsi_period=2
-strategy_cum_window=2
-strategy_cum_rsi_entry=38.0
-strategy_rsi_exit=66.0
-strategy_sma_period=165
-strategy_atr_period=12
-strategy_atr_sl_mult=2.0
-strategy_max_hold_bars=5
-strategy_max_spread_points=300
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11421_ohlc-daily-squeeze-reversal-d1.md
+strategy_entry_range_mult=1.0
+strategy_sl_range_mult=1.5
+strategy_tp_range_mult=1.0
+strategy_min_range_pips=30.0
+strategy_sl_cap_pips=80.0
+strategy_pending_ttl_bars=1
+strategy_spread_cap_pips=25.0
+strategy_enable_long=true
