@@ -37,8 +37,8 @@ input bool   use_vol_filter        = true;
 input double vol_mult              = 1.5;
 
 input group "Stops / Targets"
-input double rr                    = 1.5;
-input int    atr_period            = 14;
+input double strategy_rr           = 1.5;
+input int    strategy_atr_period   = 14;
 input double atr_sl_mult           = 1.5;    // fallback SL if range edge invalid
 input double min_range_atr_mult    = 0.10;   // reject too-small range (x daily ATR)
 input double max_range_atr_mult    = 2.50;   // reject too-large range (x daily ATR)
@@ -116,7 +116,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(g_trade_day == g_cur_day) return false;                         // one trade/day
 
    // range-size validation vs daily ATR
-   const double datr = QM_ATR(_Symbol, PERIOD_D1, atr_period, 1);
+   const double datr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    const double range = g_range_high - g_range_low;
    if(datr > 0.0)
      {
@@ -134,7 +134,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(vol_ma <= 0 || (double)vol_1 < vol_ma * vol_mult) return false;
      }
 
-   const double atr   = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, atr_period, 1);
+   const double atr   = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
    const double buf   = entry_buffer_atr * atr;
    const double close1 = iClose(_Symbol, _Period, 1);
 
@@ -144,7 +144,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type = QM_BUY; req.price = 0.0;
       req.sl = g_range_low;
       if(req.sl >= bid) req.sl = bid - atr * atr_sl_mult;
-      req.tp = QM_TakeRR(_Symbol, req.type, bid, req.sl, rr);
+      req.tp = QM_TakeRR(_Symbol, req.type, bid, req.sl, strategy_rr);
       req.reason = "BALKE_RANGE_LONG";
       if(req.sl > 0.0 && req.tp > 0.0) { g_trade_day = g_cur_day; return true; }
       return false;
@@ -156,7 +156,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.type = QM_SELL; req.price = 0.0;
       req.sl = g_range_high;
       if(req.sl <= ask) req.sl = ask + atr * atr_sl_mult;
-      req.tp = QM_TakeRR(_Symbol, req.type, ask, req.sl, rr);
+      req.tp = QM_TakeRR(_Symbol, req.type, ask, req.sl, strategy_rr);
       req.reason = "BALKE_RANGE_SHORT";
       if(req.sl > 0.0 && req.tp > 0.0) { g_trade_day = g_cur_day; return true; }
       return false;
