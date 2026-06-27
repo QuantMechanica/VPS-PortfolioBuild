@@ -33,7 +33,9 @@ param(
     [ValidateRange(0, 1000)]
     [double]$CommissionPerLot = 0,
     [ValidatePattern('^[A-Z]{3}$')]
-    [string]$TesterCurrencyOverride
+    [string]$TesterCurrencyOverride,
+    [ValidateRange(0, 2147483647)]
+    [int]$TesterDepositOverride = 0
 )
 
 Set-StrictMode -Version Latest
@@ -608,7 +610,9 @@ function Write-TesterIni {
         [Parameter(Mandatory = $true)]
         [string]$TerminalRoot,
         [string]$SetFilePath,
-        [string]$CurrencyOverride
+        [string]$CurrencyOverride,
+        [ValidateRange(0, 2147483647)]
+        [int]$DepositOverride = 0
     )
 
     # Load canonical tester defaults (DL-054 G2 source of truth).
@@ -623,23 +627,60 @@ function Write-TesterIni {
     $deposit = [int]$defaults.initial_deposit
     $currency = [string]$defaults.deposit_currency
     $leverage = [int]$defaults.leverage
-    if (-not [string]::IsNullOrWhiteSpace($CurrencyOverride)) {
-        $currency = $CurrencyOverride.Trim().ToUpperInvariant()
-    } elseif (-not [string]::IsNullOrWhiteSpace($SetFilePath)) {
+
+    $manifestPath = $null
+    $manifest = $null
+    if (-not [string]::IsNullOrWhiteSpace($SetFilePath)) {
         $setDir = Split-Path -Parent $SetFilePath
         $eaDir = Split-Path -Parent $setDir
         $manifestPath = Join-Path $eaDir "basket_manifest.json"
         if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
             try {
                 $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
-                $manifestCurrency = [string]$manifest.tester_currency
+            } catch {
+                Write-Host ("run_smoke.warn=basket_manifest_unreadable path='{0}' err='{1}'" -f $manifestPath, $_.Exception.Message)
+            }
+        }
+    }
+
+    $manifestDepositApplied = $false
+    if ($manifest) {
+        if ([string]::IsNullOrWhiteSpace($CurrencyOverride)) {
+            $currencyProperty = $manifest.PSObject.Properties["tester_currency"]
+            if ($null -ne $currencyProperty) {
+                $manifestCurrency = [string]$currencyProperty.Value
                 if (-not [string]::IsNullOrWhiteSpace($manifestCurrency)) {
                     $currency = $manifestCurrency.Trim().ToUpperInvariant()
                 }
-            } catch {
-                Write-Host ("run_smoke.warn=basket_manifest_currency_unreadable path='{0}' err='{1}'" -f $manifestPath, $_.Exception.Message)
             }
         }
+
+        foreach ($depositPropertyName in @("tester_deposit", "tester_initial_deposit")) {
+            $depositProperty = $manifest.PSObject.Properties[$depositPropertyName]
+            if ($null -eq $depositProperty) {
+                continue
+            }
+            $manifestDepositText = [string]$depositProperty.Value
+            if ([string]::IsNullOrWhiteSpace($manifestDepositText)) {
+                continue
+            }
+            $manifestDeposit = [int]$manifestDepositText
+            if ($manifestDeposit -gt 0) {
+                $deposit = $manifestDeposit
+                $manifestDepositApplied = $true
+            }
+            break
+        }
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($CurrencyOverride)) {
+        $currency = $CurrencyOverride.Trim().ToUpperInvariant()
+    }
+    if ($DepositOverride -gt 0) {
+        $deposit = $DepositOverride
+        Write-Host ("run_smoke.tester_deposit_override={0}" -f $deposit)
+    } elseif ($manifestDepositApplied) {
+        Write-Host ("run_smoke.tester_deposit_manifest={0} path='{1}'" -f $deposit, $manifestPath)
     }
     if ($deposit -le 0 -or [string]::IsNullOrWhiteSpace($currency) -or $leverage -le 0) {
         throw "tester_defaults.json invalid: initial_deposit=$deposit currency=$currency leverage=$leverage"
@@ -1330,7 +1371,8 @@ for ($i = 1; $i -le $Runs; $i++) {
         -ReportValue $relativeReportFile `
         -TerminalRoot $terminalRoot `
         -SetFilePath $SetFile `
-        -CurrencyOverride $TesterCurrencyOverride
+        -CurrencyOverride $TesterCurrencyOverride `
+        -DepositOverride $TesterDepositOverride
 
     Write-Host ("run_smoke.stage=ini_written run={0} ini='{1}'" -f $runName, $iniPath)
     if (-not [string]::IsNullOrWhiteSpace($TesterCurrencyOverride)) {
