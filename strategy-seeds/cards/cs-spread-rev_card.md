@@ -76,7 +76,7 @@ Compute a two-bar Corwin-Schultz-style high-low spread proxy from closed H1 bars
 - `alpha = (sqrt(2 * beta) - sqrt(beta)) / (3 - 2 * sqrt(2)) - sqrt(gamma / (3 - 2 * sqrt(2)))`
 - `cs_spread = 2 * (exp(max(alpha, 0)) - 1) / (1 + exp(max(alpha, 0)))`
 
-Build quality gate: this formula is written from the known Corwin-Schultz estimator family and must be verified against the source paper or a trusted reference implementation before G0 approval. The EA must include a deterministic unit-test fixture for `beta`, `gamma`, `alpha`, and `cs_spread`.
+Review verification 2026-06-27: this formula matches the Corwin-Schultz paper's beta/gamma/alpha/spread equations and the author sample SAS implementation for the unadjusted two-period high-low estimator. The EA must still include a deterministic unit-test fixture for `beta`, `gamma`, `alpha`, and `cs_spread`; use `beta=0.000043083869`, `gamma=0.000040606812`, `alpha=0.000462280697`, `cs_spread=0.000462280688` for `H1=1.1020`, `L1=1.0980`, `H2=1.1010`, `L2=1.0950`. Negative `alpha` must be clipped to zero before spread output. H1 use is a liquidity proxy, not a paper-claimed execution-cost estimate; skip weekend/reopen/gap bars rather than applying the paper's daily overnight adjustment mechanically.
 
 ## Entry Rules
 
@@ -126,7 +126,7 @@ Only one open position per symbol and magic is allowed.
 ## Risk
 
 - Baseline risk mode: V5 fixed-risk.
-- Initial test risk: 0.25% per position in P2/P3; never pyramid.
+- Backtest set files: use `RISK_FIXED > 0` and `RISK_PERCENT = 0`; live percent risk is a later portfolio/OWNER decision. Never pyramid.
 - Max one position per symbol.
 - Max two simultaneous positions across the EA if implemented as a multi-symbol host.
 - No grid, no martingale, no averaging down, no partial-close ladder.
