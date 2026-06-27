@@ -13674,5 +13674,14 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12610,wti-tue-fade,0,XTIUSD.DWX,126100000,2026-06-27,Development,active
 12624,edgelab-eurjpy-audjpy-cointegration,0,EURJPY.DWX,126240000,2026-06-27,Development,active
 12624,edgelab-eurjpy-audjpy-cointegration,1,AUDJPY.DWX,126240001,2026-06-27,Development,active
-1233,ict-silver-bullet,11,SP500.DWX,12330011,2026-06-27,Claude,active
+1233,ict-silver-bullet,12,SP500.DWX,12330012,2026-06-27,Claude,active
 12701,wti-oct-fade,0,XTIUSD.DWX,127010000,2026-06-27,Development,active
+1556,aa-zak-mom12,0,SP500.DWX,15560000,2026-06-27,Development,active
+1556,aa-zak-mom12,1,NDX.DWX,15560001,2026-06-27,Development,active
+1556,aa-zak-mom12,2,WS30.DWX,15560002,2026-06-27,Development,active
+1556,aa-zak-mom12,3,GDAXI.DWX,15560003,2026-06-27,Development,active
+1556,aa-zak-mom12,4,XAUUSD.DWX,15560004,2026-06-27,Development,active
+1556,aa-zak-mom12,5,XTIUSD.DWX,15560005,2026-06-27,Development,active
+1556,aa-zak-mom12,6,EURUSD.DWX,15560006,2026-06-27,Development,active
+1556,aa-zak-mom12,7,GBPUSD.DWX,15560007,2026-06-27,Development,active
+1556,aa-zak-mom12,8,USDJPY.DWX,15560008,2026-06-27,Development,active
