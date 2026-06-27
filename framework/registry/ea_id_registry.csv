@@ -3567,3 +3567,8 @@ QM5_1403,harmonic-5-0-pattern-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Dev
 12608,eia-oilgas-breakout,EIA-OILGAS-BREAKOUT-2026,active,Development,2026-06-27
 12609,wti-cad-spread-mr,BOC-CAD-OIL-SPREAD-2026,active,Development,2026-06-27
 12610,wti-tue-fade,GORSKA-WTI-CAL-2015,active,Development,2026-06-27
+12611,tsmom-12m-fx-sign-eurusd,e5a3f925-5a9e-513d-9e70-5c7c70fa0e59,active,Research,2026-06-27
+12612,tsmom-12m-vol-scaled-ndx,e5a3f925-5a9e-513d-9e70-5c7c70fa0e59,active,Research,2026-06-27
+12613,tsmom-3m-commodity-xauusd,e5a3f925-5a9e-513d-9e70-5c7c70fa0e59,active,Research,2026-06-27
+12614,tsmom-6m-fx-basket-3pair,e5a3f925-5a9e-513d-9e70-5c7c70fa0e59,active,Research,2026-06-27
+12615,tsmom-12m-cross-asset-basket,e5a3f925-5a9e-513d-9e70-5c7c70fa0e59,active,Research,2026-06-27
