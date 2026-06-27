@@ -28,7 +28,7 @@ input double PORTFOLIO_WEIGHT      = 1.0;
 input group "Range / Session (server time)"
 input int    range_start_hour      = 3;     // range build start
 input int    range_end_hour        = 6;     // range build end / lock (exclusive)
-input int    exit_hour             = 22;    // forced flat hour (test 18..22)
+input int    exit_hour             = 20;    // forced flat hour (test 18..22)
 input int    exit_min              = 0;
 
 input group "Entry"
@@ -37,10 +37,10 @@ input bool   use_vol_filter        = true;
 input double vol_mult              = 1.5;
 
 input group "Stops / Targets"
-input double strategy_rr           = 1.5;
+input double strategy_rr           = 2.5;
 input int    strategy_atr_period   = 14;
 input double atr_sl_mult           = 1.5;    // fallback SL if range edge invalid
-input double min_range_atr_mult    = 0.10;   // reject too-small range (x daily ATR)
+input double min_range_atr_mult    = 0.60;   // reject too-small range (x daily ATR)
 input double max_range_atr_mult    = 2.50;   // reject too-large range (x daily ATR)
 input int    spread_cap_points     = 30;
 
