@@ -122,7 +122,7 @@ bool Strategy_LoadRates(const int bars_needed, MqlRates &rates[])
   {
    ArraySetAsSeries(rates, true);
    const int count = MathMax(10, bars_needed);
-   return (CopyRates(_Symbol, Strategy_TF(), 0, count, rates) >= count);
+   return (CopyRates(_Symbol, Strategy_TF(), 0, count, rates) >= count); // perf-allowed: called only from the closed-bar entry path.
   }
 
 double Strategy_RollingVwap(MqlRates &rates[], const int shift)
