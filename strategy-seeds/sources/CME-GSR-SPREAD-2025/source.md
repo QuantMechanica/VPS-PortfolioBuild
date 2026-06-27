@@ -19,15 +19,17 @@ uri: https://www.cmegroup.com/education/lessons/gold-and-silver-ratio-spread-tra
 
 ## Mining Scope
 
-One card was extracted for a structural precious-metals basket sleeve:
+Two cards were extracted for structural precious-metals basket sleeves:
 
 - `cme-xauxag-ratio`: XAUUSD.DWX/XAGUSD.DWX D1 gold-silver ratio z-score reversion basket.
+- `cme-xauxag-brk`: XAUUSD.DWX/XAGUSD.DWX D1 gold-silver ratio channel-breakout basket.
 
 ## Evidence Notes
 
 - CME defines the gold-silver ratio as gold price divided by silver price on a per-troy-ounce basis.
 - CME documents that gold and silver are related precious metals with different macro drivers: gold has more monetary/safe-haven behavior, while silver has more industrial-cycle exposure.
 - CME presents the gold-silver ratio as an intermarket spread that can be traded through gold and silver instruments.
+- The breakout card is deliberately distinct from the existing z-score reversion card: it follows sustained relative moves outside a long D1 channel and exits on shorter-channel failure.
 - The QM implementation does not ingest CME data, futures curves, inventory data, or external APIs at runtime. It mechanizes the relationship with Darwinex MT5 XAUUSD.DWX and XAGUSD.DWX closes only.
 
 ## Guardrails
