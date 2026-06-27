@@ -46,6 +46,10 @@ _last_disk_purge_trigger = [0.0]
 # terminal cap in start_terminal_workers disabled_terminals.txt). Fail-open.
 RAM_MIN_FREE_GB = 4.0
 RAM_GUARD_SLEEP_SECONDS = 20
+# Multi-symbol real-tick jobs need materially more launch headroom than ordinary
+# single-symbol jobs. A low-memory launch can generate a syntactically valid
+# MT5 report with 0 bars and get misclassified as symbol history failure.
+MULTISYMBOL_RAM_MIN_FREE_GB = 12.0
 # Launch-fault guard (2026-06-20): the spawned phase-runner child vanishing far
 # faster than any real backtest (terminal64 startup + sync alone is ~6-10s) means
 # the run never actually started — a transient pwsh/host launch fault, NOT a clean
@@ -264,6 +268,8 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     anywhere in the farm blocks another item with the same symbol. Multi-symbol
     (basket) EAs are additionally serialized to AT MOST ONE active farm-wide, so
     their oversized tick-history working sets never stack and exhaust commit.
+    Multi-symbol claims also require higher free-RAM headroom than ordinary
+    single-symbol jobs to avoid empty-bar MT5 reports caused by allocator failure.
     """
     def _claim() -> dict[str, Any]:
         farmctl.init_db(root)
@@ -338,6 +344,8 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 )
                 skipped_history: list[dict[str, Any]] = []
                 skipped_launch_cooldown: list[dict[str, Any]] = []
+                skipped_multisym_ram: list[dict[str, Any]] = []
+                multisym_free_ram: float | None = None
                 for item in conn.execute(_priority_pending_query()).fetchall():
                     payload = _json_loads(item["payload_json"])
                     launch_not_before = _parse_utc_iso(payload.get("launch_not_before_utc"))
@@ -360,8 +368,20 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     # Skip a multi-symbol item while another multi-symbol backtest
                     # is already running anywhere in the farm (serialize the heavy
                     # basket loads). Non-multi-symbol items are unaffected.
-                    if multisym_active and str(item["ea_id"]) in multisym_ids:
+                    item_is_multisym = str(item["ea_id"]) in multisym_ids
+                    if multisym_active and item_is_multisym:
                         continue
+                    if item_is_multisym:
+                        if multisym_free_ram is None:
+                            multisym_free_ram = _free_ram_gb()
+                        if multisym_free_ram < MULTISYMBOL_RAM_MIN_FREE_GB:
+                            skipped_multisym_ram.append({
+                                "item_id": item["id"],
+                                "ea_id": item["ea_id"],
+                                "free_ram_gb": round(multisym_free_ram, 1),
+                                "threshold_gb": MULTISYMBOL_RAM_MIN_FREE_GB,
+                            })
+                            continue
                     history_ok, history = _p2_history_claimable(item)
                     if not history_ok:
                         skipped_history.append({"item_id": item["id"], **(history or {})})
@@ -389,6 +409,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     "reason": "no_pending_claimable",
                     "history_skipped": skipped_history,
                     "launch_cooldown_skipped": skipped_launch_cooldown,
+                    "multisymbol_ram_skipped": skipped_multisym_ram,
                 }
             except Exception:
                 conn.rollback()
