@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        10028
 ; ea_slug:      rw-risk-premia
@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   2f6fe29e8562c5463445a09b43704d46747a7e5553339e574537baef475e8eec
 ; author:       Development
 ; date:         2026-06-09
 ;==========================================================
