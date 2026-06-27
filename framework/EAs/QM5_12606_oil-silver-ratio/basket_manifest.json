@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_12606_XTI_XAG_RATIO_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg XTI/XAG oil-silver ratio reversion basket from the approved MACROTRENDS-SILVER-OIL-RATIO-2026 card. The EA runs from the XTIUSD.DWX host setfile and reads both D1 close series to compute ln(XTIUSD) - beta * ln(XAGUSD). Q02 must evaluate the logical basket, not the standalone legs."
+  ]
+}
