@@ -25,7 +25,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: G0
 last_updated: 2026-06-27
-g0_approval_reasoning: "R1 PASS published JFE/AQR source; R2 PASS deterministic monthly 9-month return-sign entry with 3-month confirmation and fixed exits; R3 PASS XTIUSD.DWX available; R4 PASS no ML/grid/martingale/external data."
+g0_approval_reasoning: "R1 PASS published JFE/AQR time-series-momentum source; R2 PASS deterministic monthly WTI 9-month return-sign entry with 3-month confirmation and fixed exits; R3 PASS XTIUSD.DWX available; R4 PASS no ML/grid/martingale/external data."
 expected_pf: 1.08
 expected_dd_pct: 18.0
 ---
