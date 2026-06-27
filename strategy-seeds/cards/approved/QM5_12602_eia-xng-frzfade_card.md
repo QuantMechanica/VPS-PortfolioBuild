@@ -3,7 +3,7 @@ ea_id: QM5_12602
 slug: eia-xng-frzfade
 type: strategy
 source_id: EIA-XNG-FREEZE-2026
-source_citation: "U.S. Energy Information Administration. The February 2021 cold weather led to record-high natural gas spot prices. Today in Energy, 2021-10-04. URL https://www.eia.gov/todayinenergy/detail.php?id=50778; U.S. natural gas prices spiked in February 2021, then generally traded lower. Today in Energy, 2021-12-08. URL https://www.eia.gov/todayinenergy/detail.php?id=54259"
+source_citation: "U.S. Energy Information Administration. U.S. natural gas prices spiked in February 2021, then generally increased through October. Today in Energy, 2022-01-06. URL https://www.eia.gov/todayinenergy/detail.php?id=50778; February 2021 weather triggers largest monthly decline in U.S. natural gas production. Today in Energy, 2021-05-10. URL https://www.eia.gov/todayinenergy/detail.php?id=47896"
 sources:
   - "[[sources/EIA-XNG-FREEZE-2026]]"
 concepts:
@@ -38,9 +38,9 @@ g0_approval_reasoning: "R1 PASS official EIA winter natural-gas price shock sour
 ## Source
 
 - Source: [[sources/EIA-XNG-FREEZE-2026]]
-- Primary citation: U.S. Energy Information Administration, "The February 2021 cold weather led to record-high natural gas spot prices", Today in Energy, 2021-10-04, URL https://www.eia.gov/todayinenergy/detail.php?id=50778.
-- Supplemental citation: U.S. Energy Information Administration, "U.S. natural gas prices spiked in February 2021, then generally traded lower", Today in Energy, 2021-12-08, URL https://www.eia.gov/todayinenergy/detail.php?id=54259.
-- Supplemental citation: U.S. Energy Information Administration, Natural Gas Weekly Update archive, "Winter storm Elliott sharply increased natural gas spot prices", URL https://www.eia.gov/naturalgas/weekly/archivenew_ngwu/2022/12_29/.
+- Primary citation: U.S. Energy Information Administration, "U.S. natural gas prices spiked in February 2021, then generally increased through October", Today in Energy, 2022-01-06, URL https://www.eia.gov/todayinenergy/detail.php?id=50778.
+- Supplemental citation: U.S. Energy Information Administration, "February 2021 weather triggers largest monthly decline in U.S. natural gas production", Today in Energy, 2021-05-10, URL https://www.eia.gov/todayinenergy/detail.php?id=47896.
+- Supplemental citation: U.S. Energy Information Administration, "Cold weather brings near record-high natural gas spot prices", Today in Energy, 2021-03-05, URL https://www.eia.gov/todayinenergy/detail.php?id=47016.
 
 ## Concept
 

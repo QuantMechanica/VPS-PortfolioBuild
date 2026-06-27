@@ -55,11 +55,12 @@ entry logic.
 
 ## 6. Source Citation
 
-U.S. Energy Information Administration, "The February 2021 cold weather led to
-record-high natural gas spot prices", Today in Energy, 2021-10-04, URL
-https://www.eia.gov/todayinenergy/detail.php?id=50778. Supplement: EIA, "U.S.
-natural gas prices spiked in February 2021, then generally traded lower", Today
-in Energy, 2021-12-08, URL https://www.eia.gov/todayinenergy/detail.php?id=54259.
+U.S. Energy Information Administration, "U.S. natural gas prices spiked in
+February 2021, then generally increased through October", Today in Energy,
+2022-01-06, URL https://www.eia.gov/todayinenergy/detail.php?id=50778.
+Supplement: EIA, "February 2021 weather triggers largest monthly decline in
+U.S. natural gas production", Today in Energy, 2021-05-10, URL
+https://www.eia.gov/todayinenergy/detail.php?id=47896.
 
 ## 7. Risk Model
 
