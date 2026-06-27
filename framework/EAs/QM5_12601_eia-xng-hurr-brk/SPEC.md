@@ -53,8 +53,9 @@ commodity RSI pullback all use different timing or entry logic.
 
 ## 6. Source Citation
 
-U.S. Energy Information Administration, "2024 Atlantic hurricane season could
-affect U.S. oil and natural gas markets", Today in Energy, 2024-06-13, URL
+U.S. Energy Information Administration, "Forecast strong hurricane season
+presents risk for U.S. oil and natural gas industry", Today in Energy,
+2024-06-13, URL
 https://www.eia.gov/todayinenergy/detail.php?id=62104. Supplemental: NOAA
 National Hurricane Center, Tropical Cyclone Climatology, URL
 https://www.nhc.noaa.gov/climo/.

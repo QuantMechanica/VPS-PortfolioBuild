@@ -3,7 +3,7 @@ ea_id: QM5_12601
 slug: eia-xng-hurr-brk
 type: strategy
 source_id: EIA-NOAA-XNG-HURR-2026
-source_citation: "U.S. Energy Information Administration. 2024 Atlantic hurricane season could affect U.S. oil and natural gas markets. Today in Energy, 2024-06-13. URL https://www.eia.gov/todayinenergy/detail.php?id=62104; NOAA National Hurricane Center. Tropical Cyclone Climatology. URL https://www.nhc.noaa.gov/climo/"
+source_citation: "U.S. Energy Information Administration. Forecast strong hurricane season presents risk for U.S. oil and natural gas industry. Today in Energy, 2024-06-13. URL https://www.eia.gov/todayinenergy/detail.php?id=62104; NOAA National Hurricane Center. Tropical Cyclone Climatology. URL https://www.nhc.noaa.gov/climo/"
 sources:
   - "[[sources/EIA-NOAA-XNG-HURR-2026]]"
 concepts:
@@ -38,9 +38,9 @@ g0_approval_reasoning: "R1 PASS official EIA hurricane energy-market source plus
 ## Source
 
 - Source: [[sources/EIA-NOAA-XNG-HURR-2026]]
-- Primary citation: U.S. Energy Information Administration, "2024 Atlantic hurricane season could affect U.S. oil and natural gas markets", Today in Energy, 2024-06-13, URL https://www.eia.gov/todayinenergy/detail.php?id=62104.
+- Primary citation: U.S. Energy Information Administration, "Forecast strong hurricane season presents risk for U.S. oil and natural gas industry", Today in Energy, 2024-06-13, URL https://www.eia.gov/todayinenergy/detail.php?id=62104.
 - Supplemental citation: NOAA National Hurricane Center, Tropical Cyclone Climatology, URL https://www.nhc.noaa.gov/climo/.
-- Supplemental citation: U.S. Energy Information Administration, "Hurricane Ida caused at least 1.5 million barrels per day of crude oil production to be shut in", Today in Energy, 2021-09-10, URL https://www.eia.gov/todayinenergy/detail.php?id=49436.
+- Supplemental citation: U.S. Energy Information Administration, "Hurricane Ida disrupted crude oil production and refining activity", Today in Energy, 2021-09-14, URL https://www.eia.gov/todayinenergy/detail.php?id=49576.
 
 ## Concept
 

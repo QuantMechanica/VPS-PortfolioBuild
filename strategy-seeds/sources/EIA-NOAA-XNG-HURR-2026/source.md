@@ -13,9 +13,9 @@ uri: https://www.eia.gov/todayinenergy/detail.php?id=62104
 ## Source Identity
 
 - Publisher: U.S. Energy Information Administration.
-- Primary source: EIA Today in Energy, "2024 Atlantic hurricane season could affect U.S. oil and natural gas markets", 2024-06-13, URL https://www.eia.gov/todayinenergy/detail.php?id=62104.
+- Primary source: EIA Today in Energy, "Forecast strong hurricane season presents risk for U.S. oil and natural gas industry", 2024-06-13, URL https://www.eia.gov/todayinenergy/detail.php?id=62104.
 - Supplemental source: NOAA National Hurricane Center, Tropical Cyclone Climatology, URL https://www.nhc.noaa.gov/climo/.
-- Supplemental source: EIA Today in Energy, "Hurricane Ida caused at least 1.5 million barrels per day of crude oil production to be shut in", 2021-09-10, URL https://www.eia.gov/todayinenergy/detail.php?id=49436.
+- Supplemental source: EIA Today in Energy, "Hurricane Ida disrupted crude oil production and refining activity", 2021-09-14, URL https://www.eia.gov/todayinenergy/detail.php?id=49576.
 
 ## Mining Scope
 
