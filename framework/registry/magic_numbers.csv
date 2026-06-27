@@ -13674,3 +13674,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12610,wti-tue-fade,0,XTIUSD.DWX,126100000,2026-06-27,Development,active
 12624,edgelab-eurjpy-audjpy-cointegration,0,EURJPY.DWX,126240000,2026-06-27,Development,active
 12624,edgelab-eurjpy-audjpy-cointegration,1,AUDJPY.DWX,126240001,2026-06-27,Development,active
+1233,ict-silver-bullet,11,SP500.DWX,12330011,2026-06-27,Claude,active
