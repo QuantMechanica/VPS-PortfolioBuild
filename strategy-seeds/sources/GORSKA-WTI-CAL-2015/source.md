@@ -9,6 +9,7 @@ cards_extracted:
   - wti-fri-prem
   - wti-feb-prem
   - wti-tue-fade
+  - wti-oct-fade
 ---
 
 # Gorska-Krawiec WTI Calendar Effects Source
@@ -26,7 +27,8 @@ anomalies. The paper studies WTI daily returns and reports a weekday pattern in
 which Monday and Tuesday are negative on average and Friday has the strongest
 positive average return in the sample. The same paper also studies
 month-of-year seasonality and reports February as the strongest positive WTI
-month in the sample.
+month in the sample. The same month-of-year table shows the late-year WTI
+weakness cluster, with October the weakest average-return month in the sample.
 
 The first mechanized card isolates only the Friday side on `XTIUSD.DWX`: enter
 long on the broker-calendar Friday D1 bar, use a fixed ATR hard stop, and
@@ -43,11 +45,17 @@ the weekday table on `XTIUSD.DWX`: enter short on the broker-calendar Tuesday
 D1 bar, use a fixed ATR hard stop, and flatten on the first subsequent D1 bar
 or one-calendar-day stale-position guard.
 
+The fourth mechanized card isolates the October negative month-of-year side on
+`XTIUSD.DWX`: enter short only during October D1 bars, use a fixed ATR hard
+stop, and flatten on the first subsequent D1 bar or one-calendar-day
+stale-position guard.
+
 ## Extracted Card
 
 - `wti-fri-prem`: XTIUSD.DWX D1 weekly Friday calendar-premium sleeve.
 - `wti-feb-prem`: XTIUSD.DWX D1 February month-of-year premium sleeve.
 - `wti-tue-fade`: XTIUSD.DWX D1 Tuesday negative-return fade sleeve.
+- `wti-oct-fade`: XTIUSD.DWX D1 October month-of-year fade sleeve.
 
 ## R-Rules
 
