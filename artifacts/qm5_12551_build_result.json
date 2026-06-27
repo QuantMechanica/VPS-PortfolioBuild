@@ -1,0 +1,31 @@
+{
+  "task_id": "5ffc238b-ceb2-4fb6-97a7-534f3837ca67",
+  "ea_id": "QM5_12551",
+  "ea_dir": "framework/EAs/QM5_12551_ict-turtle-soup-asian-false-break-m15",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_12551_ict-turtle-soup-asian-false-break-m15/QM5_12551_ict-turtle-soup-asian-false-break-m15.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_12551_ict-turtle-soup-asian-false-break-m15/QM5_12551_ict-turtle-soup-asian-false-break-m15.ex5",
+  "magic_base": 125510000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "XAUUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_12551_ict-turtle-soup-asian-false-break-m15/sets/QM5_12551_ict-turtle-soup-asian-false-break-m15_EURUSD.DWX_M15_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12551_ict-turtle-soup-asian-false-break-m15/sets/QM5_12551_ict-turtle-soup-asian-false-break-m15_GBPUSD.DWX_M15_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12551_ict-turtle-soup-asian-false-break-m15/sets/QM5_12551_ict-turtle-soup-asian-false-break-m15_USDJPY.DWX_M15_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12551_ict-turtle-soup-asian-false-break-m15/sets/QM5_12551_ict-turtle-soup-asian-false-break-m15_XAUUSD.DWX_M15_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_12551_ict-turtle-soup-asian-false-break-m15/SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "paced_mt5_fleet_active_terminal_jobs_4_at_2026-06-27T08:22:10Z",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": [
+    "Manual Q01 smoke was deferred because the paced MT5 fleet already had active terminal jobs; record-build will enqueue Q02 work_items for worker execution.",
+    "Q02 baseline news defaults were reset to OFF/NONE so news impact behavior remains isolated to later news-mode phases."
+  ]
+}
