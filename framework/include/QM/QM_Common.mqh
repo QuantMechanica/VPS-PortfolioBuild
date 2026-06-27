@@ -206,6 +206,31 @@ bool QM_FrameworkFridayCloseNow(const datetime broker_time = 0)
    return (dt.hour >= g_qm_fw_friday_close_hour_broker);
   }
 
+bool QM_FrameworkOwnsMagicSymbol(const long magic, const string symbol)
+  {
+   if(magic == (long)g_qm_fw_magic)
+      return true;
+
+   if(!QM_SymbolGuardIsBasket())
+      return false;
+
+   if(g_qm_fw_ea_id <= 0)
+      return false;
+
+   const long base_magic = (long)g_qm_fw_ea_id * 10000L;
+   if(magic < base_magic || magic > base_magic + QM_MAGIC_SLOT_MAX)
+      return false;
+
+   const int slot = (int)(magic - base_magic);
+   if(!QM_MagicRegistered(g_qm_fw_ea_id, slot))
+      return false;
+
+   if(symbol != "" && !QM_SymbolAllowed(symbol))
+      return false;
+
+   return true;
+  }
+
 int QM_FrameworkCloseAllByMagic(const long magic, const string reason)
   {
    int closed = 0;
@@ -217,6 +242,41 @@ int QM_FrameworkCloseAllByMagic(const long magic, const string reason)
          continue;
 
       if(PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      if(g_qm_fw_trade.PositionClose(ticket))
+        {
+         ++closed;
+         continue;
+        }
+
+      QM_LogEvent(QM_WARN,
+                  "FRIDAY_CLOSE_FAILED",
+                  StringFormat("{\"ticket\":%I64u,\"retcode\":%u,\"reason\":\"%s\"}",
+                               ticket,
+                               g_qm_fw_trade.ResultRetcode(),
+                               QM_LoggerEscapeJson(reason)));
+     }
+
+   return closed;
+  }
+
+int QM_FrameworkCloseAllOwnedPositions(const string reason)
+  {
+   if(!QM_SymbolGuardIsBasket())
+      return QM_FrameworkCloseAllByMagic((long)g_qm_fw_magic, reason);
+
+   int closed = 0;
+   const int total = PositionsTotal();
+   for(int i = total - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+
+      const long magic = PositionGetInteger(POSITION_MAGIC);
+      const string symbol = PositionGetString(POSITION_SYMBOL);
+      if(!QM_FrameworkOwnsMagicSymbol(magic, symbol))
          continue;
 
       if(g_qm_fw_trade.PositionClose(ticket))
@@ -258,7 +318,7 @@ bool QM_FrameworkHandleFridayClose()
       return true; // already handled this Friday — silent fast return.
    g_qm_fw_friday_close_last_day_key = day_key;
 
-   const int closed = QM_FrameworkCloseAllByMagic((long)g_qm_fw_magic, "friday_close");
+   const int closed = QM_FrameworkCloseAllOwnedPositions("friday_close");
    QM_LogEvent(QM_INFO, "FRIDAY_CLOSE", StringFormat("{\"closed\":%d,\"hour\":%d,\"day_key\":%d}",
                closed, g_qm_fw_friday_close_hour_broker, day_key));
    return true;
@@ -350,7 +410,8 @@ void QM_FrameworkOnTradeTransaction(const MqlTradeTransaction &trans,
       return;
 
    const long deal_magic = HistoryDealGetInteger(trans.deal, DEAL_MAGIC);
-   if(deal_magic != g_qm_fw_magic)
+   const string q08_symbol = HistoryDealGetString(trans.deal, DEAL_SYMBOL);
+   if(!QM_FrameworkOwnsMagicSymbol(deal_magic, q08_symbol))
       return;
 
    const long entry = HistoryDealGetInteger(trans.deal, DEAL_ENTRY);
@@ -363,7 +424,6 @@ void QM_FrameworkOnTradeTransaction(const MqlTradeTransaction &trans,
    const double net        = profit + swap + commission;
 
    // Q08 per-trade stream: one TRADE_CLOSED line per closing deal (real net P&L).
-   const string q08_symbol = HistoryDealGetString(trans.deal, DEAL_SYMBOL);
    const double q08_vol = HistoryDealGetDouble(trans.deal, DEAL_VOLUME);
    const double q08_price = HistoryDealGetDouble(trans.deal, DEAL_PRICE);
    const double q08_notional = QM_FrameworkDealNotionalAccount(trans.deal, q08_symbol, q08_vol, q08_price);
@@ -393,7 +453,7 @@ void QM_FrameworkOnTradeTransaction(const MqlTradeTransaction &trans,
 
    if(QM_KillSwitchKSCheck())
      {
-      QM_FrameworkCloseAllByMagic((long)g_qm_fw_magic, "ks_distribution_divergence");
+      QM_FrameworkCloseAllOwnedPositions("ks_distribution_divergence");
       // The fatal log inside QM_KillSwitchKSCheck already carries the d / d_crit / n.
       // Manual halt-flag is the most reliable cross-restart suppression.
       const string halt_path = StringFormat("D:\\QM\\data\\halt\\%d.halt", g_qm_fw_ea_id);
