@@ -111,10 +111,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       strategy_take_profit_rr <= 0.0 || strategy_max_spread_frac < 0.0)
       return false;
 
-   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1);
-   const double close_2 = iClose(_Symbol, strategy_signal_tf, 2);
-   const double prev_low = iLow(_Symbol, strategy_signal_tf, 1);
-   const double prev_high = iHigh(_Symbol, strategy_signal_tf, 1);
+   MqlRates bar_1[1];
+   MqlRates bar_2[1];
+   if(CopyRates(_Symbol, strategy_signal_tf, 1, 1, bar_1) != 1 ||
+      CopyRates(_Symbol, strategy_signal_tf, 2, 1, bar_2) != 1)
+      return false;
+
+   const double close_1 = bar_1[0].close;
+   const double close_2 = bar_2[0].close;
+   const double prev_low = bar_1[0].low;
+   const double prev_high = bar_1[0].high;
    const double ema_high_1 = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_period, 1, PRICE_HIGH);
    const double ema_high_2 = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_period, 2, PRICE_HIGH);
    const double ema_low_1 = QM_EMA(_Symbol, strategy_signal_tf, strategy_ema_period, 1, PRICE_LOW);

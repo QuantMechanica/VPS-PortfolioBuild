@@ -1,0 +1,41 @@
+{
+  "task_id": "8c2dd070-1fae-4561-85a9-828e847b8709",
+  "ea_id": "QM5_10179",
+  "slug": "tv-ema-channel-rr",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_10179_tv-ema-channel-rr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10179_tv-ema-channel-rr\\QM5_10179_tv-ema-channel-rr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10179_tv-ema-channel-rr\\QM5_10179_tv-ema-channel-rr.ex5",
+  "magic_base": 101790000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "XAUUSD.DWX",
+    "GDAXI.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10179_tv-ema-channel-rr\\sets\\QM5_10179_tv-ema-channel-rr_EURUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10179_tv-ema-channel-rr\\sets\\QM5_10179_tv-ema-channel-rr_GBPUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10179_tv-ema-channel-rr\\sets\\QM5_10179_tv-ema-channel-rr_USDJPY.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10179_tv-ema-channel-rr\\sets\\QM5_10179_tv-ema-channel-rr_XAUUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10179_tv-ema-channel-rr\\sets\\QM5_10179_tv-ema-channel-rr_GDAXI.DWX_H1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10179_tv-ema-channel-rr\\SPEC.md",
+  "host_symbol": "EURUSD.DWX",
+  "host_timeframe": "H1",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260627_222955\\QM5_10179_tv-ema-channel-rr.compile.log",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260627_222955.json",
+  "build_check_failures": 0,
+  "build_check_warnings": 16,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "q02_enqueued_for_paced_fleet_no_manual_backtest",
+  "blocked_reason": null,
+  "open_questions": [
+    "No manual backtest launched; Q02 is delegated to paced farm workers."
+  ],
+  "notes": "Codex advanced QM5_10179_tv-ema-channel-rr for diverse FX-first funnel throughput. Regenerated five H1 RISK_FIXED backtest setfiles from active magic rows, normalized SPEC.md for Q01 validation, removed build-blocking raw iClose/iLow/iHigh series calls, and passed scoped strict build_check. No live/T_Live/portfolio artifacts touched."
+}

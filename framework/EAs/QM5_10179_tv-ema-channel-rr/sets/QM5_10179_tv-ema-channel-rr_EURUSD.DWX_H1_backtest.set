@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   05c5d501daad20cabde60f72d14984c82d13f56a952dea76b92b60ed7e6381e7
 ; author:       Development
 ; date:         2026-06-27
 ;==========================================================
@@ -31,4 +31,13 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10179_tv-ema-channel-rr.md
+; card_defaults_status=manual_from_approved_farm_card
+strategy_signal_tf=16385
+strategy_ema_period=100
+strategy_atr_period=14
+strategy_min_stop_atr=0.5
+strategy_max_stop_atr=3.0
+strategy_take_profit_rr=2.0
+strategy_max_hold_bars=72
+strategy_max_spread_frac=0.15
