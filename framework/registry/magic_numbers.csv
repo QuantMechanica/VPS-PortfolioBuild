@@ -13644,3 +13644,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9506,carver-starter,7,WS30.DWX,95060007,2026-06-27,Development,active
 1023,chan-at-bb-pair,0,XTIUSD.DWX,10230000,2026-06-27,Development,active
 1023,chan-at-bb-pair,1,XAUUSD.DWX,10230001,2026-06-27,Development,active
+12596,wti-mon-fade,0,XTIUSD.DWX,125960000,2026-06-27,Development,active
