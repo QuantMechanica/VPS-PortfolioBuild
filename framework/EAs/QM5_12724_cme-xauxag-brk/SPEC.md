@@ -2,7 +2,7 @@
 
 **EA ID:** QM5_12724
 **Slug:** `cme-xauxag-brk`
-**Source:** `CME-OIL-GOLD-RATIO-2024` (see `strategy-seeds/sources/CME-OIL-GOLD-RATIO-2024/`)
+**Source:** `CME-GSR-SPREAD-2025` (see `strategy-seeds/sources/CME-GSR-SPREAD-2025/`)
 **Author of this spec:** Codex
 **Last revised:** 2026-06-27
 
@@ -12,15 +12,15 @@
 
 This EA implements a low-frequency structural commodity relative-value sleeve as
 a two-leg basket on `XAUUSD.DWX` and `XAGUSD.DWX`. It computes the D1 log spread
-`ln(XTIUSD) - beta * ln(XAUUSD)`, enters long-ratio when that spread breaks
+`ln(XAUUSD) - beta * ln(XAGUSD)`, enters long-ratio when that spread breaks
 above its 120-day channel, enters short-ratio when it breaks below its 120-day
 channel, and exits on a 40-day opposite channel break. Each leg carries an
 ATR(20) * 3.0 hard stop.
 
-The strategy is intentionally not a duplicate of `QM5_12604_cme-goldgold-ratio`:
+The strategy is intentionally not a duplicate of `QM5_12577_cme-xauxag-ratio`:
 this is channel-breakout continuation, not z-score mean reversion. It is also
-not `QM5_12578_eia-goldgas-ratio`, because this hedge leg is gold rather than
-natural gas.
+not an oil/gold, oil/silver, XTI/XNG, WTI calendar, XNG, or RSI commodity
+sleeve.
 
 ---
 
@@ -33,8 +33,8 @@ natural gas.
 | `strategy_beta` | 1.0 | 0.6-1.2 | Hedge coefficient in the log spread |
 | `strategy_atr_period_d1` | 20 | 14-30 | ATR stop period |
 | `strategy_atr_sl_mult` | 3.0 | 2.0-4.0 | Per-leg stop multiplier |
-| `strategy_xau_max_spread_pts` | 1000 | 700-1500 | XTI entry spread cap |
-| `strategy_xag_max_spread_pts` | 500 | 300-800 | XAU entry spread cap |
+| `strategy_xau_max_spread_pts` | 500 | 300-800 | XAU entry spread cap |
+| `strategy_xag_max_spread_pts` | 200 | 100-400 | XAG entry spread cap |
 | `strategy_deviation_points` | 20 | 10-50 | Broker deviation points for market legs |
 
 ---
@@ -43,12 +43,12 @@ natural gas.
 
 **Designed for:**
 - `XAUUSD.DWX` - host chart and gold numerator, magic slot 0.
-- `XAGUSD.DWX` - hedge leg and gold denominator, magic slot 1.
+- `XAGUSD.DWX` - hedge leg and silver denominator, magic slot 1.
 - `QM5_12724_XAU_XAG_BRK_D1` - logical basket symbol for Q02 dispatch.
 
 **Explicitly NOT for:**
 - `XNGUSD.DWX` - covered by separate XNG and XTI/XNG sleeves.
-- `XAGUSD.DWX` - covered by the separate XAU/XAG metals ratio.
+- Standalone XAU/XAG legs - this EA is a logical basket, not a single-leg metals strategy.
 - Equity indices and FX pairs - different economic exposure from the CME gold/silver ratio source.
 
 ---
@@ -79,9 +79,9 @@ natural gas.
 
 This card was mechanised from:
 
-**Source ID:** `CME-OIL-GOLD-RATIO-2024`
-**Source type:** `exchange article`
-**Pointer:** `https://www.cmegroup.com/articles/2024/through-the-lens-of-gold.html`
+**Source ID:** `CME-GSR-SPREAD-2025`
+**Source type:** `exchange education/research`
+**Pointer:** `https://www.cmegroup.com/education/lessons/gold-and-silver-ratio-spread-trade`
 **R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_12724_cme-xauxag-brk_card.md`
 
 ---

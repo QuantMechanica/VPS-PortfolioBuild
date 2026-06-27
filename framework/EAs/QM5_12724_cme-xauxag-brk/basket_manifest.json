@@ -7,6 +7,6 @@
     "XAGUSD.DWX"
   ],
   "notes": [
-    "Two-leg XAU/XAG gold-silver ratio breakout basket from the approved CME-OIL-GOLD-RATIO-2024 card. The EA runs from the XAUUSD.DWX host setfile and reads both D1 close series to compute ln(XTIUSD) - beta * ln(XAUUSD). Q02 must evaluate the logical basket, not the standalone legs."
+    "Two-leg XAU/XAG gold-silver ratio breakout basket from the approved CME-GSR-SPREAD-2025 card. The EA runs from the XAUUSD.DWX host setfile and reads both D1 close series to compute ln(XAUUSD) - beta * ln(XAGUSD). Q02 must evaluate the logical basket, not the standalone legs."
   ]
 }

@@ -46,8 +46,8 @@ input int    strategy_exit_lookback_d1  = 40;
 input double strategy_beta              = 1.0;
 input int    strategy_atr_period_d1     = 20;
 input double strategy_atr_sl_mult       = 3.0;
-input int    strategy_xau_max_spread_pts = 1000;
-input int    strategy_xag_max_spread_pts = 500;
+input int    strategy_xau_max_spread_pts = 500;
+input int    strategy_xag_max_spread_pts = 200;
 input int    strategy_deviation_points   = 20;
 
 string   g_leg_xau = "XAUUSD.DWX";
@@ -127,13 +127,13 @@ bool Strategy_RefreshSpreadState()
    const int exit_lookback = MathMax(5, strategy_exit_lookback_d1);
    const int lookback = MathMax(entry_lookback, exit_lookback) + 1;
 
+   double xau[];
    double xag[];
-   double xag[];
+   ArraySetAsSeries(xau, true);
    ArraySetAsSeries(xag, true);
-   ArraySetAsSeries(xag, true);
-   if(CopyClose(g_leg_xag, PERIOD_D1, 1, lookback, xti) != lookback) // perf-allowed: called only behind the D1 new-bar gate or close-state refresh.
+   if(CopyClose(g_leg_xau, PERIOD_D1, 1, lookback, xau) != lookback) // perf-allowed: called only behind the D1 new-bar gate or close-state refresh.
       return false;
-   if(CopyClose(g_leg_xag, PERIOD_D1, 1, lookback, xau) != lookback) // perf-allowed: called only behind the D1 new-bar gate or close-state refresh.
+   if(CopyClose(g_leg_xag, PERIOD_D1, 1, lookback, xag) != lookback) // perf-allowed: called only behind the D1 new-bar gate or close-state refresh.
       return false;
 
    double spreads[];

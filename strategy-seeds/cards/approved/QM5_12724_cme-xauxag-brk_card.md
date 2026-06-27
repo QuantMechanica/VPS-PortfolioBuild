@@ -53,6 +53,24 @@ D1 channel, and short gold/long silver when it breaks below. It is deliberately
 different from `QM5_12577_cme-xauxag-ratio`, which fades z-score extremes and
 exits on mean reversion. This card uses channel continuation and channel exits.
 
+## hypothesis
+
+If gold and silver begin diverging strongly enough to push their D1 log ratio
+outside a long channel, the driver mix behind monetary gold and industrial
+silver can persist long enough for a multi-week continuation move. Trading both
+legs reduces dependence on standalone XAU direction and creates a logical
+spread sleeve rather than another outright metal entry.
+
+This is deliberately different from:
+
+- `QM5_12577_cme-xauxag-ratio`: this card follows D1 channel breakouts; 12577
+  fades z-score extremes and exits on mean reversion.
+- `QM5_12604`, `QM5_12605`, and `QM5_12606`: not oil/gold or oil/silver.
+- `QM5_12608`: not XTI/XNG energy ratio logic.
+- WTI/XNG seasonal and event sleeves: no calendar, weather, inventory, or
+  energy-event trigger.
+- `QM5_12567_cum-rsi2-commodity`: no RSI or oscillator pullback logic.
+
 ## Markets And Timeframe
 
 - Host symbol: XAUUSD.DWX.
@@ -76,6 +94,15 @@ exits on mean reversion. This card uses channel continuation and channel exits.
   low, SELL XAUUSD.DWX and BUY XAGUSD.DWX.
 - No entry if either basket leg already has an open position for this EA magic.
 - No entry if either symbol's current spread exceeds its configured spread cap.
+
+## rules
+
+- Signal series: `ln(XAUUSD.DWX) - strategy_beta * ln(XAGUSD.DWX)`.
+- Entry channel excludes the most recent closed spread.
+- Upside channel break opens BUY XAUUSD.DWX plus SELL XAGUSD.DWX.
+- Downside channel break opens SELL XAUUSD.DWX plus BUY XAGUSD.DWX.
+- Exit channel, broken-package repair, Friday close, and ATR hard stops are
+  deterministic and use MT5-native data only.
 
 ## Exit Rules
 
@@ -147,6 +174,13 @@ different macro drivers of gold and silver.
 - gridding: false.
 - scalping: false.
 - ml_required: false.
+
+## risk
+
+Backtests use `RISK_FIXED=1000`, `RISK_PERCENT=0`, and one logical basket
+setfile. Live risk is intentionally not configured here; any future live
+allocation must come from the portfolio process. The EA does not touch
+`T_Live`, AutoTrading, deploy manifests, or the portfolio gate.
 
 ## Strategy Allowability Check
 
