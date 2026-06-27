@@ -73,9 +73,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const double cci = QM_CCI(_Symbol, PERIOD_H1, strategy_cci_period, 1);
    const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
-   const double high = iHigh(_Symbol, PERIOD_H1, 1);
-   const double low = iLow(_Symbol, PERIOD_H1, 1);
-   const double close = iClose(_Symbol, PERIOD_H1, 1);
+   const double high = iHigh(_Symbol, PERIOD_H1, 1);   // perf-allowed: signal candle high defines the card stop/range.
+   const double low = iLow(_Symbol, PERIOD_H1, 1);     // perf-allowed: signal candle low defines the card stop/range.
+   const double close = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: single closed H1 bar entry reference.
    const double range = high - low;
 
    bool signal_long = false;
