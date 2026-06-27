@@ -1,0 +1,15 @@
+{
+  "logical_symbol": "QM5_12723_NZDUSD_EURJPY_COINTEGRATION_D1",
+  "host_symbol": "NZDUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "NZDUSD.DWX",
+    "EURJPY.DWX"
+  ],
+  "notes": [
+    "Two-leg NZDUSD/EURJPY market-neutral FX cointegration candidate from the 2026-06-09 66-pair scan rerun. It did not clear the original hard survivor bar (OOS net Sharpe 0.68 vs 0.8), but it is the strongest remaining unbuilt pair with both positive DEV and OOS Sharpe after the existing 12532/12533/12624/12712 baskets.",
+    "Q02 uses USD tester currency and the canonical RISK_FIXED=1000 budget. The EA selects NZDUSD/EURJPY plus EURUSD/USDJPY conversion history."
+  ]
+}
