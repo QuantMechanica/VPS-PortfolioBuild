@@ -1,0 +1,28 @@
+{
+  "task_id": "be2242b1-5166-47b9-9597-813e909a43cc",
+  "ea_id": "QM5_12620",
+  "slug": "comm-reversal-4wk-xngusd",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12620_comm-reversal-4wk-xngusd",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12620_comm-reversal-4wk-xngusd\\QM5_12620_comm-reversal-4wk-xngusd.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12620_comm-reversal-4wk-xngusd\\QM5_12620_comm-reversal-4wk-xngusd.ex5",
+  "magic_base": 126200000,
+  "symbols_registered": [
+    "XNGUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12620_comm-reversal-4wk-xngusd\\sets\\QM5_12620_comm-reversal-4wk-xngusd_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12620_comm-reversal-4wk-xngusd\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260627_162609\\QM5_12620_comm-reversal-4wk-xngusd.compile.log",
+  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260627_162609.json",
+  "build_check_warnings": 16,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": "",
+  "blocked_reason": "",
+  "open_questions": [],
+  "notes": "Codex built QM5_12620_comm-reversal-4wk-xngusd as a new XNGUSD.DWX D1 weekly 4-week commodity overreaction-reversal sleeve. build_check PASS, compile PASS, SPEC present, RISK_FIXED backtest setfile generated. No live/T_Live/portfolio artifacts touched.",
+  "smoke_skipped_reason": "low-frequency D1 build smoke deferred to Q02 fleet work item",
+  "auto_q02_work_item": "c177d79e-30fe-45c6-8e46-9617c3867e46"
+}
