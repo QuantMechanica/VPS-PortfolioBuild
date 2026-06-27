@@ -133,7 +133,7 @@ double Strategy_AnnualizedCloseVolatility()
    const int days = MathMax(strategy_vol_days, 2);
    double closes[];
    ArraySetAsSeries(closes, true);
-   const int copied = CopyClose(_Symbol, PERIOD_D1, 1, days + 1, closes);
+   const int copied = CopyClose(_Symbol, PERIOD_D1, 1, days + 1, closes); // perf-allowed: closed-bar D1 volatility window for card stop model.
    if(copied < days + 1)
       return 0.0;
 
@@ -168,7 +168,7 @@ double Strategy_AnnualizedCloseVolatility()
 
 double Strategy_AggregateSignal()
   {
-   if(Bars(_Symbol, PERIOD_D1) < strategy_warmup_bars)
+   if(Bars(_Symbol, PERIOD_D1) < strategy_warmup_bars) // perf-allowed: closed-bar D1 warmup guard for bespoke ensemble.
       return 0.0;
 
    double mac_average = 0.0;
@@ -189,7 +189,7 @@ double Strategy_AggregateSignal()
      {
       double closes[];
       ArraySetAsSeries(closes, true);
-      const int copied = CopyClose(_Symbol, PERIOD_D1, 1, 320, closes);
+      const int copied = CopyClose(_Symbol, PERIOD_D1, 1, 320, closes); // perf-allowed: closed-bar D1 breakout window for card signal.
       if(copied >= 320)
         {
          mbo_average += Strategy_MBOSignalFromCloses(closes, copied, 20);
