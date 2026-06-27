@@ -25,18 +25,21 @@ input double RISK_PERCENT          = 0.0;
 input double RISK_FIXED            = 1000.0;
 input double PORTFOLIO_WEIGHT      = 1.0;
 
-input group "Range / Session (server time)"
+input group "News"
+input QM_NewsMode qm_news_mode     = QM_NEWS_OFF;
+
+input group "Friday Close"
+input bool   qm_friday_close_enabled    = true;
+input int    qm_friday_close_hour_broker = 21;
+
+input group "Strategy"
 input int    range_start_hour      = 3;     // range build start
 input int    range_end_hour        = 6;     // range build end / lock (exclusive)
 input int    exit_hour             = 20;    // forced flat hour (test 18..22)
 input int    exit_min              = 0;
-
-input group "Entry"
 input double entry_buffer_atr      = 0.0;    // breakout buffer (x ATR), 0 = edge
 input bool   use_vol_filter        = true;
 input double vol_mult              = 1.5;
-
-input group "Stops / Targets"
 input double strategy_rr           = 2.5;
 input int    strategy_atr_period   = 14;
 input double atr_sl_mult           = 1.5;    // fallback SL if range edge invalid
@@ -69,8 +72,8 @@ void UpdateRange()
 
    if(!g_range_locked && dt.hour >= range_start_hour && dt.hour < range_end_hour)
      {
-      const double h = iHigh(_Symbol, _Period, 1);   // last completed bar
-      const double l = iLow(_Symbol, _Period, 1);
+      const double h = iHigh(_Symbol, _Period, 1);   // perf-allowed: closed-bar session range high
+      const double l = iLow(_Symbol, _Period, 1);    // perf-allowed: closed-bar session range low
       if(h > g_range_high) g_range_high = h;
       if(l < g_range_low)  g_range_low  = l;
      }
@@ -127,16 +130,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // volume surge filter
    if(use_vol_filter)
      {
-      const long vol_1 = iVolume(_Symbol, _Period, 1);
+      const long vol_1 = iVolume(_Symbol, _Period, 1); // perf-allowed: closed-bar tick-volume filter
       double vol_sum = 0;
-      for(int i = 1; i <= 20; ++i) vol_sum += (double)iVolume(_Symbol, _Period, i);
+      for(int i = 1; i <= 20; ++i) vol_sum += (double)iVolume(_Symbol, _Period, i); // perf-allowed: bounded 20-bar volume average
       const double vol_ma = vol_sum / 20.0;
       if(vol_ma <= 0 || (double)vol_1 < vol_ma * vol_mult) return false;
      }
 
    const double atr   = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
    const double buf   = entry_buffer_atr * atr;
-   const double close1 = iClose(_Symbol, _Period, 1);
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: closed-bar breakout confirmation
 
    if(close1 > g_range_high + buf)
      {
@@ -180,7 +183,14 @@ bool Strategy_ExitSignal()
 // -----------------------------------------------------------------------------
 int OnInit()
   {
-   if(!QM_FrameworkInit(qm_ea_id, qm_magic_slot_offset, RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT, QM_NEWS_OFF))
+   if(!QM_FrameworkInit(qm_ea_id,
+                        qm_magic_slot_offset,
+                        RISK_PERCENT,
+                        RISK_FIXED,
+                        PORTFOLIO_WEIGHT,
+                        qm_news_mode,
+                        qm_friday_close_enabled,
+                        qm_friday_close_hour_broker))
       return INIT_FAILED;
    return INIT_SUCCEEDED;
   }
