@@ -23,7 +23,7 @@ wave (EAs already enqueued have work_items and are skipped). Part 2
 (stranded re-runs, ~76 rows) always runs. Designed to be safe under an
 hourly scheduled task.
 
-Usage: python claude_sweep_enqueue_2026-06-10.py [--apply] [--queue-ceiling N]
+Usage: python sweep_enqueue_built_eas.py [--apply] [--queue-ceiling N] [--ea QM5_12580]
 Default is dry-run. Evidence JSON written either way.
 """
 import csv
@@ -60,6 +60,12 @@ if "--max-infra-attempts" in sys.argv:
 MAX_PART2_PER_RUN = 250
 if "--max-part2-per-run" in sys.argv:
     MAX_PART2_PER_RUN = int(sys.argv[sys.argv.index("--max-part2-per-run") + 1])
+TARGET_EAS = set()
+if "--ea" in sys.argv:
+    for raw in sys.argv[sys.argv.index("--ea") + 1].split(","):
+        ea_id = raw.strip()
+        if ea_id:
+            TARGET_EAS.add(ea_id)
 NOW = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00")
 
 sys.path.insert(0, r"C:\QM\repo\tools\strategy_farm")
@@ -96,6 +102,7 @@ pending_now = cur.execute(
 budget = max(0, QUEUE_CEILING - pending_now)
 
 report = {"generated_at": NOW, "apply": APPLY,
+          "target_eas": sorted(TARGET_EAS),
           "pending_at_start": pending_now, "queue_ceiling": QUEUE_CEILING,
           "wave_budget": budget,
           "part1_never_tested": {"enqueued": [], "skipped": []},
@@ -135,6 +142,8 @@ for d in sorted(EAS.iterdir()):
 
 budget_left = budget
 for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
+    if TARGET_EAS and ea_id not in TARGET_EAS:
+        continue
     dirs = ea_dirs[ea_id]
     if budget_left <= 0:
         report["part1_never_tested"]["skipped"].append(
@@ -199,13 +208,41 @@ report["part2_stranded"]["rate_limited"] = False
 for phase in ("Q02", "Q03", "Q08"):
     if part2_count >= MAX_PART2_PER_RUN:
         break
-    stranded = [r[0] for r in cur.execute(f"""
-        SELECT ea_id FROM work_items WHERE phase=? GROUP BY ea_id
-        HAVING SUM(CASE WHEN status IN ('pending','active') THEN 1 ELSE 0 END)=0
-           AND SUM(CASE WHEN status='done' AND verdict!='INFRA_FAIL' THEN 1 ELSE 0 END)=0
-           AND SUM(CASE WHEN verdict='INFRA_FAIL' THEN 1 ELSE 0 END)>0
-        """, (phase,))]
-    for ea_id in stranded:
+    params = [phase]
+    target_filter = ""
+    if TARGET_EAS:
+        target_filter = "AND x.ea_id IN (%s)" % ",".join("?" for _ in TARGET_EAS)
+        params.extend(sorted(TARGET_EAS))
+    # Retry stranded infra at the symbol/setfile level. An EA can have some
+    # valid phase results while other symbols remain blocked by transient MT5
+    # failures, and those rows still need a chance to re-enter the funnel.
+    stranded_rows = cur.execute(f"""
+        SELECT x.ea_id, x.symbol, x.setfile_path, MAX(x.updated_at), COUNT(*)
+        FROM work_items x
+        WHERE x.phase=?
+          AND x.verdict='INFRA_FAIL'
+          {target_filter}
+          AND NOT EXISTS (
+              SELECT 1 FROM work_items y
+              WHERE y.ea_id=x.ea_id
+                AND y.phase=x.phase
+                AND y.symbol=x.symbol
+                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')
+                AND y.status IN ('pending','active')
+          )
+          AND NOT EXISTS (
+              SELECT 1 FROM work_items y
+              WHERE y.ea_id=x.ea_id
+                AND y.phase=x.phase
+                AND y.symbol=x.symbol
+                AND ifnull(y.setfile_path, '')=ifnull(x.setfile_path, '')
+                AND y.status='done'
+                AND y.verdict!='INFRA_FAIL'
+          )
+        GROUP BY x.ea_id, x.symbol, x.setfile_path
+        ORDER BY MAX(x.updated_at) ASC
+        """, params).fetchall()
+    for ea_id, symbol, setfile, _ts, infra_attempts in stranded_rows:
         if part2_count >= MAX_PART2_PER_RUN:
             break
         num = int(ea_id.split("_")[1]) if ea_id.startswith("QM5_") else None
@@ -214,38 +251,32 @@ for phase in ("Q02", "Q03", "Q08"):
             report["part2_stranded"]["skipped"].append(
                 {"ea_id": ea_id, "phase": phase, "reason": f"registry_status={status}"})
             continue
-        # one re-run per distinct (symbol, setfile), most recent INFRA_FAIL row
-        rows = cur.execute(
-            "SELECT symbol, setfile_path, MAX(updated_at), COUNT(*) FROM work_items "
-            "WHERE ea_id=? AND phase=? AND verdict='INFRA_FAIL' "
-            "GROUP BY symbol, setfile_path", (ea_id, phase)).fetchall()
-        for symbol, setfile, _ts, infra_attempts in rows:
-            if infra_attempts >= MAX_INFRA_ATTEMPTS:
-                report["part2_stranded"]["skipped"].append(
-                    {"ea_id": ea_id, "phase": phase, "symbol": symbol,
-                     "reason": "infra_retry_cap_reached", "attempts": infra_attempts})
-                continue
-            if not setfile or not Path(setfile).is_file():
-                report["part2_stranded"]["skipped"].append(
-                    {"ea_id": ea_id, "phase": phase, "symbol": symbol,
-                     "reason": "setfile_missing"})
-                continue
-            if pending_active_exists(ea_id, symbol, phase):
-                report["part2_stranded"]["skipped"].append(
-                    {"ea_id": ea_id, "phase": phase, "symbol": symbol,
-                     "reason": "existing_pending_active"})
-                continue
-            payload = {"host_symbol": symbol,
-                       "enqueued_by": "claude_sweep_enqueue_2026-06-10.stranded_infra_fail",
-                       "enqueued_at_utc": NOW}
-            insert_wi(phase, ea_id, symbol, setfile, payload)
-            report["part2_stranded"]["enqueued"].append(
+        if infra_attempts >= MAX_INFRA_ATTEMPTS:
+            report["part2_stranded"]["skipped"].append(
                 {"ea_id": ea_id, "phase": phase, "symbol": symbol,
-                 "setfile": Path(setfile).name})
-            part2_count += 1
-            if part2_count >= MAX_PART2_PER_RUN:
-                report["part2_stranded"]["rate_limited"] = True
-                break
+                 "reason": "infra_retry_cap_reached", "attempts": infra_attempts})
+            continue
+        if not setfile or not Path(setfile).is_file():
+            report["part2_stranded"]["skipped"].append(
+                {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                 "reason": "setfile_missing"})
+            continue
+        if pending_active_exists(ea_id, symbol, phase):
+            report["part2_stranded"]["skipped"].append(
+                {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                 "reason": "existing_pending_active"})
+            continue
+        payload = {"host_symbol": symbol,
+                   "enqueued_by": "claude_sweep_enqueue_2026-06-10.stranded_infra_fail",
+                   "enqueued_at_utc": NOW}
+        insert_wi(phase, ea_id, symbol, setfile, payload)
+        report["part2_stranded"]["enqueued"].append(
+            {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+             "setfile": Path(setfile).name})
+        part2_count += 1
+        if part2_count >= MAX_PART2_PER_RUN:
+            report["part2_stranded"]["rate_limited"] = True
+            break
 
 # ---------- Part 3: promote deferred symbols (gate-acceleration #2) ----------
 report["part3_deferred_promotion"] = {"promoted": [], "kept_deferred": 0}
@@ -260,6 +291,8 @@ if deferred_state:
         "SELECT COUNT(*) FROM work_items WHERE status='pending'").fetchone()[0]
     spare_capacity = pending_q < QUEUE_CEILING * 0.5
     for ea_id in sorted(deferred_state):
+        if TARGET_EAS and ea_id not in TARGET_EAS:
+            continue
         entry = deferred_state[ea_id]
         has_pass = cur.execute(
             "SELECT 1 FROM work_items WHERE ea_id=? AND phase='Q02' "
