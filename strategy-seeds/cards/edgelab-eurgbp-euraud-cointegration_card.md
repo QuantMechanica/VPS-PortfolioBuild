@@ -144,3 +144,5 @@ cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
 | v1 | 2026-06-27 | initial next-best FX cointegration basket build | G0 | APPROVED |
+| v1 | 2026-06-27 | logical-basket Q02 passed; stale active Q03 row reset from dead T3 claim and classified by paced worker | Q03 | PASS |
+| v1 | 2026-06-27 | early Q04 probe: F1/F2 traded profitably, F3 invalid on 2025 NO_HISTORY/BARS_ZERO | Q04 | INFRA_FAIL |
