@@ -59,6 +59,14 @@ recent channel; the package buys WTI and sells USDCAD. A low breakout sells WTI
 and buys USDCAD. The thesis is continuation of a synchronized oil/CAD regime,
 not z-score mean reversion.
 
+## hypothesis
+
+If WTI and CAD begin moving together strongly enough to push the D1
+petro-currency spread outside its 120-bar channel, the structural oil-exporter
+relationship can persist for a multi-week continuation move. Trading both legs
+reduces dependence on standalone WTI direction and makes the sleeve distinct
+from the existing XNG and XAU outright book exposures.
+
 This is deliberately different from:
 
 - `QM5_12609_wti-cad-spread-mr`: that card fades z-score extremes in
@@ -94,6 +102,15 @@ This is deliberately different from:
   entry-channel low, SELL XTIUSD.DWX and BUY USDCAD.DWX.
 - No entry if either basket leg already has an open position for this EA magic.
 - No entry if either symbol's current spread exceeds its configured spread cap.
+
+## rules
+
+- Signal series: `ln(XTIUSD.DWX) - strategy_beta * ln(USDCAD.DWX)`.
+- Entry channel excludes the most recent closed spread.
+- Upside channel break opens BUY XTIUSD.DWX plus SELL USDCAD.DWX.
+- Downside channel break opens SELL XTIUSD.DWX plus BUY USDCAD.DWX.
+- Exit channel, max-hold, broken-package repair, Friday close, and ATR hard
+  stops are deterministic and use MT5-native data only.
 
 ## Exit Rules
 
@@ -170,6 +187,13 @@ whether this deterministic, low-frequency basket has an edge on Darwinex
 - gridding: false.
 - scalping: false.
 - ml_required: false.
+
+## risk
+
+Backtests use `RISK_FIXED=1000`, `RISK_PERCENT=0`, and one logical basket
+setfile. Live risk is intentionally not configured here; any future live
+allocation must come from the portfolio process. The EA does not touch
+`T_Live`, AutoTrading, deploy manifests, or the portfolio gate.
 
 ## Strategy Allowability Check
 
