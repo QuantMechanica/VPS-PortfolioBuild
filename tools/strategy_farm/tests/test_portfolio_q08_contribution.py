@@ -13,6 +13,7 @@ sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 
 from portfolio.commission import CommissionModel  # noqa: E402
 from portfolio.portfolio_common import Trade  # noqa: E402
+from portfolio import portfolio_q08_contribution  # noqa: E402
 from portfolio.portfolio_q08_contribution import (  # noqa: E402
     equity_curve,
     evaluate_q08_soft_rescue,
@@ -21,6 +22,9 @@ from portfolio.portfolio_q08_contribution import (  # noqa: E402
 
 
 class PortfolioQ08ContributionTests(unittest.TestCase):
+    def test_default_starting_capital_matches_canonical_tester_deposit(self) -> None:
+        self.assertEqual(portfolio_q08_contribution.DEFAULT_STARTING_CAPITAL, 100_000.0)
+
     def test_monthly_returns_and_equity_curve_are_chronological(self) -> None:
         trades = [
             Trade(100, "EURUSD.DWX", self._ts(2024, 2, 1), 0.0, 1.0, 10000.0, 0.0, 3.25),
@@ -54,13 +58,19 @@ class PortfolioQ08ContributionTests(unittest.TestCase):
         self.assertEqual(verdict["reason"], "portfolio_trade_count_below_min")
         self.assertEqual(verdict["trade_count"], 19)
 
-    def test_regime_catastrophe_fails_before_portfolio_admission(self) -> None:
+    def test_regime_catastrophe_defers_to_portfolio_admission(self) -> None:
+        # DL-078 (OWNER-ratified 2026-06-27): a standalone Q08 8.10 regime catastrophe no
+        # longer hard-rejects. It is recorded for audit but the verdict defers to
+        # portfolio_admission -- the anticorrelation book is meant to ABSORB regime
+        # dependence (DL-075). A regime-fragile sleeve that improves the book is admitted.
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             common_dir = root / "common"
             stream_dir = self._stream_dir(common_dir)
+            candidates_db = root / "candidates.sqlite"
             summary = root / "q08_summary.json"
             self._write_stream(stream_dir / "101_EURUSD_DWX.jsonl", [10.0] * 30)
+            self._write_candidates(candidates_db, [("QM5_100", "EURUSD.DWX"), ("QM5_101", "EURUSD.DWX")])
             summary.write_text(
                 json.dumps(
                     {
@@ -75,7 +85,45 @@ class PortfolioQ08ContributionTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            with mock.patch("portfolio.portfolio_q08_contribution.portfolio_admission.evaluate_candidate") as admission:
+            with mock.patch(
+                "portfolio.portfolio_q08_contribution.portfolio_admission.evaluate_candidate",
+                return_value={
+                    "admit": True,
+                    "reason": "portfolio_contribution_pass",
+                    "max_corr_to_book": 0.2,
+                    "maxdd_with": 0.04,
+                    "maxdd_without": 0.06,
+                },
+            ) as admission:
+                verdict = evaluate_q08_soft_rescue(
+                    (101, "EURUSD.DWX"),
+                    common_dir=common_dir,
+                    candidates_db=candidates_db,
+                    q08_summary_path=summary,
+                )
+
+        self.assertEqual(verdict["verdict"], "PASS_PORTFOLIO")
+        self.assertTrue(verdict["q08_regime_catastrophe"])
+        self.assertTrue(verdict["regime_catastrophe_absorbed_by_book"])
+        admission.assert_called_once()
+
+    def test_regime_catastrophe_still_fails_when_book_not_improved(self) -> None:
+        # The override is not a free pass: a regime-fragile sleeve that does NOT improve the
+        # book still FAILs at the admission check (DL-078 defers, it does not waive).
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            common_dir = root / "common"
+            stream_dir = self._stream_dir(common_dir)
+            summary = root / "q08_summary.json"
+            self._write_stream(stream_dir / "101_EURUSD_DWX.jsonl", [10.0] * 30)
+            summary.write_text(
+                json.dumps({"sub_gates": [{"name": "8.10 Regime", "detail": "unprofitable_regimes=NY"}]}),
+                encoding="utf-8",
+            )
+            with mock.patch(
+                "portfolio.portfolio_q08_contribution.portfolio_admission.evaluate_candidate",
+                return_value={"admit": False, "reason": "no_diversification"},
+            ):
                 verdict = evaluate_q08_soft_rescue(
                     (101, "EURUSD.DWX"),
                     common_dir=common_dir,
@@ -84,8 +132,8 @@ class PortfolioQ08ContributionTests(unittest.TestCase):
                 )
 
         self.assertEqual(verdict["verdict"], "FAIL_PORTFOLIO")
-        self.assertEqual(verdict["reason"], "q08_regime_catastrophe")
-        admission.assert_not_called()
+        self.assertEqual(verdict["reason"], "no_diversification")
+        self.assertTrue(verdict["q08_regime_catastrophe"])
 
     def test_pass_portfolio_delegates_to_portfolio_admission(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -119,6 +167,7 @@ class PortfolioQ08ContributionTests(unittest.TestCase):
             [(100, "EURUSD.DWX")],
             common_dir,
             max_corr=0.30,
+            starting_capital=100_000.0,
         )
 
     def test_fail_portfolio_delegates_to_portfolio_admission(self) -> None:

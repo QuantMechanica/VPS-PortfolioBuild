@@ -16,6 +16,7 @@ try:
         load_streams,
         read_candidates,
     )
+    from .portfolio_manifest import DEFAULT_STARTING_CAPITAL
 except ImportError:  # pragma: no cover - direct script execution
     import portfolio_admission  # type: ignore
     from portfolio_common import (  # type: ignore
@@ -26,6 +27,7 @@ except ImportError:  # pragma: no cover - direct script execution
         load_streams,
         read_candidates,
     )
+    from portfolio_manifest import DEFAULT_STARTING_CAPITAL  # type: ignore
 
 
 Key = tuple[int, str]
@@ -64,6 +66,7 @@ def evaluate_q08_soft_rescue(
     q08_summary_path: Path | None = None,
     min_portfolio_trades: int = DEFAULT_MIN_PORTFOLIO_TRADES,
     max_corr: float = portfolio_admission.DEFAULT_MAX_CORR,
+    starting_capital: float = DEFAULT_STARTING_CAPITAL,
 ) -> dict[str, Any]:
     candidate = (int(candidate_key[0]), str(candidate_key[1]))
     streams = load_streams(common_dir, candidates=[candidate])
@@ -80,6 +83,7 @@ def evaluate_q08_soft_rescue(
         "min_portfolio_trades": int(min_portfolio_trades),
         "trade_count": trade_count,
         "q08_summary_path": str(q08_summary_path) if q08_summary_path else None,
+        "q08_regime_catastrophe": regime_catastrophe,
         "monthly_returns": monthly_returns(trades),
         "equity_curve": equity_curve(trades),
     }
@@ -91,12 +95,17 @@ def evaluate_q08_soft_rescue(
             "reason": "portfolio_trade_count_below_min",
         }
 
-    if regime_catastrophe:
-        return {
-            **base,
-            "verdict": "FAIL_PORTFOLIO",
-            "reason": "q08_regime_catastrophe",
-        }
+    # DL-078 (OWNER-ratified 2026-06-27): a STANDALONE Q08 8.10 regime catastrophe no
+    # longer hard-rejects a portfolio sleeve. DL-075's premise is that the anticorrelation
+    # book ABSORBS regime dependence: a sleeve whose bad regime is uncorrelated with the
+    # book can still lower the book's drawdown. The standalone reject contradicted that
+    # (and was applied inconsistently -- e.g. 10440:NDX was grandfathered in with the same
+    # flag while genuine diversifiers were turned away). The decision now defers to
+    # portfolio_admission, which admits ONLY when the candidate is sufficiently uncorrelated
+    # AND demonstrably improves the book (Sharpe up OR maxDD down) -- the portfolio-context
+    # equity curve already spans the candidate's bad regime, so admission proves absorption.
+    # This mirrors the F4 (2026-06-03) treatment of standalone PF<1 below. A regime-fragile
+    # sleeve that does NOT improve the book still FAILs at the admission check.
 
     book = read_candidates(candidates_db)
     book = [key for key in book if key != candidate]
@@ -106,6 +115,7 @@ def evaluate_q08_soft_rescue(
             book,
             common_dir,
             max_corr=max_corr,
+            starting_capital=starting_capital,
         )
     except ValueError as exc:
         if "missing q08 trade streams" not in str(exc):
@@ -139,6 +149,10 @@ def evaluate_q08_soft_rescue(
     reason = str(admission.get("reason") or "").strip() or (
         "portfolio_contribution_pass" if verdict == "PASS_PORTFOLIO" else "portfolio_contribution_fail"
     )
+    # DL-078 audit trail: surface when a regime-fragile sleeve was admitted because the
+    # book absorbed its regime dependence (vs the pre-DL-078 standalone hard-reject).
+    if regime_catastrophe and verdict == "PASS_PORTFOLIO":
+        base["regime_catastrophe_absorbed_by_book"] = True
     return {
         **base,
         **admission,
@@ -192,6 +206,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--candidates-db", type=Path, default=DEFAULT_CANDIDATES_DB)
     parser.add_argument("--min-portfolio-trades", type=int, default=DEFAULT_MIN_PORTFOLIO_TRADES)
     parser.add_argument("--max-corr", type=float, default=portfolio_admission.DEFAULT_MAX_CORR)
+    parser.add_argument("--starting-capital", type=float, default=DEFAULT_STARTING_CAPITAL)
     return parser.parse_args(argv)
 
 
@@ -205,6 +220,7 @@ def main(argv: list[str] | None = None) -> int:
         q08_summary_path=args.q08_summary,
         min_portfolio_trades=args.min_portfolio_trades,
         max_corr=args.max_corr,
+        starting_capital=args.starting_capital,
     )
     out_dir = (
         args.report_root
