@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        9506
 ; ea_slug:      carver-starter
@@ -10,7 +10,7 @@
 ; magic_slot:   7
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   c976f8da627d703a9e031ad0d6d7a5f704e857317c743778ff12de669c2dcca0
+; build_hash:   082cb490603166539a9e4e3fddf44d6462c8e5bb6eaae821b6835ed5c18da1cf
 ; author:       Development
 ; date:         2026-06-27
 ;==========================================================
