@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12579
 ; ea_slug:      eia-wti-aftershock
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   c8c9b06fda99426e13b4de0eb959582acc2294ce03571f928ec686dd7cb86fa0
+; build_hash:   53ac4624382946f6cc263f2efe7b18d18bd21e3ba97d68065c70966017b5be77
 ; author:       Development
 ; date:         2026-06-26
 ;==========================================================
