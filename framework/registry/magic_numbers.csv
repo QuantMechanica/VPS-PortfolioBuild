@@ -13649,6 +13649,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12598,opec-wti-brk,0,XTIUSD.DWX,125980000,2026-06-27,Development,active
 12599,wti-feb-prem,0,XTIUSD.DWX,125990000,2026-06-27,Development,active
 12600,cme-wti-exp-brk,0,XTIUSD.DWX,126000000,2026-06-27,Development,active
+12601,eia-xng-hurr-brk,0,XNGUSD.DWX,126010000,2026-06-27,Development,active
 9416,qs-coint-bb,0,SP500.DWX,94160000,2026-06-27,Development,active
 9416,qs-coint-bb,1,NDX.DWX,94160001,2026-06-27,Development,active
 9416,qs-coint-bb,2,WS30.DWX,94160002,2026-06-27,Development,active
