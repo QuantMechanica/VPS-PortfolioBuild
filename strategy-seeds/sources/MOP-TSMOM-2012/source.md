@@ -12,7 +12,8 @@ created_by: Codex
 
 # Time Series Momentum
 
-Canonical source for the `wti-tsmom12m` card.
+Canonical source for the `wti-tsmom12m` and
+`tsmom-9m-commodity-xtiusd` cards.
 
 ## Source Scope
 
@@ -26,8 +27,10 @@ price history and broker calendar state at runtime.
 - Single-source lineage for R1: AQR/JFE page for Moskowitz, Ooi, and Pedersen,
   "Time Series Momentum".
 - Extracted strategy: monthly 12-month return-sign momentum package on WTI.
+- Extracted strategy: monthly 9-month return-sign momentum package on WTI with
+  a 3-month same-sign confirmation filter.
 - Runtime data deliberately excludes futures curves, open interest, inventory
   feeds, analyst forecasts, CSVs, APIs, and ML models.
-- The EA should be tested as a new energy sleeve, not as a replacement for
-  existing WTI calendar/event cards.
-
+- The EAs should be tested as energy sleeves, not as replacements for existing
+  WTI calendar/event cards. The 9-month card is a shorter-horizon variant with
+  confirmation and must be duplicate-reviewed against the 12-month card.

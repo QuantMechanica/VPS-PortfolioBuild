@@ -3572,7 +3572,7 @@ QM5_1403,harmonic-5-0-pattern-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Dev
 12613,tsmom-3m-commodity-xauusd,e5a3f925-5a9e-513d-9e70-5c7c70fa0e59,active,Research,2026-06-27
 12614,tsmom-6m-fx-basket-3pair,e5a3f925-5a9e-513d-9e70-5c7c70fa0e59,active,Research,2026-06-27
 12615,tsmom-12m-cross-asset-basket,e5a3f925-5a9e-513d-9e70-5c7c70fa0e59,active,Research,2026-06-27
-12616,tsmom-9m-commodity-xtiusd,e5a3f925-5a9e-513d-9e70-5c7c70fa0e59,active,Research,2026-06-27
+12616,tsmom-9m-commodity-xtiusd,MOP-TSMOM-2012,active,Development,2026-06-27
 12617,tsmom-12m-fx-usdjpy,e5a3f925-5a9e-513d-9e70-5c7c70fa0e59,active,Research,2026-06-27
 12618,tsmom-dual-confirm-3m-12m-eurusd,e5a3f925-5a9e-513d-9e70-5c7c70fa0e59,active,Research,2026-06-27
 12619,comm-reversal-4wk-xauusd,05abad87-420d-5a51-8a9b-3c35ad795385,active,Research,2026-06-27
