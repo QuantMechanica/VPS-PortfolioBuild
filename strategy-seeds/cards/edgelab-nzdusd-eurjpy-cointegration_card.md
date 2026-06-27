@@ -44,19 +44,19 @@ and exit near the mean. The pair was selected from the QuantMechanica 66-pair FX
 scan in `docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md`, rerun from
 `framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py`.
 
-The published scan hard-certified only QM5_12533 and QM5_12532. QM5_12624
-already covers the strongest unbuilt positive DEV/OOS common-JPY pair but hit
-the Q02 backtest CPU/log ceiling. This card is the next nonbuilt structurally
-coherent positive DEV/OOS candidate: NZDUSD/EURJPY had DEV Sharpe 0.06, OOS net
-Sharpe 0.68, OOS return +8.02%, 21 OOS state changes, hedge 0.04, and 115-day
-half-life in the same rerun.
+The published scan hard-certified only QM5_12533 and QM5_12532. QM5_12624 and
+QM5_12712 already cover later exploratory baskets. This card is the strongest
+remaining unbuilt positive DEV/OOS candidate by OOS net Sharpe: NZDUSD/EURJPY
+had DEV Sharpe 0.06, OOS net Sharpe 0.68, OOS return +8.02%, 21 OOS state
+changes, hedge 0.04, and 115-day half-life in the same rerun.
 
 ## Concept
 
-NZDUSD and EURJPY share the EUR leg while expressing different GBP-vs-AUD
-regional, carry, and risk-sensitivity exposures. Temporary divergence inside
-that shared-EUR cross complex can mean-revert. The EA trades the spread, not
-either cross as a standalone directional system.
+NZDUSD is a high-beta commodity/risk USD cross, while EURJPY is a European
+risk/carry JPY cross. Temporary divergence between those global risk/carry
+expressions can mean-revert, but the low beta and weak DEV Sharpe make this a
+high-risk exploratory sleeve. The EA trades the spread, not either cross as a
+standalone directional system.
 
 ## Markets And Timeframe
 

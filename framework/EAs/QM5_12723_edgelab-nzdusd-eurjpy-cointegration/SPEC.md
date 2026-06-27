@@ -21,9 +21,10 @@ stop.
 
 This is an exploratory next-best basket, not a hard-bar scan survivor. The
 published 66-pair scan only certified QM5_12533 and QM5_12532. A rerun of the
-same script ranked NZDUSD/EURJPY as the next unbuilt positive DEV/OOS candidate
-after QM5_12624, with DEV Sharpe 0.06, OOS net Sharpe 0.68, OOS return +8.02%,
-21 OOS state changes, beta 0.04, and 115-day half-life.
+same script ranked NZDUSD/EURJPY as the strongest remaining unbuilt positive
+DEV/OOS candidate after the existing 12532/12533/12624/12712 baskets, with DEV
+Sharpe 0.06, OOS net Sharpe 0.68, OOS return +8.02%, 21 OOS state changes,
+beta 0.04, and 115-day half-life.
 
 ---
 
@@ -50,8 +51,8 @@ after QM5_12624, with DEV Sharpe 0.06, OOS net Sharpe 0.68, OOS return +8.02%,
 **Explicitly not for:**
 - Other `.DWX` symbols. This card is a fixed two-leg FX-cross basket, not a portable multi-pair strategy.
 
-The manifest selects EURUSD.DWX, GBPUSD.DWX, and AUDUSD.DWX as conversion history
-for USD-denominated tester accounting.
+The EA selects EURUSD.DWX and USDJPY.DWX as conversion history for the EURJPY leg
+under USD-denominated tester accounting.
 
 ---
 
@@ -72,7 +73,7 @@ for USD-denominated tester accounting.
 | Trades / year / logical basket | 7-12 |
 | Typical hold time | days to weeks |
 | Expected drawdown profile | moderate-high; Q04/Q05 must judge stability because this is sub-threshold research |
-| Regime preference | mean-reverting shared-EUR cross spread |
+| Regime preference | mean-reverting global risk / JPY-carry spread |
 | Win rate target | medium |
 
 ---

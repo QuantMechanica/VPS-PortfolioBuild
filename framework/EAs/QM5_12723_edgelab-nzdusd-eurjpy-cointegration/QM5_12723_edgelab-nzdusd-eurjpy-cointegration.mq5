@@ -120,10 +120,10 @@ bool Strategy_EnsureBasketScope()
    if(g_basket_scope_ready)
       return true;
 
-   // The traded legs settle in GBP/AUD, so MT5 also needs USD conversion
-   // history to value profit/margin in the account currency during tests.
-   string allowed[5] = {"NZDUSD.DWX", "EURJPY.DWX", "EURUSD.DWX", "GBPUSD.DWX", "AUDUSD.DWX"};
-   for(int i = 0; i < 5; ++i)
+   // EURJPY needs EUR and JPY conversion history for USD-denominated tester
+   // accounting; NZDUSD itself already settles in USD.
+   string allowed[4] = {"NZDUSD.DWX", "EURJPY.DWX", "EURUSD.DWX", "USDJPY.DWX"};
+   for(int i = 0; i < 4; ++i)
       SymbolSelect(allowed[i], true);
 
    QM_SymbolGuardInit(allowed);

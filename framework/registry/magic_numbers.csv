@@ -13676,6 +13676,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12624,edgelab-eurjpy-audjpy-cointegration,1,AUDJPY.DWX,126240001,2026-06-27,Development,active
 12712,edgelab-eurgbp-euraud-cointegration,0,EURGBP.DWX,127120000,2026-06-27,Development,active
 12712,edgelab-eurgbp-euraud-cointegration,1,EURAUD.DWX,127120001,2026-06-27,Development,active
+12723,edgelab-nzdusd-eurjpy-cointegration,0,NZDUSD.DWX,127230000,2026-06-27,Development,active
+12723,edgelab-nzdusd-eurjpy-cointegration,1,EURJPY.DWX,127230001,2026-06-27,Development,active
 1233,ict-silver-bullet,12,SP500.DWX,12330012,2026-06-27,Claude,active
 12701,wti-oct-fade,0,XTIUSD.DWX,127010000,2026-06-27,Development,active
 1556,aa-zak-mom12,0,SP500.DWX,15560000,2026-06-27,Development,active
