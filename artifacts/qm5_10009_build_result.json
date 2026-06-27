@@ -1,0 +1,38 @@
+{
+  "task_id": "6b602cef-3f7b-4acb-a0c4-801874ae146e",
+  "ea_id": "QM5_10009",
+  "slug": "rw-fx-cointeg-bb",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_10009_rw-fx-cointeg-bb",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10009_rw-fx-cointeg-bb\\QM5_10009_rw-fx-cointeg-bb.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10009_rw-fx-cointeg-bb\\QM5_10009_rw-fx-cointeg-bb.ex5",
+  "magic_base": 100090000,
+  "symbols_registered": [
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "USDCAD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10009_rw-fx-cointeg-bb\\sets\\QM5_10009_rw-fx-cointeg-bb_AUDUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10009_rw-fx-cointeg-bb\\sets\\QM5_10009_rw-fx-cointeg-bb_NZDUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10009_rw-fx-cointeg-bb\\sets\\QM5_10009_rw-fx-cointeg-bb_USDCAD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10009_rw-fx-cointeg-bb\\sets\\QM5_10009_rw-fx-cointeg-bb_QM5_10009_AUD_NZD_CAD_COINTEG_D1_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10009_rw-fx-cointeg-bb\\SPEC.md",
+  "host_symbol": "AUDUSD.DWX",
+  "host_timeframe": "D1",
+  "logical_symbol": "QM5_10009_AUD_NZD_CAD_COINTEG_D1",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260627_163442\\QM5_10009_rw-fx-cointeg-bb.compile.log",
+  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260627_163421.json",
+  "build_check_warnings": 19,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": "D:\\QM\\reports\\smoke\\QM5_10009\\20260627_163520\\summary.json",
+  "smoke_skipped_reason": "single Q01 smoke hit MT5 infra REPORT_MISSING/METATESTER_HUNG; farmctl record-build converted to deferred_p2_smoke after clean build_check+compile",
+  "blocked_reason": "",
+  "open_questions": [
+    "Card specifies Johansen hedge-ratio estimation; implementation uses a deterministic OLS hedge-ratio proxy because no V5 Johansen helper exists."
+  ],
+  "notes": "Codex advanced the Robot Wealth D1 AUD/NZD/CAD FX cointegration basket. SPEC present, build_check PASS, compile PASS, RISK_FIXED setfiles refreshed, logical basket Q02 enqueued. No live/T_Live/portfolio artifacts touched.",
+  "auto_q02_work_item": "47d80830-9ebc-4232-a6b4-7b6bec4f7927"
+}
