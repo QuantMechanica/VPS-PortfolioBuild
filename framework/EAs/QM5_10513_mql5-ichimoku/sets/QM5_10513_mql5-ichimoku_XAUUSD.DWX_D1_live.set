@@ -3,7 +3,7 @@
 ; ea_id:        10513
 ; ea_slug:      mql5-ichimoku
 ; ea_version:   v5.0
-; set_version:  s20260627-001
+; set_version:  s20260627-002
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  live
@@ -32,3 +32,9 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+; q12_selection: 20260627T132146Z / q06_6_18_68_18
+; q12_evidence: D:\QM\strategy_farm\scratch\q12_opt\20260627T132146Z\results.csv
+strategy_tenkan_period=6
+strategy_kijun_period=18
+strategy_senkou_b_period=68
+strategy_atr_period=18
