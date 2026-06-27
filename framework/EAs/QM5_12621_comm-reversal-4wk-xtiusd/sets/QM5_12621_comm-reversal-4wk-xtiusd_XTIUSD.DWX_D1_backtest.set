@@ -1,24 +1,23 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10978
-; ea_slug:      ftmo-macd-x
+; ea_id:        12621
+; ea_slug:      comm-reversal-4wk-xtiusd
 ; ea_version:   v5.0
-; set_version:  s20260627-stress-med
-; symbol:       XAUUSD.DWX
-; timeframe:    H4
-; environment:  q05_stress_medium
-; magic_slot:   3
+; set_version:  s20260627-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   138a100d6bd4268d2e2b87908a97eb0b5be6f7f4ee2d23affaef5208421f456b
+; build_hash:   f2cd40d222870fc62806100537068c5dfe772a3618f9fcb5f7bd2bce9f0418f2
 ; author:       Development
 ; date:         2026-06-27
 ;==========================================================
-qm_magic_slot_offset=3
+qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_stress_reject_probability=0.0000
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
@@ -31,5 +30,11 @@ qm_filter_volatility_atr_period=14
 qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\comm-reversal-4wk-xtiusd_card.md
+strategy_lookback_days=20
+strategy_atr_period=14
+strategy_min_abs_return_pct=5.0
+strategy_atr_sl_mult=2.5
+strategy_max_hold_days=21
+strategy_max_spread_points=1000

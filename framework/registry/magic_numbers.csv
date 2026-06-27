@@ -13689,3 +13689,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12620,comm-reversal-4wk-xngusd,0,XNGUSD.DWX,126200000,2026-06-27,Development,active
 12721,ict-silver-bullet-biasdol,0,NDX.DWX,127210000,2026-06-27,Claude,active
 12721,ict-silver-bullet-biasdol,1,EURUSD.DWX,127210001,2026-06-27,Claude,active
+12621,comm-reversal-4wk-xtiusd,0,XTIUSD.DWX,126210000,2026-06-27,Development,active

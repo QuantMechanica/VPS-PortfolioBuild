@@ -8,6 +8,7 @@ last_reviewed: 2026-06-27
 cards_extracted:
   - yang-wti-reversal
   - comm-reversal-4wk-xngusd
+  - comm-reversal-4wk-xtiusd
 ---
 
 # Yang-Goncu-Pantelous Commodity Reversal Source
@@ -32,6 +33,7 @@ academic reversal family into fixed D1 price rules with ATR-bounded risk.
 
 - `yang-wti-reversal`: XTIUSD.DWX D1 weekly medium-term reversal toward SMA(63).
 - `comm-reversal-4wk-xngusd`: XNGUSD.DWX D1 weekly 20-bar overreaction reversal.
+- `comm-reversal-4wk-xtiusd`: XTIUSD.DWX D1 weekly 20-bar overreaction reversal.
 
 ## R-Rules
 

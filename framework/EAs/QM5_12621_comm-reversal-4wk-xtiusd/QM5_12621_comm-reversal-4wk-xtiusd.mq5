@@ -1,21 +1,21 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_12620 XNG 4-Week Commodity Reversal"
+#property description "QM5_12621 XTI 4-Week Commodity Reversal"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QM5_12620 - XNG 4-Week Commodity Reversal
+// QM5_12621 - XTI 4-Week Commodity Reversal
 // -----------------------------------------------------------------------------
-// D1 structural XNG sleeve:
-//   - evaluates one weekly overreaction setup on XNGUSD.DWX
-//   - fades fixed 20-D1-bar natural-gas return extremes
+// D1 structural WTI sleeve:
+//   - evaluates one weekly overreaction setup on XTIUSD.DWX
+//   - fades fixed 20-D1-bar WTI return extremes
 //   - exits by max-hold guard or ATR stop
-// Runtime uses MT5 OHLC only; no storage feed, weather feed, API, CSV, or ML.
+// Runtime uses MT5 OHLC only; no futures curve, inventory feed, API, CSV, or ML.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 12620;
+input int    qm_ea_id                   = 12621;
 input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
@@ -41,16 +41,16 @@ input double qm_stress_reject_probability = 0.0;
 input group "Strategy"
 input int    strategy_lookback_days        = 20;
 input int    strategy_atr_period           = 14;
-input double strategy_min_abs_return_pct   = 6.0;
-input double strategy_atr_sl_mult          = 2.0;
-input int    strategy_max_hold_days        = 28;
-input int    strategy_max_spread_points    = 2500;
+input double strategy_min_abs_return_pct   = 5.0;
+input double strategy_atr_sl_mult          = 2.5;
+input int    strategy_max_hold_days        = 21;
+input int    strategy_max_spread_points    = 1000;
 
 int g_last_signal_week_key = -1;
 
-bool Strategy_IsXngD1()
+bool Strategy_IsXtiD1()
   {
-   return (_Symbol == "XNGUSD.DWX" && _Period == PERIOD_D1);
+   return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
   }
 
 int Strategy_WeekKey(const datetime t)
@@ -136,7 +136,7 @@ void Strategy_CloseOpenPositionsIfNeeded()
 
 bool Strategy_NoTradeFilter()
   {
-   if(!Strategy_IsXngD1())
+   if(!Strategy_IsXtiD1())
       return true;
    if(qm_magic_slot_offset != 0)
       return true;
@@ -155,7 +155,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_12620_XNG_4WK_REVERSAL";
+   req.reason = "QM5_12621_XTI_4WK_REVERSAL";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
@@ -200,7 +200,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(req.sl <= 0.0)
       return false;
 
-   req.reason = (reversal_direction > 0) ? "XNG_4WK_REVERSAL_LONG" : "XNG_4WK_REVERSAL_SHORT";
+   req.reason = (reversal_direction > 0) ? "XTI_4WK_REVERSAL_LONG" : "XTI_4WK_REVERSAL_SHORT";
    g_last_signal_week_key = signal_week_key;
    return true;
   }
@@ -240,7 +240,7 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12620\",\"ea\":\"comm-reversal-4wk-xngusd\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12621\",\"ea\":\"comm-reversal-4wk-xtiusd\"}");
    return INIT_SUCCEEDED;
   }
 
