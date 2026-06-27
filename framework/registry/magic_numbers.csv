@@ -13672,3 +13672,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12571,ict-silver-bullet-fvg,6,XAUUSD.DWX,125710006,2026-06-27,Claude,active
 12571,ict-silver-bullet-fvg,7,USDJPY.DWX,125710007,2026-06-27,Claude,active
 12610,wti-tue-fade,0,XTIUSD.DWX,126100000,2026-06-27,Development,active
+12624,edgelab-eurjpy-audjpy-cointegration,0,EURJPY.DWX,126240000,2026-06-27,Development,active
+12624,edgelab-eurjpy-audjpy-cointegration,1,AUDJPY.DWX,126240001,2026-06-27,Development,active

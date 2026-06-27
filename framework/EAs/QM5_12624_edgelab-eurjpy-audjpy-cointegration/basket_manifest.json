@@ -1,0 +1,15 @@
+{
+  "logical_symbol": "QM5_12624_EURJPY_AUDJPY_COINTEGRATION_D1",
+  "host_symbol": "EURJPY.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "JPY",
+  "tester_deposit": 15000000,
+  "basket_symbols": [
+    "EURJPY.DWX",
+    "AUDJPY.DWX"
+  ],
+  "notes": [
+    "Two-leg EURJPY/AUDJPY market-neutral FX cointegration candidate from the 2026-06-09 66-pair scan rerun. It did not clear the original hard survivor bar (OOS net Sharpe 0.58 vs 0.8), but it is the strongest structurally interpretable unbuilt common-JPY pair with positive DEV and OOS Sharpe after QM5_12533/QM5_12532.",
+    "Q02 uses JPY tester currency and Deposit=15000000 so the framework 1pct fixed-risk cap preserves the JPY-equivalent RISK_FIXED=150000 budget used by the logical basket setfile."
+  ]
+}
