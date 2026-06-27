@@ -13657,3 +13657,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12603,wti-tsmom12m,0,XTIUSD.DWX,126030000,2026-06-27,Development,active
 12604,cme-oilgold-ratio,0,XTIUSD.DWX,126040000,2026-06-27,Development,active
 12604,cme-oilgold-ratio,1,XAUUSD.DWX,126040001,2026-06-27,Development,active
+12605,cme-oilgold-brk,0,XTIUSD.DWX,126050000,2026-06-27,Development,active
+12605,cme-oilgold-brk,1,XAUUSD.DWX,126050001,2026-06-27,Development,active

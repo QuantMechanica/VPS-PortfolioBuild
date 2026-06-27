@@ -51,6 +51,19 @@ input int    strategy_be_buffer_pips         = 3;
 input int    strategy_max_spread_points      = 35;
 input int    strategy_news_blackout_minutes  = 15;
 
+datetime g_custom_news_cache_bucket = 0;
+bool     g_custom_news_cache_blocked = false;
+
+datetime Strategy_TimeBucket(const datetime broker_time)
+  {
+   int seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
+   if(seconds <= 0)
+      seconds = 60;
+
+   const long epoch = (long)broker_time;
+   return (datetime)(epoch - (epoch % seconds));
+  }
+
 bool IsTimeStopActive()
   {
    MqlDateTime dt;
@@ -164,8 +177,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(HasOurPendingStopOrder())
       return false;
 
-   const double open_price = iOpen(_Symbol, PERIOD_M15, 0);
-   const double h1_close = iClose(_Symbol, PERIOD_H1, 1);
+   const double open_price = iOpen(_Symbol, PERIOD_M15, 0); // perf-allowed: card anchors static levels to the current Tokyo-open bar.
+   const double h1_close = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: single closed-bar bias read after QM_IsNewBar gate.
    if(open_price <= 0.0 || h1_close <= 0.0)
       return false;
 
@@ -224,7 +237,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 void Strategy_ManageOpenPosition()
   {
    if(IsTimeStopActive())
-      CancelOurPendingStopOrders();
+     {
+      static datetime cancel_bucket = 0;
+      const datetime bucket = Strategy_TimeBucket(TimeCurrent());
+      if(bucket != cancel_bucket)
+        {
+         CancelOurPendingStopOrders();
+         cancel_bucket = bucket;
+        }
+     }
 
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -251,17 +272,29 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    if(strategy_news_blackout_minutes <= 0)
       return false;
+
+   const datetime bucket = Strategy_TimeBucket(broker_time);
+   if(bucket == g_custom_news_cache_bucket)
+      return g_custom_news_cache_blocked;
+
+   g_custom_news_cache_bucket = bucket;
+   g_custom_news_cache_blocked = false;
+
    if(!QM_NewsInit())
-      return true;
+     {
+      g_custom_news_cache_blocked = true;
+      return g_custom_news_cache_blocked;
+     }
 
    datetime utc_time = QM_BrokerToUTC(broker_time);
    if(utc_time <= 0)
       utc_time = TimeGMT();
-   return QM_NewsInWindow(utc_time,
-                          _Symbol,
-                          strategy_news_blackout_minutes,
-                          0,
-                          "high");
+   g_custom_news_cache_blocked = QM_NewsInWindow(utc_time,
+                                                 _Symbol,
+                                                 strategy_news_blackout_minutes,
+                                                 0,
+                                                 "high");
+   return g_custom_news_cache_blocked;
   }
 
 int OnInit()
