@@ -13700,3 +13700,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12724,cme-xauxag-brk,0,XAUUSD.DWX,127240000,2026-06-27,Development,active
 12724,cme-xauxag-brk,1,XAGUSD.DWX,127240001,2026-06-27,Development,active
 12725,eia-xng-prestor,0,XNGUSD.DWX,127250000,2026-06-27,Development,active
+12726,wti-nov-fade,0,XTIUSD.DWX,127260000,2026-06-27,Development,active
