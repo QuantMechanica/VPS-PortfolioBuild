@@ -1,0 +1,31 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9506
+; ea_slug:      carver-starter
+; ea_version:   v5.0
+; set_version:  s20260627-001
+; symbol:       USDCAD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   4
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-06-27
+;==========================================================
+qm_magic_slot_offset=4
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+strategy_fast_sma_period=16
+strategy_slow_sma_period=64
+strategy_risk_lookback_bars=256
+strategy_atr_period=25
+strategy_annual_risk_mult=0.50
+strategy_min_atr_stop_mult=2.0
+strategy_max_atr_stop_mult=8.0
+strategy_max_hold_bars=252
+strategy_min_history_bars=300
+strategy_spread_median_days=60
+strategy_spread_mult=2.0

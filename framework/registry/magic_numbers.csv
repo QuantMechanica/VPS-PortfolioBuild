@@ -13634,3 +13634,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12593,eia-wti-ref-fade,0,XTIUSD.DWX,125930000,2026-06-27,Development,active
 12594,yang-wti-reversal,0,XTIUSD.DWX,125940000,2026-06-27,Development,active
 12595,eia-xng-shfade,0,XNGUSD.DWX,125950000,2026-06-27,Development,active
+9506,carver-starter,0,EURUSD.DWX,95060000,2026-06-27,Development,active
+9506,carver-starter,1,GBPUSD.DWX,95060001,2026-06-27,Development,active
+9506,carver-starter,2,USDJPY.DWX,95060002,2026-06-27,Development,active
+9506,carver-starter,3,AUDUSD.DWX,95060003,2026-06-27,Development,active
+9506,carver-starter,4,USDCAD.DWX,95060004,2026-06-27,Development,active
+9506,carver-starter,5,XAUUSD.DWX,95060005,2026-06-27,Development,active
+9506,carver-starter,6,NDX.DWX,95060006,2026-06-27,Development,active
+9506,carver-starter,7,WS30.DWX,95060007,2026-06-27,Development,active
