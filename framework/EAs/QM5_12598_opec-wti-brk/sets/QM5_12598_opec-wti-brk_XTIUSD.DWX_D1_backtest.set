@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12598
 ; ea_slug:      opec-wti-brk
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   8e4b7274b600a4c23e1a49ce397d3b9ddf7c7461ea9b82545c983963ca22bb6a
 ; author:       Development
 ; date:         2026-06-27
 ;==========================================================
