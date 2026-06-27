@@ -3280,6 +3280,47 @@ def _active_timeout_min_for_work_item(phase: str, payload_json: str | None) -> i
     return int(timeout_min)
 
 
+BASKET_CONTEXT_PAYLOAD_KEYS = (
+    "basket_manifest",
+    "basket_symbol_count",
+    "host_symbol",
+    "host_timeframe",
+    "logical_symbol",
+    "portfolio_scope",
+    "tester_currency",
+    "tester_deposit",
+    "risk_fixed",
+    "from_year",
+    "to_year",
+    "from_date",
+    "to_date",
+    "smoke_year_count",
+    "timeout_min",
+)
+
+
+def _promotion_payload_with_basket_context(
+    parent_work_item: sqlite3.Row | dict[str, Any],
+    extra: dict[str, Any],
+) -> dict[str, Any]:
+    """Carry basket host/manifest metadata when promoting logical basket work_items."""
+    payload = dict(extra)
+    try:
+        raw = parent_work_item["payload_json"]
+    except (KeyError, TypeError):
+        raw = None
+    try:
+        parent_payload = json.loads(raw or "{}")
+    except (TypeError, json.JSONDecodeError):
+        parent_payload = {}
+    if not isinstance(parent_payload, dict):
+        return payload
+    for key in BASKET_CONTEXT_PAYLOAD_KEYS:
+        if key in parent_payload and key not in payload:
+            payload[key] = parent_payload[key]
+    return payload
+
+
 def _normalize_pending_work_item_verdicts(con: sqlite3.Connection) -> int:
     """Pending work_items are open queue entries; stale verdicts belong only to finished rows."""
     now = utc_now()
@@ -7936,7 +7977,10 @@ def pump(root: Path) -> dict[str, Any]:
                 ).fetchone()
             new_id = str(uuid.uuid4())
             now = utc_now()
-            payload = {"promoted_from_p2_work_item": wi["id"]}
+            payload = _promotion_payload_with_basket_context(
+                wi,
+                {"promoted_from_p2_work_item": wi["id"]},
+            )
             conn.execute(
                 """
                 INSERT INTO work_items
@@ -8056,11 +8100,14 @@ def pump(root: Path) -> dict[str, Any]:
                 parent_id = parent["id"] if parent else None
                 new_id = str(uuid.uuid4())
                 now = utc_now()
-                payload = {
-                    "promoted_from_phase": prev_phase,
-                    "promoted_from_work_item": wi["id"],
-                    "promotion_source": "pump_cascade",
-                }
+                payload = _promotion_payload_with_basket_context(
+                    wi,
+                    {
+                        "promoted_from_phase": prev_phase,
+                        "promoted_from_work_item": wi["id"],
+                        "promotion_source": "pump_cascade",
+                    },
+                )
                 conn.execute(
                     """
                     INSERT INTO work_items
@@ -8123,12 +8170,18 @@ def pump(root: Path) -> dict[str, Any]:
                 VALUES (?, 'backtest', 'Q04', ?, ?, ?, 'pending', 0, NULL, ?, ?, ?)
                 """,
                 (probe_id, wi["ea_id"], wi["symbol"], wi["setfile_path"],
-                 json.dumps({
-                     "promoted_from_phase": "Q02",
-                     "promoted_from_work_item": wi["id"],
-                     "promotion_source": "pump_q04_early_probe",
-                     "q04_default_probe": True,
-                 }, sort_keys=True), now, now),
+                 json.dumps(
+                     _promotion_payload_with_basket_context(
+                         wi,
+                         {
+                             "promoted_from_phase": "Q02",
+                             "promoted_from_work_item": wi["id"],
+                             "promotion_source": "pump_q04_early_probe",
+                             "q04_default_probe": True,
+                         },
+                     ),
+                     sort_keys=True,
+                 ), now, now),
             )
             result["cascade_promotions"].append({
                 "work_item_id": probe_id,
@@ -9339,12 +9392,15 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                 """,
                 (ea_id, phase, prev["symbol"], prev["setfile_path"]),
             ).fetchone()
-            payload = {
-                "promoted_from_phase": prev_phase,
-                "promoted_from_work_item": prev["id"],
-                "promotion_source": "farmctl_enqueue_backtest_ea",
-                "requeued_at": now,
-            }
+            payload = _promotion_payload_with_basket_context(
+                prev,
+                {
+                    "promoted_from_phase": prev_phase,
+                    "promoted_from_work_item": prev["id"],
+                    "promotion_source": "farmctl_enqueue_backtest_ea",
+                    "requeued_at": now,
+                },
+            )
             if existing:
                 if existing["status"] in {"pending", "active"}:
                     skipped.append({

@@ -180,6 +180,42 @@ class BasketWorkItemsTests(unittest.TestCase):
             self.assertEqual(payload["basket_symbol_count"], 2)
             self.assertEqual(payload["portfolio_scope"], "basket")
 
+    def test_basket_context_survives_phase_promotion_payload(self) -> None:
+        parent = {
+            "payload_json": json.dumps({
+                "basket_manifest": "C:/QM/repo/framework/EAs/QM5_12712_demo/basket_manifest.json",
+                "basket_symbol_count": 2,
+                "host_symbol": "EURGBP.DWX",
+                "host_timeframe": "D1",
+                "logical_symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+                "portfolio_scope": "basket",
+                "tester_currency": "USD",
+                "tester_deposit": 100000,
+                "risk_fixed": 1000,
+            }),
+        }
+
+        payload = farmctl._promotion_payload_with_basket_context(
+            parent,
+            {
+                "promoted_from_phase": "Q02",
+                "promoted_from_work_item": "wi-parent",
+                "promotion_source": "pump_q04_early_probe",
+            },
+        )
+
+        self.assertEqual(payload["promoted_from_phase"], "Q02")
+        self.assertEqual(payload["promoted_from_work_item"], "wi-parent")
+        self.assertEqual(payload["promotion_source"], "pump_q04_early_probe")
+        self.assertEqual(payload["host_symbol"], "EURGBP.DWX")
+        self.assertEqual(payload["host_timeframe"], "D1")
+        self.assertEqual(payload["logical_symbol"], "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1")
+        self.assertEqual(payload["basket_symbol_count"], 2)
+        self.assertEqual(payload["portfolio_scope"], "basket")
+        self.assertEqual(payload["tester_currency"], "USD")
+        self.assertEqual(payload["tester_deposit"], 100000)
+        self.assertEqual(payload["risk_fixed"], 1000)
+
     def test_q02_dispatch_falls_back_to_basket_manifest_host_symbol(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp) / "farm"
