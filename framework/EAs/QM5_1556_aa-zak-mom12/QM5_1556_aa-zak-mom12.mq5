@@ -95,10 +95,11 @@ bool Strategy_SpreadAllowsEntry()
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    if((ask == 0.0 && bid == 0.0) || ask < 0.0 || bid < 0.0 || point <= 0.0)
       return false;
-   if(ask <= bid)
+   const double raw_spread = ask - bid;
+   if(raw_spread <= 0.0)
       return true;
 
-   const double spread_points = (ask - bid) / point;
+   const double spread_points = raw_spread / point;
    return (spread_points <= (double)strategy_max_spread_points);
   }
 
