@@ -172,7 +172,7 @@ bool Strategy_PreviousTradingDayRange(const long current_day_index,
    const int max_scan = MathMax(24, strategy_day_scan_bars);
    for(int shift = 2; shift <= max_scan; ++shift)
      {
-      const datetime bar_time = iTime(_Symbol, PERIOD_H1, shift);
+      const datetime bar_time = iTime(_Symbol, PERIOD_H1, shift); // perf-allowed: bounded source-day range reconstruction
       if(bar_time <= 0)
          break;
 
@@ -191,8 +191,8 @@ bool Strategy_PreviousTradingDayRange(const long current_day_index,
       if(day_index != previous_day_index)
          break;
 
-      const double high = iHigh(_Symbol, PERIOD_H1, shift);
-      const double low = iLow(_Symbol, PERIOD_H1, shift);
+      const double high = iHigh(_Symbol, PERIOD_H1, shift); // perf-allowed: bounded source-day range reconstruction
+      const double low = iLow(_Symbol, PERIOD_H1, shift); // perf-allowed: bounded source-day range reconstruction
       if(high <= 0.0 || low <= 0.0 || high < low)
          continue;
 
@@ -241,7 +241,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Strategy_HasOpenPosition(position_type, position_time))
       return false;
 
-   const datetime signal_bar_time = iTime(_Symbol, PERIOD_H1, 1);
+   const datetime signal_bar_time = iTime(_Symbol, PERIOD_H1, 1); // perf-allowed: closed H1 breakout bar timestamp
    if(signal_bar_time <= 0)
       return false;
 
@@ -262,7 +262,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(d1_atr <= 0.0 || prior_range < strategy_min_range_atr * d1_atr)
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_H1, 1);
+   const double close1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: closed H1 breakout close
    if(close1 <= 0.0)
       return false;
 
@@ -324,7 +324,7 @@ bool Strategy_ExitSignal()
    if(position_time > 0 && Strategy_SourceDayIndex(TimeCurrent()) > Strategy_SourceDayIndex(position_time))
       return true;
 
-   const datetime signal_bar_time = iTime(_Symbol, PERIOD_H1, 1);
+   const datetime signal_bar_time = iTime(_Symbol, PERIOD_H1, 1); // perf-allowed: closed H1 exit-signal timestamp
    if(signal_bar_time <= 0)
       return false;
 
@@ -332,7 +332,7 @@ bool Strategy_ExitSignal()
    if(g_cached_range_day_index != current_day_index || g_cached_pdh <= 0.0 || g_cached_pdl <= 0.0)
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_H1, 1);
+   const double close1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: closed H1 opposite-breakout close
    if(close1 <= 0.0)
       return false;
 
