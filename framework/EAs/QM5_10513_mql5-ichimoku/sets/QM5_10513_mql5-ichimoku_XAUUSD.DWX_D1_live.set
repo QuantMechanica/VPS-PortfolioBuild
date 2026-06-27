@@ -31,7 +31,7 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=q12_opt:20260627T132146Z:q06_6_18_68_18
 ; q12_selection: 20260627T132146Z / q06_6_18_68_18
 ; q12_evidence: D:\QM\strategy_farm\scratch\q12_opt\20260627T132146Z\results.csv
 strategy_tenkan_period=6
