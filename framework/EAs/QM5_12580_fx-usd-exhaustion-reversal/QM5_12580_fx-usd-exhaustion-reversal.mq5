@@ -190,11 +190,16 @@ bool HasOpenUsdDirection(const int usd_direction)
       if(ticket == 0 || !PositionSelectByTicket(ticket))
          continue;
 
-      const int magic = (int)PositionGetInteger(POSITION_MAGIC);
-      if(magic < 125800000 || magic > 125800006)
+      const string symbol = PositionGetString(POSITION_SYMBOL);
+      const int slot = SymbolSlot(symbol);
+      if(slot < 0)
          continue;
 
-      const string symbol = PositionGetString(POSITION_SYMBOL);
+      const int magic = (int)PositionGetInteger(POSITION_MAGIC);
+      const int expected_magic = QM_Magic(qm_ea_id, slot);
+      if(expected_magic <= 0 || magic != expected_magic)
+         continue;
+
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       if(UsdDirectionFromPosition(symbol, ptype) == usd_direction)
          return true;
