@@ -3,7 +3,7 @@
 ; ea_id:        12533
 ; ea_slug:      edgelab-eurjpy-gbpjpy-cointegration
 ; ea_version:   v5.0
-; set_version:  s20260626-001
+; set_version:  s20260627-001
 ; symbol:       QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1
 ; host_symbol:  EURJPY.DWX
 ; timeframe:    D1
@@ -11,12 +11,13 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   e61a64aec091a8fdc4efdf0aa983034da8057bda9e82d92bcc26e0153dc6dc7a
+; build_hash:   1b2f434f7e9791d5173bdf2a0b337d1b43337c76e19b2956010f1e489159e154
 ; author:       Development
-; date:         2026-06-26
+; date:         2026-06-27
 ;==========================================================
 qm_magic_slot_offset=0
-RISK_FIXED=1000
+; basket_manifest tester_currency=JPY, so this preserves roughly the canonical $1000 fixed-risk budget.
+RISK_FIXED=150000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; core filter library params; filter-on/off variants must be pre-declared

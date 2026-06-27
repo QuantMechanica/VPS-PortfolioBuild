@@ -89,6 +89,12 @@ for USD account conversion. Running the tester account in the legs' native profi
 currency keeps the Q02 setup focused on the basket trade path without changing the
 EA inputs or the `RISK_FIXED` setfile contract.
 
+Q02 risk note: the logical basket backtest setfile uses `RISK_FIXED=150000` because
+the tester account currency is JPY. This is the JPY-equivalent fixed-risk budget
+for the canonical USD 1000 backtest risk. Leaving it at `1000` under a JPY tester
+account made both leg volumes fall below broker minimum lot and produced a false
+zero-trade Q02 failure.
+
 ---
 
 ## Revision History
@@ -97,3 +103,4 @@ EA inputs or the `RISK_FIXED` setfile contract.
 |---|---|---|---|
 | v1 | 2026-06-09 | Initial build from card | 7fe478b5-35ec-4cfa-ab03-7df60d53ab95 |
 | v2 | 2026-06-26 | Q02 setup repair | Added JPY tester-currency manifest override for EURJPY/GBPJPY conversion-history INFRA_FAIL |
+| v3 | 2026-06-27 | Q02 risk-currency repair | Logical basket setfile now uses JPY-equivalent `RISK_FIXED=150000` so fixed-risk lot sizing remains above broker min lot under `tester_currency=JPY` |
