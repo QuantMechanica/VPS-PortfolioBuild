@@ -1,0 +1,23 @@
+;==========================================================
+; QM5_12700 Balke Range Breakout — canonical backtest setfile
+; Validated config (vB): net-of-cost PF 1.19 / Sharpe 1.84 / MaxDD 2.38%
+; over 2017-2024 (172 trades, ~24/yr), USDJPY.DWX M15, commission $5/lot RT
+;==========================================================
+qm_ea_id=12700
+qm_magic_slot_offset=0
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1.0
+range_start_hour=3
+range_end_hour=6
+exit_hour=20
+exit_min=0
+entry_buffer_atr=0.0
+use_vol_filter=true
+vol_mult=1.5
+strategy_rr=2.5
+strategy_atr_period=14
+atr_sl_mult=1.5
+min_range_atr_mult=0.60
+max_range_atr_mult=2.50
+spread_cap_points=30
