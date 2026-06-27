@@ -574,6 +574,82 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(stopped_children, [123456])
             self.assertEqual(stopped_terminals, ["T5"])
 
+    def test_log_bomb_kill_records_payload_and_evidence(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            report_root = root / "reports" / "wi-log-bomb"
+            journal = report_root / "raw" / "run_01" / "20260101.log"
+            journal.parent.mkdir(parents=True)
+            journal.write_bytes(b"x" * 1024)
+            self._insert_work_item(
+                root,
+                "wi-log-bomb",
+                "QM5_9001_EUR_GBP_BASKET_D1",
+                phase="Q02",
+                status="active",
+                claimed_by="T2",
+                payload={"report_root": str(report_root), "pid": 123456},
+                ea_id="QM5_9001",
+            )
+
+            stopped_children: list[int] = []
+            stopped_terminals: list[str] = []
+            old_pid_tree_exists = terminal_worker.farmctl._pid_tree_exists
+            old_stop_pid_tree = terminal_worker.farmctl._stop_pid_tree
+            old_stop_slot = terminal_worker._stop_terminal_slot_for_release
+            old_find_journal = terminal_worker._find_oversized_journal
+            old_check_every = terminal_worker.LOG_BOMB_CHECK_EVERY_ITERS
+            old_sleep = terminal_worker.time.sleep
+            try:
+                terminal_worker.farmctl._pid_tree_exists = lambda pid: int(pid) == 123456
+                terminal_worker.farmctl._stop_pid_tree = lambda pid: stopped_children.append(int(pid)) or True
+                terminal_worker._stop_terminal_slot_for_release = (
+                    lambda _root, terminal: stopped_terminals.append(str(terminal)) or True
+                )
+                terminal_worker._find_oversized_journal = lambda _report_root: str(journal)
+                terminal_worker.LOG_BOMB_CHECK_EVERY_ITERS = 1
+                terminal_worker.time.sleep = lambda _seconds: None
+
+                result = terminal_worker._monitor_spawned_work_item(
+                    root,
+                    {"id": "wi-log-bomb", "ea_id": "QM5_9001", "symbol": "QM5_9001_EUR_GBP_BASKET_D1", "phase": "Q02"},
+                    "T2",
+                    {"pid": 123456, "report_root": str(report_root)},
+                    {"report_root": str(report_root)},
+                    timeout_seconds=30,
+                )
+            finally:
+                terminal_worker.farmctl._pid_tree_exists = old_pid_tree_exists
+                terminal_worker.farmctl._stop_pid_tree = old_stop_pid_tree
+                terminal_worker._stop_terminal_slot_for_release = old_stop_slot
+                terminal_worker._find_oversized_journal = old_find_journal
+                terminal_worker.LOG_BOMB_CHECK_EVERY_ITERS = old_check_every
+                terminal_worker.time.sleep = old_sleep
+
+            self.assertEqual(result["action"], "log_bomb_killed")
+            self.assertEqual(stopped_children, [123456])
+            self.assertEqual(stopped_terminals, ["T2"])
+            self.assertFalse(journal.exists())
+            evidence_path = Path(result["evidence_path"])
+            self.assertTrue(evidence_path.exists())
+            evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+            self.assertEqual(evidence["event"], "LOG_BOMB")
+            self.assertEqual(evidence["terminal"], "T2")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, verdict, attempt_count, claimed_by, evidence_path, payload_json FROM work_items WHERE id='wi-log-bomb'"
+                ).fetchone()
+            self.assertEqual(row[0], "done")
+            self.assertEqual(row[1], "INFRA_FAIL")
+            self.assertEqual(row[2], 99)
+            self.assertIsNone(row[3])
+            self.assertEqual(Path(row[4]), evidence_path)
+            payload = json.loads(row[5])
+            self.assertIn("LOG_BOMB", payload["reason_classes"])
+            self.assertEqual(payload["verdict_reason"], "LOG_BOMB")
+            self.assertEqual(payload["final_failure"], "log_bomb")
+            self.assertTrue(payload["terminal_stopped_on_release"])
+
     def test_run_claimed_item_preflight_blocks_missing_ex5_without_spawn(self) -> None:
         with self._root() as tmp:
             root = (Path(tmp) / "farm").resolve()

@@ -1131,6 +1131,7 @@ def _monitor_spawned_work_item(
     if log_bomb_path:
         # Reclaim the disk immediately and record a terminal verdict with a high
         # attempt_count so the sweep does NOT re-enqueue (it would re-bomb).
+        killed_at = farmctl.utc_now()
         try:
             gb = round(os.path.getsize(log_bomb_path) / 1024 ** 3, 1)
         except OSError:
@@ -1139,22 +1140,77 @@ def _monitor_spawned_work_item(
             os.remove(log_bomb_path)
         except OSError:
             pass
+        terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
+        evidence_path: Path | None = None
+        evidence = {
+            "event": "LOG_BOMB",
+            "item_id": item["id"],
+            "ea_id": item.get("ea_id"),
+            "symbol": item.get("symbol"),
+            "phase": item.get("phase"),
+            "terminal": terminal,
+            "journal_path": log_bomb_path,
+            "journal_gb": gb,
+            "journal_cap_bytes": LOG_BOMB_JOURNAL_CAP_BYTES,
+            "killed_at_utc": killed_at,
+            "terminal_stopped": terminal_stopped,
+        }
+        report_root = spawn.get("report_root")
+        if report_root:
+            try:
+                evidence_dir = Path(str(report_root))
+                evidence_dir.mkdir(parents=True, exist_ok=True)
+                evidence_path = evidence_dir / "log_bomb_evidence.json"
+                evidence_path.write_text(json.dumps(evidence, indent=2, sort_keys=True), encoding="utf-8")
+            except OSError:
+                evidence_path = None
         print(json.dumps({"event": "log_bomb", "terminal": terminal, "item_id": item["id"],
                           "ea_id": item.get("ea_id"), "journal_gb": gb,
                           "path": log_bomb_path}), flush=True)
 
         def _record_log_bomb() -> None:
             with farmctl.connect(root) as conn:
+                row = conn.execute("SELECT payload_json FROM work_items WHERE id=?", (item["id"],)).fetchone()
+                payload = _json_loads(row["payload_json"]) if row else {}
+                reason_classes = [
+                    str(reason)
+                    for reason in (payload.get("reason_classes") or [])
+                    if str(reason).strip()
+                ]
+                if "LOG_BOMB" not in [reason.upper() for reason in reason_classes]:
+                    reason_classes.append("LOG_BOMB")
+                payload.update({
+                    "reason_classes": reason_classes,
+                    "verdict_reason": "LOG_BOMB",
+                    "verdict_taxonomy": "infra",
+                    "final_failure": "log_bomb",
+                    "log_bomb_journal_path": log_bomb_path,
+                    "log_bomb_journal_gb": gb,
+                    "log_bomb_journal_cap_bytes": LOG_BOMB_JOURNAL_CAP_BYTES,
+                    "killed_at": killed_at,
+                })
+                if terminal_stopped is not None:
+                    payload["terminal_stopped_on_release"] = terminal_stopped
+                if evidence_path is not None:
+                    payload["log_bomb_evidence_path"] = str(evidence_path)
                 conn.execute(
                     "UPDATE work_items SET status='done', verdict='INFRA_FAIL', "
-                    "attempt_count=99, claimed_by=NULL, updated_at=? WHERE id=?",
-                    (farmctl.utc_now(), item["id"]),
+                    "attempt_count=99, evidence_path=COALESCE(?, evidence_path), "
+                    "claimed_by=NULL, payload_json=?, updated_at=? WHERE id=?",
+                    (
+                        str(evidence_path) if evidence_path is not None else None,
+                        json.dumps(payload, sort_keys=True),
+                        killed_at,
+                        item["id"],
+                    ),
                 )
                 conn.commit()
 
         _with_sqlite_retry(_record_log_bomb)
         return {"action": "log_bomb_killed", "item_id": item["id"],
-                "ea_id": item.get("ea_id"), "journal_gb": gb}
+                "ea_id": item.get("ea_id"), "journal_gb": gb,
+                "evidence_path": str(evidence_path) if evidence_path is not None else None,
+                "terminal_stopped": terminal_stopped}
     ran_seconds = time.monotonic() - spawn_started
     child_alive = farmctl._pid_tree_exists(pid)
     terminal_alive_after_child_exit = (not child_alive) and _terminal_slot_running(root, terminal)
