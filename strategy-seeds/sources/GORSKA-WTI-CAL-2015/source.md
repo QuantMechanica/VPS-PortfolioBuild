@@ -8,6 +8,7 @@ last_reviewed: 2026-06-27
 cards_extracted:
   - wti-fri-prem
   - wti-feb-prem
+  - wti-tue-fade
 ---
 
 # Gorska-Krawiec WTI Calendar Effects Source
@@ -37,10 +38,16 @@ D1 bar, and use a fixed ATR hard stop. The EAs do not ingest futures-chain data,
 EIA inventory data, analyst forecasts, APIs, CSV files, or external feeds at
 runtime.
 
+The third mechanized card isolates the Tuesday negative-return side shown in
+the weekday table on `XTIUSD.DWX`: enter short on the broker-calendar Tuesday
+D1 bar, use a fixed ATR hard stop, and flatten on the first subsequent D1 bar
+or one-calendar-day stale-position guard.
+
 ## Extracted Card
 
 - `wti-fri-prem`: XTIUSD.DWX D1 weekly Friday calendar-premium sleeve.
 - `wti-feb-prem`: XTIUSD.DWX D1 February month-of-year premium sleeve.
+- `wti-tue-fade`: XTIUSD.DWX D1 Tuesday negative-return fade sleeve.
 
 ## R-Rules
 
