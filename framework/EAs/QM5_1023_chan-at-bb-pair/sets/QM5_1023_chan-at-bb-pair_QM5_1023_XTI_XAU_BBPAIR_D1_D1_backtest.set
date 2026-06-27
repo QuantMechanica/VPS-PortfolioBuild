@@ -1,0 +1,44 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1023
+; ea_slug:      chan-at-bb-pair
+; ea_version:   v5.0
+; set_version:  s20260627-001
+; symbol:       QM5_1023_XTI_XAU_BBPAIR_D1
+; host_symbol:  XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   e494655f6781ee42e2a714406b447d03c54b31c26a42c88ef335231793b0f3fc
+; author:       Development
+; date:         2026-06-27
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card
+strategy_lookback_d1=20
+strategy_entry_z=1.0
+strategy_exit_z=0.0
+strategy_min_hedge_ratio=0.001
+strategy_max_hedge_ratio=2.0
+strategy_atr_period_d1=20
+strategy_atr_sizing_mult=3.0
+strategy_xti_max_spread_pts=1000
+strategy_xau_max_spread_pts=500
+strategy_deviation_points=20

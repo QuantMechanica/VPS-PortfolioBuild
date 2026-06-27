@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_1023_XTI_XAU_BBPAIR_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XAUUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg XTI/XAU commodity pair basket from the approved Chan AT Bollinger-band pair-spread card. The EA runs from the XTIUSD.DWX host setfile and reads both D1 close series to compute a rolling OLS price spread, XTIUSD - beta * XAUUSD. Q02 must evaluate the logical basket, not the standalone legs."
+  ]
+}
