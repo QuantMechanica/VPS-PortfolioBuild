@@ -25,8 +25,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-last_updated: 2026-06-27
+pipeline_phase: Q02
+last_updated: 2026-06-28
 g0_approval_reasoning: "R1 PASS because the method comes from Chan cointegration pair-trading and pair selection comes from the OWNER-requested in-house 66-pair scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS EURJPY.DWX and AUDJPY.DWX data exist; R4 PASS no ML/grid/martingale."
 expected_pf: 1.10
 expected_dd_pct: 18.0
@@ -144,3 +144,4 @@ cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 |---|---|---|---|
 | v1 | 2026-06-27 | initial next-best FX cointegration basket build | G0 | APPROVED |
 | v1 | 2026-06-27 | logical-basket Q02 reached real EURJPY/AUDJPY trades, then hit worker log-bomb guard / report-missing infra ceiling | Q02 | INFRA_FAIL_LOG_BOMB |
+| v1 | 2026-06-28 | logical-basket Q02 recheck again reached real EURJPY/AUDJPY trades, then failed with REPORT_MISSING/METATESTER_HUNG after an extended trade stream; no duplicate requeue because this is the backtest CPU/report ceiling | Q02 | INFRA_FAIL_CPU_CEILING |

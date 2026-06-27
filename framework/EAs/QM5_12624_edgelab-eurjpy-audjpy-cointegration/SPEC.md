@@ -4,7 +4,7 @@
 **Slug:** edgelab-eurjpy-audjpy-cointegration
 **Source:** claude_cross_asset_discovery_2026-06-09 plus Chan cointegration pair-trade method
 **Author of this spec:** Codex
-**Last revised:** 2026-06-27
+**Last revised:** 2026-06-28
 
 ---
 
@@ -104,6 +104,12 @@ The logical basket backtest setfile uses `RISK_FIXED=150000`, the approximate JP
 equivalent of the canonical USD 1000 backtest risk, so lot sizing stays above
 broker minimum volume under a JPY tester account.
 
+Q02 ceiling note: work item `1489f74b-7259-484d-9237-452331b0e478` reached real
+EURJPY/AUDJPY trade execution with no OnInit failure, then the tester produced no
+final report and was classified as `REPORT_MISSING`, `METATESTER_HUNG`,
+`INCOMPLETE_RUNS`. Do not blind-requeue this basket until the MT5/report ceiling
+is addressed.
+
 ---
 
 ## Revision History
@@ -111,3 +117,4 @@ broker minimum volume under a JPY tester account.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-27 | Initial next-best FX cointegration basket build | Built from 12533 basket pattern |
+| v2 | 2026-06-28 | Q02 ceiling triage | Latest logical Q02 run reached real trades, then hit REPORT_MISSING/METATESTER_HUNG; no further duplicate Q02 queued |
