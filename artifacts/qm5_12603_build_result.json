@@ -1,0 +1,30 @@
+{
+  "task_id": "9919bd3b-ef3d-437b-9e7a-c00578827125",
+  "ea_id": "QM5_12603",
+  "slug": "wti-tsmom12m",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12603_wti-tsmom12m",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12603_wti-tsmom12m\\QM5_12603_wti-tsmom12m.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12603_wti-tsmom12m\\QM5_12603_wti-tsmom12m.ex5",
+  "magic_base": 126030000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12603_wti-tsmom12m\\sets\\QM5_12603_wti-tsmom12m_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12603_wti-tsmom12m\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260627_085326\\QM5_12603_wti-tsmom12m.compile.log",
+  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260627_085242.json",
+  "build_check_warnings": 16,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": "D:\\QM\\reports\\smoke\\QM5_12603\\20260627_085350\\summary.json",
+  "blocked_reason": "",
+  "open_questions": [
+    "2024 D1 smoke attempted once on T1 via Terminal any; tester failed to export report and log tail showed unrelated CHFJPY run contamination, so Q02 worker-side smoke/backtest should re-run under normal fleet isolation."
+  ],
+  "notes": "Codex built QM5_12603_wti-tsmom12m as a new XTIUSD.DWX D1 monthly 12-month time-series-momentum sleeve. build_check PASS, compile PASS, SPEC PASS, RISK_FIXED backtest setfile generated. No live/T_Live/portfolio artifacts touched.",
+  "build_smoke_framework_error": "framework_error smoke infra failure: REPORT_MISSING;METATESTER_HUNG;INCOMPLETE_RUNS;MODEL4_MARKER_REQUIRED",
+  "smoke_skipped_reason": "framework_error_during_build_smoke_treated_as_done"
+}
