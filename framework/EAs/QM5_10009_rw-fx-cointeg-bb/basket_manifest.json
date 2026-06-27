@@ -1,0 +1,14 @@
+{
+  "logical_symbol": "QM5_10009_AUD_NZD_CAD_COINTEG_D1",
+  "host_symbol": "AUDUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "USDCAD.DWX"
+  ],
+  "notes": [
+    "Three-leg AUDUSD/NZDUSD/USDCAD Robot Wealth cointegration basket from the approved QM5_10009 card. The EA must be judged as one market-neutral spread package; prior Q02 rows were per-leg work items and could not evaluate the portfolio spread edge.",
+    "The host run is AUDUSD.DWX D1. The EA selects all three legs internally, estimates monthly hedge weights from D1 closes, and opens/closes the full basket using the spread z-score rules."
+  ]
+}
