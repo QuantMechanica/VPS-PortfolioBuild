@@ -147,7 +147,12 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 payload={"portfolio_scope": "basket", "host_symbol": "EURJPY.DWX"},
             )
 
-            result = terminal_worker.claim_atomic(root, "T2")
+            old_free_ram_gb = terminal_worker._free_ram_gb
+            try:
+                terminal_worker._free_ram_gb = lambda: terminal_worker.MULTISYMBOL_RAM_MIN_FREE_GB + 1.0
+                result = terminal_worker.claim_atomic(root, "T2")
+            finally:
+                terminal_worker._free_ram_gb = old_free_ram_gb
 
             self.assertTrue(result.get("claimed"))
             self.assertEqual(result["item"]["id"], "basket-q02")
@@ -436,6 +441,71 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             payload = json.loads(row[2])
             self.assertEqual(payload["prior_failure"], "summary_missing")
             self.assertTrue(payload["terminal_stopped_on_release"])
+
+    def test_monitor_waits_for_detached_terminal_summary(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            report_root = root / "reports" / "wi-detached"
+            self._insert_work_item(
+                root,
+                "wi-detached",
+                "EURJPY.DWX",
+                phase="Q02",
+                status="active",
+                claimed_by="T7",
+                payload={"report_root": str(report_root)},
+            )
+
+            summary_path = report_root / "QM5_9999" / "20260101_000000" / "summary.json"
+            slot_checks = {"count": 0}
+
+            def fake_terminal_slot_running(_root: Path, _terminal: str | None) -> bool:
+                slot_checks["count"] += 1
+                if slot_checks["count"] == 1:
+                    return True
+                summary_path.parent.mkdir(parents=True, exist_ok=True)
+                summary_path.write_text(
+                    json.dumps({
+                        "result": "PASS",
+                        "model4_log_marker_detected": True,
+                        "min_trades_required": 5,
+                        "runs": [{"total_trades": 10}],
+                    }),
+                    encoding="utf-8",
+                )
+                return False
+
+            old_pid_tree_exists = terminal_worker.farmctl._pid_tree_exists
+            old_terminal_slot_running = terminal_worker._terminal_slot_running
+            old_sleep = terminal_worker.time.sleep
+            try:
+                terminal_worker.farmctl._pid_tree_exists = lambda _pid: False
+                terminal_worker._terminal_slot_running = fake_terminal_slot_running
+                terminal_worker.time.sleep = lambda _seconds: None
+
+                result = terminal_worker._monitor_spawned_work_item(
+                    root,
+                    {"id": "wi-detached", "phase": "Q02"},
+                    "T7",
+                    {"pid": 123456, "report_root": str(report_root)},
+                    {"report_root": str(report_root)},
+                    timeout_seconds=30,
+                )
+            finally:
+                terminal_worker.farmctl._pid_tree_exists = old_pid_tree_exists
+                terminal_worker._terminal_slot_running = old_terminal_slot_running
+                terminal_worker.time.sleep = old_sleep
+
+            self.assertEqual(result["status"], "done")
+            self.assertEqual(result["verdict"], "PASS")
+            self.assertGreaterEqual(slot_checks["count"], 2)
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, verdict, evidence_path FROM work_items WHERE id='wi-detached'"
+                ).fetchone()
+            self.assertEqual(row[0], "done")
+            self.assertEqual(row[1], "PASS")
+            self.assertEqual(Path(row[2]), summary_path)
 
     def test_run_claimed_item_stops_child_when_claim_is_externally_released(self) -> None:
         with self._root() as tmp:

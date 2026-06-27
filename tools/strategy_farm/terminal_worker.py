@@ -69,6 +69,7 @@ LOG_BOMB_CHECK_EVERY_ITERS = 5                # ~every 10s (loop sleeps 2s)
 SQLITE_WRITE_RETRIES = 12
 SQLITE_WRITE_RETRY_SLEEP_SECONDS = 1.5
 SMOKE_TERMINAL_EXIT_GRACE_SECONDS = 60.0
+DETACHED_TERMINAL_POLL_SECONDS = 2.0
 SQLITE_LOCK_BACKOFF_SECONDS = 10.0
 STALLDUMP_REQUEST_PATH = Path("D:/QM/reports/state/STALLDUMP_REQUEST")
 STALLDUMP_DIR = Path("D:/QM/reports/state/worker_stalldump")
@@ -543,6 +544,17 @@ def _find_work_item_summary_data(item: sqlite3.Row, payload: dict[str, Any]) -> 
     return summary_path, summary
 
 
+def _work_item_has_summary_data(root: Path, item_id: str) -> bool:
+    try:
+        with farmctl.connect(root) as conn:
+            item = conn.execute("SELECT * FROM work_items WHERE id=?", (item_id,)).fetchone()
+        if not item:
+            return False
+        return _find_work_item_summary_data(item, _json_loads(item["payload_json"])) is not None
+    except Exception:
+        return False
+
+
 def _mirror_real_phase_artifacts(item: sqlite3.Row, summary_path: Path, verdict: str) -> None:
     """Publish the latest passing real-phase artifacts for downstream inputs.
 
@@ -649,6 +661,17 @@ def _stop_terminal_slot_for_release(root: Path, terminal: str | None) -> bool | 
     if not terminal:
         return None
     return farmctl._stop_terminal_slot(str(terminal))
+
+
+def _terminal_slot_running(root: Path, terminal: str | None) -> bool:
+    if root.resolve() != farmctl.DEFAULT_ROOT.resolve():
+        return False
+    if not terminal:
+        return False
+    try:
+        return str(terminal).upper() in farmctl._running_mt5_terminals()
+    except Exception:
+        return False
 
 
 def _work_item_ownership(root: Path, item_id: str, terminal: str) -> dict[str, Any]:
@@ -1071,12 +1094,18 @@ def _monitor_spawned_work_item(
     deadline = _monitor_deadline_monotonic(payload, timeout_seconds, spawn_started, adopted=adopted)
     log_bomb_path: str | None = None
     _lb_iter = 0
-    while time.monotonic() < deadline and farmctl._pid_tree_exists(pid):
+    child_alive = True
+    terminal_alive_after_child_exit = False
+    while time.monotonic() < deadline:
+        child_alive = farmctl._pid_tree_exists(pid)
+        terminal_alive_after_child_exit = (not child_alive) and _terminal_slot_running(root, terminal)
+        if not child_alive and not terminal_alive_after_child_exit:
+            break
         if _STOP:
             return {"action": "shutdown_waiting_for_child", "item_id": item["id"], "pid": pid}
         ownership = _work_item_ownership(root, item["id"], terminal)
         if not ownership.get("owned"):
-            child_stopped = farmctl._stop_pid_tree(pid)
+            child_stopped = farmctl._stop_pid_tree(pid) if child_alive else False
             terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
             return {
                 "action": "external_release_observed",
@@ -1088,6 +1117,7 @@ def _monitor_spawned_work_item(
             }
         if _smoke_terminal_exit_stalled(item, payload):
             farmctl._stop_pid_tree(pid)
+            _stop_terminal_slot_for_release(root, terminal)
             break
         # Log-bomb guard: kill a backtest whose tester journal balloons past the
         # cap (framework per-tick spam -> 50-60GB .log -> ~10GB/min disk burn).
@@ -1097,7 +1127,7 @@ def _monitor_spawned_work_item(
             if log_bomb_path:
                 farmctl._stop_pid_tree(pid)
                 break
-        time.sleep(2.0)
+        time.sleep(DETACHED_TERMINAL_POLL_SECONDS)
     if log_bomb_path:
         # Reclaim the disk immediately and record a terminal verdict with a high
         # attempt_count so the sweep does NOT re-enqueue (it would re-bomb).
@@ -1126,11 +1156,22 @@ def _monitor_spawned_work_item(
         return {"action": "log_bomb_killed", "item_id": item["id"],
                 "ea_id": item.get("ea_id"), "journal_gb": gb}
     ran_seconds = time.monotonic() - spawn_started
-    if farmctl._pid_tree_exists(pid):
-        # Timed out — kill and treat as no-result (no clean exit code).
-        farmctl._stop_pid_tree(pid)
+    child_alive = farmctl._pid_tree_exists(pid)
+    terminal_alive_after_child_exit = (not child_alive) and _terminal_slot_running(root, terminal)
+    if child_alive or terminal_alive_after_child_exit:
+        # Timed out - kill the wrapper and the detached terminal slot, then
+        # treat as no-result. MT5 can outlive run_smoke.ps1; stopping only the
+        # parent can leave the tester writing a late summary after the DB row
+        # has already been classified from stale evidence.
+        if child_alive:
+            farmctl._stop_pid_tree(pid)
+        _stop_terminal_slot_for_release(root, terminal)
         exit_code = None
-    elif (not adopted) and ran_seconds < LAUNCH_FAULT_MIN_SECONDS:
+    elif (
+        (not adopted)
+        and ran_seconds < LAUNCH_FAULT_MIN_SECONDS
+        and not _work_item_has_summary_data(root, item["id"])
+    ):
         # Child vanished far too fast to be a real run (terminal64 startup alone
         # is ~6-10s) -> transient launch fault, NOT a clean exit_code=0. Record as
         # no-result and back off so a host hiccup can't burn the whole batch
