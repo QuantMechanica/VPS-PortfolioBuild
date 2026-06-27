@@ -180,6 +180,80 @@ class BasketWorkItemsTests(unittest.TestCase):
             self.assertEqual(payload["basket_symbol_count"], 2)
             self.assertEqual(payload["portfolio_scope"], "basket")
 
+    def test_q02_dispatch_falls_back_to_basket_manifest_host_symbol(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            repo_root = Path(tmp) / "repo"
+            ea_id = "QM5_12723"
+            ea_dir = repo_root / "framework" / "EAs" / f"{ea_id}_demo"
+            sets_dir = ea_dir / "sets"
+            sets_dir.mkdir(parents=True)
+            logical = "QM5_12723_NZDUSD_EURJPY_COINTEGRATION_D1"
+            manifest = {
+                "logical_symbol": logical,
+                "host_symbol": "NZDUSD.DWX",
+                "host_timeframe": "D1",
+                "basket_symbols": ["NZDUSD.DWX", "EURJPY.DWX"],
+            }
+            (ea_dir / "basket_manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+            setfile = sets_dir / f"{ea_dir.name}_{logical}_D1_backtest.set"
+            setfile.write_text("; basket setfile\n", encoding="utf-8")
+
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO work_items
+                      (id, kind, phase, ea_id, symbol, setfile_path, status, verdict,
+                       attempt_count, parent_task_id, evidence_path, claimed_by,
+                       payload_json, created_at, updated_at)
+                    VALUES
+                      ('wi-q02-basket-fallback', 'backtest', 'Q02', ?, ?, ?,
+                       'pending', NULL, 0, NULL, NULL, NULL, '{}', ?, ?)
+                    """,
+                    (ea_id, logical, str(setfile.resolve()), now, now),
+                )
+                conn.commit()
+
+            spawned_cmds: list[list[str]] = []
+
+            class FakeProc:
+                pid = 12723
+
+                def __init__(self, cmd, **_kwargs):
+                    spawned_cmds.append([str(part) for part in cmd])
+
+            old_repo_root = farmctl.REPO_ROOT
+            old_popen = farmctl.subprocess.Popen
+            old_compile_gate_check = farmctl._compile_gate_check
+            try:
+                farmctl.REPO_ROOT = repo_root
+                farmctl.subprocess.Popen = FakeProc
+                farmctl._compile_gate_check = lambda _ea_dir_name: {
+                    "allowed": True,
+                    "verdict": "COMPILED_CACHED",
+                    "source": "test",
+                }
+                with farmctl.connect(root) as conn:
+                    row = conn.execute(
+                        "SELECT * FROM work_items WHERE id='wi-q02-basket-fallback'"
+                    ).fetchone()
+                result = farmctl._spawn_run_smoke_for_work_item(root, row, "T1")
+            finally:
+                farmctl.REPO_ROOT = old_repo_root
+                farmctl.subprocess.Popen = old_popen
+                farmctl._compile_gate_check = old_compile_gate_check
+
+            self.assertTrue(result["spawned"])
+            self.assertEqual(result["logical_symbol"], logical)
+            self.assertEqual(result["runner_symbol"], "NZDUSD.DWX")
+            self.assertEqual(len(spawned_cmds), 1)
+            cmd = spawned_cmds[0]
+            self.assertEqual(cmd[cmd.index("-Symbol") + 1], "NZDUSD.DWX")
+            self.assertEqual(cmd[cmd.index("-Period") + 1], "D1")
+            self.assertEqual(cmd[cmd.index("-SetFile") + 1], str(setfile.resolve()))
+
     def test_record_build_auto_q02_skips_basket_leg_setfiles(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp) / "farm"

@@ -2092,6 +2092,11 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         item_payload = {}
     runner_symbol = str(item_payload.get("host_symbol") or symbol)
     runner_period = str(item_payload.get("host_timeframe") or _detect_ea_period(ea_id, setfile_path))
+    if runner_symbol == str(symbol):
+        basket_manifest = _load_basket_manifest(str(ea_id))
+        if basket_manifest and str(basket_manifest.get("logical_symbol")) == str(symbol):
+            runner_symbol = str(basket_manifest["host_symbol"])
+            runner_period = str(basket_manifest["host_timeframe"])
 
     if phase in REAL_PHASE_RUNNER_PHASES:
         report_root = Path(r"D:\QM\reports\work_items") / item_row["id"]
