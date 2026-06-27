@@ -142,6 +142,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      {
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       req.type = QM_BUY; req.price = 0.0;
+      req.symbol_slot = qm_magic_slot_offset; req.expiration_seconds = 0;
       req.sl = g_range_low;
       if(req.sl >= bid) req.sl = bid - atr * atr_sl_mult;
       req.tp = QM_TakeRR(_Symbol, req.type, bid, req.sl, strategy_rr);
@@ -154,6 +155,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      {
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       req.type = QM_SELL; req.price = 0.0;
+      req.symbol_slot = qm_magic_slot_offset; req.expiration_seconds = 0;
       req.sl = g_range_high;
       if(req.sl <= ask) req.sl = ask + atr * atr_sl_mult;
       req.tp = QM_TakeRR(_Symbol, req.type, ask, req.sl, strategy_rr);
