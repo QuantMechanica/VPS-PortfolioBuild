@@ -4,7 +4,7 @@
 **Slug:** edgelab-eurjpy-gbpjpy-cointegration
 **Source:** claude_cross_asset_discovery_2026-06-09
 **Author of this spec:** Codex
-**Last revised:** 2026-06-09
+**Last revised:** 2026-06-27
 
 ---
 
@@ -95,6 +95,12 @@ for the canonical USD 1000 backtest risk. Leaving it at `1000` under a JPY teste
 account made both leg volumes fall below broker minimum lot and produced a false
 zero-trade Q02 failure.
 
+Q02 tester deposit note: the logical basket manifest uses `tester_deposit=15000000`.
+`QM_FrameworkInit` caps fixed risk at 1% of account equity, so the default
+`Deposit=100000` under `tester_currency=JPY` caps the requested `RISK_FIXED=150000`
+down to `1000 JPY` before leg sizing. The 15,000,000 JPY tester deposit preserves
+the intended 150,000 JPY fixed-risk budget without changing EA logic or live risk.
+
 ---
 
 ## Revision History
@@ -104,3 +110,4 @@ zero-trade Q02 failure.
 | v1 | 2026-06-09 | Initial build from card | 7fe478b5-35ec-4cfa-ab03-7df60d53ab95 |
 | v2 | 2026-06-26 | Q02 setup repair | Added JPY tester-currency manifest override for EURJPY/GBPJPY conversion-history INFRA_FAIL |
 | v3 | 2026-06-27 | Q02 risk-currency repair | Logical basket setfile now uses JPY-equivalent `RISK_FIXED=150000` so fixed-risk lot sizing remains above broker min lot under `tester_currency=JPY` |
+| v4 | 2026-06-27 | Q02 tester-deposit repair | Manifest pins `tester_deposit=15000000` so the framework 1% risk cap no longer reduces the JPY fixed-risk budget to below-min-lot sizing |

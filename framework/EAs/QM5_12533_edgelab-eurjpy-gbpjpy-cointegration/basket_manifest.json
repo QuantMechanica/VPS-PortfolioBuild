@@ -3,11 +3,13 @@
   "host_symbol": "EURJPY.DWX",
   "host_timeframe": "D1",
   "tester_currency": "JPY",
+  "tester_deposit": 15000000,
   "basket_symbols": [
     "EURJPY.DWX",
     "GBPJPY.DWX"
   ],
   "notes": [
-    "Two-leg EURJPY/GBPJPY cointegration pair from the approved card (strongest survivor of Claude's 66-pair scan: DEV net Sharpe 0.59 AND OOS 1.53). The EA runs from the EURJPY.DWX host setfile and reads both D1 close series to compute ln(EURJPY) - beta * ln(GBPJPY). Manifest was missing -> the gate fell back to per-symbol Q02 evaluation, which fails because each leg is unprofitable standalone (the edge is the market-neutral spread). Added 2026-06-21."
+    "Two-leg EURJPY/GBPJPY cointegration pair from the approved card (strongest survivor of Claude's 66-pair scan: DEV net Sharpe 0.59 AND OOS 1.53). The EA runs from the EURJPY.DWX host setfile and reads both D1 close series to compute ln(EURJPY) - beta * ln(GBPJPY). Manifest was missing -> the gate fell back to per-symbol Q02 evaluation, which fails because each leg is unprofitable standalone (the edge is the market-neutral spread). Added 2026-06-21.",
+    "Q02 uses JPY tester currency and Deposit=15000000 so the framework's 1pct fixed-risk cap remains 150000 JPY, matching the logical RISK_FIXED setfile. The default 100000 JPY deposit caps risk to 1000 JPY and can leave both legs below broker minimum lot."
   ]
 }
