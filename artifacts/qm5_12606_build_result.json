@@ -1,0 +1,24 @@
+{
+  "task_id": "26418734-f985-4633-9859-ec49378a24ee",
+  "ea_id": "QM5_12606",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_12606_oil-silver-ratio",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_12606_oil-silver-ratio/QM5_12606_oil-silver-ratio.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_12606_oil-silver-ratio/QM5_12606_oil-silver-ratio.ex5",
+  "magic_base": 126060000,
+  "symbols_registered": [
+    "XTIUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_12606_oil-silver-ratio/sets/QM5_12606_oil-silver-ratio_QM5_12606_XTI_XAG_RATIO_D1_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_12606_oil-silver-ratio/SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "framework_error",
+  "smoke_report_path": "D:/QM/reports/smoke/QM5_12606/20260627_102145/summary.json",
+  "blocked_reason": "run_smoke infrastructure failure: REPORT_MISSING;INCOMPLETE_RUNS;MODEL4_MARKER_REQUIRED; tester log tail showed unrelated USDJPY.DWX,H1 activity while the expected XTIUSD.DWX D1 report file was missing, so no strategy rewrite was performed in the one-pass build wake",
+  "open_questions": [
+    "Q02 should rerun from the logical basket setfile; build and compile are clean, but Q01 smoke did not produce a report."
+  ]
+}
