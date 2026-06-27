@@ -1,7 +1,7 @@
-# QM5_12624_edgelab-eurjpy-audjpy-cointegration - Strategy Spec
+# QM5_12712_edgelab-eurgbp-euraud-cointegration - Strategy Spec
 
-**EA ID:** QM5_12624
-**Slug:** edgelab-eurjpy-audjpy-cointegration
+**EA ID:** QM5_12712
+**Slug:** edgelab-eurgbp-euraud-cointegration
 **Source:** claude_cross_asset_discovery_2026-06-09 plus Chan cointegration pair-trade method
 **Author of this spec:** Codex
 **Last revised:** 2026-06-27
@@ -10,8 +10,8 @@
 
 ## 1. Strategy Logic
 
-The EA trades the EURJPY.DWX and AUDJPY.DWX D1 cointegration spread. It computes
-`S = ln(EURJPY) - beta * ln(AUDJPY)` with beta defaulting to 0.60, then
+The EA trades the EURGBP.DWX and EURAUD.DWX D1 cointegration spread. It computes
+`S = ln(EURGBP) - beta * ln(EURAUD)` with beta defaulting to 0.31, then
 calculates a 60-bar rolling z-score of that spread.
 
 It opens a short-spread package when z is above +2.0 and a long-spread package
@@ -21,9 +21,9 @@ stop.
 
 This is an exploratory next-best basket, not a hard-bar scan survivor. The
 published 66-pair scan only certified QM5_12533 and QM5_12532. A rerun of the
-same script ranked EURJPY/AUDJPY as a positive-DEV/OOS common-JPY candidate
-with DEV Sharpe 0.62, OOS net Sharpe 0.58, OOS return +4.25%, 23 OOS trades,
-beta 0.60, and 22-day half-life.
+same script ranked EURGBP/EURAUD as the next unbuilt positive DEV/OOS candidate
+after QM5_12624, with DEV Sharpe 0.66, OOS net Sharpe 0.62, OOS return +3.54%,
+25 OOS state changes, beta 0.31, and 40-day half-life.
 
 ---
 
@@ -32,7 +32,7 @@ beta 0.60, and 22-day half-life.
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
 | strategy_z_lookback_d1 | 60 | 20+ | D1 bars used for rolling spread mean and standard deviation |
-| strategy_beta | 0.60 | >0 | Hedge coefficient in `ln(EURJPY) - beta * ln(AUDJPY)` |
+| strategy_beta | 0.31 | >0 | Hedge coefficient in `ln(EURGBP) - beta * ln(EURAUD)` |
 | strategy_entry_z | 2.0 | >0 | Absolute z-score threshold for opening a spread package |
 | strategy_exit_z | 0.5 | >=0 | Absolute z-score threshold for closing the open package |
 | strategy_atr_period_d1 | 20 | 2+ | D1 ATR period for per-leg hard stop distance |
@@ -44,11 +44,14 @@ beta 0.60, and 22-day half-life.
 ## 3. Symbol Universe
 
 **Designed for:**
-- EURJPY.DWX - leg 1 of the fixed EURJPY/AUDJPY spread and the spread numerator.
-- AUDJPY.DWX - leg 2 of the fixed EURJPY/AUDJPY spread and the beta-weighted spread denominator.
+- EURGBP.DWX - leg 1 of the fixed EURGBP/EURAUD spread and the spread numerator.
+- EURAUD.DWX - leg 2 of the fixed EURGBP/EURAUD spread and the beta-weighted spread denominator.
 
 **Explicitly not for:**
 - Other `.DWX` symbols. This card is a fixed two-leg FX-cross basket, not a portable multi-pair strategy.
+
+The manifest selects EURUSD.DWX, GBPUSD.DWX, and AUDUSD.DWX as conversion history
+for USD-denominated tester accounting.
 
 ---
 
@@ -68,8 +71,8 @@ beta 0.60, and 22-day half-life.
 |---|---|
 | Trades / year / logical basket | 7-12 |
 | Typical hold time | days to weeks |
-| Expected drawdown profile | moderate; Q04/Q05 must judge stability because this is sub-threshold research |
-| Regime preference | mean-reverting common-JPY spread |
+| Expected drawdown profile | moderate-high; Q04/Q05 must judge stability because this is sub-threshold research |
+| Regime preference | mean-reverting shared-EUR cross spread |
 | Win rate target | medium |
 
 ---
@@ -85,9 +88,9 @@ Pair-selection source:
 
 Rerun excerpt for this candidate:
 
-| pair | DEV Sharpe | OOS net Sharpe | OOS ret | OOS trades | hedge | half-life |
+| pair | DEV Sharpe | OOS net Sharpe | OOS ret | OOS state changes | hedge | half-life |
 |---|---:|---:|---:|---:|---:|---:|
-| EURJPY~AUDJPY | 0.62 | 0.58 | +4.25% | 23 | 0.60 | 22d |
+| EURGBP~EURAUD | 0.66 | 0.62 | +3.54% | 25 | 0.31 | 40d |
 
 ---
 
@@ -95,14 +98,13 @@ Rerun excerpt for this candidate:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 - Q10) | RISK_FIXED | JPY 150,000 per basket trade |
+| Backtest (Q02 - Q10) | RISK_FIXED | USD 1,000 per basket trade |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio |
 
-Q02 tester note: the manifest pins `tester_currency=JPY` and `tester_deposit=15000000`.
-The logical basket backtest setfile uses `RISK_FIXED=150000`, the approximate JPY
-equivalent of the canonical USD 1000 backtest risk, so lot sizing stays above
-broker minimum volume under a JPY tester account.
+Q02 tester note: the manifest pins `tester_currency=USD` and
+`tester_deposit=100000`. The logical basket backtest setfile uses the canonical
+`RISK_FIXED=1000`, with `RISK_PERCENT=0`.
 
 ---
 
@@ -110,4 +112,4 @@ broker minimum volume under a JPY tester account.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-27 | Initial next-best FX cointegration basket build | Built from 12533 basket pattern |
+| v1 | 2026-06-27 | Initial next-best FX cointegration basket build | Built from the 12533/12624 basket pattern |
