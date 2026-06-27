@@ -7,6 +7,7 @@ status: mined
 last_reviewed: 2026-06-27
 cards_extracted:
   - wti-fri-prem
+  - wti-feb-prem
 ---
 
 # Gorska-Krawiec WTI Calendar Effects Source
@@ -22,24 +23,31 @@ cards_extracted:
 This source is used for structural lineage around WTI crude-oil calendar
 anomalies. The paper studies WTI daily returns and reports a weekday pattern in
 which Monday and Tuesday are negative on average and Friday has the strongest
-positive average return in the sample.
+positive average return in the sample. The same paper also studies
+month-of-year seasonality and reports February as the strongest positive WTI
+month in the sample.
 
-The mechanized card isolates only the Friday side on `XTIUSD.DWX`: enter long on
-the broker-calendar Friday D1 bar, use a fixed ATR hard stop, and flatten via
-the framework Friday-close guard or the next non-Friday D1 bar. The EA does not
-ingest futures-chain data, EIA inventory data, analyst forecasts, APIs, CSV
-files, or external feeds at runtime.
+The first mechanized card isolates only the Friday side on `XTIUSD.DWX`: enter
+long on the broker-calendar Friday D1 bar, use a fixed ATR hard stop, and
+flatten via the framework Friday-close guard or the next non-Friday D1 bar.
+
+The second mechanized card isolates the February month-of-year side on
+`XTIUSD.DWX`: enter long only during February D1 bars, hold each entry for one
+D1 bar, and use a fixed ATR hard stop. The EAs do not ingest futures-chain data,
+EIA inventory data, analyst forecasts, APIs, CSV files, or external feeds at
+runtime.
 
 ## Extracted Card
 
 - `wti-fri-prem`: XTIUSD.DWX D1 weekly Friday calendar-premium sleeve.
+- `wti-feb-prem`: XTIUSD.DWX D1 February month-of-year premium sleeve.
 
 ## R-Rules
 
 - R1 reputable source: PASS. Academic journal article focused on WTI crude-oil
   calendar effects.
-- R2 mechanical: PASS. Fixed D1 day-of-week entry, ATR stop, and deterministic
-  time exits.
+- R2 mechanical: PASS. Fixed D1 day-of-week or month-of-year entries, ATR stop,
+  and deterministic time exits.
 - R3 data available: PASS. `XTIUSD.DWX` exists in the DWX symbol matrix.
 - R4 no ML/banned logic: PASS. No ML, adaptive fitting, grid, martingale,
   external API, or discretionary input.
