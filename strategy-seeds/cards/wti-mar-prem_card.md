@@ -48,6 +48,27 @@ long-only exposure to `XTIUSD.DWX` during broker-calendar March D1 bars, with
 each position flattened on the next D1 bar unless the ATR hard stop or framework
 Friday close acts first.
 
+## Hypothesis
+
+WTI has documented month-of-year seasonality in the cited academic source. A
+March-only long exposure should capture the positive spring seasonal component
+without depending on inventories, futures curves, analyst forecasts, or any
+runtime external data feed.
+
+## Rules
+
+- Trade only `XTIUSD.DWX` on D1.
+- On a new D1 bar in broker-calendar March, open one long position if no
+  position already exists for this EA magic and the spread cap is satisfied.
+- Set a fixed ATR hard stop from prior completed D1 bars.
+- Exit on the next D1 bar, on leaving March, or on the max-hold stale guard.
+
+## Risk
+
+Backtests use `RISK_FIXED=1000` with `RISK_PERCENT=0`. The strategy is
+long-only, one-position-only, with no grid, martingale, pyramiding, partial
+close, or adaptive sizing.
+
 This is deliberately different from:
 
 - `QM5_12727_wti-apr-prem`: April spring premium; this card isolates March.
