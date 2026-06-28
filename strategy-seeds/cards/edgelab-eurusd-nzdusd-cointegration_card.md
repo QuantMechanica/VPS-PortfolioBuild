@@ -144,3 +144,4 @@ cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 |---|---|---|---|
 | v1 | 2026-06-28 | initial next-best FX cointegration basket build | G0 | APPROVED |
 | v1 | 2026-06-28 | logical-basket Q02 enqueued as non-duplicate paced worker item `c1ae6321-654d-4f86-9314-13f9929f6245` | Q02 | PENDING |
+| v1 | 2026-06-28 | pending Q02 row payload repaired with explicit basket tester deposit, RISK_FIXED, full-history window, priority flag, and non-duplicate guard evidence | Q02 | PENDING |
