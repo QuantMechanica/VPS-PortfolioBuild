@@ -1,0 +1,94 @@
+{
+  "task_id": "b552b9a7-87ae-43e3-b6cb-5c9b630c350e",
+  "ea_id": "QM5_12759",
+  "slug": "wti-roll-relief",
+  "strategy": "WTI D1 ETF post-roll relief long sleeve",
+  "source_id": "CFTC-ETF-ROLL-WTI-2014",
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_12759_wti-roll-relief",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_12759_wti-roll-relief/QM5_12759_wti-roll-relief.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_12759_wti-roll-relief/QM5_12759_wti-roll-relief.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_12759_wti-roll-relief/SPEC.md",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12759_wti-roll-relief_card.md",
+  "repo_card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_12759_wti-roll-relief_card.md",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_12759_wti-roll-relief/sets/QM5_12759_wti-roll-relief_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "4eae07a7f9a7536f0456ef13810b81bd07e90f843351a1f78390998e81cd4896",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic_base": 127590000,
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 127590000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_12759_wti-roll-relief --force --json --fail-on-error",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:/QM/repo/framework/build/compile/20260628_232619/QM5_12759_wti-roll-relief.compile.log",
+    "ex5_size_bytes": 286534,
+    "ex5_sha256": "6b2d0de933d1a0c2659db8ff3a378201afb9e360ba2462720e1eb44288d8ece1"
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12759_wti-roll-relief -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:/QM/reports/framework/21/build_check_20260628_232636.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "static_checks": {
+    "card_schema_lint": "ok",
+    "spec_validation": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "guardrails": "PASS",
+    "registry_validation": "not_clean_existing_corpus_issues; QM5_12759 row present and magic formula valid"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Paced fleet Q02 will run the first tester pass; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "q02_enqueue": {
+    "recorded": true,
+    "build_task_id": "b552b9a7-87ae-43e3-b6cb-5c9b630c350e",
+    "work_items": [
+      {
+        "work_item_id": "e27655b7-739d-4cbb-8d32-f183e91111e6",
+        "wi_id": "e27655b7",
+        "symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "phase": "Q02",
+        "status": "pending",
+        "setfile": "QM5_12759_wti-roll-relief_XTIUSD.DWX_D1_backtest.set",
+        "created_at_utc": "2026-06-28T23:27:56+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "notes": "New non-duplicate WTI structural ETF post-roll relief sleeve. Runtime reads only XTIUSD.DWX D1 OHLC and broker calendar; CFTC crude ETF roll research is source lineage only."
+}
