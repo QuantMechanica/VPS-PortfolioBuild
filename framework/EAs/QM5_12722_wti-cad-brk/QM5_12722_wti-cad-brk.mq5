@@ -59,7 +59,6 @@ double   g_exit_high = 0.0;
 double   g_exit_low = 0.0;
 bool     g_state_ready = false;
 datetime g_pair_entry_time = 0;
-datetime g_last_state_bar = 0;
 
 int Strategy_SlotForSymbol(const string symbol)
   {
@@ -192,8 +191,6 @@ bool Strategy_RefreshSpreadState()
       g_entry_high > g_entry_low &&
       g_exit_high > g_exit_low
    );
-   if(g_state_ready)
-      g_last_state_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cheap cached D1 timestamp.
    return g_state_ready;
   }
 
@@ -309,7 +306,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!Strategy_RefreshSpreadState())
+   if(!g_state_ready)
       return false;
    if(Strategy_OpenPairLegCount() > 0)
       return false;
@@ -365,9 +362,6 @@ bool Strategy_ExitSignal()
       return false;
      }
 
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cheap D1 timestamp guard before optional spread refresh.
-   if(current_d1_bar > 0 && current_d1_bar != g_last_state_bar)
-      Strategy_RefreshSpreadState();
    const int direction = Strategy_PairDirection();
    if(g_state_ready && direction > 0 && g_spread_value < g_exit_low)
       Strategy_ClosePair(QM_EXIT_STRATEGY);
@@ -444,20 +438,23 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
+   if(QM_FrameworkFridayCloseNow(broker_now))
+     {
+      Strategy_ClosePair(QM_EXIT_FRIDAY_CLOSE);
       return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+     }
    if(QM_FrameworkHandleFridayClose())
       return;
 
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
+
    if(Strategy_NoTradeFilter())
       return;
+
+   const bool state_refreshed = Strategy_RefreshSpreadState();
 
    Strategy_ManageOpenPosition();
 
@@ -475,10 +472,11 @@ void OnTick()
         }
      }
 
-   if(!QM_IsNewBar())
+   if(!state_refreshed)
       return;
 
-   QM_EquityStreamOnNewBar();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

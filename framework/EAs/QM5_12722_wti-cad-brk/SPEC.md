@@ -42,7 +42,10 @@ extremes, or `QM5_12607_wti-cad-confirm`, which trades only WTI.
 
 - Base timeframe: D1.
 - Multi-timeframe refs: none.
-- Bar gating: `QM_IsNewBar()`.
+- Bar gating: `QM_IsNewBar()` is consumed once in `OnTick`; basket spread
+  state, entry checks, news entry blocking, and channel exits run only on the
+  D1 new-bar path. The per-tick path is limited to kill-switch and Friday-close
+  handling to keep full-history model-4 Q02 runs bounded.
 
 ## 5. Expected Behaviour
 
@@ -67,3 +70,10 @@ performance claim is imported.
 
 No live manifest, `T_Live` file, portfolio gate, or AutoTrading setting is
 touched by this build.
+
+## Revision History
+
+| Version | Date | Change | Task |
+|---|---|---|---|
+| v1 | 2026-06-27 | Initial build from approved WTI/CAD basket card | manual-qm5-12722-build-20260627 |
+| v1.1 | 2026-06-28 | Moved basket strategy work behind the D1 new-bar gate after Q02 report-missing infra hang | 6ab5df96-7f23-47cf-82f5-2d1f56a781a0 |
