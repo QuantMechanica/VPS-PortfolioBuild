@@ -1,6 +1,6 @@
 ---
-ea_id: QM5_12731
-slug: edgelab-usdcad-eurgbp-cointegration
+ea_id: QM5_12732
+slug: edgelab-eurusd-gbpusd-cointegration
 type: strategy
 source_id: claude_cross_asset_discovery_2026-06-09
 source_citation: "Chan, Ernest P. (2009). Quantitative Trading. Wiley, Chapter 7 stationarity and cointegration; plus QuantMechanica in-house 66-pair FX cointegration scan rerun on Darwinex .DWX D1 data."
@@ -15,8 +15,8 @@ concepts:
 indicators:
   - rolling-zscore
   - atr-stop
-target_symbols: [USDCAD.DWX, EURGBP.DWX]
-logical_symbol: QM5_12731_USDCAD_EURGBP_COINTEGRATION_D1
+target_symbols: [EURUSD.DWX, GBPUSD.DWX]
+logical_symbol: QM5_12732_EURUSD_GBPUSD_COINTEGRATION_D1
 period: D1
 expected_trade_frequency: "D1 two-leg basket, approximately 7-12 logical spread packages/year."
 expected_trades_per_year_per_symbol: 8
@@ -27,13 +27,13 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 last_updated: 2026-06-28
-g0_approval_reasoning: "R1 PASS because the method comes from Chan cointegration pair-trading and pair selection comes from the OWNER-requested in-house 66-pair scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS USDCAD.DWX and EURGBP.DWX data exist in the exported scan universe; R4 PASS no ML/grid/martingale."
+g0_approval_reasoning: "R1 PASS because the method comes from Chan cointegration pair-trading and pair selection comes from the OWNER-requested in-house 66-pair scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS EURUSD.DWX and GBPUSD.DWX data exist in the exported scan universe; R4 PASS no ML/grid/martingale."
 expected_pf: 1.06
 expected_dd_pct: 20.0
 portfolio_scope: basket
 ---
 
-# Edge Lab USDCAD/EURGBP Cointegration Basket
+# Edge Lab EURUSD/GBPUSD Cointegration Basket
 
 ## Source
 
@@ -45,34 +45,33 @@ scan in `docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md`, rerun from
 `framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py`.
 
 The published scan hard-certified only QM5_12533 and QM5_12532. QM5_12624,
-QM5_12712, QM5_12723, and QM5_12728 already cover later exploratory baskets. This card is
+QM5_12712, QM5_12723, QM5_12728, and QM5_12731 already cover later exploratory baskets. This card is
 the strongest remaining unbuilt positive DEV/OOS candidate by OOS net Sharpe:
-USDCAD/EURGBP had DEV Sharpe 0.46, OOS net Sharpe 0.57, OOS return +3.50%,
-19 OOS state changes, hedge 0.49, and 57-day half-life in the same rerun.
+EURUSD/GBPUSD had DEV Sharpe 0.65, OOS net Sharpe 0.54, OOS return +2.81%,
+20 OOS state changes, hedge 0.91, and 49-day half-life in the same rerun.
 
 ## Concept
 
-USDCAD carries North America commodity/USD pressure, while EURGBP expresses
-Europe-versus-UK relative value. Temporary divergence between those macro FX
-legs can mean-revert, but the sub-threshold OOS Sharpe makes this a high-risk
-exploratory sleeve. The EA trades the spread, not either cross as a standalone
-directional system.
+EURUSD and GBPUSD are the two core European USD majors. Temporary divergence
+between the euro-USD and sterling-USD legs can mean-revert, but the sub-threshold
+OOS Sharpe makes this a high-risk exploratory sleeve. The EA trades the spread,
+not either cross as a standalone directional system.
 
 ## Markets And Timeframe
 
-- Host symbol: USDCAD.DWX.
-- Basket legs: USDCAD.DWX and EURGBP.DWX.
-- Logical symbol: QM5_12731_USDCAD_EURGBP_COINTEGRATION_D1.
+- Host symbol: EURUSD.DWX.
+- Basket legs: EURUSD.DWX and GBPUSD.DWX.
+- Logical symbol: QM5_12732_EURUSD_GBPUSD_COINTEGRATION_D1.
 - Period: D1.
 - Backtest risk mode: RISK_FIXED.
 
 ## Entry Rules
 
 - Evaluate only after a new closed D1 bar.
-- Compute `spread = ln(USDCAD) - 0.49 * ln(EURGBP)`.
+- Compute `spread = ln(EURUSD) - 0.91 * ln(GBPUSD)`.
 - Compute a 60-bar rolling z-score of the spread.
-- If no pair package is open and z > +2.0, open a short-spread package: short USDCAD, long EURGBP.
-- If no pair package is open and z < -2.0, open a long-spread package: long USDCAD, short EURGBP.
+- If no pair package is open and z > +2.0, open a short-spread package: short EURUSD, long GBPUSD.
+- If no pair package is open and z < -2.0, open a long-spread package: long EURUSD, short GBPUSD.
 - Size each leg from V5 fixed risk, split by absolute hedge weights.
 
 ## Exit Rules
@@ -84,7 +83,7 @@ directional system.
 
 ## Filters
 
-- Host chart must be USDCAD.DWX or EURGBP.DWX on D1/H1, with slot 0 used for the logical host.
+- Host chart must be EURUSD.DWX or GBPUSD.DWX on D1/H1, with slot 0 used for the logical host.
 - No pyramiding, averaging, grid, martingale, partial close, or trailing stop.
 - Framework news, kill-switch, magic, and Friday-close guards remain active.
 
@@ -94,8 +93,8 @@ directional system.
   default: 60
   sweep_range: [40, 60, 90]
 - name: strategy_beta
-  default: 0.49
-  sweep_range: [0.40, 0.49, 0.60]
+  default: 0.91
+  sweep_range: [0.80, 0.91, 1.00]
 - name: strategy_entry_z
   default: 2.0
   sweep_range: [1.75, 2.0, 2.25]
@@ -111,8 +110,8 @@ directional system.
 
 ## Author Claims
 
-No external performance claim is taken from Chan for USDCAD/EURGBP specifically.
-The in-house scan rerun found DEV Sharpe 0.46 and OOS net Sharpe 0.57 after
+No external performance claim is taken from Chan for EURUSD/GBPUSD specifically.
+The in-house scan rerun found DEV Sharpe 0.65 and OOS net Sharpe 0.54 after
 cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 
 ## Initial Risk Profile
@@ -129,7 +128,7 @@ cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 
 - [x] R1 reputable source: Chan cointegration method plus OWNER-requested in-house 66-pair scan.
 - [x] R2 mechanical: fixed beta, z-score entry/exit, ATR stop, broken-package close.
-- [x] R3 testable: USDCAD.DWX and EURGBP.DWX are Darwinex-native `.DWX` symbols in the exported scan data.
+- [x] R3 testable: EURUSD.DWX and GBPUSD.DWX are Darwinex-native `.DWX` symbols in the exported scan data.
 - [x] R4 compliant: no ML, no grid, no martingale, low-frequency D1.
 
 ## Framework Alignment
@@ -144,4 +143,3 @@ cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
 | v1 | 2026-06-28 | initial next-best FX cointegration basket build | G0 | APPROVED |
-| v1 | 2026-06-28 | logical-basket Q02 enqueued as non-duplicate paced worker item `fe6761c8-b431-421d-b3ee-74e8dc6618b9` | Q02 | PENDING |

@@ -13710,3 +13710,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12711,commodity-tsmom-dual-6-12,0,XTIUSD.DWX,127110000,2026-06-28,Development,active
 12731,edgelab-usdcad-eurgbp-cointegration,0,USDCAD.DWX,127310000,2026-06-28,Development,active
 12731,edgelab-usdcad-eurgbp-cointegration,1,EURGBP.DWX,127310001,2026-06-28,Development,active
+12732,edgelab-eurusd-gbpusd-cointegration,0,EURUSD.DWX,127320000,2026-06-28,Development,active
+12732,edgelab-eurusd-gbpusd-cointegration,1,GBPUSD.DWX,127320001,2026-06-28,Development,active
