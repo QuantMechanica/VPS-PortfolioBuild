@@ -1,20 +1,20 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_12737 EIA WTI Driving-Season Breakout"
+#property description "QM5_12746 EIA WTI Driving-Season Pullback"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QM5_12737 - EIA WTI Driving-Season Breakout
+// QM5_12746 - EIA WTI Driving-Season Pullback
 // -----------------------------------------------------------------------------
 // D1 structural WTI sleeve:
 //   - long only during the gasoline driving-season window
-//   - channel breakout entry, channel/date/time exits
+//   - pullback entry above a slow trend filter, rebound/date/time exits
 // Runtime uses MT5 OHLC only; no EIA, inventory, product-spread, or futures feed.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 12737;
+input int    qm_ea_id                   = 12746;
 input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
@@ -42,11 +42,13 @@ input int    strategy_start_month         = 4;
 input int    strategy_start_day           = 15;
 input int    strategy_end_month           = 8;
 input int    strategy_end_day             = 31;
-input int    strategy_entry_channel       = 30;
-input int    strategy_exit_channel        = 15;
+input int    strategy_pullback_lookback   = 5;
+input double strategy_min_down_return_pct = 0.75;
+input int    strategy_trend_period        = 50;
+input int    strategy_rebound_period      = 5;
 input int    strategy_atr_period          = 20;
-input double strategy_atr_sl_mult         = 3.0;
-input int    strategy_max_hold_days       = 20;
+input double strategy_atr_sl_mult         = 2.5;
+input int    strategy_max_hold_days       = 7;
 input int    strategy_max_spread_points   = 1000;
 
 bool Strategy_IsXtiD1()
@@ -90,41 +92,59 @@ bool Strategy_HasOpenPosition()
    return false;
   }
 
-bool Strategy_Channel(const int lookback, double &highest_high, double &lowest_low)
+bool Strategy_SMA(const int period, double &sma)
+  {
+   if(period <= 0)
+      return false;
+
+   double sum = 0.0;
+   for(int shift = 1; shift <= period; ++shift)
+     {
+      const double close = iClose(_Symbol, PERIOD_D1, shift); // perf-allowed: D1 SMA math on closed bars.
+      if(close <= 0.0)
+         return false;
+      sum += close;
+     }
+
+   sma = sum / (double)period;
+   return (sma > 0.0);
+  }
+
+bool Strategy_PullbackLow(const int lookback, double &lowest_low)
   {
    if(lookback <= 0)
       return false;
 
-   highest_high = -DBL_MAX;
    lowest_low = DBL_MAX;
    for(int shift = 2; shift < lookback + 2; ++shift)
      {
-      const double high = iHigh(_Symbol, PERIOD_D1, shift); // perf-allowed: D1 channel math on closed bars.
-      const double low = iLow(_Symbol, PERIOD_D1, shift);   // perf-allowed: D1 channel math on closed bars.
-      if(high <= 0.0 || low <= 0.0 || high < low)
+      const double low = iLow(_Symbol, PERIOD_D1, shift); // perf-allowed: D1 pullback low math on closed bars.
+      if(low <= 0.0)
          return false;
-      highest_high = MathMax(highest_high, high);
       lowest_low = MathMin(lowest_low, low);
      }
 
-   return (highest_high > 0.0 && lowest_low > 0.0 && highest_high >= lowest_low);
+   return (lowest_low < DBL_MAX && lowest_low > 0.0);
   }
 
 bool Strategy_LoadClosedState(double &close_last,
-                              double &entry_high,
-                              double &exit_low,
+                              double &close_prev,
+                              double &pullback_low,
+                              double &trend_sma,
+                              double &rebound_sma,
                               datetime &closed_time)
   {
    closed_time = iTime(_Symbol, PERIOD_D1, 1);  // perf-allowed: D1 calendar window gate.
-   close_last = iClose(_Symbol, PERIOD_D1, 1);  // perf-allowed: D1 breakout close on closed bars.
-   if(closed_time <= 0 || close_last <= 0.0)
+   close_last = iClose(_Symbol, PERIOD_D1, 1);  // perf-allowed: D1 pullback close on closed bars.
+   close_prev = iClose(_Symbol, PERIOD_D1, 2);  // perf-allowed: D1 one-bar return on closed bars.
+   if(closed_time <= 0 || close_last <= 0.0 || close_prev <= 0.0)
       return false;
 
-   double entry_low = 0.0;
-   double exit_high = 0.0;
-   if(!Strategy_Channel(strategy_entry_channel, entry_high, entry_low))
+   if(!Strategy_PullbackLow(strategy_pullback_lookback, pullback_low))
       return false;
-   if(!Strategy_Channel(strategy_exit_channel, exit_high, exit_low))
+   if(!Strategy_SMA(strategy_trend_period, trend_sma))
+      return false;
+   if(!Strategy_SMA(strategy_rebound_period, rebound_sma))
       return false;
    return true;
   }
@@ -132,10 +152,12 @@ bool Strategy_LoadClosedState(double &close_last,
 void Strategy_CloseOpenPositionsIfNeeded()
   {
    double close_last = 0.0;
-   double entry_high = 0.0;
-   double exit_low = 0.0;
+   double close_prev = 0.0;
+   double pullback_low = 0.0;
+   double trend_sma = 0.0;
+   double rebound_sma = 0.0;
    datetime closed_time = 0;
-   if(!Strategy_LoadClosedState(close_last, entry_high, exit_low, closed_time))
+   if(!Strategy_LoadClosedState(close_last, close_prev, pullback_low, trend_sma, rebound_sma, closed_time))
       return;
 
    const bool in_window = Strategy_InDrivingWindow(closed_time);
@@ -154,7 +176,7 @@ void Strategy_CloseOpenPositionsIfNeeded()
          continue;
 
       const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-      bool should_close = (!in_window || close_last < exit_low);
+      bool should_close = (!in_window || close_last < trend_sma || close_last >= rebound_sma);
       if(opened > 0 && now - opened >= hold_seconds)
          should_close = true;
 
@@ -177,7 +199,9 @@ bool Strategy_NoTradeFilter()
       return true;
    if(strategy_end_day < 1 || strategy_end_day > 31)
       return true;
-   if(strategy_entry_channel <= 1 || strategy_exit_channel <= 1)
+   if(strategy_pullback_lookback <= 1 || strategy_trend_period <= 1 || strategy_rebound_period <= 1)
+      return true;
+   if(strategy_min_down_return_pct < 0.0)
       return true;
    if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return true;
@@ -192,7 +216,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_12737_EIA_WTI_DRIVE";
+   req.reason = "QM5_12746_EIA_WTI_DRIVE_PB";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
@@ -209,14 +233,24 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
 
    double close_last = 0.0;
-   double entry_high = 0.0;
-   double exit_low = 0.0;
+   double close_prev = 0.0;
+   double pullback_low = 0.0;
+   double trend_sma = 0.0;
+   double rebound_sma = 0.0;
    datetime closed_time = 0;
-   if(!Strategy_LoadClosedState(close_last, entry_high, exit_low, closed_time))
+   if(!Strategy_LoadClosedState(close_last, close_prev, pullback_low, trend_sma, rebound_sma, closed_time))
       return false;
    if(!Strategy_InDrivingWindow(closed_time))
       return false;
-   if(close_last <= entry_high)
+   if(close_last > pullback_low)
+      return false;
+   if(close_last <= trend_sma)
+      return false;
+   if(close_last >= rebound_sma)
+      return false;
+
+   const double down_return_pct = ((close_last / close_prev) - 1.0) * 100.0;
+   if(down_return_pct > -strategy_min_down_return_pct)
       return false;
 
    req.type = QM_BUY;
@@ -228,7 +262,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(req.sl <= 0.0)
       return false;
 
-   req.reason = "EIA_WTI_DRIVING_SEASON_LONG_BREAKOUT";
+   req.reason = "EIA_WTI_DRIVING_SEASON_PULLBACK_LONG";
    return true;
   }
 
@@ -267,7 +301,7 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12737\",\"ea\":\"eia-wti-drive\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12746\",\"ea\":\"eia-wti-drive-pb\"}");
    return INIT_SUCCEEDED;
   }
 

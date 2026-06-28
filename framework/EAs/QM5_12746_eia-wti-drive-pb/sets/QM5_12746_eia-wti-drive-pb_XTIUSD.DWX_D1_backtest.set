@@ -1,7 +1,7 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
-; ea_id:        12737
-; ea_slug:      eia-wti-drive
+; ea_id:        12746
+; ea_slug:      eia-wti-drive-pb
 ; ea_version:   v5.0
 ; set_version:  s20260628-001
 ; symbol:       XTIUSD.DWX
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d6571c9c21645430ba1026cf1f378b73d1f7b3f6ba43a4c8715e4547e22ded81
+; build_hash:   8801a723b2425218f4b0f5756fd84072f3844882475b99c1c1496d09ef4504d4
 ; author:       Development
 ; date:         2026-06-28
 ;==========================================================
@@ -35,9 +35,11 @@ strategy_start_month=4
 strategy_start_day=15
 strategy_end_month=8
 strategy_end_day=31
-strategy_entry_channel=30
-strategy_exit_channel=15
+strategy_pullback_lookback=5
+strategy_min_down_return_pct=0.75
+strategy_trend_period=50
+strategy_rebound_period=5
 strategy_atr_period=20
-strategy_atr_sl_mult=3.0
-strategy_max_hold_days=20
+strategy_atr_sl_mult=2.5
+strategy_max_hold_days=7
 strategy_max_spread_points=1000
