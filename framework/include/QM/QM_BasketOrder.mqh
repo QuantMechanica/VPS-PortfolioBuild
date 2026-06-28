@@ -75,6 +75,17 @@ double QM_BasketSLPoints(const string symbol, const double entry_price, const do
    return dist / point;
 }
 
+double QM_BasketNormalizeLots(const string symbol, const double raw_lots)
+{
+   QM_SymbolRiskSnapshot snapshot;
+   if(!QM_RiskSizerReadSymbolSnapshot(symbol, snapshot))
+      return 0.0;
+   return QM_RiskSizerQuantizeLots(raw_lots,
+                                   snapshot.volume_min,
+                                   snapshot.volume_max,
+                                   snapshot.volume_step);
+}
+
 void QM_BasketLogReject(const QM_BasketOrderRequest &req, const string result, const string detail)
 {
    const string payload = StringFormat(
@@ -150,6 +161,8 @@ bool QM_BasketOpenPosition(const int ea_id,
       const double sl_points = QM_BasketSLPoints(req.symbol, entry_price, req.sl);
       lots = QM_LotsForRisk(req.symbol, sl_points);
    }
+   if(lots > 0.0)
+      lots = QM_BasketNormalizeLots(req.symbol, lots);
    if(lots <= 0.0)
    {
       QM_BasketLogReject(req, "QM_BASKET_REJECTED_RISK", "lots_for_risk_zero");

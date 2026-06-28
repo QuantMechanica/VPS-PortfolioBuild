@@ -94,3 +94,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-27 | Initial registry-clean build from approved card | Build task `6b602cef-3f7b-4acb-a0c4-801874ae146e` |
+| v2 | 2026-06-28 | Q02 infrastructure repair | Q02 item `47d80830` loaded AUDUSD/NZDUSD/USDCAD history but generated repeated broker `Invalid volume` rejects from fractional basket leg lots. Repaired via common basket order lot-step quantization and re-enqueued the logical basket. |
