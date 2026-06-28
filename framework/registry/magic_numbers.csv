@@ -13331,6 +13331,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11915,fielder-deadtime-midpoint-reversion-h1,7,EURJPY.DWX,119150007,2026-06-23,Development,active
 11915,fielder-deadtime-midpoint-reversion-h1,8,GBPJPY.DWX,119150008,2026-06-23,Development,active
 11915,fielder-deadtime-midpoint-reversion-h1,9,AUDJPY.DWX,119150009,2026-06-23,Development,active
+11916,neely-weller-alexander-filter-2pct-d1,0,EURUSD.DWX,119160000,2026-06-28,Development,active
+11916,neely-weller-alexander-filter-2pct-d1,1,GBPUSD.DWX,119160001,2026-06-28,Development,active
+11916,neely-weller-alexander-filter-2pct-d1,2,USDJPY.DWX,119160002,2026-06-28,Development,active
+11916,neely-weller-alexander-filter-2pct-d1,3,USDCAD.DWX,119160003,2026-06-28,Development,active
+11916,neely-weller-alexander-filter-2pct-d1,4,USDCHF.DWX,119160004,2026-06-28,Development,active
+11916,neely-weller-alexander-filter-2pct-d1,5,AUDUSD.DWX,119160005,2026-06-28,Development,active
+11916,neely-weller-alexander-filter-2pct-d1,6,NZDUSD.DWX,119160006,2026-06-28,Development,active
+11916,neely-weller-alexander-filter-2pct-d1,7,EURJPY.DWX,119160007,2026-06-28,Development,active
+11916,neely-weller-alexander-filter-2pct-d1,8,GBPJPY.DWX,119160008,2026-06-28,Development,active
+11916,neely-weller-alexander-filter-2pct-d1,9,AUDJPY.DWX,119160009,2026-06-28,Development,active
 11901,london-asia-range-breakout-m15,0,GBPUSD.DWX,119010000,2026-06-23,Development,active
 11901,london-asia-range-breakout-m15,1,EURUSD.DWX,119010001,2026-06-23,Development,active
 11901,london-asia-range-breakout-m15,2,EURJPY.DWX,119010002,2026-06-23,Development,active

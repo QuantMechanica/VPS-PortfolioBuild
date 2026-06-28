@@ -14,7 +14,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.5;
+input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -49,13 +49,13 @@ int    g_current_dir  = 0; // 1=Long, -1=Short, 0=None
 
 bool Strategy_NoTradeFilter()
 {
-   return false;
+   return (_Period != PERIOD_D1);
 }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
    // Closed bar data
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
+   const double close1 = QM_SMA(_Symbol, PERIOD_D1, 1, 1, PRICE_CLOSE);
    const double atr1   = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    
    if(close1 <= 0.0 || atr1 <= 0.0) return false;
@@ -93,6 +93,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.tp = 0.0;
    req.reason = (side == QM_BUY) ? "ALEXANDER_FILTER_LONG" : "ALEXANDER_FILTER_SHORT";
    req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    
    return true;
 }
@@ -127,7 +128,8 @@ bool Strategy_ExitSignal()
       // the framework doesn't automatically close it unless we do it here 
       // or the trade manager handles it.
       
-      const double close1 = iClose(_Symbol, PERIOD_D1, 1);
+      const double close1 = QM_SMA(_Symbol, PERIOD_D1, 1, 1, PRICE_CLOSE);
+      if(close1 <= 0.0) continue;
       if(g_current_dir == 1 && close1 < g_running_high * (1.0 - strategy_filter_size_y)) return true;
       if(g_current_dir == -1 && close1 > g_running_low * (1.0 + strategy_filter_size_y)) return true;
    }
