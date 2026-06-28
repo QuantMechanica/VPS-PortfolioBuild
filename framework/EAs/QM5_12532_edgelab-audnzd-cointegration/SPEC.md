@@ -25,6 +25,8 @@ On each D1 close the EA reads AUDUSD.DWX and NZDUSD.DWX closes and computes the 
 | `strategy_atr_period_d1` | 20 | 1+ | D1 ATR period used for each leg's safety stop. |
 | `strategy_atr_sl_mult` | 2.0 | >0 | ATR multiple for each leg's hard stop. |
 | `strategy_max_spread_points` | 0 | 0+ | Optional max broker spread in points for both legs; 0 disables it. |
+| `strategy_entry_hour_broker` | 1 | 0-23 | Broker-hour entry delay; waits until both legs are in trade session after daily FX maintenance. |
+| `strategy_entry_minute_broker` | 0 | 0-59 | Broker-minute component of the entry delay. |
 
 > Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
@@ -94,3 +96,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-10 | Initial build from card | 7f1000ad-b718-407b-99a0-bd88568712eb |
+| v2 | 2026-06-28 | Session-safe pair entry repair | Delays daily entries until both AUDUSD/NZDUSD legs are tradable; stale single-leg setfiles now carry card defaults. |

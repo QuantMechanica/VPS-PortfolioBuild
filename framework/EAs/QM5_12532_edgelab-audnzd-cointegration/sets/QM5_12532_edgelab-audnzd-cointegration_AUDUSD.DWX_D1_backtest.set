@@ -38,3 +38,5 @@ strategy_exit_abs_z=0.5
 strategy_atr_period_d1=20
 strategy_atr_sl_mult=2.0
 strategy_max_spread_points=0
+strategy_entry_hour_broker=1
+strategy_entry_minute_broker=0

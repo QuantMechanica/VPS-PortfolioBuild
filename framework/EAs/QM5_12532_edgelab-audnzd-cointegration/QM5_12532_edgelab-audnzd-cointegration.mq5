@@ -37,6 +37,8 @@ input double strategy_exit_abs_z        = 0.5;
 input int    strategy_atr_period_d1     = 20;
 input double strategy_atr_sl_mult       = 2.0;
 input int    strategy_max_spread_points = 0;
+input int    strategy_entry_hour_broker = 1;
+input int    strategy_entry_minute_broker = 0;
 
 #define STRATEGY_SYMBOL_COUNT 2
 
@@ -50,6 +52,8 @@ double g_spread_now = 0.0;
 double g_spread_mean = 0.0;
 double g_spread_stdev = 0.0;
 datetime g_pair_entry_time = 0;
+datetime g_last_state_bar = 0;
+datetime g_last_entry_signal_bar = 0;
 
 void Strategy_ResetRequest(QM_EntryRequest &req)
   {
@@ -90,6 +94,79 @@ bool Strategy_EnsureBasketScope()
    QM_SymbolGuardInit(allowed);
    QM_BasketWarmupHistory(allowed, PERIOD_D1, MathMax(strategy_z_lookback_d1 + 10, 300));
    g_basket_scope_ready = true;
+   return true;
+  }
+
+int Strategy_SecondsOfDay(const datetime value)
+  {
+   MqlDateTime dt;
+   TimeToStruct(value, dt);
+   return dt.hour * 3600 + dt.min * 60 + dt.sec;
+  }
+
+bool Strategy_SymbolTradeSessionOpen(const string symbol, const datetime broker_time)
+  {
+   MqlDateTime now;
+   TimeToStruct(broker_time, now);
+   const int seconds_now = now.hour * 3600 + now.min * 60 + now.sec;
+
+   bool has_schedule = false;
+   datetime session_from = 0;
+   datetime session_to = 0;
+   for(uint session = 0; session < 16; ++session)
+     {
+      if(!SymbolInfoSessionTrade(symbol, (ENUM_DAY_OF_WEEK)now.day_of_week, session, session_from, session_to))
+         break;
+
+      has_schedule = true;
+      int from_seconds = Strategy_SecondsOfDay(session_from);
+      int to_seconds = Strategy_SecondsOfDay(session_to);
+      const int open_buffer_seconds = 60;
+      if(from_seconds == to_seconds)
+         continue;
+      if(to_seconds == 0)
+         to_seconds = 24 * 3600;
+
+      if(from_seconds < to_seconds)
+        {
+         if(seconds_now >= from_seconds + open_buffer_seconds && seconds_now < to_seconds)
+            return true;
+        }
+      else
+        {
+         if(seconds_now >= from_seconds + open_buffer_seconds || seconds_now < to_seconds)
+            return true;
+        }
+     }
+
+   return (!has_schedule && now.day_of_week >= 1 && now.day_of_week <= 5);
+  }
+
+bool Strategy_SymbolTradeReady(const string symbol, const datetime broker_time)
+  {
+   const long trade_mode = SymbolInfoInteger(symbol, SYMBOL_TRADE_MODE);
+   if(trade_mode == SYMBOL_TRADE_MODE_DISABLED || trade_mode == SYMBOL_TRADE_MODE_CLOSEONLY)
+      return false;
+   return Strategy_SymbolTradeSessionOpen(symbol, broker_time);
+  }
+
+bool Strategy_EntryTimeReady(const datetime broker_time)
+  {
+   if(strategy_entry_hour_broker < 0 || strategy_entry_hour_broker > 23)
+      return false;
+   if(strategy_entry_minute_broker < 0 || strategy_entry_minute_broker > 59)
+      return false;
+
+   MqlDateTime now;
+   TimeToStruct(broker_time, now);
+   const int now_minutes = now.hour * 60 + now.min;
+   const int entry_minutes = strategy_entry_hour_broker * 60 + strategy_entry_minute_broker;
+   if(now_minutes < entry_minutes)
+      return false;
+
+   for(int i = 0; i < STRATEGY_SYMBOL_COUNT; ++i)
+      if(!Strategy_SymbolTradeReady(g_pair_symbols[i], broker_time))
+         return false;
    return true;
   }
 
@@ -206,6 +283,8 @@ bool Strategy_RefreshState()
    g_spread_stdev = stdev;
    g_z_now = (g_spread_now - g_spread_mean) / g_spread_stdev;
    g_state_ready = MathIsValidNumber(g_z_now);
+   if(g_state_ready)
+      g_last_state_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cheap D1 timestamp after bounded spread refresh.
    return g_state_ready;
   }
 
@@ -332,6 +411,10 @@ bool Strategy_OpenPair(const int spread_direction)
   {
    if(spread_direction == 0 || Strategy_OpenPairLegCount() > 0)
       return false;
+   const datetime broker_now = TimeCurrent();
+   for(int i = 0; i < STRATEGY_SYMBOL_COUNT; ++i)
+      if(!Strategy_SymbolTradeReady(g_pair_symbols[i], broker_now))
+         return false;
 
    const bool buy_aud = (spread_direction > 0);
    const bool buy_nzd = !buy_aud;
@@ -343,8 +426,15 @@ bool Strategy_OpenPair(const int spread_direction)
    if(weight_sum <= 0.0)
       return false;
 
-   const bool aud_ok = Strategy_OpenBasketLeg(g_pair_symbols[0], buy_aud, reason, aud_weight, weight_sum);
+   QM_EntryRequest aud_req;
+   QM_EntryRequest nzd_req;
+   if(!Strategy_BuildLegRequest(g_pair_symbols[0], buy_aud, reason, aud_weight, weight_sum, aud_req))
+      return false;
+   if(!Strategy_BuildLegRequest(g_pair_symbols[1], buy_nzd, reason, nzd_weight, weight_sum, nzd_req))
+      return false;
+
    const bool nzd_ok = Strategy_OpenBasketLeg(g_pair_symbols[1], buy_nzd, reason, nzd_weight, weight_sum);
+   const bool aud_ok = Strategy_OpenBasketLeg(g_pair_symbols[0], buy_aud, reason, aud_weight, weight_sum);
    if(aud_ok && nzd_ok)
      {
       g_pair_entry_time = TimeCurrent();
@@ -366,6 +456,16 @@ bool Strategy_NoTradeFilter()
    if(Strategy_SymbolIndex(_Symbol) < 0)
       return true;
    if(qm_magic_slot_offset != Strategy_SlotForSymbol(_Symbol))
+      return true;
+   if(strategy_z_lookback_d1 < 20 || strategy_beta <= 0.0)
+      return true;
+   if(strategy_entry_z <= 0.0 || strategy_exit_abs_z < 0.0)
+      return true;
+   if(strategy_atr_period_d1 <= 0 || strategy_atr_sl_mult <= 0.0)
+      return true;
+   if(strategy_entry_hour_broker < 0 || strategy_entry_hour_broker > 23)
+      return true;
+   if(strategy_entry_minute_broker < 0 || strategy_entry_minute_broker > 59)
       return true;
 
    if(strategy_max_spread_points > 0)
@@ -414,8 +514,23 @@ void Strategy_ManageOpenPosition()
 // Trade Close.
 bool Strategy_ExitSignal()
   {
-   if(Strategy_OpenPairLegCount() <= 0)
+   const int open_legs = Strategy_OpenPairLegCount();
+   if(open_legs <= 0)
       return false;
+   if(open_legs != STRATEGY_SYMBOL_COUNT)
+     {
+      Strategy_ClosePair(QM_EXIT_STRATEGY);
+      return false;
+     }
+
+   const datetime broker_now = TimeCurrent();
+   for(int i = 0; i < STRATEGY_SYMBOL_COUNT; ++i)
+      if(!Strategy_SymbolTradeReady(g_pair_symbols[i], broker_now))
+         return false;
+
+   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cheap D1 timestamp guard before optional spread refresh.
+   if(current_d1_bar > 0 && current_d1_bar != g_last_state_bar)
+      Strategy_RefreshState();
 
    if(g_state_ready && MathAbs(g_z_now) < strategy_exit_abs_z)
      {
@@ -509,10 +624,16 @@ void OnTick()
         }
      }
 
-   if(!QM_IsNewBar())
-      return;
+   const bool new_bar = QM_IsNewBar();
+   if(new_bar)
+      QM_EquityStreamOnNewBar();
 
-   QM_EquityStreamOnNewBar();
+   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0);
+   if(current_d1_bar <= 0 || current_d1_bar == g_last_entry_signal_bar)
+      return;
+   if(!Strategy_EntryTimeReady(broker_now))
+      return;
+   g_last_entry_signal_bar = current_d1_bar;
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
