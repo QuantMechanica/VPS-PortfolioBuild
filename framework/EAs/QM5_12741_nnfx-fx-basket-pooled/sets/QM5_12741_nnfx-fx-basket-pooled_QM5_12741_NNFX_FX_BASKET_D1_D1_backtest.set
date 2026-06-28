@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12741
 ; ea_slug:      nnfx-fx-basket-pooled
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b36c0171efeea3afc140557b94b1a536e1aa0189e59098d8588d5a504849cc2d
+; build_hash:   1534dd0879ad2dec409839aace1c18d9d87e2eed5b153eab82937e625ceafb47
 ; author:       Development
 ; date:         2026-06-28
 ;==========================================================
