@@ -38,11 +38,20 @@ Reference: `framework/templates/EA_Skeleton.mq5` + `framework/include/QM/*.mqh`.
   Treat file-scope `g_last_*_bar` / `last_checked_bar` / `iTime(...)`
   timestamp gates as per-EA reimplementations too, even when the function is
   not literally named `IsNewBar`.
+  Exception: for basket EAs with `basket_manifest.json`, a cached D1
+  `iTime(...)` timestamp used only inside exit/trade-management to avoid
+  repeated multi-symbol `CopyClose` while a package is open is allowed. It
+  must not gate entries or replace the framework entry gate.
 - Position open / close uses `QM_TM_OpenPosition / QM_TM_ClosePosition` —
-  raw `OrderSend` = FAIL.
+  raw `OrderSend` = FAIL. For basket EAs with `basket_manifest.json`,
+  `QM_BasketOpenPosition` from `QM_BasketOrder.mqh` is allowed for off-chart
+  basket legs because `QM_TM_OpenPosition`/`QM_EntryRequest` are `_Symbol`-only.
+  Host/single-symbol entries still use `QM_TM_OpenPosition`.
 - Risk sizing is provided by `QM_TM_OpenPosition()` through the framework risk
   model. Do NOT require every EA to call `QM_LotsForRisk()` directly. Hardcoded
-  lots, raw `OrderSend`, or bypassing `QM_TM_OpenPosition()` = FAIL.
+  lots, raw `OrderSend`, or bypassing the applicable framework order helper =
+  FAIL. For allowed basket legs, risk may be precomputed with
+  `QM_LotsForRisk(symbol, ...)` and passed into `QM_BasketOpenPosition`.
 - Magic uses `QM_FrameworkMagic()` — hardcoded magic int = FAIL.
 - NO bypass of `QM_FrameworkInit/Shutdown` in `OnInit/OnDeinit`.
 

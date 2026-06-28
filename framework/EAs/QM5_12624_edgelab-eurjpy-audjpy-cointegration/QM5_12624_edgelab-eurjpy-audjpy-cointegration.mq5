@@ -90,6 +90,7 @@ double   g_spread_mean = 0.0;
 double   g_spread_sd = 0.0;
 bool     g_state_ready = false;
 datetime g_pair_entry_time = 0;
+// Exit-state cache only; entry evaluation remains gated by framework QM_IsNewBar().
 datetime g_last_state_bar = 0;
 
 int Strategy_SlotForSymbol(const string symbol)
@@ -266,6 +267,7 @@ bool Strategy_OpenLeg(const string symbol,
    req.expiration_seconds = 0;
 
    ulong ticket = 0;
+   // Off-chart basket legs require the framework basket order helper; QM_TM_OpenPosition is _Symbol-only.
    return QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, strategy_deviation_points, req, ticket);
   }
 
