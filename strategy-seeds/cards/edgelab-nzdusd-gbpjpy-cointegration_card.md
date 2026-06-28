@@ -145,3 +145,4 @@ cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 |---|---|---|---|
 | v1 | 2026-06-28 | initial next-best FX cointegration basket build | G0 | APPROVED |
 | v1 | 2026-06-28 | logical-basket Q02 enqueued as non-duplicate paced worker item; worker returned invalid report with NO_HISTORY/INCOMPLETE_RUNS on T2 | Q02 | INFRA_FAIL |
+| v1 | 2026-06-28 | logical-basket Q02 requeued after prior T2 GBPUSD.DWX history synchronization infra failure; worker claimed row on T5 | Q02 | ACTIVE |
