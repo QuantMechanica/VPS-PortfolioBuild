@@ -1,0 +1,80 @@
+{
+  "task_id": "manual-build-QM5_12733-20260628",
+  "ea_id": "QM5_12733",
+  "slug": "xti-xng-xmom",
+  "strategy": "XTI/XNG D1 cross-sectional energy relative momentum",
+  "symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_12733_XTI_XNG_XMOM_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12733_xti-xng-xmom",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12733_xti-xng-xmom\\QM5_12733_xti-xng-xmom.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12733_xti-xng-xmom\\QM5_12733_xti-xng-xmom.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12733_xti-xng-xmom\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12733_xti-xng-xmom_card.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12733_xti-xng-xmom\\basket_manifest.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12733_xti-xng-xmom\\sets\\QM5_12733_xti-xng-xmom_QM5_12733_XTI_XNG_XMOM_D1_D1_backtest.set"
+  ],
+  "setfile_build_hash": "2a6e5a36b35179d897be960de348a261a7f5761f90ba86ded58781934f3fa784",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 127330000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "XNGUSD.DWX",
+        "magic": 127330001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12733_xti-xng-xmom/QM5_12733_xti-xng-xmom.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260628_035251\\QM5_12733_xti-xng-xmom.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260628_035251\\summary.csv"
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12733_xti-xng-xmom -RepoRoot C:/QM/repo -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260628_035327.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "099e941f-b16d-4f51-a594-ae4365c0a2ff",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "QM5_12733_XTI_XNG_XMOM_D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12733_xti-xng-xmom\\sets\\QM5_12733_xti-xng-xmom_QM5_12733_XTI_XNG_XMOM_D1_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "created_at_utc": "2026-06-28T03:53:53Z"
+  },
+  "smoke_result": "deferred_to_q02",
+  "smoke_skipped_reason": "Paced fleet Q02 was enqueued; no manual MT5 backtest was launched from this session.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "notes": "Completed a structural D1 XTI/XNG energy relative-momentum basket from approved SRC05_S10 cross-sectional commodity momentum lineage. It is distinct from XTI/XNG z-score reversion, XTI/XNG breakout, WTI seasonality/news, single-symbol WTI momentum, and QM5_12567 XNG RSI pullback."
+}
