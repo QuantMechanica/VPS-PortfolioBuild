@@ -57,6 +57,30 @@ regional/risk exposures. The spread can mean-revert when Europe-vs-Australia
 risk and carry pressure temporarily diverge inside the common JPY-cross complex.
 The EA trades the spread, not either leg as a standalone directional system.
 
+## Hypothesis
+
+Common-JPY FX crosses can temporarily diverge when regional risk and carry flows
+move EURJPY and AUDJPY at different speeds. A fixed-beta D1 spread that is
+extreme versus its recent distribution should mean-revert often enough to be
+harvested as a low-frequency, market-neutral basket after realistic costs.
+
+## Rules
+
+- Trade only the `EURJPY.DWX` / `AUDJPY.DWX` D1 logical basket.
+- Compute `spread = ln(EURJPY) - 0.60 * ln(AUDJPY)`.
+- Use a 60-bar rolling z-score.
+- Open short-spread when z > +2.0 and long-spread when z < -2.0.
+- Close both legs when `abs(z) < 0.5`.
+- Apply ATR(20) * 2.0 hard stops per leg and immediately flatten broken packages.
+- No grid, martingale, pyramiding, partial close, discretionary input, or ML.
+
+## Risk
+
+Backtests use the JPY fixed-risk equivalent of the canonical V5 baseline:
+`RISK_FIXED=150000`, `RISK_PERCENT=0`, `tester_currency=JPY`, and
+`tester_deposit=15000000`. This is a sub-threshold exploratory basket with
+medium-high risk until the Q02+ pipeline produces a usable verdict.
+
 ## Markets And Timeframe
 
 - Host symbol: EURJPY.DWX.
@@ -145,3 +169,4 @@ cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 | v1 | 2026-06-27 | initial next-best FX cointegration basket build | G0 | APPROVED |
 | v1 | 2026-06-27 | logical-basket Q02 reached real EURJPY/AUDJPY trades, then hit worker log-bomb guard / report-missing infra ceiling | Q02 | INFRA_FAIL_LOG_BOMB |
 | v1 | 2026-06-28 | logical-basket Q02 recheck again reached real EURJPY/AUDJPY trades, then failed with REPORT_MISSING/METATESTER_HUNG after an extended trade stream; no duplicate requeue because this is the backtest CPU/report ceiling | Q02 | INFRA_FAIL_CPU_CEILING |
+| v1 | 2026-06-28 | repaired news-off and priority-payload Q02 row `f346f9e9-7dc9-4cff-be60-4dec96784e77` still reached the memory/report-export ceiling (`64 Mb not available`, `oninit_failure_detected=false`); stop instead of blind requeue | Q02 | INFRA_FAIL_CPU_CEILING |

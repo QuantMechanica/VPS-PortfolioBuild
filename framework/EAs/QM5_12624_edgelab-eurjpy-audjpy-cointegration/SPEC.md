@@ -113,6 +113,16 @@ the intended fixed-risk baseline and explicitly disables `qm_news_temporal`,
 filter keys. This prevents the full-tick Q02 run from loading/scanning the news
 calendar on every EURJPY/AUDJPY leg check.
 
+Fresh Q02 ceiling note: repaired work item
+`f346f9e9-7dc9-4cff-be60-4dec96784e77` also reached real EURJPY/AUDJPY order
+execution and then failed at the tester/report layer. The summary classified
+`REPORT_MISSING`, `METATESTER_HUNG`, `NO_HISTORY`, and `INCOMPLETE_RUNS`, with
+`oninit_failure_detected=false`; the tester log tail includes `64 Mb not
+available`, `not enough available memory`, and a zero-bar report after memory
+exhaustion. Treat this as the repeated Q02 memory/report ceiling, not a strategy
+or OnInit failure. Do not insert another blind Q02 row without a separate
+tester-memory/report-export fix.
+
 ---
 
 ## Revision History
@@ -122,3 +132,4 @@ calendar on every EURJPY/AUDJPY leg check.
 | v1 | 2026-06-27 | Initial next-best FX cointegration basket build | Built from 12533 basket pattern |
 | v2 | 2026-06-28 | Q02 ceiling triage | Latest logical Q02 run reached real trades, then hit REPORT_MISSING/METATESTER_HUNG; no further duplicate Q02 queued |
 | v3 | 2026-06-28 | Q02 setfile repair | Explicit news-off axes added to the fixed-risk backtest setfile; build_check PASS and fresh Q02 enqueued |
+| v4 | 2026-06-28 | Repaired Q02 ceiling confirmed | Work item f346f9e9 reached real trades, then failed with memory/report-export ceiling; no duplicate Q02 requeue |
