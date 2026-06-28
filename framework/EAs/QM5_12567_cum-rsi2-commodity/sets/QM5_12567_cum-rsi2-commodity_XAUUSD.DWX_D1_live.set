@@ -14,7 +14,7 @@
 ; author:       Claude
 ; date:         2026-06-28
 ;==========================================================
-qm_magic_slot_offset=11
+qm_magic_slot_offset=3
 RISK_FIXED=0
 RISK_PERCENT=0.7500
 PORTFOLIO_WEIGHT=1.0
