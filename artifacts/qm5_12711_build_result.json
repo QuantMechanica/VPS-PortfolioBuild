@@ -1,0 +1,67 @@
+{
+  "ea_id": "QM5_12711",
+  "slug": "commodity-tsmom-dual-6-12",
+  "strategy": "WTI D1 dual 6-month and 12-month time-series momentum",
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "timeframe": "D1",
+  "source": {
+    "source_id": "MOP-TSMOM-2012",
+    "title": "Time Series Momentum",
+    "authors": "Moskowitz, Ooi, Pedersen",
+    "venue": "Journal of Financial Economics / AQR"
+  },
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12711_commodity-tsmom-dual-6-12",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12711_commodity-tsmom-dual-6-12\\QM5_12711_commodity-tsmom-dual-6-12.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12711_commodity-tsmom-dual-6-12\\QM5_12711_commodity-tsmom-dual-6-12.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12711_commodity-tsmom-dual-6-12\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12711_commodity-tsmom-dual-6-12_card.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12711_commodity-tsmom-dual-6-12\\sets\\QM5_12711_commodity-tsmom-dual-6-12_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "e02d1982637e5f7f77df3b45aa7b8c065198398dfdac0ec5ee000c7533c77991",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "symbol_slot": 0,
+    "symbol": "XTIUSD.DWX",
+    "magic": 127110000,
+    "registry_status": "active",
+    "target_magic_count": 1
+  },
+  "compile": {
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260628_025326\\QM5_12711_commodity-tsmom-dual-6-12.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260628_025326\\summary.csv"
+  },
+  "build_check": {
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260628_025340.json",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework\\scripts\\build_check.ps1 -EALabel QM5_12711_commodity-tsmom-dual-6-12 -SkipCompile -SkipMagicCheck",
+    "skip_magic_check_reason": "Global magic collision scan is repo-wide and was left out of the scoped build check; the QM5_12711 target magic row was verified unique separately."
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "988e61de-6fd4-4263-a70e-d5fb40a614c1",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "created_at_utc": "2026-06-28T02:54:13Z"
+  },
+  "smoke_result": "deferred_to_q02",
+  "smoke_skipped_reason": "Paced fleet Q02 was enqueued; no manual MT5 backtest was launched from this session.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "notes": "Completed QM5_12711 as a structural WTI commodity sleeve distinct from existing pure 6m, 9m, and 12m WTI momentum variants by requiring both 126D and 252D returns to agree outside a neutral band before monthly entry."
+}
