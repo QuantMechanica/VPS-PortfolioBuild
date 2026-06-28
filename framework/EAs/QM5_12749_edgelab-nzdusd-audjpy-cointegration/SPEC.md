@@ -116,6 +116,8 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 Q02 queue note: one logical-basket work item was inserted for
 `QM5_12749_NZDUSD_AUDJPY_COINTEGRATION_D1`:
 `ed3dada9-d657-4b85-b5ba-28d2c64bf788`. No per-leg Q02 fanout was created.
+The worker summary was recovered into the farm DB on 2026-06-28 as a real Q02
+strategy `FAIL`: T2 produced 0 trades against the 35-trade Q02 floor.
 
 ---
 
@@ -124,5 +126,4 @@ Q02 queue note: one logical-basket work item was inserted for
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-28 | Initial next-best FX cointegration basket build | Built from the 12728 basket pattern |
-| v1 | 2026-06-28 | Q02 enqueue | Pending logical-basket work item ed3dada9-d657-4b85-b5ba-28d2c64bf788 |
-
+| v1 | 2026-06-28 | Q02 orphan-result recovery | Work item ed3dada9-d657-4b85-b5ba-28d2c64bf788 classified as FAIL from existing T2 summary: MIN_TRADES_NOT_MET, 0 trades |
