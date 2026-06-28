@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
 from pathlib import Path
 
 from framework.scripts import q05_stress_medium as q05
@@ -32,6 +34,100 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertEqual(dd_money, 0.0)
         self.assertEqual(trades, 0)
 
+    def test_q05_invalid_report_summary_is_not_strategy_zero_trade(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            summary = Path(tmp) / "summary.json"
+            summary.write_text(
+                json.dumps({
+                    "result": "FAIL",
+                    "reason_classes": ["NO_HISTORY", "INCOMPLETE_RUNS"],
+                    "runs": [{
+                        "status": "INVALID",
+                        "failure": "NO_HISTORY",
+                        "invalid_report_reasons": [
+                            "EMPTY_EXPERT",
+                            "EMPTY_SYMBOL",
+                            "M0_1970_PERIOD",
+                            "BARS_ZERO",
+                            "HISTORY_CONTEXT_INVALID",
+                        ],
+                        "profit_factor": 0,
+                        "drawdown": 0,
+                        "total_trades": 0,
+                    }],
+                }),
+                encoding="utf-8",
+            )
+
+            reason = q05.summary_invalid_reason(summary)
+
+        self.assertIsNotNone(reason)
+        self.assertIn("NO_HISTORY", reason)
+        self.assertIn("BARS_ZERO", reason)
+        self.assertIn("RUN_STATUS_INVALID", reason)
+
+    def test_q05_valid_report_htm_fallback_extracts_metrics(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            report = Path(tmp) / "run_01" / "report.htm"
+            report.parent.mkdir()
+            report.write_text(
+                """
+                <html><body><table>
+                <tr><td>Expert:</td><td><b>QM5_10939_grimes-context-pb</b></td></tr>
+                <tr><td>Symbol:</td><td><b>GBPUSD.DWX</b></td></tr>
+                <tr><td>Period:</td><td><b>H4 (2017.01.01 - 2025.12.31)</b></td></tr>
+                <tr><td>Bars:</td><td><b>12608</b></td></tr>
+                <tr><td>Profit Factor:</td><td><b>1.58</b></td></tr>
+                <tr><td>Equity Drawdown Maximal:</td><td><b>6 190.06 (5.31%)</b></td></tr>
+                <tr><td>Total Trades:</td><td><b>92</b></td></tr>
+                </table></body></html>
+                """,
+                encoding="utf-8",
+            )
+
+            metrics = q05._latest_report_metrics(Path(tmp))
+
+        self.assertIsNotNone(metrics)
+        self.assertEqual(metrics["pf"], 1.58)
+        self.assertEqual(metrics["dd_money"], 6190.06)
+        self.assertEqual(metrics["trades"], 92)
+
+    def test_q05_latest_full_year_caps_smoke_window(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "summary.json").write_text(
+                json.dumps({
+                    "runs": [{
+                        "profit_factor": 1.2,
+                        "drawdown": 500.0,
+                        "total_trades": 25,
+                    }]
+                }),
+                encoding="utf-8",
+            )
+            calls = []
+
+            def fake_run(args, **_kwargs):
+                calls.append(args)
+                return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+            with patch.object(q05.subprocess, "run", side_effect=fake_run):
+                result = q05.run_stress_backtest(
+                    ea_id=12712,
+                    ea_expert="QM\\QM5_12712_demo",
+                    symbol="EURGBP.DWX",
+                    setfile=root / "demo.set",
+                    terminal="T8",
+                    period="D1",
+                    report_root=root,
+                    latest_full_year=2024,
+                )
+
+        cmd = calls[0]
+        self.assertEqual(cmd[cmd.index("-Year") + 1], "2024")
+        self.assertEqual(cmd[cmd.index("-ToDate") + 1], "2024.12.31")
+        self.assertEqual(result["history_to"], "2024.12.31")
+
     def test_q07_missing_summary_remains_invalid(self) -> None:
         verdict, reason, _metrics = q07.evaluate_seeds([
             {"seed": 42, "pf": None, "trades": 0, "summary_path": None},
@@ -41,6 +137,16 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertEqual(verdict, "INVALID")
         self.assertIn("seeds_missing_summary", reason)
 
+    def test_q07_report_path_counts_as_seed_evidence(self) -> None:
+        verdict, reason, metrics = q07.evaluate_seeds([
+            {"seed": 42, "pf": None, "trades": 0, "summary_path": None, "report_path": "report.htm"},
+            {"seed": 17, "pf": 1.2, "trades": 25, "summary_path": "summary.json"},
+        ])
+
+        self.assertEqual(verdict, "FAIL")
+        self.assertIn("seed_trades_below_floor", reason)
+        self.assertEqual(metrics["per_seed_trades"][0], (42, 0))
+
     def test_q07_zero_trade_seed_is_strategy_fail(self) -> None:
         verdict, reason, metrics = q07.evaluate_seeds([
             {"seed": 42, "pf": None, "trades": 0, "summary_path": "summary.json"},
@@ -49,6 +155,16 @@ class Q05Q07VerdictTests(unittest.TestCase):
 
         self.assertEqual(verdict, "FAIL")
         self.assertIn("seed_trades_below_floor", reason)
+        self.assertEqual(metrics["per_seed_trades"][0], (42, 0))
+
+    def test_q07_zero_trade_seed_with_runner_failure_is_invalid(self) -> None:
+        verdict, reason, metrics = q07.evaluate_seeds([
+            {"seed": 42, "pf": None, "trades": 0, "summary_path": "summary.json", "exit_code": 1},
+            {"seed": 17, "pf": 1.2, "trades": 25, "summary_path": "summary.json", "exit_code": 0},
+        ])
+
+        self.assertEqual(verdict, "INVALID")
+        self.assertIn("seeds_invalid_evidence", reason)
         self.assertEqual(metrics["per_seed_trades"][0], (42, 0))
 
 

@@ -24,9 +24,14 @@ if __package__ in (None, ""):
 
 from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
                                             resolve_ea_expert_path, period_from_setfile,
-                                            find_latest_summary, FULL_HISTORY_FROM,
-                                            FULL_HISTORY_TO, FULL_HISTORY_YEAR)
-from framework.scripts.q05_stress_medium import _parse_pf_dd_trades, MIN_TRADES, STARTING_EQUITY
+                                            find_latest_summary, full_history_window)
+from framework.scripts.q05_stress_medium import (
+    _latest_report_metrics,
+    _parse_pf_dd_trades,
+    summary_invalid_reason,
+    MIN_TRADES,
+    STARTING_EQUITY,
+)
 from framework.scripts.q06_stress_harsh import gen_harsh_setfile_for
 
 GATE_NAME = "Q07"
@@ -64,15 +69,17 @@ def _write_seeded_setfile(baseline: Path, seed: int) -> Path:
 
 def _run_seed(*, ea_id: int, ea_expert: str, symbol: str, setfile: Path,
               seed: int, terminal: str, report_root: Path,
-              timeout_sec: int, period: str = "H1") -> dict:
+              timeout_sec: int, period: str = "H1",
+              latest_full_year: int | None = None) -> dict:
     repo_root = Path(__file__).resolve().parents[2]
     run_smoke_ps1 = repo_root / "framework" / "scripts" / "run_smoke.ps1"
+    history_year, history_from, history_to = full_history_window(latest_full_year)
     args = [
         "pwsh.exe", "-NoProfile", "-File", str(run_smoke_ps1),
         "-EAId", str(ea_id),
         "-Expert", ea_expert,
         "-Symbol", symbol,
-        "-Year", FULL_HISTORY_YEAR, "-FromDate", FULL_HISTORY_FROM, "-ToDate", FULL_HISTORY_TO,
+        "-Year", history_year, "-FromDate", history_from, "-ToDate", history_to,
         "-Terminal", terminal,
         "-Period", period,
         "-DispatchSubGateHash", f"q07_seed{seed}_{ea_id}_{symbol.replace('.', '_')}",
@@ -90,20 +97,52 @@ def _run_seed(*, ea_id: int, ea_expert: str, symbol: str, setfile: Path,
                           timeout=timeout_sec, creationflags=creationflags)
     sym_clean = symbol.replace(".", "_")
     summary = find_latest_summary(report_root)
-    pf, dd_money, trades = _parse_pf_dd_trades(summary) if summary else (None, None, 0)
+    invalid_reason = summary_invalid_reason(summary) if summary else None
+    report_metrics = None if summary else _latest_report_metrics(report_root)
+    if summary:
+        pf, dd_money, trades = _parse_pf_dd_trades(summary)
+    elif report_metrics:
+        pf = report_metrics["pf"]
+        dd_money = report_metrics["dd_money"]
+        trades = report_metrics["trades"]
+    else:
+        pf, dd_money, trades = None, None, 0
     dd_pct = (dd_money / STARTING_EQUITY * 100.0) if dd_money is not None else None
     return {"seed": seed, "pf": pf, "dd_money": dd_money, "dd_pct": dd_pct,
             "trades": trades, "exit_code": proc.returncode,
-            "summary_path": str(summary) if summary else None}
+            "summary_path": str(summary) if summary else None,
+            "report_path": report_metrics.get("report_path") if report_metrics else None,
+            "metric_source": "summary_json" if summary else ("report_htm" if report_metrics else None),
+            "history_year": history_year,
+            "history_from": history_from,
+            "history_to": history_to,
+            "latest_full_year": latest_full_year,
+            "invalid_reason": invalid_reason}
 
 
 def evaluate_seeds(seed_results: list[dict]) -> tuple[str, str, dict]:
     """Combined Q07 verdict from per-seed results."""
-    missing_summary = [r["seed"] for r in seed_results if not r.get("summary_path")]
+    missing_summary = [
+        r["seed"] for r in seed_results
+        if not r.get("summary_path") and not r.get("report_path")
+    ]
     if missing_summary:
         return ("INVALID",
                 f"seeds_missing_summary:{missing_summary}",
                 {"per_seed_pf": [(r["seed"], r["pf"]) for r in seed_results]})
+
+    invalid_seeds = [
+        (r["seed"], r.get("invalid_reason") or f"exit_code={r.get('exit_code')}")
+        for r in seed_results
+        if r.get("invalid_reason") or (
+            int(r.get("trades") or 0) < MIN_TRADES
+            and r.get("exit_code") not in (0, "0", None)
+        )
+    ]
+    if invalid_seeds:
+        return ("INVALID",
+                f"seeds_invalid_evidence:{invalid_seeds}",
+                {"per_seed_trades": [(r["seed"], r.get("trades", 0)) for r in seed_results]})
 
     low_trades = [r["seed"] for r in seed_results if int(r.get("trades") or 0) < MIN_TRADES]
     if low_trades:
@@ -157,6 +196,8 @@ def main() -> int:
     ap.add_argument("--terminal", default="T2")
     ap.add_argument("--report-root", type=Path, default=Path("D:/QM/reports/pipeline"))
     ap.add_argument("--timeout-sec", type=int, default=2400)
+    ap.add_argument("--latest-full-year", type=int,
+                    help="Cap full-history window when validated custom-symbol history ends before default")
     args = ap.parse_args()
 
     ea_match = re.match(r"QM5_(\d+)_?", args.ea)
@@ -184,7 +225,8 @@ def main() -> int:
         res = _run_seed(ea_id=ea_id, ea_expert=ea_expert, symbol=args.symbol,
                         setfile=seeded_set, seed=seed,
                         terminal=args.terminal, report_root=args.report_root,
-                        timeout_sec=args.timeout_sec, period=period)
+                        timeout_sec=args.timeout_sec, period=period,
+                        latest_full_year=args.latest_full_year)
         print(f"    -> PF={res['pf']}  trades={res['trades']}  exit={res['exit_code']}")
         seed_results.append(res)
 
@@ -199,6 +241,7 @@ def main() -> int:
         "reason": reason,
         "metrics": metrics,
         "per_seed_detail": seed_results,
+        "latest_full_year": args.latest_full_year,
         "generated_at_utc": utc_now_iso(),
     })
     print(f"Q07 {args.ea} {args.symbol}: {verdict}")

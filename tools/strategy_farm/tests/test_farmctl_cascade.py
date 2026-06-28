@@ -241,6 +241,7 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
                             "host_timeframe": "D1",
                             "logical_symbol": logical,
                             "portfolio_scope": "basket",
+                            "q04_latest_full_year": 2024,
                         }),
                         now,
                         now,
@@ -270,6 +271,46 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             payload = json.loads(row[1])
             self.assertEqual(payload["host_symbol"], "EURGBP.DWX")
             self.assertEqual(payload["portfolio_scope"], "basket")
+            self.assertEqual(payload["q04_latest_full_year"], 2024)
+
+    def test_q05_runner_cmd_receives_latest_full_year_cap(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            report_root = root / "reports"
+            setfile = root / "QM5_9998_demo_EURGBP.DWX_D1_backtest.set"
+            setfile.write_text("", encoding="utf-8")
+            conn = sqlite3.connect(":memory:")
+            conn.row_factory = sqlite3.Row
+            conn.execute(
+                """
+                CREATE TABLE work_items(
+                    phase TEXT, ea_id TEXT, symbol TEXT, setfile_path TEXT, payload_json TEXT
+                )
+                """
+            )
+            conn.execute(
+                "INSERT INTO work_items VALUES(?,?,?,?,?)",
+                (
+                    "Q05",
+                    "QM5_9998",
+                    "QM5_9998_EURGBP_EURAUD_COINTEGRATION_D1",
+                    str(setfile),
+                    json.dumps({
+                        "host_symbol": "EURGBP.DWX",
+                        "host_timeframe": "D1",
+                        "q04_latest_full_year": 2024,
+                    }),
+                ),
+            )
+            row = conn.execute("SELECT * FROM work_items").fetchone()
+
+            cmd = farmctl._phase_runner_cmd_for_work_item(root, row, report_root, "T8")
+
+            self.assertIsNotNone(cmd)
+            self.assertIn("--latest-full-year", cmd)
+            self.assertEqual(cmd[cmd.index("--latest-full-year") + 1], "2024")
+            self.assertIn("--baseline-setfile", cmd)
+            self.assertNotIn("--setfile", cmd)
 
 
 if __name__ == "__main__":

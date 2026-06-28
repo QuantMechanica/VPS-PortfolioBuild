@@ -40,7 +40,7 @@ def _scan_running_workers() -> dict[str, list[int]]:
     if sys.platform != "win32":
         return {}
     command = (
-        "Get-CimInstance Win32_Process "
+        "Get-CimInstance Win32_Process -Filter \"Name='python.exe' OR Name='pythonw.exe'\" "
         "| Where-Object { $_.CommandLine -match 'terminal_worker.py' } "
         "| Select-Object ProcessId,CommandLine | ConvertTo-Json -Depth 3"
     )

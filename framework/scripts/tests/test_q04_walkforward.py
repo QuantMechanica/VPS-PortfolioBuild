@@ -105,6 +105,51 @@ class Q04WalkForwardTests(unittest.TestCase):
             self.assertEqual(result["summary_path"], str(summary))
             self.assertTrue(Path(result["log_path"]).exists())
 
+    def test_run_fold_passes_basket_manifest_tester_overrides(self) -> None:
+        mod = _load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ea_dir = root / "framework" / "EAs" / "QM5_12533_test"
+            sets_dir = ea_dir / "sets"
+            sets_dir.mkdir(parents=True)
+            setfile = sets_dir / "QM5_12533_test_LOGICAL_D1_backtest.set"
+            setfile.write_text("InpFoo=1\n", encoding="utf-8")
+            (ea_dir / "basket_manifest.json").write_text(
+                '{"tester_currency":"JPY","tester_deposit":15000000}',
+                encoding="utf-8",
+            )
+            summary = root / "summary.json"
+            summary.write_text("{}", encoding="utf-8")
+            captured = {}
+
+            def fake_run(args, **kwargs):
+                captured["args"] = args
+                kwargs["stdout"].write(f"run_smoke.summary={summary}\n")
+                return subprocess.CompletedProcess(args, 1)
+
+            with mock.patch.object(subprocess, "run", side_effect=fake_run):
+                mod.run_fold_via_smoke(
+                    ea_id=12533,
+                    ea_expert=r"QM\QM5_12533_test",
+                    symbol="EURJPY.DWX",
+                    setfile=setfile,
+                    fold={
+                        "id": "F1",
+                        "dev_start": "2017-01-01",
+                        "dev_end": "2022-12-31",
+                        "oos_start": "2023-01-01",
+                        "oos_end": "2023-12-31",
+                    },
+                    report_root=root / "reports",
+                    terminal="T10",
+                    period="D1",
+                    timeout_sec=60,
+                )
+
+            args = captured["args"]
+            self.assertEqual(args[args.index("-TesterCurrencyOverride") + 1], "JPY")
+            self.assertEqual(args[args.index("-TesterDepositOverride") + 1], "15000000")
+
     def test_incomplete_fold_is_invalid_not_strategy_fail(self) -> None:
         mod = _load_module()
         verdict, reason = mod.aggregate_verdict([
@@ -143,6 +188,18 @@ class Q04WalkForwardTests(unittest.TestCase):
 
         self.assertEqual(verdict, "FAIL")
         self.assertIn("F1:pf_net=0.9", reason)
+
+    def test_pass_soft_exits_successfully(self) -> None:
+        mod = _load_module()
+        verdict, reason = mod.aggregate_verdict([
+            {"id": "F1", "summary_path": "summary.json", "pf_net": 0.91, "trades": 22},
+            {"id": "F2", "summary_path": "summary.json", "pf_net": 1.12, "trades": 26},
+            {"id": "F3", "summary_path": "summary.json", "pf_net": 74.31, "trades": 2},
+        ])
+
+        self.assertEqual(verdict, "PASS_SOFT")
+        self.assertIn("soft:", reason)
+        self.assertEqual(mod.exit_code_for_verdict(verdict), 0)
 
     def test_completed_zero_trade_fold_is_strategy_fail(self) -> None:
         mod = _load_module()

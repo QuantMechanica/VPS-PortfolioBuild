@@ -226,6 +226,8 @@ bool QM_MagicCollisionWithForeignOpenPositions(const int magic, const string exp
       return true;
      }}
 
+   const ulong restore_ticket = (ulong)PositionGetInteger(POSITION_TICKET);
+
    const int total = PositionsTotal();
    for(int i = 0; i < total; ++i)
      {{
@@ -253,9 +255,13 @@ bool QM_MagicCollisionWithForeignOpenPositions(const int magic, const string exp
                   ticket,
                   position_symbol,
                   expected_symbol);
+      if(restore_ticket > 0)
+         PositionSelectByTicket(restore_ticket);
       return true;
      }}
 
+   if(restore_ticket > 0)
+      PositionSelectByTicket(restore_ticket);
    return false;
   }}
 

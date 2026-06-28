@@ -20,6 +20,38 @@ NEWS_STALE_RE = re.compile(
     re.IGNORECASE,
 )
 SET_KEY_RE = re.compile(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*([^;\r\n#]+)")
+INPUT_RE = re.compile(
+    r"^\s*input\s+(?:[A-Za-z_][\w:<>,\s\*&]*)\s+"
+    r"(?P<name>[A-Za-z_]\w*)\s*=\s*(?P<default>[^;]+);",
+    re.MULTILINE,
+)
+TIME_PARAM_TOKENS = (
+    "hour",
+    "hhmm",
+    "minute",
+    "session",
+    "range_start",
+    "range_end",
+    "entry_start",
+    "entry_end",
+    "exit",
+    "friday",
+    "time",
+)
+TACTICAL_KEYWORDS = (
+    "asian",
+    "balke",
+    "big-ben",
+    "break",
+    "breakout",
+    "eod",
+    "london",
+    "open",
+    "overnight",
+    "range",
+    "session",
+    "time",
+)
 
 
 def utc_now() -> str:
@@ -50,6 +82,16 @@ def _is_backtest_setfile(path: Path, values: dict[str, str]) -> bool:
     return str(env).strip().lower() == "backtest"
 
 
+def _is_live_setfile(path: Path, text: str, values: dict[str, str]) -> bool:
+    lower_name = path.name.lower()
+    if "_live.set" in lower_name:
+        return True
+    env = values.get("ENV") or values.get("Env") or values.get("env")
+    if str(env).strip().lower() == "live":
+        return True
+    return re.search(r"^\s*;\s*environment:\s*live\b", text, re.IGNORECASE | re.MULTILINE) is not None
+
+
 def _scan_mq5(path: Path, max_news_stale_hours: int) -> list[dict[str, Any]]:
     findings: list[dict[str, Any]] = []
     text = path.read_text(encoding="utf-8", errors="ignore")
@@ -67,8 +109,33 @@ def _scan_mq5(path: Path, max_news_stale_hours: int) -> list[dict[str, Any]]:
     return findings
 
 
+def _strategy_inputs(mq5_path: Path) -> set[str]:
+    text = mq5_path.read_text(encoding="utf-8", errors="ignore")
+    return {match.group("name") for match in INPUT_RE.finditer(text) if match.group("name").startswith("strategy_")}
+
+
+def _time_strategy_inputs(strategy_inputs: set[str]) -> set[str]:
+    result: set[str] = set()
+    for name in strategy_inputs:
+        lower = name.lower()
+        if any(token in lower for token in TIME_PARAM_TOKENS):
+            result.add(name)
+    return result
+
+
+def _is_tactical_ea(ea_dir: Path, mq5_path: Path) -> bool:
+    chunks = [ea_dir.name, mq5_path.read_text(encoding="utf-8", errors="ignore")[:12000]]
+    for rel in ("SPEC.md", "strategy_card.md", "docs/strategy_card.md"):
+        candidate = ea_dir / rel
+        if candidate.exists():
+            chunks.append(candidate.read_text(encoding="utf-8", errors="ignore"))
+    haystack = "\n".join(chunks).lower()
+    return any(keyword in haystack for keyword in TACTICAL_KEYWORDS)
+
+
 def _scan_setfile(path: Path, max_news_stale_hours: int) -> list[dict[str, Any]]:
     findings: list[dict[str, Any]] = []
+    text = path.read_text(encoding="utf-8", errors="ignore")
     values = _parse_setfile(path)
     if _is_backtest_setfile(path, values):
         risk_fixed = _parse_number(values.get("RISK_FIXED", ""))
@@ -91,6 +158,24 @@ def _scan_setfile(path: Path, max_news_stale_hours: int) -> list[dict[str, Any]]
                     "required": "0",
                 }
             )
+    if _is_live_setfile(path, text, values):
+        strategy_keys = sorted(key for key in values if key.startswith("strategy_"))
+        if not strategy_keys:
+            findings.append(
+                {
+                    "path": str(path),
+                    "kind": "live_strategy_params_missing",
+                    "detail": "Live setfile must include explicit strategy_* params before deployment.",
+                }
+            )
+        if "card_defaults_source=not_found" in text:
+            findings.append(
+                {
+                    "path": str(path),
+                    "kind": "live_card_defaults_source_not_found",
+                    "detail": "Live setfile was generated without card/default extraction evidence.",
+                }
+            )
     stale_raw = values.get("qm_news_stale_max_hours")
     stale_hours = _parse_number(stale_raw) if stale_raw is not None else None
     if stale_hours is not None and stale_hours > max_news_stale_hours:
@@ -102,6 +187,50 @@ def _scan_setfile(path: Path, max_news_stale_hours: int) -> list[dict[str, Any]]
                 "max_allowed": max_news_stale_hours,
             }
         )
+    return findings
+
+
+def _scan_strategy_conformance(path: Path) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
+    ea_dirs: list[tuple[Path, list[Path] | None]]
+    if path.is_file():
+        if path.suffix.lower() == ".set" and path.parent.name == "sets":
+            ea_dirs = [(path.parent.parent, [path])]
+        else:
+            ea_dirs = [(path.parent, None)]
+    elif (path / "sets").exists():
+        ea_dirs = [(path, None)]
+    else:
+        ea_dirs = [(candidate, None) for candidate in path.rglob("*") if candidate.is_dir() and (candidate / "sets").exists()]
+
+    for ea_dir, selected_setfiles in ea_dirs:
+        mq5s = sorted(ea_dir.glob("*.mq5"))
+        if not mq5s:
+            continue
+        mq5_path = mq5s[0]
+        strategy_inputs = _strategy_inputs(mq5_path)
+        time_inputs = _time_strategy_inputs(strategy_inputs)
+        if not time_inputs or not _is_tactical_ea(ea_dir, mq5_path):
+            continue
+        setfiles = selected_setfiles if selected_setfiles is not None else sorted((ea_dir / "sets").glob("*.set"))
+        for setfile in setfiles:
+            values = _parse_setfile(setfile)
+            if not _is_backtest_setfile(setfile, values):
+                continue
+            present_time_inputs = sorted(time_inputs & set(values))
+            if present_time_inputs:
+                continue
+            findings.append(
+                {
+                    "path": str(setfile),
+                    "kind": "time_sensitive_strategy_params_missing",
+                    "required_any": sorted(time_inputs),
+                    "detail": (
+                        "Tactical/session/range EA has time-sensitive strategy inputs, "
+                        "but this backtest setfile leaves all of them at EA defaults."
+                    ),
+                }
+            )
     return findings
 
 
@@ -126,6 +255,7 @@ def validate_path(path: Path, max_news_stale_hours: int = DEFAULT_MAX_NEWS_STALE
             findings.extend(_scan_mq5(candidate, max_news_stale_hours))
         elif suffix == ".set":
             findings.extend(_scan_setfile(candidate, max_news_stale_hours))
+    findings.extend(_scan_strategy_conformance(path))
     return {
         "checked_at": utc_now(),
         "path": str(path),

@@ -310,6 +310,10 @@ else {
     $lines += "; card_defaults_source=not_found"
 }
 
+if ($Env -eq 'live' -and -not ($lines | Where-Object { $_ -match '^strategy_[A-Za-z0-9_]+\s*=' })) {
+    throw "LIVE_SETFILE_STRATEGY_PARAMS_MISSING: $EaSlug $Symbol $TF would produce a live setfile without explicit strategy_* params."
+}
+
 $content = ($lines -join "`n") + "`n"
 [System.IO.File]::WriteAllText($targetPath, $content, [System.Text.UTF8Encoding]::new($false))
 

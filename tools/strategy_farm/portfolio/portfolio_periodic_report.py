@@ -29,6 +29,7 @@ if __package__ in (None, ""):
     from tools.strategy_farm.portfolio.portfolio_assemble import (
         greedy_select, select_and_validate,
     )
+    from tools.strategy_farm.portfolio.portfolio_manifest import DEFAULT_STARTING_CAPITAL
 else:
     from .portfolio_common import (
         DEFAULT_CANDIDATES_DB, DEFAULT_COMMON_DIR, _coerce_ea_int, align, key_label,
@@ -36,6 +37,7 @@ else:
     )
     from .commission import load_model
     from .portfolio_assemble import greedy_select, select_and_validate
+    from .portfolio_manifest import DEFAULT_STARTING_CAPITAL
 
 BOMBERS = ("10809", "11072", "11092")
 DEFAULT_OUT_DIR = Path(r"D:\QM\reports\portfolio")
@@ -71,7 +73,7 @@ def build_report(
     candidates_db: Path = DEFAULT_CANDIDATES_DB,
     max_dd_pct: float = 20.0,
     weighting: str = "inverse_vol",
-    starting_capital: float = 10_000.0,
+    starting_capital: float = DEFAULT_STARTING_CAPITAL,
     generated_at: str | None = None,
 ) -> dict:
     pairs = robust_pairs(candidates_db)
@@ -84,6 +86,12 @@ def build_report(
     report: dict = {
         "generated_at_utc": generated_at or "",
         "basis": "q08_fail_soft_robust_pool",
+        "certification_scope": "exploratory_q08_fail_soft_robust_pool",
+        "deployment_eligible": False,
+        "deployment_note": (
+            "Not a certified T_Live book. Q12 deployment manifests must be generated from "
+            "portfolio_candidates.Q12_REVIEW_READY_all via portfolio_manifest."
+        ),
         "weighting": weighting,
         "max_dd_pct_constraint": float(max_dd_pct),
         "commission_degraded": model.degraded,
@@ -140,6 +148,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--candidates-db", type=Path, default=DEFAULT_CANDIDATES_DB)
     p.add_argument("--max-dd-pct", type=float, default=20.0)
     p.add_argument("--weighting", choices=("equal", "inverse_vol"), default="inverse_vol")
+    p.add_argument("--starting-capital", type=float, default=DEFAULT_STARTING_CAPITAL)
     p.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
     p.add_argument("--stamp", default=None, help="UTC timestamp (the scheduler passes this; "
                                                  "Date.now is unavailable in some contexts)")
@@ -154,6 +163,7 @@ def main(argv: list[str] | None = None) -> int:
         candidates_db=args.candidates_db,
         max_dd_pct=args.max_dd_pct,
         weighting=args.weighting,
+        starting_capital=args.starting_capital,
         generated_at=stamp,
     )
     args.out_dir.mkdir(parents=True, exist_ok=True)

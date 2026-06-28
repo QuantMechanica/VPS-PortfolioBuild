@@ -224,6 +224,37 @@ def read_pf_net_from_ea(ea_id: int, symbol: str) -> tuple[float | None, int, flo
     return pf, trades, comm
 
 
+def _basket_tester_overrides(setfile: Path) -> tuple[str | None, int | None]:
+    """Return tester currency/deposit from the EA basket manifest, if present.
+
+    Q04 copies the setfile into the report directory before launching run_smoke,
+    so run_smoke's setfile-relative manifest fallback cannot see the original EA
+    directory. Read it here from the source setfile path and pass explicit
+    overrides to preserve basket-specific tester accounting.
+    """
+    manifest_path = Path(setfile).parent.parent / "basket_manifest.json"
+    if not manifest_path.exists():
+        return None, None
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return None, None
+
+    currency_raw = str(manifest.get("tester_currency") or "").strip().upper()
+    currency = currency_raw if re.fullmatch(r"[A-Z]{3}", currency_raw) else None
+
+    deposit = None
+    for key in ("tester_deposit", "tester_initial_deposit"):
+        try:
+            value = int(str(manifest.get(key) or "").strip())
+        except ValueError:
+            continue
+        if value > 0:
+            deposit = value
+            break
+    return currency, deposit
+
+
 # ---------------------------------------------------------------------------
 # DL-073 (OWNER-ratified 2026-06-09): realistic %-of-notional commission.
 # Q04 historically charged a flat $7/lot round-trip EA-side — per-instrument WRONG
@@ -445,6 +476,14 @@ def aggregate_verdict_lowfreq(strict_folds: list[dict]) -> tuple[str, str]:
     return "FAIL", f"lowfreq_pooled_pf_below_floor;{detail}"
 
 
+def exit_code_for_verdict(verdict: str) -> int:
+    if verdict in ("PASS", "PASS_SOFT", "PASS_LOWFREQ"):
+        return 0
+    if verdict == "FAIL":
+        return 1
+    return 3
+
+
 def _mt5_date(iso_date: str) -> str:
     return iso_date.replace("-", ".")
 
@@ -488,6 +527,7 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
     if "InpQMSimCommissionPerLot" not in base_text:
         base_text = base_text.rstrip("\r\n") + f"\r\nInpQMSimCommissionPerLot={sim_comm_per_lot}\r\n"
     fold_set.write_text(base_text, encoding="utf-8")
+    tester_currency, tester_deposit = _basket_tester_overrides(Path(setfile))
 
     # Clear any stale EA result + per-trade stream before this fold (folds run
     # sequentially per ea/symbol) so the post-hoc stream read picks up ONLY this
@@ -521,6 +561,10 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
         "-AllowRunningTerminal",
         "-AllowMissingRealTicksLogMarker",
     ]
+    if tester_currency:
+        args.extend(["-TesterCurrencyOverride", tester_currency])
+    if tester_deposit:
+        args.extend(["-TesterDepositOverride", str(tester_deposit)])
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
     log_path = fold_dir / "run_smoke.log"
     try:
@@ -656,7 +700,7 @@ def main() -> int:
     })
     print(f"Q04 verdict for {args.ea} {label}: {verdict}")
     print(f"  reason: {reason}")
-    return 0 if verdict in ("PASS", "PASS_LOWFREQ") else (1 if verdict == "FAIL" else 3)
+    return exit_code_for_verdict(verdict)
 
 
 if __name__ == "__main__":

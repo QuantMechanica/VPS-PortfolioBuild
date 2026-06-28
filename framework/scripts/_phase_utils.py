@@ -65,6 +65,25 @@ FULL_HISTORY_FROM = "2017.01.01"
 FULL_HISTORY_TO = "2025.12.31"
 FULL_HISTORY_YEAR = "2025"
 
+
+def full_history_window(latest_full_year: int | str | None = None) -> tuple[str, str, str]:
+    """Return run_smoke Year/FromDate/ToDate for full-history phase runners.
+
+    Some custom-symbol cohorts have validated history only through 2024. The
+    phase runners still need a valid -Year argument, so cap both -Year and
+    -ToDate when an upstream gate records latest_full_year/q04_latest_full_year.
+    """
+    if latest_full_year is None or str(latest_full_year).strip() == "":
+        return FULL_HISTORY_YEAR, FULL_HISTORY_FROM, FULL_HISTORY_TO
+    year = int(str(latest_full_year).strip())
+    default_year = int(FULL_HISTORY_YEAR)
+    if year >= default_year:
+        return FULL_HISTORY_YEAR, FULL_HISTORY_FROM, FULL_HISTORY_TO
+    from_year = int(FULL_HISTORY_FROM.split(".", 1)[0])
+    if year < from_year:
+        raise ValueError(f"latest_full_year {year} predates full-history start {from_year}")
+    return str(year), FULL_HISTORY_FROM, f"{year}.12.31"
+
 FX_MAJOR = {
     "EURUSD",
     "GBPUSD",

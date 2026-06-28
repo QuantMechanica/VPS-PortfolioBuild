@@ -64,8 +64,15 @@ PIPELINE_REPORT_ROOT = Path(r"D:\QM\reports\pipeline")
 # work_items, so the storage layer now writes Qxx directly. Legacy P-key
 # references in classify_* / report-csv paths remain inert (no rows to read).
 SUPPORTED_BACKTEST_PHASES = ("Q02", "Q03", "Q04")
-CASCADE_BACKTEST_PHASES = ("Q05", "Q06", "Q07", "Q08", "Q09", "Q09_PORTFOLIO", "Q10")
-REAL_PHASE_RUNNER_PHASES = ("Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q09_PORTFOLIO", "Q10")
+CASCADE_BACKTEST_PHASES = (
+    "Q05", "Q06", "Q07", "Q08", "Q09", "Q09_PORTFOLIO", "Q10",
+    # Back-compat for pre-rewrite P-key work_items/test fixtures.
+    "P5", "P5b", "P5c", "P6", "P7", "P8",
+)
+REAL_PHASE_RUNNER_PHASES = (
+    "Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q09_PORTFOLIO", "Q10",
+    "P5", "P5b", "P5c", "P6", "P7", "P8",
+)
 PHASE_RUNNER_SCRIPTS = {
     "Q02": "p2_baseline.py",            # verdict rewritten for PF>1.20/T>150/DD<15%
     "Q03": "p3_param_sweep.py",         # unchanged behaviour, phase-tag renamed
@@ -77,6 +84,12 @@ PHASE_RUNNER_SCRIPTS = {
     "Q09": "q09_news_mode.py",          # TODO: news-mode sweep runner
     "Q09_PORTFOLIO": "q09_portfolio.py",
     "Q10": "q10_confirmation.py",       # NEW: full-history canonical + baseline capture
+    "P5": "p5_stress_driver.py",
+    "P5b": "p5b_noise_driver.py",
+    "P5c": "p5c_crisis_slices.py",
+    "P6": "p6_multiseed_driver.py",
+    "P7": "p7_statval.py",
+    "P8": "p8_news_driver.py",
 }
 Q09_PORTFOLIO_MIN_TRADES = 20
 NEWS_MATRIX_FALLBACK = Path(r"D:\QM\data\news_calendar\news_matrix.csv")
@@ -156,9 +169,28 @@ def available_mt5_terminals(mt5_root: Path | None = None) -> tuple[str, ...]:
     return tuple(terminals)
 
 
+DISABLED_TERMINALS_FILE = Path(r"D:\QM\strategy_farm\state\disabled_terminals.txt")
+
+
+def disabled_mt5_terminals() -> set[str]:
+    try:
+        text = DISABLED_TERMINALS_FILE.read_text(encoding="utf-8-sig")
+    except (OSError, UnicodeDecodeError):
+        return set()
+    disabled: set[str] = set()
+    for line in text.splitlines():
+        terminal = line.strip().upper()
+        if is_factory_terminal_name(terminal):
+            disabled.add(terminal)
+    return disabled
+
+
 def active_mt5_terminals(mt5_root: Path | None = None) -> tuple[str, ...]:
     installed = available_mt5_terminals(mt5_root)
-    return installed if installed else tuple(t for t in MT5_TERMINALS if is_factory_terminal_name(t))
+    disabled = disabled_mt5_terminals()
+    active = tuple(t for t in (installed if installed else MT5_TERMINALS) if is_factory_terminal_name(t) and t not in disabled)
+    return active
+
 
 
 def _repo_dirty_status(root_path: Path = REPO_ROOT) -> dict[str, Any]:
@@ -1477,6 +1509,27 @@ def _derive_phase_runner_verdict(summary: dict[str, Any], min_trades: int = 5, p
     if verdict_upper in {"INFRA_FAIL", "ERROR", "TIMEOUT"}:
         return "INFRA_FAIL", reason or raw_verdict or "phase_runner_infra_fail"
     if verdict_upper == "INVALID":
+        infra_invalid_tokens = (
+            "summary_missing",
+            "missing_summary",
+            "invalid_summary",
+            "summary_parse_error",
+            "no_history",
+            "no_real_ticks",
+            "report_format_drift",
+            "invalid_report",
+            "bars_zero",
+            "empty_expert",
+            "empty_symbol",
+            "m0_1970",
+            "history_context_invalid",
+            "run_status_invalid",
+            "seeds_invalid_evidence",
+            "seeds_missing_summary",
+            "phase_runner_invalid_report",
+        )
+        if reason and any(token in reason.lower() for token in infra_invalid_tokens):
+            return "INFRA_FAIL", reason
         if reason and any(token in reason.lower() for token in ("summary_missing", "missing_summary")):
             return "INFRA_FAIL", reason
         if phase_key in {"P4", "P5", "P5b"} and (
@@ -1605,7 +1658,12 @@ def _derive_verdict_from_summary(summary: dict[str, Any], min_trades: int = 5, p
     if not runs:
         return "INFRA_FAIL", "no_runs_in_summary"
     trades = [int(r.get("total_trades", 0) or 0) for r in runs]
-    is_p5plus = str(phase or "").upper() in {p.upper() for p in CASCADE_BACKTEST_PHASES}
+    phase_key = str(phase or "").strip()
+    legacy_phase_key = _normalize_phase(phase_key)
+    is_p5plus = (
+        phase_key.upper() in {p.upper() for p in CASCADE_BACKTEST_PHASES}
+        or legacy_phase_key in {"P5", "P5b", "P5c", "P6", "P7", "P8"}
+    )
     trade_gate_passed = sum(trades) >= min_trades if is_p5plus else any(t >= min_trades for t in trades)
     if not trade_gate_passed:
         return "FAIL", "MIN_TRADES_NOT_MET"
@@ -2769,12 +2827,29 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--baseline-setfile", str(item_row["setfile_path"] or ""),
             "--terminal", terminal or "T1",
         ])
+        if phase in ("Q05", "Q06"):
+            latest_full_year = payload.get("q04_latest_full_year", payload.get("latest_full_year"))
+            if latest_full_year is not None:
+                try:
+                    latest_year = int(str(latest_full_year).strip())
+                except ValueError:
+                    latest_year = None
+                if latest_year is not None:
+                    cmd.extend(["--latest-full-year", str(latest_year)])
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "Q07":
         cmd.extend([
             "--baseline-setfile", str(item_row["setfile_path"] or ""),
             "--terminal", terminal or "T1",
         ])
+        latest_full_year = payload.get("q04_latest_full_year", payload.get("latest_full_year"))
+        if latest_full_year is not None:
+            try:
+                latest_year = int(str(latest_full_year).strip())
+            except ValueError:
+                latest_year = None
+            if latest_year is not None:
+                cmd.extend(["--latest-full-year", str(latest_year)])
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "Q08":
         # Q08 aggregator reads the EA's structured JSON-lines log directly.
@@ -3302,6 +3377,8 @@ BASKET_CONTEXT_PAYLOAD_KEYS = (
     "to_year",
     "from_date",
     "to_date",
+    "latest_full_year",
+    "q04_latest_full_year",
     "smoke_year_count",
     "timeout_min",
 )
@@ -3388,23 +3465,30 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
         terminal = item["claimed_by"]
         if terminal:
             busy_terminals.add(terminal)
-        # Find newest summary.json under report_root
+        # Find newest summary.json/aggregate.json under the work-item report root.
+        # Q-rewrite phase runners write under D:\QM\reports\work_items\<id>;
+        # legacy phase runners may still publish to the EA phase directory.
         summary_path = None
-        search_root = Path(report_root) if report_root else None
+        search_roots: list[Path] = []
+        if report_root:
+            search_roots.append(Path(report_root))
         if item["phase"] in REAL_PHASE_RUNNER_PHASES:
-            search_root = _ea_phase_dir(item["ea_id"], item["phase"])
+            search_roots.append(_ea_phase_dir(item["ea_id"], item["phase"]))
+        for search_root in dict.fromkeys(search_roots):
             for phase_summary in (search_root / "summary.json", search_root / "aggregate.json"):
                 if phase_summary.exists():
                     summary_path = phase_summary
                     break
-        if not summary_path and search_root and search_root.is_dir():
-            cands = sorted(
-                [*search_root.rglob("summary.json"), *search_root.rglob("aggregate.json")],
-                key=lambda p: p.stat().st_mtime,
-                reverse=True,
-            )
+            if summary_path:
+                break
+        if not summary_path:
+            cands: list[Path] = []
+            for search_root in dict.fromkeys(search_roots):
+                if search_root.is_dir():
+                    cands.extend(search_root.rglob("summary.json"))
+                    cands.extend(search_root.rglob("aggregate.json"))
             if cands:
-                summary_path = cands[0]
+                summary_path = max(cands, key=lambda p: p.stat().st_mtime)
         if summary_path and summary_path.exists():
             try:
                 summary = json.loads(summary_path.read_text(encoding="utf-8-sig"))
@@ -9393,6 +9477,12 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
         "Q09": "Q08",
         "Q09_PORTFOLIO": "Q08",
         "Q10": "Q08",
+        "P5": "P4",
+        "P5b": "P5",
+        "P5c": "P5",
+        "P6": "P5b",
+        "P7": "P6",
+        "P8": "P7",
     }
     phase_prev_verdicts = {
         "Q05": {"PASS"},
@@ -9402,6 +9492,12 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
         "Q09": {"PASS"},
         "Q09_PORTFOLIO": {"FAIL_SOFT"},
         "Q10": {"PASS"},
+        "P5": {"PASS"},
+        "P5b": {"PASS"},
+        "P5c": {"PASS"},
+        "P6": {"PASS"},
+        "P7": {"PASS"},
+        "P8": {"PASS"},
     }
     prev_phase = prev_phase_map[phase]
     verdicts = sorted(phase_prev_verdicts[phase])
@@ -9429,7 +9525,7 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                     "reason": "missing_setfile",
                 })
                 continue
-            if phase == "Q05":
+            if phase in {"Q05", "P5"}:
                 p5_has_history, p5_history_detail = _history_window_for_work_item(
                     prev,
                     P5_REQUIRED_OOS_FROM_YEAR,
