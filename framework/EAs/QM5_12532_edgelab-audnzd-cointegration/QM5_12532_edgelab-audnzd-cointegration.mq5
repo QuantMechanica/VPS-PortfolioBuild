@@ -55,6 +55,11 @@ datetime g_pair_entry_time = 0;
 datetime g_last_state_bar = 0;
 datetime g_last_entry_signal_bar = 0;
 
+string Strategy_BoolJson(const bool value)
+  {
+   return value ? "true" : "false";
+  }
+
 void Strategy_ResetRequest(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -414,7 +419,13 @@ bool Strategy_OpenPair(const int spread_direction)
    const datetime broker_now = TimeCurrent();
    for(int i = 0; i < STRATEGY_SYMBOL_COUNT; ++i)
       if(!Strategy_SymbolTradeReady(g_pair_symbols[i], broker_now))
+        {
+         QM_LogEvent(QM_INFO, "PAIR_OPEN_BLOCKED_SESSION",
+                     StringFormat("{\"symbol\":\"%s\",\"spread_direction\":%d}",
+                                  QM_LoggerEscapeJson(g_pair_symbols[i]),
+                                  spread_direction));
          return false;
+        }
 
    const bool buy_aud = (spread_direction > 0);
    const bool buy_nzd = !buy_aud;
@@ -429,18 +440,47 @@ bool Strategy_OpenPair(const int spread_direction)
    QM_EntryRequest aud_req;
    QM_EntryRequest nzd_req;
    if(!Strategy_BuildLegRequest(g_pair_symbols[0], buy_aud, reason, aud_weight, weight_sum, aud_req))
+     {
+      QM_LogEvent(QM_WARN, "PAIR_OPEN_BUILD_REJECT",
+                  StringFormat("{\"symbol\":\"%s\",\"spread_direction\":%d,\"z\":%.6f}",
+                               QM_LoggerEscapeJson(g_pair_symbols[0]),
+                               spread_direction,
+                               g_z_now));
       return false;
+     }
    if(!Strategy_BuildLegRequest(g_pair_symbols[1], buy_nzd, reason, nzd_weight, weight_sum, nzd_req))
+     {
+      QM_LogEvent(QM_WARN, "PAIR_OPEN_BUILD_REJECT",
+                  StringFormat("{\"symbol\":\"%s\",\"spread_direction\":%d,\"z\":%.6f}",
+                               QM_LoggerEscapeJson(g_pair_symbols[1]),
+                               spread_direction,
+                               g_z_now));
       return false;
+     }
 
    const bool nzd_ok = Strategy_OpenBasketLeg(g_pair_symbols[1], buy_nzd, reason, nzd_weight, weight_sum);
    const bool aud_ok = Strategy_OpenBasketLeg(g_pair_symbols[0], buy_aud, reason, aud_weight, weight_sum);
+   const int legs_after_open = Strategy_OpenPairLegCount();
+   QM_LogEvent(QM_INFO, "PAIR_OPEN_RESULT",
+               StringFormat("{\"spread_direction\":%d,\"aud_ok\":%s,\"nzd_ok\":%s,\"legs\":%d,\"z\":%.6f}",
+                            spread_direction,
+                            Strategy_BoolJson(aud_ok),
+                            Strategy_BoolJson(nzd_ok),
+                            legs_after_open,
+                            g_z_now));
    if(aud_ok && nzd_ok)
      {
       g_pair_entry_time = TimeCurrent();
       return true;
      }
 
+   QM_LogEvent(QM_WARN, "PAIR_OPEN_ROLLBACK",
+               StringFormat("{\"spread_direction\":%d,\"aud_ok\":%s,\"nzd_ok\":%s,\"legs\":%d,\"z\":%.6f}",
+                            spread_direction,
+                            Strategy_BoolJson(aud_ok),
+                            Strategy_BoolJson(nzd_ok),
+                            legs_after_open,
+                            g_z_now));
    Strategy_ClosePair(QM_EXIT_STRATEGY);
    return false;
   }
@@ -499,6 +539,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    else
       return false;
 
+   QM_LogEvent(QM_INFO, "PAIR_ENTRY_SIGNAL",
+               StringFormat("{\"spread_direction\":%d,\"z\":%.6f,\"entry_z\":%.6f,\"bar\":%I64d}",
+                            spread_direction,
+                            g_z_now,
+                            strategy_entry_z,
+                            (long)iTime(_Symbol, PERIOD_D1, 0)));
    Strategy_OpenPair(spread_direction);
    return false;
   }
@@ -508,7 +554,14 @@ void Strategy_ManageOpenPosition()
   {
    const int legs = Strategy_OpenPairLegCount();
    if(legs == 1)
+     {
+      QM_LogEvent(QM_WARN, "PAIR_MANAGE_PARTIAL_CLOSE",
+                  StringFormat("{\"legs\":%d,\"z\":%.6f,\"entry_time\":%I64d}",
+                               legs,
+                               g_z_now,
+                               (long)g_pair_entry_time));
       Strategy_ClosePair(QM_EXIT_STRATEGY);
+     }
   }
 
 // Trade Close.
@@ -519,6 +572,11 @@ bool Strategy_ExitSignal()
       return false;
    if(open_legs != STRATEGY_SYMBOL_COUNT)
      {
+      QM_LogEvent(QM_WARN, "PAIR_EXIT_PARTIAL_CLOSE",
+                  StringFormat("{\"legs\":%d,\"z\":%.6f,\"entry_time\":%I64d}",
+                               open_legs,
+                               g_z_now,
+                               (long)g_pair_entry_time));
       Strategy_ClosePair(QM_EXIT_STRATEGY);
       return false;
      }
@@ -534,6 +592,12 @@ bool Strategy_ExitSignal()
 
    if(g_state_ready && MathAbs(g_z_now) < strategy_exit_abs_z)
      {
+      QM_LogEvent(QM_INFO, "PAIR_EXIT_Z",
+                  StringFormat("{\"legs\":%d,\"z\":%.6f,\"exit_abs_z\":%.6f,\"entry_time\":%I64d}",
+                               open_legs,
+                               g_z_now,
+                               strategy_exit_abs_z,
+                               (long)g_pair_entry_time));
       Strategy_ClosePair(QM_EXIT_STRATEGY);
       return false;
      }
