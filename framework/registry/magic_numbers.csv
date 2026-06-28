@@ -13726,3 +13726,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12733,xti-xng-xmom,0,XTIUSD.DWX,127330000,2026-06-28,Development,active
 12733,xti-xng-xmom,1,XNGUSD.DWX,127330001,2026-06-28,Development,active
 12734,wti-febsep-prem,0,XTIUSD.DWX,127340000,2026-06-28,Development,active
+12735,edgelab-eurusd-nzdusd-cointegration,0,EURUSD.DWX,127350000,2026-06-28,Development,active
+12735,edgelab-eurusd-nzdusd-cointegration,1,NZDUSD.DWX,127350001,2026-06-28,Development,active

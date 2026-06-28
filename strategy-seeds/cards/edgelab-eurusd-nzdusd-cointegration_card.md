@@ -45,10 +45,10 @@ scan in `docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md`, rerun from
 `framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py`.
 
 The published scan hard-certified only QM5_12533 and QM5_12532. QM5_12624,
-QM5_12712, QM5_12723, QM5_12728, and QM5_12731 already cover later exploratory baskets. This card is
+QM5_12712, QM5_12723, QM5_12728, QM5_12731, and QM5_12732 already cover later exploratory baskets. This card is
 the strongest remaining unbuilt positive DEV/OOS candidate by OOS net Sharpe:
-EURUSD/NZDUSD had DEV Sharpe 0.65, OOS net Sharpe 0.54, OOS return +2.81%,
-20 OOS state changes, hedge 0.81, and 49-day half-life in the same rerun.
+EURUSD/NZDUSD had DEV Sharpe 0.31, OOS net Sharpe 0.35, OOS return +2.38%,
+15 OOS state changes, hedge 0.81, and 52-day half-life in the same rerun.
 
 ## Concept
 
@@ -111,7 +111,7 @@ not either cross as a standalone directional system.
 ## Author Claims
 
 No external performance claim is taken from Chan for EURUSD/NZDUSD specifically.
-The in-house scan rerun found DEV Sharpe 0.65 and OOS net Sharpe 0.54 after
+The in-house scan rerun found DEV Sharpe 0.31 and OOS net Sharpe 0.35 after
 cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 
 ## Initial Risk Profile
@@ -143,4 +143,4 @@ cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
 | v1 | 2026-06-28 | initial next-best FX cointegration basket build | G0 | APPROVED |
-| v1 | 2026-06-28 | logical-basket Q02 enqueued as non-duplicate paced worker item `a8c74944-5252-4ce6-839c-abe0065bb953` | Q02 | PENDING |
+| v1 | 2026-06-28 | logical-basket Q02 enqueued as non-duplicate paced worker item `c1ae6321-654d-4f86-9314-13f9929f6245` | Q02 | PENDING |

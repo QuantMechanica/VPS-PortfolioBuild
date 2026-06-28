@@ -23,8 +23,8 @@ This is an exploratory next-best basket, not a hard-bar scan survivor. The
 published 66-pair scan only certified QM5_12533 and QM5_12532. A rerun of the
 same script ranked EURUSD/NZDUSD as the strongest remaining unbuilt positive
 DEV/OOS candidate after the existing 12532/12533/12624/12712/12723/12728/12731/12732 baskets, with
-DEV Sharpe 0.65, OOS net Sharpe 0.54, OOS return +2.81%, 20 OOS state changes,
-beta 0.81, and 49-day half-life.
+DEV Sharpe 0.31, OOS net Sharpe 0.35, OOS return +2.38%, 15 OOS state changes,
+beta 0.81, and 52-day half-life.
 
 ---
 
@@ -73,7 +73,7 @@ settlement in the tester.
 | Trades / year / logical basket | 7-12 |
 | Typical hold time | days to weeks |
 | Expected drawdown profile | moderate-high; Q04/Q05 must judge stability because this is sub-threshold research |
-| Regime preference | mean-reverting EUR-vs-NZD USD-major relative-value relative-value spread |
+| Regime preference | mean-reverting EUR-vs-NZD USD-major relative-value spread |
 | Win rate target | medium |
 
 ---
