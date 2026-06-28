@@ -1,0 +1,17 @@
+{
+  "logical_symbol": "QM5_12741_NNFX_FX_BASKET_D1",
+  "host_symbol": "AUDUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "AUDUSD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDCHF.DWX"
+  ],
+  "notes": [
+    "Pooled NNFX trend sleeve built from the four gross-positive FX majors named by the approved card.",
+    "Host EA runs on AUDUSD.DWX D1 with magic slot 0.",
+    "Each member is evaluated independently with the canonical Kijun + SSL + Aroon + WAE D1 NNFX stack.",
+    "Q02 should use the logical basket symbol so downstream gates evaluate the pooled trade stream as one sleeve."
+  ]
+}

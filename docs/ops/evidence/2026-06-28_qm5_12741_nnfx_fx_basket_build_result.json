@@ -1,0 +1,30 @@
+{
+  "task_id": "e553d527-e912-4247-a7f9-dfa38341c2f2",
+  "ea_id": "QM5_12741",
+  "ea_dir": "framework/EAs/QM5_12741_nnfx-fx-basket-pooled",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_12741_nnfx-fx-basket-pooled/QM5_12741_nnfx-fx-basket-pooled.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_12741_nnfx-fx-basket-pooled/QM5_12741_nnfx-fx-basket-pooled.ex5",
+  "magic_base": 127410000,
+  "symbols_registered": [
+    "AUDUSD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDCHF.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_12741_nnfx-fx-basket-pooled/sets/QM5_12741_nnfx-fx-basket-pooled_QM5_12741_NNFX_FX_BASKET_D1_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_12741_nnfx-fx-basket-pooled/SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": "",
+  "open_questions": [
+    "Local build smoke was deferred intentionally; the EA is a logical basket and Q02 should evaluate the pooled stream through the auto-enqueued work item."
+  ],
+  "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260628_110805.json",
+  "compile_log_path": "C:/QM/repo/framework/build/compile/20260628_110805/QM5_12741_nnfx-fx-basket-pooled.compile.log",
+  "symbol_scope_verdict": "BASKET_OK",
+  "smoke_skipped_reason": "logical basket build; Q02 pooled-stream smoke/backtest via farm queue"
+}
