@@ -48,11 +48,18 @@ CFD using a dual-confirmation rule: once per month, trade `XTIUSD.DWX` only
 when the prior six-month and twelve-month D1 log returns agree in sign outside
 the neutral band.
 
-This is deliberately different from `QM5_12603_wti-tsmom12m`,
-`QM5_12616_tsmom-9m-commodity-xtiusd`, and
-`QM5_12708_commodity-tsmom-6m` because both six-month and twelve-month trend
-legs must agree. It is also not a WTI calendar/event sleeve, XNG sleeve, ratio
-basket, or RSI commodity pullback.
+This is deliberately different from:
+
+- `QM5_12603_wti-tsmom12m`: this card requires six-month confirmation, not a
+  pure twelve-month return-sign package.
+- `QM5_12616_tsmom-9m-commodity-xtiusd`: this card uses 6m/12m agreement, not
+  a 9m primary signal with separate 3m confirmation.
+- `QM5_12708_commodity-tsmom-6m`: this card rejects trades when the slower
+  twelve-month trend disagrees with the six-month trend.
+- WTI calendar/event sleeves: no weekday, month-of-year, WPSR, hurricane,
+  refinery, OPEC, or expiry-window trigger.
+- `QM5_12567_cum-rsi2-commodity`: no RSI, oscillator, or short-horizon
+  pullback logic.
 
 ## Markets And Timeframe
 
@@ -61,16 +68,20 @@ basket, or RSI commodity pullback.
 - Expected trade frequency: approximately 5-9 entries/year.
 - Backtest risk mode: RISK_FIXED.
 - Runtime data: Darwinex MT5 D1 OHLC and broker calendar only; no futures
-  curve, inventory feed, CSV, API, analyst forecast, or ML model.
+  curve, inventory feed, EIA feed, CFTC data, CSV, API, analyst forecast, or
+  ML model.
 
 ## Entry Rules
 
 - Evaluate only on a new D1 bar.
 - Entry is allowed only on the first D1 bar of a new broker-calendar month.
-- Compute six-month and twelve-month D1 log returns from completed closes.
-- Long package: BUY `XTIUSD.DWX` if both returns exceed the neutral band.
-- Short package: SELL `XTIUSD.DWX` if both returns are below the negative
-  neutral band.
+- Compute the prior closed D1 close.
+- Compute `fast_momentum = ln(close_recent / close_126_bars_ago)`.
+- Compute `slow_momentum = ln(close_recent / close_252_bars_ago)`.
+- Long package: BUY `XTIUSD.DWX` if both momentum values are greater than
+  `strategy_min_abs_return_pct / 100`.
+- Short package: SELL `XTIUSD.DWX` if both momentum values are less than
+  `-strategy_min_abs_return_pct / 100`.
 - No entry if the two horizons disagree, either horizon is inside the neutral
   band, or an open `XTIUSD.DWX` position already exists for this EA magic.
 - No entry if `XTIUSD.DWX` spread exceeds `strategy_max_spread_points`.

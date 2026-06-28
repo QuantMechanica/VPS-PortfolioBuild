@@ -29,8 +29,11 @@ price history and broker calendar state at runtime.
 - Extracted strategy: monthly 12-month return-sign momentum package on WTI.
 - Extracted strategy: monthly 9-month return-sign momentum package on WTI with
   a 3-month same-sign confirmation filter.
+- Extracted strategy: monthly WTI dual-horizon 6-month and 12-month
+  return-sign momentum package requiring both horizons to agree.
 - Runtime data deliberately excludes futures curves, open interest, inventory
   feeds, analyst forecasts, CSVs, APIs, and ML models.
 - The EAs should be tested as energy sleeves, not as replacements for existing
-  WTI calendar/event cards. The 9-month card is a shorter-horizon variant with
-  confirmation and must be duplicate-reviewed against the 12-month card.
+  WTI calendar/event cards. The 9-month and dual-horizon cards are shorter or
+  confirmation-filtered variants and must be duplicate-reviewed against the
+  pure 12-month card.
