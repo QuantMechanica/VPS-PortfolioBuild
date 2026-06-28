@@ -1,16 +1,16 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_12711 WTI Dual 6M/12M Time Series Momentum"
+#property description "QM5_12711 WTI Dual-Horizon Time Series Momentum"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QM5_12711 - WTI Dual 6M/12M Time-Series Momentum
+// QM5_12711 - WTI Dual-Horizon Time-Series Momentum
 // -----------------------------------------------------------------------------
 // D1 structural WTI sleeve:
 //   - first D1 bar of each month only
-//   - direction = sign of both prior six-month and twelve-month log returns
-//   - no trade unless both horizons agree outside the neutral band
+//   - direction = sign of prior six-month and twelve-month log returns
+//   - both horizons must agree outside the neutral band
 //   - monthly package exits at next rebalance or stale-position guard
 // Runtime uses MT5 OHLC/broker calendar only; no curve, inventory, API, or ML.
 // =============================================================================
@@ -40,13 +40,13 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_fast_lookback_d1     = 126;
-input int    strategy_slow_lookback_d1     = 252;
-input double strategy_min_abs_return_pct   = 1.5;
-input int    strategy_atr_period           = 20;
-input double strategy_atr_sl_mult          = 3.0;
-input int    strategy_max_hold_days        = 31;
-input int    strategy_max_spread_points    = 1000;
+input int    strategy_fast_lookback_d1   = 126;
+input int    strategy_slow_lookback_d1   = 252;
+input double strategy_min_abs_return_pct = 1.5;
+input int    strategy_atr_period         = 20;
+input double strategy_atr_sl_mult        = 3.0;
+input int    strategy_max_hold_days      = 31;
+input int    strategy_max_spread_points  = 1000;
 
 int g_last_entry_month_key = 0;
 
@@ -90,18 +90,21 @@ bool Strategy_HasOpenPosition()
    return false;
   }
 
-bool Strategy_LoadDualMomentum(double &fast_momentum, double &slow_momentum, int &direction)
+bool Strategy_LoadTrendState(double &fast_return,
+                             double &slow_return,
+                             int &direction)
   {
-   fast_momentum = 0.0;
-   slow_momentum = 0.0;
+   fast_return = 0.0;
+   slow_return = 0.0;
    direction = 0;
 
    const int fast_lookback = MathMax(42, strategy_fast_lookback_d1);
-   const int slow_lookback = MathMax(fast_lookback + 1, strategy_slow_lookback_d1);
+   const int slow_lookback = MathMax(84, strategy_slow_lookback_d1);
+   const int lookback = MathMax(fast_lookback, slow_lookback);
    double closes[];
    ArraySetAsSeries(closes, true);
-   const int copied = CopyClose(_Symbol, PERIOD_D1, 1, slow_lookback + 1, closes); // perf-allowed: bounded D1 dual-horizon momentum sample behind new-bar gate.
-   if(copied < slow_lookback + 1)
+   const int copied = CopyClose(_Symbol, PERIOD_D1, 1, lookback + 1, closes); // perf-allowed: bounded D1 dual-horizon momentum sample behind new-bar gate.
+   if(copied < lookback + 1)
       return false;
 
    const double close_recent = closes[0];
@@ -110,15 +113,15 @@ bool Strategy_LoadDualMomentum(double &fast_momentum, double &slow_momentum, int
    if(close_recent <= 0.0 || close_fast <= 0.0 || close_slow <= 0.0)
       return false;
 
-   fast_momentum = MathLog(close_recent / close_fast);
-   slow_momentum = MathLog(close_recent / close_slow);
-   if(!MathIsValidNumber(fast_momentum) || !MathIsValidNumber(slow_momentum))
+   fast_return = MathLog(close_recent / close_fast);
+   slow_return = MathLog(close_recent / close_slow);
+   if(!MathIsValidNumber(fast_return) || !MathIsValidNumber(slow_return))
       return false;
 
    const double threshold = MathMax(0.0, strategy_min_abs_return_pct) / 100.0;
-   if(fast_momentum > threshold && slow_momentum > threshold)
+   if(fast_return > threshold && slow_return > threshold)
       direction = 1;
-   else if(fast_momentum < -threshold && slow_momentum < -threshold)
+   else if(fast_return < -threshold && slow_return < -threshold)
       direction = -1;
    else
       direction = 0;
@@ -158,7 +161,9 @@ bool Strategy_NoTradeFilter()
       return true;
    if(qm_magic_slot_offset != 0)
       return true;
-   if(strategy_fast_lookback_d1 < 42 || strategy_slow_lookback_d1 <= strategy_fast_lookback_d1)
+   if(strategy_fast_lookback_d1 < 42 || strategy_slow_lookback_d1 < 84)
+      return true;
+   if(strategy_fast_lookback_d1 >= strategy_slow_lookback_d1)
       return true;
    if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return true;
@@ -197,10 +202,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   double fast_momentum = 0.0;
-   double slow_momentum = 0.0;
+   double fast_return = 0.0;
+   double slow_return = 0.0;
    int direction = 0;
-   if(!Strategy_LoadDualMomentum(fast_momentum, slow_momentum, direction))
+   if(!Strategy_LoadTrendState(fast_return, slow_return, direction))
       return false;
    if(direction == 0)
       return false;
