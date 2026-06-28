@@ -4,7 +4,7 @@
 **Slug:** edgelab-nzdusd-eurjpy-cointegration
 **Source:** claude_cross_asset_discovery_2026-06-09 plus Chan cointegration pair-trade method
 **Author of this spec:** Codex
-**Last revised:** 2026-06-27
+**Last revised:** 2026-06-28
 
 ---
 
@@ -107,6 +107,11 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 `tester_deposit=100000`. The logical basket backtest setfile uses the canonical
 `RISK_FIXED=1000`, with `RISK_PERCENT=0`.
 
+Q04 queue note: work item `1e13b45a-5db6-443e-a79e-a0e404131d15` requeues the
+logical basket with `q04_latest_full_year=2024`. The prior Q04 row
+`27d6640e-ac6b-4a50-b25c-3a86303565cd` had valid F1/F2 evidence and only failed
+on the 2025 F3 `NO_HISTORY/BARS_ZERO` fold.
+
 ---
 
 ## Revision History
@@ -114,3 +119,4 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-27 | Initial next-best FX cointegration basket build | Built from the 12533/12624 basket pattern |
+| v1 | 2026-06-28 | Q04 2024-window requeue | Source Q02 PASS `a12c992f-377e-4a71-8823-4f6faea2c6fc`; replacement Q04 row `1e13b45a-5db6-443e-a79e-a0e404131d15` claimed by T2 |

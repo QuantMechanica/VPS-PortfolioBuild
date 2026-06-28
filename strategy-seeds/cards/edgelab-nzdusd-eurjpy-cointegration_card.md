@@ -25,8 +25,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-last_updated: 2026-06-27
+pipeline_phase: Q04_REQUEUED
+last_updated: 2026-06-28
 g0_approval_reasoning: "R1 PASS because the method comes from Chan cointegration pair-trading and pair selection comes from the OWNER-requested in-house 66-pair scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS NZDUSD.DWX and EURJPY.DWX data exist in the exported scan universe; R4 PASS no ML/grid/martingale."
 expected_pf: 1.06
 expected_dd_pct: 20.0
@@ -142,5 +142,8 @@ cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 ## Pipeline History
 
 | version | date | rebuild reason | phase reached | verdict |
-|---|---|---|---|
+|---|---|---|---|---|
 | v1 | 2026-06-27 | initial next-best FX cointegration basket build | G0 | APPROVED |
+| v1 | 2026-06-27 | logical-basket Q02 passed after the initial log-bomb infra row was superseded by a host-symbol requeue | Q02 | PASS |
+| v1 | 2026-06-27 | early Q04 probe produced real F1/F2 fold evidence, then F3 failed on 2025 NO_HISTORY/BARS_ZERO | Q04 | INFRA_FAIL |
+| v1 | 2026-06-28 | Q04 requeued with q04_latest_full_year=2024 from source Q02 PASS `a12c992f-377e-4a71-8823-4f6faea2c6fc`; worker claimed row `1e13b45a-5db6-443e-a79e-a0e404131d15` on T2 | Q04 | ACTIVE |
