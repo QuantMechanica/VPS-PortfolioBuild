@@ -313,13 +313,14 @@ data_requirements: standard                   # D1 OHLC on two .DWX symbols simu
 
 | version | date | rebuild reason | P-stage reached | verdict |
 |---|---|---|---|---|
-| _v2 | 2026-06-28 | delayed daily entry until XAU trade session is open | Q04 repair | pending |
+| _v2 | 2026-06-28 | delayed daily entry until XAU trade session is open; add two-leg lot preflight and exit session guard | Q04 | FAIL |
 | _v1 | 2026-04-28 | initial build | TBD | TBD |
 
 ## 15. Pipeline Phase Status (current `_v1`)
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
+| Q04 Walk-forward | 2026-06-28 | FAIL | `D:\QM\reports\pipeline\QM5_1023\Q04\QM5_1023_XTI_XAU_BBPAIR_D1\aggregate.json` |
 | G0 Research Intake | 2026-04-28 | DRAFT (awaiting CEO + Quality-Business review) | this card |
 | P1 Build Validation | TBD | TBD | TBD |
 | P2 Baseline Screening | TBD | TBD | TBD |
