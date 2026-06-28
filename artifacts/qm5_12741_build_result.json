@@ -1,0 +1,117 @@
+{
+  "task_id": "e553d527-e912-4247-a7f9-dfa38341c2f2",
+  "ea_id": "QM5_12741",
+  "slug": "nnfx-fx-basket-pooled",
+  "strategy": "NNFX D1 pooled FX basket trend sleeve",
+  "source_id": "nnfx-vp-canonical-2026-06-12",
+  "symbols": [
+    "QM5_12741_NNFX_FX_BASKET_D1"
+  ],
+  "basket_symbols": [
+    "AUDUSD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDCHF.DWX"
+  ],
+  "host_symbol": "AUDUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_12741_nnfx-fx-basket-pooled",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_12741_nnfx-fx-basket-pooled/QM5_12741_nnfx-fx-basket-pooled.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_12741_nnfx-fx-basket-pooled/QM5_12741_nnfx-fx-basket-pooled.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_12741_nnfx-fx-basket-pooled/SPEC.md",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12741_nnfx-fx-basket-pooled.md",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_12741_nnfx-fx-basket-pooled/sets/QM5_12741_nnfx-fx-basket-pooled_QM5_12741_NNFX_FX_BASKET_D1_D1_backtest.set"
+  ],
+  "setfile_build_hash": "f443aa104e6bd520d1e1f2d6ac48f7eb8f68de398b9cd9ce5a101757637fd824",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic_base": 127410000,
+  "magic": {
+    "target_magic_count": 4,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "AUDUSD.DWX",
+        "magic": 127410000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "EURUSD.DWX",
+        "magic": 127410001,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 2,
+        "symbol": "GBPUSD.DWX",
+        "magic": 127410002,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 3,
+        "symbol": "USDCHF.DWX",
+        "magic": 127410003,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_12741_nnfx-fx-basket-pooled --force --json --fail-on-error",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:/QM/repo/framework/build/compile/20260628_233138/QM5_12741_nnfx-fx-basket-pooled.compile.log",
+    "ex5_size_bytes": 300468,
+    "ex5_sha256": "47c92e1a7f3ba5ef3578f11065368d581b1f7385768eb716371a95b5b57853be"
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12741_nnfx-fx-basket-pooled -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:/QM/reports/framework/21/build_check_20260628_233137.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "static_checks": {
+    "symbol_scope": "BASKET_OK",
+    "spec_validation": "PASS",
+    "registry_validation": "ea_id and four active magic rows present"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Paced fleet Q02 will run the first tester pass; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "q02_enqueue": {
+    "recorded": true,
+    "build_task_status": "done",
+    "status": "existing_q02_pending",
+    "queue_db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "work_item_id": "cab41d73-7573-4648-b58d-ce9fa6df26b3",
+    "symbol": "QM5_12741_NNFX_FX_BASKET_D1",
+    "timeframe": "D1",
+    "setfile": "QM5_12741_nnfx-fx-basket-pooled_QM5_12741_NNFX_FX_BASKET_D1_D1_backtest.set",
+    "work_item_status": "pending",
+    "record_build_auto_q02": {
+      "enqueued": [],
+      "skipped": [
+        {
+          "existing_wi_id": "cab41d73",
+          "reason": "existing_q02_pending",
+          "setfile": "QM5_12741_nnfx-fx-basket-pooled_QM5_12741_NNFX_FX_BASKET_D1_D1_backtest.set",
+          "symbol": "QM5_12741_NNFX_FX_BASKET_D1"
+        }
+      ]
+    }
+  },
+  "notes": "Completed farm-record recovery for the highest-diversity stuck build in the backlog: a structural pooled FX trend basket over AUDUSD.DWX, EURUSD.DWX, GBPUSD.DWX, and USDCHF.DWX. Existing tracked EA artifacts were recompiled and validated, then farmctl record-build advanced the stale pending build task to done without duplicate implementation."
+}
