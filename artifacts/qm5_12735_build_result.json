@@ -1,0 +1,91 @@
+{
+  "task_id": "manual-build-QM5_12735-20260628",
+  "ea_id": "QM5_12735",
+  "slug": "edgelab-eurusd-nzdusd-cointegration",
+  "strategy": "EURUSD/NZDUSD D1 market-neutral FX cointegration basket",
+  "symbols": [
+    "EURUSD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "logical_symbol": "QM5_12735_EURUSD_NZDUSD_COINTEGRATION_D1",
+  "host_symbol": "EURUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12735_edgelab-eurusd-nzdusd-cointegration",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12735_edgelab-eurusd-nzdusd-cointegration\\QM5_12735_edgelab-eurusd-nzdusd-cointegration.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12735_edgelab-eurusd-nzdusd-cointegration\\QM5_12735_edgelab-eurusd-nzdusd-cointegration.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12735_edgelab-eurusd-nzdusd-cointegration\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\edgelab-eurusd-nzdusd-cointegration_card.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12735_edgelab-eurusd-nzdusd-cointegration\\basket_manifest.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12735_edgelab-eurusd-nzdusd-cointegration\\sets\\QM5_12735_edgelab-eurusd-nzdusd-cointegration_QM5_12735_EURUSD_NZDUSD_COINTEGRATION_D1_D1_backtest.set"
+  ],
+  "setfile_build_hash": "a65fda18973eebc1a18a4fdf987c51100a65fd6c4fd097a29244d39d30713720",
+  "scan_ranking": {
+    "source": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "hard_bar_survivor": false,
+    "dev_sharpe": 0.31,
+    "oos_net_sharpe": 0.35,
+    "oos_return_pct": 2.38,
+    "oos_state_changes": 15,
+    "hedge_beta": 0.81,
+    "half_life_days": 52,
+    "selection_note": "Next unbuilt positive DEV/OOS pair after the already-built 12532/12533/12624/12712/12723/12728/12731/12732 FX cointegration baskets."
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "EURUSD.DWX",
+        "magic": 127350000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "NZDUSD.DWX",
+        "magic": 127350001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12735_edgelab-eurusd-nzdusd-cointegration/QM5_12735_edgelab-eurusd-nzdusd-cointegration.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260628_052117\\QM5_12735_edgelab-eurusd-nzdusd-cointegration.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260628_052117\\summary.csv"
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12735_edgelab-eurusd-nzdusd-cointegration -RepoRoot C:/QM/repo -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260628_052549.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "c1ae6321-654d-4f86-9314-13f9929f6245",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "QM5_12735_EURUSD_NZDUSD_COINTEGRATION_D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12735_edgelab-eurusd-nzdusd-cointegration\\sets\\QM5_12735_edgelab-eurusd-nzdusd-cointegration_QM5_12735_EURUSD_NZDUSD_COINTEGRATION_D1_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "created_at_utc": "2026-06-28T05:22:14Z"
+  },
+  "smoke_result": "deferred_to_q02",
+  "smoke_skipped_reason": "Paced fleet Q02 was enqueued; no manual MT5 backtest was launched from this session.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "notes": "Advanced the existing QM5_12735 EURUSD/NZDUSD positive DEV/OOS FX cointegration basket through strict compile/build-check and enqueued one logical Q02 work item. No live, T_Live, AutoTrading, or portfolio gate artifacts touched."
+}
