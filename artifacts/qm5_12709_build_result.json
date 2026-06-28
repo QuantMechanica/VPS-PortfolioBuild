@@ -1,0 +1,35 @@
+{
+  "task_id": "a1634e51-50a0-4ac8-be26-83dcfabe12a4",
+  "ea_id": "QM5_12709",
+  "slug": "commodity-reversal-1m",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12709_commodity-reversal-1m",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12709_commodity-reversal-1m\\QM5_12709_commodity-reversal-1m.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12709_commodity-reversal-1m\\QM5_12709_commodity-reversal-1m.ex5",
+  "magic_base": 127090000,
+  "symbols_registered": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX",
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_12709_COMM_REV1M_D1",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12709_commodity-reversal-1m\\sets\\QM5_12709_commodity-reversal-1m_QM5_12709_COMM_REV1M_D1_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12709_commodity-reversal-1m\\SPEC.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12709_commodity-reversal-1m\\basket_manifest.json",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260628_054506\\QM5_12709_commodity-reversal-1m.compile.log",
+  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260628_054506.json",
+  "build_check_warnings": 16,
+  "guardrails_verdict": "PASS",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": "",
+  "blocked_reason": "",
+  "open_questions": [],
+  "notes": "Codex built QM5_12709_commodity-reversal-1m as a monthly market-neutral commodity reversal basket across XTIUSD.DWX, XNGUSD.DWX, XAUUSD.DWX, and XAGUSD.DWX with an energy-leg requirement. build_check PASS, compile PASS, SPEC present, RISK_FIXED logical-basket backtest setfile generated. No live/T_Live/portfolio artifacts touched.",
+  "smoke_skipped_reason": "structural basket build; Q02 logical-basket smoke via farm queue",
+  "auto_q02_work_item": "c501d5a9-c9a0-4e3a-a354-2ef047bd71ef",
+  "auto_q02_symbol": "QM5_12709_COMM_REV1M_D1"
+}
