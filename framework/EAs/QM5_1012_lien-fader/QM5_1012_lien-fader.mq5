@@ -156,7 +156,7 @@ void ResetDailyState()
 bool RefreshDailySetup()
   {
    const ENUM_TIMEFRAMES sig_tf = SignalTf();
-   const datetime day_open = iTime(_Symbol, sig_tf, 0);
+   const datetime day_open = iTime(_Symbol, sig_tf, 0); // perf-allowed: D1 session boundary for card state reset.
    if(day_open <= 0)
       return false;
 
@@ -170,8 +170,8 @@ bool RefreshDailySetup()
    ResetDailyState();
 
    // perf-allowed: the card's structure is defined by prior-day OHLC extremes.
-   g_prev_day_high = iHigh(_Symbol, sig_tf, 1);
-   g_prev_day_low = iLow(_Symbol, sig_tf, 1);
+   g_prev_day_high = iHigh(_Symbol, sig_tf, 1); // perf-allowed: prior-day range defined by card.
+   g_prev_day_low = iLow(_Symbol, sig_tf, 1); // perf-allowed: prior-day range defined by card.
    if(g_prev_day_high <= 0.0 || g_prev_day_low <= 0.0 || g_prev_day_high <= g_prev_day_low)
       return false;
 
@@ -236,7 +236,7 @@ double ExtremeLow(const ENUM_TIMEFRAMES tf, const int bars)
    for(int shift = 1; shift <= bars; ++shift)
      {
       // perf-allowed: structural two-bar/DONCHIAN trailing extreme.
-      const double value = iLow(_Symbol, tf, shift);
+      const double value = iLow(_Symbol, tf, shift); // perf-allowed: trailing stop uses closed-bar lows.
       if(value <= 0.0)
          continue;
       if(out <= 0.0 || value < out)
@@ -251,7 +251,7 @@ double ExtremeHigh(const ENUM_TIMEFRAMES tf, const int bars)
    for(int shift = 1; shift <= bars; ++shift)
      {
       // perf-allowed: structural two-bar/DONCHIAN trailing extreme.
-      const double value = iHigh(_Symbol, tf, shift);
+      const double value = iHigh(_Symbol, tf, shift); // perf-allowed: trailing stop uses closed-bar highs.
       if(value <= 0.0)
          continue;
       if(out <= 0.0 || value > out)
@@ -324,8 +324,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const ENUM_TIMEFRAMES entry_tf = EntryTf();
    // perf-allowed: the card's trigger is the last closed H1 bar breaking the prior-day range.
-   const double bar_high = iHigh(_Symbol, entry_tf, 1);
-   const double bar_low = iLow(_Symbol, entry_tf, 1);
+   const double bar_high = iHigh(_Symbol, entry_tf, 1); // perf-allowed: H1 false-breakout trigger.
+   const double bar_low = iLow(_Symbol, entry_tf, 1); // perf-allowed: H1 false-breakout trigger.
    if(bar_high <= 0.0 || bar_low <= 0.0)
       return false;
 
