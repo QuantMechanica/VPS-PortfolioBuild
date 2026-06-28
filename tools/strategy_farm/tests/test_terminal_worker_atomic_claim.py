@@ -32,6 +32,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
         verdict: str | None = None,
         payload: dict[str, object] | None = None,
         ea_id: str = "QM5_9999",
+        setfile_path: str = "dummy.set",
     ) -> None:
         farmctl.init_db(root)
         now = farmctl.utc_now()
@@ -43,10 +44,22 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                    attempt_count, parent_task_id, evidence_path, claimed_by,
                    payload_json, created_at, updated_at)
                 VALUES
-                  (?, 'backtest', ?, ?, ?, 'dummy.set', ?, ?,
+                  (?, 'backtest', ?, ?, ?, ?, ?, ?,
                    0, NULL, NULL, ?, ?, ?, ?)
                 """,
-                (item_id, phase, ea_id, symbol, status, verdict, claimed_by, json.dumps(payload or {}), now, now),
+                (
+                    item_id,
+                    phase,
+                    ea_id,
+                    symbol,
+                    setfile_path,
+                    status,
+                    verdict,
+                    claimed_by,
+                    json.dumps(payload or {}),
+                    now,
+                    now,
+                ),
             )
             conn.commit()
 
@@ -220,6 +233,75 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(result["history_skipped"][0]["item_id"], "wi-no-history")
             with sqlite3.connect(root / farmctl.DB_REL) as conn:
                 status = conn.execute("SELECT status FROM work_items WHERE id='wi-no-history'").fetchone()[0]
+            self.assertEqual(status, "pending")
+
+    def test_q02_claim_skips_terminal_without_symbol_history_source(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "wi-audusd-q02",
+                "AUDUSD.DWX",
+                phase="Q02",
+                payload={"host_timeframe": "D1", "from_year": 2017, "to_year": 2026},
+            )
+
+            registry = {
+                ("AUDUSD.DWX", "D1"): {
+                    "first_year": 2017,
+                    "last_year": 2026,
+                    "source_terminals": "T1,T2,T3,T4,T5",
+                }
+            }
+            old_registry = terminal_worker.farmctl._dwx_symbol_history_registry
+            try:
+                terminal_worker.farmctl._dwx_symbol_history_registry = lambda: registry
+                skipped = terminal_worker.claim_atomic(root, "T7")
+                claimed = terminal_worker.claim_atomic(root, "T3")
+            finally:
+                terminal_worker.farmctl._dwx_symbol_history_registry = old_registry
+
+            self.assertFalse(skipped.get("claimed"))
+            self.assertEqual(skipped.get("reason"), "no_pending_claimable")
+            self.assertEqual(skipped["history_skipped"][0]["reason"], terminal_worker.TERMINAL_NO_SYMBOL_HISTORY_REASON)
+            self.assertEqual(skipped["history_skipped"][0]["terminal"], "T7")
+            self.assertTrue(claimed.get("claimed"))
+            self.assertEqual(claimed["item"]["id"], "wi-audusd-q02")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute("SELECT status, claimed_by FROM work_items WHERE id='wi-audusd-q02'").fetchone()
+            self.assertEqual(row, ("active", "T3"))
+
+    def test_q03_claim_uses_setfile_period_for_terminal_history_source(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "wi-audusd-q03",
+                "AUDUSD.DWX",
+                phase="Q03",
+                setfile_path="QM5_9999_AUDUSD.DWX_D1_backtest.set",
+            )
+
+            registry = {
+                ("AUDUSD.DWX", "D1"): {
+                    "first_year": 2017,
+                    "last_year": 2026,
+                    "source_terminals": "T1,T2,T3,T4,T5",
+                }
+            }
+            old_registry = terminal_worker.farmctl._dwx_symbol_history_registry
+            try:
+                terminal_worker.farmctl._dwx_symbol_history_registry = lambda: registry
+                result = terminal_worker.claim_atomic(root, "T7")
+            finally:
+                terminal_worker.farmctl._dwx_symbol_history_registry = old_registry
+
+            self.assertFalse(result.get("claimed"))
+            self.assertEqual(result.get("reason"), "no_pending_claimable")
+            self.assertEqual(result["history_skipped"][0]["item_id"], "wi-audusd-q03")
+            self.assertEqual(result["history_skipped"][0]["period"], "D1")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                status = conn.execute("SELECT status FROM work_items WHERE id='wi-audusd-q03'").fetchone()[0]
             self.assertEqual(status, "pending")
 
     def test_stale_same_terminal_claim_is_released_before_next_claim(self) -> None:

@@ -210,24 +210,79 @@ def _priority_pending_query() -> str:
     """
 
 
-def _p2_history_claimable(item: sqlite3.Row) -> tuple[bool, dict[str, Any] | None]:
-    if str(item["phase"]).upper() != "P2":
-        return True, None
-    payload = _json_loads(item["payload_json"])
-    period = str(payload.get("period") or "").strip().upper()
+TERMINAL_NO_SYMBOL_HISTORY_REASON = "TERMINAL_NO_SYMBOL_HISTORY_FOR_PERIOD"
+
+
+def _source_terminal_set(value: object) -> set[str]:
+    if isinstance(value, (list, tuple, set, frozenset)):
+        return {str(v).strip().upper() for v in value if str(v).strip()}
+    return {part.strip().upper() for part in str(value or "").split(",") if part.strip()}
+
+
+def _work_item_value(item: sqlite3.Row | dict[str, Any], key: str, default: object = None) -> object:
+    try:
+        return item[key]
+    except (IndexError, KeyError, TypeError):
+        if isinstance(item, dict):
+            return item.get(key, default)
+        return default
+
+
+def _work_item_test_period(item: sqlite3.Row | dict[str, Any], payload: dict[str, Any]) -> str:
+    period = str(payload.get("host_timeframe") or payload.get("period") or "").strip().upper()
     if not period:
         try:
-            period = farmctl._detect_ea_period(item["ea_id"])
+            period = farmctl._detect_ea_period(
+                str(_work_item_value(item, "ea_id", "")),
+                str(_work_item_value(item, "setfile_path", "") or ""),
+            )
         except Exception:
             period = ""
+    return period
+
+
+def _work_item_test_symbol(item: sqlite3.Row | dict[str, Any], payload: dict[str, Any]) -> str:
+    return str(payload.get("host_symbol") or _work_item_value(item, "symbol", "") or "").strip().upper()
+
+
+def _p2_history_claimable(
+    item: sqlite3.Row | dict[str, Any],
+    terminal: str | None = None,
+    registry: dict[tuple[str, str], dict[str, Any]] | None = None,
+) -> tuple[bool, dict[str, Any] | None]:
+    payload = _json_loads(str(_work_item_value(item, "payload_json", "") or ""))
+    phase = str(_work_item_value(item, "phase", "") or "").upper()
+    symbol = _work_item_test_symbol(item, payload)
+    period = _work_item_test_period(item, payload)
     if not period:
         return True, None
-    is_exploration = any(token in item["setfile_path"] for token in ("_ablation_", "_grid_", "_synth_"))
-    default_from_year = 2020 if is_exploration else farmctl.P2_DEFAULT_FROM_YEAR
-    from_year = int(payload.get("from_year") or default_from_year)
-    to_year = int(payload.get("to_year") or farmctl.P2_DEFAULT_TO_YEAR)
-    window = farmctl._p2_history_window_for_symbol(item["symbol"], period, from_year, to_year)
-    return not bool(window.get("skip")), window
+    registry = farmctl._dwx_symbol_history_registry() if registry is None else registry
+
+    window: dict[str, Any] | None = None
+    if phase in {"P2", "Q02"}:
+        setfile_path = str(_work_item_value(item, "setfile_path", "") or "")
+        is_exploration = any(token in setfile_path for token in ("_ablation_", "_grid_", "_synth_"))
+        default_from_year = 2020 if is_exploration else farmctl.P2_DEFAULT_FROM_YEAR
+        from_year = int(payload.get("from_year") or default_from_year)
+        to_year = int(payload.get("to_year") or farmctl.P2_DEFAULT_TO_YEAR)
+        window = farmctl._p2_history_window_for_symbol(symbol, period, from_year, to_year, registry)
+        if window.get("skip"):
+            return False, window
+
+    if not symbol.endswith(".DWX") or not terminal:
+        return True, window
+    source_terminals = _source_terminal_set(registry.get((symbol, period), {}).get("source_terminals"))
+    if source_terminals and str(terminal).strip().upper() not in source_terminals:
+        return False, {
+            **(window or {}),
+            "skip": True,
+            "reason": TERMINAL_NO_SYMBOL_HISTORY_REASON,
+            "symbol": symbol,
+            "period": period,
+            "terminal": str(terminal).strip().upper(),
+            "source_terminals": sorted(source_terminals),
+        }
+    return True, window
 
 
 MULTISYMBOL_REGISTRY_PATH = Path("D:/QM/strategy_farm/state/multisymbol_eas.txt")
@@ -370,6 +425,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 skipped_launch_cooldown: list[dict[str, Any]] = []
                 skipped_multisym_ram: list[dict[str, Any]] = []
                 multisym_free_ram: float | None = None
+                history_registry = farmctl._dwx_symbol_history_registry()
                 for item in conn.execute(_priority_pending_query()).fetchall():
                     payload = _json_loads(item["payload_json"])
                     launch_not_before = _parse_utc_iso(payload.get("launch_not_before_utc"))
@@ -406,7 +462,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                                 "threshold_gb": MULTISYMBOL_RAM_MIN_FREE_GB,
                             })
                             continue
-                    history_ok, history = _p2_history_claimable(item)
+                    history_ok, history = _p2_history_claimable(item, terminal, history_registry)
                     if not history_ok:
                         skipped_history.append({"item_id": item["id"], **(history or {})})
                         continue
