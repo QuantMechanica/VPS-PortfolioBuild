@@ -798,6 +798,50 @@ bool QM_NewsLiveInWindow(const string symbol, const datetime server_time,
    return false;
   }
 
+// One-time live diagnostic: log calendar health + the next high-impact event the
+// native calendar reports for `symbol`. Lets OWNER eyeball-verify at chart-attach
+// (cross-check vs ForexFactory) that the calendar is populated and timezone-correct
+// BEFORE enabling AutoTrading. Logged once per EA instance.
+bool g_qm_news_live_selftest_done = false;
+void QM_NewsLiveSelfTest(const string symbol)
+  {
+   if(g_qm_news_live_selftest_done)
+      return;
+   g_qm_news_live_selftest_done = true;
+   const bool healthy = QM_NewsLiveCalendarHealthy();
+   const datetime from = TimeTradeServer();
+   const datetime to   = from + (7 * 24 * 3600);
+   MqlCalendarValue values[];
+   const int n = CalendarValueHistory(values, from, to);
+   string next_evt = "none";
+   string next_time = "";
+   for(int i = 0; i < n; i++)
+     {
+      MqlCalendarEvent ev;
+      if(!CalendarEventById(values[i].event_id, ev))
+         continue;
+      string imp = "LOW";
+      if(ev.importance == CALENDAR_IMPORTANCE_HIGH)
+         imp = "HIGH";
+      else if(ev.importance == CALENDAR_IMPORTANCE_MODERATE)
+         imp = "MEDIUM";
+      if(!QM_NewsImpactMeetsMinimum(imp, g_qm_news_min_impact_upper))
+         continue;
+      MqlCalendarCountry country;
+      if(!CalendarCountryById(ev.country_id, country))
+         continue;
+      if(!QM_NewsEventAffectsSymbol(country.currency, symbol))
+         continue;
+      next_evt = country.currency + " " + ev.name;
+      next_time = TimeToString(values[i].time, TIME_DATE | TIME_MINUTES);
+      break;
+     }
+   const string payload = StringFormat(
+      "{\"healthy\":%s,\"window7d_total\":%d,\"min_impact\":\"%s\",\"next_high_impact\":\"%s\",\"next_time_srv\":\"%s\"}",
+      (healthy ? "true" : "false"), n, g_qm_news_min_impact_upper, next_evt, next_time);
+   QM_LogEvent(QM_INFO, "NEWS_LIVE_CALENDAR_SELFTEST", payload);
+  }
+
 // Live temporal-axis verdict (mirrors QM_NewsTemporalAllows but native-calendar).
 bool QM_NewsLiveTemporalAllows(const string symbol, const datetime server_time,
                                const QM_NewsTemporalMode temporal, bool &out_ok)
@@ -849,6 +893,7 @@ bool QM_NewsAllowsTrade2(const string symbol,
    // is reserved for the Strategy Tester (where the Calendar API is unavailable).
    if(!MQLInfoInteger(MQL_TESTER))
      {
+      QM_NewsLiveSelfTest(symbol); // one-time diagnostic for attach-time verification
       const datetime srv = (broker_time > 0 ? broker_time : TimeTradeServer());
       bool ok = true;
       const bool allows = QM_NewsLiveTemporalAllows(symbol, srv, temporal, ok);
