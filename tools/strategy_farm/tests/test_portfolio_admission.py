@@ -10,11 +10,15 @@ REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 
 from portfolio.commission import CommissionModel  # noqa: E402
+from portfolio import portfolio_admission  # noqa: E402
 from portfolio.portfolio_admission import evaluate_candidate  # noqa: E402
 from portfolio.portfolio_kpi import equal_weights, portfolio_metrics  # noqa: E402
 
 
 class PortfolioAdmissionTests(unittest.TestCase):
+    def test_default_starting_capital_matches_canonical_tester_deposit(self) -> None:
+        self.assertEqual(portfolio_admission.DEFAULT_STARTING_CAPITAL, 100_000.0)
+
     def test_empty_book_admits_first_sleeve(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             verdict = evaluate_candidate((100, "EURUSD.DWX"), [], Path(tmp))
@@ -97,6 +101,49 @@ class PortfolioAdmissionTests(unittest.TestCase):
         self.assertFalse(verdict["admit"])
         self.assertEqual(verdict["reason"], "no_diversification")
         self.assertFalse(verdict["diversifies"])
+
+    def test_dl079_maxdd_only_gain_with_sharpe_degradation_is_rejected(self) -> None:
+        # DL-079: a candidate that improves book MaxDD but DEGRADES book Sharpe must NOT be
+        # admitted (the old `sharpe_improved or maxdd_improved` OR-rule admitted such Sharpe-
+        # dilutive sleeves on a noise-floor MaxDD gain — e.g. 10115/10911 GDAXI). corr/overlap
+        # come from real dense uncorrelated streams; the with/without metrics are scripted to
+        # isolate the diversification rule.
+        from unittest import mock
+
+        with tempfile.TemporaryDirectory() as tmp:
+            common_dir = Path(tmp)
+            stream_dir = self._stream_dir(common_dir)
+            start = dt.datetime(2024, 1, 1, tzinfo=dt.UTC)
+            cost = self._cost()
+            # dense, low-correlation overlapping streams so corr_ok and overlap are satisfied
+            self._write_stream(stream_dir / "100_EURUSD_DWX.jsonl", start, [10.0, 9.0, 11.0, 8.0] * 40, cost)
+            self._write_stream(stream_dir / "101_EURUSD_DWX.jsonl", start, [9.0, 11.0, 8.0, 10.0, 12.0] * 32, cost)
+
+            # MaxDD improves (6.0 -> 4.0) but Sharpe degrades (2.0 -> 1.8) -> reject.
+            degrade = [
+                {"sharpe": 2.0, "max_drawdown_pct": 6.0},
+                {"sharpe": 1.8, "max_drawdown_pct": 4.0},
+            ]
+            with mock.patch(
+                "portfolio.portfolio_admission.portfolio_metrics", side_effect=list(degrade)
+            ):
+                rejected = evaluate_candidate((101, "EURUSD.DWX"), [(100, "EURUSD.DWX")], common_dir)
+            self.assertFalse(rejected["admit"])
+            self.assertEqual(rejected["reason"], "no_diversification")
+            self.assertFalse(rejected["diversifies"])
+
+            # Control: Sharpe improves (even though MaxDD worsens) -> admit.
+            improve = [
+                {"sharpe": 2.0, "max_drawdown_pct": 4.0},
+                {"sharpe": 2.2, "max_drawdown_pct": 5.0},
+            ]
+            with mock.patch(
+                "portfolio.portfolio_admission.portfolio_metrics", side_effect=list(improve)
+            ):
+                admitted = evaluate_candidate((101, "EURUSD.DWX"), [(100, "EURUSD.DWX")], common_dir)
+            self.assertTrue(admitted["admit"])
+            self.assertEqual(admitted["reason"], "admitted")
+            self.assertTrue(admitted["diversifies"])
 
     def test_risk_parity_admits_dense_diversifier_that_equal_weight_rejects(self) -> None:
         # Regression for the diversifies-weighting fix. The candidate is a high-volatility,

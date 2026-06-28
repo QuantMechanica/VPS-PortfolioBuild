@@ -21,6 +21,7 @@ try:
     )
     from .portfolio_correlation import COMMISSION_BASIS, correlation_matrix, _pearson
     from .portfolio_kpi import equal_weights, inverse_vol_weights, portfolio_metrics
+    from .portfolio_manifest import DEFAULT_STARTING_CAPITAL
 except ImportError:  # pragma: no cover - direct script execution
     from commission import describe_model, load_model  # type: ignore
     from portfolio_common import (  # type: ignore
@@ -36,6 +37,7 @@ except ImportError:  # pragma: no cover - direct script execution
     )
     from portfolio_correlation import COMMISSION_BASIS, correlation_matrix, _pearson  # type: ignore
     from portfolio_kpi import equal_weights, inverse_vol_weights, portfolio_metrics  # type: ignore
+    from portfolio_manifest import DEFAULT_STARTING_CAPITAL  # type: ignore
 
 
 Key = tuple[int, str]
@@ -63,7 +65,7 @@ def evaluate_candidate(
     common_dir: Path = DEFAULT_COMMON_DIR,
     *,
     max_corr: float = DEFAULT_MAX_CORR,
-    starting_capital: float = 10_000.0,
+    starting_capital: float = DEFAULT_STARTING_CAPITAL,
 ) -> dict[str, Any]:
     candidate = _normalize_key(candidate_key)
     book = sorted({_normalize_key(key) for key in book_keys if _normalize_key(key) != candidate})
@@ -144,7 +146,24 @@ def evaluate_candidate(
         and isinstance(maxdd_without, float)
         and maxdd_with < maxdd_without
     )
-    diversifies = sharpe_improved or maxdd_improved
+    # DL-079 (OWNER-ratified 2026-06-28): Sharpe-protective diversification.
+    # The book is a high-Sharpe risk-parity portfolio whose MaxDD already sits FAR under the
+    # FTMO cap, so MaxDD headroom is abundant and a marginal MaxDD "improvement" is not worth
+    # a Sharpe cost. On the canonical $100k base the book MaxDD is sub-1%, where the with/without
+    # MaxDD delta is dominated by which single day the peak lands on (noise) and can flip sign.
+    # The OLD rule `sharpe_improved or maxdd_improved` admitted Sharpe-DILUTIVE sleeves (e.g.
+    # 10115/10911 GDAXI: PF~1.0-1.1, they cut book Sharpe 2.00->1.89) on such a noise-floor MaxDD
+    # gain. Fix: a candidate diversifies iff it improves Sharpe, OR improves MaxDD WITHOUT
+    # degrading Sharpe. Sharpe is scale-invariant (capital-base independent) and is the reliable
+    # signal while DD is non-binding. (If DD ever approaches the cap, revisit to allow a DD-for-
+    # Sharpe trade in that DD-constrained regime.)
+    SHARPE_DEGRADE_EPS = 1e-3
+    sharpe_degraded = (
+        isinstance(sharpe_with, float)
+        and isinstance(sharpe_without, float)
+        and sharpe_with < sharpe_without - SHARPE_DEGRADE_EPS
+    )
+    diversifies = sharpe_improved or (maxdd_improved and not sharpe_degraded)
 
     corr_ok = max_corr_to_book is not None and max_corr_to_book <= max_corr
     admit = corr_ok and not corr_insufficient and diversifies
@@ -179,7 +198,7 @@ def build_artifact(
     candidates_db: Path = DEFAULT_CANDIDATES_DB,
     all_streams: bool = False,
     max_corr: float = DEFAULT_MAX_CORR,
-    starting_capital: float = 10_000.0,
+    starting_capital: float = DEFAULT_STARTING_CAPITAL,
 ) -> dict[str, Any]:
     candidate = _normalize_key(candidate_key)
     if all_streams:
@@ -236,7 +255,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--candidates-db", type=Path, default=DEFAULT_CANDIDATES_DB)
     parser.add_argument("--all-streams", action="store_true")
     parser.add_argument("--max-corr", type=float, default=DEFAULT_MAX_CORR)
-    parser.add_argument("--starting-capital", type=float, default=10_000.0)
+    parser.add_argument("--starting-capital", type=float, default=DEFAULT_STARTING_CAPITAL)
     parser.add_argument(
         "--out",
         type=Path,
