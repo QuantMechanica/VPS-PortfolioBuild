@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   0fc3ca22812aba36af1b82ecf011f74a2e3be2c6b3e03154ba43f8b6c70934b8
+; build_hash:   9e7ffc06bbc7d3e18f1dc2feca12388a00eb7bea9573e228109be0df593b211c
 ; author:       Development
 ; date:         2026-06-27
 ;==========================================================
@@ -20,9 +20,15 @@ qm_magic_slot_offset=0
 RISK_FIXED=150000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+; Q02 structural baseline: keep all news axes explicitly off to avoid full-tick calendar scans.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
 ; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
+qm_filter_news_enabled=0
+qm_filter_news_mode=0
 qm_filter_regime_enabled=0
 qm_filter_regime_lookback_bars=100
 qm_filter_regime_bull_return_pct=2.0
