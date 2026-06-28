@@ -7,6 +7,7 @@ status: mined
 last_reviewed: 2026-06-27
 cards_extracted:
   - cme-wti-exp-brk
+  - wti-postroll-fade
 ---
 
 # CME WTI Expiry/Roll Source
@@ -34,9 +35,16 @@ expiration calendars, or APIs at runtime. It approximates the monthly WTI
 termination date from the broker calendar, then trades only if Darwinex
 `XTIUSD.DWX` D1 bars show a confirmed breakout inside that window.
 
-## Extracted Card
+The second mechanized card isolates the post-roll pressure-relief window. It
+waits until after the default expiry breakout window, then fades stretched
+`XTIUSD.DWX` D1 impulses back toward a short D1 mean. It uses only broker OHLC
+and the same deterministic calendar approximation; no futures-chain, open
+interest, volume, calendar feed, CSV, or API is used at runtime.
+
+## Extracted Cards
 
 - `cme-wti-exp-brk`: XTIUSD.DWX D1 expiry/roll-window breakout sleeve.
+- `wti-postroll-fade`: XTIUSD.DWX D1 post-expiry roll-window impulse fade.
 
 ## R-Rules
 
