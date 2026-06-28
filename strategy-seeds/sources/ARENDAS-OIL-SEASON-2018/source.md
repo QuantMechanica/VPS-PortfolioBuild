@@ -10,6 +10,7 @@ uri: https://www.jois.eu/files/12_547_Arendas%20et%20al.pdf
 cards_extracted:
   - wti-nov-fade
   - wti-apr-prem
+  - wti-aug-prem
 ---
 
 # Arendas Oil Seasonality Source
@@ -28,11 +29,17 @@ crude-oil returns. The extraction used two mechanized cards:
 
 - `wti-nov-fade`: XTIUSD.DWX D1 November month-of-year negative-return sleeve.
 - `wti-apr-prem`: XTIUSD.DWX D1 April month-of-year positive-return sleeve.
+- `wti-aug-prem`: XTIUSD.DWX D1 August month-of-year positive-return sleeve.
 
 The April card isolates one of the positive spring months reported by the
 source. It is intentionally separate from the February premium card that uses
 the Gorska-Krawiec WTI calendar source, and from the broad EIA demand-season
 strategy that requires trend/momentum confirmation.
+
+The August card isolates the third positive month named by the source and is
+kept separate from the April spring premium and broad EIA summer-demand season
+logic. Q02+ must validate the deterministic rule on Darwinex XTIUSD.DWX bars
+before any portfolio conclusion is drawn.
 
 The QM implementation does not import the paper's performance numbers into the
 portfolio. Q02+ must validate the deterministic rule on Darwinex XTIUSD.DWX
