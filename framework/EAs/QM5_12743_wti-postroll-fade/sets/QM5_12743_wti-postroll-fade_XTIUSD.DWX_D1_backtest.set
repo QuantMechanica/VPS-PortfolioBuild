@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12743
 ; ea_slug:      wti-postroll-fade
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   b688b7fa60311adb27ae452d19e3b5607baa230e401ca411275d8bc8eb4fc1b3
 ; author:       Development
 ; date:         2026-06-28
 ;==========================================================
@@ -32,4 +32,13 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=C:\QM\repo\strategy-seeds\cards\wti-postroll-fade_card.md
-; card_defaults_status=none_found
+strategy_post_start_days=3
+strategy_post_end_days=7
+strategy_impulse_days=3
+strategy_min_abs_return_pct=2.0
+strategy_reversion_sma=10
+strategy_close_location=0.65
+strategy_atr_period=20
+strategy_atr_sl_mult=3.0
+strategy_max_hold_days=5
+strategy_max_spread_points=1000
