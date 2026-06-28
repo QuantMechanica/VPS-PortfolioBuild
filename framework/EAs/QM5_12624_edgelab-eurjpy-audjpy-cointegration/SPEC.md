@@ -120,8 +120,13 @@ execution and then failed at the tester/report layer. The summary classified
 `oninit_failure_detected=false`; the tester log tail includes `64 Mb not
 available`, `not enough available memory`, and a zero-bar report after memory
 exhaustion. Treat this as the repeated Q02 memory/report ceiling, not a strategy
-or OnInit failure. Do not insert another blind Q02 row without a separate
-tester-memory/report-export fix.
+or OnInit failure.
+
+2026-06-28 source repair: the EA now warms and guards only `EURJPY.DWX` and
+`AUDJPY.DWX`. The previous warmup scope also selected `EURUSD.DWX`,
+`AUDUSD.DWX`, and `USDJPY.DWX`; with `tester_currency=JPY` and JPY-quoted
+traded legs those conversion histories are not strategy inputs, and the latest
+Q02 log exhausted memory while preprocessing USDJPY ticks.
 
 ---
 
@@ -133,3 +138,4 @@ tester-memory/report-export fix.
 | v2 | 2026-06-28 | Q02 ceiling triage | Latest logical Q02 run reached real trades, then hit REPORT_MISSING/METATESTER_HUNG; no further duplicate Q02 queued |
 | v3 | 2026-06-28 | Q02 setfile repair | Explicit news-off axes added to the fixed-risk backtest setfile; build_check PASS and fresh Q02 enqueued |
 | v4 | 2026-06-28 | Repaired Q02 ceiling confirmed | Work item f346f9e9 reached real trades, then failed with memory/report-export ceiling; no duplicate Q02 requeue |
+| v5 | 2026-06-28 | Narrowed basket warmup scope | Removed unused USD conversion warmup symbols after Q02 memory exhaustion |

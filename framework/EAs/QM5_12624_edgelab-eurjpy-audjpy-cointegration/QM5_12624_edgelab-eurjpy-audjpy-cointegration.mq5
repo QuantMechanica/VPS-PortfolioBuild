@@ -121,10 +121,12 @@ bool Strategy_EnsureBasketScope()
    if(g_basket_scope_ready)
       return true;
 
-   // The two traded legs are JPY crosses; MT5 also needs USD conversion
-   // history to value profit/margin in the account currency during tests.
-   string allowed[5] = {"EURJPY.DWX", "AUDJPY.DWX", "EURUSD.DWX", "AUDUSD.DWX", "USDJPY.DWX"};
-   for(int i = 0; i < 5; ++i)
+   // The Q02 basket manifest pins tester_currency=JPY, and both traded legs
+   // are JPY-quoted. Warming USD conversion legs forces full-history tick
+   // preprocessing on symbols the strategy never reads and has caused
+   // METATESTER_HUNG/NO_HISTORY under memory pressure.
+   string allowed[2] = {"EURJPY.DWX", "AUDJPY.DWX"};
+   for(int i = 0; i < 2; ++i)
       SymbolSelect(allowed[i], true);
 
    QM_SymbolGuardInit(allowed);
