@@ -25,7 +25,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02
+pipeline_phase: Q04_REQUEUED
 last_updated: 2026-06-28
 g0_approval_reasoning: "R1 PASS because the method comes from Chan cointegration pair-trading and pair selection comes from the OWNER-requested in-house 66-pair scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS NZDUSD.DWX and GBPJPY.DWX data exist in the exported scan universe; R4 PASS no ML/grid/martingale."
 expected_pf: 1.06
@@ -145,4 +145,6 @@ cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 |---|---|---|---|
 | v1 | 2026-06-28 | initial next-best FX cointegration basket build | G0 | APPROVED |
 | v1 | 2026-06-28 | logical-basket Q02 enqueued as non-duplicate paced worker item; worker returned invalid report with NO_HISTORY/INCOMPLETE_RUNS on T2 | Q02 | INFRA_FAIL |
-| v1 | 2026-06-28 | logical-basket Q02 requeued after prior T2 GBPUSD.DWX history synchronization infra failure; worker claimed row on T5 | Q02 | ACTIVE |
+| v1 | 2026-06-28 | logical-basket Q02 requeued after prior T2 GBPUSD.DWX history synchronization infra failure; worker produced PASS evidence `14a6ae04-aad9-4561-bb0d-d7e350a83925` | Q02 | PASS |
+| v1 | 2026-06-28 | automatic early Q04 probe failed all folds with cold-history infra classes: BARS_ZERO, EMPTY_SYMBOL, HISTORY_CONTEXT_INVALID, INCOMPLETE_RUNS, NO_HISTORY | Q04 | INFRA_FAIL |
+| v1 | 2026-06-28 | one non-duplicate Q04 retry inserted with basket host payload preserved, `q04_latest_full_year=2024`, and source Q02 PASS `14a6ae04-aad9-4561-bb0d-d7e350a83925`; worker claimed row `b661cbc1-414a-4655-91c1-262a017c7f77` on T6 | Q04 | ACTIVE |

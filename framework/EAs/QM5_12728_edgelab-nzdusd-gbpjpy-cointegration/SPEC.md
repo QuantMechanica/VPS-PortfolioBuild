@@ -107,6 +107,19 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 `tester_deposit=100000`. The logical basket backtest setfile uses the canonical
 `RISK_FIXED=1000`, with `RISK_PERCENT=0`.
 
+Q02 evidence note: the first logical-basket Q02 row
+`8ecabdc1-8f54-4eff-aa86-ddd4734ba1b0` was an infra failure on T2. The
+non-duplicate retry `14a6ae04-aad9-4561-bb0d-d7e350a83925` produced a Q02 PASS
+from `D:/QM/reports/work_items/14a6ae04-aad9-4561-bb0d-d7e350a83925/QM5_12728/20260628_003443/summary.json`.
+
+Q04 evidence note: the automatic early Q04 probe
+`6a1a390b-7380-407e-a75d-6c64cec9a63f` failed as infra, not as a strategy
+verdict. All folds returned cold-history/report classes including `NO_HISTORY`,
+`INCOMPLETE_RUNS`, `BARS_ZERO`, and `EMPTY_SYMBOL`. A single Q04 retry
+`b661cbc1-414a-4655-91c1-262a017c7f77` was inserted with the basket host payload
+preserved and `q04_latest_full_year=2024`. The paced worker claimed it on T6;
+no manual MT5 backtest was launched.
+
 ---
 
 ## Revision History
@@ -114,3 +127,4 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-28 | Initial next-best FX cointegration basket build | Built from the 12723 basket pattern |
+| v2 | 2026-06-28 | Q04 cold-history retry handoff | Q02 PASS recorded, prior Q04 INFRA_FAIL superseded by one worker-claimed Q04 retry |
