@@ -13797,4 +13797,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12756,edgelab-usdchf-usdcad-cointegration,0,USDCHF.DWX,127560000,2026-06-28,Development,active
 12756,edgelab-usdchf-usdcad-cointegration,1,USDCAD.DWX,127560001,2026-06-28,Development,active
 12757,abraham-xti-pb,0,XTIUSD.DWX,127570000,2026-06-28,Development,active
+12758,edgelab-gbpusd-euraud-cointegration,0,GBPUSD.DWX,127580000,2026-06-28,Development,active
+12758,edgelab-gbpusd-euraud-cointegration,1,EURAUD.DWX,127580001,2026-06-28,Development,active
 12704,xngusd-summer-power-long,0,XNGUSD.DWX,127040000,2026-06-28,Development,active
