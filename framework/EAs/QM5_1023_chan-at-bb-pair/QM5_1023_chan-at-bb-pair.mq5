@@ -478,6 +478,10 @@ bool Strategy_ExitSignal()
       return false;
      }
 
+   const datetime broker_now = TimeCurrent();
+   if(!Strategy_SymbolTradeReady(g_leg_xti, broker_now) || !Strategy_SymbolTradeReady(g_leg_xau, broker_now))
+      return false;
+
    const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cheap D1 timestamp guard before optional spread refresh.
    if(current_d1_bar > 0 && current_d1_bar != g_last_state_bar)
       Strategy_RefreshSpreadState();

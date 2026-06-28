@@ -3,21 +3,21 @@
 ; ea_id:        11165
 ; ea_slug:      weiss-rsi-ma
 ; ea_version:   v5.0
-; set_version:  s20260627-d2b
+; set_version:  s20260628-d2c
 ; symbol:       AUDCAD.DWX
 ; timeframe:    H1
 ; environment:  live
 ; magic_slot:   2
 ; risk_mode:    PERCENT
-; portfolio_weight: 0.1329
+; portfolio_weight: 0.1050
 ; build_hash:   95a31d61ee4c1dbff4e8c85745c154ed9a1db30791d16ad2c8776eb3979a6805
 ; author:       Claude
-; date:         2026-06-27
+; date:         2026-06-28
 ;==========================================================
 qm_magic_slot_offset=2
 RISK_FIXED=0
-RISK_PERCENT=0.2658
-PORTFOLIO_WEIGHT=0.1329
+RISK_PERCENT=0.2101
+PORTFOLIO_WEIGHT=0.1050
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3

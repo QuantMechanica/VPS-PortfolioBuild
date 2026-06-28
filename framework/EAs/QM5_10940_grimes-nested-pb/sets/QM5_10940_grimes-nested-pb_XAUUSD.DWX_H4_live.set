@@ -3,21 +3,21 @@
 ; ea_id:        10940
 ; ea_slug:      grimes-nested-pb
 ; ea_version:   v5.0
-; set_version:  s20260627-d2b
+; set_version:  s20260628-d2c
 ; symbol:       XAUUSD.DWX
 ; timeframe:    H4
 ; environment:  live
 ; magic_slot:   3
 ; risk_mode:    PERCENT
-; portfolio_weight: 0.0691
+; portfolio_weight: 0.0546
 ; build_hash:   pending
 ; author:       Claude
-; date:         2026-06-27
+; date:         2026-06-28
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=0
-RISK_PERCENT=0.1381
-PORTFOLIO_WEIGHT=0.0691
+RISK_PERCENT=0.1092
+PORTFOLIO_WEIGHT=0.0546
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
