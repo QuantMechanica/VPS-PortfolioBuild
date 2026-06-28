@@ -12,6 +12,7 @@ cards_extracted:
   - wti-mar-prem
   - wti-apr-prem
   - wti-aug-prem
+  - wti-febsep-prem
 ---
 
 # Arendas Oil Seasonality Source
@@ -42,6 +43,11 @@ The August card isolates the third positive month named by the source and is
 kept separate from the April spring premium and broad EIA summer-demand season
 logic. Q02+ must validate the deterministic rule on Darwinex XTIUSD.DWX bars
 before any portfolio conclusion is drawn.
+
+The February-September card mechanizes the paper's source-defined seasonal
+holding window as one low-frequency WTI sleeve. It is deliberately separate
+from the single-month March/April/August cards: instead of testing one month at
+a time, it tests the broader seasonal allocation described by the source.
 
 The QM implementation does not import the paper's performance numbers into the
 portfolio. Q02+ must validate the deterministic rule on Darwinex XTIUSD.DWX

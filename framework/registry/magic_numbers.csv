@@ -13725,3 +13725,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12732,edgelab-eurusd-gbpusd-cointegration,1,GBPUSD.DWX,127320001,2026-06-28,Development,active
 12733,xti-xng-xmom,0,XTIUSD.DWX,127330000,2026-06-28,Development,active
 12733,xti-xng-xmom,1,XNGUSD.DWX,127330001,2026-06-28,Development,active
+12734,wti-febsep-prem,0,XTIUSD.DWX,127340000,2026-06-28,Development,active
