@@ -114,6 +114,12 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 `tester_deposit=100000`. The logical basket backtest setfile uses the canonical
 `RISK_FIXED=1000`, with `RISK_PERCENT=0`.
 
+Q02 queue note: one logical-basket work item was inserted for
+`QM5_12756_USDCHF_USDCAD_COINTEGRATION_D1`:
+`3a06b01c-7b8c-4db0-86fb-d40e0a1c0000`. No per-leg Q02 fanout was created. The
+paced worker claimed it on T5 immediately after insertion, hit a sub-second
+launch fault, and returned it to pending cooldown for paced retry.
+
 ---
 
 ## Revision History
@@ -121,3 +127,4 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-28 | Initial next-best FX cointegration basket build | Built from the 12732 basket pattern |
+| v1 | 2026-06-28 | Q02 enqueue | Pending logical-basket work item 3a06b01c-7b8c-4db0-86fb-d40e0a1c0000 after first T5 launch-fault cooldown |

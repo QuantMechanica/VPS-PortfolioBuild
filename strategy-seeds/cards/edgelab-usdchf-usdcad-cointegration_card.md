@@ -147,3 +147,4 @@ cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-06-28 | initial OOS-positive next-best FX cointegration basket build | G0 | APPROVED |
+| v1 | 2026-06-28 | logical-basket Q02 enqueued as non-duplicate paced worker item `3a06b01c-7b8c-4db0-86fb-d40e0a1c0000`; first T5 claim hit launch-fault cooldown | Q02 | PENDING |
