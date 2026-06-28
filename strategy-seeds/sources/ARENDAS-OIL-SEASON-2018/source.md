@@ -1,7 +1,7 @@
 ---
 source_id: ARENDAS-OIL-SEASON-2018
 title: Arendas et al. crude-oil seasonal patterns
-publisher: Journal of Investment Strategies
+publisher: Journal of International Studies
 source_type: academic_paper
 status: cards_ready
 created: 2026-06-27
@@ -9,6 +9,7 @@ created_by: Codex
 uri: https://www.jois.eu/files/12_547_Arendas%20et%20al.pdf
 cards_extracted:
   - wti-nov-fade
+  - wti-mar-prem
   - wti-apr-prem
   - wti-aug-prem
 ---
@@ -17,23 +18,24 @@ cards_extracted:
 
 ## Source Identity
 
-- Publisher: Journal of Investment Strategies
-- Primary source: Arendas, P., Chovancova, B. and Balaz, V., "Seasonal patterns
+- Publisher: Journal of International Studies
+- Primary source: Arendas, P., Tkacova, A. and Bukoven, M., "Seasonal patterns
   in oil prices and their implications for investors", URL
   https://www.jois.eu/files/12_547_Arendas%20et%20al.pdf
 
 ## Research Use
 
 This source is used for structural lineage around month-of-year seasonality in
-crude-oil returns. The extraction used two mechanized cards:
+crude-oil returns. The extraction used four mechanized cards:
 
 - `wti-nov-fade`: XTIUSD.DWX D1 November month-of-year negative-return sleeve.
+- `wti-mar-prem`: XTIUSD.DWX D1 March month-of-year positive-return sleeve.
 - `wti-apr-prem`: XTIUSD.DWX D1 April month-of-year positive-return sleeve.
 - `wti-aug-prem`: XTIUSD.DWX D1 August month-of-year positive-return sleeve.
 
-The April card isolates one of the positive spring months reported by the
-source. It is intentionally separate from the February premium card that uses
-the Gorska-Krawiec WTI calendar source, and from the broad EIA demand-season
+The March and April cards isolate positive spring months reported by the source.
+They are intentionally separate from the February premium card that uses the
+Gorska-Krawiec WTI calendar source, and from the broad EIA demand-season
 strategy that requires trend/momentum confirmation.
 
 The August card isolates the third positive month named by the source and is
