@@ -27,6 +27,8 @@ This EA trades Kathy Lien's Double Bollinger Band trend-zone system on H1. It bu
 | strategy_sl_cap_pips | 60.0 | 1-60 | Skip entries whose dynamic opposite-inner-band stop exceeds this cap. |
 | strategy_spread_cap_pips | 20.0 | 0-20 | Blocks entries only when modeled spread is genuinely wider than this. |
 | strategy_no_friday_entry | true | true/false | Implements the card's no-Friday-entry filter. |
+| strategy_direction_mode | 0 | -1/0/1 | Rescue-analysis switch: `0` trades both directions, `1` long-only, `-1` short-only. Default preserves the card logic. |
+| strategy_min_exit_bars | 0 | 0-24 | Rescue-analysis switch: minimum bars before the neutral-channel exit may close a trade. Hard SL and Friday close remain framework-managed. Default preserves the card logic. |
 
 ---
 
@@ -97,3 +99,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-23 | Initial build from card | 79b567d9-e8d1-44d2-8131-392e4cec5550 |
+| v2 | 2026-06-28 | Q05 near-miss rescue variants | Added neutral-default direction and minimum-hold inputs after USDJPY deal analysis showed long-side and longer-hold edge concentration. |

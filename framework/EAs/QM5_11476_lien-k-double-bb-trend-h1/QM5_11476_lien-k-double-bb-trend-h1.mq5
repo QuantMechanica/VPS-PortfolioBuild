@@ -77,6 +77,8 @@ input double strategy_sl_fixed_pips        = 40.0; // fallback fixed stop (pips)
 input double strategy_sl_cap_pips          = 60.0; // skip setup if dynamic band stop > this (pips)
 input double strategy_spread_cap_pips      = 20.0; // skip a genuinely wide spread (pips)
 input bool   strategy_no_friday_entry      = true; // card: no Friday entry
+input int    strategy_direction_mode       = 0;     // 0 both; 1 long only; -1 short only
+input int    strategy_min_exit_bars        = 0;     // minimum bars before neutral-channel exit; 0 = card default
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -154,6 +156,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const bool enter_long  = (buy_zone_1  && !buy_zone_2);
    const bool enter_short = (sell_zone_1 && !sell_zone_2);
    if(!enter_long && !enter_short)
+      return false;
+   if(strategy_direction_mode > 0 && enter_short)
+      return false;
+   if(strategy_direction_mode < 0 && enter_long)
       return false;
 
    // --- Optional middle-band slope filter in the trade direction ---
@@ -250,6 +256,7 @@ bool Strategy_ExitSignal()
    // Determine the direction of the open position for this magic.
    bool is_long  = false;
    bool is_short = false;
+   datetime opened_at = 0;
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -260,7 +267,15 @@ bool Strategy_ExitSignal()
       const long ptype = PositionGetInteger(POSITION_TYPE);
       if(ptype == POSITION_TYPE_BUY)  is_long  = true;
       if(ptype == POSITION_TYPE_SELL) is_short = true;
+      opened_at = (datetime)PositionGetInteger(POSITION_TIME);
       break;
+     }
+
+   if(strategy_min_exit_bars > 0 && opened_at > 0)
+     {
+      const int period_seconds = PeriodSeconds(_Period);
+      if(period_seconds > 0 && (TimeCurrent() - opened_at) < strategy_min_exit_bars * period_seconds)
+         return false;
      }
 
    if(is_long  && close1 < bb1_up_1)
