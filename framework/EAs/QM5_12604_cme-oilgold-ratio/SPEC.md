@@ -37,6 +37,8 @@ gas, and it uses CME oil-through-gold lineage rather than EIA oil/gas linkage.
 | `strategy_xti_max_spread_pts` | 1000 | 700-1500 | XTI entry spread cap |
 | `strategy_xau_max_spread_pts` | 500 | 300-800 | XAU entry spread cap |
 | `strategy_deviation_points` | 20 | 10-50 | Broker deviation points for market legs |
+| `strategy_entry_hour_broker` | 2 | 0-23 | Earliest broker hour to attempt the daily basket entry |
+| `strategy_entry_minute_broker` | 0 | 0-59 | Earliest broker minute to attempt the daily basket entry |
 
 ---
 
@@ -60,7 +62,7 @@ gas, and it uses CME oil-through-gold lineage rather than EIA oil/gas linkage.
 |---|---|
 | Base timeframe | `D1` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` through the framework entry gate |
+| Bar gating | D1 state refresh on `QM_IsNewBar`; entry can be delayed until the configured broker entry time and both legs are tradable |
 
 ---
 
@@ -103,4 +105,5 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
+| v2 | 2026-06-28 | Delay basket entry until XAU trade session is open | avoids one-leg XTI packages at the D1 bar open |
 | v1 | 2026-06-27 | Initial build from card | pending commit |
