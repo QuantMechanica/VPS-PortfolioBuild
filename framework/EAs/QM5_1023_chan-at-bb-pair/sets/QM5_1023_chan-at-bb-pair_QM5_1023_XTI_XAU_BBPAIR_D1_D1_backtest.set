@@ -42,3 +42,5 @@ strategy_atr_sizing_mult=3.0
 strategy_xti_max_spread_pts=1000
 strategy_xau_max_spread_pts=500
 strategy_deviation_points=20
+strategy_entry_hour_broker=2
+strategy_entry_minute_broker=0

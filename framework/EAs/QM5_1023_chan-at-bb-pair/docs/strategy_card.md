@@ -94,6 +94,11 @@ ENTRY (only when not already in position; one position max per direction):
 - if z[t] > +ENTRY_K  then OPEN_SHORT_SPREAD at next bar's open
                           //  (short_spread = SHORT USO + LONG (hedgeRatio * GLD))
 
+V5 execution repair:
+- the daily entry attempt is delayed until `strategy_entry_hour_broker` /
+  `strategy_entry_minute_broker` and both basket legs report an open trade
+  session, so the XTI leg is not opened before XAUUSD.DWX is tradable.
+
 NOTE on hedge-ratio retiming: Chan's MATLAB code re-computes hedgeRatio every day on the
 trailing 20-day window. The position once opened is held with the hedge ratio fixed at entry
 (per Bollinger-band convention; numUnits is set to 1 or -1 of the spread on entry and
@@ -130,6 +135,7 @@ NO TIME-STOP / NO TRAILING / NO PARTIAL CLOSE.
 - standard V5 framework defaults: kill-switch, news filter, MAX_DD trip
 - Friday Close: ENABLED (V5 default; flag friday_close at risk per § 12 — multi-day spread holds may straddle weekends)
 - pyramiding: NOT allowed (one open spread position per direction at a time)
+- skip entries before the configured broker entry time or while either basket leg is outside its trade session
 - Optional cointegration self-test (P3 sweep axis):
     skip entries when the rolling-window cadf or Johansen p-value > THRESHOLD
     // Rationale: Chan (p. 67) notes that GLD-USO are NOT cointegrating — the strategy works
@@ -185,6 +191,12 @@ NO TIME-STOP / NO TRAILING / NO PARTIAL CLOSE.
 - name: cointegration_filter_p
   default: 0                                  # disabled by default
   sweep_range: [0, 0.05, 0.10, 0.20]           # cadf p-value threshold; 0 disables filter
+- name: strategy_entry_hour_broker
+  default: 2
+  sweep_range: [1, 2, 3]
+- name: strategy_entry_minute_broker
+  default: 0
+  sweep_range: [0]
 ```
 
 P3.5 (CSR) axis: re-run on alternative pairs to test Chan's "any cointegrating pair" generalization. Candidates per Chan Ch 4: EWA-EWC (Australia/Canada commodity ETFs, p. 53), KO-PEP (Coca-Cola / Pepsi equities, Ex 7.3 cross-reference). V5 Darwinex-native candidates: GOLD.DWX/OIL.DWX (proxy for GLD/USO), AUDUSD.DWX/USDCAD.DWX (proxy for EWA-EWC commodity-currency pair).
@@ -301,6 +313,7 @@ data_requirements: standard                   # D1 OHLC on two .DWX symbols simu
 
 | version | date | rebuild reason | P-stage reached | verdict |
 |---|---|---|---|---|
+| _v2 | 2026-06-28 | delayed daily entry until XAU trade session is open | Q04 repair | pending |
 | _v1 | 2026-04-28 | initial build | TBD | TBD |
 
 ## 15. Pipeline Phase Status (current `_v1`)

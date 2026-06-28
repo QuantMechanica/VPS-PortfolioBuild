@@ -40,6 +40,8 @@ implementation.
 | `strategy_xti_max_spread_pts` | 1000 | 700-1500 | XTI entry spread cap |
 | `strategy_xau_max_spread_pts` | 500 | 300-800 | XAU entry spread cap |
 | `strategy_deviation_points` | 20 | 10-50 | Broker deviation points for market legs |
+| `strategy_entry_hour_broker` | 2 | 0-23 | Earliest broker hour to attempt the daily basket entry |
+| `strategy_entry_minute_broker` | 0 | 0-59 | Earliest broker minute to attempt the daily basket entry |
 
 ## 3. Symbol Universe
 
@@ -51,7 +53,8 @@ implementation.
 
 - Base timeframe: D1.
 - Multi-timeframe refs: none.
-- Bar gating: `QM_IsNewBar()`.
+- Bar gating: D1 state refresh on `QM_IsNewBar()`; entry can be delayed until
+  the configured broker entry time and both legs are tradable.
 
 ## 5. Expected Behaviour
 
