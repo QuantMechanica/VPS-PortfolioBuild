@@ -202,8 +202,9 @@ function Test-TesterLogShowsOnInitFailure {
         return $false
     }
     return [regex]::IsMatch($TesterLogTail, "(?im)\btester stopped because OnInit returns non-zero code\b") -or
-        [regex]::IsMatch($TesterLogTail, "(?im)\b(OnInit|init)\b.*\b(failed|INIT_FAILED)\b") -or
-        [regex]::IsMatch($TesterLogTail, "(?im)initialization failed")
+        [regex]::IsMatch($TesterLogTail, "(?im)\bOnInit\b[^\r\n]*(?:failed|INIT_FAILED|non-zero\s+code)") -or
+        [regex]::IsMatch($TesterLogTail, "(?im)\bINIT_FAILED\b") -or
+        [regex]::IsMatch($TesterLogTail, "(?im)\binitialization\s+failed\b")
 }
 
 function Test-TesterLogShowsSetupDataMissing {

@@ -73,7 +73,7 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_rsi_period             = 1;
+input int    strategy_rsi_period             = 14;
 input double strategy_buy_rsi_max            = 40.0;
 input double strategy_sell_rsi_min           = 60.0;
 input int    strategy_atr_period             = 14;

@@ -4,13 +4,13 @@
 **Slug:** `mql5-harami-h1`
 **Source:** `a120af9a-fb72-526c-bb80-d1d098a617b5` (see `strategy-seeds/sources/a120af9a-fb72-526c-bb80-d1d098a617b5/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-28
 
 ---
 
 ## 1. Strategy Logic
 
-The EA evaluates completed H1 candles only. It buys when a bearish mother candle is followed by a bullish child candle whose body is fully contained inside the mother candle body, and the preceding context is downward. It sells when a bullish mother candle is followed by a bearish child candle whose body is fully contained inside the mother candle body, and the preceding context is upward. Long entries require RSI(1) below 40, short entries require RSI(1) above 60, and positions use a 2.0 ATR(14) protective stop with no fixed take-profit. Long exits occur when RSI crosses downward through 70 or 30; short exits occur when RSI crosses upward through 30 or 70.
+The EA evaluates completed H1 candles only. It buys when a bearish mother candle is followed by a bullish child candle whose body is fully contained inside the mother candle body, and the preceding context is downward. It sells when a bullish mother candle is followed by a bearish child candle whose body is fully contained inside the mother candle body, and the preceding context is upward. Long entries require RSI(14) below 40, short entries require RSI(14) above 60, and positions use a 2.0 ATR(14) protective stop with no fixed take-profit. Long exits occur when RSI crosses downward through 70 or 30; short exits occur when RSI crosses upward through 30 or 70.
 
 ---
 
@@ -18,7 +18,7 @@ The EA evaluates completed H1 candles only. It buys when a bearish mother candle
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_rsi_period` | 1 | 1+ | RSI lookback used for entry confirmation and exit crosses. |
+| `strategy_rsi_period` | 14 | 1+ | RSI lookback used for entry confirmation and exit crosses. |
 | `strategy_buy_rsi_max` | 40.0 | 0-100 | Maximum RSI value allowed for long entries. |
 | `strategy_sell_rsi_min` | 60.0 | 0-100 | Minimum RSI value allowed for short entries. |
 | `strategy_atr_period` | 14 | 1+ | ATR lookback for the protective stop. |
@@ -97,4 +97,5 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
+| v2 | 2026-06-28 | Q02 infra repair | Aligned the EA default with the existing RISK_FIXED backtest setfiles to avoid the degenerate RSI(1) tester trap. |
 | v1 | 2026-06-18 | Initial build from card | 6e049719-cf3c-44a8-8721-5c4f99868517 |

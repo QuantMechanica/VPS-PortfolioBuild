@@ -78,4 +78,13 @@ if ($zeroTradeReasons -notcontains "ONINIT_FAILED") {
     throw "Zero-trade report did not preserve OnInit failure detection."
 }
 
+$initialDepositTail = @"
+Core 01  Initial Deposit: 100000.00
+Core 01  report failed to open cache on first attempt; retry succeeded
+"@
+
+if (Test-TesterLogShowsOnInitFailure -TesterLogTail $initialDepositTail) {
+    throw "Initial Deposit or generic failed wording was incorrectly treated as OnInit failure."
+}
+
 Write-Host "PASS Test-RunSmokeOnInitTradeScope"
