@@ -23,9 +23,9 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from cache_audit import has_ea_history_window
+    from cache_audit import has_ea_history_window, has_history_window
 except ModuleNotFoundError:
-    from tools.strategy_farm.cache_audit import has_ea_history_window
+    from tools.strategy_farm.cache_audit import has_ea_history_window, has_history_window
 
 try:
     from phase_ids import phase_label, phase_qid
@@ -8848,6 +8848,64 @@ def _load_basket_manifest(ea_id: str) -> dict[str, Any] | None:
     return manifest
 
 
+def _history_window_for_work_item(
+    work_item: sqlite3.Row,
+    from_year: int,
+    to_year: int,
+) -> tuple[bool, dict[str, Any]]:
+    """History/cache precheck for downstream gates.
+
+    Logical basket work_items use a synthetic symbol that never has MT5 history.
+    For those rows, validate the manifest host/legs instead of the logical name;
+    ordinary EAs keep the existing fail-closed all-setfiles check.
+    """
+    ea_id = str(work_item["ea_id"])
+    symbol = str(work_item["symbol"] or "")
+    manifest = _load_basket_manifest(ea_id)
+    if manifest and str(manifest.get("logical_symbol") or "") == symbol:
+        period = str(manifest.get("host_timeframe") or "").strip() or _detect_ea_period(
+            ea_id,
+            str(work_item["setfile_path"] or ""),
+        )
+        symbols: list[str] = []
+        for candidate in [manifest.get("host_symbol"), *(manifest.get("basket_symbols") or [])]:
+            text = str(candidate or "").strip()
+            if text and text not in symbols:
+                symbols.append(text)
+        checks: list[dict[str, Any]] = []
+        ok = bool(symbols)
+        for basket_symbol in symbols:
+            symbol_ok, detail = has_history_window(
+                basket_symbol,
+                period,
+                from_year,
+                to_year,
+                mt5_root=MT5_ROOT,
+            )
+            ok = ok and symbol_ok
+            checks.append(detail)
+        missing_symbols = [row for row in checks if row.get("missing_years")]
+        ea_dir = _find_single_ea_dir(ea_id)
+        return ok, {
+            "ea_id": ea_id,
+            "ea_dir": ea_dir.name if ea_dir else ea_id,
+            "history_check_scope": "basket_manifest_symbols",
+            "logical_symbol": symbol,
+            "basket_manifest": manifest.get("manifest_path"),
+            "required_years": list(range(from_year, to_year + 1)),
+            "symbols_checked": len(checks),
+            "missing_symbols": missing_symbols,
+            "symbols": checks,
+        }
+    return has_ea_history_window(
+        ea_id,
+        from_year,
+        to_year,
+        repo_root=REPO_ROOT,
+        mt5_root=MT5_ROOT,
+    )
+
+
 def _find_basket_setfile(ea_id: str, manifest: dict[str, Any]) -> tuple[str, str] | None:
     ea_dir = _find_single_ea_dir(ea_id)
     if ea_dir is None:
@@ -9353,16 +9411,6 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
     created: list[dict[str, Any]] = []
     requeued: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []
-    p5_has_history = True
-    p5_history_detail: dict[str, Any] | None = None
-    if phase == "Q05":
-        p5_has_history, p5_history_detail = has_ea_history_window(
-            ea_id,
-            P5_REQUIRED_OOS_FROM_YEAR,
-            P5_REQUIRED_OOS_TO_YEAR,
-            repo_root=REPO_ROOT,
-            mt5_root=MT5_ROOT,
-        )
     with connect(root) as conn:
         prev_rows = conn.execute(
             f"""
@@ -9381,17 +9429,23 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                     "reason": "missing_setfile",
                 })
                 continue
-            if phase == "Q05" and not p5_has_history:
-                skipped.append({
-                    "id": prev["id"],
-                    "symbol": prev["symbol"],
-                    "setfile_path": prev["setfile_path"],
-                    "reason": "cache_history_below_required_oos_window",
-                    "verdict": "INVALID",
-                    "required_oos_window": f"{P5_REQUIRED_OOS_FROM_YEAR}-{P5_REQUIRED_OOS_TO_YEAR}",
-                    "history_detail": p5_history_detail,
-                })
-                continue
+            if phase == "Q05":
+                p5_has_history, p5_history_detail = _history_window_for_work_item(
+                    prev,
+                    P5_REQUIRED_OOS_FROM_YEAR,
+                    P5_REQUIRED_OOS_TO_YEAR,
+                )
+                if not p5_has_history:
+                    skipped.append({
+                        "id": prev["id"],
+                        "symbol": prev["symbol"],
+                        "setfile_path": prev["setfile_path"],
+                        "reason": "cache_history_below_required_oos_window",
+                        "verdict": "INVALID",
+                        "required_oos_window": f"{P5_REQUIRED_OOS_FROM_YEAR}-{P5_REQUIRED_OOS_TO_YEAR}",
+                        "history_detail": p5_history_detail,
+                    })
+                    continue
             existing = conn.execute(
                 """
                 SELECT * FROM work_items
