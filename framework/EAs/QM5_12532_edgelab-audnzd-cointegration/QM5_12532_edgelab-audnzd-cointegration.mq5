@@ -548,7 +548,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                             spread_direction,
                             g_z_now,
                             strategy_entry_z,
-                            (long)iTime(_Symbol, PERIOD_D1, 0)));
+                             (long)iTime(_Symbol, PERIOD_D1, 0))); // perf-allowed: cheap D1 timestamp for entry-signal logging after new-bar gate.
    Strategy_OpenPair(spread_direction);
    return false;
   }
@@ -696,7 +696,7 @@ void OnTick()
    if(new_bar)
       QM_EquityStreamOnNewBar();
 
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0);
+   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cheap D1 timestamp gate before one-per-bar entry evaluation.
    if(current_d1_bar <= 0 || current_d1_bar == g_last_entry_signal_bar)
       return;
    if(!Strategy_EntryTimeReady(broker_now))

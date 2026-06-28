@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12532
 ; ea_slug:      edgelab-audnzd-cointegration
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   bdb220c201014dd6bf1f5c08664754dad682e57109af654bf5e00761b6cd4312
+; build_hash:   dd68d3b1575c2ef9863b9e331ca9a69b80bec01f87475791226b6a33eed4ad42
 ; author:       Development
 ; date:         2026-06-28
 ;==========================================================

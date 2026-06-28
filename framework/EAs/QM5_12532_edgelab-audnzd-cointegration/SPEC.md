@@ -89,6 +89,19 @@ This card was mechanised from:
 
 ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
+Q04 tester note: the logical basket manifest pins `tester_currency=USD` and
+`tester_deposit=100000`. This is not a risk change; it makes the AUDUSD/NZDUSD
+USD-settled basket explicit for the dispatcher and keeps the canonical
+`RISK_FIXED=1000` backtest budget aligned with the tester account.
+
+Q04 history note: the 2026-06-28 T10 rerun produced valid 2023 and 2024 folds
+but the 2025 fold exported a zero-bar report after MT5 synchronized AUDUSD.DWX
+ticks through 2025 while the D1 history cache only contained bars through
+2024-12-31. The follow-up Q04 work item is clamped with
+`q04_latest_full_year=2024` so the runner evaluates only the complete usable
+folds instead of repeatedly classifying a terminal history-cache gap as strategy
+failure.
+
 ---
 
 ## Revision History
@@ -97,3 +110,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 |---|---|---|---|
 | v1 | 2026-06-10 | Initial build from card | 7f1000ad-b718-407b-99a0-bd88568712eb |
 | v2 | 2026-06-28 | Session-safe pair entry repair | Delays daily entries until both AUDUSD/NZDUSD legs are tradable; stale single-leg setfiles now carry card defaults. |
+| v3 | 2026-06-28 | Q04 history-cache retry metadata | Manifest pins USD tester defaults; Q04 retry uses `q04_latest_full_year=2024` after 2025 D1 cache returned zero bars despite synchronized ticks. |
