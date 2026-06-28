@@ -317,6 +317,32 @@ def _multisymbol_ea_ids() -> frozenset:
         return frozenset()
 
 
+def _work_item_is_multisymbol(
+    item: sqlite3.Row | dict[str, Any],
+    payload: dict[str, Any],
+    multisym_ids: frozenset,
+) -> bool:
+    """True when a work item loads more than its chart symbol's history.
+
+    `state/multisymbol_eas.txt` is a runtime hint, but build-time basket
+    work_items already carry durable payload markers. Treat those payload
+    markers as authoritative so newly built basket EAs are protected even when
+    the runtime hint file has not been refreshed yet.
+    """
+
+    ea_id = str(_work_item_value(item, "ea_id", "") or "")
+    if ea_id in multisym_ids:
+        return True
+    if str(payload.get("portfolio_scope") or "").strip().lower() == "basket":
+        return True
+    if str(payload.get("basket_manifest") or "").strip():
+        return True
+    try:
+        return int(payload.get("basket_symbol_count") or 0) > 1
+    except (TypeError, ValueError):
+        return False
+
+
 def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     """Atomically claim one pending work_item for a terminal.
 
@@ -417,9 +443,9 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 # makes this active-check + claim atomic across workers, so two
                 # daemons can't both pass the gate. OWNER 2026-06-24.
                 multisym_ids = _multisymbol_ea_ids()
-                multisym_active = bool(multisym_ids) and any(
-                    str(row["ea_id"]) in multisym_ids
-                    for row in conn.execute("SELECT DISTINCT ea_id FROM work_items WHERE status='active'")
+                multisym_active = any(
+                    _work_item_is_multisymbol(row, _json_loads(row["payload_json"]), multisym_ids)
+                    for row in conn.execute("SELECT ea_id, payload_json FROM work_items WHERE status='active'")
                 )
                 skipped_history: list[dict[str, Any]] = []
                 skipped_launch_cooldown: list[dict[str, Any]] = []
@@ -448,7 +474,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     # Skip a multi-symbol item while another multi-symbol backtest
                     # is already running anywhere in the farm (serialize the heavy
                     # basket loads). Non-multi-symbol items are unaffected.
-                    item_is_multisym = str(item["ea_id"]) in multisym_ids
+                    item_is_multisym = _work_item_is_multisymbol(item, payload, multisym_ids)
                     if multisym_active and item_is_multisym:
                         continue
                     if item_is_multisym:

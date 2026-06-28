@@ -211,6 +211,106 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(statuses["basket-q02"], "pending")
             self.assertEqual(statuses["ordinary-q02"], "active")
 
+    def test_payload_basket_q02_waits_for_memory_headroom_without_registry_hint(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "basket-q02",
+                "QM5_12751_EURUSD_EURAUD_COINTEGRATION_D1",
+                phase="Q02",
+                ea_id="QM5_12751",
+                payload={
+                    "portfolio_scope": "basket",
+                    "basket_manifest": "C:/QM/repo/framework/EAs/QM5_12751_demo/basket_manifest.json",
+                    "basket_symbol_count": 2,
+                    "host_symbol": "EURUSD.DWX",
+                },
+            )
+            self._insert_work_item(
+                root,
+                "ordinary-q02",
+                "GBPUSD.DWX",
+                phase="Q02",
+                ea_id="QM5_1001",
+            )
+
+            old_multisymbol_ea_ids = terminal_worker._multisymbol_ea_ids
+            old_free_ram_gb = terminal_worker._free_ram_gb
+            try:
+                terminal_worker._multisymbol_ea_ids = lambda: frozenset()
+                terminal_worker._free_ram_gb = lambda: terminal_worker.MULTISYMBOL_RAM_MIN_FREE_GB - 0.5
+
+                result = terminal_worker.claim_atomic(root, "T2")
+            finally:
+                terminal_worker._multisymbol_ea_ids = old_multisymbol_ea_ids
+                terminal_worker._free_ram_gb = old_free_ram_gb
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "ordinary-q02")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                statuses = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
+            self.assertEqual(statuses["basket-q02"], "pending")
+            self.assertEqual(statuses["ordinary-q02"], "active")
+
+    def test_payload_basket_q02_serializes_while_another_payload_basket_is_active(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "active-basket",
+                "QM5_12749_NZDUSD_AUDJPY_COINTEGRATION_D1",
+                phase="Q02",
+                status="active",
+                claimed_by="T1",
+                ea_id="QM5_12749",
+                payload={
+                    "portfolio_scope": "basket",
+                    "basket_manifest": "C:/QM/repo/framework/EAs/QM5_12749_demo/basket_manifest.json",
+                    "basket_symbol_count": 2,
+                    "host_symbol": "NZDUSD.DWX",
+                },
+            )
+            self._insert_work_item(
+                root,
+                "pending-basket",
+                "QM5_12751_EURUSD_EURAUD_COINTEGRATION_D1",
+                phase="Q02",
+                ea_id="QM5_12751",
+                payload={
+                    "portfolio_scope": "basket",
+                    "basket_manifest": "C:/QM/repo/framework/EAs/QM5_12751_demo/basket_manifest.json",
+                    "basket_symbol_count": 2,
+                    "host_symbol": "EURUSD.DWX",
+                },
+            )
+            self._insert_work_item(
+                root,
+                "ordinary-q02",
+                "GBPUSD.DWX",
+                phase="Q02",
+                ea_id="QM5_1001",
+            )
+
+            old_multisymbol_ea_ids = terminal_worker._multisymbol_ea_ids
+            old_free_ram_gb = terminal_worker._free_ram_gb
+            try:
+                terminal_worker._multisymbol_ea_ids = lambda: frozenset()
+                terminal_worker._free_ram_gb = lambda: terminal_worker.MULTISYMBOL_RAM_MIN_FREE_GB + 1.0
+
+                result = terminal_worker.claim_atomic(root, "T2")
+            finally:
+                terminal_worker._multisymbol_ea_ids = old_multisymbol_ea_ids
+                terminal_worker._free_ram_gb = old_free_ram_gb
+
+            self.assertTrue(result.get("claimed"))
+            self.assertEqual(result["item"]["id"], "ordinary-q02")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                statuses = dict(conn.execute("SELECT id, status FROM work_items").fetchall())
+            self.assertEqual(statuses["active-basket"], "active")
+            self.assertEqual(statuses["pending-basket"], "pending")
+            self.assertEqual(statuses["ordinary-q02"], "active")
+
     def test_dwx_history_range_registry_is_respected_for_p2_claims(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"
