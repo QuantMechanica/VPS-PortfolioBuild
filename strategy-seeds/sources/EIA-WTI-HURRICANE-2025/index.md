@@ -7,6 +7,7 @@ status: mined
 last_reviewed: 2026-06-27
 cards_extracted:
   - eia-wti-hurr-brk
+  - eia-wti-hurr-fade
 ---
 
 # EIA WTI Hurricane Season Source
@@ -23,21 +24,25 @@ refining and petroleum supply chains to storm-related outages. The EA does not
 ingest hurricane forecasts, weather feeds, EIA data, refinery data, APIs, CSVs,
 or any external feed at runtime.
 
-The mechanized card converts that structural supply-risk window into a
-Darwinex-only XTIUSD.DWX D1 price rule: during hurricane season, require an
-upside breakout, directional bar close, and trend confirmation before taking a
-long-only WTI position with ATR risk and short time/failed-breakout exits.
+The mechanized cards convert that structural supply-risk window into
+Darwinex-only XTIUSD.DWX D1 price rules. The breakout card trades upside supply
+risk after trend confirmation. The fade card uses the same official hurricane
+season lineage but trades the opposite failure mode: during the late-summer
+storm-risk window, fade failed upside spike/rejection bars back toward a slow
+D1 mean with ATR risk and short time exits.
 
 ## Extracted Card
 
 - `eia-wti-hurr-brk`: XTIUSD.DWX D1 hurricane-season upside breakout.
+- `eia-wti-hurr-fade`: XTIUSD.DWX D1 hurricane-season failed upside spike fade.
 
 ## R-Rules
 
 - R1 reputable source: PASS. EIA is the official U.S. government energy data
   publisher.
-- R2 mechanical: PASS. Calendar window, D1 OHLC breakout, ATR range threshold,
-  SMA trend filter, ATR stop, channel exit, and max-hold exit are deterministic.
+- R2 mechanical: PASS. Calendar windows, D1 OHLC breakout or failed-spike
+  rejection rules, ATR range thresholds, SMA mean/trend filters, ATR stops, and
+  max-hold exits are deterministic.
 - R3 data available: PASS. XTIUSD.DWX exists in the DWX symbol matrix.
 - R4 no ML/banned logic: PASS. No ML, grid, martingale, external API, or
   discretionary input.
