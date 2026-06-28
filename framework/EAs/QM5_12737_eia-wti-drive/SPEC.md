@@ -65,4 +65,4 @@ captured under `EIA-WTI-DRIVE-2026`.
 | Q02+ backtest | RISK_FIXED | 1000 |
 | Live, if ever approved later | RISK_PERCENT | allocated by portfolio process |
 
-No live manifest, portfolio gate, or `T_Live` file is touched by this build.
+No live manifest, portfolio-admission artifact, or live-terminal file is touched by this build.
