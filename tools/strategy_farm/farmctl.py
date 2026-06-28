@@ -2755,6 +2755,14 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
     # worker args (--ea, --symbol, --period, --setfile) here.
     elif phase == "Q04":
         cmd.extend(["--terminal", terminal or "T1"])
+        latest_full_year = payload.get("q04_latest_full_year", payload.get("latest_full_year"))
+        if latest_full_year is not None:
+            try:
+                latest_year = int(str(latest_full_year).strip())
+            except ValueError:
+                latest_year = None
+            if latest_year is not None:
+                cmd.extend(["--latest-full-year", str(latest_year)])
     elif phase in ("Q05", "Q06", "Q10"):
         # These take --baseline-setfile instead of --setfile.
         cmd.extend([

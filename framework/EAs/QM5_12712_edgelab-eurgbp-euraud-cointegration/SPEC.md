@@ -4,7 +4,7 @@
 **Slug:** edgelab-eurgbp-euraud-cointegration
 **Source:** claude_cross_asset_discovery_2026-06-09 plus Chan cointegration pair-trade method
 **Author of this spec:** Codex
-**Last revised:** 2026-06-27
+**Last revised:** 2026-06-28
 
 ---
 
@@ -106,6 +106,13 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 `tester_deposit=100000`. The logical basket backtest setfile uses the canonical
 `RISK_FIXED=1000`, with `RISK_PERCENT=0`.
 
+Q04 evidence note: work item `06e86ebb-4f8d-4763-ac11-1966a890cf22` produced
+valid 2023/2024 folds (F1 PF-net 1.402, 11 trades; F2 PF-net 1.927, 13 trades)
+then invalidated F3 because EURGBP.DWX 2025 host history is absent on the checked
+factory terminals. The same work item is requeued with `q04_latest_full_year=2024`
+so the rerun uses only the available folds instead of duplicating the known
+NO_HISTORY fold.
+
 ---
 
 ## Revision History
@@ -113,3 +120,4 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-27 | Initial next-best FX cointegration basket build | Built from the 12533/12624 basket pattern |
+| v2 | 2026-06-28 | Q04 rerun handoff | Q04 requeued with `q04_latest_full_year=2024` after valid F1/F2 and missing 2025 EURGBP host history |
