@@ -23,6 +23,7 @@ Two cards were extracted for structural natural-gas CFD sleeves:
 
 - `eia-xng-season`: XNGUSD.DWX D1 monthly seasonal demand/shoulder regime with price confirmation.
 - `xngusd-winter-withdrawal-long`: XNGUSD.DWX D1 winter withdrawal/heating-demand long-only regime with price confirmation.
+- `xngusd-summer-power-long`: XNGUSD.DWX D1 summer electric-sector demand long-only regime with price confirmation.
 
 ## Evidence Notes
 
