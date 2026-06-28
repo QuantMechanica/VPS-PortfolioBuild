@@ -143,3 +143,4 @@ cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
 | v1 | 2026-06-28 | initial next-best FX cointegration basket build | G0 | APPROVED |
+| v1 | 2026-06-28 | logical-basket Q02 enqueued as non-duplicate paced worker item `a8c74944-5252-4ce6-839c-abe0065bb953` | Q02 | PENDING |
