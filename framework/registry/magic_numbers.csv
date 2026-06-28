@@ -13744,3 +13744,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12741,nnfx-fx-basket-pooled,3,USDCHF.DWX,127410003,2026-06-28,Development,active
 12743,wti-postroll-fade,0,XTIUSD.DWX,127430000,2026-06-28,Development,active
 12744,eia-xng-storfade,0,XNGUSD.DWX,127440000,2026-06-28,Development,active
+12745,chan-wti-cl3040,0,XTIUSD.DWX,127450000,2026-06-28,Development,active
