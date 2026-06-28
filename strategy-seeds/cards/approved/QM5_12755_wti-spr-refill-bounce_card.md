@@ -234,4 +234,3 @@ Q02+ pipeline on Darwinex `XTIUSD.DWX` bars.
 ## Pipeline History
 
 - 2026-06-28: Card approved for build as `QM5_12755`.
-

@@ -39,4 +39,3 @@ price confirmation around a fixed policy-zone parameter.
 - R2 PASS: deterministic D1 price-zone reclaim rules can be coded and audited.
 - R3 PASS: `XTIUSD.DWX` exists in the DWX symbol matrix.
 - R4 PASS: no ML, no external runtime feed, no grid, no martingale.
-

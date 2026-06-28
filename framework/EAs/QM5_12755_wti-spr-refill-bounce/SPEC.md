@@ -73,4 +73,3 @@ https://www.energy.gov/ceser/articles/us-department-energy-announces-solicitatio
 
 No live manifest, `T_Live` file, portfolio gate, or AutoTrading setting is
 touched by this build.
-
