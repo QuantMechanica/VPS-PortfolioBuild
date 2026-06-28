@@ -3355,6 +3355,12 @@ def _active_timeout_min_for_work_item(phase: str, payload_json: str | None) -> i
         payload = json.loads(payload_json or "{}")
     except json.JSONDecodeError:
         payload = {}
+    try:
+        payload_timeout_min = int(payload.get("timeout_min") or 0)
+    except (TypeError, ValueError):
+        payload_timeout_min = 0
+    if payload_timeout_min > 0:
+        timeout_min = max(int(timeout_min), payload_timeout_min)
     if (
         str(phase or "").upper() == "Q02"
         and str(payload.get("portfolio_scope") or "").lower() == "basket"

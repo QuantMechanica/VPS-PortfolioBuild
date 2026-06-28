@@ -77,6 +77,11 @@ class BasketWorkItemsTests(unittest.TestCase):
             self.assertEqual(row[1], "FAIL")
             self.assertEqual(json.loads(row[2])["verdict_reason"], "ACTIVE_TIMEOUT")
 
+    def test_payload_timeout_extends_phase_active_timeout(self) -> None:
+        payload = json.dumps({"timeout_min": 120})
+
+        self.assertEqual(farmctl._active_timeout_min_for_work_item("Q08", payload), 120)
+
     def test_p2_enqueue_uses_one_logical_basket_work_item(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp) / "farm"
