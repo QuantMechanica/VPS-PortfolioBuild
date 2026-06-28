@@ -733,6 +733,92 @@ bool QM_NewsComplianceAllows(const string symbol,
    return !QM_NewsInFirmWindow(compliance, utc_time, symbol);
   }
 
+// ===========================================================================
+// FW-LIVE 2026-06-28 (OWNER) — native MT5 Economic Calendar for LIVE blackout.
+//
+// The CSV calendar is a BACKTEST artifact: deterministic and available inside
+// the Strategy Tester, but its event data is a fixed historical window and is
+// NOT a live feed. The MQL5 Calendar API is the inverse — unavailable in the
+// tester, but live and broker/MetaQuotes-maintained. So:
+//   * Strategy Tester  → CSV path (unchanged, deterministic, gate-validated).
+//   * Live / real-time → native MQL5 Calendar (CalendarValueHistory).
+// FAIL-CLOSED on live: if the native calendar is unreachable or unpopulated,
+// block trading (return false) rather than trade blind through news.
+// ===========================================================================
+
+// Calendar is "healthy" iff it returns at least one event over the recent
+// probe window (proves data is actually downloaded, not just an empty query).
+bool QM_NewsLiveCalendarHealthy()
+  {
+   const datetime to   = TimeTradeServer();
+   const datetime from = to - (7 * 24 * 3600); // last 7 days
+   MqlCalendarValue probe[];
+   const int n = CalendarValueHistory(probe, from, to);
+   return (n > 0);
+  }
+
+// True iff `server_time` is inside a min-impact blackout window for `symbol`,
+// per the native calendar. out_ok=false signals the calendar is unavailable.
+bool QM_NewsLiveInWindow(const string symbol, const datetime server_time,
+                         const int before_minutes, const int after_minutes,
+                         bool &out_ok)
+  {
+   out_ok = true;
+   const datetime from = server_time - (after_minutes * 60);
+   const datetime to   = server_time + (before_minutes * 60);
+   MqlCalendarValue values[];
+   const int n = CalendarValueHistory(values, from, to);
+   if(n <= 0)
+     {
+      // No events in window — but confirm the calendar is populated at all.
+      if(!QM_NewsLiveCalendarHealthy())
+         out_ok = false;             // data missing → caller fails closed
+      return false;
+     }
+   for(int i = 0; i < n; i++)
+     {
+      MqlCalendarEvent ev;
+      if(!CalendarEventById(values[i].event_id, ev))
+         continue;
+      string imp = "LOW";
+      if(ev.importance == CALENDAR_IMPORTANCE_HIGH)
+         imp = "HIGH";
+      else if(ev.importance == CALENDAR_IMPORTANCE_MODERATE)
+         imp = "MEDIUM";
+      if(!QM_NewsImpactMeetsMinimum(imp, g_qm_news_min_impact_upper))
+         continue;
+      MqlCalendarCountry country;
+      if(!CalendarCountryById(ev.country_id, country))
+         continue;
+      if(!QM_NewsEventAffectsSymbol(country.currency, symbol))
+         continue;
+      if(values[i].time >= from && values[i].time <= to)
+         return true;              // high-impact event in the blackout window
+     }
+   return false;
+  }
+
+// Live temporal-axis verdict (mirrors QM_NewsTemporalAllows but native-calendar).
+bool QM_NewsLiveTemporalAllows(const string symbol, const datetime server_time,
+                               const QM_NewsTemporalMode temporal, bool &out_ok)
+  {
+   out_ok = true;
+   int before = 0;
+   int after  = 0;
+   switch(temporal)
+     {
+      case QM_NEWS_TEMPORAL_OFF:           return true;
+      case QM_NEWS_TEMPORAL_PRE30:         before = 30;      after = 0;       break;
+      case QM_NEWS_TEMPORAL_PRE60:         before = 60;      after = 0;       break;
+      case QM_NEWS_TEMPORAL_PRE30_POST30:  before = 30;      after = 30;      break;
+      case QM_NEWS_TEMPORAL_PRE60_POST60:  before = 60;      after = 60;      break;
+      case QM_NEWS_TEMPORAL_CLOSE_ALL_PRE: before = 30;      after = 0;       break;
+      case QM_NEWS_TEMPORAL_SKIP_DAY:      before = 24 * 60; after = 24 * 60; break;
+      default:                             before = 30;      after = 30;      break;
+     }
+   return !QM_NewsLiveInWindow(symbol, server_time, before, after, out_ok);
+  }
+
 // FW1 canonical query — two-axis composed via AND.
 //
 // FW7 2026-05-23 — fast-path + per-bar cache.
@@ -748,8 +834,6 @@ bool QM_NewsAllowsTrade2(const string symbol,
   {
    if(temporal == QM_NEWS_TEMPORAL_OFF && compliance == QM_NEWS_COMPLIANCE_NONE)
       return true;
-   if(!g_qm_news_active)
-      return true; // calendar deliberately not loaded — caller asked, we say allow.
 
    // Cache lookup. Bar-time is the current chart bar's open time; one verdict
    // per bar is sufficient because all permission edges happen on bar close.
@@ -760,6 +844,31 @@ bool QM_NewsAllowsTrade2(const string symbol,
       g_qm_news_cache_temporal == temporal &&
       g_qm_news_cache_compliance == compliance)
       return g_qm_news_cache_verdict;
+
+   // FW-LIVE: real-time trading uses the native MT5 calendar. The CSV path below
+   // is reserved for the Strategy Tester (where the Calendar API is unavailable).
+   if(!MQLInfoInteger(MQL_TESTER))
+     {
+      const datetime srv = (broker_time > 0 ? broker_time : TimeTradeServer());
+      bool ok = true;
+      const bool allows = QM_NewsLiveTemporalAllows(symbol, srv, temporal, ok);
+      bool verdict_live = allows;
+      if(!ok)
+        {
+         QM_NewsLogSetupMissing("live_calendar_unavailable");
+         verdict_live = false; // fail-closed: never trade blind through live news
+        }
+      g_qm_news_cache_symbol     = symbol;
+      g_qm_news_cache_bar_time   = bar_time;
+      g_qm_news_cache_temporal   = temporal;
+      g_qm_news_cache_compliance = compliance;
+      g_qm_news_cache_verdict    = verdict_live;
+      g_qm_news_cache_valid      = true;
+      return verdict_live;
+     }
+
+   if(!g_qm_news_active)
+      return true; // tester: calendar deliberately not loaded — caller asked, we say allow.
 
    if(!g_qm_news_loaded)
       QM_NewsInit();
