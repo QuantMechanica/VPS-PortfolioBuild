@@ -13764,3 +13764,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12749,edgelab-nzdusd-audjpy-cointegration,0,NZDUSD.DWX,127490000,2026-06-28,Development,active
 12749,edgelab-nzdusd-audjpy-cointegration,1,AUDJPY.DWX,127490001,2026-06-28,Development,active
 12702,xngusd-winter-withdrawal-long,0,XNGUSD.DWX,127020000,2026-06-28,Development,active
+9573,brooks-ib-breakout-failure-h4,0,EURUSD.DWX,95730000,2026-06-28,Development,active
+9573,brooks-ib-breakout-failure-h4,1,GBPUSD.DWX,95730001,2026-06-28,Development,active
+9573,brooks-ib-breakout-failure-h4,2,USDJPY.DWX,95730002,2026-06-28,Development,active
+9573,brooks-ib-breakout-failure-h4,3,AUDUSD.DWX,95730003,2026-06-28,Development,active
+9573,brooks-ib-breakout-failure-h4,4,USDCAD.DWX,95730004,2026-06-28,Development,active
+9573,brooks-ib-breakout-failure-h4,5,USDCHF.DWX,95730005,2026-06-28,Development,active
+9573,brooks-ib-breakout-failure-h4,6,NZDUSD.DWX,95730006,2026-06-28,Development,active
+9573,brooks-ib-breakout-failure-h4,7,XAUUSD.DWX,95730007,2026-06-28,Development,active
+9573,brooks-ib-breakout-failure-h4,8,XTIUSD.DWX,95730008,2026-06-28,Development,active
+9573,brooks-ib-breakout-failure-h4,9,GDAXI.DWX,95730009,2026-06-28,Development,active
+9573,brooks-ib-breakout-failure-h4,10,NDX.DWX,95730010,2026-06-28,Development,active
+9573,brooks-ib-breakout-failure-h4,11,WS30.DWX,95730011,2026-06-28,Development,active
+9573,brooks-ib-breakout-failure-h4,12,UK100.DWX,95730012,2026-06-28,Development,active
