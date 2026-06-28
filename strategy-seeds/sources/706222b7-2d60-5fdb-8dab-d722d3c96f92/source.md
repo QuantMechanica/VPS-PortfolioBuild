@@ -19,14 +19,15 @@ uri: https://www.eia.gov/todayinenergy/detail.php?id=22892
 
 ## Mining Scope
 
-One card was extracted for a structural natural-gas CFD sleeve:
+Two cards were extracted for structural natural-gas CFD sleeves:
 
 - `eia-xng-season`: XNGUSD.DWX D1 monthly seasonal demand/shoulder regime with price confirmation.
+- `xngusd-winter-withdrawal-long`: XNGUSD.DWX D1 winter withdrawal/heating-demand long-only regime with price confirmation.
 
 ## Evidence Notes
 
 - The source describes natural gas consumption and production as seasonally shaped, with consumption peaks tied to winter heating demand and summer electric-sector demand.
-- The QM implementation does not ingest external EIA data at runtime. It mechanizes the calendar seasonality as fixed monthly windows and uses only Darwinex MT5 OHLC data for price confirmation and risk control.
+- The QM implementations do not ingest external EIA data at runtime. They mechanize the calendar seasonality as fixed windows and use only Darwinex MT5 OHLC data for price confirmation and risk control.
 - This source is intentionally single-source for R1 lineage.
 
 ## Guardrails
