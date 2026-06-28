@@ -109,9 +109,10 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 Q04 evidence note: work item `06e86ebb-4f8d-4763-ac11-1966a890cf22` produced
 valid 2023/2024 folds (F1 PF-net 1.402, 11 trades; F2 PF-net 1.927, 13 trades)
 then invalidated F3 because EURGBP.DWX 2025 host history is absent on the checked
-factory terminals. The same work item is requeued with `q04_latest_full_year=2024`
-so the rerun uses only the available folds instead of duplicating the known
-NO_HISTORY fold.
+factory terminals. The archived F1/F2 real-MT5 evidence was recovered under
+`q04_latest_full_year=2024` and the Q04 row was corrected to `PASS`. Q05 is not
+queued yet because the downstream 2023-2025 stress gate still requires
+EURGBP.DWX 2025 D1 history/cache.
 
 ---
 
@@ -120,4 +121,4 @@ NO_HISTORY fold.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-27 | Initial next-best FX cointegration basket build | Built from the 12533/12624 basket pattern |
-| v2 | 2026-06-28 | Q04 rerun handoff | Q04 requeued with `q04_latest_full_year=2024` after valid F1/F2 and missing 2025 EURGBP host history |
+| v2 | 2026-06-28 | Q04 recovery + Q05 history gate | Q04 recovered from archived 2023/2024 folds; Q05 blocked on missing EURGBP.DWX 2025 D1 history/cache |
