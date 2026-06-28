@@ -13745,3 +13745,15 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12743,wti-postroll-fade,0,XTIUSD.DWX,127430000,2026-06-28,Development,active
 12744,eia-xng-storfade,0,XNGUSD.DWX,127440000,2026-06-28,Development,active
 12745,chan-wti-cl3040,0,XTIUSD.DWX,127450000,2026-06-28,Development,active
+12742,nnfx-configurable-engine,0,EURUSD.DWX,127420000,2026-06-28,Development,active
+12742,nnfx-configurable-engine,1,XTIUSD.DWX,127420001,2026-06-28,Development,active
+12742,nnfx-configurable-engine,2,XAUUSD.DWX,127420002,2026-06-28,Development,active
+12742,nnfx-configurable-engine,3,GBPUSD.DWX,127420003,2026-06-28,Development,active
+12742,nnfx-configurable-engine,4,USDJPY.DWX,127420004,2026-06-28,Development,active
+12742,nnfx-configurable-engine,5,AUDUSD.DWX,127420005,2026-06-28,Development,active
+12742,nnfx-configurable-engine,6,XAGUSD.DWX,127420006,2026-06-28,Development,active
+12742,nnfx-configurable-engine,7,NDX.DWX,127420007,2026-06-28,Development,active
+12742,nnfx-configurable-engine,8,SP500.DWX,127420008,2026-06-28,Development,active
+12742,nnfx-configurable-engine,9,GDAXI.DWX,127420009,2026-06-28,Development,active
+12742,nnfx-configurable-engine,10,WS30.DWX,127420010,2026-06-28,Development,active
+12742,nnfx-configurable-engine,11,XNGUSD.DWX,127420011,2026-06-28,Development,active
