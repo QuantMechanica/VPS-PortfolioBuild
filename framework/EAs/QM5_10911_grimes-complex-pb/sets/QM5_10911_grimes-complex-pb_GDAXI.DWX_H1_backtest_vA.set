@@ -1,0 +1,39 @@
+;==========================================================
+; QM5 Set File — Claude DAX hand-build variant vA (let-winners-run)
+; ea_id:        10911
+; ea_slug:      grimes-complex-pb
+; symbol:       GDAXI.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; note: base 10911 GDAXI (all Q04 folds positive PF1.1-1.7); raise target_r 1.5->2.2 to lift PF/Sharpe
+;==========================================================
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy params (vA)
+strategy_ema_trend_period=50
+strategy_ema_exit_period=20
+strategy_atr_period=14
+strategy_thrust_lookback_bars=20
+strategy_thrust_prior_high_bars=20
+strategy_thrust_range_atr_mult=1.00
+strategy_pullback_atr_mult=0.80
+strategy_failure_window_bars=5
+strategy_min_thrust_to_entry_bars=8
+strategy_stop_buffer_atr_mult=0.20
+strategy_target_r_mult=2.20
+strategy_max_hold_bars=40

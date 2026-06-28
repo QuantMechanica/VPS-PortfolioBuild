@@ -362,15 +362,13 @@ double Strategy_GoldWeight(const double beta)
 
 bool Strategy_OpenLeg(const string symbol,
                       const QM_OrderType type,
-                      const double risk_weight,
-                      const double risk_weight_sum,
+                      const double lots,
                       const string reason)
   {
    const int slot = Strategy_SlotForSymbol(symbol);
    if(slot < 0 || !Strategy_SpreadAllowed(symbol))
       return false;
 
-   const double lots = Strategy_LotsForLeg(symbol, risk_weight, risk_weight_sum);
    if(lots <= 0.0)
       return false;
 
@@ -408,8 +406,13 @@ bool Strategy_OpenPair(const int spread_direction)
    const string reason = long_spread ? "QM5_1023_LONG_XTI_XAU_BBPAIR"
                                      : "QM5_1023_SHORT_XTI_XAU_BBPAIR";
 
-   bool xti_ok = Strategy_OpenLeg(g_leg_xti, xti_type, xti_weight, weight_sum, reason);
-   bool xau_ok = Strategy_OpenLeg(g_leg_xau, xau_type, xau_weight, weight_sum, reason);
+   const double xti_lots = Strategy_LotsForLeg(g_leg_xti, xti_weight, weight_sum);
+   const double xau_lots = Strategy_LotsForLeg(g_leg_xau, xau_weight, weight_sum);
+   if(xti_lots <= 0.0 || xau_lots <= 0.0)
+      return false;
+
+   bool xau_ok = Strategy_OpenLeg(g_leg_xau, xau_type, xau_lots, reason);
+   bool xti_ok = Strategy_OpenLeg(g_leg_xti, xti_type, xti_lots, reason);
    if(xti_ok && xau_ok)
      {
       g_pair_entry_time = TimeCurrent();
