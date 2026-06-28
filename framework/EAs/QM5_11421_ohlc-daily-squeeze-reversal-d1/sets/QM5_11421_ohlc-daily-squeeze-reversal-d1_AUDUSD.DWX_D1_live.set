@@ -3,21 +3,21 @@
 ; ea_id:        11421
 ; ea_slug:      ohlc-daily-squeeze-reversal-d1
 ; ea_version:   v5.0
-; set_version:  s20260628-d2c
+; set_version:  s20260628-d2c-r075
 ; symbol:       AUDUSD.DWX
 ; timeframe:    D1
 ; environment:  live
 ; magic_slot:   3
 ; risk_mode:    PERCENT
-; portfolio_weight: 0.0723
+; portfolio_weight: 1.0
 ; build_hash:   177b366a0af3f432fb312d5605c6153c96c9231de0b025966179867c4dd1242b
 ; author:       Claude
 ; date:         2026-06-28
 ;==========================================================
 qm_magic_slot_offset=3
 RISK_FIXED=0
-RISK_PERCENT=0.1446
-PORTFOLIO_WEIGHT=0.0723
+RISK_PERCENT=0.7500
+PORTFOLIO_WEIGHT=1.0
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
