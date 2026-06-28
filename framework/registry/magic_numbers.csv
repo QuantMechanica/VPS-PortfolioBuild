@@ -13737,3 +13737,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12738,xng-weekend-gap,0,XNGUSD.DWX,127380000,2026-06-28,Development,active
 12739,edgelab-gbpusd-audusd-cointegration,0,GBPUSD.DWX,127390000,2026-06-28,Development,active
 12739,edgelab-gbpusd-audusd-cointegration,1,AUDUSD.DWX,127390001,2026-06-28,Development,active
+12740,eia-wti-postdrive,0,XTIUSD.DWX,127400000,2026-06-28,Development,active
