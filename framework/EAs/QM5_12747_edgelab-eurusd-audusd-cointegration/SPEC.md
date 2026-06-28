@@ -119,3 +119,4 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-28 | Initial OOS-only next-best FX cointegration basket build | Built from the 12739 basket pattern |
+| v1 | 2026-06-28 | Q02 enqueue | Pending logical-basket work item 10ab28c1-ed36-4af8-a64a-8997431a892d |

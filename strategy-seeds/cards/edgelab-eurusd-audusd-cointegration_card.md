@@ -146,3 +146,4 @@ The in-house scan rerun found OOS net Sharpe 1.59 after cost, but DEV Sharpe was
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-06-28 | initial OOS-only next-best FX cointegration basket build | G0 | APPROVED |
+| v1 | 2026-06-28 | logical-basket Q02 enqueued as non-duplicate paced worker item `10ab28c1-ed36-4af8-a64a-8997431a892d` | Q02 | PENDING |
