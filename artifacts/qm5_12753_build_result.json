@@ -1,0 +1,34 @@
+{
+  "task_id": "4f56c5dd-5ac4-494f-b225-94aaa8dd1341",
+  "ea_id": "QM5_12753",
+  "slug": "wti-thu-pb-fri-bounce",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_12753_wti-thu-pb-fri-bounce",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_12753_wti-thu-pb-fri-bounce/QM5_12753_wti-thu-pb-fri-bounce.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_12753_wti-thu-pb-fri-bounce/QM5_12753_wti-thu-pb-fri-bounce.ex5",
+  "ex5_sha256": "CE13005CFFB3AAE758CD00D981E348A82A0F8EBEE430612265B947B2BF4A3C54",
+  "magic_base": 127530000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_12753_wti-thu-pb-fri-bounce/sets/QM5_12753_wti-thu-pb-fri-bounce_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "CE13005CFFB3AAE758CD00D981E348A82A0F8EBEE430612265B947B2BF4A3C54",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_12753_wti-thu-pb-fri-bounce/SPEC.md",
+  "strategy_card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_12753_wti-thu-pb-fri-bounce_card.md",
+  "runtime_approved_card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12753_wti-thu-pb-fri-bounce.md",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log_path": "C:/QM/repo/framework/build/compile/20260628_174215/QM5_12753_wti-thu-pb-fri-bounce.compile.log",
+  "build_check_passed": true,
+  "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260628_174205.json",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Clean compile/build_check; mission requested Q02 enqueue only. No T_Live, live manifest, portfolio gate, or AutoTrading touched.",
+  "blocked_reason": null,
+  "open_questions": [],
+  "risk_mode": "RISK_FIXED",
+  "built_at_utc": "2026-06-28T17:42:23Z",
+  "notes": "Structural D1 WTI Friday bounce after material Thursday pullback, based on petroleum weekday-effect literature; OHLC/broker-calendar only; no ML/grid/martingale/external data."
+}

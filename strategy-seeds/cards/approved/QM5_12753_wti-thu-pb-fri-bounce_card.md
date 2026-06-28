@@ -37,7 +37,7 @@ expected_dd_pct: 17.0
 - Primary citation: Meek, H. and Hoelscher, S. A., "Day-of-the-week effect: Petroleum and petroleum products", Cogent Economics and Finance, 11(1), 2023, DOI https://doi.org/10.1080/23322039.2023.2213876.
 - Open repository pointer: https://www.econstor.eu/handle/10419/304091.
 
-## Concept
+## hypothesis
 
 The source studies day-of-week structure across petroleum markets and reports
 WTI weekday seasonality. This card tests a narrower, conditional expression
@@ -70,7 +70,7 @@ This is deliberately different from:
 - Expected trade frequency: about 10-25 trades/year.
 - Backtest risk mode: RISK_FIXED.
 
-## Entry Rules
+## rules
 
 - Evaluate only on a new D1 bar.
 - The current D1 bar must be broker-calendar Friday.
@@ -137,7 +137,7 @@ The source is used for structural lineage around petroleum day-of-week effects.
 No source performance number is imported into QM. The edge must be earned by
 Q02 and later evidence on Darwinex XTIUSD.DWX bars.
 
-## Initial Risk Profile
+## risk
 
 - expected_pf: 1.10
 - expected_dd_pct: 17
