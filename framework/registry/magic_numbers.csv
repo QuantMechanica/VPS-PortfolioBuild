@@ -13758,3 +13758,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12742,nnfx-configurable-engine,10,WS30.DWX,127420010,2026-06-28,Development,active
 12742,nnfx-configurable-engine,11,XNGUSD.DWX,127420011,2026-06-28,Development,active
 12746,eia-wti-drive-pb,0,XTIUSD.DWX,127460000,2026-06-28,Development,active
+12747,edgelab-eurusd-audusd-cointegration,0,EURUSD.DWX,127470000,2026-06-28,Development,active
+12747,edgelab-eurusd-audusd-cointegration,1,AUDUSD.DWX,127470001,2026-06-28,Development,active
