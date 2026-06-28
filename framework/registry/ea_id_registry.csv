@@ -3624,3 +3624,4 @@ QM5_1403,harmonic-5-0-pattern-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Dev
 12748,eia-distill-pb,EIA-HEATOIL-PB-2026,active,Development,2026-06-28
 12749,edgelab-nzdusd-audjpy-cointegration,claude_cross_asset_discovery_2026-06-09,active,Development,2026-06-28
 12750,wti-weekend-gap-fade,TGIF-WTI-WEEKEND-2017,active,Development,2026-06-28
+12751,edgelab-eurusd-euraud-cointegration,claude_cross_asset_discovery_2026-06-09,active,Development,2026-06-28
