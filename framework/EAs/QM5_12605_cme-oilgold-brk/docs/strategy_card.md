@@ -73,6 +73,9 @@ the XTI/XNG energy ratio, any standalone WTI calendar/news sleeve, or the
   high, BUY XTIUSD.DWX and SELL XAUUSD.DWX.
 - Entry Short Ratio: if the most recent closed spread is below the entry-channel
   low, SELL XTIUSD.DWX and BUY XAUUSD.DWX.
+- The daily entry attempt is delayed until `strategy_entry_hour_broker` /
+  `strategy_entry_minute_broker` and both basket legs report an open trade
+  session, so the XTI leg is not opened before XAUUSD.DWX is tradable.
 - No entry if either basket leg already has an open position for this EA magic.
 - No entry if either symbol's current spread exceeds its configured spread cap.
 
@@ -92,6 +95,8 @@ the XTI/XNG energy ratio, any standalone WTI calendar/news sleeve, or the
 - Host chart must be XTIUSD.DWX on D1.
 - Skip entries when XTI spread exceeds `strategy_xti_max_spread_pts`.
 - Skip entries when XAU spread exceeds `strategy_xau_max_spread_pts`.
+- Skip entries before the configured broker entry time or while either basket
+  leg is outside its trade session.
 - Skip entries when either close series or either ATR series is unavailable.
 - Framework news, kill-switch, magic, and Friday-close guards remain active.
 
@@ -130,6 +135,12 @@ the XTI/XNG energy ratio, any standalone WTI calendar/news sleeve, or the
 - name: strategy_deviation_points
   default: 20
   sweep_range: [10, 20, 50]
+- name: strategy_entry_hour_broker
+  default: 2
+  sweep_range: [1, 2, 3]
+- name: strategy_entry_minute_broker
+  default: 0
+  sweep_range: [0]
 
 ## Author Claims
 
@@ -168,6 +179,7 @@ ratio.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
+| v2 | 2026-06-28 | delayed daily entry until XAU trade session is open | Q04 repair | pending |
 | v1 | 2026-06-27 | initial structural XTI/XAU oil/gold ratio breakout basket build | G0 | APPROVED |
 
 ## Pipeline Phase Status
