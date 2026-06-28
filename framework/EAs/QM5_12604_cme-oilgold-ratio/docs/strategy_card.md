@@ -178,11 +178,12 @@ ratio.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v2 | 2026-06-28 | delayed daily entry until XAU trade session is open | Q04 repair | pending |
+| v2 | 2026-06-28 | delayed daily entry until XAU trade session is open | Q04 | FAIL |
 | v1 | 2026-06-27 | initial structural XTI/XAU oil/gold ratio basket build | G0 | APPROVED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
+| Q04 Walk-forward | 2026-06-28 | FAIL | `D:\QM\reports\pipeline\QM5_12604\Q04\QM5_12604_XTI_XAU_RATIO_D1\aggregate.json` |
 | G0 Research Intake | 2026-06-27 | APPROVED | this card |
