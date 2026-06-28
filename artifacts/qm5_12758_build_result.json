@@ -1,0 +1,107 @@
+{
+  "task_id": "db148c56-e737-413a-9f55-f771cf3abefa",
+  "ea_id": "QM5_12758",
+  "slug": "edgelab-gbpusd-euraud-cointegration",
+  "strategy": "GBPUSD/EURAUD D1 market-neutral FX cointegration basket",
+  "source_id": "claude_cross_asset_discovery_2026-06-09",
+  "source_citation": "Chan, Ernest P. (2009). Quantitative Trading. Wiley, Chapter 7 stationarity and cointegration; plus QuantMechanica in-house 66-pair FX cointegration scan rerun on Darwinex .DWX D1 data.",
+  "symbols": [
+    "GBPUSD.DWX",
+    "EURAUD.DWX"
+  ],
+  "logical_symbol": "QM5_12758_GBPUSD_EURAUD_COINTEGRATION_D1",
+  "host_symbol": "GBPUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12758_edgelab-gbpusd-euraud-cointegration",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12758_edgelab-gbpusd-euraud-cointegration\\QM5_12758_edgelab-gbpusd-euraud-cointegration.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12758_edgelab-gbpusd-euraud-cointegration\\QM5_12758_edgelab-gbpusd-euraud-cointegration.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12758_edgelab-gbpusd-euraud-cointegration\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\edgelab-gbpusd-euraud-cointegration_card.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12758_edgelab-gbpusd-euraud-cointegration.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12758_edgelab-gbpusd-euraud-cointegration\\basket_manifest.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12758_edgelab-gbpusd-euraud-cointegration\\sets\\QM5_12758_edgelab-gbpusd-euraud-cointegration_QM5_12758_GBPUSD_EURAUD_COINTEGRATION_D1_D1_backtest.set"
+  ],
+  "mq5_sha256": "736183aebdd018f3714d62e6f95788fda7caaeafe32fbf7688810a51a09872a7",
+  "ex5_sha256": "8065391cf49da692c759bc1de8d538a7d6d0ce4d5bb126440c6fc4e9b61f3893",
+  "setfile_header_build_hash": "2a984eb775775a360509b12532025e28ecdd8971ee35893ce0851748c97a8338",
+  "setfile_current_sha256": "f2009425e04f6f0e67a6ac608d1ce6da6647d313b2e0fea3e572a8b433299598",
+  "scan_ranking": {
+    "source": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "hard_bar_survivor": false,
+    "rank_by_oos_net_sharpe": 15,
+    "dev_sharpe": -0.27,
+    "oos_net_sharpe": 0.11,
+    "oos_return_pct": 1.03,
+    "oos_state_changes": 17,
+    "hedge_beta": 0.03,
+    "half_life_days": 107,
+    "selection_note": "Next unbuilt OOS-positive FX cointegration pair after the already-built 12532/12533/12624/12712/12723/12728/12731/12732/12735/12739/12747/12749/12751/12756 baskets."
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "GBPUSD.DWX",
+        "magic": 127580000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "EURAUD.DWX",
+        "magic": 127580001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12758_edgelab-gbpusd-euraud-cointegration/QM5_12758_edgelab-gbpusd-euraud-cointegration.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260628_220643\\QM5_12758_edgelab-gbpusd-euraud-cointegration.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260628_220643\\summary.csv"
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12758_edgelab-gbpusd-euraud-cointegration -RepoRoot C:/QM/repo -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260628_220655.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "q02_enqueue": {
+    "enqueued": true,
+    "work_item_id": "0e925c0c-5a27-459c-86d2-cdaddd2b2e9f",
+    "phase": "Q02",
+    "status": "pending",
+    "created_at": "2026-06-28T22:09:07+00:00",
+    "enqueued_by": "record_build_result.auto_q02",
+    "build_task_id": "db148c56-e737-413a-9f55-f771cf3abefa",
+    "logical_symbol": "QM5_12758_GBPUSD_EURAUD_COINTEGRATION_D1",
+    "host_symbol": "GBPUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12758_edgelab-gbpusd-euraud-cointegration\\basket_manifest.json",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12758_edgelab-gbpusd-euraud-cointegration\\sets\\QM5_12758_edgelab-gbpusd-euraud-cointegration_QM5_12758_GBPUSD_EURAUD_COINTEGRATION_D1_D1_backtest.set",
+    "manual_backtest_launched": false
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Paced fleet Q02 will run the first tester pass; no manual MT5 backtest was launched from this session.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  },
+  "notes": "Built one non-duplicate exploratory GBPUSD/EURAUD FX cointegration basket. No live, T_Live, AutoTrading, or portfolio gate artifacts touched."
+}

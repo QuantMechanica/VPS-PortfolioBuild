@@ -114,7 +114,10 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 `tester_deposit=100000`. The logical basket backtest setfile uses the canonical
 `RISK_FIXED=1000`, with `RISK_PERCENT=0`.
 
-Q02 queue note: pending compile/build-check completion.
+Q02 queue note: enqueued by `farmctl record-build` as work item
+`0e925c0c-5a27-459c-86d2-cdaddd2b2e9f` for logical symbol
+`QM5_12758_GBPUSD_EURAUD_COINTEGRATION_D1` on 2026-06-28. No manual tester
+run was launched from this session.
 
 ---
 
@@ -123,4 +126,5 @@ Q02 queue note: pending compile/build-check completion.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-28 | Initial next-best FX cointegration basket build | Built from the 12751 EURAUD conversion-aware basket pattern |
+| v1-q02 | 2026-06-28 | Build recorded and Q02 enqueued | Work item 0e925c0c-5a27-459c-86d2-cdaddd2b2e9f pending |
 
