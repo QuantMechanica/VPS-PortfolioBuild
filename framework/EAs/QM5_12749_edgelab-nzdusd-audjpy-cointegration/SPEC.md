@@ -113,6 +113,10 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 `tester_deposit=100000`. The logical basket backtest setfile uses the canonical
 `RISK_FIXED=1000`, with `RISK_PERCENT=0`.
 
+Q02 queue note: one logical-basket work item was inserted for
+`QM5_12749_NZDUSD_AUDJPY_COINTEGRATION_D1`:
+`ed3dada9-d657-4b85-b5ba-28d2c64bf788`. No per-leg Q02 fanout was created.
+
 ---
 
 ## Revision History
@@ -120,4 +124,5 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-28 | Initial next-best FX cointegration basket build | Built from the 12728 basket pattern |
+| v1 | 2026-06-28 | Q02 enqueue | Pending logical-basket work item ed3dada9-d657-4b85-b5ba-28d2c64bf788 |
 
