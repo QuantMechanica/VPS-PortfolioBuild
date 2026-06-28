@@ -86,6 +86,7 @@ LAUNCH_GATE_WINDOW_SECONDS = 15.0         # terminal64 startup+DLL-init window t
 LAUNCH_GATE_MAX_CONCURRENT = 1            # max overlapping inits (override: launch_gate_max.txt)
 LAUNCH_GATE_WAIT_TIMEOUT_SECONDS = 90.0   # fail-open after this so the factory never stalls
 LAUNCH_FAULT_DEFER_SECONDS = 300.0        # host launch storm: defer without burning retries
+LAUNCH_FAULT_DEFER_MAX_SECONDS = 3600.0   # repeated launch storms should not thrash the queue
 
 _STOP = False
 
@@ -116,6 +117,21 @@ def _parse_utc_iso(value: object) -> datetime | None:
         return parsed.astimezone(timezone.utc)
     except ValueError:
         return None
+
+
+def _launch_fault_count(value: object) -> int:
+    try:
+        return max(0, int(value or 0))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _launch_fault_defer_seconds(previous_fault_count: object) -> float:
+    previous_faults = _launch_fault_count(previous_fault_count)
+    return min(
+        LAUNCH_FAULT_DEFER_SECONDS * (2 ** min(previous_faults, 8)),
+        LAUNCH_FAULT_DEFER_MAX_SECONDS,
+    )
 
 
 def _with_sqlite_retry(fn):
@@ -1094,14 +1110,23 @@ def _defer_launch_fault(root: Path, item_id: str, terminal: str, spawn: dict[str
         now_dt = datetime.fromisoformat(now).astimezone(timezone.utc)
     except ValueError:
         now_dt = datetime.now(timezone.utc)
-    launch_not_before = now_dt + timedelta(seconds=LAUNCH_FAULT_DEFER_SECONDS)
+    default_defer_seconds = _launch_fault_defer_seconds(0)
+    default_launch_not_before = now_dt + timedelta(seconds=default_defer_seconds)
 
-    def _update() -> None:
+    def _update() -> dict[str, Any]:
         with farmctl.connect(root) as conn:
             row = conn.execute("SELECT payload_json, attempt_count FROM work_items WHERE id=?", (item_id,)).fetchone()
             if not row:
-                return
+                return {
+                    "launch_fault_count": None,
+                    "launch_fault_defer_seconds": default_defer_seconds,
+                    "launch_not_before_utc": default_launch_not_before.isoformat(),
+                }
             payload = _json_loads(row["payload_json"])
+            previous_fault_count = _launch_fault_count(payload.get("launch_fault_count"))
+            defer_seconds = _launch_fault_defer_seconds(previous_fault_count)
+            launch_not_before = now_dt + timedelta(seconds=defer_seconds)
+            next_fault_count = previous_fault_count + 1
             payload.update({
                 "prior_failure": "launch_fault",
                 "last_launch_fault_at": now,
@@ -1110,7 +1135,8 @@ def _defer_launch_fault(root: Path, item_id: str, terminal: str, spawn: dict[str
                 "last_launch_fault_seconds": round(ran_seconds, 2),
                 "last_launch_fault_child_tail": child_tail,
                 "launch_not_before_utc": launch_not_before.isoformat(),
-                "launch_fault_count": int(payload.get("launch_fault_count") or 0) + 1,
+                "launch_fault_defer_seconds": defer_seconds,
+                "launch_fault_count": next_fault_count,
                 "run_smoke_exit_code": None,
             })
             conn.execute(
@@ -1123,14 +1149,19 @@ def _defer_launch_fault(root: Path, item_id: str, terminal: str, spawn: dict[str
                 (json.dumps(payload, sort_keys=True), now, item_id),
             )
             conn.commit()
+            return {
+                "launch_fault_count": next_fault_count,
+                "launch_fault_defer_seconds": defer_seconds,
+                "launch_not_before_utc": launch_not_before.isoformat(),
+            }
 
-    _with_sqlite_retry(_update)
+    update_result = _with_sqlite_retry(_update)
     return {
         "finished": True,
         "status": "pending",
         "verdict": None,
         "reason": "launch_fault_deferred",
-        "launch_not_before_utc": launch_not_before.isoformat(),
+        **update_result,
     }
 
 

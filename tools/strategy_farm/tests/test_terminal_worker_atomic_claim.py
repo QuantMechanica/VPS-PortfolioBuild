@@ -573,6 +573,8 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 terminal_worker.time.sleep = old_sleep
 
             self.assertEqual(result["reason"], "launch_fault_deferred")
+            self.assertEqual(result["launch_fault_count"], 1)
+            self.assertEqual(result["launch_fault_defer_seconds"], terminal_worker.LAUNCH_FAULT_DEFER_SECONDS)
             with sqlite3.connect(root / farmctl.DB_REL) as conn:
                 row = conn.execute(
                     "SELECT status, verdict, claimed_by, attempt_count, payload_json FROM work_items WHERE id='wi-launch-fault'"
@@ -584,7 +586,59 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             payload = json.loads(row[4])
             self.assertEqual(payload["prior_failure"], "launch_fault")
             self.assertEqual(payload["launch_fault_count"], 1)
+            self.assertEqual(payload["launch_fault_defer_seconds"], terminal_worker.LAUNCH_FAULT_DEFER_SECONDS)
             self.assertIn("launch_not_before_utc", payload)
+
+    def test_launch_fault_defer_seconds_backoff_caps(self) -> None:
+        base = terminal_worker.LAUNCH_FAULT_DEFER_SECONDS
+        cap = terminal_worker.LAUNCH_FAULT_DEFER_MAX_SECONDS
+
+        self.assertEqual(terminal_worker._launch_fault_defer_seconds(0), base)
+        self.assertEqual(terminal_worker._launch_fault_defer_seconds("1"), base * 2)
+        self.assertEqual(terminal_worker._launch_fault_defer_seconds(3), base * 8)
+        self.assertEqual(terminal_worker._launch_fault_defer_seconds(4), cap)
+        self.assertEqual(terminal_worker._launch_fault_defer_seconds(99), cap)
+        self.assertEqual(terminal_worker._launch_fault_defer_seconds("bad"), base)
+
+    def test_repeated_launch_fault_persists_capped_backoff(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            self._insert_work_item(
+                root,
+                "wi-launch-fault-repeat",
+                "EURAUD.DWX",
+                phase="Q02",
+                status="active",
+                claimed_by="T4",
+                payload={"launch_fault_count": 4},
+            )
+
+            result = terminal_worker._defer_launch_fault(
+                root,
+                "wi-launch-fault-repeat",
+                "T4",
+                {"pid": 123456},
+                ran_seconds=0.1,
+                child_tail="",
+            )
+
+            self.assertEqual(result["reason"], "launch_fault_deferred")
+            self.assertEqual(result["launch_fault_count"], 5)
+            self.assertEqual(result["launch_fault_defer_seconds"], terminal_worker.LAUNCH_FAULT_DEFER_MAX_SECONDS)
+            self.assertIn("launch_not_before_utc", result)
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, verdict, claimed_by, attempt_count, payload_json FROM work_items WHERE id='wi-launch-fault-repeat'"
+                ).fetchone()
+            self.assertEqual(row[0], "pending")
+            self.assertIsNone(row[1])
+            self.assertIsNone(row[2])
+            self.assertEqual(row[3], 0)
+            payload = json.loads(row[4])
+            self.assertEqual(payload["prior_failure"], "launch_fault")
+            self.assertEqual(payload["launch_fault_count"], 5)
+            self.assertEqual(payload["launch_fault_defer_seconds"], terminal_worker.LAUNCH_FAULT_DEFER_MAX_SECONDS)
+            self.assertEqual(payload["last_launch_fault_terminal"], "T4")
 
     def test_summary_missing_release_stops_terminal_slot(self) -> None:
         with self._root() as tmp:
