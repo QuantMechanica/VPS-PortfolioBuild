@@ -1,0 +1,15 @@
+{
+  "logical_symbol": "QM5_12756_USDCHF_USDCAD_COINTEGRATION_D1",
+  "host_symbol": "USDCHF.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "USDCHF.DWX",
+    "USDCAD.DWX"
+  ],
+  "notes": [
+    "Two-leg USDCHF/USDCAD market-neutral FX cointegration candidate from the 2026-06-09 66-pair scan rerun. It did not clear the original hard survivor bar and has near-zero DEV Sharpe, but it is the strongest remaining unbuilt OOS-positive pair after the existing 12532/12533/12624/12712/12723/12728/12731/12732/12735/12739/12747/12749/12751 baskets.",
+    "Q02 uses USD tester currency and the canonical RISK_FIXED=1000 budget. The EA selects USDCHF/USDCAD only because both USD-base legs are available in the tester."
+  ]
+}

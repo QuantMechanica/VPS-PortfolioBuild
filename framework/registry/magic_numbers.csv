@@ -13794,4 +13794,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12753,wti-thu-pb-fri-bounce,0,XTIUSD.DWX,127530000,2026-06-28,Development,active
 12754,eia-wti-hurr-fade,0,XTIUSD.DWX,127540000,2026-06-28,Development,active
 12755,wti-spr-refill-bounce,0,XTIUSD.DWX,127550000,2026-06-28,Development,active
+12756,edgelab-usdchf-usdcad-cointegration,0,USDCHF.DWX,127560000,2026-06-28,Development,active
+12756,edgelab-usdchf-usdcad-cointegration,1,USDCAD.DWX,127560001,2026-06-28,Development,active
 12704,xngusd-summer-power-long,0,XNGUSD.DWX,127040000,2026-06-28,Development,active
