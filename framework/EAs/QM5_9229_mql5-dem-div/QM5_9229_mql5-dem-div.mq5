@@ -45,27 +45,6 @@ input double strategy_dem_exit_lo       = 0.30; // Close short when DeMarker <= 
 input int    strategy_max_bars_hold     = 30;   // Failsafe: exit after N H1 bars
 
 // =============================================================================
-// DeMarker pooled handle — follows QM_Indicators pool protocol.
-// iDeMarker is not in the standard QM_* set; we register it using the same
-// QM_IndicatorsLookup / QM_IndicatorsRegister / QM_IndicatorReadBuffer API.
-// =============================================================================
-
-int QM_IndDeMarker(const string sym, const ENUM_TIMEFRAMES tf, const int period)
-  {
-   const string key = StringFormat("DEM|%s|%d|%d", sym, (int)tf, period);
-   int h = QM_IndicatorsLookup(key);
-   if(h != INVALID_HANDLE)
-      return h;
-   h = iDeMarker(sym, tf, period);
-   return QM_IndicatorsRegister(key, h);
-  }
-
-double QM_DeMarker(const string sym, const ENUM_TIMEFRAMES tf, const int period, const int shift = 1)
-  {
-   return QM_IndicatorReadBuffer(QM_IndDeMarker(sym, tf, period), 0, shift);
-  }
-
-// =============================================================================
 // File-scope state cached once per new closed bar.
 // All strategy hooks read from these — no per-tick indicator recalculation.
 // =============================================================================
