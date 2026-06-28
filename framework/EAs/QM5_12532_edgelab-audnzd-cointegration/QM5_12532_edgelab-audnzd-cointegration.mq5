@@ -178,12 +178,16 @@ bool Strategy_EntryTimeReady(const datetime broker_time)
 bool Strategy_IsRegisteredPairPosition()
   {
    const string symbol = PositionGetString(POSITION_SYMBOL);
+   const long position_magic = PositionGetInteger(POSITION_MAGIC);
    const int idx = Strategy_SymbolIndex(symbol);
    if(idx < 0)
       return false;
 
-   const int expected_magic = QM_MagicChecked(qm_ea_id, g_pair_slots[idx], symbol);
-   return (expected_magic > 0 && (int)PositionGetInteger(POSITION_MAGIC) == expected_magic);
+   const int slot = g_pair_slots[idx];
+   const int expected_magic = QM_Magic(qm_ea_id, slot);
+   return (expected_magic > 0 &&
+           QM_MagicRegistered(qm_ea_id, slot) &&
+           position_magic == (long)expected_magic);
   }
 
 int Strategy_OpenPairLegCount()
