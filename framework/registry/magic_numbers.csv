@@ -13801,3 +13801,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12758,edgelab-gbpusd-euraud-cointegration,1,EURAUD.DWX,127580001,2026-06-28,Development,active
 12704,xngusd-summer-power-long,0,XNGUSD.DWX,127040000,2026-06-28,Development,active
 1040,singh-cmd-corr,0,CADJPY.DWX,10400000,2026-06-29,Development,active
+12759,wti-roll-relief,0,XTIUSD.DWX,127590000,2026-06-29,Development,active

@@ -4,9 +4,10 @@ title: Predatory or Sunshine Trading? Evidence from Crude Oil ETF Rolls
 publisher: U.S. Commodity Futures Trading Commission, Office of the Chief Economist
 source_type: official_government_research_paper
 status: mined
-last_reviewed: 2026-06-28
+last_reviewed: 2026-06-29
 cards_extracted:
   - wti-roll-fade
+  - wti-roll-relief
 ---
 
 # CFTC Crude Oil ETF Roll Source
@@ -24,22 +25,24 @@ and liquidity effects. The mechanized QM card does not ingest ETF holdings,
 futures curves, CFTC data, COT data, roll calendars, APIs, CSV files, or
 discretionary analyst inputs at runtime.
 
-The card converts the structural idea into a Darwinex `XTIUSD.DWX` D1 rule:
-during the early-month ETF roll-pressure window, short only when the prior
-closed D1 bar confirms downside pressure and remains below a slow D1 mean, then
-exit by window end, trend recovery, or a short time stop.
+The cards convert the structural idea into Darwinex `XTIUSD.DWX` D1 rules.
+`wti-roll-fade` trades the pressure side during the early-month ETF roll
+window. `wti-roll-relief` trades the post-window relief side only after the
+same month has shown confirmed early roll pressure and price reclaims above a
+slow D1 mean.
 
 ## Extracted Card
 
 - `wti-roll-fade`: XTIUSD.DWX D1 ETF roll-pressure short sleeve.
+- `wti-roll-relief`: XTIUSD.DWX D1 post-roll relief long sleeve.
 
 ## R-Rules
 
 - R1 reputable source: PASS. CFTC is the official U.S. derivatives regulator
   and the paper is from its Office of the Chief Economist.
-- R2 mechanical: PASS. Fixed trading-day-of-month window, D1 return
-  confirmation, SMA trend gate, ATR stop, time exit, and window exit are
-  deterministic.
+- R2 mechanical: PASS. Fixed trading-day-of-month windows, D1 return
+  confirmations, SMA trend/reclaim gates, ATR stop, time exit, and window exit
+  are deterministic.
 - R3 data available: PASS. `XTIUSD.DWX` exists in the DWX symbol matrix and the
   runtime uses broker OHLC/calendar only.
 - R4 no ML/banned logic: PASS. No ML, grid, martingale, external feed,
