@@ -1,4 +1,5 @@
 ea_id,slug,strategy_id,status,owner,created_at
+1490,raschke-anti-pullback-reversal-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Development,2026-06-28
 11429,carter-london-open-box-breakout-m5,ec63ff86-b6dd-522b-ac8e-d90de82e2dee,active,Development,2026-06-21
 11548,carter-t-m5-session-box-breakout,42530cb3-0265-534a-89cc-150f80733ff5,active,Development,2026-06-20
 1128,daniel-momentum-crash-vol-scale,afab7a6f-c3c8-51ae-a609-f376744beb8e,active,Research,2026-05-18

@@ -1,4 +1,15 @@
 ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
+1490,raschke-anti-pullback-reversal-h4,0,EURUSD.DWX,14900000,2026-06-28,Development,active
+1490,raschke-anti-pullback-reversal-h4,1,GBPUSD.DWX,14900001,2026-06-28,Development,active
+1490,raschke-anti-pullback-reversal-h4,2,USDJPY.DWX,14900002,2026-06-28,Development,active
+1490,raschke-anti-pullback-reversal-h4,3,AUDUSD.DWX,14900003,2026-06-28,Development,active
+1490,raschke-anti-pullback-reversal-h4,4,USDCAD.DWX,14900004,2026-06-28,Development,active
+1490,raschke-anti-pullback-reversal-h4,5,NDX.DWX,14900005,2026-06-28,Development,active
+1490,raschke-anti-pullback-reversal-h4,6,WS30.DWX,14900006,2026-06-28,Development,active
+1490,raschke-anti-pullback-reversal-h4,7,GDAXI.DWX,14900007,2026-06-28,Development,active
+1490,raschke-anti-pullback-reversal-h4,8,UK100.DWX,14900008,2026-06-28,Development,active
+1490,raschke-anti-pullback-reversal-h4,9,XAUUSD.DWX,14900009,2026-06-28,Development,active
+1490,raschke-anti-pullback-reversal-h4,10,XTIUSD.DWX,14900010,2026-06-28,Development,active
 1641,aa-qend-mom-season,0,NDX.DWX,16410000,2026-06-18,Development,active
 1641,aa-qend-mom-season,1,WS30.DWX,16410001,2026-06-18,Development,active
 1641,aa-qend-mom-season,2,SP500.DWX,16410002,2026-06-18,Development,active
