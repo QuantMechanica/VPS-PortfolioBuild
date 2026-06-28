@@ -121,6 +121,7 @@ bool Strategy_SymbolTradeSessionOpen(const string symbol, const datetime broker_
       has_schedule = true;
       int from_seconds = Strategy_SecondsOfDay(session_from);
       int to_seconds = Strategy_SecondsOfDay(session_to);
+      const int open_buffer_seconds = 60;
       if(from_seconds == to_seconds)
          continue;
       if(to_seconds == 0)
@@ -128,12 +129,12 @@ bool Strategy_SymbolTradeSessionOpen(const string symbol, const datetime broker_
 
       if(from_seconds < to_seconds)
         {
-         if(seconds_now >= from_seconds && seconds_now < to_seconds)
+         if(seconds_now >= from_seconds + open_buffer_seconds && seconds_now < to_seconds)
             return true;
         }
       else
         {
-         if(seconds_now >= from_seconds || seconds_now < to_seconds)
+         if(seconds_now >= from_seconds + open_buffer_seconds || seconds_now < to_seconds)
             return true;
         }
      }
