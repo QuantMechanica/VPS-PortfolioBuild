@@ -1,0 +1,92 @@
+{
+  "task_id": "e825a6b4-e1a8-4c6e-b3a5-166cce06892b",
+  "ea_id": "QM5_12740",
+  "slug": "eia-wti-postdrive",
+  "strategy": "XTIUSD.DWX D1 post-driving-season WTI channel breakdown",
+  "source_id": "EIA-WTI-POSTDRIVE-2026",
+  "source_citation": "U.S. Energy Information Administration, Gasoline price fluctuations, https://www.eia.gov/energyexplained/gasoline/price-fluctuations.php",
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12740_eia-wti-postdrive",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12740_eia-wti-postdrive\\QM5_12740_eia-wti-postdrive.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12740_eia-wti-postdrive\\QM5_12740_eia-wti-postdrive.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12740_eia-wti-postdrive\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\eia-wti-postdrive_card.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12740_eia-wti-postdrive_card.md",
+  "repo_source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\EIA-WTI-POSTDRIVE-2026\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12740_eia-wti-postdrive\\sets\\QM5_12740_eia-wti-postdrive_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_header_build_hash": "423c14129879ea12b5b2caa9a0352c26fcd9d303cfef9951d6bca46b03f84816",
+  "setfile_current_sha256": "4904602fae4ed0e02ba903d9434d04b331734aa65aa4f821d88bf19b3cfea70d",
+  "mq5_sha256": "5bd2c68fd22c828cd87ee53efa15444b6d9c01e2a6de26efccc1e4a46e36a6f6",
+  "ex5_sha256": "9190a7e5e0e715e908bb8ae9db4e165c1a9fbcd93db3483209b464d14dbfe365",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 127400000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_12740_eia-wti-postdrive --force --json --fail-on-error",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260628_094153\\QM5_12740_eia-wti-postdrive.compile.log",
+    "ex5_size_bytes": 282460
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12740_eia-wti-postdrive -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260628_094210.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "static_checks": {
+    "spec_validation": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK"
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "4690739e-ee2f-432b-80c8-0662913a76f2",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12740_eia-wti-postdrive\\sets\\QM5_12740_eia-wti-postdrive_XTIUSD.DWX_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "created_at_utc": "2026-06-28T09:41:04+00:00"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Paced fleet Q02 will provide runtime evidence; no manual MT5 backtest was launched from this session.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "non_duplicate_basis": [
+    "Not QM5_12737 eia-wti-drive: this one shorts post-driving-season downside breaks instead of buying April-August upside breaks.",
+    "Not QM5_12576 eia-wti-season: no SMA/ROC monthly season map.",
+    "Not QM5_12701 or QM5_12726 one-bar October/November static calendar fades: this requires a D1 channel breakdown and exits on channel reversal/time/window.",
+    "Not QM5_12567 cumulative-RSI commodity logic.",
+    "Not XTI/XNG, XAU/XAG, oil/gold, or oil/silver basket logic."
+  ],
+  "notes": "Built a new structural single-symbol XTIUSD.DWX D1 post-driving-season WTI downside sleeve from official EIA gasoline price seasonality lineage. No live/T_Live/portfolio artifacts touched."
+}
