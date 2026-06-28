@@ -1,0 +1,17 @@
+{
+  "logical_symbol": "QM5_12709_COMM_REV1M_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX",
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Monthly cross-sectional commodity reversal package.",
+    "Host EA runs on XTIUSD.DWX D1 with magic slot 0.",
+    "Ranks prior one-month D1 returns and opens a two-leg long-loser/short-winner package.",
+    "Requires at least one selected leg to be XTIUSD.DWX or XNGUSD.DWX to keep the sleeve commodity/energy differentiated."
+  ]
+}
