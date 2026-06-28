@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_12733_XTI_XNG_XMOM_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg XTI/XNG energy cross-sectional momentum basket derived from the approved SRC05_S10 Chan/Daniel-Moskowitz commodity futures momentum card. The EA runs from the XTIUSD.DWX host setfile, reads XTIUSD.DWX and XNGUSD.DWX D1 closes, and monthly buys the stronger 6-month energy leg while shorting the weaker leg. Q02 must evaluate the logical basket, not standalone legs."
+  ]
+}
