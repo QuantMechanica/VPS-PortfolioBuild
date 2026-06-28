@@ -3,7 +3,7 @@
 ; ea_id:        12532
 ; ea_slug:      edgelab-audnzd-cointegration
 ; ea_version:   v5.0
-; set_version:  s20260610-001
+; set_version:  s20260628-001
 ; symbol:       AUDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   1dc3d1bfa44771a1ffdfd00516a4832c3681de9b18e5c84b563951ce6fe728f2
 ; author:       Development
-; date:         2026-06-10
+; date:         2026-06-28
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000
@@ -30,5 +30,11 @@ qm_filter_volatility_atr_period=14
 qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card
+strategy_z_lookback_d1=60
+strategy_beta=0.93
+strategy_entry_z=2.0
+strategy_exit_abs_z=0.5
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=2.0
+strategy_max_spread_points=0
