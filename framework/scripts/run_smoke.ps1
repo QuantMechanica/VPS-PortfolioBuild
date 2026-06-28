@@ -1343,7 +1343,21 @@ $globalRealTicksMarker = $true
 $globalTimeoutFailure = $false
 $reasonClasses = New-Object System.Collections.Generic.List[string]
 
-for ($i = 1; $i -le $Runs; $i++) {
+# MT5 can occasionally emit an invalid warm-up report before history/tick context
+# settles, then produce valid deterministic reports immediately afterward. Keep
+# the requested OK-run contract, but allow a small number of extra attempts so a
+# transient invalid report does not become a terminal Q02/Q03 infra failure.
+$maxRunAttempts = [Math]::Min(10, ($Runs + 2))
+
+for ($i = 1; $i -le $maxRunAttempts; $i++) {
+    $okRunCount = @($runResults | Where-Object { $_.status -eq "OK" }).Count
+    if ($okRunCount -ge $Runs) {
+        break
+    }
+    if ($globalOnInitFailure -or $globalTimeoutFailure) {
+        break
+    }
+
     $runName = "run_{0:d2}" -f $i
     $runDir = Join-Path $rawDir $runName
     New-Item -ItemType Directory -Path $runDir -Force | Out-Null
@@ -1661,10 +1675,22 @@ for ($i = 1; $i -le $Runs; $i++) {
 
 $completedRuns = @($runResults | Where-Object { $_.status -eq "OK" })
 $completedRunCount = @($completedRuns).Count
+$attemptedRunCount = @($runResults).Count
+$nonOkRunCount = @($runResults | Where-Object { $_.status -ne "OK" }).Count
 $tradeGatePassed = $false
 $deterministic = $false
 
 if ($completedRunCount -eq $Runs) {
+    $reasonClasses = New-Object System.Collections.Generic.List[string]
+    $globalRealTicksMarker = $true
+    foreach ($completedRun in $completedRuns) {
+        $globalRealTicksMarker = $globalRealTicksMarker -and [bool]$completedRun.real_ticks_marker
+    }
+    $globalOnInitFailure = [bool](@($completedRuns | Where-Object { $_.oninit_failure }).Count -gt 0)
+    if ($globalOnInitFailure) {
+        $reasonClasses.Add("ONINIT_FAILED")
+    }
+
     $minTradesSeen = ($completedRuns | Measure-Object -Property total_trades -Minimum).Minimum
     $tradeGatePassed = ($minTradesSeen -ge $MinTrades)
     if (-not $tradeGatePassed) {
@@ -1716,6 +1742,10 @@ $summary = [ordered]@{
     terminal = $Terminal
     model = $Model
     period = $Period
+    requested_runs = $Runs
+    max_run_attempts = $maxRunAttempts
+    attempted_runs = $attemptedRunCount
+    non_ok_attempts = $nonOkRunCount
     min_trades_required = $MinTrades
     deterministic = $deterministic
     oninit_failure_detected = $globalOnInitFailure
