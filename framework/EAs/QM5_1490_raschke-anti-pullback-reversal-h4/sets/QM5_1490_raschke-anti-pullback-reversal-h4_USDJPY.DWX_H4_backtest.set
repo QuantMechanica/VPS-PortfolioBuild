@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        1490
 ; ea_slug:      raschke-anti-pullback-reversal-h4
@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   09f5ce1d418e70b060c08312ac59007f3eda31e9f2242ecf5d288bdd357cced5
+; build_hash:   08aec829ed3fd15b77d58d4fb3880ee1e13be17f6af03c1566ed1c432a3e2446
 ; author:       Development
 ; date:         2026-06-28
 ;==========================================================
