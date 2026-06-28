@@ -147,6 +147,9 @@ bool Strategy_NoTradeFilter()
 // the opposite-break flip is handled by Strategy_ExitSignal closing first.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    // One open position per symbol/magic — if one is open, the flip is managed
    // by the exit hook (it closes on the opposite break before re-entry).
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
