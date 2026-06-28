@@ -4,12 +4,12 @@
 
 ```yaml
 strategy_id: SRC06_S13
-ea_id: TBD
+ea_id: QM5_1040
 slug: singh-cmd-corr
 status: APPROVED
 created: 2026-05-09
 created_by: Research
-last_updated: 2026-05-09
+last_updated: 2026-06-29
 
 # Dual-gate verdict (sourced from QUA-1059 thread, run 9713f33a, 2026-05-09;
 # canonical QB record at processes/strategy_cards/g1_approved_2026-05-09.md sec 4)
@@ -24,6 +24,7 @@ g1_verdict: APPROVED
 g1_verdict_record: "processes/strategy_cards/g1_approved_2026-05-09.md (sec 4)"
 
 strategy_type_flags: [position-trade, intermarket-correlation, breakout]
+build_scope: "QM5_1040 implements Part 1 only: oil -> CADJPY using XTIUSD.DWX as the native oil leading instrument. Part 2 USDX -> XAUUSD is deferred."
 ```
 ## Verdict Trail (QUA-1059)
 
@@ -55,6 +56,10 @@ Author-claim band: **author-claimed**.
 ### Flags carried forward
 
 - P0 instrument-availability check (CTO/Pipeline-Operator): WTI.cash.DWX + USDX.f (or composite proxy) must be confirmed on Darwinex MT5 before P0 compilation. Not a G0 blocker.
+
+### 2026-06-29 Build Scope Update
+
+Development allocated `QM5_1040` to the Part 1 oil-CADJPY variant only. The prior oil-feed dependency is resolved by using native `XTIUSD.DWX` as the leading oil chart and `CADJPY.DWX` as the traded instrument. The Part 2 USDX-XAUUSD variant remains unbuilt because this mission requires a new energy-linked sleeve rather than additional metal exposure, and USDX native availability is still unresolved.
 
 
 ## 1. Source
