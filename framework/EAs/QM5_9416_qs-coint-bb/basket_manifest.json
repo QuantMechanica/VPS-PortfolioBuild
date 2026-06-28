@@ -1,0 +1,34 @@
+{
+  "logical_symbol": "QM5_9416_SP500_NDX_COINTEGRATION_D1",
+  "host_symbol": "SP500.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "WS30.DWX"
+  ],
+  "pairs": [
+    {
+      "logical_symbol": "QM5_9416_SP500_NDX_COINTEGRATION_D1",
+      "host_symbol": "SP500.DWX",
+      "y_symbol": "SP500.DWX",
+      "x_symbol": "NDX.DWX",
+      "y_slot": 0,
+      "x_slot": 1
+    },
+    {
+      "logical_symbol": "QM5_9416_WS30_NDX_COINTEGRATION_D1",
+      "host_symbol": "WS30.DWX",
+      "y_symbol": "WS30.DWX",
+      "x_symbol": "NDX.DWX",
+      "y_slot": 2,
+      "x_slot": 1
+    }
+  ],
+  "notes": [
+    "Two index-pair hosts from the approved QuantStart cointegrated spread Bollinger card. Each Q02 work item runs on its host symbol and the EA selects the corresponding NDX hedge leg internally.",
+    "SP500.DWX has the approved-card live-routing caveat; any T6 promotion requires parallel validation on broker-routable index legs before AutoTrading."
+  ]
+}

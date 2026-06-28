@@ -4,7 +4,7 @@
 **Slug:** `qs-coint-bb`
 **Source:** `842161b9-a728-55c7-97e8-33e33719b70c` (QuantStart article card)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-27
+**Last revised:** 2026-06-28
 
 ---
 
@@ -98,4 +98,5 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
+| v2 | 2026-06-28 | Q02 queue repair | Added basket manifest for the framework-review exception and pinned all strategy/news inputs in queued RISK_FIXED setfiles. |
 | v1 | 2026-06-27 | Initial build from approved card | pending build commit |
