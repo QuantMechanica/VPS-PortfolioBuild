@@ -1,0 +1,54 @@
+{
+  "ea_id": "QM5_12806",
+  "slug": "xng-rev-weekend",
+  "edge": "Natural gas reverse weekend effect",
+  "symbol": "XNGUSD.DWX",
+  "timeframe": "D1",
+  "created_at_utc": "2026-06-29T20:08:18Z",
+  "card": "strategy-seeds/cards/approved/QM5_12806_xng-rev-weekend_card.md",
+  "ea_path": "framework/EAs/QM5_12806_xng-rev-weekend/QM5_12806_xng-rev-weekend.mq5",
+  "ex5_path": "framework/EAs/QM5_12806_xng-rev-weekend/QM5_12806_xng-rev-weekend.ex5",
+  "setfile": "framework/EAs/QM5_12806_xng-rev-weekend/sets/QM5_12806_xng-rev-weekend_XNGUSD.DWX_D1_backtest.set",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "validation": {
+    "card_lint": "PASS",
+    "spec_doc": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "compile_one_strict": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260629_200741/QM5_12806_xng-rev-weekend.compile.log",
+      "summary": "D:/QM/reports/compile/20260629_200741/summary.csv"
+    },
+    "build_check_strict_skip_compile": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 16,
+      "report": "D:/QM/reports/framework/21/build_check_20260629_200754.json",
+      "warning_note": "Existing shared-framework DWX advisory warnings under framework/include/QM; no EA-local failure."
+    }
+  },
+  "hashes": {
+    "mq5_sha256": "77c436f72fc95c72d0efb5ea94cfe0f0749ff3fda55f8bb0ef101fac15afd89f",
+    "ex5_sha256": "aac10467faa8619d745f15c69ee46d64ff0aa29623fa1567bce134ac619ba17e",
+    "setfile_build_hash": "8e3bdaecb9458086dcfb88149dcf85569465cb577ed4c82cd470a93a5ff98013"
+  },
+  "q02_enqueue": {
+    "result": "pending",
+    "work_item_id": "6926273a-22be-40e5-aa81-9c60c7ef0ac1",
+    "phase": "Q02",
+    "enqueued_at_utc": "2026-06-29T20:08:18+00:00",
+    "command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --apply --ea QM5_12806 --queue-ceiling 10000 --max-part2-per-run 0"
+  },
+  "live_scope": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}

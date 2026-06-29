@@ -13855,3 +13855,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12803,edgelab-usdcad-euraud-cointegration,0,USDCAD.DWX,128030000,2026-06-29,Development,active
 12803,edgelab-usdcad-euraud-cointegration,1,EURAUD.DWX,128030001,2026-06-29,Development,active
 12804,xng-tsmom12m-atr,0,XNGUSD.DWX,128040000,2026-06-29,Development,active
+12806,xng-rev-weekend,0,XNGUSD.DWX,128060000,2026-06-29,Development,active
