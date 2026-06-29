@@ -1,0 +1,107 @@
+{
+  "task_id": "236b1e21-99b3-4b1b-97f4-6935256b3ef8",
+  "ea_id": "QM5_12780",
+  "slug": "wti-52w-anchor",
+  "strategy": "WTI 52-week high/low anchor momentum",
+  "source_id": "BIANCHI-COMM-52W-2016",
+  "source_citation": "Bianchi, R. J., Drew, M. E. and Fan, J. H. Commodities momentum: A behavioural perspective. Journal of Banking and Finance, 2016. DOI https://doi.org/10.1016/j.jbankfin.2016.06.010; SSRN https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2571725.",
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12780_wti-52w-anchor",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12780_wti-52w-anchor\\QM5_12780_wti-52w-anchor.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12780_wti-52w-anchor\\QM5_12780_wti-52w-anchor.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12780_wti-52w-anchor\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\wti-52w-anchor_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12780_wti-52w-anchor_card.md",
+  "runtime_approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12780_wti-52w-anchor.md",
+  "farm_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12780_wti-52w-anchor.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12780_wti-52w-anchor\\sets\\QM5_12780_wti-52w-anchor_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "mq5_sha256": "31d116e1fddacfdf128180729a01b6305fe6935d5b8f9fab39895b883f2d3333",
+  "ex5_sha256": "90f7c6332bdff3de815af9bb308f5c291ac252395b4638f19df151626e86fd43",
+  "setfile_current_sha256": "036374e73c4bed7cfe6cb4e37f1c948b98377f7168065b67bf3769c4b4d23c4d",
+  "magic_base": 127800000,
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 127800000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12780_wti-52w-anchor/QM5_12780_wti-52w-anchor.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260629_145548\\QM5_12780_wti-52w-anchor.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260629_145548\\summary.csv"
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12780_wti-52w-anchor -RepoRoot C:/QM/repo -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260629_145612.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings in include files; build_check failures=0."
+  },
+  "schema_and_registry_checks": {
+    "validate_spec_doc": "PASS",
+    "skill_card_schema_lint": "PASS",
+    "skill_g0_card_lint": "PASS",
+    "magic_resolver_updated": true,
+    "target_registry_rows_verified": true
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 backtest launched from this session.",
+  "blocked_reason": null,
+  "open_questions": [],
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  },
+  "duplicate_check": {
+    "selected_edge": "XTIUSD.DWX monthly 52-week high/low anchor momentum",
+    "non_duplicate_reason": "Existing WTI builds cover raw 9/12-month TSMOM, 30/40-day Chan close filter, Williams congestion breakout, reversal, XTI/XNG relative momentum, ratio, calendar, WPSR, refinery, hurricane, OPEC, expiry, roll, and weekend logic. This sleeve triggers on proximity to the 252-D1 closing high/low plus 63-D1 confirmation."
+  },
+  "notes": "Built one non-duplicate structural WTI energy sleeve. No live, T_Live, AutoTrading, or portfolio gate artifacts touched.",
+  "q02_enqueue": {
+    "status": "enqueued",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "phase": "Q02",
+    "kind": "backtest",
+    "symbol": "XTIUSD.DWX",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12780_wti-52w-anchor\\sets\\QM5_12780_wti-52w-anchor_XTIUSD.DWX_D1_backtest.set",
+    "work_item_id": "09f91beb-51a4-4eb8-8a5c-f6af09fe54ad",
+    "status_after_final_check": "pending",
+    "attempt_count": 0,
+    "created_at_utc": "2026-06-29T14:57:56+00:00",
+    "updated_at_utc": "2026-06-29T14:57:56+00:00",
+    "enqueued_by": "record_build_result.auto_q02",
+    "build_task_id": "236b1e21-99b3-4b1b-97f4-6935256b3ef8"
+  }
+}
