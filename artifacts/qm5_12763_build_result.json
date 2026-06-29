@@ -22,10 +22,10 @@
   "setfiles_generated": [
     "C:\\QM\\repo\\framework\\EAs\\QM5_12763_wti-ref-sqz-brk\\sets\\QM5_12763_wti-ref-sqz-brk_XTIUSD.DWX_D1_backtest.set"
   ],
-  "mq5_sha256": "82c58bf1399956b3f038b7bf80bfa83e40a024eb616644e29aa7080c56e63d8b",
-  "ex5_sha256": "4b132ecb47bad11cae8782b02856e099a92f8f1b65a73497faa420e6dc0a02b5",
-  "setfile_header_build_hash": "fa4a846ad71fef344870e65112d45ec76dfdecd6f0f9ac6811cedb1596ad6e81",
-  "setfile_current_sha256": "6b06bdd5aae204cc6451e2b7159928c95329cc780dd1f76de3aa0641e087638b",
+  "mq5_sha256": "cfbff14bf6df50dc9f9774dc1dd594ab69d77fbf8287e12b63b2aa60dcb4fa4c",
+  "ex5_sha256": "7acf1128c69c05fd598769bf51f2db0a4aab6d05696595fac9f849eed22b4352",
+  "setfile_header_build_hash": "bd58b650cda59d7b0efb5c6003e3c75211c13d6ece91c72cff337e1dec8688f1",
+  "setfile_current_sha256": "57301056bc4b0a127724cad0049f2b44c78623884eeab11b9f43b71da0cc5dc6",
   "risk_mode": {
     "RISK_FIXED": 1000,
     "RISK_PERCENT": 0,
@@ -49,14 +49,14 @@
     "result": "PASS",
     "errors": 0,
     "warnings": 0,
-    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260629_010916\\QM5_12763_wti-ref-sqz-brk.compile.log"
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260629_011447\\QM5_12763_wti-ref-sqz-brk.compile.log"
   },
   "build_check": {
     "command": "powershell -ExecutionPolicy Bypass -File framework\\scripts\\build_check.ps1 -EALabel QM5_12763_wti-ref-sqz-brk -Strict",
     "result": "PASS",
     "failures": 0,
     "warnings": 16,
-    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260629_010916.json",
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260629_011447.json",
     "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0 and new EA body has no raw indicator handles."
   },
   "smoke_result": "deferred_p2_smoke",
