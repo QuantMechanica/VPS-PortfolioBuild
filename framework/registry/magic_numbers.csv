@@ -13813,3 +13813,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12614,tsmom-6m-fx-basket-3pair,0,EURUSD.DWX,126140000,2026-06-29,Development,active
 12614,tsmom-6m-fx-basket-3pair,1,GBPUSD.DWX,126140001,2026-06-29,Development,active
 12614,tsmom-6m-fx-basket-3pair,2,USDJPY.DWX,126140002,2026-06-29,Development,active
+12703,xngusd-spring-shoulder-short,0,XNGUSD.DWX,127030000,2026-06-29,Development,active
