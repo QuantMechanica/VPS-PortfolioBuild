@@ -31,6 +31,8 @@ price history and broker calendar state at runtime.
   a 3-month same-sign confirmation filter.
 - Extracted strategy: monthly WTI dual-horizon 6-month and 12-month
   return-sign momentum package requiring both horizons to agree.
+- Extracted strategy: monthly WTI 12-month return-sign momentum package gated
+  by a fixed ATR-as-percent-of-price volatility corridor.
 - Runtime data deliberately excludes futures curves, open interest, inventory
   feeds, analyst forecasts, CSVs, APIs, and ML models.
 - The EAs should be tested as energy sleeves, not as replacements for existing
