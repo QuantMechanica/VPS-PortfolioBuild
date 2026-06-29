@@ -96,8 +96,8 @@ double Strategy_Midpoint(const ENUM_TIMEFRAMES tf, const int period, const int s
    double lowest = 0.0;
    for(int i = shift; i < shift + period; ++i)
      {
-      const double high = iHigh(_Symbol, tf, i);
-      const double low = iLow(_Symbol, tf, i);
+      const double high = iHigh(_Symbol, tf, i); // perf-allowed: Ichimoku midpoint loop runs only after the H1 new-bar gate.
+      const double low = iLow(_Symbol, tf, i); // perf-allowed: Ichimoku midpoint loop runs only after the H1 new-bar gate.
       if(high <= 0.0 || low <= 0.0)
          return 0.0;
       if(i == shift || high > highest)
@@ -156,7 +156,7 @@ bool Strategy_SetupMemory()
          continue;
 
       const double kijun = Strategy_Kijun(shift);
-      const double close = iClose(_Symbol, strategy_signal_tf, shift);
+      const double close = iClose(_Symbol, strategy_signal_tf, shift); // perf-allowed: setup memory scan is bounded and H1 new-bar gated.
       if(kijun > senkou_max && close > 0.0 && close < senkou_min)
          return true;
      }
@@ -168,14 +168,14 @@ bool Strategy_VolumeFilter()
    if(strategy_volume_sma <= 0)
       return true;
 
-   const long current_volume = iVolume(_Symbol, strategy_signal_tf, 1);
+   const long current_volume = iVolume(_Symbol, strategy_signal_tf, 1); // perf-allowed: H1 volume filter runs only after the H1 new-bar gate.
    if(current_volume <= 0)
       return false;
 
    double volume_sum = 0.0;
    for(int shift = 2; shift < 2 + strategy_volume_sma; ++shift)
      {
-      const long volume = iVolume(_Symbol, strategy_signal_tf, shift);
+      const long volume = iVolume(_Symbol, strategy_signal_tf, shift); // perf-allowed: bounded H1 volume SMA runs only after the H1 new-bar gate.
       if(volume <= 0)
          return false;
       volume_sum += (double)volume;
@@ -186,7 +186,7 @@ bool Strategy_VolumeFilter()
 
 bool Strategy_BullishBias()
   {
-   const double low = iLow(_Symbol, strategy_signal_tf, 1);
+   const double low = iLow(_Symbol, strategy_signal_tf, 1); // perf-allowed: D1 bias check runs only after the H1 new-bar gate.
    const double ema = QM_EMA(_Symbol, strategy_bias_tf, strategy_daily_ema, 1);
    return (low > 0.0 && ema > 0.0 && low > ema);
   }
@@ -197,8 +197,8 @@ bool Strategy_Trigger()
    const double tenkan_2 = Strategy_Tenkan(2);
    const double kijun_1 = Strategy_Kijun(1);
    const double kijun_2 = Strategy_Kijun(2);
-   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1);
-   const double close_2 = iClose(_Symbol, strategy_signal_tf, 2);
+   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1); // perf-allowed: trigger check runs only after the H1 new-bar gate.
+   const double close_2 = iClose(_Symbol, strategy_signal_tf, 2); // perf-allowed: trigger check runs only after the H1 new-bar gate.
    if(tenkan_1 <= 0.0 || tenkan_2 <= 0.0 || kijun_1 <= 0.0 || kijun_2 <= 0.0 ||
       close_1 <= 0.0 || close_2 <= 0.0)
       return false;
@@ -213,7 +213,7 @@ double Strategy_TrailingStop()
    double highest = 0.0;
    for(int shift = 1; shift <= strategy_trail_lookback; ++shift)
      {
-      const double high = iHigh(_Symbol, strategy_signal_tf, shift);
+      const double high = iHigh(_Symbol, strategy_signal_tf, shift); // perf-allowed: trailing high scan is 5 bars and H1 new-bar gated.
       if(high <= 0.0)
          return 0.0;
       if(shift == 1 || high > highest)
@@ -258,9 +258,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!Strategy_Cloud(1, span_a, span_b, senkou_min, senkou_max))
       return false;
 
-   const double close = iClose(_Symbol, strategy_signal_tf, 1);
-   const double high = iHigh(_Symbol, strategy_signal_tf, 1);
-   const double low = iLow(_Symbol, strategy_signal_tf, 1);
+   const double close = iClose(_Symbol, strategy_signal_tf, 1); // perf-allowed: entry evaluation runs only after the H1 new-bar gate.
+   const double high = iHigh(_Symbol, strategy_signal_tf, 1); // perf-allowed: entry evaluation runs only after the H1 new-bar gate.
+   const double low = iLow(_Symbol, strategy_signal_tf, 1); // perf-allowed: entry evaluation runs only after the H1 new-bar gate.
    const double kijun = Strategy_Kijun(1);
    if(close <= 0.0 || high <= 0.0 || low <= 0.0 || kijun <= 0.0)
       return false;
@@ -358,7 +358,7 @@ bool Strategy_ExitSignal()
    if(!Strategy_Cloud(1, span_a, span_b, senkou_min, senkou_max))
       return false;
 
-   const double close = iClose(_Symbol, strategy_signal_tf, 1);
+   const double close = iClose(_Symbol, strategy_signal_tf, 1); // perf-allowed: defensive exit runs only after the H1 new-bar gate.
    return (close > 0.0 && close < senkou_min);
   }
 
