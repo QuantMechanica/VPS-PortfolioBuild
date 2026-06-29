@@ -174,6 +174,5 @@ gates.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-06-29 | initial rank-23 next-unbuilt FX cointegration basket card | G0 | APPROVED |
-
-
+| v1-q02 | 2026-06-29 | build task 6ee7a158-8ec3-4445-b149-77e9041c2417 recorded and logical-basket Q02 enqueued with repaired payload | Q02 | PENDING 0ef494c0-7669-4c98-9e5c-326ff70df987 |
 

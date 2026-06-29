@@ -114,8 +114,7 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 `tester_deposit=100000`. The logical basket backtest setfile uses the canonical
 `RISK_FIXED=1000`, with `RISK_PERCENT=0`.
 
-No manual tester run was launched from this build session; Q02 is enqueued by
-`farmctl record-build` after compile/build-check PASS.
+Q02 queue note: build task `6ee7a158-8ec3-4445-b149-77e9041c2417` was recorded successfully and enqueued one logical-basket work item for `QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1`: `0ef494c0-7669-4c98-9e5c-326ff70df987`. The pending row was updated in place with full basket metadata, conversion symbol, risk, tester deposit/currency, scan metrics, priority tracking, and a 120-minute basket timeout. No duplicate Q02 row or manual MT5 launch was created.
 
 ---
 
@@ -124,7 +123,5 @@ No manual tester run was launched from this build session; Q02 is enqueued by
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-29 | Initial rank-23 next-unbuilt FX cointegration basket build | Built from the 12764 two-leg JPY-cross basket pattern |
-
-
-
+| v1-q02 | 2026-06-29 | Compile/build-check PASS and Q02 enqueued | Pending logical-basket work item 0ef494c0-7669-4c98-9e5c-326ff70df987 |
 
