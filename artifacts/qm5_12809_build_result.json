@@ -1,0 +1,60 @@
+{
+  "ea_id": "QM5_12809",
+  "slug": "eia-jetfuel-brk",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "built_at": "2026-06-30",
+  "source_id": "EIA-JETFUEL-SEASON-2026",
+  "source_card": "strategy-seeds/cards/approved/QM5_12809_eia-jetfuel-brk_card.md",
+  "ea_source": "framework/EAs/QM5_12809_eia-jetfuel-brk/QM5_12809_eia-jetfuel-brk.mq5",
+  "setfile": "framework/EAs/QM5_12809_eia-jetfuel-brk/sets/QM5_12809_eia-jetfuel-brk_XTIUSD.DWX_D1_backtest.set",
+  "mq5_hash_sha256": "646da26279b7328c7f1810c1cdadf0dfd82d402229139f84e025e0eddffe80f5",
+  "setfile_hash_sha256": "97060307b1c1c47da0cc4c42d9d68c679989c9c3493b37301a186442ada514cd",
+  "ex5_hash_sha256": "364ddcede23d56385ab9a2408869dc6a82992c3fe4c72b4893d893d87caa554b",
+  "risk_mode": {
+    "backtest": "RISK_FIXED",
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0
+  },
+  "validations": [
+    {
+      "command": "python framework\\scripts\\skill_card_schema_lint.py --card strategy-seeds\\cards\\approved\\QM5_12809_eia-jetfuel-brk_card.md",
+      "result": "PASS",
+      "notes": "status ok, no ML hits, no missing sections"
+    },
+    {
+      "command": "python framework\\scripts\\validate_spec_doc.py framework\\EAs\\QM5_12809_eia-jetfuel-brk",
+      "result": "PASS",
+      "notes": "1 PASS, 0 FAIL"
+    },
+    {
+      "command": "python tools\\strategy_farm\\validate_symbol_scope.py --ea-label QM5_12809_eia-jetfuel-brk --verbose --fail-on-leak",
+      "result": "PASS",
+      "notes": "SINGLE_SYMBOL_OK, n_violations=0"
+    },
+    {
+      "command": "python tools\\strategy_farm\\compile_ea.py --ea-label QM5_12809_eia-jetfuel-brk --force --json",
+      "result": "PASS",
+      "notes": "COMPILED; errors=0; warnings=0; ex5 produced"
+    },
+    {
+      "command": "powershell -ExecutionPolicy Bypass -File framework\\scripts\\build_check.ps1 -EALabel QM5_12809_eia-jetfuel-brk -Strict -SkipCompile",
+      "result": "PASS",
+      "notes": "0 failures; 16 warnings from existing shared framework include advisory scan"
+    }
+  ],
+  "q02_enqueue": {
+    "command": "python tools\\strategy_farm\\sweep_enqueue_built_eas.py --apply --ea QM5_12809 --queue-ceiling 10000 --max-part2-per-run 0",
+    "result": "PASS",
+    "enqueued": 1,
+    "work_item_id": "bf861753-130b-49d4-9f0b-3e6623d8f515",
+    "status": "pending",
+    "created_at_utc": "2026-06-29T22:59:35+00:00"
+  },
+  "live_scope": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "notes": "Structural D1 XTIUSD jet-fuel summer demand breakout sourced to official EIA jet-fuel refinery-output/consumption/production analysis. Runtime uses MT5 OHLC/calendar only; no EIA feed, ML, grid, martingale, or live deployment action."
+}

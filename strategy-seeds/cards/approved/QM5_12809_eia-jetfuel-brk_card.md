@@ -139,3 +139,4 @@ Exit rules:
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-06-30 | APPROVED | this card |
+| Q02 Baseline Screening | 2026-06-30 | QUEUED | work_items/bf861753-130b-49d4-9f0b-3e6623d8f515 |
