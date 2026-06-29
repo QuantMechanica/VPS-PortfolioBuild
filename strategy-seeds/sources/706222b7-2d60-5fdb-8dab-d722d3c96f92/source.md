@@ -13,22 +13,23 @@ uri: https://www.eia.gov/todayinenergy/detail.php?id=22892
 ## Source Identity
 
 - Publisher: U.S. Energy Information Administration
-- Title: "Natural gas consumption, production respond to seasonal changes"
-- Date: 2015-09-24
+- Title: "Natural gas use features two seasonal peaks per year"
+- Date: 2015-09-11
 - URL: https://www.eia.gov/todayinenergy/detail.php?id=22892
 
 ## Mining Scope
 
-Two cards were extracted for structural natural-gas CFD sleeves:
+Five cards were extracted for structural natural-gas CFD sleeves:
 
 - `eia-xng-season`: XNGUSD.DWX D1 monthly seasonal demand/shoulder regime with price confirmation.
 - `xngusd-winter-withdrawal-long`: XNGUSD.DWX D1 winter withdrawal/heating-demand long-only regime with price confirmation.
 - `xngusd-spring-shoulder-short`: XNGUSD.DWX D1 spring shoulder demand-lull short-only regime with price confirmation.
 - `xngusd-summer-power-long`: XNGUSD.DWX D1 summer electric-sector demand long-only regime with price confirmation.
+- `xngusd-fall-storage-short`: XNGUSD.DWX D1 fall shoulder/storage-fill short-only regime with price confirmation.
 
 ## Evidence Notes
 
-- The source describes natural gas consumption and production as seasonally shaped, with consumption peaks tied to winter heating demand and summer electric-sector demand.
+- The source describes natural gas consumption as seasonally shaped, with peaks tied to winter heating demand and summer electric-sector demand and lower use during the spring/fall shoulder periods.
 - The QM implementations do not ingest external EIA data at runtime. They mechanize the calendar seasonality as fixed windows and use only Darwinex MT5 OHLC data for price confirmation and risk control.
 - This source is intentionally single-source for R1 lineage.
 
