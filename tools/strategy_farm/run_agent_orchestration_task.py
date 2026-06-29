@@ -29,6 +29,10 @@ PYTHON_EXE = Path(r"C:\Users\Administrator\AppData\Local\Programs\Python\Python3
 CODEX_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\codex.cmd")
 GEMINI_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\gemini.cmd")
 GEMINI_NODE_BUNDLE = Path(r"C:\Users\Administrator\AppData\Roaming\npm\node_modules\@google\gemini-cli\bundle\gemini.js")
+# Antigravity CLI (agy) — replaces the deprecated gemini-cli for the "gemini" lane
+# (2026-06-29). Headless via `agy -p`; auth = Windows Credential Manager (gemini:antigravity),
+# OWNER-authenticated, no API key. agy does NOT read stdin -> prompt passed as a -p file-pointer.
+AGY_BIN = Path(os.environ.get("LOCALAPPDATA", r"C:\Users\Administrator\AppData\Local")) / "agy" / "bin" / "agy.exe"
 CLAUDE_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\claude.cmd")
 CODEX_HOME = Path(os.environ.get("CODEX_HOME", r"C:\Users\Administrator\.codex"))
 AGENT_USER_HOME = Path(r"C:\Users\Administrator")
@@ -60,10 +64,13 @@ def resolve_cli(agent: str) -> str:
             return found
         return str(CODEX_FALLBACK if CODEX_FALLBACK.exists() else "codex")
     if agent == "gemini":
-        found = shutil.which("gemini.cmd") or shutil.which("gemini")
+        # Antigravity CLI (agy) is the live backend; gemini-cli is deprecated/dead.
+        if AGY_BIN.exists():
+            return str(AGY_BIN)
+        found = shutil.which("agy") or shutil.which("gemini.cmd") or shutil.which("gemini")
         if found:
             return found
-        return str(GEMINI_FALLBACK if GEMINI_FALLBACK.exists() else "gemini")
+        return str(GEMINI_FALLBACK if GEMINI_FALLBACK.exists() else "agy")
     if agent == "claude":
         found = shutil.which("claude.cmd") or shutil.which("claude")
         if found:
@@ -209,7 +216,7 @@ def release_lock(lock_info: dict[str, Any]) -> None:
         pass
 
 
-def command_for(agent: str, cwd: Path) -> list[str]:
+def command_for(agent: str, cwd: Path, prompt_path: Path | None = None) -> list[str]:
     cli = resolve_cli(agent)
     if agent == "codex":
         model_args = ["-m", CODEX_HEADLESS_MODEL] if CODEX_HEADLESS_MODEL else []
@@ -222,39 +229,39 @@ def command_for(agent: str, cwd: Path) -> list[str]:
             str(cwd),
         ]
     if agent == "gemini":
-        # Sandbox whitelist. By default gemini-cli only sees the worktree.
-        # Extra paths are needed for:
-        #  - Dropbox-mining initiative (Wave-A* video source folders, project memo
-        #    `project_dropbox_strategy_research_2026-05-23`)
-        #  - cards_review write target (so gemini can write artifacts directly
-        #    instead of staging inside the worktree and requiring a copy step)
-        # `--include-directories` accepts comma-separated or repeated flag (per
-        # `gemini --help`); using comma-separated for compactness.
+        # Antigravity CLI (agy): headless via `-p`. agy does NOT read stdin, and a full
+        # orchestration prompt can exceed the Windows cmdline limit, so pass a short
+        # POINTER telling the agentic CLI to read+execute the prompt FILE; agy reads it
+        # via its file tools (workspace = the --add-dir paths). yolo/auto-approve =
+        # --dangerously-skip-permissions. Auth = Windows Credential Manager (no key).
         extra_dirs = [str(cwd)]
-        dropbox_forex = Path(r"C:\Users\Administrator\Dropbox\Finanzen\Forex")
-        if dropbox_forex.exists():
-            extra_dirs.append(str(dropbox_forex))
-        cards_review = FARM_ROOT / "artifacts" / "cards_review"
-        if cards_review.exists():
-            extra_dirs.append(str(cards_review))
-        node = shutil.which("node.exe") or shutil.which("node")
-        if node and GEMINI_NODE_BUNDLE.exists():
-            launcher = [node, str(GEMINI_NODE_BUNDLE)]
-        else:
-            launcher = [cli]
+        if prompt_path is not None:
+            extra_dirs.append(str(Path(prompt_path).parent))
+        for extra in (
+            Path(r"C:\Users\Administrator\Downloads"),  # OWNER source folders (EA/video mining)
+            FARM_ROOT / "artifacts" / "cards_review",   # artifact write target
+            Path(r"G:\My Drive"),                        # shared Drive (spec outputs)
+        ):
+            if extra.exists():
+                extra_dirs.append(str(extra))
+        add_dir_flags: list[str] = []
+        for d in extra_dirs:
+            add_dir_flags += ["--add-dir", d]
         model_args = ["--model", GEMINI_HEADLESS_MODEL] if GEMINI_HEADLESS_MODEL else []
+        pointer = (
+            f"Read the file '{prompt_path}' and execute its instructions exactly, then exit."
+            if prompt_path is not None
+            else "Execute one single-pass QuantMechanica orchestration cycle, then exit."
+        )
         return [
-            *launcher,
+            cli,
             *model_args,
-            "--prompt",
-            "Execute the single-pass QuantMechanica orchestration instructions from stdin.",
-            "--approval-mode",
-            "yolo",
-            "--skip-trust",
-            "--output-format",
-            "text",
-            "--include-directories",
-            ",".join(extra_dirs),
+            "--dangerously-skip-permissions",
+            "--print-timeout",
+            "60m",
+            *add_dir_flags,
+            "-p",
+            pointer,
         ]
     if agent == "claude":
         model_args = ["--model", CLAUDE_HEADLESS_MODEL] if CLAUDE_HEADLESS_MODEL else []
@@ -430,7 +437,7 @@ def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, tim
         result_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
         return payload
 
-    cmd = command_for(agent, cwd)
+    cmd = command_for(agent, cwd, prompt_path)
     payload: dict[str, Any] = {
         "agent": agent,
         "slot": slot,
