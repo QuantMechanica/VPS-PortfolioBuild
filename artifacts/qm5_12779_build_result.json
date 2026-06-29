@@ -1,0 +1,104 @@
+{
+  "task_id": "wti-weekend-gap-bounce-q02-20260629",
+  "ea_id": "QM5_12779",
+  "slug": "wti-weekend-gap-bounce",
+  "strategy": "XTIUSD.DWX D1 negative Monday weekend-gap bounce",
+  "source_id": "TGIF-WTI-WEEKEND-2017",
+  "source_citation": "TGIF? The weekend effect in energy commodities. Journal of Finance Issues. URL https://jfi-aof.org/index.php/jfi/article/view/2264",
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12779_wti-weekend-gap-bounce",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12779_wti-weekend-gap-bounce\\QM5_12779_wti-weekend-gap-bounce.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12779_wti-weekend-gap-bounce\\QM5_12779_wti-weekend-gap-bounce.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12779_wti-weekend-gap-bounce\\SPEC.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12779_wti-weekend-gap-bounce_card.md",
+  "runtime_approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12779_wti-weekend-gap-bounce.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12779_wti-weekend-gap-bounce\\sets\\QM5_12779_wti-weekend-gap-bounce_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "mq5_sha256": "605c4b5c69b4446e748c652e937f2e0825a9e93d37e9949bc6a88d128f99484b",
+  "ex5_sha256": "41edbc4f0c97be837ec1b8f57440fcda9625f0c8a6e9e5ff301de418d515e400",
+  "setfile_header_build_hash": "91211967c6d7f27c69675c90aff0037867327f908de4fb6326503502d51adb99",
+  "setfile_current_sha256": "cc359e8bdfeecf589454edb5372aab7311b1983d6453db3ed5430fdc0ea29f88",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 127790000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "duplicate_screen": {
+    "rejected_candidates": [
+      "XAUUSD~XAGUSD ratio reversion duplicate of QM5_12577/QM5_12724 family already present",
+      "Positive WTI Monday weekend-gap fade duplicate of QM5_12750",
+      "All-Monday WTI short duplicate of QM5_12596",
+      "WTI weekday/month/event/roll/refinery/OPEC/hurricane/trend sleeves already present"
+    ],
+    "selected_reason": "One-sided negative Monday WTI gap-fill long is mechanically different from existing positive-gap short, all-Monday short, weekday premium/fade, month, event, roll, and trend sleeves."
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "card_lint": {
+    "command": "python framework/scripts/skill_card_schema_lint.py --card strategy-seeds/cards/approved/QM5_12779_wti-weekend-gap-bounce_card.md",
+    "result": "PASS"
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_12779_wti-weekend-gap-bounce",
+    "result": "PASS"
+  },
+  "registry_validation": {
+    "targeted_result": "PASS",
+    "targeted_note": "Verified one ea_id_registry row for 12779 and one magic_numbers row for magic 127790000 on XTIUSD.DWX slot 0.",
+    "full_validate_registries": "Not used as a blocking signal because the working tree already has legacy unrelated registry issues."
+  },
+  "compile": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12779_wti-weekend-gap-bounce/QM5_12779_wti-weekend-gap-bounce.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260629_135314\\QM5_12779_wti-weekend-gap-bounce.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260629_135314\\summary.csv"
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12779_wti-weekend-gap-bounce -RepoRoot C:/QM/repo -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260629_135324.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "q02": {
+    "enqueue_command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --apply --ea QM5_12779 --queue-ceiling 10000 --max-part2-per-run 0",
+    "work_item_id": "83042e3e-6215-46e2-8ddb-1dc306edd1ad",
+    "status": "pending",
+    "phase": "Q02",
+    "kind": "backtest",
+    "symbol": "XTIUSD.DWX",
+    "created_at": "2026-06-29T13:53:36+00:00",
+    "updated_at": "2026-06-29T13:53:36+00:00",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite"
+  },
+  "smoke_result": "deferred_to_q02",
+  "smoke_skipped_reason": "Paced fleet Q02 will run the first tester pass; no manual MT5 backtest was launched from this session.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  },
+  "notes": "Built one non-duplicate structural WTI energy sleeve. No live, T_Live, AutoTrading, or portfolio gate artifacts touched."
+}
