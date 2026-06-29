@@ -13864,3 +13864,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12791,monday-range-breakout,2,EURUSD.DWX,127910002,2026-06-29,Development,active
 12791,monday-range-breakout,3,AUDUSD.DWX,127910003,2026-06-29,Development,active
 12807,xng-52w-anchor,0,XNGUSD.DWX,128070000,2026-06-29,Development,active
+12808,ftmo-xti-pb,0,XTIUSD.DWX,128080000,2026-06-29,Development,active
