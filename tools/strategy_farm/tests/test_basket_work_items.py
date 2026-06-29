@@ -352,6 +352,83 @@ class BasketWorkItemsTests(unittest.TestCase):
             self.assertEqual(payload["portfolio_scope"], "basket")
             self.assertEqual(payload["tester_currency"], "JPY")
 
+    def test_embedded_build_result_materializes_and_records(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            repo_root = Path(tmp) / "repo"
+            ea_dir = repo_root / "framework" / "EAs" / "QM5_12760_demo"
+            ea_dir.mkdir(parents=True)
+            mq5 = ea_dir / "QM5_12760_demo.mq5"
+            ex5 = ea_dir / "QM5_12760_demo.ex5"
+            mq5.write_text("// source\n", encoding="utf-8")
+            ex5.write_text("compiled\n", encoding="utf-8")
+
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            build_result = {
+                "task_id": "build-task",
+                "ea_id": "QM5_12760",
+                "mq5_path": str(mq5),
+                "ex5_path": str(ex5),
+                "compile_succeeded": True,
+                "build_check_passed": True,
+                "smoke_result": "deferred_p2_smoke",
+                "setfiles_generated": [],
+            }
+            payload = {
+                "ea_id": "QM5_12760",
+                "codex_result": build_result,
+                "pre_review_not_reviewable_reason": "missing_build_result",
+            }
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO tasks
+                      (id, kind, status, source_id, card_id, payload_json, created_at, updated_at)
+                    VALUES
+                      ('build-task', 'build_ea', 'pending', NULL, 'QM5_12760', ?, ?, ?)
+                    """,
+                    (json.dumps(payload), now, now),
+                )
+                conn.commit()
+
+            result_path = farmctl._materialize_embedded_build_result(root, "build-task", payload)
+            self.assertEqual(result_path, root / "artifacts" / "builds" / "build-task.json")
+            self.assertTrue(result_path.exists())
+
+            old_validate = farmctl._validate_ea_spec_md
+            old_auto_q02 = farmctl._auto_enqueue_q02_for_build
+            try:
+                farmctl._validate_ea_spec_md = lambda _result, _root: {
+                    "ok": True,
+                    "failures": [],
+                    "ea_dir": str(ea_dir),
+                }
+                farmctl._auto_enqueue_q02_for_build = lambda _root, _result: {
+                    "enqueued": [],
+                    "skipped": [],
+                    "reason": "missing_ea_id_or_setfiles",
+                }
+                recorded = farmctl.record_build_result(root, "build-task", str(result_path))
+            finally:
+                farmctl._validate_ea_spec_md = old_validate
+                farmctl._auto_enqueue_q02_for_build = old_auto_q02
+
+            self.assertTrue(recorded["recorded"])
+            self.assertEqual(recorded["new_status"], "done")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.row_factory = sqlite3.Row
+                row = conn.execute("SELECT * FROM tasks WHERE id='build-task'").fetchone()
+            stored = json.loads(row["payload_json"])
+            self.assertEqual(row["status"], "done")
+            self.assertEqual(
+                Path(stored["build_result_path"]).resolve(),
+                result_path.resolve(),
+            )
+            ready, reason = farmctl._pre_review_ready(root, row)
+            self.assertTrue(ready)
+            self.assertEqual(reason, "")
+
 
 if __name__ == "__main__":
     unittest.main()

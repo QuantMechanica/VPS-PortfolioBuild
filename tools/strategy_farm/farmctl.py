@@ -4702,6 +4702,56 @@ def _pre_review_ready(root: Path, build_task_row: sqlite3.Row) -> tuple[bool, st
     return True, ""
 
 
+def _materialize_embedded_build_result(
+    root: Path,
+    build_task_id: str,
+    payload: dict[str, Any],
+) -> Path | None:
+    """Recover pending build rows whose result JSON only exists in payload.
+
+    A few headless build sessions recorded a complete codex_result and even
+    auto-enqueued Q02, but never wrote artifacts/builds/<task_id>.json. The
+    downstream recorder and pre-review gate require the durable JSON file, so
+    recreate it only when the embedded result is clearly for this same task.
+    """
+    result = payload.get("codex_result")
+    if not isinstance(result, dict) or not result:
+        return None
+
+    result_task_id = str(result.get("task_id") or "").strip()
+    if result_task_id and result_task_id != str(build_task_id):
+        return None
+
+    known_missing_file_case = (
+        payload.get("pre_review_not_reviewable_reason") == "missing_build_result"
+        or bool(payload.get("auto_q02_enqueued"))
+    )
+    if not known_missing_file_case:
+        return None
+
+    raw_path = payload.get("build_result_path") or (
+        root / "artifacts" / "builds" / f"{build_task_id}.json"
+    )
+    result_path = Path(str(raw_path))
+    if not result_path.is_absolute():
+        result_path = root / result_path
+
+    try:
+        if result_path.exists() and result_path.stat().st_size > 0:
+            return result_path
+    except OSError:
+        return None
+
+    result_to_write = dict(result)
+    result_to_write.setdefault("task_id", build_task_id)
+    result_path.parent.mkdir(parents=True, exist_ok=True)
+    result_path.write_text(
+        json.dumps(result_to_write, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return result_path
+
+
 def _block_unreviewable_build(root: Path, build_task_row: sqlite3.Row, reason: str) -> dict[str, Any]:
     payload = json.loads(build_task_row["payload_json"])
     blocked_reason = f"pre_review_not_reviewable:{reason}"
@@ -7570,6 +7620,25 @@ def pump(root: Path) -> dict[str, Any]:
         if result_path is not None:
             rec = record_build_result(root, row["id"], str(result_path))
             result["build_records"].append({"task_id": row["id"], "recorded": rec})
+            continue
+
+        embedded_result_path = _materialize_embedded_build_result(root, row["id"], payload)
+        if embedded_result_path is not None:
+            with connect(root) as conn:
+                update_task(
+                    conn,
+                    row["id"],
+                    payload_merge={
+                        "build_result_path": str(embedded_result_path),
+                        "embedded_build_result_materialized_at": utc_now(),
+                    },
+                )
+            rec = record_build_result(root, row["id"], str(embedded_result_path))
+            result["build_records"].append({
+                "task_id": row["id"],
+                "recorded": rec,
+                "source": "embedded_codex_result",
+            })
 
     # 4b. ZERO-TRADE SHORT-CIRCUIT — observed 2026-05-17: 9/9 codex_reviews
     #     in last hour FAIL on smoke_sanity (0 trades in smoke window). The
@@ -10931,7 +11000,10 @@ def record_build_result(root: Path, task_id: str, result_file: str) -> dict[str,
         blocked = ""
 
     fail_code = _classify_build_fail_code(result)
-    payload_merge: dict[str, Any] = {"codex_result": result}
+    payload_merge: dict[str, Any] = {
+        "build_result_path": str(rp),
+        "codex_result": result,
+    }
     if fail_code:
         payload_merge["fail_code"] = fail_code
         result.setdefault("fail_code", fail_code)
