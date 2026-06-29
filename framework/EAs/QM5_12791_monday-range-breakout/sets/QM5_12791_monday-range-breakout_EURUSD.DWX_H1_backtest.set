@@ -1,0 +1,46 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        12791
+; ea_slug:      monday-range-breakout
+; ea_version:   v5.0
+; set_version:  s20260629-001
+; symbol:       EURUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   8b56ac5901b2b37c194121f85a40000f2e8c62093341cb55aab754db451bc8f3
+; author:       Development
+; date:         2026-06-29
+;==========================================================
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=framework/EAs/QM5_12791_monday-range-breakout/docs/strategy_card.md
+strategy_min_monday_range_pips=30
+strategy_max_monday_range_pips=150
+strategy_breakout_buffer_pips=5
+strategy_stop_buffer_pips=10
+strategy_tp_r=1.5
+strategy_move_to_breakeven=true
+strategy_entry_start_hour=8
+strategy_entry_end_hour=18
+strategy_max_trades_per_week=2
+strategy_friday_exit_hour=21
+strategy_max_spread_points=80
+strategy_d1_history_bars=12

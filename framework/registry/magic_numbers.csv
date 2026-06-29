@@ -13859,4 +13859,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12788,turnaround-tuesday,0,GBPUSD.DWX,127880000,2026-06-29,Development,active
 12788,turnaround-tuesday,1,EURUSD.DWX,127880001,2026-06-29,Development,active
 12788,turnaround-tuesday,2,USDCAD.DWX,127880002,2026-06-29,Development,active
+12791,monday-range-breakout,0,USDJPY.DWX,127910000,2026-06-29,Development,active
+12791,monday-range-breakout,1,GBPUSD.DWX,127910001,2026-06-29,Development,active
+12791,monday-range-breakout,2,EURUSD.DWX,127910002,2026-06-29,Development,active
+12791,monday-range-breakout,3,AUDUSD.DWX,127910003,2026-06-29,Development,active
 12807,xng-52w-anchor,0,XNGUSD.DWX,128070000,2026-06-29,Development,active
