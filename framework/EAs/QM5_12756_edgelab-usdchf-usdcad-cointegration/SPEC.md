@@ -128,3 +128,4 @@ launch fault, and returned it to pending cooldown for paced retry.
 |---|---|---|---|
 | v1 | 2026-06-28 | Initial next-best FX cointegration basket build | Built from the 12732 basket pattern |
 | v1 | 2026-06-28 | Q02 enqueue | Pending logical-basket work item 3a06b01c-7b8c-4db0-86fb-d40e0a1c0000 after first T5 launch-fault cooldown |
+| v1-q04 | 2026-06-29 | Q04 2024 retry | Work item fb626620-20ec-4ee6-9e64-b491ded2d6f2 requeues Q04 from source Q02 PASS 3a06b01c-7b8c-4db0-86fb-d40e0a1c0000 with q04_latest_full_year=2024 after prior F3 2025 NO_HISTORY/BARS_ZERO infra failure |
