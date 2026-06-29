@@ -1,0 +1,33 @@
+{
+  "task_id": "d5bfd0ec-557a-400e-9245-df545e90bfb4",
+  "ea_id": "QM5_10180",
+  "ea_dir": "framework/EAs/QM5_10180_tv-fut-ema-rsi-pull",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_10180_tv-fut-ema-rsi-pull/QM5_10180_tv-fut-ema-rsi-pull.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_10180_tv-fut-ema-rsi-pull/QM5_10180_tv-fut-ema-rsi-pull.ex5",
+  "magic_base": 101800000,
+  "symbols_registered": [
+    "NDX.DWX",
+    "WS30.DWX",
+    "GDAXI.DWX",
+    "XAUUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_10180_tv-fut-ema-rsi-pull/sets/QM5_10180_tv-fut-ema-rsi-pull_NDX.DWX_M15_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_10180_tv-fut-ema-rsi-pull/sets/QM5_10180_tv-fut-ema-rsi-pull_WS30.DWX_M15_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_10180_tv-fut-ema-rsi-pull/sets/QM5_10180_tv-fut-ema-rsi-pull_GDAXI.DWX_M15_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_10180_tv-fut-ema-rsi-pull/sets/QM5_10180_tv-fut-ema-rsi-pull_XAUUSD.DWX_M15_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_10180_tv-fut-ema-rsi-pull/SPEC.md",
+  "build_check_passed": true,
+  "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260629_102205.json",
+  "compile_succeeded": true,
+  "compile_log_path": "C:/QM/repo/framework/build/compile/20260629_102205/QM5_10180_tv-fut-ema-rsi-pull.compile.log",
+  "compile_summary_path": "D:/QM/reports/compile/20260629_102205/summary.csv",
+  "mq5_sha256": "d59528b190cc590194521bb9babf39709163e3f0f60c491fb173c557c2aa9865",
+  "ex5_sha256": "0a6c0d71d54f6b1ecac34434a64a9034419d0a827718ec064389d7d34cab37d5",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "q02_queue_repair_no_dedicated_terminal_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": []
+}
