@@ -11,7 +11,7 @@
 ## 1. Strategy Logic
 
 The EA trades the USDJPY.DWX and GBPJPY.DWX D1 cointegration spread. It computes
-`S = ln(USDJPY) - beta * ln(GBPJPY)` with beta defaulting to 0.01, then
+`S = ln(USDJPY) - beta * ln(GBPJPY)` with beta defaulting to 0.992629, then
 calculates a 60-bar rolling z-score of that spread.
 
 It opens a short-spread package when z is above +2.0 and a long-spread package
@@ -23,9 +23,9 @@ This is an exploratory next-best basket, not a hard-bar scan survivor. The
 published 66-pair scan only certified QM5_12533 and QM5_12532. A rerun of the
 same script ranked USDJPY/GBPJPY as the strongest remaining unbuilt
 OOS-positive candidate after the existing
-12532/12533/12624/12712/12723/12728/12731/12732/12735/12739/12747/12749/12751/12756/12758 baskets,
-with DEV Sharpe -0.26, OOS net Sharpe 0.10, OOS return +0.95%, 17 OOS state
-changes, beta 0.01, and 109-day half-life.
+12532/12533/12624/12712/12723/12728/12731/12732/12735/12739/12747/12749/12751/12756/12758/12760/12762 baskets,
+with DEV Sharpe -0.2377, OOS net Sharpe 0.0935, OOS return +0.8665%, 17 OOS state
+changes, beta 0.992629, and 109.22-day half-life.
 
 The negative DEV Sharpe and very low OOS Sharpe mean this did not clear the
 original build discipline; it is a very high-risk exploratory sleeve built only
@@ -40,7 +40,7 @@ stronger exploratory candidates were already built.
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
 | strategy_z_lookback_d1 | 60 | 20+ | D1 bars used for rolling spread mean and standard deviation |
-| strategy_beta | 0.01 | >0 | Hedge coefficient in `ln(USDJPY) - beta * ln(GBPJPY)` |
+| strategy_beta | 0.992629 | >0 | Hedge coefficient in `ln(USDJPY) - beta * ln(GBPJPY)` |
 | strategy_entry_z | 2.0 | >0 | Absolute z-score threshold for opening a spread package |
 | strategy_exit_z | 0.5 | >=0 | Absolute z-score threshold for closing the open package |
 | strategy_atr_period_d1 | 20 | 2+ | D1 ATR period for per-leg hard stop distance |
@@ -58,7 +58,7 @@ stronger exploratory candidates were already built.
 **Explicitly not for:**
 - Other `.DWX` symbols. This card is a fixed two-leg FX-cross basket, not a portable multi-pair strategy.
 
-The EA selects USDJPY.DWX as conversion history for the GBPJPY leg under
+USDJPY.DWX is also the conversion history for the GBPJPY leg under
 USD-denominated tester accounting.
 
 ---
@@ -80,7 +80,7 @@ USD-denominated tester accounting.
 | Trades / year / logical basket | 4-8 |
 | Typical hold time | days to weeks |
 | Expected drawdown profile | high; Q02/Q04/Q05 must judge whether this weak residual is tradable after cost |
-| Regime preference | low-conviction macro relative-value residual between cable and sterling-yen risk/funding expressions |
+| Regime preference | low-conviction macro relative-value residual between dollar-yen and sterling-yen risk/funding expressions |
 | Win rate target | medium |
 
 ---
@@ -98,7 +98,7 @@ Rerun excerpt for this candidate:
 
 | pair | DEV Sharpe | OOS net Sharpe | OOS ret | OOS state changes | hedge | half-life |
 |---|---:|---:|---:|---:|---:|---:|
-| USDJPY~GBPJPY | -0.26 | 0.10 | +0.95% | 17 | 0.01 | 109d |
+| USDJPY~GBPJPY | -0.2377 | 0.0935 | +0.8665% | 17 | 0.992629 | 109.22d |
 
 ---
 
@@ -114,10 +114,9 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 `tester_deposit=100000`. The logical basket backtest setfile uses the canonical
 `RISK_FIXED=1000`, with `RISK_PERCENT=0`.
 
-Q02 queue note: enqueued by `farmctl record-build` as work item
-`6154567b-875f-416c-903b-b171a4d4eefc` for logical symbol
-`QM5_12764_USDJPY_GBPJPY_COINTEGRATION_D1` on 2026-06-29. No manual tester
-run was launched from this session.
+Q02 queue note: after build recording, enqueue exactly one logical-basket work
+item for `QM5_12764_USDJPY_GBPJPY_COINTEGRATION_D1`. No per-leg Q02 fanout is
+valid for this basket.
 
 ---
 
@@ -125,7 +124,6 @@ run was launched from this session.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-29 | Initial next-best FX cointegration basket build | Built from the 12758 two-leg basket pattern with USDJPY conversion history |
-| v1-q02 | 2026-06-29 | Build recorded and Q02 enqueued | Work item 6154567b-875f-416c-903b-b171a4d4eefc pending |
+| v1 | 2026-06-29 | Initial next-best FX cointegration basket build | Built from the 12760 two-leg basket pattern |
 
 

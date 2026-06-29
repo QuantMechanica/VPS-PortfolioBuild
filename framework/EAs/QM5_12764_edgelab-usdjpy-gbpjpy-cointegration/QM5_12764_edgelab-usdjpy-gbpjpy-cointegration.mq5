@@ -75,7 +75,7 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_z_lookback_d1     = 60;
-input double strategy_beta              = 0.01;
+input double strategy_beta              = 0.992629;
 input double strategy_entry_z           = 2.0;
 input double strategy_exit_z            = 0.5;
 input int    strategy_atr_period_d1     = 20;
@@ -120,10 +120,10 @@ bool Strategy_EnsureBasketScope()
    if(g_basket_scope_ready)
       return true;
 
-   // GBPJPY needs USDJPY conversion history for USD-denominated tester
-   // accounting; USDJPY itself already settles in USD.
-   string allowed[3] = {"USDJPY.DWX", "GBPJPY.DWX", "USDJPY.DWX"};
-   for(int i = 0; i < 3; ++i)
+   // USDJPY is both the spread numerator and the USD conversion history
+   // required for the GBPJPY leg under USD-denominated tester accounting.
+   string allowed[2] = {"USDJPY.DWX", "GBPJPY.DWX"};
+   for(int i = 0; i < 2; ++i)
       SymbolSelect(allowed[i], true);
 
    QM_SymbolGuardInit(allowed);

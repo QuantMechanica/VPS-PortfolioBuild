@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12764
 ; ea_slug:      edgelab-usdjpy-gbpjpy-cointegration
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   bf47611f8d9ae74b7f316c76743d9610da87dd9182073613ae64ee304264337e
+; build_hash:   fa2966f665c967b4a8b33f810d498f6560a9f1c8aaf475128f5e9cc3208a603d
 ; author:       Development
 ; date:         2026-06-29
 ;==========================================================
@@ -39,7 +39,7 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card
 strategy_z_lookback_d1=60
-strategy_beta=0.01
+strategy_beta=0.992629
 strategy_entry_z=2.0
 strategy_exit_z=0.5
 strategy_atr_period_d1=20
