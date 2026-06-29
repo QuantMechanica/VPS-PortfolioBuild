@@ -13883,3 +13883,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12796,carver-vol-trend,4,XAGUSD.DWX,127960004,2026-06-30,Development,active
 12796,carver-vol-trend,5,XTIUSD.DWX,127960005,2026-06-30,Development,active
 12796,carver-vol-trend,6,XNGUSD.DWX,127960006,2026-06-30,Development,active
+12810,wti-month-orb,0,XTIUSD.DWX,128100000,2026-06-30,Development,active
