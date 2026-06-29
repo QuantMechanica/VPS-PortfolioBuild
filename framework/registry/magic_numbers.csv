@@ -13876,3 +13876,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12785,timerangebreakout-orb,8,GBPJPY.DWX,127850008,2026-06-30,Development,active
 12785,timerangebreakout-orb,9,NZDJPY.DWX,127850009,2026-06-30,Development,active
 12809,eia-jetfuel-brk,0,XTIUSD.DWX,128090000,2026-06-30,Development,active
+12796,carver-vol-trend,0,NDX.DWX,127960000,2026-06-30,Development,active
+12796,carver-vol-trend,1,SP500.DWX,127960001,2026-06-30,Development,active
+12796,carver-vol-trend,2,GDAXI.DWX,127960002,2026-06-30,Development,active
+12796,carver-vol-trend,3,XAUUSD.DWX,127960003,2026-06-30,Development,active
+12796,carver-vol-trend,4,XAGUSD.DWX,127960004,2026-06-30,Development,active
+12796,carver-vol-trend,5,XTIUSD.DWX,127960005,2026-06-30,Development,active
+12796,carver-vol-trend,6,XNGUSD.DWX,127960006,2026-06-30,Development,active
