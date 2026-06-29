@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        11894
 ; ea_slug:      carter-55-smma-channel-wpr-stoch
@@ -10,7 +10,7 @@
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   8a1b5a301b3fa11121eb3a68bdb9dbd8b51093042d369472d80a7f9a54122c8e
 ; author:       Development
 ; date:         2026-06-18
 ;==========================================================
