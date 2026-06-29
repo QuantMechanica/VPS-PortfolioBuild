@@ -12,15 +12,15 @@ created_by: Codex
 
 # Time Series Momentum
 
-Canonical source for the `wti-tsmom12m` and
-`tsmom-9m-commodity-xtiusd` cards.
+Canonical source for the `wti-tsmom12m`,
+`tsmom-9m-commodity-xtiusd`, and `xng-tsmom12m-atr` cards.
 
 ## Source Scope
 
 This source documents the broad time-series-momentum finding across liquid
-futures markets, including commodities. The QM card ports the source's
-structural rule to the DWX-tradable WTI CFD, `XTIUSD.DWX`, using only MT5 D1
-price history and broker calendar state at runtime.
+futures markets, including commodities. QM cards port the source's structural
+rule to DWX-tradable energy CFDs such as `XTIUSD.DWX` and `XNGUSD.DWX`, using
+only MT5 D1 price history and broker calendar state at runtime.
 
 ## Extraction Notes
 
@@ -33,6 +33,8 @@ price history and broker calendar state at runtime.
   return-sign momentum package requiring both horizons to agree.
 - Extracted strategy: monthly WTI 12-month return-sign momentum package gated
   by a fixed ATR-as-percent-of-price volatility corridor.
+- Extracted strategy: monthly natural-gas 12-month return-sign momentum package
+  gated by a fixed ATR-as-percent-of-price volatility corridor.
 - Runtime data deliberately excludes futures curves, open interest, inventory
   feeds, analyst forecasts, CSVs, APIs, and ML models.
 - The EAs should be tested as energy sleeves, not as replacements for existing
