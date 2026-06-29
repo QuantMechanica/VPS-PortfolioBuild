@@ -6,10 +6,12 @@
   "tester_deposit": 100000,
   "basket_symbols": [
     "AUDUSD.DWX",
-    "EURJPY.DWX"
+    "EURJPY.DWX",
+    "EURUSD.DWX",
+    "USDJPY.DWX"
   ],
   "notes": [
     "Two-leg AUDUSD/EURJPY market-neutral FX cointegration candidate from the 2026-06-09 66-pair scan rerun. It did not clear the original hard survivor bar; DEV Sharpe was positive but OOS net Sharpe was negative. It is the next unbuilt rank-25 tail pair after the existing 12532/12533/12624/12712/12723/12728/12731/12732/12735/12739/12747/12749/12751/12756/12758/12760/12762/12764/12765/12766/12768/12770/12772/12776 baskets.",
-    "Q02 uses USD tester currency and the canonical RISK_FIXED=1000 budget. The EA selects AUDUSD/EURJPY and USDJPY conversion history for USD-denominated EURJPY accounting."
+    "Q02 uses USD tester currency and the canonical RISK_FIXED=1000 budget. AUDUSD.DWX and EURJPY.DWX are the traded legs; EURUSD.DWX and USDJPY.DWX are declared only as custom-symbol conversion history for USD-denominated EURJPY accounting."
   ]
 }

@@ -54,12 +54,14 @@ built.
 **Designed for:**
 - AUDUSD.DWX - leg 1 of the fixed AUDUSD/EURJPY spread and the spread numerator.
 - EURJPY.DWX - leg 2 of the fixed AUDUSD/EURJPY spread and the beta-weighted spread denominator.
+- EURUSD.DWX and USDJPY.DWX - custom-symbol conversion history only, preloaded
+  for EURJPY accounting in the USD-denominated tester.
 
 **Explicitly not for:**
 - Other `.DWX` symbols. This card is a fixed two-leg FX-cross basket, not a portable multi-pair strategy.
 
-USDJPY.DWX is selected as conversion history for USD-denominated tester
-accounting of the EURJPY leg.
+EURUSD.DWX and USDJPY.DWX are selected as conversion history for
+USD-denominated tester accounting of the EURJPY leg. They are not traded legs.
 
 ---
 
@@ -121,9 +123,19 @@ Q02 handoff: build task `e6ac4aae-f214-40f0-b037-1a9eeea4e2f8` was recorded
 on 2026-06-29 and auto-enqueued one logical basket work item,
 `8f0e511f-0f93-42eb-b2c5-b07e1f7a6f1e`, for
 `QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1`. The Q02 payload includes the
-basket manifest, AUDUSD/EURJPY basket legs, USDJPY conversion history,
+basket manifest, AUDUSD/EURJPY basket legs, EURUSD/USDJPY conversion history,
 `tester_currency=USD`, `tester_deposit=100000`, `RISK_FIXED=1000`, and a
-120-minute paced-fleet timeout.
+120-minute paced-fleet timeout. The first Q02 attempt failed with
+`NO_HISTORY`/`INCOMPLETE_RUNS` after the tester synchronized `EURUSD.DWX` but
+then fell through to bare `USDJPY`; v1-q02-conversion preloads both conversion
+legs as `.DWX` symbols before framework initialization.
+
+Repair handoff: the repaired build was strict-compiled on 2026-06-29 with 0
+errors and 0 warnings, build-check PASS, and the existing build task was
+re-recorded with refreshed hashes. `record-build` auto-enqueued replacement Q02
+work item `7f04ff6a-35ca-45bd-a702-afc37b310f97` for the same logical basket
+symbol. The prior `8f0e511f-0f93-42eb-b2c5-b07e1f7a6f1e` row remains terminal
+as the original infra-fail evidence.
 
 ---
 
@@ -133,3 +145,4 @@ basket manifest, AUDUSD/EURJPY basket legs, USDJPY conversion history,
 |---|---|---|---|
 | v1 | 2026-06-29 | Initial rank-25 next-unbuilt FX cointegration basket build | Built from the 12772 two-leg basket pattern |
 | v1-q02 | 2026-06-29 | Build recorded and logical basket Q02 enqueued | build task `e6ac4aae-f214-40f0-b037-1a9eeea4e2f8`; work item `8f0e511f-0f93-42eb-b2c5-b07e1f7a6f1e` enqueued |
+| v1-q02-conversion | 2026-06-29 | Q02 conversion-history repair | Preloaded `EURUSD.DWX` and `USDJPY.DWX`; replacement Q02 work item `7f04ff6a-35ca-45bd-a702-afc37b310f97` enqueued |

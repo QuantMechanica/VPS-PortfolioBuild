@@ -120,10 +120,11 @@ bool Strategy_EnsureBasketScope()
    if(g_basket_scope_ready)
       return true;
 
-   // EURJPY needs USDJPY conversion history for USD-denominated tester
-   // accounting; AUDUSD already quotes in USD.
-   string allowed[3] = {"AUDUSD.DWX", "EURJPY.DWX", "USDJPY.DWX"};
-   for(int i = 0; i < 3; ++i)
+   // EURJPY accounting in a USD tester account can traverse EURUSD and USDJPY.
+   // Preload both custom-symbol conversion legs so MT5 never falls through to
+   // bare broker USDJPY history during the basket run.
+   string allowed[4] = {"AUDUSD.DWX", "EURJPY.DWX", "EURUSD.DWX", "USDJPY.DWX"};
+   for(int i = 0; i < 4; ++i)
       SymbolSelect(allowed[i], true);
 
    QM_SymbolGuardInit(allowed);
@@ -403,6 +404,8 @@ int OnInit()
   {
    SymbolSelect(g_leg_audusd, true);
    SymbolSelect(g_leg_eurjpy, true);
+   SymbolSelect("EURUSD.DWX", true);
+   SymbolSelect("USDJPY.DWX", true);
 
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
