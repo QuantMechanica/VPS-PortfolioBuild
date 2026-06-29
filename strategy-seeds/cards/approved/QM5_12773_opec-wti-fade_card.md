@@ -55,6 +55,30 @@ by an ATR-normalized distance. The thesis is structural post-event digestion:
 policy-window shocks can overshoot, and late continuation after the official
 window is tested as a mean-reversion entry.
 
+## Hypothesis
+
+OPEC ordinary-meeting windows can produce D1 WTI impulses that continue briefly
+after the policy-risk window has passed. When that late continuation leaves
+price stretched away from a slow D1 mean, a bounded fade may capture post-event
+digestion without forecasting the OPEC decision itself.
+
+## Rules
+
+- Trade only `XTIUSD.DWX` on D1.
+- Use only broker calendar, D1 OHLC, SMA, ATR, and framework filters.
+- Detect the largest qualifying June/December event-window impulse during days
+  1-14.
+- During days 15-24, fade same-direction continuation only when the prior
+  closed bar is ATR-stretched away from SMA(`strategy_trend_period`).
+- Exit on SMA mean reversion, fade-window end, max-hold expiry, Friday close,
+  or ATR hard stop.
+
+## Risk
+
+Backtests use `RISK_FIXED=1000` with `RISK_PERCENT=0`. The strategy opens at
+most one `XTIUSD.DWX` position per magic, never grids, never martingales, never
+uses ML, and does not read external OPEC/EIA/news/futures data at runtime.
+
 This is deliberately different from:
 
 - `QM5_12598_opec-wti-brk`: event-window Donchian breakout continuation during
