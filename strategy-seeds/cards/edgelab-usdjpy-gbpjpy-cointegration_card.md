@@ -153,4 +153,4 @@ judge.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-06-29 | initial OOS-positive next-best FX cointegration basket build | G0 | APPROVED |
-
+| v1-q02 | 2026-06-29 | build task 6876bf40-5fd9-4445-a7b4-b658b895fb88 recorded | Q02 | PENDING work item dea115dd-02b5-4c27-a29f-98013541fc3c |

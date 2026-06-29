@@ -114,9 +114,10 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 `tester_deposit=100000`. The logical basket backtest setfile uses the canonical
 `RISK_FIXED=1000`, with `RISK_PERCENT=0`.
 
-Q02 queue note: after build recording, enqueue exactly one logical-basket work
-item for `QM5_12764_USDJPY_GBPJPY_COINTEGRATION_D1`. No per-leg Q02 fanout is
-valid for this basket.
+Q02 queue note: `farmctl record-build` inserted one logical-basket work item
+`dea115dd-02b5-4c27-a29f-98013541fc3c` for
+`QM5_12764_USDJPY_GBPJPY_COINTEGRATION_D1` on 2026-06-29. No per-leg Q02
+fanout was created.
 
 ---
 
@@ -125,5 +126,6 @@ valid for this basket.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-29 | Initial next-best FX cointegration basket build | Built from the 12760 two-leg basket pattern |
+| v1-q02 | 2026-06-29 | Build task 6876bf40-5fd9-4445-a7b4-b658b895fb88 recorded | Pending logical-basket work item dea115dd-02b5-4c27-a29f-98013541fc3c |
 
 
