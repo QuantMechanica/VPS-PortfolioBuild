@@ -13826,3 +13826,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12706,xngusd-seasonal-dual-peak,0,XNGUSD.DWX,127060000,2026-06-29,Development,active
 12617,tsmom-12m-fx-usdjpy,0,USDJPY.DWX,126170000,2026-06-29,Development,active
 12769,eia-xng-lng-brk,0,XNGUSD.DWX,127690000,2026-06-29,Development,active
+12770,edgelab-eurusd-eurgbp-cointegration,0,EURUSD.DWX,127700000,2026-06-29,Development,active
+12770,edgelab-eurusd-eurgbp-cointegration,1,EURGBP.DWX,127700001,2026-06-29,Development,active

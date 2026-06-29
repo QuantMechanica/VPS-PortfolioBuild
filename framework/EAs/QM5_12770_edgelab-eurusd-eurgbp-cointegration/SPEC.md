@@ -116,6 +116,14 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 No manual tester run was launched from this build session; Q02 is enqueued by
 `farmctl record-build`.
 
+Q02 queue note: build task `dd64c930-550b-41e6-9d3a-807b184f9cb8`
+recorded successfully and enqueued one logical-basket work item for
+`QM5_12770_EURUSD_EURGBP_COINTEGRATION_D1`:
+`118ab93b-8df8-47a2-85d1-79b4ab0e1eaa`. The auto-enqueued row was updated in
+place with full basket metadata, risk, tester deposit/currency, scan metrics,
+and a 120-minute basket timeout; no duplicate Q02 row or manual MT5 launch was
+created.
+
 ---
 
 ## Revision History
@@ -123,3 +131,4 @@ No manual tester run was launched from this build session; Q02 is enqueued by
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-29 | Initial rank-22 next-unbuilt FX cointegration basket build | Built from the 12768 two-leg basket pattern |
+| v1-q02 | 2026-06-29 | Compile/build-check PASS and Q02 enqueued | Pending logical-basket work item 118ab93b-8df8-47a2-85d1-79b4ab0e1eaa |
