@@ -1,0 +1,82 @@
+{
+  "task_id": "e7971930-4133-4701-9736-beaecfb48717",
+  "ea_id": "QM5_12785",
+  "slug": "timerangebreakout-orb",
+  "ea_dir": "framework/EAs/QM5_12785_timerangebreakout-orb",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12785_timerangebreakout-orb\\QM5_12785_timerangebreakout-orb.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12785_timerangebreakout-orb\\QM5_12785_timerangebreakout-orb.ex5",
+  "magic_base": 127850000,
+  "symbols_registered": [
+    "NDX.DWX",
+    "SP500.DWX",
+    "GDAXI.DWX",
+    "XAUUSD.DWX",
+    "USDJPY.DWX",
+    "EURJPY.DWX",
+    "AUDJPY.DWX",
+    "CADJPY.DWX",
+    "GBPJPY.DWX",
+    "NZDJPY.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12785_timerangebreakout-orb\\sets\\QM5_12785_timerangebreakout-orb_AUDJPY.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12785_timerangebreakout-orb\\sets\\QM5_12785_timerangebreakout-orb_CADJPY.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12785_timerangebreakout-orb\\sets\\QM5_12785_timerangebreakout-orb_EURJPY.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12785_timerangebreakout-orb\\sets\\QM5_12785_timerangebreakout-orb_GBPJPY.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12785_timerangebreakout-orb\\sets\\QM5_12785_timerangebreakout-orb_GDAXI.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12785_timerangebreakout-orb\\sets\\QM5_12785_timerangebreakout-orb_NDX.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12785_timerangebreakout-orb\\sets\\QM5_12785_timerangebreakout-orb_NZDJPY.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12785_timerangebreakout-orb\\sets\\QM5_12785_timerangebreakout-orb_SP500.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12785_timerangebreakout-orb\\sets\\QM5_12785_timerangebreakout-orb_USDJPY.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12785_timerangebreakout-orb\\sets\\QM5_12785_timerangebreakout-orb_XAUUSD.DWX_M15_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12785_timerangebreakout-orb\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260629_222143\\QM5_12785_timerangebreakout-orb.compile.log",
+  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260629_222143.json",
+  "source_hash_sha256": "ae99884bde1ceb27d3b1401dd9e40e6ca5f14684e4f93455a80fa43987f26ee8",
+  "ex5_hash_sha256": "d4297e0eb32676743eeebdf95c28473ffd72bb0624b1761c0c087e30650f267a",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "backtest_cpu_ceiling: T1-T5 active with metatester64 processes at 2026-06-29T22:22Z; Q02 delegated to paced farm workers",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": [
+    "No manual smoke launched because T1-T5 factory slots were already active; Q02 is delegated to paced workers.",
+    "GBPJPY.DWX and NZDJPY.DWX use the generic Asian JPY profile because the approved card listed those pairs but did not provide exact tuned minutes."
+  ],
+  "q02_enqueue": {
+    "command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --apply --ea QM5_12785 --queue-ceiling 10000 --max-part2-per-run 0",
+    "result": "PASS",
+    "enqueued": 3,
+    "deferred": 7,
+    "skip_reasons": {
+      "staged_deferred_symbol": 7
+    },
+    "work_items": [
+      {
+        "id": "90b80346-bcce-40f8-a5ca-022e1c39d1b4",
+        "symbol": "AUDJPY.DWX",
+        "status": "pending",
+        "phase": "Q02"
+      },
+      {
+        "id": "865a5be5-16fb-47d2-b7b4-3ecaca474b37",
+        "symbol": "GDAXI.DWX",
+        "status": "pending",
+        "phase": "Q02"
+      },
+      {
+        "id": "0e05e1a3-37e6-4f94-af92-779a9ec7e3e4",
+        "symbol": "XAUUSD.DWX",
+        "status": "pending",
+        "phase": "Q02"
+      }
+    ]
+  },
+  "live_scope": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  }
+}

@@ -13865,3 +13865,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12791,monday-range-breakout,3,AUDUSD.DWX,127910003,2026-06-29,Development,active
 12807,xng-52w-anchor,0,XNGUSD.DWX,128070000,2026-06-29,Development,active
 12808,ftmo-xti-pb,0,XTIUSD.DWX,128080000,2026-06-29,Development,active
+12785,timerangebreakout-orb,0,NDX.DWX,127850000,2026-06-30,Development,active
+12785,timerangebreakout-orb,1,SP500.DWX,127850001,2026-06-30,Development,active
+12785,timerangebreakout-orb,2,GDAXI.DWX,127850002,2026-06-30,Development,active
+12785,timerangebreakout-orb,3,XAUUSD.DWX,127850003,2026-06-30,Development,active
+12785,timerangebreakout-orb,4,USDJPY.DWX,127850004,2026-06-30,Development,active
+12785,timerangebreakout-orb,5,EURJPY.DWX,127850005,2026-06-30,Development,active
+12785,timerangebreakout-orb,6,AUDJPY.DWX,127850006,2026-06-30,Development,active
+12785,timerangebreakout-orb,7,CADJPY.DWX,127850007,2026-06-30,Development,active
+12785,timerangebreakout-orb,8,GBPJPY.DWX,127850008,2026-06-30,Development,active
+12785,timerangebreakout-orb,9,NZDJPY.DWX,127850009,2026-06-30,Development,active
