@@ -114,8 +114,10 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 `tester_deposit=100000`. The logical basket backtest setfile uses the canonical
 `RISK_FIXED=1000`, with `RISK_PERCENT=0`.
 
-Q02 queue note: pending build record. The logical basket symbol is
-`QM5_12768_USDJPY_EURJPY_COINTEGRATION_D1`; no per-leg Q02 fanout should be
+Q02 queue note: build task `50b8f15b-11ff-4cf3-ae31-4f8534ce5a82`
+was recorded and enqueued one logical-basket Q02 work item for
+`QM5_12768_USDJPY_EURJPY_COINTEGRATION_D1`:
+`93909a80-8ce6-4e95-be28-889f8dc17a7d`. No per-leg Q02 fanout was
 created.
 
 ---
@@ -125,5 +127,6 @@ created.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-29 | Initial rank-21 next-unbuilt FX cointegration basket build | Built from the 12764 two-leg JPY-cross basket pattern |
+| v1-q02 | 2026-06-29 | Compile/build-check PASS and Q02 enqueued | Pending logical-basket work item 93909a80-8ce6-4e95-be28-889f8dc17a7d |
 
 
