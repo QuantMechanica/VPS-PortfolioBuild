@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2a6e5a36b35179d897be960de348a261a7f5761f90ba86ded58781934f3fa784
+; build_hash:   79e4fb2217fbc3fbe937580e665b813e7ee49c5781fe34648034efa84143e65a
 ; author:       Development
 ; date:         2026-06-28
 ;==========================================================
@@ -19,9 +19,15 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+; Q02 structural baseline: keep all news axes explicitly off to avoid non-strategy init dependencies.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
 ; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
+qm_filter_news_enabled=0
+qm_filter_news_mode=0
 qm_filter_regime_enabled=0
 qm_filter_regime_lookback_bars=100
 qm_filter_regime_bull_return_pct=2.0
