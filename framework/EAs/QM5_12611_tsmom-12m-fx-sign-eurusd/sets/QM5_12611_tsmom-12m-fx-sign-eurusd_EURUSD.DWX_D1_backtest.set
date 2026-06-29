@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a59c27e6be1f784ad3b208411658a6e9e7bd42930787583138933089a3f2b1bb
+; build_hash:   ebe70b26e28e330b0eb1936695a24f38c2fe0e7288512a21fbafebfe8fe30133
 ; author:       Development
 ; date:         2026-06-29
 ;==========================================================
@@ -31,4 +31,10 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12611_tsmom-12m-fx-sign-eurusd.md
+strategy_lookback_d1_bars=252
+strategy_min_d1_bars=275
+strategy_atr_period=14
+strategy_atr_sl_mult=3.0
+strategy_spread_days=20
+strategy_spread_mult=3.0
