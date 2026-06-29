@@ -169,3 +169,4 @@ burn-in would be assigned by the standard portfolio pipeline after all gates.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-06-29 | initial rank-20 next-unbuilt FX cointegration basket build | G0 | APPROVED |
+| v1-q02 | 2026-06-29 | build task 2e99cc4b-453a-4b75-84a7-81ea844c8ff0 recorded and logical-basket Q02 enqueued | Q02 | PENDING c097d38d-f428-4c8b-a90c-104d1e072c0d |
