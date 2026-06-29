@@ -1,10 +1,16 @@
 # QM5_10180 tv-fut-ema-rsi-pull
 
-## Strategy Logic
+**EA ID:** QM5_10180
+**Slug:** tv-fut-ema-rsi-pull
+**Source:** 30591366-874b-5bee-b47c-da2fca20b728
+**Build Task:** d5bfd0ec-557a-400e-9245-df545e90bfb4
+**Updated:** 2026-06-29
+
+## 1. Strategy Logic
 
 Trades a futures-style trend pullback continuation on the chart timeframe. EMA(100) defines trend direction on the last closed bar. Long entries require close > EMA(100) and RSI(14) <= 35. Short entries require close < EMA(100) and RSI(14) >= 65. Entries use market orders with ATR bracket exits fixed at entry. One position per magic is enforced by the framework.
 
-## Parameters
+## 2. Parameters
 
 | Input | Default | Range | Meaning |
 |---|---:|---|---|
@@ -20,22 +26,22 @@ Trades a futures-style trend pullback continuation on the chart timeframe. EMA(1
 | `strategy_session_start_h` | 0 | 0-23 | Session start hour, broker time |
 | `strategy_session_end_h` | 23 | 0-23 | Session end hour, broker time |
 
-## Symbol Universe
+## 3. Symbol Universe
 
 Primary DWX port: `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`, `XAUUSD.DWX`. The card states `GDAXI.DWX`; this build uses `GDAXI.DWX` because it is the matrix-valid DAX symbol. `SP500.DWX` is noted by the card as optional and backtest-only, but is not part of the primary registered basket.
 
-## Timeframe
+## 4. Timeframe
 
 Primary build timeframe is M15, selected from the card phrase "M15 or M30" by taking the first listed timeframe. The EA uses the chart timeframe for all indicators and the 32-bar time stop.
 
-## Expected Behaviour
+## 5. Expected Behaviour
 
 The card estimates about 140 trades per year per symbol. Typical holding time is intraday to 32 bars unless SL or TP is hit first. The strategy should prefer directional markets with pullbacks into trend and can struggle in choppy sideways regimes.
 
-## Source Citation
+## 6. Source Citation
 
 TradingView script `All-Day Futures Trend Pullback (EMA + RSI) [v5]`, author `bradenstrock`, published 2026-03-05. Source ID: `30591366-874b-5bee-b47c-da2fca20b728`.
 
-## Risk Model
+## 7. Risk Model
 
 Backtests use V5 fixed risk via `RISK_FIXED = 1000.0` and `RISK_PERCENT = 0.0`. Live deployment uses `RISK_PERCENT = 0.5` with `RISK_FIXED = 0.0` in live setfiles after pipeline approval.

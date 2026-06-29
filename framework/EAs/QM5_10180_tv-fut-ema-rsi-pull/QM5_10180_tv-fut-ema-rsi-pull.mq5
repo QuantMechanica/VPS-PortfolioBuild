@@ -151,15 +151,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(strategy_atr_sl_mult <= 0.0 || strategy_atr_tp_mult <= 0.0)
       return false;
 
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double ema = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
+   const int trend_state = QM_Sig_Price_Above_MA(_Symbol, _Period, strategy_ema_period, 0.0, 1);
    const double rsi = QM_RSI(_Symbol, _Period, strategy_rsi_period, 1);
    const double atr = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
-   if(close1 <= 0.0 || ema <= 0.0 || rsi <= 0.0 || atr <= 0.0)
+   if(trend_state == 0 || rsi <= 0.0 || atr <= 0.0)
       return false;
 
-   const bool long_signal = (close1 > ema && rsi <= strategy_rsi_long_level);
-   const bool short_signal = (close1 < ema && rsi >= strategy_rsi_short_level);
+   const bool long_signal = (trend_state > 0 && rsi <= strategy_rsi_long_level);
+   const bool short_signal = (trend_state < 0 && rsi >= strategy_rsi_short_level);
    if(!long_signal && !short_signal)
       return false;
 
