@@ -73,7 +73,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const int bars_needed = MathMax(strategy_xr, strategy_daysback + 1);
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, PERIOD_H1, 1, bars_needed, rates);
+   const int copied = CopyRates(_Symbol, PERIOD_H1, 1, bars_needed, rates); // perf-allowed: OnTick gates this hook with QM_IsNewBar(); structural range/stddev needs closed H1 bars.
    if(copied < bars_needed)
       return false;
 
