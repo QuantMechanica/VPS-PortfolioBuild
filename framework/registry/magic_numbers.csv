@@ -13810,3 +13810,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12763,wti-ref-sqz-brk,0,XTIUSD.DWX,127630000,2026-06-29,Development,active
 12764,edgelab-usdjpy-gbpjpy-cointegration,0,USDJPY.DWX,127640000,2026-06-29,Development,active
 12764,edgelab-usdjpy-gbpjpy-cointegration,1,GBPJPY.DWX,127640001,2026-06-29,Development,active
+12614,tsmom-6m-fx-basket-3pair,0,EURUSD.DWX,126140000,2026-06-29,Development,active
+12614,tsmom-6m-fx-basket-3pair,1,GBPUSD.DWX,126140001,2026-06-29,Development,active
+12614,tsmom-6m-fx-basket-3pair,2,USDJPY.DWX,126140002,2026-06-29,Development,active
