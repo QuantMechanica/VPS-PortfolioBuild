@@ -117,6 +117,14 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 No manual tester run is launched from this build session; Q02 is delegated to
 the paced farm workers through the logical basket setfile.
 
+Q02 handoff: build task `e6ac4aae-f214-40f0-b037-1a9eeea4e2f8` was recorded
+on 2026-06-29 and auto-enqueued one logical basket work item,
+`8f0e511f-0f93-42eb-b2c5-b07e1f7a6f1e`, for
+`QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1`. The Q02 payload includes the
+basket manifest, AUDUSD/EURJPY basket legs, USDJPY conversion history,
+`tester_currency=USD`, `tester_deposit=100000`, `RISK_FIXED=1000`, and a
+120-minute paced-fleet timeout.
+
 ---
 
 ## Revision History
@@ -124,3 +132,4 @@ the paced farm workers through the logical basket setfile.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-29 | Initial rank-25 next-unbuilt FX cointegration basket build | Built from the 12772 two-leg basket pattern |
+| v1-q02 | 2026-06-29 | Build recorded and logical basket Q02 enqueued | build task `e6ac4aae-f214-40f0-b037-1a9eeea4e2f8`; work item `8f0e511f-0f93-42eb-b2c5-b07e1f7a6f1e` enqueued |

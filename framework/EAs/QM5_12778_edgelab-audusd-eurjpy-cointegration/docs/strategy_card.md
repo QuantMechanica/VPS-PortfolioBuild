@@ -174,6 +174,13 @@ gates.
 
 ## Pipeline History
 
+Q02 handoff: build task `e6ac4aae-f214-40f0-b037-1a9eeea4e2f8` was recorded
+on 2026-06-29 and auto-enqueued one logical basket work item,
+`8f0e511f-0f93-42eb-b2c5-b07e1f7a6f1e`, for
+`QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1`. No manual tester run was launched;
+the paced farm owns the first Q02 tester pass.
+
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-06-29 | initial rank-25 next-unbuilt FX cointegration basket card | G0 | APPROVED |
+| v1-q02 | 2026-06-29 | build recorded; logical basket Q02 auto-enqueued | Q02 | ENQUEUED |

@@ -1,0 +1,115 @@
+{
+  "task_id": "e6ac4aae-f214-40f0-b037-1a9eeea4e2f8",
+  "ea_id": "QM5_12778",
+  "slug": "edgelab-audusd-eurjpy-cointegration",
+  "strategy": "AUDUSD/EURJPY D1 market-neutral FX cointegration basket",
+  "source_id": "claude_cross_asset_discovery_2026-06-09",
+  "source_citation": "Chan, Ernest P. (2009). Quantitative Trading. Wiley, Chapter 7 stationarity and cointegration; plus QuantMechanica in-house 66-pair FX cointegration scan rerun on Darwinex .DWX D1 data.",
+  "symbols": [
+    "AUDUSD.DWX",
+    "EURJPY.DWX"
+  ],
+  "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+  "host_symbol": "AUDUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\edgelab-audusd-eurjpy-cointegration_card.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12778_edgelab-audusd-eurjpy-cointegration.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\basket_manifest.json",
+  "magic_base": 127780000,
+  "symbols_registered": [
+    "AUDUSD.DWX",
+    "EURJPY.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\sets\\QM5_12778_edgelab-audusd-eurjpy-cointegration_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1_D1_backtest.set"
+  ],
+  "mq5_sha256": "da93b73d7ee9a29025fe88cd5a0874d3a4d83f2b622fcac2d89270d8a6bc9221",
+  "ex5_sha256": "8f674fb13a637b923fc4ffc69d14dc995f02a277a9d51c433de2ee09ed21553e",
+  "setfile_header_build_hash": "48e808036467e5febfdda5f71dfb276083919cbd8337f1ed6a54825345773679",
+  "setfile_current_sha256": "92f8d34d9131cef8494b484167e7534732947b6447a3faf2e1aec2049e2d866e",
+  "scan_ranking": {
+    "source": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "hard_bar_survivor": false,
+    "rank_by_oos_net_sharpe": 25,
+    "dev_sharpe": 0.3598,
+    "oos_net_sharpe": -0.2240,
+    "oos_return_pct": -2.6162,
+    "oos_state_changes": 17,
+    "hedge_beta": 0.279193,
+    "half_life_days": 110.79,
+    "selection_note": "Next unbuilt FX cointegration pair after already-built 12532/12533/12624/12712/12723/12728/12731/12732/12735/12739/12747/12749/12751/12756/12758/12760/12762/12764/12765/12766/12768/12770/12772/12776 baskets."
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "AUDUSD.DWX",
+        "magic": 127780000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "EURJPY.DWX",
+        "magic": 127780001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "spec_validation": {
+    "result": "PASS",
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration"
+  },
+  "compile": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/QM5_12778_edgelab-audusd-eurjpy-cointegration.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260629_133716\\QM5_12778_edgelab-audusd-eurjpy-cointegration.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260629_133716\\summary.csv"
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12778_edgelab-audusd-eurjpy-cointegration -RepoRoot C:\\QM\\repo -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260629_133740.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "q02": {
+    "work_item_id": "8f0e511f-0f93-42eb-b2c5-b07e1f7a6f1e",
+    "status": "active",
+    "phase": "Q02",
+    "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "payload_repaired": true,
+    "payload_backup": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_12778_priority_payload_20260629_134317Z.sqlite",
+    "payload_note": "Auto-enqueued Q02 row was updated in place with basket manifest, basket symbols, USDJPY conversion symbol, RISK_FIXED=1000, tester currency/deposit, scan metrics, priority tracking, and 120-minute timeout."
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Paced fleet Q02 will run the first tester pass; no manual MT5 backtest was launched from this session.",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": [
+    "No manual backtest launched; Q02 is delegated to paced farm workers."
+  ],
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  },
+  "notes": "Built one non-duplicate exploratory AUDUSD/EURJPY FX cointegration basket. No live, T_Live, AutoTrading, or portfolio gate artifacts touched."
+}
