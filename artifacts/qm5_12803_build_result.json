@@ -1,0 +1,145 @@
+{
+  "task_id": "1827cfa5-fdde-4618-b200-64564bf095d7",
+  "ea_id": "QM5_12803",
+  "numeric_ea_id": 12803,
+  "slug": "edgelab-usdcad-euraud-cointegration",
+  "strategy": "USDCAD/EURAUD market-neutral FX cointegration basket",
+  "source_id": "claude_cross_asset_discovery_2026-06-09",
+  "source_citation": "Chan, Ernest P. (2009). Quantitative Trading, Chapter 7 stationarity and cointegration; QuantMechanica in-house 66-pair FX cointegration scan rerun on Darwinex .DWX D1 data.",
+  "created_at_local": "2026-06-29T18:54:05+02:00",
+  "symbols": [
+    "USDCAD.DWX",
+    "EURAUD.DWX"
+  ],
+  "conversion_symbols": [
+    "EURUSD.DWX",
+    "AUDUSD.DWX"
+  ],
+  "logical_symbol": "QM5_12803_USDCAD_EURAUD_COINTEGRATION_D1",
+  "host_symbol": "USDCAD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12803_edgelab-usdcad-euraud-cointegration",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12803_edgelab-usdcad-euraud-cointegration\\QM5_12803_edgelab-usdcad-euraud-cointegration.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12803_edgelab-usdcad-euraud-cointegration\\QM5_12803_edgelab-usdcad-euraud-cointegration.ex5",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12803_edgelab-usdcad-euraud-cointegration\\sets\\QM5_12803_edgelab-usdcad-euraud-cointegration_QM5_12803_USDCAD_EURAUD_COINTEGRATION_D1_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12803_edgelab-usdcad-euraud-cointegration\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12803_edgelab-usdcad-euraud-cointegration_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12803_edgelab-usdcad-euraud-cointegration_card.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12803_edgelab-usdcad-euraud-cointegration_card.md",
+  "repo_artifact_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12803_edgelab-usdcad-euraud-cointegration.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12803_edgelab-usdcad-euraud-cointegration\\basket_manifest.json",
+  "prompt_path": "D:\\QM\\strategy_farm\\queue\\codex_build_1827cfa5-fdde-4618-b200-64564bf095d7.md",
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260629_185345\\QM5_12803_edgelab-usdcad-euraud-cointegration.compile.log",
+  "compile_summary": "D:\\QM\\reports\\compile\\20260629_185345\\summary.csv",
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260629_185405.json",
+  "mq5_sha256": "85d2d939d56c7f06e8a3952465ab83f4fc41cd983e9fb8e6b21405b2a2e26581",
+  "ex5_sha256": "e9f15518e3df1b7bbe84d537330e6d2bfbf17e4d6ce0f174bcb59bccdf7cdb09",
+  "setfile_sha256": "912fd15bcde05fbd55b2aab35db8816514751ac3c6296219b82973dc76c939dc",
+  "basket_manifest_sha256": "9d153a8b794b4a24f2aec92de88fb8982ee14e8879314a51585d35e9f12677e9",
+  "spec_sha256": "ad6315b832d20c65166ef63448799c5f2533af3b3b13356bf1133cbbdf82acb3",
+  "card_sha256": "30ae2a283752edd1e1b92de82191de2a94d0e225134db795ebed9e490962cef7",
+  "magic_base": 128030000,
+  "magic_rows": [
+    {
+      "ea_id": 12803,
+      "slot": 0,
+      "symbol": "USDCAD.DWX",
+      "magic": 128030000
+    },
+    {
+      "ea_id": 12803,
+      "slot": 1,
+      "symbol": "EURAUD.DWX",
+      "magic": 128030001
+    }
+  ],
+  "symbols_registered": [
+    "USDCAD.DWX",
+    "EURAUD.DWX"
+  ],
+  "scan_ranking": {
+    "source_script": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "source_report": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "selection_policy": "next unbuilt positive-hedge tail candidate after existing 12532/12533 and subsequent built baskets through 12786",
+    "hard_bar_survivor": false,
+    "rank_positive_hedge": 29,
+    "pair": "USDCAD~EURAUD",
+    "dev_sharpe": 0.5746,
+    "oos_net_sharpe": -0.8728,
+    "oos_return_pct": -5.8413,
+    "oos_state_changes": 13,
+    "hedge_beta": 0.466896958,
+    "half_life_days": 65.82
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1,
+    "timeframe": "D1",
+    "news_axes": "off"
+  },
+  "validation": {
+    "compile_one": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "metaeditor_exit_code": 1
+    },
+    "symbol_scope": {
+      "result": "BASKET_OK",
+      "violations": 0,
+      "foreign_symbols_referenced": [
+        "AUDUSD.DWX",
+        "EURUSD.DWX"
+      ],
+      "manifest_symbols": 4
+    },
+    "card_schema_lint": {
+      "status": "ok",
+      "ml_hits": [],
+      "missing_sections": []
+    },
+    "spec_validation": {
+      "ok": true,
+      "summary": "PASS  QM5_12803_edgelab-usdcad-euraud-cointegration"
+    },
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 16,
+      "warnings_scope": "shared framework include advisories"
+    }
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Paced fleet Q02 will run the first tester pass; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "fail_code": null,
+  "smoke_report_path": null,
+  "live_safety": {
+    "touched_t_live_manifest": false,
+    "toggled_autotrading": false,
+    "touched_portfolio_gate": false,
+    "launched_manual_backtest": false
+  },
+  "notes": [
+    "Structural low-frequency basket build only; no banned or ML indicators.",
+    "RISK_FIXED backtest setfile generated and stamped by build_check.",
+    "12532/12533 were checked and not blocked at Q02 before selecting this unbuilt pair.",
+    "Candidate is an exploratory tail pair from the same scan, not one of the two original hard survivors."
+  ],
+  "q02_enqueued": {
+    "recorded_at_utc": "2026-06-29T18:55:52Z",
+    "task_id": "1827cfa5-fdde-4618-b200-64564bf095d7",
+    "work_item_id": "6c344f79-282d-491c-81c6-2c3b3bd80538",
+    "work_item_short_id": "6c344f79",
+    "status": "pending",
+    "symbol": "QM5_12803_USDCAD_EURAUD_COINTEGRATION_D1",
+    "timeframe": "D1"
+  },
+  "card_history_synced_after_record": true
+}
