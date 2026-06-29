@@ -33,6 +33,9 @@ GEMINI_NODE_BUNDLE = Path(r"C:\Users\Administrator\AppData\Roaming\npm\node_modu
 # (2026-06-29). Headless via `agy -p`; auth = Windows Credential Manager (gemini:antigravity),
 # OWNER-authenticated, no API key. agy does NOT read stdin -> prompt passed as a -p file-pointer.
 AGY_BIN = Path(os.environ.get("LOCALAPPDATA", r"C:\Users\Administrator\AppData\Local")) / "agy" / "bin" / "agy.exe"
+# agy hangs on non-TTY stdout (redirected file/pipe). The ConPTY runner gives agy a real
+# pseudo-console via pywinpty so it runs headless; the runner forwards output to our stdout.
+CONPTY_RUNNER = REPO_ROOT / "tools" / "strategy_farm" / "agy_conpty_run.py"
 CLAUDE_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\claude.cmd")
 CODEX_HOME = Path(os.environ.get("CODEX_HOME", r"C:\Users\Administrator\.codex"))
 AGENT_USER_HOME = Path(r"C:\Users\Administrator")
@@ -254,6 +257,8 @@ def command_for(agent: str, cwd: Path, prompt_path: Path | None = None) -> list[
             else "Execute one single-pass QuantMechanica orchestration cycle, then exit."
         )
         return [
+            str(PYTHON_EXE),
+            str(CONPTY_RUNNER),
             cli,
             *model_args,
             "--dangerously-skip-permissions",

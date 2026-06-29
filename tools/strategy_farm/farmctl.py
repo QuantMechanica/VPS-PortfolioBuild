@@ -233,6 +233,8 @@ _GEMINI_NODE_BUNDLE = Path(r"C:\Users\Administrator\AppData\Roaming\npm\node_mod
 _CLAUDE_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\claude.cmd")
 # Antigravity CLI (agy) — the live backend for the "gemini" lane (gemini-cli is dead, 2026-06-29).
 _AGY_BIN = Path(os.environ.get("LOCALAPPDATA", r"C:\Users\Administrator\AppData\Local")) / "agy" / "bin" / "agy.exe"
+# ConPTY wrapper: agy hangs on non-TTY stdout; this runs it under a real pseudo-console (pywinpty).
+_CONPTY_RUNNER = Path(__file__).resolve().parent / "agy_conpty_run.py"
 _CODEX_HOME = Path(os.environ.get("CODEX_HOME", r"C:\Users\Administrator\.codex"))
 
 
@@ -5289,6 +5291,8 @@ def _spawn_gemini_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]
     # Antigravity CLI (agy): headless -p FILE-POINTER (agy ignores stdin); --add-dir
     # exposes the prompt file + repo to its workspace; yolo = --dangerously-skip-permissions.
     cmd = [
+        sys.executable,
+        str(_CONPTY_RUNNER),
         *launcher,
         "--dangerously-skip-permissions",
         "--print-timeout",
