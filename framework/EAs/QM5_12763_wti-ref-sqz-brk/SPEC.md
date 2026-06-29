@@ -76,3 +76,18 @@ runtime.
 
 No live manifest, `T_Live` file, AutoTrading setting, or portfolio gate is
 touched by this build.
+
+## 8. Repair History
+
+2026-06-29 Codex board-advisor repair:
+
+- Closed the blocked Codex pre-review finding by relying on the framework
+  `QM_IsNewBar()` gate only; the redundant file-scope D1 day gate is absent
+  from the current EA source.
+- Recompiled with `compile_one.ps1 -Strict`: PASS, 0 errors, 0 warnings.
+- Re-ran `build_check.ps1 -Strict`: PASS, 0 failures; remaining warnings are
+  shared-framework DWX advisory warnings.
+- Farm DB task `4b33dc46-796b-4689-a2c2-aece33cd466a` is `done`; Codex
+  pre-review task `52823734-3f45-47b4-ac29-31cc95dc9754` is `PASS`.
+- Q02 remains queued for `XTIUSD.DWX` via work item
+  `1c14b14f-88ee-4709-ba7b-0a94de7afb26`.
