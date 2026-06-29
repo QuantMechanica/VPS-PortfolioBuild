@@ -4,7 +4,7 @@
 **Slug:** carter-55-smma-channel-wpr-stoch
 **Source:** 9b7e5f31-2d68-5aa4-b914-d7e2f5c1a8b6 (see approved Strategy Card)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-29
 
 ---
 
@@ -104,3 +104,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | f3e82abc-5640-44f7-a480-e0e34603af62 |
+| v1.1 | 2026-06-29 | Q02 infra repair | Made all backtest setfiles explicit with card strategy defaults before re-enqueueing the deferred FX symbols blocked by prior ex5_missing preflights. |
