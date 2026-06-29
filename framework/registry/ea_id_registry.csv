@@ -3662,3 +3662,4 @@ QM5_1403,harmonic-5-0-pattern-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Dev
 12784,intraday-config-engine,intraday-config-engine,active,Research,2026-06-29
 12785,timerangebreakout-orb,timerangebreakout-orb,active,Research,2026-06-29
 12786,edgelab-usdchf-eurgbp-cointegration,claude_cross_asset_discovery_2026-06-09,active,Development,2026-06-29
+12787,vol-contraction-breakout,vol-contraction-breakout,active,Research,2026-06-29
