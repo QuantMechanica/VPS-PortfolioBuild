@@ -231,6 +231,8 @@ _CODEX_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\codex.cmd")
 _GEMINI_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\gemini.cmd")
 _GEMINI_NODE_BUNDLE = Path(r"C:\Users\Administrator\AppData\Roaming\npm\node_modules\@google\gemini-cli\bundle\gemini.js")
 _CLAUDE_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\claude.cmd")
+# Antigravity CLI (agy) — the live backend for the "gemini" lane (gemini-cli is dead, 2026-06-29).
+_AGY_BIN = Path(os.environ.get("LOCALAPPDATA", r"C:\Users\Administrator\AppData\Local")) / "agy" / "bin" / "agy.exe"
 _CODEX_HOME = Path(os.environ.get("CODEX_HOME", r"C:\Users\Administrator\.codex"))
 
 
@@ -258,22 +260,22 @@ def _codex_env() -> dict[str, str]:
 
 
 def _resolve_gemini_command() -> tuple[list[str], bool]:
-    """Return a headless Gemini command and whether it needs shell=True.
+    """Return a headless command for the 'gemini' lane (now Antigravity CLI 'agy').
 
-    On Windows scheduled tasks, the npm .cmd shim can enter the Gemini CLI's
-    pseudo-terminal path and fail with AttachConsole errors. Prefer direct
-    node + bundle execution, which works in headless prompt mode.
+    gemini-cli is deprecated/dead; agy is the live backend. Headless via 'agy -p'
+    (caller passes a -p FILE-POINTER; agy reads the prompt file via --add-dir,
+    since agy does not read stdin). Auth = Windows Credential Manager (no API key).
     """
     import shutil as _shutil
+    if _AGY_BIN.exists():
+        return [str(_AGY_BIN)], False
+    p = _shutil.which("agy")
+    if p:
+        return [p], False
     node = _shutil.which("node.exe") or _shutil.which("node")
     if node and _GEMINI_NODE_BUNDLE.exists():
-        return [node, str(_GEMINI_NODE_BUNDLE)], False
-    p = _shutil.which("gemini.cmd") or _shutil.which("gemini")
-    if p:
-        return [p], True
-    if _GEMINI_FALLBACK.exists():
-        return [str(_GEMINI_FALLBACK)], True
-    return ["gemini"], True
+        return [node, str(_GEMINI_NODE_BUNDLE)], False  # legacy fallback (dead cli)
+    return ["agy"], False
 
 
 def _gemini_env() -> dict[str, str]:
@@ -5284,20 +5286,23 @@ def _spawn_gemini_for_build(root: Path, task_row: sqlite3.Row) -> dict[str, Any]
             return {"spawned": False, "agent": "gemini", "reason": "live log activity within 60s - gemini likely still running", "task_id": task_row["id"]}
 
     launcher, shell_needed = _resolve_gemini_command()
+    # Antigravity CLI (agy): headless -p FILE-POINTER (agy ignores stdin); --add-dir
+    # exposes the prompt file + repo to its workspace; yolo = --dangerously-skip-permissions.
     cmd = [
         *launcher,
-        "--prompt",
-        "Execute the QuantMechanica EA build instructions from stdin.",
-        "--approval-mode",
-        "yolo",
-        "--skip-trust",
-        "--output-format",
-        "text",
-        "--include-directories",
+        "--dangerously-skip-permissions",
+        "--print-timeout",
+        "60m",
+        "--add-dir",
         str(REPO_ROOT),
+        "--add-dir",
+        str(Path(prompt_path).parent),
+        "-p",
+        f"Read the file '{prompt_path}' and execute its instructions exactly: it is a "
+        "QuantMechanica EA build contract. Write the required JSON result file and exit.",
     ]
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0  # type: ignore[attr-defined]
-    stdin_f = open(prompt_path, "rb")
+    stdin_f = open(os.devnull, "rb")
     stdout_f = open(live_log, "wb")
     proc = subprocess.Popen(
         cmd,
