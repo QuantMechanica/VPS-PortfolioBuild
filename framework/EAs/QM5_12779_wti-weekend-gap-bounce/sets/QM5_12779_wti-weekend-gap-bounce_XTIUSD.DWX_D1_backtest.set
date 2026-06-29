@@ -1,0 +1,48 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        12779
+; ea_slug:      wti-weekend-gap-bounce
+; ea_version:   v5.0
+; set_version:  s20260629-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   91211967c6d7f27c69675c90aff0037867327f908de4fb6326503502d51adb99
+; author:       Development
+; date:         2026-06-29
+;==========================================================
+qm_ea_id=12779
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=true
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card
+strategy_min_gap_pct=0.75
+strategy_atr_period=20
+strategy_atr_sl_mult=2.25
+strategy_max_hold_days=2
+strategy_max_spread_points=1000

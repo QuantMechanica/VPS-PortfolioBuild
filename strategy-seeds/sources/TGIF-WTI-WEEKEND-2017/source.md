@@ -9,6 +9,7 @@ created_by: Codex
 uri: https://jfi-aof.org/index.php/jfi/article/view/2264
 cards_extracted:
   - wti-weekend-gap-fade
+  - wti-weekend-gap-bounce
 ---
 
 # TGIF WTI Weekend Source
@@ -23,8 +24,10 @@ cards_extracted:
 ## Research Use
 
 This source is used for structural lineage around weekday/weekend return
-structure in energy commodities. The QM extraction mechanizes only one WTI CFD
-rule: a D1 Monday positive-weekend-gap fade on `XTIUSD.DWX`.
+structure in energy commodities. The QM extraction mechanizes two one-sided WTI
+CFD rules: a D1 Monday positive-weekend-gap fade on `XTIUSD.DWX`, and a
+separate D1 Monday negative-weekend-gap bounce that targets a fill back to the
+prior Friday close.
 
 The implementation does not import the paper's performance claims into QM. It
 uses the source only to justify a deterministic weekend-effect hypothesis, then
