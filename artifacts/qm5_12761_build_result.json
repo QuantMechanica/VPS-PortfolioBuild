@@ -1,0 +1,87 @@
+{
+  "task_id": "a7ebe3ab-b8ab-4c1b-a5d9-ca43c7419af2",
+  "ea_id": "QM5_12761",
+  "slug": "eia-xng-stor-idbrk",
+  "strategy": "EIA XNG Storage Inside-Day Breakout",
+  "source_id": "EIA-XNG-STOR-IDBRK-2026",
+  "source_citation": "U.S. Energy Information Administration. Weekly Natural Gas Storage Report and release schedule. URLs https://www.eia.gov/naturalgas/storage/ and https://www.eia.gov/naturalgas/schedule/",
+  "symbols": [
+    "XNGUSD.DWX"
+  ],
+  "logical_symbol": "XNGUSD.DWX",
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12761_eia-xng-stor-idbrk",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12761_eia-xng-stor-idbrk\\QM5_12761_eia-xng-stor-idbrk.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12761_eia-xng-stor-idbrk\\QM5_12761_eia-xng-stor-idbrk.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12761_eia-xng-stor-idbrk\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\eia-xng-stor-idbrk_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12761_eia-xng-stor-idbrk_card.md",
+  "repo_approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12761_eia-xng-stor-idbrk.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12761_eia-xng-stor-idbrk.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12761_eia-xng-stor-idbrk\\sets\\QM5_12761_eia-xng-stor-idbrk_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "mq5_sha256": "9f9b4e2984dce313aa0d721d1af437182a54f041fb4bbe4160c1ef840afd4504",
+  "ex5_sha256": "d130c8a672c3698009b43ae75c8a079e97116a2d28d5eb4bb1c6e67971f5c9cb",
+  "setfile_header_build_hash": "3ae108ffb87ea6bc68b9d85a6cbdb302fc06fc2fe285892847972016a5401cc1",
+  "setfile_current_sha256": "c4618fa8d2b9b08752e59e20bd413b8d0576d098ce6fff1ecc47a62d441751c6",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XNGUSD.DWX",
+        "magic": 127610000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework\\scripts\\compile_one.ps1 -EAPath framework\\EAs\\QM5_12761_eia-xng-stor-idbrk\\QM5_12761_eia-xng-stor-idbrk.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260629_000507\\QM5_12761_eia-xng-stor-idbrk.compile.log"
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework\\scripts\\build_check.ps1 -EALabel QM5_12761_eia-xng-stor-idbrk -Strict",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260629_000517.json",
+    "warning_note": "Warnings are shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Paced fleet Q02 will run the first tester pass; no manual MT5 backtest was launched from this session.",
+  "q02_enqueue": {
+    "enqueued": true,
+    "work_item_id": "1f99c20e-7bf7-4ed2-8589-43397c80e1a9",
+    "phase": "Q02",
+    "status": "pending",
+    "created_at": "2026-06-29T00:11:25+00:00",
+    "enqueued_by": "record_build_result.auto_q02",
+    "build_task_id": "a7ebe3ab-b8ab-4c1b-a5d9-ca43c7419af2",
+    "logical_symbol": "XNGUSD.DWX",
+    "host_symbol": "XNGUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12761_eia-xng-stor-idbrk\\sets\\QM5_12761_eia-xng-stor-idbrk_XNGUSD.DWX_D1_backtest.set",
+    "manual_backtest_launched": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  },
+  "notes": "Built one non-duplicate structural XNG storage-report inside-day breakout sleeve. No live, T_Live, AutoTrading, or portfolio gate artifacts touched."
+}
