@@ -16,6 +16,7 @@ indicators:
   - rolling-zscore
   - atr-stop
 target_symbols: [GBPUSD.DWX, GBPJPY.DWX]
+conversion_symbols: [USDJPY.DWX]
 logical_symbol: QM5_12760_GBPUSD_GBPJPY_COINTEGRATION_D1
 period: D1
 expected_trade_frequency: "D1 two-leg basket, approximately 4-8 logical spread packages/year."
@@ -66,6 +67,7 @@ standalone directional system.
 
 - Host symbol: GBPUSD.DWX.
 - Basket legs: GBPUSD.DWX and GBPJPY.DWX.
+- Conversion history: USDJPY.DWX for USD-denominated GBPJPY accounting; not a traded leg.
 - Logical symbol: QM5_12760_GBPUSD_GBPJPY_COINTEGRATION_D1.
 - Period: D1.
 - Backtest risk mode: RISK_FIXED.
@@ -133,7 +135,7 @@ cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 
 - [x] R1 reputable source: Chan cointegration method plus OWNER-requested in-house 66-pair scan.
 - [x] R2 mechanical: fixed beta, z-score entry/exit, ATR stop, broken-package close.
-- [x] R3 testable: GBPUSD.DWX and GBPJPY.DWX are Darwinex-native `.DWX` symbols in the exported scan data.
+- [x] R3 testable: GBPUSD.DWX and GBPJPY.DWX are Darwinex-native `.DWX` symbols in the exported scan data; USDJPY.DWX is available as conversion history.
 - [x] R4 compliant: no ML, no grid, no martingale, low-frequency D1.
 
 ## Framework Alignment
@@ -149,5 +151,6 @@ cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 |---|---|---|---|---|
 | v1 | 2026-06-29 | initial OOS-positive next-best FX cointegration basket build | G0 | APPROVED |
 | v1-q02 | 2026-06-29 | build task fa63237b-e268-475d-98a4-aa64147473c3 recorded | Q02 | PENDING work item 6154567b-875f-416c-903b-b171a4d4eefc |
+| v1-q02a | 2026-06-30 | pending Q02 row repaired in place with USDJPY conversion-history manifest scope, tester deposit, fixed-risk, priority, and timeout hints | Q02 | PENDING work item 6154567b-875f-416c-903b-b171a4d4eefc |
 
 

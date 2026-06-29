@@ -29,6 +29,34 @@ Date: 2026-06-29
 - Enqueued by: `record_build_result.auto_q02`
 - Duplicate pending/active count for same EA, phase, and logical symbol: `1`
 
+## 2026-06-30 Payload Repair
+
+The pending Q02 row remained unclaimed while newer basket rows had already
+advanced. The EA already selected and warmed `USDJPY.DWX` for GBPJPY conversion
+history, but `basket_manifest.json` only declared the two traded legs. The
+manifest now declares `GBPUSD.DWX`, `GBPJPY.DWX`, and `USDJPY.DWX`, with
+`USDJPY.DWX` documented as conversion history only.
+
+The existing Q02 row was repaired in place, not duplicated:
+
+| field | value |
+|---|---|
+| work item | `6154567b-875f-416c-903b-b171a4d4eefc` |
+| status after repair | `pending` |
+| basket_symbol_count | `3` |
+| tester_deposit | `100000` |
+| risk_fixed | `1000` |
+| timeout_min | `120` |
+| priority_track | `true` |
+| conversion_history_symbols | `USDJPY.DWX` |
+| updated_at UTC | `2026-06-29T22:33:21+00:00` |
+
+DB backup before mutation:
+
+```text
+D:\QM\strategy_farm\state\backups\farm_state_before_qm5_12760_priority_payload_20260629_223320Z.sqlite
+```
+
 ## Guardrails
 
 - No manual MT5 backtest launched in this session.

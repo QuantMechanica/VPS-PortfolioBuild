@@ -6,11 +6,12 @@
   "tester_deposit": 100000,
   "basket_symbols": [
     "GBPUSD.DWX",
-    "GBPJPY.DWX"
+    "GBPJPY.DWX",
+    "USDJPY.DWX"
   ],
   "notes": [
     "Two-leg GBPUSD/GBPJPY market-neutral FX cointegration candidate from the 2026-06-09 66-pair scan rerun. It did not clear the original hard survivor bar and has negative DEV Sharpe plus very low OOS Sharpe, but it is the strongest remaining unbuilt OOS-positive pair after the existing 12532/12533/12624/12712/12723/12728/12731/12732/12735/12739/12747/12749/12751/12756/12758 baskets.",
-    "Q02 uses USD tester currency and the canonical RISK_FIXED=1000 budget. The EA selects GBPUSD/GBPJPY plus USDJPY conversion history."
+    "Q02 uses USD tester currency and the canonical RISK_FIXED=1000 budget. GBPUSD.DWX and GBPJPY.DWX are the traded legs; USDJPY.DWX is declared only as custom-symbol conversion history for USD-denominated GBPJPY accounting."
   ]
 }
 

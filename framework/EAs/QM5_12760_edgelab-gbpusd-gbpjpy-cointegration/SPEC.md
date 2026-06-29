@@ -54,12 +54,15 @@ stronger exploratory candidates were already built.
 **Designed for:**
 - GBPUSD.DWX - leg 1 of the fixed GBPUSD/GBPJPY spread and the spread numerator.
 - GBPJPY.DWX - leg 2 of the fixed GBPUSD/GBPJPY spread and the beta-weighted spread denominator.
+- USDJPY.DWX - conversion-history dependency for USD-denominated GBPJPY accounting; not a traded leg.
 
 **Explicitly not for:**
 - Other `.DWX` symbols. This card is a fixed two-leg FX-cross basket, not a portable multi-pair strategy.
 
-The EA selects USDJPY.DWX as conversion history for the GBPJPY leg under
-USD-denominated tester accounting.
+The EA selects and warms USDJPY.DWX as conversion history for the GBPJPY leg
+under USD-denominated tester accounting. `basket_manifest.json` declares it so
+farm history checks cover every custom symbol the basket needs before Q02
+claims the logical row.
 
 ---
 
@@ -127,5 +130,6 @@ run was launched from this session.
 |---|---|---|---|
 | v1 | 2026-06-29 | Initial next-best FX cointegration basket build | Built from the 12758 two-leg basket pattern with USDJPY conversion history |
 | v1-q02 | 2026-06-29 | Build recorded and Q02 enqueued | Work item 6154567b-875f-416c-903b-b171a4d4eefc pending |
+| v1-q02a | 2026-06-30 | Q02 payload/manifest repair | Manifest now declares USDJPY.DWX conversion history; pending row payload refreshed with tester deposit, risk, priority, and timeout hints |
 
 
