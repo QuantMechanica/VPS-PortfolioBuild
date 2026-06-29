@@ -1,0 +1,59 @@
+{
+  "ea_id": "QM5_12808",
+  "slug": "ftmo-xti-pb",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "H4",
+  "built_at": "2026-06-29",
+  "source_id": "FTMO-MAR2026-XTI-PORTFOLIO",
+  "source_card": "strategy-seeds/cards/approved/QM5_12808_ftmo-xti-pb_card.md",
+  "ea_source": "framework/EAs/QM5_12808_ftmo-xti-pb/QM5_12808_ftmo-xti-pb.mq5",
+  "setfile": "framework/EAs/QM5_12808_ftmo-xti-pb/sets/QM5_12808_ftmo-xti-pb_XTIUSD.DWX_H4_backtest.set",
+  "source_hash_sha256": "401f55c1c17c92443c2b4921a14defba015676306507686386883de14362de27",
+  "setfile_hash_sha256": "e32d0755b40ed33466eaec2c56045ab7d4573bacaa78a558d116382f329b42e2",
+  "ex5_hash_sha256": "87c8f92d8ac6ba0af199d93bd43a518ad749002bda0ee5897accc415711569a1",
+  "risk_mode": {
+    "backtest": "RISK_FIXED",
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0
+  },
+  "validations": [
+    {
+      "command": "python framework\\scripts\\skill_card_schema_lint.py --card strategy-seeds\\cards\\approved\\QM5_12808_ftmo-xti-pb_card.md",
+      "result": "PASS",
+      "notes": "status ok, no ML hits, no missing sections"
+    },
+    {
+      "command": "python framework\\scripts\\validate_spec_doc.py framework\\EAs\\QM5_12808_ftmo-xti-pb",
+      "result": "PASS",
+      "notes": "1 PASS, 0 FAIL"
+    },
+    {
+      "command": "python tools\\strategy_farm\\validate_symbol_scope.py --ea-label QM5_12808_ftmo-xti-pb --verbose --fail-on-leak",
+      "result": "PASS",
+      "notes": "SINGLE_SYMBOL_OK, n_violations=0"
+    },
+    {
+      "command": "powershell -ExecutionPolicy Bypass -File framework\\scripts\\compile_one.ps1 -EALabel QM5_12808_ftmo-xti-pb -Strict",
+      "result": "PASS",
+      "notes": "compile_one.errors=0, compile_one.warnings=0"
+    },
+    {
+      "command": "powershell -ExecutionPolicy Bypass -File framework\\scripts\\build_check.ps1 -EALabel QM5_12808_ftmo-xti-pb -Strict -SkipCompile",
+      "result": "PASS",
+      "notes": "0 failures; 16 warnings from existing shared framework include advisory scan"
+    }
+  ],
+  "q02_enqueue": {
+    "command": "python tools\\strategy_farm\\sweep_enqueue_built_eas.py --apply --ea QM5_12808 --queue-ceiling 10000 --max-part2-per-run 0",
+    "result": "PASS",
+    "enqueued": 1,
+    "work_item_id": "16aa9bb8-af49-4a4a-9b63-7379264d6d53",
+    "status": "pending",
+    "created_at_utc": "2026-06-29T22:10:06+00:00"
+  },
+  "live_scope": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
