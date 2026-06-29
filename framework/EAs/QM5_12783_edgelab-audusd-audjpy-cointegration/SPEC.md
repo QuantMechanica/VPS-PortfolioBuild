@@ -1,7 +1,7 @@
-# QM5_12781_edgelab-usdjpy-audjpy-cointegration - Strategy Spec
+# QM5_12783_edgelab-audusd-audjpy-cointegration - Strategy Spec
 
-**EA ID:** QM5_12781
-**Slug:** edgelab-usdjpy-audjpy-cointegration
+**EA ID:** QM5_12783
+**Slug:** edgelab-audusd-audjpy-cointegration
 **Source:** claude_cross_asset_discovery_2026-06-09 plus Chan cointegration pair-trade method
 **Author of this spec:** Codex
 **Last revised:** 2026-06-29
@@ -10,8 +10,8 @@
 
 ## 1. Strategy Logic
 
-The EA trades the USDJPY.DWX and AUDJPY.DWX D1 cointegration spread. It computes
-`S = ln(USDJPY) - beta * ln(AUDJPY)` with beta defaulting to 0.763733, then
+The EA trades the AUDUSD.DWX and AUDJPY.DWX D1 cointegration spread. It computes
+`S = ln(AUDUSD) - beta * ln(AUDJPY)` with beta defaulting to 0.236355, then
 calculates a 60-bar rolling z-score of that spread.
 
 It opens a short-spread package when z is above +2.0 and a long-spread package
@@ -21,11 +21,11 @@ stop.
 
 This is an exploratory next-best basket, not a hard-bar scan survivor. The
 published 66-pair scan only certified QM5_12533 and QM5_12532. A rerun of the
-same script ranked USDJPY/AUDJPY as the next unbuilt rank-26 tail candidate
+same script ranked AUDUSD/AUDJPY as the next unbuilt rank-27 tail candidate
 after the existing
-12532/12533/12624/12712/12723/12728/12731/12732/12735/12739/12747/12749/12751/12756/12758/12760/12762/12764/12765/12766/12768/12770/12772/12776/12778
-baskets, with DEV Sharpe 0.3587, OOS net Sharpe -0.3548, OOS return -3.8397%,
-15 OOS state changes, beta 0.763733, and 139.63-day half-life.
+12532/12533/12624/12712/12723/12728/12731/12732/12735/12739/12747/12749/12751/12756/12758/12760/12762/12764/12765/12766/12768/12770/12772/12776/12778/12781
+baskets, with DEV Sharpe 0.3295, OOS net Sharpe -0.3601, OOS return -3.8428%,
+15 OOS state changes, beta 0.236355, and 139.55-day half-life.
 
 The positive DEV Sharpe but negative OOS Sharpe mean this did not clear the
 original build discipline; it is a very high-risk exploratory sleeve built only
@@ -40,7 +40,7 @@ built.
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
 | strategy_z_lookback_d1 | 60 | 20+ | D1 bars used for rolling spread mean and standard deviation |
-| strategy_beta | 0.763733 | >0 | Hedge coefficient in `ln(USDJPY) - beta * ln(AUDJPY)` |
+| strategy_beta | 0.236355 | >0 | Hedge coefficient in `ln(AUDUSD) - beta * ln(AUDJPY)` |
 | strategy_entry_z | 2.0 | >0 | Absolute z-score threshold for opening a spread package |
 | strategy_exit_z | 0.5 | >=0 | Absolute z-score threshold for closing the open package |
 | strategy_atr_period_d1 | 20 | 2+ | D1 ATR period for per-leg hard stop distance |
@@ -52,14 +52,14 @@ built.
 ## 3. Symbol Universe
 
 **Designed for:**
-- USDJPY.DWX - leg 1 of the fixed USDJPY/AUDJPY spread and the spread numerator.
-- AUDJPY.DWX - leg 2 of the fixed USDJPY/AUDJPY spread and the beta-weighted spread denominator.
+- AUDUSD.DWX - leg 1 of the fixed AUDUSD/AUDJPY spread and the spread numerator.
+- AUDJPY.DWX - leg 2 of the fixed AUDUSD/AUDJPY spread and the beta-weighted spread denominator.
 
 **Explicitly not for:**
 - Other `.DWX` symbols. This card is a fixed two-leg FX-cross basket, not a portable multi-pair strategy.
 
-USDJPY.DWX is selected as conversion history for both JPY-cross legs under
-USD-denominated tester accounting.
+USDJPY.DWX is selected as conversion history for the AUDJPY leg under
+USD-denominated tester accounting, but it is not traded.
 
 ---
 
@@ -98,7 +98,7 @@ Rerun excerpt for this candidate:
 
 | pair | DEV Sharpe | OOS net Sharpe | OOS ret | OOS state changes | hedge | half-life |
 |---|---:|---:|---:|---:|---:|---:|
-| USDJPY~AUDJPY | 0.3587 | -0.3548 | -3.8397% | 15 | 0.763733 | 139.63d |
+| AUDUSD~AUDJPY | 0.3295 | -0.3601 | -3.8428% | 15 | 0.236355 | 139.55d |
 
 ---
 
@@ -124,6 +124,5 @@ is delegated to paced farm workers through the logical basket setfile.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-29 | Initial rank-26 next-unbuilt FX cointegration basket build | Built from the 12764 two-leg JPY-cross basket pattern |
-| v2 | 2026-06-29 | Q02 handoff | Build task c5c43c78-2d18-465d-9a9a-c0cc078bbd05 recorded; Q02 work item 080ebc00-3644-4719-b6e6-6f855604f6b6 active on T2 |
+| v1 | 2026-06-29 | Initial rank-27 next-unbuilt FX cointegration basket build | Built from the adjacent AUDUSD/JPY basket pattern with explicit USDJPY conversion history |
 
