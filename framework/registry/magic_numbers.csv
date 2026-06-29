@@ -13875,3 +13875,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12785,timerangebreakout-orb,7,CADJPY.DWX,127850007,2026-06-30,Development,active
 12785,timerangebreakout-orb,8,GBPJPY.DWX,127850008,2026-06-30,Development,active
 12785,timerangebreakout-orb,9,NZDJPY.DWX,127850009,2026-06-30,Development,active
+12809,eia-jetfuel-brk,0,XTIUSD.DWX,128090000,2026-06-30,Development,active
