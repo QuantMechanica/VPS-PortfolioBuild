@@ -4,7 +4,7 @@
 **Slug:** `eia-oilgas-ratio`
 **Source:** `EIA-OILGAS-RATIO-2026`
 **Author of this spec:** Codex
-**Last revised:** 2026-06-26
+**Last revised:** 2026-06-29
 
 ## 1. Strategy Logic
 
@@ -69,3 +69,13 @@ these sources only for mechanism; no performance claim is imported.
 | Live, if ever approved later | RISK_PERCENT | allocated by portfolio process |
 
 No live manifest or `T_Live` file is touched by this build.
+
+## 8. Q02 Infra Repair
+
+The prior Q02 logical-basket work item
+`eb3502ce-8cb4-4066-be51-7037ad7cb4d7` failed on 2026-06-26 with
+`ONINIT_FAILED` before usable bars were produced. The current repair refreshes
+the compiled artifact and setfile build hash, keeps the logical basket symbol
+`QM5_12578_XTI_XNG_RATIO_D1`, and runs the tester on the manifest host
+`XTIUSD.DWX` at D1. A new Q02 work item was enqueued after the rebuild so the
+farm does not keep treating the stale failed artifact as current state.
