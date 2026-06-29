@@ -76,4 +76,3 @@ runtime.
 
 No live manifest, `T_Live` file, AutoTrading setting, or portfolio gate is
 touched by this build.
-

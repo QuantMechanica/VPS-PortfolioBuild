@@ -1,0 +1,87 @@
+{
+  "task_id": "4b33dc46-796b-4689-a2c2-aece33cd466a",
+  "ea_id": "QM5_12763",
+  "slug": "wti-ref-sqz-brk",
+  "strategy": "WTI refinery-utilization squeeze breakout",
+  "source_id": "EIA-WTI-REFINERY-MAINT-2026",
+  "source_citation": "U.S. Energy Information Administration. Refinery outages: planned and unplanned outages, 2007-2011; U.S. refinery utilization rates slightly higher than last year heading into summer.",
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "logical_symbol": "XTIUSD.DWX",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12763_wti-ref-sqz-brk",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12763_wti-ref-sqz-brk\\QM5_12763_wti-ref-sqz-brk.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12763_wti-ref-sqz-brk\\QM5_12763_wti-ref-sqz-brk.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12763_wti-ref-sqz-brk\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\wti-ref-sqz-brk_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12763_wti-ref-sqz-brk_card.md",
+  "repo_approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12763_wti-ref-sqz-brk.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12763_wti-ref-sqz-brk.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12763_wti-ref-sqz-brk\\sets\\QM5_12763_wti-ref-sqz-brk_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "mq5_sha256": "82c58bf1399956b3f038b7bf80bfa83e40a024eb616644e29aa7080c56e63d8b",
+  "ex5_sha256": "4b132ecb47bad11cae8782b02856e099a92f8f1b65a73497faa420e6dc0a02b5",
+  "setfile_header_build_hash": "fa4a846ad71fef344870e65112d45ec76dfdecd6f0f9ac6811cedb1596ad6e81",
+  "setfile_current_sha256": "6b06bdd5aae204cc6451e2b7159928c95329cc780dd1f76de3aa0641e087638b",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 127630000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework\\scripts\\compile_one.ps1 -EAPath framework\\EAs\\QM5_12763_wti-ref-sqz-brk\\QM5_12763_wti-ref-sqz-brk.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260629_010916\\QM5_12763_wti-ref-sqz-brk.compile.log"
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework\\scripts\\build_check.ps1 -EALabel QM5_12763_wti-ref-sqz-brk -Strict",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260629_010916.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0 and new EA body has no raw indicator handles."
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Paced fleet Q02 will run the first tester pass; no manual MT5 backtest was launched from this session.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  },
+  "notes": "Built one non-duplicate structural XTIUSD.DWX D1 refinery-utilization squeeze-breakout sleeve. No live, T_Live, AutoTrading, or portfolio gate artifacts touched.",
+  "q02_enqueue": {
+    "enqueued": true,
+    "work_item_id": "1c14b14f-88ee-4709-ba7b-0a94de7afb26",
+    "phase": "Q02",
+    "status": "pending",
+    "created_at": "2026-06-29T01:10:24+00:00",
+    "enqueued_by": "record_build_result.auto_q02",
+    "build_task_id": "4b33dc46-796b-4689-a2c2-aece33cd466a",
+    "logical_symbol": "XTIUSD.DWX",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12763_wti-ref-sqz-brk\\sets\\QM5_12763_wti-ref-sqz-brk_XTIUSD.DWX_D1_backtest.set",
+    "manual_backtest_launched": false
+  }
+}

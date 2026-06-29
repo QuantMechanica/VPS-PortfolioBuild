@@ -5,4 +5,3 @@ runtime_copy: D:/QM/strategy_farm/artifacts/cards_approved/QM5_12763_wti-ref-sqz
 ---
 
 See `strategy-seeds/cards/wti-ref-sqz-brk_card.md`.
-
