@@ -1,0 +1,124 @@
+{
+  "task_id": "73da7bc3-d02e-4fa3-a467-0b02479f92a9",
+  "ea_id": "QM5_12782",
+  "slug": "katz-seas-xti",
+  "strategy": "XTIUSD.DWX D1 Katz adaptive seasonal crossover with Stochastic confirmation",
+  "source_id": "katz-encyclopedia-2000-ch8",
+  "source_citation": "Katz, J. O. and McCormick, D. L. The Encyclopedia of Trading Strategies. McGraw-Hill, 2000, Chapter 8, pp. 185-189, Tests 7-9.",
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12782_katz-seas-xti",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12782_katz-seas-xti\\QM5_12782_katz-seas-xti.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12782_katz-seas-xti\\QM5_12782_katz-seas-xti.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12782_katz-seas-xti\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\katz-seas-xti_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12782_katz-seas-xti_card.md",
+  "repo_approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12782_katz-seas-xti.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12782_katz-seas-xti.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12782_katz-seas-xti\\sets\\QM5_12782_katz-seas-xti_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "mq5_sha256": "2b0f4a9eefe2085ad8a8be3e78d9bdffc9ede3acf350b246bedbc2645355b387",
+  "ex5_sha256": "2529ff20bcae9a92b0d9f51ab4287a750963a595696d111204db8ea936c23fbb",
+  "setfile_header_build_hash": "335a0e58da8168e2195c1a0eb17190c12a555f3de9e8f57c710bd7d828bfb225",
+  "setfile_current_sha256": "3e3c12d01ae8dd9deb3b319af44bd5d9f95589ab7f3225f92b1114a2b8cef615",
+  "magic_base": 127820000,
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 127820000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "card_lint": {
+    "command": "python framework/scripts/skill_card_schema_lint.py --card strategy-seeds/cards/approved/QM5_12782_katz-seas-xti_card.md",
+    "result": "PASS"
+  },
+  "g0_card_lint": {
+    "command": "python framework/scripts/skill_g0_card_lint.py --card strategy-seeds/cards/approved/QM5_12782_katz-seas-xti_card.md",
+    "result": "PASS"
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_12782_katz-seas-xti",
+    "result": "PASS"
+  },
+  "symbol_scope": {
+    "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_12782_katz-seas-xti --verbose",
+    "result": "SINGLE_SYMBOL_OK"
+  },
+  "compile": {
+    "command": "pwsh framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12782_katz-seas-xti/QM5_12782_katz-seas-xti.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260629_155307\\QM5_12782_katz-seas-xti.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260629_155307\\summary.csv"
+  },
+  "build_check": {
+    "command": "pwsh framework/scripts/build_check.ps1 -EALabel QM5_12782_katz-seas-xti -Strict",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260629_155321.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings in include files; build_check failures=0."
+  },
+  "schema_and_registry_checks": {
+    "skill_card_schema_lint": "PASS",
+    "skill_g0_card_lint": "PASS",
+    "validate_spec_doc": "PASS",
+    "validate_symbol_scope": "SINGLE_SYMBOL_OK",
+    "magic_resolver_updated": true,
+    "target_registry_rows_verified": true
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet Q02 will run the first tester pass; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": null,
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  },
+  "duplicate_check": {
+    "selected_edge": "XTIUSD.DWX D1 adaptive seasonal pseudo-price crossover with Stochastic confirmation",
+    "non_duplicate_reason": "Existing WTI builds cover fixed calendar/event, ratio, 52-week anchor, TSMOM, Donchian/close-location, Williams box, reversal, and RSI/pullback logic. This sleeve uses Katz Ch.8 prior-year day-of-year seasonal momentum integration and displaced seasonal-SMA crossovers with Stochastic confirmation."
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "phase": "Q02",
+    "kind": "backtest",
+    "symbol": "XTIUSD.DWX",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12782_katz-seas-xti\\sets\\QM5_12782_katz-seas-xti_XTIUSD.DWX_D1_backtest.set",
+    "work_item_id": "c2352d5b-dfa9-4e26-b6b8-2e078d042a39",
+    "status_after_final_check": "pending",
+    "attempt_count": 0,
+    "created_at_utc": "2026-06-29T15:57:46+00:00",
+    "updated_at_utc": "2026-06-29T15:57:46+00:00",
+    "enqueued_by": "record_build_result.auto_q02",
+    "build_task_id": "73da7bc3-d02e-4fa3-a467-0b02479f92a9"
+  },
+  "notes": "Built one non-duplicate structural WTI energy sleeve. No live, T_Live, AutoTrading, or portfolio gate artifacts touched."
+}
