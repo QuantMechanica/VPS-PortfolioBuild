@@ -26,12 +26,14 @@ Five cards were extracted for structural natural-gas CFD sleeves:
 - `xngusd-spring-shoulder-short`: XNGUSD.DWX D1 spring shoulder demand-lull short-only regime with price confirmation.
 - `xngusd-summer-power-long`: XNGUSD.DWX D1 summer electric-sector demand long-only regime with price confirmation.
 - `xngusd-fall-storage-short`: XNGUSD.DWX D1 fall shoulder/storage-fill short-only regime with price confirmation.
+- `xngusd-seasonal-dual-peak`: XNGUSD.DWX D1 long-only combined winter/summer demand-peak regime with price confirmation.
 
 ## Evidence Notes
 
 - The source describes natural gas consumption as seasonally shaped, with peaks tied to winter heating demand and summer electric-sector demand and lower use during the spring/fall shoulder periods.
 - The QM implementations do not ingest external EIA data at runtime. They mechanize the calendar seasonality as fixed windows and use only Darwinex MT5 OHLC data for price confirmation and risk control.
 - This source is intentionally single-source for R1 lineage.
+- The dual-peak card is intentionally long-only. It does not include the shoulder-season shorts from the broad `eia-xng-season` card and is tested as a separate correlation candidate by Q02+.
 
 ## Guardrails
 
