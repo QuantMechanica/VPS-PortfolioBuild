@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        11755
 ; ea_slug:      davey-big-range-momentum-h1
@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   88b1fa07bf2b76f93772c9ca0230bf8a05d0804e75d690f612d4ad863c6fc91a
 ; author:       Development
 ; date:         2026-06-11
 ;==========================================================
