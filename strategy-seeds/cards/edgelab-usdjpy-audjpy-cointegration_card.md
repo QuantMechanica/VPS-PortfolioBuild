@@ -50,7 +50,8 @@ QuantMechanica 2026 in-house 66-pair FX scan rerun on Darwinex `.DWX` D1 data.
 The published scan hard-certified only QM5_12533 and QM5_12532. QM5_12624,
 QM5_12712, QM5_12723, QM5_12728, QM5_12731, QM5_12732, QM5_12735, QM5_12739,
 QM5_12747, QM5_12749, QM5_12751, QM5_12756, QM5_12758, QM5_12760, QM5_12762,
-QM5_12764, QM5_12765, QM5_12766, QM5_12768, and QM5_12770 already cover stronger exploratory baskets.
+QM5_12764, QM5_12765, QM5_12766, QM5_12768, QM5_12770, QM5_12772, QM5_12776,
+and QM5_12778 already cover stronger exploratory baskets.
 This card is the next unbuilt rank-26 tail candidate by OOS net Sharpe:
 USDJPY/AUDJPY had DEV Sharpe 0.3587, OOS net Sharpe -0.3548, OOS return
 -3.8397%, 15 OOS state changes, hedge 0.763733, and 139.63-day half-life in the
@@ -58,9 +59,9 @@ same rerun.
 
 ## Concept
 
-USDJPY and AUDJPY share the JPY quote side but differ by GBP and AUD base-side
+USDJPY and AUDJPY share the JPY quote side but differ by USD and AUD base-side
 macro/rate risk, so this is a low-conviction relative-value residual rather than
-a certified same-complex survivor like EURJPY/USDJPY. The scan found positive DEV but
+a certified same-complex survivor like EURJPY/GBPJPY. The scan found positive DEV but
 negative OOS Sharpe, making this a very high-risk exploratory sleeve. The EA
 trades the spread, not either cross as a standalone directional system.
 
@@ -106,7 +107,7 @@ tail test only; Q02+ must reject it if live-cost mechanics confirm no edge.
 ## Filters
 
 - Host chart must be USDJPY.DWX or AUDJPY.DWX on D1/H1, with slot 0 used for the logical host.
-- The EA selects USDJPY.DWX as conversion history for both JPY-cross legs in USD-denominated tests.
+- USDJPY.DWX is also the USD-account conversion path for AUDJPY accounting.
 - No pyramiding, averaging, grid, martingale, partial close, or trailing stop.
 - Framework news, kill-switch, magic, and Friday-close guards remain active.
 
@@ -174,5 +175,4 @@ gates.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-06-29 | initial rank-26 next-unbuilt FX cointegration basket card | G0 | APPROVED |
-| v1-q02 | 2026-06-29 | build task 6ee7a158-8ec3-4445-b149-77e9041c2417 recorded and logical-basket Q02 enqueued with repaired payload | Q02 | PENDING 0ef494c0-7669-4c98-9e5c-326ff70df987 |
 

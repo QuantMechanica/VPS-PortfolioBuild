@@ -23,7 +23,7 @@ This is an exploratory next-best basket, not a hard-bar scan survivor. The
 published 66-pair scan only certified QM5_12533 and QM5_12532. A rerun of the
 same script ranked USDJPY/AUDJPY as the next unbuilt rank-26 tail candidate
 after the existing
-12532/12533/12624/12712/12723/12728/12731/12732/12735/12739/12747/12749/12751/12756/12758/12760/12762/12764/12765/12766/12768/12770
+12532/12533/12624/12712/12723/12728/12731/12732/12735/12739/12747/12749/12751/12756/12758/12760/12762/12764/12765/12766/12768/12770/12772/12776/12778
 baskets, with DEV Sharpe 0.3587, OOS net Sharpe -0.3548, OOS return -3.8397%,
 15 OOS state changes, beta 0.763733, and 139.63-day half-life.
 
@@ -98,7 +98,7 @@ Rerun excerpt for this candidate:
 
 | pair | DEV Sharpe | OOS net Sharpe | OOS ret | OOS state changes | hedge | half-life |
 |---|---:|---:|---:|---:|---:|---:|
-| USDJPY~AUDJPY | 0.3587 | -0.3548 | -3.8397% | 19 | 0.763733 | 38.85d |
+| USDJPY~AUDJPY | 0.3587 | -0.3548 | -3.8397% | 15 | 0.763733 | 139.63d |
 
 ---
 
@@ -114,7 +114,9 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 `tester_deposit=100000`. The logical basket backtest setfile uses the canonical
 `RISK_FIXED=1000`, with `RISK_PERCENT=0`.
 
-Q02 queue note: build task `6ee7a158-8ec3-4445-b149-77e9041c2417` was recorded successfully and enqueued one logical-basket work item for `QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1`: `0ef494c0-7669-4c98-9e5c-326ff70df987`. The pending row was updated in place with full basket metadata, conversion symbol, risk, tester deposit/currency, scan metrics, priority tracking, and a 120-minute basket timeout. No duplicate Q02 row or manual MT5 launch was created.
+Q02 handoff will be recorded after strict compile and build-check pass. No manual
+MT5 run is launched from this build session; Q02 is delegated to paced farm
+workers through the logical basket setfile.
 
 ---
 
@@ -123,5 +125,4 @@ Q02 queue note: build task `6ee7a158-8ec3-4445-b149-77e9041c2417` was recorded s
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-29 | Initial rank-26 next-unbuilt FX cointegration basket build | Built from the 12764 two-leg JPY-cross basket pattern |
-| v1-q02 | 2026-06-29 | Compile/build-check PASS and Q02 enqueued | Pending logical-basket work item 0ef494c0-7669-4c98-9e5c-326ff70df987 |
 
