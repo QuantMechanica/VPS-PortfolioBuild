@@ -13842,3 +13842,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12779,wti-weekend-gap-bounce,0,XTIUSD.DWX,127790000,2026-06-29,Development,active
 12611,tsmom-12m-fx-sign-eurusd,0,EURUSD.DWX,126110000,2026-06-29,Development,active
 12780,wti-52w-anchor,0,XTIUSD.DWX,127800000,2026-06-29,Development,active
+12781,edgelab-usdjpy-audjpy-cointegration,0,USDJPY.DWX,127810000,2026-06-29,Development,active
+12781,edgelab-usdjpy-audjpy-cointegration,1,AUDJPY.DWX,127810001,2026-06-29,Development,active
