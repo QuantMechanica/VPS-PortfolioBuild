@@ -1,0 +1,92 @@
+{
+  "task_id": "1630d6d7-52cb-4a53-a8e1-1e00abdcebbe",
+  "ea_id": "QM5_12706",
+  "slug": "xngusd-seasonal-dual-peak",
+  "strategy": "XNGUSD D1 long-only winter/summer natural-gas demand-peak seasonal sleeve",
+  "source_id": "706222b7-2d60-5fdb-8dab-d722d3c96f92",
+  "source_citation": "U.S. Energy Information Administration. (2015). Natural gas use features two seasonal peaks per year. Today in Energy, 2015-09-11. URL https://www.eia.gov/todayinenergy/detail.php?id=22892",
+  "symbols": [
+    "XNGUSD.DWX"
+  ],
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12706_xngusd-seasonal-dual-peak",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12706_xngusd-seasonal-dual-peak\\QM5_12706_xngusd-seasonal-dual-peak.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12706_xngusd-seasonal-dual-peak\\QM5_12706_xngusd-seasonal-dual-peak.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12706_xngusd-seasonal-dual-peak\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\xngusd-seasonal-dual-peak_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12706_xngusd-seasonal-dual-peak_card.md",
+  "repo_approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12706_xngusd-seasonal-dual-peak.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12706_xngusd-seasonal-dual-peak.md",
+  "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\706222b7-2d60-5fdb-8dab-d722d3c96f92\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12706_xngusd-seasonal-dual-peak\\sets\\QM5_12706_xngusd-seasonal-dual-peak_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "mq5_sha256": "5d7d2ba8f532d0822ef7205fd7bf7ba39338b7af1e59d346d338fe80788973e6",
+  "ex5_sha256": "1a02c95e03b3f882d8607e48bd582409094f187b8f13e7ef4c39e53f8346027c",
+  "setfile_current_sha256": "a6b71ac60df54be8dafc66dba87424ced376a32870bf3f65dba01c10a1e83664",
+  "card_sha256": "a4cdd09e6cf7343059682d672495f2fdbeb0adb7cc774deea3c3a4463123c718",
+  "setfile_header_build_hash": "d5650f330f66230cbe38e0f13f3f074ef001db10acb523fa9371ef2e8bd231e8",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XNGUSD.DWX",
+        "magic": 127060000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12706_xngusd-seasonal-dual-peak/QM5_12706_xngusd-seasonal-dual-peak.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260629_070742\\QM5_12706_xngusd-seasonal-dual-peak.compile.log"
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12706_xngusd-seasonal-dual-peak -Strict -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260629_071235.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_12706_xngusd-seasonal-dual-peak",
+    "result": "PASS"
+  },
+  "static_checks": {
+    "card_schema_lint": "ok",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "spec_validation": "PASS",
+    "prebuild_validate_card": "ok"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Paced fleet Q02 will run the first tester pass; no manual MT5 backtest was launched from this session.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  },
+  "notes": "Built one non-duplicate XNGUSD structural natural-gas dual demand-peak seasonal sleeve. No live, T_Live, AutoTrading, or portfolio gate artifacts touched.",
+  "q02_enqueue": {
+    "method": "farmctl.record-build auto_q02",
+    "work_item_id": "9b831363-5cb6-4f6d-a19d-9debb27f8588",
+    "status": "pending",
+    "symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "enqueued_at_utc": "2026-06-29T07:09:05+00:00"
+  }
+}
