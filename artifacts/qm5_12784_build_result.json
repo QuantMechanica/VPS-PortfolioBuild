@@ -1,0 +1,37 @@
+{
+  "task_id": "77ff1410-a63f-476e-b1c9-7faca589a290",
+  "ea_id": "QM5_12784",
+  "slug": "progo-xti",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12784_progo-xti",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12784_progo-xti\\QM5_12784_progo-xti.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12784_progo-xti\\QM5_12784_progo-xti.ex5",
+  "magic_base": 127840000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12784_progo-xti\\sets\\QM5_12784_progo-xti_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12784_progo-xti\\SPEC.md",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260629_171013\\QM5_12784_progo-xti.compile.log",
+  "compile_summary_path": "D:\\QM\\reports\\compile\\20260629_171013\\summary.csv",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260629_171034.json",
+  "build_check_failures": 0,
+  "build_check_warnings": 16,
+  "mq5_sha256": "979cf22a46da6a2a8b0b44d9a46eb061eea61c11a384caeddc9744de3ee724e3",
+  "ex5_sha256": "6743903a3efb46504bb9ddd5c2e9658603a6e356c51603b788b394065a564016",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "q02_enqueued_for_paced_fleet_no_manual_backtest",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": [
+    "No manual backtest launched; Q02 is delegated to paced farm workers."
+  ],
+  "notes": "Codex built QM5_12784_progo-xti as a structural D1 XTIUSD Pro-Go flow-crossover sleeve. Strict compile PASS, build_check PASS, RISK_FIXED setfile generated, no live/T_Live/portfolio artifacts touched."
+}
