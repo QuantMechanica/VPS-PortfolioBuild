@@ -9589,7 +9589,7 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
         "P8": "P7",
     }
     phase_prev_verdicts = {
-        "Q05": {"PASS"},
+        "Q05": {"PASS", "PASS_SOFT", "PASS_LOWFREQ"},
         "Q06": {"PASS"},
         "Q07": {"PASS"},
         "Q08": {"PASS", "MULTI_SEED_PASS"},  # Q07 = multi-seed phase
