@@ -69,7 +69,7 @@ trades the spread, not either cross as a standalone directional system.
 
 Temporary dislocations between the USDJPY and AUDJPY D1 log-price spread can
 mean-revert because both pairs express JPY funding/risk pressure through
-different GBP and AUD macro channels. The negative OOS scan result makes this a
+different USD and AUD macro channels. The negative OOS scan result makes this a
 tail test only; Q02+ must reject it if live-cost mechanics confirm no edge.
 
 ## Markets And Timeframe
@@ -144,7 +144,7 @@ judge.
 - expected_pf: 0.90.
 - expected_dd_pct: 30.
 - expected_trade_frequency: approximately 4-8 basket packages/year.
-- risk_class: very high because this is a rank-26 negative-OOS tail candidate after the rank-25 AUDUSD/EURJPY exploratory basket.
+- risk_class: very high because this is a rank-26 negative-OOS tail candidate after stronger exploratory baskets already built.
 - gridding: false.
 - scalping: false.
 - ml_required: false.
@@ -175,4 +175,5 @@ gates.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-06-29 | initial rank-26 next-unbuilt FX cointegration basket card | G0 | APPROVED |
+| v2 | 2026-06-29 | build recorded and Q02 enqueued as work item 080ebc00-3644-4719-b6e6-6f855604f6b6 | Q02 | ACTIVE |
 

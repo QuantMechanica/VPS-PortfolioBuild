@@ -176,4 +176,3 @@ gates.
 |---|---|---|---|---|
 | v1 | 2026-06-29 | initial rank-26 next-unbuilt FX cointegration basket card | G0 | APPROVED |
 | v2 | 2026-06-29 | build recorded and Q02 enqueued as work item 080ebc00-3644-4719-b6e6-6f855604f6b6 | Q02 | ACTIVE |
-

@@ -80,7 +80,7 @@ USD-denominated tester accounting.
 | Trades / year / logical basket | 4-8 |
 | Typical hold time | days to weeks |
 | Expected drawdown profile | high; Q02/Q04/Q05 must judge whether this weak residual is tradable after cost |
-| Regime preference | low-conviction macro relative-value residual between sterling-yen and Aussie-yen rate/risk expressions |
+| Regime preference | low-conviction macro relative-value residual between dollar-yen and Aussie-yen rate/risk expressions |
 | Win rate target | medium |
 
 ---
@@ -114,9 +114,9 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 `tester_deposit=100000`. The logical basket backtest setfile uses the canonical
 `RISK_FIXED=1000`, with `RISK_PERCENT=0`.
 
-Q02 handoff will be recorded after strict compile and build-check pass. No manual
-MT5 run is launched from this build session; Q02 is delegated to paced farm
-workers through the logical basket setfile.
+Q02 was auto-enqueued by `farmctl record-build` after strict compile and
+build-check passed. No manual MT5 run was launched from this build session; Q02
+is delegated to paced farm workers through the logical basket setfile.
 
 ---
 
@@ -125,4 +125,5 @@ workers through the logical basket setfile.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-29 | Initial rank-26 next-unbuilt FX cointegration basket build | Built from the 12764 two-leg JPY-cross basket pattern |
+| v2 | 2026-06-29 | Q02 handoff | Build task c5c43c78-2d18-465d-9a9a-c0cc078bbd05 recorded; Q02 work item 080ebc00-3644-4719-b6e6-6f855604f6b6 active on T2 |
 
