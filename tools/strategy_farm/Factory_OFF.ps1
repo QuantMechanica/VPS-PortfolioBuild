@@ -45,14 +45,16 @@ foreach ($d in $daemons) { Stop-Process -Id $d.ProcessId -Force -ErrorAction Sil
 Write-Host ("  worker daemons killed : {0}" -f $daemons.Count)
 
 # 3. kill transient terminal64.exe backtest processes
-$terms = @(Get-Process terminal64 -ErrorAction SilentlyContinue)
-foreach ($p in $terms) { Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue }
-Write-Host ("  terminal64.exe killed : {0}" -f $terms.Count)
+$terms = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
+           Where-Object { $_.CommandLine -notmatch 'T_Live' })   # never kill the LIVE terminal (T_Live isolation hard rule)
+foreach ($p in $terms) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
+Write-Host ("  terminal64.exe killed : {0} (T_Live excluded)" -f $terms.Count)
 
 Start-Sleep -Seconds 3
 $leftDaemons = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe'" -ErrorAction SilentlyContinue |
                  Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
-$leftTerms   = @(Get-Process terminal64 -ErrorAction SilentlyContinue).Count
+$leftTerms   = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
+                 Where-Object { $_.CommandLine -notmatch 'T_Live' }).Count
 
 Write-Host ''
 if ($leftDaemons -eq 0 -and $leftTerms -eq 0) {

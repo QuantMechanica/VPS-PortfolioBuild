@@ -109,8 +109,9 @@ Write-Host ''
 $daemonsBefore = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue |
                    Where-Object { $_.CommandLine -match 'terminal_worker\.py' })
 foreach ($d in $daemonsBefore) { Stop-Process -Id $d.ProcessId -Force -ErrorAction SilentlyContinue }
-$termsBefore = @(Get-Process terminal64 -ErrorAction SilentlyContinue)
-foreach ($p in $termsBefore) { Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue }
+$termsBefore = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
+                 Where-Object { $_.CommandLine -notmatch 'T_Live' })   # never kill the LIVE terminal (T_Live isolation hard rule)
+foreach ($p in $termsBefore) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
 if ($daemonsBefore.Count -gt 0 -or $termsBefore.Count -gt 0) {
     Write-Host ("  cleared: {0} old daemon(s), {1} old terminal(s)" -f $daemonsBefore.Count, $termsBefore.Count)
     Start-Sleep -Seconds 2
