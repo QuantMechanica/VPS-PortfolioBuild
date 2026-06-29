@@ -25,7 +25,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
+pipeline_phase: Q02
 last_updated: 2026-06-29
 g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-requested in-house 66-pair FX scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS AUDUSD.DWX and GBPJPY.DWX data exist in scan universe; R4 PASS no ML/grid/martingale. Marked very high-risk because OOS net Sharpe was negative."
 expected_pf: 0.94
@@ -177,3 +177,4 @@ gates.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-06-29 | initial rank-24 next-unbuilt FX cointegration basket card | G0 | APPROVED |
+| v1-q02 | 2026-06-29 | build task 8e41528c-5716-4003-97c4-0ebff1e9ec20 recorded and logical-basket Q02 enqueued | Q02 | PENDING 5de6cce6-f2ee-4316-bf82-0b312fa625c0 |

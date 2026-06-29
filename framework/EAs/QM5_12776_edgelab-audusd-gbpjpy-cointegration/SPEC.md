@@ -115,7 +115,11 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 `RISK_FIXED=1000`, with `RISK_PERCENT=0`.
 
 No manual tester run was launched from this build session; Q02 is enqueued by
-`farmctl record-build`.
+`farmctl record-build` as work item
+`5de6cce6-f2ee-4316-bf82-0b312fa625c0` for
+`QM5_12776_AUDUSD_GBPJPY_COINTEGRATION_D1`. Its payload was repaired in place
+to include basket legs, USDJPY conversion history, tester deposit, fixed-risk
+settings, scan metrics, priority tracking, and a 120-minute basket timeout.
 
 ---
 
@@ -124,3 +128,4 @@ No manual tester run was launched from this build session; Q02 is enqueued by
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-29 | Initial rank-24 next-unbuilt FX cointegration basket build | Built from the 12772 two-leg basket pattern |
+| v1-q02 | 2026-06-29 | Build recorded and logical-basket Q02 enqueued | work_item=5de6cce6-f2ee-4316-bf82-0b312fa625c0 |
