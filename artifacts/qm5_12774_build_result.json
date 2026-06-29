@@ -1,0 +1,98 @@
+{
+  "task_id": "manual-build-QM5_12774-20260629",
+  "ea_id": "QM5_12774",
+  "slug": "williams-8wk-xti",
+  "strategy": "Williams 8-week WTI D1 congestion-box breakout",
+  "source_id": "SRC03_S11_XTI",
+  "source_citation": "Williams, Larry R. (1999). Long-Term Secrets to Short-Term Trading. Wiley Trading; SRC03 slot S11, 8-Week Box Congestion Breakout.",
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12774_williams-8wk-xti",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12774_williams-8wk-xti\\QM5_12774_williams-8wk-xti.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12774_williams-8wk-xti\\QM5_12774_williams-8wk-xti.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12774_williams-8wk-xti\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\williams-8wk-xti_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12774_williams-8wk-xti_card.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12774_williams-8wk-xti\\sets\\QM5_12774_williams-8wk-xti_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "mq5_sha256": "2a6edf7d647febce3e3069c15d657e48a613d8e86f25c7436c0137ddaf8b3203",
+  "ex5_sha256": "cde31a2f2500485eb9db85a4929fb4d4cff4e42ac4ee7c9d8753ca355a88b433",
+  "setfile_header_build_hash": "27cb22f8d2e6f1811d9ffde61f601b78ea17dc4048e1777254e874c71f441967",
+  "setfile_current_sha256": "b25ad2c447ef05b2f0b2cbcb18ba10ec55f4c1444f96a7756fe66d85bb27ac4e",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 127740000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12774_williams-8wk-xti/QM5_12774_williams-8wk-xti.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260629_111223\\QM5_12774_williams-8wk-xti.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260629_111223\\summary.csv"
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12774_williams-8wk-xti -RepoRoot C:/QM/repo -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260629_111235.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Paced fleet Q02 was enqueued; no manual MT5 backtest was launched from this session.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  },
+  "notes": "Built one non-duplicate structural WTI congestion-box breakout sleeve. No live, T_Live, AutoTrading, or portfolio gate artifacts touched.",
+  "q02_enqueue": {
+    "status": "enqueued",
+    "helper_result": {
+      "enqueued": [
+        {
+          "wi_id": "e333f988",
+          "symbol": "XTIUSD.DWX",
+          "tf": "D1",
+          "setfile": "QM5_12774_williams-8wk-xti_XTIUSD.DWX_D1_backtest.set"
+        }
+      ],
+      "skipped": [],
+      "ea_id": "QM5_12774"
+    },
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "phase": "Q02",
+    "kind": "backtest",
+    "symbol": "XTIUSD.DWX",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12774_williams-8wk-xti\\sets\\QM5_12774_williams-8wk-xti_XTIUSD.DWX_D1_backtest.set",
+    "work_item_id": "e333f988-aa6e-4c77-9119-3bb39e9b12ca",
+    "status_after_final_check": "pending",
+    "claimed_by": null,
+    "created_at_utc": "2026-06-29T11:14:13+00:00",
+    "updated_at_utc": "2026-06-29T11:14:13+00:00"
+  }
+}
