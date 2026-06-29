@@ -1,0 +1,15 @@
+{
+  "logical_symbol": "QM5_12765_GBPUSD_NZDUSD_COINTEGRATION_D1",
+  "host_symbol": "GBPUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "GBPUSD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg GBPUSD/NZDUSD market-neutral FX cointegration candidate from the 2026-06-09 66-pair scan rerun. It did not clear the original hard survivor bar and is the first remaining unbuilt tail pair after the existing 12532/12533/12624/12712/12723/12728/12731/12732/12735/12739/12747/12749/12751/12756/12758/12760/12762/12764 baskets.",
+    "Q02 uses USD tester currency and the canonical RISK_FIXED=1000 budget. Both traded legs are USD-quoted, so no extra conversion-history warmup symbol is declared."
+  ]
+}
