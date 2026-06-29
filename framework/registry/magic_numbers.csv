@@ -13852,3 +13852,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12786,edgelab-usdchf-eurgbp-cointegration,1,EURGBP.DWX,127860001,2026-06-29,Development,active
 12797,oil-silver-brk,0,XTIUSD.DWX,127970000,2026-06-29,Development,active
 12797,oil-silver-brk,1,XAGUSD.DWX,127970001,2026-06-29,Development,active
+12803,edgelab-usdcad-euraud-cointegration,0,USDCAD.DWX,128030000,2026-06-29,Development,active
+12803,edgelab-usdcad-euraud-cointegration,1,EURAUD.DWX,128030001,2026-06-29,Development,active
