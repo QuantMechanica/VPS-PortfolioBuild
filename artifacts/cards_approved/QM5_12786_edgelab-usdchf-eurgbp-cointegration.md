@@ -176,4 +176,5 @@ gates.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-06-29 | initial rank-28 next-unbuilt FX cointegration basket card | G0 | APPROVED |
-| v2 | 2026-06-29 | strict compile/build-check recorded and Q02 enqueued as work item 560b4011-c09f-494a-aa8e-a52830f9013e | Q02 | PENDING |
+| v2 | 2026-06-29 | strict compile/build-check recorded and Q02 enqueued as work item 560b4011-c09f-494a-aa8e-a52830f9013e | Q02 | PASS |
+| v3 | 2026-06-29 | Q04 infra failure requeued in place after invalid folds with NO_HISTORY/M0_1970 report context | Q04 | PENDING 803159ab-cf78-4819-8691-26cdad47bd96 |

@@ -1,0 +1,126 @@
+{
+  "task_id": "411e7313-e38d-4fe6-85ab-592be19bb290",
+  "ea_id": "QM5_12786",
+  "numeric_ea_id": 12786,
+  "slug": "edgelab-usdchf-eurgbp-cointegration",
+  "strategy": "USDCHF/EURGBP D1 market-neutral FX cointegration basket",
+  "source_id": "claude_cross_asset_discovery_2026-06-09",
+  "source_citation": "Chan, Ernest P. (2009). Quantitative Trading. Wiley, Chapter 7 stationarity and cointegration; plus QuantMechanica in-house 66-pair FX cointegration scan rerun on Darwinex .DWX D1 data.",
+  "created_at_utc": "2026-06-29T17:39:49+00:00",
+  "symbols": [
+    "USDCHF.DWX",
+    "EURGBP.DWX"
+  ],
+  "conversion_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX"
+  ],
+  "logical_symbol": "QM5_12786_USDCHF_EURGBP_COINTEGRATION_D1",
+  "host_symbol": "USDCHF.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_12786_edgelab-usdchf-eurgbp-cointegration",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_12786_edgelab-usdchf-eurgbp-cointegration/QM5_12786_edgelab-usdchf-eurgbp-cointegration.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_12786_edgelab-usdchf-eurgbp-cointegration/QM5_12786_edgelab-usdchf-eurgbp-cointegration.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_12786_edgelab-usdchf-eurgbp-cointegration/SPEC.md",
+  "basket_manifest_path": "C:/QM/repo/framework/EAs/QM5_12786_edgelab-usdchf-eurgbp-cointegration/basket_manifest.json",
+  "strategy_card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_12786_edgelab-usdchf-eurgbp-cointegration_card.md",
+  "runtime_approved_card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12786_edgelab-usdchf-eurgbp-cointegration.md",
+  "repo_approved_card_path": "C:/QM/repo/artifacts/cards_approved/QM5_12786_edgelab-usdchf-eurgbp-cointegration.md",
+  "compile": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12786_edgelab-usdchf-eurgbp-cointegration/QM5_12786_edgelab-usdchf-eurgbp-cointegration.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:/QM/repo/framework/build/compile/20260629_173735/QM5_12786_edgelab-usdchf-eurgbp-cointegration.compile.log",
+    "summary_path": "D:/QM/reports/compile/20260629_173735/summary.csv",
+    "metaeditor_exit_code": 1
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12786_edgelab-usdchf-eurgbp-cointegration -RepoRoot C:/QM/repo -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "initial_report_path": "D:/QM/reports/framework/21/build_check_20260629_173751.json",
+    "requeue_guard_report_path": "D:/QM/reports/framework/21/build_check_20260629_213404.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "hashes": {
+    "mq5_sha256": "5238a5ea5d55c3c1ef82a00d30bb96697fadb4f787b65d6cc7d19c28b5054df8",
+    "ex5_sha256": "03edbf5860194ad39acbfb828bc1f7c2dfa6381e6a421bf5307a692650889b00",
+    "basket_manifest_sha256": "94faa5aa7cc6a4931dc29236c336385e834e81aa28fcd1f5ac8d315f0d70c845",
+    "setfile_sha256_after_requeue_guard": "207e2af489baf36611541b443488fe3d3da98bf8b9f63892b2b6aa249f36dfa9",
+    "spec_sha256": "07c9b0182c8c44076e6d69c690450a4f42694a9b3d1f183846d3d8c3071deafa",
+    "setfile_header_build_hash_after_requeue_guard": "8a446c223f69918600deecc58bd42a451f887b61f0319c8f0b8f9809b0dab41e"
+  },
+  "magic": {
+    "magic_base": 127860000,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "USDCHF.DWX",
+        "magic": 127860000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "EURGBP.DWX",
+        "magic": 127860001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "scan_ranking": {
+    "source_script": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "source_report": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "hard_bar_survivor": false,
+    "rank_positive_hedge": 28,
+    "pair": "USDCHF~EURGBP",
+    "dev_sharpe": 0.084,
+    "oos_net_sharpe": -0.3881,
+    "oos_return_pct": -3.8501,
+    "oos_state_changes": 15,
+    "hedge_beta": 0.138258947,
+    "half_life_days": 92.63,
+    "selection_note": "All positive-hedge pairs in the 66-pair scan are already built through rank 29; this artifact records the existing rank-28 build and subsequent funnel advancement."
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1,
+    "timeframe": "D1",
+    "news_axes": "off"
+  },
+  "q02": {
+    "work_item_id": "560b4011-c09f-494a-aa8e-a52830f9013e",
+    "symbol": "QM5_12786_USDCHF_EURGBP_COINTEGRATION_D1",
+    "status": "done",
+    "verdict": "PASS",
+    "evidence_path": "D:/QM/reports/work_items/560b4011-c09f-494a-aa8e-a52830f9013e/QM5_12786/20260629_174536/summary.json",
+    "updated_at_utc": "2026-06-29T18:09:45+00:00"
+  },
+  "q04_requeue": {
+    "work_item_id": "803159ab-cf78-4819-8691-26cdad47bd96",
+    "previous_verdict": "INFRA_FAIL",
+    "previous_aggregate_path": "D:/QM/reports/work_items/803159ab-cf78-4819-8691-26cdad47bd96.requeued_20260629T213440Z/QM5_12786/Q04/QM5_12786_USDCHF_EURGBP_COINTEGRATION_D1/aggregate.json",
+    "requeued_status": "pending",
+    "requeued_at_utc": "2026-06-29T21:34:59+00:00",
+    "db_backup_before_requeue": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12786_q04_requeue_20260629T213440Z.sqlite",
+    "archived_report_root": "D:/QM/reports/work_items/803159ab-cf78-4819-8691-26cdad47bd96.requeued_20260629T213440Z",
+    "duplicate_guard_pending_active_count": 1
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Q02 paced-fleet run produced the first real tester pass; no manual MT5 backtest was launched from this session.",
+  "live_safety": {
+    "touched_t_live_manifest": false,
+    "toggled_autotrading": false,
+    "touched_portfolio_gate": false,
+    "launched_manual_backtest": false
+  },
+  "notes": [
+    "No unbuilt positive-hedge FX cointegration pair remains in the 66-pair scan after QM5_12803 rank 29.",
+    "Advanced existing forex basket QM5_12786 by requeueing a retryable Q04 infra failure after Q02 PASS.",
+    "Structural low-frequency basket only; no banned or ML indicators."
+  ]
+}
