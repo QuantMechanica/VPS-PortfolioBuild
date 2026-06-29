@@ -1,0 +1,28 @@
+{
+  "task_id": "c552ad7f-f1b1-4e8e-a502-dfb040ff1524",
+  "ea_id": "QM5_12797",
+  "slug": "oil-silver-brk",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12797_oil-silver-brk_card.md",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12797_oil-silver-brk",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12797_oil-silver-brk\\QM5_12797_oil-silver-brk.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12797_oil-silver-brk\\QM5_12797_oil-silver-brk.ex5",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12797_oil-silver-brk\\sets\\QM5_12797_oil-silver-brk_QM5_12797_XTI_XAG_BRK_D1_D1_backtest.set"
+  ],
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260629_181026\\QM5_12797_oil-silver-brk.compile.log",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Q02 basket enqueue only; no smoke or backtest CPU started.",
+  "basket_manifest": "C:\\QM\\repo\\framework\\EAs\\QM5_12797_oil-silver-brk\\basket_manifest.json",
+  "logical_symbol": "QM5_12797_XTI_XAG_BRK_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "q02_work_item_id": "21e7babb-dcde-4796-9403-423dbfb7b4c5",
+  "q02_enqueued_at_utc": "2026-06-29T18:14:06+00:00",
+  "risk_mode": "RISK_FIXED",
+  "compiled_at": "2026-06-29T18:10:26+02:00",
+  "blocked_reason": ""
+}
