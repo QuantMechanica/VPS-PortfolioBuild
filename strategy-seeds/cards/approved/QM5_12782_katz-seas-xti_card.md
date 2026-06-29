@@ -23,6 +23,9 @@ indicators:
   - "[[indicators/atr]]"
 strategy_type_flags: [calendar-seasonality, seasonal-crossover, stochastic-confirmation, atr-hard-stop, time-stop, symmetric-long-short, low-frequency]
 target_symbols: [XTIUSD.DWX]
+primary_target_symbols: [XTIUSD.DWX]
+markets: [XTIUSD.DWX]
+timeframes: [D1]
 single_symbol_only: true
 period: D1
 expected_trade_frequency: "D1 WTI adaptive seasonal-crossover sleeve; estimate 6-10 stop-entry packages/year after six-year warmup, stochastic confirmation, and framework filters."
@@ -33,11 +36,16 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
+pipeline_phase: Q02
 last_updated: 2026-06-29
 g0_approval_reasoning: "R1 PASS single Tier-A book source already approved for Katz Ch.8; R2 PASS deterministic day-of-year seasonal momentum curve, displaced SMA crossover, stochastic confirmation, stop entry, SES ATR stop/target, and time exit; R3 PASS XTIUSD.DWX is available and crude oil was one of the source's strongest commodity markets; R4 PASS no ML/grid/martingale/external runtime feed."
 expected_pf: 1.12
 expected_dd_pct: 18.0
+risk_class: medium-high
+ml_required: false
+modules_used: [no_trade, trade_entry, trade_management, trade_close]
+target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
+hard_rules_at_risk: [friday_close, enhancement_doctrine]
 ---
 
 # Katz Seasonal XTI
@@ -60,6 +68,14 @@ This is deliberately different from:
 - `QM5_12546_katz-seasonal-crossover-stoch-confirmation-stop-d1`: that build tests XAUUSD/GDAXI proxies. This card is the WTI energy port motivated by the source's commodity-market evidence.
 - `QM5_12567_cum-rsi2-commodity`: no RSI, oscillator pullback, ML, grid, martingale, or short-horizon commodity fade logic is used.
 
+## Hypothesis
+
+WTI has exploitable low-frequency seasonal inflection points when a prior-year adaptive seasonal momentum curve crosses its displaced average and current price confirms with a Stochastic extreme.
+
+## Rules
+
+Use a closed-D1 rule: build the seasonal pseudo-price from prior-year ATR-normalized day-of-year momentum, take stop-entry packages only on displaced seasonal-SMA crossovers confirmed by Stochastic, and exit through ATR hard stop, ATR target, or time stop.
+
 ## Markets And Timeframe
 
 - Target symbol: `XTIUSD.DWX`.
@@ -67,7 +83,7 @@ This is deliberately different from:
 - Backtest risk mode: `RISK_FIXED`.
 - Runtime data: Darwinex MT5 D1 OHLC, broker spread, framework Stochastic, and framework ATR only. No futures curve, inventory feed, EIA feed, CFTC data, CSV, API, analyst forecast, or ML model.
 
-## Entry Rules
+## 4. Entry Rules
 
 - Evaluate only on a new D1 bar.
 - Require at least `strategy_min_years` prior-year samples for the same day-of-year neighborhood before a seasonal value is valid.
@@ -81,21 +97,21 @@ This is deliberately different from:
 - No entry if an open position or pending stop already exists for this EA magic.
 - No entry if `XTIUSD.DWX` spread exceeds `strategy_max_spread_points`.
 
-## Exit Rules
+## 5. Exit Rules
 
 - Stop loss: Katz SES hard stop at ATR(`strategy_exit_atr`) * `strategy_sl_atr_mult`.
 - Profit target: ATR(`strategy_exit_atr`) * `strategy_tp_atr_mult`.
 - Time exit after `strategy_time_exit_bars` D1 bars.
 - Friday close remains enabled by the V5 framework.
 
-## Filters
+## 6. Filters (No-Trade Module)
 
 - Only trade `XTIUSD.DWX` on D1.
 - Only magic slot 0 is valid.
 - Skip entries when seasonal cache, Stochastic, ATR, tick size, point size, or current prices are unavailable.
 - Framework news, kill-switch, magic, stress, and Friday-close guards remain active.
 
-## Trade Management Rules
+## 7. Trade Management Rules
 
 - Symmetric long/short stop-entry packages.
 - No pyramiding.
