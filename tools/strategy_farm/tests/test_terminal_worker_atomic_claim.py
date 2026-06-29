@@ -589,6 +589,75 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(payload["launch_fault_defer_seconds"], terminal_worker.LAUNCH_FAULT_DEFER_SECONDS)
             self.assertIn("launch_not_before_utc", payload)
 
+    def test_fast_phase_runner_with_host_keyed_aggregate_finishes_item(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            report_root = root / "reports" / "wi-q05-basket"
+            aggregate = report_root / "QM5_9999" / "Q05" / "EURGBP_DWX" / "aggregate.json"
+            aggregate.parent.mkdir(parents=True)
+            aggregate.write_text(
+                json.dumps({
+                    "phase": "Q05",
+                    "verdict": "INVALID",
+                    "reason": "invalid_summary:NO_HISTORY,BARS_ZERO",
+                    "summary_path": str(report_root / "summary.json"),
+                    "trades": 0,
+                }),
+                encoding="utf-8",
+            )
+            self._insert_work_item(
+                root,
+                "wi-q05-basket",
+                "QM5_9999_EURGBP_EURAUD_COINTEGRATION_D1",
+                phase="Q05",
+                status="active",
+                claimed_by="T4",
+                payload={"report_root": str(report_root)},
+            )
+
+            old_pid_tree_exists = terminal_worker.farmctl._pid_tree_exists
+            old_terminal_slot_running = terminal_worker._terminal_slot_running
+            old_sleep = terminal_worker.time.sleep
+            try:
+                terminal_worker.farmctl._pid_tree_exists = lambda _pid: False
+                terminal_worker._terminal_slot_running = lambda _root, _terminal: False
+                terminal_worker.time.sleep = lambda _seconds: None
+
+                result = terminal_worker._monitor_spawned_work_item(
+                    root,
+                    {
+                        "id": "wi-q05-basket",
+                        "phase": "Q05",
+                        "ea_id": "QM5_9999",
+                        "symbol": "QM5_9999_EURGBP_EURAUD_COINTEGRATION_D1",
+                    },
+                    "T4",
+                    {"pid": 123456, "report_root": str(report_root)},
+                    {"report_root": str(report_root)},
+                    timeout_seconds=30,
+                )
+            finally:
+                terminal_worker.farmctl._pid_tree_exists = old_pid_tree_exists
+                terminal_worker._terminal_slot_running = old_terminal_slot_running
+                terminal_worker.time.sleep = old_sleep
+
+            self.assertEqual(result["status"], "done")
+            self.assertEqual(result["verdict"], "INFRA_FAIL")
+            self.assertIn("invalid_summary", result["reason"])
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, verdict, claimed_by, attempt_count, evidence_path, payload_json "
+                    "FROM work_items WHERE id='wi-q05-basket'"
+                ).fetchone()
+            self.assertEqual(row[0], "done")
+            self.assertEqual(row[1], "INFRA_FAIL")
+            self.assertIsNone(row[2])
+            self.assertEqual(row[3], 0)
+            self.assertEqual(Path(row[4]), aggregate)
+            payload = json.loads(row[5])
+            self.assertEqual(payload["evidence_provenance"], "phase_runner")
+            self.assertEqual(payload["run_smoke_exit_code"], 0)
+
     def test_launch_fault_defer_seconds_backoff_caps(self) -> None:
         base = terminal_worker.LAUNCH_FAULT_DEFER_SECONDS
         cap = terminal_worker.LAUNCH_FAULT_DEFER_MAX_SECONDS

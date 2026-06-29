@@ -624,6 +624,18 @@ def _find_work_item_summary_data(item: sqlite3.Row, payload: dict[str, Any]) -> 
                         return agg, json.loads(agg.read_text(encoding="utf-8-sig"))
                     except (OSError, json.JSONDecodeError):
                         return None
+            phase_dir = Path(str(report_root)) / f"QM5_{ea_num}" / phase
+            if phase_dir.is_dir():
+                cands = sorted(
+                    phase_dir.rglob("aggregate.json"),
+                    key=lambda p: p.stat().st_mtime,
+                    reverse=True,
+                )
+                for agg in cands:
+                    try:
+                        return agg, json.loads(agg.read_text(encoding="utf-8-sig"))
+                    except (OSError, json.JSONDecodeError):
+                        continue
         canonical_summary_path = farmctl._ea_phase_dir(str(item["ea_id"]), phase) / "summary.json"
         if canonical_summary_path.exists():
             try:
