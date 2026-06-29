@@ -13831,3 +13831,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12771,wti-thu-prem,0,XTIUSD.DWX,127710000,2026-06-29,Development,active
 12772,edgelab-gbpjpy-audjpy-cointegration,0,GBPJPY.DWX,127720000,2026-06-29,Development,active
 12772,edgelab-gbpjpy-audjpy-cointegration,1,AUDJPY.DWX,127720001,2026-06-29,Development,active
+12773,opec-wti-fade,0,XTIUSD.DWX,127730000,2026-06-29,Development,active
