@@ -13828,3 +13828,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12769,eia-xng-lng-brk,0,XNGUSD.DWX,127690000,2026-06-29,Development,active
 12770,edgelab-eurusd-eurgbp-cointegration,0,EURUSD.DWX,127700000,2026-06-29,Development,active
 12770,edgelab-eurusd-eurgbp-cointegration,1,EURGBP.DWX,127700001,2026-06-29,Development,active
+12771,wti-thu-prem,0,XTIUSD.DWX,127710000,2026-06-29,Development,active
