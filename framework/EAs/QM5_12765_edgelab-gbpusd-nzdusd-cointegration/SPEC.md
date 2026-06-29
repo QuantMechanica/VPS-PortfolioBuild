@@ -113,6 +113,11 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 `tester_deposit=100000`. The logical basket backtest setfile uses the canonical
 `RISK_FIXED=1000`, with `RISK_PERCENT=0`.
 
+Q02 queue note: `farmctl record-build` inserted one logical-basket work item
+`735a3ca6-6012-4897-8603-9ec5353b11d9` for
+`QM5_12765_GBPUSD_NZDUSD_COINTEGRATION_D1` on 2026-06-29. No per-leg Q02
+fanout was created.
+
 ---
 
 ## Revision History
@@ -120,3 +125,4 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-29 | Initial rank-19 next-unbuilt FX cointegration basket build | Built from the 12760 two-leg basket pattern |
+| v1-q02 | 2026-06-29 | Build task 739e6501-57fd-410e-8e27-85aa11ca9f1b recorded | Pending logical-basket work item 735a3ca6-6012-4897-8603-9ec5353b11d9 |

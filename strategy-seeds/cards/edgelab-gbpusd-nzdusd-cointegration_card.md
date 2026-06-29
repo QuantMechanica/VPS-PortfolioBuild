@@ -148,3 +148,4 @@ gates are the judge.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-06-29 | initial rank-19 next-unbuilt FX cointegration basket build | G0 | APPROVED |
+| v1-q02 | 2026-06-29 | build task 739e6501-57fd-410e-8e27-85aa11ca9f1b recorded | Q02 | PENDING work item 735a3ca6-6012-4897-8603-9ec5353b11d9 |
