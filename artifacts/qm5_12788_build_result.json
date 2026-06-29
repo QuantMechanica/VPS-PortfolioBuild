@@ -1,0 +1,25 @@
+{
+  "task_id": "ef8d5a9c-9807-464f-9df3-130315178d8a",
+  "ea_id": "QM5_12788",
+  "ea_dir": "framework/EAs/QM5_12788_turnaround-tuesday",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12788_turnaround-tuesday\\QM5_12788_turnaround-tuesday.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12788_turnaround-tuesday\\QM5_12788_turnaround-tuesday.ex5",
+  "magic_base": 127880000,
+  "symbols_registered": [
+    "GBPUSD.DWX",
+    "EURUSD.DWX",
+    "USDCAD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12788_turnaround-tuesday\\sets\\QM5_12788_turnaround-tuesday_GBPUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12788_turnaround-tuesday\\sets\\QM5_12788_turnaround-tuesday_EURUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12788_turnaround-tuesday\\sets\\QM5_12788_turnaround-tuesday_USDCAD.DWX_H1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12788_turnaround-tuesday\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "passed",
+  "smoke_report_path": "D:\\QM\\reports\\smoke\\QM5_12788\\20260629_202144\\summary.json",
+  "blocked_reason": null,
+  "open_questions": []
+}
