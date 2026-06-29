@@ -1,0 +1,15 @@
+{
+  "logical_symbol": "QM5_12770_EURUSD_EURGBP_COINTEGRATION_D1",
+  "host_symbol": "EURUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "EURGBP.DWX"
+  ],
+  "notes": [
+    "Two-leg EURUSD/EURGBP market-neutral FX cointegration candidate from the 2026-06-09 66-pair scan rerun. It did not clear the original hard survivor bar and has negative DEV and OOS Sharpe. It is the next unbuilt rank-22 tail pair after the existing 12532/12533/12624/12712/12723/12728/12731/12732/12735/12739/12747/12749/12751/12756/12758/12760/12762/12764/12765/12766/12768 baskets.",
+    "Q02 uses USD tester currency and the canonical RISK_FIXED=1000 budget. The EA trades EURUSD/EURGBP and selects GBPUSD conversion history for the EURGBP leg."
+  ]
+}
