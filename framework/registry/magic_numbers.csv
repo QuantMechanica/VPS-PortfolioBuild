@@ -13807,3 +13807,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12761,eia-xng-stor-idbrk,0,XNGUSD.DWX,127610000,2026-06-29,Development,active
 12762,edgelab-usdjpy-usdcad-cointegration,0,USDJPY.DWX,127620000,2026-06-29,Development,active
 12762,edgelab-usdjpy-usdcad-cointegration,1,USDCAD.DWX,127620001,2026-06-29,Development,active
+12763,wti-ref-sqz-brk,0,XTIUSD.DWX,127630000,2026-06-29,Development,active
