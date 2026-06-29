@@ -111,8 +111,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(Strategy_HasOpenPosition())
-      return false;
    if(strategy_smma_period <= 0 || strategy_wpr_period <= 0 ||
       strategy_stoch_k <= 0 || strategy_stoch_d <= 0 || strategy_stoch_slowing <= 0 ||
       strategy_structure_lookback <= 0 || strategy_target_rr <= 0.0)
