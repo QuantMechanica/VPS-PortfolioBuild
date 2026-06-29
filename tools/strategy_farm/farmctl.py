@@ -1003,6 +1003,36 @@ def _smoke_year_count(from_date: str | None, to_date: str | None, default_year: 
         return 1
 
 
+def _basket_payload_date_window(payload: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Return promoted basket test dates without changing single-symbol Q03 behavior."""
+    is_basket = (
+        str(payload.get("portfolio_scope") or "").lower() == "basket"
+        or bool(payload.get("basket_manifest"))
+    )
+    if not is_basket:
+        return None, None
+
+    def _date(value: Any) -> str | None:
+        text = str(value or "").strip()
+        if re.match(r"^\d{4}\.\d{2}\.\d{2}$", text):
+            return text
+        return None
+
+    from_date = _date(payload.get("from_date"))
+    to_date = _date(payload.get("to_date"))
+    if not from_date:
+        try:
+            from_date = f"{int(payload['from_year']):04d}.01.01"
+        except (KeyError, TypeError, ValueError):
+            from_date = None
+    if not to_date:
+        try:
+            to_date = f"{int(payload['to_year']):04d}.12.31"
+        except (KeyError, TypeError, ValueError):
+            to_date = None
+    return from_date, to_date
+
+
 # Q02 absolute trade floor (OWNER 2026-06-26): 5 trades/year is a sufficient sample at
 # Q02 for low-frequency structural edges; the per-window floor is this rate * window years.
 Q02_MIN_TRADES_PER_YEAR = 5
@@ -2311,8 +2341,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
             n_runs = "1"
             timeout_seconds = _p2_full_timeout_seconds(item_payload, from_date, to_date)
     else:
-        from_date = None
-        to_date = None
+        from_date, to_date = _basket_payload_date_window(item_payload)
         p2_run_stage = None
         timeout_seconds = 1800
     # Clamp the backtest start to where .DWX data actually exists, else NO_HISTORY.

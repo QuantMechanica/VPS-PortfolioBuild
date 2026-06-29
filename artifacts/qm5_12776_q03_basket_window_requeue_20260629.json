@@ -1,0 +1,25 @@
+{
+  "ea_id": "QM5_12776",
+  "logical_symbol": "QM5_12776_AUDUSD_GBPJPY_COINTEGRATION_D1",
+  "unit_of_work": "q03_infra_repair_requeue",
+  "instrument_diversity": "fx_market_neutral_basket",
+  "old_q03_work_item_id": "9b5cee64-a4a8-4364-98e0-526222529fd4",
+  "old_q03_verdict": "INFRA_FAIL",
+  "old_q03_reason": "NO_HISTORY;INCOMPLETE_RUNS caused by omitted promoted basket date window",
+  "parent_q02_work_item_id": "5de6cce6-f2ee-4316-bf82-0b312fa625c0",
+  "parent_q02_verdict": "PASS",
+  "new_q03_work_item_id": "f0d8f061-7a15-4891-a06e-54bbe6cd3e58",
+  "new_q03_status": "pending",
+  "from_date": "2018.07.02",
+  "to_date": "2024.12.31",
+  "host_symbol": "AUDUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "risk_mode": "RISK_FIXED",
+  "db_backup_before_mutation": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_12776_q03_requeue_20260629_192739Z.sqlite",
+  "requeue_reason": "basket_q03_promoted_date_window_preservation_fix_2026-06-29",
+  "source_agent": "codex_board_advisor_qm5_12776_q03_basket_window_fix_2026-06-29",
+  "tests": [
+    "python -m pytest tools\\strategy_farm\\tests\\test_basket_work_items.py -q"
+  ]
+}
