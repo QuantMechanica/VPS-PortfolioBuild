@@ -128,6 +128,12 @@ bool Strategy_EnsureBasketScope()
 
    QM_SymbolGuardInit(allowed);
    QM_BasketWarmupHistory(allowed, PERIOD_D1, MathMax(300, strategy_z_lookback_d1 + strategy_atr_period_d1 + 10));
+
+   // USD tester accounting requests bare USDJPY/USDCAD conversion history.
+   // Warm these as history-only dependencies so MT5 does not discover them
+   // mid-run after orders have already executed.
+   string conversion[2] = {"USDJPY", "USDCAD"};
+   QM_BasketWarmupHistory(conversion, PERIOD_D1, MathMax(300, strategy_z_lookback_d1 + strategy_atr_period_d1 + 10));
    g_basket_scope_ready = true;
    return true;
   }

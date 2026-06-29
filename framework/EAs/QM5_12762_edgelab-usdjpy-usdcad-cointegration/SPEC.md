@@ -114,6 +114,12 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 `tester_deposit=100000`. The logical basket backtest setfile uses the canonical
 `RISK_FIXED=1000`, with `RISK_PERCENT=0`.
 
+Q02 INFRA repair note: the 2026-06-29 failed work item produced real trades on
+`USDJPY.DWX` and `USDCAD.DWX`, then MT5 requested bare `USDJPY`/`USDCAD`
+conversion history and returned an empty M0/1970 report after sync timeout.
+The EA now warms those bare conversion symbols as history-only dependencies;
+the tradable and guarded basket universe remains `USDJPY.DWX`/`USDCAD.DWX`.
+
 Q02 queue note: one logical-basket work item was inserted for
 `QM5_12762_USDJPY_USDCAD_COINTEGRATION_D1`:
 `ec04e440-5ee4-440e-b6bc-d78898d233ee`. No per-leg Q02 fanout was created.
@@ -127,4 +133,5 @@ No manual tester run was launched from this session.
 |---|---|---|---|
 | v1 | 2026-06-29 | Initial next-best FX cointegration basket build | Built from the 12756 two-leg basket pattern |
 | v1-q02 | 2026-06-29 | Build passed and Q02 enqueued | Pending logical-basket work item ec04e440-5ee4-440e-b6bc-d78898d233ee |
+| v1-q02-infra1 | 2026-06-29 | Warm tester conversion symbols | Bare USDJPY/USDCAD conversion-history preload before Q02 requeue |
 
