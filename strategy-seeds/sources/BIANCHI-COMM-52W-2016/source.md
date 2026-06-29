@@ -7,6 +7,7 @@ status: mined
 last_reviewed: 2026-06-29
 cards_extracted:
   - wti-52w-anchor
+  - xng-52w-anchor
 ---
 
 # Bianchi-Drew-Fan Commodity 52-Week High Source
@@ -22,10 +23,10 @@ cards_extracted:
 
 This source is used for structural lineage around commodity momentum being
 observable through a 52-week high anchor. The QM implementation ports the
-idea to a Darwinex-native WTI CFD rule: once per month, buy WTI only when the
-prior close is near its own 252-D1 close high and the 63-D1 return confirms;
-sell only when the prior close is near its own 252-D1 close low and the 63-D1
-return confirms.
+idea first to a Darwinex-native WTI CFD rule and then to an independent
+natural-gas port: once per month, buy only when the prior close is near its own
+252-D1 close high and the 63-D1 return confirms; sell only when the prior close
+is near its own 252-D1 close low and the 63-D1 return confirms.
 
 The EA does not ingest futures-chain data, inventory data, CFTC data,
 analyst forecasts, APIs, CSV files, or external feeds at runtime. It uses only
@@ -38,6 +39,7 @@ risk/news/friday-close guards.
   preprint lineage.
 - R2 mechanical: PASS. Fixed D1 252-bar anchor, fixed D1 63-bar confirmation,
   monthly calendar gate, ATR hard stop, and max-hold exit are deterministic.
-- R3 data available: PASS. `XTIUSD.DWX` exists in the DWX symbol matrix.
+- R3 data available: PASS. `XTIUSD.DWX` and `XNGUSD.DWX` exist in the DWX
+  symbol matrix.
 - R4 no ML/banned logic: PASS. No ML, adaptive fitting, grid, martingale,
   external API, or discretionary input.
