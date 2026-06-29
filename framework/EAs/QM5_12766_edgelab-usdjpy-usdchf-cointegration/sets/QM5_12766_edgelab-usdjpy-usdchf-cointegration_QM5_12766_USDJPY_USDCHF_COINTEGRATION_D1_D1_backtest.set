@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12766
 ; ea_slug:      edgelab-usdjpy-usdchf-cointegration
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3dd93868c20c27ec31f48448de2618e83c84706c55822d803b9cfa91973a9386
+; build_hash:   541db50634bfdb856b41138d3b2c3f5bebbaed3b53dfe603b5553449d79ffef5
 ; author:       Development
 ; date:         2026-06-29
 ;==========================================================

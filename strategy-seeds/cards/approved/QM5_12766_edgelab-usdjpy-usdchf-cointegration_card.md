@@ -1,130 +1,171 @@
-# QM5_12766_edgelab-usdjpy-usdchf-cointegration - Strategy Spec
-
-**EA ID:** QM5_12766
-**Slug:** edgelab-usdjpy-usdchf-cointegration
-**Source:** claude_cross_asset_discovery_2026-06-09 plus Chan cointegration pair-trade method
-**Author of this spec:** Codex
-**Last revised:** 2026-06-29
-
+---
+ea_id: QM5_12766
+slug: edgelab-usdjpy-usdchf-cointegration
+type: strategy
+source_id: claude_cross_asset_discovery_2026-06-09
+source_citation: "Chan, Ernest P. (2009). Quantitative Trading. Wiley, Chapter 7 stationarity and cointegration; plus QuantMechanica in-house 66-pair FX cointegration scan rerun on Darwinex .DWX D1 data."
+sources:
+  - "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md"
+  - "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md"
+  - "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py"
+concepts:
+  - cointegration-pair-trade
+  - zscore-band-reversion
+  - market-neutral-fx-basket
+indicators:
+  - rolling-zscore
+  - atr-stop
+target_symbols: [USDJPY.DWX, USDCHF.DWX]
+logical_symbol: QM5_12766_USDJPY_USDCHF_COINTEGRATION_D1
+period: D1
+expected_trade_frequency: "D1 two-leg basket, approximately 4-8 logical spread packages/year."
+expected_trades_per_year_per_symbol: 5
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: Q02
+last_updated: 2026-06-29
+g0_approval_reasoning: "R1 PASS because the method comes from Chan cointegration pair-trading and pair selection comes from the OWNER-requested in-house 66-pair scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS USDJPY.DWX and USDCHF.DWX data exist in the exported scan universe; R4 PASS no ML/grid/martingale. Marked very high-risk because DEV and OOS net Sharpe were both negative."
+expected_pf: 0.98
+expected_dd_pct: 30.0
+portfolio_scope: basket
 ---
 
-## 1. Strategy Logic
+# Edge Lab USDJPY/USDCHF Cointegration Basket
 
-The EA trades the USDJPY.DWX and USDCHF.DWX D1 cointegration spread. It computes
-`S = ln(USDJPY) - beta * ln(USDCHF)` with beta defaulting to 0.435197, then
-calculates a 60-bar rolling z-score of that spread.
+## Source
 
-It opens a short-spread package when z is above +2.0 and a long-spread package
-when z is below -2.0. It closes both legs when the cached spread z-score has
-reverted inside +/-0.5. Each leg also carries a 2.0 * ATR(20, D1) protective
-stop.
+This card uses Chan's cointegration pair-trading structure from
+`strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md`: form a
+stationary two-asset spread, compute a z-score, enter against extreme deviations,
+and exit near the mean. The pair was selected from the QuantMechanica 66-pair FX
+scan in `docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md`, rerun from
+`framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py`.
 
-This is an exploratory next-best basket, not a hard-bar scan survivor. The
-published 66-pair scan only certified QM5_12533 and QM5_12532. A rerun of the
-same script ranked USDJPY/USDCHF as the strongest remaining unbuilt
-OOS-positive candidate after the existing
-12532/12533/12624/12712/12723/12728/12731/12732/12735/12739/12747/12749/12751/12756/12758/12760
-baskets, with DEV Sharpe -0.12, OOS net Sharpe 0.10, OOS return +1.20%, 15 OOS
-state changes, beta 0.435197, and 511.50-day half-life.
+The published scan hard-certified only QM5_12533 and QM5_12532. QM5_12624,
+QM5_12712, QM5_12723, QM5_12728, QM5_12731, QM5_12732, QM5_12735, QM5_12739,
+QM5_12747, QM5_12749, QM5_12751, QM5_12756, QM5_12758, QM5_12760, QM5_12762,
+QM5_12764, and QM5_12765 already cover the stronger exploratory tail. This card
+is the next unbuilt pair by OOS net Sharpe: USDJPY/USDCHF had DEV Sharpe
+-0.2817, OOS net Sharpe -0.0884, OOS return -1.0114%, 15 OOS state changes,
+hedge 0.435197, and 511.50-day half-life in the same rerun.
 
-The negative DEV Sharpe and very low OOS Sharpe mean this did not clear the
-original build discipline; it is a very high-risk exploratory sleeve built only
-because the mission requested a non-duplicate next-best FX cointegration pair
-after the strict survivors and stronger exploratory candidates were already
-built.
+## Concept
 
----
+USDJPY and USDCHF are both USD-base major pairs with different safe-haven and
+funding expressions: yen funding/risk-off pressure on one leg and Swiss-franc
+haven/rate pressure on the other. The scan result is weak because both DEV and
+OOS Sharpe are negative; this is an exploratory rank-20 tail candidate, not a
+certified survivor. The EA trades the spread, not either pair as a standalone
+directional system.
 
-## 2. Parameters
+## Hypothesis
 
-| Parameter | Default | Range | Meaning |
-|---|---:|---|---|
-| strategy_z_lookback_d1 | 60 | 20+ | D1 bars used for rolling spread mean and standard deviation |
-| strategy_beta | 0.435197 | >0 | Hedge coefficient in `ln(USDJPY) - beta * ln(USDCHF)` |
-| strategy_entry_z | 2.0 | >0 | Absolute z-score threshold for opening a spread package |
-| strategy_exit_z | 0.5 | >=0 | Absolute z-score threshold for closing the open package |
-| strategy_atr_period_d1 | 20 | 2+ | D1 ATR period for per-leg hard stop distance |
-| strategy_atr_sl_mult | 2.0 | >0 | ATR multiplier for each leg's hard stop |
-| strategy_deviation_points | 20 | 0+ | Broker deviation points for market leg entries |
+Temporary dislocations between the USDJPY and USDCHF D1 log-price spread can
+mean-revert because both pairs express USD plus safe-haven funding demand, but
+with different JPY and CHF policy/risk channels. The negative scan metrics make
+this a low-confidence tail test that must be killed by Q02+ if the live-cost
+pipeline confirms no edge.
 
----
+## Markets And Timeframe
 
-## 3. Symbol Universe
+- Host symbol: USDJPY.DWX.
+- Basket legs: USDJPY.DWX and USDCHF.DWX.
+- Logical symbol: QM5_12766_USDJPY_USDCHF_COINTEGRATION_D1.
+- Period: D1.
+- Backtest risk mode: RISK_FIXED.
 
-**Designed for:**
-- USDJPY.DWX - leg 1 of the fixed USDJPY/USDCHF spread and the spread numerator.
-- USDCHF.DWX - leg 2 of the fixed USDJPY/USDCHF spread and the beta-weighted spread denominator.
+## Rules
 
-**Explicitly not for:**
-- Other `.DWX` symbols. This card is a fixed two-leg FX-cross basket, not a portable multi-pair strategy.
+- Entry, exit, and broken-package handling are fully mechanical and specified
+  in the following sections.
+- The EA is fixed-pair only; it does not reselect symbols, refit beta, average
+  down, pyramid, or use portfolio feedback.
 
-The EA selects USDJPY.DWX and USDCHF.DWX only; both USD-base legs are available
-in the tester for basket valuation.
+## Entry Rules
 
----
+- Evaluate only after a new closed D1 bar.
+- Compute `spread = ln(USDJPY) - 0.435197 * ln(USDCHF)`.
+- Compute a 60-bar rolling z-score of the spread.
+- If no pair package is open and z > +2.0, open a short-spread package: short USDJPY, long USDCHF.
+- If no pair package is open and z < -2.0, open a long-spread package: long USDJPY, short USDCHF.
+- Size each leg from V5 fixed risk, split by absolute hedge weights.
 
-## 4. Timeframe
+## Exit Rules
 
-| Aspect | Value |
-|---|---|
-| Base timeframe | D1 |
-| Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` |
+- Close both legs when `abs(z) < 0.5`.
+- Each leg receives a hard ATR(20) * 2.0 protective stop.
+- If only one leg remains open, close it immediately as a broken package.
+- Framework Friday close remains enabled.
 
----
+## Filters
 
-## 5. Expected Behaviour
+- Host chart must be USDJPY.DWX or USDCHF.DWX on D1/H1, with slot 0 used for the logical host.
+- No pyramiding, averaging, grid, martingale, partial close, or trailing stop.
+- Framework news, kill-switch, magic, and Friday-close guards remain active.
 
-| Metric | Expected |
-|---|---|
-| Trades / year / logical basket | 4-8 |
-| Typical hold time | days to weeks |
-| Expected drawdown profile | high; Q02/Q04/Q05 must judge whether this weak residual is tradable after cost |
-| Regime preference | low-conviction USD-base residual between yen funding/risk-off and CAD commodity/rate expressions |
-| Win rate target | medium |
+## Parameters To Test
 
----
+- name: strategy_z_lookback_d1
+  default: 60
+  sweep_range: [40, 60, 90]
+- name: strategy_beta
+  default: 0.435197
+  sweep_range: [0.35, 0.435197, 0.55]
+- name: strategy_entry_z
+  default: 2.0
+  sweep_range: [1.75, 2.0, 2.25]
+- name: strategy_exit_z
+  default: 0.5
+  sweep_range: [0.25, 0.5, 0.75]
+- name: strategy_atr_period_d1
+  default: 20
+  sweep_range: [14, 20, 30]
+- name: strategy_atr_sl_mult
+  default: 2.0
+  sweep_range: [1.5, 2.0, 2.5]
 
-## 6. Source Citation
+## Author Claims
 
-Primary method source:
-- Chan, Ernest P. (2009). *Quantitative Trading*. Wiley. Chapter 7, stationarity and cointegration pair trading; examples 3.6, 7.2, 7.5 as extracted in `strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md`.
+No external performance claim is taken from Chan for USDJPY/USDCHF specifically.
+The in-house scan rerun found DEV Sharpe -0.2817 and OOS net Sharpe -0.0884
+after cost, below the original 0.8 survivor threshold and below zero in both
+windows. Pipeline gates are the judge.
 
-Pair-selection source:
-- `docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md`
-- `framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py`, rerun on `D:/QM/mt5/T_Export/MQL5/Files` D1 data.
+## Initial Risk Profile
 
-Rerun excerpt for this candidate:
+- expected_pf: 0.98.
+- expected_dd_pct: 30.
+- expected_trade_frequency: approximately 4-8 basket packages/year.
+- risk_class: very high because this is the first remaining unbuilt tail pair after the rank-19 negative-OOS exploratory basket.
+- gridding: false.
+- scalping: false.
+- ml_required: false.
 
-| pair | DEV Sharpe | OOS net Sharpe | OOS ret | OOS state changes | hedge | half-life |
-|---|---:|---:|---:|---:|---:|---:|
-| USDJPY~USDCHF | -0.12 | 0.10 | +1.20% | 15 | 0.435197 | 511.50d |
+## Risk
 
----
+Backtests use V5 `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
+`PORTFOLIO_WEIGHT=1`. No live risk is authorized by this card; any future live
+burn-in would be assigned by the standard portfolio pipeline after all gates.
 
-## 7. Risk Model
+## Strategy Allowability Check
 
-| Phase | Risk mode | Value |
-|---|---|---|
-| Backtest (Q02 - Q10) | RISK_FIXED | USD 1,000 per basket trade |
-| Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio |
+- [x] R1 reputable source: Chan cointegration method plus OWNER-requested in-house 66-pair scan.
+- [x] R2 mechanical: fixed beta, z-score entry/exit, ATR stop, broken-package close.
+- [x] R3 testable: USDJPY.DWX and USDCHF.DWX are Darwinex-native `.DWX` symbols in the exported scan data.
+- [x] R4 compliant: no ML, no grid, no martingale, low-frequency D1.
 
-Q02 tester note: the manifest pins `tester_currency=USD` and
-`tester_deposit=100000`. The logical basket backtest setfile uses the canonical
-`RISK_FIXED=1000`, with `RISK_PERCENT=0`.
+## Framework Alignment
 
-Q02 queue note: one logical-basket work item was inserted for
-`QM5_12766_USDJPY_USDCHF_COINTEGRATION_D1`:
-`ec04e440-5ee4-440e-b6bc-d78898d233ee`. No per-leg Q02 fanout was created.
-No manual tester run was launched from this session.
+- no_trade: fixed host/symbol guard plus framework news/Friday/kill-switch.
+- trade_entry: D1 cointegration spread z-score threshold.
+- trade_management: broken-package cleanup only.
+- trade_close: mean-reversion exit and framework Friday close.
 
----
+## Pipeline History
 
-## Revision History
-
-| Version | Date | Reason | Notes |
-|---|---|---|---|
-| v1 | 2026-06-29 | Initial next-best FX cointegration basket build | Built from the 12756 two-leg basket pattern |
-| v1-q02 | 2026-06-29 | Build passed and Q02 enqueued | Pending logical-basket work item ec04e440-5ee4-440e-b6bc-d78898d233ee |
-
+| version | date | rebuild reason | phase reached | verdict |
+|---|---|---|---|---|
+| v1 | 2026-06-29 | initial rank-20 next-unbuilt FX cointegration basket build | G0 | APPROVED |

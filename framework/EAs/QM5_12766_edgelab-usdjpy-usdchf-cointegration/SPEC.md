@@ -21,13 +21,13 @@ stop.
 
 This is an exploratory next-best basket, not a hard-bar scan survivor. The
 published 66-pair scan only certified QM5_12533 and QM5_12532. A rerun of the
-same script ranked USDJPY/USDCHF as the strongest remaining unbuilt
-OOS-positive candidate after the existing
-12532/12533/12624/12712/12723/12728/12731/12732/12735/12739/12747/12749/12751/12756/12758/12760
-baskets, with DEV Sharpe -0.12, OOS net Sharpe 0.10, OOS return +1.20%, 15 OOS
-state changes, beta 0.435197, and 511.50-day half-life.
+same script ranked USDJPY/USDCHF as the strongest remaining unbuilt tail
+candidate after the existing
+12532/12533/12624/12712/12723/12728/12731/12732/12735/12739/12747/12749/12751/12756/12758/12760/12762/12764/12765
+baskets, with DEV Sharpe -0.2817, OOS net Sharpe -0.0884, OOS return -1.0114%,
+15 OOS state changes, beta 0.435197, and 511.50-day half-life.
 
-The negative DEV Sharpe and very low OOS Sharpe mean this did not clear the
+The negative DEV Sharpe and negative OOS Sharpe mean this did not clear the
 original build discipline; it is a very high-risk exploratory sleeve built only
 because the mission requested a non-duplicate next-best FX cointegration pair
 after the strict survivors and stronger exploratory candidates were already
@@ -80,7 +80,7 @@ in the tester for basket valuation.
 | Trades / year / logical basket | 4-8 |
 | Typical hold time | days to weeks |
 | Expected drawdown profile | high; Q02/Q04/Q05 must judge whether this weak residual is tradable after cost |
-| Regime preference | low-conviction USD-base residual between yen funding/risk-off and CAD commodity/rate expressions |
+| Regime preference | low-conviction USD-base residual between yen funding/risk-off and Swiss-franc haven/rate expressions |
 | Win rate target | medium |
 
 ---
@@ -98,7 +98,7 @@ Rerun excerpt for this candidate:
 
 | pair | DEV Sharpe | OOS net Sharpe | OOS ret | OOS state changes | hedge | half-life |
 |---|---:|---:|---:|---:|---:|---:|
-| USDJPY~USDCHF | -0.12 | 0.10 | +1.20% | 15 | 0.435197 | 511.50d |
+| USDJPY~USDCHF | -0.2817 | -0.0884 | -1.0114% | 15 | 0.435197 | 511.50d |
 
 ---
 
@@ -114,10 +114,9 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 `tester_deposit=100000`. The logical basket backtest setfile uses the canonical
 `RISK_FIXED=1000`, with `RISK_PERCENT=0`.
 
-Q02 queue note: one logical-basket work item was inserted for
-`QM5_12766_USDJPY_USDCHF_COINTEGRATION_D1`:
-`ec04e440-5ee4-440e-b6bc-d78898d233ee`. No per-leg Q02 fanout was created.
-No manual tester run was launched from this session.
+Q02 queue note: not enqueued yet at v1 build-spec authoring time. The intended
+queue shape is one logical-basket Q02 row for
+`QM5_12766_USDJPY_USDCHF_COINTEGRATION_D1`; no per-leg Q02 fanout.
 
 ---
 
@@ -125,6 +124,5 @@ No manual tester run was launched from this session.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-29 | Initial next-best FX cointegration basket build | Built from the 12756 two-leg basket pattern |
-| v1-q02 | 2026-06-29 | Build passed and Q02 enqueued | Pending logical-basket work item ec04e440-5ee4-440e-b6bc-d78898d233ee |
+| v1 | 2026-06-29 | Initial rank-20 next-unbuilt FX cointegration basket build | Built from the 12762 two-leg basket pattern |
 

@@ -13813,6 +13813,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12764,edgelab-usdjpy-gbpjpy-cointegration,1,GBPJPY.DWX,127640001,2026-06-29,Development,active
 12765,edgelab-gbpusd-nzdusd-cointegration,0,GBPUSD.DWX,127650000,2026-06-29,Development,active
 12765,edgelab-gbpusd-nzdusd-cointegration,1,NZDUSD.DWX,127650001,2026-06-29,Development,active
+12766,edgelab-usdjpy-usdchf-cointegration,0,USDJPY.DWX,127660000,2026-06-29,Development,active
+12766,edgelab-usdjpy-usdchf-cointegration,1,USDCHF.DWX,127660001,2026-06-29,Development,active
 12614,tsmom-6m-fx-basket-3pair,0,EURUSD.DWX,126140000,2026-06-29,Development,active
 12614,tsmom-6m-fx-basket-3pair,1,GBPUSD.DWX,126140001,2026-06-29,Development,active
 12614,tsmom-6m-fx-basket-3pair,2,USDJPY.DWX,126140002,2026-06-29,Development,active
