@@ -235,6 +235,17 @@ double Strategy_TrailingStop()
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   if(strategy_signal_tf != PERIOD_H1)
+      return true;
+   if(strategy_bias_tf != PERIOD_D1)
+      return true;
+   if(strategy_tenkan_period <= 0 || strategy_kijun_period <= 0 ||
+      strategy_senkou_b_period <= 0 || strategy_displacement < 0 ||
+      strategy_setup_lookback <= 0 || strategy_daily_ema <= 0 ||
+      strategy_trail_lookback <= 0 || strategy_atr_period <= 0 ||
+      strategy_trail_atr_mult <= 0.0 || strategy_initial_atr_cap <= 0.0)
+      return true;
+
    return false;
   }
 
@@ -416,10 +427,19 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
-   // Per-tick: trade management can adjust SL/TP on open positions.
+   // Strategy logic is closed-bar only. Keep Ichimoku/volume/trailing-stop
+   // history scans out of the Model-4 per-tick path.
+   if(!QM_IsNewBar(_Symbol, strategy_signal_tf))
+      return;
+
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
+   QM_EquityStreamOnNewBar();
+
+   // Per-closed-bar: trade management can adjust SL/TP on open positions.
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
+   // Per-closed-bar: discretionary exit. Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -433,16 +453,6 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
-
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
-   if(!QM_IsNewBar())
-      return;
-
-   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
-   // since last tick. Cheap: most calls early-return on same-day check.
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
