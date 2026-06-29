@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12810
 ; ea_slug:      wti-month-orb
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   f0e389dc198776f1ee1ae7b38ae92cb6750d5c123f0d62239ca6e396d21bcacc
 ; author:       Development
 ; date:         2026-06-30
 ;==========================================================
