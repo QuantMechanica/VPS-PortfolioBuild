@@ -54,8 +54,6 @@ input double strategy_atr_sl_mult         = 3.0;
 input int    strategy_max_hold_days       = 18;
 input int    strategy_max_spread_points   = 1000;
 
-int g_last_signal_day_key = 0;
-
 bool Strategy_IsXtiD1()
   {
    return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
@@ -64,13 +62,6 @@ bool Strategy_IsXtiD1()
 int Strategy_DateKey(const MqlDateTime &dt)
   {
    return dt.mon * 100 + dt.day;
-  }
-
-int Strategy_DayKey(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 10000 + dt.mon * 100 + dt.day;
   }
 
 bool Strategy_InRampWindow(const datetime t)
@@ -131,8 +122,7 @@ bool Strategy_LoadClosedState(double &close_last,
                               double &trend_sma_prior,
                               double &atr_fast,
                               double &atr_slow,
-                              datetime &closed_time,
-                              int &day_key)
+                              datetime &closed_time)
   {
    closed_time = iTime(_Symbol, PERIOD_D1, 1);  // perf-allowed: D1 refinery-ramp calendar gate.
    close_last = iClose(_Symbol, PERIOD_D1, 1);  // perf-allowed: D1 breakout close on closed bars.
@@ -150,11 +140,10 @@ bool Strategy_LoadClosedState(double &close_last,
    trend_sma_prior = QM_SMA(_Symbol, PERIOD_D1, strategy_trend_period, 1 + strategy_sma_slope_shift, PRICE_CLOSE);
    atr_fast = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_fast_period, 1);
    atr_slow = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_slow_period, 1);
-   day_key = Strategy_DayKey(closed_time);
 
    if(trend_sma <= 0.0 || trend_sma_prior <= 0.0 || atr_fast <= 0.0 || atr_slow <= 0.0)
       return false;
-   return (day_key > 0);
+   return true;
   }
 
 void Strategy_CloseOpenPositionsIfNeeded()
@@ -167,9 +156,8 @@ void Strategy_CloseOpenPositionsIfNeeded()
    double atr_fast = 0.0;
    double atr_slow = 0.0;
    datetime closed_time = 0;
-   int day_key = 0;
    if(!Strategy_LoadClosedState(close_last, entry_high, exit_low, trend_sma,
-                                trend_sma_prior, atr_fast, atr_slow, closed_time, day_key))
+                                trend_sma_prior, atr_fast, atr_slow, closed_time))
       return;
 
    const bool in_window = Strategy_InRampWindow(closed_time);
@@ -256,11 +244,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double atr_fast = 0.0;
    double atr_slow = 0.0;
    datetime closed_time = 0;
-   int day_key = 0;
    if(!Strategy_LoadClosedState(close_last, entry_high, exit_low, trend_sma,
-                                trend_sma_prior, atr_fast, atr_slow, closed_time, day_key))
-      return false;
-   if(day_key <= 0 || day_key == g_last_signal_day_key)
+                                trend_sma_prior, atr_fast, atr_slow, closed_time))
       return false;
    if(!Strategy_InRampWindow(closed_time))
       return false;
@@ -280,7 +265,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.reason = "WTI_REFINERY_RAMP_SQUEEZE_BREAKOUT_LONG";
-   g_last_signal_day_key = day_key;
    return true;
   }
 
