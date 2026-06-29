@@ -21,8 +21,8 @@
   ],
   "mq5_sha256": "2a6edf7d647febce3e3069c15d657e48a613d8e86f25c7436c0137ddaf8b3203",
   "ex5_sha256": "cde31a2f2500485eb9db85a4929fb4d4cff4e42ac4ee7c9d8753ca355a88b433",
-  "setfile_header_build_hash": "27cb22f8d2e6f1811d9ffde61f601b78ea17dc4048e1777254e874c71f441967",
-  "setfile_current_sha256": "b25ad2c447ef05b2f0b2cbcb18ba10ec55f4c1444f96a7756fe66d85bb27ac4e",
+  "setfile_header_build_hash": "653e0ed15b25bffe0e8a079f608706dfc8c669aafcea8e6a64f848275c4a4b01",
+  "setfile_current_sha256": "2c53dbe3d321b8f64a774a94f6bd83fc414579831569126dfaf0a73d382c6de3",
   "risk_mode": {
     "RISK_FIXED": 1000,
     "RISK_PERCENT": 0,
@@ -54,7 +54,7 @@
     "result": "PASS",
     "failures": 0,
     "warnings": 16,
-    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260629_111235.json",
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260629_111600.json",
     "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
   },
   "smoke_result": "deferred_p2_smoke",
