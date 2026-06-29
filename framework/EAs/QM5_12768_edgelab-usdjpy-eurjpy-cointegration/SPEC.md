@@ -120,6 +120,13 @@ was recorded and enqueued one logical-basket Q02 work item for
 `93909a80-8ce6-4e95-be28-889f8dc17a7d`. No per-leg Q02 fanout was
 created.
 
+Q02 payload repair note: on 2026-06-29 the existing pending work item
+`93909a80-8ce6-4e95-be28-889f8dc17a7d` was updated in place after
+`build_check.ps1 -SkipCompile` PASS. The payload now carries the full logical
+basket metadata (`portfolio_scope=basket`, both basket legs, host symbol,
+tester deposit/currency, `RISK_FIXED=1000`, 120 minute basket timeout, and
+priority tracking). No duplicate Q02 row or manual MT5 launch was created.
+
 ---
 
 ## Revision History
@@ -128,5 +135,6 @@ created.
 |---|---|---|---|
 | v1 | 2026-06-29 | Initial rank-21 next-unbuilt FX cointegration basket build | Built from the 12764 two-leg JPY-cross basket pattern |
 | v1-q02 | 2026-06-29 | Compile/build-check PASS and Q02 enqueued | Pending logical-basket work item 93909a80-8ce6-4e95-be28-889f8dc17a7d |
+| v1-q02-payload | 2026-06-29 | Repaired existing pending Q02 payload | Added full basket/runtime metadata in place; duplicate guard left one pending/active logical Q02 row |
 
 
