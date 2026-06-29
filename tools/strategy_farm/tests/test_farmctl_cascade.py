@@ -384,6 +384,8 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             self.assertIn("--latest-full-year", cmd)
             self.assertEqual(cmd[cmd.index("--latest-full-year") + 1], "2024")
             self.assertIn("--baseline-setfile", cmd)
+            self.assertIn("--logical-symbol", cmd)
+            self.assertEqual(cmd[cmd.index("--logical-symbol") + 1], "QM5_9998_EURGBP_EURAUD_COINTEGRATION_D1")
             self.assertNotIn("--setfile", cmd)
 
 

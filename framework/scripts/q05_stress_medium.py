@@ -221,13 +221,40 @@ def gen_stress_setfile_for(baseline: Path) -> Path:
     return baseline.with_name(f"{stem}_q05_stress_medium.set")
 
 
+def _basket_tester_overrides(setfile: Path) -> tuple[str | None, int | None]:
+    """Return tester currency/deposit from the EA basket manifest, if present."""
+    manifest_path = Path(setfile).parent.parent / "basket_manifest.json"
+    if not manifest_path.exists():
+        return None, None
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return None, None
+
+    currency_raw = str(manifest.get("tester_currency") or "").strip().upper()
+    currency = currency_raw if re.fullmatch(r"[A-Z]{3}", currency_raw) else None
+
+    deposit = None
+    for key in ("tester_deposit", "tester_initial_deposit"):
+        try:
+            value = int(str(manifest.get(key) or "").strip())
+        except ValueError:
+            continue
+        if value > 0:
+            deposit = value
+            break
+    return currency, deposit
+
+
 def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
                          setfile: Path, terminal: str, period: str = "H1",
                          report_root: Path, timeout_sec: int = 1800,
-                         latest_full_year: int | None = None) -> dict:
+                         latest_full_year: int | None = None,
+                         logical_symbol: str | None = None) -> dict:
     repo_root = Path(__file__).resolve().parents[2]
     run_smoke_ps1 = repo_root / "framework" / "scripts" / "run_smoke.ps1"
     history_year, history_from, history_to = full_history_window(latest_full_year)
+    evidence_symbol = logical_symbol or symbol
     args = [
         "pwsh.exe", "-NoProfile", "-File", str(run_smoke_ps1),
         "-EAId", str(ea_id),
@@ -246,6 +273,11 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         "-ReportRoot", str(report_root),
         "-TimeoutSeconds", str(timeout_sec),
     ]
+    tester_currency, tester_deposit = _basket_tester_overrides(setfile)
+    if tester_currency:
+        args.extend(["-TesterCurrencyOverride", tester_currency])
+    if tester_deposit:
+        args.extend(["-TesterDepositOverride", str(tester_deposit)])
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
     proc = subprocess.run(args, capture_output=True, text=True,
                           timeout=timeout_sec, creationflags=creationflags)
@@ -283,7 +315,8 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
     return {
         "phase": GATE_NAME,
         "ea_id": ea_id,
-        "symbol": symbol,
+        "symbol": evidence_symbol,
+        "runner_symbol": symbol,
         "verdict": verdict,
         "reason": reason,
         "pf": pf,
@@ -313,6 +346,8 @@ def main() -> int:
     ap.add_argument("--timeout-sec", type=int, default=1800)
     ap.add_argument("--latest-full-year", type=int,
                     help="Cap full-history window when validated custom-symbol history ends before default")
+    ap.add_argument("--logical-symbol",
+                    help="Basket evidence symbol to record when --symbol is the MT5 host")
     args = ap.parse_args()
 
     ea_match = re.match(r"QM5_(\d+)_?", args.ea)
@@ -336,11 +371,13 @@ def main() -> int:
         setfile=stress_set, terminal=args.terminal, period=period,
         report_root=args.report_root, timeout_sec=args.timeout_sec,
         latest_full_year=args.latest_full_year,
+        logical_symbol=args.logical_symbol,
     )
 
-    out_dir = ensure_dir(args.report_root / f"QM5_{ea_id}" / "Q05" / args.symbol.replace(".", "_"))
+    evidence_symbol = args.logical_symbol or args.symbol
+    out_dir = ensure_dir(args.report_root / f"QM5_{ea_id}" / "Q05" / evidence_symbol.replace(".", "_"))
     write_json(out_dir / "aggregate.json", res)
-    print(f"Q05 {args.ea} {args.symbol}: {res['verdict']}  pf={res['pf']}  dd_pct={res['dd_pct']}")
+    print(f"Q05 {args.ea} {evidence_symbol}: {res['verdict']}  pf={res['pf']}  dd_pct={res['dd_pct']}")
     return 0 if res["verdict"] == "PASS" else (1 if res["verdict"] == "FAIL" else 3)
 
 

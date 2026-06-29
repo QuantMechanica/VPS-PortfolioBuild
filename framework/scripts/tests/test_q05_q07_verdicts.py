@@ -128,6 +128,52 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertEqual(cmd[cmd.index("-ToDate") + 1], "2024.12.31")
         self.assertEqual(result["history_to"], "2024.12.31")
 
+    def test_q05_passes_basket_manifest_tester_overrides(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ea_dir = root / "QM5_12533_demo"
+            sets_dir = ea_dir / "sets"
+            sets_dir.mkdir(parents=True)
+            setfile = sets_dir / "QM5_12533_demo_LOGICAL_D1_q05_stress_medium.set"
+            setfile.write_text("RISK_FIXED=150000\n", encoding="utf-8")
+            (ea_dir / "basket_manifest.json").write_text(
+                json.dumps({"tester_currency": "JPY", "tester_deposit": 15000000}),
+                encoding="utf-8",
+            )
+            (root / "summary.json").write_text(
+                json.dumps({
+                    "runs": [{
+                        "profit_factor": 1.2,
+                        "drawdown": 500.0,
+                        "total_trades": 25,
+                    }]
+                }),
+                encoding="utf-8",
+            )
+            calls = []
+
+            def fake_run(args, **_kwargs):
+                calls.append(args)
+                return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+            with patch.object(q05.subprocess, "run", side_effect=fake_run):
+                result = q05.run_stress_backtest(
+                    ea_id=12533,
+                    ea_expert=r"QM\QM5_12533_demo",
+                    symbol="EURJPY.DWX",
+                    setfile=setfile,
+                    terminal="T8",
+                    period="D1",
+                    report_root=root,
+                    logical_symbol="QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+                )
+
+        cmd = calls[0]
+        self.assertEqual(cmd[cmd.index("-TesterCurrencyOverride") + 1], "JPY")
+        self.assertEqual(cmd[cmd.index("-TesterDepositOverride") + 1], "15000000")
+        self.assertEqual(result["symbol"], "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1")
+        self.assertEqual(result["runner_symbol"], "EURJPY.DWX")
+
     def test_q07_missing_summary_remains_invalid(self) -> None:
         verdict, reason, _metrics = q07.evaluate_seeds([
             {"seed": 42, "pf": None, "trades": 0, "summary_path": None},
