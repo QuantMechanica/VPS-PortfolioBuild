@@ -1,0 +1,91 @@
+{
+  "task_id": "manual-build-QM5_12775-20260629",
+  "ea_id": "QM5_12775",
+  "slug": "wti-wed-prem",
+  "strategy": "WTI Wednesday D1 calendar premium",
+  "source_id": "MEEK-HOELSCHER-WTI-DOW-2023",
+  "source_citation": "Meek, H. and Hoelscher, S. A. Day-of-the-week effect: Petroleum and petroleum products. Cogent Economics and Finance 11(1), 2023. DOI https://doi.org/10.1080/23322039.2023.2213876; open pointer https://www.econstor.eu/handle/10419/304091.",
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12775_wti-wed-prem",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12775_wti-wed-prem\\QM5_12775_wti-wed-prem.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12775_wti-wed-prem\\QM5_12775_wti-wed-prem.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12775_wti-wed-prem\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\wti-wed-prem_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12775_wti-wed-prem_card.md",
+  "runtime_approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12775_wti-wed-prem.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12775_wti-wed-prem\\sets\\QM5_12775_wti-wed-prem_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "mq5_sha256": "431b0876256ad307d68b672093ce07ce4f1b2a090e2d5c5c3b7609fdb24af97e",
+  "ex5_sha256": "6f375d7dabe6924d7b2671e25962658f22a92f439174d94f3aff1b47ccb91aad",
+  "setfile_header_build_hash": "f3e5b3d09c0c92dcaa2a681a01c288440c5b2d0bf65f212fad23ecc563cd3b9d",
+  "setfile_current_sha256": "f7abae8979d4b186f5ba784e11690651567cd8e602379564fef9aa2ecc7ae8f0",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 127750000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12775_wti-wed-prem/QM5_12775_wti-wed-prem.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260629_120623\\QM5_12775_wti-wed-prem.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260629_120623\\summary.csv"
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12775_wti-wed-prem -RepoRoot C:/QM/repo -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260629_120634.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Paced fleet Q02 was enqueued; no manual MT5 backtest was launched from this session.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  },
+  "duplicate_check": {
+    "selected_edge": "XTIUSD.DWX Wednesday long day-of-week premium",
+    "non_duplicate_reason": "Existing WTI day-of-week builds cover Monday short fade, Tuesday short fade, Thursday long premium, Friday long premium, weekend gap fade, and conditional Thursday-pullback/Friday-bounce. This is a Wednesday-only long sleeve and uses no WPSR, inventory, roll, month, ratio, RSI, or medium-term trend/reversal logic."
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "phase": "Q02",
+    "kind": "backtest",
+    "symbol": "XTIUSD.DWX",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12775_wti-wed-prem\\sets\\QM5_12775_wti-wed-prem_XTIUSD.DWX_D1_backtest.set",
+    "work_item_id": "c4736fdd-e17b-4cc2-9cb5-5de45c3ae1fb",
+    "status_after_final_check": "pending",
+    "claimed_by": null,
+    "created_at_utc": "2026-06-29T12:06:59+00:00",
+    "updated_at_utc": "2026-06-29T12:06:59+00:00"
+  },
+  "notes": "Built one non-duplicate structural WTI Wednesday calendar-premium energy sleeve. No live, T_Live, AutoTrading, or portfolio gate artifacts touched."
+}
