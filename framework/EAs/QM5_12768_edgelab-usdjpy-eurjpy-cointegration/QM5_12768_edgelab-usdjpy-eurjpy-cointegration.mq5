@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_12764 Edge Lab USDJPY GBPJPY Cointegration"
+#property description "QM5_12768 Edge Lab USDJPY EURJPY Cointegration"
 
 #include <QM/QM_Common.mqh>
 #include <QM/QM_BasketOrder.mqh>
@@ -36,7 +36,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 12764;
+input int    qm_ea_id                   = 12768;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -75,7 +75,7 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_z_lookback_d1     = 60;
-input double strategy_beta              = 0.992629;
+input double strategy_beta              = 1.236712;
 input double strategy_entry_z           = 2.0;
 input double strategy_exit_z            = 0.5;
 input int    strategy_atr_period_d1     = 20;
@@ -83,7 +83,7 @@ input double strategy_atr_sl_mult       = 2.0;
 input int    strategy_deviation_points  = 20;
 
 string   g_leg_usdjpy = "USDJPY.DWX";
-string   g_leg_gbpjpy = "GBPJPY.DWX";
+string   g_leg_eurjpy = "EURJPY.DWX";
 bool     g_basket_scope_ready = false;
 double   g_spread_z = 0.0;
 double   g_spread_mean = 0.0;
@@ -96,14 +96,14 @@ int Strategy_SlotForSymbol(const string symbol)
   {
    if(symbol == g_leg_usdjpy)
       return 0;
-   if(symbol == g_leg_gbpjpy)
+   if(symbol == g_leg_eurjpy)
       return 1;
    return -1;
   }
 
 bool Strategy_IsHostSymbol()
   {
-   return (_Symbol == g_leg_usdjpy || _Symbol == g_leg_gbpjpy);
+   return (_Symbol == g_leg_usdjpy || _Symbol == g_leg_eurjpy);
   }
 
 bool Strategy_IsPairPosition()
@@ -121,8 +121,8 @@ bool Strategy_EnsureBasketScope()
       return true;
 
    // USDJPY is both the spread numerator and the USD conversion history
-   // required for the GBPJPY leg under USD-denominated tester accounting.
-   string allowed[2] = {"USDJPY.DWX", "GBPJPY.DWX"};
+   // required for the EURJPY leg under USD-denominated tester accounting.
+   string allowed[2] = {"USDJPY.DWX", "EURJPY.DWX"};
    for(int i = 0; i < 2; ++i)
       SymbolSelect(allowed[i], true);
 
@@ -165,16 +165,16 @@ bool Strategy_RefreshSpreadState()
 
    if(!Strategy_EnsureBasketScope())
       return false;
-   if(!QM_SymbolAssertOrLog(g_leg_usdjpy) || !QM_SymbolAssertOrLog(g_leg_gbpjpy))
+   if(!QM_SymbolAssertOrLog(g_leg_usdjpy) || !QM_SymbolAssertOrLog(g_leg_eurjpy))
       return false;
 
    double usdjpy[];
-   double gbpjpy[];
+   double eurjpy[];
    ArraySetAsSeries(usdjpy, true);
-   ArraySetAsSeries(gbpjpy, true);
+   ArraySetAsSeries(eurjpy, true);
    if(CopyClose(g_leg_usdjpy, PERIOD_D1, 1, lookback, usdjpy) != lookback) // perf-allowed: Strategy_EntrySignal is called only after the framework QM_IsNewBar gate.
       return false;
-   if(CopyClose(g_leg_gbpjpy, PERIOD_D1, 1, lookback, gbpjpy) != lookback) // perf-allowed: Strategy_EntrySignal is called only after the framework QM_IsNewBar gate.
+   if(CopyClose(g_leg_eurjpy, PERIOD_D1, 1, lookback, eurjpy) != lookback) // perf-allowed: Strategy_EntrySignal is called only after the framework QM_IsNewBar gate.
       return false;
 
    double sum = 0.0;
@@ -182,9 +182,9 @@ bool Strategy_RefreshSpreadState()
    ArrayResize(spreads, lookback);
    for(int i = 0; i < lookback; ++i)
      {
-      if(usdjpy[i] <= 0.0 || gbpjpy[i] <= 0.0)
+      if(usdjpy[i] <= 0.0 || eurjpy[i] <= 0.0)
          return false;
-      spreads[i] = MathLog(usdjpy[i]) - strategy_beta * MathLog(gbpjpy[i]);
+      spreads[i] = MathLog(usdjpy[i]) - strategy_beta * MathLog(eurjpy[i]);
       if(!MathIsValidNumber(spreads[i]))
          return false;
       sum += spreads[i];
@@ -275,20 +275,20 @@ bool Strategy_OpenPair(const int spread_direction)
       return false;
 
    const double usdjpy_weight = 1.0;
-   const double gbpjpy_weight = MathAbs(strategy_beta);
-   const double weight_sum = usdjpy_weight + gbpjpy_weight;
+   const double eurjpy_weight = MathAbs(strategy_beta);
+   const double weight_sum = usdjpy_weight + eurjpy_weight;
    if(weight_sum <= 0.0)
       return false;
 
    const bool long_spread = (spread_direction > 0);
    const QM_OrderType usdjpy_type = long_spread ? QM_BUY : QM_SELL;
-   const QM_OrderType gbpjpy_type = long_spread ? QM_SELL : QM_BUY;
-   const string reason = long_spread ? "QM5_12764_LONG_SPREAD_Z_LT_NEG_ENTRY"
-                                     : "QM5_12764_SHORT_SPREAD_Z_GT_POS_ENTRY";
+   const QM_OrderType eurjpy_type = long_spread ? QM_SELL : QM_BUY;
+   const string reason = long_spread ? "QM5_12768_LONG_SPREAD_Z_LT_NEG_ENTRY"
+                                     : "QM5_12768_SHORT_SPREAD_Z_GT_POS_ENTRY";
 
    bool usdjpy_ok = Strategy_OpenLeg(g_leg_usdjpy, usdjpy_type, usdjpy_weight, weight_sum, reason);
-   bool gbpjpy_ok = Strategy_OpenLeg(g_leg_gbpjpy, gbpjpy_type, gbpjpy_weight, weight_sum, reason);
-   if(usdjpy_ok && gbpjpy_ok)
+   bool eurjpy_ok = Strategy_OpenLeg(g_leg_eurjpy, eurjpy_type, eurjpy_weight, weight_sum, reason);
+   if(usdjpy_ok && eurjpy_ok)
      {
       g_pair_entry_time = TimeCurrent();
       return true;
@@ -324,7 +324,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_12764_PAIR_HOST";
+   req.reason = "QM5_12768_PAIR_HOST";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
@@ -382,14 +382,14 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
      {
       if(!QM_NewsAllowsTrade2(g_leg_usdjpy, broker_time, qm_news_temporal, qm_news_compliance))
          return true;
-      if(!QM_NewsAllowsTrade2(g_leg_gbpjpy, broker_time, qm_news_temporal, qm_news_compliance))
+      if(!QM_NewsAllowsTrade2(g_leg_eurjpy, broker_time, qm_news_temporal, qm_news_compliance))
          return true;
      }
    else
      {
       if(!QM_NewsAllowsTrade(g_leg_usdjpy, broker_time, qm_news_mode_legacy))
          return true;
-      if(!QM_NewsAllowsTrade(g_leg_gbpjpy, broker_time, qm_news_mode_legacy))
+      if(!QM_NewsAllowsTrade(g_leg_eurjpy, broker_time, qm_news_mode_legacy))
          return true;
      }
    return false;
@@ -402,7 +402,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 int OnInit()
   {
    SymbolSelect(g_leg_usdjpy, true);
-   SymbolSelect(g_leg_gbpjpy, true);
+   SymbolSelect(g_leg_eurjpy, true);
 
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
