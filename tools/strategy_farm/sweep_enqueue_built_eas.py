@@ -23,7 +23,7 @@ wave (EAs already enqueued have work_items and are skipped). Part 2
 (stranded re-runs, ~76 rows) always runs. Designed to be safe under an
 hourly scheduled task.
 
-Usage: python sweep_enqueue_built_eas.py [--apply] [--queue-ceiling N] [--ea QM5_12580]
+Usage: python sweep_enqueue_built_eas.py [--apply] [--queue-ceiling N] [--ea QM5_12580] [--symbols EURUSD.DWX,GBPUSD.DWX]
 Default is dry-run. Evidence JSON written either way.
 """
 import csv
@@ -66,6 +66,12 @@ if "--ea" in sys.argv:
         ea_id = raw.strip()
         if ea_id:
             TARGET_EAS.add(ea_id)
+TARGET_SYMBOLS = set()
+if "--symbols" in sys.argv:
+    for raw in sys.argv[sys.argv.index("--symbols") + 1].split(","):
+        symbol = raw.strip()
+        if symbol:
+            TARGET_SYMBOLS.add(symbol)
 NOW = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00")
 
 sys.path.insert(0, r"C:\QM\repo\tools\strategy_farm")
@@ -103,6 +109,7 @@ budget = max(0, QUEUE_CEILING - pending_now)
 
 report = {"generated_at": NOW, "apply": APPLY,
           "target_eas": sorted(TARGET_EAS),
+          "target_symbols": sorted(TARGET_SYMBOLS),
           "pending_at_start": pending_now, "queue_ceiling": QUEUE_CEILING,
           "wave_budget": budget,
           "part1_never_tested": {"enqueued": [], "skipped": []},
@@ -187,6 +194,10 @@ for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
         report["part1_never_tested"]["skipped"].append(
             {"ea_id": ea_id, "symbol": _sym, "reason": "staged_deferred_symbol"})
     for sf, symbol, tf in stage1:
+        if TARGET_SYMBOLS and symbol not in TARGET_SYMBOLS:
+            report["part1_never_tested"]["skipped"].append(
+                {"ea_id": ea_id, "symbol": symbol, "reason": "target_symbol_filter"})
+            continue
         if pending_active_exists(ea_id, symbol, "Q02"):
             report["part1_never_tested"]["skipped"].append(
                 {"ea_id": ea_id, "symbol": symbol, "reason": "existing_pending_active"})
@@ -245,6 +256,11 @@ for phase in ("Q02", "Q03", "Q08"):
     for ea_id, symbol, setfile, _ts, infra_attempts in stranded_rows:
         if part2_count >= MAX_PART2_PER_RUN:
             break
+        if TARGET_SYMBOLS and symbol not in TARGET_SYMBOLS:
+            report["part2_stranded"]["skipped"].append(
+                {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                 "reason": "target_symbol_filter"})
+            continue
         num = int(ea_id.split("_")[1]) if ea_id.startswith("QM5_") else None
         status, _slug = reg.get(num, (None, None))
         if status != "active":
@@ -301,6 +317,11 @@ if deferred_state:
             report["part3_deferred_promotion"]["kept_deferred"] += len(entry["setfiles"])
             continue
         for sf in entry["setfiles"]:
+            if TARGET_SYMBOLS and sf["symbol"] not in TARGET_SYMBOLS:
+                report["part3_deferred_promotion"].setdefault("skipped", []).append(
+                    {"ea_id": ea_id, "symbol": sf["symbol"],
+                     "reason": "target_symbol_filter"})
+                continue
             if not Path(sf["setfile"]).is_file():
                 continue
             if pending_active_exists(ea_id, sf["symbol"], "Q02"):
