@@ -18,6 +18,8 @@ https://www.macrotrends.net/2612/silver-to-oil-ratio-historical-chart
 
 - `oil-silver-ratio`: D1 `XTIUSD.DWX` / `XAGUSD.DWX` log-ratio reversion
   basket.
+- `oil-silver-brk`: D1 `XTIUSD.DWX` / `XAGUSD.DWX` log-ratio breakout
+  basket.
 
 ## Research Summary
 
@@ -30,8 +32,8 @@ any external data.
 ## R1-R4 Notes
 
 - R1 single source: PASS. One public Macrotrends market-data chart.
-- R2 mechanical: PASS. Card supplies deterministic D1 log-spread z-score entry,
-  mean-reversion exit, ATR hard stops, and one package at a time.
+- R2 mechanical: PASS. Cards supply deterministic D1 log-spread z-score entry,
+  fixed exit rules, ATR hard stops, and one package at a time.
 - R3 data available: PASS. `XTIUSD.DWX` and `XAGUSD.DWX` are present in
   `framework/registry/dwx_symbol_matrix.csv`.
 - R4 compliant: PASS. No ML, adaptive PnL fitting, grid, martingale, external
@@ -41,6 +43,9 @@ any external data.
 
 - Not `QM5_12577_cme-xauxag-ratio`: this is energy versus silver, not
   gold-versus-silver metal value.
+- `oil-silver-brk` is not `QM5_12606_oil-silver-ratio`: it follows D1 ratio
+  breakouts and exits on signal failure or time stop instead of fading z-score
+  extremes into mean reversion.
 - Not `QM5_12578_eia-oilgas-ratio`: this uses silver as the denominator, not
   natural gas.
 - Not `QM5_12604_cme-oilgold-ratio` or `QM5_12605_cme-oilgold-brk`: the hedge
