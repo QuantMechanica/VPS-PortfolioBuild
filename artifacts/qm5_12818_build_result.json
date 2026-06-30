@@ -1,0 +1,109 @@
+{
+  "task_id": "manual-build-QM5_12818-20260630",
+  "ea_id": "QM5_12818",
+  "slug": "xng-tue-prem",
+  "strategy": "XNG Tuesday D1 calendar premium",
+  "branch": "agents/board-advisor",
+  "date": "2026-06-30",
+  "source_id": "MEEK-HOELSCHER-XNG-DOW-2023",
+  "source_citation": "Meek, H. and Hoelscher, S. A. Day-of-the-week effect: Petroleum and petroleum products. Cogent Economics and Finance 11(1), 2023. DOI https://doi.org/10.1080/23322039.2023.2213876; open pointer https://www.econstor.eu/handle/10419/304091.",
+  "symbols": [
+    "XNGUSD.DWX"
+  ],
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12818_xng-tue-prem",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12818_xng-tue-prem\\QM5_12818_xng-tue-prem.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12818_xng-tue-prem\\QM5_12818_xng-tue-prem.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12818_xng-tue-prem\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\xng-tue-prem_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12818_xng-tue-prem_card.md",
+  "runtime_approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12818_xng-tue-prem.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12818_xng-tue-prem\\sets\\QM5_12818_xng-tue-prem_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "mq5_sha256": "98bb2cc9c17fb51acbd8ea165ce9d65b31456626be0ad181689d964da7bf9fe6",
+  "ex5_sha256": "33c3b93f3eb06f87fa65bf83fb7141a39f9fabdfd83980fd2896a431149af422",
+  "setfile_header_build_hash": "bc9c46846ef4227159b9d2ae7ebf51e015cd272f7de41d59786f4be9502b69c4",
+  "setfile_current_sha256": "d3537783275450b1cba236d6eb990f891d4526eb2e02339c055a2be4debbd309",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XNGUSD.DWX",
+        "magic": 128180000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "card_lint": {
+    "command": "python framework/scripts/skill_card_schema_lint.py --card strategy-seeds/cards/approved/QM5_12818_xng-tue-prem_card.md",
+    "result": "PASS",
+    "ml_hits": [],
+    "missing_sections": []
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12818_xng-tue-prem/QM5_12818_xng-tue-prem.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "metaeditor_exit_code": 1,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260630_055802\\QM5_12818_xng-tue-prem.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260630_055802\\summary.csv"
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12818_xng-tue-prem -RepoRoot C:/QM/repo -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260630_055816.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "smoke_result": "deferred_q02",
+  "smoke_skipped_reason": "Paced-fleet Q02 was enqueued; no manual MT5 backtest was launched from this session.",
+  "q02_enqueue": {
+    "status": "enqueued",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "phase": "Q02",
+    "kind": "backtest",
+    "review_task_id": "85e0c9f8-8660-486e-b7b0-e261cb648990",
+    "backtest_task_id": "510d3cd7-7518-4c45-af3b-8710a1d283c6",
+    "work_item_id": "44fd14be-d7de-4752-9e59-82e0fc49798a",
+    "symbol": "XNGUSD.DWX",
+    "host_symbol": "XNGUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12818_xng-tue-prem\\sets\\QM5_12818_xng-tue-prem_XNGUSD.DWX_D1_backtest.set",
+    "status_after_final_check": "pending",
+    "claimed_by": null,
+    "created_at_utc": "2026-06-30T06:00:22+00:00",
+    "updated_at_utc": "2026-06-30T06:00:22+00:00",
+    "single_symbol_scope_verified": true,
+    "initial_fanout_correction": {
+      "corrected": true,
+      "reason": "farmctl Q02 ran before artifacts/cards_approved runtime card existed and initially fanned out all DWX symbols; 36 pending non-XNG rows and generated setfiles were removed before dispatch, leaving only XNGUSD.DWX.",
+      "deleted_pending_non_xng_work_items": 36,
+      "deleted_generated_non_xng_setfiles": 36
+    }
+  },
+  "duplicate_check": {
+    "selected_edge": "XNGUSD.DWX Tuesday long day-of-week premium",
+    "non_duplicate_reason": "Existing XNG builds cover RSI2 commodity pullback, Monday/Friday reverse weekend, Monday weekend-gap continuation, storage/report fades and breakouts, seasonal windows, 52-week anchor, month-open breakout, volatility shock fade, and XTI/XNG baskets. This build is Tuesday-only long calendar exposure from a peer-reviewed Natural Gas DOW source."
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  },
+  "notes": "Built one non-duplicate structural Natural Gas Tuesday calendar-premium energy sleeve. No live, T_Live, AutoTrading, or portfolio gate artifacts touched."
+}

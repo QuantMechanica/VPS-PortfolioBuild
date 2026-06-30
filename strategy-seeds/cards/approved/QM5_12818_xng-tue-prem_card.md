@@ -29,7 +29,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
+pipeline_phase: Q02
 last_updated: 2026-06-30
 expected_pf: 1.08
 expected_dd_pct: 23.0
@@ -204,9 +204,11 @@ allocation must come from the portfolio process. The EA does not touch
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-06-30 | initial structural XNG Tuesday calendar-premium card | G0 | APPROVED |
+| v1-q02 | 2026-06-30 | strict build PASS and paced-fleet Q02 enqueued | Q02 | PENDING 44fd14be-d7de-4752-9e59-82e0fc49798a |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-06-30 | APPROVED | this card |
+| Q02 Baseline Screening | 2026-06-30 | QUEUED | work_items/44fd14be-d7de-4752-9e59-82e0fc49798a |

@@ -29,7 +29,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
+pipeline_phase: Q02
 last_updated: 2026-06-30
 expected_pf: 1.08
 expected_dd_pct: 23.0
@@ -38,11 +38,177 @@ g0_approval_reasoning: "R1 PASS peer-reviewed petroleum and natural-gas day-of-w
 
 # XNG Tuesday Calendar Premium
 
-Canonical approved card:
-`strategy-seeds/cards/approved/QM5_12818_xng-tue-prem_card.md`.
+## Source
 
-Summary: D1 `XNGUSD.DWX` Tuesday calendar-premium sleeve from the
-peer-reviewed petroleum and Natural Gas day-of-week source. It buys only the
-broker-calendar Tuesday D1 bar, uses a fixed ATR hard stop, and exits on the
-next non-Tuesday D1 bar or max-hold stale guard. Runtime uses Darwinex OHLC,
-broker calendar, spread, and ATR only.
+- Source: [[sources/MEEK-HOELSCHER-XNG-DOW-2023]]
+- Primary citation: Meek, H. and Hoelscher, S. A., "Day-of-the-week effect:
+  Petroleum and petroleum products", Cogent Economics and Finance 11(1), 2023,
+  DOI https://doi.org/10.1080/23322039.2023.2213876.
+- Open repository pointer: https://www.econstor.eu/handle/10419/304091.
+
+## Concept
+
+The peer-reviewed source studies day-of-week structure across petroleum markets
+and Natural Gas. It reports positive Natural Gas weekday structure on Monday and
+Tuesday and a negative Thursday effect. This card isolates only the Tuesday leg
+as a low-frequency Darwinex CFD sleeve: buy `XNGUSD.DWX` on the
+broker-calendar Tuesday D1 bar and flatten on the first subsequent non-Tuesday
+D1 bar.
+
+This is deliberately different from:
+
+- `QM5_12567_cum-rsi2-commodity`: no RSI, oscillator, short-horizon pullback,
+  ML, grid, or martingale logic.
+- `QM5_12806_xng-rev-weekend`: that card buys Monday and sells Friday as a
+  reverse-weekend profile. This card trades Tuesday only and never shorts.
+- `QM5_12738_xng-weekend-gap`: no Monday weather gap, gap continuation, or
+  prior-Friday close comparison.
+- XNG storage, storage fade, storage inside-bar breakout, prestorage,
+  hurricane, freeze-fade, LNG, month-open breakout, 52-week anchor, broad
+  winter/summer/fall/spring seasonality, and XTI/XNG baskets: no event feed,
+  storage timing, monthly window, breakout channel, relative-value basket, or
+  multi-month trend/reversal rule is used.
+
+## hypothesis
+
+Natural Gas can carry weekday return asymmetry because demand, storage, and
+weather expectations are repriced unevenly through the trading week. If the
+Tuesday premium reported in the source survives the Darwinex `XNGUSD.DWX` CFD
+realization, a Tuesday-only long sleeve should add a different energy exposure
+than RSI pullback, broad seasonality, storage events, or weekend effects.
+
+## Markets And Timeframe
+
+- Target symbol: `XNGUSD.DWX`.
+- Period: D1.
+- Expected trade frequency: about 45-52 trades/year.
+- Backtest risk mode: `RISK_FIXED`.
+- Runtime data: Darwinex MT5 D1 OHLC, broker calendar, broker spread, and ATR
+  only. No storage report, weather feed, EIA feed, futures curve, CSV, API,
+  analyst forecast, or ML model.
+
+## Entry Rules
+
+- Evaluate only on a new D1 bar.
+- Current broker-calendar D1 bar must be Tuesday, using MQL5
+  `day_of_week == 2`.
+- Entry direction is long only: BUY `XNGUSD.DWX` at market.
+- Use ATR(`strategy_atr_period`) on prior completed D1 bars for the hard stop.
+- No entry if an open `XNGUSD.DWX` position already exists for this EA magic.
+- No entry if `XNGUSD.DWX` spread exceeds `strategy_max_spread_points`.
+
+## rules
+
+- Trade only `XNGUSD.DWX` on D1.
+- Buy the broker-calendar Tuesday bar only.
+- Place a hard stop at ATR(`strategy_atr_period`) *
+  `strategy_atr_sl_mult` from entry.
+- Close on the first new D1 bar whose broker-calendar day is not Tuesday, or
+  after `strategy_max_hold_days` calendar days.
+- Do not pyramid, grid, martingale, trail, partial-close, or call external data.
+
+## Exit Rules
+
+- Stop loss: fixed hard SL at ATR(`strategy_atr_period`) *
+  `strategy_atr_sl_mult`.
+- Close the position on the first new D1 bar whose broker-calendar day is not
+  Tuesday.
+- Also close after `strategy_max_hold_days` calendar days as a stale-position
+  guard.
+- Friday close remains enabled by the V5 framework.
+
+## Filters
+
+- Host chart must be `XNGUSD.DWX` on D1.
+- Magic slot must be 0.
+- Skip entries when ATR or broker-calendar state is unavailable.
+- Framework news, kill-switch, magic, spread, and Friday-close guards remain
+  active.
+
+## Trade Management Rules
+
+- Long-only.
+- No pyramiding.
+- No gridding.
+- No martingale.
+- No partial close.
+- No trailing stop in v1.
+- One open position per magic/symbol.
+
+## Parameters To Test
+
+- name: strategy_entry_dow
+  default: 2
+  sweep_range: [2]
+- name: strategy_atr_period
+  default: 20
+  sweep_range: [14, 20, 30]
+- name: strategy_atr_sl_mult
+  default: 2.75
+  sweep_range: [2.0, 2.75, 3.5]
+- name: strategy_max_hold_days
+  default: 1
+  sweep_range: [1, 2]
+- name: strategy_max_spread_points
+  default: 2500
+  sweep_range: [1500, 2500, 3500]
+
+## Author Claims
+
+The source is used for structural lineage around Natural Gas day-of-week
+effects. No source performance number is imported into QM. The Q02+ pipeline
+must test the deterministic Tuesday-long realization on Darwinex `XNGUSD.DWX`
+bars.
+
+## risk
+
+Backtests use `RISK_FIXED=1000`, `RISK_PERCENT=0`, and one `XNGUSD.DWX` D1
+setfile. Live risk is intentionally not configured here; any future live
+allocation must come from the portfolio process. The EA does not touch
+`T_Live`, AutoTrading, deploy manifests, or the portfolio gate.
+
+## Initial Risk Profile
+
+- expected_pf: 1.08
+- expected_dd_pct: 23
+- expected_trade_frequency: approximately 45-52 trades/year.
+- risk_class: high for natural-gas volatility and weekday event risk.
+- gridding: false.
+- scalping: false.
+- ml_required: false.
+
+## Strategy Allowability Check
+
+- [x] R1 reputable source: peer-reviewed petroleum/Natural Gas DOW article
+  with DOI and repository pointer; exactly one `source_id`.
+- [x] R2 mechanical: fixed broker-calendar Tuesday, single D1 long entry, ATR
+  stop, and next-bar/time exit.
+- [x] R3 testable: `XNGUSD.DWX` exists in
+  `framework/registry/dwx_symbol_matrix.csv`.
+- [x] R4 compliant: no ML, no adaptive PnL fitting, no grid, no martingale,
+  and one position per magic.
+- [x] Non-duplicate: Tuesday-only Natural Gas long premium is not RSI2
+  commodity pullback, Monday/Friday reverse weekend, Monday gap continuation,
+  XNG storage/weather/seasonality/event logic, XNG 52-week anchor, XNG
+  month-open breakout, XNG volatility-shock fade, or an energy ratio basket.
+
+## Framework Alignment
+
+- no_trade: D1 and `XNGUSD.DWX` guard, slot guard, parameter guard, spread cap.
+- trade_entry: Tuesday broker-calendar D1 long entry.
+- trade_management: non-Tuesday stale exit and max-hold guard.
+- trade_close: hard ATR stop plus deterministic time exits.
+
+## Pipeline History
+
+| version | date | rebuild reason | phase reached | verdict |
+|---|---|---|---|---|
+| v1 | 2026-06-30 | initial structural XNG Tuesday calendar-premium card | G0 | APPROVED |
+| v1-q02 | 2026-06-30 | strict build PASS and paced-fleet Q02 enqueued | Q02 | PENDING 44fd14be-d7de-4752-9e59-82e0fc49798a |
+
+## Pipeline Phase Status
+
+| Phase | Date | Verdict | Evidence path |
+|---|---|---|---|
+| G0 Research Intake | 2026-06-30 | APPROVED | this card |
+| Q02 Baseline Screening | 2026-06-30 | QUEUED | work_items/44fd14be-d7de-4752-9e59-82e0fc49798a |
