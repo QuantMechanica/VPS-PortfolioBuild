@@ -11984,7 +11984,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11816,carter-m5-s3-bb20-stoch-trend-reversal-m5,1,GBPUSD.DWX,118160001,2026-06-18,Claude,active
 11816,carter-m5-s3-bb20-stoch-trend-reversal-m5,2,USDJPY.DWX,118160002,2026-06-18,Claude,active
 11816,carter-m5-s3-bb20-stoch-trend-reversal-m5,3,USDCHF.DWX,118160003,2026-06-18,Claude,active
-11818,carter-m5-s6-mtf-ema142150-bb20-m5h1,0,EURUSD.DWX,118180000,2026-06-18,Claude,reserved
+11818,carter-m5-s6-mtf-ema142150-bb20-m5h1,0,EURUSD.DWX,118180000,2026-06-18,Development,active
 11819,carter-m5-s8-bb50-rsi3-stoch-reversal-m5,0,EURUSD.DWX,118190000,2026-06-18,Claude,active
 11819,carter-m5-s8-bb50-rsi3-stoch-reversal-m5,1,GBPUSD.DWX,118190001,2026-06-18,Claude,active
 11819,carter-m5-s8-bb50-rsi3-stoch-reversal-m5,2,USDJPY.DWX,118190002,2026-06-18,Claude,active
@@ -13965,3 +13965,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12821,twin-csm-basket,25,CADJPY.DWX,128210025,2026-06-30,Development,active
 12821,twin-csm-basket,26,CADCHF.DWX,128210026,2026-06-30,Development,active
 12821,twin-csm-basket,27,CHFJPY.DWX,128210027,2026-06-30,Development,active
+1420,bressert-cycle-counting-h4,0,EURUSD.DWX,14200000,2026-06-30,Development,active
+1420,bressert-cycle-counting-h4,1,GBPUSD.DWX,14200001,2026-06-30,Development,active
+1420,bressert-cycle-counting-h4,2,USDJPY.DWX,14200002,2026-06-30,Development,active
+1420,bressert-cycle-counting-h4,3,AUDUSD.DWX,14200003,2026-06-30,Development,active
+1420,bressert-cycle-counting-h4,4,USDCAD.DWX,14200004,2026-06-30,Development,active
+1420,bressert-cycle-counting-h4,5,USDCHF.DWX,14200005,2026-06-30,Development,active
+1420,bressert-cycle-counting-h4,6,NZDUSD.DWX,14200006,2026-06-30,Development,active
+1420,bressert-cycle-counting-h4,7,XAUUSD.DWX,14200007,2026-06-30,Development,active
+1420,bressert-cycle-counting-h4,8,XTIUSD.DWX,14200008,2026-06-30,Development,active
+1420,bressert-cycle-counting-h4,9,NDX.DWX,14200009,2026-06-30,Development,active
+1420,bressert-cycle-counting-h4,10,WS30.DWX,14200010,2026-06-30,Development,active
+1420,bressert-cycle-counting-h4,11,GDAXI.DWX,14200011,2026-06-30,Development,active
+1420,bressert-cycle-counting-h4,12,UK100.DWX,14200012,2026-06-30,Development,active
