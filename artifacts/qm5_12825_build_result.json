@@ -35,15 +35,15 @@
     "result": "PASS",
     "errors": 0,
     "warnings": 0,
-    "log": "C:\\QM\\repo\\framework\\build\\compile\\20260630_105650\\QM5_12825_wti-eurusd-spread.compile.log",
-    "summary": "D:\\QM\\reports\\compile\\20260630_105650\\summary.csv",
+    "log": "C:\\QM\\repo\\framework\\build\\compile\\20260630_120434\\QM5_12825_wti-eurusd-spread.compile.log",
+    "summary": "D:\\QM\\reports\\compile\\20260630_120434\\summary.csv",
     "ex5": "C:\\QM\\repo\\framework\\EAs\\QM5_12825_wti-eurusd-spread\\QM5_12825_wti-eurusd-spread.ex5"
   },
   "build_check": {
     "result": "PASS",
     "failures": 0,
     "warnings": 16,
-    "report": "D:\\QM\\reports\\framework\\21\\build_check_20260630_105702.json"
+    "report": "D:\\QM\\reports\\framework\\21\\build_check_20260630_120835.json"
   },
   "q02": {
     "status": "enqueued",
@@ -65,5 +65,21 @@
     "portfolio_gate_touched": false
   },
   "non_duplicate_reason": "New EIA official-source XTIUSD/EURUSD two-leg oil-dollar spread basket. It differs from QM5_12814, which trades only XTI with EURUSD read-only confirmation, and from WTI/CAD, calendar, WPSR, OPEC, refinery, roll, metal-ratio, XNG, and RSI sleeves.",
-  "notes": "No local backtest was run. The build uses the logical basket setfile with RISK_FIXED=1000 and is intended for paced-fleet Q02 evaluation."
+  "notes": "Repaired Codex-review findings in place: host XTI leg now uses QM_TM_OpenPosition, off-chart EURUSD leg uses QM_BasketOpenPosition, and entry cadence uses the framework QM_IsNewBar gate. No local backtest was run; existing Q02 pending row remains the paced-fleet evaluation path.",
+  "mq5_sha256": "89608D6781C3D93446282C22E5024162DBAFA56D00951D4498FE169585199E93",
+  "ex5_sha256": "A216EF4F0376193752E93AB295E519A2225696C4CB4A530586A089D00CE8E0D8",
+  "setfile_current_sha256": "2F276C4B4F0AE5369F04B2F86359EF92F0B9B80BCBC29E4C8B52FF2DA91F12D8",
+  "setfile_header_build_hash": "ab72fab783c5b25be40e44f7e52c01fdca384ed11c62bc39d74e20730ab98b3f",
+  "blocked_reason": null,
+  "codex_review_repair": {
+    "repaired_at": "2026-06-30T12:04:34Z",
+    "previous_codex_review_task_id": "ffc8e467-6f9f-4729-873e-97faabc7566c",
+    "previous_findings": [
+      "Removed file-scope D1 entry timestamp gate and now uses one QM_IsNewBar gate in OnTick.",
+      "Host XTIUSD.DWX leg now opens through QM_TM_OpenPosition; only off-chart EURUSD.DWX uses QM_BasketOpenPosition."
+    ],
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260630_120434\\QM5_12825_wti-eurusd-spread.compile.log",
+    "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260630_120835.json",
+    "q02_duplicate_policy": "kept existing pending Q02 work item 0dc3297e-5a7a-4f76-8fa1-d74ebace0300; no duplicate enqueue"
+  }
 }

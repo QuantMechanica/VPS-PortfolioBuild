@@ -33,7 +33,7 @@ both XTI and EURUSD as a basket.
 | `strategy_xti_max_spread_pts` | 1000 | 700-1500 | XTI entry spread cap |
 | `strategy_eurusd_max_spread_pts` | 60 | 30-100 | EURUSD entry spread cap |
 | `strategy_deviation_points` | 20 | 10-50 | Broker deviation points for market legs |
-| `strategy_entry_hour_broker` | 2 | 1-4 | Earliest broker hour for daily entry attempt |
+| `strategy_entry_hour_broker` | 0 | 0 | Framework D1 new-bar entry cadence |
 | `strategy_entry_minute_broker` | 0 | 0 | Earliest broker minute for daily entry attempt |
 
 ## 3. Symbol Universe
@@ -46,7 +46,7 @@ both XTI and EURUSD as a basket.
 
 - Base timeframe: D1.
 - Multi-timeframe refs: none.
-- Bar gating: one entry attempt per D1 bar after configured broker entry time.
+- Bar gating: one entry attempt per D1 bar through the framework new-bar gate.
 
 ## 5. Expected Behaviour
 
