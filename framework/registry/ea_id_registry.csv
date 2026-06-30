@@ -3700,3 +3700,4 @@ QM5_1403,harmonic-5-0-pattern-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Dev
 1418,classical-falling-wedge-reversal-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Development,2026-06-30
 QM5_1492,connors-vix-spike-reversal-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Development,2026-06-30
 12828,wti-cushing-brk,EIA-CUSHING-STORAGE-2021,active,Development,2026-06-30
+12829,wti-cushing-fade,EIA-CUSHING-STORAGE-2021_S02,active,Development,2026-06-30
