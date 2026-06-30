@@ -1,0 +1,72 @@
+{
+  "action": "q04_parser_fix_and_requeue",
+  "agent": "codex-board-advisor",
+  "branch": "agents/board-advisor",
+  "created_at_utc": "2026-06-30T06:36:44+00:00",
+  "mission_path": "fallback_advance_existing_forex_card",
+  "ea_id": "QM5_12781",
+  "strategy": "USDJPY/AUDJPY market-neutral FX cointegration basket",
+  "logical_symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1",
+  "host_symbol": "USDJPY.DWX",
+  "timeframe": "D1",
+  "strict_scan_status": {
+    "source_report": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_survivors": [
+      "QM5_12533",
+      "QM5_12532"
+    ],
+    "qm5_12532_q02_blocked": false,
+    "qm5_12533_q02_blocked": false,
+    "unbuilt_strict_survivor_found": false,
+    "all_current_edgelab_cointegration_card_slugs_have_ea_folder": true
+  },
+  "prior_state": {
+    "q02_pass_work_item": "080ebc00-3644-4719-b6e6-6f855604f6b6",
+    "prior_q04_work_item": "f8e8a8d4-48c8-4c30-a7f0-2eace7bb8ccb",
+    "prior_q04_verdict": "INFRA_FAIL",
+    "prior_q04_reason": "F1 invalidated despite a later run_smoke PASS/OK retry; F2/F3 retained NO_HISTORY/INCOMPLETE_RUNS infra evidence",
+    "prior_q04_evidence": "D:/QM/reports/work_items/f8e8a8d4-48c8-4c30-a7f0-2eace7bb8ccb/QM5_12781/Q04/QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1/aggregate.json",
+    "false_invalid_example_summary": "D:/QM/reports/work_items/f8e8a8d4-48c8-4c30-a7f0-2eace7bb8ccb/QM5_12781/20260629_173839/summary.json"
+  },
+  "code_fix": {
+    "path": "framework/scripts/q04_walkforward.py",
+    "summary": "summary_invalid_reason now accepts top-level PASS summaries with at least one OK run, so earlier failed retry attempts no longer poison a completed fold.",
+    "test_path": "framework/scripts/tests/test_q04_walkforward.py",
+    "regression_test": "Q04WalkForwardTests::test_pass_summary_ignores_failed_retry_attempts"
+  },
+  "queue_action": {
+    "action": "requeue_existing_q04_work_item_in_place",
+    "work_item_id": "f8e8a8d4-48c8-4c30-a7f0-2eace7bb8ccb",
+    "phase": "Q04",
+    "status_before": "done",
+    "verdict_before": "INFRA_FAIL",
+    "status_after": "pending",
+    "verdict_after": null,
+    "duplicate_q04_inserted": false,
+    "pending_active_duplicate_count_after": 1,
+    "db_backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12781_q04_parserfix_requeue_20260630T063550Z.sqlite",
+    "payload_sanitized_at_utc": "2026-06-30T06:36:44+00:00"
+  },
+  "validation": [
+    {
+      "command": "python -m py_compile framework/scripts/q04_walkforward.py",
+      "result": "PASS"
+    },
+    {
+      "command": "python -m pytest framework/scripts/tests/test_q04_walkforward.py",
+      "result": "PASS",
+      "tests": 19
+    }
+  ],
+  "safety": {
+    "manual_backtest_launched": false,
+    "t_live_manifest_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "risk_mode": "RISK_FIXED backtest setfile remains in use"
+  },
+  "cpu_ceiling_note": "No manual MT5 run was launched. mt5-slots showed active factory terminals on T1, T3, T4, and T5; the pending Q04 retry is left to paced workers."
+}

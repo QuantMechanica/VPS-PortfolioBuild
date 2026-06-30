@@ -96,6 +96,44 @@ class Q04WalkForwardTests(unittest.TestCase):
         self.assertIn("REPORT_MISSING", reason)
         self.assertIn("INCOMPLETE_RUNS", reason)
 
+    def test_pass_summary_ignores_failed_retry_attempts(self) -> None:
+        mod = _load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            summary = Path(tmp) / "summary.json"
+            summary.write_text(
+                """
+                {
+                  "result": "PASS",
+                  "reason_classes": ["OK"],
+                  "runs": [
+                    {
+                      "status": "INVALID",
+                      "failure": "NO_HISTORY",
+                      "invalid_report_reasons": [
+                        "EMPTY_EXPERT",
+                        "EMPTY_SYMBOL",
+                        "M0_1970_PERIOD",
+                        "BARS_ZERO",
+                        "HISTORY_CONTEXT_INVALID"
+                      ],
+                      "total_trades": 0
+                    },
+                    {
+                      "status": "OK",
+                      "total_trades": 34,
+                      "profit_factor": 1.02,
+                      "net_profit": 80.37
+                    }
+                  ]
+                }
+                """,
+                encoding="utf-8",
+            )
+
+            reason = mod.summary_invalid_reason(summary)
+
+        self.assertIsNone(reason)
+
     def test_run_fold_allows_worker_owned_terminal_and_logs_summary(self) -> None:
         mod = _load_module()
         with tempfile.TemporaryDirectory() as tmp:

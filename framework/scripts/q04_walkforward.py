@@ -194,9 +194,14 @@ def summary_invalid_reason(summary_path: Path) -> str | None:
     sj = _load_summary(summary_path)
     if sj is None:
         return "summary_parse_error"
+    runs = sj.get("runs") or []
+    if str(sj.get("result") or "").upper() == "PASS" and any(
+        str(run.get("status") or "").upper() == "OK" for run in runs
+    ):
+        return None
     reasons = {str(r).upper() for r in (sj.get("reason_classes") or [])}
     markers: set[str] = set()
-    for run in sj.get("runs") or []:
+    for run in runs:
         if str(run.get("status") or "").upper() == "INVALID":
             markers.add("RUN_STATUS_INVALID")
         for reason in run.get("invalid_report_reasons") or []:
