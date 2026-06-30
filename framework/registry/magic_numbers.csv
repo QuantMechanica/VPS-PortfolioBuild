@@ -14059,3 +14059,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12707,commodity-tsmom-12m,1,XAGUSD.DWX,127070001,2026-06-30,Development,active
 12707,commodity-tsmom-12m,2,XTIUSD.DWX,127070002,2026-06-30,Development,active
 12707,commodity-tsmom-12m,3,XNGUSD.DWX,127070003,2026-06-30,Development,active
+12832,dax-range-breakout,0,GDAXI.DWX,128320000,2026-06-30,Development,active

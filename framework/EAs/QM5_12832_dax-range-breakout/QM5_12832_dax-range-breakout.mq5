@@ -1,15 +1,15 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_12700 Balke Range Breakout (USDJPY) - improved multi-hour range"
+#property description "QM5_12832 DAX Range Breakout - GDAXI overnight range"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QM5_12700: Balke Range Breakout (improved)
+// QM5_12832: DAX Range Breakout (Balke transfer)
 // -----------------------------------------------------------------------------
-// René Balke style: build a session range, trade the breakout, flat by evening.
+// Rene Balke style: build a session range, trade the breakout, flat by session end.
 //   1. Range: High/Low over the FULL [range_start_hour, range_end_hour) window
-//      (server time). FIX vs QM5_5003, which only captured the single start hour.
+//      (server time), including wrapped overnight windows such as 22:00-08:00.
 //   2. Breakout: completed-bar close beyond range +/- buffer (confirmation).
 //   3. Filters: range-size vs daily-ATR band, volume surge, spread cap.
 //   4. Exit: opposite range edge SL, RR take-profit, OR forced close at exit_hour.
@@ -17,7 +17,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id              = 12700;
+input int    qm_ea_id              = 12832;
 input int    qm_magic_slot_offset  = 0;
 
 input group "Risk"
@@ -33,9 +33,9 @@ input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Strategy"
-input int    range_start_hour      = 3;     // range build start
-input int    range_end_hour        = 6;     // range build end / lock (exclusive)
-input int    exit_hour             = 20;    // forced flat hour (test 18..22)
+input int    range_start_hour      = 22;    // DAX overnight range start
+input int    range_end_hour        = 8;     // range build end / lock (exclusive)
+input int    exit_hour             = 17;    // forced flat near cash close
 input int    exit_min              = 0;
 input double entry_buffer_atr      = 0.0;    // breakout buffer (x ATR), 0 = edge
 input bool   use_vol_filter        = true;
@@ -56,12 +56,39 @@ datetime g_trade_day  = 0;
 
 datetime DayStart(const datetime t) { return (datetime)((long)t / 86400 * 86400); }
 
+bool RangeWraps()
+  {
+   return range_start_hour > range_end_hour;
+  }
+
+datetime RangeTradingDay(const datetime now, const int hour)
+  {
+   const datetime day = DayStart(now);
+   if(RangeWraps() && hour >= range_start_hour)
+      return (datetime)(day + 86400);
+   return day;
+  }
+
+bool IsRangeBuildHour(const int hour)
+  {
+   if(!RangeWraps())
+      return (hour >= range_start_hour && hour < range_end_hour);
+   return (hour >= range_start_hour || hour < range_end_hour);
+  }
+
+bool IsEntryHour(const int hour)
+  {
+   if(!RangeWraps())
+      return (hour >= range_end_hour && hour < exit_hour);
+   return (hour >= range_end_hour && hour < exit_hour && hour < range_start_hour);
+  }
+
 void UpdateRange()
   {
    MqlDateTime dt;
    const datetime now = TimeCurrent();
    TimeToStruct(now, dt);
-   const datetime day = DayStart(now);
+   const datetime day = RangeTradingDay(now, dt.hour);
 
    if(day != g_cur_day)
      {
@@ -70,14 +97,14 @@ void UpdateRange()
       g_range_locked = false;
      }
 
-   if(!g_range_locked && dt.hour >= range_start_hour && dt.hour < range_end_hour)
+   if(!g_range_locked && IsRangeBuildHour(dt.hour))
      {
       const double h = iHigh(_Symbol, _Period, 1);   // perf-allowed: closed-bar session range high
       const double l = iLow(_Symbol, _Period, 1);    // perf-allowed: closed-bar session range low
       if(h > g_range_high) g_range_high = h;
       if(l < g_range_low)  g_range_low  = l;
      }
-   else if(!g_range_locked && dt.hour >= range_end_hour &&
+   else if(!g_range_locked && IsEntryHour(dt.hour) &&
            g_range_high > 0.0 && g_range_low < DBL_MAX)
      {
       g_range_locked = true;
@@ -115,7 +142,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    MqlDateTime dt;
    TimeToStruct(TimeCurrent(), dt);
-   if(dt.hour < range_end_hour || dt.hour >= exit_hour) return false;  // entry window
+   if(!IsEntryHour(dt.hour)) return false;                            // entry window
    if(g_trade_day == g_cur_day) return false;                         // one trade/day
 
    // range-size validation vs daily ATR

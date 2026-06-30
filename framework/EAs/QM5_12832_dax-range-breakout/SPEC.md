@@ -1,16 +1,16 @@
-# QM5_12700_balke-range-breakout - Strategy Spec
+# QM5_12832_dax-range-breakout - Strategy Spec
 
-**EA ID:** QM5_12700
-**Slug:** `balke-range-breakout`
-**Source:** `BALKE-RANGE-BREAKOUT-USDJPY-2026` (OWNER-directed Balke-style range breakout port)
+**EA ID:** QM5_12832
+**Slug:** `dax-range-breakout`
+**Source:** `balke-range-breakout-dax-transfer-20260630`
 **Author of this spec:** Codex
-**Last revised:** 2026-06-27
+**Last revised:** 2026-06-30
 
 ---
 
 ## 1. Strategy Logic
 
-The EA builds the USDJPY.DWX M15 session range from 03:00 through 05:59 broker time, locks the high and low after 06:00, then trades one confirmed breakout per day. A long entry requires the last closed M15 bar to close above the locked range high; a short entry requires a close below the locked range low. It filters out ranges that are too small or too large versus D1 ATR, requires a closed-bar tick-volume surge, uses the opposite range edge as the initial stop, targets a fixed reward/risk multiple, and closes any open position at the configured evening flat time.
+The EA builds an overnight GDAXI.DWX M15 range from 22:00 through 07:59 broker time, locks the high and low after 08:00, then trades one confirmed DAX breakout per day. A long entry requires the last closed M15 bar to close above the locked range high; a short entry requires a close below the locked range low. It filters out ranges that are too small or too large versus D1 ATR, requires a closed-bar tick-volume surge, uses the opposite range edge as the initial stop, targets a fixed reward/risk multiple, and closes any open position before the DAX cash close.
 
 ---
 
@@ -18,9 +18,9 @@ The EA builds the USDJPY.DWX M15 session range from 03:00 through 05:59 broker t
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `range_start_hour` | `3` | `0-23` | Broker-hour when range accumulation starts. |
-| `range_end_hour` | `6` | `1-24` | Broker-hour when range accumulation ends and breakout trading can begin. |
-| `exit_hour` | `20` | `0-23` | Broker-hour for forced flat close. |
+| `range_start_hour` | `22` | `0-23` | Broker-hour when overnight range accumulation starts. |
+| `range_end_hour` | `8` | `0-23` | Broker-hour when range accumulation ends and breakout trading can begin. |
+| `exit_hour` | `17` | `0-23` | Broker-hour for forced flat close. |
 | `exit_min` | `0` | `0-59` | Broker-minute for forced flat close. |
 | `entry_buffer_atr` | `0.0` | `0.0+` | ATR multiple added beyond the range edge before breakout confirmation. |
 | `use_vol_filter` | `true` | `true/false` | Enables the closed-bar volume-surge filter. |
@@ -42,11 +42,12 @@ The EA builds the USDJPY.DWX M15 session range from 03:00 through 05:59 broker t
 ## 3. Symbol Universe
 
 **Designed for:**
-- `USDJPY.DWX` - source/tested sleeve is a Tokyo-session FX breakout on USDJPY M15.
+- `GDAXI.DWX` - DAX 40 custom-symbol history is available in the DWX matrix, and the card targets a DAX transfer of the validated Balke range breakout mechanic.
 
 **Explicitly NOT for:**
-- `XAUUSD.DWX`, `XAGUSD.DWX`, `XTIUSD.DWX`, `XNGUSD.DWX` - session structure and cost profile were not validated on metals or energy.
-- `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`, `UK100.DWX` - index opening hours and range economics differ from the tested FX session.
+- `USDJPY.DWX` - parent sleeve uses a different Tokyo-session range and is already represented by QM5_12700.
+- `XAUUSD.DWX`, `XAGUSD.DWX`, `XTIUSD.DWX`, `XNGUSD.DWX` - metals and energy do not share the DAX cash-open session structure.
+- `SP500.DWX`, `NDX.DWX`, `WS30.DWX`, `UK100.DWX` - other indices require their own range-window validation.
 
 ---
 
@@ -64,9 +65,9 @@ The EA builds the USDJPY.DWX M15 session range from 03:00 through 05:59 broker t
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `24` |
-| Typical hold time | Intraday; flat by 20:00 broker time. |
-| Expected drawdown profile | Low-frequency breakout with low historical drawdown in the documented smoke evidence. |
+| Trades / year / symbol | `30` |
+| Typical hold time | Intraday; flat by 17:00 broker time. |
+| Expected drawdown profile | Low-frequency breakout with drawdown expected to stay below the card's 6% prior if the DAX session transfer is valid. |
 | Regime preference | `volatility-expansion / breakout` |
 | Win rate target (qualitative) | `medium` |
 
@@ -76,10 +77,10 @@ The EA builds the USDJPY.DWX M15 session range from 03:00 through 05:59 broker t
 
 This card was mechanised from:
 
-**Source ID:** `BALKE-RANGE-BREAKOUT-USDJPY-2026`
-**Source type:** `OWNER / source-inspired structural port`
-**Pointer:** `docs/research/BALKE_RANGE_BREAKOUT_QM5_12700_2026-06-27.md`
-**R1-R4 verdict (Q00):** OWNER-directed structural build; no approved card file exists, so Q02 evidence is required before any portfolio claim.
+**Source ID:** `balke-range-breakout-dax-transfer-20260630`
+**Source type:** `OWNER / validated-strategy transfer`
+**Pointer:** `docs/research/BALKE_RANGE_BREAKOUT_QM5_12700_2026-06-27.md` and `D:/QM/strategy_farm/artifacts/cards_approved/QM5_12832_dax-range-breakout.md`
+**R1-R4 verdict (Q00):** all PASS / see `framework/EAs/QM5_12832_dax-range-breakout/docs/strategy_card.md`
 
 ---
 
@@ -99,4 +100,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-27 | Initial registry-clean build from validated vB parameters | Q02 work item `3e79beb0` |
+| v1 | 2026-06-30 | Initial build from approved DAX transfer card | build task `940f4709-fa6f-4470-8487-f5d297f78ca2` |

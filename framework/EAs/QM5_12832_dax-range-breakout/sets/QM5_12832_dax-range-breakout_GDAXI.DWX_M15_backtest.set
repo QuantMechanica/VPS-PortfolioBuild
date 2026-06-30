@@ -1,0 +1,48 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12832
+; ea_slug:      dax-range-breakout
+; ea_version:   v5.0
+; set_version:  s20260630-001
+; symbol:       GDAXI.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   efae1a9f20376b215d72623e6ff3e3504bb25d04ec6e6d4d6ec4ea367b18a53c
+; author:       Development
+; date:         2026-06-30
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found
+qm_news_mode=3
+range_start_hour=22
+range_end_hour=8
+exit_hour=17
+exit_min=0
+entry_buffer_atr=0.0
+use_vol_filter=true
+vol_mult=1.5
+strategy_rr=2.5
+strategy_atr_period=14
+atr_sl_mult=1.5
+min_range_atr_mult=0.60
+max_range_atr_mult=2.50
+spread_cap_points=30
