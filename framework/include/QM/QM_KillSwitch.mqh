@@ -30,6 +30,8 @@ double g_qm_ks_day_start_equity          = 0.0;
 
 CTrade g_qm_ks_trade;
 
+void QM_FrameworkTrackOpenPositionMae();
+
 int QM_KillSwitchDayKey(const datetime broker_time)
 {
    MqlDateTime t;
@@ -274,6 +276,7 @@ bool QM_KillSwitchCheck()
       return true;
    }
 
+   QM_FrameworkTrackOpenPositionMae();
    QM_KillSwitchRefreshBrokerDay();
    if(g_qm_ks_halted)
       return false;

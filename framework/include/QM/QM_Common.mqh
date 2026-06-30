@@ -54,6 +54,15 @@ string g_qm_q08_trade_log = "";
 
 CTrade g_qm_fw_trade;
 
+struct QM_PositionMaeState
+  {
+   ulong    position_id;
+   datetime entry_time;
+   double   min_floating_pnl;
+  };
+
+QM_PositionMaeState g_qm_q08_mae_states[];
+
 string QM_FrameworkSlug(const int ea_id)
   {
    return StringFormat("ea-%04d", ea_id);
@@ -109,6 +118,8 @@ bool QM_FrameworkInit(const int ea_id,
    g_qm_fw_magic = QM_MagicChecked(ea_id, magic_slot_offset, _Symbol);
    if(g_qm_fw_magic <= 0)
       return false;
+   g_qm_q08_trade_log = "";
+   ArrayResize(g_qm_q08_mae_states, 0);
 
    const string slug = QM_FrameworkSlug(ea_id);
    QM_LoggerInit(ea_id, slug, _Symbol, (ENUM_TIMEFRAMES)_Period, g_qm_fw_magic);
@@ -228,6 +239,154 @@ bool QM_FrameworkOwnsMagicSymbol(const long magic, const string symbol)
    if(symbol != "" && !QM_SymbolAllowed(symbol))
       return false;
 
+   return true;
+  }
+
+int QM_FrameworkMaeFind(const ulong position_id)
+  {
+   const int count = ArraySize(g_qm_q08_mae_states);
+   for(int i = 0; i < count; ++i)
+     {
+      if(g_qm_q08_mae_states[i].position_id == position_id)
+         return i;
+     }
+   return -1;
+  }
+
+void QM_FrameworkMaeRemoveIndex(const int index)
+  {
+   const int count = ArraySize(g_qm_q08_mae_states);
+   if(index < 0 || index >= count)
+      return;
+   for(int i = index; i < count - 1; ++i)
+      g_qm_q08_mae_states[i] = g_qm_q08_mae_states[i + 1];
+   ArrayResize(g_qm_q08_mae_states, count - 1);
+  }
+
+void QM_FrameworkMaeUpsert(const ulong position_id,
+                           const datetime entry_time,
+                           const double floating_pnl)
+  {
+   if(position_id == 0)
+      return;
+
+   const double mae = MathMin(0.0, floating_pnl);
+   int index = QM_FrameworkMaeFind(position_id);
+   if(index < 0)
+     {
+      const int count = ArraySize(g_qm_q08_mae_states);
+      ArrayResize(g_qm_q08_mae_states, count + 1);
+      index = count;
+      g_qm_q08_mae_states[index].position_id = position_id;
+      g_qm_q08_mae_states[index].entry_time = entry_time;
+      g_qm_q08_mae_states[index].min_floating_pnl = mae;
+      return;
+     }
+
+   if(entry_time > 0 && g_qm_q08_mae_states[index].entry_time <= 0)
+      g_qm_q08_mae_states[index].entry_time = entry_time;
+   if(mae < g_qm_q08_mae_states[index].min_floating_pnl)
+      g_qm_q08_mae_states[index].min_floating_pnl = mae;
+  }
+
+bool QM_FrameworkMaePositionStillOpen(const ulong position_id)
+  {
+   const int total = PositionsTotal();
+   for(int i = 0; i < total; ++i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if((ulong)PositionGetInteger(POSITION_IDENTIFIER) != position_id)
+         continue;
+
+      const long magic = PositionGetInteger(POSITION_MAGIC);
+      const string symbol = PositionGetString(POSITION_SYMBOL);
+      if(QM_FrameworkOwnsMagicSymbol(magic, symbol))
+         return true;
+     }
+   return false;
+  }
+
+void QM_FrameworkTrackOpenPositionMae()
+  {
+   if(!g_qm_fw_initialized)
+      return;
+
+   const int total = PositionsTotal();
+   for(int i = 0; i < total; ++i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+
+      const long magic = PositionGetInteger(POSITION_MAGIC);
+      const string symbol = PositionGetString(POSITION_SYMBOL);
+      if(!QM_FrameworkOwnsMagicSymbol(magic, symbol))
+         continue;
+
+      const ulong position_id = (ulong)PositionGetInteger(POSITION_IDENTIFIER);
+      const datetime entry_time = (datetime)PositionGetInteger(POSITION_TIME);
+      const double floating_pnl = PositionGetDouble(POSITION_PROFIT) + PositionGetDouble(POSITION_SWAP);
+      QM_FrameworkMaeUpsert(position_id, entry_time, floating_pnl);
+     }
+
+   for(int index = ArraySize(g_qm_q08_mae_states) - 1; index >= 0; --index)
+     {
+      if(!QM_FrameworkMaePositionStillOpen(g_qm_q08_mae_states[index].position_id))
+         QM_FrameworkMaeRemoveIndex(index);
+     }
+  }
+
+void QM_FrameworkMaeRecordEntryDeal(const ulong position_id,
+                                    const datetime entry_time)
+  {
+   QM_FrameworkMaeUpsert(position_id, entry_time, 0.0);
+  }
+
+datetime QM_FrameworkMaeFindEntryTimeInHistory(const ulong position_id,
+                                               const datetime fallback_time)
+  {
+   if(position_id == 0)
+      return fallback_time;
+
+   const datetime to_time = (fallback_time > 0 ? fallback_time : TimeCurrent()) + 60;
+   if(!HistorySelect(0, to_time))
+      return fallback_time;
+
+   datetime found = 0;
+   const int total = HistoryDealsTotal();
+   for(int i = 0; i < total; ++i)
+     {
+      const ulong ticket = HistoryDealGetTicket(i);
+      if(ticket == 0)
+         continue;
+      if((ulong)HistoryDealGetInteger(ticket, DEAL_POSITION_ID) != position_id)
+         continue;
+      const long entry = HistoryDealGetInteger(ticket, DEAL_ENTRY);
+      if(entry != DEAL_ENTRY_IN && entry != DEAL_ENTRY_INOUT)
+         continue;
+
+      const datetime deal_time = (datetime)HistoryDealGetInteger(ticket, DEAL_TIME);
+      if(deal_time > 0 && (found == 0 || deal_time < found))
+         found = deal_time;
+     }
+
+   return (found > 0 ? found : fallback_time);
+  }
+
+bool QM_FrameworkMaeLookup(const ulong position_id,
+                           datetime &entry_time,
+                           double &mae_acct)
+  {
+   entry_time = 0;
+   mae_acct = 0.0;
+   const int index = QM_FrameworkMaeFind(position_id);
+   if(index < 0)
+      return false;
+
+   entry_time = g_qm_q08_mae_states[index].entry_time;
+   mae_acct = MathMin(0.0, g_qm_q08_mae_states[index].min_floating_pnl);
    return true;
   }
 
@@ -415,6 +574,13 @@ void QM_FrameworkOnTradeTransaction(const MqlTradeTransaction &trans,
       return;
 
    const long entry = HistoryDealGetInteger(trans.deal, DEAL_ENTRY);
+   const ulong q08_position_id = (ulong)HistoryDealGetInteger(trans.deal, DEAL_POSITION_ID);
+   if(entry == DEAL_ENTRY_IN)
+     {
+      const datetime deal_time = (datetime)HistoryDealGetInteger(trans.deal, DEAL_TIME);
+      QM_FrameworkMaeRecordEntryDeal(q08_position_id, deal_time);
+      return;
+     }
    if(entry != DEAL_ENTRY_OUT && entry != DEAL_ENTRY_OUT_BY && entry != DEAL_ENTRY_INOUT)
       return;  // only closing deals contribute to the live distribution
 
@@ -428,9 +594,15 @@ void QM_FrameworkOnTradeTransaction(const MqlTradeTransaction &trans,
    const double q08_price = HistoryDealGetDouble(trans.deal, DEAL_PRICE);
    const double q08_notional = QM_FrameworkDealNotionalAccount(trans.deal, q08_symbol, q08_vol, q08_price);
    const long   q08_t   = (long)HistoryDealGetInteger(trans.deal, DEAL_TIME);
+   datetime q08_entry_time = 0;
+   double q08_mae_acct = 0.0;
+   QM_FrameworkMaeLookup(q08_position_id, q08_entry_time, q08_mae_acct);
+   q08_entry_time = QM_FrameworkMaeFindEntryTimeInHistory(q08_position_id, q08_entry_time > 0 ? q08_entry_time : (datetime)q08_t);
+   q08_mae_acct = MathMin(q08_mae_acct, net);
    g_qm_q08_trade_log += StringFormat(
-      "{\"event\":\"TRADE_CLOSED\",\"time\":%I64d,\"net\":%.2f,\"profit\":%.2f,\"swap\":%.2f,\"commission\":%.2f,\"volume\":%.2f,\"notional\":%.2f,\"symbol\":\"%s\"}\r\n",
-      q08_t, net, profit, swap, commission, q08_vol, q08_notional, QM_LoggerEscapeJson(q08_symbol));
+      "{\"event\":\"TRADE_CLOSED\",\"time\":%I64d,\"entry_time\":%I64d,\"mae_acct\":%.2f,\"net\":%.2f,\"profit\":%.2f,\"swap\":%.2f,\"commission\":%.2f,\"volume\":%.2f,\"notional\":%.2f,\"symbol\":\"%s\"}\r\n",
+      q08_t, (long)q08_entry_time, q08_mae_acct, net, profit, swap, commission, q08_vol, q08_notional, QM_LoggerEscapeJson(q08_symbol));
+   QM_FrameworkMaeRemoveIndex(QM_FrameworkMaeFind(q08_position_id));
 
    // Q04 EA-side simulated commission: accumulate a PF-net that reflects a worst-case
    // USD/lot round-trip charge the tester does not apply to custom symbols. Charged once
@@ -518,6 +690,7 @@ void QM_FrameworkShutdown()
          FileClose(q08_fh);
         }
      }
+   ArrayResize(g_qm_q08_mae_states, 0);
    if(g_qm_fw_initialized)
       QM_LogEvent(QM_INFO, "DEINIT", "{}");
    g_qm_fw_initialized = false;
