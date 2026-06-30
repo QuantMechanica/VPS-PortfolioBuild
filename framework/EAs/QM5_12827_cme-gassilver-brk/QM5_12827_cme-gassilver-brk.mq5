@@ -61,7 +61,7 @@ double   g_channel_low = 0.0;
 bool     g_state_ready = false;
 datetime g_pair_entry_time = 0;
 datetime g_last_state_bar = 0;
-datetime g_last_entry_signal_bar = 0;
+bool     g_entry_check_pending = false;
 
 int Strategy_SlotForSymbol(const string symbol)
   {
@@ -550,16 +550,18 @@ void OnTick()
         }
      }
 
-   const bool new_bar = QM_IsNewBar();
+   const bool new_bar = QM_IsNewBar(_Symbol, PERIOD_D1);
    if(new_bar)
+     {
       QM_EquityStreamOnNewBar();
+      g_entry_check_pending = true;
+     }
 
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cheap D1 timestamp guard before one daily basket entry attempt.
-   if(current_d1_bar <= 0 || current_d1_bar == g_last_entry_signal_bar)
+   if(!g_entry_check_pending)
       return;
    if(!Strategy_EntryTimeReady(broker_now))
       return;
-   g_last_entry_signal_bar = current_d1_bar;
+   g_entry_check_pending = false;
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
