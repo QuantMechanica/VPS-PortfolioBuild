@@ -58,13 +58,20 @@ MULTISYMBOL_RAM_MIN_FREE_GB = 12.0
 # 2026-06-19: 250 work_items INFRA_FAIL in 14s).
 LAUNCH_FAULT_MIN_SECONDS = 10.0
 LAUNCH_FAULT_BACKOFF_SECONDS = 30.0
-# Log-bomb guard (2026-06-21): some EAs spam the MT5 tester journal per-tick
-# (framework symbol_slot resolver logging on every tick), producing 50-60GB
-# .log files that burn D: at ~10GB/min. Kill any backtest whose journal exceeds
-# the cap mid-run, before it floods the disk. See ops_issue f6769583.
-LOG_BOMB_JOURNAL_CAP_BYTES = 512 * 1024 ** 2  # 512 MB (2026-06-21: tightened from 2GB
-                                              # after disk dipped to 11GB — concurrent
-                                              # bombs grew multi-GB between checks)
+# Log-bomb guard. Some EAs spam the MT5 tester journal per-tick (framework
+# symbol_slot resolver logging on every tick), producing 50-60GB .log files that
+# burn D: at ~10GB/min — that is a BUG to kill. But a legit multi-position /
+# basket EA (e.g. QM5_12823 pyramid, the T-WIN 7-leg basket) logs the tester's
+# own order/deal/SL lines and grows SLOWLY to ~0.5-2GB over a 7-yr run — that is
+# NOT a bomb. The old absolute 512MB cap killed both (2026-06-30 incident: 12823
+# killed at exactly 0.5GB; its 6-mo prescreen passed). Fix (2026-06-30): trigger
+# on GROWTH RATE (catches the ~10GB/min spam in one check window) with a high
+# absolute HARD-CEILING backstop (bounds disk for a slow-but-unbounded grower).
+# See ops_issue f6769583 + project_qm_magic_resolver_race_2026-06-30.
+LOG_BOMB_RATE_MB_PER_MIN = 1500.0             # >> any legit EA's journal growth (~50-200 MB/min);
+                                              # << the per-tick spam (~10000 MB/min)
+LOG_BOMB_HARD_CEIL_BYTES = 4 * 1024 ** 3      # 4 GB absolute backstop (disk safety; 4x7 terminals = 28GB worst case)
+LOG_BOMB_JOURNAL_CAP_BYTES = LOG_BOMB_HARD_CEIL_BYTES  # back-compat alias (kill-record field)
 LOG_BOMB_CHECK_EVERY_ITERS = 5                # ~every 10s (loop sleeps 2s)
 SQLITE_WRITE_RETRIES = 12
 SQLITE_WRITE_RETRY_SLEEP_SECONDS = 1.5
@@ -1088,22 +1095,40 @@ def _fail_work_item_preflight(root: Path, item: sqlite3.Row, failure: dict[str, 
     }
 
 
-def _find_oversized_journal(report_root: str | None, cap_bytes: int = LOG_BOMB_JOURNAL_CAP_BYTES) -> str | None:
-    """Return the path of a tester .log journal under report_root that exceeds
-    cap_bytes, or None. Fail-open (None) on any error so a measurement glitch
-    never kills a legitimate run. Used by the log-bomb guard."""
+def _journal_bomb(report_root: str | None, sizes: dict, now_mono: float):
+    """Rate-based log-bomb detector. Returns (path, gb, reason) for a tester .log
+    journal under report_root that is BOMBING, else None. `sizes` is a mutable
+    {path: (bytes, mono_time)} carried across calls so growth rate can be measured.
+
+    A journal bombs if EITHER:
+      * its growth rate exceeds LOG_BOMB_RATE_MB_PER_MIN (fast per-tick spam — the
+        ~10GB/min framework-resolver bug; caught within one ~10s check window), OR
+      * its absolute size exceeds LOG_BOMB_HARD_CEIL_BYTES (a slow-but-unbounded
+        grower — disk-safety backstop).
+    A legit multi-position EA grows ~50-200 MB/min to <=~2GB and trips neither.
+    Fail-open (None) on any error so a measurement glitch never kills a legit run."""
     if not report_root:
         return None
     try:
         for dirpath, _dirs, files in os.walk(report_root):
             for fn in files:
-                if fn.lower().endswith(".log"):
-                    fp = os.path.join(dirpath, fn)
-                    try:
-                        if os.path.getsize(fp) > cap_bytes:
-                            return fp
-                    except OSError:
-                        continue
+                if not fn.lower().endswith(".log"):
+                    continue
+                fp = os.path.join(dirpath, fn)
+                try:
+                    sz = os.path.getsize(fp)
+                except OSError:
+                    continue
+                prev = sizes.get(fp)
+                sizes[fp] = (sz, now_mono)
+                gb = round(sz / 1024 ** 3, 2)
+                if sz > LOG_BOMB_HARD_CEIL_BYTES:
+                    return (fp, gb, f"abs>{LOG_BOMB_HARD_CEIL_BYTES // 1024 ** 3}GB")
+                if prev:
+                    d_min = max((now_mono - prev[1]) / 60.0, 1e-6)
+                    rate = ((sz - prev[0]) / 1024 ** 2) / d_min  # MB/min
+                    if rate > LOG_BOMB_RATE_MB_PER_MIN:
+                        return (fp, gb, f"rate>{int(LOG_BOMB_RATE_MB_PER_MIN)}MB/min(~{int(rate)})")
     except Exception:
         return None
     return None
@@ -1219,6 +1244,8 @@ def _monitor_spawned_work_item(
     deadline = _monitor_deadline_monotonic(payload, timeout_seconds, spawn_started, adopted=adopted)
     log_bomb_path: str | None = None
     _lb_iter = 0
+    _lb_sizes: dict = {}
+    _lb_bomb: tuple | None = None
     child_alive = True
     terminal_alive_after_child_exit = False
     while time.monotonic() < deadline:
@@ -1244,12 +1271,14 @@ def _monitor_spawned_work_item(
             farmctl._stop_pid_tree(pid)
             _stop_terminal_slot_for_release(root, terminal)
             break
-        # Log-bomb guard: kill a backtest whose tester journal balloons past the
-        # cap (framework per-tick spam -> 50-60GB .log -> ~10GB/min disk burn).
+        # Log-bomb guard: kill a backtest whose tester journal GROWS too fast
+        # (per-tick spam -> ~10GB/min) or breaches the absolute hard ceiling.
+        # Rate-based so legit slow-growing multi-position/basket journals survive.
         _lb_iter += 1
         if _lb_iter % LOG_BOMB_CHECK_EVERY_ITERS == 0:
-            log_bomb_path = _find_oversized_journal(spawn.get("report_root"))
-            if log_bomb_path:
+            _lb_bomb = _journal_bomb(spawn.get("report_root"), _lb_sizes, time.monotonic())
+            if _lb_bomb:
+                log_bomb_path = _lb_bomb[0]
                 farmctl._stop_pid_tree(pid)
                 break
         time.sleep(DETACHED_TERMINAL_POLL_SECONDS)
@@ -1257,10 +1286,11 @@ def _monitor_spawned_work_item(
         # Reclaim the disk immediately and record a terminal verdict with a high
         # attempt_count so the sweep does NOT re-enqueue (it would re-bomb).
         killed_at = farmctl.utc_now()
+        bomb_reason = _lb_bomb[2] if _lb_bomb else "unknown"
         try:
             gb = round(os.path.getsize(log_bomb_path) / 1024 ** 3, 1)
         except OSError:
-            gb = 0.0
+            gb = (_lb_bomb[1] if _lb_bomb else 0.0)
         try:
             os.remove(log_bomb_path)
         except OSError:
@@ -1276,7 +1306,9 @@ def _monitor_spawned_work_item(
             "terminal": terminal,
             "journal_path": log_bomb_path,
             "journal_gb": gb,
+            "bomb_reason": bomb_reason,
             "journal_cap_bytes": LOG_BOMB_JOURNAL_CAP_BYTES,
+            "rate_cap_mb_per_min": LOG_BOMB_RATE_MB_PER_MIN,
             "killed_at_utc": killed_at,
             "terminal_stopped": terminal_stopped,
         }
