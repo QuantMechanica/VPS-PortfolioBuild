@@ -7179,6 +7179,53 @@ def _reap_stuck_codex_procs(max_age_min: int = 60) -> dict[str, Any]:
         return {"reaped": 0, "error": repr(exc)}
 
 
+MAGIC_CSV_PATH = REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
+MAGIC_RESOLVER_PATH = REPO_ROOT / "framework" / "include" / "QM" / "QM_MagicResolver.mqh"
+MAGIC_REGEN_SCRIPT = REPO_ROOT / "framework" / "scripts" / "update_magic_resolver.py"
+
+
+def _reconcile_magic_resolver(root: Path) -> dict[str, Any]:
+    """Pump-cycle safety net: keep QM_MagicResolver.mqh in sync with
+    magic_numbers.csv. Concurrent Codex builds race on the CSV append + the
+    per-build resolver regen (build A appends its magics AFTER build B
+    regenerated the .mqh, so the resolver misses A's rows until the next
+    regen). At a high codex_parallel those stale windows are frequent and make
+    EVERY codex_review FAIL `magic_registry` — even on good EAs (incident
+    2026-06-30: 3 EAs flagged on a stale resolver). Regenerating once per pump
+    cycle, just before the artifact auto-commit, closes the window to <= one
+    pump interval; the existing _auto_commit_build_artifacts then ships the
+    .mqh (it is in SHARED_BUILD_PATHS).
+
+    Cheap-guarded: the resolver embeds the source CSV's SHA256, so we only
+    regenerate when sha256(magic_numbers.csv) != that embedded hash. In-sync
+    cycles do zero work and create no dirty-tree churn.
+    """
+    try:
+        if not (MAGIC_CSV_PATH.exists() and MAGIC_RESOLVER_PATH.exists()
+                and MAGIC_REGEN_SCRIPT.exists()):
+            return {"regenerated": False, "reason": "missing_inputs"}
+        import hashlib
+        csv_hash = hashlib.sha256(MAGIC_CSV_PATH.read_bytes()).hexdigest().upper()
+        mqh = MAGIC_RESOLVER_PATH.read_text(encoding="utf-8", errors="replace")
+        m = re.search(r"[0-9A-F]{64}", mqh)
+        if m and m.group(0) == csv_hash:
+            return {"regenerated": False, "reason": "in_sync", "csv_hash": csv_hash[:16]}
+        proc = subprocess.run(
+            [sys.executable, str(MAGIC_REGEN_SCRIPT)],
+            cwd=str(REPO_ROOT), capture_output=True, text=True, timeout=180,
+        )
+        ok = proc.returncode == 0
+        return {
+            "regenerated": ok,
+            "reason": "stale_resync" if ok else "regen_failed",
+            "csv_hash": csv_hash[:16],
+            "rc": proc.returncode,
+            "err": ((proc.stderr or "")[-200:] if not ok else ""),
+        }
+    except Exception as exc:  # never break the pump on a maintenance step
+        return {"regenerated": False, "reason": f"exception:{exc!r}"[:200]}
+
+
 def pump(root: Path) -> dict[str, Any]:
     """Continuous deterministic worker — run every 5 min.
 
@@ -7200,10 +7247,14 @@ def pump(root: Path) -> dict[str, Any]:
     # halt all builds (see _reap_stuck_codex_procs). Then deterministic artifact
     # commit clears the working tree before the build guard checks it.
     reap_result = _reap_stuck_codex_procs()
+    # Resync the magic resolver BEFORE the artifact commit so a stale .mqh from
+    # the concurrent-build race never reaches codex_review (see _reconcile_magic_resolver).
+    resolver_reconcile = _reconcile_magic_resolver(root)
     auto_commit_result = _auto_commit_build_artifacts(root)
     result: dict[str, Any] = {
         "pumped_at": utc_now(),
         "reaped_stuck_procs": reap_result,
+        "magic_resolver": resolver_reconcile,
         "auto_commit": auto_commit_result,
         "dispatch": None,
         "codex_spawn": None,
