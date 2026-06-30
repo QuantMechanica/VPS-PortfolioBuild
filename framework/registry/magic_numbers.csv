@@ -14016,3 +14016,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1446,demark-td-open-range-h4,8,UK100.DWX,14460008,2026-06-30,Development,active
 1446,demark-td-open-range-h4,9,XAUUSD.DWX,14460009,2026-06-30,Development,active
 1446,demark-td-open-range-h4,10,XTIUSD.DWX,14460010,2026-06-30,Development,active
+12784,intraday-config-engine,1,GDAXI.DWX,127840001,2026-06-30,Development,active
+12784,intraday-config-engine,2,NDX.DWX,127840002,2026-06-30,Development,active
+12784,intraday-config-engine,3,SP500.DWX,127840003,2026-06-30,Development,active
+12784,intraday-config-engine,4,XAUUSD.DWX,127840004,2026-06-30,Development,active
