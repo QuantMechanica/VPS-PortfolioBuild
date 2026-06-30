@@ -149,7 +149,9 @@ class BasketWorkItemsTests(unittest.TestCase):
                 "logical_symbol": "QM5_12577_XAU_XAG_RATIO_D1",
                 "host_symbol": "XAUUSD.DWX",
                 "host_timeframe": "D1",
-                "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+                "tester_currency": "USD",
+                "tester_deposit": 100000,
+                "basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX", "EURUSD.DWX"],
             }
             (ea_dir / "basket_manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
             setfile = sets_dir / (
@@ -165,6 +167,12 @@ class BasketWorkItemsTests(unittest.TestCase):
                 result = farmctl._auto_enqueue_q02_for_build(root, {
                     "task_id": "build-task",
                     "ea_id": "QM5_12577",
+                    "symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+                    "risk_mode": {
+                        "RISK_FIXED": 1000,
+                        "RISK_PERCENT": 0,
+                        "PORTFOLIO_WEIGHT": 1,
+                    },
                     "setfiles_generated": [str(setfile)],
                 })
             finally:
@@ -182,8 +190,17 @@ class BasketWorkItemsTests(unittest.TestCase):
             payload = json.loads(row[2])
             self.assertEqual(payload["host_symbol"], "XAUUSD.DWX")
             self.assertEqual(payload["host_timeframe"], "D1")
-            self.assertEqual(payload["basket_symbol_count"], 2)
+            self.assertEqual(payload["basket_symbol_count"], 3)
+            self.assertEqual(payload["basket_symbols"], ["XAUUSD.DWX", "XAGUSD.DWX", "EURUSD.DWX"])
+            self.assertEqual(payload["traded_symbols"], ["XAUUSD.DWX", "XAGUSD.DWX"])
             self.assertEqual(payload["portfolio_scope"], "basket")
+            self.assertEqual(payload["tester_currency"], "USD")
+            self.assertEqual(payload["tester_deposit"], 100000)
+            self.assertEqual(payload["risk_fixed"], 1000)
+            self.assertEqual(payload["risk_percent"], 0)
+            self.assertEqual(payload["portfolio_weight"], 1)
+            self.assertEqual(payload["risk_mode"], "RISK_FIXED")
+            self.assertEqual(payload["timeout_min"], farmctl.BASKET_Q02_ACTIVE_TIMEOUT_MIN)
 
     def test_basket_context_survives_phase_promotion_payload(self) -> None:
         parent = {

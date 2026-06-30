@@ -1,0 +1,87 @@
+{
+  "ea_id": "QM5_12778",
+  "slug": "edgelab-audusd-eurjpy-cointegration",
+  "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+  "basket_symbols": [
+    "AUDUSD.DWX",
+    "EURJPY.DWX",
+    "EURUSD.DWX",
+    "USDJPY.DWX"
+  ],
+  "traded_symbols": [
+    "AUDUSD.DWX",
+    "EURJPY.DWX"
+  ],
+  "conversion_symbols": [
+    "EURUSD.DWX",
+    "USDJPY.DWX"
+  ],
+  "mission_scope": "Advance existing forex cointegration basket after no unbuilt strict-threshold FX cointegration pair was found and QM5_12532/QM5_12533 were no longer Q02-blocked.",
+  "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12778_q02_payload_enrich_20260630T023610Z.sqlite",
+  "work_item_update": {
+    "work_item_id": "7f04ff6a-35ca-45bd-a702-afc37b310f97",
+    "phase": "Q02",
+    "status_after": "pending",
+    "claimed_by_after": null,
+    "duplicate_guard_pending_active_count": 1,
+    "payload_repair_reason": "qm5_12778_conversion_repair_requeue_payload_enrichment_2026-06-30",
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "timeout_min": 120,
+    "priority_track": true
+  },
+  "code_changes": [
+    {
+      "path": "tools/strategy_farm/farmctl.py",
+      "summary": "Added a shared basket Q02 payload builder and wired it into record-build and enqueue_backtest basket work-item creation."
+    },
+    {
+      "path": "tools/strategy_farm/tests/test_basket_work_items.py",
+      "summary": "Extended the record-build logical basket Q02 test to assert tester overrides, declared/traded symbol separation, fixed-risk metadata, and basket timeout."
+    },
+    {
+      "path": "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/sets/QM5_12778_edgelab-audusd-eurjpy-cointegration_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1_D1_backtest.set",
+      "summary": "Refreshed the build_hash header produced by build_check; strategy parameters and RISK_FIXED values are unchanged."
+    }
+  ],
+  "validation": [
+    {
+      "command": "python -m py_compile tools/strategy_farm/farmctl.py",
+      "result": "PASS"
+    },
+    {
+      "command": "python -m pytest tools/strategy_farm/tests/test_basket_work_items.py",
+      "result": "PASS",
+      "tests": 11
+    },
+    {
+      "command": "python -m pytest tools/strategy_farm/tests/test_terminal_worker_atomic_claim.py::TerminalWorkerAtomicClaimTests::test_fast_phase_runner_with_host_keyed_aggregate_finishes_item",
+      "result": "PASS",
+      "tests": 1
+    },
+    {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_12778_edgelab-audusd-eurjpy-cointegration --verbose",
+      "result": "PASS",
+      "verdict": "BASKET_OK",
+      "violations": 0
+    },
+    {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12778_edgelab-audusd-eurjpy-cointegration -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 16,
+      "report": "D:/QM/reports/framework/21/build_check_20260630_023647.json"
+    }
+  ],
+  "safety": {
+    "manual_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  },
+  "cpu_ceiling_note": "QM5_12532 Q05 was not re-run because latest evidence shows the paced MT5 run hit TIMEOUT/METATESTER_HUNG/INCOMPLETE_RUNS after the 1800-second ceiling."
+}

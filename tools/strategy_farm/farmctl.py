@@ -3423,6 +3423,57 @@ BASKET_CONTEXT_PAYLOAD_KEYS = (
 )
 
 
+def _basket_q02_payload(
+    basket_manifest: dict[str, Any],
+    build_result: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Build the common runtime payload for logical basket Q02 rows."""
+    payload: dict[str, Any] = {
+        "basket_manifest": basket_manifest["manifest_path"],
+        "basket_symbol_count": len(basket_manifest.get("basket_symbols") or []),
+        "host_symbol": basket_manifest["host_symbol"],
+        "host_timeframe": basket_manifest["host_timeframe"],
+        "logical_symbol": basket_manifest["logical_symbol"],
+        "portfolio_scope": "basket",
+        "timeout_min": BASKET_Q02_ACTIVE_TIMEOUT_MIN,
+    }
+    basket_symbols = basket_manifest.get("basket_symbols") or []
+    if basket_symbols:
+        payload["basket_symbols"] = list(basket_symbols)
+    tester_currency = str(basket_manifest.get("tester_currency") or "").strip().upper()
+    if tester_currency:
+        payload["tester_currency"] = tester_currency
+    tester_deposit = basket_manifest.get("tester_deposit")
+    if tester_deposit not in (None, ""):
+        payload["tester_deposit"] = tester_deposit
+
+    if isinstance(build_result, dict):
+        traded_symbols = build_result.get("symbols") or []
+        if traded_symbols:
+            payload["traded_symbols"] = list(traded_symbols)
+        risk_mode = build_result.get("risk_mode")
+        if isinstance(risk_mode, dict):
+            risk_fixed = risk_mode.get("RISK_FIXED")
+            risk_percent = risk_mode.get("RISK_PERCENT")
+            portfolio_weight = risk_mode.get("PORTFOLIO_WEIGHT")
+            if risk_fixed not in (None, ""):
+                payload["risk_fixed"] = risk_fixed
+            if risk_percent not in (None, ""):
+                payload["risk_percent"] = risk_percent
+            if portfolio_weight not in (None, ""):
+                payload["portfolio_weight"] = portfolio_weight
+            try:
+                risk_fixed_value = float(risk_fixed)
+            except (TypeError, ValueError):
+                risk_fixed_value = 0.0
+            if risk_fixed_value > 0:
+                payload["risk_mode"] = "RISK_FIXED"
+        scan_ranking = build_result.get("scan_ranking")
+        if isinstance(scan_ranking, dict):
+            payload["scan_ranking"] = scan_ranking
+    return payload
+
+
 def _promotion_payload_with_basket_context(
     parent_work_item: sqlite3.Row | dict[str, Any],
     extra: dict[str, Any],
@@ -9339,17 +9390,7 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
     for sym, setfile_path in setfiles:
         payload: dict[str, Any] = {}
         if basket_manifest:
-            payload = {
-                "basket_manifest": basket_manifest["manifest_path"],
-                "basket_symbol_count": len(basket_manifest.get("basket_symbols") or []),
-                "host_symbol": basket_manifest["host_symbol"],
-                "host_timeframe": basket_manifest["host_timeframe"],
-                "logical_symbol": basket_manifest["logical_symbol"],
-                "portfolio_scope": "basket",
-            }
-            tester_currency = str(basket_manifest.get("tester_currency") or "").strip().upper()
-            if tester_currency:
-                payload["tester_currency"] = tester_currency
+            payload = _basket_q02_payload(basket_manifest)
         elif is_q02 and history_registry:
             window = _p2_history_window_for_symbol(
                 sym,
@@ -11198,6 +11239,7 @@ def _q02_build_setfile_basket_match(
     ea_id: str,
     setfile_path: Path,
     basket_manifest: dict[str, Any] | None,
+    build_result: dict[str, Any] | None = None,
 ) -> tuple[str, str, dict[str, Any]] | None:
     if not basket_manifest:
         return None
@@ -11213,17 +11255,7 @@ def _q02_build_setfile_basket_match(
         return None
 
     host_timeframe = str(basket_manifest["host_timeframe"])
-    payload_extra = {
-        "basket_manifest": basket_manifest["manifest_path"],
-        "basket_symbol_count": len(basket_manifest.get("basket_symbols") or []),
-        "host_symbol": basket_manifest["host_symbol"],
-        "host_timeframe": host_timeframe,
-        "logical_symbol": basket_manifest["logical_symbol"],
-        "portfolio_scope": "basket",
-    }
-    tester_currency = str(basket_manifest.get("tester_currency") or "").strip().upper()
-    if tester_currency:
-        payload_extra["tester_currency"] = tester_currency
+    payload_extra = _basket_q02_payload(basket_manifest, build_result)
     return logical_symbol, host_timeframe, payload_extra
 
 
@@ -11295,7 +11327,12 @@ def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dic
         m = re.search(r"_([A-Z][A-Z0-9.]{2,})_([A-Z0-9]+)_backtest\.set$",
                       setfile_path.name)
         if not m:
-            basket_match = _q02_build_setfile_basket_match(str(ea_id), setfile_path, basket_manifest)
+            basket_match = _q02_build_setfile_basket_match(
+                str(ea_id),
+                setfile_path,
+                basket_manifest,
+                build_result,
+            )
             if basket_match:
                 symbol, tf, payload_extra = basket_match
                 parsed.append((setfile_path, symbol, tf, payload_extra))
