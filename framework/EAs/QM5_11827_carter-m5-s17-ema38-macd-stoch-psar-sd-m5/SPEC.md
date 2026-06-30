@@ -4,7 +4,7 @@
 **Slug:** carter-m5-s17-ema38-macd-stoch-psar-sd-m5
 **Source:** f4430cee-7efb-592e-bf0f-e469ef156b2d (see approved card source citation)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-26
+**Last revised:** 2026-06-30
 
 ---
 
@@ -108,4 +108,4 @@ ENV to mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MI
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-26 | Initial build from card | 1c278c5e-c701-4d80-a1f7-b2f973233b3b |
+| v1 | 2026-06-30 | Initial build from card | 303402bb-540e-4cd3-9353-70b12f43b812 |

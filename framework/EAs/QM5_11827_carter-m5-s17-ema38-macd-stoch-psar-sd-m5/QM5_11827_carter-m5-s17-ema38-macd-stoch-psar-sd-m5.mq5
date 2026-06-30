@@ -92,36 +92,6 @@ input double strategy_atr_sl_mult         = 2.0;
 input double strategy_atr_tp_mult         = 4.0;
 input bool   strategy_psar_trail_enabled  = true;
 
-double StrategyMarketPrice(const QM_OrderType side)
-  {
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(side == QM_BUY)
-      return (ask > 0.0 ? ask : bid);
-   return (bid > 0.0 ? bid : ask);
-  }
-
-double StrategyStdDevAverage()
-  {
-   if(strategy_stddev_avg_bars <= 0)
-      return 0.0;
-
-   double sum = 0.0;
-   int count = 0;
-   for(int shift = 2; shift < 2 + strategy_stddev_avg_bars; ++shift)
-     {
-      const double sd = QM_StdDev(_Symbol, PERIOD_M5, strategy_stddev_period, shift);
-      if(sd <= 0.0)
-         continue;
-      sum += sd;
-      ++count;
-     }
-
-   if(count <= 0)
-      return 0.0;
-   return sum / (double)count;
-  }
-
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -130,6 +100,8 @@ double StrategyStdDevAverage()
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   // Card declares no extra time/session/spread filter; framework news,
+   // Friday-close, kill-switch, and tester spread rules remain in force.
    return false;
   }
 
@@ -172,7 +144,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const double psar = QM_SAR(_Symbol, PERIOD_M5, strategy_psar_step, strategy_psar_maximum, 1);
    const double sd_now = QM_StdDev(_Symbol, PERIOD_M5, strategy_stddev_period, 1);
-   const double sd_avg = StrategyStdDevAverage();
+   double sd_sum = 0.0;
+   int sd_count = 0;
+   for(int shift = 2; shift < 2 + strategy_stddev_avg_bars; ++shift)
+     {
+      const double sd = QM_StdDev(_Symbol, PERIOD_M5, strategy_stddev_period, shift);
+      if(sd <= 0.0)
+         continue;
+      sd_sum += sd;
+      ++sd_count;
+     }
+   const double sd_avg = (sd_count > 0) ? (sd_sum / (double)sd_count) : 0.0;
    if(psar <= 0.0 || sd_now <= 0.0 || sd_avg <= 0.0 || sd_now <= sd_avg)
       return false;
 
@@ -181,7 +163,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(long_cross && macd_hist > 0.0 && stoch_k > stoch_d && stoch_k < strategy_stoch_long_ceiling)
      {
-      const double entry = StrategyMarketPrice(QM_BUY);
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double entry = (ask > 0.0) ? ask : bid;
       if(entry <= 0.0 || psar >= entry)
          return false;
       const double sl = QM_StopATR(_Symbol, QM_BUY, entry, strategy_atr_period, strategy_atr_sl_mult);
@@ -198,7 +182,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    if(short_cross && macd_hist < 0.0 && stoch_k < stoch_d && stoch_k > strategy_stoch_short_floor)
      {
-      const double entry = StrategyMarketPrice(QM_SELL);
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      const double entry = (bid > 0.0) ? bid : ask;
       if(entry <= 0.0 || psar <= entry)
          return false;
       const double sl = QM_StopATR(_Symbol, QM_SELL, entry, strategy_atr_period, strategy_atr_sl_mult);
@@ -255,6 +241,7 @@ void Strategy_ManageOpenPosition()
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
+   // Card exits by ATR stop, ATR target, PSAR trailing, and framework Friday close.
    return false;
   }
 
@@ -263,6 +250,7 @@ bool Strategy_ExitSignal()
 // custom high-impact-event handling beyond the central filter.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
+   // No card-specific news override; framework news modes decide.
    return false; // defer to QM_NewsAllowsTrade(...)
   }
 

@@ -4,7 +4,7 @@
 **Slug:** `ea31337-bands`
 **Source:** `041e0d5c-bf76-501d-bee2-31c0f4a6e233` (see `artifacts/cards_approved/QM5_12428_ea31337-bands.md`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-26
+**Last revised:** 2026-06-30
 
 ---
 
@@ -97,4 +97,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-26 | Initial build from card | f5ae21c3-a387-4d6a-9b99-fa99b204cac5 |
+| v1 | 2026-06-30 | Initial build from card | d946f08f-b99d-480f-85ee-0670a888026f |

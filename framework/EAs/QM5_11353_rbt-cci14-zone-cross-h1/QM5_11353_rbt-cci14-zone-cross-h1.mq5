@@ -65,10 +65,10 @@ input double strategy_cci_overbought     = 150.0;  // prior-extreme STATE: deep 
 input double strategy_cci_long_zone      = 100.0;  // EVENT: cross UP through this -> LONG
 input double strategy_cci_short_zone     = -100.0; // EVENT: cross DOWN through this -> SHORT
 input int    strategy_prior_lookback    = 5;      // bars before trigger to find prior extreme (3-8)
-input double strategy_sl_pips           = 20.0;   // fixed stop in pips
-input double strategy_tp_pips           = 40.0;   // fixed take-profit in pips
+input int    strategy_sl_pips           = 20;     // fixed stop in pips
+input int    strategy_tp_pips           = 40;     // fixed take-profit in pips
 input bool   strategy_use_fade_exit     = true;   // exit when CCI returns past the trigger zone
-input double strategy_spread_cap_pips   = 20.0;   // skip only a genuinely wide spread (pips)
+input int    strategy_spread_cap_pips   = 20;     // skip only a genuinely wide spread (pips)
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -83,10 +83,10 @@ bool Strategy_NoTradeFilter()
       return false; // no valid quote yet — do not block on it
 
    const double spread = ask - bid;
-   if(spread <= 0.0)
+   if(!(spread > 0.0))
       return false; // zero/negative modeled spread (.DWX) — fail-open, allow
 
-   const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, (int)strategy_spread_cap_pips);
+   const double cap_distance = QM_StopRulesPipsToPriceDistance(_Symbol, strategy_spread_cap_pips);
    if(cap_distance <= 0.0)
       return false; // cannot scale cap — do not block here
 
@@ -101,6 +101,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    // One open position per symbol/magic.
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+      return false;
+   if(strategy_cci_period <= 1 || strategy_prior_lookback < 1)
       return false;
 
    // Closed-bar CCI readings: shift 1 = just-closed bar, shift 2 = the one before.
@@ -139,16 +141,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const double entry = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(entry <= 0.0)
          return false;
-      const double sl = QM_StopFixedPips(_Symbol, QM_BUY, entry, (int)strategy_sl_pips);
-      const double tp = QM_TakeFixedPips(_Symbol, QM_BUY, entry, (int)strategy_tp_pips);
+      const double sl = QM_StopFixedPips(_Symbol, QM_BUY, entry, strategy_sl_pips);
+      const double tp = QM_TakeFixedPips(_Symbol, QM_BUY, entry, strategy_tp_pips);
       if(sl <= 0.0 || tp <= 0.0)
          return false;
 
-      req.type   = QM_BUY;
-      req.price  = 0.0;   // framework fills market price at send
-      req.sl     = sl;
-      req.tp     = tp;
+      req.type = QM_BUY;
+      req.price = 0.0;   // framework fills market price at send
+      req.sl = sl;
+      req.tp = tp;
       req.reason = "cci14_zone_cross_long";
+      req.symbol_slot = qm_magic_slot_offset;
+      req.expiration_seconds = 0;
       return true;
      }
 
@@ -169,16 +173,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double sentry = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(sentry <= 0.0)
       return false;
-   const double ssl = QM_StopFixedPips(_Symbol, QM_SELL, sentry, (int)strategy_sl_pips);
-   const double stp = QM_TakeFixedPips(_Symbol, QM_SELL, sentry, (int)strategy_tp_pips);
+   const double ssl = QM_StopFixedPips(_Symbol, QM_SELL, sentry, strategy_sl_pips);
+   const double stp = QM_TakeFixedPips(_Symbol, QM_SELL, sentry, strategy_tp_pips);
    if(ssl <= 0.0 || stp <= 0.0)
       return false;
 
-   req.type   = QM_SELL;
-   req.price  = 0.0;
-   req.sl     = ssl;
-   req.tp     = stp;
+   req.type = QM_SELL;
+   req.price = 0.0;
+   req.sl = ssl;
+   req.tp = stp;
    req.reason = "cci14_zone_cross_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 

@@ -4,7 +4,7 @@
 **Slug:** `rbt-cci14-zone-cross-h1`
 **Source:** `ed246754-1f4d-5bed-8dd3-3b5cbf1b420d` (RoboForex Strategy Collection, "CCI strategy")
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-06-30
 
 ---
 
@@ -43,9 +43,34 @@ CCI falls back below +100 (short: rises back above -100).
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — deep-liquidity major; CCI extreme-zone reversals are well behaved on H1.
-- `GBPUSD.DWX` — high intraday range gives the oscillator room to reach ±150 extremes.
-- `USDJPY.DWX` — major with distinct momentum bursts; pip-scaling handled via pip_factor.
+- `EURUSD.DWX` — card primary FX major; deep liquidity for H1 CCI zone crosses.
+- `GBPUSD.DWX` — card primary FX major; high intraday range can reach CCI extremes.
+- `USDJPY.DWX` — card primary FX major; pip scaling handles JPY quote precision.
+- `AUDCAD.DWX` — DWX forex cross in the full portable FX basket.
+- `AUDCHF.DWX` — DWX forex cross in the full portable FX basket.
+- `AUDJPY.DWX` — DWX forex cross in the full portable FX basket.
+- `AUDNZD.DWX` — DWX forex cross in the full portable FX basket.
+- `AUDUSD.DWX` — DWX forex major in the full portable FX basket.
+- `CADCHF.DWX` — DWX forex cross in the full portable FX basket.
+- `CADJPY.DWX` — DWX forex cross in the full portable FX basket.
+- `CHFJPY.DWX` — DWX forex cross in the full portable FX basket.
+- `EURAUD.DWX` — DWX forex cross in the full portable FX basket.
+- `EURCAD.DWX` — DWX forex cross in the full portable FX basket.
+- `EURCHF.DWX` — DWX forex cross in the full portable FX basket.
+- `EURGBP.DWX` — DWX forex cross in the full portable FX basket.
+- `EURJPY.DWX` — DWX forex cross in the full portable FX basket.
+- `EURNZD.DWX` — DWX forex cross in the full portable FX basket.
+- `GBPAUD.DWX` — DWX forex cross in the full portable FX basket.
+- `GBPCAD.DWX` — DWX forex cross in the full portable FX basket.
+- `GBPCHF.DWX` — DWX forex cross in the full portable FX basket.
+- `GBPJPY.DWX` — DWX forex cross in the full portable FX basket.
+- `GBPNZD.DWX` — DWX forex cross in the full portable FX basket.
+- `NZDCAD.DWX` — DWX forex cross in the full portable FX basket.
+- `NZDCHF.DWX` — DWX forex cross in the full portable FX basket.
+- `NZDJPY.DWX` — DWX forex cross in the full portable FX basket.
+- `NZDUSD.DWX` — DWX forex major in the full portable FX basket.
+- `USDCAD.DWX` — DWX forex major in the full portable FX basket.
+- `USDCHF.DWX` — DWX forex major in the full portable FX basket.
 
 **Explicitly NOT for:**
 - Index CFDs (NDX/WS30/SP500.DWX) — the card scopes this to FX majors on H1; fixed-pip
@@ -103,3 +128,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | board-advisor build |
+| v2 | 2026-06-30 | In-place rebuild with full P2 FX basket registration | be93b14f-3d5d-4167-894b-15f3ad708e86 |
