@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_12825_XTI_EURUSD_SPREAD_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "EURUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg WTI/EURUSD oil-dollar relative-value basket from the approved EIA-OIL-USD-FX-2017 card. The EA runs from the XTIUSD.DWX host setfile and reads both D1 close series to compute ln(XTIUSD) - beta * ln(EURUSD). Q02 must evaluate the logical basket, not the standalone legs."
+  ]
+}

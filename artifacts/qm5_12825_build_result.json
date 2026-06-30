@@ -1,0 +1,69 @@
+{
+  "task_id": "b2620970-7cd2-4e2f-a5d3-419f759e2488",
+  "ea_id": "QM5_12825",
+  "slug": "wti-eurusd-spread",
+  "branch": "agents/board-advisor",
+  "date": "2026-06-30",
+  "source_id": "EIA-OIL-USD-FX-2017",
+  "source_citation": "Beckmann, J., Czudaj, R. L., and Arora, V. The Relationship between Oil Prices and Exchange Rates. U.S. Energy Information Administration Working Paper, June 2017.",
+  "strategy": "D1 XTIUSD/EURUSD oil-dollar relative-value spread mean reversion",
+  "logical_symbol": "QM5_12825_XTI_EURUSD_SPREAD_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "EURUSD.DWX"
+  ],
+  "risk_mode": "RISK_FIXED",
+  "risk_fixed": 1000,
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 16,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "q02_enqueued_for_paced_fleet_no_manual_backtest",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12825_wti-eurusd-spread\\QM5_12825_wti-eurusd-spread.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12825_wti-eurusd-spread\\QM5_12825_wti-eurusd-spread.ex5",
+  "spec_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12825_wti-eurusd-spread\\SPEC.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12825_wti-eurusd-spread\\basket_manifest.json",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12825_wti-eurusd-spread_card.md",
+  "repo_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12825_wti-eurusd-spread_card.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12825_wti-eurusd-spread\\sets\\QM5_12825_wti-eurusd-spread_QM5_12825_XTI_EURUSD_SPREAD_D1_D1_backtest.set"
+  ],
+  "compile": {
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log": "C:\\QM\\repo\\framework\\build\\compile\\20260630_105650\\QM5_12825_wti-eurusd-spread.compile.log",
+    "summary": "D:\\QM\\reports\\compile\\20260630_105650\\summary.csv",
+    "ex5": "C:\\QM\\repo\\framework\\EAs\\QM5_12825_wti-eurusd-spread\\QM5_12825_wti-eurusd-spread.ex5"
+  },
+  "build_check": {
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report": "D:\\QM\\reports\\framework\\21\\build_check_20260630_105702.json"
+  },
+  "q02": {
+    "status": "enqueued",
+    "phase": "Q02",
+    "task_id": "b2620970-7cd2-4e2f-a5d3-419f759e2488",
+    "logical_symbol": "QM5_12825_XTI_EURUSD_SPREAD_D1",
+    "work_items": [
+      {
+        "wi_id": "0dc3297e",
+        "symbol": "QM5_12825_XTI_EURUSD_SPREAD_D1",
+        "tf": "D1",
+        "setfile": "QM5_12825_wti-eurusd-spread_QM5_12825_XTI_EURUSD_SPREAD_D1_D1_backtest.set"
+      }
+    ]
+  },
+  "live_scope": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "non_duplicate_reason": "New EIA official-source XTIUSD/EURUSD two-leg oil-dollar spread basket. It differs from QM5_12814, which trades only XTI with EURUSD read-only confirmation, and from WTI/CAD, calendar, WPSR, OPEC, refinery, roll, metal-ratio, XNG, and RSI sleeves.",
+  "notes": "No local backtest was run. The build uses the logical basket setfile with RISK_FIXED=1000 and is intended for paced-fleet Q02 evaluation."
+}
