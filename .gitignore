@@ -74,3 +74,9 @@ scripts/pip*.exe
 scripts/pymupdf.exe
 # stray Antigravity CLI installer
 install.cmd
+
+# Antigravity channel-harvest army: transient working files (final reconstruction is committed)
+docs/research/unconventional_forex/logs/
+docs/research/unconventional_forex/_*
+docs/research/unconventional_forex/HARVEST_PROGRESS.log
+docs/research/unconventional_forex/batch_*.md
