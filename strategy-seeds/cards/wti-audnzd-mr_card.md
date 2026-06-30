@@ -4,7 +4,7 @@ slug: wti-audnzd-mr
 type: strategy
 strategy_id: EIA-RBA-RBNZ-WTI-FX-2026_S01
 source_id: EIA-RBA-RBNZ-WTI-FX-2026
-source_citation: "Beckmann, J., Czudaj, R. L., and Arora, V. The Relationship between Oil Prices and Exchange Rates. U.S. Energy Information Administration Working Paper, June 2017. URL https://www.eia.gov/workingpapers/pdf/oil_exchangerates_61317.pdf; Reserve Bank of Australia, Drivers of the Australian Dollar Exchange Rate. URL https://www.rba.gov.au/education/resources/explainers/drivers-of-the-aud-exchange-rate.html; Reserve Bank of New Zealand official monetary-policy and exchange-rate material. URL https://www.rbnz.govt.nz/"
+source_citation: "Beckmann, J., Czudaj, R. L., and Arora, V. The Relationship between Oil Prices and Exchange Rates. U.S. Energy Information Administration Working Paper, June 2017. URL https://www.eia.gov/workingpapers/pdf/oil_exchangerates_61317.pdf; Reserve Bank of Australia, Drivers of the Australian Dollar Exchange Rate. URL https://www.rba.gov.au/education/resources/explainers/drivers-of-the-aud-exchange-rate.html; Reserve Bank of New Zealand, Commodity prices and implications for monetary policy. URL https://www.rbnz.govt.nz/research-and-publications/research/our-research-and-analysis/additional-research/commodity-prices-and-implications-for-monetary-policy"
 source_citations:
   - type: working_paper
     citation: "Beckmann, J., Czudaj, R. L., and Arora, V. (2017). The Relationship between Oil Prices and Exchange Rates. U.S. Energy Information Administration."
@@ -17,8 +17,8 @@ source_citations:
     quality_tier: A
     role: supplement
   - type: central_bank_research
-    citation: "Reserve Bank of New Zealand. Monetary policy and exchange-rate transmission material."
-    location: "https://www.rbnz.govt.nz/"
+    citation: "Reserve Bank of New Zealand. Commodity prices and implications for monetary policy."
+    location: "https://www.rbnz.govt.nz/research-and-publications/research/our-research-and-analysis/additional-research/commodity-prices-and-implications-for-monetary-policy"
     quality_tier: A
     role: supplement
 sources:
@@ -65,8 +65,8 @@ hard_rules_at_risk: [friday_close, enhancement_doctrine]
   Information Administration working paper, June 2017.
 - Supplement: Reserve Bank of Australia, "Drivers of the Australian Dollar
   Exchange Rate".
-- Supplement: Reserve Bank of New Zealand official monetary-policy and
-  exchange-rate material.
+- Supplement: Reserve Bank of New Zealand, "Commodity prices and implications
+  for monetary policy".
 
 ## Concept
 

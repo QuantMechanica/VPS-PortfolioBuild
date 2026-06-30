@@ -14071,6 +14071,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1579,sperandeo-tlb-swing-pivot-h4,6,XTIUSD.DWX,15790006,2026-06-30,Development,active
 12835,wti-usdchf-brk,0,XTIUSD.DWX,128350000,2026-06-30,Codex,active
 12835,wti-usdchf-brk,1,USDCHF.DWX,128350001,2026-06-30,Codex,active
+12837,wti-audnzd-mr,0,XTIUSD.DWX,128370000,2026-06-30,Codex,active
+12837,wti-audnzd-mr,1,AUDUSD.DWX,128370001,2026-06-30,Codex,active
+12837,wti-audnzd-mr,2,NZDUSD.DWX,128370002,2026-06-30,Codex,active
 12801,wyckoff-trend-swing,0,NDX.DWX,128010000,2026-06-30,Development,active
 12801,wyckoff-trend-swing,1,GDAXI.DWX,128010001,2026-06-30,Development,active
 12801,wyckoff-trend-swing,2,SP500.DWX,128010002,2026-06-30,Development,active

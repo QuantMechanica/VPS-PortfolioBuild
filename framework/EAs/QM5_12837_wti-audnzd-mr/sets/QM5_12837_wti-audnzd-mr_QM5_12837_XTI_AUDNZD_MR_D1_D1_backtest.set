@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12837
 ; ea_slug:      wti-audnzd-mr
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   TBD
+; build_hash:   ba146686cabd21e62c5e5f0775108c71388603b5e75dd687cdc539215f50502c
 ; author:       Development
 ; date:         2026-06-30
 ;==========================================================

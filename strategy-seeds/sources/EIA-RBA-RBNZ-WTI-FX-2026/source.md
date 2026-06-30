@@ -19,10 +19,9 @@ uri: https://www.eia.gov/workingpapers/pdf/oil_exchangerates_61317.pdf
 - Supplement: Reserve Bank of Australia, "Drivers of the Australian Dollar
   Exchange Rate".
 - Supplement URL: https://www.rba.gov.au/education/resources/explainers/drivers-of-the-aud-exchange-rate.html
-- Supplement: Reserve Bank of New Zealand, "Explaining New Zealand's monetary
-  policy framework and exchange-rate transmission", RBNZ education and research
-  material.
-- Supplement URL: https://www.rbnz.govt.nz/
+- Supplement: Reserve Bank of New Zealand, "Commodity prices and implications
+  for monetary policy", Richard Sullivan and Tim Aldridge, 2011.
+- Supplement URL: https://www.rbnz.govt.nz/research-and-publications/research/our-research-and-analysis/additional-research/commodity-prices-and-implications-for-monetary-policy
 
 ## Mining Scope
 
@@ -37,9 +36,9 @@ One card was extracted for a structural commodity/FX relative-value sleeve:
   oil prices and exchange rates.
 - The RBA source provides official central-bank lineage for the Australian
   dollar's sensitivity to commodity prices, terms of trade, and global demand.
-- The RBNZ source is used only as a reputable central-bank supplement for NZD
-  exchange-rate transmission and New Zealand's open-economy sensitivity. No RBNZ
-  data is consumed at runtime.
+- The RBNZ source is used only as a reputable central-bank supplement for New
+  Zealand commodity-price and monetary-policy context. No RBNZ data is consumed
+  at runtime.
 - The QM implementation does not ingest EIA, RBA, RBNZ, commodity-index,
   futures-curve, rate, macro, or external FX data at runtime. It uses the source
   packet only for structural lineage and trades Darwinex MT5-native D1 OHLC for
