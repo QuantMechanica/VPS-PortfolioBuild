@@ -1,0 +1,48 @@
+{
+  "ea_id": "QM5_12813",
+  "slug": "eia-energy-switch",
+  "date": "2026-06-30",
+  "status": "BUILT_AND_Q02_ENQUEUED",
+  "source_id": "EIA-ENERGY-SEASON-SWITCH-2026",
+  "logical_symbol": "QM5_12813_XTI_XNG_SEASON_SWITCH_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "compile": {
+    "verdict": "COMPILED",
+    "warnings": 0,
+    "errors": 0,
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12813_eia-energy-switch\\QM5_12813_eia-energy-switch.ex5",
+    "ex5_size_bytes": 294218,
+    "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260630_025826\\QM5_12813_eia-energy-switch.compile.log"
+  },
+  "checks": {
+    "card_schema_lint": "PASS",
+    "spec_doc": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 16,
+    "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260630_025847.json"
+  },
+  "q02_enqueue": {
+    "status": "pending",
+    "work_item_id": "1097d28a-8dd5-4dc7-9b1e-e8cb73f2e50d",
+    "db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12813_eia-energy-switch\\sets\\QM5_12813_eia-energy-switch_QM5_12813_XTI_XNG_SEASON_SWITCH_D1_D1_backtest.set",
+    "payload_scope": "basket",
+    "timeout_min": 120
+  },
+  "notes": [
+    "The generic sweep enqueuer rejected underscore logical symbols by filename regex, so Q02 was inserted through farmctl._create_backtest_work_items to preserve the controller's basket payload format.",
+    "No T_Live, AutoTrading, live manifest, or portfolio gate file was touched."
+  ]
+}
