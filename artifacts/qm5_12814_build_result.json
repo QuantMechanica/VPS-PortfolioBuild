@@ -1,0 +1,37 @@
+{
+  "ea_id": "QM5_12814",
+  "slug": "wti-usd-confirm",
+  "branch": "agents/board-advisor",
+  "date": "2026-06-30",
+  "source_id": "EIA-OIL-USD-FX-2017",
+  "target_symbol": "XTIUSD.DWX",
+  "read_only_symbols": ["EURUSD.DWX"],
+  "risk_mode": "RISK_FIXED",
+  "risk_fixed": 1000,
+  "card_lint": "PASS",
+  "spec_validation": "PASS",
+  "symbol_scope": "SINGLE_SYMBOL_OK",
+  "compile": {
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log": "C:\\QM\\repo\\framework\\build\\compile\\20260630_035547\\QM5_12814_wti-usd-confirm.compile.log"
+  },
+  "build_check": {
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report": "D:\\QM\\reports\\framework\\21\\build_check_20260630_035601.json"
+  },
+  "q02": {
+    "enqueued": true,
+    "work_item_id": "53915b9e-c6b6-4532-84c7-92909e3c7599",
+    "status": "pending",
+    "created_at": "2026-06-30T03:56:25+00:00"
+  },
+  "live_scope": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
