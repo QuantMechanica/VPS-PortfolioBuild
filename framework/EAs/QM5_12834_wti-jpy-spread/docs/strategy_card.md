@@ -25,18 +25,18 @@ sources:
   - "[[sources/EIA-BOJ-WTI-JPY-2026]]"
 concepts:
   - "[[concepts/oil-importer-fx]]"
-  - "[[concepts/commodity-trend-confirmation]]"
+  - "[[concepts/cross-asset-relative-value]]"
 indicators:
-  - "[[indicators/rolling-return]]"
-  - "[[indicators/sma]]"
+  - "[[indicators/z-score]]"
   - "[[indicators/atr]]"
-strategy_type_flags: [commodity-trend, cross-asset-confirmation, weekly-gate, atr-hard-stop, time-stop, symmetric-long-short, low-frequency]
-target_symbols: [XTIUSD.DWX]
-read_only_symbols: [USDJPY.DWX]
-single_symbol_only: true
+strategy_type_flags: [mean-reversion, cross-asset-relative-value, atr-hard-stop, time-stop, symmetric-long-short, low-frequency]
+target_symbols: [XTIUSD.DWX, USDJPY.DWX]
+basket_symbols: [XTIUSD.DWX, USDJPY.DWX]
+read_only_symbols: []
+single_symbol_only: false
 period: D1
-expected_trade_frequency: "Weekly-gated WTI trend package confirmed by USDJPY.DWX oil-importer FX direction; estimate 5-12 entries/year after thresholds."
-expected_trades_per_year_per_symbol: 8
+expected_trade_frequency: "D1 z-score gate on a 120-day XTIUSD/USDJPY log spread; estimate 4-10 basket packages/year."
+expected_trades_per_year_per_symbol: 7
 g0_status: APPROVED
 status: APPROVED
 r1_track_record: PASS
@@ -45,14 +45,14 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 last_updated: 2026-06-30
-g0_approval_reasoning: "R1 PASS official EIA Japan energy source plus official BOJ macro source and EIA oil/exchange-rate supplement; R2 PASS deterministic weekly D1 oil return plus USDJPY oil-importer FX confirmation, SMA trend filter, ATR stop, signal-flip and time exits; R3 PASS XTIUSD.DWX and USDJPY.DWX available; R4 PASS no ML/grid/martingale/external runtime data."
-expected_pf: 1.08
+g0_approval_reasoning: "R1 PASS official EIA Japan energy source plus official BOJ macro source and EIA oil/exchange-rate supplement; R2 PASS deterministic D1 XTIUSD/USDJPY log-spread z-score entries, z-score/time exits, and ATR stops; R3 PASS XTIUSD.DWX and USDJPY.DWX available; R4 PASS no ML/grid/martingale/external runtime data."
+expected_pf: 1.07
 expected_dd_pct: 22.0
 risk_class: medium-high
 ml_required: false
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal]
-hard_rules_at_risk: [friday_close, enhancement_doctrine]
+hard_rules_at_risk: [friday_close, magic_schema, dwx_suffix_discipline]
 ---
 
 # WTI JPY Oil-Importer Spread Mean Reversion
@@ -72,58 +72,58 @@ hard_rules_at_risk: [friday_close, enhancement_doctrine]
 
 Japan is structurally exposed to imported energy costs, and crude-oil price
 moves can feed through the terms-of-trade channel into yen-sensitive macro
-pricing. This card converts that mechanism into a Darwinex-native WTI sleeve:
-trade `XTIUSD.DWX` only when its own D1 trend agrees with closed `USDJPY.DWX`
-direction as an oil-importer FX confirmation proxy.
+pricing. This card converts that mechanism into a Darwinex-native two-leg
+relative-value basket: fade large D1 dislocations between `XTIUSD.DWX` and
+`USDJPY.DWX` while judging the package as one spread.
 
 This is deliberately different from:
 
-- `QM5_12814_wti-usd-confirm`: uses `EURUSD.DWX` as a broad USD proxy; this
-  card uses `USDJPY.DWX` as an oil-importer/yen proxy.
+- `QM5_12833_wti-jpy-confirm`: trades only WTI and uses USDJPY as read-only
+  confirmation; this card opens and manages both legs as a basket.
+- `QM5_12814_wti-usd-confirm`: uses `EURUSD.DWX` as a broad USD proxy and
+  trades only WTI.
 - `QM5_12607_wti-cad-confirm`, `QM5_12609_wti-cad-spread-mr`, and
   `QM5_12722_wti-cad-brk`: this is not a petro-exporter CAD setup.
-- `QM5_12831_wti-audusd-brk`: no AUDUSD traded leg and no two-leg basket.
+- `QM5_12831_wti-audusd-brk`: AUDUSD breakout basket, not USDJPY z-score
+  mean reversion.
 - WTI calendar, weekday, month, WPSR, OPEC, refinery, hurricane, Cushing, SPR,
   ETF-roll, expiry, driving-season, distillate, jet-fuel, and RBOB sleeves:
   no event or calendar window is used.
 - XTI/XNG, oil/gold, oil/silver, gas/metal, XAU/XAG, and XNG RSI sleeves:
-  this is one traded WTI leg with read-only FX confirmation.
+  no gas or metals leg is used.
 
 ## Hypothesis
 
-WTI trend persistence should improve when the direction of oil is confirmed by
-the yen oil-importer channel. `USDJPY.DWX` rising is treated as yen weakness and
-confirms long WTI setups; `USDJPY.DWX` falling is treated as yen strength and
-confirms short WTI setups.
+The oil/yen macro link should not be a fixed linear trade at all times, but
+large deviations in the D1 `ln(XTIUSD) - beta * ln(USDJPY)` spread can mean
+temporary terms-of-trade or FX overreaction. The EA fades those extremes and
+exits when the spread normalizes or the package ages out.
 
 ## rules
 
-- Host/traded symbol: `XTIUSD.DWX` D1, magic slot 0.
-- Read-only confirmation symbol: `USDJPY.DWX` D1.
-- Evaluate entries only on the first D1 bar of a new broker-calendar week.
-- Compute oil momentum as `ln(XTI close[1] / XTI close[1+lookback])`.
-- Compute JPY proxy momentum as
-  `ln(USDJPY close[1] / USDJPY close[1+lookback])`.
-- Long entry: oil return above `strategy_min_oil_return_pct`, USDJPY return
-  above `strategy_min_jpy_proxy_return_pct`, and XTI close above its D1 SMA.
-- Short entry: oil return below `-strategy_min_oil_return_pct`, USDJPY return
-  below `-strategy_min_jpy_proxy_return_pct`, and XTI close below its D1 SMA.
-- Exit on weekly signal flip/loss, `strategy_max_hold_days`, Friday close, or
-  ATR hard stop.
+- Host symbol: `XTIUSD.DWX` D1, magic slot 0.
+- Second basket leg: `USDJPY.DWX` D1, magic slot 1.
+- Compute spread as `ln(XTI close[1]) - beta * ln(USDJPY close[1])`.
+- Compute z-score over the prior `strategy_z_lookback_d1` closed D1 bars.
+- Rich spread entry: SELL `XTIUSD.DWX`, BUY `USDJPY.DWX`.
+- Cheap spread entry: BUY `XTIUSD.DWX`, SELL `USDJPY.DWX`.
+- Exit on spread z-score reversion to `strategy_exit_z`, `strategy_max_hold_days`,
+  broken package repair, Friday close, or per-leg ATR hard stop.
 - No pyramiding, grid, martingale, partial close, runtime source data, or ML.
 
 ## risk
 
 - Backtest risk mode: `RISK_FIXED=1000`, `RISK_PERCENT=0`.
-- Hard stop: ATR(`strategy_atr_period`) times `strategy_atr_sl_mult`.
-- One open XTI position per magic.
+- Per-leg hard stop: ATR(`strategy_atr_period_d1`) times
+  `strategy_atr_sl_mult`.
+- One open basket package: one position per magic slot.
 - Live risk is intentionally not configured here; any future live allocation
   must come from the portfolio process.
 
 ## Markets And Timeframe
 
 - Host/traded symbol: `XTIUSD.DWX`.
-- Read-only confirmation symbol: `USDJPY.DWX`.
+- Basket leg symbol: `USDJPY.DWX`.
 - Period: D1.
 - Backtest risk mode: `RISK_FIXED`.
 - Runtime data: Darwinex MT5 OHLC and broker calendar only; no EIA, BOJ,
@@ -132,31 +132,29 @@ confirms short WTI setups.
 
 ## Entry Rules
 
-- Evaluate entries only on the first D1 bar of a new broker-calendar week.
-- Compute oil momentum as `ln(XTI close[1] / XTI close[1+lookback])`.
-- Compute JPY proxy momentum as
-  `ln(USDJPY close[1] / USDJPY close[1+lookback])`.
-- Long entry: oil return above `strategy_min_oil_return_pct`, USDJPY return
-  above `strategy_min_jpy_proxy_return_pct`, and XTI close above its D1 SMA.
-- Short entry: oil return below `-strategy_min_oil_return_pct`, USDJPY return
-  below `-strategy_min_jpy_proxy_return_pct`, and XTI close below its D1 SMA.
-- No entry if an XTI position is already open for this EA magic.
-- No entry if XTI's current spread exceeds `strategy_max_spread_points`.
+- Compute `spread = ln(XTIUSD.DWX close) - beta * ln(USDJPY.DWX close)` over
+  closed D1 bars.
+- If spread z-score > `strategy_entry_z`, SELL `XTIUSD.DWX` and BUY
+  `USDJPY.DWX`.
+- If spread z-score < `-strategy_entry_z`, BUY `XTIUSD.DWX` and SELL
+  `USDJPY.DWX`.
+- No entry if either basket leg already has an open position for this EA.
+- No entry if either leg exceeds its configured spread cap.
 
 ## Exit Rules
 
-- Stop loss: fixed hard SL at ATR(`strategy_atr_period`) times
+- Stop loss: fixed per-leg hard SL at ATR(`strategy_atr_period_d1`) times
   `strategy_atr_sl_mult`.
-- Exit on weekly signal flip or loss of confirmation.
+- Exit when spread z-score reverts inside `strategy_exit_z`.
 - Exit after `strategy_max_hold_days`.
+- If only one leg remains open, close the broken package immediately.
 - Friday close remains enabled by the V5 framework.
 
 ## Filters
 
 - Host chart must be `XTIUSD.DWX` on D1.
 - `qm_magic_slot_offset` must be 0.
-- `strategy_jpy_proxy_symbol` must be `USDJPY.DWX`.
-- Skip when required close/SMA/ATR history is unavailable.
+- Skip when required close/ATR history is unavailable.
 - Framework news, kill-switch, magic, and Friday-close guards remain active.
 
 ## Trade Management Rules
@@ -166,53 +164,50 @@ confirms short WTI setups.
 - No martingale.
 - No partial close.
 - No trailing stop in v1.
-- One open traded XTI position at a time.
+- One open two-leg package at a time.
 
 ## Parameters To Test
 
-- name: strategy_jpy_proxy_symbol
-  default: USDJPY.DWX
-  sweep_range: [USDJPY.DWX]
-- name: strategy_oil_lookback_d1
-  default: 63
-  sweep_range: [42, 63, 84]
-- name: strategy_jpy_lookback_d1
-  default: 63
-  sweep_range: [42, 63, 84]
-- name: strategy_min_oil_return_pct
-  default: 3.0
-  sweep_range: [2.0, 3.0, 5.0]
-- name: strategy_min_jpy_proxy_return_pct
+- name: strategy_z_lookback_d1
+  default: 120
+  sweep_range: [90, 120, 180]
+- name: strategy_beta
   default: 1.0
-  sweep_range: [0.5, 1.0, 1.5]
-- name: strategy_trend_period
-  default: 84
-  sweep_range: [63, 84, 126]
-- name: strategy_atr_period
+  sweep_range: [0.75, 1.0, 1.25]
+- name: strategy_entry_z
+  default: 2.0
+  sweep_range: [1.75, 2.0, 2.25]
+- name: strategy_exit_z
+  default: 0.5
+  sweep_range: [0.25, 0.5, 0.75]
+- name: strategy_atr_period_d1
   default: 20
   sweep_range: [14, 20, 30]
 - name: strategy_atr_sl_mult
   default: 3.0
   sweep_range: [2.5, 3.0, 4.0]
 - name: strategy_max_hold_days
-  default: 21
-  sweep_range: [14, 21, 31]
-- name: strategy_max_spread_points
+  default: 45
+  sweep_range: [30, 45, 60]
+- name: strategy_xti_max_spread_pts
   default: 1000
   sweep_range: [700, 1000, 1500]
+- name: strategy_usdjpy_max_spread_pts
+  default: 60
+  sweep_range: [30, 60, 100]
 
 ## Author Claims
 
 No performance claim is imported from any source. The sources are used only for
 structural lineage around Japan's oil-import exposure, oil terms-of-trade
 pressure, and oil/exchange-rate linkage. The Q02+ pipeline tests the
-deterministic Darwinex `XTIUSD.DWX` strategy.
+deterministic Darwinex `XTIUSD.DWX` / `USDJPY.DWX` basket.
 
 ## Initial Risk Profile
 
 - expected_pf: 1.08
 - expected_dd_pct: 22
-- expected_trade_frequency: approximately 5-12 entries/year.
+- expected_trade_frequency: approximately 4-10 basket packages/year.
 - risk_class: medium-high for crude-oil volatility.
 - gridding: false.
 - scalping: false.
@@ -222,36 +217,36 @@ deterministic Darwinex `XTIUSD.DWX` strategy.
 
 - [x] R1 reputable source: official EIA Japan energy source, official BOJ
   policy speech, and official EIA oil/exchange-rate working paper supplement.
-- [x] R2 mechanical: fixed weekly gate, fixed return thresholds, SMA trend
-  filter, ATR hard stop, signal-flip exit, and time exit.
+- [x] R2 mechanical: fixed z-score lookback, fixed spread coefficients, ATR
+  hard stops, z-score reversion exit, and time exit.
 - [x] R3 testable: `XTIUSD.DWX` and `USDJPY.DWX` exist in
   `framework/registry/dwx_symbol_matrix.csv`.
 - [x] R4 compliant: no ML, no adaptive PnL fitting, no grid, no martingale,
   no external runtime data.
-- [x] Non-duplicate: not broad USD EURUSD confirmation, not CAD/AUD
-  commodity-FX logic, not WTI event/calendar logic, not XTI/XNG or metal logic,
-  and not `QM5_12567` RSI commodity logic.
+- [x] Non-duplicate: not `QM5_12833` single-leg WTI/JPY confirmation, not broad
+  USD EURUSD confirmation, not CAD/AUD commodity-FX logic, not WTI
+  event/calendar logic, not XTI/XNG or metal logic, and not `QM5_12567` RSI
+  commodity logic.
 
 ## Framework Alignment
 
 - no_trade: D1 and `XTIUSD.DWX` host guard, magic-slot guard, parameter guard,
   spread cap, framework news, kill-switch, and Friday close.
-- trade_entry: weekly XTI momentum and SMA trend entry confirmed by closed
-  `USDJPY.DWX` direction.
-- trade_management: weekly signal-flip/loss exit and max-hold control.
+- trade_entry: D1 XTI/USDJPY log-spread z-score mean-reversion basket entry.
+- trade_management: broken-package repair and max-hold control.
 - trade_close: ATR hard stop, Friday close, framework kill-switch, and
-  deterministic time/signal exits.
+  deterministic z-score/time exits.
 
 ## Pipeline History
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-06-30 | initial WTI/JPY oil-importer confirmation build | Q02 | ENQUEUED |
+| v1 | 2026-06-30 | initial WTI/JPY oil-importer spread basket build | Q01 | IN_PROGRESS |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-06-30 | APPROVED | this card |
-| Q01 Build Validation | 2026-06-30 | PASS | `artifacts/QM5_12834_build_result.json` |
-| Q02 Backtest | 2026-06-30 | ENQUEUED | `D:\QM\strategy_farm\state\farm_state.sqlite` |
+| Q01 Build Validation | TBD | TBD | TBD |
+| Q02 Backtest | TBD | TBD | TBD |
