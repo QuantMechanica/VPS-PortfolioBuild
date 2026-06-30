@@ -1,0 +1,48 @@
+{
+  "task_id": "60d5a54c-7e94-4513-bb25-7bd5fe0755c0",
+  "ea_id": "QM5_12817",
+  "slug": "xng-volshock-fade",
+  "branch": "agents/board-advisor",
+  "date": "2026-06-30",
+  "source_id": "EIA-XNG-VOLSHOCK-2026",
+  "target_symbol": "XNGUSD.DWX",
+  "risk_mode": "RISK_FIXED",
+  "risk_fixed": 1000,
+  "card_lint": "PASS",
+  "spec_validation": "PASS",
+  "symbol_scope": "SINGLE_SYMBOL_OK",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12817_xng-volshock-fade",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12817_xng-volshock-fade\\QM5_12817_xng-volshock-fade.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12817_xng-volshock-fade\\QM5_12817_xng-volshock-fade.ex5",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12817_xng-volshock-fade\\sets\\QM5_12817_xng-volshock-fade_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Q02_queue_only_no_manual_backtest_per_mission",
+  "compile": {
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log": "C:\\QM\\repo\\framework\\build\\compile\\20260630_044032\\QM5_12817_xng-volshock-fade.compile.log"
+  },
+  "build_check": {
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report": "D:\\QM\\reports\\framework\\21\\build_check_20260630_044244.json"
+  },
+  "q02": {
+    "enqueued": true,
+    "work_item_id": "657489cb-0c16-42f0-a951-34b03f444b77",
+    "status": "pending",
+    "symbol": "XNGUSD.DWX",
+    "created_at": "2026-06-30T04:47:24+00:00"
+  },
+  "live_scope": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
