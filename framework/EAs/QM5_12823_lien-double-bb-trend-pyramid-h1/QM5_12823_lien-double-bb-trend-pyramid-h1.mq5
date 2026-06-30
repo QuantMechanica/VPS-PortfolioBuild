@@ -14,8 +14,8 @@
 // long-only on USDJPY.DWX H1.
 //
 // Overlay: bounded add-to-winner pyramid. Slot 0 is the host unit; slots 1..4
-// are registered add units. Adds are attempted only from Strategy_EntrySignal,
-// so the framework's single QM_IsNewBar gate remains the only bar gate.
+// are registered add units. Adds are attempted only from Strategy_EntrySignal;
+// aggregate stop trailing is independently limited to one closed-bar update.
 // =============================================================================
 
 #define QM12823_SYMBOL             "USDJPY.DWX"
@@ -61,6 +61,8 @@ input int    strategy_trail_method           = 0;      // 0 band; 1 structure; 2
 input int    strategy_trail_structure_bars   = 10;
 input int    strategy_trail_atr_period       = 20;
 input double strategy_trail_atr_mult         = 2.0;
+
+datetime g_qm12823_last_aggregate_trail_bar = 0;
 
 // -----------------------------------------------------------------------------
 // Helpers
@@ -325,8 +327,23 @@ double QM12823_ClampLongStopBelowBid(const double raw_stop)
    return QM_StopRulesNormalizePrice(_Symbol, stop);
   }
 
-bool QM12823_TrailAggregateStop()
+bool QM12823_AggregateTrailNewBar()
   {
+   const datetime bar_time = iTime(_Symbol, _Period, 0);
+   if(bar_time <= 0)
+      return false;
+   if(bar_time == g_qm12823_last_aggregate_trail_bar)
+      return false;
+
+   g_qm12823_last_aggregate_trail_bar = bar_time;
+   return true;
+  }
+
+bool QM12823_TrailAggregateStop(const bool force_run = false)
+  {
+   if(!force_run && !QM12823_AggregateTrailNewBar())
+      return false;
+
    int count = 0;
    int add_count = 0;
    double total_volume = 0.0;
@@ -357,8 +374,13 @@ bool QM12823_TrailAggregateStop()
          continue;
 
       const double current_sl = PositionGetDouble(POSITION_SL);
-      if(current_sl > 0.0 && point > 0.0 && target <= current_sl + point * 0.5)
-         continue;
+      if(current_sl > 0.0)
+        {
+         if(target <= current_sl)
+            continue;
+         if(point > 0.0 && target <= current_sl + point * 0.5)
+            continue;
+        }
 
       if(QM_TM_MoveSL(ticket, target, "aggregate_pyramid_stop"))
          moved_any = true;
@@ -430,7 +452,7 @@ bool QM12823_TryPyramidAdd()
 
    const bool ok = QM_TM_AddToPosition(host_ticket, add_req);
    if(ok)
-      QM12823_TrailAggregateStop();
+      QM12823_TrailAggregateStop(true);
    return ok;
   }
 
