@@ -1,0 +1,77 @@
+{
+  "ea_id": "QM5_12776",
+  "ea_label": "QM5_12776_edgelab-audusd-gbpjpy-cointegration",
+  "logical_symbol": "QM5_12776_AUDUSD_GBPJPY_COINTEGRATION_D1",
+  "unit_of_work": "q04_infra_requeue_after_q03_pass",
+  "mission_scope": "Advance an existing forex cointegration basket because all current edgelab cointegration card stubs already have matching EA folders through QM5_12803.",
+  "prechecks": {
+    "qm5_12532_q02_blocked": false,
+    "qm5_12533_q02_blocked": false,
+    "unbuilt_edgelab_cointegration_pair_found": false
+  },
+  "target_selection_reason": "QM5_12776 has logical-basket Q02 PASS and a later Q03 PASS; the only Q04 row was an older INFRA_FAIL, and no pending/active Q04 row existed before this action.",
+  "pre_action_state": {
+    "q02_work_item": "5de6cce6-f2ee-4316-bf82-0b312fa625c0",
+    "q02_verdict": "PASS",
+    "latest_q03_work_item": "f0d8f061-7a15-4891-a06e-54bbe6cd3e58",
+    "latest_q03_verdict": "PASS",
+    "old_q04_work_item": "60dac3a6-dce2-496e-8794-38930dd337aa",
+    "old_q04_verdict": "INFRA_FAIL",
+    "old_q04_reason": "BARS_ZERO;EMPTY_EXPERT;EMPTY_SYMBOL;HISTORY_CONTEXT_INVALID;M0_1970_PERIOD;RUN_STATUS_INVALID;F3 also NO_HISTORY and INCOMPLETE_RUNS"
+  },
+  "queue_action": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12776 --phase Q04",
+    "db_backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12776_q04_requeue_20260701T001900Z.sqlite",
+    "requeued_work_item": "60dac3a6-dce2-496e-8794-38930dd337aa",
+    "created_rows": 0,
+    "skipped_rows": 0,
+    "post_status": "pending"
+  },
+  "pending_payload_summary": {
+    "basket_manifest": "C:/QM/repo/framework/EAs/QM5_12776_edgelab-audusd-gbpjpy-cointegration/basket_manifest.json",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_12776_edgelab-audusd-gbpjpy-cointegration/sets/QM5_12776_edgelab-audusd-gbpjpy-cointegration_QM5_12776_AUDUSD_GBPJPY_COINTEGRATION_D1_D1_backtest.set",
+    "host_symbol": "AUDUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_symbols": [
+      "AUDUSD.DWX",
+      "GBPJPY.DWX"
+    ],
+    "conversion_symbols": [
+      "USDJPY.DWX"
+    ],
+    "portfolio_scope": "basket",
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "from_date": "2018.07.02",
+    "to_date": "2024.12.31",
+    "q04_latest_full_year": 2024
+  },
+  "verification": [
+    {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_12776_edgelab-audusd-gbpjpy-cointegration --verbose",
+      "result": "BASKET_OK; 0 violations"
+    },
+    {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12776_edgelab-audusd-gbpjpy-cointegration -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS; failures=0; warnings=16 existing shared-framework DWX advisories",
+      "report": "D:/QM/reports/framework/21/build_check_20260630_221842.json"
+    },
+    {
+      "command": "python -m pytest tools/strategy_farm/tests/test_farmctl_cascade.py -k \"q04\" -q",
+      "result": "3 passed, 10 deselected, 2 subtests passed"
+    },
+    {
+      "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --ea QM5_12776",
+      "result": "Q02 PASS, Q03 PASS, Q04 pending; exactly one pending/active Q04 row"
+    }
+  ],
+  "guardrails": {
+    "manual_mt5_backtest_started": false,
+    "t_live_manifest_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "risk_mode": "RISK_FIXED"
+  }
+}
