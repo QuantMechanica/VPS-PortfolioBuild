@@ -4,7 +4,13 @@ OWNER 2026-06-30: reverse-engineer the 'UnconventionalForexTrading' channel
 (the 'T-WIN' / 'U.F.O.' BASKET forex strategy). Enumerate handled by yt-dlp
 (VIDEO_MANIFEST.txt); this script fans an ARMY of headless agy (Antigravity)
 instances over the videos in batches (each watches its batch + writes an
-analysis), then runs one synthesis pass to reconstruct the full strategy.
+analysis).
+
+POLICY (OWNER 2026-06-30): **agy does VIDEO ANALYSIS ONLY. Claude does all
+synthesis / reconstruction / strategy design.** This conserves agy's scarce 5h
+quota (a video run = many internal calls) and plays to each agent's strength.
+So the agy synthesis pass is OFF by default — opt in only via --agy-synth.
+After the batches land, Claude reads batch_*.md and writes the reconstruction.
 
 agy is the only agent that can watch YouTube here (the VPS IP is bot-blocked;
 agy uses Google infra). Each batch runs under the ConPTY runner (agy hangs on
@@ -137,7 +143,8 @@ def main(argv=None) -> int:
     ap.add_argument("--synth-timeout-min", type=int, default=30)
     ap.add_argument("--synth-only", action="store_true")
     ap.add_argument("--skip-existing", action="store_true", help="skip batches whose batch_NN.md already exists (gap-fill)")
-    ap.add_argument("--no-synth", action="store_true", help="do not run the synthesis pass (preserve a hand-written reconstruction)")
+    ap.add_argument("--no-synth", action="store_true", help="(default behaviour) do not run an agy synthesis pass")
+    ap.add_argument("--agy-synth", action="store_true", help="(RARE) let agy synthesize too. DEFAULT OFF — OWNER 2026-06-30: agy does VIDEO ANALYSIS ONLY, Claude does all synthesis/reasoning/design.")
     ap.add_argument("--limit", type=int, default=0, help="only first N videos (validation)")
     args = ap.parse_args(argv)
     OUT.mkdir(parents=True, exist_ok=True)
@@ -177,8 +184,10 @@ def main(argv=None) -> int:
                 for f in futs:
                     f.result()
 
-    if args.no_synth:
-        log("HARVEST COMPLETE (--no-synth; hand-written reconstruction preserved).")
+    if not args.agy_synth or args.no_synth:
+        log("HARVEST COMPLETE — agy did VIDEO EXTRACTION ONLY. Synthesis/reconstruction is "
+            "Claude's job (OWNER 2026-06-30: Antigravity analyzes videos, Claude does the rest). "
+            "Read the batch_*.md and write the reconstruction yourself.")
         return 0
     s = synthesize(args.synth_timeout_min)
     log(f"HARVEST COMPLETE. reconstruction ok={s['ok']} -> {s['file']}")
