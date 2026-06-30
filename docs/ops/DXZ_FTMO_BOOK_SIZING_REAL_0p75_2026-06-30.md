@@ -119,3 +119,16 @@ is a lower bound, pass an upper bound**):
 1. **DXZ:** no change — keep 0.75 %/trade; the Darwin already fills the VaR target.
 2. **FTMO:** prioritize the **intraday harvest pipeline** (higher-freq edges) so the book gains
    a genuine sprint vehicle; the current swing book passes only ~25–36 %/attempt.
+
+## Action taken (2026-06-30) — intraday FTMO prioritization
+The Q02 backtest queue (5467 pending) was **48 % swing (D1/H4), 29 % intraday**. The dispatch
+orders by `priority_track` first (`terminal_worker.py::_priority_pending_query`). Set
+`"priority_track": true` on the **1307** genuine intraday Q02-pending work_items
+(M1 125 / M5 483 / M15 544 / M30 150 + 5 scalper/orb slug-only) so the FTMO-relevant
+high-frequency edges drain ahead of the swing backlog.
+- Tool (auditable, reversible): `tools/strategy_farm/prioritize_intraday_ftmo.py`
+  (`--apply` / `--revert` / dry-run default).
+- New cards in flight: **QM5_12815** (stat-mr, M15/H1) + **QM5_12816** (harmonic-cypher, H1/H4)
+  queued as `build_ea` (pending). Re-run the tool after new intraday EAs build to capture them.
+- Backtests are CPU-bound (~8 terminals); this changes dispatch ORDER, not throughput. The swing
+  book is already deployed/working on DXZ, so biasing the next chunk to intraday is aligned.
