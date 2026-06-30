@@ -8,6 +8,7 @@ last_reviewed: 2026-06-27
 cards_extracted:
   - cme-wti-exp-brk
   - wti-postroll-fade
+  - wti-exp-fade
 ---
 
 # CME WTI Expiry/Roll Source
@@ -41,10 +42,17 @@ waits until after the default expiry breakout window, then fades stretched
 and the same deterministic calendar approximation; no futures-chain, open
 interest, volume, calendar feed, CSV, or API is used at runtime.
 
+The third mechanized card isolates failed breakouts inside the WTI expiry
+window itself. It is deliberately different from the breakout follower: the
+signal bar must trade beyond the prior D1 channel and close back inside it,
+then the EA fades toward the D1 SMA/channel normalization using broker OHLC
+only.
+
 ## Extracted Cards
 
 - `cme-wti-exp-brk`: XTIUSD.DWX D1 expiry/roll-window breakout sleeve.
 - `wti-postroll-fade`: XTIUSD.DWX D1 post-expiry roll-window impulse fade.
+- `wti-exp-fade`: XTIUSD.DWX D1 expiry-window failed-breakout fade sleeve.
 
 ## R-Rules
 

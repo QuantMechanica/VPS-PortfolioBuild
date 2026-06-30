@@ -14075,6 +14075,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12837,wti-audnzd-mr,1,AUDUSD.DWX,128370001,2026-06-30,Codex,active
 12837,wti-audnzd-mr,2,NZDUSD.DWX,128370002,2026-06-30,Codex,active
 12838,xng-exp-fade,0,XNGUSD.DWX,128380000,2026-07-01,Codex,active
+12839,wti-exp-fade,0,XTIUSD.DWX,128390000,2026-07-01,Codex,active
 12801,wyckoff-trend-swing,0,NDX.DWX,128010000,2026-06-30,Development,active
 12801,wyckoff-trend-swing,1,GDAXI.DWX,128010001,2026-06-30,Development,active
 12801,wyckoff-trend-swing,2,SP500.DWX,128010002,2026-06-30,Development,active
