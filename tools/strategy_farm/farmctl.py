@@ -100,6 +100,8 @@ NEWS_CALENDAR_CANDIDATES = (
 )
 P5_REQUIRED_OOS_FROM_YEAR = 2023
 P5_REQUIRED_OOS_TO_YEAR = 2025
+Q04_FIRST_OOS_YEAR = 2023
+Q04_DEFAULT_LATEST_FULL_YEAR = 2025
 P5PLUS_MAX_DRAWDOWN_PCT = 20.0
 P5PLUS_MIN_SHARPE = 0.6
 FACTORY_TERMINAL_PATTERN = re.compile(r"^T(?:[1-9]|10)$", re.IGNORECASE)
@@ -3405,6 +3407,7 @@ def _active_timeout_min_for_work_item(phase: str, payload_json: str | None) -> i
 BASKET_CONTEXT_PAYLOAD_KEYS = (
     "basket_manifest",
     "basket_symbol_count",
+    "basket_symbols",
     "host_symbol",
     "host_timeframe",
     "logical_symbol",
@@ -3418,6 +3421,11 @@ BASKET_CONTEXT_PAYLOAD_KEYS = (
     "to_date",
     "latest_full_year",
     "q04_latest_full_year",
+    "q04_history_checked_period",
+    "q04_history_checked_scope",
+    "q04_history_checked_symbols",
+    "q04_history_checked_window",
+    "q04_history_clamp_source",
     "smoke_year_count",
     "timeout_min",
 )
@@ -3494,6 +3502,97 @@ def _promotion_payload_with_basket_context(
         if key in parent_payload and key not in payload:
             payload[key] = parent_payload[key]
     return payload
+
+
+def _work_item_value(work_item: sqlite3.Row | dict[str, Any], key: str, default: Any = None) -> Any:
+    try:
+        return work_item[key]
+    except (IndexError, KeyError, TypeError):
+        return default
+
+
+def _unique_text_values(values: list[Any]) -> list[str]:
+    out: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        text = str(value or "").strip()
+        if not text:
+            continue
+        key = text.upper()
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(text)
+    return out
+
+
+def _q04_history_scope_for_work_item(
+    work_item: sqlite3.Row | dict[str, Any],
+    payload: dict[str, Any],
+) -> tuple[list[str], str, str]:
+    ea_id = str(_work_item_value(work_item, "ea_id", "") or "")
+    symbol = str(_work_item_value(work_item, "symbol", "") or "")
+    setfile_path = _work_item_value(work_item, "setfile_path", None)
+    manifest = _load_basket_manifest(ea_id)
+    manifest_matches = bool(manifest and str(manifest.get("logical_symbol") or "") == symbol)
+    is_basket = (
+        str(payload.get("portfolio_scope") or "").strip().lower() == "basket"
+        or bool(payload.get("host_symbol"))
+        or manifest_matches
+    )
+    if is_basket:
+        period = str(
+            payload.get("host_timeframe")
+            or (manifest or {}).get("host_timeframe")
+            or _detect_ea_period(ea_id, setfile_path)
+        ).strip()
+        payload_symbols = payload.get("basket_symbols") if isinstance(payload.get("basket_symbols"), list) else []
+        manifest_symbols = (manifest or {}).get("basket_symbols")
+        if not isinstance(manifest_symbols, list):
+            manifest_symbols = []
+        symbols = _unique_text_values([
+            payload.get("host_symbol"),
+            *payload_symbols,
+            (manifest or {}).get("host_symbol"),
+            *manifest_symbols,
+        ])
+        return symbols, period, "basket_manifest_symbols"
+
+    period = str(payload.get("host_timeframe") or _detect_ea_period(ea_id, setfile_path)).strip()
+    symbols = _unique_text_values([payload.get("host_symbol") or symbol])
+    return symbols, period, "setfile_symbol"
+
+
+def _apply_q04_latest_full_year_from_history(
+    work_item: sqlite3.Row | dict[str, Any],
+    payload: dict[str, Any],
+) -> bool:
+    if payload.get("q04_latest_full_year") is not None or payload.get("latest_full_year") is not None:
+        return False
+    symbols, period, scope = _q04_history_scope_for_work_item(work_item, payload)
+    if not symbols or not period:
+        return False
+    for latest_year in range(Q04_DEFAULT_LATEST_FULL_YEAR, Q04_FIRST_OOS_YEAR - 1, -1):
+        ok = True
+        for symbol in symbols:
+            symbol_ok, _detail = has_history_window(
+                symbol,
+                period,
+                Q04_FIRST_OOS_YEAR,
+                latest_year,
+                mt5_root=MT5_ROOT,
+            )
+            ok = ok and symbol_ok
+        if ok:
+            if latest_year < Q04_DEFAULT_LATEST_FULL_YEAR:
+                payload["q04_latest_full_year"] = latest_year
+                payload["q04_history_clamp_source"] = "mt5_cache"
+                payload["q04_history_checked_symbols"] = symbols
+                payload["q04_history_checked_period"] = period
+                payload["q04_history_checked_scope"] = scope
+                payload["q04_history_checked_window"] = f"{Q04_FIRST_OOS_YEAR}-{latest_year}"
+            return latest_year < Q04_DEFAULT_LATEST_FULL_YEAR
+    return False
 
 
 def _normalize_pending_work_item_verdicts(con: sqlite3.Connection) -> int:
@@ -8364,6 +8463,8 @@ def pump(root: Path) -> dict[str, Any]:
                         "promotion_source": "pump_cascade",
                     },
                 )
+                if next_phase == "Q04":
+                    _apply_q04_latest_full_year_from_history(wi, payload)
                 conn.execute(
                     """
                     INSERT INTO work_items
@@ -8418,6 +8519,16 @@ def pump(root: Path) -> dict[str, Any]:
                 continue
             probe_id = str(uuid.uuid4())
             now = utc_now()
+            payload = _promotion_payload_with_basket_context(
+                wi,
+                {
+                    "promoted_from_phase": "Q02",
+                    "promoted_from_work_item": wi["id"],
+                    "promotion_source": "pump_q04_early_probe",
+                    "q04_default_probe": True,
+                },
+            )
+            _apply_q04_latest_full_year_from_history(wi, payload)
             conn.execute(
                 """
                 INSERT INTO work_items
@@ -8426,18 +8537,7 @@ def pump(root: Path) -> dict[str, Any]:
                 VALUES (?, 'backtest', 'Q04', ?, ?, ?, 'pending', 0, NULL, ?, ?, ?)
                 """,
                 (probe_id, wi["ea_id"], wi["symbol"], wi["setfile_path"],
-                 json.dumps(
-                     _promotion_payload_with_basket_context(
-                         wi,
-                         {
-                             "promoted_from_phase": "Q02",
-                             "promoted_from_work_item": wi["id"],
-                             "promotion_source": "pump_q04_early_probe",
-                             "q04_default_probe": True,
-                         },
-                     ),
-                     sort_keys=True,
-                 ), now, now),
+                 json.dumps(payload, sort_keys=True), now, now),
             )
             result["cascade_promotions"].append({
                 "work_item_id": probe_id,

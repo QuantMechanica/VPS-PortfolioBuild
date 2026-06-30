@@ -273,6 +273,60 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             self.assertEqual(payload["portfolio_scope"], "basket")
             self.assertEqual(payload["q04_latest_full_year"], 2024)
 
+    def test_q04_promotion_clamps_basket_latest_year_from_cache(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            repo_root = Path(tmp) / "repo"
+            mt5_root = Path(tmp) / "mt5"
+            ea_id = "QM5_9996"
+            ea_dir = repo_root / "framework" / "EAs" / f"{ea_id}_basket-demo"
+            sets_dir = ea_dir / "sets"
+            sets_dir.mkdir(parents=True)
+            logical = "QM5_9996_USDCHF_EURGBP_COINTEGRATION_D1"
+            manifest = {
+                "logical_symbol": logical,
+                "host_symbol": "USDCHF.DWX",
+                "host_timeframe": "D1",
+                "basket_symbols": ["USDCHF.DWX", "EURGBP.DWX"],
+            }
+            manifest_path = ea_dir / "basket_manifest.json"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            setfile = sets_dir / f"{ea_dir.name}_{logical}_D1_backtest.set"
+            setfile.write_text("RISK_FIXED=1000\n", encoding="utf-8")
+            for symbol in ("USDCHF.DWX", "EURGBP.DWX"):
+                hist_dir = mt5_root / "T1" / "Bases" / "Custom" / "history" / symbol
+                hist_dir.mkdir(parents=True)
+                for year in (2023, 2024):
+                    (hist_dir / f"{year}.hcc").write_text("", encoding="utf-8")
+
+            old_repo_root = farmctl.REPO_ROOT
+            old_mt5_root = farmctl.MT5_ROOT
+            try:
+                farmctl.REPO_ROOT = repo_root
+                farmctl.MT5_ROOT = mt5_root
+                parent = {
+                    "ea_id": ea_id,
+                    "symbol": logical,
+                    "setfile_path": str(setfile),
+                    "payload_json": json.dumps({
+                        "basket_manifest": str(manifest_path),
+                        "basket_symbols": ["USDCHF.DWX", "EURGBP.DWX"],
+                        "host_symbol": "USDCHF.DWX",
+                        "host_timeframe": "D1",
+                        "logical_symbol": logical,
+                        "portfolio_scope": "basket",
+                    }),
+                }
+                payload = farmctl._promotion_payload_with_basket_context(parent, {})
+                changed = farmctl._apply_q04_latest_full_year_from_history(parent, payload)
+            finally:
+                farmctl.REPO_ROOT = old_repo_root
+                farmctl.MT5_ROOT = old_mt5_root
+
+            self.assertTrue(changed)
+            self.assertEqual(payload["q04_latest_full_year"], 2024)
+            self.assertEqual(payload["q04_history_clamp_source"], "mt5_cache")
+            self.assertEqual(payload["q04_history_checked_symbols"], ["USDCHF.DWX", "EURGBP.DWX"])
+
     def test_enqueue_q05_accepts_q04_soft_pass_verdicts(self) -> None:
         for verdict in ("PASS_SOFT", "PASS_LOWFREQ"):
             with self.subTest(verdict=verdict):
