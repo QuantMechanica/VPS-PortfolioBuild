@@ -14,7 +14,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.5;
+input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -45,9 +45,13 @@ input int    strategy_time_stop_bars    = 60;
 // Helper Functions
 // -----------------------------------------------------------------------------
 
+const double SZ_BETA_INVALID = -999.0;
+
 double GetSZBeta(int shift)
 {
-   if (shift + strategy_moving_window_n >= iBars(_Symbol, PERIOD_D1)) return -999.0;
+   if(strategy_moving_window_n < 2) return SZ_BETA_INVALID;
+   const int bars = iBars(_Symbol, PERIOD_D1); // perf-allowed: O(1) D1 warmup guard for bespoke SZ log-return estimator.
+   if(shift < 1 || shift + strategy_moving_window_n >= bars) return SZ_BETA_INVALID;
    
    double sum_r = 0.0;
    double r_array[];
@@ -55,10 +59,10 @@ double GetSZBeta(int shift)
    
    for (int i = 0; i < strategy_moving_window_n; i++)
    {
-      double curr = iClose(_Symbol, PERIOD_D1, shift + i);
-      double prev = iClose(_Symbol, PERIOD_D1, shift + i + 1);
+      double curr = iClose(_Symbol, PERIOD_D1, shift + i);     // perf-allowed: bounded closed-D1 window; caller is behind QM_IsNewBar(_Symbol, PERIOD_D1).
+      double prev = iClose(_Symbol, PERIOD_D1, shift + i + 1); // perf-allowed: bounded closed-D1 window for log returns.
       
-      if (prev <= 0.0 || curr <= 0.0) return -999.0; // Error
+      if (prev <= 0.0 || curr <= 0.0) return SZ_BETA_INVALID;
       
       double r = MathLog(curr / prev);
       r_array[i] = r;
@@ -78,10 +82,26 @@ double GetSZBeta(int shift)
    double mu_hat = strategy_trading_days_yr * r_mean;
    double sigma_sq_hat = strategy_trading_days_yr * s_sq;
    
-   if (sigma_sq_hat == 0) return -999.0;
+   if (MathAbs(sigma_sq_hat) < 1.0e-12) return SZ_BETA_INVALID;
    
    double beta_hat = (mu_hat / sigma_sq_hat) - 0.5;
    return beta_hat;
+}
+
+int OpenPositionCountForMagicSymbol()
+{
+   const int magic = QM_FrameworkMagic();
+   int count = 0;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0) continue;
+      if(!PositionSelectByTicket(ticket)) continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic) continue;
+      ++count;
+   }
+   return count;
 }
 
 // -----------------------------------------------------------------------------
@@ -95,7 +115,7 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
-   if(PositionsTotal() > 0) return false;
+   if(OpenPositionCountForMagicSymbol() > 0) return false;
 
    // Get Beta for today (shift 1), yesterday (shift 2), day before (shift 3), and day before that (shift 4)
    double beta1 = GetSZBeta(1);
@@ -103,7 +123,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double beta3 = GetSZBeta(3);
    double beta4 = GetSZBeta(4);
    
-   if (beta1 == -999.0 || beta2 == -999.0 || beta3 == -999.0 || beta4 == -999.0) return false;
+   if (beta1 == SZ_BETA_INVALID || beta2 == SZ_BETA_INVALID ||
+       beta3 == SZ_BETA_INVALID || beta4 == SZ_BETA_INVALID) return false;
    
    const double atr1 = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if (atr1 <= 0.0) return false;
@@ -154,8 +175,8 @@ bool Strategy_ExitSignal()
       if(strategy_time_stop_bars > 0)
       {
          datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-         int bars = iBarShift(_Symbol, PERIOD_D1, opened);
-         if(bars >= strategy_time_stop_bars) return true;
+         int bars = iBarShift(_Symbol, PERIOD_D1, opened, false);
+         if(bars >= 0 && bars >= strategy_time_stop_bars) return true;
       }
       
       // Opposite signal exit (Flip)
@@ -163,7 +184,7 @@ bool Strategy_ExitSignal()
       double beta2 = GetSZBeta(2);
       double beta3 = GetSZBeta(3);
       
-      if (beta1 == -999.0 || beta2 == -999.0 || beta3 == -999.0) continue;
+      if (beta1 == SZ_BETA_INVALID || beta2 == SZ_BETA_INVALID || beta3 == SZ_BETA_INVALID) continue;
       
       ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       
@@ -197,10 +218,15 @@ int OnInit()
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
 
+   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
 }
 
-void OnDeinit(const int reason) { QM_FrameworkShutdown(); }
+void OnDeinit(const int reason)
+{
+   QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
+   QM_FrameworkShutdown();
+}
 
 void OnTick()
 {
@@ -218,6 +244,8 @@ void OnTick()
    if(QM_FrameworkHandleFridayClose()) return;
    if(Strategy_NoTradeFilter()) return;
 
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1)) return;
+
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -228,11 +256,11 @@ void OnTick()
          ulong ticket = PositionGetTicket(i);
          if(!PositionSelectByTicket(ticket)) continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
+         if(PositionGetString(POSITION_SYMBOL) != _Symbol) continue;
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
       }
    }
 
-   if(!QM_IsNewBar()) return;
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
