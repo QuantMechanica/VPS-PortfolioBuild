@@ -59,6 +59,34 @@ Artifacts:
 - `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_mt5_validation_intraday_candidates_round18_20260629.json`
 - `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_validated_combo_screen_round18_20260629.json`
 - `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_combo_confirm_round18_20260629.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_mt5_validation_intraday_candidates_round19_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_validated_combo_screen_round19_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_mt5_validation_intraday_candidates_round20_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_validated_combo_screen_round20_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_combo_confirm_round20_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_combo_scale_sweep_round20_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_mt5_validation_intraday_candidates_round21_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_validated_combo_screen_round21_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_combo_confirm_round21_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_mt5_validation_intraday_candidates_round22_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_mt5_validation_intraday_candidates_round23_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_validated_combo_screen_round23_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_combo_confirm_round23_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_combo_scale_sweep_round23_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_mt5_validation_intraday_candidates_round24_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_validated_combo_screen_round24_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_combo_confirm_round24_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_combo_scale_sweep_round24_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_mt5_validation_intraday_candidates_round25_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_mt5_validation_intraday_candidates_round26_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_mt5_validation_intraday_candidates_round27_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_validated_combo_screen_round27_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_combo_confirm_round27_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_mt5_validation_intraday_candidates_round28_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_mt5_validation_intraday_candidates_round29_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_validated_combo_screen_round29_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_combo_confirm_round29_20260630.json`
+- `D:\QM\strategy_farm\artifacts\portfolio\prop_challenge_ftmo_mt5_validation_intraday_candidates_round30_20260630.json`
 
 ## Corrected Screen Results
 
@@ -143,6 +171,41 @@ Re-ran selected candidates over `2023.01.01` to `2025.12.31` on free terminals:
 | `QM5_10110:NDX.DWX` | T8 | PASS | 372 | 1.11 | 18647.19 | 11047.46 / 8.56% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round18\QM5_10110\20260629_205856\summary.json` |
 | `QM5_10194:XAUUSD.DWX` | T10 | PASS | 584 | 1.31 | 73123.84 | 28396.18 / 24.20% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round18\QM5_10194\20260629_205856\summary.json` |
 | `QM5_10750:NDX.DWX` | T9 | PASS | 990 | 0.96 | -21602.82 | 57536.52 / 50.67% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round18\QM5_10750\20260629_205856\summary.json` |
+| `QM5_1638:XAUUSD.DWX` | T8 | PASS | 2506 | 1.02 | 26919.13 | 53451.14 / 49.83% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round19\QM5_1638\20260630_042757\summary.json` |
+| `QM5_10471:NDX.DWX` | T9 | REPORT_COPIED | 2758 | 0.98 | -19312.96 | 80791.95 / 53.03% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round19\QM5_10471\20260630_042757\raw\run_01\report.htm` |
+| `QM5_10490:XAUUSD.DWX` | T10 | PASS | 562 | 0.72 | -58821.81 | 62048.36 / 61.41% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round19\QM5_10490\20260630_042757\summary.json` |
+| `QM5_10286:XTIUSD.DWX` | T8 | PASS | 189 | 1.38 | 26656.50 | 10999.58 / 10.26% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round20\QM5_10286\20260630_044953\summary.json` |
+| `QM5_10531:USDJPY.DWX` | T9 | PASS | 1382 | 0.90 | -8047.74 | 11058.50 / 10.93% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round20\QM5_10531\20260630_044953\summary.json` |
+| `QM5_11340:EURUSD.DWX` | T10 | PASS | 210 | 1.32 | 17907.69 | 10546.45 / 8.97% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round20\QM5_11340\20260630_044953\summary.json` |
+| `QM5_1142:USDJPY.DWX` | T8 | PASS | 463 | 0.90 | -3247.74 | 6845.52 / 6.75% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round21\QM5_1142\20260630_051112\summary.json` |
+| `QM5_10715:USDJPY.DWX` | T9 | PASS | 468 | 1.19 | 10947.94 | 3939.77 / 3.46% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round21\QM5_10715\20260630_051112\summary.json` |
+| `QM5_9936:USDJPY.DWX` | T10 | PASS | 445 | 1.21 | 7397.83 | 5087.49 / 5.06% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round21\QM5_9936\20260630_051112\summary.json` |
+| `QM5_10551:USDJPY.DWX` | T8/T9 | FAIL | 0 | 0.00 | 0.00 | 0.00 | `NO_HISTORY`, `INCOMPLETE_RUNS`; retry also failed |
+| `QM5_10469:USDJPY.DWX` | T9 | FAIL | 0 | 0.00 | 0.00 | 0.00 | `NO_HISTORY`, `INCOMPLETE_RUNS` |
+| `QM5_10596:USDJPY.DWX` | T10 | FAIL | 0 | 0.00 | 0.00 | 0.00 | `NO_HISTORY`, `INCOMPLETE_RUNS` |
+| `QM5_10847:GBPUSD.DWX` | T8 | PASS | 272 | 1.32 | 45905.23 | 14179.07 / 12.92% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round23\QM5_10847\20260630_060004\summary.json` |
+| `QM5_1120:GBPUSD.DWX` | T9 | PASS | 470 | 1.07 | 18785.00 | 29376.74 / 24.85% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round23\QM5_1120\20260630_060004\summary.json` |
+| `QM5_9952:EURUSD.DWX` | T10 | PASS | 2239 | 0.87 | -38522.85 | 59006.89 / 49.33% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round23\QM5_9952\20260630_060004\summary.json` |
+| `QM5_10113:GBPUSD.DWX` | T8 | PASS | 69 | 0.24 | -22204.51 | 22850.74 / 22.85% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round24\QM5_10113\20260630_062040\summary.json` |
+| `QM5_10476:USDCAD.DWX` | T10 | PASS | 73 | 1.39 | 13365.93 | 12070.18 / 10.69% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round24\QM5_10476\20260630_062040\summary.json` |
+| `QM5_10712:GBPUSD.DWX` | T9 | PASS | 666 | 0.89 | -54934.92 | 58160.74 / 56.34% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round24\QM5_10712\20260630_062039\summary.json` |
+| `QM5_10215:GBPJPY.DWX` | T9 | PASS | 275 | 0.73 | -9769.31 | 10452.31 / 10.45% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round25\QM5_10215\20260630_082337\summary.json` |
+| `QM5_10540:EURUSD.DWX` | T8 | PASS | 1205 | 0.81 | -71553.11 | 79864.37 / 73.98% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round25\QM5_10540\20260630_082337\summary.json` |
+| `QM5_10163:USDJPY.DWX` | T8 | FAIL | 0 | 0.00 | 0.00 | 0.00 | `NO_HISTORY`, `INCOMPLETE_RUNS` |
+| `QM5_1241:USDJPY.DWX` | T9 | FAIL | 0 | 0.00 | 0.00 | 0.00 | `NO_HISTORY`, `INCOMPLETE_RUNS` |
+| `QM5_10352:USDJPY.DWX` | T10 | PASS | 1171 | 0.96 | -2302.06 | 9967.06 / 9.81% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round26\QM5_10352\20260630_084815\summary.json` |
+| `QM5_10375:SP500.DWX` | T8 | PASS | 641 | 1.11 | 17966.69 | 8418.79 / 8.35% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round27\QM5_10375\20260630_090000\summary.json` |
+| `QM5_10163:SP500.DWX` | T9 | PASS | 257 | 1.14 | 3721.39 | 2986.77 / 2.81% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round27\QM5_10163\20260630_090000\summary.json` |
+| `QM5_10595:USDJPY.DWX` | T10 | PASS | 674 | 1.03 | 3096.93 | 9694.97 / 8.77% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round27\QM5_10595\20260630_090001\summary.json` |
+| `QM5_11132:SP500.DWX` | T8 | PASS | 32 | 2.13 | 4991.95 | 1551.46 / 1.47% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round28\QM5_11132\20260630_093605\summary.json` |
+| `QM5_10300:SP500.DWX` | T9 | PASS | 197 | 0.90 | -6270.20 | 17711.28 / 17.12% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round28\QM5_10300\20260630_093606\summary.json` |
+| `QM5_10192:WS30.DWX` | T10 | PASS | 179 | 0.65 | -75330.35 | 70239.64 / 64.30% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round28\QM5_10192\20260630_093606\summary.json` |
+| `QM5_11165:AUDCAD.DWX` | T8 | PASS | 53 | 1.55 | 2473.76 | 1744.17 / 1.72% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round29\QM5_11165\20260630_105406\summary.json` |
+| `QM5_11421:EURUSD.DWX` | T9 | PASS | 34 | 1.38 | 3326.07 | 2826.04 / 2.75% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round29\QM5_11421\20260630_105406\summary.json` |
+| `QM5_10939:GBPUSD.DWX` | T10 | PASS | 34 | 1.40 | 4927.92 | 4663.09 / 4.63% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round29\QM5_10939\20260630_105406\summary.json` |
+| `QM5_10041:GBPUSD.DWX` | T8 | PASS | 1371 | 0.87 | -3926.82 | 9356.05 / 9.25% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round30\QM5_10041\20260630_110828\summary.json` |
+| `QM5_11708:AUDUSD.DWX` | T9 | PASS | 32 | 0.52 | -2274.75 | 3474.74 / 3.47% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round30\QM5_11708\20260630_110828\summary.json` |
+| `QM5_10300:XTIUSD.DWX` | T10 | PASS | 277 | 0.93 | -4306.18 | 13218.91 / 12.93% | `D:\QM\reports\prop_ftmo_candidates_20260629\validation_round30\QM5_10300\20260630_110828\summary.json` |
 
 All `NO_HISTORY` rows produced M0/1970 reports with `EMPTY_EXPERT`,
 `EMPTY_SYMBOL`, `BARS_ZERO`, and `HISTORY_CONTEXT_INVALID`. These are infra/data
@@ -194,6 +257,36 @@ FTMO simulation from the fresh MT5 reports:
 | `QM5_10110:NDX.DWX` | 1.00 | 1.4% | 0.0% | 2.0% | 95.2% |
 | `QM5_10194:XAUUSD.DWX` | 0.75 | 8.6% | 0.0% | 2.9% | 88.5% |
 | `QM5_10750:NDX.DWX` | 0.50 | 0.3% | 0.0% | 4.5% | 94.8% |
+| `QM5_1638:XAUUSD.DWX` | 0.25 | 0.0% | 0.0% | 0.0% | 100.0% |
+| `QM5_10471:NDX.DWX` | 0.25 | 0.0% | 0.0% | 0.5% | 99.5% |
+| `QM5_10490:XAUUSD.DWX` | 0.25 | 0.0% | 0.0% | 1.1% | 98.9% |
+| `QM5_10286:XTIUSD.DWX` | 1.50 | 4.5% | 0.0% | 3.3% | 93.2% |
+| `QM5_10531:USDJPY.DWX` | 3.50 | 0.0% | 0.0% | 4.1% | 96.5% |
+| `QM5_11340:EURUSD.DWX` | 2.25 | 4.6% | 0.0% | 3.9% | 93.5% |
+| `QM5_1142:USDJPY.DWX` | 5.00 | 0.5% | 0.0% | 2.1% | 97.7% |
+| `QM5_10715:USDJPY.DWX` | 3.50 | 5.9% | 0.0% | 3.6% | 90.5% |
+| `QM5_9936:USDJPY.DWX` | 5.00 | 3.6% | 0.0% | 1.3% | 95.2% |
+| `QM5_10847:GBPUSD.DWX` | 1.00 | 4.5% | 0.0% | 1.8% | 94.2% |
+| `QM5_1120:GBPUSD.DWX` | 0.75 | 1.4% | 0.0% | 2.1% | 96.8% |
+| `QM5_9952:EURUSD.DWX` | 0.50 | 0.0% | 0.0% | 0.3% | 99.9% |
+| `QM5_10113:GBPUSD.DWX` | 1.00 | 0.0% | 0.0% | 2.9% | 99.9% |
+| `QM5_10476:USDCAD.DWX` | 1.50 | 0.4% | 0.0% | 2.2% | 98.6% |
+| `QM5_10712:GBPUSD.DWX` | 0.50 | 0.0% | 0.0% | 3.8% | 96.2% |
+| `QM5_10215:GBPJPY.DWX` | 4.00 | 0.0% | 0.0% | 3.5% | 97.2% |
+| `QM5_10540:EURUSD.DWX` | 0.50 | 0.0% | 0.0% | 1.4% | 98.9% |
+| `QM5_10352:USDJPY.DWX` | 5.00 | 1.7% | 0.0% | 8.8% | 89.9% |
+| `QM5_10375:SP500.DWX` | 4.50 | 33.5% | 11.9% | 48.5% | 9.0% |
+| `QM5_10163:SP500.DWX` | 5.00 | 2.3% | 25.1% | 1.1% | 72.0% |
+| `QM5_10595:USDJPY.DWX` | 5.00 | 17.0% | 28.1% | 25.3% | 31.8% |
+| `QM5_11132:SP500.DWX` | 5.00 | 0.1% | 12.6% | 0.0% | 87.5% |
+| `QM5_10300:SP500.DWX` | 4.75 | 9.7% | 15.5% | 29.2% | 49.5% |
+| `QM5_10192:WS30.DWX` | 2.00 | 7.3% | 32.7% | 52.8% | 12.8% |
+| `QM5_11165:AUDCAD.DWX` | 0.25 | 0.0% | 0.0% | 0.0% | 100.0% |
+| `QM5_11421:EURUSD.DWX` | 5.00 | 0.4% | 24.4% | 0.0% | 75.3% |
+| `QM5_10939:GBPUSD.DWX` | 4.75 | 3.9% | 6.1% | 1.6% | 89.8% |
+| `QM5_10041:GBPUSD.DWX` | 4.75 | 0.1% | 0.0% | 5.1% | 95.8% |
+| `QM5_11708:AUDUSD.DWX` | 0.25 | 0.0% | 0.0% | 0.0% | 100.0% |
+| `QM5_10300:XTIUSD.DWX` | 5.00 | 9.2% | 4.6% | 31.6% | 55.3% |
 
 `QM5_10543:EURUSD.DWX` is rejected by the 2023-2025 validation despite the
 earlier Q03 screen. `QM5_10672:NDX.DWX` is active enough, but its full-window
@@ -231,13 +324,32 @@ Validated positive candidates were combined:
 - `QM5_10951:NDX.DWX`
 - `QM5_10194:XAUUSD.DWX`
 - `QM5_10110:NDX.DWX`
+- `QM5_10286:XTIUSD.DWX`
+- `QM5_11340:EURUSD.DWX`
+- `QM5_10715:USDJPY.DWX`
+- `QM5_9936:USDJPY.DWX`
+- `QM5_10847:GBPUSD.DWX`
+- `QM5_1120:GBPUSD.DWX`
+- `QM5_10476:USDCAD.DWX`
 
 Best combo outcomes:
 
 | combo | weights | scale | robust pass | max-loss breach | target-not-reached |
 |---|---|---:|---:|---:|---:|
+| `QM5_10951:NDX.DWX` + `QM5_10163:NDX.DWX` + `QM5_10375:NDX.DWX` + `QM5_12475:NDX.DWX` + `QM5_10848:XAUUSD.DWX` + `QM5_10700:XAUUSD.DWX` + `QM5_10702:XAUUSD.DWX` + `QM5_10988:XAUUSD.DWX` + `QM5_10194:XAUUSD.DWX` + `QM5_10286:XTIUSD.DWX` + `QM5_9936:USDJPY.DWX` + `QM5_10847:GBPUSD.DWX` + `QM5_10476:USDCAD.DWX` | 4.5/25.2/11.5/9.3/5.6/11.6/5.8/5.5/2.5/4.6/2.8/8.0/3.0 | 5.90 | 57.0% | 5.0% | 38.0% |
+| same as above, aggressive scale | 4.5/25.2/11.5/9.3/5.6/11.6/5.8/5.5/2.5/4.6/2.8/8.0/3.0 | 6.00 | 57.8% | 5.4% | 36.9% |
+| `QM5_10951:NDX.DWX` + `QM5_10163:NDX.DWX` + `QM5_10375:NDX.DWX` + `QM5_12475:NDX.DWX` + `QM5_10848:XAUUSD.DWX` + `QM5_10700:XAUUSD.DWX` + `QM5_10702:XAUUSD.DWX` + `QM5_10988:XAUUSD.DWX` + `QM5_10194:XAUUSD.DWX` + `QM5_10286:XTIUSD.DWX` + `QM5_9936:USDJPY.DWX` + `QM5_10847:GBPUSD.DWX` | 4.5/28.2/11.5/9.3/5.6/11.6/5.8/5.5/2.5/4.6/2.8/8.0 | 5.80 | 56.5% | 4.9% | 38.5% |
+| same as above, aggressive scale | 4.5/28.2/11.5/9.3/5.6/11.6/5.8/5.5/2.5/4.6/2.8/8.0 | 5.90 | 57.2% | 5.3% | 37.4% |
+| `QM5_10951:NDX.DWX` + `QM5_10163:NDX.DWX` + `QM5_10375:NDX.DWX` + `QM5_12475:NDX.DWX` + `QM5_10848:XAUUSD.DWX` + `QM5_10700:XAUUSD.DWX` + `QM5_10702:XAUUSD.DWX` + `QM5_10988:XAUUSD.DWX` + `QM5_10194:XAUUSD.DWX` + `QM5_10286:XTIUSD.DWX` + `QM5_9936:USDJPY.DWX` | 4.9/30.7/12.5/10.1/6.1/12.6/6.3/6.0/2.8/5.0/3.0 | 5.30 | 50.1% | 4.9% | 44.7% |
+| Round 21 backup: trim `QM5_10163:NDX.DWX` 2pct to `QM5_10715:USDJPY.DWX` | 4.9/31.7/12.5/10.1/6.1/12.6/6.3/6.0/2.8/5.0/2.0 | 5.20 | 49.7% | 4.7% | 45.8% |
+| `QM5_10951:NDX.DWX` + `QM5_10163:NDX.DWX` + `QM5_10375:NDX.DWX` + `QM5_12475:NDX.DWX` + `QM5_10848:XAUUSD.DWX` + `QM5_10700:XAUUSD.DWX` + `QM5_10702:XAUUSD.DWX` + `QM5_10988:XAUUSD.DWX` + `QM5_10194:XAUUSD.DWX` + `QM5_10286:XTIUSD.DWX` | 4.9/33.7/12.5/10.1/6.1/12.6/6.3/6.0/2.8/5.0 | 5.20 | 49.7% | 4.8% | 45.4% |
+| same as above, aggressive scale | 4.9/33.7/12.5/10.1/6.1/12.6/6.3/6.0/2.8/5.0 | 5.30 | 50.6% | 5.2% | 44.1% |
+| Round 20 screen: lead + `QM5_10286:XTIUSD.DWX` 2% | lead scaled + 2% | 5.00 | 48.5% | 4.6% | 47.4% |
 | `QM5_10951:NDX.DWX` + `QM5_10163:NDX.DWX` + `QM5_10375:NDX.DWX` + `QM5_12475:NDX.DWX` + `QM5_10848:XAUUSD.DWX` + `QM5_10700:XAUUSD.DWX` + `QM5_10702:XAUUSD.DWX` + `QM5_10988:XAUUSD.DWX` + `QM5_10194:XAUUSD.DWX` | 5.2/35.5/13.2/10.6/6.4/13.3/6.6/6.3/2.9 | 4.90 | 48.0% | 4.9% | 46.9% |
 | same as above, aggressive scale | 5.2/35.5/13.2/10.6/6.4/13.3/6.6/6.3/2.9 | 5.00 | 49.0% | 5.4% | 45.5% |
+| Round 19 screen: lead + `QM5_1638:XAUUSD.DWX` 2% | lead scaled + 2% | 5.00 | 48.8% | 6.9% | 42.9% |
+| Round 19 screen: lead + `QM5_10471:NDX.DWX` 1% | lead scaled + 1% | 4.80 | 45.9% | 4.9% | 48.8% |
+| Round 19 screen: lead + `QM5_10490:XAUUSD.DWX` 1% | lead scaled + 1% | 4.80 | 45.6% | 4.9% | 48.9% |
 | `QM5_10951:NDX.DWX` + `QM5_10163:NDX.DWX` + `QM5_10375:NDX.DWX` + `QM5_12475:NDX.DWX` + `QM5_10848:XAUUSD.DWX` + `QM5_10700:XAUUSD.DWX` + `QM5_10702:XAUUSD.DWX` + `QM5_10988:XAUUSD.DWX` | 5.3/36.5/13.6/11.0/6.6/13.7/6.8/6.5 | 4.90 | 46.3% | 4.8% | 48.3% |
 | same as above, aggressive scale | 5.3/36.5/13.6/11.0/6.6/13.7/6.8/6.5 | 5.00 | 47.2% | 5.1% | 46.9% |
 | `QM5_12475:XAUUSD.DWX` + `QM5_10163:NDX.DWX` + `QM5_10375:NDX.DWX` + `QM5_12475:NDX.DWX` + `QM5_10848:XAUUSD.DWX` + `QM5_10700:XAUUSD.DWX` + `QM5_10702:XAUUSD.DWX` + `QM5_10988:XAUUSD.DWX` | 5.3/36.5/13.6/11.0/6.6/13.7/6.8/6.5 | 4.00 | 40.2% | 3.9% | 55.9% |
@@ -362,22 +474,150 @@ max-loss breach reaches `5.4%`. `QM5_10110:NDX.DWX` validates and stays a backup
 leg, while `QM5_10750:NDX.DWX` is rejected because its full-window PF is `0.96`
 and net is negative.
 
+Round 19 does not improve the confirmed Round 18 lead. `QM5_1638:XAUUSD.DWX`
+validates mechanically with very high trade count, but the full-window edge is
+too thin (`PF 1.02`) and DD is too large (`49.83%`) for a sprint leg. The best
+screened addition to the lead improves target coverage only at breachy Scale
+5.0 (`6.9%` max-loss breach). `QM5_10471:NDX.DWX` and
+`QM5_10490:XAUUSD.DWX` are rejected because both lose over the full validation
+window. The `QM5_10471` T9 run exported a stable MT5 report, but the terminal
+wrapper hung on shutdown; the report was copied manually and parsed into the
+Round 19 validation artifact.
+
+Round 20 produces the first confirmed improvement after Round 18. `QM5_10286`
+on `XTIUSD.DWX` is too slow as a standalone sprint EA, but it is useful as a
+small commodity sleeve. A 5% allocation to `QM5_10286:XTIUSD.DWX`, with the
+Round 18 lead scaled down to 95%, confirms across five 5000-run seeds at Scale
+5.2 with minimum `49.68%` robust pass, mean `50.48%`, maximum `4.76%` max-loss
+breach, and `45.42%` mean target-not-reached. Scale 5.3 and above is aggressive
+only because max-loss breach exceeds the `5%` research guardrail. `QM5_11340`
+on `EURUSD.DWX` validates and remains a secondary diversification leg, but did
+not beat the XTI overlay. `QM5_10531:USDJPY.DWX` is rejected despite high trade
+count because the full-window MT5 report loses (`PF 0.90`, `-8047.74` net).
+
+Round 21 adds a small confirmed USDJPY improvement. `QM5_9936:USDJPY.DWX` is
+not strong enough as a standalone sprint EA, but shifting 3 percentage points
+from the large `QM5_10163:NDX.DWX` sleeve into `QM5_9936:USDJPY.DWX` improves
+the confirmed clean lead to Scale 5.3 with minimum `50.12%` robust pass, mean
+`50.99%`, maximum `4.86%` max-loss breach, and `44.70%` mean
+target-not-reached. `QM5_10715:USDJPY.DWX` validates and is a backup USDJPY
+diversifier, but its best confirmed basket variant only marginally improves the
+old lead. `QM5_1142:USDJPY.DWX` is rejected because the full-window report loses
+(`PF 0.90`, `-3247.74` net).
+
+Round 22 is infrastructure-blocked, not a strategy verdict. `QM5_10551`,
+`QM5_10469`, and `QM5_10596` all produced M0/1970 `NO_HISTORY` reports on
+USDJPY despite valid-looking tester setup; a sequential retry of `QM5_10551` on
+T9 failed the same way. Keep these as retry candidates only after the T8-T10
+USDJPY synchronization issue is cleared.
+
+Round 23 is the largest confirmed improvement so far. `QM5_10847:GBPUSD.DWX`
+validates as a quality but not standalone-sufficient GBPUSD leg, and an 8%
+overlay on the Round 21 lead confirms cleanly across five 5000-run seeds. The
+Scale 5.8 sweep reaches minimum `56.52%` robust pass, mean `57.08%`, maximum
+`4.94%` max-loss breach, and `38.55%` mean target-not-reached. Scale 5.9 is
+aggressive only because max-loss breach rises to `5.26%`. `QM5_1120:GBPUSD.DWX`
+validates but does not improve the confirmed lead. `QM5_9952:EURUSD.DWX` is
+rejected for sprint use because the full-window report loses (`PF 0.87`,
+`-38522.85` net).
+
+Round 24 adds a small confirmed USDCAD improvement, but it is close to the
+guardrail. `QM5_10476:USDCAD.DWX` is slow as a single, but shifting 3 percentage
+points from `QM5_10163:NDX.DWX` into `QM5_10476:USDCAD.DWX` confirms at Scale
+5.9 with minimum `57.04%` robust pass, mean `57.78%`, maximum `4.96%`
+max-loss breach, and `38.04%` mean target-not-reached. Scale 6.0 is aggressive
+only because max-loss breach rises to `5.44%`. `QM5_10113:GBPUSD.DWX` and
+`QM5_10712:GBPUSD.DWX` are rejected because both lose over the 2023-2025
+validation window.
+
+Round 25 does not improve the lead and produces no combo screen. Both remaining
+non-USDJPY screen candidates validate mechanically, but lose over the full
+2023-2025 MT5 window after worst-case commission: `QM5_10215:GBPJPY.DWX`
+finishes at `PF 0.73` and `-9769.31` net, while `QM5_10540:EURUSD.DWX` finishes
+at `PF 0.81` and `-71553.11` net.
+
+Round 26 also does not improve the lead and produces no combo screen.
+`QM5_10163:USDJPY.DWX` and `QM5_1241:USDJPY.DWX` hit the same M0/1970
+`NO_HISTORY` path seen in Round 22, so those are infra failures rather than
+strategy verdicts. `QM5_10352:USDJPY.DWX` validates mechanically with `1171`
+trades, but the full-window report loses after worst-case commission (`PF
+0.96`, `-2302.06` net). Its best single simulation is only `1.7%` robust pass
+and is already breachy (`8.8%` max-loss breach), so it is not worth adding to
+the current Basket.
+
+Round 27 finds a useful backup idea but does not beat the current lead.
+`QM5_10375:SP500.DWX` validates with a real edge (`PF 1.11`, `17966.69` net)
+and improves some Seed-0 screens as a small SP500 sleeve. The 5-seed
+confirmation does not hold above the Round 24 benchmark: the best clean
+confirmed variant, shifting 1 percentage point from `QM5_10847:GBPUSD.DWX` to
+`QM5_10375:SP500.DWX`, reaches Scale 5.9 with minimum `56.76%` robust pass,
+mean `57.35%`, maximum `4.78%` max-loss breach, and `38.49%`
+target-not-reached. That is close, but below the Round 24 `57.04%` minimum
+robust lead. `QM5_10163:SP500.DWX` and `QM5_10595:USDJPY.DWX` validate
+mechanically, but neither provides a confirmed lead improvement.
+
+Round 28 does not improve the lead and produces no combo screen. `QM5_11132`
+on `SP500.DWX` validates profitably after worst-case commission (`PF 2.13`,
+`4991.95` net) with low full-window DD, but it is too slow for the FTMO sprint:
+only `32` trades over 2023-2025, `0.1%` robust pass at Scale 5.0, and already
+`12.6%` daily-loss breach. `QM5_10300:SP500.DWX` and `QM5_10192:WS30.DWX`
+confirm the earlier Q05-fail warning: both lose over the full validation
+window after costs and their useful scales are breachy.
+
+Round 29 validates three deeper-funnel FX/AUD candidates and runs a focused
+combo screen/confirmation. All three are profitable after worst-case commission,
+but too low-frequency as standalone sprint legs. The best 5-seed confirmed
+overlay, shifting 2 percentage points from `QM5_9936:USDJPY.DWX` into
+`QM5_11165:AUDCAD.DWX`, reaches Scale 5.9 with minimum `57.04%` robust pass,
+mean `57.72%`, maximum `4.98%` max-loss breach, and `38.14%`
+target-not-reached. That ties the Round 24 minimum robust number but is worse
+on mean robust, max-loss headroom, and target coverage, so it is not promoted.
+
+Round 30 tests the more aggressive high-cadence/Q05-warning sleeve ideas and
+rejects all three. `QM5_10041:GBPUSD.DWX` is active (`1371` trades), but the
+full-window native report loses after costs (`PF 0.87`, `-3926.82` net).
+`QM5_11708:AUDUSD.DWX` and `QM5_10300:XTIUSD.DWX` also lose over 2023-2025, so
+no combo screen was run.
+
 ## Current Read
 
-No clean FTMO 60-calendar-day sprint candidate is validated yet, but Round 18
-moved the current clean lead to `48.0%` minimum robust pass with max-loss breach
-still below the `5%` research guardrail. The remaining problem is target
-coverage: even the clean Scale 4.9 lead still misses the target in about
-`46.9%` of block-bootstrap paths.
+No production-ready FTMO 60-calendar-day sprint module is validated yet, but
+Round 24 moved the current clean lead to a 13-leg mix with `57.04%` minimum
+robust pass and max-loss breach still below the `5%` research guardrail. The
+remaining problem is target coverage and guardrail margin: even the clean Scale
+5.9 USDCAD/GBPUSD/USDJPY/XTI lead still misses the target in about `38.0%` of
+bootstrap paths, and max-loss breach is `4.96%`.
+
+Round 27 adds `QM5_10375:SP500.DWX` as a close backup diversifier, but it is not
+promoted because the 5-seed confirmation stays below the Round 24 lead.
+
+Round 28 adds no new promoted leg. `QM5_11132:SP500.DWX` stays a slow research /
+Q12-ready candidate, not an FTMO sprint sleeve; `QM5_10300:SP500.DWX` and
+`QM5_10192:WS30.DWX` are rejected for this use case.
+
+Round 29 adds two useful backup ideas (`QM5_11165:AUDCAD.DWX`,
+`QM5_10939:GBPUSD.DWX`) but no promoted sleeve. Round 30 confirms that the
+high-cadence `QM5_10041:GBPUSD.DWX` and the remaining `11708/10300` variants
+are not viable FTMO sleeves.
 
 The best next ideas are:
 
 - Treat the `QM5_10951`/`QM5_10163`/`QM5_10375`/`QM5_12475:NDX`/
-  `QM5_10848`/`QM5_10700`/`QM5_10702`/`QM5_10988`/`QM5_10194` at
-  5.2/35.5/13.2/10.6/6.4/13.3/6.6/6.3/2.9 and Scale 4.9 as the current clean
-  lead/rescue candidate, not yet as a live prop module.
-- Treat Scale 5.0 for the same 9-leg mix as aggressive only: better target
-  coverage, but max-loss breach reached `5.4%` in the 5-seed confirmation.
+  `QM5_10848`/`QM5_10700`/`QM5_10702`/`QM5_10988`/`QM5_10194`/
+  `QM5_10286:XTIUSD.DWX`/`QM5_9936:USDJPY.DWX`/`QM5_10847:GBPUSD.DWX`/
+  `QM5_10476:USDCAD.DWX` at
+  4.5/25.2/11.5/9.3/5.6/11.6/5.8/5.5/2.5/4.6/2.8/8.0/3.0 and Scale 5.9 as the
+  current clean lead/rescue candidate, not yet as a live prop module.
+- Treat Scale 6.0+ for the same 13-leg mix as aggressive only: better target
+  coverage, but max-loss breach reached `5.44%` in the 5-seed scale sweep.
+- Keep the Round 23 12-leg Scale 5.8 mix as the prior clean benchmark
+  (`56.52%` minimum robust pass, `4.94%` max-loss breach).
+- Keep the Round 21 11-leg Scale 5.3 mix as the prior clean benchmark
+  (`50.12%` minimum robust pass, `4.86%` max-loss breach).
+- Keep the Round 20 10-leg Scale 5.2 mix as the prior clean benchmark
+  (`49.68%` minimum robust pass, `4.76%` max-loss breach).
+- Keep the Round 18 9-leg Scale 4.9 mix as the prior clean benchmark
+  (`48.0%` minimum robust pass, `4.86%` max-loss breach).
 - Keep the 10/45/15/10/5/10/5 `QM5_10702` variant as the cleaner guardrail
   candidate (`37.1%` robust pass, `4.7%` max-loss breach) if the 10% overlay is
   considered too close to the max-loss line.
@@ -397,8 +637,9 @@ The best next ideas are:
   not beat the `12475 + 10163` lead.
 - Reject `QM5_10482:NDX.DWX` for sprint use unless a stricter filter can lift
   PF materially above `1.02`.
-- Keep searching for medium-frequency NDX and XAUUSD overlays; Round 9 shows
-  decorrelation from another NDX leg is the best current path.
+- Keep searching for medium-frequency overlays with genuine decorrelation;
+  Round 20 shows commodity exposure can improve the basket more than another
+  weak NDX/XAU clone.
 - Keep `QM5_10692:NDX.DWX` as a quality backup leg, but prioritize candidates
   with more 60-day target coverage.
 - Keep `QM5_10848:XAUUSD.DWX` in the focused basket; it is the first Round 12
@@ -429,6 +670,74 @@ The best next ideas are:
   did not improve the confirmed lead.
 - Reject `QM5_10750:NDX.DWX` for sprint use despite high trade count because
   full-window PF is `0.96` and net is negative.
+- Reject `QM5_1638:XAUUSD.DWX` for sprint use despite very high trade count
+  because full-window PF is only `1.02` and the combo benefit appears only at
+  breachy scale.
+- Reject `QM5_10471:NDX.DWX` and `QM5_10490:XAUUSD.DWX` for sprint use because
+  both lose over the 2023-2025 MT5 validation window.
+- Keep `QM5_10286:XTIUSD.DWX` in the focused basket as the Round 20 commodity
+  overlay; it is weak as a single, but materially improves the confirmed basket
+  at a 5% sleeve.
+- Keep `QM5_11340:EURUSD.DWX` as a secondary diversification leg only; it
+  validates, but did not beat the `QM5_10286:XTIUSD.DWX` overlay.
+- Reject `QM5_10531:USDJPY.DWX` for sprint use despite high trade count because
+  the full-window MT5 report is losing (`PF 0.90`, `-8047.74` net).
+- Keep `QM5_9936:USDJPY.DWX` in the focused basket as a small Round 21 USDJPY
+  sleeve; it improves the confirmed lead only when funded by trimming
+  `QM5_10163:NDX.DWX`, not as a large standalone overlay.
+- Keep `QM5_10715:USDJPY.DWX` as a backup USDJPY diversifier; the standalone
+  profile is better than `QM5_9936`, but the confirmed basket improvement is
+  smaller.
+- Reject `QM5_1142:USDJPY.DWX` for sprint use despite MT5 PASS because the
+  full-window report is losing (`PF 0.90`, `-3247.74` net).
+- Keep `QM5_10551:USDJPY.DWX`, `QM5_10469:USDJPY.DWX`, and
+  `QM5_10596:USDJPY.DWX` as infra-blocked retry candidates only; Round 22 did
+  not produce valid strategy reports.
+- Keep `QM5_10847:GBPUSD.DWX` in the focused basket as the Round 23 GBPUSD
+  overlay; it materially improves the confirmed basket at an 8% sleeve.
+- Keep `QM5_1120:GBPUSD.DWX` as a backup GBPUSD diversifier only; it validates,
+  but did not beat the `QM5_10847:GBPUSD.DWX` overlay.
+- Reject `QM5_9952:EURUSD.DWX` for sprint use despite high trade count because
+  the full-window report is losing (`PF 0.87`, `-38522.85` net).
+- Keep `QM5_10476:USDCAD.DWX` in the focused basket as a small Round 24
+  diversification sleeve; it improves the confirmed basket only at 3% and with
+  little max-loss headroom.
+- Reject `QM5_10113:GBPUSD.DWX` and `QM5_10712:GBPUSD.DWX` for sprint use
+  because both lose over the 2023-2025 validation window.
+- Reject `QM5_10215:GBPJPY.DWX` and `QM5_10540:EURUSD.DWX` for sprint use
+  because both lose over the 2023-2025 validation window.
+- Reject `QM5_10352:USDJPY.DWX` for sprint use despite high trade count because
+  the full-window MT5 report loses (`PF 0.96`, `-2302.06` net), and useful scale
+  is breachy.
+- Keep `QM5_10163:USDJPY.DWX` and `QM5_1241:USDJPY.DWX` as infra-blocked retry
+  candidates only; Round 26 did not produce valid strategy reports.
+- Keep `QM5_10375:SP500.DWX` as a close backup SP500 diversifier; it validates
+  profitably and improves some screens, but the 5-seed confirmation did not beat
+  the Round 24 lead.
+- Keep `QM5_10163:SP500.DWX` as a secondary backup only; it validates, but its
+  confirmed basket contribution is smaller than `QM5_10375:SP500.DWX`.
+- Reject `QM5_10595:USDJPY.DWX` for sprint use despite MT5 PASS because the
+  full-window edge is thin (`PF 1.03`) and useful scale is breachy.
+- Keep `QM5_11132:SP500.DWX` as a slow research/Q12-ready candidate only; it
+  validates profitably, but the 60-day challenge simulation is too target-starved
+  and becomes daily-loss breachy at useful scale.
+- Keep `QM5_11165:AUDCAD.DWX` as a backup AUD-cross diversifier only. Its best
+  confirmed overlay ties the Round 24 minimum robust number, but worsens
+  headroom and target coverage.
+- Keep `QM5_10939:GBPUSD.DWX` as a backup GBPUSD diversifier only; it validates
+  profitably, but the confirmed overlay stays below the Round 24 benchmark.
+- Keep `QM5_11421:EURUSD.DWX` as low-frequency research only; it validates
+  profitably, but its standalone useful scale is daily-loss breachy and the
+  overlay screen does not improve the lead.
+- Reject `QM5_10300:SP500.DWX` for sprint use despite MT5 PASS because the
+  2023-2025 report loses after worst-case commission (`PF 0.90`, `-6270.20`
+  net).
+- Reject `QM5_10192:WS30.DWX` for sprint use despite MT5 PASS because the
+  2023-2025 report loses heavily after worst-case commission (`PF 0.65`,
+  `-75330.35` net, `64.30%` DD).
+- Reject `QM5_10041:GBPUSD.DWX`, `QM5_11708:AUDUSD.DWX`, and
+  `QM5_10300:XTIUSD.DWX` for sprint use because all three lose in native
+  2023-2025 full-window validation after worst-case commission.
 - Keep `QM5_10467:XAUUSD.DWX` and `QM5_10858:NDX.DWX` as secondary research
   legs only; neither improved the lead basket.
 - Reject `QM5_9996:NDX.DWX` and `QM5_10469:NDX.DWX` for sprint use despite MT5

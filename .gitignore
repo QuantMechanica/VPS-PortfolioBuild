@@ -88,3 +88,8 @@ scripts/*.exe
 /get_batch*.py
 /fetch_batch*.py
 /*_batch_*.py
+
+# T-WIN harvest scratch working dir (transient extraction scripts + dumps)
+/scratch/
+# transient build-retry attempt artifacts (build_result renamed across retries)
+artifacts/*build_result.attempt*.json
