@@ -124,4 +124,5 @@ Q02 queue note: build task `6ee7a158-8ec3-4445-b149-77e9041c2417` was recorded s
 |---|---|---|---|
 | v1 | 2026-06-29 | Initial rank-23 next-unbuilt FX cointegration basket build | Built from the 12764 two-leg JPY-cross basket pattern |
 | v1-q02 | 2026-06-29 | Compile/build-check PASS and Q02 enqueued | Pending logical-basket work item 0ef494c0-7669-4c98-9e5c-326ff70df987 |
+| v1-q05a | 2026-06-30 | Q05 manifest-history repair | Q05 reached `INFRA_FAIL` after repeated 1800-second `run_smoke` timeouts, then `NO_HISTORY/HISTORY_CONTEXT_INVALID`; `basket_manifest.json` now declares `USDJPY.DWX` conversion history to match the EA's `OnInit` symbol selection. No manual MT5 rerun launched. |
 
