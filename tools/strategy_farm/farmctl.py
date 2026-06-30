@@ -65,7 +65,7 @@ PIPELINE_REPORT_ROOT = Path(r"D:\QM\reports\pipeline")
 # references in classify_* / report-csv paths remain inert (no rows to read).
 SUPPORTED_BACKTEST_PHASES = ("Q02", "Q03", "Q04")
 CASCADE_BACKTEST_PHASES = (
-    "Q05", "Q06", "Q07", "Q08", "Q09", "Q09_PORTFOLIO", "Q10",
+    "Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q09_PORTFOLIO", "Q10",
     # Back-compat for pre-rewrite P-key work_items/test fixtures.
     "P5", "P5b", "P5c", "P6", "P7", "P8",
 )
@@ -9700,9 +9700,9 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
 
 
 def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[str, Any]:
-    """Requeue or create a P5+ cascade work_item from the prior PASS phase.
+    """Requeue or create a cascade work_item from the prior PASS phase.
 
-    P5+ phases are consumed by the work_item dispatcher/pump cascade, not the
+    Q04+ phases are consumed by the work_item dispatcher/pump cascade, not the
     older review-task enqueue path. This keeps the operator-facing command
     idempotent and avoids duplicate EA/symbol/phase rows.
     """
@@ -9721,9 +9721,11 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
             "phase": phase,
         }
     # Q-native cascade map (post-2026-05-23 rewrite). Pipeline order:
-    # Q04 WF -> Q05 Stress MED -> Q06 Stress HARSH -> Q07 Multi-Seed -> Q08 Davey
-    # -> Q09 News -> Q10 Full-History. (Was legacy P-keys; KeyError'd on Q-input.)
+    # Q02 baseline -> Q04 WF default probe -> Q05 Stress MED -> Q06 Stress HARSH
+    # -> Q07 Multi-Seed -> Q08 Davey -> Q09 News -> Q10 Full-History.
+    # (Was legacy P-keys; KeyError'd on Q-input.)
     prev_phase_map = {
+        "Q04": "Q02",
         "Q05": "Q04",
         "Q06": "Q05",
         "Q07": "Q06",
@@ -9739,6 +9741,7 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
         "P8": "P7",
     }
     phase_prev_verdicts = {
+        "Q04": {"PASS"},
         "Q05": {"PASS", "PASS_SOFT", "PASS_LOWFREQ"},
         "Q06": {"PASS"},
         "Q07": {"PASS"},
@@ -9825,6 +9828,9 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                     "requeued_at": now,
                 },
             )
+            if phase == "Q04":
+                payload["q04_default_probe"] = True
+                _apply_q04_latest_full_year_from_history(prev, payload)
             if existing:
                 if existing["status"] in {"pending", "active"}:
                     skipped.append({

@@ -327,6 +327,99 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             self.assertEqual(payload["q04_history_clamp_source"], "mt5_cache")
             self.assertEqual(payload["q04_history_checked_symbols"], ["USDCHF.DWX", "EURGBP.DWX"])
 
+    def test_enqueue_q04_requeues_existing_basket_probe_from_q02_pass(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            repo_root = Path(tmp) / "repo"
+            mt5_root = Path(tmp) / "mt5"
+            ea_id = "QM5_9995"
+            ea_dir = repo_root / "framework" / "EAs" / f"{ea_id}_basket-demo"
+            sets_dir = ea_dir / "sets"
+            sets_dir.mkdir(parents=True)
+            (ea_dir / f"{ea_dir.name}.ex5").write_text("compiled", encoding="utf-8")
+            logical = "QM5_9995_USDJPY_USDCAD_COINTEGRATION_D1"
+            manifest = {
+                "logical_symbol": logical,
+                "host_symbol": "USDJPY.DWX",
+                "host_timeframe": "D1",
+                "basket_symbols": ["USDJPY.DWX", "USDCAD.DWX"],
+            }
+            manifest_path = ea_dir / "basket_manifest.json"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            setfile = sets_dir / f"{ea_dir.name}_{logical}_D1_backtest.set"
+            setfile.write_text("RISK_FIXED=1000\n", encoding="utf-8")
+            for symbol in ("USDJPY.DWX", "USDCAD.DWX"):
+                hist_dir = mt5_root / "T1" / "Bases" / "Custom" / "history" / symbol
+                hist_dir.mkdir(parents=True)
+                for year in (2023, 2024):
+                    (hist_dir / f"{year}.hcc").write_text("", encoding="utf-8")
+
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO work_items
+                      (id, kind, phase, ea_id, symbol, setfile_path, status,
+                       verdict, attempt_count, payload_json, created_at, updated_at)
+                    VALUES
+                      ('q02-pass', 'backtest', 'Q02', ?, ?, ?,
+                       'done', 'PASS', 0, ?, ?, ?),
+                      ('q04-infra', 'backtest', 'Q04', ?, ?, ?,
+                       'done', 'INFRA_FAIL', 2, ?, ?, ?)
+                    """,
+                    (
+                        ea_id,
+                        logical,
+                        str(setfile),
+                        json.dumps({
+                            "basket_manifest": str(manifest_path),
+                            "host_symbol": "USDJPY.DWX",
+                            "host_timeframe": "D1",
+                            "logical_symbol": logical,
+                            "portfolio_scope": "basket",
+                        }),
+                        now,
+                        now,
+                        ea_id,
+                        logical,
+                        str(setfile),
+                        json.dumps({"prior_failure": "runner_invalid"}),
+                        now,
+                        now,
+                    ),
+                )
+                conn.commit()
+
+            old_repo_root = farmctl.REPO_ROOT
+            old_mt5_root = farmctl.MT5_ROOT
+            try:
+                farmctl.REPO_ROOT = repo_root
+                farmctl.MT5_ROOT = mt5_root
+                result = farmctl.enqueue_cascade_backtest_for_ea(root, ea_id, "Q04")
+            finally:
+                farmctl.REPO_ROOT = old_repo_root
+                farmctl.MT5_ROOT = old_mt5_root
+
+            self.assertTrue(result["enqueued"])
+            self.assertEqual(result["created"], [])
+            self.assertEqual(result["requeued"], [{"id": "q04-infra", "symbol": logical}])
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                rows = conn.execute(
+                    "SELECT id, phase, status, verdict, attempt_count, payload_json "
+                    "FROM work_items WHERE phase='Q04'"
+                ).fetchall()
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0][0], "q04-infra")
+            self.assertEqual(rows[0][2], "pending")
+            self.assertIsNone(rows[0][3])
+            self.assertEqual(rows[0][4], 0)
+            payload = json.loads(rows[0][5])
+            self.assertTrue(payload["q04_default_probe"])
+            self.assertEqual(payload["q04_latest_full_year"], 2024)
+            self.assertEqual(payload["q04_history_checked_symbols"], ["USDJPY.DWX", "USDCAD.DWX"])
+            self.assertEqual(payload["promoted_from_phase"], "Q02")
+
     def test_enqueue_q05_accepts_q04_soft_pass_verdicts(self) -> None:
         for verdict in ("PASS_SOFT", "PASS_LOWFREQ"):
             with self.subTest(verdict=verdict):

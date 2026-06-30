@@ -1,0 +1,76 @@
+{
+  "ea_id": "QM5_12762",
+  "slug": "edgelab-usdjpy-usdcad-cointegration",
+  "logical_symbol": "QM5_12762_USDJPY_USDCAD_COINTEGRATION_D1",
+  "basket_symbols": [
+    "USDJPY.DWX",
+    "USDCAD.DWX"
+  ],
+  "mission_scope": "Advance an existing forex cointegration basket after all registered edgelab cointegration pairs through QM5_12803 were already built and 12532/12533 were not Q02-blocked.",
+  "precheck": {
+    "qm5_12532_q02": "PASS",
+    "qm5_12533_q02": "PASS",
+    "unbuilt_registered_edgelab_cointegration_pairs": 0,
+    "selected_existing_pair": "USDJPY~USDCAD",
+    "selected_prior_state": {
+      "q02": {
+        "status": "done",
+        "verdict": "PASS",
+        "work_item_id": "bb14e32b-4910-4a11-993f-2233c59958d7"
+      },
+      "q04": {
+        "status": "done",
+        "verdict": "INFRA_FAIL",
+        "work_item_id": "6a83a2cb-ab6f-41ad-b998-8a965c6228fe"
+      }
+    }
+  },
+  "code_changes": [
+    {
+      "path": "tools/strategy_farm/farmctl.py",
+      "summary": "Enabled explicit EA-driven Q04 enqueue/requeue from a Q02 PASS, matching pump's default Q04 probe path and applying basket history-year clamping before dispatch."
+    },
+    {
+      "path": "tools/strategy_farm/tests/test_farmctl_cascade.py",
+      "summary": "Added regression coverage that Q04 requeue reuses an existing failed basket probe row, resets it to pending, and carries q04_latest_full_year from MT5 cache history."
+    }
+  ],
+  "queue_action": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12762 --phase Q04",
+    "result": "requeued",
+    "work_item_id": "6a83a2cb-ab6f-41ad-b998-8a965c6228fe",
+    "status_after": "pending",
+    "attempt_count_after": 0,
+    "updated_at_utc": "2026-06-30T11:18:38+00:00",
+    "db_backup_before_requeue": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12762_q04_requeue_20260630_131832.sqlite",
+    "archived_report_root": "D:/QM/reports/work_items/6a83a2cb-ab6f-41ad-b998-8a965c6228fe.requeued_20260630T1118380000"
+  },
+  "payload_after_requeue": {
+    "portfolio_scope": "basket",
+    "host_symbol": "USDJPY.DWX",
+    "host_timeframe": "D1",
+    "q04_default_probe": true,
+    "q04_latest_full_year": 2024,
+    "q04_history_clamp_source": "mt5_cache",
+    "q04_history_checked_symbols": [
+      "USDJPY.DWX",
+      "USDCAD.DWX"
+    ],
+    "basket_manifest": "C:/QM/repo/framework/EAs/QM5_12762_edgelab-usdjpy-usdcad-cointegration/basket_manifest.json",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_12762_edgelab-usdjpy-usdcad-cointegration/sets/QM5_12762_edgelab-usdjpy-usdcad-cointegration_QM5_12762_USDJPY_USDCAD_COINTEGRATION_D1_D1_backtest.set"
+  },
+  "validation": [
+    {
+      "command": "python -m pytest tools/strategy_farm/tests/test_farmctl_cascade.py::CascadePromotionTests::test_enqueue_q04_requeues_existing_basket_probe_from_q02_pass tools/strategy_farm/tests/test_farmctl_cascade.py::CascadePromotionTests::test_q04_promotion_clamps_basket_latest_year_from_cache tools/strategy_farm/tests/test_farmctl_cascade.py::CascadePromotionTests::test_enqueue_q05_checks_basket_manifest_symbols_not_logical_symbol",
+      "result": "PASS",
+      "tests": 3
+    }
+  ],
+  "safety": {
+    "manual_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
