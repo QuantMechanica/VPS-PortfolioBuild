@@ -13894,3 +13894,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12813,eia-energy-switch,0,XTIUSD.DWX,128130000,2026-06-30,Development,active
 12813,eia-energy-switch,1,XNGUSD.DWX,128130001,2026-06-30,Development,active
 12814,wti-usd-confirm,0,XTIUSD.DWX,128140000,2026-06-30,Development,active
+12817,xng-volshock-fade,0,XNGUSD.DWX,128170000,2026-06-30,Development,active
