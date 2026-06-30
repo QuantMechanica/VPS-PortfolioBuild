@@ -1,0 +1,43 @@
+{
+  "ea_id": "QM5_12803",
+  "slug": "edgelab-usdcad-euraud-cointegration",
+  "logical_symbol": "QM5_12803_USDCAD_EURAUD_COINTEGRATION_D1",
+  "mission_scope": "Advance existing forex cointegration basket after no non-duplicate allocated unbuilt edgelab FX cointegration pair was available.",
+  "precheck": {
+    "qm5_12532_q02": "PASS",
+    "qm5_12533_q02": "PASS",
+    "unbuilt_registered_edgelab_cointegration_pairs": 0,
+    "target_q02_work_item_before": {
+      "id": "6c344f79-282d-491c-81c6-2c3b3bd80538",
+      "status": "pending",
+      "symbol": "QM5_12803_USDCAD_EURAUD_COINTEGRATION_D1",
+      "portfolio_scope": "basket",
+      "priority_track": false
+    }
+  },
+  "queue_action": {
+    "action": "payload_priority_update",
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12803_q02_priority_20260630T083309Z.sqlite",
+    "work_item_id": "6c344f79-282d-491c-81c6-2c3b3bd80538",
+    "duplicate_q02_rows_after": 1,
+    "payload_updates": {
+      "priority_track": true,
+      "priority_set_at_utc": "2026-06-30T08:33:09.711700Z",
+      "priority_set_by": "Codex agents/board-advisor"
+    }
+  },
+  "state_after": {
+    "status": "active",
+    "claimed_by": "T2",
+    "updated_at_utc": "2026-06-30T08:33:19+00:00",
+    "verdict": null
+  },
+  "safety": {
+    "manual_backtest_launched": false,
+    "duplicate_queue_row_created": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
