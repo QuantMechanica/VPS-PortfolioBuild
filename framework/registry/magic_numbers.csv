@@ -13913,3 +13913,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11905,hui-chan-shiryaev-zhou-3day-d1,9,AUDJPY.DWX,119050009,2026-06-30,Development,active
 12825,wti-eurusd-spread,0,XTIUSD.DWX,128250000,2026-06-30,Development,active
 12825,wti-eurusd-spread,1,EURUSD.DWX,128250001,2026-06-30,Development,active
+12826,cme-gassilver-ratio,0,XNGUSD.DWX,128260000,2026-06-30,Development,active
+12826,cme-gassilver-ratio,1,XAGUSD.DWX,128260001,2026-06-30,Development,active
