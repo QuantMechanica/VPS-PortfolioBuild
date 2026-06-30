@@ -260,12 +260,23 @@ bool Strategy_RefreshSpecialKCache()
    double sk_max = -DBL_MAX;
    double price_min = DBL_MAX;
    double price_max = -DBL_MAX;
+   double sk_confirm_min = DBL_MAX;
+   double sk_confirm_max = -DBL_MAX;
+   double price_confirm_min = DBL_MAX;
+   double price_confirm_max = -DBL_MAX;
    for(int i = 0; i < strategy_major_window; ++i)
      {
       sk_min = MathMin(sk_min, g_sk_window[i]);
       sk_max = MathMax(sk_max, g_sk_window[i]);
       price_min = MathMin(price_min, g_rates[i].low);
       price_max = MathMax(price_max, g_rates[i].high);
+      if(i >= 1)
+        {
+         sk_confirm_min = MathMin(sk_confirm_min, g_sk_window[i]);
+         sk_confirm_max = MathMax(sk_confirm_max, g_sk_window[i]);
+         price_confirm_min = MathMin(price_confirm_min, g_rates[i].low);
+         price_confirm_max = MathMax(price_confirm_max, g_rates[i].high);
+        }
      }
 
    const bool magnitude_ok = ((sk_max - sk_min) >= strategy_min_sk_range);
@@ -292,8 +303,8 @@ bool Strategy_RefreshSpecialKCache()
    g_trough_signal = magnitude_ok &&
                      components_aligned &&
                      separation_ok &&
-                     (sk_now <= sk_min + tol) &&
-                     (g_rates[0].low <= price_min) &&
+                     (sk_prev <= sk_confirm_min + tol) &&
+                     (g_rates[1].low <= price_confirm_min) &&
                      ((sk_now - sk_prev) > 0.0) &&
                      bullish_bar &&
                      regime_long_ok;
@@ -301,8 +312,8 @@ bool Strategy_RefreshSpecialKCache()
    g_peak_signal = magnitude_ok &&
                    components_aligned &&
                    separation_ok &&
-                   (sk_now >= sk_max - tol) &&
-                   (g_rates[0].high >= price_max) &&
+                   (sk_prev >= sk_confirm_max - tol) &&
+                   (g_rates[1].high >= price_confirm_max) &&
                    ((sk_now - sk_prev) < 0.0) &&
                    bearish_bar &&
                    regime_short_ok;

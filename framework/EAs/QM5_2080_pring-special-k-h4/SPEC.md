@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA trades Martin Pring's Special-K major-cycle extremes on H4 bars. It computes 12 fixed ROC series, smooths each with its fixed SMA length, and sums the fixed Pring coefficients into one Special-K oscillator. A long entry fires when the just-closed H4 bar is both the 100-bar Special-K low and the 100-bar price low, Special-K turns up, the bar closes bullish, component signs align, and the last major extreme is at least 60 bars back. Shorts mirror the same rule at 100-bar highs; exits use the opposite extreme, a Special-K zero-line reversal, a 3.0 ATR trailing stop after a 2.0 ATR favorable move, or a 200 H4-bar time stop.
+This EA trades Martin Pring's Special-K major-cycle extremes on H4 bars. It computes 12 fixed ROC series, smooths each with its fixed SMA length, and sums the fixed Pring coefficients into one Special-K oscillator. A long entry fires when the prior H4 bar is both the 100-bar Special-K low and the 100-bar price low, then the just-closed H4 bar confirms the turn with rising Special-K and a bullish close. Component signs must align, and the last major extreme must be at least 60 bars back. Shorts mirror the same rule at 100-bar highs; exits use the opposite extreme, a Special-K zero-line reversal, a 3.0 ATR trailing stop after a 2.0 ATR favorable move, or a 200 H4-bar time stop.
 
 ---
 
@@ -101,3 +101,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-26 | Initial build from card | 1f8e20d5-5615-4a5f-a027-c60145078116 |
+| v2 | 2026-06-30 | Q01 zero-trade rework; previous-bar extreme plus current-bar confirmation | d85063a1-13e4-473a-854b-224ae23e64f3 |
