@@ -1,0 +1,96 @@
+{
+  "ea_id": "QM5_12778",
+  "slug": "edgelab-audusd-eurjpy-cointegration",
+  "selected_pair": "AUDUSD~EURJPY",
+  "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+  "mission_scope": "Advance an existing FX market-neutral cointegration basket after no unbuilt approved EdgeLab FX cointegration card remained and QM5_12532/QM5_12533 were no longer Q02-blocked.",
+  "precheck": {
+    "qm5_12532_q02_blocked": false,
+    "qm5_12532_current_observed_state": "Q02 PASS, Q04 PASS, Q05 INFRA_FAIL/CPU ceiling",
+    "qm5_12533_q02_blocked": false,
+    "qm5_12533_current_observed_state": "Q02 PASS, Q04 FAIL",
+    "unbuilt_approved_edgelab_cointegration_cards_found": 0,
+    "target_prior_state": "QM5_12778 had Q02 PASS, one pending Q03 row, and one terminal Q04 INFRA_FAIL row from the same promotion cycle."
+  },
+  "code_change": {
+    "reason": "Promoted logical basket rows retained host/manifest fields but dropped traded/conversion symbol split and fixed-risk metadata that Q02 repairs proved necessary.",
+    "files_changed": [
+      "tools/strategy_farm/farmctl.py",
+      "tools/strategy_farm/tests/test_basket_work_items.py"
+    ],
+    "promotion_payload_keys_added": [
+      "risk_percent",
+      "portfolio_weight",
+      "risk_mode",
+      "traded_symbols",
+      "conversion_symbols",
+      "scan_ranking"
+    ]
+  },
+  "queue_action": {
+    "action": "existing_q03_payload_enrichment_no_duplicate_insert",
+    "work_item_id": "7a11f24a-091f-49dd-983a-3dc8c7cef456",
+    "phase": "Q03",
+    "status_after": "pending",
+    "claimed_by_after": null,
+    "updated_at_utc": "2026-06-30T21:18:29+00:00",
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12778_q03_payload_enrich_20260630T211827Z.sqlite",
+    "payload_updates": {
+      "basket_symbol_count": 3,
+      "basket_symbols": [
+        "AUDUSD.DWX",
+        "EURJPY.DWX",
+        "EURUSD.DWX"
+      ],
+      "traded_symbols": [
+        "AUDUSD.DWX",
+        "EURJPY.DWX"
+      ],
+      "conversion_symbols": [
+        "EURUSD.DWX"
+      ],
+      "tester_currency": "EUR",
+      "tester_deposit": 100000,
+      "risk_mode": "RISK_FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_weight": 1,
+      "priority_track": true
+    }
+  },
+  "validation": [
+    {
+      "command": "python -m pytest tools/strategy_farm/tests/test_basket_work_items.py",
+      "result": "PASS",
+      "tests": 11
+    },
+    {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_12778_edgelab-audusd-eurjpy-cointegration --verbose",
+      "result": "PASS",
+      "verdict": "BASKET_OK"
+    },
+    {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12778_edgelab-audusd-eurjpy-cointegration -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 16,
+      "report": "D:/QM/reports/framework/21/build_check_20260630_211736.json"
+    },
+    {
+      "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --ea QM5_12778",
+      "result": "PASS",
+      "summary": "Exactly one QM5_12778 Q03 row remains pending; no duplicate work item was inserted."
+    }
+  ],
+  "safety": {
+    "manual_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false,
+    "risk_mode": "RISK_FIXED backtest queue only"
+  }
+}

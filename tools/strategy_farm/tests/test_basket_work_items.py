@@ -214,6 +214,12 @@ class BasketWorkItemsTests(unittest.TestCase):
                 "tester_currency": "USD",
                 "tester_deposit": 100000,
                 "risk_fixed": 1000,
+                "risk_percent": 0,
+                "portfolio_weight": 1,
+                "risk_mode": "RISK_FIXED",
+                "traded_symbols": ["EURGBP.DWX", "EURAUD.DWX"],
+                "conversion_symbols": ["EURUSD.DWX", "AUDUSD.DWX"],
+                "scan_ranking": {"rank_positive_hedge": 12},
             }),
         }
 
@@ -237,6 +243,12 @@ class BasketWorkItemsTests(unittest.TestCase):
         self.assertEqual(payload["tester_currency"], "USD")
         self.assertEqual(payload["tester_deposit"], 100000)
         self.assertEqual(payload["risk_fixed"], 1000)
+        self.assertEqual(payload["risk_percent"], 0)
+        self.assertEqual(payload["portfolio_weight"], 1)
+        self.assertEqual(payload["risk_mode"], "RISK_FIXED")
+        self.assertEqual(payload["traded_symbols"], ["EURGBP.DWX", "EURAUD.DWX"])
+        self.assertEqual(payload["conversion_symbols"], ["EURUSD.DWX", "AUDUSD.DWX"])
+        self.assertEqual(payload["scan_ranking"], {"rank_positive_hedge": 12})
 
     def test_q02_dispatch_falls_back_to_basket_manifest_host_symbol(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
