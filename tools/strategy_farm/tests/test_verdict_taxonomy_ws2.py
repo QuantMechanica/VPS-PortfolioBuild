@@ -1,5 +1,7 @@
+import json
 import sqlite3
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -359,6 +361,54 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
 
         self.assertEqual(verdict, "INFRA_FAIL")
         self.assertIn("invalid_summary", reason)
+
+    def test_parent_aggregate_preserves_all_infra_fail_verdict(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO tasks(
+                        id, kind, status, source_id, card_id, payload_json,
+                        created_at, updated_at
+                    )
+                    VALUES (
+                        'parent-q03', 'backtest_q03', 'pending', NULL,
+                        'QM5_9998', ?, ?, ?
+                    )
+                    """,
+                    (json.dumps({"ea_id": "QM5_9998", "phase": "Q03"}), now, now),
+                )
+                conn.execute(
+                    """
+                    INSERT INTO work_items(
+                        id, kind, phase, ea_id, symbol, setfile_path, status,
+                        verdict, attempt_count, parent_task_id, payload_json,
+                        created_at, updated_at
+                    )
+                    VALUES (
+                        'wi-infra', 'backtest', 'Q03', 'QM5_9998',
+                        'QM5_9998_EURUSD_GBPUSD_COINTEGRATION_D1',
+                        'dummy.set', 'done', 'INFRA_FAIL', 0,
+                        'parent-q03', '{}', ?, ?
+                    )
+                    """,
+                    (now, now),
+                )
+                conn.commit()
+
+            farmctl.dispatch_work_items(root, timeout_minutes=1)
+
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, payload_json FROM tasks WHERE id='parent-q03'"
+                ).fetchone()
+            self.assertEqual(row[0], "done")
+            classification = json.loads(row[1])["classification"]
+            self.assertEqual(classification["verdict"], "INFRA_FAIL")
+            self.assertEqual(classification["counts_by_verdict"]["INFRA_FAIL"], 1)
 
 
 if __name__ == "__main__":

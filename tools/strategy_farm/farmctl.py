@@ -4067,13 +4067,15 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 surviving, p2_profit_skipped = _filter_p2_profitable_symbols(conn, parent_id, pass_symbols)
             else:
                 surviving = pass_symbols
-            verdict = "PASS" if surviving else "STRATEGY_FAIL"
+            strategy_fail_count = sum(1 for w in wis if w["verdict"] in {"FAIL", "ZERO_TRADES", "MIN_TRADES_NOT_MET"})
+            infra_fail_count = sum(1 for w in wis if w["verdict"] in {"INFRA_FAIL", "INVALID", "WAITING_INPUT", "PENDING_RUNNER"})
+            verdict = "PASS" if surviving else ("INFRA_FAIL" if infra_fail_count > 0 and strategy_fail_count == 0 else "STRATEGY_FAIL")
             classification = {
                 "verdict": verdict,
                 "surviving_symbols": surviving,
                 "counts_by_verdict": {
                     v: sum(1 for w in wis if w["verdict"] == v)
-                    for v in ("PASS", "FAIL", "INVALID")
+                    for v in ("PASS", "FAIL", "INVALID", "INFRA_FAIL", "ZERO_TRADES", "MIN_TRADES_NOT_MET")
                 },
                 "source": "work_items_aggregate",
             }

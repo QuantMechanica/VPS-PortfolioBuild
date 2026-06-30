@@ -1,0 +1,81 @@
+{
+  "ea_id": "QM5_12778",
+  "slug": "edgelab-audusd-eurjpy-cointegration",
+  "selected_pair": "AUDUSD~EURJPY",
+  "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+  "mission_scope": "Advance a diverse FX market-neutral cointegration sleeve already past Q02, after no higher-diversity unbuilt approved card remained cleanly buildable without duplicate work or unavailable DWX inputs.",
+  "diagnosis": {
+    "prior_q03_work_item_id": "7a11f24a-091f-49dd-983a-3dc8c7cef456",
+    "prior_q03_parent_task_id": "26435143-7c0c-4a2d-aaad-649095f743da",
+    "prior_evidence_path": "D:/QM/reports/work_items/7a11f24a-091f-49dd-983a-3dc8c7cef456/QM5_12778/20260630_213954/summary.json",
+    "prior_reason_classes": [
+      "NO_HISTORY",
+      "REPORT_MISSING",
+      "METATESTER_HUNG",
+      "INCOMPLETE_RUNS"
+    ],
+    "infra_read": "Runs 1/2/4 were 1970 empty-symbol/no-history invalid reports; run 3 showed actual AUDUSD.DWX and EURJPY.DWX trades in the tester log but failed report export. This is terminal/history/report infrastructure, not a strategy-code failure.",
+    "parent_aggregate_bug": "The Q03 parent payload had counts_by_verdict.INFRA_FAIL=1 but classification.verdict=STRATEGY_FAIL, which could suppress infra retry handling."
+  },
+  "code_change": {
+    "files_changed": [
+      "tools/strategy_farm/farmctl.py",
+      "tools/strategy_farm/tests/test_verdict_taxonomy_ws2.py"
+    ],
+    "summary": "Parent work-item aggregation now returns INFRA_FAIL when all completed child rows are infra-like and no child has a definitive strategy failure."
+  },
+  "queue_action": {
+    "action": "reopened_existing_q03_work_item_no_duplicate_insert",
+    "updated_at_utc": "2026-06-30T23:05:38+00:00",
+    "work_item_id": "7a11f24a-091f-49dd-983a-3dc8c7cef456",
+    "parent_task_id": "26435143-7c0c-4a2d-aaad-649095f743da",
+    "work_item_status_after": "pending",
+    "parent_task_status_after": "pending",
+    "pending_q03_ids_after": [
+      "7a11f24a-091f-49dd-983a-3dc8c7cef456"
+    ],
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12778_q03_infra_requeue_20260630T230538.sqlite",
+    "archived_report_root": "D:/QM/reports/work_items/7a11f24a-091f-49dd-983a-3dc8c7cef456.requeued_20260630T2305380000",
+    "payload_context_preserved": {
+      "risk_mode": "RISK_FIXED",
+      "risk_fixed": 1000,
+      "portfolio_weight": 1,
+      "traded_symbols": [
+        "AUDUSD.DWX",
+        "EURJPY.DWX"
+      ],
+      "conversion_symbols": [
+        "EURUSD.DWX"
+      ],
+      "tester_currency": "EUR",
+      "tester_deposit": 100000
+    }
+  },
+  "validation": [
+    {
+      "command": "python -m pytest tools/strategy_farm/tests/test_verdict_taxonomy_ws2.py",
+      "result": "PASS",
+      "tests": 18
+    },
+    {
+      "command": "python -m pytest tools/strategy_farm/tests/test_terminal_worker_atomic_claim.py::TerminalWorkerAtomicClaimTests::test_run_claimed_item_preflight_blocks_missing_ex5_without_spawn",
+      "result": "PASS",
+      "tests": 1
+    },
+    {
+      "command": "python tools/strategy_farm/farmctl.py work-items --ea QM5_12778",
+      "result": "PASS",
+      "summary": "Exactly one QM5_12778 Q03 row is pending; no Q03 duplicate or active claim exists."
+    }
+  ],
+  "safety": {
+    "manual_backtest_launched": false,
+    "backtest_cpu_ceiling_hit": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "deploy_manifest_touched": false,
+    "risk_mode": "RISK_FIXED backtest queue only"
+  }
+}
