@@ -14052,3 +14052,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12828,wti-cushing-brk,0,XTIUSD.DWX,128280000,2026-06-30,Development,active
 12829,wti-cushing-fade,0,XTIUSD.DWX,128290000,2026-06-30,Development,active
 12830,xng-exp-brk,0,XNGUSD.DWX,128300000,2026-06-30,Development,active
+12831,wti-audusd-brk,0,XTIUSD.DWX,128310000,2026-06-30,Development,active
+12831,wti-audusd-brk,1,AUDUSD.DWX,128310001,2026-06-30,Development,active

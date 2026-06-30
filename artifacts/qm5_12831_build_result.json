@@ -1,0 +1,101 @@
+{
+  "task_id": "manual-build-QM5_12831-20260630",
+  "ea_id": "QM5_12831",
+  "slug": "wti-audusd-brk",
+  "branch": "agents/board-advisor",
+  "date": "2026-06-30",
+  "source_id": "EIA-RBA-WTI-AUD-2026",
+  "source_citations": [
+    "Beckmann, J., Czudaj, R. L., and Arora, V. The Relationship between Oil Prices and Exchange Rates. U.S. Energy Information Administration Working Paper, June 2017. URL https://www.eia.gov/workingpapers/pdf/oil_exchangerates_61317.pdf",
+    "Reserve Bank of Australia. Drivers of the Australian Dollar Exchange Rate. URL https://www.rba.gov.au/education/resources/explainers/drivers-of-the-aud-exchange-rate.html"
+  ],
+  "strategy": "D1 XTIUSD/AUDUSD commodity-FX log-spread channel breakout basket",
+  "logical_symbol": "QM5_12831_XTI_AUDUSD_BRK_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "AUDUSD.DWX"
+  ],
+  "risk_mode": "RISK_FIXED",
+  "risk_fixed": 1000,
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 16,
+  "build_check_compile_skipped": true,
+  "build_check_compile_skipped_reason": "Strict compile had already passed; build_check was run with -SkipCompile to avoid MetaEditor process hang after the successful compile.",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12831_wti-audusd-brk\\QM5_12831_wti-audusd-brk.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12831_wti-audusd-brk\\QM5_12831_wti-audusd-brk.ex5",
+  "spec_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12831_wti-audusd-brk\\SPEC.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12831_wti-audusd-brk\\basket_manifest.json",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12831_wti-audusd-brk_card.md",
+  "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\EIA-RBA-WTI-AUD-2026\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12831_wti-audusd-brk\\sets\\QM5_12831_wti-audusd-brk_QM5_12831_XTI_AUDUSD_BRK_D1_D1_backtest.set"
+  ],
+  "compile": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12831_wti-audusd-brk/QM5_12831_wti-audusd-brk.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log": "C:\\QM\\repo\\framework\\build\\compile\\20260630_175747\\QM5_12831_wti-audusd-brk.compile.log",
+    "summary": "D:\\QM\\reports\\compile\\20260630_175747\\summary.csv",
+    "ex5": "C:\\QM\\repo\\framework\\EAs\\QM5_12831_wti-audusd-brk\\QM5_12831_wti-audusd-brk.ex5"
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12831_wti-audusd-brk -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report": "D:\\QM\\reports\\framework\\21\\build_check_20260630_180041.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_12831_wti-audusd-brk",
+    "result": "PASS"
+  },
+  "q02": {
+    "status": "enqueued",
+    "phase": "Q02",
+    "work_item_id": "925ac0a2-37c2-44a0-adec-0d03bc1abf39",
+    "task_id": "54f37e24-8b08-4f78-ba48-837170215400",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "QM5_12831_XTI_AUDUSD_BRK_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12831_wti-audusd-brk\\sets\\QM5_12831_wti-audusd-brk_QM5_12831_XTI_AUDUSD_BRK_D1_D1_backtest.set",
+    "created_at_utc": "2026-06-30T18:01:36+00:00",
+    "payload": {
+      "from_date": "2017.01.01",
+      "to_date": "2024.12.31",
+      "risk_mode": "RISK_FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_weight": 1,
+      "basket_manifest": "C:\\QM\\repo\\framework\\EAs\\QM5_12831_wti-audusd-brk\\basket_manifest.json",
+      "basket_symbols": [
+        "XTIUSD.DWX",
+        "AUDUSD.DWX"
+      ]
+    }
+  },
+  "hashes": {
+    "mq5_sha256": "26DCD13FD428954B5C78EA49678A991137ACB6DB4A5A0CB955EC81DE0DCF6F9E",
+    "ex5_sha256": "B577102D6CE4A1126B524AC73C6B68EDA9885521764593E51F52C322BA5382F1",
+    "setfile_sha256": "F2D46C4446D3331F1E2B3246CFAECA37F60DDAF0E037FCEC80253E7D58C497FA",
+    "setfile_header_build_hash": "5ec9484f95af7ad0ee8eba88346d111b28a85527471f59d5649f1a48e565c7cc"
+  },
+  "non_duplicate_reason": "New XTIUSD/AUDUSD commodity-FX breakout basket. It differs from XTI/EURUSD z-score mean reversion, WTI/CAD sleeves, WTI calendar/event sleeves, XTI/XNG, energy/metal ratios, XAU/XAG baskets, and XNG RSI logic.",
+  "smoke_result": "deferred_to_q02",
+  "smoke_skipped_reason": "Paced fleet Q02 was enqueued; no manual MT5 backtest was launched from this session.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "t_live_manifest_touched": false
+  },
+  "notes": "Built and enqueued one non-duplicate structural WTI/AUDUSD commodity-FX basket sleeve. No live, T_Live, AutoTrading, T_Live manifest, or portfolio gate artifacts touched."
+}
