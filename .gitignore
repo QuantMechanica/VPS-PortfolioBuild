@@ -84,3 +84,7 @@ docs/research/unconventional_forex/batch_*.md
 docs/research/unconventional_forex/
 # pip console-script binaries that land in scripts/
 scripts/*.exe
+# agy scratch helper scripts dropped at repo root during channel harvest
+/get_batch*.py
+/fetch_batch*.py
+/*_batch_*.py
