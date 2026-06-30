@@ -332,18 +332,18 @@ bool Strategy_OpenLeg(const string symbol,
    return QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, strategy_deviation_points, req, ticket);
   }
 
-bool Strategy_OpenPair(const int relative_momentum_direction)
+bool Strategy_OpenPair(const int seasonal_direction)
   {
-   if(relative_momentum_direction == 0 || Strategy_OpenPairLegCount() > 0)
+   if(seasonal_direction == 0 || Strategy_OpenPairLegCount() > 0)
       return false;
    if(!Strategy_SpreadAllowed(g_leg_xti) || !Strategy_SpreadAllowed(g_leg_xng))
       return false;
 
-   const bool xti_winner = (relative_momentum_direction > 0);
-   const QM_OrderType xti_type = xti_winner ? QM_BUY : QM_SELL;
-   const QM_OrderType xng_type = xti_winner ? QM_SELL : QM_BUY;
-   const string reason = xti_winner ? "QM5_12733_LONG_XTI_SHORT_XNG_XMOM"
-                                    : "QM5_12733_SHORT_XTI_LONG_XNG_XMOM";
+   const bool xti_season = (seasonal_direction > 0);
+   const QM_OrderType xti_type = xti_season ? QM_BUY : QM_SELL;
+   const QM_OrderType xng_type = xti_season ? QM_SELL : QM_BUY;
+   const string reason = xti_season ? "QM5_12813_LONG_XTI_SHORT_XNG_SEASON"
+                                    : "QM5_12813_SHORT_XTI_LONG_XNG_SEASON";
    const double weight_sum = 2.0;
 
    const bool xti_ok = Strategy_OpenLeg(g_leg_xti, xti_type, 1.0, weight_sum, reason);
@@ -362,7 +362,15 @@ bool Strategy_NoTradeFilter()
   {
    if(!Strategy_IsHostChart())
       return true;
-   if(strategy_lookback_d1 < 21 || strategy_min_return_diff_pct < 0.0)
+   if(strategy_trend_period_d1 < 20)
+      return true;
+   if(!Strategy_ValidMonthDay(strategy_xti_start_month, strategy_xti_start_day))
+      return true;
+   if(!Strategy_ValidMonthDay(strategy_xti_end_month, strategy_xti_end_day))
+      return true;
+   if(!Strategy_ValidMonthDay(strategy_xng_start_month, strategy_xng_start_day))
+      return true;
+   if(!Strategy_ValidMonthDay(strategy_xng_end_month, strategy_xng_end_day))
       return true;
    if(strategy_atr_period_d1 <= 0 || strategy_atr_sl_mult <= 0.0)
       return true;
@@ -377,12 +385,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_12733_XTI_XNG_XMOM_HOST";
+   req.reason = "QM5_12813_XTI_XNG_SEASON_SWITCH_HOST";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
-
-   if(!Strategy_IsMonthlyRebalanceBar())
-      return false;
 
    const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 monthly de-dupe behind new-bar gate.
    const int month_key = Strategy_MonthKey(current_bar);
@@ -398,7 +403,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    if(Strategy_OpenPair(direction))
+     {
       g_last_entry_month_key = month_key;
+      g_current_direction = direction;
+     }
    return false;
   }
 
@@ -417,6 +425,14 @@ bool Strategy_ExitSignal()
       return false;
      }
 
+   const int current_pair_direction = Strategy_CurrentPairDirection();
+   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 season lifecycle check.
+   if(current_pair_direction != 0 && Strategy_SeasonDirection(current_bar) != current_pair_direction)
+     {
+      Strategy_ClosePair(QM_EXIT_STRATEGY);
+      return false;
+     }
+
    const datetime oldest_open = Strategy_OldestPairOpenTime();
    const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
    if(oldest_open > 0 && TimeCurrent() - oldest_open >= hold_seconds)
@@ -427,7 +443,6 @@ bool Strategy_ExitSignal()
 
    if(Strategy_IsMonthlyRebalanceBar())
      {
-      const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 monthly package lifecycle check.
       if(current_bar > 0 && oldest_open > 0 && Strategy_MonthKey(oldest_open) != Strategy_MonthKey(current_bar))
          Strategy_ClosePair(QM_EXIT_STRATEGY);
      }
@@ -484,9 +499,9 @@ int OnInit()
 
    string basket_symbols[2] = {g_leg_xti, g_leg_xng};
    QM_SymbolGuardInit(basket_symbols);
-   QM_BasketWarmupHistory(basket_symbols, PERIOD_D1, MathMax(180, strategy_lookback_d1 + strategy_atr_period_d1 + 10));
+   QM_BasketWarmupHistory(basket_symbols, PERIOD_D1, MathMax(160, strategy_trend_period_d1 + strategy_atr_period_d1 + 10));
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12733\",\"ea\":\"xti-xng-xmom\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12813\",\"ea\":\"eia-energy-switch\"}");
    return INIT_SUCCEEDED;
   }
 

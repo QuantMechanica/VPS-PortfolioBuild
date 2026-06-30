@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_12813_XTI_XNG_SEASON_SWITCH_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg XTI/XNG seasonal energy-switch basket derived from official EIA gasoline/oil and natural gas seasonality sources. The EA runs from the XTIUSD.DWX D1 host setfile, trades XTIUSD.DWX and XNGUSD.DWX as a paired package, and Q02 must evaluate the logical basket rather than standalone legs."
+  ]
+}
