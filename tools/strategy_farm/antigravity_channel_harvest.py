@@ -136,6 +136,8 @@ def main(argv=None) -> int:
     ap.add_argument("--batch-timeout-min", type=int, default=30)
     ap.add_argument("--synth-timeout-min", type=int, default=30)
     ap.add_argument("--synth-only", action="store_true")
+    ap.add_argument("--skip-existing", action="store_true", help="skip batches whose batch_NN.md already exists (gap-fill)")
+    ap.add_argument("--no-synth", action="store_true", help="do not run the synthesis pass (preserve a hand-written reconstruction)")
     ap.add_argument("--limit", type=int, default=0, help="only first N videos (validation)")
     args = ap.parse_args(argv)
     OUT.mkdir(parents=True, exist_ok=True)
@@ -150,10 +152,18 @@ def main(argv=None) -> int:
         if args.limit:
             vids = vids[: args.limit]
         batches = [vids[i:i + args.batch] for i in range(0, len(vids), args.batch)]
-        log(f"START army: {len(vids)} videos, {len(batches)} batches, concurrency={args.concurrency}")
+        pending = []
+        for i, b in enumerate(batches):
+            idx = i + 1
+            f = OUT / f"batch_{idx:02d}.md"
+            if args.skip_existing and f.exists() and f.stat().st_size > 200:
+                continue
+            pending.append((idx, b))
+        log(f"START army: {len(vids)} videos, {len(batches)} batches, {len(pending)} to run "
+            f"(skip_existing={args.skip_existing}), concurrency={args.concurrency}")
         results = []
         with ThreadPoolExecutor(max_workers=args.concurrency) as ex:
-            futs = [ex.submit(run_batch, i + 1, b, args.batch_timeout_min) for i, b in enumerate(batches)]
+            futs = [ex.submit(run_batch, idx, b, args.batch_timeout_min) for idx, b in pending]
             for f in futs:
                 results.append(f.result())
         ok = sum(1 for r in results if r["ok"])
@@ -167,6 +177,9 @@ def main(argv=None) -> int:
                 for f in futs:
                     f.result()
 
+    if args.no_synth:
+        log("HARVEST COMPLETE (--no-synth; hand-written reconstruction preserved).")
+        return 0
     s = synthesize(args.synth_timeout_min)
     log(f"HARVEST COMPLETE. reconstruction ok={s['ok']} -> {s['file']}")
     return 0
