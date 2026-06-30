@@ -22,7 +22,7 @@ must run as Administrator (detached Start-Process, not the kill-prone harness).
   python antigravity_channel_harvest.py --synth-only
 """
 from __future__ import annotations
-import argparse, datetime as dt, os, subprocess, sys, time
+import argparse, datetime as dt, json, os, subprocess, sys, time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -35,6 +35,26 @@ CONPTY = REPO / "tools" / "strategy_farm" / "agy_conpty_run.py"
 PROGRESS = OUT / "HARVEST_PROGRESS.log"
 CHANNEL = "UnconventionalForexTrading"
 STRATEGY = "T-WIN / U.F.O. basket forex strategy (forex hedging + mathematical/Excel analysis, London session)"
+AGY_GATE_FLAG = Path(r"D:/QM/strategy_farm/AGY_LOW_QUOTA.flag")
+
+
+def _agy_gated() -> bool:
+    """True if agy_governor.py has raised the low-quota gate and the 5h window
+    has not yet reset. Lets the army stop launching NEW batches when agy is
+    nearly empty (instead of grinding into the wall) and resume after reset."""
+    if not AGY_GATE_FLAG.exists():
+        return False
+    try:
+        reset = json.loads(AGY_GATE_FLAG.read_text(encoding="utf-8")).get("reset")
+        if reset:
+            r = dt.datetime.fromisoformat(str(reset).replace("Z", "+00:00"))
+            if r.tzinfo is None:
+                r = r.replace(tzinfo=dt.timezone.utc)
+            if dt.datetime.now(dt.timezone.utc) >= r:
+                return False  # window reset; governor will clear the flag shortly
+        return True
+    except Exception:
+        return True  # present but unreadable -> be conservative
 
 
 def log(msg: str) -> None:
@@ -88,6 +108,9 @@ def run_agy(instruction: str, log_path: Path, timeout_min: int) -> int:
 
 def run_batch(idx: int, batch: list[tuple[str, str]], timeout_min: int) -> dict:
     outfile = OUT / f"batch_{idx:02d}.md"
+    if _agy_gated():
+        log(f"batch {idx:02d}: SKIPPED — agy quota gated (AGY_LOW_QUOTA.flag); resume after window reset")
+        return {"idx": idx, "rc": 0, "ok": False, "gated": True, "file": str(outfile)}
     vids = "\n".join(f"- https://www.youtube.com/watch?v={v} ({t})" for v, t in batch)
     instr = (
         f"You are reverse-engineering the YouTube channel '{CHANNEL}' — its {STRATEGY}. "
