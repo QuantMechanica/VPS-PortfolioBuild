@@ -247,4 +247,4 @@ Q02+ must validate this deterministic Darwinex-native realization.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-06-30 | APPROVED | this card |
-| Q02 Baseline Screening | 2026-06-30 | QUEUED | TBD |
+| Q02 Baseline Screening | 2026-06-30 | QUEUED | work_item:ed5109a8-95c7-46b4-8334-25588bf82e59 |

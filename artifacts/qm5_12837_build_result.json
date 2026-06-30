@@ -1,0 +1,128 @@
+{
+  "task_id": "manual-build-QM5_12837-20260630",
+  "ea_id": "QM5_12837",
+  "slug": "wti-audnzd-mr",
+  "branch": "agents/board-advisor",
+  "date": "2026-06-30",
+  "source_id": "EIA-RBA-RBNZ-WTI-FX-2026",
+  "source_citations": [
+    "Beckmann, J., Czudaj, R. L., and Arora, V. The Relationship between Oil Prices and Exchange Rates. U.S. Energy Information Administration Working Paper, June 2017. URL https://www.eia.gov/workingpapers/pdf/oil_exchangerates_61317.pdf",
+    "Reserve Bank of Australia. Drivers of the Australian Dollar Exchange Rate. URL https://www.rba.gov.au/education/resources/explainers/drivers-of-the-aud-exchange-rate.html",
+    "Reserve Bank of New Zealand. Commodity prices and implications for monetary policy. URL https://www.rbnz.govt.nz/research-and-publications/research/our-research-and-analysis/additional-research/commodity-prices-and-implications-for-monetary-policy"
+  ],
+  "strategy": "D1 XTIUSD/AUDUSD/NZDUSD commodity-FX log-spread z-score mean-reversion basket",
+  "logical_symbol": "QM5_12837_XTI_AUDNZD_MR_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "symbols": [
+    "XTIUSD.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "risk_fixed": 1000,
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 16,
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12837_wti-audnzd-mr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12837_wti-audnzd-mr\\QM5_12837_wti-audnzd-mr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12837_wti-audnzd-mr\\QM5_12837_wti-audnzd-mr.ex5",
+  "spec_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12837_wti-audnzd-mr\\SPEC.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12837_wti-audnzd-mr\\basket_manifest.json",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12837_wti-audnzd-mr_card.md",
+  "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\EIA-RBA-RBNZ-WTI-FX-2026\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12837_wti-audnzd-mr\\sets\\QM5_12837_wti-audnzd-mr_QM5_12837_XTI_AUDNZD_MR_D1_D1_backtest.set"
+  ],
+  "compile": {
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_12837_wti-audnzd-mr --force --json --fail-on-error",
+    "result": "COMPILED",
+    "reason": "fresh build, 0 warnings",
+    "errors": 0,
+    "warnings": 0,
+    "symbol_scope_verdict": "BASKET_OK",
+    "elapsed_seconds": 11.04,
+    "log": "C:\\QM\\repo\\framework\\build\\compile\\20260630_215410\\QM5_12837_wti-audnzd-mr.compile.log",
+    "result_json": "D:\\QM\\reports\\compile\\QM5_12837_wti-audnzd-mr\\result.json",
+    "ex5": "C:\\QM\\repo\\framework\\EAs\\QM5_12837_wti-audnzd-mr\\QM5_12837_wti-audnzd-mr.ex5",
+    "ex5_size_bytes": 299498
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12837_wti-audnzd-mr",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report": "D:\\QM\\reports\\framework\\21\\build_check_20260630_215426.json",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260630_215426\\QM5_12837_wti-audnzd-mr.compile.log",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings in framework/include/QM; build_check failures=0."
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_12837_wti-audnzd-mr",
+    "result": "PASS"
+  },
+  "q02": {
+    "status": "enqueued",
+    "phase": "Q02",
+    "work_item_id": "ed5109a8-95c7-46b4-8334-25588bf82e59",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "QM5_12837_XTI_AUDNZD_MR_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12837_wti-audnzd-mr\\sets\\QM5_12837_wti-audnzd-mr_QM5_12837_XTI_AUDNZD_MR_D1_D1_backtest.set",
+    "created_at_utc": "2026-06-30T21:57:15+00:00",
+    "payload": {
+      "host_symbol": "XTIUSD.DWX",
+      "host_timeframe": "D1",
+      "enqueued_by": "record_build_result.auto_q02",
+      "enqueued_at_utc": "2026-06-30T21:57:15+00:00",
+      "build_task_id": "manual-build-QM5_12837-20260630",
+      "basket_manifest": "C:\\QM\\repo\\framework\\EAs\\QM5_12837_wti-audnzd-mr\\basket_manifest.json",
+      "basket_symbol_count": 3,
+      "logical_symbol": "QM5_12837_XTI_AUDNZD_MR_D1",
+      "portfolio_scope": "basket",
+      "timeout_min": 120,
+      "basket_symbols": [
+        "XTIUSD.DWX",
+        "AUDUSD.DWX",
+        "NZDUSD.DWX"
+      ],
+      "traded_symbols": [
+        "XTIUSD.DWX",
+        "AUDUSD.DWX",
+        "NZDUSD.DWX"
+      ],
+      "risk_mode": "RISK_FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_weight": 1
+    }
+  },
+  "hashes": {
+    "mq5_sha256": "28BC47583AA6C9F9C8E7FD6A1FA2C32BCA53E902DE9C7FD0196B89AB808F40FB",
+    "ex5_sha256": "AE58D4D8777768C4F6341CFC16BE23BEF8E97B88402D5B43F60D5A8FBAFF06E4",
+    "setfile_sha256": "A2809A4A7FBAD88D29DE05F55FDD05202052C147672911F92CD66501C3ED16CD",
+    "setfile_header_build_hash": "ba146686cabd21e62c5e5f0775108c71388603b5e75dd687cdc539215f50502c"
+  },
+  "non_duplicate_reason": "New XTIUSD/AUDUSD/NZDUSD commodity-FX mean-reversion basket. It differs from WTI/EURUSD z-score sleeves, WTI/AUDUSD breakout, WTI/CAD, WTI/JPY, WTI/CHF, WTI calendar/event sleeves, XTI/XNG, energy/metal ratios, XAU/XAG baskets, and XNG RSI logic.",
+  "smoke_result": "deferred_to_q02",
+  "smoke_skipped_reason": "Paced fleet Q02 was enqueued; no manual MT5 backtest was launched from this session.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "t_live_manifest_touched": false
+  },
+  "notes": "Built and enqueued one non-duplicate structural WTI/AUD/NZD commodity-FX basket sleeve. No live, T_Live, AutoTrading, T_Live manifest, or portfolio gate artifacts touched."
+}
