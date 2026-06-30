@@ -4,7 +4,7 @@
 **Slug:** edgelab-usdjpy-gbpjpy-cointegration
 **Source:** claude_cross_asset_discovery_2026-06-09 plus Chan cointegration pair-trade method
 **Author of this spec:** Codex
-**Last revised:** 2026-06-29
+**Last revised:** 2026-06-30
 
 ---
 
@@ -119,6 +119,12 @@ Q02 queue note: `farmctl record-build` inserted one logical-basket work item
 `QM5_12764_USDJPY_GBPJPY_COINTEGRATION_D1` on 2026-06-29. No per-leg Q02
 fanout was created.
 
+Q02 payload repair note: on 2026-06-30 the existing pending row was updated in
+place, not duplicated, with `priority_track=true`, `timeout_min=120`,
+`tester_deposit=100000`, `risk_fixed=1000`, basket symbol count, and the
+runtime multisymbol hint. The paced fleet still owns execution; no manual MT5
+tester run was launched.
+
 ---
 
 ## Revision History
@@ -127,5 +133,6 @@ fanout was created.
 |---|---|---|---|
 | v1 | 2026-06-29 | Initial next-best FX cointegration basket build | Built from the 12760 two-leg basket pattern |
 | v1-q02 | 2026-06-29 | Build task 6876bf40-5fd9-4445-a7b4-b658b895fb88 recorded | Pending logical-basket work item dea115dd-02b5-4c27-a29f-98013541fc3c |
+| v1-q02a | 2026-06-30 | Q02 payload priority repair | Existing pending work item repaired in place with basket priority, fixed-risk, tester deposit, timeout, and multisymbol hints |
 
 

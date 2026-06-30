@@ -35,3 +35,49 @@
 
 No per-leg Q02 fanout was created. No `T_Live`, AutoTrading, portfolio gate,
 `portfolio_admission`, portfolio KPI, or Q08 contribution artifact was touched.
+
+## 2026-06-30 Q02 Payload Repair
+
+The existing Q02 row remained pending behind the ordinary Q02 pool while newer
+basket rows already carried priority and timeout hints. The row was repaired in
+place; no duplicate Q02 item was inserted.
+
+SQLite backup before mutation:
+
+`D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12764_priority_payload_20260630T013333Z.sqlite`
+
+Runtime multisymbol hint backup before mutation:
+
+`D:/QM/strategy_farm/state/backups/multisymbol_eas_before_qm5_12764_20260630T013333Z.txt`
+
+Read-back after mutation:
+
+| Field | Value |
+|---|---|
+| work_item_id | `dea115dd-02b5-4c27-a29f-98013541fc3c` |
+| status | `pending` |
+| claimed_by | `NULL` |
+| duplicate pending/active rows for same EA/phase/logical symbol | `1` |
+| portfolio_scope | `basket` |
+| priority_track | `true` |
+| timeout_min | `120` |
+| tester_currency / tester_deposit | `USD` / `100000` |
+| risk_fixed | `1000` |
+| basket_symbols | `USDJPY.DWX`, `GBPJPY.DWX` |
+| conversion_history_symbols | `USDJPY.DWX` |
+| runtime multisymbol hint | `QM5_12764` present |
+
+Post-repair build validation:
+
+| Check | Result |
+|---|---|
+| command | `powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12764_edgelab-usdjpy-gbpjpy-cointegration -RepoRoot C:/QM/repo -SkipCompile` |
+| report | `D:/QM/reports/framework/21/build_check_20260630_013422.json` |
+| result | `PASS` |
+| failures | `0` |
+| warnings | `16` existing shared-framework DWX advisories |
+| setfile update | refreshed `build_hash` only; risk remains `RISK_FIXED=1000`, `RISK_PERCENT=0` |
+
+The paced fleet still owns execution. At repair time all five worker slots were
+busy, including active `Q02` rows on `T1` and `T2`, so no manual MT5 launch was
+attempted under the CPU-ceiling constraint.
