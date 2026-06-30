@@ -1,120 +1,145 @@
-# T-WIN / U.F.O. Basket Strategy — Reconstruction & V5 Build Spec
+# T-WIN / U.F.O. — Complete 1:1 Reconstruction & V5 Build Spec (all 13 video batches)
 
-**Date:** 2026-06-30
-**Source:** YouTube channel `UnconventionalForexTrading` (Dr. Marco Giavon / "MT Algo
-Solutions"), 50 videos. Reverse-engineered by the Antigravity agent-army (7/13 batches
-landed before agy hit a rate-wall: batch_01/03/06/07/08/09/11, ~28 videos incl. the core
-mechanics + the mature T-WIN webinars). Synthesis by Claude over the batch analyses.
-**Policy:** built under [[decisions/DL-081]] (bounded-risk grid/basket, 1% account cap).
+**Source:** YouTube channel *UnconventionalForexTrading* — Dr. Marco Giavon ("MT Algo
+Solutions", MT = *Manual Trading*). Reverse-engineered via the agy army (13 batches /
+50 videos) + 4 raw transcripts. Per-video evidence: `batch_01..13.md`, `twin_*_clean.txt`
+in this folder. Synthesis: Claude, 2026-06-30 (agy = video extraction only; the synthesis,
+design decisions, and V5-compliance judgment are Claude's per OWNER 2026-06-30).
 
----
+Card: **QM5_12821** `twin-csm-basket`. Build: task `af6dea49` (DL-081 bounded-grid).
 
-## 1. What it is (the edge)
-
-**"Trade What Is Not" (T-WIN)** — a **currency-strength divergence basket**. It ignores
-single-pair charts and instead ranks the **8 major currencies** (USD, EUR, GBP, JPY, CHF,
-AUD, CAD, NZD) by absolute strength, then trades the **strongest against the weakest** as a
-multi-pair basket. The edge is **relative-strength momentum/divergence** captured at the
-**London open**, smoothed by spreading exposure across many correlated legs.
-
-### The Currency Strength Meter (CSM) — the engine (deterministic, codeable)
-- For each of the 28 major pairs, intraday performance from the **daily open (broker
-  midnight)**: `Perf(pair) = (Price_now − Price_open) / Price_open × 100`.
-- Each currency's strength = sum of its performance across the 7 pairs it appears in,
-  **signed +1 when it is the base, −1 when it is the quote**:
-  `Strength(C) = Σ_base Perf(C/x) − Σ_quote Perf(y/C)`.
-- The 28 changes are **zero-sum** (`Σ ≈ 0`), so the matrix self-normalizes: one currency is
-  the extreme winner, one the extreme loser.
-- Multi-timeframe coherence: the same ranking must hold on H1 + Daily before acting.
-- (Giavon ran this in Excel via DDE/RTD off an MT4 feed EA, refreshing every 2–3 min. For us
-  it is just an indicator computed on closed bars — no Excel, no DDE.)
-
-## 2. Basket construction (two modes seen)
-- **Mode A — single-currency cluster (dominant / cleanest):** trade ONE extreme currency
-  against the rest. E.g. JPY weakest → LONG all JPY crosses (GBPJPY, EURJPY, AUDJPY, NZDJPY,
-  CADJPY, USDJPY) = 6–7 legs; NZD strongest → buy NZD vs all. Individual-leg retracements are
-  offset by the cluster → smoother basket equity.
-- **Mode B — synthetic 4-pair pair-trade:** replicate a target cross (e.g. SELL AUD/JPY) with
-  4 legs whose intermediates (EUR, USD) net to zero → synthetic 2× exposure, spreading
-  correlation risk. (Elegant but more complex; Mode A is the workhorse.)
-- "Double size" qualifier when both legs of a cross sit at the strength/weakness extremes.
-
-## 3. Entry / exit (native)
-- **Session:** London open **06:30–08:30 broker time**, and the London–NY overlap
-  **09:30–10:00**. Intraday only (≈95%); **no overnight, no weekend hold** (keeps swap ≈ 0).
-- **Entry:** extreme strength/weakness gap in the CSM + multi-TF coherence → wait for a
-  pullback/consolidation on M1/M5/M15 → inject the basket as pending orders at S/R.
-- **Exit:** (a) basket-wide **combined profit target** (close all legs as a group); OR
-  (b) **strength-ranking shift** — if the CSM extreme currency changes, flatten immediately
-  regardless of per-leg P&L; (c) time-stop before US session close; (d) Friday pre-close flat.
-- **Skip filter:** don't trade when a major session is on holiday (frozen correlations).
-
-## 4. Native money-management = the V5-forbidden part (now exception-allowed)
-The native system has **no per-trade hard SL**; instead a **global soft SL of 2–3%** and a
-**grid "enforcement" scale-in**: when a leg retraces, add larger positions at S/R
-(martingale lot-multipliers) to drag the basket break-even toward price for a quick exit.
-Under [[decisions/DL-081]] this is **now permitted** — but re-bounded (see §5).
+> **Fidelity convention:** **[SPEC]** = stated/shown by Giavon on screen (mechanizable 1:1).
+> **[DESIGN]** = NOT specified by the source — our V5 design decision (the videos leave it
+> open; building it is unavoidable but it is NOT "from the videos"). Honoring the difference
+> is the whole point of a faithful rebuild.
 
 ---
 
-## 5. V5-compliant rebuild (DL-081 bounded version) — THE BUILD SPEC
+## ⚠️ Evidence caveat (read first — binds the verdict)
 
-Keep the CSM edge + the cluster basket + the grid/martingale scale-in, but replace the
-"soft 2–3% global SL" with a **hard 1%-of-account basket equity-stop** as the single,
-binding risk control.
+Giavon **states outright that a 28-pair system cannot be backtested in MT4** (video 46); every
+result he shows (+60%, +200%, +428%, +66.6%/mo …) is a **forward demo, single-session,
+day-by-day** run on accounts that expire/recreate monthly, with **$0 swap on ~90% of trades**
+and commission deducted only in one small-account example. There is **no costed multi-year
+backtest and no verifiable equity curve.** So the source provides a *mechanism*, not a
+*validated edge*. The V5 pipeline — specifically **Q04 net-of-cost** and **Q08** — is the real
+judge. The #1 viability risk is **FX-basket commission**: a 7-leg cluster pays commission on
+every leg every cycle; the channel's headline returns assume ~zero cost. Build it faithfully,
+but expect the net-of-cost gates to be the decider. (Hard rule: evidence over claims.)
 
-**Signal engine (deterministic, closed-bar):**
-1. Compute `Strength(C)` for all 8 majors from the daily-open % change (above), each new bar.
-2. Require an extreme gap: `max(Strength) − min(Strength) ≥ G` (tunable) AND the same
-   strongest/weakest currency on H1 **and** D1 (coherence).
-3. Identify the target currency (weakest → short its crosses; strongest → long its crosses).
+---
 
-**Basket open (Mode A):**
-4. Only inside the London / overlap session windows; skip on configured holidays + news
-   blackout ([[decisions/DL-080]]).
-5. Open the cluster legs (the 5–7 crosses of the target currency) at the aligned direction.
-6. **Grid + martingale scale-in ALLOWED** (DL-081): on retrace, add "enforcement" legs at
-   stepped S/R levels with a lot-multiplier. The schedule is free.
+## 1. Currency-Strength Model (CSM) — [SPEC, the hard core]
 
-**Risk control (the binding invariant):**
-7. **Basket equity-stop:** monitor the **aggregate floating P&L of the magic-group** every
-   tick; when it hits **−1% of ACCOUNT_EQUITY**, **flatten ALL legs** and stop adding.
-   → max loss per cycle = 1% (ex-gap). This is the new EA primitive.
-8. **Basket take-profit:** flatten all at a combined `+T%` (T uncapped vs the 1% downside →
-   the asymmetry). Plus the **strength-shift exit** (recompute CSM; flip → flatten).
-9. Intraday time-stop + Friday flat. No position survives the news blackout window.
+- **Universe:** 8 majors **USD EUR GBP AUD JPY CAD CHF NZD** → the **28 crosses** among them.
+  Each currency appears in exactly **7 crosses**.
+- **Per-pair measure:** percentage change from the **daily open at broker midnight**:
+  `Perf(pair) = (Price_now - Price_dailyOpen) / Price_dailyOpen * 100`.
+- **Currency strength (base-add / quote-subtract):**
+  `Strength(C) = sum Perf(crosses where C is BASE) - sum Perf(crosses where C is QUOTE)`.
+  Worked example (verbatim structure): `Strength_GBP = Perf_GBPUSD + Perf_GBPCAD + Perf_GBPAUD
+  + Perf_GBPNZD + Perf_GBPCHF + Perf_GBPJPY - Perf_EURGBP`. The system is **zero-sum**
+  (sum of strengths ~ 0).
+- **Timeframes:** strength is read on **D1, W1, MN** for the bias (the decisive TFs); lower TFs
+  only time entry. (The EA also showed a 9-TF panel M1..MN, but the *decision* is D/W/M.)
+- **Exhaustion / ranking:** normalized to +/-100; a currency breaking **~95** (over/undervalued)
+  is "exhausted". **Probability ratio** = how many of a currency's 7 crosses agree: **6/7 ~ 86%,
+  7/7 = 100%** -- prefer >= 6/7.
 
-**Framework implications (important):**
-- This is a **basket EA** → it breaks the single-position-per-magic convention. Use the
-  reference single-host basket pattern (QM5_10717) + a magic-group allocation for the legs.
-- New primitive **`QM_BasketEquityStop`** (group-scoped floating-P&L flatten-all) — adjacent
-  to `QM_KillSwitch` (which already reads ACCOUNT_EQUITY) but scoped to the basket's magics.
-- `RISK_FIXED` for backtest / `RISK_PERCENT` for live; the 1% cap sits on top of leg sizing.
+**[DESIGN] CSM internal scaling:** the EA panel showed raw integer scores (GBP -1600, USD +700)
+with no stated conversion to the +/-100 view. We compute strength directly from the %-change sum
+and apply our own normalization; the raw-integer scale is not reproduced (it is an undisclosed
+display multiplier).
 
-## 6. ⚠️ The #1 viability risk — FX-basket commission
-T-WIN is **FX-only** (the 8 majors) and opens **6–14 legs per cycle, intraday, possibly
-several cycles/day**. Forex commission is **~$45 round-trip per standard lot** (HIGH;
-[[reference_commission_by_asset_class_2026-06-26]]). A single cluster cycle = 6–14 legs ×
-commission + spread on every leg. **This is a brutal cost load** — the gross edge per cycle
-must clear 6–14× the per-trade cost. Q04 (net-of-cost walk-forward) is exactly where this
-will be decided, and it is the most likely killer (more than the grid). Mitigations to test:
-fewer/larger legs, higher gap threshold G (fewer, higher-conviction cycles), and only the
-highest-strength clusters.
+## 2. Basket construction — [SPEC]
 
-## 7. Edge-plausibility verdict
-- **Plausible core:** currency-strength relative-momentum at the London open is a real,
-  documented intraday phenomenon; the cluster smooths variance. The CSM is fully mechanical.
-- **Real risks (ranked):** (1) FX-basket commission, (2) grid/martingale whipsaw frequency
-  hitting the 1% stop, (3) gap-through-stop tail (mitigated by intraday/no-weekend/news).
-- **Bottom line:** worth building as a DL-081 bounded basket EA and running the full pipeline.
-  The 1% cap makes it SAFE; Q02→Q04(net-of-cost)→Q08 decide if it is PROFITABLE. Do not
-  assume the YouTube "+428%" demo numbers (1.0 flat lot, no commission, no slippage).
+Never trade one pair alone; build a **synthetic basket** that nets the intermediate currencies
+(usually EUR & USD -> net zero) and leaves clean **strongest-vs-weakest** exposure.
 
-## 8. Coverage gap
-6 batches (videos 5–8, 13–20, 37–40, 45–50 — incl. the final monthly-report videos) were not
-analyzed (agy rate-wall). The core mechanics are covered; re-run `antigravity_channel_harvest.py
---synth-only` style on the missing IDs when agy quota resets to confirm late refinements.
+- **Mode B -- 4-pair net-zero "square"** (e.g. Sell AUD/JPY synthetically): `EUR/AUD Buy,
+  EUR/JPY Sell, AUD/USD Sell, USD/JPY Sell` -> EUR 0, USD 0, AUD -2, JPY +2 = 2x synthetic Sell
+  AUD/JPY.
+- **Mode C -- 7-to-1 single-currency cluster (the mature "T-WIN" form, our PRIMARY):** take the
+  single most-extreme currency and open **all 7 of its crosses** in the strength-implied
+  direction. GBP-strong example: `GBP/USD, GBP/CAD, GBP/AUD, GBP/NZD, GBP/CHF, GBP/JPY all Buy
+  + EUR/GBP Sell`. GBP-weak = the 6 GBP crosses Sell + EUR/GBP Buy.
+- **Leg direction rule [SPEC]:** the strong/weak currency's base-or-quote role in each cross
+  sets the side (if a currency is strong -> buy crosses where it's base, sell crosses where it's
+  quote).
+- **[DESIGN] leg count:** the source ranges 2->4->6 (his words) and 3/5/7/8 in practice. We use
+  **Mode C = 7 legs** of the single most-extreme currency as the deterministic default; the leg
+  set is fully determined by which currency is selected.
 
-## Next step
-Draft a Strategy Card (basket EA, DL-081 bounded, CSM cluster) → build via the basket-EA
-pattern → Q02. Source per modified R1 = the channel itself (no author pedigree needed).
+## 3. Entry -- [SPEC] gate, [DESIGN] thresholds
+
+1. **Extreme divergence:** the selected currency's |strength| past the exhaustion gate
+   (~ **+/-350-400 raw / >=95 normalized**). **[DESIGN]** we use normalized >= a tunable threshold.
+2. **MTF coherence:** strength must agree on **Monthly + Weekly + Daily** simultaneously.
+3. **Probability >= 6/7** of the currency's crosses agree.
+4. **Pullback only -- never chase.** If the big move already happened, skip; enter on a
+   retracement / ranging phase (at the 30-min fair-price oversold/overbought boundary).
+5. **Session window [SPEC/DESIGN]:** **London open ~06:30-08:30 broker time** (primary);
+   no entries before 03:00 or in the midnight-01:00 window.
+6. **No-trade filters [SPEC]:** strength clustered near zero; MTF contradiction; bank holidays
+   (frozen correlations); major news (close 30 min before, re-enter >= 1 h after).
+
+## 4. Exit -- [SPEC]
+
+- **CSM-flip (the mechanical natural TP):** the instant the selected currency leaves its extreme
+  / the ranking flips, **flatten the whole basket** -- even at break-even.
+- **Basket take-profit:** combined floating P&L target. **[DESIGN]** unit is inconsistent in the
+  source (pips/EUR/%); we use the Money-Manager EA's stated **+15% equity** as the systematic TP,
+  tunable.
+- **Time-stops [SPEC]:** **intraday, no overnight** (mature era: 95% intraday, ~0 swap); hard
+  **Friday pre-close liquidation**; close before midnight.
+
+## 5. Risk layer -- DL-081 (REPLACES the broker-blind no-SL stance)
+
+The source's MM is the contentious part: **no broker-side SL** ("don't give the broker
+information"), legs "breathe", plus **enforcement (averaging into losers at S/R)** and
+**doubling (pyramiding into winners)** -- but **no grid spacing or martingale factor is ever
+stated** (analyst-invented 20-30 pip / 1.3-2.0x numbers are NOT from the videos). The source's
+*own* unambiguous risk control is a **global equity stop (1-3%)** and a **Money-Manager EA =
+-2% SL / +15% TP on equity**.
+
+**V5 binding control (DL-081, OWNER 2026-06-30):** a hard **1%-of-account basket equity stop** --
+when the basket's aggregate floating P&L hits **-1%**, **flatten ALL legs**. This bounds the idea
+regardless of any scale-in schedule (aggressive martingale just hits -1% sooner). It is
+*consistent with* the source's own global-equity-stop and is the ONE authorized risk layer.
+
+- **[DESIGN] grid/enforcement + martingale:** permitted *inside* the 1% box, but since the source
+  underspecifies it, the FIRST build runs **grid OFF** (clean CSM-basket + 1% stop) to get an
+  honest net-of-cost read on the core edge *before* adding grid complexity. `ENABLE_GRID`,
+  `GRID_STEP_PIPS`, `LOT_MULT` are exposed params (default off) for a later sweep.
+
+## 6. Sizing & sessions -- [SPEC] lookup, [DESIGN] formula
+
+- Account-proportional lot lookup actually shown: **10,000 -> 0.10 lot; 1,000 -> 0.03; 500 -> 0.01.**
+- **[DESIGN]** no sizing *formula* is given; in backtest we use **RISK_FIXED** (canonical $1000),
+  split equally across the legs; live = RISK_PERCENT with the 1% basket cap on top.
+- ECN broker; all 28 majors must exist with proper spreads. (Our .DWX symbol set must cover the
+  28 -- gap check is a build prerequisite.)
+
+## 7. Build plan for Codex (the EA) -- QM5_12821
+
+- **Multi-symbol single-host basket EA** (the QM5_10717 pattern): one EA instance computes the
+  CSM over all 28 `.DWX` majors, selects the extreme currency, and sends the 7-leg cluster.
+- **New primitive `QM_BasketEquityStop`** (or a self-contained group-stop like QM5_12823's): a
+  magic-group floating-P&L monitor that flattens ALL legs at -1% of equity. Build it reusable
+  (DL-081; the #20 dormant-basket sweep depends on it) but a self-contained group-stop is
+  acceptable for v1.
+- **Magic-group:** all legs share an ea_id-derived magic group so the stop + exits act on the set.
+- **Params to expose:** `EXHAUSTION_NORM` (~95), `MTF_SET` (D1,W1,MN), `PROB_MIN` (6/7),
+  `SESSION_START/END` (London), `BASKET_TP_PCT` (15%), `BASKET_SL_PCT` (1% -- hard cap),
+  `MODE` (C 7-to-1 default / B square), `ENABLE_GRID` (off), `GRID_STEP_PIPS`, `LOT_MULT`,
+  `NO_OVERNIGHT` (true), `FRIDAY_CLOSE_HHMM`.
+- **V5 compliance:** RISK_FIXED backtest / RISK_PERCENT live; mandatory news-blackout (calendar);
+  **no ML**; deterministic; no invented commission/swap (the pipeline injects real costs).
+
+## 8. What the pipeline will decide
+
+Q02 (gross) will likely PASS (the channel's whole point is gross profit). The **real test is
+Q04/Q08 net-of-cost** -- 7 FX legs * commission per cycle is the headwind the source never paid.
+If it survives net-of-cost, it's a genuine find; if not, we have definitively answered whether
+the T-WIN basket has an edge once costs are real. Either way the CSM engine + basket
+infrastructure are reusable assets (and unblock the #20 dormant-basket sweep).
