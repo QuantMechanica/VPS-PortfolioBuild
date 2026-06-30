@@ -55,6 +55,7 @@ The EA runs on M5 and maintains stop-pending breakout orders around the highest 
 - `NDX.DWX` - Canonical DWX equivalent for Nasdaq/US100 exposure.
 - `GDAXI.DWX` - Canonical DWX equivalent for GER40/DAX exposure in the available matrix.
 - `SP500.DWX` - Canonical DWX equivalent for US500/S&P 500; valid for backtest registration.
+- `WS30.DWX` - Canonical DWX equivalent for Dow/US30 exposure named in the source specification.
 
 **Explicitly NOT for:**
 - `BTCUSD.DWX` - Card/source mention BTC, but it is not present in `dwx_symbol_matrix.csv`.
