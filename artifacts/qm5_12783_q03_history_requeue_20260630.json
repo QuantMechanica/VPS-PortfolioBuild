@@ -1,0 +1,62 @@
+{
+  "action": "q03_history_requeue",
+  "agent": "codex:agents/board-advisor",
+  "branch": "agents/board-advisor",
+  "created_at_utc": "2026-06-30T10:07:06Z",
+  "mission_path": "priority_2_diverse_fx_infra_repair",
+  "ea_id": "QM5_12783",
+  "strategy": "AUDUSD/AUDJPY market-neutral FX cointegration basket",
+  "logical_symbol": "QM5_12783_AUDUSD_AUDJPY_COINTEGRATION_D1",
+  "host_symbol": "AUDUSD.DWX",
+  "timeframe": "D1",
+  "selection_basis": {
+    "q02_work_item": "1a2e412b-1229-4b97-a627-9491e264af63",
+    "q02_verdict": "PASS",
+    "q02_evidence": "D:/QM/reports/work_items/1a2e412b-1229-4b97-a627-9491e264af63/QM5_12783/20260630_034644/summary.json",
+    "q02_year": 2024,
+    "q02_total_trades": 184,
+    "prior_q03_work_item": "ab3c2b44-f749-407b-8a56-b38c0d368fe7",
+    "prior_q03_verdict": "INFRA_FAIL",
+    "prior_q03_reason": "run_smoke_fail:NO_HISTORY;INCOMPLETE_RUNS",
+    "prior_q03_evidence": "D:/QM/reports/work_items/ab3c2b44-f749-407b-8a56-b38c0d368fe7/QM5_12783/20260630_053207/summary.json",
+    "diagnosis": "Transient MT5 history/report artifact: all four Q03 reports had EMPTY_EXPERT, EMPTY_SYMBOL, M0_1970_PERIOD, BARS_ZERO, and HISTORY_CONTEXT_INVALID, while Q02 on the same host symbol/year passed shortly before."
+  },
+  "queue_action": {
+    "action": "requeue_existing_q03_work_item_in_place",
+    "parent_task_id": "c7afca44-6c60-4d56-acd6-8e92117e3417",
+    "work_item_id": "ab3c2b44-f749-407b-8a56-b38c0d368fe7",
+    "phase": "Q03",
+    "status_before": "done",
+    "verdict_before": "INFRA_FAIL",
+    "status_after": "pending",
+    "verdict_after": null,
+    "evidence_after": null,
+    "from_date": "2024.01.01",
+    "to_date": "2024.12.31",
+    "parent_status_before": "done",
+    "parent_status_after": "pending",
+    "duplicate_q03_inserted": false,
+    "pending_active_duplicate_count_after": 1,
+    "db_backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12783_q03_requeue_20260630T100706Z.sqlite"
+  },
+  "validation": [
+    {
+      "command": "python tools/strategy_farm/farmctl.py work-items --ea QM5_12783",
+      "result": "PASS",
+      "summary": "Q02 done PASS, Q03 pending, Q04 done INFRA_FAIL."
+    },
+    {
+      "command": "direct SQLite verification",
+      "result": "PASS",
+      "summary": "Q03 child row pending with verdict/evidence cleared; parent backtest_q03 task reopened to pending."
+    }
+  ],
+  "safety": {
+    "manual_backtest_launched": false,
+    "t_live_manifest_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "risk_mode": "RISK_FIXED backtest setfile remains in use"
+  },
+  "cpu_ceiling_note": "No manual MT5 run was launched. The Q03 retry is left for paced factory workers."
+}
