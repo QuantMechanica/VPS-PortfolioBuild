@@ -176,4 +176,4 @@ allocation must come from the portfolio process. The EA does not touch
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-06-30 | APPROVED | this card |
-| Q02 Baseline Screening | 2026-06-30 | QUEUED | pending build record |
+| Q02 Baseline Screening | 2026-06-30 | QUEUED | work_item `c5620a63-779d-4e6a-b106-4f28ce91664c` |
