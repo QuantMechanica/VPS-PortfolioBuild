@@ -1,0 +1,61 @@
+{
+  "generated_at_utc": "2026-06-30T02:11:16+00:00",
+  "agent": "codex-board-advisor",
+  "branch": "agents/board-advisor",
+  "mission_priority": "priority_2_diverse_infra_requeue",
+  "triage": {
+    "unbuilt_high_diversity_approved_card_found": false,
+    "reason": "Approved forex/market-neutral diversity cards inspected were already built, already queued, or outside their current SPEC universe.",
+    "selected_path": "Fix built-but-stuck diverse EA at Q02 by replacing stale H1 enqueue with SPEC/current D1 setfile enqueue."
+  },
+  "selected_ea": {
+    "ea_id": "QM5_1092",
+    "slug": "qp-fx-value-ppp",
+    "symbol": "GBPUSD.DWX",
+    "phase": "Q02",
+    "source_profile": "Quantpedia PPP FX value; approved card R1-R4 PASS",
+    "strategy_class": "structural FX value / PPP mean reversion",
+    "frequency": "low frequency; approximately 0-4 trades per year per symbol",
+    "spec_path": "framework/EAs/QM5_1092_qp-fx-value-ppp/SPEC.md",
+    "setfile_path": "framework/EAs/QM5_1092_qp-fx-value-ppp/sets/QM5_1092_qp-fx-value-ppp_GBPUSD.DWX_D1_backtest.set",
+    "risk_model": "RISK_FIXED backtest setfile"
+  },
+  "diagnosis": {
+    "infra_block": "Stale Q02 work item used an H1 setfile path for a D1 strategy after the EA/SPEC/current setfiles had been corrected to D1.",
+    "stale_work_item_id": "d3ddd754-ec6c-4297-854e-1c6bdb229233",
+    "stale_status": "failed",
+    "stale_verdict": "INFRA_FAIL",
+    "stale_setfile_path": "framework/EAs/QM5_1092_qp-fx-value-ppp/sets/QM5_1092_qp-fx-value-ppp_GBPUSD.DWX_H1_backtest.set",
+    "stale_failure": "summary_missing_retries_exhausted",
+    "active_collision_check": "No pending or active Q02 row existed for QM5_1092 GBPUSD.DWX before insertion.",
+    "d1_history_check": "No prior Q02 row existed for QM5_1092 GBPUSD.DWX using the D1 setfile."
+  },
+  "db_mutation": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_1092_gbpusd_d1_q02_20260630T021116Z.sqlite",
+    "new_work_item_id": "4f5ad983-7fc6-4805-866a-7a95a42e2de2",
+    "new_status": "pending",
+    "new_kind": "backtest",
+    "new_phase": "Q02",
+    "new_setfile_path": "C:/QM/repo/framework/EAs/QM5_1092_qp-fx-value-ppp/sets/QM5_1092_qp-fx-value-ppp_GBPUSD.DWX_D1_backtest.set",
+    "payload": {
+      "host_symbol": "GBPUSD.DWX",
+      "host_timeframe": "D1",
+      "enqueued_by": "codex-board-advisor.d1_setfile_recovery",
+      "enqueued_at_utc": "2026-06-30T02:11:16+00:00",
+      "repair_action": "stale_h1_work_item_to_spec_d1_setfile",
+      "repair_source": "work_item:d3ddd754-ec6c-4297-854e-1c6bdb229233",
+      "expected_trades_per_year_per_symbol": 2,
+      "p2_run_stage": "full",
+      "from_date": "2017.01.01",
+      "to_date": "2024.12.31"
+    }
+  },
+  "safety": {
+    "backtest_started": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "cpu_ceiling_hit": false
+  }
+}
