@@ -354,25 +354,29 @@ elseif ($factoryEnabled -and $realStall) {
         # Interactive, RunLevel Highest): with qm-admin logged on, Start-ScheduledTask
         # runs Factory_ON.ps1 -NoPause in that interactive session = the WORKING path
         # (enable tasks + kill stale daemons/terminals + spawn workers in-session +
-        # farmctl repair + trigger pump). T_Live guard: Factory_ON's kill-all-terminal64
-        # would hit a live terminal, so never auto-recover while T_Live runs (Hard Rule).
+        # farmctl repair + trigger pump).
+        # 2026-06-30 (T_Live guard CORRECTED, OWNER-verified): the prior guard REFUSED to
+        # auto-recover whenever a T_Live terminal was running, on the premise that Factory_ON
+        # "kills ALL terminal64 incl T_Live". That premise is FALSE: Factory_ON.ps1:113 filters
+        # `notmatch 'T_Live'` (the T_Live-isolation Hard-Rule line itself) BEFORE killing any
+        # terminal64 -- it provably spares the live terminal. The watchdog detected T_Live with
+        # the IDENTICAL `CommandLine -match 'T_Live'` test Factory_ON uses to spare it, so the
+        # guard was 100% redundant: whenever it fired, Factory_ON would spare that same terminal
+        # anyway. The only effect of the bad guard was that every worker-death DURING LIVE
+        # TRADING sat un-recovered until a MANUAL Factory_ON. Fix: always delegate to the
+        # T_Live-sparing FactoryON_AtLogon; keep T_Live detection for the audit record only.
         $tLiveRunning = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
                           Where-Object { $_.CommandLine -match 'T_Live' }).Count -gt 0
-        if ($tLiveRunning) {
-            $action = 'realstall_tlive_guard'
-            $detail = "REAL-STALL confirmed but a T_Live terminal is running - refusing auto-recovery (Hard Rule); OWNER must recover manually"
-        } else {
-            $action = 'healed_full_reset'
-            $detail = "REAL-STALL confirmed 2x (since $($rst.pending_since)) ($realStallInfo) -> Start FactoryON_AtLogon (interactive recovery)"
-            @{ pending_since = $null; last_reset = $nowDt.ToString('yyyy-MM-ddTHH:mm:ssZ') } | ConvertTo-Json -Compress | Set-Content -Path $rsState -Encoding UTF8
-            try {
-                Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop
-                Start-Sleep -Seconds 25
-                $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
-                           Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
-                $detail += " -> after=$after workers (via FactoryON_AtLogon)"
-            } catch { $action = 'heal_failed'; $detail += " -> ERROR: $_" }
-        }
+        $action = 'healed_full_reset'
+        $detail = "REAL-STALL confirmed 2x (since $($rst.pending_since)) ($realStallInfo) -> Start FactoryON_AtLogon (interactive, T_Live-sparing recovery; tLiveRunning=$tLiveRunning)"
+        @{ pending_since = $null; last_reset = $nowDt.ToString('yyyy-MM-ddTHH:mm:ssZ') } | ConvertTo-Json -Compress | Set-Content -Path $rsState -Encoding UTF8
+        try {
+            Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop
+            Start-Sleep -Seconds 25
+            $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
+                       Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
+            $detail += " -> after=$after workers (via FactoryON_AtLogon)"
+        } catch { $action = 'heal_failed'; $detail += " -> ERROR: $_" }
     }
 }
 elseif ($nWorkers -ge $MinWorkers -and -not $dispatchStalled) {
@@ -430,29 +434,31 @@ else {
     # working recovery as realStall: delegate to QM_StrategyFarm_FactoryON_AtLogon (RunAs
     # qm-admin, Interactive, RunLevel Highest) = a direct in-session Factory_ON.ps1 (kill stale
     # daemons/terminals + spawn workers in-session + farmctl repair + trigger pump) that recovers
-    # instantly. T_Live guard: Factory_ON kills ALL terminal64 incl a live T_Live terminal, so
-    # never auto-recover while T_Live runs (Hard Rule -- OWNER recovers manually).
+    # instantly.
+    # 2026-06-30 (T_Live guard CORRECTED, OWNER-verified): the prior guard REFUSED auto-recovery
+    # whenever a T_Live terminal was running, on the FALSE premise that Factory_ON "kills ALL
+    # terminal64 incl T_Live". Factory_ON.ps1:113 filters `notmatch 'T_Live'` (the T_Live-isolation
+    # Hard-Rule line) BEFORE any kill -- it provably spares the live terminal -- and the watchdog
+    # detected T_Live with the IDENTICAL `-match 'T_Live'` test, so the guard was 100% redundant
+    # and merely blocked recovery: both 2026-06-30 worker-deaths sat in 'heal_tlive_guard' until a
+    # MANUAL Factory_ON. Fix: always delegate to the T_Live-sparing FactoryON_AtLogon; keep T_Live
+    # detection for the audit record only.
     $tLiveRunning = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
                       Where-Object { $_.CommandLine -match 'T_Live' }).Count -gt 0
-    if ($tLiveRunning) {
-        $action = 'heal_tlive_guard'
-        $detail += " -> a T_Live terminal is running; refusing auto-recovery (Hard Rule), OWNER must recover manually"
-    } else {
-        try {
-            if ($dispatchStalled) {
-                $dumpDetail = Invoke-StallDumpCapture -RequestPath $stallDumpRequest -DumpDir $stallDumpDir
-                $detail += " | $dumpDetail"
-            }
-            Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop
-            Start-Sleep -Seconds 25
-            $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
-                       Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
-            $action = 'healed_via_factoryon'
-            $detail += " -> Start FactoryON_AtLogon (interactive recovery) -> after=$after/$ExpectWorkers"
-        } catch {
-            $action = 'heal_failed'
-            $detail += " -> ERROR: $_"
+    try {
+        if ($dispatchStalled) {
+            $dumpDetail = Invoke-StallDumpCapture -RequestPath $stallDumpRequest -DumpDir $stallDumpDir
+            $detail += " | $dumpDetail"
         }
+        Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop
+        Start-Sleep -Seconds 25
+        $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
+                   Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
+        $action = 'healed_via_factoryon'
+        $detail += " -> Start FactoryON_AtLogon (interactive, T_Live-sparing; tLiveRunning=$tLiveRunning) -> after=$after/$ExpectWorkers"
+    } catch {
+        $action = 'heal_failed'
+        $detail += " -> ERROR: $_"
     }
 }
 
