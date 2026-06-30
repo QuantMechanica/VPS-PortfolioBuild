@@ -1,0 +1,66 @@
+{
+  "ea_id": "QM5_12772",
+  "slug": "edgelab-gbpjpy-audjpy-cointegration",
+  "logical_symbol": "QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1",
+  "basket_symbols": [
+    "GBPJPY.DWX",
+    "AUDJPY.DWX"
+  ],
+  "mission_scope": "Advance an existing FX cointegration basket because no non-duplicate approved unbuilt EdgeLab FX cointegration pair remains in the local book.",
+  "precheck": {
+    "qm5_12532_q02": "PASS",
+    "qm5_12532_q04": "PASS",
+    "qm5_12532_latest_q05": {
+      "verdict": "INFRA_FAIL",
+      "reason": "invalid_summary:INCOMPLETE_RUNS,TIMEOUT",
+      "summary_path": "D:/QM/reports/work_items/82cab3d1-bf05-4aa4-8278-86c8064b16e7/QM5_12532/20260630_041853/summary.json"
+    },
+    "qm5_12533_q02": "PASS",
+    "qm5_12533_latest_q04": "FAIL",
+    "qm5_12772_q02": "PASS",
+    "qm5_12772_q04": "PASS_SOFT",
+    "unbuilt_allocated_edgelab_cointegration_pairs_found": 0
+  },
+  "queue_action": {
+    "action": "priority_mark_existing_pending_row",
+    "work_item_id": "dd43c7e2-7351-41e1-a4a4-f667d0789249",
+    "phase": "Q05",
+    "status_after": "pending",
+    "priority_track_after": true,
+    "updated_at_utc": "2026-06-30T12:17:09.194593Z",
+    "db_backup_before_priority": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12772_q05_priority_20260630T121709Z.sqlite",
+    "duplicate_rows_inserted": 0
+  },
+  "payload_after": {
+    "portfolio_scope": "basket",
+    "host_symbol": "GBPJPY.DWX",
+    "host_timeframe": "D1",
+    "logical_symbol": "QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1",
+    "priority_track": true,
+    "priority_reason": "OWNER 2026-06-30 forex portfolio mission: QM5_12772 logical Q04 PASS_SOFT; advance existing FX cointegration basket to Q05 without duplicate enqueue while factory is CPU-saturated.",
+    "priority_set_by": "Codex agents/board-advisor"
+  },
+  "verification": {
+    "farmctl_work_items_summary": {
+      "Q02_done_PASS": 1,
+      "Q04_done_PASS_SOFT": 1,
+      "Q05_pending": 1
+    },
+    "duplicate_guard": "exactly one pending/active Q05 row for the logical basket",
+    "factory_active_count": 5,
+    "factory_active_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5"
+    ]
+  },
+  "safety": {
+    "manual_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
