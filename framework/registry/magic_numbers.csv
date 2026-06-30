@@ -14049,3 +14049,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1492,connors-vix-spike-reversal-h4,2,GDAXI.DWX,14920002,2026-06-30,Development,active
 1492,connors-vix-spike-reversal-h4,3,UK100.DWX,14920003,2026-06-30,Development,active
 1492,connors-vix-spike-reversal-h4,4,SP500.DWX,14920004,2026-06-30,Development,active
+12828,wti-cushing-brk,0,XTIUSD.DWX,128280000,2026-06-30,Development,active
