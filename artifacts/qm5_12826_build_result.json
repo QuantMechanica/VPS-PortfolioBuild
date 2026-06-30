@@ -1,0 +1,113 @@
+{
+  "task_id": "manual-build-QM5_12826-20260630",
+  "ea_id": "QM5_12826",
+  "slug": "cme-gassilver-ratio",
+  "strategy": "XNGUSD/XAGUSD D1 market-neutral gas-silver relative-value basket",
+  "source_id": "CME-GAS-SILVER-RELVAL-2026",
+  "source_citation": "CME Group Henry Hub Natural Gas futures overview; CME Group Silver futures overview.",
+  "symbols": [
+    "XNGUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_12826_XNG_XAG_RATIO_D1",
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12826_cme-gassilver-ratio",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12826_cme-gassilver-ratio\\QM5_12826_cme-gassilver-ratio.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12826_cme-gassilver-ratio\\QM5_12826_cme-gassilver-ratio.ex5",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\cme-gassilver-ratio_card.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12826_cme-gassilver-ratio\\basket_manifest.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12826_cme-gassilver-ratio\\sets\\QM5_12826_cme-gassilver-ratio_QM5_12826_XNG_XAG_RATIO_D1_D1_backtest.set"
+  ],
+  "mq5_sha256": "00E6FBAFC237B308C483D5C91A9A7561C1BECFBF9DFBDE6B218E2AB70311A00C",
+  "ex5_sha256": "71C9D474DB03E29169959E3AA372E472709AE5423C0764D5A15F54EB2539E0B1",
+  "setfile_header_build_hash": "031fc7491a2f8072cfcc87e2a9eeccdf9b504e1abfb0ea945c8eb7100ab4384d",
+  "setfile_current_sha256": "3AB152F71F1A77471A970648F54A329B4EE33B251B650CA07D029DCA94996A9D",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XNGUSD.DWX",
+        "magic": 128260000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "XAGUSD.DWX",
+        "magic": 128260001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "deployment_verified": true,
+  "compile": {
+    "command": "powershell -NoProfile -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12826_cme-gassilver-ratio/QM5_12826_cme-gassilver-ratio.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260630_115018\\QM5_12826_cme-gassilver-ratio.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260630_115018\\summary.csv"
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -File framework/scripts/build_check.ps1 -EALabel QM5_12826_cme-gassilver-ratio -ReportRoot D:/QM/reports/framework/12826",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\12826\\build_check_20260630_115032.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "deployment": {
+    "scope": "factory T1-T10 only",
+    "evidence_path": "C:\\QM\\repo\\artifacts\\qm5_12826_deploy_t1_t10.json",
+    "all_hashes_match": true,
+    "sha256": "71C9D474DB03E29169959E3AA372E472709AE5423C0764D5A15F54EB2539E0B1"
+  },
+  "build_deployment_verify": {
+    "command": "python framework/scripts/verify_build_deployment.py --json --ea-id 12826 --ea-dir-glob QM5_12826_cme-gassilver-ratio",
+    "verdict": "PASS",
+    "setfile_count": 1,
+    "ex5_size": 293748
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "0804c594-c315-4d00-8161-dabee941102b",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "QM5_12826_XNG_XAG_RATIO_D1",
+    "host_symbol": "XNGUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12826_cme-gassilver-ratio\\sets\\QM5_12826_cme-gassilver-ratio_QM5_12826_XNG_XAG_RATIO_D1_D1_backtest.set",
+    "status_after_final_check": "pending",
+    "claimed_by": null,
+    "created_at_utc": "2026-06-30T11:56:40+00:00",
+    "updated_at_utc": "2026-06-30T11:56:40+00:00",
+    "payload": {
+      "portfolio_scope": "basket",
+      "basket_symbol_count": 2,
+      "from_date": "2015.01.01",
+      "to_date": "2024.12.31",
+      "risk_mode": "RISK_FIXED"
+    }
+  },
+  "smoke_result": "deferred_to_q02",
+  "smoke_skipped_reason": "Paced fleet Q02 was enqueued; no manual MT5 backtest was launched from this session.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "t_live_manifest_touched": false
+  },
+  "notes": "Built and enqueued one non-duplicate exploratory XNGUSD/XAGUSD commodity relative-value basket. No live, T_Live, AutoTrading, T_Live manifest, or portfolio gate artifacts touched."
+}

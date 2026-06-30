@@ -171,11 +171,11 @@ allocation must come from the portfolio process. The EA does not touch
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
-| v1 | 2026-06-30 | initial structural XNG/XAG relative-value basket | Q02 | PENDING |
+| v1 | 2026-06-30 | initial structural XNG/XAG relative-value basket | Q02 | PENDING work item `0804c594-c315-4d00-8161-dabee941102b` |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-06-30 | APPROVED | this card |
-| Q02 Baseline Screening | 2026-06-30 | QUEUED | TBD after queue insertion |
+| Q02 Baseline Screening | 2026-06-30 | QUEUED | `D:/QM/strategy_farm/state/farm_state.sqlite` work_item `0804c594-c315-4d00-8161-dabee941102b` |
