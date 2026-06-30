@@ -2,16 +2,16 @@
   "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
   "host_symbol": "AUDUSD.DWX",
   "host_timeframe": "D1",
-  "tester_currency": "USD",
+  "tester_currency": "EUR",
   "tester_deposit": 100000,
   "basket_symbols": [
     "AUDUSD.DWX",
     "EURJPY.DWX",
-    "EURUSD.DWX",
-    "USDJPY.DWX"
+    "EURUSD.DWX"
   ],
   "notes": [
     "Two-leg AUDUSD/EURJPY market-neutral FX cointegration candidate from the 2026-06-09 66-pair scan rerun. It did not clear the original hard survivor bar; DEV Sharpe was positive but OOS net Sharpe was negative. It is the next unbuilt rank-25 tail pair after the existing 12532/12533/12624/12712/12723/12728/12731/12732/12735/12739/12747/12749/12751/12756/12758/12760/12762/12764/12765/12766/12768/12770/12772/12776 baskets.",
-    "Q02 uses USD tester currency and the canonical RISK_FIXED=1000 budget. AUDUSD.DWX and EURJPY.DWX are the traded legs; EURUSD.DWX and USDJPY.DWX are declared only as custom-symbol conversion history for USD-denominated EURJPY accounting."
+    "Q02 uses EUR tester currency and the canonical RISK_FIXED=1000 account-currency budget. AUDUSD.DWX and EURJPY.DWX are the traded legs; EURUSD.DWX is declared only as custom-symbol conversion history for EUR-denominated AUDUSD accounting.",
+    "Repair note 2026-06-30: two prior Q02 attempts failed with NO_HISTORY after USD-denominated EURJPY accounting fell through from USDJPY.DWX to bare USDJPY. The EUR tester account avoids that conversion path while keeping all declared symbols in the Darwinex .DWX namespace."
   ]
 }

@@ -4,7 +4,7 @@
 **Slug:** edgelab-audusd-eurjpy-cointegration
 **Source:** claude_cross_asset_discovery_2026-06-09 plus Chan cointegration pair-trade method
 **Author of this spec:** Codex
-**Last revised:** 2026-06-29
+**Last revised:** 2026-06-30
 
 ---
 
@@ -54,14 +54,14 @@ built.
 **Designed for:**
 - AUDUSD.DWX - leg 1 of the fixed AUDUSD/EURJPY spread and the spread numerator.
 - EURJPY.DWX - leg 2 of the fixed AUDUSD/EURJPY spread and the beta-weighted spread denominator.
-- EURUSD.DWX and USDJPY.DWX - custom-symbol conversion history only, preloaded
-  for EURJPY accounting in the USD-denominated tester.
+- EURUSD.DWX - custom-symbol conversion history only, preloaded for
+  AUDUSD accounting in the EUR-denominated tester.
 
 **Explicitly not for:**
 - Other `.DWX` symbols. This card is a fixed two-leg FX-cross basket, not a portable multi-pair strategy.
 
-EURUSD.DWX and USDJPY.DWX are selected as conversion history for
-USD-denominated tester accounting of the EURJPY leg. They are not traded legs.
+EURUSD.DWX is selected as conversion history for EUR-denominated tester
+accounting of the AUDUSD leg. It is not a traded leg.
 
 ---
 
@@ -108,11 +108,11 @@ Rerun excerpt for this candidate:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 - Q10) | RISK_FIXED | USD 1,000 per basket trade |
+| Backtest (Q02 - Q10) | RISK_FIXED | EUR 1,000 per basket trade |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio |
 
-Q02 tester note: the manifest pins `tester_currency=USD` and
+Q02 tester note: the manifest pins `tester_currency=EUR` and
 `tester_deposit=100000`. The logical basket backtest setfile uses the canonical
 `RISK_FIXED=1000`, with `RISK_PERCENT=0`.
 
@@ -123,8 +123,8 @@ Q02 handoff: build task `e6ac4aae-f214-40f0-b037-1a9eeea4e2f8` was recorded
 on 2026-06-29 and auto-enqueued one logical basket work item,
 `8f0e511f-0f93-42eb-b2c5-b07e1f7a6f1e`, for
 `QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1`. The Q02 payload includes the
-basket manifest, AUDUSD/EURJPY basket legs, EURUSD/USDJPY conversion history,
-`tester_currency=USD`, `tester_deposit=100000`, `RISK_FIXED=1000`, and a
+basket manifest, AUDUSD/EURJPY basket legs, EURUSD conversion history,
+`tester_currency=EUR`, `tester_deposit=100000`, `RISK_FIXED=1000`, and a
 120-minute paced-fleet timeout. The first Q02 attempt failed with
 `NO_HISTORY`/`INCOMPLETE_RUNS` after the tester synchronized `EURUSD.DWX` but
 then fell through to bare `USDJPY`; v1-q02-conversion preloads both conversion
@@ -137,6 +137,14 @@ work item `7f04ff6a-35ca-45bd-a702-afc37b310f97` for the same logical basket
 symbol. The prior `8f0e511f-0f93-42eb-b2c5-b07e1f7a6f1e` row remains terminal
 as the original infra-fail evidence.
 
+Second repair handoff: replacement Q02 work item
+`7f04ff6a-35ca-45bd-a702-afc37b310f97` reproduced the same
+`NO_HISTORY`/`INCOMPLETE_RUNS` failure on 2026-06-30. T4 tester logs showed the
+EA opened both `.DWX` legs, then USD-denominated EURJPY accounting requested
+bare `USDJPY` and timed out. The basket manifest now uses an EUR tester account
+and declares only `AUDUSD.DWX`, `EURJPY.DWX`, and `EURUSD.DWX`, so the next Q02
+requeue avoids that bare-symbol conversion branch.
+
 ---
 
 ## Revision History
@@ -146,3 +154,4 @@ as the original infra-fail evidence.
 | v1 | 2026-06-29 | Initial rank-25 next-unbuilt FX cointegration basket build | Built from the 12772 two-leg basket pattern |
 | v1-q02 | 2026-06-29 | Build recorded and logical basket Q02 enqueued | build task `e6ac4aae-f214-40f0-b037-1a9eeea4e2f8`; work item `8f0e511f-0f93-42eb-b2c5-b07e1f7a6f1e` enqueued |
 | v1-q02-conversion | 2026-06-29 | Q02 conversion-history repair | Preloaded `EURUSD.DWX` and `USDJPY.DWX`; replacement Q02 work item `7f04ff6a-35ca-45bd-a702-afc37b310f97` enqueued |
+| v1-q02-eur-accounting | 2026-06-30 | Q02 conversion-accounting repair | Switched basket manifest to `tester_currency=EUR` and removed `USDJPY.DWX` from declared conversion scope before requeueing Q02 |

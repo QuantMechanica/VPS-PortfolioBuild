@@ -26,7 +26,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
-last_updated: 2026-06-29
+last_updated: 2026-06-30
 g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-requested in-house 66-pair FX scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS AUDUSD.DWX and EURJPY.DWX data exist in scan universe; R4 PASS no ML/grid/martingale. Marked very high-risk because OOS net Sharpe was negative."
 expected_pf: 0.94
 expected_dd_pct: 35.0
@@ -109,7 +109,7 @@ no edge.
 ## Filters
 
 - Host chart must be AUDUSD.DWX or EURJPY.DWX on D1/H1, with slot 0 used for the logical host.
-- The EA selects USDJPY.DWX as conversion history for USD-denominated EURJPY accounting.
+- The EA selects EURUSD.DWX as conversion history for EUR-denominated AUDUSD accounting.
 - No pyramiding, averaging, grid, martingale, partial close, or trailing stop.
 - Framework news, kill-switch, magic, and Friday-close guards remain active.
 
@@ -180,7 +180,15 @@ on 2026-06-29 and auto-enqueued one logical basket work item,
 `QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1`. No manual tester run was launched;
 the paced farm owns the first Q02 tester pass.
 
+Q02 repair: the original Q02 item and replacement
+`7f04ff6a-35ca-45bd-a702-afc37b310f97` both failed with
+`NO_HISTORY`/`INCOMPLETE_RUNS` after USD-denominated EURJPY accounting fell
+through to bare `USDJPY`. On 2026-06-30 the basket manifest was switched to an
+EUR tester account and the declared conversion scope was reduced to
+`AUDUSD.DWX`, `EURJPY.DWX`, and `EURUSD.DWX` before requeue.
+
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-06-29 | initial rank-25 next-unbuilt FX cointegration basket card | G0 | APPROVED |
 | v1-q02 | 2026-06-29 | build recorded; logical basket Q02 auto-enqueued | Q02 | ENQUEUED |
+| v1-q02-eur-accounting | 2026-06-30 | switched Q02 tester accounting to EUR to avoid bare USDJPY conversion timeout | Q02 | REQUEUED |

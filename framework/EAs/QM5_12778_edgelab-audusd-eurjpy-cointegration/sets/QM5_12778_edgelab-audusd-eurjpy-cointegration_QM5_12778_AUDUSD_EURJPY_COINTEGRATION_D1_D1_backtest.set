@@ -11,11 +11,12 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   57161c292007bc4cc8719e0f57fa205011c8da8949be3e34e1b73c9084a6478b
+; build_hash:   da0529329978cd31e224914f50d4b6603c02d6b4b24fa4ca8fff3591f8b20efe
 ; author:       Development
 ; date:         2026-06-29
 ;==========================================================
 qm_magic_slot_offset=0
+; basket_manifest pins tester_currency=EUR to keep conversion history inside declared .DWX symbols.
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
