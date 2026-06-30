@@ -3,7 +3,18 @@
 **Binding** for all G0 verdicts. This file is canonical — when vault pages or
 prompts disagree, this file wins.
 
-**Last revised 2026-05-23** — pipeline rewrite. OWNER directive: R1 widened to
+**Last revised 2026-06-30** — OWNER directive (two changes): (1) **R1 is fully
+source-agnostic on author.** The source is simply WHERE the strategy was found; a
+YouTube video or forum post from an unknown "noname" with no academic author,
+credentials, or track record is a fully valid source. The pipeline (Q02–Q08) is
+the only quality judge. The piracy/licensing guard is SEPARATE and unchanged —
+never mine pirated/leaked material. (2) **Bounded martingale scale-in is permitted**
+for the risk-capped grid/basket class — see `decisions/DL-081` (grid + martingale
+"enforcement" scale-in allowed when the whole idea's loss is hard-capped at 1% of
+account by a basket-level equity stop). R4's general "no martingale runaway" default
+otherwise stands for every other strategy.
+
+**Earlier revision 2026-05-23** — pipeline rewrite. OWNER directive: R1 widened to
 accept OWNER and AI as valid sources (the single-source-per-card rule remains,
 but the source *type* is open). R4 narrowed to ML-only — Grid trading is now
 allowed provided it's deterministic and bounded.
@@ -100,6 +111,10 @@ is allowed** as long as it's deterministic and bounded.
 - Maximum simultaneous open positions per magic is bounded in code
 - No martingale-style runaway sizing (each grid level must have a defined
   position-size formula that doesn't grow without limit)
+  - **EXCEPTION (DL-081, OWNER 2026-06-30):** martingale "enforcement" scale-in
+    IS allowed for the risk-capped grid/basket class, where a hard 1%-of-account
+    **basket equity-stop** flattens all legs and bounds total loss regardless of
+    the scale-in schedule. The cap — not a per-level sizing limit — is the bound.
 
 **R4 is binding Hard Rule 14 — not relaxable beyond what's above.** OWNER
 explicit written exception only for any further relaxation.
