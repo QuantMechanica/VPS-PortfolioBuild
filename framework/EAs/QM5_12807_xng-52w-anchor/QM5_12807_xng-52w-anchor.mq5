@@ -49,7 +49,7 @@ input double strategy_atr_sl_mult             = 3.75;
 input int    strategy_max_hold_days           = 31;
 input int    strategy_max_spread_points       = 1500;
 
-int g_last_entry_month_key = 0;
+int g_last_signal_month_key = 0;
 
 bool Strategy_IsXngD1()
   {
@@ -67,11 +67,20 @@ int Strategy_MonthKey(const datetime t)
 
 bool Strategy_IsMonthlyRebalanceBar()
   {
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 calendar gate behind framework new-bar.
-   const datetime prior_bar = iTime(_Symbol, PERIOD_D1, 1);   // perf-allowed: D1 calendar gate behind framework new-bar.
-   if(current_bar <= 0 || prior_bar <= 0)
+   const int month_key = Strategy_MonthKey(TimeCurrent());
+   return (month_key > 0 && month_key != g_last_signal_month_key);
+  }
+
+int Strategy_CurrentMonthKey()
+  {
+   return Strategy_MonthKey(TimeCurrent());
+  }
+
+bool Strategy_PositionNeedsMonthlyRebalance(const datetime opened, const int current_month_key)
+  {
+   if(opened <= 0 || current_month_key <= 0)
       return false;
-   return Strategy_MonthKey(current_bar) != Strategy_MonthKey(prior_bar);
+   return Strategy_MonthKey(opened) != current_month_key;
   }
 
 bool Strategy_HasOpenPosition()
@@ -163,9 +172,9 @@ bool Strategy_LoadAnchorSignal(int &direction, double &anchor_metric, double &co
 
 void Strategy_CloseOpenPositionsIfNeeded()
   {
-   const bool monthly_rebalance = Strategy_IsMonthlyRebalanceBar();
    const int magic = QM_FrameworkMagic();
    const datetime now = TimeCurrent();
+   const int current_month_key = Strategy_MonthKey(now);
    const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -179,7 +188,7 @@ void Strategy_CloseOpenPositionsIfNeeded()
          continue;
 
       const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-      bool should_close = monthly_rebalance;
+      bool should_close = Strategy_PositionNeedsMonthlyRebalance(opened, current_month_key);
       if(opened > 0 && now - opened >= hold_seconds)
          should_close = true;
 
@@ -226,10 +235,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!Strategy_IsMonthlyRebalanceBar())
       return false;
 
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 monthly de-dupe behind new-bar gate.
-   const int month_key = Strategy_MonthKey(current_bar);
-   if(month_key <= 0 || month_key == g_last_entry_month_key)
-      return false;
+   const int month_key = Strategy_CurrentMonthKey();
+   g_last_signal_month_key = month_key;
 
    if(Strategy_HasOpenPosition())
       return false;
@@ -263,7 +270,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.reason = (direction > 0) ? "XNG_52W_ANCHOR_LONG" : "XNG_52W_ANCHOR_SHORT";
-   g_last_entry_month_key = month_key;
    return true;
   }
 

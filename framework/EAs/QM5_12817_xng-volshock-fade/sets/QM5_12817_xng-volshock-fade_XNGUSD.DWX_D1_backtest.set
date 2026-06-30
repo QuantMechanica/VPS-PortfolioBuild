@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12817
 ; ea_slug:      xng-volshock-fade
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING_BUILD_CHECK
+; build_hash:   539e83757f1fa3e359a94e195696a3d7cd28f7e827fb751c6c0f052e7c03b8ae
 ; author:       Development
 ; date:         2026-06-30
 ;==========================================================
