@@ -1,0 +1,49 @@
+{
+  "task_id": "d85063a1-13e4-473a-854b-224ae23e64f3",
+  "ea_id": "QM5_2080",
+  "slug": "pring-special-k-h4",
+  "ea_dir": "framework/EAs/QM5_2080_pring-special-k-h4",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_2080_pring-special-k-h4\\QM5_2080_pring-special-k-h4.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_2080_pring-special-k-h4\\QM5_2080_pring-special-k-h4.ex5",
+  "magic_base": 20800000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "XAUUSD.DWX",
+    "SP500.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "GDAXI.DWX",
+    "UK100.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_2080_pring-special-k-h4\\sets\\QM5_2080_pring-special-k-h4_EURUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_2080_pring-special-k-h4\\sets\\QM5_2080_pring-special-k-h4_GBPUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_2080_pring-special-k-h4\\sets\\QM5_2080_pring-special-k-h4_GDAXI.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_2080_pring-special-k-h4\\sets\\QM5_2080_pring-special-k-h4_NDX.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_2080_pring-special-k-h4\\sets\\QM5_2080_pring-special-k-h4_SP500.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_2080_pring-special-k-h4\\sets\\QM5_2080_pring-special-k-h4_UK100.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_2080_pring-special-k-h4\\sets\\QM5_2080_pring-special-k-h4_USDJPY.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_2080_pring-special-k-h4\\sets\\QM5_2080_pring-special-k-h4_WS30.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_2080_pring-special-k-h4\\sets\\QM5_2080_pring-special-k-h4_XAUUSD.DWX_H4_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_2080_pring-special-k-h4\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260630_050609\\QM5_2080_pring-special-k-h4.compile.log",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260630_050504.json",
+  "build_check_failures": 0,
+  "build_check_warnings": 16,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "backtest_cpu_ceiling: 7 terminal64 processes, all T1-T5 backtest terminals occupied, and 5465 pending Q02 work_items at 2026-06-30T05:05Z; Q02 delegated to paced farm workers",
+  "blocked_reason": null,
+  "open_questions": [
+    "No manual smoke launched because the paced MT5 fleet was saturated; Q02 will provide post-fix runtime evidence.",
+    "Rework fixed impossible same-bar Special-K extreme/turn condition by using previous-bar extreme plus current-bar confirmation per card wording."
+  ],
+  "notes": "Codex reworked QM5_2080_pring-special-k-h4 for diversity-focused FX/index Special-K throughput. The prior trigger required the same closed bar to be the 100-bar Special-K extreme and to turn away from the previous bar, which cannot occur because the previous bar is inside the same extreme window. Build_check and compile pass; Q02 is delegated to paced workers."
+}
