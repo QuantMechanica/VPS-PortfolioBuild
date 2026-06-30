@@ -14,12 +14,12 @@ The EA implements the approved 6-month time-series momentum card on three
 major FX `.DWX` symbols: EURUSD.DWX, GBPUSD.DWX, and USDJPY.DWX. Each symbol
 is an independent magic slot of the same EA.
 
-On the first D1 bar of a new calendar month, the EA compares the most recently
-closed D1 close with the close 126 D1 bars earlier. A positive return opens or
-keeps a long position; a negative return opens or keeps a short position. If a
-position already exists and the signal is unchanged, the slot holds it. If the
-signal reverses, the slot closes the current position and opens in the new
-direction.
+On the first tradable D1 bar of a new calendar month, the EA compares the most
+recently closed D1 close with the close 126 D1 bars earlier. A positive return
+opens or keeps a long position; a negative return opens or keeps a short
+position. If a position already exists and the signal is unchanged, the slot
+holds it. If the signal reverses, the slot closes the current position and opens
+in the new direction.
 
 The code computes the card's 20-day realized volatility series as an entry data
 guard and caps the derived scale at 2.0. Order submission remains on the V5
@@ -66,7 +66,7 @@ zero-based slots. The implemented order is the same: EURUSD, GBPUSD, USDJPY.
 | Base timeframe | D1 |
 | Multi-timeframe refs | none |
 | Bar gating | `QM_IsNewBar()` after the framework tick guards |
-| Rebalance cadence | First D1 bar of each calendar month |
+| Rebalance cadence | Broker-calendar day 1, or Monday day 2-3 when the month opens over a weekend |
 
 ---
 
@@ -124,3 +124,4 @@ and USDJPY.DWX work item `e26fef3d`.
 |---|---|---|---|
 | v1 | 2026-06-29 | Initial approved FX basket build | Built for EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX |
 | v1-q02 | 2026-06-29 | Build recorded and Q02 enqueued | Work items 3cf5bd2d, f9794a25, e26fef3d pending |
+| v1-review | 2026-06-30 | Codex review rework | Removed raw `iTime` month-boundary entry gate; cadence now uses broker calendar after framework new-bar gating |

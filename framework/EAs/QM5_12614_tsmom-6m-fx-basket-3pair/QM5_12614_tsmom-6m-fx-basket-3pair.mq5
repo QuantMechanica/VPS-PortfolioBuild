@@ -77,16 +77,17 @@ bool Strategy_IsMonthRebalanceBar()
    if(_Period != PERIOD_D1)
       return false;
 
-   const datetime closed_bar = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: monthly D1 boundary detection
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: monthly D1 boundary detection
-   if(closed_bar <= 0 || current_bar <= 0)
+   const datetime broker_now = TimeCurrent();
+   if(broker_now <= 0)
       return false;
 
-   MqlDateTime closed_dt;
-   MqlDateTime current_dt;
-   TimeToStruct(closed_bar, closed_dt);
-   TimeToStruct(current_bar, current_dt);
-   return (closed_dt.year != current_dt.year || closed_dt.mon != current_dt.mon);
+   MqlDateTime now_dt;
+   TimeToStruct(broker_now, now_dt);
+
+   if(now_dt.day == 1)
+      return true;
+
+   return (now_dt.day_of_week == 1 && now_dt.day <= 3);
   }
 
 bool Strategy_CurrentPosition(ulong &ticket, int &direction)

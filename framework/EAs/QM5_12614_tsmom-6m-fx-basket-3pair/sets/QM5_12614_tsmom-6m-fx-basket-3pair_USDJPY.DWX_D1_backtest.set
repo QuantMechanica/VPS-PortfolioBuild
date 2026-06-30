@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12614
 ; ea_slug:      tsmom-6m-fx-basket-3pair
@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 0.333333
-; build_hash:   570080484b21afc4e5dfadce3d3074578824301d8d5aad8b73d77a49be903be8
+; build_hash:   2d24569c64a11e26eee77ded833f1adaa61ab02f9a27c9d1bc8c22af0ab9a533
 ; author:       Development
 ; date:         2026-06-29
 ;==========================================================
