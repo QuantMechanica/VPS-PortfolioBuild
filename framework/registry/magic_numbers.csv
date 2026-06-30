@@ -14062,3 +14062,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12832,dax-range-breakout,0,GDAXI.DWX,128320000,2026-06-30,Development,active
 12834,wti-jpy-spread,0,XTIUSD.DWX,128340000,2026-06-30,Development,active
 12834,wti-jpy-spread,1,USDJPY.DWX,128340001,2026-06-30,Development,active
+1579,sperandeo-tlb-swing-pivot-h4,0,EURUSD.DWX,15790000,2026-06-30,Development,active
+1579,sperandeo-tlb-swing-pivot-h4,1,GBPUSD.DWX,15790001,2026-06-30,Development,active
+1579,sperandeo-tlb-swing-pivot-h4,2,USDJPY.DWX,15790002,2026-06-30,Development,active
+1579,sperandeo-tlb-swing-pivot-h4,3,NDX.DWX,15790003,2026-06-30,Development,active
+1579,sperandeo-tlb-swing-pivot-h4,4,WS30.DWX,15790004,2026-06-30,Development,active
+1579,sperandeo-tlb-swing-pivot-h4,5,XAUUSD.DWX,15790005,2026-06-30,Development,active
+1579,sperandeo-tlb-swing-pivot-h4,6,XTIUSD.DWX,15790006,2026-06-30,Development,active
