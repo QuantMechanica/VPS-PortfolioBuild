@@ -4,7 +4,7 @@
 **Slug:** edgelab-gbpusd-euraud-cointegration
 **Source:** claude_cross_asset_discovery_2026-06-09 plus Chan cointegration pair-trade method
 **Author of this spec:** Codex
-**Last revised:** 2026-06-28
+**Last revised:** 2026-06-30
 
 ---
 
@@ -128,4 +128,5 @@ run was launched from this session.
 | v1 | 2026-06-28 | Initial next-best FX cointegration basket build | Built from the 12751 EURAUD conversion-aware basket pattern |
 | v1-q02 | 2026-06-28 | Build recorded and Q02 enqueued | Work item 0e925c0c-5a27-459c-86d2-cdaddd2b2e9f pending |
 | v1-priority | 2026-06-29 | Q02 pending-row priority payload repair | Work item 0e925c0c-5a27-459c-86d2-cdaddd2b2e9f remains pending and unique; runtime multisymbol hint refreshed |
+| v2 | 2026-06-30 | Codex review fix | Host chart leg now returns through the framework `QM_TM_OpenPosition` path; only the off-chart peer leg uses `QM_BasketOpenPosition`. |
 

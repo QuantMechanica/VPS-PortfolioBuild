@@ -230,12 +230,47 @@ double Strategy_LotsForLeg(const string symbol, const double risk_weight, const 
    return MathMin(max_lot, NormalizeDouble(lots, 8));
   }
 
-bool Strategy_OpenLeg(const string symbol,
-                      const QM_OrderType type,
-                      const double risk_weight,
-                      const double risk_weight_sum,
-                      const string reason)
+bool Strategy_BuildHostLegRequest(const string symbol,
+                                  const QM_OrderType type,
+                                  const string reason,
+                                  QM_EntryRequest &req)
   {
+   if(symbol != _Symbol)
+      return false;
+
+   const int slot = Strategy_SlotForSymbol(symbol);
+   if(slot < 0 || slot != qm_magic_slot_offset)
+      return false;
+
+   const double entry = QM_OrderTypeIsBuy(type) ? SymbolInfoDouble(symbol, SYMBOL_ASK)
+                                                : SymbolInfoDouble(symbol, SYMBOL_BID);
+   const double atr = QM_ATR(symbol, PERIOD_D1, strategy_atr_period_d1, 1);
+   if(entry <= 0.0 || atr <= 0.0)
+      return false;
+
+   const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
+   const double stop_dist = strategy_atr_sl_mult * atr;
+
+   req.type = type;
+   req.price = 0.0;
+   req.sl = QM_OrderTypeIsBuy(type) ? NormalizeDouble(entry - stop_dist, digits)
+                                    : NormalizeDouble(entry + stop_dist, digits);
+   req.tp = 0.0;
+   req.reason = reason;
+   req.symbol_slot = slot;
+   req.expiration_seconds = 0;
+   return (req.sl > 0.0);
+  }
+
+bool Strategy_OpenOffChartLeg(const string symbol,
+                              const QM_OrderType type,
+                              const double risk_weight,
+                              const double risk_weight_sum,
+                              const string reason)
+  {
+   if(symbol == _Symbol)
+      return false;
+
    const int slot = Strategy_SlotForSymbol(symbol);
    if(slot < 0)
       return false;
@@ -269,9 +304,11 @@ bool Strategy_OpenLeg(const string symbol,
    return QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, strategy_deviation_points, req, ticket);
   }
 
-bool Strategy_OpenPair(const int spread_direction)
+bool Strategy_PreparePairEntry(const int spread_direction, QM_EntryRequest &host_req)
   {
    if(spread_direction == 0 || Strategy_OpenPairLegCount() > 0)
+      return false;
+   if(_Symbol != g_leg_gbpusd && _Symbol != g_leg_euraud)
       return false;
 
    const double gbpusd_weight = 1.0;
@@ -286,16 +323,20 @@ bool Strategy_OpenPair(const int spread_direction)
    const string reason = long_spread ? "QM5_12758_LONG_SPREAD_Z_LT_NEG_ENTRY"
                                      : "QM5_12758_SHORT_SPREAD_Z_GT_POS_ENTRY";
 
-   bool gbpusd_ok = Strategy_OpenLeg(g_leg_gbpusd, gbpusd_type, gbpusd_weight, weight_sum, reason);
-   bool euraud_ok = Strategy_OpenLeg(g_leg_euraud, euraud_type, euraud_weight, weight_sum, reason);
-   if(gbpusd_ok && euraud_ok)
-     {
-      g_pair_entry_time = TimeCurrent();
-      return true;
-     }
+   const bool host_is_gbpusd = (_Symbol == g_leg_gbpusd);
+   const string peer_symbol = host_is_gbpusd ? g_leg_euraud : g_leg_gbpusd;
+   const QM_OrderType host_type = host_is_gbpusd ? gbpusd_type : euraud_type;
+   const QM_OrderType peer_type = host_is_gbpusd ? euraud_type : gbpusd_type;
+   const double peer_weight = host_is_gbpusd ? euraud_weight : gbpusd_weight;
 
-   Strategy_ClosePair(QM_EXIT_STRATEGY);
-   return false;
+   if(!Strategy_BuildHostLegRequest(_Symbol, host_type, reason, host_req))
+      return false;
+
+   if(!Strategy_OpenOffChartLeg(peer_symbol, peer_type, peer_weight, weight_sum, reason))
+      return false;
+
+   g_pair_entry_time = TimeCurrent();
+   return true;
   }
 
 // -----------------------------------------------------------------------------
@@ -334,9 +375,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    if(g_spread_z > strategy_entry_z)
-      Strategy_OpenPair(-1);
+      return Strategy_PreparePairEntry(-1, req);
    else if(g_spread_z < -strategy_entry_z)
-      Strategy_OpenPair(1);
+      return Strategy_PreparePairEntry(1, req);
 
    return false;
   }
