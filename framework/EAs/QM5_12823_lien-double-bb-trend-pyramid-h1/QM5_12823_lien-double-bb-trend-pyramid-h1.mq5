@@ -56,6 +56,7 @@ input double strategy_spread_cap_pips        = 20.0;
 input bool   strategy_no_friday_entry        = true;
 input int    strategy_max_adds               = 3;
 input int    strategy_add_size_mode          = 0;      // 0 equal; 1 decreasing 1.0/0.75/0.5
+input int    strategy_scale_mode             = 0;      // 0 aggregate; 1 risk-budgeted; 2 free-roll
 input double strategy_aggregate_risk_cap_pct = 1.0;
 input int    strategy_trail_method           = 0;      // 0 band; 1 structure; 2 ATR
 input int    strategy_trail_structure_bars   = 10;
@@ -277,6 +278,209 @@ double QM12823_RiskCapMoney()
    return equity * strategy_aggregate_risk_cap_pct / 100.0;
   }
 
+double QM12823_MoneyRiskForLeg(const double entry, const double sl, const double volume)
+  {
+   const double tick_value = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE);
+   const double tick_size  = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   if(entry <= 0.0 || sl <= 0.0 || volume <= 0.0 || tick_value <= 0.0 || tick_size <= 0.0)
+      return 0.0;
+
+   const double price_distance = entry - sl;
+   if(price_distance <= 0.0)
+      return 0.0;
+   return (price_distance / tick_size) * tick_value * volume;
+  }
+
+double QM12823_CurrentOpenRiskMoney()
+  {
+   double risk = 0.0;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+
+      int slot = -1;
+      if(!QM12823_IsOwnPyramidPosition(slot))
+         continue;
+
+      const double entry  = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double sl     = PositionGetDouble(POSITION_SL);
+      const double volume = PositionGetDouble(POSITION_VOLUME);
+      risk += QM12823_MoneyRiskForLeg(entry, sl, volume);
+     }
+   return risk;
+  }
+
+double QM12823_CapLotsByMargin(const QM_SymbolRiskSnapshot &snapshot, const double requested_lots)
+  {
+   if(requested_lots <= 0.0)
+      return 0.0;
+
+   double lots = requested_lots;
+   double margin_per_lot = snapshot.margin_initial;
+   if(margin_per_lot <= 0.0)
+     {
+      double leverage = (double)AccountInfoInteger(ACCOUNT_LEVERAGE);
+      if(leverage <= 0.0)
+         leverage = 100.0;
+
+      double price = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(price <= 0.0)
+         price = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(price > 0.0 && snapshot.contract_size > 0.0)
+         margin_per_lot = (price * snapshot.contract_size) / leverage;
+     }
+
+   if(margin_per_lot > 0.0)
+     {
+      const double free_margin = AccountInfoDouble(ACCOUNT_MARGIN_FREE);
+      if(free_margin <= 0.0)
+         return 0.0;
+      lots = MathMin(lots, (free_margin * 0.90) / margin_per_lot);
+     }
+
+   return QM_RiskSizerQuantizeLots(lots,
+                                   snapshot.volume_min,
+                                   snapshot.volume_max,
+                                   snapshot.volume_step);
+  }
+
+double QM12823_LotsForRiskMoney(const double entry, const double sl, const double risk_money)
+  {
+   if(entry <= 0.0 || sl <= 0.0 || risk_money <= 0.0 || sl >= entry)
+      return 0.0;
+
+   QM_SymbolRiskSnapshot snapshot;
+   if(!QM_RiskSizerReadSymbolSnapshot(_Symbol, snapshot))
+      return 0.0;
+
+   const double sl_points = (entry - sl) / snapshot.point;
+   double lots = QM_LotsForRiskFromSnapshot(snapshot, risk_money, sl_points);
+   if(lots <= 0.0)
+      return 0.0;
+
+   return QM12823_CapLotsByMargin(snapshot, lots);
+  }
+
+bool QM12823_OpenSizedAdd(const ulong existing_ticket,
+                          const QM_EntryRequest &add_req,
+                          const double lots,
+                          ulong &out_ticket)
+  {
+   out_ticket = 0;
+   if(lots <= 0.0)
+      return false;
+   if(!QM_TM_SelectPosition(existing_ticket))
+      return false;
+
+   const string symbol = PositionGetString(POSITION_SYMBOL);
+   const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+   const bool is_buy_position = (position_type == POSITION_TYPE_BUY);
+   if((is_buy_position && !QM_OrderTypeIsBuy(add_req.type)) ||
+      (!is_buy_position && QM_OrderTypeIsBuy(add_req.type)))
+      return false;
+
+   const int magic = QM_MagicChecked(qm_ea_id, add_req.symbol_slot, _Symbol);
+   if(magic <= 0)
+      return false;
+   if(QM_EntryHasOpenPosition((long)magic, _Symbol))
+      return false;
+
+   const double entry_price = QM_EntryResolvePrice(add_req);
+   if(entry_price <= 0.0 || add_req.sl <= 0.0)
+      return false;
+
+   if(g_qm_entry_stress_reject_prob > 0.0 &&
+      QM_RandBoolTagged("entry_reject", g_qm_entry_stress_reject_prob))
+     {
+      QM_EntryLogReject(add_req,
+                        QM_ENTRY_REJECTED_STRESS,
+                        StringFormat("stress_reject_prob=%.4f", g_qm_entry_stress_reject_prob));
+      return false;
+     }
+
+   QM_LoggerSetMagic(magic);
+
+   MqlTradeRequest trade_req;
+   ZeroMemory(trade_req);
+   trade_req.action = TRADE_ACTION_DEAL;
+   trade_req.symbol = _Symbol;
+   trade_req.magic = magic;
+   trade_req.volume = lots;
+   trade_req.type = QM_OrderTypeToMT5(add_req.type);
+   trade_req.price = NormalizeDouble(entry_price, _Digits);
+   trade_req.sl = NormalizeDouble(add_req.sl, _Digits);
+   trade_req.tp = 0.0;
+   trade_req.deviation = g_qm_entry_deviation_points;
+   trade_req.type_time = ORDER_TIME_GTC;
+   trade_req.comment = add_req.reason;
+
+   MqlTradeResult trade_res;
+   string broker_error_class = "";
+   if(!QM_TradeContextSend(trade_req, trade_res, broker_error_class))
+     {
+      QM_EntryLogReject(add_req, QM_ENTRY_REJECTED_BROKER, broker_error_class);
+      return false;
+     }
+
+   out_ticket = (trade_res.order > 0) ? trade_res.order : trade_res.deal;
+   const string entry_payload = StringFormat(
+      "{\"ticket\":%I64u,\"symbol\":\"%s\",\"type\":\"%s\",\"lots\":%.8f,\"price\":%.8f,\"sl\":%.8f,\"tp\":%.8f,\"magic\":%d,\"reason\":\"%s\",\"symbol_slot\":%d,\"retcode\":%u}",
+      out_ticket,
+      QM_LoggerEscapeJson(_Symbol),
+      QM_LoggerEscapeJson(QM_OrderTypeToString(add_req.type)),
+      lots,
+      trade_req.price,
+      trade_req.sl,
+      trade_req.tp,
+      magic,
+      QM_LoggerEscapeJson(add_req.reason),
+      add_req.symbol_slot,
+      trade_res.retcode
+   );
+   QM_LogEvent(QM_INFO, "ENTRY_ACCEPTED", entry_payload);
+
+   const string add_payload = StringFormat(
+      "{\"existing_ticket\":%I64u,\"added_ticket\":%I64u,\"symbol\":\"%s\",\"ok\":true}",
+      existing_ticket,
+      out_ticket,
+      QM_LoggerEscapeJson(symbol)
+   );
+   QM_LogEvent(QM_INFO, "TM_ADD", add_payload);
+   return true;
+  }
+
+bool QM12823_LockExistingLegsBreakEven()
+  {
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+
+      int slot = -1;
+      if(!QM12823_IsOwnPyramidPosition(slot))
+         continue;
+
+      const double entry = PositionGetDouble(POSITION_PRICE_OPEN);
+      const double current_sl = PositionGetDouble(POSITION_SL);
+      if(entry <= 0.0)
+         return false;
+      if(current_sl >= entry)
+         continue;
+
+      const double target = QM12823_ClampLongStopBelowBid(entry);
+      if(target <= 0.0)
+         return false;
+      if(target < entry)
+         return false;
+      if(!QM_TM_MoveSL(ticket, target, "free_roll_break_even"))
+         return false;
+     }
+   return true;
+  }
+
 double QM12823_AggregateRiskStop(const double avg_entry, const double total_volume)
   {
    const double risk_cap = QM12823_RiskCapMoney();
@@ -352,7 +556,10 @@ bool QM12823_TrailAggregateStop(const bool force_run = false)
    if(!QM12823_ReadGroupState(count, add_count, total_volume, avg_entry, host_ticket))
       return false;
 
-   double target = QM12823_AggregateRiskStop(avg_entry, total_volume);
+   double target = 0.0;
+   if(strategy_scale_mode != 1 && strategy_scale_mode != 2)
+      target = QM12823_AggregateRiskStop(avg_entry, total_volume);
+
    const double method_stop = QM12823_MethodTrailStop();
    if(method_stop > target)
       target = method_stop;
@@ -449,6 +656,28 @@ bool QM12823_TryPyramidAdd()
 
    if(add_req.sl <= 0.0)
       return false;
+
+   if(strategy_scale_mode == 1)
+     {
+      const double risk_cap = QM12823_RiskCapMoney();
+      const double remaining_risk = risk_cap - QM12823_CurrentOpenRiskMoney();
+      if(remaining_risk <= 0.0)
+         return false;
+
+      const double lots = QM12823_LotsForRiskMoney(entry, add_req.sl, remaining_risk);
+      ulong added_ticket = 0;
+      return QM12823_OpenSizedAdd(host_ticket, add_req, lots, added_ticket);
+     }
+
+   if(strategy_scale_mode == 2)
+     {
+      if(!QM12823_LockExistingLegsBreakEven())
+         return false;
+
+      const double lots = QM12823_LotsForRiskMoney(entry, add_req.sl, QM12823_RiskCapMoney());
+      ulong added_ticket = 0;
+      return QM12823_OpenSizedAdd(host_ticket, add_req, lots, added_ticket);
+     }
 
    const bool ok = QM_TM_AddToPosition(host_ticket, add_req);
    if(ok)
