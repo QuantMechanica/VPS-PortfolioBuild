@@ -26,7 +26,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
-last_updated: 2026-06-29
+last_updated: 2026-06-30
 g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-requested in-house 66-pair FX scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS AUDUSD.DWX and EURJPY.DWX data exist in scan universe; R4 PASS no ML/grid/martingale. Marked very high-risk because OOS net Sharpe was negative."
 expected_pf: 0.94
 expected_dd_pct: 35.0
@@ -109,7 +109,8 @@ no edge.
 ## Filters
 
 - Host chart must be AUDUSD.DWX or EURJPY.DWX on D1/H1, with slot 0 used for the logical host.
-- The EA selects USDJPY.DWX as conversion history for USD-denominated EURJPY accounting.
+- Q02 uses an EUR-denominated tester account; EURUSD.DWX is selected only as
+  conversion history for AUDUSD accounting.
 - No pyramiding, averaging, grid, martingale, partial close, or trailing stop.
 - Framework news, kill-switch, magic, and Friday-close guards remain active.
 
@@ -158,6 +159,10 @@ Backtests use V5 `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 burn-in would be assigned only by the standard portfolio pipeline after all
 gates.
 
+The current Q02 basket manifest pins `tester_currency=EUR` and
+`tester_deposit=100000`. The declared Q02 symbol scope is AUDUSD.DWX,
+EURJPY.DWX, and EURUSD.DWX; only AUDUSD.DWX and EURJPY.DWX are traded legs.
+
 ## Strategy Allowability Check
 
 - [x] R1 reputable source: Chan cointegration method plus OWNER-requested in-house 66-pair scan.
@@ -180,7 +185,13 @@ on 2026-06-29 and auto-enqueued one logical basket work item,
 `QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1`. No manual tester run was launched;
 the paced farm owns the first Q02 tester pass.
 
+Current Q02 handoff: the first two Q02 rows ended as infra failures. Pending
+work item `4dbf18f1-f8c0-4665-beea-778c9ad960c2` carries the EUR-accounting
+repair payload, including `RISK_FIXED=1000`, `RISK_PERCENT=0`,
+`PORTFOLIO_WEIGHT=1`, `timeout_min=120`, and `priority_track=true`.
+
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-06-29 | initial rank-25 next-unbuilt FX cointegration basket card | G0 | APPROVED |
 | v1-q02 | 2026-06-29 | build recorded; logical basket Q02 auto-enqueued | Q02 | ENQUEUED |
+| v1-q02-eur-accounting | 2026-06-30 | EUR tester accounting and enriched pending Q02 payload | Q02 | PENDING |
