@@ -24,10 +24,13 @@ uri: https://www.eia.gov/international/analysis/country/JPN
 
 ## Mining Scope
 
-One card is extracted from this source packet:
+Two cards are extracted from this source packet:
 
 - `wti-jpy-confirm`: `XTIUSD.DWX` D1 WTI trend entries confirmed by the
   closed-bar direction of `USDJPY.DWX` as a Japan oil-importer FX proxy.
+- `wti-jpy-spread`: two-leg `XTIUSD.DWX` / `USDJPY.DWX` D1 log-spread
+  mean reversion; Q02 must judge the logical basket package rather than either
+  standalone leg.
 
 ## Evidence Notes
 
@@ -41,13 +44,16 @@ One card is extracted from this source packet:
 - The EA does not ingest EIA, BOJ, DXY, oil-import, futures-curve, macro CSV,
   API, or analyst data at runtime.
 - Runtime uses closed Darwinex MT5 D1 bars only: `XTIUSD.DWX` for WTI and
-  `USDJPY.DWX` as read-only confirmation.
+  `USDJPY.DWX` as confirmation or basket leg depending on the card.
 
 ## Guardrails
 
 - No external data calls in the EA.
 - No ML, adaptive parameter fitting, grid, martingale, or pyramiding.
-- `USDJPY.DWX` is read-only confirmation; the EA trades only `XTIUSD.DWX`.
+- `wti-jpy-confirm` uses `USDJPY.DWX` as read-only confirmation; the EA trades
+  only `XTIUSD.DWX`.
+- `wti-jpy-spread` trades both `XTIUSD.DWX` and `USDJPY.DWX` as a paired
+  package with one magic slot per leg.
 - One open position per magic slot.
 
 ## R-Rules

@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_12834_XTI_USDJPY_SPREAD_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "USDJPY.DWX"
+  ],
+  "notes": [
+    "Two-leg WTI/USDJPY oil-yen relative-value basket from the approved EIA-BOJ-WTI-JPY-2026 card. The EA runs from the XTIUSD.DWX host setfile and reads both D1 close series to compute ln(XTIUSD) - beta * ln(USDJPY). Q02 must evaluate the logical basket, not the standalone legs."
+  ]
+}
