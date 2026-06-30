@@ -1,0 +1,73 @@
+{
+  "action": "q05_current_bridge_requeue",
+  "agent": "codex-board-advisor",
+  "branch": "agents/board-advisor",
+  "created_at_utc": "2026-06-30T10:31:45Z",
+  "mission_path": "fallback_advance_existing_forex_card",
+  "ea_id": "QM5_12772",
+  "strategy": "GBPJPY/AUDJPY market-neutral FX cointegration basket",
+  "logical_symbol": "QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1",
+  "host_symbol": "GBPJPY.DWX",
+  "timeframe": "D1",
+  "scan_exhaustion_check": {
+    "strict_survivors": [
+      "QM5_12533",
+      "QM5_12532"
+    ],
+    "qm5_12532_q02_blocked": false,
+    "qm5_12533_q02_blocked": false,
+    "unbuilt_allocated_edgelab_cointegration_pairs_found": 0,
+    "allocated_built_through": "QM5_12803"
+  },
+  "pre_action_state": {
+    "q02_work_item": "0ef494c0-7669-4c98-9e5c-326ff70df987",
+    "q02_verdict": "PASS",
+    "q04_work_item": "1b418d74-da86-4fb2-aa41-74ebca065f05",
+    "q04_verdict": "PASS_SOFT",
+    "q05_work_item": "dd43c7e2-7351-41e1-a4a4-f667d0789249",
+    "q05_status_before": "done",
+    "q05_verdict_before": "INFRA_FAIL",
+    "q05_reason_before": "invalid_summary:BARS_ZERO,EMPTY_EXPERT,EMPTY_SYMBOL,HISTORY_CONTEXT_INVALID,INCOMPLETE_RUNS,M0_1970_PERIOD,NO_HISTORY,RUN_STATUS_INVALID"
+  },
+  "queue_action": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12772 --phase Q05",
+    "result": "requeued",
+    "requeued_work_item": "dd43c7e2-7351-41e1-a4a4-f667d0789249",
+    "created_rows": 0,
+    "skipped_rows": 0,
+    "status_after": "pending",
+    "verdict_after": null,
+    "duplicate_q05_inserted": false
+  },
+  "runner_command_check": {
+    "uses_report_root": true,
+    "uses_stale_out_prefix": false,
+    "passes_generic_period": false,
+    "runner_symbol": "GBPJPY.DWX",
+    "logical_symbol_arg": "QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1",
+    "baseline_setfile": "C:/QM/repo/framework/EAs/QM5_12772_edgelab-gbpjpy-audjpy-cointegration/sets/QM5_12772_edgelab-gbpjpy-audjpy-cointegration_QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1_D1_backtest.set"
+  },
+  "validation": [
+    {
+      "command": "python -m pytest tools/strategy_farm/tests/test_farmctl_cascade.py -k \"q05_runner_cmd_receives_latest_full_year_cap or q05_accepts_q04_soft_pass_verdicts or enqueue_q05_checks_basket_manifest_symbols\" tools/strategy_farm/tests/test_q04_latest_full_year_payload.py -q",
+      "result": "PASS",
+      "summary": "3 passed, 9 deselected, 2 subtests passed"
+    },
+    {
+      "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --ea QM5_12772",
+      "result": "PASS",
+      "summary": "Q02 done PASS, Q04 done PASS_SOFT, Q05 pending; no duplicate pending/active Q05 row."
+    }
+  ],
+  "safety": {
+    "manual_backtest_launched": false,
+    "t_live_manifest_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false,
+    "risk_mode": "RISK_FIXED backtest queue only"
+  }
+}
