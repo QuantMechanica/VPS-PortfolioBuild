@@ -119,6 +119,12 @@ Q02 queue note: one logical-basket work item was inserted for
 The worker summary was recovered into the farm DB on 2026-06-28 as a real Q02
 strategy `FAIL`: T2 produced 0 trades against the 35-trade Q02 floor.
 
+2026-07-01 repair note: the original manifest declared only the two traded legs
+even though `Strategy_EnsureBasketScope()` selects and warms AUDUSD.DWX plus
+USDJPY.DWX for AUDJPY conversion history under USD tester accounting. The
+manifest now declares those conversion-history symbols and Q02 was requeued as
+one logical-basket work item.
+
 ---
 
 ## Revision History
@@ -127,3 +133,4 @@ strategy `FAIL`: T2 produced 0 trades against the 35-trade Q02 floor.
 |---|---|---|---|
 | v1 | 2026-06-28 | Initial next-best FX cointegration basket build | Built from the 12728 basket pattern |
 | v1 | 2026-06-28 | Q02 orphan-result recovery | Work item ed3dada9-d657-4b85-b5ba-28d2c64bf788 classified as FAIL from existing T2 summary: MIN_TRADES_NOT_MET, 0 trades |
+| v1-q02a | 2026-07-01 | Q02 conversion-history manifest repair | Declared AUDUSD.DWX and USDJPY.DWX in `basket_manifest.json`; logical-basket Q02 requeued |

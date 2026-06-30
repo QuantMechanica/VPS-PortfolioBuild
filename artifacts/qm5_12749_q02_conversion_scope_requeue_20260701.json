@@ -1,0 +1,108 @@
+{
+  "ea_id": "QM5_12749",
+  "ea_label": "QM5_12749_edgelab-nzdusd-audjpy-cointegration",
+  "logical_symbol": "QM5_12749_NZDUSD_AUDJPY_COINTEGRATION_D1",
+  "unit_of_work": "q02_conversion_scope_manifest_repair",
+  "mission_scope": "Advance an existing FX market-neutral cointegration basket because no unbuilt approved EdgeLab cointegration pair remained and QM5_12532/QM5_12533 were not Q02-blocked.",
+  "prechecks": {
+    "qm5_12532_q02_blocked": false,
+    "qm5_12532_current_observed_state": "Q02 PASS, Q04 PASS, Q05 INFRA_FAIL",
+    "qm5_12533_q02_blocked": false,
+    "qm5_12533_current_observed_state": "Q02 PASS, Q04 FAIL/INFRA_FAIL",
+    "unbuilt_approved_edgelab_cointegration_pair_found": false,
+    "target_prior_state": "QM5_12749 had one logical-basket Q02 row, status done, verdict FAIL, with 0 trades versus the 35-trade floor."
+  },
+  "repair": {
+    "reason": "The EA selects and warms AUDUSD.DWX plus USDJPY.DWX for USD-denominated AUDJPY accounting, but basket_manifest.json declared only NZDUSD.DWX and AUDJPY.DWX.",
+    "files_changed": [
+      "framework/EAs/QM5_12749_edgelab-nzdusd-audjpy-cointegration/basket_manifest.json",
+      "framework/EAs/QM5_12749_edgelab-nzdusd-audjpy-cointegration/SPEC.md",
+      "framework/EAs/QM5_12749_edgelab-nzdusd-audjpy-cointegration/sets/QM5_12749_edgelab-nzdusd-audjpy-cointegration_QM5_12749_NZDUSD_AUDJPY_COINTEGRATION_D1_D1_backtest.set",
+      "strategy-seeds/cards/edgelab-nzdusd-audjpy-cointegration_card.md",
+      "tools/strategy_farm/tests/test_fx_basket_manifests.py"
+    ],
+    "manifest_symbols_after": [
+      "NZDUSD.DWX",
+      "AUDJPY.DWX",
+      "AUDUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "traded_symbols": [
+      "NZDUSD.DWX",
+      "AUDJPY.DWX"
+    ],
+    "conversion_symbols": [
+      "AUDUSD.DWX",
+      "USDJPY.DWX"
+    ]
+  },
+  "queue_action": {
+    "action": "insert_single_logical_q02_requeue_after_scope_repair",
+    "previous_work_item_id": "ed3dada9-d657-4b85-b5ba-28d2c64bf788",
+    "requeued_work_item_id": "aafbbea7-fdc5-4699-9ae9-2ef6a4579177",
+    "status_after": "pending",
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12749_q02_conversion_requeue_20260630T231928Z.sqlite",
+    "created_rows": 1,
+    "duplicate_pending_or_active_rows_before_insert": 0,
+    "payload_updates": {
+      "basket_symbol_count": 4,
+      "basket_symbols": [
+        "NZDUSD.DWX",
+        "AUDJPY.DWX",
+        "AUDUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "traded_symbols": [
+        "NZDUSD.DWX",
+        "AUDJPY.DWX"
+      ],
+      "conversion_symbols": [
+        "AUDUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "priority_track": true,
+      "priority_reason": "fx_market_neutral_basket_q02_conversion_scope_repair_2026-07-01",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "tester_currency": "USD",
+      "tester_deposit": 100000,
+      "timeout_min": 120
+    }
+  },
+  "validation": [
+    {
+      "command": "python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py -q",
+      "result": "PASS",
+      "tests": 3
+    },
+    {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_12749_edgelab-nzdusd-audjpy-cointegration --verbose",
+      "result": "PASS",
+      "verdict": "BASKET_OK",
+      "manifest_declares": 4
+    },
+    {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12749_edgelab-nzdusd-audjpy-cointegration -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 16,
+      "report": "D:/QM/reports/framework/21/build_check_20260630_231826.json"
+    },
+    {
+      "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --ea QM5_12749",
+      "result": "PASS",
+      "summary": "One historical Q02 FAIL remains as evidence and one repaired Q02 row is pending; no duplicate pending row was present before insert."
+    }
+  ],
+  "guardrails": {
+    "manual_backtest_launched": false,
+    "t_live_manifest_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false,
+    "risk_mode": "RISK_FIXED backtest queue only"
+  }
+}

@@ -6,11 +6,14 @@
   "tester_deposit": 100000,
   "basket_symbols": [
     "NZDUSD.DWX",
-    "AUDJPY.DWX"
+    "AUDJPY.DWX",
+    "AUDUSD.DWX",
+    "USDJPY.DWX"
   ],
   "notes": [
     "Two-leg NZDUSD/AUDJPY market-neutral FX cointegration candidate from the 2026-06-09 66-pair scan rerun. It did not clear the original hard survivor bar and has negative DEV Sharpe, but it is the strongest remaining unbuilt OOS-positive pair after the existing 12532/12533/12624/12712/12723/12728/12731/12732/12735/12739/12747 baskets.",
-    "Q02 uses USD tester currency and the canonical RISK_FIXED=1000 budget. The EA selects NZDUSD/AUDJPY plus AUDUSD/USDJPY conversion history."
+    "Q02 uses USD tester currency and the canonical RISK_FIXED=1000 budget. NZDUSD.DWX and AUDJPY.DWX are the traded legs; AUDUSD.DWX and USDJPY.DWX are declared only as custom-symbol conversion history for USD-denominated AUDJPY accounting.",
+    "Repair note 2026-07-01: the EA already selects and warms AUDUSD.DWX plus USDJPY.DWX in Strategy_EnsureBasketScope(); the manifest now declares that conversion history so Q02 history scope matches the runtime contract."
   ]
 }
 

@@ -16,6 +16,7 @@ indicators:
   - rolling-zscore
   - atr-stop
 target_symbols: [NZDUSD.DWX, AUDJPY.DWX]
+conversion_symbols: [AUDUSD.DWX, USDJPY.DWX]
 logical_symbol: QM5_12749_NZDUSD_AUDJPY_COINTEGRATION_D1
 period: D1
 expected_trade_frequency: "D1 two-leg basket, approximately 7-12 logical spread packages/year."
@@ -63,6 +64,7 @@ standalone directional system.
 
 - Host symbol: NZDUSD.DWX.
 - Basket legs: NZDUSD.DWX and AUDJPY.DWX.
+- Conversion history: AUDUSD.DWX and USDJPY.DWX for USD-denominated AUDJPY accounting; not traded legs.
 - Logical symbol: QM5_12749_NZDUSD_AUDJPY_COINTEGRATION_D1.
 - Period: D1.
 - Backtest risk mode: RISK_FIXED.
@@ -130,7 +132,7 @@ cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 
 - [x] R1 reputable source: Chan cointegration method plus OWNER-requested in-house 66-pair scan.
 - [x] R2 mechanical: fixed beta, z-score entry/exit, ATR stop, broken-package close.
-- [x] R3 testable: NZDUSD.DWX and AUDJPY.DWX are Darwinex-native `.DWX` symbols in the exported scan data.
+- [x] R3 testable: NZDUSD.DWX and AUDJPY.DWX are Darwinex-native `.DWX` symbols in the exported scan data; AUDUSD.DWX and USDJPY.DWX are available as conversion-history symbols.
 - [x] R4 compliant: no ML, no grid, no martingale, low-frequency D1.
 
 ## Framework Alignment
@@ -146,3 +148,4 @@ cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 |---|---|---|---|---|
 | v1 | 2026-06-28 | initial OOS-positive next-best FX cointegration basket build | G0 | APPROVED |
 | v1 | 2026-06-28 | logical-basket Q02 completed from recovered orphan worker summary `ed3dada9-d657-4b85-b5ba-28d2c64bf788`; real T2 run produced 0 trades versus the 35-trade floor | Q02 | FAIL |
+| v1-q02a | 2026-07-01 | manifest repaired to declare AUDUSD.DWX and USDJPY.DWX conversion history used by the EA runtime, then logical-basket Q02 requeued | Q02 | PENDING |
