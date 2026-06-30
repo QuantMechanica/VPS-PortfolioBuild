@@ -1,3 +1,3 @@
 # Strategy Card
 
-Canonical card: `strategy-seeds/cards/wti-month-orb_card.md`
+Canonical card: `strategy-seeds/cards/xng-month-orb_card.md`

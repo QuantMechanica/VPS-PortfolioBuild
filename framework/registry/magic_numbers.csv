@@ -13890,3 +13890,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12615,tsmom-12m-cross-asset-basket,1,NDX.DWX,126150001,2026-06-30,Development,active
 12615,tsmom-12m-cross-asset-basket,2,XAUUSD.DWX,126150002,2026-06-30,Development,active
 12615,tsmom-12m-cross-asset-basket,3,XTIUSD.DWX,126150003,2026-06-30,Development,active
+12812,xng-month-orb,0,XNGUSD.DWX,128120000,2026-06-30,Development,active

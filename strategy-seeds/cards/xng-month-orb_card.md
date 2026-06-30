@@ -234,10 +234,11 @@ whether the deterministic price-only realization has edge on Darwinex
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
-| v1 | 2026-06-30 | initial XNG month-opening range breakout build | G0 | APPROVED |
+| v1-q02 | 2026-06-30 | strict build PASS and paced-fleet Q02 enqueued | Q02 | PENDING 4638e4ce-0f70-42db-b3af-e5fb73b62f91 |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-06-30 | APPROVED | this card |
+| Q02 Baseline Screening | 2026-06-30 | QUEUED | work_items/4638e4ce-0f70-42db-b3af-e5fb73b62f91 |
