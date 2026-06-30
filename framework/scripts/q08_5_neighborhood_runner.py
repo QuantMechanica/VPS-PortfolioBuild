@@ -36,6 +36,7 @@ import json
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 if __package__ in (None, ""):
@@ -46,6 +47,25 @@ from framework.scripts.q05_stress_medium import _parse_pf_dd_trades
 
 GATE_NAME = "Q08.5_neighborhood"
 PERTURBATION_PCT = 10.0
+NON_STRATEGY_PREFIXES = ("qm_", "RISK_")
+NON_PERTURBABLE_NAME_TOKENS = (
+    "enabled",
+    "mode",
+    "use_",
+    "no_",
+    "direction",
+)
+
+
+def is_perturbable_param(key: str, value: int | float) -> bool:
+    lowered = key.lower()
+    if key == "PORTFOLIO_WEIGHT" or key.startswith(NON_STRATEGY_PREFIXES):
+        return False
+    if any(token in lowered for token in NON_PERTURBABLE_NAME_TOKENS):
+        return False
+    if float(value) == 0.0:
+        return False
+    return True
 
 
 def load_plateau_pick(plateau_path: Path) -> dict:
@@ -83,11 +103,14 @@ def load_params_from_setfile(setfile_path: Path) -> dict:
             continue
         try:
             if re.fullmatch(r"[-+]?\d+", value):
-                params[key] = int(value)
+                parsed = int(value)
             else:
-                params[key] = float(value)
+                parsed = float(value)
         except ValueError:
             continue
+        if not is_perturbable_param(key, parsed):
+            continue
+        params[key] = parsed
     if not params:
         return {"params": params, "source": str(setfile_path), "source_type": "baseline_setfile_no_strategy_params"}
     return {"params": params, "source": str(setfile_path), "source_type": "baseline_setfile"}
@@ -128,15 +151,36 @@ def write_perturbation_setfile(baseline_set: Path, param: str, value, out_dir: P
     return out_path
 
 
+def latest_run_smoke_summary(report_root: Path, ea_id: int, started_at: float) -> Path | None:
+    """Return the newest run_smoke summary for this EA from this invocation."""
+    base = Path(report_root) / f"QM5_{ea_id}"
+    if not base.exists():
+        return None
+    summaries = sorted(
+        base.glob("*/summary.json"),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    for summary in summaries:
+        try:
+            if summary.stat().st_mtime >= started_at - 5:
+                return summary
+        except OSError:
+            continue
+    return summaries[0] if summaries else None
+
+
 def resolve_ea_expert(ea_label: str, ea_id: int) -> str:
     repo_root = Path(__file__).resolve().parents[2]
-    if "_" in ea_label.replace(f"QM5_{ea_id}", "", 1).strip("_"):
+    if ea_label.startswith("QM\\"):
         return ea_label
+    if "_" in ea_label.replace(f"QM5_{ea_id}", "", 1).strip("_"):
+        return f"QM\\{ea_label}"
     ea_dirs = sorted(
         d for d in (repo_root / "framework" / "EAs").glob(f"QM5_{ea_id}_*")
         if d.is_dir()
     )
-    return ea_dirs[0].name if ea_dirs else ea_label
+    return f"QM\\{ea_dirs[0].name}" if ea_dirs else f"QM\\{ea_label}"
 
 
 def fire_backtest(*, ea_id: int, ea_expert: str, symbol: str,
@@ -170,6 +214,7 @@ def fire_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         "-TimeoutSeconds", str(timeout_sec),
     ]
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+    started_at = time.time()
     try:
         subprocess.run(args, capture_output=True, text=True,
                        timeout=timeout_sec, creationflags=creationflags)
@@ -178,6 +223,8 @@ def fire_backtest(*, ea_id: int, ea_expert: str, symbol: str,
     sym_clean = symbol.replace(".", "_")
     summary = (report_root / f"QM5_{ea_id}" / "Q08" / "neighborhood"
                / sym_clean / run_tag / "summary.json")
+    if not summary.exists():
+        summary = latest_run_smoke_summary(report_root, ea_id, started_at) or summary
     return _parse_pf_dd_trades(summary)
 
 

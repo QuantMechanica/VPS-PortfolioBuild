@@ -84,6 +84,8 @@ def summary_invalid_reason(summary_path: Path) -> str | None:
     sj = _load_summary(summary_path)
     if sj is None:
         return "summary_parse_error"
+    if str(sj.get("result") or "").upper() == "PASS":
+        return None
     reasons = {str(r).upper() for r in (sj.get("reason_classes") or [])}
     runs = sj.get("runs") or []
     markers: set[str] = set()

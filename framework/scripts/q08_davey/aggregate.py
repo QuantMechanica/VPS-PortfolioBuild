@@ -81,7 +81,9 @@ LOW_SAMPLE_DETAIL_TOKENS = (
 DL077_MIN_QUALITY_PASSES = 1
 
 
-def _ensure_sub_gate_inputs(ea_id: int, symbol: str, terminal: str | None = None) -> dict:
+def _ensure_sub_gate_inputs(ea_id: int, symbol: str, terminal: str | None = None,
+                            baseline_setfile: Path | None = None,
+                            neighborhood_max_params: int | None = None) -> dict:
     """PT4 2026-05-23 — pre-invoke Q08.5 + Q08.7 supporting runners if their
     output artifacts don't yet exist. Sub-gates 8.5 (neighborhood) and 8.7
     (PBO) read perturbations.json / scores.csv produced by separate runners.
@@ -104,17 +106,20 @@ def _ensure_sub_gate_inputs(ea_id: int, symbol: str, terminal: str | None = None
         # Best-effort dispatch — requires a baseline setfile to be discoverable.
         # We let the runner self-resolve from --ea + --symbol via Q03 plateau
         # pick lookup; it'll log SKIP and exit non-zero if pre-reqs missing.
-        baseline = _guess_baseline_setfile(repo_root, ea_id, symbol)
+        baseline = baseline_setfile or _guess_baseline_setfile(repo_root, ea_id, symbol)
         if baseline is not None:
             try:
-                proc = _sp.run([
+                cmd = [
                     py, str(repo_root / "framework" / "scripts" /
                             "q08_5_neighborhood_runner.py"),
                     "--ea", f"QM5_{ea_id}",
                     "--symbol", symbol,
                     "--baseline-setfile", str(baseline),
                     "--terminal", terminal or "T2",
-                ], capture_output=True, text=True, timeout=1800)
+                ]
+                if neighborhood_max_params is not None:
+                    cmd.extend(["--max-params", str(neighborhood_max_params)])
+                proc = _sp.run(cmd, capture_output=True, text=True, timeout=1800)
                 ran["8_5_neighborhood"] = {
                     "exit_code": proc.returncode,
                     "artifact_now_exists": perturbations.exists(),
@@ -271,16 +276,18 @@ def _latest_structured_qm_log(ea_id: int, symbol: str, terminal: str | None = No
     return best[2] if best is not None else None
 
 
-def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None) -> dict:
+def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None,
+                             baseline_setfile: Path | None = None) -> dict:
     """Run ONE clean full-history backtest so the EA emits its TRADE_CLOSED stream to
     Common\\Files. Q08 itself doesn't otherwise run a backtest, so without this the trade
     log never exists for the aggregator to read."""
     import subprocess as _sp
     import re as _re
     repo_root = Path(__file__).resolve().parents[3]
-    baseline = _guess_baseline_setfile(repo_root, ea_id, symbol)
+    baseline = baseline_setfile or _guess_baseline_setfile(repo_root, ea_id, symbol)
     if baseline is None:
         return {"skipped": "no_baseline_setfile"}
+    baseline = Path(baseline)
     ea_dirs = [d for d in (repo_root / "framework" / "EAs").iterdir()
                if d.is_dir() and d.name.startswith(f"QM5_{ea_id}_")]
     if not ea_dirs:
@@ -604,7 +611,9 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
 def run_all(ea_id: int, symbol: str, log_path: Path,
             portfolio: list[dict] | None = None,
             out_dir: Path | None = None,
-            terminal: str | None = None) -> dict:
+            terminal: str | None = None,
+            baseline_setfile: Path | None = None,
+            neighborhood_max_params: int | None = None) -> dict:
     log_path = Path(log_path)
     trades = common.load_trades_from_log(log_path)
     equity_stream = common.load_equity_stream(log_path)
@@ -626,7 +635,7 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
                 common_log.unlink()
         except OSError:
             pass
-        baseline_run = _run_baseline_for_trades(ea_id, symbol, terminal)
+        baseline_run = _run_baseline_for_trades(ea_id, symbol, terminal, baseline_setfile)
         if baseline_run and not baseline_run.get("baseline_report_path"):
             retry_summary = _latest_baseline_summary(
                 Path(f"D:/QM/reports/pipeline/QM5_{ea_id}/Q08/_baseline"),
@@ -649,11 +658,18 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
     # portfolio stream carries gross-of-worst-case net (the builder reapplies its own
     # commission model), matching the raw Common\Files stream format.
     raw_trades = [dict(t) for t in trades]
+    portfolio_stream = _persist_durable_sleeve_stream(ea_id, symbol, raw_trades)
 
     trades, commission_info = _apply_worst_case_commission(trades, symbol)
 
     # PT4 — best-effort pre-run of Q08.5 + Q08.7 supporting runners
-    sub_gate_input_runs = _ensure_sub_gate_inputs(ea_id, symbol, terminal)
+    sub_gate_input_runs = _ensure_sub_gate_inputs(
+        ea_id,
+        symbol,
+        terminal,
+        baseline_setfile,
+        neighborhood_max_params,
+    )
 
     sub_results: list[dict] = []
     for label, mod in SUB_GATES:
@@ -715,9 +731,9 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         out_dir = Path(f"D:/QM/reports/pipeline/QM5_{ea_id}/Q08/{sym_clean}")
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Persist a durable, builder-compatible per-trade stream so the portfolio layer can
-    # always assemble this sleeve, independent of the volatile Common\Files working dir.
-    aggregate["portfolio_stream"] = _persist_durable_sleeve_stream(ea_id, symbol, raw_trades)
+    # Persisted before Q08.5/Q08.7 support runners can overwrite the volatile
+    # Common\Files trade stream with perturbation/fold artifacts.
+    aggregate["portfolio_stream"] = portfolio_stream
 
     (out_dir / "aggregate.json").write_text(
         json.dumps(aggregate, indent=2, default=str), encoding="utf-8"
@@ -749,6 +765,10 @@ def main() -> int:
     ap.add_argument("--log", type=Path, help="path to EA JSON-lines log")
     ap.add_argument("--out-dir", type=Path, help="override output dir")
     ap.add_argument("--terminal", help="MT5 terminal (T1-T10) for the baseline trade-log backtest")
+    ap.add_argument("--baseline-setfile", type=Path,
+                    help="explicit baseline setfile for Q08 baseline and neighborhood support runs")
+    ap.add_argument("--neighborhood-max-params", type=int,
+                    help="override Q08.5 perturbation parameter cap for bounded reruns")
     ap.add_argument("--discover", action="store_true",
                     help="walk Q07-PASS pairs in farm DB and run Q08 on each (TODO)")
     args = ap.parse_args()
@@ -761,7 +781,15 @@ def main() -> int:
         ap.print_usage(sys.stderr)
         return 2
 
-    agg = run_all(args.ea_id, args.symbol, args.log, out_dir=args.out_dir, terminal=args.terminal)
+    agg = run_all(
+        args.ea_id,
+        args.symbol,
+        args.log,
+        out_dir=args.out_dir,
+        terminal=args.terminal,
+        baseline_setfile=args.baseline_setfile,
+        neighborhood_max_params=args.neighborhood_max_params,
+    )
     _print_summary(agg)
     return 0 if agg["verdict"] == "PASS" else (1 if agg["verdict"] == "FAIL" else 3)
 

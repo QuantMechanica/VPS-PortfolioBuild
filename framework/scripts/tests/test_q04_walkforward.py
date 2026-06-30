@@ -38,6 +38,39 @@ class Q04CommissionFallbackTests(unittest.TestCase):
 
 
 class Q04WalkForwardTests(unittest.TestCase):
+    def test_stream_pf_cannot_override_losing_native_report(self) -> None:
+        mod = _load_module()
+
+        pf, trades, basis, reason = mod.guard_pf_net_against_report_summary(
+            pf_net=6.207,
+            trades=399,
+            commission_basis="worst_case_dxz_ftmo_notional",
+            report_pf=0.69,
+            report_trades=434,
+        )
+
+        self.assertEqual(pf, 0.69)
+        self.assertEqual(trades, 434)
+        self.assertEqual(basis, "native_report_guard_fallback")
+        self.assertIn("trade_count_mismatch", reason)
+        self.assertIn("pf_contradicts_report", reason)
+
+    def test_matching_stream_keeps_commission_model_pf(self) -> None:
+        mod = _load_module()
+
+        pf, trades, basis, reason = mod.guard_pf_net_against_report_summary(
+            pf_net=1.12,
+            trades=240,
+            commission_basis="worst_case_dxz_ftmo_notional",
+            report_pf=1.10,
+            report_trades=240,
+        )
+
+        self.assertEqual(pf, 1.12)
+        self.assertEqual(trades, 240)
+        self.assertEqual(basis, "worst_case_dxz_ftmo_notional")
+        self.assertIsNone(reason)
+
     def test_report_missing_summary_is_invalid_evidence(self) -> None:
         mod = _load_module()
         with tempfile.TemporaryDirectory() as tmp:

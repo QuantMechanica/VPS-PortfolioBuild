@@ -115,6 +115,7 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
     def test_q08_aggregate_classifies_soft_chopping_fail(self) -> None:
         verdict, classification = q08_aggregate._aggregate_verdict(
             [
+                {"name": "8.7_pbo", "status": "PASS", "detail": "PBO=0.00%:max=40%"},
                 {
                     "name": "8.6_chopping_block",
                     "status": "FAIL",
@@ -143,20 +144,26 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
     def test_q08_seasonal_scattered_losing_months_is_soft(self) -> None:
         # 4 SCATTERED losing months (max consecutive run = 2) -> soft (OWNER "am Stück")
         verdict, classification = q08_aggregate._aggregate_verdict(
-            [{"name": "8.4_seasonal", "status": "FAIL", "detail": "losing_months:[2, 6, 8, 9]"}],
+            [
+                {"name": "8.7_pbo", "status": "PASS", "detail": "PBO=0.00%:max=40%"},
+                {"name": "8.4_seasonal", "status": "FAIL", "detail": "losing_months:[2, 6, 8, 9]"},
+            ],
             trades=[{"net": 10.0}, {"net": -5.0}],
         )
         self.assertEqual(verdict, "FAIL_SOFT")
         self.assertEqual(classification["8.4_seasonal"], "EDGE_SOFT")
 
-    def test_q08_seasonal_consecutive_streak_is_hard(self) -> None:
-        # 4 CONSECUTIVE losing months -> sustained drawdown -> hard
+    def test_q08_seasonal_consecutive_streak_is_soft_for_portfolio_track(self) -> None:
+        # DL-075: seasonal robustness is absorbed by the portfolio track; Q08 keeps it soft.
         verdict, classification = q08_aggregate._aggregate_verdict(
-            [{"name": "8.4_seasonal", "status": "FAIL", "detail": "losing_months:[1, 2, 3, 4]"}],
+            [
+                {"name": "8.7_pbo", "status": "PASS", "detail": "PBO=0.00%:max=40%"},
+                {"name": "8.4_seasonal", "status": "FAIL", "detail": "losing_months:[1, 2, 3, 4]"},
+            ],
             trades=[{"net": 10.0}, {"net": -5.0}],
         )
-        self.assertEqual(verdict, "FAIL_HARD")
-        self.assertEqual(classification["8.4_seasonal"], "EDGE_HARD")
+        self.assertEqual(verdict, "FAIL_SOFT")
+        self.assertEqual(classification["8.4_seasonal"], "EDGE_SOFT")
 
     def test_q08_hard_fail_dominates_invalid_gate(self) -> None:
         # a definitive hard fail wins over a single non-evaluable (INVALID) gate
@@ -170,15 +177,18 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
         )
         self.assertEqual(verdict, "FAIL_HARD")
 
-    def test_q08_regime_join_incomplete_is_low_sample(self) -> None:
-        # low-trade regime-join shortfall is a sample symptom, not a final fail
+    def test_q08_regime_join_incomplete_is_soft_for_portfolio_track(self) -> None:
+        # DL-075: regime/crisis gaps are soft at Q08 and evaluated in the portfolio track.
         verdict, classification = q08_aggregate._aggregate_verdict(
-            [{"name": "8.10_regime_crisis", "status": "INVALID",
-              "detail": "regime_join_incomplete:classified=1:unclassified=2:n_timestamped=3"}],
+            [
+                {"name": "8.7_pbo", "status": "PASS", "detail": "PBO=0.00%:max=40%"},
+                {"name": "8.10_regime_crisis", "status": "INVALID",
+                 "detail": "regime_join_incomplete:classified=1:unclassified=2:n_timestamped=3"},
+            ],
             trades=[{"net": 10.0}, {"net": -5.0}],
         )
         self.assertEqual(verdict, "FAIL_SOFT")
-        self.assertEqual(classification["8.10_regime_crisis"], "LOW_SAMPLE")
+        self.assertEqual(classification["8.10_regime_crisis"], "EDGE_SOFT")
 
     def test_q08_fail_soft_routes_to_q09_portfolio_when_trade_count_met(self) -> None:
         conn = _memory_work_items_conn()
@@ -334,6 +344,21 @@ class VerdictTaxonomyWs2Tests(unittest.TestCase):
         )
         self.assertEqual(verdict, "INFRA_FAIL")
         self.assertEqual(reason, "summary_missing")
+
+    def test_invalid_zero_trade_evidence_remains_infra_fail(self) -> None:
+        verdict, reason = farmctl._derive_phase_runner_verdict(
+            {
+                "phase": "Q05",
+                "verdict": "INVALID",
+                "reason": "invalid_summary:NO_HISTORY,BARS_ZERO,EMPTY_EXPERT,RUN_STATUS_INVALID",
+                "summary_path": "D:/QM/reports/work_items/example/summary.json",
+                "trades": 0,
+            },
+            phase="Q05",
+        )
+
+        self.assertEqual(verdict, "INFRA_FAIL")
+        self.assertIn("invalid_summary", reason)
 
 
 if __name__ == "__main__":

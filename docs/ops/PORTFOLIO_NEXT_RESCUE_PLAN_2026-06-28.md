@@ -28,18 +28,25 @@ strategy refinements.
 ## Near-Miss Q05 Rescue Queue
 
 These failed Q05 by a small PF or drawdown margin after useful Q04 evidence.
-The first group is more portfolio-useful because it avoids adding more XAU/US
-index exposure.
+The list below reflects the 2026-06-28 native-report guard audit in
+`docs/ops/Q04_NATIVE_REPORT_GUARD_AUDIT_2026-06-28.md`; candidates whose Q04
+PASS was stream-driven are removed from the rescue queue.
 
 | rank | EA | symbol | prior gate | Q05 issue | read |
 |---:|---|---|---|---|---|
-| 1 | `QM5_11476` | `USDJPY.DWX` | Q04 `PASS_SOFT` | PF `0.980` | Best quick FX rescue candidate. |
-| 2 | `QM5_9636` | `GBPUSD.DWX` | Q04 `PASS_SOFT` | PF `0.980` | GBP diversifier; inspect setfile/filter. |
-| 3 | `QM5_10198` | `GBPUSD.DWX` | Q04 `PASS` | PF `0.970` | Strong candidate; Q04 all folds > 1. |
-| 4 | `QM5_10041` | `GBPUSD.DWX` | Q04 `PASS` | PF `0.950` | Already on shortlist; small filter likely. |
-| 5 | `QM5_11708` | `AUDUSD.DWX` | Q04 `PASS_LOWFREQ` | PF `0.920` | Useful AUD exposure if stable. |
-| 6 | `QM5_11340` | `EURUSD.DWX` | Q04 `PASS` | PF `0.910` | Lower priority while `10558` Q08 is pending. |
-| 7 | `QM5_10300` | `XTIUSD.DWX` | Q04 `PASS_SOFT` | PF `0.900` | Commodity diversifier; worth a separate filter pass. |
+| 1 | `QM5_11476` | `USDJPY.DWX` | Q04 `PASS_SOFT` | PF `0.980` | Long-only rescue is Q04/Q05/Q06/Q07 PASS and Q08 `FAIL_SOFT`, but Q09 is `FAIL_PORTFOLIO`: monthly max corr `0.4446` > `0.30`, Sharpe would fall `1.9598 -> 1.8389`, MaxDD would rise `0.4504 -> 0.4731`. Park for current book unless decorrelation/book mix changes. |
+| 2 | `QM5_10198` | `GBPUSD.DWX` | Q04 `PASS` | PF `0.970`, DD `41.80%` | Valid Q04, but needs drawdown/filter repair before rerun. |
+| 3 | `QM5_9636` | `GBPUSD.DWX` | Q04 `PASS_SOFT` | PF `0.980`, DD `36.85%` | Valid Q04, but drawdown is too high for quick admission. |
+| 4 | `QM5_11340` | `EURUSD.DWX` | Q04 `PASS` | PF `0.910` | Lower priority while `10558` Q08 is pending. |
+
+Removed from this queue after native-report recheck:
+
+- `QM5_10041 GBPUSD`: old Q04 `PASS` corrects to `FAIL`
+  (`0.69 / 0.73 / 1.38` native folds).
+- `QM5_11708 AUDUSD`: old Q04 `PASS_LOWFREQ` corrects to `FAIL`
+  (`0.23 / 0.91 / 0 trades` native folds).
+- `QM5_10300 XTIUSD`: old Q04 `PASS_SOFT` corrects to `FAIL`
+  (`0.74 / 1.07 / 1.00` native folds).
 
 Index/XAU near-misses exist, but they are lower portfolio priority unless the
 farm produces an unusually clean Q08/Q09 path.

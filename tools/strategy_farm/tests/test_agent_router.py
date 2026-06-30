@@ -233,9 +233,13 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
 
             self.assertEqual(result["replenish"]["created"], [])
             self.assertTrue(result["replenish"]["frozen"])
+            self.assertTrue(result["replenish_directed"]["created"])
             assigned = [r for r in result["routes"] if r["reason"] == "assigned"]
-            self.assertEqual(assigned, [])
-            self.assertEqual(agent_router.status(root)["tasks"], [])
+            self.assertGreater(len(assigned), 0)
+            self.assertLessEqual(len(assigned), len(result["replenish_directed"]["created"]))
+            self.assertTrue(
+                all(row["task_type"] == "research_strategy" for row in assigned)
+            )
 
     def test_friday_smoke_tasks_route_to_all_three_workers_when_enabled(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
@@ -410,7 +414,7 @@ expected_trades_per_year_per_symbol: 12
             self.assertFalse(result["updated"])
             self.assertEqual(result["reason"], "strategy_card_schema_failed")
 
-    def test_research_review_card_requires_filters_block(self) -> None:
+    def test_research_review_card_accepts_relaxed_optional_sections(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             review = root / "artifacts" / "cards_review"
@@ -451,8 +455,8 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
                 verdict="RESEARCH_DRAFT_READY",
             )
 
-            self.assertFalse(result["updated"])
-            self.assertEqual(result["reason"], "strategy_card_schema_failed")
+            self.assertTrue(result["updated"])
+            self.assertEqual(result["state"], "REVIEW")
 
 
 if __name__ == "__main__":

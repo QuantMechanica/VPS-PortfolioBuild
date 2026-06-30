@@ -45,23 +45,49 @@ Portfolio read:
 
 ## Priority 2 - Stress-Gate Borderline Repairs
 
-### QM5_10041 GBPUSD
+### QM5_11476 USDJPY
 
-- Q04 PASS with very high PF-net on all folds.
-- Q05 FAIL only slightly: `pf_below_floor:pf=0.950`.
-- Candidate for a small filter/refinement pass, not live-ready as-is.
+- Q04 remains valid after native-report guard audit: `PASS_SOFT`
+  (`0.871 / 1.516 / 1.120`).
+- Directional decomposition showed the edge is long-side concentrated; the
+  original short side drove the Q05 failure.
+- Long-only rescue now has Q04 `PASS`, Q05 `PASS`, Q06 `PASS`, Q07 `PASS`.
+- Q07 rerun after a retry-summary aggregation fix passed with seed PFs
+  `1.10 / 1.10 / 1.14 / 1.09 / 1.07`, variance `6.36%`.
+- Q08 standalone is `FAIL_SOFT`: Neighborhood PASS, PBO PASS, Regime PASS;
+  soft signals are seasonal, chopping-block, and cost cushion.
+- Q09 portfolio contribution is `FAIL_PORTFOLIO`: monthly max correlation
+  `0.4446` exceeds the current `0.30` cap, and the current book would degrade
+  from Sharpe `1.9598` to `1.8389` while MaxDD rises from `0.4504` to `0.4731`.
+- Keep as a robust standalone/soft rescue candidate, but do not add it to the
+  current book unchanged.
 
-### QM5_10300 XTIUSD
+### QM5_10198 GBPUSD
 
-- Q04 PASS_SOFT: 2/3 folds > floor, mean PF-net about 1.30, weakest fold 0.98.
-- Q05 FAIL: `pf_below_floor:pf=0.900`.
-- Still useful because XTIUSD diversifies away from the current XAU/index bias.
+- Q04 remains valid after native-report guard audit: `PASS`
+  (`1.18 / 1.39 / 1.02`).
+- Q05 PF is near floor (`0.970`), but DD is too high (`41.80%`).
+- Keep as drawdown/filter repair, not quick admission.
 
-### QM5_12361 WS30
+### QM5_9636 GBPUSD
 
-- Q04 PASS, but Q05 fails on drawdown: `dd_pct=28.28 > 15`.
-- Not a first rescue for live because WS30/index exposure overlaps existing book
-  and the fix needs risk/drawdown work, not a simple infra correction.
+- Q04 remains valid after native-report guard audit: `PASS_SOFT`
+  (`1.20 / 0.87 / 1.80`).
+- Q05 PF is near floor (`0.980`), but DD is too high (`36.85%`).
+- Keep as drawdown/filter repair.
+
+### Removed From Borderline Repair
+
+- `QM5_10041 GBPUSD`: old Q04 `PASS` corrects to `FAIL`
+  (`0.69 / 0.73 / 1.38`) because the stream missed closing deals.
+- `QM5_10300 XTIUSD`: old Q04 `PASS_SOFT` corrects to `FAIL`
+  (`0.74 / 1.07 / 1.00`).
+- `QM5_11708 AUDUSD`: old Q04 `PASS_LOWFREQ` corrects to `FAIL`
+  (`0.23 / 0.91 / 0 trades`).
+- `QM5_12361 WS30`: Q04 PASS, but Q05 fails on drawdown:
+  `dd_pct=28.28 > 15`; index exposure overlaps existing book.
+
+Evidence: `docs/ops/Q04_NATIVE_REPORT_GUARD_AUDIT_2026-06-28.md`.
 
 ## Priority 3 - Basket / Relative-Value Research Queue
 
@@ -96,5 +122,7 @@ Portfolio read:
 2. If Q05 PASS, let cascade continue to Q06/Q07/Q08 with the propagated 2024 cap.
 3. If Q05 FAIL by strategy metrics, inspect PF/DD/trades and decide whether a
    minimal basket filter refinement is justified.
-4. In parallel, keep `QM5_10041 GBPUSD` and `QM5_10300 XTIUSD` as the next
-   borderline rescue candidates.
+4. Park `QM5_11476 USDJPY` for the current book after Q09 rejection; revisit
+   only after a material book-composition change or a decorrelation/session
+   filter. Treat `QM5_10198 GBPUSD` / `QM5_9636 GBPUSD` as the next
+   drawdown-filter repairs.

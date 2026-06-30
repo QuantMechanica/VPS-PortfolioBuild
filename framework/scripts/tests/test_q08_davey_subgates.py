@@ -2,9 +2,10 @@ import datetime as dt
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
-from framework.scripts import q08_7_pbo_runner
+from framework.scripts import q08_5_neighborhood_runner, q08_7_pbo_runner
 from framework.scripts.q08_davey import (
     aggregate,
     sub_8_1_correlation,
@@ -283,6 +284,116 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         # Guard the helper's contract directly without requiring a live MT5 tree.
         self.assertTrue(hasattr(aggregate, "_latest_structured_qm_log"))
 
+    def test_q08_explicit_baseline_setfile_feeds_support_runners(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            baseline = Path(tmp) / "QM5_999999_demo_EURUSD.DWX_H1_rescue_long_only_backtest.set"
+            baseline.write_text("x=1\n", encoding="utf-8")
+            calls = []
+
+            def fake_run(args, **_kwargs):
+                calls.append([str(arg) for arg in args])
+                return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+            with patch("subprocess.run", side_effect=fake_run):
+                aggregate._ensure_sub_gate_inputs(
+                    999999,
+                    "EURUSD.DWX",
+                    terminal="T9",
+                    baseline_setfile=baseline,
+                    neighborhood_max_params=1,
+                )
+
+        neighborhood = next(
+            cmd for cmd in calls
+            if any("q08_5_neighborhood_runner.py" in part for part in cmd)
+        )
+        self.assertEqual(neighborhood[neighborhood.index("--baseline-setfile") + 1], str(baseline))
+        self.assertEqual(neighborhood[neighborhood.index("--max-params") + 1], "1")
+
+    def test_q08_explicit_baseline_setfile_feeds_baseline_backtest(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            baseline = Path(tmp) / "QM5_11476_demo_USDJPY.DWX_H1_rescue_long_only_backtest.set"
+            baseline.write_text("x=1\n", encoding="utf-8")
+            calls = []
+
+            def fake_run(args, **_kwargs):
+                calls.append([str(arg) for arg in args])
+                return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+            with patch("subprocess.run", side_effect=fake_run), \
+                 patch.object(aggregate, "_latest_baseline_summary", return_value=None), \
+                 patch.object(aggregate, "_latest_structured_qm_log", return_value=None):
+                aggregate._run_baseline_for_trades(
+                    11476,
+                    "USDJPY.DWX",
+                    terminal="T9",
+                    baseline_setfile=baseline,
+                )
+
+        self.assertEqual(calls[0][calls[0].index("-SetFile") + 1], str(baseline))
+
+    def test_q08_neighborhood_resolves_canonical_v5_expert_path(self) -> None:
+        expert = q08_5_neighborhood_runner.resolve_ea_expert("QM5_11476", 11476)
+
+        self.assertTrue(expert.startswith("QM\\QM5_11476_"))
+
+    def test_q08_neighborhood_reads_run_smoke_timestamp_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            baseline = root / "baseline.set"
+            baseline.write_text("x=1\n", encoding="utf-8")
+
+            def fake_run(_args, **_kwargs):
+                summary = root / "QM5_11476" / "20260101_000000" / "summary.json"
+                summary.parent.mkdir(parents=True)
+                summary.write_text(
+                    '{"runs":[{"profit_factor":1.23,"drawdown":456.0,"total_trades":78}]}',
+                    encoding="utf-8",
+                )
+                return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+            with patch.object(q08_5_neighborhood_runner.subprocess, "run", side_effect=fake_run):
+                pf, dd, trades = q08_5_neighborhood_runner.fire_backtest(
+                    ea_id=11476,
+                    ea_expert="QM\\QM5_11476_demo",
+                    symbol="USDJPY.DWX",
+                    setfile=baseline,
+                    terminal="T9",
+                    run_tag="baseline",
+                    report_root=root,
+                )
+
+        self.assertEqual(pf, 1.23)
+        self.assertEqual(dd, 456.0)
+        self.assertEqual(trades, 78)
+
+    def test_q08_neighborhood_setfile_fallback_skips_framework_and_categorical_params(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            setfile = Path(tmp) / "demo.set"
+            setfile.write_text(
+                "\n".join([
+                    "; strategy-specific params from card must be appended below this line",
+                    "qm_rng_seed=42",
+                    "RISK_FIXED=1000",
+                    "PORTFOLIO_WEIGHT=1",
+                    "strategy_use_slope_filter=1",
+                    "strategy_direction_mode=1",
+                    "strategy_min_exit_bars=0",
+                    "strategy_bb_period=20",
+                    "strategy_bb_dev_inner=1.0",
+                    "fast_ema=12",
+                ]),
+                encoding="utf-8",
+            )
+
+            params = q08_5_neighborhood_runner.load_params_from_setfile(setfile)["params"]
+
+        self.assertEqual(params, {
+            "strategy_bb_period": 20,
+            "strategy_bb_dev_inner": 1.0,
+            "fast_ema": 12,
+        })
+
 
 class Q08DurableSleeveStreamTests(unittest.TestCase):
     """The durable portfolio-stream persistence fidelity rule (copy / serialise / skip)."""
@@ -330,6 +441,45 @@ class Q08DurableSleeveStreamTests(unittest.TestCase):
                 res = aggregate._persist_durable_sleeve_stream(99, "NDX.DWX", trades)
             self.assertFalse(res["persisted"])
             self.assertEqual(res["reason"], "report_fallback_no_volume")
+
+    def test_run_all_persists_stream_before_support_runners(self) -> None:
+        events = []
+        trades = [{"time": 1, "net": 10.0, "profit": 10.0, "swap": 0.0,
+                   "commission": 0.0, "volume": 0.1, "symbol": "EURUSD.DWX"}]
+        commission_info = {
+            "commission_basis": "test",
+            "commission_model": {"degraded": False},
+            "commission_total": 0.0,
+            "gross_total": 10.0,
+            "cost_cushion": None,
+            "cost_cushion_tier": "PASS",
+            "degraded_symbols": [],
+        }
+
+        def persist(*_args, **_kwargs):
+            events.append("persist")
+            return {"persisted": True, "source": "common_copy", "path": "durable.jsonl", "n": 1}
+
+        def ensure(*_args, **_kwargs):
+            events.append("ensure")
+            return {}
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            out_dir = root / "out"
+            with patch.object(aggregate.common, "load_trades_from_log", return_value=trades), \
+                 patch.object(aggregate.common, "load_equity_stream", return_value=[]), \
+                 patch.object(aggregate, "_latest_structured_qm_log", return_value=None), \
+                 patch.object(aggregate, "_persist_durable_sleeve_stream", side_effect=persist), \
+                 patch.object(aggregate, "_ensure_sub_gate_inputs", side_effect=ensure), \
+                 patch.object(aggregate, "_apply_worst_case_commission",
+                              return_value=([dict(t) for t in trades], commission_info)), \
+                 patch.object(aggregate, "_aggregate_verdict", return_value=("PASS", {})), \
+                 patch.object(aggregate, "SUB_GATES", []):
+                res = aggregate.run_all(1234, "EURUSD.DWX", root / "unused.log", out_dir=out_dir)
+
+        self.assertEqual(events, ["persist", "ensure"])
+        self.assertEqual(res["portfolio_stream"]["n"], 1)
 
 
 if __name__ == "__main__":

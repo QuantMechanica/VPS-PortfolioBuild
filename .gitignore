@@ -69,3 +69,8 @@ scripts/pip*.exe
 .tmp_*.pdf
 .tmp_*.html
 
+
+# PDF-mining binary tool (kept on disk, not tracked)
+scripts/pymupdf.exe
+# stray Antigravity CLI installer
+install.cmd

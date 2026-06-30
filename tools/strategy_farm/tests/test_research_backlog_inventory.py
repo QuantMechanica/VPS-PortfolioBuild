@@ -93,7 +93,7 @@ expected_trades_per_year_per_symbol: 12
 
             self.assertEqual(ready["ready_count"], 0)
             errors = ready["blocked_cards"][0]["errors"]
-            self.assertIn("schema_missing_body:thesis", errors)
+            self.assertIn("schema_missing_body:market_universe", errors)
 
     def test_implausible_entry_frequency_blocks_ready_count(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:

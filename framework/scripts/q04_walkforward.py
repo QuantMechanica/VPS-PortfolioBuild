@@ -139,6 +139,42 @@ def parse_pf_from_report_summary(summary_path: Path) -> tuple[float | None, int]
     return pf_net, trades
 
 
+def guard_pf_net_against_report_summary(
+    *,
+    pf_net: float | None,
+    trades: int,
+    commission_basis: str,
+    report_pf: float | None,
+    report_trades: int,
+) -> tuple[float | None, int, str, str | None]:
+    """Keep Q04's stream/self-report PF from contradicting native MT5 evidence.
+
+    The preferred Q04 grading source is the per-trade stream because it lets the
+    runner apply the shared worst-case commission model. A malformed or partial
+    stream is still worse than the native report: it can miss closing deals and
+    falsely inflate PF. When that happens, fall back to the MT5 summary metrics
+    and carry an explicit guard reason in the aggregate.
+    """
+    if pf_net is None or report_pf is None or report_trades <= 0:
+        return pf_net, trades, commission_basis, None
+
+    reasons: list[str] = []
+    if trades and trades != report_trades:
+        reasons.append(f"trade_count_mismatch:stream={trades},report={report_trades}")
+
+    # Net-of-cost PF should not materially exceed the native report PF. A small
+    # tolerance covers rounding and the case where the shared commission model is
+    # marginally cheaper than tester-side commission on a symbol.
+    allowed_pf = max(report_pf + 0.05, report_pf * 1.25)
+    if pf_net > allowed_pf:
+        reasons.append(f"pf_contradicts_report:stream={pf_net:.3f},report={report_pf:.3f}")
+
+    if not reasons:
+        return pf_net, trades, commission_basis, None
+
+    return report_pf, report_trades, "native_report_guard_fallback", ";".join(reasons)
+
+
 def _load_summary(summary_path: Path) -> dict | None:
     if not summary_path.exists():
         return None
@@ -581,6 +617,10 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
         return {**fold, "pf_net": None, "trades": 0, "status": "TIMEOUT",
                 "summary_path": None, "invalid_reason": "timeout", "log_path": str(log_path)}
 
+    summary_path = _summary_from_log(log_path) or report_root / f"QM5_{ea_id}" / "Q04" / fold["id"] / "summary.json"
+    invalid_reason = summary_invalid_reason(summary_path) if summary_path.exists() else None
+    report_pf, report_trades = parse_pf_from_report_summary(summary_path) if summary_path.exists() else (None, 0)
+
     # DL-073: grade from the realistic %-notional model applied post-hoc to the per-trade
     # stream this fold just emitted (preferred). Fall back to the EA's self-report (now graded
     # at the realistic per-class flat rate, not a blanket $7) only when the stream is
@@ -592,8 +632,18 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
         gross_total = None
         oos_nets = []  # per-class flat fallback has no per-trade stream → no low-freq pooling
         commission_basis = "flat_per_class_ea_side_fallback"
-    summary_path = _summary_from_log(log_path) or report_root / f"QM5_{ea_id}" / "Q04" / fold["id"] / "summary.json"
-    invalid_reason = summary_invalid_reason(summary_path) if summary_path.exists() else None
+
+    pf_net, trades, commission_basis, report_guard_reason = guard_pf_net_against_report_summary(
+        pf_net=pf_net,
+        trades=trades,
+        commission_basis=commission_basis,
+        report_pf=report_pf,
+        report_trades=report_trades,
+    )
+    if report_guard_reason:
+        comm_total = None
+        gross_total = None
+        oos_nets = []
     status = "INVALID" if invalid_reason else ("OK" if (pf_net is not None and proc.returncode == 0) else "FAIL")
     return {
         **fold,
@@ -602,6 +652,9 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
         "sim_commission_total": comm_total,
         "gross_total": gross_total,
         "commission_basis": commission_basis,
+        "report_pf": report_pf,
+        "report_trades": report_trades,
+        "report_guard_reason": report_guard_reason,
         "oos_nets": oos_nets,
         "status": status,
         "summary_path": str(summary_path) if summary_path.exists() else None,

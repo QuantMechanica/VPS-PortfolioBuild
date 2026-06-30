@@ -1,4 +1,5 @@
 import json
+import os
 import sqlite3
 import sys
 import tempfile
@@ -84,11 +85,17 @@ class P2P3ProfitFilterTests(unittest.TestCase):
                 conn.commit()
 
             old_repo_root = farmctl.REPO_ROOT
+            old_agent = os.environ.get("QM_AGENT_ID")
             farmctl.REPO_ROOT = repo_root
             try:
+                os.environ["QM_AGENT_ID"] = "controller"
                 result = farmctl.enqueue_backtest(root, "p2-task", "P3")
             finally:
                 farmctl.REPO_ROOT = old_repo_root
+                if old_agent is None:
+                    os.environ.pop("QM_AGENT_ID", None)
+                else:
+                    os.environ["QM_AGENT_ID"] = old_agent
 
             self.assertTrue(result["enqueued"])
             self.assertEqual(
@@ -101,8 +108,8 @@ class P2P3ProfitFilterTests(unittest.TestCase):
             self.assertEqual(result["work_items_skipped"][0]["p2_net_profit"], -50.0)
 
             with sqlite3.connect(db) as conn:
-                rows = conn.execute("SELECT phase, symbol FROM work_items WHERE phase='P3'").fetchall()
-            self.assertEqual(rows, [("P3", "NDX.DWX")])
+                rows = conn.execute("SELECT phase, symbol FROM work_items WHERE phase='Q03'").fetchall()
+        self.assertEqual(rows, [("Q03", "NDX.DWX")])
 
 
 if __name__ == "__main__":

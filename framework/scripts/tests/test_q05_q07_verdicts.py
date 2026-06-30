@@ -66,6 +66,43 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertIn("BARS_ZERO", reason)
         self.assertIn("RUN_STATUS_INVALID", reason)
 
+    def test_q05_pass_summary_ignores_prior_invalid_retry_attempt(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            summary = Path(tmp) / "summary.json"
+            summary.write_text(
+                json.dumps({
+                    "result": "PASS",
+                    "reason_classes": ["OK"],
+                    "runs": [
+                        {
+                            "status": "INVALID",
+                            "failure": "NO_HISTORY",
+                            "invalid_report_reasons": [
+                                "EMPTY_EXPERT",
+                                "EMPTY_SYMBOL",
+                                "M0_1970_PERIOD",
+                                "BARS_ZERO",
+                                "HISTORY_CONTEXT_INVALID",
+                            ],
+                            "profit_factor": 0,
+                            "drawdown": 0,
+                            "total_trades": 0,
+                        },
+                        {
+                            "status": "OK",
+                            "profit_factor": 1.1,
+                            "drawdown": 3246.79,
+                            "total_trades": 1410,
+                        },
+                    ],
+                }),
+                encoding="utf-8",
+            )
+
+            reason = q05.summary_invalid_reason(summary)
+
+        self.assertIsNone(reason)
+
     def test_q05_valid_report_htm_fallback_extracts_metrics(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             report = Path(tmp) / "run_01" / "report.htm"

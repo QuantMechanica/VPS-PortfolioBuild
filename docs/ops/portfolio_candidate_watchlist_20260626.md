@@ -106,9 +106,13 @@ Post-merge actions executed:
   risk-parity Q09 evidence path so re-admission isn't blocked.
 - Both NDX **admitted → Q12_REVIEW_READY**.
 
-**Certified book: 3 → 5 sleeves.** Distinct Q12_REVIEW_READY = **5** (10513:XAU, 10940:XAU,
-11132:SP500, 10440:NDX, 10692:NDX), **0 duplicate ready rows**. Canonical 5-sleeve Q12-ready
-risk-parity draft manifest (`portfolio_manifest --book-source q12-ready-all`, 2018–2025 streams): **MaxDD 13.83%, Sharpe 1.49, total net
-profit 9598.11**, no missing `.ex5` files. Evidence:
+**Certified book: 3 → 6 sleeves.** Distinct Q12_REVIEW_READY = **6** (10513:XAU, 10940:XAU,
+11132:SP500, 10440:NDX, 10692:NDX, 12567:XNG), **0 duplicate ready rows**. Canonical Q12-ready
+risk-parity draft manifest (`portfolio_manifest --book-source q12-ready-all`, 2018–2025 streams):
+**observed MaxDD 0.77%, MC-p95 DD 1.37%, Sharpe 2.06, total net profit 7478.15** on the
+canonical $100k tester capital. The regenerated T_Live draft is internally consistent on registry
+magics and passes the 6% DD cap
+(`status=DRAFT_FOR_OWNER_APPROVAL`, `cap_met=true`). No missing `.ex5` files. Evidence:
 `D:\QM\reports\pipeline\QM5_{10692,10440}\Q09_PORTFOLIO\NDX_DWX\aggregate.json` and
-`D:\QM\reports\portfolio\portfolio_manifest_q12_ready_all_DRAFT_20260626.json`.
+`D:\QM\reports\portfolio\canonical_q09_12567_20260626\QM5_12567\Q09_PORTFOLIO\XNGUSD_DWX\aggregate.json`
+and `D:\QM\strategy_farm\artifacts\portfolio\portfolio_manifest_tlive_DRAFT.json`.

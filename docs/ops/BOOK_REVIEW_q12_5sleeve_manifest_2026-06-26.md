@@ -1,10 +1,27 @@
-# Book Review — Q12-ready 5-sleeve T_Live draft manifest (2026-06-26)
+# Book Review — Q12-ready T_Live draft manifest (2026-06-26)
 
-Reviewer: Claude. Subject: `D:\QM\reports\portfolio\portfolio_manifest_q12_ready_all_DRAFT_20260626.json`
+Reviewer: Claude. Subject: `D:\QM\strategy_farm\artifacts\portfolio\portfolio_manifest_tlive_DRAFT.json`
 (Codex commit `c40505dcd` — q12-ready-all manifest mode). Scope: book review + OWNER-approval prep
 for the FIRST V5 live portfolio. **No deploy / no AutoTrading action taken.**
 
-## Verdict: book VERIFIED — approvable AFTER one magic-number artifact fix (not a runtime mis-magic risk)
+## Verdict: book VERIFIED — draft is OWNER-approval-ready
+
+> 2026-06-26 Codex follow-up: the magic-number artifact defect below has been fixed in
+> `portfolio_manifest.py`; regenerated manifest sleeves now resolve `magic_number` and
+> `qm_magic_slot_offset` from `framework/registry/magic_numbers.csv`.
+>
+> The current canonical artifact
+> `D:\QM\strategy_farm\artifacts\portfolio\portfolio_manifest_tlive_DRAFT.json` is therefore
+> internally consistent on magics and uses the canonical tester capital from
+> `framework/registry/tester_defaults.json` (`initial_deposit=100000`). With the corrected capital
+> base, the Q12-ready-all book satisfied the configured `--max-dd-pct 6.0` cap.
+>
+> 2026-06-26 later update: `12567:XNGUSD` was canonically redumped through 2025, reached
+> 20 trades, passed Q09_PORTFOLIO, and was materialized as Q12-ready. The current draft is
+> therefore **6 sleeves** with observed MaxDD **0.7680115443%**, MC-p95 DD
+> **1.3741046694%**, Sharpe **2.05854719**, `cap_met=true`,
+> `status=DRAFT_FOR_OWNER_APPROVAL`, `deployment_action=NONE`.
+> The earlier 13.83% DD artifact used the stale $10k base and overstated drawdown by ~10x.
 
 > Correction (verified post-write): `gen_setfile.ps1` derives `qm_magic_slot_offset` from
 > `magic_numbers.csv` `symbol_slot` (L246–275), NOT from the manifest — so the *generated live
@@ -19,21 +36,28 @@ for the FIRST V5 live portfolio. **No deploy / no AutoTrading action taken.**
   `Q12_REVIEW_READY` sleeve (`read_candidates`) and weights inverse-vol (`inverse_vol_weights`,
   the merged risk-parity basis). Greedy assembler is the separate `selected` mode. Basis recorded
   `portfolio_candidates.Q12_REVIEW_READY_all`.
-- **Reproducible:** re-ran the canonical command; KPIs identical to Codex's draft —
-  5 sleeves, **MaxDD 13.8307%, Sharpe 1.4929, net-of-cost 9598.11**.
-- **Book == farm state exactly:** the 5 manifest sleeves == DB `portfolio_candidates`
-  `Q12_REVIEW_READY` (10440:NDX, 10513:XAU, 10692:NDX, 10940:XAU, 11132:SP500), 0 duplicate ready rows.
-- **Weights** (inverse-vol, sum 1.0): 11132:SP500 0.389, 10513:XAU 0.275, 10940:XAU 0.216,
-  10692:NDX 0.069, 10440:NDX 0.051 — risk-parity correctly down-weights the volatile NDX sleeves.
-- **Safety flags:** `status=DRAFT_FOR_OWNER_APPROVAL`, `manual_approval_required=true`,
-  `deployment_action=NONE`, `autotrading_action=NONE`. ✔
-- **All 5 `.ex5` present** (SHA256 captured for the factory→T_Live verify): 10440 `336b5910…`,
-  10513 `ee92f1c6…`, 10692 `e28f8a1e…`, 10940 `363a2793…`, 11132 `7b48a34c…`.
-- **Tests:** full portfolio group 34 OK (incl. `test_portfolio_manifest` 5).
+- **Reproducible:** re-ran the canonical command; current KPIs —
+  6 sleeves, **observed MaxDD 0.7680%, MC-p95 DD 1.3741%, Sharpe 2.0585,
+  net-of-cost 7478.15**.
+- **Book == farm state exactly:** the 6 manifest sleeves == DB `portfolio_candidates`
+  `Q12_REVIEW_READY` (10440:NDX, 10513:XAU, 10692:NDX, 10940:XAU, 11132:SP500,
+  12567:XNG), 0 duplicate ready rows.
+- **Weights** (inverse-vol, sum 1.0): 12567:XNG 0.483, 11132:SP500 0.201,
+  10513:XAU 0.142, 10940:XAU 0.112, 10692:NDX 0.036, 10440:NDX 0.026 —
+  risk-parity correctly down-weights the volatile NDX sleeves and gives the low-vol XNG
+  sleeve a large portfolio weight.
+- **Safety flags after Codex follow-up:** `status=DRAFT_FOR_OWNER_APPROVAL`,
+  `manual_approval_required=true`, `deployment_action=NONE`, `autotrading_action=NONE`,
+  `cap_met=true`. ✔
+- **All 6 `.ex5` present** (SHA256 captured for the factory→T_Live verify): 10440 `336b5910…`,
+  10513 `ee92f1c6…`, 10692 `e28f8a1e…`, 10940 `363a2793…`, 11132 `7b48a34c…`,
+  12567 `e66579c0…`.
+- **Tests:** portfolio group 49 OK (incl. manifest + periodic-report regression coverage).
 
-### ❌ MUST-FIX before approval — manifest magic numbers wrong for 4/5 sleeves
-`build_manifest` sets `magic_number = ea_id*10000 + slot` and `set_file_expectation.qm_magic_slot_offset = slot`,
-where `slot = enumerate(book) position (0–4)`. But the live magic is
+### ✅ Fixed — manifest magic numbers now come from the registry
+Before the Codex follow-up, `build_manifest` set `magic_number = ea_id*10000 + slot` and
+`set_file_expectation.qm_magic_slot_offset = slot`, where `slot = enumerate(book) position (0–4)`.
+But the live magic is
 `QM_MagicResolver.mqh:55 → ea_id*10000 + symbol_slot`, and each (ea, symbol) has a **registered**
 slot in `framework/registry/magic_numbers.csv`:
 
@@ -45,35 +69,43 @@ slot in `framework/registry/magic_numbers.csv`:
 | 10940:XAU | 109400003 (3) | 109400003 (3) | ✅ (coincidence) |
 | 11132:SP500 | 111320000 (0) | 111320004 (4) | ❌ |
 
-Impact: the manifest (the artifact OWNER signs) shows wrong magics, and its `set_file_expectation`
+Historical impact: the manifest (the artifact OWNER signs) showed wrong magics, and its `set_file_expectation`
 (qm_magic_slot_offset = book-position) **contradicts** the setfile gen_setfile.ps1 will actually
 produce (qm_magic_slot_offset = registry symbol_slot) — so the deploy-flow "set-file correct"
 verification would mismatch. The wrong manifest magics also overlap existing registry reservations
 for OTHER symbols of the same EA (e.g. 106920002 is reserved for 10692 at symbol_slot 2, not NDX).
-Live magic itself is safe (gen_setfile uses the registry), but the approval artifact must be correct.
+Live magic itself was safe (gen_setfile uses the registry), but the approval artifact had to be fixed.
 
-**Fix (routed to Codex, ops task — see below):** `build_manifest` must resolve each sleeve's
-`magic_number` and `qm_magic_slot_offset` from `magic_numbers.csv` (the active reservation for that
-ea_id+symbol), not the enumerate position. Add a test: manifest per-sleeve magic == registry magic.
-Then regenerate the canonical draft.
+**Fix implemented:** `build_manifest` resolves each sleeve's `magic_number` and
+`qm_magic_slot_offset` from `magic_numbers.csv` (the active reservation for that ea_id+symbol), not
+the enumerate position. Regression coverage was added in `test_portfolio_manifest.py`.
+
+Current regenerated manifest values:
+
+| sleeve | manifest magic (slot) | registry match |
+|---|---:|---|
+| 10440:NDX | 104400003 (3) | ✅ |
+| 10513:XAU | 105130003 (3) | ✅ |
+| 10692:NDX | 106920005 (5) | ✅ |
+| 10940:XAU | 109400003 (3) | ✅ |
+| 11132:SP500 | 111320000 (0) | ✅ |
+| 12567:XNG | 125670002 (2) | ✅ |
 
 ### ⚠️ Caveats to record for OWNER (not blockers)
 1. **KPIs are at backtest fixed-lot scale**, not the live `RISK_PERCENT` (default 2% risk-parity)
-   scale. MaxDD 13.83% / Sharpe 1.49 describe the historical book shape from the `q08_trades`
-   streams; the **live-sized** DD must be confirmed in the deploy flow (it will differ from 13.83%).
+   scale. Observed MaxDD 0.7680% / MC-p95 DD 1.3741% / Sharpe 2.0585 describe the historical
+   book shape from the `q08_trades` streams on the canonical $100k tester capital; the
+   **live-sized** DD must be confirmed in the deploy flow.
 2. **`--book-source` defaults to `selected` (greedy).** No automated path generates the T_Live draft
    (manual CLI only; periodic report does not build the manifest), and the canonical command uses
    `q12-ready-all` — but recommend flipping the default (or a guard) to remove the greedy footgun.
-3. `--max-dd-pct` is recorded, not enforced, in `q12-ready-all` (book = all certified sleeves). Here
-   the book DD 13.83% < the 20% target, so OK; flag that the flag is informational in this mode.
+3. `--max-dd-pct` is now enforced at manifest-status level in `q12-ready-all`: the all-certified
+   book is written for evidence, and a DD-cap breach would prevent an owner-ready status.
 
-## Approval prep (staged — gated on the magic fix)
-Once the magic defect is fixed and the draft regenerated, the OWNER-approval package is:
-- This review + the regenerated manifest (sleeves/weights/KPIs unchanged; only magics corrected).
-- Then the **manual T_Live deploy flow** (post-approval): generate live setfiles (ENV=live,
-  RISK_PERCENT per weight, RISK_FIXED=0, qm_magic_slot_offset = registry slot), SHA256 match
-  factory→T_Live, magic-registry recheck, news calendar present+current, then OWNER/Claude flip
-  AutoTrading and record `decisions/2026-06-26_t_live_q12_5sleeve_book.md`.
+## Approval prep
+The magic-number blocker is closed and the corrected-capital manifest passes the 6% DD cap. The
+current 6-sleeve Q12-ready-all book is suitable for OWNER review as the first V5 live portfolio
+draft.
 
-**Recommendation: do NOT approve for deploy yet.** Book composition is correct and certified; fix the
-magic-number derivation, regenerate, then this becomes approvable.
+**Recommendation: approve only after manual OWNER review of the manifest and the standard T_Live
+deploy-verification packet.** No deploy action and no AutoTrading action have been taken.
