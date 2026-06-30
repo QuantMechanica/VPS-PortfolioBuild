@@ -13920,6 +13920,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12825,wti-eurusd-spread,1,EURUSD.DWX,128250001,2026-06-30,Development,active
 12826,cme-gassilver-ratio,0,XNGUSD.DWX,128260000,2026-06-30,Development,active
 12826,cme-gassilver-ratio,1,XAGUSD.DWX,128260001,2026-06-30,Development,active
+12827,cme-gassilver-brk,0,XNGUSD.DWX,128270000,2026-06-30,Development,active
+12827,cme-gassilver-brk,1,XAGUSD.DWX,128270001,2026-06-30,Development,active
 12805,capfree-nbar-breakout,0,XAUUSD.DWX,128050000,2026-06-30,Development,active
 12805,capfree-nbar-breakout,1,NDX.DWX,128050001,2026-06-30,Development,active
 12805,capfree-nbar-breakout,2,GDAXI.DWX,128050002,2026-06-30,Development,active

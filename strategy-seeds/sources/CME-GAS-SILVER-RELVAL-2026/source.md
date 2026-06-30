@@ -9,6 +9,7 @@ created_by: Codex
 uri: https://www.cmegroup.com/markets/energy/natural-gas/natural-gas.html
 cards_extracted:
   - cme-gassilver-ratio
+  - cme-gassilver-brk
 ---
 
 # CME Natural Gas / Silver Relative-Value Source
@@ -23,9 +24,9 @@ cards_extracted:
 
 This source packet is used for structural lineage only. CME lists liquid,
 exchange-traded Henry Hub Natural Gas and Silver futures markets. The QM card
-constructs a Darwinex-native relative-value basket from the corresponding
-validated CFDs, `XNGUSD.DWX` and `XAGUSD.DWX`, and tests whether extreme
-deviations in natural gas priced against silver mean-revert at D1 frequency.
+constructs Darwinex-native relative-value baskets from the corresponding
+validated CFDs, `XNGUSD.DWX` and `XAGUSD.DWX`, and tests whether natural gas
+priced against silver mean-reverts or trends after D1 channel breaks.
 
 The EA does not ingest CME data, futures curves, settlement files, storage data,
 weather feeds, macro feeds, CSV files, APIs, analyst forecasts, or any external
@@ -35,7 +36,7 @@ trade-session state for the two registered `.DWX` symbols.
 ## Guardrails
 
 - Runtime uses `XNGUSD.DWX` and `XAGUSD.DWX` D1 OHLC only.
-- Logical basket dispatch must evaluate `QM5_12826_XNG_XAG_RATIO_D1`, not
+- Logical basket dispatch must evaluate the card-specific logical basket, not
   standalone leg setfiles.
 - No ML, adaptive PnL fitting, grid, martingale, pyramiding, or discretionary
   override.
@@ -45,8 +46,8 @@ trade-session state for the two registered `.DWX` symbols.
 
 - R1 reputable source: PASS. CME Group is the exchange operator for Henry Hub
   Natural Gas and Silver futures product pages.
-- R2 mechanical: PASS. Fixed D1 log-ratio z-score entry, deterministic
-  mean-reversion exit, ATR hard stops, spread caps, and broken-package close.
+- R2 mechanical: PASS. Fixed D1 log-ratio z-score or channel-breakout entry,
+  deterministic exit, ATR hard stops, spread caps, and broken-package close.
 - R3 data available: PASS. `XNGUSD.DWX` and `XAGUSD.DWX` exist in the DWX
   symbol matrix and have active magic slots.
 - R4 no ML/banned logic: PASS. No ML, grid, martingale, external API, or

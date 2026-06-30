@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_12827_XNG_XAG_BRK_D1",
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XNGUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg natural-gas/silver channel-breakout basket from the approved CME-GAS-SILVER-RELVAL-2026_S02 card. The EA runs from the XNGUSD.DWX host setfile and reads both D1 close series to compute ln(XNGUSD) - beta * ln(XAGUSD). Q02 must evaluate the logical basket, not the standalone legs."
+  ]
+}
