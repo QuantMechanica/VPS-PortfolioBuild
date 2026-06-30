@@ -14093,3 +14093,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9404,chande-vr-rsi-mr-composite-h4,10,NDX.DWX,94040010,2026-06-30,Development,active
 9404,chande-vr-rsi-mr-composite-h4,11,WS30.DWX,94040011,2026-06-30,Development,active
 9404,chande-vr-rsi-mr-composite-h4,12,UK100.DWX,94040012,2026-06-30,Development,active
+9905,ff-wmd-bop-hook-h1,0,EURUSD.DWX,99050000,2026-07-01,Development,active
+9905,ff-wmd-bop-hook-h1,1,GBPUSD.DWX,99050001,2026-07-01,Development,active
+9905,ff-wmd-bop-hook-h1,2,USDJPY.DWX,99050002,2026-07-01,Development,active
+9905,ff-wmd-bop-hook-h1,3,XAUUSD.DWX,99050003,2026-07-01,Development,active
