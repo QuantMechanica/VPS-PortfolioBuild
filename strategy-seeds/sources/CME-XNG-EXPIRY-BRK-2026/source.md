@@ -9,9 +9,10 @@ created_by: Codex
 uri: https://www.cmegroup.com/rulebook/NYMEX/2/220.pdf
 cards_extracted:
   - xng-exp-brk
+  - xng-exp-fade
 ---
 
-# CME XNG Expiry Breakout Source
+# CME XNG Expiry Window Source
 
 ## Source Identity
 
@@ -28,10 +29,10 @@ cards_extracted:
 ## Research Use
 
 This source is used for structural lineage around the recurring final-trading
-and delivery process for Henry Hub Natural Gas futures. The mechanized card
-ports that monthly flow window to a Darwinex-native natural-gas sleeve:
-`XNGUSD.DWX` D1 channel breakout confirmation around the approximate last
-trading day.
+and delivery process for Henry Hub Natural Gas futures. The mechanized cards
+port that monthly flow window to Darwinex-native natural-gas sleeves:
+`XNGUSD.DWX` D1 channel breakout confirmation and `XNGUSD.DWX` D1 failed
+breakout fade around the approximate last trading day.
 
 The implementation does not ingest CME data, futures curves, open interest,
 volume, storage data, analyst forecasts, CSV files, APIs, or external feeds at
@@ -52,9 +53,8 @@ runtime. It uses Darwinex MT5 OHLC and broker calendar state only.
 - R1 reputable source: PASS. Official CME/NYMEX exchange rulebook and contract
   specification source packet.
 - R2 mechanical: PASS. Fixed monthly calendar approximation, D1 channel
-  breakout, SMA/range/close-location confirmation, ATR hard stop, window exit,
-  and max-hold exit.
+  breakout or failed-breakout fade, SMA/range/close-location confirmation, ATR
+  hard stop, window exit, and max-hold exit.
 - R3 data available: PASS. `XNGUSD.DWX` exists in the DWX symbol matrix.
 - R4 no ML/banned logic: PASS. Deterministic one-position monthly structural
   breakout sleeve.
-

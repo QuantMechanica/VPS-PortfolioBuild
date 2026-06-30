@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12838
 ; ea_slug:      xng-exp-fade
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   3e4ffd21f0e4fafed476493d21d80b4fda5009f255246b020e413a98feed2218
 ; author:       Development
 ; date:         2026-07-01
 ;==========================================================
