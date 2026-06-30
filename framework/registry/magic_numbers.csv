@@ -13899,6 +13899,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12819,xng-thu-fade,0,XNGUSD.DWX,128190000,2026-06-30,Development,active
 12820,eia-xng-frzbrk,0,XNGUSD.DWX,128200000,2026-06-30,Development,active
 12822,eia-jetfuel-pb,0,XTIUSD.DWX,128220000,2026-06-30,Development,active
+12824,cme-gasgold-ratio,0,XNGUSD.DWX,128240000,2026-06-30,Development,active
+12824,cme-gasgold-ratio,1,XAUUSD.DWX,128240001,2026-06-30,Development,active
 11905,hui-chan-shiryaev-zhou-3day-d1,0,EURUSD.DWX,119050000,2026-06-30,Development,active
 11905,hui-chan-shiryaev-zhou-3day-d1,1,GBPUSD.DWX,119050001,2026-06-30,Development,active
 11905,hui-chan-shiryaev-zhou-3day-d1,2,USDJPY.DWX,119050002,2026-06-30,Development,active

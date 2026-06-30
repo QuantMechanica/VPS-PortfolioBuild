@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_12824_XNG_XAU_RATIO_D1",
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XNGUSD.DWX",
+    "XAUUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg XNG/XAU natural-gas/gold ratio reversion basket from the approved CME-GAS-GOLD-RELVAL-2026 card. The EA runs from the XNGUSD.DWX host setfile and reads both D1 close series to compute ln(XNGUSD) - beta * ln(XAUUSD). Q02 must evaluate the logical basket, not the standalone legs."
+  ]
+}
