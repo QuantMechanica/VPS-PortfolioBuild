@@ -173,11 +173,11 @@ allocation must come from the portfolio process. The EA does not touch
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
-| v1 | 2026-06-30 | initial structural XNG/XAG channel-breakout basket | Q02 | PENDING |
+| v1 | 2026-06-30 | initial structural XNG/XAG channel-breakout basket | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-06-30 | APPROVED | this card |
-| Q02 Baseline Screening | 2026-06-30 | PENDING | to be enqueued after build |
+| Q02 Baseline Screening | 2026-06-30 | ENQUEUED | work_item `0282fe25-254e-47d1-9d63-7200b334f151`; build_task `56a7c72d-0660-4049-9b04-8db6422f5bfd` |
