@@ -206,11 +206,13 @@ allocation must come from the portfolio process. The EA does not touch
 ## Pipeline History
 
 | version | date | rebuild reason | phase reached | verdict |
-|---|---|---|---|
+|---|---|---|---|---|
 | v1 | 2026-06-30 | initial structural XNG Thursday calendar-fade card | G0 | APPROVED |
+| v1-q02 | 2026-06-30 | strict build PASS and paced-fleet Q02 enqueued | Q02 | PENDING work_item 28150970-d62e-4b55-9d77-dda6ad847396 |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-06-30 | APPROVED | this card |
+| Q02 Baseline Screening | 2026-06-30 | QUEUED | work_items/28150970-d62e-4b55-9d77-dda6ad847396 |
