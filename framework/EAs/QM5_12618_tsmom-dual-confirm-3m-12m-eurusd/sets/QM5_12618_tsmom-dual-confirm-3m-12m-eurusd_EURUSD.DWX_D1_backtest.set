@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   88290c9d8f25e52684b2159251d28a4d6f2682f5d4084a5e4fd3827caa48fdfa
 ; author:       Development
 ; date:         2026-06-30
 ;==========================================================
@@ -32,4 +32,11 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=C:\QM\repo\strategy-seeds\cards\tsmom-dual-confirm-3m-12m-eurusd_card.md
-; card_defaults_status=none_found
+; card_defaults_status=manual_from_card
+strategy_short_lookback_d1_bars=63
+strategy_long_lookback_d1_bars=252
+strategy_min_d1_bars=275
+strategy_atr_period=14
+strategy_atr_sl_mult=3.0
+strategy_spread_days=20
+strategy_spread_mult=3.0
