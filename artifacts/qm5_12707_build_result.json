@@ -1,0 +1,58 @@
+{
+  "task_id": "b4208e40-1e7e-4ac9-930c-58d5a11188b9",
+  "ea_id": "QM5_12707",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_12707_commodity-tsmom-12m",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_12707_commodity-tsmom-12m/QM5_12707_commodity-tsmom-12m.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_12707_commodity-tsmom-12m/QM5_12707_commodity-tsmom-12m.ex5",
+  "magic_base": 127070000,
+  "symbols_registered": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX",
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_12707_commodity-tsmom-12m/sets/QM5_12707_commodity-tsmom-12m_XAUUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12707_commodity-tsmom-12m/sets/QM5_12707_commodity-tsmom-12m_XAGUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12707_commodity-tsmom-12m/sets/QM5_12707_commodity-tsmom-12m_XTIUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_12707_commodity-tsmom-12m/sets/QM5_12707_commodity-tsmom-12m_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_12707_commodity-tsmom-12m/SPEC.md",
+  "strategy_card_path": "C:/QM/repo/framework/EAs/QM5_12707_commodity-tsmom-12m/docs/strategy_card.md",
+  "runtime_approved_card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12707_commodity-tsmom-12m.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260630_181805.json",
+  "smoke_result": "passed",
+  "smoke_report_path": "D:/QM/reports/smoke/QM5_12707/20260630_181911/summary.json",
+  "smoke_symbol": "XAUUSD.DWX",
+  "smoke_total_trades": 10,
+  "q02_enqueued": true,
+  "q02_work_items": [
+    {
+      "symbol": "XTIUSD.DWX",
+      "work_item_id": "deff95b4",
+      "setfile": "QM5_12707_commodity-tsmom-12m_XTIUSD.DWX_D1_backtest.set"
+    },
+    {
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "d3cbda24",
+      "setfile": "QM5_12707_commodity-tsmom-12m_XAUUSD.DWX_D1_backtest.set"
+    },
+    {
+      "symbol": "XNGUSD.DWX",
+      "work_item_id": "2d609ac5",
+      "setfile": "QM5_12707_commodity-tsmom-12m_XNGUSD.DWX_D1_backtest.set"
+    }
+  ],
+  "q02_deferred": [
+    {
+      "symbol": "XAGUSD.DWX",
+      "reason": "staged_deferred_symbol"
+    }
+  ],
+  "blocked_reason": null,
+  "open_questions": []
+}
