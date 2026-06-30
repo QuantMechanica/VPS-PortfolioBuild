@@ -157,6 +157,44 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertEqual(result["exit_code"], 124)
         self.assertEqual(result["symbol"], "QM5_12532_AUDNZD_COINTEGRATION_D1")
 
+    def test_q05_default_timeout_leaves_worker_headroom(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "summary.json").write_text(
+                json.dumps({
+                    "runs": [{
+                        "profit_factor": 1.2,
+                        "drawdown": 500.0,
+                        "total_trades": 25,
+                    }]
+                }),
+                encoding="utf-8",
+            )
+            calls = []
+            timeouts = []
+
+            def fake_run(args, **kwargs):
+                calls.append(args)
+                timeouts.append(kwargs["timeout"])
+                return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+            with patch.object(q05.subprocess, "run", side_effect=fake_run):
+                result = q05.run_stress_backtest(
+                    ea_id=12532,
+                    ea_expert=r"QM\QM5_12532_demo",
+                    symbol="AUDUSD.DWX",
+                    setfile=root / "demo.set",
+                    terminal="T4",
+                    period="D1",
+                    report_root=root,
+                )
+
+        cmd = calls[0]
+        self.assertEqual(cmd[cmd.index("-TimeoutSeconds") + 1], "3300")
+        self.assertEqual(timeouts, [3420])
+        self.assertEqual(result["timeout_sec"], 3300)
+        self.assertEqual(result["runner_timeout_sec"], 3420)
+
     def test_q05_passes_basket_manifest_tester_overrides(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

@@ -31,6 +31,8 @@ from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
 
 GATE_NAME = "Q05"
 LEVEL = "MED"
+DEFAULT_TIMEOUT_SEC = 3300
+RUNNER_HEADROOM_SEC = 120
 PF_FLOOR = 1.0
 DD_PCT_MAX = 15.0
 MIN_TRADES = 20
@@ -248,7 +250,7 @@ def _basket_tester_overrides(setfile: Path) -> tuple[str | None, int | None]:
 
 def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
                          setfile: Path, terminal: str, period: str = "H1",
-                         report_root: Path, timeout_sec: int = 1800,
+                         report_root: Path, timeout_sec: int = DEFAULT_TIMEOUT_SEC,
                          latest_full_year: int | None = None,
                          logical_symbol: str | None = None) -> dict:
     repo_root = Path(__file__).resolve().parents[2]
@@ -279,7 +281,7 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
     if tester_deposit:
         args.extend(["-TesterDepositOverride", str(tester_deposit)])
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
-    runner_timeout_sec = timeout_sec + 120
+    runner_timeout_sec = timeout_sec + RUNNER_HEADROOM_SEC
     timed_out = False
     timeout_detail = None
     try:
@@ -360,7 +362,7 @@ def main() -> int:
                     help="Q03 plateau-median setfile; Q05 stress variant generated from this")
     ap.add_argument("--terminal", default="T2")
     ap.add_argument("--report-root", type=Path, default=Path("D:/QM/reports/pipeline"))
-    ap.add_argument("--timeout-sec", type=int, default=1800)
+    ap.add_argument("--timeout-sec", type=int, default=DEFAULT_TIMEOUT_SEC)
     ap.add_argument("--latest-full-year", type=int,
                     help="Cap full-history window when validated custom-symbol history ends before default")
     ap.add_argument("--logical-symbol",

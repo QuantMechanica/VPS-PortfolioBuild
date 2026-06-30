@@ -1,0 +1,71 @@
+{
+  "ea_id": "QM5_12532",
+  "slug": "edgelab-audnzd-cointegration",
+  "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+  "basket_symbols": [
+    "AUDUSD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "mission_scope": "Advance an existing forex cointegration basket after all registered edgelab cointegration pairs through QM5_12803 were already built.",
+  "precheck": {
+    "qm5_12532_q02": "PASS",
+    "qm5_12532_q04": "PASS",
+    "qm5_12532_latest_q05_before_action": {
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "reason": "run_smoke summary failed with TIMEOUT/INCOMPLETE_RUNS at 1800 seconds",
+      "summary_path": "D:/QM/reports/work_items/82cab3d1-bf05-4aa4-8278-86c8064b16e7/QM5_12532/20260630_012820/summary.json"
+    },
+    "qm5_12533_q02": "PASS",
+    "qm5_12533_latest_q04": "FAIL",
+    "unbuilt_registered_edgelab_cointegration_pairs": 0
+  },
+  "code_changes": [
+    {
+      "path": "framework/scripts/q05_stress_medium.py",
+      "summary": "Raised Q05 default run_smoke timeout from 1800s to 3300s and made the 120s wrapper headroom explicit, keeping the full subprocess window inside the existing 60-minute Q05 active envelope."
+    },
+    {
+      "path": "framework/scripts/tests/test_q05_q07_verdicts.py",
+      "summary": "Added coverage that Q05's default timeout passes 3300s to run_smoke and reserves 3420s for the Python wrapper."
+    }
+  ],
+  "queue_action": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12532 --phase Q05",
+    "result": "requeued",
+    "work_item_id": "82cab3d1-bf05-4aa4-8278-86c8064b16e7",
+    "status_after": "pending",
+    "attempt_count_after": 0,
+    "updated_at_utc": "2026-06-30T04:18:13+00:00",
+    "archived_report_root": "D:/QM/reports/work_items/82cab3d1-bf05-4aa4-8278-86c8064b16e7.requeued_20260630T0418130000"
+  },
+  "payload_after_requeue": {
+    "portfolio_scope": "basket",
+    "host_symbol": "AUDUSD.DWX",
+    "host_timeframe": "D1",
+    "q04_latest_full_year": 2024,
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "basket_manifest": "C:/QM/repo/framework/EAs/QM5_12532_edgelab-audnzd-cointegration/basket_manifest.json",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_12532_edgelab-audnzd-cointegration/sets/QM5_12532_edgelab-audnzd-cointegration_QM5_12532_AUDNZD_COINTEGRATION_D1_D1_backtest.set"
+  },
+  "validation": [
+    {
+      "command": "python -m pytest framework/scripts/tests/test_q05_q07_verdicts.py::Q05Q07VerdictTests::test_q05_default_timeout_leaves_worker_headroom",
+      "result": "PASS",
+      "tests": 1
+    },
+    {
+      "command": "python -m pytest tools/strategy_farm/tests/test_farmctl_cascade.py::CascadePromotionTests::test_enqueue_q05_checks_basket_manifest_symbols_not_logical_symbol tools/strategy_farm/tests/test_farmctl_cascade.py::CascadePromotionTests::test_enqueue_q05_accepts_q04_soft_pass_verdicts tools/strategy_farm/tests/test_farmctl_cascade.py::CascadePromotionTests::test_q05_runner_cmd_receives_latest_full_year_cap",
+      "result": "PASS",
+      "tests": 3
+    }
+  ],
+  "safety": {
+    "manual_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
