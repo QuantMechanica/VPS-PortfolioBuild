@@ -215,7 +215,7 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             for symbol in ("EURGBP.DWX", "EURAUD.DWX"):
                 hist_dir = mt5_root / "T1" / "Bases" / "Custom" / "history" / symbol
                 hist_dir.mkdir(parents=True)
-                for year in (2023, 2024, 2025):
+                for year in (2023, 2024):
                     (hist_dir / f"{year}.hcc").write_text("", encoding="utf-8")
 
             farmctl.init_db(root)

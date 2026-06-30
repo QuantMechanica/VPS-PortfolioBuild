@@ -9639,10 +9639,22 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                 })
                 continue
             if phase in {"Q05", "P5"}:
+                required_oos_to_year = P5_REQUIRED_OOS_TO_YEAR
+                if phase == "Q05":
+                    try:
+                        prev_payload = json.loads(prev["payload_json"] or "{}")
+                    except json.JSONDecodeError:
+                        prev_payload = {}
+                    latest_full_year = prev_payload.get("q04_latest_full_year", prev_payload.get("latest_full_year"))
+                    if latest_full_year is not None:
+                        try:
+                            required_oos_to_year = min(required_oos_to_year, int(str(latest_full_year).strip()))
+                        except (TypeError, ValueError):
+                            pass
                 p5_has_history, p5_history_detail = _history_window_for_work_item(
                     prev,
                     P5_REQUIRED_OOS_FROM_YEAR,
-                    P5_REQUIRED_OOS_TO_YEAR,
+                    required_oos_to_year,
                 )
                 if not p5_has_history:
                     skipped.append({
@@ -9651,7 +9663,7 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                         "setfile_path": prev["setfile_path"],
                         "reason": "cache_history_below_required_oos_window",
                         "verdict": "INVALID",
-                        "required_oos_window": f"{P5_REQUIRED_OOS_FROM_YEAR}-{P5_REQUIRED_OOS_TO_YEAR}",
+                        "required_oos_window": f"{P5_REQUIRED_OOS_FROM_YEAR}-{required_oos_to_year}",
                         "history_detail": p5_history_detail,
                     })
                     continue

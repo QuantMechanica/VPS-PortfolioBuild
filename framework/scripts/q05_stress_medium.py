@@ -279,8 +279,17 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
     if tester_deposit:
         args.extend(["-TesterDepositOverride", str(tester_deposit)])
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
-    proc = subprocess.run(args, capture_output=True, text=True,
-                          timeout=timeout_sec, creationflags=creationflags)
+    runner_timeout_sec = timeout_sec + 120
+    timed_out = False
+    timeout_detail = None
+    try:
+        proc = subprocess.run(args, capture_output=True, text=True,
+                              timeout=runner_timeout_sec, creationflags=creationflags)
+        exit_code = proc.returncode
+    except subprocess.TimeoutExpired as exc:
+        timed_out = True
+        timeout_detail = f"subprocess_timeout_after={exc.timeout}s"
+        exit_code = 124
     sym_clean = symbol.replace(".", "_")
     summary = find_latest_summary(report_root)
     invalid_reason = summary_invalid_reason(summary) if summary else None
@@ -296,7 +305,11 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
     dd_pct = (dd_money / STARTING_EQUITY * 100.0) if dd_money is not None else None
 
     if summary is None and report_metrics is None:
-        verdict, reason = "INVALID", "summary_missing"
+        if timed_out:
+            verdict = "INVALID"
+            reason = f"timeout_expired:timeout_sec={timeout_sec}:runner_timeout_sec={runner_timeout_sec}"
+        else:
+            verdict, reason = "INVALID", "summary_missing"
     elif invalid_reason:
         verdict, reason = "INVALID", invalid_reason
     elif trades < MIN_TRADES:
@@ -323,7 +336,11 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         "dd_money": dd_money,
         "dd_pct": dd_pct,
         "trades": trades,
-        "exit_code": proc.returncode,
+        "exit_code": exit_code,
+        "timed_out": timed_out,
+        "timeout_detail": timeout_detail,
+        "timeout_sec": timeout_sec,
+        "runner_timeout_sec": runner_timeout_sec,
         "summary_path": str(summary) if summary else None,
         "report_path": report_metrics.get("report_path") if report_metrics else None,
         "metric_source": "summary_json" if summary else ("report_htm" if report_metrics else None),

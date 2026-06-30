@@ -128,6 +128,35 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertEqual(cmd[cmd.index("-ToDate") + 1], "2024.12.31")
         self.assertEqual(result["history_to"], "2024.12.31")
 
+    def test_q05_subprocess_timeout_records_invalid_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            timeouts = []
+
+            def fake_run(args, **kwargs):
+                timeouts.append(kwargs["timeout"])
+                raise q05.subprocess.TimeoutExpired(cmd=args, timeout=kwargs["timeout"])
+
+            with patch.object(q05.subprocess, "run", side_effect=fake_run):
+                result = q05.run_stress_backtest(
+                    ea_id=12532,
+                    ea_expert=r"QM\QM5_12532_demo",
+                    symbol="AUDUSD.DWX",
+                    setfile=root / "demo.set",
+                    terminal="T6",
+                    period="D1",
+                    report_root=root,
+                    timeout_sec=30,
+                    logical_symbol="QM5_12532_AUDNZD_COINTEGRATION_D1",
+                )
+
+        self.assertEqual(timeouts, [150])
+        self.assertEqual(result["verdict"], "INVALID")
+        self.assertIn("timeout_expired", result["reason"])
+        self.assertTrue(result["timed_out"])
+        self.assertEqual(result["exit_code"], 124)
+        self.assertEqual(result["symbol"], "QM5_12532_AUDNZD_COINTEGRATION_D1")
+
     def test_q05_passes_basket_manifest_tester_overrides(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

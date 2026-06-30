@@ -1,0 +1,86 @@
+{
+  "ea_id": "QM5_12532",
+  "slug": "edgelab-audnzd-cointegration",
+  "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+  "basket_symbols": [
+    "AUDUSD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "mission_scope": "Advance existing forex cointegration basket after no allocated unbuilt FX cointegration registry row was found beyond QM5_12803.",
+  "prior_state": {
+    "q02": {
+      "status": "done",
+      "verdict": "PASS",
+      "work_item_id": "e4890d77-b865-4a48-b946-315faefca920"
+    },
+    "q04": {
+      "status": "done",
+      "verdict": "PASS",
+      "work_item_id": "94f89f07-58ad-487f-a0ab-b57c4e99106a",
+      "latest_full_year": 2024
+    },
+    "q05": {
+      "status": "failed",
+      "verdict": "FAIL",
+      "work_item_id": "82cab3d1-bf05-4aa4-8278-86c8064b16e7",
+      "reason_classes": [
+        "ACTIVE_TIMEOUT"
+      ]
+    }
+  },
+  "code_changes": [
+    {
+      "path": "framework/scripts/q05_stress_medium.py",
+      "summary": "Q05 now gives run_smoke.ps1 120 seconds of wrapper headroom over its own MT5 timeout and catches subprocess.TimeoutExpired so an INVALID aggregate is written instead of crashing with no evidence."
+    },
+    {
+      "path": "tools/strategy_farm/farmctl.py",
+      "summary": "Q05 cascade history preflight now honors q04_latest_full_year/latest_full_year when checking required cache years, matching the Q05 runner command cap."
+    }
+  ],
+  "queue_actions": [
+    {
+      "action": "attempted_supported_requeue_before_history_cap_fix",
+      "command": "python tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_12532 --phase Q05",
+      "result": "skipped",
+      "skip_reason": "cache_history_below_required_oos_window",
+      "missing_cache_year": 2025,
+      "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12532_q05_timeout_fix_requeue_20260630_023453.sqlite"
+    },
+    {
+      "action": "supported_requeue_after_history_cap_fix",
+      "command": "python tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_12532 --phase Q05",
+      "result": "requeued",
+      "work_item_id": "82cab3d1-bf05-4aa4-8278-86c8064b16e7",
+      "status_after": "pending",
+      "attempt_count_after": 0,
+      "updated_at_utc": "2026-06-30T00:35:59+00:00",
+      "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12532_q05_historycap_requeue_20260630_023559.sqlite",
+      "archived_report_root": "D:/QM/reports/work_items/82cab3d1-bf05-4aa4-8278-86c8064b16e7.requeued_20260630T0035590000"
+    }
+  ],
+  "validation": [
+    {
+      "command": "python -m pytest framework/scripts/tests/test_q05_q07_verdicts.py",
+      "result": "PASS",
+      "tests": 11
+    },
+    {
+      "command": "python -m pytest tools/strategy_farm/tests/test_farmctl_cascade.py::CascadePromotionTests::test_enqueue_q05_checks_basket_manifest_symbols_not_logical_symbol tools/strategy_farm/tests/test_farmctl_cascade.py::CascadePromotionTests::test_enqueue_q05_accepts_q04_soft_pass_verdicts tools/strategy_farm/tests/test_farmctl_cascade.py::CascadePromotionTests::test_q05_runner_cmd_receives_latest_full_year_cap",
+      "result": "PASS",
+      "tests": 3
+    },
+    {
+      "command": "python -m pytest tools/strategy_farm/tests/test_terminal_worker_atomic_claim.py::TerminalWorkerAtomicClaimTests::test_fast_phase_runner_with_host_keyed_aggregate_finishes_item",
+      "result": "PASS",
+      "tests": 1
+    }
+  ],
+  "safety": {
+    "manual_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
