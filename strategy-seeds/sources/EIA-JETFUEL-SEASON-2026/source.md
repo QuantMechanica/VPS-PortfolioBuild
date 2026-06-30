@@ -9,6 +9,7 @@ created_by: Codex
 uri: https://www.eia.gov/todayinenergy/detail.php?id=64786
 cards_extracted:
   - eia-jetfuel-brk
+  - eia-jetfuel-pb
 ---
 
 # EIA Jet Fuel Season Source
@@ -34,10 +35,10 @@ and air-travel-demand channel that can move WTI differently from gasoline-only
 driving-season, distillate winter, WPSR-inventory, OPEC, hurricane, roll, and
 weekday crude-oil sleeves.
 
-The mechanized card narrows the source to a Darwinex-native WTI expression:
-trade `XTIUSD.DWX` D1 upside breakouts during the summer air-travel demand
-window after a crude trend filter confirms that the refinery/feedstock impulse
-is already visible in price.
+The mechanized cards narrow the source to Darwinex-native WTI expressions:
+trade `XTIUSD.DWX` D1 upside breakouts or controlled pullback continuations
+during the summer air-travel demand window after a crude trend filter confirms
+that the refinery/feedstock impulse is already visible in price.
 
 No EIA data, jet fuel prices, refinery yields, crack spreads, production data,
 inventories, airline data, CSV files, APIs, or external feeds are read at
@@ -55,7 +56,8 @@ SMA only.
 ## R-Rules
 
 - R1 reputable source: PASS. Official U.S. EIA energy analysis with dated URLs.
-- R2 mechanical: PASS. Fixed date window, D1 breakout, SMA trend gate, ATR hard
-  stop, and deterministic channel/date/time exits.
+- R2 mechanical: PASS. Fixed date window, D1 breakout or pullback-continuation
+  triggers, SMA trend gate, ATR hard stop, and deterministic channel/date/time
+  exits.
 - R3 data available: PASS. `XTIUSD.DWX` exists in the DWX symbol matrix.
 - R4 no ML/banned logic: PASS. Deterministic one-position structural sleeve.
