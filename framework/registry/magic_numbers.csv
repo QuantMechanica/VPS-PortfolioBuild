@@ -13924,6 +13924,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12805,capfree-nbar-breakout,1,NDX.DWX,128050001,2026-06-30,Development,active
 12805,capfree-nbar-breakout,2,GDAXI.DWX,128050002,2026-06-30,Development,active
 12805,capfree-nbar-breakout,3,SP500.DWX,128050003,2026-06-30,Development,active
+12805,capfree-nbar-breakout,4,WS30.DWX,128050004,2026-06-30,Development,active
 12792,gold-asian-drift,0,XAUUSD.DWX,127920000,2026-06-30,Development,active
 12787,vol-contraction-breakout,0,NDX.DWX,127870000,2026-06-30,Development,active
 12787,vol-contraction-breakout,1,SP500.DWX,127870001,2026-06-30,Development,active
