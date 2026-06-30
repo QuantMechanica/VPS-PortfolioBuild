@@ -249,5 +249,5 @@ deploy manifests, or the portfolio gate.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-01 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-01 | TBD | `artifacts/qm5_12839_build_result.json` |
-| Q02 Baseline Screening | 2026-07-01 | TBD | `D:\QM\strategy_farm\state\farm_state.sqlite` |
+| Q01 Build Validation | 2026-07-01 | PASS | `artifacts/qm5_12839_build_result.json` |
+| Q02 Baseline Screening | 2026-07-01 | QUEUED | `D:\QM\strategy_farm\state\farm_state.sqlite` work item `2ecee84f-2e19-4f3e-9e2f-3cd4c3fece7e` |
