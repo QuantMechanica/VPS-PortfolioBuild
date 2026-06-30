@@ -14005,3 +14005,14 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1420,bressert-cycle-counting-h4,10,WS30.DWX,14200010,2026-06-30,Development,active
 1420,bressert-cycle-counting-h4,11,GDAXI.DWX,14200011,2026-06-30,Development,active
 1420,bressert-cycle-counting-h4,12,UK100.DWX,14200012,2026-06-30,Development,active
+1446,demark-td-open-range-h4,0,EURUSD.DWX,14460000,2026-06-30,Development,active
+1446,demark-td-open-range-h4,1,GBPUSD.DWX,14460001,2026-06-30,Development,active
+1446,demark-td-open-range-h4,2,USDJPY.DWX,14460002,2026-06-30,Development,active
+1446,demark-td-open-range-h4,3,AUDUSD.DWX,14460003,2026-06-30,Development,active
+1446,demark-td-open-range-h4,4,USDCAD.DWX,14460004,2026-06-30,Development,active
+1446,demark-td-open-range-h4,5,NDX.DWX,14460005,2026-06-30,Development,active
+1446,demark-td-open-range-h4,6,WS30.DWX,14460006,2026-06-30,Development,active
+1446,demark-td-open-range-h4,7,GDAXI.DWX,14460007,2026-06-30,Development,active
+1446,demark-td-open-range-h4,8,UK100.DWX,14460008,2026-06-30,Development,active
+1446,demark-td-open-range-h4,9,XAUUSD.DWX,14460009,2026-06-30,Development,active
+1446,demark-td-open-range-h4,10,XTIUSD.DWX,14460010,2026-06-30,Development,active
