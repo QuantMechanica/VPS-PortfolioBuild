@@ -1,0 +1,39 @@
+{
+  "ea_id": "QM5_12781",
+  "phase": "Q06",
+  "logical_symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1",
+  "host_symbol": "USDJPY.DWX",
+  "work_item_id": "f1147d03-5c9b-4874-ba86-0406e1a90bdc",
+  "action": "requeued_existing_row_after_q06_basket_bridge_fix",
+  "created_rows": 0,
+  "status_after_worker_claim": "done",
+  "verdict_after_worker_claim": "INFRA_FAIL",
+  "fresh_evidence_path": "D:/QM/reports/work_items/f1147d03-5c9b-4874-ba86-0406e1a90bdc/QM5_12781/Q06/QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1/aggregate.json",
+  "fresh_aggregate": {
+    "symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1",
+    "runner_symbol": "USDJPY.DWX",
+    "verdict": "INVALID",
+    "reason": "summary_missing",
+    "timed_out": false,
+    "timeout_sec": 3300,
+    "runner_timeout_sec": 3420,
+    "exit_code": 3221225794
+  },
+  "archived_prior_report_root": "D:/QM/reports/work_items/f1147d03-5c9b-4874-ba86-0406e1a90bdc.requeued_20260630T1921440000",
+  "code_changes": [
+    "framework/scripts/q06_stress_harsh.py accepts/logs logical basket symbols and infers them from basket_manifest.json when omitted",
+    "framework/scripts/q06_stress_harsh.py applies basket tester currency/deposit overrides",
+    "framework/scripts/q06_stress_harsh.py uses Q05 timeout/headroom defaults",
+    "tools/strategy_farm/farmctl.py passes --logical-symbol for Q06 basket work items"
+  ],
+  "validation": [
+    "python -m py_compile framework/scripts/q06_stress_harsh.py tools/strategy_farm/farmctl.py",
+    "python -m pytest framework/scripts/tests/test_q05_q07_verdicts.py tools/strategy_farm/tests/test_farmctl_cascade.py tools/strategy_farm/tests/test_cascade_real_phase_runners.py -q"
+  ],
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "manual_mt5_backtest_launched": false
+  }
+}

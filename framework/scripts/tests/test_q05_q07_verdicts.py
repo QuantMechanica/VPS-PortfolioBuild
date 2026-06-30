@@ -10,6 +10,7 @@ from unittest.mock import patch
 from pathlib import Path
 
 from framework.scripts import q05_stress_medium as q05
+from framework.scripts import q06_stress_harsh as q06
 from framework.scripts import q07_multiseed as q07
 
 
@@ -277,6 +278,63 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertEqual(cmd[cmd.index("-TesterDepositOverride") + 1], "15000000")
         self.assertEqual(result["symbol"], "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1")
         self.assertEqual(result["runner_symbol"], "EURJPY.DWX")
+
+    def test_q06_passes_basket_overrides_and_infers_logical_symbol(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ea_dir = root / "QM5_12533_demo"
+            sets_dir = ea_dir / "sets"
+            sets_dir.mkdir(parents=True)
+            setfile = sets_dir / "QM5_12533_demo_LOGICAL_D1_q06_stress_harsh.set"
+            setfile.write_text("RISK_FIXED=150000\n", encoding="utf-8")
+            (ea_dir / "basket_manifest.json").write_text(
+                json.dumps({
+                    "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+                    "host_symbol": "EURJPY.DWX",
+                    "basket_symbols": ["EURJPY.DWX", "GBPJPY.DWX"],
+                    "tester_currency": "JPY",
+                    "tester_deposit": 15000000,
+                }),
+                encoding="utf-8",
+            )
+            (root / "summary.json").write_text(
+                json.dumps({
+                    "runs": [{
+                        "profit_factor": 1.2,
+                        "drawdown": 500.0,
+                        "total_trades": 25,
+                    }]
+                }),
+                encoding="utf-8",
+            )
+            calls = []
+            timeouts = []
+
+            def fake_run(args, **kwargs):
+                calls.append(args)
+                timeouts.append(kwargs.get("timeout"))
+                return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+            with patch.object(q06.subprocess, "run", side_effect=fake_run):
+                result = q06.run_harsh_backtest(
+                    ea_id=12533,
+                    ea_expert=r"QM\QM5_12533_demo",
+                    symbol="EURJPY.DWX",
+                    setfile=setfile,
+                    terminal="T8",
+                    period="D1",
+                    report_root=root,
+                )
+
+        cmd = calls[0]
+        self.assertEqual(cmd[cmd.index("-TesterCurrencyOverride") + 1], "JPY")
+        self.assertEqual(cmd[cmd.index("-TesterDepositOverride") + 1], "15000000")
+        self.assertEqual(cmd[cmd.index("-TimeoutSeconds") + 1], "3300")
+        self.assertEqual(timeouts, [3420])
+        self.assertEqual(result["symbol"], "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1")
+        self.assertEqual(result["runner_symbol"], "EURJPY.DWX")
+        self.assertEqual(result["timeout_sec"], 3300)
+        self.assertEqual(result["runner_timeout_sec"], 3420)
 
     def test_q07_missing_summary_remains_invalid(self) -> None:
         verdict, reason, _metrics = q07.evaluate_seeds([
