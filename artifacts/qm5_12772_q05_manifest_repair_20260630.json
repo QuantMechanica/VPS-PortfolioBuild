@@ -1,0 +1,76 @@
+{
+  "ea_id": "QM5_12772",
+  "slug": "edgelab-gbpjpy-audjpy-cointegration",
+  "logical_symbol": "QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1",
+  "mission_scope": "Advance an existing forex cointegration basket after the 66-pair scan had no unbuilt allocated EdgeLab candidates and QM5_12532/QM5_12533 were no longer Q02-blocked.",
+  "precheck": {
+    "qm5_12532_q02": "PASS",
+    "qm5_12533_q02": "PASS",
+    "strict_survivor_unbuilt_pairs_found": 0,
+    "target_q02": {
+      "status": "done",
+      "verdict": "PASS",
+      "work_item_id": "0ef494c0-7669-4c98-9e5c-326ff70df987"
+    },
+    "target_q04": {
+      "status": "done",
+      "verdict": "PASS_SOFT",
+      "work_item_id": "1b418d74-da86-4fb2-aa41-74ebca065f05"
+    },
+    "target_q05_before_repair": {
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "work_item_id": "dd43c7e2-7351-41e1-a4a4-f667d0789249",
+      "latest_reason": "NO_HISTORY;INCOMPLETE_RUNS with EMPTY_EXPERT, EMPTY_SYMBOL, M0_1970_PERIOD, BARS_ZERO, HISTORY_CONTEXT_INVALID",
+      "prior_ceiling_evidence": "Repeated run_smoke subprocess timeouts at 1800 seconds before the latest invalid Q05 run."
+    }
+  },
+  "code_changes": [
+    {
+      "path": "framework/EAs/QM5_12772_edgelab-gbpjpy-audjpy-cointegration/basket_manifest.json",
+      "summary": "Added USDJPY.DWX to basket_symbols as conversion-history scope for USD-denominated GBPJPY/AUDJPY accounting, matching the EA's OnInit SymbolSelect list."
+    },
+    {
+      "path": "framework/EAs/QM5_12772_edgelab-gbpjpy-audjpy-cointegration/SPEC.md",
+      "summary": "Recorded the Q05 manifest-history repair and noted that no manual MT5 rerun was launched because of the observed timeout ceiling."
+    },
+    {
+      "path": "tools/strategy_farm/tests/test_fx_basket_manifests.py",
+      "summary": "Added a focused regression test that asserts QM5_12772's manifest declares the symbols selected by the EA, including USDJPY.DWX conversion history."
+    }
+  ],
+  "queue_action": {
+    "manual_backtest_launched": false,
+    "requeued": false,
+    "reason": "Stopped at the Q05 backtest CPU ceiling per mission constraint; structural manifest repair is committed for the next controlled enqueue."
+  },
+  "validation": [
+    {
+      "command": "python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py -q",
+      "result": "PASS",
+      "tests": 1
+    },
+    {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12772_edgelab-gbpjpy-audjpy-cointegration -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 16,
+      "report": "D:/QM/reports/framework/21/build_check_20260630_141004.json"
+    },
+    {
+      "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --ea QM5_12772",
+      "result": "PASS",
+      "summary": "Q02 done PASS; Q04 done PASS_SOFT; Q05 done INFRA_FAIL after CPU/history ceiling."
+    }
+  ],
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false,
+    "risk_mode": "RISK_FIXED backtest artifacts only"
+  }
+}
