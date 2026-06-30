@@ -1,0 +1,96 @@
+{
+  "ea_id": "QM5_12758",
+  "slug": "edgelab-gbpusd-euraud-cointegration",
+  "selected_pair": "GBPUSD~EURAUD",
+  "logical_symbol": "QM5_12758_GBPUSD_EURAUD_COINTEGRATION_D1",
+  "mission_scope": "Advance an existing FX market-neutral cointegration basket after no unbuilt strict-threshold 66-pair survivor was available and QM5_12532/QM5_12533 were no longer Q02-blocked.",
+  "precheck": {
+    "qm5_12532_q02_blocked": false,
+    "qm5_12532_current_observed_state": "Q02 PASS, Q04 PASS, Q05 INFRA_FAIL",
+    "qm5_12533_q02_blocked": false,
+    "qm5_12533_current_observed_state": "Q02 PASS, Q04 FAIL",
+    "unbuilt_strict_66_pair_survivor_found": false,
+    "target_prior_state": "QM5_12758 had Q02 PASS, Q04 FAIL, and one non-duplicate Q02 pending requeue row."
+  },
+  "repair": {
+    "reason": "EA selects and warms AUDUSD.DWX for USD-denominated EURAUD conversion history, but basket_manifest.json and the pending Q02 payload declared only GBPUSD.DWX and EURAUD.DWX.",
+    "files_changed": [
+      "framework/EAs/QM5_12758_edgelab-gbpusd-euraud-cointegration/basket_manifest.json",
+      "framework/EAs/QM5_12758_edgelab-gbpusd-euraud-cointegration/sets/QM5_12758_edgelab-gbpusd-euraud-cointegration_QM5_12758_GBPUSD_EURAUD_COINTEGRATION_D1_D1_backtest.set",
+      "tools/strategy_farm/tests/test_fx_basket_manifests.py"
+    ],
+    "manifest_symbols_after": [
+      "GBPUSD.DWX",
+      "EURAUD.DWX",
+      "AUDUSD.DWX"
+    ],
+    "traded_symbols": [
+      "GBPUSD.DWX",
+      "EURAUD.DWX"
+    ],
+    "conversion_symbols": [
+      "AUDUSD.DWX"
+    ]
+  },
+  "queue_action": {
+    "action": "existing_q02_payload_repair_no_duplicate_insert",
+    "work_item_id": "200f7838-0cf3-456e-bc35-1db11c1db09c",
+    "status_after": "pending",
+    "claimed_by_after": null,
+    "updated_at_utc": "2026-06-30T18:20:21+00:00",
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12758_manifest_payload_repair_20260630T181955Z.sqlite",
+    "payload_updates": {
+      "basket_symbol_count": 3,
+      "basket_symbols": [
+        "GBPUSD.DWX",
+        "EURAUD.DWX",
+        "AUDUSD.DWX"
+      ],
+      "traded_symbols": [
+        "GBPUSD.DWX",
+        "EURAUD.DWX"
+      ],
+      "conversion_symbols": [
+        "AUDUSD.DWX"
+      ],
+      "priority_track": true,
+      "priority_reason": "fx_market_neutral_basket_q02_manifest_conversion_repair_2026-06-30"
+    }
+  },
+  "validation": [
+    {
+      "command": "python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py",
+      "result": "PASS",
+      "tests": 2
+    },
+    {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_12758_edgelab-gbpusd-euraud-cointegration --verbose",
+      "result": "PASS",
+      "verdict": "BASKET_OK",
+      "manifest_declares": 3
+    },
+    {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12758_edgelab-gbpusd-euraud-cointegration -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 16,
+      "report": "D:/QM/reports/framework/21/build_check_20260630_181955.json"
+    },
+    {
+      "command": "python tools/strategy_farm/farmctl.py work-items --ea QM5_12758",
+      "result": "PASS",
+      "summary": "Exactly one QM5_12758 Q02 requeue remains pending; no duplicate work item was inserted."
+    }
+  ],
+  "safety": {
+    "manual_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false,
+    "risk_mode": "RISK_FIXED backtest queue only"
+  }
+}
