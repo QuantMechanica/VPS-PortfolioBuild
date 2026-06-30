@@ -14078,3 +14078,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12801,wyckoff-trend-swing,1,GDAXI.DWX,128010001,2026-06-30,Development,active
 12801,wyckoff-trend-swing,2,SP500.DWX,128010002,2026-06-30,Development,active
 12801,wyckoff-trend-swing,3,XAUUSD.DWX,128010003,2026-06-30,Development,active
+9404,chande-vr-rsi-mr-composite-h4,0,EURUSD.DWX,94040000,2026-06-30,Development,active
+9404,chande-vr-rsi-mr-composite-h4,1,GBPUSD.DWX,94040001,2026-06-30,Development,active
+9404,chande-vr-rsi-mr-composite-h4,2,USDJPY.DWX,94040002,2026-06-30,Development,active
+9404,chande-vr-rsi-mr-composite-h4,3,AUDUSD.DWX,94040003,2026-06-30,Development,active
+9404,chande-vr-rsi-mr-composite-h4,4,USDCAD.DWX,94040004,2026-06-30,Development,active
+9404,chande-vr-rsi-mr-composite-h4,5,USDCHF.DWX,94040005,2026-06-30,Development,active
+9404,chande-vr-rsi-mr-composite-h4,6,NZDUSD.DWX,94040006,2026-06-30,Development,active
+9404,chande-vr-rsi-mr-composite-h4,7,XAUUSD.DWX,94040007,2026-06-30,Development,active
+9404,chande-vr-rsi-mr-composite-h4,8,XTIUSD.DWX,94040008,2026-06-30,Development,active
+9404,chande-vr-rsi-mr-composite-h4,9,GDAXI.DWX,94040009,2026-06-30,Development,active
+9404,chande-vr-rsi-mr-composite-h4,10,NDX.DWX,94040010,2026-06-30,Development,active
+9404,chande-vr-rsi-mr-composite-h4,11,WS30.DWX,94040011,2026-06-30,Development,active
+9404,chande-vr-rsi-mr-composite-h4,12,UK100.DWX,94040012,2026-06-30,Development,active
