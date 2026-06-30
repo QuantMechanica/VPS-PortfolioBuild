@@ -1,0 +1,40 @@
+{
+  "task_id": "7cea71b0-64df-46d2-910f-8094c6ac2bbc",
+  "ea_id": "QM5_12827",
+  "slug": "cme-gassilver-brk",
+  "label": "QM5_12827_cme-gassilver-brk",
+  "ea_dir": "framework/EAs/QM5_12827_cme-gassilver-brk",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_12827_cme-gassilver-brk/QM5_12827_cme-gassilver-brk.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_12827_cme-gassilver-brk/QM5_12827_cme-gassilver-brk.ex5",
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile_log_path": "C:/QM/repo/framework/build/compile/20260630_170602/QM5_12827_cme-gassilver-brk.compile.log",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260630_170602.json",
+  "build_check_failures": 0,
+  "build_check_warnings": 16,
+  "mq5_sha256": "783e80b61ec010455f15fd76d077c236a7d750c168262c3ec77b61d3a2e32d60",
+  "ex5_sha256": "7cff0e87a6e52598c843601f2bcd305e43c480c39bda468c97fc28c15e564291",
+  "symbols": [
+    "XNGUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_12827_XNG_XAG_BRK_D1",
+  "timeframe": "D1",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_12827_cme-gassilver-brk/sets/QM5_12827_cme-gassilver-brk_QM5_12827_XNG_XAG_BRK_D1_D1_backtest.set"
+  ],
+  "basket_manifest": "C:/QM/repo/framework/EAs/QM5_12827_cme-gassilver-brk/basket_manifest.json",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "No manual MT5 backtest launched; existing Q02 logical basket work-item remains queued for paced workers.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "notes": "Repaired codex-review failure for QM5_12827 by replacing raw iTime D1 entry gating with a framework QM_IsNewBar-armed pending entry check. The 02:00 broker entry semantics are preserved while satisfying the framework new-bar contract. Strict compile and build_check PASS; no T_Live, AutoTrading, portfolio gate, or deploy manifest files touched."
+}
