@@ -1,0 +1,100 @@
+{
+  "action": "q04_history_clamp_requeue",
+  "agent": "codex-board-advisor",
+  "branch": "agents/board-advisor",
+  "created_at_utc": "2026-06-30T07:34:38Z",
+  "mission_path": "fallback_advance_existing_forex_card",
+  "ea_id": "QM5_12783",
+  "strategy": "AUDUSD/AUDJPY market-neutral FX cointegration basket",
+  "logical_symbol": "QM5_12783_AUDUSD_AUDJPY_COINTEGRATION_D1",
+  "host_symbol": "AUDUSD.DWX",
+  "timeframe": "D1",
+  "scan_exhaustion_check": {
+    "source_script": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "source_data": "D:/QM/mt5/T_Export/MQL5/Files/*.DWX_D1.csv",
+    "positive_hedge_pairs_in_rerun": 29,
+    "positive_hedge_pairs_already_built": 29,
+    "unbuilt_positive_hedge_scan_pair_found": false,
+    "strict_survivors": [
+      "QM5_12533",
+      "QM5_12532"
+    ],
+    "qm5_12532_q02_blocked": false,
+    "qm5_12533_q02_blocked": false
+  },
+  "selection_basis": {
+    "q02_work_item": "1a2e412b-1229-4b97-a627-9491e264af63",
+    "q02_verdict": "PASS",
+    "prior_q04_work_item": "16267df3-00b5-4ede-abbb-75dfcadedc14",
+    "prior_q04_verdict": "INFRA_FAIL",
+    "prior_q04_evidence": "D:/QM/reports/work_items/16267df3-00b5-4ede-abbb-75dfcadedc14/QM5_12783/Q04/QM5_12783_AUDUSD_AUDJPY_COINTEGRATION_D1/aggregate.json",
+    "prior_q04_reason": "F1/F2/F3 invalid_summary with NO_HISTORY, M0_1970_PERIOD, BARS_ZERO, EMPTY_EXPERT, EMPTY_SYMBOL, HISTORY_CONTEXT_INVALID, INCOMPLETE_RUNS, RUN_STATUS_INVALID"
+  },
+  "history_clamp": {
+    "source": "tools.strategy_farm.farmctl._apply_q04_latest_full_year_from_history",
+    "q04_latest_full_year": 2024,
+    "q04_history_checked_symbols": [
+      "AUDUSD.DWX",
+      "AUDJPY.DWX",
+      "USDJPY.DWX"
+    ],
+    "q04_history_checked_period": "D1",
+    "q04_history_checked_scope": "basket_manifest_symbols",
+    "q04_history_checked_window": "2023-2024",
+    "q04_history_clamp_source": "mt5_cache"
+  },
+  "queue_action": {
+    "action": "requeue_existing_q04_work_item_in_place",
+    "work_item_id": "16267df3-00b5-4ede-abbb-75dfcadedc14",
+    "phase": "Q04",
+    "status_before": "done",
+    "verdict_before": "INFRA_FAIL",
+    "evidence_before": "D:/QM/reports/work_items/16267df3-00b5-4ede-abbb-75dfcadedc14/QM5_12783/Q04/QM5_12783_AUDUSD_AUDJPY_COINTEGRATION_D1/aggregate.json",
+    "status_after": "pending",
+    "verdict_after": null,
+    "evidence_after": null,
+    "duplicate_q04_inserted": false,
+    "pending_active_duplicate_count_after": 1,
+    "db_backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12783_q04_requeue_20260630T073436Z.sqlite",
+    "payload_sanitized_runtime_fields": [
+      "claimed_at_iso",
+      "claimed_by_worker_pid",
+      "started_at_iso",
+      "terminal",
+      "pid",
+      "log_path",
+      "run_smoke_exit_code",
+      "verdict_reason",
+      "verdict_taxonomy",
+      "evidence_provenance"
+    ],
+    "priority_track": true
+  },
+  "validation": [
+    {
+      "command": "python -m py_compile framework/scripts/q04_walkforward.py",
+      "result": "PASS"
+    },
+    {
+      "command": "python -m pytest framework/scripts/tests/test_q04_walkforward.py",
+      "result": "PASS",
+      "tests": 19
+    },
+    {
+      "command": "python tools/strategy_farm/farmctl.py work-items --ea QM5_12783",
+      "result": "PASS",
+      "summary": "Q02 done PASS, Q03 done INFRA_FAIL, Q04 pending; exactly one Q04 pending row for the logical basket."
+    }
+  ],
+  "safety": {
+    "manual_backtest_launched": false,
+    "t_live_manifest_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "risk_mode": "RISK_FIXED backtest setfile remains in use"
+  },
+  "cpu_ceiling_note": "No manual MT5 run was launched. Existing factory terminals were active, so the Q04 retry is left as a paced-worker pending item."
+}
