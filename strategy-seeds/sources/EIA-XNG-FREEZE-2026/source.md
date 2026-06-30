@@ -19,15 +19,20 @@ uri: https://www.eia.gov/todayinenergy/detail.php?id=50778
 
 ## Mining Scope
 
-One card was extracted for a structural natural-gas CFD sleeve:
+Two cards were extracted for structural natural-gas CFD sleeves:
 
 - `eia-xng-frzfade`: XNGUSD.DWX D1 winter freeze-off spike fade.
+- `eia-xng-frzbrk`: XNGUSD.DWX D1 winter freeze-off continuation breakout.
 
 ## Evidence Notes
 
 - EIA documents that severe U.S. winter weather can create sharp natural-gas price spikes through heating demand, supply interruptions, and regional constraints.
 - EIA also documents that extreme winter spot-price shocks can normalize after the acute weather stress passes.
-- The QM implementation does not ingest weather, production, storage, pipeline, cash-market, futures-curve, EIA, or external API data at runtime. It uses the official EIA lineage only to constrain the setup to January-February and then requires XNGUSD.DWX D1 spike/rejection confirmation.
+- The QM implementations do not ingest weather, production, storage, pipeline,
+  cash-market, futures-curve, EIA, or external API data at runtime. They use the
+  official EIA lineage only to constrain the setup to January-February and then
+  require XNGUSD.DWX D1 price confirmation. The fade card requires
+  spike/rejection; the breakout card requires upside shock continuation.
 
 ## Guardrails
 
