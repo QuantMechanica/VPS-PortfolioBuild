@@ -1,0 +1,49 @@
+{
+  "ea_id": "QM5_12778",
+  "slug": "edgelab-audusd-eurjpy-cointegration",
+  "work_unit": "Q02 terminal-slot contamination guard and requeue",
+  "timestamp_utc": "2026-06-30T03:08:44Z",
+  "diversity_rationale": "Market-neutral FX basket on AUDUSD.DWX/EURJPY.DWX with EURUSD.DWX and USDJPY.DWX conversion history; no healthy Q02 path existed.",
+  "diagnosis": {
+    "prior_failed_work_items": [
+      "8f0e511f-0f93-42eb-b2c5-b07e1f7a6f1e",
+      "7f04ff6a-35ca-45bd-a702-afc37b310f97"
+    ],
+    "classified_reason": "NO_HISTORY;INCOMPLETE_RUNS",
+    "root_cause": "Terminal-slot contamination: 7f04ff6a tester.ini requested QM5_12778 on AUDUSD.DWX, but the copied tester log contains QM5_12786 on USDCHF.DWX and an empty M0/1970 report.",
+    "history_check": "AUDUSD.DWX, EURJPY.DWX, EURUSD.DWX, and USDJPY.DWX history exists on T1-T10 for the required Q02 window."
+  },
+  "fix": {
+    "file": "framework/scripts/run_smoke.ps1",
+    "summary": "Test-TerminalAlreadyRunning now treats Win32_Process.ExecutablePath as authoritative and falls back to command-line/root matching, preventing a dedicated terminal launch from being mistaken as idle when CommandLine is blank or stale."
+  },
+  "requeue": {
+    "lease_key": "manual:codex:QM5_12778:q02_terminal_guard_requeue",
+    "new_work_item_id": "4dbf18f1-f8c0-4665-beea-778c9ad960c2",
+    "phase": "Q02",
+    "status": "pending",
+    "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "host_symbol": "AUDUSD.DWX",
+    "host_timeframe": "D1",
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "basket_symbols": [
+      "AUDUSD.DWX",
+      "EURJPY.DWX",
+      "EURUSD.DWX",
+      "USDJPY.DWX"
+    ]
+  },
+  "verification": [
+    "pwsh.exe -NoProfile -File framework/scripts/tests/Test-RunSmokeTerminalRunningGuard.ps1",
+    "pwsh.exe -NoProfile -File framework/scripts/tests/Test-RunSmokeWaitsForChildTerminal.ps1",
+    "pwsh.exe -NoProfile -File framework/scripts/tests/Test-RunSmokeNoHistoryScope.ps1",
+    "pwsh.exe -NoProfile -File framework/scripts/tests/Test-TerminalSpawnWatchdog.ps1"
+  ],
+  "runtime_scope": {
+    "backtest_started": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  }
+}

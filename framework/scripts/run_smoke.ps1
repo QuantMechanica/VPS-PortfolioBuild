@@ -574,15 +574,29 @@ function Test-TerminalAlreadyRunning {
         [string]$TerminalRoot
     )
 
-    $escaped = [regex]::Escape((Join-Path $TerminalRoot "terminal64.exe"))
+    $terminalExe = Join-Path $TerminalRoot "terminal64.exe"
+    try {
+        $terminalExe = (Resolve-Path -LiteralPath $terminalExe -ErrorAction Stop).Path
+    } catch {
+    }
+    $escapedExe = [regex]::Escape($terminalExe)
+    $escapedRoot = [regex]::Escape($TerminalRoot.TrimEnd('\', '/'))
     $processes = Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue
     if (-not $processes) {
         return $false
     }
 
     foreach ($proc in $processes) {
+        $exePath = [string]$proc.ExecutablePath
+        if ($exePath -and ($exePath -ieq $terminalExe)) {
+            return $true
+        }
+
         $line = [string]$proc.CommandLine
-        if ($line -and [regex]::IsMatch($line, $escaped, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)) {
+        if ($line -and (
+            [regex]::IsMatch($line, $escapedExe, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase) -or
+            [regex]::IsMatch($line, $escapedRoot, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+        )) {
             return $true
         }
     }
