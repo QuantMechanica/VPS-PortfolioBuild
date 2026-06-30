@@ -1,0 +1,39 @@
+{
+  "ea_id": "QM5_12615",
+  "ea_slug": "tsmom-12m-cross-asset-basket",
+  "logical_symbol": "QM5_12615_TSMOM_XASSET_D1",
+  "host_symbol": "EURUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "NDX.DWX",
+    "XAUUSD.DWX",
+    "XTIUSD.DWX"
+  ],
+  "magic_slots": [
+    {
+      "slot": 0,
+      "symbol": "EURUSD.DWX",
+      "magic": 126150000
+    },
+    {
+      "slot": 1,
+      "symbol": "NDX.DWX",
+      "magic": 126150001
+    },
+    {
+      "slot": 2,
+      "symbol": "XAUUSD.DWX",
+      "magic": 126150002
+    },
+    {
+      "slot": 3,
+      "symbol": "XTIUSD.DWX",
+      "magic": 126150003
+    }
+  ],
+  "notes": [
+    "Run on EURUSD.DWX D1 only; the EA opens all four basket legs through QM_BasketOrder.",
+    "Card prose uses 1-based slot labels; V5 registry slots are zero-based."
+  ]
+}
