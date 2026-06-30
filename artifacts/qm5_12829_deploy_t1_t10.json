@@ -1,0 +1,126 @@
+{
+    "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12829_wti-cushing-fade\\QM5_12829_wti-cushing-fade.ex5",
+    "file_name":  "QM5_12829_wti-cushing-fade.ex5",
+    "deployed_at_local":  "2026-06-30T18:02:02.4537876+02:00",
+    "terminal_roots":  [
+                           "D:\\QM\\mt5\\T1",
+                           "D:\\QM\\mt5\\T2",
+                           "D:\\QM\\mt5\\T3",
+                           "D:\\QM\\mt5\\T4",
+                           "D:\\QM\\mt5\\T5",
+                           "D:\\QM\\mt5\\T6",
+                           "D:\\QM\\mt5\\T7",
+                           "D:\\QM\\mt5\\T8",
+                           "D:\\QM\\mt5\\T9",
+                           "D:\\QM\\mt5\\T10"
+                       ],
+    "status_counts":  [
+                          {
+                              "status":  "created",
+                              "count":  10
+                          }
+                      ],
+    "files":  [
+                  {
+                      "terminal":  "T1",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12829_wti-cushing-fade\\QM5_12829_wti-cushing-fade.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_12829_wti-cushing-fade.ex5",
+                      "source_hash_sha256":  "7F03302353D982F74F3DC48D2EB0A56224BC6D4A05DBA694B5106731534F2D29",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "7F03302353D982F74F3DC48D2EB0A56224BC6D4A05DBA694B5106731534F2D29",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T2",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12829_wti-cushing-fade\\QM5_12829_wti-cushing-fade.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T2\\MQL5\\Experts\\QM\\QM5_12829_wti-cushing-fade.ex5",
+                      "source_hash_sha256":  "7F03302353D982F74F3DC48D2EB0A56224BC6D4A05DBA694B5106731534F2D29",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "7F03302353D982F74F3DC48D2EB0A56224BC6D4A05DBA694B5106731534F2D29",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T3",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12829_wti-cushing-fade\\QM5_12829_wti-cushing-fade.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T3\\MQL5\\Experts\\QM\\QM5_12829_wti-cushing-fade.ex5",
+                      "source_hash_sha256":  "7F03302353D982F74F3DC48D2EB0A56224BC6D4A05DBA694B5106731534F2D29",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "7F03302353D982F74F3DC48D2EB0A56224BC6D4A05DBA694B5106731534F2D29",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T4",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12829_wti-cushing-fade\\QM5_12829_wti-cushing-fade.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T4\\MQL5\\Experts\\QM\\QM5_12829_wti-cushing-fade.ex5",
+                      "source_hash_sha256":  "7F03302353D982F74F3DC48D2EB0A56224BC6D4A05DBA694B5106731534F2D29",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "7F03302353D982F74F3DC48D2EB0A56224BC6D4A05DBA694B5106731534F2D29",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T5",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12829_wti-cushing-fade\\QM5_12829_wti-cushing-fade.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T5\\MQL5\\Experts\\QM\\QM5_12829_wti-cushing-fade.ex5",
+                      "source_hash_sha256":  "7F03302353D982F74F3DC48D2EB0A56224BC6D4A05DBA694B5106731534F2D29",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "7F03302353D982F74F3DC48D2EB0A56224BC6D4A05DBA694B5106731534F2D29",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T6",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12829_wti-cushing-fade\\QM5_12829_wti-cushing-fade.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T6\\MQL5\\Experts\\QM\\QM5_12829_wti-cushing-fade.ex5",
+                      "source_hash_sha256":  "7F03302353D982F74F3DC48D2EB0A56224BC6D4A05DBA694B5106731534F2D29",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "7F03302353D982F74F3DC48D2EB0A56224BC6D4A05DBA694B5106731534F2D29",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T7",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12829_wti-cushing-fade\\QM5_12829_wti-cushing-fade.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T7\\MQL5\\Experts\\QM\\QM5_12829_wti-cushing-fade.ex5",
+                      "source_hash_sha256":  "7F03302353D982F74F3DC48D2EB0A56224BC6D4A05DBA694B5106731534F2D29",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "7F03302353D982F74F3DC48D2EB0A56224BC6D4A05DBA694B5106731534F2D29",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T8",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12829_wti-cushing-fade\\QM5_12829_wti-cushing-fade.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T8\\MQL5\\Experts\\QM\\QM5_12829_wti-cushing-fade.ex5",
+                      "source_hash_sha256":  "7F03302353D982F74F3DC48D2EB0A56224BC6D4A05DBA694B5106731534F2D29",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "7F03302353D982F74F3DC48D2EB0A56224BC6D4A05DBA694B5106731534F2D29",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T9",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12829_wti-cushing-fade\\QM5_12829_wti-cushing-fade.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T9\\MQL5\\Experts\\QM\\QM5_12829_wti-cushing-fade.ex5",
+                      "source_hash_sha256":  "7F03302353D982F74F3DC48D2EB0A56224BC6D4A05DBA694B5106731534F2D29",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "7F03302353D982F74F3DC48D2EB0A56224BC6D4A05DBA694B5106731534F2D29",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T10",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12829_wti-cushing-fade\\QM5_12829_wti-cushing-fade.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T10\\MQL5\\Experts\\QM\\QM5_12829_wti-cushing-fade.ex5",
+                      "source_hash_sha256":  "7F03302353D982F74F3DC48D2EB0A56224BC6D4A05DBA694B5106731534F2D29",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "7F03302353D982F74F3DC48D2EB0A56224BC6D4A05DBA694B5106731534F2D29",
+                      "hash_match":  true
+                  }
+              ],
+    "all_hashes_match":  true
+}

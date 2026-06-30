@@ -35,7 +35,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
+pipeline_phase: Q02
 last_updated: 2026-06-30
 expected_pf: 1.06
 expected_dd_pct: 20.0
@@ -194,5 +194,4 @@ at_risk_explanation: |
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-06-30 | initial EIA Cushing failed-spike fade build | G0 | APPROVED |
-
+| v1 | 2026-06-30 | initial EIA Cushing failed-spike fade build; Q02 work item 4c84fa95-7b39-4b22-894f-64d55b7db128 enqueued | Q02 | ENQUEUED |
