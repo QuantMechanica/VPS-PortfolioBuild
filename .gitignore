@@ -80,3 +80,7 @@ docs/research/unconventional_forex/logs/
 docs/research/unconventional_forex/_*
 docs/research/unconventional_forex/HARVEST_PROGRESS.log
 docs/research/unconventional_forex/batch_*.md
+# whole harvest working dir (final reconstruction force-added when done); tracked VIDEO_MANIFEST stays
+docs/research/unconventional_forex/
+# pip console-script binaries that land in scripts/
+scripts/*.exe
