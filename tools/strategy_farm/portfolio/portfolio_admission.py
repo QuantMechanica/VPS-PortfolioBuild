@@ -59,6 +59,29 @@ def current_book(candidates_db: Path = DEFAULT_CANDIDATES_DB) -> list[Key]:
     return read_candidates(candidates_db)
 
 
+QUARANTINE_PATH = Path(r"D:\QM\reports\state\plausibility_quarantine.json")
+
+
+def load_quarantine(path: Path = QUARANTINE_PATH) -> set[Key]:
+    """Plausibility-scan artifact keys (ea_id:SYMBOL) to exclude from admission.
+    See tools/strategy_farm/plausibility_scan.py — catches mirage streams (no real
+    stop / zero loss / absurd PF) that survive Q04's net-of-cost walk-forward."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return set()
+    out: set[Key] = set()
+    for label in data.get("quarantine", []):
+        ea, _, sym = str(label).partition(":")
+        if not (ea and sym):
+            continue
+        try:
+            out.add((int(ea), sym))
+        except ValueError:
+            continue
+    return out
+
+
 def evaluate_candidate(
     candidate_key: Key,
     book_keys: Sequence[Key],
@@ -68,6 +91,25 @@ def evaluate_candidate(
     starting_capital: float = DEFAULT_STARTING_CAPITAL,
 ) -> dict[str, Any]:
     candidate = _normalize_key(candidate_key)
+
+    # Plausibility guard: never admit a quarantined artifact (no real stop / zero loss /
+    # absurd PF), even as a first sleeve. Q04's net-of-cost walk-forward lets these through
+    # because the defect is consistent across folds; the portfolio is the last line.
+    if candidate in load_quarantine():
+        return {
+            "admit": False,
+            "reason": "quarantined_artifact",
+            "standalone_pf": None,
+            "max_corr_to_book": None,
+            "corr_insufficient": False,
+            "corr_basis": "n/a",
+            "sharpe_with": None,
+            "sharpe_without": None,
+            "maxdd_with": None,
+            "maxdd_without": None,
+            "diversifies": False,
+        }
+
     book = sorted({_normalize_key(key) for key in book_keys if _normalize_key(key) != candidate})
 
     if not book:
