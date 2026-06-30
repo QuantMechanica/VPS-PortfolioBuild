@@ -118,6 +118,13 @@ Q02 was auto-enqueued by `farmctl record-build` after strict compile and
 build-check passed. No manual MT5 run was launched from this build session; Q02
 is delegated to paced farm workers through the logical basket setfile.
 
+Q02 result note: logical-basket work item
+`6c344f79-282d-491c-81c6-2c3b3bd80538` passed on 2026-06-30 using the
+USDCAD.DWX D1 host run. The automatic Q04 promotion created work item
+`4d482c50-d54e-4549-992f-500881a7716c`, which is priority-marked in place
+with `q04_latest_full_year=2024`; no duplicate Q04 row or manual tester run was
+created.
+
 ---
 
 ## Revision History
@@ -125,6 +132,7 @@ is delegated to paced farm workers through the logical basket setfile.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-29 | Initial rank-29 next-unbuilt FX cointegration basket build | Built from the adjacent rank-28 basket pattern with explicit EURUSD/AUDUSD conversion history |
+| v2 | 2026-06-30 | Q02 PASS and Q04 priority track | Logical-basket Q02 PASS recorded; existing Q04 pending row priority-marked in place without duplicate enqueue |
 
 
 
