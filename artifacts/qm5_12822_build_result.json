@@ -1,0 +1,48 @@
+{
+  "task_id": "141480b4-be7c-4520-b618-0959d8d5924f",
+  "ea_id": "QM5_12822",
+  "slug": "eia-jetfuel-pb",
+  "branch": "agents/board-advisor",
+  "date": "2026-06-30",
+  "source_id": "EIA-JETFUEL-SEASON-2026",
+  "target_symbol": "XTIUSD.DWX",
+  "risk_mode": "RISK_FIXED",
+  "risk_fixed": 1000,
+  "card_lint": "PASS",
+  "spec_validation": "PASS",
+  "symbol_scope": "SINGLE_SYMBOL_OK",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12822_eia-jetfuel-pb",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12822_eia-jetfuel-pb\\QM5_12822_eia-jetfuel-pb.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12822_eia-jetfuel-pb\\QM5_12822_eia-jetfuel-pb.ex5",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12822_eia-jetfuel-pb\\sets\\QM5_12822_eia-jetfuel-pb_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Q02_queue_only_no_manual_backtest_per_mission",
+  "compile": {
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log": "C:\\QM\\repo\\framework\\build\\compile\\20260630_085555\\QM5_12822_eia-jetfuel-pb.compile.log"
+  },
+  "build_check": {
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report": "D:\\QM\\reports\\framework\\21\\build_check_20260630_085611.json"
+  },
+  "q02": {
+    "enqueued": true,
+    "work_item_id": "9fee4588-f105-456c-8d29-ffb94cea0afc",
+    "status": "pending",
+    "symbol": "XTIUSD.DWX",
+    "created_at": "2026-06-30T08:58:50+00:00"
+  },
+  "live_scope": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
