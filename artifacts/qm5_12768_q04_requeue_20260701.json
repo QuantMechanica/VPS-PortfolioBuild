@@ -1,0 +1,88 @@
+{
+  "ea_id": "QM5_12768",
+  "slug": "edgelab-usdjpy-eurjpy-cointegration",
+  "selected_pair": "USDJPY~EURJPY",
+  "logical_symbol": "QM5_12768_USDJPY_EURJPY_COINTEGRATION_D1",
+  "mission_scope": "Advance an existing FX market-neutral cointegration basket because all 29 positive-hedge candidates from the 2026-06-09 66-pair scan are already built and QM5_12532/QM5_12533 are not Q02-blocked.",
+  "preflight": {
+    "controlling_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md plus read-only rerun of framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py ranking logic",
+    "positive_hedge_scan_candidate_count": 29,
+    "unbuilt_positive_hedge_candidates_found": 0,
+    "qm5_12532_current_state": "Q02 PASS, Q04 PASS, later Q05 INFRA_FAIL/TIMEOUT CPU-ceiling path; not Q02-blocked.",
+    "qm5_12533_current_state": "Q02 PASS, later Q04 FAIL; not Q02-blocked.",
+    "excluded_cpu_ceiling_targets": [
+      "QM5_12532 Q05 INFRA_FAIL reason includes INCOMPLETE_RUNS,TIMEOUT",
+      "QM5_12712 Q05 INFRA_FAIL reason includes INCOMPLETE_RUNS,TIMEOUT after manifest repair",
+      "QM5_12772 Q05 has explicit prior CPU-ceiling evidence"
+    ],
+    "target_state_before_action": {
+      "Q02": {
+        "work_item_id": "93909a80-8ce6-4e95-be28-889f8dc17a7d",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      "Q04": {
+        "work_item_id": "190f8061-7947-48b3-b9c2-c7cc3742d877",
+        "status": "done",
+        "verdict": "INFRA_FAIL",
+        "reason": "F1/F2 invalid_summary:BARS_ZERO,EMPTY_EXPERT,EMPTY_SYMBOL,HISTORY_CONTEXT_INVALID,INCOMPLETE_RUNS,M0_1970_PERIOD,NO_HISTORY,RUN_STATUS_INVALID; F3 OK with report PF 0.67"
+      }
+    },
+    "duplicate_pending_or_active_q04_before": 0
+  },
+  "queue_action": {
+    "db_backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12768_q04_requeue_20260701_135104.sqlite",
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12768 --phase Q04",
+    "result": "requeued_existing_row",
+    "created_rows": 0,
+    "skipped_rows": 0,
+    "requeued_work_item_id": "190f8061-7947-48b3-b9c2-c7cc3742d877",
+    "status_after": "pending",
+    "verdict_after": null,
+    "claimed_by_after": null,
+    "evidence_path_after": null,
+    "updated_at_utc": "2026-07-01T13:51:12+00:00",
+    "archived_report_root_on_requeue": "D:/QM/reports/work_items/190f8061-7947-48b3-b9c2-c7cc3742d877.requeued_20260701T1351120000"
+  },
+  "payload_after": {
+    "portfolio_scope": "basket",
+    "logical_symbol": "QM5_12768_USDJPY_EURJPY_COINTEGRATION_D1",
+    "host_symbol": "USDJPY.DWX",
+    "host_timeframe": "D1",
+    "basket_symbols": [
+      "USDJPY.DWX",
+      "EURJPY.DWX"
+    ],
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "risk_fixed": 1000,
+    "q04_default_probe": true,
+    "from_date": "2018.07.02",
+    "to_date": "2024.12.31",
+    "smoke_year_count": 7,
+    "timeout_min": 120
+  },
+  "verification": [
+    {
+      "check": "farmctl work-items --ea QM5_12768",
+      "result": "PASS",
+      "summary": "Q02 done PASS; Q04 pending."
+    },
+    {
+      "check": "direct SQLite duplicate guard",
+      "result": "PASS",
+      "summary": "Exactly one pending/active Q04 row exists for QM5_12768, the requeued row 190f8061-7947-48b3-b9c2-c7cc3742d877."
+    }
+  ],
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false,
+    "risk_mode": "RISK_FIXED backtest queue item"
+  }
+}
