@@ -25,8 +25,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02
-last_updated: 2026-06-30
+pipeline_phase: Q04
+last_updated: 2026-07-01
 g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-requested in-house 66-pair FX scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS USDJPY.DWX and GBPJPY.DWX data exist in scan universe; R4 PASS no ML/grid/martingale."
 expected_pf: 1.01
 expected_dd_pct: 30.0
@@ -155,3 +155,5 @@ judge.
 | v1 | 2026-06-29 | initial OOS-positive next-best FX cointegration basket build | G0 | APPROVED |
 | v1-q02 | 2026-06-29 | build task 6876bf40-5fd9-4445-a7b4-b658b895fb88 recorded | Q02 | PENDING work item dea115dd-02b5-4c27-a29f-98013541fc3c |
 | v1-q02a | 2026-06-30 | pending Q02 row repaired in place with basket priority, fixed-risk, tester-deposit, timeout, and multisymbol hints | Q02 | PENDING work item dea115dd-02b5-4c27-a29f-98013541fc3c |
+| v1-q02b | 2026-06-30 | logical basket Q02 completed with real MT5 evidence | Q02 | PASS work item dea115dd-02b5-4c27-a29f-98013541fc3c |
+| v1-q04 | 2026-07-01 | existing automatic Q04 row priority-marked in place after Q02 PASS; no duplicate enqueue | Q04 | PENDING work item 19fdb50e-61b9-488d-a12e-d0737afe5333 |

@@ -14158,3 +14158,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9401,demark-tdprl-fade-h4,11,WS30.DWX,94010011,2026-07-01,Codex,active
 9401,demark-tdprl-fade-h4,12,UK100.DWX,94010012,2026-07-01,Codex,active
 12852,wti-may-prem,0,XTIUSD.DWX,128520000,2026-07-01,Codex,active
+11902,bermuda-triangle-123-fib-extension-h1,0,EURUSD.DWX,119020000,2026-07-01,Codex,active
+11902,bermuda-triangle-123-fib-extension-h1,1,GBPUSD.DWX,119020001,2026-07-01,Codex,active
+11902,bermuda-triangle-123-fib-extension-h1,2,USDJPY.DWX,119020002,2026-07-01,Codex,active
+11902,bermuda-triangle-123-fib-extension-h1,3,USDCAD.DWX,119020003,2026-07-01,Codex,active
+11902,bermuda-triangle-123-fib-extension-h1,4,USDCHF.DWX,119020004,2026-07-01,Codex,active
+11902,bermuda-triangle-123-fib-extension-h1,5,AUDUSD.DWX,119020005,2026-07-01,Codex,active
+11902,bermuda-triangle-123-fib-extension-h1,6,NZDUSD.DWX,119020006,2026-07-01,Codex,active
+11902,bermuda-triangle-123-fib-extension-h1,7,EURJPY.DWX,119020007,2026-07-01,Codex,active
+11902,bermuda-triangle-123-fib-extension-h1,8,GBPJPY.DWX,119020008,2026-07-01,Codex,active
+11902,bermuda-triangle-123-fib-extension-h1,9,AUDJPY.DWX,119020009,2026-07-01,Codex,active

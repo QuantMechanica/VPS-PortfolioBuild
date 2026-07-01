@@ -89,6 +89,11 @@ double AbsD(const double value)
    return (value >= 0.0) ? value : -value;
   }
 
+int AbsInt(const int value)
+  {
+   return (value >= 0) ? value : -value;
+  }
+
 int H1Seconds()
   {
    const int seconds = PeriodSeconds(PERIOD_H1);
@@ -233,7 +238,7 @@ void AppendPivot(SwingPivot &pivots[], int &count, SwingPivot &candidate, const 
    if(count > 0)
      {
       const int last = count - 1;
-      const int spacing = AbsD((double)(pivots[last].shift - candidate.shift));
+      const int spacing = AbsInt(pivots[last].shift - candidate.shift);
 
       if(candidate.kind == pivots[last].kind)
         {
