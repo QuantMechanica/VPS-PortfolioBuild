@@ -27,6 +27,18 @@ def test_qm5_12781_manifest_uses_jpy_tester_account_for_jpy_cross_basket() -> No
     assert _mq5_allowed_symbols(ea_dir) <= declared
 
 
+def test_qm5_12783_manifest_uses_aud_tester_account_for_aud_base_basket() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_12783_edgelab-audusd-audjpy-cointegration"
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+
+    declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
+
+    assert manifest["tester_currency"] == "AUD"
+    assert manifest["tester_deposit"] == 150000
+    assert declared == {"AUDUSD.DWX", "AUDJPY.DWX"}
+    assert _mq5_allowed_symbols(ea_dir) <= declared
+
+
 def test_qm5_12772_manifest_declares_usdjpy_conversion_history() -> None:
     ea_dir = REPO / "framework" / "EAs" / "QM5_12772_edgelab-gbpjpy-audjpy-cointegration"
     manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
