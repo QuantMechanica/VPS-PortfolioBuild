@@ -17,6 +17,7 @@ import json
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 if __package__ in (None, ""):
@@ -24,7 +25,7 @@ if __package__ in (None, ""):
 
 from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
                                             resolve_ea_expert_path, period_from_setfile,
-                                            find_latest_summary, full_history_window)
+                                            full_history_window)
 from framework.scripts.q05_stress_medium import (
     _latest_report_metrics,
     _parse_pf_dd_trades,
@@ -39,6 +40,62 @@ from framework.scripts.q06_stress_harsh import gen_harsh_setfile_for, _basket_lo
 GATE_NAME = "Q07"
 PF_VARIANCE_PCT_MAX = 20.0
 PER_SEED_PF_MIN = 1.0
+
+
+def _text_from_completed_process(proc: subprocess.CompletedProcess | subprocess.TimeoutExpired) -> str:
+    parts: list[str] = []
+    for raw in (getattr(proc, "stdout", None), getattr(proc, "stderr", None)):
+        if raw is None:
+            continue
+        if isinstance(raw, bytes):
+            parts.append(raw.decode("utf-8", errors="replace"))
+        else:
+            parts.append(str(raw))
+    return "\n".join(part for part in parts if part)
+
+
+def _summary_from_run_smoke_output(output_text: str) -> Path | None:
+    match = re.search(r"(?m)^run_smoke\.summary=(?P<path>.+?)\s*$", output_text or "")
+    if not match:
+        return None
+    path = Path(match.group("path").strip().strip('"'))
+    return path if path.exists() else None
+
+
+def _find_latest_summary_after(report_root: Path, started_at: float) -> Path | None:
+    root = Path(report_root)
+    if not root.is_dir():
+        return None
+    cands = []
+    for summary in root.rglob("summary.json"):
+        try:
+            mtime = summary.stat().st_mtime
+        except OSError:
+            continue
+        if mtime >= started_at:
+            cands.append((mtime, summary))
+    if not cands:
+        return None
+    return max(cands, key=lambda item: item[0])[1]
+
+
+def _latest_report_metrics_after(report_root: Path, started_at: float) -> dict | None:
+    root = Path(report_root)
+    if not root.is_dir():
+        return None
+    reports = []
+    for report in root.rglob("report.htm"):
+        try:
+            mtime = report.stat().st_mtime
+        except OSError:
+            continue
+        if mtime >= started_at:
+            reports.append((mtime, report))
+    for _mtime, report in sorted(reports, reverse=True):
+        metrics = _latest_report_metrics(report.parent)
+        if metrics:
+            return metrics
+    return None
 
 
 def _load_canonical_seeds() -> list[int]:
@@ -103,17 +160,21 @@ def _run_seed(*, ea_id: int, ea_expert: str, symbol: str, setfile: Path,
     runner_timeout_sec = timeout_sec + RUNNER_HEADROOM_SEC
     timed_out = False
     timeout_detail = None
+    output_text = ""
+    started_at = time.time()
     try:
         proc = subprocess.run(args, capture_output=True, text=True,
                               timeout=runner_timeout_sec, creationflags=creationflags)
         exit_code = proc.returncode
+        output_text = _text_from_completed_process(proc)
     except subprocess.TimeoutExpired as exc:
         timed_out = True
         timeout_detail = f"subprocess_timeout_after={exc.timeout}s"
         exit_code = 124
-    summary = find_latest_summary(report_root)
+        output_text = _text_from_completed_process(exc)
+    summary = _summary_from_run_smoke_output(output_text) or _find_latest_summary_after(report_root, started_at)
     invalid_reason = summary_invalid_reason(summary) if summary else None
-    report_metrics = None if summary else _latest_report_metrics(report_root)
+    report_metrics = None if summary else _latest_report_metrics_after(report_root, started_at)
     if summary:
         pf, dd_money, trades = _parse_pf_dd_trades(summary)
     elif report_metrics:

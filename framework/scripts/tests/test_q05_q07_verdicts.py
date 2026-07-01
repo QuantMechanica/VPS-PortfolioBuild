@@ -428,20 +428,37 @@ class Q05Q07VerdictTests(unittest.TestCase):
             )
             (root / "summary.json").write_text(
                 json.dumps({
-                    "result": "PASS",
+                    "result": "FAIL",
+                    "reason_classes": ["NO_HISTORY", "INCOMPLETE_RUNS"],
                     "runs": [{
-                        "profit_factor": 1.07,
-                        "drawdown": 2287.51,
-                        "total_trades": 228,
+                        "status": "INVALID",
+                        "failure": "NO_HISTORY",
+                        "invalid_report_reasons": ["EMPTY_EXPERT", "EMPTY_SYMBOL", "M0_1970_PERIOD", "BARS_ZERO"],
+                        "profit_factor": 0,
+                        "drawdown": 0,
+                        "total_trades": 0,
                     }]
                 }),
                 encoding="utf-8",
             )
+            seed_summary = root / "QM5_12781" / "20260701_010101" / "summary.json"
             calls = []
 
             def fake_run(args, **_kwargs):
                 calls.append(args)
-                return SimpleNamespace(returncode=0, stdout="", stderr="")
+                seed_summary.parent.mkdir(parents=True)
+                seed_summary.write_text(
+                    json.dumps({
+                        "result": "PASS",
+                        "runs": [{
+                            "profit_factor": 1.07,
+                            "drawdown": 2287.51,
+                            "total_trades": 228,
+                        }]
+                    }),
+                    encoding="utf-8",
+                )
+                return SimpleNamespace(returncode=0, stdout=f"run_smoke.summary={seed_summary}\n", stderr="")
 
             with patch.object(q07.subprocess, "run", side_effect=fake_run):
                 result = q07._run_seed(
@@ -459,6 +476,7 @@ class Q05Q07VerdictTests(unittest.TestCase):
         cmd = calls[0]
         self.assertEqual(cmd[cmd.index("-TesterCurrencyOverride") + 1], "USD")
         self.assertEqual(cmd[cmd.index("-TesterDepositOverride") + 1], "100000")
+        self.assertEqual(result["summary_path"], str(seed_summary))
         self.assertEqual(result["pf"], 1.07)
         self.assertEqual(result["trades"], 228)
 
