@@ -38,10 +38,19 @@ Reference: `framework/templates/EA_Skeleton.mq5` + `framework/include/QM/*.mqh`.
   Treat file-scope `g_last_*_bar` / `last_checked_bar` / `iTime(...)`
   timestamp gates as per-EA reimplementations too, even when the function is
   not literally named `IsNewBar`.
-  Exception: for basket EAs with `basket_manifest.json`, a cached D1
-  `iTime(...)` timestamp used only inside exit/trade-management to avoid
-  repeated multi-symbol `CopyClose` while a package is open is allowed. It
+  Exception 1 (basket exit-mgmt): for basket EAs with `basket_manifest.json`, a
+  cached D1 `iTime(...)` timestamp used only inside exit/trade-management to
+  avoid repeated multi-symbol `CopyClose` while a package is open is allowed. It
   must not gate entries or replace the framework entry gate.
+  Exception 2 (calendar cadence): monthly/weekly/daily rebalance strategies
+  (cross-asset, cointegration spreads, seasonal) MUST get their period boundary
+  from the framework helpers `QM_IsNewCalendarPeriod(PERIOD_MN1|PERIOD_W1|
+  PERIOD_D1)` and/or `QM_CalendarPeriodKey(...)` from `QM_Indicators.mqh` — a
+  raw `iTime(...)` month/week/day-key gate in the EA is STILL a FAIL, but using
+  these helpers is the conformant, corset-clean path (they internalise the
+  iTime call). `QM_IsNewBar(sym, PERIOD_MN1/W1/D1)` for a higher timeframe is
+  equally acceptable for the boolean edge. Flag EAs that hand-roll `iTime`
+  calendar keys and tell them to switch to `QM_CalendarPeriodKey`.
 - Position open / close uses `QM_TM_OpenPosition / QM_TM_ClosePosition` —
   raw `OrderSend` = FAIL. For basket EAs with `basket_manifest.json`,
   `QM_BasketOpenPosition` from `QM_BasketOrder.mqh` is allowed for off-chart
@@ -119,11 +128,23 @@ Grep the mq5 for:
 - `iMA(` / `iATR(` / `iRSI(` / `iMACD(` / `iADX(` / `iBands(` outside `QM_*`
   wrapper internals (in user-EA file = FAIL).
 - `CopyBuffer(` outside `QM/QM_Indicators.mqh` (FAIL).
-- ML-y patterns: `tensorflow`, `onnx`, `OnnxLoad`, `predict`, `train`,
-  `weights[`, `model.` (R4 violation; let Claude decide severity but mark).
+- Hard ML violations (always FAIL, Hard-Rule R4 "no ML in V5 EAs"):
+  `tensorflow`, `onnx`, `OnnxLoad`, `.predict(`, `.fit(`, `.train(`, tensor/
+  matrix learning, OR any `weights[` array that is ASSIGNED / UPDATED at runtime
+  from price/indicator inputs (adaptive / learned parameters = ML).
+- NOT a violation (do NOT FAIL): a STATIC / const hedge- or portfolio-weight
+  array initialised with literal constants — e.g. `double g_weights[3] =
+  {1.0,-1.0,-1.0};` for a cointegration / basket spread — is a fixed hedge
+  ratio, not a learned weight. Bare `model.<field>` struct access that is not an
+  ML method call is likewise fine.
+- If a `weights[` / `model.` hit is genuinely ambiguous (neither clearly static
+  nor clearly learned), do NOT set `forbidden_grep=FAIL`. Record it as an
+  `"[R4-ADVISORY] ..."` string in `findings`, keep `forbidden_grep=PASS`, and
+  let Claude adjudicate — an advisory must never auto-reject or trip the health
+  fail-rate alarm.
 - `Sleep(` calls > 100ms in OnTick (blocks tester; FAIL).
 
-PASS if none found.
+PASS if no hard violation found (advisories alone still PASS).
 
 ## Output — write JSON to `{{verdict_path}}`
 

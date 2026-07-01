@@ -209,13 +209,24 @@ Forbidden patterns (Claude review will `REJECT_REWORK` on any):
   If daily/weekly signals need closed-bar cadence, use the framework
   `QM_IsNewBar(symbol, timeframe)` overload or read fixed closed-bar shifts
   from `QM_*` helpers. Do not maintain your own timestamp gate.
+- Calendar-rebalance cadence (monthly/weekly/daily "rebalance once per period",
+  common in cross-asset / cointegration / seasonal strategies) — do NOT hand-roll
+  an `iTime(...)` month/week/day key (NOT even with a `// perf-allowed` comment).
+  Use `QM_IsNewCalendarPeriod(PERIOD_MN1|PERIOD_W1|PERIOD_D1)` for the boolean
+  edge and/or `QM_CalendarPeriodKey(period[, sym])` (returns yyyymm / yyyymmdd)
+  compared against your own stored `g_last_rebalance_key` for restart-safe
+  once-per-period logic. These live in `QM_Indicators.mqh` and internalise the
+  iTime call so the EA stays corset-clean.
 - Direct `iATR / iMA / iRSI / iMACD / iADX / iBands` calls — use the `QM_*` readers
 - Direct `iOpen / iHigh / iLow / iClose / iTime / iVolume / Bars` calls for strategy
   math — use `QM_*` readers/signals or a documented `// perf-allowed` exception
-  only for bespoke structural logic.
+  only for bespoke structural logic (NEVER for calendar-period keys — those use
+  `QM_CalendarPeriodKey`).
 - `CopyBuffer` on raw handles — no `perf-allowed` exception; the readers do it for you
-- ML-like weight arrays such as `weights[]` — forbidden under HR14 unless this is a
-  fixed, transparent non-ML coefficient table and explicitly justified before build.
+- Learned / adaptive `weights[]` arrays updated at runtime from data — forbidden
+  under HR14 (no ML). A STATIC/const hedge- or portfolio-weight array of literal
+  constants (e.g. `double g_weights[3]={1.0,-1.0,-1.0};` for a cointegration
+  spread) is a fixed hedge ratio, NOT ML — that is allowed.
 - File-scope `g_atr_handle` / `IndicatorRelease` — handles are pooled
 - `CopyRates` over warmup window on every tick
 

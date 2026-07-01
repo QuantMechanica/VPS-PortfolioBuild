@@ -136,6 +136,77 @@ bool QM_IsNewBar(const string sym = "", const ENUM_TIMEFRAMES tf = PERIOD_CURREN
    return true;
   }
 
+// ----- Calendar-period cadence ---------------------------------------------
+//
+// Calendar-rebalance strategies (monthly / weekly cross-asset, cointegration
+// spreads, seasonal) need (a) a stable integer KEY for the calendar period a
+// bar belongs to and (b) a "did the period just roll over" gate. Doing this
+// with raw iTime(...) in the EA is a framework-corset violation (a per-EA
+// bar/calendar reimplementation). These helpers centralise it so the EA never
+// touches iTime and stays corset-clean.
+//
+// IMPORTANT: the key is derived from the reliable D1 bar, NOT from an MN1/W1
+// bar, because .DWX custom symbols yield 0 bars on MN1/W1 in the tester. The
+// `period` argument selects the CADENCE (how coarsely to bucket the D1 date):
+//   QM_CalendarPeriodKey(PERIOD_MN1) -> yyyymm            (e.g. 202606)
+//   QM_CalendarPeriodKey(PERIOD_W1)  -> yyyy*1000 + week  (7-day bucket of the year)
+//   QM_CalendarPeriodKey(PERIOD_D1)  -> yyyymmdd
+// The key is stable inside a period and changes exactly once per new period.
+// Compare it to your own stored `g_last_rebalance_key` so a rebalance fires
+// once per period AND survives a restart mid-period (unlike a pure new-bar
+// edge, which re-fires on the first call after any reload).
+//
+// QM_IsNewCalendarPeriod(period) latches the last key per (symbol, period) and
+// returns true once when it changes — the calendar analogue of QM_IsNewBar,
+// but tester-robust (never depends on MN1/W1 bars existing).
+
+int QM_CalendarPeriodKey(const ENUM_TIMEFRAMES period,
+                         const string sym = "",
+                         const int shift = 0)
+  {
+   const string symbol = (StringLen(sym) == 0) ? _Symbol : sym;
+   datetime t = iTime(symbol, PERIOD_D1, shift);   // D1 is reliable on .DWX; MN1/W1 are not
+   if(t <= 0)
+      t = iTime(symbol, (ENUM_TIMEFRAMES)_Period, shift);  // last-resort: chart tf
+   if(t <= 0)
+      return 0;
+   MqlDateTime d;
+   TimeToStruct(t, d);
+   if(period == PERIOD_MN1)
+      return d.year * 100 + d.mon;                 // yyyymm
+   if(period == PERIOD_W1)
+      return d.year * 1000 + (d.day_of_year / 7);  // stable weekly bucket
+   return d.year * 10000 + d.mon * 100 + d.day;    // yyyymmdd (D1 / default)
+  }
+
+bool QM_IsNewCalendarPeriod(const ENUM_TIMEFRAMES period, const string sym = "")
+  {
+   const string symbol = (StringLen(sym) == 0) ? _Symbol : sym;
+   const int cal_key = QM_CalendarPeriodKey(period, symbol, 0);
+   if(cal_key == 0)
+      return false;
+   const string key = StringFormat("CAL|%s|%d", symbol, (int)period);
+   for(int i = 0; i < g_qm_bartracker_count; ++i)
+     {
+      if(g_qm_bartracker[i].key == key)
+        {
+         if(g_qm_bartracker[i].last_bar_time == (datetime)cal_key)
+            return false;
+         g_qm_bartracker[i].last_bar_time = (datetime)cal_key;
+         return true;
+        }
+     }
+   if(g_qm_bartracker_count >= QM_BARTRACKER_MAX)
+     {
+      PrintFormat("QM_IsNewCalendarPeriod: tracker pool exhausted (max=%d) key=%s", QM_BARTRACKER_MAX, key);
+      return false;
+     }
+   g_qm_bartracker[g_qm_bartracker_count].key           = key;
+   g_qm_bartracker[g_qm_bartracker_count].last_bar_time = (datetime)cal_key;
+   g_qm_bartracker_count++;
+   return true;
+  }
+
 // ----- Indicator readers ---------------------------------------------------
 
 double QM_IndicatorReadBuffer(const int handle, const int buffer_idx, const int shift)
