@@ -35,15 +35,15 @@ Long-only weekly mean-reversion on WS30 (Dow Jones 30). The strategy exploits th
 
 ## 3. Symbol Universe
 
-**Designed for:**
-- `WS30.DWX` — Dow Jones 30 index CFD; the canonical Turnaround Tuesday instrument (US large-cap, low commission ~$4.4 RT, live-tradable on DXZ)
+**Designed for (all registered in magic_numbers.csv — P2 will run Davey multi-market baseline across all four):**
+- `WS30.DWX` — Dow Jones 30 index CFD; canonical Turnaround Tuesday instrument (US large-cap, ~$4.4 RT commission, live-tradable on DXZ); slot 0
+- `SP500.DWX` — S&P 500 custom symbol (backtest-only on DXZ); broadens the Davey #4 multi-market baseline check; slot 1
+- `NDX.DWX` — Nasdaq 100 (live-tradable on DXZ); further generalisation test of the US equity-index calendar effect; slot 2
+- `GDAXI.DWX` — DAX 40 (live-tradable); European index for out-of-sample generalisation; calendar effect expected weaker outside US; slot 3
 
 **Explicitly NOT for:**
-- `SP500.DWX` — backtest-only; not live-tradable on DXZ; demonstrator is WS30
-- Forex pairs — anomaly is equity-index specific; commission would destroy edge at weekly frequency
-- `XAUUSD.DWX` — different behavioral regime; not the target asset class
-
-**Multi-market baseline note (Davey #4):** Acceptance requires the default-param logic to show positive edge on ≥2 of {WS30, SP500, NDX, GDAXI} before any optimization. This is a validation requirement, not a P2 registration. Multi-symbol P2 registration deferred to after WS30 demonstrator passes Q04.
+- Forex pairs — anomaly is equity-index specific; weekly-frequency commission destroys edge on FX
+- `XAUUSD.DWX` — different behavioural regime; not the target asset class
 
 ---
 
