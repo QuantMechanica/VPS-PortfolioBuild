@@ -19,6 +19,7 @@ $neededFunctions = @(
     "Get-ReportMetricValue",
     "Convert-ReportNumber",
     "Test-TesterReportHasCompleteMetrics",
+    "Publish-TesterReportCandidate",
     "Wait-ForReportExport"
 )
 
@@ -60,6 +61,18 @@ try {
 
     if (Wait-ForReportExport -ReportPath $reportPath -TerminalRoot $tmpRoot -MaxWaitSeconds 0 -RequireCompleteMetrics) {
         throw "Incomplete M0/1970 tester report was accepted as materialized."
+    }
+
+    $canonicalReportPath = Join-Path $tmpRoot "canonical-report.htm"
+    $publishedPath = Publish-TesterReportCandidate -SourceReportPath $reportPath -CanonicalReportPath $canonicalReportPath
+    if ($publishedPath -ne $canonicalReportPath) {
+        throw "Incomplete tester report was not published to canonical evidence path."
+    }
+    if (-not (Test-Path -LiteralPath $canonicalReportPath -PathType Leaf)) {
+        throw "Canonical evidence copy was not created for incomplete tester report."
+    }
+    if (Wait-ForReportExport -ReportPath $canonicalReportPath -TerminalRoot $tmpRoot -MaxWaitSeconds 0 -RequireCompleteMetrics) {
+        throw "Publishing incomplete tester report incorrectly made it complete."
     }
 
     @"

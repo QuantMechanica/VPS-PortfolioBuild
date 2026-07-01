@@ -868,7 +868,7 @@ function Use-LegacyRelativeReportExport {
     )
 
     if (Test-Path -LiteralPath $AbsoluteReportPath -PathType Leaf) {
-        return $false
+        return $true
     }
     if (-not (Test-Path -LiteralPath $LegacyRelativePath -PathType Leaf)) {
         return $false
@@ -879,6 +879,43 @@ function Use-LegacyRelativeReportExport {
     } catch {
         return $false
     }
+}
+
+function Publish-TesterReportCandidate {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$SourceReportPath,
+        [Parameter(Mandatory = $true)]
+        [string]$CanonicalReportPath
+    )
+
+    $candidatePaths = @($CanonicalReportPath, $SourceReportPath) |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+        Select-Object -Unique
+
+    foreach ($candidatePath in $candidatePaths) {
+        if (-not (Test-Path -LiteralPath $candidatePath -PathType Leaf)) {
+            continue
+        }
+        try {
+            $candidateInfo = Get-Item -LiteralPath $candidatePath -ErrorAction Stop
+            if ($candidateInfo.Length -le 0) {
+                continue
+            }
+            if ($candidatePath -ne $CanonicalReportPath) {
+                Copy-Item -LiteralPath $candidatePath -Destination $CanonicalReportPath -Force -ErrorAction Stop
+            }
+            if (Test-Path -LiteralPath $CanonicalReportPath -PathType Leaf) {
+                $canonicalInfo = Get-Item -LiteralPath $CanonicalReportPath -ErrorAction Stop
+                if ($canonicalInfo.Length -gt 0) {
+                    return $CanonicalReportPath
+                }
+            }
+        } catch {
+        }
+    }
+
+    return $null
 }
 
 function Get-LatestTesterLog {
@@ -1544,12 +1581,19 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
     }
 
     # MT5 report writes can lag significantly under terminal contention; allow a longer settle window
-    # before classifying as infra REPORT_MISSING.
+    # before classifying as infra REPORT_MISSING. A complete report may be latched
+    # early, but an incomplete non-empty MT5 shell report is still evidence and must
+    # go through INVALID_REPORT parsing instead of being hidden as missing.
     $reportMaterialized = Wait-ForReportExport -ReportPath $sourceReportPath -TerminalRoot $terminalRoot -MaxWaitSeconds 240 -RequireCompleteMetrics
     if (-not $reportMaterialized) {
-        $reportMaterialized = Use-LegacyRelativeReportExport -TerminalRoot $terminalRoot -AbsoluteReportPath $reportHtmPath -LegacyRelativePath $legacyRelativeSourcePath
-        if ($reportMaterialized -and -not (Test-TesterReportHasCompleteMetrics -ReportPath $reportHtmPath)) {
-            $reportMaterialized = $false
+        [void](Use-LegacyRelativeReportExport -TerminalRoot $terminalRoot -AbsoluteReportPath $reportHtmPath -LegacyRelativePath $legacyRelativeSourcePath)
+        $publishedReportPath = Publish-TesterReportCandidate -SourceReportPath $sourceReportPath -CanonicalReportPath $reportHtmPath
+        if ($publishedReportPath) {
+            $reportMaterialized = $true
+            if (-not (Test-Path -LiteralPath $sourceReportPath -PathType Leaf)) {
+                $sourceReportPath = $publishedReportPath
+            }
+            Write-Host ("run_smoke.stage=incomplete_report_published run={0} report='{1}'" -f $runName, $publishedReportPath)
         }
     }
     if (-not $reportMaterialized) {
