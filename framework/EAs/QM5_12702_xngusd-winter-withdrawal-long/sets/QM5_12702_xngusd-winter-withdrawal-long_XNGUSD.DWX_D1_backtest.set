@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12702
 ; ea_slug:      xngusd-winter-withdrawal-long
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   472b0a0e79ac7a17ed93b4029938c7df513500db96a077a4cf72a8bc41c2aaaf
+; build_hash:   2dafac7fae4f72ca4c5463cd402321f5dd54dc6fc2c6a52e92f94b4813be9a2e
 ; author:       Development
 ; date:         2026-06-28
 ;==========================================================

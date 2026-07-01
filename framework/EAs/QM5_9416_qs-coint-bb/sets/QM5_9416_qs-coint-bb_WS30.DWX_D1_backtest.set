@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        9416
 ; ea_slug:      qs-coint-bb
@@ -11,7 +11,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   7e61a4e45df4bd25a3f57873bbec0eaca99528fc7e62f7ae24fd8a54900b4e79
+; build_hash:   57d6d09090fa3d23d5d9801aad7469de547eac8a136c2478a9490d5436a446b6
 ; author:       Development
 ; date:         2026-06-28
 ;==========================================================
