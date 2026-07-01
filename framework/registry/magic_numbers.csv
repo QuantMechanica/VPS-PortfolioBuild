@@ -12115,9 +12115,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11851,bermuda-123-fib-h1,0,EURUSD.DWX,118510000,2026-06-18,Claude,reserved
 11851,bermuda-123-fib-h1,1,GBPUSD.DWX,118510001,2026-06-18,Claude,reserved
 11851,bermuda-123-fib-h1,2,USDJPY.DWX,118510002,2026-06-18,Claude,reserved
-11852,bb50-234-meanturn-m1,0,GBPJPY.DWX,118520000,2026-06-18,Claude,reserved
-11852,bb50-234-meanturn-m1,1,EURJPY.DWX,118520001,2026-06-18,Claude,reserved
-11852,bb50-234-meanturn-m1,2,USDJPY.DWX,118520002,2026-06-18,Claude,reserved
+11852,bb50-234-meanturn-m1,0,GBPJPY.DWX,118520000,2026-06-18,Claude,active
+11852,bb50-234-meanturn-m1,1,EURJPY.DWX,118520001,2026-06-18,Claude,active
+11852,bb50-234-meanturn-m1,2,USDJPY.DWX,118520002,2026-06-18,Claude,active
 11853,wpr-ema50-pullback-h1,0,EURUSD.DWX,118530000,2026-06-18,Claude,reserved
 11853,wpr-ema50-pullback-h1,1,GBPUSD.DWX,118530001,2026-06-18,Claude,reserved
 11853,wpr-ema50-pullback-h1,2,USDJPY.DWX,118530002,2026-06-18,Claude,reserved
