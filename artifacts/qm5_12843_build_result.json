@@ -1,0 +1,101 @@
+{
+  "task_id": "manual-codex-2026-07-01-wti-brent-spread",
+  "ea_id": "QM5_12843",
+  "slug": "wti-brent-spread",
+  "strategy": "WTI-Brent D1 crude benchmark spread reversion basket",
+  "source_id": "CME-WTI-BRENT-SPREAD-2026",
+  "source_links": [
+    "https://www.cmegroup.com/markets/energy/crude-oil/wti-brent-ice-calendar-swap-futures.html",
+    "https://www.eia.gov/todayinenergy/detail.php?id=67424",
+    "https://www.ice.com/products/1242/Brent-WTI-Futures-Spread/data"
+  ],
+  "logical_symbol": "QM5_12843_WTI_BRENT_SPREAD_D1",
+  "symbols": [
+    "XTIUSD.DWX",
+    "XBRUSD.DWX"
+  ],
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12843_wti-brent-spread",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12843_wti-brent-spread\\QM5_12843_wti-brent-spread.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12843_wti-brent-spread\\QM5_12843_wti-brent-spread.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12843_wti-brent-spread\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\wti-brent-spread_card.md",
+  "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\CME-WTI-BRENT-SPREAD-2026\\source.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12843_wti-brent-spread\\basket_manifest.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12843_wti-brent-spread\\sets\\QM5_12843_wti-brent-spread_QM5_12843_WTI_BRENT_SPREAD_D1_D1_backtest.set"
+  ],
+  "setfile_build_hash": "f8733c169ffcd738b2c93c03b850559509d7077bca5e4b1cf2337da7a4909601",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 128430000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "XBRUSD.DWX",
+        "magic": 128430001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_12843_wti-brent-spread --force --json --fail-on-error",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260701_032728\\QM5_12843_wti-brent-spread.compile.log",
+    "ex5_size_bytes": 297698
+  },
+  "build_check": {
+    "command": "framework/scripts/build_check.ps1 -EALabel QM5_12843_wti-brent-spread -Strict -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260701_032745.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "validations": {
+    "symbol_scope": "BASKET_OK",
+    "build_guardrails": "PASS",
+    "spec_doc": "PASS"
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "5d112944-daec-4524-94cb-d11c1179b29c",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "QM5_12843_WTI_BRENT_SPREAD_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_symbols": [
+      "XTIUSD.DWX",
+      "XBRUSD.DWX"
+    ],
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12843_wti-brent-spread\\sets\\QM5_12843_wti-brent-spread_QM5_12843_WTI_BRENT_SPREAD_D1_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "created_at_utc": "2026-07-01T03:28:18+00:00"
+  },
+  "smoke_result": "deferred_to_q02",
+  "smoke_skipped_reason": "Paced fleet Q02 was enqueued; no manual MT5 backtest was launched from this session.",
+  "non_duplicate_reason": "Brent/WTI crude benchmark spread z-score basket is distinct from existing XTI/XNG ratio, return-spread, breakout, relative momentum, and seasonal switch sleeves, from Brent Thursday single-symbol calendar logic, and from XAU/XAG, XNG, WTI event/calendar, and commodity RSI builds.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "notes": "Completed a structural D1 Brent/WTI spread reversion basket from CME, ICE, and EIA spread references. Q02 must validate XBRUSD.DWX history sufficiency because XBR is routed by prior setfiles but is not listed in dwx_symbol_history_ranges.csv."
+}
