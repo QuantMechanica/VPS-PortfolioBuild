@@ -334,15 +334,18 @@ def _candidate_corr(
 ) -> tuple[float | None, bool]:
     candidate_idx = aligned_keys.index(candidate)
     corr_values: list[float] = []
-    insufficient = False
     for book_key in book:
         book_idx = aligned_keys.index(book_key)
         value = correlations[candidate_idx][book_idx]
-        if value is None:
-            insufficient = True
-        else:
+        if value is not None:
             corr_values.append(float(value))
     max_corr = max(corr_values) if corr_values else None
+    # insufficient ONLY when not a single book pair is measurable. A pair with < the daily
+    # overlap threshold is time-disjoint (diversifying by construction), not a reason to veto
+    # the whole candidate; max over the measurable pairs is the real worst-case correlation.
+    # (Old semantics — "any unmeasurable pair -> whole candidate insufficient" — perversely
+    # rejected every low-freq diversifier the moment the book held one sparse sleeve.)
+    insufficient = not corr_values
     return max_corr, insufficient
 
 
@@ -382,36 +385,36 @@ def _monthly_candidate_corr(
         return None, True
 
     corr_values: list[float] = []
-    insufficient = False
     for book_key in book:
         book_series = monthly[book_key]
         book_active = sorted(m for m, v in book_series.items() if v != 0.0)
         if not book_active:
-            insufficient = True
             continue
         lo = max(candidate_active[0], book_active[0])
         hi = min(candidate_active[-1], book_active[-1])
         if lo > hi:
-            insufficient = True
-            continue
+            continue  # time-disjoint from this sleeve => diversifying, not a risk
         window = _months_between(lo, hi)
         if len(window) < DEFAULT_MIN_SHARED_SPAN_MONTHS:
-            insufficient = True
             continue
         cand_vec = [float(candidate_series.get(m, 0.0)) for m in window]
         book_vec = [float(book_series.get(m, 0.0)) for m in window]
         cand_active_n = sum(1 for v in cand_vec if v != 0.0)
         book_active_n = sum(1 for v in book_vec if v != 0.0)
         if cand_active_n < DEFAULT_MIN_ACTIVE_MONTHS or book_active_n < DEFAULT_MIN_ACTIVE_MONTHS:
-            insufficient = True
             continue
         value = _pearson(cand_vec, book_vec)
-        if value is None:
-            insufficient = True
-        else:
+        if value is not None:
             corr_values.append(float(value))
 
     max_corr = max(corr_values) if corr_values else None
+    # insufficient ONLY when NOT ONE book pair was measurable (candidate shares no assessable
+    # live-span with any sleeve). A pair skipped above is time-disjoint or too sparse to
+    # co-move => diversifying by construction; it must not veto the whole candidate. The max
+    # over measurable pairs is the true worst-case correlation. (Old semantics vetoed the
+    # whole candidate on any single unmeasurable pair, which rejected real low-freq
+    # diversifiers as soon as the book held one sparse sleeve — e.g. 10569 XAU, corr 0.22.)
+    insufficient = not corr_values
     return max_corr, insufficient
 
 

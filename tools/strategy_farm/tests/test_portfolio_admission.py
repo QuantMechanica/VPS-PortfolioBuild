@@ -244,6 +244,39 @@ class PortfolioAdmissionTests(unittest.TestCase):
         self.assertFalse(verdict["admit"])
         self.assertEqual(verdict["reason"], "correlation_above_max_corr")
 
+    def test_one_unmeasurable_book_pair_does_not_veto_a_measurable_diversifier(self) -> None:
+        # Regression: with a multi-sleeve book holding a sparse low-freq member, the OLD gate
+        # marked the WHOLE candidate insufficient_overlap the moment ANY single book pair was
+        # unmeasurable -> it rejected real low-freq diversifiers as soon as the book held one
+        # sparse sleeve (e.g. 10569 XAU, monthly corr 0.22, vetoed by an 8-trade book sleeve).
+        # New semantics: a pair too sparse to co-move is skipped (time-disjoint = diversifying);
+        # the candidate is insufficient ONLY when not one book pair is measurable.
+        with tempfile.TemporaryDirectory() as tmp:
+            common_dir = Path(tmp)
+            stream_dir = self._stream_dir(common_dir)
+            start = dt.datetime(2020, 1, 1, tzinfo=dt.UTC)
+            cost = self._cost()
+            # Book sleeve A: long-lived and VOLATILE (swings +120/-40) — an anti-correlated
+            # candidate smooths it, lifting portfolio Sharpe (genuine diversification).
+            self._write_monthly_stream(stream_dir / "100_EURUSD_DWX.jsonl", start, [120.0, -40.0] * 18, 15, cost)
+            # Book sleeve B: sparse — only 3 active months (< DEFAULT_MIN_ACTIVE_MONTHS=6) so the
+            # candidate-vs-B pair is unmeasurable and MUST be skipped, not veto the candidate.
+            sparse = [0.0] * 36
+            sparse[2] = sparse[14] = sparse[26] = 60.0
+            self._write_monthly_stream(stream_dir / "101_EURUSD_DWX.jsonl", start, sparse, 20, cost)
+            # Candidate: long-lived, anti-correlated to A -> smooths the book at low corr.
+            self._write_monthly_stream(stream_dir / "102_EURUSD_DWX.jsonl", start, [-40.0, 120.0] * 18, 1, cost)
+            verdict = evaluate_candidate(
+                (102, "EURUSD.DWX"),
+                [(100, "EURUSD.DWX"), (101, "EURUSD.DWX")],
+                common_dir,
+            )
+        # The sparse B pair no longer vetoes; the measurable A pair carries the verdict.
+        self.assertFalse(verdict["corr_insufficient"])
+        self.assertEqual(verdict["corr_basis"], "monthly")
+        self.assertLessEqual(verdict["max_corr_to_book"], portfolio_admission.DEFAULT_MAX_CORR)
+        self.assertTrue(verdict["admit"])
+
     def _stream_dir(self, common_dir: Path) -> Path:
         stream_dir = common_dir / "QM" / "q08_trades"
         stream_dir.mkdir(parents=True)
