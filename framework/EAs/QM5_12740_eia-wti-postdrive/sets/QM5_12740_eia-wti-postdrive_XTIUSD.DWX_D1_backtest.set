@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12740
 ; ea_slug:      eia-wti-postdrive
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   423c14129879ea12b5b2caa9a0352c26fcd9d303cfef9951d6bca46b03f84816
+; build_hash:   32a7534ef6df23edb75189daedfd8be9cbc2a08835dccdeaeadf032ffa1f1a95
 ; author:       Development
 ; date:         2026-06-28
 ;==========================================================
