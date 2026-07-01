@@ -1,0 +1,61 @@
+{
+  "task_id": "8a80b356-382f-492e-bad0-0d25aa25c2b9",
+  "ea_id": "QM5_10024",
+  "slug": "rw-fx-comm-basket",
+  "strategy": "Robot Wealth FX commodity basket mean-reversion stat-arb",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_10024_rw-fx-comm-basket",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_10024_rw-fx-comm-basket/QM5_10024_rw-fx-comm-basket.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_10024_rw-fx-comm-basket/QM5_10024_rw-fx-comm-basket.ex5",
+  "magic_base": 100240000,
+  "symbols_registered": [
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "USDCAD.DWX",
+    "AUDNZD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_10024_rw-fx-comm-basket/sets/QM5_10024_rw-fx-comm-basket_QM5_10024_RW_FX_COMM_BASKET_D1_D1_backtest.set"
+  ],
+  "basket_manifest_path": "C:/QM/repo/framework/EAs/QM5_10024_rw-fx-comm-basket/basket_manifest.json",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_10024_rw-fx-comm-basket/SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_10024_rw-fx-comm-basket/QM5_10024_rw-fx-comm-basket.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:/QM/repo/framework/build/compile/20260701_161946/QM5_10024_rw-fx-comm-basket.compile.log",
+    "ex5_size_bytes": 299230
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_10024_rw-fx-comm-basket -Strict",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 20,
+    "report_path": "D:/QM/reports/framework/21/build_check_20260701_161925.json",
+    "warning_note": "Remaining warnings are shared-framework indicator advisories and intentional CopyClose basket-state advisories; EA-local zero-spread block and raw iTime failure were repaired."
+  },
+  "spec_validation": {
+    "result": "PASS",
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_10024_rw-fx-comm-basket"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet Q02 requested after infra repair; no manual MT5 backtest launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [
+    "Prior Q02 work item 9874a456-bb17-4aa9-b8d2-9768849a33e7 failed as INFRA_FAIL summary_missing_retries_exhausted. This repair refreshes the compiled artifact and removes the .DWX zero-spread fail-closed guard before re-enqueueing the logical basket Q02."
+  ],
+  "hashes": {
+    "mq5": "F42DFC81F370E64B6F75AD1D9DA78282434D6869F9F50B0E27F0888D7007E193",
+    "ex5": "660443B482B7D842A03AFC42EE7D241F14A297C70CE73651AA6CA072D17D1E5D",
+    "logical_setfile": "52607C77FEA2E64FDF5582B689DACF50A84F164BA1103E128356BBE8920371C0"
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
