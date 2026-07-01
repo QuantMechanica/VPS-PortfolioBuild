@@ -1,0 +1,70 @@
+{
+  "ea_id": "QM5_12783",
+  "slug": "edgelab-audusd-audjpy-cointegration",
+  "selected_pair": "AUDUSD~AUDJPY",
+  "logical_symbol": "QM5_12783_AUDUSD_AUDJPY_COINTEGRATION_D1",
+  "mission_scope": "Advance an existing built FX cointegration basket because no unbuilt approved EdgeLab FX cointegration card was found.",
+  "preflight": {
+    "controlling_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "unbuilt_edgelab_cointegration_cards_found": 0,
+    "qm5_12532_q02_blocked": false,
+    "qm5_12532_current_state": "Q02 PASS, Q04 PASS, Q05 INFRA_FAIL timeout",
+    "qm5_12533_q02_blocked": false,
+    "qm5_12533_current_state": "Q02 PASS, Q04 FAIL on combined basket metrics",
+    "q02_verdict_before_action": "PASS",
+    "q03_verdict_before_action": "PASS",
+    "q04_verdict_before_action": "INFRA_FAIL"
+  },
+  "queue_action": {
+    "command": "python tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_12783 --phase Q04",
+    "db_backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12783_q04_requeue_20260701_064945.sqlite",
+    "result": "requeued",
+    "work_item_id": "16267df3-00b5-4ede-abbb-75dfcadedc14",
+    "phase": "Q04",
+    "status_after": "pending",
+    "verdict_after": null,
+    "attempt_count_after": 0,
+    "duplicate_q04_pending_or_active_count": 1,
+    "updated_at_utc": "2026-07-01T06:49:50+00:00",
+    "archived_report_root_on_requeue": "D:/QM/reports/work_items/16267df3-00b5-4ede-abbb-75dfcadedc14.requeued_20260701T0649500000"
+  },
+  "basket_payload": {
+    "portfolio_scope": "basket",
+    "host_symbol": "AUDUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_symbols": [
+      "AUDUSD.DWX",
+      "AUDJPY.DWX",
+      "USDJPY.DWX"
+    ],
+    "tester_currency": "USD",
+    "q04_default_probe": true,
+    "q04_latest_full_year": 2024,
+    "q04_history_clamp_source": "mt5_cache",
+    "q04_history_checked_window": "2023-2024",
+    "q04_history_checked_symbols": [
+      "AUDUSD.DWX",
+      "AUDJPY.DWX",
+      "USDJPY.DWX"
+    ]
+  },
+  "verification": [
+    {
+      "check": "direct SQLite read of QM5_12783 work_items",
+      "result": "PASS",
+      "summary": "Q04 row is pending, verdict is null, claimed_by is null, and no duplicate active/pending Q04 row exists."
+    },
+    {
+      "check": "risk mode",
+      "result": "PASS",
+      "summary": "The logical setfile remains the existing backtest RISK_FIXED=1000, RISK_PERCENT=0 setfile."
+    }
+  ],
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
