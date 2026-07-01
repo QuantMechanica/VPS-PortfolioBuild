@@ -375,6 +375,54 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertIn("seeds_invalid_evidence", reason)
         self.assertEqual(metrics["per_seed_trades"][0], (42, 0))
 
+    def test_q07_seed_run_passes_basket_tester_overrides(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ea_dir = root / "QM5_12781_demo"
+            sets_dir = ea_dir / "sets"
+            sets_dir.mkdir(parents=True)
+            setfile = sets_dir / "QM5_12781_demo_LOGICAL_D1_q06_stress_harsh_seed42.set"
+            setfile.write_text("RISK_FIXED=1000\n", encoding="utf-8")
+            (ea_dir / "basket_manifest.json").write_text(
+                json.dumps({"tester_currency": "USD", "tester_deposit": 100000}),
+                encoding="utf-8",
+            )
+            (root / "summary.json").write_text(
+                json.dumps({
+                    "result": "PASS",
+                    "runs": [{
+                        "profit_factor": 1.07,
+                        "drawdown": 2287.51,
+                        "total_trades": 228,
+                    }]
+                }),
+                encoding="utf-8",
+            )
+            calls = []
+
+            def fake_run(args, **_kwargs):
+                calls.append(args)
+                return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+            with patch.object(q07.subprocess, "run", side_effect=fake_run):
+                result = q07._run_seed(
+                    ea_id=12781,
+                    ea_expert=r"QM\QM5_12781_demo",
+                    symbol="USDJPY.DWX",
+                    setfile=setfile,
+                    seed=42,
+                    terminal="T8",
+                    report_root=root,
+                    timeout_sec=2400,
+                    period="D1",
+                )
+
+        cmd = calls[0]
+        self.assertEqual(cmd[cmd.index("-TesterCurrencyOverride") + 1], "USD")
+        self.assertEqual(cmd[cmd.index("-TesterDepositOverride") + 1], "100000")
+        self.assertEqual(result["pf"], 1.07)
+        self.assertEqual(result["trades"], 228)
+
 
 if __name__ == "__main__":
     unittest.main()

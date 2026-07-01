@@ -919,6 +919,48 @@ function Get-TesterLogTailText {
     return ((Get-Content -LiteralPath $TesterLogPath | Select-Object -Last $LineCount) -join [Environment]::NewLine)
 }
 
+function Test-TesterReportHasCompleteMetrics {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ReportPath
+    )
+
+    if (-not (Test-Path -LiteralPath $ReportPath -PathType Leaf)) {
+        return $false
+    }
+    try {
+        $info = Get-Item -LiteralPath $ReportPath -ErrorAction Stop
+        if ($info.Length -le 0) {
+            return $false
+        }
+        $html = Get-Content -Raw -LiteralPath $ReportPath -ErrorAction Stop
+        $expertValue = Get-ReportMetricValue -Html $html -Label "Expert" -AllowMissing
+        $symbolValue = Get-ReportMetricValue -Html $html -Label "Symbol" -AllowMissing
+        $periodValue = Get-ReportMetricValue -Html $html -Label "Period" -AllowMissing
+        $barsValue = Get-ReportMetricValue -Html $html -Label "Bars" -AllowMissing
+        $totalTradesRaw = Get-ReportMetricValue -Html $html -Label "Total Trades" -AllowMissing
+        $profitFactorRaw = Get-ReportMetricValue -Html $html -Label "Profit Factor" -AllowMissing
+        $drawdownRaw = Get-ReportMetricValue -Html $html -Label "Equity Drawdown Maximal" -AllowMissing
+
+        if ([string]::IsNullOrWhiteSpace($expertValue) -or
+            [string]::IsNullOrWhiteSpace($symbolValue) -or
+            [string]::IsNullOrWhiteSpace($periodValue) -or
+            [string]::IsNullOrWhiteSpace($barsValue) -or
+            $null -eq $totalTradesRaw -or
+            $null -eq $profitFactorRaw -or
+            $null -eq $drawdownRaw) {
+            return $false
+        }
+        if ($periodValue -match "(?i)\bM0\b" -or $periodValue -match "1970\.01\.01\s*-\s*1970\.01\.01") {
+            return $false
+        }
+        $bars = [int](Convert-ReportNumber -Value $barsValue)
+        return ($bars -gt 0)
+    } catch {
+        return $false
+    }
+}
+
 function Start-TesterRun {
     param(
         [Parameter(Mandatory = $true)]
@@ -927,6 +969,7 @@ function Start-TesterRun {
         [string]$IniPath,
         [Parameter(Mandatory = $true)]
         [int]$TimeoutSec,
+        [string]$ReportPath,
         [string]$TerminalName = $TerminalExe
     )
 
@@ -936,8 +979,54 @@ function Start-TesterRun {
     $proc = Start-Process -FilePath $TerminalExe -ArgumentList $args -PassThru -WindowStyle Hidden
     $childTerminal = Wait-TerminalSpawn -TerminalExe $TerminalExe -IniPath $IniPath -TerminalName $TerminalName -StartedAfter $spawnStartedAfter
     Write-Host ("run_smoke.stage=terminal_spawn_confirmed terminal_pid={0} start_time='{1:o}'" -f $childTerminal.Id, $childTerminal.StartTime)
-    $finished = $childTerminal.WaitForExit($TimeoutSec * 1000)
-    $timedOut = -not $finished
+
+    $finished = $false
+    $latchedReport = $false
+    $deadline = (Get-Date).ToUniversalTime().AddSeconds($TimeoutSec)
+    while ((Get-Date).ToUniversalTime() -lt $deadline) {
+        if ($childTerminal.HasExited) {
+            $finished = $true
+            break
+        }
+        if (-not [string]::IsNullOrWhiteSpace($ReportPath) -and (Test-Path -LiteralPath $ReportPath -PathType Leaf)) {
+            $sizeBefore = (Get-Item -LiteralPath $ReportPath).Length
+            if ($sizeBefore -gt 0) {
+                Start-Sleep -Milliseconds 500
+                $sizeAfter = if (Test-Path -LiteralPath $ReportPath -PathType Leaf) { (Get-Item -LiteralPath $ReportPath).Length } else { 0 }
+                if ($sizeAfter -eq $sizeBefore -and (Test-TesterReportHasCompleteMetrics -ReportPath $ReportPath)) {
+                    $latchedReport = $true
+                    Write-Host ("run_smoke.stage=valid_report_latched terminal_pid={0} report='{1}' size={2}" -f $childTerminal.Id, $ReportPath, $sizeAfter)
+                    try {
+                        Stop-Process -Id $childTerminal.Id -Force -ErrorAction Stop
+                    } catch {
+                    }
+                    if ($proc.Id -ne $childTerminal.Id) {
+                        try {
+                            Stop-Process -Id $proc.Id -Force -ErrorAction Stop
+                        } catch {
+                        }
+                    }
+                    [void]$childTerminal.WaitForExit(10000)
+                    $terminalRootForMeta = Split-Path -Parent $TerminalExe
+                    $lingeringMeta = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $terminalRootForMeta)
+                    foreach ($metaProc in $lingeringMeta) {
+                        try {
+                            Stop-Process -Id $metaProc.ProcessId -Force -ErrorAction Stop
+                        } catch {
+                        }
+                    }
+                    break
+                }
+            }
+        }
+        Start-Sleep -Milliseconds 500
+    }
+
+    if (-not $finished -and -not $latchedReport -and $childTerminal.HasExited) {
+        $finished = $true
+    }
+
+    $timedOut = (-not $finished) -and (-not $latchedReport)
     if ($timedOut) {
         try {
             Stop-Process -Id $childTerminal.Id -Force -ErrorAction Stop
@@ -951,12 +1040,16 @@ function Start-TesterRun {
         }
     }
     $loggedExitCode = if ($finished) { $childTerminal.ExitCode } else { "<timeout>" }
-    Write-Host ("run_smoke.stage=terminal_exit terminal_pid={0} exit_code={1} timed_out={2}" -f $childTerminal.Id, $loggedExitCode, $timedOut)
+    if ($latchedReport) {
+        $loggedExitCode = "<valid_report_latched>"
+    }
+    Write-Host ("run_smoke.stage=terminal_exit terminal_pid={0} exit_code={1} timed_out={2} valid_report_latched={3}" -f $childTerminal.Id, $loggedExitCode, $timedOut, $latchedReport)
 
     return [pscustomobject]@{
-        exit_code = $(if ($finished) { $childTerminal.ExitCode } else { $null })
+        exit_code = $(if ($finished) { $childTerminal.ExitCode } elseif ($latchedReport) { 0 } else { $null })
         timed_out = $timedOut
         terminal_pid = $childTerminal.Id
+        valid_report_latched = $latchedReport
     }
 }
 
@@ -1409,7 +1502,7 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
     }
     Write-Host ("run_smoke.stage=start_terminal terminal={0} run={1} ini='{2}'" -f $effectiveTerminal, $runName, $iniPath)
     try {
-        $runExec = Start-TesterRun -TerminalExe $terminalExe -IniPath $iniPath -TimeoutSec $TimeoutSeconds -TerminalName $effectiveTerminal
+        $runExec = Start-TesterRun -TerminalExe $terminalExe -IniPath $iniPath -TimeoutSec $TimeoutSeconds -ReportPath $sourceReportPath -TerminalName $effectiveTerminal
     } catch {
         Write-Host ("run_smoke.start_failed terminal={0} run={1} ini='{2}' err='{3}'" -f $effectiveTerminal, $runName, $iniPath, $_.Exception.Message)
         throw

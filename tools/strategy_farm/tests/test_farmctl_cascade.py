@@ -578,6 +578,49 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             self.assertEqual(cmd[cmd.index("--latest-full-year") + 1], "2024")
             self.assertNotIn("--setfile", cmd)
 
+    def test_q07_runner_cmd_keeps_basket_logical_symbol(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            report_root = root / "reports"
+            setfile = root / "QM5_9998_demo_USDJPY.DWX_D1_backtest.set"
+            setfile.write_text("", encoding="utf-8")
+            conn = sqlite3.connect(":memory:")
+            conn.row_factory = sqlite3.Row
+            conn.execute(
+                """
+                CREATE TABLE work_items(
+                    phase TEXT, ea_id TEXT, symbol TEXT, setfile_path TEXT, payload_json TEXT
+                )
+                """
+            )
+            logical = "QM5_9998_USDJPY_AUDJPY_COINTEGRATION_D1"
+            conn.execute(
+                "INSERT INTO work_items VALUES(?,?,?,?,?)",
+                (
+                    "Q07",
+                    "QM5_9998",
+                    logical,
+                    str(setfile),
+                    json.dumps({
+                        "host_symbol": "USDJPY.DWX",
+                        "host_timeframe": "D1",
+                        "q04_latest_full_year": 2024,
+                    }),
+                ),
+            )
+            row = conn.execute("SELECT * FROM work_items").fetchone()
+
+            cmd = farmctl._phase_runner_cmd_for_work_item(root, row, report_root, "T8")
+
+            self.assertIsNotNone(cmd)
+            self.assertIn("q07_multiseed.py", " ".join(cmd))
+            self.assertEqual(cmd[cmd.index("--symbol") + 1], "USDJPY.DWX")
+            self.assertIn("--logical-symbol", cmd)
+            self.assertEqual(cmd[cmd.index("--logical-symbol") + 1], logical)
+            self.assertIn("--latest-full-year", cmd)
+            self.assertEqual(cmd[cmd.index("--latest-full-year") + 1], "2024")
+            self.assertNotIn("--setfile", cmd)
+
 
 if __name__ == "__main__":
     unittest.main()

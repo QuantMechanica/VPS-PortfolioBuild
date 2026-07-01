@@ -31,8 +31,9 @@ from framework.scripts.q05_stress_medium import (
     summary_invalid_reason,
     MIN_TRADES,
     STARTING_EQUITY,
+    _basket_tester_overrides,
 )
-from framework.scripts.q06_stress_harsh import gen_harsh_setfile_for
+from framework.scripts.q06_stress_harsh import gen_harsh_setfile_for, _basket_logical_symbol
 
 GATE_NAME = "Q07"
 PF_VARIANCE_PCT_MAX = 20.0
@@ -92,6 +93,11 @@ def _run_seed(*, ea_id: int, ea_expert: str, symbol: str, setfile: Path,
         "-ReportRoot", str(report_root),
         "-TimeoutSeconds", str(timeout_sec),
     ]
+    tester_currency, tester_deposit = _basket_tester_overrides(setfile)
+    if tester_currency:
+        args.extend(["-TesterCurrencyOverride", tester_currency])
+    if tester_deposit:
+        args.extend(["-TesterDepositOverride", str(tester_deposit)])
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
     proc = subprocess.run(args, capture_output=True, text=True,
                           timeout=timeout_sec, creationflags=creationflags)
@@ -198,6 +204,8 @@ def main() -> int:
     ap.add_argument("--timeout-sec", type=int, default=2400)
     ap.add_argument("--latest-full-year", type=int,
                     help="Cap full-history window when validated custom-symbol history ends before default")
+    ap.add_argument("--logical-symbol",
+                    help="Basket evidence symbol to record when --symbol is the MT5 host")
     args = ap.parse_args()
 
     ea_match = re.match(r"QM5_(\d+)_?", args.ea)
@@ -215,8 +223,9 @@ def main() -> int:
 
     # Q07 runs against Q06 HARSH stress per spec — apply HARSH first, then per-seed.
     harsh_set = gen_harsh_setfile_for(args.baseline_setfile)
+    evidence_symbol = args.logical_symbol or _basket_logical_symbol(harsh_set, args.symbol) or args.symbol
     seeds = _load_canonical_seeds()
-    print(f"Q07 {args.ea} {args.symbol}  seeds={seeds}  on top of HARSH stress")
+    print(f"Q07 {args.ea} {evidence_symbol}  runner_symbol={args.symbol}  seeds={seeds}  on top of HARSH stress")
 
     seed_results: list[dict] = []
     for seed in seeds:
@@ -231,11 +240,12 @@ def main() -> int:
         seed_results.append(res)
 
     verdict, reason, metrics = evaluate_seeds(seed_results)
-    out_dir = ensure_dir(args.report_root / f"QM5_{ea_id}" / "Q07" / args.symbol.replace(".", "_"))
+    out_dir = ensure_dir(args.report_root / f"QM5_{ea_id}" / "Q07" / evidence_symbol.replace(".", "_"))
     write_json(out_dir / "aggregate.json", {
         "phase": GATE_NAME,
         "ea_id": ea_id,
-        "symbol": args.symbol,
+        "symbol": evidence_symbol,
+        "runner_symbol": args.symbol,
         "seeds": seeds,
         "verdict": verdict,
         "reason": reason,

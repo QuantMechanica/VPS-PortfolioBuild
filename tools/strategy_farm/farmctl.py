@@ -2769,7 +2769,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
         "--period", runner_period,
         "--setfile", item_row["setfile_path"],
     ]
-    if phase in {"Q04", "Q05", "Q06"} and runner_symbol != symbol:
+    if phase in {"Q04", "Q05", "Q06", "Q07"} and runner_symbol != symbol:
         cmd.extend(["--logical-symbol", symbol])
     if phase == "P3.5":
         cmd.extend(["--symbols", symbol, "--from-year", "2017", "--to-year", "2022"])
