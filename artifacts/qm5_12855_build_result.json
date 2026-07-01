@@ -1,0 +1,40 @@
+{
+  "ea_id": "QM5_12855",
+  "slug": "brent-nov-fade",
+  "source_card": "strategy-seeds/cards/approved/QM5_12855_brent-nov-fade_card.md",
+  "mq5_path": "framework/EAs/QM5_12855_brent-nov-fade/QM5_12855_brent-nov-fade.mq5",
+  "ex5_path": "framework/EAs/QM5_12855_brent-nov-fade/QM5_12855_brent-nov-fade.ex5",
+  "setfiles_generated": [
+    "framework/EAs/QM5_12855_brent-nov-fade/sets/QM5_12855_brent-nov-fade_XBRUSD.DWX_D1_backtest.set"
+  ],
+  "compile": {
+    "command": "framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12855_brent-nov-fade/QM5_12855_brent-nov-fade.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log": "C:/QM/repo/framework/build/compile/20260701_132251/QM5_12855_brent-nov-fade.compile.log",
+    "summary": "D:/QM/reports/compile/20260701_132251/summary.csv"
+  },
+  "build_check": {
+    "command": "framework/scripts/build_check.ps1 -EALabel QM5_12855_brent-nov-fade -Strict",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report": "D:/QM/reports/framework/21/build_check_20260701_132306.json"
+  },
+  "q02_enqueue": {
+    "result": "QUEUED",
+    "work_item_id": "50b7b820-f9b5-421e-b614-3d7955dc877f",
+    "symbol": "XBRUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_12855_brent-nov-fade/sets/QM5_12855_brent-nov-fade_XBRUSD.DWX_D1_backtest.set",
+    "state_db": "D:/QM/strategy_farm/state/farm_state.sqlite"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "created_at_utc": "2026-07-01T13:23:32+00:00",
+  "created_by": "Codex"
+}

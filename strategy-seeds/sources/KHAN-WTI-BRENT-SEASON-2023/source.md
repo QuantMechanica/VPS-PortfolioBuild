@@ -11,6 +11,7 @@ cards_extracted:
   - wti-may-prem
   - brent-may-prem
   - brent-dec-fade
+  - brent-nov-fade
 ---
 
 # Khan WTI/Brent Seasonality Source
@@ -28,7 +29,8 @@ This source is used for WTI and Brent month-of-year cards. The paper studies
 daily and monthly WTI and Brent crude-oil returns and reports that May has the
 highest average monthly return in the sample, while November and December are
 the weakest months. The QM cards isolate the positive May side and a separate
-December weakness fade on Brent.
+December weakness fade on Brent. A separate Brent November fade isolates the
+other weak-month side without changing the runtime data contract.
 
 The runtime implementations do not import the paper's performance values. Q02+
 must validate the deterministic rule on Darwinex `XTIUSD.DWX` and `XBRUSD.DWX`
