@@ -1,9 +1,17 @@
 #property strict
-#property version   "5.0"
+#property version   "5.1"
 #property description "QM5_12821 T-WIN Currency-Strength Cluster Basket"
 
 #include <QM/QM_Common.mqh>
 #include <QM/QM_BasketOrder.mqh>
+#include <QM/QM_CurrencyStrength.mqh>
+#include <QM/QM_MTFCoherence.mqh>
+#include <QM/QM_PullbackGate.mqh>
+#include <QM/QM_BasketBuilder.mqh>
+#include <QM/QM_BasketEquityStop.mqh>
+
+#define QM12821_HOST_SYMBOL "EURUSD.DWX"
+#define QM12821_HOST_TF PERIOD_H1
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 12821;
@@ -30,79 +38,27 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input double strategy_gap_threshold_pct   = 0.20;
-input int    strategy_cluster_size        = 6;
-input int    strategy_atr_period          = 14;
-input double strategy_atr_sl_mult         = 1.5;
-input double strategy_basket_tp_pct       = 1.25;
-input double strategy_basket_stop_pct     = 1.00;
-input int    strategy_london_start_hhmm   = 630;
-input int    strategy_london_end_hhmm     = 830;
-input int    strategy_overlap_start_hhmm  = 930;
-input int    strategy_overlap_end_hhmm    = 1000;
-input int    strategy_flat_hhmm           = 2100;
-input int    strategy_deviation_points    = 20;
-input int    strategy_warmup_bars         = 320;
+input double strategy_exhaustion_norm       = 95.0;
+input int    strategy_prob_min_numerator    = 6;
+input double strategy_basket_tp_pct         = 15.0;
+input double strategy_basket_stop_pct       = 1.0;
+input double strategy_total_lots_per_1000   = 0.10;
+input int    strategy_london_start_hhmm     = 630;
+input int    strategy_london_end_hhmm       = 830;
+input int    strategy_overlap_start_hhmm    = 930;
+input int    strategy_overlap_end_hhmm      = 1000;
+input int    strategy_flat_hhmm             = 2100;
+input int    strategy_deviation_points      = 20;
+input int    strategy_warmup_bars           = 360;
+input int    strategy_pullback_ema_period   = 20;
+input int    strategy_pullback_atr_period   = 14;
+input double strategy_pullback_boundary_atr = 0.25;
+input double strategy_pullback_max_chase_atr = 1.00;
+input int    strategy_pullback_min_legs     = 4;
 
-const string QM12821_CCY[8] =
-  {"USD","EUR","GBP","JPY","CHF","AUD","NZD","CAD"};
-
-const string QM12821_PAIRS[28] =
-  {
-   "EURUSD.DWX","GBPUSD.DWX","AUDUSD.DWX","NZDUSD.DWX","USDJPY.DWX",
-   "USDCHF.DWX","USDCAD.DWX","EURGBP.DWX","EURJPY.DWX","EURCHF.DWX",
-   "EURAUD.DWX","EURNZD.DWX","EURCAD.DWX","GBPJPY.DWX","GBPCHF.DWX",
-   "GBPAUD.DWX","GBPNZD.DWX","GBPCAD.DWX","AUDJPY.DWX","AUDCHF.DWX",
-   "AUDNZD.DWX","AUDCAD.DWX","NZDJPY.DWX","NZDCHF.DWX","NZDCAD.DWX",
-   "CADJPY.DWX","CADCHF.DWX","CHFJPY.DWX"
-  };
-
-int    g_active_strong_idx = -1;
-int    g_active_weak_idx   = -1;
-bool   g_cycle_stopped     = false;
-
-int QM12821_CcyIndex(const string ccy)
-  {
-   for(int i = 0; i < 8; ++i)
-      if(QM12821_CCY[i] == ccy)
-         return i;
-   return -1;
-  }
-
-int QM12821_PairSlot(const string symbol)
-  {
-   for(int i = 0; i < 28; ++i)
-      if(QM12821_PAIRS[i] == symbol)
-         return i;
-   return -1;
-  }
-
-bool QM12821_FindPair(const string base,
-                      const string quote,
-                      string &out_symbol,
-                      bool &out_inverted)
-  {
-   out_symbol = "";
-   out_inverted = false;
-   for(int i = 0; i < 28; ++i)
-     {
-      const string symbol = QM12821_PAIRS[i];
-      const string sym_base = StringSubstr(symbol, 0, 3);
-      const string sym_quote = StringSubstr(symbol, 3, 3);
-      if(sym_base == base && sym_quote == quote)
-        {
-         out_symbol = symbol;
-         return true;
-        }
-      if(sym_base == quote && sym_quote == base)
-        {
-         out_symbol = symbol;
-         out_inverted = true;
-         return true;
-        }
-     }
-   return false;
-  }
+int  g_active_currency_idx = -1;
+int  g_active_direction    = 0;
+bool g_cycle_stopped       = false;
 
 int QM12821_HhmmToMinutes(const int hhmm)
   {
@@ -131,6 +87,10 @@ bool QM12821_InWindow(const int now_hhmm, const int start_hhmm, const int end_hh
 bool QM12821_InEntrySession(const datetime broker_time)
   {
    const int now_hhmm = QM12821_BrokerHhmm(broker_time);
+   if(now_hhmm < 300)
+      return false;
+   if(QM12821_InWindow(now_hhmm, 0, 100))
+      return false;
    if(QM12821_InWindow(now_hhmm, strategy_london_start_hhmm, strategy_london_end_hhmm))
       return true;
    if(QM12821_InWindow(now_hhmm, strategy_overlap_start_hhmm, strategy_overlap_end_hhmm))
@@ -138,355 +98,266 @@ bool QM12821_InEntrySession(const datetime broker_time)
    return false;
   }
 
-bool QM12821_ReadPerf(const string symbol,
-                      const ENUM_TIMEFRAMES tf,
-                      double &out_perf)
+bool QM12821_TimeToFlat(const datetime broker_time)
   {
-   out_perf = 0.0;
-
-   if(tf == PERIOD_H1)
-     {
-      MqlRates h1_rates[];
-      MqlRates d1_rates[];
-      if(CopyRates(symbol, PERIOD_H1, 1, 1, h1_rates) != 1) // perf-allowed: one closed H1 bar for explicit 28-pair CSM, called only from framework QM_IsNewBar-gated entry path.
-         return false;
-      if(CopyRates(symbol, PERIOD_D1, 0, 1, d1_rates) != 1) // perf-allowed: current broker-day open for daily-open CSM denominator.
-         return false;
-      if(d1_rates[0].open <= 0.0 || h1_rates[0].close <= 0.0)
-         return false;
-      out_perf = ((h1_rates[0].close - d1_rates[0].open) / d1_rates[0].open) * 100.0;
-      return true;
-     }
-
-   if(tf == PERIOD_D1)
-     {
-      MqlRates d1_closed[];
-      if(CopyRates(symbol, PERIOD_D1, 1, 1, d1_closed) != 1) // perf-allowed: one closed D1 bar for the card's H1/D1 CSM coherence gate.
-         return false;
-      if(d1_closed[0].open <= 0.0 || d1_closed[0].close <= 0.0)
-         return false;
-      out_perf = ((d1_closed[0].close - d1_closed[0].open) / d1_closed[0].open) * 100.0;
-      return true;
-     }
-
-   return false;
-  }
-
-bool QM12821_CurrencyStrength(const ENUM_TIMEFRAMES tf,
-                              double &strength[],
-                              int &out_strong_idx,
-                              int &out_weak_idx,
-                              double &out_gap)
-  {
-   ArrayResize(strength, 8);
-   ArrayInitialize(strength, 0.0);
-   out_strong_idx = -1;
-   out_weak_idx = -1;
-   out_gap = 0.0;
-
-   for(int i = 0; i < 28; ++i)
-     {
-      const string symbol = QM12821_PAIRS[i];
-      const int base_idx = QM12821_CcyIndex(StringSubstr(symbol, 0, 3));
-      const int quote_idx = QM12821_CcyIndex(StringSubstr(symbol, 3, 3));
-      if(base_idx < 0 || quote_idx < 0)
-         return false;
-
-      double perf = 0.0;
-      if(!QM12821_ReadPerf(symbol, tf, perf))
-         return false;
-
-      strength[base_idx] += perf;
-      strength[quote_idx] -= perf;
-     }
-
-   double max_strength = -DBL_MAX;
-   double min_strength = DBL_MAX;
-   for(int c = 0; c < 8; ++c)
-     {
-      if(strength[c] > max_strength)
-        {
-         max_strength = strength[c];
-         out_strong_idx = c;
-        }
-      if(strength[c] < min_strength)
-        {
-         min_strength = strength[c];
-         out_weak_idx = c;
-        }
-     }
-
-   if(out_strong_idx < 0 || out_weak_idx < 0)
-      return false;
-   out_gap = max_strength - min_strength;
-   return (out_gap >= strategy_gap_threshold_pct);
-  }
-
-bool QM12821_StrengthState(int &out_strong_idx,
-                           int &out_weak_idx,
-                           double &out_gap,
-                           double &out_h1_strength[])
-  {
-   out_strong_idx = -1;
-   out_weak_idx = -1;
-   out_gap = 0.0;
-
-   double d1_strength[];
-   int h1_strong = -1;
-   int h1_weak = -1;
-   int d1_strong = -1;
-   int d1_weak = -1;
-   double h1_gap = 0.0;
-   double d1_gap = 0.0;
-
-   if(!QM12821_CurrencyStrength(PERIOD_H1, out_h1_strength, h1_strong, h1_weak, h1_gap))
-      return false;
-   if(!QM12821_CurrencyStrength(PERIOD_D1, d1_strength, d1_strong, d1_weak, d1_gap))
-      return false;
-   if(h1_strong != d1_strong || h1_weak != d1_weak)
-      return false;
-
-   out_strong_idx = h1_strong;
-   out_weak_idx = h1_weak;
-   out_gap = h1_gap;
-   return true;
+   return (QM12821_HhmmToMinutes(QM12821_BrokerHhmm(broker_time)) >=
+           QM12821_HhmmToMinutes(strategy_flat_hhmm));
   }
 
 bool QM12821_HasOwnedPositions()
   {
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      const long magic = PositionGetInteger(POSITION_MAGIC);
-      const string symbol = PositionGetString(POSITION_SYMBOL);
-      if(QM_FrameworkOwnsMagicSymbol(magic, symbol))
-         return true;
-     }
-   return false;
+   return QM_BasketEquityStop_HasOwnedPositions();
   }
 
-double QM12821_BasketFloatingPnL()
+void QM12821_ResetActiveCycle()
   {
-   double pnl = 0.0;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      const long magic = PositionGetInteger(POSITION_MAGIC);
-      const string symbol = PositionGetString(POSITION_SYMBOL);
-      if(!QM_FrameworkOwnsMagicSymbol(magic, symbol))
-         continue;
-      pnl += PositionGetDouble(POSITION_PROFIT);
-      pnl += PositionGetDouble(POSITION_SWAP);
-     }
-   return pnl;
+   g_active_currency_idx = -1;
+   g_active_direction = 0;
   }
 
 int QM12821_CloseAllOwned(const QM_ExitReason reason)
   {
-   int closed = 0;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      const long magic = PositionGetInteger(POSITION_MAGIC);
-      const string symbol = PositionGetString(POSITION_SYMBOL);
-      if(!QM_FrameworkOwnsMagicSymbol(magic, symbol))
-         continue;
-      if(QM_TM_ClosePosition(ticket, reason))
-         ++closed;
-     }
+   const int closed = QM_BasketEquityStop_CloseAllOwned(reason);
    if(closed > 0)
-     {
-      g_active_strong_idx = -1;
-      g_active_weak_idx = -1;
-     }
+      QM12821_ResetActiveCycle();
    return closed;
+  }
+
+double QM12821_BaseRiskMoney()
+  {
+   if(RISK_FIXED > 0.0)
+      return RISK_FIXED;
+   const double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   if(equity <= 0.0 || RISK_PERCENT <= 0.0)
+      return 0.0;
+   return equity * RISK_PERCENT / 100.0;
+  }
+
+double QM12821_LotsPerLeg(const string symbol, const int leg_count)
+  {
+   if(leg_count <= 0 || strategy_total_lots_per_1000 <= 0.0)
+      return 0.0;
+
+   const double base_money = QM12821_BaseRiskMoney();
+   if(base_money <= 0.0)
+      return 0.0;
+
+   const double raw_total_lots = (base_money / 1000.0) * strategy_total_lots_per_1000;
+   const double raw_leg_lots = raw_total_lots / (double)leg_count;
+   return QM_BasketNormalizeLots(symbol, raw_leg_lots);
+  }
+
+bool QM12821_EvaluateSignal(QM_CSMReading &d1,
+                            QM_CSMReading &w1,
+                            QM_CSMReading &mn,
+                            QM_MTFCoherenceState &mtf,
+                            QM_BasketPlan &plan,
+                            double &out_probability)
+  {
+   out_probability = 0.0;
+   QM_BasketBuilder_Reset(plan);
+
+   if(!QM_CSM_LoadStrength(PERIOD_D1, d1, 0))
+      return false;
+   if(d1.extreme_idx < 0 || d1.extreme_sign == 0)
+      return false;
+   if(!QM_CSM_IsExhausted(d1, d1.extreme_idx, strategy_exhaustion_norm))
+      return false;
+
+   if(!QM_CSM_LoadStrength(PERIOD_W1, w1, 0))
+      return false;
+   if(!QM_CSM_LoadStrength(PERIOD_MN1, mn, 0))
+      return false;
+   if(!QM_MTFCoherence_Evaluate(d1, w1, mn, d1.extreme_idx, mtf))
+      return false;
+
+   out_probability = QM_CSM_ProbabilityRatio(d1, d1.extreme_idx);
+   const double required_probability = (double)MathMax(1, strategy_prob_min_numerator) /
+                                       (double)QM_CSM_CROSSES_PER_CURRENCY;
+   if(out_probability < required_probability)
+      return false;
+
+   return QM_BasketBuilder_ModeC(d1.extreme_idx, d1.extreme_sign, plan);
+  }
+
+bool QM12821_PullbackGateAllows(const QM_BasketPlan &plan,
+                                int &accepted_count,
+                                int &extended_count)
+  {
+   accepted_count = 0;
+   extended_count = 0;
+   if(plan.leg_count <= 0)
+      return false;
+
+   const int required = MathMax(1, MathMin(plan.leg_count, strategy_pullback_min_legs));
+   for(int i = 0; i < plan.leg_count; ++i)
+     {
+      QM_PullbackGateResult result;
+      if(!QM_PullbackGate_CheckSymbol(plan.legs[i].symbol,
+                                      plan.legs[i].type,
+                                      strategy_pullback_ema_period,
+                                      strategy_pullback_atr_period,
+                                      strategy_pullback_boundary_atr,
+                                      strategy_pullback_max_chase_atr,
+                                      result,
+                                      1))
+         continue;
+      if(result.extended)
+         ++extended_count;
+      if(result.accepted)
+         ++accepted_count;
+     }
+
+   return (accepted_count >= required);
+  }
+
+bool QM12821_OpenPlan(const QM_BasketPlan &plan, const double probability)
+  {
+   if(plan.leg_count != QM_BASKET_BUILDER_MAX_LEGS)
+      return false;
+
+   int opened = 0;
+   for(int i = 0; i < plan.leg_count; ++i)
+     {
+      const string symbol = plan.legs[i].symbol;
+      if(!SymbolSelect(symbol, true))
+         continue;
+
+      const double lots = QM12821_LotsPerLeg(symbol, plan.leg_count);
+      if(lots <= 0.0)
+         continue;
+
+      QM_BasketOrderRequest req;
+      req.symbol = symbol;
+      req.type = plan.legs[i].type;
+      req.price = 0.0;
+      req.sl = 0.0;
+      req.tp = 0.0;
+      req.lots = lots;
+      req.reason = StringFormat("TWIN_MODE_C_%s_%s",
+                                QM_CSM_CCY[plan.currency_idx],
+                                plan.direction > 0 ? "STRONG" : "WEAK");
+      req.symbol_slot = plan.legs[i].symbol_slot;
+      req.expiration_seconds = 0;
+
+      ulong ticket = 0;
+      if(QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, strategy_deviation_points, req, ticket))
+         ++opened;
+     }
+
+   if(opened != plan.leg_count)
+     {
+      const int closed = QM12821_CloseAllOwned(QM_EXIT_STRATEGY);
+      QM_LogEvent(QM_WARN, "BASKET_PARTIAL_ABORT",
+                  StringFormat("{\"attempted\":%d,\"opened\":%d,\"closed\":%d}",
+                               plan.leg_count, opened, closed));
+      return false;
+     }
+
+   g_active_currency_idx = plan.currency_idx;
+   g_active_direction = plan.direction;
+   g_cycle_stopped = false;
+   QM_LogEvent(QM_INFO, "BASKET_CYCLE_OPEN",
+               StringFormat("{\"currency\":\"%s\",\"direction\":%d,\"legs\":%d,\"probability\":%.4f}",
+                            QM_CSM_CCY[plan.currency_idx],
+                            plan.direction,
+                            plan.leg_count,
+                            probability));
+   return true;
   }
 
 void QM12821_CheckBasketRisk()
   {
    if(!QM12821_HasOwnedPositions())
      {
-      g_active_strong_idx = -1;
-      g_active_weak_idx = -1;
+      QM12821_ResetActiveCycle();
       g_cycle_stopped = false;
       return;
      }
 
-   const int now_hhmm = QM12821_BrokerHhmm(TimeCurrent());
-   if(QM12821_HhmmToMinutes(now_hhmm) >= QM12821_HhmmToMinutes(strategy_flat_hhmm))
+   if(QM12821_TimeToFlat(TimeCurrent()))
      {
       const int closed = QM12821_CloseAllOwned(QM_EXIT_TIME_STOP);
       if(closed > 0)
-         QM_LogEvent(QM_INFO, "BASKET_FLAT_TIME", StringFormat("{\"closed\":%d,\"hhmm\":%d}", closed, now_hhmm));
+         QM_LogEvent(QM_INFO, "BASKET_FLAT_TIME", StringFormat("{\"closed\":%d}", closed));
       return;
      }
 
-   const double equity = AccountInfoDouble(ACCOUNT_EQUITY);
-   if(equity <= 0.0)
-      return;
-
-   const double pnl = QM12821_BasketFloatingPnL();
-   const double stop_money = -equity * strategy_basket_stop_pct / 100.0;
-   const double take_money = equity * strategy_basket_tp_pct / 100.0;
-
-   if(strategy_basket_stop_pct > 0.0 && pnl <= stop_money)
+   QM_ExitReason reason = QM_EXIT_STRATEGY;
+   double pnl = 0.0;
+   double threshold = 0.0;
+   const int closed_by_equity = QM_BasketEquityStop_Enforce(strategy_basket_stop_pct,
+                                                            strategy_basket_tp_pct,
+                                                            reason,
+                                                            pnl,
+                                                            threshold);
+   if(closed_by_equity > 0)
      {
-      g_cycle_stopped = true;
-      const int closed = QM12821_CloseAllOwned(QM_EXIT_KILLSWITCH);
-      QM_LogEvent(QM_WARN, "BASKET_EQUITY_STOP",
-                  StringFormat("{\"pnl\":%.2f,\"threshold\":%.2f,\"closed\":%d}", pnl, stop_money, closed));
-      return;
-     }
-
-   if(strategy_basket_tp_pct > 0.0 && pnl >= take_money)
-     {
-      const int closed = QM12821_CloseAllOwned(QM_EXIT_TP_HIT);
-      QM_LogEvent(QM_INFO, "BASKET_TAKE_PROFIT",
-                  StringFormat("{\"pnl\":%.2f,\"threshold\":%.2f,\"closed\":%d}", pnl, take_money, closed));
+      if(reason == QM_EXIT_KILLSWITCH)
+         g_cycle_stopped = true;
+      QM12821_ResetActiveCycle();
+      QM_LogEvent(reason == QM_EXIT_KILLSWITCH ? QM_WARN : QM_INFO,
+                  reason == QM_EXIT_KILLSWITCH ? "BASKET_EQUITY_STOP" : "BASKET_TAKE_PROFIT",
+                  StringFormat("{\"pnl\":%.2f,\"threshold\":%.2f,\"closed\":%d}",
+                               pnl, threshold, closed_by_equity));
      }
   }
 
-bool QM12821_OpenBasketLeg(const string counterpart,
-                           const string weak_ccy,
-                           const int cluster_count)
-  {
-   string symbol = "";
-   bool inverted = false;
-   if(!QM12821_FindPair(counterpart, weak_ccy, symbol, inverted))
-      return false;
-
-   const int slot = QM12821_PairSlot(symbol);
-   if(slot < 0)
-      return false;
-
-   if(!SymbolSelect(symbol, true))
-      return false;
-
-   QM_BasketOrderRequest req;
-   req.symbol = symbol;
-   req.type = inverted ? QM_SELL : QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.lots = 0.0;
-   req.reason = StringFormat("TWIN_CSM_WEAK_%s_VS_%s", weak_ccy, counterpart);
-   req.symbol_slot = slot;
-   req.expiration_seconds = 0;
-
-   const double entry = QM_BasketMarketPrice(req.symbol, req.type);
-   const double atr = QM_ATR(req.symbol, PERIOD_H1, strategy_atr_period, 1);
-   if(entry <= 0.0 || atr <= 0.0)
-      return false;
-
-   req.sl = QM_StopATRFromValue(req.symbol, req.type, entry, atr, strategy_atr_sl_mult);
-   if(req.sl <= 0.0)
-      return false;
-
-   const double point = SymbolInfoDouble(req.symbol, SYMBOL_POINT);
-   if(point <= 0.0)
-      return false;
-   const double sl_points = MathAbs(entry - req.sl) / point;
-   const double base_lots = QM_LotsForRisk(req.symbol, sl_points);
-   if(base_lots <= 0.0)
-      return false;
-   req.lots = base_lots / (double)MathMax(1, cluster_count);
-
-   ulong ticket = 0;
-   return QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, strategy_deviation_points, req, ticket);
-  }
-
-bool QM12821_OpenWeakCurrencyCluster(const int strong_idx,
-                                     const int weak_idx,
-                                     const double &strength[])
-  {
-   if(strong_idx < 0 || weak_idx < 0 || weak_idx >= 8)
-      return false;
-
-   int order[8];
-   for(int i = 0; i < 8; ++i)
-      order[i] = i;
-   for(int a = 0; a < 7; ++a)
-      for(int b = 0; b < 7 - a; ++b)
-         if(strength[order[b]] < strength[order[b + 1]])
-           {
-            const int tmp = order[b];
-            order[b] = order[b + 1];
-            order[b + 1] = tmp;
-           }
-
-   const int cluster_count = MathMin(7, MathMax(1, strategy_cluster_size));
-   int attempted = 0;
-   int opened = 0;
-   const string weak_ccy = QM12821_CCY[weak_idx];
-
-   for(int i = 0; i < 8 && attempted < cluster_count; ++i)
-     {
-      const int counter_idx = order[i];
-      if(counter_idx == weak_idx)
-         continue;
-      attempted++;
-      if(QM12821_OpenBasketLeg(QM12821_CCY[counter_idx], weak_ccy, cluster_count))
-         opened++;
-     }
-
-   if(opened > 0)
-     {
-      g_active_strong_idx = strong_idx;
-      g_active_weak_idx = weak_idx;
-      g_cycle_stopped = false;
-      QM_LogEvent(QM_INFO, "BASKET_CYCLE_OPEN",
-                  StringFormat("{\"strong\":\"%s\",\"weak\":\"%s\",\"attempted\":%d,\"opened\":%d}",
-                               QM12821_CCY[strong_idx], weak_ccy, attempted, opened));
-      return true;
-     }
-
-   return false;
-  }
-
-void QM12821_CloseOnStrengthShift(const int strong_idx, const int weak_idx)
+void QM12821_CloseOnSignalShift()
   {
    if(!QM12821_HasOwnedPositions())
       return;
 
-   if(g_active_strong_idx < 0 || g_active_weak_idx < 0)
+   QM_CSMReading d1;
+   QM_CSMReading w1;
+   QM_CSMReading mn;
+   QM_MTFCoherenceState mtf;
+   QM_BasketPlan plan;
+   double probability = 0.0;
+   if(!QM12821_EvaluateSignal(d1, w1, mn, mtf, plan, probability))
      {
-      g_active_strong_idx = strong_idx;
-      g_active_weak_idx = weak_idx;
+      const int closed = QM12821_CloseAllOwned(QM_EXIT_OPPOSITE_SIGNAL);
+      QM_LogEvent(QM_INFO, "BASKET_STRENGTH_SHIFT_EXIT",
+                  StringFormat("{\"closed\":%d,\"reason\":\"signal_invalid\"}", closed));
       return;
      }
 
-   if(g_active_strong_idx == strong_idx && g_active_weak_idx == weak_idx)
+   if(g_active_currency_idx < 0 || g_active_direction == 0)
+     {
+      g_active_currency_idx = plan.currency_idx;
+      g_active_direction = plan.direction;
+      return;
+     }
+
+   if(plan.currency_idx == g_active_currency_idx && plan.direction == g_active_direction)
       return;
 
-   const int old_strong_idx = g_active_strong_idx;
-   const int old_weak_idx = g_active_weak_idx;
+   const int old_idx = g_active_currency_idx;
+   const int old_direction = g_active_direction;
    const int closed = QM12821_CloseAllOwned(QM_EXIT_OPPOSITE_SIGNAL);
    QM_LogEvent(QM_INFO, "BASKET_STRENGTH_SHIFT_EXIT",
-               StringFormat("{\"closed\":%d,\"old_strong\":\"%s\",\"old_weak\":\"%s\",\"new_strong\":\"%s\",\"new_weak\":\"%s\"}",
+               StringFormat("{\"closed\":%d,\"old_currency\":\"%s\",\"old_direction\":%d,\"new_currency\":\"%s\",\"new_direction\":%d}",
                             closed,
-                            QM12821_CCY[old_strong_idx],
-                            QM12821_CCY[old_weak_idx],
-                            QM12821_CCY[strong_idx],
-                            QM12821_CCY[weak_idx]));
+                            old_idx >= 0 ? QM_CSM_CCY[old_idx] : "",
+                            old_direction,
+                            QM_CSM_CCY[plan.currency_idx],
+                            plan.direction));
   }
 
 bool Strategy_NoTradeFilter()
   {
-   if((ENUM_TIMEFRAMES)_Period != PERIOD_H1)
+   if(_Symbol != QM12821_HOST_SYMBOL)
       return true;
-
+   if((ENUM_TIMEFRAMES)_Period != QM12821_HOST_TF)
+      return true;
+   if(qm_magic_slot_offset != 0)
+      return true;
    if(QM12821_HasOwnedPositions())
       return false;
-
+   if(g_cycle_stopped)
+      return true;
    if(!QM12821_InEntrySession(TimeCurrent()))
       return true;
-
    return false;
   }
 
@@ -500,26 +371,36 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   double h1_strength[];
-   int strong_idx = -1;
-   int weak_idx = -1;
-   double gap = 0.0;
-   if(!QM12821_StrengthState(strong_idx, weak_idx, gap, h1_strength))
-      return false;
-
    if(QM12821_HasOwnedPositions())
      {
-      QM12821_CloseOnStrengthShift(strong_idx, weak_idx);
+      QM12821_CloseOnSignalShift();
       return false;
      }
 
-   if(g_cycle_stopped)
+   QM_CSMReading d1;
+   QM_CSMReading w1;
+   QM_CSMReading mn;
+   QM_MTFCoherenceState mtf;
+   QM_BasketPlan plan;
+   double probability = 0.0;
+   if(!QM12821_EvaluateSignal(d1, w1, mn, mtf, plan, probability))
       return false;
 
-   if(!QM12821_InEntrySession(TimeCurrent()))
+   int pullback_ok = 0;
+   int extended = 0;
+   if(!QM12821_PullbackGateAllows(plan, pullback_ok, extended))
+     {
+      QM_LogEvent(QM_INFO, "BASKET_PULLBACK_REJECT",
+                  StringFormat("{\"currency\":\"%s\",\"direction\":%d,\"accepted\":%d,\"extended\":%d,\"required\":%d}",
+                               QM_CSM_CCY[plan.currency_idx],
+                               plan.direction,
+                               pullback_ok,
+                               extended,
+                               MathMax(1, MathMin(plan.leg_count, strategy_pullback_min_legs))));
       return false;
+     }
 
-   QM12821_OpenWeakCurrencyCluster(strong_idx, weak_idx, h1_strength);
+   QM12821_OpenPlan(plan, probability);
    return false;
   }
 
@@ -558,15 +439,18 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   string basket_symbols[28];
-   for(int i = 0; i < 28; ++i)
-      basket_symbols[i] = QM12821_PAIRS[i];
+   string basket_symbols[QM_CSM_PAIR_COUNT];
+   for(int i = 0; i < QM_CSM_PAIR_COUNT; ++i)
+      basket_symbols[i] = QM_CSM_PAIRS[i];
    QM_SymbolGuardInit(basket_symbols);
+   QM_BasketWarmupHistory(basket_symbols, PERIOD_M30, strategy_warmup_bars);
    QM_BasketWarmupHistory(basket_symbols, PERIOD_H1, strategy_warmup_bars);
    QM_BasketWarmupHistory(basket_symbols, PERIOD_D1, MathMax(40, strategy_warmup_bars / 24));
+   QM_BasketWarmupHistory(basket_symbols, PERIOD_W1, 80);
+   QM_BasketWarmupHistory(basket_symbols, PERIOD_MN1, 80);
 
    QM_LogEvent(QM_INFO, "INIT_OK",
-               "{\"card\":\"QM5_12821_twin-csm-basket\",\"scope\":\"fx8_csm_basket\"}");
+               "{\"card\":\"QM5_12821_twin-csm-basket\",\"scope\":\"fx8_csm_basket\",\"version\":\"modular_5_1\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -620,11 +504,7 @@ void OnTick()
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
-   if(Strategy_EntrySignal(req))
-     {
-      ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
-     }
+   Strategy_EntrySignal(req);
   }
 
 void OnTimer()
