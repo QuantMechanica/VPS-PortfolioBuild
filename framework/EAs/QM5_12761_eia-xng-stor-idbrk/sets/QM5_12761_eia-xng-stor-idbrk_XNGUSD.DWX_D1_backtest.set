@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12761
 ; ea_slug:      eia-xng-stor-idbrk
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3ae108ffb87ea6bc68b9d85a6cbdb302fc06fc2fe285892847972016a5401cc1
+; build_hash:   1480928ef888bf96f8748871674367266e093abede17775addf5aac37f5c7e37
 ; author:       Development
 ; date:         2026-06-29
 ;==========================================================
