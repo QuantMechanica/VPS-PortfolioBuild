@@ -1,21 +1,20 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
-; ea_id:        12532
-; ea_slug:      edgelab-audnzd-cointegration
+; ea_id:        10749
+; ea_slug:      tv-orb-atlas
 ; ea_version:   v5.0
 ; set_version:  s20260702-stress-med
-; symbol:       QM5_12532_AUDNZD_COINTEGRATION_D1
-; host_symbol:  AUDUSD.DWX
-; timeframe:    D1
+; symbol:       XAUUSD.DWX
+; timeframe:    M5
 ; environment:  q05_stress_medium
-; magic_slot:   0
+; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3cdbabf7e1fb36a1442e650e3b432117bf95b25ae785abaad473058d028fb444
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-07-02
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
@@ -32,13 +31,5 @@ qm_filter_volatility_atr_period=14
 qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card
-strategy_z_lookback_d1=60
-strategy_beta=0.93
-strategy_entry_z=2.0
-strategy_exit_abs_z=0.5
-strategy_atr_period_d1=20
-strategy_atr_sl_mult=2.0
-strategy_max_spread_points=0
-strategy_entry_hour_broker=1
-strategy_entry_minute_broker=0
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found
