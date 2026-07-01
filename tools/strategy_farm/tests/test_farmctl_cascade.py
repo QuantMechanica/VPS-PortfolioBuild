@@ -207,6 +207,8 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
                 "host_symbol": "EURGBP.DWX",
                 "host_timeframe": "D1",
                 "basket_symbols": ["EURGBP.DWX", "EURAUD.DWX"],
+                "tester_currency": "JPY",
+                "tester_deposit": 15000000,
             }
             manifest_path = ea_dir / "basket_manifest.json"
             manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
@@ -272,6 +274,8 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             self.assertEqual(payload["host_symbol"], "EURGBP.DWX")
             self.assertEqual(payload["portfolio_scope"], "basket")
             self.assertEqual(payload["q04_latest_full_year"], 2024)
+            self.assertEqual(payload["tester_currency"], "JPY")
+            self.assertEqual(payload["tester_deposit"], 15000000)
 
     def test_q04_promotion_clamps_basket_latest_year_from_cache(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:

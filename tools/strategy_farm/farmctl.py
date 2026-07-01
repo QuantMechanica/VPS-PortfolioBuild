@@ -3458,6 +3458,8 @@ BASKET_CONTEXT_PAYLOAD_KEYS = (
 def _basket_q02_payload(
     basket_manifest: dict[str, Any],
     build_result: dict[str, Any] | None = None,
+    *,
+    include_timeout_min: bool = True,
 ) -> dict[str, Any]:
     """Build the common runtime payload for logical basket Q02 rows."""
     payload: dict[str, Any] = {
@@ -3467,8 +3469,9 @@ def _basket_q02_payload(
         "host_timeframe": basket_manifest["host_timeframe"],
         "logical_symbol": basket_manifest["logical_symbol"],
         "portfolio_scope": "basket",
-        "timeout_min": BASKET_Q02_ACTIVE_TIMEOUT_MIN,
     }
+    if include_timeout_min:
+        payload["timeout_min"] = BASKET_Q02_ACTIVE_TIMEOUT_MIN
     basket_symbols = basket_manifest.get("basket_symbols") or []
     if basket_symbols:
         payload["basket_symbols"] = list(basket_symbols)
@@ -3521,10 +3524,29 @@ def _promotion_payload_with_basket_context(
     except (TypeError, json.JSONDecodeError):
         parent_payload = {}
     if not isinstance(parent_payload, dict):
-        return payload
+        parent_payload = {}
     for key in BASKET_CONTEXT_PAYLOAD_KEYS:
         if key in parent_payload and key not in payload:
             payload[key] = parent_payload[key]
+
+    ea_id = str(_work_item_value(parent_work_item, "ea_id", "") or "")
+    symbol = str(_work_item_value(parent_work_item, "symbol", "") or "")
+    manifest = _load_basket_manifest(ea_id)
+    logical_symbol = str((manifest or {}).get("logical_symbol") or "")
+    parent_is_manifest_basket = bool(
+        manifest
+        and logical_symbol
+        and (
+            symbol == logical_symbol
+            or str(parent_payload.get("logical_symbol") or "") == logical_symbol
+            or str(parent_payload.get("portfolio_scope") or "").strip().lower() == "basket"
+        )
+    )
+    if parent_is_manifest_basket:
+        manifest_payload = _basket_q02_payload(manifest, include_timeout_min=False)
+        for key in BASKET_CONTEXT_PAYLOAD_KEYS:
+            if key in manifest_payload:
+                payload[key] = manifest_payload[key]
     return payload
 
 
