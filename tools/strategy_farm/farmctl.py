@@ -154,7 +154,15 @@ PHASE_ACTIVE_TIMEOUT_MIN = {
     "Q09": 120,    # news-mode sweep (1 or 7 modes)
     "Q10": 60,     # full-history canonical confirmation
 }
-BASKET_Q02_ACTIVE_TIMEOUT_MIN = 120
+# Baskets pay a one-time N-symbol cold tick-sync (a 28-symbol basket like T-WIN
+# needs ~3-5h just to sync member ticks over the full window) that single-symbol
+# EAs never incur, so the 45-min Q02 budget starved them into INFRA_FAIL. This is
+# the reaper/monitor OUTER net; the run_smoke -TimeoutSeconds INNER net is now
+# symbol-scaled (see the basket branch in the dispatch) and catches real hangs at
+# a member-count-appropriate bound first. Serialization keeps only ONE basket
+# active farm-wide, so a generous outer budget never stacks or starves
+# single-symbol throughput. 2026-07-01. (Was 120 — too short for >~12 members.)
+BASKET_Q02_ACTIVE_TIMEOUT_MIN = 450
 
 
 def is_factory_terminal_name(value: Any) -> bool:
@@ -2367,7 +2375,25 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     else:
         from_date, to_date = _basket_payload_date_window(item_payload)
         p2_run_stage = None
-        timeout_seconds = 1800
+        # Basket / multi-symbol EAs pay a one-time cold tick-sync of EVERY member
+        # symbol over the full window (~minutes/symbol) that single-symbol EAs
+        # never incur. A flat 1800s (30 min) starved every basket: a 28-symbol
+        # basket (T-WIN) needs ~3h just to sync ticks, so all 3 run_smoke attempts
+        # died in tick-prep -> REPORT_MISSING/METATESTER_HUNG -> INFRA_FAIL. This
+        # is why the cross-sectional/basket class never got a fair test. Scale the
+        # per-run timeout with member count, floored at the single-symbol full
+        # budget and capped for safety (serialization keeps only ONE basket active
+        # farm-wide, so a long basket run never stacks or starves single-symbol
+        # throughput on the other terminals). 2026-07-01.
+        _basket_n = 1
+        try:
+            _basket_n = max(1, int(item_payload.get("basket_symbol_count") or 1))
+        except (TypeError, ValueError):
+            _basket_n = 1
+        timeout_seconds = max(
+            P2_FULL_TIMEOUT_MIN_SECONDS,
+            min(25200, 1800 + _basket_n * 600),
+        )
     # Clamp the backtest start to where .DWX data actually exists, else NO_HISTORY.
     # FX/metals/energy .DWX history begins 2017.10.02, but the index .DWX symbols
     # (NDX/WS30/SP500/UK100/GDAXI) begin only 2018.07.02. Single-symbol EAs auto-clamp
