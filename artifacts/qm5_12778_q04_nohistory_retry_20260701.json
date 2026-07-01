@@ -1,0 +1,101 @@
+{
+  "ea_id": "QM5_12778",
+  "slug": "edgelab-audusd-eurjpy-cointegration",
+  "selected_pair": "AUDUSD~EURJPY",
+  "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+  "unit_of_work": "q04_nohistory_retry",
+  "mission_scope": "Advance an existing built FX market-neutral cointegration basket because no unbuilt allocated EdgeLab FX cointegration scan candidate remained and QM5_12532/QM5_12533 were not Q02-blocked.",
+  "preflight": {
+    "controlling_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "unbuilt_allocated_edgelab_cointegration_pairs_found": 0,
+    "qm5_12532_current_state": "Q02 PASS, Q04 PASS, later Q05 INFRA_FAIL with timeout/incomplete-runs CPU-ceiling evidence; not Q02-blocked.",
+    "qm5_12533_current_state": "Q02 PASS, later Q04 FAIL on completed combined basket metrics; not Q02-blocked.",
+    "target_state_before_action": {
+      "Q02": "done/PASS",
+      "Q03": "done/PASS",
+      "Q04": "done/INFRA_FAIL"
+    },
+    "prior_q04_failure": {
+      "work_item_id": "9546f319-dc02-4249-b6ac-0c1bb64fec4f",
+      "evidence_path": "D:/QM/reports/work_items/9546f319-dc02-4249-b6ac-0c1bb64fec4f/QM5_12778/Q04/QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1/aggregate.json",
+      "verdict": "INVALID",
+      "reason": "F1/F2 invalid_summary with BARS_ZERO, EMPTY_EXPERT, EMPTY_SYMBOL, HISTORY_CONTEXT_INVALID, INCOMPLETE_RUNS, M0_1970_PERIOD, NO_HISTORY, RUN_STATUS_INVALID; F1 also REPORT_MISSING."
+    }
+  },
+  "queue_action": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12778 --phase Q04",
+    "db_backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12778_q04_retry_20260701_231659.sqlite",
+    "result": "requeued_existing_row",
+    "created_rows": 0,
+    "skipped_rows": 0,
+    "requeued_work_item_id": "9546f319-dc02-4249-b6ac-0c1bb64fec4f",
+    "status_after": "pending",
+    "verdict_after": null,
+    "attempt_count_after": 0,
+    "claimed_by_after": null,
+    "evidence_path_after": null,
+    "updated_at_utc": "2026-07-01T21:17:02+00:00",
+    "archived_report_root_on_requeue": "D:/QM/reports/work_items/9546f319-dc02-4249-b6ac-0c1bb64fec4f.requeued_20260701T2117020000"
+  },
+  "basket_payload_after": {
+    "portfolio_scope": "basket",
+    "host_symbol": "AUDUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_symbols": [
+      "AUDUSD.DWX",
+      "EURJPY.DWX",
+      "EURUSD.DWX"
+    ],
+    "traded_symbols": [
+      "AUDUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "conversion_symbols": [
+      "EURUSD.DWX"
+    ],
+    "tester_currency": "EUR",
+    "tester_deposit": 100000,
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "q04_latest_full_year": 2024,
+    "q04_history_checked_symbols": [
+      "AUDUSD.DWX",
+      "EURJPY.DWX",
+      "EURUSD.DWX"
+    ]
+  },
+  "verification": [
+    {
+      "check": "farmctl work-items --ea QM5_12778",
+      "result": "PASS",
+      "summary": "Q02 done/PASS, Q03 done/PASS, Q04 pending."
+    },
+    {
+      "check": "direct SQLite duplicate guard",
+      "result": "PASS",
+      "summary": "Exactly one pending/active Q04 row exists for QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1."
+    },
+    {
+      "check": "basket manifest JSON",
+      "result": "PASS",
+      "summary": "Valid JSON; EUR tester account and declared AUDUSD.DWX/EURJPY.DWX/EURUSD.DWX basket symbols retained."
+    },
+    {
+      "check": "backtest setfile risk mode",
+      "result": "PASS",
+      "summary": "Canonical logical-basket backtest setfile has RISK_FIXED=1000 and RISK_PERCENT=0."
+    }
+  ],
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "backtest_cpu_ceiling_hit": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
