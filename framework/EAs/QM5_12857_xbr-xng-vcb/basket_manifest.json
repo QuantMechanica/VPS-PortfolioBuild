@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_12857_XBR_XNG_VCB_D1",
+  "host_symbol": "XBRUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XBRUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg XBR/XNG energy ratio volatility-contraction breakout basket from the approved BOLLINGER-BB-SQUEEZE-2001 source packet. The EA runs from the XBRUSD.DWX host setfile, reads XBRUSD.DWX and XNGUSD.DWX completed D1 closes, computes the log ratio, and trades only after low Bollinger BandWidth compression resolves into an envelope breakout. Q02 must evaluate the logical basket, not standalone legs."
+  ]
+}

@@ -8,6 +8,7 @@ last_reviewed: 2026-06-30
 cards_extracted:
   - xti-vcb
   - xti-xng-vcb
+  - xbr-xng-vcb
 ---
 
 # Bollinger BandWidth Squeeze Source
@@ -35,7 +36,9 @@ natural gas, then trades the two-leg basket only after ratio compression.
 The EA does not ingest futures-chain data, inventory data, CFTC data, analyst
 forecasts, APIs, CSV files, volume, open interest, or ML features at runtime.
 It uses only Darwinex MT5 D1 OHLC, spread, ATR, SMA, Bollinger Bands, broker
-calendar, and V5 framework risk/news/friday-close guards.
+calendar, and V5 framework risk/news/friday-close guards. The XBR/XNG extension
+keeps the same BandWidth mechanism but trades the Brent/natural-gas completed
+D1 log ratio as a separate energy-relative basket.
 
 ## R-Rules
 

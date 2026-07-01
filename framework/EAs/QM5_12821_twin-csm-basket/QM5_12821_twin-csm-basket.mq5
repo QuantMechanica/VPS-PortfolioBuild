@@ -255,43 +255,87 @@ bool QM12821_EvaluateSignal(QM_CSMReading &d1,
    return QM_BasketBuilder_ModeC(d1.extreme_idx, d1.extreme_sign, plan);
   }
 
-bool QM12821_PullbackGateAllows(const QM_BasketPlan &plan,
-                                double &pending_prices[],
-                                int &accepted_count,
-                                int &extended_count)
+// Faithful pullback mechanic (Giavon T-WIN / U.F.O., design-gap findings 2026-07-01 section 2):
+// when the CSM signal fires the extreme currency's crosses have ALREADY run past their M30
+// fair price (that is what makes the currency exhausted). We do NOT wait for the pullback to
+// have happened on the current bar -- instead we place a PENDING LIMIT for every leg at its
+// M30 fair-price boundary (lower dotted line for BUY legs, upper dotted line for SELL legs).
+// The limit sitting at the boundary IS the "wait for the pullback / never chase" mechanism:
+// it fills only if price retraces to the boundary, and expires otherwise. So this routine only
+// computes each leg's boundary; it never vetoes on "already extended". tick-volume / distance
+// are logged per leg for later fill-time calibration, but never block placement (that would
+// break the symmetric 7-leg basket and defeat the limit mechanism).
+bool QM12821_ComputeBasketBoundaries(const QM_BasketPlan &plan,
+                                     double &pending_prices[],
+                                     int &legs_ready,
+                                     int &extended_count)
   {
-   accepted_count = 0;
+   legs_ready = 0;
    extended_count = 0;
    ArrayResize(pending_prices, plan.leg_count);
    ArrayInitialize(pending_prices, 0.0);
    if(plan.leg_count <= 0)
       return false;
 
-   const int required = MathMax(1, MathMin(plan.leg_count, strategy_pullback_min_legs));
    for(int i = 0; i < plan.leg_count; ++i)
      {
-      QM_PullbackGateResult result;
-      if(!QM_PullbackGate_CheckSymbol(plan.legs[i].symbol,
-                                      plan.legs[i].type,
-                                      strategy_pullback_ema_period,
-                                      strategy_pullback_atr_period,
-                                      strategy_pullback_boundary_atr,
-                                      strategy_pullback_max_chase_atr,
-                                      strategy_pullback_volume_lookback,
-                                      strategy_pullback_volume_max_ratio,
-                                      result,
-                                      1))
+      const string symbol = plan.legs[i].symbol;
+      if(StringLen(symbol) <= 0)
          continue;
-      if(result.extended)
-         ++extended_count;
-      if(result.accepted)
+      if(!SymbolSelect(symbol, true))
+         continue;
+
+      const double fair_price = QM_EMA(symbol, PERIOD_M30, strategy_pullback_ema_period, 1, PRICE_CLOSE);
+      const double atr = QM_ATR(symbol, PERIOD_M30, strategy_pullback_atr_period, 1);
+      if(fair_price <= 0.0 || atr <= 0.0)
+         continue;
+
+      const double boundary_price = QM_PullbackGate_BoundaryPrice(fair_price, atr,
+                                                                  plan.legs[i].type,
+                                                                  strategy_pullback_boundary_atr);
+      if(boundary_price <= 0.0)
+         continue;
+
+      pending_prices[i] = boundary_price;
+      ++legs_ready;
+
+      // Diagnostics only (never a placement veto): how far current price sits beyond fair
+      // in the trade direction, plus tick-volume context for a future fill-time filter.
+      MqlRates rates[];
+      double distance_atr = 0.0;
+      double tick_vol = 0.0;
+      if(CopyRates(symbol, PERIOD_M30, 1, 1, rates) == 1 && rates[0].close > 0.0)
         {
-         pending_prices[i] = result.boundary_price;
-         ++accepted_count;
+         const int dir = QM_OrderTypeIsBuy(plan.legs[i].type) ? 1 : -1;
+         distance_atr = ((rates[0].close - fair_price) / atr) * (double)dir;
+         tick_vol = (double)rates[0].tick_volume;
+         if(distance_atr > MathMax(0.0, strategy_pullback_max_chase_atr))
+            ++extended_count;
         }
+      double avg_vol = 0.0;
+      if(strategy_pullback_volume_lookback > 0)
+        {
+         MqlRates hist[];
+         const int got = CopyRates(symbol, PERIOD_M30, 2, strategy_pullback_volume_lookback, hist);
+         if(got > 0)
+           {
+            double tot = 0.0;
+            for(int h = 0; h < got; ++h)
+               tot += (double)hist[h].tick_volume;
+            avg_vol = tot / (double)got;
+           }
+        }
+      QM_LogEvent(QM_INFO, "BASKET_LEG_LIMIT",
+                  StringFormat("{\"symbol\":\"%s\",\"type\":\"%s\",\"boundary\":%.5f,\"fair\":%.5f,\"atr\":%.5f,\"distance_atr\":%.3f,\"tick_vol\":%.0f,\"avg_vol\":%.1f}",
+                               symbol,
+                               QM_OrderTypeIsBuy(plan.legs[i].type) ? "buy_limit" : "sell_limit",
+                               boundary_price, fair_price, atr, distance_atr,
+                               tick_vol, avg_vol));
      }
 
-   return (accepted_count >= required);
+   // The symmetric basket needs a valid boundary for EVERY leg. If any leg's M30 data is not
+   // ready (early warmup / missing history), skip this signal rather than open a partial basket.
+   return (legs_ready == plan.leg_count);
   }
 
 bool QM12821_OpenPlan(const QM_BasketPlan &plan,
@@ -485,21 +529,27 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!QM12821_EvaluateSignal(d1, w1, mn, mtf, plan, probability))
       return false;
 
-   int pullback_ok = 0;
+   int legs_ready = 0;
    int extended = 0;
    double pending_prices[];
-   if(!QM12821_PullbackGateAllows(plan, pending_prices, pullback_ok, extended))
+   if(!QM12821_ComputeBasketBoundaries(plan, pending_prices, legs_ready, extended))
      {
-      QM_LogEvent(QM_INFO, "BASKET_PULLBACK_REJECT",
-                  StringFormat("{\"currency\":\"%s\",\"direction\":%d,\"accepted\":%d,\"extended\":%d,\"required\":%d}",
+      QM_LogEvent(QM_INFO, "BASKET_BOUNDARY_UNREADY",
+                  StringFormat("{\"currency\":\"%s\",\"direction\":%d,\"legs_ready\":%d,\"required\":%d}",
                                QM_CSM_CCY[plan.currency_idx],
                                plan.direction,
-                               pullback_ok,
-                               extended,
-                               MathMax(1, MathMin(plan.leg_count, strategy_pullback_min_legs))));
+                               legs_ready,
+                               plan.leg_count));
       return false;
      }
 
+   QM_LogEvent(QM_INFO, "BASKET_LIMITS_PLACED",
+               StringFormat("{\"currency\":\"%s\",\"direction\":%d,\"legs\":%d,\"extended\":%d,\"probability\":%.4f}",
+                            QM_CSM_CCY[plan.currency_idx],
+                            plan.direction,
+                            plan.leg_count,
+                            extended,
+                            probability));
    QM12821_OpenPlan(plan, probability, pending_prices);
    return false;
   }
