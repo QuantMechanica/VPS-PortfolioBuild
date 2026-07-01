@@ -34,7 +34,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
+pipeline_phase: Q02
 last_updated: 2026-07-01
 expected_pf: 1.10
 expected_dd_pct: 18.0
@@ -238,10 +238,12 @@ gate.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-01 | initial XTI/XNG ratio volatility-contraction breakout build | G0 | APPROVED |
+| v1 | 2026-07-01 | initial XTI/XNG ratio volatility-contraction breakout build | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-01 | APPROVED | this card |
+| Q01 Build Validation | 2026-07-01 | PASS | `artifacts/qm5_12850_build_result.json` |
+| Q02 Baseline Screening | 2026-07-01 | QUEUED | `D:\QM\strategy_farm\state\farm_state.sqlite` work item `8e5ef3eb-76d6-4812-aa62-b23f086114b3` |

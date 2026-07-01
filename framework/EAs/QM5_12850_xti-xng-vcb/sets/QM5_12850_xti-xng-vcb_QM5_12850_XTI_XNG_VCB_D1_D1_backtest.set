@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12850
 ; ea_slug:      xti-xng-vcb
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   918de8a7b9959ae2cc5c43d02db25f6b83d271025c492c92f37a929124f4feaf
 ; author:       Development
 ; date:         2026-07-01
 ;==========================================================
