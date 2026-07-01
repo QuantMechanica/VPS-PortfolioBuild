@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12617
 ; ea_slug:      tsmom-12m-fx-usdjpy
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3bac18b3a52ef433cc03031e45e08402233f2dbb2356079498cfca64ac4419a7
+; build_hash:   7b73533aa50aee707ccb52844d41b2706da699a8df5415093e3ac6be4e97ca6c
 ; author:       Development
 ; date:         2026-06-29
 ;==========================================================
