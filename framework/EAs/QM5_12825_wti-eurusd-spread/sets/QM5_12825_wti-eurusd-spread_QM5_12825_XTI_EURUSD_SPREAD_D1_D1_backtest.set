@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12825
 ; ea_slug:      wti-eurusd-spread
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   ab72fab783c5b25be40e44f7e52c01fdca384ed11c62bc39d74e20730ab98b3f
+; build_hash:   2a1ed627e0dffa311dbc9a50ea6ea0cb562b93ffe6c06c8e6f8b3d5bb13ecb6a
 ; author:       Development
 ; date:         2026-06-30
 ;==========================================================
