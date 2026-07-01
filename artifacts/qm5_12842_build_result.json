@@ -1,0 +1,128 @@
+{
+  "task_id": "9d5be4c3-0e90-4886-91fd-10c835ec34e2",
+  "ea_id": "QM5_12842",
+  "slug": "williams-vol-bo-xti",
+  "ea_label": "QM5_12842_williams-vol-bo-xti",
+  "branch": "agents/board-advisor",
+  "date": "2026-07-01",
+  "source_id": "SRC03",
+  "source_citations": [
+    "Williams, Larry R. (1999). Long-Term Secrets to Short-Term Trading. Wiley Trading. Source packet strategy-seeds/sources/SRC03/."
+  ],
+  "strategy": "D1 XTIUSD WTI prior-range volatility expansion buy-stop",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "risk_fixed": 1000,
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 16,
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12842_williams-vol-bo-xti",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12842_williams-vol-bo-xti\\QM5_12842_williams-vol-bo-xti.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12842_williams-vol-bo-xti\\QM5_12842_williams-vol-bo-xti.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12842_williams-vol-bo-xti\\SPEC.md",
+  "spec_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12842_williams-vol-bo-xti\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12842_williams-vol-bo-xti_card.md",
+  "runtime_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12842_williams-vol-bo-xti_card.md",
+  "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\SRC03\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12842_williams-vol-bo-xti\\sets\\QM5_12842_williams-vol-bo-xti_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 128420000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "compile": {
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_12842_williams-vol-bo-xti --force --json --fail-on-error",
+    "result": "COMPILED",
+    "reason": "fresh build, 0 warnings",
+    "errors": 0,
+    "warnings": 0,
+    "symbol_scope_verdict": "SINGLE_SYMBOL_OK",
+    "log": "C:\\QM\\repo\\framework\\build\\compile\\20260701_022249\\QM5_12842_williams-vol-bo-xti.compile.log",
+    "ex5": "C:\\QM\\repo\\framework\\EAs\\QM5_12842_williams-vol-bo-xti\\QM5_12842_williams-vol-bo-xti.ex5",
+    "ex5_size_bytes": 290040
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12842_williams-vol-bo-xti -Strict -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report": "D:\\QM\\reports\\framework\\21\\build_check_20260701_022302.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings in framework/include/QM; build_check failures=0."
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_12842_williams-vol-bo-xti",
+    "result": "PASS"
+  },
+  "scope_validation": {
+    "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_12842_williams-vol-bo-xti --json",
+    "result": "SINGLE_SYMBOL_OK"
+  },
+  "guardrail_validation": {
+    "command": "python tools/strategy_farm/validate_build_guardrails.py framework/EAs/QM5_12842_williams-vol-bo-xti",
+    "result": "PASS"
+  },
+  "hashes": {
+    "mq5": "D6E6F2C05702EDF94500BD925F1C8022CB78BE218DF6AD5DEC89CD0FE4985E14",
+    "ex5": "29158AA1C497BA4245AF33B7CEBC53050F7B25EC8871F6D351CCB0A8080D1CC6",
+    "setfile": "B9D253B287F85B3BF6F9DBD7D3864CD8EA17935D21A73F0E3B5E57EDA5E394F1",
+    "spec": "42D49EF4095741CDE3EAB05D6250B91BB184928A21F5F068A55F292A92B2652D",
+    "card": "64A0CFD977AD9FAEE400B0832DE5364A75011556F5862B34F68373CE087A2809"
+  },
+  "non_duplicate_reason": "New WTI prior-range volatility-expansion buy-stop sleeve. It differs from WTI calendar/event/roll/inventory/ratio/reversal sleeves, XNG logic, XAU/XAG logic, and QM5_12567 commodity RSI pullback logic.",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet Q02 handles the first MT5 backtest; no manual smoke/backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "t_live_manifest_touched": false
+  },
+  "notes": "Built one non-duplicate structural WTI commodity sleeve. No live, T_Live, AutoTrading, T_Live manifest, or portfolio gate artifacts touched.",
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_12842",
+    "enqueued": [
+      {
+        "wi_id": "abdbf5c8",
+        "symbol": "XTIUSD.DWX",
+        "tf": "D1",
+        "phase": "Q02",
+        "status": "pending",
+        "setfile": "QM5_12842_williams-vol-bo-xti_XTIUSD.DWX_D1_backtest.set"
+      }
+    ],
+    "skipped": []
+  },
+  "q02": {
+    "status": "enqueued",
+    "phase": "Q02",
+    "work_item_id": "abdbf5c8-a67f-4745-96ea-1767a24338f0",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "XTIUSD.DWX",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12842_williams-vol-bo-xti\\sets\\QM5_12842_williams-vol-bo-xti_XTIUSD.DWX_D1_backtest.set",
+    "created_at_utc": "2026-07-01T02:24:49+00:00"
+  },
+  "record_build": {
+    "command": "python tools/strategy_farm/farmctl.py record-build --task-id 9d5be4c3-0e90-4886-91fd-10c835ec34e2 --result-file D:\\QM\\strategy_farm\\artifacts\\builds\\9d5be4c3-0e90-4886-91fd-10c835ec34e2.json",
+    "recorded": true,
+    "new_status": "done",
+    "smoke_result": "deferred_p2_smoke",
+    "next_action_hint": "Q02 auto-enqueued (1 work_items); worker daemons will dispatch on next tick"
+  }
+}
