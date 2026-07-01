@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12754
 ; ea_slug:      eia-wti-hurr-fade
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   4bca1fffe9435b760343c7faa37fa4c92228dadaf38caf68633665d689bd6b47
+; build_hash:   1ce5d0f136994d31d07f07bd86939e3b1dd194b31fabe79714473ace90b2b822
 ; author:       Development
 ; date:         2026-06-28
 ;==========================================================

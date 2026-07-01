@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12759
 ; ea_slug:      wti-roll-relief
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   4eae07a7f9a7536f0456ef13810b81bd07e90f843351a1f78390998e81cd4896
+; build_hash:   31204343423422a18db8f0acefdf50d0aeef94636e9533cfa325237725c24ae3
 ; author:       Development
 ; date:         2026-06-28
 ;==========================================================
