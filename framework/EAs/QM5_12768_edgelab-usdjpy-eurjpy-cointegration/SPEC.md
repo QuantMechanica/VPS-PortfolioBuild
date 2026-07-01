@@ -127,6 +127,13 @@ basket metadata (`portfolio_scope=basket`, both basket legs, host symbol,
 tester deposit/currency, `RISK_FIXED=1000`, 120 minute basket timeout, and
 priority tracking). No duplicate Q02 row or manual MT5 launch was created.
 
+Q04 requeue note: Q02 completed PASS. The existing Q04 work item
+`190f8061-7947-48b3-b9c2-c7cc3742d877` was requeued in place on 2026-07-01
+after the prior retry returned `INFRA_FAIL` from fold F1
+`NO_HISTORY/REPORT_MISSING` output while F2 and F3 produced valid reports. No
+duplicate Q04 row or manual MT5 launch was created; the row is pending for the
+paced worker fleet.
+
 ---
 
 ## Revision History
@@ -136,5 +143,6 @@ priority tracking). No duplicate Q02 row or manual MT5 launch was created.
 | v1 | 2026-06-29 | Initial rank-21 next-unbuilt FX cointegration basket build | Built from the 12764 two-leg JPY-cross basket pattern |
 | v1-q02 | 2026-06-29 | Compile/build-check PASS and Q02 enqueued | Pending logical-basket work item 93909a80-8ce6-4e95-be28-889f8dc17a7d |
 | v1-q02-payload | 2026-06-29 | Repaired existing pending Q02 payload | Added full basket/runtime metadata in place; duplicate guard left one pending/active logical Q02 row |
+| v1-q04-requeue | 2026-07-01 | Requeued existing Q04 row after infra invalid summary | Q04 work item 190f8061-7947-48b3-b9c2-c7cc3742d877 pending; no duplicate row inserted |
 
 

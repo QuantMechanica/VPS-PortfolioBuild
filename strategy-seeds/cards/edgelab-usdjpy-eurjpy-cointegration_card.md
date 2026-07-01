@@ -25,8 +25,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02
-last_updated: 2026-06-29
+pipeline_phase: Q04_REQUEUED
+last_updated: 2026-07-01
 g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-requested in-house 66-pair FX scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS USDJPY.DWX and EURJPY.DWX data exist in scan universe; R4 PASS no ML/grid/martingale."
 expected_pf: 0.98
 expected_dd_pct: 30.0
@@ -173,4 +173,5 @@ gates.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-06-29 | initial rank-21 next-unbuilt FX cointegration basket card | G0 | APPROVED |
-| v1-q02 | 2026-06-29 | build task 50b8f15b-11ff-4cf3-ae31-4f8534ce5a82 recorded and logical-basket Q02 enqueued | Q02 | PENDING 93909a80-8ce6-4e95-be28-889f8dc17a7d |
+| v1-q02 | 2026-06-29 | build task 50b8f15b-11ff-4cf3-ae31-4f8534ce5a82 recorded and logical-basket Q02 enqueued | Q02 | PASS 93909a80-8ce6-4e95-be28-889f8dc17a7d |
+| v1-q04-requeue | 2026-07-01 | existing Q04 row requeued after infra invalid summary on F1 history/report output | Q04 | PENDING 190f8061-7947-48b3-b9c2-c7cc3742d877 |
