@@ -11,13 +11,14 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   13c357eb50adcab41cff306bafec4321d2ae99f26e5ccd82f3bd69f23db74a8a
+; build_hash:   3a515b66066eeefc5a1396ebaff854dad99243a47e69faa400e5691ab1e30c86
 ; author:       Development
 ; date:         2026-07-01
 ;==========================================================
 qm_magic_slot_offset=0
 qm_rng_seed=99
-RISK_FIXED=1000
+; JPY tester account preserves roughly the canonical USD 1000 fixed-risk budget.
+RISK_FIXED=150000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 qm_stress_reject_probability=0.1000

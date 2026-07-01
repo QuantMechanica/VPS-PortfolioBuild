@@ -58,8 +58,9 @@ built.
 **Explicitly not for:**
 - Other `.DWX` symbols. This card is a fixed two-leg FX-cross basket, not a portable multi-pair strategy.
 
-USDJPY.DWX is selected as conversion history for both JPY-cross legs under
-USD-denominated tester accounting.
+The basket runs under JPY-denominated tester accounting. Both legs are
+JPY-quoted, so the test does not rely on a separate bare-symbol conversion
+history path.
 
 ---
 
@@ -106,13 +107,15 @@ Rerun excerpt for this candidate:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 - Q10) | RISK_FIXED | USD 1,000 per basket trade |
+| Backtest (Q02 - Q10) | RISK_FIXED | JPY 150,000 per basket trade, roughly USD 1,000 equivalent |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio |
 
-Q02 tester note: the manifest pins `tester_currency=USD` and
-`tester_deposit=100000`. The logical basket backtest setfile uses the canonical
-`RISK_FIXED=1000`, with `RISK_PERCENT=0`.
+Q02 tester note: the manifest pins `tester_currency=JPY` and
+`tester_deposit=15000000`. The logical basket backtest setfile uses
+`RISK_FIXED=150000`, with `RISK_PERCENT=0`, to preserve roughly the canonical
+USD 1,000 fixed-risk budget without forcing MT5 to fetch bare `USDJPY`
+conversion history.
 
 Q02 was auto-enqueued by `farmctl record-build` after strict compile and
 build-check passed. No manual MT5 run was launched from this build session; Q02
@@ -126,4 +129,5 @@ is delegated to paced farm workers through the logical basket setfile.
 |---|---|---|---|
 | v1 | 2026-06-29 | Initial rank-26 next-unbuilt FX cointegration basket build | Built from the 12764 two-leg JPY-cross basket pattern |
 | v2 | 2026-06-29 | Q02 handoff | Build task c5c43c78-2d18-465d-9a9a-c0cc078bbd05 recorded; Q02 work item 080ebc00-3644-4719-b6e6-6f855604f6b6 active on T2 |
+| v3 | 2026-07-01 | JPY tester-account repair | Q07 seed failures traced to bare USDJPY conversion-history timeouts; manifest and setfiles switched to JPY accounting; Q02 task ccd2d5bd-1d18-4c42-a888-63dadfe9b6a3 / work item 54c04ac1-e5f7-4060-ae60-6814cb930fd5 pending |
 

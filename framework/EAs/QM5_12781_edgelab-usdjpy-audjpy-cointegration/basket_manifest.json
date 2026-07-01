@@ -2,15 +2,15 @@
   "logical_symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1",
   "host_symbol": "USDJPY.DWX",
   "host_timeframe": "D1",
-  "tester_currency": "USD",
-  "tester_deposit": 100000,
+  "tester_currency": "JPY",
+  "tester_deposit": 15000000,
   "basket_symbols": [
     "USDJPY.DWX",
     "AUDJPY.DWX"
   ],
   "notes": [
     "Two-leg USDJPY/AUDJPY market-neutral FX cointegration candidate from the 2026-06-09 66-pair scan rerun. It did not clear the original hard survivor bar; DEV Sharpe was positive but OOS net Sharpe was negative. It is the next unbuilt rank-26 tail pair after the existing 12532/12533/12624/12712/12723/12728/12731/12732/12735/12739/12747/12749/12751/12756/12758/12760/12762/12764/12765/12766/12768/12770/12772/12776/12778 baskets.",
-    "Q02 uses USD tester currency and the canonical RISK_FIXED=1000 budget. USDJPY.DWX and AUDJPY.DWX are the traded legs; USDJPY.DWX also provides the USD-account conversion path for AUDJPY accounting."
+    "Q02 uses JPY tester currency, tester_deposit=15000000, and RISK_FIXED=150000 JPY to preserve roughly the canonical USD 1000 fixed-risk budget. USDJPY.DWX and AUDJPY.DWX are the traded legs; the JPY account avoids bare USDJPY conversion-history pulls for this JPY-quoted basket."
   ]
 }
 
