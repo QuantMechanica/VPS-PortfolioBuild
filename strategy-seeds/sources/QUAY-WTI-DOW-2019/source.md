@@ -10,6 +10,7 @@ uri: https://doi.org/10.1007/s00500-019-04329-0
 cards_extracted:
   - wti-mon-fade
   - wti-thu-prem
+  - brent-thu-prem
 ---
 
 # Quayyum WTI Day-Of-Week Source
@@ -28,6 +29,11 @@ seasonality. The already-built `wti-mon-fade` card isolates the reported weak
 Monday side. This extraction adds a separate WTI Thursday premium test: buy
 only the broker-calendar Thursday D1 bar and flatten on the next non-Thursday
 D1 bar or a one-day stale-position guard.
+
+The `brent-thu-prem` extraction uses the same peer-reviewed day-of-week
+lineage but ports the Thursday premium to the Brent CFD proxy `XBRUSD.DWX`.
+It is deliberately separate from the WTI Thursday build so Q02 can decide
+whether the Brent benchmark adds usable non-XNG energy exposure.
 
 No source performance number is imported into the portfolio. The QM pipeline
 must validate the deterministic Darwinex `XTIUSD.DWX` realization in Q02 and
