@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_12862_XAU_XAG_RSPREAD_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg XAU/XAG precious-metals return-spread reversion basket from the approved CME-XAUXAG-RSPREAD-2026 card. The EA runs from the XAUUSD.DWX host setfile and reads both D1 close series to compute log-return spread over a fixed lookback. Q02 must evaluate the logical basket, not the standalone legs."
+  ]
+}
