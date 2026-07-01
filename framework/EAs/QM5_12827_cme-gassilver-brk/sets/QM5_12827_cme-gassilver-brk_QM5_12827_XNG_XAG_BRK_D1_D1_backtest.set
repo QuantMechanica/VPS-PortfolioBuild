@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12827
 ; ea_slug:      cme-gassilver-brk
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   108334ea6a05c0e9f2f614a5e14319ab0cf4e1190ce3125f22711f7d98bf9c57
+; build_hash:   c5001b6ef1e7d864e7b11c2a4d76fe0148f44503b0f4e557e40cfb61ea4eb247
 ; author:       Development
 ; date:         2026-06-30
 ;==========================================================
