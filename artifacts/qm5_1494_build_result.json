@@ -1,0 +1,159 @@
+{
+  "task_id": "be15888d-e6b9-4ec8-b35b-3438baaf4d88",
+  "ea_id": "QM5_1494",
+  "slug": "dorsey-mass-index-reversal-bulge-h4",
+  "branch": "agents/board-advisor",
+  "date": "2026-07-01",
+  "source_id": "6e967762-b26d-59a3-b076-35c17f2e7c36",
+  "strategy": "H4 Dorsey Mass Index reversal bulge across FX, indices, XAU, and XTI",
+  "host_timeframe": "H4",
+  "symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "AUDUSD.DWX",
+    "USDCAD.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "GDAXI.DWX",
+    "UK100.DWX",
+    "XAUUSD.DWX",
+    "XTIUSD.DWX"
+  ],
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "risk_fixed": 1000,
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 16,
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_1494_dorsey-mass-index-reversal-bulge-h4",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1494_dorsey-mass-index-reversal-bulge-h4\\QM5_1494_dorsey-mass-index-reversal-bulge-h4.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1494_dorsey-mass-index-reversal-bulge-h4\\QM5_1494_dorsey-mass-index-reversal-bulge-h4.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1494_dorsey-mass-index-reversal-bulge-h4\\SPEC.md",
+  "spec_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1494_dorsey-mass-index-reversal-bulge-h4\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_1494_dorsey-mass-index-reversal-bulge-h4.md",
+  "runtime_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1494_dorsey-mass-index-reversal-bulge-h4.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1494_dorsey-mass-index-reversal-bulge-h4\\sets\\QM5_1494_dorsey-mass-index-reversal-bulge-h4_EURUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1494_dorsey-mass-index-reversal-bulge-h4\\sets\\QM5_1494_dorsey-mass-index-reversal-bulge-h4_NDX.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1494_dorsey-mass-index-reversal-bulge-h4\\sets\\QM5_1494_dorsey-mass-index-reversal-bulge-h4_XAUUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1494_dorsey-mass-index-reversal-bulge-h4\\sets\\QM5_1494_dorsey-mass-index-reversal-bulge-h4_XTIUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1494_dorsey-mass-index-reversal-bulge-h4\\sets\\QM5_1494_dorsey-mass-index-reversal-bulge-h4_GBPUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1494_dorsey-mass-index-reversal-bulge-h4\\sets\\QM5_1494_dorsey-mass-index-reversal-bulge-h4_USDJPY.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1494_dorsey-mass-index-reversal-bulge-h4\\sets\\QM5_1494_dorsey-mass-index-reversal-bulge-h4_AUDUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1494_dorsey-mass-index-reversal-bulge-h4\\sets\\QM5_1494_dorsey-mass-index-reversal-bulge-h4_USDCAD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1494_dorsey-mass-index-reversal-bulge-h4\\sets\\QM5_1494_dorsey-mass-index-reversal-bulge-h4_WS30.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1494_dorsey-mass-index-reversal-bulge-h4\\sets\\QM5_1494_dorsey-mass-index-reversal-bulge-h4_GDAXI.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1494_dorsey-mass-index-reversal-bulge-h4\\sets\\QM5_1494_dorsey-mass-index-reversal-bulge-h4_UK100.DWX_H4_backtest.set"
+  ],
+  "magic_base": 14940000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "AUDUSD.DWX",
+    "USDCAD.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "GDAXI.DWX",
+    "UK100.DWX",
+    "XAUUSD.DWX",
+    "XTIUSD.DWX"
+  ],
+  "compile": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_1494_dorsey-mass-index-reversal-bulge-h4 -Strict",
+    "result": "PASS",
+    "reason": "fresh build, 0 compiler warnings",
+    "errors": 0,
+    "warnings": 0,
+    "log": "C:\\QM\\repo\\framework\\build\\compile\\20260701_010055\\QM5_1494_dorsey-mass-index-reversal-bulge-h4.compile.log",
+    "ex5": "C:\\QM\\repo\\framework\\EAs\\QM5_1494_dorsey-mass-index-reversal-bulge-h4\\QM5_1494_dorsey-mass-index-reversal-bulge-h4.ex5",
+    "ex5_size_bytes": 301076
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_1494_dorsey-mass-index-reversal-bulge-h4 -Strict",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report": "D:\\QM\\reports\\framework\\21\\build_check_20260701_010055.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings in framework/include/QM; build_check failures=0."
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_1494_dorsey-mass-index-reversal-bulge-h4",
+    "result": "PASS"
+  },
+  "q02": {
+    "status": "enqueued",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "stage1_pending": [
+      {
+        "work_item_id_prefix": "27bbb3b2",
+        "symbol": "EURUSD.DWX",
+        "setfile": "QM5_1494_dorsey-mass-index-reversal-bulge-h4_EURUSD.DWX_H4_backtest.set"
+      },
+      {
+        "work_item_id_prefix": "92c768e2",
+        "symbol": "NDX.DWX",
+        "setfile": "QM5_1494_dorsey-mass-index-reversal-bulge-h4_NDX.DWX_H4_backtest.set"
+      },
+      {
+        "work_item_id_prefix": "7ca8ebdf",
+        "symbol": "XAUUSD.DWX",
+        "setfile": "QM5_1494_dorsey-mass-index-reversal-bulge-h4_XAUUSD.DWX_H4_backtest.set"
+      }
+    ],
+    "deferred_symbols": [
+      "XTIUSD.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX",
+      "AUDUSD.DWX",
+      "USDCAD.DWX",
+      "WS30.DWX",
+      "GDAXI.DWX",
+      "UK100.DWX"
+    ],
+    "record_build": {
+      "task_status": "done",
+      "auto_q02_result": "3 staged, 8 deferred by standard Q02 diversity staging"
+    }
+  },
+  "hashes": {
+    "mq5_sha256": "A1C26D36294EA6B4FFD5F42D233DF55411A90FA41190DE3272DF5F8AAE692A2B",
+    "ex5_sha256": "D575B0286EA1C56E2FF1374F8F41A8747DA02A6EBF85A85C303A22F92F754430",
+    "spec_sha256": "523B443D75E152B625CC974E734D9E8FBB5440AC43A06D5BEE060BB2504B7B33",
+    "card_sha256": "FB91F4CFBDDA6FB2D06FDAE8C678A22C6061E7CC5D249D129DC0800E0D1BEDC3",
+    "magic_numbers_sha256": "307F67192883092EFDBA0AB8658D082E864CBCE39D4F22AACE6DE448E7C80028",
+    "setfile_sha256": {
+      "AUDUSD.DWX": "97F3F87ADFE07B23EEF097A7E50C68484EA762DF7809766C22BEF7A567AAB20C",
+      "EURUSD.DWX": "182F4E7C029486B5B927F3234B9EF67ED562ADF1B4FBE931553B9D67A5996EF5",
+      "GBPUSD.DWX": "5494D53E444ED6450524678998FCFCFC7E1983404605F8B8D20ACD5F453D95AB",
+      "GDAXI.DWX": "12494616B4528247E185D440A374438E39506BADD554C23DC0F7AAFED583CCFF",
+      "NDX.DWX": "4E4DF8D55A969381C37FA8420CDE32C983C4F754F0F7C81EF5026FFB6741FC82",
+      "UK100.DWX": "F0BBE4DBA7416E12E73F115CC38530ADCE0D6DCC0307BA132A520C3F9D1B8415",
+      "USDCAD.DWX": "9A1B309782D3BBCD3853F267AFB9D6FD60B1BC8D1B994E41256204D143888CBC",
+      "USDJPY.DWX": "95FFBF643EA53DB94C3B51518447E153F1ADEEE8A2BE4192D270DD36846BB588",
+      "WS30.DWX": "285FBEA0A187E0DA694CE2E805DF26777A1A031EFDBF4AC38C2E6A9A8D8E8DA5",
+      "XAUUSD.DWX": "9EC66C6C90F36479580E47FB08242F10318FAAA6B19DAD8D03873EC819D5DFDC",
+      "XTIUSD.DWX": "02B1191147166A8ADB2309BD56BF7DDAFEED46C5A5A056240DD69882D2330640"
+    }
+  },
+  "non_duplicate_reason": "Approved QM5_1494 card had no EA directory, no ex5, no Q02 work_items, and a stale registry slug allocation. This build repairs that allocation and mechanizes a Dorsey Mass Index H4 volatility-reversal edge across five FX majors plus XTI, indices, and XAU.",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet Q02 handles the first MT5 backtest; no manual smoke/backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "t_live_manifest_touched": false
+  },
+  "notes": "Built one non-duplicate structural diverse sleeve from an APPROVED card. No live, T_Live, AutoTrading, T_Live manifest, or portfolio gate artifacts touched."
+}
