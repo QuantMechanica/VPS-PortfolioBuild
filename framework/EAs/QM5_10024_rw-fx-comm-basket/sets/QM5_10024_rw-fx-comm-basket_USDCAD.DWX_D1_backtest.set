@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        10024
 ; ea_slug:      rw-fx-comm-basket
@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   0435e64a91ce2243043c5b66c98469a038c2b8e7c401ee98258c5bd63920a17f
 ; author:       Development
 ; date:         2026-05-23
 ;==========================================================

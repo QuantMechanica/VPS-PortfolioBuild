@@ -159,12 +159,12 @@ bool Strategy_DataAllows()
       if(!Strategy_HasDwxSuffix(symbol))
          return false;
       // Note: SymbolSelect is called in OnInit for all legs.
-      if(iTime(symbol, PERIOD_D1, 1) <= 0)
+      if(iTime(symbol, PERIOD_D1, 1) <= 0) // perf-allowed: one closed D1 timestamp probe per leg during new-bar state refresh to detect missing basket history.
          return false;
       if(strategy_max_spread_points > 0)
         {
          const long spread = SymbolInfoInteger(symbol, SYMBOL_SPREAD);
-         if(spread <= 0 || spread > strategy_max_spread_points)
+         if(spread > strategy_max_spread_points)
             return false;
         }
      }
