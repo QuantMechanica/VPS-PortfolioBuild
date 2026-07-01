@@ -32,3 +32,9 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+strategy_london_start_hhmm=630
+strategy_london_end_hhmm=830
+strategy_overlap_start_hhmm=930
+strategy_overlap_end_hhmm=1000
+strategy_flat_hhmm=2100
+

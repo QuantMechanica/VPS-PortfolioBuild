@@ -54,7 +54,10 @@ input int    strategy_pullback_ema_period   = 20;
 input int    strategy_pullback_atr_period   = 14;
 input double strategy_pullback_boundary_atr = 0.25;
 input double strategy_pullback_max_chase_atr = 1.00;
-input int    strategy_pullback_min_legs     = 4;
+input int    strategy_pullback_volume_lookback = 20;
+input double strategy_pullback_volume_max_ratio = 1.00;
+input int    strategy_pullback_min_legs     = 7;
+input int    strategy_pending_expiration_minutes = 60;
 
 int  g_active_currency_idx = -1;
 int  g_active_direction    = 0;
@@ -109,6 +112,26 @@ bool QM12821_HasOwnedPositions()
    return QM_BasketEquityStop_HasOwnedPositions();
   }
 
+bool QM12821_HasOwnedPendingOrders()
+  {
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0)
+         continue;
+      const long magic = OrderGetInteger(ORDER_MAGIC);
+      const string symbol = OrderGetString(ORDER_SYMBOL);
+      if(QM_FrameworkOwnsMagicSymbol(magic, symbol))
+         return true;
+     }
+   return false;
+  }
+
+bool QM12821_HasOwnedExposure()
+  {
+   return (QM12821_HasOwnedPositions() || QM12821_HasOwnedPendingOrders());
+  }
+
 void QM12821_ResetActiveCycle()
   {
    g_active_currency_idx = -1;
@@ -118,9 +141,22 @@ void QM12821_ResetActiveCycle()
 int QM12821_CloseAllOwned(const QM_ExitReason reason)
   {
    const int closed = QM_BasketEquityStop_CloseAllOwned(reason);
-   if(closed > 0)
+   int canceled = 0;
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0)
+         continue;
+      const long magic = OrderGetInteger(ORDER_MAGIC);
+      const string symbol = OrderGetString(ORDER_SYMBOL);
+      if(!QM_FrameworkOwnsMagicSymbol(magic, symbol))
+         continue;
+      if(QM_TM_RemovePendingOrder(ticket, "twin_basket_cancel"))
+         ++canceled;
+     }
+   if(closed > 0 || canceled > 0)
       QM12821_ResetActiveCycle();
-   return closed;
+   return closed + canceled;
   }
 
 double QM12821_BaseRiskMoney()
@@ -181,11 +217,14 @@ bool QM12821_EvaluateSignal(QM_CSMReading &d1,
   }
 
 bool QM12821_PullbackGateAllows(const QM_BasketPlan &plan,
+                                double &pending_prices[],
                                 int &accepted_count,
                                 int &extended_count)
   {
    accepted_count = 0;
    extended_count = 0;
+   ArrayResize(pending_prices, plan.leg_count);
+   ArrayInitialize(pending_prices, 0.0);
    if(plan.leg_count <= 0)
       return false;
 
@@ -199,21 +238,30 @@ bool QM12821_PullbackGateAllows(const QM_BasketPlan &plan,
                                       strategy_pullback_atr_period,
                                       strategy_pullback_boundary_atr,
                                       strategy_pullback_max_chase_atr,
+                                      strategy_pullback_volume_lookback,
+                                      strategy_pullback_volume_max_ratio,
                                       result,
                                       1))
          continue;
       if(result.extended)
          ++extended_count;
       if(result.accepted)
+        {
+         pending_prices[i] = result.boundary_price;
          ++accepted_count;
+        }
      }
 
    return (accepted_count >= required);
   }
 
-bool QM12821_OpenPlan(const QM_BasketPlan &plan, const double probability)
+bool QM12821_OpenPlan(const QM_BasketPlan &plan,
+                      const double probability,
+                      const double &pending_prices[])
   {
    if(plan.leg_count != QM_BASKET_BUILDER_MAX_LEGS)
+      return false;
+   if(ArraySize(pending_prices) < plan.leg_count)
       return false;
 
    int opened = 0;
@@ -226,19 +274,21 @@ bool QM12821_OpenPlan(const QM_BasketPlan &plan, const double probability)
       const double lots = QM12821_LotsPerLeg(symbol, plan.leg_count);
       if(lots <= 0.0)
          continue;
+      if(pending_prices[i] <= 0.0)
+         continue;
 
       QM_BasketOrderRequest req;
       req.symbol = symbol;
-      req.type = plan.legs[i].type;
-      req.price = 0.0;
+      req.type = QM_OrderTypeIsBuy(plan.legs[i].type) ? QM_BUY_LIMIT : QM_SELL_LIMIT;
+      req.price = pending_prices[i];
       req.sl = 0.0;
       req.tp = 0.0;
       req.lots = lots;
       req.reason = StringFormat("TWIN_MODE_C_%s_%s",
                                 QM_CSM_CCY[plan.currency_idx],
-                                plan.direction > 0 ? "STRONG" : "WEAK");
+                               plan.direction > 0 ? "STRONG" : "WEAK");
       req.symbol_slot = plan.legs[i].symbol_slot;
-      req.expiration_seconds = 0;
+      req.expiration_seconds = MathMax(1, strategy_pending_expiration_minutes) * 60;
 
       ulong ticket = 0;
       if(QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, strategy_deviation_points, req, ticket))
@@ -258,7 +308,7 @@ bool QM12821_OpenPlan(const QM_BasketPlan &plan, const double probability)
    g_active_direction = plan.direction;
    g_cycle_stopped = false;
    QM_LogEvent(QM_INFO, "BASKET_CYCLE_OPEN",
-               StringFormat("{\"currency\":\"%s\",\"direction\":%d,\"legs\":%d,\"probability\":%.4f}",
+               StringFormat("{\"currency\":\"%s\",\"direction\":%d,\"legs\":%d,\"probability\":%.4f,\"order_type\":\"limit_at_m30_boundary\"}",
                             QM_CSM_CCY[plan.currency_idx],
                             plan.direction,
                             plan.leg_count,
@@ -268,7 +318,7 @@ bool QM12821_OpenPlan(const QM_BasketPlan &plan, const double probability)
 
 void QM12821_CheckBasketRisk()
   {
-   if(!QM12821_HasOwnedPositions())
+   if(!QM12821_HasOwnedExposure())
      {
       QM12821_ResetActiveCycle();
       g_cycle_stopped = false;
@@ -279,9 +329,12 @@ void QM12821_CheckBasketRisk()
      {
       const int closed = QM12821_CloseAllOwned(QM_EXIT_TIME_STOP);
       if(closed > 0)
-         QM_LogEvent(QM_INFO, "BASKET_FLAT_TIME", StringFormat("{\"closed\":%d}", closed));
+         QM_LogEvent(QM_INFO, "BASKET_FLAT_TIME", StringFormat("{\"closed_or_canceled\":%d}", closed));
       return;
      }
+
+   if(!QM12821_HasOwnedPositions())
+      return;
 
    QM_ExitReason reason = QM_EXIT_STRATEGY;
    double pnl = 0.0;
@@ -305,7 +358,7 @@ void QM12821_CheckBasketRisk()
 
 void QM12821_CloseOnSignalShift()
   {
-   if(!QM12821_HasOwnedPositions())
+   if(!QM12821_HasOwnedExposure())
       return;
 
    QM_CSMReading d1;
@@ -352,7 +405,7 @@ bool Strategy_NoTradeFilter()
       return true;
    if(qm_magic_slot_offset != 0)
       return true;
-   if(QM12821_HasOwnedPositions())
+   if(QM12821_HasOwnedExposure())
       return false;
    if(g_cycle_stopped)
       return true;
@@ -371,7 +424,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(QM12821_HasOwnedPositions())
+   if(QM12821_HasOwnedExposure())
      {
       QM12821_CloseOnSignalShift();
       return false;
@@ -388,7 +441,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    int pullback_ok = 0;
    int extended = 0;
-   if(!QM12821_PullbackGateAllows(plan, pullback_ok, extended))
+   double pending_prices[];
+   if(!QM12821_PullbackGateAllows(plan, pending_prices, pullback_ok, extended))
      {
       QM_LogEvent(QM_INFO, "BASKET_PULLBACK_REJECT",
                   StringFormat("{\"currency\":\"%s\",\"direction\":%d,\"accepted\":%d,\"extended\":%d,\"required\":%d}",
@@ -400,7 +454,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
      }
 
-   QM12821_OpenPlan(plan, probability);
+   QM12821_OpenPlan(plan, probability, pending_prices);
    return false;
   }
 
