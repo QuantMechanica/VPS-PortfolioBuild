@@ -120,7 +120,7 @@ bool Strategy_EnsureBasketScope()
    if(g_basket_scope_ready)
       return true;
 
-   // USDJPY is both the host leg and the USD-account conversion path for AUDJPY.
+   // Both traded legs are JPY-quoted; tester accounting is pinned in basket_manifest.json.
    string allowed[2] = {"USDJPY.DWX", "AUDJPY.DWX"};
    for(int i = 0; i < 2; ++i)
       SymbolSelect(allowed[i], true);

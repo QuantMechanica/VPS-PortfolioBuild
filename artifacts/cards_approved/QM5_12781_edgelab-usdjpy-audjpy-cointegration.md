@@ -107,7 +107,8 @@ tail test only; Q02+ must reject it if live-cost mechanics confirm no edge.
 ## Filters
 
 - Host chart must be USDJPY.DWX or AUDJPY.DWX on D1/H1, with slot 0 used for the logical host.
-- USDJPY.DWX is also the USD-account conversion path for AUDJPY accounting.
+- Backtests use JPY tester accounting for the two JPY-quoted legs, avoiding a
+  separate bare USDJPY conversion-history dependency.
 - No pyramiding, averaging, grid, martingale, partial close, or trailing stop.
 - Framework news, kill-switch, magic, and Friday-close guards remain active.
 
@@ -151,10 +152,11 @@ judge.
 
 ## Risk
 
-Backtests use V5 `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
-`PORTFOLIO_WEIGHT=1`. No live risk is authorized by this card; any future live
-burn-in would be assigned only by the standard portfolio pipeline after all
-gates.
+Backtests use JPY tester accounting with V5 `RISK_FIXED=150000`,
+`RISK_PERCENT=0`, and `PORTFOLIO_WEIGHT=1`, preserving roughly the canonical
+USD 1,000 fixed-risk budget. No live risk is authorized by this card; any
+future live burn-in would be assigned only by the standard portfolio pipeline
+after all gates.
 
 ## Strategy Allowability Check
 
@@ -179,3 +181,4 @@ gates.
 | v3 | 2026-06-30 | Q04 logical-basket walk-forward completed after parser/history repair | Q04 | PASS_SOFT f8e8a8d4-48c8-4c30-a7f0-2eace7bb8ccb |
 | v4 | 2026-06-30 | Q05 medium stress completed on the logical basket with PF 1.07 and 2.29% drawdown | Q05 | PASS dcf243dd-7948-414b-a1ad-9481f83a5445 |
 | v5 | 2026-07-01 | Q06 harsh-stress infra failure `summary_missing`/exit 3221225794 requeued in place with basket manifest payload; no duplicate row created | Q06 | PENDING f1147d03-5c9b-4874-ba86-0406e1a90bdc |
+| v6 | 2026-07-01 | tester account switched to JPY after Q07 seed failures exposed bare USDJPY conversion-history timeouts | Q02 | PENDING 54c04ac1-e5f7-4060-ae60-6814cb930fd5 |

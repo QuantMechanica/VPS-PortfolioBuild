@@ -1,0 +1,62 @@
+{
+  "date": "2026-07-01",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_12781",
+  "ea_label": "QM5_12781_edgelab-usdjpy-audjpy-cointegration",
+  "logical_symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1",
+  "selection": {
+    "new_scan_pair_available": false,
+    "reason": "All 29 positive-hedge candidates from the 2026-06-09 66-pair FX cointegration rerun were already built; QM5_12532 and QM5_12533 were not Q02-blocked.",
+    "fallback_target": "advance existing FX basket QM5_12781"
+  },
+  "prior_state": {
+    "q02": "PASS 080ebc00-3644-4719-b6e6-6f855604f6b6",
+    "q04": "PASS_SOFT f8e8a8d4-48c8-4c30-a7f0-2eace7bb8ccb",
+    "q05": "PASS dcf243dd-7948-414b-a1ad-9481f83a5445",
+    "q06": "PASS f1147d03-5c9b-4874-ba86-0406e1a90bdc",
+    "q07": "INFRA_FAIL 38226031-b41f-4f03-ab86-d1697ca5e203"
+  },
+  "root_cause": {
+    "summary": "Q07 seeds 99 and 7 failed from incomplete reports after MT5 attempted bare USDJPY conversion-history synchronization under USD tester accounting.",
+    "aggregate_path": "D:/QM/reports/work_items/38226031-b41f-4f03-ab86-d1697ca5e203/QM5_12781/Q07/QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1/aggregate.json"
+  },
+  "repair": {
+    "tester_currency": "JPY",
+    "tester_deposit": 15000000,
+    "risk_fixed": 150000,
+    "risk_percent": 0,
+    "rationale": "Both traded basket legs are JPY-quoted, so JPY tester accounting avoids bare USDJPY conversion-history fetches while preserving roughly the canonical USD 1000 fixed-risk budget."
+  },
+  "validation": [
+    {
+      "command": "python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py -q",
+      "result": "PASS",
+      "summary": "5 passed in 0.06s"
+    },
+    {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_12781_edgelab-usdjpy-audjpy-cointegration --verbose",
+      "result": "PASS",
+      "summary": "BASKET_OK; n_violations=0"
+    },
+    {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12781_edgelab-usdjpy-audjpy-cointegration -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "summary": "build_check.result=PASS; failures=0; warnings=16",
+      "report": "D:/QM/reports/framework/21/build_check_20260701_125834.json"
+    }
+  ],
+  "queue": {
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12781_jpy_account_q02_requeue_20260701T145510Z.sqlite",
+    "review_task_id": "b92031f7-23eb-4b49-b71d-62ee20607184",
+    "q02_task_id": "ccd2d5bd-1d18-4c42-a888-63dadfe9b6a3",
+    "q02_work_item_id": "54c04ac1-e5f7-4060-ae60-6814cb930fd5",
+    "status": "pending"
+  },
+  "guardrails": {
+    "manual_mt5_backtest_launched": false,
+    "auto_trading_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "strategy_logic_touched": false
+  }
+}
