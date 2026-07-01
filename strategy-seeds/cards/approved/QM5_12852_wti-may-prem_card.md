@@ -33,7 +33,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
+pipeline_phase: Q02
 last_updated: 2026-07-01
 g0_approval_reasoning: "R1 PASS single research-paper source URL; R2 PASS deterministic May D1 long/time-flat rule with ATR stop; R3 PASS XTIUSD.DWX available; R4 PASS no ML/grid/martingale/external data."
 expected_pf: 1.08
@@ -136,3 +136,5 @@ sleeves, XTI/XNG baskets, WTI/Brent baskets, metal-ratio baskets, and
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-01 | APPROVED | this card |
+| Q01 Build Validation | 2026-07-01 | PASS | `D:\QM\strategy_farm\artifacts\builds\71d97b86-77aa-42f1-84bc-f40e273279ac.json` |
+| Q02 Baseline Screening | 2026-07-01 | QUEUED | `D:\QM\strategy_farm\state\farm_state.sqlite` work item `fa3c2903-90db-4417-bc9b-98f631caa827` |
