@@ -3716,3 +3716,6 @@ QM5_1492,connors-vix-spike-reversal-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,acti
 12841,brent-thu-prem,QUAY-WTI-DOW-2019_BRENT_S01,active,Codex,2026-07-01
 12842,williams-vol-bo-xti,SRC03_S01_XTI_20260701,active,Codex,2026-07-01
 12843,wti-brent-spread,CME-WTI-BRENT-SPREAD-2026_S01,active,Codex,2026-07-01
+12844,commodity-trend-crude,balke-davey-slate-20260630,active,Research,2026-07-01
+12845,trend-tracer-crude,balke-davey-slate-20260630,active,Research,2026-07-01
+12846,euro-night-mr-eurusd,balke-davey-slate-20260630,active,Research,2026-07-01
