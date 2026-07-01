@@ -53,23 +53,16 @@ bool Strategy_IsUsdJpyD1()
    return (_Symbol == "USDJPY.DWX" && _Period == PERIOD_D1 && qm_magic_slot_offset == 0);
   }
 
-int Strategy_MonthKey(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 100 + dt.mon;
-  }
-
 bool Strategy_IsMonthlyRebalanceBar()
   {
    if(_Period != PERIOD_D1)
       return false;
 
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 calendar gate behind framework new-bar.
-   const datetime prior_bar = iTime(_Symbol, PERIOD_D1, 1);   // perf-allowed: D1 calendar gate behind framework new-bar.
-   if(current_bar <= 0 || prior_bar <= 0)
+   const int current_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   const int prior_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 1);
+   if(current_key <= 0 || prior_key <= 0)
       return false;
-   return Strategy_MonthKey(current_bar) != Strategy_MonthKey(prior_bar);
+   return current_key != prior_key;
   }
 
 bool Strategy_CurrentPosition(ulong &ticket, int &direction)
@@ -190,8 +183,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!Strategy_IsMonthlyRebalanceBar())
       return false;
 
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 monthly de-dupe behind new-bar gate.
-   const int rebalance_key = Strategy_MonthKey(current_bar);
+   const int rebalance_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
    if(rebalance_key <= 0 || rebalance_key == g_last_entry_rebalance_key)
       return false;
 
