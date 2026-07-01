@@ -1,0 +1,89 @@
+{
+  "ea_id": "QM5_12728",
+  "slug": "edgelab-nzdusd-gbpjpy-cointegration",
+  "selected_pair": "NZDUSD~GBPJPY",
+  "logical_symbol": "QM5_12728_NZDUSD_GBPJPY_COINTEGRATION_D1",
+  "mission_scope": "Advance an existing FX market-neutral cointegration basket because the registered EdgeLab FX cointegration scan candidates are already built and QM5_12532/QM5_12533 are not Q02-blocked.",
+  "preflight": {
+    "controlling_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "method_source": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+    "card_path": "strategy-seeds/cards/edgelab-nzdusd-gbpjpy-cointegration_card.md",
+    "ea_dir": "framework/EAs/QM5_12728_edgelab-nzdusd-gbpjpy-cointegration",
+    "basket_manifest": "framework/EAs/QM5_12728_edgelab-nzdusd-gbpjpy-cointegration/basket_manifest.json",
+    "unbuilt_registered_edgelab_cointegration_pairs_found": 0,
+    "qm5_12532_current_state": "Q02 PASS, Q04 PASS, later Q05 INFRA_FAIL with INCOMPLETE_RUNS/TIMEOUT class; not Q02-blocked.",
+    "qm5_12533_current_state": "Q02 PASS, later Q04 FAIL; not Q02-blocked.",
+    "target_state_before_action": {
+      "Q02": {
+        "work_item_id": "14a6ae04-aad9-4561-bb0d-d7e350a83925",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      "latest_Q04_before_action": {
+        "work_item_id": "b661cbc1-414a-4655-91c1-262a017c7f77",
+        "status": "done",
+        "verdict": "INFRA_FAIL",
+        "reason": "F2 invalid_summary:BARS_ZERO,EMPTY_EXPERT,EMPTY_SYMBOL,HISTORY_CONTEXT_INVALID,INCOMPLETE_RUNS,M0_1970_PERIOD,NO_HISTORY,RUN_STATUS_INVALID after F1 completed with PF 0.4074."
+      }
+    },
+    "duplicate_pending_or_active_q04_before": 0,
+    "cpu_ceiling_avoidance": "Did not requeue QM5_12532 Q05 because the latest aggregate is an INCOMPLETE_RUNS/TIMEOUT post-Q04 stress run, matching the mission stop condition for CPU-ceiling paths."
+  },
+  "queue_action": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12728 --phase Q04",
+    "result": "requeued_existing_row",
+    "created_rows": 0,
+    "skipped_rows": 0,
+    "requeued_work_item_id": "6a1a390b-7380-407e-a75d-6c64cec9a63f",
+    "phase": "Q04",
+    "symbol": "QM5_12728_NZDUSD_GBPJPY_COINTEGRATION_D1",
+    "status_after": "pending",
+    "verdict_after": null,
+    "claimed_by_after": null,
+    "evidence_path_after": null,
+    "updated_at_utc": "2026-07-01T17:32:02+00:00",
+    "archived_report_root_on_requeue": "D:/QM/reports/work_items/6a1a390b-7380-407e-a75d-6c64cec9a63f.requeued_20260701T1732020000"
+  },
+  "payload_after": {
+    "portfolio_scope": "basket",
+    "host_symbol": "NZDUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_symbols": [
+      "NZDUSD.DWX",
+      "GBPJPY.DWX"
+    ],
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "setfile_path": "framework/EAs/QM5_12728_edgelab-nzdusd-gbpjpy-cointegration/sets/QM5_12728_edgelab-nzdusd-gbpjpy-cointegration_QM5_12728_NZDUSD_GBPJPY_COINTEGRATION_D1_D1_backtest.set"
+  },
+  "verification": [
+    {
+      "check": "farmctl work-items --ea QM5_12728",
+      "result": "PASS",
+      "summary": "Q02 has a done/PASS logical basket row; Q04 has exactly one pending row and one older done/INFRA_FAIL cold-history retry row."
+    },
+    {
+      "check": "direct SQLite duplicate guard",
+      "result": "PASS",
+      "summary": "COUNT(*) for QM5_12728 Q04 rows with status in pending/active is 1."
+    },
+    {
+      "check": "risk mode",
+      "result": "PASS",
+      "summary": "Canonical logical-basket backtest setfile keeps RISK_FIXED=1000 and RISK_PERCENT=0."
+    }
+  ],
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
