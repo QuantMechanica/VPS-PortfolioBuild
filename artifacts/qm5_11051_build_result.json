@@ -1,0 +1,110 @@
+{
+  "task_id": "a0175a7d-088c-45ac-b170-2f6d26f3894d",
+  "ea_id": "QM5_11051",
+  "ea_dir": "framework/EAs/QM5_11051_pst-volatten-break",
+  "ea_label": "QM5_11051_pst-volatten-break",
+  "slug": "pst-volatten-break",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11051_pst-volatten-break.md",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11051_pst-volatten-break\\QM5_11051_pst-volatten-break.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11051_pst-volatten-break\\QM5_11051_pst-volatten-break.ex5",
+  "magic_base": 110510000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "XAUUSD.DWX",
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11051_pst-volatten-break\\sets\\QM5_11051_pst-volatten-break_EURUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11051_pst-volatten-break\\sets\\QM5_11051_pst-volatten-break_GBPUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11051_pst-volatten-break\\sets\\QM5_11051_pst-volatten-break_USDJPY.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11051_pst-volatten-break\\sets\\QM5_11051_pst-volatten-break_NDX.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11051_pst-volatten-break\\sets\\QM5_11051_pst-volatten-break_WS30.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11051_pst-volatten-break\\sets\\QM5_11051_pst-volatten-break_XAUUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11051_pst-volatten-break\\sets\\QM5_11051_pst-volatten-break_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11051_pst-volatten-break\\SPEC.md",
+  "build_check_passed": true,
+  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260701_170951.json",
+  "build_check_failures": 0,
+  "build_check_warnings": 17,
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 1,
+  "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260701_170430\\QM5_11051_pst-volatten-break.compile.log",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "backtest_cpu_ceiling_active_metatester_T1_T2_T3_T4_T5_observed_2026-07-01T17:06Z",
+  "blocked_reason": null,
+  "open_questions": [
+    "Q02 stage-1 enqueue will intentionally select a three-symbol diversified wave and defer the remainder per farmctl _stage_q02_setfiles."
+  ],
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_11051",
+    "enqueued": [
+      {
+        "setfile": "QM5_11051_pst-volatten-break_EURUSD.DWX_D1_backtest.set",
+        "symbol": "EURUSD.DWX",
+        "tf": "D1",
+        "wi_id": "e07cb163"
+      },
+      {
+        "setfile": "QM5_11051_pst-volatten-break_NDX.DWX_D1_backtest.set",
+        "symbol": "NDX.DWX",
+        "tf": "D1",
+        "wi_id": "345a3b05"
+      },
+      {
+        "setfile": "QM5_11051_pst-volatten-break_XAUUSD.DWX_D1_backtest.set",
+        "symbol": "XAUUSD.DWX",
+        "tf": "D1",
+        "wi_id": "516cc3b3"
+      }
+    ],
+    "skipped": [
+      {
+        "reason": "staged_deferred_symbol",
+        "setfile": "QM5_11051_pst-volatten-break_GBPUSD.DWX_D1_backtest.set",
+        "symbol": "GBPUSD.DWX"
+      },
+      {
+        "reason": "staged_deferred_symbol",
+        "setfile": "QM5_11051_pst-volatten-break_USDJPY.DWX_D1_backtest.set",
+        "symbol": "USDJPY.DWX"
+      },
+      {
+        "reason": "staged_deferred_symbol",
+        "setfile": "QM5_11051_pst-volatten-break_WS30.DWX_D1_backtest.set",
+        "symbol": "WS30.DWX"
+      },
+      {
+        "reason": "staged_deferred_symbol",
+        "setfile": "QM5_11051_pst-volatten-break_XTIUSD.DWX_D1_backtest.set",
+        "symbol": "XTIUSD.DWX"
+      }
+    ]
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "guardrail_validation": {
+    "command": "python tools/strategy_farm/validate_build_guardrails.py framework/EAs/QM5_11051_pst-volatten-break",
+    "result": "PASS"
+  },
+  "scope_validation": {
+    "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_11051_pst-volatten-break --json",
+    "result": "SINGLE_SYMBOL_OK"
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "notes": "Recovered an approved high-diversity D1 Rob Carver/pysystemtrade volatility-attenuated breakout EA. Fix was scoped to the MQL5 CopySpread buffer type; generated explicit RISK_FIXED backtest setfiles for FX, index, metal, and energy symbols."
+}
