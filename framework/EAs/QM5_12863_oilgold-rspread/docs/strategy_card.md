@@ -1,44 +1,34 @@
 ---
-ea_id: QM5_12862
-slug: xauxag-rspread
+ea_id: QM5_12863
+slug: oilgold-rspread
 type: strategy
-strategy_id: CME-XAUXAG-RSPREAD-2026
-source_id: CME-XAUXAG-RSPREAD-2026
-source_citation: "CME Group Gold & Silver Ratio Spread lesson; CME Group Spread Trading Opportunities with Precious Metals; Chan, Ernest P. Algorithmic Trading, Wiley, 2013, pair-spread mean-reversion template."
+strategy_id: CME-OIL-GOLD-RATIO-2024_S03
+source_id: CME-OIL-GOLD-RATIO-2024
+source_citation: "CME Group. Through the Lens of Gold. 2024. URL https://www.cmegroup.com/articles/2024/through-the-lens-of-gold.html"
 source_citations:
-  - type: exchange_education
-    citation: "CME Group. Gold & Silver Ratio Spread."
-    location: "https://www.cmegroup.com/education/lessons/gold-and-silver-ratio-spread-trade"
+  - type: exchange_article
+    citation: "CME Group. Through the Lens of Gold. 2024."
+    location: "https://www.cmegroup.com/articles/2024/through-the-lens-of-gold.html"
     quality_tier: A
     role: primary
-  - type: exchange_education
-    citation: "CME Group. Spread Trading Opportunities with Precious Metals."
-    location: "https://www.cmegroup.com/education/articles-and-reports/spread-trading-opportunities-with-precious-metals"
-    quality_tier: A
-    role: structural_context
-  - type: book
-    citation: "Chan, Ernest P. Algorithmic Trading: Winning Strategies and Their Rationale. Wiley, 2013."
-    location: "Pair-spread mean-reversion template lineage."
-    quality_tier: A
-    role: implementation_template
 sources:
-  - "[[sources/CME-XAUXAG-RSPREAD-2026]]"
+  - "[[sources/CME-OIL-GOLD-RATIO-2024]]"
 concepts:
-  - "[[concepts/gold-silver-relative-value]]"
-  - "[[concepts/pair-spread-mean-reversion]]"
-  - "[[concepts/return-spread-zscore]]"
+  - "[[concepts/oil-gold-ratio]]"
+  - "[[concepts/relative-return-shock]]"
+  - "[[concepts/market-neutral-basket]]"
 indicators:
   - "[[indicators/rolling-zscore]]"
   - "[[indicators/atr]]"
-strategy_type_flags: [market-neutral-basket, precious-metals-relative-value, return-spread-zscore, mean-reversion-exit, atr-hard-stop, time-stop, low-frequency]
-target_symbols: [XAUUSD.DWX, XAGUSD.DWX]
-primary_target_symbols: [XAUUSD.DWX, XAGUSD.DWX]
-markets: [XAUUSD.DWX, XAGUSD.DWX]
+strategy_type_flags: [market-neutral-basket, oil-gold-relative-value, return-spread-zscore, mean-reversion-exit, atr-hard-stop, time-stop, low-frequency]
+target_symbols: [XTIUSD.DWX, XAUUSD.DWX]
+primary_target_symbols: [XTIUSD.DWX, XAUUSD.DWX]
+markets: [XTIUSD.DWX, XAUUSD.DWX]
 timeframes: [D1]
-logical_symbol: QM5_12862_XAU_XAG_RSPREAD_D1
+logical_symbol: QM5_12863_XTI_XAU_RSPREAD_D1
 single_symbol_only: false
 period: D1
-expected_trade_frequency: "Low-frequency D1 XAU/XAG return-spread z-score reversion; estimate 6-14 paired packages/year before Q02 validates history and fills."
+expected_trade_frequency: "Low-frequency D1 XTI/XAU return-spread z-score reversion; estimate 6-14 paired packages/year before Q02 validates history and fills."
 expected_trades_per_year_per_symbol: 10
 g0_status: APPROVED
 status: APPROVED
@@ -49,78 +39,79 @@ r4_ml_forbidden: PASS
 pipeline_phase: Q02
 last_updated: 2026-07-01
 expected_pf: 1.08
-expected_dd_pct: 18.0
-risk_class: medium-high
+expected_dd_pct: 22.0
+risk_class: high
 ml_required: false
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
 hard_rules_at_risk: [basket_execution, friday_close, magic_schema, risk_mode_dual]
-g0_approval_reasoning: "R1 PASS official CME gold/silver ratio and precious-metals spread references plus Chan/Wiley pair-spread implementation lineage; R2 PASS deterministic D1 return-spread z-score entry, mean exit, max-hold exit, spread caps, and ATR hard stops; R3 PASS XAUUSD.DWX and XAGUSD.DWX are in the DWX symbol matrix; R4 PASS no ML/grid/martingale/external runtime feed."
+g0_approval_reasoning: "R1 PASS single CME exchange source packet; R2 PASS deterministic D1 oil-minus-gold return-spread z-score entry, mean exit, max-hold exit, spread caps, and ATR hard stops; R3 PASS XTIUSD.DWX and XAUUSD.DWX are in the DWX symbol matrix; R4 PASS no ML/grid/martingale/external runtime feed."
 ---
 
-# XAU/XAG Return-Spread Reversion
+# Oil/Gold Return-Spread Reversion
 
 ## Source
 
-- Primary reference: CME Group, "Gold & Silver Ratio Spread".
-- Structural context: CME Group, "Spread Trading Opportunities with Precious
-  Metals".
-- Implementation lineage: Chan, Ernest P. (2013), *Algorithmic Trading:
-  Winning Strategies and Their Rationale*, Wiley, pair-spread mean reversion.
+- Source: [[sources/CME-OIL-GOLD-RATIO-2024]]
+- Primary citation: CME Group, "Through the Lens of Gold", 2024, URL
+  https://www.cmegroup.com/articles/2024/through-the-lens-of-gold.html.
 
 ## Concept
 
-CME documents gold/silver as a traded relative-value spread. This card keeps
-that exposure market-neutral, but deliberately avoids another absolute
-gold/silver price-ratio sleeve. Instead it measures short fixed-window relative
-return divergence:
+CME frames crude oil through gold as a relative-value lens rather than an
+outright oil forecast. This card keeps that exposure market-neutral and avoids
+another absolute oil/gold price-ratio sleeve. It measures short fixed-window
+relative return divergence:
 
-`return_spread = ln(XAU_t / XAU_t-N) - beta * ln(XAG_t / XAG_t-N)`
+`return_spread = ln(XTI_t / XTI_t-N) - beta * ln(XAU_t / XAU_t-N)`
 
 The current return spread is standardized against recent completed-D1 history.
-If gold has overrun silver over the return window, the basket sells gold and
-buys silver. If silver has overrun gold, the basket buys gold and sells silver.
-The hypothesis is short-horizon relative-return snapback inside a structural
-metals pair, not outright gold direction.
+If WTI has overrun gold over the return window, the basket sells WTI and buys
+gold. If gold has overrun WTI, the basket buys WTI and sells gold. The thesis is
+short-horizon relative-return snapback inside a structural oil/gold pair, not
+outright WTI trend and not outright gold exposure.
 
 This is deliberately different from:
 
-- `QM5_12577_cme-xauxag-ratio`: that EA fades the absolute XAU/XAG log price
+- `QM5_12604_cme-oilgold-ratio`: that EA fades the absolute XTI/XAU log price
   ratio level. This card fades a short-window return-spread shock.
-- `QM5_12724_cme-xauxag-brk`: that EA follows ratio breakouts. This card is
-  contrarian after return-spread dislocation.
-- Directional XAU/XAG trend, seasonal, ORB, or pullback sleeves: every entry is
-  a paired package with both metal legs.
-- `QM5_12567_cum-rsi2-commodity`: no RSI, oscillator pullback, ML, grid,
-  martingale, or adaptive online parameter logic is used.
-- Index, WTI, XNG, and XTI/XNG sleeves: this is a precious-metals relative-value
-  package and should be evaluated as a logical basket, not two standalone legs.
+- `QM5_12605_cme-oilgold-brk`: that EA follows oil/gold ratio breakouts. This
+  card is contrarian after return-spread dislocation.
+- `QM5_12840_xti-xng-rspread`: that card trades oil versus natural gas; this
+  card trades oil versus gold.
+- `QM5_12860_wti-brent-rshock`: that card trades two crude benchmarks; this
+  card trades energy versus monetary-metal relative value.
+- `QM5_12862_xauxag-rspread`: that card is intra-metals; this card introduces
+  WTI-relative exposure.
+- Directional WTI, XNG, XAU, index, calendar, inventory, roll, and
+  `QM5_12567_cum-rsi2-commodity` sleeves: every entry is a paired package and
+  uses no RSI, oscillator pullback, ML, grid, martingale, or external feed.
 
 ## Markets And Timeframe
 
-- Logical symbol: `QM5_12862_XAU_XAG_RSPREAD_D1`.
-- Host symbol: `XAUUSD.DWX`.
-- Second leg: `XAGUSD.DWX`.
+- Logical symbol: `QM5_12863_XTI_XAU_RSPREAD_D1`.
+- Host symbol: `XTIUSD.DWX`.
+- Second leg: `XAUUSD.DWX`.
 - Period: D1.
 - Expected package frequency: about 6-14 paired packages/year before Q02.
 - Backtest risk mode: `RISK_FIXED`.
 - Runtime data: Darwinex MT5 D1 OHLC, spread, ATR, broker calendar, and V5
-  framework state only. No CME feed, futures curve, CFTC data, CSV, API,
-  analyst forecast, alternative data, or ML model.
+  framework state only. No CME feed, futures curve, CFTC data, inventory data,
+  CSV, API, analyst forecast, alternative data, or ML model.
 
 ## Entry Rules
 
 - Evaluate only on a new D1 host bar after both completed D1 close series are
   available.
 - Compute the latest `strategy_return_lookback_d1` D1 log return for
-  `XAUUSD.DWX` and `XAGUSD.DWX`.
-- Compute `return_spread = return_XAU - beta * return_XAG`.
+  `XTIUSD.DWX` and `XAUUSD.DWX`.
+- Compute `return_spread = return_XTI - beta * return_XAU`.
 - Standardize the return spread using the last `strategy_z_lookback_d1`
   completed return-spread observations.
-- If z-score is above `strategy_entry_z`, gold has outperformed silver sharply:
-  sell `XAUUSD.DWX` and buy `XAGUSD.DWX`.
-- If z-score is below negative `strategy_entry_z`, silver has outperformed gold
-  sharply: buy `XAUUSD.DWX` and sell `XAGUSD.DWX`.
+- If z-score is above `strategy_entry_z`, WTI has outperformed gold sharply:
+  sell `XTIUSD.DWX` and buy `XAUUSD.DWX`.
+- If z-score is below negative `strategy_entry_z`, gold has outperformed WTI
+  sharply: buy `XTIUSD.DWX` and sell `XAUUSD.DWX`.
 - No entry if either leg has an open position for this EA magic.
 - No entry if either leg exceeds its spread cap.
 
@@ -136,7 +127,7 @@ This is deliberately different from:
 
 ## Filters
 
-- Only trade from an `XAUUSD.DWX` D1 host chart.
+- Only trade from an `XTIUSD.DWX` D1 host chart.
 - Magic slot offset must be 0 on the host.
 - Skip entries when either D1 history series, ATR, spread, or symbol metadata is
   unavailable.
@@ -145,7 +136,7 @@ This is deliberately different from:
 ## Trade Management Rules
 
 - Two-leg basket only.
-- Symmetric long/short precious-metals relative-value package.
+- Symmetric long/short oil/gold relative-value package.
 - No pyramiding.
 - No gridding.
 - No martingale.
@@ -174,53 +165,51 @@ This is deliberately different from:
   default: 20
   sweep_range: [14, 20, 30]
 - name: strategy_atr_sl_mult
-  default: 2.5
-  sweep_range: [2.0, 2.5, 3.5]
+  default: 3.0
+  sweep_range: [2.0, 3.0, 4.0]
 - name: strategy_max_hold_days
   default: 20
   sweep_range: [10, 20, 30]
+- name: strategy_xti_max_spread_pts
+  default: 1000
+  sweep_range: [700, 1000, 1500]
 - name: strategy_xau_max_spread_pts
   default: 500
   sweep_range: [300, 500, 800]
-- name: strategy_xag_max_spread_pts
-  default: 200
-  sweep_range: [100, 200, 400]
 - name: strategy_deviation_points
   default: 20
   sweep_range: [10, 20, 50]
 
 ## Author Claims
 
-The CME sources establish gold/silver as a standard relative-value spread and
-precious-metals spread context. The Chan source supplies the generic mechanical
-pair-spread mean-reversion template. This card imports no performance claim.
-Q02 and later phases must validate or reject the mechanical rule on Darwinex
-`XAUUSD.DWX` and `XAGUSD.DWX` bars.
+The CME source establishes the oil/gold relative-value lens. This card imports
+no source performance claim. Q02 and later phases must validate or reject the
+mechanical rule on Darwinex `XTIUSD.DWX` and `XAUUSD.DWX` bars.
 
 ## Initial Risk Profile
 
 - expected_pf: 1.08.
-- expected_dd_pct: 18.
+- expected_dd_pct: 22.
 - expected_trade_frequency: approximately 6-14 paired packages/year.
-- risk_class: medium-high because metal leg volatility and basket execution
-  quality both need Q02 proof.
+- risk_class: high because WTI gaps, gold hedge behavior, and basket execution
+  quality all need Q02 proof.
 - gridding: false.
 - scalping: false.
 - ml_required: false.
 
 ## Strategy Allowability Check
 
-- [x] R1 reputable source: official CME gold/silver ratio and precious-metals
-  spread references plus Chan/Wiley pair-spread implementation lineage.
+- [x] R1 reputable source: single CME exchange article source packet.
 - [x] R2 mechanical: fixed D1 return-spread z-score entry, normalization exit,
   time stop, spread caps, and ATR hard stops.
-- [x] R3 testable: `XAUUSD.DWX` and `XAGUSD.DWX` exist in the DWX symbol
+- [x] R3 testable: `XTIUSD.DWX` and `XAUUSD.DWX` exist in the DWX symbol
   universe and require OHLC only.
 - [x] R4 compliant: no ML, adaptive PnL fitting, grid, martingale, external
   runtime feed, or more than one package per magic.
-- [x] Non-duplicate: this is XAU/XAG return-spread reversion, not XAU/XAG
-  price-ratio level reversion, XAU/XAG ratio breakout, commodity RSI, or
-  directional metal exposure.
+- [x] Non-duplicate: this is XTI/XAU return-spread reversion, not XTI/XAU
+  price-ratio level reversion, oil/gold ratio breakout, XTI/XNG relative
+  value, WTI/Brent return shock, XAU/XAG return-spread, commodity RSI, or
+  directional oil/gold exposure.
 
 ## Risk
 
@@ -234,7 +223,7 @@ gate.
 
 - no_trade: host/timeframe guard, magic-slot guard, parameter guard, spread
   caps, return-spread data sufficiency, and valid lot/ATR checks.
-- trade_entry: D1 standardized XAU/XAG return-spread reversion.
+- trade_entry: D1 standardized XTI/XAU return-spread reversion.
 - trade_management: z-score mean exit, max-hold stale-package exit, orphan leg
   cleanup, and Friday close.
 - trade_close: hard ATR stop plus deterministic package close rules.
@@ -243,12 +232,12 @@ gate.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
-| v1 | 2026-07-01 | initial XAU/XAG return-spread basket build | Q02 | ENQUEUED |
+| v1 | 2026-07-01 | initial XTI/XAU return-spread basket build | Q02 | ENQUEUE_PENDING |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-01 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-01 | PASS | `artifacts/qm5_12862_build_result.json` |
-| Q02 Baseline Screening | 2026-07-01 | QUEUED | `D:\QM\strategy_farm\state\farm_state.sqlite` work item `350833a1-7065-48c7-8acb-df836d718667` |
+| Q01 Build Validation | TBD | TBD | TBD |
+| Q02 Baseline Screening | TBD | ENQUEUE_PENDING | TBD |

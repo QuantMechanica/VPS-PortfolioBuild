@@ -14195,6 +14195,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9574,demark-td-anti-diff-3bar-h4,12,UK100.DWX,95740012,2026-07-01,Codex,active
 12862,xauxag-rspread,0,XAUUSD.DWX,128620000,2026-07-01,Codex,active
 12862,xauxag-rspread,1,XAGUSD.DWX,128620001,2026-07-01,Codex,active
+12863,oilgold-rspread,0,XTIUSD.DWX,128630000,2026-07-01,Codex,active
+12863,oilgold-rspread,1,XAUUSD.DWX,128630001,2026-07-01,Codex,active
 9400,brooks-failed-outside-outside-h4,0,EURUSD.DWX,94000000,2026-07-01,Codex,active
 9400,brooks-failed-outside-outside-h4,1,GBPUSD.DWX,94000001,2026-07-01,Codex,active
 9400,brooks-failed-outside-outside-h4,2,USDJPY.DWX,94000002,2026-07-01,Codex,active

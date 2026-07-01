@@ -1,23 +1,23 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_12862 XAU XAG Return Spread Reversion"
+#property description "QM5_12863 XTI XAU Return Spread Reversion"
 
 #include <QM/QM_Common.mqh>
 #include <QM/QM_BasketOrder.mqh>
 
 // =============================================================================
-// QM5_12862 - XAU/XAG Return-Spread Reversion
+// QM5_12863 - XTI/XAU Return-Spread Reversion
 // -----------------------------------------------------------------------------
-// D1 two-leg precious-metals basket:
-//   rspread = log(XAU[t] / XAU[t-L]) - beta * log(XAG[t] / XAG[t-L])
-//   z > entry: short return spread = sell gold, buy silver
-//   z < -entry: long return spread = buy gold, sell silver
-// The EA runs from the XAUUSD.DWX host chart and trades both registered legs
+// D1 two-leg oil/gold basket:
+//   rspread = log(XTI[t] / XTI[t-L]) - beta * log(XAU[t] / XAU[t-L])
+//   z > entry: short return spread = sell oil, buy gold
+//   z < -entry: long return spread = buy oil, sell gold
+// The EA runs from the XTIUSD.DWX host chart and trades both registered legs
 // through QM_BasketOrder. Runtime uses MT5 OHLC only; no external feed.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 12862;
+input int    qm_ea_id                   = 12863;
 input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
@@ -47,14 +47,14 @@ input double strategy_beta               = 1.0;
 input double strategy_entry_z            = 2.0;
 input double strategy_exit_z             = 0.4;
 input int    strategy_atr_period_d1      = 20;
-input double strategy_atr_sl_mult        = 2.5;
+input double strategy_atr_sl_mult        = 3.0;
 input int    strategy_max_hold_days      = 20;
+input int    strategy_xti_max_spread_pts = 1000;
 input int    strategy_xau_max_spread_pts = 500;
-input int    strategy_xag_max_spread_pts = 200;
 input int    strategy_deviation_points   = 20;
 
+string   g_leg_xti = "XTIUSD.DWX";
 string   g_leg_xau = "XAUUSD.DWX";
-string   g_leg_xag = "XAGUSD.DWX";
 double   g_spread_z = 0.0;
 double   g_spread_mean = 0.0;
 double   g_spread_sd = 0.0;
@@ -64,25 +64,25 @@ datetime g_last_state_bar = 0;
 
 int Strategy_SlotForSymbol(const string symbol)
   {
-   if(symbol == g_leg_xau)
+   if(symbol == g_leg_xti)
       return 0;
-   if(symbol == g_leg_xag)
+   if(symbol == g_leg_xau)
       return 1;
    return -1;
   }
 
 bool Strategy_IsHostChart()
   {
-   return (_Symbol == g_leg_xau && _Period == PERIOD_D1 && qm_magic_slot_offset == 0);
+   return (_Symbol == g_leg_xti && _Period == PERIOD_D1 && qm_magic_slot_offset == 0);
   }
 
 bool Strategy_SpreadAllowed(const string symbol)
   {
    const long spread_points = SymbolInfoInteger(symbol, SYMBOL_SPREAD);
+   if(symbol == g_leg_xti && strategy_xti_max_spread_pts > 0)
+      return (spread_points <= strategy_xti_max_spread_pts);
    if(symbol == g_leg_xau && strategy_xau_max_spread_pts > 0)
       return (spread_points <= strategy_xau_max_spread_pts);
-   if(symbol == g_leg_xag && strategy_xag_max_spread_pts > 0)
-      return (spread_points <= strategy_xag_max_spread_pts);
    return true;
   }
 
@@ -147,13 +147,13 @@ bool Strategy_RefreshSpreadState()
    const int z_lookback = MathMax(40, strategy_z_lookback_d1);
    const int history_needed = z_lookback + return_lookback + 1;
 
+   double xti[];
    double xau[];
-   double xag[];
+   ArraySetAsSeries(xti, true);
    ArraySetAsSeries(xau, true);
-   ArraySetAsSeries(xag, true);
-   if(CopyClose(g_leg_xau, PERIOD_D1, 1, history_needed, xau) != history_needed) // perf-allowed: called only behind the D1 new-bar gate or close-state refresh.
+   if(CopyClose(g_leg_xti, PERIOD_D1, 1, history_needed, xti) != history_needed) // perf-allowed: called only behind the D1 new-bar gate or close-state refresh.
       return false;
-   if(CopyClose(g_leg_xag, PERIOD_D1, 1, history_needed, xag) != history_needed) // perf-allowed: called only behind the D1 new-bar gate or close-state refresh.
+   if(CopyClose(g_leg_xau, PERIOD_D1, 1, history_needed, xau) != history_needed) // perf-allowed: called only behind the D1 new-bar gate or close-state refresh.
       return false;
 
    double sum = 0.0;
@@ -162,12 +162,12 @@ bool Strategy_RefreshSpreadState()
    for(int i = 0; i < z_lookback; ++i)
      {
       const int past_idx = i + return_lookback;
-      if(xau[i] <= 0.0 || xag[i] <= 0.0 || xau[past_idx] <= 0.0 || xag[past_idx] <= 0.0)
+      if(xti[i] <= 0.0 || xau[i] <= 0.0 || xti[past_idx] <= 0.0 || xau[past_idx] <= 0.0)
          return false;
 
+      const double xti_ret = MathLog(xti[i] / xti[past_idx]);
       const double xau_ret = MathLog(xau[i] / xau[past_idx]);
-      const double xag_ret = MathLog(xag[i] / xag[past_idx]);
-      spreads[i] = xau_ret - strategy_beta * xag_ret;
+      spreads[i] = xti_ret - strategy_beta * xau_ret;
       if(!MathIsValidNumber(spreads[i]))
          return false;
       sum += spreads[i];
@@ -255,21 +255,21 @@ bool Strategy_OpenPair(const int spread_direction)
   {
    if(spread_direction == 0 || Strategy_OpenPairLegCount() > 0)
       return false;
-   if(!Strategy_SpreadAllowed(g_leg_xau) || !Strategy_SpreadAllowed(g_leg_xag))
+   if(!Strategy_SpreadAllowed(g_leg_xti) || !Strategy_SpreadAllowed(g_leg_xau))
       return false;
 
-   const double xau_weight = 1.0;
-   const double xag_weight = MathMax(0.1, MathAbs(strategy_beta));
-   const double weight_sum = xau_weight + xag_weight;
+   const double xti_weight = 1.0;
+   const double xau_weight = MathMax(0.1, MathAbs(strategy_beta));
+   const double weight_sum = xti_weight + xau_weight;
    const bool long_spread = (spread_direction > 0);
-   const QM_OrderType xau_type = long_spread ? QM_BUY : QM_SELL;
-   const QM_OrderType xag_type = long_spread ? QM_SELL : QM_BUY;
-   const string reason = long_spread ? "QM5_12862_LONG_XAU_XAG_RSPREAD"
-                                     : "QM5_12862_SHORT_XAU_XAG_RSPREAD";
+   const QM_OrderType xti_type = long_spread ? QM_BUY : QM_SELL;
+   const QM_OrderType xau_type = long_spread ? QM_SELL : QM_BUY;
+   const string reason = long_spread ? "QM5_12863_LONG_XTI_XAU_RSPREAD"
+                                     : "QM5_12863_SHORT_XTI_XAU_RSPREAD";
 
+   bool xti_ok = Strategy_OpenLeg(g_leg_xti, xti_type, xti_weight, weight_sum, reason);
    bool xau_ok = Strategy_OpenLeg(g_leg_xau, xau_type, xau_weight, weight_sum, reason);
-   bool xag_ok = Strategy_OpenLeg(g_leg_xag, xag_type, xag_weight, weight_sum, reason);
-   if(xau_ok && xag_ok)
+   if(xti_ok && xau_ok)
      {
       g_pair_entry_time = TimeCurrent();
       return true;
@@ -298,7 +298,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_12862_RSPREAD_HOST";
+   req.reason = "QM5_12863_RSPREAD_HOST";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
@@ -362,16 +362,16 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
      {
-      if(!QM_NewsAllowsTrade2(g_leg_xau, broker_time, qm_news_temporal, qm_news_compliance))
+      if(!QM_NewsAllowsTrade2(g_leg_xti, broker_time, qm_news_temporal, qm_news_compliance))
          return true;
-      if(!QM_NewsAllowsTrade2(g_leg_xag, broker_time, qm_news_temporal, qm_news_compliance))
+      if(!QM_NewsAllowsTrade2(g_leg_xau, broker_time, qm_news_temporal, qm_news_compliance))
          return true;
      }
    else
      {
-      if(!QM_NewsAllowsTrade(g_leg_xau, broker_time, qm_news_mode_legacy))
+      if(!QM_NewsAllowsTrade(g_leg_xti, broker_time, qm_news_mode_legacy))
          return true;
-      if(!QM_NewsAllowsTrade(g_leg_xag, broker_time, qm_news_mode_legacy))
+      if(!QM_NewsAllowsTrade(g_leg_xau, broker_time, qm_news_mode_legacy))
          return true;
      }
    return false;
@@ -379,8 +379,8 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
+   SymbolSelect(g_leg_xti, true);
    SymbolSelect(g_leg_xau, true);
-   SymbolSelect(g_leg_xag, true);
 
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
@@ -400,13 +400,13 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   string basket_symbols[2] = {g_leg_xau, g_leg_xag};
+   string basket_symbols[2] = {g_leg_xti, g_leg_xau};
    QM_SymbolGuardInit(basket_symbols);
    QM_BasketWarmupHistory(basket_symbols,
                           PERIOD_D1,
                           MathMax(220, strategy_z_lookback_d1 + strategy_return_lookback_d1 + strategy_atr_period_d1 + 10));
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12862\",\"ea\":\"xauxag-rspread\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12863\",\"ea\":\"oilgold-rspread\"}");
    return INIT_SUCCEEDED;
   }
 

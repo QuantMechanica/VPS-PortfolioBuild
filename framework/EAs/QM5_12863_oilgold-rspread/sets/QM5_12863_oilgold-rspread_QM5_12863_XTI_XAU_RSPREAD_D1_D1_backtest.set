@@ -1,17 +1,17 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
-; ea_id:        12862
-; ea_slug:      xauxag-rspread
+; ea_id:        12863
+; ea_slug:      oilgold-rspread
 ; ea_version:   v5.0
 ; set_version:  s20260701-001
-; symbol:       QM5_12862_XAU_XAG_RSPREAD_D1
-; host_symbol:  XAUUSD.DWX
+; symbol:       QM5_12863_XTI_XAU_RSPREAD_D1
+; host_symbol:  XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   bc2837d5394e03e0c1462bbefabe20a066cd11e21096a700a63c96683b4fcbfb
+; build_hash:   f1765bfc4102580fa1893c4063582b0ff75f823a8819bf5cd0ebe82b4f71a1e5
 ; author:       Development
 ; date:         2026-07-01
 ;==========================================================
@@ -44,8 +44,8 @@ strategy_beta=1.0
 strategy_entry_z=2.0
 strategy_exit_z=0.4
 strategy_atr_period_d1=20
-strategy_atr_sl_mult=2.5
+strategy_atr_sl_mult=3.0
 strategy_max_hold_days=20
+strategy_xti_max_spread_pts=1000
 strategy_xau_max_spread_pts=500
-strategy_xag_max_spread_pts=200
 strategy_deviation_points=20

@@ -18,6 +18,8 @@ https://www.cmegroup.com/articles/2024/through-the-lens-of-gold.html
 
 - `cme-oilgold-ratio`: D1 `XTIUSD.DWX` / `XAUUSD.DWX` log-ratio reversion
   basket.
+- `oilgold-rspread`: D1 `XTIUSD.DWX` / `XAUUSD.DWX` return-spread reversion
+  basket.
 
 ## Research Summary
 
@@ -45,3 +47,6 @@ Runtime logic uses Darwinex MT5 D1 OHLC only.
 - Not the WTI seasonal/news sleeve group: no calendar, OPEC, WPSR, refinery, or
   hurricane rule.
 - Not `QM5_12567_cum-rsi2-commodity`: no RSI or short-horizon pullback logic.
+- `oilgold-rspread` is not a duplicate of the existing oil/gold ratio cards:
+  it fades a fixed-window relative-return shock rather than the absolute
+  oil/gold ratio level or a ratio channel breakout.
