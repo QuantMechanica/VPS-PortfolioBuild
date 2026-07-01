@@ -1,0 +1,116 @@
+{
+  "task_id": "aa213e91-9ae5-4789-9065-118263d03590",
+  "ea_id": "QM5_12863",
+  "slug": "oilgold-rspread",
+  "strategy": "XTI/XAU D1 return-spread reversion basket",
+  "strategy_id": "CME-OIL-GOLD-RATIO-2024_S03",
+  "source_id": "CME-OIL-GOLD-RATIO-2024",
+  "source_links": [
+    "https://www.cmegroup.com/articles/2024/through-the-lens-of-gold.html"
+  ],
+  "symbols": [
+    "XTIUSD.DWX",
+    "XAUUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XTIUSD.DWX",
+    "XAUUSD.DWX"
+  ],
+  "logical_symbol": "QM5_12863_XTI_XAU_RSPREAD_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12863_oilgold-rspread",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12863_oilgold-rspread\\QM5_12863_oilgold-rspread.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12863_oilgold-rspread\\QM5_12863_oilgold-rspread.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12863_oilgold-rspread\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12863_oilgold-rspread.md",
+  "approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12863_oilgold-rspread.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12863_oilgold-rspread.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12863_oilgold-rspread\\basket_manifest.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12863_oilgold-rspread\\sets\\QM5_12863_oilgold-rspread_QM5_12863_XTI_XAU_RSPREAD_D1_D1_backtest.set"
+  ],
+  "setfile_build_hash": "c44740290dade0b39b075499b004f4bcf1d4a12a5d9334a893a6fa0ec8c63458",
+  "mq5_sha256": "ea5dfe7008c240e057c2e21372cc20df91aec957a4a7a06cac47bda2563874b7",
+  "ex5_sha256": "f2d5a07d49271f71655bd355dfd6143b79e29fdebfcf6e9061de7120ff608a9e",
+  "setfile_current_sha256": "5eadf04a6f7d385c231087b00f01317e7fba2ed93abb5b7eb5055051539a2ca2",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic_base": 128630000,
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 128630000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "XAUUSD.DWX",
+        "magic": 128630001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12863_oilgold-rspread/QM5_12863_oilgold-rspread.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260701_203905\\QM5_12863_oilgold-rspread.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260701_203905\\summary.csv",
+    "ex5_size_bytes": 304066,
+    "symbol_scope_verdict": "BASKET_OK"
+  },
+  "build_check": {
+    "command": "framework/scripts/build_check.ps1 -EALabel QM5_12863_oilgold-rspread -RepoRoot C:/QM/repo -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260701_204448.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "validations": {
+    "symbol_scope": "BASKET_OK",
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "magic_registry_rows_added": true
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "afa6e12f-ff10-4758-9f7f-163741bdfb4d",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "QM5_12863_XTI_XAU_RSPREAD_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12863_oilgold-rspread\\sets\\QM5_12863_oilgold-rspread_QM5_12863_XTI_XAU_RSPREAD_D1_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "attempt_count": 0,
+    "created_at_utc": "2026-07-01T20:43:24+00:00",
+    "portfolio_scope": "basket",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "non_duplicate_reason": "XTI/XAU return-spread reversion uses a fixed-window relative-return z-score. It is distinct from QM5_12604 absolute XTI/XAU price-ratio level reversion, QM5_12605 oil/gold ratio breakout, QM5_12840 XTI/XNG return-spread, QM5_12860 WTI/Brent return shock, QM5_12862 XAU/XAG return-spread, commodity RSI logic, directional index, metal, XNG, or WTI sleeves.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false
+  },
+  "notes": "Completed the build for a new low-frequency market-neutral oil/gold relative-value sleeve and prepared it for Q02 via record-build auto-enqueue."
+}
