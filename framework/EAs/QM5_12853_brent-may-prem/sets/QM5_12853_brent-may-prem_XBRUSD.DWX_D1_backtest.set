@@ -1,20 +1,20 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
-; ea_id:        1556
-; ea_slug:      aa-zak-mom12
+; ea_id:        12853
+; ea_slug:      brent-may-prem
 ; ea_version:   v5.0
-; set_version:  s20260627-001
-; symbol:       GBPUSD.DWX
+; set_version:  s20260701-001
+; symbol:       XBRUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   7
+; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b61cafd061a2f81f6089c30a38c98d9c96cfbb63b842f984c94d8520e5bbdf9b
-; author:       Development
-; date:         2026-06-27
+; build_hash:   ada1615acc5500f694c2ae285d12fe24a191782d072054a13fdc9ff936628bc3
+; author:       Codex
+; date:         2026-07-01
 ;==========================================================
-qm_magic_slot_offset=7
+qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
@@ -31,4 +31,9 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\brent-may-prem_card.md
+strategy_entry_month=5
+strategy_atr_sl_mult=2.25
+strategy_max_spread_points=1200
+strategy_atr_period=20
+strategy_max_hold_days=1

@@ -9,6 +9,7 @@ created_by: Codex
 uri: https://www.researchsquare.com/article/rs-2569101/v1.pdf
 cards_extracted:
   - wti-may-prem
+  - brent-may-prem
 ---
 
 # Khan WTI/Brent Seasonality Source
@@ -22,13 +23,14 @@ cards_extracted:
 
 ## Research Use
 
-This source is used for a single WTI month-of-year card. The paper studies daily
-and monthly WTI and Brent crude-oil returns and reports that May has the highest
-average monthly return in the sample, while November and December are the
-weakest months. The QM card isolates the positive May side only.
+This source is used for WTI and Brent month-of-year cards. The paper studies
+daily and monthly WTI and Brent crude-oil returns and reports that May has the
+highest average monthly return in the sample, while November and December are
+the weakest months. The QM cards isolate the positive May side only.
 
-The runtime implementation does not import the paper's performance values. Q02+
-must validate the deterministic rule on Darwinex `XTIUSD.DWX` D1 bars.
+The runtime implementations do not import the paper's performance values. Q02+
+must validate the deterministic rule on Darwinex `XTIUSD.DWX` and `XBRUSD.DWX`
+D1 bars.
 
 ## Guardrails
 
@@ -36,11 +38,12 @@ must validate the deterministic rule on Darwinex `XTIUSD.DWX` D1 bars.
 - No external API calls, CSV feeds, futures curve, inventory data, analyst
   forecast, or discretionary override.
 - No ML, adaptive PnL fitting, grid, or martingale.
-- One position per `XTIUSD.DWX` magic slot.
+- One position per symbol magic slot.
 
 ## R-Rules
 
 - R1 source lineage: PASS. Single research-paper source with URL and source ID.
 - R2 mechanical: PASS. Fixed D1 May entry, ATR stop, and deterministic time exit.
-- R3 data available: PASS. `XTIUSD.DWX` exists in the DWX symbol matrix.
+- R3 data available: PASS. `XTIUSD.DWX` exists in the DWX symbol matrix, and
+  `XBRUSD.DWX` is already locally routed by prior Brent builds.
 - R4 no ML/banned logic: PASS. Deterministic single-position calendar sleeve.
