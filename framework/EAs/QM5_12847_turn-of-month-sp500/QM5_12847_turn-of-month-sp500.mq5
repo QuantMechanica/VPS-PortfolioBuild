@@ -3,7 +3,6 @@
 #property description "QM5_12847 Turn-of-Month SP500 calendar seasonal"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QM5_12847 — Turn-of-Month / Ultimo (SP500 index seasonal)
@@ -70,17 +69,16 @@ void PrecomputeCalendar()
     ArrayResize(g_entry_dates, 0);
     ArrayResize(g_exit_dates, 0);
 
-    int total = Bars(_Symbol, PERIOD_D1);
+    int total = Bars(_Symbol, PERIOD_D1); // perf-allowed
     if(total < 30) return;
 
-    // Closed bars: shifts 1..(total-1). Collect oldest-first.
+    // Closed bars: shifts 1..(total-1). Collect oldest-first (init-time only).
     int n_closed = total - 1;
     datetime all_times[];
     ArrayResize(all_times, n_closed);
 
-    // perf-allowed: init-time scan — not called on-tick
     for(int k = 0; k < n_closed; k++)
-        all_times[k] = iTime(_Symbol, PERIOD_D1, total - 1 - k);
+        all_times[k] = iTime(_Symbol, PERIOD_D1, total - 1 - k); // perf-allowed
 
     // Process one calendar month at a time (oldest first)
     int i = 0;
@@ -152,8 +150,7 @@ bool Strategy_NoTradeFilter()
 // Handles both exit scheduling for open positions and new entry signals.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
-    // perf-allowed: single iTime read for calendar date lookup (bespoke structural logic)
-    datetime bar1_time = iTime(_Symbol, PERIOD_D1, 1);
+    datetime bar1_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed
 
     // If we hold a position, check whether today is the scheduled exit bar
     if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)

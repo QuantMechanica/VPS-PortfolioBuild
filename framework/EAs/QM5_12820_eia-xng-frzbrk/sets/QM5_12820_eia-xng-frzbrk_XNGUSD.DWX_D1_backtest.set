@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12820
 ; ea_slug:      eia-xng-frzbrk
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   cd318609a219c509c572a73116eb09d81dbe72eb4a978cd46485a3d22eed542e
 ; author:       Development
 ; date:         2026-06-30
 ;==========================================================

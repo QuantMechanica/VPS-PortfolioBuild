@@ -1,11 +1,11 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        12836
-; ea_slug:      turnaround-tuesday-ws30
+; ea_id:        12847
+; ea_slug:      turn-of-month-sp500
 ; ea_version:   v5.0
 ; set_version:  s20260701-001
-; symbol:       WS30.DWX
-; timeframe:    H1
+; symbol:       SP500.DWX
+; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
