@@ -1,5 +1,6 @@
 {
   "logical_symbol": "FX8_TWIN_CSM_BASKET_H1",
+  "host_symbol": "EURUSD.DWX",
   "host_timeframe": "H1",
   "basket_symbols": [
     "EURUSD.DWX",
