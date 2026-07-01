@@ -1,0 +1,100 @@
+{
+  "ea_id": "QM5_12728",
+  "slug": "edgelab-nzdusd-gbpjpy-cointegration",
+  "selected_pair": "NZDUSD~GBPJPY",
+  "logical_symbol": "QM5_12728_NZDUSD_GBPJPY_COINTEGRATION_D1",
+  "mission_scope": "Advance an existing FX market-neutral cointegration basket because all allocated EdgeLab FX cointegration scan candidates are already built and QM5_12532/QM5_12533 are not Q02-blocked.",
+  "preflight": {
+    "controlling_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "method_source": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+    "card_path": "strategy-seeds/cards/edgelab-nzdusd-gbpjpy-cointegration_card.md",
+    "ea_dir": "framework/EAs/QM5_12728_edgelab-nzdusd-gbpjpy-cointegration",
+    "basket_manifest": "framework/EAs/QM5_12728_edgelab-nzdusd-gbpjpy-cointegration/basket_manifest.json",
+    "unbuilt_registered_edgelab_cointegration_pairs_found": 0,
+    "qm5_12532_state": "Logical-basket Q02 PASS and Q04 PASS; latest Q05 INFRA_FAIL from INCOMPLETE_RUNS/TIMEOUT CPU-ceiling class, so it was not requeued.",
+    "qm5_12533_state": "Logical-basket Q02 PASS; later Q04 FAIL with completed folds and pooled net PF below floor, so it was not requeued as an infra repair.",
+    "target_state_before_action": {
+      "Q02": {
+        "work_item_id": "14a6ae04-aad9-4561-bb0d-d7e350a83925",
+        "status": "done",
+        "verdict": "PASS"
+      },
+      "Q04_pending": {
+        "work_item_id": "6a1a390b-7380-407e-a75d-6c64cec9a63f",
+        "status": "pending",
+        "claimed_by": null,
+        "priority_track_before": null
+      }
+    }
+  },
+  "queue_action": {
+    "action": "priority_metadata_set_on_existing_q04_work_item",
+    "db_backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12728_q04_priority_20260701T183311Z.sqlite",
+    "work_item_id": "6a1a390b-7380-407e-a75d-6c64cec9a63f",
+    "phase": "Q04",
+    "status_after_priority_update": "pending",
+    "claimed_by_after_priority_update": null,
+    "updated_at_utc": "2026-07-01T18:33:12+00:00",
+    "duplicate_pending_active_q04_after": 1,
+    "created_queue_rows": 0,
+    "payload_updates": {
+      "priority_track": true,
+      "priority_reason": "OWNER 2026-07-01 forex portfolio mission fallback: no unbuilt allocated FX cointegration pair remains; advance existing QM5_12728 Q04 pending basket without duplicate enqueue.",
+      "priority_set_at_utc": "2026-07-01T18:33:12+00:00",
+      "priority_set_by": "Codex agents/board-advisor",
+      "priority_scope": "fallback_advance_existing_forex_card",
+      "db_backup_before_priority": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12728_q04_priority_20260701T183311Z.sqlite"
+    }
+  },
+  "post_validation_state": {
+    "status": "active",
+    "verdict": null,
+    "claimed_by": "T5",
+    "updated_at_utc": "2026-07-01T18:33:54+00:00",
+    "duplicate_pending_active_q04": 1,
+    "note": "Paced farm worker claimed the prioritized Q04 row during verification; no manual MT5 backtest was launched."
+  },
+  "payload_after": {
+    "portfolio_scope": "basket",
+    "host_symbol": "NZDUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_symbols": [
+      "NZDUSD.DWX",
+      "GBPJPY.DWX"
+    ],
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "risk_fixed": 1000,
+    "timeout_min": 120,
+    "from_date": "2018.07.02",
+    "to_date": "2024.12.31",
+    "q04_latest_full_year": 2024
+  },
+  "verification": [
+    {
+      "check": "direct SQLite update verification",
+      "result": "PASS",
+      "summary": "Work item 6a1a390b-7380-407e-a75d-6c64cec9a63f has priority_track=true and was claimed active by T5 after the update."
+    },
+    {
+      "check": "direct SQLite duplicate guard",
+      "result": "PASS",
+      "summary": "Exactly one QM5_12728 Q04 row has status pending or active for logical symbol QM5_12728_NZDUSD_GBPJPY_COINTEGRATION_D1."
+    },
+    {
+      "check": "risk mode",
+      "result": "PASS",
+      "summary": "The existing basket payload remains on the canonical RISK_FIXED=1000 backtest path; no live risk inputs were changed."
+    }
+  ],
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
