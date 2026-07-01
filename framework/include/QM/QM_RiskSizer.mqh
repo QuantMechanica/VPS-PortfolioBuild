@@ -98,8 +98,157 @@ double QM_RiskSizerQuantizeLots(const double raw_lots,
    return quantized;
   }
 
+string QM_RiskSizerUpper(const string value)
+  {
+   string out = value;
+   StringToUpper(out);
+   return out;
+  }
+
+string QM_RiskSizerBaseSymbol(const string symbol)
+  {
+   const string trimmed = QM_RiskSizerUpper(symbol);
+   const int dot = StringFind(trimmed, ".");
+   if(dot > 0)
+      return StringSubstr(trimmed, 0, dot);
+   return trimmed;
+  }
+
+string QM_RiskSizerSymbolSuffix(const string symbol)
+  {
+   const int dot = StringFind(symbol, ".");
+   if(dot >= 0)
+      return QM_RiskSizerUpper(StringSubstr(symbol, dot));
+   return "";
+  }
+
+bool QM_RiskSizerIsFiatCode(const string code)
+  {
+   const string c = QM_RiskSizerUpper(code);
+   return (c == "USD" || c == "EUR" || c == "GBP" || c == "JPY" ||
+           c == "AUD" || c == "NZD" || c == "CAD" || c == "CHF");
+  }
+
+bool QM_RiskSizerReadMidPrice(const string symbol, double &price)
+  {
+   price = 0.0;
+   if(StringLen(symbol) <= 0)
+      return false;
+
+   if(!SymbolInfoInteger(symbol, SYMBOL_SELECT))
+      SymbolSelect(symbol, true);
+
+   const double bid = SymbolInfoDouble(symbol, SYMBOL_BID);
+   const double ask = SymbolInfoDouble(symbol, SYMBOL_ASK);
+   if(bid > 0.0 && ask > 0.0)
+     {
+      price = (bid + ask) * 0.5;
+      return true;
+     }
+   if(ask > 0.0)
+     {
+      price = ask;
+      return true;
+     }
+   if(bid > 0.0)
+     {
+      price = bid;
+      return true;
+     }
+
+   const double last = SymbolInfoDouble(symbol, SYMBOL_LAST);
+   if(last > 0.0)
+     {
+      price = last;
+      return true;
+     }
+   return false;
+  }
+
+bool QM_RiskSizerCurrencyToAccountRate(const string currency,
+                                       const string account_currency,
+                                       const string suffix,
+                                       double &rate)
+  {
+   rate = 0.0;
+   const string ccy = QM_RiskSizerUpper(currency);
+   const string acct = QM_RiskSizerUpper(account_currency);
+   if(ccy == acct)
+     {
+      rate = 1.0;
+      return true;
+     }
+
+   double price = 0.0;
+   const string direct = ccy + acct + suffix;
+   if(QM_RiskSizerReadMidPrice(direct, price) && price > 0.0)
+     {
+      rate = price;
+      return true;
+     }
+
+   const string inverse = acct + ccy + suffix;
+   if(QM_RiskSizerReadMidPrice(inverse, price) && price > 0.0)
+     {
+      rate = 1.0 / price;
+      return true;
+     }
+
+   return false;
+  }
+
+bool QM_RiskSizerReadDwxFxSnapshot(const string symbol, QM_SymbolRiskSnapshot &snapshot)
+  {
+   const string suffix = QM_RiskSizerSymbolSuffix(symbol);
+   if(suffix != ".DWX")
+      return false;
+
+   const string pair = QM_RiskSizerBaseSymbol(symbol);
+   if(StringLen(pair) != 6)
+      return false;
+
+   const string base = StringSubstr(pair, 0, 3);
+   const string quote = StringSubstr(pair, 3, 3);
+   if(!QM_RiskSizerIsFiatCode(base) || !QM_RiskSizerIsFiatCode(quote))
+      return false;
+
+   snapshot.tick_value     = 0.0;
+   snapshot.tick_size      = SymbolInfoDouble(symbol, SYMBOL_TRADE_TICK_SIZE);
+   snapshot.point          = SymbolInfoDouble(symbol, SYMBOL_POINT);
+   snapshot.volume_min     = SymbolInfoDouble(symbol, SYMBOL_VOLUME_MIN);
+   snapshot.volume_max     = SymbolInfoDouble(symbol, SYMBOL_VOLUME_MAX);
+   snapshot.volume_step    = SymbolInfoDouble(symbol, SYMBOL_VOLUME_STEP);
+   snapshot.contract_size  = SymbolInfoDouble(symbol, SYMBOL_TRADE_CONTRACT_SIZE);
+   snapshot.margin_initial = 0.0;
+
+   if(snapshot.point <= 0.0 || snapshot.volume_min <= 0.0 ||
+      snapshot.volume_max <= 0.0 || snapshot.volume_step <= 0.0 ||
+      snapshot.contract_size <= 0.0)
+      return false;
+   if(snapshot.tick_size <= 0.0)
+      snapshot.tick_size = snapshot.point;
+
+   const string account_currency = QM_RiskSizerUpper(AccountInfoString(ACCOUNT_CURRENCY));
+   double quote_to_account = 0.0;
+   if(!QM_RiskSizerCurrencyToAccountRate(quote, account_currency, suffix, quote_to_account))
+      return false;
+
+   snapshot.tick_value = snapshot.contract_size * snapshot.tick_size * quote_to_account;
+
+   double base_to_account = 0.0;
+   const double leverage = (double)AccountInfoInteger(ACCOUNT_LEVERAGE);
+   if(leverage > 0.0 &&
+      QM_RiskSizerCurrencyToAccountRate(base, account_currency, suffix, base_to_account))
+      snapshot.margin_initial = (snapshot.contract_size * base_to_account) / leverage;
+
+   return (snapshot.tick_value > 0.0);
+  }
+
 bool QM_RiskSizerReadSymbolSnapshot(const string symbol, QM_SymbolRiskSnapshot &snapshot)
   {
+   if(QM_RiskSizerReadDwxFxSnapshot(symbol, snapshot))
+      return true;
+
    snapshot.tick_value     = SymbolInfoDouble(symbol, SYMBOL_TRADE_TICK_VALUE);
    snapshot.tick_size      = SymbolInfoDouble(symbol, SYMBOL_TRADE_TICK_SIZE);
    snapshot.point          = SymbolInfoDouble(symbol, SYMBOL_POINT);
