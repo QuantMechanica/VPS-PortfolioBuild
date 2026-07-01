@@ -14157,3 +14157,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9401,demark-tdprl-fade-h4,10,NDX.DWX,94010010,2026-07-01,Codex,active
 9401,demark-tdprl-fade-h4,11,WS30.DWX,94010011,2026-07-01,Codex,active
 9401,demark-tdprl-fade-h4,12,UK100.DWX,94010012,2026-07-01,Codex,active
+12852,wti-may-prem,0,XTIUSD.DWX,128520000,2026-07-01,Codex,active
