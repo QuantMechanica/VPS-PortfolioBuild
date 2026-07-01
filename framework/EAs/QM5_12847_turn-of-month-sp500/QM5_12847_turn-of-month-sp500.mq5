@@ -3,7 +3,6 @@
 #property description "QM5_12847 Turn-of-the-Month / Ultimo (SP500 index seasonal)"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QM5_12847 — Turn-of-the-Month / Ultimo
@@ -46,6 +45,8 @@ input int    entry_td_from_end   = 5;    // Nth-last trading day of month to ent
 input int    exit_td_of_next     = 3;    // Mth trading day of NEXT month to exit (card default 3; sweep 2/3/4)
 input int    regime_sma_period   = 200;  // SMA period for bull-regime filter (D1)
 input bool   use_regime_filter   = true; // true = only trade when price > SMA (card default; sweep on/off)
+input int    sl_atr_period       = 14;   // ATR period for protective stop
+input double sl_atr_mult         = 3.0;  // ATR multiplier below entry
 
 // -----------------------------------------------------------------------------
 // File-scope calendar state (advanced once per new D1 bar)
@@ -144,10 +145,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(open_count > 0)     return false;
    if(g_entered_this_mon) return false;
 
-   // Regime filter: price > N-bar SMA on D1
+   // Regime filter: price > N-bar SMA on D1 (SMA, not EMA — per card spec)
    if(use_regime_filter)
      {
-      if(QM_Sig_Price_Above_MA(_Symbol, PERIOD_D1, regime_sma_period, 0, 1) <= 0)
+      const double sma200 = QM_SMA(_Symbol, PERIOD_D1, regime_sma_period, 1);
+      const double cls1   = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed
+      if(sma200 <= 0.0 || cls1 <= 0.0 || cls1 <= sma200)
          return false;
      }
 
@@ -160,14 +163,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(bid <= 0.0)
       return false;
 
-   // 3x ATR(14) protective stop below entry — safety net; primary exit is time stop
-   const double atr14 = QM_ATR(_Symbol, PERIOD_D1, 14, 1);
-   if(atr14 <= 0.0)
+   // ATR-based protective stop; primary exit is time stop
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, sl_atr_period, 1);
+   if(atr <= 0.0)
       return false;
 
    req.type        = QM_BUY;
    req.price       = 0.0;
-   req.sl          = bid - 3.0 * atr14;
+   req.sl          = bid - sl_atr_mult * atr;
    req.tp          = 0.0;
    req.reason      = "TOM_ENTRY_D1";
    req.symbol_slot = qm_magic_slot_offset;

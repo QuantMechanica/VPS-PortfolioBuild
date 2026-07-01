@@ -24,6 +24,8 @@ Entry fires at the close of the Nth-last trading day of the calendar month (defa
 | `exit_td_of_next` | 3 | 2–4 | Mth trading day of the NEXT calendar month to close the position |
 | `regime_sma_period` | 200 | 100–300 | SMA period (D1) for the bull-regime filter; only enter when close > SMA |
 | `use_regime_filter` | true | on/off | Toggle the 200-SMA regime gate on or off |
+| `sl_atr_period` | 14 | 7–21 | ATR period for protective stop (D1); primary exit is the time stop |
+| `sl_atr_mult` | 3.0 | 2.0–5.0 | ATR multiplier below entry price for the protective SL |
 
 ---
 
