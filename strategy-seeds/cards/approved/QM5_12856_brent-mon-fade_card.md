@@ -192,5 +192,5 @@ rule on Darwinex `XBRUSD.DWX` bars.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-01 | APPROVED | this card |
-| Q01 Build Validation | TBD | TBD | TBD |
-| Q02 Baseline Screening | TBD | QUEUED | TBD |
+| Q01 Build Validation | 2026-07-01 | PASS | `D:\QM\reports\framework\21\build_check_20260701_140718.json` |
+| Q02 Baseline Screening | 2026-07-01 | QUEUED | `D:\QM\strategy_farm\state\farm_state.sqlite` work item `3dac9cf1-8a42-4309-af7b-09d74df05002` |
