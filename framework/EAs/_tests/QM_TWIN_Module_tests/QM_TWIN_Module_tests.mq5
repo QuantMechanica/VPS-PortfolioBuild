@@ -8,6 +8,7 @@
 #include <QM/QM_BasketBuilder.mqh>
 #include <QM/QM_PullbackGate.mqh>
 #include <QM/QM_BasketEquityStop.mqh>
+#include <QM/QM_TWINWarmupGuard.mqh>
 
 bool TestAssert(const bool condition, const string label)
   {
@@ -167,6 +168,27 @@ bool TestBasketEquityStop()
    return TestAssert(decision.should_take_profit, "fifteen pct take profit fires");
   }
 
+bool TestMtfWarmupGuard()
+  {
+   const datetime first_bar = D'2018.07.02 00:00';
+   const datetime expected_ready = first_bar +
+                                   (datetime)(QM_TWIN_MTF_WARMUP_MN_DAYS *
+                                              QM_TWIN_SECONDS_PER_DAY);
+   if(!TestAssert(QM_TWIN_MtfWarmupReadyTime(first_bar) == expected_ready,
+                  "mtf warmup ready after one mn-equivalent period"))
+      return false;
+   if(!TestAssert(!QM_TWIN_MtfWarmupReady(first_bar,
+                                          first_bar + (datetime)(30 * QM_TWIN_SECONDS_PER_DAY)),
+                  "mtf warmup blocks immature mn window"))
+      return false;
+   if(!TestAssert(!QM_TWIN_MtfWarmupReady(first_bar,
+                                          first_bar + (datetime)(28 * QM_TWIN_SECONDS_PER_DAY)),
+                  "mtf warmup blocks four-week boundary before mn maturity"))
+      return false;
+   return TestAssert(QM_TWIN_MtfWarmupReady(first_bar, expected_ready),
+                     "mtf warmup ready at maturity");
+  }
+
 int OnInit()
   {
    if(!TestCurrencyStrength())
@@ -178,6 +200,8 @@ int OnInit()
    if(!TestPullbackGate())
       return INIT_FAILED;
    if(!TestBasketEquityStop())
+      return INIT_FAILED;
+   if(!TestMtfWarmupGuard())
       return INIT_FAILED;
    Print("QM_TWIN_Module_tests PASS");
    return INIT_SUCCEEDED;

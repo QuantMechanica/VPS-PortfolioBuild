@@ -9,6 +9,7 @@
 #include <QM/QM_PullbackGate.mqh>
 #include <QM/QM_BasketBuilder.mqh>
 #include <QM/QM_BasketEquityStop.mqh>
+#include <QM/QM_TWINWarmupGuard.mqh>
 
 #define QM12821_HOST_SYMBOL "EURUSD.DWX"
 #define QM12821_HOST_TF PERIOD_H1
@@ -62,6 +63,9 @@ input int    strategy_pending_expiration_minutes = 60;
 int  g_active_currency_idx = -1;
 int  g_active_direction    = 0;
 bool g_cycle_stopped       = false;
+datetime g_mtf_warmup_first_bar_time = 0;
+datetime g_mtf_warmup_ready_time     = 0;
+bool     g_mtf_warmup_logged         = false;
 
 int QM12821_HhmmToMinutes(const int hhmm)
   {
@@ -105,6 +109,38 @@ bool QM12821_TimeToFlat(const datetime broker_time)
   {
    return (QM12821_HhmmToMinutes(QM12821_BrokerHhmm(broker_time)) >=
            QM12821_HhmmToMinutes(strategy_flat_hhmm));
+  }
+
+void QM12821_InitMtfWarmupGuard()
+  {
+   g_mtf_warmup_first_bar_time = iTime(QM12821_HOST_SYMBOL, QM12821_HOST_TF, 0);
+   if(g_mtf_warmup_first_bar_time <= 0)
+      g_mtf_warmup_first_bar_time = TimeCurrent();
+   g_mtf_warmup_ready_time = QM_TWIN_MtfWarmupReadyTime(g_mtf_warmup_first_bar_time);
+   g_mtf_warmup_logged = false;
+  }
+
+bool QM12821_MtfWarmupReady(const datetime broker_time)
+  {
+   return QM_TWIN_MtfWarmupReady(g_mtf_warmup_first_bar_time, broker_time);
+  }
+
+bool QM12821_BlockEntryForMtfWarmup(const datetime broker_time)
+  {
+   if(QM12821_MtfWarmupReady(broker_time))
+      return false;
+   if(!g_mtf_warmup_logged)
+     {
+      QM_LogEvent(QM_INFO, "BASKET_MTF_WARMUP_BLOCK",
+                  StringFormat("{\"first_bar_time\":%I64d,\"ready_time\":%I64d,\"broker_time\":%I64d,\"w1_periods\":%d,\"mn_days\":%d}",
+                               (long)g_mtf_warmup_first_bar_time,
+                               (long)g_mtf_warmup_ready_time,
+                               (long)broker_time,
+                               QM_TWIN_MTF_WARMUP_W1_PERIODS,
+                               QM_TWIN_MTF_WARMUP_MN_DAYS));
+      g_mtf_warmup_logged = true;
+     }
+   return true;
   }
 
 bool QM12821_HasOwnedPositions()
@@ -192,6 +228,9 @@ bool QM12821_EvaluateSignal(QM_CSMReading &d1,
   {
    out_probability = 0.0;
    QM_BasketBuilder_Reset(plan);
+
+   if(!QM12821_MtfWarmupReady(TimeCurrent()))
+      return false;
 
    if(!QM_CSM_LoadStrength(PERIOD_D1, d1, 0))
       return false;
@@ -360,6 +399,8 @@ void QM12821_CloseOnSignalShift()
   {
    if(!QM12821_HasOwnedExposure())
       return;
+   if(!QM12821_MtfWarmupReady(TimeCurrent()))
+      return;
 
    QM_CSMReading d1;
    QM_CSMReading w1;
@@ -409,7 +450,10 @@ bool Strategy_NoTradeFilter()
       return false;
    if(g_cycle_stopped)
       return true;
-   if(!QM12821_InEntrySession(TimeCurrent()))
+   const datetime broker_now = TimeCurrent();
+   if(QM12821_BlockEntryForMtfWarmup(broker_now))
+      return true;
+   if(!QM12821_InEntrySession(broker_now))
       return true;
    return false;
   }
@@ -429,6 +473,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       QM12821_CloseOnSignalShift();
       return false;
      }
+   if(QM12821_BlockEntryForMtfWarmup(TimeCurrent()))
+      return false;
 
    QM_CSMReading d1;
    QM_CSMReading w1;
@@ -497,6 +543,7 @@ int OnInit()
    for(int i = 0; i < QM_CSM_PAIR_COUNT; ++i)
       basket_symbols[i] = QM_CSM_PAIRS[i];
    QM_SymbolGuardInit(basket_symbols);
+   QM12821_InitMtfWarmupGuard();
    QM_BasketWarmupHistory(basket_symbols, PERIOD_M30, strategy_warmup_bars);
    QM_BasketWarmupHistory(basket_symbols, PERIOD_H1, strategy_warmup_bars);
    QM_BasketWarmupHistory(basket_symbols, PERIOD_D1, MathMax(40, strategy_warmup_bars / 24));
@@ -504,7 +551,9 @@ int OnInit()
    QM_BasketWarmupHistory(basket_symbols, PERIOD_MN1, 80);
 
    QM_LogEvent(QM_INFO, "INIT_OK",
-               "{\"card\":\"QM5_12821_twin-csm-basket\",\"scope\":\"fx8_csm_basket\",\"version\":\"modular_5_1\"}");
+               StringFormat("{\"card\":\"QM5_12821_twin-csm-basket\",\"scope\":\"fx8_csm_basket\",\"version\":\"modular_5_1\",\"mtf_warmup_first_bar_time\":%I64d,\"mtf_warmup_ready_time\":%I64d}",
+                            (long)g_mtf_warmup_first_bar_time,
+                            (long)g_mtf_warmup_ready_time));
    return INIT_SUCCEEDED;
   }
 
