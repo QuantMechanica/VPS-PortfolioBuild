@@ -14143,3 +14143,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12846,euro-night-mr-eurusd,0,EURUSD.DWX,128460000,2026-07-01,Codex,active
 12850,xti-xng-vcb,0,XTIUSD.DWX,128500000,2026-07-01,Codex,active
 12850,xti-xng-vcb,1,XNGUSD.DWX,128500001,2026-07-01,Codex,active
+12851,williams18-xti,0,XTIUSD.DWX,128510000,2026-07-01,Codex,active

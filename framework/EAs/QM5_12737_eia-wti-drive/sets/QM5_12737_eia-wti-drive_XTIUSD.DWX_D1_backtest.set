@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12737
 ; ea_slug:      eia-wti-drive
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d6571c9c21645430ba1026cf1f378b73d1f7b3f6ba43a4c8715e4547e22ded81
+; build_hash:   b78aedac858385c16274b9c5a5829d982534d6cd34bb98218dd71277ccf3b15b
 ; author:       Development
 ; date:         2026-06-28
 ;==========================================================
