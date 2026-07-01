@@ -1,0 +1,76 @@
+{
+  "task_id": "7127ce8c-df3c-4e4d-ae3d-6a15ef064d94",
+  "ea_id": "QM5_12845",
+  "slug": "trend-tracer-crude",
+  "strategy": "Crude H4 swing-structure trend tracer",
+  "source_id": "balke-trend-tracer-swing-20260630",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "H4",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12845_trend-tracer-crude",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12845_trend-tracer-crude\\QM5_12845_trend-tracer-crude.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12845_trend-tracer-crude\\QM5_12845_trend-tracer-crude.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12845_trend-tracer-crude\\SPEC.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12845_trend-tracer-crude.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12845_trend-tracer-crude\\sets\\QM5_12845_trend-tracer-crude_XTIUSD.DWX_H4_backtest.set"
+  ],
+  "setfile_build_hash": "a1b07be4fa41199b2a105c97a43e13259460ec7ded466b0a35d501fcd460c17c",
+  "mq5_sha256": "c5de6ac04bfd05848ef12e02d5f87f042c43974437ec06737d0d6318aa930be8",
+  "ex5_sha256": "b40dfd4e6b089dc04cea3c049c9ab3be4f8f1e0fc64175436d703aa7c88c6beb",
+  "setfile_current_sha256": "a256a3cceaba58a63fef472397e335df2e32a1bb6b9ac740635c590cd916bef2",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 128450000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_12845_trend-tracer-crude --force --json --fail-on-error",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260701_181023\\QM5_12845_trend-tracer-crude.compile.log",
+    "ex5_size_bytes": 298908,
+    "symbol_scope_verdict": "SINGLE_SYMBOL_OK"
+  },
+  "build_check": {
+    "command": "pwsh -NoProfile -File framework/scripts/build_check.ps1 -EALabel QM5_12845_trend-tracer-crude -RepoRoot C:/QM/repo -Strict -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260701_181040.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "validations": {
+    "spec_doc": "PASS",
+    "magic_resolver_regenerated": true,
+    "risk_fixed_setfile": true,
+    "live_safety": "No T_Live, AutoTrading, portfolio gate, or live manifest changes."
+  },
+  "farm_record": {
+    "result_path": "D:\\QM\\strategy_farm\\artifacts\\builds\\7127ce8c-df3c-4e4d-ae3d-6a15ef064d94.json",
+    "task_status": "done",
+    "q02_enqueued": true,
+    "q02_work_item_id": "b00dd253-92b7-4184-8704-f656e2af55da"
+  },
+  "diversity_reason": "Non-XNG energy sleeve on XTIUSD.DWX, using swing-structure breakout distinct from Donchian crude builds.",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Q02 auto-enqueued for worker daemons; no manual MT5 backtest was launched from this session.",
+  "open_questions": [
+    "Card allowed ZigZag or fractals; v1 pins Williams-fractal swing detection to avoid ZigZag repaint ambiguity."
+  ],
+  "created_at_utc": "2026-07-01T18:13:10Z"
+}
+
