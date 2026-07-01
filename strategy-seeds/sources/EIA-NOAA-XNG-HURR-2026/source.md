@@ -19,18 +19,20 @@ uri: https://www.eia.gov/todayinenergy/detail.php?id=62104
 
 ## Mining Scope
 
-One card was extracted for a structural natural-gas CFD sleeve:
+Two cards were extracted for structural natural-gas CFD sleeves:
 
 - `eia-xng-hurr-brk`: XNGUSD.DWX D1 peak hurricane-season supply-risk breakout.
+- `xng-hurr-fade`: XNGUSD.DWX D1 hurricane-window failed-spike fade.
 
 ## Evidence Notes
 
 - EIA documents that Atlantic hurricanes can affect U.S. oil and natural gas markets through Gulf of Mexico production interruptions, LNG export disruptions, and energy infrastructure outages.
 - NOAA/NHC defines the Atlantic hurricane season and shows activity clustering around the mid-August to mid-October peak window.
 - The QM implementation does not ingest EIA, NOAA, hurricane-track, weather, production, LNG, storage, futures-curve, or external API data at runtime. It uses the official sources only for structural lineage, then requires XNGUSD.DWX D1 price confirmation during a fixed peak-season window.
+- The breakout card follows confirmed upside supply-risk pressure. The fade card tests the distinct exhaustion side: after an upside hurricane-window spike makes a new short-term high but closes back near the low of the D1 range, the EA fades the failed risk-premium move and exits on normalization or invalidation.
 
 ## Guardrails
 
 - No external data calls in the EA.
 - No ML, adaptive parameter fitting, grid, or martingale.
-- Single-position XNGUSD.DWX sleeve, one magic slot.
+- Single-position XNGUSD.DWX sleeves, one magic slot per EA.
