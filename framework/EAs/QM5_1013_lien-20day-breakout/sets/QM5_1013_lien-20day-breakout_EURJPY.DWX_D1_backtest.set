@@ -1,0 +1,46 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1013
+; ea_slug:      lien-20day-breakout
+; ea_version:   v5.0
+; set_version:  s20260701-001
+; symbol:       EURJPY.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   12
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   b524ed7a1fdca8da0a486565397b0fa7d960966da13cd783740ea98e28f85ae8
+; author:       Development
+; date:         2026-07-01
+;==========================================================
+qm_magic_slot_offset=12
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\lien-20day-breakout_card.md
+trail_method=two_bar_extreme
+pullback_lookback=2
+friday_close=enabled
+BAR=D1
+breakout_lookback=20
+tp1_rr=1.0
+multi_window_extreme_confluence=off
+pullback_timing=1
+rebreak_window=3
+signal_tf=D1
+stop_anchor_offset_pips=7
+breakout_offset_pips=5
