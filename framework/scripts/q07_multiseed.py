@@ -31,6 +31,7 @@ from framework.scripts.q05_stress_medium import (
     summary_invalid_reason,
     MIN_TRADES,
     STARTING_EQUITY,
+    RUNNER_HEADROOM_SEC,
     _basket_tester_overrides,
 )
 from framework.scripts.q06_stress_harsh import gen_harsh_setfile_for, _basket_logical_symbol
@@ -99,9 +100,17 @@ def _run_seed(*, ea_id: int, ea_expert: str, symbol: str, setfile: Path,
     if tester_deposit:
         args.extend(["-TesterDepositOverride", str(tester_deposit)])
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
-    proc = subprocess.run(args, capture_output=True, text=True,
-                          timeout=timeout_sec, creationflags=creationflags)
-    sym_clean = symbol.replace(".", "_")
+    runner_timeout_sec = timeout_sec + RUNNER_HEADROOM_SEC
+    timed_out = False
+    timeout_detail = None
+    try:
+        proc = subprocess.run(args, capture_output=True, text=True,
+                              timeout=runner_timeout_sec, creationflags=creationflags)
+        exit_code = proc.returncode
+    except subprocess.TimeoutExpired as exc:
+        timed_out = True
+        timeout_detail = f"subprocess_timeout_after={exc.timeout}s"
+        exit_code = 124
     summary = find_latest_summary(report_root)
     invalid_reason = summary_invalid_reason(summary) if summary else None
     report_metrics = None if summary else _latest_report_metrics(report_root)
@@ -114,8 +123,12 @@ def _run_seed(*, ea_id: int, ea_expert: str, symbol: str, setfile: Path,
     else:
         pf, dd_money, trades = None, None, 0
     dd_pct = (dd_money / STARTING_EQUITY * 100.0) if dd_money is not None else None
+    if timed_out and summary is None and report_metrics is None:
+        invalid_reason = f"timeout_expired:timeout_sec={timeout_sec}:runner_timeout_sec={runner_timeout_sec}"
     return {"seed": seed, "pf": pf, "dd_money": dd_money, "dd_pct": dd_pct,
-            "trades": trades, "exit_code": proc.returncode,
+            "trades": trades, "exit_code": exit_code,
+            "timed_out": timed_out, "timeout_detail": timeout_detail,
+            "timeout_sec": timeout_sec, "runner_timeout_sec": runner_timeout_sec,
             "summary_path": str(summary) if summary else None,
             "report_path": report_metrics.get("report_path") if report_metrics else None,
             "metric_source": "summary_json" if summary else ("report_htm" if report_metrics else None),
@@ -128,15 +141,6 @@ def _run_seed(*, ea_id: int, ea_expert: str, symbol: str, setfile: Path,
 
 def evaluate_seeds(seed_results: list[dict]) -> tuple[str, str, dict]:
     """Combined Q07 verdict from per-seed results."""
-    missing_summary = [
-        r["seed"] for r in seed_results
-        if not r.get("summary_path") and not r.get("report_path")
-    ]
-    if missing_summary:
-        return ("INVALID",
-                f"seeds_missing_summary:{missing_summary}",
-                {"per_seed_pf": [(r["seed"], r["pf"]) for r in seed_results]})
-
     invalid_seeds = [
         (r["seed"], r.get("invalid_reason") or f"exit_code={r.get('exit_code')}")
         for r in seed_results
@@ -149,6 +153,15 @@ def evaluate_seeds(seed_results: list[dict]) -> tuple[str, str, dict]:
         return ("INVALID",
                 f"seeds_invalid_evidence:{invalid_seeds}",
                 {"per_seed_trades": [(r["seed"], r.get("trades", 0)) for r in seed_results]})
+
+    missing_summary = [
+        r["seed"] for r in seed_results
+        if not r.get("summary_path") and not r.get("report_path")
+    ]
+    if missing_summary:
+        return ("INVALID",
+                f"seeds_missing_summary:{missing_summary}",
+                {"per_seed_pf": [(r["seed"], r["pf"]) for r in seed_results]})
 
     low_trades = [r["seed"] for r in seed_results if int(r.get("trades") or 0) < MIN_TRADES]
     if low_trades:

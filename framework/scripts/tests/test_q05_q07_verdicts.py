@@ -375,6 +375,45 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertIn("seeds_invalid_evidence", reason)
         self.assertEqual(metrics["per_seed_trades"][0], (42, 0))
 
+    def test_q07_seed_timeout_records_invalid_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            setfile = root / "demo_seed42.set"
+            setfile.write_text("RISK_FIXED=1000\n", encoding="utf-8")
+            timeouts = []
+
+            def fake_run(args, **kwargs):
+                timeouts.append(kwargs["timeout"])
+                raise q07.subprocess.TimeoutExpired(cmd=args, timeout=kwargs["timeout"])
+
+            with patch.object(q07.subprocess, "run", side_effect=fake_run):
+                result = q07._run_seed(
+                    ea_id=12781,
+                    ea_expert=r"QM\QM5_12781_demo",
+                    symbol="USDJPY.DWX",
+                    setfile=setfile,
+                    seed=42,
+                    terminal="T8",
+                    report_root=root,
+                    timeout_sec=30,
+                    period="D1",
+                )
+
+        self.assertEqual(timeouts, [150])
+        self.assertTrue(result["timed_out"])
+        self.assertEqual(result["exit_code"], 124)
+        self.assertEqual(result["timeout_sec"], 30)
+        self.assertEqual(result["runner_timeout_sec"], 150)
+        self.assertIn("timeout_expired", result["invalid_reason"])
+
+        verdict, reason, metrics = q07.evaluate_seeds([
+            result,
+            {"seed": 17, "pf": 1.2, "trades": 25, "summary_path": "summary.json", "exit_code": 0},
+        ])
+        self.assertEqual(verdict, "INVALID")
+        self.assertIn("seeds_invalid_evidence", reason)
+        self.assertEqual(metrics["per_seed_trades"][0], (42, 0))
+
     def test_q07_seed_run_passes_basket_tester_overrides(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
