@@ -718,6 +718,55 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(payload["evidence_provenance"], "phase_runner")
             self.assertEqual(payload["run_smoke_exit_code"], 0)
 
+    def test_parent_aggregate_preserves_all_infra_fail_verdict(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO tasks(
+                        id, kind, status, source_id, card_id, payload_json,
+                        created_at, updated_at
+                    )
+                    VALUES (
+                        'parent-q03', 'backtest_q03', 'pending', NULL,
+                        'QM5_9998', ?, ?, ?
+                    )
+                    """,
+                    (json.dumps({"ea_id": "QM5_9998", "phase": "Q03"}), now, now),
+                )
+                conn.execute(
+                    """
+                    INSERT INTO work_items(
+                        id, kind, phase, ea_id, symbol, setfile_path, status,
+                        verdict, attempt_count, parent_task_id, payload_json,
+                        created_at, updated_at
+                    )
+                    VALUES (
+                        'wi-infra', 'backtest', 'Q03', 'QM5_9998',
+                        'QM5_9998_EURUSD_GBPUSD_COINTEGRATION_D1',
+                        'dummy.set', 'done', 'INFRA_FAIL', 0,
+                        'parent-q03', '{}', ?, ?
+                    )
+                    """,
+                    (now, now),
+                )
+                conn.commit()
+
+            result = terminal_worker._aggregate_finished_parent(root, "parent-q03")
+            self.assertEqual(result["verdict"], "INFRA_FAIL")
+
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, payload_json FROM tasks WHERE id='parent-q03'"
+                ).fetchone()
+            self.assertEqual(row[0], "done")
+            classification = json.loads(row[1])["classification"]
+            self.assertEqual(classification["verdict"], "INFRA_FAIL")
+            self.assertEqual(classification["counts_by_verdict"]["INFRA_FAIL"], 1)
+
     def test_launch_fault_defer_seconds_backoff_caps(self) -> None:
         base = terminal_worker.LAUNCH_FAULT_DEFER_SECONDS
         cap = terminal_worker.LAUNCH_FAULT_DEFER_MAX_SECONDS

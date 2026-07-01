@@ -1022,7 +1022,17 @@ def _aggregate_finished_parent(root: Path, parent_task_id: str | None) -> dict[s
             surviving, p2_profit_skipped = farmctl._filter_p2_profitable_symbols(conn, parent_task_id, pass_symbols)
         else:
             surviving = pass_symbols
-        verdict = "PASS" if surviving else "STRATEGY_FAIL"
+        strategy_fail_count = sum(
+            1 for w in wis if w["verdict"] in {"FAIL", "ZERO_TRADES", "MIN_TRADES_NOT_MET"}
+        )
+        infra_fail_count = sum(
+            1 for w in wis if w["verdict"] in {"INFRA_FAIL", "INVALID", "WAITING_INPUT", "PENDING_RUNNER"}
+        )
+        verdict = (
+            "PASS"
+            if surviving
+            else ("INFRA_FAIL" if infra_fail_count > 0 and strategy_fail_count == 0 else "STRATEGY_FAIL")
+        )
         classification: dict[str, Any] = {
             "verdict": verdict,
             "surviving_symbols": surviving,
