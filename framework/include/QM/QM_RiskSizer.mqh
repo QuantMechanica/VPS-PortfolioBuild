@@ -135,6 +135,10 @@ bool QM_RiskSizerReadMidPrice(const string symbol, double &price)
    if(StringLen(symbol) <= 0)
       return false;
 
+   bool is_custom = false;
+   if(!SymbolExist(symbol, is_custom))
+      return false;
+
    if(!SymbolInfoInteger(symbol, SYMBOL_SELECT))
       SymbolSelect(symbol, true);
 
