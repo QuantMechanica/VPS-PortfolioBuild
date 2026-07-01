@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_12850_XTI_XNG_VCB_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg XTI/XNG energy ratio volatility-contraction breakout basket from the approved BOLLINGER-BB-SQUEEZE-2001 source packet. The EA runs from the XTIUSD.DWX host setfile, reads XTIUSD.DWX and XNGUSD.DWX completed D1 closes, computes the log ratio, and trades only after low Bollinger BandWidth compression resolves into an envelope breakout. Q02 must evaluate the logical basket, not standalone legs."
+  ]
+}
