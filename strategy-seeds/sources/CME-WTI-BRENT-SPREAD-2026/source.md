@@ -37,6 +37,15 @@ This source packet supports a low-frequency market-neutral D1 basket:
 - Exit: flatten near the rolling mean, on max hold, on Friday close, or through
   hard per-leg ATR stops.
 
+The same source packet also supports a separate continuation variant when the
+completed D1 benchmark spread exits a long channel:
+
+- Signal: Donchian breakout of `log(Brent) - beta * log(WTI)`.
+- Entry: buy Brent/sell WTI on upside spread breakout; sell Brent/buy WTI on
+  downside spread breakout.
+- Exit: flatten on an opposite shorter-channel break, max hold, Friday close,
+  broken-package repair, or hard per-leg ATR stops.
+
 The runtime EA uses broker OHLC data only. It does not consume futures curves,
 inventory releases, EIA tables, ICE data, CME data, forecasts, options, analyst
 feeds, ML models, grids, or martingale sizing.
@@ -46,7 +55,8 @@ feeds, ML models, grids, or martingale sizing.
 This packet is not the existing `QM5_12840` XTI/XNG return-spread reversion,
 not the EIA XTI/XNG price-ratio sleeves, not WTI calendar/event logic, not Brent
 weekday seasonality, and not a generic commodity RSI or trend-following build.
-It is specifically a Brent-vs-WTI crude benchmark spread reversion basket.
+The S01 card is specifically a Brent-vs-WTI crude benchmark spread reversion
+basket; the S02 card is a Brent-vs-WTI crude benchmark spread breakout basket.
 
 ## Q02 Data Note
 
