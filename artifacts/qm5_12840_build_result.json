@@ -1,0 +1,122 @@
+{
+  "task_id": "93d7ffa1-bd90-4948-9d5a-6ac65ad9c7e0",
+  "ea_id": "QM5_12840",
+  "slug": "xti-xng-rspread",
+  "branch": "agents/board-advisor",
+  "date": "2026-07-01",
+  "source_id": "SRC05",
+  "source_citations": [
+    "Chan, Ernest P. (2013). Algorithmic Trading: Winning Strategies and Their Rationale. Wiley. Chapter 3, Example 3.2 pair-spread Bollinger-style mean reversion; local source packet strategy-seeds/sources/SRC05/."
+  ],
+  "strategy": "D1 XTI/XNG return-spread z-score reversion basket",
+  "logical_symbol": "QM5_12840_XTI_XNG_RSPREAD_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "risk_fixed": 1000,
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 16,
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12840_xti-xng-rspread",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12840_xti-xng-rspread\\QM5_12840_xti-xng-rspread.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12840_xti-xng-rspread\\QM5_12840_xti-xng-rspread.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12840_xti-xng-rspread\\SPEC.md",
+  "spec_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12840_xti-xng-rspread\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12840_xti-xng-rspread_card.md",
+  "runtime_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12840_xti-xng-rspread_card.md",
+  "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\SRC05\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12840_xti-xng-rspread\\sets\\QM5_12840_xti-xng-rspread_QM5_12840_XTI_XNG_RSPREAD_D1_D1_backtest.set"
+  ],
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12840_xti-xng-rspread\\basket_manifest.json",
+  "magic_base": 128400000,
+  "symbols_registered": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "compile": {
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_12840_xti-xng-rspread --force --json --fail-on-error",
+    "result": "COMPILED",
+    "reason": "fresh build, 0 warnings",
+    "errors": 0,
+    "warnings": 0,
+    "symbol_scope_verdict": "BASKET_OK",
+    "log": "C:\\QM\\repo\\framework\\build\\compile\\20260701_004115\\QM5_12840_xti-xng-rspread.compile.log",
+    "ex5": "C:\\QM\\repo\\framework\\EAs\\QM5_12840_xti-xng-rspread\\QM5_12840_xti-xng-rspread.ex5",
+    "ex5_size_bytes": 298498
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12840_xti-xng-rspread -Strict -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report": "D:\\QM\\reports\\framework\\21\\build_check_20260701_004131.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings in framework/include/QM; build_check failures=0."
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_12840_xti-xng-rspread",
+    "result": "PASS"
+  },
+  "scope_validation": {
+    "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_12840_xti-xng-rspread --json",
+    "result": "BASKET_OK"
+  },
+  "guardrail_validation": {
+    "command": "python tools/strategy_farm/validate_build_guardrails.py framework/EAs/QM5_12840_xti-xng-rspread",
+    "result": "PASS"
+  },
+  "q02": {
+    "status": "enqueued",
+    "phase": "Q02",
+    "work_item_id": "bc623b84-ba53-4e54-964d-96932497bbd0",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "QM5_12840_XTI_XNG_RSPREAD_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12840_xti-xng-rspread\\sets\\QM5_12840_xti-xng-rspread_QM5_12840_XTI_XNG_RSPREAD_D1_D1_backtest.set",
+    "created_at_utc": "2026-07-01T00:43:28+00:00",
+    "payload": {
+      "host_symbol": "XTIUSD.DWX",
+      "host_timeframe": "D1",
+      "basket_symbols": [
+        "XTIUSD.DWX",
+        "XNGUSD.DWX"
+      ],
+      "logical_symbol": "QM5_12840_XTI_XNG_RSPREAD_D1",
+      "enqueued_by": "record_build_result.auto_q02",
+      "enqueued_at_utc": "2026-07-01T00:43:28+00:00",
+      "build_task_id": "93d7ffa1-bd90-4948-9d5a-6ac65ad9c7e0"
+    }
+  },
+  "hashes": {
+    "mq5_sha256": "126440BD6532796ED627CA6B930D56E6E1B7C349032AF5E3E7582AE87DCF19CA",
+    "ex5_sha256": "F4B1B4AE82EF504709CC50DCB4AFD828A45B12CF8F1C86535331D32DFC746B55",
+    "setfile_sha256": "A7D6CBECB5C4D6C7D594E0B3AB8251B71B2E64C45788D8BEE2EA02946CB2E06E",
+    "spec_sha256": "0E55A3EBEA757B0ECA009F508C4938A00893EFA0EB39FBCB687C424A823B30D3",
+    "setfile_header_build_hash": "d25b8a4a9d42f28a3cffde1c8418f5661b129e016753a8952d158a419bcb7328"
+  },
+  "non_duplicate_reason": "New XTI/XNG energy return-spread z-score reversion basket. It differs from QM5_12578 price-level log-ratio reversion, QM5_12608 price-level ratio breakout, QM5_12733 monthly cross-sectional momentum, QM5_12813 fixed seasonal switch, and QM5_12567 commodity RSI pullback logic.",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet Q02 handles the first MT5 backtest; no manual smoke/backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "t_live_manifest_touched": false
+  },
+  "notes": "Built one non-duplicate structural energy basket sleeve. No live, T_Live, AutoTrading, T_Live manifest, or portfolio gate artifacts touched."
+}

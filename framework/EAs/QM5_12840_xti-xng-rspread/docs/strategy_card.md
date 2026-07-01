@@ -226,5 +226,5 @@ gate.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-01 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-01 | PENDING | `artifacts/qm5_12840_build_result.json` |
-| Q02 Baseline Screening | 2026-07-01 | PENDING | queue after build record |
+| Q01 Build Validation | 2026-07-01 | PASS | `artifacts/qm5_12840_build_result.json` |
+| Q02 Baseline Screening | 2026-07-01 | QUEUED | `D:\QM\strategy_farm\state\farm_state.sqlite` work item `bc623b84-ba53-4e54-964d-96932497bbd0` |
