@@ -10,6 +10,10 @@ primary_links:
 collected_by: Codex
 collected_date: 2026-07-01
 approved_for_cards: true
+cards_extracted:
+  - wti-brent-spread
+  - wti-brent-brk
+  - wti-brent-rshock
 ---
 
 # WTI-Brent Crude Oil Spread Structure
@@ -46,6 +50,16 @@ completed D1 benchmark spread exits a long channel:
 - Exit: flatten on an opposite shorter-channel break, max hold, Friday close,
   broken-package repair, or hard per-leg ATR stops.
 
+The third card isolates short-horizon relative-return dislocations rather than
+the level of the Brent-WTI basis:
+
+- Signal: z-score of the completed `N`-day return spread,
+  `return(Brent, N) - beta * return(WTI, N)`.
+- Entry: fade an extreme Brent-minus-WTI return shock, shorting the outperforming
+  benchmark and buying the underperforming benchmark.
+- Exit: flatten after the return-shock z-score normalizes, on max hold, Friday
+  close, broken-package repair, or hard per-leg ATR stops.
+
 The runtime EA uses broker OHLC data only. It does not consume futures curves,
 inventory releases, EIA tables, ICE data, CME data, forecasts, options, analyst
 feeds, ML models, grids, or martingale sizing.
@@ -57,6 +71,8 @@ not the EIA XTI/XNG price-ratio sleeves, not WTI calendar/event logic, not Brent
 weekday seasonality, and not a generic commodity RSI or trend-following build.
 The S01 card is specifically a Brent-vs-WTI crude benchmark spread reversion
 basket; the S02 card is a Brent-vs-WTI crude benchmark spread breakout basket.
+The S03 card is a Brent-vs-WTI return-shock fade basket; it uses a rolling
+relative-return displacement, not a spread-level z-score or channel breakout.
 
 ## Q02 Data Note
 

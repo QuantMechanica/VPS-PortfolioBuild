@@ -1,0 +1,106 @@
+{
+  "task_id": "1421b714-7caa-4680-9d40-2f5e12636655",
+  "ea_id": "QM5_12860",
+  "slug": "wti-brent-rshock",
+  "strategy": "WTI/Brent D1 return-shock fade basket",
+  "strategy_id": "CME-WTI-BRENT-SPREAD-2026_S03",
+  "source_id": "CME-WTI-BRENT-SPREAD-2026",
+  "source_links": [
+    "https://www.cmegroup.com/markets/energy/crude-oil/wti-brent-ice-calendar-swap-futures.html",
+    "https://www.ice.com/products/1242/Brent-WTI-Futures-Spread/data",
+    "https://www.eia.gov/todayinenergy/detail.php?id=67424"
+  ],
+  "symbols": [
+    "XTIUSD.DWX",
+    "XBRUSD.DWX"
+  ],
+  "logical_symbol": "QM5_12860_WTI_BRENT_RSHOCK_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12860_wti-brent-rshock",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12860_wti-brent-rshock\\QM5_12860_wti-brent-rshock.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12860_wti-brent-rshock\\QM5_12860_wti-brent-rshock.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12860_wti-brent-rshock\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\wti-brent-rshock_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12860_wti-brent-rshock_card.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12860_wti-brent-rshock.md",
+  "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\CME-WTI-BRENT-SPREAD-2026\\source.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12860_wti-brent-rshock\\basket_manifest.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12860_wti-brent-rshock\\sets\\QM5_12860_wti-brent-rshock_QM5_12860_WTI_BRENT_RSHOCK_D1_D1_backtest.set"
+  ],
+  "setfile_build_hash": "6679f25ef3c5249b8e7c3ab20dc9a33bd025a742d72b77ff5efa3a292bbf6651",
+  "mq5_sha256": "64f2f79a48d0aabaae3d74e008b1abc3f1ea9fd6c7a8ee4d1426a3c669144774",
+  "ex5_sha256": "5b3aa83266a9563759d93d923677526f01d00be33d5ec8bad885584a3240006f",
+  "setfile_current_sha256": "150eaa9bbe0e27d8f583bc7b68a3f04332beba8b891a1421c5e9ece5c9610707",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 128600000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "XBRUSD.DWX",
+        "magic": 128600001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_12860_wti-brent-rshock --force --json --fail-on-error",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260701_175246\\QM5_12860_wti-brent-rshock.compile.log",
+    "ex5_size_bytes": 304074,
+    "symbol_scope_verdict": "BASKET_OK"
+  },
+  "build_check": {
+    "command": "pwsh.exe -NoProfile -File framework/scripts/build_check.ps1 -EALabel QM5_12860_wti-brent-rshock -RepoRoot C:/QM/repo -Strict -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260701_175301.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "validations": {
+    "symbol_scope": "BASKET_OK",
+    "build_guardrails": "PASS",
+    "magic_resolver_regenerated": true
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "cecc9658-8bee-464b-a2a7-fe9a50a2c712",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "QM5_12860_WTI_BRENT_RSHOCK_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12860_wti-brent-rshock\\sets\\QM5_12860_wti-brent-rshock_QM5_12860_WTI_BRENT_RSHOCK_D1_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "attempt_count": 0,
+    "created_at_utc": "2026-07-01T17:55:16+00:00"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 backtest was launched from this session.",
+  "non_duplicate_reason": "WTI/Brent return-shock fade uses a rolling short-horizon relative-return z-score. It is distinct from QM5_12843 spread-level z-score reversion, QM5_12848 spread channel breakout, QM5_12840 XTI/XNG return-spread reversion, single-symbol WTI/Brent calendar sleeves, XNG sleeves, XAU/XAG baskets, index sleeves, and QM5_12567 commodity RSI logic.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false
+  },
+  "notes": "Completed the build for a new low-frequency crude benchmark market-neutral sleeve and prepared it for Q02 via record-build auto-enqueue."
+}
