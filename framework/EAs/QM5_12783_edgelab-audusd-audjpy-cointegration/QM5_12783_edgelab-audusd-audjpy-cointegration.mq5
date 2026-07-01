@@ -120,10 +120,9 @@ bool Strategy_EnsureBasketScope()
    if(g_basket_scope_ready)
       return true;
 
-   // AUDJPY needs USDJPY conversion history for USD-denominated tester
-   // accounting; AUDUSD already quotes in USD.
-   string allowed[3] = {"AUDUSD.DWX", "AUDJPY.DWX", "USDJPY.DWX"};
-   for(int i = 0; i < 3; ++i)
+   // AUD tester accounting uses the two traded AUD-base symbols for conversion.
+   string allowed[2] = {"AUDUSD.DWX", "AUDJPY.DWX"};
+   for(int i = 0; i < 2; ++i)
       SymbolSelect(allowed[i], true);
 
    QM_SymbolGuardInit(allowed);
@@ -403,7 +402,6 @@ int OnInit()
   {
    SymbolSelect(g_leg_audusd, true);
    SymbolSelect(g_leg_audjpy, true);
-   SymbolSelect("USDJPY.DWX", true);
 
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,

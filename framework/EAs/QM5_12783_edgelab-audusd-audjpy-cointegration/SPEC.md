@@ -4,7 +4,7 @@
 **Slug:** edgelab-audusd-audjpy-cointegration
 **Source:** claude_cross_asset_discovery_2026-06-09 plus Chan cointegration pair-trade method
 **Author of this spec:** Codex
-**Last revised:** 2026-06-29
+**Last revised:** 2026-07-01
 
 ---
 
@@ -58,8 +58,9 @@ built.
 **Explicitly not for:**
 - Other `.DWX` symbols. This card is a fixed two-leg FX-cross basket, not a portable multi-pair strategy.
 
-USDJPY.DWX is selected as conversion history for the AUDJPY leg under
-USD-denominated tester accounting, but it is not traded.
+Q04 repair note: tester accounting is AUD so the two traded AUD-base symbols
+provide the required conversion paths. USDJPY.DWX is intentionally not selected
+or warmed by this EA.
 
 ---
 
@@ -106,13 +107,15 @@ Rerun excerpt for this candidate:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 - Q10) | RISK_FIXED | USD 1,000 per basket trade |
+| Backtest (Q02 - Q10) | RISK_FIXED | AUD 1,500 per basket trade, approximately the canonical USD 1,000 budget |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio |
 
-Q02 tester note: the manifest pins `tester_currency=USD` and
-`tester_deposit=100000`. The logical basket backtest setfile uses the canonical
-`RISK_FIXED=1000`, with `RISK_PERCENT=0`.
+Q04 tester repair note: the manifest pins `tester_currency=AUD` and
+`tester_deposit=150000`. The logical basket backtest setfile uses
+`RISK_FIXED=1500`, with `RISK_PERCENT=0`, to avoid bare `USDJPY` conversion
+history pulls while preserving roughly the canonical USD 1,000 fixed-risk
+budget.
 
 Q02 was auto-enqueued by `farmctl record-build` after strict compile and
 build-check passed. No manual MT5 run was launched from this build session; Q02
@@ -125,4 +128,5 @@ is delegated to paced farm workers through the logical basket setfile.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-29 | Initial rank-27 next-unbuilt FX cointegration basket build | Built from the adjacent AUDUSD/JPY basket pattern with explicit USDJPY conversion history |
+| v2 | 2026-07-01 | Q04 AUD-account conversion repair | Removed obsolete USDJPY.DWX warmup, switched tester accounting to AUD, and set backtest fixed risk to AUD 1,500 |
 

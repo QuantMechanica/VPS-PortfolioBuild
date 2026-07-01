@@ -25,8 +25,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02
-last_updated: 2026-06-29
+pipeline_phase: Q04
+last_updated: 2026-07-01
 g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-requested in-house 66-pair FX scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS AUDUSD.DWX and AUDJPY.DWX data exist in scan universe; R4 PASS no ML/grid/martingale."
 expected_pf: 0.90
 expected_dd_pct: 35.0
@@ -107,7 +107,7 @@ Q02+ must reject it if live-cost mechanics confirm no edge.
 ## Filters
 
 - Host chart must be AUDUSD.DWX or AUDJPY.DWX on D1/H1, with slot 0 used for the logical host.
-- USDJPY.DWX is preselected as the USD-account conversion path for AUDJPY accounting; it is not a traded leg.
+- Q04 repair uses AUD tester accounting, so AUDUSD.DWX and AUDJPY.DWX provide the required conversion paths without a bare USDJPY history pull.
 - No pyramiding, averaging, grid, martingale, partial close, or trailing stop.
 - Framework news, kill-switch, magic, and Friday-close guards remain active.
 
@@ -151,16 +151,17 @@ judge.
 
 ## Risk
 
-Backtests use V5 `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
-`PORTFOLIO_WEIGHT=1`. No live risk is authorized by this card; any future live
-burn-in would be assigned only by the standard portfolio pipeline after all
-gates.
+Backtests use V5 `RISK_FIXED=1500` under AUD tester accounting,
+`RISK_PERCENT=0`, and `PORTFOLIO_WEIGHT=1`. This preserves approximately the
+canonical USD 1,000 fixed-risk budget while avoiding bare USDJPY conversion
+history pulls. No live risk is authorized by this card; any future live burn-in
+would be assigned only by the standard portfolio pipeline after all gates.
 
 ## Strategy Allowability Check
 
 - [x] R1 reputable source: Chan cointegration method plus OWNER-requested in-house 66-pair scan.
 - [x] R2 mechanical: fixed beta, z-score entry/exit, ATR stop, broken-package close.
-- [x] R3 testable: AUDUSD.DWX and AUDJPY.DWX are Darwinex-native `.DWX` symbols in the exported scan data; USDJPY.DWX conversion history is also available.
+- [x] R3 testable: AUDUSD.DWX and AUDJPY.DWX are Darwinex-native `.DWX` symbols in the exported scan data; AUD tester accounting avoids additional conversion symbols.
 - [x] R4 compliant: no ML, no grid, no martingale, low-frequency D1.
 
 ## Framework Alignment
@@ -176,3 +177,4 @@ gates.
 |---|---|---|---|---|
 | v1 | 2026-06-29 | initial rank-27 next-unbuilt FX cointegration basket card | G0 | APPROVED |
 | v2 | 2026-06-29 | strict compile/build-check recorded and Q02 enqueued as work item 1a2e412b-1229-4b97-a627-9491e264af63 | Q02 | PENDING |
+| v3 | 2026-07-01 | Q04 INFRA_FAIL traced to bare USDJPY conversion-history sync; switched to AUD tester account and removed USDJPY warmup | Q04 | REQUEUE |

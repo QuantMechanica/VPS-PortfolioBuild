@@ -3,20 +3,20 @@
 ; ea_id:        12783
 ; ea_slug:      edgelab-audusd-audjpy-cointegration
 ; ea_version:   v5.0
-; set_version:  s20260629-001
+; set_version:  s20260701-002
 ; symbol:       QM5_12783_AUDUSD_AUDJPY_COINTEGRATION_D1
 ; host_symbol:  AUDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
-; risk_mode:    FIXED
+; risk_mode:    FIXED_AUD_ACCOUNT
 ; portfolio_weight: 1
-; build_hash:   7bad881ca13fd49f660206ff85e7c444f5faf0c98735677e5b1995fe98774d37
+; build_hash:   c6cfdd54736d321e735dfbd2b3cbb305b678da68999ae3ebee1e6a2d1c943901
 ; author:       Development
-; date:         2026-06-29
+; date:         2026-07-01
 ;==========================================================
 qm_magic_slot_offset=0
-RISK_FIXED=1000
+RISK_FIXED=1500
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; Q02 structural baseline: keep all news axes explicitly off to avoid full-tick calendar scans.
