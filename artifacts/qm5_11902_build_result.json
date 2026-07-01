@@ -1,0 +1,312 @@
+{
+  "task_id": "23e88607-e120-40dc-8a8c-6a68f4d38ab7",
+  "ea_id": "QM5_11902",
+  "slug": "bermuda-triangle-123-fib-extension-h1",
+  "strategy": "Bermuda triangle compression, 1-2-3 breakout, and Fibonacci extension scaled exits on H1 forex",
+  "source_id": "d2e5a8c4-3f76-5b91-8c47-a1f9d6e3b5c8",
+  "symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "USDCAD.DWX",
+    "USDCHF.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "EURJPY.DWX",
+    "GBPJPY.DWX",
+    "AUDJPY.DWX"
+  ],
+  "host_timeframe": "H1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\QM5_11902_bermuda-triangle-123-fib-extension-h1.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\QM5_11902_bermuda-triangle-123-fib-extension-h1.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\docs\\strategy_card.md",
+  "farm_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11902_bermuda-triangle-123-fib-extension-h1.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_EURUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_GBPUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_USDJPY.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_USDCAD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_USDCHF.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_AUDUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_NZDUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_EURJPY.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_GBPJPY.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_AUDJPY.DWX_H1_backtest.set"
+  ],
+  "setfile_hashes": [
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_EURUSD.DWX_H1_backtest.set",
+      "sha256": "c4f275f071b7e921489154c2e58486da98afcb32042e1b9adbbe6321560e05a9",
+      "build_hash": "4c9f0ac755ca549b71d9dc873064d6f47a9f5a1a915f89b57d20252a3859c225"
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_GBPUSD.DWX_H1_backtest.set",
+      "sha256": "3530e71788d59a26aa4fa784771651d190a3b9408edcb381b2d3f6fe69bd79c6",
+      "build_hash": "ac96a7218778e08e2cd11de520e83c5bc328c39103a3585b3eaa7ea684625020"
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_USDJPY.DWX_H1_backtest.set",
+      "sha256": "adfe7cca964be9e0d39719ef89105ad644a752cfdfb763c92c1dcc59ec9d151b",
+      "build_hash": "046d67bc6badfbbe25b23aa49cfea41519df9c752ad9f1e8429162731dcb5f59"
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_USDCAD.DWX_H1_backtest.set",
+      "sha256": "608ed29ae7ff4f8e75599adff9b9db0ca55d1f8f8d0bd6159314a4b147492d59",
+      "build_hash": "2ff7c741c1d1cf02a9edb83ae67dbc85bb407ffb70be014af180f1bf96f75494"
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_USDCHF.DWX_H1_backtest.set",
+      "sha256": "3a49f79177dc691f666533d01a8f6d39769276d390572cd43ddc2401ca0d2294",
+      "build_hash": "3599ba9a454b18c4dead2c3f4a5c5b61bb8699a5ba071b7e410fdf520f15bf92"
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_AUDUSD.DWX_H1_backtest.set",
+      "sha256": "b6e05726d69f2d7a00fdc59b208a2379a7ef499b226b043551df59e50ce6b537",
+      "build_hash": "08d9b9ce37810944f62cb3c9541bab5a24afc14949d3a694e8ee84db30303494"
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_NZDUSD.DWX_H1_backtest.set",
+      "sha256": "bc4106b1010ed88f5a0641bf13f9403b8cf8a6aa797b5a1d591ed78266dcae96",
+      "build_hash": "cd9e845f77dc7c762284032884180ed65f7885eae8c69fc163f15a0ced310db2"
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_EURJPY.DWX_H1_backtest.set",
+      "sha256": "b1b70fd9a6b6e9b7505372df002dd4bf31594d57db3be2362dd66ea076b397ec",
+      "build_hash": "9c4656dea4cb04d87f134bf32b5bba0533d10b627beaf59e88534aa9d42bd0b0"
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_GBPJPY.DWX_H1_backtest.set",
+      "sha256": "b93044629bc72c0dc981f994b877abb1fa613031f994a78c3af5f4e0ab42cfbc",
+      "build_hash": "48d88f20ab52146535e256836befa06512723476c1c0851ca8c6c56a390ce96f"
+    },
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_AUDJPY.DWX_H1_backtest.set",
+      "sha256": "f3096231e3a7cef31bc6b80e455d4eba32e6fa1f8d269ce6fbe081c4e84944bb",
+      "build_hash": "2d4feebc2f7b3513d6351864f789bd2b5a166e31bc8c55ea100cd24e396e2db4"
+    }
+  ],
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 10,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "EURUSD.DWX",
+        "magic": 119020000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "GBPUSD.DWX",
+        "magic": 119020001,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 2,
+        "symbol": "USDJPY.DWX",
+        "magic": 119020002,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 3,
+        "symbol": "USDCAD.DWX",
+        "magic": 119020003,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 4,
+        "symbol": "USDCHF.DWX",
+        "magic": 119020004,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 5,
+        "symbol": "AUDUSD.DWX",
+        "magic": 119020005,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 6,
+        "symbol": "NZDUSD.DWX",
+        "magic": 119020006,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 7,
+        "symbol": "EURJPY.DWX",
+        "magic": 119020007,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 8,
+        "symbol": "GBPJPY.DWX",
+        "magic": 119020008,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 9,
+        "symbol": "AUDJPY.DWX",
+        "magic": 119020009,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_11902_bermuda-triangle-123-fib-extension-h1/QM5_11902_bermuda-triangle-123-fib-extension-h1.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260701_104520\\QM5_11902_bermuda-triangle-123-fib-extension-h1.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260701_104520\\summary.csv",
+    "ex5_size_bytes": 306562,
+    "ex5_sha256": "c6f1ea01c9aaa960a29001b484259002dc8d96f8064d6be2286f02d3f25950c2"
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_11902_bermuda-triangle-123-fib-extension-h1 -Strict",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260701_104520.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings from included framework files; the QM5_11902 EA body compiled with zero warnings."
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_11902_bermuda-triangle-123-fib-extension-h1",
+    "result": "PASS",
+    "failures": 0
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Backtest CPU ceiling: farmctl work-items --status active showed 6 active MT5 work items at build time; Q02 is queued through record-build instead of launching a manual smoke.",
+  "blocked_reason": "",
+  "prebuild_override": {
+    "farmctl_build_ea_result": "prebuild validation failed: entry_frequency_implausible:declared=25:inferred=1",
+    "justification": "The card is G0 APPROVED with R2/R3/R4 PASS metadata and is a structural low-frequency forex diversity sleeve, matching the mission constraints."
+  },
+  "non_duplicate_reason": "Ten-symbol H1 forex structural triangle/1-2-3/Fibonacci sleeve is distinct from the current Q08 survivor concentration in index, metal, and energy EAs.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "notes": "Completed one approved-card build in place from an uncompiled placeholder. No T_Live, AutoTrading, or portfolio gate files were touched.",
+  "record_build": {
+    "task_status": "done",
+    "auto_q02_enqueued": {
+      "ea_id": "QM5_11902",
+      "enqueued": [
+        {
+          "setfile": "QM5_11902_bermuda-triangle-123-fib-extension-h1_EURUSD.DWX_H1_backtest.set",
+          "symbol": "EURUSD.DWX",
+          "tf": "H1",
+          "wi_id": "5ef7a22e"
+        },
+        {
+          "setfile": "QM5_11902_bermuda-triangle-123-fib-extension-h1_GBPUSD.DWX_H1_backtest.set",
+          "symbol": "GBPUSD.DWX",
+          "tf": "H1",
+          "wi_id": "48a3099c"
+        },
+        {
+          "setfile": "QM5_11902_bermuda-triangle-123-fib-extension-h1_USDJPY.DWX_H1_backtest.set",
+          "symbol": "USDJPY.DWX",
+          "tf": "H1",
+          "wi_id": "fd68579f"
+        }
+      ],
+      "skipped": [
+        {
+          "reason": "staged_deferred_symbol",
+          "setfile": "QM5_11902_bermuda-triangle-123-fib-extension-h1_USDCAD.DWX_H1_backtest.set",
+          "symbol": "USDCAD.DWX"
+        },
+        {
+          "reason": "staged_deferred_symbol",
+          "setfile": "QM5_11902_bermuda-triangle-123-fib-extension-h1_USDCHF.DWX_H1_backtest.set",
+          "symbol": "USDCHF.DWX"
+        },
+        {
+          "reason": "staged_deferred_symbol",
+          "setfile": "QM5_11902_bermuda-triangle-123-fib-extension-h1_AUDUSD.DWX_H1_backtest.set",
+          "symbol": "AUDUSD.DWX"
+        },
+        {
+          "reason": "staged_deferred_symbol",
+          "setfile": "QM5_11902_bermuda-triangle-123-fib-extension-h1_NZDUSD.DWX_H1_backtest.set",
+          "symbol": "NZDUSD.DWX"
+        },
+        {
+          "reason": "staged_deferred_symbol",
+          "setfile": "QM5_11902_bermuda-triangle-123-fib-extension-h1_EURJPY.DWX_H1_backtest.set",
+          "symbol": "EURJPY.DWX"
+        },
+        {
+          "reason": "staged_deferred_symbol",
+          "setfile": "QM5_11902_bermuda-triangle-123-fib-extension-h1_GBPJPY.DWX_H1_backtest.set",
+          "symbol": "GBPJPY.DWX"
+        },
+        {
+          "reason": "staged_deferred_symbol",
+          "setfile": "QM5_11902_bermuda-triangle-123-fib-extension-h1_AUDJPY.DWX_H1_backtest.set",
+          "symbol": "AUDJPY.DWX"
+        }
+      ]
+    },
+    "work_items": [
+      {
+        "id": "5ef7a22e-fa51-4feb-acd8-edec2be3d902",
+        "phase": "Q02",
+        "ea_id": "QM5_11902",
+        "symbol": "EURUSD.DWX",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_EURUSD.DWX_H1_backtest.set",
+        "status": "pending",
+        "created_at": "2026-07-01T10:48:10+00:00",
+        "payload": {
+          "host_symbol": "EURUSD.DWX",
+          "host_timeframe": "H1",
+          "enqueued_by": "record_build_result.auto_q02",
+          "enqueued_at_utc": "2026-07-01T10:48:10+00:00",
+          "build_task_id": "23e88607-e120-40dc-8a8c-6a68f4d38ab7"
+        }
+      },
+      {
+        "id": "48a3099c-c2da-482c-9f72-c6c064020021",
+        "phase": "Q02",
+        "ea_id": "QM5_11902",
+        "symbol": "GBPUSD.DWX",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_GBPUSD.DWX_H1_backtest.set",
+        "status": "pending",
+        "created_at": "2026-07-01T10:48:10+00:00",
+        "payload": {
+          "host_symbol": "GBPUSD.DWX",
+          "host_timeframe": "H1",
+          "enqueued_by": "record_build_result.auto_q02",
+          "enqueued_at_utc": "2026-07-01T10:48:10+00:00",
+          "build_task_id": "23e88607-e120-40dc-8a8c-6a68f4d38ab7"
+        }
+      },
+      {
+        "id": "fd68579f-1a55-425d-bbd2-7442abe28726",
+        "phase": "Q02",
+        "ea_id": "QM5_11902",
+        "symbol": "USDJPY.DWX",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11902_bermuda-triangle-123-fib-extension-h1\\sets\\QM5_11902_bermuda-triangle-123-fib-extension-h1_USDJPY.DWX_H1_backtest.set",
+        "status": "pending",
+        "created_at": "2026-07-01T10:48:10+00:00",
+        "payload": {
+          "host_symbol": "USDJPY.DWX",
+          "host_timeframe": "H1",
+          "enqueued_by": "record_build_result.auto_q02",
+          "enqueued_at_utc": "2026-07-01T10:48:10+00:00",
+          "build_task_id": "23e88607-e120-40dc-8a8c-6a68f4d38ab7"
+        }
+      }
+    ]
+  }
+}
