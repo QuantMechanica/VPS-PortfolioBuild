@@ -223,5 +223,5 @@ deploy manifests, portfolio admission, or the portfolio gate.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-01 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-01 | TBD | `artifacts/qm5_12858_build_result.json` |
-| Q02 Baseline Screening | 2026-07-01 | QUEUED | `D:\QM\strategy_farm\state\farm_state.sqlite` |
+| Q01 Build Validation | 2026-07-01 | PASS | `artifacts/qm5_12858_build_result.json` |
+| Q02 Baseline Screening | 2026-07-01 | QUEUED | `D:\QM\strategy_farm\state\farm_state.sqlite` work item `4d4748c4-e519-49eb-8a86-00c74f1fbba5` |

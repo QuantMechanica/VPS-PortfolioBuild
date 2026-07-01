@@ -8,6 +8,8 @@ source_id: BAKERHUGHES-RIGCOUNT-2026
 target_symbols: [XTIUSD.DWX]
 logical_symbol: QM5_12858_XTI_RIGCOUNT_FRI_MOM_D1
 period: D1
+expected_trade_frequency: "D1 WTI last-workday rig-count displacement continuation; estimate 8-18 trades/year."
+expected_trades_per_year_per_symbol: 12
 g0_status: APPROVED
 status: APPROVED
 r1_track_record: PASS
@@ -47,5 +49,5 @@ data, grid, martingale, or ML is involved.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-01 | APPROVED | `strategy-seeds/cards/rigcount-fri-mom_card.md` |
-| Q01 Build Validation | 2026-07-01 | TBD | `artifacts/qm5_12858_build_result.json` |
-| Q02 Baseline Screening | 2026-07-01 | QUEUED | `D:\QM\strategy_farm\state\farm_state.sqlite` |
+| Q01 Build Validation | 2026-07-01 | PASS | `artifacts/qm5_12858_build_result.json` |
+| Q02 Baseline Screening | 2026-07-01 | QUEUED | `D:\QM\strategy_farm\state\farm_state.sqlite` work item `4d4748c4-e519-49eb-8a86-00c74f1fbba5` |

@@ -1,0 +1,100 @@
+{
+  "task_id": "0209b232-b461-4237-8464-7277e5adb9cf",
+  "ea_id": "QM5_12858",
+  "slug": "rigcount-fri-mom",
+  "strategy": "Baker Hughes rig-count Friday WTI D1 momentum",
+  "strategy_id": "BAKERHUGHES-RIGCOUNT-FRI-MOM-2026",
+  "source_id": "BAKERHUGHES-RIGCOUNT-2026",
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_12858_rigcount-fri-mom",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_12858_rigcount-fri-mom/QM5_12858_rigcount-fri-mom.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_12858_rigcount-fri-mom/QM5_12858_rigcount-fri-mom.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_12858_rigcount-fri-mom/SPEC.md",
+  "card_path": "C:/QM/repo/strategy-seeds/cards/rigcount-fri-mom_card.md",
+  "approved_card_path": "C:/QM/repo/artifacts/cards_approved/QM5_12858_rigcount-fri-mom.md",
+  "runtime_approved_card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12858_rigcount-fri-mom.md",
+  "source_path": "C:/QM/repo/strategy-seeds/sources/BAKERHUGHES-RIGCOUNT-2026/source.md",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_12858_rigcount-fri-mom/sets/QM5_12858_rigcount-fri-mom_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "79450a02c3c1d423c0aec648ed130315d7fc185d6133986f210d9a08fa6702dd",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic_base": 128580000,
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 128580000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12858_rigcount-fri-mom/QM5_12858_rigcount-fri-mom.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:/QM/repo/framework/build/compile/20260701_160838/QM5_12858_rigcount-fri-mom.compile.log",
+    "ex5_size_bytes": 295894
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12858_rigcount-fri-mom -Strict",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:/QM/reports/framework/21/build_check_20260701_160838.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "validations": {
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK"
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "4d4748c4-e519-49eb-8a86-00c74f1fbba5",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "symbol": "XTIUSD.DWX",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_12858_rigcount-fri-mom/sets/QM5_12858_rigcount-fri-mom_XTIUSD.DWX_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "created_at_utc": "2026-07-01T16:12:46+00:00",
+    "enqueued_by": "record_build_result.auto_q02"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet Q02 was requested; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "non_duplicate_reason": "D1 WTI continuation after large final-workday rig-count-window displacement is distinct from static WTI weekday/month calendar rules, weekend-gap rules, WPSR/Cushing/refinery/hurricane/OPEC/SPR/expiry/ETF-roll/seasonality rules, XTI/XNG or metals baskets, XNG sleeves, and QM5_12567 RSI commodity logic.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  },
+  "hashes": {
+    "mq5": "270A22A0B0C14A404870A5F13C4A76C97D2F7CA59C658D240B58B0AA4C3D2E0A",
+    "ex5": "F4CBE2FAC0160EAEB92C24652C15115F45F46BE263B8EC92451C2D73CF023A51",
+    "setfile": "526645266FE07415E55DEAAAEE1D22F3E1369F1DAB4EA75BEED77BD12BAECB54",
+    "spec": "E5FF8F873E3BAB05022B01199E9C69C76920E6AB66B8553DAC6B5CB622B4A678",
+    "card": "46ADB1BE94AC6030EAB857B0C84E140694707D9D19B2C168C7470AEC6E53D179",
+    "approved_card": "53F89D934B50AC694D9F445814C351A900CD2CA5D1DB1AC48E6A0A6391E22D91",
+    "strategy_approved_card": "AC5D405C84BC0316003FD3F77FA0B86F3DB4D03818227B419BA76CF14F77158C"
+  },
+  "notes": "Completed a structural low-frequency WTI energy sleeve using official Baker Hughes rig-count cadence as the source event and DWX OHLC only at runtime. Q02 must validate trade count, history sufficiency, and cost sensitivity."
+}
