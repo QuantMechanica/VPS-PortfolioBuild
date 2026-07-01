@@ -3,16 +3,16 @@
 ; ea_id:        10553
 ; ea_slug:      mql5-rsioma
 ; ea_version:   v5.0
-; set_version:  s20260528-001
+; set_version:  s20260701-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   c4e4ef80e3c4685aae0d474757108d612bfdfedbfe58c09f55cc75e543832339
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-28
+; date:         2026-07-01
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000
