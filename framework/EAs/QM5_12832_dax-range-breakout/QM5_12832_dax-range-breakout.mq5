@@ -41,11 +41,12 @@ input group "Stress"
 input double qm_stress_reject_probability          = 0.0;
 
 input group "Strategy"
-// Overnight range window in broker time (DXZ: GMT+2 outside US DST, GMT+3 during US DST).
-// GDAXI default: 22:00 -> 08:00 broker (overnight pre-open), breakout at DAX cash open.
-// range_start_hour > range_end_hour => overnight window spanning midnight.
-input int    range_start_hour   = 22;    // range accumulation start (broker)
-input int    range_end_hour     = 8;     // range lock time (broker, DAX pre-open)
+// Opening-range window in broker time (DXZ: GMT+2 outside US DST, GMT+3 during US DST).
+// GDAXI default: 10:00 broker = DAX cash open (09:00 CET); range locked at 11:00.
+// Sweep option (a): overnight 22->08 (set range_start_hour>range_end_hour for midnight wrap).
+// Sweep option (b) [default]: opening-range 10->11, entry 11:00-17:00.
+input int    range_start_hour   = 10;    // range accumulation start (broker) — DAX cash open
+input int    range_end_hour     = 11;    // range lock time (broker); entry window begins here
 input int    exit_hour          = 17;    // forced flat before DAX cash close (broker)
 input int    exit_min           = 0;
 input double entry_buffer_atr   = 0.0;   // breakout buffer (x ATR), 0=at range edge

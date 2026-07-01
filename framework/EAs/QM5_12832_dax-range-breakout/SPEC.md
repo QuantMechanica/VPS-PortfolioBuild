@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-The EA builds an overnight GDAXI.DWX M15 range from 22:00 through 07:59 broker time, locks the high and low after 08:00, then trades one confirmed DAX breakout per day. A long entry requires the last closed M15 bar to close above the locked range high; a short entry requires a close below the locked range low. It filters out ranges that are too small or too large versus D1 ATR, requires a closed-bar tick-volume surge, uses the opposite range edge as the initial stop, targets a fixed reward/risk multiple, and closes any open position before the DAX cash close.
+The EA builds a 60-minute opening-range on GDAXI.DWX M15 bars from the DAX cash open (10:00 broker = 09:00 CET), locks the high and low at 11:00 broker, then trades one confirmed breakout per day. A long entry requires the last closed M15 bar to close above the locked range high; a short entry requires a close below the locked range low. It filters out ranges that are too small or too large versus D1 ATR, requires a closed-bar tick-volume surge, uses the opposite range edge as the initial stop, targets a fixed reward/risk multiple (RR 2.5), and closes any open position before the DAX cash close. Range window is a sweepable parameter — the overnight option (range_start_hour=22, range_end_hour=8) is available but the default is the 60-minute opening range (10-11 broker).
 
 ---
 
@@ -18,8 +18,8 @@ The EA builds an overnight GDAXI.DWX M15 range from 22:00 through 07:59 broker t
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `range_start_hour` | `22` | `0-23` | Broker-hour when overnight range accumulation starts. |
-| `range_end_hour` | `8` | `0-23` | Broker-hour when range accumulation ends and breakout trading can begin. |
+| `range_start_hour` | `10` | `0-23` | Broker-hour when range accumulation starts (DAX cash open = 10:00 broker). Set >range_end_hour for overnight wrap. |
+| `range_end_hour` | `11` | `0-23` | Broker-hour when range accumulation ends and breakout trading can begin. |
 | `exit_hour` | `17` | `0-23` | Broker-hour for forced flat close. |
 | `exit_min` | `0` | `0-59` | Broker-minute for forced flat close. |
 | `entry_buffer_atr` | `0.0` | `0.0+` | ATR multiple added beyond the range edge before breakout confirmation. |
@@ -101,3 +101,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-30 | Initial build from approved DAX transfer card | build task `940f4709-fa6f-4470-8487-f5d297f78ca2` |
+| v2 | 2026-07-01 | Rework: overnight window (22-08) yielded 0 trades (sparse overnight GDAXI data); switched default to 60-min opening range (10-11 broker = DAX cash open) | build task `940f4709-fa6f-4470-8487-f5d297f78ca2` |
