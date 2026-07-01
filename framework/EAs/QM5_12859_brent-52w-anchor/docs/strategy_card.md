@@ -110,7 +110,7 @@ live allocation must come from the portfolio process. The EA does not touch
 Brent routes through prior `XBRUSD.DWX` builds, but current history sufficiency
 remains a Q02 responsibility.
 
-## Entry Rules
+## 4. Entry Rules
 
 - Evaluate only on a new D1 bar.
 - Entry is allowed only on the first D1 bar of a new broker-calendar month.
@@ -128,7 +128,7 @@ remains a Q02 responsibility.
 - No entry if an open `XBRUSD.DWX` position already exists for this EA magic.
 - No entry if `XBRUSD.DWX` spread exceeds `strategy_max_spread_points`.
 
-## Exit Rules
+## 5. Exit Rules
 
 - Stop loss: fixed hard SL at ATR(`strategy_atr_period`) *
   `strategy_atr_sl_mult`.
@@ -137,14 +137,14 @@ remains a Q02 responsibility.
 - Exit any stale package after `strategy_max_hold_days` calendar days.
 - Friday close remains enabled by the V5 framework.
 
-## Filters
+## 6. Filters (No-Trade Module)
 
 - Only trade `XBRUSD.DWX` on D1.
 - Skip entries when D1 history is shorter than the 252-D1 anchor plus warmup.
 - Skip entries when ATR is unavailable.
 - Framework news, kill-switch, magic, and Friday-close guards remain active.
 
-## Trade Management Rules
+## 7. Trade Management Rules
 
 - Symmetric long/short.
 - No pyramiding.
@@ -234,4 +234,4 @@ target_modules:
 |---|---|---|---|
 | G0 Research Intake | 2026-07-01 | APPROVED | this card |
 | Q01 Build Validation | 2026-07-01 | PASS | `artifacts/qm5_12859_build_result.json` |
-| Q02 Baseline Screening | 2026-07-01 | QUEUED | pending work item recorded in build result |
+| Q02 Baseline Screening | 2026-07-01 | QUEUED | `D:\QM\strategy_farm\state\farm_state.sqlite` work item `7ed34d00-fcb9-4411-af53-ed2a416401f9` |

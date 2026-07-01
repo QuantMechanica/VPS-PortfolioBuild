@@ -1,0 +1,98 @@
+{
+  "task_id": "manual-codex-2026-07-01-brent-52w-anchor",
+  "ea_id": "QM5_12859",
+  "slug": "brent-52w-anchor",
+  "strategy": "Brent D1 52-week high/low anchor momentum",
+  "strategy_id": "BIANCHI-COMM-52W-2016_BRENT_S03",
+  "source_id": "BIANCHI-COMM-52W-2016",
+  "source_links": [
+    "https://doi.org/10.1016/j.jbankfin.2016.06.010",
+    "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2571725"
+  ],
+  "symbols": [
+    "XBRUSD.DWX"
+  ],
+  "host_symbol": "XBRUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12859_brent-52w-anchor",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12859_brent-52w-anchor\\QM5_12859_brent-52w-anchor.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12859_brent-52w-anchor\\QM5_12859_brent-52w-anchor.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12859_brent-52w-anchor\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\brent-52w-anchor_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12859_brent-52w-anchor_card.md",
+  "runtime_approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12859_brent-52w-anchor.md",
+  "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\BIANCHI-COMM-52W-2016\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12859_brent-52w-anchor\\sets\\QM5_12859_brent-52w-anchor_XBRUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "c45bc14f4687d8280ca1d092a9a4313621ed29e022a4eec30275326ea564002f",
+  "mq5_sha256": "f0f834b2eb5ea57af7eda5a40666f0c9f8708dbafcbe3eb92bc26f4e111e71c3",
+  "ex5_sha256": "53b735a896d2b42cbd8be4dc0b2c17fe73586a04f47a526f6bf2e9700dc57bb9",
+  "setfile_current_sha256": "4d00d501fda75b3615d74aea09a1ae645af22dfecb0272135c01d40491a57ce2",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XBRUSD.DWX",
+        "magic": 128590000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_12859_brent-52w-anchor --force --json --fail-on-error",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260701_165309\\QM5_12859_brent-52w-anchor.compile.log",
+    "ex5_size_bytes": 297652,
+    "symbol_scope_verdict": "SINGLE_SYMBOL_OK"
+  },
+  "build_check": {
+    "command": "pwsh.exe -NoProfile -File framework/scripts/build_check.ps1 -EALabel QM5_12859_brent-52w-anchor -RepoRoot C:/QM/repo -Strict -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260701_165324.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "validations": {
+    "spec_doc": "PASS",
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_guardrails": "PASS"
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "7ed34d00-fcb9-4411-af53-ed2a416401f9",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "XBRUSD.DWX",
+    "host_symbol": "XBRUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12859_brent-52w-anchor\\sets\\QM5_12859_brent-52w-anchor_XBRUSD.DWX_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "attempt_count": 0,
+    "created_at_utc": "2026-07-01T16:54:46+00:00"
+  },
+  "smoke_result": "deferred_to_q02",
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 backtest was launched from this session.",
+  "non_duplicate_reason": "Single-symbol Brent 52-week high/low anchor momentum is distinct from Brent raw 12-month TSMOM, Brent weekday/month seasonal sleeves, WTI/Brent spread baskets, WTI event/calendar/trend sleeves, XNG sleeves, XAU/XAG and gas-metal baskets, index sleeves, and QM5_12567 commodity RSI logic.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false
+  },
+  "notes": "Completed the actual build and Q02 enqueue for the Brent 52-week-anchor sleeve. The card/source skeleton existed in HEAD, but no compiled .ex5 or Q02 work item existed before this run."
+}
