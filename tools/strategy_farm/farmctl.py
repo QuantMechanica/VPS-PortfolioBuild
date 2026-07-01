@@ -2020,6 +2020,23 @@ def _p2_date_span_days(from_date: str, to_date: str) -> int:
 
 
 def _p2_full_timeout_seconds(payload: dict[str, Any], from_date: str, to_date: str) -> int:
+    # Basket / multi-symbol EAs pay a one-time cold tick-sync of EVERY member
+    # symbol over the full window (~10 min/member) that single-symbol EAs never
+    # incur; a 28-symbol basket (T-WIN) needs ~5h. The flat 2h P2_FULL_MIN floor
+    # therefore starved every basket Q02 *full* run into INFRA_FAIL in tick-prep
+    # (REPORT_MISSING/METATESTER_HUNG/INCOMPLETE). Note: the 2026-07-01 fix only
+    # touched the non-P2/Q02 basket branch; the Q02 full run lands HERE, so this
+    # is where the member-count floor must live. Scale the floor with member
+    # count, capped for safety. Serialization keeps only ONE basket active
+    # farm-wide, so this generous floor never stacks or starves single-symbol
+    # throughput on the other terminals. 2026-07-02.
+    floor_sec = P2_FULL_TIMEOUT_MIN_SECONDS
+    try:
+        _basket_n = max(1, int(payload.get("basket_symbol_count") or 1))
+    except (TypeError, ValueError):
+        _basket_n = 1
+    if _basket_n > 1:
+        floor_sec = max(P2_FULL_TIMEOUT_MIN_SECONDS, min(25200, 1800 + _basket_n * 600))
     runtime_sec = float(payload.get("p2_prescreen_runtime_sec") or 0.0)
     prescreen_from = str(payload.get("p2_prescreen_from_date") or "")
     prescreen_to = str(payload.get("p2_prescreen_to_date") or "")
@@ -2028,12 +2045,13 @@ def _p2_full_timeout_seconds(payload: dict[str, Any], from_date: str, to_date: s
             prescreen_days = _p2_date_span_days(prescreen_from, prescreen_to)
             full_days = _p2_date_span_days(from_date, to_date)
             # Full P2 runs twice for determinism. Add 50% headroom above the
-            # observed six-month real-tick runtime.
+            # observed six-month real-tick runtime. Baskets floor above the
+            # single-symbol MAX when member count demands it.
             estimated = int(runtime_sec * (full_days / prescreen_days) * 2 * 1.5)
-            return max(P2_FULL_TIMEOUT_MIN_SECONDS, min(P2_FULL_TIMEOUT_MAX_SECONDS, estimated))
+            return max(floor_sec, min(P2_FULL_TIMEOUT_MAX_SECONDS, estimated))
         except ValueError:
             pass
-    return P2_FULL_TIMEOUT_MIN_SECONDS
+    return floor_sec
 
 
 def _p2_active_summary_runtime_sec(item_row: sqlite3.Row, summary: dict[str, Any]) -> float | None:
@@ -2348,6 +2366,19 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         from_date = f"{from_year}.01.01"
         to_date = f"{to_year}.12.31"
         skip_prescreen = (phase == "Q02" and period_upper in Q02_SKIP_PRESCREEN_PERIODS)
+        # Baskets skip the 6-month prescreen entirely: the per-member tick-sync
+        # setup cost is nearly the same as the full run, so a prescreen just
+        # doubles the basket's scarce serialized budget -- and a flat 1800s
+        # prescreen starves a 28-symbol basket in tick-prep anyway. Only ONE
+        # basket runs farm-wide, so we don't need the throughput-protection the
+        # prescreen gives single-symbol EAs; go straight to the symbol-scaled
+        # full run (see _p2_full_timeout_seconds). 2026-07-02.
+        try:
+            _dispatch_is_basket = int(item_payload.get("basket_symbol_count") or 1) > 1
+        except (TypeError, ValueError):
+            _dispatch_is_basket = False
+        if _dispatch_is_basket or str(item_payload.get("portfolio_scope") or "") == "basket":
+            skip_prescreen = True
         if phase == "Q02" and not skip_prescreen:
             # Frequency-aware guard (gate-acceleration #1): low-freq cards go
             # straight to the full window — a 6-month probe proves nothing
