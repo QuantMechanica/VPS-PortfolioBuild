@@ -175,5 +175,8 @@ gates.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-06-29 | initial rank-26 next-unbuilt FX cointegration basket card | G0 | APPROVED |
-| v2 | 2026-06-29 | build recorded and Q02 enqueued as work item 080ebc00-3644-4719-b6e6-6f855604f6b6 | Q02 | ACTIVE |
+| v2 | 2026-06-29 | build recorded and logical-basket Q02 enqueued as work item 080ebc00-3644-4719-b6e6-6f855604f6b6 | Q02 | PASS |
+| v3 | 2026-06-30 | Q04 logical-basket walk-forward completed after parser/history repair | Q04 | PASS_SOFT f8e8a8d4-48c8-4c30-a7f0-2eace7bb8ccb |
+| v4 | 2026-06-30 | Q05 medium stress completed on the logical basket with PF 1.07 and 2.29% drawdown | Q05 | PASS dcf243dd-7948-414b-a1ad-9481f83a5445 |
+| v5 | 2026-07-01 | Q06 harsh-stress infra failure `summary_missing`/exit 3221225794 requeued in place with basket manifest payload; no duplicate row created | Q06 | PENDING f1147d03-5c9b-4874-ba86-0406e1a90bdc |
 

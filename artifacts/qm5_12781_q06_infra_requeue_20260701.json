@@ -1,0 +1,64 @@
+{
+  "ea_id": "QM5_12781",
+  "slug": "edgelab-usdjpy-audjpy-cointegration",
+  "unit_of_work": "q06_infra_requeue_after_q05_pass",
+  "logical_symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1",
+  "host_symbol": "USDJPY.DWX",
+  "basket_symbols": [
+    "USDJPY.DWX",
+    "AUDJPY.DWX"
+  ],
+  "mission_scope": "Advance an existing FX market-neutral cointegration basket because all approved EdgeLab cointegration pairs were already built and QM5_12532/QM5_12533 were not Q02-blocked.",
+  "precheck": {
+    "approved_unbuilt_edgelab_cointegration_pairs": 0,
+    "qm5_12532_current_observed_state": "Q02 PASS, Q04 PASS, Q05 INFRA_FAIL/no active row",
+    "qm5_12533_current_observed_state": "Q02 PASS, Q04 terminal FAIL/no active row",
+    "target_prior_state": "QM5_12781 had Q02 PASS, Q04 PASS_SOFT, Q05 PASS, and one terminal Q06 INFRA_FAIL row with no pending/active Q06 duplicate."
+  },
+  "prior_q06_failure": {
+    "work_item_id": "f1147d03-5c9b-4874-ba86-0406e1a90bdc",
+    "verdict": "INFRA_FAIL",
+    "runner_verdict": "INVALID",
+    "reason": "summary_missing",
+    "exit_code": 3221225794,
+    "evidence_path": "D:/QM/reports/work_items/f1147d03-5c9b-4874-ba86-0406e1a90bdc/QM5_12781/Q06/QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1/aggregate.json"
+  },
+  "q05_basis": {
+    "work_item_id": "dcf243dd-7948-414b-a1ad-9481f83a5445",
+    "verdict": "PASS",
+    "pf": 1.07,
+    "dd_pct": 2.28751,
+    "trades": 228,
+    "evidence_path": "D:/QM/reports/work_items/dcf243dd-7948-414b-a1ad-9481f83a5445/QM5_12781/Q05/QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1/aggregate.json"
+  },
+  "queue_action": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12781 --phase Q06",
+    "result": "requeued_existing_row",
+    "created_rows": 0,
+    "requeued_work_item_id": "f1147d03-5c9b-4874-ba86-0406e1a90bdc",
+    "status_after": "pending",
+    "attempt_count_after": 0,
+    "updated_at_utc": "2026-07-01T00:18:53+00:00",
+    "payload_after_requeue": {
+      "portfolio_scope": "basket",
+      "logical_symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1",
+      "host_symbol": "USDJPY.DWX",
+      "host_timeframe": "D1",
+      "tester_currency": "USD",
+      "tester_deposit": 100000,
+      "basket_manifest": "C:/QM/repo/framework/EAs/QM5_12781_edgelab-usdjpy-audjpy-cointegration/basket_manifest.json",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12781_edgelab-usdjpy-audjpy-cointegration/sets/QM5_12781_edgelab-usdjpy-audjpy-cointegration_QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1_D1_backtest.set"
+    }
+  },
+  "postcheck": {
+    "pending_active_q06_rows_for_target": 1,
+    "duplicate_q06_inserted": false,
+    "manual_backtest_launched": false
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
