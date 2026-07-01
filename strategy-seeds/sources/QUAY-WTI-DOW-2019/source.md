@@ -3,7 +3,7 @@ source_id: QUAY-WTI-DOW-2019
 title: Quayyum et al. crude-oil day-of-week seasonality
 publisher: Soft Computing
 source_type: academic_paper
-status: mined
+status: cards_ready
 created: 2026-06-29
 created_by: Codex
 uri: https://doi.org/10.1007/s00500-019-04329-0
@@ -11,6 +11,7 @@ cards_extracted:
   - wti-mon-fade
   - wti-thu-prem
   - brent-thu-prem
+  - brent-mon-fade
 ---
 
 # Quayyum WTI Day-Of-Week Source
@@ -35,6 +36,11 @@ lineage but ports the Thursday premium to the Brent CFD proxy `XBRUSD.DWX`.
 It is deliberately separate from the WTI Thursday build so Q02 can decide
 whether the Brent benchmark adds usable non-XNG energy exposure.
 
+The `brent-mon-fade` extraction uses the same source lineage but isolates the
+Monday weakness side on Brent. It is deliberately separate from WTI Monday and
+Brent Thursday so the pipeline can test whether a short early-week Brent sleeve
+adds different energy exposure to the XAU/SP500/NDX/XNG book.
+
 No source performance number is imported into the portfolio. The QM pipeline
 must validate the deterministic Darwinex `XTIUSD.DWX` realization in Q02 and
 later phases before any portfolio conclusion is drawn.
@@ -45,7 +51,7 @@ later phases before any portfolio conclusion is drawn.
 - No external API calls, CSV feeds, futures curve, inventory data, analyst
   forecast, discretionary override, or news scraping.
 - No ML, adaptive PnL fitting, grid, or martingale.
-- One position per `XTIUSD.DWX` magic slot.
+- One position per symbol magic slot.
 
 ## R-Rules
 
