@@ -14114,3 +14114,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12842,williams-vol-bo-xti,0,XTIUSD.DWX,128420000,2026-07-01,Codex,active
 12843,wti-brent-spread,0,XTIUSD.DWX,128430000,2026-07-01,Codex,active
 12843,wti-brent-spread,1,XBRUSD.DWX,128430001,2026-07-01,Codex,active
+12844,commodity-trend-crude,0,XTIUSD.DWX,128440000,2026-07-01,Codex,active
