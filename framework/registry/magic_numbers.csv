@@ -14213,3 +14213,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12623,comm-mom-rev-interaction-xauusd,0,XAUUSD.DWX,126230000,2026-07-01,Codex,active
 12864,oilsilver-rspr,0,XTIUSD.DWX,128640000,2026-07-01,Codex,active
 12864,oilsilver-rspr,1,XAGUSD.DWX,128640001,2026-07-01,Codex,active
+12865,brent-fri-prem,0,XBRUSD.DWX,128650000,2026-07-02,Codex,active

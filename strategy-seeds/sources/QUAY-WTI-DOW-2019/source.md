@@ -12,6 +12,7 @@ cards_extracted:
   - wti-thu-prem
   - brent-thu-prem
   - brent-mon-fade
+  - brent-fri-prem
 ---
 
 # Quayyum WTI Day-Of-Week Source
@@ -40,6 +41,11 @@ The `brent-mon-fade` extraction uses the same source lineage but isolates the
 Monday weakness side on Brent. It is deliberately separate from WTI Monday and
 Brent Thursday so the pipeline can test whether a short early-week Brent sleeve
 adds different energy exposure to the XAU/SP500/NDX/XNG book.
+
+The `brent-fri-prem` extraction isolates the positive Friday side on Brent. It
+uses the same deterministic D1 calendar package as the Thursday card but tests a
+separate weekday that the source identifies for Brent, giving Q02 a distinct
+energy benchmark sleeve rather than another WTI, XNG, metal, or index leg.
 
 No source performance number is imported into the portfolio. The QM pipeline
 must validate the deterministic Darwinex `XTIUSD.DWX` realization in Q02 and
