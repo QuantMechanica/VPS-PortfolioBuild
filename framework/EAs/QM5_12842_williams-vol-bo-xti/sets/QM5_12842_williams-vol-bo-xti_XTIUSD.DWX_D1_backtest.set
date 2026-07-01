@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12842
 ; ea_slug:      williams-vol-bo-xti
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   def93937f32c53384f66879b5eb0a624fbdb0930b8476f88e33e7c39f1721855
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-07-01
 ;==========================================================
@@ -32,11 +32,4 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=C:\QM\repo\strategy-seeds\cards\williams-vol-bo-xti_card.md
-strategy_range_mult=0.75
-strategy_min_range_atr=0.35
-strategy_atr_period=20
-strategy_atr_sl_mult=2.5
-strategy_take_rr=2.0
-strategy_order_expiry_hours=20
-strategy_max_hold_days=5
-strategy_max_spread_points=1000
+; card_defaults_status=none_found
