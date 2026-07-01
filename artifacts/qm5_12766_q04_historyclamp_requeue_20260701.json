@@ -1,0 +1,83 @@
+{
+  "action": "q04_historyclamp_requeue",
+  "agent": "codex-board-advisor",
+  "branch": "agents/board-advisor",
+  "created_at_utc": "2026-07-01T09:47:32Z",
+  "mission_path": "fallback_advance_existing_forex_card",
+  "ea_id": "QM5_12766",
+  "slug": "edgelab-usdjpy-usdchf-cointegration",
+  "selected_pair": "USDJPY~USDCHF",
+  "logical_symbol": "QM5_12766_USDJPY_USDCHF_COINTEGRATION_D1",
+  "preflight": {
+    "controlling_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "unbuilt_approved_edgelab_cointegration_cards_found": 0,
+    "qm5_12532_q02_blocked": false,
+    "qm5_12532_current_state": "Q02 PASS, Q04 PASS, Q05 INFRA_FAIL timeout",
+    "qm5_12533_q02_blocked": false,
+    "qm5_12533_current_state": "Q02 PASS, Q04 FAIL on combined basket metrics",
+    "q02_work_item": "c2f9cb77-7ea7-43ca-9f4e-d7c8749c8207",
+    "q02_verdict_before_action": "PASS",
+    "prior_q04_work_item": "1f085756-64f7-4368-9451-77a968a521de",
+    "prior_q04_verdict": "INFRA_FAIL",
+    "prior_q04_reason": "F1/F2/F3 invalid_summary with BARS_ZERO, EMPTY_EXPERT, EMPTY_SYMBOL, HISTORY_CONTEXT_INVALID, INCOMPLETE_RUNS, M0_1970_PERIOD, NO_HISTORY, RUN_STATUS_INVALID"
+  },
+  "queue_action": {
+    "command": "python tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_12766 --phase Q04",
+    "db_backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12766_q04_requeue_20260701T094732Z.sqlite",
+    "result": "requeued_existing_work_item_in_place",
+    "work_item_id": "1f085756-64f7-4368-9451-77a968a521de",
+    "phase": "Q04",
+    "status_after": "pending",
+    "verdict_after": null,
+    "attempt_count_after": 0,
+    "claimed_by_after": null,
+    "evidence_path_after": null,
+    "updated_at_utc": "2026-07-01T09:47:32+00:00",
+    "archived_report_root_on_requeue": "D:/QM/reports/work_items/1f085756-64f7-4368-9451-77a968a521de.requeued_20260701T0947320000",
+    "duplicate_q04_pending_or_active_count": 1
+  },
+  "basket_payload": {
+    "portfolio_scope": "basket",
+    "host_symbol": "USDJPY.DWX",
+    "host_timeframe": "D1",
+    "basket_symbols": [
+      "USDJPY.DWX",
+      "USDCHF.DWX"
+    ],
+    "basket_manifest": "C:/QM/repo/framework/EAs/QM5_12766_edgelab-usdjpy-usdchf-cointegration/basket_manifest.json",
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "q04_default_probe": true,
+    "q04_latest_full_year": 2024,
+    "q04_history_clamp_source": "mt5_cache",
+    "q04_history_checked_window": "2023-2024",
+    "q04_history_checked_symbols": [
+      "USDJPY.DWX",
+      "USDCHF.DWX"
+    ]
+  },
+  "verification": [
+    {
+      "check": "direct SQLite read of QM5_12766 work_items",
+      "result": "PASS",
+      "summary": "Q04 row is pending, verdict/evidence/claimed_by are null, and exactly one Q04 row is pending or active."
+    },
+    {
+      "check": "farmctl work-items --ea QM5_12766",
+      "result": "PASS",
+      "summary": "Q02 done/PASS row remains intact and Q04 shows pending for the logical basket."
+    },
+    {
+      "check": "risk mode setfile",
+      "result": "PASS",
+      "summary": "Backtest setfile remains RISK_FIXED=1000, RISK_PERCENT=0, environment=backtest."
+    }
+  ],
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}

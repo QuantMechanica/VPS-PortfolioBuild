@@ -4,7 +4,7 @@
 **Slug:** edgelab-usdjpy-usdchf-cointegration
 **Source:** claude_cross_asset_discovery_2026-06-09 plus Chan cointegration pair-trade method
 **Author of this spec:** Codex
-**Last revised:** 2026-06-29
+**Last revised:** 2026-07-01
 
 ---
 
@@ -120,6 +120,15 @@ was recorded and enqueued one logical-basket Q02 work item for
 `c097d38d-f428-4c8b-a90c-104d1e072c0d`. No per-leg Q02 fanout was
 created.
 
+Q04 handoff note: the first Q04 probe
+`1f085756-64f7-4368-9451-77a968a521de` finished as `INFRA_FAIL` with
+empty-symbol/M0-1970/no-history fold summaries even though the repaired Q02
+logical-basket run passed on the same USDJPY/USDCHF D1 setfile. On 2026-07-01
+the existing Q04 row was requeued in place through `farmctl enqueue-backtest
+--ea QM5_12766 --phase Q04`; the payload now carries the basket manifest and
+history clamp (`q04_latest_full_year=2024`) for the paced workers. No manual MT5
+run was launched.
+
 ---
 
 ## Revision History
@@ -128,4 +137,5 @@ created.
 |---|---|---|---|
 | v1 | 2026-06-29 | Initial rank-20 next-unbuilt FX cointegration basket build | Built from the 12762 two-leg basket pattern |
 | v1-q02 | 2026-06-29 | Compile/build-check PASS and Q02 enqueued | Pending logical-basket work item c097d38d-f428-4c8b-a90c-104d1e072c0d |
+| v1-q04-requeue | 2026-07-01 | Q04 infra retry queued | Requeued existing Q04 row 1f085756-64f7-4368-9451-77a968a521de after Q02 PASS; payload includes basket manifest and 2024 latest-full-year clamp |
 
