@@ -14165,6 +14165,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12857,xbr-xng-vcb,0,XBRUSD.DWX,128570000,2026-07-01,Codex,active
 12857,xbr-xng-vcb,1,XNGUSD.DWX,128570001,2026-07-01,Codex,active
 12858,rigcount-fri-mom,0,XTIUSD.DWX,128580000,2026-07-01,Codex,active
+12859,brent-52w-anchor,0,XBRUSD.DWX,128590000,2026-07-01,Codex,active
 11902,bermuda-triangle-123-fib-extension-h1,0,EURUSD.DWX,119020000,2026-07-01,Codex,active
 11902,bermuda-triangle-123-fib-extension-h1,1,GBPUSD.DWX,119020001,2026-07-01,Codex,active
 11902,bermuda-triangle-123-fib-extension-h1,2,USDJPY.DWX,119020002,2026-07-01,Codex,active
