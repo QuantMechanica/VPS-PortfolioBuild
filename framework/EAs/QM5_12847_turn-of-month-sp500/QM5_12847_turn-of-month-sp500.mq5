@@ -1,316 +1,303 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_12847 Turn-of-Month SP500 calendar seasonal"
+#property description "QM5_12847 Turn-of-the-Month / Ultimo (SP500 index seasonal)"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_Signals.mqh>
 
 // =============================================================================
-// QM5_12847 — Turn-of-Month / Ultimo (SP500 index seasonal)
-// Entry at the close of the Nth-last trading day of each calendar month.
-// Exit at the close of the Mth trading day of the following calendar month.
-// Regime gate: close[1] > SMA(regime_sma_period) on D1.
-// Long-only, one trade/month, single-position-per-magic, closed-bar D1.
-// Trading-day counting uses actual D1 bar sequence (skips weekends/holidays).
+// QM5_12847 — Turn-of-the-Month / Ultimo
+// Source: quantified-turn-of-month-20260701
+// Card:   cards_approved/QM5_12847_turn-of-month-sp500.md
+//
+// Mechanic (D1):
+//   Long-only. Enter at close of Nth-last trading day of calendar month
+//   (counting ACTUAL D1 bars, not calendar days). Exit at close of Mth
+//   trading day of the NEXT calendar month. Optional 200-SMA regime gate.
+//   One trade per calendar month. No ML, no grid, no martingale.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                    = 12847;
-input int    qm_magic_slot_offset        = 0;
-input uint   qm_rng_seed                 = 42;
+input int    qm_ea_id                     = 12847;
+input int    qm_magic_slot_offset         = 0;
+input uint   qm_rng_seed                  = 42;
 
 input group "Risk"
-input double RISK_PERCENT                = 0.0;
-input double RISK_FIXED                  = 1000.0;
-input double PORTFOLIO_WEIGHT            = 1.0;
+input double RISK_PERCENT                 = 0.0;
+input double RISK_FIXED                   = 1000.0;
+input double PORTFOLIO_WEIGHT             = 1.0;
 
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
-input int    qm_news_stale_max_hours     = 336;
-input string qm_news_min_impact          = "high";
-input QM_NewsMode qm_news_mode_legacy    = QM_NEWS_OFF;
+input int    qm_news_stale_max_hours               = 336;
+input string qm_news_min_impact                    = "high";
+input QM_NewsMode qm_news_mode_legacy              = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = true;
-input int    qm_friday_close_hour_broker = 21;
+input bool   qm_friday_close_enabled      = true;
+input int    qm_friday_close_hour_broker  = 21;
 
 input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    entry_td_from_end  = 5;     // Nth-last trading day of month (sweep 4/5/6)
-input int    exit_td_of_next    = 3;     // Mth trading day of next month (sweep 2/3/4)
-input int    regime_sma_period  = 200;   // Bull-regime D1 SMA period
-input bool   use_regime_filter  = true;  // Enable 200-SMA bull-regime gate
-input int    sl_atr_period      = 14;    // ATR period for safety-stop (lot sizing only)
-input double sl_atr_mult        = 3.0;   // ATR multiplier for safety-stop (lot sizing only)
-
-// File-scope calendar arrays (populated once at OnInit)
-datetime g_entry_dates[];
-datetime g_exit_dates[];
-bool     g_should_exit = false;
+input int    entry_td_from_end   = 5;    // Nth-last trading day of month to enter (card default 5; sweep 4/5/6)
+input int    exit_td_of_next     = 3;    // Mth trading day of NEXT month to exit (card default 3; sweep 2/3/4)
+input int    regime_sma_period   = 200;  // SMA period for bull-regime filter (D1)
+input bool   use_regime_filter   = true; // true = only trade when price > SMA (card default; sweep on/off)
 
 // -----------------------------------------------------------------------------
-// Calendar helpers
+// File-scope calendar state (advanced once per new D1 bar)
 // -----------------------------------------------------------------------------
+int   g_cur_mon           = -1;
+int   g_cur_year          = -1;
+int   g_td_in_month       = 0;
+int   g_prev_tdc          = 21;   // seed with typical ~21 trading days/month
+bool  g_entered_this_mon  = false;
 
-bool IsInDateArray(const datetime &arr[], const datetime val)
-{
-    int n = ArraySize(arr);
-    for(int i = 0; i < n; i++)
-        if(arr[i] == val) return true;
-    return false;
-}
+int   g_pos_entry_mon     = -1;
+int   g_pos_entry_year    = -1;
+bool  g_exit_pending      = false;
+int   g_exit_td_count     = 0;
 
-// Build entry-date and exit-date arrays from the full D1 bar history.
-// Uses actual bar sequence so weekends/holidays are naturally excluded.
-// Called once from OnInit after QM_FrameworkInit succeeds.
-void PrecomputeCalendar()
-{
-    ArrayResize(g_entry_dates, 0);
-    ArrayResize(g_exit_dates, 0);
+// -----------------------------------------------------------------------------
+// Advance calendar state — called once per new D1 bar from Strategy_EntrySignal
+// -----------------------------------------------------------------------------
+void AdvanceMonthTracking()
+  {
+   const datetime bar1_t = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: bespoke calendar month detection; no QM_ wrapper for bar open-time
+   if(bar1_t <= 0)
+      return;
 
-    int total = Bars(_Symbol, PERIOD_D1); // perf-allowed
-    if(total < 30) return;
+   MqlDateTime dt1;
+   TimeToStruct(bar1_t, dt1);
 
-    // Closed bars: shifts 1..(total-1). Collect oldest-first (init-time only).
-    int n_closed = total - 1;
-    datetime all_times[];
-    ArrayResize(all_times, n_closed);
+   const bool month_rolled = (dt1.mon != g_cur_mon || dt1.year != g_cur_year);
+   if(month_rolled)
+     {
+      if(g_cur_mon >= 0)
+         g_prev_tdc = g_td_in_month;
 
-    for(int k = 0; k < n_closed; k++)
-        all_times[k] = iTime(_Symbol, PERIOD_D1, total - 1 - k); // perf-allowed
+      g_cur_mon          = dt1.mon;
+      g_cur_year         = dt1.year;
+      g_td_in_month      = 1;
+      g_entered_this_mon = false;
 
-    // Process one calendar month at a time (oldest first)
-    int i = 0;
-    while(i < n_closed)
-    {
-        MqlDateTime sd;
-        TimeToStruct(all_times[i], sd);
-        int cur_ym = sd.year * 100 + sd.mon;
-
-        // Find end of this month's bar block
-        int j = i;
-        while(j < n_closed)
+      if(g_pos_entry_mon >= 0)
         {
-            MqlDateTime sj;
-            TimeToStruct(all_times[j], sj);
-            if(sj.year * 100 + sj.mon != cur_ym) break;
-            j++;
+         g_exit_pending  = true;
+         g_exit_td_count = 1;
         }
-        // all_times[i..j-1] = trading days in cur_ym (oldest first), count = j-i
-
-        int n_bars = j - i;
-
-        // Entry: Nth-last trading day of this month
-        if(n_bars >= entry_td_from_end)
-        {
-            int sz = ArraySize(g_entry_dates);
-            ArrayResize(g_entry_dates, sz + 1);
-            g_entry_dates[sz] = all_times[j - entry_td_from_end];
-        }
-
-        // Exit: Mth trading day of NEXT month
-        if(j + exit_td_of_next - 1 < n_closed)
-        {
-            MqlDateTime snext;
-            TimeToStruct(all_times[j], snext);
-            int next_ym = snext.year * 100 + snext.mon;
-
-            MqlDateTime sexit;
-            TimeToStruct(all_times[j + exit_td_of_next - 1], sexit);
-
-            // Verify the exit bar is still in the same next month (guards short month edge)
-            if(sexit.year * 100 + sexit.mon == next_ym)
-            {
-                int sz = ArraySize(g_exit_dates);
-                ArrayResize(g_exit_dates, sz + 1);
-                g_exit_dates[sz] = all_times[j + exit_td_of_next - 1];
-            }
-        }
-
-        i = j;
-    }
-
-    QM_LogEvent(QM_INFO, "CALENDAR_PRECOMPUTED",
-                StringFormat("{\"entry_count\":%d,\"exit_count\":%d}",
-                             ArraySize(g_entry_dates), ArraySize(g_exit_dates)));
-}
+     }
+   else
+     {
+      g_td_in_month++;
+      if(g_exit_pending)
+         g_exit_td_count++;
+     }
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// No additional trade filter beyond regime (applied in EntrySignal)
 bool Strategy_NoTradeFilter()
-{
-    return false;
-}
+  {
+   return false;
+  }
 
-// Called once per closed D1 bar (after QM_IsNewBar gate in OnTick).
-// Handles both exit scheduling for open positions and new entry signals.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
-{
-    datetime bar1_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed
+  {
+   AdvanceMonthTracking();
 
-    // If we hold a position, check whether today is the scheduled exit bar
-    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
-    {
-        if(IsInDateArray(g_exit_dates, bar1_time))
-            g_should_exit = true;
-        return false;
-    }
+   const int magic      = QM_FrameworkMagic();
+   const int open_count = QM_TM_OpenPositionCount(magic);
 
-    // No open position: check entry calendar
-    if(!IsInDateArray(g_entry_dates, bar1_time))
-        return false;
+   // --- Time exit: close on Mth trading day of next month ---
+   if(g_exit_pending)
+     {
+      if(open_count > 0 && g_exit_td_count >= exit_td_of_next)
+        {
+         for(int i = PositionsTotal() - 1; i >= 0; --i)
+           {
+            const ulong ticket = PositionGetTicket(i);
+            if(!PositionSelectByTicket(ticket))
+               continue;
+            if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+               continue;
+            QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
+           }
+         g_pos_entry_mon = -1;
+         g_exit_pending  = false;
+         g_exit_td_count = 0;
+        }
+      else if(open_count == 0)
+        {
+         // SL was hit; reset exit tracking
+         g_pos_entry_mon = -1;
+         g_exit_pending  = false;
+         g_exit_td_count = 0;
+        }
+     }
 
-    // Bull-regime gate: close[1] > daily SMA (200 SMA per card)
-    if(use_regime_filter)
-    {
-        const double sma  = QM_SMA(_Symbol, PERIOD_D1, regime_sma_period, 1);
-        const double cls1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: regime read
-        if(cls1 <= 0.0 || sma <= 0.0 || cls1 <= sma)
-            return false;
-    }
+   if(open_count > 0)     return false;
+   if(g_entered_this_mon) return false;
 
-    // Build entry: long at market, ATR safety stop for lot sizing, time-based exit
-    req.type              = QM_BUY;
-    req.price             = 0.0;  // framework fills market ask
-    req.sl                = QM_StopATR(_Symbol, QM_BUY,
-                                        SymbolInfoDouble(_Symbol, SYMBOL_BID),
-                                        sl_atr_period, sl_atr_mult);
-    req.tp                = 0.0;  // no hard TP; exit is time-based via g_should_exit
-    req.reason            = "ToM_Entry";
-    req.symbol_slot       = qm_magic_slot_offset;
-    req.expiration_seconds = 0;
+   // Regime filter: price > N-bar SMA on D1
+   if(use_regime_filter)
+     {
+      if(QM_Sig_Price_Above_MA(_Symbol, PERIOD_D1, regime_sma_period, 0, 1) <= 0)
+         return false;
+     }
 
-    return true;
-}
+   // Near-end-of-month: remaining = prev_tdc - td_in_month (days AFTER bar 1 in same month)
+   const int remaining_est = g_prev_tdc - g_td_in_month;
+   if(remaining_est >= entry_td_from_end)
+      return false;
 
-// No intra-hold management; hold is short (~8 TD) and exits at fixed calendar date
+   const double bid   = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(bid <= 0.0)
+      return false;
+
+   // 3x ATR(14) protective stop below entry — safety net; primary exit is time stop
+   const double atr14 = QM_ATR(_Symbol, PERIOD_D1, 14, 1);
+   if(atr14 <= 0.0)
+      return false;
+
+   req.type        = QM_BUY;
+   req.price       = 0.0;
+   req.sl          = bid - 3.0 * atr14;
+   req.tp          = 0.0;
+   req.reason      = "TOM_ENTRY_D1";
+   req.symbol_slot = qm_magic_slot_offset;
+
+   g_pos_entry_mon    = g_cur_mon;
+   g_pos_entry_year   = g_cur_year;
+   g_entered_this_mon = true;
+
+   return true;
+  }
+
 void Strategy_ManageOpenPosition()
-{
-}
+  {
+   // No trailing stop or BE for a time-exit monthly strategy.
+  }
 
-// g_should_exit is set inside Strategy_EntrySignal when the exit bar is detected.
-// ExitSignal fires on the next tick after EntrySignal sets the flag.
 bool Strategy_ExitSignal()
-{
-    if(!g_should_exit) return false;
-    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) == 0)
-    {
-        g_should_exit = false;
-        return false;
-    }
-    return true;
-}
+  {
+   // Time exit is handled inside Strategy_EntrySignal (new-bar gate).
+   return false;
+  }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
-{
-    return false;  // defer to framework 2-axis news gate
-}
+  {
+   return false;
+  }
 
 // -----------------------------------------------------------------------------
-// Framework wiring — do NOT edit below this line unless you know why.
+// Framework wiring
 // -----------------------------------------------------------------------------
 
 int OnInit()
-{
-    if(!QM_FrameworkInit(qm_ea_id,
-                         qm_magic_slot_offset,
-                         RISK_PERCENT,
-                         RISK_FIXED,
-                         PORTFOLIO_WEIGHT,
-                         qm_news_mode_legacy,
-                         qm_friday_close_enabled,
-                         qm_friday_close_hour_broker,
-                         30,
-                         30,
-                         qm_news_stale_max_hours,
-                         qm_news_min_impact,
-                         qm_rng_seed,
-                         qm_stress_reject_probability,
-                         qm_news_temporal,
-                         qm_news_compliance))
-        return INIT_FAILED;
+  {
+   if(!QM_FrameworkInit(qm_ea_id,
+                        qm_magic_slot_offset,
+                        RISK_PERCENT,
+                        RISK_FIXED,
+                        PORTFOLIO_WEIGHT,
+                        qm_news_mode_legacy,
+                        qm_friday_close_enabled,
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
+      return INIT_FAILED;
 
-    PrecomputeCalendar();
-
-    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
-    return INIT_SUCCEEDED;
-}
+   QM_LogEvent(QM_INFO, "INIT_OK",
+               "{\"ea\":\"QM5_12847\",\"slug\":\"turn-of-month-sp500\","
+               "\"entry_td_from_end\":" + IntegerToString(entry_td_from_end) +
+               ",\"exit_td_of_next\":" + IntegerToString(exit_td_of_next) + "}");
+   return INIT_SUCCEEDED;
+  }
 
 void OnDeinit(const int reason)
-{
-    QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
-    QM_FrameworkShutdown();
-}
+  {
+   QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
+   QM_FrameworkShutdown();
+  }
 
 void OnTick()
-{
-    if(!QM_KillSwitchCheck())
-        return;
+  {
+   if(!QM_KillSwitchCheck())
+      return;
 
-    const datetime broker_now = TimeCurrent();
-    if(Strategy_NewsFilterHook(broker_now))
-        return;
-    bool news_allows = true;
-    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-        news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-    else
-        news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-    if(!news_allows)
-        return;
-    if(QM_FrameworkHandleFridayClose())
-        return;
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
 
-    if(Strategy_NoTradeFilter())
-        return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
 
-    Strategy_ManageOpenPosition();
+   if(QM_FrameworkHandleFridayClose())
+      return;
 
-    if(Strategy_ExitSignal())
-    {
-        const int magic = QM_FrameworkMagic();
-        for(int i = PositionsTotal() - 1; i >= 0; --i)
+   if(Strategy_NoTradeFilter())
+      return;
+
+   Strategy_ManageOpenPosition();
+
+   if(Strategy_ExitSignal())
+     {
+      const int magic = QM_FrameworkMagic();
+      for(int i = PositionsTotal() - 1; i >= 0; --i)
         {
-            const ulong ticket = PositionGetTicket(i);
-            if(!PositionSelectByTicket(ticket))
-                continue;
-            if(PositionGetInteger(POSITION_MAGIC) != magic)
-                continue;
-            QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+         const ulong ticket = PositionGetTicket(i);
+         if(!PositionSelectByTicket(ticket))
+            continue;
+         if(PositionGetInteger(POSITION_MAGIC) != magic)
+            continue;
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
-    }
+     }
 
-    if(!QM_IsNewBar())
-        return;
+   if(!QM_IsNewBar())
+      return;
 
-    QM_EquityStreamOnNewBar();
+   QM_EquityStreamOnNewBar();
 
-    QM_EntryRequest req;
-    if(Strategy_EntrySignal(req))
-    {
-        ulong out_ticket = 0;
-        QM_TM_OpenPosition(req, out_ticket);
-    }
-}
+   QM_EntryRequest req;
+   if(Strategy_EntrySignal(req))
+     {
+      ulong out_ticket = 0;
+      QM_TM_OpenPosition(req, out_ticket);
+     }
+  }
 
 void OnTimer()
-{
-    QM_FrameworkOnTimer();
-}
+  {
+   QM_FrameworkOnTimer();
+  }
 
 void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeRequest &request,
                         const MqlTradeResult &result)
-{
-    QM_FrameworkOnTradeTransaction(trans, request, result);
-}
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
+  }
 
 double OnTester()
-{
-    QM_ChartUI_Refresh();
-    return QM_DefaultObjective();
-}
+  {
+   QM_ChartUI_Refresh();
+   return QM_DefaultObjective();
+  }
