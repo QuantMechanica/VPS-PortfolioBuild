@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12578
 ; ea_slug:      eia-oilgas-ratio
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   90e8d3dda824afee9f6ec9538e487ab85363f545849dfb5e5f9ce26cc2a21e4f
+; build_hash:   4344d587fe1a07a10929e9340498e04dee6203591dcc5d85356bf1e3f0080c8b
 ; author:       Development
 ; date:         2026-06-26
 ;==========================================================

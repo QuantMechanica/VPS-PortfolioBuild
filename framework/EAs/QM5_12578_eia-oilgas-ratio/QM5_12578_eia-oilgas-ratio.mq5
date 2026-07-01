@@ -59,6 +59,8 @@ double   g_spread_sd = 0.0;
 bool     g_state_ready = false;
 datetime g_pair_entry_time = 0;
 datetime g_last_state_bar = 0;
+datetime g_news_check_bucket = 0;
+bool     g_news_blocked_cached = false;
 
 int Strategy_SlotForSymbol(const string symbol)
   {
@@ -309,6 +311,13 @@ bool Strategy_ExitSignal()
    return false;
   }
 
+datetime Strategy_NewsBucket(const datetime broker_time)
+  {
+   const long bucket_seconds = 15 * 60;
+   const long raw_time = (long)broker_time;
+   return (datetime)(raw_time - (raw_time % bucket_seconds));
+  }
+
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    if(QM_FrameworkFridayCloseNow(broker_time))
@@ -317,21 +326,40 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
       return true;
      }
 
+   const datetime news_bucket = Strategy_NewsBucket(broker_time);
+   if(news_bucket == g_news_check_bucket)
+      return g_news_blocked_cached;
+
+   g_news_check_bucket = news_bucket;
+   g_news_blocked_cached = false;
+
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
      {
       if(!QM_NewsAllowsTrade2(g_leg_xti, broker_time, qm_news_temporal, qm_news_compliance))
+        {
+         g_news_blocked_cached = true;
          return true;
+        }
       if(!QM_NewsAllowsTrade2(g_leg_xng, broker_time, qm_news_temporal, qm_news_compliance))
+        {
+         g_news_blocked_cached = true;
          return true;
+        }
      }
    else
      {
       if(!QM_NewsAllowsTrade(g_leg_xti, broker_time, qm_news_mode_legacy))
+        {
+         g_news_blocked_cached = true;
          return true;
+        }
       if(!QM_NewsAllowsTrade(g_leg_xng, broker_time, qm_news_mode_legacy))
+        {
+         g_news_blocked_cached = true;
          return true;
+        }
      }
-   return false;
+   return g_news_blocked_cached;
   }
 
 int OnInit()
@@ -379,13 +407,7 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+   // Synthetic ratio host has no economic-news mapping; leg checks above are authoritative.
    if(QM_FrameworkHandleFridayClose())
       return;
 
