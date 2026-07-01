@@ -36,10 +36,16 @@ function New-FakeProcess {
     $obj = [pscustomobject]@{
         Id = $Id
         ExitCode = $ExitCode
+        HasExitedValue = $true
+        HasExitedCalls = 0
         StartTime = Get-Date
         WaitCalls = 0
         WaitResult = $WaitResult
     }
+    $obj | Add-Member -MemberType ScriptProperty -Name HasExited -Value {
+        $this.HasExitedCalls += 1
+        return $this.HasExitedValue
+    } -Force
     $obj | Add-Member -MemberType ScriptMethod -Name WaitForExit -Value {
         param([int]$Milliseconds)
         $this.WaitCalls += 1
@@ -77,8 +83,8 @@ $result = Start-TesterRun `
     -TimeoutSec 1 `
     -TerminalName "T1"
 
-if ($script:childTerminalProcess.WaitCalls -ne 1) {
-    throw "Expected Start-TesterRun to wait on spawned terminal once, got $($script:childTerminalProcess.WaitCalls)."
+if ($script:childTerminalProcess.HasExitedCalls -lt 1) {
+    throw "Expected Start-TesterRun to poll the spawned terminal, got $($script:childTerminalProcess.HasExitedCalls) polls."
 }
 
 if ($script:launcherProcess.WaitCalls -ne 0) {

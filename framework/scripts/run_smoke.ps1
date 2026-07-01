@@ -1204,13 +1204,16 @@ function Wait-ForReportExport {
         [Parameter(Mandatory = $true)]
         [string]$TerminalRoot,
         [ValidateRange(0, 300)]
-        [int]$MaxWaitSeconds = 30
+        [int]$MaxWaitSeconds = 30,
+        [switch]$RequireCompleteMetrics
     )
 
     $deadline = (Get-Date).ToUniversalTime().AddSeconds($MaxWaitSeconds)
     do {
         if (Test-Path -LiteralPath $ReportPath -PathType Leaf) {
-            return $true
+            if (-not $RequireCompleteMetrics -or (Test-TesterReportHasCompleteMetrics -ReportPath $ReportPath)) {
+                return $true
+            }
         }
 
         # Do not early-return when metatester is gone: report export can lag
@@ -1223,7 +1226,10 @@ function Wait-ForReportExport {
         }
     } while ((Get-Date).ToUniversalTime() -lt $deadline)
 
-    return (Test-Path -LiteralPath $ReportPath -PathType Leaf)
+    if (-not (Test-Path -LiteralPath $ReportPath -PathType Leaf)) {
+        return $false
+    }
+    return (-not $RequireCompleteMetrics -or (Test-TesterReportHasCompleteMetrics -ReportPath $ReportPath))
 }
 
 function Convert-RunMetricsToFingerprint {
@@ -1539,9 +1545,12 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
 
     # MT5 report writes can lag significantly under terminal contention; allow a longer settle window
     # before classifying as infra REPORT_MISSING.
-    $reportMaterialized = Wait-ForReportExport -ReportPath $sourceReportPath -TerminalRoot $terminalRoot -MaxWaitSeconds 240
+    $reportMaterialized = Wait-ForReportExport -ReportPath $sourceReportPath -TerminalRoot $terminalRoot -MaxWaitSeconds 240 -RequireCompleteMetrics
     if (-not $reportMaterialized) {
         $reportMaterialized = Use-LegacyRelativeReportExport -TerminalRoot $terminalRoot -AbsoluteReportPath $reportHtmPath -LegacyRelativePath $legacyRelativeSourcePath
+        if ($reportMaterialized -and -not (Test-TesterReportHasCompleteMetrics -ReportPath $reportHtmPath)) {
+            $reportMaterialized = $false
+        }
     }
     if (-not $reportMaterialized) {
         $reasonClasses.Add("REPORT_MISSING")
