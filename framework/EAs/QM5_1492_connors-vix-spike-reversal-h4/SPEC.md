@@ -1,16 +1,16 @@
 # QM5_1492_connors-vix-spike-reversal-h4 — Strategy Spec
 
 **EA ID:** QM5_1492
-**Slug:** connors-vix-spike-reversal-h4
-**Source:** 6e967762-b26d-59a3-b076-35c17f2e7c36 (see `strategy-seeds/sources/6e967762-b26d-59a3-b076-35c17f2e7c36/`)
-**Author of this spec:** Codex
-**Last revised:** 2026-06-30
+**Slug:** `connors-vix-spike-reversal-h4`
+**Source:** `6e967762-b26d-59a3-b076-35c17f2e7c36`
+**Author of this spec:** Claude
+**Last revised:** 2026-07-01
 
 ---
 
 ## 1. Strategy Logic
 
-This EA trades long-only H4 volatility-spike reversals on index CFDs. An entry fires when ATR(14) on the last closed H4 bar is more than 1.5 times its 50-bar ATR baseline, one of the two prior H4 bars is still above 1.3 times baseline, price is above a rising H4 SMA(200), the last two H4 closes are below SMA(5), and the last closed D1 bar is above a rising D1 SMA(50). The EA blocks another entry if the same complete trigger appeared in the previous 12 H4 bars, uses a fixed 2.0 ATR stop from entry, closes 60% above H4 SMA(5), closes the remainder above H4 SMA(10), and closes full size after 16 H4 bars if TP1 never fired.
+On each H4 bar close, the EA checks six gates: (1) current ATR(14) is at least 1.5× its 50-bar SMA baseline (volatility spike), (2) at least one of the prior two bars also showed a stretch above 1.3× (persistence), (3) H4 close is above its 200-bar SMA and that SMA is rising over 10 bars (long-term uptrend), (4) H4 close is below its 5-bar SMA on both the most recent and second-most-recent bar (short-term pullback), (5) daily close is above its 50-bar SMA and that SMA is rising over 5 bars (D1 trend confirmation), and (6) at least 12 H4 bars have elapsed since the last entry trigger (cooldown). When all six gates pass, a market long is opened with a stop at 2×ATR(14) below entry. TP1 closes 60% of the position when H4 bar closes above the 5-bar SMA; TP2 closes the remaining 40% when H4 bar closes above the 10-bar SMA. A time stop closes the full position after 16 H4 bars regardless of profit.
 
 ---
 
@@ -18,38 +18,36 @@ This EA trades long-only H4 volatility-spike reversals on index CFDs. An entry f
 
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
-| `strategy_signal_tf` | `PERIOD_H4` | H4 only | Base timeframe for all H4 entry and exit signals. |
-| `strategy_atr_period` | `14` | `>0` | ATR period used for stretch and stop distance. |
-| `strategy_atr_baseline_bars` | `50` | `1-80` | Number of ATR bars in the long volatility baseline. |
-| `strategy_spike_threshold` | `1.5` | `>0` | Current ATR stretch required for entry. |
-| `strategy_confirm_threshold` | `1.3` | `>0` | Prior-bar ATR stretch required for confirmation. |
-| `strategy_long_sma_period` | `200` | `>0` | H4 long-trend SMA period. |
-| `strategy_long_sma_slope_bars` | `10` | `>0` | H4 bars used to confirm the SMA(200) is rising. |
-| `strategy_pullback_sma_period` | `5` | `>0` | H4 fast SMA used for pullback and TP1. |
-| `strategy_daily_sma_period` | `50` | `>0` | D1 trend-confirmation SMA period. |
-| `strategy_daily_sma_slope_bars` | `5` | `>0` | D1 bars used to confirm the daily SMA is rising. |
-| `strategy_cooldown_bars` | `12` | `0-24` | H4 bars checked for recent prior triggers. |
-| `strategy_atr_sl_mult` | `2.0` | `>0` | ATR multiple for the hard stop. |
-| `strategy_time_stop_bars` | `16` | `>0` | H4 bars before time-stop if TP1 has not fired. |
-| `strategy_tp2_sma_period` | `10` | `>0` | H4 SMA used for the final exit. |
-| `strategy_tp1_fraction` | `0.60` | `0-1` | Fraction of current position closed at TP1. |
-| `strategy_tp_done_volume_ratio` | `0.50` | `0-1` | Volume ratio used to infer TP1 has already fired. |
-| `strategy_spread_atr_fraction` | `0.15` | `>0` | Current spread cap as a fraction of H4 ATR. |
-| `strategy_warmup_bars` | `250` | `>=200` | Minimum H4 closed-bar depth required before entry. |
+| `strategy_atr_period` | 14 | 7–21 | ATR period for volatility measurement (H4) |
+| `strategy_atr_baseline_period` | 50 | 20–100 | SMA period for ATR stretch baseline envelope |
+| `strategy_stretch_entry` | 1.5 | 1.2–2.5 | Entry threshold: ATR must be this multiple of baseline |
+| `strategy_stretch_confirm` | 1.3 | 1.0–2.0 | Persistence threshold: prior bar ATR/baseline |
+| `strategy_sma_long_h4` | 200 | 100–300 | Long-term H4 SMA period for uptrend gate |
+| `strategy_sma_long_slope_bars` | 10 | 5–20 | Bars back for SMA200 slope check |
+| `strategy_sma_pullback_h4` | 5 | 3–10 | Fast H4 SMA for pullback gate and TP1 exit |
+| `strategy_sma_exit_slow` | 10 | 5–20 | Slow H4 SMA for TP2 exit |
+| `strategy_sma_d1` | 50 | 20–100 | Daily SMA period for D1 trend confirmation |
+| `strategy_sma_d1_slope_bars` | 5 | 3–10 | Bars back for D1 SMA slope check |
+| `strategy_cooldown_bars` | 12 | 6–24 | Minimum H4 bars between entry triggers |
+| `strategy_time_stop_bars` | 16 | 8–32 | Maximum H4 bars before forced close |
+| `strategy_sl_atr_mult` | 2.0 | 1.0–4.0 | Stop loss = N × ATR(14) below entry |
+| `strategy_warmup_h4_bars` | 250 | 200–400 | Minimum H4 bars before first entry allowed |
+| `strategy_spread_mult` | 1.5 | 1.0–3.0 | Block entry if spread exceeds N × EMA(spread) |
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `NDX.DWX` — Nasdaq 100 index CFD fits the equity-index volatility-spike reversal mechanism.
-- `WS30.DWX` — Dow 30 index CFD provides a second liquid US large-cap index.
-- `GDAXI.DWX` — DAX 40 index CFD extends the same index microstructure to Germany.
-- `UK100.DWX` — FTSE 100 index CFD extends the same index microstructure to the UK.
-- `SP500.DWX` — S&P 500 custom symbol is the closest Connors/SPY analogue and is valid for backtests.
+- `NDX.DWX` — Nasdaq 100; equity index with strong trend persistence and clear ATR-stretch vol-spike events
+- `WS30.DWX` — Dow Jones 30; US large-cap index; Connors VIX mechanism calibrated to equity-index microstructure
+- `GDAXI.DWX` — DAX 40; major EU equity index with similar vol-spike dynamics to US indices
+- `UK100.DWX` — FTSE 100; major EU equity index; acceptable vol-stretch dynamics; live-tradable
+- `SP500.DWX` — S&P 500; original Connors VIX source instrument; backtest-only (broker does not route live orders)
 
 **Explicitly NOT for:**
-- Forex, metals, and energy symbols — the card excludes non-index markets because the ATR-stretch port is calibrated to equity-index microstructure.
+- Forex pairs — VIX-stretch mechanism is calibrated to equity-index microstructure; FX vol dynamics are structurally different
+- Commodities — excluded by card instrument scope
 
 ---
 
@@ -58,7 +56,7 @@ This EA trades long-only H4 volatility-spike reversals on index CFDs. An entry f
 | Aspect | Value |
 |---|---|
 | Base timeframe | `H4` |
-| Multi-timeframe refs | `D1` SMA(50) close and slope confirmation |
+| Multi-timeframe refs | `PERIOD_D1` (SMA50 for daily trend gate) |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
 ---
@@ -67,22 +65,20 @@ This EA trades long-only H4 volatility-spike reversals on index CFDs. An entry f
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `100` |
-| Typical hold time | `1-3 trading days` (`16` H4 bars maximum without TP1) |
-| Expected drawdown profile | ATR-bounded mean-reversion drawdowns during failed index rebounds. |
-| Regime preference | Volatility-spike mean reversion inside a rising index trend. |
-| Win rate target (qualitative) | medium-high |
+| Trades / year / symbol | ~100 |
+| Typical hold time | 1–3 trading days (4–16 H4 bars) |
+| Expected drawdown profile | Moderate; hard ATR stop limits individual trade loss |
+| Regime preference | Mean-reversion pullback within long-term uptrend during volatility expansion |
+| Win rate target (qualitative) | Medium |
 
 ---
 
 ## 6. Source Citation
 
-This card was mechanised from:
-
-**Source ID:** 6e967762-b26d-59a3-b076-35c17f2e7c36
-**Source type:** forum / book cluster
-**Pointer:** ForexFactory Trading Systems Connors VIX EA cluster plus Connors and Alvarez, *Short Term Trading Strategies That Work*, chapters 9-10.
-**R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_1492_connors-vix-spike-reversal-h4.md`
+**Source ID:** `6e967762-b26d-59a3-b076-35c17f2e7c36`
+**Source type:** book + forum
+**Pointer:** Connors/Alvarez *Short Term Trading Strategies That Work* (TradingMarkets Publishing 2008, ISBN 978-0-9819239-0-1) ch. 9–10; ForexFactory Trading Systems subforum cluster "Connors VIX EA" / "VIX stretch reversal MT4" (2010–2024)
+**R1–R4 verdict (Q00):** all PASS per `artifacts/cards_approved/QM5_1492_connors-vix-spike-reversal-h4.md`
 
 ---
 
@@ -94,7 +90,7 @@ This card was mechanised from:
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
-ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
@@ -102,4 +98,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-30 | Initial build from card | 2e52925a-f50e-4e36-8394-35738beab9bb |
+| v1 | 2026-07-01 | Initial build from card | 2e52925a-f50e-4e36-8394-35738beab9bb |
