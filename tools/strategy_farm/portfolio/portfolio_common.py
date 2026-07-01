@@ -51,6 +51,8 @@ class Trade:
     notional: float | None
     commission_cost: float
     net_of_cost: float
+    entry_time: int | None = None
+    mae_acct: float | None = None
 
 
 def key_label(key: tuple[int, str]) -> str:
@@ -205,12 +207,18 @@ def _load_one_stream(
             volume = float(row["volume"])
             notional = row.get("notional")
             notional_value = None if notional is None else float(notional)
+            entry_time = row.get("entry_time")
+            entry_time_value = None if entry_time is None else int(entry_time)
+            mae_acct = row.get("mae_acct")
+            mae_acct_value = None if mae_acct is None else float(mae_acct)
             cost = model.cost_round_trip(trade_symbol, volume, notional_value)
             trades.append(
                 Trade(
                     ea_id=ea_id,
                     symbol=trade_symbol,
                     time=int(row["time"]),
+                    entry_time=entry_time_value,
+                    mae_acct=mae_acct_value,
                     net=net,
                     volume=volume,
                     notional=notional_value,

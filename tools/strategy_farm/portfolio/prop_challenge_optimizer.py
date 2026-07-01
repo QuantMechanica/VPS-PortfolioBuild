@@ -4,6 +4,8 @@ import argparse
 import datetime as dt
 import itertools
 import json
+import re
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
@@ -57,6 +59,358 @@ DEFAULT_TOP_SINGLE_POOL = 12
 DEFAULT_TOP_RESULTS = 25
 DEFAULT_MAX_COMBO_SIZE = 3
 DEFAULT_MIN_TRADE_COUNT = 50
+DEFAULT_OPTIMIZER_ARTIFACT = DEFAULT_ARTIFACT_DIR / "prop_challenge_ftmo_2step_sprint_optimizer.json"
+DEFAULT_ROUND24_SCALE_SWEEP_ARTIFACT = (
+    DEFAULT_ARTIFACT_DIR / "prop_challenge_ftmo_combo_scale_sweep_round24_20260630.json"
+)
+DEFAULT_PROP_VALIDATION_ROOT = Path(r"D:\QM\reports\prop_ftmo_candidates_20260629")
+DEFAULT_ROUND24_SCREEN_SCALES = (5.7, 5.8, 5.9, 6.0, 6.1)
+DEFAULT_SCREEN_CANDIDATE_WEIGHTS = (0.01, 0.02, 0.03, 0.05, 0.08, 0.10)
+DEFAULT_MAX_DAILY_BREACH_SCREEN_PCT = 5.0
+DEFAULT_MAX_LOSS_BREACH_SCREEN_PCT = 5.0
+
+
+class _HtmlTableParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.rows: list[list[str]] = []
+        self._row: list[str] | None = None
+        self._in_cell = False
+        self._cell_parts: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        tag = tag.lower()
+        if tag == "tr":
+            self._row = []
+        elif tag in {"td", "th"} and self._row is not None:
+            self._in_cell = True
+            self._cell_parts = []
+
+    def handle_data(self, data: str) -> None:
+        if self._in_cell:
+            self._cell_parts.append(data)
+
+    def handle_endtag(self, tag: str) -> None:
+        tag = tag.lower()
+        if tag in {"td", "th"} and self._row is not None and self._in_cell:
+            cell = " ".join("".join(self._cell_parts).split())
+            self._row.append(cell)
+            self._in_cell = False
+            self._cell_parts = []
+        elif tag == "tr" and self._row is not None:
+            self.rows.append(self._row)
+            self._row = None
+
+
+def parse_mt5_report_daily_pnl(
+    report_path: Path,
+    *,
+    expected_symbol: str | None = None,
+    commission_model: Any | None = None,
+) -> dict[str, Any]:
+    """Parse native MT5 report.htm closing deals into full-calendar daily PnL.
+
+    The Round24 artifacts were built from MT5 report closing deal rows, using
+    profit + swap minus the larger of native round-trip close commission and the
+    registry flat round-trip fallback. This keeps the new admission screen on
+    the same report.htm basis.
+    """
+    rows = _report_rows(report_path)
+    stats = _extract_report_stats(rows)
+    period_start, period_end = _extract_period_dates(str(stats.get("period") or ""))
+    model = commission_model if commission_model is not None else load_model()
+
+    daily: dict[dt.date, float] = {}
+    if period_start is not None and period_end is not None:
+        daily = {
+            period_start + dt.timedelta(days=offset): 0.0
+            for offset in range((period_end - period_start).days + 1)
+        }
+
+    in_deals = False
+    headers: list[str] = []
+    closed_trades = 0
+    symbols: set[str] = set()
+    gross_profit = 0.0
+    gross_loss = 0.0
+    close_commission_total = 0.0
+    fallback_commission_total = 0.0
+    native_round_trip_commission_total = 0.0
+
+    for row in rows:
+        if len(row) == 1 and _normalize_cell(row[0]) == "deals":
+            in_deals = True
+            headers = []
+            continue
+        if not in_deals:
+            continue
+        if row and _normalize_cell(row[0]) == "time":
+            headers = row
+            continue
+        if not headers or len(row) < len(headers):
+            continue
+
+        deal = dict(zip(headers, row))
+        if _normalize_cell(deal.get("Direction", "")) != "out":
+            continue
+        symbol = str(deal.get("Symbol") or "").strip()
+        if not symbol:
+            continue
+        if expected_symbol is not None and symbol != expected_symbol:
+            continue
+
+        close_time = _parse_report_datetime(str(deal.get("Time") or ""))
+        profit = _parse_report_number(str(deal.get("Profit") or "0")) or 0.0
+        swap = _parse_report_number(str(deal.get("Swap") or "0")) or 0.0
+        close_commission = _parse_report_number(str(deal.get("Commission") or "0")) or 0.0
+        volume = _parse_report_number(str(deal.get("Volume") or "0")) or 0.0
+        native_round_trip_commission = 2.0 * abs(close_commission)
+        fallback_commission = float(model.cost_round_trip(symbol, volume, None))
+        commission_cost = max(native_round_trip_commission, fallback_commission)
+        net = profit + swap - commission_cost
+
+        symbols.add(symbol)
+        closed_trades += 1
+        close_commission_total += close_commission
+        native_round_trip_commission_total += native_round_trip_commission
+        fallback_commission_total += fallback_commission
+        if profit > 0.0:
+            gross_profit += profit
+        elif profit < 0.0:
+            gross_loss += profit
+        daily[close_time.date()] = daily.get(close_time.date(), 0.0) + net
+
+    if expected_symbol is not None and closed_trades == 0:
+        raise ValueError(f"{report_path} has no closing deals for {expected_symbol}")
+    if not daily and closed_trades > 0:
+        trade_dates = sorted(daily)
+        if trade_dates:
+            daily = {day: daily.get(day, 0.0) for day in trade_dates}
+
+    total_net = _round_float(sum(daily.values()))
+    report_net = stats.get("net")
+    net_delta = None
+    if isinstance(report_net, (int, float)) and (expected_symbol is None or len(symbols) == 1):
+        net_delta = _round_float(total_net - float(report_net))
+
+    return {
+        "report_path": str(report_path),
+        "basis": "native_mt5_report_htm_closing_deals",
+        "symbol": expected_symbol or (sorted(symbols)[0] if len(symbols) == 1 else None),
+        "symbols": sorted(symbols),
+        "period": stats.get("period"),
+        "start_date": period_start.isoformat() if period_start is not None else None,
+        "end_date": period_end.isoformat() if period_end is not None else None,
+        "calendar_days": len(daily),
+        "closed_trades": closed_trades,
+        "daily_pnl": dict(sorted(daily.items())),
+        "net": total_net,
+        "report_net": report_net,
+        "report_net_delta": net_delta,
+        "gross_profit": _round_float(gross_profit),
+        "gross_loss": _round_float(gross_loss),
+        "pf": stats.get("pf"),
+        "equity_drawdown": stats.get("equity_drawdown"),
+        "equity_drawdown_pct": stats.get("equity_drawdown_pct"),
+        "native_close_commission_total": _round_float(close_commission_total),
+        "native_round_trip_commission_total": _round_float(native_round_trip_commission_total),
+        "fallback_commission_total": _round_float(fallback_commission_total),
+        "commission_model": describe_model(model),
+    }
+
+
+def build_round24_candidate_screen_artifact(
+    *,
+    candidate_ea_id: str,
+    candidate_symbol: str,
+    candidate_report: Path | None = None,
+    round24_artifact_path: Path = DEFAULT_ROUND24_SCALE_SWEEP_ARTIFACT,
+    candidate_report_root: Path = DEFAULT_PROP_VALIDATION_ROOT,
+    candidate_weights: Sequence[float] = DEFAULT_SCREEN_CANDIDATE_WEIGHTS,
+    risk_scales: Sequence[float] = DEFAULT_ROUND24_SCREEN_SCALES,
+    runs: int | None = None,
+    block_days: int | None = None,
+    seed: int = 0,
+    seeds: Sequence[int] | None = None,
+    starting_capital: float | None = None,
+    phase_horizon_days: int | None = None,
+    trim_mode: str = "proportional",
+    trim_key: str | None = None,
+    force_confirm: bool = False,
+    max_daily_breach_probability_pct: float = DEFAULT_MAX_DAILY_BREACH_SCREEN_PCT,
+    max_max_loss_breach_probability_pct: float = DEFAULT_MAX_LOSS_BREACH_SCREEN_PCT,
+) -> dict[str, Any]:
+    round24 = _load_json(round24_artifact_path)
+    candidate_key = _parse_label(f"{candidate_ea_id}:{candidate_symbol}")
+    candidate_label = _artifact_label(candidate_key)
+    lead_labels = [str(label) for label in round24["keys"]]
+    lead_keys = [_parse_label(label) for label in lead_labels]
+    if candidate_key in lead_keys:
+        raise ValueError(f"{candidate_label} is already present in the Round24 lead")
+
+    lead_weights = [float(value) for value in round24["weights"]]
+    if len(lead_keys) != len(lead_weights):
+        raise ValueError("Round24 artifact keys/weights length mismatch")
+
+    source_reports = dict(round24.get("source_reports") or {})
+    daily_by_key: dict[Key, Mapping[dt.date, float]] = {}
+    source_report_stats: dict[str, dict[str, Any]] = {}
+    for label, key in zip(lead_labels, lead_keys):
+        report = source_reports.get(label)
+        if not report:
+            raise ValueError(f"Round24 source report missing for {label}")
+        parsed = parse_mt5_report_daily_pnl(Path(report), expected_symbol=key[1])
+        daily_by_key[key] = parsed["daily_pnl"]
+        source_report_stats[label] = _compact_report_parse(parsed)
+
+    resolved_candidate_report = candidate_report or find_latest_candidate_report(
+        candidate_key,
+        candidate_report_root,
+    )
+    candidate_parse = parse_mt5_report_daily_pnl(
+        resolved_candidate_report,
+        expected_symbol=candidate_key[1],
+    )
+    daily_by_key[candidate_key] = candidate_parse["daily_pnl"]
+
+    screen_runs = int(runs if runs is not None else round24.get("runs_per_seed") or 5000)
+    screen_block_days = int(block_days if block_days is not None else round24.get("block_days") or DEFAULT_BLOCK_DAYS)
+    screen_starting_capital = float(
+        starting_capital if starting_capital is not None else round24.get("starting_capital") or DEFAULT_STARTING_CAPITAL
+    )
+    screen_phase_horizon_days = int(
+        phase_horizon_days
+        if phase_horizon_days is not None
+        else round24.get("phase_horizon_days") or DEFAULT_PHASE_HORIZON_DAYS
+    )
+    confirm_seeds = [int(value) for value in (seeds if seeds is not None else round24.get("seeds") or [0, 1, 2, 3, 4])]
+    scales = _validate_risk_scales(risk_scales)
+    weights_to_try = _validate_risk_scales(candidate_weights)
+    benchmark = _round24_benchmark(
+        round24,
+        max_daily_breach_probability_pct=max_daily_breach_probability_pct,
+        max_max_loss_breach_probability_pct=max_max_loss_breach_probability_pct,
+    )
+    preset_name = str(round24.get("preset") or "FTMO_2STEP")
+
+    screen_results: list[dict[str, Any]] = []
+    for candidate_weight in weights_to_try:
+        case_keys = [*lead_keys, candidate_key]
+        case_weights = _append_candidate_weight(
+            lead_keys,
+            lead_weights,
+            candidate_weight,
+            trim_mode=trim_mode,
+            trim_key=trim_key,
+        )
+        for scale in scales:
+            row = _evaluate_weighted_case(
+                case_keys,
+                case_weights,
+                daily_by_key,
+                preset_name=preset_name,
+                risk_scale=scale,
+                runs=screen_runs,
+                block_days=screen_block_days,
+                seed=seed,
+                starting_capital=screen_starting_capital,
+                phase_horizon_days=screen_phase_horizon_days,
+                max_daily_breach_probability_pct=max_daily_breach_probability_pct,
+                max_max_loss_breach_probability_pct=max_max_loss_breach_probability_pct,
+            )
+            row["candidate_weight"] = _round_float(candidate_weight)
+            row["case_note"] = f"round24_plus_{candidate_label}_{_round_float(candidate_weight)}"
+            row["keys"] = [_artifact_label(key) for key in case_keys]
+            row["weights"] = [_round_float(value) for value in case_weights]
+            screen_results.append(row)
+
+    screen_results.sort(key=lambda row: _screen_rank_tuple(row), reverse=True)
+    selected_seed0 = screen_results[0] if screen_results else None
+    seed0_beats = bool(selected_seed0 and _screen_row_beats_benchmark(selected_seed0, benchmark))
+
+    confirmation = None
+    if selected_seed0 is not None and (seed0_beats or force_confirm):
+        confirm_rows = [
+            _evaluate_weighted_case(
+                [_parse_label(label) for label in selected_seed0["keys"]],
+                [float(value) for value in selected_seed0["weights"]],
+                daily_by_key,
+                preset_name=preset_name,
+                risk_scale=float(selected_seed0["risk_scale"]),
+                runs=screen_runs,
+                block_days=screen_block_days,
+                seed=confirm_seed,
+                starting_capital=screen_starting_capital,
+                phase_horizon_days=screen_phase_horizon_days,
+                max_daily_breach_probability_pct=max_daily_breach_probability_pct,
+                max_max_loss_breach_probability_pct=max_max_loss_breach_probability_pct,
+            )
+            for confirm_seed in confirm_seeds
+        ]
+        for confirm_seed, row in zip(confirm_seeds, confirm_rows):
+            row["seed"] = int(confirm_seed)
+        confirmation = {
+            "case_note": selected_seed0["case_note"],
+            "keys": selected_seed0["keys"],
+            "weights": selected_seed0["weights"],
+            "risk_scale": selected_seed0["risk_scale"],
+            "runs_per_seed": screen_runs,
+            "seeds": confirm_seeds,
+            "seed_results": confirm_rows,
+            "summary": _summarize_confirm_rows(confirm_rows),
+        }
+
+    verdict, verdict_reason = _admission_verdict(
+        selected_seed0=selected_seed0,
+        seed0_beats=seed0_beats,
+        confirmation=confirmation,
+        benchmark=benchmark,
+        max_daily_breach_probability_pct=max_daily_breach_probability_pct,
+        max_max_loss_breach_probability_pct=max_max_loss_breach_probability_pct,
+    )
+    deltas = _screen_deltas(
+        confirmation["summary"] if confirmation else selected_seed0,
+        benchmark,
+    )
+
+    return {
+        "phase": "Q_PROP_ROUND24_ADMISSION_SCREEN",
+        "basis": "native_mt5_report_htm_closing_deals",
+        "generated_at_utc": dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat(),
+        "preset": preset_name,
+        "round24_artifact": str(round24_artifact_path),
+        "benchmark": benchmark,
+        "candidate": {
+            "key": candidate_label,
+            "ea_id": candidate_key[0],
+            "symbol": candidate_key[1],
+            "report": _compact_report_parse(candidate_parse),
+        },
+        "lead": {
+            "keys": lead_labels,
+            "weights": [_round_float(value) for value in lead_weights],
+            "source_reports": source_reports,
+            "source_report_stats": source_report_stats,
+        },
+        "screen": {
+            "seed": seed,
+            "runs": screen_runs,
+            "block_days": screen_block_days,
+            "phase_horizon_days": screen_phase_horizon_days,
+            "starting_capital": _round_float(screen_starting_capital),
+            "risk_scales": [_round_float(value) for value in scales],
+            "candidate_weights": [_round_float(value) for value in weights_to_try],
+            "trim_mode": trim_mode,
+            "trim_key": trim_key,
+            "results": screen_results,
+            "selected_seed0": selected_seed0,
+            "seed0_beats_round24_bar": seed0_beats,
+        },
+        "confirmation": confirmation,
+        "verdict": verdict,
+        "verdict_reason": verdict_reason,
+        "deltas_vs_round24": deltas,
+    }
 
 
 def build_artifact(
@@ -327,6 +681,445 @@ def combine_daily_pnl(
     return combine_calendar_daily_pnl(keys, daily_by_key, [weight for _ in keys])
 
 
+def find_latest_candidate_report(
+    candidate_key: Key,
+    report_root: Path = DEFAULT_PROP_VALIDATION_ROOT,
+) -> Path:
+    ea_id, symbol = candidate_key
+    if not report_root.exists():
+        raise FileNotFoundError(f"candidate report root does not exist: {report_root}")
+    ea_dir_pattern = f"QM5_{ea_id}"
+    candidates: list[Path] = []
+    for report in report_root.glob(f"**/{ea_dir_pattern}/**/raw/run_*/report.htm"):
+        try:
+            parsed = parse_mt5_report_daily_pnl(report, expected_symbol=symbol)
+        except Exception:
+            continue
+        if parsed["closed_trades"] > 0:
+            candidates.append(report)
+    if not candidates:
+        raise FileNotFoundError(f"no report.htm found for {_artifact_label(candidate_key)} under {report_root}")
+    candidates.sort(key=lambda path: path.stat().st_mtime, reverse=True)
+    return candidates[0]
+
+
+def _evaluate_weighted_case(
+    keys: Sequence[Key],
+    weights: Sequence[float],
+    daily_by_key: Mapping[Key, Mapping[dt.date, float]],
+    *,
+    preset_name: str,
+    risk_scale: float,
+    runs: int,
+    block_days: int,
+    seed: int,
+    starting_capital: float,
+    phase_horizon_days: int,
+    max_daily_breach_probability_pct: float,
+    max_max_loss_breach_probability_pct: float,
+) -> dict[str, Any]:
+    preset = get_preset(preset_name)
+    base_daily = combine_calendar_daily_pnl(keys, daily_by_key, weights)
+    scaled_daily = [value * float(risk_scale) for value in base_daily]
+    observed = evaluate_challenge(
+        scaled_daily,
+        preset,
+        starting_capital=starting_capital,
+        phase_horizon_days=phase_horizon_days,
+    )
+    simulation = simulate(
+        scaled_daily,
+        preset,
+        runs=runs,
+        block_days=block_days,
+        seed=seed,
+        starting_capital=starting_capital,
+        phase_horizon_days=phase_horizon_days,
+    )
+    block = simulation["block_bootstrap"]
+    shuffle = simulation["day_order_shuffle"]
+    block_pass = float(block["pass_probability_pct"])
+    shuffle_pass = float(shuffle["pass_probability_pct"])
+    daily_breach = max(
+        float(block["daily_loss_breach_probability_pct"]),
+        float(shuffle["daily_loss_breach_probability_pct"]),
+    )
+    max_loss_breach = max(
+        float(block["max_loss_breach_probability_pct"]),
+        float(shuffle["max_loss_breach_probability_pct"]),
+    )
+    target_not_reached = max(
+        float(block["target_not_reached_probability_pct"]),
+        float(shuffle["target_not_reached_probability_pct"]),
+    )
+    row = {
+        "risk_scale": _round_float(risk_scale),
+        "seed": int(seed),
+        "observed_days": observed.get("total_days"),
+        "observed_passed": bool(observed.get("passed")),
+        "observed_reason": observed.get("reason"),
+        "block_pass_probability_pct": _round_float(block_pass),
+        "shuffle_pass_probability_pct": _round_float(shuffle_pass),
+        "robust_pass_probability_pct": _round_float(min(block_pass, shuffle_pass)),
+        "daily_loss_breach_probability_pct": _round_float(daily_breach),
+        "max_loss_breach_probability_pct": _round_float(max_loss_breach),
+        "target_not_reached_probability_pct": _round_float(target_not_reached),
+        "daily_pnl_stats_unscaled": daily_pnl_stats(base_daily, starting_capital),
+        "daily_pnl_stats_scaled": daily_pnl_stats(scaled_daily, starting_capital),
+    }
+    row["status"] = (
+        "CLEAN"
+        if daily_breach <= max_daily_breach_probability_pct
+        and max_loss_breach <= max_max_loss_breach_probability_pct
+        else "BREACHY"
+    )
+    return row
+
+
+def _append_candidate_weight(
+    lead_keys: Sequence[Key],
+    lead_weights: Sequence[float],
+    candidate_weight: float,
+    *,
+    trim_mode: str,
+    trim_key: str | None,
+) -> list[float]:
+    candidate_weight = float(candidate_weight)
+    if candidate_weight <= 0.0 or candidate_weight >= 1.0:
+        raise ValueError("candidate weights must be between 0 and 1")
+    if trim_mode == "proportional":
+        weights = [float(weight) * (1.0 - candidate_weight) for weight in lead_weights]
+    elif trim_mode == "single":
+        target_key = _parse_label(trim_key) if trim_key else lead_keys[_largest_weight_index(lead_weights)]
+        weights = [float(weight) for weight in lead_weights]
+        try:
+            idx = list(lead_keys).index(target_key)
+        except ValueError as exc:
+            raise ValueError(f"trim key {_artifact_label(target_key)} is not in the Round24 lead") from exc
+        if weights[idx] <= candidate_weight:
+            raise ValueError(
+                f"candidate weight {candidate_weight} is too large to trim from {_artifact_label(target_key)}"
+            )
+        weights[idx] -= candidate_weight
+    else:
+        raise ValueError("trim_mode must be 'proportional' or 'single'")
+    weights.append(candidate_weight)
+    total = sum(weights)
+    if total <= 0.0:
+        raise ValueError("screen weights sum to zero")
+    return [weight / total for weight in weights]
+
+
+def _largest_weight_index(weights: Sequence[float]) -> int:
+    return max(range(len(weights)), key=lambda idx: float(weights[idx]))
+
+
+def _round24_benchmark(
+    artifact: Mapping[str, Any],
+    *,
+    max_daily_breach_probability_pct: float = DEFAULT_MAX_DAILY_BREACH_SCREEN_PCT,
+    max_max_loss_breach_probability_pct: float = DEFAULT_MAX_LOSS_BREACH_SCREEN_PCT,
+) -> dict[str, Any]:
+    clean_summaries: list[dict[str, Any]] = []
+    for result in artifact.get("results") or []:
+        summary = dict(result.get("summary") or {})
+        if not summary:
+            continue
+        summary["risk_scale"] = result.get("risk_scale")
+        if (
+            float(summary.get("max_daily_loss_breach_probability_pct") or 0.0)
+            <= max_daily_breach_probability_pct
+            and float(summary.get("max_max_loss_breach_probability_pct") or 100.0)
+            <= max_max_loss_breach_probability_pct
+        ):
+            clean_summaries.append(summary)
+    if not clean_summaries:
+        raise ValueError("Round24 artifact does not contain clean result summaries within the breach guards")
+    best = max(clean_summaries, key=_benchmark_rank_tuple)
+    return {
+        "risk_scale": best.get("risk_scale"),
+        "min_robust_pass_probability_pct": _round_float(float(best["min_robust_pass_probability_pct"])),
+        "mean_robust_pass_probability_pct": _round_float(float(best["mean_robust_pass_probability_pct"])),
+        "max_daily_loss_breach_probability_pct": _round_float(
+            float(best.get("max_daily_loss_breach_probability_pct") or 0.0)
+        ),
+        "max_max_loss_breach_probability_pct": _round_float(float(best["max_max_loss_breach_probability_pct"])),
+        "mean_target_not_reached_probability_pct": _round_float(
+            float(best["mean_target_not_reached_probability_pct"])
+        ),
+    }
+
+
+def _benchmark_rank_tuple(summary: Mapping[str, Any]) -> tuple[float, ...]:
+    return (
+        float(summary.get("min_robust_pass_probability_pct") or 0.0),
+        float(summary.get("mean_robust_pass_probability_pct") or 0.0),
+        -float(summary.get("max_max_loss_breach_probability_pct") or 100.0),
+        -float(summary.get("mean_target_not_reached_probability_pct") or 100.0),
+    )
+
+
+def _screen_rank_tuple(row: Mapping[str, Any]) -> tuple[float, ...]:
+    return (
+        1.0 if row.get("status") == "CLEAN" else 0.0,
+        float(row.get("robust_pass_probability_pct") or 0.0),
+        -float(row.get("target_not_reached_probability_pct") or 100.0),
+        -float(row.get("max_loss_breach_probability_pct") or 100.0),
+        float(row.get("daily_pnl_stats_unscaled", {}).get("total_net") or 0.0),
+    )
+
+
+def _screen_row_beats_benchmark(row: Mapping[str, Any], benchmark: Mapping[str, Any]) -> bool:
+    return (
+        row.get("status") == "CLEAN"
+        and float(row.get("robust_pass_probability_pct") or 0.0)
+        > float(benchmark["min_robust_pass_probability_pct"])
+        and float(row.get("target_not_reached_probability_pct") or 100.0)
+        < float(benchmark["mean_target_not_reached_probability_pct"])
+        and float(row.get("max_loss_breach_probability_pct") or 100.0)
+        <= float(benchmark["max_max_loss_breach_probability_pct"])
+    )
+
+
+def _summarize_confirm_rows(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    if not rows:
+        return {
+            "min_robust_pass_probability_pct": 0.0,
+            "mean_robust_pass_probability_pct": 0.0,
+            "max_daily_loss_breach_probability_pct": 0.0,
+            "max_max_loss_breach_probability_pct": 0.0,
+            "mean_target_not_reached_probability_pct": 0.0,
+        }
+    robust = [float(row.get("robust_pass_probability_pct") or 0.0) for row in rows]
+    target = [float(row.get("target_not_reached_probability_pct") or 0.0) for row in rows]
+    daily = [float(row.get("daily_loss_breach_probability_pct") or 0.0) for row in rows]
+    max_loss = [float(row.get("max_loss_breach_probability_pct") or 0.0) for row in rows]
+    return {
+        "min_robust_pass_probability_pct": _round_float(min(robust)),
+        "mean_robust_pass_probability_pct": _round_float(sum(robust) / len(robust)),
+        "max_daily_loss_breach_probability_pct": _round_float(max(daily)),
+        "max_max_loss_breach_probability_pct": _round_float(max(max_loss)),
+        "mean_target_not_reached_probability_pct": _round_float(sum(target) / len(target)),
+    }
+
+
+def _admission_verdict(
+    *,
+    selected_seed0: Mapping[str, Any] | None,
+    seed0_beats: bool,
+    confirmation: Mapping[str, Any] | None,
+    benchmark: Mapping[str, Any],
+    max_daily_breach_probability_pct: float,
+    max_max_loss_breach_probability_pct: float,
+) -> tuple[str, str]:
+    if selected_seed0 is None:
+        return "REJECT", "no screen rows produced"
+    if confirmation is None:
+        if seed0_beats:
+            return "REJECT", "seed-0 beat Round24 but confirmation was not run"
+        return "REJECT", "seed-0 screen did not beat the Round24 bar"
+
+    summary = confirmation["summary"]
+    daily_loss = float(summary["max_daily_loss_breach_probability_pct"])
+    max_loss = float(summary["max_max_loss_breach_probability_pct"])
+    improves = (
+        float(summary["min_robust_pass_probability_pct"])
+        > float(benchmark["min_robust_pass_probability_pct"])
+        and float(summary["mean_robust_pass_probability_pct"])
+        > float(benchmark["mean_robust_pass_probability_pct"])
+        and float(summary["mean_target_not_reached_probability_pct"])
+        < float(benchmark["mean_target_not_reached_probability_pct"])
+        and max_loss <= min(
+            float(benchmark["max_max_loss_breach_probability_pct"]),
+            max_max_loss_breach_probability_pct,
+        )
+        and daily_loss <= max_daily_breach_probability_pct
+    )
+    if improves:
+        return "ADMIT", "confirmed screen improves Round24 robust pass and target coverage within max-loss guard"
+    if daily_loss <= max_daily_breach_probability_pct and max_loss <= max_max_loss_breach_probability_pct:
+        return "BACKUP", "confirmed screen is clean but does not improve the Round24 bar"
+    if daily_loss > max_daily_breach_probability_pct:
+        return "REJECT", "confirmed screen breaches the daily-loss guard"
+    return "REJECT", "confirmed screen breaches the max-loss guard"
+
+
+def _screen_deltas(row: Mapping[str, Any] | None, benchmark: Mapping[str, Any]) -> dict[str, Any]:
+    if row is None:
+        return {}
+    mapping = {
+        "min_robust_pass_probability_pct": "min_robust_pass_probability_pct",
+        "mean_robust_pass_probability_pct": "mean_robust_pass_probability_pct",
+        "max_daily_loss_breach_probability_pct": "max_daily_loss_breach_probability_pct",
+        "max_max_loss_breach_probability_pct": "max_max_loss_breach_probability_pct",
+        "mean_target_not_reached_probability_pct": "mean_target_not_reached_probability_pct",
+    }
+    if "robust_pass_probability_pct" in row:
+        mapping = {
+            "robust_pass_probability_pct": "min_robust_pass_probability_pct",
+            "max_loss_breach_probability_pct": "max_max_loss_breach_probability_pct",
+            "daily_loss_breach_probability_pct": "max_daily_loss_breach_probability_pct",
+            "target_not_reached_probability_pct": "mean_target_not_reached_probability_pct",
+        }
+    deltas: dict[str, Any] = {}
+    for row_key, benchmark_key in mapping.items():
+        if row_key in row and benchmark_key in benchmark:
+            deltas[row_key] = _round_float(float(row[row_key]) - float(benchmark[benchmark_key]))
+    return deltas
+
+
+def _compact_report_parse(parsed: Mapping[str, Any]) -> dict[str, Any]:
+    keys = [
+        "report_path",
+        "basis",
+        "symbol",
+        "symbols",
+        "period",
+        "start_date",
+        "end_date",
+        "calendar_days",
+        "closed_trades",
+        "net",
+        "report_net",
+        "report_net_delta",
+        "gross_profit",
+        "gross_loss",
+        "pf",
+        "equity_drawdown",
+        "equity_drawdown_pct",
+        "native_round_trip_commission_total",
+        "fallback_commission_total",
+    ]
+    return {key: parsed.get(key) for key in keys}
+
+
+def _report_rows(report_path: Path) -> list[list[str]]:
+    text = _read_report_text(report_path)
+    parser = _HtmlTableParser()
+    parser.feed(text)
+    return parser.rows
+
+
+def _read_report_text(report_path: Path) -> str:
+    if not report_path.exists():
+        raise FileNotFoundError(report_path)
+    raw = report_path.read_bytes()
+    encodings: list[str] = []
+    if raw.startswith((b"\xff\xfe", b"\xfe\xff")):
+        encodings.append("utf-16")
+    if raw.startswith(b"\xef\xbb\xbf"):
+        encodings.append("utf-8-sig")
+    if _looks_utf16le(raw):
+        encodings.append("utf-16-le")
+    encodings.extend(["utf-8-sig", "utf-8", "utf-16", "utf-16-le"])
+
+    for encoding in dict.fromkeys(encodings):
+        try:
+            text = raw.decode(encoding)
+        except UnicodeError:
+            continue
+        if "<" in text or "Period" in text or "Deals" in text:
+            return text
+    return raw.decode("utf-8", errors="replace")
+
+
+def _looks_utf16le(raw: bytes) -> bool:
+    if len(raw) < 4:
+        return False
+    sample = raw[: min(len(raw), 512)]
+    odd_nuls = sample[1::2].count(0)
+    even_nuls = sample[0::2].count(0)
+    return odd_nuls > len(sample) // 8 and odd_nuls > even_nuls * 2
+
+
+def _extract_report_stats(rows: Sequence[Sequence[str]]) -> dict[str, Any]:
+    period = _cell_after(rows, "Period")
+    equity_dd_text = _cell_after(rows, "Equity Drawdown Maximal")
+    stats = {
+        "expert": _cell_after(rows, "Expert"),
+        "symbol": _cell_after(rows, "Symbol"),
+        "period": period,
+        "net": _parse_report_number(_cell_after(rows, "Total Net Profit") or ""),
+        "gross_profit": _parse_report_number(_cell_after(rows, "Gross Profit") or ""),
+        "gross_loss": _parse_report_number(_cell_after(rows, "Gross Loss") or ""),
+        "pf": _parse_report_number(_cell_after(rows, "Profit Factor") or ""),
+        "total_trades": _parse_report_int(_cell_after(rows, "Total Trades") or ""),
+        "equity_drawdown": _parse_report_number(equity_dd_text or ""),
+        "equity_drawdown_pct": _parse_percent(equity_dd_text or ""),
+    }
+    return stats
+
+
+def _cell_after(rows: Sequence[Sequence[str]], label: str) -> str | None:
+    target = _normalize_cell(label)
+    for row in rows:
+        for idx, cell in enumerate(row[:-1]):
+            if _normalize_cell(cell) == target:
+                return row[idx + 1]
+    return None
+
+
+def _extract_period_dates(period: str) -> tuple[dt.date | None, dt.date | None]:
+    match = re.search(
+        r"\((\d{4}\.\d{2}\.\d{2})\s*-\s*(\d{4}\.\d{2}\.\d{2})\)",
+        period,
+    )
+    if not match:
+        return None, None
+    return (
+        dt.datetime.strptime(match.group(1), "%Y.%m.%d").date(),
+        dt.datetime.strptime(match.group(2), "%Y.%m.%d").date(),
+    )
+
+
+def _parse_report_datetime(raw: str) -> dt.datetime:
+    return dt.datetime.strptime(raw.strip(), "%Y.%m.%d %H:%M:%S").replace(tzinfo=dt.UTC)
+
+
+def _parse_report_number(raw: str) -> float | None:
+    match = re.search(r"-?[\d\s\xa0,.]+", raw)
+    if not match:
+        return None
+    value = match.group(0).replace("\xa0", " ").strip()
+    value = value.replace(" ", "")
+    if "," in value and "." in value:
+        value = value.replace(",", "")
+    elif "," in value:
+        value = value.replace(",", ".")
+    try:
+        return float(value)
+    except ValueError:
+        return None
+
+
+def _parse_report_int(raw: str) -> int | None:
+    value = _parse_report_number(raw)
+    return None if value is None else int(value)
+
+
+def _parse_percent(raw: str) -> float | None:
+    matches = re.findall(r"\((-?[\d\s\xa0,.]+)%\)", raw)
+    if not matches:
+        return None
+    return _parse_report_number(matches[-1])
+
+
+def _normalize_cell(raw: str) -> str:
+    return re.sub(r"\s+", " ", raw.strip().rstrip(":").lower())
+
+
+def _load_json(path: Path) -> dict[str, Any]:
+    with path.open("r", encoding="utf-8") as fh:
+        data = json.load(fh)
+    if not isinstance(data, dict):
+        raise ValueError(f"{path} must contain a JSON object")
+    return data
+
+
+def _artifact_label(key: Key) -> str:
+    return f"QM5_{key[0]}:{key[1]}"
+
+
 def write_artifact(artifact: dict[str, Any], out_path: Path) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open("w", encoding="utf-8") as fh:
@@ -339,6 +1132,40 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--preset", default="FTMO_2STEP", choices=["FTMO_2STEP"])
     parser.add_argument("--common-dir", type=Path, default=DEFAULT_COMMON_DIR)
     parser.add_argument("--candidates-db", type=Path, default=DEFAULT_CANDIDATES_DB)
+    parser.add_argument(
+        "--screen-candidate",
+        nargs="+",
+        metavar=("EA_ID", "SYMBOL"),
+        help="Screen one report.htm-validated candidate against the Round24 lead, e.g. QM5_10494 XAUUSD.DWX or QM5_10494:XAUUSD.DWX.",
+    )
+    parser.add_argument(
+        "--candidate-report",
+        type=Path,
+        default=None,
+        help="Fresh candidate report.htm. If omitted, the latest matching report under --candidate-report-root is used.",
+    )
+    parser.add_argument("--candidate-report-root", type=Path, default=DEFAULT_PROP_VALIDATION_ROOT)
+    parser.add_argument("--round24-artifact", type=Path, default=DEFAULT_ROUND24_SCALE_SWEEP_ARTIFACT)
+    parser.add_argument(
+        "--candidate-weights",
+        default=",".join(str(value).rstrip("0").rstrip(".") for value in DEFAULT_SCREEN_CANDIDATE_WEIGHTS),
+        help="Comma-separated overlay weights for --screen-candidate.",
+    )
+    parser.add_argument(
+        "--screen-risk-scales",
+        default=",".join(str(value).rstrip("0").rstrip(".") for value in DEFAULT_ROUND24_SCREEN_SCALES),
+        help="Comma-separated risk scales for the Round24 admission screen.",
+    )
+    parser.add_argument("--screen-runs", type=int, default=None)
+    parser.add_argument(
+        "--screen-seeds",
+        default=None,
+        help="Comma-separated confirmation seeds. Defaults to the Round24 artifact seeds.",
+    )
+    parser.add_argument("--trim-mode", choices=["proportional", "single"], default="proportional")
+    parser.add_argument("--trim-key", default=None, help="EA:SYMBOL key to trim when --trim-mode single is used.")
+    parser.add_argument("--confirm-always", action="store_true")
+    parser.add_argument("--force-confirm", action="store_true", dest="confirm_always")
     parser.add_argument("--all-streams", action="store_true")
     parser.add_argument(
         "--keys",
@@ -364,7 +1191,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--out",
         type=Path,
-        default=DEFAULT_ARTIFACT_DIR / "prop_challenge_ftmo_2step_sprint_optimizer.json",
+        default=DEFAULT_OPTIMIZER_ARTIFACT,
         help="Artifact JSON path.",
     )
     return parser.parse_args(argv)
@@ -372,6 +1199,48 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    if args.screen_candidate:
+        candidate_key = _parse_screen_candidate(args.screen_candidate)
+        candidate_ea_id, candidate_symbol = _artifact_label(candidate_key).split(":", 1)
+        artifact = build_round24_candidate_screen_artifact(
+            candidate_ea_id=candidate_ea_id,
+            candidate_symbol=candidate_symbol,
+            candidate_report=args.candidate_report,
+            round24_artifact_path=args.round24_artifact,
+            candidate_report_root=args.candidate_report_root,
+            candidate_weights=_parse_scales(args.candidate_weights),
+            risk_scales=_parse_scales(args.screen_risk_scales),
+            runs=args.screen_runs,
+            block_days=args.block_days,
+            seed=args.seed,
+            seeds=_parse_ints(args.screen_seeds),
+            starting_capital=args.starting_capital,
+            phase_horizon_days=args.phase_horizon_days,
+            trim_mode=args.trim_mode,
+            trim_key=args.trim_key,
+            force_confirm=args.confirm_always,
+            max_daily_breach_probability_pct=args.max_daily_breach_probability_pct,
+            max_max_loss_breach_probability_pct=args.max_max_loss_breach_probability_pct,
+        )
+        out_path = args.out
+        if out_path == DEFAULT_OPTIMIZER_ARTIFACT:
+            stamp = dt.datetime.now(dt.UTC).strftime("%Y%m%d_%H%M%S")
+            safe_key = artifact["candidate"]["key"].replace(":", "_").replace(".", "_")
+            out_path = DEFAULT_ARTIFACT_DIR / f"prop_challenge_ftmo_round24_admission_{safe_key}_{stamp}.json"
+        write_artifact(artifact, out_path)
+        selected = artifact.get("confirmation") or artifact["screen"].get("selected_seed0") or {}
+        summary = selected.get("summary", selected)
+        print(
+            f"{artifact['verdict']} {artifact['candidate']['key']} wrote {out_path} "
+            f"reason={artifact['verdict_reason']} "
+            f"min_robust={summary.get('min_robust_pass_probability_pct', summary.get('robust_pass_probability_pct'))} "
+            f"mean_robust={summary.get('mean_robust_pass_probability_pct', 'n/a')} "
+            f"max_loss_breach={summary.get('max_max_loss_breach_probability_pct', summary.get('max_loss_breach_probability_pct'))} "
+            f"target_not_reached={summary.get('mean_target_not_reached_probability_pct', summary.get('target_not_reached_probability_pct'))} "
+            f"deltas={artifact['deltas_vs_round24']}"
+        )
+        return 0
+
     artifact = build_artifact(
         preset_name=args.preset,
         common_dir=args.common_dir,
@@ -463,6 +1332,20 @@ def _parse_scales(raw: str | None) -> list[float]:
     if raw is None or raw.strip() == "":
         return list(DEFAULT_RISK_SCALES)
     return _validate_risk_scales([float(token.strip()) for token in raw.split(",")])
+
+
+def _parse_ints(raw: str | None) -> list[int] | None:
+    if raw is None or raw.strip() == "":
+        return None
+    return [int(token.strip()) for token in raw.split(",") if token.strip()]
+
+
+def _parse_screen_candidate(tokens: Sequence[str]) -> Key:
+    if len(tokens) == 1:
+        return _parse_label(tokens[0])
+    if len(tokens) == 2:
+        return _parse_label(f"{tokens[0]}:{tokens[1]}")
+    raise ValueError("--screen-candidate expects EA_ID SYMBOL or EA_ID:SYMBOL")
 
 
 def _parse_keys(raw: str | None) -> list[Key] | None:
