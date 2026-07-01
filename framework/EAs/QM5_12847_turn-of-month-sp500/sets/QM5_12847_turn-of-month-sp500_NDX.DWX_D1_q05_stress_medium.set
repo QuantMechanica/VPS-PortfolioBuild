@@ -1,24 +1,24 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        12608
-; ea_slug:      eia-oilgas-breakout
+; ea_id:        12847
+; ea_slug:      turn-of-month-sp500
 ; ea_version:   v5.0
-; set_version:  s20260627-001
-; symbol:       QM5_12608_XTI_XNG_BREAKOUT_D1
-; host_symbol:  XTIUSD.DWX
+; set_version:  s20260701-stress-med
+; symbol:       NDX.DWX
 ; timeframe:    D1
-; environment:  backtest
-; magic_slot:   0
+; environment:  q05_stress_medium
+; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3ffd7685751bffe111bc98592d95c0cb88e123551c8be4c968f29bd86074b623
+; build_hash:   ae714e5833f3a43799b7e8985f5cad6fe919e8569fb677391782b00970bb461e
 ; author:       Development
-; date:         2026-06-27
+; date:         2026-07-01
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.0000
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
@@ -31,14 +31,5 @@ qm_filter_volatility_atr_period=14
 qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card
-strategy_channel_lookback_d1=63
-strategy_exit_lookback_d1=20
-strategy_beta=1.0
-strategy_breakout_buffer_sd=0.10
-strategy_atr_period_d1=20
-strategy_atr_sl_mult=3.0
-strategy_max_hold_days=45
-strategy_xti_max_spread_pts=1000
-strategy_xng_max_spread_pts=2500
-strategy_deviation_points=20
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found
