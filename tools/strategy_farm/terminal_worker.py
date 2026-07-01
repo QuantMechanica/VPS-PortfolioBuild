@@ -268,6 +268,58 @@ def _work_item_test_symbol(item: sqlite3.Row | dict[str, Any], payload: dict[str
     return str(payload.get("host_symbol") or _work_item_value(item, "symbol", "") or "").strip().upper()
 
 
+def _unique_symbols(values: list[object]) -> list[str]:
+    out: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        text = str(value or "").strip().upper()
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        out.append(text)
+    return out
+
+
+def _payload_basket_manifest(payload: dict[str, Any], ea_id: str) -> dict[str, Any] | None:
+    manifest_path = str(payload.get("basket_manifest") or "").strip()
+    if manifest_path:
+        try:
+            path = Path(manifest_path)
+            if path.exists():
+                return json.loads(path.read_text(encoding="utf-8-sig"))
+        except Exception:
+            pass
+    try:
+        return farmctl._load_basket_manifest(ea_id)
+    except Exception:
+        return None
+
+
+def _work_item_history_symbols(
+    item: sqlite3.Row | dict[str, Any],
+    payload: dict[str, Any],
+) -> list[str]:
+    symbols: list[object] = [payload.get("host_symbol") or _work_item_value(item, "symbol", "")]
+    payload_symbols = payload.get("basket_symbols")
+    if isinstance(payload_symbols, list):
+        symbols.extend(payload_symbols)
+
+    is_basket = (
+        str(payload.get("portfolio_scope") or "").strip().lower() == "basket"
+        or bool(payload.get("basket_manifest"))
+        or str(payload.get("basket_symbol_count") or "").strip() not in {"", "0", "1"}
+    )
+    if is_basket:
+        manifest = _payload_basket_manifest(payload, str(_work_item_value(item, "ea_id", "") or ""))
+        if manifest:
+            symbols.append(manifest.get("host_symbol"))
+            manifest_symbols = manifest.get("basket_symbols")
+            if isinstance(manifest_symbols, list):
+                symbols.extend(manifest_symbols)
+
+    return _unique_symbols(symbols)
+
+
 def _p2_history_claimable(
     item: sqlite3.Row | dict[str, Any],
     terminal: str | None = None,
@@ -292,18 +344,25 @@ def _p2_history_claimable(
         if window.get("skip"):
             return False, window
 
-    if not symbol.endswith(".DWX") or not terminal:
+    if not terminal:
         return True, window
-    source_terminals = _source_terminal_set(registry.get((symbol, period), {}).get("source_terminals"))
-    if source_terminals and str(terminal).strip().upper() not in source_terminals:
+    terminal_key = str(terminal).strip().upper()
+    required_symbols = _work_item_history_symbols(item, payload)
+    for required_symbol in required_symbols:
+        if not required_symbol.endswith(".DWX"):
+            continue
+        source_terminals = _source_terminal_set(registry.get((required_symbol, period), {}).get("source_terminals"))
+        if not source_terminals or terminal_key in source_terminals:
+            continue
         return False, {
             **(window or {}),
             "skip": True,
             "reason": TERMINAL_NO_SYMBOL_HISTORY_REASON,
-            "symbol": symbol,
+            "symbol": required_symbol,
             "period": period,
-            "terminal": str(terminal).strip().upper(),
+            "terminal": terminal_key,
             "source_terminals": sorted(source_terminals),
+            "history_check_symbols": required_symbols,
         }
     return True, window
 

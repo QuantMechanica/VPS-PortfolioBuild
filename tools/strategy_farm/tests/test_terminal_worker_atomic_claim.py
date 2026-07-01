@@ -404,6 +404,66 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 status = conn.execute("SELECT status FROM work_items WHERE id='wi-audusd-q03'").fetchone()[0]
             self.assertEqual(status, "pending")
 
+    def test_basket_claim_requires_terminal_history_for_all_manifest_symbols(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            payload = {
+                "portfolio_scope": "basket",
+                "host_symbol": "AUDUSD.DWX",
+                "host_timeframe": "D1",
+                "logical_symbol": "QM5_12783_AUDUSD_AUDJPY_COINTEGRATION_D1",
+                "basket_symbols": ["AUDUSD.DWX", "AUDJPY.DWX", "USDJPY.DWX"],
+                "basket_symbol_count": 3,
+            }
+            self._insert_work_item(
+                root,
+                "wi-audusd-audjpy-q03",
+                "QM5_12783_AUDUSD_AUDJPY_COINTEGRATION_D1",
+                phase="Q03",
+                payload=payload,
+                ea_id="QM5_12783",
+                setfile_path="QM5_12783_AUDUSD_AUDJPY_COINTEGRATION_D1_D1_backtest.set",
+            )
+
+            registry = {
+                ("AUDUSD.DWX", "D1"): {
+                    "first_year": 2017,
+                    "last_year": 2026,
+                    "source_terminals": "T3,T7",
+                },
+                ("AUDJPY.DWX", "D1"): {
+                    "first_year": 2017,
+                    "last_year": 2026,
+                    "source_terminals": "T3",
+                },
+                ("USDJPY.DWX", "D1"): {
+                    "first_year": 2017,
+                    "last_year": 2026,
+                    "source_terminals": "T3",
+                },
+            }
+            old_registry = terminal_worker.farmctl._dwx_symbol_history_registry
+            old_free_ram = terminal_worker._free_ram_gb
+            try:
+                terminal_worker.farmctl._dwx_symbol_history_registry = lambda: registry
+                terminal_worker._free_ram_gb = lambda: 64.0
+                skipped = terminal_worker.claim_atomic(root, "T7")
+                claimed = terminal_worker.claim_atomic(root, "T3")
+            finally:
+                terminal_worker.farmctl._dwx_symbol_history_registry = old_registry
+                terminal_worker._free_ram_gb = old_free_ram
+
+            self.assertFalse(skipped.get("claimed"))
+            self.assertEqual(skipped.get("reason"), "no_pending_claimable")
+            self.assertEqual(skipped["history_skipped"][0]["reason"], terminal_worker.TERMINAL_NO_SYMBOL_HISTORY_REASON)
+            self.assertEqual(skipped["history_skipped"][0]["symbol"], "AUDJPY.DWX")
+            self.assertEqual(
+                skipped["history_skipped"][0]["history_check_symbols"],
+                ["AUDUSD.DWX", "AUDJPY.DWX", "USDJPY.DWX"],
+            )
+            self.assertTrue(claimed.get("claimed"))
+            self.assertEqual(claimed["item"]["id"], "wi-audusd-audjpy-q03")
+
     def test_stale_same_terminal_claim_is_released_before_next_claim(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"
@@ -902,7 +962,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             old_pid_tree_exists = terminal_worker.farmctl._pid_tree_exists
             old_stop_pid_tree = terminal_worker.farmctl._stop_pid_tree
             old_stop_slot = terminal_worker._stop_terminal_slot_for_release
-            old_find_journal = terminal_worker._find_oversized_journal
+            old_journal_bomb = terminal_worker._journal_bomb
             old_check_every = terminal_worker.LOG_BOMB_CHECK_EVERY_ITERS
             old_sleep = terminal_worker.time.sleep
             try:
@@ -911,7 +971,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 terminal_worker._stop_terminal_slot_for_release = (
                     lambda _root, terminal: stopped_terminals.append(str(terminal)) or True
                 )
-                terminal_worker._find_oversized_journal = lambda _report_root: str(journal)
+                terminal_worker._journal_bomb = lambda _report_root, _sizes, _now_mono: (str(journal), 0.0, "test")
                 terminal_worker.LOG_BOMB_CHECK_EVERY_ITERS = 1
                 terminal_worker.time.sleep = lambda _seconds: None
 
@@ -927,7 +987,7 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 terminal_worker.farmctl._pid_tree_exists = old_pid_tree_exists
                 terminal_worker.farmctl._stop_pid_tree = old_stop_pid_tree
                 terminal_worker._stop_terminal_slot_for_release = old_stop_slot
-                terminal_worker._find_oversized_journal = old_find_journal
+                terminal_worker._journal_bomb = old_journal_bomb
                 terminal_worker.LOG_BOMB_CHECK_EVERY_ITERS = old_check_every
                 terminal_worker.time.sleep = old_sleep
 
