@@ -14214,3 +14214,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12864,oilsilver-rspr,0,XTIUSD.DWX,128640000,2026-07-01,Codex,active
 12864,oilsilver-rspr,1,XAGUSD.DWX,128640001,2026-07-01,Codex,active
 12865,brent-fri-prem,0,XBRUSD.DWX,128650000,2026-07-02,Codex,active
+1530,connors-double-sevens-h4,0,EURUSD.DWX,15300000,2026-07-02,Codex,active
+1530,connors-double-sevens-h4,1,GBPUSD.DWX,15300001,2026-07-02,Codex,active
+1530,connors-double-sevens-h4,2,USDJPY.DWX,15300002,2026-07-02,Codex,active
+1530,connors-double-sevens-h4,3,GDAXI.DWX,15300003,2026-07-02,Codex,active
+1530,connors-double-sevens-h4,4,NDX.DWX,15300004,2026-07-02,Codex,active
+1530,connors-double-sevens-h4,5,WS30.DWX,15300005,2026-07-02,Codex,active
+1530,connors-double-sevens-h4,6,XAUUSD.DWX,15300006,2026-07-02,Codex,active
+1530,connors-double-sevens-h4,7,SP500.DWX,15300007,2026-07-02,Codex,active
