@@ -1,0 +1,31 @@
+{
+  "action": "q03_infra_requeue",
+  "agent": "codex:agents/board-advisor",
+  "branch": "agents/board-advisor",
+  "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12778_q03_requeue_20260701T035214Z.sqlite",
+  "ea_id": "QM5_12778",
+  "instrument_diversity": "forex market-neutral pair basket",
+  "latest_failure_evidence": "D:/QM/reports/work_items/7a11f24a-091f-49dd-983a-3dc8c7cef456/QM5_12778/20260630_231042/summary.json",
+  "latest_failure_reason_classes": [
+    "NO_HISTORY",
+    "INCOMPLETE_RUNS"
+  ],
+  "latest_failure_summary": "Q03 produced one valid AUDUSD/EURJPY D1 basket run with 194 trades, then three INVALID reports with EMPTY_EXPERT, EMPTY_SYMBOL, M0_1970_PERIOD, BARS_ZERO, HISTORY_CONTEXT_INVALID.",
+  "parent_task_after": {
+    "id": "26435143-7c0c-4a2d-aaad-649095f743da",
+    "kind": "backtest_q03",
+    "status": "pending"
+  },
+  "requeue_scope": "Reopened existing Q03 work item only; no duplicate row inserted.",
+  "requeued_at_utc": "2026-07-01T01:52:40Z",
+  "setfile_path": "C:/QM/repo/framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/sets/QM5_12778_edgelab-audusd-eurjpy-cointegration_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1_D1_backtest.set",
+  "work_item_after": {
+    "attempt_count": 0,
+    "claimed_by": null,
+    "evidence_path": null,
+    "id": "7a11f24a-091f-49dd-983a-3dc8c7cef456",
+    "phase": "Q03",
+    "status": "pending",
+    "verdict": null
+  }
+}
