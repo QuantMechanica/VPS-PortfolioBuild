@@ -334,7 +334,7 @@ bool Strategy_OpenBasketLeg(const string symbol,
                             const string reason)
   {
    const int slot = Strategy_SlotForSymbol(symbol);
-   if(slot < 0 || symbol == _Symbol || !Strategy_SpreadAllowed(symbol))
+   if(slot < 0 || !Strategy_SpreadAllowed(symbol))
       return false;
 
    const double entry = QM_OrderTypeIsBuy(type) ? SymbolInfoDouble(symbol, SYMBOL_ASK)
@@ -381,15 +381,11 @@ bool Strategy_OpenPair(const int spread_direction)
    const string reason = long_spread ? "QM5_12825_LONG_XTI_EURUSD_SPREAD"
                                      : "QM5_12825_SHORT_XTI_EURUSD_SPREAD";
 
-   QM_EntryRequest host_req;
-   if(!Strategy_BuildHostRequest(xti_type, reason, host_req))
+   const bool xti_ok = Strategy_OpenBasketLeg(g_leg_xti, xti_type, xti_weight, weight_sum, reason);
+   if(!xti_ok)
       return false;
 
-   ulong host_ticket = 0;
-   if(!QM_TM_OpenPosition(host_req, host_ticket))
-      return false;
-
-   bool eurusd_ok = Strategy_OpenBasketLeg(g_leg_eurusd, eurusd_type, eurusd_weight, weight_sum, reason);
+   const bool eurusd_ok = Strategy_OpenBasketLeg(g_leg_eurusd, eurusd_type, eurusd_weight, weight_sum, reason);
    if(eurusd_ok)
      {
       g_pair_entry_time = TimeCurrent();
