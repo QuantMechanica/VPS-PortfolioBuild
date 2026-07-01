@@ -14180,3 +14180,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11902,bermuda-triangle-123-fib-extension-h1,8,GBPJPY.DWX,119020008,2026-07-01,Codex,active
 11902,bermuda-triangle-123-fib-extension-h1,9,AUDJPY.DWX,119020009,2026-07-01,Codex,active
 12861,xng-hurr-fade,0,XNGUSD.DWX,128610000,2026-07-01,Codex,active
+9574,demark-td-anti-diff-3bar-h4,0,EURUSD.DWX,95740000,2026-07-01,Codex,active
+9574,demark-td-anti-diff-3bar-h4,1,GBPUSD.DWX,95740001,2026-07-01,Codex,active
+9574,demark-td-anti-diff-3bar-h4,2,USDJPY.DWX,95740002,2026-07-01,Codex,active
+9574,demark-td-anti-diff-3bar-h4,3,AUDUSD.DWX,95740003,2026-07-01,Codex,active
+9574,demark-td-anti-diff-3bar-h4,4,USDCAD.DWX,95740004,2026-07-01,Codex,active
+9574,demark-td-anti-diff-3bar-h4,5,USDCHF.DWX,95740005,2026-07-01,Codex,active
+9574,demark-td-anti-diff-3bar-h4,6,NZDUSD.DWX,95740006,2026-07-01,Codex,active
+9574,demark-td-anti-diff-3bar-h4,7,XAUUSD.DWX,95740007,2026-07-01,Codex,active
+9574,demark-td-anti-diff-3bar-h4,8,XTIUSD.DWX,95740008,2026-07-01,Codex,active
+9574,demark-td-anti-diff-3bar-h4,9,GDAXI.DWX,95740009,2026-07-01,Codex,active
+9574,demark-td-anti-diff-3bar-h4,10,NDX.DWX,95740010,2026-07-01,Codex,active
+9574,demark-td-anti-diff-3bar-h4,11,WS30.DWX,95740011,2026-07-01,Codex,active
+9574,demark-td-anti-diff-3bar-h4,12,UK100.DWX,95740012,2026-07-01,Codex,active
