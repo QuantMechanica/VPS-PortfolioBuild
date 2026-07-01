@@ -1,0 +1,114 @@
+{
+  "task_id": "manual-codex-2026-07-01-xbr-xng-vcb",
+  "ea_id": "QM5_12857",
+  "slug": "xbr-xng-vcb",
+  "strategy": "XBR/XNG D1 log-ratio Bollinger BandWidth volatility-contraction breakout",
+  "strategy_id": "BOLLINGER-BB-SQUEEZE-2001_XBR_XNG_VCB",
+  "source_id": "BOLLINGER-BB-SQUEEZE-2001",
+  "symbols": [
+    "XBRUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XBRUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_12857_XBR_XNG_VCB_D1",
+  "host_symbol": "XBRUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12857_xbr-xng-vcb",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12857_xbr-xng-vcb\\QM5_12857_xbr-xng-vcb.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12857_xbr-xng-vcb\\QM5_12857_xbr-xng-vcb.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12857_xbr-xng-vcb\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\xbr-xng-vcb_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12857_xbr-xng-vcb_card.md",
+  "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\BOLLINGER-BB-SQUEEZE-2001\\source.md",
+  "basket_manifest": "C:\\QM\\repo\\framework\\EAs\\QM5_12857_xbr-xng-vcb\\basket_manifest.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12857_xbr-xng-vcb\\sets\\QM5_12857_xbr-xng-vcb_QM5_12857_XBR_XNG_VCB_D1_D1_backtest.set"
+  ],
+  "setfile_build_hash": "591f37e0d34edfc18970fe8cd4fc0391047fe8b2e85876ff569b8cd762be9773",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic_base": 128570000,
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XBRUSD.DWX",
+        "magic": 128570000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "XNGUSD.DWX",
+        "magic": 128570001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12857_xbr-xng-vcb/QM5_12857_xbr-xng-vcb.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260701_150538\\QM5_12857_xbr-xng-vcb.compile.log",
+    "ex5_size_bytes": 305424
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12857_xbr-xng-vcb -Strict",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260701_150549.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "validations": {
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "BASKET_OK"
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "189ba50a-caf0-4402-acde-623a4d2d7ff3",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "QM5_12857_XBR_XNG_VCB_D1",
+    "host_symbol": "XBRUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_symbols": [
+      "XBRUSD.DWX",
+      "XNGUSD.DWX"
+    ],
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12857_xbr-xng-vcb\\sets\\QM5_12857_xbr-xng-vcb_QM5_12857_XBR_XNG_VCB_D1_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "created_at_utc": "2026-07-01T15:07:54+00:00",
+    "enqueued_by": "record_build_result.auto_q02"
+  },
+  "smoke_result": "deferred_to_q02",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet Q02 was requested; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "non_duplicate_reason": "D1 XBR/XNG post-compression Bollinger ratio breakout is distinct from XTI/XNG z-score reversion, raw channel breakout, return-spread reversion, monthly relative momentum, fixed seasonal switching, single-symbol Brent/WTI trend/calendar/squeeze sleeves, WTI/Brent spread builds, XNG RSI, and metal/index sleeves.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  },
+  "hashes": {
+    "mq5": "779BAA02663033130CC1473F960F8554DE083A562B5C3897CBE8AB4BCCA97D7A",
+    "ex5": "2BC0681FDAA73FCFC1C9E8F77E94C6B435279123F1B6E9617789363091824673",
+    "setfile": "DBF3C92FD16BECAF958F77BC8A8A8BD513AE67D445CE8EA36DBDF8FCC309407F",
+    "spec": "6F3D452E3249E5F91FFDE3877701C23B4C3B89674950C42F08BEB5A2E0662F05",
+    "card": "53A3C77D3219313F756F8A084216534AB8AD1BFC3ABC616474105B726D397680"
+  },
+  "notes": "Completed a structural market-neutral Brent/natural-gas energy sleeve using the approved Bollinger BandWidth squeeze source packet and DWX OHLC only. Q02 must validate synchronized XBR/XNG history sufficiency and cost sensitivity for the logical basket."
+}
