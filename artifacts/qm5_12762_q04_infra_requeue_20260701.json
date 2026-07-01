@@ -1,0 +1,70 @@
+{
+  "ea_id": "QM5_12762",
+  "slug": "edgelab-usdjpy-usdcad-cointegration",
+  "unit_of_work": "q04_infra_requeue",
+  "logical_symbol": "QM5_12762_USDJPY_USDCAD_COINTEGRATION_D1",
+  "host_symbol": "USDJPY.DWX",
+  "basket_symbols": [
+    "USDJPY.DWX",
+    "USDCAD.DWX"
+  ],
+  "mission_scope": "Advance an existing FX market-neutral cointegration basket because no strict-threshold unbuilt 66-pair scan survivor remains and QM5_12532/QM5_12533 are not Q02-blocked.",
+  "precheck": {
+    "qm5_12532_current_observed_state": "Q02 PASS, Q04 PASS, Q05 INFRA_FAIL at expanded tester timeout; CPU-ceiling stop, no requeue.",
+    "qm5_12533_current_observed_state": "Q02 PASS, Q04 FAIL; not Q02-blocked.",
+    "target_prior_state": "QM5_12762 had Q02 PASS and one terminal Q04 INFRA_FAIL row with no pending/active Q04 duplicate."
+  },
+  "prior_q04_failure": {
+    "work_item_id": "6a83a2cb-ab6f-41ad-b998-8a965c6228fe",
+    "status": "done",
+    "verdict": "INFRA_FAIL",
+    "runner_verdict": "INVALID",
+    "reason": "F1 and F2 blank zero-bar/no-history reports",
+    "invalid_markers": [
+      "BARS_ZERO",
+      "EMPTY_EXPERT",
+      "EMPTY_SYMBOL",
+      "HISTORY_CONTEXT_INVALID",
+      "INCOMPLETE_RUNS",
+      "M0_1970_PERIOD",
+      "NO_HISTORY",
+      "RUN_STATUS_INVALID"
+    ],
+    "evidence_path": "D:/QM/reports/work_items/6a83a2cb-ab6f-41ad-b998-8a965c6228fe/QM5_12762/Q04/QM5_12762_USDJPY_USDCAD_COINTEGRATION_D1/aggregate.json"
+  },
+  "queue_action": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12762 --phase Q04",
+    "result": "requeued_existing_row",
+    "created_rows": 0,
+    "requeued_work_item_id": "6a83a2cb-ab6f-41ad-b998-8a965c6228fe",
+    "status_after": "pending",
+    "attempt_count_after": 0,
+    "updated_at_utc": "2026-07-01T04:04:46+00:00",
+    "archived_report_root_on_requeue": "D:/QM/reports/work_items/6a83a2cb-ab6f-41ad-b998-8a965c6228fe.requeued_20260701T0404460000",
+    "payload_after_requeue": {
+      "portfolio_scope": "basket",
+      "logical_symbol": "QM5_12762_USDJPY_USDCAD_COINTEGRATION_D1",
+      "host_symbol": "USDJPY.DWX",
+      "host_timeframe": "D1",
+      "tester_currency": "USD",
+      "tester_deposit": 100000,
+      "q04_latest_full_year": 2024,
+      "q04_history_checked_symbols": [
+        "USDJPY.DWX",
+        "USDCAD.DWX"
+      ],
+      "basket_manifest": "C:/QM/repo/framework/EAs/QM5_12762_edgelab-usdjpy-usdcad-cointegration/basket_manifest.json"
+    }
+  },
+  "validation": [
+    "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --ea QM5_12762: Q02 PASS, Q04 pending",
+    "Direct SQLite duplicate guard: exactly one pending/active Q04 row for QM5_12762"
+  ],
+  "safety": {
+    "manual_backtest_launched": false,
+    "autotrading_toggled": false,
+    "t_live_changed": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
