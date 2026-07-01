@@ -33,7 +33,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
+pipeline_phase: Q02
 last_updated: 2026-07-01
 g0_approval_reasoning: "R1 PASS existing source packet covering both WTI and Brent crude-oil seasonality; R2 PASS deterministic May D1 long/time-flat rule with ATR stop; R3 PASS XBRUSD.DWX is locally routed by prior Brent builds with Q02 validating current history sufficiency; R4 PASS no ML/grid/martingale/external runtime data."
 expected_pf: 1.08
@@ -203,10 +203,12 @@ must validate the deterministic Brent CFD port on Darwinex `XBRUSD.DWX` bars.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
-| v1 | 2026-07-01 | initial Brent May calendar-premium build | G0 | APPROVED |
+| v1 | 2026-07-01 | initial Brent May calendar-premium build | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-01 | APPROVED | this card |
+| Q01 Build Validation | 2026-07-01 | PASS | `artifacts/build_checks/QM5_12853_brent-may-prem/build_check_20260701_110534.json` |
+| Q02 Baseline Screening | 2026-07-01 | QUEUED | `D:\QM\strategy_farm\state\farm_state.sqlite` work item `13d8fde8-7ad2-4946-a815-6aee75eaf2db` |
