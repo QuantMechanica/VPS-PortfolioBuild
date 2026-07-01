@@ -14115,6 +14115,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12843,wti-brent-spread,0,XTIUSD.DWX,128430000,2026-07-01,Codex,active
 12843,wti-brent-spread,1,XBRUSD.DWX,128430001,2026-07-01,Codex,active
 12844,commodity-trend-crude,0,XTIUSD.DWX,128440000,2026-07-01,Codex,active
+12845,trend-tracer-crude,0,XTIUSD.DWX,128450000,2026-07-01,Codex,active
 9450,brooks-failed-spike-and-channel-h4,0,EURUSD.DWX,94500000,2026-07-01,Codex,active
 9450,brooks-failed-spike-and-channel-h4,1,GBPUSD.DWX,94500001,2026-07-01,Codex,active
 9450,brooks-failed-spike-and-channel-h4,2,USDJPY.DWX,94500002,2026-07-01,Codex,active
