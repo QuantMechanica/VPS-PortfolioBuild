@@ -4,7 +4,7 @@
 **Slug:** edgelab-usdjpy-audjpy-cointegration
 **Source:** claude_cross_asset_discovery_2026-06-09 plus Chan cointegration pair-trade method
 **Author of this spec:** Codex
-**Last revised:** 2026-06-29
+**Last revised:** 2026-07-02
 
 ---
 
@@ -121,6 +121,12 @@ Q02 was auto-enqueued by `farmctl record-build` after strict compile and
 build-check passed. No manual MT5 run was launched from this build session; Q02
 is delegated to paced farm workers through the logical basket setfile.
 
+After the JPY tester-account repair, the corrected logical-basket Q02 row
+`54c04ac1-e5f7-4060-ae60-6814cb930fd5` passed. Q04 was requeued in place as
+`f8e8a8d4-48c8-4c30-a7f0-2eace7bb8ccb` with manifest-refreshed
+`tester_currency=JPY` and `tester_deposit=15000000`, so downstream Q04-Q07
+evidence will no longer inherit the stale USD-account conversion path.
+
 ---
 
 ## Revision History
@@ -130,4 +136,5 @@ is delegated to paced farm workers through the logical basket setfile.
 | v1 | 2026-06-29 | Initial rank-26 next-unbuilt FX cointegration basket build | Built from the 12764 two-leg JPY-cross basket pattern |
 | v2 | 2026-06-29 | Q02 handoff | Build task c5c43c78-2d18-465d-9a9a-c0cc078bbd05 recorded; Q02 work item 080ebc00-3644-4719-b6e6-6f855604f6b6 active on T2 |
 | v3 | 2026-07-01 | JPY tester-account repair | Q07 seed failures traced to bare USDJPY conversion-history timeouts; manifest and setfiles switched to JPY accounting; Q02 task ccd2d5bd-1d18-4c42-a888-63dadfe9b6a3 / work item 54c04ac1-e5f7-4060-ae60-6814cb930fd5 pending |
+| v4 | 2026-07-02 | JPY Q04 requeue | Corrected Q02 work item 54c04ac1-e5f7-4060-ae60-6814cb930fd5 passed; existing Q04 row f8e8a8d4-48c8-4c30-a7f0-2eace7bb8ccb requeued pending with JPY tester-account payload |
 

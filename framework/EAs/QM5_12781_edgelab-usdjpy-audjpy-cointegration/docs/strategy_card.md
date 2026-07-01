@@ -25,8 +25,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02
-last_updated: 2026-06-29
+pipeline_phase: Q04
+last_updated: 2026-07-02
 g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-requested in-house 66-pair FX scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS USDJPY.DWX and AUDJPY.DWX data exist in scan universe; R4 PASS no ML/grid/martingale."
 expected_pf: 0.90
 expected_dd_pct: 35.0
@@ -158,6 +158,12 @@ USD 1,000 fixed-risk budget. No live risk is authorized by this card; any
 future live burn-in would be assigned only by the standard portfolio pipeline
 after all gates.
 
+The repaired JPY-account Q02 row
+`54c04ac1-e5f7-4060-ae60-6814cb930fd5` passed on 2026-07-01 UTC. The existing
+Q04 row `f8e8a8d4-48c8-4c30-a7f0-2eace7bb8ccb` was requeued in place on
+2026-07-01T22:18:11Z with the manifest-derived JPY tester account, avoiding a
+duplicate logical-basket row.
+
 ## Strategy Allowability Check
 
 - [x] R1 reputable source: Chan cointegration method plus OWNER-requested in-house 66-pair scan.
@@ -179,4 +185,5 @@ after all gates.
 | v1 | 2026-06-29 | initial rank-26 next-unbuilt FX cointegration basket card | G0 | APPROVED |
 | v2 | 2026-06-29 | build recorded and Q02 enqueued as work item 080ebc00-3644-4719-b6e6-6f855604f6b6 | Q02 | ACTIVE |
 | v3 | 2026-07-01 | tester account switched to JPY after Q07 seed failures exposed bare USDJPY conversion-history timeouts | Q02 | PENDING 54c04ac1-e5f7-4060-ae60-6814cb930fd5 |
+| v4 | 2026-07-02 | corrected JPY-account Q02 passed; Q04 requeued in place from work item f8e8a8d4-48c8-4c30-a7f0-2eace7bb8ccb | Q04 | PENDING |
 
