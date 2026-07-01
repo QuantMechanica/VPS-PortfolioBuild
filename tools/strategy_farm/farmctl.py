@@ -216,11 +216,29 @@ def _repo_dirty_status(root_path: Path = REPO_ROOT) -> dict[str, Any]:
             "entries": entries[:DIRTY_REPO_GUARD_DETAIL_LIMIT],
             "count": len(entries),
         }
+    # 2026-07-01 (Claude): build ARTIFACTS (.ex5 compiled binary, .set generated set
+    # file) churn continuously as the 7 terminals backtest/recompile, so the tree is
+    # almost never clean. With the prior no-allowlist guard that perpetually blocked
+    # ALL build spawns even when only artifact churn was present -- the recurring
+    # dirty-guard deadlock (the pump's _auto_commit_build_artifacts can't outrun
+    # continuous churn). .ex5/.set are machine-generated OUTPUTS, never human-edited
+    # source, so their transient dirtiness must NOT gate builds. Source (.mq5, .mqh,
+    # tools/, scripts/, registries, docs, etc.) STILL blocks -> build reproducibility
+    # from committed source is preserved. Narrow by extension only.
+    def _is_build_artifact(line: str) -> bool:
+        p = line[3:] if len(line) > 3 else line
+        if " -> " in p:  # rename
+            p = p.split(" -> ", 1)[1]
+        p = p.strip().strip('"').replace("\\", "/").lower()
+        return p.endswith(".ex5") or p.endswith(".set")
+    blocking = [ln for ln in entries if not _is_build_artifact(ln)]
+    artifact_churn = len(entries) - len(blocking)
     return {
-        "blocked": bool(entries),
+        "blocked": bool(blocking),
         "override": False,
-        "entries": entries[:DIRTY_REPO_GUARD_DETAIL_LIMIT],
-        "count": len(entries),
+        "entries": blocking[:DIRTY_REPO_GUARD_DETAIL_LIMIT],
+        "count": len(blocking),
+        "artifact_churn_ignored": artifact_churn,
     }
 
 # Known-good fallback paths for codex.cmd / claude.cmd. Required because
