@@ -1,0 +1,61 @@
+{
+  "ea_id": "QM5_12781",
+  "slug": "edgelab-usdjpy-audjpy-cointegration",
+  "logical_symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1",
+  "basket_symbols": [
+    "USDJPY.DWX",
+    "AUDJPY.DWX"
+  ],
+  "mission_scope": "Advance an existing FX cointegration basket after no unbuilt strict-threshold 66-pair survivor was available and QM5_12532/QM5_12533 were no longer Q02-blocked.",
+  "selected_existing_basket_state": {
+    "q02": {
+      "work_item_id": "080ebc00-3644-4719-b6e6-6f855604f6b6",
+      "verdict": "PASS"
+    },
+    "q04": {
+      "work_item_id": "f8e8a8d4-48c8-4c30-a7f0-2eace7bb8ccb",
+      "verdict": "PASS_SOFT"
+    },
+    "q05": {
+      "work_item_id": "dcf243dd-7948-414b-a1ad-9481f83a5445",
+      "verdict": "PASS"
+    },
+    "q06": {
+      "work_item_id": "f1147d03-5c9b-4874-ba86-0406e1a90bdc",
+      "verdict": "PASS"
+    },
+    "q07_latest": {
+      "work_item_id": "38226031-b41f-4f03-ab86-d1697ca5e203",
+      "verdict": "INFRA_FAIL",
+      "reason": "seeds_invalid_evidence for seed 99 and seed 7 from REPORT_MISSING/INCOMPLETE_RUNS on the old USD-account path"
+    }
+  },
+  "queue_action": {
+    "action": "set_priority_track_on_existing_pending_q02",
+    "new_row_inserted": false,
+    "work_item_id": "54c04ac1-e5f7-4060-ae60-6814cb930fd5",
+    "phase": "Q02",
+    "status_after": "pending",
+    "updated_at_utc": "2026-07-01T16:34:52+00:00",
+    "priority_track": true,
+    "priority_reason": "fx_market_neutral_basket_jpy_account_q02_recovery_after_q07_conversion_history_infra_2026-07-01",
+    "tester_currency": "JPY",
+    "tester_deposit": 15000000,
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12781_jpy_q02_priority_20260701T163423Z.sqlite",
+    "event_id": 204886
+  },
+  "verification": {
+    "pending_queue_position": 1,
+    "worker_order_basis": "priority_track ASC, phase rank ASC, updated_at ASC",
+    "top_pending_work_item_after_update": "54c04ac1-e5f7-4060-ae60-6814cb930fd5"
+  },
+  "safety": {
+    "manual_backtest_launched": false,
+    "duplicate_q02_inserted": false,
+    "duplicate_q07_inserted": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
