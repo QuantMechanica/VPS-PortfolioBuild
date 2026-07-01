@@ -345,7 +345,7 @@ bool Strategy_SpreadAllowsEntry()
       return true;
 
    const int lookback = MathMax(2, MathMin(strategy_spread_median_days, 256));
-   long spreads[];
+   int spreads[];
    ArrayResize(spreads, lookback);
    ArraySetAsSeries(spreads, true);
    const int copied = CopySpread(_Symbol, PERIOD_D1, 1, lookback, spreads); // perf-allowed: entry-only median spread filter from card
