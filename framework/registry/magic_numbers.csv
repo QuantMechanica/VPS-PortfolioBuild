@@ -14115,3 +14115,17 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12843,wti-brent-spread,0,XTIUSD.DWX,128430000,2026-07-01,Codex,active
 12843,wti-brent-spread,1,XBRUSD.DWX,128430001,2026-07-01,Codex,active
 12844,commodity-trend-crude,0,XTIUSD.DWX,128440000,2026-07-01,Codex,active
+9450,brooks-failed-spike-and-channel-h4,0,EURUSD.DWX,94500000,2026-07-01,Codex,active
+9450,brooks-failed-spike-and-channel-h4,1,GBPUSD.DWX,94500001,2026-07-01,Codex,active
+9450,brooks-failed-spike-and-channel-h4,2,USDJPY.DWX,94500002,2026-07-01,Codex,active
+9450,brooks-failed-spike-and-channel-h4,3,AUDUSD.DWX,94500003,2026-07-01,Codex,active
+9450,brooks-failed-spike-and-channel-h4,4,USDCAD.DWX,94500004,2026-07-01,Codex,active
+9450,brooks-failed-spike-and-channel-h4,5,USDCHF.DWX,94500005,2026-07-01,Codex,active
+9450,brooks-failed-spike-and-channel-h4,6,NZDUSD.DWX,94500006,2026-07-01,Codex,active
+9450,brooks-failed-spike-and-channel-h4,7,XAUUSD.DWX,94500007,2026-07-01,Codex,active
+9450,brooks-failed-spike-and-channel-h4,8,XTIUSD.DWX,94500008,2026-07-01,Codex,active
+9450,brooks-failed-spike-and-channel-h4,9,GDAXI.DWX,94500009,2026-07-01,Codex,active
+9450,brooks-failed-spike-and-channel-h4,10,NDX.DWX,94500010,2026-07-01,Codex,active
+9450,brooks-failed-spike-and-channel-h4,11,WS30.DWX,94500011,2026-07-01,Codex,active
+9450,brooks-failed-spike-and-channel-h4,12,UK100.DWX,94500012,2026-07-01,Codex,active
+9450,brooks-failed-spike-and-channel-h4,13,SP500.DWX,94500013,2026-07-01,Codex,active
