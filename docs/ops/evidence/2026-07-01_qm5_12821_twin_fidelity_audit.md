@@ -78,6 +78,33 @@ reusable (unblocks the #20 dormant-basket sweep).
 4. **Claude review:** module tests green + EA fidelity re-checked line-by-line vs this table, then
    re-enqueue the logical-basket Q02 (already wired, FX8_TWIN_CSM_BASKET_H1) → Q04 net-of-cost = judge.
 
+## C.1 Agy design-gap findings — ALL 5 RESOLVED (2026-07-01) → exact values for Codex
+
+Source: `D:/QM/strategy_farm/research_charters/TWIN_DESIGN_GAP_FINDINGS_2026-07-01.md` (Agy visual
+re-watch, video titles + timestamps cited). These CLOSE the [DESIGN] gaps — Codex uses these exact
+values. No more open thresholds.
+
+- **Module 1 exhaustion:** tradeable when normalized strength breaks **≥95 / 100 (0.95 decimal)**,
+  equivalently **raw ±350–400**. The raw→normalized multiplier is proprietary (Giavon refuses on
+  screen) → use a standard normalization (min-max or z-score) mapping raw %-strength to ±100; gate
+  at ±95. (Vid 38 @25:08; Vid 17 @15:12.)
+- **Module 1 probability ratio:** count how many of the currency's **7 crosses agree** with its bias
+  (for GBP-strong: the 6 GBP-base crosses >0% + EUR/GBP <0%). **HARD gate ≥ 6/7** (86%); <6/7 blocks
+  the entry (strength not broad-based). (Vid 40 @36:17.)
+- **Module 2 MTF:** **D1 AND W1 AND MN must ALL agree** simultaneously (D1 primary, W1+MN confirm) —
+  hard. TFs < M30 (M1/M5/M15) are execution-timing ONLY, never bias. (Vid 14 @14:38; Vid 40 @31:48.)
+- **Module 3 pullback:** a custom **3-line channel** — center full line = 30-min **fair price**, two
+  outer **dotted OB/OS boundaries** — **recalculated every 30 minutes**. Enter with **limit/pending
+  orders at the outer boundary on a pullback** (never chase); low tick-volume at the boundary
+  confirms rejection. (Vid 17 @03:03, @17:24, @18:19.)
+- **Module 4 basket (7-to-1, GBP-strong worked example — exact):** `EUR/GBP Sell, GBP/USD Buy,
+  GBP/CAD Buy, GBP/AUD Buy, GBP/NZD Buy, GBP/CHF Buy, GBP/JPY Buy` = **7 legs**, side = base→Buy /
+  quote→Sell. cluster_count = **7** (not 6).
+- **Confirms:** CSM formula verified (Perf, Strength base−quote, zero-sum). Exits: CSM-rank-flip →
+  flatten all; basket **TP +15% equity**; **intraday-only** (close before US session end for ~0
+  swap); **hard Friday pre-close ~22:00–22:55** server. Session **London 06:30–08:30** broker; NO
+  new entries midnight–01:00 (rollover) or before 03:00.
+
 ## D. Non-negotiables (no shortcuts — OWNER)
 Every row in table A must be implemented and unit-tested. RISK_FIXED backtest / RISK_PERCENT live;
 mandatory news-blackout; no ML; deterministic; no invented commission/swap. The multi-symbol
