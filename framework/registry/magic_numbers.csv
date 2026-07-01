@@ -14132,3 +14132,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12848,wti-brent-brk,0,XTIUSD.DWX,128480000,2026-07-01,Codex,active
 12848,wti-brent-brk,1,XBRUSD.DWX,128480001,2026-07-01,Codex,active
 12849,brent-tsmom12m,0,XBRUSD.DWX,128490000,2026-07-01,Codex,active
+12836,turnaround-tuesday-ws30,0,WS30.DWX,128360000,2026-07-01,Claude,active

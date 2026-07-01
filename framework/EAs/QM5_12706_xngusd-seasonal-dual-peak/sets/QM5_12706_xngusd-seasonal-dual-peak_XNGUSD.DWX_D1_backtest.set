@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12706
 ; ea_slug:      xngusd-seasonal-dual-peak
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d5650f330f66230cbe38e0f13f3f074ef001db10acb523fa9371ef2e8bd231e8
+; build_hash:   4a1d2b33ef88eade5fd395da9b4893ebce7b01afbdd0c46dea848d2550168913
 ; author:       Development
 ; date:         2026-06-29
 ;==========================================================
