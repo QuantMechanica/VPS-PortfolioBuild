@@ -50,5 +50,5 @@ data, grid, martingale, or ML is involved.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-01 | APPROVED | `strategy-seeds/cards/xng-hurr-fade_card.md` |
-| Q01 Build Validation | 2026-07-01 | PENDING | `artifacts/qm5_12861_build_result.json` |
-| Q02 Baseline Screening | 2026-07-01 | PENDING | paced fleet enqueue after Q01 PASS |
+| Q01 Build Validation | 2026-07-01 | PASS | `artifacts/qm5_12861_build_result.json` |
+| Q02 Baseline Screening | 2026-07-01 | QUEUED | `D:\QM\strategy_farm\state\farm_state.sqlite` work item `93fd0dc3-09a4-479c-bbfd-6c9b8b3922d0` |
