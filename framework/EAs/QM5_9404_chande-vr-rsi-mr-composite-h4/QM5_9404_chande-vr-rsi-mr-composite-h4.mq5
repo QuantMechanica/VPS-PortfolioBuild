@@ -172,7 +172,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double low1 = 0.0;
    if(atr_short <= 0.0 ||
       atr_long <= 0.0 ||
-      rsi <= 0.0 ||
+      rsi < 0.0 ||
       sma <= 0.0 ||
       !Strategy_ReadTriggerBar(close1, high1, low1))
       return false;

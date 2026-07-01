@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        9404
 ; ea_slug:      chande-vr-rsi-mr-composite-h4
@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a914a79ac9e992183cdd024aa77dc798aa9f94ec200039a485042bc9d418412e
+; build_hash:   bc4453d535f1715e8102aa7d982649be782ed8d9016dc419464b7f76496e384b
 ; author:       Development
 ; date:         2026-06-30
 ;==========================================================
