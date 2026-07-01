@@ -14210,3 +14210,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9400,brooks-failed-outside-outside-h4,10,NDX.DWX,94000010,2026-07-01,Codex,active
 9400,brooks-failed-outside-outside-h4,11,WS30.DWX,94000011,2026-07-01,Codex,active
 9400,brooks-failed-outside-outside-h4,12,UK100.DWX,94000012,2026-07-01,Codex,active
+12623,comm-mom-rev-interaction-xauusd,0,XAUUSD.DWX,126230000,2026-07-01,Codex,active

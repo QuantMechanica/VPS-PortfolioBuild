@@ -1,0 +1,401 @@
+#property strict
+#property version   "5.0"
+#property description "QM5_12623 XAUUSD momentum-reversal interaction filter"
+
+#include <QM/QM_Common.mqh>
+
+// =============================================================================
+// QM5_12623 - XAUUSD Momentum-Reversal Interaction Filter
+// -----------------------------------------------------------------------------
+// Structural D1 commodity sleeve:
+//   - first D1 bar of each broker-calendar month only
+//   - direction = sign of prior completed D1 close versus 63 D1 bars earlier
+//   - 20 D1 bar return must not contradict the 3-month momentum direction
+//   - hold existing position when the short-term reversal filter blocks a new
+//     momentum entry; reverse only when the filtered signal flips
+// =============================================================================
+
+input group "QuantMechanica V5 Framework"
+input int    qm_ea_id                    = 12623;
+input int    qm_magic_slot_offset        = 0;
+input uint   qm_rng_seed                 = 42;
+
+input group "Risk"
+input double RISK_PERCENT                = 0.0;
+input double RISK_FIXED                  = 1000.0;
+input double PORTFOLIO_WEIGHT            = 1.0;
+
+input group "News"
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours     = 336;
+input string qm_news_min_impact          = "high";
+input QM_NewsMode qm_news_mode_legacy    = QM_NEWS_OFF;
+
+input group "Friday Close"
+input bool   qm_friday_close_enabled     = true;
+input int    qm_friday_close_hour_broker = 21;
+
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
+
+input group "Strategy"
+input int    strategy_momentum_lookback_d1_bars = 63;
+input int    strategy_reversal_lookback_d1_bars = 20;
+input double strategy_reversal_deadband         = 0.01;
+input int    strategy_min_d1_bars               = 75;
+input int    strategy_atr_period                = 14;
+input double strategy_atr_sl_mult               = 2.5;
+input int    strategy_spread_days               = 20;
+input double strategy_spread_mult               = 3.0;
+
+int g_last_entry_rebalance_key = 0;
+
+bool Strategy_IsXauUsdD1()
+  {
+   return (_Symbol == "XAUUSD.DWX" && _Period == PERIOD_D1 && qm_magic_slot_offset == 0);
+  }
+
+bool Strategy_IsMonthlyRebalanceBar()
+  {
+   if(_Period != PERIOD_D1)
+      return false;
+
+   const int current_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   const int prior_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 1);
+   if(current_key <= 0 || prior_key <= 0)
+      return false;
+   return current_key != prior_key;
+  }
+
+bool Strategy_CurrentPosition(ulong &ticket, int &direction)
+  {
+   ticket = 0;
+   direction = 0;
+   const int magic = QM_FrameworkMagic();
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong pos_ticket = PositionGetTicket(i);
+      if(pos_ticket == 0 || !PositionSelectByTicket(pos_ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      ticket = pos_ticket;
+      const long pos_type = PositionGetInteger(POSITION_TYPE);
+      direction = (pos_type == POSITION_TYPE_BUY) ? 1 : -1;
+      return true;
+     }
+   return false;
+  }
+
+double Strategy_MedianDailySpreadPoints()
+  {
+   const int n = strategy_spread_days;
+   if(n <= 0 || n > 64)
+      return 0.0;
+
+   double values[64];
+   int count = 0;
+   for(int shift = 1; shift <= n; ++shift)
+     {
+      const long spread = iSpread(_Symbol, PERIOD_D1, shift); // perf-allowed: card spread filter reads D1 history once per monthly gate.
+      if(spread > 0)
+        {
+         values[count] = (double)spread;
+         ++count;
+        }
+     }
+
+   if(count <= 0)
+      return 0.0;
+
+   for(int i = 0; i < count - 1; ++i)
+      for(int j = i + 1; j < count; ++j)
+         if(values[j] < values[i])
+           {
+            const double tmp = values[i];
+            values[i] = values[j];
+            values[j] = tmp;
+           }
+
+   if((count % 2) == 1)
+      return values[count / 2];
+   return 0.5 * (values[(count / 2) - 1] + values[count / 2]);
+  }
+
+bool Strategy_SpreadAllowsEntry()
+  {
+   const double median_spread = Strategy_MedianDailySpreadPoints();
+   if(median_spread <= 0.0 || strategy_spread_mult <= 0.0)
+      return true;
+
+   const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   if(current_spread > 0 && (double)current_spread > median_spread * strategy_spread_mult)
+      return false;
+   return true;
+  }
+
+bool Strategy_ReturnState(int &momentum_direction,
+                          int &filtered_direction,
+                          double &ret_3m,
+                          double &ret_4w)
+  {
+   momentum_direction = 0;
+   filtered_direction = 0;
+   ret_3m = 0.0;
+   ret_4w = 0.0;
+
+   if(strategy_momentum_lookback_d1_bars <= 0 ||
+      strategy_reversal_lookback_d1_bars <= 0 ||
+      strategy_reversal_deadband < 0.0)
+      return false;
+
+   int max_lookback = strategy_momentum_lookback_d1_bars;
+   if(strategy_reversal_lookback_d1_bars > max_lookback)
+      max_lookback = strategy_reversal_lookback_d1_bars;
+
+   const int min_bars = (strategy_min_d1_bars > max_lookback + 5)
+                        ? strategy_min_d1_bars
+                        : max_lookback + 5;
+   if(Bars(_Symbol, PERIOD_D1) < min_bars) // perf-allowed: fixed D1 return windows required by the approved card.
+      return false;
+
+   const double recent_close = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: card requires closed D1 return math behind framework new-bar gate.
+   const double momentum_close = iClose(_Symbol, PERIOD_D1, 1 + strategy_momentum_lookback_d1_bars); // perf-allowed: monthly D1 return lookup.
+   const double reversal_close = iClose(_Symbol, PERIOD_D1, 1 + strategy_reversal_lookback_d1_bars); // perf-allowed: monthly D1 return lookup.
+   if(recent_close <= 0.0 || momentum_close <= 0.0 || reversal_close <= 0.0)
+      return false;
+
+   ret_3m = (recent_close - momentum_close) / momentum_close;
+   ret_4w = (recent_close - reversal_close) / reversal_close;
+
+   if(ret_3m > 0.0)
+      momentum_direction = 1;
+   else if(ret_3m < 0.0)
+      momentum_direction = -1;
+   else
+      return true;
+
+   if(momentum_direction > 0 && ret_4w >= -strategy_reversal_deadband)
+      filtered_direction = 1;
+   else if(momentum_direction < 0 && ret_4w <= strategy_reversal_deadband)
+      filtered_direction = -1;
+
+   return true;
+  }
+
+bool Strategy_NoTradeFilter()
+  {
+   if(!Strategy_IsXauUsdD1())
+      return true;
+   if(strategy_momentum_lookback_d1_bars < 21)
+      return true;
+   if(strategy_reversal_lookback_d1_bars < 5)
+      return true;
+   if(strategy_reversal_deadband < 0.0 || strategy_reversal_deadband > 0.25)
+      return true;
+   if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
+      return true;
+   if(strategy_spread_days < 0 || strategy_spread_mult < 0.0)
+      return true;
+   return false;
+  }
+
+bool Strategy_EntrySignal(QM_EntryRequest &req)
+  {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(!Strategy_IsMonthlyRebalanceBar())
+      return false;
+
+   const int rebalance_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   if(rebalance_key <= 0 || rebalance_key == g_last_entry_rebalance_key)
+      return false;
+
+   if(!Strategy_SpreadAllowsEntry())
+      return false;
+
+   int momentum_direction = 0;
+   int filtered_direction = 0;
+   double ret_3m = 0.0;
+   double ret_4w = 0.0;
+   if(!Strategy_ReturnState(momentum_direction, filtered_direction, ret_3m, ret_4w))
+      return false;
+
+   ulong existing_ticket = 0;
+   int existing_direction = 0;
+   const bool has_position = Strategy_CurrentPosition(existing_ticket, existing_direction);
+
+   if(momentum_direction == 0)
+     {
+      if(has_position && !QM_TM_ClosePosition(existing_ticket, QM_EXIT_STRATEGY))
+         return false;
+      g_last_entry_rebalance_key = rebalance_key;
+      return false;
+     }
+
+   if(filtered_direction == 0)
+     {
+      g_last_entry_rebalance_key = rebalance_key;
+      return false;
+     }
+
+   if(has_position)
+     {
+      if(existing_direction == filtered_direction)
+        {
+         g_last_entry_rebalance_key = rebalance_key;
+         return false;
+        }
+      if(!QM_TM_ClosePosition(existing_ticket, QM_EXIT_STRATEGY))
+         return false;
+     }
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+
+   req.type = (filtered_direction > 0) ? QM_BUY : QM_SELL;
+   req.price = (filtered_direction > 0) ? ask : bid;
+   req.sl = QM_StopATR(_Symbol, req.type, req.price, strategy_atr_period, strategy_atr_sl_mult);
+   req.tp = 0.0;
+   req.symbol_slot = qm_magic_slot_offset;
+   req.reason = (filtered_direction > 0) ? "XAU_MOMREV_LONG" : "XAU_MOMREV_SHORT";
+
+   if(req.sl <= 0.0)
+      return false;
+   if(req.type == QM_BUY && req.sl >= req.price)
+      return false;
+   if(req.type == QM_SELL && req.sl <= req.price)
+      return false;
+
+   g_last_entry_rebalance_key = rebalance_key;
+   return true;
+  }
+
+void Strategy_ManageOpenPosition()
+  {
+   // Card specifies no trailing, break-even, pyramiding, or partial close.
+  }
+
+bool Strategy_ExitSignal()
+  {
+   // Monthly exits/reversals are handled in Strategy_EntrySignal so the
+   // framework consumes QM_IsNewBar() only once per D1 bar.
+   return false;
+  }
+
+bool Strategy_NewsFilterHook(const datetime broker_time)
+  {
+   return false;
+  }
+
+int OnInit()
+  {
+   if(!QM_FrameworkInit(qm_ea_id,
+                        qm_magic_slot_offset,
+                        RISK_PERCENT,
+                        RISK_FIXED,
+                        PORTFOLIO_WEIGHT,
+                        qm_news_mode_legacy,
+                        qm_friday_close_enabled,
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
+      return INIT_FAILED;
+
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"strategy\":\"xau_momentum_reversal_interaction\"}");
+   return INIT_SUCCEEDED;
+  }
+
+void OnDeinit(const int reason)
+  {
+   QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
+   QM_FrameworkShutdown();
+  }
+
+void OnTick()
+  {
+   if(!QM_KillSwitchCheck())
+      return;
+
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+   if(QM_FrameworkHandleFridayClose())
+      return;
+
+   if(Strategy_NoTradeFilter())
+      return;
+
+   Strategy_ManageOpenPosition();
+
+   if(Strategy_ExitSignal())
+     {
+      const int magic = QM_FrameworkMagic();
+      for(int i = PositionsTotal() - 1; i >= 0; --i)
+        {
+         const ulong ticket = PositionGetTicket(i);
+         if(!PositionSelectByTicket(ticket))
+            continue;
+         if(PositionGetInteger(POSITION_MAGIC) != magic)
+            continue;
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+        }
+     }
+
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
+
+   QM_EntryRequest req;
+   if(Strategy_EntrySignal(req))
+     {
+      ulong out_ticket = 0;
+      QM_TM_OpenPosition(req, out_ticket);
+     }
+  }
+
+void OnTimer()
+  {
+   QM_FrameworkOnTimer();
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
+  }
+
+double OnTester()
+  {
+   QM_ChartUI_Refresh();
+   return QM_DefaultObjective();
+  }
