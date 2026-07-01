@@ -1,0 +1,131 @@
+{
+  "task_id": "9a5e2877-85c5-4f26-812d-d0614c78e563",
+  "ea_id": "QM5_12844",
+  "slug": "commodity-trend-crude",
+  "ea_label": "QM5_12844_commodity-trend-crude",
+  "branch": "agents/board-advisor",
+  "date": "2026-07-01",
+  "source_id": "BALKE-DAVEY-SLATE-20260630",
+  "source_citations": [
+    "docs/research/YOUTUBE_STRATEGY_SYNTHESIS_2026-06-30.md, B1 Commodity Trend / Breakout - Crude & Gold.",
+    "Davey, Kevin J. (2014). Building Winning Algorithmic Trading Systems. Wiley."
+  ],
+  "strategy": "D1 XTIUSD Donchian 20-bar breakout with ADX(11)>20, ATR(14) hard stop/trail, 10-bar reverse-channel exit, and max-hold time exit",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "risk_fixed": 1000,
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 16,
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12844_commodity-trend-crude",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12844_commodity-trend-crude\\QM5_12844_commodity-trend-crude.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12844_commodity-trend-crude\\QM5_12844_commodity-trend-crude.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12844_commodity-trend-crude\\SPEC.md",
+  "spec_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12844_commodity-trend-crude\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12844_commodity-trend-crude_card.md",
+  "approved_card_artifact_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12844_commodity-trend-crude_card.md",
+  "source_path": "C:\\QM\\repo\\docs\\research\\YOUTUBE_STRATEGY_SYNTHESIS_2026-06-30.md",
+  "farm_build_result_path": "D:\\QM\\strategy_farm\\artifacts\\builds\\9a5e2877-85c5-4f26-812d-d0614c78e563.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12844_commodity-trend-crude\\sets\\QM5_12844_commodity-trend-crude_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "568c2f5d37dee56d2e0e61a426094ae638775ea8be7d86aa2c885cde051936b6",
+  "magic_base": 128440000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "compile": {
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_12844_commodity-trend-crude --force --json --fail-on-error",
+    "result": "COMPILED",
+    "reason": "fresh build, 0 warnings",
+    "errors": 0,
+    "warnings": 0,
+    "symbol_scope_verdict": "SINGLE_SYMBOL_OK",
+    "log": "C:\\QM\\repo\\framework\\build\\compile\\20260701_042616\\QM5_12844_commodity-trend-crude.compile.log",
+    "ex5": "C:\\QM\\repo\\framework\\EAs\\QM5_12844_commodity-trend-crude\\QM5_12844_commodity-trend-crude.ex5",
+    "ex5_size_bytes": 300786
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12844_commodity-trend-crude -Strict -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report": "D:\\QM\\reports\\framework\\21\\build_check_20260701_042630.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings in framework/include/QM; build_check failures=0."
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_12844_commodity-trend-crude",
+    "result": "PASS"
+  },
+  "scope_validation": {
+    "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_12844_commodity-trend-crude --json",
+    "result": "SINGLE_SYMBOL_OK"
+  },
+  "guardrail_validation": {
+    "command": "python tools/strategy_farm/validate_build_guardrails.py framework/EAs/QM5_12844_commodity-trend-crude",
+    "result": "PASS"
+  },
+  "hashes": {
+    "mq5": "51E9AFD8494DE2CD9AD43A434E198C62177454CC46546B451EA459EDB4ACE2BD",
+    "ex5": "B57DCBF9EBCF00FFAA164A28AF8844E2828BC71B8B4DF0F7C87A34CC0BC38EFB",
+    "setfile": "11B7926CD0C511F3FB704788599FEA9E0B28389F031E393E28CF03C0400B6059",
+    "spec": "5BB0A52B102E541EF75A12B4C25611FD47166A662898B6C05B576BB81EB5DD66",
+    "card": "A1A56FF7349A219FCD169E0DECCA9FFC1C3BFAA70600DBDB4622BB3B9F4C8AB9"
+  },
+  "non_duplicate_reason": "New crude-only D1 Donchian+ADX+ATR-trail trend sleeve. It differs from QM5_12563 multi-commodity Turtle by using only XTIUSD.DWX plus an ADX(11) regime gate, ATR(14) trailing stop, and time exit; it is also distinct from WTI monthly TSMOM, Abraham pullback, prior-range expansion, XTI/XNG, metals, gas, index, and ratio sleeves.",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet Q02 handles the first MT5 backtest; no manual smoke/backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "t_live_manifest_touched": false
+  },
+  "notes": "Built one non-duplicate structural WTI commodity sleeve. No live, T_Live, AutoTrading, T_Live manifest, or portfolio gate artifacts touched.",
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_12844",
+    "enqueued": [
+      {
+        "wi_id": "78955929",
+        "symbol": "XTIUSD.DWX",
+        "tf": "D1",
+        "phase": "Q02",
+        "status": "pending",
+        "setfile": "QM5_12844_commodity-trend-crude_XTIUSD.DWX_D1_backtest.set"
+      }
+    ],
+    "skipped": []
+  },
+  "q02": {
+    "status": "enqueued",
+    "phase": "Q02",
+    "work_item_id": "78955929-5fa7-46ab-88ba-34a8edfaefed",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "XTIUSD.DWX",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12844_commodity-trend-crude\\sets\\QM5_12844_commodity-trend-crude_XTIUSD.DWX_D1_backtest.set",
+    "created_at_utc": "2026-07-01T04:27:48+00:00"
+  },
+  "record_build": {
+    "command": "direct farmctl._auto_enqueue_q02_for_build(Path('D:/QM/strategy_farm'), build_result) because no farm build_ea task row existed for QM5_12844",
+    "recorded": false,
+    "new_status": "done",
+    "smoke_result": "deferred_p2_smoke",
+    "next_action_hint": "Q02 auto-enqueued (1 work_items); worker daemons will dispatch on next tick"
+  }
+}
