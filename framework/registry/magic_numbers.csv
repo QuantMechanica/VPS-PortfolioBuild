@@ -14144,3 +14144,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12850,xti-xng-vcb,0,XTIUSD.DWX,128500000,2026-07-01,Codex,active
 12850,xti-xng-vcb,1,XNGUSD.DWX,128500001,2026-07-01,Codex,active
 12851,williams18-xti,0,XTIUSD.DWX,128510000,2026-07-01,Codex,active
+9401,demark-tdprl-fade-h4,0,EURUSD.DWX,94010000,2026-07-01,Codex,active
+9401,demark-tdprl-fade-h4,1,GBPUSD.DWX,94010001,2026-07-01,Codex,active
+9401,demark-tdprl-fade-h4,2,USDJPY.DWX,94010002,2026-07-01,Codex,active
+9401,demark-tdprl-fade-h4,3,AUDUSD.DWX,94010003,2026-07-01,Codex,active
+9401,demark-tdprl-fade-h4,4,USDCAD.DWX,94010004,2026-07-01,Codex,active
+9401,demark-tdprl-fade-h4,5,USDCHF.DWX,94010005,2026-07-01,Codex,active
+9401,demark-tdprl-fade-h4,6,NZDUSD.DWX,94010006,2026-07-01,Codex,active
+9401,demark-tdprl-fade-h4,7,XAUUSD.DWX,94010007,2026-07-01,Codex,active
+9401,demark-tdprl-fade-h4,8,XTIUSD.DWX,94010008,2026-07-01,Codex,active
+9401,demark-tdprl-fade-h4,9,GDAXI.DWX,94010009,2026-07-01,Codex,active
+9401,demark-tdprl-fade-h4,10,NDX.DWX,94010010,2026-07-01,Codex,active
+9401,demark-tdprl-fade-h4,11,WS30.DWX,94010011,2026-07-01,Codex,active
+9401,demark-tdprl-fade-h4,12,UK100.DWX,94010012,2026-07-01,Codex,active
