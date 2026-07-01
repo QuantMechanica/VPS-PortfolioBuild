@@ -39,35 +39,12 @@ input bool   strategy_first_d1_bar_only    = true;
 int g_last_entry_rebalance_key = 0;
 int g_last_exit_rebalance_key  = 0;
 
-int Strategy_MonthKey(const datetime t)
-  {
-   MqlDateTime parts;
-   TimeToStruct(t, parts);
-   return parts.year * 100 + parts.mon;
-  }
-
-bool Strategy_IsFirstD1BarOfMonth(const datetime bar_time)
-  {
-   const datetime prev_bar = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: monthly cadence check, O(1).
-   if(prev_bar <= 0)
-      return true;
-
-   MqlDateTime cur;
-   MqlDateTime prev;
-   TimeToStruct(bar_time, cur);
-   TimeToStruct(prev_bar, prev);
-   return (cur.year != prev.year || cur.mon != prev.mon);
-  }
-
 bool Strategy_RebalanceDue(const bool entry_path, int &month_key)
   {
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: monthly cadence check, O(1).
-   if(current_d1_bar <= 0)
-      return false;
-   if(strategy_first_d1_bar_only && !Strategy_IsFirstD1BarOfMonth(current_d1_bar))
+   month_key = QM_CalendarPeriodKey(PERIOD_MN1);
+   if(month_key <= 0)
       return false;
 
-   month_key = Strategy_MonthKey(current_d1_bar);
    if(entry_path)
       return (month_key != g_last_entry_rebalance_key);
    return (month_key != g_last_exit_rebalance_key);
@@ -233,6 +210,12 @@ void OnTick()
    if(Strategy_NoTradeFilter())
       return;
 
+   const bool nb = QM_IsNewBar();
+   if(!nb)
+      return;
+
+   QM_EquityStreamOnNewBar();
+
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -248,11 +231,6 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
-
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

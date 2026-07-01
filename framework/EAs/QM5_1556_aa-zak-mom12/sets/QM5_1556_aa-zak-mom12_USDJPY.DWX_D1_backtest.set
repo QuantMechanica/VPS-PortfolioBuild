@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        1556
 ; ea_slug:      aa-zak-mom12
@@ -10,7 +10,7 @@
 ; magic_slot:   8
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   0e0553f3825776adad2a769361783862008b7e319a26d9ab39cf45d0b98fedd5
+; build_hash:   5df2daf6544b36f996e6fdad704bf5a8db94c360dec2701e1403d88e73ca4626
 ; author:       Development
 ; date:         2026-06-27
 ;==========================================================

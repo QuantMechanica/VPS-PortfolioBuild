@@ -58,13 +58,6 @@ int Strategy_DayKey(const datetime t)
    return dt.year * 10000 + dt.mon * 100 + dt.day;
   }
 
-int Strategy_Month(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.mon;
-  }
-
 bool Strategy_HasOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
@@ -86,9 +79,9 @@ void Strategy_CloseTimeExpiredPositions()
   {
    const int magic = QM_FrameworkMagic();
    const datetime now = TimeCurrent();
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 exit check behind new-bar gate.
-   const int current_month = (current_d1_bar > 0) ? Strategy_Month(current_d1_bar) : Strategy_Month(now);
-   const int current_day_key = (current_d1_bar > 0) ? Strategy_DayKey(current_d1_bar) : Strategy_DayKey(now);
+   const int current_month_key = QM_CalendarPeriodKey(PERIOD_MN1);
+   const int current_month = (current_month_key > 0) ? (current_month_key % 100) : 0;
+   const int current_day_key = QM_CalendarPeriodKey(PERIOD_D1);
    const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -103,8 +96,8 @@ void Strategy_CloseTimeExpiredPositions()
 
       const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
       const int opened_day_key = Strategy_DayKey(opened);
-      bool should_close = (current_month != strategy_entry_month);
-      if(current_day_key > opened_day_key)
+      bool should_close = (current_month > 0 && current_month != strategy_entry_month);
+      if(current_day_key > 0 && current_day_key > opened_day_key)
          should_close = true;
       if(opened > 0 && now - opened >= hold_seconds)
          should_close = true;
@@ -151,13 +144,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 entry calendar gate behind new-bar gate.
-   if(current_d1_bar <= 0)
+   const int month_key = QM_CalendarPeriodKey(PERIOD_MN1);
+   if(month_key <= 0)
       return false;
-   if(Strategy_Month(current_d1_bar) != strategy_entry_month)
+   if((month_key % 100) != strategy_entry_month)
       return false;
 
-   const int day_key = Strategy_DayKey(current_d1_bar);
+   const int day_key = QM_CalendarPeriodKey(PERIOD_D1);
    if(day_key <= 0 || day_key == g_last_entry_day_key)
       return false;
 
