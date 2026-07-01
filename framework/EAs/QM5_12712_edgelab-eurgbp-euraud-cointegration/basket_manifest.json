@@ -6,10 +6,14 @@
   "tester_deposit": 100000,
   "basket_symbols": [
     "EURGBP.DWX",
-    "EURAUD.DWX"
+    "EURAUD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX"
   ],
   "notes": [
     "Two-leg EURGBP/EURAUD market-neutral FX cointegration candidate from the 2026-06-09 66-pair scan rerun. It did not clear the original hard survivor bar (OOS net Sharpe 0.62 vs 0.8), but it is the strongest unbuilt pair after QM5_12624 with both positive DEV and OOS Sharpe and a coherent shared-EUR cross structure.",
-    "Q02 uses USD tester currency and the canonical RISK_FIXED=1000 budget. The EA selects EURGBP/EURAUD plus EURUSD/GBPUSD/AUDUSD conversion history."
+    "Q02 uses USD tester currency and the canonical RISK_FIXED=1000 budget. EURGBP.DWX and EURAUD.DWX are the traded legs; EURUSD.DWX, GBPUSD.DWX, and AUDUSD.DWX are declared only as custom-symbol conversion history for USD-denominated cross accounting.",
+    "Repair note 2026-07-01: the EA already selects and warms EURUSD.DWX, GBPUSD.DWX, and AUDUSD.DWX in Strategy_EnsureBasketScope(); the manifest now declares that conversion history so Q05 history scope matches the runtime contract."
   ]
 }

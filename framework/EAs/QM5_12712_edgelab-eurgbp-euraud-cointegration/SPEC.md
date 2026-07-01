@@ -50,8 +50,10 @@ after QM5_12624, with DEV Sharpe 0.66, OOS net Sharpe 0.62, OOS return +3.54%,
 **Explicitly not for:**
 - Other `.DWX` symbols. This card is a fixed two-leg FX-cross basket, not a portable multi-pair strategy.
 
-The manifest selects EURUSD.DWX, GBPUSD.DWX, and AUDUSD.DWX as conversion history
-for USD-denominated tester accounting.
+The EA selects EURUSD.DWX, GBPUSD.DWX, and AUDUSD.DWX as conversion history for
+USD-denominated tester accounting. Those conversion-history symbols are declared
+in `basket_manifest.json` alongside the two traded legs so farm history preflight
+and MT5 tester synchronization use the same custom-symbol scope.
 
 ---
 
@@ -114,6 +116,15 @@ factory terminals. The archived F1/F2 real-MT5 evidence was recovered under
 queued yet because the downstream 2023-2025 stress gate still requires
 EURGBP.DWX 2025 D1 history/cache.
 
+2026-07-01 Q05 repair note: work item
+`f064eb24-9f7e-4d80-8180-88b1b0165b52` reached Q05 with the 2024 history cap but
+failed as infra-invalid when MT5 synchronized EURUSD.DWX and EURAUD.DWX, then
+hit `GBPUSD.DWX: history synchronization error`. The original manifest declared
+only EURGBP.DWX/EURAUD.DWX even though `Strategy_EnsureBasketScope()` selects
+EURUSD.DWX, GBPUSD.DWX, and AUDUSD.DWX for conversion accounting. The manifest
+now declares those conversion-history symbols and Q05 was requeued as one
+logical-basket work item.
+
 ---
 
 ## Revision History
@@ -122,3 +133,4 @@ EURGBP.DWX 2025 D1 history/cache.
 |---|---|---|---|
 | v1 | 2026-06-27 | Initial next-best FX cointegration basket build | Built from the 12533/12624 basket pattern |
 | v2 | 2026-06-28 | Q04 recovery + Q05 history gate | Q04 recovered from archived 2023/2024 folds; Q05 blocked on missing EURGBP.DWX 2025 D1 history/cache |
+| v2-q05a | 2026-07-01 | Q05 conversion-history manifest repair | Declared EURUSD.DWX, GBPUSD.DWX, and AUDUSD.DWX in `basket_manifest.json`; logical-basket Q05 requeued |
