@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12726
 ; ea_slug:      wti-nov-fade
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   141634017fa36b4f9ec1340e0109375a3547bcc67d160afa6f6a534060a5f9de
+; build_hash:   58d8d7c5b6b39cc0a8fc9d62ca487fe3de4775f1addfe472a8d8a1f68b41b442
 ; author:       Development
 ; date:         2026-06-27
 ;==========================================================
