@@ -14111,3 +14111,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12840,xti-xng-rspread,0,XTIUSD.DWX,128400000,2026-07-01,Codex,active
 12840,xti-xng-rspread,1,XNGUSD.DWX,128400001,2026-07-01,Codex,active
 12841,brent-thu-prem,0,XBRUSD.DWX,128410000,2026-07-01,Codex,active
+12842,williams-vol-bo-xti,0,XTIUSD.DWX,128420000,2026-07-01,Codex,active
