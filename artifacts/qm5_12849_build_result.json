@@ -1,0 +1,87 @@
+{
+  "task_id": "manual-codex-2026-07-01-brent-tsmom12m",
+  "ea_id": "QM5_12849",
+  "slug": "brent-tsmom12m",
+  "strategy": "Brent D1 12-month time-series momentum",
+  "strategy_id": "MOP-TSMOM-2012_BRENT_S01",
+  "source_id": "MOP-TSMOM-2012",
+  "source_links": [
+    "https://www.aqr.com/Insights/Research/Journal-Article/Time-Series-Momentum"
+  ],
+  "symbols": [
+    "XBRUSD.DWX"
+  ],
+  "host_symbol": "XBRUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12849_brent-tsmom12m",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12849_brent-tsmom12m\\QM5_12849_brent-tsmom12m.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12849_brent-tsmom12m\\QM5_12849_brent-tsmom12m.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12849_brent-tsmom12m\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\brent-tsmom12m_card.md",
+  "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\MOP-TSMOM-2012\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12849_brent-tsmom12m\\sets\\QM5_12849_brent-tsmom12m_XBRUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "e1323b592a4f2a47da628178b837fb8970fae17e620bcefcfa82733b14a6f66e",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XBRUSD.DWX",
+        "magic": 128490000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_12849_brent-tsmom12m --force --json --fail-on-error",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260701_062208\\QM5_12849_brent-tsmom12m.compile.log",
+    "ex5_size_bytes": 296384
+  },
+  "build_check": {
+    "command": "framework/scripts/build_check.ps1 -EALabel QM5_12849_brent-tsmom12m -Strict -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260701_062225.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "validations": {
+    "spec_doc": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_guardrails": "PASS"
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "7cc296f9-9603-42a5-ba3e-cccbb8df7792",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "XBRUSD.DWX",
+    "host_symbol": "XBRUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12849_brent-tsmom12m\\sets\\QM5_12849_brent-tsmom12m_XBRUSD.DWX_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "created_at_utc": "2026-07-01T06:23:05+00:00"
+  },
+  "smoke_result": "deferred_to_q02",
+  "smoke_skipped_reason": "Paced fleet Q02 was enqueued; no manual MT5 backtest was launched from this session.",
+  "non_duplicate_reason": "Single-symbol Brent 12-month time-series momentum is distinct from Brent Thursday seasonality, Brent/WTI spread reversion/breakout baskets, WTI event/calendar/trend sleeves, XNG sleeves, XAU/XAG and gas-metal baskets, and commodity RSI logic.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "notes": "Completed a structural D1 Brent TSMOM sleeve from the MOP JFE/AQR time-series-momentum source. Q02 must validate XBRUSD.DWX history sufficiency and costs."
+}

@@ -14131,3 +14131,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9450,brooks-failed-spike-and-channel-h4,13,SP500.DWX,94500013,2026-07-01,Codex,active
 12848,wti-brent-brk,0,XTIUSD.DWX,128480000,2026-07-01,Codex,active
 12848,wti-brent-brk,1,XBRUSD.DWX,128480001,2026-07-01,Codex,active
+12849,brent-tsmom12m,0,XBRUSD.DWX,128490000,2026-07-01,Codex,active
