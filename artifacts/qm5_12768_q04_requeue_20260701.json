@@ -3,19 +3,18 @@
   "slug": "edgelab-usdjpy-eurjpy-cointegration",
   "selected_pair": "USDJPY~EURJPY",
   "logical_symbol": "QM5_12768_USDJPY_EURJPY_COINTEGRATION_D1",
-  "mission_scope": "Advance an existing FX market-neutral cointegration basket because all 29 positive-hedge candidates from the 2026-06-09 66-pair scan are already built and QM5_12532/QM5_12533 are not Q02-blocked.",
+  "mission_scope": "Advance an existing FX market-neutral cointegration basket because all approved EdgeLab FX cointegration cards from the 2026-06-09 66-pair scan family are already built and QM5_12532/QM5_12533 are not Q02-blocked.",
   "preflight": {
-    "controlling_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md plus read-only rerun of framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py ranking logic",
-    "positive_hedge_scan_candidate_count": 29,
-    "unbuilt_positive_hedge_candidates_found": 0,
-    "qm5_12532_current_state": "Q02 PASS, Q04 PASS, later Q05 INFRA_FAIL/TIMEOUT CPU-ceiling path; not Q02-blocked.",
+    "controlling_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md plus framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py ranking metadata",
+    "unbuilt_approved_edgelab_cointegration_pairs_found": 0,
+    "qm5_12532_current_state": "Q02 PASS, Q04 PASS, later Q05 INFRA_FAIL/TIMEOUT; not Q02-blocked.",
     "qm5_12533_current_state": "Q02 PASS, later Q04 FAIL; not Q02-blocked.",
     "excluded_cpu_ceiling_targets": [
-      "QM5_12532 Q05 INFRA_FAIL reason includes INCOMPLETE_RUNS,TIMEOUT",
-      "QM5_12712 Q05 INFRA_FAIL reason includes INCOMPLETE_RUNS,TIMEOUT after manifest repair",
-      "QM5_12772 Q05 has explicit prior CPU-ceiling evidence"
+      "QM5_12532 Q05 INFRA_FAIL reason includes INCOMPLETE_RUNS/TIMEOUT",
+      "QM5_12712 Q05 INFRA_FAIL reason includes INCOMPLETE_RUNS/TIMEOUT after manifest repair",
+      "QM5_12772 Q05 has prior CPU-ceiling evidence"
     ],
-    "target_state_before_action": {
+    "target_state_before_latest_action": {
       "Q02": {
         "work_item_id": "93909a80-8ce6-4e95-be28-889f8dc17a7d",
         "status": "done",
@@ -25,13 +24,22 @@
         "work_item_id": "190f8061-7947-48b3-b9c2-c7cc3742d877",
         "status": "done",
         "verdict": "INFRA_FAIL",
-        "reason": "F1/F2 invalid_summary:BARS_ZERO,EMPTY_EXPERT,EMPTY_SYMBOL,HISTORY_CONTEXT_INVALID,INCOMPLETE_RUNS,M0_1970_PERIOD,NO_HISTORY,RUN_STATUS_INVALID; F3 OK with report PF 0.67"
+        "reason": "F1 invalid_summary:BARS_ZERO,EMPTY_EXPERT,EMPTY_SYMBOL,HISTORY_CONTEXT_INVALID,INCOMPLETE_RUNS,M0_1970_PERIOD,NO_HISTORY,REPORT_MISSING,RUN_STATUS_INVALID; F2 OK PF 0.7056 with 22 trades; F3 OK PF 0.67 with 28 report trades."
       }
     },
-    "duplicate_pending_or_active_q04_before": 0
+    "duplicate_pending_or_active_q04_before_latest_action": 0
   },
-  "queue_action": {
+  "prior_same_day_requeue": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12768 --phase Q04",
+    "result": "requeued_existing_row",
+    "requeued_work_item_id": "190f8061-7947-48b3-b9c2-c7cc3742d877",
+    "status_after": "pending",
+    "updated_at_utc": "2026-07-01T13:51:12+00:00",
     "db_backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12768_q04_requeue_20260701_135104.sqlite",
+    "archived_report_root_on_requeue": "D:/QM/reports/work_items/190f8061-7947-48b3-b9c2-c7cc3742d877.requeued_20260701T1351120000",
+    "subsequent_result": "Paced worker completed it as Q04 INFRA_FAIL; F1 remained invalid, F2/F3 produced valid reports."
+  },
+  "latest_queue_action": {
     "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12768 --phase Q04",
     "result": "requeued_existing_row",
     "created_rows": 0,
@@ -41,10 +49,10 @@
     "verdict_after": null,
     "claimed_by_after": null,
     "evidence_path_after": null,
-    "updated_at_utc": "2026-07-01T13:51:12+00:00",
-    "archived_report_root_on_requeue": "D:/QM/reports/work_items/190f8061-7947-48b3-b9c2-c7cc3742d877.requeued_20260701T1351120000"
+    "updated_at_utc": "2026-07-01T20:18:47+00:00",
+    "archived_report_root_on_requeue": "D:/QM/reports/work_items/190f8061-7947-48b3-b9c2-c7cc3742d877.requeued_20260701T2018470000"
   },
-  "payload_after": {
+  "payload_after_latest_action": {
     "portfolio_scope": "basket",
     "logical_symbol": "QM5_12768_USDJPY_EURJPY_COINTEGRATION_D1",
     "host_symbol": "USDJPY.DWX",
@@ -56,6 +64,7 @@
     "tester_currency": "USD",
     "tester_deposit": 100000,
     "risk_fixed": 1000,
+    "risk_percent": null,
     "q04_default_probe": true,
     "from_date": "2018.07.02",
     "to_date": "2024.12.31",
@@ -69,9 +78,14 @@
       "summary": "Q02 done PASS; Q04 pending."
     },
     {
-      "check": "direct SQLite duplicate guard",
+      "check": "direct SQLite row check",
       "result": "PASS",
-      "summary": "Exactly one pending/active Q04 row exists for QM5_12768, the requeued row 190f8061-7947-48b3-b9c2-c7cc3742d877."
+      "summary": "Q04 row 190f8061-7947-48b3-b9c2-c7cc3742d877 is pending, unclaimed, verdict NULL."
+    },
+    {
+      "check": "duplicate guard",
+      "result": "PASS",
+      "summary": "Exactly one pending/active Q04 row exists for QM5_12768."
     }
   ],
   "safety": {
