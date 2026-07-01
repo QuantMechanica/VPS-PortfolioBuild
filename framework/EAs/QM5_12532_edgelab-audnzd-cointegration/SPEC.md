@@ -4,7 +4,7 @@
 **Slug:** `edgelab-audnzd-cointegration`
 **Source:** `claude_cross_asset_discovery_2026-06-09` (see `docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-10
+**Last revised:** 2026-07-02
 
 ---
 
@@ -111,3 +111,4 @@ failure.
 | v1 | 2026-06-10 | Initial build from card | 7f1000ad-b718-407b-99a0-bd88568712eb |
 | v2 | 2026-06-28 | Session-safe pair entry repair | Delays daily entries until both AUDUSD/NZDUSD legs are tradable; stale single-leg setfiles now carry card defaults. |
 | v3 | 2026-06-28 | Q04 history-cache retry metadata | Manifest pins USD tester defaults; Q04 retry uses `q04_latest_full_year=2024` after 2025 D1 cache returned zero bars despite synchronized ticks. |
+| v4 | 2026-07-02 | Q05 tick-path CPU trim | Removed a redundant per-tick host-symbol news lookup from `OnTick`; the basket news hook already checks both AUDUSD/NZDUSD legs before entries. |

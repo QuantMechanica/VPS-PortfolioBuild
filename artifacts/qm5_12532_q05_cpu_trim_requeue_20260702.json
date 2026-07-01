@@ -1,0 +1,88 @@
+{
+  "ea_id": "QM5_12532",
+  "slug": "edgelab-audnzd-cointegration",
+  "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+  "basket_symbols": [
+    "AUDUSD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "mission_scope": "Fallback advance of an existing FX cointegration basket after the strict 66-pair survivors and allocated EdgeLab tail were already built.",
+  "precheck": {
+    "controlling_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_survivors": [
+      "QM5_12533",
+      "QM5_12532"
+    ],
+    "qm5_12532_q02": "PASS",
+    "qm5_12532_q04": "PASS",
+    "latest_q05_before_action": {
+      "work_item_id": "82cab3d1-bf05-4aa4-8278-86c8064b16e7",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "reason": "invalid_summary:INCOMPLETE_RUNS,TIMEOUT",
+      "summary_path": "D:/QM/reports/work_items/82cab3d1-bf05-4aa4-8278-86c8064b16e7/QM5_12532/20260630_041853/summary.json"
+    }
+  },
+  "code_changes": [
+    {
+      "path": "framework/EAs/QM5_12532_edgelab-audnzd-cointegration/QM5_12532_edgelab-audnzd-cointegration.mq5",
+      "summary": "Removed redundant per-tick host-symbol news lookup after the basket news hook had already checked both AUDUSD/NZDUSD legs."
+    },
+    {
+      "path": "framework/EAs/QM5_12532_edgelab-audnzd-cointegration/SPEC.md",
+      "summary": "Recorded the Q05 tick-path CPU trim in revision history."
+    }
+  ],
+  "queue_action": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12532 --phase Q05",
+    "result": "requeued",
+    "created_rows": 0,
+    "work_item_id": "82cab3d1-bf05-4aa4-8278-86c8064b16e7",
+    "status_after": "pending",
+    "verdict_after": null,
+    "updated_at_utc": "2026-07-01T23:05:11+00:00",
+    "archived_report_root": "D:/QM/reports/work_items/82cab3d1-bf05-4aa4-8278-86c8064b16e7.requeued_20260701T2305110000"
+  },
+  "payload_after_requeue": {
+    "portfolio_scope": "basket",
+    "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+    "host_symbol": "AUDUSD.DWX",
+    "host_timeframe": "D1",
+    "q04_latest_full_year": 2024,
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "basket_manifest": "C:/QM/repo/framework/EAs/QM5_12532_edgelab-audnzd-cointegration/basket_manifest.json",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_12532_edgelab-audnzd-cointegration/sets/QM5_12532_edgelab-audnzd-cointegration_QM5_12532_AUDNZD_COINTEGRATION_D1_D1_backtest.set"
+  },
+  "validation": [
+    {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12532_edgelab-audnzd-cointegration/QM5_12532_edgelab-audnzd-cointegration.mq5 -Strict",
+      "result": "PASS",
+      "compile_log": "C:/QM/repo/framework/build/compile/20260701_230442/QM5_12532_edgelab-audnzd-cointegration.compile.log"
+    },
+    {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_12532_edgelab-audnzd-cointegration --verbose",
+      "result": "BASKET_OK",
+      "violations": 0
+    },
+    {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12532_edgelab-audnzd-cointegration -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 16,
+      "report": "D:/QM/reports/framework/21/build_check_20260701_230458.json"
+    },
+    {
+      "command": "python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py -q",
+      "result": "PASS",
+      "tests": 6
+    }
+  ],
+  "safety": {
+    "manual_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
