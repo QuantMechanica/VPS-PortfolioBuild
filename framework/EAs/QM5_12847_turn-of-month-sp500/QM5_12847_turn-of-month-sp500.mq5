@@ -42,7 +42,8 @@ input int    entry_td_from_end  = 5;     // Nth-last trading day of month (sweep
 input int    exit_td_of_next    = 3;     // Mth trading day of next month (sweep 2/3/4)
 input int    regime_sma_period  = 200;   // Bull-regime D1 SMA period
 input bool   use_regime_filter  = true;  // Enable 200-SMA bull-regime gate
-input double atr_sl_mult        = 2.0;   // Safety-stop ATR(14) multiplier for lot sizing
+input int    sl_atr_period      = 14;    // ATR period for safety-stop (lot sizing only)
+input double sl_atr_mult        = 3.0;   // ATR multiplier for safety-stop (lot sizing only)
 
 // File-scope calendar arrays (populated once at OnInit)
 datetime g_entry_dates[];
@@ -164,17 +165,21 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
     if(!IsInDateArray(g_entry_dates, bar1_time))
         return false;
 
-    // Bull-regime gate: close[1] must be above D1 SMA
-    if(use_regime_filter &&
-       QM_Sig_Price_Above_MA(_Symbol, PERIOD_D1, regime_sma_period, 0, 1) <= 0)
-        return false;
+    // Bull-regime gate: close[1] > daily SMA (200 SMA per card)
+    if(use_regime_filter)
+    {
+        const double sma  = QM_SMA(_Symbol, PERIOD_D1, regime_sma_period, 1);
+        const double cls1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: regime read
+        if(cls1 <= 0.0 || sma <= 0.0 || cls1 <= sma)
+            return false;
+    }
 
     // Build entry: long at market, ATR safety stop for lot sizing, time-based exit
     req.type              = QM_BUY;
     req.price             = 0.0;  // framework fills market ask
     req.sl                = QM_StopATR(_Symbol, QM_BUY,
                                         SymbolInfoDouble(_Symbol, SYMBOL_BID),
-                                        14, atr_sl_mult);
+                                        sl_atr_period, sl_atr_mult);
     req.tp                = 0.0;  // no hard TP; exit is time-based via g_should_exit
     req.reason            = "ToM_Entry";
     req.symbol_slot       = qm_magic_slot_offset;

@@ -28,7 +28,8 @@ Long-only index seasonal strategy exploiting the well-documented Turn-of-Month (
 | `exit_td_of_next` | 3 | 2–4 | Mth trading day of the following month to exit |
 | `regime_sma_period` | 200 | 100–300 | D1 SMA period for bull-regime gate |
 | `use_regime_filter` | true | true/false | Enable/disable 200-SMA regime gate |
-| `atr_sl_mult` | 2.0 | 1.5–3.0 | ATR(14) multiplier for safety stop used in lot sizing |
+| `sl_atr_period` | 14 | 7–21 | ATR period for safety-stop sizing |
+| `sl_atr_mult` | 3.0 | 2.0–5.0 | ATR multiplier for safety-stop sizing |
 
 ---
 
