@@ -10,10 +10,17 @@
 $ErrorActionPreference = 'Stop'
 $py = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe'
 $Manifest = 'C:\QM\deploy\GoLive_D2c_13sleeve_2026-06-28\manifest_d2c_13sleeve_2026-06-28.json'
+# SUM-basis 42d MaxDD MC reference (correct DD basis; regenerate via
+# make_live_burnin_mc_reference.py when the book changes). Falls back to the manifest
+# weighted-avg placeholder inside the adapter if this file is absent.
+$McRef = 'D:\QM\reports\portfolio\live_burnin\mc_reference_d2c_42d.json'
 $ts = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
 
 Set-Location 'C:\QM\repo'
+$mcArg = @()
+if (Test-Path $McRef) { $mcArg = @('--mc-artifact', $McRef) }
 & $py -m tools.strategy_farm.portfolio.portfolio_live_forward_from_logs `
     --manifest $Manifest `
+    @mcArg `
     --generated-at-utc $ts
 exit $LASTEXITCODE

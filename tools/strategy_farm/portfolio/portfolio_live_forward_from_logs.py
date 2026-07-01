@@ -133,17 +133,33 @@ def build_report(
     window = int(config.get("burnin_window_days", 42))
     n_days = int(forward_equity.get("n_days", 0))
     immature = n_days < window
+    mc_basis = str(mc_artifact.get("_basis", "unknown"))
+    dd_basis_ok = mc_basis.startswith("sum_of_sleeves")
+    caveat = (
+        "Live equity = ACCOUNT_EQUITY (deployed SUM of sleeves at flat RISK_PERCENT). "
+        "Sharpe is scale-invariant so the Sharpe-band check is directionally valid. "
+    )
+    if dd_basis_ok:
+        caveat += (
+            "DD check uses the SUM-basis 42d MC reference (mc_reference_d2c_42d.json, "
+            "make_live_burnin_mc_reference.py) -> correct basis + window."
+        )
+    else:
+        caveat += (
+            "DD check is using a PLACEHOLDER reference (manifest weighted-avg, full-history) "
+            "-> not directly comparable; supply --mc-artifact with the SUM-basis reference."
+        )
     return {
         "status": "EVIDENCE_FOR_OWNER",
         "generated_at_utc": generated_at_utc,
         "source": "t_live_per_ea_logs",
-        "basis_caveat": (
-            "Live equity = ACCOUNT_EQUITY (deployed SUM of sleeves at flat RISK_PERCENT). "
-            "Manifest backtest KPIs (Sharpe, MC-p95 DD) are the RISK-PARITY WEIGHTED-AVERAGE "
-            "book -> a different risk basis. Sharpe is scale-invariant so the Sharpe-band "
-            "check is directionally valid; the DD check needs a SUM-basis MC-p95 reference "
-            "(follow-up: generate via tools/strategy_farm/portfolio/book_sizing.py)."
-        ),
+        "basis_caveat": caveat,
+        "dd_reference": {
+            "basis": mc_basis,
+            "basis_ok": dd_basis_ok,
+            "mc_p95_max_drawdown_pct": pb._mc_drawdown_p95(mc_artifact),
+            "provenance": mc_artifact.get("_provenance", {}),
+        },
         "maturity": {
             "n_days_observed": n_days,
             "burnin_window_days": window,
