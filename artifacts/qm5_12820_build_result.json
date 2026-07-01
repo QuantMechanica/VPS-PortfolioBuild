@@ -1,0 +1,90 @@
+{
+  "task_id": "manual-build-QM5_12820-20260701",
+  "ea_id": "QM5_12820",
+  "slug": "eia-xng-frzbrk",
+  "strategy": "XNGUSD.DWX January-February winter freeze-off shock continuation breakout",
+  "source_id": "EIA-XNG-FREEZE-2026_S02",
+  "source_citation": "U.S. Energy Information Administration Today in Energy winter natural-gas price shock articles; runtime uses Darwinex MT5 OHLC only.",
+  "symbols": [
+    "XNGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_12820_XNG_FRZBRK_D1",
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_12820_eia-xng-frzbrk",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_12820_eia-xng-frzbrk/QM5_12820_eia-xng-frzbrk.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_12820_eia-xng-frzbrk/QM5_12820_eia-xng-frzbrk.ex5",
+  "card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_12820_eia-xng-frzbrk_card.md",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_12820_eia-xng-frzbrk/sets/QM5_12820_eia-xng-frzbrk_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "mq5_sha256": "2ABFD724A1E6A7C1BBB61299579B6239A8B53E27E77E82960BE9AE1C65A732AF",
+  "ex5_sha256": "9051C45AAB300899C64DF64015B27EB0327DE4E3829263B7E652C5DC8C0DD81F",
+  "setfile_sha256": "A6903393AAAFCCEBCF4DED87DCE6EF0A0C2814F4894A0BCAB718E38707514C56",
+  "setfile_header_build_hash": "ab8f6f7a9446ca9d374987094f986539855eb148b6c799b60952a66768fb6e01",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XNGUSD.DWX",
+        "magic": 128200000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "powershell -NoProfile -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12820_eia-xng-frzbrk/QM5_12820_eia-xng-frzbrk.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:/QM/repo/framework/build/compile/20260701_071817/QM5_12820_eia-xng-frzbrk.compile.log",
+    "summary_path": "D:/QM/reports/compile/20260701_071817/summary.csv"
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -File framework/scripts/build_check.ps1 -EALabel QM5_12820_eia-xng-frzbrk -ReportRoot D:/QM/reports/framework/12820",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:/QM/reports/framework/12820/build_check_20260701_072224.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "7e315613-2db7-4b3f-be9d-99ce53bdcfbc",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "symbol": "XNGUSD.DWX",
+    "host_symbol": "XNGUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_12820_eia-xng-frzbrk/sets/QM5_12820_eia-xng-frzbrk_XNGUSD.DWX_D1_backtest.set",
+    "status_after_final_check": "pending",
+    "created_at_utc": "2026-07-01T07:20:02+00:00",
+    "updated_at_utc": "2026-07-01T07:20:02+00:00",
+    "payload": {
+      "host_symbol": "XNGUSD.DWX",
+      "host_timeframe": "D1",
+      "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested"
+    }
+  },
+  "non_duplicate_reason": "This is a January-February XNG winter freeze-off upside shock/channel breakout using EIA structural lineage. It is not QM5_12567 RSI pullback logic, not XNG fixed seasonal carry, not storage/event timing, not XNG vol-shock fade, and not an XTI/XNG or metals basket.",
+  "smoke_result": "deferred_to_q02",
+  "smoke_skipped_reason": "Paced fleet Q02 was enqueued; no manual MT5 backtest was launched from this session.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "t_live_manifest_touched": false
+  },
+  "notes": "Completed the missing compiled build for an approved non-RSI XNG structural freeze-off breakout sleeve and enqueued one RISK_FIXED D1 Q02 work item. No live, T_Live, AutoTrading, T_Live manifest, or portfolio gate artifacts touched."
+}

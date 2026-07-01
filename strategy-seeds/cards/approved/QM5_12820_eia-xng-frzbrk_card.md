@@ -43,8 +43,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-last_updated: 2026-06-30
+pipeline_phase: Q02
+last_updated: 2026-07-01
 expected_pf: 1.10
 expected_dd_pct: 24.0
 g0_approval_reasoning: "R1 PASS official EIA winter natural-gas price shock source packet; R2 PASS deterministic Jan-Feb D1 upside shock/channel breakout with SMA, ATR stop, and time exits; R3 PASS XNGUSD.DWX available; R4 PASS no ML/grid/martingale/external runtime data."
@@ -186,9 +186,11 @@ This is intentionally not a duplicate of `QM5_12602_eia-xng-frzfade`,
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
 | v1 | 2026-06-30 | initial structural XNG winter freeze-off continuation breakout card | G0 | APPROVED |
+| v1-q02 | 2026-07-01 | strict compile/build_check PASS; Q02 paced-fleet enqueue | Q02 | PENDING |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-06-30 | APPROVED | this card |
+| Q02 Baseline Screening | 2026-07-01 | QUEUED | work_items/7e315613-2db7-4b3f-be9d-99ce53bdcfbc |
