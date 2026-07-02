@@ -1,0 +1,37 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12959
+; ea_slug:      elder-triple-screen-swing
+; ea_version:   v5.0
+; set_version:  s20260702-001
+; symbol:       XAUUSD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-02
+;==========================================================
+qm_ea_id=12959
+qm_magic_slot_offset=1
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy_sma_regime_period=200
+strategy_rsi_period=14
+strategy_rsi_long_max=30.0
+strategy_rsi_short_min=70.0
+strategy_pending_expiry_hours=24
+strategy_rr_target=2.0
+strategy_swing_lookback_h4=10
+strategy_entry_buffer_points=5
+strategy_sl_buffer_points=5
