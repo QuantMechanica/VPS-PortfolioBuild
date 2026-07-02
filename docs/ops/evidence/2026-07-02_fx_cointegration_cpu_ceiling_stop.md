@@ -13,15 +13,17 @@ cointegration baskets, preferring a Q02 unblock for `QM5_12532` or
 The controlling source remains
 `docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md`.
 
-Rerunning the local scan script showed only two strict 66-pair FX
-cointegration survivors:
+Rerunning the local scan logic over the exported Darwinex D1 CSVs showed only
+two strict 66-pair FX cointegration survivors:
 
 | Pair | DEV Sharpe | OOS net Sharpe | OOS return | OOS trades | State |
 |---|---:|---:|---:|---:|---|
 | `EURJPY~GBPJPY` | 0.59 | 1.53 | 5.98% | 24 | built as `QM5_12533` |
 | `AUDUSD~NZDUSD` | 0.13 | 1.29 | 5.68% | 14 | built as `QM5_12532` |
 
-All locally registered EdgeLab FX cointegration baskets are already built:
+The same read-only rerun found 29 positive-hedge ranked rows. All locally
+registered EdgeLab FX cointegration baskets from that ranked set are already
+built:
 `QM5_12532`, `QM5_12533`, `QM5_12624`, `QM5_12712`, `QM5_12723`,
 `QM5_12728`, `QM5_12731`, `QM5_12732`, `QM5_12735`, `QM5_12739`,
 `QM5_12747`, `QM5_12749`, `QM5_12751`, `QM5_12756`, `QM5_12758`,
@@ -32,7 +34,12 @@ All locally registered EdgeLab FX cointegration baskets are already built:
 ## Current Funnel State
 
 `QM5_12532_AUDNZD_COINTEGRATION_D1` is not Q02-blocked. It has Q02 `PASS`,
-Q04 `PASS`, and is currently active at Q05 on `T5`.
+Q04 `PASS`, and the latest Q05 retry completed `INFRA_FAIL` at
+`2026-07-02T05:16:43+00:00` after the existing timeout and CPU-trim repairs.
+The current aggregate is:
+`D:/QM/reports/work_items/82cab3d1-bf05-4aa4-8278-86c8064b16e7/QM5_12532/Q05/QM5_12532_AUDNZD_COINTEGRATION_D1/aggregate.json`.
+Reason: `invalid_summary:INCOMPLETE_RUNS,TIMEOUT` with runner timeout `3420`
+seconds.
 
 `QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1` is not Q02-blocked. It has Q02
 `PASS` and a later completed Q04 `FAIL`.
@@ -41,9 +48,10 @@ Q04 `PASS`, and is currently active at Q05 on `T5`.
 the earlier no-history infra requeue, so no duplicate queue mutation was made.
 
 `QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1` is the cleanest higher-progress
-fallback candidate by phase state: Q02 `PASS`, Q03 `PASS`, Q04 `PASS`, latest
-Q05 `INFRA_FAIL`. Its latest Q05 evidence is not a strategy fail, but it is
-also not a cheap setup fix:
+fallback candidate by phase state: Q02 `PASS`, Q03 `PASS`, Q04 `PASS`, and a
+Q05 retry is already pending as work item
+`1c0405e7-16d3-40e6-b884-6be1b504dc4c`. Its prior Q05 evidence is not a
+strategy fail, but it is also not a cheap setup fix:
 
 - Work item: `1c0405e7-16d3-40e6-b884-6be1b504dc4c`
 - Evidence:
@@ -56,22 +64,23 @@ also not a cheap setup fix:
 
 ## CPU-Ceiling Stop
 
-Factory slot scan showed all T1-T5 terminals occupied:
+Factory slot scan at the stop point showed all T1-T5 terminals occupied:
 
 | Terminal | Active work item |
 |---|---|
-| T1 | `QM5_10485` Q02 `GBPUSD.DWX` |
+| T1 | `QM5_10375` Q05 `NDX.DWX` |
 | T2 | `QM5_9936` Q05 `USDJPY.DWX` |
-| T3 | `QM5_1228` Q04 `AUDCHF.DWX` |
+| T3 | `QM5_10813` Q05 `GDAXI.DWX` |
 | T4 | `QM5_1238` Q03 `XAUUSD.DWX` |
-| T5 | `QM5_12532` Q05 `QM5_12532_AUDNZD_COINTEGRATION_D1` |
+| T5 | `QM5_12821` Q02 `FX8_TWIN_CSM_BASKET_H1` |
 
 Per mission constraint, I stopped at the backtest CPU ceiling instead of
-requeueing another full-history FX basket run. No manual MT5 tester run was
-launched.
+requeueing another full-history FX basket run. `QM5_12532` has now consumed
+multiple Q05 retries and still times out at the current 3420-second runner
+envelope; another enqueue would be duplicate CPU work without a new execution
+mode or budget decision. No manual MT5 tester run was launched.
 
 ## Safety
 
 No `T_Live`, AutoTrading, portfolio admission, portfolio KPI, Q08
 contribution, portfolio gate, or deploy manifest files were touched.
-

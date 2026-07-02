@@ -21,39 +21,54 @@
       "oos_net_sharpe": 1.29,
       "oos_return_pct": 5.68,
       "oos_trades": 14,
-      "current_state": "Q02_PASS_Q04_PASS_Q05_ACTIVE"
+      "current_state": "Q02_PASS_Q04_PASS_Q05_INFRA_FAIL_CPU_CEILING"
     }
   ],
   "unbuilt_registered_edgelab_cointegration_pair_found": false,
+  "positive_hedge_ranked_pairs": 29,
+  "positive_hedge_ranked_pairs_unbuilt": 0,
+  "latest_qm5_12532_q05_failure": {
+    "work_item": "82cab3d1-bf05-4aa4-8278-86c8064b16e7",
+    "updated_at": "2026-07-02T05:16:43+00:00",
+    "verdict": "INFRA_FAIL",
+    "reason": "invalid_summary:INCOMPLETE_RUNS,TIMEOUT",
+    "runner_timeout_sec": 3420,
+    "aggregate": "D:/QM/reports/work_items/82cab3d1-bf05-4aa4-8278-86c8064b16e7/QM5_12532/Q05/QM5_12532_AUDNZD_COINTEGRATION_D1/aggregate.json"
+  },
   "active_or_pending_fx_baskets": [
-    {
-      "ea": "QM5_12532",
-      "phase": "Q05",
-      "status": "active",
-      "terminal": "T5",
-      "symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1"
-    },
     {
       "ea": "QM5_12728",
       "phase": "Q04",
       "status": "pending",
       "symbol": "QM5_12728_NZDUSD_GBPJPY_COINTEGRATION_D1"
+    },
+    {
+      "ea": "QM5_12778",
+      "phase": "Q05",
+      "status": "pending",
+      "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1"
+    },
+    {
+      "ea": "QM5_12781",
+      "phase": "Q07",
+      "status": "pending",
+      "symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1"
     }
   ],
   "fallback_candidate_checked": {
     "ea": "QM5_12778",
     "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
     "latest_phase": "Q05",
-    "latest_verdict": "INFRA_FAIL",
-    "reason": "NO_HISTORY/REPORT_MISSING/METATESTER_HUNG after Q02/Q03/Q04 PASS",
+    "latest_verdict": "PENDING_RETRY_AFTER_INFRA_FAIL",
+    "reason": "Q05 retry already pending after prior NO_HISTORY/REPORT_MISSING/METATESTER_HUNG evidence and Q02/Q03/Q04 PASS",
     "work_item": "1c0405e7-16d3-40e6-b884-6be1b504dc4c"
   },
   "factory_slots_occupied": {
-    "T1": "QM5_10485 Q02 GBPUSD.DWX",
+    "T1": "QM5_10375 Q05 NDX.DWX",
     "T2": "QM5_9936 Q05 USDJPY.DWX",
-    "T3": "QM5_1228 Q04 AUDCHF.DWX",
+    "T3": "QM5_10813 Q05 GDAXI.DWX",
     "T4": "QM5_1238 Q03 XAUUSD.DWX",
-    "T5": "QM5_12532 Q05 QM5_12532_AUDNZD_COINTEGRATION_D1"
+    "T5": "QM5_12821 Q02 FX8_TWIN_CSM_BASKET_H1"
   },
   "safety": {
     "manual_mt5_run_launched": false,
