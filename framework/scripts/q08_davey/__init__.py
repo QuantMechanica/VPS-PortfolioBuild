@@ -1,4 +1,4 @@
-"""Q08 Davey Statistical Validation — 10 sub-gates.
+"""Q08 Davey Statistical Validation — 11 sub-gates.
 
 Per 2026-05-23 pipeline rewrite. Vault: `03 Pipeline/Q08 Davey Statistical Validation.md`.
 
@@ -13,6 +13,7 @@ Sub-gates (ALL must PASS for Q08 to advance):
   8.8   edge_decay           — rolling 12m PF decline < 40%
   8.9   runs_test            — Wald-Wolfowitz p > 0.05 + top-20% months ≤ 70% profit
   8.10  regime_crisis        — profitable in 3 ATR regimes; crisis slices informational
+  8.11  mc_shuffle_dd        — trade-order-shuffle p95 max drawdown sizing signal
 
 Each sub-gate is a standalone callable in its own module. The aggregator
 (`aggregate.py`) runs them in order, AND-combines verdicts, writes

@@ -1,12 +1,12 @@
-"""Q08 Davey aggregator — run all 10 sub-gates, AND-combine verdicts, write report.
+"""Q08 Davey aggregator — run all 11 sub-gates, AND-combine verdicts, write report.
 
 Output:
     D:/QM/reports/pipeline/QM5_<id>/Q08/<symbol>/aggregate.json
     D:/QM/reports/pipeline/QM5_<id>/Q08/<symbol>/8_<N>_<name>.json (per sub-gate)
 
-The combined verdict is AND across all 10 sub-gates. Any INVALID gate
-returns INVALID at the aggregate level (separates infrastructure issues
-from genuine FAILs).
+The combined verdict is AND across all 11 sub-gates, then calibrated into
+PASS/FAIL_SOFT/FAIL_HARD/INVALID so soft-only and low-sample signals do not
+become hard blockers.
 
 Usage:
     python -m framework.scripts.q08_davey.aggregate \
@@ -36,6 +36,7 @@ if __package__ in (None, ""):
         common, sub_8_1_correlation, sub_8_2_dsr_mc_fdr, sub_8_3_tail_dependence,
         sub_8_4_seasonal, sub_8_5_neighborhood, sub_8_6_chopping_block,
         sub_8_7_pbo, sub_8_8_edge_decay, sub_8_9_runs_test, sub_8_10_regime_crisis,
+        sub_8_11_mc_shuffle_dd,
     )
 else:
     from tools.strategy_farm.portfolio import commission
@@ -43,6 +44,7 @@ else:
         common, sub_8_1_correlation, sub_8_2_dsr_mc_fdr, sub_8_3_tail_dependence,
         sub_8_4_seasonal, sub_8_5_neighborhood, sub_8_6_chopping_block,
         sub_8_7_pbo, sub_8_8_edge_decay, sub_8_9_runs_test, sub_8_10_regime_crisis,
+        sub_8_11_mc_shuffle_dd,
     )
 
 # Execution order matches the Vault Q08 spec numbering.
@@ -57,6 +59,7 @@ SUB_GATES = [
     ("8.8",  sub_8_8_edge_decay),
     ("8.9",  sub_8_9_runs_test),
     ("8.10", sub_8_10_regime_crisis),
+    ("8.11", sub_8_11_mc_shuffle_dd),
 ]
 
 N_SEASON = 3  # max CONSECUTIVE losing calendar months still 'soft' (OWNER: "am Stück")
@@ -529,14 +532,15 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
             classification[name] = "PASS"
             continue
         # Portfolio reframe (DL-075, 2026-06-21, OWNER): seasonal (8.4), chopping-block
-        # (8.6) and regime/crisis (8.10) measure SINGLE-EA robustness across conditions —
+        # (8.6), regime/crisis (8.10), and MC shuffle DD (8.11) measure SINGLE-EA
+        # robustness across conditions or trade sequencing —
         # exactly the risk the Q09 anti-correlation portfolio absorbs by diversification.
         # Requiring each EA to individually survive every season/regime double-counts the
-        # robustness bar and walls off low-freq/regime-dependent edges. So these three
+        # robustness bar and walls off low-freq/regime-dependent edges. So these gates
         # gates can only contribute a SOFT signal here: never HARD-fail, never block as
         # INVALID. The EA flows to the Q09 portfolio track where combined robustness is
         # the real gate. Profitability (portfolio_net_pf, cost_cushion) stays HARD below.
-        if name.startswith(("8.4", "8.6", "8.10")):
+        if name.startswith(("8.4", "8.6", "8.10", "8.11")):
             classification[name] = "EDGE_SOFT"
             soft = True
             continue
@@ -690,7 +694,16 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             )
         sub_results.append(res)
 
-    # PASS only if all 10 PASS; otherwise split failures into hard/soft/infra.
+    mc_shuffle_dd = next(
+        (
+            dict(r.get("evidence") or {})
+            for r in sub_results
+            if str(r.get("name") or "").startswith("8.11")
+        ),
+        None,
+    )
+
+    # PASS only if all 11 PASS; otherwise split failures into hard/soft/infra.
     overall, verdict_classification = _aggregate_verdict(
         sub_results, trades, commission_info.get("cost_cushion_tier"))
 
@@ -723,6 +736,13 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
             "n_invalid": sum(1 for r in sub_results if r["status"] == "INVALID"),
         },
     }
+    if mc_shuffle_dd:
+        aggregate["mc_shuffle_dd"] = mc_shuffle_dd
+        aggregate["mc_maxdd_p95"] = mc_shuffle_dd.get("mc_maxdd_p95")
+        aggregate["mc_maxdd_p95_pct"] = mc_shuffle_dd.get("mc_maxdd_p95_pct")
+        aggregate["mc_maxdd_p95_over_as_realized_maxdd"] = (
+            mc_shuffle_dd.get("mc_maxdd_p95_over_as_realized_maxdd")
+        )
     if commission_info["degraded_symbols"]:
         aggregate["degraded_symbols"] = commission_info["degraded_symbols"]
 
@@ -759,7 +779,7 @@ def _print_summary(agg: dict) -> None:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Q08 Davey aggregator (10 sub-gates)")
+    ap = argparse.ArgumentParser(description="Q08 Davey aggregator (11 sub-gates)")
     ap.add_argument("--ea-id", type=int, help="EA id (with --symbol + --log)")
     ap.add_argument("--symbol", help="symbol e.g. NDX.DWX")
     ap.add_argument("--log", type=Path, help="path to EA JSON-lines log")

@@ -1,4 +1,5 @@
 import datetime as dt
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -18,6 +19,7 @@ from framework.scripts.q08_davey import (
     sub_8_8_edge_decay,
     sub_8_9_runs_test,
     sub_8_10_regime_crisis,
+    sub_8_11_mc_shuffle_dd,
 )
 
 
@@ -147,6 +149,44 @@ class Q08DaveySubGateSemanticsTests(unittest.TestCase):
         self.assertEqual(incomplete["status"], "INVALID")
         self.assertFalse(incomplete["passed"])
         self.assertIn("regime_join_incomplete", incomplete["detail"])
+
+    def test_mc_shuffle_dd_is_deterministic_with_stable_values(self) -> None:
+        trades = [
+            {"net": 1000.0},
+            {"net": -500.0},
+            {"net": 700.0},
+            {"net": -1200.0},
+            {"net": 300.0},
+            {"net": -100.0},
+            {"net": 900.0},
+            {"net": -400.0},
+        ]
+
+        first = sub_8_11_mc_shuffle_dd.run(trades=trades)
+        second = sub_8_11_mc_shuffle_dd.run(trades=trades)
+
+        self.assertEqual(first, second)
+        self.assertEqual(first["status"], "PASS")
+        evidence = first["evidence"]
+        self.assertEqual(evidence["seed"], 8112026)
+        self.assertEqual(evidence["n_permutations"], 1000)
+        self.assertEqual(evidence["as_realized_maxdd"], 1200.0)
+        self.assertEqual(evidence["mc_maxdd_median"], 1600.0)
+        self.assertEqual(evidence["mc_maxdd_p95"], 2200.0)
+        self.assertEqual(evidence["mc_maxdd_p95_over_as_realized_maxdd"], 1.833333)
+
+    def test_mc_shuffle_dd_failure_is_soft_only_in_aggregate(self) -> None:
+        trades = [_trade(dt.datetime(2024, 1, d), 10.0) for d in range(1, 20)]
+        trades.append(_trade(dt.datetime(2024, 2, 1), -5.0))
+        subs = [
+            {"name": "8.7_pbo", "status": "PASS"},
+            {"name": "8.11_mc_shuffle_dd", "status": "FAIL", "detail": "mc_maxdd_p95=11000"},
+        ]
+
+        verdict, classification = aggregate._aggregate_verdict(subs, trades=trades)
+
+        self.assertEqual(verdict, "FAIL_SOFT")
+        self.assertEqual(classification["8.11_mc_shuffle_dd"], "EDGE_SOFT")
 
     def test_edge_decay_negative_decline_passes(self) -> None:
         trades: list[dict] = []
@@ -480,6 +520,51 @@ class Q08DurableSleeveStreamTests(unittest.TestCase):
 
         self.assertEqual(events, ["persist", "ensure"])
         self.assertEqual(res["portfolio_stream"]["n"], 1)
+
+    def test_run_all_exposes_mc_shuffle_dd_metrics(self) -> None:
+        trades = [
+            {"time": 1, "net": 1000.0},
+            {"time": 2, "net": -500.0},
+            {"time": 3, "net": 700.0},
+            {"time": 4, "net": -1200.0},
+            {"time": 5, "net": 300.0},
+            {"time": 6, "net": -100.0},
+            {"time": 7, "net": 900.0},
+            {"time": 8, "net": -400.0},
+        ]
+        commission_info = {
+            "commission_basis": "test",
+            "commission_model": {"degraded": False},
+            "commission_total": 0.0,
+            "gross_total": 700.0,
+            "cost_cushion": None,
+            "cost_cushion_tier": "PASS",
+            "degraded_symbols": [],
+        }
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            out_dir = root / "out"
+            with patch.object(aggregate.common, "load_trades_from_log", return_value=trades), \
+                 patch.object(aggregate.common, "load_equity_stream", return_value=[]), \
+                 patch.object(aggregate, "_latest_structured_qm_log", return_value=None), \
+                 patch.object(aggregate, "_persist_durable_sleeve_stream",
+                              return_value={"persisted": False, "reason": "test", "n": len(trades)}), \
+                 patch.object(aggregate, "_ensure_sub_gate_inputs", return_value={}), \
+                 patch.object(aggregate, "_apply_worst_case_commission",
+                              return_value=([dict(t) for t in trades], commission_info)), \
+                 patch.object(aggregate, "SUB_GATES", [("8.11", sub_8_11_mc_shuffle_dd)]):
+                res = aggregate.run_all(9999, "EURUSD.DWX", root / "unused.log", out_dir=out_dir)
+
+            persisted = json.loads((out_dir / "aggregate.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(res["mc_shuffle_dd"]["mc_maxdd_p95"], 2200.0)
+        self.assertEqual(res["mc_maxdd_p95"], 2200.0)
+        self.assertEqual(persisted["mc_maxdd_p95"], 2200.0)
+        self.assertEqual(
+            persisted["mc_maxdd_p95_over_as_realized_maxdd"],
+            1.833333,
+        )
 
 
 if __name__ == "__main__":
