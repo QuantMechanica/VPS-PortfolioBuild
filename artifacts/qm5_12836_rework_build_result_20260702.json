@@ -1,0 +1,136 @@
+{
+  "task_id": "579ff8ad-c6eb-4632-bac6-1eb70f1f43bd",
+  "ea_id": "QM5_12836",
+  "slug": "turnaround-tuesday-ws30",
+  "strategy": "Turnaround Tuesday long-only calendar mean reversion on WS30",
+  "source_id": "balke-turnaround-tuesday-20260630",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12836_turnaround-tuesday-ws30.md",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12836_turnaround-tuesday-ws30",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12836_turnaround-tuesday-ws30\\QM5_12836_turnaround-tuesday-ws30.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12836_turnaround-tuesday-ws30\\QM5_12836_turnaround-tuesday-ws30.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12836_turnaround-tuesday-ws30\\SPEC.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12836_turnaround-tuesday-ws30\\sets\\QM5_12836_turnaround-tuesday-ws30_WS30.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12836_turnaround-tuesday-ws30\\sets\\QM5_12836_turnaround-tuesday-ws30_SP500.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12836_turnaround-tuesday-ws30\\sets\\QM5_12836_turnaround-tuesday-ws30_NDX.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12836_turnaround-tuesday-ws30\\sets\\QM5_12836_turnaround-tuesday-ws30_GDAXI.DWX_H1_backtest.set"
+  ],
+  "symbols_registered": [
+    "WS30.DWX",
+    "SP500.DWX",
+    "NDX.DWX",
+    "GDAXI.DWX"
+  ],
+  "magic_base": 128360000,
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "repair_summary": {
+    "root_cause": "Q02 prescreen zero-trade failures were caused by fixed-risk sizing with too-tight index stops, producing WS30 order volumes that exceeded tester margin.",
+    "change": "Backtest setfiles now use numeric enum parameters for entry and stop/take-profit modes, with SL_FIXED_PCT at 2.0 percent; this preserves the card-authorized 0.5-3.0 percent fixed-stop range while reducing RISK_FIXED lot size enough for the 100k tester account.",
+    "scope": "Setfile and SPEC-only repair for the existing approved/buildable EA; no framework include, registry, live, or portfolio-gate edits."
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "pwsh -File framework/scripts/build_check.ps1 -EALabel QM5_12836_turnaround-tuesday-ws30",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260702_152311\\QM5_12836_turnaround-tuesday-ws30.compile.log",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12836_turnaround-tuesday-ws30\\QM5_12836_turnaround-tuesday-ws30.ex5"
+  },
+  "build_check": {
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260702_152311.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings in QM_Indicators, QM_StopRules, and QM_EquityStream; build_check failures=0."
+  },
+  "validations": {
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "smoke_terminal": "T2",
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  },
+  "smoke_result": "passed",
+  "smoke_report_path": "D:\\QM\\reports\\smoke\\QM5_12836\\20260702_152343\\summary.json",
+  "smoke": {
+    "command": "pwsh -File framework/scripts/run_smoke.ps1 -EALabel QM5_12836_turnaround-tuesday-ws30 -Symbol WS30.DWX -Year 2024 -Terminal any -Period H1 -SetFile C:/QM/repo/framework/EAs/QM5_12836_turnaround-tuesday-ws30/sets/QM5_12836_turnaround-tuesday-ws30_WS30.DWX_H1_backtest.set -MinTrades 1",
+    "result": "PASS",
+    "reason_classes": [
+      "OK"
+    ],
+    "symbol": "WS30.DWX",
+    "year": 2024,
+    "period": "H1",
+    "terminal": "T2",
+    "min_trades_required": 5,
+    "deterministic": true,
+    "oninit_failure_detected": false,
+    "runs": [
+      {
+        "run": "run_01",
+        "total_trades": 6,
+        "profit_factor": 0.96,
+        "net_profit": -332.34,
+        "drawdown": 7771.54
+      },
+      {
+        "run": "run_02",
+        "total_trades": 6,
+        "profit_factor": 0.96,
+        "net_profit": -332.34,
+        "drawdown": 7771.54
+      }
+    ],
+    "evidence": "D:\\QM\\reports\\framework\\22\\20260702_152343_QM5_12836_T2_WS30_DWX_run_smoke.md"
+  },
+  "blocked_reason": "",
+  "open_questions": [
+    "Q02 must validate the repaired setfiles across the staged index baseline; this build artifact only verifies compile, SPEC, and a bounded WS30 smoke.",
+    "The strategy remains a Dow/calendar demonstrator, not a certified sleeve, until Q02+ pipeline evidence replaces the prior stale zero-trade rows."
+  ],
+  "non_duplicate_reason": "WS30 Turnaround Tuesday is the approved Dow calendar-mean-reversion demonstrator and remains absent from the certified book; it is structurally distinct from the existing NDX momentum, metal, and energy survivors.",
+  "q02_enqueue": {
+    "status": "enqueued",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "requested_phase": "Q02",
+    "created_by": "record_build_result.auto_q02",
+    "enqueued": [
+      {
+        "work_item_id_prefix": "3592623f",
+        "symbol": "WS30.DWX",
+        "phase": "Q02",
+        "timeframe": "H1",
+        "setfile": "QM5_12836_turnaround-tuesday-ws30_WS30.DWX_H1_backtest.set"
+      },
+      {
+        "work_item_id_prefix": "10bfb5bd",
+        "symbol": "SP500.DWX",
+        "phase": "Q02",
+        "timeframe": "H1",
+        "setfile": "QM5_12836_turnaround-tuesday-ws30_SP500.DWX_H1_backtest.set"
+      },
+      {
+        "work_item_id_prefix": "5400b358",
+        "symbol": "NDX.DWX",
+        "phase": "Q02",
+        "timeframe": "H1",
+        "setfile": "QM5_12836_turnaround-tuesday-ws30_NDX.DWX_H1_backtest.set"
+      }
+    ],
+    "deferred": [
+      {
+        "symbol": "GDAXI.DWX",
+        "reason": "staged_deferred_symbol",
+        "setfile": "QM5_12836_turnaround-tuesday-ws30_GDAXI.DWX_H1_backtest.set"
+      }
+    ]
+  }
+}
