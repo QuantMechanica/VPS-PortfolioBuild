@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12751
 ; ea_slug:      edgelab-eurusd-euraud-cointegration
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   5d2d6540002593e8bbc496b81bed3ae434475383a7d8cd6018100bbc613d560e
+; build_hash:   5e6e3ff1537c45d18311ba365e5ae8971143026064c27e624ffd771dea8d4c0b
 ; author:       Development
 ; date:         2026-06-28
 ;==========================================================

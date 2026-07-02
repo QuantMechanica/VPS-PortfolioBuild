@@ -72,6 +72,17 @@ def test_qm5_12749_manifest_declares_audjpy_conversion_history() -> None:
     assert _mq5_allowed_symbols(ea_dir) <= declared
 
 
+def test_qm5_12751_manifest_declares_euraud_conversion_history() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_12751_edgelab-eurusd-euraud-cointegration"
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+
+    declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
+
+    assert manifest["tester_currency"] == "USD"
+    assert {"EURUSD.DWX", "EURAUD.DWX", "AUDUSD.DWX"} <= declared
+    assert _mq5_allowed_symbols(ea_dir) <= declared
+
+
 def test_qm5_12728_manifest_declares_gbpjpy_conversion_history() -> None:
     ea_dir = REPO / "framework" / "EAs" / "QM5_12728_edgelab-nzdusd-gbpjpy-cointegration"
     manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))

@@ -1,0 +1,102 @@
+{
+  "ea_id": "QM5_12751",
+  "ea_label": "QM5_12751_edgelab-eurusd-euraud-cointegration",
+  "logical_symbol": "QM5_12751_EURUSD_EURAUD_COINTEGRATION_D1",
+  "mission_scope": "Advance an existing FX market-neutral cointegration basket because no unbuilt approved EdgeLab cointegration pair remained and QM5_12532/QM5_12533 were not Q02-blocked.",
+  "prechecks": {
+    "qm5_12532_q02_blocked": false,
+    "qm5_12532_current_observed_state": "Q02 PASS, Q04 PASS, Q05 pending/CPU-ceiling history",
+    "qm5_12533_q02_blocked": false,
+    "qm5_12533_current_observed_state": "Q02 PASS, Q04 FAIL",
+    "unbuilt_approved_edgelab_cointegration_pair_found": false,
+    "target_prior_state": "QM5_12751 had logical-basket Q02 PASS and later Q04 strategy FAIL, but its runtime warmed AUDUSD.DWX conversion history that was absent from basket_manifest.json and the Q02 payload symbol count."
+  },
+  "repair": {
+    "reason": "The EA selects and warms AUDUSD.DWX in Strategy_EnsureBasketScope() for USD-denominated EURAUD accounting, but basket_manifest.json declared only EURUSD.DWX and EURAUD.DWX.",
+    "files_changed": [
+      "framework/EAs/QM5_12751_edgelab-eurusd-euraud-cointegration/basket_manifest.json",
+      "framework/EAs/QM5_12751_edgelab-eurusd-euraud-cointegration/SPEC.md",
+      "framework/EAs/QM5_12751_edgelab-eurusd-euraud-cointegration/sets/QM5_12751_edgelab-eurusd-euraud-cointegration_QM5_12751_EURUSD_EURAUD_COINTEGRATION_D1_D1_backtest.set",
+      "strategy-seeds/cards/edgelab-eurusd-euraud-cointegration_card.md",
+      "tools/strategy_farm/tests/test_fx_basket_manifests.py"
+    ],
+    "manifest_symbols_after": [
+      "EURUSD.DWX",
+      "EURAUD.DWX",
+      "AUDUSD.DWX"
+    ],
+    "traded_symbols": [
+      "EURUSD.DWX",
+      "EURAUD.DWX"
+    ],
+    "conversion_symbols": [
+      "AUDUSD.DWX"
+    ]
+  },
+  "queue_action": {
+    "action": "insert_single_logical_q02_requeue_after_scope_repair",
+    "previous_q02_work_item_id": "0480d11b-9754-4586-b461-e4e677fb58dc",
+    "previous_q02_verdict": "PASS",
+    "previous_q04_work_item_id": "6d9c5116-10b3-4754-be2b-c4422734980d",
+    "previous_q04_verdict": "FAIL",
+    "requeued_work_item_id": "2eea4a0f-21a9-42a8-a0a0-4222eb37525e",
+    "status_after": "pending",
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12751_q02_conversion_requeue_20260702T223433Z.sqlite",
+    "created_rows": 1,
+    "duplicate_pending_or_active_rows_before_insert": 0,
+    "duplicate_pending_or_active_rows_after_insert": 1,
+    "payload_updates": {
+      "basket_symbol_count": 3,
+      "basket_symbols": [
+        "EURUSD.DWX",
+        "EURAUD.DWX",
+        "AUDUSD.DWX"
+      ],
+      "traded_symbols": [
+        "EURUSD.DWX",
+        "EURAUD.DWX"
+      ],
+      "conversion_symbols": [
+        "AUDUSD.DWX"
+      ],
+      "priority_track": true,
+      "priority_reason": "fx_market_neutral_basket_q02_conversion_scope_repair_2026-07-03",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "tester_currency": "USD",
+      "tester_deposit": 100000,
+      "timeout_min": 120
+    }
+  },
+  "validation": [
+    {
+      "command": "python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py -q",
+      "result": "PASS",
+      "tests": 9
+    },
+    {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_12751_edgelab-eurusd-euraud-cointegration --verbose",
+      "result": "PASS",
+      "verdict": "BASKET_OK",
+      "manifest_declares": 3
+    },
+    {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12751_edgelab-eurusd-euraud-cointegration -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 16,
+      "report": "D:/QM/reports/framework/21/build_check_20260702_223613.json"
+    }
+  ],
+  "guardrails": {
+    "manual_backtest_launched": false,
+    "t_live_manifest_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false,
+    "risk_mode": "RISK_FIXED backtest queue only"
+  }
+}

@@ -16,6 +16,7 @@ indicators:
   - rolling-zscore
   - atr-stop
 target_symbols: [EURUSD.DWX, EURAUD.DWX]
+conversion_symbols: [AUDUSD.DWX]
 logical_symbol: QM5_12751_EURUSD_EURAUD_COINTEGRATION_D1
 period: D1
 expected_trade_frequency: "D1 two-leg basket, approximately 4-8 logical spread packages/year."
@@ -26,7 +27,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
-last_updated: 2026-06-28
+last_updated: 2026-07-03
 g0_approval_reasoning: "R1 PASS because the method comes from Chan cointegration pair-trading and pair selection comes from the OWNER-requested in-house 66-pair scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS EURUSD.DWX and EURAUD.DWX data exist in the exported scan universe; R4 PASS no ML/grid/martingale. Marked high-risk because DEV Sharpe was negative."
 expected_pf: 1.01
 expected_dd_pct: 30.0
@@ -64,6 +65,7 @@ directional system.
 
 - Host symbol: EURUSD.DWX.
 - Basket legs: EURUSD.DWX and EURAUD.DWX.
+- Conversion history: AUDUSD.DWX for USD-denominated EURAUD accounting; not a traded leg.
 - Logical symbol: QM5_12751_EURUSD_EURAUD_COINTEGRATION_D1.
 - Period: D1.
 - Backtest risk mode: RISK_FIXED.
@@ -131,7 +133,7 @@ cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 
 - [x] R1 reputable source: Chan cointegration method plus OWNER-requested in-house 66-pair scan.
 - [x] R2 mechanical: fixed beta, z-score entry/exit, ATR stop, broken-package close.
-- [x] R3 testable: EURUSD.DWX and EURAUD.DWX are Darwinex-native `.DWX` symbols in the exported scan data.
+- [x] R3 testable: EURUSD.DWX and EURAUD.DWX are Darwinex-native `.DWX` symbols in the exported scan data; AUDUSD.DWX is available as conversion history.
 - [x] R4 compliant: no ML, no grid, no martingale, low-frequency D1.
 
 ## Framework Alignment
@@ -147,4 +149,5 @@ cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 |---|---|---|---|---|
 | v1 | 2026-06-28 | initial OOS-positive next-best FX cointegration basket build | G0 | APPROVED |
 | v1 | 2026-06-28 | logical-basket Q02 enqueued as non-duplicate paced worker item `0480d11b-9754-4586-b461-e4e677fb58dc` | Q02 | PENDING |
+| v1-q02a | 2026-07-03 | manifest repaired to declare AUDUSD.DWX conversion history used by the EA runtime, then logical-basket Q02 work item `2eea4a0f-21a9-42a8-a0a0-4222eb37525e` queued | Q02 | PENDING |
 

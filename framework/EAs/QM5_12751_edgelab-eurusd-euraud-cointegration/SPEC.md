@@ -4,7 +4,7 @@
 **Slug:** edgelab-eurusd-euraud-cointegration
 **Source:** claude_cross_asset_discovery_2026-06-09 plus Chan cointegration pair-trade method
 **Author of this spec:** Codex
-**Last revised:** 2026-06-28
+**Last revised:** 2026-07-03
 
 ---
 
@@ -54,12 +54,14 @@ stronger exploratory candidates were already built.
 **Designed for:**
 - EURUSD.DWX - leg 1 of the fixed EURUSD/EURAUD spread and the spread numerator.
 - EURAUD.DWX - leg 2 of the fixed EURUSD/EURAUD spread and the beta-weighted spread denominator.
+- AUDUSD.DWX - conversion history for USD-denominated EURAUD accounting; not a traded leg.
 
 **Explicitly not for:**
 - Other `.DWX` symbols. This card is a fixed two-leg FX-cross basket, not a portable multi-pair strategy.
 
 The EA selects AUDUSD.DWX as conversion history for the EURAUD leg under
-USD-denominated tester accounting.
+USD-denominated tester accounting. `basket_manifest.json` must declare all three
+symbols so the farm's basket history scope matches `Strategy_EnsureBasketScope()`.
 
 ---
 
@@ -118,6 +120,12 @@ Q02 queue note: one logical-basket work item was inserted for
 `QM5_12751_EURUSD_EURAUD_COINTEGRATION_D1`:
 `0480d11b-9754-4586-b461-e4e677fb58dc`. No per-leg Q02 fanout was created.
 
+2026-07-03 repair note: the original manifest declared only the two traded legs
+even though `Strategy_EnsureBasketScope()` selects and warms AUDUSD.DWX for
+EURAUD conversion history under USD tester accounting. The manifest now declares
+that conversion-history symbol and repaired logical-basket Q02 work item
+`2eea4a0f-21a9-42a8-a0a0-4222eb37525e` was queued.
+
 ---
 
 ## Revision History
@@ -126,4 +134,5 @@ Q02 queue note: one logical-basket work item was inserted for
 |---|---|---|---|
 | v1 | 2026-06-28 | Initial next-best FX cointegration basket build | Built from the 12728 basket pattern |
 | v1 | 2026-06-28 | Q02 enqueue | Pending logical-basket work item 0480d11b-9754-4586-b461-e4e677fb58dc |
+| v1-q02a | 2026-07-03 | Q02 conversion-history manifest repair | Declared AUDUSD.DWX in `basket_manifest.json`; logical-basket Q02 work item `2eea4a0f-21a9-42a8-a0a0-4222eb37525e` queued |
 
