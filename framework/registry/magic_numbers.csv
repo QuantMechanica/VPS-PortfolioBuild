@@ -14303,3 +14303,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12918,jegadeesh-1w-reversal-fx,4,USDCAD.DWX,129180004,2026-07-02,Codex,active
 12918,jegadeesh-1w-reversal-fx,5,USDCHF.DWX,129180005,2026-07-02,Codex,active
 12918,jegadeesh-1w-reversal-fx,6,NZDUSD.DWX,129180006,2026-07-02,Codex,active
+12965,wti-week-orb,0,XTIUSD.DWX,129650000,2026-07-02,Codex,active
