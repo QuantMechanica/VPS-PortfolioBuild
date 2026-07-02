@@ -19,6 +19,7 @@
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id              = 12700;
 input int    qm_magic_slot_offset  = 0;
+input uint   qm_rng_seed           = 42;
 
 input group "Risk"
 input double RISK_PERCENT          = 0.0;
@@ -26,11 +27,18 @@ input double RISK_FIXED            = 1000.0;
 input double PORTFOLIO_WEIGHT      = 1.0;
 
 input group "News"
-input QM_NewsMode qm_news_mode     = QM_NEWS_OFF;
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
+input int    qm_news_stale_max_hours = 336;
+input string qm_news_min_impact      = "high";
+input QM_NewsMode qm_news_mode       = QM_NEWS_OFF;
 
 input group "Friday Close"
 input bool   qm_friday_close_enabled    = true;
 input int    qm_friday_close_hour_broker = 21;
+
+input group "Stress"
+input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    range_start_hour      = 3;     // range build start
@@ -51,10 +59,54 @@ input int    spread_cap_points     = 30;
 double   g_range_high = 0.0;
 double   g_range_low  = 0.0;
 bool     g_range_locked = false;
-datetime g_cur_day    = 0;
-datetime g_trade_day  = 0;
+datetime g_cur_day      = 0;
+datetime g_trade_day    = 0;
 
-datetime DayStart(const datetime t) { return (datetime)((long)t / 86400 * 86400); }
+datetime DayStart(const datetime t)
+  {
+   MqlDateTime dt;
+   TimeToStruct(t, dt);
+   dt.hour = 0;
+   dt.min = 0;
+   dt.sec = 0;
+   return StructToTime(dt);
+  }
+
+bool BuildCompletedRange(const datetime day, double &range_high, double &range_low)
+  {
+   range_high = 0.0;
+   range_low = DBL_MAX;
+
+   const datetime start_time = (datetime)((long)day + (long)range_start_hour * 3600);
+   const datetime end_time = (datetime)((long)day + (long)range_end_hour * 3600);
+   if(end_time <= start_time)
+      return false;
+
+   int samples = 0;
+   const int max_scan = MathMax(8, (int)((end_time - start_time) / PeriodSeconds(_Period)) + 8);
+   for(int shift = 1; shift <= max_scan + 64; ++shift) // perf-allowed: bounded daily rebuild after range end
+     {
+      const datetime bar_time = iTime(_Symbol, _Period, shift); // perf-allowed
+      if(bar_time <= 0)
+         break;
+      if(bar_time < start_time)
+         break;
+      if(bar_time >= end_time)
+         continue;
+
+      const double h = iHigh(_Symbol, _Period, shift); // perf-allowed
+      const double l = iLow(_Symbol, _Period, shift);  // perf-allowed
+      if(h <= 0.0 || l <= 0.0 || h < l)
+         return false;
+      if(h > range_high)
+         range_high = h;
+      if(l < range_low)
+         range_low = l;
+      samples++;
+     }
+
+   return (samples > 0 && range_high > 0.0 && range_low < DBL_MAX && range_high > range_low);
+  }
 
 void UpdateRange()
   {
@@ -70,17 +122,16 @@ void UpdateRange()
       g_range_locked = false;
      }
 
-   if(!g_range_locked && dt.hour >= range_start_hour && dt.hour < range_end_hour)
+   if(!g_range_locked && dt.hour >= range_end_hour)
      {
-      const double h = iHigh(_Symbol, _Period, 1);   // perf-allowed: closed-bar session range high
-      const double l = iLow(_Symbol, _Period, 1);    // perf-allowed: closed-bar session range low
-      if(h > g_range_high) g_range_high = h;
-      if(l < g_range_low)  g_range_low  = l;
-     }
-   else if(!g_range_locked && dt.hour >= range_end_hour &&
-           g_range_high > 0.0 && g_range_low < DBL_MAX)
-     {
-      g_range_locked = true;
+      double high = 0.0;
+      double low = 0.0;
+      if(BuildCompletedRange(day, high, low))
+        {
+         g_range_high = high;
+         g_range_low = low;
+         g_range_locked = true;
+        }
      }
   }
 
@@ -190,7 +241,15 @@ int OnInit()
                         PORTFOLIO_WEIGHT,
                         qm_news_mode,
                         qm_friday_close_enabled,
-                        qm_friday_close_hour_broker))
+                        qm_friday_close_hour_broker,
+                        30,
+                        30,
+                        qm_news_stale_max_hours,
+                        qm_news_min_impact,
+                        qm_rng_seed,
+                        qm_stress_reject_probability,
+                        qm_news_temporal,
+                        qm_news_compliance))
       return INIT_FAILED;
    return INIT_SUCCEEDED;
   }
@@ -228,4 +287,12 @@ void OnTick()
   }
 
 void OnTimer() { QM_FrameworkOnTimer(); }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
+  }
+
 double OnTester() { QM_ChartUI_Refresh(); return QM_DefaultObjective(); }

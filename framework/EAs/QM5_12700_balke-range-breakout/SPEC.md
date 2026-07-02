@@ -100,3 +100,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-27 | Initial registry-clean build from validated vB parameters | Q02 work item `3e79beb0` |
+| v2 | 2026-07-02 | Restore Q08 trade stream and full range window | Added OnTradeTransaction, current news/stress inputs, and full 03:00-05:59 completed-bar range rebuild |
