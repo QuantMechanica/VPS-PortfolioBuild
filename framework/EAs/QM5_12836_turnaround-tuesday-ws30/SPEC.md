@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-Long-only weekly mean-reversion on WS30 (Dow Jones 30). The strategy exploits the Turnaround Tuesday calendar anomaly: when Monday's session is bearish relative to Friday's close (or bearish relative to its own open), institutional dip-buyers tend to reverse the selling on Tuesday. Entry is gated on a 200-day SMA bull-regime filter (price must be above the 200-day SMA) and an optional volume filter (Monday tick-volume must exceed a 25-day SMA). On a qualifying Tuesday, the EA enters long at market on the first H1 bar (immediate mode) or after the H1 bar whose high breaks above Monday's high (breakout mode). The trade is hard-exited at exit_hour on Tuesday (default 22:00 broker, approx US cash close) or via SL/TP. A max_hold_days safety guard closes any residual position by end of Wednesday.
+Long-only weekly mean-reversion on WS30 (Dow Jones 30). The strategy exploits the Turnaround Tuesday calendar anomaly: when Monday's session is bearish relative to Friday's close (or bearish relative to its own open), institutional dip-buyers tend to reverse the selling on Tuesday. Entry is gated on a 200-day SMA bull-regime filter (price must be above the 200-day SMA) and an optional volume filter (Monday tick-volume must exceed a 25-day SMA). On a qualifying Tuesday, the EA enters long at market on the first H1 bar (immediate mode) or after the H1 bar whose high breaks above Monday's high (breakout mode). The trade is hard-exited at exit_hour on Tuesday (default 23:00 broker, 16:00 ET US cash close under the DXZ ET+7 convention) or via SL/TP. A max_hold_days safety guard closes any residual position by end of Wednesday.
 
 ---
 
@@ -28,7 +28,7 @@ Long-only weekly mean-reversion on WS30 (Dow Jones 30). The strategy exploits th
 | `tp_mode` | TP_FIXED_PCT | enum | TP_FIXED_PCT=entry plus tp_fixed_pct%; TP_MONDAY_HIGH=Monday D1 high; TP_NONE=time-exit only |
 | `tp_fixed_pct` | 1.75 | 1.0–3.0 | TP distance from entry in % (used when tp_mode=TP_FIXED_PCT); sweep 1.5/1.75/2.0 |
 | `exit_dow` | 2 | 0–6 | Day-of-week for hard time-exit (2=Tuesday, matching MqlDateTime.day_of_week) |
-| `exit_hour` | 22 | 14–23 | Broker hour for hard time-exit (WS30 US cash close 16:00 ET ≈ 22:00 broker GMT+2/+3) |
+| `exit_hour` | 23 | 14–23 | Broker hour for hard time-exit (WS30 US cash close 16:00 ET = 23:00 broker under DXZ ET+7) |
 | `max_hold_days` | 2 | 1–5 | Safety: force-close position after this many calendar days |
 
 ---
@@ -62,7 +62,7 @@ Long-only weekly mean-reversion on WS30 (Dow Jones 30). The strategy exploits th
 | Metric | Expected |
 |---|---|
 | Trades / year / symbol | ~25 (low-freq; swing/low-freq Q04/Q08 track DL-070/076 applies) |
-| Typical hold time | ~1 day (entry Tuesday morning, exit Tuesday cash close ~22:00 broker) |
+| Typical hold time | ~1 day (entry Tuesday morning, exit Tuesday cash close ~23:00 broker) |
 | Expected drawdown profile | ~5% max DD target; low-freq single weekly long per week |
 | Regime preference | mean-reversion / calendar anomaly / structural long bias |
 | Win rate target (qualitative) | medium (time-limited exit means wins capped; losses bounded by Monday's low SL) |
@@ -97,3 +97,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-01 | Initial build from card | ceae2d90-54a4-49b8-a09c-26c2a6b8f272 |
+| v2 | 2026-07-02 | Correct DXZ ET+7 cash-close mapping and latch semantics | exit_hour=23; setup latch uses QM_CalendarPeriodKey; entry latch burns after successful send |

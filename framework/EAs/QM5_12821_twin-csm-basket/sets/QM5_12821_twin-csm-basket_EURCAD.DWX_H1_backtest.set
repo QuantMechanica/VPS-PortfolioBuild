@@ -3,7 +3,7 @@
 ; ea_id:        12821
 ; ea_slug:      twin-csm-basket
 ; ea_version:   v5.0
-; set_version:  s20260630-001
+; set_version:  s20260702-001
 ; symbol:       EURCAD.DWX
 ; timeframe:    H1
 ; environment:  backtest
@@ -12,29 +12,32 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-06-30
+; date:         2026-07-02
 ;==========================================================
+qm_ea_id=12821
 qm_magic_slot_offset=12
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12821_twin-csm-basket.md
+strategy_exhaustion_norm=95.0
+strategy_prob_min_numerator=6
+strategy_basket_tp_pct=15.0
+strategy_basket_stop_pct=1.0
+strategy_total_lots_per_1000=0.10
 strategy_london_start_hhmm=630
 strategy_london_end_hhmm=830
 strategy_overlap_start_hhmm=930
 strategy_overlap_end_hhmm=1000
 strategy_flat_hhmm=2100
-
+strategy_deviation_points=20
+strategy_warmup_bars=360
+strategy_pullback_ema_period=20
+strategy_pullback_atr_period=14
+strategy_pullback_boundary_atr=0.25
+strategy_pullback_max_chase_atr=1.00
+strategy_pullback_volume_lookback=20
+strategy_pullback_volume_max_ratio=1.00
+strategy_pullback_min_legs=7
+strategy_pending_expiration_minutes=60

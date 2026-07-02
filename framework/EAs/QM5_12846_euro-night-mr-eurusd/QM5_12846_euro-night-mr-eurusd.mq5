@@ -42,9 +42,10 @@ input double strategy_sl_atr_mult         = 2.0;
 input QM12846_TakeProfitMode strategy_tp_mode = QM12846_TP_FIXED_ATR;
 input double strategy_tp_atr_mult         = 1.5;
 input double strategy_tp_fixed_pct        = 0.20;
-input int    strategy_entry_start_hour    = 0;
-input int    strategy_entry_end_hour      = 7;
-input int    strategy_exit_hour           = 13;
+input int    strategy_entry_start_hour    = 1;  // 18:00 ET = 01:00 broker under DXZ ET+7
+input int    strategy_entry_end_hour      = 8;  // 01:00 ET = 08:00 broker under DXZ ET+7
+input int    strategy_exit_hour           = 14; // 07:00 ET = 14:00 broker under DXZ ET+7
+input int    strategy_max_spread_points   = 50;
 
 int QM12846_ClampHour(const int hour_value)
   {
@@ -153,6 +154,15 @@ bool QM12846_HasOurPendingOrder()
    return false;
   }
 
+bool QM12846_SpreadAllowsEntry()
+  {
+   if(strategy_max_spread_points <= 0)
+      return true;
+
+   const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   return (spread_points >= 0 && spread_points <= strategy_max_spread_points);
+  }
+
 void QM12846_CancelPendingOrders(const string reason)
   {
    const int magic = QM_FrameworkMagic();
@@ -242,27 +252,16 @@ bool QM12846_BuildRequest(const QM_OrderType side,
    return true;
   }
 
-bool Strategy_NoTradeFilter()
+bool QM12846_OpenSymmetricLimits()
   {
-   return false;
-  }
-
-bool Strategy_EntrySignal(QM_EntryRequest &req)
-  {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "";
-   req.symbol_slot = qm_magic_slot_offset;
-   req.expiration_seconds = 0;
-
    const datetime broker_now = TimeCurrent();
    if(!QM12846_HourInWindow(broker_now, strategy_entry_start_hour, strategy_entry_end_hour))
       return false;
    if(QM12846_ExitWindowElapsed(broker_now))
       return false;
    if(QM12846_HasOurOpenPosition() || QM12846_HasOurPendingOrder())
+      return false;
+   if(!QM12846_SpreadAllowsEntry())
       return false;
    if(strategy_lookback_bars < 2 || strategy_atr_period < 1 || strategy_atr_mult <= 0.0 ||
       strategy_sl_atr_mult <= 0.0 || strategy_tp_atr_mult <= 0.0)
@@ -284,28 +283,52 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(bid <= 0.0 || ask <= 0.0)
       return false;
 
-   const bool buy_valid = (buy_limit > 0.0 && buy_limit < bid);
-   const bool sell_valid = (sell_limit > 0.0 && sell_limit > ask);
-   if(!buy_valid && !sell_valid)
+   if(!(buy_limit > 0.0 && buy_limit < bid && sell_limit > 0.0 && sell_limit > ask))
       return false;
 
-   const double midpoint = (avg_high + avg_low) * 0.5;
-   const double reference_price = (bid + ask) * 0.5;
+   QM_EntryRequest buy_req;
+   QM_EntryRequest sell_req;
+   if(!QM12846_BuildRequest(QM_BUY_LIMIT, buy_limit, atr_value, buy_req))
+      return false;
+   if(!QM12846_BuildRequest(QM_SELL_LIMIT, sell_limit, atr_value, sell_req))
+      return false;
 
-   if(buy_valid && sell_valid)
+   ulong buy_ticket = 0;
+   if(!QM_TM_OpenPosition(buy_req, buy_ticket))
      {
-      if(reference_price >= midpoint)
-         return QM12846_BuildRequest(QM_SELL_LIMIT, sell_limit, atr_value, req);
-      return QM12846_BuildRequest(QM_BUY_LIMIT, buy_limit, atr_value, req);
+      QM12846_CancelPendingOrders("euro_night_pair_buy_failed");
+      return false;
      }
 
-   if(buy_valid)
-      return QM12846_BuildRequest(QM_BUY_LIMIT, buy_limit, atr_value, req);
-   return QM12846_BuildRequest(QM_SELL_LIMIT, sell_limit, atr_value, req);
+   ulong sell_ticket = 0;
+   if(!QM_TM_OpenPosition(sell_req, sell_ticket))
+     {
+      QM12846_CancelPendingOrders("euro_night_pair_sell_failed");
+      return false;
+     }
+
+   QM_LogEvent(QM_INFO, "EURO_NIGHT_LIMITS_PLACED",
+      StringFormat("{\"buy_ticket\":%I64u,\"sell_ticket\":%I64u,\"buy_limit\":%.8f,"
+                   "\"sell_limit\":%.8f,\"atr\":%.8f,\"spread_points\":%d}",
+                   buy_ticket,
+                   sell_ticket,
+                   buy_req.price,
+                   sell_req.price,
+                   atr_value,
+                   (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD)));
+   return true;
+  }
+
+bool Strategy_NoTradeFilter()
+  {
+   return false;
   }
 
 void Strategy_ManageOpenPosition()
   {
+   if(QM12846_HasOurOpenPosition() && QM12846_HasOurPendingOrder())
+      QM12846_CancelPendingOrders("euro_night_oco_peer_cancel");
+
    const datetime broker_now = TimeCurrent();
    if(!QM12846_HourInWindow(broker_now, strategy_entry_start_hour, strategy_entry_end_hour) ||
       QM12846_ExitWindowElapsed(broker_now))
@@ -370,13 +393,6 @@ void OnTick()
    if(Strategy_NewsFilterHook(broker_now))
       return;
 
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -399,17 +415,20 @@ void OnTick()
         }
      }
 
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    if(!QM_IsNewBar())
       return;
 
    QM_EquityStreamOnNewBar();
 
-   QM_EntryRequest req;
-   if(Strategy_EntrySignal(req))
-     {
-      ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
-     }
+   QM12846_OpenSymmetricLimits();
   }
 
 void OnTimer()

@@ -1,7 +1,12 @@
 {
   "ea_id": "QM5_1058",
   "slug": "gatev-fx-pairs-zscore",
-  "symbols": [
+  "logical_symbol": "QM5_1058_EURUSD_GBPUSD_GGR_D1",
+  "host_symbol": "EURUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
     "EURUSD.DWX",
     "GBPUSD.DWX",
     "AUDUSD.DWX",
@@ -28,5 +33,9 @@
       "name": "Pair C",
       "reason": "USDNOK.DWX is absent from framework/registry/dwx_symbol_matrix.csv"
     }
+  ],
+  "notes": [
+    "Logical Q02 row is anchored on EURUSD.DWX to evaluate the EURUSD/GBPUSD Gatev-GGR pair as one market-neutral sleeve instead of duplicate single-leg work items.",
+    "AUDUSD.DWX and NZDUSD.DWX remain declared because the EA warmup path selects all registered pair symbols on init; their pair should be queued as a separate host-selected logical sleeve in a later unit if this repair holds."
   ]
 }

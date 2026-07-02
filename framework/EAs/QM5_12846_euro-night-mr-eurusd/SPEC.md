@@ -10,7 +10,7 @@
 
 ## 1. Strategy Logic
 
-This EA trades EURUSD.DWX H1 overnight mean reversion with pending limit orders. On each new H1 bar inside the broker-time entry window, it computes the average high and average low over the last `strategy_lookback_bars`, then places a buy limit at average high minus `strategy_atr_mult` times ATR or a sell limit at average low plus `strategy_atr_mult` times ATR. If both symmetric limits are valid, the deterministic tie-break is sell above the rolling midpoint and buy below it, preserving the single-position-per-magic rule. Open trades use ATR-scaled hard stops, ATR or fixed-percent targets, and a hard broker-hour time exit.
+This EA trades EURUSD.DWX H1 overnight mean reversion with pending limit orders. On each new H1 bar inside the broker-time entry window, it computes the average high and average low over the last `strategy_lookback_bars`, then places both symmetric limits when valid: a buy limit at average high minus `strategy_atr_mult` times ATR and a sell limit at average low plus `strategy_atr_mult` times ATR. The entry window maps Davey's 18:00-01:00 ET session to 01:00-08:00 broker time under the DXZ ET+7 convention; the hard exit maps 07:00 ET to 14:00 broker. Open trades use ATR-scaled hard stops, ATR or fixed-percent targets, OCO pending cleanup after a fill, and a hard broker-hour time exit.
 
 ---
 
@@ -25,9 +25,10 @@ This EA trades EURUSD.DWX H1 overnight mean reversion with pending limit orders.
 | `strategy_tp_mode` | `QM12846_TP_FIXED_ATR` | enum | Fixed ATR target by default; fixed percent mode is available for Davey WFA. |
 | `strategy_tp_atr_mult` | 1.5 | 0.5-5.0 | ATR target distance when `strategy_tp_mode` is fixed ATR. |
 | `strategy_tp_fixed_pct` | 0.20 | 0.05-2.00 | Percent target distance when `strategy_tp_mode` is fixed percent. |
-| `strategy_entry_start_hour` | 0 | 0-23 broker | Start of overnight entry window in broker time. |
-| `strategy_entry_end_hour` | 7 | 0-23 broker | End of new-entry window in broker time. |
-| `strategy_exit_hour` | 13 | 0-23 broker | Hard flatten hour in broker time. |
+| `strategy_entry_start_hour` | 1 | 0-23 broker | Start of overnight entry window; 18:00 ET = 01:00 broker under DXZ ET+7. |
+| `strategy_entry_end_hour` | 8 | 0-23 broker | End of new-entry window; 01:00 ET = 08:00 broker under DXZ ET+7. |
+| `strategy_exit_hour` | 14 | 0-23 broker | Hard flatten hour; 07:00 ET = 14:00 broker under DXZ ET+7. |
+| `strategy_max_spread_points` | 50 | 0-500 | Skip new paired-limit placement when spread exceeds this point cap; 0 disables the guard. |
 
 ---
 
@@ -92,3 +93,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-01 | Initial build from card | adefef89-0159-40fa-a854-7a4b20e71149 |
+| v2 | 2026-07-02 | Correct ET->broker session mapping and paired-limit mechanics | entry 1-8 broker, exit 14 broker, max-spread guard, symmetric buy/sell limits |

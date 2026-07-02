@@ -51,7 +51,7 @@ input double           sl_fixed_pct       = 1.0;           // SL distance from e
 input TP_MODE_TT       tp_mode            = TP_FIXED_PCT;  // TP_FIXED_PCT / TP_MONDAY_HIGH / TP_NONE
 input double           tp_fixed_pct       = 1.75;          // TP distance from entry in % (when tp_mode=TP_FIXED_PCT)
 input int              exit_dow           = 2;             // Day-of-week for hard time-exit (2=Tuesday)
-input int              exit_hour          = 22;            // Broker hour for hard time-exit (WS30 US cash close ~22h broker)
+input int              exit_hour          = 23;            // Broker hour for hard time-exit (16:00 ET = 23:00 broker under DXZ ET+7)
 input int              max_hold_days      = 2;             // Safety: force-close after N calendar days
 
 // =============================================================================
@@ -65,9 +65,9 @@ double   g_friday_close    = 0.0;
 double   g_monday_tick_vol = 0.0;
 double   g_monday_vol_sma  = 0.0;
 double   g_d1_regime_sma   = 0.0;
-bool     g_week_setup_valid = false;
-datetime g_last_setup_bar   = 0;   // iTime(PERIOD_D1,1) of the Monday we last cached
-bool     g_entry_taken      = false;
+bool     g_week_setup_valid    = false;
+int      g_last_setup_day_key  = 0; // QM_CalendarPeriodKey(PERIOD_D1, shift=1) for Monday cached
+bool     g_entry_taken         = false;
 
 // =============================================================================
 // MaybeSetupWeekly
@@ -81,8 +81,12 @@ void MaybeSetupWeekly(const datetime broker_now)
    if(t.day_of_week != 2)
       return;
 
-   const datetime d1_t1 = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: calendar gating, once/week
-   if(d1_t1 <= 0 || d1_t1 == g_last_setup_bar)
+   const int d1_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 1);
+   if(d1_key == 0 || d1_key == g_last_setup_day_key)
+      return;
+
+   const datetime d1_t1 = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: calendar-key gated, once/week
+   if(d1_t1 <= 0)
       return;
 
    MqlDateTime d1t;
@@ -123,8 +127,8 @@ void MaybeSetupWeekly(const datetime broker_now)
    g_week_setup_valid = (weak_mon && vol_ok && regime_ok &&
                          g_monday_high > 0.0 && g_monday_low > 0.0);
 
-   g_last_setup_bar = d1_t1;
-   g_entry_taken    = false;
+   g_last_setup_day_key = d1_key;
+   g_entry_taken        = false;
 
    QM_LogEvent(QM_INFO, "WEEKLY_SETUP",
       StringFormat("{\"d1_bar\":\"%s\",\"monday_close\":%.4f,\"friday_close\":%.4f,"
@@ -211,7 +215,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot      = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   g_entry_taken = true;
    return true;
   }
 
@@ -337,7 +340,8 @@ void OnTick()
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
+      if(QM_TM_OpenPosition(req, out_ticket))
+         g_entry_taken = true;
      }
   }
 

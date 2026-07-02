@@ -3,35 +3,24 @@
 ; ea_id:        12845
 ; ea_slug:      trend-tracer-crude
 ; ea_version:   v5.0
-; set_version:  s20260701-001
+; set_version:  s20260702-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a1b07be4fa41199b2a105c97a43e13259460ec7ded466b0a35d501fcd460c17c
+; build_hash:   pending
 ; author:       Development
-; date:         2026-07-01
+; date:         2026-07-02
 ;==========================================================
+qm_ea_id=12845
 qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12845_trend-tracer-crude.md
 strategy_swing_wing=3
 strategy_swing_scan_bars=160
 strategy_adx_period=14
