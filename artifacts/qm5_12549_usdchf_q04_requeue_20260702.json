@@ -1,0 +1,89 @@
+{
+  "ea_id": "QM5_12549",
+  "ea_label": "QM5_12549_turtle-s2-pyramid-d1",
+  "symbol": "USDCHF.DWX",
+  "phase": "Q04",
+  "date": "2026-07-02",
+  "branch": "agents/board-advisor",
+  "mission_path": {
+    "selected_action": "reopen_diverse_low_frequency_q04_infra_frontier",
+    "priority_reason": "D1 FX Turtle System 2 sleeve is structurally diverse versus the current index/metal/energy certified survivors and had Q03 PASS with Q04 blocked by infrastructure.",
+    "not_build_volume": true
+  },
+  "strategy_guardrails": {
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12549_turtle-s2-pyramid-d1.md",
+    "source": "Faith 2007 Way of the Turtle Appendix A System 2",
+    "timeframe": "D1",
+    "structural": true,
+    "ml_forbidden_check": "card r4_ml_forbidden=PASS",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "setfile": "framework/EAs/QM5_12549_turtle-s2-pyramid-d1/sets/QM5_12549_turtle-s2-pyramid-d1_USDCHF.DWX_D1_backtest.set"
+  },
+  "pre_action_state": {
+    "Q02": {
+      "work_item_id": "3d46389f-56cd-45d0-9e7a-aa25dd993ec1",
+      "verdict": "PASS",
+      "updated_at": "2026-06-20T17:34:50+00:00"
+    },
+    "Q03": {
+      "work_item_id": "6a493ee5-297e-4abd-b02a-369dbc44f5f6",
+      "verdict": "PASS",
+      "updated_at": "2026-06-20T17:41:34+00:00"
+    },
+    "Q04": {
+      "work_item_id": "f76c5b9d-9f94-4e6f-a9d0-08aad860396e",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "reason": "F1:incomplete_fold;F2:incomplete_fold;F3:incomplete_fold",
+      "evidence": "D:/QM/reports/work_items/f76c5b9d-9f94-4e6f-a9d0-08aad860396e/QM5_12549/Q04/USDCHF.DWX/aggregate.json",
+      "updated_at": "2026-06-23T08:31:11+00:00"
+    }
+  },
+  "diagnosis": {
+    "failure_class": "stale_q04_phase_runner_incomplete_folds",
+    "aggregate_exit_code": 3221225794,
+    "folds_incomplete": ["F1", "F2", "F3"],
+    "not_strategy_verdict": true,
+    "q03_pass_frontier_confirmed": true,
+    "duplicate_pending_or_active_before": 0
+  },
+  "queue_action": {
+    "method": "single-row reopen to avoid re-running unrelated QM5_12549 symbols",
+    "db_backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12549_usdchf_q04_requeue_20260702T080810Z.sqlite",
+    "archived_prior_report_root": "D:/QM/reports/work_items/f76c5b9d-9f94-4e6f-a9d0-08aad860396e.requeued_20260702T080810Z",
+    "work_item_id": "f76c5b9d-9f94-4e6f-a9d0-08aad860396e",
+    "payload_enrichment": {
+      "host_symbol": "USDCHF.DWX",
+      "host_timeframe": "D1",
+      "risk_mode": "RISK_FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "priority_track": true,
+      "q04_requeue_reason": "stale_all_fold_incomplete_infra_after_q03_pass"
+    },
+    "post_requeue_status_initial": "pending",
+    "post_requeue_verdict_initial": null,
+    "farm_claimed_after_requeue": true,
+    "post_claim_status": "active",
+    "post_claim_terminal": "T4",
+    "post_claimed_at_utc": "2026-07-02T08:08:18+00:00"
+  },
+  "verification": {
+    "db_row_checked": true,
+    "open_duplicate_count_after": 1,
+    "open_duplicate_note": "The only open row after verification was the same work_item_id, already claimed active by the paced farm worker.",
+    "backtest_started_manually": false,
+    "tests_run": "not_applicable_db_queue_only"
+  },
+  "guardrails": {
+    "manual_mt5_run_launched": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
