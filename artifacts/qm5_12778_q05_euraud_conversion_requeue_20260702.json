@@ -1,0 +1,128 @@
+{
+  "ea_id": "QM5_12778",
+  "ea_label": "QM5_12778_edgelab-audusd-eurjpy-cointegration",
+  "selected_pair": "AUDUSD~EURJPY",
+  "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+  "date": "2026-07-02",
+  "branch": "agents/board-advisor",
+  "mission_path": {
+    "qm5_12532_q02_blocked": false,
+    "qm5_12533_q02_blocked": false,
+    "unbuilt_registered_fx_cointegration_pair_found": false,
+    "selected_action": "advance_existing_forex_basket"
+  },
+  "pre_action_state": {
+    "Q02": {
+      "work_item_id": "4dbf18f1-f8c0-4665-beea-778c9ad960c2",
+      "verdict": "PASS"
+    },
+    "Q03": {
+      "work_item_id": "7a11f24a-091f-49dd-983a-3dc8c7cef456",
+      "verdict": "PASS"
+    },
+    "Q04": {
+      "work_item_id": "9546f319-dc02-4249-b6ac-0c1bb64fec4f",
+      "verdict": "PASS"
+    },
+    "Q05": {
+      "work_item_id": "1c0405e7-16d3-40e6-b884-6be1b504dc4c",
+      "verdict": "INFRA_FAIL",
+      "aggregate": "D:/QM/reports/work_items/1c0405e7-16d3-40e6-b884-6be1b504dc4c/QM5_12778/Q05/QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1/aggregate.json",
+      "reason": "invalid_summary:BARS_ZERO,EMPTY_EXPERT,EMPTY_SYMBOL,HISTORY_CONTEXT_INVALID,INCOMPLETE_RUNS,M0_1970_PERIOD,NO_HISTORY,REPORT_MISSING,RUN_STATUS_INVALID"
+    }
+  },
+  "diagnosis": {
+    "failure_class": "custom_symbol_conversion_history_scope",
+    "evidence": "T5 Q05 tester log synchronized EURAUD.DWX after EURUSD.DWX while valuing AUDUSD.DWX under an EUR tester account.",
+    "not_edge_verdict": true,
+    "not_cpu_ceiling": true
+  },
+  "repair": {
+    "traded_symbols": [
+      "AUDUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "conversion_history_symbols_declared": [
+      "EURUSD.DWX",
+      "EURAUD.DWX"
+    ],
+    "files_updated": [
+      "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/basket_manifest.json",
+      "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/QM5_12778_edgelab-audusd-eurjpy-cointegration.mq5",
+      "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+      "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/SPEC.md",
+      "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/sets/QM5_12778_edgelab-audusd-eurjpy-cointegration_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1_D1_backtest.set",
+      "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/sets/QM5_12778_edgelab-audusd-eurjpy-cointegration_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1_D1_q05_stress_medium.set",
+      "tools/strategy_farm/tests/test_fx_basket_manifests.py"
+    ]
+  },
+  "queue_action": {
+    "db_backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12778_q05_euraud_requeue_20260702T020353Z.sqlite",
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12778 --phase Q05",
+    "requeued": [
+      "1c0405e7-16d3-40e6-b884-6be1b504dc4c"
+    ],
+    "created": [],
+    "post_status": "pending",
+    "post_verdict": null,
+    "post_claimed_by": null,
+    "updated_at": "2026-07-02T02:04:41+00:00",
+    "archived_prior_report_root": "D:/QM/reports/work_items/1c0405e7-16d3-40e6-b884-6be1b504dc4c.requeued_20260702T0203530000",
+    "payload_confirmed": {
+      "portfolio_scope": "basket",
+      "basket_symbols": [
+        "AUDUSD.DWX",
+        "EURJPY.DWX",
+        "EURUSD.DWX",
+        "EURAUD.DWX"
+      ],
+      "basket_symbol_count": 4,
+      "conversion_symbols": [
+        "EURUSD.DWX",
+        "EURAUD.DWX"
+      ],
+      "tester_currency": "EUR",
+      "tester_deposit": 100000,
+      "risk_mode": "RISK_FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "priority_track": true
+    }
+  },
+  "verification": {
+    "pytest": {
+      "command": "python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py -q",
+      "result": "7 passed in 0.18s"
+    },
+    "validate_symbol_scope": {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_12778_edgelab-audusd-eurjpy-cointegration --verbose",
+      "result": "BASKET_OK",
+      "violations": 0,
+      "manifest_symbols": 4
+    },
+    "compile_one_strict": {
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/QM5_12778_edgelab-audusd-eurjpy-cointegration.mq5 -Strict",
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260702_020320/QM5_12778_edgelab-audusd-eurjpy-cointegration.compile.log"
+    },
+    "build_check": {
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12778_edgelab-audusd-eurjpy-cointegration -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 16,
+      "report": "D:/QM/reports/framework/21/build_check_20260702_020333.json"
+    }
+  },
+  "guardrails": {
+    "manual_mt5_run_launched": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false
+  }
+}

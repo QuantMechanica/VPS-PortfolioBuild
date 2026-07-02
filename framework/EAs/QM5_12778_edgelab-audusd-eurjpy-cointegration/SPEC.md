@@ -4,7 +4,7 @@
 **Slug:** edgelab-audusd-eurjpy-cointegration
 **Source:** claude_cross_asset_discovery_2026-06-09 plus Chan cointegration pair-trade method
 **Author of this spec:** Codex
-**Last revised:** 2026-06-30
+**Last revised:** 2026-07-02
 
 ---
 
@@ -56,12 +56,15 @@ built.
 - EURJPY.DWX - leg 2 of the fixed AUDUSD/EURJPY spread and the beta-weighted spread denominator.
 - EURUSD.DWX - custom-symbol conversion history only, preloaded for
   AUDUSD accounting in the EUR-denominated tester.
+- EURAUD.DWX - custom-symbol conversion history only, preloaded because Q05
+  stress logs showed MT5 requesting it while valuing AUDUSD in the EUR tester
+  account.
 
 **Explicitly not for:**
 - Other `.DWX` symbols. This card is a fixed two-leg FX-cross basket, not a portable multi-pair strategy.
 
-EURUSD.DWX is selected as conversion history for EUR-denominated tester
-accounting of the AUDUSD leg. It is not a traded leg.
+EURUSD.DWX and EURAUD.DWX are selected as conversion history for
+EUR-denominated tester accounting of the AUDUSD leg. They are not traded legs.
 
 ---
 
@@ -145,6 +148,13 @@ bare `USDJPY` and timed out. The basket manifest now uses an EUR tester account
 and declares only `AUDUSD.DWX`, `EURJPY.DWX`, and `EURUSD.DWX`, so the next Q02
 requeue avoids that bare-symbol conversion branch.
 
+Q05 repair handoff: Q05 stress work item
+`1c0405e7-16d3-40e6-b884-6be1b504dc4c` failed on 2026-07-02 with
+`NO_HISTORY`/`INCOMPLETE_RUNS`/missing-report symptoms. The T5 tester log showed
+MT5 synchronizing `EURAUD.DWX` after `EURUSD.DWX` while valuing the EUR-account
+AUDUSD leg. The basket manifest and EA warmup scope now declare both conversion
+symbols before requeueing the existing Q05 row.
+
 ---
 
 ## Revision History
@@ -155,3 +165,4 @@ requeue avoids that bare-symbol conversion branch.
 | v1-q02 | 2026-06-29 | Build recorded and logical basket Q02 enqueued | build task `e6ac4aae-f214-40f0-b037-1a9eeea4e2f8`; work item `8f0e511f-0f93-42eb-b2c5-b07e1f7a6f1e` enqueued |
 | v1-q02-conversion | 2026-06-29 | Q02 conversion-history repair | Preloaded `EURUSD.DWX` and `USDJPY.DWX`; replacement Q02 work item `7f04ff6a-35ca-45bd-a702-afc37b310f97` enqueued |
 | v1-q02-eur-accounting | 2026-06-30 | Q02 conversion-accounting repair | Switched basket manifest to `tester_currency=EUR` and removed `USDJPY.DWX` from declared conversion scope before requeueing Q02 |
+| v1-q05-euraud-conversion | 2026-07-02 | Q05 conversion-history repair | Declared and warmed `EURAUD.DWX` after Q05 stress logs showed EUR-account AUDUSD valuation requested that custom symbol |

@@ -120,10 +120,10 @@ bool Strategy_EnsureBasketScope()
    if(g_basket_scope_ready)
       return true;
 
-   // Q02 runs in an EUR tester account so both leg conversions stay inside
-   // declared .DWX history: EURJPY via its traded quote and AUDUSD via EURUSD.
-   string allowed[3] = {"AUDUSD.DWX", "EURJPY.DWX", "EURUSD.DWX"};
-   for(int i = 0; i < 3; ++i)
+   // EUR tester accounting keeps the JPY leg inside EURJPY history; AUDUSD
+   // valuation also asks MT5 for EURUSD and EURAUD conversion history.
+   string allowed[4] = {"AUDUSD.DWX", "EURJPY.DWX", "EURUSD.DWX", "EURAUD.DWX"};
+   for(int i = 0; i < 4; ++i)
       SymbolSelect(allowed[i], true);
 
    QM_SymbolGuardInit(allowed);
@@ -404,6 +404,7 @@ int OnInit()
    SymbolSelect(g_leg_audusd, true);
    SymbolSelect(g_leg_eurjpy, true);
    SymbolSelect("EURUSD.DWX", true);
+   SymbolSelect("EURAUD.DWX", true);
 
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
