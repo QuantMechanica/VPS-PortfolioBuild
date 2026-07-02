@@ -1,5 +1,5 @@
 {
-  "task_id": "751700df-d87e-48e8-b6ff-6db3e4e4570b",
+  "task_id": "c82bfb1c-2791-4845-9d27-12a9e3792848",
   "ea_id": "QM5_1486",
   "slug": "ehlers-cg-oscillator-cross-h4",
   "strategy": "Ehlers Center-of-Gravity oscillator cross H4",
@@ -47,14 +47,14 @@
   },
   "compile_succeeded": true,
   "build_check_passed": true,
-  "compile_log_path": "C:/QM/repo/framework/build/compile/20260628_194851/QM5_1486_ehlers-cg-oscillator-cross-h4.compile.log",
+  "compile_log_path": "C:/QM/repo/framework/build/compile/20260702_173551/QM5_1486_ehlers-cg-oscillator-cross-h4.compile.log",
   "compile_errors": 0,
   "compile_warnings": 0,
-  "mq5_sha256": "d810a0af3969456ae0ebd5c82f67d6cf7d20d30684bebaa09754897a84ca39be",
-  "ex5_sha256": "fcf186247ad1c6d91e52a6f402480ea89732577b242f92389b35486162aa4a47",
-  "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260628_194931.json",
+  "mq5_sha256": "454341622045101606089aaeec22d7eeb16ad830d139ad06bf6fbab26c2e216f",
+  "ex5_sha256": "c6feefe6eb6bc3863975fb643a09f71dc26f5891a6df4b5a4fba015ca366c983",
+  "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260702_173526.json",
   "build_check_failures": 0,
-  "build_check_warnings": 18,
+  "build_check_warnings": 16,
   "smoke_result": "deferred_p2_smoke",
   "smoke_skipped_reason": "Paced fleet Q02 will run the tester pass; no manual MT5 backtest was launched from this session.",
   "smoke_report_path": null,
@@ -62,7 +62,7 @@
   "open_questions": [],
   "q02_enqueue": {
     "recorded": true,
-    "build_task_id": "751700df-d87e-48e8-b6ff-6db3e4e4570b",
+    "build_task_id": "c82bfb1c-2791-4845-9d27-12a9e3792848",
     "work_items": [
       {
         "wi_id": "7676f13a",
@@ -85,5 +85,5 @@
     ],
     "skipped": []
   },
-  "notes": "Closed a stale pending build task for the already-built diversified H4 FX/metal Ehlers CG sleeve. Fresh strict compile PASS and build_check PASS; Q02 is intended to run via farm work_items. No T_Live, AutoTrading, or portfolio gate files were touched."
+  "notes": "Repaired QM5_1486 OnTick ordering so Friday close, position management, time exits, and opposite-signal exits run before the news blackout; news now gates new entries only. Removed two EA-local DWX zero-spread advisory patterns without changing zero-spread allow behavior. Fresh compile PASS and build_check PASS; Q02 work_items were already pending for the paced farm. No T_Live, AutoTrading, or portfolio gate files were touched."
 }
