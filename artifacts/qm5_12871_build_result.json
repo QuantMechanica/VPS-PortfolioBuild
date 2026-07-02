@@ -1,0 +1,70 @@
+{
+  "task_id": "deefcb2f-ae5c-4d91-90d8-97228ef76e45",
+  "ea_id": "QM5_12871",
+  "slug": "brent-jan-fade",
+  "strategy": "Brent D1 January calendar fade",
+  "symbols": [
+    "XBRUSD.DWX"
+  ],
+  "host_symbol": "XBRUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12871_brent-jan-fade",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12871_brent-jan-fade\\QM5_12871_brent-jan-fade.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12871_brent-jan-fade\\QM5_12871_brent-jan-fade.ex5",
+  "ex5_sha256": "6b6ff335ea116f39f5c3cd9dedbded20e77230599a9a1ce7a2039934b47c8358",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12871_brent-jan-fade\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12871_brent-jan-fade.md",
+  "source_id": "ARENDAS-OIL-SEASON-2018",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12871_brent-jan-fade\\sets\\QM5_12871_brent-jan-fade_XBRUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "aa530176e2e5068c724877125801aa9b32818525c110d31bfba791c9816bb57d",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XBRUSD.DWX",
+        "magic": 128710000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_12871_brent-jan-fade --force --json --fail-on-error",
+    "result": "COMPILED",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260702_050653\\QM5_12871_brent-jan-fade.compile.log",
+    "ex5_size_bytes": 295778
+  },
+  "build_check": {
+    "command": "pwsh -NoProfile -File framework/scripts/build_check.ps1 -EALabel QM5_12871_brent-jan-fade -Strict",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260702_050653.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "pre_compile_validation": {
+    "spec_doc": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_guardrails": "PASS"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Paced fleet Q02 enqueue is the smoke/baseline path for this low-frequency build; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": null,
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "notes": "Completed a structural D1 Brent January calendar-fade sleeve from the peer-reviewed Arendas et al. oil seasonality source. This is distinct from WTI January, existing Brent April/May/November/December calendar, Brent weekday, Brent trend/anchor, WTI/Brent spread, XTI/XNG, XNG, XAU/XAG, and commodity RSI logic. Q02 must validate XBRUSD.DWX history sufficiency, fills, and costs."
+}
