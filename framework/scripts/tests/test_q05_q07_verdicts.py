@@ -278,6 +278,72 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertEqual(result["verdict"], "PASS")
         self.assertEqual(result["summary_path"], str(summary))
 
+    def test_q05_final_windows_launch_fault_is_not_summary_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            calls = []
+
+            def fake_run(args, **_kwargs):
+                calls.append(args)
+                return SimpleNamespace(returncode=3221225794, stdout="", stderr="")
+
+            with patch.object(q05.subprocess, "run", side_effect=fake_run), \
+                    patch("framework.scripts._phase_utils.time.sleep"):
+                result = q05.run_stress_backtest(
+                    ea_id=12772,
+                    ea_expert=r"QM\QM5_12772_demo",
+                    symbol="GBPJPY.DWX",
+                    setfile=root / "demo.set",
+                    terminal="T5",
+                    period="D1",
+                    report_root=root,
+                    timeout_sec=30,
+                    logical_symbol="QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1",
+                )
+
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(result["verdict"], "INVALID")
+        self.assertEqual(result["exit_code"], 3221225794)
+        self.assertIn("launch_fault", result["reason"])
+        self.assertIn("0xC0000142", result["reason"])
+        self.assertNotEqual(result["reason"], "summary_missing")
+
+    def test_q05_generates_stress_setfile_in_process(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            baseline = Path(tmp) / "QM5_12772_demo_D1_backtest.set"
+            baseline.write_text(
+                "; environment: backtest\n"
+                "; set_version: s20260701-base\n"
+                "; date: 2026-07-01\n"
+                "PORTFOLIO_WEIGHT=1\n",
+                encoding="utf-8",
+            )
+
+            with patch.object(q05.subprocess, "run", side_effect=AssertionError("spawned")):
+                out_path = q05.gen_stress_setfile_for(baseline)
+            text = out_path.read_text(encoding="utf-8")
+
+        self.assertEqual(out_path.name, "QM5_12772_demo_D1_q05_stress_medium.set")
+        self.assertIn("; environment: q05_stress_medium", text)
+        self.assertIn("qm_stress_reject_probability=0.0000", text)
+
+    def test_q06_generates_stress_setfile_in_process(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            baseline = Path(tmp) / "QM5_12781_demo_D1_backtest.set"
+            baseline.write_text(
+                "; environment: backtest\n"
+                "PORTFOLIO_WEIGHT=1\n",
+                encoding="utf-8",
+            )
+
+            with patch.object(q06.subprocess, "run", side_effect=AssertionError("spawned")):
+                out_path = q06.gen_harsh_setfile_for(baseline)
+            text = out_path.read_text(encoding="utf-8")
+
+        self.assertEqual(out_path.name, "QM5_12781_demo_D1_q06_stress_harsh.set")
+        self.assertIn("; environment: q06_stress_harsh", text)
+        self.assertIn("qm_stress_reject_probability=0.1000", text)
+
     def test_q05_passes_basket_manifest_tester_overrides(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

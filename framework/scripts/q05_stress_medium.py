@@ -28,7 +28,9 @@ if __package__ in (None, ""):
 from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
                                             resolve_ea_expert_path, period_from_setfile,
                                             find_latest_summary, full_history_window,
+                                            is_launch_fault_exit_code,
                                             run_with_launch_fault_retry)
+from framework.scripts.gen_stress_setfile import stress_setfile_text
 
 GATE_NAME = "Q05"
 LEVEL = "MED"
@@ -69,6 +71,14 @@ INVALID_REPORT_MARKERS = {
     "REPORT_METRIC_MISSING:BARS",
     "ONINIT_FAILED",
 }
+
+
+def _format_exit_code(returncode: int | None) -> str:
+    if returncode is None:
+        return "None"
+    if returncode < 0:
+        return str(returncode)
+    return f"0x{returncode:08X}"
 
 
 def _load_summary(summary_path: Path) -> dict | None:
@@ -217,19 +227,19 @@ def _latest_report_metrics(report_root: Path) -> dict | None:
 
 
 def gen_stress_setfile_for(baseline: Path) -> Path:
-    """Invoke gen_stress_setfile.py to produce the Q05 MED variant."""
-    repo_root = Path(__file__).resolve().parents[2]
-    gen_script = repo_root / "framework" / "scripts" / "gen_stress_setfile.py"
-    args = [sys.executable, str(gen_script), str(baseline),
-            "--level", LEVEL, "--in-place"]
-    proc = subprocess.run(args, capture_output=True, text=True, timeout=30)
-    if proc.returncode != 0:
-        raise RuntimeError(f"gen_stress_setfile failed: {proc.stderr or proc.stdout}")
-    # Output: same dir, suffix _q05_stress_medium.set
+    """Write the Q05 MED variant without spawning a child Python process."""
+    if not baseline.exists():
+        raise FileNotFoundError(f"baseline not found: {baseline}")
     stem = baseline.stem
     if stem.endswith("_backtest"):
         stem = stem[: -len("_backtest")]
-    return baseline.with_name(f"{stem}_q05_stress_medium.set")
+    out_path = baseline.with_name(f"{stem}_q05_stress_medium.set")
+    stressed = stress_setfile_text(
+        baseline.read_text(encoding="utf-8", errors="replace"),
+        LEVEL,
+    )
+    out_path.write_text(stressed, encoding="utf-8")
+    return out_path
 
 
 def _basket_tester_overrides(setfile: Path) -> tuple[str | None, int | None]:
@@ -325,6 +335,9 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         if timed_out:
             verdict = "INVALID"
             reason = f"timeout_expired:timeout_sec={timeout_sec}:runner_timeout_sec={runner_timeout_sec}"
+        elif is_launch_fault_exit_code(exit_code):
+            verdict = "INVALID"
+            reason = f"launch_fault:exit_code={_format_exit_code(exit_code)}"
         else:
             verdict, reason = "INVALID", "summary_missing"
     elif invalid_reason:

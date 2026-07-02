@@ -1,0 +1,98 @@
+{
+  "branch": "agents/board-advisor",
+  "date": "2026-07-02",
+  "ea_id": "QM5_12772",
+  "ea_label": "QM5_12772_edgelab-gbpjpy-audjpy-cointegration",
+  "logical_symbol": "QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1",
+  "selected_pair": "GBPJPY~AUDJPY",
+  "mission_path": {
+    "qm5_12532_q02_blocked": false,
+    "qm5_12533_q02_blocked": false,
+    "unbuilt_strict_66_pair_scan_candidate_found": false,
+    "selected_action": "advance_existing_forex_basket"
+  },
+  "pre_action_state": {
+    "Q02": {
+      "work_item_id": "0ef494c0-7669-4c98-9e5c-326ff70df987",
+      "verdict": "PASS"
+    },
+    "Q04": {
+      "work_item_id": "1b418d74-da86-4fb2-aa41-74ebca065f05",
+      "verdict": "PASS_SOFT",
+      "evidence_path": "D:/QM/reports/work_items/1b418d74-da86-4fb2-aa41-74ebca065f05/QM5_12772/Q04/QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1/aggregate.json"
+    },
+    "Q05_before_requeue": {
+      "work_item_id": "dd43c7e2-7351-41e1-a4a4-f667d0789249",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "aggregate": "D:/QM/reports/work_items/dd43c7e2-7351-41e1-a4a4-f667d0789249/QM5_12772/Q05/QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1/aggregate.json",
+      "reason": "summary_missing",
+      "exit_code": 3221225794,
+      "history_to": "2024.12.31"
+    }
+  },
+  "code_repair": {
+    "summary": "Q05/Q06 stress-setfile generation now happens in-process instead of spawning gen_stress_setfile.py; Q05 also classifies exhausted Windows 0xC0000142 launch faults as launch_fault instead of generic summary_missing.",
+    "files_updated": [
+      "framework/scripts/q05_stress_medium.py",
+      "framework/scripts/q06_stress_harsh.py",
+      "framework/scripts/tests/test_q05_q07_verdicts.py"
+    ],
+    "regression_tests_added": [
+      "test_q05_final_windows_launch_fault_is_not_summary_missing",
+      "test_q05_generates_stress_setfile_in_process",
+      "test_q06_generates_stress_setfile_in_process"
+    ]
+  },
+  "queue_action": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12772 --phase Q05",
+    "created": [],
+    "requeued": [
+      "dd43c7e2-7351-41e1-a4a4-f667d0789249"
+    ],
+    "duplicate_rows_inserted": 0,
+    "pending_active_q05_count_after": 1,
+    "post_status": "pending",
+    "post_verdict": null,
+    "post_attempt_count": 0,
+    "post_claimed_by": null,
+    "archived_report_root_on_requeue": "D:/QM/reports/work_items/dd43c7e2-7351-41e1-a4a4-f667d0789249.requeued_20260702T1748550000",
+    "payload_confirmed": {
+      "basket_manifest": "C:/QM/repo/framework/EAs/QM5_12772_edgelab-gbpjpy-audjpy-cointegration/basket_manifest.json",
+      "basket_symbols": [
+        "GBPJPY.DWX",
+        "AUDJPY.DWX",
+        "USDJPY.DWX"
+      ],
+      "host_symbol": "GBPJPY.DWX",
+      "host_timeframe": "D1",
+      "portfolio_scope": "basket",
+      "risk_fixed": 1000,
+      "tester_currency": "USD",
+      "tester_deposit": 100000,
+      "timeout_min": 120
+    }
+  },
+  "validation": [
+    {
+      "command": "python -m pytest framework/scripts/tests/test_q05_q07_verdicts.py -q",
+      "result": "PASS",
+      "tests": "20 passed"
+    },
+    {
+      "command": "git diff --check -- framework/scripts/q05_stress_medium.py framework/scripts/q06_stress_harsh.py framework/scripts/tests/test_q05_q07_verdicts.py",
+      "result": "PASS"
+    }
+  ],
+  "guardrails": {
+    "manual_mt5_run_launched": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false,
+    "risk_mode": "RISK_FIXED backtest queue only"
+  }
+}

@@ -34,23 +34,25 @@ from framework.scripts.q05_stress_medium import (
     PF_FLOOR, DD_PCT_MAX, STARTING_EQUITY, DEFAULT_TIMEOUT_SEC,
     RUNNER_HEADROOM_SEC, _basket_tester_overrides,
 )
+from framework.scripts.gen_stress_setfile import stress_setfile_text
 
 GATE_NAME = "Q06"
 LEVEL = "HARSH"
 
 
 def gen_harsh_setfile_for(baseline: Path) -> Path:
-    repo_root = Path(__file__).resolve().parents[2]
-    gen_script = repo_root / "framework" / "scripts" / "gen_stress_setfile.py"
-    args = [sys.executable, str(gen_script), str(baseline),
-            "--level", LEVEL, "--in-place"]
-    proc = subprocess.run(args, capture_output=True, text=True, timeout=30)
-    if proc.returncode != 0:
-        raise RuntimeError(f"gen_stress_setfile HARSH failed: {proc.stderr or proc.stdout}")
+    if not baseline.exists():
+        raise FileNotFoundError(f"baseline not found: {baseline}")
     stem = baseline.stem
     if stem.endswith("_backtest"):
         stem = stem[: -len("_backtest")]
-    return baseline.with_name(f"{stem}_q06_stress_harsh.set")
+    out_path = baseline.with_name(f"{stem}_q06_stress_harsh.set")
+    stressed = stress_setfile_text(
+        baseline.read_text(encoding="utf-8", errors="replace"),
+        LEVEL,
+    )
+    out_path.write_text(stressed, encoding="utf-8")
+    return out_path
 
 
 def _basket_logical_symbol(setfile: Path, symbol: str) -> str | None:
