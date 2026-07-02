@@ -81,7 +81,7 @@ DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
     },
     "gemini": {
         "enabled": True,
-        "capabilities": ["code", "tests", "repo_edit", "research", "strategy", "source_discovery"],
+        "capabilities": ["code", "tests", "repo_edit", "research", "strategy", "source_discovery", "video_analysis"],
         "max_parallel": 2,
         "cost_rank": 10,
     },
