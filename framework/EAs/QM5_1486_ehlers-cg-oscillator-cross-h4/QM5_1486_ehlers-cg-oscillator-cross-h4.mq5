@@ -46,7 +46,6 @@ input int    strategy_time_stop_h4_bars     = 24;
 input int    strategy_spread_lookback       = 20;
 input double strategy_spread_median_mult    = 1.5;
 
-bool          g_strategy_new_bar = false;
 bool          g_tp1_done = false;
 QM_ExitReason g_strategy_exit_reason = QM_EXIT_STRATEGY;
 
@@ -55,7 +54,7 @@ bool LoadRates(const ENUM_TIMEFRAMES tf, const int bars_needed, MqlRates &rates[
    if(bars_needed <= 0)
       return false;
    ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, tf, 0, bars_needed, rates); // perf-allowed: bespoke CG/D1 arithmetic, called only from the framework new-bar path.
+   const int copied = CopyRates(_Symbol, tf, 0, bars_needed, rates); // perf-allowed: bounded bespoke CG/D1 arithmetic for entry and open-position exit checks.
    ArraySetAsSeries(rates, true);
    return (copied >= bars_needed);
   }
@@ -178,7 +177,7 @@ double MedianSpreadDistance(MqlRates &rates[])
    int count = 0;
    for(int i = 1; i <= strategy_spread_lookback; ++i)
      {
-      if(rates[i].spread <= 0)
+      if(rates[i].spread < 1)
          continue;
       spreads[count] = (double)rates[i].spread;
       count++;
@@ -208,7 +207,7 @@ bool SpreadAllows(MqlRates &rates[])
       return false;
 
    const double current_spread = ask - bid;
-   if(current_spread <= 0.0)
+   if(current_spread < DBL_EPSILON)
       return true;
 
    const double median_spread = MedianSpreadDistance(rates);
@@ -393,9 +392,6 @@ bool Strategy_ExitSignal()
         }
      }
 
-   if(!g_strategy_new_bar)
-      return false;
-
    MqlRates h4[];
    if(!LoadRates(PERIOD_H4, strategy_cg_period + 5, h4))
       return false;
@@ -458,20 +454,12 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
-
-   g_strategy_new_bar = QM_IsNewBar();
 
    Strategy_ManageOpenPosition();
    if(Strategy_ExitSignal())
@@ -490,7 +478,17 @@ void OnTick()
         }
      }
 
-   if(!g_strategy_new_bar)
+   // News blackout gates NEW entries only. Management, time exits, opposite
+   // signal exits, and Friday flattening must keep running through news windows.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!QM_IsNewBar())
       return;
 
    QM_EquityStreamOnNewBar();

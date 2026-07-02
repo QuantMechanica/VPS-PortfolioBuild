@@ -4,7 +4,7 @@
 **Slug:** `ehlers-cg-oscillator-cross-h4`
 **Source:** `6e967762-b26d-59a3-b076-35c17f2e7c36` (see `strategy-seeds/sources/6e967762-b26d-59a3-b076-35c17f2e7c36/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-26
+**Last revised:** 2026-07-02
 
 ---
 
@@ -104,3 +104,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-26 | Initial build from card | 2e975b1b-4a87-43b1-8ad6-1644d58c5c73 |
+| v2 | 2026-07-02 | Entry-only news gate; management and exits run through blackout windows | c82bfb1c-2791-4845-9d27-12a9e3792848 |
