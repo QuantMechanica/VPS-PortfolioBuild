@@ -7,6 +7,7 @@ status: mined
 last_reviewed: 2026-07-01
 cards_extracted:
   - rigcount-fri-mom
+  - rigcount-fri-fade
 ---
 
 # Baker Hughes Rig Count Source
@@ -31,6 +32,13 @@ The QM expression does not import Baker Hughes data at runtime. It uses the
 last completed D1 bar of the broker week as the market's price reaction proxy
 around the weekly rig-count release. The strategy enters only after a large,
 directional last-workday displacement and holds briefly into the following week.
+
+The second extracted card, `rigcount-fri-fade`, uses the same official release
+cadence but tests the opposite reaction profile: it fades unusually large
+last-workday displacements that close at an extreme, seeking short-horizon
+normalization during the first new-week bars. It is intentionally separated from
+`rigcount-fri-mom` so Q02 can judge continuation and exhaustion as independent
+WTI event-response hypotheses.
 
 ## R-Rules
 

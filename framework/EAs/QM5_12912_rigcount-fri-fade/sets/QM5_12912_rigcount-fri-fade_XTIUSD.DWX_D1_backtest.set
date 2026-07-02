@@ -1,0 +1,44 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12912
+; ea_slug:      rigcount-fri-fade
+; ea_version:   v5.0
+; set_version:  s20260702-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   4164f1deafc1152ec001c3af25f67b4dcd41fa5b44bbca488a6747e6d35ac8e7
+; author:       Codex
+; date:         2026-07-02
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=1
+qm_filter_news_mode=3
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card
+strategy_min_signal_return_pct=1.10
+strategy_min_atr_return_mult=0.60
+strategy_max_signal_return_pct=8.0
+strategy_close_location_min=0.70
+strategy_signal_min_dow=4
+strategy_atr_period=20
+strategy_atr_sl_mult=2.75
+strategy_max_hold_days=3
+strategy_reversion_close_atr_mult=0.75
+strategy_adverse_close_atr_mult=0.75
+strategy_max_spread_points=1000

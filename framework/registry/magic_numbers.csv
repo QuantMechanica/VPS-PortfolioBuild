@@ -14266,3 +14266,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12619,comm-reversal-4wk-xauusd,0,XAUUSD.DWX,126190000,2026-07-02,Development,active
 12910,wti-dist-unwind,0,XTIUSD.DWX,129100000,2026-07-02,Codex,active
 12911,brent-aug-prem,0,XBRUSD.DWX,129110000,2026-07-02,Codex,active
+12912,rigcount-fri-fade,0,XTIUSD.DWX,129120000,2026-07-02,Codex,active
