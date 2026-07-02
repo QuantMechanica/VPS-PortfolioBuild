@@ -1,0 +1,32 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9507
+; ea_slug:      carver-breakout
+; ea_version:   v5.0
+; set_version:  s20260702-001
+; symbol:       EURUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   01ffb1cedd070844616a97bc3e8416c47e0afe827e724b03587dd285cad64ceb
+; author:       Development
+; date:         2026-07-02
+;==========================================================
+qm_ea_id=9507
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9507_carver-breakout.md
+strategy_breakout_lookback_d1=80
+strategy_exit_lookback_d1=40
+strategy_atr_period=25
+strategy_atr_sl_mult=4.0
+strategy_atr_median_bars=252
+strategy_min_atr_median_mult=0.40
+strategy_spread_days=60
+strategy_spread_mult=2.0
+strategy_trail_after_r=1.5

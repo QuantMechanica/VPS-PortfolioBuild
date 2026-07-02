@@ -14269,3 +14269,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12911,brent-aug-prem,0,XBRUSD.DWX,129110000,2026-07-02,Codex,active
 12912,rigcount-fri-fade,0,XTIUSD.DWX,129120000,2026-07-02,Codex,active
 12913,xti-12m-carry,0,XTIUSD.DWX,129130000,2026-07-02,Codex,active
+9507,carver-breakout,0,EURUSD.DWX,95070000,2026-07-02,Codex,active
+9507,carver-breakout,1,GBPUSD.DWX,95070001,2026-07-02,Codex,active
+9507,carver-breakout,2,USDJPY.DWX,95070002,2026-07-02,Codex,active
+9507,carver-breakout,3,AUDUSD.DWX,95070003,2026-07-02,Codex,active
+9507,carver-breakout,4,XAUUSD.DWX,95070004,2026-07-02,Codex,active
+9507,carver-breakout,5,NDX.DWX,95070005,2026-07-02,Codex,active
+9507,carver-breakout,6,GDAXI.DWX,95070006,2026-07-02,Codex,active
+9507,carver-breakout,7,UK100.DWX,95070007,2026-07-02,Codex,active
