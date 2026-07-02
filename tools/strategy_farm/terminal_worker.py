@@ -652,14 +652,53 @@ def release_stale_claims_for_terminal(root: Path, terminal: str) -> list[str]:
         return []
 
 
-def _find_summary(report_root: str | None) -> Path | None:
+def _summary_run_tag_utc(path: Path, summary: dict[str, Any]) -> datetime | None:
+    tag = str(summary.get("run_tag") or path.parent.name or "").strip()
+    try:
+        return datetime.strptime(tag, "%Y%m%d_%H%M%S").replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
+
+
+def _summary_fresh_for_claim(path: Path, summary: dict[str, Any], payload: dict[str, Any]) -> bool:
+    claim_time = (
+        _parse_utc_iso(payload.get("started_at_iso"))
+        or _parse_utc_iso(payload.get("claimed_at_iso"))
+    )
+    if claim_time is None:
+        return True
+    threshold = claim_time - timedelta(seconds=2)
+    run_tag_time = _summary_run_tag_utc(path, summary)
+    if run_tag_time is not None:
+        return run_tag_time >= threshold
+    try:
+        mtime = datetime.fromtimestamp(path.stat().st_mtime, timezone.utc)
+    except OSError:
+        return False
+    return mtime >= threshold
+
+
+def _load_fresh_summary(path: Path, payload: dict[str, Any]) -> dict[str, Any] | None:
+    try:
+        summary = json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return summary if _summary_fresh_for_claim(path, summary, payload) else None
+
+
+def _find_summary(report_root: str | None, payload: dict[str, Any] | None = None) -> Path | None:
     if not report_root:
         return None
     root = Path(report_root)
     if not root.is_dir():
         return None
     candidates = sorted(root.rglob("summary.json"), key=lambda p: p.stat().st_mtime, reverse=True)
-    return candidates[0] if candidates else None
+    if payload is None:
+        return candidates[0] if candidates else None
+    for candidate in candidates:
+        if _load_fresh_summary(candidate, payload) is not None:
+            return candidate
+    return None
 
 
 def _find_work_item_summary_data(item: sqlite3.Row, payload: dict[str, Any]) -> tuple[Path, dict[str, Any]] | None:
@@ -669,9 +708,8 @@ def _find_work_item_summary_data(item: sqlite3.Row, payload: dict[str, Any]) -> 
         if report_root:
             summary_path = Path(str(report_root)) / str(item["ea_id"]) / phase / "summary.json"
             if summary_path.exists():
-                try:
-                    summary = json.loads(summary_path.read_text(encoding="utf-8-sig"))
-                except (OSError, json.JSONDecodeError):
+                summary = _load_fresh_summary(summary_path, payload)
+                if summary is None:
                     return None
                 return summary_path, summary
             # Q-rewrite runners (q04..q10) write aggregate.json at
@@ -686,10 +724,10 @@ def _find_work_item_summary_data(item: sqlite3.Row, payload: dict[str, Any]) -> 
                     continue
                 agg = Path(str(report_root)) / f"QM5_{ea_num}" / phase / sym_variant / "aggregate.json"
                 if agg.exists():
-                    try:
-                        return agg, json.loads(agg.read_text(encoding="utf-8-sig"))
-                    except (OSError, json.JSONDecodeError):
+                    summary = _load_fresh_summary(agg, payload)
+                    if summary is None:
                         return None
+                    return agg, summary
             phase_dir = Path(str(report_root)) / f"QM5_{ea_num}" / phase
             if phase_dir.is_dir():
                 cands = sorted(
@@ -698,24 +736,21 @@ def _find_work_item_summary_data(item: sqlite3.Row, payload: dict[str, Any]) -> 
                     reverse=True,
                 )
                 for agg in cands:
-                    try:
-                        return agg, json.loads(agg.read_text(encoding="utf-8-sig"))
-                    except (OSError, json.JSONDecodeError):
-                        continue
+                    summary = _load_fresh_summary(agg, payload)
+                    if summary is not None:
+                        return agg, summary
         canonical_summary_path = farmctl._ea_phase_dir(str(item["ea_id"]), phase) / "summary.json"
         if canonical_summary_path.exists():
-            try:
-                summary = json.loads(canonical_summary_path.read_text(encoding="utf-8-sig"))
-            except (OSError, json.JSONDecodeError):
+            summary = _load_fresh_summary(canonical_summary_path, payload)
+            if summary is None:
                 return None
             return canonical_summary_path, summary
         return farmctl._phase_artifact_summary(item)
-    summary_path = _find_summary(payload.get("report_root"))
+    summary_path = _find_summary(payload.get("report_root"), payload)
     if not summary_path:
         return None
-    try:
-        summary = json.loads(summary_path.read_text(encoding="utf-8-sig"))
-    except (OSError, json.JSONDecodeError):
+    summary = _load_fresh_summary(summary_path, payload)
+    if summary is None:
         return None
     return summary_path, summary
 
@@ -812,7 +847,7 @@ def _smoke_terminal_exit_stalled(item: dict[str, Any], payload: dict[str, Any]) 
     """
     if str(item.get("phase") or "").upper() not in {"P2", "P3"}:
         return False
-    if _find_summary(payload.get("report_root")):
+    if _find_summary(payload.get("report_root"), payload):
         return False
     log_path = payload.get("log_path")
     if not log_path:

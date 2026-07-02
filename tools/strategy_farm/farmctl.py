@@ -2063,6 +2063,53 @@ def _p2_active_summary_runtime_sec(item_row: sqlite3.Row, summary: dict[str, Any
     return max(0.0, (completed - launched).total_seconds())
 
 
+def _payload_claim_time_utc(payload: dict[str, Any]) -> dt.datetime | None:
+    for key in ("started_at_iso", "claimed_at_iso"):
+        raw = payload.get(key)
+        if not raw:
+            continue
+        try:
+            parsed = dt.datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=dt.UTC)
+            return parsed.astimezone(dt.UTC)
+        except Exception:
+            continue
+    return None
+
+
+def _summary_run_tag_utc(path: Path, summary: dict[str, Any]) -> dt.datetime | None:
+    tag = str(summary.get("run_tag") or path.parent.name or "").strip()
+    try:
+        return dt.datetime.strptime(tag, "%Y%m%d_%H%M%S").replace(tzinfo=dt.UTC)
+    except ValueError:
+        return None
+
+
+def _summary_fresh_for_claim(path: Path, summary: dict[str, Any], payload: dict[str, Any]) -> bool:
+    claim_time = _payload_claim_time_utc(payload)
+    if claim_time is None:
+        return True
+    threshold = claim_time - dt.timedelta(seconds=2)
+    run_tag_time = _summary_run_tag_utc(path, summary)
+    if run_tag_time is not None:
+        return run_tag_time >= threshold
+    try:
+        return dt.datetime.fromtimestamp(path.stat().st_mtime, dt.UTC) >= threshold
+    except OSError:
+        return False
+
+
+def _load_summary_if_fresh(path: Path, payload: dict[str, Any]) -> dict[str, Any] | None:
+    try:
+        summary = json.loads(path.read_text(encoding="utf-8-sig"))
+    except Exception:
+        return None
+    if not isinstance(summary, dict):
+        return None
+    return summary if _summary_fresh_for_claim(path, summary, payload) else None
+
+
 # PT9 2026-05-23 — Q02 compile gate. Cheap inline mtime check first; full
 # tools/strategy_farm/compile_ea.py subprocess fallback only when source is
 # newer than the cached ex5 (i.e. the EA was edited since last compile). This
@@ -3761,6 +3808,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
         # Q-rewrite phase runners write under D:\QM\reports\work_items\<id>;
         # legacy phase runners may still publish to the EA phase directory.
         summary_path = None
+        summary = None
         search_roots: list[Path] = []
         if report_root:
             search_roots.append(Path(report_root))
@@ -3769,7 +3817,11 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
         for search_root in dict.fromkeys(search_roots):
             for phase_summary in (search_root / "summary.json", search_root / "aggregate.json"):
                 if phase_summary.exists():
+                    loaded = _load_summary_if_fresh(phase_summary, payload)
+                    if loaded is None:
+                        continue
                     summary_path = phase_summary
+                    summary = loaded
                     break
             if summary_path:
                 break
@@ -3780,12 +3832,14 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                     cands.extend(search_root.rglob("summary.json"))
                     cands.extend(search_root.rglob("aggregate.json"))
             if cands:
-                summary_path = max(cands, key=lambda p: p.stat().st_mtime)
-        if summary_path and summary_path.exists():
-            try:
-                summary = json.loads(summary_path.read_text(encoding="utf-8-sig"))
-            except Exception as e:
-                summary = None
+                for candidate in sorted(cands, key=lambda p: p.stat().st_mtime, reverse=True):
+                    loaded = _load_summary_if_fresh(candidate, payload)
+                    if loaded is None:
+                        continue
+                    summary_path = candidate
+                    summary = loaded
+                    break
+        if summary_path and summary:
             if summary:
                 effective_min_trades = int(payload.get("effective_min_trades")
                                            or summary.get("min_trades_required")
@@ -4611,12 +4665,14 @@ def _claim_research_source(root: Path) -> dict[str, Any]:
         "AND C:\\QM\\repo\\processes\\qb_reputable_source_criteria.md . "
         f"Mine source `{src_id}` ({target_source.get('title')}). "
         "Action: " + (research_action or "draft_cards") + ". "
-        "Draft UP TO 5 new strategy cards into "
-        "D:\\QM\\strategy_farm\\artifacts\\cards_draft\\QM5_<NNNN>_<slug>.md per the "
-        "Strategy Wiki _TEMPLATE Strategy.md format with g0_status: PENDING. "
-        "Reserve fresh QM5_<NNNN> IDs ONLY via `python C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py "
+        "Before writing any card file, reserve fresh QM5 IDs ONLY via "
+        "`python C:\\QM\\repo\\tools\\strategy_farm\\farmctl.py "
         "reserve-ea-ids --strategy-id " + str(src_id) + " --slug <slug> [--slug <slug2> ...]`; "
-        "never hand-edit or append framework/registry/ea_id_registry.csv. Append notes to "
+        "`QM5_<NNNN>` is a placeholder, not a number you may choose. "
+        "Draft UP TO 5 new strategy cards into "
+        "D:\\QM\\strategy_farm\\artifacts\\cards_draft\\QM5_<reserved_id>_<slug>.md per the "
+        "Strategy Wiki _TEMPLATE Strategy.md format with g0_status: PENDING. "
+        "Never infer IDs from filenames; never hand-edit or append framework/registry/ea_id_registry.csv. Append notes to "
         f"D:\\QM\\strategy_farm\\artifacts\\source_notes\\{src_id}.md. "
         "At end: if <5 cards or exhausted, run `farmctl set-source-status "
         f"{src_id} done`. If 5 cards + more findable, run `farmctl "
@@ -8619,7 +8675,7 @@ def pump(root: Path) -> dict[str, Any]:
                         "promotion_source": "pump_cascade",
                     },
                 )
-                if next_phase == "Q04":
+                if next_phase in {"Q04", "Q05"}:
                     _apply_q04_latest_full_year_from_history(wi, payload)
                 conn.execute(
                     """
@@ -9986,6 +10042,8 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
             )
             if phase == "Q04":
                 payload["q04_default_probe"] = True
+                _apply_q04_latest_full_year_from_history(prev, payload)
+            elif phase == "Q05":
                 _apply_q04_latest_full_year_from_history(prev, payload)
             if existing:
                 if existing["status"] in {"pending", "active"}:

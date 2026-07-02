@@ -856,6 +856,113 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(payload["prior_failure"], "summary_missing")
             self.assertTrue(payload["terminal_stopped_on_release"])
 
+    def test_finish_work_item_ignores_summary_run_tag_before_claim(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            claim_time = datetime.now(timezone.utc)
+            old_run_time = claim_time - timedelta(minutes=5)
+            old_run_tag = old_run_time.strftime("%Y%m%d_%H%M%S")
+            report_root = root / "reports" / "wi-stale-summary"
+            summary_path = report_root / "QM5_9999" / old_run_tag / "summary.json"
+            summary_path.parent.mkdir(parents=True)
+            summary_path.write_text(
+                json.dumps({
+                    "timestamp_utc": old_run_time.isoformat(),
+                    "run_tag": old_run_tag,
+                    "result": "PASS",
+                    "model4_log_marker_detected": True,
+                    "min_trades_required": 5,
+                    "runs": [{"total_trades": 10}],
+                }),
+                encoding="utf-8",
+            )
+            os.utime(summary_path, (claim_time.timestamp(), claim_time.timestamp()))
+            claim_iso = claim_time.isoformat().replace("+00:00", "Z")
+            self._insert_work_item(
+                root,
+                "wi-stale-summary",
+                "EURUSD.DWX",
+                phase="Q02",
+                status="active",
+                claimed_by="T3",
+                payload={
+                    "report_root": str(report_root),
+                    "pid": 123456,
+                    "claimed_at_iso": claim_iso,
+                    "started_at_iso": claim_iso,
+                },
+            )
+
+            stopped: list[str] = []
+            old_default_root = terminal_worker.farmctl.DEFAULT_ROOT
+            old_stop_terminal_slot = terminal_worker.farmctl._stop_terminal_slot
+            try:
+                terminal_worker.farmctl.DEFAULT_ROOT = root
+                terminal_worker.farmctl._stop_terminal_slot = lambda terminal: stopped.append(terminal) or True
+                result = terminal_worker._finish_work_item(root, "wi-stale-summary", exit_code=0)
+            finally:
+                terminal_worker.farmctl.DEFAULT_ROOT = old_default_root
+                terminal_worker.farmctl._stop_terminal_slot = old_stop_terminal_slot
+
+            self.assertEqual(result["status"], "pending")
+            self.assertEqual(stopped, ["T3"])
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, verdict, evidence_path, payload_json FROM work_items WHERE id='wi-stale-summary'"
+                ).fetchone()
+            self.assertEqual(row[0], "pending")
+            self.assertIsNone(row[1])
+            self.assertIsNone(row[2])
+            self.assertEqual(json.loads(row[3])["prior_failure"], "summary_missing")
+
+    def test_finish_work_item_accepts_summary_run_tag_after_claim(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            claim_time = datetime.now(timezone.utc)
+            run_time = claim_time + timedelta(seconds=1)
+            run_tag = run_time.strftime("%Y%m%d_%H%M%S")
+            report_root = root / "reports" / "wi-fresh-summary"
+            summary_path = report_root / "QM5_9999" / run_tag / "summary.json"
+            summary_path.parent.mkdir(parents=True)
+            summary_path.write_text(
+                json.dumps({
+                    "timestamp_utc": run_time.isoformat(),
+                    "run_tag": run_tag,
+                    "result": "PASS",
+                    "model4_log_marker_detected": True,
+                    "min_trades_required": 5,
+                    "runs": [{"total_trades": 10}],
+                }),
+                encoding="utf-8",
+            )
+            claim_iso = claim_time.isoformat().replace("+00:00", "Z")
+            self._insert_work_item(
+                root,
+                "wi-fresh-summary",
+                "EURUSD.DWX",
+                phase="Q02",
+                status="active",
+                claimed_by="T3",
+                payload={
+                    "report_root": str(report_root),
+                    "pid": 123456,
+                    "claimed_at_iso": claim_iso,
+                    "started_at_iso": claim_iso,
+                },
+            )
+
+            result = terminal_worker._finish_work_item(root, "wi-fresh-summary", exit_code=0)
+
+            self.assertEqual(result["status"], "done")
+            self.assertEqual(result["verdict"], "PASS")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT status, verdict, evidence_path FROM work_items WHERE id='wi-fresh-summary'"
+                ).fetchone()
+            self.assertEqual(row[0], "done")
+            self.assertEqual(row[1], "PASS")
+            self.assertEqual(Path(row[2]), summary_path)
+
     def test_monitor_waits_for_detached_terminal_summary(self) -> None:
         with self._root() as tmp:
             root = (Path(tmp) / "farm").resolve()

@@ -114,6 +114,146 @@ function ConvertFrom-UtcStamp {
     } catch { return $null }
 }
 
+function Get-ActiveBacktestProtection {
+    param([string]$PythonExe)
+
+    $probe = @'
+import json
+import os
+import sqlite3
+import time
+
+db = r"D:/QM/strategy_farm/state/farm_state.sqlite"
+now = time.time()
+recent_cutoff = now - 600
+out = {
+    "active_count": 0,
+    "active_multisym_count": 0,
+    "active_recent_progress_count": 0,
+    "protected_terminals": [],
+    "details": [],
+}
+
+
+def payload_dict(text):
+    try:
+        value = json.loads(text or "{}")
+        return value if isinstance(value, dict) else {}
+    except Exception:
+        return {}
+
+
+def is_multisym(symbol, payload):
+    if str(payload.get("portfolio_scope") or "").strip().lower() == "basket":
+        return True
+    if str(payload.get("basket_manifest") or "").strip():
+        return True
+    try:
+        if int(payload.get("basket_symbol_count") or 0) > 1:
+            return True
+    except Exception:
+        pass
+    return "BASKET" in str(symbol or "").upper()
+
+
+def path_recent(path):
+    try:
+        return os.path.exists(path) and os.path.getmtime(path) >= recent_cutoff
+    except Exception:
+        return False
+
+
+def tree_recent(path):
+    if not path or not os.path.isdir(path):
+        return False
+    seen = 0
+    try:
+        for root, _dirs, files in os.walk(path):
+            for name in files:
+                seen += 1
+                try:
+                    if os.path.getmtime(os.path.join(root, name)) >= recent_cutoff:
+                        return True
+                except Exception:
+                    pass
+                if seen >= 2000:
+                    return False
+    except Exception:
+        return False
+    return False
+
+
+def terminal_journal_recent(terminal):
+    if not terminal:
+        return False
+    log_dir = fr"D:/QM/mt5/{terminal}/logs"
+    if not os.path.isdir(log_dir):
+        return False
+    try:
+        files = [
+            os.path.join(log_dir, name)
+            for name in os.listdir(log_dir)
+            if name.lower().endswith(".log")
+        ]
+        files.sort(key=lambda p: os.path.getmtime(p), reverse=True)
+        return any(path_recent(path) for path in files[:3])
+    except Exception:
+        return False
+
+
+try:
+    conn = sqlite3.connect(db)
+    conn.row_factory = sqlite3.Row
+    rows = conn.execute(
+        "SELECT id, ea_id, symbol, phase, claimed_by, payload_json "
+        "FROM work_items WHERE status='active'"
+    ).fetchall()
+    out["active_count"] = len(rows)
+    protected = set()
+    for row in rows:
+        payload = payload_dict(row["payload_json"])
+        terminal = str(row["claimed_by"] or payload.get("terminal") or "").strip().upper()
+        if terminal:
+            protected.add(terminal)
+        multisym = is_multisym(row["symbol"], payload)
+        if multisym:
+            out["active_multisym_count"] += 1
+        recent = (
+            path_recent(str(payload.get("log_path") or ""))
+            or tree_recent(str(payload.get("report_root") or ""))
+            or terminal_journal_recent(terminal)
+        )
+        if recent:
+            out["active_recent_progress_count"] += 1
+        out["details"].append({
+            "id": row["id"],
+            "ea_id": row["ea_id"],
+            "phase": row["phase"],
+            "terminal": terminal,
+            "multisym": multisym,
+            "recent_progress": recent,
+        })
+    out["protected_terminals"] = sorted(protected)
+except Exception as exc:
+    out["error"] = str(exc)
+
+print(json.dumps(out, separators=(",", ":")))
+'@
+
+    try {
+        return (($probe | & $PythonExe - 2>$null) -join '' | ConvertFrom-Json)
+    } catch {
+        return [pscustomobject]@{
+            active_count = 0
+            active_multisym_count = 0
+            active_recent_progress_count = 0
+            protected_terminals = @()
+            details = @()
+            error = $_.Exception.Message
+        }
+    }
+}
+
 # 1. OWNER intent: is the factory meant to be ON? (FACTORY tasks enabled?)
 $factoryEnabled = $false
 foreach ($t in $QM_FACTORY_TASKS) {
@@ -141,6 +281,9 @@ $diskFreeGb = try { [math]::Round((Get-PSDrive D -ErrorAction Stop).Free / 1GB, 
 # a live session handle via CreateProcessAsUser, even into a disconnected session).
 $dispatchStalled = $false
 $stallInfo = ''
+$nTerm = 0
+$nActive = 0
+$nPending = 0
 if ($factoryEnabled) {
     try {
         # Count ONLY factory T1-T10 terminals, not every terminal64 on the box. A
@@ -170,6 +313,26 @@ print(str(a) + " " + str(p))
         }
     } catch { $stallInfo = "stall-probe-error: $_" }
 }
+
+$activeProtection = [pscustomobject]@{
+    active_count = 0
+    active_multisym_count = 0
+    active_recent_progress_count = 0
+    protected_terminals = @()
+    details = @()
+}
+if ($factoryEnabled) {
+    $activeProtection = Get-ActiveBacktestProtection -PythonExe $py
+}
+$activeMultisymCount = [int]($activeProtection.active_multisym_count | Select-Object -First 1)
+$activeRecentProgressCount = [int]($activeProtection.active_recent_progress_count | Select-Object -First 1)
+$activeProtectionDetail = ''
+try {
+    $activeProtectionDetail = (($activeProtection.details | ForEach-Object {
+        "$($_.id):$($_.ea_id):$($_.phase):$($_.terminal):multisym=$($_.multisym):recent=$($_.recent_progress)"
+    }) -join ';')
+} catch {}
+$realStallSuppressedReason = ''
 
 # 2c. SESSION-LOSS detection + reboot-heal (added 2026-06-11).
 # The one case neither respawn nor tscon can fix: the interactive session itself is
@@ -302,8 +465,17 @@ print(n)
         # (normal between-backtest churn); the SAME 2-run (~30 min) confirm + 45-min cooldown +
         # FactoryON_AtLogon recovery below guards against a transient dip or post-restart ramp.
         $mtFloor = [math]::Max(1, $ExpectWorkers - 2)
-        $realStallInfo = "realDone15m=$realN metatester64=$mt/$ExpectWorkers (floor=$mtFloor) ramFreeGb=$ramFreeGb pending=$nPending recentPurge=$recentPurge"
-        if ((($realN -eq 0) -or ($mt -lt $mtFloor)) -and $nPending -ge $StallPendingThreshold) { $realStall = $true }
+        $realStallInfo = "realDone15m=$realN metatester64=$mt/$ExpectWorkers (floor=$mtFloor) terminal64=$nTerm ramFreeGb=$ramFreeGb pending=$nPending recentPurge=$recentPurge activeMultisym=$activeMultisymCount activeRecentProgress=$activeRecentProgressCount"
+        $realStallCandidate = ((($realN -eq 0) -or ($mt -lt $mtFloor)) -and $nPending -ge $StallPendingThreshold)
+        if ($realStallCandidate) {
+            if ($activeMultisymCount -gt 0) {
+                $realStallSuppressedReason = "active multisymbol/basket work_item present; refusing full reset"
+            } elseif ($activeRecentProgressCount -gt 0) {
+                $realStallSuppressedReason = "active work_item log/report/journal progressed in last 10m"
+            } else {
+                $realStall = $true
+            }
+        }
     }
 }
 
@@ -321,6 +493,17 @@ elseif ($diskFreeGb -lt 40) {
     $action = 'noop_disk_low_purge'
     $detail = "D: free ${diskFreeGb}GB < 40GB while factory ON - workers pausing by design; kicking cache purge, NOT respawning"
     try { Start-ScheduledTask -TaskName 'QM_StrategyFarm_TesterCachePurge' -ErrorAction SilentlyContinue } catch {}
+}
+elseif ($factoryEnabled -and $realStallSuppressedReason) {
+    $action = 'realstall_guarded'
+    $detail = "REAL-STALL candidate suppressed: $realStallSuppressedReason ($realStallInfo); active=$activeProtectionDetail"
+    $rsState = 'D:\QM\reports\state\watchdog_realstall.json'
+    if (Test-Path $rsState) {
+        try {
+            $rst = Get-Content $rsState -Raw | ConvertFrom-Json
+            if ($rst.pending_since) { @{ pending_since = $null; last_reset = $rst.last_reset } | ConvertTo-Json -Compress | Set-Content -Path $rsState -Encoding UTF8 }
+        } catch {}
+    }
 }
 elseif ($factoryEnabled -and $realStall) {
     # REAL-VERDICT-STALL (launch_fault wedge): workers look healthy but 0 real verdicts.
@@ -381,7 +564,7 @@ elseif ($factoryEnabled -and $realStall) {
 }
 elseif ($nWorkers -ge $MinWorkers -and -not $dispatchStalled) {
     $action = 'noop_healthy'
-    $detail = "workers=$nWorkers/$ExpectWorkers (>= $MinWorkers); $stallInfo"
+    $detail = "workers=$nWorkers/$ExpectWorkers (>= $MinWorkers); $stallInfo; activeMultisym=$activeMultisymCount activeRecentProgress=$activeRecentProgressCount"
     # clear any stale real-stall confirm flag once real verdicts are flowing again
     $rsState = 'D:\QM\reports\state\watchdog_realstall.json'
     if (Test-Path $rsState) {
@@ -445,20 +628,25 @@ else {
     # detection for the audit record only.
     $tLiveRunning = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
                       Where-Object { $_.CommandLine -match 'T_Live' }).Count -gt 0
-    try {
-        if ($dispatchStalled) {
-            $dumpDetail = Invoke-StallDumpCapture -RequestPath $stallDumpRequest -DumpDir $stallDumpDir
-            $detail += " | $dumpDetail"
+    if ($activeMultisymCount -gt 0) {
+        $action = 'heal_deferred_active_multisym'
+        $detail += " | active multisymbol/basket work_item guard: refusing FactoryON full reset while protected=$($activeProtection.protected_terminals -join ',') active=$activeProtectionDetail"
+    } else {
+        try {
+            if ($dispatchStalled) {
+                $dumpDetail = Invoke-StallDumpCapture -RequestPath $stallDumpRequest -DumpDir $stallDumpDir
+                $detail += " | $dumpDetail"
+            }
+            Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop
+            Start-Sleep -Seconds 25
+            $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
+                       Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
+            $action = 'healed_via_factoryon'
+            $detail += " -> Start FactoryON_AtLogon (interactive, T_Live-sparing; tLiveRunning=$tLiveRunning) -> after=$after/$ExpectWorkers"
+        } catch {
+            $action = 'heal_failed'
+            $detail += " -> ERROR: $_"
         }
-        Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop
-        Start-Sleep -Seconds 25
-        $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
-                   Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
-        $action = 'healed_via_factoryon'
-        $detail += " -> Start FactoryON_AtLogon (interactive, T_Live-sparing; tLiveRunning=$tLiveRunning) -> after=$after/$ExpectWorkers"
-    } catch {
-        $action = 'heal_failed'
-        $detail += " -> ERROR: $_"
     }
 }
 
@@ -472,6 +660,8 @@ $record = [ordered]@{
     dispatch_stalled = $dispatchStalled
     real_stall       = $realStall
     session_lost     = $sessionLost
+    active_multisym  = $activeMultisymCount
+    active_progress  = $activeRecentProgressCount
     action           = $action
     detail           = $detail
 } | ConvertTo-Json -Compress -Depth 4
