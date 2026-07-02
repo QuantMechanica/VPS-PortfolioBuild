@@ -9994,14 +9994,24 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                     "reason": "missing_setfile",
                 })
                 continue
+            payload = _promotion_payload_with_basket_context(
+                prev,
+                {
+                    "promoted_from_phase": prev_phase,
+                    "promoted_from_work_item": prev["id"],
+                    "promotion_source": "farmctl_enqueue_backtest_ea",
+                    "requeued_at": now,
+                },
+            )
+            if phase == "Q04":
+                payload["q04_default_probe"] = True
+                _apply_q04_latest_full_year_from_history(prev, payload)
+            elif phase == "Q05":
+                _apply_q04_latest_full_year_from_history(prev, payload)
             if phase in {"Q05", "P5"}:
                 required_oos_to_year = P5_REQUIRED_OOS_TO_YEAR
                 if phase == "Q05":
-                    try:
-                        prev_payload = json.loads(prev["payload_json"] or "{}")
-                    except json.JSONDecodeError:
-                        prev_payload = {}
-                    latest_full_year = prev_payload.get("q04_latest_full_year", prev_payload.get("latest_full_year"))
+                    latest_full_year = payload.get("q04_latest_full_year", payload.get("latest_full_year"))
                     if latest_full_year is not None:
                         try:
                             required_oos_to_year = min(required_oos_to_year, int(str(latest_full_year).strip()))
@@ -10031,20 +10041,6 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                 """,
                 (ea_id, phase, prev["symbol"], prev["setfile_path"]),
             ).fetchone()
-            payload = _promotion_payload_with_basket_context(
-                prev,
-                {
-                    "promoted_from_phase": prev_phase,
-                    "promoted_from_work_item": prev["id"],
-                    "promotion_source": "farmctl_enqueue_backtest_ea",
-                    "requeued_at": now,
-                },
-            )
-            if phase == "Q04":
-                payload["q04_default_probe"] = True
-                _apply_q04_latest_full_year_from_history(prev, payload)
-            elif phase == "Q05":
-                _apply_q04_latest_full_year_from_history(prev, payload)
             if existing:
                 if existing["status"] in {"pending", "active"}:
                     skipped.append({
