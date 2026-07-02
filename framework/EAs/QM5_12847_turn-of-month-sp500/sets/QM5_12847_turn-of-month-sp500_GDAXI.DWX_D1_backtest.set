@@ -15,6 +15,7 @@
 ; date:         2026-07-01
 ;==========================================================
 qm_magic_slot_offset=3
+qm_friday_close_enabled=false
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

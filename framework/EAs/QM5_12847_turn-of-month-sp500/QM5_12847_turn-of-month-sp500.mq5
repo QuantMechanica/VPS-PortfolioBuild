@@ -54,13 +54,52 @@ input double sl_atr_mult         = 3.0;  // ATR multiplier below entry
 int   g_cur_mon           = -1;
 int   g_cur_year          = -1;
 int   g_td_in_month       = 0;
-int   g_prev_tdc          = 21;   // seed with typical ~21 trading days/month
+int   g_prev_tdc          = 0;
+bool  g_have_prev_tdc     = false;
 bool  g_entered_this_mon  = false;
 
 int   g_pos_entry_mon     = -1;
 int   g_pos_entry_year    = -1;
 bool  g_exit_pending      = false;
 int   g_exit_td_count     = 0;
+
+datetime QM12847_MonthStart(const int year, const int mon)
+  {
+   MqlDateTime dt;
+   ZeroMemory(dt);
+   dt.year = year;
+   dt.mon = mon;
+   dt.day = 1;
+   return StructToTime(dt);
+  }
+
+datetime QM12847_NextMonthStart(const int year, const int mon)
+  {
+   int next_year = year;
+   int next_mon = mon + 1;
+   if(next_mon > 12)
+     {
+      next_mon = 1;
+      next_year++;
+     }
+   return QM12847_MonthStart(next_year, next_mon);
+  }
+
+int QM12847_TradingDaysInMonth(const int year, const int mon)
+  {
+   if(year <= 0 || mon < 1 || mon > 12)
+      return 0;
+
+   const datetime month_start = QM12847_MonthStart(year, mon);
+   const datetime next_start = QM12847_NextMonthStart(year, mon);
+   if(month_start <= 0 || next_start <= month_start)
+      return 0;
+
+   datetime times[];
+   ArraySetAsSeries(times, false);
+   const int copied = CopyTime(_Symbol, PERIOD_D1, month_start, next_start - 1, times); // perf-allowed: exact month D1 trading-day count.
+   return (copied > 0) ? copied : 0;
+  }
 
 // -----------------------------------------------------------------------------
 // Advance calendar state — called once per new D1 bar from Strategy_EntrySignal
@@ -77,8 +116,15 @@ void AdvanceMonthTracking()
    const bool month_rolled = (dt1.mon != g_cur_mon || dt1.year != g_cur_year);
    if(month_rolled)
      {
-      if(g_cur_mon >= 0)
-         g_prev_tdc = g_td_in_month;
+       if(g_cur_mon >= 0)
+        {
+         const int full_tdc = QM12847_TradingDaysInMonth(g_cur_year, g_cur_mon);
+         if(full_tdc > 0 && g_td_in_month >= full_tdc)
+           {
+            g_prev_tdc = full_tdc;
+            g_have_prev_tdc = true;
+           }
+        }
 
       g_cur_mon          = dt1.mon;
       g_cur_year         = dt1.year;
@@ -154,8 +200,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   // Near-end-of-month: remaining = prev_tdc - td_in_month (days AFTER bar 1 in same month)
-   const int remaining_est = g_prev_tdc - g_td_in_month;
+   // Near-end-of-month: prefer exact current-month D1 bar count; fall back
+   // only after a complete prior month was observed.
+   const int exact_month_tdc = QM12847_TradingDaysInMonth(g_cur_year, g_cur_mon);
+   int reference_tdc = 0;
+   if(exact_month_tdc > g_td_in_month)
+      reference_tdc = exact_month_tdc;
+   else if(g_have_prev_tdc)
+      reference_tdc = g_prev_tdc;
+   if(reference_tdc <= 0)
+      return false;
+
+   const int remaining_est = reference_tdc - g_td_in_month;
+   if(remaining_est < 0)
+      return false;
    if(remaining_est >= entry_td_from_end)
       return false;
 
@@ -174,6 +232,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.tp          = 0.0;
    req.reason      = "TOM_ENTRY_D1";
    req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
 
    g_pos_entry_mon    = g_cur_mon;
    g_pos_entry_year   = g_cur_year;
