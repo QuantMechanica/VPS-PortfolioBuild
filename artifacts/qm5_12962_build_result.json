@@ -1,0 +1,83 @@
+{
+  "task_id": "89a63a63-3af6-424d-b9e4-80e53e247293",
+  "ea_id": "QM5_12962",
+  "slug": "wti-jul-prem",
+  "strategy": "WTI D1 July calendar premium",
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12962_wti-jul-prem",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12962_wti-jul-prem\\QM5_12962_wti-jul-prem.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12962_wti-jul-prem\\QM5_12962_wti-jul-prem.ex5",
+  "ex5_sha256": "7a9a97483fa60484e664a37cce58980bbc06e5069c26976b7568d3439a1ff81c",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12962_wti-jul-prem\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12962_wti-jul-prem_card.md",
+  "seed_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\wti-jul-prem_card.md",
+  "source_id": "EIA-WTI-SEASON-2024",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12962_wti-jul-prem\\sets\\QM5_12962_wti-jul-prem_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "df0c32879bd2f6d60ef88d291670b55d1c3dc9a1c91d89b049d6aff99163fa7d",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 129620000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12962_wti-jul-prem/QM5_12962_wti-jul-prem.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260702_181124\\QM5_12962_wti-jul-prem.compile.log",
+    "ex5_size_bytes": 298278
+  },
+  "build_check": {
+    "command": "framework/scripts/build_check.ps1 -EALabel QM5_12962_wti-jul-prem -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260702_181136.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "pre_compile_validation": {
+    "prebuild_validate_card": "PASS",
+    "spec_doc": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_guardrails": "PASS"
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "cebf1765-60b2-4d60-b395-29a98a36c3b2",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12962_wti-jul-prem\\sets\\QM5_12962_wti-jul-prem_XTIUSD.DWX_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "created_at_utc": "2026-07-02T18:11:59+00:00"
+  },
+  "smoke_result": "deferred_q02_backtest",
+  "smoke_skipped_reason": "Paced fleet Q02 enqueue is the baseline path for this build; no manual MT5 backtest was launched from this session.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "notes": "Completed a structural D1 WTI July calendar-premium sleeve from the official EIA petroleum product seasonality source packet. This is distinct from the broad EIA WTI season map, the April-to-June driving-season swing, existing single-month WTI cards, WTI event/ratio/storage/roll logic, XAU/XAG, XNG, and commodity RSI logic. Q02 must validate XTIUSD.DWX history sufficiency, costs, and correlation."
+}
