@@ -102,6 +102,13 @@ ticks through 2025 while the D1 history cache only contained bars through
 folds instead of repeatedly classifying a terminal history-cache gap as strategy
 failure.
 
+Q05 handoff note: on 2026-07-02 the existing Q05 work item
+`82cab3d1-bf05-4aa4-8278-86c8064b16e7` was requeued in place from Q04 PASS
+`94f89f07-58ad-487f-a0ab-b57c4e99106a`. No duplicate work item was created.
+The payload carries the basket manifest, USD tester account, the 2024 history
+clamp, and `timeout_min=120`. The prior report root was archived by farmctl
+before requeueing.
+
 ---
 
 ## Revision History
@@ -112,3 +119,4 @@ failure.
 | v2 | 2026-06-28 | Session-safe pair entry repair | Delays daily entries until both AUDUSD/NZDUSD legs are tradable; stale single-leg setfiles now carry card defaults. |
 | v3 | 2026-06-28 | Q04 history-cache retry metadata | Manifest pins USD tester defaults; Q04 retry uses `q04_latest_full_year=2024` after 2025 D1 cache returned zero bars despite synchronized ticks. |
 | v4 | 2026-07-02 | Q05 tick-path CPU trim | Removed a redundant per-tick host-symbol news lookup from `OnTick`; the basket news hook already checks both AUDUSD/NZDUSD legs before entries. |
+| v5 | 2026-07-02 | Q05 queue handoff | Requeued existing Q05 work item in place with current 120-minute cascade timeout payload; no manual MT5 run launched. |

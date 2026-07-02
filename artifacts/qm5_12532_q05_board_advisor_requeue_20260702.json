@@ -1,0 +1,71 @@
+{
+  "date": "2026-07-02",
+  "branch": "agents/board-advisor",
+  "mission": "forex_market_neutral_cointegration_portfolio_growth",
+  "action": "q05_in_place_requeue",
+  "ea": "QM5_12532",
+  "slug": "edgelab-audnzd-cointegration",
+  "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+  "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+  "why_this_existing_card": [
+    "No unbuilt registered positive-hedge EdgeLab FX cointegration pair remained in the 66-pair scan set.",
+    "QM5_12532 is one of the two strict scan survivors and is not Q02-blocked: Q02 PASS and Q04 PASS are already recorded.",
+    "The latest Q05 row had completed INFRA_FAIL with no pending duplicate, so the existing row could be requeued in place."
+  ],
+  "preflight": {
+    "q02_state": "PASS",
+    "q04_state": "PASS",
+    "previous_q05_state": "INFRA_FAIL",
+    "previous_q05_reason": "summary_missing",
+    "previous_q05_work_item": "82cab3d1-bf05-4aa4-8278-86c8064b16e7",
+    "previous_q05_updated_at_utc": "2026-07-02T10:23:08+00:00",
+    "factory_cpu_ceiling": false,
+    "running_t1_t5_terminals": [
+      "T5"
+    ],
+    "t_live_touched": false
+  },
+  "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12532_q05_board_advisor_requeue_20260702_173547.sqlite",
+  "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12532 --phase Q05",
+  "result": {
+    "enqueued": true,
+    "created": [],
+    "requeued": [
+      {
+        "id": "82cab3d1-bf05-4aa4-8278-86c8064b16e7",
+        "symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1"
+      }
+    ],
+    "skipped": []
+  },
+  "post_requeue_payload": {
+    "status": "pending",
+    "verdict": null,
+    "updated_at_utc": "2026-07-02T15:35:52+00:00",
+    "promoted_from_phase": "Q04",
+    "promoted_from_work_item": "94f89f07-58ad-487f-a0ab-b57c4e99106a",
+    "promotion_source": "farmctl_enqueue_backtest_ea",
+    "basket_manifest": "C:/QM/repo/framework/EAs/QM5_12532_edgelab-audnzd-cointegration/basket_manifest.json",
+    "basket_symbols": [
+      "AUDUSD.DWX",
+      "NZDUSD.DWX"
+    ],
+    "host_symbol": "AUDUSD.DWX",
+    "host_timeframe": "D1",
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "q04_latest_full_year": 2024,
+    "latest_full_year": 2024,
+    "timeout_min": 120,
+    "archived_report_root_on_requeue": "D:/QM/reports/work_items/82cab3d1-bf05-4aa4-8278-86c8064b16e7.requeued_20260702T1535520000"
+  },
+  "safety": {
+    "manual_mt5_run_launched": false,
+    "autotrading_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  }
+}
