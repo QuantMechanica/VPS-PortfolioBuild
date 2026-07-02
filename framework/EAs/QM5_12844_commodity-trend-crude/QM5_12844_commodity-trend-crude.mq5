@@ -115,14 +115,17 @@ bool Strategy_LoadClosedState(double &close_last,
                               datetime &closed_time,
                               double &entry_high,
                               double &entry_low,
+                              double &reverse_high,
+                              double &reverse_low,
                               double &adx_value,
                               double &atr_value)
   {
    const int lookback = MathMax(2, donchian_lookback);
+   const int bars_needed = lookback + 1;
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, lookback, rates); // perf-allowed: bounded D1 channel math.
-   if(copied < lookback)
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, bars_needed, rates); // perf-allowed: bounded D1 channel math.
+   if(copied < bars_needed)
       return false;
 
    close_last = rates[0].close;
@@ -132,12 +135,21 @@ bool Strategy_LoadClosedState(double &close_last,
 
    entry_high = -DBL_MAX;
    entry_low = DBL_MAX;
+   reverse_high = -DBL_MAX;
+   reverse_low = DBL_MAX;
    for(int i = 0; i < lookback; ++i)
      {
       if(rates[i].high > entry_high)
          entry_high = rates[i].high;
       if(rates[i].low < entry_low)
          entry_low = rates[i].low;
+     }
+   for(int j = 1; j <= lookback; ++j)
+     {
+      if(rates[j].high > reverse_high)
+         reverse_high = rates[j].high;
+      if(rates[j].low < reverse_low)
+         reverse_low = rates[j].low;
      }
 
    adx_value = QM_ADX(_Symbol, PERIOD_D1, MathMax(1, adx_period), 1);
@@ -146,6 +158,9 @@ bool Strategy_LoadClosedState(double &close_last,
    return (entry_high > 0.0 &&
            entry_low > 0.0 &&
            entry_high > entry_low &&
+           reverse_high > 0.0 &&
+           reverse_low > 0.0 &&
+           reverse_high > reverse_low &&
            adx_value > 0.0 &&
            atr_value > 0.0);
   }
@@ -205,8 +220,8 @@ bool Strategy_NoTradeFilter()
   }
 
 bool Strategy_CloseOppositeSignal(const double close_last,
-                                  const double entry_high,
-                                  const double entry_low,
+                                  const double reverse_high,
+                                  const double reverse_low,
                                   const datetime closed_time)
   {
    const int magic = QM_FrameworkMagic();
@@ -223,8 +238,8 @@ bool Strategy_CloseOppositeSignal(const double close_last,
          continue;
 
       const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      const bool exit_long = (position_type == POSITION_TYPE_BUY && close_last < entry_low);
-      const bool exit_short = (position_type == POSITION_TYPE_SELL && close_last > entry_high);
+      const bool exit_long = (position_type == POSITION_TYPE_BUY && close_last < reverse_low);
+      const bool exit_short = (position_type == POSITION_TYPE_SELL && close_last > reverse_high);
       if(!exit_long && !exit_short)
          continue;
 
@@ -268,17 +283,21 @@ void Strategy_ManageOpenPosition()
    datetime closed_time = 0;
    double entry_high = 0.0;
    double entry_low = 0.0;
+   double reverse_high = 0.0;
+   double reverse_low = 0.0;
    double adx_value = 0.0;
    double atr_value = 0.0;
    const bool has_state = Strategy_LoadClosedState(close_last,
                                                    closed_time,
                                                    entry_high,
                                                    entry_low,
+                                                   reverse_high,
+                                                   reverse_low,
                                                    adx_value,
                                                    atr_value);
 
    if(has_state)
-      Strategy_CloseOppositeSignal(close_last, entry_high, entry_low, closed_time);
+      Strategy_CloseOppositeSignal(close_last, reverse_high, reverse_low, closed_time);
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -319,9 +338,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    datetime closed_time = 0;
    double entry_high = 0.0;
    double entry_low = 0.0;
+   double reverse_high = 0.0;
+   double reverse_low = 0.0;
    double adx_value = 0.0;
    double atr_value = 0.0;
-   if(!Strategy_LoadClosedState(close_last, closed_time, entry_high, entry_low, adx_value, atr_value))
+   if(!Strategy_LoadClosedState(close_last,
+                                closed_time,
+                                entry_high,
+                                entry_low,
+                                reverse_high,
+                                reverse_low,
+                                adx_value,
+                                atr_value))
       return false;
    if(closed_time == g_last_entry_bar_time || closed_time == g_last_no_reverse_bar_time)
       return false;
