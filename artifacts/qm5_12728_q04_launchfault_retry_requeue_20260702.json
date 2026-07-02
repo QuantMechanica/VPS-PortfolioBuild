@@ -1,0 +1,86 @@
+{
+  "branch": "agents/board-advisor",
+  "date": "2026-07-02",
+  "ea_id": "QM5_12728",
+  "ea_label": "QM5_12728_edgelab-nzdusd-gbpjpy-cointegration",
+  "logical_symbol": "QM5_12728_NZDUSD_GBPJPY_COINTEGRATION_D1",
+  "selected_action": "advance_existing_forex_basket",
+  "mission_path": {
+    "unbuilt_strict_66_pair_survivor_found": false,
+    "qm5_12532_q02_blocked": false,
+    "qm5_12533_q02_blocked": false,
+    "qm5_12533_latest_q04": "strategy_FAIL_pooled_pf_net_0.432"
+  },
+  "pre_action": {
+    "duplicate_pending_active_q04": 0,
+    "latest_q04_work_item": "6a1a390b-7380-407e-a75d-6c64cec9a63f",
+    "latest_q04_verdict": "INFRA_FAIL",
+    "latest_q04_exit_codes": [
+      3221225794,
+      3221225794
+    ],
+    "latest_q04_reason": "F1:incomplete_fold;F2:incomplete_fold"
+  },
+  "queue_action": {
+    "db_backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12728_q04_launchfault_retry_requeue_20260702T184752Z.sqlite",
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12728 --phase Q04",
+    "enqueued": true,
+    "created": [],
+    "requeued": [
+      {
+        "id": "6a1a390b-7380-407e-a75d-6c64cec9a63f",
+        "symbol": "QM5_12728_NZDUSD_GBPJPY_COINTEGRATION_D1"
+      }
+    ],
+    "post_status": "pending",
+    "post_verdict": null,
+    "payload_confirmed": {
+      "portfolio_scope": "basket",
+      "host_symbol": "NZDUSD.DWX",
+      "host_timeframe": "D1",
+      "tester_currency": "USD",
+      "tester_deposit": 100000,
+      "q04_latest_full_year": 2024,
+      "basket_symbols": [
+        "NZDUSD.DWX",
+        "GBPJPY.DWX",
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ]
+    }
+  },
+  "validation": [
+    {
+      "command": "python -m py_compile framework/scripts/_phase_utils.py framework/scripts/q04_walkforward.py framework/scripts/q05_stress_medium.py framework/scripts/q06_stress_harsh.py framework/scripts/q07_multiseed.py",
+      "result": "PASS"
+    },
+    {
+      "command": "python -m pytest framework/scripts/tests/test_q05_q07_verdicts.py framework/scripts/tests/test_q04_walkforward.py tools/strategy_farm/tests/test_fx_basket_manifests.py -q",
+      "result": "PASS",
+      "tests": "48 passed"
+    },
+    {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_12728_edgelab-nzdusd-gbpjpy-cointegration --verbose",
+      "result": "BASKET_OK",
+      "violations": 0
+    },
+    {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12728_edgelab-nzdusd-gbpjpy-cointegration -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 16,
+      "report": "D:/QM/reports/framework/21/build_check_20260702_184829.json",
+      "setfile_build_hash": "5cfdae14f9a76fe9fa54931b9f7e60f4bdf608d6823a0a8dbfca2acbde573515"
+    }
+  ],
+  "guardrails": {
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
