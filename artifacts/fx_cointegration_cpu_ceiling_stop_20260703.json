@@ -1,0 +1,133 @@
+{
+  "date_local": "2026-07-03",
+  "date_utc_observed": "2026-07-02",
+  "branch": "agents/board-advisor",
+  "mission": "forex_market_neutral_cointegration_portfolio_growth",
+  "action": "cpu_ceiling_stop_no_enqueue",
+  "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+  "strict_scan_survivors": [
+    {
+      "pair": "EURJPY~GBPJPY",
+      "ea": "QM5_12533",
+      "scan_dev_sharpe": 0.59,
+      "scan_oos_net_sharpe": 1.53,
+      "current_state": "Q02_PASS_Q04_STRATEGY_FAIL",
+      "q02_blocked": false
+    },
+    {
+      "pair": "AUDUSD~NZDUSD",
+      "ea": "QM5_12532",
+      "scan_dev_sharpe": 0.13,
+      "scan_oos_net_sharpe": 1.29,
+      "current_state": "Q02_PASS_Q04_PASS_Q05_PENDING_RETRY",
+      "q02_blocked": false,
+      "pending_work_item": "82cab3d1-bf05-4aa4-8278-86c8064b16e7"
+    }
+  ],
+  "unbuilt_registered_edgelab_cointegration_pair_found": false,
+  "edge_lab_cointegration_state_summary": {
+    "queued_or_active_viable_later_phase": [
+      {
+        "ea": "QM5_12532",
+        "phase": "Q05",
+        "status": "pending",
+        "symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1"
+      },
+      {
+        "ea": "QM5_12712",
+        "phase": "Q05",
+        "status": "pending",
+        "symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1"
+      },
+      {
+        "ea": "QM5_12772",
+        "phase": "Q05",
+        "status": "pending",
+        "symbol": "QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1"
+      },
+      {
+        "ea": "QM5_12778",
+        "phase": "Q05",
+        "status": "pending",
+        "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1"
+      },
+      {
+        "ea": "QM5_12781",
+        "phase": "Q07",
+        "status": "active",
+        "symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1"
+      }
+    ],
+    "remaining_edgelab_tail": "Q02_PASS but later Q04 strategy FAIL, or already pending/active; no clean non-duplicate enqueue point found."
+  },
+  "fallback_candidates_checked": [
+    {
+      "ea": "QM5_10009",
+      "label": "QM5_10009_rw-fx-cointeg-bb",
+      "state": "Q04_PENDING",
+      "work_item": "52731ceb-42b5-4b20-94b9-3e7785fe2546",
+      "decision": "duplicate_enqueue_avoided"
+    },
+    {
+      "ea": "QM5_1156",
+      "label": "QM5_1156_caldeira-cointegration-pairs-fx",
+      "state": "logical_basket_Q02_PASS_Q04_STRATEGY_FAIL",
+      "decision": "do_not_requeue_strategy_fail"
+    },
+    {
+      "ea": "QM5_12821",
+      "label": "QM5_12821_twin-csm-basket",
+      "state": "Q02_INFRA_FAIL_NO_PENDING",
+      "reason_not_enqueued": "28-symbol H1 basket; prior full-window Q02 was owner-aborted in favor of a shorter test path; current factory slots are occupied, so this would push the known CPU-heavy lane over the ceiling."
+    }
+  ],
+  "factory_state_at_stop": {
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4"
+    ],
+    "active_work_items": [
+      {
+        "terminal": "T1",
+        "ea": "QM5_9953",
+        "phase": "Q02",
+        "symbol": "AUDUSD.DWX"
+      },
+      {
+        "terminal": "T2",
+        "ea": "QM5_12781",
+        "phase": "Q07",
+        "symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1"
+      },
+      {
+        "terminal": "T3",
+        "ea": "QM5_10248",
+        "phase": "Q06",
+        "symbol": "NDX.DWX"
+      },
+      {
+        "terminal": "T4",
+        "ea": "QM5_12958",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX"
+      }
+    ],
+    "t_live_process_observed": true,
+    "t_live_action_taken": false
+  },
+  "queue_mutation": "none",
+  "reason": "Backtest CPU ceiling reached for the remaining non-duplicate basket work; strict FX cointegration survivors are not Q02-blocked, and every clean cointegration continuation is already pending or active.",
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "new_backtest_enqueued": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
