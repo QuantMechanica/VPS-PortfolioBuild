@@ -1,0 +1,84 @@
+{
+  "task_id": "d33cf15b-253d-4ae3-8d0a-f83705bab74f",
+  "ea_id": "QM5_12913",
+  "slug": "xti-12m-carry",
+  "strategy": "WTI D1 broker-swap carry with 12M adverse-drift guard",
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12913_xti-12m-carry",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12913_xti-12m-carry\\QM5_12913_xti-12m-carry.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12913_xti-12m-carry\\QM5_12913_xti-12m-carry.ex5",
+  "ex5_sha256": "2fe8a18a49172a062b08e81f5d207ee0aaf94232b5ea1214d5e7cebacc71fc22",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12913_xti-12m-carry\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12913_xti-12m-carry.md",
+  "source_id": "KOIJEN-CARRY-2018",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12913_xti-12m-carry\\sets\\QM5_12913_xti-12m-carry_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "0a0a5baed7593b021fcf62145449f34b8ce122969ead773723b01b0743efb5e5",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 129130000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12913_xti-12m-carry/QM5_12913_xti-12m-carry.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260702_102836\\QM5_12913_xti-12m-carry.compile.log",
+    "ex5_size_bytes": 298878
+  },
+  "build_check": {
+    "command": "framework/scripts/build_check.ps1 -EALabel QM5_12913_xti-12m-carry -RepoRoot C:\\QM\\repo -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 18,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260702_103215.json",
+    "warning_note": "Warnings are two expected .DWX swap-usage advisories for the carry signal/fallback plus shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "pre_compile_validation": {
+    "card_schema_lint": "PASS",
+    "spec_doc": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_guardrails": "PASS"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet Q02 enqueue is the smoke/baseline path for this build; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": null,
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "notes": "Completed a structural D1 WTI carry sleeve from Koijen et al. Carry (JFE 2018). Direction comes from broker swap carry with a deterministic zero-swap short fallback for .DWX tester ties; 12M return is only an adverse-drift guard. This is distinct from existing XTI RSI/pullback, WTI trend/anchor, event/calendar/roll/refinery, XTI/XNG, WTI/metals, XNG, XAU/XAG, and index/metal sleeves. Q02 must validate XTIUSD.DWX trade generation, costs, PF/DD, and correlation.",
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "fd3c1f85-6c3d-4ce0-9599-5d07544c084f",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12913_xti-12m-carry\\sets\\QM5_12913_xti-12m-carry_XTIUSD.DWX_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "created_at_utc": "2026-07-02T10:33:13+00:00"
+  }
+}
