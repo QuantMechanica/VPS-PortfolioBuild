@@ -1,0 +1,32 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        10718
+; ea_slug:      edgelab-regime-filtered-carry
+; ea_version:   v5.0
+; set_version:  s20260702-001
+; symbol:       QM5_10718_FX8_BASKET_D1
+; host_symbol:  EURUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   3d98131653a509b930cd647301c6c667d2a9f66703b3b1966ad3ecd0aee8a693
+; author:       Development
+; date:         2026-07-02
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=500
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_mode=0
+qm_friday_close_enabled=false
+qm_friday_close_hour_broker=21
+strategy_rebalance_dow=1
+strategy_atr_period=20
+strategy_atr_sl_mult=2.0
+strategy_deviation_points=30
+strategy_regime_enabled=true
+strategy_vol_window=20
+strategy_regime_lookback_days=252
+strategy_regime_vol_pct=0.50

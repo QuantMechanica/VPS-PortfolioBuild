@@ -1,5 +1,5 @@
 {
-  "logical_symbol": "FX8_BASKET_D1",
+  "logical_symbol": "QM5_10718_FX8_BASKET_D1",
   "host_symbol": "EURUSD.DWX",
   "host_timeframe": "D1",
   "basket_symbols": [

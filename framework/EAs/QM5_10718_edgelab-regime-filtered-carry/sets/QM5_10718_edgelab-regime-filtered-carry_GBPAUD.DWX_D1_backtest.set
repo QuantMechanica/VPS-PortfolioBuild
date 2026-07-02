@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        10718
 ; ea_slug:      edgelab-regime-filtered-carry
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   231592b3fb33759b9f05d1ecbee6992a9a32293364692e97dffd9129e3eaef9a
+; build_hash:   06a96aa5741fe2d9a162f80edb9b05e8e85ee1c593dc7e239a80658ea60a97dc
 ; author:       Development
 ; date:         2026-05-22
 ;==========================================================

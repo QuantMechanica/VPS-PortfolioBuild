@@ -127,7 +127,7 @@ bool QM10718_PairCarry(const string base, const string quote, double &out_carry)
    const double swap = inv ? SymbolInfoDouble(sym, SYMBOL_SWAP_SHORT)
                            : SymbolInfoDouble(sym, SYMBOL_SWAP_LONG);
    const double point = SymbolInfoDouble(sym, SYMBOL_POINT);
-   const double px = iClose(sym, PERIOD_D1, 1);
+   const double px = iClose(sym, PERIOD_D1, 1); // perf-allowed: bounded cross-symbol D1 close for carry normalization, called only from weekly rebalance after QM_IsNewBar.
    if(point <= 0.0 || px <= 0.0)
       return false;
    out_carry = (swap * point) / px;
@@ -185,8 +185,8 @@ bool QM10718_SymVol(const string sym, const int window,
    for(int k = 0; k < window; ++k)
      {
       const int sh = endShift + k;
-      const double c0 = iClose(sym, PERIOD_D1, sh);
-      const double c1 = iClose(sym, PERIOD_D1, sh + 1);
+      const double c0 = iClose(sym, PERIOD_D1, sh); // perf-allowed: bounded D1 basket-vol return window, called only after QM_IsNewBar.
+      const double c1 = iClose(sym, PERIOD_D1, sh + 1); // perf-allowed: bounded D1 basket-vol return window, called only after QM_IsNewBar.
       if(c0 <= 0.0 || c1 <= 0.0)
          return false;
       const double r = (c0 / c1) - 1.0;
