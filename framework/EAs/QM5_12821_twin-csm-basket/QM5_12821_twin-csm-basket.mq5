@@ -722,7 +722,11 @@ void QM12821_CloseOnRankingDecay()
       return;
 
    QM_CSMReading d1;
-   if(!QM_CSM_LoadStrength(PERIOD_D1, d1, 1))
+   // shift 0, NOT 1: the basket was selected on TODAY's forming D1 bar (video
+   // definition: %-change from daily open). Checking yesterday's closed bar
+   // asked a different question and closed every basket at the first exit
+   // evaluation (2024 A/B: median hold 0.6h, PF 0.61).
+   if(!QM_CSM_LoadStrength(PERIOD_D1, d1, 0))
       return;
 
    const int ranked_idx = (g_active_direction > 0) ? d1.strong_idx : d1.weak_idx;
