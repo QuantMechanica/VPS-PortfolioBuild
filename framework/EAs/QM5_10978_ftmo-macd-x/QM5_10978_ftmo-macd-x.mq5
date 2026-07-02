@@ -308,7 +308,17 @@ void Strategy_ManageOpenPosition()
 
    const double initial_risk = MathAbs(tp - open_price) / strategy_take_profit_r;
    const double moved = is_buy ? (market - open_price) : (open_price - market);
-   if(initial_risk > 0.0 && moved >= initial_risk * strategy_breakeven_trigger_r)
+   if(initial_risk <= 0.0 || moved < initial_risk * strategy_breakeven_trigger_r)
+      return;
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
+      return;
+
+   const bool needs_breakeven = (sl <= 0.0) ||
+                                (is_buy ? (sl < open_price - point * 0.5)
+                                        : (sl > open_price + point * 0.5));
+   if(needs_breakeven)
       QM_TM_MoveSL(ticket, open_price, "ftmo_macd_x_be_after_1_2r");
   }
 
