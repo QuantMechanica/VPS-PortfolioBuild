@@ -96,6 +96,52 @@ def queue_status(sqlite_path: Path, limit: int = 5) -> dict[str, Any]:
                     (max(1, int(limit)),),
                 ).fetchall()
             ]
+        elif "work_items" in tables:
+            payload["schema"] = "work_items"
+            rows = conn.execute("SELECT status, COUNT(*) FROM work_items GROUP BY status").fetchall()
+            payload["counts"] = {str(status): int(count) for status, count in rows}
+            payload["queued_top"] = [
+                {
+                    "work_item_id": str(row[0]),
+                    "ea_id": str(row[1]),
+                    "phase": str(row[2]),
+                    "symbol": str(row[3]),
+                    "status": str(row[4]),
+                    "updated_at": str(row[5] or ""),
+                    "created_at": str(row[6] or ""),
+                }
+                for row in conn.execute(
+                    """
+                    SELECT id,ea_id,phase,symbol,status,updated_at,created_at
+                    FROM work_items
+                    WHERE status='pending'
+                    ORDER BY updated_at ASC, created_at ASC, id ASC
+                    LIMIT ?
+                    """,
+                    (max(1, int(limit)),),
+                ).fetchall()
+            ]
+            payload["dispatched_top"] = [
+                {
+                    "work_item_id": str(row[0]),
+                    "ea_id": str(row[1]),
+                    "phase": str(row[2]),
+                    "symbol": str(row[3]),
+                    "claimed_by": str(row[4] or ""),
+                    "status": str(row[5]),
+                    "updated_at": str(row[6] or ""),
+                }
+                for row in conn.execute(
+                    """
+                    SELECT id,ea_id,phase,symbol,claimed_by,status,updated_at
+                    FROM work_items
+                    WHERE status='active'
+                    ORDER BY updated_at DESC, id DESC
+                    LIMIT ?
+                    """,
+                    (max(1, int(limit)),),
+                ).fetchall()
+            ]
         elif "mt5_job_queue" in tables:
             payload["schema"] = "legacy_saturation"
             rows = conn.execute("SELECT status, COUNT(*) FROM mt5_job_queue GROUP BY status").fetchall()
