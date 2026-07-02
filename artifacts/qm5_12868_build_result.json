@@ -1,0 +1,113 @@
+{
+  "task_id": "codex-direct-QM5_12868-20260702T012416Z",
+  "record_build_used": false,
+  "record_build_skip_reason": "No pre-existing farm build_ea task was allocated for this headless mission; Q02 was enqueued via farmctl._auto_enqueue_q02_for_build with the same logical-basket payload shape.",
+  "ea_id": "QM5_12868",
+  "slug": "cme-gassilver-rspr",
+  "strategy": "XNG/XAG D1 natural gas/silver return-spread reversion basket",
+  "strategy_id": "CME-GAS-SILVER-RELVAL-2026_S03",
+  "source_id": "CME-GAS-SILVER-RELVAL-2026",
+  "source_links": [
+    "https://www.cmegroup.com/markets/energy/natural-gas/natural-gas.html",
+    "https://www.cmegroup.com/markets/metals/precious/silver.html"
+  ],
+  "logical_symbol": "QM5_12868_XNG_XAG_RSPREAD_D1",
+  "symbols": [
+    "XNGUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12868_cme-gassilver-rspr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12868_cme-gassilver-rspr\\QM5_12868_cme-gassilver-rspr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12868_cme-gassilver-rspr\\QM5_12868_cme-gassilver-rspr.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12868_cme-gassilver-rspr\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12868_cme-gassilver-rspr.md",
+  "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\CME-GAS-SILVER-RELVAL-2026\\source.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12868_cme-gassilver-rspr\\basket_manifest.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12868_cme-gassilver-rspr\\sets\\QM5_12868_cme-gassilver-rspr_QM5_12868_XNG_XAG_RSPREAD_D1_D1_backtest.set"
+  ],
+  "setfile_build_hash": "af3614cdc4657404652fba13cc54862e5cf2abf396a60ebcbfb5bd96c0390095",
+  "hashes_sha256": {
+    "QM5_12868_cme-gassilver-rspr.mq5": "5fd45dbcbda23a24a5cc1fef978f3d49505e042ae3977329a27a3c5c65be75ea",
+    "basket_manifest.json": "e8cbbda55e6171e7093dad2f71ab6358b4aa3a0fe6743ee82c52ebc5936f7363",
+    "QM5_12868_cme-gassilver-rspr_QM5_12868_XNG_XAG_RSPREAD_D1_D1_backtest.set": "03f872af0ce0a2aee72f4ca8d3b73d53c5b7ca65f3c7ef13a1e16eb2cb72db2f",
+    "QM5_12868_cme-gassilver-rspr.md": "81b1026dbd6ae565ad0ed533f52c7b9e24715710ee9f67f5b2b7d57bfac6dfcc",
+    "QM5_12868_cme-gassilver-rspr.ex5": "fd76f1f22d5acf92c73219e6fa9811cbef45dfc258497083d8d859ddf760a400",
+    "source.md": "24471d206a4d5ef7a590ad3625979904646026f658119261ba7e2928dfd46935",
+    "SPEC.md": "276ec40a76c8c18fb886f17922ea846cede243b85a4a9599ae1670f69e12a4c6"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XNGUSD.DWX",
+        "magic": 128680000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "XAGUSD.DWX",
+        "magic": 128680001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12868_cme-gassilver-rspr/QM5_12868_cme-gassilver-rspr.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260702_012402\\QM5_12868_cme-gassilver-rspr.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260702_012402\\summary.csv",
+    "ex5_size_bytes": 303972
+  },
+  "build_check": {
+    "command": "framework/scripts/build_check.ps1 -EALabel QM5_12868_cme-gassilver-rspr -RepoRoot C:/QM/repo -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260702_012416.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "q02_enqueue": {
+    "method": "farmctl._auto_enqueue_q02_for_build",
+    "status": "enqueued",
+    "work_item_id": "377ea635-89ee-4398-abfc-b3e2df0d5d90",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "QM5_12868_XNG_XAG_RSPREAD_D1",
+    "host_symbol": "XNGUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_symbols": [
+      "XNGUSD.DWX",
+      "XAGUSD.DWX"
+    ],
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12868_cme-gassilver-rspr\\sets\\QM5_12868_cme-gassilver-rspr_QM5_12868_XNG_XAG_RSPREAD_D1_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "created_at_utc": "2026-07-02T03:25:35+02:00",
+    "portfolio_scope": "basket",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000
+  },
+  "smoke_result": "deferred_to_q02",
+  "smoke_skipped_reason": "Paced fleet Q02 was enqueued; no manual MT5 backtest was launched from this session.",
+  "non_duplicate_reason": "XNG/XAG return-spread reversion uses a fixed-window relative-return z-score. It is distinct from QM5_12826 absolute XNG/XAG price-ratio level reversion, QM5_12827 gas/silver ratio breakout, QM5_12824 gas/gold ratio reversion, XTI/XNG relative-value/VCB sleeves, XNG single-leg event/calendar sleeves, XAU/XAG return-spread, and QM5_12567 commodity RSI logic.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false
+  },
+  "notes": "Completed a new low-frequency market-neutral natural gas/silver relative-value sleeve. Q02 must validate basket history, fills, and correlation behavior before any portfolio consideration."
+}
