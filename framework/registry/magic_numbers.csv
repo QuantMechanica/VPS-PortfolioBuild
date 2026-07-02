@@ -14281,3 +14281,14 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9507,carver-breakout,6,GDAXI.DWX,95070006,2026-07-02,Codex,active
 9507,carver-breakout,7,UK100.DWX,95070007,2026-07-02,Codex,active
 12961,wti-sep-prem,0,XTIUSD.DWX,129610000,2026-07-02,Codex,active
+12914,xau-weekly-donchian-swing,0,XAUUSD.DWX,129140000,2026-07-02,Claude,active
+12915,sp500-weekly-oversold-swing,0,SP500.DWX,129150000,2026-07-02,Claude,active
+12916,chfjpy-carry-trend-swing,0,CHFJPY.DWX,129160000,2026-07-02,Claude,active
+12917,xti-driving-season-swing,0,XTIUSD.DWX,129170000,2026-07-02,Claude,active
+12958,nnfx-hma-wae-swing,0,XAUUSD.DWX,129580000,2026-07-02,Claude,active
+12958,nnfx-hma-wae-swing,1,GDAXI.DWX,129580001,2026-07-02,Claude,active
+12958,nnfx-hma-wae-swing,2,EURJPY.DWX,129580002,2026-07-02,Claude,active
+12959,elder-triple-screen-swing,0,NDX.DWX,129590000,2026-07-02,Claude,active
+12959,elder-triple-screen-swing,1,XAUUSD.DWX,129590001,2026-07-02,Claude,active
+12960,keltner-pullback-swing,0,SP500.DWX,129600000,2026-07-02,Claude,active
+12960,keltner-pullback-swing,1,XAGUSD.DWX,129600001,2026-07-02,Claude,active
