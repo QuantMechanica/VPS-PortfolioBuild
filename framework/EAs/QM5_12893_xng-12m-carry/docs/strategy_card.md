@@ -4,7 +4,7 @@ slug: xng-12m-carry
 type: strategy
 strategy_id: KOIJEN_CARRY_2018_XNG_S01
 source_id: KOIJEN-CARRY-2018
-source_citation: "Koijen, R. S. J., Moskowitz, T. J., Pedersen, L. H. and Vrugt, E. B. (2018). Carry. Journal of Financial Economics, 127(2), 197-225. DOI https://doi.org/10.1016/j.jfineco.2017.11.002; NBER working paper https://www.nber.org/papers/w19325."
+source_citation: "Koijen, R. S. J., Moskowitz, T. J., Pedersen, L. H. and Vrugt, E. B. (2018). Carry. Journal of Financial Economics, 127(2), 197-225. DOI https://doi.org/10.1016/j.jfineco.2017.11.002; NBER working paper https://www.nber.org/papers/w19325. EIA, What is the natural gas futures market?, https://www.eia.gov/todayinenergy/detail.php?id=62605."
 target_symbols: [XNGUSD.DWX]
 timeframes: [D1]
 status: APPROVED
@@ -23,9 +23,11 @@ This build-side card copy follows
 
 The EA trades `XNGUSD.DWX` on D1. Direction is set by the broker swap side:
 long when long swap is better than short swap, short when short swap is better
-than long swap. A 12-month D1 return guard blocks carry trades that are fighting
-an extreme adverse drift. Entries are checked on the configured weekly rebalance
-weekday, use an ATR hard stop, and close on max hold or carry-side flip.
+than long swap. If `.DWX` tester swaps are tied at zero, it uses the documented
+structural short-carry fallback. A 12-month D1 return guard blocks carry trades
+that are fighting an extreme adverse drift. Entries are checked on the
+configured weekly rebalance weekday, use an ATR hard stop, and close on max hold
+or carry-side flip.
 
 Backtests use `RISK_FIXED=1000`. No live manifest, `T_Live` file, portfolio
 gate, or AutoTrading setting is touched by this build.

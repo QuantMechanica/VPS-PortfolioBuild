@@ -44,6 +44,7 @@ input int    strategy_rebalance_weekday     = 1;
 input int    strategy_return_lookback_d1    = 252;
 input double strategy_max_adverse_return_pct = 25.0;
 input double strategy_min_swap_advantage    = 0.0;
+input int    strategy_zero_swap_fallback_direction = -1;
 input int    strategy_atr_period            = 20;
 input double strategy_atr_sl_mult           = 3.5;
 input int    strategy_max_hold_days         = 5;
@@ -113,7 +114,12 @@ bool Strategy_LoadCarryState(int &direction, double &swap_edge, double &return_1
    else if(-diff > min_edge)
       direction = -1;
    else
-      return false;
+     {
+      const bool zero_swap_tie = (MathAbs(swap_long) <= 0.0000001 && MathAbs(swap_short) <= 0.0000001);
+      if(!zero_swap_tie || (strategy_zero_swap_fallback_direction != 1 && strategy_zero_swap_fallback_direction != -1))
+         return false;
+      direction = strategy_zero_swap_fallback_direction;
+     }
    swap_edge = MathAbs(diff);
 
    const int lookback = MathMax(21, strategy_return_lookback_d1);
@@ -193,6 +199,8 @@ bool Strategy_NoTradeFilter()
    if(strategy_max_adverse_return_pct < 0.0)
       return true;
    if(strategy_min_swap_advantage < 0.0)
+      return true;
+   if(strategy_zero_swap_fallback_direction != -1 && strategy_zero_swap_fallback_direction != 0 && strategy_zero_swap_fallback_direction != 1)
       return true;
    if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return true;

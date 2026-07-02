@@ -10,9 +10,12 @@
 
 This EA implements a structural natural-gas carry sleeve on `XNGUSD.DWX`.
 Once per configured broker weekday on D1, it compares the broker's long and
-short swap values and enters the side with better carry. A 12-month D1 return
-guard blocks long carry after extreme negative drift and short carry after
-extreme positive drift, so price history is a risk guard, not the signal source.
+short swap values and enters the side with better carry. If `.DWX` backtest
+symbols expose both swap fields as zero, the EA uses a documented structural
+short-carry fallback so the test harness does not collapse to zero trades. A
+12-month D1 return guard blocks long carry after extreme negative drift and
+short carry after extreme positive drift, so price history is a risk guard, not
+the signal source.
 
 The strategy is intentionally not a duplicate of the existing XNG family:
 `QM5_12567` uses cumulative RSI/pullback logic, `QM5_12804` uses 12-month
@@ -27,6 +30,7 @@ and the storage/weather/event sleeves use calendar or EIA event timing.
 | `strategy_return_lookback_d1` | 252 | 189-315 | D1 return lookback for adverse-drift guard |
 | `strategy_max_adverse_return_pct` | 25.0 | 15-40 | Max adverse 12M drift allowed against carry side |
 | `strategy_min_swap_advantage` | 0.0 | 0 | Minimum long-vs-short swap edge |
+| `strategy_zero_swap_fallback_direction` | -1 | -1/0/1 | Direction used when tester swap fields are tied at zero |
 | `strategy_atr_period` | 20 | 14-30 | ATR period for hard stop |
 | `strategy_atr_sl_mult` | 3.5 | 2.5-5.0 | ATR stop distance multiplier |
 | `strategy_max_hold_days` | 5 | 3-7 | Stale-position time exit |
@@ -52,6 +56,9 @@ and the storage/weather/event sleeves use calendar or EIA event timing.
 Koijen, R. S. J., Moskowitz, T. J., Pedersen, L. H. and Vrugt, E. B. (2018).
 "Carry." Journal of Financial Economics, 127(2), 197-225.
 DOI: https://doi.org/10.1016/j.jfineco.2017.11.002.
+
+U.S. Energy Information Administration, "What is the natural gas futures
+market?", https://www.eia.gov/todayinenergy/detail.php?id=62605.
 
 ## 7. Risk Model
 

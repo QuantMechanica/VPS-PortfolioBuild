@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d6c3b62bf7daeadbb32934752315e035082b7f693028fad89a992a6bbec97bd9
+; build_hash:   dbb90911efc4155b0aaa4c6e1544217b99cf7f55700862ae112afa47e53c5077
 ; author:       Development
 ; date:         2026-07-02
 ;==========================================================
@@ -25,6 +25,7 @@ strategy_rebalance_weekday=1
 strategy_return_lookback_d1=252
 strategy_max_adverse_return_pct=25.0
 strategy_min_swap_advantage=0.0
+strategy_zero_swap_fallback_direction=-1
 strategy_atr_period=20
 strategy_atr_sl_mult=3.5
 strategy_max_hold_days=5

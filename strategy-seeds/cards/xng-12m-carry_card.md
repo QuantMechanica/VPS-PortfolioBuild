@@ -4,7 +4,7 @@ slug: xng-12m-carry
 type: strategy
 strategy_id: KOIJEN_CARRY_2018_XNG_S01
 source_id: KOIJEN-CARRY-2018
-source_citation: "Koijen, R. S. J., Moskowitz, T. J., Pedersen, L. H. and Vrugt, E. B. (2018). Carry. Journal of Financial Economics, 127(2), 197-225. DOI https://doi.org/10.1016/j.jfineco.2017.11.002; NBER working paper https://www.nber.org/papers/w19325."
+source_citation: "Koijen, R. S. J., Moskowitz, T. J., Pedersen, L. H. and Vrugt, E. B. (2018). Carry. Journal of Financial Economics, 127(2), 197-225. DOI https://doi.org/10.1016/j.jfineco.2017.11.002; NBER working paper https://www.nber.org/papers/w19325. EIA, What is the natural gas futures market?, https://www.eia.gov/todayinenergy/detail.php?id=62605."
 source_citations:
   - "Koijen, R. S. J., Moskowitz, T. J., Pedersen, L. H. and Vrugt, E. B. (2018). Carry. Journal of Financial Economics, 127(2), 197-225."
 sources:
@@ -14,6 +14,7 @@ concepts:
   - "[[concepts/natural-gas-cfd-carry]]"
 indicators:
   - "[[indicators/broker-swap]]"
+  - "[[indicators/structural-zero-swap-fallback]]"
   - "[[indicators/rolling-return]]"
   - "[[indicators/atr]]"
 strategy_type_flags: [carry-direction, atr-hard-stop, time-stop, symmetric-long-short, low-frequency]
@@ -54,9 +55,15 @@ g0_approval_reasoning: "R1 PASS peer-reviewed carry source; R2 PASS deterministi
 
 Koijen, Moskowitz, Pedersen, and Vrugt define carry as an ex-ante return
 component observable before price movement and show that carry predicts returns
-across asset classes, including commodities. This card ports the concept to the
-Darwinex natural-gas CFD by using the broker's long-vs-short swap values as the
-observable carry side, while using a 12-month price-return guard only to avoid
+across asset classes, including commodities. EIA describes the natural-gas
+futures curve as capable of contango or backwardation depending on supply,
+demand, storage, and the starting point of spot prices. This card ports the
+concept to the Darwinex natural-gas CFD by using the broker's long-vs-short swap
+values as the observable carry side when available. Because `.DWX` tester
+symbols can expose both swap fields as zero, the backtest-safe tie case uses a
+fixed structural short-carry fallback (`strategy_zero_swap_fallback_direction =
+-1`) so Q02 tests a deterministic natural-gas carry sleeve instead of a
+zero-trade harness artifact. A 12-month price-return guard is used only to avoid
 holding carry against an extreme adverse drift.
 
 This is deliberately different from:
@@ -92,6 +99,9 @@ This is deliberately different from:
     strategy_min_swap_advantage`.
   - Short side if `SYMBOL_SWAP_SHORT - SYMBOL_SWAP_LONG >
     strategy_min_swap_advantage`.
+  - If both swap fields are exactly zero and tied, use
+    `strategy_zero_swap_fallback_direction` (default `-1`, structural short
+    carry) so `.DWX` backtests remain trade-generating.
   - Otherwise no trade.
 - Compute `return_12m = ln(close[1] / close[1 + strategy_return_lookback_d1])`.
 - Block long carry if `return_12m` is below
@@ -143,6 +153,9 @@ This is deliberately different from:
 - name: strategy_min_swap_advantage
   default: 0.0
   sweep_range: [0.0]
+- name: strategy_zero_swap_fallback_direction
+  default: -1
+  sweep_range: [-1, 0, 1]
 - name: strategy_atr_period
   default: 20
   sweep_range: [14, 20, 30]
@@ -191,10 +204,10 @@ predictor; Q02+ must validate the deterministic Darwinex `XNGUSD.DWX` port.
 modules_used:
   no_trade:
     used: true
-    notes: "XNGUSD.DWX D1 only, slot 0, valid lookbacks, swap availability, spread cap, framework news, kill-switch, and Friday close."
+    notes: "XNGUSD.DWX D1 only, slot 0, valid lookbacks, swap validity or zero-swap fallback, spread cap, framework news, kill-switch, and Friday close."
   trade_entry:
     used: true
-    notes: "Weekly D1 broker-swap carry direction with 12M adverse-trend guard."
+    notes: "Weekly D1 broker-swap carry direction with deterministic structural short fallback for zero-swap tester ties and 12M adverse-trend guard."
   trade_management:
     used: true
     notes: "Max-hold stale-position guard and carry-side flip exit."
