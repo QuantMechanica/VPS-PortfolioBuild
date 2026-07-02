@@ -1,0 +1,274 @@
+{
+  "task_id": "d89c0330-bcb1-45da-9f86-abcd839b6210",
+  "ea_id": "QM5_9571",
+  "slug": "williams-smash-day-failure-h4",
+  "strategy": "Williams failed Smash-Day reversal on H4",
+  "source_id": "6e967762-b26d-59a3-b076-35c17f2e7c36",
+  "source_links": [
+    "https://www.forexfactory.com/thread/post/14002850"
+  ],
+  "symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "AUDUSD.DWX",
+    "USDCAD.DWX",
+    "USDCHF.DWX",
+    "NZDUSD.DWX",
+    "XAUUSD.DWX",
+    "XTIUSD.DWX",
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "UK100.DWX"
+  ],
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "AUDUSD.DWX",
+    "USDCAD.DWX",
+    "USDCHF.DWX",
+    "NZDUSD.DWX",
+    "XAUUSD.DWX",
+    "XTIUSD.DWX",
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "UK100.DWX"
+  ],
+  "symbols_excluded": [
+    {
+      "symbol": "FRA40.DWX",
+      "reason": "Approved-card target absent from framework/registry/dwx_symbol_matrix.csv"
+    },
+    {
+      "symbol": "JP225.DWX",
+      "reason": "Approved-card target absent from framework/registry/dwx_symbol_matrix.csv"
+    }
+  ],
+  "host_timeframe": "H4",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_9571_williams-smash-day-failure-h4",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9571_williams-smash-day-failure-h4\\QM5_9571_williams-smash-day-failure-h4.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9571_williams-smash-day-failure-h4\\QM5_9571_williams-smash-day-failure-h4.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9571_williams-smash-day-failure-h4\\SPEC.md",
+  "card_ref_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9571_williams-smash-day-failure-h4\\docs\\strategy_card.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9571_williams-smash-day-failure-h4.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9571_williams-smash-day-failure-h4\\sets\\QM5_9571_williams-smash-day-failure-h4_EURUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9571_williams-smash-day-failure-h4\\sets\\QM5_9571_williams-smash-day-failure-h4_GBPUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9571_williams-smash-day-failure-h4\\sets\\QM5_9571_williams-smash-day-failure-h4_USDJPY.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9571_williams-smash-day-failure-h4\\sets\\QM5_9571_williams-smash-day-failure-h4_AUDUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9571_williams-smash-day-failure-h4\\sets\\QM5_9571_williams-smash-day-failure-h4_USDCAD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9571_williams-smash-day-failure-h4\\sets\\QM5_9571_williams-smash-day-failure-h4_USDCHF.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9571_williams-smash-day-failure-h4\\sets\\QM5_9571_williams-smash-day-failure-h4_NZDUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9571_williams-smash-day-failure-h4\\sets\\QM5_9571_williams-smash-day-failure-h4_XAUUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9571_williams-smash-day-failure-h4\\sets\\QM5_9571_williams-smash-day-failure-h4_XTIUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9571_williams-smash-day-failure-h4\\sets\\QM5_9571_williams-smash-day-failure-h4_GDAXI.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9571_williams-smash-day-failure-h4\\sets\\QM5_9571_williams-smash-day-failure-h4_NDX.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9571_williams-smash-day-failure-h4\\sets\\QM5_9571_williams-smash-day-failure-h4_WS30.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9571_williams-smash-day-failure-h4\\sets\\QM5_9571_williams-smash-day-failure-h4_UK100.DWX_H4_backtest.set"
+  ],
+  "mq5_sha256": "44ea07beb4a1dfcd2272afafe98a90afcd263d62080df769d5ad273542295b4f",
+  "ex5_sha256": "d246149590bb7110d61974bb0d710a9c764be8b5716b0372b911175e19ea67a4",
+  "setfile_sha256": {
+    "QM5_9571_williams-smash-day-failure-h4_EURUSD.DWX_H4_backtest.set": "a289dc38071f9c0c21c21bb2ba5d32c03d8dc9bb41a290a95f181d41b845b1bd",
+    "QM5_9571_williams-smash-day-failure-h4_GBPUSD.DWX_H4_backtest.set": "66eef48d0fad7f512c6dcc8aa7660e73a770520f70d6223bdebeaa20d4d10061",
+    "QM5_9571_williams-smash-day-failure-h4_USDJPY.DWX_H4_backtest.set": "2dcb104aba3ad8dfb35daaf08859781ea8d90ca755ff6c41526c316107aa8756",
+    "QM5_9571_williams-smash-day-failure-h4_AUDUSD.DWX_H4_backtest.set": "594da145468530aee691146f8af547a0e37f81086594e070878dbb081524c996",
+    "QM5_9571_williams-smash-day-failure-h4_USDCAD.DWX_H4_backtest.set": "d52e5edb03e43c223a637bbf5a9bd0594b9ba330a8f161ad49618709d89d9c9e",
+    "QM5_9571_williams-smash-day-failure-h4_USDCHF.DWX_H4_backtest.set": "3a498b7a0b6052c3c9dc220cb8c126484b1021fcab2afa94eed1b08d6d0535a8",
+    "QM5_9571_williams-smash-day-failure-h4_NZDUSD.DWX_H4_backtest.set": "87bab8fb335c3928b02b77cb55a8e52d38f53e56e0a27e3b7d8345745941efb5",
+    "QM5_9571_williams-smash-day-failure-h4_XAUUSD.DWX_H4_backtest.set": "3f892afb4ab70a85fc6a0167e39761eaa61745d4f14bd74ffabdb1cd2624a3dc",
+    "QM5_9571_williams-smash-day-failure-h4_XTIUSD.DWX_H4_backtest.set": "891ce16243616647be5f54c8a6f3f868c875feee80548cef25eee84976fe3df9",
+    "QM5_9571_williams-smash-day-failure-h4_GDAXI.DWX_H4_backtest.set": "0389cd80b12c57fc8bc7dbf39ebc68730ac305b2c88e1d72ef5e617f9b49c71c",
+    "QM5_9571_williams-smash-day-failure-h4_NDX.DWX_H4_backtest.set": "01c9b356f042944b37f19d97c2888e60d4515ea8f62b0cf844eb4005c7acccf3",
+    "QM5_9571_williams-smash-day-failure-h4_WS30.DWX_H4_backtest.set": "085715a438709091a3754331d0f556ff5898624f4108ff19b0d2878d4327c7cc",
+    "QM5_9571_williams-smash-day-failure-h4_UK100.DWX_H4_backtest.set": "9b0d7c7b27004cf2b65dda8e2302af7abe66293a38f7f22512ad6c68ab0a115e"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic_base": 95710000,
+  "magic": {
+    "target_magic_count": 13,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "EURUSD.DWX",
+        "magic": 95710000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "GBPUSD.DWX",
+        "magic": 95710001,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 2,
+        "symbol": "USDJPY.DWX",
+        "magic": 95710002,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 3,
+        "symbol": "AUDUSD.DWX",
+        "magic": 95710003,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 4,
+        "symbol": "USDCAD.DWX",
+        "magic": 95710004,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 5,
+        "symbol": "USDCHF.DWX",
+        "magic": 95710005,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 6,
+        "symbol": "NZDUSD.DWX",
+        "magic": 95710006,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 7,
+        "symbol": "XAUUSD.DWX",
+        "magic": 95710007,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 8,
+        "symbol": "XTIUSD.DWX",
+        "magic": 95710008,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 9,
+        "symbol": "GDAXI.DWX",
+        "magic": 95710009,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 10,
+        "symbol": "NDX.DWX",
+        "magic": 95710010,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 11,
+        "symbol": "WS30.DWX",
+        "magic": 95710011,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 12,
+        "symbol": "UK100.DWX",
+        "magic": 95710012,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "framework/scripts/compile_one.ps1 -EALabel QM5_9571_williams-smash-day-failure-h4 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260702_024156\\QM5_9571_williams-smash-day-failure-h4.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260702_024156\\summary.csv",
+    "ex5_size_bytes": 298708
+  },
+  "build_check": {
+    "command": "framework/scripts/build_check.ps1 -EALabel QM5_9571_williams-smash-day-failure-h4",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260702_024136.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "validations": {
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "magic_registry_rows_added": true,
+    "risk_fixed_setfiles": "PASS"
+  },
+  "smoke_result": "passed",
+  "smoke_report_path": "D:\\QM\\reports\\smoke\\QM5_9571\\20260702_024214\\summary.json",
+  "smoke_summary_path": "D:\\QM\\reports\\smoke\\QM5_9571\\20260702_024214\\summary.json",
+  "smoke_evidence_path": "D:\\QM\\reports\\framework\\22\\20260702_024214_QM5_9571_T8_EURUSD_DWX_run_smoke.md",
+  "smoke": {
+    "result": "PASS",
+    "reason_classes": [
+      "OK"
+    ],
+    "symbol": "EURUSD.DWX",
+    "period": "H4",
+    "year": 2024,
+    "terminal": "T8",
+    "total_trades": 17,
+    "profit_factor": 0.45,
+    "net_profit": -5260.48,
+    "min_trades_required": 5,
+    "oninit_failure_detected": false,
+    "run_status": "OK"
+  },
+  "blocked_reason": "",
+  "open_questions": [
+    "FRA40.DWX and JP225.DWX remain excluded until/if they are added to the local DWX symbol matrix."
+  ],
+  "non_duplicate_reason": "Failed Smash-Day next-bar reversal is distinct from the base Williams Smash-Day and three-day failure variants; the first Q02 wave adds broad FX/metal/energy/index coverage rather than another single index/metal survivor.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false
+  },
+  "notes": "Completed a diverse structural H4 build from approved card QM5_9571 and prepared it for record-build Q02 auto-enqueue.",
+  "completed_at_utc": "2026-07-02T02:44:51.7064512Z",
+  "q02_enqueue": {
+    "status": "enqueued",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "phase": "Q02",
+    "stage_policy": "record_build_result.auto_q02 stage-1 diversity wave",
+    "enqueued": [
+      {
+        "wi_id": "7d3a775a",
+        "symbol": "EURUSD.DWX",
+        "tf": "H4",
+        "setfile": "QM5_9571_williams-smash-day-failure-h4_EURUSD.DWX_H4_backtest.set"
+      },
+      {
+        "wi_id": "a3495a45",
+        "symbol": "GDAXI.DWX",
+        "tf": "H4",
+        "setfile": "QM5_9571_williams-smash-day-failure-h4_GDAXI.DWX_H4_backtest.set"
+      },
+      {
+        "wi_id": "b3faec44",
+        "symbol": "XAUUSD.DWX",
+        "tf": "H4",
+        "setfile": "QM5_9571_williams-smash-day-failure-h4_XAUUSD.DWX_H4_backtest.set"
+      }
+    ],
+    "deferred_symbols": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX",
+      "AUDUSD.DWX",
+      "USDCAD.DWX",
+      "USDCHF.DWX",
+      "NZDUSD.DWX",
+      "XTIUSD.DWX",
+      "NDX.DWX",
+      "WS30.DWX",
+      "UK100.DWX"
+    ]
+  }
+}

@@ -14232,3 +14232,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9352,pring-kst-trend-deviation-h4,2,XAUUSD.DWX,93520002,2026-07-02,Codex,active
 9352,pring-kst-trend-deviation-h4,3,NDX.DWX,93520003,2026-07-02,Codex,active
 12869,wti-ref-ramp-pb,0,XTIUSD.DWX,128690000,2026-07-02,Codex,active
+9571,williams-smash-day-failure-h4,0,EURUSD.DWX,95710000,2026-07-02,Codex,active
+9571,williams-smash-day-failure-h4,1,GBPUSD.DWX,95710001,2026-07-02,Codex,active
+9571,williams-smash-day-failure-h4,2,USDJPY.DWX,95710002,2026-07-02,Codex,active
+9571,williams-smash-day-failure-h4,3,AUDUSD.DWX,95710003,2026-07-02,Codex,active
+9571,williams-smash-day-failure-h4,4,USDCAD.DWX,95710004,2026-07-02,Codex,active
+9571,williams-smash-day-failure-h4,5,USDCHF.DWX,95710005,2026-07-02,Codex,active
+9571,williams-smash-day-failure-h4,6,NZDUSD.DWX,95710006,2026-07-02,Codex,active
+9571,williams-smash-day-failure-h4,7,XAUUSD.DWX,95710007,2026-07-02,Codex,active
+9571,williams-smash-day-failure-h4,8,XTIUSD.DWX,95710008,2026-07-02,Codex,active
+9571,williams-smash-day-failure-h4,9,GDAXI.DWX,95710009,2026-07-02,Codex,active
+9571,williams-smash-day-failure-h4,10,NDX.DWX,95710010,2026-07-02,Codex,active
+9571,williams-smash-day-failure-h4,11,WS30.DWX,95710011,2026-07-02,Codex,active
+9571,williams-smash-day-failure-h4,12,UK100.DWX,95710012,2026-07-02,Codex,active
