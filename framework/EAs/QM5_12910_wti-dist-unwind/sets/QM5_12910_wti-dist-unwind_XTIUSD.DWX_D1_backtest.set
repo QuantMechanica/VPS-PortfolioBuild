@@ -1,0 +1,35 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        12910
+; ea_slug:      wti-dist-unwind
+; ea_version:   v5.0
+; set_version:  s20260702-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   5a06679e54bf4048b4584f355291c92eac34768afda41c63f2ba52f733434ced
+; author:       Development
+; date:         2026-07-02
+;==========================================================
+qm_ea_id=12910
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_12910_wti-dist-unwind.md
+strategy_start_month=3
+strategy_start_day=1
+strategy_end_month=4
+strategy_end_day=30
+strategy_trend_period=63
+strategy_sma_slope_shift=10
+strategy_breakdown_lookback=8
+strategy_exit_channel=8
+strategy_atr_period=20
+strategy_atr_sl_mult=3.0
+strategy_max_hold_days=12
+strategy_max_spread_points=1000

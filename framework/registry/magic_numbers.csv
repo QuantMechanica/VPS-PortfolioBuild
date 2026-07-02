@@ -14264,3 +14264,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12893,xng-12m-carry,0,XNGUSD.DWX,128930000,2026-07-02,Codex,active
 12613,tsmom-3m-commodity-xauusd,0,XAUUSD.DWX,126130000,2026-07-02,Development,active
 12619,comm-reversal-4wk-xauusd,0,XAUUSD.DWX,126190000,2026-07-02,Development,active
+12910,wti-dist-unwind,0,XTIUSD.DWX,129100000,2026-07-02,Codex,active
