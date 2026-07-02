@@ -1,0 +1,108 @@
+{
+  "task_id": "e1433af3-dba2-485b-9cf8-78fa98056e02",
+  "ea_id": "QM5_12869",
+  "slug": "wti-ref-ramp-pb",
+  "strategy": "XTI D1 refinery-utilization ramp pullback continuation",
+  "strategy_id": "EIA-WTI-REFINERY-MAINT-2026_S03",
+  "source_id": "EIA-WTI-REFINERY-MAINT-2026",
+  "source_links": [
+    "https://www.eia.gov/petroleum/articles/refoutagesindex.php",
+    "https://www.eia.gov/todayinenergy/detail.php?id=61543"
+  ],
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "logical_symbol": "QM5_12869_XTI_REF_RAMP_PB_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12869_wti-ref-ramp-pb",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12869_wti-ref-ramp-pb\\QM5_12869_wti-ref-ramp-pb.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12869_wti-ref-ramp-pb\\QM5_12869_wti-ref-ramp-pb.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12869_wti-ref-ramp-pb\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12869_wti-ref-ramp-pb.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12869_wti-ref-ramp-pb_card.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12869_wti-ref-ramp-pb.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12869_wti-ref-ramp-pb\\sets\\QM5_12869_wti-ref-ramp-pb_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "36bfac593bcb80fe17c3e7728584be87171be821703fa7a8bac5f4c3a473f945",
+  "mq5_sha256": "1b4e90e46f63ec0622d69c21ed053b07135de9c16142a78ea11e6b342d3f0f25",
+  "ex5_sha256": "699d5cead96deba2c60411da5ed2a606960ef6dd4fc91052f3708fc9ba6e92db",
+  "setfile_current_sha256": "fde1e76b22996fd9aa2475015b93ca8ce1def868d71589734924fb5f8ead379c",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic_base": 128690000,
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 128690000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12869_wti-ref-ramp-pb/QM5_12869_wti-ref-ramp-pb.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260702_022442\\QM5_12869_wti-ref-ramp-pb.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260702_022442\\summary.csv",
+    "ex5_size_bytes": 299346,
+    "symbol_scope_verdict": "SINGLE_SYMBOL_OK"
+  },
+  "build_check": {
+    "command": "framework/scripts/build_check.ps1 -EALabel QM5_12869_wti-ref-ramp-pb -RepoRoot C:/QM/repo -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260702_022504.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "validations": {
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "magic_registry_rows_added": true
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "non_duplicate_reason": "May-July refinery-ramp pullback continuation is distinct from QM5_12593 refinery stretch fade, QM5_12763 refinery squeeze breakout, jet-fuel and gasoline driving-season sleeves, WPSR/Cushing/hurricane/OPEC/expiry/roll rules, XTI/XNG and metal ratio baskets, index exposure, and QM5_12567 commodity RSI logic.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false
+  },
+  "notes": "Completed a new low-frequency structural XTI refinery-ramp pullback continuation build and prepared it for Q02 via record-build auto-enqueue.",
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "6ac367ef-cb8e-473d-8b8b-56bcb9eec10e",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "XTIUSD.DWX",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12869_wti-ref-ramp-pb\\sets\\QM5_12869_wti-ref-ramp-pb_XTIUSD.DWX_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "attempt_count": 0,
+    "created_at_utc": "2026-07-02T02:27:03+00:00",
+    "portfolio_scope": "single_symbol",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000
+  }
+}
