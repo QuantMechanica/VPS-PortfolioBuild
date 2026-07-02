@@ -1,0 +1,56 @@
+{
+  "timestamp_utc": "2026-07-02T12:37:05+00:00",
+  "unit_of_work": "Q02 infra recovery and requeue",
+  "ea_id": "QM5_10044",
+  "ea_slug": "ff-vr-gap-fade",
+  "strategy_shape": "H1 structural FX gap-fade mean reversion",
+  "diversity_rationale": "registered USDJPY.DWX FX sleeve; not index, metal, XNG, or outright energy",
+  "source_status": {
+    "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10044_ff-vr-gap-fade.md",
+    "g0_status": "APPROVED",
+    "source_id": "6e967762-b26d-59a3-b076-35c17f2e7c36",
+    "r1_track_record": "PASS",
+    "r2_mechanical": "PASS",
+    "r3_data_available": "PASS",
+    "r4_ml_forbidden": "PASS"
+  },
+  "prior_failure": {
+    "work_item_id": "ad80461a-a2e9-4821-8e01-6eb3faf7bbff",
+    "phase": "Q02",
+    "symbol": "USDJPY.DWX",
+    "verdict": "INFRA_FAIL",
+    "reason": "setfile_missing",
+    "stale_setfile_path": "C:/QM/repo/framework/EAs/QM5_10044_ff-vr-gap-fade/sets/QM5_10044_ff-vr-gap-fade_USDJPY.DWX_M15_backtest.set",
+    "diagnosis": "The current approved card, SPEC, EA code, active magic row, and repo setfiles are H1. The failed work item referenced a stale M15 setfile path that is no longer a valid artifact."
+  },
+  "actions": {
+    "spec_validation": "PASS",
+    "build_check": "PASS",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260702_123600.json",
+    "compiled_ex5_sha256": "F1F41FADC20650C2001F099029E9AD861FE5EB25AA1606E615FC14261ECDB505",
+    "setfile_build_hashes_refreshed": {
+      "EURUSD.DWX_H1": "6235f6fdfa4902f4c345cc4f1a3812fef03940ed76bc3cd5d7b2edd26ee0d296",
+      "GBPUSD.DWX_H1": "c0cbf9ee173d742351f4711f293f103b7465075798c4baddb55d07ffacfba9a6",
+      "USDJPY.DWX_H1": "1408d96deb542bddbb369e8ad798c35d645bfb33535dfd00869d17c55a113e65",
+      "XAUUSD.DWX_H1": "31a7e445047170dd520d91cc58125fbffbbea775852212308a03f58b56288f35"
+    },
+    "farm_db_requeue": {
+      "db_path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+      "db_backup_before_requeue": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_10044_usdjpy_h1_requeue_20260702_123705Z.sqlite",
+      "new_work_item_id": "6ac2ec17-4ad3-43c0-84cb-c58ccd076ffe",
+      "phase": "Q02",
+      "status": "pending",
+      "symbol": "USDJPY.DWX",
+      "host_symbol": "USDJPY.DWX",
+      "host_timeframe": "H1",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_10044_ff-vr-gap-fade/sets/QM5_10044_ff-vr-gap-fade_USDJPY.DWX_H1_backtest.set",
+      "duplicate_guard": "inserted only after no pending or active QM5_10044 Q02 USDJPY.DWX row was found"
+    }
+  },
+  "safety": {
+    "manual_mt5_backtest_started": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false
+  }
+}
