@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_12868_XNG_XAG_RSPREAD_D1",
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XNGUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg XNG/XAG natural gas/silver return-spread reversion basket from the approved CME-GAS-SILVER-RELVAL-2026 source packet. The EA runs from the XNGUSD.DWX host setfile and reads both D1 close series to compute log-return spread over a fixed lookback. Q02 must evaluate the logical basket, not the standalone legs."
+  ]
+}
