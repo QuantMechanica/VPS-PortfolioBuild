@@ -44,8 +44,6 @@ input double strategy_atr_sl_mult         = 2.25;
 input int    strategy_max_hold_days       = 1;
 input int    strategy_max_spread_points   = 1200;
 
-int g_last_entry_day_key = 0;
-
 bool Strategy_IsBrentD1()
   {
    return (_Symbol == "XBRUSD.DWX" && _Period == PERIOD_D1);
@@ -56,13 +54,6 @@ int Strategy_DayKey(const datetime t)
    MqlDateTime dt;
    TimeToStruct(t, dt);
    return dt.year * 10000 + dt.mon * 100 + dt.day;
-  }
-
-int Strategy_Month(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.mon;
   }
 
 bool Strategy_HasOpenPosition()
@@ -86,9 +77,9 @@ void Strategy_CloseTimeExpiredPositions()
   {
    const int magic = QM_FrameworkMagic();
    const datetime now = TimeCurrent();
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 exit check behind new-bar gate.
-   const int current_month = (current_d1_bar > 0) ? Strategy_Month(current_d1_bar) : Strategy_Month(now);
-   const int current_day_key = (current_d1_bar > 0) ? Strategy_DayKey(current_d1_bar) : Strategy_DayKey(now);
+   const int current_month_key = QM_CalendarPeriodKey(PERIOD_MN1);
+   const int current_month = (current_month_key > 0) ? (current_month_key % 100) : 0;
+   const int current_day_key = QM_CalendarPeriodKey(PERIOD_D1);
    const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -103,8 +94,8 @@ void Strategy_CloseTimeExpiredPositions()
 
       const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
       const int opened_day_key = Strategy_DayKey(opened);
-      bool should_close = (current_month != strategy_entry_month);
-      if(current_day_key > opened_day_key)
+      bool should_close = (current_month > 0 && current_month != strategy_entry_month);
+      if(current_day_key > 0 && current_day_key > opened_day_key)
          should_close = true;
       if(opened > 0 && now - opened >= hold_seconds)
          should_close = true;
@@ -139,8 +130,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   Strategy_CloseTimeExpiredPositions();
-
    if(Strategy_HasOpenPosition())
       return false;
 
@@ -151,14 +140,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 entry calendar gate behind new-bar gate.
-   if(current_d1_bar <= 0)
+   const int month_key = QM_CalendarPeriodKey(PERIOD_MN1);
+   if(month_key <= 0)
       return false;
-   if(Strategy_Month(current_d1_bar) != strategy_entry_month)
-      return false;
-
-   const int day_key = Strategy_DayKey(current_d1_bar);
-   if(day_key <= 0 || day_key == g_last_entry_day_key)
+   if((month_key % 100) != strategy_entry_month)
       return false;
 
    const double atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
@@ -174,7 +159,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.reason = "BRENT_JANUARY_FADE_SHORT";
-   g_last_entry_day_key = day_key;
    return true;
   }
 
@@ -227,27 +211,12 @@ void OnTick()
   {
    if(!QM_KillSwitchCheck())
       return;
-
-   const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
-
    if(Strategy_NoTradeFilter())
       return;
 
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
+   // Management and exit run every tick, not gated by news (2026-07-02 binding rule).
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -263,6 +232,23 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // News gate: guards entry only.
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
