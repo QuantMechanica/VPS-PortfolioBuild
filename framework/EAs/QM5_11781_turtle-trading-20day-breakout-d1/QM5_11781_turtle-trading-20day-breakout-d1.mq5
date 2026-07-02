@@ -160,6 +160,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = 0.0;   // trend-following: no fixed target, exit via channel
    req.reason = (breakout_up ? "turtle_breakout_long" : "turtle_breakout_short");
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
@@ -265,15 +267,6 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -283,10 +276,9 @@ void OnTick()
    Strategy_ManageOpenPosition();
 
    // Closed-bar gate: consume the new-bar event ONCE and reuse for exit+entry.
-   if(!QM_IsNewBar())
-      return;
+   const bool is_new_bar = QM_IsNewBar();
 
-   if(Strategy_ExitSignal())
+   if(is_new_bar && Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
       for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -300,7 +292,21 @@ void OnTick()
         }
      }
 
-   QM_EquityStreamOnNewBar();
+   if(is_new_bar)
+      QM_EquityStreamOnNewBar();
+
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!is_new_bar)
+      return;
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

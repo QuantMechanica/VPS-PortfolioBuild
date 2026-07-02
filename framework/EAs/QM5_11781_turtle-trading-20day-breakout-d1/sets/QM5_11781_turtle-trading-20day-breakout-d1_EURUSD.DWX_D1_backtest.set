@@ -1,0 +1,27 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11781
+; ea_slug:      turtle-trading-20day-breakout-d1
+; ea_version:   v5.0
+; set_version:  s20260702-001
+; symbol:       EURUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   e47bf77089007ffd4d199dac5984a20f67c09d3a4178ad1cb9f28b568e95f1a8
+; author:       Development
+; date:         2026-07-02
+;==========================================================
+qm_ea_id=11781
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11781_turtle-trading-20day-breakout-d1.md
+strategy_entry_channel=20
+strategy_exit_channel=10
+strategy_atr_period=14
+strategy_sl_atr_mult=2.0
