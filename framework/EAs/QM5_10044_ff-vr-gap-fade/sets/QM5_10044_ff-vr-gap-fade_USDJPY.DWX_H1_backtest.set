@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        10044
 ; ea_slug:      ff-vr-gap-fade
@@ -10,14 +10,24 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   1408d96deb542bddbb369e8ad798c35d645bfb33535dfd00869d17c55a113e65
+; build_hash:   fc9fec5e4b8cb0ca55bff1f1be96d80641a200f492a50118ab849ce9320233af
 ; author:       Development
 ; date:         2026-06-06
 ;==========================================================
+qm_ea_id=10044
 qm_magic_slot_offset=2
+qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
@@ -31,4 +41,10 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10044_ff-vr-gap-fade.md
+strategy_min_gap_pips=10
+strategy_min_gap_atr_mult=0.35
+strategy_atr_period=14
+strategy_min_stop_pips=20
+strategy_stop_gap_mult=1.25
+strategy_max_hold_bars=12

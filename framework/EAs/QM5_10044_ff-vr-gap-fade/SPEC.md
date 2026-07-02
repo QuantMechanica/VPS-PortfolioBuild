@@ -4,7 +4,7 @@
 **Slug:** ff-vr-gap-fade
 **Source:** 6e967762-b26d-59a3-b076-35c17f2e7c36
 **Author of this spec:** Codex
-**Last revised:** 2026-06-06
+**Last revised:** 2026-07-02
 
 ---
 
@@ -94,3 +94,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-06 | Initial build from card | 625c673c-da7f-415e-ba71-a10eea2c8aec |
+| v2 | 2026-07-02 | Q02 infra repair | Prior Q02 work item ad80461a-a2e9-4821-8e01-6eb3faf7bbff failed on stale M15 setfile path; pending H1 retry 6ac2ec17-4ad3-43c0-84cb-c58ccd076ffe uses explicit framework and strategy inputs in all H1 backtest setfiles. |
