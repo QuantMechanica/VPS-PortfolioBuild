@@ -4,7 +4,7 @@
 **Slug:** `wti-feb-prem`
 **Source:** `GORSKA-WTI-CAL-2015`
 **Author of this spec:** Codex
-**Last revised:** 2026-06-27
+**Last revised:** 2026-07-02
 
 ## 1. Strategy Logic
 
@@ -62,3 +62,10 @@ https://ageconsearch.umn.edu/record/230857/files/2015_4_7.pdf.
 
 No live manifest, `T_Live` file, portfolio gate, or AutoTrading setting is
 touched by this build.
+
+## Revision History
+
+| Version | Date | Reason | Notes |
+|---|---|---|---|
+| v1 | 2026-06-27 | Initial build from card | first structural build |
+| v2 | 2026-07-02 | OnTick ordering fix per 2026-07-02 audit rule; remove duplicate CloseTimeExpired call from EntrySignal | eba2ee32-da67-477d-9cb7-7131b40c01ad |
