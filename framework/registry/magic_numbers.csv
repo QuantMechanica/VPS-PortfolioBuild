@@ -14223,3 +14223,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1530,connors-double-sevens-h4,5,WS30.DWX,15300005,2026-07-02,Codex,active
 1530,connors-double-sevens-h4,6,XAUUSD.DWX,15300006,2026-07-02,Codex,active
 1530,connors-double-sevens-h4,7,SP500.DWX,15300007,2026-07-02,Codex,active
+12867,brentgold-rspread,0,XBRUSD.DWX,128670000,2026-07-02,Codex,active
+12867,brentgold-rspread,1,XAUUSD.DWX,128670001,2026-07-02,Codex,active

@@ -3,7 +3,7 @@
 ; ea_id:        12867
 ; ea_slug:      brentgold-rspread
 ; ea_version:   v5.0
-; set_version:  s20260701-001
+; set_version:  s20260702-001
 ; symbol:       QM5_12867_XBR_XAU_RSPREAD_D1
 ; host_symbol:  XBRUSD.DWX
 ; timeframe:    D1
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   c44740290dade0b39b075499b004f4bcf1d4a12a5d9334a893a6fa0ec8c63458
+; build_hash:   9ca045e36b01021ad05d8f5219b78aef970cdc39d9c922b1de10ebd6279cfbc7
 ; author:       Development
 ; date:         2026-07-02
 ;==========================================================

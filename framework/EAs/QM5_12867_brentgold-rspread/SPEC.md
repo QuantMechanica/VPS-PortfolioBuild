@@ -20,8 +20,9 @@ so the basket sells Brent and buys gold. A high negative z-score buys Brent and
 sells gold. The package exits when the z-score reverts near zero, max hold
 expires, Friday close fires, an orphan leg appears, or a per-leg ATR stop is hit.
 
-This is not a duplicate of `QM5_12604_cme-oilgold-ratio`, which fades the
-absolute XBR/XAU log price ratio, or `QM5_12605_cme-oilgold-brk`, which follows a
+This is not a duplicate of `QM5_12863_oilgold-rspread`, which uses WTI as the
+oil leg. It is also not `QM5_12604_cme-oilgold-ratio`, which fades the absolute
+WTI/XAU log price ratio, or `QM5_12605_cme-oilgold-brk`, which follows a
 ratio-level breakout. This EA trades temporary D1 relative-return dislocation
 between Brent and gold.
 
@@ -58,7 +59,7 @@ between Brent and gold.
 - Expected package frequency: about 6-14 paired packages/year before Q02 proves
   or rejects the hypothesis.
 - Typical hold: several D1 bars to a few weeks.
-- Regime preference: short-lived relative return dislocations between oil and
+- Regime preference: short-lived relative return dislocations between Brent and
   gold where one leg has overrun the other.
 - Risk mode for Q02 backtests: `RISK_FIXED`.
 
@@ -68,8 +69,9 @@ CME Group, "Through the Lens of Gold", 2024, URL
 https://www.cmegroup.com/articles/2024/through-the-lens-of-gold.html.
 
 The source frames crude oil through gold as a relative-value lens. The EA uses
-that lineage to define the XBR/XAU pair and tests a fixed-window return-spread
-mechanization using Darwinex OHLC only. No source performance claim is imported.
+that lineage to define the XBR/XAU pair, with Brent as the crude-oil benchmark
+leg, and tests a fixed-window return-spread mechanization using Darwinex OHLC
+only. No source performance claim is imported.
 
 ## 7. Risk Model
 

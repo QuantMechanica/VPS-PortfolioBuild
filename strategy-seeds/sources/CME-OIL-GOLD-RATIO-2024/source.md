@@ -20,6 +20,8 @@ https://www.cmegroup.com/articles/2024/through-the-lens-of-gold.html
   basket.
 - `oilgold-rspread`: D1 `XTIUSD.DWX` / `XAUUSD.DWX` return-spread reversion
   basket.
+- `brentgold-rspread`: D1 `XBRUSD.DWX` / `XAUUSD.DWX` return-spread
+  reversion basket, using Brent as the crude-oil benchmark leg.
 
 ## Research Summary
 
@@ -50,3 +52,7 @@ Runtime logic uses Darwinex MT5 D1 OHLC only.
 - `oilgold-rspread` is not a duplicate of the existing oil/gold ratio cards:
   it fades a fixed-window relative-return shock rather than the absolute
   oil/gold ratio level or a ratio channel breakout.
+- `brentgold-rspread` is not a duplicate of `oilgold-rspread`: it uses
+  `XBRUSD.DWX` Brent exposure as the crude-oil leg instead of `XTIUSD.DWX` WTI,
+  giving Q02 a separate energy-benchmark realization of the same CME
+  oil-through-gold relative-value lens.
