@@ -1,0 +1,26 @@
+{
+  "ea_id": "QM5_12897",
+  "ea_slug": "xag-donchian55-trend",
+  "strategy_shape": "D1 solo XAGUSD Donchian-55 trend breakout with ADX filter",
+  "diversity_rationale": "solo silver commodity trend sleeve; not index, XAU outright, XNG, XAU/XAG ratio, oil/silver spread, gas/silver spread, or QM5_12567 cumulative-RSI commodity pullback logic",
+  "card_path": "strategy-seeds/cards/approved/QM5_12897_xag-donchian55-trend_card.md",
+  "build_result_path": "artifacts/qm5_12897_build_result.json",
+  "smoke_summary": "D:/QM/reports/smoke/QM5_12897/20260702_170849/summary.json",
+  "build_task_id": "5188178a-5424-4299-94b3-4fc07d56ab63",
+  "q02_work_items": [
+    {
+      "id": "1dbfbb06-2852-4086-9ec7-f2afc16cca87",
+      "phase": "Q02",
+      "status": "pending",
+      "symbol": "XAGUSD.DWX",
+      "timeframe": "D1",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12897_xag-donchian55-trend/sets/QM5_12897_xag-donchian55-trend_XAGUSD.DWX_D1_backtest.set"
+    }
+  ],
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
