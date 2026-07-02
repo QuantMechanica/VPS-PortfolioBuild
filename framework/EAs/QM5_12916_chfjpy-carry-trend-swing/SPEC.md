@@ -36,7 +36,24 @@ the framework risk-sizing stop.
 - Entry gating: `QM_IsNewBar()`.
 - Signal and exit reads use closed D1 bars.
 
-## 5. Risk Model
+## 5. Expected Behaviour
+
+Expected frequency is low: about 3-6 trades per year on CHFJPY.DWX D1 with
+multi-week holds. The EA should trade only on the target symbol/timeframe,
+evaluate entries on new D1 bars, hold through weekends, and exit on SMA(50)
+trend failure or the framework stop. Zero intraday scaling, grid, martingale,
+or ML behaviour is expected.
+
+## 6. Source Citation
+
+Primary evidence comes from peer-reviewed FX carry and momentum literature:
+Koijen, Moskowitz, Pedersen, and Vrugt (2018), "Carry", Journal of Financial
+Economics 127(2); and Menkhoff et al. (2012), "Currency momentum strategies",
+Journal of Financial Economics 106(3). The implemented mechanic combines
+structural JPY funding/carry exposure with a deterministic D1 trend and
+three-month momentum filter.
+
+## 7. Risk Model
 
 Backtests use `RISK_FIXED=1000`, `RISK_PERCENT=0`. Friday close defaults to
 disabled for the approved multi-week swing hold.
@@ -46,3 +63,4 @@ disabled for the approved multi-week swing hold.
 | Version | Date | Reason |
 |---|---|---|
 | v1 | 2026-07-02 | Initial WS3 build from approved card |
+| v2 | 2026-07-02 | Q01 SPEC layout repair and raw-series build-check exception documentation |

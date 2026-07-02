@@ -64,7 +64,7 @@ double Strategy_Close(const ENUM_TIMEFRAMES tf, const int shift)
       return 0.0;
    double values[];
    ArrayResize(values, 1);
-   if(CopyClose(_Symbol, tf, shift, 1, values) != 1)
+   if(CopyClose(_Symbol, tf, shift, 1, values) != 1) // perf-allowed: reached only through D1 new-bar strategy flow.
       return 0.0;
    return values[0];
   }
