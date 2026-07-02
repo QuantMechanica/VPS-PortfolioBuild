@@ -14330,3 +14330,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9575,pring-kst-monthly,10,NDX.DWX,95750010,2026-07-03,Codex,active
 9575,pring-kst-monthly,11,WS30.DWX,95750011,2026-07-03,Codex,active
 9575,pring-kst-monthly,12,UK100.DWX,95750012,2026-07-03,Codex,active
+12977,wti-propane-draw,0,XTIUSD.DWX,129770000,2026-07-03,Codex,active
