@@ -63,6 +63,11 @@ input int    strategy_pending_expiration_minutes = 60;
 int  g_active_currency_idx = -1;
 int  g_active_direction    = 0;
 bool g_cycle_stopped       = false;
+// D1 calendar key of the day the equity stop fired. The stop is per-CYCLE
+// (DL-081 / card): it kills the current basket, not the EA. Without a re-arm
+// the flag latched forever once flat (Strategy_NoTradeFilter short-circuits
+// before QM12821_CheckBasketRisk's reset can ever run again).
+int  g_cycle_stopped_daykey = 0;
 datetime g_mtf_warmup_first_bar_time = 0;
 datetime g_mtf_warmup_ready_time     = 0;
 bool     g_mtf_warmup_logged         = false;
@@ -430,7 +435,14 @@ void QM12821_CheckBasketRisk()
    if(closed_by_equity > 0)
      {
       if(reason == QM_EXIT_KILLSWITCH)
+        {
          g_cycle_stopped = true;
+         g_cycle_stopped_daykey = QM_CalendarPeriodKey(PERIOD_D1, _Symbol);
+        }
+      // The equity-stop module closes POSITIONS only. The cycle's pending leg
+      // limits must die with the cycle, or late fills re-open exposure past
+      // the 1% cap with the cycle already reset.
+      QM12821_CloseAllOwned(reason);
       QM12821_ResetActiveCycle();
       QM_LogEvent(reason == QM_EXIT_KILLSWITCH ? QM_WARN : QM_INFO,
                   reason == QM_EXIT_KILLSWITCH ? "BASKET_EQUITY_STOP" : "BASKET_TAKE_PROFIT",
@@ -492,6 +504,10 @@ bool Strategy_NoTradeFilter()
       return true;
    if(QM12821_HasOwnedExposure())
       return false;
+   // Per-cycle stop re-arm: a new D1 calendar day = a new cycle evaluation.
+   // (The card's 1% stop ends the CYCLE; it must not end the backtest.)
+   if(g_cycle_stopped && QM_CalendarPeriodKey(PERIOD_D1, _Symbol) != g_cycle_stopped_daykey)
+      g_cycle_stopped = false;
    if(g_cycle_stopped)
       return true;
    const datetime broker_now = TimeCurrent();
@@ -622,13 +638,6 @@ void OnTick()
    if(Strategy_NewsFilterHook(broker_now))
       return;
 
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -650,6 +659,18 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // News blackout gates NEW entries only (below). It must not sit above the
+   // management path: the 7 legs carry no server-side SL (req.sl=0.0), so the
+   // DL-081 1% equity stop is the ONLY protection and has to keep enforcing
+   // through news windows. Fail-closed init in OnInit is unchanged.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
 
    if(!QM_IsNewBar())
       return;
