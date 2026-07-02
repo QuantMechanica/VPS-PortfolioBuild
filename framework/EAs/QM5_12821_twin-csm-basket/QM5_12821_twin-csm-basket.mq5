@@ -42,12 +42,15 @@ input group "Strategy"
 input double strategy_exhaustion_norm       = 95.0;
 input int    strategy_exhaustion_mode       = 0;    // 0=legacy normalized, 1=absolute raw aggregate %
 input double strategy_exhaustion_abs_pct    = 0.60;
+input double strategy_min_divergence_raw    = 0.0;  // raw sum-% spread; 0=off
 input bool   strategy_reverse_direction     = false;
 input int    strategy_prob_min_numerator    = 6;
 input double strategy_basket_tp_pct         = 15.0;
 input double strategy_basket_tp_units_per_lot = 0.0;
 input double strategy_basket_stop_pct       = 1.0;
 input double strategy_total_lots_per_1000   = 0.10;
+input double strategy_stop_engage_move_pct  = 0.0;  // 0=legacy lots_per_1000 sizing
+input double strategy_max_lots_per_leg      = 1.0;
 input int    strategy_london_start_hhmm     = 630;
 input int    strategy_london_end_hhmm       = 830;
 input int    strategy_overlap_start_hhmm    = 930;
@@ -332,7 +335,7 @@ double QM12821_BaseRiskMoney()
    return equity * RISK_PERCENT / 100.0;
   }
 
-double QM12821_LotsPerLeg(const string symbol, const int leg_count)
+double QM12821_LegacyLotsPerLeg(const string symbol, const int leg_count)
   {
    if(leg_count <= 0 || strategy_total_lots_per_1000 <= 0.0)
       return 0.0;
@@ -344,6 +347,193 @@ double QM12821_LotsPerLeg(const string symbol, const int leg_count)
    const double raw_total_lots = (base_money / 1000.0) * strategy_total_lots_per_1000;
    const double raw_leg_lots = raw_total_lots / (double)leg_count;
    return QM_BasketNormalizeLots(symbol, raw_leg_lots);
+  }
+
+double QM12821_CurrentSizingPrice(const string symbol)
+  {
+   const double bid = SymbolInfoDouble(symbol, SYMBOL_BID);
+   const double ask = SymbolInfoDouble(symbol, SYMBOL_ASK);
+   if(bid > 0.0 && ask > 0.0)
+      return (bid + ask) * 0.5;
+   if(ask > 0.0)
+      return ask;
+   if(bid > 0.0)
+      return bid;
+   const double last = SymbolInfoDouble(symbol, SYMBOL_LAST);
+   if(last > 0.0)
+      return last;
+
+   MqlRates rates[];
+   if(CopyRates(symbol, PERIOD_H1, 0, 1, rates) == 1 && rates[0].close > 0.0)
+      return rates[0].close;
+   return 0.0;
+  }
+
+bool QM12821_LegMoveValuePerLot(const string symbol,
+                                double &out_move_value,
+                                double &out_price,
+                                double &out_tick_value,
+                                double &out_tick_size)
+  {
+   out_move_value = 0.0;
+   out_price = 0.0;
+   out_tick_value = 0.0;
+   out_tick_size = 0.0;
+   if(strategy_stop_engage_move_pct <= 0.0)
+      return false;
+   if(!SymbolSelect(symbol, true))
+      return false;
+
+   out_price = QM12821_CurrentSizingPrice(symbol);
+   out_tick_value = SymbolInfoDouble(symbol, SYMBOL_TRADE_TICK_VALUE);
+   out_tick_size = SymbolInfoDouble(symbol, SYMBOL_TRADE_TICK_SIZE);
+   if(out_price <= 0.0 || out_tick_value <= 0.0 || out_tick_size <= 0.0)
+      return false;
+
+   out_move_value = (strategy_stop_engage_move_pct / 100.0) *
+                    out_price *
+                    (out_tick_value / out_tick_size);
+   return (out_move_value > 0.0);
+  }
+
+double QM12821_NormalizeRiskLotsPerLeg(const string symbol, const double raw_lots)
+  {
+   if(raw_lots <= 0.0)
+      return 0.0;
+
+   QM_SymbolRiskSnapshot snapshot;
+   if(!QM_RiskSizerReadSymbolSnapshot(symbol, snapshot))
+      return 0.0;
+
+   double adjusted = raw_lots;
+   if(strategy_max_lots_per_leg > 0.0 && adjusted > strategy_max_lots_per_leg)
+      adjusted = strategy_max_lots_per_leg;
+   if(adjusted < snapshot.volume_min)
+      adjusted = snapshot.volume_min;
+
+   return QM_RiskSizerQuantizeLots(adjusted,
+                                   snapshot.volume_min,
+                                   snapshot.volume_max,
+                                   snapshot.volume_step);
+  }
+
+bool QM12821_PreparePlanLots(const QM_BasketPlan &plan,
+                             double &lots[],
+                             const bool log_cycle_sizing)
+  {
+   ArrayResize(lots, plan.leg_count);
+   ArrayInitialize(lots, 0.0);
+   if(plan.leg_count <= 0)
+      return false;
+
+   if(strategy_stop_engage_move_pct <= 0.0)
+     {
+      for(int i = 0; i < plan.leg_count; ++i)
+         lots[i] = QM12821_LegacyLotsPerLeg(plan.legs[i].symbol, plan.leg_count);
+      return true;
+     }
+
+   const double risk_money = QM12821_BaseRiskMoney();
+   if(risk_money <= 0.0)
+      return false;
+
+   double move_values[];
+   ArrayResize(move_values, plan.leg_count);
+   ArrayInitialize(move_values, 0.0);
+
+   double total_move_value = 0.0;
+   for(int i = 0; i < plan.leg_count; ++i)
+     {
+      double price = 0.0;
+      double tick_value = 0.0;
+      double tick_size = 0.0;
+      double move_value = 0.0;
+      if(!QM12821_LegMoveValuePerLot(plan.legs[i].symbol, move_value, price, tick_value, tick_size))
+        {
+         QM_LogEvent(QM_WARN, "BASKET_RISK_SIZING_UNREADY",
+                     StringFormat("{\"symbol\":\"%s\",\"move_pct\":%.4f,\"price\":%.8f,\"tick_value\":%.8f,\"tick_size\":%.8f}",
+                                  plan.legs[i].symbol,
+                                  strategy_stop_engage_move_pct,
+                                  price,
+                                  tick_value,
+                                  tick_size));
+         return false;
+        }
+      move_values[i] = move_value;
+      total_move_value += move_value;
+     }
+
+   if(total_move_value <= 0.0)
+      return false;
+
+   double raw_lots_per_leg = risk_money / total_move_value;
+   if(strategy_max_lots_per_leg > 0.0 && raw_lots_per_leg > strategy_max_lots_per_leg)
+      raw_lots_per_leg = strategy_max_lots_per_leg;
+
+   double normalized_min = DBL_MAX;
+   double normalized_max = 0.0;
+   double normalized_basket_move_value = 0.0;
+   for(int i = 0; i < plan.leg_count; ++i)
+     {
+      lots[i] = QM12821_NormalizeRiskLotsPerLeg(plan.legs[i].symbol, raw_lots_per_leg);
+      if(lots[i] <= 0.0)
+        {
+         QM_LogEvent(QM_WARN, "BASKET_RISK_SIZING_UNREADY",
+                     StringFormat("{\"symbol\":\"%s\",\"reason\":\"lot_normalization_failed\",\"raw_lots_per_leg\":%.8f}",
+                                  plan.legs[i].symbol,
+                                  raw_lots_per_leg));
+         return false;
+        }
+      if(lots[i] < normalized_min)
+         normalized_min = lots[i];
+      if(lots[i] > normalized_max)
+         normalized_max = lots[i];
+      normalized_basket_move_value += lots[i] * move_values[i];
+     }
+
+   if(log_cycle_sizing && normalized_basket_move_value > 0.0)
+     {
+      const double projected_move_pct = strategy_stop_engage_move_pct *
+                                        (risk_money / normalized_basket_move_value);
+      QM_LogEvent(QM_INFO, "BASKET_RISK_SIZING",
+                  StringFormat("{\"legs\":%d,\"lots_per_leg\":%.6f,\"projected_stop_engage_move_pct\":%.4f,\"configured_move_pct\":%.4f,\"risk_money\":%.2f,\"total_move_value_per_lot\":%.2f,\"normalized_lots_min\":%.4f,\"normalized_lots_max\":%.4f}",
+                               plan.leg_count,
+                               raw_lots_per_leg,
+                               projected_move_pct,
+                               strategy_stop_engage_move_pct,
+                               risk_money,
+                               total_move_value,
+                               normalized_min,
+                               normalized_max));
+     }
+
+   return true;
+  }
+
+bool QM12821_PassesDivergenceGate(const QM_CSMReading &d1)
+  {
+   if(strategy_min_divergence_raw <= 0.0)
+      return true;
+   if(d1.strong_idx < 0 || d1.weak_idx < 0)
+      return false;
+
+   const double strong_raw = QM_CSM_RawStrength(d1, d1.strong_idx);
+   const double weak_raw = QM_CSM_RawStrength(d1, d1.weak_idx);
+   const double divergence = strong_raw - weak_raw;
+   if(divergence >= strategy_min_divergence_raw)
+      return true;
+
+   QM_LogEvent(QM_INFO, "BASKET_DIVERGENCE_BLOCK",
+               StringFormat("{\"strong\":\"%s\",\"weak\":\"%s\",\"strong_raw\":%.6f,\"weak_raw\":%.6f,\"divergence_raw\":%.6f,\"threshold_raw\":%.6f,\"divergence_x100_sum\":%.2f,\"threshold_x100_sum\":%.2f}",
+                            QM_CSM_CCY[d1.strong_idx],
+                            QM_CSM_CCY[d1.weak_idx],
+                            strong_raw,
+                            weak_raw,
+                            divergence,
+                            strategy_min_divergence_raw,
+                            divergence * 100.0,
+                            strategy_min_divergence_raw * 100.0));
+   return false;
   }
 
 bool QM12821_PassesExhaustionGate(const QM_CSMReading &d1, const int currency_idx)
@@ -369,6 +559,8 @@ bool QM12821_EvaluateSignal(QM_CSMReading &d1,
    if(!QM_CSM_LoadStrength(PERIOD_D1, d1, 0))
       return false;
    if(d1.extreme_idx < 0 || d1.extreme_sign == 0)
+      return false;
+   if(!QM12821_PassesDivergenceGate(d1))
       return false;
    if(!QM12821_PassesExhaustionGate(d1, d1.extreme_idx))
       return false;
@@ -483,6 +675,10 @@ bool QM12821_OpenPlan(const QM_BasketPlan &plan,
    if(ArraySize(pending_prices) < plan.leg_count)
       return false;
 
+   double plan_lots[];
+   if(!QM12821_PreparePlanLots(plan, plan_lots, true))
+      return false;
+
    int opened = 0;
    for(int i = 0; i < plan.leg_count; ++i)
      {
@@ -490,7 +686,7 @@ bool QM12821_OpenPlan(const QM_BasketPlan &plan,
       if(!SymbolSelect(symbol, true))
          continue;
 
-      const double lots = QM12821_LotsPerLeg(symbol, plan.leg_count);
+      const double lots = plan_lots[i];
       if(lots <= 0.0)
          continue;
       if(pending_prices[i] <= 0.0)
@@ -638,6 +834,10 @@ void QM12821_ReprojectPendingOrders()
       return;
      }
 
+   double plan_lots[];
+   if(!QM12821_PreparePlanLots(plan, plan_lots, false))
+      return;
+
    int canceled = 0;
    int replaced = 0;
    int stopped = 0;
@@ -680,7 +880,7 @@ void QM12821_ReprojectPendingOrders()
 
       double lots = pending_lots;
       if(lots <= 0.0)
-         lots = QM12821_LotsPerLeg(leg.symbol, plan.leg_count);
+         lots = plan_lots[i];
       if(lots <= 0.0)
          continue;
 
