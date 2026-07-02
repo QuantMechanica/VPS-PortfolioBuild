@@ -1,0 +1,40 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        9575
+; ea_slug:      pring-kst-monthly
+; ea_version:   v5.0
+; set_version:  s20260702-001
+; symbol:       USDJPY.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   d4a8fc1fdbb6e77d02b0aa8c2476d1c7fae105bb11a92683296846fd6c57f5e0
+; author:       Development
+; date:         2026-07-02
+;==========================================================
+qm_ea_id=9575
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9575_pring-kst-monthly.md
+strategy_proxy_days_per_month=21
+strategy_roc1_months=6
+strategy_roc2_months=9
+strategy_roc3_months=12
+strategy_roc4_months=18
+strategy_smooth1_months=6
+strategy_smooth2_months=6
+strategy_smooth3_months=9
+strategy_smooth4_months=9
+strategy_signal_months=9
+strategy_long_ma_months=18
+strategy_kst_chase_level=20.0
+strategy_atr_period=14
+strategy_sl_atr_mult=3.0
+strategy_spread_atr_fraction=0.20
+strategy_time_stop_months=12
+strategy_warmup_months=42

@@ -14317,3 +14317,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12953,mql5-gator-ma-card,1,GBPUSD.DWX,129530001,2026-07-02,Codex,active
 12953,mql5-gator-ma-card,2,XAUUSD.DWX,129530002,2026-07-02,Codex,active
 12976,brent-mar-prem,0,XBRUSD.DWX,129760000,2026-07-03,Codex,active
+9575,pring-kst-monthly,0,EURUSD.DWX,95750000,2026-07-03,Codex,active
+9575,pring-kst-monthly,1,GBPUSD.DWX,95750001,2026-07-03,Codex,active
+9575,pring-kst-monthly,2,USDJPY.DWX,95750002,2026-07-03,Codex,active
+9575,pring-kst-monthly,3,AUDUSD.DWX,95750003,2026-07-03,Codex,active
+9575,pring-kst-monthly,4,USDCAD.DWX,95750004,2026-07-03,Codex,active
+9575,pring-kst-monthly,5,USDCHF.DWX,95750005,2026-07-03,Codex,active
+9575,pring-kst-monthly,6,NZDUSD.DWX,95750006,2026-07-03,Codex,active
+9575,pring-kst-monthly,7,XAUUSD.DWX,95750007,2026-07-03,Codex,active
+9575,pring-kst-monthly,8,XTIUSD.DWX,95750008,2026-07-03,Codex,active
+9575,pring-kst-monthly,9,GDAXI.DWX,95750009,2026-07-03,Codex,active
+9575,pring-kst-monthly,10,NDX.DWX,95750010,2026-07-03,Codex,active
+9575,pring-kst-monthly,11,WS30.DWX,95750011,2026-07-03,Codex,active
+9575,pring-kst-monthly,12,UK100.DWX,95750012,2026-07-03,Codex,active
