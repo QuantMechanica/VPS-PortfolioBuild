@@ -1,0 +1,105 @@
+{
+  "task_id": "f0620ee4-ea19-4719-add4-6fbed7c1be92",
+  "ea_id": "QM5_12895",
+  "slug": "xng-6m-reversal",
+  "strategy": "XNGUSD.DWX D1 six-month overextension fade",
+  "strategy_id": "BIANCHI-COMM-52W-2016",
+  "source_id": "BIANCHI-COMM-52W-2016",
+  "source_links": [
+    "https://doi.org/10.1016/j.jbankfin.2016.06.010",
+    "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3069253"
+  ],
+  "symbols": [
+    "XNGUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XNGUSD.DWX"
+  ],
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12895_xng-6m-reversal",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12895_xng-6m-reversal\\QM5_12895_xng-6m-reversal.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12895_xng-6m-reversal\\QM5_12895_xng-6m-reversal.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12895_xng-6m-reversal\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12895_xng-6m-reversal.md",
+  "approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12895_xng-6m-reversal.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12895_xng-6m-reversal.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12895_xng-6m-reversal\\sets\\QM5_12895_xng-6m-reversal_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "ee4a96d2e7525ea04c8c1ba344c8d695b2786c733aa1146773c1355feeea3c29",
+  "mq5_sha256": "de7445466a910fbdb5e179e6b62645620c742bb82eba410ddf4a9fa0b962fe98",
+  "ex5_sha256": "953beb23f5985695626130ad1599dd5590ba00f52022dd10e13b64153f7f4c55",
+  "setfile_current_sha256": "3eb6a07b89c8aea512eb0d66bbfd0855064ee37790b26950b2ec81842f5bd005",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic_base": 128950000,
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XNGUSD.DWX",
+        "magic": 128950000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12895_xng-6m-reversal/QM5_12895_xng-6m-reversal.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260702_112248\\QM5_12895_xng-6m-reversal.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260702_112248\\summary.csv",
+    "ex5_size_bytes": 299286,
+    "symbol_scope_verdict": "XNGUSD_DWX_D1_ONLY"
+  },
+  "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260702_112248\\QM5_12895_xng-6m-reversal.compile.log",
+  "build_check": {
+    "command": "framework/scripts/build_check.ps1 -EALabel QM5_12895_xng-6m-reversal -RepoRoot C:/QM/repo",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260702_112248.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260702_112248.json",
+  "build_check_warnings": 16,
+  "validations": {
+    "spec_md": "PASS",
+    "build_guardrails": "PASS",
+    "magic_resolver_regenerated": true
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "fd5c460a",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "XNGUSD.DWX",
+    "host_symbol": "XNGUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12895_xng-6m-reversal\\sets\\QM5_12895_xng-6m-reversal_XNGUSD.DWX_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "build_task_id": "f0620ee4-ea19-4719-add4-6fbed7c1be92"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "non_duplicate_reason": "XNG six-month return-threshold fade is distinct from QM5_12567 two-day RSI2 pullback, QM5_12620 20-bar commodity reversal, and QM5_12893 broker-swap carry.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false
+  },
+  "notes": "Completed the build for a new low-frequency structural natural-gas reversal sleeve and prepared it for Q02 via record-build auto-enqueue."
+}

@@ -107,7 +107,7 @@ Monthly rebalance check (first D1 bar of each calendar month):
 
 ## Filters
 
-- **Spread filter:** Skip entry if broker spread > 500 points on `XNGUSD.DWX`.
+- **Spread filter:** Skip entry if broker spread > 2500 points on `XNGUSD.DWX`.
 - **News filter:** Standard V5 news blackout applies; EIA Thursday releases are
   expected to be held through (6-month position is not unwound for weekly data).
 - **Minimum lookback:** Require at least 120 completed D1 bars before signals.
