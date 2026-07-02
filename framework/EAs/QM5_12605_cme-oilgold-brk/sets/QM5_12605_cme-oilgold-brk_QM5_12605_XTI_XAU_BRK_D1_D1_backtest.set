@@ -3,14 +3,15 @@
 ; ea_id:        12605
 ; ea_slug:      cme-oilgold-brk
 ; ea_version:   v5.0
-; set_version:  s20260702-001
-; symbol:       XTIUSD.DWX
+; set_version:  s20260702-002
+; symbol:       QM5_12605_XTI_XAU_BRK_D1
+; host_symbol:  XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   9c1144aa9514e49dffafe56df457f9165f15c4c00f2575dcedaaecc93fdd0254
 ; author:       Development
 ; date:         2026-07-02
 ;==========================================================
@@ -20,7 +21,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\cme-oilgold-brk_card.md
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_12605_cme-oilgold-brk_card.md
 strategy_entry_lookback_d1=120
 strategy_exit_lookback_d1=40
 strategy_beta=1.0
