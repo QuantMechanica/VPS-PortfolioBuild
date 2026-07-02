@@ -1,0 +1,85 @@
+{
+  "ea_id": "QM5_12767",
+  "slug": "collins-15rex",
+  "strategy": "XTI D1 Collins 1.5 daily range expansion",
+  "strategy_id": "SRC08_S03",
+  "source_id": "SRC08",
+  "source_citation": "Art Collins, Beating the Financial Futures Market, Wiley, 2006, Chapter 25 and Appendix Table 25.4.",
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12767_collins-15rex",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12767_collins-15rex\\QM5_12767_collins-15rex.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12767_collins-15rex\\QM5_12767_collins-15rex.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12767_collins-15rex\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12767_collins-15rex.md",
+  "ea_docs_card_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12767_collins-15rex\\docs\\strategy_card.md",
+  "setfiles": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12767_collins-15rex\\sets\\QM5_12767_collins-15rex_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "ebf748133a7811a35edcff04b2dcec7a339ce92fd994e3a353fde7f47d70a314",
+  "mq5_sha256": "d8628499b90207fd92339cf166627682c9c3a740650d03d0194760d33d663920",
+  "ex5_sha256": "6500193ac9a7a670ca183fd93a6b2cd633be1369450b17c5b6a9a0603c503880",
+  "setfile_sha256": "02b6beec8850a2ec061872c2793f8106bd693c811acd7678cc17861ebdbb501a",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 127670000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_12767_collins-15rex --force --json --fail-on-error",
+    "result": "COMPILED",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260702_031828\\QM5_12767_collins-15rex.compile.log",
+    "ex5_size_bytes": 299234,
+    "symbol_scope_verdict": "SINGLE_SYMBOL_OK"
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12767_collins-15rex -Strict -ReportRoot D:\\QM\\reports\\framework\\21",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260702_031827.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "q02_enqueue": {
+    "status": "already_enqueued_pending",
+    "work_item_id": "8ceadfa5-23a2-4484-b964-2198efce8a3a",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12767_collins-15rex\\sets\\QM5_12767_collins-15rex_XTIUSD.DWX_D1_backtest.set",
+    "status_after_verification": "pending",
+    "attempt_count": 0,
+    "created_at_utc": "2026-06-29T06:12:50+00:00"
+  },
+  "smoke_result": "deferred_q02_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "No manual MT5 backtest launched; Q02 is delegated to the paced farm worker item already pending.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false
+  },
+  "non_duplicate_reason": "Collins 1.5 daily range expansion is a structural WTI stop-entry volatility expansion rule. It is distinct from WTI refinery-ramp, roll, event, pullback, month/weekday, ratio-basket, XNG, XAU/XAG, index, and QM5_12567 commodity RSI logic.",
+  "notes": "Completed missing build evidence and EA-local strategy-card documentation for the approved WTI Collins range-expansion sleeve; Q02 queue was verified rather than duplicated."
+}
