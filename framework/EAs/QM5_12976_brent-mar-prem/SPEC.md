@@ -70,4 +70,4 @@ touched by this build.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-03 | Initial build from card | Q02 enqueue pending |
+| v1 | 2026-07-03 | Initial build from card | Q02 queued as work_item 72ede470-ca54-4165-a5cf-7c93c781bca8 |
