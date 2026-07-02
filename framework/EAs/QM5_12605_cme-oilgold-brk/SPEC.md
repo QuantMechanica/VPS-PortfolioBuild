@@ -3,8 +3,8 @@
 **EA ID:** QM5_12605
 **Slug:** `cme-oilgold-brk`
 **Source:** `CME-OIL-GOLD-RATIO-2024` (see `strategy-seeds/sources/CME-OIL-GOLD-RATIO-2024/`)
-**Author of this spec:** Codex
-**Last revised:** 2026-06-27
+**Author of this spec:** Claude
+**Last revised:** 2026-07-02
 
 ---
 
@@ -36,8 +36,6 @@ natural gas.
 | `strategy_xti_max_spread_pts` | 1000 | 700-1500 | XTI entry spread cap |
 | `strategy_xau_max_spread_pts` | 500 | 300-800 | XAU entry spread cap |
 | `strategy_deviation_points` | 20 | 10-50 | Broker deviation points for market legs |
-| `strategy_entry_hour_broker` | 2 | 0-23 | Earliest broker hour to attempt the daily basket entry |
-| `strategy_entry_minute_broker` | 0 | 0-59 | Earliest broker minute to attempt the daily basket entry |
 
 ---
 
@@ -46,7 +44,6 @@ natural gas.
 **Designed for:**
 - `XTIUSD.DWX` - host chart and oil numerator, magic slot 0.
 - `XAUUSD.DWX` - hedge leg and gold denominator, magic slot 1.
-- `QM5_12605_XTI_XAU_BRK_D1` - logical basket symbol for Q02 dispatch.
 
 **Explicitly NOT for:**
 - `XNGUSD.DWX` - covered by separate XNG and XTI/XNG sleeves.
@@ -61,7 +58,7 @@ natural gas.
 |---|---|
 | Base timeframe | `D1` |
 | Multi-timeframe refs | none |
-| Bar gating | D1 state refresh on `QM_IsNewBar`; entry can be delayed until the configured broker entry time and both legs are tradable |
+| Bar gating | D1 state refresh on `QM_IsNewBar`; entry and exit eval on new D1 bar only |
 
 ---
 
@@ -104,5 +101,6 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
+| v3 | 2026-07-02 | Full rebuild: 2026-07-02 OnTick order, QM_IsNewBar latch, remove non-card params | Claude; fixes news-before-management violation |
 | v2 | 2026-06-28 | Delay basket entry until XAU trade session is open | avoids one-leg XTI packages at the D1 bar open |
 | v1 | 2026-06-27 | Initial build from card | pending commit |
