@@ -14227,3 +14227,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12867,brentgold-rspread,1,XAUUSD.DWX,128670001,2026-07-02,Codex,active
 12868,cme-gassilver-rspr,0,XNGUSD.DWX,128680000,2026-07-02,Codex,active
 12868,cme-gassilver-rspr,1,XAGUSD.DWX,128680001,2026-07-02,Codex,active
+9352,pring-kst-trend-deviation-h4,0,EURUSD.DWX,93520000,2026-07-02,Codex,active
+9352,pring-kst-trend-deviation-h4,1,GBPJPY.DWX,93520001,2026-07-02,Codex,active
+9352,pring-kst-trend-deviation-h4,2,XAUUSD.DWX,93520002,2026-07-02,Codex,active
+9352,pring-kst-trend-deviation-h4,3,NDX.DWX,93520003,2026-07-02,Codex,active
