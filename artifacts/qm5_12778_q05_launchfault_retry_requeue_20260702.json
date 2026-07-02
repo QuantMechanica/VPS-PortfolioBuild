@@ -1,0 +1,62 @@
+{
+  "action": "launch_fault_retry_fix_and_q05_requeue",
+  "branch": "agents/board-advisor",
+  "date": "2026-07-02",
+  "ea": "QM5_12778",
+  "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+  "mission": "forex_market_neutral_cointegration_portfolio_growth",
+  "frontier_check": {
+    "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_survivors_already_built": [
+      "QM5_12532",
+      "QM5_12533"
+    ],
+    "strict_survivors_q02_blocked": false,
+    "unbuilt_positive_hedge_scan_pair_found": false,
+    "fallback": "advance_existing_fx_cointegration_basket"
+  },
+  "infrastructure_fix": {
+    "root_cause": "pwsh/run_smoke child launch can exit before summary with Windows DLL initialization failure",
+    "retry_exit_codes": [
+      3221225794,
+      -1073741502
+    ],
+    "retry_exit_code_hex": "0xC0000142",
+    "attempts": 2,
+    "backoff_sec": 30.0,
+    "helper": "framework/scripts/_phase_utils.py::run_with_launch_fault_retry",
+    "wired_runners": [
+      "framework/scripts/q04_walkforward.py",
+      "framework/scripts/q05_stress_medium.py",
+      "framework/scripts/q06_stress_harsh.py",
+      "framework/scripts/q07_multiseed.py"
+    ]
+  },
+  "validation": {
+    "py_compile": "PASS",
+    "pytest": {
+      "command": "python -m pytest framework/scripts/tests/test_q05_q07_verdicts.py framework/scripts/tests/test_q04_walkforward.py -q",
+      "result": "37 passed in 0.35s"
+    }
+  },
+  "farm_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12778_q05_launchfault_retry_requeue_20260702T121150Z.sqlite",
+  "queue_action": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12778 --phase Q05",
+    "enqueued": true,
+    "created": [],
+    "requeued": [
+      {
+        "id": "1c0405e7-16d3-40e6-b884-6be1b504dc4c",
+        "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1"
+      }
+    ],
+    "final_checked_status": "Q05_pending"
+  },
+  "guardrails": {
+    "manual_mt5_run": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  }
+}

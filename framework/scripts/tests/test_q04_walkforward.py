@@ -176,6 +176,48 @@ class Q04WalkForwardTests(unittest.TestCase):
             self.assertEqual(result["summary_path"], str(summary))
             self.assertTrue(Path(result["log_path"]).exists())
 
+    def test_run_fold_retries_windows_launch_fault_before_grading(self) -> None:
+        mod = _load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            setfile = root / "QM5_12728_USDJPY.DWX_D1_backtest.set"
+            setfile.write_text("InpFoo=1\n", encoding="utf-8")
+            summary = root / "summary.json"
+            summary.write_text("{}", encoding="utf-8")
+            calls = []
+
+            def fake_run(args, **kwargs):
+                calls.append(args)
+                if len(calls) == 1:
+                    return subprocess.CompletedProcess(args, 3221225794)
+                kwargs["stdout"].write(f"run_smoke.summary={summary}\n")
+                return subprocess.CompletedProcess(args, 1)
+
+            with mock.patch.object(subprocess, "run", side_effect=fake_run), \
+                    mock.patch("framework.scripts._phase_utils.time.sleep") as sleep_mock:
+                result = mod.run_fold_via_smoke(
+                    ea_id=12728,
+                    ea_expert=r"QM\QM5_12728_test",
+                    symbol="USDJPY.DWX",
+                    setfile=setfile,
+                    fold={
+                        "id": "F1",
+                        "dev_start": "2017-01-01",
+                        "dev_end": "2022-12-31",
+                        "oos_start": "2023-01-01",
+                        "oos_end": "2023-12-31",
+                    },
+                    report_root=root / "reports",
+                    terminal="T6",
+                    period="D1",
+                    timeout_sec=60,
+                )
+
+            self.assertEqual(len(calls), 2)
+            sleep_mock.assert_called_once()
+            self.assertEqual(result["summary_path"], str(summary))
+            self.assertIn("launch_fault_retry", Path(result["log_path"]).read_text(encoding="utf-8"))
+
     def test_run_fold_passes_basket_manifest_tester_overrides(self) -> None:
         mod = _load_module()
         with tempfile.TemporaryDirectory() as tmp:

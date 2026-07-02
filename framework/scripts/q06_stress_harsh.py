@@ -27,7 +27,8 @@ if __package__ in (None, ""):
 
 from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
                                             resolve_ea_expert_path, period_from_setfile,
-                                            find_latest_summary, full_history_window)
+                                            find_latest_summary, full_history_window,
+                                            run_with_launch_fault_retry)
 from framework.scripts.q05_stress_medium import (
     _latest_report_metrics, _parse_pf_dd_trades, summary_invalid_reason, MIN_TRADES,
     PF_FLOOR, DD_PCT_MAX, STARTING_EQUITY, DEFAULT_TIMEOUT_SEC,
@@ -108,8 +109,14 @@ def run_harsh_backtest(*, ea_id: int, ea_expert: str, symbol: str,
     timed_out = False
     timeout_detail = None
     try:
-        proc = subprocess.run(args, capture_output=True, text=True,
-                              timeout=runner_timeout_sec, creationflags=creationflags)
+        proc = run_with_launch_fault_retry(
+            args,
+            runner=subprocess.run,
+            capture_output=True,
+            text=True,
+            timeout=runner_timeout_sec,
+            creationflags=creationflags,
+        )
         exit_code = proc.returncode
     except subprocess.TimeoutExpired as exc:
         timed_out = True

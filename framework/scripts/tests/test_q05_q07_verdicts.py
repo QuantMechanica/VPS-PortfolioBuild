@@ -233,6 +233,51 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertEqual(result["timeout_sec"], 5400)
         self.assertEqual(result["runner_timeout_sec"], 5520)
 
+    def test_q05_retries_windows_launch_fault_before_grading(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            summary = root / "QM5_12778" / "20260702_010101" / "summary.json"
+            calls = []
+            timeouts = []
+
+            def fake_run(args, **kwargs):
+                calls.append(args)
+                timeouts.append(kwargs["timeout"])
+                if len(calls) == 1:
+                    return SimpleNamespace(returncode=3221225794, stdout="", stderr="")
+                summary.parent.mkdir(parents=True)
+                summary.write_text(
+                    json.dumps({
+                        "runs": [{
+                            "profit_factor": 1.2,
+                            "drawdown": 500.0,
+                            "total_trades": 25,
+                        }]
+                    }),
+                    encoding="utf-8",
+                )
+                return SimpleNamespace(returncode=0, stdout=f"run_smoke.summary={summary}\n", stderr="")
+
+            with patch.object(q05.subprocess, "run", side_effect=fake_run), \
+                    patch("framework.scripts._phase_utils.time.sleep") as sleep_mock:
+                result = q05.run_stress_backtest(
+                    ea_id=12778,
+                    ea_expert=r"QM\QM5_12778_demo",
+                    symbol="GBPJPY.DWX",
+                    setfile=root / "demo.set",
+                    terminal="T8",
+                    period="D1",
+                    report_root=root,
+                    timeout_sec=30,
+                )
+
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(timeouts, [150, 150])
+        sleep_mock.assert_called_once()
+        self.assertEqual(result["exit_code"], 0)
+        self.assertEqual(result["verdict"], "PASS")
+        self.assertEqual(result["summary_path"], str(summary))
+
     def test_q05_passes_basket_manifest_tester_overrides(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -413,6 +458,53 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertEqual(verdict, "INVALID")
         self.assertIn("seeds_invalid_evidence", reason)
         self.assertEqual(metrics["per_seed_trades"][0], (42, 0))
+
+    def test_q07_seed_retries_windows_launch_fault_before_grading(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            setfile = root / "demo_seed42.set"
+            setfile.write_text("RISK_FIXED=1000\n", encoding="utf-8")
+            seed_summary = root / "QM5_12781" / "20260702_010101" / "summary.json"
+            calls = []
+
+            def fake_run(args, **_kwargs):
+                calls.append(args)
+                if len(calls) == 1:
+                    return SimpleNamespace(returncode=3221225794, stdout="", stderr="")
+                seed_summary.parent.mkdir(parents=True)
+                seed_summary.write_text(
+                    json.dumps({
+                        "result": "PASS",
+                        "runs": [{
+                            "profit_factor": 1.07,
+                            "drawdown": 2287.51,
+                            "total_trades": 228,
+                        }]
+                    }),
+                    encoding="utf-8",
+                )
+                return SimpleNamespace(returncode=0, stdout=f"run_smoke.summary={seed_summary}\n", stderr="")
+
+            with patch.object(q07.subprocess, "run", side_effect=fake_run), \
+                    patch("framework.scripts._phase_utils.time.sleep") as sleep_mock:
+                result = q07._run_seed(
+                    ea_id=12781,
+                    ea_expert=r"QM\QM5_12781_demo",
+                    symbol="USDJPY.DWX",
+                    setfile=setfile,
+                    seed=42,
+                    terminal="T8",
+                    report_root=root,
+                    timeout_sec=30,
+                    period="D1",
+                )
+
+        self.assertEqual(len(calls), 2)
+        sleep_mock.assert_called_once()
+        self.assertEqual(result["exit_code"], 0)
+        self.assertEqual(result["summary_path"], str(seed_summary))
+        self.assertEqual(result["pf"], 1.07)
+        self.assertEqual(result["trades"], 228)
 
     def test_q07_seed_run_passes_basket_tester_overrides(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

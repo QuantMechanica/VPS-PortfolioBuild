@@ -35,7 +35,7 @@ from pathlib import Path
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from framework.scripts._phase_utils import ensure_dir, utc_now_iso, write_json
+from framework.scripts._phase_utils import ensure_dir, run_with_launch_fault_retry, utc_now_iso, write_json
 
 GATE_NAME = "Q04"
 COMMISSION_PER_LOT_ROUND_TRIP = 7.00     # USD; locked by Vault Q04 spec
@@ -610,8 +610,9 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
     log_path = fold_dir / "run_smoke.log"
     try:
         with log_path.open("w", encoding="utf-8") as log:
-            proc = subprocess.run(
+            proc = run_with_launch_fault_retry(
                 args,
+                runner=subprocess.run,
                 stdout=log,
                 stderr=subprocess.STDOUT,
                 text=True,

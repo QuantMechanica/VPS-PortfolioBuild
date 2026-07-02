@@ -7,7 +7,9 @@ import argparse
 import csv
 import json
 import re
+import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -26,6 +28,60 @@ for _stream in (sys.stdout, sys.stderr):
         pass
 
 PASS_TOKENS = {"pass", "green", "true", "1", "yes", "auto_pass", "multi_seed_pass", "multi_seed_mixed"}
+WINDOWS_DLL_INIT_FAILED = 0xC0000142
+WINDOWS_DLL_INIT_FAILED_SIGNED = -1073741502
+LAUNCH_FAULT_EXIT_CODES = {WINDOWS_DLL_INIT_FAILED, WINDOWS_DLL_INIT_FAILED_SIGNED}
+DEFAULT_LAUNCH_FAULT_ATTEMPTS = 2
+DEFAULT_LAUNCH_FAULT_BACKOFF_SEC = 30.0
+
+
+def is_launch_fault_exit_code(returncode: int | None) -> bool:
+    return returncode in LAUNCH_FAULT_EXIT_CODES
+
+
+def _format_exit_code(returncode: int | None) -> str:
+    if returncode is None:
+        return "None"
+    if returncode < 0:
+        return str(returncode)
+    return f"0x{returncode:08X}"
+
+
+def run_with_launch_fault_retry(
+    args: list[str],
+    *,
+    runner=subprocess.run,
+    attempts: int = DEFAULT_LAUNCH_FAULT_ATTEMPTS,
+    backoff_sec: float = DEFAULT_LAUNCH_FAULT_BACKOFF_SEC,
+    sleep_func=None,
+    **kwargs,
+) -> subprocess.CompletedProcess:
+    """Retry transient Windows process launch failures before grading evidence.
+
+    Exit code 0xC0000142 means the child process failed during DLL/process
+    initialization. In the farm this can kill pwsh.exe before run_smoke writes
+    any summary, producing a misleading summary_missing INFRA_FAIL.
+    """
+    max_attempts = max(1, int(attempts))
+    sleeper = time.sleep if sleep_func is None else sleep_func
+    proc = None
+    for attempt in range(1, max_attempts + 1):
+        proc = runner(args, **kwargs)
+        if not is_launch_fault_exit_code(getattr(proc, "returncode", None)):
+            return proc
+        if attempt >= max_attempts:
+            return proc
+        stdout = kwargs.get("stdout")
+        if hasattr(stdout, "write"):
+            stdout.write(
+                "launch_fault_retry "
+                f"attempt={attempt} "
+                f"exit_code={_format_exit_code(getattr(proc, 'returncode', None))} "
+                f"backoff_sec={backoff_sec}\n"
+            )
+            stdout.flush()
+        sleeper(backoff_sec)
+    return proc
 
 
 def resolve_ea_expert_path(repo_root: Path, ea_label: str) -> str | None:
