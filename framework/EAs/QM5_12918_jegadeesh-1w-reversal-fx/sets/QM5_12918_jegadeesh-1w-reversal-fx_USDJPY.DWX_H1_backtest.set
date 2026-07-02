@@ -1,0 +1,34 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12918
+; ea_slug:      jegadeesh-1w-reversal-fx
+; ea_version:   v5.0
+; set_version:  s20260702-001
+; symbol:       USDJPY.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   a61090016e9155e0b80762b7a36fe46aabb29eb3e05f7e850d6808d3e6ed7f18
+; author:       Development
+; date:         2026-07-02
+;==========================================================
+qm_ea_id=12918
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12918_jegadeesh-1w-reversal-fx.md
+strategy_bottom_count=2
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_hold_trading_days=5
+strategy_min_eligible_symbols=5
+strategy_monday_start_hour=0
+strategy_monday_end_hour=4
+strategy_friday_exit_hour=21
+strategy_max_spread_points=0
+strategy_skip_rate_decision_weeks=true
+strategy_rate_calendar_path="D:\\QM\\data\\news_calendar\\news_calendar_2015_2025.csv"
