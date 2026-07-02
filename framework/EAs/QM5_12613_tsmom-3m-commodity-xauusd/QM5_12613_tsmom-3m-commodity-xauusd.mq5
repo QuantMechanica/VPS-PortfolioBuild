@@ -68,9 +68,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!QM_IsNewCalendarPeriod(PERIOD_MN1))
       return false;
 
-   // perf-allowed: bespoke 63-bar lookback return; no QM_* reader covers arbitrary close shift
-   double close_now = iClose(_Symbol, PERIOD_D1, 1);
-   double close_ago = iClose(_Symbol, PERIOD_D1, 1 + strategy_lookback_bars);
+   double close_now = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: bespoke N-bar lookback return, no QM_* reader covers arbitrary close shift
+   double close_ago = iClose(_Symbol, PERIOD_D1, 1 + strategy_lookback_bars); // perf-allowed: bespoke N-bar lookback return, no QM_* reader covers arbitrary close shift
    if(close_now <= 0 || close_ago <= 0)
       return false;
 
