@@ -27,6 +27,11 @@ pipeline_phase: Q02
 last_updated: 2026-07-01
 ---
 
+> NOTE 2026-07-02: the card of record is
+> `D:/QM/strategy_farm/artifacts/cards_approved/QM5_12844_commodity-trend-crude.md`.
+> This local copy is retained only as build-side context and must not override the
+> approved card.
+
 # Crude Commodity Trend Breakout
 
 This local EA copy follows the approved card at

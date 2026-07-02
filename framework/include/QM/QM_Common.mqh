@@ -390,6 +390,15 @@ bool QM_FrameworkMaeLookup(const ulong position_id,
    return true;
   }
 
+QM_ExitReason QM_FrameworkExitReasonFromText(const string reason)
+  {
+   if(reason == "friday_close")
+      return QM_EXIT_FRIDAY_CLOSE;
+   if(reason == "ks_distribution_divergence")
+      return QM_EXIT_KILLSWITCH;
+   return QM_EXIT_STRATEGY;
+  }
+
 int QM_FrameworkCloseAllByMagic(const long magic, const string reason)
   {
    int closed = 0;
@@ -403,7 +412,7 @@ int QM_FrameworkCloseAllByMagic(const long magic, const string reason)
       if(PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      if(g_qm_fw_trade.PositionClose(ticket))
+      if(QM_TM_ClosePosition(ticket, QM_FrameworkExitReasonFromText(reason)))
         {
          ++closed;
          continue;
@@ -438,7 +447,7 @@ int QM_FrameworkCloseAllOwnedPositions(const string reason)
       if(!QM_FrameworkOwnsMagicSymbol(magic, symbol))
          continue;
 
-      if(g_qm_fw_trade.PositionClose(ticket))
+      if(QM_TM_ClosePosition(ticket, QM_FrameworkExitReasonFromText(reason)))
         {
          ++closed;
          continue;

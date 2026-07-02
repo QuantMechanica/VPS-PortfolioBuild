@@ -259,7 +259,7 @@ bool QM_TM_MoveToBreakEven(const ulong ticket, const int trigger_pips, const int
    return QM_TM_MoveSL(ticket, normalized_target, reason);
   }
 
-bool QM_TM_TrailATR(const ulong ticket, const int atr_period, const double atr_mult)
+bool QM_TM_TrailATR(const ulong ticket, const int atr_period_value, const double atr_mult)
   {
    if(!QM_TM_SelectPosition(ticket))
       return false;
@@ -272,7 +272,7 @@ bool QM_TM_TrailATR(const ulong ticket, const int atr_period, const double atr_m
       return false;
 
    double atr_value = 0.0;
-   if(!QM_StopRulesReadATRValue(symbol, atr_period, 1, atr_value))
+   if(!QM_StopRulesReadATRValue(symbol, atr_period_value, 1, atr_value))
       return false;
 
    const bool is_buy = (position_type == POSITION_TYPE_BUY);
@@ -293,7 +293,7 @@ bool QM_TM_TrailATR(const ulong ticket, const int atr_period, const double atr_m
    if(!improves)
       return false;
 
-   const string reason = StringFormat("trail_atr period=%d mult=%.4f", atr_period, atr_mult);
+   const string reason = StringFormat("trail_atr period=%d mult=%.4f", atr_period_value, atr_mult);
    return QM_TM_MoveSL(ticket, target_sl, reason);
   }
 

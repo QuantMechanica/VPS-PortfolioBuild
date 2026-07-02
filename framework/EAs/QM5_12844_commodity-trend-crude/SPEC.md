@@ -2,17 +2,18 @@
 
 **EA ID:** QM5_12844
 **Slug:** `commodity-trend-crude`
-**Source:** `BALKE-DAVEY-SLATE-20260630`
+**Source:** `D:/QM/strategy_farm/artifacts/cards_approved/QM5_12844_commodity-trend-crude.md`
 **Author of this spec:** Codex
 **Last revised:** 2026-07-01
 
 ## 1. Strategy Logic
 
-This EA implements a low-frequency structural WTI trend sleeve on
-`XTIUSD.DWX`. On each new D1 bar, it checks whether the just-closed bar broke
-the prior 20-bar channel while ADX(11) is above the trend threshold. It trades
-symmetrically long and short, with an ATR hard stop, ATR trailing stop,
-opposite 10-bar channel exit, and max-hold time exit.
+This EA implements a low-frequency commodity trend sleeve using the
+OWNER-approved card of record. On each new D1 bar, it places buy-stop and
+sell-stop orders at the last N-bar Donchian extremes when ADX(11) is above the
+trend threshold. It trades symmetrically long and short, with an ATR hard stop,
+ATR trailing stop, stop-and-reverse on the opposite Donchian signal, and
+optional time exit.
 
 The strategy is intentionally not a duplicate of the existing WTI family:
 monthly TSMOM, Abraham pullback, prior-range volatility expansion, XTI/XNG,
@@ -25,22 +26,20 @@ ATR trail, and time exit.
 
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
-| `strategy_entry_period` | 20 | 15-30 | Prior D1 channel lookback for breakout entry |
-| `strategy_exit_period` | 10 | 8-15 | Prior D1 channel lookback for reverse exit |
-| `strategy_adx_period` | 11 | 9-14 | ADX trend-state period |
-| `strategy_adx_threshold` | 20.0 | 18.0-25.0 | Minimum closed-bar ADX for entry |
-| `strategy_atr_period` | 14 | 14-20 | ATR period for hard stop and trail |
-| `strategy_atr_sl_mult` | 3.0 | 2.5-3.5 | Initial ATR stop multiplier |
-| `strategy_atr_trail_mult` | 3.0 | 2.5-3.5 | ATR trailing stop multiplier |
-| `strategy_trail_activation_atr` | 1.0 | 0.0-1.5 | Favorable ATR move before trailing |
-| `strategy_max_hold_days` | 45 | 30-65 | Calendar-day time exit |
+| `donchian_lookback` | 20 | 15-30 | D1 channel lookback for buy-stop/sell-stop entry |
+| `adx_period` | 11 | 9-14 | ADX trend-state period |
+| `adx_min` | 20.0 | 18.0-25.0 | Minimum closed-bar ADX for entry |
+| `atr_period` | 14 | 14-20 | ATR period for hard stop and trail |
+| `atr_trail_mult` | 3.0 | 2.5-3.5 | ATR hard-stop and trailing multiplier |
+| `time_exit_bars` | 0 | 0+ | D1-bar time exit; 0 disables it |
+| `use_stop_and_reverse` | true | true/false | Opposite Donchian signal can reverse on the same bar |
 | `strategy_max_spread_points` | 1000 | 700-1500 | Entry spread cap |
 
 ## 3. Symbol Universe
 
-- `XTIUSD.DWX` only, magic slot 0. This is the Darwinex WTI CFD proxy and gives
-  the book outright crude exposure distinct from the current XAU, index, XNG,
-  and ratio sleeves.
+- Primary target: `XTIUSD.DWX`; use the registered symbol magic slot. The EA does not hardcode the
+  symbol so the card-mandated multi-market baseline can run on other approved
+  commodity symbols without a rebuild.
 
 ## 4. Timeframe
 
@@ -78,4 +77,5 @@ touched by this build.
 
 | Version | Date | Change | Task |
 |---|---|---|---|
-| v1 | 2026-07-01 | Initial build from approved card | QM5_12844 |
+| v1 | 2026-07-01 | Initial build from divergent local card | QM5_12844 |
+| v2 | 2026-07-02 | Realigned to OWNER-approved card of record; stop orders, same-bar reverse, no hardcoded XTI/D1 gate | 49a19ccb |

@@ -50,15 +50,15 @@ double QM_StopRulesPipsToPriceDistance(const string symbol, const int pips)
   }
 
 bool QM_StopRulesReadATRValue(const string symbol,
-                              const int atr_period,
+                              const int atr_period_value,
                               const int shift,
                               double &out_atr)
   {
    out_atr = 0.0;
-   if(atr_period <= 0 || shift < 0)
+   if(atr_period_value <= 0 || shift < 0)
       return false;
 
-   int handle = iATR(symbol, PERIOD_CURRENT, atr_period);
+   int handle = iATR(symbol, PERIOD_CURRENT, atr_period_value);
    if(handle == INVALID_HANDLE)
       return false;
 
@@ -161,11 +161,11 @@ double QM_StopATRFromValue(const string sym,
 double QM_StopATR(const string sym,
                   const QM_OrderType side,
                   const double entry,
-                  const int atr_period,
+                  const int atr_period_value,
                   const double atr_mult)
   {
    double atr_value = 0.0;
-   if(!QM_StopRulesReadATRValue(sym, atr_period, 1, atr_value))
+   if(!QM_StopRulesReadATRValue(sym, atr_period_value, 1, atr_value))
       return 0.0;
    return QM_StopATRFromValue(sym, side, entry, atr_value, atr_mult);
   }
@@ -259,11 +259,11 @@ double QM_TakeATRFromValue(const string sym,
 double QM_TakeATR(const string sym,
                   const QM_OrderType side,
                   const double entry,
-                  const int atr_period,
+                  const int atr_period_value,
                   const double atr_mult)
   {
    double atr_value = 0.0;
-   if(!QM_StopRulesReadATRValue(sym, atr_period, 1, atr_value))
+   if(!QM_StopRulesReadATRValue(sym, atr_period_value, 1, atr_value))
       return 0.0;
    return QM_TakeATRFromValue(sym, side, entry, atr_value, atr_mult);
   }

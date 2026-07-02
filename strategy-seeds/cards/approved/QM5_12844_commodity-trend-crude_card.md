@@ -1,3 +1,7 @@
+> SUPERSEDED 2026-07-02: this Codex-derived strategy-seeds fork is not the card
+> of record for QM5_12844. Use
+> `D:/QM/strategy_farm/artifacts/cards_approved/QM5_12844_commodity-trend-crude.md`.
+
 ---
 ea_id: QM5_12844
 slug: commodity-trend-crude
