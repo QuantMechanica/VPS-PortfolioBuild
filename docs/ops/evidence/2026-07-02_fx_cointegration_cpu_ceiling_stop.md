@@ -35,11 +35,11 @@ built:
 
 `QM5_12532_AUDNZD_COINTEGRATION_D1` is not Q02-blocked. It has Q02 `PASS`,
 Q04 `PASS`, and the latest Q05 retry completed `INFRA_FAIL` at
-`2026-07-02T05:16:43+00:00` after the existing timeout and CPU-trim repairs.
+`2026-07-02T10:23:08+00:00` after the existing timeout and CPU-trim repairs.
 The current aggregate is:
 `D:/QM/reports/work_items/82cab3d1-bf05-4aa4-8278-86c8064b16e7/QM5_12532/Q05/QM5_12532_AUDNZD_COINTEGRATION_D1/aggregate.json`.
-Reason: `invalid_summary:INCOMPLETE_RUNS,TIMEOUT` with runner timeout `3420`
-seconds.
+Reason: `summary_missing` with exit code `3221225794` and runner timeout
+`5520` seconds.
 
 `QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1` is not Q02-blocked. It has Q02
 `PASS` and a later completed Q04 `FAIL`.
@@ -76,9 +76,29 @@ Factory slot scan at the stop point showed all T1-T5 terminals occupied:
 
 Per mission constraint, I stopped at the backtest CPU ceiling instead of
 requeueing another full-history FX basket run. `QM5_12532` has now consumed
-multiple Q05 retries and still times out at the current 3420-second runner
-envelope; another enqueue would be duplicate CPU work without a new execution
-mode or budget decision. No manual MT5 tester run was launched.
+multiple Q05 retries: the earlier retry failed inside the 3420-second runner
+envelope, and the post-worker recheck below shows the later row also completed
+`INFRA_FAIL` under a 5520-second wrapper. Another enqueue would be duplicate
+CPU work without a new execution mode or budget decision. No manual MT5 tester
+run was launched.
+
+## Post-Worker Recheck
+
+Rechecked the farm DB at `2026-07-02T11:04Z` before closing this pass. No
+EdgeLab FX cointegration basket had an active or pending logical Q02/Q05/Q07
+row. The relevant later-phase baskets had all completed as infra failures:
+
+| EA | Phase | Symbol | Current verdict | Current reason |
+|---|---|---|---|---|
+| `QM5_12532` | Q05 | `QM5_12532_AUDNZD_COINTEGRATION_D1` | `INFRA_FAIL` | `summary_missing`, exit code `3221225794`, runner timeout `5520` |
+| `QM5_12712` | Q05 | `QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1` | `INFRA_FAIL` | `invalid_summary:INCOMPLETE_RUNS,TIMEOUT`, exit code `3221225794`, runner timeout `5520` |
+| `QM5_12772` | Q05 | `QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1` | `INFRA_FAIL` | `summary_missing`, exit code `3221225794`, runner timeout `5520` |
+| `QM5_12778` | Q05 | `QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1` | `INFRA_FAIL` | no-history/report-missing invalid summary, exit code `3221225794`, runner timeout `5520` |
+| `QM5_12781` | Q07 | `QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1` | `INFRA_FAIL` | all five seeds invalid with exit code `3221225794`, runner timeout `2520` |
+
+I did not requeue any of these rows. The next non-duplicate action needs a new
+runner mode, a narrower validated stress window, or an owner-approved timeout
+budget; replaying the same worker-owned path would only consume terminal time.
 
 ## Safety
 

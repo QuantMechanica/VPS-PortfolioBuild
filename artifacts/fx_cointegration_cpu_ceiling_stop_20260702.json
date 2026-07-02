@@ -29,13 +29,70 @@
   "positive_hedge_ranked_pairs_unbuilt": 0,
   "latest_qm5_12532_q05_failure": {
     "work_item": "82cab3d1-bf05-4aa4-8278-86c8064b16e7",
-    "updated_at": "2026-07-02T05:16:43+00:00",
+    "updated_at": "2026-07-02T10:23:08+00:00",
     "verdict": "INFRA_FAIL",
-    "reason": "invalid_summary:INCOMPLETE_RUNS,TIMEOUT",
-    "runner_timeout_sec": 3420,
+    "reason": "summary_missing",
+    "runner_timeout_sec": 5520,
     "aggregate": "D:/QM/reports/work_items/82cab3d1-bf05-4aa4-8278-86c8064b16e7/QM5_12532/Q05/QM5_12532_AUDNZD_COINTEGRATION_D1/aggregate.json"
   },
-  "active_or_pending_fx_baskets": [
+  "post_worker_recheck_20260702T1104Z": {
+    "strict_survivor_q02_blocked": false,
+    "edge_lab_cointegration_active_or_pending": [],
+    "later_phase_infra_failures": [
+      {
+        "ea": "QM5_12532",
+        "phase": "Q05",
+        "symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+        "work_item": "82cab3d1-bf05-4aa4-8278-86c8064b16e7",
+        "verdict": "INFRA_FAIL",
+        "reason": "summary_missing",
+        "exit_code": 3221225794,
+        "runner_timeout_sec": 5520
+      },
+      {
+        "ea": "QM5_12712",
+        "phase": "Q05",
+        "symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+        "work_item": "f064eb24-9f7e-4d80-8180-88b1b0165b52",
+        "verdict": "INFRA_FAIL",
+        "reason": "invalid_summary:INCOMPLETE_RUNS,TIMEOUT",
+        "exit_code": 3221225794,
+        "runner_timeout_sec": 5520
+      },
+      {
+        "ea": "QM5_12772",
+        "phase": "Q05",
+        "symbol": "QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1",
+        "work_item": "dd43c7e2-7351-41e1-a4a4-f667d0789249",
+        "verdict": "INFRA_FAIL",
+        "reason": "summary_missing",
+        "exit_code": 3221225794,
+        "runner_timeout_sec": 5520
+      },
+      {
+        "ea": "QM5_12778",
+        "phase": "Q05",
+        "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+        "work_item": "1c0405e7-16d3-40e6-b884-6be1b504dc4c",
+        "verdict": "INFRA_FAIL",
+        "reason": "invalid_summary:BARS_ZERO,EMPTY_EXPERT,EMPTY_SYMBOL,HISTORY_CONTEXT_INVALID,INCOMPLETE_RUNS,M0_1970_PERIOD,NO_HISTORY,REPORT_MISSING,RUN_STATUS_INVALID",
+        "exit_code": 3221225794,
+        "runner_timeout_sec": 5520
+      },
+      {
+        "ea": "QM5_12781",
+        "phase": "Q07",
+        "symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1",
+        "work_item": "38226031-b41f-4f03-ab86-d1697ca5e203",
+        "verdict": "INFRA_FAIL",
+        "reason": "seeds_invalid_evidence exit_code=3221225794 for all five seeds",
+        "exit_code": 3221225794,
+        "runner_timeout_sec": 2520
+      }
+    ],
+    "queue_mutation": "none; duplicate enqueue avoided until there is a new runner mode, narrower validated window, or owner-approved timeout budget"
+  },
+  "active_or_pending_fx_baskets_at_initial_stop": [
     {
       "ea": "QM5_12728",
       "phase": "Q04",
