@@ -1,0 +1,87 @@
+{
+  "date": "2026-07-02",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_12781",
+  "ea_label": "QM5_12781_edgelab-usdjpy-audjpy-cointegration",
+  "selected_pair": "USDJPY~AUDJPY",
+  "logical_symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1",
+  "mission_path": {
+    "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "qm5_12532_q02_blocked": false,
+    "qm5_12533_q02_blocked": false,
+    "unbuilt_registered_fx_cointegration_pair_found": false,
+    "selected_action": "advance_existing_forex_basket"
+  },
+  "pre_action_state": {
+    "q02_latest": {
+      "work_item_id": "54c04ac1-e5f7-4060-ae60-6814cb930fd5",
+      "status": "done",
+      "verdict": "PASS",
+      "tester_currency": "JPY",
+      "tester_deposit": 15000000
+    },
+    "q06_predecessor": {
+      "work_item_id": "f1147d03-5c9b-4874-ba86-0406e1a90bdc",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q07_before_requeue": {
+      "work_item_id": "38226031-b41f-4f03-ab86-d1697ca5e203",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "reason": "seeds_invalid_evidence after stale USD-account payload"
+    }
+  },
+  "queue_action": {
+    "db_backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12781_q07_jpy_requeue_20260702T144807Z.sqlite",
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12781 --phase Q07",
+    "created_rows": 0,
+    "requeued": [
+      "38226031-b41f-4f03-ab86-d1697ca5e203"
+    ],
+    "post_status": "pending",
+    "post_verdict": null,
+    "post_claimed_by": null,
+    "duplicate_pending_active_q07_after": 1,
+    "archived_report_root_on_requeue": "D:/QM/reports/work_items/38226031-b41f-4f03-ab86-d1697ca5e203.requeued_20260702T1448130000",
+    "payload_confirmed": {
+      "portfolio_scope": "basket",
+      "basket_manifest": "C:/QM/repo/framework/EAs/QM5_12781_edgelab-usdjpy-audjpy-cointegration/basket_manifest.json",
+      "basket_symbols": [
+        "USDJPY.DWX",
+        "AUDJPY.DWX"
+      ],
+      "host_symbol": "USDJPY.DWX",
+      "host_timeframe": "D1",
+      "tester_currency": "JPY",
+      "tester_deposit": 15000000,
+      "timeout_min": 120,
+      "promoted_from_phase": "Q06",
+      "promoted_from_work_item": "f1147d03-5c9b-4874-ba86-0406e1a90bdc"
+    }
+  },
+  "validation": [
+    {
+      "command": "python -m pytest tools/strategy_farm/tests/test_farmctl_cascade.py::CascadePromotionTests::test_enqueue_q05_checks_basket_manifest_symbols_not_logical_symbol tools/strategy_farm/tests/test_farmctl_cascade.py::CascadePromotionTests::test_q07_runner_cmd_keeps_basket_logical_symbol tools/strategy_farm/tests/test_fx_basket_manifests.py -q",
+      "result": "PASS",
+      "summary": "10 passed"
+    },
+    {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12781_edgelab-usdjpy-audjpy-cointegration -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "summary": "failures=0; warnings=16 shared framework include advisories",
+      "report": "D:/QM/reports/framework/21/build_check_20260702_144826.json"
+    }
+  ],
+  "guardrails": {
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false,
+    "risk_mode": "RISK_FIXED backtest queue only"
+  }
+}

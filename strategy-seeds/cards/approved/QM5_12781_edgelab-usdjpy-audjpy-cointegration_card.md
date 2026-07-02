@@ -25,8 +25,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02
-last_updated: 2026-06-29
+pipeline_phase: Q07
+last_updated: 2026-07-02
 g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-requested in-house 66-pair FX scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS USDJPY.DWX and AUDJPY.DWX data exist in scan universe; R4 PASS no ML/grid/martingale."
 expected_pf: 0.90
 expected_dd_pct: 35.0
@@ -182,4 +182,5 @@ after all gates.
 | v4 | 2026-06-30 | Q05 medium stress completed on the logical basket with PF 1.07 and 2.29% drawdown | Q05 | PASS dcf243dd-7948-414b-a1ad-9481f83a5445 |
 | v5 | 2026-07-01 | Q06 harsh-stress infra failure `summary_missing`/exit 3221225794 requeued in place with basket manifest payload; no duplicate row created | Q06 | PENDING f1147d03-5c9b-4874-ba86-0406e1a90bdc |
 | v6 | 2026-07-01 | tester account switched to JPY after Q07 seed failures exposed bare USDJPY conversion-history timeouts | Q02 | PENDING 54c04ac1-e5f7-4060-ae60-6814cb930fd5 |
+| v7 | 2026-07-02 | existing Q07 row requeued after the JPY-account Q02 PASS; payload now refreshes from the current basket manifest with JPY tester currency/deposit and no duplicate row | Q07 | PENDING 38226031-b41f-4f03-ab86-d1697ca5e203 |
 
