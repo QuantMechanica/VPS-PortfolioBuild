@@ -1,0 +1,82 @@
+{
+  "timestamp_utc": "2026-07-02T18:22:59Z",
+  "branch": "agents/board-advisor",
+  "unit_of_work": "Q02_INFRA_REQUEUE",
+  "ea_id": "QM5_12580",
+  "ea_label": "QM5_12580_fx-usd-exhaustion-reversal",
+  "symbol": "USDCHF.DWX",
+  "timeframe": "D1",
+  "instrument_bucket": "forex",
+  "strategy_class": "structural_usd_exhaustion_reversal",
+  "risk_mode": "RISK_FIXED",
+  "risk_fixed": 1000,
+  "selection_rationale": [
+    "No clean unbuilt high-diversity approved card with registry and magic preflight was available.",
+    "USDCHF.DWX is a diverse FX sleeve candidate, not an index/metal/energy duplicate.",
+    "The latest USDCHF Q02 row was INFRA_FAIL with NO_HISTORY and INCOMPLETE_RUNS, and there was no pending or active USDCHF retry."
+  ],
+  "previous_work_items": {
+    "latest_infra_fail": {
+      "id": "fec733dd-bd33-409f-bbae-c8f1d586f5cd",
+      "terminal": "T4",
+      "evidence_path": "D:\\QM\\reports\\work_items\\fec733dd-bd33-409f-bbae-c8f1d586f5cd\\QM5_12580\\20260630_004016\\summary.json",
+      "reason_classes": [
+        "NO_HISTORY",
+        "INCOMPLETE_RUNS"
+      ],
+      "invalid_report_reasons": [
+        "EMPTY_EXPERT",
+        "EMPTY_SYMBOL",
+        "M0_1970_PERIOD",
+        "BARS_ZERO",
+        "HISTORY_CONTEXT_INVALID"
+      ]
+    },
+    "prior_pass": {
+      "id": "b088093a-ce02-405c-8193-78f6b53f5102",
+      "evidence_path": "D:\\QM\\reports\\work_items\\b088093a-ce02-405c-8193-78f6b53f5102\\QM5_12580\\20260626_160953\\summary.json"
+    }
+  },
+  "repair_actions": [
+    {
+      "action": "strict_compile",
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260702_182134\\QM5_12580_fx-usd-exhaustion-reversal.compile.log"
+    },
+    {
+      "action": "build_check",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 16,
+      "report": "D:\\QM\\reports\\framework\\21\\build_check_20260702_182200.json",
+      "warning_scope": "framework advisory warnings in shared include files"
+    },
+    {
+      "action": "refresh_build_artifacts",
+      "result": "DONE",
+      "ex5_path": "framework/EAs/QM5_12580_fx-usd-exhaustion-reversal/QM5_12580_fx-usd-exhaustion-reversal.ex5",
+      "setfile_build_hash": "83c9982b5e19d37716dab56c2c42e73bbc4917a34898a453b54874d5c1309332"
+    },
+    {
+      "action": "enqueue_single_q02_retry",
+      "result": "DONE",
+      "farm_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+      "work_item_id": "dde8b9df-929e-444e-8bed-aeb1f16dee5b",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12580_fx-usd-exhaustion-reversal\\sets\\QM5_12580_fx-usd-exhaustion-reversal_USDCHF.DWX_D1_backtest.set"
+    }
+  ],
+  "collision_check": {
+    "phase": "Q02",
+    "symbol": "USDCHF.DWX",
+    "pending_or_active_before_insert": 0
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "backtest_started_by_this_unit": false
+  }
+}
