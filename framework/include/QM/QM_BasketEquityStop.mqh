@@ -75,6 +75,23 @@ double QM_BasketEquityStop_FloatingPnL()
    return pnl;
   }
 
+double QM_BasketEquityStop_OpenLots()
+  {
+   double lots = 0.0;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      const long magic = PositionGetInteger(POSITION_MAGIC);
+      const string symbol = PositionGetString(POSITION_SYMBOL);
+      if(!QM_FrameworkOwnsMagicSymbol(magic, symbol))
+         continue;
+      lots += PositionGetDouble(POSITION_VOLUME);
+     }
+   return lots;
+  }
+
 int QM_BasketEquityStop_CloseAllOwned(const QM_ExitReason reason)
   {
    int closed = 0;
@@ -110,6 +127,55 @@ int QM_BasketEquityStop_Enforce(const double stop_pct,
    QM_BasketEquityDecision decision;
    if(!QM_BasketEquityStop_Evaluate(out_pnl, equity, stop_pct, take_profit_pct, decision))
       return 0;
+
+   if(decision.should_stop)
+     {
+      out_reason = QM_EXIT_KILLSWITCH;
+      out_threshold = decision.stop_threshold;
+      return QM_BasketEquityStop_CloseAllOwned(out_reason);
+     }
+
+   if(decision.should_take_profit)
+     {
+      out_reason = QM_EXIT_TP_HIT;
+      out_threshold = decision.take_threshold;
+      return QM_BasketEquityStop_CloseAllOwned(out_reason);
+     }
+
+   return 0;
+  }
+
+int QM_BasketEquityStop_EnforceUnitsPerLot(const double stop_pct,
+                                           const double take_profit_units_per_lot,
+                                           QM_ExitReason &out_reason,
+                                           double &out_pnl,
+                                           double &out_threshold,
+                                           double &out_lots)
+  {
+   out_reason = QM_EXIT_STRATEGY;
+   out_pnl = 0.0;
+   out_threshold = 0.0;
+   out_lots = 0.0;
+   if(!QM_BasketEquityStop_HasOwnedPositions())
+      return 0;
+
+   const double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   out_pnl = QM_BasketEquityStop_FloatingPnL();
+   out_lots = QM_BasketEquityStop_OpenLots();
+   QM_BasketEquityDecision decision;
+   QM_BasketEquityStop_ResetDecision(decision);
+
+   if(equity > 0.0 && stop_pct > 0.0)
+     {
+      decision.stop_threshold = -equity * stop_pct / 100.0;
+      decision.should_stop = (out_pnl <= decision.stop_threshold);
+     }
+
+   if(take_profit_units_per_lot > 0.0 && out_lots > 0.0)
+     {
+      decision.take_threshold = take_profit_units_per_lot * out_lots;
+      decision.should_take_profit = (out_pnl >= decision.take_threshold);
+     }
 
    if(decision.should_stop)
      {
