@@ -1,0 +1,86 @@
+# Operating Rules — konsolidiert aus der Nacht 2026-07-02/03 (OWNER-ratifiziert)
+
+Bindend für alle Agenten (Claude, Codex, agy) und alle Sessions. Ergänzt die Hard Rules
+im Vault; bei Konflikt gelten Vault-Hard-Rules zuerst.
+
+## Gates & Ökonomie
+
+1. **Frequenz-Floor bestätigt (OWNER 07-03):** Q02 verlangt ≥5 Trades/Jahr/Symbol.
+   Begründung: Wirtschaftlichkeit (VPS-Kostendeckung). Below-Floor-EAs werden RETIRED,
+   nicht requeued — auch bei starkem PF (Präzedenz: 12914 PF 1.58, 12917 PF 1.65).
+   Keine Gate-Ausnahmen ohne expliziten OWNER-Entscheid. Higher-Freq-Card-Varianten
+   sind der legitime Weg.
+2. **Gates bleiben bewusst konservativ** — niemals nächtlich/eigenmächtig aufweichen.
+3. **Challenger-Swap an der Buchtür (OWNER 07-03):** Bei Q09-Ablehnung wegen
+   `correlation_above_max_corr` wird automatisch der Verdrängungs-Tausch bewertet
+   (Buch-mit-Challenger vs. Buch-mit-Amtsinhaber auf Portfolio-Sharpe/MaxDD; Task
+   c57721a9). `CHALLENGER_SUPERIOR` → OWNER-Q12-Review. **NIE Auto-Swap** — Live-
+   Änderungen nur über das Manifest-Protokoll (OWNER + Claude).
+4. **Prescreen-Fenster für Saison-/Kalender-EAs:** Kalender-Strategien MÜSSEN mit
+   Fenstern getestet werden, die ihr Handelsfenster überlappen (Ganzjahres-Prescreen).
+   H2-Default-Prescreen auf ein Apr–Jun-Fenster = strukturell 0 Trades = False FAIL
+   (Präzedenz 12917).
+
+## Card- & Strategie-Beschaffung
+
+5. **Qualität vor Volumen:** ~10 neue Cards/Woche Richtwert. Jede Card braucht:
+   Primärquellen-Zitat (Video-Links von agy gelten NICHT als R1-Beleg — Halluzinations-
+   Präzedenz), erwartete Frequenz ≥ Floor, Kill-Kriterien, KEINE nachträglichen
+   Parameter-Sweeps außer im Card dokumentiert.
+6. **Survivor-Port-Playbook:** Gate-Passierer werden auf unkorrelierte Träger portiert
+   (Parameter GELOCKT — Port-Reinheit; ein scheiternder Port stirbt als Port, wird nicht
+   re-gefittet). Präzedenzen: 12567 (→ Buch), 12915 → 12966/67/68.
+7. **News-Kalender-als-Signal** ist ein zulässiges Muster (Pre-FOMC/Pre-ECB-Klasse),
+   solange Positionen VOR dem Event geschlossen werden (Blackout-Grenze respektiert)
+   und der Stale-Calendar-Fail-Closed greift.
+8. **agy = Video/Quellen-Extraktion ONLY**; jede agy-Behauptung braucht zitierbare
+   Timestamps/Links; Lücken als UNKNOWN, nie plausibel gefüllt. Synthese = Claude,
+   Code = Codex.
+
+## Factory-Betrieb
+
+9. **Keine manuellen codex/agy-Exec-Sessions bei laufender Factory-Automatik** — sie
+   kollidieren mit Pump/Pacer/Orchestrierungs-Slots und werden gecullt. Arbeit gehört
+   in die Task-Queues (agent_tasks/tasks); die Lanes führen aus. Manuelle Sessions nur
+   in OWNER-genehmigten OFF-Fenstern.
+10. **Magic-Registry-Reihenfolge (bindend):** EA-Verzeichnisse ERST anlegen, DANN
+    magic_numbers.csv-Zeilen appending, DANN update_magic_resolver.py, DANN im
+    generierten Resolver die neuen Magics VERIFIZIEREN, DANN kompilieren. Der
+    Regenerator droppt Zeilen ohne EA-Verzeichnis stillschweigend.
+11. **Terminal-Prozess-Selektion IMMER pfadverankert** (`\mt5\T<n>\`) UND explizit
+    `-notmatch 'T_Live'`. Nie bare `T<n>`-Substrings (Case-Insensitive-Match auf 'mt5'
+    killte T_Live am 07-02).
+12. **Dedizierte Testfenster** erfordern: Factory_OFF + Watchdog/FactoryON/Reconciler
+    disabled + codex_parallel=0 + Kill aller Streu-run_smoke-Wrapper. Der post-run-
+    Pump-Hook jedes run_smoke-Laufs reaktiviert sonst die Factory (Resurrection-Kette
+    07-02). Restore-Checkliste danach vollständig abarbeiten.
+13. **Gemini-Scheduled-Lane defekt** (SYSTEM-Kontext ohne G:-Zugriff → Tasks stranden
+    IN_PROGRESS): bis zum Codex-Fix deaktiviert lassen; agy-Tasks via Foreground-
+    One-Shot aus Session 1 (nur in OFF-Fenstern, s. Regel 9) oder nach Lane-Fix.
+14. **Evidence-Dokumente gehören ins kanonische Checkout** (C:\QM\repo), nicht in
+    Agenten-Worktrees (7 gestrandete Docs am 07-02 gerettet). Codex-Prompts müssen den
+    Zielpfad explizit nennen.
+
+## Bergungs-Operationen (Schatzsuche 07-03)
+
+15. **Recovery in Wellen, nie flutend:** Requeues aus dem False-FAIL-Archiv gestaffelt
+    (~100–150/Welle), Sperrliste (requeue_excluded_eas.txt, 160 Cost-Doomed-FX)
+    respektieren, Überlebens-Klassen zuerst. Offene Operationen: C4-Re-Verdikt
+    (70 beweisbare PASS_SOFT-Opfer), C2-Param-Diff (583 EAs auf leeren Sets beurteilt),
+    C6/C8 (10069-Redump + 941 Storm-INFRA_FAILs). Task-IDs: 69d126f2, bffea48b, 54387422.
+
+## T-WIN (abgeschlossen)
+
+16. **T-WIN-Original + v7 = archiviert** (18-Zellen-Dossier docs/research/
+    TWIN_FINAL_DOSSIER_2026-07-02.md; OWNER-Sign-off über Archiv-Status einholen).
+    Fade @Exhaustion 1.5–2.0% = dokumentierter **Schock-Regime-Satellit** (2024-Klasse),
+    Reaktivierung nur als bewusste OWNER-Regime-Wette. 12821-Q02-Requeues gestoppt.
+    Die Basket-Primitive (Cluster-Stop, Re-Projektion, Divergenz-Gate, Equity-Sizing)
+    bleiben Framework-Bestand für künftige Basket-EAs.
+
+## Sizing (offener OWNER-Design-Punkt)
+
+17. Cluster-EAs: `strategy_stop_engage_move_pct`-Sizing (implementiert 07-02) macht
+    DL-081-1%-Stops real. Für Single-Symbol-EAs bleibt RISK_FIXED-Backtest /
+    RISK_PERCENT-Live unverändert. Die generelle Lot-Skalierungs-Architektur
+    (Equity-basiert vs. Risikobudget) ist ein dokumentierter OWNER-Entscheid für Q12+.

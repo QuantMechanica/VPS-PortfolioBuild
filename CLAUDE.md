@@ -198,6 +198,16 @@ dashboard widget content) leave the interior open — design it well against the
 constraints. Over-specification trains agents to be passive; under-specifying a hard
 constraint corrupts the evidence trail. Know which is which.
 
+
+## Current Operating Rules
+
+Read **`docs/ops/OPERATING_RULES_2026-07-03.md`** (OWNER-ratified 2026-07-03) before factory
+operations. Binding highlights: Q02 frequency floor >=5 trades/yr (economics; below-floor =
+RETIRE), challenger-swap evaluation at Q09 (never auto-swap), magic-registry order-of-operations
+(dirs -> CSV -> regen -> verify -> compile), path-anchored terminal process selection + T_Live
+exclusion, no manual codex/agy exec sessions while factory automation runs, staged recovery
+requeues, survivor-port purity, agy citations mandatory.
+
 ## Output Format
 
 For non-trivial work, return:
