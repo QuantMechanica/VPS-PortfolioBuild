@@ -14262,6 +14262,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12870,wti-jan-fade,0,XTIUSD.DWX,128700000,2026-07-02,Codex,active
 12871,brent-jan-fade,0,XBRUSD.DWX,128710000,2026-07-02,Codex,active
 12893,xng-12m-carry,0,XNGUSD.DWX,128930000,2026-07-02,Codex,active
+12895,xng-6m-reversal,0,XNGUSD.DWX,128950000,2026-07-02,Codex,active
 12613,tsmom-3m-commodity-xauusd,0,XAUUSD.DWX,126130000,2026-07-02,Development,active
 12619,comm-reversal-4wk-xauusd,0,XAUUSD.DWX,126190000,2026-07-02,Development,active
 12910,wti-dist-unwind,0,XTIUSD.DWX,129100000,2026-07-02,Codex,active

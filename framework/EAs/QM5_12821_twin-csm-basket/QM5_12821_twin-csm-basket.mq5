@@ -58,7 +58,11 @@ input double strategy_pullback_max_chase_atr = 1.00;
 input int    strategy_pullback_volume_lookback = 20;
 input double strategy_pullback_volume_max_ratio = 1.00;
 input int    strategy_pullback_min_legs     = 7;
-input int    strategy_pending_expiration_minutes = 60;
+input int    strategy_pending_expiration_minutes = 60; // <=0: cycle-scoped GTC (canceled on cycle teardown)
+// false = exit only on a true strength FLIP, not when the momentary entry
+// alignment expires. Full-run 20260702_094031: decay-close forced median
+// 0.9h holds; measured edge is positive only >4h (4-12h +106/61%, 12-24h +42/94%).
+input bool   strategy_close_on_signal_decay = true;
 
 int  g_active_currency_idx = -1;
 int  g_active_direction    = 0;
@@ -112,6 +116,8 @@ bool QM12821_InEntrySession(const datetime broker_time)
 
 bool QM12821_TimeToFlat(const datetime broker_time)
   {
+   if(strategy_flat_hhmm <= 0)
+      return false;
    return (QM12821_HhmmToMinutes(QM12821_BrokerHhmm(broker_time)) >=
            QM12821_HhmmToMinutes(strategy_flat_hhmm));
   }
@@ -376,7 +382,9 @@ bool QM12821_OpenPlan(const QM_BasketPlan &plan,
                                 QM_CSM_CCY[plan.currency_idx],
                                plan.direction > 0 ? "STRONG" : "WEAK");
       req.symbol_slot = plan.legs[i].symbol_slot;
-      req.expiration_seconds = MathMax(1, strategy_pending_expiration_minutes) * 60;
+      req.expiration_seconds = (strategy_pending_expiration_minutes <= 0)
+                               ? 0
+                               : strategy_pending_expiration_minutes * 60;
 
       ulong ticket = 0;
       if(QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, strategy_deviation_points, req, ticket))
@@ -466,6 +474,8 @@ void QM12821_CloseOnSignalShift()
    double probability = 0.0;
    if(!QM12821_EvaluateSignal(d1, w1, mn, mtf, plan, probability))
      {
+      if(!strategy_close_on_signal_decay)
+         return;
       const int closed = QM12821_CloseAllOwned(QM_EXIT_OPPOSITE_SIGNAL);
       QM_LogEvent(QM_INFO, "BASKET_STRENGTH_SHIFT_EXIT",
                   StringFormat("{\"closed\":%d,\"reason\":\"signal_invalid\"}", closed));

@@ -21,15 +21,17 @@ single_symbol_only: true
 period: D1
 expected_trade_frequency: "Monthly D1 XNGUSD 6-month overextension fade; estimate 4-10 entries/year after threshold and SMA filters."
 expected_trades_per_year_per_symbol: 7
-g0_status: REVIEW
+g0_status: APPROVED
+status: APPROVED
 r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
+pipeline_phase: Q02
 last_updated: 2026-07-02
 expected_pf: 1.08
 expected_dd_pct: 24.0
+g0_approval_reasoning: "Mission-directed G0 approval 2026-07-02: R1 PASS peer-reviewed Bianchi-Drew-Fan commodity momentum/reversal source plus Yang commodity reversal supplement; R2 PASS deterministic 120-D1 return threshold, SMA/ATR stretch confirmation, ATR stop, zero-cross exit, and max-hold exit; R3 PASS XNGUSD.DWX available; R4 PASS no ML/grid/martingale/external data. Non-duplicate versus QM5_12567 because this is monthly 6-month overextension fade, not 2-day RSI pullback."
 ---
 
 # XNGUSD 6-Month Overextension Fade (Medium-Horizon Reversal)
@@ -140,7 +142,7 @@ Monthly rebalance check (first D1 bar of each calendar month):
 - Distinct from QM5_12807 (xng-52w-anchor): 12807 is a momentum continuation;
   this is a reversal fade at 6-month horizon. Opposite signals in a shared
   trending year (if 12807 says long, 6-month threshold may not yet be breached).
-- Distinct from QM5_12872 (xng-12m-carry): 12872 is directional momentum at
+- Distinct from QM5_12893 (xng-12m-carry): 12893 is broker-swap carry at
   12 months; this is contra-directional fade at 6 months.
 
 ## P3 sweep
