@@ -19,7 +19,12 @@ param(
     [int]$MinTrades = 5,
     [ValidateSet(4)]
     [int]$Model = 4,
-    [ValidateRange(60, 7200)]
+    # Max raised 7200 -> 28800 (2026-07-02): multi-symbol basket Q02 runs pay a
+    # one-time cold tick-sync of EVERY member symbol (~10 min/member; a 28-symbol
+    # basket like T-WIN needs ~5h). farmctl passes a symbol-scaled timeout capped
+    # at 25200s; the old 7200 max rejected it at parameter binding and the basket
+    # class INFRA_FAILed in 2s. Single-symbol dispatches still pass <=14400.
+    [ValidateRange(60, 28800)]
     [int]$TimeoutSeconds = 1800,
     [string]$SetFile,
     [string]$ReportRoot = "D:\QM\reports\smoke",
