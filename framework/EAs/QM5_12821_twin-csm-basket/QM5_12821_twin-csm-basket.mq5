@@ -42,6 +42,7 @@ input group "Strategy"
 input double strategy_exhaustion_norm       = 95.0;
 input int    strategy_exhaustion_mode       = 0;    // 0=legacy normalized, 1=absolute raw aggregate %
 input double strategy_exhaustion_abs_pct    = 0.60;
+input bool   strategy_reverse_direction     = false;
 input int    strategy_prob_min_numerator    = 6;
 input double strategy_basket_tp_pct         = 15.0;
 input double strategy_basket_tp_units_per_lot = 0.0;
@@ -223,7 +224,10 @@ int QM12821_CloseAllOwned(const QM_ExitReason reason)
 
 QM_OrderType QM12821_LegPendingOrderType(const QM_BasketLeg &leg)
   {
-   return QM_OrderTypeIsBuy(leg.type) ? QM_BUY_LIMIT : QM_SELL_LIMIT;
+   const bool original_buy = QM_OrderTypeIsBuy(leg.type);
+   if(!strategy_reverse_direction)
+      return original_buy ? QM_BUY_LIMIT : QM_SELL_LIMIT;
+   return original_buy ? QM_SELL_STOP : QM_BUY_STOP;
   }
 
 bool QM12821_HasOwnedPositionForSymbol(const string symbol)
@@ -456,9 +460,11 @@ bool QM12821_ComputeBasketBoundaries(const QM_BasketPlan &plan,
            }
         }
       QM_LogEvent(QM_INFO, "BASKET_LEG_LIMIT",
-                  StringFormat("{\"symbol\":\"%s\",\"type\":\"%s\",\"boundary\":%.5f,\"fair\":%.5f,\"atr\":%.5f,\"distance_atr\":%.3f,\"tick_vol\":%.0f,\"avg_vol\":%.1f}",
+                  StringFormat("{\"symbol\":\"%s\",\"type\":\"%s\",\"placement_type\":\"%s\",\"reverse\":%s,\"boundary\":%.5f,\"fair\":%.5f,\"atr\":%.5f,\"distance_atr\":%.3f,\"tick_vol\":%.0f,\"avg_vol\":%.1f}",
                                symbol,
                                QM_OrderTypeIsBuy(plan.legs[i].type) ? "buy_limit" : "sell_limit",
+                               QM_OrderTypeToString(QM12821_LegPendingOrderType(plan.legs[i])),
+                               strategy_reverse_direction ? "true" : "false",
                                boundary_price, fair_price, atr, distance_atr,
                                tick_vol, avg_vol));
      }
@@ -492,7 +498,7 @@ bool QM12821_OpenPlan(const QM_BasketPlan &plan,
 
       QM_BasketOrderRequest req;
       req.symbol = symbol;
-      req.type = QM_OrderTypeIsBuy(plan.legs[i].type) ? QM_BUY_LIMIT : QM_SELL_LIMIT;
+      req.type = QM12821_LegPendingOrderType(plan.legs[i]);
       req.price = pending_prices[i];
       req.sl = 0.0;
       req.tp = 0.0;
@@ -525,11 +531,13 @@ bool QM12821_OpenPlan(const QM_BasketPlan &plan,
    QM12821_ResetPendingReprojectState();
    g_pending_reproject_last_m30_bar = iTime(QM12821_HOST_SYMBOL, PERIOD_M30, 1);
    QM_LogEvent(QM_INFO, "BASKET_CYCLE_OPEN",
-               StringFormat("{\"currency\":\"%s\",\"direction\":%d,\"legs\":%d,\"probability\":%.4f,\"order_type\":\"limit_at_m30_boundary\"}",
-                            QM_CSM_CCY[plan.currency_idx],
-                            plan.direction,
-                            plan.leg_count,
-                            probability));
+               StringFormat("{\"currency\":\"%s\",\"direction\":%d,\"reverse\":%s,\"legs\":%d,\"probability\":%.4f,\"order_type\":\"%s\"}",
+                             QM_CSM_CCY[plan.currency_idx],
+                             plan.direction,
+                             strategy_reverse_direction ? "true" : "false",
+                             plan.leg_count,
+                             probability,
+                             strategy_reverse_direction ? "reverse_stop_at_m30_boundary" : "limit_at_m30_boundary"));
    return true;
   }
 
@@ -706,10 +714,11 @@ void QM12821_ReprojectPendingOrders()
 
    if(canceled > 0 || replaced > 0 || stopped > 0)
       QM_LogEvent(QM_INFO, "BASKET_PENDING_REPROJECT",
-                  StringFormat("{\"bar_time\":%I64d,\"currency\":\"%s\",\"direction\":%d,\"canceled\":%d,\"replaced\":%d,\"stopped\":%d,\"filled\":%d}",
+                  StringFormat("{\"bar_time\":%I64d,\"currency\":\"%s\",\"direction\":%d,\"reverse\":%s,\"canceled\":%d,\"replaced\":%d,\"stopped\":%d,\"filled\":%d}",
                                (long)closed_m30,
                                QM_CSM_CCY[g_active_currency_idx],
                                g_active_direction,
+                               strategy_reverse_direction ? "true" : "false",
                                canceled,
                                replaced,
                                stopped,
