@@ -273,24 +273,32 @@ bool Strategy_LoadRateDecisionWeeks()
    g_rate_weeks_available = false;
    ArrayResize(g_rate_decision_week_keys, 0);
 
-   int handle = FileOpen(strategy_rate_calendar_path, FILE_READ | FILE_TXT | FILE_ANSI | FILE_SHARE_READ);
+   const string calendar_base = QM_NewsBasename(strategy_rate_calendar_path);
+   int handle = INVALID_HANDLE;
+   if(StringLen(calendar_base) > 0)
+      handle = FileOpen(calendar_base, FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON, ',');
    if(handle == INVALID_HANDLE)
-      handle = FileOpen(QM_NewsBasename(strategy_rate_calendar_path), FILE_READ | FILE_TXT | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON);
+      handle = FileOpen(strategy_rate_calendar_path, FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON, ',');
+   if(handle == INVALID_HANDLE)
+      handle = FileOpen(strategy_rate_calendar_path, FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ, ',');
    if(handle == INVALID_HANDLE)
       return false;
 
    int rows = 0;
    while(!FileIsEnding(handle))
      {
-      string line = FileReadString(handle);
-      if(StringLen(line) == 0)
-         continue;
+      const string event_time = FileReadString(handle);
+      if(FileIsEnding(handle) && StringLen(event_time) == 0)
+         break;
+      const string event_currency = FileReadString(handle);
+      const string event_name = FileReadString(handle);
+      const string event_impact = FileReadString(handle);
+      while(!FileIsEnding(handle) && !FileIsLineEnding(handle))
+         FileReadString(handle);
 
-      string fields[];
-      const int n = StringSplit(line, ',', fields);
-      if(n < 4)
+      if(StringLen(event_time) == 0 || StringLen(event_currency) == 0 || StringLen(event_name) == 0)
          continue;
-      if(rows == 0 && Strategy_Upper(QM_NewsStripQuotes(fields[0])) == "DATETIME")
+      if(rows == 0 && Strategy_Upper(QM_NewsStripQuotes(event_time)) == "DATETIME")
         {
          rows++;
          continue;
@@ -298,9 +306,9 @@ bool Strategy_LoadRateDecisionWeeks()
       rows++;
 
       datetime event_utc = 0;
-      if(!QM_NewsParseDateTimeUTC(fields[0], event_utc))
+      if(!QM_NewsParseDateTimeUTC(event_time, event_utc))
          continue;
-      if(!Strategy_IsRateDecisionEvent(fields[1], fields[2]))
+      if(!Strategy_IsRateDecisionEvent(event_currency, event_name))
          continue;
       Strategy_AddRateWeekKey(Strategy_WeekKeyFromUTC(event_utc));
      }

@@ -101,3 +101,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-02 | Initial build from card | 4652a1bb-eaa4-4dcc-89e0-2b7127a9669f |
+| v2 | 2026-07-02 | Q02 ONINIT hardening | Rate-decision calendar loader now reads the Common Files CSV as structured CSV before fallback paths; strict compile PASS at `framework/build/compile/20260702_213910/QM5_12918_jegadeesh-1w-reversal-fx.compile.log`. |

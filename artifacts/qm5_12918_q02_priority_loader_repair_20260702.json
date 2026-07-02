@@ -1,0 +1,94 @@
+{
+  "date": "2026-07-02",
+  "branch": "agents/board-advisor",
+  "mission_outcome": "fallback_existing_structural_fx_card_advanced",
+  "cointegration_precheck": {
+    "source_checked": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_66_pair_survivors": [
+      {
+        "ea_id": "QM5_12533",
+        "pair": "EURJPY~GBPJPY",
+        "current_state": "Q02_PASS_later_Q04_FAIL"
+      },
+      {
+        "ea_id": "QM5_12532",
+        "pair": "AUDUSD~NZDUSD",
+        "current_state": "Q02_PASS_Q04_PASS_later_Q05_CPU_HISTORY_INFRA"
+      }
+    ],
+    "approved_edgelab_cointegration_frontier_built_through": "QM5_12803",
+    "unbuilt_registered_edgelab_cointegration_pairs_found": 0
+  },
+  "selected_existing_fx_card": {
+    "ea_id": "QM5_12918",
+    "slug": "jegadeesh-1w-reversal-fx",
+    "card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12918_jegadeesh-1w-reversal-fx.md",
+    "reason": "Approved structural weekly short-term FX reversal card; pure Friday-to-Friday return ranking, no ML, no adaptive indicators, expected_trades_per_year_per_symbol=40.",
+    "symbols_registered": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX",
+      "AUDUSD.DWX",
+      "USDCAD.DWX",
+      "USDCHF.DWX",
+      "NZDUSD.DWX"
+    ]
+  },
+  "code_repair": {
+    "file": "framework/EAs/QM5_12918_jegadeesh-1w-reversal-fx/QM5_12918_jegadeesh-1w-reversal-fx.mq5",
+    "issue": "Build-smoke evidence reported ONINIT_FAILED from Strategy_LoadRateDecisionWeeks after the tester could not use the configured absolute rate-calendar path reliably.",
+    "fix": "Strategy_LoadRateDecisionWeeks now opens the Common Files basename first and parses the calendar with FILE_CSV so datetime,currency,event_name columns are read explicitly before fallback paths.",
+    "prior_smoke_summary": "D:/QM/reports/smoke/QM5_12918/20260702_192829/summary.json"
+  },
+  "queue_action": {
+    "action": "set_priority_track_on_existing_pending_q02_rows",
+    "new_rows_inserted": false,
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12918_q02_priority_20260702T213522Z.sqlite",
+    "updated_at_utc": "2026-07-02T21:35:44+00:00",
+    "work_items": [
+      {
+        "id": "6e06e8a2-0c55-4e8d-a88c-9a993f70baba",
+        "symbol": "EURUSD.DWX",
+        "state_after_validation": "active",
+        "claimed_by": "T1"
+      },
+      {
+        "id": "2ec934d4-5383-41a4-80dd-5d2ac4d66caa",
+        "symbol": "GBPUSD.DWX",
+        "state_after_validation": "pending"
+      },
+      {
+        "id": "3797a3a8-6e1e-4525-8a87-dd2241d9258e",
+        "symbol": "USDJPY.DWX",
+        "state_after_validation": "pending"
+      }
+    ],
+    "duplicate_pending_active_symbols_after_update": 0,
+    "worker_order_basis": "priority_track ASC, phase rank ASC, basket rank ASC, winner rank ASC, updated_at ASC"
+  },
+  "validation": {
+    "compile_one_strict": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260702_213910/QM5_12918_jegadeesh-1w-reversal-fx.compile.log"
+    },
+    "build_check_skip_compile": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 16,
+      "report": "D:/QM/reports/framework/21/build_check_20260702_213929.json",
+      "warning_scope": "framework include advisory warnings only"
+    },
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "risk_setfiles": "RISK_FIXED=1000,RISK_PERCENT=0",
+    "ex5_sha256_after_compile": "B0ED6D6F694F783C32935D00EA953F736409A94E41DD06AA529F380BD935EF17"
+  },
+  "safety": {
+    "manual_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}

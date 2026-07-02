@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12918
 ; ea_slug:      jegadeesh-1w-reversal-fx
@@ -10,7 +10,7 @@
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   80deae3937feac367fd0f54ae8d33ec54050d2965687aab7ff2d235f7712b553
+; build_hash:   6648acd551b295d85e2eeb57817b19ee5a9bd088e96c5938d5739fb8ee1371cc
 ; author:       Development
 ; date:         2026-07-02
 ;==========================================================
