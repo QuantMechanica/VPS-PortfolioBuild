@@ -14,6 +14,7 @@ cards_extracted:
   - wti-aug-prem
   - wti-febsep-prem
   - brent-apr-prem
+  - brent-aug-prem
 ---
 
 # Arendas Oil Seasonality Source
@@ -43,15 +44,17 @@ source. They are intentionally separate from the February premium card that uses
 the Gorska-Krawiec WTI calendar source, and from the broad EIA demand-season
 strategy that requires trend/momentum confirmation.
 
-The Brent April card isolates the same source-reported positive April month on
-the Brent benchmark (`XBRUSD.DWX`) rather than WTI. It is deliberately separate
-from the WTI April card, existing Brent weekday cards, Brent May/November/
-December calendar cards, Brent TSMOM, and Brent/WTI spread logic.
+The Brent April and Brent August cards isolate source-reported positive months
+on the Brent benchmark (`XBRUSD.DWX`) rather than WTI. They are deliberately
+separate from the WTI month cards, existing Brent weekday cards, Brent
+May/November/December calendar cards, Brent TSMOM, and Brent/WTI spread logic.
 
 The August card isolates the third positive month named by the source and is
 kept separate from the April spring premium and broad EIA summer-demand season
-logic. Q02+ must validate the deterministic rule on Darwinex XTIUSD.DWX bars
-before any portfolio conclusion is drawn.
+logic. The WTI August card validates that month on `XTIUSD.DWX`; the Brent
+August card validates the same structural month on `XBRUSD.DWX`. Q02+ must
+validate each deterministic rule on Darwinex bars before any portfolio
+conclusion is drawn.
 
 The February-September card mechanizes the paper's source-defined seasonal
 holding window as one low-frequency WTI sleeve. It is deliberately separate

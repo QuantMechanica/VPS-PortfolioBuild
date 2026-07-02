@@ -14,6 +14,10 @@
 //   z < -entry: long return spread = buy oil, sell gold
 // The EA runs from the XTIUSD.DWX host chart and trades both registered legs
 // through QM_BasketOrder. Runtime uses MT5 OHLC only; no external feed.
+//
+// OnTick order (2026-07-02 binding rule):
+//   kill-switch → Friday-close → NoTradeFilter → [nb latch + state refresh]
+//   → ManageOpenPosition → ExitSignal → news gate → entry-signal
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -55,12 +59,11 @@ input int    strategy_deviation_points   = 20;
 
 string   g_leg_xti = "XTIUSD.DWX";
 string   g_leg_xau = "XAUUSD.DWX";
-double   g_spread_z = 0.0;
+double   g_spread_z    = 0.0;
 double   g_spread_mean = 0.0;
-double   g_spread_sd = 0.0;
+double   g_spread_sd   = 0.0;
 bool     g_state_ready = false;
 datetime g_pair_entry_time = 0;
-datetime g_last_state_bar = 0;
 
 int Strategy_SlotForSymbol(const string symbol)
   {
@@ -78,11 +81,12 @@ bool Strategy_IsHostChart()
 
 bool Strategy_SpreadAllowed(const string symbol)
   {
-   const long spread_points = SymbolInfoInteger(symbol, SYMBOL_SPREAD);
+   // DWX tester: spread == 0; only block a genuinely wide non-zero spread.
+   const long spread_pts = SymbolInfoInteger(symbol, SYMBOL_SPREAD);
    if(symbol == g_leg_xti && strategy_xti_max_spread_pts > 0)
-      return (spread_points <= strategy_xti_max_spread_pts);
+      return (spread_pts == 0 || spread_pts <= (long)strategy_xti_max_spread_pts);
    if(symbol == g_leg_xau && strategy_xau_max_spread_pts > 0)
-      return (spread_points <= strategy_xau_max_spread_pts);
+      return (spread_pts == 0 || spread_pts <= (long)strategy_xau_max_spread_pts);
    return true;
   }
 
@@ -119,7 +123,6 @@ datetime Strategy_CurrentPairEntryTime()
          continue;
       if(!Strategy_IsPairPosition())
          continue;
-
       const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
       if(opened > 0 && (earliest == 0 || opened < earliest))
          earliest = opened;
@@ -142,29 +145,30 @@ void Strategy_ClosePair(const QM_ExitReason reason)
 
 bool Strategy_RefreshSpreadState()
   {
+   // Called once per new D1 bar from OnTick after QM_IsNewBar().
+   // CopyClose over history required for rolling z-score. perf-allowed: single call per bar.
    g_state_ready = false;
    const int return_lookback = MathMax(5, strategy_return_lookback_d1);
-   const int z_lookback = MathMax(40, strategy_z_lookback_d1);
-   const int history_needed = z_lookback + return_lookback + 1;
+   const int z_lookback      = MathMax(40, strategy_z_lookback_d1);
+   const int history_needed  = z_lookback + return_lookback + 1;
 
    double xti[];
    double xau[];
    ArraySetAsSeries(xti, true);
    ArraySetAsSeries(xau, true);
-   if(CopyClose(g_leg_xti, PERIOD_D1, 1, history_needed, xti) != history_needed) // perf-allowed: called only behind the D1 new-bar gate or close-state refresh.
+   if(CopyClose(g_leg_xti, PERIOD_D1, 1, history_needed, xti) != history_needed) // perf-allowed
       return false;
-   if(CopyClose(g_leg_xau, PERIOD_D1, 1, history_needed, xau) != history_needed) // perf-allowed: called only behind the D1 new-bar gate or close-state refresh.
+   if(CopyClose(g_leg_xau, PERIOD_D1, 1, history_needed, xau) != history_needed) // perf-allowed
       return false;
 
-   double sum = 0.0;
    double spreads[];
    ArrayResize(spreads, z_lookback);
+   double sum = 0.0;
    for(int i = 0; i < z_lookback; ++i)
      {
       const int past_idx = i + return_lookback;
       if(xti[i] <= 0.0 || xau[i] <= 0.0 || xti[past_idx] <= 0.0 || xau[past_idx] <= 0.0)
          return false;
-
       const double xti_ret = MathLog(xti[i] / xti[past_idx]);
       const double xau_ret = MathLog(xau[i] / xau[past_idx]);
       spreads[i] = xti_ret - strategy_beta * xau_ret;
@@ -180,15 +184,12 @@ bool Strategy_RefreshSpreadState()
       const double d = spreads[i] - g_spread_mean;
       var_sum += d * d;
      }
-
    g_spread_sd = MathSqrt(var_sum / (double)MathMax(1, z_lookback - 1));
    if(g_spread_sd <= 0.0 || !MathIsValidNumber(g_spread_sd))
       return false;
 
    g_spread_z = (spreads[0] - g_spread_mean) / g_spread_sd;
    g_state_ready = MathIsValidNumber(g_spread_z);
-   if(g_state_ready)
-      g_last_state_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cheap cached D1 timestamp.
    return g_state_ready;
   }
 
@@ -203,7 +204,7 @@ double Strategy_LotsForLeg(const string symbol, const double risk_weight, const 
    double lots = QM_LotsForRisk(symbol, sl_points) * risk_weight / risk_weight_sum;
    const double min_lot = SymbolInfoDouble(symbol, SYMBOL_VOLUME_MIN);
    const double max_lot = SymbolInfoDouble(symbol, SYMBOL_VOLUME_MAX);
-   const double step = SymbolInfoDouble(symbol, SYMBOL_VOLUME_STEP);
+   const double step    = SymbolInfoDouble(symbol, SYMBOL_VOLUME_STEP);
    if(lots <= 0.0 || min_lot <= 0.0 || max_lot <= 0.0 || step <= 0.0)
       return 0.0;
 
@@ -225,26 +226,26 @@ bool Strategy_OpenLeg(const string symbol,
 
    const double entry = QM_OrderTypeIsBuy(type) ? SymbolInfoDouble(symbol, SYMBOL_ASK)
                                                 : SymbolInfoDouble(symbol, SYMBOL_BID);
-   const double atr = QM_ATR(symbol, PERIOD_D1, strategy_atr_period_d1, 1);
+   const double atr   = QM_ATR(symbol, PERIOD_D1, strategy_atr_period_d1, 1);
    if(entry <= 0.0 || atr <= 0.0)
       return false;
 
-   const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
+   const int    digits    = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
    const double stop_dist = strategy_atr_sl_mult * atr;
-   const double lots = Strategy_LotsForLeg(symbol, risk_weight, risk_weight_sum);
+   const double lots      = Strategy_LotsForLeg(symbol, risk_weight, risk_weight_sum);
    if(lots <= 0.0)
       return false;
 
    QM_BasketOrderRequest req;
    req.symbol = symbol;
-   req.type = type;
-   req.price = 0.0;
+   req.type   = type;
+   req.price  = 0.0;
    req.sl = QM_OrderTypeIsBuy(type) ? NormalizeDouble(entry - stop_dist, digits)
                                     : NormalizeDouble(entry + stop_dist, digits);
-   req.tp = 0.0;
-   req.lots = lots;
-   req.reason = reason;
-   req.symbol_slot = slot;
+   req.tp               = 0.0;
+   req.lots             = lots;
+   req.reason           = reason;
+   req.symbol_slot      = slot;
    req.expiration_seconds = 0;
 
    ulong ticket = 0;
@@ -261,8 +262,8 @@ bool Strategy_OpenPair(const int spread_direction)
    const double xti_weight = 1.0;
    const double xau_weight = MathMax(0.1, MathAbs(strategy_beta));
    const double weight_sum = xti_weight + xau_weight;
-   const bool long_spread = (spread_direction > 0);
-   const QM_OrderType xti_type = long_spread ? QM_BUY : QM_SELL;
+   const bool long_spread  = (spread_direction > 0);
+   const QM_OrderType xti_type = long_spread ? QM_BUY  : QM_SELL;
    const QM_OrderType xau_type = long_spread ? QM_SELL : QM_BUY;
    const string reason = long_spread ? "QM5_12863_LONG_XTI_XAU_RSPREAD"
                                      : "QM5_12863_SHORT_XTI_XAU_RSPREAD";
@@ -274,10 +275,11 @@ bool Strategy_OpenPair(const int spread_direction)
       g_pair_entry_time = TimeCurrent();
       return true;
      }
-
    Strategy_ClosePair(QM_EXIT_STRATEGY);
    return false;
   }
+
+// ---- Strategy hooks ----------------------------------------------------------
 
 bool Strategy_NoTradeFilter()
   {
@@ -294,41 +296,31 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   req.type = QM_BUY;
-   req.price = 0.0;
-   req.sl = 0.0;
-   req.tp = 0.0;
-   req.reason = "QM5_12863_RSPREAD_HOST";
-   req.symbol_slot = qm_magic_slot_offset;
+   // Uses g_spread_z refreshed earlier this bar in OnTick. Never refreshes itself.
+   req.type               = QM_BUY;
+   req.price              = 0.0;
+   req.sl                 = 0.0;
+   req.tp                 = 0.0;
+   req.reason             = "QM5_12863_RSPREAD_HOST";
+   req.symbol_slot        = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!Strategy_RefreshSpreadState())
+   if(!g_state_ready)
       return false;
    if(Strategy_OpenPairLegCount() > 0)
       return false;
 
    if(g_spread_z > strategy_entry_z)
-      Strategy_OpenPair(-1);
+      Strategy_OpenPair(-1);  // short XTI, long XAU
    else if(g_spread_z < -strategy_entry_z)
-      Strategy_OpenPair(1);
+      Strategy_OpenPair(1);   // long XTI, short XAU
 
    return false;
   }
 
 void Strategy_ManageOpenPosition()
   {
-  }
-
-bool Strategy_MaxHoldExceeded()
-  {
-   datetime entry_time = g_pair_entry_time;
-   if(entry_time <= 0)
-      entry_time = Strategy_CurrentPairEntryTime();
-   if(entry_time <= 0)
-      return false;
-
-   const long hold_seconds = (long)strategy_max_hold_days * 86400;
-   return ((long)(TimeCurrent() - entry_time) >= hold_seconds);
+   // v1: hard ATR stops set at entry; no trailing or BE in v1.
   }
 
 bool Strategy_ExitSignal()
@@ -336,30 +328,44 @@ bool Strategy_ExitSignal()
    const int open_legs = Strategy_OpenPairLegCount();
    if(open_legs <= 0)
       return false;
+
+   // Pair-level Friday close — both legs must close together.
+   if(qm_friday_close_enabled && QM_FrameworkFridayCloseNow())
+     {
+      Strategy_ClosePair(QM_EXIT_FRIDAY_CLOSE);
+      return false;
+     }
+
+   // Orphan-leg cleanup: if one leg closed (via SL or broker), flatten the other.
    if(open_legs != 2)
      {
       Strategy_ClosePair(QM_EXIT_STRATEGY);
       return false;
      }
 
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cheap D1 timestamp guard before optional spread refresh.
-   if(current_d1_bar > 0 && current_d1_bar != g_last_state_bar)
-      Strategy_RefreshSpreadState();
+   // Z-score mean-reversion exit (uses state cached this bar in OnTick).
    if(g_state_ready && MathAbs(g_spread_z) < strategy_exit_z)
+     {
       Strategy_ClosePair(QM_EXIT_STRATEGY);
-   else if(Strategy_MaxHoldExceeded())
-      Strategy_ClosePair(QM_EXIT_STRATEGY);
+      return false;
+     }
+
+   // Max-hold time stop.
+   datetime entry_time = g_pair_entry_time;
+   if(entry_time <= 0)
+      entry_time = Strategy_CurrentPairEntryTime();
+   if(entry_time > 0)
+     {
+      const long hold_seconds = (long)strategy_max_hold_days * 86400;
+      if((long)(TimeCurrent() - entry_time) >= hold_seconds)
+         Strategy_ClosePair(QM_EXIT_STRATEGY);
+     }
    return false;
   }
 
+// Entry-gate news check for both basket legs. No Friday-close logic here.
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   if(QM_FrameworkFridayCloseNow(broker_time))
-     {
-      Strategy_ClosePair(QM_EXIT_FRIDAY_CLOSE);
-      return true;
-     }
-
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
      {
       if(!QM_NewsAllowsTrade2(g_leg_xti, broker_time, qm_news_temporal, qm_news_compliance))
@@ -376,6 +382,8 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
      }
    return false;
   }
+
+// ---- Framework wiring --------------------------------------------------------
 
 int OnInit()
   {
@@ -404,7 +412,8 @@ int OnInit()
    QM_SymbolGuardInit(basket_symbols);
    QM_BasketWarmupHistory(basket_symbols,
                           PERIOD_D1,
-                          MathMax(220, strategy_z_lookback_d1 + strategy_return_lookback_d1 + strategy_atr_period_d1 + 10));
+                          MathMax(220, strategy_z_lookback_d1 + strategy_return_lookback_d1
+                                  + strategy_atr_period_d1 + 10));
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12863\",\"ea\":\"oilgold-rspread\"}");
    return INIT_SUCCEEDED;
@@ -421,42 +430,43 @@ void OnTick()
    if(!QM_KillSwitchCheck())
       return;
 
-   const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+   // Standard framework Friday-close guard (position management still runs below).
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   Strategy_ManageOpenPosition();
-
-   if(Strategy_ExitSignal())
+   // Latch new-bar flag once; refresh spread state on bar roll.
+   // QM_IsNewBar is single-consume — one call, latched for reuse below.
+   const bool nb = QM_IsNewBar();
+   if(nb)
      {
-      const int magic = QM_FrameworkMagic();
-      for(int i = PositionsTotal() - 1; i >= 0; --i)
-        {
-         const ulong ticket = PositionGetTicket(i);
-         if(!PositionSelectByTicket(ticket))
-            continue;
-         if(PositionGetInteger(POSITION_MAGIC) != magic)
-            continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-        }
+      QM_EquityStreamOnNewBar();
+      Strategy_RefreshSpreadState();
      }
 
-   if(!QM_IsNewBar())
-      return;
+   // Position management and exit run every tick regardless of news.
+   Strategy_ManageOpenPosition();
+   Strategy_ExitSignal();
 
-   QM_EquityStreamOnNewBar();
+   // News gate — guards ENTRY ONLY; management/exit ran above.
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+     {
+      if(!QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance))
+         return;
+     }
+   else
+     {
+      if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy))
+         return;
+     }
+
+   if(!nb)
+      return;
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

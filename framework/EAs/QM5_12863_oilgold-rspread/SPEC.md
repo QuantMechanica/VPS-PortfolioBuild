@@ -80,3 +80,12 @@ mechanization using Darwinex OHLC only. No source performance claim is imported.
 
 No live manifest, `T_Live` file, AutoTrading setting, portfolio admission file,
 or portfolio gate file is touched by this build.
+
+---
+
+## Revision History
+
+| Version | Date | Reason | Notes |
+|---|---|---|---|
+| v1 | 2026-07-01 | Initial XTI/XAU return-spread basket build from card | aa213e91 |
+| v2 | 2026-07-02 | 2026-07-02 audit fix: canonical OnTick order; remove forbidden g_last_state_bar gate | aa213e91 |

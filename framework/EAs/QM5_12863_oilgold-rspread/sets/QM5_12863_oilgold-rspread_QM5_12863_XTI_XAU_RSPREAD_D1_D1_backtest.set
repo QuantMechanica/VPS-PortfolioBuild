@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12863
 ; ea_slug:      oilgold-rspread
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   c44740290dade0b39b075499b004f4bcf1d4a12a5d9334a893a6fa0ec8c63458
+; build_hash:   fb5cf0fc9408c07aec447df4ee2b7f3ea7fea729cbf3aea97e47140a98c25738
 ; author:       Development
 ; date:         2026-07-01
 ;==========================================================
