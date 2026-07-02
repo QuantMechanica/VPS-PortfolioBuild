@@ -8,6 +8,7 @@ last_reviewed: 2026-06-27
 cards_extracted:
   - eia-wti-ref-fade
   - wti-ref-sqz-brk
+  - wti-ref-ramp-pb
 ---
 
 # EIA WTI Refinery Maintenance Source
@@ -30,13 +31,16 @@ The cards convert that structural refinery-turnaround regime into Darwinex
 stretch rejection as mean reversion. `wti-ref-sqz-brk` isolates the different
 pre-summer refinery-utilization ramp: during May-July, buy only when WTI has
 compressed, the slow D1 trend is rising, and price closes through a prior D1
-range high. Both cards use MT5 OHLC only and do not ingest EIA outage or
+range high. `wti-ref-ramp-pb` uses the same May-July ramp lineage but requires
+a measured pullback from a recent high and a short rebound close instead of ATR
+compression. All cards use MT5 OHLC only and do not ingest EIA outage or
 utilization data at runtime.
 
 ## Extracted Card
 
 - `eia-wti-ref-fade`: XTIUSD.DWX D1 refinery-turnaround stretch rejection fade.
 - `wti-ref-sqz-brk`: XTIUSD.DWX D1 pre-summer refinery-utilization squeeze breakout.
+- `wti-ref-ramp-pb`: XTIUSD.DWX D1 pre-summer refinery-utilization pullback continuation.
 
 ## R-Rules
 

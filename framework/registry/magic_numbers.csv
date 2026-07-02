@@ -14231,3 +14231,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9352,pring-kst-trend-deviation-h4,1,GBPJPY.DWX,93520001,2026-07-02,Codex,active
 9352,pring-kst-trend-deviation-h4,2,XAUUSD.DWX,93520002,2026-07-02,Codex,active
 9352,pring-kst-trend-deviation-h4,3,NDX.DWX,93520003,2026-07-02,Codex,active
+12869,wti-ref-ramp-pb,0,XTIUSD.DWX,128690000,2026-07-02,Codex,active
