@@ -58,10 +58,21 @@ bool Strategy_HasOpenPosition()
    return false;
   }
 
+double Strategy_Close(const ENUM_TIMEFRAMES tf, const int shift)
+  {
+   if(shift < 0)
+      return 0.0;
+   double values[];
+   ArrayResize(values, 1);
+   if(CopyClose(_Symbol, tf, shift, 1, values) != 1)
+      return 0.0;
+   return values[0];
+  }
+
 bool Strategy_RegimeOk()
   {
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
-   const double close_mom = iClose(_Symbol, PERIOD_D1, 1 + strategy_momentum_lookback);
+   const double close1 = Strategy_Close(PERIOD_D1, 1);
+   const double close_mom = Strategy_Close(PERIOD_D1, 1 + strategy_momentum_lookback);
    const double sma200 = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_regime_period, 1, PRICE_CLOSE);
    if(close1 <= 0.0 || close_mom <= 0.0 || sma200 <= 0.0)
       return false;
@@ -96,8 +107,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!Strategy_RegimeOk())
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
-   const double close2 = iClose(_Symbol, PERIOD_D1, 2);
+   const double close1 = Strategy_Close(PERIOD_D1, 1);
+   const double close2 = Strategy_Close(PERIOD_D1, 2);
    const double sma10_1 = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_entry_period, 1, PRICE_CLOSE);
    const double sma10_2 = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_entry_period, 2, PRICE_CLOSE);
    if(close1 <= 0.0 || close2 <= 0.0 || sma10_1 <= 0.0 || sma10_2 <= 0.0)
@@ -121,7 +132,7 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
+   const double close1 = Strategy_Close(PERIOD_D1, 1);
    const double sma50 = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_exit_period, 1, PRICE_CLOSE);
    if(close1 <= 0.0 || sma50 <= 0.0)
       return false;
