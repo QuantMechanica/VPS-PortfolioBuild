@@ -14304,3 +14304,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12918,jegadeesh-1w-reversal-fx,5,USDCHF.DWX,129180005,2026-07-02,Codex,active
 12918,jegadeesh-1w-reversal-fx,6,NZDUSD.DWX,129180006,2026-07-02,Codex,active
 12965,wti-week-orb,0,XTIUSD.DWX,129650000,2026-07-02,Codex,active
+12919,amp-value-momentum-xasset,0,GDAXI.DWX,129190000,2026-07-02,Codex,active
+12919,amp-value-momentum-xasset,1,NDX.DWX,129190001,2026-07-02,Codex,active
+12919,amp-value-momentum-xasset,2,UK100.DWX,129190002,2026-07-02,Codex,active
+12919,amp-value-momentum-xasset,3,WS30.DWX,129190003,2026-07-02,Codex,active
+12919,amp-value-momentum-xasset,4,EURUSD.DWX,129190004,2026-07-02,Codex,active
+12919,amp-value-momentum-xasset,5,GBPUSD.DWX,129190005,2026-07-02,Codex,active
+12919,amp-value-momentum-xasset,6,USDJPY.DWX,129190006,2026-07-02,Codex,active
+12919,amp-value-momentum-xasset,7,AUDUSD.DWX,129190007,2026-07-02,Codex,active
