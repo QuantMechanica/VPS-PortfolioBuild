@@ -1,0 +1,39 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12898
+; ea_slug:      xng-eia-multiday-drift
+; ea_version:   v5.0
+; set_version:  s20260702-001
+; symbol:       XNGUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   de2a1fbbb9a78e856888de24f82267946c7a32d9ea9b0a9e59c890bb325e30de
+; author:       Development
+; date:         2026-07-02
+;==========================================================
+qm_ea_id=12898
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_12898_xng-eia-multiday-drift.md
+strategy_event_min_dow=3
+strategy_event_max_dow=5
+strategy_entry_min_dow=1
+strategy_entry_max_dow=5
+strategy_atr_period=20
+strategy_trend_period=50
+strategy_min_event_range_atr=0.80
+strategy_max_event_range_atr=3.50
+strategy_close_location_threshold=0.65
+strategy_min_body_ratio=0.25
+strategy_atr_sl_mult=3.00
+strategy_atr_tp_mult=0.00
+strategy_signal_valid_days=1
+strategy_max_hold_days=4
+strategy_max_spread_points=2500
+strategy_require_trend=true
