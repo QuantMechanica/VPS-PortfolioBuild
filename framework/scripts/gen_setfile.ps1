@@ -20,42 +20,58 @@ $ErrorActionPreference = 'Stop'
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent (Split-Path -Parent $scriptDir)
 $easRoot = Join-Path $repoRoot 'framework\EAs'
-$cardsRoot = Join-Path $repoRoot 'strategy-seeds\cards'
+$farmCardsRoot = $null
+if (-not [string]::IsNullOrWhiteSpace(${env:QM_STRATEGY_FARM_ROOT})) {
+    $farmCardsRoot = Join-Path ${env:QM_STRATEGY_FARM_ROOT} 'artifacts\cards_approved'
+}
+
+$cardsRoots = @(
+    (Join-Path $repoRoot 'strategy-seeds\cards'),
+    (Join-Path $repoRoot 'strategy-seeds\cards\approved'),
+    (Join-Path $repoRoot 'artifacts\cards_approved'),
+    $farmCardsRoot,
+    'D:\QM\strategy_farm\artifacts\cards_approved'
+) | Where-Object { $_ -and (Test-Path -LiteralPath $_) } | Select-Object -Unique
 
 function Find-CardPath {
     param(
         [Parameter(Mandatory = $true)]
-        [string]$CardsRoot,
+        [string[]]$CardsRoots,
         [Parameter(Mandatory = $true)]
         [string]$EaSlug
     )
-
-    if (-not (Test-Path -LiteralPath $CardsRoot)) {
-        return $null
-    }
 
     $base = $EaSlug -replace '^QM5_[^_]+_', ''
     if ([string]::IsNullOrWhiteSpace($base)) {
         return $null
     }
     $slug = $base.Replace('_', '-')
-    $candidate = Join-Path $CardsRoot ($slug + '_card.md')
-    if (Test-Path -LiteralPath $candidate) {
-        return $candidate
+
+    foreach ($CardsRoot in $CardsRoots) {
+        $exact = Join-Path $CardsRoot ($EaSlug + '.md')
+        if (Test-Path -LiteralPath $exact) {
+            return $exact
+        }
+        $candidate = Join-Path $CardsRoot ($slug + '_card.md')
+        if (Test-Path -LiteralPath $candidate) {
+            return $candidate
+        }
     }
 
     # Fallback: strategy_id-based slug (e.g., QM5_SRC04_S03_...)
     if ($EaSlug -match '^QM5_(SRC\d+_S\d+)_') {
         $strategyId = $matches[1]
-        $cardFiles = Get-ChildItem -Path $CardsRoot -Filter '*_card.md' -File -ErrorAction SilentlyContinue
-        foreach ($cf in $cardFiles) {
-            try {
-                $head = Get-Content -LiteralPath $cf.FullName -TotalCount 80
-                if ($head -match ("strategy_id:\s*" + [regex]::Escape($strategyId))) {
-                    return $cf.FullName
+        foreach ($CardsRoot in $CardsRoots) {
+            $cardFiles = Get-ChildItem -Path $CardsRoot -Filter '*.md' -File -ErrorAction SilentlyContinue
+            foreach ($cf in $cardFiles) {
+                try {
+                    $head = Get-Content -LiteralPath $cf.FullName -TotalCount 80
+                    if ($head -match ("strategy_id:\s*" + [regex]::Escape($strategyId))) {
+                        return $cf.FullName
+                    }
+                } catch {
+                    continue
                 }
-            } catch {
-                continue
             }
         }
     }
@@ -63,17 +79,18 @@ function Find-CardPath {
     # Fallback: resolve slug from ea_id_registry.csv (ea_id -> strategy slug)
     if ($EaSlug -match '^QM5_(\d+)_') {
         $eaId = $matches[1]
-        $repoRootGuess = Split-Path -Parent (Split-Path -Parent $CardsRoot)
-        $registryPath = Join-Path $repoRootGuess 'framework\registry\ea_id_registry.csv'
+        $registryPath = Join-Path $repoRoot 'framework\registry\ea_id_registry.csv'
         if (Test-Path -LiteralPath $registryPath) {
             try {
                 $rows = Import-Csv -LiteralPath $registryPath
                 $row = $rows | Where-Object { $_.ea_id -eq $eaId } | Select-Object -First 1
                 if ($row -and $row.slug) {
                     $slug2 = [string]$row.slug
-                    $candidate2 = Join-Path $CardsRoot ($slug2 + '_card.md')
-                    if (Test-Path -LiteralPath $candidate2) {
-                        return $candidate2
+                    foreach ($CardsRoot in $CardsRoots) {
+                        $candidate2 = Join-Path $CardsRoot ($slug2 + '_card.md')
+                        if (Test-Path -LiteralPath $candidate2) {
+                            return $candidate2
+                        }
                     }
                 }
             } catch {
@@ -94,6 +111,51 @@ function Parse-CardDefaults {
     $lines = Get-Content -LiteralPath $CardPath
     if (-not $lines -or $lines.Count -eq 0) {
         return $out
+    }
+
+    # Current approved-card format: a markdown table headed "param | default".
+    $inParamTable = $false
+    foreach ($line in $lines) {
+        if ($line -match '^\s*##\s+') {
+            $inParamTable = $false
+        }
+        if ($line -match '^\s*\|\s*param\s*\|\s*default\s*\|') {
+            $inParamTable = $true
+            continue
+        }
+        if ($inParamTable) {
+            if ($line -match '^\s*\|\s*-+\s*\|') {
+                continue
+            }
+            if ($line -notmatch '^\s*\|') {
+                $inParamTable = $false
+                continue
+            }
+            if ($line -match '^\s*\|\s*`?([A-Za-z_][A-Za-z0-9_]*)`?\s*\|\s*`?([^|`]+?)`?\s*\|') {
+                $k = $matches[1].Trim()
+                $v = $matches[2].Trim().Trim('"').Trim()
+                if ($k -and $v -and $k -notin @('param', 'parameter', 'name')) {
+                    $out[$k] = $v
+                }
+            }
+        }
+    }
+
+    # Current YAML-like parameter list format: "- name: X" followed by "default: Y".
+    $currName = $null
+    foreach ($line in $lines) {
+        if ($line -match '^\s*-\s*name:\s*([A-Za-z_][A-Za-z0-9_]*)\s*$') {
+            $currName = $matches[1].Trim()
+            continue
+        }
+        if ($currName -and $line -match '^\s*default:\s*([^#\r\n]+)') {
+            $v = $matches[1].Trim().Trim('"')
+            if ($v -and $v -ne 'TBD' -and $v -ne 'NOT_SPECIFIED') {
+                $out[$currName] = $v
+            }
+            $currName = $null
+            continue
+        }
     }
 
     # Section 4 parser: captures "PARAMETERS" bullets like "- SSL1 = 0.75"
@@ -180,6 +242,59 @@ function Parse-CardDefaults {
     return $out
 }
 
+function Get-EAInputDefaults {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$EAFolder
+    )
+
+    $result = [ordered]@{
+        all = [ordered]@{}
+        strategy = [ordered]@{}
+    }
+
+    $mq5 = Get-ChildItem -LiteralPath $EAFolder -Filter '*.mq5' -File -ErrorAction SilentlyContinue |
+        Select-Object -First 1
+    if (-not $mq5) {
+        return $result
+    }
+
+    $group = ''
+    foreach ($line in Get-Content -LiteralPath $mq5.FullName) {
+        if ($line -match '^\s*input\s+group\s+"([^"]+)"') {
+            $group = $matches[1]
+            continue
+        }
+        if ($line -match '^\s*input\s+(?:[A-Za-z_][A-Za-z0-9_<>]*\s+)+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*([^;]+);') {
+            $name = $matches[1].Trim()
+            $value = $matches[2].Trim()
+            $result.all[$name] = $value
+            if ($group -eq 'Strategy') {
+                $result.strategy[$name] = $value
+            }
+        }
+    }
+
+    return $result
+}
+
+function Add-DefaultsMatchingInputs {
+    param(
+        [Parameter(Mandatory = $true)]
+        [hashtable]$Target,
+        [Parameter(Mandatory = $true)]
+        [hashtable]$Defaults,
+        [Parameter(Mandatory = $true)]
+        [hashtable]$InputDefaults
+    )
+
+    foreach ($k in $Defaults.Keys) {
+        if ($InputDefaults.Contains($k)) {
+            $Target[$k] = $Defaults[$k]
+        }
+    }
+}
+
 function Normalize-CardDefaultsForSetfile {
     param(
         [Parameter(Mandatory = $true)]
@@ -221,6 +336,7 @@ if ($EaSlug -notmatch '^QM5_[A-Za-z0-9_-]+$') {
 
 $eaFolder = Join-Path $easRoot $EaSlug
 New-Item -ItemType Directory -Path $eaFolder -Force | Out-Null
+$eaInputDefaults = Get-EAInputDefaults -EAFolder $eaFolder
 
 $setsFolder = Join-Path $eaFolder 'sets'
 New-Item -ItemType Directory -Path $setsFolder -Force | Out-Null
@@ -272,33 +388,29 @@ $lines = @(
     "; author:       Development",
     "; date:         $today",
     ";==========================================================",
+    "qm_ea_id=$eaId",
     "qm_magic_slot_offset=$magicSlot",
     "RISK_FIXED=$RiskFixed",
     "RISK_PERCENT=$RiskPercent",
     "PORTFOLIO_WEIGHT=$PortfolioWeight",
-    "; core filter library params; filter-on/off variants must be pre-declared",
-    "qm_filter_news_enabled=1",
-    "qm_filter_news_mode=3",
-    "qm_filter_regime_enabled=0",
-    "qm_filter_regime_lookback_bars=100",
-    "qm_filter_regime_bull_return_pct=2.0",
-    "qm_filter_regime_bear_return_pct=2.0",
-    "qm_filter_volatility_enabled=0",
-    "qm_filter_volatility_atr_period=14",
-    "qm_filter_volatility_lookback_bars=50",
-    "qm_filter_volatility_compression_ratio=0.75",
-    "qm_filter_volatility_expansion_ratio=1.25",
-    "; strategy-specific params from card must be appended below this line"
+    "; strategy-specific params from card/input defaults must be appended below this line"
 )
 
-$cardPath = Find-CardPath -CardsRoot $cardsRoot -EaSlug $EaSlug
+$cardPath = Find-CardPath -CardsRoots $cardsRoots -EaSlug $EaSlug
 if ($cardPath) {
     $defaults = Parse-CardDefaults -CardPath $cardPath
     $defaults = Normalize-CardDefaultsForSetfile -EaSlug $EaSlug -Defaults $defaults
-    if ($defaults.Count -gt 0) {
+    $setDefaults = [ordered]@{}
+    Add-DefaultsMatchingInputs -Target $setDefaults -Defaults $defaults -InputDefaults $eaInputDefaults.all
+    foreach ($k in $eaInputDefaults.strategy.Keys) {
+        if (-not $setDefaults.Contains($k)) {
+            $setDefaults[$k] = $eaInputDefaults.strategy[$k]
+        }
+    }
+    if ($setDefaults.Count -gt 0) {
         $lines += "; card_defaults_source=$cardPath"
-        foreach ($k in $defaults.Keys) {
-            $lines += "$k=$($defaults[$k])"
+        foreach ($k in $setDefaults.Keys) {
+            $lines += "$k=$($setDefaults[$k])"
         }
     }
     else {
