@@ -4,7 +4,7 @@
 **Slug:** qp-fx-carry-rates
 **Source:** 7ede58dd-d184-5099-9d48-7a65de230853 (see `strategy-seeds/sources/7ede58dd-d184-5099-9d48-7a65de230853/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-07-02
 
 ---
 
@@ -59,6 +59,10 @@ The EA trades a monthly FX carry ranking. At the first D1 bar of each new month,
 | Multi-timeframe refs | none |
 | Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
 
+Q02 queue repair note: obsolete H1 backtest setfiles from the initial May scaffold
+were retired on 2026-07-02. This strategy is monthly/D1 by card and by
+implementation; Q02 must use the seven `*_D1_backtest.set` files only.
+
 ---
 
 ## 5. Expected Behaviour
@@ -101,3 +105,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | b5638b41-c48e-4743-bed6-f3fec4a782d2 |
+| v2 | 2026-07-02 | Q02 queue repair | Removed stale H1 setfiles and re-pointed open Q02 rows to canonical D1 setfiles |
