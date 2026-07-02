@@ -1,0 +1,56 @@
+{
+  "ea_id": "QM5_12964",
+  "slug": "wti-jun-prem",
+  "strategy_id": "EIA-WTI-SEASON-2024_JUN_S03",
+  "created_at": "2026-07-02T19:49:22Z",
+  "agent": "Codex",
+  "status": "PASS",
+  "scope": "Q01 build validation",
+  "compile": {
+    "command": "framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12964_wti-jun-prem/QM5_12964_wti-jun-prem.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "summary_csv": "D:/QM/reports/compile/20260702_194922/summary.csv",
+    "compile_log": "C:/QM/repo/framework/build/compile/20260702_194922/QM5_12964_wti-jun-prem.compile.log"
+  },
+  "build_check": {
+    "command": "framework/scripts/build_check.ps1 -Strict -EALabel QM5_12964_wti-jun-prem",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "warning_note": "All warnings are pre-existing DWX advisory hits in shared framework include files; the new EA compiled with zero warnings.",
+    "report": "D:/QM/reports/framework/21/build_check_20260702_194922.json"
+  },
+  "outputs": {
+    "mq5": {
+      "path": "framework/EAs/QM5_12964_wti-jun-prem/QM5_12964_wti-jun-prem.mq5",
+      "sha256": "AE36F219734B20E1C59C89E200D84742708C53E5563EC9E32068109383D16E9B"
+    },
+    "ex5": {
+      "path": "framework/EAs/QM5_12964_wti-jun-prem/QM5_12964_wti-jun-prem.ex5",
+      "sha256": "97DF3A8C595FB48A816C419BEF415676A159A5C6C6B5AEA45B81DF3F80B040B1"
+    },
+    "backtest_setfile": {
+      "path": "framework/EAs/QM5_12964_wti-jun-prem/sets/QM5_12964_wti-jun-prem_XTIUSD.DWX_D1_backtest.set",
+      "sha256": "8B1BBB3FAA901B23F9F86B20D39D3CF8D9CFC402FC2EE1C7B253F732FD86F562",
+      "risk_mode": "RISK_FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0
+    }
+  },
+  "q02_enqueue": {
+    "status": "ENQUEUED",
+    "work_item_id": "bbcffd53-283a-413a-8391-af7198f16f17",
+    "symbol": "XTIUSD.DWX",
+    "phase": "Q02",
+    "setfile": "framework/EAs/QM5_12964_wti-jun-prem/sets/QM5_12964_wti-jun-prem_XTIUSD.DWX_D1_backtest.set",
+    "queued_at": "2026-07-02T19:50:21Z"
+  },
+  "boundaries": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}

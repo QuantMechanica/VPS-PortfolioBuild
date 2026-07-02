@@ -14295,6 +14295,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12897,xag-donchian55-trend,0,XAGUSD.DWX,128970000,2026-07-02,Codex,active
 12962,wti-jul-prem,0,XTIUSD.DWX,129620000,2026-07-02,Codex,active
 12963,wti-winter-exhaust,0,XTIUSD.DWX,129630000,2026-07-02,Codex,active
+12964,wti-jun-prem,0,XTIUSD.DWX,129640000,2026-07-02,Codex,active
 12918,jegadeesh-1w-reversal-fx,0,EURUSD.DWX,129180000,2026-07-02,Codex,active
 12918,jegadeesh-1w-reversal-fx,1,GBPUSD.DWX,129180001,2026-07-02,Codex,active
 12918,jegadeesh-1w-reversal-fx,2,USDJPY.DWX,129180002,2026-07-02,Codex,active
