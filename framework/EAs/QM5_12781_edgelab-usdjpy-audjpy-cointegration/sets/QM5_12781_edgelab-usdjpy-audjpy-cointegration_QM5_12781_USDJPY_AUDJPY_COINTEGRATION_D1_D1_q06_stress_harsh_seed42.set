@@ -3,7 +3,7 @@
 ; ea_id:        12781
 ; ea_slug:      edgelab-usdjpy-audjpy-cointegration
 ; ea_version:   v5.0
-; set_version:  s20260701-stress-harsh
+; set_version:  s20260702-stress-harsh
 ; symbol:       QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1
 ; host_symbol:  USDJPY.DWX
 ; timeframe:    D1
@@ -11,9 +11,9 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   c35e66d5f151ba35219cc6fa25488444da2a15ebe16d9374e92d8df01d07444c
+; build_hash:   6ace197772cefb5cf7217ca35e6488e11d3f070bf0854f6b12193e54ca8e75a0
 ; author:       Development
-; date:         2026-07-01
+; date:         2026-07-02
 ;==========================================================
 qm_magic_slot_offset=0
 qm_rng_seed=42
