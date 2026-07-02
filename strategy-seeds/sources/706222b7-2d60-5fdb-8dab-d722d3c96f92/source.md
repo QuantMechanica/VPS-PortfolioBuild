@@ -27,6 +27,7 @@ Five cards were extracted for structural natural-gas CFD sleeves:
 - `xngusd-summer-power-long`: XNGUSD.DWX D1 summer electric-sector demand long-only regime with price confirmation.
 - `xngusd-fall-storage-short`: XNGUSD.DWX D1 fall shoulder/storage-fill short-only regime with price confirmation.
 - `xngusd-seasonal-dual-peak`: XNGUSD.DWX D1 long-only combined winter/summer demand-peak regime with price confirmation.
+- `xng-oct-turn-long`: XNGUSD.DWX D1 October-November autumn-to-winter transition long with weekly price-turn confirmation.
 
 ## Evidence Notes
 
