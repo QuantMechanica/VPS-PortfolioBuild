@@ -40,6 +40,8 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input double strategy_exhaustion_norm       = 95.0;
+input int    strategy_exhaustion_mode       = 0;    // 0=legacy normalized, 1=absolute raw aggregate %
+input double strategy_exhaustion_abs_pct    = 0.60;
 input int    strategy_prob_min_numerator    = 6;
 input double strategy_basket_tp_pct         = 15.0;
 input double strategy_basket_tp_units_per_lot = 0.0;
@@ -340,6 +342,13 @@ double QM12821_LotsPerLeg(const string symbol, const int leg_count)
    return QM_BasketNormalizeLots(symbol, raw_leg_lots);
   }
 
+bool QM12821_PassesExhaustionGate(const QM_CSMReading &d1, const int currency_idx)
+  {
+   if(strategy_exhaustion_mode == 1)
+      return QM_CSM_IsExhaustedAbsolute(d1, currency_idx, strategy_exhaustion_abs_pct);
+   return QM_CSM_IsExhausted(d1, currency_idx, strategy_exhaustion_norm);
+  }
+
 bool QM12821_EvaluateSignal(QM_CSMReading &d1,
                             QM_CSMReading &w1,
                             QM_CSMReading &mn,
@@ -357,7 +366,7 @@ bool QM12821_EvaluateSignal(QM_CSMReading &d1,
       return false;
    if(d1.extreme_idx < 0 || d1.extreme_sign == 0)
       return false;
-   if(!QM_CSM_IsExhausted(d1, d1.extreme_idx, strategy_exhaustion_norm))
+   if(!QM12821_PassesExhaustionGate(d1, d1.extreme_idx))
       return false;
 
    if(!QM_CSM_LoadStrength(PERIOD_W1, w1, 0))
