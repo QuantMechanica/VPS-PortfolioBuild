@@ -9994,7 +9994,7 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
             f"""
             SELECT * FROM work_items
             WHERE ea_id=? AND phase=? AND status='done' AND verdict in ({placeholders})
-            ORDER BY updated_at ASC
+            ORDER BY updated_at DESC
             """,
             (ea_id, prev_phase, *verdicts),
         ).fetchall()

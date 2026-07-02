@@ -1,0 +1,106 @@
+{
+  "date": "2026-07-02",
+  "branch": "agents/board-advisor",
+  "mission": "forex_market_neutral_cointegration_portfolio_growth",
+  "selected_action": "advance_existing_forex_cointegration_basket",
+  "ea_id": "QM5_10009",
+  "ea_label": "QM5_10009_rw-fx-cointeg-bb",
+  "logical_symbol": "QM5_10009_AUD_NZD_CAD_COINTEG_D1",
+  "host_symbol": "AUDUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "USDCAD.DWX"
+  ],
+  "mission_route": {
+    "controlling_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_survivors": [
+      {
+        "ea": "QM5_12533",
+        "pair": "EURJPY~GBPJPY",
+        "state_checked": "Q02 PASS, Q04 strategy FAIL"
+      },
+      {
+        "ea": "QM5_12532",
+        "pair": "AUDUSD~NZDUSD",
+        "state_checked": "Q02 PASS, Q04 PASS, Q05 INFRA_FAIL summary_missing"
+      }
+    ],
+    "unbuilt_strict_scan_pair_found": false
+  },
+  "code_fix": {
+    "path": "tools/strategy_farm/farmctl.py",
+    "summary": "Cascade requeues now inspect prior PASS rows newest-first so an existing pending/requeued phase is sourced from the latest successful evidence when multiple prior PASS rows exist."
+  },
+  "setfile_refresh": {
+    "summary": "build_check refreshed QM5_10009 backtest setfile build_hash metadata only; risk mode remained RISK_FIXED.",
+    "files": [
+      "framework/EAs/QM5_10009_rw-fx-cointeg-bb/sets/QM5_10009_rw-fx-cointeg-bb_AUDUSD.DWX_D1_backtest.set",
+      "framework/EAs/QM5_10009_rw-fx-cointeg-bb/sets/QM5_10009_rw-fx-cointeg-bb_NZDUSD.DWX_D1_backtest.set",
+      "framework/EAs/QM5_10009_rw-fx-cointeg-bb/sets/QM5_10009_rw-fx-cointeg-bb_QM5_10009_AUD_NZD_CAD_COINTEG_D1_D1_backtest.set",
+      "framework/EAs/QM5_10009_rw-fx-cointeg-bb/sets/QM5_10009_rw-fx-cointeg-bb_USDCAD.DWX_D1_backtest.set"
+    ],
+    "risk_mode": "FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0
+  },
+  "queue_action": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_10009 --phase Q04",
+    "db_backup_before_enqueue": "D:/QM/strategy_farm/state/backups/farm_state_pre_qm5_10009_q04_enqueue_20260702_154959.sqlite",
+    "work_item": "52731ceb-42b5-4b20-94b9-3e7785fe2546",
+    "created_rows": 0,
+    "requeued_rows": 1,
+    "status_after": "pending",
+    "verdict_after": null,
+    "claimed_by_after": null
+  },
+  "payload_refresh": {
+    "db_backup_before_refresh": "D:/QM/strategy_farm/state/backups/farm_state_pre_qm5_10009_q04_payload_refresh_20260702T135239Z0000.sqlite",
+    "old_promoted_from_work_item": "18f70d58-1419-4109-9b34-5c03ac3c884f",
+    "new_promoted_from_work_item": "2ae2c04e-5b5c-47de-a9eb-c46caeeefe0a",
+    "updated_at_utc": "2026-07-02T13:52:39+00:00",
+    "q04_latest_full_year": 2024,
+    "q04_history_checked_window": "2023-2024",
+    "q04_history_checked_symbols": [
+      "AUDUSD.DWX",
+      "NZDUSD.DWX",
+      "USDCAD.DWX"
+    ],
+    "portfolio_scope": "basket"
+  },
+  "validation": [
+    {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_10009_rw-fx-cointeg-bb --verbose --json",
+      "result": "BASKET_OK",
+      "violations": 0
+    },
+    {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_10009_rw-fx-cointeg-bb -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 19,
+      "report": "D:/QM/reports/framework/21/build_check_20260702_134935.json"
+    },
+    {
+      "command": "python -m unittest tools.strategy_farm.tests.test_farmctl_cascade",
+      "result": "PASS",
+      "tests": 17
+    },
+    {
+      "command": "git diff --check -- tools/strategy_farm/farmctl.py tools/strategy_farm/tests/test_farmctl_cascade.py",
+      "result": "PASS_WITH_LINE_ENDING_WARNINGS_ONLY"
+    }
+  ],
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false,
+    "risk_mode": "RISK_FIXED backtest setfile"
+  }
+}
