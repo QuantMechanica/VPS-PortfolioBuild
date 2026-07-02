@@ -147,8 +147,8 @@ PHASE_ACTIVE_TIMEOUT_MIN = {
     "Q02": 45,     # one backtest per symbol; H1 full-history runs typically 5-20 min
     "Q03": 60,     # parameter-sweep config
     "Q04": 90,     # 3-fold walk-forward + commission
-    "Q05": 60,     # MED stress, full history
-    "Q06": 60,     # HARSH stress, full history
+    "Q05": 120,    # MED stress, full history (2026-07-02: 60->120, tick-heavy XAU EAs need ~90min; inner run budget 5400s)
+    "Q06": 120,    # HARSH stress, full history (follows Q05; shares DEFAULT_TIMEOUT_SEC)
     "Q07": 120,    # 5 seeds × full history under HARSH stress
     "Q08": 30,     # Davey aggregator reads log; cheap
     "Q09": 120,    # news-mode sweep (1 or 7 modes)

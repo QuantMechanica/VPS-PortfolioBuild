@@ -174,6 +174,16 @@ Use these framework helpers — DO NOT reimplement them:
 | News gate                         | `QM_NewsAllowsTrade(symbol, broker_time, qm_news_mode)`            |
 | Kill-switch / Friday-close        | `QM_KillSwitchCheck` / `QM_FrameworkHandleFridayClose`             |
 
+**OnTick ordering rule (2026-07-02, audit finding — binding):** the news blackout
+gate must sit BELOW `Strategy_ManageOpenPosition` / exit handling and gate ONLY the
+entry path. Position management, stop enforcement, and time/equity exits must keep
+running through news windows — a news gate above management silently suspends risk
+management exactly when spreads spike (worst for EAs whose positions carry no
+server-side SL). Canonical order: kill-switch → Friday-close → NoTradeFilter →
+ManageOpenPosition → ExitSignal → **news gate** → IsNewBar → EntrySignal (see
+QM5_12821 OnTick after commit dc418a720 for the reference implementation). The
+fail-closed news-calendar init in OnInit is unchanged and still mandatory.
+
 ### Optional Signal Mixins (`QM_Signals.mqh`)
 
 Each returns `+1` / `0` / `-1` so you can compose patterns without re-doing

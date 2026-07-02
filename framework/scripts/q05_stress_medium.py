@@ -31,7 +31,13 @@ from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
 
 GATE_NAME = "Q05"
 LEVEL = "MED"
-DEFAULT_TIMEOUT_SEC = 3300
+# 3300 -> 5400 (2026-07-02): tick-heavy XAUUSD M15 EAs (QM5_10116, QM5_11182)
+# exceed 55 min for a stressed full-history run and died timeout_expired at Q05
+# despite having PASSed Q04. Q05 items are scarce (the post-Q04 cascade is nearly
+# empty), so the longer budget costs no meaningful throughput. Reaper budget
+# raised in farmctl PHASE_ACTIVE_TIMEOUT_MIN accordingly; requeued items also
+# carry payload timeout_min=120 so the reaper honors it pre-restart.
+DEFAULT_TIMEOUT_SEC = 5400
 RUNNER_HEADROOM_SEC = 120
 PF_FLOOR = 1.0
 DD_PCT_MAX = 15.0

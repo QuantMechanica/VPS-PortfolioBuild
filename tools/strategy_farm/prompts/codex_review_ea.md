@@ -143,6 +143,14 @@ Grep the mq5 for:
   let Claude adjudicate — an advisory must never auto-reject or trip the health
   fail-rate alarm.
 - `Sleep(` calls > 100ms in OnTick (blocks tester; FAIL).
+- **News gate above risk management (2026-07-02):** if OnTick returns on the
+  news-blackout check BEFORE `Strategy_ManageOpenPosition` / exit handling, the
+  EA suspends stop enforcement and time/equity exits during news windows. This
+  is a FAIL for EAs whose positions carry no server-side SL (`req.sl = 0`,
+  basket/equity-stop designs); for EAs with server-side SLs on every position
+  record it as an `"[ONTICK-ORDER-ADVISORY] ..."` finding instead (still PASS).
+  Canonical order: kill-switch → Friday-close → NoTradeFilter → Manage → Exit →
+  news gate → IsNewBar → Entry (reference: QM5_12821 @ dc418a720).
 
 PASS if no hard violation found (advisories alone still PASS).
 
