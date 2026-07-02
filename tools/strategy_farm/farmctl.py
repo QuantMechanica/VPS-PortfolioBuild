@@ -3526,6 +3526,17 @@ def _active_timeout_min_for_work_item(phase: str, payload_json: str | None) -> i
     return int(timeout_min)
 
 
+def _apply_phase_timeout_min(payload: dict[str, Any], phase: str) -> None:
+    phase_timeout_min = PHASE_ACTIVE_TIMEOUT_MIN.get(str(phase or ""))
+    if phase_timeout_min is None:
+        return
+    try:
+        existing_timeout_min = int(payload.get("timeout_min") or 0)
+    except (TypeError, ValueError):
+        existing_timeout_min = 0
+    payload["timeout_min"] = max(existing_timeout_min, int(phase_timeout_min))
+
+
 BASKET_CONTEXT_PAYLOAD_KEYS = (
     "basket_manifest",
     "basket_symbol_count",
@@ -8677,6 +8688,8 @@ def pump(root: Path) -> dict[str, Any]:
                 )
                 if next_phase in {"Q04", "Q05"}:
                     _apply_q04_latest_full_year_from_history(wi, payload)
+                if next_phase in {"Q05", "Q06"}:
+                    _apply_phase_timeout_min(payload, next_phase)
                 conn.execute(
                     """
                     INSERT INTO work_items
@@ -10008,6 +10021,8 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                 _apply_q04_latest_full_year_from_history(prev, payload)
             elif phase == "Q05":
                 _apply_q04_latest_full_year_from_history(prev, payload)
+            if phase in {"Q05", "Q06"}:
+                _apply_phase_timeout_min(payload, phase)
             if phase in {"Q05", "P5"}:
                 required_oos_to_year = P5_REQUIRED_OOS_TO_YEAR
                 if phase == "Q05":

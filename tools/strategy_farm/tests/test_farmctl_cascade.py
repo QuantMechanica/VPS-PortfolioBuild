@@ -274,6 +274,7 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             self.assertEqual(payload["host_symbol"], "EURGBP.DWX")
             self.assertEqual(payload["portfolio_scope"], "basket")
             self.assertEqual(payload["q04_latest_full_year"], 2024)
+            self.assertEqual(payload["timeout_min"], farmctl.PHASE_ACTIVE_TIMEOUT_MIN["Q05"])
             self.assertEqual(payload["tester_currency"], "JPY")
             self.assertEqual(payload["tester_deposit"], 15000000)
 
@@ -574,6 +575,7 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             self.assertEqual(payload["q04_latest_full_year"], 2024)
             self.assertEqual(payload["q04_history_clamp_source"], "mt5_cache")
             self.assertEqual(payload["q04_history_checked_symbols"], manifest["basket_symbols"])
+            self.assertEqual(payload["timeout_min"], farmctl.PHASE_ACTIVE_TIMEOUT_MIN["Q05"])
 
     def test_pump_q04_to_q05_promotion_clamps_latest_year_from_cache(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
@@ -649,6 +651,7 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             payload = json.loads(row[0])
             self.assertEqual(payload["q04_latest_full_year"], 2024)
             self.assertEqual(payload["q04_history_clamp_source"], "mt5_cache")
+            self.assertEqual(payload["timeout_min"], farmctl.PHASE_ACTIVE_TIMEOUT_MIN["Q05"])
 
     def test_q05_runner_cmd_receives_latest_full_year_cap(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:

@@ -228,10 +228,10 @@ class Q05Q07VerdictTests(unittest.TestCase):
                 )
 
         cmd = calls[0]
-        self.assertEqual(cmd[cmd.index("-TimeoutSeconds") + 1], "3300")
-        self.assertEqual(timeouts, [3420])
-        self.assertEqual(result["timeout_sec"], 3300)
-        self.assertEqual(result["runner_timeout_sec"], 3420)
+        self.assertEqual(cmd[cmd.index("-TimeoutSeconds") + 1], "5400")
+        self.assertEqual(timeouts, [5520])
+        self.assertEqual(result["timeout_sec"], 5400)
+        self.assertEqual(result["runner_timeout_sec"], 5520)
 
     def test_q05_passes_basket_manifest_tester_overrides(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -329,12 +329,12 @@ class Q05Q07VerdictTests(unittest.TestCase):
         cmd = calls[0]
         self.assertEqual(cmd[cmd.index("-TesterCurrencyOverride") + 1], "JPY")
         self.assertEqual(cmd[cmd.index("-TesterDepositOverride") + 1], "15000000")
-        self.assertEqual(cmd[cmd.index("-TimeoutSeconds") + 1], "3300")
-        self.assertEqual(timeouts, [3420])
+        self.assertEqual(cmd[cmd.index("-TimeoutSeconds") + 1], "5400")
+        self.assertEqual(timeouts, [5520])
         self.assertEqual(result["symbol"], "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1")
         self.assertEqual(result["runner_symbol"], "EURJPY.DWX")
-        self.assertEqual(result["timeout_sec"], 3300)
-        self.assertEqual(result["runner_timeout_sec"], 3420)
+        self.assertEqual(result["timeout_sec"], 5400)
+        self.assertEqual(result["runner_timeout_sec"], 5520)
 
     def test_q07_missing_summary_remains_invalid(self) -> None:
         verdict, reason, _metrics = q07.evaluate_seeds([
