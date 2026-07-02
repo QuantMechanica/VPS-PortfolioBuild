@@ -1,0 +1,56 @@
+{
+  "timestamp_utc": "2026-07-02T08:57:19+00:00",
+  "unit_of_work": "Q02 infra recovery and requeue",
+  "ea_id": "QM5_12724",
+  "ea_slug": "cme-xauxag-brk",
+  "strategy_shape": "D1 structural XAU/XAG gold-silver ratio breakout basket",
+  "diversity_rationale": "market-neutral precious-metals pair sleeve, not a standalone index, XNG, or outright directional metal leg",
+  "source_status": {
+    "card_path": "strategy-seeds/cards/approved/QM5_12724_cme-xauxag-brk_card.md",
+    "g0_status": "APPROVED",
+    "source_id": "CME-GSR-SPREAD-2025",
+    "r1_track_record": "PASS",
+    "r2_mechanical": "PASS",
+    "r3_data_available": "PASS",
+    "r4_ml_forbidden": "PASS"
+  },
+  "prior_failure": {
+    "work_item_id": "932ad00e-bcf5-4666-8725-294f4fcbb13a",
+    "phase": "Q02",
+    "verdict": "INFRA_FAIL",
+    "evidence_path": "D:/QM/reports/work_items/932ad00e-bcf5-4666-8725-294f4fcbb13a/QM5_12724/20260628_010247/summary.json",
+    "reason_classes": [
+      "REPORT_MISSING",
+      "METATESTER_HUNG",
+      "INCOMPLETE_RUNS"
+    ],
+    "diagnosis": "Tester log showed real XAUUSD.DWX and XAGUSD.DWX basket orders before report export failed; no OnInit failure was detected in the final failed run."
+  },
+  "actions": {
+    "spec_validation": "PASS",
+    "build_check": "PASS",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260702_085618.json",
+    "compiled_ex5_sha256": "9209F9A0BAB416F76219C4FA7A70AA0706D7C40DAEC21BDA06417DE5EA58F76B",
+    "setfile_build_hash_refreshed": {
+      "from": "c52208b2d494b335b57afbd3f1d67eb46aae2bab8cea377d1a8c5cad48234843",
+      "to": "6fc26271b9e9538dd308730fea062afbd737ae243ccf5fd607fa59309b489095"
+    },
+    "farm_db_requeue": {
+      "db_path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+      "new_work_item_id": "2aa4e34e-c99d-43e9-bedd-4364dec0825b",
+      "phase": "Q02",
+      "status": "pending",
+      "symbol": "QM5_12724_XAU_XAG_BRK_D1",
+      "host_symbol": "XAUUSD.DWX",
+      "host_timeframe": "D1",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12724_cme-xauxag-brk/sets/QM5_12724_cme-xauxag-brk_QM5_12724_XAU_XAG_BRK_D1_D1_backtest.set",
+      "duplicate_guard": "inserted only after atomic check found no pending or active QM5_12724 work items"
+    }
+  },
+  "safety": {
+    "manual_mt5_backtest_started": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false
+  }
+}
