@@ -3,14 +3,14 @@
 ; ea_id:        12836
 ; ea_slug:      turnaround-tuesday-ws30
 ; ea_version:   v5.0
-; set_version:  s20260702-002
+; set_version:  s20260702-003
 ; symbol:       GDAXI.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   90962aa3dcbf0d63716e281a69517aad11b7aa714cc159c651dacfef7972ea7a
+; build_hash:   b8d25de193b755acfbc1383d027730cab734652cb11c7b09b7e0c6a328820b0b
 ; author:       Development
 ; date:         2026-07-02
 ;==========================================================
@@ -22,13 +22,13 @@ PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12836_turnaround-tuesday-ws30.md
 regime_sma_period=200
-weak_monday_mode=WMM_BELOW_FRIDAY
+weak_monday_mode=0
 use_volume_filter=true
 volume_sma_period=25
-entry_mode=EM_IMMEDIATE
-sl_mode=SL_FIXED_PCT
-sl_fixed_pct=0.5
-tp_mode=TP_FIXED_PCT
+entry_mode=0
+sl_mode=1
+sl_fixed_pct=2.0
+tp_mode=0
 tp_fixed_pct=1.75
 exit_dow=2
 exit_hour=23

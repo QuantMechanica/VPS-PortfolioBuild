@@ -98,4 +98,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 |---|---|---|---|
 | v1 | 2026-07-01 | Initial build from card | ceae2d90-54a4-49b8-a09c-26c2a6b8f272 |
 | v2 | 2026-07-02 | Correct DXZ ET+7 cash-close mapping and latch semantics | exit_hour=23; setup latch uses QM_CalendarPeriodKey; entry latch burns after successful send |
-| v3 | 2026-07-02 | Q01 margin rework for Q02 baseline | backtest setfiles use SL_FIXED_PCT at 0.5%; news gate moved below management/exit |
+| v3 | 2026-07-02 | Q01 margin rework for Q02 baseline | backtest setfiles use SL_FIXED_PCT at 2.0%; news gate moved below management/exit |
