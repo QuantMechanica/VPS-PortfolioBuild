@@ -14292,3 +14292,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12959,elder-triple-screen-swing,1,XAUUSD.DWX,129590001,2026-07-02,Claude,active
 12960,keltner-pullback-swing,0,SP500.DWX,129600000,2026-07-02,Claude,active
 12960,keltner-pullback-swing,1,XAGUSD.DWX,129600001,2026-07-02,Claude,active
+12897,xag-donchian55-trend,0,XAGUSD.DWX,128970000,2026-07-02,Codex,active
