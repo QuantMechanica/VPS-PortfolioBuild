@@ -14316,3 +14316,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12953,mql5-gator-ma-card,0,EURUSD.DWX,129530000,2026-07-02,Codex,active
 12953,mql5-gator-ma-card,1,GBPUSD.DWX,129530001,2026-07-02,Codex,active
 12953,mql5-gator-ma-card,2,XAUUSD.DWX,129530002,2026-07-02,Codex,active
+12976,brent-mar-prem,0,XBRUSD.DWX,129760000,2026-07-03,Codex,active
