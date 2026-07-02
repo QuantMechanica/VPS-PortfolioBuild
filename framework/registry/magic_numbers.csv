@@ -14259,3 +14259,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9350,brooks-failed-ttr-h4,11,WS30.DWX,93500011,2026-07-02,Codex,active
 9350,brooks-failed-ttr-h4,12,GDAXI.DWX,93500012,2026-07-02,Codex,active
 9350,brooks-failed-ttr-h4,13,UK100.DWX,93500013,2026-07-02,Codex,active
+12870,wti-jan-fade,0,XTIUSD.DWX,128700000,2026-07-02,Codex,active
