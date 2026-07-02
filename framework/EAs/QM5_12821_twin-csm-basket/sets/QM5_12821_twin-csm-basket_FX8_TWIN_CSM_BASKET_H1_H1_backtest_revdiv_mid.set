@@ -1,0 +1,55 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12821
+; ea_slug:      twin-csm-basket
+; ea_version:   v5.1
+; set_version:  s20260702-v6rev
+; symbol:       FX8_TWIN_CSM_BASKET_H1 (logical 28-pair basket; host EURUSD.DWX)
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-02
+; EXPERIMENT v6rev: v3faithful plus absolute exhaustion and reverse-direction pending geometry.
+; Exits: D1 CSM ranking decay/flip, units-per-lot basket TP, DL-081 1% cycle stop,
+; 21:00 flat, and Friday close.
+;==========================================================
+qm_ea_id=12821
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12821_twin-csm-basket.md
+strategy_exhaustion_norm=95.0
+strategy_exhaustion_mode=0
+strategy_exhaustion_abs_pct=0.60
+strategy_reverse_direction=true
+strategy_prob_min_numerator=6
+strategy_basket_tp_pct=15.0
+strategy_basket_tp_units_per_lot=400
+strategy_basket_stop_pct=1.0
+strategy_total_lots_per_1000=0.10
+strategy_london_start_hhmm=630
+strategy_london_end_hhmm=830
+strategy_overlap_start_hhmm=930
+strategy_overlap_end_hhmm=1000
+strategy_flat_hhmm=2100
+strategy_deviation_points=20
+strategy_warmup_bars=360
+strategy_pullback_ema_period=20
+strategy_pullback_atr_period=14
+strategy_pullback_boundary_atr=0.25
+strategy_pullback_max_chase_atr=1.00
+strategy_pullback_volume_lookback=20
+strategy_pullback_volume_max_ratio=1.00
+strategy_pullback_min_legs=7
+strategy_pending_expiration_minutes=30
+strategy_pending_reproject=true
+strategy_exit_signal_mode=1
+strategy_close_on_signal_decay=true
+strategy_min_divergence_raw=8.50
+
