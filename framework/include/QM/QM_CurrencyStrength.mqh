@@ -23,6 +23,7 @@ string QM_CSM_PAIRS[QM_CSM_PAIR_COUNT] =
 struct QM_CSMReading
   {
    double strength[QM_CSM_CURRENCY_COUNT];
+   double raw_strength[QM_CSM_CURRENCY_COUNT];
    double normalized[QM_CSM_CURRENCY_COUNT];
    double perf[QM_CSM_PAIR_COUNT];
    int    strong_idx;
@@ -39,6 +40,7 @@ void QM_CSM_Reset(QM_CSMReading &reading)
    for(int i = 0; i < QM_CSM_CURRENCY_COUNT; ++i)
      {
       reading.strength[i] = 0.0;
+      reading.raw_strength[i] = 0.0;
       reading.normalized[i] = 0.0;
      }
    for(int p = 0; p < QM_CSM_PAIR_COUNT; ++p)
@@ -137,6 +139,7 @@ bool QM_CSM_BuildFromPerf(const double &perf[], QM_CSMReading &reading)
    double min_strength = DBL_MAX;
    for(int c = 0; c < QM_CSM_CURRENCY_COUNT; ++c)
      {
+      reading.raw_strength[c] = reading.strength[c];
       reading.zero_sum += reading.strength[c];
       const double abs_strength = MathAbs(reading.strength[c]);
       if(abs_strength > reading.max_abs_strength)
@@ -240,6 +243,13 @@ double QM_CSM_ProbabilityRatio(const QM_CSMReading &reading, const int currency_
    return (double)agree / (double)seen;
   }
 
+double QM_CSM_RawStrength(const QM_CSMReading &reading, const int currency_idx)
+  {
+   if(currency_idx < 0 || currency_idx >= QM_CSM_CURRENCY_COUNT)
+      return 0.0;
+   return reading.raw_strength[currency_idx];
+  }
+
 bool QM_CSM_IsExhausted(const QM_CSMReading &reading,
                         const int currency_idx,
                         const double threshold_norm)
@@ -249,6 +259,17 @@ bool QM_CSM_IsExhausted(const QM_CSMReading &reading,
    if(threshold_norm <= 0.0)
       return true;
    return (MathAbs(reading.normalized[currency_idx]) >= threshold_norm);
+  }
+
+bool QM_CSM_IsExhaustedAbsolute(const QM_CSMReading &reading,
+                                const int currency_idx,
+                                const double threshold_abs_pct)
+  {
+   if(currency_idx < 0 || currency_idx >= QM_CSM_CURRENCY_COUNT)
+      return false;
+   if(threshold_abs_pct <= 0.0)
+      return true;
+   return (MathAbs(QM_CSM_RawStrength(reading, currency_idx)) >= threshold_abs_pct);
   }
 
 #endif // QM_CURRENCY_STRENGTH_MQH

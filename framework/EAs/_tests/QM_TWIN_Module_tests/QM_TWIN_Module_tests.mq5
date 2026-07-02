@@ -58,13 +58,21 @@ bool TestCurrencyStrength()
    const int gbp = QM_CSM_CcyIndex("GBP");
    if(!TestNear(reading.strength[gbp], 7.0, 1e-9, "gbp strength"))
       return false;
+   if(!TestNear(reading.raw_strength[gbp], 7.0, 1e-9, "gbp raw strength"))
+      return false;
+   if(!TestNear(QM_CSM_RawStrength(reading, gbp), 7.0, 1e-9, "gbp raw accessor"))
+      return false;
    if(!TestNear(reading.zero_sum, 0.0, 1e-9, "zero sum"))
       return false;
    if(!TestNear(reading.normalized[gbp], 100.0, 1e-9, "gbp normalized"))
       return false;
    if(!TestNear(QM_CSM_ProbabilityRatio(reading, gbp), 1.0, 1e-9, "gbp probability 7 of 7"))
       return false;
-   return TestAssert(QM_CSM_IsExhausted(reading, gbp, 95.0), "gbp exhausted");
+   if(!TestAssert(QM_CSM_IsExhausted(reading, gbp, 95.0), "gbp exhausted legacy"))
+      return false;
+   if(!TestAssert(QM_CSM_IsExhaustedAbsolute(reading, gbp, 0.60), "gbp exhausted absolute"))
+      return false;
+   return TestAssert(!QM_CSM_IsExhaustedAbsolute(reading, gbp, 7.10), "gbp not exhausted absolute high threshold");
   }
 
 bool TestMtfCoherence()
