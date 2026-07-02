@@ -1,0 +1,27 @@
+{
+  "task_id": "f7f9da9e-0359-4c0d-a731-cee1ad61eee0",
+  "ea_id": "QM5_12953",
+  "slug": "mql5-gator-ma-card",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12953_mql5-gator-ma-card",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12953_mql5-gator-ma-card\\QM5_12953_mql5-gator-ma-card.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12953_mql5-gator-ma-card\\QM5_12953_mql5-gator-ma-card.ex5",
+  "magic_base": 129530000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "XAUUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12953_mql5-gator-ma-card\\sets\\QM5_12953_mql5-gator-ma-card_EURUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12953_mql5-gator-ma-card\\sets\\QM5_12953_mql5-gator-ma-card_GBPUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12953_mql5-gator-ma-card\\sets\\QM5_12953_mql5-gator-ma-card_XAUUSD.DWX_H1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12953_mql5-gator-ma-card\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "build-only handoff: direct smoke deferred to Q02 worker queue after clean compile/build_check",
+  "blocked_reason": null,
+  "open_questions": []
+}
