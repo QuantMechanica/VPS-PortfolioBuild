@@ -380,6 +380,26 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
             self.assertFalse(result["updated"])
             self.assertEqual(result["reason"], "duplicate_strategy_card_fingerprint")
 
+    def test_research_review_card_rejects_duplicate_ea_id(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp)
+            review = root / "artifacts" / "cards_review"
+            review.mkdir(parents=True)
+            self._write_ready_card(review / "QM5_900010_alpha.md", "QM5_900010", "alpha")
+            self._write_ready_card(review / "QM5_900010_beta.md", "900010", "beta")
+            created = agent_router.enqueue_task(root, "research_strategy", priority=10)
+
+            result = agent_router.update_task(
+                root,
+                created["task_id"],
+                state="REVIEW",
+                artifact_path=str(review / "QM5_900010_beta.md"),
+                verdict="RESEARCH_DRAFT_READY",
+            )
+
+            self.assertFalse(result["updated"])
+            self.assertEqual(result["reason"], "duplicate_strategy_card_ea_id")
+
     def test_research_review_card_requires_schema(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)

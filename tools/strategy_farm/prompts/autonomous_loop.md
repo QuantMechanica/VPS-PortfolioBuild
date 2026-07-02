@@ -173,14 +173,15 @@ Then mine the source per `tools/strategy_farm/prompts/claude_research_source.md`
 - Open the rendered research prompt at
   `D:/QM/strategy_farm/queue/claude_research_<source_id>.md`.
 - Work depth-first on this one source only.
-- Write **up to 5** new draft cards (next batch) to
-  `D:/QM/strategy_farm/artifacts/cards_draft/QM5_<NNNN>_<slug>.md` per the
-  Strategy Wiki `_TEMPLATE Strategy.md` format, with `g0_status: PENDING`
-  AND `source_id: <source-uuid>` in frontmatter.
 - Reserve NEW EA IDs only via the atomic guard:
   `python C:/QM/repo/tools/strategy_farm/farmctl.py reserve-ea-ids --strategy-id <source-id> --slug <slug-1> --slug <slug-2>`.
-  Use the returned IDs in cards. Do NOT hand-edit or append
-  `framework/registry/ea_id_registry.csv`.
+  Use the returned IDs in cards. `QM5_<NNNN>` is a placeholder, not a number
+  you may choose. Do NOT infer the next ID from existing filenames, and do NOT
+  hand-edit or append `framework/registry/ea_id_registry.csv`.
+- Write **up to 5** new draft cards (next batch) to
+  `D:/QM/strategy_farm/artifacts/cards_draft/QM5_<reserved_id>_<slug>.md` per the
+  Strategy Wiki `_TEMPLATE Strategy.md` format, with `g0_status: PENDING`
+  AND `source_id: <source-uuid>` in frontmatter.
 - Append to (or create) source notes at
   `D:/QM/strategy_farm/artifacts/source_notes/<source_id>.md`. Each batch
   gets its own section header.

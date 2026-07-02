@@ -82,7 +82,9 @@ If the file already exists (this is a resumed-mining 2nd/3rd/Nth batch),
 Each batch documents what you mined this session.
 
 ### Draft strategy cards (up to 5)
-`D:\QM\strategy_farm\artifacts\cards_draft\QM5_<NNNN>_<slug>.md`
+First reserve IDs with `farmctl reserve-ea-ids`; only then write cards to
+`D:\QM\strategy_farm\artifacts\cards_draft\QM5_<reserved_id>_<slug>.md`.
+`QM5_<NNNN>` is a placeholder, not a number you may choose.
 
 Use the Strategy Wiki `_TEMPLATE Strategy.md` format. **Mandatory frontmatter
 fields for autonomous workflow:**
@@ -101,8 +103,9 @@ last_updated: <YYYY-MM-DD>
 ---
 ```
 
-Reserve NEW EA IDs with the atomic registry guard. Do NOT hand-edit or append
-`ea_id_registry.csv`.
+Reserve NEW EA IDs with the atomic registry guard before creating card files.
+Do NOT hand-edit or append `ea_id_registry.csv`, and do not infer the next ID
+from existing filenames.
 
 ```powershell
 python C:/QM/repo/tools/strategy_farm/farmctl.py reserve-ea-ids --strategy-id {{source_id}} --slug <slug-1> --slug <slug-2>

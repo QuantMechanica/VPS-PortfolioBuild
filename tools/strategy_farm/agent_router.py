@@ -795,6 +795,14 @@ def list_tasks(root: Path = DEFAULT_ROOT, agent_id: str | None = None, state: st
         ]
 
 
+def _normalize_card_ea_id(value: Any) -> str:
+    text = str(value or "").strip()
+    match = re.match(r"^(?:QM5_)?(\d+)$", text, re.IGNORECASE)
+    if match:
+        return match.group(1)
+    return text.upper()
+
+
 def update_task(
     root: Path,
     task_id: str,
@@ -833,6 +841,29 @@ def update_task(
                             "task_id": task_id,
                             "reason": "strategy_card_schema_failed",
                             "errors": schema_issues[:12],
+                        }
+                    ea_id_key = _normalize_card_ea_id(fm.get("ea_id"))
+                    duplicate_ea_id_cards: list[str] = []
+                    if ea_id_key:
+                        for pool in (approved_dir, review_dir):
+                            if not pool.exists():
+                                continue
+                            for candidate in pool.glob("*.md"):
+                                if candidate.resolve() == resolved_artifact:
+                                    continue
+                                try:
+                                    candidate_fm = farmctl.parse_card_frontmatter(candidate)
+                                except Exception:
+                                    continue
+                                if _normalize_card_ea_id(candidate_fm.get("ea_id")) == ea_id_key:
+                                    duplicate_ea_id_cards.append(str(candidate))
+                    if duplicate_ea_id_cards:
+                        return {
+                            "updated": False,
+                            "task_id": task_id,
+                            "reason": "duplicate_strategy_card_ea_id",
+                            "ea_id": fm.get("ea_id"),
+                            "duplicates": duplicate_ea_id_cards[:8],
                         }
                     fp = farmctl.strategy_card_fingerprint(resolved_artifact, fm)
                     duplicate_cards: list[str] = []

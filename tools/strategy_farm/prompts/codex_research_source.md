@@ -53,13 +53,15 @@ Anchors: bare MA/breakout ~10-40/yr; +regime filter ~5-20; +oscillator-extreme
 session-breakouts 50-300/yr. When unsure, estimate LOW — over-claiming kills a
 good low-freq EA at the MIN_TRADES gate; under-claiming is harmless.
 
-ID allocation: reserve fresh `QM5_<NNNN>` IDs only through the atomic guard:
+ID allocation: reserve fresh IDs only through the atomic guard before creating
+card filenames. `QM5_<NNNN>` is a placeholder, not a number you may choose:
 
 ```powershell
 python C:/QM/repo/tools/strategy_farm/farmctl.py reserve-ea-ids --strategy-id {{source_id}} --slug <slug-1> --slug <slug-2>
 ```
 
-Use the returned rows for card filenames/frontmatter. Do NOT hand-edit or append
+Use the returned rows for card filenames/frontmatter. Do NOT infer the next ID
+from existing filenames, and do NOT hand-edit or append
 `C:/QM/repo/framework/registry/ea_id_registry.csv`. If reservation fails, stop
 and record the reason in the source notes.
 
