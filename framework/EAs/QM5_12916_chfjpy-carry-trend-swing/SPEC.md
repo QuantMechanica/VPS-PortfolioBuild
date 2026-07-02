@@ -58,6 +58,13 @@ three-month momentum filter.
 Backtests use `RISK_FIXED=1000`, `RISK_PERCENT=0`. Friday close defaults to
 disabled for the approved multi-week swing hold.
 
+Q02 queue note (2026-07-02): build task
+`2d939c34-15a3-48c2-8873-5a9324ffafb2` was recorded done after strict
+compile/build_check/SPEC/symbol-scope PASS. The farm has one pending Q02 work
+item, `c11ef2fc-b709-405e-bbd1-c130cc3e257a`, for `CHFJPY.DWX` D1. The item
+was inserted by the never-tested sweep and record-build skipped it as an
+existing pending duplicate; no manual MT5 backtest was launched.
+
 ## Revision History
 
 | Version | Date | Reason |

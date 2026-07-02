@@ -1,0 +1,62 @@
+{
+  "date": "2026-07-02",
+  "branch": "agents/board-advisor",
+  "mission_outcome": "fallback_existing_fx_card_advanced_to_q02",
+  "cointegration_source_checked": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+  "cointegration_findings": {
+    "strict_66_pair_survivors": [
+      {
+        "ea_id": "QM5_12532",
+        "pair": "AUDUSD~NZDUSD",
+        "current_state": "Q02_PASS_Q04_PASS_Q05_PENDING"
+      },
+      {
+        "ea_id": "QM5_12533",
+        "pair": "EURJPY~GBPJPY",
+        "current_state": "Q02_PASS_Q04_FAIL"
+      }
+    ],
+    "unbuilt_registered_edgelab_cointegration_pairs": 0,
+    "reference_artifact": "artifacts/fx_cointegration_cpu_ceiling_stop_20260702.json"
+  },
+  "selected_ea": {
+    "ea_id": "QM5_12916",
+    "slug": "chfjpy-carry-trend-swing",
+    "symbol": "CHFJPY.DWX",
+    "timeframe": "D1",
+    "source_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12916_chfjpy-carry-trend-swing.md",
+    "reason": "Approved low-frequency structural FX carry-trend card with zero prior farm work-items; used because no unbuilt FX cointegration candidate remained and the named basket EAs were not Q02-blocked."
+  },
+  "build_record": {
+    "task_id": "2d939c34-15a3-48c2-8873-5a9324ffafb2",
+    "result_file": "D:/QM/strategy_farm/artifacts/builds/2d939c34-15a3-48c2-8873-5a9324ffafb2.json",
+    "record_build_status": "done",
+    "compile_log": "C:/QM/repo/framework/build/compile/20260702_165338/QM5_12916_chfjpy-carry-trend-swing.compile.log",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260702_165348.json",
+    "build_check_warnings": 16,
+    "smoke_result": "deferred_p2_smoke"
+  },
+  "q02": {
+    "work_item_id": "c11ef2fc-b709-405e-bbd1-c130cc3e257a",
+    "status": "pending",
+    "symbol": "CHFJPY.DWX",
+    "timeframe": "D1",
+    "setfile": "C:/QM/repo/framework/EAs/QM5_12916_chfjpy-carry-trend-swing/sets/QM5_12916_chfjpy-carry-trend-swing_CHFJPY.DWX_D1_backtest.set",
+    "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested",
+    "record_build_duplicate_guard": "existing_q02_pending",
+    "pending_active_q02_count": 1
+  },
+  "validations": {
+    "compile_one_strict": "PASS",
+    "build_check": "PASS",
+    "spec_validator": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "risk_setfile": "RISK_FIXED=1000,RISK_PERCENT=0"
+  },
+  "safety": {
+    "manual_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false
+  }
+}
