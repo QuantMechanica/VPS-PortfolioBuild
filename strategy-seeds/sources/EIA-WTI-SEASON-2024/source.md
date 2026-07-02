@@ -19,9 +19,10 @@ uri: https://www.eia.gov/energyexplained/gasoline/price-fluctuations.php
 
 ## Mining Scope
 
-One card was extracted for a structural WTI crude oil CFD sleeve:
+Two cards were extracted for structural WTI crude oil CFD sleeves:
 
 - `eia-wti-season`: XTIUSD.DWX D1 monthly product-demand seasonal trend with price confirmation.
+- `wti-jun-prem`: XTIUSD.DWX D1 June-only driving-season calendar premium.
 
 ## Evidence Notes
 
