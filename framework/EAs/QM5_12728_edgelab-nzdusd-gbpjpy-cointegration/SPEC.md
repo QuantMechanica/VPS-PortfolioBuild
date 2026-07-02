@@ -52,7 +52,9 @@ beta 0.04, and 116-day half-life.
 - Other `.DWX` symbols. This card is a fixed two-leg FX-cross basket, not a portable multi-pair strategy.
 
 The EA selects GBPUSD.DWX and USDJPY.DWX as conversion history for the GBPJPY leg
-under USD-denominated tester accounting.
+under USD-denominated tester accounting. The basket manifest declares both
+conversion symbols so farm history checks and MT5 tester synchronization use the
+same symbol scope as the runtime EA.
 
 ---
 
@@ -120,6 +122,11 @@ verdict. All folds returned cold-history/report classes including `NO_HISTORY`,
 preserved and `q04_latest_full_year=2024`. The paced worker claimed it on T6;
 no manual MT5 backtest was launched.
 
+Q04 repair note: later Q04 retries on the same logical row still returned infra
+invalid/incomplete-fold output. On 2026-07-02 the manifest was repaired to
+include GBPUSD.DWX and USDJPY.DWX conversion history, matching the EA's
+`Strategy_EnsureBasketScope()` runtime warmup.
+
 ---
 
 ## Revision History
@@ -128,3 +135,4 @@ no manual MT5 backtest was launched.
 |---|---|---|---|
 | v1 | 2026-06-28 | Initial next-best FX cointegration basket build | Built from the 12723 basket pattern |
 | v2 | 2026-06-28 | Q04 cold-history retry handoff | Q02 PASS recorded, prior Q04 INFRA_FAIL superseded by one worker-claimed Q04 retry |
+| v3 | 2026-07-02 | Q04 conversion-history manifest repair | Declared GBPUSD.DWX and USDJPY.DWX conversion history used by runtime warmup |
