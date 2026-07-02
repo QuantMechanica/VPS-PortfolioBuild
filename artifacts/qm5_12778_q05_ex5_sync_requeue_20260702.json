@@ -1,0 +1,131 @@
+{
+  "ea_id": "QM5_12778",
+  "slug": "edgelab-audusd-eurjpy-cointegration",
+  "selected_pair": "AUDUSD~EURJPY",
+  "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+  "mission_scope": "Fallback advancement for an existing FX market-neutral cointegration basket because the EdgeLab FX cointegration scan frontier is already built and QM5_12532/QM5_12533 are not Q02-blocked.",
+  "selection": {
+    "controlling_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_survivors": [
+      "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "QM5_12532_AUDNZD_COINTEGRATION_D1"
+    ],
+    "qm5_12532_current_state": "Q02 PASS, Q04 PASS, Q05 active; not Q02-blocked.",
+    "qm5_12533_current_state": "Q02 PASS, later Q04 FAIL; not Q02-blocked.",
+    "unbuilt_registered_edgelab_cointegration_pairs_found": 0,
+    "fallback_reason": "QM5_12778 had Q02 PASS, Q03 PASS, Q04 PASS, no pending/active rows, and a Q05 INFRA_FAIL caused by an invalid empty MT5 report rather than a performance rejection."
+  },
+  "prior_q05": {
+    "work_item_id": "1c0405e7-16d3-40e6-b884-6be1b504dc4c",
+    "status_before": "done",
+    "verdict_before": "INFRA_FAIL",
+    "aggregate_path": "D:/QM/reports/work_items/1c0405e7-16d3-40e6-b884-6be1b504dc4c/QM5_12778/Q05/QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1/aggregate.json",
+    "reason": "invalid_summary:BARS_ZERO,EMPTY_EXPERT,EMPTY_SYMBOL,HISTORY_CONTEXT_INVALID,INCOMPLETE_RUNS,M0_1970_PERIOD,NO_HISTORY,RUN_STATUS_INVALID",
+    "timed_out": false,
+    "runner_timeout_sec": 3420,
+    "runner_symbol": "AUDUSD.DWX"
+  },
+  "build_refresh": {
+    "compile_command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/QM5_12778_edgelab-audusd-eurjpy-cointegration.mq5 -Strict",
+    "compile_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "compile_log": "C:/QM/repo/framework/build/compile/20260702_010419/QM5_12778_edgelab-audusd-eurjpy-cointegration.compile.log",
+    "compile_summary": "D:/QM/reports/compile/20260702_010419/summary.csv",
+    "mq5_sha256": "AFD5E626F91972070B85481E7E520CA9A839F0097833C8ED5B98645796045976",
+    "ex5_sha256": "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+    "ex5_path": "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+    "setfile_build_hashes_refreshed": [
+      "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/sets/QM5_12778_edgelab-audusd-eurjpy-cointegration_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1_D1_backtest.set",
+      "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/sets/QM5_12778_edgelab-audusd-eurjpy-cointegration_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1_D1_q05_stress_medium.set"
+    ]
+  },
+  "validation": [
+    {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_12778_edgelab-audusd-eurjpy-cointegration --verbose",
+      "result": "PASS",
+      "summary": "BASKET_OK, 0 violations; manifest declares AUDUSD.DWX, EURJPY.DWX, EURUSD.DWX."
+    },
+    {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12778_edgelab-audusd-eurjpy-cointegration -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 16,
+      "report": "D:/QM/reports/framework/21/build_check_20260702_010434.json",
+      "warning_note": "Warnings are existing shared-framework DWX advisory warnings."
+    },
+    {
+      "command": "python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py -q",
+      "result": "PASS",
+      "summary": "6 passed"
+    }
+  ],
+  "factory_ex5_sync": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/deploy_ea_to_all_terminals.ps1 -EaPath framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5 -EvidenceJsonPath artifacts/qm5_12778_factory_ex5_sync_20260702.json",
+    "evidence": "artifacts/qm5_12778_factory_ex5_sync_20260702.json",
+    "result": "PASS",
+    "all_hashes_match": true,
+    "source_hash_sha256": "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+    "terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "status_counts": {
+      "created": 7,
+      "updated": 3
+    }
+  },
+  "queue_action": {
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12778_q05_requeue_20260702T010526Z.sqlite",
+    "duplicate_pending_or_active_q05_before": 0,
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12778 --phase Q05",
+    "result": "requeued_existing_row",
+    "created_rows": 0,
+    "requeued_work_item_id": "1c0405e7-16d3-40e6-b884-6be1b504dc4c",
+    "phase": "Q05",
+    "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "archived_prior_report_root": "D:/QM/reports/work_items/1c0405e7-16d3-40e6-b884-6be1b504dc4c.requeued_20260702T0105320000"
+  },
+  "verification_after_queue": {
+    "status_after": "pending",
+    "verdict_after": null,
+    "claimed_by_after": null,
+    "evidence_path_after": null,
+    "duplicate_pending_or_active_q05_after": 1,
+    "payload": {
+      "portfolio_scope": "basket",
+      "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+      "host_symbol": "AUDUSD.DWX",
+      "host_timeframe": "D1",
+      "basket_symbols": [
+        "AUDUSD.DWX",
+        "EURJPY.DWX",
+        "EURUSD.DWX"
+      ],
+      "tester_currency": "EUR",
+      "tester_deposit": 100000,
+      "risk_mode": "RISK_FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0
+    }
+  },
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "backtest_cpu_ceiling_hit": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false
+  }
+}

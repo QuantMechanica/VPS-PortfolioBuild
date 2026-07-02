@@ -1,0 +1,130 @@
+﻿{
+    "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+    "file_name":  "QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+    "deployed_at_local":  "2026-07-02T03:05:13.0899678+02:00",
+    "terminal_roots":  [
+                           "D:\\QM\\mt5\\T1",
+                           "D:\\QM\\mt5\\T2",
+                           "D:\\QM\\mt5\\T3",
+                           "D:\\QM\\mt5\\T4",
+                           "D:\\QM\\mt5\\T5",
+                           "D:\\QM\\mt5\\T6",
+                           "D:\\QM\\mt5\\T7",
+                           "D:\\QM\\mt5\\T8",
+                           "D:\\QM\\mt5\\T9",
+                           "D:\\QM\\mt5\\T10"
+                       ],
+    "status_counts":  [
+                          {
+                              "status":  "created",
+                              "count":  7
+                          },
+                          {
+                              "status":  "updated",
+                              "count":  3
+                          }
+                      ],
+    "files":  [
+                  {
+                      "terminal":  "T1",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+                      "source_hash_sha256":  "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T2",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T2\\MQL5\\Experts\\QM\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+                      "source_hash_sha256":  "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T3",
+                      "status":  "updated",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T3\\MQL5\\Experts\\QM\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+                      "source_hash_sha256":  "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+                      "destination_hash_before_sha256":  "BC52F14ED4281727CC1080E8DDB3582F5A754B33B2E38B52B055F78604C86802",
+                      "destination_hash_after_sha256":  "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T4",
+                      "status":  "updated",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T4\\MQL5\\Experts\\QM\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+                      "source_hash_sha256":  "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+                      "destination_hash_before_sha256":  "B2358D049D0C154101C0E9A8A1B71F5FBFCF67BC5CC968E553C284FC709BBE9C",
+                      "destination_hash_after_sha256":  "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T5",
+                      "status":  "updated",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T5\\MQL5\\Experts\\QM\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+                      "source_hash_sha256":  "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+                      "destination_hash_before_sha256":  "BC52F14ED4281727CC1080E8DDB3582F5A754B33B2E38B52B055F78604C86802",
+                      "destination_hash_after_sha256":  "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T6",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T6\\MQL5\\Experts\\QM\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+                      "source_hash_sha256":  "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T7",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T7\\MQL5\\Experts\\QM\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+                      "source_hash_sha256":  "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T8",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T8\\MQL5\\Experts\\QM\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+                      "source_hash_sha256":  "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T9",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T9\\MQL5\\Experts\\QM\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+                      "source_hash_sha256":  "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+                      "hash_match":  true
+                  },
+                  {
+                      "terminal":  "T10",
+                      "status":  "created",
+                      "source_path":  "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+                      "destination_path":  "D:\\QM\\mt5\\T10\\MQL5\\Experts\\QM\\QM5_12778_edgelab-audusd-eurjpy-cointegration.ex5",
+                      "source_hash_sha256":  "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+                      "destination_hash_before_sha256":  null,
+                      "destination_hash_after_sha256":  "A78618BBE6822BF147B08994CDFEACA74D1B3A3FECA55D630C8D01002E7D821F",
+                      "hash_match":  true
+                  }
+              ],
+    "all_hashes_match":  true
+}
