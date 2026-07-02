@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   REPLACE_AFTER_SOURCE_HASH
+; build_hash:   a4f56930c9be781ac269fd5df80020160e527b79e92ab41a96d27ef922e039e6
 ; author:       Codex
 ; date:         2026-07-02
 ;==========================================================

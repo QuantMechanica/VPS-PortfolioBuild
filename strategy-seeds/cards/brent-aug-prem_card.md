@@ -220,5 +220,5 @@ Darwinex `XBRUSD.DWX` bars.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-02 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-02 | PENDING | compile/build artifact |
-| Q02 Baseline Screening | 2026-07-02 | PLANNED | `D:\QM\strategy_farm\state\farm_state.sqlite` |
+| Q01 Build Validation | 2026-07-02 | PASS | `D:\QM\reports\framework\21\build_check_20260702_084407.json` |
+| Q02 Baseline Screening | 2026-07-02 | QUEUED | `D:\QM\strategy_farm\state\farm_state.sqlite` work item `b90c3915-a31f-40ae-bdc0-97dd49aa1be8` |
