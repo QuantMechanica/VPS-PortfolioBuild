@@ -3,16 +3,16 @@
 ; ea_id:        9513
 ; ea_slug:      lt-breakout-stack
 ; ea_version:   v5.0
-; set_version:  s20260611-001
+; set_version:  s20260702-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   6
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   e7f4921a5701fb3b5dd1a23db82a035f9ec03a4c0fa9e2ba088c394b64487160
-; author:       Development
-; date:         2026-06-11
+; build_hash:   71027b2245b6ea3348aef5932aff928e95ca8a247620f323e42f41c21459714d
+; author:       Codex
+; date:         2026-07-02
 ;==========================================================
 qm_magic_slot_offset=6
 RISK_FIXED=1000
@@ -31,4 +31,17 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=SPEC.md
+strategy_scalar_10=28.6
+strategy_scalar_20=31.6
+strategy_scalar_40=32.7
+strategy_scalar_80=33.5
+strategy_scalar_160=33.5
+strategy_scalar_320=33.5
+strategy_entry_threshold=2.0
+strategy_exit_threshold=0.0
+strategy_atr_period=20
+strategy_atr_stop_mult=2.5
+strategy_spread_lookback=20
+strategy_spread_cap_mult=2.0
+strategy_min_valid_horizons=3
