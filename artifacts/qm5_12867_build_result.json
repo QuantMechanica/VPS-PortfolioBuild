@@ -1,0 +1,116 @@
+{
+  "task_id": "1bd88c9c-a444-4c2c-b4b8-8b39c95d2dac",
+  "ea_id": "QM5_12867",
+  "slug": "brentgold-rspread",
+  "strategy": "XBR/XAU D1 return-spread reversion basket",
+  "strategy_id": "CME-OIL-GOLD-RATIO-2024_BRENT_S04",
+  "source_id": "CME-OIL-GOLD-RATIO-2024",
+  "source_links": [
+    "https://www.cmegroup.com/articles/2024/through-the-lens-of-gold.html"
+  ],
+  "symbols": [
+    "XBRUSD.DWX",
+    "XAUUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XBRUSD.DWX",
+    "XAUUSD.DWX"
+  ],
+  "logical_symbol": "QM5_12867_XBR_XAU_RSPREAD_D1",
+  "host_symbol": "XBRUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12867_brentgold-rspread",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12867_brentgold-rspread\\QM5_12867_brentgold-rspread.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12867_brentgold-rspread\\QM5_12867_brentgold-rspread.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12867_brentgold-rspread\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12867_brentgold-rspread.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12867_brentgold-rspread_card.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12867_brentgold-rspread.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12867_brentgold-rspread\\basket_manifest.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12867_brentgold-rspread\\sets\\QM5_12867_brentgold-rspread_QM5_12867_XBR_XAU_RSPREAD_D1_D1_backtest.set"
+  ],
+  "setfile_build_hash": "9ca045e36b01021ad05d8f5219b78aef970cdc39d9c922b1de10ebd6279cfbc7",
+  "mq5_sha256": "9988e717a4b60d346db298dad3706fec84e3c3d5f5dac177280332772d8291c8",
+  "ex5_sha256": "acb7dd55e89a48bcc66c0b9a7709b8ca1295be4403fe5db0d1c74a305da36bec",
+  "setfile_current_sha256": "07a9c73be752c56e1996302b420189a9e26b434e6e7ebb817126b2da3b580aeb",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic_base": 128670000,
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XBRUSD.DWX",
+        "magic": 128670000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "XAUUSD.DWX",
+        "magic": 128670001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12867_brentgold-rspread/QM5_12867_brentgold-rspread.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260702_002155\\QM5_12867_brentgold-rspread.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260702_002155\\summary.csv",
+    "ex5_size_bytes": 303820,
+    "symbol_scope_verdict": "BASKET_OK"
+  },
+  "build_check": {
+    "command": "framework/scripts/build_check.ps1 -EALabel QM5_12867_brentgold-rspread -RepoRoot C:/QM/repo -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260702_002435.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "validations": {
+    "symbol_scope": "BASKET_OK",
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "magic_registry_rows_added": true
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "non_duplicate_reason": "XBR/XAU return-spread reversion uses Brent as the crude leg and a fixed-window relative-return z-score. It is distinct from QM5_12863 WTI/gold return-spread, QM5_12604 absolute WTI/gold price-ratio level reversion, QM5_12605 oil/gold ratio breakout, QM5_12840 XTI/XNG return-spread, QM5_12860 WTI/Brent return shock, QM5_12862 XAU/XAG return-spread, commodity RSI logic, directional index, metal, XNG, or WTI sleeves.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false
+  },
+  "notes": "Completed the build for a new low-frequency market-neutral Brent/gold relative-value sleeve and prepared it for Q02 via record-build auto-enqueue.",
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "9842f766-769d-474a-b78e-bfd02ba07924",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "QM5_12867_XBR_XAU_RSPREAD_D1",
+    "host_symbol": "XBRUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12867_brentgold-rspread\\sets\\QM5_12867_brentgold-rspread_QM5_12867_XBR_XAU_RSPREAD_D1_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "attempt_count": 0,
+    "created_at_utc": "2026-07-02T00:26:48+00:00",
+    "portfolio_scope": "basket",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000
+  }
+}
