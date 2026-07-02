@@ -1,0 +1,100 @@
+{
+  "task_id": "manual-codex-2026-07-02-xng-eia-multiday-drift",
+  "created_at_utc": "2026-07-02T22:01:24+00:00",
+  "ea_id": "QM5_12898",
+  "ea_slug": "xng-eia-multiday-drift",
+  "ea_label": "QM5_12898_xng-eia-multiday-drift",
+  "strategy_shape": "D1 XNGUSD post-EIA storage-report multiday drift continuation",
+  "source_lineage": {
+    "primary": "U.S. Energy Information Administration Weekly Natural Gas Storage Report",
+    "schedule": "U.S. Energy Information Administration Natural Gas Weekly Update and Storage Report Schedule",
+    "urls": [
+      "https://www.eia.gov/naturalgas/storage/",
+      "https://www.eia.gov/naturalgas/schedule/"
+    ],
+    "runtime_feed_used": false
+  },
+  "diversity_rationale": "Second XNG sleeve uses official EIA storage-event multiday drift; no RSI/pullback, no inside-day breakout, no fade, no prestorage positioning, no index/metal exposure.",
+  "non_duplicate_checks": [
+    "Not QM5_12567 cumulative RSI2 commodity pullback: no RSI, oscillator, or two-day pullback rule.",
+    "Not QM5_12761 EIA storage inside-day breakout: no inside-day setup and no live range breakout trigger.",
+    "Not storage fade or pre-storage positioning: entries occur only after a likely report event bar and follow directional close-location drift."
+  ],
+  "paths": {
+    "card": "artifacts/cards_approved/QM5_12898_xng-eia-multiday-drift.md",
+    "ea_dir": "framework/EAs/QM5_12898_xng-eia-multiday-drift",
+    "mq5": "framework/EAs/QM5_12898_xng-eia-multiday-drift/QM5_12898_xng-eia-multiday-drift.mq5",
+    "ex5": "framework/EAs/QM5_12898_xng-eia-multiday-drift/QM5_12898_xng-eia-multiday-drift.ex5",
+    "spec": "framework/EAs/QM5_12898_xng-eia-multiday-drift/SPEC.md",
+    "setfile": "framework/EAs/QM5_12898_xng-eia-multiday-drift/sets/QM5_12898_xng-eia-multiday-drift_XNGUSD.DWX_D1_backtest.set",
+    "q02_enqueue_artifact": "artifacts/qm5_12898_q02_enqueue_20260702.json"
+  },
+  "hashes_sha256": {
+    "mq5": "83d5f7c00c622e1aab851c53a584cd1de3b2c1658b43757bdb2a5138b2d00b1b",
+    "ex5": "943fa78a73ac14ef766196523ffbf7d336553935dca1ad9c617b563969a63ae5",
+    "setfile": "a79c84344b5009e06c0307f5b9ea9f618ca92e505ee62c0725605a94377b0b4b"
+  },
+  "magic_numbers": [
+    {
+      "ea_id": 12898,
+      "ea_slug": "xng-eia-multiday-drift",
+      "symbol_slot": 0,
+      "symbol": "XNGUSD.DWX",
+      "magic": 128980000,
+      "reserved_at": "2026-07-02",
+      "reserved_by": "Codex",
+      "status": "active"
+    }
+  ],
+  "setfiles": [
+    {
+      "path": "framework/EAs/QM5_12898_xng-eia-multiday-drift/sets/QM5_12898_xng-eia-multiday-drift_XNGUSD.DWX_D1_backtest.set",
+      "symbol": "XNGUSD.DWX",
+      "timeframe": "D1",
+      "environment": "backtest",
+      "risk_mode": "RISK_FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "build_hash": "de2a1fbbb9a78e856888de24f82267946c7a32d9ea9b0a9e59c890bb325e30de"
+    }
+  ],
+  "validation": {
+    "compile_one": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260702_220032/QM5_12898_xng-eia-multiday-drift.compile.log"
+    },
+    "compile_ea": {
+      "verdict": "COMPILED",
+      "reason": "fresh build, 0 warnings",
+      "symbol_scope_verdict": "SINGLE_SYMBOL_OK"
+    },
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 16,
+      "report": "D:/QM/reports/framework/21/build_check_20260702_220012.json",
+      "warning_note": "Advisory warnings are from shared framework include files; MetaEditor compile warnings for this EA were 0."
+    },
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "targeted_registry_rows": "PASS",
+    "repo_wide_registry_validation": "FAIL_PREEXISTING_REPO_DEBT"
+  },
+  "q02": {
+    "enqueued": true,
+    "work_item_id": "4e6206c6-6c2c-428e-b9e9-655de0004ad3",
+    "status": "pending",
+    "artifact": "artifacts/qm5_12898_q02_enqueue_20260702.json"
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "backtest_cpu_run": false
+  }
+}

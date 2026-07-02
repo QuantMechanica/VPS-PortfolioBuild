@@ -1,0 +1,43 @@
+{
+  "ea_id": "QM5_12898",
+  "ea_slug": "xng-eia-multiday-drift",
+  "strategy_shape": "D1 XNGUSD post-EIA storage-report multiday drift continuation",
+  "diversity_rationale": "Second XNG sleeve uses official EIA storage-event multiday drift; no RSI/pullback, no inside-day breakout, no fade, no prestorage positioning, no index/metal exposure.",
+  "card_path": "artifacts/cards_approved/QM5_12898_xng-eia-multiday-drift.md",
+  "build_result_path": "artifacts/qm5_12898_build_result.json",
+  "db_path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+  "db_backup_path": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12898_q02_enqueue_20260702T220124Z.sqlite",
+  "duplicate_guard": {
+    "checked_existing_pending_or_active": true,
+    "existing_pending_or_active_count": 0
+  },
+  "q02_work_items": [
+    {
+      "id": "4e6206c6-6c2c-428e-b9e9-655de0004ad3",
+      "kind": "backtest",
+      "phase": "Q02",
+      "ea_id": "QM5_12898",
+      "status": "pending",
+      "symbol": "XNGUSD.DWX",
+      "timeframe": "D1",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12898_xng-eia-multiday-drift/sets/QM5_12898_xng-eia-multiday-drift_XNGUSD.DWX_D1_backtest.set",
+      "attempt_count": 0,
+      "created_at": "2026-07-02T22:01:24+00:00",
+      "updated_at": "2026-07-02T22:01:24+00:00",
+      "payload_json": {
+        "host_symbol": "XNGUSD.DWX",
+        "host_timeframe": "D1",
+        "enqueued_by": "codex_board_advisor_2026-07-02.xng_eia_multiday_drift",
+        "enqueued_at_utc": "2026-07-02T22:01:24+00:00",
+        "build_task_id": "manual-codex-2026-07-02-xng-eia-multiday-drift",
+        "diversity_rationale": "Second XNG sleeve uses official EIA storage-event multiday drift; no RSI/pullback, no inside-day breakout, no fade, no prestorage positioning, no index/metal exposure."
+      }
+    }
+  ],
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
