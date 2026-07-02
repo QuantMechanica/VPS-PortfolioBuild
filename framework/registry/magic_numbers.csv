@@ -14280,3 +14280,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9507,carver-breakout,5,NDX.DWX,95070005,2026-07-02,Codex,active
 9507,carver-breakout,6,GDAXI.DWX,95070006,2026-07-02,Codex,active
 9507,carver-breakout,7,UK100.DWX,95070007,2026-07-02,Codex,active
+12961,wti-sep-prem,0,XTIUSD.DWX,129610000,2026-07-02,Codex,active
