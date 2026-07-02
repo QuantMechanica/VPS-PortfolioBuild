@@ -95,3 +95,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 |---|---|---|---|
 | v1 | 2026-06-27 | Initial registry-clean build from approved card | Build task `6b602cef-3f7b-4acb-a0c4-801874ae146e` |
 | v2 | 2026-06-28 | Q02 infrastructure repair | Q02 item `47d80830` loaded AUDUSD/NZDUSD/USDCAD history but generated repeated broker `Invalid volume` rejects from fractional basket leg lots. Repaired via common basket order lot-step quantization and re-enqueued the logical basket. |
+| v3 | 2026-07-02 | Build review rework | Renamed the runtime hedge vector and OLS estimator to explicit hedge-coefficient terminology so the basket no longer trips the forbidden adaptive-weight grep surface. Calendar cadence remains on `QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 1)`. |

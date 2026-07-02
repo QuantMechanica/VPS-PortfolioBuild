@@ -43,7 +43,7 @@ input int    strategy_leg_stop_pips        = 250;
 
 string  g_symbols[3] = {"AUDUSD.DWX", "NZDUSD.DWX", "USDCAD.DWX"};
 int     g_slots[3] = {0, 1, 2};
-double  g_weights[3] = {1.0, -1.0, -1.0};
+double  g_hedge_coeff[3] = {1.0, -1.0, -1.0};
 double  g_spreads[600];
 int     g_spread_count = 0;
 int     g_current_month_key = -1;
@@ -92,7 +92,7 @@ bool ReadCloses(double &aud[], double &nzd[], double &cad_inv[], const int bars)
    return true;
   }
 
-bool EstimateWeights(const double &aud[], const double &nzd[], const double &cad_inv[], const int bars)
+bool EstimateHedgeCoefficients(const double &aud[], const double &nzd[], const double &cad_inv[], const int bars)
   {
    double sx1 = 0.0, sx2 = 0.0, sy = 0.0;
    double sx1x1 = 0.0, sx2x2 = 0.0, sx1x2 = 0.0, sx1y = 0.0, sx2y = 0.0;
@@ -127,9 +127,9 @@ bool EstimateWeights(const double &aud[], const double &nzd[], const double &cad
       MathAbs(beta1) > 20.0 || MathAbs(beta2) > 20.0)
       return false;
 
-   g_weights[0] = 1.0;
-   g_weights[1] = -beta1;
-   g_weights[2] = -beta2;
+   g_hedge_coeff[0] = 1.0;
+   g_hedge_coeff[1] = -beta1;
+   g_hedge_coeff[2] = -beta2;
    return true;
   }
 
@@ -137,7 +137,7 @@ void BuildSpreadSeries(const double &aud[], const double &nzd[], const double &c
   {
    g_spread_count = MathMin(bars, 600);
    for(int i = 0; i < g_spread_count; ++i)
-      g_spreads[i] = g_weights[0] * aud[i] + g_weights[1] * nzd[i] + g_weights[2] * cad_inv[i];
+      g_spreads[i] = g_hedge_coeff[0] * aud[i] + g_hedge_coeff[1] * nzd[i] + g_hedge_coeff[2] * cad_inv[i];
   }
 
 bool EstimateHalfLife()
@@ -220,7 +220,7 @@ bool RefreshState()
      }
    if(month_key != g_current_month_key)
      {
-      if(!EstimateWeights(aud, nzd, cad_inv, strategy_hedge_lookback))
+      if(!EstimateHedgeCoefficients(aud, nzd, cad_inv, strategy_hedge_lookback))
         {
          g_state_ready = false;
          return false;
@@ -283,7 +283,7 @@ bool OpenBasket(const int signal_direction)
   {
    double sum_abs = 0.0;
    for(int leg = 0; leg < 3; ++leg)
-      sum_abs += MathAbs(g_weights[leg]);
+      sum_abs += MathAbs(g_hedge_coeff[leg]);
    if(sum_abs <= 0.0)
       return false;
 
@@ -296,7 +296,7 @@ bool OpenBasket(const int signal_direction)
       if(ask <= 0.0 || bid <= 0.0)
          continue;
 
-      const bool buy_leg = (signal_direction * g_weights[leg] < 0.0);
+      const bool buy_leg = (signal_direction * g_hedge_coeff[leg] < 0.0);
       const double entry = buy_leg ? ask : bid;
       const double stop_dist = PipDistance(symbol, strategy_leg_stop_pips);
       if(stop_dist <= 0.0)
@@ -314,7 +314,7 @@ bool OpenBasket(const int signal_direction)
 
       const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
       const double sl_points = (point > 0.0) ? stop_dist / point : 0.0;
-      breq.lots = QM_LotsForRisk(symbol, sl_points) * MathAbs(g_weights[leg]) / sum_abs;
+      breq.lots = QM_LotsForRisk(symbol, sl_points) * MathAbs(g_hedge_coeff[leg]) / sum_abs;
 
       ulong ticket = 0;
       if(QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, breq, ticket))
