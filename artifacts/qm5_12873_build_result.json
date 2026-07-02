@@ -1,0 +1,102 @@
+{
+  "task_id": "9bbdabf3-3633-4568-95d4-9bd83b03e505",
+  "ea_id": "QM5_12873",
+  "slug": "xng-latewinter-decay-short",
+  "strategy": "XNG D1 late-winter decay short",
+  "strategy_id": "EIA-XNG-SHOULDER-2026_S03",
+  "source_id": "EIA-XNG-SHOULDER-2026",
+  "source_links": [
+    "https://www.eia.gov/todayinenergy/detail.php?id=22892"
+  ],
+  "symbols": [
+    "XNGUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XNGUSD.DWX"
+  ],
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12873_xng-latewinter-decay-short",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12873_xng-latewinter-decay-short\\QM5_12873_xng-latewinter-decay-short.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12873_xng-latewinter-decay-short\\QM5_12873_xng-latewinter-decay-short.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12873_xng-latewinter-decay-short\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12873_xng-latewinter-decay-short.md",
+  "approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12873_xng-latewinter-decay-short.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12873_xng-latewinter-decay-short.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12873_xng-latewinter-decay-short\\sets\\QM5_12873_xng-latewinter-decay-short_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "e322e1a1df035554e87d078a4e738dd50d5d29ffaaed8ce03cb31ac66512ab5b",
+  "mq5_sha256": "a1308f43be23da031aa4c246b3e649110314408d6c93981602694cf89754be0d",
+  "ex5_sha256": "0fc96c1ecc50e06f756f6263db3fd1fde4b9e292cfeac894c026b2a157697611",
+  "setfile_current_sha256": "d4b0a6056c108b8ae81ced954494e3e6bab4843c198777a54f173053131eac86",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic_base": 128730000,
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XNGUSD.DWX",
+        "magic": 128730000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12873_xng-latewinter-decay-short/QM5_12873_xng-latewinter-decay-short.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260702_151130\\QM5_12873_xng-latewinter-decay-short.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260702_151130\\summary.csv",
+    "ex5_size_bytes": 301532,
+    "symbol_scope_verdict": "SINGLE_SYMBOL_OK"
+  },
+  "build_check": {
+    "command": "framework/scripts/build_check.ps1 -EALabel QM5_12873_xng-latewinter-decay-short -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260702_151145.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "validations": {
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_guardrails": "PASS",
+    "magic_resolver_regenerated": true
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "non_duplicate_reason": "XNG late-winter decay short uses a Feb 15-Mar 31 weekly structural demand-transition window, requires ATR-normalized decay from the recent winter high and negative D1 SMA slope, and exits on season, slope, fast-SMA recovery, or time. It is distinct from QM5_12567 cumulative RSI2 commodity pullback, freeze fades, Donchian injection breakdowns, broad spring shoulder seasonals, QM5_12874 April-October monthly injection slope, storage/weather events, carry, and energy baskets.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false
+  },
+  "notes": "Completed the build for a new low-frequency structural XNG late-winter decay sleeve and prepared it for Q02 via record-build auto-enqueue.",
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id_short": "0b1d9261",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "XNGUSD.DWX",
+    "host_symbol": "XNGUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12873_xng-latewinter-decay-short\\sets\\QM5_12873_xng-latewinter-decay-short_XNGUSD.DWX_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "attempt_count": 0,
+    "work_item_id": "0b1d9261-48d3-4ef4-a743-a0915a8ab722"
+  }
+}
