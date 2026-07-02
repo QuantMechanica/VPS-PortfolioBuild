@@ -3,14 +3,14 @@
 ; ea_id:        12836
 ; ea_slug:      turnaround-tuesday-ws30
 ; ea_version:   v5.0
-; set_version:  s20260702-001
+; set_version:  s20260702-002
 ; symbol:       WS30.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   61d9ad9f2e54735ea444246673a5f8f499bf33281c946ad339e9cb7d2327976b
 ; author:       Development
 ; date:         2026-07-02
 ;==========================================================
@@ -26,8 +26,8 @@ weak_monday_mode=WMM_BELOW_FRIDAY
 use_volume_filter=true
 volume_sma_period=25
 entry_mode=EM_IMMEDIATE
-sl_mode=SL_MONDAY_LOW
-sl_fixed_pct=1.0
+sl_mode=SL_FIXED_PCT
+sl_fixed_pct=0.5
 tp_mode=TP_FIXED_PCT
 tp_fixed_pct=1.75
 exit_dow=2
