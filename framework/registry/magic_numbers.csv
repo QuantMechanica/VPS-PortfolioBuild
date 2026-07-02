@@ -14261,3 +14261,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9350,brooks-failed-ttr-h4,13,UK100.DWX,93500013,2026-07-02,Codex,active
 12870,wti-jan-fade,0,XTIUSD.DWX,128700000,2026-07-02,Codex,active
 12871,brent-jan-fade,0,XBRUSD.DWX,128710000,2026-07-02,Codex,active
+12893,xng-12m-carry,0,XNGUSD.DWX,128930000,2026-07-02,Codex,active
