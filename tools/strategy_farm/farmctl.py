@@ -37,6 +37,7 @@ DEFAULT_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_far
 DB_REL = Path("state") / "farm_state.sqlite"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FRAMEWORK_EAS_DIR = REPO_ROOT / "framework" / "EAs"
+REQUEUE_EXCLUDED_EAS_FILE = DEFAULT_ROOT / "state" / "requeue_excluded_eas.txt"
 P5_CALIBRATION_JSON = REPO_ROOT / "framework" / "calibrations" / "VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json"
 MT5_ROOT = Path(os.environ.get("QM_MT5_ROOT", r"D:\QM\mt5"))
 PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
@@ -57,6 +58,32 @@ SHARED_BUILD_PATHS = [
 ]
 
 PIPELINE_REPORT_ROOT = Path(r"D:\QM\reports\pipeline")
+
+
+def _normalise_ea_label(ea_id: Any) -> str:
+    match = re.search(r"(?:QM5[_-]?)?(\d+)", str(ea_id or ""), re.IGNORECASE)
+    if not match:
+        return str(ea_id or "").strip().upper()
+    return f"QM5_{int(match.group(1))}"
+
+
+def load_requeue_excluded_eas(path: Path = REQUEUE_EXCLUDED_EAS_FILE) -> set[str]:
+    """EA IDs excluded from new Q02 enqueue waves."""
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return set()
+    out: set[str] = set()
+    for line in lines:
+        value = line.split("#", 1)[0].strip()
+        if value:
+            out.add(_normalise_ea_label(value))
+    return out
+
+
+def is_q02_requeue_excluded(ea_id: Any, excluded: set[str] | None = None) -> bool:
+    excluded = load_requeue_excluded_eas() if excluded is None else excluded
+    return _normalise_ea_label(ea_id) in excluded
 
 # 2026-05-23 OR3 — post-pipeline-rewrite Qxx canonical phase set.
 # Vault: 03 Pipeline/Pipeline Overview.md
@@ -6514,6 +6541,8 @@ def _detect_unenqueued_eas(con: sqlite3.Connection) -> list[dict[str, Any]]:
         if ea_id in seen_eas:
             continue
         seen_eas.add(ea_id)
+        if is_q02_requeue_excluded(ea_id):
+            continue
         try:
             review_payload = json.loads(r["payload_json"] or "{}")
         except json.JSONDecodeError:
@@ -6633,6 +6662,15 @@ def _expand_pending_backtest_p2_parents(
                 payload_merge={"enqueue_error": "missing_ea_id"},
             )
             expanded.append({"task_id": row["id"], "error": "missing_ea_id"})
+            continue
+        if is_q02_requeue_excluded(ea_id):
+            expanded.append({
+                "task_id": row["id"],
+                "ea_id": ea_id,
+                "created": 0,
+                "skipped": 0,
+                "reason": "requeue_excluded_q02",
+            })
             continue
         created, skipped = _create_backtest_work_items(
             con,
@@ -9684,6 +9722,13 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
     """
     phase = phase_qid(phase)
     is_q02 = phase == "Q02"
+    if is_q02 and is_q02_requeue_excluded(ea_id):
+        return [], [{
+            "ea_id": ea_id,
+            "phase": phase,
+            "reason": "requeue_excluded_q02",
+            "source": str(REQUEUE_EXCLUDED_EAS_FILE),
+        }]
     basket_manifest = _load_basket_manifest(ea_id) if is_q02 else None
     basket_setfile = _find_basket_setfile(ea_id, basket_manifest) if basket_manifest else None
     if basket_manifest:
@@ -9840,6 +9885,14 @@ def enqueue_backtest(root: Path, review_task_id: str, phase: str) -> dict[str, A
                     "detail": "latest build smoke produced zero trades; route to Codex fix or card rework before Q02 fanout",
                     "ea_id": ea_id,
                     "build_task_id": smoke.get("build_task_id"),
+                }
+            if is_q02_requeue_excluded(ea_id):
+                return {
+                    "enqueued": False,
+                    "reason": "requeue_excluded_q02",
+                    "detail": f"EA is listed in {REQUEUE_EXCLUDED_EAS_FILE}",
+                    "ea_id": ea_id,
+                    "phase": phase,
                 }
         artifact_failure = _ea_build_artifact_failure(str(ea_id))
         if artifact_failure:
@@ -11612,6 +11665,19 @@ def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dic
     if not ea_id or not setfiles:
         return {"enqueued": [], "skipped": [],
                 "reason": "missing_ea_id_or_setfiles"}
+    if is_q02_requeue_excluded(ea_id):
+        return {
+            "enqueued": [],
+            "skipped": [
+                {
+                    "setfile": Path(str(item)).name,
+                    "reason": "requeue_excluded_q02",
+                    "source": str(REQUEUE_EXCLUDED_EAS_FILE),
+                }
+                for item in setfiles
+            ],
+            "ea_id": ea_id,
+        }
 
     enqueued: list[dict[str, Any]] = []
     skipped: list[dict[str, Any]] = []

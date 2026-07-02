@@ -76,6 +76,7 @@ NOW = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00")
 
 sys.path.insert(0, r"C:\QM\repo\tools\strategy_farm")
 import farmctl  # staging helpers (_stage_q02_setfiles, _record_q02_deferral)
+REQUEUE_EXCLUDED_EAS = farmctl.load_requeue_excluded_eas()
 try:
     import strategy_priority as _sp
     _SCORES = _sp.compute_scores()
@@ -110,6 +111,7 @@ budget = max(0, QUEUE_CEILING - pending_now)
 report = {"generated_at": NOW, "apply": APPLY,
           "target_eas": sorted(TARGET_EAS),
           "target_symbols": sorted(TARGET_SYMBOLS),
+          "requeue_excluded_eas_count": len(REQUEUE_EXCLUDED_EAS),
           "pending_at_start": pending_now, "queue_ceiling": QUEUE_CEILING,
           "wave_budget": budget,
           "part1_never_tested": {"enqueued": [], "skipped": []},
@@ -122,13 +124,21 @@ def pending_active_exists(ea_id, symbol, phase):
     ).fetchone() is not None
 
 def insert_wi(phase, ea_id, symbol, setfile, payload):
+    if phase in {"Q02", "P2"} and farmctl.is_q02_requeue_excluded(ea_id, REQUEUE_EXCLUDED_EAS):
+        report.setdefault("requeue_excluded_refused", []).append({
+            "ea_id": ea_id,
+            "phase": phase,
+            "symbol": symbol,
+            "setfile": Path(setfile).name,
+        })
+        return False
     # OWNER directive 2026-06-20: only ever enqueue .DWX custom symbols. Bare
     # broker symbols have no local history -> the tester fails history sync with
     # "file opening or reading error [32]" and the item INFRA_FAILs without ever
     # producing a result. Refuse non-.DWX outright.
     if not str(symbol).upper().endswith(".DWX"):
         report.setdefault("non_dwx_refused", []).append({"ea_id": ea_id, "symbol": symbol})
-        return
+        return False
     if APPLY:
         cur.execute(
             "INSERT INTO work_items (id, kind, phase, ea_id, symbol, setfile_path, "
@@ -136,6 +146,7 @@ def insert_wi(phase, ea_id, symbol, setfile, payload):
             "VALUES (?, 'backtest', ?, ?, ?, ?, 'pending', 0, ?, ?, ?)",
             (str(uuid.uuid4()), phase, ea_id, symbol, str(setfile),
              json.dumps(payload), NOW, NOW))
+    return True
 
 # ---------- Part 1: built, never tested ----------
 ea_dirs = {}
@@ -150,6 +161,10 @@ for d in sorted(EAS.iterdir()):
 budget_left = budget
 for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
     if TARGET_EAS and ea_id not in TARGET_EAS:
+        continue
+    if farmctl.is_q02_requeue_excluded(ea_id, REQUEUE_EXCLUDED_EAS):
+        report["part1_never_tested"]["skipped"].append(
+            {"ea_id": ea_id, "reason": "requeue_excluded_q02"})
         continue
     dirs = ea_dirs[ea_id]
     if budget_left <= 0:
@@ -207,7 +222,8 @@ for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
                    "enqueued_at_utc": NOW}
         if ea_id in PRIORITY_EAS:
             payload["priority_track"] = True
-        insert_wi("Q02", ea_id, symbol, sf, payload)
+        if not insert_wi("Q02", ea_id, symbol, sf, payload):
+            continue
         budget_left -= 1
         report["part1_never_tested"]["enqueued"].append(
             {"ea_id": ea_id, "symbol": symbol, "setfile": sf.name,
@@ -282,10 +298,16 @@ for phase in ("Q02", "Q03", "Q08"):
                 {"ea_id": ea_id, "phase": phase, "symbol": symbol,
                  "reason": "existing_pending_active"})
             continue
+        if phase == "Q02" and farmctl.is_q02_requeue_excluded(ea_id, REQUEUE_EXCLUDED_EAS):
+            report["part2_stranded"]["skipped"].append(
+                {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                 "reason": "requeue_excluded_q02"})
+            continue
         payload = {"host_symbol": symbol,
                    "enqueued_by": "claude_sweep_enqueue_2026-06-10.stranded_infra_fail",
                    "enqueued_at_utc": NOW}
-        insert_wi(phase, ea_id, symbol, setfile, payload)
+        if not insert_wi(phase, ea_id, symbol, setfile, payload):
+            continue
         report["part2_stranded"]["enqueued"].append(
             {"ea_id": ea_id, "phase": phase, "symbol": symbol,
              "setfile": Path(setfile).name})
@@ -316,6 +338,11 @@ if deferred_state:
         if not (has_pass or spare_capacity):
             report["part3_deferred_promotion"]["kept_deferred"] += len(entry["setfiles"])
             continue
+        if farmctl.is_q02_requeue_excluded(ea_id, REQUEUE_EXCLUDED_EAS):
+            report["part3_deferred_promotion"].setdefault("skipped", []).append(
+                {"ea_id": ea_id, "reason": "requeue_excluded_q02",
+                 "deferred_setfiles": len(entry["setfiles"])})
+            continue
         for sf in entry["setfiles"]:
             if TARGET_SYMBOLS and sf["symbol"] not in TARGET_SYMBOLS:
                 report["part3_deferred_promotion"].setdefault("skipped", []).append(
@@ -330,7 +357,8 @@ if deferred_state:
                        "enqueued_by": "sweep_enqueue.deferred_promotion",
                        "promotion_reason": "stage1_pass" if has_pass else "spare_capacity",
                        "enqueued_at_utc": NOW}
-            insert_wi("Q02", ea_id, sf["symbol"], sf["setfile"], payload)
+            if not insert_wi("Q02", ea_id, sf["symbol"], sf["setfile"], payload):
+                continue
             report["part3_deferred_promotion"]["promoted"].append(
                 {"ea_id": ea_id, "symbol": sf["symbol"],
                  "reason": payload["promotion_reason"]})
