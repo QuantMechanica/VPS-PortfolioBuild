@@ -33,5 +33,7 @@
     "CHFJPY.DWX"
   ],
   "currencies": ["USD", "EUR", "GBP", "JPY", "CHF", "AUD", "NZD", "CAD"],
+  "q02_from_date": "2023.01.01",
+  "q02_to_date": "2023.12.31",
   "notes": "Single-host basket pattern. Each leg resolves its own registered symbol slot and magic number; the host setfile symbol is used only to drive the H1 closed-bar cadence."
 }

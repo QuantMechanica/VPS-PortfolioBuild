@@ -1072,14 +1072,8 @@ def _basket_payload_date_window(payload: dict[str, Any]) -> tuple[str | None, st
     if not is_basket:
         return None, None
 
-    def _date(value: Any) -> str | None:
-        text = str(value or "").strip()
-        if re.match(r"^\d{4}\.\d{2}\.\d{2}$", text):
-            return text
-        return None
-
-    from_date = _date(payload.get("from_date"))
-    to_date = _date(payload.get("to_date"))
+    from_date = _valid_ymd_date(payload.get("from_date"))
+    to_date = _valid_ymd_date(payload.get("to_date"))
     if not from_date:
         try:
             from_date = f"{int(payload['from_year']):04d}.01.01"
@@ -1091,6 +1085,13 @@ def _basket_payload_date_window(payload: dict[str, Any]) -> tuple[str | None, st
         except (KeyError, TypeError, ValueError):
             to_date = None
     return from_date, to_date
+
+
+def _valid_ymd_date(value: Any) -> str | None:
+    text = str(value or "").strip()
+    if re.match(r"^\d{4}\.\d{2}\.\d{2}$", text):
+        return text
+    return None
 
 
 # Q02 absolute trade floor (OWNER 2026-06-26): 5 trades/year is a sufficient sample at
@@ -2454,6 +2455,11 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
             _dispatch_is_basket = False
         if _dispatch_is_basket or str(item_payload.get("portfolio_scope") or "") == "basket":
             skip_prescreen = True
+            explicit_from_date, explicit_to_date = _basket_payload_date_window(item_payload)
+            if explicit_from_date:
+                from_date = explicit_from_date
+            if explicit_to_date:
+                to_date = explicit_to_date
         if phase == "Q02" and not skip_prescreen:
             # Frequency-aware guard (gate-acceleration #1): low-freq cards go
             # straight to the full window — a 6-month probe proves nothing
@@ -3658,6 +3664,12 @@ def _basket_q02_payload(
     tester_deposit = basket_manifest.get("tester_deposit")
     if tester_deposit not in (None, ""):
         payload["tester_deposit"] = tester_deposit
+    q02_from_date = _valid_ymd_date(basket_manifest.get("q02_from_date"))
+    q02_to_date = _valid_ymd_date(basket_manifest.get("q02_to_date"))
+    if q02_from_date:
+        payload["from_date"] = q02_from_date
+    if q02_to_date:
+        payload["to_date"] = q02_to_date
 
     if isinstance(build_result, dict):
         traded_symbols = build_result.get("symbols") or []

@@ -56,7 +56,11 @@ class BasketWorkItemsTests(unittest.TestCase):
     def test_basket_q02_active_timeout_still_reaps_after_basket_window(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
-            self._insert_active_basket_q02(root, item_id="wi-basket-130m", age_minutes=130)
+            self._insert_active_basket_q02(
+                root,
+                item_id="wi-basket-expired",
+                age_minutes=farmctl.BASKET_Q02_ACTIVE_TIMEOUT_MIN + 10,
+            )
             old_stop_pid = farmctl._stop_pid
             old_stop_terminal_slot = farmctl._stop_terminal_slot
             try:
@@ -65,7 +69,7 @@ class BasketWorkItemsTests(unittest.TestCase):
                 with farmctl.connect(root) as conn:
                     flagged = farmctl._detect_active_age_timeout(conn)
                     row = conn.execute(
-                        "SELECT status, verdict, payload_json FROM work_items WHERE id='wi-basket-130m'"
+                        "SELECT status, verdict, payload_json FROM work_items WHERE id='wi-basket-expired'"
                     ).fetchone()
             finally:
                 farmctl._stop_pid = old_stop_pid
@@ -323,6 +327,96 @@ class BasketWorkItemsTests(unittest.TestCase):
             self.assertEqual(cmd[cmd.index("-Symbol") + 1], "NZDUSD.DWX")
             self.assertEqual(cmd[cmd.index("-Period") + 1], "D1")
             self.assertEqual(cmd[cmd.index("-SetFile") + 1], str(setfile.resolve()))
+
+    def test_q02_basket_dispatch_honors_manifest_q02_window(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            repo_root = Path(tmp) / "repo"
+            ea_id = "QM5_12888"
+            ea_dir = repo_root / "framework" / "EAs" / f"{ea_id}_demo"
+            sets_dir = ea_dir / "sets"
+            sets_dir.mkdir(parents=True)
+            (ea_dir / f"{ea_id}_demo.ex5").write_text("compiled\n", encoding="utf-8")
+            logical = "FX8_DEMO_BASKET_H1"
+            manifest = {
+                "logical_symbol": logical,
+                "host_symbol": "EURUSD.DWX",
+                "host_timeframe": "H1",
+                "basket_symbols": ["EURUSD.DWX", "GBPUSD.DWX"],
+                "q02_from_date": "2023.01.01",
+                "q02_to_date": "2023.12.31",
+            }
+            (ea_dir / "basket_manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+            setfile = sets_dir / f"{ea_dir.name}_{logical}_H1_backtest.set"
+            setfile.write_text("; basket setfile\n", encoding="utf-8")
+
+            old_repo_root = farmctl.REPO_ROOT
+            try:
+                farmctl.REPO_ROOT = repo_root
+                loaded_manifest = farmctl._load_basket_manifest(ea_id)
+                payload = farmctl._basket_q02_payload(loaded_manifest or {})
+            finally:
+                farmctl.REPO_ROOT = old_repo_root
+
+            self.assertEqual(payload["from_date"], "2023.01.01")
+            self.assertEqual(payload["to_date"], "2023.12.31")
+
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO work_items
+                      (id, kind, phase, ea_id, symbol, setfile_path, status, verdict,
+                       attempt_count, parent_task_id, evidence_path, claimed_by,
+                       payload_json, created_at, updated_at)
+                    VALUES
+                      ('wi-q02-basket-window', 'backtest', 'Q02', ?, ?, ?,
+                       'pending', NULL, 0, NULL, NULL, NULL, ?, ?, ?)
+                    """,
+                    (ea_id, logical, str(setfile.resolve()), json.dumps(payload), now, now),
+                )
+                conn.commit()
+
+            spawned_cmds: list[list[str]] = []
+
+            class FakeProc:
+                pid = 12888
+
+                def __init__(self, cmd, **_kwargs):
+                    spawned_cmds.append([str(part) for part in cmd])
+
+            old_popen = farmctl.subprocess.Popen
+            old_compile_gate_check = farmctl._compile_gate_check
+            try:
+                farmctl.REPO_ROOT = repo_root
+                farmctl.subprocess.Popen = FakeProc
+                farmctl._compile_gate_check = lambda _ea_dir_name: {
+                    "allowed": True,
+                    "verdict": "COMPILED_CACHED",
+                    "source": "test",
+                }
+                with farmctl.connect(root) as conn:
+                    row = conn.execute(
+                        "SELECT * FROM work_items WHERE id='wi-q02-basket-window'"
+                    ).fetchone()
+                result = farmctl._spawn_run_smoke_for_work_item(root, row, "T2")
+            finally:
+                farmctl.REPO_ROOT = old_repo_root
+                farmctl.subprocess.Popen = old_popen
+                farmctl._compile_gate_check = old_compile_gate_check
+
+            self.assertTrue(result["spawned"])
+            self.assertEqual(result["runner_symbol"], "EURUSD.DWX")
+            self.assertEqual(result["from_date"], "2023.01.01")
+            self.assertEqual(result["to_date"], "2023.12.31")
+            self.assertEqual(result["smoke_year_count"], 1)
+            self.assertEqual(result["effective_min_trades"], 5)
+            self.assertEqual(len(spawned_cmds), 1)
+            cmd = spawned_cmds[0]
+            self.assertEqual(cmd[cmd.index("-FromDate") + 1], "2023.01.01")
+            self.assertEqual(cmd[cmd.index("-ToDate") + 1], "2023.12.31")
+            self.assertEqual(cmd[cmd.index("-MinTrades") + 1], "5")
 
     def test_q03_basket_dispatch_preserves_promoted_date_window(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
