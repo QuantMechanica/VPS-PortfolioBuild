@@ -1,0 +1,77 @@
+{
+  "task_id": "d58e6d38-3de8-402c-a441-0ee6ad967d27",
+  "ea_id": "QM5_12977",
+  "slug": "wti-propane-draw",
+  "strategy": "WTI propane heating-season draw displacement continuation",
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12977_wti-propane-draw",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12977_wti-propane-draw\\QM5_12977_wti-propane-draw.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12977_wti-propane-draw\\QM5_12977_wti-propane-draw.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12977_wti-propane-draw\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12977_wti-propane-draw.md",
+  "source_id": "EIA-PROPANE-DRAW-2026",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12977_wti-propane-draw\\sets\\QM5_12977_wti-propane-draw_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "7d7d3e467878f537925ad8ef0b40fcd02510dbc940486013019b054fd767f6cd",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 129770000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "framework/scripts/compile_one.ps1 -EALabel QM5_12977_wti-propane-draw",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260702_235739\\QM5_12977_wti-propane-draw.compile.log",
+    "ex5_size_bytes": 303144
+  },
+  "build_check": {
+    "command": "framework/scripts/build_check.ps1 -EALabel QM5_12977_wti-propane-draw -Strict",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260702_235718.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "6ea9bebc-91ce-411a-b995-373245a72b17",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12977_wti-propane-draw\\sets\\QM5_12977_wti-propane-draw_XTIUSD.DWX_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "created_at_utc": "2026-07-02T23:59:12+00:00"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "q02_requested_by_mission_after_clean_compile_build_check",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "notes": "Completed a structural D1 WTI propane heating-season draw displacement-continuation sleeve from official EIA propane/heating-season sources. Runtime uses MT5 OHLC only; no EIA feed, weather feed, futures curve, ML, grid, or martingale. Q02 must validate XTIUSD.DWX history sufficiency and frequency."
+}
