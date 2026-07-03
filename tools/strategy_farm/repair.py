@@ -66,7 +66,11 @@ LOG_DIR = ROOT / "logs"
 REPORTS_DIR = ROOT / "reports"
 QUEUE_DIR = ROOT / "queue"
 REPO_ROOT = Path(__file__).resolve().parents[2]
+# EA dirs only fully present in canonical checkout — use the same anchor as farmctl.
+CANONICAL_REPO_ROOT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo"))
 REGISTRY_DIR = REPO_ROOT / "framework" / "registry"
+HEALTH_ALARMS_LOG = ROOT / "state" / "health_alarms.log"
+_R11_CIRCUIT_BREAKER_LIMIT = 200
 
 
 def _utc_now() -> str:
@@ -458,7 +462,7 @@ def _pending_work_item_artifact_failure(row: sqlite3.Row) -> dict | None:
         return {"reason": "setfile_missing", "detail": str(setfile_path)}
 
     ea_id = str(row["ea_id"] or "")
-    ea_root = REPO_ROOT / "framework" / "EAs"
+    ea_root = CANONICAL_REPO_ROOT / "framework" / "EAs"
     candidates = sorted(p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir())
     if not candidates:
         return {"reason": "ea_dir_missing", "detail": str(ea_root / f"{ea_id}_*")}
@@ -482,11 +486,31 @@ def repair_pending_unclaimable_work_items(con) -> list[dict]:
         WHERE status='pending'
         """
     ).fetchall()
+
+    # Pre-scan (single pass) to check the mass-invalidation circuit breaker before
+    # touching the DB. A worktree run resolves ~8% of EA dirs and would cause
+    # thousands of false ea_dir_missing invalidations (2026-07-03 incident: 5167).
+    preflight = [(r, _pending_work_item_artifact_failure(r)) for r in rows]
+    failing = [(r, f) for (r, f) in preflight if f is not None]
+
+    if len(failing) > _R11_CIRCUIT_BREAKER_LIMIT:
+        alarm_msg = (
+            f"R11_mass_invalidation_blocked: {len(failing)} pending items would be set "
+            f"INVALID (limit={_R11_CIRCUIT_BREAKER_LIMIT}). Likely CANONICAL_REPO_ROOT "
+            f"resolves a worktree torso. CANONICAL_REPO_ROOT={CANONICAL_REPO_ROOT}"
+        )
+        HEALTH_ALARMS_LOG.parent.mkdir(parents=True, exist_ok=True)
+        with HEALTH_ALARMS_LOG.open("a", encoding="utf-8") as f:
+            f.write(f"{_utc_now()}\tmass_invalidation\t{len(failing)}\t{alarm_msg}\n")
+        return [{
+            "handler": "R11_pending_unclaimable_work_item",
+            "target": "circuit_breaker",
+            "action": "ABORTED",
+            "detail": alarm_msg,
+        }]
+
     now = _utc_now()
-    for r in rows:
-        failure = _pending_work_item_artifact_failure(r)
-        if not failure:
-            continue
+    for r, failure in failing:
 
         report_root = ROOT / "reports" / "work_items" / str(r["id"])
         evidence_dir = report_root / str(r["ea_id"]) / str(r["phase"])
@@ -535,7 +559,7 @@ def repair_pending_unclaimable_work_items(con) -> list[dict]:
 
 
 def _ea_dir_for_id(ea_id: str) -> Path | None:
-    candidates = sorted(p for p in (REPO_ROOT / "framework" / "EAs").glob(f"{ea_id}_*") if p.is_dir())
+    candidates = sorted(p for p in (CANONICAL_REPO_ROOT / "framework" / "EAs").glob(f"{ea_id}_*") if p.is_dir())
     if len(candidates) != 1:
         return None
     return candidates[0]

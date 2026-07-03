@@ -36,7 +36,11 @@ except ModuleNotFoundError:
 DEFAULT_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
 DB_REL = Path("state") / "farm_state.sqlite"
 REPO_ROOT = Path(__file__).resolve().parents[2]
-FRAMEWORK_EAS_DIR = REPO_ROOT / "framework" / "EAs"
+# EA dirs are fully materialized only in the canonical checkout; worktrees carry a
+# small committed subset, so script-relative resolution from a worktree misclassifies
+# ~92% of EAs as ea_dir_missing (2026-07-03 mass false-invalidation, 5167 items).
+CANONICAL_REPO_ROOT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo"))
+FRAMEWORK_EAS_DIR = CANONICAL_REPO_ROOT / "framework" / "EAs"
 P5_CALIBRATION_JSON = REPO_ROOT / "framework" / "calibrations" / "VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json"
 MT5_ROOT = Path(os.environ.get("QM_MT5_ROOT", r"D:\QM\mt5"))
 PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
@@ -91,6 +95,34 @@ PHASE_ACTIVE_TIMEOUT_MIN = {
     "P7": 30,
     "P8": 30,
 }
+
+_CANONICAL_CHECKOUT = Path(r"C:\QM\repo")
+
+
+def _assert_canonical_checkout() -> None:
+    """Hard-abort if running from a worktree.
+
+    State-mutating farmctl commands (pump, repair, bulk verdict writers) must run
+    from the canonical checkout C:/QM/repo — worktrees carry only ~8% of EA dirs
+    and will mass-false-invalidate work_items (2026-07-03 incident: 5167 items).
+    Set QM_ALLOW_NONCANONICAL=1 to override for deliberate tests.
+    """
+    if os.environ.get("QM_ALLOW_NONCANONICAL") == "1":
+        return
+    try:
+        Path(__file__).resolve().relative_to(_CANONICAL_CHECKOUT.resolve())
+    except ValueError:
+        print(
+            "\n[FATAL] farmctl state-mutating command REFUSED.\n"
+            f"  Script: {Path(__file__).resolve()}\n"
+            f"  Expected prefix: {_CANONICAL_CHECKOUT}\n"
+            "  Running from a worktree resolves only ~8% of EA dirs and can\n"
+            "  mass-invalidate work_items (2026-07-03 incident: 5167 false INVALIDs).\n"
+            "  Run: python C:/QM/repo/tools/strategy_farm/farmctl.py <command>\n"
+            "  Override (deliberate test only): QM_ALLOW_NONCANONICAL=1\n",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
 
 def is_factory_terminal_name(value: Any) -> bool:
@@ -8849,6 +8881,7 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "pipeline":
         print_json(pipeline_view(root))
     elif args.command == "pump":
+        _assert_canonical_checkout()
         print_json(pump(root))
     elif args.command == "health":
         try:
@@ -8859,6 +8892,7 @@ def main(argv: list[str] | None = None) -> int:
             from health import run_all as _health_run_all
         print_json(_health_run_all())
     elif args.command == "repair":
+        _assert_canonical_checkout()
         try:
             from repair import run_all as _repair_run_all
         except ImportError:
