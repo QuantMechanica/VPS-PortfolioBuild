@@ -5098,8 +5098,21 @@ def pump(root: Path) -> dict[str, Any]:
     if factory_off_flag.exists():
         return {"pumped_at": utc_now(), "skipped": "FACTORY_OFF.flag set"}
     init_db(root)
+    # Janitor: release agent_tasks stuck IN_PROGRESS with a stale lane heartbeat.
+    # Mirrors agent_router.route_once; running it here ensures capacity is freed
+    # even if the router task lags a cycle.
+    _stale_release: dict[str, Any] = {}
+    try:
+        try:
+            from tools.strategy_farm import agent_router as _ar
+        except ImportError:
+            import agent_router as _ar  # type: ignore[import-not-found]
+        _stale_release = _ar.release_stale_in_progress(root)
+    except Exception as _exc:
+        _stale_release = {"error": repr(_exc)}
     result: dict[str, Any] = {
         "pumped_at": utc_now(),
+        "stale_task_release": _stale_release,
         "dispatch": None,
         "codex_spawn": None,
         "build_records": [],

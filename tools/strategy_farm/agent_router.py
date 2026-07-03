@@ -13,6 +13,9 @@ import argparse
 import datetime as dt
 import json
 import sqlite3
+import subprocess
+import sys
+import time as _time
 import uuid
 from contextlib import closing
 from dataclasses import dataclass
@@ -81,6 +84,14 @@ DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
 
 STALE_IN_PROGRESS_HOURS = 6
 LANE_HEARTBEAT_STALE_HOURS = 2  # release IN_PROGRESS tasks / skip lane if heartbeat is older than this
+
+_AGENT_LANE_TASKS: dict[str, str] = {
+    "claude": "QM_StrategyFarm_ClaudeOrchestration_15min",
+    "codex": "QM_StrategyFarm_CodexOrchestration_15min",
+    "gemini": "QM_StrategyFarm_GeminiOrchestration_15min",
+}
+_LANE_TASK_STATUS_CACHE: dict[str, tuple[float, bool]] = {}
+_LANE_TASK_CACHE_TTL_S = 120.0
 
 STRATEGY_CARD_SCHEMA: dict[str, list[str]] = {
     "frontmatter_required": [
@@ -413,6 +424,37 @@ def _lane_heartbeat_stale(root: Path, agent_id: str) -> bool:
         return False
 
 
+def _lane_task_disabled(agent_id: str) -> bool:
+    """Return True if the agent's Windows scheduled orchestration task is Disabled.
+
+    Uses a 2-minute in-process cache to avoid repeated schtasks calls per cycle.
+    Fails OPEN (returns False) on any error — routing must not stall on a scheduler
+    query failure. Only active on Windows; returns False on other platforms.
+    """
+    if sys.platform != "win32":
+        return False
+    task_name = _AGENT_LANE_TASKS.get(agent_id)
+    if not task_name:
+        return False
+    now = _time.monotonic()
+    cached = _LANE_TASK_STATUS_CACHE.get(agent_id)
+    if cached is not None and (now - cached[0]) < _LANE_TASK_CACHE_TTL_S:
+        return cached[1]
+    try:
+        proc = subprocess.run(
+            ["schtasks", "/query", "/tn", task_name, "/fo", "CSV", "/nh"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            creationflags=subprocess.CREATE_NO_WINDOW,
+        )
+        disabled = proc.returncode == 0 and "Disabled" in proc.stdout
+    except Exception:
+        disabled = False  # fail open
+    _LANE_TASK_STATUS_CACHE[agent_id] = (now, disabled)
+    return disabled
+
+
 def _eligible_agents(conn: sqlite3.Connection, required: set[str], root: Path = DEFAULT_ROOT) -> list[sqlite3.Row]:
     rows = conn.execute(
         """
@@ -429,6 +471,8 @@ def _eligible_agents(conn: sqlite3.Connection, required: set[str], root: Path = 
         if _running_count(conn, row["agent_id"]) >= int(row["max_parallel"]):
             continue
         if _lane_heartbeat_stale(root, row["agent_id"]):
+            continue
+        if _lane_task_disabled(row["agent_id"]):
             continue
         eligible.append(row)
     return eligible

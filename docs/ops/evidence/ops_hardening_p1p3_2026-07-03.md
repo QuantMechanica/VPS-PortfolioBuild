@@ -115,16 +115,36 @@ New `_lane_heartbeat_stale(root, agent_id)` function: returns True only if heart
 EXISTS but mtime is older than 2h. Missing file = treat lane as available (new deployment,
 factory-OFF, first run).
 
-### Router disabled-lane guard
+### Router disabled-lane guard (schtasks)
 
-`_eligible_agents()` updated to skip agents whose heartbeat is stale (uses
-`_lane_heartbeat_stale` check). This prevents routing new tasks to a dead lane.
+`_lane_task_disabled(agent_id)` added to `agent_router.py`:
+- Maps `_AGENT_LANE_TASKS` dict (agent_id → scheduler task name)
+- Queries `schtasks /query /tn <name> /fo CSV /nh`, returns True if "Disabled" in output
+- 120s in-process cache (`_LANE_TASK_STATUS_CACHE`) to avoid hammering scheduler per cycle
+- Fails open (returns False) on any error, platform != win32, or unknown agent
+- Called in `_eligible_agents()` after the heartbeat-stale check
 
-### Validation
+This closes the gap where an agent with no heartbeat file (never-run or deleted) would
+still be eligible for routing even if its task is Disabled in Task Scheduler.
+
+### Pump janitor
+
+`farmctl.py` pump now calls `agent_router.release_stale_in_progress(root)` via lazy import
+immediately after the FACTORY_OFF guard. Result stored in `result["stale_task_release"]`.
+This mirrors the same call in `route_once` and ensures stale IN_PROGRESS tasks are freed
+even if the router task lags behind the pump cycle.
+
+### Validation (2026-07-03 cycle)
 
 ```
-py_compile: agent_router.py OK
+py_compile: agent_router.py  OK
+py_compile: farmctl.py       OK
 py_compile: run_agent_orchestration_task.py OK
+
+_lane_task_disabled check:
+  claude: disabled=False  (QM_StrategyFarm_ClaudeOrchestration_15min  = Running)
+  codex:  disabled=False  (QM_StrategyFarm_CodexOrchestration_15min   = Running)
+  gemini: disabled=False  (QM_StrategyFarm_GeminiOrchestration_15min  = Ready, re-enabled)
 ```
 
 ---
@@ -163,7 +183,7 @@ tools/strategy_farm/TestWindow_OFF.ps1       (new in this branch)
 tools/strategy_farm/TestWindow_ON.ps1        (new in this branch)
 tools/strategy_farm/farmctl.py               (modified: FACTORY_OFF guard in pump)
 tools/strategy_farm/run_pump_task.py         (modified: FACTORY_OFF guard in main)
-tools/strategy_farm/agent_router.py          (modified: heartbeat stale check)
+tools/strategy_farm/agent_router.py          (modified: heartbeat stale check + _lane_task_disabled + pump janitor)
 tools/strategy_farm/run_agent_orchestration_task.py  (modified: G: skip + heartbeat write)
 framework/scripts/run_smoke.ps1              (modified: FACTORY_OFF guard on post-run pump)
 docs/ops/evidence/ops_hardening_p1p3_2026-07-03.md  (this file)
