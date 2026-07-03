@@ -1,0 +1,39 @@
+{
+  "ea_id": "QM5_12994",
+  "slug": "iea-omr-fade",
+  "built_at_utc": "2026-07-03T10:25:27Z",
+  "edge": "IEA OMR proxy-window D1 shock fade on XTIUSD.DWX",
+  "source_id": "IEA-OMR-XTI-FADE-2026",
+  "files": {
+    "ea": "framework/EAs/QM5_12994_iea-omr-fade/QM5_12994_iea-omr-fade.mq5",
+    "ex5": "framework/EAs/QM5_12994_iea-omr-fade/QM5_12994_iea-omr-fade.ex5",
+    "setfile": "framework/EAs/QM5_12994_iea-omr-fade/sets/QM5_12994_iea-omr-fade_XTIUSD.DWX_D1_backtest.set",
+    "strategy_card": "strategy-seeds/cards/iea-omr-fade_card.md",
+    "source": "strategy-seeds/sources/IEA-OMR-XTI-FADE-2026/source.md"
+  },
+  "compile_one": {
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "compile_log": "C:/QM/repo/framework/build/compile/20260703_102527/QM5_12994_iea-omr-fade.compile.log",
+    "summary": "D:/QM/reports/compile/20260703_102527/summary.csv"
+  },
+  "build_check": {
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report": "D:/QM/reports/framework/21/build_check_20260703_102527.json",
+    "note": "Warnings are pre-existing static advisories in framework include files; this EA compiled with zero warnings."
+  },
+  "risk_mode": {
+    "backtest": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0
+  },
+  "guards": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  }
+}

@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12994
+; ea_slug:      iea-omr-fade
+; ea_version:   v5.0
+; set_version:  s20260703-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   cc360fe40bce74b7cd1b4f995cb28d89e5b18d3a012f1938cc70090ab0b83734
+; author:       Development
+; date:         2026-07-03
+;==========================================================
+qm_ea_id=12994
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\iea-omr-fade_card.md
+strategy_event_start_day=10
+strategy_event_end_day=18
+strategy_atr_period=20
+strategy_min_range_atr=1.10
+strategy_min_body_atr=0.35
+strategy_close_location_extreme=0.75
+strategy_atr_sl_mult=2.5
+strategy_atr_tp_mult=1.5
+strategy_max_hold_days=4
+strategy_max_spread_points=1000

@@ -1,0 +1,31 @@
+{
+  "ea_id": "QM5_12994",
+  "slug": "iea-omr-fade",
+  "phase": "Q02",
+  "enqueued_at_utc": "2026-07-03T10:27:20+00:00",
+  "enqueue_tool": "tools/strategy_farm/sweep_enqueue_built_eas.py",
+  "enqueue_command_scope": {
+    "apply": true,
+    "ea": "QM5_12994",
+    "symbols": ["XTIUSD.DWX"]
+  },
+  "enqueue_result": {
+    "part1_never_tested_enqueued": 1,
+    "part1_never_tested_skipped": 0,
+    "part2_stranded_enqueued": 0,
+    "part3_deferred_promoted": 0
+  },
+  "work_item": {
+    "id": "b89020e1-b1b7-4220-9980-563ec81e2da2",
+    "phase": "Q02",
+    "symbol": "XTIUSD.DWX",
+    "status": "pending",
+    "attempt_count": 0,
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_12994_iea-omr-fade/sets/QM5_12994_iea-omr-fade_XTIUSD.DWX_D1_backtest.set",
+    "payload": {
+      "host_symbol": "XTIUSD.DWX",
+      "host_timeframe": "D1",
+      "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested"
+    }
+  }
+}
