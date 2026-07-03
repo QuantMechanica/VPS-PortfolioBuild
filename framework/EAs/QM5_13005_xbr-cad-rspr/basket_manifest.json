@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_13005_XBR_CAD_RSPREAD_D1",
+  "host_symbol": "XBRUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XBRUSD.DWX",
+    "USDCAD.DWX"
+  ],
+  "notes": [
+    "Two-leg Brent/CAD relative-value basket from the approved BOC-EIA-BRENT-CAD-RSPREAD-2026_S01 card. The EA runs from the XBRUSD.DWX host setfile and reads XBRUSD.DWX and USDCAD.DWX D1 closes to compute a CAD-denominated Brent spread z-score. Q02 must evaluate the logical basket, not the standalone legs."
+  ]
+}
