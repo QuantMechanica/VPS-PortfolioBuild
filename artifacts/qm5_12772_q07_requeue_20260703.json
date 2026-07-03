@@ -1,0 +1,69 @@
+{
+  "date_local": "2026-07-03",
+  "observed_at_local": "2026-07-03T16:48:14+02:00",
+  "branch": "agents/board-advisor",
+  "commit_before": "1a5ad4437",
+  "mission": "forex_market_neutral_cointegration_portfolio_growth",
+  "action": "fallback_existing_fx_cointegration_q07_requeue",
+  "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+  "method_source": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+  "strict_scan_survivors": [
+    {
+      "ea": "QM5_12533",
+      "pair": "EURJPY~GBPJPY",
+      "current_state": "Q02_PASS_Q04_FAIL",
+      "q02_blocked": false
+    },
+    {
+      "ea": "QM5_12532",
+      "pair": "AUDUSD~NZDUSD",
+      "current_state": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "q02_blocked": false
+    }
+  ],
+  "approved_cointegration_card_build_map": {
+    "approved_cointegration_cards_checked": 15,
+    "approved_cointegration_ea_dirs_found": 15,
+    "unbuilt_approved_pair_found": false
+  },
+  "selected_existing_basket": {
+    "ea": "QM5_12772",
+    "slug": "edgelab-gbpjpy-audjpy-cointegration",
+    "pair": "GBPJPY~AUDJPY",
+    "logical_symbol": "QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1",
+    "basket_manifest": "framework/EAs/QM5_12772_edgelab-gbpjpy-audjpy-cointegration/basket_manifest.json",
+    "setfile": "framework/EAs/QM5_12772_edgelab-gbpjpy-audjpy-cointegration/sets/QM5_12772_edgelab-gbpjpy-audjpy-cointegration_QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1_D1_backtest.set",
+    "selection_reason": "No approved unbuilt EdgeLab FX cointegration card remained; QM5_12772 had Q02 PASS, Q04 PASS_SOFT, Q05 PASS, Q06 PASS, and a Q07 INFRA_FAIL row with no evidence path or pending retry."
+  },
+  "queue_action": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12772 --phase Q07",
+    "result": "requeued_existing_row_no_duplicate",
+    "created": [],
+    "requeued": [
+      {
+        "work_item_id": "0727c6a0-e41f-41b0-bf5a-261a7b80a077",
+        "symbol": "QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1"
+      }
+    ],
+    "status_after": "pending",
+    "updated_at_utc_after": "2026-07-03T14:48:03+00:00"
+  },
+  "farm_state_after": {
+    "active_work_items": 5,
+    "pending_work_items": 6220,
+    "queued_top_contains_requeue": true,
+    "qm5_12772_queue_rank_observed": 3,
+    "cpu_ceiling_reached_after_action": true
+  },
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "new_duplicate_work_item_created": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
