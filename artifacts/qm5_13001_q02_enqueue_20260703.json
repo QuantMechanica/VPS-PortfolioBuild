@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-07-03T17:08:23+00:00",
+  "apply": true,
+  "target_eas": [
+    "QM5_13001"
+  ],
+  "part1_never_tested": {
+    "enqueued": [
+      {
+        "ea_id": "QM5_13001",
+        "symbol": "XTIUSD.DWX",
+        "setfile": "QM5_13001_xti-export-flow-brk_XTIUSD.DWX_D1_backtest.set",
+        "priority_track": false,
+        "work_item_id": "c5f1bee1-4bc8-40fa-ba6e-9d6472b78b6b"
+      }
+    ],
+    "skipped": []
+  },
+  "work_items_after": {
+    "Q02_pending": 1
+  }
+}
