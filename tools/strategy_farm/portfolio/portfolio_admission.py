@@ -227,7 +227,8 @@ def evaluate_candidate(
     if reason == "correlation_above_max_corr":
         challenger_swap = _evaluate_challenger_swap(
             candidate, book, aligned_keys, correlations,
-            common_dir, without_metrics, starting_capital
+            common_dir, without_metrics, starting_capital,
+            streams=streams,
         )
         if challenger_swap.get("challenger_superior"):
             reason = "CHALLENGER_SUPERIOR"
@@ -475,6 +476,57 @@ def _find_most_correlated_incumbent(
     return best_key, best_corr
 
 
+def _monthly_find_most_correlated_incumbent(
+    candidate: Key,
+    book: Sequence[Key],
+    streams: dict[Key, Sequence[Any]],
+) -> tuple["Key | None", "float | None"]:
+    """Monthly-basis fallback for finding the most correlated book member.
+
+    Used when daily overlap between the candidate and book members is insufficient
+    to compute a daily Pearson correlation (e.g. low-frequency structural sleeves).
+    Mirrors _monthly_candidate_corr but returns the most-correlated key, not max corr.
+    """
+    monthly = {key: to_monthly_pnl(streams[key]) for key in [candidate, *book] if key in streams}
+    if candidate not in monthly:
+        return None, None
+    candidate_series = monthly[candidate]
+    candidate_active = sorted(m for m, v in candidate_series.items() if v != 0.0)
+    if not candidate_active:
+        return None, None
+
+    best_key: Key | None = None
+    best_corr: float | None = None
+    for book_key in book:
+        if book_key not in monthly:
+            continue
+        book_series = monthly[book_key]
+        book_active = sorted(m for m, v in book_series.items() if v != 0.0)
+        if not book_active:
+            continue
+        lo = max(candidate_active[0], book_active[0])
+        hi = min(candidate_active[-1], book_active[-1])
+        if lo > hi:
+            continue
+        window = _months_between(lo, hi)
+        if len(window) < DEFAULT_MIN_SHARED_SPAN_MONTHS:
+            continue
+        cand_vec = [float(candidate_series.get(m, 0.0)) for m in window]
+        book_vec = [float(book_series.get(m, 0.0)) for m in window]
+        cand_active_n = sum(1 for v in cand_vec if v != 0.0)
+        book_active_n = sum(1 for v in book_vec if v != 0.0)
+        if cand_active_n < DEFAULT_MIN_ACTIVE_MONTHS or book_active_n < DEFAULT_MIN_ACTIVE_MONTHS:
+            continue
+        value = _pearson(cand_vec, book_vec)
+        if value is not None:
+            v = float(value)
+            if best_corr is None or v > best_corr:
+                best_corr = v
+                best_key = book_key
+
+    return best_key, best_corr
+
+
 def _evaluate_challenger_swap(
     candidate: Key,
     book: Sequence[Key],
@@ -483,18 +535,31 @@ def _evaluate_challenger_swap(
     common_dir: Path,
     current_book_metrics: dict,
     starting_capital: float,
+    *,
+    streams: "dict[Key, Sequence[Any]] | None" = None,
 ) -> dict:
     """Check if challenger replacing the most-correlated incumbent improves the book.
 
     Returns a comparison table. challenger_superior=True when the swap improves BOTH
     Sharpe and MaxDD, or Sharpe strongly (>= SHARPE_STRONG_DELTA above current).
     Result is informational — NEVER triggers an auto-swap.
+
+    When daily overlap is insufficient (low-freq sleeves), falls back to monthly
+    correlation to identify the most-correlated incumbent — the same basis that
+    caused the rejection.
     """
     SHARPE_STRONG_DELTA = 0.05
 
     incumbent, incumbent_corr = _find_most_correlated_incumbent(
         candidate, book, aligned_keys, correlations
     )
+    # Monthly fallback: when daily overlap is too sparse to compute Pearson (all daily
+    # correlations are None), use monthly returns to identify the most-correlated
+    # incumbent — the same basis that produced the rejection verdict.
+    if incumbent is None and streams is not None:
+        incumbent, incumbent_corr = _monthly_find_most_correlated_incumbent(
+            candidate, book, streams
+        )
     if incumbent is None:
         return {"error": "no_measurable_incumbent", "challenger_superior": False, "incumbent": None}
 

@@ -468,5 +468,66 @@ class ChallengerSwapTests(unittest.TestCase):
             self.assertEqual(verdict["challenger_swap"]["incumbent"], "100:EURUSD.DWX")
 
 
+    def test_challenger_swap_monthly_fallback_identifies_incumbent(self) -> None:
+        # Regression for the monthly-fallback bug: when daily overlap between the challenger
+        # and book members is insufficient (low-freq structural sleeves trade once a month
+        # so they never share a daily bar), the daily correlation matrix is all-None and
+        # _find_most_correlated_incumbent returns (None, None). The fixed code falls back to
+        # monthly correlation to identify the incumbent — same basis that caused the rejection.
+        # Validation case: 12915-vs-11132 — incumbent (11132) wins (stronger edge), so
+        # challenger_superior=False with a populated challenger_swap dict.
+        with tempfile.TemporaryDirectory() as tmp:
+            common_dir = Path(tmp)
+            stream_dir = self._stream_dir(common_dir)
+            start = dt.datetime(2022, 1, 1, tzinfo=dt.UTC)
+            cost = self._cost()
+
+            # Incumbent: strong monthly edge (correlated to challenger — same months)
+            self._write_monthly_stream(stream_dir / "100_EURUSD_DWX.jsonl", start, [80.0, -10.0] * 12, 5, cost)
+            # Challenger: correlated to incumbent (same direction each month) but weaker
+            self._write_monthly_stream(stream_dir / "101_EURUSD_DWX.jsonl", start, [20.0, -8.0] * 12, 20, cost)
+
+            verdict = evaluate_candidate(
+                (101, "EURUSD.DWX"),
+                [(100, "EURUSD.DWX")],
+                common_dir,
+            )
+
+        # Must be rejected (high monthly correlation with the incumbent)
+        self.assertFalse(verdict["admit"])
+        # Challenger swap must be populated — monthly fallback found the incumbent
+        cs = verdict["challenger_swap"]
+        self.assertIsNotNone(cs)
+        # Incumbent must be identified (not None) via the monthly fallback
+        self.assertEqual(cs.get("incumbent"), "100:EURUSD.DWX")
+        # Replacing the strong incumbent with the weaker challenger degrades the book
+        self.assertFalse(cs.get("challenger_superior"))
+
+    def _write_monthly_stream(
+        self,
+        path: Path,
+        start: dt.datetime,
+        monthly_pnl: list[float],
+        day_of_month: int,
+        cost: float,
+    ) -> None:
+        with path.open("w", encoding="utf-8") as fh:
+            for index, net_of_cost in enumerate(monthly_pnl):
+                year = start.year + (start.month - 1 + index) // 12
+                month = (start.month - 1 + index) % 12 + 1
+                stamp = dt.datetime(year, month, day_of_month, tzinfo=dt.UTC)
+                row = {
+                    "event": "TRADE_CLOSED",
+                    "time": int(stamp.timestamp()),
+                    "net": net_of_cost + cost,
+                    "profit": net_of_cost + cost,
+                    "swap": 0.0,
+                    "commission": 0.0,
+                    "volume": 1.0,
+                    "notional": 10000.0,
+                }
+                fh.write(json.dumps(row, sort_keys=True) + "\n")
+
+
 if __name__ == "__main__":
     unittest.main()
