@@ -41,6 +41,9 @@ Repair handlers (each is idempotent, returns count of actions taken):
   R11 Pending work_items whose setfile/EA dir/.ex5 is missing → mark
       failed INVALID immediately, without waiting for a terminal slot.
 
+  R17 Pending work_items whose stale preflight_failure payload is now clean →
+      clear the stale payload/evidence marker so workers can claim them normally.
+
   R12 Incomplete P2 parent fanout with only one pending symbol while the EA
       has a full canonical setfile set → add the missing pending symbols.
 
@@ -552,6 +555,9 @@ def _pending_work_item_artifact_failure(row: sqlite3.Row) -> dict | None:
     ex5 = ea_dir / f"{ea_dir.name}.ex5"
     if not ex5.exists():
         return {"reason": "ex5_missing", "detail": str(ex5)}
+    ex5_files = sorted(p.name for p in ea_dir.glob("*.ex5"))
+    if ex5_files != [ex5.name]:
+        return {"reason": "duplicate_ex5", "detail": ex5_files}
     return None
 
 
@@ -611,6 +617,76 @@ def repair_pending_unclaimable_work_items(con) -> list[dict]:
             "target": r["id"],
             "action": "pending → failed INVALID",
             "detail": f"ea={r['ea_id']} sym={r['symbol']} reason={failure.get('reason')}",
+        })
+    if out:
+        con.commit()
+    return out
+
+
+_STALE_PREFLIGHT_PAYLOAD_KEYS = (
+    "preflight_failure",
+    "preflight_failed_at",
+    "verdict_reason",
+    "repair_handler",
+    "repair_note",
+    "report_root",
+    "pid",
+    "started_at_iso",
+    "log_path",
+    "run_smoke_exit_code",
+    "adopted_active_child_at_iso",
+)
+
+
+def _clear_stale_preflight_payload(payload: dict, now: str) -> tuple[bool, str | None]:
+    if "preflight_failure" not in payload and "preflight_failed_at" not in payload:
+        return False, None
+    failure = payload.get("preflight_failure")
+    reason = failure.get("reason") if isinstance(failure, dict) else None
+    for key in _STALE_PREFLIGHT_PAYLOAD_KEYS:
+        payload.pop(key, None)
+    payload["cleared_stale_preflight_at"] = now
+    if reason:
+        payload["cleared_stale_preflight_reason"] = str(reason)
+    payload["stale_preflight_repair_handler"] = "R17_clear_stale_preflight_work_item"
+    return True, str(reason) if reason else None
+
+
+def repair_clear_stale_preflight_work_items(con) -> list[dict]:
+    """R17: clear stale preflight metadata for pending rows whose artifacts now exist."""
+    out = []
+    rows = con.execute(
+        """
+        SELECT id, ea_id, symbol, phase, setfile_path, evidence_path, payload_json
+        FROM work_items
+        WHERE status='pending'
+          AND payload_json LIKE '%"preflight_failure"%'
+        """
+    ).fetchall()
+    now = _utc_now()
+    for r in rows:
+        if _pending_work_item_artifact_failure(r):
+            continue
+        try:
+            payload = json.loads(r["payload_json"] or "{}")
+        except Exception:
+            payload = {}
+        changed, reason = _clear_stale_preflight_payload(payload, now)
+        if not changed:
+            continue
+        con.execute(
+            """
+            UPDATE work_items
+            SET evidence_path=NULL, payload_json=?, updated_at=?
+            WHERE id=? AND status='pending'
+            """,
+            (json.dumps(payload, sort_keys=True), now, r["id"]),
+        )
+        out.append({
+            "handler": "R17_clear_stale_preflight_work_item",
+            "target": r["id"],
+            "action": "cleared stale preflight payload",
+            "detail": f"ea={r['ea_id']} phase={r['phase']} sym={r['symbol']} old_reason={reason or '?'}",
         })
     if out:
         con.commit()
@@ -1033,6 +1109,7 @@ def run_all() -> dict:
         repair_orphan_g0_claims,
         repair_permanent_build_failures,
         repair_pending_unclaimable_work_items,
+        repair_clear_stale_preflight_work_items,
         repair_incomplete_p2_parent_fanout,
         repair_infra_only_codex_review_failures,
         repair_sparse_q09_portfolio_overlap_fails,
