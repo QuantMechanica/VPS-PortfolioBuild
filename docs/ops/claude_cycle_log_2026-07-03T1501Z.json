@@ -1,0 +1,61 @@
+{
+  "timestamp": "2026-07-03T15:01Z",
+  "cycle": "orchestration",
+  "agent": "claude",
+  "worktree": "C:/QM/worktrees/claude-orchestration-2",
+  "health": {
+    "overall": "FAIL",
+    "fail": 5,
+    "warn": 2,
+    "ok": 12,
+    "fail_items": [
+      "codex_review_fail_rate_1h: 0.5 (2/4 system-class FAILs in last hour -- inspect framework_corset/magic_registry/forbidden_grep verdicts)",
+      "p2_pass_no_p3: 127 profitable Q02-PASS work_items without Q03 promotion",
+      "unbuilt_cards_count: 786 approved cards lack .ex5 and auto-build task",
+      "unenqueued_eas_count: 65 reviewed built EAs have no Q02 work_items",
+      "p_pass_stagnation: 0 P3+ PASS verdicts in last 12h (pipeline throughput zero)"
+    ],
+    "warn_items": [
+      "mt5_worker_saturation: 7/10 daemons alive (T8/T9/T10 expected disabled by cap)",
+      "source_pool_drained: only 7 pending sources"
+    ],
+    "ok_highlights": [
+      "mt5_dispatch_idle: 6212 pending / 5 active / 8 pwsh workers / 6 fresh logs",
+      "codex_zero_activity: 1 codex active / 25 pending",
+      "disk_free_gb: D: 280.1 GB free",
+      "quota_snapshot_fresh: codex=264s, claude=257s",
+      "codex_auth_broken: OK (auth_age=42h)"
+    ]
+  },
+  "tasks": {
+    "in_progress_at_start": [],
+    "outcome": "no_routable_task -- router returned no routes on both `run` and `route-many`",
+    "approved_claude_queue": {
+      "build_ea_blocked": 3,
+      "ops_issue_approved": 10,
+      "review_ea_approved": 1,
+      "research_strategy_approved": 6
+    }
+  },
+  "qm5_10260": {
+    "phase": "Q08",
+    "verdict": "FAIL_HARD",
+    "count": 3,
+    "symbol": "NDX.DWX",
+    "note": "3x FAIL_HARD confirmed at Q08 (NDX.DWX, all 2026-06-26). Strategy failure at Davey gate -- not infrastructure. No recovery action warranted."
+  },
+  "router": {
+    "run": "no_routable_task",
+    "route_many": "no_routable_task",
+    "ready_strategy_cards": 61,
+    "replenish_frozen": true,
+    "replenish_reason": "generic_research_replenishment_frozen_edge_lab_primary_2026-05-22"
+  },
+  "action": "no_new_tasks_router_idle",
+  "notes": [
+    "p_pass_stagnation FAIL: 0 pipeline verdicts in 12h -- likely downstream of codex_review_fail_rate spike; Codex has 1 active ops_issue IN_PROGRESS.",
+    "codex_review_fail_rate_1h FAIL: 2/4 system-class FAILs -- check if framework_corset or magic_registry triggered.",
+    "p2_pass_no_p3 at 127 is a persistent structural alarm (ops_issue 0bf5dc87 APPROVED for claude).",
+    "source_pool_drained WARN: 7 sources remaining -- research replenishment still frozen per charter."
+  ]
+}
