@@ -1695,8 +1695,12 @@ def _p2_history_window_for_symbol(
     }
 
 
-def _p2_prescreen_dates(to_year: int) -> tuple[str, str]:
-    """Use the most recent six months inside the requested P2 history window."""
+def _p2_prescreen_dates(to_year: int, payload: dict | None = None) -> tuple[str, str]:
+    """Use the most recent six months; full year for calendar/seasonal strategies."""
+    flags = str((payload or {}).get("strategy_type_flags", "")).lower()
+    if any(kw in flags for kw in ("calendar", "season", "month")):
+        # Full-year prescreen: Jan-Dec of to_year (H2-only probe misses Apr-Jun seasons)
+        return f"{to_year}.01.01", f"{to_year}.12.31"
     return f"{to_year}.07.01", f"{to_year}.12.31"
 
 
@@ -1848,7 +1852,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         from_date = f"{from_year}.01.01"
         to_date = f"{to_year}.12.31"
         if not is_exploration and not item_payload.get("p2_prescreen_done"):
-            from_date, to_date = _p2_prescreen_dates(to_year)
+            from_date, to_date = _p2_prescreen_dates(to_year, payload=item_payload)
             n_runs = "1"
             p2_run_stage = "prescreen"
             timeout_seconds = P2_PRESCREEN_TIMEOUT_SECONDS
@@ -2650,6 +2654,83 @@ def _release_dispatch_lock(lock: tuple[int, Path] | None) -> None:
         pass
 
 
+def _active_timeout_min_for_work_item(phase: str, payload_json: str | None) -> int | None:
+    """Compute the effective active-timeout (minutes) for a work item.
+
+    Starts from the flat constant in PHASE_ACTIVE_TIMEOUT_MIN, then applies
+    scaling factors for long date-range EAs, Q07 multi-seed runs, and
+    heavy-backtest asset classes (commodity/index/XAU/XAG).
+
+    If payload_json carries an explicit `timeout_min` override that value is
+    honoured as a floor (max of formula and override).
+
+    Falls back to the flat constant on any parse error.
+    """
+    base = PHASE_ACTIVE_TIMEOUT_MIN.get(str(phase or ""))
+    if base is None:
+        return None
+
+    payload: dict[str, Any] = {}
+    if payload_json:
+        try:
+            payload = json.loads(payload_json)
+        except (json.JSONDecodeError, TypeError):
+            return int(base)
+
+    # --- date-range scale factor (base = 7 years) ---
+    scale_factor = 1.0
+    from_str = payload.get("from_date") or payload.get("from_year")
+    to_str   = payload.get("to_date")   or payload.get("to_year")
+    if from_str and to_str:
+        try:
+            # Normalise: "2010.01.01" or bare year "2010"
+            def _parse_date(s: str) -> dt.date:
+                s = str(s).strip()
+                if re.match(r"^\d{4}$", s):
+                    return dt.date(int(s), 1, 1)
+                return dt.datetime.strptime(s, "%Y.%m.%d").date()
+            fd = _parse_date(str(from_str))
+            td = _parse_date(str(to_str))
+            date_range_years = (td - fd).days / 365.25
+            if date_range_years > 0:
+                scale_factor = max(1.0, date_range_years / 7.0)
+        except (ValueError, TypeError):
+            pass  # parse failure → keep scale_factor=1.0
+
+    # --- Q07 multi-seed multiplier ---
+    seed_factor = 1.0
+    if str(phase) == "P7":
+        n_seeds = payload.get("q07_n_seeds", 5)
+        try:
+            seed_factor = max(1.0, (int(n_seeds) / 5.0) ** 0.5)
+        except (ValueError, TypeError):
+            pass
+
+    # --- heavy-backtest asset multiplier (Q05/Q06/Q07 only) ---
+    asset_factor = 1.0
+    if str(phase) in ("P5", "P5b", "P5c", "P6", "P7"):
+        heavy_symbols = {"XAUUSD.DWX", "XAU.DWX", "XAGUSD.DWX", "XAG.DWX"}
+        strategy_type = str(payload.get("strategy_type", "")).lower()
+        symbol = str(payload.get("symbol", "")).upper()
+        if strategy_type in ("commodity", "index") or symbol in heavy_symbols:
+            asset_factor = 1.5
+
+    # --- combine, cap at 3× base ---
+    computed = int(base * scale_factor * seed_factor * asset_factor)
+    cap = int(base * 3.0)
+    computed = min(computed, cap)
+
+    # --- honour explicit payload override as a floor ---
+    override = payload.get("timeout_min")
+    if override is not None:
+        try:
+            computed = max(computed, int(override))
+        except (ValueError, TypeError):
+            pass
+
+    return computed
+
+
 def _detect_active_age_timeout(con: sqlite3.Connection) -> list[dict[str, Any]]:
     now_dt = dt.datetime.now(dt.UTC)
     now = now_dt.replace(microsecond=0).isoformat()
@@ -2663,7 +2744,7 @@ def _detect_active_age_timeout(con: sqlite3.Connection) -> list[dict[str, Any]]:
     flagged: list[dict[str, Any]] = []
     for r in rows:
         phase = str(r["phase"] or "")
-        timeout_min = PHASE_ACTIVE_TIMEOUT_MIN.get(phase)
+        timeout_min = _active_timeout_min_for_work_item(phase, r["payload_json"])
         if timeout_min is None:
             continue
         updated = _parse_utc_datetime(r["updated_at"])

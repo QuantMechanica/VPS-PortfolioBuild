@@ -68,13 +68,20 @@ def active_ea_ids(*, keep_obsolete: bool) -> set[int]:
     return ids
 
 
-def load_rows(*, keep_obsolete: bool) -> list[dict]:
-    """Return rows from magic_numbers.csv, sorted by (ea_id, slot)."""
+def load_rows(*, keep_obsolete: bool) -> tuple[list[dict], list[tuple[int, str]]]:
+    """Return (rows, dropped) from magic_numbers.csv, sorted by (ea_id, slot).
+
+    rows   — rows that pass all filters, sorted by (ea_id, slot).
+    dropped — list of (ea_id, slug) tuples for rows filtered because their
+              EA dir is missing (active is not None and ea_id not in active).
+              retired rows and parse-error rows are NOT counted as dropped.
+    """
     if not REGISTRY_CSV.exists():
         sys.exit(f"[FATAL] {REGISTRY_CSV} not found")
 
     active = active_ea_ids(keep_obsolete=keep_obsolete)
     rows: list[dict] = []
+    dropped: list[tuple[int, str]] = []
     with REGISTRY_CSV.open(encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
         for raw in reader:
@@ -85,22 +92,25 @@ def load_rows(*, keep_obsolete: bool) -> list[dict]:
             except ValueError:
                 continue
             symbol = (raw.get("symbol") or "").strip()
+            slug = (raw.get("slug") or "?").strip()
             status = (raw.get("status") or "").strip().lower()
             if not symbol or magic <= 0:
                 continue
             if status == "retired":
                 continue
             if active is not None and ea_id not in active:
+                dropped.append((ea_id, slug))
                 continue
             rows.append({
                 "ea_id": ea_id,
                 "slot": slot,
                 "symbol": symbol,
                 "magic": magic,
+                "slug": slug,
             })
 
     rows.sort(key=lambda r: (r["ea_id"], r["slot"]))
-    return rows
+    return rows, dropped
 
 
 def csv_sha256_upper() -> str:
@@ -282,18 +292,33 @@ def main() -> int:
     ap.add_argument("--dry-run", action="store_true", help="print result, do not write")
     ap.add_argument("--keep-obsolete", action="store_true",
                     help="include rows whose EA dir is under _obsolete_* (default: skip)")
+    ap.add_argument("--strict", action="store_true",
+                    help="exit nonzero if any rows were dropped due to missing EA dirs, "
+                         "and print a LOUD WARNING listing each dropped (ea_id, slug)")
     args = ap.parse_args()
 
-    rows = load_rows(keep_obsolete=args.keep_obsolete)
+    rows, dropped = load_rows(keep_obsolete=args.keep_obsolete)
     content = render_mqh(rows)
+
+    if dropped:
+        print(f"\n[WARNING] {len(dropped)} rows dropped (EA dirs missing):", file=sys.stderr)
+        for ea_id, slug in dropped:
+            print(f"  ea_id={ea_id} slug={slug}", file=sys.stderr)
 
     if args.dry_run:
         sys.stdout.write(content)
         sys.stderr.write(f"\n[dry-run] {len(rows)} rows, sha={csv_sha256_upper()[:16]}...\n")
+        if args.strict and dropped:
+            sys.stderr.write(f"[strict] {len(dropped)} dropped rows — would exit 1\n")
+            return 1
         return 0
 
     RESOLVER_MQH.write_text(content, encoding="utf-8", newline="\n")
     print(f"[OK] wrote {RESOLVER_MQH.relative_to(REPO_ROOT)} — {len(rows)} rows, sha={csv_sha256_upper()[:16]}...")
+
+    if args.strict and dropped:
+        sys.stderr.write(f"[strict] exiting 1 — {len(dropped)} rows dropped due to missing EA dirs\n")
+        return 1
     return 0
 
 

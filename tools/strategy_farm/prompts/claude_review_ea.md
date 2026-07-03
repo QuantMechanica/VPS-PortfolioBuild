@@ -168,6 +168,16 @@ shows the `.mqh` missing rows for any active EA listed in `magic_numbers.csv`,
 that is a `block` finding REJECT_REWORK with directive "run
 `python framework/scripts/update_magic_resolver.py` and recompile".
 
+## Evidence Path Rule
+
+Evidence docs (findings, rework summaries, any supplementary artifacts you write
+beyond the verdict JSON) MUST be written to `C:/QM/repo/docs/ops/evidence/`
+(canonical checkout, not a worktree path). Worktree-stranded evidence docs become
+inaccessible after worktree reset or agent-branch cleanup.
+
+The verdict JSON itself goes to `{{verdict_path}}` (a runtime-injected path, correct
+as-is). Any additional artifact you choose to write must use the canonical evidence dir.
+
 ## Output Contract
 
 Write **exactly one JSON object** to `{{verdict_path}}` AND echo to stdout. Schema:

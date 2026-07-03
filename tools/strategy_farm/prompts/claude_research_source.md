@@ -64,6 +64,16 @@ OWNER 2026-05-15 mining policy: extract **up to 5** new draft cards per
 research session. After the batch, decide whether the source has more
 material (paused as `cards_ready`) or is exhausted (`done`).
 
+## Evidence Path Rule
+
+Evidence docs (research briefs, analysis artifacts, supplementary findings beyond
+the source notes and draft cards below) MUST be written to
+`C:/QM/repo/docs/ops/evidence/` (canonical checkout, not a worktree path).
+Worktree-stranded evidence docs become inaccessible after worktree reset or
+agent-branch cleanup.
+
+Source notes and draft cards use the runtime paths below (correct as-is).
+
 ## Required Output Files
 
 ### Source notes
