@@ -1,0 +1,80 @@
+{
+  "ea_id": "QM5_12996",
+  "slug": "xti-dpr-mom",
+  "built_at_utc": "2026-07-03T12:29:00Z",
+  "edge": "Monthly EIA DPR shale-production proxy-window D1 momentum on XTIUSD.DWX",
+  "source_id": "EIA-DPR-XTI-MOM-2026",
+  "files": {
+    "ea": "framework/EAs/QM5_12996_xti-dpr-mom/QM5_12996_xti-dpr-mom.mq5",
+    "ex5": "framework/EAs/QM5_12996_xti-dpr-mom/QM5_12996_xti-dpr-mom.ex5",
+    "setfile": "framework/EAs/QM5_12996_xti-dpr-mom/sets/QM5_12996_xti-dpr-mom_XTIUSD.DWX_D1_backtest.set",
+    "strategy_card": "strategy-seeds/cards/xti-dpr-mom_card.md",
+    "approved_card": "strategy-seeds/cards/approved/QM5_12996_xti-dpr-mom_card.md",
+    "source": "strategy-seeds/sources/EIA-DPR-XTI-MOM-2026/source.md",
+    "spec": "framework/EAs/QM5_12996_xti-dpr-mom/SPEC.md"
+  },
+  "hashes": {
+    "mq5_sha256": "93fdc1384499cf7c4a980a536c62efccfad21738ac1f6139955fbf0e6f091d5d",
+    "ex5_sha256": "9af50951e64606ac3b294178f4c1ef90913ab2478164f5690ac8d54b97daaba5",
+    "setfile_sha256": "efb2b25ad6b6228e49a476748a57bef4c8dca747db295d1bd0dedf0ec33cd701",
+    "setfile_header_build_hash": "37327f98ce07529c5de76b376c62ccba7378a909853b5d02463fb2e2f1521e2e"
+  },
+  "compile_one": {
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "compile_log": "C:/QM/repo/framework/build/compile/20260703_122725/QM5_12996_xti-dpr-mom.compile.log",
+    "summary": "D:/QM/reports/compile/20260703_122725/summary.csv"
+  },
+  "build_check": {
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report": "D:/QM/reports/framework/21/build_check_20260703_122738.json",
+    "note": "Warnings are pre-existing static advisories in shared framework include files; this EA compiled with zero warnings."
+  },
+  "preflight_checks": {
+    "card_lint": "PASS",
+    "spec_validation": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "magic_registry": {
+      "ea_id": 12996,
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 129960000,
+      "status": "active"
+    }
+  },
+  "risk_mode": {
+    "backtest": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "duplicate_check": {
+    "selected_edge": "XTIUSD.DWX monthly EIA DPR shale-production proxy-window D1 momentum",
+    "non_duplicate_reason": "No local DPR/shale/tight-oil sleeve exists. This is not STEO release-date breakout, WPSR inventory momentum, OPEC/IEA/MOMR, Cushing, refinery, hurricane, rig-count, roll, expiry, WTI month/weekday/weekend, XTI/XNG relative value, XNG, XAU/XAG, or QM5_12567 commodity RSI pullback logic."
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "queue_db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "phase": "Q02",
+    "kind": "backtest",
+    "symbol": "XTIUSD.DWX",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_12996_xti-dpr-mom/sets/QM5_12996_xti-dpr-mom_XTIUSD.DWX_D1_backtest.set",
+    "work_item_id": "54ca3518-644b-45b3-ab97-00b8ac865cd2",
+    "status_after_final_check": "pending",
+    "created_at_utc": "2026-07-03T12:28:03+00:00",
+    "updated_at_utc": "2026-07-03T12:28:03+00:00",
+    "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested"
+  },
+  "guards": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  },
+  "notes": "Built one non-duplicate structural XTI energy sleeve. No manual MT5 backtest was launched from this session."
+}
