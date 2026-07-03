@@ -111,15 +111,23 @@ Cycle:
    python tools/strategy_farm/agent_router.py route-many --max-routes 5
    python tools/strategy_farm/agent_router.py list-tasks --agent {agent}
 2. For every IN_PROGRESS task assigned to {agent}, in ascending numeric priority:
+   The router claims a 30-minute spawn lease (`agent_task:<task_id>`) when it
+   moves work to IN_PROGRESS. If you were launched directly for a specific task
+   outside the router path, acquire that same lease before doing any work; if the
+   lease is live, skip/defer instead of duplicating the task.
    read payload and skills, produce a durable artifact, run focused verification,
    then update the router with:
    python tools/strategy_farm/agent_router.py update-task <task_id> --state REVIEW --artifact-path "<artifact>" --verdict "<short_verdict>"
-3. Repeat task handling until no IN_PROGRESS {agent} task remains.
+3. Repeat task handling until `list-tasks --agent {agent}` returns an empty IN_PROGRESS list.
+   Ignore REVIEW/BLOCKED/PASSED tasks; they are not yours.
 4. If no task remains, run farmctl health and check QM5_10260 queue state. Do not invent untracked work.
 5. Exit.
 
 Hard rules:
 - Do not choose work outside the deterministic router.
+- Gemini may draft code, but Codex review is mandatory before acceptance; leave
+  Gemini code tasks in REVIEW and do not self-approve or move them to PIPELINE.
+- Build guardrail: NEVER set qm_news_stale_max_hours above 336.
 - Keep operator-facing phase names Q-only.
 - Never enable T_Live or AutoTrading.
 - Never start terminal64.exe manually.
@@ -129,6 +137,11 @@ Hard rules:
   <=10% total DD, mandatory news blackout, swing/scalping horizon only, no HFT,
   no martingale/grid, mechanical only, no ML in EA.
 - Strategy card drafts go to D:/QM/strategy_farm/artifacts/cards_review/.
+- Evidence / artifact docs MUST be written to the canonical repo checkout at
+  C:/QM/repo/docs/ops/evidence/ (NOT inside a worktree). Seven docs were
+  stranded in worktrees on 2026-07-02 and became invisible to the main branch.
+  When committing evidence, use an explicit pathspec so only the intended file
+  ships: `git -C C:/QM/repo commit docs/ops/evidence/<file> -m "..."`.
 """
 
 

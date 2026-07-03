@@ -68,13 +68,20 @@ def active_ea_ids(*, keep_obsolete: bool) -> set[int]:
     return ids
 
 
-def load_rows(*, keep_obsolete: bool) -> list[dict]:
-    """Return rows from magic_numbers.csv, sorted by (ea_id, slot)."""
+def load_rows(*, keep_obsolete: bool) -> tuple[list[dict], list[dict]]:
+    """Return (kept_rows, dropped_rows) from magic_numbers.csv, sorted by (ea_id, slot).
+
+    dropped_rows are CSV entries whose EA directory is missing (not under framework/EAs)
+    and therefore filtered out.  In --strict mode the caller prints them as loud warnings
+    and exits nonzero so the race condition (build A appends CSV after build B wiped
+    resolver) is immediately visible instead of silently shrinking the registry.
+    """
     if not REGISTRY_CSV.exists():
         sys.exit(f"[FATAL] {REGISTRY_CSV} not found")
 
     active = active_ea_ids(keep_obsolete=keep_obsolete)
     rows: list[dict] = []
+    dropped: list[dict] = []
     with REGISTRY_CSV.open(encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
         for raw in reader:
@@ -90,17 +97,15 @@ def load_rows(*, keep_obsolete: bool) -> list[dict]:
                 continue
             if status == "retired":
                 continue
+            row = {"ea_id": ea_id, "slot": slot, "symbol": symbol, "magic": magic}
             if active is not None and ea_id not in active:
+                slug = (raw.get("ea_slug") or raw.get("slug") or "").strip()
+                dropped.append({**row, "slug": slug, "reason": "ea_dir_missing"})
                 continue
-            rows.append({
-                "ea_id": ea_id,
-                "slot": slot,
-                "symbol": symbol,
-                "magic": magic,
-            })
+            rows.append(row)
 
     rows.sort(key=lambda r: (r["ea_id"], r["slot"]))
-    return rows
+    return rows, dropped
 
 
 def csv_sha256_upper() -> str:
@@ -282,18 +287,48 @@ def main() -> int:
     ap.add_argument("--dry-run", action="store_true", help="print result, do not write")
     ap.add_argument("--keep-obsolete", action="store_true",
                     help="include rows whose EA dir is under _obsolete_* (default: skip)")
+    ap.add_argument("--strict", action="store_true",
+                    help="exit nonzero and print a loud WARNING if any rows are dropped "
+                         "due to missing EA directories (detects resolver race conditions)")
     args = ap.parse_args()
 
-    rows = load_rows(keep_obsolete=args.keep_obsolete)
+    rows, dropped = load_rows(keep_obsolete=args.keep_obsolete)
+
+    if dropped:
+        print(
+            f"\n{'='*72}\n"
+            f"WARNING: {len(dropped)} magic-registry row(s) DROPPED — EA directory missing.\n"
+            f"This can indicate a build-race (EA built but dir not yet committed) or an\n"
+            f"orphaned registry entry.  Review and either commit the EA dir or retire the row.\n"
+            f"{'='*72}",
+            file=sys.stderr,
+        )
+        for d in dropped:
+            print(
+                f"  DROPPED ea_id={d['ea_id']} slot={d['slot']} symbol={d['symbol']} "
+                f"magic={d['magic']} slug={d['slug']!r} reason={d['reason']}",
+                file=sys.stderr,
+            )
+        print(f"{'='*72}\n", file=sys.stderr)
+
     content = render_mqh(rows)
 
     if args.dry_run:
         sys.stdout.write(content)
-        sys.stderr.write(f"\n[dry-run] {len(rows)} rows, sha={csv_sha256_upper()[:16]}...\n")
+        sys.stderr.write(f"\n[dry-run] {len(rows)} kept, {len(dropped)} dropped, sha={csv_sha256_upper()[:16]}...\n")
+        if args.strict and dropped:
+            return 1
         return 0
 
     RESOLVER_MQH.write_text(content, encoding="utf-8", newline="\n")
-    print(f"[OK] wrote {RESOLVER_MQH.relative_to(REPO_ROOT)} — {len(rows)} rows, sha={csv_sha256_upper()[:16]}...")
+    print(
+        f"[OK] wrote {RESOLVER_MQH.relative_to(REPO_ROOT)} — "
+        f"{len(rows)} rows kept, {len(dropped)} dropped, sha={csv_sha256_upper()[:16]}..."
+    )
+
+    if args.strict and dropped:
+        print(f"[STRICT] exiting nonzero: {len(dropped)} row(s) dropped.", file=sys.stderr)
+        return 1
     return 0
 
 

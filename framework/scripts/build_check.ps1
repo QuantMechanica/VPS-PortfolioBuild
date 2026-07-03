@@ -819,6 +819,59 @@ function Invoke-PerfStaticCheck {
     }
 }
 
+function Invoke-ResolverPrecompileCheck {
+    # Regenerate QM_MagicResolver.mqh from magic_numbers.csv and verify the
+    # target EA's magic is present before MetaEditor attempts to compile.
+    # This prevents the 2026-05-16 regression where a concurrent build silently
+    # dropped rows from the resolver, causing EA_MAGIC_NOT_REGISTERED at runtime.
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ResolvedRepoRoot
+    )
+
+    $py = (Get-Command python -ErrorAction SilentlyContinue)?.Source
+    if (-not $py) { $py = "python" }
+
+    $resolverScript = Join-Path $ResolvedRepoRoot "framework\scripts\update_magic_resolver.py"
+    if (-not (Test-Path -LiteralPath $resolverScript)) {
+        Add-Warning "BUILD_CHECK_RESOLVER_SCRIPT_MISSING: $resolverScript — skip resolver freshness check."
+        return
+    }
+
+    $resolverOutput = & $py $resolverScript --strict 2>&1
+    $resolverExit = $LASTEXITCODE
+    foreach ($line in $resolverOutput) { Write-Output $line }
+
+    if ($resolverExit -ne 0) {
+        Add-Failure "BUILD_CHECK_RESOLVER_DROPPED_ROWS: update_magic_resolver.py --strict exited $resolverExit — one or more magic-registry rows are missing their EA directory. Commit the EA dir or retire the row before compiling."
+    }
+
+    if (-not $EALabel) {
+        return  # whole-repo compile: resolver freshness is sufficient
+    }
+
+    # Single-EA build: verify this EA's magic numbers are in the freshly-written resolver.
+    $resolverMqh = Join-Path $ResolvedRepoRoot "framework\include\QM\QM_MagicResolver.mqh"
+    if (-not (Test-Path -LiteralPath $resolverMqh)) {
+        Add-Failure "BUILD_CHECK_RESOLVER_MQH_MISSING: $resolverMqh not found after regeneration."
+        return
+    }
+
+    # Extract numeric ea_id from the label (e.g. QM5_12345_slug -> 12345).
+    $eaIdMatch = [regex]::Match($EALabel, '^QM5_(\d+)')
+    if (-not $eaIdMatch.Success) {
+        return  # non-standard label — skip id check
+    }
+    $eaId = [int]$eaIdMatch.Groups[1].Value
+
+    $resolverContent = Get-Content -Raw -LiteralPath $resolverMqh -ErrorAction SilentlyContinue
+    if ($resolverContent -notmatch "\b$eaId\b") {
+        Add-Failure "BUILD_CHECK_RESOLVER_EA_NOT_REGISTERED: ea_id=$eaId ($EALabel) not found in regenerated QM_MagicResolver.mqh. Add the EA to magic_numbers.csv and re-run update_magic_resolver.py before compiling."
+    } else {
+        Write-Output "build_check.resolver_ea_registered=true ea_id=$eaId label=$EALabel"
+    }
+}
+
 function Write-GateEvidence {
     param(
         [Parameter(Mandatory = $true)]
@@ -853,6 +906,9 @@ if (-not $SkipCompile.IsPresent) {
     }
 }
 
+if (-not $SkipMagicCheck.IsPresent) {
+    Invoke-ResolverPrecompileCheck -ResolvedRepoRoot $resolvedRepoRoot
+}
 if (-not $SkipCompile.IsPresent -and $resolvedCompileScriptPath) {
     Invoke-CompileGate -ResolvedRepoRoot $resolvedRepoRoot -ResolvedCompileScriptPath $resolvedCompileScriptPath
 }

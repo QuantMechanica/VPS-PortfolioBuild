@@ -83,18 +83,24 @@ MT5_WORK_ITEM_MIN_FEED_DEPTH = 20
 ZERO_TRADE_DEAD_THRESHOLD = 0.80
 ZERO_TRADE_DEAD_MIN_DONE = 5
 ZERO_TRADE_REWORK_DEDUP_HOURS = 6
+# Base active-timeout per phase (minutes) at reference workload: ~3yr date range, 1 seed.
+# Actual timeout is scaled by workload via _active_timeout_min_for_work_item().
+# P5/P5b/P6 increased from legacy 30 min — noise/multiseed phases on full-range EAs
+# routinely exceed 30 min (Q07 XAU multiseed killed at 30 min while needing 120+).
 PHASE_ACTIVE_TIMEOUT_MIN = {
     "P2": 360,
     "P3": 60,
     "P3.5": 30,
     "P4": 240,
-    "P5": 30,
-    "P5b": 30,
-    "P5c": 30,
-    "P6": 30,
+    "P5": 90,
+    "P5b": 120,
+    "P5c": 90,
+    "P6": 120,
     "P7": 30,
     "P8": 30,
 }
+# Reference date-range window (years) that the base timeouts above are calibrated for.
+_PHASE_TIMEOUT_REF_YEARS = 3
 
 
 def is_factory_terminal_name(value: Any) -> bool:
@@ -767,6 +773,62 @@ def _smoke_year_count(from_date: str | None, to_date: str | None, default_year: 
         return max(1, int(end[:4]) - int(start[:4]) + 1)
     except Exception:
         return 1
+
+
+def _active_timeout_min_for_work_item(phase: str, payload: dict[str, Any]) -> int | None:
+    """Compute workload-scaled active-timeout for a work_item.
+
+    Formula: base(phase) * max(1, date_range_years / REF_YEARS) * max(1, seeds / 1)
+    Capped at 480 min (8 h). Payload ``timeout_min_override`` is always honoured.
+    """
+    base = PHASE_ACTIVE_TIMEOUT_MIN.get(phase)
+    if base is None:
+        return None
+
+    # Explicit payload override wins unconditionally (set by spawn site for known-long work).
+    override = payload.get("timeout_min_override")
+    if override is not None:
+        try:
+            return max(1, int(override))
+        except (ValueError, TypeError):
+            pass
+
+    # P2 manages its own spawn-timeout via _p2_full_timeout_seconds; the watchdog
+    # ceiling just needs to be above the maximum P2 run (4h = 240min → base = 360).
+    if phase == "P2":
+        return base
+
+    # Date-range scaling: carries forward from P2 spawn or cascade propagation.
+    # Fall back to the full default P2 range when no dates are stored.
+    from_date = payload.get("from_date") or payload.get("from_year")
+    to_date = payload.get("to_date") or payload.get("to_year")
+    if from_date and to_date:
+        try:
+            f = str(from_date)
+            t = str(to_date)
+            # Support both "YYYY.MM.DD" and bare "YYYY" formats.
+            from_yr = int(f[:4])
+            to_yr = int(t[:4])
+            years = max(1, to_yr - from_yr + 1)
+        except (ValueError, TypeError):
+            years = P2_DEFAULT_TO_YEAR - P2_DEFAULT_FROM_YEAR + 1
+    else:
+        years = P2_DEFAULT_TO_YEAR - P2_DEFAULT_FROM_YEAR + 1
+
+    year_scale = max(1.0, years / float(_PHASE_TIMEOUT_REF_YEARS))
+
+    # Seed-count scaling: when seeds are recorded in the payload (P5b/P6 variants).
+    seeds_raw = str(payload.get("seeds") or payload.get("num_seeds") or "").strip()
+    seed_count = 1
+    if seeds_raw:
+        try:
+            seed_count = max(1, len(seeds_raw.split(",")) if "," in seeds_raw else int(seeds_raw))
+        except (ValueError, TypeError):
+            pass
+    seed_scale = max(1.0, float(seed_count))
+
+    scaled = int(base * year_scale * seed_scale)
+    return min(480, max(base, scaled))
 
 
 def _effective_min_trades(root: Path, ea_id: str, from_date: str | None,
@@ -1631,8 +1693,43 @@ def _p2_history_window_for_symbol(
     }
 
 
-def _p2_prescreen_dates(to_year: int) -> tuple[str, str]:
-    """Use the most recent six months inside the requested P2 history window."""
+_SEASONAL_CARD_KEYWORDS = re.compile(
+    r"\b(monthly|turn[- ]of[- ]month|month[- ]end|month[- ]start"
+    r"|seasonal|calendar[- ]period|quarterly|annual|sell[- ]in[- ]may|halloween)\b",
+    re.IGNORECASE,
+)
+
+
+def _needs_full_year_prescreen(root: Path, ea_id: str, payload: dict[str, Any]) -> bool:
+    """Return True when the strategy has calendar/seasonal structure.
+
+    A half-year H2 prescreen window misses seasonal edges that peak in H1
+    (e.g. Apr-Jun patterns in lesson 12917).  Full-year prescreen fixes this
+    at only 2× the prescreen runtime cost.
+    """
+    type_flags = payload.get("strategy_type_flags") or []
+    if isinstance(type_flags, str):
+        type_flags = [f.strip().lower() for f in type_flags.split(",")]
+    if any(f in {"calendar", "season", "month", "seasonal", "monthly"} for f in type_flags):
+        return True
+    card = _find_approved_card_for_ea(root, ea_id)
+    if card is None:
+        return False
+    try:
+        return bool(_SEASONAL_CARD_KEYWORDS.search(card.read_text(encoding="utf-8-sig")))
+    except OSError:
+        return False
+
+
+def _p2_prescreen_dates(to_year: int, *, full_year: bool = False) -> tuple[str, str]:
+    """Return the prescreen date window for a P2 work_item.
+
+    Default: H2 (July–December) of to_year — covers most edge families.
+    full_year=True: full Jan–Dec window, required for calendar/seasonal strategies
+    so that the prescreen does not amputate a seasonal edge that peaks in H1.
+    """
+    if full_year:
+        return f"{to_year}.01.01", f"{to_year}.12.31"
     return f"{to_year}.07.01", f"{to_year}.12.31"
 
 
@@ -1784,7 +1881,8 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         from_date = f"{from_year}.01.01"
         to_date = f"{to_year}.12.31"
         if not is_exploration and not item_payload.get("p2_prescreen_done"):
-            from_date, to_date = _p2_prescreen_dates(to_year)
+            full_yr = _needs_full_year_prescreen(root, ea_id, item_payload)
+            from_date, to_date = _p2_prescreen_dates(to_year, full_year=full_yr)
             n_runs = "1"
             p2_run_stage = "prescreen"
             timeout_seconds = P2_PRESCREEN_TIMEOUT_SECONDS
@@ -2599,7 +2697,9 @@ def _detect_active_age_timeout(con: sqlite3.Connection) -> list[dict[str, Any]]:
     flagged: list[dict[str, Any]] = []
     for r in rows:
         phase = str(r["phase"] or "")
-        timeout_min = PHASE_ACTIVE_TIMEOUT_MIN.get(phase)
+        # Parse payload first so the workload-scaled timeout can be computed.
+        payload = json.loads(r["payload_json"] or "{}")
+        timeout_min = _active_timeout_min_for_work_item(phase, payload)
         if timeout_min is None:
             continue
         updated = _parse_utc_datetime(r["updated_at"])
@@ -2608,7 +2708,6 @@ def _detect_active_age_timeout(con: sqlite3.Connection) -> list[dict[str, Any]]:
         age_min = (now_dt - updated).total_seconds() / 60.0
         if age_min < float(timeout_min):
             continue
-        payload = json.loads(r["payload_json"] or "{}")
         reason_classes = payload.get("reason_classes") or []
         if "ACTIVE_TIMEOUT" not in [str(x).upper() for x in reason_classes]:
             reason_classes.append("ACTIVE_TIMEOUT")
@@ -5982,6 +6081,11 @@ def pump(root: Path) -> dict[str, Any]:
                     "promoted_from_work_item": wi["id"],
                     "promotion_source": "pump_cascade",
                 }
+                # Propagate date range so _active_timeout_min_for_work_item can scale correctly.
+                prev_pl = json.loads(wi["payload_json"] or "{}")
+                for _dk in ("from_date", "to_date", "from_year", "to_year"):
+                    if prev_pl.get(_dk) is not None:
+                        payload[_dk] = prev_pl[_dk]
                 conn.execute(
                     """
                     INSERT INTO work_items
