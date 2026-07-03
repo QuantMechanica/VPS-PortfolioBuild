@@ -1,0 +1,28 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13007
+; ea_slug:      eurnzd-tsmom-pb
+; ea_version:   v5.0
+; set_version:  s20260703-001
+; symbol:       EURNZD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   665e362c6645db2936766e3240a48a07685fc7da8da811a3b50982e048d647c9
+; author:       Development
+; date:         2026-07-03
+;==========================================================
+qm_ea_id=13007
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_13007_eurnzd-tsmom-pb.md
+strategy_mid_lookback_d1_bars=126
+strategy_long_lookback_d1_bars=252
+strategy_atr_period=14
+strategy_atr_sl_mult=3.0
+strategy_max_spread_points=80
