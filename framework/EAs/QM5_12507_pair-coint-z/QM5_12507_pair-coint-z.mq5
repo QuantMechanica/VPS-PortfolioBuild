@@ -3,6 +3,7 @@
 #property description "QM5_12507 Pair Cointegration Z-Score"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_BasketOrder.mqh>
 
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 12507;
@@ -432,7 +433,7 @@ bool Strategy_NewsAllowsPair(const int pair_index, const datetime broker_time)
 bool Strategy_BuildLegRequest(const int pair_index,
                               const string symbol,
                               const int pair_side,
-                              QM_EntryRequest &req)
+                              QM_BasketOrderRequest &req)
   {
    if(pair_index < 0 || pair_index >= STRATEGY_PAIR_COUNT || pair_side == 0)
       return false;
@@ -458,11 +459,17 @@ bool Strategy_BuildLegRequest(const int pair_index,
       return false;
 
    const int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
+   const double lots = QM_LotsForRisk(symbol, sl_points) * 0.5;
+   if(lots <= 0.0 || !MathIsValidNumber(lots))
+      return false;
+
+   req.symbol = symbol;
    req.type = type;
    req.price = 0.0;
    req.sl = buy_leg ? NormalizeDouble(entry - stop_dist, digits)
                     : NormalizeDouble(entry + stop_dist, digits);
    req.tp = 0.0;
+   req.lots = lots;
    req.reason = (pair_side > 0) ? "QM5_12507_LONG_ASSET1_SHORT_ASSET2"
                                 : "QM5_12507_SHORT_ASSET1_LONG_ASSET2";
    req.symbol_slot = Strategy_SlotForSymbol(pair_index, symbol);
@@ -480,13 +487,22 @@ bool Strategy_OpenPair(const int pair_index, const int pair_side)
    if(!Strategy_IsPairLeg(pair_index, _Symbol))
       return false;
 
-   QM_EntryRequest entry;
-   if(!Strategy_BuildLegRequest(pair_index, _Symbol, pair_side, entry))
+   QM_BasketOrderRequest leg1;
+   QM_BasketOrderRequest leg2;
+   if(!Strategy_BuildLegRequest(pair_index, g_asset1[pair_index], pair_side, leg1))
+      return false;
+   if(!Strategy_BuildLegRequest(pair_index, g_asset2[pair_index], pair_side, leg2))
       return false;
 
-   ulong ticket = 0;
-   if(!QM_TM_OpenPosition(entry, ticket))
+   ulong ticket1 = 0;
+   ulong ticket2 = 0;
+   if(!QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, leg1, ticket1))
       return false;
+   if(!QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, leg2, ticket2))
+     {
+      Strategy_ClosePair(pair_index, QM_EXIT_STRATEGY);
+      return false;
+     }
 
    g_entry_residual[pair_index] = g_residual_now;
    g_entry_residual_set[pair_index] = true;
@@ -514,7 +530,7 @@ bool Strategy_NoTradeFilter()
       for(int i = 0; i < 2; ++i)
         {
          const long spread = SymbolInfoInteger(symbols[i], SYMBOL_SPREAD);
-         if(spread <= 0 || spread > strategy_max_spread_points)
+         if(spread > strategy_max_spread_points)
             return true;
         }
      }
@@ -665,16 +681,6 @@ void OnTick()
    if(!QM_KillSwitchCheck())
       return;
 
-   const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -696,6 +702,17 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
 
    if(!QM_IsNewBar())
       return;

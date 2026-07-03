@@ -4,7 +4,7 @@
 **Slug:** `pair-coint-z`
 **Source:** `46758070-d6b1-52ef-a3ee-ffcbffb7bb54` (see `strategy-seeds/sources/46758070-d6b1-52ef-a3ee-ffcbffb7bb54/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-11
+**Last revised:** 2026-07-03
 
 ---
 
@@ -96,3 +96,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-11 | Initial build from card | 34b946aa-e1c9-4f38-b713-ee3a8efbb8e3 |
+| v2 | 2026-07-03 | Q02 infrastructure repair | Repaired pair entry to open both registered legs through `QM_BasketOpenPosition`, split fixed risk 50/50, preserved zero-spread `.DWX` behavior, and made P2 setfiles carry explicit card defaults before requeue. |
