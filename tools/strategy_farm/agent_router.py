@@ -70,7 +70,10 @@ DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
     },
     "claude": {
         "enabled": True,
-        "capabilities": ["code", "research", "review", "strategy", "summary"],
+        # OWNER 2026-07-02/03: headless Sonnet lane takes coding tasks (incl. former
+        # codex work) -> full coding capability set; "repo" added 2026-07-03 to match
+        # ops_issue task requirements ([code,repo,ops]).
+        "capabilities": ["code", "tests", "repo_edit", "repo", "ops", "research", "review", "strategy", "summary"],
         "max_parallel": 3,
         "cost_rank": 30,
     },
