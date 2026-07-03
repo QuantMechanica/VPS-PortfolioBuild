@@ -1,0 +1,62 @@
+{
+  "date_local": "2026-07-03",
+  "branch": "agents/board-advisor",
+  "mission_scope": "Advance the existing non-duplicate FX market-neutral cointegration basket because QM5_12532/QM5_12533 are not Q02-blocked and no approved unbuilt EdgeLab FX cointegration card remains.",
+  "selected_existing_basket": {
+    "ea_id": "QM5_12978",
+    "slug": "edgelab-gbpusd-usdcad-cointegration",
+    "pair": "GBPUSD~USDCAD",
+    "logical_symbol": "QM5_12978_GBPUSD_USDCAD_COINTEGRATION_D1",
+    "basket_symbols": [
+      "GBPUSD.DWX",
+      "USDCAD.DWX"
+    ],
+    "selection_basis": "Already-built top unbuilt strict 66-pair rerun row when negative hedge ratios are retained; Q02 was pending but not priority-tracked."
+  },
+  "precheck": {
+    "qm5_12532_q02": "PASS",
+    "qm5_12532_latest_state": "Q05_FAIL",
+    "qm5_12533_q02": "PASS",
+    "qm5_12533_latest_state": "Q04_FAIL",
+    "unbuilt_approved_edgelab_cointegration_pairs_found": 0,
+    "farm_active_work_items_before": 5,
+    "farm_pending_work_items_before": 5197,
+    "cpu_ceiling": "Backtest workers saturated; no manual MT5 run launched and no duplicate Q02 row inserted."
+  },
+  "queue_action": {
+    "action": "payload_priority_update",
+    "work_item_id": "b1656e8e-d9dc-4a7b-b5a2-ba8e3ff0150b",
+    "phase": "Q02",
+    "status_after": "pending",
+    "updated_at_utc": "2026-07-03T03:33:06.413845Z",
+    "priority_track": true,
+    "priority_reason": "OWNER 2026-07-03 forex portfolio mission: advance existing non-duplicate QM5_12978 GBPUSD~USDCAD market-neutral FX cointegration Q02 row while factory is CPU-saturated; no duplicate enqueue.",
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12978_q02_priority_20260703T033306Z.sqlite",
+    "event_id": 208223,
+    "duplicate_q02_rows_after": 1
+  },
+  "verification": {
+    "unit_test": "python -m unittest framework.scripts.tests.test_mt5_queue_status",
+    "unit_test_result": "PASS",
+    "status_helper": "python framework/scripts/mt5_queue_status.py --sqlite D:/QM/strategy_farm/state/farm_state.sqlite --limit 5",
+    "status_helper_result": "schema=work_items; active=5; pending=5197; queued_top[0]=QM5_12978 Q02 priority_track=true",
+    "worker_order_rank": 1
+  },
+  "code_change": {
+    "file": "framework/scripts/mt5_queue_status.py",
+    "summary": "Read-only work_items queued_top now follows worker priority order and exposes priority_track so priority FX baskets are visible in operator snapshots.",
+    "test_file": "framework/scripts/tests/test_mt5_queue_status.py"
+  },
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "new_backtest_enqueued": false,
+    "duplicate_queue_row_created": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false
+  }
+}

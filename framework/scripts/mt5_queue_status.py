@@ -109,13 +109,37 @@ def queue_status(sqlite_path: Path, limit: int = 5) -> dict[str, Any]:
                     "status": str(row[4]),
                     "updated_at": str(row[5] or ""),
                     "created_at": str(row[6] or ""),
+                    "priority_track": bool(row[7]),
                 }
                 for row in conn.execute(
                     """
-                    SELECT id,ea_id,phase,symbol,status,updated_at,created_at
+                    SELECT
+                        id,ea_id,phase,symbol,status,updated_at,created_at,
+                        CASE
+                            WHEN payload_json LIKE '%"priority_track": true%' THEN 1
+                            ELSE 0
+                        END AS priority_track
                     FROM work_items
                     WHERE status='pending'
-                    ORDER BY updated_at ASC, created_at ASC, id ASC
+                    ORDER BY
+                        CASE
+                            WHEN payload_json LIKE '%"priority_track": true%' THEN 0
+                            ELSE 1
+                        END,
+                        CASE phase
+                            WHEN 'Q10' THEN 0
+                            WHEN 'Q09_PORTFOLIO' THEN 1
+                            WHEN 'Q09' THEN 1
+                            WHEN 'Q08' THEN 2
+                            WHEN 'Q07' THEN 3
+                            WHEN 'Q06' THEN 4
+                            WHEN 'Q05' THEN 5
+                            WHEN 'Q04' THEN 6
+                            WHEN 'Q03' THEN 7
+                            WHEN 'Q02' THEN 8
+                            ELSE 9
+                        END,
+                        updated_at ASC, created_at ASC, id ASC
                     LIMIT ?
                     """,
                     (max(1, int(limit)),),
