@@ -25,7 +25,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: APPROVED
+pipeline_phase: Q02
 last_updated: 2026-07-03
 g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-requested in-house 66-pair FX scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS USDCAD.DWX and NZDUSD.DWX data exist in scan universe; R4 PASS no ML/grid/martingale."
 expected_pf: 1.10
@@ -167,3 +167,4 @@ gates.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-03 | initial full-scan next-unbuilt FX cointegration basket card | G0 | APPROVED |
+| v2 | 2026-07-03 | compiled basket EA and logical basket Q02 enqueued as work item 48141c69-b04f-4ebc-a6fe-fd15bc30317e | Q02 | PENDING |
