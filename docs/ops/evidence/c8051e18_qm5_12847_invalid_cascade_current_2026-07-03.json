@@ -1,0 +1,543 @@
+{
+  "actions_this_pass": [
+    "Inspected live farm DB and current task payload.",
+    "Confirmed no QM5_12847 work_items remain with verdict INVALID.",
+    "Did not mutate work_items because the prior c8051e18 repair already requeued the INVALID descendants and pipeline has advanced.",
+    "Left WS30 Q04 and SP500 Q04 real FAIL evidence untouched.",
+    "Did not enable T_Live or AutoTrading, did not start terminal64.exe manually, and did not interrupt active T1-T10 backtests."
+  ],
+  "active_rows": [],
+  "artifact_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\qm5_12847_invalid_cascade_current_c8051e18_2026-07-03T1537Z.json",
+  "artifact_type": "qm5_12847_invalid_cascade_current_state",
+  "canonical_evidence_path": "C:\\QM\\repo\\docs\\ops\\evidence\\c8051e18_qm5_12847_invalid_cascade_current_2026-07-03.json",
+  "created_at_utc": "2026-07-03T15:38:41Z",
+  "diagnosis": {
+    "current_state": "No INVALID rows remain. NDX lane produced Q05 PASS, Q06 PASS, Q07 PASS, Q08 FAIL_SOFT, and Q09_PORTFOLIO FAIL_PORTFOLIO evidence. NDX Q03/Q04 and GDAXI Q02 are pending; SP500/WS30 Q04 are terminal FAIL evidence rows.",
+    "pipeline_verdict_policy": "Real PASS/FAIL/FAIL_SOFT/FAIL_PORTFOLIO values are reported from evidence files only; no verdict was invented in this ops artifact.",
+    "root_cause": "stale invalidated descendants after approved QM5_12847 fidelity repair 05a836a7; prior artifacts reset INVALID Q03/Q04/Q05 rows for fresh pipeline evidence."
+  },
+  "ea_id": "QM5_12847",
+  "evidence_summaries": [
+    {
+      "exists": true,
+      "exit_code": 0,
+      "path": "D:\\QM\\reports\\work_items\\07e0ef9d-1d87-42d5-9180-679fb5701a82\\QM5_12847\\Q05\\NDX_DWX\\aggregate.json",
+      "pf": 1.18,
+      "phase": "Q05",
+      "reason": "pf=1.180:dd_pct=4.86",
+      "symbol": "NDX.DWX",
+      "trades": 69,
+      "verdict": "PASS"
+    },
+    {
+      "exists": true,
+      "exit_code": 0,
+      "path": "D:\\QM\\reports\\work_items\\8c15a9de-9a8c-474d-9506-568c38adfbca\\QM5_12847\\Q06\\NDX_DWX\\aggregate.json",
+      "pf": 1.23,
+      "phase": "Q06",
+      "reason": "pf=1.230:dd_pct=4.09:stress=HARSH",
+      "symbol": "NDX.DWX",
+      "trades": 63,
+      "verdict": "PASS"
+    },
+    {
+      "exists": true,
+      "path": "D:\\QM\\reports\\work_items\\8878bd6b-2ec8-4d39-a1b2-e77dd2360ab3\\QM5_12847\\Q07\\NDX_DWX\\aggregate.json",
+      "phase": "Q07",
+      "reason": "variance_pct=0.00<20.0:min_pf=1.230",
+      "symbol": "NDX.DWX",
+      "verdict": "PASS"
+    },
+    {
+      "exists": true,
+      "path": "D:\\QM\\reports\\work_items\\0fb960d7-5d74-476f-a37c-8189b1d6011b\\QM5_12847\\Q08\\NDX_DWX\\aggregate.json",
+      "phase": "Q08",
+      "symbol": "NDX.DWX",
+      "verdict": "FAIL_SOFT"
+    },
+    {
+      "exists": true,
+      "path": "D:\\QM\\reports\\work_items\\e5e3f200-c976-4e69-8e91-c78537d33a9a\\QM5_12847\\Q09_PORTFOLIO\\NDX_DWX\\aggregate.json",
+      "phase": "Q09_PORTFOLIO",
+      "reason": "no_diversification",
+      "verdict": "FAIL_PORTFOLIO"
+    },
+    {
+      "exists": true,
+      "fold_count": 3,
+      "folds": [
+        {
+          "fold": null,
+          "name": null,
+          "pf": null,
+          "pf_net": 0.96,
+          "result": null,
+          "trades": 12,
+          "verdict": null
+        },
+        {
+          "fold": null,
+          "name": null,
+          "pf": null,
+          "pf_net": 1.2680810370083746,
+          "result": null,
+          "trades": 12,
+          "verdict": null
+        },
+        {
+          "fold": null,
+          "name": null,
+          "pf": null,
+          "pf_net": 0.9,
+          "result": null,
+          "trades": 11,
+          "verdict": null
+        }
+      ],
+      "path": "D:\\QM\\reports\\work_items\\356ba890-1484-405e-b435-9f29850cb2f8\\QM5_12847\\Q04\\SP500.DWX\\aggregate.json",
+      "phase": "Q04",
+      "reason": "F1:pf_net=0.960;F2:pf_net=1.268;F3:pf_net=0.900 || lowfreq:INVALID:lowfreq_insufficient_pooled_trades:12<15(>=5/yr)",
+      "symbol": "SP500.DWX",
+      "verdict": "FAIL"
+    },
+    {
+      "exists": true,
+      "fold_count": 3,
+      "folds": [
+        {
+          "fold": null,
+          "name": null,
+          "pf": null,
+          "pf_net": 0.9,
+          "result": null,
+          "trades": 10,
+          "verdict": null
+        },
+        {
+          "fold": null,
+          "name": null,
+          "pf": null,
+          "pf_net": 0.69,
+          "result": null,
+          "trades": 12,
+          "verdict": null
+        },
+        {
+          "fold": null,
+          "name": null,
+          "pf": null,
+          "pf_net": 0.77,
+          "result": null,
+          "trades": 9,
+          "verdict": null
+        }
+      ],
+      "path": "D:\\QM\\reports\\work_items\\2d6e3470-5cad-4cbb-94bb-2de51a8603fe\\QM5_12847\\Q04\\WS30.DWX\\aggregate.json",
+      "phase": "Q04",
+      "reason": "F1:pf_net=0.900;F2:pf_net=0.690;F3:pf_net=0.770 || lowfreq:INVALID:lowfreq_insufficient_pooled_trades:0<15(>=5/yr)",
+      "symbol": "WS30.DWX",
+      "verdict": "FAIL"
+    }
+  ],
+  "invalid_rows": [],
+  "pending_rows": [
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-01T09:52:58+00:00",
+      "ea_id": "QM5_12847",
+      "evidence_path": null,
+      "id": "9489d601-278a-465e-905b-27f14673156c",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q02",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500\\sets\\QM5_12847_turn-of-month-sp500_GDAXI.DWX_D1_backtest.set",
+      "status": "pending",
+      "symbol": "GDAXI.DWX",
+      "updated_at": "2026-07-01T09:52:58+00:00",
+      "verdict": null
+    },
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-01T10:48:01+00:00",
+      "ea_id": "QM5_12847",
+      "evidence_path": null,
+      "id": "ed65f307-8d67-4650-8587-99de616284ed",
+      "kind": "backtest",
+      "parent_task_id": "dc0cd6fa-eb7c-4096-a646-e987db707ae5",
+      "phase": "Q03",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500\\sets\\QM5_12847_turn-of-month-sp500_NDX.DWX_D1_backtest.set",
+      "status": "pending",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-07-03T07:43:44Z",
+      "verdict": null
+    },
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-01T10:48:03+00:00",
+      "ea_id": "QM5_12847",
+      "evidence_path": null,
+      "id": "658d14e1-c567-4f49-85c6-2f931644c0fc",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q04",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500\\sets\\QM5_12847_turn-of-month-sp500_NDX.DWX_D1_backtest.set",
+      "status": "pending",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-07-03T07:43:44Z",
+      "verdict": null
+    }
+  ],
+  "prior_repair_artifacts": [
+    {
+      "exists": true,
+      "path": "D:\\QM\\strategy_farm\\artifacts\\ops\\qm5_12847_invalid_requeue_c8051e18_2026-07-03.json"
+    },
+    {
+      "exists": true,
+      "path": "D:\\QM\\strategy_farm\\artifacts\\ops\\qm5_12847_invalid_cascade_requeue_2026-07-03.json"
+    }
+  ],
+  "queue_summary_counts": {
+    "Q02_done_PASS": 3,
+    "Q02_pending_NULL": 1,
+    "Q03_pending_NULL": 1,
+    "Q04_done_FAIL": 2,
+    "Q04_pending_NULL": 1,
+    "Q05_done_PASS": 1,
+    "Q06_done_PASS": 1,
+    "Q07_done_PASS": 1,
+    "Q08_done_FAIL_SOFT": 1,
+    "Q09_PORTFOLIO_done_FAIL_PORTFOLIO": 1
+  },
+  "task_id": "c8051e18-8f52-4b8d-a70e-bd876e79fc30",
+  "task_row_before_review_update": [
+    {
+      "artifact_path": "C:/QM/repo/docs/ops/evidence/09e692a9_guard_propagation_2026-07-03.md",
+      "assigned_agent": "codex",
+      "id": "c8051e18-8f52-4b8d-a70e-bd876e79fc30",
+      "payload": {
+        "goal": "QM5_12847 (turn-of-month calendar MR, near-zero expected corr to the book) passed Q02 on NDX/SP500/WS30 but its Q03/Q04/Q05 work_items are 'failed INVALID' (NDX Q03/Q04/Q05, SP500 Q04) and WS30 Q04 done FAIL. Diagnose the INVALIDs: read the fold aggregates/logs - likely candidates: stale .ex5 without q08/trade dumps (recompile class), calendar-cadence corset family (QM_CalendarPeriodKey fix f55040e44 - 12847 IS calendar family), or invalid_summary cold-cache. Fix root cause (recompile after resolver verify per the magic order-of-operations; full-year prescreen windows per operating rule 4), requeue the INVALID items, respect requeue_excluded list. If WS30 Q04 FAIL is a REAL verdict leave it - only INVALID lanes get repaired. Evidence JSON to D:/QM/strategy_farm/artifacts/ops/. state=REVIEW.",
+        "required_capabilities": [
+          "code",
+          "ops"
+        ],
+        "routed_at": "2026-07-03T15:32:54+00:00",
+        "title": "RESCUE: 12847 turn-of-month INVALID cascade (Q02 3x PASS, near-zero-corr book candidate)"
+      },
+      "priority": 2,
+      "state": "IN_PROGRESS",
+      "task_type": "ops_issue",
+      "updated_at": "2026-07-03T15:32:54+00:00",
+      "verdict": "UNBLOCKED: canonical guard is on origin/main; all farmctl invocations from C:/QM/repo only (rule 23)."
+    }
+  ],
+  "verdict": "INVALID_REPAIR_COMPLETE_NO_INVALID_ROWS_REMAIN",
+  "verification": {
+    "compile_log": {
+      "clean_tail_has_zero_errors_zero_warnings": true,
+      "exists": true,
+      "path": "C:\\QM\\repo\\framework\\build\\compile\\20260702_053022\\QM5_12847_turn-of-month-sp500.compile.log",
+      "tail": [
+        " : information: generating code 84%",
+        " : information: generating code 87%",
+        " : information: generating code 90%",
+        " : information: generating code 93%",
+        " : information: generating code 95%",
+        " : information: generating code 100%",
+        " : information: code generated",
+        "Result: 0 errors, 0 warnings, 3567 ms elapsed, cpu='X64 Regular'"
+      ]
+    },
+    "focused_db_checks": {
+      "no_active_rows": true,
+      "no_invalid_rows": true,
+      "pending_rows_are_open_queue_only": [
+        {
+          "attempt_count": 0,
+          "claimed_by": null,
+          "created_at": "2026-07-01T09:52:58+00:00",
+          "ea_id": "QM5_12847",
+          "evidence_path": null,
+          "id": "9489d601-278a-465e-905b-27f14673156c",
+          "kind": "backtest",
+          "parent_task_id": null,
+          "phase": "Q02",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500\\sets\\QM5_12847_turn-of-month-sp500_GDAXI.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "GDAXI.DWX",
+          "updated_at": "2026-07-01T09:52:58+00:00",
+          "verdict": null
+        },
+        {
+          "attempt_count": 0,
+          "claimed_by": null,
+          "created_at": "2026-07-01T10:48:01+00:00",
+          "ea_id": "QM5_12847",
+          "evidence_path": null,
+          "id": "ed65f307-8d67-4650-8587-99de616284ed",
+          "kind": "backtest",
+          "parent_task_id": "dc0cd6fa-eb7c-4096-a646-e987db707ae5",
+          "phase": "Q03",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500\\sets\\QM5_12847_turn-of-month-sp500_NDX.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "NDX.DWX",
+          "updated_at": "2026-07-03T07:43:44Z",
+          "verdict": null
+        },
+        {
+          "attempt_count": 0,
+          "claimed_by": null,
+          "created_at": "2026-07-01T10:48:03+00:00",
+          "ea_id": "QM5_12847",
+          "evidence_path": null,
+          "id": "658d14e1-c567-4f49-85c6-2f931644c0fc",
+          "kind": "backtest",
+          "parent_task_id": null,
+          "phase": "Q04",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500\\sets\\QM5_12847_turn-of-month-sp500_NDX.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "NDX.DWX",
+          "updated_at": "2026-07-03T07:43:44Z",
+          "verdict": null
+        }
+      ]
+    },
+    "guardrail_validator": {
+      "command": "python tools/strategy_farm/validate_build_guardrails.py C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": {
+        "checked_at": "2026-07-03T15:38:41.004067Z",
+        "results": [
+          {
+            "checked_at": "2026-07-03T15:38:41.004067Z",
+            "files_checked": 12,
+            "findings": [],
+            "max_news_stale_hours": 336,
+            "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500",
+            "verdict": "PASS"
+          }
+        ],
+        "verdict": "PASS"
+      }
+    },
+    "requeue_excluded_check": {
+      "exists": true,
+      "path": "D:\\QM\\strategy_farm\\state\\requeue_excluded_eas.txt",
+      "qm5_12847_listed": false
+    }
+  },
+  "work_items": [
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-01T09:52:58+00:00",
+      "ea_id": "QM5_12847",
+      "evidence_path": null,
+      "id": "9489d601-278a-465e-905b-27f14673156c",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q02",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500\\sets\\QM5_12847_turn-of-month-sp500_GDAXI.DWX_D1_backtest.set",
+      "status": "pending",
+      "symbol": "GDAXI.DWX",
+      "updated_at": "2026-07-01T09:52:58+00:00",
+      "verdict": null
+    },
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-01T07:34:44+00:00",
+      "ea_id": "QM5_12847",
+      "evidence_path": "D:\\QM\\reports\\work_items\\b488f529-3da1-4b4a-9d19-ed7844dc61d9\\QM5_12847\\20260702_053424\\summary.json",
+      "id": "b488f529-3da1-4b4a-9d19-ed7844dc61d9",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q02",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500\\sets\\QM5_12847_turn-of-month-sp500_NDX.DWX_D1_backtest.set",
+      "status": "done",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-07-02T05:42:43+00:00",
+      "verdict": "PASS"
+    },
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-01T07:34:44+00:00",
+      "ea_id": "QM5_12847",
+      "evidence_path": "D:\\QM\\reports\\work_items\\bb6d9777-e998-4037-91bc-265f29d08fdd\\QM5_12847\\20260702_053328\\summary.json",
+      "id": "bb6d9777-e998-4037-91bc-265f29d08fdd",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q02",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500\\sets\\QM5_12847_turn-of-month-sp500_SP500.DWX_D1_backtest.set",
+      "status": "done",
+      "symbol": "SP500.DWX",
+      "updated_at": "2026-07-02T05:36:42+00:00",
+      "verdict": "PASS"
+    },
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-01T07:34:44+00:00",
+      "ea_id": "QM5_12847",
+      "evidence_path": "D:\\QM\\reports\\work_items\\985667ef-0fc7-4475-ab5e-167c96c85f9d\\QM5_12847\\20260701_094800\\summary.json",
+      "id": "985667ef-0fc7-4475-ab5e-167c96c85f9d",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q02",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500\\sets\\QM5_12847_turn-of-month-sp500_WS30.DWX_D1_backtest.set",
+      "status": "done",
+      "symbol": "WS30.DWX",
+      "updated_at": "2026-07-01T09:51:43+00:00",
+      "verdict": "PASS"
+    },
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-01T10:48:01+00:00",
+      "ea_id": "QM5_12847",
+      "evidence_path": null,
+      "id": "ed65f307-8d67-4650-8587-99de616284ed",
+      "kind": "backtest",
+      "parent_task_id": "dc0cd6fa-eb7c-4096-a646-e987db707ae5",
+      "phase": "Q03",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500\\sets\\QM5_12847_turn-of-month-sp500_NDX.DWX_D1_backtest.set",
+      "status": "pending",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-07-03T07:43:44Z",
+      "verdict": null
+    },
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-01T10:48:03+00:00",
+      "ea_id": "QM5_12847",
+      "evidence_path": null,
+      "id": "658d14e1-c567-4f49-85c6-2f931644c0fc",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q04",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500\\sets\\QM5_12847_turn-of-month-sp500_NDX.DWX_D1_backtest.set",
+      "status": "pending",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-07-03T07:43:44Z",
+      "verdict": null
+    },
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-01T09:53:24+00:00",
+      "ea_id": "QM5_12847",
+      "evidence_path": "D:\\QM\\reports\\work_items\\356ba890-1484-405e-b435-9f29850cb2f8\\QM5_12847\\Q04\\SP500.DWX\\aggregate.json",
+      "id": "356ba890-1484-405e-b435-9f29850cb2f8",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q04",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500\\sets\\QM5_12847_turn-of-month-sp500_SP500.DWX_D1_backtest.set",
+      "status": "done",
+      "symbol": "SP500.DWX",
+      "updated_at": "2026-07-03T07:47:52+00:00",
+      "verdict": "FAIL"
+    },
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-01T09:53:24+00:00",
+      "ea_id": "QM5_12847",
+      "evidence_path": "D:\\QM\\reports\\work_items\\2d6e3470-5cad-4cbb-94bb-2de51a8603fe\\QM5_12847\\Q04\\WS30.DWX\\aggregate.json",
+      "id": "2d6e3470-5cad-4cbb-94bb-2de51a8603fe",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q04",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500\\sets\\QM5_12847_turn-of-month-sp500_WS30.DWX_D1_backtest.set",
+      "status": "done",
+      "symbol": "WS30.DWX",
+      "updated_at": "2026-07-01T10:07:06+00:00",
+      "verdict": "FAIL"
+    },
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-01T11:13:38+00:00",
+      "ea_id": "QM5_12847",
+      "evidence_path": "D:\\QM\\reports\\work_items\\07e0ef9d-1d87-42d5-9180-679fb5701a82\\QM5_12847\\Q05\\NDX_DWX\\aggregate.json",
+      "id": "07e0ef9d-1d87-42d5-9180-679fb5701a82",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q05",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500\\sets\\QM5_12847_turn-of-month-sp500_NDX.DWX_D1_backtest.set",
+      "status": "done",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-07-03T08:41:47+00:00",
+      "verdict": "PASS"
+    },
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-03T08:47:01+00:00",
+      "ea_id": "QM5_12847",
+      "evidence_path": "D:\\QM\\reports\\work_items\\8c15a9de-9a8c-474d-9506-568c38adfbca\\QM5_12847\\Q06\\NDX_DWX\\aggregate.json",
+      "id": "8c15a9de-9a8c-474d-9506-568c38adfbca",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q06",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500\\sets\\QM5_12847_turn-of-month-sp500_NDX.DWX_D1_backtest.set",
+      "status": "done",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-07-03T12:01:41+00:00",
+      "verdict": "PASS"
+    },
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-03T12:04:32+00:00",
+      "ea_id": "QM5_12847",
+      "evidence_path": "D:\\QM\\reports\\work_items\\8878bd6b-2ec8-4d39-a1b2-e77dd2360ab3\\QM5_12847\\Q07\\NDX_DWX\\aggregate.json",
+      "id": "8878bd6b-2ec8-4d39-a1b2-e77dd2360ab3",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q07",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500\\sets\\QM5_12847_turn-of-month-sp500_NDX.DWX_D1_backtest.set",
+      "status": "done",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-07-03T13:31:57+00:00",
+      "verdict": "PASS"
+    },
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-03T13:37:29+00:00",
+      "ea_id": "QM5_12847",
+      "evidence_path": "D:\\QM\\reports\\work_items\\0fb960d7-5d74-476f-a37c-8189b1d6011b\\QM5_12847\\Q08\\NDX_DWX\\aggregate.json",
+      "id": "0fb960d7-5d74-476f-a37c-8189b1d6011b",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q08",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500\\sets\\QM5_12847_turn-of-month-sp500_NDX.DWX_D1_backtest.set",
+      "status": "done",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-07-03T14:24:21+00:00",
+      "verdict": "FAIL_SOFT"
+    },
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-03T14:30:10+00:00",
+      "ea_id": "QM5_12847",
+      "evidence_path": "D:\\QM\\reports\\work_items\\e5e3f200-c976-4e69-8e91-c78537d33a9a\\QM5_12847\\Q09_PORTFOLIO\\NDX_DWX\\aggregate.json",
+      "id": "e5e3f200-c976-4e69-8e91-c78537d33a9a",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q09_PORTFOLIO",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12847_turn-of-month-sp500\\sets\\QM5_12847_turn-of-month-sp500_NDX.DWX_D1_backtest.set",
+      "status": "done",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-07-03T14:36:24+00:00",
+      "verdict": "FAIL_PORTFOLIO"
+    }
+  ]
+}
