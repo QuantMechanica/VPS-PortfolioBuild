@@ -144,7 +144,6 @@ PHASE_ACTIVE_TIMEOUT_MIN = {
     "Q10": 60,     # full-history canonical confirmation
 }
 
-
 def is_factory_terminal_name(value: Any) -> bool:
     terminal = str(value or "").upper()
     return bool(FACTORY_TERMINAL_PATTERN.fullmatch(terminal)) and terminal not in LIVE_TERMINAL_NAMES
@@ -11700,7 +11699,7 @@ _STATE_MUTATING_COMMANDS = frozenset({
 })
 
 
-def _assert_canonical_checkout(command: str) -> None:
+def _assert_canonical_checkout(command: str = "state-mutating command") -> None:
     """Abort with a loud error if a state-mutating command is run from a worktree.
 
     Set QM_ALLOW_NONCANONICAL=1 to skip this check (deliberate override only).
@@ -11743,6 +11742,7 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "pipeline":
         print_json(pipeline_view(root))
     elif args.command == "pump":
+        _assert_canonical_checkout()
         print_json(pump(root))
     elif args.command == "health":
         try:
@@ -11753,6 +11753,7 @@ def main(argv: list[str] | None = None) -> int:
             from health import run_all as _health_run_all
         print_json(_health_run_all())
     elif args.command == "repair":
+        _assert_canonical_checkout()
         try:
             from repair import run_all as _repair_run_all
         except ImportError:
