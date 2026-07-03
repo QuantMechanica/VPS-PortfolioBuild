@@ -19,4 +19,12 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1804_hutson-trix-cross-h4.md
+strategy_trix_period=14
+strategy_signal_period=9
+strategy_regime_ema_period=100
+strategy_atr_period=20
+strategy_atr_mult=2.5
+strategy_trail_trigger_atr=1.5
+strategy_spread_atr_frac=0.35
+strategy_time_stop_bars=35

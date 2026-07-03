@@ -19,4 +19,16 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1703_sperandeo-multiple-top-bottom-h4.md
+strategy_pivot_k=3
+strategy_lookback_bars=50
+strategy_min_rejections=3
+strategy_atr_period=14
+strategy_zone_atr_mult=0.5
+strategy_spread_atr_mult=0.3
+strategy_break_atr_mult=0.5
+strategy_sl_atr_mult=0.5
+strategy_projection_mult=1.5
+strategy_d1_sma_period=50
+strategy_cooldown_bars=12
+strategy_time_stop_bars=30

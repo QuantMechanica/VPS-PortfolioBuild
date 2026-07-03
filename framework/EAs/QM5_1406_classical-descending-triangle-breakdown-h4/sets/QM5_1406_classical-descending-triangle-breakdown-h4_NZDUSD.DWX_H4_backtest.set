@@ -3,7 +3,7 @@
 ; ea_id:        1406
 ; ea_slug:      classical-descending-triangle-breakdown-h4
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260703-001
 ; symbol:       NZDUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
@@ -12,11 +12,32 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1406
 qm_magic_slot_offset=6
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1406_classical-descending-triangle-breakdown-h4.md
+strategy_tf=PERIOD_H4
+strategy_atr_period=14
+strategy_min_window_bars=25
+strategy_max_window_bars=80
+strategy_fractal_wing=2
+strategy_support_band_atr=0.40
+strategy_high_tol_atr=0.20
+strategy_slope_min_d1_atr=0.30
+strategy_slope_max_d1_atr=2.00
+strategy_amplitude_atr=2.50
+strategy_convergence_frac=0.50
+strategy_no_break_atr=0.30
+strategy_break_atr=0.50
+strategy_sl_buffer_atr=0.30
+strategy_max_stop_atr=3.00
+strategy_spread_atr=0.25
+strategy_sma_period=200
+strategy_order_valid_bars=10
+strategy_time_stop_bars=48
+strategy_reuse_guard_bars=20

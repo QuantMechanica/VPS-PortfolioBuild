@@ -19,4 +19,10 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1096_unger-donchian-channel-tf.md
+strategy_donchian_period=20
+strategy_atr_period=20
+strategy_atr_sl_mult=2.5
+strategy_vol_floor_ratio=0.004
+strategy_spread_median_days=20
+strategy_spread_median_mult=2.0

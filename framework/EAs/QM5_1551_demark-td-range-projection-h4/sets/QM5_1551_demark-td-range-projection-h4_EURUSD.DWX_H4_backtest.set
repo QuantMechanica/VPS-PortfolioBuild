@@ -19,4 +19,15 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1551_demark-td-range-projection-h4.md
+strategy_td_setup_bars=9
+strategy_td_compare_bars=4
+strategy_setup_window_bars=6
+strategy_d1_sma_period=50
+strategy_atr_period=14
+strategy_atr_sl_mult=1.8
+strategy_spread_atr_mult=0.35
+strategy_tp2_range_mult=2.5
+strategy_pt1_after_bars=6
+strategy_pt1_close_frac=0.75
+strategy_time_stop_bars=18

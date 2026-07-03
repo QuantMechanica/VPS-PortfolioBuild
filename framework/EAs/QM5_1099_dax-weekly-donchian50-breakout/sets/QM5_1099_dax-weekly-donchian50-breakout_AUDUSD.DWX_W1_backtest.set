@@ -19,4 +19,9 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1099_dax-weekly-donchian50-breakout.md
+strategy_donchian_high_bars=50
+strategy_donchian_low_bars=25
+strategy_atr_period=14
+strategy_atr_stop_mult=3.0
+strategy_long_only=true

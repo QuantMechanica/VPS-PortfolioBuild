@@ -19,4 +19,11 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1118_renko-street-v2-trend.md
+strategy_atr_period_d1=14
+strategy_brick_atr_mult=0.10
+strategy_confirm_bricks=2
+strategy_use_rr_tp=true
+strategy_take_profit_rr=2.0
+strategy_max_spread_points=25
+strategy_max_bricks_per_tick=20

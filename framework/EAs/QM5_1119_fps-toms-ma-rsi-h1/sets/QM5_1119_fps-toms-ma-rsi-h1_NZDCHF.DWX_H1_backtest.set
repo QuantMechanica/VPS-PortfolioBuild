@@ -19,4 +19,14 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1119_fps-toms-ma-rsi-h1.md
+strategy_fast_ma_period=5
+strategy_slow_ma_period=12
+strategy_rsi_period=21
+strategy_rsi_midline=50.0
+strategy_swing_lookback=10
+strategy_rr_take_profit=2.0
+strategy_max_spread_points=20
+strategy_session_filter_on=false
+strategy_session_start_h=0
+strategy_session_end_h=24

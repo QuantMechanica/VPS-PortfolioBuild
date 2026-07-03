@@ -19,4 +19,11 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1101_qp-comm-mom12.md
+strategy_lookback_d1_bars=252
+strategy_min_history_d1_bars=270
+strategy_rank_slots_each_side=2
+strategy_atr_period=20
+strategy_atr_sl_mult=5.0
+strategy_spread_median_days=20
+strategy_spread_mult=3.0

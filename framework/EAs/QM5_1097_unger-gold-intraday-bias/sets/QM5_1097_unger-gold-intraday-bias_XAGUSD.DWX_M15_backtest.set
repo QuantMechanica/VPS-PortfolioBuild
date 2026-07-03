@@ -3,20 +3,31 @@
 ; ea_id:        1097
 ; ea_slug:      unger-gold-intraday-bias
 ; ea_version:   v5.0
-; set_version:  s20260517-001
+; set_version:  s20260703-001
 ; symbol:       XAGUSD.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   8af112e64d8671c7f4f9f1638caa6538aa40039a86569908180837a5a1c2654d
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-17
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1097
 qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1097_unger-gold-intraday-bias.md
+strategy_long_slot_hour=8
+strategy_short_slot_hour=14
+strategy_slot_hold_minutes=60
+strategy_atr_period=14
+strategy_atr_sl_mult=1.0
+strategy_atr_median_days=60
+strategy_min_atr_median_mult=0.60
+strategy_spread_median_days=20
+strategy_spread_max_median_mult=2.0
+strategy_friday_last_entry_hour=18

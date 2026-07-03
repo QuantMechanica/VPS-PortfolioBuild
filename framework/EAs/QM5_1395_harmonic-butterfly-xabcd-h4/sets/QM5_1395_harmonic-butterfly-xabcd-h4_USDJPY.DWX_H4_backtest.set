@@ -3,7 +3,7 @@
 ; ea_id:        1395
 ; ea_slug:      harmonic-butterfly-xabcd-h4
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260703-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    H4
 ; environment:  backtest
@@ -12,11 +12,43 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1395
 qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1395_harmonic-butterfly-xabcd-h4.md
+strategy_pivot_window=5
+strategy_pivot_lookback=200
+strategy_atr_period=14
+strategy_sma_macro_period=200
+strategy_b_min=0.770
+strategy_b_max=0.802
+strategy_c_min=0.382
+strategy_c_max=0.886
+strategy_bc_min=1.618
+strategy_bc_max=2.618
+strategy_d_min=1.272
+strategy_d_max=1.618
+strategy_xa_d1_atr_min=2.0
+strategy_d_beyond_d1_atr=0.2
+strategy_body_ratio_min=0.45
+strategy_d_tag_atr_mult=0.3
+strategy_sma_atr_band=6.0
+strategy_vol_min_mult=0.7
+strategy_vol_max_mult=3.0
+strategy_spread_atr_mult=0.4
+strategy_sl_atr_mult=1.0
+strategy_invalidation_atr=1.5
+strategy_tp1_ad_retrace=0.382
+strategy_tp2_ad_retrace=0.618
+strategy_tp1_close_fraction=0.50
+strategy_time_stop_bars=32
+strategy_reuse_guard_bars=24
+strategy_max_trades_week=2
+strategy_session_start_hour=7
+strategy_session_end_hour=21
+strategy_friday_cutoff_hour=16

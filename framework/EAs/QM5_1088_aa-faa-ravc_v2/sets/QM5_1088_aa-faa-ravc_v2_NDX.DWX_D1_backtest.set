@@ -20,4 +20,9 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1088_aa-faa-ravc.md
+strategy_lookback_bars=84
+strategy_top_n=3
+strategy_atr_period=14
+strategy_atr_sl_mult=4.0
+strategy_rebalance_day_max=7

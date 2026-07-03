@@ -19,4 +19,16 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10025_rw-fx-broad-pairs.md
+strategy_formation_bars=252
+strategy_zscore_bars=120
+strategy_min_corr=0.70
+strategy_adf_t_max=-1.30
+strategy_entry_z=2.0
+strategy_exit_z=0.0
+strategy_spread_stop_z=3.0
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_time_stop_bars=15
+strategy_min_improve_frac=0.25
+strategy_max_spread_points=50

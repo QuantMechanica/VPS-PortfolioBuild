@@ -19,4 +19,11 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1568_ehlers-two-pole-butterworth-h4.md
+strategy_filter_period=15
+strategy_warmup_h4_bars=100
+strategy_regime_sma_period=200
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_max_spread_atr=0.4
+strategy_time_stop_h4_bars=30
