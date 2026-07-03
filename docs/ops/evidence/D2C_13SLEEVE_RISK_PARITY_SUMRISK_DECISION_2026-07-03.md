@@ -97,6 +97,51 @@ Data-basis note: the live `DEFAULT_COMMON_DIR` Q08 stream files changed after th
 - Risk table CSV: `D:\QM\strategy_farm\artifacts\portfolio\d2c_invvol_sumrisk_2026-07-03\variant_b\d2c_risk_percent_old_to_invvol_capped_2026-07-03.csv`
 - Draft staged capped presets: `D:\QM\strategy_farm\artifacts\portfolio\d2c_invvol_sumrisk_2026-07-03\variant_b\staged_live_presets`
 
+## Variant B v2 (frozen inputs)
+
+Task: `58c324cc-88a9-4e0e-bdbd-7fb941c5dfff`
+
+Variant B v2 freezes the 13 live-sleeve Q08 streams before recomputation. The streams were copied from the durable root `D:\QM\reports\portfolio\sleeve_streams` into `D:\QM\strategy_farm\artifacts\portfolio\d2c_variant_b_v2_2026-07-03\frozen_streams`, and all flat/v1/v2 metrics below were computed only from that frozen copy. No `T_Live` files were changed.
+
+### Variant B v2 Metrics
+
+| policy | summed risk | total net | annual return | Sharpe | MaxDD | monthly VaR 95 | worst day |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| flat 0.75 each (frozen streams) | 1800 trade-days / 9.75% | $138,219 | 16.862% | 1.442 | 15.327% | 4.444% | -3.049% |
+| signed Variant B v1 capped (frozen streams) | 1800 trade-days / 9.75% | $98,286 | 11.990% | 1.696 | 6.425% | 2.603% | -2.168% |
+| Variant B v2 capped (frozen streams) | 1800 trade-days / 9.75% | $86,962 | 10.609% | 1.674 | 6.407% | 2.206% | -1.945% |
+
+Uncapped v2 reference: total net $74,220, Sharpe 2.000, MaxDD 4.081%. V2 capped allocation preserves total summed risk at `9.7500%`, hard-caps per-sleeve risk at `1.0000%`, and hard-capped slots are `[1, 7, 8, 9, 10, 11, 12]`. Maximum absolute v2-vs-signed-v1 `RISK_PERCENT` delta is `0.2883` percentage points.
+
+### Variant B v2 Risk Delta
+
+| slot | EA | symbol | TF | magic | signed v1 | v2 uncapped | v2 capped | delta v2-v1 | hard capped | stream lines |
+|---:|---|---|---|---:|---:|---:|---:|---:|---|---:|
+| 0 | QM5_10440 | NDX.DWX | H1 | 104400003 | 0.2403 | 0.1227 | 0.1983 | -0.0421 | FALSE | 441 |
+| 1 | QM5_10513 | XAUUSD.DWX | D1 | 105130003 | 0.7237 | 0.6690 | 1.0000 | +0.2763 | TRUE | 22 |
+| 2 | QM5_10692 | NDX.DWX | H1 | 106920005 | 0.3545 | 0.1675 | 0.2707 | -0.0838 | FALSE | 443 |
+| 3 | QM5_10715 | USDJPY.DWX | M15 | 107150004 | 0.7071 | 0.3100 | 0.5011 | -0.2060 | FALSE | 1466 |
+| 4 | QM5_10911 | GDAXI.DWX | H1 | 109110003 | 0.3241 | 0.2379 | 0.3846 | +0.0605 | FALSE | 268 |
+| 5 | QM5_10939 | GBPUSD.DWX | H4 | 109390001 | 0.8359 | 0.3387 | 0.5475 | -0.2883 | FALSE | 92 |
+| 6 | QM5_10940 | XAUUSD.DWX | H4 | 109400003 | 0.7145 | 0.5245 | 0.8478 | +0.1333 | FALSE | 35 |
+| 7 | QM5_11132 | SP500.DWX | D1 | 111320000 | 1.0000 | 0.9453 | 1.0000 | +0.0000 | TRUE | 43 |
+| 8 | QM5_11165 | AUDCAD.DWX | H1 | 111650002 | 1.0000 | 1.0092 | 1.0000 | +0.0000 | TRUE | 173 |
+| 9 | QM5_11421 | AUDUSD.DWX | D1 | 114210003 | 0.9460 | 0.6944 | 1.0000 | +0.0540 | TRUE | 53 |
+| 10 | QM5_11421 | EURUSD.DWX | D1 | 114210000 | 1.0000 | 0.6460 | 1.0000 | +0.0000 | TRUE | 58 |
+| 11 | QM5_12567 | XAUUSD.DWX | D1 | 125670003 | 0.9039 | 1.8227 | 1.0000 | +0.0961 | TRUE | 28 |
+| 12 | QM5_12567 | XNGUSD.DWX | D1 | 125670002 | 1.0000 | 2.2621 | 1.0000 | +0.0000 | TRUE | 20 |
+
+### Variant B v2 Reproducibility
+
+- Metrics JSON: `D:\QM\strategy_farm\artifacts\portfolio\d2c_variant_b_v2_2026-07-03\d2c_variant_b_v2_frozen_metrics_2026-07-03.json`
+- Risk delta CSV: `D:\QM\strategy_farm\artifacts\portfolio\d2c_variant_b_v2_2026-07-03\d2c_variant_b_v2_risk_delta_2026-07-03.csv`
+- Equity curve CSV: `D:\QM\strategy_farm\artifacts\portfolio\d2c_variant_b_v2_2026-07-03\d2c_variant_b_v2_equity_curve_2026-07-03.csv`
+- Frozen streams: `D:\QM\strategy_farm\artifacts\portfolio\d2c_variant_b_v2_2026-07-03\frozen_streams`
+- Draft staged v2 presets: `D:\QM\strategy_farm\artifacts\portfolio\d2c_variant_b_v2_2026-07-03\staged_live_presets`
+- Verification JSON: `D:\QM\strategy_farm\artifacts\portfolio\d2c_variant_b_v2_2026-07-03\d2c_variant_b_v2_verify_2026-07-03.json`
+
+The metrics JSON records each frozen stream SHA256. Spot-check target `10939_GBPUSD_DWX.jsonl` is frozen with `line_count=92` and `sha256=55a54176330827c3c797080a6385a35ad4506ba14005490031196aa0feac2078`.
+
 ## Verdict
 
 PASS_FOR_OWNER_REVIEW: inverse-vol same-sum-risk package produced and staged. Do not deploy directly; OWNER must decide whether to waive/cap per-sleeve risk above 1% and issue a signed manifest if proceeding.
