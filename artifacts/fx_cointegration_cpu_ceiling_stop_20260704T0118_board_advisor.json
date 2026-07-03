@@ -1,0 +1,132 @@
+{
+  "date_local": "2026-07-04",
+  "observed_at_local": "2026-07-04T01:18:28+02:00",
+  "branch": "agents/board-advisor",
+  "mission": "forex_market_neutral_cointegration_portfolio_growth",
+  "action": "cpu_ceiling_stop_after_current_fx_cointegration_verification",
+  "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+  "method_source": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+  "scan_rerun": {
+    "command": "python framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "strict_survivors": [
+      {
+        "pair": "EURJPY~GBPJPY",
+        "dev_net_sharpe": 0.59,
+        "oos_net_sharpe": 1.53,
+        "oos_return_pct": 5.98,
+        "oos_trades": 24,
+        "hedge": 0.75,
+        "half_life_days": 35,
+        "ea": "QM5_12533"
+      },
+      {
+        "pair": "AUDUSD~NZDUSD",
+        "dev_net_sharpe": 0.13,
+        "oos_net_sharpe": 1.29,
+        "oos_return_pct": 5.68,
+        "oos_trades": 14,
+        "hedge": 0.93,
+        "half_life_days": 65,
+        "ea": "QM5_12532"
+      }
+    ],
+    "triangular_mispricing_verdict": "ALL_DEAD_NET"
+  },
+  "strict_survivor_funnel_state": [
+    {
+      "ea": "QM5_12533",
+      "pair": "EURJPY~GBPJPY",
+      "current_state": "Q02_PASS_Q04_FAIL",
+      "q02_blocked": false
+    },
+    {
+      "ea": "QM5_12532",
+      "pair": "AUDUSD~NZDUSD",
+      "current_state": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "q02_blocked": false
+    }
+  ],
+  "edgelab_cointegration_build_map": {
+    "active_registered_edge_lab_cointegration_rows": 31,
+    "active_registered_edge_lab_cointegration_ea_dirs_found": 31,
+    "visible_edgelab_cointegration_cards": 45,
+    "visible_edgelab_cointegration_cards_without_ea_dir": 0,
+    "unbuilt_pair_found": false
+  },
+  "current_nonduplicate_fx_continuation": {
+    "ea": "QM5_12778",
+    "pair": "AUDUSD~EURJPY",
+    "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "state": "Q02_PASS_Q03_PASS_Q04_PASS_Q05_PASS_Q06_PASS_Q07_PENDING",
+    "pending_q07_work_item": "fc554e0c-e66e-486a-a83d-c7301e67c615"
+  },
+  "active_factory_work_items": [
+    {
+      "terminal": "T1",
+      "ea": "QM5_10557",
+      "phase": "Q02",
+      "symbol": "GBPJPY.DWX",
+      "work_item": "2bcc0882-a38c-47d6-80f6-41c673258781"
+    },
+    {
+      "terminal": "T2",
+      "ea": "QM5_1567",
+      "phase": "Q04",
+      "symbol": "NZDCAD.DWX",
+      "work_item": "9551e23a-933d-4cbd-ad5d-359d68cd35b9"
+    },
+    {
+      "terminal": "T3",
+      "ea": "QM5_10142",
+      "phase": "Q05",
+      "symbol": "NDX.DWX",
+      "work_item": "94c74d83-69d5-483c-9ba5-a55c1e6ca8e1"
+    },
+    {
+      "terminal": "T4",
+      "ea": "QM5_1567",
+      "phase": "Q02",
+      "symbol": "EURGBP.DWX",
+      "work_item": "f0269d38-d4f0-45ee-afca-d77f75267419"
+    },
+    {
+      "terminal": "T5",
+      "ea": "QM5_10718",
+      "phase": "Q02",
+      "symbol": "QM5_10718_FX8_BASKET_D1",
+      "work_item": "92ba2ca6-1147-4432-af19-929a45993f4a"
+    }
+  ],
+  "queue_mutation_this_turn": "none",
+  "reason": "The two strict scan survivors are not Q02-blocked, every visible/local Edgelab cointegration card maps to an EA folder, one nonduplicate FX continuation is already pending at Q07, and all five factory slots are active. The mission says to stop when the backtest CPU ceiling is hit.",
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "new_backtest_enqueued_this_turn": false,
+    "farm_db_mutated": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false
+  },
+  "commands": [
+    {
+      "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --ea QM5_12532",
+      "result": "Q02 PASS, Q04 PASS, Q05 FAIL"
+    },
+    {
+      "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --ea QM5_12533",
+      "result": "Q02 PASS, Q04 FAIL"
+    },
+    {
+      "command": "python framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+      "result": "strict survivors remain EURJPY~GBPJPY and AUDUSD~NZDUSD only"
+    },
+    {
+      "command": "python framework/scripts/mt5_queue_status.py --sqlite D:/QM/strategy_farm/state/farm_state.sqlite --limit 20",
+      "result": "active=5, pending=6106"
+    }
+  ]
+}
