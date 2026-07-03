@@ -60,3 +60,6 @@ korrigiert, Shift-Bug gefixt, Divergenz-Filter nachgerüstet, 1%-Cluster-Sizing 
 **Archivieren.** Q02-Requeues stoppen, Karte auf ARCHIVED-EVIDENCE setzen,
 Ressourcen vollständig auf die Swing-Initiative (bereits erste Q04-Passage
 in derselben Nacht: QM5_12915).
+
+---
+**OWNER SIGN-OFF: 2026-07-03 (morgens) — Archivierung ratifiziert.** Requeues gesperrt (requeue_excluded), work items retired, Primitive verbleiben im Framework, Fade-Schock-Satellit dokumentiert reaktivierbar.
