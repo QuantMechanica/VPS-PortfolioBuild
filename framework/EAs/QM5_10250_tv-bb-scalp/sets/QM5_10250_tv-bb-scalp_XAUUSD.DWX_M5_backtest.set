@@ -3,7 +3,7 @@
 ; ea_id:        10250
 ; ea_slug:      tv-bb-scalp
 ; ea_version:   v5.0
-; set_version:  s20260609-001
+; set_version:  s20260703-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    M5
 ; environment:  backtest
@@ -12,23 +12,30 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-06-09
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=10250
 qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10250_tv-bb-scalp.md
+strategy_bb_period=20
+strategy_bb_deviation=2.0
+strategy_exit_ema_period=8
+strategy_ema12_period=12
+strategy_ema26_period=26
+strategy_use_ema200_filter=true
+strategy_ema200_period=200
+strategy_volume_sma_period=20
+strategy_spread_avg_bars=50
+strategy_spread_avg_mult=1.5
+strategy_atr_period=14
+strategy_fx_atr_sl_mult=1.2
+strategy_index_sl_percent=0.35
+strategy_max_hold_bars=24
+strategy_london_start_hour=7
+strategy_london_end_hour=12
+strategy_ny_start_hour=13
+strategy_ny_end_hour=21

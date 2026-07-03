@@ -3,7 +3,7 @@
 ; ea_id:        10095
 ; ea_slug:      gh-ict-orderblk
 ; ea_version:   v5.0
-; set_version:  s20260620-001
+; set_version:  s20260703-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    H1
 ; environment:  backtest
@@ -12,23 +12,22 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-06-20
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=10095
 qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10095_gh-ict-orderblk.md
+strategy_order_block_threshold_pct=10
+strategy_lookback=24
+strategy_fast_sma=5
+strategy_slow_sma=30
+strategy_daily_body_days=5
+strategy_h1_range_to_d1_body_max=0.80
+strategy_tp_body_threshold=10.0
+strategy_tp_rr_low_body=3.0
+strategy_tp_rr_high_body=4.0
+strategy_weekly_open_lookback_bars=240

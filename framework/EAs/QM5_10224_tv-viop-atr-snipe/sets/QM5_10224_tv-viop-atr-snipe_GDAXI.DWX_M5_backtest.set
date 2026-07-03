@@ -3,7 +3,7 @@
 ; ea_id:        10224
 ; ea_slug:      tv-viop-atr-snipe
 ; ea_version:   v5.0
-; set_version:  s20260609-001
+; set_version:  s20260703-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    M5
 ; environment:  backtest
@@ -12,23 +12,29 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-06-09
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=10224
 qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10224_tv-viop-atr-snipe.md
+strategy_fast_ema_period=9
+strategy_slow_ema_period=21
+strategy_min_ema_diff_pts=0.0
+strategy_rsi_period=14
+strategy_rsi_long_min=50.0
+strategy_rsi_long_max=80.0
+strategy_rsi_short_min=20.0
+strategy_rsi_short_max=50.0
+strategy_adx_period=14
+strategy_adx_min=20.0
+strategy_wma_period=50
+strategy_atr_period=14
+strategy_atr_sl_mult=1.5
+strategy_rr_target=1.5
+strategy_no_trade_enabled=true
+strategy_no_trade_start_h=22
+strategy_no_trade_end_h=1

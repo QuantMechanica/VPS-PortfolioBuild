@@ -3,34 +3,45 @@
 ; ea_id:        10094
 ; ea_slug:      gh-h4-zone
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260703-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   8b8368e2eddb7f945dd131d6f0ec98b19b60fbb09c891ee8edf3194cbace8c79
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=10094
 qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10094_gh-h4-zone.md
+strategy_signal_tf=PERIOD_M5
+strategy_ema_tf=PERIOD_H1
+strategy_atr_tf=PERIOD_H1
+strategy_zone_mode=0
+strategy_h4_zone_bars=1
+strategy_min_body_pct=50.0
+strategy_min_body_points=0.0
+strategy_max_wait_seconds=86400
+strategy_use_ema_filter=true
+strategy_ema_fast_period=50
+strategy_ema_slow_period=200
+strategy_use_atr_sizing=true
+strategy_atr_period=14
+strategy_atr_sl_mult=1.5
+strategy_atr_tp_mult=3.0
+strategy_fixed_rr=1.5
 strategy_session_start_hour=7
 strategy_session_end_hour=22
+strategy_spread_cap_points=50
+strategy_enable_break_even=false
+strategy_be_trigger_pips=30
+strategy_be_buffer_pips=2
+strategy_enable_atr_trailing=false
+strategy_trail_atr_mult=1.5

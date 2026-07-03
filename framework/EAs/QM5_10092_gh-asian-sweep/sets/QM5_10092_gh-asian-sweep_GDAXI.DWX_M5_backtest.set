@@ -3,7 +3,7 @@
 ; ea_id:        10092
 ; ea_slug:      gh-asian-sweep
 ; ea_version:   v5.0
-; set_version:  s20260523-001
+; set_version:  s20260703-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    M5
 ; environment:  backtest
@@ -12,23 +12,26 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-23
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=10092
 qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10092_gh-asian-sweep.md
+strategy_broker_gmt_offset_hours=0
+strategy_asian_start_hour_utc=0
+strategy_asian_end_hour_utc=6
+strategy_trade_start_hour_utc=6
+strategy_trade_end_hour_utc=16
+strategy_range_min_pips=30.0
+strategy_range_max_pips=200.0
+strategy_sweep_min_pips=5.0
+strategy_sweep_max_pips=80.0
+strategy_sl_buffer_pips=15.0
+strategy_min_rr_ratio=1.5
+strategy_ema_filter_enabled=true
+strategy_ema_period=200
+strategy_scan_bars=288

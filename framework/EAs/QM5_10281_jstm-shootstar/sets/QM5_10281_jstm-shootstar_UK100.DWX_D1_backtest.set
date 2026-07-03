@@ -3,32 +3,27 @@
 ; ea_id:        10281
 ; ea_slug:      jstm-shootstar
 ; ea_version:   v5.0
-; set_version:  s20260612-001
+; set_version:  s20260703-001
 ; symbol:       UK100.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   28
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   e3a43ef4f54bcad0829e54855190da3f849eaecd6f94d7434ffd4ee17cca8e02
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-12
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=10281
 qm_magic_slot_offset=28
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10281_jstm-shootstar.md
+strategy_body_avg_lookback=20
+strategy_lower_wick_body_max=0.20
+strategy_body_mean_mult=0.50
+strategy_upper_wick_body_min=2.00
+strategy_exit_move_pct=5.00
+strategy_max_hold_d1_bars=7

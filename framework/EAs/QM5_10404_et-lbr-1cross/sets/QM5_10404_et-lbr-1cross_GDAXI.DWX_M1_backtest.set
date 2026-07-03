@@ -3,7 +3,7 @@
 ; ea_id:        10404
 ; ea_slug:      et-lbr-1cross
 ; ea_version:   v5.0
-; set_version:  s20260525-001
+; set_version:  s20260703-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    M1
 ; environment:  backtest
@@ -12,23 +12,23 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-25
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=10404
 qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10404_et-lbr-1cross.md
+strategy_macd_fast=3
+strategy_macd_slow=10
+strategy_macd_signal=16
+strategy_stop_pct=0.20
+strategy_target_pct=0.20
+strategy_be_trigger_pct=0.15
+strategy_use_ema_filter=false
+strategy_ema_fast=9
+strategy_ema_slow=34
+strategy_session_start_hour_broker=0
+strategy_session_end_hour_broker=21

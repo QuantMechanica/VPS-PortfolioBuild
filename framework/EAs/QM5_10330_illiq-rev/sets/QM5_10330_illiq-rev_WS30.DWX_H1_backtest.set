@@ -3,32 +3,35 @@
 ; ea_id:        10330
 ; ea_slug:      illiq-rev
 ; ea_version:   v5.0
-; set_version:  s20260612-001
+; set_version:  s20260703-001
 ; symbol:       WS30.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   eb717eaa7eecea14326fda363cde2dee3a2321ad3da383f5a1775ae0b57591c0
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-12
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=10330
 qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10330_illiq-rev.md
+strategy_atr_period=14
+strategy_return_atr_mult=0.75
+strategy_stop_atr_mult=1.00
+strategy_percentile_days=60
+strategy_bars_per_day=24
+strategy_spread_percentile_min=70.0
+strategy_volume_percentile_min=70.0
+strategy_session_start_hour=8
+strategy_session_end_hour=22
+strategy_max_hold_bars=2
+strategy_min_stop_spreads=4
+strategy_spread_session_count=20
+strategy_spread_year_sessions=252
+strategy_skip_monday_first_session=true

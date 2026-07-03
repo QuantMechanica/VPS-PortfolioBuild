@@ -3,32 +3,38 @@
 ; ea_id:        10345
 ; ea_slug:      et-oil-lwma
 ; ea_version:   v5.0
-; set_version:  s20260525-001
+; set_version:  s20260703-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    M1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   5b0e57414132fa02ce9336438f60c0e63cd5996a0cb9ff0e32debcce8f91d6c1
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-25
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=10345
 qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10345_et-oil-lwma.md
+strategy_lwma_fast=36
+strategy_lwma_mid=75
+strategy_lwma_slow=120
+strategy_rsi_period=14
+strategy_rsi_long_level=50.0
+strategy_rsi_short_level=50.0
+strategy_atr_period=14
+strategy_impulse_mult=1.0
+strategy_pullback_atr_mult=0.25
+strategy_sl_atr_mult=1.0
+strategy_tp_atr_mult=1.0
+strategy_trail_atr_mult=1.0
+strategy_swing_lookback=10
+strategy_session_start_h=7
+strategy_session_end_h=20
+strategy_spread_median_bars=30
+strategy_spread_median_mult=2.0

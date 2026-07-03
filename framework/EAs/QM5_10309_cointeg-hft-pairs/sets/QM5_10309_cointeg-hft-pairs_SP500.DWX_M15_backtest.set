@@ -3,32 +3,34 @@
 ; ea_id:        10309
 ; ea_slug:      cointeg-hft-pairs
 ; ea_version:   v5.0
-; set_version:  s20260525-001
+; set_version:  s20260703-001
 ; symbol:       SP500.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   1aa18163451afdc003368188d1c03c3c75d3584294d3d11b62c8d463e4193bf7
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-25
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=10309
 qm_magic_slot_offset=4
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10309_cointeg-hft-pairs.md
+strategy_formation_days=90
+strategy_residual_days=20
+strategy_coint_exit_days=30
+strategy_coint_pvalue_max=0.05
+strategy_coint_exit_pvalue=0.20
+strategy_entry_z=2.0
+strategy_exit_z=0.0
+strategy_stop_z=3.5
+strategy_min_half_life_bars=2
+strategy_max_half_life_bars=96
+strategy_max_hold_bars=48
+strategy_max_spread_cost_frac=0.15
+strategy_vol_stop_mult=3.5

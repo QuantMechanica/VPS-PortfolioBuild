@@ -3,7 +3,7 @@
 ; ea_id:        10394
 ; ea_slug:      et-rsi-trend
 ; ea_version:   v5.0
-; set_version:  s20260614-001
+; set_version:  s20260703-001
 ; symbol:       NDX.DWX
 ; timeframe:    M15
 ; environment:  backtest
@@ -12,23 +12,27 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-06-14
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=10394
 qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10394_et-rsi-trend.md
+strategy_rsi_length=43
+strategy_long_entry_rsi=50.5
+strategy_short_entry_rsi=49.5
+strategy_long_exit_rsi=52.5
+strategy_short_exit_rsi=47.0
+strategy_atr_period=20
+strategy_atr_sl_mult=2.0
+strategy_us_start_hour=15
+strategy_us_start_min=30
+strategy_us_end_hour=22
+strategy_us_end_min=0
+strategy_eu_start_hour=9
+strategy_eu_start_min=0
+strategy_eu_end_hour=17
+strategy_eu_end_min=30
