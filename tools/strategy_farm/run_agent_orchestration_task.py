@@ -110,6 +110,18 @@ def agent_env(agent: str) -> dict[str, str]:
 def build_prompt(agent: str, cwd: Path) -> str:
     edge_charter = cwd / "docs" / "ops" / "EDGE_LAB_CHARTER_2026-05-22.md"
     profitability = cwd / "docs" / "ops" / "PROFITABILITY_TRACK_2026-05-21.md"
+    # G: drive (Google Drive for Desktop) is mounted per-user. Gemini/agy runs as SYSTEM
+    # in a scheduled task with no G: mount -> any G: access raises PermissionError and
+    # strands the task IN_PROGRESS (Rule 13, OPERATING_RULES_2026-07-03). Skip G: paths
+    # for gemini; Claude/Codex run interactively or have G: via the user session.
+    if agent == "gemini":
+        vault_lines = ""
+    else:
+        vault_lines = (
+            "- G:/My Drive/QuantMechanica - Company Reference/08 Current State/Current Operating State.md\n"
+            "- G:/My Drive/QuantMechanica - Company Reference/02 Org/AI Agent Routing and Role Contracts.md\n"
+            "- G:/My Drive/QuantMechanica - Company Reference/_OPEN ITEMS.md\n"
+        )
     return f"""You are {agent} for QuantMechanica, launched by a headless scheduled task.
 
 Execute exactly one single-pass orchestration cycle, then exit. Do not start a
@@ -118,10 +130,7 @@ Execute exactly one single-pass orchestration cycle, then exit. Do not start a
 Working directory: {cwd.as_posix()}
 
 Read first if needed:
-- G:/My Drive/QuantMechanica - Company Reference/08 Current State/Current Operating State.md
-- G:/My Drive/QuantMechanica - Company Reference/02 Org/AI Agent Routing and Role Contracts.md
-- G:/My Drive/QuantMechanica - Company Reference/_OPEN ITEMS.md
-- {edge_charter}
+{vault_lines}- {edge_charter}
 - {profitability}
 
 Cycle:
@@ -441,6 +450,18 @@ def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, tim
         }
         result_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
         return payload
+
+    # Write lane heartbeat so the router and pump janitor can verify the lane is alive.
+    heartbeat_path = FARM_ROOT / "state" / f"lane_{agent}_heartbeat.json"
+    try:
+        heartbeat_path.parent.mkdir(parents=True, exist_ok=True)
+        heartbeat_path.write_text(
+            json.dumps({"agent": agent, "slot": slot, "pid": os.getpid(), "at": utc_stamp()},
+                       sort_keys=True),
+            encoding="utf-8",
+        )
+    except OSError:
+        pass
 
     cmd = command_for(agent, cwd, prompt_path)
     payload: dict[str, Any] = {

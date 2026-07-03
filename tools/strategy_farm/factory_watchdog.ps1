@@ -38,6 +38,17 @@ $stallDumpRequest = 'D:\QM\reports\state\STALLDUMP_REQUEST'
 $stallDumpDir = 'D:\QM\reports\state\worker_stalldump'
 . (Join-Path $PSScriptRoot 'qm_tasks.manifest.ps1')
 
+# FACTORY_OFF.flag master switch: owner/claude sets it to suspend all automation.
+# Watchdog must no-op immediately so it cannot resurrect the factory.
+$factoryOffFlagPath = 'D:\QM\strategy_farm\state\FACTORY_OFF.flag'
+if (Test-Path $factoryOffFlagPath) {
+    $offTs = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+    $offRecord = [ordered]@{ ts=$offTs; action='noop_factory_off_flag'; detail='FACTORY_OFF.flag present; watchdog suspended' } | ConvertTo-Json -Compress
+    try { Add-Content -Path $log -Value $offRecord -Encoding UTF8 } catch {}
+    Write-Output $offRecord
+    exit 0
+}
+
 $now    = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
 $action = 'none'
 $detail = ''

@@ -41,6 +41,10 @@ REGISTRY = Path(r"C:\QM\repo\framework\registry\ea_id_registry.csv")
 EVIDENCE = Path(r"D:\QM\reports\state\claude_sweep_enqueue_2026-06-10.json")
 SETFILE_RE = re.compile(r"_([A-Z][A-Z0-9.]{2,})_([A-Z0-9]+)_backtest\.set$")
 PRIORITY_EAS = {"QM5_1049", "QM5_1047", "QM5_1085", "QM5_1158"}
+_FACTORY_OFF_FLAG = Path(r"D:\QM\strategy_farm\state\FACTORY_OFF.flag")
+if _FACTORY_OFF_FLAG.exists():
+    print(json.dumps({"skipped": "FACTORY_OFF.flag set", "flag": str(_FACTORY_OFF_FLAG)}))
+    raise SystemExit(0)
 APPLY = "--apply" in sys.argv
 QUEUE_CEILING = 7000
 if "--queue-ceiling" in sys.argv:

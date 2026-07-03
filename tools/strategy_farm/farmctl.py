@@ -7499,6 +7499,9 @@ def pump(root: Path) -> dict[str, Any]:
     live_log freshness so re-runs while Codex is still going don't
     double-spawn.
     """
+    factory_off_flag = root / "state" / "FACTORY_OFF.flag"
+    if factory_off_flag.exists():
+        return {"pumped_at": utc_now(), "skipped": "FACTORY_OFF.flag set"}
     init_db(root)
     # Reap stuck codex procs FIRST — they hold the build proc-cap and silently
     # halt all builds (see _reap_stuck_codex_procs). Then deterministic artifact

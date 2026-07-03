@@ -20,6 +20,7 @@ LOG_DIR = Path(r"D:\QM\strategy_farm\logs")
 FARMCTL = REPO_ROOT / "tools" / "strategy_farm" / "farmctl.py"
 LOCK_PATH = LOG_DIR / "pump_task.lock"
 LOCK_STALE_SECONDS = 20 * 60
+FACTORY_OFF_FLAG = Path(r"D:\QM\strategy_farm\state\FACTORY_OFF.flag")
 
 
 def _console_python() -> str:
@@ -49,6 +50,8 @@ def _acquire_lock() -> int | None:
 
 
 def main() -> int:
+    if FACTORY_OFF_FLAG.exists():
+        return 0  # FACTORY_OFF.flag is set; pump is suspended
     os.environ.setdefault("QM_AGENT_ID", "controller")
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     lock_fd = _acquire_lock()

@@ -21,6 +21,14 @@ $logDir  = "D:\QM\reports\state"
 $logPath = Join-Path $logDir "reconcile_orphans.jsonl"
 if (-not (Test-Path -LiteralPath $logDir)) { New-Item -ItemType Directory -Force -Path $logDir | Out-Null }
 
+# FACTORY_OFF.flag master switch: no-op immediately to prevent factory resurrection.
+if (Test-Path 'D:\QM\strategy_farm\state\FACTORY_OFF.flag') {
+    $offLine = [ordered]@{ ts_utc = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ"); task = "reconcile_orphans"; ok = $true; orphans_stopped = 0; skipped = "FACTORY_OFF.flag" } | ConvertTo-Json -Compress
+    Add-Content -LiteralPath $logPath -Value $offLine -ErrorAction SilentlyContinue
+    Write-Output $offLine
+    exit 0
+}
+
 $ts = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
 $stopped = 0; $ok = $false; $err = ""
 try {

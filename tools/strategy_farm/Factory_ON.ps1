@@ -42,6 +42,17 @@ if (-not $pr.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
 $ErrorActionPreference = 'Continue'
 . (Join-Path $PSScriptRoot 'qm_tasks.manifest.ps1')
 
+$factoryOffFlagPath = 'D:\QM\strategy_farm\state\FACTORY_OFF.flag'
+$codexParallelPath  = 'D:\QM\strategy_farm\state\codex_parallel.txt'
+
+# Resurrection-vector tasks: disabled by Factory_OFF to prevent autonomous restart;
+# re-enabled here so the watchdog/auto-logon/reconciler resume normal operation.
+$QM_RESPAWN_TASKS = @(
+    'QM_StrategyFarm_FactoryWatchdog_15min',
+    'QM_StrategyFarm_FactoryON_AtLogon',
+    'QM_StrategyFarm_ReconcileOrphans_Hourly'
+)
+
 # Operator concurrency cap awareness (2026-06-22). disabled_terminals.txt removes
 # terminals (e.g. T8,T9,T10 for the RAM cap, commit 050829f9b) so the fleet is < 10.
 # Derive the expected worker count from it; otherwise the fixed "/10" + ">= 8"
@@ -62,9 +73,38 @@ Write-Host ("  QuantMechanica  -  FACTORY ON  (session {0}, visible)" -f $mySess
 Write-Host '=====================================================' -ForegroundColor Cyan
 Write-Host ''
 
+# 0. Remove FACTORY_OFF.flag and restore codex_parallel before starting anything.
+$codexParallelRestored = ''
+if (Test-Path $factoryOffFlagPath) {
+    try {
+        $flagData = Get-Content $factoryOffFlagPath -Raw | ConvertFrom-Json
+        $codexParallelRestored = $flagData.codex_parallel_before
+    } catch {}
+    Remove-Item -Path $factoryOffFlagPath -Force -ErrorAction SilentlyContinue
+    Write-Host ("  FACTORY_OFF.flag removed: {0}" -f $factoryOffFlagPath)
+} else {
+    Write-Host '  FACTORY_OFF.flag not present (was already removed or never set)'
+}
+if ($codexParallelRestored -and $codexParallelRestored -match '^\d+$') {
+    Set-Content -Path $codexParallelPath -Value $codexParallelRestored -Encoding ASCII -ErrorAction SilentlyContinue
+    Write-Host ("  codex_parallel restored: {0}" -f $codexParallelRestored)
+} else {
+    Write-Host '  codex_parallel: no saved value in flag; leaving current value'
+}
+Write-Host ''
+
 # 1. enable + (re)start the FACTORY + AI tasks
 Write-Host '  [FACTORY + AI] enable + start' -ForegroundColor Cyan
 foreach ($t in @($QM_FACTORY_TASKS + $QM_AI_TASKS)) {
+    Enable-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue | Out-Null
+    $st = (Get-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue).State
+    Write-Host ("    enabled : {0,-42} [{1}]" -f $t, $st)
+}
+Write-Host ''
+
+# 1b. Re-enable resurrection-vector tasks.
+Write-Host '  [RESPAWN TASKS] re-enable watchdog / auto-logon / reconciler' -ForegroundColor Cyan
+foreach ($t in $QM_RESPAWN_TASKS) {
     Enable-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue | Out-Null
     $st = (Get-ScheduledTask -TaskName $t -ErrorAction SilentlyContinue).State
     Write-Host ("    enabled : {0,-42} [{1}]" -f $t, $st)
@@ -147,6 +187,20 @@ if ($inMySession.Count -ge $expectWorkers) {
     Write-Host ("  PARTIAL START - only {0}/{1} daemons in your session. Re-run if needed." -f $inMySession.Count, $expectWorkers) -ForegroundColor Yellow
 }
 Write-Host ''
+
+# 8. Warn about disabled_terminals entries beyond the standard T8-T10 RAM cap.
+#    T8/T9/T10 are expected; entries outside that set suggest a temporary cap that
+#    was never cleaned up and may silently reduce throughput below the worker target.
+if (Test-Path $disabledTerminalsPath) {
+    $extraDisabled = @(Get-Content $disabledTerminalsPath -ErrorAction SilentlyContinue |
+        ForEach-Object { $_.Trim() } |
+        Where-Object { $_ -match '^T(?:[1-9]|10)$' -and $_ -notin @('T8','T9','T10') })
+    if ($extraDisabled.Count -gt 0) {
+        Write-Host ("  WARNING: disabled_terminals.txt contains {0} non-standard entr(y/ies): {1}" -f $extraDisabled.Count, ($extraDisabled -join ', ')) -ForegroundColor Yellow
+        Write-Host '           Review D:\QM\strategy_farm\state\disabled_terminals.txt if throughput is below target.' -ForegroundColor Yellow
+    }
+}
+
 Write-Host '  NOTE: The factory runs while this RDP session is alive (disconnect is OK).'
 Write-Host '        An explicit LOGOFF kills the session and stops the factory.'
 Write-Host '        Always-on tasks (dashboards/health/brief/alarm) keep running regardless.'
