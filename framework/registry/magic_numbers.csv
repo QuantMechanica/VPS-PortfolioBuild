@@ -14395,3 +14395,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13006,xti-nzd-rspread,0,XTIUSD.DWX,130060000,2026-07-03,Codex,active
 13006,xti-nzd-rspread,1,NZDUSD.DWX,130060001,2026-07-03,Codex,active
 13007,eurnzd-tsmom-pb,0,EURNZD.DWX,130070000,2026-07-03,Development,active
+13008,xng-aud-rspread,0,XNGUSD.DWX,130080000,2026-07-03,Codex,active
+13008,xng-aud-rspread,1,AUDUSD.DWX,130080001,2026-07-03,Codex,active
