@@ -68,13 +68,18 @@ def active_ea_ids(*, keep_obsolete: bool) -> set[int]:
     return ids
 
 
-def load_rows(*, keep_obsolete: bool) -> list[dict]:
-    """Return rows from magic_numbers.csv, sorted by (ea_id, slot)."""
+def load_rows(*, keep_obsolete: bool) -> tuple[list[dict], list[int]]:
+    """Return (rows, dropped_ea_ids) from magic_numbers.csv, sorted by (ea_id, slot).
+
+    dropped_ea_ids: distinct ea_ids whose EA dir is missing under framework/EAs/.
+    Only populated when keep_obsolete=False (the normal path).
+    """
     if not REGISTRY_CSV.exists():
         sys.exit(f"[FATAL] {REGISTRY_CSV} not found")
 
     active = active_ea_ids(keep_obsolete=keep_obsolete)
     rows: list[dict] = []
+    dropped: set[int] = set()
     with REGISTRY_CSV.open(encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
         for raw in reader:
@@ -91,6 +96,7 @@ def load_rows(*, keep_obsolete: bool) -> list[dict]:
             if status == "retired":
                 continue
             if active is not None and ea_id not in active:
+                dropped.add(ea_id)
                 continue
             rows.append({
                 "ea_id": ea_id,
@@ -100,7 +106,7 @@ def load_rows(*, keep_obsolete: bool) -> list[dict]:
             })
 
     rows.sort(key=lambda r: (r["ea_id"], r["slot"]))
-    return rows
+    return rows, sorted(dropped)
 
 
 def csv_sha256_upper() -> str:
@@ -303,18 +309,45 @@ def main() -> int:
     ap.add_argument("--dry-run", action="store_true", help="print result, do not write")
     ap.add_argument("--keep-obsolete", action="store_true",
                     help="include rows whose EA dir is under _obsolete_* (default: skip)")
+    ap.add_argument("--strict", action="store_true",
+                    help="exit 2 if any active-magic rows were dropped because their EA dir is missing")
     args = ap.parse_args()
 
-    rows = load_rows(keep_obsolete=args.keep_obsolete)
+    rows, dropped = load_rows(keep_obsolete=args.keep_obsolete)
+
+    if dropped:
+        print(
+            f"\n[WARNING] {len(dropped)} ea_id(s) in magic_numbers.csv dropped from resolver "
+            f"because their EA dir is missing under {EA_ROOT}:",
+            file=sys.stderr,
+        )
+        for ea_id in dropped:
+            print(f"  ea_id={ea_id}  (expected: {EA_ROOT}/QM5_{ea_id}_*)", file=sys.stderr)
+        print(
+            "[WARNING] Run update_magic_resolver.py from the canonical checkout "
+            "(C:/QM/repo) where framework/EAs/ is fully materialised, "
+            "or investigate whether the EA dir was deleted without retiring the magic.\n",
+            file=sys.stderr,
+        )
+
     content = render_mqh(rows)
 
     if args.dry_run:
         sys.stdout.write(content)
-        sys.stderr.write(f"\n[dry-run] {len(rows)} rows, sha={csv_sha256_upper()[:16]}...\n")
+        sys.stderr.write(f"\n[dry-run] {len(rows)} rows kept, {len(dropped)} dropped, "
+                         f"sha={csv_sha256_upper()[:16]}...\n")
+        if args.strict and dropped:
+            sys.stderr.write(f"[strict] {len(dropped)} rows dropped — exit 2\n")
+            return 2
         return 0
 
     RESOLVER_MQH.write_text(content, encoding="utf-8", newline="\n")
-    print(f"[OK] wrote {RESOLVER_MQH.relative_to(REPO_ROOT)} — {len(rows)} rows, sha={csv_sha256_upper()[:16]}...")
+    print(f"[OK] wrote {RESOLVER_MQH.relative_to(REPO_ROOT)} — "
+          f"{len(rows)} rows kept, {len(dropped)} dropped, sha={csv_sha256_upper()[:16]}...")
+
+    if args.strict and dropped:
+        print(f"[strict] {len(dropped)} ea_id(s) dropped — exit 2", file=sys.stderr)
+        return 2
     return 0
 
 

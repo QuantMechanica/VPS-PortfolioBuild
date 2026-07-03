@@ -2477,7 +2477,23 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
             except Exception:
                 pass
         if not is_exploration and not skip_prescreen and not item_payload.get("p2_prescreen_done"):
-            from_date, to_date = _p2_prescreen_dates(to_year)
+            # Seasonal/calendar/month strategies need a FULL-YEAR prescreen window:
+            # H2-only probe misses Apr-Jun seasons entirely (12917 lesson, 2026-07-03).
+            # Check strategy_type_flags in payload or card frontmatter.
+            _stf = str(item_payload.get("strategy_type_flags") or "").lower()
+            if not _stf:
+                try:
+                    _card_p = item_payload.get("card_path") or ""
+                    if _card_p:
+                        _fm = parse_card_frontmatter(Path(_card_p))
+                        _stf_raw = _fm.get("strategy_type_flags") or []
+                        _stf = (" ".join(_stf_raw) if isinstance(_stf_raw, list) else str(_stf_raw)).lower()
+                except Exception:
+                    pass
+            if any(f in _stf for f in ("calendar", "season", "month")):
+                from_date, to_date = f"{to_year}.01.01", f"{to_year}.12.31"
+            else:
+                from_date, to_date = _p2_prescreen_dates(to_year)
             n_runs = "1"
             p2_run_stage = "prescreen"
             timeout_seconds = P2_PRESCREEN_TIMEOUT_SECONDS
@@ -3605,6 +3621,39 @@ def _detect_active_age_timeout(con: sqlite3.Connection) -> list[dict[str, Any]]:
     return flagged
 
 
+_WORKLOAD_SCALED_PHASES = frozenset({"Q05", "Q06", "Q07"})
+# Calibration reference for timeout scaling: 8 years of history, 3 seeds.
+# XAU Q07 with full 2009-2026 history (17yr) + 5 seeds → scale=3.54 → 425min.
+_TIMEOUT_SCALE_REF_YEARS: float = 8.0
+_TIMEOUT_SCALE_REF_SEEDS: float = 3.0
+_TIMEOUT_SCALE_CAP_MULTIPLIER: int = 4  # never more than 4× base
+
+
+def _scale_timeout_for_workload(base_min: int, payload: dict[str, Any], phase: str) -> int:
+    """Return a workload-scaled timeout for Q05/Q06/Q07.
+
+    Factors: date_range_years (from full_history_from payload key) and seed_count
+    (Q07 always uses 5 seeds; Q05/Q06 use 1). Floors at base_min, caps at
+    base_min * _TIMEOUT_SCALE_CAP_MULTIPLIER.
+    """
+    full_history_from = str(payload.get("full_history_from") or "").strip()
+    current_year = 2026
+    if full_history_from:
+        try:
+            start_year = int(full_history_from.split(".")[0])
+            date_range_years = max(1.0, float(current_year - start_year))
+        except (ValueError, IndexError):
+            date_range_years = _TIMEOUT_SCALE_REF_YEARS
+    else:
+        date_range_years = _TIMEOUT_SCALE_REF_YEARS
+
+    seeds = 5 if phase == "Q07" else 1
+    year_factor = date_range_years / _TIMEOUT_SCALE_REF_YEARS
+    seed_factor = seeds / _TIMEOUT_SCALE_REF_SEEDS
+    scaled = int(base_min * year_factor * seed_factor)
+    return max(base_min, min(scaled, base_min * _TIMEOUT_SCALE_CAP_MULTIPLIER))
+
+
 def _active_timeout_min_for_work_item(phase: str, payload_json: str | None) -> int | None:
     timeout_min = PHASE_ACTIVE_TIMEOUT_MIN.get(str(phase or ""))
     if timeout_min is None:
@@ -3624,6 +3673,9 @@ def _active_timeout_min_for_work_item(phase: str, payload_json: str | None) -> i
         and str(payload.get("portfolio_scope") or "").lower() == "basket"
     ):
         return max(int(timeout_min), BASKET_Q02_ACTIVE_TIMEOUT_MIN)
+    phase_upper = str(phase or "").upper()
+    if phase_upper in _WORKLOAD_SCALED_PHASES:
+        timeout_min = _scale_timeout_for_workload(int(timeout_min), payload, phase_upper)
     return int(timeout_min)
 
 

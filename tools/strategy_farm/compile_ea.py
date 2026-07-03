@@ -50,6 +50,7 @@ REPORT_ROOT = Path("D:/QM/reports/compile")
 
 VALIDATOR = REPO_ROOT / "tools" / "strategy_farm" / "validate_symbol_scope.py"
 MAGIC_REGISTRY = REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
+RESOLVER_MQH = REPO_ROOT / "framework" / "include" / "QM" / "QM_MagicResolver.mqh"
 
 
 def ea_id_registered(ea_label: str) -> tuple[bool, int | None]:
@@ -65,6 +66,25 @@ def ea_id_registered(ea_label: str) -> tuple[bool, int | None]:
     except OSError:
         return False, ea_id
     return bool(re.search(rf"(?m)^{ea_id},", text)), ea_id
+
+
+def magic_in_resolver(ea_id: int) -> bool:
+    """Check that ea_id is baked into the QM_MAGIC_REG_EA_ID array in QM_MagicResolver.mqh.
+
+    update_magic_resolver.py filters rows by active EA dirs, so a stale resolver
+    (not regenerated since an EA's dir was created) will not contain this ea_id even
+    if the CSV has the row — meaning the compiled .ex5 will have QM_MagicRegistered()
+    return false and the EA will abort at OnInit.
+    """
+    try:
+        text = RESOLVER_MQH.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return False
+    m = re.search(r"QM_MAGIC_REG_EA_ID\[[^\]]*\]\s*=\s*\{([^}]*)\}", text, re.DOTALL)
+    if not m:
+        return False
+    ea_ids_str = m.group(1)
+    return ea_id in {int(x.strip()) for x in ea_ids_str.split(",") if x.strip().lstrip("-").isdigit()}
 
 
 @dataclass
@@ -215,6 +235,24 @@ def compile_ea(ea_label: str, force: bool = False, skip_validator: bool = False)
             ea_label=ea_label, verdict="MAGIC_NOT_REGISTERED",
             reason=(f"ea_id {ea_id_num} not in framework/registry/magic_numbers.csv; "
                     f"register the magic before compiling"),
+            mq5_mtime_utc=file_mtime_iso(mq5),
+            symbol_scope_verdict=scope_verdict,
+            timestamp_utc=utc_now_iso(),
+            elapsed_seconds=round((dt.datetime.now(dt.UTC) - started).total_seconds(), 2),
+        )
+        write_result(r)
+        return r
+
+    # Verify the regenerated QM_MagicResolver.mqh actually bakes this EA's magic.
+    # update_magic_resolver.py filters by active EA dirs; a stale resolver (not yet
+    # regenerated since this EA's dir was created) will compile with
+    # QM_MagicRegistered() returning false, making the .ex5 non-functional at OnInit.
+    if ea_id_num is not None and not magic_in_resolver(ea_id_num):
+        r = CompileResult(
+            ea_label=ea_label, verdict="MAGIC_NOT_IN_RESOLVER",
+            reason=(f"ea_id {ea_id_num} is in magic_numbers.csv but NOT baked into "
+                    f"framework/include/QM/QM_MagicResolver.mqh — run "
+                    f"python framework/scripts/update_magic_resolver.py first"),
             mq5_mtime_utc=file_mtime_iso(mq5),
             symbol_scope_verdict=scope_verdict,
             timestamp_utc=utc_now_iso(),
