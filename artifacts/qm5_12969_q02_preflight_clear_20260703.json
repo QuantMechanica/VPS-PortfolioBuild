@@ -1,0 +1,79 @@
+{
+  "date": "2026-07-03",
+  "branch": "agents/board-advisor",
+  "mission_outcome": "fallback_existing_forex_card_advanced_to_clean_q02_pending",
+  "cointegration_precheck": {
+    "source_checked": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_66_pair_survivors": [
+      {
+        "ea_id": "QM5_12533",
+        "pair": "EURJPY~GBPJPY",
+        "current_state": "Q02_PASS_Q04_FAIL",
+        "q02_blocked": false
+      },
+      {
+        "ea_id": "QM5_12532",
+        "pair": "AUDUSD~NZDUSD",
+        "current_state": "Q02_PASS_Q04_PASS_Q05_FAIL",
+        "q02_blocked": false
+      }
+    ],
+    "current_nonduplicate_cointegration_tail": {
+      "ea_id": "QM5_12978",
+      "pair": "GBPUSD~USDCAD",
+      "state": "Q02_PASS_Q03_PASS_Q04_FAIL",
+      "decision": "do_not_requeue_strategy_fail"
+    },
+    "unbuilt_strict_cointegration_pair_found": false
+  },
+  "selected_existing_fx_card": {
+    "ea_id": "QM5_12969",
+    "slug": "usdjpy-gotobi-nakane-fix",
+    "symbol": "USDJPY.DWX",
+    "timeframe": "M30",
+    "source": "Ito and Yamada 2017 Tokyo/Nakane fixing anomaly; approved card in strategy-seeds/cards/approved/QM5_12969_usdjpy-gotobi-nakane-fix_card.md",
+    "reason": "Approved low-frequency structural FX fix-flow card; no unbuilt strict cointegration pair remained, and 12532/12533 were not Q02-blocked."
+  },
+  "queue_action": {
+    "work_item_id": "8ba695a4-4ad7-4002-93d9-b97b2a974e76",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "symbol": "USDJPY.DWX",
+    "setfile": "C:/QM/repo/framework/EAs/QM5_12969_usdjpy-gotobi-nakane-fix/sets/QM5_12969_usdjpy-gotobi-nakane-fix_USDJPY.DWX_M30_backtest.set",
+    "row_backup": "D:/QM/strategy_farm/state/backups/qm5_12969_q02_work_item_before_preflight_clear_20260703T090557Z.json",
+    "cleared_stale_evidence_path": "D:/QM/strategy_farm/reports/work_items/8ba695a4-4ad7-4002-93d9-b97b2a974e76/QM5_12969/Q02/preflight_failure.json",
+    "stale_reason": "ea_dir_missing from non-canonical C:/QM/worktrees/codex-orchestration-1 checkout",
+    "canonical_preflight_after_repair": "PASS",
+    "priority_track": true,
+    "queue_rank_after_repair": "top pending Q02 by terminal_worker priority ordering",
+    "duplicate_rows_created": false
+  },
+  "validations": {
+    "build_check_skip_compile": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 16,
+      "report": "D:/QM/reports/framework/21/build_check_20260703_090405.json"
+    },
+    "validate_symbol_scope": "SINGLE_SYMBOL_OK",
+    "validate_spec_doc": "PASS",
+    "terminal_worker_preflight_helper": "preflight_failure=null",
+    "risk_setfile": "RISK_FIXED=1000,RISK_PERCENT=0"
+  },
+  "backtest_cpu_ceiling_stop": {
+    "manual_mt5_backtest_launched": false,
+    "reason": "Paced fleet already had six active factory MT5 terminals at verification; Q02 remains delegated to workers.",
+    "observed_factory_terminals": ["T1", "T2", "T3", "T4", "T5", "T7"],
+    "observed_at_utc": "2026-07-03T09:06:45+00:00"
+  },
+  "safety": {
+    "t_live_action_taken": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
