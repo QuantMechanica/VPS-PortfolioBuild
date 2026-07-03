@@ -25,9 +25,11 @@ uri: https://www.eia.gov/workingpapers/pdf/oil_exchangerates_61317.pdf
 
 ## Mining Scope
 
-One card was extracted for a structural commodity/FX relative-value sleeve:
+Two cards were extracted for structural commodity/FX relative-value sleeves:
 
 - `wti-audnzd-mr`: XTIUSD.DWX/AUDUSD.DWX/NZDUSD.DWX D1 oil-in-antipodean-FX
+  z-score mean-reversion basket.
+- `xti-nzd-rspread`: XTIUSD.DWX/NZDUSD.DWX D1 oil-versus-NZD residual-spread
   z-score mean-reversion basket.
 
 ## Evidence Notes
@@ -39,15 +41,15 @@ One card was extracted for a structural commodity/FX relative-value sleeve:
 - The RBNZ source is used only as a reputable central-bank supplement for New
   Zealand commodity-price and monetary-policy context. No RBNZ data is consumed
   at runtime.
-- The QM implementation does not ingest EIA, RBA, RBNZ, commodity-index,
+- The QM implementations do not ingest EIA, RBA, RBNZ, commodity-index,
   futures-curve, rate, macro, or external FX data at runtime. It uses the source
   packet only for structural lineage and trades Darwinex MT5-native D1 OHLC for
-  `XTIUSD.DWX`, `AUDUSD.DWX`, and `NZDUSD.DWX`.
+  `XTIUSD.DWX`, `AUDUSD.DWX`, and/or `NZDUSD.DWX`.
 
 ## Guardrails
 
 - No external data calls in the EA.
 - No ML, no adaptive parameter fitting, no grid, no martingale.
-- Three-leg basket only, one package at a time.
+- Basket packages only, one package at a time.
 - Backtests use RISK_FIXED setfiles. Live, T_Live, AutoTrading, deploy
   manifests, and portfolio gates are out of scope.
