@@ -25,8 +25,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02
-last_updated: 2026-06-30
+pipeline_phase: Q07
+last_updated: 2026-07-03
 g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-requested in-house 66-pair FX scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS AUDUSD.DWX and EURJPY.DWX data exist in scan universe; R4 PASS no ML/grid/martingale. Marked very high-risk because OOS net Sharpe was negative."
 expected_pf: 0.94
 expected_dd_pct: 35.0
@@ -185,13 +185,19 @@ on 2026-06-29 and auto-enqueued one logical basket work item,
 `QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1`. No manual tester run was launched;
 the paced farm owns the first Q02 tester pass.
 
-Current Q02 handoff: the first two Q02 rows ended as infra failures. Pending
-work item `4dbf18f1-f8c0-4665-beea-778c9ad960c2` carries the EUR-accounting
-repair payload, including `RISK_FIXED=1000`, `RISK_PERCENT=0`,
-`PORTFOLIO_WEIGHT=1`, `timeout_min=120`, and `priority_track=true`.
+Current funnel state: the EUR-accounting Q02 repair passed, then Q03, Q04,
+Q05, and Q06 all passed on the logical basket. Q07 is active under paced
+factory ownership as work item `fc554e0c-e66e-486a-a83d-c7301e67c615` on
+`QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1`; no duplicate Q07/Q08 enqueue was
+made while the farm has five active tester work items.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-06-29 | initial rank-25 next-unbuilt FX cointegration basket card | G0 | APPROVED |
 | v1-q02 | 2026-06-29 | build recorded; logical basket Q02 auto-enqueued | Q02 | ENQUEUED |
-| v1-q02-eur-accounting | 2026-06-30 | EUR tester accounting and enriched pending Q02 payload | Q02 | PENDING |
+| v1-q02-eur-accounting | 2026-06-30 | EUR tester accounting and enriched pending Q02 payload | Q02 | PASS `4dbf18f1-f8c0-4665-beea-778c9ad960c2` |
+| v1-q03 | 2026-07-01 | automatic post-Q02 progression | Q03 | PASS `7a11f24a-091f-49dd-983a-3dc8c7cef456` |
+| v1-q04 | 2026-07-01 | walk-forward logical basket aggregate | Q04 | PASS `9546f319-dc02-4249-b6ac-0c1bb64fec4f` |
+| v1-q05 | 2026-07-03 | stress medium logical basket aggregate | Q05 | PASS `1c0405e7-16d3-40e6-b884-6be1b504dc4c` |
+| v1-q06 | 2026-07-03 | stress harsh logical basket aggregate | Q06 | PASS `a60892f1-0059-47e8-83b2-39120ee15478` |
+| v1-q07 | 2026-07-03 | statistical validation active under paced factory | Q07 | ACTIVE `fc554e0c-e66e-486a-a83d-c7301e67c615` |

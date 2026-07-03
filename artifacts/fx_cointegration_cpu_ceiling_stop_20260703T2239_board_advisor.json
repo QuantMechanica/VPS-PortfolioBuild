@@ -1,0 +1,90 @@
+{
+  "date_local": "2026-07-03",
+  "observed_at_local": "2026-07-03T22:38:53+02:00",
+  "branch": "agents/board-advisor",
+  "mission": "forex_market_neutral_cointegration_portfolio_growth",
+  "action": "cpu_ceiling_stop_after_current_fx_cointegration_verification",
+  "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+  "method_source": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+  "strict_scan_survivors": [
+    {
+      "pair": "EURJPY~GBPJPY",
+      "ea": "QM5_12533",
+      "current_state": "Q02_PASS_Q04_FAIL",
+      "q02_blocked": false
+    },
+    {
+      "pair": "AUDUSD~NZDUSD",
+      "ea": "QM5_12532",
+      "current_state": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "q02_blocked": false
+    }
+  ],
+  "registered_edgelab_cointegration_state": {
+    "active_registered_edge_lab_cointegration_rows": 31,
+    "active_registered_edge_lab_cointegration_ea_dirs_found": 31,
+    "unbuilt_registered_pair_found": false
+  },
+  "current_nonduplicate_fx_continuation": {
+    "ea": "QM5_12778",
+    "pair": "AUDUSD~EURJPY",
+    "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "state": "Q02_PASS_Q03_PASS_Q04_PASS_Q05_PASS_Q06_PASS_Q07_ACTIVE",
+    "active_q07_work_item": "fc554e0c-e66e-486a-a83d-c7301e67c615"
+  },
+  "active_factory_work_items": [
+    {
+      "terminal": "T4",
+      "ea": "QM5_1061",
+      "phase": "Q02",
+      "symbol": "GDAXI.DWX",
+      "work_item": "4f2c34cf-20aa-4fed-afd2-25ddd8343423"
+    },
+    {
+      "terminal": "T3",
+      "ea": "QM5_10692",
+      "phase": "Q06",
+      "symbol": "NDX.DWX",
+      "work_item": "9d03adb6-1d07-40cb-b1e7-cd9589e38da7"
+    },
+    {
+      "terminal": "T1",
+      "ea": "QM5_12778",
+      "phase": "Q07",
+      "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+      "work_item": "fc554e0c-e66e-486a-a83d-c7301e67c615"
+    },
+    {
+      "terminal": "T5",
+      "ea": "QM5_12989",
+      "phase": "Q08",
+      "symbol": "XAUUSD.DWX",
+      "work_item": "14c59fc5-3fa9-4625-abb7-3644fb72ff31"
+    },
+    {
+      "terminal": "T2",
+      "ea": "QM5_9121",
+      "phase": "Q02",
+      "symbol": "XTIUSD.DWX",
+      "work_item": "868b8c3c-6e14-44b7-af9c-a91070b3541d"
+    }
+  ],
+  "queue_mutation_this_turn": "none",
+  "card_metadata_updated_this_turn": [
+    "strategy-seeds/cards/approved/QM5_12778_edgelab-audusd-eurjpy-cointegration_card.md",
+    "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/docs/strategy_card.md",
+    "artifacts/cards_approved/QM5_12778_edgelab-audusd-eurjpy-cointegration.md"
+  ],
+  "reason": "The two strict scan survivors are not Q02-blocked, every active registered EdgeLab cointegration row already has an EA folder, QM5_12778 has advanced to active Q07 as the current nonduplicate FX continuation, and the farm has five active tester work items. The mission says to stop when the backtest CPU ceiling is hit.",
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "new_backtest_enqueued_this_turn": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
