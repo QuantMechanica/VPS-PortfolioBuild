@@ -14331,3 +14331,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9575,pring-kst-monthly,11,WS30.DWX,95750011,2026-07-03,Codex,active
 9575,pring-kst-monthly,12,UK100.DWX,95750012,2026-07-03,Codex,active
 12977,wti-propane-draw,0,XTIUSD.DWX,129770000,2026-07-03,Codex,active
+9503,williams-ocr-extension-h4,0,EURUSD.DWX,95030000,2026-07-03,Codex,active
+9503,williams-ocr-extension-h4,1,GBPUSD.DWX,95030001,2026-07-03,Codex,active
+9503,williams-ocr-extension-h4,2,USDJPY.DWX,95030002,2026-07-03,Codex,active
+9503,williams-ocr-extension-h4,3,AUDUSD.DWX,95030003,2026-07-03,Codex,active
+9503,williams-ocr-extension-h4,4,USDCAD.DWX,95030004,2026-07-03,Codex,active
+9503,williams-ocr-extension-h4,5,USDCHF.DWX,95030005,2026-07-03,Codex,active
+9503,williams-ocr-extension-h4,6,NZDUSD.DWX,95030006,2026-07-03,Codex,active
+9503,williams-ocr-extension-h4,7,XAUUSD.DWX,95030007,2026-07-03,Codex,active
+9503,williams-ocr-extension-h4,8,XTIUSD.DWX,95030008,2026-07-03,Codex,active
+9503,williams-ocr-extension-h4,9,GDAXI.DWX,95030009,2026-07-03,Codex,active
+9503,williams-ocr-extension-h4,10,NDX.DWX,95030010,2026-07-03,Codex,active
+9503,williams-ocr-extension-h4,11,WS30.DWX,95030011,2026-07-03,Codex,active
+9503,williams-ocr-extension-h4,12,UK100.DWX,95030012,2026-07-03,Codex,active
