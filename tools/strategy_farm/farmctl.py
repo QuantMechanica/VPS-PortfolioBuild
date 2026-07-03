@@ -36,7 +36,11 @@ except ModuleNotFoundError:
 DEFAULT_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
 DB_REL = Path("state") / "farm_state.sqlite"
 REPO_ROOT = Path(__file__).resolve().parents[2]
-FRAMEWORK_EAS_DIR = REPO_ROOT / "framework" / "EAs"
+# EA dirs are fully materialized ONLY in the canonical checkout; worktrees carry a
+# small committed subset, so script-relative resolution from a worktree misclassifies
+# ~92% of EAs as ea_dir_missing (2026-07-03 mass false-invalidation, 5167 items).
+CANONICAL_REPO_ROOT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo"))
+FRAMEWORK_EAS_DIR = CANONICAL_REPO_ROOT / "framework" / "EAs"
 P5_CALIBRATION_JSON = REPO_ROOT / "framework" / "calibrations" / "VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json"
 MT5_ROOT = Path(os.environ.get("QM_MT5_ROOT", r"D:\QM\mt5"))
 PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
@@ -91,6 +95,70 @@ PHASE_ACTIVE_TIMEOUT_MIN = {
     "P7": 30,
     "P8": 30,
 }
+
+
+# ---------------------------------------------------------------------------
+# LAYER 2 — Canonical self-check hard-abort
+# ---------------------------------------------------------------------------
+
+def _require_canonical_checkout() -> None:
+    """Abort if farmctl is running from a worktree instead of the canonical checkout.
+
+    State-mutating subcommands (repair, pump, sweep-enqueue, requeue) must run from
+    C:/QM/repo to ensure FRAMEWORK_EAS_DIR resolves to the full EA tree.
+    Set QM_ALLOW_NONCANONICAL=1 to skip this check for deliberate testing.
+    """
+    if os.environ.get("QM_ALLOW_NONCANONICAL", "").strip() == "1":
+        return
+    script_path = Path(__file__).resolve()
+    canonical = Path(r"C:\QM\repo")
+    try:
+        script_path.relative_to(canonical)
+    except ValueError:
+        print(
+            f"\n[FATAL] farmctl is running from a non-canonical path:\n"
+            f"  {script_path}\n"
+            f"State-mutating subcommands must run from {canonical}.\n"
+            f"This guard prevents false ea_dir_missing invalidation (2026-07-03 incident).\n"
+            f"Set QM_ALLOW_NONCANONICAL=1 to override for deliberate tests.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+# ---------------------------------------------------------------------------
+# LAYER 3 — Mass-invalidation circuit breaker
+# ---------------------------------------------------------------------------
+
+_MASS_INVALIDATION_LIMIT = 200
+
+
+def _check_mass_invalidation_circuit_breaker(conn: sqlite3.Connection, count: int, context: str) -> None:
+    """Abort if a single run is about to invalidate more than the circuit-breaker limit.
+
+    Writes a health alarm to health_alarms.log and exits nonzero.
+    The 2026-07-03 incident invalidated 5167 items from a worktree run.
+    """
+    if os.environ.get("QM_ALLOW_NONCANONICAL", "").strip() == "1":
+        return
+    if count <= _MASS_INVALIDATION_LIMIT:
+        return
+    alarm_path = DEFAULT_ROOT / "state" / "health_alarms.log"
+    import datetime as _dt
+    msg = (
+        f"{_dt.datetime.now(_dt.timezone.utc).isoformat()} class=mass_invalidation "
+        f"count={count} limit={_MASS_INVALIDATION_LIMIT} context={context}\n"
+    )
+    with open(alarm_path, "a", encoding="utf-8") as f:
+        f.write(msg)
+    print(
+        f"\n[CIRCUIT BREAKER] About to invalidate {count} work_items (limit={_MASS_INVALIDATION_LIMIT}).\n"
+        f"Context: {context}\n"
+        f"Alarm written to {alarm_path}\n"
+        f"Set QM_ALLOW_NONCANONICAL=1 to skip circuit-breaker check (use for bulk repairs only).",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 
 def is_factory_terminal_name(value: Any) -> bool:
@@ -1745,7 +1813,7 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         }
 
     # Resolve full EA dir name (with slug) for the -EALabel arg
-    ea_root_dir = REPO_ROOT / "framework" / "EAs"
+    ea_root_dir = FRAMEWORK_EAS_DIR
     candidates = [p for p in ea_root_dir.glob(f"{ea_id}_*") if p.is_dir()]
     if not candidates:
         return {"spawned": False, "reason": f"no EA dir for {ea_id}"}
@@ -6539,7 +6607,7 @@ def _find_ea_setfiles(ea_id: str, phase: str) -> list[tuple[str, str]]:
     EAs are the norm). For P3+, restrict to the surviving_symbols supplied
     by the caller (filter applied externally).
     """
-    ea_root = REPO_ROOT / "framework" / "EAs"
+    ea_root = FRAMEWORK_EAS_DIR
     candidates = [p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir()]
     if not candidates:
         return []
@@ -6558,7 +6626,7 @@ def _find_ea_setfiles(ea_id: str, phase: str) -> list[tuple[str, str]]:
 
 
 def _find_single_ea_dir(ea_id: str) -> Path | None:
-    ea_root = REPO_ROOT / "framework" / "EAs"
+    ea_root = FRAMEWORK_EAS_DIR
     candidates = sorted(p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir())
     if len(candidates) != 1:
         return None
@@ -6606,7 +6674,7 @@ def _find_basket_setfile(ea_id: str, manifest: dict[str, Any]) -> tuple[str, str
 
 def _ea_build_artifact_failure(ea_id: str) -> dict[str, Any] | None:
     """Return why an EA is not runnable before creating MT5 work_items."""
-    ea_root = REPO_ROOT / "framework" / "EAs"
+    ea_root = FRAMEWORK_EAS_DIR
     candidates = sorted(p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir())
     if not candidates:
         return {"reason": "ea_dir_missing", "detail": str(ea_root / f"{ea_id}_*")}
@@ -6753,7 +6821,7 @@ def _ensure_p2_target_setfiles(root: Path, ea_id: str) -> list[tuple[str, str]]:
     if not existing or not target_symbols:
         return existing
 
-    ea_root = REPO_ROOT / "framework" / "EAs"
+    ea_root = FRAMEWORK_EAS_DIR
     candidates = [p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir()]
     if not candidates:
         return existing
@@ -7240,7 +7308,7 @@ def _detect_ea_period(ea_id: str) -> str:
     Fix: match ONLY canonical MT5 timeframe tokens. Order matters
     (longest first) so H4 doesn't get partial-matched by H.
     """
-    ea_root = REPO_ROOT / "framework" / "EAs"
+    ea_root = FRAMEWORK_EAS_DIR
     candidates = [p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir()]
     if not candidates:
         return "H1"
@@ -8849,6 +8917,7 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "pipeline":
         print_json(pipeline_view(root))
     elif args.command == "pump":
+        _require_canonical_checkout()
         print_json(pump(root))
     elif args.command == "health":
         try:
@@ -8859,6 +8928,7 @@ def main(argv: list[str] | None = None) -> int:
             from health import run_all as _health_run_all
         print_json(_health_run_all())
     elif args.command == "repair":
+        _require_canonical_checkout()
         try:
             from repair import run_all as _repair_run_all
         except ImportError:
@@ -8869,6 +8939,7 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "work-items":
         print_json(work_items_view(root, status_filter=args.status, ea_filter=args.ea))
     elif args.command == "backfill-work-items":
+        _require_canonical_checkout()
         print_json(backfill_work_items(root))
     elif args.command == "next":
         print_json(next_action(root))
@@ -8903,6 +8974,7 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "reconcile-mt5":
         print_json(reconcile_mt5_slots(root, fix_workers=args.fix_workers, fix_orphan_terminals=args.fix_orphan_terminals))
     elif args.command == "enqueue-backtest":
+        _require_canonical_checkout()
         if args.ea:
             print_json(enqueue_cascade_backtest_for_ea(root, args.ea, args.phase))
         elif args.review_task_id:

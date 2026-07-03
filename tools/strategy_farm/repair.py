@@ -458,7 +458,8 @@ def _pending_work_item_artifact_failure(row: sqlite3.Row) -> dict | None:
         return {"reason": "setfile_missing", "detail": str(setfile_path)}
 
     ea_id = str(row["ea_id"] or "")
-    ea_root = REPO_ROOT / "framework" / "EAs"
+    import farmctl as _farmctl
+    ea_root = _farmctl.FRAMEWORK_EAS_DIR
     candidates = sorted(p for p in ea_root.glob(f"{ea_id}_*") if p.is_dir())
     if not candidates:
         return {"reason": "ea_dir_missing", "detail": str(ea_root / f"{ea_id}_*")}
@@ -483,6 +484,16 @@ def repair_pending_unclaimable_work_items(con) -> list[dict]:
         """
     ).fetchall()
     now = _utc_now()
+
+    # LAYER 3 — mass-invalidation circuit breaker: pre-scan before committing any
+    # mutations. The 2026-07-03 incident invalidated 5167 items from a worktree
+    # run where FRAMEWORK_EAS_DIR resolved to only ~225 of 2657 EA dirs.
+    import farmctl as _farmctl
+    would_invalidate = sum(1 for r in rows if _pending_work_item_artifact_failure(r))
+    _farmctl._check_mass_invalidation_circuit_breaker(
+        con, would_invalidate, "repair_pending_unclaimable_work_items"
+    )
+
     for r in rows:
         failure = _pending_work_item_artifact_failure(r)
         if not failure:
@@ -535,7 +546,8 @@ def repair_pending_unclaimable_work_items(con) -> list[dict]:
 
 
 def _ea_dir_for_id(ea_id: str) -> Path | None:
-    candidates = sorted(p for p in (REPO_ROOT / "framework" / "EAs").glob(f"{ea_id}_*") if p.is_dir())
+    import farmctl as _farmctl
+    candidates = sorted(p for p in _farmctl.FRAMEWORK_EAS_DIR.glob(f"{ea_id}_*") if p.is_dir())
     if len(candidates) != 1:
         return None
     return candidates[0]
