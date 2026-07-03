@@ -1,19 +1,19 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
-; ea_id:        12840
-; ea_slug:      xti-xng-rspread
+; ea_id:        12999
+; ea_slug:      xbr-xng-rspr
 ; ea_version:   v5.0
-; set_version:  s20260701-001
-; symbol:       QM5_12840_XTI_XNG_RSPREAD_D1
-; host_symbol:  XTIUSD.DWX
+; set_version:  s20260703-001
+; symbol:       QM5_12999_XBR_XNG_RSPREAD_D1
+; host_symbol:  XBRUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d25b8a4a9d42f28a3cffde1c8418f5661b129e016753a8952d158a419bcb7328
+; build_hash:   fe269770f28f92450b0633efc03172a74414e6a249fef5b8a70476957a11de2a
 ; author:       Development
-; date:         2026-07-01
+; date:         2026-07-03
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000
@@ -46,6 +46,6 @@ strategy_exit_z=0.4
 strategy_atr_period_d1=20
 strategy_atr_sl_mult=3.0
 strategy_max_hold_days=25
-strategy_xti_max_spread_pts=1000
+strategy_xbr_max_spread_pts=1200
 strategy_xng_max_spread_pts=2500
 strategy_deviation_points=20

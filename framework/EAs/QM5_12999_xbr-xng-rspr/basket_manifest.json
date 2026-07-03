@@ -1,12 +1,12 @@
 {
-  "logical_symbol": "QM5_12840_XTI_XNG_RSPREAD_D1",
-  "host_symbol": "XTIUSD.DWX",
+  "logical_symbol": "QM5_12999_XBR_XNG_RSPREAD_D1",
+  "host_symbol": "XBRUSD.DWX",
   "host_timeframe": "D1",
   "basket_symbols": [
-    "XTIUSD.DWX",
+    "XBRUSD.DWX",
     "XNGUSD.DWX"
   ],
   "notes": [
-    "Two-leg XTI/XNG energy return-spread reversion basket from the approved SRC05_S01_XTI_XNG_RSPREAD_2026 card. The EA runs from the XTIUSD.DWX host setfile and reads both D1 close series to compute log-return spread over a fixed lookback. Q02 must evaluate the logical basket, not the standalone legs."
+    "Two-leg XBR/XNG energy return-spread reversion basket from the approved EIA-OILGAS-RSPREAD-2026_XBR_XNG_RSPR card. The EA runs from the XBRUSD.DWX host setfile and reads both D1 close series to compute log-return spread over a fixed lookback. Q02 must evaluate the logical basket, not the standalone legs."
   ]
 }
