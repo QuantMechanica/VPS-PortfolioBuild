@@ -25,7 +25,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: BUILD
+pipeline_phase: DEAD
 last_updated: 2026-07-03
 g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-requested in-house 66-pair FX scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS GBPUSD.DWX and USDCAD.DWX data exist in scan universe; R4 PASS no ML/grid/martingale."
 expected_pf: 1.10
@@ -168,3 +168,6 @@ gates.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-03 | initial full-scan top-unbuilt FX cointegration basket card | G0 | APPROVED |
+| v2 | 2026-07-03 | compiled basket EA and logical basket Q02 enqueued as work item b1656e8e-d9dc-4a7b-b5a2-ba8e3ff0150b | Q02 | PASS |
+| v3 | 2026-07-03 | automatic Q03 completed on the same logical basket as work item 30907ff5-af52-448b-81b4-1e008539602f | Q03 | PASS |
+| v4 | 2026-07-03 | Q04 completed on logical basket work item bf98a2c5-0ed2-4410-abbe-7e66fe97e843; strategy failed before portfolio consideration | Q04 | FAIL |

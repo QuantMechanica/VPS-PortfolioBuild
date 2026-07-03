@@ -1,0 +1,109 @@
+{
+  "date_local": "2026-07-03",
+  "observed_at_local": "2026-07-03T14:47:11+02:00",
+  "branch": "agents/board-advisor",
+  "mission": "forex_market_neutral_cointegration_portfolio_growth",
+  "action": "cpu_ceiling_stop_after_current_fx_cointegration_triage",
+  "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+  "method_source": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+  "strict_scan_survivors": [
+    {
+      "pair": "EURJPY~GBPJPY",
+      "ea": "QM5_12533",
+      "current_state": "Q02_PASS_Q04_FAIL",
+      "q02_blocked": false,
+      "latest_terminal_state": "Q04 FAIL work_item ff2cb183-8269-4e63-abaf-27ba79afdb62"
+    },
+    {
+      "pair": "AUDUSD~NZDUSD",
+      "ea": "QM5_12532",
+      "current_state": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "q02_blocked": false,
+      "latest_terminal_state": "Q05 FAIL work_item 82cab3d1-bf05-4aa4-8278-86c8064b16e7"
+    }
+  ],
+  "approved_cointegration_card_build_map": {
+    "approved_cointegration_cards_checked": 15,
+    "approved_cointegration_ea_dirs_found": 15,
+    "unbuilt_approved_pair_found": false,
+    "result": "no approved EdgeLab cointegration card lacks an EA folder"
+  },
+  "current_nonduplicate_pair": {
+    "ea": "QM5_12978",
+    "pair": "GBPUSD~USDCAD",
+    "slug": "edgelab-gbpusd-usdcad-cointegration",
+    "selection_basis": "top unbuilt strict 66-pair rerun row when negative hedge ratios are retained",
+    "logical_symbol": "QM5_12978_GBPUSD_USDCAD_COINTEGRATION_D1",
+    "q02": {
+      "status": "done",
+      "verdict": "PASS",
+      "work_item": "b1656e8e-d9dc-4a7b-b5a2-ba8e3ff0150b",
+      "evidence_path": "D:/QM/reports/work_items/b1656e8e-d9dc-4a7b-b5a2-ba8e3ff0150b/QM5_12978/20260703_041103/summary.json"
+    },
+    "q03": {
+      "status": "done",
+      "verdict": "PASS",
+      "work_item": "30907ff5-af52-448b-81b4-1e008539602f",
+      "evidence_path": "D:/QM/reports/work_items/30907ff5-af52-448b-81b4-1e008539602f/QM5_12978/20260703_053040/summary.json"
+    },
+    "q04": {
+      "status": "done",
+      "verdict": "FAIL",
+      "work_item": "bf98a2c5-0ed2-4410-abbe-7e66fe97e843",
+      "evidence_path": "D:/QM/reports/work_items/bf98a2c5-0ed2-4410-abbe-7e66fe97e843/QM5_12978/Q04/QM5_12978_GBPUSD_USDCAD_COINTEGRATION_D1/aggregate.json"
+    },
+    "card_updates": [
+      "strategy-seeds/cards/approved/QM5_12978_edgelab-gbpusd-usdcad-cointegration_card.md",
+      "framework/EAs/QM5_12978_edgelab-gbpusd-usdcad-cointegration/docs/strategy_card.md",
+      "artifacts/cards_approved/QM5_12978_edgelab-gbpusd-usdcad-cointegration.md"
+    ]
+  },
+  "factory_state_at_stop": {
+    "active_work_item_count": 5,
+    "active_work_items": [
+      {
+        "terminal": "T3",
+        "ea": "QM5_10808",
+        "phase": "Q05",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T5",
+        "ea": "QM5_10854",
+        "phase": "Q05",
+        "symbol": "GDAXI.DWX"
+      },
+      {
+        "terminal": "T2",
+        "ea": "QM5_11128",
+        "phase": "Q07",
+        "symbol": "SP500.DWX"
+      },
+      {
+        "terminal": "T1",
+        "ea": "QM5_12772",
+        "phase": "Q07",
+        "symbol": "QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1"
+      },
+      {
+        "terminal": "T4",
+        "ea": "QM5_12847",
+        "phase": "Q07",
+        "symbol": "NDX.DWX"
+      }
+    ]
+  },
+  "queue_mutation_this_turn": "none",
+  "reason": "The two strict scan survivors are not Q02-blocked, all approved EdgeLab cointegration cards already have EA builds, QM5_12978 advanced to Q04 and failed, and the farm already has five active backtest work items. No duplicate or CPU-expanding enqueue was made.",
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "new_backtest_enqueued_this_turn": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
