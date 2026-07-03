@@ -1,0 +1,103 @@
+{
+  "date": "2026-07-03",
+  "branch": "agents/board-advisor",
+  "mission_outcome": "priority_2_diverse_fx_q02_infra_repair_requeued",
+  "selected_ea": {
+    "ea_id": "QM5_12918",
+    "slug": "jegadeesh-1w-reversal-fx",
+    "instrument_diversity": "G10 FX basket: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, USDCAD.DWX, USDCHF.DWX, NZDUSD.DWX",
+    "reason": "Built structural weekly FX reversal EA was stuck at Q02 with INFRA ONINIT failures on diverse FX hosts."
+  },
+  "diagnosis": {
+    "failed_q02_work_items": [
+      {
+        "id": "6e06e8a2-0c55-4e8d-a88c-9a993f70baba",
+        "symbol": "EURUSD.DWX",
+        "verdict": "INFRA_FAIL",
+        "reason": "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS",
+        "summary": "D:\\QM\\reports\\work_items\\6e06e8a2-0c55-4e8d-a88c-9a993f70baba\\QM5_12918\\20260702_213926\\summary.json"
+      },
+      {
+        "id": "2ec934d4-5383-41a4-80dd-5d2ac4d66caa",
+        "symbol": "GBPUSD.DWX",
+        "verdict": "INFRA_FAIL",
+        "reason": "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS",
+        "summary": "D:\\QM\\reports\\work_items\\2ec934d4-5383-41a4-80dd-5d2ac4d66caa\\QM5_12918\\20260702_214746\\summary.json"
+      },
+      {
+        "id": "3797a3a8-6e1e-4525-8a87-dd2241d9258e",
+        "symbol": "USDJPY.DWX",
+        "verdict": "INFRA_FAIL",
+        "reason": "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS",
+        "summary": "D:\\QM\\reports\\work_items\\3797a3a8-6e1e-4525-8a87-dd2241d9258e\\QM5_12918\\20260702_214955\\summary.json"
+      }
+    ],
+    "agent_log_evidence": "D:\\QM\\mt5\\T1\\Tester\\Agent-127.0.0.1-3002\\logs\\20260702.log showed all required symbol histories loading before tester stopped because OnInit returned non-zero code 1.",
+    "root_cause": "strategy_rate_calendar_path came from setfiles as a quoted string; the loader used the raw input for QM_NewsBasename/FileOpen, so calendar open could fail and OnInit returned INIT_FAILED."
+  },
+  "repair": {
+    "source_file": "framework/EAs/QM5_12918_jegadeesh-1w-reversal-fx/QM5_12918_jegadeesh-1w-reversal-fx.mq5",
+    "changes": [
+      "Strip quotes with QM_NewsStripQuotes before basename and absolute FileOpen attempts.",
+      "Keep rate-calendar load failures fail-closed in the entry filter instead of returning INIT_FAILED from OnInit."
+    ],
+    "ex5_path": "framework/EAs/QM5_12918_jegadeesh-1w-reversal-fx/QM5_12918_jegadeesh-1w-reversal-fx.ex5",
+    "ex5_sha256": "5C1E3B35FD124E362A8F96BBDF5860C1D3EE04F800731BB1BEF5B95FCFEA2A38",
+    "setfiles_refreshed": 7
+  },
+  "validation": {
+    "compile_one_strict": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:\\QM\\repo\\framework\\build\\compile\\20260703_020643\\QM5_12918_jegadeesh-1w-reversal-fx.compile.log"
+    },
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 16,
+      "report": "D:\\QM\\reports\\framework\\21\\build_check_20260703_020643.json",
+      "warning_scope": "Existing shared-framework DWX advisory warnings from include files; no build_check failures."
+    },
+    "build_check_skip_compile_after_docs": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 16,
+      "report": "D:\\QM\\reports\\framework\\21\\build_check_20260703_021105.json",
+      "warning_scope": "Same existing shared-framework DWX advisory warnings; setfile hashes remained valid."
+    },
+    "manual_backtest_launched": false
+  },
+  "q02_requeue": {
+    "action": "annotated_existing_pending_rows_no_duplicates",
+    "new_rows_inserted": false,
+    "db_backup": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_12918_oninit_calendar_repair_20260703T020839Z.sqlite",
+    "updated_at_preserved": true,
+    "pending_rows": [
+      {
+        "id": "50b584ea-2351-4e0d-bacb-42d4e4fa8493",
+        "symbol": "EURUSD.DWX",
+        "status": "pending",
+        "priority_track": true
+      },
+      {
+        "id": "517eba56-47d9-4c00-8eb7-3cb844d7924d",
+        "symbol": "GBPUSD.DWX",
+        "status": "pending",
+        "priority_track": true
+      },
+      {
+        "id": "12fe26b6-84be-45b0-a475-fd2697902e52",
+        "symbol": "USDJPY.DWX",
+        "status": "pending",
+        "priority_track": true
+      }
+    ]
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}

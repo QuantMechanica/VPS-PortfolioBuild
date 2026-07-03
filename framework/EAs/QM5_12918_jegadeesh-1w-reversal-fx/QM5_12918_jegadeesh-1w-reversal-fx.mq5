@@ -273,14 +273,15 @@ bool Strategy_LoadRateDecisionWeeks()
    g_rate_weeks_available = false;
    ArrayResize(g_rate_decision_week_keys, 0);
 
-   const string calendar_base = QM_NewsBasename(strategy_rate_calendar_path);
+   const string calendar_path = QM_NewsStripQuotes(strategy_rate_calendar_path);
+   const string calendar_base = QM_NewsBasename(calendar_path);
    int handle = INVALID_HANDLE;
    if(StringLen(calendar_base) > 0)
       handle = FileOpen(calendar_base, FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON, ',');
    if(handle == INVALID_HANDLE)
-      handle = FileOpen(strategy_rate_calendar_path, FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON, ',');
+      handle = FileOpen(calendar_path, FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ | FILE_COMMON, ',');
    if(handle == INVALID_HANDLE)
-      handle = FileOpen(strategy_rate_calendar_path, FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ, ',');
+      handle = FileOpen(calendar_path, FILE_READ | FILE_CSV | FILE_ANSI | FILE_SHARE_READ, ',');
    if(handle == INVALID_HANDLE)
       return false;
 
@@ -468,8 +469,7 @@ int OnInit()
 
    if(strategy_skip_rate_decision_weeks && !Strategy_LoadRateDecisionWeeks())
      {
-      QM_LogEvent(QM_ERROR, SETUP_DATA_MISSING, "{\"component\":\"rate_decision_calendar\"}");
-      return INIT_FAILED;
+      QM_LogEvent(QM_WARN, "RATE_CALENDAR_FAIL_CLOSED", "{\"component\":\"rate_decision_calendar\",\"mode\":\"entry_filter\"}");
      }
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12918\",\"ea\":\"jegadeesh-1w-reversal-fx\"}");
