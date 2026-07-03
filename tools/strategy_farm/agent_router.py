@@ -12,7 +12,11 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import re
 import sqlite3
+import subprocess
+import sys
+import time as _time
 import uuid
 from contextlib import closing
 from dataclasses import dataclass
@@ -23,6 +27,11 @@ try:
     from tools.strategy_farm import farmctl
 except ModuleNotFoundError:  # pragma: no cover - direct script execution
     import farmctl  # type: ignore
+
+try:
+    from tools.strategy_farm import agent_scopes
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    import agent_scopes  # type: ignore
 
 
 DEFAULT_ROOT = farmctl.DEFAULT_ROOT
@@ -46,6 +55,8 @@ TASK_STATES = {
 }
 
 REVIEW_CLOSE_STATES = {"APPROVED", "BLOCKED", "FAILED", "RECYCLE"}
+LEASE_TTL_MINUTES = 30
+LEASE_RELEASE_STATES = {"REVIEW", "APPROVED", "FAILED", "BLOCKED", "RECYCLE"}
 
 TASK_TYPE_CAPABILITIES: dict[str, list[str]] = {
     "research_strategy": ["research", "strategy"],
@@ -68,18 +79,29 @@ DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
     "claude": {
         "enabled": True,
         "capabilities": ["code", "research", "review", "strategy", "summary"],
-        "max_parallel": 3,
+        "max_parallel": 3,  # OWNER 2026-06-09: 2->3 (use weekly headroom before Wed reset)
         "cost_rank": 30,
     },
     "gemini": {
         "enabled": True,
-        "capabilities": ["research", "strategy", "source_discovery"],
+        "capabilities": ["code", "tests", "repo_edit", "research", "strategy", "source_discovery", "video_analysis"],
         "max_parallel": 2,
         "cost_rank": 10,
     },
 }
 
 STALE_IN_PROGRESS_HOURS = 6
+LANE_HEARTBEAT_STALE_HOURS = 2  # release IN_PROGRESS tasks / skip lane if heartbeat is older than this
+
+# Windows Task Scheduler task names for each agent's orchestration lane.
+# Used by _lane_task_disabled() to skip routing when a lane task is Disabled.
+_AGENT_LANE_TASKS: dict[str, str] = {
+    "claude": "QM_StrategyFarm_ClaudeOrchestration_15min",
+    "codex": "QM_StrategyFarm_CodexOrchestration_15min",
+    "gemini": "QM_StrategyFarm_GeminiOrchestration_15min",
+}
+_LANE_TASK_STATUS_CACHE: dict[str, tuple[float, bool]] = {}  # agent_id -> (checked_at, is_disabled)
+_LANE_TASK_CACHE_TTL_S = 120.0  # seconds — avoid hammering schtasks on every route call
 
 STRATEGY_CARD_SCHEMA: dict[str, list[str]] = {
     "frontmatter_required": [
@@ -323,10 +345,70 @@ def _running_count(conn: sqlite3.Connection, agent_id: str) -> int:
     return int(row["n"] if row else 0)
 
 
+def _task_lease_key(task_id: str) -> str:
+    return f"agent_task:{task_id}"
+
+
+def _record_lease_event(conn: sqlite3.Connection, task_id: str, event_name: str, detail: dict[str, Any]) -> None:
+    try:
+        farmctl.event(conn, "agent_task", task_id, event_name, detail)
+    except Exception:
+        pass
+
+
+def _acquire_task_lease(
+    conn: sqlite3.Connection,
+    task_id: str,
+    agent_id: str,
+    now_dt: dt.datetime,
+) -> bool:
+    now_iso = now_dt.isoformat(timespec="seconds")
+    expires_iso = (now_dt + dt.timedelta(minutes=LEASE_TTL_MINUTES)).isoformat(timespec="seconds")
+    task_key = _task_lease_key(task_id)
+    try:
+        acquired = agent_scopes.acquire_spawn_lease(conn, task_key, agent_id, now_iso, expires_iso)
+    except Exception as exc:
+        _record_lease_event(
+            conn,
+            task_id,
+            "spawn_lease_error",
+            {"agent_id": agent_id, "task_key": task_key, "error": repr(exc), "decision": "fail_open"},
+        )
+        return True
+    if not acquired:
+        _record_lease_event(
+            conn,
+            task_id,
+            "spawn_lease_deferred",
+            {"agent_id": agent_id, "task_key": task_key, "expires_after": now_iso},
+        )
+    return acquired
+
+
+def _release_task_lease(conn: sqlite3.Connection, task_id: str) -> None:
+    try:
+        agent_scopes.release_spawn_lease(conn, _task_lease_key(task_id))
+    except Exception as exc:
+        _record_lease_event(
+            conn,
+            task_id,
+            "spawn_lease_release_error",
+            {"task_key": _task_lease_key(task_id), "error": repr(exc)},
+        )
+
+
 def release_stale_in_progress(root: Path = DEFAULT_ROOT, *, max_age_hours: int = STALE_IN_PROGRESS_HOURS) -> dict[str, Any]:
-    """Release abandoned agent_tasks so one dead worker cannot consume capacity forever."""
+    """Release abandoned agent_tasks so one dead worker cannot consume capacity forever.
+
+    Two release triggers:
+    1. Task age > max_age_hours (unconditional, existing behaviour).
+    2. Task age > LANE_HEARTBEAT_STALE_HOURS AND the assigned agent's lane heartbeat is
+       missing or stale — the lane died without recovering, release sooner.
+    """
     now = farmctl.utc_now()
-    cutoff = dt.datetime.now(dt.UTC).replace(microsecond=0) - dt.timedelta(hours=max_age_hours)
+    now_dt = dt.datetime.now(dt.UTC).replace(microsecond=0)
+    age_cutoff = now_dt - dt.timedelta(hours=max_age_hours)
+    hb_cutoff  = now_dt - dt.timedelta(hours=LANE_HEARTBEAT_STALE_HOURS)
     released: list[dict[str, Any]] = []
     with closing(connect(root)) as conn:
         conn.execute("BEGIN IMMEDIATE")
@@ -334,17 +416,33 @@ def release_stale_in_progress(root: Path = DEFAULT_ROOT, *, max_age_hours: int =
             """
             SELECT * FROM agent_tasks
             WHERE state='IN_PROGRESS'
-              AND updated_at < ?
             ORDER BY updated_at ASC
             """,
-            (cutoff.isoformat(timespec="seconds"),),
         ).fetchall()
         for row in rows:
+            updated_at_str: str = row["updated_at"] or ""
+            try:
+                updated_dt = dt.datetime.fromisoformat(updated_at_str)
+                if updated_dt.tzinfo is None:
+                    updated_dt = updated_dt.replace(tzinfo=dt.timezone.utc)
+            except (ValueError, TypeError):
+                updated_dt = dt.datetime.min.replace(tzinfo=dt.timezone.utc)
+
+            age_expired = updated_dt < age_cutoff
+            hb_stale = (
+                updated_dt < hb_cutoff
+                and _lane_heartbeat_stale(root, row["assigned_agent"] or "")
+            )
+            if not (age_expired or hb_stale):
+                continue
+
+            release_reason = "age_expired" if age_expired else "lane_heartbeat_stale"
             payload = json.loads(row["payload_json"] or "{}")
             history = list(payload.get("stale_releases") or [])
             history.append(
                 {
                     "released_at": now,
+                    "release_reason": release_reason,
                     "previous_assigned_agent": row["assigned_agent"],
                     "previous_updated_at": row["updated_at"],
                     "max_age_hours": max_age_hours,
@@ -359,19 +457,69 @@ def release_stale_in_progress(root: Path = DEFAULT_ROOT, *, max_age_hours: int =
                 """,
                 (_json(payload), now, row["id"]),
             )
+            _release_task_lease(conn, row["id"])
             released.append(
                 {
                     "task_id": row["id"],
                     "task_type": row["task_type"],
                     "assigned_agent": row["assigned_agent"],
                     "previous_updated_at": row["updated_at"],
+                    "release_reason": release_reason,
                 }
             )
         conn.commit()
     return {"released": released, "max_age_hours": max_age_hours}
 
 
-def _eligible_agents(conn: sqlite3.Connection, required: set[str]) -> list[sqlite3.Row]:
+def _lane_heartbeat_stale(root: Path, agent_id: str) -> bool:
+    """Return True only if a heartbeat FILE EXISTS for this agent but is older than
+    LANE_HEARTBEAT_STALE_HOURS.  Missing file = no data = treat lane as available
+    (covers new deployments and factory-OFF states where the scheduler never fires)."""
+    if not agent_id:
+        return False
+    hb_path = root / "state" / f"lane_{agent_id}_heartbeat.json"
+    if not hb_path.exists():
+        return False  # no prior evidence; don't block routing
+    try:
+        age_hours = (dt.datetime.now(dt.UTC).timestamp() - hb_path.stat().st_mtime) / 3600
+        return age_hours > LANE_HEARTBEAT_STALE_HOURS
+    except OSError:
+        return False
+
+
+def _lane_task_disabled(agent_id: str) -> bool:
+    """Return True if the agent's scheduled orchestration task is Disabled in Task Scheduler.
+
+    Uses a 2-minute in-process cache to avoid repeated schtasks calls per routing cycle.
+    Fails OPEN (returns False) if the task name is unknown, schtasks is unavailable, or
+    the query times out — routing should not stall on a scheduler query failure.
+    Only available on Windows; returns False on other platforms.
+    """
+    if sys.platform != "win32":
+        return False
+    task_name = _AGENT_LANE_TASKS.get(agent_id)
+    if not task_name:
+        return False
+    now = _time.monotonic()
+    cached = _LANE_TASK_STATUS_CACHE.get(agent_id)
+    if cached is not None and (now - cached[0]) < _LANE_TASK_CACHE_TTL_S:
+        return cached[1]
+    try:
+        proc = subprocess.run(
+            ["schtasks", "/query", "/tn", task_name, "/fo", "CSV", "/nh"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            creationflags=subprocess.CREATE_NO_WINDOW,
+        )
+        disabled = proc.returncode == 0 and "Disabled" in proc.stdout
+    except Exception:
+        disabled = False  # fail open
+    _LANE_TASK_STATUS_CACHE[agent_id] = (now, disabled)
+    return disabled
+
+
+def _eligible_agents(conn: sqlite3.Connection, required: set[str], root: Path = DEFAULT_ROOT) -> list[sqlite3.Row]:
     rows = conn.execute(
         """
         SELECT * FROM agent_registry
@@ -386,6 +534,10 @@ def _eligible_agents(conn: sqlite3.Connection, required: set[str]) -> list[sqlit
             continue
         if _running_count(conn, row["agent_id"]) >= int(row["max_parallel"]):
             continue
+        if _lane_heartbeat_stale(root, row["agent_id"]):
+            continue
+        if _lane_task_disabled(row["agent_id"]):
+            continue
         eligible.append(row)
     return eligible
 
@@ -393,7 +545,8 @@ def _eligible_agents(conn: sqlite3.Connection, required: set[str]) -> list[sqlit
 def route_once(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE_DISABLED_FLAG) -> RouteDecision:
     sync_default_registry(root, claude_disabled_flag=claude_disabled_flag)
     release_stale_in_progress(root)
-    now = farmctl.utc_now()
+    now_dt = dt.datetime.now(dt.UTC).replace(microsecond=0)
+    now = now_dt.isoformat()
     with closing(connect(root)) as conn:
         conn.execute("BEGIN IMMEDIATE")
         tasks = conn.execute(
@@ -411,8 +564,11 @@ def route_once(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE
         selected: tuple[sqlite3.Row, sqlite3.Row, set[str]] | None = None
         for task in tasks:
             required = set(json.loads(task["required_capabilities_json"] or "[]"))
-            agents = _eligible_agents(conn, required)
+            agents = _eligible_agents(conn, required, root)
             if not agents:
+                skipped.append(task["id"])
+                continue
+            if not _acquire_task_lease(conn, task["id"], agents[0]["agent_id"], now_dt):
                 skipped.append(task["id"])
                 continue
             selected = (task, agents[0], required)
@@ -483,6 +639,107 @@ def replenish(
         "frozen": True,
         "reason": "generic_research_replenishment_frozen_edge_lab_primary_2026-05-22",
         "min_ready_strategy_cards": min_ready_strategy_cards,
+    }
+
+
+def directed_research_targets(root: Path = DEFAULT_ROOT) -> dict[str, Any]:
+    """DL-064 R-064-1: ranked empty (logic x market) cells of the robust sleeve pool.
+
+    The "shopping list" for anticorrelated edges. Lazy-imports the portfolio matrix so the
+    router still works if the portfolio package is unavailable.
+    """
+    try:
+        import research_matrix
+    except Exception as exc:  # pragma: no cover - defensive
+        return {"available": False, "ranked_targets": [], "reason": f"matrix_unavailable:{exc}"}
+    try:
+        sc = research_matrix.sleeve_coverage()
+    except Exception as exc:  # pragma: no cover - defensive
+        return {"available": False, "ranked_targets": [], "reason": f"matrix_error:{exc}"}
+    return {
+        "available": True,
+        "ranked_targets": sc["ranked_targets"],
+        "filled": sc["filled"],
+        "n_sleeves": sc["n_sleeves"],
+    }
+
+
+def replenish_directed(
+    root: Path = DEFAULT_ROOT,
+    *,
+    max_open_directed: int = 6,
+    max_seed_per_run: int = 3,
+    claude_disabled_flag: Path = CLAUDE_DISABLED_FLAG,
+) -> dict[str, Any]:
+    """DL-064 R-064-1: seed matrix-DIRECTED research for the most under-filled,
+    anticorrelated portfolio cells (Forex / SeasonalVol are empty today).
+
+    Replaces the frozen generic reservoir replenishment with targeted demand. Idempotent
+    and self-limiting: at most one open task per empty cell, capped at max_open_directed
+    total and max_seed_per_run per cycle, so running it every router tick is safe.
+    """
+    targets = directed_research_targets(root)
+    if not targets.get("available"):
+        return {"created": [], "skipped": [], "reason": targets.get("reason")}
+    ranked = targets.get("ranked_targets") or []
+    if not ranked:
+        return {"created": [], "skipped": [], "reason": "no_empty_cells", "n_sleeves": targets.get("n_sleeves")}
+
+    open_cells: set[tuple[str, str]] = set()
+    with closing(connect(root)) as conn:
+        for row in conn.execute(
+            """
+            SELECT payload_json FROM agent_tasks
+            WHERE state IN ('BACKLOG', 'TODO', 'IN_PROGRESS', 'REVIEW')
+              AND payload_json LIKE '%portfolio_matrix_directed_research%'
+            """
+        ).fetchall():
+            try:
+                p = json.loads(row["payload_json"] or "{}")
+            except json.JSONDecodeError:
+                continue
+            open_cells.add((str(p.get("target_logic")), str(p.get("target_market"))))
+
+    created: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+    for t in ranked:
+        if len(created) >= max_seed_per_run:
+            break
+        if (len(open_cells) + len(created)) >= max_open_directed:
+            break
+        cell = (t["logic"], t["market"])
+        if cell in open_cells:
+            skipped.append({"cell": cell, "reason": "already_open"})
+            continue
+        brief = (
+            f"Find or mechanize a {t['logic']} strategy for {t['market']} markets "
+            f"(DWX-testable) that is ANTICORRELATED to the current book "
+            f"({targets.get('filled')}). Low parameter freedom, V5-framework-encodable, "
+            f"no ML/grid/martingale, one position per magic. This fills an empty "
+            f"portfolio diversification cell (DL-064 R-064-1)."
+        )
+        created.append(
+            enqueue_task(
+                root,
+                "research_strategy",
+                state="TODO",
+                priority=70,
+                required_capabilities=RESEARCH_PERSPECTIVES["gemini"]["required_capabilities"],
+                payload={
+                    "reason": "portfolio_matrix_directed_research",
+                    "target_logic": t["logic"],
+                    "target_market": t["market"],
+                    "perspective": "portfolio_diversification_R064_1",
+                    "brief": brief,
+                },
+            )
+        )
+    return {
+        "created": created,
+        "skipped": skipped,
+        "open_before": len(open_cells),
+        "ranked_targets": ranked,
+        "n_sleeves": targets.get("n_sleeves"),
     }
 
 
@@ -559,10 +816,14 @@ def run_once(
         min_ready_strategy_cards=min_ready_strategy_cards,
         claude_disabled_flag=claude_disabled_flag,
     )
+    # DL-064 R-064-1: matrix-directed research toward empty anticorrelated cells
+    # (replaces the frozen generic replenishment). Idempotent + self-limiting.
+    directed = replenish_directed(root, claude_disabled_flag=claude_disabled_flag)
     routed = route_many(root, max_routes=max_routes, claude_disabled_flag=claude_disabled_flag)
     return {
         "registry": registry,
         "replenish": replenished,
+        "replenish_directed": directed,
         "routes": routed,
         "status": status(root),
     }
@@ -595,13 +856,18 @@ def status(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE_DIS
     return {"agents": agents, "tasks": tasks}
 
 
-def list_tasks(root: Path = DEFAULT_ROOT, agent_id: str | None = None) -> list[dict[str, Any]]:
+def list_tasks(root: Path = DEFAULT_ROOT, agent_id: str | None = None, state: str | None = None) -> list[dict[str, Any]]:
+    if state is not None and state not in TASK_STATES:
+        raise ValueError(f"unknown state: {state}")
     with closing(connect(root)) as conn:
         query = "SELECT * FROM agent_tasks"
         params = []
         if agent_id:
             query += " WHERE assigned_agent = ?"
             params.append(agent_id)
+        if state:
+            query += " AND state = ?" if params else " WHERE state = ?"
+            params.append(state)
         query += " ORDER BY priority DESC, updated_at DESC"
         
         rows = conn.execute(query, params).fetchall()
@@ -618,6 +884,14 @@ def list_tasks(root: Path = DEFAULT_ROOT, agent_id: str | None = None) -> list[d
             }
             for row in rows
         ]
+
+
+def _normalize_card_ea_id(value: Any) -> str:
+    text = str(value or "").strip()
+    match = re.match(r"^(?:QM5_)?(\d+)$", text, re.IGNORECASE)
+    if match:
+        return match.group(1)
+    return text.upper()
 
 
 def update_task(
@@ -659,6 +933,29 @@ def update_task(
                             "reason": "strategy_card_schema_failed",
                             "errors": schema_issues[:12],
                         }
+                    ea_id_key = _normalize_card_ea_id(fm.get("ea_id"))
+                    duplicate_ea_id_cards: list[str] = []
+                    if ea_id_key:
+                        for pool in (approved_dir, review_dir):
+                            if not pool.exists():
+                                continue
+                            for candidate in pool.glob("*.md"):
+                                if candidate.resolve() == resolved_artifact:
+                                    continue
+                                try:
+                                    candidate_fm = farmctl.parse_card_frontmatter(candidate)
+                                except Exception:
+                                    continue
+                                if _normalize_card_ea_id(candidate_fm.get("ea_id")) == ea_id_key:
+                                    duplicate_ea_id_cards.append(str(candidate))
+                    if duplicate_ea_id_cards:
+                        return {
+                            "updated": False,
+                            "task_id": task_id,
+                            "reason": "duplicate_strategy_card_ea_id",
+                            "ea_id": fm.get("ea_id"),
+                            "duplicates": duplicate_ea_id_cards[:8],
+                        }
                     fp = farmctl.strategy_card_fingerprint(resolved_artifact, fm)
                     duplicate_cards: list[str] = []
                     for pool in (approved_dir, review_dir):
@@ -691,6 +988,59 @@ def update_task(
             """,
             (state, artifact_path, verdict, now, task_id),
         )
+        if state in LEASE_RELEASE_STATES:
+            _release_task_lease(conn, task_id)
+        codex_review_task_id = None
+        if row["task_type"] == "build_ea" and row["assigned_agent"] == "gemini" and state == "REVIEW":
+            existing_review = conn.execute(
+                """
+                SELECT id FROM agent_tasks
+                WHERE task_type='review_ea'
+                  AND parent_id=?
+                  AND state IN ('BACKLOG', 'TODO', 'IN_PROGRESS', 'REVIEW')
+                ORDER BY created_at DESC
+                LIMIT 1
+                """,
+                (task_id,),
+            ).fetchone()
+            if existing_review:
+                codex_review_task_id = existing_review["id"]
+            else:
+                payload = json.loads(row["payload_json"] or "{}")
+                review_payload = {
+                    "reason": "codex_review_required_for_gemini_code",
+                    "source_task_id": task_id,
+                    "source_agent": "gemini",
+                    "source_task_type": row["task_type"],
+                    "source_artifact_path": artifact_path or row["artifact_path"],
+                    "source_verdict": verdict,
+                    "ea_id": payload.get("ea_id"),
+                    "card_id": payload.get("card_id"),
+                    "required_capabilities": ["code", "review"],
+                }
+                codex_review_task_id = str(uuid.uuid4())
+                conn.execute(
+                    """
+                    INSERT INTO agent_tasks(
+                        id, task_type, state, priority, required_capabilities_json,
+                        required_skills_json, assigned_agent, budget_class, parent_id,
+                        artifact_path, verdict, payload_json, created_at, updated_at
+                    )
+                    VALUES (?, 'review_ea', 'TODO', ?, ?, ?, NULL, ?, ?, ?, NULL, ?, ?, ?)
+                    """,
+                    (
+                        codex_review_task_id,
+                        int(row["priority"]) + 1,
+                        _json(["code", "review"]),
+                        _json(["code-review", "gemini-output-review"]),
+                        row["budget_class"],
+                        task_id,
+                        artifact_path or row["artifact_path"],
+                        _json(review_payload),
+                        now,
+                        now,
+                    ),
+                )
         conn.commit()
     return {
         "updated": True,
@@ -698,6 +1048,7 @@ def update_task(
         "state": state,
         "artifact_path": artifact_path,
         "verdict": verdict,
+        "codex_review_task_id": codex_review_task_id,
     }
 
 
@@ -715,6 +1066,12 @@ def _task_artifact_path(root: Path, row: sqlite3.Row, artifact_path: str | None)
     if not path.is_absolute():
         path = farmctl.REPO_ROOT / path
     return path
+
+
+try:
+    from validate_build_guardrails import validate_path as _validate_build_guardrails
+except ImportError:  # imported as a package (tools.strategy_farm.agent_router)
+    from tools.strategy_farm.validate_build_guardrails import validate_path as _validate_build_guardrails
 
 
 def close_review_task(
@@ -749,6 +1106,21 @@ def close_review_task(
                     "reason": "artifact_missing",
                     "artifact_path": str(evidence),
                 }
+            # Hard-Rule backstop: never approve a build that violates the deterministic
+            # build guardrails - news-staleness bypass (qm_news_stale_max_hours > 336) or
+            # RISK_PERCENT in a backtest set (must be RISK_FIXED). OWNER 2026-06-03.
+            if row["task_type"] == "build_ea":
+                gr = _validate_build_guardrails(Path(evidence).parent)
+                if gr.get("verdict") != "PASS":
+                    kinds = ",".join(sorted({f["kind"] for f in gr.get("findings", [])}))
+                    return {
+                        "closed": False,
+                        "task_id": task_id,
+                        "reason": "build_guardrails_failed",
+                        "findings": kinds,
+                        "detail": (f"refusing APPROVED: build guardrails failed ({kinds}). "
+                                   f"Refresh the news calendar / use RISK_FIXED; do not weaken the checks."),
+                    }
 
         payload = json.loads(row["payload_json"] or "{}")
         payload["review_closed_at"] = now
@@ -772,6 +1144,7 @@ def close_review_task(
                 task_id,
             ),
         )
+        _release_task_lease(conn, task_id)
         conn.commit()
     return {
         "closed": True,
@@ -782,48 +1155,108 @@ def close_review_task(
     }
 
 
-def sync_q11_candidates(root: Path = DEFAULT_ROOT) -> dict[str, Any]:
-    """Mirror Q11/P8 PASS work_items into a Q12 portfolio-candidate queue."""
+def _portfolio_admission_key(ea_id: str, symbol: str) -> tuple[int, str] | None:
+    """work_items ea_id 'QM5_10692' + symbol 'NDX.DWX' -> (10692, 'NDX.DWX').
+    Note: match QM5_(\\d+), NOT \\d+ (the latter grabs the 5 in 'QM5')."""
+    m = re.search(r"QM5_(\d+)", str(ea_id))
+    sym = str(symbol).strip()
+    if not m or not sym:
+        return None
+    return int(m.group(1)), sym
+
+
+def sync_q11_candidates(root: Path = DEFAULT_ROOT, *, apply_admission: bool = True) -> dict[str, Any]:
+    """Promote Q10 PASS work_items into the Q11 portfolio-candidate book.
+
+    DL-064 R-064-2: this is the real portfolio gate, not "≥1 symbol passed =
+    candidate". A Q10 passer is admitted ONLY if portfolio_admission judges it
+    diversifying vs the current book (low correlation AND it improves portfolio
+    Sharpe or max-DD); the first sleeve is admitted unconditionally. Non-
+    diversifying passers are recorded as DIVERSIFICATION_REJECTED (visible, not
+    silently dropped); evaluation errors (e.g. missing q08 stream) land as
+    ADMISSION_DEFERRED and are retried next sync. Pass apply_admission=False
+    (CLI --no-admission) to fall back to the legacy mirror-all behaviour.
+    """
     now = farmctl.utc_now()
     created = 0
     existing = 0
+    admitted = 0
+    rejected = 0
+    deferred = 0
+    admission = None
+    if apply_admission:
+        try:
+            from portfolio import portfolio_admission as admission  # type: ignore
+        except ImportError:  # pragma: no cover
+            from tools.strategy_farm.portfolio import portfolio_admission as admission  # type: ignore
+
     with closing(connect(root)) as conn:
+        # Seed the book with already-admitted candidates so new passers evaluate
+        # against (and grow) the real book.
+        book: list[tuple[int, str]] = []
+        if apply_admission:
+            for r in conn.execute(
+                "SELECT DISTINCT ea_id, symbol FROM portfolio_candidates WHERE state='Q12_REVIEW_READY'"
+            ).fetchall():
+                key = _portfolio_admission_key(r["ea_id"], r["symbol"])
+                if key:
+                    book.append(key)
+
         rows = conn.execute(
             """
             SELECT id, ea_id, COALESCE(symbol, '') AS symbol, evidence_path
             FROM work_items
-            WHERE phase='P8' AND status='done' AND verdict='PASS'
+            WHERE phase IN ('Q10', 'P8') AND status='done' AND verdict='PASS'
             ORDER BY updated_at DESC
             """
         ).fetchall()
         for row in rows:
             cur = conn.execute(
-                """
-                SELECT 1 FROM portfolio_candidates
-                WHERE ea_id=? AND symbol=? AND q11_work_item_id=?
-                """,
+                "SELECT 1 FROM portfolio_candidates WHERE ea_id=? AND symbol=? AND q11_work_item_id=?",
                 (row["ea_id"], row["symbol"], row["id"]),
             ).fetchone()
             if cur:
                 existing += 1
                 conn.execute(
-                    """
-                    UPDATE portfolio_candidates
-                    SET evidence_path=COALESCE(?, evidence_path), updated_at=?
-                    WHERE ea_id=? AND symbol=? AND q11_work_item_id=?
-                    """,
+                    "UPDATE portfolio_candidates SET evidence_path=COALESCE(?, evidence_path), "
+                    "updated_at=? WHERE ea_id=? AND symbol=? AND q11_work_item_id=?",
                     (row["evidence_path"], now, row["ea_id"], row["symbol"], row["id"]),
                 )
                 continue
+
+            state = "Q12_REVIEW_READY"
+            reason = "legacy_mirror_all"
+            if apply_admission:
+                key = _portfolio_admission_key(row["ea_id"], row["symbol"])
+                if key is None:
+                    state, reason = "ADMISSION_DEFERRED", "unparseable_ea_id"
+                    deferred += 1
+                else:
+                    try:
+                        verdict = admission.evaluate_candidate(key, book)
+                        reason = str(verdict.get("reason", ""))
+                        if verdict.get("admit"):
+                            state = "Q12_REVIEW_READY"
+                            book.append(key)
+                            admitted += 1
+                        else:
+                            state = "DIVERSIFICATION_REJECTED"
+                            rejected += 1
+                    except Exception as exc:  # never crash the sync on one bad candidate
+                        state, reason = "ADMISSION_DEFERRED", f"admission_error:{exc!r}"[:160]
+                        deferred += 1
+                farmctl.event(conn, "portfolio_admission", str(row["ea_id"]),
+                              state, {"symbol": row["symbol"], "reason": reason})
+
             conn.execute(
                 """
                 INSERT INTO portfolio_candidates(
                     ea_id, symbol, q11_work_item_id, state, evidence_path,
                     first_seen_at, updated_at
                 )
-                VALUES (?, ?, ?, 'Q12_REVIEW_READY', ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
-                (row["ea_id"], row["symbol"], row["id"], row["evidence_path"], now, now),
+                (row["ea_id"], row["symbol"], row["id"], state, row["evidence_path"], now, now),
             )
             created += 1
         conn.commit()
@@ -831,6 +1264,10 @@ def sync_q11_candidates(root: Path = DEFAULT_ROOT) -> dict[str, Any]:
         "q11_pass_rows": len(rows),
         "created": created,
         "existing": existing,
+        "admitted": admitted,
+        "rejected": rejected,
+        "deferred": deferred,
+        "apply_admission": apply_admission,
         "target": "portfolio_candidates",
     }
 
@@ -843,6 +1280,7 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("status")
     list_tasks_p = sub.add_parser("list-tasks")
     list_tasks_p.add_argument("--agent", help="Filter by assigned agent ID")
+    list_tasks_p.add_argument("--state", choices=sorted(TASK_STATES), help="Filter by task state")
     sub.add_parser("replenish")
     route_many_p = sub.add_parser("route-many")
     route_many_p.add_argument("--max-routes", type=int, default=5)
@@ -863,7 +1301,9 @@ def main(argv: list[str] | None = None) -> int:
     close.add_argument("--verdict", required=True)
     close.add_argument("--artifact-path")
     close.add_argument("--note")
-    sub.add_parser("sync-q11-candidates")
+    sync_q11 = sub.add_parser("sync-q11-candidates")
+    sync_q11.add_argument("--no-admission", action="store_true",
+                          help="legacy mirror-all (skip the DL-064 R-064-2 diversification gate)")
     update = sub.add_parser("update-task")
     update.add_argument("task_id")
     update.add_argument("--state", required=True, choices=sorted(TASK_STATES))
@@ -876,7 +1316,7 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "status":
         result = status(args.root)
     elif args.command == "list-tasks":
-        result = list_tasks(args.root, agent_id=args.agent)
+        result = list_tasks(args.root, agent_id=args.agent, state=args.state)
     elif args.command == "replenish":
         result = replenish(args.root)
     elif args.command == "route-many":
@@ -911,7 +1351,7 @@ def main(argv: list[str] | None = None) -> int:
             note=args.note,
         )
     elif args.command == "sync-q11-candidates":
-        result = sync_q11_candidates(args.root)
+        result = sync_q11_candidates(args.root, apply_admission=not args.no_admission)
     elif args.command == "update-task":
         result = update_task(
             args.root,
