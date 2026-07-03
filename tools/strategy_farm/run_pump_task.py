@@ -16,9 +16,12 @@ from pathlib import Path
 REPO_ROOT = Path(r"C:\QM\repo")
 LOG_DIR = Path(r"D:\QM\strategy_farm\logs")
 FARMCTL = REPO_ROOT / "tools" / "strategy_farm" / "farmctl.py"
+FACTORY_OFF_FLAG = Path(r"D:\QM\strategy_farm\state\FACTORY_OFF.flag")
 
 
 def main() -> int:
+    if FACTORY_OFF_FLAG.exists():
+        return 0  # FACTORY_OFF.flag is set; pump is suspended
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     stamp = dt.datetime.now(dt.UTC).replace(microsecond=0).strftime("%Y%m%dT%H%M%SZ")
     log_path = LOG_DIR / f"pump_task_{stamp}.log"

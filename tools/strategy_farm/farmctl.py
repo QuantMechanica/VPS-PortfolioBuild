@@ -5094,6 +5094,9 @@ def pump(root: Path) -> dict[str, Any]:
     live_log freshness so re-runs while Codex is still going don't
     double-spawn.
     """
+    factory_off_flag = root / "state" / "FACTORY_OFF.flag"
+    if factory_off_flag.exists():
+        return {"pumped_at": utc_now(), "skipped": "FACTORY_OFF.flag set"}
     init_db(root)
     result: dict[str, Any] = {
         "pumped_at": utc_now(),

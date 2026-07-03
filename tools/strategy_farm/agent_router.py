@@ -80,6 +80,7 @@ DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
 }
 
 STALE_IN_PROGRESS_HOURS = 6
+LANE_HEARTBEAT_STALE_HOURS = 2  # release IN_PROGRESS tasks / skip lane if heartbeat is older than this
 
 STRATEGY_CARD_SCHEMA: dict[str, list[str]] = {
     "frontmatter_required": [
@@ -324,9 +325,17 @@ def _running_count(conn: sqlite3.Connection, agent_id: str) -> int:
 
 
 def release_stale_in_progress(root: Path = DEFAULT_ROOT, *, max_age_hours: int = STALE_IN_PROGRESS_HOURS) -> dict[str, Any]:
-    """Release abandoned agent_tasks so one dead worker cannot consume capacity forever."""
+    """Release abandoned agent_tasks so one dead worker cannot consume capacity forever.
+
+    Two release triggers:
+    1. Task age > max_age_hours (unconditional, existing behaviour).
+    2. Task age > LANE_HEARTBEAT_STALE_HOURS AND the assigned agent's lane heartbeat is
+       missing or stale — the lane died without recovering, release sooner.
+    """
     now = farmctl.utc_now()
-    cutoff = dt.datetime.now(dt.UTC).replace(microsecond=0) - dt.timedelta(hours=max_age_hours)
+    now_dt = dt.datetime.now(dt.UTC).replace(microsecond=0)
+    age_cutoff = now_dt - dt.timedelta(hours=max_age_hours)
+    hb_cutoff  = now_dt - dt.timedelta(hours=LANE_HEARTBEAT_STALE_HOURS)
     released: list[dict[str, Any]] = []
     with closing(connect(root)) as conn:
         conn.execute("BEGIN IMMEDIATE")
@@ -334,17 +343,33 @@ def release_stale_in_progress(root: Path = DEFAULT_ROOT, *, max_age_hours: int =
             """
             SELECT * FROM agent_tasks
             WHERE state='IN_PROGRESS'
-              AND updated_at < ?
             ORDER BY updated_at ASC
             """,
-            (cutoff.isoformat(timespec="seconds"),),
         ).fetchall()
         for row in rows:
+            updated_at_str: str = row["updated_at"] or ""
+            try:
+                updated_dt = dt.datetime.fromisoformat(updated_at_str)
+                if updated_dt.tzinfo is None:
+                    updated_dt = updated_dt.replace(tzinfo=dt.timezone.utc)
+            except (ValueError, TypeError):
+                updated_dt = dt.datetime.min.replace(tzinfo=dt.timezone.utc)
+
+            age_expired = updated_dt < age_cutoff
+            hb_stale = (
+                updated_dt < hb_cutoff
+                and _lane_heartbeat_stale(root, row["assigned_agent"] or "")
+            )
+            if not (age_expired or hb_stale):
+                continue
+
+            release_reason = "age_expired" if age_expired else "lane_heartbeat_stale"
             payload = json.loads(row["payload_json"] or "{}")
             history = list(payload.get("stale_releases") or [])
             history.append(
                 {
                     "released_at": now,
+                    "release_reason": release_reason,
                     "previous_assigned_agent": row["assigned_agent"],
                     "previous_updated_at": row["updated_at"],
                     "max_age_hours": max_age_hours,
@@ -365,13 +390,30 @@ def release_stale_in_progress(root: Path = DEFAULT_ROOT, *, max_age_hours: int =
                     "task_type": row["task_type"],
                     "assigned_agent": row["assigned_agent"],
                     "previous_updated_at": row["updated_at"],
+                    "release_reason": release_reason,
                 }
             )
         conn.commit()
     return {"released": released, "max_age_hours": max_age_hours}
 
 
-def _eligible_agents(conn: sqlite3.Connection, required: set[str]) -> list[sqlite3.Row]:
+def _lane_heartbeat_stale(root: Path, agent_id: str) -> bool:
+    """Return True only if a heartbeat FILE EXISTS for this agent but is older than
+    LANE_HEARTBEAT_STALE_HOURS.  Missing file = no data = treat lane as available
+    (covers new deployments and factory-OFF states where the scheduler never fires)."""
+    if not agent_id:
+        return False
+    hb_path = root / "state" / f"lane_{agent_id}_heartbeat.json"
+    if not hb_path.exists():
+        return False  # no prior evidence; don't block routing
+    try:
+        age_hours = (dt.datetime.now(dt.UTC).timestamp() - hb_path.stat().st_mtime) / 3600
+        return age_hours > LANE_HEARTBEAT_STALE_HOURS
+    except OSError:
+        return False
+
+
+def _eligible_agents(conn: sqlite3.Connection, required: set[str], root: Path = DEFAULT_ROOT) -> list[sqlite3.Row]:
     rows = conn.execute(
         """
         SELECT * FROM agent_registry
@@ -385,6 +427,8 @@ def _eligible_agents(conn: sqlite3.Connection, required: set[str]) -> list[sqlit
         if not required.issubset(capabilities):
             continue
         if _running_count(conn, row["agent_id"]) >= int(row["max_parallel"]):
+            continue
+        if _lane_heartbeat_stale(root, row["agent_id"]):
             continue
         eligible.append(row)
     return eligible
@@ -411,7 +455,7 @@ def route_once(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE
         selected: tuple[sqlite3.Row, sqlite3.Row, set[str]] | None = None
         for task in tasks:
             required = set(json.loads(task["required_capabilities_json"] or "[]"))
-            agents = _eligible_agents(conn, required)
+            agents = _eligible_agents(conn, required, root)
             if not agents:
                 skipped.append(task["id"])
                 continue
