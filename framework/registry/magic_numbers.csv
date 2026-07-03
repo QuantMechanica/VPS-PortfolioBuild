@@ -14385,5 +14385,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13001,xti-export-flow-brk,0,XTIUSD.DWX,130010000,2026-07-03,Codex,active
 13002,xng-cad-rspread,0,XNGUSD.DWX,130020000,2026-07-03,Codex,active
 13002,xng-cad-rspread,1,USDCAD.DWX,130020001,2026-07-03,Codex,active
+13003,edgelab-usdcad-nzdusd-cointegration,0,USDCAD.DWX,130030000,2026-07-03,Development,active
+13003,edgelab-usdcad-nzdusd-cointegration,1,NZDUSD.DWX,130030001,2026-07-03,Development,active
 12975,ehlers-pma-triple-swing,0,NDX.DWX,129750000,2026-07-03,Codex,active
 12975,ehlers-pma-triple-swing,1,XAUUSD.DWX,129750001,2026-07-03,Codex,active

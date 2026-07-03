@@ -1,0 +1,15 @@
+{
+  "logical_symbol": "QM5_13003_USDCAD_NZDUSD_COINTEGRATION_D1",
+  "host_symbol": "USDCAD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "USDCAD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg USDCAD/NZDUSD FX cointegration candidate from a full 66-pair rerun that includes negative hedge ratios. The published positive-hedge scan hard-certified only QM5_12533 and QM5_12532; this row is the next unbuilt full-scan candidate with DEV net Sharpe 0.46 and OOS net Sharpe 1.13.",
+    "The scan hedge is negative, so the EA trades the second leg with sign(-beta) direction: long spread means long USDCAD and long NZDUSD, short spread means short both legs. Q02 uses USD tester currency and the canonical RISK_FIXED=1000 budget."
+  ]
+}
