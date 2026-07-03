@@ -1,0 +1,67 @@
+{
+  "task_id": "1ff95a74-9fb9-4f02-b384-4d1deacb435f",
+  "ea_id": "QM5_13005",
+  "slug": "xbr-cad-rspr",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13005_xbr-cad-rspr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13005_xbr-cad-rspr\\QM5_13005_xbr-cad-rspr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13005_xbr-cad-rspr\\QM5_13005_xbr-cad-rspr.ex5",
+  "ex5_sha256": "1950878E080C1C76CE674748EBB238E7A474D5C42852CE7443C0B2D5945CA157",
+  "magic_base": 130050000,
+  "symbols_registered": [
+    "XBRUSD.DWX",
+    "USDCAD.DWX"
+  ],
+  "symbols": [
+    "XBRUSD.DWX",
+    "USDCAD.DWX"
+  ],
+  "logical_symbol": "QM5_13005_XBR_CAD_RSPREAD_D1",
+  "host_symbol": "XBRUSD.DWX",
+  "timeframe": "D1",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13005_xbr-cad-rspr\\sets\\QM5_13005_xbr-cad-rspr_QM5_13005_XBR_CAD_RSPREAD_D1_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13005_xbr-cad-rspr\\SPEC.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13005_xbr-cad-rspr\\basket_manifest.json",
+  "build_check_passed": true,
+  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260703_195456.json",
+  "compile_succeeded": true,
+  "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260703_195457\\QM5_13005_xbr-cad-rspr.compile.log",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Backtest CPU preserved for Q02 farm workers; build session performed compile/build_check only.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "source_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13005_xbr-cad-rspr.md",
+  "repo_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\xbr-cad-rspr_card.md",
+  "source_citation": "Bank of Canada Staff Analytical Note 2017-1; U.S. EIA Today in Energy 2024-08-01; Canada Energy Regulator Market Snapshot 2025.",
+  "notes": [
+    "D1 XBR/USDCAD structural relative-value basket; no ML, grid, martingale, external runtime data, T_Live, or AutoTrading changes."
+  ],
+  "record_build_result": {
+    "auto_q02_enqueued": {
+      "ea_id": "QM5_13005",
+      "enqueued": [
+        {
+          "setfile": "QM5_13005_xbr-cad-rspr_QM5_13005_XBR_CAD_RSPREAD_D1_D1_backtest.set",
+          "symbol": "QM5_13005_XBR_CAD_RSPREAD_D1",
+          "tf": "D1",
+          "wi_id": "b220132c"
+        }
+      ],
+      "skipped": []
+    },
+    "blocked_reason": "",
+    "fail_code": null,
+    "new_status": "done",
+    "next_action_hint": "Q02 auto-enqueued (1 work_items); worker daemons will dispatch on next tick",
+    "recorded": true,
+    "smoke_result": "deferred_p2_smoke",
+    "task_id": "1ff95a74-9fb9-4f02-b384-4d1deacb435f"
+  }
+}
