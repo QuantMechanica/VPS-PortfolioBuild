@@ -42,10 +42,12 @@ data, grid, martingale, or ML is involved.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
-| v1 | 2026-07-03 | initial Baker Hughes XNG rig-count Friday momentum build | Q02 | PENDING |
+| v1 | 2026-07-03 | initial Baker Hughes XNG rig-count Friday momentum build | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-03 | APPROVED | `strategy-seeds/cards/xng-rig-fri-mom_card.md` |
+| Q01 Build Validation | 2026-07-03 | PASS | `artifacts/qm5_12997_build_result.json` |
+| Q02 Baseline Screening | 2026-07-03 | QUEUED | `D:\QM\strategy_farm\state\farm_state.sqlite` work item `26ed76db-8424-4424-acf3-0a156e460658` |

@@ -1,0 +1,80 @@
+{
+  "ea_id": "QM5_12997",
+  "slug": "xng-rig-fri-mom",
+  "built_at_utc": "2026-07-03T13:26:00Z",
+  "edge": "Weekly Baker Hughes rig-count release-cadence D1 momentum on XNGUSD.DWX",
+  "source_id": "BAKERHUGHES-RIGCOUNT-2026",
+  "files": {
+    "ea": "framework/EAs/QM5_12997_xng-rig-fri-mom/QM5_12997_xng-rig-fri-mom.mq5",
+    "ex5": "framework/EAs/QM5_12997_xng-rig-fri-mom/QM5_12997_xng-rig-fri-mom.ex5",
+    "setfile": "framework/EAs/QM5_12997_xng-rig-fri-mom/sets/QM5_12997_xng-rig-fri-mom_XNGUSD.DWX_D1_backtest.set",
+    "strategy_card": "strategy-seeds/cards/xng-rig-fri-mom_card.md",
+    "approved_card": "strategy-seeds/cards/approved/QM5_12997_xng-rig-fri-mom_card.md",
+    "source": "strategy-seeds/sources/BAKERHUGHES-RIGCOUNT-2026/source.md",
+    "spec": "framework/EAs/QM5_12997_xng-rig-fri-mom/SPEC.md"
+  },
+  "hashes": {
+    "mq5_sha256": "a89210feb6f0e8fc49549c321127a2539ed126f56a0d40659d5c1627bd76be44",
+    "ex5_sha256": "865a25dd43ab6ce542bb1c74916ec93836aaa24017ca9952ca16f37eb63fee05",
+    "setfile_sha256": "07b2ee7c3a73c53c058ba791917296155c00b79b11d409b2b5940c3f123ac231",
+    "setfile_header_build_hash": "fd329af486e674e14c61b75d466a64eb7395b5ebd18e554a8867b3e9eed929e4"
+  },
+  "compile_one": {
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "compile_log": "C:/QM/repo/framework/build/compile/20260703_132516/QM5_12997_xng-rig-fri-mom.compile.log",
+    "summary": "D:/QM/reports/compile/20260703_132516/summary.csv"
+  },
+  "build_check": {
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report": "D:/QM/reports/framework/21/build_check_20260703_132515.json",
+    "note": "Warnings are pre-existing static advisories in shared framework include files; this EA compiled with zero warnings."
+  },
+  "preflight_checks": {
+    "card_lint": "PASS",
+    "spec_present": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "magic_registry": {
+      "ea_id": 12997,
+      "slot": 0,
+      "symbol": "XNGUSD.DWX",
+      "magic": 129970000,
+      "status": "active"
+    }
+  },
+  "risk_mode": {
+    "backtest": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "duplicate_check": {
+    "selected_edge": "XNGUSD.DWX weekly Baker Hughes rig-count release-cadence D1 momentum",
+    "non_duplicate_reason": "No local Baker Hughes natural-gas rig-count momentum sleeve exists. This is not WTI rig-count, EIA storage, winter/freeze, hurricane, LNG, XNG RSI pullback, XNG weekday/month/weekend, XTI/XNG relative value, gas/gold, XAU/XAG, metal-ratio, or QM5_12567 commodity RSI logic."
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "queue_db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "phase": "Q02",
+    "kind": "backtest",
+    "symbol": "XNGUSD.DWX",
+    "host_symbol": "XNGUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_12997_xng-rig-fri-mom/sets/QM5_12997_xng-rig-fri-mom_XNGUSD.DWX_D1_backtest.set",
+    "work_item_id": "26ed76db-8424-4424-acf3-0a156e460658",
+    "status_after_final_check": "pending",
+    "created_at_utc": "2026-07-03T13:26:05+00:00",
+    "updated_at_utc": "2026-07-03T13:26:05+00:00",
+    "enqueued_by": "record_build_result.auto_q02"
+  },
+  "guards": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  },
+  "notes": "Built one non-duplicate structural XNG energy sleeve. No manual MT5 backtest was launched from this session."
+}

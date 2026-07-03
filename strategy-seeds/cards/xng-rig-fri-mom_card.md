@@ -230,10 +230,12 @@ claim. Q02 and later phases must validate or reject the mechanical
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
-| v1 | 2026-07-03 | initial Baker Hughes natural-gas rig-count Friday momentum card | Q02 | PENDING |
+| v1 | 2026-07-03 | initial Baker Hughes natural-gas rig-count Friday momentum card | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-03 | APPROVED | this card |
+| Q01 Build Validation | 2026-07-03 | PASS | `artifacts/qm5_12997_build_result.json` |
+| Q02 Baseline Screening | 2026-07-03 | QUEUED | `D:\QM\strategy_farm\state\farm_state.sqlite` work item `26ed76db-8424-4424-acf3-0a156e460658` |
