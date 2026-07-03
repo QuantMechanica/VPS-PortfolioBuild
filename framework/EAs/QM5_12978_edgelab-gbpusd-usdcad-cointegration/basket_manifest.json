@@ -1,0 +1,15 @@
+{
+  "logical_symbol": "QM5_12978_GBPUSD_USDCAD_COINTEGRATION_D1",
+  "host_symbol": "GBPUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "GBPUSD.DWX",
+    "USDCAD.DWX"
+  ],
+  "notes": [
+    "Two-leg GBPUSD/USDCAD FX cointegration candidate from a full 66-pair rerun that includes negative hedge ratios. The published positive-hedge scan hard-certified only QM5_12533 and QM5_12532; this row is the top unbuilt full-scan candidate with DEV net Sharpe 0.26 and OOS net Sharpe 1.55.",
+    "The scan hedge is negative, so the EA trades the second leg with sign(-beta) direction: long spread means long GBPUSD and long USDCAD, short spread means short both legs. Q02 uses USD tester currency and the canonical RISK_FIXED=1000 budget."
+  ]
+}

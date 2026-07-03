@@ -14344,3 +14344,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9503,williams-ocr-extension-h4,10,NDX.DWX,95030010,2026-07-03,Codex,active
 9503,williams-ocr-extension-h4,11,WS30.DWX,95030011,2026-07-03,Codex,active
 9503,williams-ocr-extension-h4,12,UK100.DWX,95030012,2026-07-03,Codex,active
+12978,edgelab-gbpusd-usdcad-cointegration,0,GBPUSD.DWX,129780000,2026-07-03,Development,active
+12978,edgelab-gbpusd-usdcad-cointegration,1,USDCAD.DWX,129780001,2026-07-03,Development,active
