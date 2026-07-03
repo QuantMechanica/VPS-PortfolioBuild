@@ -1,0 +1,80 @@
+{
+  "date_local": "2026-07-03",
+  "branch": "agents/board-advisor",
+  "mission_scope": "Advance an existing non-duplicate FX market-neutral cointegration basket because the original strict 66-pair survivors QM5_12532/QM5_12533 are no longer Q02-blocked and QM5_13003 was already built with one pending logical Q02 row.",
+  "selected_existing_basket": {
+    "ea_id": "QM5_13003",
+    "slug": "edgelab-usdcad-nzdusd-cointegration",
+    "pair": "USDCAD~NZDUSD",
+    "logical_symbol": "QM5_13003_USDCAD_NZDUSD_COINTEGRATION_D1",
+    "basket_symbols": [
+      "USDCAD.DWX",
+      "NZDUSD.DWX"
+    ],
+    "selection_basis": "Approved Chan/in-house 66-pair full-scan extension; next unbuilt strict row at build time when negative hedge ratios were retained. At this mission turn it was already built and awaiting Q02."
+  },
+  "precheck": {
+    "qm5_12532_q02": "PASS",
+    "qm5_12532_latest_observed_state": "Q05 done FAIL",
+    "qm5_12533_q02": "PASS",
+    "qm5_12533_latest_observed_state": "Q04 done FAIL",
+    "target_q02_work_item_before": {
+      "id": "48141c69-b04f-4ebc-a6fe-fd15bc30317e",
+      "phase": "Q02",
+      "status": "pending",
+      "priority_track": null,
+      "symbol": "QM5_13003_USDCAD_NZDUSD_COINTEGRATION_D1"
+    },
+    "farm_active_work_items_before": 5,
+    "farm_pending_work_items_before": 6143
+  },
+  "queue_action": {
+    "action": "payload_priority_update",
+    "work_item_id": "48141c69-b04f-4ebc-a6fe-fd15bc30317e",
+    "phase": "Q02",
+    "status_after": "pending",
+    "updated_at_utc": "2026-07-03T21:17:29.561719Z",
+    "priority_track": true,
+    "priority_reason": "OWNER 2026-07-03 forex portfolio mission: advance existing non-duplicate QM5_13003 USDCAD~NZDUSD market-neutral FX cointegration Q02 row while factory is CPU-saturated; no duplicate enqueue.",
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_13003_q02_priority_20260703T211729Z.sqlite",
+    "event_id": 210283,
+    "duplicate_q02_rows_total_after": 1,
+    "duplicate_q02_rows_open_after": 1
+  },
+  "verification": {
+    "build_check": {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13003_edgelab-usdcad-nzdusd-cointegration -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 16,
+      "warning_note": "Known shared-framework DWX advisory warnings only.",
+      "report_path": "D:/QM/reports/framework/21/build_check_20260703_211627.json"
+    },
+    "basket_manifest_tests": {
+      "command": "python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py -q",
+      "result": "PASS",
+      "tests": 9
+    },
+    "queue_status_helper_test": {
+      "command": "python -m unittest framework.scripts.tests.test_mt5_queue_status",
+      "result": "PASS",
+      "tests": 2
+    },
+    "status_helper": {
+      "command": "python framework/scripts/mt5_queue_status.py --sqlite D:/QM/strategy_farm/state/farm_state.sqlite --limit 10",
+      "result": "schema=work_items; active=5; pending=6141; queued_top[1]=QM5_13003 Q02 priority_track=true"
+    }
+  },
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "new_backtest_enqueued": false,
+    "duplicate_queue_row_created": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
