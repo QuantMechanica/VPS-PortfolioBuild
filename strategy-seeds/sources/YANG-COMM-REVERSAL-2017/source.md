@@ -10,6 +10,7 @@ cards_extracted:
   - comm-reversal-4wk-xngusd
   - comm-reversal-4wk-xtiusd
   - commodity-reversal-1m
+  - wti-6m-reversal
 ---
 
 # Yang-Goncu-Pantelous Commodity Reversal Source
@@ -29,6 +30,10 @@ market-neutral commodity basket using Darwinex MT5 D1 OHLC only.
 The EAs do not ingest futures-chain data, CFTC data, inventory data, analyst
 forecasts, APIs, CSV files, or external feeds at runtime. They convert the
 academic reversal family into fixed D1 price rules with ATR-bounded risk.
+
+`wti-6m-reversal` extends the same reversal lineage to an intermediate
+120-D1 monthly WTI horizon. It is explicitly separate from the existing 20-D1
+and 63-D1 WTI reversal builds, and from 9/12-month WTI momentum or carry.
 
 ## Extracted Card
 

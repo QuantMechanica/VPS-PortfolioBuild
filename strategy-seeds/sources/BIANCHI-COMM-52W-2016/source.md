@@ -9,6 +9,7 @@ cards_extracted:
   - wti-52w-anchor
   - xng-52w-anchor
   - brent-52w-anchor
+  - wti-6m-reversal
 ---
 
 # Bianchi-Drew-Fan Commodity 52-Week High Source
@@ -33,6 +34,11 @@ The EA does not ingest futures-chain data, inventory data, CFTC data,
 analyst forecasts, APIs, CSV files, or external feeds at runtime. It uses only
 Darwinex MT5 D1 close data, broker calendar, spread, ATR, and the V5 framework
 risk/news/friday-close guards.
+
+`wti-6m-reversal` uses this source only as behavioural commodity-overextension
+lineage, with Yang-Goncu-Pantelous as the direct reversal supplement. It is a
+monthly WTI 120-D1 overextension fade, not the 52-week high/low momentum-anchor
+rule and not the shorter 20-D1 or 63-D1 WTI reversal cards.
 
 ## R-Rules
 
