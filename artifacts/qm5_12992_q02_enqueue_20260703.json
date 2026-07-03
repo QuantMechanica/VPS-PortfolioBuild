@@ -1,0 +1,30 @@
+{
+  "ea_id": "QM5_12992",
+  "slug": "eia-steo-brk",
+  "phase": "Q02",
+  "enqueued_at_utc": "2026-07-03T08:13:44+00:00",
+  "enqueue_tool": "tools/strategy_farm/sweep_enqueue_built_eas.py",
+  "enqueue_result": {
+    "part1_never_tested_enqueued": 1,
+    "part1_never_tested_skipped": 0,
+    "part2_stranded_enqueued": 0,
+    "part3_deferred_promoted": 0
+  },
+  "work_item": {
+    "id": "c234d326-3f93-41fc-b8f6-77e6a0f1b60e",
+    "phase": "Q02",
+    "symbol": "XTIUSD.DWX",
+    "status": "pending",
+    "attempt_count": 0,
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_12992_eia-steo-brk/sets/QM5_12992_eia-steo-brk_XTIUSD.DWX_D1_backtest.set",
+    "payload": {
+      "host_symbol": "XTIUSD.DWX",
+      "host_timeframe": "D1",
+      "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested"
+    }
+  },
+  "first_attempt": {
+    "result": "database_locked",
+    "resolution": "Retried after 10 seconds and enqueue succeeded."
+  }
+}

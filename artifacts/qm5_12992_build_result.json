@@ -1,0 +1,39 @@
+{
+  "ea_id": "QM5_12992",
+  "slug": "eia-steo-brk",
+  "built_at_utc": "2026-07-03T08:13:03Z",
+  "edge": "Monthly EIA STEO proxy D1 breakout on XTIUSD.DWX",
+  "source_id": "EIA-STEO-XTI-BRK-2026",
+  "files": {
+    "ea": "framework/EAs/QM5_12992_eia-steo-brk/QM5_12992_eia-steo-brk.mq5",
+    "ex5": "framework/EAs/QM5_12992_eia-steo-brk/QM5_12992_eia-steo-brk.ex5",
+    "setfile": "framework/EAs/QM5_12992_eia-steo-brk/sets/QM5_12992_eia-steo-brk_XTIUSD.DWX_D1_backtest.set",
+    "strategy_card": "strategy-seeds/cards/eia-steo-brk_card.md",
+    "source": "strategy-seeds/sources/EIA-STEO-XTI-BRK-2026/source.md"
+  },
+  "compile_one": {
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "compile_log": "C:/QM/repo/framework/build/compile/20260703_081053/QM5_12992_eia-steo-brk.compile.log",
+    "summary": "D:/QM/reports/compile/20260703_081053/summary.csv"
+  },
+  "build_check": {
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report": "D:/QM/reports/framework/21/build_check_20260703_081228.json",
+    "note": "Warnings are pre-existing static advisories in framework include files; this EA compiled with zero warnings."
+  },
+  "risk_mode": {
+    "backtest": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0
+  },
+  "guards": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  }
+}
