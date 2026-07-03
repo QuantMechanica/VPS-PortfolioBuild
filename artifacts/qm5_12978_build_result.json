@@ -1,0 +1,139 @@
+{
+  "task_id": "999f869a-d57a-49ee-b0dd-b1e2f0bab8b7",
+  "ea_id": "QM5_12978",
+  "slug": "edgelab-gbpusd-usdcad-cointegration",
+  "strategy": "GBPUSD/USDCAD D1 market-neutral FX cointegration basket",
+  "source_id": "claude_cross_asset_discovery_2026-06-09",
+  "source_citation": "Chan, Ernest P. (2009). Quantitative Trading. Wiley, Chapter 7 stationarity and cointegration; plus QuantMechanica in-house 66-pair FX cointegration scan rerun on Darwinex .DWX D1 data.",
+  "symbols": [
+    "GBPUSD.DWX",
+    "USDCAD.DWX"
+  ],
+  "logical_symbol": "QM5_12978_GBPUSD_USDCAD_COINTEGRATION_D1",
+  "host_symbol": "GBPUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12978_edgelab-gbpusd-usdcad-cointegration",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12978_edgelab-gbpusd-usdcad-cointegration\\QM5_12978_edgelab-gbpusd-usdcad-cointegration.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12978_edgelab-gbpusd-usdcad-cointegration\\QM5_12978_edgelab-gbpusd-usdcad-cointegration.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12978_edgelab-gbpusd-usdcad-cointegration\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\edgelab-gbpusd-usdcad-cointegration_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12978_edgelab-gbpusd-usdcad-cointegration_card.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12978_edgelab-gbpusd-usdcad-cointegration.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12978_edgelab-gbpusd-usdcad-cointegration\\basket_manifest.json",
+  "magic_base": 129780000,
+  "symbols_registered": [
+    "GBPUSD.DWX",
+    "USDCAD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12978_edgelab-gbpusd-usdcad-cointegration\\sets\\QM5_12978_edgelab-gbpusd-usdcad-cointegration_QM5_12978_GBPUSD_USDCAD_COINTEGRATION_D1_D1_backtest.set"
+  ],
+  "mq5_sha256": "8517a6b42a3a2f78121ac2396ee7543062b6923b01667868c2daa73c263c5dcd",
+  "ex5_sha256": "9ca8a4a0336c80ef5e5f6e6702a43ddb364e8955b35ef3df9e3ea104e60e144b",
+  "setfile_header_build_hash": "ee3102263a106abe0cb40ade23ec96da0523af80244e1b60cbdafa3e8389f899",
+  "setfile_current_sha256": "e9af5dc7723f1ee4405ebaaa2a63e5d763cba9124b64190d69e17638c975eafaa",
+  "scan_ranking": {
+    "source": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "hard_bar_survivor": true,
+    "rank_by_oos_net_sharpe_full_hedge": 2,
+    "dev_sharpe": 0.2612,
+    "oos_net_sharpe": 1.5477,
+    "oos_return_pct": 9.0401,
+    "oos_state_changes": 19,
+    "hedge_beta": -1.140460285727,
+    "half_life_days": 62.39,
+    "selection_note": "Top unbuilt strict 66-pair scan row when negative hedge ratios are retained. The published positive-hedge scan only surfaced QM5_12533 and QM5_12532."
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "GBPUSD.DWX",
+        "magic": 129780000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "USDCAD.DWX",
+        "magic": 129780001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "card_lint": {
+    "command": "python framework/scripts/skill_card_schema_lint.py --card strategy-seeds/cards/approved/QM5_12978_edgelab-gbpusd-usdcad-cointegration_card.md",
+    "result": "PASS"
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_12978_edgelab-gbpusd-usdcad-cointegration",
+    "result": "PASS"
+  },
+  "symbol_scope": {
+    "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_12978_edgelab-gbpusd-usdcad-cointegration --verbose",
+    "result": "BASKET_OK"
+  },
+  "manifest_tests": {
+    "command": "python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py -q",
+    "result": "PASS",
+    "tests": 9
+  },
+  "compile": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12978_edgelab-gbpusd-usdcad-cointegration/QM5_12978_edgelab-gbpusd-usdcad-cointegration.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260703_002600\\QM5_12978_edgelab-gbpusd-usdcad-cointegration.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260703_002600\\summary.csv"
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12978_edgelab-gbpusd-usdcad-cointegration -RepoRoot C:\\QM\\repo -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260703_002613.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "q02": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm record-build --task-id 999f869a-d57a-49ee-b0dd-b1e2f0bab8b7 --result-file D:/QM/strategy_farm/artifacts/builds/999f869a-d57a-49ee-b0dd-b1e2f0bab8b7.json",
+    "phase": "Q02",
+    "work_item_id": "b1656e8e-d9dc-4a7b-b5a2-ba8e3ff0150b",
+    "status_at_handoff": "pending",
+    "claimed_by": null,
+    "symbol": "QM5_12978_GBPUSD_USDCAD_COINTEGRATION_D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12978_edgelab-gbpusd-usdcad-cointegration\\sets\\QM5_12978_edgelab-gbpusd-usdcad-cointegration_QM5_12978_GBPUSD_USDCAD_COINTEGRATION_D1_D1_backtest.set",
+    "basket_symbols": [
+      "GBPUSD.DWX",
+      "USDCAD.DWX"
+    ],
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1,
+      "tester_currency": "USD",
+      "tester_deposit": 100000
+    },
+    "enqueued_at_utc": "2026-07-03T00:28:37+00:00",
+    "note": "Auto-enqueued by farmctl record-build as one logical-basket Q02 work item. Not manually dispatched because the paced factory already had four active MT5 jobs."
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Paced fleet Q02 will run the first tester pass; no manual MT5 backtest was launched from this session.",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  },
+  "notes": "Built one non-duplicate GBPUSD/USDCAD FX cointegration basket. Negative-beta leg direction is explicit. No live, T_Live, AutoTrading, or portfolio gate artifacts touched."
+}
