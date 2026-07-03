@@ -3,7 +3,7 @@
 ; ea_id:        1554
 ; ea_slug:      bressert-double-cycle-composite-h4
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260703-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    H4
 ; environment:  backtest
@@ -12,11 +12,25 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1554
 qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1554_bressert-double-cycle-composite-h4.md
+strategy_trading_cycle_bars=24
+strategy_intermediate_cycle_bars=96
+strategy_trading_tolerance_bars=2
+strategy_intermediate_tolerance_bars=4
+strategy_dss_period=13
+strategy_dss_slow=8
+strategy_dss_smoothing=5
+strategy_dss_oversold=20.0
+strategy_dss_overbought=80.0
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_spread_atr_mult=0.4
+strategy_regime_sma_period=200

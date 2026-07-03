@@ -3,20 +3,33 @@
 ; ea_id:        1800
 ; ea_slug:      chande-vidya-cross-h4
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260703-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   8
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a7da81ac68255f79a62408c790f5e51bd8eed13558ea45be738f0924ac34c56c
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1800
 qm_magic_slot_offset=8
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1800_chande-vidya-cross-h4.md
+strategy_fast_vidya_period=12
+strategy_fast_cmo_period=9
+strategy_slow_vidya_period=48
+strategy_slow_cmo_period=27
+strategy_d1_ema_period=50
+strategy_atr_period=20
+strategy_initial_atr_mult=2.5
+strategy_trail_atr_mult=2.0
+strategy_trail_trigger_atr=1.5
+strategy_spread_atr_mult=0.35
+strategy_max_hold_h4_bars=30
+strategy_vidya_warmup_bars=160
