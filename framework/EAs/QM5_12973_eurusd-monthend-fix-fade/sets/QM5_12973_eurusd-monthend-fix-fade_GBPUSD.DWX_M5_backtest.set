@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12973
+; ea_slug:      eurusd-monthend-fix-fade
+; ea_version:   v5.0
+; set_version:  s20260703-001
+; symbol:       GBPUSD.DWX
+; timeframe:    M5
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   6495fea68c3dd921da2f140f65ac4f3fc88b08ce9ff710ece002c01df31b2b2e
+; author:       Development
+; date:         2026-07-03
+;==========================================================
+qm_ea_id=12973
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12973_eurusd-monthend-fix-fade.md
+strategy_fix_start_london_hhmm=1500
+strategy_fix_end_london_hhmm=1600
+strategy_entry_after_hhmm=1605
+strategy_entry_until_hhmm=1700
+strategy_exit_london_hhmm=1800
+strategy_daily_atr_period=14
+strategy_m5_atr_period=14
+strategy_trigger_atr_frac=0.5
+strategy_stop_atr_mult=1.0
+strategy_max_spread_points=0
