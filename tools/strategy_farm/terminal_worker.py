@@ -1149,6 +1149,35 @@ def _work_item_preflight_failure(item: sqlite3.Row) -> dict[str, Any] | None:
     return None
 
 
+_STALE_PREFLIGHT_PAYLOAD_KEYS = (
+    "preflight_failure",
+    "preflight_failed_at",
+    "verdict_reason",
+    "repair_handler",
+    "repair_note",
+    "report_root",
+    "pid",
+    "started_at_iso",
+    "log_path",
+    "run_smoke_exit_code",
+    "adopted_active_child_at_iso",
+)
+
+
+def _clear_stale_preflight_payload(payload: dict[str, Any], now: str) -> bool:
+    """Drop old preflight/runtime fields once the current preflight is clean."""
+    if "preflight_failure" not in payload and "preflight_failed_at" not in payload:
+        return False
+    failure = payload.get("preflight_failure")
+    reason = failure.get("reason") if isinstance(failure, dict) else None
+    for key in _STALE_PREFLIGHT_PAYLOAD_KEYS:
+        payload.pop(key, None)
+    payload["cleared_stale_preflight_at"] = now
+    if reason:
+        payload["cleared_stale_preflight_reason"] = str(reason)
+    return True
+
+
 def _fail_work_item_preflight(root: Path, item: sqlite3.Row, failure: dict[str, Any]) -> dict[str, Any]:
     now = farmctl.utc_now()
     report_root = Path(r"D:\QM\reports\work_items") / str(item["id"])
@@ -1541,6 +1570,29 @@ def _run_claimed_item(root: Path, item: dict[str, Any], terminal: str, timeout_s
             **_fail_work_item_preflight(root, row, preflight_failure),
         }
     existing_payload = _json_loads(row["payload_json"])
+    stale_preflight_cleared_at = farmctl.utc_now()
+    if _clear_stale_preflight_payload(existing_payload, stale_preflight_cleared_at):
+        def _record_stale_preflight_clear() -> sqlite3.Row | None:
+            with farmctl.connect(root) as conn:
+                cur = conn.execute(
+                    """
+                    UPDATE work_items
+                    SET evidence_path=NULL, payload_json=?, updated_at=?
+                    WHERE id=? AND status='active'
+                    """,
+                    (json.dumps(existing_payload, sort_keys=True), stale_preflight_cleared_at, item["id"]),
+                )
+                if cur.rowcount != 1:
+                    conn.rollback()
+                    return None
+                conn.commit()
+                return conn.execute("SELECT * FROM work_items WHERE id=?", (item["id"],)).fetchone()
+
+        refreshed = _with_sqlite_retry(_record_stale_preflight_clear)
+        if not refreshed:
+            return {"action": "missing_item", "item_id": item["id"]}
+        row = refreshed
+        existing_payload = _json_loads(row["payload_json"])
     existing_pid = existing_payload.get("pid")
     if existing_pid and farmctl._pid_tree_exists(existing_pid):
         existing_payload["adopted_active_child_at_iso"] = farmctl.utc_now()

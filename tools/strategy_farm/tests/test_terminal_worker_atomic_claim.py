@@ -1227,6 +1227,130 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertTrue(Path(row[3]).exists())
             self.assertEqual(json.loads(row[4])["verdict_reason"], "ex5_missing")
 
+    def test_preflight_prefers_setfile_dir_when_sibling_versions_exist(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            repo = Path(tmp) / "repo"
+            base_dir = repo / "framework" / "EAs" / "QM5_9997_sibling"
+            v2_dir = repo / "framework" / "EAs" / "QM5_9997_sibling_v2"
+            sets = v2_dir / "sets"
+            sets.mkdir(parents=True)
+            base_dir.mkdir(parents=True)
+            (base_dir / "QM5_9997_sibling.ex5").write_bytes(b"compiled")
+            (v2_dir / "QM5_9997_sibling_v2.ex5").write_bytes(b"compiled")
+            setfile = sets / "QM5_9997_sibling_v2_XTIUSD.DWX_D1_backtest.set"
+            setfile.write_text("Symbol=XTIUSD.DWX\n", encoding="utf-8")
+
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO work_items
+                      (id, kind, phase, ea_id, symbol, setfile_path, status, verdict,
+                       attempt_count, parent_task_id, evidence_path, claimed_by,
+                       payload_json, created_at, updated_at)
+                    VALUES
+                      ('wi-sibling-v2', 'backtest', 'Q02', 'QM5_9997', 'XTIUSD.DWX', ?,
+                       'pending', NULL, 0, NULL, NULL, NULL, '{}', ?, ?)
+                    """,
+                    (str(setfile), now, now),
+                )
+                conn.commit()
+
+            old_repo_root = terminal_worker.farmctl.REPO_ROOT
+            try:
+                terminal_worker.farmctl.REPO_ROOT = repo
+                with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                    conn.row_factory = sqlite3.Row
+                    row = conn.execute("SELECT * FROM work_items WHERE id='wi-sibling-v2'").fetchone()
+
+                self.assertIsNone(terminal_worker._work_item_preflight_failure(row))
+            finally:
+                terminal_worker.farmctl.REPO_ROOT = old_repo_root
+
+    def test_run_claimed_item_clears_stale_preflight_before_spawn(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            repo = Path(tmp) / "repo"
+            ea_dir = repo / "framework" / "EAs" / "QM5_9996_stale-preflight"
+            sets = ea_dir / "sets"
+            sets.mkdir(parents=True)
+            setfile = sets / "QM5_9996_stale-preflight_XTIUSD.DWX_D1_backtest.set"
+            setfile.write_text("Symbol=XTIUSD.DWX\n", encoding="utf-8")
+            (ea_dir / "QM5_9996_stale-preflight.ex5").write_bytes(b"compiled")
+            old_evidence = root / "old" / "preflight_failure.json"
+            old_evidence.parent.mkdir(parents=True)
+            old_evidence.write_text("{}", encoding="utf-8")
+            payload = {
+                "preflight_failure": {"reason": "ea_dir_ambiguous", "detail": ["base", "v2"]},
+                "preflight_failed_at": "2026-07-03T07:42:34Z",
+                "verdict_reason": "ea_dir_ambiguous",
+                "repair_handler": "R11_pending_unclaimable_work_item",
+                "report_root": str(root / "old"),
+                "pid": 123456789,
+                "started_at_iso": "2026-07-03T07:42:34Z",
+                "log_path": str(root / "old" / "run.log"),
+            }
+
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO work_items
+                      (id, kind, phase, ea_id, symbol, setfile_path, status, verdict,
+                       attempt_count, parent_task_id, evidence_path, claimed_by,
+                       payload_json, created_at, updated_at)
+                    VALUES
+                      ('wi-stale-preflight', 'backtest', 'Q02', 'QM5_9996', 'XTIUSD.DWX', ?,
+                       'active', NULL, 0, NULL, ?, 'T1', ?, ?, ?)
+                    """,
+                    (str(setfile), str(old_evidence), json.dumps(payload), now, now),
+                )
+                conn.commit()
+
+            old_repo_root = terminal_worker.farmctl.REPO_ROOT
+            old_spawn = terminal_worker.farmctl._spawn_work_item_runner
+            old_pid_tree_exists = terminal_worker.farmctl._pid_tree_exists
+            try:
+                terminal_worker.farmctl.REPO_ROOT = repo
+                terminal_worker.farmctl._pid_tree_exists = lambda _pid: (_ for _ in ()).throw(
+                    AssertionError("stale preflight pid must be cleared before adoption")
+                )
+
+                def fake_spawn(_root: Path, item_row: sqlite3.Row, _terminal: str) -> dict[str, object]:
+                    spawn_payload = json.loads(item_row["payload_json"])
+                    for key in ("preflight_failure", "preflight_failed_at", "pid", "report_root", "log_path"):
+                        self.assertNotIn(key, spawn_payload)
+                    self.assertIsNone(item_row["evidence_path"])
+                    self.assertEqual(spawn_payload["cleared_stale_preflight_reason"], "ea_dir_ambiguous")
+                    return {
+                        "spawned": False,
+                        "pending_runner": True,
+                        "reason": "test_pending_runner",
+                        "log_path": str(root / "pending.log"),
+                        "report_root": str(root / "pending"),
+                    }
+
+                terminal_worker.farmctl._spawn_work_item_runner = fake_spawn
+                result = terminal_worker._run_claimed_item(root, {"id": "wi-stale-preflight"}, "T1", 30)
+            finally:
+                terminal_worker.farmctl.REPO_ROOT = old_repo_root
+                terminal_worker.farmctl._spawn_work_item_runner = old_spawn
+                terminal_worker.farmctl._pid_tree_exists = old_pid_tree_exists
+
+            self.assertEqual(result["action"], "pending_runner")
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute(
+                    "SELECT evidence_path, payload_json FROM work_items WHERE id='wi-stale-preflight'"
+                ).fetchone()
+            self.assertIsNone(row[0])
+            updated_payload = json.loads(row[1])
+            self.assertNotIn("preflight_failure", updated_payload)
+            self.assertNotIn("pid", updated_payload)
+            self.assertEqual(updated_payload["cleared_stale_preflight_reason"], "ea_dir_ambiguous")
+
     def test_preflight_resolves_absolute_setfile_outside_worker_repo_root(self) -> None:
         with self._root() as tmp:
             root = (Path(tmp) / "farm").resolve()
