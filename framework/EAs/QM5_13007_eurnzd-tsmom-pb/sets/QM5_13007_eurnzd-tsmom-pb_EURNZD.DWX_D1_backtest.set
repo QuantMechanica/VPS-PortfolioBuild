@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   665e362c6645db2936766e3240a48a07685fc7da8da811a3b50982e048d647c9
+; build_hash:   65cce3b8e94dc241afc7c476e353689ab37c872e93ab5e89518e10886a94e903
 ; author:       Development
 ; date:         2026-07-03
 ;==========================================================
@@ -21,8 +21,8 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_13007_eurnzd-tsmom-pb.md
-strategy_mid_lookback_d1_bars=126
-strategy_long_lookback_d1_bars=252
+strategy_fast_lookback_d1_bars=63
+strategy_slow_lookback_d1_bars=126
 strategy_atr_period=14
 strategy_atr_sl_mult=3.0
 strategy_max_spread_points=80

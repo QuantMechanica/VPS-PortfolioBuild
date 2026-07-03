@@ -9,8 +9,8 @@
 ## 1. Strategy Logic
 
 This EA applies the Moskowitz, Ooi, and Pedersen time-series momentum structure
-to EURNZD.DWX. On the first new D1 bar of each broker-calendar month, it
-compares the last completed close with the closes 126 and 252 D1 bars earlier.
+to EURNZD.DWX. On the first tradeable new D1 bar of each broker-calendar week,
+it compares the last completed close with the closes 63 and 126 D1 bars earlier.
 If both return signs are positive, the EA holds or opens long; if both are
 negative, it holds or opens short. If the two horizons disagree, it closes any
 open position and stays flat. Each new entry receives an ATR(14) x 3.0 hard stop.
@@ -23,8 +23,8 @@ pyramiding, trailing stops, or partial closes.
 
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
-| `strategy_mid_lookback_d1_bars` | 126 | 105-147 | Completed D1 bars used for the 6-month sign signal |
-| `strategy_long_lookback_d1_bars` | 252 | 210-294 | Completed D1 bars used for the 12-month sign signal |
+| `strategy_fast_lookback_d1_bars` | 63 | 42-84 | Completed D1 bars used for the 3-month sign signal |
+| `strategy_slow_lookback_d1_bars` | 126 | 105-147 | Completed D1 bars used for the 6-month sign signal |
 | `strategy_atr_period` | 14 | 10-20 | ATR period for the hard protective stop |
 | `strategy_atr_sl_mult` | 3.0 | 2.0-4.0 | ATR hard-stop distance multiplier |
 | `strategy_max_spread_points` | 80 | 50-120 | Maximum positive current spread allowed for new entries |
@@ -47,16 +47,16 @@ pyramiding, trailing stops, or partial closes.
 |---|---|
 | Base timeframe | D1 |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar()` plus `QM_CalendarPeriodKey(PERIOD_MN1)` monthly key |
+| Bar gating | `QM_IsNewBar()` plus `QM_CalendarPeriodKey(PERIOD_W1)` weekly key |
 
 ## 5. Expected Behaviour
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | about 6 direction or flat-state changes from 12 monthly checks |
-| Typical hold time | one or more calendar months while both horizons agree |
+| Trades / year / symbol | about 18-40 weekly swing entries after flat regimes and framework filters |
+| Typical hold time | one calendar week, with continuation while both horizons agree |
 | Expected drawdown profile | medium-high FX trend drawdown with flat exposure during horizon disagreement |
-| Regime preference | persistent EURNZD trends confirmed by both 6-month and 12-month returns |
+| Regime preference | persistent EURNZD trends confirmed by both 3-month and 6-month returns |
 | Win rate target (qualitative) | medium-low; trend-following payoff should come from larger winners |
 
 ## 6. Source Citation
@@ -86,3 +86,4 @@ ENV-to-mode validation is enforced by `QM_FrameworkInit`
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-03 | Initial build from approved EURNZD persistent-bias TSMOM card | Build task created by farmctl |
+| v2 | 2026-07-03 | Q01 zero-trade smoke rework | Weekly 3m/6m TSMOM cadence for observable low-frequency trade generation |

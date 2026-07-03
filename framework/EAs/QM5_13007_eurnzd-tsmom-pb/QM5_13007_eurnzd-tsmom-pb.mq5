@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_13007 EURNZD persistent-bias time-series momentum"
+#property description "QM5_13007 EURNZD weekly persistent-bias time-series momentum"
 
 #include <QM/QM_Common.mqh>
 
@@ -8,9 +8,9 @@
 // QM5_13007 - EURNZD Persistent-Bias Time-Series Momentum
 // -----------------------------------------------------------------------------
 // D1 structural FX sleeve:
-//   - first D1 bar of each broker-calendar month only
-//   - direction = sign agreement between 126- and 252-D1-bar return windows
-//   - disagreement flattens the EA until the next monthly agreement
+//   - first tradeable D1 bar of each broker-calendar week only
+//   - direction = sign agreement between 63- and 126-D1-bar return windows
+//   - disagreement flattens the EA until the next weekly agreement
 // Runtime uses MT5 OHLC/broker calendar only; no macro feed, API, ML, or grid.
 // =============================================================================
 
@@ -39,8 +39,8 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_mid_lookback_d1_bars  = 126;
-input int    strategy_long_lookback_d1_bars = 252;
+input int    strategy_fast_lookback_d1_bars = 63;
+input int    strategy_slow_lookback_d1_bars = 126;
 input int    strategy_atr_period            = 14;
 input double strategy_atr_sl_mult           = 3.0;
 input int    strategy_max_spread_points     = 80;
@@ -53,18 +53,18 @@ bool Strategy_IsEurnzdD1()
    return (_Symbol == "EURNZD.DWX" && _Period == PERIOD_D1 && qm_magic_slot_offset == 0);
   }
 
-bool Strategy_IsMonthlyRebalanceBar()
+int Strategy_WeeklyRebalanceKey()
   {
-   const int current_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
-   const int prior_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 1);
-   if(current_key <= 0 || prior_key <= 0)
+   return QM_CalendarPeriodKey(PERIOD_W1, _Symbol, 0);
+  }
+
+bool Strategy_IsWeeklyRebalancePending(int &current_key)
+  {
+   current_key = Strategy_WeeklyRebalanceKey();
+   if(current_key <= 0)
       return false;
    if(current_key == g_last_rebalance_key)
       return false;
-   if(current_key == prior_key)
-      return false;
-
-   g_last_rebalance_key = current_key;
    return true;
   }
 
@@ -122,12 +122,12 @@ int Strategy_ReturnDirection(const int lookback_bars)
 
 int Strategy_PersistentBiasDirection()
   {
-   const int mid_dir = Strategy_ReturnDirection(strategy_mid_lookback_d1_bars);
-   const int long_dir = Strategy_ReturnDirection(strategy_long_lookback_d1_bars);
-   if(mid_dir == 0 || long_dir == 0)
+   const int fast_dir = Strategy_ReturnDirection(strategy_fast_lookback_d1_bars);
+   const int slow_dir = Strategy_ReturnDirection(strategy_slow_lookback_d1_bars);
+   if(fast_dir == 0 || slow_dir == 0)
       return 0;
-   if(mid_dir == long_dir)
-      return mid_dir;
+   if(fast_dir == slow_dir)
+      return fast_dir;
    return 0;
   }
 
@@ -135,9 +135,9 @@ bool Strategy_NoTradeFilter()
   {
    if(!Strategy_IsEurnzdD1())
       return true;
-   if(strategy_mid_lookback_d1_bars < 42)
+   if(strategy_fast_lookback_d1_bars < 21)
       return true;
-   if(strategy_long_lookback_d1_bars <= strategy_mid_lookback_d1_bars)
+   if(strategy_slow_lookback_d1_bars <= strategy_fast_lookback_d1_bars)
       return true;
    if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return true;
@@ -156,7 +156,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!Strategy_IsMonthlyRebalanceBar())
+   int rebalance_key = 0;
+   if(!Strategy_IsWeeklyRebalancePending(rebalance_key))
       return false;
 
    const int direction = Strategy_PersistentBiasDirection();
@@ -169,6 +170,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(has_position)
          QM_TM_ClosePosition(existing_ticket, QM_EXIT_STRATEGY);
       g_last_target_state = 0;
+      g_last_rebalance_key = rebalance_key;
       return false;
      }
 
@@ -180,6 +182,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       if(existing_direction == direction)
         {
          g_last_target_state = direction;
+         g_last_rebalance_key = rebalance_key;
          return false;
         }
       if(!QM_TM_ClosePosition(existing_ticket, QM_EXIT_STRATEGY))
@@ -206,6 +209,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    g_last_target_state = direction;
+   g_last_rebalance_key = rebalance_key;
    return true;
   }
 
@@ -216,7 +220,7 @@ void Strategy_ManageOpenPosition()
 
 bool Strategy_ExitSignal()
   {
-   // Monthly flatten/reversal exits are handled inside Strategy_EntrySignal so
+   // Weekly flatten/reversal exits are handled inside Strategy_EntrySignal so
    // the framework consumes QM_IsNewBar() only once per D1 bar.
    return false;
   }
