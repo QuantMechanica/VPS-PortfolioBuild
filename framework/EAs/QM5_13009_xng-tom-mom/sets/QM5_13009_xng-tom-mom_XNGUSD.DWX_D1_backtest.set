@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13009
 ; ea_slug:      xng-tom-mom
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   TBD
+; build_hash:   c280c902f8da1c59ef14403c644c8771c4bbd54437bc69fba5c0fa1180139558
 ; author:       Development
 ; date:         2026-07-04
 ;==========================================================
