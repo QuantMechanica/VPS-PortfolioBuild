@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_12993_XNG_XAU_RSPREAD_D1",
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XNGUSD.DWX",
+    "XAUUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg XNG/XAU natural-gas/gold return-spread reversion basket from the approved CME-GAS-GOLD-RELVAL-2026 source packet. The EA runs from the XNGUSD.DWX host setfile and reads both D1 close series to compute a fixed-window natural-gas-minus-gold return spread. Q02 must evaluate the logical basket, not standalone legs."
+  ]
+}

@@ -14369,3 +14369,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12990,grimes-context-pb-v2,1,GBPUSD.DWX,129900001,2026-07-03,Codex,active
 12991,weiss-rsi-ma-v2,2,AUDCAD.DWX,129910002,2026-07-03,Codex,active
 12992,eia-steo-brk,0,XTIUSD.DWX,129920000,2026-07-03,Codex,active
+12993,xnggold-rspread,0,XNGUSD.DWX,129930000,2026-07-03,Codex,active
+12993,xnggold-rspread,1,XAUUSD.DWX,129930001,2026-07-03,Codex,active
