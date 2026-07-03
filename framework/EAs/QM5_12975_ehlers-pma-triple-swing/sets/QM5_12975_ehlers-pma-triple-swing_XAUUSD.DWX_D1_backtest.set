@@ -1,0 +1,32 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        12975
+; ea_slug:      ehlers-pma-triple-swing
+; ea_version:   v5.0
+; set_version:  s20260703-001
+; symbol:       XAUUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   5be42ab958d88912d2854c58e14fc041029c3b7ab94600e15ae531c186aab62c
+; author:       Development
+; date:         2026-07-03
+;==========================================================
+qm_ea_id=12975
+qm_magic_slot_offset=1
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=3
+qm_news_compliance=1
+qm_news_stale_max_hours=336
+qm_friday_close_enabled=0
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy_pma_slow_period=50
+strategy_pma_fast_period=10
+strategy_atr_period=14
+strategy_atr_mult=2.5
