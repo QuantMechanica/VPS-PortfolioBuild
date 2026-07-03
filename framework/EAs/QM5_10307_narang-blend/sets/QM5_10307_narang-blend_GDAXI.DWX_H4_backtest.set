@@ -3,7 +3,7 @@
 ; ea_id:        10307
 ; ea_slug:      narang-blend
 ; ea_version:   v5.0
-; set_version:  s20260525-001
+; set_version:  s20260703-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    H4
 ; environment:  backtest
@@ -12,23 +12,31 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-25
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=10307
 qm_magic_slot_offset=21
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10307_narang-blend.md
+strategy_signal_tf=PERIOD_H4
+strategy_fast_ema_period=50
+strategy_slow_ema_period=200
+strategy_rsi_period=14
+strategy_rsi_long_level=35.0
+strategy_rsi_short_level=65.0
+strategy_rsi_long_exit_level=60.0
+strategy_rsi_short_exit_level=40.0
+strategy_atr_period=14
+strategy_expected_atr_mult=1.2
+strategy_atr_stop_mult=2.2
+strategy_cost_hurdle_mult=3.0
+strategy_commission_points=0
+strategy_max_hold_bars=18
+strategy_warmup_bars=230
+strategy_rollover_filter=true
+strategy_rollover_start_hour=21
+strategy_rollover_end_hour=23
+strategy_max_spread_points=0

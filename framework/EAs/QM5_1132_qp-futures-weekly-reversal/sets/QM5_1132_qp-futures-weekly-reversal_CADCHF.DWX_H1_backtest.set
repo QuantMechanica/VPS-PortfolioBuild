@@ -3,22 +3,23 @@
 ; ea_id:        1132
 ; ea_slug:      qp-futures-weekly-reversal
 ; ea_version:   v5.0
-; set_version:  s20260518-001
+; set_version:  s20260703-001
 ; symbol:       CADCHF.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   5
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   50a0612e033c57e5b849ae81f412ce39b3dbea7940a7416d794efe4a3a4344bb
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-18
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1132
 qm_magic_slot_offset=5
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
+; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1132_qp-futures-weekly-reversal.md
 strategy_volume_only=true
 strategy_atr_period=20

@@ -3,22 +3,23 @@
 ; ea_id:        1060
 ; ea_slug:      george-hwang-52w-high
 ; ea_version:   v5.0
-; set_version:  s20260517-001
+; set_version:  s20260703-001
 ; symbol:       NZDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   6
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   483481780bb75dde7cece2d4960fa3f409976bbf2efcaa04b8873b3fb3f1a980
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-17
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1060
 qm_magic_slot_offset=6
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
+; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1060_george-hwang-52w-high.md
 strategy_lookback_d1_bars=252
 strategy_rank_slots_each_side=2

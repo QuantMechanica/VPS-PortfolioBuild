@@ -3,22 +3,23 @@
 ; ea_id:        1132
 ; ea_slug:      qp-futures-weekly-reversal
 ; ea_version:   v5.0
-; set_version:  s20260518-001
+; set_version:  s20260703-001
 ; symbol:       SP500.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   27
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   20b0d783ddd0dc5b548874aca798f4438ddbeadeac289e6a9f019e152473fa93
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-18
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1132
 qm_magic_slot_offset=27
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
+; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1132_qp-futures-weekly-reversal.md
 strategy_volume_only=true
 strategy_atr_period=20
