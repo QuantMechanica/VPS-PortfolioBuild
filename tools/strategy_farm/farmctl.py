@@ -2857,11 +2857,52 @@ def _phase_artifact_summary(item_row: sqlite3.Row) -> tuple[Path, dict[str, Any]
     return None
 
 
-def _phase_runner_script_path(phase: str) -> Path | None:
+def _work_item_artifact_repo_root(item_row: sqlite3.Row) -> Path:
+    """Prefer the repo that owns an absolute work-item artifact path.
+
+    Factory workers can run from orchestration worktrees that lag the canonical
+    build branch. Basket rows carry absolute setfile/manifest paths; using that
+    path's repo keeps Q04+ phase runners aligned with the EA that is actually
+    under test.
+    """
+    paths: list[str] = []
+    try:
+        paths.append(str(item_row["setfile_path"] or ""))
+    except (KeyError, IndexError):
+        pass
+    try:
+        payload = json.loads(item_row["payload_json"] or "{}")
+    except (KeyError, IndexError, json.JSONDecodeError):
+        payload = {}
+    manifest = str(payload.get("basket_manifest") or "").strip()
+    if manifest:
+        paths.append(manifest)
+
+    for raw in paths:
+        if not raw:
+            continue
+        path = Path(raw)
+        if not path.is_absolute():
+            continue
+        try:
+            resolved = path.resolve()
+        except OSError:
+            resolved = path.absolute()
+        for parent in resolved.parents:
+            if parent.name.lower() != "framework":
+                continue
+            repo_root = parent.parent
+            if (repo_root / "framework" / "EAs").is_dir() and (repo_root / "framework" / "scripts").is_dir():
+                return repo_root
+    return REPO_ROOT
+
+
+def _phase_runner_script_path(phase: str, repo_root: Path | None = None) -> Path | None:
     script_name = PHASE_RUNNER_SCRIPTS.get(str(phase or "").strip())
     if not script_name:
         return None
-    path = REPO_ROOT / "framework" / "scripts" / script_name
+    root = repo_root or REPO_ROOT
+    path = root / "framework" / "scripts" / script_name
     return path if path.exists() else None
 
 
@@ -2889,9 +2930,11 @@ def _console_python_executable() -> str:
 
 def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
                                     report_root: Path,
-                                    terminal: str | None = None) -> list[str] | None:
+                                    terminal: str | None = None,
+                                    repo_root: Path | None = None) -> list[str] | None:
     phase = item_row["phase"]
-    script_path = _phase_runner_script_path(phase)
+    runner_repo_root = repo_root or _work_item_artifact_repo_root(item_row)
+    script_path = _phase_runner_script_path(phase, runner_repo_root)
     if script_path is None:
         return None
     inputs = _phase_runner_inputs(root, item_row["ea_id"], phase)
@@ -2911,7 +2954,17 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
     if payload.get("host_timeframe"):
         runner_period = str(payload["host_timeframe"])
     if runner_symbol == symbol:
-        basket_manifest = _load_basket_manifest(ea_id)
+        basket_manifest = None
+        manifest_path = str(payload.get("basket_manifest") or "").strip()
+        if manifest_path:
+            try:
+                path = Path(manifest_path)
+                if path.exists():
+                    basket_manifest = json.loads(path.read_text(encoding="utf-8-sig"))
+            except (OSError, json.JSONDecodeError):
+                basket_manifest = None
+        if basket_manifest is None:
+            basket_manifest = _load_basket_manifest(ea_id)
         if basket_manifest and str(basket_manifest.get("logical_symbol")) == str(symbol):
             runner_symbol = str(basket_manifest["host_symbol"])
             runner_period = str(basket_manifest["host_timeframe"])
@@ -3054,7 +3107,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
                     "MQL5" / "Logs" / "QM" / f"{ea_id}.log")
         cmd = [
             _console_python_executable(),
-            str(REPO_ROOT / "framework" / "scripts" / "q08_davey" / "aggregate.py"),
+            str(runner_repo_root / "framework" / "scripts" / "q08_davey" / "aggregate.py"),
             "--ea-id", str(int(ea_id.replace("QM5_", "").split("_")[0]))
                           if ea_id.startswith("QM5_") else ea_id,
             "--symbol", symbol,
@@ -3128,7 +3181,8 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
             "phase_runner": None,
         }
 
-    cmd = _phase_runner_cmd_for_work_item(root, item_row, report_root, terminal)
+    runner_repo_root = _work_item_artifact_repo_root(item_row)
+    cmd = _phase_runner_cmd_for_work_item(root, item_row, report_root, terminal, runner_repo_root)
     if cmd is None:
         msg = "phase runner not implemented yet -- skipping for now"
         with log_path.open("a", encoding="utf-8", newline="\n") as f:
@@ -3151,11 +3205,11 @@ def _spawn_phase_runner_for_work_item(root: Path, item_row: sqlite3.Row,
         creationflags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
     env = {**os.environ}
     env["PYTHONPATH"] = os.pathsep.join(
-        [str(REPO_ROOT), env.get("PYTHONPATH", "")]
+        [str(runner_repo_root), env.get("PYTHONPATH", "")]
     )
     proc = subprocess.Popen(
         cmd,
-        cwd=str(REPO_ROOT),
+        cwd=str(runner_repo_root),
         stdout=log_fh,
         stderr=subprocess.STDOUT,
         stdin=subprocess.DEVNULL,

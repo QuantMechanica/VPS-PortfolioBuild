@@ -1,0 +1,73 @@
+{
+  "date_local": "2026-07-03",
+  "branch": "agents/board-advisor",
+  "mission_scope": "Grow the certified V5 book with new forex sleeves via market-neutral FX cointegration baskets.",
+  "selected_existing_basket": {
+    "ea_id": "QM5_12712",
+    "slug": "edgelab-eurgbp-euraud-cointegration",
+    "pair": "EURGBP~EURAUD",
+    "logical_symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+    "why_selected": [
+      "The strict positive-hedge scan survivors QM5_12533 and QM5_12532 are not Q02-blocked.",
+      "No approved unbuilt EdgeLab FX cointegration card remains in the current repo.",
+      "QM5_12712 already has Q02 PASS, Q03 PASS, Q04 PASS, and Q05 PASS, with one Q06 row pending but carrying stale ea_dir_missing preflight metadata from the orchestration worker checkout."
+    ]
+  },
+  "code_change": {
+    "file": "tools/strategy_farm/farmctl.py",
+    "summary": "Phase-runner work items now derive the runner repo root from absolute setfile or basket_manifest artifact paths, so stale worker checkouts can spawn Q04+ runners from the repo that actually contains the basket EA."
+  },
+  "test_change": {
+    "file": "tools/strategy_farm/tests/test_basket_work_items.py",
+    "coverage": "Regression test for a stale worker checkout resolving Q06 from the canonical artifact repo."
+  },
+  "queue_repair": {
+    "action": "in_place_pending_q06_payload_repair",
+    "sqlite": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12712_q06_artifact_repo_repair_20260703T100703Z.sqlite",
+    "work_item_id": "305dd60d-e74d-4b6c-a5db-aef2dbacc327",
+    "phase": "Q06",
+    "status_after": "pending",
+    "updated_at_utc": "2026-07-03T10:07:03+00:00",
+    "priority_track": true,
+    "duplicate_pending_or_active_q06_rows_after": 1,
+    "evidence_path_after": null,
+    "cleared_stale_preflight": {
+      "reason": "ea_dir_missing",
+      "detail": "C:/QM/worktrees/codex-orchestration-1/framework/EAs/QM5_12712_*"
+    },
+    "resolved_runner_check": {
+      "repo_root": "C:/QM/repo",
+      "phase_runner": "C:/QM/repo/framework/scripts/q06_stress_harsh.py",
+      "baseline_setfile": "C:/QM/repo/framework/EAs/QM5_12712_edgelab-eurgbp-euraud-cointegration/sets/QM5_12712_edgelab-eurgbp-euraud-cointegration_QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1_D1_backtest.set"
+    }
+  },
+  "verification": {
+    "tests": [
+      {
+        "command": "python -m unittest tools.strategy_farm.tests.test_basket_work_items",
+        "result": "PASS"
+      },
+      {
+        "command": "python -m unittest tools.strategy_farm.tests.test_terminal_worker_atomic_claim.TerminalWorkerAtomicClaimTests.test_preflight_resolves_absolute_setfile_outside_worker_repo_root",
+        "result": "PASS"
+      },
+      {
+        "command": "python -m unittest tools.strategy_farm.tests.test_terminal_worker_atomic_claim",
+        "result": "PASS"
+      }
+    ],
+    "queue_status": "QM5_12712 Q06 priority_track=true is queued_top[0]; five factory work items are active, including one active basket QM5_12772 Q07, so no additional MT5 basket run was launched."
+  },
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "duplicate_queue_row_created": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false
+  }
+}

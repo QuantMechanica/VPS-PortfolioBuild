@@ -115,6 +115,69 @@ class BasketWorkItemsTests(unittest.TestCase):
             self.assertEqual(numeric["items"][0]["id"], "wi-12978")
             self.assertEqual(numeric["summary"], {"Q02_active": 1})
 
+    def test_phase_runner_uses_artifact_repo_when_worker_checkout_is_stale(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            source_repo = (Path(tmp) / "source_repo").resolve()
+            stale_worker_repo = (Path(tmp) / "stale_worker_repo").resolve()
+            ea_dir = source_repo / "framework" / "EAs" / "QM5_12712_demo"
+            sets_dir = ea_dir / "sets"
+            scripts_dir = source_repo / "framework" / "scripts"
+            sets_dir.mkdir(parents=True)
+            scripts_dir.mkdir(parents=True)
+            stale_worker_repo.mkdir(parents=True)
+            (scripts_dir / "q06_stress_harsh.py").write_text("# runner\n", encoding="utf-8")
+            setfile = sets_dir / "QM5_12712_demo_QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1_D1_backtest.set"
+            setfile.write_text("; basket setfile\n", encoding="utf-8")
+            manifest = {
+                "logical_symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+                "host_symbol": "EURGBP.DWX",
+                "host_timeframe": "D1",
+                "basket_symbols": ["EURGBP.DWX", "EURAUD.DWX"],
+            }
+            manifest_path = ea_dir / "basket_manifest.json"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            payload = {
+                "basket_manifest": str(manifest_path),
+                "logical_symbol": manifest["logical_symbol"],
+                "portfolio_scope": "basket",
+            }
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO work_items
+                      (id, kind, phase, ea_id, symbol, setfile_path, status, verdict,
+                       attempt_count, parent_task_id, evidence_path, claimed_by,
+                       payload_json, created_at, updated_at)
+                    VALUES
+                      ('wi-q06-stale-worker', 'backtest', 'Q06', 'QM5_12712',
+                       'QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1', ?,
+                       'pending', NULL, 0, NULL, NULL, NULL, ?, ?, ?)
+                    """,
+                    (str(setfile), json.dumps(payload), now, now),
+                )
+                conn.commit()
+                conn.row_factory = sqlite3.Row
+                row = conn.execute("SELECT * FROM work_items WHERE id='wi-q06-stale-worker'").fetchone()
+
+            old_repo_root = farmctl.REPO_ROOT
+            try:
+                farmctl.REPO_ROOT = stale_worker_repo
+                cmd = farmctl._phase_runner_cmd_for_work_item(root, row, root / "reports", "T6")
+                self.assertEqual(farmctl._work_item_artifact_repo_root(row), source_repo)
+            finally:
+                farmctl.REPO_ROOT = old_repo_root
+
+            self.assertIsNotNone(cmd)
+            self.assertEqual(Path(cmd[1]), scripts_dir / "q06_stress_harsh.py")
+            self.assertIn("--baseline-setfile", cmd)
+            self.assertEqual(cmd[cmd.index("--baseline-setfile") + 1], str(setfile))
+            self.assertIn("--logical-symbol", cmd)
+            self.assertIn("QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1", cmd)
+
     def test_p2_enqueue_uses_one_logical_basket_work_item(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp) / "farm"
