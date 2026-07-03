@@ -10,6 +10,7 @@ cards_extracted:
   - xng-52w-anchor
   - brent-52w-anchor
   - wti-6m-reversal
+  - brent-6m-rev
 ---
 
 # Bianchi-Drew-Fan Commodity 52-Week High Source
@@ -39,6 +40,11 @@ risk/news/friday-close guards.
 lineage, with Yang-Goncu-Pantelous as the direct reversal supplement. It is a
 monthly WTI 120-D1 overextension fade, not the 52-week high/low momentum-anchor
 rule and not the shorter 20-D1 or 63-D1 WTI reversal cards.
+
+`brent-6m-rev` applies the same intermediate overextension-fade structure to
+`XBRUSD.DWX`. It is intentionally separate from the Brent 52-week anchor
+momentum port, Brent calendar cards, WTI 6-month reversal, WTI/Brent spread
+cards, and XNG/metal sleeves.
 
 ## R-Rules
 

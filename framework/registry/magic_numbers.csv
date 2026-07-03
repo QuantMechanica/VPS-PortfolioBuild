@@ -14351,3 +14351,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9278,mql5-lw-outside,1,GBPUSD.DWX,92780001,2026-07-03,Codex,active
 9278,mql5-lw-outside,2,XAUUSD.DWX,92780002,2026-07-03,Codex,active
 9278,mql5-lw-outside,3,GDAXI.DWX,92780003,2026-07-03,Codex,active
+12980,brent-6m-rev,0,XBRUSD.DWX,129800000,2026-07-03,Codex,active
