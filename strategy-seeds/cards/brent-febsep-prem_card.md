@@ -197,11 +197,12 @@ Brent CFD port on Darwinex `XBRUSD.DWX` bars.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
-| v1 | 2026-07-03 | initial Brent February-September seasonal build | Q02 | PENDING |
+| v1 | 2026-07-03 | initial Brent February-September seasonal build | Q02 | QUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-03 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-03 | PENDING | local build in progress |
+| Q01 Build Validation | 2026-07-03 | PASS | `artifacts/qm5_12981_build_result.json`; `C:/QM/repo/framework/build/compile/20260703_025209/QM5_12981_brent-febsep-prem.compile.log`; `D:/QM/reports/framework/21/build_check_20260703_025359.json` |
+| Q02 Baseline Screening | 2026-07-03 | QUEUED | `D:/QM/strategy_farm/state/farm_state.sqlite` work_item `3f669727-d83b-4b15-b633-364240ef2aef` |

@@ -65,4 +65,4 @@ API, analyst forecast, ML, grid, martingale, or live-deploy artifact is used.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
-| v1 | 2026-07-03 | initial Brent February-September seasonal build | Q02 | PENDING |
+| v1 | 2026-07-03 | initial Brent February-September seasonal build | Q02 | QUEUED |
