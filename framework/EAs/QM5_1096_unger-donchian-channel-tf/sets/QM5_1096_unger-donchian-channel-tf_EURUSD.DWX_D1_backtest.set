@@ -3,20 +3,27 @@
 ; ea_id:        1096
 ; ea_slug:      unger-donchian-channel-tf
 ; ea_version:   v5.0
-; set_version:  s20260517-001
+; set_version:  s20260703-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   43b1002a3967cad1021858b899533e0e4c66403ead5ec19c65a2c87318bf6c53
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-17
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1096
 qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1096_unger-donchian-channel-tf.md
+strategy_donchian_period=20
+strategy_atr_period=20
+strategy_atr_sl_mult=2.5
+strategy_vol_floor_ratio=0.004
+strategy_spread_median_days=20
+strategy_spread_median_mult=2.0

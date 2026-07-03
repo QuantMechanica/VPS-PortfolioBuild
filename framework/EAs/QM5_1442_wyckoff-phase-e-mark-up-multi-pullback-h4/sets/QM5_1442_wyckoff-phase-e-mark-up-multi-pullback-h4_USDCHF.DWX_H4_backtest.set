@@ -3,7 +3,7 @@
 ; ea_id:        1442
 ; ea_slug:      wyckoff-phase-e-mark-up-multi-pullback-h4
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260703-001
 ; symbol:       USDCHF.DWX
 ; timeframe:    H4
 ; environment:  backtest
@@ -12,11 +12,38 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1442
 qm_magic_slot_offset=5
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1442_wyckoff-phase-e-mark-up-multi-pullback-h4.md
+strategy_tf=PERIOD_H4
+strategy_atr_period=20
+strategy_sma_period=20
+strategy_d1_sma_period=50
+strategy_d1_slope_bars=10
+strategy_anchor_min_bars=30
+strategy_anchor_max_bars=200
+strategy_range_lookback=30
+strategy_swing_lookback=8
+strategy_linreg_period=30
+strategy_recovery_min_bars=2
+strategy_recovery_max_bars=12
+strategy_reentry_spacing=8
+strategy_time_stop_bars=30
+strategy_break_atr_mult=0.50
+strategy_higher_low_atr=0.10
+strategy_pullback_min_atr=0.60
+strategy_pullback_max_atr=1.80
+strategy_slope_atr_mult=0.04
+strategy_spread_atr_mult=0.15
+strategy_entry_buffer_atr=0.15
+strategy_sl_atr_mult=0.30
+strategy_sl_cap_atr_mult=2.50
+strategy_tp1_atr_mult=0.10
+strategy_tp2_pullback_mult=1.50
+strategy_trail_break_atr=0.20

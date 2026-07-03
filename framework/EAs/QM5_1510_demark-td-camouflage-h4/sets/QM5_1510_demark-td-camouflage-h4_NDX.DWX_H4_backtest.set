@@ -3,7 +3,7 @@
 ; ea_id:        1510
 ; ea_slug:      demark-td-camouflage-h4
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260703-001
 ; symbol:       NDX.DWX
 ; timeframe:    H4
 ; environment:  backtest
@@ -12,11 +12,26 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1510
 qm_magic_slot_offset=5
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1510_demark-td-camouflage-h4.md
+strategy_atr_period=14
+strategy_ema_period=50
+strategy_d1_sma_period=50
+strategy_warmup_h4_bars=100
+strategy_range_atr_mult=1.20
+strategy_close_range_min=0.60
+strategy_opposite_lookback=14
+strategy_cluster_lookback=30
+strategy_cluster_max=2
+strategy_sl_atr_buffer=0.30
+strategy_tp1_atr_mult=1.20
+strategy_tp1_close_frac=0.60
+strategy_time_stop_bars=12
+strategy_spread_median_mult=1.50

@@ -3,7 +3,7 @@
 ; ea_id:        1518
 ; ea_slug:      hopwood-wilders-stoch-donchian-h4
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260703-001
 ; symbol:       USDCAD.DWX
 ; timeframe:    H4
 ; environment:  backtest
@@ -12,11 +12,31 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1518
 qm_magic_slot_offset=4
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1518_hopwood-wilders-stoch-donchian-h4.md
+strategy_tf=PERIOD_H4
+strategy_ema_period=200
+strategy_ema_slope_bars=5
+strategy_donchian_period=20
+strategy_pullback_bars=3
+strategy_stoch_k_period=14
+strategy_wilder_k_period=7
+strategy_wilder_d_period=3
+strategy_oversold=25.0
+strategy_overbought=75.0
+strategy_atr_period=14
+strategy_atr_mean_bars=100
+strategy_atr_active_mult=0.5
+strategy_atr_sl_mult=1.5
+strategy_cooldown_bars=16
+strategy_time_stop_bars=30
+strategy_tp1_close_pct=0.60
+strategy_warmup_bars=220
+strategy_spread_median_mult=1.5

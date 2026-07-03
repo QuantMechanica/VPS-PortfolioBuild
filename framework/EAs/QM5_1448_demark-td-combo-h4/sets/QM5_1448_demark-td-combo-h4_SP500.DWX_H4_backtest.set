@@ -3,7 +3,7 @@
 ; ea_id:        1448
 ; ea_slug:      demark-td-combo-h4
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260703-001
 ; symbol:       SP500.DWX
 ; timeframe:    H4
 ; environment:  backtest
@@ -12,11 +12,31 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1448
 qm_magic_slot_offset=13
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1448_demark-td-combo-h4.md
+strategy_setup_bars=9
+strategy_combo_bars=13
+strategy_setup_lookback=26
+strategy_uniqueness_bars=20
+strategy_atr_period=20
+strategy_atr_amplitude_mult=2.0
+strategy_spread_atr_mult=0.15
+strategy_macro_slope_atr=0.50
+strategy_macro_sma_period=50
+strategy_macro_slope_bars=10
+strategy_sl_atr_mult=1.5
+strategy_sl_range_mult=0.30
+strategy_sl_atr_cap=3.0
+strategy_tp1_range_mult=1.0
+strategy_tp2_range_mult=1.618
+strategy_tp1_close_fraction=0.60
+strategy_time_stop_bars=40
+strategy_invalidation_atr=0.30
+strategy_max_combo_positions=2

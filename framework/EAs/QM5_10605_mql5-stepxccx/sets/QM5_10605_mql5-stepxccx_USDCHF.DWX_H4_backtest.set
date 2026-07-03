@@ -3,7 +3,7 @@
 ; ea_id:        10605
 ; ea_slug:      mql5-stepxccx
 ; ea_version:   v5.0
-; set_version:  s20260602-001
+; set_version:  s20260703-001
 ; symbol:       USDCHF.DWX
 ; timeframe:    H4
 ; environment:  backtest
@@ -12,11 +12,26 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-06-02
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=10605
 qm_magic_slot_offset=4
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10605_mql5-stepxccx.md
+strategy_signal_tf=PERIOD_H4
+strategy_signal_bar=1
+strategy_d_smooth_method=4
+strategy_d_period=30
+strategy_d_phase=100
+strategy_m_smooth_method=7
+strategy_m_period=7
+strategy_m_phase=15
+strategy_price_mode=6
+strategy_step_fast=5
+strategy_step_slow=30
+strategy_atr_period=14
+strategy_atr_sl_mult=2.5
+strategy_time_stop_bars=16

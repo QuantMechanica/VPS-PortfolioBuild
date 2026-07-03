@@ -3,7 +3,7 @@
 ; ea_id:        1385
 ; ea_slug:      demark-td-range-expansion-h4
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260703-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    H4
 ; environment:  backtest
@@ -12,11 +12,31 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1385
 qm_magic_slot_offset=13
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1385_demark-td-range-expansion-h4.md
+strategy_tr_lookback=10
+strategy_expansion_min=1.50
+strategy_expansion_max=4.00
+strategy_close_strength=0.70
+strategy_body_ratio_min=0.55
+strategy_breakout_bars=5
+strategy_sma_period=50
+strategy_atr_period=14
+strategy_sl_atr_buffer=0.30
+strategy_sl_atr_cap=2.50
+strategy_tp_range_mult=1.50
+strategy_be_range_mult=0.75
+strategy_trail_atr_buffer=0.50
+strategy_time_stop_bars=18
+strategy_fade_bars=4
+strategy_cooldown_bars=12
+strategy_session_start_hr=6
+strategy_session_end_hr=22
+strategy_spread_atr_mult=0.40

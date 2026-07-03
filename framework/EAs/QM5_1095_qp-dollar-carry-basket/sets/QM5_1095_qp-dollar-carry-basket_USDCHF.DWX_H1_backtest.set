@@ -3,7 +3,7 @@
 ; ea_id:        1095
 ; ea_slug:      qp-dollar-carry-basket
 ; ea_version:   v5.0
-; set_version:  s20260518-001
+; set_version:  s20260703-001
 ; symbol:       USDCHF.DWX
 ; timeframe:    H1
 ; environment:  backtest
@@ -12,11 +12,21 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-18
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1095
 qm_magic_slot_offset=5
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1095_qp-dollar-carry-basket.md
+strategy_atr_period=20
+strategy_atr_sl_mult=5.0
+strategy_spread_days=20
+strategy_spread_mult=3.0
+strategy_rebalance_hour=1
+strategy_rate_csv_path="QM5_1095_dollar_carry_rates.csv"
+strategy_us_3m_rate=5.25
+strategy_basket_3m_rate=3.78
+strategy_basket_legs=7

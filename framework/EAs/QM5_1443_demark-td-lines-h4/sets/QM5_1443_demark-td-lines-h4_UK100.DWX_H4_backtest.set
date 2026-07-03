@@ -3,20 +3,34 @@
 ; ea_id:        1443
 ; ea_slug:      demark-td-lines-h4
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260703-001
 ; symbol:       UK100.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   11
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   7d9f47df750949516d6baa4431cf869d26e397535c179897fe54364de3a16673
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1443
 qm_magic_slot_offset=11
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1443_demark-td-lines-h4.md
+strategy_tf=PERIOD_H4
+strategy_atr_period=20
+strategy_d1_sma_period=50
+strategy_td_scan_bars=160
+strategy_min_line_span=4
+strategy_max_line_span=60
+strategy_reuse_cooldown=15
+strategy_spread_atr_mult=0.20
+strategy_entry_buffer_atr=0.15
+strategy_sl_atr_mult=1.50
+strategy_tp2_atr_mult=1.00
+strategy_time_stop_bars=25
+strategy_partial_pct=0.50
