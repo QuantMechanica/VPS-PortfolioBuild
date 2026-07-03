@@ -78,14 +78,48 @@ LOG_DIR = ROOT / "logs"
 REPORTS_DIR = ROOT / "reports"
 QUEUE_DIR = ROOT / "queue"
 REPO_ROOT = Path(__file__).resolve().parents[2]
-REGISTRY_DIR = REPO_ROOT / "framework" / "registry"
+# EA dirs are fully materialized ONLY in the canonical checkout; anchor to it
+# (mirrors farmctl.CANONICAL_REPO_ROOT / FRAMEWORK_EAS_DIR, 2026-07-03 incident).
+CANONICAL_REPO_ROOT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo"))
+CANONICAL_EAS_DIR = CANONICAL_REPO_ROOT / "framework" / "EAs"
+REGISTRY_DIR = CANONICAL_REPO_ROOT / "framework" / "registry"
 COMMON_Q08_STREAM_DIR = Path(r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files\QM\q08_trades")
+
+# Layer 3: mass-invalidation circuit breaker (2026-07-03 incident).
+# Any single repair run that would write >MASS_INVALIDATION_THRESHOLD INVALID verdicts
+# aborts without committing and writes a health alarm instead.
+MASS_INVALIDATION_THRESHOLD = 200
+HEALTH_ALARMS_LOG = ROOT / "state" / "health_alarms.log"
 
 
 def _utc_now() -> str:
     return dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.") + (
         dt.datetime.now(dt.timezone.utc).strftime("%f")[:6]
     ) + "Z"
+
+
+def _write_mass_invalidation_alarm(would_invalidate: int, sample_reason: str) -> None:
+    """Write a health alarm when the circuit breaker fires. Does not raise."""
+    try:
+        HEALTH_ALARMS_LOG.parent.mkdir(parents=True, exist_ok=True)
+        line = (
+            f"{_utc_now()} class=mass_invalidation "
+            f"would_invalidate={would_invalidate} "
+            f"threshold={MASS_INVALIDATION_THRESHOLD} "
+            f"sample_reason={sample_reason!r} "
+            f"action=ABORTED_NO_COMMIT\n"
+        )
+        with HEALTH_ALARMS_LOG.open("a", encoding="utf-8") as fh:
+            fh.write(line)
+        print(
+            f"[CIRCUIT BREAKER] mass_invalidation: {would_invalidate} work_items would be "
+            f"INVALID in this run (threshold={MASS_INVALIDATION_THRESHOLD}). "
+            f"No commits written. Check CANONICAL_EAS_DIR={CANONICAL_EAS_DIR} "
+            f"and QM_CANONICAL_REPO_ROOT env var. Set QM_ALLOW_NONCANONICAL=1 to override.",
+            file=__import__("sys").stderr,
+        )
+    except Exception:
+        pass
 
 
 def _connect() -> sqlite3.Connection:
@@ -532,7 +566,7 @@ def _pending_work_item_artifact_failure(row: sqlite3.Row) -> dict | None:
         return {"reason": "setfile_missing", "detail": str(setfile_path)}
 
     ea_id = str(row["ea_id"] or "")
-    ea_root = REPO_ROOT / "framework" / "EAs"
+    ea_root = CANONICAL_EAS_DIR
     ea_dir_from_setfile = farmctl._ea_dir_from_setfile_path(setfile_path, ea_id)
     candidates = (
         [ea_dir_from_setfile]
@@ -556,8 +590,13 @@ def _pending_work_item_artifact_failure(row: sqlite3.Row) -> dict | None:
 
 
 def repair_pending_unclaimable_work_items(con) -> list[dict]:
-    """R11: fail pending work_items that can never run because artifacts are missing."""
-    out = []
+    """R11: fail pending work_items that can never run because artifacts are missing.
+
+    Layer 3 circuit breaker: if the dry-run count of would-be INVALID verdicts
+    exceeds MASS_INVALIDATION_THRESHOLD, no writes are committed and a health
+    alarm is written instead (2026-07-03 mass-invalidation incident guard).
+    Override: set env QM_ALLOW_NONCANONICAL=1.
+    """
     rows = con.execute(
         """
         SELECT id, ea_id, symbol, phase, setfile_path, payload_json
@@ -566,11 +605,22 @@ def repair_pending_unclaimable_work_items(con) -> list[dict]:
         """
     ).fetchall()
     now = _utc_now()
-    for r in rows:
-        failure = _pending_work_item_artifact_failure(r)
-        if not failure:
-            continue
 
+    # --- dry-run pass: count failures before writing anything ---
+    if not os.environ.get("QM_ALLOW_NONCANONICAL"):
+        dry_failures = [(r, _pending_work_item_artifact_failure(r)) for r in rows]
+        would_invalidate = sum(1 for _, f in dry_failures if f)
+        if would_invalidate > MASS_INVALIDATION_THRESHOLD:
+            sample_reason = next((f["reason"] for _, f in dry_failures if f), "unknown")
+            _write_mass_invalidation_alarm(would_invalidate, sample_reason)
+            return []
+        pairs = [(r, f) for r, f in dry_failures if f]
+    else:
+        pairs = [(r, _pending_work_item_artifact_failure(r)) for r in rows]
+        pairs = [(r, f) for r, f in pairs if f]
+
+    out = []
+    for r, failure in pairs:
         report_root = ROOT / "reports" / "work_items" / str(r["id"])
         evidence_dir = report_root / str(r["ea_id"]) / str(r["phase"])
         evidence_dir.mkdir(parents=True, exist_ok=True)
