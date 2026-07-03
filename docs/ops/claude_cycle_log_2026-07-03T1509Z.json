@@ -1,0 +1,69 @@
+{
+  "cycle_timestamp": "2026-07-03T15:09Z",
+  "overall_health": "FAIL",
+  "health_summary": {
+    "fail": 1,
+    "warn": 3,
+    "ok": 18
+  },
+  "health_failures": [
+    {
+      "name": "codex_review_fail_rate_1h",
+      "value": 0.4,
+      "threshold": 0.8,
+      "detail": "2/5 system-class FAILs across 2 EAs in last hour",
+      "action_hint": "Inspect verdicts on framework_corset, magic_registry, or forbidden_grep — indicates Codex producing bad code or schema drift, NOT just strategy quality"
+    }
+  ],
+  "health_warnings": [
+    {
+      "name": "mt5_worker_saturation",
+      "value": 7,
+      "threshold": 10,
+      "detail": "7/10 terminal_worker daemons alive (T1-T7); T8-T10 absent (Codex FTMO terminals)"
+    },
+    {
+      "name": "source_pool_drained",
+      "value": 7,
+      "threshold": 10,
+      "detail": "only 7 pending sources"
+    },
+    {
+      "name": "unbuilt_cards_count",
+      "value": 293,
+      "threshold": 10,
+      "detail": "293 approved cards await build; Codex/build queue saturated (codex=1, pending_builds=25); no manual action while slots full"
+    }
+  ],
+  "pipeline_throughput": {
+    "q03_plus_pass_6h": 50,
+    "mt5_pending_items": 6211,
+    "mt5_active": 5,
+    "workers": 7
+  },
+  "router": {
+    "run_result": "no_routable_task",
+    "route_many_result": "no_routable_task",
+    "replenishment": "frozen (generic_research_replenishment_frozen_edge_lab_primary_2026-05-22)",
+    "ready_cards": 2434,
+    "claude_running": 0,
+    "claude_in_progress": 0
+  },
+  "qm5_10260_state": {
+    "q02": {"PASS": 16, "FAIL": 8, "INFRA_FAIL": 4, "active": 1},
+    "q03": {"PASS": 115, "FAIL": 1, "INFRA_FAIL": 1},
+    "q04": {"PASS": 5, "FAIL": 110},
+    "q05": {"PASS": 5},
+    "q06": {"PASS": 5},
+    "q07": {"PASS": 3, "FAIL": 2},
+    "q08": {"FAIL_HARD": 3},
+    "frontier": "Q08 FAIL_HARD — all 3 Q07 survivors failed at Q08; EA is effectively pipeline-terminal at current settings"
+  },
+  "tasks_worked": 0,
+  "cycle_outcome": "NO_WORK — no IN_PROGRESS tasks for claude; router found no_routable_task on this cycle",
+  "flags_for_owner": [
+    "codex_review_fail_rate_1h FAIL: 2 system-class failures (framework_corset or magic_registry likely) in last hour — worth checking if a codex build wave is producing bad code",
+    "QM5_10260 is pipeline-terminal: Q08 FAIL_HARD on all 3 Q07 survivors (no FAIL_SOFT path); no further work tracked",
+    "source_pool low: 7 remaining — consider adding sources before pool drains below 5"
+  ]
+}
