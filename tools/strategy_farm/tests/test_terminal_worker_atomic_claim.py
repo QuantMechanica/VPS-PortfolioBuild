@@ -1227,6 +1227,49 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertTrue(Path(row[3]).exists())
             self.assertEqual(json.loads(row[4])["verdict_reason"], "ex5_missing")
 
+    def test_preflight_resolves_absolute_setfile_outside_worker_repo_root(self) -> None:
+        with self._root() as tmp:
+            root = (Path(tmp) / "farm").resolve()
+            source_repo = Path(tmp) / "source_repo"
+            stale_worker_repo = Path(tmp) / "stale_worker_repo"
+            ea_dir = source_repo / "framework" / "EAs" / "QM5_9998_external-ea"
+            sets = ea_dir / "sets"
+            sets.mkdir(parents=True)
+            stale_worker_repo.mkdir(parents=True)
+            setfile = sets / "QM5_9998_external-ea_EURUSD.DWX_H1_backtest.set"
+            setfile.write_text("Symbol=EURUSD.DWX\n", encoding="utf-8")
+            (ea_dir / "QM5_9998_external-ea.ex5").write_bytes(b"compiled")
+
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO work_items
+                      (id, kind, phase, ea_id, symbol, setfile_path, status, verdict,
+                       attempt_count, parent_task_id, evidence_path, claimed_by,
+                       payload_json, created_at, updated_at)
+                    VALUES
+                      ('wi-external-setfile', 'backtest', 'Q04', 'QM5_9998', 'EURUSD.DWX', ?,
+                       'pending', NULL, 0, NULL, NULL, NULL, '{}', ?, ?)
+                    """,
+                    (str(setfile), now, now),
+                )
+                conn.commit()
+
+            old_repo_root = terminal_worker.farmctl.REPO_ROOT
+            try:
+                terminal_worker.farmctl.REPO_ROOT = stale_worker_repo
+                with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                    conn.row_factory = sqlite3.Row
+                    row = conn.execute(
+                        "SELECT * FROM work_items WHERE id='wi-external-setfile'"
+                    ).fetchone()
+
+                self.assertIsNone(terminal_worker._work_item_preflight_failure(row))
+            finally:
+                terminal_worker.farmctl.REPO_ROOT = old_repo_root
+
 
 if __name__ == "__main__":
     unittest.main()
