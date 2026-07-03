@@ -91,12 +91,13 @@ void QM12971_SortEvents()
 bool QM12971_LoadFomcEvents()
   {
    ArrayResize(g_fomc_events, 0);
+   const string calendar_path = QM_NewsStripQuotes(strategy_calendar_path);
    int handle = INVALID_HANDLE;
-   if(!QM12971_OpenCalendarFile(strategy_calendar_path, handle))
+   if(!QM12971_OpenCalendarFile(calendar_path, handle))
      {
       QM_LogEvent(QM_ERROR, SETUP_DATA_MISSING,
                   StringFormat("{\"component\":\"fomc_calendar\",\"path\":\"%s\"}",
-                               QM_LoggerEscapeJson(strategy_calendar_path)));
+                               QM_LoggerEscapeJson(calendar_path)));
       return false;
      }
 
