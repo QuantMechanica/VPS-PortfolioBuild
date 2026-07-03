@@ -1,37 +1,58 @@
 {
   "date_local": "2026-07-03",
-  "date_utc_observed": "2026-07-02",
+  "observed_at_local": "2026-07-03T04:32:05+02:00",
+  "date_utc_observed": "2026-07-03",
   "branch": "agents/board-advisor",
   "mission": "forex_market_neutral_cointegration_portfolio_growth",
-  "action": "cpu_ceiling_stop_no_enqueue",
+  "action": "cpu_ceiling_stop_no_new_enqueue",
   "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+  "method_source": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
   "strict_scan_survivors": [
     {
       "pair": "EURJPY~GBPJPY",
       "ea": "QM5_12533",
       "scan_dev_sharpe": 0.59,
       "scan_oos_net_sharpe": 1.53,
-      "current_state": "Q02_PASS_Q04_STRATEGY_FAIL",
-      "q02_blocked": false
+      "current_state": "Q02_PASS_Q04_FAIL",
+      "q02_blocked": false,
+      "latest_failure": "Q04 lowfreq pooled PF below floor; aggregate ff2cb183-8269-4e63-abaf-27ba79afdb62"
     },
     {
       "pair": "AUDUSD~NZDUSD",
       "ea": "QM5_12532",
       "scan_dev_sharpe": 0.13,
       "scan_oos_net_sharpe": 1.29,
-      "current_state": "Q02_PASS_Q04_PASS_Q05_PENDING_RETRY",
+      "current_state": "Q02_PASS_Q04_PASS_Q05_FAIL",
       "q02_blocked": false,
-      "pending_work_item": "82cab3d1-bf05-4aa4-8278-86c8064b16e7"
+      "latest_failure": "Q05 pf_below_floor: pf=0.950 floor=1.0; work_item 82cab3d1-bf05-4aa4-8278-86c8064b16e7"
     }
   ],
-  "unbuilt_registered_edgelab_cointegration_pair_found": false,
+  "new_nonduplicate_pair_already_on_branch": {
+    "ea": "QM5_12978",
+    "pair": "GBPUSD~USDCAD",
+    "slug": "edgelab-gbpusd-usdcad-cointegration",
+    "selection_basis": "Top unbuilt strict 66-pair rerun row when negative hedge ratios are retained.",
+    "source_commit": "7bd896b53 Add QM5_12978 FX cointegration evidence",
+    "q02_work_item": "b1656e8e-d9dc-4a7b-b5a2-ba8e3ff0150b",
+    "q02_state": "pending",
+    "logical_symbol": "QM5_12978_GBPUSD_USDCAD_COINTEGRATION_D1",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "basket_manifest": "framework/EAs/QM5_12978_edgelab-gbpusd-usdcad-cointegration/basket_manifest.json"
+  },
+  "unbuilt_approved_edgelab_cointegration_pair_found": false,
+  "approved_card_build_map": {
+    "approved_cointegration_cards_checked": 15,
+    "approved_cointegration_ea_dirs_found": 15,
+    "result": "no approved unbuilt EdgeLab cointegration card remained"
+  },
   "edge_lab_cointegration_state_summary": {
     "queued_or_active_viable_later_phase": [
       {
-        "ea": "QM5_12532",
-        "phase": "Q05",
+        "ea": "QM5_12978",
+        "phase": "Q02",
         "status": "pending",
-        "symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1"
+        "symbol": "QM5_12978_GBPUSD_USDCAD_COINTEGRATION_D1"
       },
       {
         "ea": "QM5_12712",
@@ -42,23 +63,11 @@
       {
         "ea": "QM5_12772",
         "phase": "Q05",
-        "status": "pending",
-        "symbol": "QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1"
-      },
-      {
-        "ea": "QM5_12778",
-        "phase": "Q05",
-        "status": "pending",
-        "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1"
-      },
-      {
-        "ea": "QM5_12781",
-        "phase": "Q07",
         "status": "active",
-        "symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1"
+        "symbol": "QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1"
       }
     ],
-    "remaining_edgelab_tail": "Q02_PASS but later Q04 strategy FAIL, or already pending/active; no clean non-duplicate enqueue point found."
+    "remaining_edgelab_tail": "Q02 PASS but later strategy FAIL, already pending/active, or blocked by current factory saturation; no clean non-duplicate enqueue point was used."
   },
   "fallback_candidates_checked": [
     {
@@ -78,34 +87,35 @@
       "ea": "QM5_12821",
       "label": "QM5_12821_twin-csm-basket",
       "state": "Q02_INFRA_FAIL_NO_PENDING",
-      "reason_not_enqueued": "28-symbol H1 basket; prior full-window Q02 was owner-aborted in favor of a shorter test path; current factory slots are occupied, so this would push the known CPU-heavy lane over the ceiling."
+      "reason_not_enqueued": "28-symbol H1 basket; current factory slots are fully occupied, so this would push the known CPU-heavy lane over the ceiling."
     }
   ],
   "factory_state_at_stop": {
-    "running_factory_terminals": [
-      "T1",
-      "T2",
-      "T3",
-      "T4"
-    ],
+    "active_work_item_count": 5,
     "active_work_items": [
-      {
-        "terminal": "T1",
-        "ea": "QM5_9953",
-        "phase": "Q02",
-        "symbol": "AUDUSD.DWX"
-      },
-      {
-        "terminal": "T2",
-        "ea": "QM5_12781",
-        "phase": "Q07",
-        "symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1"
-      },
       {
         "terminal": "T3",
         "ea": "QM5_10248",
-        "phase": "Q06",
+        "phase": "Q07",
         "symbol": "NDX.DWX"
+      },
+      {
+        "terminal": "T2",
+        "ea": "QM5_10288",
+        "phase": "Q02",
+        "symbol": "GBPJPY.DWX"
+      },
+      {
+        "terminal": "T1",
+        "ea": "QM5_10288",
+        "phase": "Q02",
+        "symbol": "NZDJPY.DWX"
+      },
+      {
+        "terminal": "T5",
+        "ea": "QM5_12772",
+        "phase": "Q05",
+        "symbol": "QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1"
       },
       {
         "terminal": "T4",
@@ -114,14 +124,14 @@
         "symbol": "XAUUSD.DWX"
       }
     ],
-    "t_live_process_observed": true,
+    "t_live_process_observed": "not_inspected_this_turn",
     "t_live_action_taken": false
   },
-  "queue_mutation": "none",
-  "reason": "Backtest CPU ceiling reached for the remaining non-duplicate basket work; strict FX cointegration survivors are not Q02-blocked, and every clean cointegration continuation is already pending or active.",
+  "queue_mutation_this_turn": "none",
+  "reason": "Backtest CPU ceiling reached with five active factory work items. The strict FX cointegration survivors are not Q02-blocked, QM5_12978 is already built and Q02-pending as the current non-duplicate GBPUSD/USDCAD sleeve, and remaining clean continuations are already pending or active.",
   "safety": {
     "manual_mt5_backtest_launched": false,
-    "new_backtest_enqueued": false,
+    "new_backtest_enqueued_this_turn": false,
     "t_live_touched": false,
     "autotrading_touched": false,
     "portfolio_gate_touched": false,
