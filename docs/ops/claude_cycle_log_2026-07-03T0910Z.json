@@ -1,0 +1,60 @@
+{
+  "cycle_at_utc": "2026-07-03T09:10:00Z",
+  "agent": "claude",
+  "branch": "agents/claude-orchestration-1",
+
+  "health_summary": {
+    "overall": "WARN (0 FAIL, 3 WARN, 19 OK)",
+    "mt5_worker_saturation": "WARN (7/10 alive: T1-T7; T8-T10 appear disabled/FTMO)",
+    "source_pool_drained": "WARN (7 pending sources, threshold=10)",
+    "unbuilt_cards_count": "WARN (293 approved cards await build; Codex build queue saturated, 31 pending; pump will emit auto-build tasks as slots free)",
+    "p_pass_stagnation": "OK (17 Q03+ PASS in last 6h)",
+    "phase_infra_graveyard": "OK (no gate INFRA_FAIL-saturated)",
+    "codex_auth": "OK (no 401 errors, auth_age=34h)",
+    "quota_snapshot": "OK (codex=149s, claude=146s)"
+  },
+
+  "qm5_10260_state": {
+    "summary": "Deep in pipeline, stalled at Q08 FAIL_HARD. Q02: 16 PASS / 8 FAIL / 4 INFRA_FAIL / 1 pending. Q03: 115 PASS. Q04: 5 PASS / 110 FAIL. Q05-Q07: 5/5/3 PASS. Q08: 3 FAIL_HARD (all NDX.DWX). No action needed — Q08 FAIL_HARD is a pipeline gate result, not an infra issue.",
+    "action": "none"
+  },
+
+  "router_result": {
+    "run_output": "no_routable_task",
+    "route_many_output": "no_routable_task",
+    "in_progress_tasks_for_claude": 0,
+    "note": "Router found nothing to assign this cycle. 12 APPROVED tasks for Claude exist (highest priority 0bf5dc87 ops_issue pri=90) but router did not route them."
+  },
+
+  "tasks_in_review": [
+    {
+      "task_id": "b80ee365",
+      "title": "OPS HARDENING P1-P3: Factory_OFF NoPause, schtasks disabled-lane guard, re-enable Gemini",
+      "state": "REVIEW",
+      "action": "awaiting OWNER close-review"
+    },
+    {
+      "task_id": "9485fdd2",
+      "title": "RECOVERY C2 EXECUTION: inject strategy_params into 49 confirmed param-empty cards",
+      "state": "REVIEW",
+      "action": "awaiting OWNER close-review"
+    }
+  ],
+
+  "approved_queue_for_claude": {
+    "count": 12,
+    "highest_priority": {
+      "id": "0bf5dc87",
+      "type": "ops_issue",
+      "priority": 90,
+      "description": "Q02->Q03 cascade bug (pre-existing; prior Codex fix was stale-pipeline RECYCLE)"
+    },
+    "action": "router did not promote any to IN_PROGRESS this cycle; no manual pickup per hard rule (deterministic router only)"
+  },
+
+  "gaps_noted": {
+    "source_pool": "7 remaining sources (warn threshold=10); OWNER should add sources before pool drains",
+    "build_queue_saturation": "293 unbuilt cards; no manual action while Codex slots full",
+    "worker_count": "3 workers offline (T8-T10); acceptable if intentionally disabled for FTMO or cap"
+  }
+}
