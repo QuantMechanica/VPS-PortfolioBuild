@@ -1,0 +1,66 @@
+{
+  "generated_at": "2026-07-03T22:43:10+00:00",
+  "local_date": "2026-07-04",
+  "apply": true,
+  "target_eas": [
+    "QM5_13009"
+  ],
+  "target_symbols": [
+    "XNGUSD.DWX"
+  ],
+  "strategy_shape": "D1 XNGUSD turn-of-month momentum, one package per broker-calendar month-end cycle",
+  "diversity_rationale": "Single-symbol natural-gas turn-of-month momentum sleeve; no index, outright gold, XAU/XAG, WTI, storage-report, weather, rig-count, RSI, XNG/AUD, XNG/CAD, or XTI/XNG basket exposure.",
+  "card_path": "strategy-seeds/cards/xng-tom-mom_card.md",
+  "build_result_path": "artifacts/qm5_13009_build_result.json",
+  "queue_db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+  "enqueue_command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --apply --ea QM5_13009 --symbols XNGUSD.DWX --queue-ceiling 100000 --max-part2-per-run 0",
+  "sweep_evidence_path": "D:/QM/reports/state/claude_sweep_enqueue_2026-06-10.json",
+  "duplicate_guard": {
+    "checked_existing_work_items_before_insert": true,
+    "existing_work_items_count_before_insert": 0
+  },
+  "part1_never_tested": {
+    "enqueued": [
+      {
+        "ea_id": "QM5_13009",
+        "symbol": "XNGUSD.DWX",
+        "setfile": "QM5_13009_xng-tom-mom_XNGUSD.DWX_D1_backtest.set",
+        "priority_track": false,
+        "work_item_id": "d6e04fda-070a-43dd-b430-692bbf6f7eec"
+      }
+    ],
+    "skipped": []
+  },
+  "q02_work_items": [
+    {
+      "id": "d6e04fda-070a-43dd-b430-692bbf6f7eec",
+      "kind": "backtest",
+      "phase": "Q02",
+      "ea_id": "QM5_13009",
+      "status": "pending",
+      "symbol": "XNGUSD.DWX",
+      "timeframe": "D1",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_13009_xng-tom-mom/sets/QM5_13009_xng-tom-mom_XNGUSD.DWX_D1_backtest.set",
+      "attempt_count": 0,
+      "created_at": "2026-07-03T22:43:10+00:00",
+      "updated_at": "2026-07-03T22:43:10+00:00",
+      "payload_json": {
+        "host_symbol": "XNGUSD.DWX",
+        "host_timeframe": "D1",
+        "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested",
+        "enqueued_at_utc": "2026-07-03T22:43:10+00:00"
+      }
+    }
+  ],
+  "work_items_after": {
+    "Q02_pending": 1
+  },
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "manual_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false
+  }
+}

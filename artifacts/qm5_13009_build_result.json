@@ -1,0 +1,96 @@
+{
+  "task_id": "manual-codex-2026-07-04-xng-tom-mom",
+  "ea_id": "QM5_13009",
+  "slug": "xng-tom-mom",
+  "strategy": "XNGUSD D1 turn-of-month momentum",
+  "strategy_id": "VANHEMERT-MOMTOM-2014_XNG",
+  "source_id": "VANHEMERT-MOMTOM-2014",
+  "source_links": [
+    "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2515900",
+    "https://docs.lhpedersen.com/TimeSeriesMomentum.pdf"
+  ],
+  "symbol": "XNGUSD.DWX",
+  "timeframe": "D1",
+  "risk_mode": "RISK_FIXED",
+  "risk_fixed": 1000,
+  "risk_percent": 0,
+  "portfolio_weight": 1,
+  "branch": "agents/board-advisor",
+  "built_by": "Codex",
+  "date": "2026-07-04",
+  "card_path": "strategy-seeds/cards/xng-tom-mom_card.md",
+  "approved_card_path": "strategy-seeds/cards/approved/QM5_13009_xng-tom-mom_card.md",
+  "runtime_approved_card_path": "artifacts/cards_approved/QM5_13009_xng-tom-mom.md",
+  "source_path": "strategy-seeds/sources/VANHEMERT-MOMTOM-2014/source.md",
+  "ea_dir": "framework/EAs/QM5_13009_xng-tom-mom",
+  "mq5_path": "framework/EAs/QM5_13009_xng-tom-mom/QM5_13009_xng-tom-mom.mq5",
+  "ex5_path": "framework/EAs/QM5_13009_xng-tom-mom/QM5_13009_xng-tom-mom.ex5",
+  "spec_md_path": "framework/EAs/QM5_13009_xng-tom-mom/SPEC.md",
+  "setfiles": [
+    {
+      "path": "framework/EAs/QM5_13009_xng-tom-mom/sets/QM5_13009_xng-tom-mom_XNGUSD.DWX_D1_backtest.set",
+      "symbol": "XNGUSD.DWX",
+      "timeframe": "D1",
+      "risk_mode": "RISK_FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "magic_slot": 0,
+      "build_hash": "c280c902f8da1c59ef14403c644c8771c4bbd54437bc69fba5c0fa1180139558",
+      "sha256": "58FFC430D904BDE52E28CDF5B13D21D5BE8E24D6C66FC58452F62D5506F4D406"
+    }
+  ],
+  "hashes": {
+    "mq5_sha256": "A0C5A072B0B57F947579CA62377D29B8BCE5E90C5D55B47375193B905E76F188",
+    "ex5_sha256": "F7E27E6D1DCB5A4D8043BF0022F0C4F0C3D252F80C35774C9BB45652EDDBD159"
+  },
+  "ea_binary": {
+    "path": "framework/EAs/QM5_13009_xng-tom-mom/QM5_13009_xng-tom-mom.ex5",
+    "sha256": "F7E27E6D1DCB5A4D8043BF0022F0C4F0C3D252F80C35774C9BB45652EDDBD159",
+    "bytes": 301114
+  },
+  "registry": {
+    "ea_id_registry": "framework/registry/ea_id_registry.csv",
+    "magic_numbers": "framework/registry/magic_numbers.csv",
+    "magic": 130090000
+  },
+  "compile": {
+    "command": "python tools/strategy_farm/compile_ea.py --ea-id 13009 --force --json --fail-on-error",
+    "status": "PASS",
+    "result": "COMPILED",
+    "errors": 0,
+    "warnings": 0,
+    "log": "framework/build/compile/20260703_223926/QM5_13009_xng-tom-mom.compile.log",
+    "summary": "D:/QM/reports/compile/20260703_223926/summary.csv",
+    "symbol_scope_verdict": "SINGLE_SYMBOL_OK"
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13009_xng-tom-mom -SkipCompile",
+    "strict": true,
+    "status": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report": "D:/QM/reports/framework/21/build_check_20260703_224107.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0 and EA compile warnings=0."
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "d6e04fda-070a-43dd-b430-692bbf6f7eec",
+    "artifact": "artifacts/qm5_13009_q02_enqueue_20260704.json"
+  },
+  "smoke_result": "deferred_to_q02",
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 backtest was launched from this session.",
+  "non_duplicate_reason": "XNG turn-of-month momentum is distinct from QM5_12567's short-horizon cumulative RSI commodity pullback, existing XNG storage/weather/rig-count/weekday/month-open/seasonality sleeves, XNG/AUD and XNG/CAD return-spread baskets, XTI/XNG energy baskets, WTI event sleeves, metal-ratio sleeves, and index sleeves.",
+  "scope_guard": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "backtest_run": false
+  },
+  "validations": {
+    "source_packet": "PASS",
+    "compile": "PASS",
+    "build_check": "PASS",
+    "q02_enqueue": "PASS"
+  }
+}
