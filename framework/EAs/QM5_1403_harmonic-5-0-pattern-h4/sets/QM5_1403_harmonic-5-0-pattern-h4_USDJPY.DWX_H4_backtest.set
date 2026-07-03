@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        1403
 ; ea_slug:      harmonic-5-0-pattern-h4
@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   c5f3295cae77d10d19c71f874d243783d0b7a298ff50756cc28e2e4e738975a3
+; build_hash:   60465a454988d4ecea9c966ad32720a97c2d2c9fc12d7c1ecc86222b8ed71f48
 ; author:       Development
 ; date:         2026-06-26
 ;==========================================================

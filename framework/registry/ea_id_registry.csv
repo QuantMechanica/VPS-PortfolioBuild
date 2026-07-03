@@ -283,7 +283,7 @@ ea_id,slug,strategy_id,status,owner,created_at
 1381,chan-fx-flow-quintile,fce67611-4e0f-5dce-8cff-c8b9dd84dd49,active,Research,2026-05-18
 1401,as-caa-offensive,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,active,Research,2026-05-19
 1402,as-caa-defensive,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,active,Research,2026-05-19
-1403,as-mbb-relative,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,active,Research,2026-05-19
+1403,harmonic-5-0-pattern-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Research,2026-05-19
 1404,as-raa-unemp-canary,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,active,Research,2026-05-19
 1405,as-rpv-bestvalue,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,active,Research,2026-05-19
 1411,as-tactical-yield,2df06de7-6a3a-5b06-9e6d-446d1a01fab9,active,Research,2026-05-19
