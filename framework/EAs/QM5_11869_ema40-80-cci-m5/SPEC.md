@@ -4,7 +4,7 @@
 **Slug:** ema40-80-cci-m5
 **Source:** 7eb3773b-4c7d-5f72-9c2a-99773154821f (see local PDF archive)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-11
+**Last revised:** 2026-07-03
 
 ---
 
@@ -92,3 +92,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-11 | Initial build from card | 890961dc-2b51-4a8f-89c0-d08f1f280a18 |
+| v2 | 2026-07-03 | Q02 AUDUSD log-bomb infra repair | Regenerated backtest setfiles with explicit strategy and news-off inputs; moved news gate below management/exit. |

@@ -3,32 +3,32 @@
 ; ea_id:        11869
 ; ea_slug:      ema40-80-cci-m5
 ; ea_version:   v5.0
-; set_version:  s20260611-001
+; set_version:  s20260703-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   05ef3062204e722fcafe6247716b86328712ede0d7869a910bab32f3c59bb444
 ; author:       Development
-; date:         2026-06-11
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=11869
 qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; Q02 structural baseline: keep news axes explicitly off to avoid non-strategy setup/log dependencies.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11869_ema40-80-cci-m5.md
+strategy_ema_fast_period=40
+strategy_ema_slow_period=80
+strategy_cci_period=21
+strategy_sl_pips=12
+strategy_tp_pips=12
