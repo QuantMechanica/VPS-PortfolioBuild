@@ -1,0 +1,101 @@
+{
+  "cycle_at": "2026-07-03T13:49Z",
+  "agent": "claude",
+  "worktree": "C:/QM/worktrees/claude-orchestration-1",
+
+  "health": {
+    "overall": "FAIL",
+    "summary": { "fail": 4, "warn": 2, "ok": 13 },
+    "fails": [
+      {
+        "name": "p2_pass_no_p3",
+        "detail": "127 profitable P2-PASS work_items without P3 promotion",
+        "action_hint": "Pump §10c is failing or backlogged; run farmctl pump manually"
+      },
+      {
+        "name": "unbuilt_cards_count",
+        "detail": "786 approved cards lack .ex5 and auto-build task",
+        "action_hint": "Run farmctl pump; emit up to 2 auto-build bridge tasks per cycle"
+      },
+      {
+        "name": "unenqueued_eas_count",
+        "detail": "54 reviewed built EAs have no P2 work_items",
+        "action_hint": "Run farmctl pump; enqueue up to 3 EAs into P2 per cycle"
+      },
+      {
+        "name": "p_pass_stagnation",
+        "detail": "0 P3+ PASS verdicts in last 12h",
+        "action_hint": "Pipeline stuck on infrastructure or strategy quality. Trigger Gmail alarm + check bridge_review_pending.md."
+      }
+    ],
+    "warns": [
+      {
+        "name": "mt5_worker_saturation",
+        "detail": "7/10 terminal_worker daemons alive (T1-T7); T8/T9/T10 absent",
+        "action_hint": "Fleet above 2/3 but not fully saturated; restart missing workers when convenient. Note: T8/T9/T10 may be Codex FTMO bench terminals per memory."
+      },
+      {
+        "name": "source_pool_drained",
+        "detail": "7 pending sources (threshold 10)",
+        "action_hint": "Add more sources before pool drains"
+      }
+    ],
+    "notable_ok": {
+      "mt5_dispatch_idle": "6225 pending, 5 active, 10 pwsh workers, 0 fresh work_item logs",
+      "quota_snapshot_fresh": "codex=262s, claude=261s",
+      "codex_auth_broken": "no 401 errors; auth_age=40.7h"
+    }
+  },
+
+  "router": {
+    "in_progress_claude": 0,
+    "todo_claude": 3,
+    "todo_tasks": [
+      {
+        "id": "1a52d28d-cc57-49d0-8973-abbda9a7018e",
+        "priority": 1,
+        "title": "URGENT GUARD: canonical-checkout self-check + mass-invalidation circuit breaker in farmctl",
+        "note": "Layer 1 already shipped (881d17ee6). Remaining: merge to main, layer-2 self-check, layer-3 circuit breaker, tests, unblock c8051e18. route-many returned no_available_agent on this task."
+      },
+      {
+        "id": "e1fb9395-4b12-4f91-a343-27c51295f1ab",
+        "priority": 2,
+        "title": "CONFIG: grant claude lane repo_edit + merge live_book_pulse to main + repoint scheduled task",
+        "note": "claude capability set already shows repo_edit in agent_router status — verify if DL-065 config needs update or if the bounce was pre-fix."
+      },
+      {
+        "id": "d015e982-5921-4b81-b318-1bc54d325546",
+        "priority": 2,
+        "title": "OPS HARDENING P4-P5: scaled phase timeouts, loud resolver drops, seasonal full-year prescreen, shared terminal-proc helper, evidence-path enforcement"
+      }
+    ],
+    "route_many_result": {
+      "task_id": "1a52d28d-cc57-49d0-8973-abbda9a7018e",
+      "assigned_agent": null,
+      "reason": "no_available_agent"
+    }
+  },
+
+  "qm5_10260": {
+    "total_work_items": 279,
+    "pending": 1,
+    "pending_detail": {
+      "id": "e5a23435-27c1-4ab2-8cb6-e205dbf134a4",
+      "phase": "Q02",
+      "symbol": "NDX.DWX",
+      "status": "pending",
+      "claimed_by": null,
+      "created_at": "2026-06-30T08:52:58Z"
+    },
+    "note": "Q08 FAIL noted in prior cycles persists (per commit log 57ad7fc32). 1 Q02 pending item (NDX.DWX) unclaimed — awaiting dispatch by factory workers."
+  },
+
+  "action_taken": "none — no IN_PROGRESS tasks for claude; router produced no new routes",
+
+  "recommendations": [
+    "p_pass_stagnation persisting across 3+ cycle logs. Root cause unclear from this vantage — could be T8/T9/T10 absence reducing throughput, or Q-gate bottleneck. OWNER should check if T8-T10 are intentionally down (FTMO bench) and if so whether to re-enable for normal pipeline.",
+    "127 P2-PASS items awaiting P3 promotion: farmctl pump should handle this automatically; if it's not running on schedule, check QM_StrategyFarm_Pump task.",
+    "Task 1a52d28d (priority 1, URGENT) stuck in TODO — router returned no_available_agent. Manual move to IN_PROGRESS via agent_router may be needed, or investigate why the router rejected it despite claude being available.",
+    "Route-many could not route the top-priority task (1a52d28d). This may be a router capability mismatch — verify that task required capabilities match claude's registered set."
+  ]
+}
