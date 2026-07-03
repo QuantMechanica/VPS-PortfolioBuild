@@ -3,7 +3,7 @@
 ; ea_id:        1383
 ; ea_slug:      wave59-quickstrike-gann-h4
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260703-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
@@ -12,11 +12,30 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1383
 qm_magic_slot_offset=8
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1383_wave59-quickstrike-gann-h4.md
+strategy_tf=PERIOD_H4
+strategy_swing_window=50
+strategy_macro_window=200
+strategy_min_swing_age=10
+strategy_atr_period=14
+strategy_swing_d1_atr_mult=3.0
+strategy_approach_atr=0.40
+strategy_tag_atr=0.20
+strategy_body_ratio=0.40
+strategy_spread_atr=0.40
+strategy_sl_atr=0.80
+strategy_max_sl_atr=2.50
+strategy_tp_cap_atr=5.00
+strategy_min_tp_atr=2.00
+strategy_be_atr=1.50
+strategy_invalidation_atr=0.50
+strategy_time_stop_bars=36
+strategy_cooldown_bars=24

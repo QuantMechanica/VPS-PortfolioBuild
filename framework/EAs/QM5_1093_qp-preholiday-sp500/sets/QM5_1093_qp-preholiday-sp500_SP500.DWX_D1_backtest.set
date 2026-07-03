@@ -3,7 +3,7 @@
 ; ea_id:        1093
 ; ea_slug:      qp-preholiday-sp500
 ; ea_version:   v5.0
-; set_version:  s20260518-001
+; set_version:  s20260703-001
 ; symbol:       SP500.DWX
 ; timeframe:    D1
 ; environment:  backtest
@@ -12,11 +12,17 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-18
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1093
 qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1093_qp-preholiday-sp500.md
+strategy_atr_period=14
+strategy_atr_stop_mult=2.0
+strategy_spread_median_mult=3.0
+strategy_spread_lookback=20
+strategy_time_stop_days=3

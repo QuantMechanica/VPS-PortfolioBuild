@@ -3,20 +3,44 @@
 ; ea_id:        1386
 ; ea_slug:      forex-pulse-detector-multi-tf-momo-h1
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260703-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   10
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b788d2a71a4b11cdee3f8a2b01d7918372cc4982077ece5a281b4ec8de0baefa
+; build_hash:   pending
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1386
 qm_magic_slot_offset=10
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1386_forex-pulse-detector-multi-tf-momo-h1.md
+strategy_ema_fast=20
+strategy_ema_pulse=50
+strategy_ema_slow=200
+strategy_rsi_period=14
+strategy_atr_period=14
+strategy_macd_fast=12
+strategy_macd_slow=26
+strategy_macd_signal=9
+strategy_fresh_bars=8
+strategy_time_stop_bars=36
+strategy_atr_sl_mult=1.5
+strategy_atr_tp_mult=2.5
+strategy_be_trigger_atr=1.0
+strategy_be_buffer_atr=0.1
+strategy_trail_trigger_atr=2.0
+strategy_trail_lock_atr=1.0
+strategy_min_atr_avg_mult=0.7
+strategy_max_atr_avg_mult=3.0
+strategy_max_spread_atr_mult=0.4
+strategy_session_start_hour=6
+strategy_session_end_hour=20
+strategy_friday_cutoff_hour=18
+strategy_entry_news_mode=QM_NEWS_PAUSE
