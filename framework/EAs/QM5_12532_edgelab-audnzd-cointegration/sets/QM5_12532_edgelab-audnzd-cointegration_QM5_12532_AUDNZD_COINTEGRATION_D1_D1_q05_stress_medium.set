@@ -3,7 +3,7 @@
 ; ea_id:        12532
 ; ea_slug:      edgelab-audnzd-cointegration
 ; ea_version:   v5.0
-; set_version:  s20260702-stress-med
+; set_version:  s20260703-stress-med
 ; symbol:       QM5_12532_AUDNZD_COINTEGRATION_D1
 ; host_symbol:  AUDUSD.DWX
 ; timeframe:    D1
@@ -11,9 +11,9 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   9ee1f0373da47eb2e060e775485d802ee21212a10c7b94b17c97b85ee403e32e
+; build_hash:   f792f6848581d715ba8508b0be7475b6a271f91c916ef681b7aa9d71f3934069
 ; author:       Development
-; date:         2026-07-02
+; date:         2026-07-03
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000
