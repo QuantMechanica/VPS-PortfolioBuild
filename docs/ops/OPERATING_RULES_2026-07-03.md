@@ -115,6 +115,12 @@ im Vault; bei Konflikt gelten Vault-Hard-Rules zuerst.
     neue Slates) laufen mit Prioritäts-Flag durch die Queue; Recovery-Wellen füllen nur
     Leerlauf auf (Queue-Tiefe ~13 Tage bei ~450 Verdicts/Tag — ohne Priorisierung ist
     jeder neue Sleeve ein Mehrwochen-Ereignis).
+24. **Coding-Default = Claude-Headless-Lane (Sonnet 5).** OWNER 2026-07-03: Programmier-
+    Tasks — auch übernommene Codex-Aufgaben — laufen über die Headless-Claude-Lane
+    (ANTHROPIC_MODEL default `claude-sonnet-5`, verifiziert; Lane-Caps um
+    repo_edit/tests/ops erweitert). Codex bleibt für Spot-Checks/Reviews und die
+    FTMO-Terminals reserviert, solange sein Wochenkontingent knapp ist (aktuell 79%).
+    Interaktive Session = Steuerung/Review/chirurgische Fixes, nicht Massen-Code.
 23. **Zustandsverändernde Factory-Operationen NUR aus dem Kanon** (`C:\QM\repo`).
     Worktrees sind für Code-Änderungen, NIEMALS für Factory-Betrieb (repair, pump,
     Sweeps, Bulk-Verdicts): Worktrees enthalten nur ~225 von 2.657 EA-Dirs — ein
