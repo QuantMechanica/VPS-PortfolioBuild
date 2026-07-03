@@ -1,0 +1,75 @@
+{
+  "ea_id": 11739,
+  "ea_label": "QM5_11739_rfs-alligator-sma144-m15",
+  "card_id": "QM5_11739",
+  "work_unit": "q02_infra_stale_package_recovery",
+  "completed_at": "2026-07-03T16:26:00Z",
+  "agent": "codex:agents/board-advisor:manual-20260703-qm5-11739",
+  "diversity_reason": "Five-symbol FX sleeve candidate: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, USDCHF.DWX, AUDUSD.DWX.",
+  "diagnosis": {
+    "latest_q02_failure": "summary_missing_retries_exhausted",
+    "stale_package_findings": [
+      "Backtest setfiles had 2026-06-11 metadata.",
+      "Setfiles were missing qm_ea_id.",
+      "Setfiles still carried obsolete qm_filter_* inputs.",
+      "Setfiles lacked explicit strategy-specific card defaults."
+    ],
+    "source_check": "Entry processing is gated on the explicit strategy timeframe via QM_IsNewBar(_Symbol, entry_tf)."
+  },
+  "changes": {
+    "set_version": "s20260703-001",
+    "setfiles_refreshed": [
+      "framework/EAs/QM5_11739_rfs-alligator-sma144-m15/sets/QM5_11739_rfs-alligator-sma144-m15_EURUSD.DWX_M15_backtest.set",
+      "framework/EAs/QM5_11739_rfs-alligator-sma144-m15/sets/QM5_11739_rfs-alligator-sma144-m15_GBPUSD.DWX_M15_backtest.set",
+      "framework/EAs/QM5_11739_rfs-alligator-sma144-m15/sets/QM5_11739_rfs-alligator-sma144-m15_USDJPY.DWX_M15_backtest.set",
+      "framework/EAs/QM5_11739_rfs-alligator-sma144-m15/sets/QM5_11739_rfs-alligator-sma144-m15_USDCHF.DWX_M15_backtest.set",
+      "framework/EAs/QM5_11739_rfs-alligator-sma144-m15/sets/QM5_11739_rfs-alligator-sma144-m15_AUDUSD.DWX_M15_backtest.set"
+    ],
+    "setfile_hashes": {
+      "EURUSD.DWX": "9e22a919501c6deeaf27cdf7c6e991a8d2deb3317e8fa3132581daa46800da9b",
+      "GBPUSD.DWX": "9c28f12dfa7b04e49ce5f03297f1029288d34b02f72ef9a1679e89664bcc154f",
+      "USDJPY.DWX": "42abc6c1fbf9e34d3691964258d144d25e5e413e28e47fc2ce5cdec4ad8eb267",
+      "USDCHF.DWX": "7e5b8937bca8da1fb4e003bdb6ab75213cb91129df68b1e006bae065f7ba0035",
+      "AUDUSD.DWX": "345ccd397ad30534875129f7f68066b4b7abe2762bc2816741786ef9e8ffe697"
+    }
+  },
+  "validation": {
+    "compile": {
+      "command": "framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_11739_rfs-alligator-sma144-m15/QM5_11739_rfs-alligator-sma144-m15.mq5 -Strict",
+      "status": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "summary": "D:/QM/reports/compile/20260703_162327/summary.csv"
+    },
+    "build_check": {
+      "command": "framework/scripts/build_check.ps1 -EALabel QM5_11739_rfs-alligator-sma144-m15 -Strict",
+      "status": "PASS",
+      "failures": 0,
+      "warnings": 16,
+      "report": "D:/QM/reports/framework/21/build_check_20260703_162343.json",
+      "compile_summary": "D:/QM/reports/compile/20260703_162343/summary.csv",
+      "warning_note": "Warnings are existing V5 include advisories in shared framework headers."
+    },
+    "ex5_sha256": "A13236E31B17655AC7BA108E73A74604CD7F29577912FB3B39BD575B0DB1A09C"
+  },
+  "farm_db": {
+    "db_path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "backup_before_enqueue": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11739_q02_requeue_20260703_162552Z.sqlite",
+    "claimed_task_id": "c21b6140-fcda-49bd-8ca7-80c8e6e05e43",
+    "q02_parent_task_id": "31a6def4-d1fa-4aa1-b586-43357f9bd84a",
+    "q02_work_items": {
+      "EURUSD.DWX": "bf2fe844-0ede-43c1-886b-5938eb618c09",
+      "GBPUSD.DWX": "fb258389-b622-4a50-9d34-65263262d9ed",
+      "USDJPY.DWX": "010ff593-0f15-4deb-821a-6e79043f8514",
+      "USDCHF.DWX": "15d7632c-0983-497a-a42d-fd8616dc48c8",
+      "AUDUSD.DWX": "8fc2e5ad-ffba-4823-be85-825dd6698661"
+    }
+  },
+  "boundary": {
+    "backtests_started": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  }
+}

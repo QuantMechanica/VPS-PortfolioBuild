@@ -104,3 +104,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-11 | Initial build from card | 3aff5ab6-26c2-44d8-98b6-180d0898574f |
+| v2 | 2026-07-03 | Q02 INFRA/stale-package recovery | Confirmed entry gate uses the strategy timeframe explicitly; backtest setfiles refreshed to current V5 inputs and card defaults. |
