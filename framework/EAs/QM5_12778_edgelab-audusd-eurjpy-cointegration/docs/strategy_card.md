@@ -26,7 +26,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q07
-last_updated: 2026-07-03
+last_updated: 2026-07-04
 g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-requested in-house 66-pair FX scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS AUDUSD.DWX and EURJPY.DWX data exist in scan universe; R4 PASS no ML/grid/martingale. Marked very high-risk because OOS net Sharpe was negative."
 expected_pf: 0.94
 expected_dd_pct: 35.0
@@ -181,10 +181,12 @@ on 2026-06-29 and auto-enqueued one logical basket work item,
 the paced farm owns the first Q02 tester pass.
 
 Current funnel state: the EUR-accounting Q02 repair passed, then Q03, Q04,
-Q05, and Q06 all passed on the logical basket. Q07 is active under paced
-factory ownership as work item `fc554e0c-e66e-486a-a83d-c7301e67c615` on
-`QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1`; no duplicate Q07/Q08 enqueue was
-made while the farm has five active tester work items.
+Q05, and Q06 all passed on the logical basket. The first Q07 run produced valid
+seed evidence for 42/17/99/7 but seed 2026 ended with `NO_HISTORY` /
+`REPORT_MISSING` infra evidence. Existing work item
+`fc554e0c-e66e-486a-a83d-c7301e67c615` was requeued in place on
+2026-07-03T22:33:23Z; no duplicate Q07/Q08 row was created, and the farm still
+has five active tester work items.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
@@ -195,4 +197,5 @@ made while the farm has five active tester work items.
 | v1-q04 | 2026-07-01 | walk-forward logical basket aggregate | Q04 | PASS `9546f319-dc02-4249-b6ac-0c1bb64fec4f` |
 | v1-q05 | 2026-07-03 | stress medium logical basket aggregate | Q05 | PASS `1c0405e7-16d3-40e6-b884-6be1b504dc4c` |
 | v1-q06 | 2026-07-03 | stress harsh logical basket aggregate | Q06 | PASS `a60892f1-0059-47e8-83b2-39120ee15478` |
-| v1-q07 | 2026-07-03 | statistical validation active under paced factory | Q07 | ACTIVE `fc554e0c-e66e-486a-a83d-c7301e67c615` |
+| v1-q07 | 2026-07-03 | statistical validation first attempt | Q07 | INFRA_FAIL seed 2026; four seeds valid |
+| v1-q07-requeue | 2026-07-04 | requeued existing Q07 row after seed-2026 infra failure | Q07 | PENDING `fc554e0c-e66e-486a-a83d-c7301e67c615` |

@@ -4,7 +4,7 @@
 **Slug:** edgelab-audusd-eurjpy-cointegration
 **Source:** claude_cross_asset_discovery_2026-06-09 plus Chan cointegration pair-trade method
 **Author of this spec:** Codex
-**Last revised:** 2026-07-02
+**Last revised:** 2026-07-04
 
 ---
 
@@ -155,6 +155,15 @@ MT5 synchronizing `EURAUD.DWX` after `EURUSD.DWX` while valuing the EUR-account
 AUDUSD leg. The basket manifest and EA warmup scope now declare both conversion
 symbols before requeueing the existing Q05 row.
 
+Q07 retry handoff: Q07 work item `fc554e0c-e66e-486a-a83d-c7301e67c615`
+completed as `INFRA_FAIL` on 2026-07-03 UTC after seeds 42/17/99/7 all produced
+PF 1.07 with 196 trades and only seed 2026 failed with `NO_HISTORY` /
+`REPORT_MISSING` evidence. The existing Q07 row was requeued in place on
+2026-07-03T22:33:23Z; no duplicate work item was created. The stale report root
+was archived to
+`D:\QM\reports\work_items\fc554e0c-e66e-486a-a83d-c7301e67c615.requeued_20260703T2233230000`,
+so the Q07 runner can reuse valid seed summaries and rerun only missing evidence.
+
 ---
 
 ## Revision History
@@ -166,3 +175,4 @@ symbols before requeueing the existing Q05 row.
 | v1-q02-conversion | 2026-06-29 | Q02 conversion-history repair | Preloaded `EURUSD.DWX` and `USDJPY.DWX`; replacement Q02 work item `7f04ff6a-35ca-45bd-a702-afc37b310f97` enqueued |
 | v1-q02-eur-accounting | 2026-06-30 | Q02 conversion-accounting repair | Switched basket manifest to `tester_currency=EUR` and removed `USDJPY.DWX` from declared conversion scope before requeueing Q02 |
 | v1-q05-euraud-conversion | 2026-07-02 | Q05 conversion-history repair | Declared and warmed `EURAUD.DWX` after Q05 stress logs showed EUR-account AUDUSD valuation requested that custom symbol |
+| v1-q07-infra-retry | 2026-07-04 | Q07 seed-2026 infra retry | Requeued existing Q07 row `fc554e0c-e66e-486a-a83d-c7301e67c615` after four seeds passed and seed 2026 hit `NO_HISTORY` / missing-report infra evidence |
