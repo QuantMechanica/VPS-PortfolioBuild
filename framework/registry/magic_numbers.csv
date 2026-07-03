@@ -14374,3 +14374,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12967,uk100-weekly-oversold-swing,0,UK100.DWX,129670000,2026-07-03,Codex,active
 12994,iea-omr-fade,0,XTIUSD.DWX,129940000,2026-07-03,Codex,active
 12972,gdaxi-pre-ecb-drift,0,GDAXI.DWX,129720000,2026-07-03,Codex,active
+12995,opec-momr-brk,0,XTIUSD.DWX,129950000,2026-07-03,Codex,active

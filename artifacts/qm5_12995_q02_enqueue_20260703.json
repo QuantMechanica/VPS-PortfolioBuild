@@ -1,0 +1,24 @@
+{
+  "ea_id": "QM5_12995",
+  "slug": "opec-momr-brk",
+  "phase": "Q02",
+  "enqueued": true,
+  "enqueued_at_utc": "2026-07-03T11:24:19+00:00",
+  "work_item_id": "32b0ae45-c296-4d65-adea-27f218601c25",
+  "work_item_status": "pending",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "setfile": "framework/EAs/QM5_12995_opec-momr-brk/sets/QM5_12995_opec-momr-brk_XTIUSD.DWX_D1_backtest.set",
+  "enqueue_command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --apply --ea QM5_12995 --queue-ceiling 100000",
+  "sweep_summary": {
+    "part1_never_tested_enqueued": 1,
+    "part2_stranded_enqueued": 0,
+    "part3_deferred_promoted": 0
+  },
+  "guards": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  }
+}
