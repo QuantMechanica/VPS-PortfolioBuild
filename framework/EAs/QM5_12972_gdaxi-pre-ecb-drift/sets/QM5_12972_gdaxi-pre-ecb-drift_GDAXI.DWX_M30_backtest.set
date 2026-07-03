@@ -1,0 +1,31 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12972
+; ea_slug:      gdaxi-pre-ecb-drift
+; ea_version:   v5.0
+; set_version:  s20260703-001
+; symbol:       GDAXI.DWX
+; timeframe:    M30
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   a2b0832fdc3f3348dcfb4c6f3c3a19ad9b20c93c08e0a30f3f49639858baac27
+; author:       Development
+; date:         2026-07-03
+;==========================================================
+qm_ea_id=12972
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12972_gdaxi-pre-ecb-drift.md
+strategy_pre_event_entry_hours=24
+strategy_pre_event_exit_minutes=30
+strategy_atr_period=20
+strategy_atr_sl_mult=3.0
+strategy_max_hold_hours=30
+strategy_max_spread_points=0
+strategy_calendar_file="D:\\QM\\data\\news_calendar\\news_calendar_2015_2025.csv"
+strategy_event_name_filter="Main Refinancing Rate"
