@@ -14355,3 +14355,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12981,brent-febsep-prem,0,XBRUSD.DWX,129810000,2026-07-03,Codex,active
 12982,brent-sep-prem,0,XBRUSD.DWX,129820000,2026-07-03,Codex,active
 12969,usdjpy-gotobi-nakane-fix,0,USDJPY.DWX,129690000,2026-07-03,Codex,active
+12983,wti-tom-mom,0,XTIUSD.DWX,129830000,2026-07-03,Codex,active
