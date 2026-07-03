@@ -1,0 +1,44 @@
+{
+  "ea_id": "QM5_12983",
+  "ea_slug": "wti-tom-mom",
+  "strategy_shape": "D1 XTIUSD turn-of-month momentum, one package per month-end cycle",
+  "diversity_rationale": "Single-symbol WTI turn-of-month momentum sleeve; no XAU, SP500, NDX, XNG, XAU/XAG, EIA/WPSR/OPEC, roll/expiry, month-of-year, weekday, basket, RSI, or ML exposure.",
+  "card_path": "strategy-seeds/cards/wti-tom-mom_card.md",
+  "build_result_path": "artifacts/qm5_12983_build_result.json",
+  "db_path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+  "db_backup_path": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12983_q02_enqueue_20260703T045447Z.sqlite",
+  "duplicate_guard": {
+    "checked_existing_pending_or_active": true,
+    "existing_pending_or_active_count_before_insert": 0
+  },
+  "q02_work_items": [
+    {
+      "id": "8810244c-c8fb-4c1f-ac7e-53a2e7b1ead3",
+      "kind": "backtest",
+      "phase": "Q02",
+      "ea_id": "QM5_12983",
+      "status": "pending",
+      "symbol": "XTIUSD.DWX",
+      "timeframe": "D1",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_12983_wti-tom-mom/sets/QM5_12983_wti-tom-mom_XTIUSD.DWX_D1_backtest.set",
+      "attempt_count": 0,
+      "created_at": "2026-07-03T04:54:47+00:00",
+      "updated_at": "2026-07-03T04:54:47+00:00",
+      "payload_json": {
+        "host_symbol": "XTIUSD.DWX",
+        "host_timeframe": "D1",
+        "enqueued_by": "codex_board_advisor_2026-07-03.wti_tom_mom",
+        "enqueued_at_utc": "2026-07-03T04:54:47+00:00",
+        "build_task_id": "manual-codex-2026-07-03-wti-tom-mom",
+        "diversity_rationale": "Single-symbol WTI turn-of-month momentum sleeve; no XAU, SP500, NDX, XNG, XAU/XAG, EIA/WPSR/OPEC, roll/expiry, month-of-year, weekday, basket, RSI, or ML exposure."
+      }
+    }
+  ],
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "manual_backtest_launched": false
+  }
+}

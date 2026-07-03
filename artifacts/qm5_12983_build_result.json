@@ -1,0 +1,64 @@
+{
+  "ea_id": "QM5_12983",
+  "slug": "wti-tom-mom",
+  "strategy_id": "VANHEMERT-MOMTOM-2014_XTI",
+  "status": "PASS",
+  "date": "2026-07-03",
+  "built_by": "Codex",
+  "branch": "agents/board-advisor",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "risk_mode": "RISK_FIXED",
+  "risk_fixed": 1000,
+  "risk_percent": 0,
+  "card": "strategy-seeds/cards/wti-tom-mom_card.md",
+  "ea_source": "framework/EAs/QM5_12983_wti-tom-mom/QM5_12983_wti-tom-mom.mq5",
+  "ea_binary": {
+    "path": "framework/EAs/QM5_12983_wti-tom-mom/QM5_12983_wti-tom-mom.ex5",
+    "sha256": "7FA2A27BB97E5E969C71D381E0FFE481D5929026D88F1706740547737AEB88E9",
+    "bytes": 300114
+  },
+  "setfiles": [
+    {
+      "path": "framework/EAs/QM5_12983_wti-tom-mom/sets/QM5_12983_wti-tom-mom_XTIUSD.DWX_D1_backtest.set",
+      "symbol": "XTIUSD.DWX",
+      "timeframe": "D1",
+      "risk_mode": "RISK_FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "magic_slot": 0,
+      "build_hash": "f7e00ef0feb26f2561df5d0da4323b6c99062f16074f5062a77d93398d0b9e01"
+    }
+  ],
+  "registry": {
+    "ea_id_registry": "framework/registry/ea_id_registry.csv",
+    "magic_numbers": "framework/registry/magic_numbers.csv",
+    "magic": 129830000
+  },
+  "compile": {
+    "strict": true,
+    "status": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log": "framework/build/compile/20260703_045707/QM5_12983_wti-tom-mom.compile.log",
+    "summary": "D:/QM/reports/compile/20260703_045707/summary.csv"
+  },
+  "build_check": {
+    "strict": true,
+    "status": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report": "D:/QM/reports/framework/21/build_check_20260703_045719.json",
+    "warning_note": "Warnings are framework-level DWX advisory warnings in shared include files, not EA compile warnings."
+  },
+  "smoke": {
+    "status": "deferred_p2_smoke",
+    "reason": "Q01 smoke deferred to Q02 controlled backtest queue after compile/build_check PASS; avoids ad hoc MT5 CPU use in headless build turn."
+  },
+  "scope_guard": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "backtest_run": false
+  }
+}
