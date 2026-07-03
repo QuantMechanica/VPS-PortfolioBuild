@@ -14376,3 +14376,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12972,gdaxi-pre-ecb-drift,0,GDAXI.DWX,129720000,2026-07-03,Codex,active
 12995,opec-momr-brk,0,XTIUSD.DWX,129950000,2026-07-03,Codex,active
 12996,xti-dpr-mom,0,XTIUSD.DWX,129960000,2026-07-03,Codex,active
+12997,xng-rig-fri-mom,0,XNGUSD.DWX,129970000,2026-07-03,Codex,active
