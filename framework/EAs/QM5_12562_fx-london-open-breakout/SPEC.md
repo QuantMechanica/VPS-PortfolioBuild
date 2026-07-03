@@ -103,3 +103,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 |---|---|---|---|
 | v1 | 2026-06-25 | Initial build from card | bd8ddfc1-5416-4352-a31a-e12a583fbc37 |
 | v2 | 2026-06-25 | Fix entry logic + recalibrate filters | Dual OR tracking (wick for width/SL, close for entry trigger); bb_atr_mult 0.5→0.2, sl_cap_atr 1.6→3.0; smoke PASS 68 trades EURUSD.DWX 2024 |
+| v3 | 2026-07-03 | Q02 INFRA repair | Move news gating below position management and exit handling so blackout windows only block new entries |
