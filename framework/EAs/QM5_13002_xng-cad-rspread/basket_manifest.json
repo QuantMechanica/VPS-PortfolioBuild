@@ -1,12 +1,12 @@
 {
-  "logical_symbol": "QM5_12840_XTI_XNG_RSPREAD_D1",
-  "host_symbol": "XTIUSD.DWX",
+  "logical_symbol": "QM5_13002_XNG_CAD_RSPREAD_D1",
+  "host_symbol": "XNGUSD.DWX",
   "host_timeframe": "D1",
   "basket_symbols": [
-    "XTIUSD.DWX",
-    "XNGUSD.DWX"
+    "XNGUSD.DWX",
+    "USDCAD.DWX"
   ],
   "notes": [
-    "Two-leg XTI/XNG energy return-spread reversion basket from the approved SRC05_S01_XTI_XNG_RSPREAD_2026 card. The EA runs from the XTIUSD.DWX host setfile and reads both D1 close series to compute log-return spread over a fixed lookback. Q02 must evaluate the logical basket, not the standalone legs."
+    "Two-leg XNG/CAD natural-gas trade relative-value basket from the approved EIA-CANADA-GAS-TRADE-2025_S01 card. The EA runs from the XNGUSD.DWX host setfile and reads XNGUSD.DWX and USDCAD.DWX D1 closes to compute a CAD-denominated gas spread z-score. Q02 must evaluate the logical basket, not the standalone legs."
   ]
 }

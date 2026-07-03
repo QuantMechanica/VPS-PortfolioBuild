@@ -1,23 +1,22 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_12840 XTI XNG Return Spread Reversion"
+#property description "QM5_13002 XNG CAD Relative Spread Mean Reversion"
 
 #include <QM/QM_Common.mqh>
 #include <QM/QM_BasketOrder.mqh>
 
 // =============================================================================
-// QM5_12840 - XTI/XNG Return-Spread Reversion
+// QM5_13002 - XNG/CAD gas-trade spread mean reversion
 // -----------------------------------------------------------------------------
-// D1 two-leg energy basket:
-//   rspread = log(XTI[t] / XTI[t-L]) - beta * log(XNG[t] / XNG[t-L])
-//   z > entry: short return spread = sell WTI, buy natural gas
-//   z < -entry: long return spread = buy WTI, sell natural gas
-// The EA runs from the XTIUSD.DWX host chart and trades both registered legs
-// through QM_BasketOrder. Runtime uses MT5 OHLC only; no external feed.
+// D1 two-leg basket:
+//   spread = ln(XNGUSD.DWX) + beta * ln(USDCAD.DWX)
+//   rich spread: sell XNG, sell USDCAD
+//   cheap spread: buy XNG, buy USDCAD
+// Runtime uses MT5 OHLC only; no macro feed, futures curve, API, or ML.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 12840;
+input int    qm_ea_id                   = 13002;
 input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
@@ -41,48 +40,45 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_return_lookback_d1 = 20;
-input int    strategy_z_lookback_d1      = 120;
-input double strategy_beta               = 1.0;
-input double strategy_entry_z            = 1.8;
-input double strategy_exit_z             = 0.4;
-input int    strategy_atr_period_d1      = 20;
-input double strategy_atr_sl_mult        = 3.0;
-input int    strategy_max_hold_days      = 25;
-input int    strategy_xti_max_spread_pts = 1000;
-input int    strategy_xng_max_spread_pts = 2500;
-input int    strategy_deviation_points   = 20;
+input int    strategy_z_lookback_d1       = 90;
+input double strategy_beta                = 4.0;
+input double strategy_entry_z             = 2.0;
+input double strategy_exit_z              = 0.5;
+input int    strategy_atr_period_d1       = 20;
+input double strategy_atr_sl_mult         = 3.0;
+input int    strategy_max_hold_days       = 45;
+input int    strategy_xng_max_spread_pts  = 2500;
+input int    strategy_usdcad_max_spread_pts = 80;
+input int    strategy_deviation_points    = 20;
 
-string   g_leg_xti = "XTIUSD.DWX";
 string   g_leg_xng = "XNGUSD.DWX";
-double   g_spread_z = 0.0;
-double   g_spread_mean = 0.0;
-double   g_spread_sd = 0.0;
+string   g_leg_usdcad = "USDCAD.DWX";
+double   g_current_z = 0.0;
 bool     g_state_ready = false;
 datetime g_pair_entry_time = 0;
-datetime g_last_state_bar = 0;
+datetime g_last_exit_eval_bar = 0;
 
 int Strategy_SlotForSymbol(const string symbol)
   {
-   if(symbol == g_leg_xti)
-      return 0;
    if(symbol == g_leg_xng)
+      return 0;
+   if(symbol == g_leg_usdcad)
       return 1;
    return -1;
   }
 
 bool Strategy_IsHostChart()
   {
-   return (_Symbol == g_leg_xti && _Period == PERIOD_D1 && qm_magic_slot_offset == 0);
+   return (_Symbol == g_leg_xng && _Period == PERIOD_D1 && qm_magic_slot_offset == 0);
   }
 
 bool Strategy_SpreadAllowed(const string symbol)
   {
    const long spread_points = SymbolInfoInteger(symbol, SYMBOL_SPREAD);
-   if(symbol == g_leg_xti && strategy_xti_max_spread_pts > 0)
-      return (spread_points <= strategy_xti_max_spread_pts);
    if(symbol == g_leg_xng && strategy_xng_max_spread_pts > 0)
       return (spread_points <= strategy_xng_max_spread_pts);
+   if(symbol == g_leg_usdcad && strategy_usdcad_max_spread_pts > 0)
+      return (spread_points <= strategy_usdcad_max_spread_pts);
    return true;
   }
 
@@ -109,24 +105,6 @@ int Strategy_OpenPairLegCount()
    return count;
   }
 
-datetime Strategy_CurrentPairEntryTime()
-  {
-   datetime earliest = 0;
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(!Strategy_IsPairPosition())
-         continue;
-
-      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-      if(opened > 0 && (earliest == 0 || opened < earliest))
-         earliest = opened;
-     }
-   return earliest;
-  }
-
 void Strategy_ClosePair(const QM_ExitReason reason)
   {
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -137,59 +115,114 @@ void Strategy_ClosePair(const QM_ExitReason reason)
       if(Strategy_IsPairPosition())
          QM_TM_ClosePosition(ticket, reason);
      }
-   g_pair_entry_time = 0;
   }
 
-bool Strategy_RefreshSpreadState()
+int Strategy_PairDirection()
   {
-   g_state_ready = false;
-   const int return_lookback = MathMax(5, strategy_return_lookback_d1);
-   const int z_lookback = MathMax(40, strategy_z_lookback_d1);
-   const int history_needed = z_lookback + return_lookback + 1;
+   const int xng_magic = QM_MagicChecked(qm_ea_id, 0, g_leg_xng);
+   if(xng_magic <= 0)
+      return 0;
 
-   double xti[];
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != g_leg_xng)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != xng_magic)
+         continue;
+
+      const long type = PositionGetInteger(POSITION_TYPE);
+      if(type == POSITION_TYPE_BUY)
+         return 1;
+      if(type == POSITION_TYPE_SELL)
+         return -1;
+     }
+   return 0;
+  }
+
+datetime Strategy_OldestPairOpenTime()
+  {
+   datetime oldest = 0;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(!Strategy_IsPairPosition())
+         continue;
+      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
+      if(opened <= 0)
+         continue;
+      if(oldest == 0 || opened < oldest)
+         oldest = opened;
+     }
+   return oldest;
+  }
+
+bool Strategy_LoadSpreadSeries(const int count_raw, double &spreads[])
+  {
+   const int count = MathMax(5, count_raw);
    double xng[];
-   ArraySetAsSeries(xti, true);
+   double usdcad[];
    ArraySetAsSeries(xng, true);
-   if(CopyClose(g_leg_xti, PERIOD_D1, 1, history_needed, xti) != history_needed) // perf-allowed: called only behind the D1 new-bar gate or close-state refresh.
+   ArraySetAsSeries(usdcad, true);
+   if(CopyClose(g_leg_xng, PERIOD_D1, 1, count, xng) != count) // perf-allowed: called only behind D1 new-bar or close-state guards.
       return false;
-   if(CopyClose(g_leg_xng, PERIOD_D1, 1, history_needed, xng) != history_needed) // perf-allowed: called only behind the D1 new-bar gate or close-state refresh.
+   if(CopyClose(g_leg_usdcad, PERIOD_D1, 1, count, usdcad) != count) // perf-allowed: called only behind D1 new-bar or close-state guards.
+      return false;
+
+   ArrayResize(spreads, count);
+   for(int i = 0; i < count; ++i)
+     {
+      if(xng[i] <= 0.0 || usdcad[i] <= 0.0)
+         return false;
+      spreads[i] = MathLog(xng[i]) + strategy_beta * MathLog(usdcad[i]);
+      if(!MathIsValidNumber(spreads[i]))
+         return false;
+     }
+   return true;
+  }
+
+bool Strategy_LoadSignalState(int &direction)
+  {
+   direction = 0;
+   g_state_ready = false;
+   g_current_z = 0.0;
+
+   const int lookback = MathMax(30, strategy_z_lookback_d1);
+   double spreads[];
+   if(!Strategy_LoadSpreadSeries(lookback + 1, spreads))
       return false;
 
    double sum = 0.0;
-   double spreads[];
-   ArrayResize(spreads, z_lookback);
-   for(int i = 0; i < z_lookback; ++i)
-     {
-      const int past_idx = i + return_lookback;
-      if(xti[i] <= 0.0 || xng[i] <= 0.0 || xti[past_idx] <= 0.0 || xng[past_idx] <= 0.0)
-         return false;
-
-      const double xti_ret = MathLog(xti[i] / xti[past_idx]);
-      const double xng_ret = MathLog(xng[i] / xng[past_idx]);
-      spreads[i] = xti_ret - strategy_beta * xng_ret;
-      if(!MathIsValidNumber(spreads[i]))
-         return false;
+   for(int i = 1; i <= lookback; ++i)
       sum += spreads[i];
-     }
+   const double mean = sum / (double)lookback;
 
-   g_spread_mean = sum / (double)z_lookback;
    double var_sum = 0.0;
-   for(int i = 0; i < z_lookback; ++i)
+   for(int i = 1; i <= lookback; ++i)
      {
-      const double d = spreads[i] - g_spread_mean;
+      const double d = spreads[i] - mean;
       var_sum += d * d;
      }
-
-   g_spread_sd = MathSqrt(var_sum / (double)MathMax(1, z_lookback - 1));
-   if(g_spread_sd <= 0.0 || !MathIsValidNumber(g_spread_sd))
+   const double sd = MathSqrt(var_sum / (double)MathMax(1, lookback - 1));
+   if(sd <= 0.0 || !MathIsValidNumber(sd))
       return false;
 
-   g_spread_z = (spreads[0] - g_spread_mean) / g_spread_sd;
-   g_state_ready = MathIsValidNumber(g_spread_z);
-   if(g_state_ready)
-      g_last_state_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cheap cached D1 timestamp.
-   return g_state_ready;
+   g_current_z = (spreads[0] - mean) / sd;
+   if(!MathIsValidNumber(g_current_z))
+      return false;
+
+   const double entry_z = MathMax(0.1, strategy_entry_z);
+   if(g_current_z > entry_z)
+      direction = -1;
+   else if(g_current_z < -entry_z)
+      direction = 1;
+
+   g_state_ready = true;
+   return true;
   }
 
 double Strategy_LotsForLeg(const string symbol, const double risk_weight, const double risk_weight_sum)
@@ -255,21 +288,21 @@ bool Strategy_OpenPair(const int spread_direction)
   {
    if(spread_direction == 0 || Strategy_OpenPairLegCount() > 0)
       return false;
-   if(!Strategy_SpreadAllowed(g_leg_xti) || !Strategy_SpreadAllowed(g_leg_xng))
+   if(!Strategy_SpreadAllowed(g_leg_xng) || !Strategy_SpreadAllowed(g_leg_usdcad))
       return false;
 
-   const double xti_weight = 1.0;
-   const double xng_weight = MathMax(0.1, MathAbs(strategy_beta));
-   const double weight_sum = xti_weight + xng_weight;
+   const double xng_weight = 1.0;
+   const double usdcad_weight = 1.0;
+   const double weight_sum = xng_weight + usdcad_weight;
    const bool long_spread = (spread_direction > 0);
-   const QM_OrderType xti_type = long_spread ? QM_BUY : QM_SELL;
-   const QM_OrderType xng_type = long_spread ? QM_SELL : QM_BUY;
-   const string reason = long_spread ? "QM5_12840_LONG_XTI_XNG_RSPREAD"
-                                     : "QM5_12840_SHORT_XTI_XNG_RSPREAD";
+   const QM_OrderType xng_type = long_spread ? QM_BUY : QM_SELL;
+   const QM_OrderType usdcad_type = long_spread ? QM_BUY : QM_SELL;
+   const string reason = long_spread ? "QM5_13002_LONG_XNG_CAD_RSPREAD"
+                                     : "QM5_13002_SHORT_XNG_CAD_RSPREAD";
 
-   bool xti_ok = Strategy_OpenLeg(g_leg_xti, xti_type, xti_weight, weight_sum, reason);
-   bool xng_ok = Strategy_OpenLeg(g_leg_xng, xng_type, xng_weight, weight_sum, reason);
-   if(xti_ok && xng_ok)
+   const bool xng_ok = Strategy_OpenLeg(g_leg_xng, xng_type, xng_weight, weight_sum, reason);
+   const bool cad_ok = Strategy_OpenLeg(g_leg_usdcad, usdcad_type, usdcad_weight, weight_sum, reason);
+   if(xng_ok && cad_ok)
      {
       g_pair_entry_time = TimeCurrent();
       return true;
@@ -283,11 +316,15 @@ bool Strategy_NoTradeFilter()
   {
    if(!Strategy_IsHostChart())
       return true;
-   if(strategy_return_lookback_d1 < 5 || strategy_z_lookback_d1 < 40 || strategy_beta <= 0.0)
+   if(strategy_z_lookback_d1 < 30)
       return true;
-   if(strategy_entry_z <= 0.0 || strategy_exit_z < 0.0)
+   if(strategy_beta <= 0.0 || strategy_entry_z <= 0.0 || strategy_exit_z < 0.0)
       return true;
-   if(strategy_atr_period_d1 <= 0 || strategy_atr_sl_mult <= 0.0 || strategy_max_hold_days <= 0)
+   if(strategy_exit_z >= strategy_entry_z)
+      return true;
+   if(strategy_atr_period_d1 <= 0 || strategy_atr_sl_mult <= 0.0)
+      return true;
+   if(strategy_max_hold_days <= 0)
       return true;
    return false;
   }
@@ -298,37 +335,24 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_12840_RSPREAD_HOST";
+   req.reason = "QM5_13002_SPREAD_HOST";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!Strategy_RefreshSpreadState())
+   int direction = 0;
+   if(!Strategy_LoadSignalState(direction))
+      return false;
+   if(direction == 0)
       return false;
    if(Strategy_OpenPairLegCount() > 0)
       return false;
 
-   if(g_spread_z > strategy_entry_z)
-      Strategy_OpenPair(-1);
-   else if(g_spread_z < -strategy_entry_z)
-      Strategy_OpenPair(1);
-
+   Strategy_OpenPair(direction);
    return false;
   }
 
 void Strategy_ManageOpenPosition()
   {
-  }
-
-bool Strategy_MaxHoldExceeded()
-  {
-   datetime entry_time = g_pair_entry_time;
-   if(entry_time <= 0)
-      entry_time = Strategy_CurrentPairEntryTime();
-   if(entry_time <= 0)
-      return false;
-
-   const long hold_seconds = (long)strategy_max_hold_days * 86400;
-   return ((long)(TimeCurrent() - entry_time) >= hold_seconds);
   }
 
 bool Strategy_ExitSignal()
@@ -342,12 +366,28 @@ bool Strategy_ExitSignal()
       return false;
      }
 
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cheap D1 timestamp guard before optional spread refresh.
-   if(current_d1_bar > 0 && current_d1_bar != g_last_state_bar)
-      Strategy_RefreshSpreadState();
-   if(g_state_ready && MathAbs(g_spread_z) < strategy_exit_z)
+   const datetime oldest_open = Strategy_OldestPairOpenTime();
+   const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
+   if(oldest_open > 0 && TimeCurrent() - oldest_open >= hold_seconds)
+     {
       Strategy_ClosePair(QM_EXIT_STRATEGY);
-   else if(Strategy_MaxHoldExceeded())
+      return false;
+     }
+
+   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cheap D1 timestamp guard before optional spread refresh.
+   if(current_d1_bar <= 0 || current_d1_bar == g_last_exit_eval_bar)
+      return false;
+   g_last_exit_eval_bar = current_d1_bar;
+
+   int fresh_direction = 0;
+   if(!Strategy_LoadSignalState(fresh_direction))
+      return false;
+
+   const int pair_direction = Strategy_PairDirection();
+   const double exit_z = MathMax(0.0, strategy_exit_z);
+   if(pair_direction > 0 && g_current_z >= -exit_z)
+      Strategy_ClosePair(QM_EXIT_STRATEGY);
+   else if(pair_direction < 0 && g_current_z <= exit_z)
       Strategy_ClosePair(QM_EXIT_STRATEGY);
    return false;
   }
@@ -362,16 +402,16 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
      {
-      if(!QM_NewsAllowsTrade2(g_leg_xti, broker_time, qm_news_temporal, qm_news_compliance))
-         return true;
       if(!QM_NewsAllowsTrade2(g_leg_xng, broker_time, qm_news_temporal, qm_news_compliance))
+         return true;
+      if(!QM_NewsAllowsTrade2(g_leg_usdcad, broker_time, qm_news_temporal, qm_news_compliance))
          return true;
      }
    else
      {
-      if(!QM_NewsAllowsTrade(g_leg_xti, broker_time, qm_news_mode_legacy))
-         return true;
       if(!QM_NewsAllowsTrade(g_leg_xng, broker_time, qm_news_mode_legacy))
+         return true;
+      if(!QM_NewsAllowsTrade(g_leg_usdcad, broker_time, qm_news_mode_legacy))
          return true;
      }
    return false;
@@ -379,8 +419,8 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
-   SymbolSelect(g_leg_xti, true);
    SymbolSelect(g_leg_xng, true);
+   SymbolSelect(g_leg_usdcad, true);
 
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
@@ -400,13 +440,11 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   string basket_symbols[2] = {g_leg_xti, g_leg_xng};
+   string basket_symbols[2] = {g_leg_xng, g_leg_usdcad};
    QM_SymbolGuardInit(basket_symbols);
-   QM_BasketWarmupHistory(basket_symbols,
-                          PERIOD_D1,
-                          MathMax(220, strategy_z_lookback_d1 + strategy_return_lookback_d1 + strategy_atr_period_d1 + 10));
+   QM_BasketWarmupHistory(basket_symbols, PERIOD_D1, MathMax(180, strategy_z_lookback_d1 + strategy_atr_period_d1 + 10));
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12840\",\"ea\":\"xti-xng-rspread\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_13002\",\"ea\":\"xng-cad-rspread\"}");
    return INIT_SUCCEEDED;
   }
 
