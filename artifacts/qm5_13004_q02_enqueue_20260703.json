@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-07-03T19:09:57+00:00",
+  "apply": true,
+  "target_eas": [
+    "QM5_13004"
+  ],
+  "part1_never_tested": {
+    "enqueued": [
+      {
+        "ea_id": "QM5_13004",
+        "symbol": "XTIUSD.DWX",
+        "setfile": "QM5_13004_xti-cot-fade_XTIUSD.DWX_D1_backtest.set",
+        "priority_track": false,
+        "work_item_id": "58b51498-a96e-47c5-98be-cb380fce6459"
+      }
+    ],
+    "skipped": []
+  },
+  "work_items_after": {
+    "Q02_pending": 1
+  }
+}
