@@ -1,0 +1,120 @@
+{
+  "task_id": "manual-codex-2026-07-03-xng-aud-rspread",
+  "ea_id": "QM5_13008",
+  "slug": "xng-aud-rspread",
+  "strategy": "XNG/AUD D1 return-spread z-score reversion",
+  "strategy_id": "RBA-AUD-COMMODITY-2026_XNG_AUD_RSPREAD",
+  "source_id": "RBA-AUD-COMMODITY-2026",
+  "source_links": [
+    "https://www.rba.gov.au/education/resources/explainers/drivers-of-the-aud-exchange-rate.html"
+  ],
+  "symbols": [
+    "XNGUSD.DWX",
+    "AUDUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13008_XNG_AUD_RSPREAD_D1",
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13008_xng-aud-rspread",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13008_xng-aud-rspread\\QM5_13008_xng-aud-rspread.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13008_xng-aud-rspread\\QM5_13008_xng-aud-rspread.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13008_xng-aud-rspread\\SPEC.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13008_xng-aud-rspread\\basket_manifest.json",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\xng-aud-rspread_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13008_xng-aud-rspread_card.md",
+  "runtime_approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13008_xng-aud-rspread.md",
+  "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\RBA-AUD-COMMODITY-2026\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13008_xng-aud-rspread\\sets\\QM5_13008_xng-aud-rspread_QM5_13008_XNG_AUD_RSPREAD_D1_D1_backtest.set"
+  ],
+  "setfile_build_hash": "0ec0fe73a6362005e6f73d207b8b49d056f269631e69316f9c5fdd0f539c197b",
+  "mq5_sha256": "6441fcddc4bfb87aad427891f3f1b584178396fb6298da3fe723431be6cbbe47",
+  "ex5_sha256": "24f0211fad2eb076a36c7cfe8dcbce40855a24b210c00e2f2e96dfe98f6eac81",
+  "setfile_current_sha256": "eb53aca4ca39823cd5cb347d9f4f64f9983143dcdc868984df6c4e13ab04a36b",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XNGUSD.DWX",
+        "magic": 130080000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "AUDUSD.DWX",
+        "magic": 130080001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_13008_xng-aud-rspread --force --json --fail-on-error",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260703_215622\\QM5_13008_xng-aud-rspread.compile.log",
+    "ex5_size_bytes": 306674,
+    "symbol_scope_verdict": "BASKET_OK"
+  },
+  "build_check": {
+    "command": "pwsh.exe -NoProfile -File framework/scripts/build_check.ps1 -EALabel QM5_13008_xng-aud-rspread -RepoRoot C:/QM/repo -Strict -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260703_215639.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "validations": {
+    "source_packet": "PASS",
+    "approved_card_mirror": "PASS",
+    "spec_doc": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "compile": "PASS",
+    "build_check": "PASS",
+    "q02_enqueue": "PASS"
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "33dafe79-5a87-4b60-9d6e-459393343d9a",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "QM5_13008_XNG_AUD_RSPREAD_D1",
+    "host_symbol": "XNGUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13008_xng-aud-rspread\\sets\\QM5_13008_xng-aud-rspread_QM5_13008_XNG_AUD_RSPREAD_D1_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "attempt_count": 0,
+    "created_at_utc": "2026-07-03T21:57:23+00:00",
+    "payload": {
+      "portfolio_scope": "basket",
+      "basket_symbol_count": 2,
+      "basket_symbols": [
+        "XNGUSD.DWX",
+        "AUDUSD.DWX"
+      ],
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "risk_mode": "RISK_FIXED",
+      "portfolio_weight": 1,
+      "timeout_min": 450
+    }
+  },
+  "smoke_result": "deferred_to_q02",
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 backtest was launched from this session.",
+  "non_duplicate_reason": "XNG/AUD commodity-FX return-spread reversion is distinct from QM5_12567's XNG commodity RSI logic, existing XNG seasonal/storage/weather/event sleeves, XNG/CAD return-spread, XBR/XNG and XTI/XNG energy baskets, WTI calendar/event/index sleeves, metal-ratio sleeves, and index sleeves.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false
+  }
+}
