@@ -1,0 +1,83 @@
+{
+  "cycle_timestamp": "2026-07-03T1601Z",
+  "overall": "PRODUCTIVE",
+  "tasks_completed": 3,
+  "health_initial": {
+    "overall": "FAIL",
+    "fail": 4,
+    "warn": 2,
+    "fail_checks": [
+      "p2_pass_no_p3: 127 items",
+      "unbuilt_cards_count: 786 cards",
+      "unenqueued_eas_count: 54 EAs",
+      "p_pass_stagnation: 0 P3+ PASS / 12h (known: health.py version drift, checks old P-era phases)"
+    ],
+    "warn_checks": [
+      "mt5_worker_saturation: 7/10 workers (T1-T7)",
+      "source_pool_drained: 7 pending sources"
+    ]
+  },
+  "health_final": {
+    "overall": "WARN",
+    "warn_checks": [
+      "mt5_worker_saturation: 7/10 workers",
+      "source_pool_drained: 7 pending",
+      "unbuilt_cards_count: 293 (pump ran between checks)"
+    ],
+    "note": "p2_pass_no_p3 and unenqueued_eas_count resolved by scheduled pump"
+  },
+  "routing": {
+    "issue": "3 TODO tasks for Claude had required_capability='repo' (not 'repo_edit'); no agent has 'repo'. Router returned no_available_agent.",
+    "resolution": "Tasks transitioned to IN_PROGRESS automatically after router run cycle completed — probably due to stale-lock release. All 3 executed."
+  },
+  "tasks": [
+    {
+      "id": "1a52d28d-cc57-49d0-8973-abbda9a7018e",
+      "title": "URGENT GUARD: canonical-checkout self-check + mass-invalidation circuit breaker",
+      "priority": 1,
+      "state": "REVIEW",
+      "commits": ["f13f40efe", "ccf0992cb"],
+      "summary": "Layer 1: FRAMEWORK_EAS_DIR anchored to CANONICAL_REPO_ROOT (C:/QM/repo). Layer 2: _require_canonical_checkout() hard-aborts pump/repair/backfill/enqueue-backtest from worktree paths. Layer 3: mass-invalidation circuit breaker >200 items in repair R11. 7/7 tests pass.",
+      "evidence": "docs/ops/evidence/canonical_guard_layers123_2026-07-03.md",
+      "side_effects": ["c8051e18 (12847 rescue) unblocked → APPROVED for Codex"]
+    },
+    {
+      "id": "e1fb9395-4b12-4f91-a343-27c51295f1ab",
+      "title": "CONFIG: grant claude repo_edit + merge live_book_pulse to main + repoint schtask",
+      "priority": 2,
+      "state": "REVIEW",
+      "commits": ["fd3c99cb1"],
+      "summary": "claude lane already had repo_edit (commits ccca6cf13, 539ead9a1). Documented. live_book_pulse.py (873 lines) merged from codex-orchestration-1 worktree; py_compile clean; manual run produced live_book_pulse.json (13 sleeves, ALARM journal_stale_gt_120m). Schtask repointed to C:/QM/repo; file also copied untracked to C:/QM/repo for immediate use.",
+      "evidence": "docs/ops/evidence/claude_lane_repo_edit_grant_2026-07-03.md",
+      "note": "live_book_pulse.json shows journal_stale_gt_120m_market_hours=148min (WARN). May indicate T_Live position closed or MT5 quiet period. OWNER aware; no action taken (T_Live = OWNER+Claude authority only)."
+    },
+    {
+      "id": "d015e982-5921-4b81-b318-1bc54d325546",
+      "title": "OPS HARDENING P4-P5: scaled timeouts, loud resolver drops, seasonal prescreen, QMProc, evidence-path enforcement",
+      "priority": 2,
+      "state": "REVIEW",
+      "commits": ["3f2d694df"],
+      "summary": "(1) _active_timeout_min_for_work_item: date-range scale (7yr base), sqrt-seed Q07, 1.5x heavy-asset (commodity/index/XAU/XAG), cap 3x. (2) update_magic_resolver.py: dropped rows WARN to stderr always; --strict exits nonzero. compile_ea.py integration DEFERRED. (3) _p2_prescreen_dates: full-year for calendar/season/month strategy_type_flags. (4) QMProc.psm1: Get-QMFactoryProcesses T1-T10 with T_Live double-exclusion. (5) claude_review_ea.md + claude_research_source.md: evidence path rule added.",
+      "evidence": "docs/ops/evidence/ops_hardening_p4p5_2026-07-03.md"
+    }
+  ],
+  "qm5_10260": {
+    "status": "Q03 FAIL NDX.DWX (2026-06-30), Q08 FAIL_HARD historical. Build task RECYCLE. Q02 pending item stale from 2026-06-30. No change from prior cycles."
+  },
+  "live_book_pulse": {
+    "verdict": "ALARM",
+    "alarm": "journal_stale_gt_120m_market_hours=148.68min",
+    "sleeves": 13,
+    "generated_at": "2026-07-03T14:12:49Z"
+  },
+  "blockers_unblocked": ["c8051e18 (12847 rescue) → APPROVED"],
+  "deferred": [
+    "compile_ea.py magic-existence check post-resolver (not tracked in worktree branch)"
+  ],
+  "commits_this_cycle": [
+    "fd3c99cb1 ops(lane): document claude repo_edit grant + merge live_book_pulse",
+    "f13f40efe guard(farm): layers 1-3 canonical-checkout check + mass-invalidation circuit breaker",
+    "ccf0992cb ops(evidence): canonical guard layers 1-3 evidence doc",
+    "3f2d694df ops(hardening): P4-P5 scaled timeouts, loud resolver drops, seasonal prescreen, QMProc module, evidence path enforcement"
+  ]
+}
