@@ -1,0 +1,68 @@
+{
+  "timestamp": "2026-07-03T21:52Z",
+  "cycle": "orchestration",
+  "agent": "claude",
+  "worktree": "C:/QM/worktrees/claude-orchestration-3",
+  "health": {
+    "overall": "FAIL",
+    "fail": 3,
+    "warn": 2,
+    "ok": "all others",
+    "fail_items": [
+      "p2_pass_no_p3: 127 profitable Q02-PASS work_items without Q03 promotion (pre-existing pipeline mapping bug)",
+      "unbuilt_cards_count: 786 approved cards lack .ex5 (pre-existing; farmctl pump self-addresses)",
+      "unenqueued_eas_count: 60 reviewed built EAs without Q02 work_items (pre-existing)"
+    ],
+    "warn_items": [
+      "mt5_worker_saturation: 7/10 daemons alive (T1-T7; T8-T10 disabled by cap -- pre-existing expected state)",
+      "source_pool_drained: only 7 pending sources (threshold 10)"
+    ],
+    "ok_highlights": [
+      "disk_free_gb: 275.7GB free on D:",
+      "p_pass_stagnation: OK (37 Q04+ PASS in last 6h)",
+      "quota_snapshot_fresh: OK (codex=262s, claude=262s)",
+      "codex_auth_broken: OK (no 401 errors; auth_age=48.7h)",
+      "zerotrade_rework_backlog: OK"
+    ]
+  },
+  "tasks": {
+    "in_progress_at_start": [
+      {
+        "id": "106ed489-5914-497b-9ca0-9986372ec8d0",
+        "type": "ops_issue",
+        "priority": 1,
+        "title": "D2-d COMPOSITE PACKAGE: 15-sleeve frozen-stream weights + scenario table for OWNER Q12"
+      }
+    ],
+    "outcome": "1 task completed and moved to REVIEW",
+    "router_run": "no_routable_task",
+    "router_route_many": "no_routable_task"
+  },
+  "task_outcomes": [
+    {
+      "id": "106ed489-5914-497b-9ca0-9986372ec8d0",
+      "action": "REVIEW",
+      "artifact": "C:/QM/worktrees/cto_main/docs/ops/evidence/D2D_COMPOSITE_PACKAGE_2026-07-03.md",
+      "summary": "D2-d 4-scenario OWNER decision package complete. Evidence doc committed to main (034beaa24). All artifacts pre-computed and verified.",
+      "scenarios": {
+        "S0_flat13_baseline": {"annual_return_pct": 16.86, "sharpe": 1.44, "max_dd_pct": 15.33},
+        "S1_variant_b_v2_13": {"annual_return_pct": 10.61, "sharpe": 1.67, "max_dd_pct": 6.41},
+        "S2_d2d_15_no_swap": {"annual_return_pct": 12.10, "sharpe": 1.98, "max_dd_pct": 4.52},
+        "S3_d2d_15_swap_recommended": {"annual_return_pct": 12.68, "sharpe": 2.03, "max_dd_pct": 4.76}
+      }
+    }
+  ],
+  "actions_taken": [
+    "Verified all 16 frozen streams present with SHA256 matching metrics JSON",
+    "Verified 15 staged DRAFT set files exist for S3 and S2 (RISK_FIXED=0, RISK_PERCENT set, DRAFT_ONLY headers)",
+    "Evidence doc D2D_COMPOSITE_PACKAGE_2026-07-03.md confirmed committed to main (034beaa24)",
+    "Moved task 106ed489 from IN_PROGRESS to REVIEW"
+  ],
+  "notes": [
+    "Evidence doc was already committed by a prior cycle (034beaa24); this cycle verified completeness and moved task to REVIEW.",
+    "p2_pass_no_p3 FAIL: 127 profitable items blocked by known pipeline mapping bug (task 0bf5dc87 in queue for Codex). Not a regression.",
+    "7/10 worker saturation is expected steady-state with T8-T10 cap (050829f9b RAM wedge fix).",
+    "Route-many returned no_routable_task after completing the one IN_PROGRESS task.",
+    "S3 recommended to OWNER: Sharpe 2.03, MaxDD 4.76%, annual return 12.68%, max pair-corr 0.076."
+  ]
+}
