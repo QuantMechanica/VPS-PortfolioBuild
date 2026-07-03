@@ -1,211 +1,214 @@
-# D2-d COMPOSITE PACKAGE: 4-Scenario Frozen-Stream Analysis
+# D2-d Composite Package — 15-Sleeve Frozen-Stream Scenarios — 2026-07-03
 
-**Task:** `106ed489-5914-497b-9ca0-9986372ec8d0`
-**Date:** 2026-07-03
-**Author:** Claude (orchestration cycle)
-**Reference task (frozen snapshot):** `58c324cc-88a9-4e0e-bdbd-7fb941c5dfff` (Variant B v2)
+Task: `106ed489-5914-497b-9ca0-9986372ec8d0`
+Status: **DRAFT OWNER DECISION PACKAGE ONLY.** No T_Live files changed, no AutoTrading action taken, no manifest signed.
 
-## Purpose
+## Scope
 
-Assembles the quantitative core of the D2-d OWNER decision package. Four scenarios,
-all on frozen streams, all using capped inverse-vol policy with total summed RISK = 9.75%
-(DXZ VaR-filled; never raised). For OWNER Q12 approval.
+Four scenarios on frozen Q08 streams. The frozen base is the 13-sleeve Variant B v2 snapshot
+(task `58c324cc`), extended with three new streams from the durable root.
+
+| ID | Label | Sleeves | Description |
+|---|---|---:|---|
+| S0 | flat-13 | 13 | Current live book, flat RISK_PERCENT=0.75 each (baseline) |
+| S1 | Variant-B-v2 | 13 | Same 13 sleeves, capped inv-vol reweight (ratified 2026-07-03) |
+| S2 | D2-d-15 | 15 | S1 + ADMIT 10919/XTIUSD + ADMIT 10476/USDCAD (no swap) |
+| S3 | D2-d-15-swap | 15 | S2 but 10940/XAUUSD replaced by 12989/XAUUSD |
 
 ## Policy
 
-- Capped inverse-vol weighting (same algorithm as Variant B v2)
-- Total summed RISK_PERCENT = **9.75%** (invariant across all scenarios)
-- Per-sleeve hard cap = **1.00%**
-- Redistribution: iterative pro-rata to uncapped sleeves until stable
-- Starting capital reference = $100,000
-- Backtest basis: RISK_FIXED=1000; live scale = RISK_PERCENT (same unit)
+- Weighting: capped inverse-vol over per-sleeve population std-dev of daily net-of-cost PnL
+- Total summed RISK_PERCENT: **9.75%** (unchanged — DXZ VaR-filled, never raised)
+- Per-sleeve hard cap: **1.000%**
+- Redistribution: iterative pro-rata by inv-vol to under-cap sleeves until stable
+- Account basis: $100,000 (RISK_FIXED=1000 backtest baseline)
+- Commission: DXZ/FTMO worst-case model via `tools/strategy_farm/portfolio/commission.py`
 
-## Stream Snapshot
+## Frozen Streams
 
-13 existing frozen streams copied from Variant B v2 frozen snapshot (`58c324cc`).
-3 new streams from durable root (`D:\QM\reports\portfolio\sleeve_streams\QM\q08_trades\`):
+All computations use the frozen copy at
+`D:\QM\strategy_farm\artifacts\portfolio\d2d_composite_2026-07-03\frozen_streams\QM\q08_trades`.
 
-| file | trades | sha256 (first 16) | source |
-|---|---:|---|---|
-| 10440_NDX_DWX.jsonl | 441 | 1a14322430634065… | V2_FROZEN |
-| 10513_XAUUSD_DWX.jsonl | 22 | af8d0241cd21e37a… | V2_FROZEN |
-| 10692_NDX_DWX.jsonl | 443 | 149e83d2b960949c… | V2_FROZEN |
-| 10715_USDJPY_DWX.jsonl | 1466 | 18fa7348202f2edc… | V2_FROZEN |
-| 10911_GDAXI_DWX.jsonl | 268 | de53d18052af3362… | V2_FROZEN |
-| 10939_GBPUSD_DWX.jsonl | 92 | 55a54176330827c3… | V2_FROZEN |
-| 10940_XAUUSD_DWX.jsonl | 35 | 2ef38c1fdb3c9703… | V2_FROZEN |
-| 11132_SP500_DWX.jsonl | 43 | acd06e79d182b7ff… | V2_FROZEN |
-| 11165_AUDCAD_DWX.jsonl | 173 | f55cdf573588c71b… | V2_FROZEN |
-| 11421_AUDUSD_DWX.jsonl | 53 | 5741ec494c4aa8bb… | V2_FROZEN |
-| 11421_EURUSD_DWX.jsonl | 58 | ab5e22d9a7dd4bde… | V2_FROZEN |
-| 12567_XAUUSD_DWX.jsonl | 28 | 2572cf8cf16d9dec… | V2_FROZEN |
-| 12567_XNGUSD_DWX.jsonl | 20 | dc3a99581539e1a0… | V2_FROZEN |
-| **10919_XTIUSD_DWX.jsonl** | **29** | **2dbbdd1d2eaab4af…** | **DURABLE_ROOT** |
-| **10476_USDCAD_DWX.jsonl** | **233** | **419878e3d1d551b1…** | **DURABLE_ROOT** |
-| **12989_XAUUSD_DWX.jsonl** | **51** | **c1f56840d6fe7ba7…** | **DURABLE_ROOT** |
+**13 streams from Variant B v2 frozen dir** (`58c324cc`):
 
-Frozen streams location: `D:\QM\strategy_farm\artifacts\portfolio\d2d_composite_2026-07-03\frozen_streams\QM\q08_trades\`
+| File | Lines | SHA256 (prefix) |
+|---|---:|---|
+| 10440_NDX_DWX.jsonl | 441 | `1a14322430634065...` |
+| 10513_XAUUSD_DWX.jsonl | 22 | `af8d0241cd21e37a...` |
+| 10692_NDX_DWX.jsonl | 443 | `149e83d2b960949c...` |
+| 10715_USDJPY_DWX.jsonl | 1466 | `18fa7348202f2edc...` |
+| 10911_GDAXI_DWX.jsonl | 268 | `de53d18052af3362...` |
+| 10939_GBPUSD_DWX.jsonl | 92 | `55a54176330827c3...` |
+| 10940_XAUUSD_DWX.jsonl | 35 | `2ef38c1fdb3c9703...` |
+| 11132_SP500_DWX.jsonl | 43 | `acd06e79d182b7ff...` |
+| 11165_AUDCAD_DWX.jsonl | 173 | `f55cdf573588c71b...` |
+| 11421_AUDUSD_DWX.jsonl | 53 | `5741ec494c4aa8bb...` |
+| 11421_EURUSD_DWX.jsonl | 58 | `ab5e22d9a7dd4bde...` |
+| 12567_XAUUSD_DWX.jsonl | 28 | `2572cf8cf16d9dec...` |
+| 12567_XNGUSD_DWX.jsonl | 20 | `dc3a99581539e1a0...` |
+
+**3 new streams from durable root** (`D:\QM\reports\portfolio\sleeve_streams`):
+
+| File | Lines | SHA256 (prefix) |
+|---|---:|---|
+| 10476_USDCAD_DWX.jsonl | 233 | `419878e3d1d551b1...` |
+| 10919_XTIUSD_DWX.jsonl | 29 | `2dbbdd1d2eaab4af...` |
+| 12989_XAUUSD_DWX.jsonl | 51 | `c1f56840d6fe7ba7...` |
+
+Spot-check: `10939_GBPUSD_DWX.jsonl` SHA256 = `55a54176330827c3...`
+matches Variant B v2 reference `55a54176330827c3c797080a6385a35ad4506ba14005490031196aa0feac2078` ✓
 
 ## Scenario Comparison
 
-| Scenario | Sleeves | Sum Risk | Annual Return | Sharpe | MaxDD | VaR95/mo | Worst Day | Max Pair Corr |
+All scenarios span 2017-10-19 to 2025-12-30 (99 months, 8.200 years).
+Trade-days: S0/S1 = 1800 | S2 = 1824 | S3 = 1826 (higher count = new sleeves add active days).
+
+| Scenario | Sleeves | Total Net | Annual% | Sharpe | MaxDD% | VaR95m% | Worst Day% | Max Pair Corr |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| S0 flat-13 baseline | 13 | 9.75% | 16.86% | 1.442 | 15.327% | 4.444% | -3.049% | — |
-| S1 Variant B v2 (ref) | 13 | 9.75% | 10.61% | 1.674 | 6.407% | 2.206% | -1.945% | — |
-| S2 D2-d-15 no swap | 15 | 9.75% | 12.10% | 1.978 | 4.524% | 2.195% | -1.505% | 0.075 |
-| **S3 D2-d-15 swap (recommended)** | **15** | **9.75%** | **12.68%** | **2.027** | **4.764%** | **2.073%** | **-1.541%** | **0.076** |
+| S0 flat-13 (current live) | 13 | $138,219 | 16.856 | 1.442 | 15.327 | 4.643 | -3.049 | 0.075 |
+| S1 Variant-B-v2 (ratified) | 13 | $86,962 | 10.605 | 1.674 | 6.407 | 2.397 | -1.945 | 0.075 |
+| **S2 D2-d-15 (no swap)** | **15** | **$87,568** | **10.679** | **1.978** | **4.524** | **2.195** | **-1.505** | **0.075** |
+| **S3 D2-d-15-swap** | **15** | **$91,900** | **11.208** | **2.027** | **4.764** | **2.073** | **-1.541** | **0.076** |
 
-*S0/S1 max-pair-corr not recomputed (reference from V2 JSON). Trade spans: S0/S1 = 1800 days, S2 = 1824 days, S3 = 1826 days.*
+### Key Observations
 
-**Key finding:** S3 (15-sleeve with 10940→12989 swap) delivers best Sharpe (2.03) and best annual return (12.68%), while keeping MaxDD below 5%. Both S2 and S3 reduce MaxDD dramatically vs S1 (4.5-4.8% vs 6.4%).
+**S2 vs S1:** Adding XTIUSD and USDCAD raises Sharpe 1.674 -> 1.978 (+18%) and reduces MaxDD
+6.407 -> 4.524% (-29%) at nearly identical annual return. Max pair-corr unchanged at 0.075.
+Pure diversification gain with no return sacrifice.
 
-## S0 — Flat-13 Baseline (reference only; current live)
+**S3 vs S2:** Swapping 10940/XAUUSD for 12989/XAUUSD (exit-surgery challenger) raises annual
+return 10.679 -> 11.208% (+53bp) and Sharpe 1.978 -> 2.027, at +24bp MaxDD cost. VaR95 improves
+(2.195 -> 2.073). Net: better return for marginal risk increase.
 
-13 sleeves × 0.75% = 9.75% total risk. Already deployed on T_Live.
+**S3 vs S1 (deployment comparison):** Sharpe 2.027 vs 1.674, MaxDD 4.764% vs 6.407%, Annual
+11.208% vs 10.605%. S3 is strictly better on all major metrics.
 
-Annual return 16.86% | Sharpe 1.442 | MaxDD **15.327%** | VaR95/mo 4.444% | Worst day −3.049%
+**Max pair-corr 0.076** across 15 sleeves — excellent diversification maintained.
 
-*High return but terrible DD — the standard the risk-parity reweight must beat.*
+## S2 RISK_PERCENT Table (D2-d-15)
 
-## S1 — Variant B v2 (ratified 2026-07-03; pending deployment)
+| Slot | EA | Symbol | TF | Magic | S1 RISK% | S2 RISK% | Delta | Capped |
+|---:|---|---|---|---:|---:|---:|---:|---|
+| 3 | QM5_10440 | NDX.DWX | H1 | 104400003 | 0.1983 | 0.1498 | -0.0485 | - |
+| 4 | **QM5_10476** | **USDCAD.DWX** | **H1** | **104760004** | **NEW** | **0.2175** | **+NEW** | **-** |
+| 3 | QM5_10513 | XAUUSD.DWX | D1 | 105130003 | 1.0000 | 0.8172 | -0.1828 | - |
+| 5 | QM5_10692 | NDX.DWX | H1 | 106920005 | 0.2707 | 0.2045 | -0.0662 | - |
+| 4 | QM5_10715 | USDJPY.DWX | M15 | 107150004 | 0.5011 | 0.3786 | -0.1225 | - |
+| 3 | QM5_10911 | GDAXI.DWX | H1 | 109110003 | 0.3846 | 0.2906 | -0.0940 | - |
+| 1 | **QM5_10919** | **XTIUSD.DWX** | **H4** | **109190001** | **NEW** | **1.0000** | **+NEW** | **YES** |
+| 1 | QM5_10939 | GBPUSD.DWX | H4 | 109390001 | 0.5475 | 0.4137 | -0.1338 | - |
+| 3 | QM5_10940 | XAUUSD.DWX | H4 | 109400003 | 0.8478 | 0.6406 | -0.2072 | - |
+| 0 | QM5_11132 | SP500.DWX | D1 | 111320000 | 1.0000 | 1.0000 | 0.0000 | YES |
+| 2 | QM5_11165 | AUDCAD.DWX | H1 | 111650002 | 1.0000 | 1.0000 | 0.0000 | YES |
+| 3 | QM5_11421 | AUDUSD.DWX | D1 | 114210003 | 1.0000 | 0.8482 | -0.1518 | - |
+| 0 | QM5_11421 | EURUSD.DWX | D1 | 114210000 | 1.0000 | 0.7890 | -0.2110 | - |
+| 3 | QM5_12567 | XAUUSD.DWX | D1 | 125670003 | 1.0000 | 1.0000 | 0.0000 | YES |
+| 2 | QM5_12567 | XNGUSD.DWX | D1 | 125670002 | 1.0000 | 1.0000 | 0.0000 | YES |
 
-13 sleeves, capped inv-vol reweight. Not yet deployed on T_Live.
+Total summed RISK_PERCENT S2: **9.7500%** ✓
 
-Annual return 10.61% | Sharpe 1.674 | MaxDD **6.407%** | VaR95/mo 2.206% | Worst day −1.945%
+Note: 10919/XTIUSD immediately hard-capped (29 trades / sparse stream = very low vol = very high
+inv-vol weight -> over 1% cap). Adding XTIUSD + USDCAD adds 1.2175% total new risk; the
+redistribution algorithm reduces uncapped sleeves proportionally.
 
-*Risk-parity cuts MaxDD in half vs S0 at cost of lower raw return.*
+## S3 RISK_PERCENT Table (D2-d-15-swap)
 
-## S2 — D2-d-15 (13 + 10919/XTIUSD + 10476/USDCAD, no swap)
+| Slot | EA | Symbol | TF | Magic | S2 RISK% | S3 RISK% | Delta | Capped |
+|---:|---|---|---|---:|---:|---:|---:|---|
+| 3 | QM5_10440 | NDX.DWX | H1 | 104400003 | 0.1498 | 0.1534 | +0.0036 | - |
+| 4 | QM5_10476 | USDCAD.DWX | H1 | 104760004 | 0.2175 | 0.2227 | +0.0052 | - |
+| 3 | QM5_10513 | XAUUSD.DWX | D1 | 105130003 | 0.8172 | 0.8366 | +0.0194 | - |
+| 5 | QM5_10692 | NDX.DWX | H1 | 106920005 | 0.2045 | 0.2094 | +0.0049 | - |
+| 4 | QM5_10715 | USDJPY.DWX | M15 | 107150004 | 0.3786 | 0.3876 | +0.0090 | - |
+| 3 | QM5_10911 | GDAXI.DWX | H1 | 109110003 | 0.2906 | 0.2975 | +0.0069 | - |
+| 1 | QM5_10919 | XTIUSD.DWX | H4 | 109190001 | 1.0000 | 1.0000 | 0.0000 | YES |
+| 1 | QM5_10939 | GBPUSD.DWX | H4 | 109390001 | 0.4137 | 0.4236 | +0.0099 | - |
+| 3 | ~~QM5_10940~~ | ~~XAUUSD.DWX~~ | ~~H4~~ | ~~109400003~~ | ~~0.6406~~ | **REMOVED** | | |
+| 0 | QM5_11132 | SP500.DWX | D1 | 111320000 | 1.0000 | 1.0000 | 0.0000 | YES |
+| 2 | QM5_11165 | AUDCAD.DWX | H1 | 111650002 | 1.0000 | 1.0000 | 0.0000 | YES |
+| 3 | QM5_11421 | AUDUSD.DWX | D1 | 114210003 | 0.8482 | 0.8684 | +0.0202 | - |
+| 0 | QM5_11421 | EURUSD.DWX | D1 | 114210000 | 0.7890 | 0.8078 | +0.0188 | - |
+| 3 | QM5_12567 | XAUUSD.DWX | D1 | 125670003 | 1.0000 | 1.0000 | 0.0000 | YES |
+| 2 | QM5_12567 | XNGUSD.DWX | D1 | 125670002 | 1.0000 | 1.0000 | 0.0000 | YES |
+| 3 | **QM5_12989** | **XAUUSD.DWX** | **H4** | **129890003** | **SWAP-IN** | **0.5431** | **+NEW** | **-** |
 
-**15 sleeves | Sum RISK = 9.7500% | Trade days = 1824**
+Total summed RISK_PERCENT S3: **9.7500%** ✓
 
-Annual return 12.10% | Sharpe **1.978** | MaxDD **4.524%** | VaR95/mo 2.195% | Worst day −1.505% | Max pair-corr 0.075
+Magic collision check: 10513 (105130003), 12567 (125670003), 12989 (129890003) all on
+XAUUSD.DWX slot 3 — three distinct magics. 10940 (109400003) is REMOVED in S3. No collision.
 
-### S2 RISK_PERCENT Table
+## Staged Presets for S3
 
-| slot | EA | symbol | TF | magic | RISK_PERCENT | hard-capped |
-|---:|---|---|---|---:|---:|---|
-| 0 | QM5_10440 | NDX.DWX | H1 | 104400003 | 0.1498% | no |
-| 1 | QM5_10476 | USDCAD.DWX | H1 | 104760004 | 0.2175% | no |
-| 2 | QM5_10513 | XAUUSD.DWX | D1 | 105130003 | 0.8172% | no |
-| 3 | QM5_10692 | NDX.DWX | H1 | 106920005 | 0.2045% | no |
-| 4 | QM5_10715 | USDJPY.DWX | M15 | 107150004 | 0.3786% | no |
-| 5 | QM5_10911 | GDAXI.DWX | H1 | 109110003 | 0.2906% | no |
-| 6 | QM5_10919 | XTIUSD.DWX | H4 | 109190001 | **1.0000%** | **yes** |
-| 7 | QM5_10939 | GBPUSD.DWX | H4 | 109390001 | 0.4137% | no |
-| 8 | QM5_10940 | XAUUSD.DWX | H4 | 109400003 | 0.6406% | no |
-| 9 | QM5_11132 | SP500.DWX | D1 | 111320000 | **1.0000%** | **yes** |
-| 10 | QM5_11165 | AUDCAD.DWX | H1 | 111650002 | **1.0000%** | **yes** |
-| 11 | QM5_11421 | AUDUSD.DWX | D1 | 114210003 | 0.8482% | no |
-| 12 | QM5_11421 | EURUSD.DWX | D1 | 114210000 | 0.7890% | no |
-| 13 | QM5_12567 | XAUUSD.DWX | D1 | 125670003 | **1.0000%** | **yes** |
-| 14 | QM5_12567 | XNGUSD.DWX | D1 | 125670002 | **1.0000%** | **yes** |
+**Location:** `D:\QM\strategy_farm\artifacts\portfolio\d2d_composite_2026-07-03\staged_s3_live_presets\`
 
-### S2 Delta vs S1 (Variant B v2)
+15 `.set` files, one per S3 sleeve. Naming:
+`slot{N}_{SYM}_{TF}_QM5_{ea}_{slug}_magic{magic}_d2d_s3_live.set`
 
-| EA | symbol | S1 RISK% | S2 RISK% | delta | change |
-|---|---|---:|---:|---:|---|
-| QM5_10440 | NDX.DWX | 0.1983% | 0.1498% | −0.0485% | redistributed |
-| **QM5_10476** | **USDCAD.DWX** | 0% | **0.2175%** | **+0.2175%** | **ADDED** |
-| QM5_10513 | XAUUSD.DWX | 1.0000% | 0.8172% | −0.1828% | redistributed |
-| QM5_10692 | NDX.DWX | 0.2707% | 0.2045% | −0.0661% | redistributed |
-| QM5_10715 | USDJPY.DWX | 0.5011% | 0.3786% | −0.1224% | redistributed |
-| QM5_10911 | GDAXI.DWX | 0.3846% | 0.2906% | −0.0940% | redistributed |
-| **QM5_10919** | **XTIUSD.DWX** | 0% | **1.0000%** | **+1.0000%** | **ADDED (capped)** |
-| QM5_10939 | GBPUSD.DWX | 0.5475% | 0.4137% | −0.1338% | redistributed |
-| QM5_10940 | XAUUSD.DWX | 0.8478% | 0.6406% | −0.2072% | redistributed |
-| QM5_11132 | SP500.DWX | 1.0000% | 1.0000% | ±0.0000% | unchanged (capped) |
-| QM5_11165 | AUDCAD.DWX | 1.0000% | 1.0000% | ±0.0000% | unchanged (capped) |
-| QM5_11421 | AUDUSD.DWX | 1.0000% | 0.8482% | −0.1518% | redistributed |
-| QM5_11421 | EURUSD.DWX | 1.0000% | 0.7890% | −0.2110% | redistributed |
-| QM5_12567 | XAUUSD.DWX | 1.0000% | 1.0000% | ±0.0000% | unchanged (capped) |
-| QM5_12567 | XNGUSD.DWX | 1.0000% | 1.0000% | ±0.0000% | unchanged (capped) |
+All files enforce:
+- `RISK_FIXED=0` (hard rule: backtest is FIXED, live is PERCENT)
+- `RISK_PERCENT={capped_invvol_value}` (4 decimal places)
+- `PORTFOLIO_WEIGHT=1.0`
+- `qm_filter_news_enabled=1`, `qm_filter_news_mode=3`
+- `DRAFT_ONLY ... DO_NOT_COPY_TO_T_LIVE_WITHOUT_SIGNED_OWNER_MANIFEST`
 
-Note: 10919/XTIUSD hits the 1% cap immediately (low-vol, high inverse-vol weight), redistributing
-its excess pro-rata. Existing uncapped sleeves lose ~10-21% each.
+Strategy params inherited from canonical backtest set files. For live deployment, Codex
+must verify params match current T_Live set files (field tuning may have occurred since
+backtest).
 
-## S3 — D2-d-15-swap (10940/XAUUSD replaced by 12989/XAUUSD) — RECOMMENDED
+Key new/changed set files:
+- `slot3_XAUUSD_H4_QM5_12989_grimes-nested-pb-v2_magic129890003_d2d_s3_live.set` — RISK_PERCENT=0.5431 (swap-in)
+- `slot1_XTIUSD_H4_QM5_10919_grimes-overshoot_magic109190001_d2d_s3_live.set` — RISK_PERCENT=1.0000 (new, capped)
+- `slot4_USDCAD_H1_QM5_10476_mql5-pamxa_magic104760004_d2d_s3_live.set` — RISK_PERCENT=0.2227 (new)
 
-**15 sleeves | Sum RISK = 9.7500% | Trade days = 1826**
+**S2 delta CSV:** `D:\QM\strategy_farm\artifacts\portfolio\d2d_composite_2026-07-03\d2d_s2_risk_delta_2026-07-03.csv`
 
-Annual return **12.68%** | Sharpe **2.027** | MaxDD **4.764%** | VaR95/mo **2.073%** | Worst day −1.541% | Max pair-corr 0.076
+## Deployment Guardrails (S3 path)
 
-*S3 swaps the original 10940 grimes-nested-pb for the exit-surgery challenger 12989 grimes-nested-pb-v2 (source: D2C 13-sleeve exit surgery audit 2026-07-03). Result: +58bp annual return, +0.05 Sharpe, +24bp MaxDD vs S2 — the swap is net positive.*
-
-### S3 RISK_PERCENT Table
-
-| slot | EA | symbol | TF | magic | RISK_PERCENT | hard-capped |
-|---:|---|---|---|---:|---:|---|
-| 0 | QM5_10440 | NDX.DWX | H1 | 104400003 | 0.1534% | no |
-| 1 | QM5_10476 | USDCAD.DWX | H1 | 104760004 | 0.2227% | no |
-| 2 | QM5_10513 | XAUUSD.DWX | D1 | 105130003 | 0.8366% | no |
-| 3 | QM5_10692 | NDX.DWX | H1 | 106920005 | 0.2094% | no |
-| 4 | QM5_10715 | USDJPY.DWX | M15 | 107150004 | 0.3876% | no |
-| 5 | QM5_10911 | GDAXI.DWX | H1 | 109110003 | 0.2975% | no |
-| 6 | QM5_10919 | XTIUSD.DWX | H4 | 109190001 | **1.0000%** | **yes** |
-| 7 | QM5_10939 | GBPUSD.DWX | H4 | 109390001 | 0.4236% | no |
-| 8 | QM5_11132 | SP500.DWX | D1 | 111320000 | **1.0000%** | **yes** |
-| 9 | QM5_11165 | AUDCAD.DWX | H1 | 111650002 | **1.0000%** | **yes** |
-| 10 | QM5_11421 | AUDUSD.DWX | D1 | 114210003 | 0.8684% | no |
-| 11 | QM5_11421 | EURUSD.DWX | D1 | 114210000 | 0.8078% | no |
-| 12 | QM5_12567 | XAUUSD.DWX | D1 | 125670003 | **1.0000%** | **yes** |
-| 13 | QM5_12567 | XNGUSD.DWX | D1 | 125670002 | **1.0000%** | **yes** |
-| 14 | **QM5_12989** | **XAUUSD.DWX** | H4 | **129890003** | **0.5431%** | no |
-
-*10940/XAUUSD (slot 8 in S2) is REMOVED. QM5_12989 grimes-nested-pb-v2 replaces it at slot 14.*
-
-## Staged Presets
-
-### S3 Staged Presets (DRAFT — DO NOT deploy without signed OWNER manifest)
-
-Location: `D:\QM\strategy_farm\artifacts\portfolio\d2d_composite_2026-07-03\staged_live_presets_s3\`
-
-15 files (one per sleeve), naming: `slot{N}_{SYM}_{TF}_QM5_{ea}_{slug}_magic{magic}_d2d_s3_live.set`
-
-Key preset properties: `RISK_FIXED=0`, `RISK_PERCENT={computed}`, `PORTFOLIO_WEIGHT=1.0`, `ENV=live`, `qm_filter_news_enabled=1`.
-
-### S2 Staged Presets
-
-Location: `D:\QM\strategy_farm\artifacts\portfolio\d2d_composite_2026-07-03\staged_live_presets_s2\`
-
-15 files. Same structure, all 13 original sleeves + 10919 + 10476 (10940 KEPT).
+Before any T_Live manifest is signed:
+1. 10940/XAUUSD position must close (or be managed to close) before 10940 is deactivated
+2. 12989 EA must be verified compiled + news calendar current
+3. OWNER manifest with SHA256 of all 15 set files signed
+4. Claude verifies magic registry consistent + set files match manifest
+5. OWNER or Claude enables AutoTrading on T_Live (per T_Live governance)
 
 ## Reproducibility
 
-- **Computation script:** `D:\QM\strategy_farm\artifacts\portfolio\d2d_composite_2026-07-03\compute_d2d_composite.py`
-- **Metrics JSON:** `D:\QM\strategy_farm\artifacts\portfolio\d2d_composite_2026-07-03\d2d_composite_metrics_2026-07-03.json`
-- **Frozen streams:** `D:\QM\strategy_farm\artifacts\portfolio\d2d_composite_2026-07-03\frozen_streams\QM\q08_trades\`
-- **S2 presets:** `D:\QM\strategy_farm\artifacts\portfolio\d2d_composite_2026-07-03\staged_live_presets_s2\`
-- **S3 presets:** `D:\QM\strategy_farm\artifacts\portfolio\d2d_composite_2026-07-03\staged_live_presets_s3\`
-- **V2 reference metrics:** `D:\QM\strategy_farm\artifacts\portfolio\d2c_variant_b_v2_2026-07-03\d2c_variant_b_v2_frozen_metrics_2026-07-03.json`
-- Portfolio KPI module: `C:\QM\repo\tools\strategy_farm\portfolio\portfolio_kpi.py`
-- `starting_capital = $100,000`, `RISK_FIXED_ref = 1000`, `weight = raw RISK_PERCENT`
+```
+Script:        D:\QM\strategy_farm\artifacts\portfolio\d2d_composite_compute_2026-07-03.py
+Metrics JSON:  D:\QM\strategy_farm\artifacts\portfolio\d2d_composite_2026-07-03\d2d_composite_metrics_2026-07-03.json
+S2 delta CSV:  D:\QM\strategy_farm\artifacts\portfolio\d2d_composite_2026-07-03\d2d_s2_risk_delta_2026-07-03.csv
+Staged S3:     D:\QM\strategy_farm\artifacts\portfolio\d2d_composite_2026-07-03\staged_s3_live_presets\
+Frozen dir:    D:\QM\strategy_farm\artifacts\portfolio\d2d_composite_2026-07-03\frozen_streams\
+Source V-Bv2:  D:\QM\strategy_farm\artifacts\portfolio\d2c_variant_b_v2_2026-07-03\frozen_streams\
+Durable root:  D:\QM\reports\portfolio\sleeve_streams\QM\q08_trades\
+```
 
-## Risks and Notes
+Verification against reference (S0 flat-13, S1 Variant B v2 frozen):
+- S0 annual: 16.856% (ref 16.862%) — delta <0.01pp ✓
+- S0 Sharpe: 1.442 (ref 1.442) ✓
+- S0 MaxDD: 15.327% (ref 15.327%) ✓
+- S1 Sharpe: 1.674 (ref 1.674) ✓
+- S1 MaxDD: 6.407% (ref 6.407%) ✓
+- S1 annual: 10.605% (ref 10.609%) — delta <0.01pp ✓
 
-1. **10919/XTIUSD low trade count (29 trades)**: Low-vol sleeve gets capped at 1.0% immediately.
-   At 29 trades over ~7 years, stream is sparse. OWNER should consider whether this is enough evidence.
-2. **Strategy params for existing 13 sleeves**: Staged presets contain card-default params from
-   backtest set files. For live deployment, Codex must populate from CURRENT T_Live set files to
-   capture any field-tuning done since backtest.
-3. **10940 deactivation in S3**: If OWNER chooses S3, the T_Live 10940 position must be managed
-   to close before removing. Codex/OWNER deployment manifest must include deactivation step.
-4. **S3 corr=0.076**: Very low max pair-corr across 15 sleeves — excellent diversification maintained.
-5. **No T_Live writes**: All outputs are staged DRAFT files. Zero T_Live interaction by this task.
+Monthly VaR95 uses 5th-percentile of calendar-monthly returns; values may differ from
+the Variant B v2 reference by 10-15% due to percentile interpolation rounding (99 months,
+5th percentile at index 4 vs 4.95 interpolated).
 
-## Decision for OWNER
+## Risks and Open Items
 
-| | S2 (add only) | S3 (swap, recommended) |
-|---|---|---|
-| Annual return | 12.10% | **12.68%** |
-| Sharpe | 1.978 | **2.027** |
-| MaxDD | **4.524%** | 4.764% |
-| VaR95/mo | 2.195% | **2.073%** |
-| Worst day | **−1.505%** | −1.541% |
-| New EAs | +2 (10919, 10476) | +2 (10919, 10476) |
-| Removed EAs | none | 10940 → 12989 |
-| Risk vs S1 | ✅ −1.9pp MaxDD | ✅ −1.6pp MaxDD |
+1. **10919/XTIUSD sparse stream (29 trades)**: Hard-capped at 1.0% due to low volatility.
+   Low trade count = wide OOS confidence interval. OWNER should decide if 29 trades is
+   sufficient evidence to accept at 1.0% risk.
 
-**Recommendation: S3.** Higher Sharpe and return. The 24bp MaxDD disadvantage vs S2 is
-more than offset by 58bp more annual return and better tail risk (VaR95 is lower).
-The 12989 challenger was audited in the D2-c exit surgery analysis (2026-07-03).
+2. **10476/USDCAD commission model**: Stream has embedded commission; DXZ worst-case
+   model applies additional cost. Net is conservative.
+
+3. **12989/XAUUSD (swap-in)**: Exit-surgery challenger per D2C_13SLEEVE_EXIT_SURGERY_AUDIT
+   2026-07-03. 51 trades, RISK_PERCENT=0.5431 (well below cap). Lower inv-vol than 10940.
+
+4. **S2 delta vs S1**: 13 existing sleeves all see reduced RISK_PERCENT (additional risk
+   budget absorbed by 2 new sleeves). Max reduction: 10513 -0.1828% (1.00 -> 0.82%).
+
+5. **No staged S2 presets**: S2 staged presets were not generated (S3 is the recommended path).
+   If OWNER chooses S2 over S3, re-run script targeting S2.
