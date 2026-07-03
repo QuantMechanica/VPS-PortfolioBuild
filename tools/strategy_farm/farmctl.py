@@ -1281,7 +1281,7 @@ def work_items_view(root: Path, status_filter: str | None = None,
         params.append(status_filter)
     if ea_filter:
         where.append("ea_id = ?")
-        params.append(ea_filter)
+        params.append(_normalise_ea_label(ea_filter))
     if where:
         query += " WHERE " + " AND ".join(where)
     query += " ORDER BY ea_id, phase, symbol"

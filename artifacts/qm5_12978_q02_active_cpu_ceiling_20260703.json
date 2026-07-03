@@ -1,0 +1,100 @@
+{
+  "date_local": "2026-07-03",
+  "observed_at_local": "2026-07-03T06:34:14+02:00",
+  "branch": "agents/board-advisor",
+  "mission_scope": "Grow the certified V5 book with new forex sleeves via market-neutral FX cointegration baskets.",
+  "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+  "precheck": {
+    "strict_positive_hedge_scan_survivors": [
+      {
+        "ea_id": "QM5_12533",
+        "pair": "EURJPY~GBPJPY",
+        "q02_state": "PASS",
+        "current_state": "Q04_FAIL",
+        "q02_blocked": false
+      },
+      {
+        "ea_id": "QM5_12532",
+        "pair": "AUDUSD~NZDUSD",
+        "q02_state": "PASS",
+        "current_state": "Q05_FAIL",
+        "q02_blocked": false
+      }
+    ],
+    "approved_unbuilt_edgelab_cointegration_cards_found": 0,
+    "selected_existing_nonduplicate_basket": "QM5_12978"
+  },
+  "qm5_12978": {
+    "pair": "GBPUSD~USDCAD",
+    "slug": "edgelab-gbpusd-usdcad-cointegration",
+    "logical_symbol": "QM5_12978_GBPUSD_USDCAD_COINTEGRATION_D1",
+    "basket_symbols": [
+      "GBPUSD.DWX",
+      "USDCAD.DWX"
+    ],
+    "selection_basis": "Top unbuilt strict 66-pair rerun row when negative hedge ratios are retained; already built and Q02-enqueued on this branch.",
+    "q02_work_item_id": "b1656e8e-d9dc-4a7b-b5a2-ba8e3ff0150b",
+    "q02_status": "active",
+    "claimed_by": "T2",
+    "created_at_utc": "2026-07-03T00:28:37+00:00",
+    "updated_at_utc": "2026-07-03T04:11:02+00:00",
+    "risk_mode": "RISK_FIXED",
+    "basket_manifest": "framework/EAs/QM5_12978_edgelab-gbpusd-usdcad-cointegration/basket_manifest.json"
+  },
+  "queue_snapshot": {
+    "sqlite": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "active_work_items": 5,
+    "pending_work_items": 5193,
+    "active_workers": [
+      {
+        "terminal": "T5",
+        "ea_id": "QM5_10290",
+        "phase": "Q04",
+        "symbol": "EURCAD.DWX"
+      },
+      {
+        "terminal": "T1",
+        "ea_id": "QM5_10290",
+        "phase": "Q02",
+        "symbol": "NZDCAD.DWX"
+      },
+      {
+        "terminal": "T2",
+        "ea_id": "QM5_12978",
+        "phase": "Q02",
+        "symbol": "QM5_12978_GBPUSD_USDCAD_COINTEGRATION_D1"
+      },
+      {
+        "terminal": "T4",
+        "ea_id": "QM5_10979",
+        "phase": "Q02",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T3",
+        "ea_id": "QM5_10248",
+        "phase": "Q07",
+        "symbol": "NDX.DWX"
+      }
+    ],
+    "cpu_ceiling_stop": true,
+    "action_taken": "No additional MT5 run or duplicate enqueue was launched because all paced-fleet workers were active."
+  },
+  "controller_fix": {
+    "summary": "farmctl work-items --ea now normalizes numeric EA filters, so --ea 12978 finds the same row as --ea QM5_12978 during Q02 triage.",
+    "test": "python -m unittest tools.strategy_farm.tests.test_basket_work_items.BasketWorkItemsTests.test_work_items_view_normalizes_numeric_ea_filter",
+    "test_result": "PASS"
+  },
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "new_backtest_enqueued": false,
+    "duplicate_queue_row_created": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false
+  }
+}

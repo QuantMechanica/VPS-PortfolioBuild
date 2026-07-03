@@ -86,6 +86,35 @@ class BasketWorkItemsTests(unittest.TestCase):
 
         self.assertEqual(farmctl._active_timeout_min_for_work_item("Q08", payload), 120)
 
+    def test_work_items_view_normalizes_numeric_ea_filter(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            farmctl.init_db(root)
+            now = farmctl.utc_now()
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO work_items
+                      (id, kind, phase, ea_id, symbol, setfile_path, status, verdict,
+                       attempt_count, parent_task_id, evidence_path, claimed_by,
+                       payload_json, created_at, updated_at)
+                    VALUES
+                      ('wi-12978', 'backtest', 'Q02', 'QM5_12978',
+                       'QM5_12978_GBPUSD_USDCAD_COINTEGRATION_D1',
+                       'basket.set', 'active', NULL, 0, NULL, NULL, 'T2', '{}', ?, ?)
+                    """,
+                    (now, now),
+                )
+                conn.commit()
+
+            numeric = farmctl.work_items_view(root, ea_filter="12978")
+            prefixed = farmctl.work_items_view(root, ea_filter="QM5_12978")
+
+            self.assertEqual(numeric["count"], 1)
+            self.assertEqual(prefixed["count"], 1)
+            self.assertEqual(numeric["items"][0]["id"], "wi-12978")
+            self.assertEqual(numeric["summary"], {"Q02_active": 1})
+
     def test_p2_enqueue_uses_one_logical_basket_work_item(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp) / "farm"
