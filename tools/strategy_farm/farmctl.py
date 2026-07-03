@@ -2209,7 +2209,23 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
             except Exception:
                 pass
         if not is_exploration and not skip_prescreen and not item_payload.get("p2_prescreen_done"):
-            from_date, to_date = _p2_prescreen_dates(to_year)
+            # Seasonal/calendar/month strategies need a FULL-YEAR prescreen window:
+            # H2-only probe misses Apr-Jun seasons entirely (12917 lesson, 2026-07-03).
+            # Check strategy_type_flags in payload or card frontmatter.
+            _stf = str(item_payload.get("strategy_type_flags") or "").lower()
+            if not _stf:
+                try:
+                    _card_p = item_payload.get("card_path") or ""
+                    if _card_p:
+                        _fm = parse_card_frontmatter(Path(_card_p))
+                        _stf_raw = _fm.get("strategy_type_flags") or []
+                        _stf = (" ".join(_stf_raw) if isinstance(_stf_raw, list) else str(_stf_raw)).lower()
+                except Exception:
+                    pass
+            if any(f in _stf for f in ("calendar", "season", "month")):
+                from_date, to_date = f"{to_year}.01.01", f"{to_year}.12.31"
+            else:
+                from_date, to_date = _p2_prescreen_dates(to_year)
             n_runs = "1"
             p2_run_stage = "prescreen"
             timeout_seconds = P2_PRESCREEN_TIMEOUT_SECONDS
@@ -3212,6 +3228,329 @@ def _detect_active_age_timeout(con: sqlite3.Connection) -> list[dict[str, Any]]:
     if flagged:
         con.commit()
     return flagged
+
+
+_WORKLOAD_SCALED_PHASES = frozenset({"Q05", "Q06", "Q07"})
+# Calibration reference for timeout scaling: 8 years of history, 3 seeds.
+# XAU Q07 with full 2009-2026 history (17yr) + 5 seeds → scale=3.54 → 425min.
+_TIMEOUT_SCALE_REF_YEARS: float = 8.0
+_TIMEOUT_SCALE_REF_SEEDS: float = 3.0
+_TIMEOUT_SCALE_CAP_MULTIPLIER: int = 4  # never more than 4× base
+
+
+def _scale_timeout_for_workload(base_min: int, payload: dict[str, Any], phase: str) -> int:
+    """Return a workload-scaled timeout for Q05/Q06/Q07.
+
+    Factors: date_range_years (from full_history_from payload key) and seed_count
+    (Q07 always uses 5 seeds; Q05/Q06 use 1). Floors at base_min, caps at
+    base_min * _TIMEOUT_SCALE_CAP_MULTIPLIER.
+    """
+    full_history_from = str(payload.get("full_history_from") or "").strip()
+    current_year = 2026
+    if full_history_from:
+        try:
+            start_year = int(full_history_from.split(".")[0])
+            date_range_years = max(1.0, float(current_year - start_year))
+        except (ValueError, IndexError):
+            date_range_years = _TIMEOUT_SCALE_REF_YEARS
+    else:
+        date_range_years = _TIMEOUT_SCALE_REF_YEARS
+
+    seeds = 5 if phase == "Q07" else 1
+    year_factor = date_range_years / _TIMEOUT_SCALE_REF_YEARS
+    seed_factor = seeds / _TIMEOUT_SCALE_REF_SEEDS
+    scaled = int(base_min * year_factor * seed_factor)
+    return max(base_min, min(scaled, base_min * _TIMEOUT_SCALE_CAP_MULTIPLIER))
+
+
+def _active_timeout_min_for_work_item(phase: str, payload_json: str | None) -> int | None:
+    timeout_min = PHASE_ACTIVE_TIMEOUT_MIN.get(str(phase or ""))
+    if timeout_min is None:
+        return None
+    try:
+        payload = json.loads(payload_json or "{}")
+    except json.JSONDecodeError:
+        payload = {}
+    try:
+        payload_timeout_min = int(payload.get("timeout_min") or 0)
+    except (TypeError, ValueError):
+        payload_timeout_min = 0
+    if payload_timeout_min > 0:
+        timeout_min = max(int(timeout_min), payload_timeout_min)
+    if (
+        str(phase or "").upper() == "Q02"
+        and str(payload.get("portfolio_scope") or "").lower() == "basket"
+    ):
+        return max(int(timeout_min), BASKET_Q02_ACTIVE_TIMEOUT_MIN)
+    phase_upper = str(phase or "").upper()
+    if phase_upper in _WORKLOAD_SCALED_PHASES:
+        timeout_min = _scale_timeout_for_workload(int(timeout_min), payload, phase_upper)
+    return int(timeout_min)
+
+
+def _apply_phase_timeout_min(payload: dict[str, Any], phase: str) -> None:
+    phase_timeout_min = PHASE_ACTIVE_TIMEOUT_MIN.get(str(phase or ""))
+    if phase_timeout_min is None:
+        return
+    try:
+        existing_timeout_min = int(payload.get("timeout_min") or 0)
+    except (TypeError, ValueError):
+        existing_timeout_min = 0
+    payload["timeout_min"] = max(existing_timeout_min, int(phase_timeout_min))
+
+
+def _payload_is_basket(payload: dict[str, Any]) -> bool:
+    if str(payload.get("portfolio_scope") or "").strip().lower() == "basket":
+        return True
+    if str(payload.get("basket_manifest") or "").strip():
+        return True
+    try:
+        return int(payload.get("basket_symbol_count") or 0) > 1
+    except (TypeError, ValueError):
+        return False
+
+
+def _q_phase_full_history_from(payload: dict[str, Any], phase: str) -> str | None:
+    if str(phase or "").upper() not in {"Q05", "Q06", "Q07", "Q10"}:
+        return None
+    explicit = str(payload.get("full_history_from") or "").strip()
+    if explicit:
+        return explicit
+    if _payload_is_basket(payload):
+        return DWX_MULTI_SYMBOL_FULL_HISTORY_FROM
+    return None
+
+
+def _apply_q_phase_full_history_from(payload: dict[str, Any], phase: str) -> None:
+    full_history_from = _q_phase_full_history_from(payload, phase)
+    if full_history_from:
+        payload["full_history_from"] = full_history_from
+
+
+BASKET_CONTEXT_PAYLOAD_KEYS = (
+    "basket_manifest",
+    "basket_symbol_count",
+    "basket_symbols",
+    "host_symbol",
+    "host_timeframe",
+    "logical_symbol",
+    "portfolio_scope",
+    "tester_currency",
+    "tester_deposit",
+    "risk_fixed",
+    "risk_percent",
+    "portfolio_weight",
+    "risk_mode",
+    "traded_symbols",
+    "conversion_symbols",
+    "scan_ranking",
+    "from_year",
+    "to_year",
+    "from_date",
+    "to_date",
+    "latest_full_year",
+    "q04_latest_full_year",
+    "q04_history_checked_period",
+    "q04_history_checked_scope",
+    "q04_history_checked_symbols",
+    "q04_history_checked_window",
+    "q04_history_clamp_source",
+    "full_history_from",
+    "smoke_year_count",
+    "timeout_min",
+)
+
+
+def _basket_q02_payload(
+    basket_manifest: dict[str, Any],
+    build_result: dict[str, Any] | None = None,
+    *,
+    include_timeout_min: bool = True,
+) -> dict[str, Any]:
+    """Build the common runtime payload for logical basket Q02 rows."""
+    payload: dict[str, Any] = {
+        "basket_manifest": basket_manifest["manifest_path"],
+        "basket_symbol_count": len(basket_manifest.get("basket_symbols") or []),
+        "host_symbol": basket_manifest["host_symbol"],
+        "host_timeframe": basket_manifest["host_timeframe"],
+        "logical_symbol": basket_manifest["logical_symbol"],
+        "portfolio_scope": "basket",
+    }
+    if include_timeout_min:
+        payload["timeout_min"] = BASKET_Q02_ACTIVE_TIMEOUT_MIN
+    basket_symbols = basket_manifest.get("basket_symbols") or []
+    if basket_symbols:
+        payload["basket_symbols"] = list(basket_symbols)
+    tester_currency = str(basket_manifest.get("tester_currency") or "").strip().upper()
+    if tester_currency:
+        payload["tester_currency"] = tester_currency
+    tester_deposit = basket_manifest.get("tester_deposit")
+    if tester_deposit not in (None, ""):
+        payload["tester_deposit"] = tester_deposit
+    q02_from_date = _valid_ymd_date(basket_manifest.get("q02_from_date"))
+    q02_to_date = _valid_ymd_date(basket_manifest.get("q02_to_date"))
+    if q02_from_date:
+        payload["from_date"] = q02_from_date
+    if q02_to_date:
+        payload["to_date"] = q02_to_date
+
+    if isinstance(build_result, dict):
+        traded_symbols = build_result.get("symbols") or []
+        if traded_symbols:
+            payload["traded_symbols"] = list(traded_symbols)
+        risk_mode = build_result.get("risk_mode")
+        if isinstance(risk_mode, dict):
+            risk_fixed = risk_mode.get("RISK_FIXED")
+            risk_percent = risk_mode.get("RISK_PERCENT")
+            portfolio_weight = risk_mode.get("PORTFOLIO_WEIGHT")
+            if risk_fixed not in (None, ""):
+                payload["risk_fixed"] = risk_fixed
+            if risk_percent not in (None, ""):
+                payload["risk_percent"] = risk_percent
+            if portfolio_weight not in (None, ""):
+                payload["portfolio_weight"] = portfolio_weight
+            try:
+                risk_fixed_value = float(risk_fixed)
+            except (TypeError, ValueError):
+                risk_fixed_value = 0.0
+            if risk_fixed_value > 0:
+                payload["risk_mode"] = "RISK_FIXED"
+        scan_ranking = build_result.get("scan_ranking")
+        if isinstance(scan_ranking, dict):
+            payload["scan_ranking"] = scan_ranking
+    return payload
+
+
+def _promotion_payload_with_basket_context(
+    parent_work_item: sqlite3.Row | dict[str, Any],
+    extra: dict[str, Any],
+) -> dict[str, Any]:
+    """Carry basket host/manifest metadata when promoting logical basket work_items."""
+    payload = dict(extra)
+    try:
+        raw = parent_work_item["payload_json"]
+    except (KeyError, TypeError):
+        raw = None
+    try:
+        parent_payload = json.loads(raw or "{}")
+    except (TypeError, json.JSONDecodeError):
+        parent_payload = {}
+    if not isinstance(parent_payload, dict):
+        parent_payload = {}
+    for key in BASKET_CONTEXT_PAYLOAD_KEYS:
+        if key in parent_payload and key not in payload:
+            payload[key] = parent_payload[key]
+
+    ea_id = str(_work_item_value(parent_work_item, "ea_id", "") or "")
+    symbol = str(_work_item_value(parent_work_item, "symbol", "") or "")
+    manifest = _load_basket_manifest(ea_id)
+    logical_symbol = str((manifest or {}).get("logical_symbol") or "")
+    parent_is_manifest_basket = bool(
+        manifest
+        and logical_symbol
+        and (
+            symbol == logical_symbol
+            or str(parent_payload.get("logical_symbol") or "") == logical_symbol
+            or str(parent_payload.get("portfolio_scope") or "").strip().lower() == "basket"
+        )
+    )
+    if parent_is_manifest_basket:
+        manifest_payload = _basket_q02_payload(manifest, include_timeout_min=False)
+        for key in BASKET_CONTEXT_PAYLOAD_KEYS:
+            if key in manifest_payload:
+                payload[key] = manifest_payload[key]
+    return payload
+
+
+def _work_item_value(work_item: sqlite3.Row | dict[str, Any], key: str, default: Any = None) -> Any:
+    try:
+        return work_item[key]
+    except (IndexError, KeyError, TypeError):
+        return default
+
+
+def _unique_text_values(values: list[Any]) -> list[str]:
+    out: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        text = str(value or "").strip()
+        if not text:
+            continue
+        key = text.upper()
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(text)
+    return out
+
+
+def _q04_history_scope_for_work_item(
+    work_item: sqlite3.Row | dict[str, Any],
+    payload: dict[str, Any],
+) -> tuple[list[str], str, str]:
+    ea_id = str(_work_item_value(work_item, "ea_id", "") or "")
+    symbol = str(_work_item_value(work_item, "symbol", "") or "")
+    setfile_path = _work_item_value(work_item, "setfile_path", None)
+    manifest = _load_basket_manifest(ea_id)
+    manifest_matches = bool(manifest and str(manifest.get("logical_symbol") or "") == symbol)
+    is_basket = (
+        str(payload.get("portfolio_scope") or "").strip().lower() == "basket"
+        or bool(payload.get("host_symbol"))
+        or manifest_matches
+    )
+    if is_basket:
+        period = str(
+            payload.get("host_timeframe")
+            or (manifest or {}).get("host_timeframe")
+            or _detect_ea_period(ea_id, setfile_path)
+        ).strip()
+        payload_symbols = payload.get("basket_symbols") if isinstance(payload.get("basket_symbols"), list) else []
+        manifest_symbols = (manifest or {}).get("basket_symbols")
+        if not isinstance(manifest_symbols, list):
+            manifest_symbols = []
+        symbols = _unique_text_values([
+            payload.get("host_symbol"),
+            *payload_symbols,
+            (manifest or {}).get("host_symbol"),
+            *manifest_symbols,
+        ])
+        return symbols, period, "basket_manifest_symbols"
+
+    period = str(payload.get("host_timeframe") or _detect_ea_period(ea_id, setfile_path)).strip()
+    symbols = _unique_text_values([payload.get("host_symbol") or symbol])
+    return symbols, period, "setfile_symbol"
+
+
+def _apply_q04_latest_full_year_from_history(
+    work_item: sqlite3.Row | dict[str, Any],
+    payload: dict[str, Any],
+) -> bool:
+    if payload.get("q04_latest_full_year") is not None or payload.get("latest_full_year") is not None:
+        return False
+    symbols, period, scope = _q04_history_scope_for_work_item(work_item, payload)
+    if not symbols or not period:
+        return False
+    for latest_year in range(Q04_DEFAULT_LATEST_FULL_YEAR, Q04_FIRST_OOS_YEAR - 1, -1):
+        ok = True
+        for symbol in symbols:
+            symbol_ok, _detail = has_history_window(
+                symbol,
+                period,
+                Q04_FIRST_OOS_YEAR,
+                latest_year,
+                mt5_root=MT5_ROOT,
+            )
+            ok = ok and symbol_ok
+        if ok:
+            if latest_year < Q04_DEFAULT_LATEST_FULL_YEAR:
+                payload["q04_latest_full_year"] = latest_year
+                payload["q04_history_clamp_source"] = "mt5_cache"
+                payload["q04_history_checked_symbols"] = symbols
+                payload["q04_history_checked_period"] = period
+                payload["q04_history_checked_scope"] = scope
+                payload["q04_history_checked_window"] = f"{Q04_FIRST_OOS_YEAR}-{latest_year}"
+            return latest_year < Q04_DEFAULT_LATEST_FULL_YEAR
+    return False
 
 
 def _normalize_pending_work_item_verdicts(con: sqlite3.Connection) -> int:
