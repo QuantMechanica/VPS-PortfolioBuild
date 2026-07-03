@@ -115,3 +115,11 @@ im Vault; bei Konflikt gelten Vault-Hard-Rules zuerst.
     neue Slates) laufen mit Prioritäts-Flag durch die Queue; Recovery-Wellen füllen nur
     Leerlauf auf (Queue-Tiefe ~13 Tage bei ~450 Verdicts/Tag — ohne Priorisierung ist
     jeder neue Sleeve ein Mehrwochen-Ereignis).
+23. **Zustandsverändernde Factory-Operationen NUR aus dem Kanon** (`C:\QM\repo`).
+    Worktrees sind für Code-Änderungen, NIEMALS für Factory-Betrieb (repair, pump,
+    Sweeps, Bulk-Verdicts): Worktrees enthalten nur ~225 von 2.657 EA-Dirs — ein
+    Hygiene-Lauf von dort invalidiert die Queue falsch (Vorfall 2026-07-03 07:42,
+    5.167 Items, 100% falsch, restauriert). Technische Guards (Task-Auftrag offen):
+    absoluter EA-Dir-Anker, Kanon-Selbstcheck mit Hard-Abort, Mass-Invalidation-
+    Circuit-Breaker (>200 Items/Lauf → Abbruch + Alarm). Agenten-Prompts für
+    Factory-Ops müssen `cd C:/QM/repo` explizit vorgeben.
