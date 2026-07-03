@@ -9,6 +9,7 @@ cards_extracted:
   - rigcount-fri-mom
   - rigcount-fri-fade
   - xng-rig-fri-mom
+  - xng-rig-fri-fade
 ---
 
 # Baker Hughes Rig Count Source
@@ -49,11 +50,19 @@ has different storage, weather, power-burn, LNG, and rig-activity sensitivities,
 and it is also separate from the existing `QM5_12567` commodity RSI pullback
 logic.
 
+The fourth extracted card, `xng-rig-fri-fade`, keeps the same official Baker
+Hughes release cadence and natural-gas symbol but tests the opposite exhaustion
+profile. It fades unusually large final-workday `XNGUSD.DWX` displacements that
+close at a directional extreme, seeking short-horizon normalization during the
+first new-week bars. It is intentionally separated from `xng-rig-fri-mom` and
+from `QM5_12567` because its entry side, exit thesis, and information clock are
+different from continuation and RSI pullback logic.
+
 ## R-Rules
 
 - R1 reputable source: PASS. Baker Hughes is the official rig-count publisher.
 - R2 mechanical: PASS. Fixed new-week gate, last-workday return threshold,
-  close-location confirmation, ATR stop, and time exit.
+  close-location confirmation, ATR stop, and time/reversion exits.
 - R3 data available: PASS. `XTIUSD.DWX` and `XNGUSD.DWX` exist in the DWX
   symbol matrix.
 - R4 no ML/banned logic: PASS. No ML, external runtime API, grid, martingale,
