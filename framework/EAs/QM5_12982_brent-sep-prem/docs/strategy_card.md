@@ -24,3 +24,9 @@ September, max-hold expiry, Friday close, or the stop. Backtests use
 
 No runtime external feed, ML, grid, martingale, live manifest, AutoTrading, or
 portfolio gate change is part of this build.
+
+## Pipeline Status
+
+- Q01 Build Validation: PASS, `artifacts/qm5_12982_build_result.json`.
+- Q02 Baseline Screening: QUEUED, work item
+  `6559a3c8-ed8b-4299-be40-73993833fe06`.

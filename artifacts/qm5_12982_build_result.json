@@ -1,0 +1,88 @@
+{
+  "task_id": "mission-brent-sep-prem-20260703",
+  "ea_id": "QM5_12982",
+  "slug": "brent-sep-prem",
+  "strategy_id": "ARENDAS-OIL-SEASON-2018_BRENT_SEP_S04",
+  "strategy": "Brent D1 September calendar premium",
+  "symbols": [
+    "XBRUSD.DWX"
+  ],
+  "host_symbol": "XBRUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12982_brent-sep-prem",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12982_brent-sep-prem\\QM5_12982_brent-sep-prem.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12982_brent-sep-prem\\QM5_12982_brent-sep-prem.ex5",
+  "ex5_sha256": "a0fb2ac8e72d8a5c7306367a67ad7cbc05984fa04bd6098cd6f61f2137f7b0d6",
+  "ex5_size_bytes": 298774,
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12982_brent-sep-prem\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\brent-sep-prem_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12982_brent-sep-prem_card.md",
+  "source_id": "ARENDAS-OIL-SEASON-2018",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12982_brent-sep-prem\\sets\\QM5_12982_brent-sep-prem_XBRUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "1bf8d4ab02990a188ee386af5dd3432c6e38645150d5426c218dac53f2e13958",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XBRUSD.DWX",
+        "magic": 129820000,
+        "registry_status": "active"
+      }
+    ],
+    "resolver_regenerated": true
+  },
+  "pre_compile_validation": {
+    "card_schema_lint": "PASS",
+    "approved_card_schema_lint": "PASS",
+    "spec_doc": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_guardrails": "PASS"
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_12982_brent-sep-prem/QM5_12982_brent-sep-prem.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260703_035351\\QM5_12982_brent-sep-prem.compile.log",
+    "ex5_size_bytes": 298774
+  },
+  "build_check": {
+    "command": "framework/scripts/build_check.ps1 -EALabel QM5_12982_brent-sep-prem -Strict -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260703_035406.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "6559a3c8-ed8b-4299-be40-73993833fe06",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "XBRUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12982_brent-sep-prem\\sets\\QM5_12982_brent-sep-prem_XBRUSD.DWX_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "created_at_utc": "2026-07-03T03:55:30+00:00",
+    "enqueue_evidence": "farm_state.sqlite work_items row"
+  },
+  "smoke_result": "deferred_q02_baseline",
+  "smoke_skipped_reason": "Paced fleet Q02 enqueue is the baseline path for this build; no manual MT5 backtest was launched from this session.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "notes": "Completed a structural D1 Brent September calendar-premium sleeve from the peer-reviewed Arendas et al. oil seasonality source. This is distinct from WTI September, the broad Brent February-September first-tradable-day sleeve, Brent weak-month fades, Brent weekday cards, WTI event/calendar, XTI/XNG, XNG, XAU/XAG, gas-metal, trend, carry, and commodity RSI logic. Q02 must validate XBRUSD.DWX history sufficiency, costs, and correlation."
+}

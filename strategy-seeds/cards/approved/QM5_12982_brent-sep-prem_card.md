@@ -62,6 +62,25 @@ API, analyst forecast, ML, grid, martingale, or live-deploy artifact is used.
 - Use `RISK_FIXED=1000`, `RISK_PERCENT=0`, and `PORTFOLIO_WEIGHT=1` for Q02
   backtests.
 
+## hypothesis
+
+September is the terminal month of the source-defined February-September crude
+oil allocation window. Testing Brent separately from WTI can add a distinct
+crude-oil energy sleeve.
+
+## rules
+
+- Host chart: `XBRUSD.DWX` D1.
+- Direction: long only.
+- Entry gate: broker-calendar D1 bar is in September.
+- Exit gate: next D1 bar, outside September, max-hold expiry, Friday close, or
+  hard ATR stop.
+
+## risk
+
+Backtests use `RISK_FIXED=1000`, `RISK_PERCENT=0`, and one `XBRUSD.DWX` D1
+setfile. Live allocation is not configured here.
+
 ## Pipeline History
 
 | version | date | rebuild reason | phase reached | verdict |
@@ -73,3 +92,5 @@ API, analyst forecast, ML, grid, martingale, or live-deploy artifact is used.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-03 | APPROVED | `strategy-seeds/cards/brent-sep-prem_card.md` |
+| Q01 Build Validation | 2026-07-03 | PASS | `artifacts/qm5_12982_build_result.json` |
+| Q02 Baseline Screening | 2026-07-03 | QUEUED | work item `6559a3c8-ed8b-4299-be40-73993833fe06` |

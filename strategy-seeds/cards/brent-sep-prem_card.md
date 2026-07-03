@@ -92,6 +92,23 @@ index/metal/XNG book. It is deliberately different from:
   framework state only. No futures curve, inventory feed, EIA feed, CFTC data,
   CSV, API, analyst forecast, alternative data, or ML model.
 
+## hypothesis
+
+September is the terminal month of the source-defined February-September crude
+oil allocation window. Testing the Brent benchmark separately from WTI can add a
+crude-oil energy sleeve with different contract behavior from XNG, XAU/XAG,
+indices, and the existing commodity RSI sleeve.
+
+## rules
+
+- Host chart: `XBRUSD.DWX` D1.
+- Direction: long only.
+- Entry gate: broker-calendar D1 bar is in September and no position exists for
+  this EA magic.
+- Exit gate: first new D1 bar after entry, outside September, max-hold expiry,
+  Friday close, or hard ATR stop.
+- Risk mode: Q02 backtests use `RISK_FIXED=1000` and `RISK_PERCENT=0`.
+
 ## Entry Rules
 
 - Evaluate only on a new `XBRUSD.DWX` D1 bar.
@@ -206,3 +223,5 @@ gate.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-03 | APPROVED | this card |
+| Q01 Build Validation | 2026-07-03 | PASS | `artifacts/qm5_12982_build_result.json`; `C:/QM/repo/framework/build/compile/20260703_035351/QM5_12982_brent-sep-prem.compile.log`; `D:/QM/reports/framework/21/build_check_20260703_035406.json` |
+| Q02 Baseline Screening | 2026-07-03 | QUEUED | `D:/QM/strategy_farm/state/farm_state.sqlite` work item `6559a3c8-ed8b-4299-be40-73993833fe06` |
