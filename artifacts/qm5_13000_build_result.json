@@ -1,0 +1,99 @@
+{
+  "task_id": "823da83b-b74a-4b59-a154-a6e190d06a4b",
+  "ea_id": "QM5_13000",
+  "slug": "xng-rig-fri-fade",
+  "built_at_utc": "2026-07-03T16:10:37Z",
+  "edge": "Weekly Baker Hughes rig-count release-cadence D1 exhaustion fade on XNGUSD.DWX",
+  "source_id": "BAKERHUGHES-RIGCOUNT-2026",
+  "ea_dir": "framework/EAs/QM5_13000_xng-rig-fri-fade",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_13000_xng-rig-fri-fade/QM5_13000_xng-rig-fri-fade.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_13000_xng-rig-fri-fade/QM5_13000_xng-rig-fri-fade.ex5",
+  "magic_base": 130000000,
+  "symbols_registered": [
+    "XNGUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_13000_xng-rig-fri-fade/sets/QM5_13000_xng-rig-fri-fade_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_13000_xng-rig-fri-fade/SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Q02 enqueued for worker-pool backtest; no manual T_Live, AutoTrading, or live deploy activity launched.",
+  "blocked_reason": null,
+  "open_questions": [],
+  "files": {
+    "ea": "framework/EAs/QM5_13000_xng-rig-fri-fade/QM5_13000_xng-rig-fri-fade.mq5",
+    "ex5": "framework/EAs/QM5_13000_xng-rig-fri-fade/QM5_13000_xng-rig-fri-fade.ex5",
+    "setfile": "framework/EAs/QM5_13000_xng-rig-fri-fade/sets/QM5_13000_xng-rig-fri-fade_XNGUSD.DWX_D1_backtest.set",
+    "strategy_card": "strategy-seeds/cards/xng-rig-fri-fade_card.md",
+    "approved_card": "strategy-seeds/cards/approved/QM5_13000_xng-rig-fri-fade_card.md",
+    "source": "strategy-seeds/sources/BAKERHUGHES-RIGCOUNT-2026/source.md",
+    "spec": "framework/EAs/QM5_13000_xng-rig-fri-fade/SPEC.md"
+  },
+  "hashes": {
+    "mq5_sha256": "cd722d2490591e26f96beb5417851a6b3d04af11cb34249f25fc15fde4296878",
+    "ex5_sha256": "cc07cb259f2b22c5d394e342ae87c16d7b3cd17f11750ff054310cfbb9302a8e",
+    "setfile_sha256": "aafbccd5510be603852b5ea5cbed0e81a66e8aceebe169ac4693e9dd41051fcb",
+    "setfile_header_build_hash": "e6cad78552ccb3da917ab25322cdf1cabee3b1b193b4d148f0815db1deb11851"
+  },
+  "compile_one": {
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "compile_log": "C:/QM/repo/framework/build/compile/20260703_161029/QM5_13000_xng-rig-fri-fade.compile.log",
+    "summary": "D:/QM/reports/compile/20260703_161029/summary.csv"
+  },
+  "build_check": {
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report": "D:/QM/reports/framework/21/build_check_20260703_160852.json",
+    "note": "Warnings are shared-framework static advisories outside the new EA; the EA compiled with zero warnings."
+  },
+  "preflight_checks": {
+    "card_lint": "PASS",
+    "spec_present": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "magic_registry": {
+      "ea_id": 13000,
+      "slot": 0,
+      "symbol": "XNGUSD.DWX",
+      "magic": 130000000,
+      "status": "active"
+    }
+  },
+  "risk_mode": {
+    "backtest": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "duplicate_check": {
+    "selected_edge": "XNGUSD.DWX weekly Baker Hughes rig-count release-cadence D1 exhaustion fade",
+    "non_duplicate_reason": "Different from QM5_12567 RSI2 commodity pullback and from QM5_12997 Baker Hughes rig-count continuation: this sleeve fades extended final-workday displacement and uses favorable/adverse closed-bar exits."
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "queue_db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "phase": "Q02",
+    "kind": "backtest",
+    "symbol": "XNGUSD.DWX",
+    "host_symbol": "XNGUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_13000_xng-rig-fri-fade/sets/QM5_13000_xng-rig-fri-fade_XNGUSD.DWX_D1_backtest.set",
+    "work_item_id": "b334559b-da23-4b4f-9991-44b7c60c4d36",
+    "status_after_final_check": "pending",
+    "created_at_utc": "2026-07-03T16:12:24+00:00",
+    "updated_at_utc": "2026-07-03T16:12:24+00:00",
+    "enqueued_by": "record_build_result.auto_q02"
+  },
+  "guards": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  },
+  "notes": "Built one non-duplicate structural XNG energy sleeve. No manual MT5 backtest, T_Live operation, AutoTrading change, live manifest change, or portfolio gate change was launched from this session."
+}

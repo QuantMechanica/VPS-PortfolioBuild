@@ -89,6 +89,14 @@ This is deliberately different from:
 - XTI/XNG, gas/gold, oil/gold, oil/silver, XAU/XAG, Brent, WTI, index, and
   metals-ratio logic: no basket, hedge ratio, or cross-asset spread is used.
 
+## Hypothesis
+
+Large natural-gas D1 displacement into the Baker Hughes weekly rig-count window
+can exhaust over short horizons when the bar closes near its directional
+extreme. Fading that completed final-workday proxy on the first new-week D1 bar
+creates an energy sleeve with different mechanics from the existing XNG
+continuation, storage, weather, and RSI-pullback book.
+
 ## Markets And Timeframe
 
 - Target symbol: `XNGUSD.DWX`.
@@ -120,6 +128,14 @@ This is deliberately different from:
 - Skip if spread exceeds `strategy_max_spread_points`.
 - Enter SELL after a qualifying positive last-workday displacement.
 - Enter BUY after a qualifying negative last-workday displacement.
+
+## Rules
+
+Rules are deterministic and use completed `XNGUSD.DWX` D1 OHLC, ATR, spread,
+broker calendar state, and V5 framework guards only. Entry, exit, filters, and
+management are specified in the following sections; no external runtime report
+download, analyst estimate, ML model, grid, martingale, or discretionary
+override is permitted.
 
 ## Exit Rules
 
@@ -249,5 +265,5 @@ gate.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-03 | APPROVED | this card |
-| Q01 Build Validation | TBD | TBD | TBD |
-| Q02 Baseline Screening | TBD | TBD | TBD |
+| Q01 Build Validation | 2026-07-03 | PASS | `artifacts/qm5_13000_build_result.json` |
+| Q02 Baseline Screening | 2026-07-03 | QUEUED | `work_items.id=b334559b-da23-4b4f-9991-44b7c60c4d36` |

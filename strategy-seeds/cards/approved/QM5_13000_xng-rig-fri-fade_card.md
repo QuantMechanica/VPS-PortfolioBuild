@@ -39,12 +39,26 @@ Backtests use `RISK_FIXED=1000`, `RISK_PERCENT=0`, and the single symbol
 `XNGUSD.DWX`. No live manifest, AutoTrading, portfolio gate, external runtime
 data, grid, martingale, or ML is involved.
 
+## Hypothesis
+
+Large natural-gas D1 displacement into the Baker Hughes weekly rig-count window
+can exhaust over short horizons when the bar closes near its directional
+extreme. The sleeve fades that completed final-workday proxy on the first
+new-week D1 bar.
+
 ## Source Citation
 
 Primary source packet: `strategy-seeds/sources/BAKERHUGHES-RIGCOUNT-2026/`.
 Baker Hughes Rig Count Overview and Summary Count URL:
 https://rigcount.bakerhughes.com/. Baker Hughes Rig Count FAQ URL:
 https://bakerhughesrigcount.gcs-web.com/rig-count-faqs.
+
+## Rules
+
+Rules are deterministic and use completed `XNGUSD.DWX` D1 OHLC, ATR, spread,
+broker calendar state, and V5 framework guards only. No runtime Baker Hughes
+download, analyst estimate, ML model, grid, martingale, or discretionary
+override is permitted.
 
 ## Entry Rules
 
@@ -71,5 +85,5 @@ adverse completed-close continuation, or by the standard Friday Close rule.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-03 | APPROVED | `strategy-seeds/cards/xng-rig-fri-fade_card.md` |
-| Q01 Build Validation | TBD | TBD | TBD |
-| Q02 Baseline Screening | TBD | TBD | TBD |
+| Q01 Build Validation | 2026-07-03 | PASS | `artifacts/qm5_13000_build_result.json` |
+| Q02 Baseline Screening | 2026-07-03 | QUEUED | `work_items.id=b334559b-da23-4b4f-9991-44b7c60c4d36` |
