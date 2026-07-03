@@ -1,0 +1,23 @@
+{
+  "task_id": "67dd4763-2e7e-483c-a150-33bf2efadca3",
+  "ea_id": "QM5_12967",
+  "ea_dir": "framework/EAs/QM5_12967_uk100-weekly-oversold-swing",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12967_uk100-weekly-oversold-swing\\QM5_12967_uk100-weekly-oversold-swing.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12967_uk100-weekly-oversold-swing\\QM5_12967_uk100-weekly-oversold-swing.ex5",
+  "magic_base": 129670000,
+  "symbols_registered": [
+    "UK100.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12967_uk100-weekly-oversold-swing\\sets\\QM5_12967_uk100-weekly-oversold-swing_UK100.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12967_uk100-weekly-oversold-swing\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": "",
+  "open_questions": [],
+  "build_smoke_framework_error": "smoke_timeout_terminal_contention_cpu_ceiling: bounded smoke did not produce a QM5_12967 report; sampled smoke logs contained concurrent QM5_12990 GBPUSD/H4 run output, so smoke is deferred to Q02 worker lane",
+  "smoke_skipped_reason": "framework_error_during_build_smoke_treated_as_done"
+}
