@@ -311,7 +311,8 @@ void OnTick()
    // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
    // per-tick recompute mistakes — EntrySignal sees one new closed bar per
    // call, not every incoming tick.
-   if(!QM_IsNewBar())
+   const ENUM_TIMEFRAMES entry_tf = (strategy_timeframe == PERIOD_CURRENT) ? (ENUM_TIMEFRAMES)_Period : strategy_timeframe;
+   if(!QM_IsNewBar(_Symbol, entry_tf))
       return;
 
    // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
