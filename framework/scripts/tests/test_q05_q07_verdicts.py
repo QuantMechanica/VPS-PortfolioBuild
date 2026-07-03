@@ -638,6 +638,81 @@ class Q05Q07VerdictTests(unittest.TestCase):
         self.assertEqual(result["pf"], 1.07)
         self.assertEqual(result["trades"], 228)
 
+    def test_q07_recovers_existing_valid_seed_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            run_dir = root / "QM5_12772" / "20260703_112954"
+            raw_dir = run_dir / "raw" / "run_02"
+            raw_dir.mkdir(parents=True)
+            (raw_dir / "tester.ini").write_text(
+                "ExpertParameters=QM5_12772_demo_LOGICAL_D1_q06_stress_harsh_seed42.set\n",
+                encoding="utf-8",
+            )
+            summary = run_dir / "summary.json"
+            summary.write_text(
+                json.dumps({
+                    "result": "PASS",
+                    "runs": [{
+                        "status": "OK",
+                        "report_canonical_path": str(raw_dir / "report.htm"),
+                        "profit_factor": 1.01,
+                        "drawdown": 3343.50,
+                        "total_trades": 226,
+                    }],
+                }),
+                encoding="utf-8",
+            )
+
+            recovered = q07._recover_existing_seed_results(
+                root,
+                [42, 17, 99, 7, 2026],
+                latest_full_year=None,
+                full_history_from="2018.07.02",
+            )
+
+        self.assertEqual(sorted(recovered), [42])
+        self.assertEqual(recovered[42]["summary_path"], str(summary))
+        self.assertEqual(recovered[42]["metric_source"], "summary_json_reused")
+        self.assertEqual(recovered[42]["pf"], 1.01)
+        self.assertEqual(recovered[42]["trades"], 226)
+
+    def test_q07_recovers_seed_summary_from_archived_requeue_root(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "work-item-1"
+            archived = Path(tmp) / "work-item-1.requeued_20260703T1200000000"
+            run_dir = archived / "QM5_12772" / "20260703_120827"
+            raw_dir = run_dir / "raw" / "run_01"
+            raw_dir.mkdir(parents=True)
+            (raw_dir / "tester.ini").write_text(
+                "ExpertParameters=QM5_12772_demo_LOGICAL_D1_q06_stress_harsh_seed17.set\n",
+                encoding="utf-8",
+            )
+            summary = run_dir / "summary.json"
+            summary.write_text(
+                json.dumps({
+                    "result": "PASS",
+                    "runs": [{
+                        "status": "OK",
+                        "report_canonical_path": str(raw_dir / "report.htm"),
+                        "profit_factor": 1.03,
+                        "drawdown": 1200.0,
+                        "total_trades": 95,
+                    }],
+                }),
+                encoding="utf-8",
+            )
+
+            recovered = q07._recover_existing_seed_results(
+                root,
+                [42, 17, 99, 7, 2026],
+                latest_full_year=None,
+                full_history_from="2018.07.02",
+            )
+
+        self.assertEqual(sorted(recovered), [17])
+        self.assertEqual(recovered[17]["summary_path"], str(summary))
+        self.assertEqual(recovered[17]["pf"], 1.03)
+
 
 if __name__ == "__main__":
     unittest.main()

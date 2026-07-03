@@ -99,6 +99,111 @@ def _latest_report_metrics_after(report_root: Path, started_at: float) -> dict |
     return None
 
 
+def _seed_from_tester_ini(path: Path) -> int | None:
+    try:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return None
+    match = re.search(r"_seed(?P<seed>\d+)\.set\b", text, flags=re.IGNORECASE)
+    if not match:
+        return None
+    return int(match.group("seed"))
+
+
+def _seed_from_summary_path(summary_path: Path) -> int | None:
+    try:
+        data = json.loads(summary_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        data = {}
+    run_paths: list[Path] = []
+    for run in data.get("runs") or []:
+        for key in ("report_canonical_path", "tester_ini_path"):
+            raw = run.get(key)
+            if raw:
+                run_paths.append(Path(str(raw)))
+    for run_path in run_paths:
+        ini_path = run_path if run_path.name.lower() == "tester.ini" else run_path.parent / "tester.ini"
+        seed = _seed_from_tester_ini(ini_path)
+        if seed is not None:
+            return seed
+    for ini_path in summary_path.parent.rglob("tester.ini"):
+        seed = _seed_from_tester_ini(ini_path)
+        if seed is not None:
+            return seed
+    return None
+
+
+def _result_from_existing_seed_summary(*, summary_path: Path, seed: int,
+                                       latest_full_year: int | None,
+                                       full_history_from: str | None) -> dict | None:
+    invalid_reason = summary_invalid_reason(summary_path)
+    if invalid_reason:
+        return None
+    pf, dd_money, trades = _parse_pf_dd_trades(summary_path)
+    if pf is None or int(trades or 0) < MIN_TRADES:
+        return None
+    dd_pct = (dd_money / STARTING_EQUITY * 100.0) if dd_money is not None else None
+    return {
+        "seed": seed,
+        "pf": pf,
+        "dd_money": dd_money,
+        "dd_pct": dd_pct,
+        "trades": trades,
+        "exit_code": 0,
+        "timed_out": False,
+        "timeout_detail": None,
+        "timeout_sec": None,
+        "runner_timeout_sec": None,
+        "summary_path": str(summary_path),
+        "report_path": None,
+        "metric_source": "summary_json_reused",
+        "history_year": None,
+        "history_from": None,
+        "history_to": None,
+        "latest_full_year": latest_full_year,
+        "full_history_from_override": full_history_from,
+        "invalid_reason": None,
+        "reused_existing_summary": True,
+    }
+
+
+def _recover_existing_seed_results(report_root: Path, seeds: list[int],
+                                   latest_full_year: int | None,
+                                   full_history_from: str | None) -> dict[int, dict]:
+    root = Path(report_root)
+    search_roots: list[Path] = []
+    if root.is_dir():
+        search_roots.append(root)
+    try:
+        search_roots.extend(
+            p for p in sorted(root.parent.glob(f"{root.name}.requeued_*"))
+            if p.is_dir()
+        )
+    except OSError:
+        pass
+    if not search_roots:
+        return {}
+    wanted = set(seeds)
+    recovered: dict[int, dict] = {}
+    summaries: list[Path] = []
+    for search_root in search_roots:
+        summaries.extend(search_root.rglob("summary.json"))
+    summaries = sorted(summaries, key=lambda p: p.stat().st_mtime, reverse=True)
+    for summary_path in summaries:
+        seed = _seed_from_summary_path(summary_path)
+        if seed not in wanted or seed in recovered:
+            continue
+        result = _result_from_existing_seed_summary(
+            summary_path=summary_path,
+            seed=seed,
+            latest_full_year=latest_full_year,
+            full_history_from=full_history_from,
+        )
+        if result is not None:
+            recovered[seed] = result
+    return recovered
+
+
 def _load_canonical_seeds() -> list[int]:
     """Load from framework/registry/multiseed_seeds.json — fail loud if absent."""
     repo_root = Path(__file__).resolve().parents[2]
@@ -312,8 +417,20 @@ def main() -> int:
     seeds = _load_canonical_seeds()
     print(f"Q07 {args.ea} {evidence_symbol}  runner_symbol={args.symbol}  seeds={seeds}  on top of HARSH stress")
 
+    recovered = _recover_existing_seed_results(
+        args.report_root,
+        seeds,
+        args.latest_full_year,
+        args.full_history_from,
+    )
     seed_results: list[dict] = []
     for seed in seeds:
+        if seed in recovered:
+            res = recovered[seed]
+            print(f"  seed {seed}: reusing {res['summary_path']}")
+            print(f"    -> PF={res['pf']}  trades={res['trades']}  exit={res['exit_code']}")
+            seed_results.append(res)
+            continue
         seeded_set = _write_seeded_setfile(harsh_set, seed)
         print(f"  seed {seed}: running...")
         res = _run_seed(ea_id=ea_id, ea_expert=ea_expert, symbol=args.symbol,
