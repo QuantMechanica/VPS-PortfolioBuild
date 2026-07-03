@@ -3,7 +3,7 @@
 ; ea_id:        12712
 ; ea_slug:      edgelab-eurgbp-euraud-cointegration
 ; ea_version:   v5.0
-; set_version:  s20260702-stress-med
+; set_version:  s20260703-stress-med
 ; symbol:       QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1
 ; host_symbol:  EURGBP.DWX
 ; timeframe:    D1
@@ -11,9 +11,9 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   251684f2b871c5dce2fe8fcdfeafdb50cbb6439c0d03a8eb9dc86256a9f323b0
+; build_hash:   fc4772dea41ce86b593cc7c57191143b9f606e23b1d5912eb71a129cbd5e007d
 ; author:       Development
-; date:         2026-07-02
+; date:         2026-07-03
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000
