@@ -14371,3 +14371,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12992,eia-steo-brk,0,XTIUSD.DWX,129920000,2026-07-03,Codex,active
 12993,xnggold-rspread,0,XNGUSD.DWX,129930000,2026-07-03,Codex,active
 12993,xnggold-rspread,1,XAUUSD.DWX,129930001,2026-07-03,Codex,active
+12967,uk100-weekly-oversold-swing,0,UK100.DWX,129670000,2026-07-03,Codex,active
