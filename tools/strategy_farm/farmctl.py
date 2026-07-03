@@ -129,6 +129,7 @@ P5_REQUIRED_OOS_FROM_YEAR = 2023
 P5_REQUIRED_OOS_TO_YEAR = 2025
 Q04_FIRST_OOS_YEAR = 2023
 Q04_DEFAULT_LATEST_FULL_YEAR = 2025
+DWX_MULTI_SYMBOL_FULL_HISTORY_FROM = "2018.07.02"
 P5PLUS_MAX_DRAWDOWN_PCT = 20.0
 P5PLUS_MIN_SHARPE = 0.6
 FACTORY_TERMINAL_PATTERN = re.compile(r"^T(?:[1-9]|10)$", re.IGNORECASE)
@@ -2508,9 +2509,8 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     # (2018.07.02) so every possible member has data — costs ~9 months of FX history
     # (6.5y remains, ample) for guaranteed multi-symbol correctness. 2026-06-25.
     # Date strings are "YYYY.MM.DD" so lexical < is chronological <.
-    DWX_HISTORY_START = "2018.07.02"
-    if from_date and from_date < DWX_HISTORY_START:
-        from_date = DWX_HISTORY_START
+    if from_date and from_date < DWX_MULTI_SYMBOL_FULL_HISTORY_FROM:
+        from_date = DWX_MULTI_SYMBOL_FULL_HISTORY_FROM
     year = 2024
     min_trade_info = _effective_min_trades(root, ea_id, from_date, to_date, year)
     effective_min_trades = str(min_trade_info["effective_min_trades"])
@@ -3011,7 +3011,7 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--baseline-setfile", str(item_row["setfile_path"] or ""),
             "--terminal", terminal or "T1",
         ])
-        if phase in ("Q05", "Q06"):
+        if phase in ("Q05", "Q06", "Q10"):
             latest_full_year = payload.get("q04_latest_full_year", payload.get("latest_full_year"))
             if latest_full_year is not None:
                 try:
@@ -3020,6 +3020,9 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
                     latest_year = None
                 if latest_year is not None:
                     cmd.extend(["--latest-full-year", str(latest_year)])
+        full_history_from = _q_phase_full_history_from(payload, phase)
+        if full_history_from:
+            cmd.extend(["--full-history-from", full_history_from])
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "Q07":
         cmd.extend([
@@ -3034,6 +3037,9 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
                 latest_year = None
             if latest_year is not None:
                 cmd.extend(["--latest-full-year", str(latest_year)])
+        full_history_from = _q_phase_full_history_from(payload, phase)
+        if full_history_from:
+            cmd.extend(["--full-history-from", full_history_from])
         _remove_cmd_arg(cmd, "--setfile")
     elif phase == "Q08":
         # Q08 aggregator reads the EA's structured JSON-lines log directly.
@@ -3564,6 +3570,34 @@ def _apply_phase_timeout_min(payload: dict[str, Any], phase: str) -> None:
     payload["timeout_min"] = max(existing_timeout_min, int(phase_timeout_min))
 
 
+def _payload_is_basket(payload: dict[str, Any]) -> bool:
+    if str(payload.get("portfolio_scope") or "").strip().lower() == "basket":
+        return True
+    if str(payload.get("basket_manifest") or "").strip():
+        return True
+    try:
+        return int(payload.get("basket_symbol_count") or 0) > 1
+    except (TypeError, ValueError):
+        return False
+
+
+def _q_phase_full_history_from(payload: dict[str, Any], phase: str) -> str | None:
+    if str(phase or "").upper() not in {"Q05", "Q06", "Q07", "Q10"}:
+        return None
+    explicit = str(payload.get("full_history_from") or "").strip()
+    if explicit:
+        return explicit
+    if _payload_is_basket(payload):
+        return DWX_MULTI_SYMBOL_FULL_HISTORY_FROM
+    return None
+
+
+def _apply_q_phase_full_history_from(payload: dict[str, Any], phase: str) -> None:
+    full_history_from = _q_phase_full_history_from(payload, phase)
+    if full_history_from:
+        payload["full_history_from"] = full_history_from
+
+
 BASKET_CONTEXT_PAYLOAD_KEYS = (
     "basket_manifest",
     "basket_symbol_count",
@@ -3592,6 +3626,7 @@ BASKET_CONTEXT_PAYLOAD_KEYS = (
     "q04_history_checked_symbols",
     "q04_history_checked_window",
     "q04_history_clamp_source",
+    "full_history_from",
     "smoke_year_count",
     "timeout_min",
 )
@@ -8728,6 +8763,8 @@ def pump(root: Path) -> dict[str, Any]:
                     _apply_q04_latest_full_year_from_history(wi, payload)
                 if next_phase in {"Q05", "Q06"}:
                     _apply_phase_timeout_min(payload, next_phase)
+                if next_phase in {"Q05", "Q06", "Q07", "Q10"}:
+                    _apply_q_phase_full_history_from(payload, next_phase)
                 conn.execute(
                     """
                     INSERT INTO work_items
@@ -10076,6 +10113,8 @@ def enqueue_cascade_backtest_for_ea(root: Path, ea_id: str, phase: str) -> dict[
                 _apply_q04_latest_full_year_from_history(prev, payload)
             if phase in {"Q05", "Q06"}:
                 _apply_phase_timeout_min(payload, phase)
+            if phase in {"Q05", "Q06", "Q07", "Q10"}:
+                _apply_q_phase_full_history_from(payload, phase)
             if phase in {"Q05", "P5"}:
                 required_oos_to_year = P5_REQUIRED_OOS_TO_YEAR
                 if phase == "Q05":

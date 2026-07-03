@@ -277,6 +277,7 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             self.assertEqual(payload["timeout_min"], farmctl.PHASE_ACTIVE_TIMEOUT_MIN["Q05"])
             self.assertEqual(payload["tester_currency"], "JPY")
             self.assertEqual(payload["tester_deposit"], 15000000)
+            self.assertEqual(payload["full_history_from"], farmctl.DWX_MULTI_SYMBOL_FULL_HISTORY_FROM)
 
     def test_q04_promotion_clamps_basket_latest_year_from_cache(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
@@ -669,6 +670,7 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             self.assertEqual(payload["q04_history_clamp_source"], "mt5_cache")
             self.assertEqual(payload["q04_history_checked_symbols"], manifest["basket_symbols"])
             self.assertEqual(payload["timeout_min"], farmctl.PHASE_ACTIVE_TIMEOUT_MIN["Q05"])
+            self.assertEqual(payload["full_history_from"], farmctl.DWX_MULTI_SYMBOL_FULL_HISTORY_FROM)
 
     def test_pump_q04_to_q05_promotion_clamps_latest_year_from_cache(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
@@ -745,6 +747,7 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             self.assertEqual(payload["q04_latest_full_year"], 2024)
             self.assertEqual(payload["q04_history_clamp_source"], "mt5_cache")
             self.assertEqual(payload["timeout_min"], farmctl.PHASE_ACTIVE_TIMEOUT_MIN["Q05"])
+            self.assertEqual(payload["full_history_from"], farmctl.DWX_MULTI_SYMBOL_FULL_HISTORY_FROM)
 
     def test_q05_runner_cmd_receives_latest_full_year_cap(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
@@ -769,8 +772,10 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
                     "QM5_9998_EURGBP_EURAUD_COINTEGRATION_D1",
                     str(setfile),
                     json.dumps({
+                        "basket_symbol_count": 2,
                         "host_symbol": "EURGBP.DWX",
                         "host_timeframe": "D1",
+                        "portfolio_scope": "basket",
                         "q04_latest_full_year": 2024,
                     }),
                 ),
@@ -782,6 +787,11 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             self.assertIsNotNone(cmd)
             self.assertIn("--latest-full-year", cmd)
             self.assertEqual(cmd[cmd.index("--latest-full-year") + 1], "2024")
+            self.assertIn("--full-history-from", cmd)
+            self.assertEqual(
+                cmd[cmd.index("--full-history-from") + 1],
+                farmctl.DWX_MULTI_SYMBOL_FULL_HISTORY_FROM,
+            )
             self.assertIn("--baseline-setfile", cmd)
             self.assertIn("--logical-symbol", cmd)
             self.assertEqual(cmd[cmd.index("--logical-symbol") + 1], "QM5_9998_EURGBP_EURAUD_COINTEGRATION_D1")
@@ -811,8 +821,10 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
                     logical,
                     str(setfile),
                     json.dumps({
+                        "basket_symbol_count": 2,
                         "host_symbol": "USDJPY.DWX",
                         "host_timeframe": "D1",
+                        "portfolio_scope": "basket",
                         "q04_latest_full_year": 2024,
                     }),
                 ),
@@ -828,6 +840,11 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             self.assertEqual(cmd[cmd.index("--logical-symbol") + 1], logical)
             self.assertIn("--latest-full-year", cmd)
             self.assertEqual(cmd[cmd.index("--latest-full-year") + 1], "2024")
+            self.assertIn("--full-history-from", cmd)
+            self.assertEqual(
+                cmd[cmd.index("--full-history-from") + 1],
+                farmctl.DWX_MULTI_SYMBOL_FULL_HISTORY_FROM,
+            )
             self.assertNotIn("--setfile", cmd)
 
     def test_q07_runner_cmd_keeps_basket_logical_symbol(self) -> None:
@@ -854,8 +871,10 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
                     logical,
                     str(setfile),
                     json.dumps({
+                        "basket_symbol_count": 2,
                         "host_symbol": "USDJPY.DWX",
                         "host_timeframe": "D1",
+                        "portfolio_scope": "basket",
                         "q04_latest_full_year": 2024,
                     }),
                 ),
@@ -871,6 +890,11 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             self.assertEqual(cmd[cmd.index("--logical-symbol") + 1], logical)
             self.assertIn("--latest-full-year", cmd)
             self.assertEqual(cmd[cmd.index("--latest-full-year") + 1], "2024")
+            self.assertIn("--full-history-from", cmd)
+            self.assertEqual(
+                cmd[cmd.index("--full-history-from") + 1],
+                farmctl.DWX_MULTI_SYMBOL_FULL_HISTORY_FROM,
+            )
             self.assertNotIn("--setfile", cmd)
 
 

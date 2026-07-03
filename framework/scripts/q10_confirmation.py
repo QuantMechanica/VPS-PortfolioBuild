@@ -24,8 +24,7 @@ if __package__ in (None, ""):
 
 from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
                                             resolve_ea_expert_path, period_from_setfile,
-                                            find_latest_summary, FULL_HISTORY_FROM,
-                                            FULL_HISTORY_TO, FULL_HISTORY_YEAR)
+                                            find_latest_summary, full_history_window)
 from framework.scripts.q05_stress_medium import _parse_pf_dd_trades, STARTING_EQUITY
 
 GATE_NAME = "Q10"
@@ -65,15 +64,18 @@ def write_canonical_setfile(baseline: Path, news_temporal: str,
 
 def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
                       setfile: Path, terminal: str, period: str = "H1",
-                      report_root: Path, timeout_sec: int = 3600) -> dict:
+                      report_root: Path, timeout_sec: int = 3600,
+                      latest_full_year: int | None = None,
+                      full_history_from: str | None = None) -> dict:
     repo_root = Path(__file__).resolve().parents[2]
     run_smoke_ps1 = repo_root / "framework" / "scripts" / "run_smoke.ps1"
+    history_year, history_from, history_to = full_history_window(latest_full_year, full_history_from)
     args = [
         "pwsh.exe", "-NoProfile", "-File", str(run_smoke_ps1),
         "-EAId", str(ea_id),
         "-Expert", ea_expert,
         "-Symbol", symbol,
-        "-Year", FULL_HISTORY_YEAR, "-FromDate", FULL_HISTORY_FROM, "-ToDate", FULL_HISTORY_TO,
+        "-Year", history_year, "-FromDate", history_from, "-ToDate", history_to,
         "-Terminal", terminal,
         "-Period", period,
         "-DispatchSubGateHash", f"q10_{ea_id}_{symbol.replace('.', '_')}",
@@ -116,6 +118,11 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
         "exit_code": proc.returncode,
         "summary_path": str(summary) if summary else None,
         "report_htm": _find_report_htm(summary) if summary else None,
+        "history_year": history_year,
+        "history_from": history_from,
+        "history_to": history_to,
+        "latest_full_year": latest_full_year,
+        "full_history_from_override": full_history_from,
         "generated_at_utc": utc_now_iso(),
     }
 
@@ -164,6 +171,10 @@ def main() -> int:
     ap.add_argument("--report-root", type=Path, default=Path("D:/QM/reports/pipeline"))
     ap.add_argument("--timeout-sec", type=int, default=3600,
                     help="Full-history runs take longer than a single-year run")
+    ap.add_argument("--latest-full-year", type=int,
+                    help="Cap full-history window when validated custom-symbol history ends before default")
+    ap.add_argument("--full-history-from",
+                    help="Override full-history start date as YYYY.MM.DD for custom-symbol cohorts")
     ap.add_argument("--no-baseline-capture", action="store_true",
                     help="Skip the gen_q10_baseline.py trigger after PASS")
     args = ap.parse_args()
@@ -191,6 +202,8 @@ def main() -> int:
         ea_id=ea_id, ea_expert=ea_expert, symbol=args.symbol,
         setfile=canonical, terminal=args.terminal, period=period,
         report_root=args.report_root, timeout_sec=args.timeout_sec,
+        latest_full_year=args.latest_full_year,
+        full_history_from=args.full_history_from,
     )
     res["news_temporal"] = args.news_temporal
     res["news_compliance"] = args.news_compliance

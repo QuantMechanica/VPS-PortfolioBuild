@@ -75,13 +75,14 @@ def run_harsh_backtest(*, ea_id: int, ea_expert: str, symbol: str,
                         setfile: Path, terminal: str, period: str = "H1",
                         report_root: Path, timeout_sec: int = DEFAULT_TIMEOUT_SEC,
                         latest_full_year: int | None = None,
+                        full_history_from: str | None = None,
                         logical_symbol: str | None = None) -> dict:
     """Q06 timeout is longer than Q05 — 10% trade rejection may slightly
     increase retry overhead on the EA side, though the rejection itself
     short-circuits before OrderSend so the impact is small."""
     repo_root = Path(__file__).resolve().parents[2]
     run_smoke_ps1 = repo_root / "framework" / "scripts" / "run_smoke.ps1"
-    history_year, history_from, history_to = full_history_window(latest_full_year)
+    history_year, history_from, history_to = full_history_window(latest_full_year, full_history_from)
     evidence_symbol = logical_symbol or _basket_logical_symbol(setfile, symbol) or symbol
     args = [
         "pwsh.exe", "-NoProfile", "-File", str(run_smoke_ps1),
@@ -184,6 +185,7 @@ def run_harsh_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         "history_from": history_from,
         "history_to": history_to,
         "latest_full_year": latest_full_year,
+        "full_history_from_override": full_history_from,
         "generated_at_utc": utc_now_iso(),
     }
 
@@ -198,6 +200,8 @@ def main() -> int:
     ap.add_argument("--timeout-sec", type=int, default=DEFAULT_TIMEOUT_SEC)
     ap.add_argument("--latest-full-year", type=int,
                     help="Cap full-history window when validated custom-symbol history ends before default")
+    ap.add_argument("--full-history-from",
+                    help="Override full-history start date as YYYY.MM.DD for custom-symbol cohorts")
     ap.add_argument("--logical-symbol",
                     help="Basket evidence symbol to record when --symbol is the MT5 host")
     args = ap.parse_args()
@@ -223,6 +227,7 @@ def main() -> int:
         setfile=harsh_set, terminal=args.terminal, period=period,
         report_root=args.report_root, timeout_sec=args.timeout_sec,
         latest_full_year=args.latest_full_year,
+        full_history_from=args.full_history_from,
         logical_symbol=args.logical_symbol,
     )
 
