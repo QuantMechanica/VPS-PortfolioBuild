@@ -1,11 +1,16 @@
 # T_Live decision — D2-c Variant B risk-parity reweight (capped inverse-vol)
 
-**Status: DIRECTION RATIFIED — DEPLOYMENT PENDING (codex review + OWNER manifest signature)**
+**Status: OWNER-APPROVED — FILE-SIDE DEPLOYED; CHART APPLICATION PENDING**
 
 - Direction ratified by OWNER in chat, 2026-07-03 ("B"), on the three-variant decision package.
-- Deployment gates still open: (1) codex cross-review closure of compute tasks `b482e875` +
-  `b0b51db3`; (2) OWNER written approval of THIS manifest section; (3) verification + deploy
-  workflow below. **No T_Live file has been changed as of this record's creation.**
+- **Manifest approval (written): OWNER, 2026-07-03 — "Manifest Variante B am 03.07.2026
+  freigegeben".**
+- Compensating control for the still-open codex cross-review (`b482e875`/`b0b51db3`, both in
+  REVIEW at deploy time): Claude independently recomputed the cap-redistribution from the
+  uncapped inverse-vol weights — max deviation vs staged table 0.0001 (rounding), sum 9.7500.
+- File-side deployment executed 2026-07-03 (see Deployment log below). Running EAs are NOT
+  affected by preset files — the risk change takes effect only when each chart loads its new
+  preset (application step, terminal UI).
 
 ## Decision
 
@@ -76,8 +81,29 @@ risk quality (Sharpe 2.16→2.66), not raw return.
 - Historical return drops ~4.1pts/yr vs flat in exchange for ~10.7pts less MaxDD — accepted by
   OWNER with the ratified objective (consistency/low DD; DXZ normalizes risk).
 
+## Deployment log (2026-07-03, Claude)
+
+1. ✅ Backup: all 13 original presets (`slotN_..._magicNNN.set`) copied to
+   `C:\QM\deploy\VariantB_reweight_2026-07-03\preset_backup\` (13 files). Note: originals
+   carry NO `_live` suffix — the 2026-07-01 record's "slot..._live.set" naming was imprecise.
+2. ✅ Copy: 13 `*_riskparity_capped_live.set` presets copied into
+   `T_Live\MT5_Base\MQL5\Presets\` under NEW filenames — nothing overwritten; originals
+   remain in place as a second rollback path.
+3. ✅ SHA256: 13/13 copied files identical to staged (`C:\QM\deploy\VariantB_reweight_2026-07-03\
+   staged_sha256.txt` / `live_sha256.txt`).
+4. ⬜ Chart application (terminal UI, per chart 1–13): EA Properties → Load →
+   `slotN_..._riskparity_capped_live.set` → OK. Sizing applies to NEW entries only; open
+   positions unaffected; AutoTrading is NOT touched.
+5. ⬜ Post-application: journal re-init lines confirmed per chart; live-book pulse consistency
+   check on next 30-min cycle.
+
+Rollback: reload the original `slotN_..._magicNNN.set` per chart (both the in-place originals
+and the dated backup exist).
+
 ## Sign-off
 
 - Direction (Variant B): **OWNER, 2026-07-03, chat ("B")**
-- Manifest/deployment approval: _pending OWNER written line referencing this file_
-- Deployed: _pending_
+- Manifest/deployment approval: **OWNER, 2026-07-03, chat — "Manifest Variante B am
+  03.07.2026 freigegeben"**
+- File-side deployed: **2026-07-03, Claude (backup + copy + SHA256 verified)**
+- Charts applied: _pending (terminal UI step)_
