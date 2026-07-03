@@ -14398,3 +14398,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13008,xng-aud-rspread,0,XNGUSD.DWX,130080000,2026-07-03,Codex,active
 13008,xng-aud-rspread,1,AUDUSD.DWX,130080001,2026-07-03,Codex,active
 13009,xng-tom-mom,0,XNGUSD.DWX,130090000,2026-07-04,Codex,active
+12966,gdaxi-weekly-oversold-swing,0,GDAXI.DWX,129660000,2026-07-04,Codex,active
