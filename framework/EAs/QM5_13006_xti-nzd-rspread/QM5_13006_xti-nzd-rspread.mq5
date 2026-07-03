@@ -1,23 +1,22 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_12837 WTI AUD/NZD Commodity-FX Mean Reversion"
+#property description "QM5_13006 XTI/NZD Commodity-FX Residual Spread Reversion"
 
 #include <QM/QM_Common.mqh>
 #include <QM/QM_BasketOrder.mqh>
 
 // =============================================================================
-// QM5_12837 - WTI/AUD/NZD commodity-FX mean reversion
+// QM5_13006 - XTI/NZD commodity-FX residual spread reversion
 // -----------------------------------------------------------------------------
-// D1 three-leg basket:
-//   spread = ln(XTIUSD.DWX) - beta_aud * ln(AUDUSD.DWX)
-//                         - beta_nzd * ln(NZDUSD.DWX)
-//   rich spread: sell XTI, buy AUDUSD, buy NZDUSD
-//   cheap spread: buy XTI, sell AUDUSD, sell NZDUSD
+// D1 two-leg basket:
+//   spread = ln(XTIUSD.DWX) - beta_nzd * ln(NZDUSD.DWX)
+//   rich spread: sell XTI, buy NZDUSD
+//   cheap spread: buy XTI, sell NZDUSD
 // Runtime uses MT5 OHLC only; no macro feed, futures curve, API, or ML.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                       = 12837;
+input int    qm_ea_id                       = 13006;
 input int    qm_magic_slot_offset           = 0;
 input uint   qm_rng_seed                    = 42;
 
@@ -42,22 +41,19 @@ input double qm_stress_reject_probability   = 0.0;
 
 input group "Strategy"
 input int    strategy_z_lookback_d1         = 120;
-input double strategy_beta_aud              = 0.6;
-input double strategy_beta_nzd              = 0.4;
+input double strategy_beta_nzd              = 0.5;
 input double strategy_entry_z               = 2.0;
 input double strategy_exit_z                = 0.5;
 input int    strategy_atr_period_d1         = 20;
 input double strategy_atr_sl_mult           = 3.0;
 input int    strategy_max_hold_days         = 45;
 input int    strategy_xti_max_spread_pts    = 1000;
-input int    strategy_audusd_max_spread_pts = 80;
 input int    strategy_nzdusd_max_spread_pts = 90;
 input int    strategy_deviation_points      = 20;
 input int    strategy_entry_hour_broker     = 0;
 input int    strategy_entry_minute_broker   = 0;
 
 string   g_leg_xti    = "XTIUSD.DWX";
-string   g_leg_audusd = "AUDUSD.DWX";
 string   g_leg_nzdusd = "NZDUSD.DWX";
 double   g_spread_z = 0.0;
 double   g_spread_mean = 0.0;
@@ -69,10 +65,8 @@ int Strategy_SlotForSymbol(const string symbol)
   {
    if(symbol == g_leg_xti)
       return 0;
-   if(symbol == g_leg_audusd)
-      return 1;
    if(symbol == g_leg_nzdusd)
-      return 2;
+      return 1;
    return -1;
   }
 
@@ -86,8 +80,6 @@ bool Strategy_SpreadAllowed(const string symbol)
    const long spread_points = SymbolInfoInteger(symbol, SYMBOL_SPREAD);
    if(symbol == g_leg_xti && strategy_xti_max_spread_pts > 0)
       return (spread_points <= strategy_xti_max_spread_pts);
-   if(symbol == g_leg_audusd && strategy_audusd_max_spread_pts > 0)
-      return (spread_points <= strategy_audusd_max_spread_pts);
    if(symbol == g_leg_nzdusd && strategy_nzdusd_max_spread_pts > 0)
       return (spread_points <= strategy_nzdusd_max_spread_pts);
    return true;
@@ -159,8 +151,6 @@ bool Strategy_EntryTimeReady(const datetime broker_time)
    if(now_minutes < entry_minutes)
       return false;
    if(!Strategy_SymbolTradeReady(g_leg_xti, broker_time))
-      return false;
-   if(!Strategy_SymbolTradeReady(g_leg_audusd, broker_time))
       return false;
    if(!Strategy_SymbolTradeReady(g_leg_nzdusd, broker_time))
       return false;
@@ -252,14 +242,10 @@ bool Strategy_RefreshSpreadState()
    const int lookback = MathMax(30, strategy_z_lookback_d1);
 
    double xti[];
-   double audusd[];
    double nzdusd[];
    ArraySetAsSeries(xti, true);
-   ArraySetAsSeries(audusd, true);
    ArraySetAsSeries(nzdusd, true);
    if(CopyClose(g_leg_xti, PERIOD_D1, 1, lookback, xti) != lookback) // perf-allowed: called only behind D1 new-bar or close-state refresh.
-      return false;
-   if(CopyClose(g_leg_audusd, PERIOD_D1, 1, lookback, audusd) != lookback) // perf-allowed: called only behind D1 new-bar or close-state refresh.
       return false;
    if(CopyClose(g_leg_nzdusd, PERIOD_D1, 1, lookback, nzdusd) != lookback) // perf-allowed: called only behind D1 new-bar or close-state refresh.
       return false;
@@ -269,10 +255,9 @@ bool Strategy_RefreshSpreadState()
    ArrayResize(spreads, lookback);
    for(int i = 0; i < lookback; ++i)
      {
-      if(xti[i] <= 0.0 || audusd[i] <= 0.0 || nzdusd[i] <= 0.0)
+      if(xti[i] <= 0.0 || nzdusd[i] <= 0.0)
          return false;
-      spreads[i] = MathLog(xti[i]) - strategy_beta_aud * MathLog(audusd[i])
-                                 - strategy_beta_nzd * MathLog(nzdusd[i]);
+      spreads[i] = MathLog(xti[i]) - strategy_beta_nzd * MathLog(nzdusd[i]);
       if(!MathIsValidNumber(spreads[i]))
          return false;
       sum += spreads[i];
@@ -359,25 +344,21 @@ bool Strategy_OpenPair(const int spread_direction)
    if(spread_direction == 0 || Strategy_OpenPairLegCount() > 0)
       return false;
    if(!Strategy_SpreadAllowed(g_leg_xti) ||
-      !Strategy_SpreadAllowed(g_leg_audusd) ||
       !Strategy_SpreadAllowed(g_leg_nzdusd))
       return false;
 
    const double xti_weight = 1.0;
-   const double aud_weight = MathMax(0.1, MathAbs(strategy_beta_aud));
    const double nzd_weight = MathMax(0.1, MathAbs(strategy_beta_nzd));
-   const double weight_sum = xti_weight + aud_weight + nzd_weight;
+   const double weight_sum = xti_weight + nzd_weight;
    const bool long_spread = (spread_direction > 0);
    const QM_OrderType xti_type = long_spread ? QM_BUY : QM_SELL;
-   const QM_OrderType aud_type = long_spread ? QM_SELL : QM_BUY;
    const QM_OrderType nzd_type = long_spread ? QM_SELL : QM_BUY;
-   const string reason = long_spread ? "QM5_12837_LONG_XTI_AUDNZD_MR"
-                                     : "QM5_12837_SHORT_XTI_AUDNZD_MR";
+   const string reason = long_spread ? "QM5_13006_LONG_XTI_NZD_RSPREAD"
+                                     : "QM5_13006_SHORT_XTI_NZD_RSPREAD";
 
    bool xti_ok = Strategy_OpenLeg(g_leg_xti, xti_type, xti_weight, weight_sum, reason);
-   bool aud_ok = Strategy_OpenLeg(g_leg_audusd, aud_type, aud_weight, weight_sum, reason);
    bool nzd_ok = Strategy_OpenLeg(g_leg_nzdusd, nzd_type, nzd_weight, weight_sum, reason);
-   if(xti_ok && aud_ok && nzd_ok)
+   if(xti_ok && nzd_ok)
      {
       g_pair_entry_time = TimeCurrent();
       return true;
@@ -391,7 +372,7 @@ bool Strategy_NoTradeFilter()
   {
    if(!Strategy_IsHostChart())
       return true;
-   if(strategy_z_lookback_d1 < 30 || strategy_beta_aud <= 0.0 || strategy_beta_nzd <= 0.0)
+   if(strategy_z_lookback_d1 < 30 || strategy_beta_nzd <= 0.0)
       return true;
    if(strategy_entry_z <= 0.0 || strategy_exit_z < 0.0 || strategy_exit_z >= strategy_entry_z)
       return true;
@@ -412,7 +393,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_12837_SPREAD_HOST";
+   req.reason = "QM5_13006_SPREAD_HOST";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
@@ -438,7 +419,7 @@ bool Strategy_ExitSignal()
    const int open_legs = Strategy_OpenPairLegCount();
    if(open_legs <= 0)
       return false;
-   if(open_legs != 3)
+   if(open_legs != 2)
      {
       Strategy_ClosePair(QM_EXIT_STRATEGY);
       return false;
@@ -478,16 +459,12 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
      {
       if(!QM_NewsAllowsTrade2(g_leg_xti, broker_time, qm_news_temporal, qm_news_compliance))
          return true;
-      if(!QM_NewsAllowsTrade2(g_leg_audusd, broker_time, qm_news_temporal, qm_news_compliance))
-         return true;
       if(!QM_NewsAllowsTrade2(g_leg_nzdusd, broker_time, qm_news_temporal, qm_news_compliance))
          return true;
      }
    else
      {
       if(!QM_NewsAllowsTrade(g_leg_xti, broker_time, qm_news_mode_legacy))
-         return true;
-      if(!QM_NewsAllowsTrade(g_leg_audusd, broker_time, qm_news_mode_legacy))
          return true;
       if(!QM_NewsAllowsTrade(g_leg_nzdusd, broker_time, qm_news_mode_legacy))
          return true;
@@ -498,7 +475,6 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 int OnInit()
   {
    SymbolSelect(g_leg_xti, true);
-   SymbolSelect(g_leg_audusd, true);
    SymbolSelect(g_leg_nzdusd, true);
 
    if(!QM_FrameworkInit(qm_ea_id,
@@ -519,11 +495,11 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   string basket_symbols[3] = {g_leg_xti, g_leg_audusd, g_leg_nzdusd};
+   string basket_symbols[2] = {g_leg_xti, g_leg_nzdusd};
    QM_SymbolGuardInit(basket_symbols);
    QM_BasketWarmupHistory(basket_symbols, PERIOD_D1, MathMax(180, strategy_z_lookback_d1 + strategy_atr_period_d1 + 10));
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12837\",\"ea\":\"wti-audnzd-mr\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_13006\",\"ea\":\"xti-nzd-rspread\"}");
    return INIT_SUCCEEDED;
   }
 

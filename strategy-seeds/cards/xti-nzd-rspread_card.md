@@ -28,6 +28,9 @@ indicators:
 strategy_type_flags: [commodity-fx-relative-value, market-neutral-basket, zscore-reversion, atr-hard-stop, time-stop, low-frequency]
 target_symbols: [XTIUSD.DWX, NZDUSD.DWX]
 basket_symbols: [XTIUSD.DWX, NZDUSD.DWX]
+markets: [XTIUSD.DWX, NZDUSD.DWX]
+timeframes: [D1]
+primary_target_symbols: [XTIUSD.DWX, NZDUSD.DWX]
 single_symbol_only: false
 period: D1
 expected_trade_frequency: "D1 z-score basket on WTI priced against NZDUSD; estimate 5-10 packages/year."
@@ -98,6 +101,13 @@ the portfolio an energy/commodity-FX sleeve that is structurally different from
 the current XAU/SP500/NDX/XNG book and from the existing AUD/NZD three-leg
 realization.
 
+## Rules
+
+The strategy is deterministic: compute the prior-bar D1 log spread, convert it
+to a rolling z-score, enter a two-leg XTI/NZD package only at configured
+z-score extremes, and exit the full package on z-score reversion, time stop,
+Friday close, broken-package repair, or hard ATR stop.
+
 ## Markets And Timeframe
 
 - Host symbol: `XTIUSD.DWX`.
@@ -108,7 +118,7 @@ realization.
 - Runtime data: Darwinex MT5 OHLC only; no EIA, RBNZ, futures-curve, macro CSV,
   API, analyst feed, or ML model.
 
-## Entry Rules
+## 4. Entry Rules
 
 - Evaluate only on a new D1 bar.
 - Compute the spread above on prior completed D1 bars.
@@ -121,7 +131,7 @@ realization.
 - No entry if either basket leg already has an open position for this EA magic.
 - No entry if either symbol's current spread exceeds its configured spread cap.
 
-## Exit Rules
+## 5. Exit Rules
 
 - Stop loss: each leg receives a fixed hard SL at
   ATR(`strategy_atr_period_d1`) * `strategy_atr_sl_mult`.
@@ -131,7 +141,7 @@ realization.
   immediately as a broken package.
 - Friday close remains enabled by the V5 framework and closes all basket legs.
 
-## Filters
+## 6. Filters (No-Trade Module)
 
 - Host chart must be `XTIUSD.DWX` on D1.
 - Skip entries when XTI or NZDUSD spread exceeds its configured cap.
@@ -140,7 +150,7 @@ realization.
   time.
 - Framework news, kill-switch, magic, and Friday-close guards remain active.
 
-## Trade Management Rules
+## 7. Trade Management Rules
 
 - No pyramiding.
 - No gridding.
@@ -194,6 +204,11 @@ No source performance claim is imported into QM. The sources are used only for
 structural lineage around oil/exchange-rate linkage and NZD commodity-FX
 context. Q02+ must validate this deterministic Darwinex-native realization.
 
+## Risk
+
+Q02 and later backtests use `RISK_FIXED=1000` and `RISK_PERCENT=0`. Live risk,
+if ever authorized after portfolio admission, is outside this build.
+
 ## Initial Risk Profile
 
 - expected_pf: 1.07
@@ -231,11 +246,11 @@ context. Q02+ must validate this deterministic Darwinex-native realization.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-03 | initial XTI/NZD residual-spread mean-reversion basket build | Q02 | PENDING |
+| v1 | 2026-07-03 | initial XTI/NZD residual-spread mean-reversion basket build | Q02 | QUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-03 | APPROVED | this card |
-| Q02 Baseline Screening | 2026-07-03 | PENDING | pending enqueue |
+| Q02 Baseline Screening | 2026-07-03 | QUEUED | work_item:ecb3d51d |

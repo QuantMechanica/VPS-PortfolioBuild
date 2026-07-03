@@ -1,13 +1,12 @@
 {
-  "logical_symbol": "QM5_12837_XTI_AUDNZD_MR_D1",
+  "logical_symbol": "QM5_13006_XTI_NZD_RSPREAD_D1",
   "host_symbol": "XTIUSD.DWX",
   "host_timeframe": "D1",
   "basket_symbols": [
     "XTIUSD.DWX",
-    "AUDUSD.DWX",
     "NZDUSD.DWX"
   ],
   "notes": [
-    "Three-leg WTI/AUD/NZD commodity-FX relative-value basket from the approved EIA-RBA-RBNZ-WTI-FX-2026 card. The EA runs from the XTIUSD.DWX host setfile and reads all three D1 close series to compute ln(XTIUSD) - beta_aud * ln(AUDUSD) - beta_nzd * ln(NZDUSD). Q02 must evaluate the logical basket, not standalone legs."
+    "Two-leg WTI/NZD commodity-FX residual-spread basket from the approved EIA-RBA-RBNZ-WTI-FX-2026 card. The EA runs from the XTIUSD.DWX host setfile and reads both D1 close series to compute ln(XTIUSD) - beta_nzd * ln(NZDUSD). Q02 must evaluate the logical basket, not standalone legs."
   ]
 }
