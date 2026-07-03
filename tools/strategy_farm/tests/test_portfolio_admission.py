@@ -333,5 +333,140 @@ class PortfolioAdmissionTests(unittest.TestCase):
                 fh.write(json.dumps(row, sort_keys=True) + "\n")
 
 
+class ChallengerSwapTests(unittest.TestCase):
+    """Tests for the Q09 challenger-swap feature (OWNER directive 2026-07-03).
+
+    When a candidate is rejected for high correlation, the feature evaluates whether
+    replacing the most-correlated incumbent with the challenger would improve the book.
+    NEVER auto-swaps — CHALLENGER_SUPERIOR is an OWNER Q12 review signal.
+    """
+
+    def _stream_dir(self, common_dir: Path) -> Path:
+        stream_dir = common_dir / "QM" / "q08_trades"
+        stream_dir.mkdir(parents=True)
+        return stream_dir
+
+    def _cost(self) -> float:
+        model = CommissionModel(REPO / "framework" / "registry" / "live_commission.json")
+        return model.cost_round_trip("EURUSD.DWX", 1.0, 10000.0)
+
+    def _write_stream(self, path: Path, start: dt.datetime, desired_pnl: list[float], cost: float) -> None:
+        with path.open("w", encoding="utf-8") as fh:
+            for offset, net_of_cost in enumerate(desired_pnl):
+                row = {
+                    "event": "TRADE_CLOSED",
+                    "time": int((start + dt.timedelta(days=offset)).timestamp()),
+                    "net": net_of_cost + cost,
+                    "profit": net_of_cost + cost,
+                    "swap": 0.0,
+                    "commission": 0.0,
+                    "volume": 1.0,
+                    "notional": 10000.0,
+                }
+                fh.write(json.dumps(row, sort_keys=True) + "\n")
+
+    def test_corr_rejected_candidate_with_inferior_swap_stays_corr_rejected(self) -> None:
+        # Mimics 12915-vs-11132 validation case: incumbent (11132) is strong (PF 5.2-5.6)
+        # and challenger (12915) is weaker (PF ~2.39). The swap degrades the book.
+        # Expected: challenger_superior=False, reason stays correlation_above_max_corr.
+        with tempfile.TemporaryDirectory() as tmp:
+            common_dir = Path(tmp)
+            stream_dir = self._stream_dir(common_dir)
+            start = dt.datetime(2022, 1, 1, tzinfo=dt.UTC)
+            cost = self._cost()
+
+            # Incumbent (11132): strong consistent edge — high Sharpe book anchor
+            self._write_stream(stream_dir / "11132_EURUSD_DWX.jsonl", start, [30.0, -5.0] * 60, cost)
+            # Challenger (12915): correlated to incumbent but weaker (more losses)
+            self._write_stream(stream_dir / "12915_EURUSD_DWX.jsonl", start, [25.0, -15.0] * 60, cost)
+
+            verdict = evaluate_candidate(
+                (12915, "EURUSD.DWX"),
+                [(11132, "EURUSD.DWX")],
+                common_dir,
+            )
+
+        self.assertFalse(verdict["admit"])
+        self.assertEqual(verdict["reason"], "correlation_above_max_corr")
+        self.assertIsNotNone(verdict["challenger_swap"])
+        self.assertFalse(verdict["challenger_swap"]["challenger_superior"])
+        self.assertEqual(verdict["challenger_swap"]["incumbent"], "11132:EURUSD.DWX")
+
+    def test_corr_rejected_candidate_with_superior_swap_emits_challenger_superior(self) -> None:
+        # Challenger is better than the incumbent it would replace — swap improves both Sharpe
+        # and MaxDD. Expected: reason=CHALLENGER_SUPERIOR, admit=False (never auto-swap).
+        with tempfile.TemporaryDirectory() as tmp:
+            common_dir = Path(tmp)
+            stream_dir = self._stream_dir(common_dir)
+            start = dt.datetime(2022, 1, 1, tzinfo=dt.UTC)
+            cost = self._cost()
+
+            # Incumbent: mediocre edge with large drawdowns
+            self._write_stream(stream_dir / "100_EURUSD_DWX.jsonl", start, [10.0, -40.0] * 60, cost)
+            # Challenger: highly correlated to incumbent (same direction) but much stronger
+            self._write_stream(stream_dir / "101_EURUSD_DWX.jsonl", start, [50.0, -5.0] * 60, cost)
+
+            verdict = evaluate_candidate(
+                (101, "EURUSD.DWX"),
+                [(100, "EURUSD.DWX")],
+                common_dir,
+            )
+
+        self.assertFalse(verdict["admit"])  # NEVER auto-admits
+        self.assertEqual(verdict["reason"], "CHALLENGER_SUPERIOR")
+        self.assertIsNotNone(verdict["challenger_swap"])
+        swap = verdict["challenger_swap"]
+        self.assertTrue(swap["challenger_superior"])
+        self.assertEqual(swap["incumbent"], "100:EURUSD.DWX")
+        self.assertIsNotNone(swap["current_book_sharpe"])
+        self.assertIsNotNone(swap["swap_book_sharpe"])
+
+    def test_non_corr_rejection_has_no_challenger_swap(self) -> None:
+        # Candidates rejected for reasons other than correlation should have challenger_swap=None.
+        with tempfile.TemporaryDirectory() as tmp:
+            common_dir = Path(tmp)
+            stream_dir = self._stream_dir(common_dir)
+            start = dt.datetime(2022, 1, 1, tzinfo=dt.UTC)
+            cost = self._cost()
+
+            self._write_stream(stream_dir / "100_EURUSD_DWX.jsonl", start, [20.0, 10.0] * 60, cost)
+            self._write_stream(stream_dir / "101_EURUSD_DWX.jsonl", start, [-30.0, -20.0, -10.0, -20.0] * 30, cost)
+
+            verdict = evaluate_candidate(
+                (101, "EURUSD.DWX"),
+                [(100, "EURUSD.DWX")],
+                common_dir,
+            )
+
+        self.assertFalse(verdict["admit"])
+        self.assertEqual(verdict["reason"], "no_diversification")
+        self.assertIsNone(verdict["challenger_swap"])
+
+    def test_challenger_swap_multi_book_targets_most_correlated_incumbent(self) -> None:
+        # Book has two incumbents: A (highly correlated to challenger) and B (uncorrelated).
+        # The swap should replace A (most correlated), not B.
+        with tempfile.TemporaryDirectory() as tmp:
+            common_dir = Path(tmp)
+            stream_dir = self._stream_dir(common_dir)
+            start = dt.datetime(2022, 1, 1, tzinfo=dt.UTC)
+            cost = self._cost()
+
+            # Incumbent A: mediocre, correlated to challenger
+            self._write_stream(stream_dir / "100_EURUSD_DWX.jsonl", start, [8.0, -30.0] * 60, cost)
+            # Incumbent B: strong, uncorrelated to challenger
+            self._write_stream(stream_dir / "101_EURUSD_DWX.jsonl", start, [40.0, -3.0, 5.0, -2.0] * 30, cost)
+            # Challenger: highly correlated to A (same pattern, but stronger)
+            self._write_stream(stream_dir / "102_EURUSD_DWX.jsonl", start, [50.0, -8.0] * 60, cost)
+
+            verdict = evaluate_candidate(
+                (102, "EURUSD.DWX"),
+                [(100, "EURUSD.DWX"), (101, "EURUSD.DWX")],
+                common_dir,
+            )
+
+        if verdict["challenger_swap"] is not None:
+            self.assertEqual(verdict["challenger_swap"]["incumbent"], "100:EURUSD.DWX")
+
+
 if __name__ == "__main__":
     unittest.main()

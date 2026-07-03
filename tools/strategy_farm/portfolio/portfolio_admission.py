@@ -218,6 +218,21 @@ def evaluate_candidate(
     else:
         reason = "admitted"
 
+    # Challenger-swap evaluation (OWNER directive 2026-07-03):
+    # When rejected for high correlation, check if replacing the most-correlated incumbent
+    # with the challenger would improve the book. Emit CHALLENGER_SUPERIOR for OWNER Q12
+    # review when the swap improves both Sharpe and MaxDD (or Sharpe strongly).
+    # NEVER auto-swap — live deployment stays OWNER+manifest protocol.
+    challenger_swap: dict | None = None
+    if reason == "correlation_above_max_corr":
+        challenger_swap = _evaluate_challenger_swap(
+            candidate, book, aligned_keys, correlations,
+            common_dir, without_metrics, starting_capital
+        )
+        if challenger_swap.get("challenger_superior"):
+            reason = "CHALLENGER_SUPERIOR"
+            # admit stays False — OWNER must approve any swap at Q12
+
     return {
         "admit": admit,
         "reason": reason,
@@ -230,6 +245,7 @@ def evaluate_candidate(
         "maxdd_with": maxdd_with,
         "maxdd_without": maxdd_without,
         "diversifies": diversifies,
+        "challenger_swap": challenger_swap,
     }
 
 
@@ -432,6 +448,106 @@ def _profit_factor(trades: Sequence[Any]) -> float | None:
     if gross_loss == 0.0:
         return None
     return _round_float(gross_profit / gross_loss)
+
+
+def _find_most_correlated_incumbent(
+    candidate: Key,
+    book: Sequence[Key],
+    aligned_keys: Sequence[Key],
+    correlations: list[list[float | None]],
+) -> tuple["Key | None", "float | None"]:
+    """Return (incumbent, corr) — the book member most correlated to the challenger."""
+    if candidate not in aligned_keys:
+        return None, None
+    candidate_idx = aligned_keys.index(candidate)
+    best_key: Key | None = None
+    best_corr: float | None = None
+    for book_key in book:
+        if book_key not in aligned_keys:
+            continue
+        book_idx = aligned_keys.index(book_key)
+        value = correlations[candidate_idx][book_idx]
+        if value is not None:
+            v = float(value)
+            if best_corr is None or v > best_corr:
+                best_corr = v
+                best_key = book_key
+    return best_key, best_corr
+
+
+def _evaluate_challenger_swap(
+    candidate: Key,
+    book: Sequence[Key],
+    aligned_keys: Sequence[Key],
+    correlations: list[list[float | None]],
+    common_dir: Path,
+    current_book_metrics: dict,
+    starting_capital: float,
+) -> dict:
+    """Check if challenger replacing the most-correlated incumbent improves the book.
+
+    Returns a comparison table. challenger_superior=True when the swap improves BOTH
+    Sharpe and MaxDD, or Sharpe strongly (>= SHARPE_STRONG_DELTA above current).
+    Result is informational — NEVER triggers an auto-swap.
+    """
+    SHARPE_STRONG_DELTA = 0.05
+
+    incumbent, incumbent_corr = _find_most_correlated_incumbent(
+        candidate, book, aligned_keys, correlations
+    )
+    if incumbent is None:
+        return {"error": "no_measurable_incumbent", "challenger_superior": False, "incumbent": None}
+
+    swap_keys = sorted((set(book) - {incumbent}) | {candidate})
+    try:
+        swap_metrics = portfolio_metrics(
+            swap_keys,
+            inverse_vol_weights(swap_keys, common_dir),
+            common_dir,
+            starting_capital=starting_capital,
+        )
+    except Exception as exc:
+        return {
+            "error": f"swap_metrics_failed: {exc}",
+            "challenger_superior": False,
+            "incumbent": key_label(incumbent),
+            "incumbent_corr_to_challenger": _round_float(incumbent_corr) if incumbent_corr is not None else None,
+        }
+
+    current_sharpe = current_book_metrics.get("sharpe")
+    current_dd = current_book_metrics.get("max_drawdown_pct")
+    swap_sharpe = swap_metrics.get("sharpe")
+    swap_dd = swap_metrics.get("max_drawdown_pct")
+
+    sharpe_improved = (
+        isinstance(swap_sharpe, float) and isinstance(current_sharpe, float)
+        and swap_sharpe > current_sharpe
+    )
+    dd_improved = (
+        isinstance(swap_dd, float) and isinstance(current_dd, float)
+        and swap_dd < current_dd
+    )
+    sharpe_strong = (
+        isinstance(swap_sharpe, float) and isinstance(current_sharpe, float)
+        and swap_sharpe >= current_sharpe + SHARPE_STRONG_DELTA
+    )
+
+    challenger_superior = (sharpe_improved and dd_improved) or sharpe_strong
+
+    return {
+        "incumbent": key_label(incumbent),
+        "incumbent_corr_to_challenger": _round_float(incumbent_corr) if incumbent_corr is not None else None,
+        "current_book_sharpe": current_sharpe,
+        "current_book_maxdd": current_dd,
+        "swap_book_sharpe": swap_sharpe,
+        "swap_book_maxdd": swap_dd,
+        "swap_book_keys": [key_label(k) for k in swap_keys],
+        "sharpe_improved": sharpe_improved,
+        "dd_improved": dd_improved,
+        "sharpe_strong": sharpe_strong,
+        "challenger_superior": challenger_superior,
+        "note": "CHALLENGER_SUPERIOR flags OWNER Q12 review; live deployment stays OWNER+manifest protocol",
+    }
 
 
 def _parse_key(value: str) -> Key:
