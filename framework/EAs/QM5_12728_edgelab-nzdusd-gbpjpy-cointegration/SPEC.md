@@ -4,7 +4,7 @@
 **Slug:** edgelab-nzdusd-gbpjpy-cointegration
 **Source:** claude_cross_asset_discovery_2026-06-09 plus Chan cointegration pair-trade method
 **Author of this spec:** Codex
-**Last revised:** 2026-06-28
+**Last revised:** 2026-07-03
 
 ---
 
@@ -127,6 +127,14 @@ invalid/incomplete-fold output. On 2026-07-02 the manifest was repaired to
 include GBPUSD.DWX and USDJPY.DWX conversion history, matching the EA's
 `Strategy_EnsureBasketScope()` runtime warmup.
 
+Q04 status note: on 2026-07-03 the canonical Q04 row
+`6a1a390b-7380-407e-a75d-6c64cec9a63f` remained pending while all five factory
+slots were active. The pending row still carried stale `ea_dir_missing`
+preflight metadata from the orchestration checkout, but the current worker
+clears stale preflight payload after a clean claim-time artifact check. The
+read-only queue status helper now exposes `preflight_failure_reason` so this
+class of pending-row metadata is visible without ad hoc SQL.
+
 ---
 
 ## Revision History
@@ -136,3 +144,4 @@ include GBPUSD.DWX and USDJPY.DWX conversion history, matching the EA's
 | v1 | 2026-06-28 | Initial next-best FX cointegration basket build | Built from the 12723 basket pattern |
 | v2 | 2026-06-28 | Q04 cold-history retry handoff | Q02 PASS recorded, prior Q04 INFRA_FAIL superseded by one worker-claimed Q04 retry |
 | v3 | 2026-07-02 | Q04 conversion-history manifest repair | Declared GBPUSD.DWX and USDJPY.DWX conversion history used by runtime warmup |
+| v4 | 2026-07-03 | Q04 pending-row triage under factory CPU ceiling | No duplicate enqueue; documented stale preflight visibility and worker claim-time cleanup |

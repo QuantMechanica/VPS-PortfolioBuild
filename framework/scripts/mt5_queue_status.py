@@ -14,6 +14,22 @@ from pathlib import Path
 from typing import Any
 
 
+def _json_dict(raw: Any) -> dict[str, Any]:
+    try:
+        value = json.loads(str(raw or "{}"))
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return {}
+    return value if isinstance(value, dict) else {}
+
+
+def _preflight_failure_reason(raw_payload: Any) -> str:
+    payload = _json_dict(raw_payload)
+    failure = payload.get("preflight_failure")
+    if isinstance(failure, dict):
+        return str(failure.get("reason") or "")
+    return ""
+
+
 def queue_status(sqlite_path: Path, limit: int = 5) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "sqlite": str(sqlite_path),
@@ -110,6 +126,7 @@ def queue_status(sqlite_path: Path, limit: int = 5) -> dict[str, Any]:
                     "updated_at": str(row[5] or ""),
                     "created_at": str(row[6] or ""),
                     "priority_track": bool(row[7]),
+                    "preflight_failure_reason": _preflight_failure_reason(row[8]),
                 }
                 for row in conn.execute(
                     """
@@ -118,7 +135,8 @@ def queue_status(sqlite_path: Path, limit: int = 5) -> dict[str, Any]:
                         CASE
                             WHEN payload_json LIKE '%"priority_track": true%' THEN 1
                             ELSE 0
-                        END AS priority_track
+                        END AS priority_track,
+                        payload_json
                     FROM work_items
                     WHERE status='pending'
                     ORDER BY

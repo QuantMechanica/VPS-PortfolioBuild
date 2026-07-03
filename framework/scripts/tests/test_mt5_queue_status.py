@@ -53,6 +53,13 @@ class MT5QueueStatusTests(unittest.TestCase):
                 conn.execute(
                     """
                     INSERT INTO work_items
+                    (id,kind,phase,ea_id,symbol,setfile_path,status,payload_json,created_at,updated_at)
+                    VALUES ('wi-preflight','backtest','Q04','QM5_12728','QM5_12728_NZDUSD_GBPJPY_COINTEGRATION_D1','d.set','pending','{"preflight_failure": {"reason": "ea_dir_missing"}}','2026-07-03T09:00:00Z','2026-07-03T09:00:00Z')
+                    """
+                )
+                conn.execute(
+                    """
+                    INSERT INTO work_items
                     (id,kind,phase,ea_id,symbol,setfile_path,status,claimed_by,payload_json,created_at,updated_at)
                     VALUES ('wi-active','backtest','Q05','QM5_12781','QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1','b.set','active','T2','{}','2026-07-02T11:00:00Z','2026-07-02T11:05:00Z')
                     """
@@ -64,11 +71,13 @@ class MT5QueueStatusTests(unittest.TestCase):
             payload = queue_status(db_path, limit=5)
             self.assertTrue(payload["db_exists"])
             self.assertEqual(payload["schema"], "work_items")
-            self.assertEqual(payload["counts"]["pending"], 2)
+            self.assertEqual(payload["counts"]["pending"], 3)
             self.assertEqual(payload["counts"]["active"], 1)
             self.assertEqual(payload["queued_top"][0]["work_item_id"], "wi-priority")
             self.assertTrue(payload["queued_top"][0]["priority_track"])
             self.assertEqual(payload["queued_top"][0]["phase"], "Q02")
+            by_id = {row["work_item_id"]: row for row in payload["queued_top"]}
+            self.assertEqual(by_id["wi-preflight"]["preflight_failure_reason"], "ea_dir_missing")
             self.assertEqual(payload["dispatched_top"][0]["work_item_id"], "wi-active")
             self.assertEqual(payload["dispatched_top"][0]["claimed_by"], "T2")
 
