@@ -1,0 +1,46 @@
+{
+  "action": "priority_track_existing_q03",
+  "branch": "agents/board-advisor",
+  "date_local": "2026-07-03",
+  "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12978_q03_priority_20260703T051806Z.sqlite",
+  "event": {
+    "event_id": 208403,
+    "event_type": "priority_track_set",
+    "ts_utc": "2026-07-03T05:18:06+00:00"
+  },
+  "factory_state_after": {
+    "active": 5,
+    "pending": 5191
+  },
+  "mission": "forex_market_neutral_cointegration_portfolio_growth",
+  "new_backtest_enqueued": false,
+  "portfolio_gate_touched": false,
+  "q03_work_item": {
+    "ea": "QM5_12978",
+    "logical_symbol": "QM5_12978_GBPUSD_USDCAD_COINTEGRATION_D1",
+    "phase": "Q03",
+    "priority_track": true,
+    "status": "pending",
+    "work_item_id": "30907ff5-af52-448b-81b4-1e008539602f"
+  },
+  "q04_companion_row": {
+    "left_unprioritized": true,
+    "work_item_id": "bf98a2c5-0ed2-4410-abbe-7e66fe97e843"
+  },
+  "q02_source": {
+    "evidence": "D:/QM/reports/work_items/b1656e8e-d9dc-4a7b-b5a2-ba8e3ff0150b/QM5_12978/20260703_041103/summary.json",
+    "status": "done",
+    "verdict": "PASS",
+    "work_item_id": "b1656e8e-d9dc-4a7b-b5a2-ba8e3ff0150b"
+  },
+  "safety": {
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "manual_mt5_backtest_launched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false
+  },
+  "selection_basis": "No approved unbuilt non-duplicate EdgeLab FX cointegration card remained; QM5_12978 GBPUSD~USDCAD is the current new forex cointegration sleeve after Q02 PASS."
+}
