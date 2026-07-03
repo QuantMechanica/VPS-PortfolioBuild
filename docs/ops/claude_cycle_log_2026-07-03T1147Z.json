@@ -1,0 +1,65 @@
+{
+  "cycle_at_utc": "2026-07-03T11:47:00Z",
+  "agent": "claude",
+  "branch": "agents/claude-orchestration-1",
+
+  "health_summary": {
+    "overall": "FAIL (5 FAIL, 2 WARN, 12 OK)",
+    "failures": {
+      "pump_task_lastresult": "FAIL (exit code 267009 = 0x41301 = SCHED_S_TASK_RUNNING — pump was running at health-check time; TRANSIENT false alarm; D: free 285.1GB so not disk full)",
+      "p2_pass_no_p3": "FAIL (127 profitable P2-PASS work_items without P3 promotion; threshold=10; persistent across cycles)",
+      "unbuilt_cards_count": "FAIL (786 approved cards lack .ex5 and auto-build task; threshold=10; up from 293 at 0910Z — large jump, likely new Gemini research cards approved)",
+      "unenqueued_eas_count": "FAIL (54 reviewed built EAs have no P2 work_items; pump should clear this over cycles)",
+      "p_pass_stagnation": "FAIL (0 P3+ PASS verdicts in last 12h; pipeline has stalled since ~2026-07-02T23:47Z)"
+    },
+    "warnings": {
+      "mt5_worker_saturation": "WARN (7/10 alive: T1-T7; T8-T10 intentionally disabled or FTMO reserved)",
+      "source_pool_drained": "WARN (7 pending sources; threshold=10)"
+    },
+    "notable_ok": {
+      "mt5_dispatch": "6241 pending, 5 active, 11 pwsh workers, 2 fresh logs",
+      "codex_activity": "3 codex workers active, 26 pending",
+      "disk_free": "285.1 GB free on D:",
+      "quota_snapshot": "codex=25s, claude=18s (fresh)"
+    }
+  },
+
+  "qm5_10260_state": {
+    "summary": "Q08 FAIL_HARD wave (3x on NDX.DWX on 2026-06-26) triggered re-test pipeline. Q02 re-ran 2026-06-30 (PASS + 1 pending), Q03 FAIL on 2026-06-30. EA is actively re-running in the queue.",
+    "last_10_work_items": [
+      {"phase": "Q03", "verdict": "FAIL", "updated_at": "2026-06-30T18:43:03Z"},
+      {"phase": "Q02", "verdict": null,   "updated_at": "2026-06-30T08:52:58Z"},
+      {"phase": "Q02", "verdict": "PASS",  "updated_at": "2026-06-30T08:03:54Z"},
+      {"phase": "Q03", "verdict": "PASS",  "updated_at": "2026-06-28T05:58:28Z"},
+      {"phase": "Q08", "verdict": "FAIL_HARD", "updated_at": "2026-06-26T22:41:27Z"}
+    ],
+    "action": "none — pipeline gate result, not infra. Q03 FAIL on re-run is dispositive."
+  },
+
+  "router_result": {
+    "run_output": "routed to background (not yet returned at cycle close)",
+    "route_many_output": "1 ops_issue (1a52d28d) -> no_available_agent",
+    "in_progress_tasks_for_claude": 0,
+    "all_in_progress_db": [
+      {"id": "872618f1", "type": "ops_issue", "agent": "codex", "updated_at": "2026-07-03T11:47:34Z"},
+      {"id": "3b3332e3", "type": "research_strategy", "agent": "gemini", "updated_at": "2026-07-03T09:34:21Z"}
+    ]
+  },
+
+  "approved_queue_for_claude": {
+    "count_approx": 14,
+    "highest_priority": {
+      "id": "0bf5dc87",
+      "type": "ops_issue",
+      "priority": 90,
+      "description": "Q02->Q03 cascade bug (RECYCLE history; prior Codex fix was stale-pipeline)"
+    },
+    "action": "router did not promote any to IN_PROGRESS; no manual pickup per hard rule"
+  },
+
+  "gaps_noted": {
+    "p_pass_stagnation": "CRITICAL: 0 P3+ PASS in 12h. Only 5 active backtests vs 6241 pending. Workers may be cold-cache heavy or queue has shifted to slow long-running EAs. OWNER should monitor.",
+    "unbuilt_cards_jump": "786 unbuilt (up from 293 at 0910Z, +493 in ~2.5h). Likely new research cards from Gemini batch. Pump will auto-bridge but this is a large backlog.",
+    "source_pool": "7 remaining sources (warn threshold=10); OWNER should add sources before pool drains."
+  }
+}
