@@ -1,0 +1,81 @@
+{
+  "date_local": "2026-07-04",
+  "observed_at_local": "2026-07-04T00:33:23+02:00",
+  "branch": "agents/board-advisor",
+  "mission": "forex_market_neutral_cointegration_portfolio_growth",
+  "action": "fallback_existing_fx_cointegration_q07_requeue",
+  "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+  "method_source": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+  "strict_scan_survivors": [
+    {
+      "ea": "QM5_12533",
+      "pair": "EURJPY~GBPJPY",
+      "current_state": "Q02_PASS_Q04_FAIL",
+      "q02_blocked": false
+    },
+    {
+      "ea": "QM5_12532",
+      "pair": "AUDUSD~NZDUSD",
+      "current_state": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "q02_blocked": false
+    }
+  ],
+  "selected_existing_basket": {
+    "ea": "QM5_12778",
+    "slug": "edgelab-audusd-eurjpy-cointegration",
+    "pair": "AUDUSD~EURJPY",
+    "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "selection_reason": "No approved unbuilt EdgeLab FX cointegration card remained; QM5_12778 had Q02/Q03/Q04/Q05/Q06 PASS and a Q07 INFRA_FAIL row caused by seed 2026 only."
+  },
+  "q07_previous_attempt": {
+    "work_item_id": "fc554e0c-e66e-486a-a83d-c7301e67c615",
+    "verdict": "INFRA_FAIL",
+    "valid_seed_count": 4,
+    "valid_seeds": [42, 17, 99, 7],
+    "valid_seed_pf": 1.07,
+    "valid_seed_trades": 196,
+    "failed_seed": 2026,
+    "failed_seed_reason": "invalid_summary:BARS_ZERO,EMPTY_EXPERT,EMPTY_SYMBOL,HISTORY_CONTEXT_INVALID,INCOMPLETE_RUNS,M0_1970_PERIOD,NO_HISTORY,REPORT_MISSING,RUN_STATUS_INVALID"
+  },
+  "queue_action": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12778 --phase Q07",
+    "result": "requeued_existing_row_no_duplicate",
+    "created": [],
+    "requeued": [
+      {
+        "work_item_id": "fc554e0c-e66e-486a-a83d-c7301e67c615",
+        "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1"
+      }
+    ],
+    "status_after": "pending",
+    "updated_at_utc_after": "2026-07-03T22:33:23+00:00",
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12778_q07_requeue_20260703T223308Z.sqlite",
+    "archived_report_root_on_requeue": "D:/QM/reports/work_items/fc554e0c-e66e-486a-a83d-c7301e67c615.requeued_20260703T2233230000"
+  },
+  "verification": {
+    "duplicate_q07_rows_total_after": 1,
+    "duplicate_q07_rows_open_after": 1,
+    "queue_rank_observed": 2,
+    "farm_active_work_items_after": 5,
+    "farm_pending_work_items_after": 6119,
+    "unit_test": "python -m unittest framework.scripts.tests.test_q05_q07_verdicts",
+    "unit_test_result": "PASS",
+    "unit_test_count": 22
+  },
+  "cpu_ceiling": {
+    "active_workers": 5,
+    "manual_mt5_backtest_launched": false,
+    "note": "Stopped after in-place requeue because the paced backtest fleet remained saturated."
+  },
+  "safety": {
+    "new_duplicate_work_item_created": false,
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
