@@ -36,7 +36,11 @@ except ModuleNotFoundError:
 DEFAULT_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
 DB_REL = Path("state") / "farm_state.sqlite"
 REPO_ROOT = Path(__file__).resolve().parents[2]
-FRAMEWORK_EAS_DIR = REPO_ROOT / "framework" / "EAs"
+# EA dirs are fully materialized ONLY in the canonical checkout; worktrees carry a
+# small committed subset, so script-relative resolution from a worktree misclassifies
+# ~92% of EAs as ea_dir_missing (2026-07-03 mass false-invalidation, 5167 items).
+CANONICAL_REPO_ROOT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo"))
+FRAMEWORK_EAS_DIR = CANONICAL_REPO_ROOT / "framework" / "EAs"
 REQUEUE_EXCLUDED_EAS_FILE = DEFAULT_ROOT / "state" / "requeue_excluded_eas.txt"
 P5_CALIBRATION_JSON = REPO_ROOT / "framework" / "calibrations" / "VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json"
 MT5_ROOT = Path(os.environ.get("QM_MT5_ROOT", r"D:\QM\mt5"))
@@ -3134,6 +3138,8 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
         q08_summary = payload.get("q08_evidence_path")
         if q08_summary:
             cmd.extend(["--q08-summary", str(q08_summary)])
+        if payload:
+            cmd.extend(["--lineage-payload-json", json.dumps(payload, sort_keys=True)])
     # PT3 bridge (2026-05-29): the rewritten Qxx runners (q04-q10) use
     # --report-root, not the P-era --out-prefix, and reject --period. The
     # generic base cmd above always injects --out-prefix/--period, which the

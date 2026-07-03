@@ -535,7 +535,7 @@ def _pending_work_item_artifact_failure(row: sqlite3.Row) -> dict | None:
         return {"reason": "setfile_missing", "detail": str(setfile_path)}
 
     ea_id = str(row["ea_id"] or "")
-    ea_root = REPO_ROOT / "framework" / "EAs"
+    ea_root = farmctl.FRAMEWORK_EAS_DIR
     ea_dir_from_setfile = farmctl._ea_dir_from_setfile_path(setfile_path, ea_id)
     candidates = (
         [ea_dir_from_setfile]
