@@ -58,6 +58,11 @@ bool Strategy_HasOpenPosition()
    return false;
   }
 
+double Strategy_Close(const ENUM_TIMEFRAMES tf, const int shift)
+  {
+   return QM_SMA(_Symbol, tf, 1, shift, PRICE_CLOSE);
+  }
+
 double Strategy_LowestClose(const ENUM_TIMEFRAMES tf, const int start_shift, const int count)
   {
    if(count <= 0 || start_shift < 1)
@@ -65,7 +70,7 @@ double Strategy_LowestClose(const ENUM_TIMEFRAMES tf, const int start_shift, con
    double best = 0.0;
    for(int shift = start_shift; shift < start_shift + count; ++shift)
      {
-      const double value = iClose(_Symbol, tf, shift);
+      const double value = Strategy_Close(tf, shift);
       if(value <= 0.0)
          return 0.0;
       if(best <= 0.0 || value < best)
@@ -78,10 +83,10 @@ int Strategy_D1BarsHeld(const datetime opened)
   {
    if(opened <= 0)
       return 0;
-   const int bars = Bars(_Symbol, PERIOD_D1, opened, TimeCurrent());
-   if(bars <= 1)
+   const int shift = iBarShift(_Symbol, PERIOD_D1, opened, false);
+   if(shift < 0)
       return 0;
-   return bars - 1;
+   return shift;
   }
 
 bool Strategy_NoTradeFilter()
@@ -110,7 +115,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Strategy_HasOpenPosition())
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
+   const double close1 = Strategy_Close(PERIOD_D1, 1);
    const double sma200 = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_regime_period, 1, PRICE_CLOSE);
    const double lowest = Strategy_LowestClose(PERIOD_D1, 1, strategy_entry_lookback_low);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
@@ -137,7 +142,7 @@ void Strategy_ManageOpenPosition()
 bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
+   const double close1 = Strategy_Close(PERIOD_D1, 1);
    const double sma_exit = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_exit_period, 1, PRICE_CLOSE);
    if(close1 <= 0.0 || sma_exit <= 0.0)
       return false;
@@ -262,4 +267,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
