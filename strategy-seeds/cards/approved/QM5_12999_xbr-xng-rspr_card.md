@@ -219,9 +219,9 @@ gate.
 ## Framework Alignment
 
 - no_trade: host/timeframe guard, magic-slot guard, parameter guard, spread
-  caps, ratio data sufficiency, and valid lot/ATR checks.
+  caps, return-spread data sufficiency, and valid lot/ATR checks.
 - trade_entry: D1 standardized XBR/XNG return-spread reversion.
-- trade_management: mean-reach exit, max-hold stale-package exit, orphan leg
+- trade_management: mean-reversion exit, max-hold stale-package exit, orphan leg
   cleanup, and Friday close.
 - trade_close: hard ATR stop plus deterministic package close rules.
 

@@ -1,0 +1,114 @@
+{
+  "task_id": "manual-codex-2026-07-03-xbr-xng-rspr",
+  "ea_id": "QM5_12999",
+  "slug": "xbr-xng-rspr",
+  "strategy": "XBR/XNG D1 return-spread z-score reversion",
+  "strategy_id": "EIA-OILGAS-RSPREAD-2026_XBR_XNG_RSPR",
+  "source_id": "EIA-OILGAS-RSPREAD-2026",
+  "source_links": [
+    "https://www.eia.gov/naturalgas/articles/reloilgaspriindex.php"
+  ],
+  "symbols": [
+    "XBRUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_12999_XBR_XNG_RSPREAD_D1",
+  "host_symbol": "XBRUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12999_xbr-xng-rspr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12999_xbr-xng-rspr\\QM5_12999_xbr-xng-rspr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12999_xbr-xng-rspr\\QM5_12999_xbr-xng-rspr.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12999_xbr-xng-rspr\\SPEC.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12999_xbr-xng-rspr\\basket_manifest.json",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\xbr-xng-rspr_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12999_xbr-xng-rspr_card.md",
+  "runtime_approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_12999_xbr-xng-rspr.md",
+  "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\EIA-OILGAS-RSPREAD-2026\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12999_xbr-xng-rspr\\sets\\QM5_12999_xbr-xng-rspr_QM5_12999_XBR_XNG_RSPREAD_D1_D1_backtest.set"
+  ],
+  "setfile_build_hash": "fe269770f28f92450b0633efc03172a74414e6a249fef5b8a70476957a11de2a",
+  "mq5_sha256": "b7dab4ecb8304938f9bc368595b02c96afa32633ca5a6a0a16b000ca2a3310e1",
+  "ex5_sha256": "3b6a90b5845e13b3fcd879ac4a1d1cfb87187c425b2c9a93d322cce7c96a80c1",
+  "setfile_current_sha256": "7b1b40ad56e6966bce1a5dcc31d4889e8fe902b76cb758d501256fd42633f3be",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XBRUSD.DWX",
+        "magic": 129990000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "XNGUSD.DWX",
+        "magic": 129990001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_12999_xbr-xng-rspr --force --json --fail-on-error",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260703_151021\\QM5_12999_xbr-xng-rspr.compile.log",
+    "ex5_size_bytes": 306642,
+    "symbol_scope_verdict": "BASKET_OK"
+  },
+  "build_check": {
+    "command": "pwsh.exe -NoProfile -File framework/scripts/build_check.ps1 -EALabel QM5_12999_xbr-xng-rspr -RepoRoot C:/QM/repo -Strict -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260703_151037.json",
+    "warning_note": "Warnings are existing shared-framework DWX advisory warnings; build_check failures=0."
+  },
+  "validations": {
+    "source_packet": "PASS",
+    "approved_card_mirror": "PASS",
+    "compile": "PASS",
+    "build_check": "PASS",
+    "q02_enqueue": "PASS"
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "e38708b0-22d3-45fd-ab74-f045d8e29ad2",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "QM5_12999_XBR_XNG_RSPREAD_D1",
+    "host_symbol": "XBRUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12999_xbr-xng-rspr\\sets\\QM5_12999_xbr-xng-rspr_QM5_12999_XBR_XNG_RSPREAD_D1_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "attempt_count": 0,
+    "created_at_utc": "2026-07-03T15:11:15+00:00",
+    "payload": {
+      "portfolio_scope": "basket",
+      "basket_symbol_count": 2,
+      "basket_symbols": [
+        "XBRUSD.DWX",
+        "XNGUSD.DWX"
+      ],
+      "timeout_min": 450
+    }
+  },
+  "smoke_result": "deferred_to_q02",
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 backtest was launched from this session.",
+  "non_duplicate_reason": "Energy-only XBR/XNG return-spread mean reversion is distinct from existing XBR/XNG volatility breakout, XTI/XNG return-spread reversion, XTI/XNG price-ratio level reversion/breakout, crude benchmark spreads, single-symbol XNG/Brent/WTI sleeves, XAU/XAG and gas-metal baskets, index sleeves, and QM5_12567 commodity RSI logic.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false
+  }
+}
