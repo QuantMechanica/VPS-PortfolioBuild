@@ -14365,4 +14365,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12957,commodity-reversal-1m-card,2,XAUUSD.DWX,129570002,2026-07-03,Codex,active
 12957,commodity-reversal-1m-card,3,XAGUSD.DWX,129570003,2026-07-03,Codex,active
 12988,xti-eia-inventory-momentum,0,XTIUSD.DWX,129880000,2026-07-03,Codex,active
+12989,grimes-nested-pb-v2,3,XAUUSD.DWX,129890003,2026-07-03,Codex,active
+12990,grimes-context-pb-v2,1,GBPUSD.DWX,129900001,2026-07-03,Codex,active
+12991,weiss-rsi-ma-v2,2,AUDCAD.DWX,129910002,2026-07-03,Codex,active
 12992,eia-steo-brk,0,XTIUSD.DWX,129920000,2026-07-03,Codex,active
