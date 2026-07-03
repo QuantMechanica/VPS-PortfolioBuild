@@ -1,0 +1,97 @@
+{
+  "task_id": "manual-codex-2026-07-04-xti-cadjpy-rspr",
+  "ea_id": "QM5_13010",
+  "ea_label": "QM5_13010_xti-cadjpy-rspr",
+  "slug": "xti-cadjpy-rspr",
+  "strategy_id": "EIA-BOC-BOJ-XTI-CADJPY-2026_S01",
+  "source_id": "EIA-BOC-BOJ-XTI-CADJPY-2026",
+  "decision": "build_pass_enqueue_q02",
+  "concept": "D1 WTI/CADJPY return-spread z-score reversion basket",
+  "logical_symbol": "QM5_13010_XTI_CADJPY_RSPREAD_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "symbols": [
+    "XTIUSD.DWX",
+    "CADJPY.DWX"
+  ],
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "paths": {
+    "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13010_xti-cadjpy-rspr",
+    "mq5": "C:\\QM\\repo\\framework\\EAs\\QM5_13010_xti-cadjpy-rspr\\QM5_13010_xti-cadjpy-rspr.mq5",
+    "ex5": "C:\\QM\\repo\\framework\\EAs\\QM5_13010_xti-cadjpy-rspr\\QM5_13010_xti-cadjpy-rspr.ex5",
+    "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_13010_xti-cadjpy-rspr\\sets\\QM5_13010_xti-cadjpy-rspr_QM5_13010_XTI_CADJPY_RSPREAD_D1_D1_backtest.set",
+    "basket_manifest": "C:\\QM\\repo\\framework\\EAs\\QM5_13010_xti-cadjpy-rspr\\basket_manifest.json",
+    "strategy_card": "C:\\QM\\repo\\strategy-seeds\\cards\\xti-cadjpy-rspr_card.md",
+    "approved_card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13010_xti-cadjpy-rspr_card.md",
+    "artifact_card": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13010_xti-cadjpy-rspr.md",
+    "source_packet": "C:\\QM\\repo\\strategy-seeds\\sources\\EIA-BOC-BOJ-XTI-CADJPY-2026\\source.md"
+  },
+  "hashes_sha256": {
+    "mq5": "6CE0A1CA0B0615E858F374957093656A3756A00286F81116122C116EE426D72F",
+    "ex5": "2D453C3107931943E4FCFC86EDDE073F8A9F5D85B0943822290D40C24B49415F",
+    "setfile": "F639C7C55F3FB1C61771A41B04D9D304DABBA526098635409E2B30179DB025C8",
+    "basket_manifest": "3CB32FF26F4F8C91242DBE456C35B74145F4BA457549885411DEB6999714774B",
+    "strategy_card": "C0D43D4BB2C2B7F26A293A7D0ED4199273891DB4BEA6C250899CE30AD7E692E1"
+  },
+  "setfile_build_hash": "93771bd11464a1c7b2230056ebb303fdb6c5c436203f5946bac74f9fe655fc79",
+  "ex5_size_bytes": 307210,
+  "compile": {
+    "status": "COMPILED",
+    "errors": 0,
+    "warnings": 0,
+    "symbol_scope_verdict": "BASKET_OK",
+    "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260703_234245\\QM5_13010_xti-cadjpy-rspr.compile.log",
+    "timestamp_utc": "2026-07-03T23:42:55+00:00"
+  },
+  "build_check": {
+    "status": "PASS",
+    "strict": true,
+    "failures": 0,
+    "warnings": 16,
+    "warning_scope": "existing framework include advisories",
+    "report": "D:\\QM\\reports\\framework\\21\\build_check_20260703_234304.json",
+    "timestamp_utc": "2026-07-03T23:43:04.7168269Z"
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "17458e42-dc49-46bc-97fa-b7acfd577f1f",
+    "artifact": "C:\\QM\\repo\\artifacts\\qm5_13010_q02_enqueue_20260704.json"
+  },
+  "manual_backtest": {
+    "status": "not_started",
+    "reason": "Farm CPU ceiling: active terminals=5, pending queue=6100 at enqueue check. Q02 was enqueued pending, but no manual MT5 smoke/backtest was launched."
+  },
+  "magic_rows": [
+    {
+      "ea_id": 13010,
+      "slug": "xti-cadjpy-rspr",
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 130100000
+    },
+    {
+      "ea_id": 13010,
+      "slug": "xti-cadjpy-rspr",
+      "slot": 1,
+      "symbol": "CADJPY.DWX",
+      "magic": 130100001
+    }
+  ],
+  "source_links": [
+    "https://www.eia.gov/workingpapers/pdf/oil_exchangerates.pdf",
+    "https://www.bankofcanada.ca/2017/01/staff-analytical-note-2017-1/",
+    "https://www.eia.gov/international/analysis/country/JPN",
+    "https://www.boj.or.jp/en/about/press/koen_2026/ko260603a.htm"
+  ],
+  "non_duplicate_reason": "This is a two-leg XTIUSD/CADJPY return-spread mean-reversion basket tied to oil exporter/importer FX structure. It is not XNG RSI/seasonal/storage/weather logic, not XNG/CAD, not XTI/XNG, not Brent/WTI, not oil/metals, not XAU/XAG, and not the existing Singh oil-to-CADJPY S/R breakout card.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_manifest_touched": false
+  }
+}

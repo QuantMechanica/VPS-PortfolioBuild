@@ -1,0 +1,53 @@
+{
+  "ea_id": "QM5_13010",
+  "slug": "xti-cadjpy-rspr",
+  "strategy_id": "EIA-BOC-BOJ-XTI-CADJPY-2026_S01",
+  "phase": "Q02",
+  "kind": "backtest",
+  "enqueue_status": "enqueued",
+  "work_item_id": "17458e42-dc49-46bc-97fa-b7acfd577f1f",
+  "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "status_after_enqueue": "pending",
+  "attempt_count": 0,
+  "created_at_utc": "2026-07-03T23:44:35+00:00",
+  "updated_at_utc": "2026-07-03T23:44:35+00:00",
+  "symbol": "QM5_13010_XTI_CADJPY_RSPREAD_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13010_xti-cadjpy-rspr\\sets\\QM5_13010_xti-cadjpy-rspr_QM5_13010_XTI_CADJPY_RSPREAD_D1_D1_backtest.set",
+  "payload": {
+    "basket_manifest": "C:\\QM\\repo\\framework\\EAs\\QM5_13010_xti-cadjpy-rspr\\basket_manifest.json",
+    "basket_symbol_count": 2,
+    "basket_symbols": [
+      "XTIUSD.DWX",
+      "CADJPY.DWX"
+    ],
+    "build_task_id": "manual-codex-2026-07-04-xti-cadjpy-rspr",
+    "enqueued_at_utc": "2026-07-03T23:44:35+00:00",
+    "enqueued_by": "record_build_result.auto_q02",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "logical_symbol": "QM5_13010_XTI_CADJPY_RSPREAD_D1",
+    "portfolio_scope": "basket",
+    "portfolio_weight": 1,
+    "risk_fixed": 1000,
+    "risk_mode": "RISK_FIXED",
+    "risk_percent": 0,
+    "timeout_min": 450,
+    "traded_symbols": [
+      "XTIUSD.DWX",
+      "CADJPY.DWX"
+    ]
+  },
+  "queue_pressure_at_enqueue": {
+    "active": 5,
+    "pending": 6100,
+    "note": "No manual MT5 backtest or smoke was launched because all five farm terminals were active."
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_manifest_touched": false
+  }
+}
