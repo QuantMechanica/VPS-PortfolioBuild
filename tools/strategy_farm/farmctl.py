@@ -196,6 +196,34 @@ PHASE_ACTIVE_TIMEOUT_MIN = {
 # single-symbol throughput. 2026-07-01. (Was 120 — too short for >~12 members.)
 BASKET_Q02_ACTIVE_TIMEOUT_MIN = 450
 
+_CANONICAL_CHECKOUT = Path(r"C:\QM\repo")
+
+
+def _assert_canonical_checkout() -> None:
+    """Hard-abort if running from a worktree.
+
+    State-mutating farmctl commands (pump, repair, bulk verdict writers) must run
+    from the canonical checkout C:/QM/repo — worktrees carry only ~8% of EA dirs
+    and will mass-false-invalidate work_items (2026-07-03 incident: 5167 items).
+    Set QM_ALLOW_NONCANONICAL=1 to override for deliberate tests.
+    """
+    if os.environ.get("QM_ALLOW_NONCANONICAL") == "1":
+        return
+    try:
+        Path(__file__).resolve().relative_to(_CANONICAL_CHECKOUT.resolve())
+    except ValueError:
+        print(
+            "\n[FATAL] farmctl state-mutating command REFUSED.\n"
+            f"  Script: {Path(__file__).resolve()}\n"
+            f"  Expected prefix: {_CANONICAL_CHECKOUT}\n"
+            "  Running from a worktree resolves only ~8% of EA dirs and can\n"
+            "  mass-invalidate work_items (2026-07-03 incident: 5167 false INVALIDs).\n"
+            "  Run: python C:/QM/repo/tools/strategy_farm/farmctl.py <command>\n"
+            "  Override (deliberate test only): QM_ALLOW_NONCANONICAL=1\n",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
 
 def is_factory_terminal_name(value: Any) -> bool:
     terminal = str(value or "").upper()
@@ -12512,6 +12540,7 @@ def main(argv: list[str] | None = None) -> int:
     elif args.command == "pipeline":
         print_json(pipeline_view(root))
     elif args.command == "pump":
+        _assert_canonical_checkout()
         print_json(pump(root))
     elif args.command == "health":
         try:
@@ -12522,6 +12551,7 @@ def main(argv: list[str] | None = None) -> int:
             from health import run_all as _health_run_all
         print_json(_health_run_all())
     elif args.command == "repair":
+        _assert_canonical_checkout()
         try:
             from repair import run_all as _repair_run_all
         except ImportError:
