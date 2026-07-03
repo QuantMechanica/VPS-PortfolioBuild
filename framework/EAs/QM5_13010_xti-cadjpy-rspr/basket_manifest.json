@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_13010_XTI_CADJPY_RSPREAD_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "CADJPY.DWX"
+  ],
+  "notes": [
+    "Two-leg WTI/CADJPY oil-exporter versus oil-importer return-spread reversion basket from the approved EIA-BOC-BOJ-XTI-CADJPY-2026 card. The EA runs from the XTIUSD.DWX host setfile and reads both D1 close series to compute log-return spread over a fixed lookback. Q02 must evaluate the logical basket, not the standalone legs."
+  ]
+}
