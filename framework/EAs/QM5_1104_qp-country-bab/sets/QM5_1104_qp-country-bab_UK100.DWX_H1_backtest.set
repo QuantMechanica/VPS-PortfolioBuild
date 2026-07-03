@@ -3,7 +3,7 @@
 ; ea_id:        1104
 ; ea_slug:      qp-country-bab
 ; ea_version:   v5.0
-; set_version:  s20260518-001
+; set_version:  s20260703-001
 ; symbol:       UK100.DWX
 ; timeframe:    H1
 ; environment:  backtest
@@ -12,11 +12,18 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-18
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1104
 qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1104_qp-country-bab.md
+strategy_beta_lookback_d1=252
+strategy_min_bars_d1=270
+strategy_bucket_size=2
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=4.0
+strategy_beta_abs_max=3.0

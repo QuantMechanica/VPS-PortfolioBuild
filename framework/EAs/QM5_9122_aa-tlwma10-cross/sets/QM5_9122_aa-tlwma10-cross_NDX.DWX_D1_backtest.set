@@ -3,7 +3,7 @@
 ; ea_id:        9122
 ; ea_slug:      aa-tlwma10-cross
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260703-001
 ; symbol:       NDX.DWX
 ; timeframe:    D1
 ; environment:  backtest
@@ -12,11 +12,17 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=9122
 qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9122_aa-tlwma10-cross.md
+strategy_lwma_period=10
+strategy_atr_period=20
+strategy_atr_sl_mult=2.5
+strategy_warmup_bars=60
+strategy_max_spread_median_mult=2.5

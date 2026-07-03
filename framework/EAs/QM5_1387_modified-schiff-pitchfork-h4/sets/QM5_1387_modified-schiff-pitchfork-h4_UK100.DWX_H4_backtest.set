@@ -3,7 +3,7 @@
 ; ea_id:        1387
 ; ea_slug:      modified-schiff-pitchfork-h4
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260703-001
 ; symbol:       UK100.DWX
 ; timeframe:    H4
 ; environment:  backtest
@@ -12,11 +12,32 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1387
 qm_magic_slot_offset=10
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1387_modified-schiff-pitchfork-h4.md
+strategy_timeframe=PERIOD_H4
+strategy_atr_period=14
+strategy_pivot_scan_bars=100
+strategy_zigzag_depth=12
+strategy_zigzag_backstep=3
+strategy_zigzag_dev_pips=5.0
+strategy_swing1_d1_atr=2.0
+strategy_swing2_d1_atr=1.5
+strategy_fresh_p2_bars=50
+strategy_line_touch_atr=0.20
+strategy_body_ratio_min=0.40
+strategy_spread_atr=0.40
+strategy_vol_spike_mult=2.50
+strategy_stop_atr=1.50
+strategy_tp_projection_bars=12
+strategy_time_stop_bars=24
+strategy_reuse_guard_bars=12
+strategy_session_start_hour=7
+strategy_session_end_hour=21
+strategy_friday_cutoff_hour=16

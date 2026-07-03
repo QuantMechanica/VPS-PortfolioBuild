@@ -3,7 +3,7 @@
 ; ea_id:        1400
 ; ea_slug:      wyckoff-upthrust-distribution-h4
 ; ea_version:   v5.0
-; set_version:  s20260519-001
+; set_version:  s20260703-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
@@ -12,11 +12,30 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-05-19
+; date:         2026-07-03
 ;==========================================================
+qm_ea_id=1400
 qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1400_wyckoff-upthrust-distribution-h4.md
+strategy_range_bars=60
+strategy_atr_period=14
+strategy_range_atr_mult=4.0
+strategy_required_pivots=3
+strategy_pivot_band_atr=0.3
+strategy_volume_decline=0.85
+strategy_breakout_atr=0.3
+strategy_wick_ratio_min=0.55
+strategy_volume_spike=1.4
+strategy_sma_period=200
+strategy_sma_compare_shift=40
+strategy_sl_atr_buffer=0.3
+strategy_max_sl_atr=3.0
+strategy_tp1_range_frac=0.2
+strategy_tp2_range_mult=0.5
+strategy_time_stop_bars=80
+strategy_spread_atr_mult=0.25
+strategy_news_h4_bars=2
