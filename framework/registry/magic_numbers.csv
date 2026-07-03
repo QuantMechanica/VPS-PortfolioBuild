@@ -14359,3 +14359,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12973,eurusd-monthend-fix-fade,0,EURUSD.DWX,129730000,2026-07-03,Codex,active
 12973,eurusd-monthend-fix-fade,1,GBPUSD.DWX,129730001,2026-07-03,Codex,active
 12984,psara-oil-filter,0,XTIUSD.DWX,129840000,2026-07-03,Codex,active
+12957,commodity-reversal-1m-card,0,XTIUSD.DWX,129570000,2026-07-03,Codex,active
+12957,commodity-reversal-1m-card,1,XNGUSD.DWX,129570001,2026-07-03,Codex,active
+12957,commodity-reversal-1m-card,2,XAUUSD.DWX,129570002,2026-07-03,Codex,active
+12957,commodity-reversal-1m-card,3,XAGUSD.DWX,129570003,2026-07-03,Codex,active

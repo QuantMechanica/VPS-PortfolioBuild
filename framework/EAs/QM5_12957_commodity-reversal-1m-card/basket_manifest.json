@@ -1,0 +1,17 @@
+{
+  "logical_symbol": "QM5_12957_COMM_REV1M_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX",
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Monthly market-neutral commodity reversal basket from the approved Yang/Goncu/Pantelous commodity reversal card. The EA runs from the XTIUSD.DWX D1 host chart, ranks XTI, XNG, XAU, and XAG by prior one-month D1 log return, buys the worst performer, and shorts the best performer when at least one selected leg is energy.",
+    "Q02 must evaluate the logical basket symbol, not standalone single-symbol fanout rows."
+  ]
+}
