@@ -2768,6 +2768,8 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
         q08_summary = payload.get("q08_evidence_path")
         if q08_summary:
             cmd.extend(["--q08-summary", str(q08_summary)])
+        if payload:
+            cmd.extend(["--lineage-payload-json", json.dumps(payload, sort_keys=True)])
     # PT3 bridge (2026-05-29): the rewritten Qxx runners (q04-q10) use
     # --report-root, not the P-era --out-prefix, and reject --period. The
     # generic base cmd above always injects --out-prefix/--period, which the
