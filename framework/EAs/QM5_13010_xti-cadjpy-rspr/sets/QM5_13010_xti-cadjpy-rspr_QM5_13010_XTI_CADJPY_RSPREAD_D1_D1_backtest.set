@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13010
 ; ea_slug:      xti-cadjpy-rspr
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   93771bd11464a1c7b2230056ebb303fdb6c5c436203f5946bac74f9fe655fc79
 ; author:       Development
 ; date:         2026-07-04
 ;==========================================================
