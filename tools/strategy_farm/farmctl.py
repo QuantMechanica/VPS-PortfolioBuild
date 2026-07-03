@@ -416,7 +416,9 @@ def _claude_env() -> dict[str, str]:
     # burns the Claude weekly limit. The DEEP/premium reviews are done by the interactive
     # Opus session (which does NOT use _claude_env, so it is unaffected). Override via
     # QM_CLAUDE_HEADLESS_MODEL if a specific spawn ever needs Opus. (OWNER 2026-06-09)
-    env["ANTHROPIC_MODEL"] = os.environ.get("QM_CLAUDE_HEADLESS_MODEL", "claude-sonnet-4-6")
+    # OWNER 2026-07-03: lane upgraded to Sonnet 5 (verified resolving headless same day);
+    # it now also carries former-Codex coding tasks while Codex weekly quota is tight.
+    env["ANTHROPIC_MODEL"] = os.environ.get("QM_CLAUDE_HEADLESS_MODEL", "claude-sonnet-5")
     return env
 
 RUNTIME_DIRS = [

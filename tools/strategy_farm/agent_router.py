@@ -75,7 +75,9 @@ DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
     },
     "claude": {
         "enabled": True,
-        "capabilities": ["code", "research", "review", "strategy", "summary"],
+        # OWNER 2026-07-02/03: headless Sonnet lane takes coding tasks (incl. former
+        # codex work) -> full coding capability set; Codex weekly quota is the scarce one.
+        "capabilities": ["code", "tests", "repo_edit", "ops", "research", "review", "strategy", "summary"],
         "max_parallel": 3,  # OWNER 2026-06-09: 2->3 (use weekly headroom before Wed reset)
         "cost_rank": 30,
     },
@@ -1157,7 +1159,7 @@ def sync_q11_candidates(root: Path = DEFAULT_ROOT, *, apply_admission: bool = Tr
 
         rows = conn.execute(
             """
-            SELECT id, ea_id, COALESCE(symbol, '') AS symbol, evidence_path
+            SELECT id, ea_id, COALESCE(symbol, '') AS symbol, evidence_path, payload_json
             FROM work_items
             WHERE phase IN ('Q10', 'P8') AND status='done' AND verdict='PASS'
             ORDER BY updated_at DESC
@@ -1186,7 +1188,11 @@ def sync_q11_candidates(root: Path = DEFAULT_ROOT, *, apply_admission: bool = Tr
                     deferred += 1
                 else:
                     try:
-                        verdict = admission.evaluate_candidate(key, book)
+                        try:
+                            payload = json.loads(row["payload_json"] or "{}")
+                        except json.JSONDecodeError:
+                            payload = {}
+                        verdict = admission.evaluate_candidate(key, book, lineage_payload=payload)
                         reason = str(verdict.get("reason", ""))
                         if verdict.get("admit"):
                             state = "Q12_REVIEW_READY"
