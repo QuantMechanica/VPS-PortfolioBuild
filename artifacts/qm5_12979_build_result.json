@@ -1,0 +1,70 @@
+{
+  "ea_id": "QM5_12979",
+  "slug": "wti-6m-reversal",
+  "strategy_id": "BIANCHI-COMM-52W-2016_XTI_6M_REV",
+  "status": "PASS",
+  "date": "2026-07-03",
+  "built_by": "Codex",
+  "branch": "agents/board-advisor",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "risk_mode": "RISK_FIXED",
+  "risk_fixed": 1000,
+  "risk_percent": 0,
+  "card": "strategy-seeds/cards/wti-6m-reversal_card.md",
+  "approved_card_artifact": "artifacts/cards_approved/QM5_12979_wti-6m-reversal.md",
+  "ea_source": "framework/EAs/QM5_12979_wti-6m-reversal/QM5_12979_wti-6m-reversal.mq5",
+  "ea_binary": {
+    "path": "framework/EAs/QM5_12979_wti-6m-reversal/QM5_12979_wti-6m-reversal.ex5",
+    "sha256": "4D6945C6145DD59DC75020821DE2AD7DEB469768EAAC5D75A4BAE3242466F02B",
+    "bytes": 301624
+  },
+  "setfiles": [
+    {
+      "path": "framework/EAs/QM5_12979_wti-6m-reversal/sets/QM5_12979_wti-6m-reversal_XTIUSD.DWX_D1_backtest.set",
+      "symbol": "XTIUSD.DWX",
+      "timeframe": "D1",
+      "risk_mode": "RISK_FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "magic_slot": 0,
+      "build_hash": "6a064bea5ac63d46b737534626942dd8a997226f672f31641e03ab45f552112e"
+    }
+  ],
+  "registry": {
+    "ea_id_registry": "framework/registry/ea_id_registry.csv",
+    "magic_numbers": "framework/registry/magic_numbers.csv",
+    "magic": 129790000
+  },
+  "compile": {
+    "strict": true,
+    "status": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log": "framework/build/compile/20260703_005650/QM5_12979_wti-6m-reversal.compile.log"
+  },
+  "build_check": {
+    "strict": true,
+    "status": "PASS",
+    "failures": 0,
+    "warnings": 16,
+    "report": "D:/QM/reports/framework/21/build_check_20260703_005707.json",
+    "compile_log": "framework/build/compile/20260703_005707/QM5_12979_wti-6m-reversal.compile.log",
+    "warning_note": "Warnings are framework-level DWX advisory warnings in shared include files, not EA compile warnings."
+  },
+  "q02_enqueue": {
+    "status": "QUEUED",
+    "work_item_id": "9f0fb558-5c27-4b07-867f-f7b99f76acc4",
+    "phase": "Q02",
+    "work_item_status": "pending",
+    "enqueued_at_utc": "2026-07-03T00:58:39+00:00",
+    "queue_db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "enqueue_evidence": "D:/QM/reports/state/claude_sweep_enqueue_2026-06-10.json"
+  },
+  "scope_guard": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "backtest_run": false
+  }
+}
