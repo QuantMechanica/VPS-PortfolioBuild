@@ -45,14 +45,24 @@ Evidenz: Low-Freq strukturelle Edges sind UNSERE Überlebensklasse (DL-070-Track
 4. Bestehende Assets zuerst: 12567-Klasse (cum-rsi2 Ports), Calendar-Neubewertung
    (12893-12909-Welle), XAG/UK100/ORB-Karten aus der Missing-Class-Recherche.
 
-### WS4 — Prop-Firm-Track (FTMO zuerst, dann 5%ers)
-1. **Round24-Admission-Screen** (Tool fertig, 97e655fe) über den GESAMTEN Q08-Soft-Pool +
+### WS4 — Prop-Firm-Track (FTMO zuerst, dann 5%ers) — **HOCHGESTUFT 2026-07-03**
+
+**OWNER-Ratifizierung 07-03: WS4 ist gleichrangiges DESIGN-Ziel, nicht nur Screening**
+(Operating Rules 18/19). DXZ ist VaR-gefüllt; Wachstum kommt aus Challenges, dort bindet
+Target-Coverage. Konsequenz: Karten werden GEZIELT für Renditedichte + Intraday-DD gebaut.
+
+1. **Prop-Track-Karten-Slate 1 aktiv:** QM5_12985 (NDX/SP500/GDAXI RSI2-Shorthold),
+   12986 (GDAXI ORB day-flat, dient Task #17), 12987 (XTI cum-RSI2, dient Task #16),
+   12988 (XTI EIA-Inventory-Day, event-driven/orthogonal). Design-Spec: Dichte
+   ≥~25 Tr/Jahr/Symbol, Index/Commodity (Kommission irrelevant), Day-Flat/strukturelle
+   Stops. Slate-ID: CEO-PROPTRACK-SLATE-2026-07-03.
+2. **Round24-Admission-Screen** (Tool fertig, 97e655fe) über den GESAMTEN Q08-Soft-Pool +
    Book-Sleeves laufen lassen → Ranking nach Ziel-Erreichbarkeit + Breach-Risiko.
-2. Intraday-DD/MAE-Capture (Codex-Task 1d72d68a) abschließen → FTMO-DD-Regeln exakt simulieren.
-3. FTMO-Book-Komposition: bestehendes Round24-13-Leg als Benchmark (57% min-robust);
+3. Intraday-DD/MAE-Capture (Codex-Task 1d72d68a) abschließen → FTMO-DD-Regeln exakt simulieren.
+4. FTMO-Book-Komposition: bestehendes Round24-13-Leg als Benchmark (57% min-robust);
    jede Änderung muss COMBINED schlagen. Binding constraint = Zielerreichung, nicht Risiko →
    Sleeves mit höherer Frequenz/Amplitude auf Index (billige Kosten) gezielt ergänzen.
-4. 5%ers-Regelwerk als Variante des Screens (Codex, klein) — gleiche Maschinerie.
+5. 5%ers-Regelwerk als Variante des Screens (Codex, klein) — gleiche Maschinerie.
 
 ### WS5 — DXZ-Book-Pflege (kontinuierlich)
 Q09-Admission (DL-075/078) läuft; Kandidaten aus Rescue-Wave (10569 XAU, 10115 GDAXI,

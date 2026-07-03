@@ -84,3 +84,34 @@ im Vault; bei Konflikt gelten Vault-Hard-Rules zuerst.
     DL-081-1%-Stops real. Für Single-Symbol-EAs bleibt RISK_FIXED-Backtest /
     RISK_PERCENT-Live unverändert. Die generelle Lot-Skalierungs-Architektur
     (Equity-basiert vs. Risikobudget) ist ein dokumentierter OWNER-Entscheid für Q12+.
+
+## Steuerung nach dem Engpass-Wechsel (OWNER-ratifiziert 2026-07-03, Chat)
+
+18. **Orthogonalität schlägt Volumen.** Der Engpass ist nicht mehr "Survivors
+    produzieren", sondern "unkorrelierte Return-Streams produzieren" (Beweis: 12915
+    volle Kaskade, an Q09 corr=0.35 zu 11132 gescheitert). Neue Karten werden primär
+    nach Return-Treiber-Klasse gesteuert (Event/Kalender, Energie, JPY-Crosses,
+    Long-Vol-Charakter, Session-Struktur), NICHT nach weiteren Index/Metall-Swing-MR-
+    Varianten. Jede neue Karte benennt im `review_focus`, welchen Treiber sie dem Buch
+    hinzufügt.
+19. **Prop-Track = gleichrangiges Design-Ziel (WS4-Upgrade).** DXZ ist VaR-gefüllt;
+    Wachstum kommt aus FTMO/5%ers, und dort bindet TARGET-COVERAGE (Round24: 0 ADMIT /
+    13 BACKUP, Engpass Renditedichte, nicht Risiko). Prop-Track-Karten: Trade-Dichte
+    ≥~25/Jahr/Symbol, Index/Commodity bevorzugt (Kommission irrelevant), hartes
+    Intraday-DD-Design (Day-Flat, strukturelle Stops, Tages-Loss-Cap). FX-High-Freq
+    bleibt tot (Kommission). Erste Slate: QM5_12985–12988
+    (CEO-PROPTRACK-SLATE-2026-07-03). Screening weiter ausschließlich auf Codex'
+    report.htm-Basis (BASIS LESSON 06-30, kein paralleler q08-Screen).
+20. **Live-Book-Puls.** Das Live-Buch (T_Live, Konto 4000090541) bekommt eine eigene
+    automatisierte Überwachung (Log-basiert, strikt read-only auf T_Live-Dateien, kein
+    Prozess-Zugriff): Heartbeat der Terminal-Logs, AutoTrading-Status, offene
+    Positionen, Fehler-Muster → `D:/QM/reports/state/live_book_pulse.json` + Alarm.
+    NIGHTWATCH überwacht die Fabrik, der Live-Puls das Buch — getrennte Verantwortung.
+21. **Self-Review wird geflaggt.** Wenn Claude-Lane-Arbeit mangels Codex-Quota von
+    Claude reviewt wird, trägt das close-review-Verdict das Präfix `SELF_REVIEW:` und
+    der Vorgang kommt auf die Codex-Spot-Check-Liste (Stichprobe nach Quota-Reset).
+    Cross-Agent-Review bleibt der Normalfall, sobald Quota es erlaubt.
+22. **Frontier-Priorität explizit.** Buch-/Prop-Kandidaten (aktive Kaskaden, Ports,
+    neue Slates) laufen mit Prioritäts-Flag durch die Queue; Recovery-Wellen füllen nur
+    Leerlauf auf (Queue-Tiefe ~13 Tage bei ~450 Verdicts/Tag — ohne Priorisierung ist
+    jeder neue Sleeve ein Mehrwochen-Ereignis).
