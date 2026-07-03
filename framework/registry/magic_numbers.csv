@@ -10,6 +10,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1490,raschke-anti-pullback-reversal-h4,8,UK100.DWX,14900008,2026-06-28,Development,active
 1490,raschke-anti-pullback-reversal-h4,9,XAUUSD.DWX,14900009,2026-06-28,Development,active
 1490,raschke-anti-pullback-reversal-h4,10,XTIUSD.DWX,14900010,2026-06-28,Development,active
+12971,spx-pre-fomc-drift,0,SP500.DWX,129710000,2026-07-03,Development,active
 1494,dorsey-mass-index-reversal-bulge-h4,0,EURUSD.DWX,14940000,2026-07-01,Development,active
 1494,dorsey-mass-index-reversal-bulge-h4,1,GBPUSD.DWX,14940001,2026-07-01,Development,active
 1494,dorsey-mass-index-reversal-bulge-h4,2,USDJPY.DWX,14940002,2026-07-01,Development,active
