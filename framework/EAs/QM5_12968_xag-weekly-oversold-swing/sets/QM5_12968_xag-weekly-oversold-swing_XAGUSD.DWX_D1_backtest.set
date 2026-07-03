@@ -1,0 +1,29 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        12968
+; ea_slug:      xag-weekly-oversold-swing
+; ea_version:   v5.0
+; set_version:  s20260703-001
+; symbol:       XAGUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   168f5687196a46ed2cd95c19488091688f498e62e0ac7046e1a2ed3d76971f2e
+; author:       Development
+; date:         2026-07-03
+;==========================================================
+qm_ea_id=12968
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12968_xag-weekly-oversold-swing.md
+strategy_sma_regime_period=200
+strategy_entry_lookback_low=10
+strategy_sma_exit_period=10
+strategy_time_stop_days=15
+strategy_atr_period=14
+strategy_atr_sl_mult=2.5

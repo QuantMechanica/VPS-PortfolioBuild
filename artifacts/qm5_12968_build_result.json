@@ -1,0 +1,26 @@
+{
+  "task_id": "104621a0-5cca-4a9b-bec0-207b2af87354",
+  "ea_id": "QM5_12968",
+  "ea_dir": "framework/EAs/QM5_12968_xag-weekly-oversold-swing",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12968_xag-weekly-oversold-swing\\QM5_12968_xag-weekly-oversold-swing.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12968_xag-weekly-oversold-swing\\QM5_12968_xag-weekly-oversold-swing.ex5",
+  "magic_base": 129680000,
+  "symbols_registered": [
+    "XAGUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12968_xag-weekly-oversold-swing\\sets\\QM5_12968_xag-weekly-oversold-swing_XAGUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": "870a6484041f9c3c08e3f2e0ec389a9f1a204f125692c98fd2d1fa3247ad6e93",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12968_xag-weekly-oversold-swing\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "blocked_reason": "",
+  "open_questions": [],
+  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260703_134011.json",
+  "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260703_134012\\QM5_12968_xag-weekly-oversold-swing.compile.log",
+  "build_smoke_framework_error": "smoke_deferred_backtest_cpu_ceiling: factory terminals T1-T4 were running active Q07/Q08 jobs at 2026-07-03T13:40:38Z; Q02 worker lane will perform the first tester run",
+  "smoke_skipped_reason": "backtest_cpu_ceiling_factory_terminals_busy"
+}
