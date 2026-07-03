@@ -1,0 +1,51 @@
+{
+  "ea_id": "QM5_12507",
+  "slug": "pair-coint-z",
+  "agent": "codex:agents/board-advisor",
+  "timestamp_utc": "2026-07-03T18:46:30Z",
+  "unit_of_work": "q02_infra_repair_requeue",
+  "priority_basis": "market-neutral pair strategy with FX plus index pair coverage; no prior Q02 PASS; latest Q02 rows were INFRA_FAIL summary_missing_retries_exhausted with no pending or active retry",
+  "repair_summary": [
+    "Changed pair entry from single chart-leg open to two registered basket leg opens via QM_BasketOpenPosition.",
+    "Split fixed-risk sizing 50/50 across the two legs before basket lot normalization.",
+    "Preserved zero-spread .DWX behavior when strategy_max_spread_points is enabled.",
+    "Moved the news gate below position management and exit handling for current V5 ordering.",
+    "Added explicit strategy defaults to all four H1 backtest setfiles."
+  ],
+  "verification": {
+    "build_check": "PASS: pwsh -NoProfile -File C:\\QM\\repo\\framework\\scripts\\build_check.ps1 -EALabel QM5_12507_pair-coint-z",
+    "compile_one_strict": "PASS: pwsh -NoProfile -File C:\\QM\\repo\\framework\\scripts\\compile_one.ps1 -EAPath C:\\QM\\repo\\framework\\EAs\\QM5_12507_pair-coint-z\\QM5_12507_pair-coint-z.mq5 -Strict",
+    "spec_validation": "PASS: python C:\\QM\\repo\\framework\\scripts\\validate_spec_doc.py C:\\QM\\repo\\framework\\EAs\\QM5_12507_pair-coint-z",
+    "local_backtest": "not_run; Q02 was enqueued for farm workers to avoid local CPU contention"
+  },
+  "q02_enqueue": {
+    "farmctl_task_id": "453d3dfe-8589-444e-81d4-8097d358a3e6",
+    "review_task_id": "c85bc9b3-d5c5-46fb-ba5a-0ba8ccd01630",
+    "work_items_created": [
+      {
+        "id": "ff64c149-ba52-48b1-a024-59d910212583",
+        "symbol": "EURUSD.DWX",
+        "phase": "Q02",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12507_pair-coint-z\\sets\\QM5_12507_pair-coint-z_EURUSD.DWX_H1_backtest.set"
+      },
+      {
+        "id": "b2cad7df-8f5c-44d6-8fa6-33c26dbc8a15",
+        "symbol": "GBPUSD.DWX",
+        "phase": "Q02",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12507_pair-coint-z\\sets\\QM5_12507_pair-coint-z_GBPUSD.DWX_H1_backtest.set"
+      },
+      {
+        "id": "4f40300d-a9a4-43ba-b7f9-8b068ce8254b",
+        "symbol": "NDX.DWX",
+        "phase": "Q02",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12507_pair-coint-z\\sets\\QM5_12507_pair-coint-z_NDX.DWX_H1_backtest.set"
+      },
+      {
+        "id": "8c4481e7-b3b3-4492-b134-b43f2f44c418",
+        "symbol": "WS30.DWX",
+        "phase": "Q02",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12507_pair-coint-z\\sets\\QM5_12507_pair-coint-z_WS30.DWX_H1_backtest.set"
+      }
+    ]
+  }
+}
