@@ -14379,3 +14379,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12996,xti-dpr-mom,0,XTIUSD.DWX,129960000,2026-07-03,Codex,active
 12997,xng-rig-fri-mom,0,XNGUSD.DWX,129970000,2026-07-03,Codex,active
 12998,xti-spr-relief,0,XTIUSD.DWX,129980000,2026-07-03,Codex,active
+12999,xbr-xng-rspr,0,XBRUSD.DWX,129990000,2026-07-03,Codex,active
+12999,xbr-xng-rspr,1,XNGUSD.DWX,129990001,2026-07-03,Codex,active
