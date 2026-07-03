@@ -1,0 +1,150 @@
+{
+  "date_local": "2026-07-03",
+  "observed_at_local": "2026-07-03T17:48:15+02:00",
+  "branch": "agents/board-advisor",
+  "mission": "forex_market_neutral_cointegration_portfolio_growth",
+  "action": "cpu_ceiling_stop_no_queue_mutation",
+  "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+  "strict_66_pair_scan": {
+    "survivors": [
+      {
+        "pair": "EURJPY~GBPJPY",
+        "ea": "QM5_12533",
+        "scan_dev_sharpe": 0.59,
+        "scan_oos_net_sharpe": 1.53,
+        "current_state": "Q02_PASS_Q04_FAIL",
+        "q02_blocked": false,
+        "latest_terminal_work_item": "ff2cb183-8269-4e63-abaf-27ba79afdb62"
+      },
+      {
+        "pair": "AUDUSD~NZDUSD",
+        "ea": "QM5_12532",
+        "scan_dev_sharpe": 0.13,
+        "scan_oos_net_sharpe": 1.29,
+        "current_state": "Q02_PASS_Q04_PASS_Q05_FAIL",
+        "q02_blocked": false,
+        "latest_terminal_work_item": "82cab3d1-bf05-4aa4-8278-86c8064b16e7"
+      }
+    ],
+    "unbuilt_strict_survivor_found": false
+  },
+  "edgelab_cointegration_build_map": {
+    "registry_rows_checked": 30,
+    "ea_dirs_found": 30,
+    "unbuilt_registered_pair_found": false,
+    "result": "No registered EdgeLab FX cointegration pair lacked an EA folder."
+  },
+  "current_nonduplicate_tail": {
+    "ea": "QM5_12978",
+    "pair": "GBPUSD~USDCAD",
+    "slug": "edgelab-gbpusd-usdcad-cointegration",
+    "latest_state": "Q02_PASS_Q03_PASS_Q04_FAIL",
+    "latest_terminal_work_item": "bf98a2c5-0ed2-4410-abbe-7e66fe97e843"
+  },
+  "existing_forex_cointegration_work_in_funnel": [
+    {
+      "ea": "QM5_12712",
+      "pair": "EURGBP~EURAUD",
+      "state": "Q06_PASS_Q07_PENDING",
+      "work_item": "1b9fa7a5-48a7-4e57-a699-9e55dfb0cb19"
+    },
+    {
+      "ea": "QM5_12772",
+      "pair": "GBPJPY~AUDJPY",
+      "state": "Q06_PASS_Q07_ACTIVE",
+      "work_item": "0727c6a0-e41f-41b0-bf5a-261a7b80a077"
+    },
+    {
+      "ea": "QM5_12778",
+      "pair": "AUDUSD~EURJPY",
+      "state": "Q04_PASS_Q05_PENDING",
+      "work_item": "1c0405e7-16d3-40e6-b884-6be1b504dc4c"
+    }
+  ],
+  "eligible_but_not_enqueued_due_ceiling": {
+    "ea": "QM5_12781",
+    "pair": "USDJPY~AUDJPY",
+    "state": "Q06_PASS_Q07_INFRA_FAIL",
+    "latest_q07_work_item": "38226031-b41f-4f03-ab86-d1697ca5e203",
+    "reason_not_requeued": "Backtest factory already had five active work items; mission says to stop when CPU ceiling is hit."
+  },
+  "factory_state_at_stop": {
+    "active_work_item_count": 5,
+    "active_work_items": [
+      {
+        "terminal": "T5",
+        "ea": "QM5_10440",
+        "phase": "Q05",
+        "symbol": "NDX.DWX",
+        "work_item": "11272098-52e8-4eb5-8a69-1f1ba9d36f7e"
+      },
+      {
+        "terminal": "T3",
+        "ea": "QM5_10939",
+        "phase": "Q05",
+        "symbol": "XAUUSD.DWX",
+        "work_item": "18c41bb8-1c09-4215-a878-d7bf39dfd24f"
+      },
+      {
+        "terminal": "T1",
+        "ea": "QM5_12772",
+        "phase": "Q07",
+        "symbol": "QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1",
+        "work_item": "0727c6a0-e41f-41b0-bf5a-261a7b80a077"
+      },
+      {
+        "terminal": "T4",
+        "ea": "QM5_9121",
+        "phase": "Q02",
+        "symbol": "GBPUSD.DWX",
+        "work_item": "24606a21-ec59-4053-bb35-908fd0cbc806"
+      },
+      {
+        "terminal": "T2",
+        "ea": "QM5_9121",
+        "phase": "Q02",
+        "symbol": "SP500.DWX",
+        "work_item": "dbf80dfa-b432-4148-af30-d6f5c6e8b4ad"
+      }
+    ],
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5"
+    ]
+  },
+  "queue_mutation_this_turn": "none",
+  "reason": "The strict scan survivors are not Q02-blocked, no registered unbuilt EdgeLab FX cointegration pair remains, several nonduplicate forex cointegration continuations are already pending or active, and all five factory slots were active.",
+  "validation": [
+    {
+      "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --ea QM5_12532",
+      "result": "Q02 PASS, Q04 PASS, Q05 FAIL"
+    },
+    {
+      "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --ea QM5_12533",
+      "result": "Q02 PASS, Q04 FAIL"
+    },
+    {
+      "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --status active",
+      "result": "5 active work items"
+    },
+    {
+      "command": "registry/card/EA cross-check",
+      "result": "30 registered EdgeLab cointegration rows, 30 EA folders"
+    }
+  ],
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "new_backtest_enqueued_this_turn": false,
+    "database_mutation_this_turn": false,
+    "autotrading_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
