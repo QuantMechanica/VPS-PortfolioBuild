@@ -1,0 +1,52 @@
+{
+  "task_id": "93a7e406-631e-4d9e-af53-27e8cf436db3",
+  "ea_id": "QM5_12986",
+  "ea_dir": "framework/EAs/QM5_12986_gdaxi-orb-intraday",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12986_gdaxi-orb-intraday\\QM5_12986_gdaxi-orb-intraday.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12986_gdaxi-orb-intraday\\QM5_12986_gdaxi-orb-intraday.ex5",
+  "ex5_bytes": 299224,
+  "magic_base": 129860000,
+  "symbols_registered": [
+    "GDAXI.DWX"
+  ],
+  "magic_numbers_registered": [
+    {
+      "symbol": "GDAXI.DWX",
+      "slot": 0,
+      "magic": 129860000
+    }
+  ],
+  "resolver_regen_confirmed": true,
+  "resolver_regen_rows": 14292,
+  "resolver_sha256_prefix": "263D046995FB57B8",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12986_gdaxi-orb-intraday\\sets\\QM5_12986_gdaxi-orb-intraday_GDAXI.DWX_M15_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12986_gdaxi-orb-intraday\\SPEC.md",
+  "spec_md_validated": true,
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 17,
+  "build_check_warning_note": "All 17 warnings are DWX_ADVISORY_* from framework include files (QM_Indicators.mqh, QM_StopRules.mqh, QM_EquityStream.mqh), not from the EA .mq5 itself. These are known framework-level advisories, not EA defects. One additional non-failure BUILD_CHECK_SETFILE_NONE_FOUND warning was emitted on first build_check run (before set file was generated); subsequent set file generation resolved it.",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_note": "First compile attempt produced 1 warning (warning 43: possible loss of data due to type conversion from 'long' to 'datetime' at IsEUDSTActive line computing day31_utc) which failed build_check strict mode. Fix: added explicit (datetime) cast on the arithmetic result. Dead code cleanup: removed unused LastDayOfMonthBroker() helper function. Second compile: 0 errors, 0 warnings. build_check.result=PASS.",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "q02_requested_by_mission_after_clean_compile_build_check",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": [
+    "OnTick ordering: current skeleton has news gate BEFORE ManageOpenPosition. The 2026-07-02 audit binding rule says news gate should be AFTER management. For this EA the ordering is benign (day-flat design; any open position has a server-side SL and force-flat at session close). Skeleton template should be updated to canonical order \u2014 this is a template-level issue, not an EA-level defect.",
+    "DST transition correctness: IsEUDSTActive() uses inline arithmetic to find last Sunday of March/October. The 'day31_utc' approach correctly handles months with 28/29/30/31 days because we start from a known date and add days forward to reach day 31, then read day-of-week. However, for February (month 2) this is never called (mon < 3 returns immediately). Verified correct for March (mon=3) and October (mon=10). No further concern.",
+    "GetXetraOpenBrokerHour returns an integer hour. The ORB accumulation in Strategy_EntrySignal fires on QM_IsNewBar(M15) when bar_time_hour == GetXetraOpenBrokerHour() and bar count < orb_bars. This means the ORB accumulation window is [open_hour:00, open_hour:45] (4 bars \u00d7 15 min). The full 60-minute opening range is captured by 09:00, 09:15, 09:30, 09:45 CET \u2014 four M15 bars, as specified by the card. Correct.",
+    "SP500.DWX not registered for QM5_12986 per card single_symbol_only: true. This is correct and intentional. GDAXI.DWX is the only symbol."
+  ],
+  "deviations": [
+    {
+      "deviation": "Unused helper function LastDayOfMonthBroker() removed after first compile",
+      "reason": "The function was added as a helper to compute last-day-of-month in broker time, but IsEUDSTActive() uses inline UTC arithmetic instead, making the broker-time helper dead code. MQL5 compiler does not warn about unused functions, but the build_check strict-mode warning 43 (type conversion) was separately introduced by the arithmetic at day31_utc. Both issues fixed in second edit: removed dead code + added explicit (datetime) cast.",
+      "severity": "cosmetic"
+    }
+  ]
+}

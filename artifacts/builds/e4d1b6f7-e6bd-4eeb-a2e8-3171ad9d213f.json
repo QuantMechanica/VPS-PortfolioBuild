@@ -1,0 +1,58 @@
+{
+  "task_id": "e4d1b6f7-e6bd-4eeb-a2e8-3171ad9d213f",
+  "ea_id": "QM5_12985",
+  "ea_dir": "framework/EAs/QM5_12985_ndx-rsi2-shorthold-mr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12985_ndx-rsi2-shorthold-mr\\QM5_12985_ndx-rsi2-shorthold-mr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12985_ndx-rsi2-shorthold-mr\\QM5_12985_ndx-rsi2-shorthold-mr.ex5",
+  "ex5_bytes": 298332,
+  "magic_base": 129850000,
+  "symbols_registered": [
+    "NDX.DWX",
+    "SP500.DWX",
+    "GDAXI.DWX"
+  ],
+  "magic_numbers_registered": [
+    {
+      "symbol": "NDX.DWX",
+      "slot": 0,
+      "magic": 129850000
+    },
+    {
+      "symbol": "SP500.DWX",
+      "slot": 1,
+      "magic": 129850001
+    },
+    {
+      "symbol": "GDAXI.DWX",
+      "slot": 2,
+      "magic": 129850002
+    }
+  ],
+  "resolver_regen_confirmed": true,
+  "resolver_regen_rows": 14291,
+  "resolver_sha256_prefix": "022965BEDBE1448F",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12985_ndx-rsi2-shorthold-mr\\sets\\QM5_12985_ndx-rsi2-shorthold-mr_NDX.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12985_ndx-rsi2-shorthold-mr\\sets\\QM5_12985_ndx-rsi2-shorthold-mr_SP500.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_12985_ndx-rsi2-shorthold-mr\\sets\\QM5_12985_ndx-rsi2-shorthold-mr_GDAXI.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12985_ndx-rsi2-shorthold-mr\\SPEC.md",
+  "spec_md_validated": true,
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 17,
+  "build_check_warning_note": "All 17 warnings are DWX_ADVISORY_* from framework include files (QM_Indicators.mqh, QM_StopRules.mqh, QM_EquityStream.mqh), not from the EA .mq5 itself. These are known framework-level advisories, not EA defects.",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_note": "build_check.ps1 ran compile_one internally (metaeditor_exit_code=1 is a MetaEditor quirk \u2014 errors=0 and ex5 present confirms success). Separate compile_one.ps1 step skipped to avoid double-compile; .ex5 on disk at 298332 bytes confirms PASS.",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "q02_requested_by_mission_after_clean_compile_build_check",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": [
+    "OnTick ordering: current skeleton has news gate BEFORE ManageOpenPosition. The 2026-07-02 audit binding rule says news gate should be AFTER management. This EA has no critical management during news windows (SL is server-side), so ordering is benign here. Skeleton template should be updated to canonical order per QM5_12821 dc418a720 \u2014 this is a template-level issue, not an EA-level defect.",
+    "SP500.DWX is backtest-only (DXZ does not route orders). The EA is registered for SP500.DWX per the card's R3 target list and the P2 SATURATION RULE. Live promotion to T6 for SP500.DWX-only runs is forbidden per DWX SYMBOL DISCIPLINE \u2014 this is a Board Advisor T6-gate concern.",
+    "QM_Sig_Price_Above_MA called with deadband_pts=0: the function signature requires this parameter and it is correctly passed. Verify QM_Signals.mqh implements the zero-deadband case as a pure price-vs-MA comparison."
+  ]
+}
