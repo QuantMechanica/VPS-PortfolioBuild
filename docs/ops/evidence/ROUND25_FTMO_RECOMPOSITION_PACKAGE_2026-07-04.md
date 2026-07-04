@@ -75,6 +75,36 @@ is capital-efficiency, not correlation risk between accounts).
 4. Q04-class cost realism: validation reports run the canonical backtest sets (real
    Darwinex commission schedule); no additional cost stress applied at composition level.
 
+## Deployment math — per-leg RISK_FIXED translation (caveat 2 resolved)
+
+Sim semantics (verified in `_evaluate_weighted_case`, optimizer line ~722): combined
+daily PnL = Σ wᵢ × PnLᵢ(report) × risk_scale. Source reports ran the canonical backtest
+sets at RISK_FIXED = $1,000/trade (HR4 convention). Therefore on a 100k FTMO account:
+
+**RISK_FIXED_live(leg i) = 1000 × 9.0 × wᵢ**
+
+| Leg | Weight | RISK_FIXED (USD/trade) | % of 100k |
+|---|---|---|---|
+| QM5_11476:USDJPY | 0.1594 | 1,435 | 1.43% |
+| QM5_10911:GDAXI | 0.1396 | 1,256 | 1.26% |
+| QM5_12958:XAUUSD | 0.1396 | 1,256 | 1.26% |
+| QM5_10692:NDX | 0.1241 | 1,117 | 1.12% |
+| QM5_10848:XAUUSD | 0.0931 | 838 | 0.84% |
+| QM5_10700:XAUUSD | 0.0693 | 624 | 0.62% |
+| QM5_10286:XTIUSD | 0.0576 | 518 | 0.52% |
+| QM5_10440:NDX | 0.0510 | 459 | 0.46% |
+| QM5_10163:NDX | 0.0469 | 422 | 0.42% |
+| QM5_10847:GBPUSD | 0.0432 | 389 | 0.39% |
+| QM5_12990:GBPUSD | 0.0400 | 360 | 0.36% |
+| QM5_12475:NDX | 0.0361 | 325 | 0.33% |
+| **Σ (all legs simultaneously at full SL)** | 1.0000 | **9,000** | **9.0%** |
+
+Pre-deploy verification (deterministic, MUST run before any live setfile generation):
+parse each source report.htm's input block and confirm its actual RISK_FIXED — any leg
+whose report ran at a different RISK_FIXED gets its factor corrected accordingly.
+Note: worst-case 9.0% simultaneous full-loss < FTMO 10% max-loss limit even before
+correlation effects; the sim puts the realistic breach probability at 4.24%.
+
 ## Recommended next steps
 
 1. OWNER reviews this package (after the Sunday chart session — no rush, challenge
