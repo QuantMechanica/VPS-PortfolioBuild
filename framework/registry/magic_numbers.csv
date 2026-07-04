@@ -14403,3 +14403,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13010,xti-cadjpy-rspr,1,CADJPY.DWX,130100001,2026-07-04,Development,active
 13011,xti-cadchf-rspr,0,XTIUSD.DWX,130110000,2026-07-04,Codex,active
 13011,xti-cadchf-rspr,1,CADCHF.DWX,130110001,2026-07-04,Codex,active
+12985,ndx-rsi2-shorthold-mr,0,NDX.DWX,129850000,2026-07-04,Development,active
+12985,ndx-rsi2-shorthold-mr,1,SP500.DWX,129850001,2026-07-04,Development,active
+12985,ndx-rsi2-shorthold-mr,2,GDAXI.DWX,129850002,2026-07-04,Development,active
+12986,gdaxi-orb-intraday,0,GDAXI.DWX,129860000,2026-07-04,Development,active
