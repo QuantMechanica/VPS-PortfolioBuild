@@ -1,0 +1,108 @@
+{
+  "task_id": "9991e833-7985-4f82-b727-6a469f3fae8a",
+  "ea_id": "QM5_13011",
+  "ea_label": "QM5_13011_xti-cadchf-rspr",
+  "slug": "xti-cadchf-rspr",
+  "strategy_id": "BOC-CADCHF-OIL-RSPREAD-2026",
+  "source_id": "BOC-CADCHF-OIL-RSPREAD-2026",
+  "decision": "build_pass_enqueue_q02",
+  "concept": "D1 WTI/CADCHF return-spread z-score reversion basket",
+  "logical_symbol": "QM5_13011_XTI_CADCHF_RSPREAD_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "symbols": [
+    "XTIUSD.DWX",
+    "CADCHF.DWX"
+  ],
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 smoke/backtest was launched from this session.",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13011_xti-cadchf-rspr\\sets\\QM5_13011_xti-cadchf-rspr_QM5_13011_XTI_CADCHF_RSPREAD_D1_D1_backtest.set"
+  ],
+  "paths": {
+    "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13011_xti-cadchf-rspr",
+    "mq5": "C:\\QM\\repo\\framework\\EAs\\QM5_13011_xti-cadchf-rspr\\QM5_13011_xti-cadchf-rspr.mq5",
+    "ex5": "C:\\QM\\repo\\framework\\EAs\\QM5_13011_xti-cadchf-rspr\\QM5_13011_xti-cadchf-rspr.ex5",
+    "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_13011_xti-cadchf-rspr\\sets\\QM5_13011_xti-cadchf-rspr_QM5_13011_XTI_CADCHF_RSPREAD_D1_D1_backtest.set",
+    "basket_manifest": "C:\\QM\\repo\\framework\\EAs\\QM5_13011_xti-cadchf-rspr\\basket_manifest.json",
+    "strategy_card": "C:\\QM\\repo\\framework\\EAs\\QM5_13011_xti-cadchf-rspr\\docs\\strategy_card.md",
+    "approved_card": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13011_xti-cadchf-rspr.md",
+    "runtime_approved_card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13011_xti-cadchf-rspr.md",
+    "source_packet": "C:\\QM\\repo\\strategy-seeds\\sources\\BOC-CADCHF-OIL-RSPREAD-2026\\source.md"
+  },
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13011_xti-cadchf-rspr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13011_xti-cadchf-rspr\\QM5_13011_xti-cadchf-rspr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13011_xti-cadchf-rspr\\QM5_13011_xti-cadchf-rspr.ex5",
+  "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13011_xti-cadchf-rspr\\sets\\QM5_13011_xti-cadchf-rspr_QM5_13011_XTI_CADCHF_RSPREAD_D1_D1_backtest.set",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13011_xti-cadchf-rspr\\basket_manifest.json",
+  "hashes_sha256": {
+    "mq5": "E06E5DFFD068BE527F9E49D8027D8A97B631C43FEDC5918E5B1C3D137590B386",
+    "ex5": "057A90ADC819EE86F55E02BAF0A1E5E635709042D3955E3CC8ED6FB730DADCDB",
+    "setfile": "CA0463C699097C2835B00AD11895A34E1EEBE7A6C20A5141C386847D1492FE90",
+    "basket_manifest": "D32D3545A51029E3F2898689647D4DA4D289BFA8B0B0AA61BA0ECDDB86DD3196",
+    "strategy_card": "C848105BBC329202526CC3BD0886C28B403C9C6C9F624FB54C839056B38E9856",
+    "source_packet": "0E5C7216B66E1E1FB96E9D9B848C796E0C24562B8E7A39BE55A7FC14E7DC125B"
+  },
+  "setfile_build_hash": "fb507f7cdd18bf39ebd787f7746e43f8e9636528ebfce08b1bd2ec0f0bdd4c25",
+  "ex5_size_bytes": 308012,
+  "compile": {
+    "status": "COMPILED",
+    "errors": 0,
+    "warnings": 0,
+    "symbol_scope_verdict": "BASKET_OK",
+    "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260704_003932\\QM5_13011_xti-cadchf-rspr.compile.log",
+    "timestamp_utc": "2026-07-04T00:39:32+00:00"
+  },
+  "build_check": {
+    "status": "PASS",
+    "strict": true,
+    "failures": 0,
+    "warnings": 16,
+    "warning_scope": "existing framework include advisories",
+    "report": "D:\\QM\\reports\\framework\\21\\build_check_20260704_003906.json",
+    "timestamp_utc": "2026-07-04T00:39:06.3157073Z"
+  },
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "3b2ab309-c389-4c52-803b-f2a96ea062e4",
+    "artifact": "C:\\QM\\repo\\artifacts\\qm5_13011_q02_enqueue_20260704.json"
+  },
+  "manual_backtest": {
+    "status": "not_started",
+    "reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 smoke/backtest was launched."
+  },
+  "magic_rows": [
+    {
+      "ea_id": 13011,
+      "slug": "xti-cadchf-rspr",
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 130110000
+    },
+    {
+      "ea_id": 13011,
+      "slug": "xti-cadchf-rspr",
+      "slot": 1,
+      "symbol": "CADCHF.DWX",
+      "magic": 130110001
+    }
+  ],
+  "source_links": [
+    "https://www.bankofcanada.ca/2017/02/staff-analytical-note-2017-1/",
+    "https://www.eia.gov/international/analysis/country/CAN"
+  ],
+  "non_duplicate_reason": "This is a two-leg XTIUSD/CADCHF return-spread mean-reversion basket tied to the CAD commodity channel against CHF. It is not XNG RSI/seasonal/storage/weather logic, not XNG/CAD, not XTI/XNG, not Brent/WTI, not oil/metals, not XAU/XAG, not the existing XTI/CADJPY exporter/importer cross basket, and not the existing Singh oil-to-CADJPY S/R breakout card.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_manifest_touched": false
+  }
+}
