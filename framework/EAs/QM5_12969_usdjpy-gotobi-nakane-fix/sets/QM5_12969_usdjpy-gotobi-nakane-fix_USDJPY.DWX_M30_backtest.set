@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12969
 ; ea_slug:      usdjpy-gotobi-nakane-fix
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   707be6a1395439fce9391340b0347af48ff86c1b0ffcc924bf59b6fa5682fba6
+; build_hash:   37bf75214b9b4de3a0e6414568a9618ef732cbf8ee77fcbcf65e172777e74f95
 ; author:       Development
 ; date:         2026-07-03
 ;==========================================================
