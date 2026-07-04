@@ -14407,3 +14407,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12985,ndx-rsi2-shorthold-mr,1,SP500.DWX,129850001,2026-07-04,Development,active
 12985,ndx-rsi2-shorthold-mr,2,GDAXI.DWX,129850002,2026-07-04,Development,active
 12986,gdaxi-orb-intraday,0,GDAXI.DWX,129860000,2026-07-04,Development,active
+13012,grimes-complex-pb-v2,0,GDAXI.DWX,130120000,2026-07-04,Claude,active
