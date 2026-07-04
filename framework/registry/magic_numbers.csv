@@ -14412,3 +14412,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13014,mql5-dema-chan-v2,0,XAUUSD.DWX,130140000,2026-07-04,Claude,active
 13015,grimes-accept-high-v2,0,GDAXI.DWX,130150000,2026-07-04,Claude,active
 13016,tv-ma-scalper-relief-v2,0,GDAXI.DWX,130160000,2026-07-04,Claude,active
+13017,grimes-context-pb-xau-v2,0,XAUUSD.DWX,130170000,2026-07-05,Claude,active
