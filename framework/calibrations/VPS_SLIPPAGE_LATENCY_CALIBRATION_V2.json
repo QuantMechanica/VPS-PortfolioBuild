@@ -162,6 +162,25 @@
       "stub_created_at": "2026-05-18T11:44:19+00:00",
       "stub_source": "farmctl_pump_p5_calibration_autostub"
     },
+    "QM5_1058_EURUSD_GBPUSD_GGR_D1": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "D:\\QM\\reports\\work_items\\cff1ca51-2d6f-4204-8fac-804ded4a4864\\QM5_1058\\Q04\\QM5_1058_EURUSD_GBPUSD_GGR_D1\\aggregate.json",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-07-04T14:26:53+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
     "QM5_12532_AUDNZD_COINTEGRATION_D1": {
       "auto_stub": true,
       "commission_cents_per_lot": 700.0,
