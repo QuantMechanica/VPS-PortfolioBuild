@@ -51,17 +51,6 @@ input double rr_multiple                  = 2.0;
 // DST helpers for broker-time session computation (EU and US DST)
 // ============================================================================
 
-// Returns the datetime (in broker/server time) of day 31 of the given month
-// in the given year. Used to find day-of-week of month end.
-// Note: StructToTime treats the struct as server time (broker-epoch seconds).
-datetime LastDayOfMonthBroker(int year, int mon)
-  {
-   MqlDateTime dt;
-   dt.year = year; dt.mon = mon; dt.day = 31;
-   dt.hour = 1; dt.min = 0; dt.sec = 0;
-   return StructToTime(dt);
-  }
-
 // Returns true if EU summer time (CEST) is active for the given UTC datetime.
 // CEST: last Sunday in March 01:00 UTC → last Sunday in October 01:00 UTC.
 // Input: utc_time = QM_BrokerToUTC(TimeCurrent()).
@@ -77,7 +66,7 @@ bool IsEUDSTActive(const datetime utc_time)
    // In March or October: determine last Sunday of that month.
    // Add enough days to reach the 31st, then read its day-of-week.
    int days_to_31 = 31 - dt.day;
-   datetime day31_utc = utc_time + (long)days_to_31 * 86400;
+   datetime day31_utc = (datetime)(utc_time + (long)days_to_31 * 86400);
    MqlDateTime d31;
    TimeToStruct(day31_utc, d31);
    int last_sun_day = 31 - (int)d31.day_of_week;  // 0=Sunday → day 31; 6=Saturday → day 25
