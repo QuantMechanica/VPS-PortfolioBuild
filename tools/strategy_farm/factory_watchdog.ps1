@@ -6,11 +6,12 @@
 #  missing workers, in THIS session, so the visible-mode factory keeps
 #  producing without a manual "Factory ON" click.
 #
-#  MUST run in the interactive (autologon) session, RunLevel=Highest -
-#  a SYSTEM/session-0 task cannot spawn visible terminals (that is the
-#  exact reason the hourly_monitor only ESCALATES "factory down" and
-#  Repair_Hourly/TerminalWorkers are ENFORCE_DISABLED). This watchdog is
-#  the in-session complement to that session-0 triage monitor.
+#  RUNS AS SYSTEM (QM_StrategyFarm_FactoryWatchdog_15min, ServiceAccount) —
+#  it must therefore NEVER spawn workers/terminals directly: a SYSTEM/
+#  session-0 child spawn yields workers whose terminal64 die 0xC0000142
+#  (2026-06-24 broken-respawn class). ALL healing is delegated via
+#  Start-ScheduledTask to interactive qm-admin tasks (FactoryON_AtLogon
+#  for clean-slate, QM_StrategyFarm_WorkerDedupe for surgical spawns).
 #
 #  Deterministic + respects OWNER's ON/OFF:
 #    - OWNER intent is read from the FACTORY tasks' enable-state
@@ -355,16 +356,40 @@ $realStallSuppressedReason = ''
 # 2026-06-11) recreates the console session -> FactoryON_AtLogon restores the factory.
 # Guards: confirm on 2 consecutive runs (~15 min), 6h cooldown, autologon secret must
 # exist, never while any T_Live terminal runs (Hard Rule: live trading untouchable).
-$sessionLost = $false
+$sessionLost        = $false
+$lsmDegraded        = $false   # FIX 2: qwinsta failed/missing but worker evidence proves session alive
+$qwinstaError       = $null    # FIX 2: error string from qwinsta failure (for jsonl)
+$secretBasis        = ''       # FIX 1: 'lsa_secret' | 'winlogon_fallback_nonsystem' (for jsonl)
 $targetUser = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -ErrorAction SilentlyContinue).DefaultUserName
 if (-not $targetUser) { $targetUser = 'qm-admin' }
 if ($factoryEnabled) {
-    $hasSession = $false
-    foreach ($line in (qwinsta 2>$null)) {
+    $hasSession    = $false
+    $qwinstaOutput = @()
+    try {
+        $qwinstaOutput   = @(qwinsta 2>$null)
+        $qwinstaExitCode = $LASTEXITCODE
+        if ($qwinstaExitCode -ne 0) { $qwinstaError = "exitcode=$qwinstaExitCode" }
+    } catch {
+        $qwinstaError = "exception=$($_.Exception.Message)"
+    }
+    foreach ($line in $qwinstaOutput) {
         if (($line -match "\b$([regex]::Escape($targetUser))\b") -and
             ($line -match "\s\d+\s+(Active|Disc|Conn)\b")) { $hasSession = $true }
     }
-    $sessionLost = -not $hasSession
+    # FIX 2: Worker-process evidence cross-check. Terminal_worker daemons run inside
+    # the interactive session; if >=1 is alive the session cannot be gone regardless
+    # of qwinsta status. qwinsta exit-code 87 (or any non-zero) during LSM degradation
+    # does NOT prove session loss. session_lost requires BOTH signals to agree.
+    $workerDaemonsAlive = $nWorkers  # already collected: python.exe|pythonw.exe + terminal_worker.py
+    if ((-not $hasSession) -and ($workerDaemonsAlive -ge 1)) {
+        # qwinsta says no session but workers are running inside it -> LSM masked the session
+        $lsmDegraded = $true
+    } elseif ($qwinstaError -and ($workerDaemonsAlive -ge 1)) {
+        # qwinsta failed entirely but workers are alive -> LSM degradation
+        $lsmDegraded = $true
+    }
+    # session_lost: BOTH session enumeration says gone AND zero worker-daemon process evidence
+    $sessionLost = (-not $hasSession) -and ($workerDaemonsAlive -eq 0)
 }
 
 if ($factoryEnabled -and $sessionLost) {
@@ -375,15 +400,35 @@ if ($factoryEnabled -and $sessionLost) {
     $pendingSince = ConvertFrom-UtcStamp $st.pending_since
     $lastReboot   = ConvertFrom-UtcStamp $st.last_reboot
 
-    $secretOk = $false
-    try { $secretOk = $null -ne [Microsoft.Win32.RegistryKey]::OpenBaseKey('LocalMachine','Default').OpenSubKey('SECURITY\Policy\Secrets\DefaultPassword') } catch {}
+    # FIX 1: HKLM\SECURITY is SYSTEM-only; an admin-context read always throws access-denied,
+    # making secretOk=false a FALSE NEGATIVE from any non-SYSTEM caller. If the read fails
+    # AND the current identity is not SYSTEM, fall back to the admin-readable Winlogon keys
+    # (AutoAdminLogon + DefaultUserName) rather than treating the ACL error as "no secret".
+    # secret_basis is emitted in the jsonl record so the evidence path is auditable.
+    # The action 'session_lost_no_autologon' MUST NOT fire solely because the SYSTEM-only
+    # read failed from a non-SYSTEM context (that was the LSM-degradation false-positive).
+    $isSystem    = [System.Security.Principal.WindowsIdentity]::GetCurrent().IsSystem
+    $secretOk    = $false
+    $secretBasis = 'lsa_secret'
+    try {
+        $secretOk    = $null -ne [Microsoft.Win32.RegistryKey]::OpenBaseKey('LocalMachine','Default').OpenSubKey('SECURITY\Policy\Secrets\DefaultPassword')
+        $secretBasis = 'lsa_secret'
+    } catch {
+        if (-not $isSystem) {
+            # Non-SYSTEM caller: SECURITY hive access-denied is expected; fall back to Winlogon.
+            $wl          = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -ErrorAction SilentlyContinue
+            $secretOk    = ($wl.AutoAdminLogon -eq '1') -and ($null -ne $wl.DefaultUserName) -and ('' -ne $wl.DefaultUserName)
+            $secretBasis = 'winlogon_fallback_nonsystem'
+        }
+        # IS SYSTEM but read still failed -> genuine absent/inaccessible secret; $secretOk stays $false
+    }
     $autologonOn = ((Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -ErrorAction SilentlyContinue).AutoAdminLogon -eq '1')
     $tLiveRunning = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
                       Where-Object { $_.CommandLine -match 'T_Live' }).Count -gt 0
 
     if (-not ($secretOk -and $autologonOn)) {
         $action = 'session_lost_no_autologon'
-        $detail = "NO interactive $targetUser session, but autologon not usable (secret=$secretOk autoadmin=$autologonOn) - reboot would strand at logon screen; OWNER must log in"
+        $detail = "NO interactive $targetUser session, but autologon not usable (secret=$secretOk basis=$secretBasis autoadmin=$autologonOn) - reboot would strand at logon screen; OWNER must log in"
     } elseif ($tLiveRunning) {
         $action = 'session_lost_tlive_guard'
         $detail = "NO interactive $targetUser session but a T_Live terminal is running - refusing auto-reboot (Hard Rule)"
@@ -493,6 +538,15 @@ print(n)
 if ($factoryEnabled -and $sessionLost) {
     # handled above; fall through to logging
 }
+elseif ($factoryEnabled -and $lsmDegraded) {
+    # FIX 2: LSM-degradation guard. qwinsta failed or found no session, but at least one
+    # terminal_worker daemon is alive — proving the interactive session is not destroyed.
+    # (qwinsta error 87 / LSM service degradation gives a false "no session" result.)
+    # Emit a diagnostic record and take NO destructive or heal action; condition should
+    # self-clear on the next run once LSM recovers.
+    $action = 'lsm_degraded_suspected'
+    $detail = "qwinsta_error=$qwinstaError worker_daemons_alive=$nWorkers; session not confirmed lost — no destructive action taken"
+}
 elseif (-not $factoryEnabled) {
     $action = 'noop_factory_off'
     $detail = "FACTORY tasks disabled (OWNER OFF); workers=$nWorkers - leaving alone"
@@ -586,12 +640,17 @@ elseif ($nWorkers -ge $MinWorkers -and -not $dispatchStalled) {
     }
 }
 else {
-    # 3. heal: factory meant ON but workers are dead/short OR alive-but-wedged
-    #    (dispatch stalled) -> clean-slate respawn either way.
+    # 3. heal: factory meant ON but workers are dead/short OR alive-but-wedged (dispatch stalled).
+    # FIX 3: DISPATCH STALL (dead session handle, 0 active + many pending + 0 terminal64) ->
+    #   clean-slate FactoryON_AtLogon (existing path, unchanged).
+    # PURE WORKER SHORTAGE (session alive, no stall, no launch_fault wedge) ->
+    #   surgical --dedupe spawn: fills only the missing worker slots, NEVER kills in-flight
+    #   terminals or backtests. The clean-slate path is reserved for dispatch stall and the
+    #   launch_fault-wedge class (realStall branch above) only.
     if ($dispatchStalled) {
         $detail = "DISPATCH STALL: workers=$nWorkers alive but wedged ($stallInfo) while factory ON -> clean-slate respawn"
     } else {
-        $detail = "workers=$nWorkers/$ExpectWorkers (< $MinWorkers) while factory ON -> clean-slate respawn"
+        $detail = "workers=$nWorkers/$ExpectWorkers (< $MinWorkers) while factory ON -> surgical dedupe spawn"
     }
     # ESCALATION (2026-06-09): a dispatch stall on a DISCONNECTED session is the case the
     # plain respawn CANNOT fix -- workers respawn fine, but terminal64 (a GUI app) has no
@@ -641,22 +700,43 @@ else {
                       Where-Object { $_.CommandLine -match 'T_Live' }).Count -gt 0
     if ($activeMultisymCount -gt 0) {
         $action = 'heal_deferred_active_multisym'
-        $detail += " | active multisymbol/basket work_item guard: refusing FactoryON full reset while protected=$($activeProtection.protected_terminals -join ',') active=$activeProtectionDetail"
-    } else {
+        $detail += " | active multisymbol/basket work_item guard: refusing full reset while protected=$($activeProtection.protected_terminals -join ',') active=$activeProtectionDetail"
+    } elseif ($dispatchStalled) {
+        # DISPATCH STALL path: needs clean-slate FactoryON_AtLogon (dead session handle;
+        # dedupe-only spawn would inherit the same broken handle and still produce 0 runs).
         try {
-            if ($dispatchStalled) {
-                $dumpDetail = Invoke-StallDumpCapture -RequestPath $stallDumpRequest -DumpDir $stallDumpDir
-                $detail += " | $dumpDetail"
-            }
+            $dumpDetail = Invoke-StallDumpCapture -RequestPath $stallDumpRequest -DumpDir $stallDumpDir
+            $detail += " | $dumpDetail"
             Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop
             Start-Sleep -Seconds 25
             $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
                        Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
             $action = 'healed_via_factoryon'
-            $detail += " -> Start FactoryON_AtLogon (interactive, T_Live-sparing; tLiveRunning=$tLiveRunning) -> after=$after/$ExpectWorkers"
+            $detail += " -> Start FactoryON_AtLogon (dispatch stall, interactive, T_Live-sparing; tLiveRunning=$tLiveRunning) -> after=$after/$ExpectWorkers"
         } catch {
             $action = 'heal_failed'
             $detail += " -> ERROR: $_"
+        }
+    } else {
+        # FIX 3: PURE WORKER SHORTAGE — session alive, no stall, no launch_fault wedge.
+        # Surgical dedupe spawn: only fills the missing worker slots; never kills
+        # in-flight terminals or interrupts running backtests.
+        # This watchdog runs as SYSTEM: a direct child spawn here would put workers in
+        # session 0 and their terminal64 dies 0xC0000142 (2026-06-24 broken-respawn
+        # class). Delegate to the on-demand interactive task (qm-admin, Interactive,
+        # Highest) exactly like the FactoryON_AtLogon escalation path.
+        # Emits action 'worker_dedupe_heal' with workers_before / workers_after counts.
+        $workersBefore = $nWorkers
+        try {
+            Start-ScheduledTask -TaskName 'QM_StrategyFarm_WorkerDedupe' -ErrorAction Stop
+            Start-Sleep -Seconds 20
+            $workersAfter = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
+                              Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
+            $action = 'worker_dedupe_heal'
+            $detail += " -> dedupe via QM_StrategyFarm_WorkerDedupe: workers_before=$workersBefore workers_after=$workersAfter/$ExpectWorkers tLiveRunning=$tLiveRunning"
+        } catch {
+            $action = 'heal_failed'
+            $detail += " -> ERROR: $_ (QM_StrategyFarm_WorkerDedupe task missing? register via install_hygiene_and_lsm_tasks.ps1)"
         }
     }
 }
@@ -671,6 +751,9 @@ $record = [ordered]@{
     dispatch_stalled = $dispatchStalled
     real_stall       = $realStall
     session_lost     = $sessionLost
+    lsm_degraded     = $lsmDegraded        # FIX 2: true when qwinsta failed but worker daemons alive
+    qwinsta_error    = $qwinstaError        # FIX 2: error string from qwinsta failure (null = ok)
+    secret_basis     = $secretBasis         # FIX 1: 'lsa_secret' | 'winlogon_fallback_nonsystem' | ''
     active_multisym  = $activeMultisymCount
     active_progress  = $activeRecentProgressCount
     action           = $action
@@ -684,5 +767,13 @@ try {
     $lines = Get-Content $log -ErrorAction SilentlyContinue
     if ($lines -and $lines.Count -gt 500) { Set-Content -Path $log -Value ($lines | Select-Object -Last 500) -Encoding UTF8 }
 } catch { }
+
+# FIX 4: heartbeat record — appended after every run so downstream monitors can detect
+# a frozen jsonl. Without this a monitor re-reading the last 'session_lost_no_autologon'
+# line has no way to tell if the watchdog is still cycling or has stopped. A monitor
+# should check the most-recent heartbeat ts; if stale (e.g. > 30 min) the watchdog itself
+# is frozen and needs investigation. The heartbeat ts field is UTC ISO-8601.
+$hbRecord = [ordered]@{ ts = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ'); action = 'heartbeat' } | ConvertTo-Json -Compress
+try { Add-Content -Path $log -Value $hbRecord -Encoding UTF8 } catch {}
 
 Write-Output $record
