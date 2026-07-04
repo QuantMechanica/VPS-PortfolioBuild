@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13016
+; ea_slug:      tv-ma-scalper-relief-v2
+; ea_version:   v5.0
+; set_version:  s20260704-001
+; symbol:       GDAXI.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Claude
+; date:         2026-07-04
+;==========================================================
+qm_ea_id=13016
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults
+strategy_sma_fast_period=9
+strategy_sma_mid_period=50
+strategy_sma_slow_period=100
+strategy_sma_regime_period=200
+strategy_sma_slope_bars=20
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_structure_lookback=20
+strategy_max_hold_bars=192
+strategy_min_hold_bars=16
+strategy_max_spread_stop_frac=0.10
