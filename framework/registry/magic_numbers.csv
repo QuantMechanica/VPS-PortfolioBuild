@@ -14401,3 +14401,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12966,gdaxi-weekly-oversold-swing,0,GDAXI.DWX,129660000,2026-07-04,Codex,active
 13010,xti-cadjpy-rspr,0,XTIUSD.DWX,130100000,2026-07-04,Development,active
 13010,xti-cadjpy-rspr,1,CADJPY.DWX,130100001,2026-07-04,Development,active
+13011,xti-cadchf-rspr,0,XTIUSD.DWX,130110000,2026-07-04,Codex,active
+13011,xti-cadchf-rspr,1,CADCHF.DWX,130110001,2026-07-04,Codex,active
