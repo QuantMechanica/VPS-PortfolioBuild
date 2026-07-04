@@ -129,6 +129,42 @@ full window. True OOS (re-select on 2023–24 only, confirm on 2025) is possible
 same tooling (driver + date filter) if OWNER wants the gold-standard number before
 committing challenge capital.
 
+## True-OOS protocol + fair baseline (2026-07-05 early AM — the decision-grade section)
+
+**True OOS (select on 2023–24 only, confirm on untouched 2025, 5000×5):** the greedy
+selector overfits substantially — train 78% → holdout **42%** with 16% daily-breach
+(seed_iii collapse); train 74% → holdout **59.5%** at 9.4% max-loss (seed_ii, heavy
+shrink but still above the 57.04 bar). Conclusion: greedy scores are selection-inflated
+by ~15–35pp; scale 9 is too hot out-of-sample; single greedy compositions are
+high-variance. The headline 67.72% must NOT be read as a forward pass probability.
+
+**Consensus-10 equal-weight experiment (anti-overfit attempt): FAILED.** Legs chosen in
+≥3/4 independent runs, equal weights: 30% (2025) / 57% (2023–24). The greedy WEIGHTS
+carry real information; discarding them costs more than the overfit they embody.
+
+**Fair baseline — Round24 evaluated identically (5000×5, per window):**
+
+| Window | Round24 @ 5.9 | Round25 12-leg @ 9.0 |
+|---|---|---|
+| 2023–2024 | 56.1%, breach **6.0% ❌** | **66.5%, 3.3% ✓** |
+| 2025 | 60.1%, 3.2% ✓ | **62.9%, 4.3% ✓** |
+
+The incumbent Round24 itself breaches the max-loss guard on 2023–24 — its published
+57.04 hides window fragility. On equal footing the Round25 12-leg composition beats it
+in BOTH windows with clean guards. Both compositions were built with in-sample
+processes, so the RELATIVE superiority is the robust statement; the absolute forward
+pass probability is realistically ~55–65%, not 67.7.
+
+## Final recommendation (Claude)
+
+Deploy candidate = **the Round25 12-leg composition at scale 8.5–9.0** (8.5 for guard
+margin: 59.8% on 2025 at 3.3% breach; 9.0 for yield: 62.9% at 4.3%). It dominates the
+incumbent in every window at clean guards, contains the freshest evidence legs
+(12958/12989/12990/10911), and its RISK_FIXED translation is documented above (scale
+8.5 ⇒ Σ $8,500 = 8.5% worst-case simultaneous). Expect a real-world pass probability
+in the high-50s to low-60s — materially better than the incumbent, not the in-sample 68.
+Decision remains OWNER's (challenge fee = money decision); no urgency.
+
 ## Recommended next steps
 
 1. OWNER reviews this package (after the Sunday chart session — no rush, challenge
