@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12110
 ; ea_slug:      mtf-stochastic-confirmation
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1.00
-; build_hash:   948ce36253827c4bb0bf803441b47edc3845ee975e4927959e10133e086f5b0b
+; build_hash:   f46359e43ceae740d1b7d5968ac91096660c891cc53ccc89474c7365c69fc5d3
 ; author:       Development
 ; date:         2026-05-26
 ;==========================================================

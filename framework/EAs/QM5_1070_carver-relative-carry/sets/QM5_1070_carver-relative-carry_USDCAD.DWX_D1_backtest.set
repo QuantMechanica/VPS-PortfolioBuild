@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        1070
 ; ea_slug:      carver-relative-carry
@@ -10,7 +10,7 @@
 ; magic_slot:   8
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   99ae00954785d3a05a575dadcffa01fd25f06d20d723763b4ee7b27c216a3433
 ; author:       Development
 ; date:         2026-06-14
 ;==========================================================

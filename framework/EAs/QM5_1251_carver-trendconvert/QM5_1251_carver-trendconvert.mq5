@@ -146,8 +146,8 @@ double Strategy_EwmaVolatility(const string symbol, const int shift)
 
    for(int i = shift + period - 1; i >= shift; --i)
      {
-      const double c0 = iClose(symbol, PERIOD_D1, i);
-      const double c1 = iClose(symbol, PERIOD_D1, i + 1);
+      const double c0 = iClose(symbol, PERIOD_D1, i);     // perf-allowed: D1 closed-bar conversion loop.
+      const double c1 = iClose(symbol, PERIOD_D1, i + 1); // perf-allowed: D1 closed-bar conversion loop.
       if(c0 <= 0.0 || c1 <= 0.0)
          return 0.0;
       const double r = (c0 - c1) / c1;
@@ -176,7 +176,7 @@ double Strategy_EMA(const string symbol, const int period, const int shift)
    double ema = 0.0;
    for(int i = seed_shift + p - 1; i >= seed_shift; --i)
      {
-      const double close = iClose(symbol, PERIOD_D1, i);
+      const double close = iClose(symbol, PERIOD_D1, i); // perf-allowed: D1 closed-bar EMA seed.
       if(close <= 0.0)
          return 0.0;
       ema += close;
@@ -186,7 +186,7 @@ double Strategy_EMA(const string symbol, const int period, const int shift)
    const double alpha = 2.0 / ((double)p + 1.0);
    for(int i = seed_shift - 1; i >= shift; --i)
      {
-      const double close = iClose(symbol, PERIOD_D1, i);
+      const double close = iClose(symbol, PERIOD_D1, i); // perf-allowed: D1 closed-bar EMA update.
       if(close <= 0.0)
          return 0.0;
       ema = alpha * close + (1.0 - alpha) * ema;
@@ -196,7 +196,7 @@ double Strategy_EMA(const string symbol, const int period, const int shift)
 
 double Strategy_Forecast(const string symbol, const int shift)
   {
-   const double close = iClose(symbol, PERIOD_D1, shift);
+   const double close = iClose(symbol, PERIOD_D1, shift); // perf-allowed: D1 closed-bar forecast input.
    if(close <= 0.0)
       return 0.0;
 
@@ -226,8 +226,8 @@ bool Strategy_ConversionSRForSymbol(const string symbol, double &sr)
 
    for(int shift = lookback; shift >= 1; --shift)
      {
-      const double c0 = iClose(symbol, PERIOD_D1, shift);
-      const double c1 = iClose(symbol, PERIOD_D1, shift + 1);
+      const double c0 = iClose(symbol, PERIOD_D1, shift);     // perf-allowed: D1 closed-bar conversion return.
+      const double c1 = iClose(symbol, PERIOD_D1, shift + 1); // perf-allowed: D1 closed-bar conversion return.
       if(c0 <= 0.0 || c1 <= 0.0)
          continue;
 
@@ -299,7 +299,7 @@ double Strategy_MedianSpreadPoints()
    for(int shift = 1; shift <= lookback; ++shift)
      {
       const long spread = iSpread(_Symbol, PERIOD_D1, shift);
-      if(spread <= 0)
+      if(spread < 0)
          continue;
       spreads[count] = (double)spread;
       ++count;
@@ -314,7 +314,7 @@ bool Strategy_SpreadAllowsEntry()
    if(strategy_spread_mult <= 0.0)
       return true;
    const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(current_spread <= 0)
+   if(current_spread < 0)
       return true;
    const double median_spread = Strategy_MedianSpreadPoints();
    if(median_spread <= 0.0)
@@ -349,7 +349,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = Strategy_SlotForCurrentSymbol();
    req.expiration_seconds = 0;
 
-   const datetime signal_bar = iTime(_Symbol, PERIOD_D1, 1);
+   const datetime signal_bar = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: D1 closed-bar signal latch.
    if(signal_bar <= 0 || signal_bar == g_last_entry_bar || signal_bar == g_last_exit_bar)
       return false;
    if(Strategy_HasOpenPosition())
@@ -400,7 +400,7 @@ void Strategy_ManageOpenPosition()
 
 bool Strategy_ExitSignal()
   {
-   const datetime signal_bar = iTime(_Symbol, PERIOD_D1, 1);
+   const datetime signal_bar = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: D1 closed-bar signal latch.
    if(signal_bar <= 0 || signal_bar == g_last_exit_bar || signal_bar == g_last_exit_check_bar)
       return false;
    g_last_exit_check_bar = signal_bar;

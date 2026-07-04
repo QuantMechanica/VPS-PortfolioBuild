@@ -1,23 +1,24 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
-; ea_id:        1070
-; ea_slug:      carver-relative-carry
+; ea_id:        10938
+; ea_slug:      grimes-accept-high
 ; ea_version:   v5.0
-; set_version:  s20260614-001
-; symbol:       NZDJPY.DWX
-; timeframe:    D1
-; environment:  backtest
+; set_version:  s20260704-stress-harsh
+; symbol:       NDX.DWX
+; timeframe:    H1
+; environment:  q06_stress_harsh
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   ca6ff23c60ebbea43c2f59a662a0869eaeaae80d028c28a4458ad52510b8b0be
+; build_hash:   7f29066c59860e21fbac9689af03acaf4cd19b7a3f2e932d620c9b0e632c0dcc
 ; author:       Development
-; date:         2026-06-14
+; date:         2026-07-04
 ;==========================================================
 qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
