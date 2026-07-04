@@ -59,6 +59,19 @@ Rollback: original 13 presets remain in place untouched (plus dated backup
 `C:\QM\deploy\VariantB_reweight_2026-07-03\preset_backup\`); reload per chart; detach the 3
 new EAs.
 
+
+## Saturday prep log (2026-07-04, Claude — OWNER-authorized cleanup)
+
+- ✅ Full backup: 41 presets + 14 EA binaries → `C:\QM\deploy\D2d_S3_2026-07-04\pre_sunday_backup\`
+- ✅ Cleanup executed: 26 obsolete presets deleted (13 originals + 13 Variant-B-v1); ONLY the
+  15 `*_d2d_s3_live.set` remain in T_Live Presets; post-cleanup SHA 15/15 identical to staged.
+- ✅ OWNER guide written: `C:\QM\deploy\D2d_S3_2026-07-04\ANLEITUNG_SONNTAG.md`
+  (note: 11132 preset filename carries a wrong slug, content verified — match by magic).
+- ✅ T_Live post-reboot autostart verified: `QM_T_Live_AtLogon` + `FactoryON_AtLogon` enabled.
+- Controlled VPS reboot Saturday afternoon (LSM/session repair; market closed; no Factory_OFF
+  needed — plain reboot uses the designed autologon recovery chain). 10940 binary deletion
+  deferred until after Sunday chart detach.
+
 ## Sign-off
 
 - Package recommendation (S3): Claude, 2026-07-04, on evidence D2D_COMPOSITE_PACKAGE_2026-07-03
