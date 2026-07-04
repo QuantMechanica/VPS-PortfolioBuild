@@ -567,5 +567,128 @@ class Q08DurableSleeveStreamTests(unittest.TestCase):
         )
 
 
+class HostSymbolFromSetfileTests(unittest.TestCase):
+    """Tests for aggregate._host_symbol_from_setfile.
+
+    Basket EAs carry a logical composite symbol (e.g.
+    QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1) that does not exist in MT5's
+    market watch. The setfile header records the physical MT5 symbol the tester
+    must run on as '; host_symbol: <sym>'. The helper must extract it and the
+    baseline runner must pass it as -Symbol.
+    """
+
+    def _write_setfile(self, tmp: str, content: str, *, bom: bool = False) -> Path:
+        p = Path(tmp) / "test.set"
+        if bom:
+            p.write_bytes(b"\xef\xbb\xbf" + content.encode("utf-8"))
+        else:
+            p.write_text(content, encoding="utf-8")
+        return p
+
+    def test_header_present_returns_host_symbol(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            setfile = self._write_setfile(tmp, (
+                ";=====\n"
+                "; host_symbol:  GBPJPY.DWX\n"
+                "; timeframe:    D1\n"
+                "strategy_z_lookback_d1=60\n"
+            ))
+            result = aggregate._host_symbol_from_setfile(setfile, "COMPOSITE_FALLBACK")
+        self.assertEqual(result, "GBPJPY.DWX")
+
+    def test_header_absent_returns_fallback(self) -> None:
+        # Single-symbol EA setfile — no host_symbol line at all.
+        with tempfile.TemporaryDirectory() as tmp:
+            setfile = self._write_setfile(tmp, "; symbol: EURUSD.DWX\nx=1\n")
+            result = aggregate._host_symbol_from_setfile(setfile, "EURUSD.DWX")
+        self.assertEqual(result, "EURUSD.DWX")
+
+    def test_unreadable_file_returns_fallback(self) -> None:
+        missing = Path("/nonexistent_path_for_test/setfile.set")
+        result = aggregate._host_symbol_from_setfile(missing, "FALLBACK.DWX")
+        self.assertEqual(result, "FALLBACK.DWX")
+
+    def test_bom_file_works(self) -> None:
+        # Real setfiles are generated with utf-8-sig; the BOM must not confuse the parser.
+        with tempfile.TemporaryDirectory() as tmp:
+            setfile = self._write_setfile(tmp, "; host_symbol: AUDJPY.DWX\nx=1\n", bom=True)
+            result = aggregate._host_symbol_from_setfile(setfile, "COMPOSITE_FALLBACK")
+        self.assertEqual(result, "AUDJPY.DWX")
+
+    def test_tolerates_no_space_after_semicolon(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            setfile = self._write_setfile(tmp, ";host_symbol:USDJPY.DWX\nx=1\n")
+            result = aggregate._host_symbol_from_setfile(setfile, "FALLBACK")
+        self.assertEqual(result, "USDJPY.DWX")
+
+    def test_case_insensitive_key(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            setfile = self._write_setfile(tmp, "; HOST_SYMBOL: XAUUSD.DWX\nx=1\n")
+            result = aggregate._host_symbol_from_setfile(setfile, "FALLBACK")
+        self.assertEqual(result, "XAUUSD.DWX")
+
+    def test_run_baseline_passes_host_symbol_to_mt5_for_basket_ea(self) -> None:
+        """_run_baseline_for_trades must pass -Symbol=host_symbol (physical), not the composite."""
+        with tempfile.TemporaryDirectory() as tmp:
+            baseline = (Path(tmp)
+                        / "QM5_12772_demo_QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1_D1_backtest.set")
+            baseline.write_text(
+                "; host_symbol:  GBPJPY.DWX\nstrategy_z_lookback_d1=60\n",
+                encoding="utf-8",
+            )
+            calls: list[list[str]] = []
+
+            def fake_run(args, **_kwargs):
+                calls.append([str(a) for a in args])
+                return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+            with patch("subprocess.run", side_effect=fake_run), \
+                 patch.object(aggregate, "_latest_baseline_summary", return_value=None), \
+                 patch.object(aggregate, "_latest_structured_qm_log", return_value=None):
+                aggregate._run_baseline_for_trades(
+                    12772,
+                    "QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1",
+                    terminal="T2",
+                    baseline_setfile=baseline,
+                )
+
+        self.assertEqual(len(calls), 1)
+        args = calls[0]
+        sym_idx = args.index("-Symbol")
+        self.assertEqual(
+            args[sym_idx + 1], "GBPJPY.DWX",
+            "-Symbol must be the physical host_symbol, not the composite",
+        )
+
+    def test_run_baseline_uses_symbol_unchanged_when_no_host_symbol_header(self) -> None:
+        """Single-symbol EAs (no host_symbol header) receive the original symbol — zero regression."""
+        with tempfile.TemporaryDirectory() as tmp:
+            baseline = Path(tmp) / "QM5_11476_demo_USDJPY.DWX_H1_backtest.set"
+            baseline.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+            calls: list[list[str]] = []
+
+            def fake_run(args, **_kwargs):
+                calls.append([str(a) for a in args])
+                return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+            with patch("subprocess.run", side_effect=fake_run), \
+                 patch.object(aggregate, "_latest_baseline_summary", return_value=None), \
+                 patch.object(aggregate, "_latest_structured_qm_log", return_value=None):
+                aggregate._run_baseline_for_trades(
+                    11476,
+                    "USDJPY.DWX",
+                    terminal="T2",
+                    baseline_setfile=baseline,
+                )
+
+        self.assertEqual(len(calls), 1)
+        args = calls[0]
+        sym_idx = args.index("-Symbol")
+        self.assertEqual(
+            args[sym_idx + 1], "USDJPY.DWX",
+            "Without host_symbol header, original symbol must pass through unchanged",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -279,6 +279,26 @@ def _latest_structured_qm_log(ea_id: int, symbol: str, terminal: str | None = No
     return best[2] if best is not None else None
 
 
+def _host_symbol_from_setfile(setfile: Path, fallback: str) -> str:
+    """Read '; host_symbol:' from the setfile header. Basket EAs carry a logical
+    composite symbol that does not exist in MT5's market watch; the host_symbol
+    is the physical MT5 symbol the baseline backtest must run on.
+
+    Tolerant parser: strips leading/trailing whitespace, case-insensitive on the
+    key, accepts both ';host_symbol:' and '; host_symbol :' spacings.
+    Single-symbol EAs have no such header line — the fallback is returned unchanged,
+    so this helper is a zero-regression no-op for non-basket EAs.
+    """
+    try:
+        for line in setfile.read_text(encoding="utf-8-sig").splitlines():
+            m = re.match(r";\s*host_symbol\s*:\s*(\S+)", line.strip(), flags=re.IGNORECASE)
+            if m:
+                return m.group(1)
+    except (OSError, UnicodeDecodeError):
+        pass
+    return fallback
+
+
 def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None,
                              baseline_setfile: Path | None = None) -> dict:
     """Run ONE clean full-history backtest so the EA emits its TRADE_CLOSED stream to
@@ -302,7 +322,7 @@ def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None,
     args = [
         "pwsh.exe", "-NoProfile", "-File",
         str(repo_root / "framework" / "scripts" / "run_smoke.ps1"),
-        "-EAId", str(ea_id), "-Expert", expert, "-Symbol", symbol,
+        "-EAId", str(ea_id), "-Expert", expert, "-Symbol", _host_symbol_from_setfile(baseline, symbol),
         "-Year", "2025", "-FromDate", "2017.01.01", "-ToDate", "2025.12.31",
         "-Terminal", terminal or "T1", "-Period", period,
         "-Runs", "1", "-MinTrades", "1", "-Model", "4",
