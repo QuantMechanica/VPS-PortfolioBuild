@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        9575
 ; ea_slug:      pring-kst-monthly
@@ -10,7 +10,7 @@
 ; magic_slot:   8
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   fd25591d444ecf5caef341527a9a8e3f78b314150ef523cac9549cc69dfa93fd
+; build_hash:   3b95b5cc312d4c6f010777075da7e2a0ba3915af8a952aeb2bec7cee31f7245d
 ; author:       Development
 ; date:         2026-07-02
 ;==========================================================

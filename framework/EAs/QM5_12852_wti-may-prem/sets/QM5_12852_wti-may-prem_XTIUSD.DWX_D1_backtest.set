@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12852
 ; ea_slug:      wti-may-prem
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f59e0d79441bae65412d8187cd7b7b9dfa8b52b484ce5bc8ce8d6a6df9ed2fa8
+; build_hash:   21ba558ffad3514a3100f7cb7b16a71fd833e957cde64b018e27048f497dcdee
 ; author:       Development
 ; date:         2026-07-01
 ;==========================================================

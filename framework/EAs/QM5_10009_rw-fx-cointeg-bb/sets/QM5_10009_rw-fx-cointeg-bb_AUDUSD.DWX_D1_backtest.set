@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        10009
 ; ea_slug:      rw-fx-cointeg-bb
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3891386d249a80f26b00fdde22e1e07d3aa7eca8509b88781f356def6a086069
+; build_hash:   e1cf11cd0b5d53423967a44bc3124f3479c0fbd31162910b5b830f3f91fa0224
 ; author:       Development
 ; date:         2026-05-19
 ;==========================================================
