@@ -11,6 +11,7 @@ sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 
 from portfolio.commission import CommissionModel  # noqa: E402
 from portfolio.prop_challenge_optimizer import (  # noqa: E402
+    _filter_daily_pnl,
     build_artifact,
     build_round24_candidate_screen_artifact,
     combine_daily_pnl,
@@ -331,6 +332,104 @@ class PropChallengeOptimizerTests(unittest.TestCase):
         self.assertEqual(artifact["phase"], "Q_PROP_ROUND24_ADMISSION_SCREEN")
         self.assertEqual(artifact["candidate"]["key"], "QM5_11:GBPUSD.DWX")
         self.assertIn("deltas_vs_round24", artifact)
+
+    def test_filter_daily_pnl_inclusive_bounds(self) -> None:
+        mapping = {
+            dt.date(2024, 1, 1): 1.0,
+            dt.date(2024, 1, 2): 2.0,
+            dt.date(2024, 1, 3): 3.0,
+            dt.date(2024, 1, 4): 4.0,
+            dt.date(2024, 1, 5): 5.0,
+        }
+        result = _filter_daily_pnl(mapping, dt.date(2024, 1, 2), dt.date(2024, 1, 4))
+        self.assertEqual(
+            result,
+            {
+                dt.date(2024, 1, 2): 2.0,
+                dt.date(2024, 1, 3): 3.0,
+                dt.date(2024, 1, 4): 4.0,
+            },
+        )
+
+    def test_filter_daily_pnl_none_bounds_passthrough(self) -> None:
+        mapping = {dt.date(2024, 1, day): float(day) for day in range(1, 6)}
+        self.assertEqual(_filter_daily_pnl(mapping, None, None), dict(mapping))
+        result_from = _filter_daily_pnl(mapping, dt.date(2024, 1, 3), None)
+        self.assertEqual(
+            set(result_from.keys()),
+            {dt.date(2024, 1, 3), dt.date(2024, 1, 4), dt.date(2024, 1, 5)},
+        )
+        result_to = _filter_daily_pnl(mapping, None, dt.date(2024, 1, 2))
+        self.assertEqual(
+            set(result_to.keys()),
+            {dt.date(2024, 1, 1), dt.date(2024, 1, 2)},
+        )
+
+    def test_filter_daily_pnl_thin_window_raises(self) -> None:
+        """Restricting any leg to < 30 calendar days must raise ValueError."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            lead = root / "lead.htm"
+            candidate = root / "candidate.htm"
+            round24 = root / "round24.json"
+            # Reports span Jan 2024 (31 calendar days); filter to 14 days triggers the guard.
+            self._write_report(
+                lead,
+                "EURUSD.DWX",
+                [(dt.date(2024, 1, d), 100.0, 1.0) for d in range(1, 5)],
+                start=dt.date(2024, 1, 1),
+                end=dt.date(2024, 1, 31),
+            )
+            self._write_report(
+                candidate,
+                "GBPUSD.DWX",
+                [(dt.date(2024, 1, d), 100.0, 1.0) for d in range(1, 5)],
+                start=dt.date(2024, 1, 1),
+                end=dt.date(2024, 1, 31),
+            )
+            write_artifact(
+                {
+                    "keys": ["QM5_1:EURUSD.DWX"],
+                    "weights": [1.0],
+                    "source_reports": {"QM5_1:EURUSD.DWX": str(lead)},
+                    "runs_per_seed": 5,
+                    "seeds": [0],
+                    "block_days": 1,
+                    "phase_horizon_days": 4,
+                    "starting_capital": 100000.0,
+                    "preset": "FTMO_2STEP",
+                    "results": [
+                        {
+                            "risk_scale": 1.0,
+                            "summary": {
+                                "min_robust_pass_probability_pct": 0.0,
+                                "mean_robust_pass_probability_pct": 0.0,
+                                "max_daily_loss_breach_probability_pct": 0.0,
+                                "max_max_loss_breach_probability_pct": 4.0,
+                                "mean_target_not_reached_probability_pct": 100.0,
+                            },
+                        }
+                    ],
+                },
+                round24,
+            )
+            with self.assertRaises(ValueError) as ctx:
+                build_round24_candidate_screen_artifact(
+                    candidate_ea_id="QM5_2",
+                    candidate_symbol="GBPUSD.DWX",
+                    candidate_report=candidate,
+                    round24_artifact_path=round24,
+                    candidate_weights=[0.1],
+                    risk_scales=[1.0],
+                    runs=5,
+                    block_days=1,
+                    seed=0,
+                    seeds=[0],
+                    phase_horizon_days=4,
+                    pnl_from_date=dt.date(2024, 1, 1),
+                    pnl_to_date=dt.date(2024, 1, 14),  # only 14 days — must raise
+                )
+            self.assertIn("30", str(ctx.exception))
 
     def _write_stream(self, common_dir: Path, ea_id: int, symbol: str, net_of_cost: list[float]) -> None:
         stream_dir = common_dir / "QM" / "q08_trades"

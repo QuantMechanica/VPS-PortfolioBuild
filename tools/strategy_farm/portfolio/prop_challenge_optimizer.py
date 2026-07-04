@@ -219,6 +219,24 @@ def parse_mt5_report_daily_pnl(
     }
 
 
+def _filter_daily_pnl(
+    mapping: Mapping[dt.date, float],
+    from_date: dt.date | None,
+    to_date: dt.date | None,
+) -> dict[dt.date, float]:
+    """Return a copy of *mapping* keeping only dates within [from_date, to_date].
+
+    None bounds are treated as open (no restriction on that side).
+    """
+    if from_date is None and to_date is None:
+        return dict(mapping)
+    return {
+        day: value
+        for day, value in mapping.items()
+        if (from_date is None or day >= from_date) and (to_date is None or day <= to_date)
+    }
+
+
 def build_round24_candidate_screen_artifact(
     *,
     candidate_ea_id: str,
@@ -239,6 +257,8 @@ def build_round24_candidate_screen_artifact(
     force_confirm: bool = False,
     max_daily_breach_probability_pct: float = DEFAULT_MAX_DAILY_BREACH_SCREEN_PCT,
     max_max_loss_breach_probability_pct: float = DEFAULT_MAX_LOSS_BREACH_SCREEN_PCT,
+    pnl_from_date: dt.date | None = None,
+    pnl_to_date: dt.date | None = None,
 ) -> dict[str, Any]:
     round24 = _load_json(round24_artifact_path)
     candidate_key = _parse_label(f"{candidate_ea_id}:{candidate_symbol}")
@@ -260,7 +280,12 @@ def build_round24_candidate_screen_artifact(
         if not report:
             raise ValueError(f"Round24 source report missing for {label}")
         parsed = parse_mt5_report_daily_pnl(Path(report), expected_symbol=key[1])
-        daily_by_key[key] = parsed["daily_pnl"]
+        filtered = _filter_daily_pnl(parsed["daily_pnl"], pnl_from_date, pnl_to_date)
+        if (pnl_from_date is not None or pnl_to_date is not None) and len(filtered) < 30:
+            raise ValueError(
+                f"pnl window filter leaves {len(filtered)} days (< 30) for lead leg {label}"
+            )
+        daily_by_key[key] = filtered
         source_report_stats[label] = _compact_report_parse(parsed)
 
     resolved_candidate_report = candidate_report or find_latest_candidate_report(
@@ -271,7 +296,12 @@ def build_round24_candidate_screen_artifact(
         resolved_candidate_report,
         expected_symbol=candidate_key[1],
     )
-    daily_by_key[candidate_key] = candidate_parse["daily_pnl"]
+    candidate_filtered = _filter_daily_pnl(candidate_parse["daily_pnl"], pnl_from_date, pnl_to_date)
+    if (pnl_from_date is not None or pnl_to_date is not None) and len(candidate_filtered) < 30:
+        raise ValueError(
+            f"pnl window filter leaves {len(candidate_filtered)} days (< 30) for candidate {candidate_label}"
+        )
+    daily_by_key[candidate_key] = candidate_filtered
 
     screen_runs = int(runs if runs is not None else round24.get("runs_per_seed") or 5000)
     screen_block_days = int(block_days if block_days is not None else round24.get("block_days") or DEFAULT_BLOCK_DAYS)
@@ -376,6 +406,8 @@ def build_round24_candidate_screen_artifact(
     return {
         "phase": "Q_PROP_ROUND24_ADMISSION_SCREEN",
         "basis": "native_mt5_report_htm_closing_deals",
+        "pnl_from_date": pnl_from_date.isoformat() if pnl_from_date is not None else None,
+        "pnl_to_date": pnl_to_date.isoformat() if pnl_to_date is not None else None,
         "generated_at_utc": dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat(),
         "preset": preset_name,
         "round24_artifact": str(round24_artifact_path),
@@ -1166,6 +1198,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--trim-key", default=None, help="EA:SYMBOL key to trim when --trim-mode single is used.")
     parser.add_argument("--confirm-always", action="store_true")
     parser.add_argument("--force-confirm", action="store_true", dest="confirm_always")
+    parser.add_argument(
+        "--pnl-from-date",
+        default=None,
+        help="Filter PnL to dates >= YYYY-MM-DD (inclusive). Applies to all lead and candidate legs.",
+    )
+    parser.add_argument(
+        "--pnl-to-date",
+        default=None,
+        help="Filter PnL to dates <= YYYY-MM-DD (inclusive). Applies to all lead and candidate legs.",
+    )
     parser.add_argument("--all-streams", action="store_true")
     parser.add_argument(
         "--keys",
@@ -1221,6 +1263,8 @@ def main(argv: list[str] | None = None) -> int:
             force_confirm=args.confirm_always,
             max_daily_breach_probability_pct=args.max_daily_breach_probability_pct,
             max_max_loss_breach_probability_pct=args.max_max_loss_breach_probability_pct,
+            pnl_from_date=dt.date.fromisoformat(args.pnl_from_date) if args.pnl_from_date else None,
+            pnl_to_date=dt.date.fromisoformat(args.pnl_to_date) if args.pnl_to_date else None,
         )
         out_path = args.out
         if out_path == DEFAULT_OPTIMIZER_ARTIFACT:
