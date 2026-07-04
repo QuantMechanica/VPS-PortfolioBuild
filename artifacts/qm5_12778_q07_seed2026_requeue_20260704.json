@@ -1,0 +1,41 @@
+{
+  "action": "requeue_existing_q07_work_item",
+  "backup_path": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12778_q07_seed2026_requeue_20260704_030201.sqlite",
+  "branch": "agents/board-advisor",
+  "created_work_items": [],
+  "ea": "QM5_12778",
+  "evidence_doc": "docs/ops/evidence/2026-07-04_qm5_12778_q07_seed2026_requeue.md",
+  "farm_active_count_after": 5,
+  "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+  "manual_mt5_backtest_launched": false,
+  "phase": "Q07",
+  "post_state": {
+    "attempt_count": 0,
+    "claimed_by": null,
+    "pending_active_q07_rows_for_ea": 1,
+    "status": "pending",
+    "verdict": null,
+    "work_item_id": "fc554e0c-e66e-486a-a83d-c7301e67c615"
+  },
+  "pre_state": {
+    "latest_q07_reason": "seed 2026 invalid_summary:BARS_ZERO,EMPTY_EXPERT,EMPTY_SYMBOL,HISTORY_CONTEXT_INVALID,INCOMPLETE_RUNS,M0_1970_PERIOD,NO_HISTORY,RUN_STATUS_INVALID",
+    "status": "done",
+    "verdict": "INFRA_FAIL",
+    "work_item_id": "fc554e0c-e66e-486a-a83d-c7301e67c615"
+  },
+  "queue_command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12778 --phase Q07",
+  "requeued_work_items": [
+    "fc554e0c-e66e-486a-a83d-c7301e67c615"
+  ],
+  "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+  "safety": {
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false
+  },
+  "timestamp_utc": "2026-07-04T01:02:04Z"
+}
