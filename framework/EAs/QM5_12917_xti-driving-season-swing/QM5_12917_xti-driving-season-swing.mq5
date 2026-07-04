@@ -129,8 +129,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Strategy_HasOpenPosition())
       return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
-   const double close2 = iClose(_Symbol, PERIOD_D1, 2);
+   const double close1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: single closed D1 bar read; called once per new bar behind QM_IsNewBar gate.
+   const double close2 = iClose(_Symbol, PERIOD_D1, 2); // perf-allowed: single closed D1 bar read at shift 2; called once per new bar behind QM_IsNewBar gate.
    const double sma1 = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 1, PRICE_CLOSE);
    const double sma2 = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 2, PRICE_CLOSE);
    if(close1 <= 0.0 || close2 <= 0.0 || sma1 <= 0.0 || sma2 <= 0.0)
@@ -157,7 +157,7 @@ bool Strategy_ExitSignal()
   {
    const int magic = QM_FrameworkMagic();
    const int day_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 1);
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
+   const double close1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: single closed D1 bar read for exit cross; called once per new bar behind QM_IsNewBar gate.
    const double sma1 = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 1, PRICE_CLOSE);
    if(day_key <= 0 || close1 <= 0.0 || sma1 <= 0.0)
       return false;
