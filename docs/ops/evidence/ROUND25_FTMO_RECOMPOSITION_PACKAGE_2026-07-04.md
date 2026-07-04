@@ -105,6 +105,30 @@ whose report ran at a different RISK_FIXED gets its factor corrected accordingly
 Note: worst-case 9.0% simultaneous full-loss < FTMO 10% max-loss limit even before
 correlation effects; the sim puts the realistic breach probability at 4.24%.
 
+## Window-split stability check (caveat 1 addressed; 5000×5 per window)
+
+Input-window filter added to the screen CLI (`--pnl-from-date/--pnl-to-date`, commit
+`9f2792c5c`, SELF_REVIEW-flagged for codex spot-check). Same 12-leg composition:
+
+| Window | min_robust | max-loss breach | target-miss | confirm scale |
+|---|---|---|---|---|
+| Full 2023–2025 | 67.72% | 4.24% | 28.0% | ~9.0 |
+| 2023–2024 | 68.70% | 4.10% | 27.5% | 9.5 (auto-selected) |
+| 2025 only | 65.34% | 5.16% | 29.3% | 9.5 (auto-selected) |
+
+Reading: the edge is not concentrated in any year — the weakest slice (2025) still sits
+**8.3pp above the Round24 bar**. Mild ~3.4pp shrinkage vs the stronger years = normal
+fit-shrinkage. The single guard breach (5.16% on 2025) occurred at the AUTO-SELECTED
+scale 9.5, not the canonical 9.0; pinned-scale confirms (9.0 both windows + 8.5 margin
+variant for 2025) are running and will be appended before the OWNER decision. If 2025 @
+9.0 still grazes the guard, the conservative deployment is scale 8.5 (RISK_FIXED factors
+scale down proportionally: Σ = $8,500 = 8.5% worst-case simultaneous).
+
+Honesty note: this is a stability/shrinkage check, not true OOS — leg selection saw the
+full window. True OOS (re-select on 2023–24 only, confirm on 2025) is possible with the
+same tooling (driver + date filter) if OWNER wants the gold-standard number before
+committing challenge capital.
+
 ## Recommended next steps
 
 1. OWNER reviews this package (after the Sunday chart session — no rush, challenge
