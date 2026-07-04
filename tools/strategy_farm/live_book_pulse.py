@@ -26,6 +26,10 @@ DEFAULT_OUTPUT_JSON = Path(r"D:\QM\reports\state\live_book_pulse.json")
 DEFAULT_APPEND_LOG = Path(r"D:\QM\reports\state\live_book_pulse.log")
 DEFAULT_ALARM_LOG = Path(r"D:\QM\strategy_farm\state\health_alarms.log")
 DEFAULT_TAIL_BYTES = 4 * 1024 * 1024
+OPEN_POSITION_JOURNAL_STALE_MINUTES = 120
+NETWORK_SCAN_HEARTBEAT_STALE_MINUTES = 390
+TODAY_LOG_FIRST_SCAN_GRACE_HOUR = 2
+TODAY_LOG_FIRST_SCAN_GRACE_MINUTE = 15
 
 ACCOUNT_RE = re.compile(r"'(?P<account>\d{6,})'")
 DATE_FILE_RE = re.compile(r"(?P<date>\d{8})\.log$", re.IGNORECASE)
@@ -41,6 +45,7 @@ SYNC_RE = re.compile(
     r"terminal synchronized with .*?: (?P<positions>\d+) positions, (?P<orders>\d+) orders",
     re.IGNORECASE,
 )
+NETWORK_SCAN_RE = re.compile(r"\bscanning network finished\b", re.IGNORECASE)
 AUTOTRADING_RE = re.compile(
     r"\b(auto[\s-]?trading|automated trading|algo(?:rithmic)? trading)\b",
     re.IGNORECASE,
@@ -654,33 +659,145 @@ def parse_ea_logs(
     }
 
 
-def heartbeat(terminal_roots: list[Path], now: datetime) -> dict[str, Any]:
+def latest_network_scan(journal_files: list[Path], tail_bytes: int) -> dict[str, Any] | None:
+    latest: dict[str, Any] | None = None
+    for path in sorted(journal_files):
+        try:
+            text = read_tail(path, tail_bytes)
+        except OSError:
+            continue
+        for line in text.splitlines():
+            if not NETWORK_SCAN_RE.search(line):
+                continue
+            terminal_ts = terminal_timestamp_from_line(path, line)
+            file_write = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
+            row = {
+                "file": str(path),
+                "ts_terminal": terminal_ts,
+                "file_write_utc": iso_utc(file_write),
+                "line": line_excerpt(line),
+            }
+            if latest is None:
+                latest = row
+                continue
+            latest_key = (str(latest.get("ts_terminal") or ""), str(latest.get("file_write_utc") or ""))
+            row_key = (str(row.get("ts_terminal") or ""), str(row.get("file_write_utc") or ""))
+            if row_key > latest_key:
+                latest = row
+    return latest
+
+
+def coerce_int(value: Any) -> int:
+    try:
+        return int(value or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def open_exposure_count(terminal: dict[str, Any] | None, ea_logs: dict[str, Any] | None) -> int:
+    sync_positions = coerce_int(((terminal or {}).get("last_terminal_sync") or {}).get("positions"))
+    tm_positions = coerce_int((ea_logs or {}).get("active_trade_manager_entry_count"))
+    return max(sync_positions, tm_positions)
+
+
+def broker_date_yyyymmdd(now: datetime) -> str:
+    return datetime.fromtimestamp(now.timestamp()).strftime("%Y%m%d")
+
+
+def after_first_broker_scan(now: datetime) -> bool:
+    local_now = datetime.fromtimestamp(now.timestamp())
+    return (local_now.hour, local_now.minute) >= (
+        TODAY_LOG_FIRST_SCAN_GRACE_HOUR,
+        TODAY_LOG_FIRST_SCAN_GRACE_MINUTE,
+    )
+
+
+def minutes_since_terminal_timestamp(ts_terminal: Any, now: datetime) -> float | None:
+    if not ts_terminal:
+        return None
+    try:
+        terminal_time = datetime.fromisoformat(str(ts_terminal))
+    except ValueError:
+        return None
+    local_now = datetime.fromtimestamp(now.timestamp())
+    age_seconds = (local_now - terminal_time).total_seconds()
+    if age_seconds < -300:
+        return None
+    return round(max(age_seconds, 0) / 60.0, 2)
+
+
+def heartbeat(
+    terminal_roots: list[Path],
+    now: datetime,
+    terminal: dict[str, Any] | None = None,
+    ea_logs: dict[str, Any] | None = None,
+    tail_bytes: int = DEFAULT_TAIL_BYTES,
+) -> dict[str, Any]:
     journal_files: list[Path] = []
     for root in terminal_roots:
         journal_files.extend((root / "logs").glob("*.log"))
     journal_files = [p for p in journal_files if p.is_file() and DATE_FILE_RE.search(p.name)]
+    market_hours = is_market_hours(now)
+    exposure_count = open_exposure_count(terminal, ea_logs)
+    today_log_name = f"{broker_date_yyyymmdd(now)}.log"
+    today_log_exists = any(p.name.lower() == today_log_name.lower() for p in journal_files)
+    after_first_scan = after_first_broker_scan(now)
     if not journal_files:
         return {
             "latest_journal_file": None,
             "latest_journal_write_utc": None,
             "minutes_since_last_journal_write": None,
-            "market_hours_mon_fri": is_market_hours(now),
+            "latest_network_scan": None,
+            "minutes_since_last_network_scan_write": None,
+            "market_hours_mon_fri": market_hours,
+            "open_exposure_count": exposure_count,
+            "today_broker_log": today_log_name,
+            "today_broker_log_exists": False,
+            "after_first_broker_scan": after_first_scan,
             "alarm": True,
             "alarm_reason": "no_terminal_journal_files",
+            "alarm_reasons": ["no_terminal_journal_files"],
         }
 
     latest = max(journal_files, key=lambda p: p.stat().st_mtime)
     latest_write = datetime.fromtimestamp(latest.stat().st_mtime, tz=timezone.utc)
     age_minutes = round((now - latest_write).total_seconds() / 60.0, 2)
-    market_hours = is_market_hours(now)
-    alarm = bool(market_hours and age_minutes > 120)
+    latest_scan = latest_network_scan(journal_files, tail_bytes)
+    scan_age_minutes = None
+    scan_age_source = None
+    if latest_scan and latest_scan.get("file_write_utc"):
+        scan_age_minutes = minutes_since_terminal_timestamp(latest_scan.get("ts_terminal"), now)
+        scan_age_source = "terminal_ts" if scan_age_minutes is not None else None
+        if scan_age_minutes is None:
+            scan_write = datetime.fromisoformat(str(latest_scan["file_write_utc"]).replace("Z", "+00:00"))
+            scan_age_minutes = round((now - scan_write).total_seconds() / 60.0, 2)
+            scan_age_source = "file_write_utc"
+
+    alarm_reasons: list[str] = []
+    if exposure_count > 0 and age_minutes > OPEN_POSITION_JOURNAL_STALE_MINUTES:
+        alarm_reasons.append("journal_stale_gt_120m_open_position")
+    if latest_scan is None:
+        alarm_reasons.append("network_scan_heartbeat_missing")
+    elif scan_age_minutes is not None and scan_age_minutes > NETWORK_SCAN_HEARTBEAT_STALE_MINUTES:
+        alarm_reasons.append("network_scan_stale_gt_390m")
+    if after_first_scan and not today_log_exists:
+        alarm_reasons.append("today_broker_journal_missing_after_first_scan")
+
     return {
         "latest_journal_file": str(latest),
         "latest_journal_write_utc": iso_utc(latest_write),
         "minutes_since_last_journal_write": age_minutes,
+        "latest_network_scan": latest_scan,
+        "minutes_since_last_network_scan_write": scan_age_minutes,
+        "network_scan_age_source": scan_age_source,
         "market_hours_mon_fri": market_hours,
-        "alarm": alarm,
-        "alarm_reason": "journal_stale_gt_120m_market_hours" if alarm else None,
+        "open_exposure_count": exposure_count,
+        "today_broker_log": today_log_name,
+        "today_broker_log_exists": today_log_exists,
+        "after_first_broker_scan": after_first_scan,
+        "alarm": bool(alarm_reasons),
+        "alarm_reason": ";".join(alarm_reasons) if alarm_reasons else None,
+        "alarm_reasons": alarm_reasons,
     }
 
 
@@ -693,15 +810,31 @@ def build_alarms(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
     alarms: list[dict[str, Any]] = []
     hb = snapshot.get("heartbeat", {})
     if hb.get("alarm"):
-        alarms.append(
-            {
-                "class": "live_book",
-                "severity": "WARN",
-                "metric": "journal_age_minutes",
-                "value": hb.get("minutes_since_last_journal_write"),
-                "detail": hb.get("alarm_reason"),
-            }
-        )
+        reasons = hb.get("alarm_reasons") or [hb.get("alarm_reason")]
+        for reason in reasons:
+            metric = "journal_age_minutes"
+            value = hb.get("minutes_since_last_journal_write")
+            if reason == "no_terminal_journal_files":
+                metric = "terminal_journal_files"
+                value = 0
+            elif reason == "network_scan_heartbeat_missing":
+                metric = "network_scan_heartbeat"
+                value = None
+            elif reason == "network_scan_stale_gt_390m":
+                metric = "network_scan_age_minutes"
+                value = hb.get("minutes_since_last_network_scan_write")
+            elif reason == "today_broker_journal_missing_after_first_scan":
+                metric = "today_broker_log"
+                value = hb.get("today_broker_log")
+            alarms.append(
+                {
+                    "class": "live_book",
+                    "severity": "WARN",
+                    "metric": metric,
+                    "value": value,
+                    "detail": reason,
+                }
+            )
     terminal = snapshot.get("terminal_journals", {})
     if terminal.get("loaded_sleeve_count") != 13:
         alarms.append(
@@ -796,7 +929,7 @@ def build_snapshot(args: argparse.Namespace) -> dict[str, Any]:
             "path": str(magic_csv),
             "rows_loaded": len(magic_registry),
         },
-        "heartbeat": heartbeat(terminal_roots, now),
+        "heartbeat": heartbeat(terminal_roots, now, terminal, ea_logs, args.max_tail_bytes),
         "terminal_config": {
             "common_ini": config_files,
             "experts_enabled_config": next(
