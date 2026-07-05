@@ -226,8 +226,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry_price <= 0.0)
       return false;
 
+   // Read stop distance via the pooled QM_ATR reader, then derive the SL price
+   // from that value (see QM_StopRules.mqh QM_StopATRFromValue). Do not call
+   // the QM_StopATR(...) convenience wrapper here: its internal lazy-lookup
+   // path does not reliably back-calculate under the tester and was the
+   // confirmed root cause of a WTI/D1 ATR-stop trade-generation defect class
+   // fixed fleet-wide 2026-07-05/06 (see EA lessons across the sister sleeves).
+   const double atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(atr_last <= 0.0)
+      return false;
+
    req.type = QM_SELL;
-   req.sl = QM_StopATR(_Symbol, req.type, entry_price, strategy_atr_period, strategy_atr_sl_mult);
+   req.sl = QM_StopATRFromValue(_Symbol, req.type, entry_price, atr_last, strategy_atr_sl_mult);
    if(req.sl <= 0.0)
       return false;
 
