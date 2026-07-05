@@ -3,7 +3,7 @@
 ; ea_id:        10553
 ; ea_slug:      mql5-rsioma
 ; ea_version:   v5.0
-; set_version:  s20260701-001
+; set_version:  s20260705-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
@@ -12,23 +12,25 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-07-01
+; date:         2026-07-05
 ;==========================================================
+qm_ea_id=10553
 qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10553_mql5-rsioma.md
+strategy_rsi_period=14
+strategy_signal_period=9
+strategy_support_level=30.0
+strategy_resistance_level=70.0
+strategy_use_signal_cross=true
+strategy_use_level_break=true
+strategy_atr_period=14
+strategy_atr_sl_mult=2.0
+strategy_reward_r_multiple=1.5
+strategy_ma_filter_enabled=false
+strategy_ma_fast_period=50
+strategy_ma_slow_period=200
+strategy_max_spread_points=0

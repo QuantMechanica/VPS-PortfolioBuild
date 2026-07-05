@@ -3,8 +3,8 @@
 **EA ID:** QM5_10169
 **Slug:** rsi-div-trend
 **Source:** d3c009d7-a8d6-5251-b572-4777b207c2b9
-**Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Author of this spec:** Claude
+**Last revised:** 2026-07-05
 
 ---
 
@@ -98,3 +98,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | 959c0238-9f7e-4ba7-9db8-5a36098bac5d |
+| v2 | 2026-07-05 | Rework: auto-rework ZERO_TRADE_RECURRENT trigger (rework_attempt_count=3, 16/20 P2 MIN_TRADES_NOT_MET). OnTick news-gate reordered below management/exit per 2026-07-02 binding audit finding (was pre-dating that fix). Entry/exit divergence logic left unchanged: independent Python replay of the exact pivot/divergence math against `D:\QM\mt5\T_Export\MQL5\Files\{SP500,NDX,WS30}.DWX_D1.csv` across 2019-2025 (21 symbol-years) reproduces the low frequency organically (avg ~2.7 trades/yr/symbol, range 0-5) — no coding defect found, the card's literal mechanical rule (exact-bar pivot confirmation + RSI<>50 + EMA hold) is simply a low-frequency edge on trending index D1 data, well under the card's optimistic `expected_trades_per_year_per_symbol: 12` (inherited from the source's single-stock XOM vectorized demo). See build_result open_questions for the frequency evidence and recommended next step (P3 sweep of card-listed pivot_order/EMA-pair alternatives, or low-freq Q02 track, before RETIRE). | 91cccdc9-8167-4e6b-a646-94f9fd68edc2 |

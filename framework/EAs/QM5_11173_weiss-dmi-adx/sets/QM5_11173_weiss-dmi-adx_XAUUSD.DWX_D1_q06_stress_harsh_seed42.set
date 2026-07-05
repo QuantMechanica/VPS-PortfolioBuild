@@ -1,23 +1,24 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        10791
-; ea_slug:      tv-stc-tt
+; ea_id:        11173
+; ea_slug:      weiss-dmi-adx
 ; ea_version:   v5.0
-; set_version:  s20260605-001
-; symbol:       GBPUSD.DWX
-; timeframe:    H1
-; environment:  backtest
-; magic_slot:   1
+; set_version:  s20260705-stress-harsh
+; symbol:       XAUUSD.DWX
+; timeframe:    D1
+; environment:  q06_stress_harsh
+; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   bb5ea04f32ab3d5b5566f3d0145e8b2ab0dca3ceca0a502b1c522670e094043a
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-05
+; date:         2026-07-05
 ;==========================================================
-qm_magic_slot_offset=1
+qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3

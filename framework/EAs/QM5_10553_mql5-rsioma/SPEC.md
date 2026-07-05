@@ -3,14 +3,14 @@
 **EA ID:** QM5_10553
 **Slug:** `mql5-rsioma`
 **Source:** `b8b5125a-c67f-5bbc-baff-33456e08f5b2` (see `strategy-seeds/sources/b8b5125a-c67f-5bbc-baff-33456e08f5b2/`)
-**Author of this spec:** Codex
-**Last revised:** 2026-05-29
+**Author of this spec:** Claude
+**Last revised:** 2026-07-05
 
 ---
 
 ## 1. Strategy Logic
 
-The EA reads an RSIOMA-style oscillator on closed H4 bars and builds a signal line from a short average of that oscillator. It opens a long position when the oscillator crosses upward through its signal line or through the resistance level, and it opens a short position when the oscillator crosses downward through its signal line or through the support level. A long is closed on the opposite bearish oscillator break, and a short is closed on the opposite bullish oscillator break. Every entry also carries the P2 baseline ATR(14) 2.0 hard stop and a 1.5R target.
+The EA reads an RSIOMA-style oscillator on closed bars (chart timeframe, `_Period`) and builds a signal line from a short average of that oscillator. It opens a long position when the oscillator crosses upward through its signal line or through the resistance level, and it opens a short position when the oscillator crosses downward through its signal line or through the support level. A long is closed on the opposite bearish oscillator break, and a short is closed on the opposite bullish oscillator break. Every entry also carries the P2 baseline ATR(14) 2.0 hard stop and a 1.5R target. All oscillator/signal/ATR/MA-filter reads are computed once per closed bar and cached (`AdvanceState_OnNewBar`); the per-tick path only compares cached scalars — see v2 revision note.
 
 ---
 
@@ -18,7 +18,6 @@ The EA reads an RSIOMA-style oscillator on closed H4 bars and builds a signal li
 
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
-| `strategy_signal_tf` | `PERIOD_H4` | H1-H6 sweep target | Timeframe used for RSIOMA, signal-line, optional MA filter, and ATR reads. |
 | `strategy_rsi_period` | `14` | 2-100 | Period used for the RSIOMA oscillator read. |
 | `strategy_signal_period` | `9` | 1-50 | Number of oscillator samples averaged into the signal line. |
 | `strategy_support_level` | `30.0` | 0-50 | Support level crossed downward for short entries. |
@@ -58,7 +57,7 @@ The EA reads an RSIOMA-style oscillator on closed H4 bars and builds a signal li
 |---|---|
 | Base timeframe | `H4` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (framework default) |
+| Bar gating | `QM_IsNewBar()` latched once per tick, drives `AdvanceState_OnNewBar()` cache refresh |
 
 ---
 
@@ -102,3 +101,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-05-29 | Initial build from card | 4d2776da-2fba-4cec-986b-c1d67141b86f |
+| v2 | 2026-07-05 | Auto-rework STRATEGY_HANG_RECURRENT (5/9 Q02 samples ACTIVE_TIMEOUT on XAUUSD/GBPUSD, no report ever produced). Root-caused to `Strategy_ExitSignal()` recomputing the RSIOMA/signal average uncached on every tick (~40 QM_RSI buffer reads/tick, no `QM_IsNewBar` gate). Rebuilt in place per DL-069: all oscillator/ATR/MA reads now cached once per closed bar in `AdvanceState_OnNewBar()`; per-tick hooks read only cached scalars. Dropped the separate `strategy_signal_tf` input (now reads chart `_Period` directly, matching how `gen_setfile.ps1` already emits one setfile per symbol x TF) to remove a latent TF-mismatch risk. Strategy mechanics unchanged. | aa90ea66-11fd-4add-8774-a8aaff554b90 |
