@@ -119,3 +119,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-05 | Initial build from card | c4bf56de-656d-4344-adb4-5e7360e2f4f5 |
+| v2 | 2026-07-05 | Rebuild-in-place (DL-069): fixed OnTick news-gate ordering per the 2026-07-02 audit finding (news blackout must gate only the entry path, below Strategy_ManageOpenPosition/Strategy_ExitSignal). No strategy-logic change. Smoke on EURUSD.DWX H1 2024 produced 1 deterministic trade vs. card_expected=110/yr (min_trades_required=5 basket-scaled floor) -- MIN_TRADES_NOT_MET, flagged for review. | 157c7730-c5ee-4142-82f5-a8608df47e4f |
