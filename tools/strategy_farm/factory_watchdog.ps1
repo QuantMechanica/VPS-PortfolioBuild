@@ -545,7 +545,7 @@ elseif ($factoryEnabled -and $lsmDegraded) {
     # Emit a diagnostic record and take NO destructive or heal action; condition should
     # self-clear on the next run once LSM recovers.
     $action = 'lsm_degraded_suspected'
-    $detail = "qwinsta_error=$qwinstaError worker_daemons_alive=$nWorkers; session not confirmed lost — no destructive action taken"
+    $detail = "qwinsta_error=$qwinstaError worker_daemons_alive=$nWorkers; session not confirmed lost - no destructive action taken"
 }
 elseif (-not $factoryEnabled) {
     $action = 'noop_factory_off'
@@ -698,7 +698,10 @@ else {
     # detection for the audit record only.
     $tLiveRunning = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
                       Where-Object { $_.CommandLine -match 'T_Live' }).Count -gt 0
-    if ($activeMultisymCount -gt 0) {
+    if ($dispatchStalled -and $activeMultisymCount -gt 0) {
+        # Multisym guard: dispatch stall needs clean-slate FactoryON (kills terminals), but
+        # an active basket/multisym backtest must not be interrupted. Defer the full reset;
+        # a pure worker shortage with an active multisym is safe to dedupe-spawn below.
         $action = 'heal_deferred_active_multisym'
         $detail += " | active multisymbol/basket work_item guard: refusing full reset while protected=$($activeProtection.protected_terminals -join ',') active=$activeProtectionDetail"
     } elseif ($dispatchStalled) {

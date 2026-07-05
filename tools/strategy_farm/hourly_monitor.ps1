@@ -72,6 +72,38 @@ foreach ($c in $fails) {
     $escalations += $esc
 }
 
+# 3b. WATCHDOG STALE-READ DETECTION (FIX: 2026-07-05).
+# The watchdog runs every 5 min and appends a 'heartbeat' action each cycle.
+# If the most recent heartbeat is older than 30 min, the watchdog task itself
+# has stopped cycling (crashed, disabled, task degraded). Report WATCHDOG-STALE
+# with the timestamp of the last heartbeat so OWNER can investigate.
+$wdLog = 'D:\QM\reports\state\factory_watchdog.jsonl'
+try {
+    if (Test-Path $wdLog) {
+        $lastHb = $null
+        $tail = @(Get-Content $wdLog -Tail 20 -ErrorAction SilentlyContinue)
+        foreach ($ln in ($tail | Sort-Object -Descending)) {
+            try {
+                $rec = $ln | ConvertFrom-Json
+                if ($rec.action -eq 'heartbeat' -and $rec.ts) { $lastHb = $rec.ts; break }
+            } catch {}
+        }
+        if ($lastHb) {
+            $hbDt = [datetime]::ParseExact($lastHb, 'yyyy-MM-ddTHH:mm:ssZ',
+                [Globalization.CultureInfo]::InvariantCulture,
+                ([Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal))
+            $staleMins = [int]([datetime]::UtcNow - $hbDt).TotalMinutes
+            if ($staleMins -gt 30) {
+                $escalations += "WATCHDOG-STALE:last_heartbeat=${lastHb} age=${staleMins}min; watchdog task may be frozen - check QM_StrategyFarm_FactoryWatchdog_15min LastTaskResult"
+            }
+        } else {
+            $escalations += "WATCHDOG-STALE:no_heartbeat_found_in_tail20; watchdog may never have run"
+        }
+    } else {
+        $escalations += "WATCHDOG-STALE:log_missing=${wdLog}"
+    }
+} catch { $escalations += "watchdog_stale_check_error:$_" }
+
 # 4. record (rolling JSONL); keep only last 500 lines
 $record = [ordered]@{
     ts          = $now

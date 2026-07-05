@@ -102,3 +102,42 @@ Related: `docs/ops/SCHEDULED_TASKS_INVENTORY.md`,
 `project_qm_d_drive_tester_cache_2026-06-02` (memory),
 `feedback_codex_quota_throttle_2026-06-21` (memory),
 `project_qm_no_history_root_cause_2026-06-20` (memory).
+
+## 6. Worker-shortage-only heal — dedupe-spawn, not clean-slate (2026-07-04/05)
+
+**Pattern:** T5 worker daemon died after a basket-EA timeout; watchdog detected
+`workers < MinWorkers` but `real_stall=false, dispatch_stalled=false` (session alive,
+no wedge). Prior behaviour: `heal_deferred_active_multisym` (multisym guard) kept
+deferring the full FactoryON_AtLogon reset for hours. Fixed behaviour: pure worker
+shortage with a live session gets a surgical `QM_StrategyFarm_WorkerDedupe` spawn
+instead of a clean-slate reset.
+
+**How the watchdog decides:**
+
+| Condition | Watchdog action |
+|---|---|
+| `dispatch_stalled=true` (0 active, many pending, 0 term64) | `healed_via_factoryon` — clean-slate FactoryON_AtLogon |
+| `real_stall=true` (2-run confirmed; 0 verdicts, low metatester64) | `healed_full_reset` — FactoryON_AtLogon |
+| `workers < MinWorkers`, no stall | `worker_dedupe_heal` — QM_StrategyFarm_WorkerDedupe |
+
+**QM_StrategyFarm_WorkerDedupe** — registered by `install_hygiene_and_lsm_tasks.ps1`:
+- Principal: `qm-admin / Interactive / Highest` (mirrors FactoryON_AtLogon)
+- Action: `python start_terminal_workers.py --repo-root C:/QM/repo --farm-root D:/QM/strategy_farm --dedupe`
+- No trigger; started on-demand by the SYSTEM watchdog via `Start-ScheduledTask`
+- The interactive principal is mandatory: SYSTEM spawns yield session-0 workers whose
+  terminal64 children instant-exit 0xC0000142 (2026-06-24 broken-respawn class)
+
+**Why --dedupe not full reset:**
+- `--dedupe` fills only the missing worker slots; running workers and in-flight
+  terminals are untouched — backtests are not interrupted
+- The clean-slate path (FactoryON_AtLogon) kills every terminal64 first, which
+  interrupts active backtests during the warm-up gap
+
+**Reinstall if task is missing:**
+```powershell
+cd C:\QM\repo
+.\tools\strategy_farm\install_hygiene_and_lsm_tasks.ps1
+```
+
+Evidence: watchdog `action=worker_dedupe_heal`, `workers_before`, `workers_after`
+fields in `D:\QM\reports\state\factory_watchdog.jsonl`.

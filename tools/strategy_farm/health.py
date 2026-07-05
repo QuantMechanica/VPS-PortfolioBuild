@@ -1544,6 +1544,54 @@ def chk_stranded_ea_improvements() -> dict:
                   "Register the improved slug (active) in magic_numbers.csv or remove the un-promoted dir (DL-069).")
 
 
+_LSM_HEALTH_FILE = Path(r"D:\QM\reports\state\lsm_health.json")
+
+
+def chk_lsm_session_health() -> dict:
+    """Session-infrastructure health from QM_StrategyFarm_LsmHealthProbe (6h cadence).
+
+    Surfaces the probe verdict ('ok'/'degrading'/'critical') and flags a stale probe
+    (>8h since last run) as WARN.  Probe checks: qwinsta exit code (error 87 = LSM
+    degradation), three QM task LastTaskResult+cadence-lag (FactoryWatchdog included),
+    Win32_LogonSession presence, CreateProcess viability.
+    """
+    if not _LSM_HEALTH_FILE.exists():
+        return _check("lsm_session_health", "WARN", "missing", "ok",
+                      "lsm_health.json missing — LsmHealthProbe has not run yet",
+                      "Register+run: install_hygiene_and_lsm_tasks.ps1 -RunLsmNow")
+    try:
+        data = json.loads(_LSM_HEALTH_FILE.read_text(encoding="utf-8-sig"))
+    except Exception as exc:
+        return _check("lsm_session_health", "WARN", "unreadable", "ok",
+                      f"lsm_health.json unreadable: {exc!r}", "")
+
+    probed_at = _parse_utc_ts(data.get("probed_at"))
+    age_h = round((_utc_now() - probed_at).total_seconds() / 3600, 1) if probed_at else None
+    if age_h is None or age_h > 8:
+        return _check("lsm_session_health", "WARN", age_h, 8,
+                      f"lsm_health.json stale ({age_h}h old) — LsmHealthProbe may have stopped",
+                      "Check QM_StrategyFarm_LsmHealthProbe LastTaskResult")
+
+    verdict = str(data.get("verdict") or "unknown")
+    qwinsta = data.get("qwinsta_ok")
+    tasks_failing = data.get("tasks_failing_count", 0)
+    tasks_checked = data.get("tasks_checked", 0)
+    logon_ok = data.get("logon_session_ok")
+    spawn_ok = data.get("spawn_ok")
+    qwinsta_err = data.get("qwinsta_error")
+    detail = (f"verdict={verdict} qwinsta_ok={qwinsta} qwinsta_error={qwinsta_err} "
+              f"tasks_failing={tasks_failing}/{tasks_checked} "
+              f"logon_session_ok={logon_ok} spawn_ok={spawn_ok} age={age_h}h")
+    if verdict == "critical":
+        return _check("lsm_session_health", "FAIL", verdict, "ok", detail,
+                      "LSM is critically degraded; expect 0x800710E0 / qwinsta error 87. "
+                      "Plan a controlled hygiene reboot (Saturday 07:00 automation or manual).")
+    if verdict == "degrading":
+        return _check("lsm_session_health", "WARN", verdict, "ok", detail,
+                      "LSM degradation in progress — monitor; hygiene reboot planned Saturday.")
+    return _check("lsm_session_health", "OK", verdict, "ok", detail, "")
+
+
 ALL_CHECKS = [
     ("stranded_ea_improvements", chk_stranded_ea_improvements, False),
     ("codex_review_fail_rate", chk_codex_review_fail_rate, True),  # needs con
@@ -1566,6 +1614,7 @@ ALL_CHECKS = [
     ("p_pass_stagnation",      chk_p_pass_stagnation,      True),
     ("phase_infra_graveyard",  chk_phase_infra_graveyard,  True),
     ("quota_snapshot_fresh",   chk_quota_snapshot_fresh,   False),
+    ("lsm_session_health",     chk_lsm_session_health,     False),
     ("codex_auth_broken",      chk_codex_auth_broken,      True),
 ]
 
