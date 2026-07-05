@@ -3,16 +3,16 @@
 ; ea_id:        12896
 ; ea_slug:      xng-oct-turn-long
 ; ea_version:   v5.0
-; set_version:  s20260702-001
+; set_version:  s20260705-001
 ; symbol:       XNGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2ed31231320ad8ca5b1f6caf697f7ee8b6863a072e95c12245d49c9afde345d2
+; build_hash:   pending
 ; author:       Development
-; date:         2026-07-02
+; date:         2026-07-05
 ;==========================================================
 qm_ea_id=12896
 qm_magic_slot_offset=0

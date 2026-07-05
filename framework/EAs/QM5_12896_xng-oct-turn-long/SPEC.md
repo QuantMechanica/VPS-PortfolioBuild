@@ -3,8 +3,8 @@
 **EA ID:** QM5_12896
 **Slug:** `xng-oct-turn-long`
 **Source:** `706222b7-2d60-5fdb-8dab-d722d3c96f92`
-**Author of this spec:** Codex
-**Last revised:** 2026-07-02
+**Author of this spec:** Claude
+**Last revised:** 2026-07-05
 
 ## 1. Strategy Logic
 
@@ -68,3 +68,4 @@ touched by this build.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-02 | Initial build from card | Enqueue Q02 |
+| v2 | 2026-07-05 | Rebuild in place: canonical OnTick order (news gate moved below trade management/exit per 2026-07-02 audit rule) + replaced hand-rolled iTime week-key gating with `QM_CalendarPeriodKey`/weekly cadence primitive | Task 36d865fc-4887-4a79-bb9a-a08141e6463f |
