@@ -70,3 +70,4 @@ touched by this build.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-01 | Initial build from card | build commit pending |
+| v2 | 2026-07-05 | Rebuild-in-place (DL-069): fixed OnTick news-gate ordering (2026-07-02 audit rule -- management/exit must run before the news gate, not after) and removed a per-call raw-indicator-handle re-derivation of ATR in the SL calc (`QM_StopATR` -> `QM_StopATRFromValue` reusing the already-pooled `QM_ATR` reading). Root-caused the WTI calendar-fade-family "1 trade ever, then permanent silence" defect (Q02 work item fa3c2903, FAIL/MIN_TRADES_NOT_MET, trades=1 over 6.5yr) to the `QM_StopRules.mqh` raw-handle pattern flagged by `BUILD_CHECK_DWX_ADVISORY_DWX_LAZY_INDICATOR_HANDLE`/`_INDICATOR_RELEASE`; smoke re-run (task 71d97b86) confirmed the fix: 23 trades in May 2024 alone vs the prior 1 trade across the full 2018-2024 history. | task_id 71d97b86-77aa-42f1-84bc-f40e273279ac |
