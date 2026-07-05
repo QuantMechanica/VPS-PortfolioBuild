@@ -74,8 +74,48 @@ is precisely what BOOK_GAP_SCAN_2026-07-05 says the book needs.
 **Cost:** ~23 stress re-runs (~30–90 min each, normal queue) + one small runner
 variant (cost-multiplier parameter in the Q05 stress-setfile generation).
 
+## ★ CORRECTION + EXECUTION (same evening, post-GO implementation check)
+
+**Spec-vs-implementation finding (major):** Q05 does NOT apply its documented
+stress. Evidence: the generated `*_q05_stress_medium.set` differs from baseline
+only in comment headers + `qm_stress_reject_probability=0.0000`; no `ENV=` input
+exists; `QM_Common.mqh` has no ENV/stress-cost handling; `run_stress_backtest`
+passes no commission/spread/slippage args to `run_smoke.ps1`; the only implemented
+stress mechanism framework-wide is Q06's trade-rejection RNG (`QM_Entry.mqh`).
+**Actual Q05 = gross full-history run on Q03 plateau-median params, PF>1.0 AND
+DD<15% AND ≥20 trades.** The "×2 costs" premise of the original shortlist above is
+therefore VOID: `pf_below_floor` fails are gross-unprofitable → NOT salvage
+material (incl. 12532, 10163, 11113 — withdrawn). Gate-integrity ticket filed
+(implement the documented stress OR re-ratify the spec — OWNER decision;
+hard-bounded item).
+
+**Corrected salvage class (survives the correction):** `dd_above_ceiling` deaths
+with gross PF > 1.0 — 45 items. The DD ceiling measures STANDALONE DD at fixed
+sizing; portfolio weighting scales it (DL-075/078 precedent: 8.10
+regime-catastrophe → portfolio-absorbed). Live precedent inside this very list:
+QM5_10700 + 10848 + 10494 (FTMO/Round25 basis) and QM5_10692 (DXZ sleeve) are all
+Q05-DD-fails trading live/validated via real-cost chains.
+
+**Executed wave 1 (OWNER GO 2026-07-05 chat „Go jetzt"):** 10 direct-to-Q08
+salvage work items (payload `salvage_lane=q05_dd_waiver`, `q06_q07_skipped=true`,
+`probation=true`, `priority_track=true`; Q05 FAIL verdicts left untouched;
+farmctl's cascade guard deliberately bypassed by documented INSERT — this doc +
+payload = the audit trail):
+10706/GBPUSD (PF 1.31/DD 25.4), 11125/WS30 (1.23/20.3), 12361/WS30 (1.23/28.3),
+11063/USDJPY (1.10/18.6), 10847/GDAXI (1.17/21.0), 10094/GDAXI (1.14/25.4),
+10916/SP500 (1.09/18.8), 10375/SP500 (1.08/26.0), 10566/XAU (1.08/23.4),
+10569/XAU (1.08/19.6). WS30 = a symbol in NO book today. 6 NDX candidates
+deferred (family saturated, Q09 would corr-reject). `trades_below_floor` deaths
+(8) = zero/near-zero-trade defect class → audit lane, not salvage.
+
+**Residual risk accepted:** Q06 trade-rejection robustness untested for salvage
+items (Q06/Q07 skipped — they re-test the same standalone-DD premise). Mitigation:
+probation weights + Q08 Davey sub-gates + Q09 admission remain the judges.
+
 ## Status
 
-- [ ] OWNER ratifies salvage lane (this doc = decision basis)
-- [ ] Claude implements 1.5× re-screen variant + enqueues shortlist
-- [ ] Results feed Q06+ cascade; admissions via normal Q09
+- [x] OWNER ratified salvage lane (2026-07-05 chat „Go jetzt")
+- [x] ~~1.5× re-screen~~ VOID (no cost stress exists to scale — see correction)
+- [x] Wave 1: 10 salvage Q08 items enqueued (IDs in farm_state, payload-marked)
+- [ ] Q08 results → Q09 admission (probation weights per proposal §4)
+- [ ] Gate-integrity decision: implement Q05 documented stress vs re-ratify spec
