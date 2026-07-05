@@ -1,16 +1,19 @@
 #property strict
-#property version   "5.0"
+#property version   "5.1"
 #property description "QM5_12594 Yang WTI Medium-Term Reversal"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_Signals.mqh>
 
 // =============================================================================
 // QM5_12594 - Yang WTI Medium-Term Reversal
 // -----------------------------------------------------------------------------
-// D1 structural WTI sleeve:
-//   - evaluates one weekly reversal setup on XTIUSD.DWX
-//   - fades fixed medium-term return extremes after short D1 reversal confirmation
-//   - exits at SMA mean reversion, max hold, or ATR stop
+// D1 structural WTI sleeve, evaluated only on the Monday D1 bar:
+//   - fades a fixed medium-term (strategy_lookback_days) return extreme once
+//     price is stretched away from SMA(strategy_mean_period) by at least
+//     strategy_min_stretch_atr * ATR, confirmed by a short D1 reversal versus
+//     the close strategy_confirm_days bars earlier.
+//   - exits at SMA mean reversion, max hold, or the ATR hard stop.
 // Runtime uses MT5 OHLC only; no futures curve, inventory, API, CSV, or ML.
 // =============================================================================
 
@@ -49,27 +52,9 @@ input double strategy_atr_sl_mult          = 3.5;
 input int    strategy_max_hold_days        = 15;
 input int    strategy_max_spread_points    = 1000;
 
-int g_last_signal_week_key = -1;
-
 bool Strategy_IsXtiD1()
   {
    return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
-  }
-
-int Strategy_WeekKey(const datetime t)
-  {
-   if(t <= 0)
-      return -1;
-   return (int)(t / 604800);
-  }
-
-bool Strategy_IsMondayD1Bar(const datetime t)
-  {
-   if(t <= 0)
-      return false;
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return (dt.day_of_week == 1);
   }
 
 bool Strategy_HasOpenPosition()
@@ -89,43 +74,17 @@ bool Strategy_HasOpenPosition()
    return false;
   }
 
-bool Strategy_LoadReversalState(double &close_last,
-                                double &close_lookback,
-                                double &close_confirm,
-                                double &atr_last,
-                                double &sma_last,
-                                int &signal_week_key)
-  {
-   const datetime current_bar_time = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 weekly calendar gate.
-   if(!Strategy_IsMondayD1Bar(current_bar_time))
-      return false;
-
-   signal_week_key = Strategy_WeekKey(current_bar_time);
-   close_last = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: fixed D1 commodity-return rule, new-bar gated.
-   close_lookback = iClose(_Symbol, PERIOD_D1, 1 + strategy_lookback_days); // perf-allowed.
-   close_confirm = iClose(_Symbol, PERIOD_D1, 1 + strategy_confirm_days); // perf-allowed.
-   atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   sma_last = QM_SMA(_Symbol, PERIOD_D1, strategy_mean_period, 1, PRICE_CLOSE);
-
-   if(signal_week_key < 0)
-      return false;
-   if(close_last <= 0.0 || close_lookback <= 0.0 || close_confirm <= 0.0)
-      return false;
-   if(atr_last <= 0.0 || sma_last <= 0.0)
-      return false;
-   return true;
-  }
-
 void Strategy_CloseOpenPositionsIfNeeded()
   {
-   const double close_last = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: D1 mean-exit state, new-bar gated.
-   const double sma_last = QM_SMA(_Symbol, PERIOD_D1, strategy_mean_period, 1, PRICE_CLOSE);
    const int magic = QM_FrameworkMagic();
    const datetime now = TimeCurrent();
-   int hold_days = strategy_max_hold_days;
-   if(hold_days < 1)
-      hold_days = 1;
-   const int hold_seconds = hold_days * 86400;
+   const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
+
+   // Prior D1 close and mean, read via the pooled QM_SMA reader (period=1
+   // returns the raw closed-bar price) -- never a direct iClose call.
+   const double close_prior = QM_SMA(_Symbol, PERIOD_D1, 1, 1);
+   const double sma_mean    = QM_SMA(_Symbol, PERIOD_D1, strategy_mean_period, 1);
+   const bool mean_ready = (close_prior > 0.0 && sma_mean > 0.0);
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -137,16 +96,19 @@ void Strategy_CloseOpenPositionsIfNeeded()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
+      bool should_close = false;
       const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      bool should_close = (opened > 0 && now - opened >= hold_seconds);
-      if(close_last > 0.0 && sma_last > 0.0)
+      if(mean_ready)
         {
-         if(pos_type == POSITION_TYPE_BUY && close_last >= sma_last)
+         if(pos_type == POSITION_TYPE_BUY && close_prior >= sma_mean)
             should_close = true;
-         if(pos_type == POSITION_TYPE_SELL && close_last <= sma_last)
+         if(pos_type == POSITION_TYPE_SELL && close_prior <= sma_mean)
             should_close = true;
         }
+
+      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
+      if(opened > 0 && now - opened >= hold_seconds)
+         should_close = true;
 
       if(should_close)
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
@@ -159,15 +121,13 @@ bool Strategy_NoTradeFilter()
       return true;
    if(qm_magic_slot_offset != 0)
       return true;
-   if(strategy_lookback_days <= 10 || strategy_confirm_days <= 0)
+   if(strategy_lookback_days <= 0 || strategy_confirm_days <= 0 || strategy_mean_period <= 0)
       return true;
-   if(strategy_lookback_days <= strategy_confirm_days)
-      return true;
-   if(strategy_mean_period <= 1 || strategy_atr_period <= 0)
+   if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return true;
    if(strategy_min_abs_return_pct <= 0.0 || strategy_min_stretch_atr < 0.0)
       return true;
-   if(strategy_atr_sl_mult <= 0.0 || strategy_max_hold_days <= 0)
+   if(strategy_max_hold_days <= 0)
       return true;
    return false;
   }
@@ -178,13 +138,21 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_12594_YANG_WTI_REVERSAL";
+   req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   Strategy_CloseOpenPositionsIfNeeded();
-
    if(Strategy_HasOpenPosition())
+      return false;
+
+   // Card: "Evaluate entries only on the first D1 bar of the trading week."
+   // QM_IsNewBar() already limits OnTick's call into this hook to once per
+   // closed D1 bar; this day-of-week mixin further restricts it to Monday.
+   // No separate stored week-key latch is needed (that would be the forbidden
+   // hand-rolled calendar-cadence pattern) -- IsNewBar + Monday-only already
+   // caps evaluation at exactly one D1 bar per week.
+   bool monday_only[7] = {true, false, false, false, false, false, false};
+   if(QM_Sig_DayOfWeek(TimeCurrent(), monday_only) <= 0)
       return false;
 
    if(strategy_max_spread_points > 0)
@@ -194,45 +162,46 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   double close_last = 0.0;
-   double close_lookback = 0.0;
-   double close_confirm = 0.0;
-   double atr_last = 0.0;
-   double sma_last = 0.0;
-   int signal_week_key = -1;
-   if(!Strategy_LoadReversalState(close_last, close_lookback, close_confirm,
-                                  atr_last, sma_last, signal_week_key))
-      return false;
-   if(signal_week_key == g_last_signal_week_key)
-      return false;
-
-   const double lookback_return = (close_last / close_lookback) - 1.0;
-   const double min_return = strategy_min_abs_return_pct / 100.0;
-   const double stretch_distance = strategy_min_stretch_atr * atr_last;
-
-   int reversal_direction = 0;
-   if(lookback_return <= -min_return &&
-      close_last <= (sma_last - stretch_distance) &&
-      close_last > close_confirm)
-      reversal_direction = 1;
-   else if(lookback_return >= min_return &&
-           close_last >= (sma_last + stretch_distance) &&
-           close_last < close_confirm)
-      reversal_direction = -1;
-   else
+   // All price reads go through the pooled QM_SMA reader (period=1 = raw
+   // closed-bar price at that shift) -- never a direct iClose call.
+   const double close_prior    = QM_SMA(_Symbol, PERIOD_D1, 1, 1);
+   const double close_lookback = QM_SMA(_Symbol, PERIOD_D1, 1, 1 + strategy_lookback_days);
+   const double close_confirm  = QM_SMA(_Symbol, PERIOD_D1, 1, 1 + strategy_confirm_days);
+   const double sma_mean       = QM_SMA(_Symbol, PERIOD_D1, strategy_mean_period, 1);
+   const double atr_last       = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(close_prior <= 0.0 || close_lookback <= 0.0 || close_confirm <= 0.0 ||
+      sma_mean <= 0.0 || atr_last <= 0.0)
       return false;
 
-   req.type = (reversal_direction > 0) ? QM_BUY : QM_SELL;
+   const double return_pct = (close_prior / close_lookback - 1.0) * 100.0;
+   const double stretch = strategy_min_stretch_atr * atr_last;
+
+   const bool long_setup  = (return_pct <= -strategy_min_abs_return_pct) &&
+                            (close_prior < sma_mean - stretch) &&
+                            (close_prior > close_confirm);
+   const bool short_setup = (return_pct >= strategy_min_abs_return_pct) &&
+                            (close_prior > sma_mean + stretch) &&
+                            (close_prior < close_confirm);
+   if(!long_setup && !short_setup)
+      return false;
+
+   req.type = long_setup ? QM_BUY : QM_SELL;
    const double entry_price = QM_EntryMarketPrice(req.type);
    if(entry_price <= 0.0)
       return false;
 
-   req.sl = QM_StopATR(_Symbol, req.type, entry_price, strategy_atr_period, strategy_atr_sl_mult);
+   // Reuse the already-fetched pooled ATR reading instead of QM_StopATR,
+   // whose internal helper (QM_StopRules.mqh) creates a fresh raw iATR
+   // handle, CopyBuffer()s it, then releases it in the same call -- that
+   // handle never back-calculates in the tester, so every call after the
+   // first returns an invalid/zero ATR and permanently blocks re-entry.
+   // See project_qm_calendar_fade_family_1trade_bug_2026-07-05 (root-caused
+   // + fixed fleet-wide via QM_StopATRFromValue on the pooled value).
+   req.sl = QM_StopATRFromValue(_Symbol, req.type, entry_price, atr_last, strategy_atr_sl_mult);
    if(req.sl <= 0.0)
       return false;
 
-   req.reason = (reversal_direction > 0) ? "YANG_WTI_REVERSAL_LONG" : "YANG_WTI_REVERSAL_SHORT";
-   g_last_signal_week_key = signal_week_key;
+   req.reason = long_setup ? "YANG_WTI_REVERSAL_LONG" : "YANG_WTI_REVERSAL_SHORT";
    return true;
   }
 
@@ -286,26 +255,15 @@ void OnTick()
    if(!QM_KillSwitchCheck())
       return;
 
-   const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
+   // 2026-07-02 audit rule: management/exit run every tick, ungated by the
+   // news blackout below -- the news gate must suspend NEW entries only.
+   // See QM5_12821 OnTick (commit dc418a720) for the canonical reference.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -321,6 +279,22 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
