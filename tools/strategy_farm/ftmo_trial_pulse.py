@@ -32,6 +32,9 @@ DAILY_LIMIT_PCT = 5.0     # FTMO daily loss limit
 TOTAL_LIMIT_PCT = 10.0    # FTMO max loss limit
 DAILY_WARN_PCT = 3.0      # early warning thresholds
 TOTAL_WARN_PCT = 6.0
+DD_FLOOR_PCT = 8.0        # H2 book floor: write book-scoped halt signal (gated by flag)
+BOOK_DD_SIGNAL = Path(r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal"
+                      r"\Common\Files\QM\halt\book_ftmo_r25\portfolio_dd.signal")
 
 EXPECTED_MAGICS = {
     114760002, 109110003, 129580000, 106920005, 108480002, 107000003,
@@ -142,6 +145,22 @@ def main() -> int:
             alarms.append(f"daily_loss_{day_loss_pct:.2f}pct_vs_limit_{DAILY_LIMIT_PCT}")
     else:
         total_dd_pct = day_loss_pct = None
+
+    # H2 total-DD floor (KILLSWITCH_HALT_CHANNEL_FIX_2026-07-05): when ARMED and
+    # book DD reaches the floor, write the book-scoped portfolio_dd signal. EAs
+    # honor it only after the qm_ks_book_tag rollout (challenge rebuild) — until
+    # then this is inert by design. Arm via the flag file, never by default.
+    floor_flag = Path(r"D:\QM\reports\state\FTMO_DD_FLOOR_ARMED.flag")
+    if floor_flag.exists() and total_dd_pct is not None and total_dd_pct >= DD_FLOOR_PCT:
+        try:
+            BOOK_DD_SIGNAL.parent.mkdir(parents=True, exist_ok=True)
+            if not BOOK_DD_SIGNAL.exists():
+                BOOK_DD_SIGNAL.write_text(f"{total_dd_pct:.2f}\n", encoding="ascii")
+                alarms.append(f"dd_floor_signal_written:{total_dd_pct:.2f}pct")
+            else:
+                alarms.append("dd_floor_signal_active")
+        except OSError as exc:
+            alarms.append(f"dd_floor_signal_write_failed:{exc}")
 
     verdict = "ALARM" if alarms else ("WARN" if warns else "OK")
     out = {
