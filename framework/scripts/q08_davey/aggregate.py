@@ -620,13 +620,12 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
                 common_log.unlink()
         except OSError:
             pass
-        # Also clear the host-symbol path so stale data does not survive a fresh baseline.
-        if host_log is not None:
-            try:
-                if host_log.exists():
-                    host_log.unlink()
-            except OSError:
-                pass
+        # NOTE: we intentionally do NOT delete host_log here. For basket EAs the host-symbol
+        # file is written only by a full-history OnDeinit, so pre-existing data is always a
+        # valid full-history run. If the fresh baseline succeeds, the EA overwrites it with
+        # updated data. If the baseline times out (long cold-cache multi-symbol runs), the
+        # pre-existing file provides the correct fallback. Deleting it before a potentially
+        # timed-out baseline discards the only valid trade stream — the 0-trade INVALID loop.
         baseline_run = _run_baseline_for_trades(ea_id, symbol, terminal, baseline_setfile)
         if baseline_run and not baseline_run.get("baseline_report_path"):
             retry_summary = _latest_baseline_summary(
