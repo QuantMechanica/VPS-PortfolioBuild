@@ -6,11 +6,12 @@
 #  missing workers, in THIS session, so the visible-mode factory keeps
 #  producing without a manual "Factory ON" click.
 #
-#  MUST run in the interactive (autologon) session, RunLevel=Highest -
-#  a SYSTEM/session-0 task cannot spawn visible terminals (that is the
-#  exact reason the hourly_monitor only ESCALATES "factory down" and
-#  Repair_Hourly/TerminalWorkers are ENFORCE_DISABLED). This watchdog is
-#  the in-session complement to that session-0 triage monitor.
+#  RUNS AS SYSTEM (QM_StrategyFarm_FactoryWatchdog_15min, ServiceAccount) —
+#  it must therefore NEVER spawn workers/terminals directly: a SYSTEM/
+#  session-0 child spawn yields workers whose terminal64 die 0xC0000142
+#  (2026-06-24 broken-respawn class). ALL healing is delegated via
+#  Start-ScheduledTask to interactive qm-admin tasks (FactoryON_AtLogon
+#  for clean-slate, QM_StrategyFarm_WorkerDedupe for surgical spawns).
 #
 #  Deterministic + respects OWNER's ON/OFF:
 #    - OWNER intent is read from the FACTORY tasks' enable-state
@@ -37,6 +38,17 @@ $log  = 'D:\QM\reports\state\factory_watchdog.jsonl'
 $stallDumpRequest = 'D:\QM\reports\state\STALLDUMP_REQUEST'
 $stallDumpDir = 'D:\QM\reports\state\worker_stalldump'
 . (Join-Path $PSScriptRoot 'qm_tasks.manifest.ps1')
+
+# FACTORY_OFF.flag master switch: owner/claude sets it to suspend all automation.
+# Watchdog must no-op immediately so it cannot resurrect the factory.
+$factoryOffFlagPath = 'D:\QM\strategy_farm\state\FACTORY_OFF.flag'
+if (Test-Path $factoryOffFlagPath) {
+    $offTs = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+    $offRecord = [ordered]@{ ts=$offTs; action='noop_factory_off_flag'; detail='FACTORY_OFF.flag present; watchdog suspended' } | ConvertTo-Json -Compress
+    try { Add-Content -Path $log -Value $offRecord -Encoding UTF8 } catch {}
+    Write-Output $offRecord
+    exit 0
+}
 
 $now    = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
 $action = 'none'
@@ -114,6 +126,146 @@ function ConvertFrom-UtcStamp {
     } catch { return $null }
 }
 
+function Get-ActiveBacktestProtection {
+    param([string]$PythonExe)
+
+    $probe = @'
+import json
+import os
+import sqlite3
+import time
+
+db = r"D:/QM/strategy_farm/state/farm_state.sqlite"
+now = time.time()
+recent_cutoff = now - 600
+out = {
+    "active_count": 0,
+    "active_multisym_count": 0,
+    "active_recent_progress_count": 0,
+    "protected_terminals": [],
+    "details": [],
+}
+
+
+def payload_dict(text):
+    try:
+        value = json.loads(text or "{}")
+        return value if isinstance(value, dict) else {}
+    except Exception:
+        return {}
+
+
+def is_multisym(symbol, payload):
+    if str(payload.get("portfolio_scope") or "").strip().lower() == "basket":
+        return True
+    if str(payload.get("basket_manifest") or "").strip():
+        return True
+    try:
+        if int(payload.get("basket_symbol_count") or 0) > 1:
+            return True
+    except Exception:
+        pass
+    return "BASKET" in str(symbol or "").upper()
+
+
+def path_recent(path):
+    try:
+        return os.path.exists(path) and os.path.getmtime(path) >= recent_cutoff
+    except Exception:
+        return False
+
+
+def tree_recent(path):
+    if not path or not os.path.isdir(path):
+        return False
+    seen = 0
+    try:
+        for root, _dirs, files in os.walk(path):
+            for name in files:
+                seen += 1
+                try:
+                    if os.path.getmtime(os.path.join(root, name)) >= recent_cutoff:
+                        return True
+                except Exception:
+                    pass
+                if seen >= 2000:
+                    return False
+    except Exception:
+        return False
+    return False
+
+
+def terminal_journal_recent(terminal):
+    if not terminal:
+        return False
+    log_dir = fr"D:/QM/mt5/{terminal}/logs"
+    if not os.path.isdir(log_dir):
+        return False
+    try:
+        files = [
+            os.path.join(log_dir, name)
+            for name in os.listdir(log_dir)
+            if name.lower().endswith(".log")
+        ]
+        files.sort(key=lambda p: os.path.getmtime(p), reverse=True)
+        return any(path_recent(path) for path in files[:3])
+    except Exception:
+        return False
+
+
+try:
+    conn = sqlite3.connect(db)
+    conn.row_factory = sqlite3.Row
+    rows = conn.execute(
+        "SELECT id, ea_id, symbol, phase, claimed_by, payload_json "
+        "FROM work_items WHERE status='active'"
+    ).fetchall()
+    out["active_count"] = len(rows)
+    protected = set()
+    for row in rows:
+        payload = payload_dict(row["payload_json"])
+        terminal = str(row["claimed_by"] or payload.get("terminal") or "").strip().upper()
+        if terminal:
+            protected.add(terminal)
+        multisym = is_multisym(row["symbol"], payload)
+        if multisym:
+            out["active_multisym_count"] += 1
+        recent = (
+            path_recent(str(payload.get("log_path") or ""))
+            or tree_recent(str(payload.get("report_root") or ""))
+            or terminal_journal_recent(terminal)
+        )
+        if recent:
+            out["active_recent_progress_count"] += 1
+        out["details"].append({
+            "id": row["id"],
+            "ea_id": row["ea_id"],
+            "phase": row["phase"],
+            "terminal": terminal,
+            "multisym": multisym,
+            "recent_progress": recent,
+        })
+    out["protected_terminals"] = sorted(protected)
+except Exception as exc:
+    out["error"] = str(exc)
+
+print(json.dumps(out, separators=(",", ":")))
+'@
+
+    try {
+        return (($probe | & $PythonExe - 2>$null) -join '' | ConvertFrom-Json)
+    } catch {
+        return [pscustomobject]@{
+            active_count = 0
+            active_multisym_count = 0
+            active_recent_progress_count = 0
+            protected_terminals = @()
+            details = @()
+            error = $_.Exception.Message
+        }
+    }
+}
+
 # 1. OWNER intent: is the factory meant to be ON? (FACTORY tasks enabled?)
 $factoryEnabled = $false
 foreach ($t in $QM_FACTORY_TASKS) {
@@ -141,6 +293,9 @@ $diskFreeGb = try { [math]::Round((Get-PSDrive D -ErrorAction Stop).Free / 1GB, 
 # a live session handle via CreateProcessAsUser, even into a disconnected session).
 $dispatchStalled = $false
 $stallInfo = ''
+$nTerm = 0
+$nActive = 0
+$nPending = 0
 if ($factoryEnabled) {
     try {
         # Count ONLY factory T1-T10 terminals, not every terminal64 on the box. A
@@ -171,6 +326,26 @@ print(str(a) + " " + str(p))
     } catch { $stallInfo = "stall-probe-error: $_" }
 }
 
+$activeProtection = [pscustomobject]@{
+    active_count = 0
+    active_multisym_count = 0
+    active_recent_progress_count = 0
+    protected_terminals = @()
+    details = @()
+}
+if ($factoryEnabled) {
+    $activeProtection = Get-ActiveBacktestProtection -PythonExe $py
+}
+$activeMultisymCount = [int]($activeProtection.active_multisym_count | Select-Object -First 1)
+$activeRecentProgressCount = [int]($activeProtection.active_recent_progress_count | Select-Object -First 1)
+$activeProtectionDetail = ''
+try {
+    $activeProtectionDetail = (($activeProtection.details | ForEach-Object {
+        "$($_.id):$($_.ea_id):$($_.phase):$($_.terminal):multisym=$($_.multisym):recent=$($_.recent_progress)"
+    }) -join ';')
+} catch {}
+$realStallSuppressedReason = ''
+
 # 2c. SESSION-LOSS detection + reboot-heal (added 2026-06-11).
 # The one case neither respawn nor tscon can fix: the interactive session itself is
 # DESTROYED (observed 3x 2026-06-10/11: LSM event 40 reason 23, per-session user
@@ -181,16 +356,40 @@ print(str(a) + " " + str(p))
 # 2026-06-11) recreates the console session -> FactoryON_AtLogon restores the factory.
 # Guards: confirm on 2 consecutive runs (~15 min), 6h cooldown, autologon secret must
 # exist, never while any T_Live terminal runs (Hard Rule: live trading untouchable).
-$sessionLost = $false
+$sessionLost        = $false
+$lsmDegraded        = $false   # FIX 2: qwinsta failed/missing but worker evidence proves session alive
+$qwinstaError       = $null    # FIX 2: error string from qwinsta failure (for jsonl)
+$secretBasis        = ''       # FIX 1: 'lsa_secret' | 'winlogon_fallback_nonsystem' (for jsonl)
 $targetUser = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -ErrorAction SilentlyContinue).DefaultUserName
 if (-not $targetUser) { $targetUser = 'qm-admin' }
 if ($factoryEnabled) {
-    $hasSession = $false
-    foreach ($line in (qwinsta 2>$null)) {
+    $hasSession    = $false
+    $qwinstaOutput = @()
+    try {
+        $qwinstaOutput   = @(qwinsta 2>$null)
+        $qwinstaExitCode = $LASTEXITCODE
+        if ($qwinstaExitCode -ne 0) { $qwinstaError = "exitcode=$qwinstaExitCode" }
+    } catch {
+        $qwinstaError = "exception=$($_.Exception.Message)"
+    }
+    foreach ($line in $qwinstaOutput) {
         if (($line -match "\b$([regex]::Escape($targetUser))\b") -and
             ($line -match "\s\d+\s+(Active|Disc|Conn)\b")) { $hasSession = $true }
     }
-    $sessionLost = -not $hasSession
+    # FIX 2: Worker-process evidence cross-check. Terminal_worker daemons run inside
+    # the interactive session; if >=1 is alive the session cannot be gone regardless
+    # of qwinsta status. qwinsta exit-code 87 (or any non-zero) during LSM degradation
+    # does NOT prove session loss. session_lost requires BOTH signals to agree.
+    $workerDaemonsAlive = $nWorkers  # already collected: python.exe|pythonw.exe + terminal_worker.py
+    if ((-not $hasSession) -and ($workerDaemonsAlive -ge 1)) {
+        # qwinsta says no session but workers are running inside it -> LSM masked the session
+        $lsmDegraded = $true
+    } elseif ($qwinstaError -and ($workerDaemonsAlive -ge 1)) {
+        # qwinsta failed entirely but workers are alive -> LSM degradation
+        $lsmDegraded = $true
+    }
+    # session_lost: BOTH session enumeration says gone AND zero worker-daemon process evidence
+    $sessionLost = (-not $hasSession) -and ($workerDaemonsAlive -eq 0)
 }
 
 if ($factoryEnabled -and $sessionLost) {
@@ -201,15 +400,35 @@ if ($factoryEnabled -and $sessionLost) {
     $pendingSince = ConvertFrom-UtcStamp $st.pending_since
     $lastReboot   = ConvertFrom-UtcStamp $st.last_reboot
 
-    $secretOk = $false
-    try { $secretOk = $null -ne [Microsoft.Win32.RegistryKey]::OpenBaseKey('LocalMachine','Default').OpenSubKey('SECURITY\Policy\Secrets\DefaultPassword') } catch {}
+    # FIX 1: HKLM\SECURITY is SYSTEM-only; an admin-context read always throws access-denied,
+    # making secretOk=false a FALSE NEGATIVE from any non-SYSTEM caller. If the read fails
+    # AND the current identity is not SYSTEM, fall back to the admin-readable Winlogon keys
+    # (AutoAdminLogon + DefaultUserName) rather than treating the ACL error as "no secret".
+    # secret_basis is emitted in the jsonl record so the evidence path is auditable.
+    # The action 'session_lost_no_autologon' MUST NOT fire solely because the SYSTEM-only
+    # read failed from a non-SYSTEM context (that was the LSM-degradation false-positive).
+    $isSystem    = [System.Security.Principal.WindowsIdentity]::GetCurrent().IsSystem
+    $secretOk    = $false
+    $secretBasis = 'lsa_secret'
+    try {
+        $secretOk    = $null -ne [Microsoft.Win32.RegistryKey]::OpenBaseKey('LocalMachine','Default').OpenSubKey('SECURITY\Policy\Secrets\DefaultPassword')
+        $secretBasis = 'lsa_secret'
+    } catch {
+        if (-not $isSystem) {
+            # Non-SYSTEM caller: SECURITY hive access-denied is expected; fall back to Winlogon.
+            $wl          = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -ErrorAction SilentlyContinue
+            $secretOk    = ($wl.AutoAdminLogon -eq '1') -and ($null -ne $wl.DefaultUserName) -and ('' -ne $wl.DefaultUserName)
+            $secretBasis = 'winlogon_fallback_nonsystem'
+        }
+        # IS SYSTEM but read still failed -> genuine absent/inaccessible secret; $secretOk stays $false
+    }
     $autologonOn = ((Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -ErrorAction SilentlyContinue).AutoAdminLogon -eq '1')
     $tLiveRunning = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
                       Where-Object { $_.CommandLine -match 'T_Live' }).Count -gt 0
 
     if (-not ($secretOk -and $autologonOn)) {
         $action = 'session_lost_no_autologon'
-        $detail = "NO interactive $targetUser session, but autologon not usable (secret=$secretOk autoadmin=$autologonOn) - reboot would strand at logon screen; OWNER must log in"
+        $detail = "NO interactive $targetUser session, but autologon not usable (secret=$secretOk basis=$secretBasis autoadmin=$autologonOn) - reboot would strand at logon screen; OWNER must log in"
     } elseif ($tLiveRunning) {
         $action = 'session_lost_tlive_guard'
         $detail = "NO interactive $targetUser session but a T_Live terminal is running - refusing auto-reboot (Hard Rule)"
@@ -292,13 +511,41 @@ print(n)
             $m2 = @(Get-CimInstance Win32_Process -Filter "Name='metatester64.exe'" -ErrorAction SilentlyContinue).Count
             $mt = [math]::Max($m1, $m2)
         } catch {}
-        $realStallInfo = "realDone15m=$realN metatester64=$mt ramFreeGb=$ramFreeGb pending=$nPending recentPurge=$recentPurge"
-        if ((($realN -eq 0) -or ($mt -eq 0)) -and $nPending -ge $StallPendingThreshold) { $realStall = $true }
+        # PARTIAL-WEDGE detection (2026-06-26, OWNER "harden"). The realN==0 / mt==0 checks miss
+        # the case where SOME terminals work but MOST are stuck: the 22:00 restart launch_fault
+        # left 4 of 7 worker daemons idle (metatester64=3) for 40+ min while 875 items pended.
+        # Daemon COUNT read healthy (7) so the worker-shortage heal never fired; the 3 working
+        # terminals kept realN>0 so the realN==0/mt==0 checks never fired -> the fleet ran at ~43%
+        # indefinitely until a manual restart. Add: metatester64 stuck below (ExpectWorkers-2)
+        # while the queue is deep = most of the fleet wedged. Tolerates up to 2 idle terminals
+        # (normal between-backtest churn); the SAME 2-run (~30 min) confirm + 45-min cooldown +
+        # FactoryON_AtLogon recovery below guards against a transient dip or post-restart ramp.
+        $mtFloor = [math]::Max(1, $ExpectWorkers - 2)
+        $realStallInfo = "realDone15m=$realN metatester64=$mt/$ExpectWorkers (floor=$mtFloor) terminal64=$nTerm ramFreeGb=$ramFreeGb pending=$nPending recentPurge=$recentPurge activeMultisym=$activeMultisymCount activeRecentProgress=$activeRecentProgressCount"
+        $realStallCandidate = ((($realN -eq 0) -or ($mt -lt $mtFloor)) -and $nPending -ge $StallPendingThreshold)
+        if ($realStallCandidate) {
+            if ($activeMultisymCount -gt 0) {
+                $realStallSuppressedReason = "active multisymbol/basket work_item present; refusing full reset"
+            } elseif ($activeRecentProgressCount -gt 0) {
+                $realStallSuppressedReason = "active work_item log/report/journal progressed in last 10m"
+            } else {
+                $realStall = $true
+            }
+        }
     }
 }
 
 if ($factoryEnabled -and $sessionLost) {
     # handled above; fall through to logging
+}
+elseif ($factoryEnabled -and $lsmDegraded) {
+    # FIX 2: LSM-degradation guard. qwinsta failed or found no session, but at least one
+    # terminal_worker daemon is alive — proving the interactive session is not destroyed.
+    # (qwinsta error 87 / LSM service degradation gives a false "no session" result.)
+    # Emit a diagnostic record and take NO destructive or heal action; condition should
+    # self-clear on the next run once LSM recovers.
+    $action = 'lsm_degraded_suspected'
+    $detail = "qwinsta_error=$qwinstaError worker_daemons_alive=$nWorkers; session not confirmed lost - no destructive action taken"
 }
 elseif (-not $factoryEnabled) {
     $action = 'noop_factory_off'
@@ -311,6 +558,17 @@ elseif ($diskFreeGb -lt 40) {
     $action = 'noop_disk_low_purge'
     $detail = "D: free ${diskFreeGb}GB < 40GB while factory ON - workers pausing by design; kicking cache purge, NOT respawning"
     try { Start-ScheduledTask -TaskName 'QM_StrategyFarm_TesterCachePurge' -ErrorAction SilentlyContinue } catch {}
+}
+elseif ($factoryEnabled -and $realStallSuppressedReason) {
+    $action = 'realstall_guarded'
+    $detail = "REAL-STALL candidate suppressed: $realStallSuppressedReason ($realStallInfo); active=$activeProtectionDetail"
+    $rsState = 'D:\QM\reports\state\watchdog_realstall.json'
+    if (Test-Path $rsState) {
+        try {
+            $rst = Get-Content $rsState -Raw | ConvertFrom-Json
+            if ($rst.pending_since) { @{ pending_since = $null; last_reset = $rst.last_reset } | ConvertTo-Json -Compress | Set-Content -Path $rsState -Encoding UTF8 }
+        } catch {}
+    }
 }
 elseif ($factoryEnabled -and $realStall) {
     # REAL-VERDICT-STALL (launch_fault wedge): workers look healthy but 0 real verdicts.
@@ -344,30 +602,34 @@ elseif ($factoryEnabled -and $realStall) {
         # Interactive, RunLevel Highest): with qm-admin logged on, Start-ScheduledTask
         # runs Factory_ON.ps1 -NoPause in that interactive session = the WORKING path
         # (enable tasks + kill stale daemons/terminals + spawn workers in-session +
-        # farmctl repair + trigger pump). T_Live guard: Factory_ON's kill-all-terminal64
-        # would hit a live terminal, so never auto-recover while T_Live runs (Hard Rule).
+        # farmctl repair + trigger pump).
+        # 2026-06-30 (T_Live guard CORRECTED, OWNER-verified): the prior guard REFUSED to
+        # auto-recover whenever a T_Live terminal was running, on the premise that Factory_ON
+        # "kills ALL terminal64 incl T_Live". That premise is FALSE: Factory_ON.ps1:113 filters
+        # `notmatch 'T_Live'` (the T_Live-isolation Hard-Rule line itself) BEFORE killing any
+        # terminal64 -- it provably spares the live terminal. The watchdog detected T_Live with
+        # the IDENTICAL `CommandLine -match 'T_Live'` test Factory_ON uses to spare it, so the
+        # guard was 100% redundant: whenever it fired, Factory_ON would spare that same terminal
+        # anyway. The only effect of the bad guard was that every worker-death DURING LIVE
+        # TRADING sat un-recovered until a MANUAL Factory_ON. Fix: always delegate to the
+        # T_Live-sparing FactoryON_AtLogon; keep T_Live detection for the audit record only.
         $tLiveRunning = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
                           Where-Object { $_.CommandLine -match 'T_Live' }).Count -gt 0
-        if ($tLiveRunning) {
-            $action = 'realstall_tlive_guard'
-            $detail = "REAL-STALL confirmed but a T_Live terminal is running - refusing auto-recovery (Hard Rule); OWNER must recover manually"
-        } else {
-            $action = 'healed_full_reset'
-            $detail = "REAL-STALL confirmed 2x (since $($rst.pending_since)) ($realStallInfo) -> Start FactoryON_AtLogon (interactive recovery)"
-            @{ pending_since = $null; last_reset = $nowDt.ToString('yyyy-MM-ddTHH:mm:ssZ') } | ConvertTo-Json -Compress | Set-Content -Path $rsState -Encoding UTF8
-            try {
-                Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop
-                Start-Sleep -Seconds 25
-                $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
-                           Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
-                $detail += " -> after=$after workers (via FactoryON_AtLogon)"
-            } catch { $action = 'heal_failed'; $detail += " -> ERROR: $_" }
-        }
+        $action = 'healed_full_reset'
+        $detail = "REAL-STALL confirmed 2x (since $($rst.pending_since)) ($realStallInfo) -> Start FactoryON_AtLogon (interactive, T_Live-sparing recovery; tLiveRunning=$tLiveRunning)"
+        @{ pending_since = $null; last_reset = $nowDt.ToString('yyyy-MM-ddTHH:mm:ssZ') } | ConvertTo-Json -Compress | Set-Content -Path $rsState -Encoding UTF8
+        try {
+            Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop
+            Start-Sleep -Seconds 25
+            $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
+                       Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
+            $detail += " -> after=$after workers (via FactoryON_AtLogon)"
+        } catch { $action = 'heal_failed'; $detail += " -> ERROR: $_" }
     }
 }
 elseif ($nWorkers -ge $MinWorkers -and -not $dispatchStalled) {
     $action = 'noop_healthy'
-    $detail = "workers=$nWorkers/$ExpectWorkers (>= $MinWorkers); $stallInfo"
+    $detail = "workers=$nWorkers/$ExpectWorkers (>= $MinWorkers); $stallInfo; activeMultisym=$activeMultisymCount activeRecentProgress=$activeRecentProgressCount"
     # clear any stale real-stall confirm flag once real verdicts are flowing again
     $rsState = 'D:\QM\reports\state\watchdog_realstall.json'
     if (Test-Path $rsState) {
@@ -378,12 +640,17 @@ elseif ($nWorkers -ge $MinWorkers -and -not $dispatchStalled) {
     }
 }
 else {
-    # 3. heal: factory meant ON but workers are dead/short OR alive-but-wedged
-    #    (dispatch stalled) -> clean-slate respawn either way.
+    # 3. heal: factory meant ON but workers are dead/short OR alive-but-wedged (dispatch stalled).
+    # FIX 3: DISPATCH STALL (dead session handle, 0 active + many pending + 0 terminal64) ->
+    #   clean-slate FactoryON_AtLogon (existing path, unchanged).
+    # PURE WORKER SHORTAGE (session alive, no stall, no launch_fault wedge) ->
+    #   surgical --dedupe spawn: fills only the missing worker slots, NEVER kills in-flight
+    #   terminals or backtests. The clean-slate path is reserved for dispatch stall and the
+    #   launch_fault-wedge class (realStall branch above) only.
     if ($dispatchStalled) {
         $detail = "DISPATCH STALL: workers=$nWorkers alive but wedged ($stallInfo) while factory ON -> clean-slate respawn"
     } else {
-        $detail = "workers=$nWorkers/$ExpectWorkers (< $MinWorkers) while factory ON -> clean-slate respawn"
+        $detail = "workers=$nWorkers/$ExpectWorkers (< $MinWorkers) while factory ON -> surgical dedupe spawn"
     }
     # ESCALATION (2026-06-09): a dispatch stall on a DISCONNECTED session is the case the
     # plain respawn CANNOT fix -- workers respawn fine, but terminal64 (a GUI app) has no
@@ -410,42 +677,70 @@ else {
             }
         } catch { $detail += " | tscon_err=$($_.Exception.Message)" }
     }
-    try {
-        # CLEAN-SLATE respawn INTO the autologon console session (visible-mode).
-        # Why clean-slate (kill-all then spawn 10) instead of --dedupe gap-fill:
-        # start_terminal_workers' --dedupe detects existing workers via a CIM
-        # (Get-CimInstance) query that FAILS inside a CreateProcessAsUser'd
-        # disconnected-session process -> it would see 0 existing and spawn a full
-        # 10 ON TOP of survivors (observed 7 -> 17 over-provision). So we first
-        # kill every worker + terminal64 from THIS SYSTEM/session-0 context (where
-        # CIM works), then launch a fresh set of exactly 10 (nothing to dedupe).
-        #
-        # This watchdog runs as SYSTEM (SeTcb) so the launcher can WTSQueryUserToken
-        # + CreateProcessAsUser into qm-admin's session even when RDP is DISCONNECTED.
-        # A plain `& $py ...` here would land workers in SYSTEM's session-0 (hazard).
-        if ($dispatchStalled) {
+    # 2026-06-26 (OWNER "harden the watchdog"): the old clean-slate respawn here used
+    # run_in_console_session (CreateProcessAsUser as SYSTEM) -- the SAME mechanism the realStall
+    # path was moved OFF on 2026-06-24 because it yields worker daemons whose terminal64 children
+    # instant-exit 0xC0000142, so metatester64 stays 0 and the factory never actually recovers
+    # while the log reads 'healed_respawn_workers'. That asymmetry was the 2026-06-26 stall:
+    # workers fell to 1, the worker-shortage heal "succeeded" cleanly, yet 0 compute -> needed a
+    # MANUAL FactoryON kick. Unify the worker-shortage / dispatch-stall heal onto the SAME
+    # working recovery as realStall: delegate to QM_StrategyFarm_FactoryON_AtLogon (RunAs
+    # qm-admin, Interactive, RunLevel Highest) = a direct in-session Factory_ON.ps1 (kill stale
+    # daemons/terminals + spawn workers in-session + farmctl repair + trigger pump) that recovers
+    # instantly.
+    # 2026-06-30 (T_Live guard CORRECTED, OWNER-verified): the prior guard REFUSED auto-recovery
+    # whenever a T_Live terminal was running, on the FALSE premise that Factory_ON "kills ALL
+    # terminal64 incl T_Live". Factory_ON.ps1:113 filters `notmatch 'T_Live'` (the T_Live-isolation
+    # Hard-Rule line) BEFORE any kill -- it provably spares the live terminal -- and the watchdog
+    # detected T_Live with the IDENTICAL `-match 'T_Live'` test, so the guard was 100% redundant
+    # and merely blocked recovery: both 2026-06-30 worker-deaths sat in 'heal_tlive_guard' until a
+    # MANUAL Factory_ON. Fix: always delegate to the T_Live-sparing FactoryON_AtLogon; keep T_Live
+    # detection for the audit record only.
+    $tLiveRunning = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
+                      Where-Object { $_.CommandLine -match 'T_Live' }).Count -gt 0
+    if ($dispatchStalled -and $activeMultisymCount -gt 0) {
+        # Multisym guard: dispatch stall needs clean-slate FactoryON (kills terminals), but
+        # an active basket/multisym backtest must not be interrupted. Defer the full reset;
+        # a pure worker shortage with an active multisym is safe to dedupe-spawn below.
+        $action = 'heal_deferred_active_multisym'
+        $detail += " | active multisymbol/basket work_item guard: refusing full reset while protected=$($activeProtection.protected_terminals -join ',') active=$activeProtectionDetail"
+    } elseif ($dispatchStalled) {
+        # DISPATCH STALL path: needs clean-slate FactoryON_AtLogon (dead session handle;
+        # dedupe-only spawn would inherit the same broken handle and still produce 0 runs).
+        try {
             $dumpDetail = Invoke-StallDumpCapture -RequestPath $stallDumpRequest -DumpDir $stallDumpDir
             $detail += " | $dumpDetail"
+            Start-ScheduledTask -TaskName 'QM_StrategyFarm_FactoryON_AtLogon' -ErrorAction Stop
+            Start-Sleep -Seconds 25
+            $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
+                       Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
+            $action = 'healed_via_factoryon'
+            $detail += " -> Start FactoryON_AtLogon (dispatch stall, interactive, T_Live-sparing; tLiveRunning=$tLiveRunning) -> after=$after/$ExpectWorkers"
+        } catch {
+            $action = 'heal_failed'
+            $detail += " -> ERROR: $_"
         }
-        foreach ($d in $daemons) { Stop-Process -Id $d.ProcessId -Force -ErrorAction SilentlyContinue }
-        # Kill ONLY factory T1-T10 terminals. NEVER terminate T_Live (live trading —
-        # OWNER+Claude authority, Hard Rule) or T_Export (analysis); matching by the
-        # T1-T10 path keeps the clean-slate respawn from ever touching them.
-        @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
-          Where-Object { $_.CommandLine -match '\\mt5\\T(?:[1-9]|10)\\' }) |
-          ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
-        Start-Sleep -Seconds 4
-        $launcher = Join-Path $repo 'tools\strategy_farm\run_in_console_session.ps1'
-        $swArgs = '"' + (Join-Path $repo 'tools\strategy_farm\start_terminal_workers.py') + '" --repo-root "' + $repo + '" --farm-root "D:\QM\strategy_farm" --dedupe'
-        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $launcher -Exe $py -Arguments $swArgs -WorkDir $repo 2>$null | Out-Null
-        Start-Sleep -Seconds 12
-        $after = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
-                   Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
-        $action = 'healed_respawn_workers'
-        $detail += " -> after=$after/$ExpectWorkers"
-    } catch {
-        $action = 'heal_failed'
-        $detail += " -> ERROR: $_"
+    } else {
+        # FIX 3: PURE WORKER SHORTAGE — session alive, no stall, no launch_fault wedge.
+        # Surgical dedupe spawn: only fills the missing worker slots; never kills
+        # in-flight terminals or interrupts running backtests.
+        # This watchdog runs as SYSTEM: a direct child spawn here would put workers in
+        # session 0 and their terminal64 dies 0xC0000142 (2026-06-24 broken-respawn
+        # class). Delegate to the on-demand interactive task (qm-admin, Interactive,
+        # Highest) exactly like the FactoryON_AtLogon escalation path.
+        # Emits action 'worker_dedupe_heal' with workers_before / workers_after counts.
+        $workersBefore = $nWorkers
+        try {
+            Start-ScheduledTask -TaskName 'QM_StrategyFarm_WorkerDedupe' -ErrorAction Stop
+            Start-Sleep -Seconds 20
+            $workersAfter = @(Get-CimInstance Win32_Process -Filter "Name='python.exe' OR Name='pythonw.exe'" -ErrorAction SilentlyContinue |
+                              Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
+            $action = 'worker_dedupe_heal'
+            $detail += " -> dedupe via QM_StrategyFarm_WorkerDedupe: workers_before=$workersBefore workers_after=$workersAfter/$ExpectWorkers tLiveRunning=$tLiveRunning"
+        } catch {
+            $action = 'heal_failed'
+            $detail += " -> ERROR: $_ (QM_StrategyFarm_WorkerDedupe task missing? register via install_hygiene_and_lsm_tasks.ps1)"
+        }
     }
 }
 
@@ -459,6 +754,11 @@ $record = [ordered]@{
     dispatch_stalled = $dispatchStalled
     real_stall       = $realStall
     session_lost     = $sessionLost
+    lsm_degraded     = $lsmDegraded        # FIX 2: true when qwinsta failed but worker daemons alive
+    qwinsta_error    = $qwinstaError        # FIX 2: error string from qwinsta failure (null = ok)
+    secret_basis     = $secretBasis         # FIX 1: 'lsa_secret' | 'winlogon_fallback_nonsystem' | ''
+    active_multisym  = $activeMultisymCount
+    active_progress  = $activeRecentProgressCount
     action           = $action
     detail           = $detail
 } | ConvertTo-Json -Compress -Depth 4
@@ -470,5 +770,13 @@ try {
     $lines = Get-Content $log -ErrorAction SilentlyContinue
     if ($lines -and $lines.Count -gt 500) { Set-Content -Path $log -Value ($lines | Select-Object -Last 500) -Encoding UTF8 }
 } catch { }
+
+# FIX 4: heartbeat record — appended after every run so downstream monitors can detect
+# a frozen jsonl. Without this a monitor re-reading the last 'session_lost_no_autologon'
+# line has no way to tell if the watchdog is still cycling or has stopped. A monitor
+# should check the most-recent heartbeat ts; if stale (e.g. > 30 min) the watchdog itself
+# is frozen and needs investigation. The heartbeat ts field is UTC ISO-8601.
+$hbRecord = [ordered]@{ ts = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ'); action = 'heartbeat' } | ConvertTo-Json -Compress
+try { Add-Content -Path $log -Value $hbRecord -Encoding UTF8 } catch {}
 
 Write-Output $record
