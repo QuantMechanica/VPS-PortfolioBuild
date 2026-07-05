@@ -150,7 +150,8 @@ $daemonsBefore = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR 
                    Where-Object { $_.CommandLine -match 'terminal_worker\.py' })
 foreach ($d in $daemonsBefore) { Stop-Process -Id $d.ProcessId -Force -ErrorAction SilentlyContinue }
 $termsBefore = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
-                 Where-Object { $_.CommandLine -notmatch 'T_Live' })   # never kill the LIVE terminal (T_Live isolation hard rule)
+                 Where-Object { ($_.ExecutablePath -like 'D:\QM\mt5\*' -or $_.CommandLine -match 'D:\\QM\\mt5\\') `
+                                -and $_.CommandLine -notmatch 'T_Live' })   # factory-path-anchored; T_Live + FTMO never match
 foreach ($p in $termsBefore) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
 if ($daemonsBefore.Count -gt 0 -or $termsBefore.Count -gt 0) {
     Write-Host ("  cleared: {0} old daemon(s), {1} old terminal(s)" -f $daemonsBefore.Count, $termsBefore.Count)

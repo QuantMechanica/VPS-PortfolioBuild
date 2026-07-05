@@ -66,10 +66,14 @@ foreach ($d in $daemons) { Stop-Process -Id $d.ProcessId -Force -ErrorAction Sil
 Write-Host ("  worker daemons killed : {0}" -f $daemons.Count)
 
 # 3. kill transient terminal64.exe backtest processes
+#    POSITIVE path anchor (Operating Rules 2026-07-03): only factory terminals under
+#    D:\QM\mt5\ are ever killed. T_Live (C:\QM\mt5\T_Live) and the FTMO challenge
+#    terminal (C:\Program Files\FTMO...) never match the anchor.
 $terms = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
-           Where-Object { $_.CommandLine -notmatch 'T_Live' })   # never kill the LIVE terminal (T_Live isolation hard rule)
+           Where-Object { ($_.ExecutablePath -like 'D:\QM\mt5\*' -or $_.CommandLine -match 'D:\\QM\\mt5\\') `
+                          -and $_.CommandLine -notmatch 'T_Live' })
 foreach ($p in $terms) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
-Write-Host ("  terminal64.exe killed : {0} (T_Live excluded)" -f $terms.Count)
+Write-Host ("  terminal64.exe killed : {0} (factory-path-anchored; T_Live + FTMO safe)" -f $terms.Count)
 
 # 4. kill stray run_smoke wrapper pwsh processes (path-anchored; never T_Live)
 #    run_smoke post-run triggers pump_task.py; kill the wrappers so the pump
@@ -84,7 +88,8 @@ Start-Sleep -Seconds 3
 $leftDaemons = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe'" -ErrorAction SilentlyContinue |
                  Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
 $leftTerms   = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
-                 Where-Object { $_.CommandLine -notmatch 'T_Live' }).Count
+                 Where-Object { ($_.ExecutablePath -like 'D:\QM\mt5\*' -or $_.CommandLine -match 'D:\\QM\\mt5\\') `
+                                -and $_.CommandLine -notmatch 'T_Live' }).Count
 
 # 5. Save pre-OFF codex_parallel; set to 0 during OFF window.
 $codexParallelBefore = '1'
