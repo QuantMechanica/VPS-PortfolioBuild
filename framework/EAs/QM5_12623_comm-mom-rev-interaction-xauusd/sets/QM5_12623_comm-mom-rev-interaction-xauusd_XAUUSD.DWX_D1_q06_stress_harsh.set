@@ -3,7 +3,7 @@
 ; ea_id:        12623
 ; ea_slug:      comm-mom-rev-interaction-xauusd
 ; ea_version:   v5.0
-; set_version:  s20260705-stress-harsh
+; set_version:  s20260706-stress-harsh
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  q06_stress_harsh
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   19924d10d4fa6fc53a1834c3593e085c1fc20995461679b07b0b670419c6363e
 ; author:       Development
-; date:         2026-07-05
+; date:         2026-07-06
 ;==========================================================
 qm_magic_slot_offset=0
 RISK_FIXED=1000
