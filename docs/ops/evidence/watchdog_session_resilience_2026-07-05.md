@@ -170,14 +170,14 @@ QM_T_Live_Watchdog                    | SYSTEM/ServiceAccount | LastResult=0x000
 
 | File | Change |
 |---|---|
-| `tools/strategy_farm/factory_watchdog.ps1` | Fix em-dash -> hyphen in string literal (line 548) |
-| `tools/strategy_farm/hourly_monitor.ps1` | Add watchdog stale-read detection (section 3b) |
-| `tools/strategy_farm/weekly_hygiene_reboot.ps1` | Pre-existing (committed 2707463e9) |
-| `tools/strategy_farm/lsm_health_probe.ps1` | Pre-existing (committed 2707463e9) |
-| `tools/strategy_farm/install_hygiene_and_lsm_tasks.ps1` | Pre-existing (committed 2707463e9) |
-| `tools/strategy_farm/health.py` | Added `chk_lsm_session_health()` + ALL_CHECKS entry (2026-07-05T13:xx cycle) |
-| `tools/strategy_farm/factory_watchdog.ps1` | Multisym guard fix: blocks clean-slate only, not dedupe (task 674f3cbc) |
-| `docs/ops/QUOTA_GOVERNOR_AND_FACTORY_RECOVERY_2026-06-21.md` | Added section 6 (dedupe-spawn pattern) |
+| `tools/strategy_farm/factory_watchdog.ps1` | Fix em-dash -> hyphen in string literal (line 548); multisym guard fix: blocks clean-slate only, not dedupe (task 674f3cbc) |
+| `tools/strategy_farm/hourly_monitor.ps1` | Add watchdog stale-read detection (section 3b, commit 2707463e9) |
+| `tools/strategy_farm/render_cockpit.py` | Cockpit watchdog panel: stale-read fix — WATCHDOG-STALE label when last heartbeat >30 min; show operational action from last non-heartbeat record (2026-07-05T13:xx cycle) |
+| `tools/strategy_farm/weekly_hygiene_reboot.ps1` | New (committed 2707463e9) |
+| `tools/strategy_farm/lsm_health_probe.ps1` | New (committed 2707463e9) |
+| `tools/strategy_farm/install_hygiene_and_lsm_tasks.ps1` | New (committed 2707463e9) |
+| `tools/strategy_farm/health.py` | Added `chk_lsm_session_health()` + ALL_CHECKS entry (committed 2707463e9) |
+| `docs/ops/QUOTA_GOVERNOR_AND_FACTORY_RECOVERY_2026-06-21.md` | Added section 6 (dedupe-spawn pattern, committed 2707463e9) |
 | `docs/ops/evidence/watchdog_session_resilience_2026-07-05.md` | This doc |
 
 ---
