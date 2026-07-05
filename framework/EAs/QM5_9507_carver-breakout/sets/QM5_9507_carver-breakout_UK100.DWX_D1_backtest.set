@@ -10,7 +10,7 @@
 ; magic_slot:   7
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   af5b5259c5030e8962516354a708c6224a49da0f20bef4481ad35064164637e4
+; build_hash:   4c6ebdb907b659c272c73ef1853042103d9c64bb7091d9a889f51ea52b5a0598
 ; author:       Development
 ; date:         2026-07-02
 ;==========================================================
@@ -19,6 +19,7 @@ qm_magic_slot_offset=7
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_friday_close_enabled=false
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9507_carver-breakout.md
 strategy_breakout_lookback_d1=80

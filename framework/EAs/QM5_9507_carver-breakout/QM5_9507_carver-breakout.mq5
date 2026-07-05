@@ -22,7 +22,12 @@ input string qm_news_min_impact          = "high";
 input QM_NewsMode qm_news_mode_legacy    = QM_NEWS_OFF;
 
 input group "Friday Close"
-input bool   qm_friday_close_enabled     = true;
+// Card mechanic holds through weekends by design (Donchian(40) trail exit /
+// 4xATR stop span multi-week trends). A default weekly force-flat truncates
+// every trade to <=1 week and starves entry re-triggers (see
+// docs/ops/evidence/05a836a7_qm5_12847_turn_of_month_fidelity_2026-07-02.md
+// for the identical defect class fixed on QM5_12847).
+input bool   qm_friday_close_enabled     = false;
 input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
