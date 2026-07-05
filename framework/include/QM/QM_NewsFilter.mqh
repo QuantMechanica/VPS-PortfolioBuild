@@ -302,6 +302,25 @@ bool QM_NewsReadFileBytes(const string path, uchar &bytes[], datetime &modified_
    return true;
   }
 
+string QM_NewsIndexCurrencies(const string normalized_symbol)
+  {
+   if(normalized_symbol == "NDX" || normalized_symbol == "SP500" ||
+      normalized_symbol == "SPX500" || normalized_symbol == "WS30" ||
+      normalized_symbol == "US30" || normalized_symbol == "US500" ||
+      normalized_symbol == "USTEC")
+      return "USD";
+   if(normalized_symbol == "GDAXI" || normalized_symbol == "GER40" ||
+      normalized_symbol == "DE40" || normalized_symbol == "STOXX50E" ||
+      normalized_symbol == "EU50" || normalized_symbol == "ESP35" ||
+      normalized_symbol == "FRA40" || normalized_symbol == "F40")
+      return "EUR";
+   if(normalized_symbol == "UK100" || normalized_symbol == "FTSE100")
+      return "GBP";
+   if(normalized_symbol == "JP225" || normalized_symbol == "NIK225")
+      return "JPY";
+   return "";
+  }
+
 bool QM_NewsEventAffectsSymbol(const string event_currency, const string symbol)
   {
    string currency = QM_NewsUpper(QM_NewsStripQuotes(event_currency));
@@ -309,8 +328,19 @@ bool QM_NewsEventAffectsSymbol(const string event_currency, const string symbol)
       return true;
 
    string normalized_symbol = QM_NewsNormalizeSymbol(symbol);
+   string index_currencies = QM_NewsIndexCurrencies(normalized_symbol);
+   if(StringLen(index_currencies) > 0)
+     {
+      // Mapped index/commodity: only its economy's events apply.
+      string padded_idx = " " + currency + " ";
+      if(StringFind(padded_idx, " " + index_currencies + " ") >= 0)
+         return true;
+      if(StringFind(currency, index_currencies) >= 0)
+         return true;
+      return false;
+     }
    if(StringLen(normalized_symbol) < 6)
-      return true;
+      return true;   // unknown short symbol: fail-closed (unchanged behavior)
 
    string base = StringSubstr(normalized_symbol, 0, 3);
    string quote = StringSubstr(normalized_symbol, 3, 3);
@@ -459,13 +489,16 @@ bool QM_NewsInit(const string base_dir = "D:\\QM\\data\\news_calendar",
    if(modified_secondary > g_qm_news_latest_modified_utc)
       g_qm_news_latest_modified_utc = modified_secondary;
 
-   int age_seconds = (int)(TimeGMT() - g_qm_news_latest_modified_utc);
-   if(age_seconds < 0)
-      age_seconds = 0;
-   if(g_qm_news_stale_max_hours > 0 && age_seconds > (g_qm_news_stale_max_hours * 3600))
+   if(!MQLInfoInteger(MQL_TESTER))
      {
-      QM_NewsLogSetupMissing("calendar_file_stale");
-      return false;
+      int age_seconds = (int)(TimeGMT() - g_qm_news_latest_modified_utc);
+      if(age_seconds < 0)
+         age_seconds = 0;
+      if(g_qm_news_stale_max_hours > 0 && age_seconds > (g_qm_news_stale_max_hours * 3600))
+        {
+         QM_NewsLogSetupMissing("calendar_file_stale");
+         return false;
+        }
      }
 
    int rows_primary = 0;
