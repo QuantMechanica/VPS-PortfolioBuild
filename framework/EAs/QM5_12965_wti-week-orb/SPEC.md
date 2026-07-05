@@ -3,8 +3,8 @@
 **EA ID:** QM5_12965
 **Slug:** `wti-week-orb`
 **Source:** `CRABEL-WTI-WEEK-ORB-2026`
-**Author of this spec:** Codex
-**Last revised:** 2026-07-02
+**Author of this spec:** Codex; rebuilt in place by Claude 2026-07-05
+**Last revised:** 2026-07-05
 
 ## 1. Strategy Logic
 
@@ -76,3 +76,4 @@ touched by this build.
 | Version | Date | Reason |
 |---|---|---|
 | v1 | 2026-07-02 | Initial WTI weekly opening-range breakout build |
+| v1.1 | 2026-07-05 | Rebuild in place (DL-069): fixed OnTick news-gate ordering to the 2026-07-02 audit's binding canonical order (management/exit run before the news gate, gating entries only); removed a hand-rolled `iTime()`-fed week-key fallback (forbidden pattern); consolidated the weekly CopyRates/ATR/SMA pass into a single per-bar cache read by both management and entry. Strategy rules unchanged from v1. |

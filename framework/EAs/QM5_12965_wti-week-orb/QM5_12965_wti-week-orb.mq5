@@ -1,5 +1,5 @@
 #property strict
-#property version   "5.0"
+#property version   "5.1"
 #property description "QM5_12965 WTI Weekly Opening Range Breakout"
 
 #include <QM/QM_Common.mqh>
@@ -55,11 +55,34 @@ input int    strategy_max_spread_points   = 1000;
 
 int g_last_entry_week_key = 0;
 
+// File-scope cache: refreshed exactly once per closed D1 bar by
+// Strategy_ManageOpenPosition() -> Strategy_RefreshWeekState(). Strategy_EntrySignal()
+// reads the same cache instead of re-running CopyRates/QM_ATR/QM_SMA a second
+// time on the same bar (PERFORMANCE DISCIPLINE: cache per-bar state in file scope).
+bool     g_week_ready           = false;
+double   g_week_close_last      = 0.0;
+double   g_week_opening_high    = 0.0;
+double   g_week_opening_low     = 0.0;
+double   g_week_atr_last        = 0.0;
+double   g_week_sma_last        = 0.0;
+double   g_week_open_range      = 0.0;
+double   g_week_close_location  = 0.0;
+int      g_week_signal_week_key = 0;
+int      g_week_signal_dow      = -1;
+
 bool Strategy_IsXtiD1()
   {
    return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
   }
 
+// Monday-anchored broker-week helpers (bespoke structural logic). The card's
+// Crabel-style opening range must anchor to the weekend-gap reopen (normally
+// Monday); QM_CalendarPeriodKey(PERIOD_W1)'s day_of_year/7 rolling bucket does
+// not guarantee that anchor (its boundary drifts across weekdays year to
+// year depending on where Jan-1 falls), which would misalign the opening box
+// with the actual weekend gap the strategy's edge depends on. All inputs
+// below are MqlRates.time values from a single CopyRates call (never a
+// direct iTime() read) so no per-EA iTime-fed calendar key is introduced.
 datetime Strategy_DateMidnight(const datetime t)
   {
    if(t <= 0)
@@ -127,6 +150,9 @@ bool Strategy_HasOpenPosition()
    return false;
   }
 
+// Single CopyRates + QM_ATR/QM_SMA pass per closed bar. Populates the week
+// state via out-params; Strategy_RefreshWeekState() below stashes the result
+// into the file-scope cache consumed by both management and entry.
 bool Strategy_LoadWeekState(double &close_last,
                             double &opening_high,
                             double &opening_low,
@@ -134,10 +160,8 @@ bool Strategy_LoadWeekState(double &close_last,
                             double &sma_last,
                             double &open_range,
                             double &close_location,
-                            datetime &signal_time,
                             int &signal_week_key,
-                            int &signal_dow,
-                            int &week_bar_count)
+                            int &signal_dow)
   {
    close_last = 0.0;
    opening_high = 0.0;
@@ -146,24 +170,23 @@ bool Strategy_LoadWeekState(double &close_last,
    sma_last = 0.0;
    open_range = 0.0;
    close_location = 0.0;
-   signal_time = 0;
    signal_week_key = 0;
    signal_dow = -1;
-   week_bar_count = 0;
 
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, 30, rates); // perf-allowed: D1 weekly range is evaluated only after QM_IsNewBar.
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, 30, rates); // perf-allowed: bespoke weekly-range structural read, once per closed D1 bar (see QM_IsNewBar gate in OnTick).
    if(copied < strategy_opening_days + 1)
       return false;
 
-   signal_time = rates[0].time;
+   const datetime signal_time = rates[0].time;
    const datetime week_start = Strategy_WeekStart(signal_time);
    signal_week_key = Strategy_WeekKey(signal_time);
    signal_dow = Strategy_DayOfWeek(signal_time);
    if(week_start <= 0 || signal_week_key <= 0)
       return false;
 
+   int week_bar_count = 0;
    for(int i = 0; i < copied; ++i)
      {
       if(!Strategy_SameWeek(rates[i].time, week_start))
@@ -211,33 +234,21 @@ bool Strategy_LoadWeekState(double &close_last,
    return MathIsValidNumber(close_location);
   }
 
+void Strategy_RefreshWeekState()
+  {
+   g_week_ready = Strategy_LoadWeekState(g_week_close_last,
+                                        g_week_opening_high,
+                                        g_week_opening_low,
+                                        g_week_atr_last,
+                                        g_week_sma_last,
+                                        g_week_open_range,
+                                        g_week_close_location,
+                                        g_week_signal_week_key,
+                                        g_week_signal_dow);
+  }
+
 void Strategy_CloseOpenPositionsIfNeeded()
   {
-   double close_last = 0.0;
-   double opening_high = 0.0;
-   double opening_low = 0.0;
-   double atr_last = 0.0;
-   double sma_last = 0.0;
-   double open_range = 0.0;
-   double close_location = 0.0;
-   datetime signal_time = 0;
-   int signal_week_key = 0;
-   int signal_dow = -1;
-   int week_bar_count = 0;
-   const bool have_state = Strategy_LoadWeekState(close_last,
-                                                  opening_high,
-                                                  opening_low,
-                                                  atr_last,
-                                                  sma_last,
-                                                  open_range,
-                                                  close_location,
-                                                  signal_time,
-                                                  signal_week_key,
-                                                  signal_dow,
-                                                  week_bar_count);
-   if(signal_week_key == 0)
-      signal_week_key = Strategy_WeekKey(iTime(_Symbol, PERIOD_D1, 1)); // perf-allowed: D1 week boundary check is evaluated only after QM_IsNewBar.
-
    const int magic = QM_FrameworkMagic();
    const datetime now = TimeCurrent();
    const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
@@ -256,20 +267,23 @@ void Strategy_CloseOpenPositionsIfNeeded()
       const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       bool should_close = false;
 
-      const int open_week_key = Strategy_WeekKey(opened);
-      if(signal_week_key > 0 && open_week_key > 0 && signal_week_key != open_week_key)
-         should_close = true;
+      if(g_week_ready && g_week_signal_week_key > 0 && opened > 0)
+        {
+         const int open_week_key = Strategy_WeekKey(opened);
+         if(open_week_key > 0 && g_week_signal_week_key != open_week_key)
+            should_close = true;
+        }
       if(opened > 0 && now - opened >= hold_seconds)
          should_close = true;
 
-      if(have_state && pos_type == POSITION_TYPE_BUY)
+      if(g_week_ready && pos_type == POSITION_TYPE_BUY)
         {
-         if(close_last < opening_high || close_last < sma_last)
+         if(g_week_close_last < g_week_opening_high || g_week_close_last < g_week_sma_last)
             should_close = true;
         }
-      else if(have_state && pos_type == POSITION_TYPE_SELL)
+      else if(g_week_ready && pos_type == POSITION_TYPE_SELL)
         {
-         if(close_last > opening_low || close_last > sma_last)
+         if(g_week_close_last > g_week_opening_low || g_week_close_last > g_week_sma_last)
             should_close = true;
         }
 
@@ -313,8 +327,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   Strategy_CloseOpenPositionsIfNeeded();
-
    if(Strategy_HasOpenPosition())
       return false;
 
@@ -325,48 +337,27 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   double close_last = 0.0;
-   double opening_high = 0.0;
-   double opening_low = 0.0;
-   double atr_last = 0.0;
-   double sma_last = 0.0;
-   double open_range = 0.0;
-   double close_location = 0.0;
-   datetime signal_time = 0;
-   int signal_week_key = 0;
-   int signal_dow = -1;
-   int week_bar_count = 0;
-   if(!Strategy_LoadWeekState(close_last,
-                              opening_high,
-                              opening_low,
-                              atr_last,
-                              sma_last,
-                              open_range,
-                              close_location,
-                              signal_time,
-                              signal_week_key,
-                              signal_dow,
-                              week_bar_count))
+   if(!g_week_ready)
       return false;
 
-   if(signal_week_key <= 0 || signal_week_key == g_last_entry_week_key)
+   if(g_week_signal_week_key <= 0 || g_week_signal_week_key == g_last_entry_week_key)
       return false;
-   if(signal_dow < strategy_signal_min_dow || signal_dow > strategy_signal_max_dow)
+   if(g_week_signal_dow < strategy_signal_min_dow || g_week_signal_dow > strategy_signal_max_dow)
       return false;
-   if(open_range < strategy_min_open_range_atr * atr_last)
+   if(g_week_open_range < strategy_min_open_range_atr * g_week_atr_last)
       return false;
-   if(open_range > strategy_max_open_range_atr * atr_last)
+   if(g_week_open_range > strategy_max_open_range_atr * g_week_atr_last)
       return false;
 
-   const double buffer = strategy_entry_buffer_atr * atr_last;
+   const double buffer = strategy_entry_buffer_atr * g_week_atr_last;
    int direction = 0;
-   if(close_last > opening_high + buffer &&
-      close_last > sma_last &&
-      close_location >= strategy_min_close_location)
+   if(g_week_close_last > g_week_opening_high + buffer &&
+      g_week_close_last > g_week_sma_last &&
+      g_week_close_location >= strategy_min_close_location)
       direction = 1;
-   else if(close_last < opening_low - buffer &&
-           close_last < sma_last &&
-           close_location <= (1.0 - strategy_min_close_location))
+   else if(g_week_close_last < g_week_opening_low - buffer &&
+           g_week_close_last < g_week_sma_last &&
+           g_week_close_location <= (1.0 - strategy_min_close_location))
       direction = -1;
    else
       return false;
@@ -382,12 +373,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.reason = (direction > 0) ? "WTI_WEEK_OPEN_RANGE_BREAKOUT_LONG" : "WTI_WEEK_OPEN_RANGE_BREAKOUT_SHORT";
-   g_last_entry_week_key = signal_week_key;
+   g_last_entry_week_key = g_week_signal_week_key;
    return true;
   }
 
 void Strategy_ManageOpenPosition()
   {
+   Strategy_RefreshWeekState();
    Strategy_CloseOpenPositionsIfNeeded();
   }
 
@@ -439,26 +431,23 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   if(!QM_IsNewBar())
-      return;
+   // Single QM_IsNewBar() consume for this tick; latched and reused below so
+   // management/exit can be gated to run once per closed bar (this EA's
+   // management does a CopyRates + ATR/SMA pass, not O(1) per-tick work)
+   // without ever calling QM_IsNewBar() a second time this tick.
+   const bool is_new_bar = QM_IsNewBar();
 
-   QM_EquityStreamOnNewBar();
-   Strategy_ManageOpenPosition();
+   if(is_new_bar)
+      Strategy_ManageOpenPosition();
 
-   if(Strategy_ExitSignal())
+   if(is_new_bar && Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
       for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -471,6 +460,24 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // News blackout gates NEW entries only (below); management/exits above
+   // already ran regardless of news state, per the 2026-07-02 OnTick-ordering
+   // audit finding: risk management must not be silenced during news
+   // windows (this EA's positions carry real broker-side ATR SL/TP either
+   // way, but the ordering rule is binding for all EAs, not just baskets).
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!is_new_bar)
+      return;
+
+   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
