@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12895
 ; ea_slug:      xng-6m-reversal
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   ee4a96d2e7525ea04c8c1ba344c8d695b2786c733aa1146773c1355feeea3c29
+; build_hash:   2881c58bf1b8c1362552439ea7033ddd50664fab6dda834a0aaf614d0dc6988f
 ; author:       Development
 ; date:         2026-07-02
 ;==========================================================

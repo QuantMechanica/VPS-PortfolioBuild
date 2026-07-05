@@ -63,7 +63,26 @@ bool Strategy_IsXngD1()
    return (_Symbol == "XNGUSD.DWX" && _Period == PERIOD_D1);
   }
 
-bool Strategy_HasOpenPosition()
+bool Strategy_HasOpenPositionInDirection(const QM_OrderType desired_type)
+  {
+   const int magic = QM_FrameworkMagic();
+   const ENUM_POSITION_TYPE desired_position_type = (desired_type == QM_BUY) ? POSITION_TYPE_BUY : POSITION_TYPE_SELL;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) == desired_position_type)
+         return true;
+     }
+   return false;
+  }
+
+void Strategy_CloseAllOpenPositions(const QM_ExitReason reason)
   {
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -75,9 +94,8 @@ bool Strategy_HasOpenPosition()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-      return true;
+      QM_TM_ClosePosition(ticket, reason);
      }
-   return false;
   }
 
 void Strategy_AdvanceState_OnNewBar()
@@ -94,7 +112,7 @@ void Strategy_AdvanceState_OnNewBar()
 
    double closes[];
    ArraySetAsSeries(closes, true);
-   const int close_count = CopyClose(_Symbol, PERIOD_D1, 1, lookback + 1, closes);
+   const int close_count = CopyClose(_Symbol, PERIOD_D1, 1, lookback + 1, closes); // perf-allowed: Strategy_AdvanceState_OnNewBar only runs behind QM_IsNewBar() in OnTick.
    if(close_count < lookback + 1)
       return;
 
@@ -104,7 +122,7 @@ void Strategy_AdvanceState_OnNewBar()
 
    double sma_closes[];
    ArraySetAsSeries(sma_closes, true);
-   const int sma_count = CopyClose(_Symbol, PERIOD_D1, 1, sma_period, sma_closes);
+   const int sma_count = CopyClose(_Symbol, PERIOD_D1, 1, sma_period, sma_closes); // perf-allowed: Strategy_AdvanceState_OnNewBar only runs behind QM_IsNewBar() in OnTick.
    if(sma_count < sma_period)
       return;
 
@@ -197,8 +215,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(Strategy_HasOpenPosition())
-      return false;
    if(!g_state_ready)
       return false;
    // Monthly rebalance: only evaluate the fade signal on the first D1 bar of
@@ -225,16 +241,32 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    else
       return false;
 
-   req.type = (reversal_direction > 0) ? QM_BUY : QM_SELL;
-   const double entry_price = QM_EntryMarketPrice(req.type);
+   const QM_OrderType desired_type = (reversal_direction > 0) ? QM_BUY : QM_SELL;
+
+   // Card rule 4: existing position already in the fade direction — skip.
+   if(Strategy_HasOpenPositionInDirection(desired_type))
+      return false;
+
+   const double entry_price = QM_EntryMarketPrice(desired_type);
    if(entry_price <= 0.0)
       return false;
 
-   req.sl = QM_StopATR(_Symbol, req.type, entry_price, strategy_atr_period, strategy_atr_sl_mult);
-   if(req.sl <= 0.0)
+   const double sl_price = QM_StopATR(_Symbol, desired_type, entry_price, strategy_atr_period, strategy_atr_sl_mult);
+   if(sl_price <= 0.0)
       return false;
 
+   // Card rule 5: direction switch — close any opposite-direction position
+   // before opening the new one (no-op if nothing was open).
+   Strategy_CloseAllOpenPositions(QM_EXIT_OPPOSITE_SIGNAL);
+
+   req.type = desired_type;
+   req.sl = sl_price;
    req.reason = (reversal_direction > 0) ? "XNG_6M_REVERSAL_LONG" : "XNG_6M_REVERSAL_SHORT";
+
+   QM_LogEvent(QM_INFO, "XNG_6M_REVERSAL_SIGNAL", StringFormat(
+      "{\"half_yr_return_pct\":%.4f,\"fade_threshold_pct\":%.2f,\"atr_stretch\":%.4f,\"sma_value\":%.5f,\"signal_direction\":%d}",
+      g_half_year_return_pct, min_return, g_stretch_atr, g_sma_last, reversal_direction));
+
    return true;
   }
 
@@ -291,23 +323,13 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -323,6 +345,24 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // News blackout gates NEW entries only (below). The max-hold / zero-cross
+   // exit above and the ATR hard stop (server-side req.sl) must keep
+   // enforcing through EIA/news windows — the card holds the position through
+   // weekly EIA releases by design, so client-side management cannot pause.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
+   Strategy_AdvanceState_OnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
