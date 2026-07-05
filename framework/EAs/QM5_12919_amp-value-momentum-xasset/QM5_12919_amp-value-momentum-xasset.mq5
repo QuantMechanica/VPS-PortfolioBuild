@@ -32,7 +32,7 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_top_n                    = 3;
-input int    strategy_min_eligible_symbols     = 6;
+input int    strategy_min_eligible_symbols     = 4;
 input int    strategy_skip_recent_days         = 21;
 input int    strategy_momentum_lookback_days   = 252;
 input int    strategy_value_lookback_days      = 1260;

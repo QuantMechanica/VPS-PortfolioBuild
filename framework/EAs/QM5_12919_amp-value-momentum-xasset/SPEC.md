@@ -4,7 +4,7 @@
 **Slug:** `amp-value-momentum-xasset`
 **Source:** `afab7a6f-c3c8-51ae-a609-f376744beb8e`
 **Author of this spec:** Codex
-**Last revised:** 2026-07-02
+**Last revised:** 2026-07-05
 
 ---
 
@@ -19,7 +19,7 @@ Once per month, the EA scores eight DWX instruments using the Asness-Moskowitz-P
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
 | `strategy_top_n` | 3 | 1-8 | Number of highest combined-score symbols eligible for long exposure. |
-| `strategy_min_eligible_symbols` | 6 | 3-8 | Minimum symbols with enough D1 history required before any rank is valid. |
+| `strategy_min_eligible_symbols` | 4 | 3-8 | Minimum symbols with enough D1 history required before any rank is valid (top_n+1 floor; the card only requires per-instrument history skip, not a numeric universe-wide minimum). |
 | `strategy_skip_recent_days` | 21 | 1-63 | Recent D1 bars excluded from both signals to avoid one-month reversal contamination. |
 | `strategy_momentum_lookback_days` | 252 | 126-378 | D1-bar lookback for medium-horizon momentum. |
 | `strategy_value_lookback_days` | 1260 | 756-1512 | D1-bar lookback for long-horizon reversal value. |
@@ -102,3 +102,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-02 | Initial build from card | farm task 84c638cb-3129-4083-9bc9-5d4645b5af8b |
+| v2 | 2026-07-05 | Q01 rework (2x codex_review_fail on zero_trades): relaxed strategy_min_eligible_symbols 6->4 (top_n+1, more literal reading -- card never mandates a universe-wide minimum beyond per-instrument history skip); re-verified cross-symbol multi-year basket lookback works in this tester (QM5_10328 precedent, 1800-bar warmup, 31 trades in a 6-month window) | farm task 84c638cb-3129-4083-9bc9-5d4645b5af8b |
