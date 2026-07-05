@@ -1,6 +1,8 @@
 # FTMO decision — Round25 12-leg book, Phase 1 @ scale 9.0 (Two-Speed)
 
-**Status: DRAFT — file-side staged 2026-07-05; awaiting OWNER manifest approval + chart session + AutoTrading**
+**Status: DEPLOYED ON FREE TRIAL — charts applied + AutoTrading ON 2026-07-05
+16:47–16:54 local; Claude-verified 12/12 (checklist below). Open: FTMO-portal
+account-number confirm (1513845506) + server-time check at first tick.**
 **OWNER direction 2026-07-05 (chat): run the book on an FTMO Free Trial first — dress
 rehearsal (plumbing verification: symbols, sizing, server-time offset, risk-cap events,
 first fills), not a pass attempt; challenge purchase deferred.**
@@ -103,20 +105,40 @@ the cap input natively.
       `C:\QM\deploy\FTMO_Round25_2026-07-05\live_eas_sha256.txt`)
 - [x] SHA256 staged presets == terminal `MQL5\Presets` copies (12/12; old 13 demo
       presets + 11 old binaries moved to `pre_deploy_backup\`)
-- [ ] Account identity: **Free Trial first (OWNER 2026-07-05)**. Still open: trial
-      account with balance/currency **USD 100,000** (sizing basis of all 12 presets and
-      of the FTMO limit percentages); if the trial is a new login (terminal currently
-      holds 1513845506 / FTMO-Demo, connected, 0 positions — journal 20260705.log),
-      OWNER logs the terminal in; Claude then re-verifies SHA 12/12 and records the
-      trial terms (duration/target per FTMO dashboard) here
-- [ ] OWNER manifest approval in writing
-- [ ] Charts applied (12), journal `loaded successfully` + `INIT_OK` 12/12,
-      `RISK_CAP_OVERRIDE` in exactly 4 EA logs
-- [ ] Server-time offset check at first tick
-- [ ] AutoTrading enabled by OWNER
+- [x] Account identity: **Free Trial first (OWNER 2026-07-05)**; OWNER confirms trial
+      account created with USD 100,000. Equity evidence: `RISK_CAP_OVERRIDE`
+      `cap_money=2000.00` at `cap_pct=2.0` in all 4 big legs → equity exactly 100,000.
+      Virgin account: journals 06-29/06-30 show logins only (no experts, no deals),
+      07-05 sync `0 positions`. **Residual open item:** terminal journal shows NO new
+      login today — session runs on `1513845506` (FTMO-Demo, authorized since 06-29).
+      OWNER to confirm the FTMO-portal trial account number IS 1513845506; if the
+      portal shows a different number, re-login + re-verify re-inits. Trial terms
+      (web-verified 07-05): 14 days, target 5%, daily 5% / max 10%.
+- [x] OWNER manifest approval — 2026-07-05 chat chain: „deployen!" (deploy order) +
+      Trial-first direction + „EAs sind alle auf den Charts, überprüfe!" (execution
+      confirmation). Recorded as written approval for the TRIAL run; to be re-confirmed
+      explicitly before the paid challenge.
+- [x] Charts applied (12) by OWNER 2026-07-05 16:47–16:54 local. Verification:
+      journal `loaded successfully` 12/12 (20260705.log); QM EA logs `INIT_OK` 12/12
+      with magic set matching the leg table 12/12, 0 unexpected (magic comes from the
+      preset → proves correct preset per chart); `RISK_CAP_OVERRIDE` in exactly the
+      4 cap-2.0 legs (10692/10911/11476/12958). Post-session SHA re-verify: EAs 12/12
+      vs `live_eas_sha256.txt`, presets 12/12 vs staging. News calendar: 10/12
+      `NEWS_CALENDAR_LOADED` (fresh 2026-07-05 15:42 file, identical hash);
+      10700 + 11476 `NEWS_CALENDAR_SKIPPED` (all news axes off per their preset /
+      compiled defaults — identical params ran through the MT5 validation, so live
+      behavior == evidence behavior; funded-stage compliance = deviation 4, still
+      open). Transient `unconfigured` (magic 0) pre-preset inits during attach were
+      all superseded within the session; market closed → no trade risk.
+- [ ] Server-time offset check at first tick — preliminary: last FX tick Friday
+      23:54:59 broker / USOIL 19:59:44 (EA log `ts_broker`) is consistent with UTC+3;
+      definitive check at Monday market open (~23:00 CEST)
+- [x] AutoTrading enabled 16:47:47 local by OWNER (during chart session; market
+      closed, 0 positions)
 
 ## Sign-off
 
 - Package + staging: Claude, 2026-07-05
-- Manifest approval: _pending OWNER_
-- AutoTrading: _pending OWNER_
+- Manifest approval: OWNER, 2026-07-05 chat (trial run; re-confirm before paid challenge)
+- Charts + AutoTrading: OWNER, 2026-07-05 16:47–16:54 local
+- Post-session verification (SHA/INIT/magic/risk-cap/equity): Claude, 2026-07-05
