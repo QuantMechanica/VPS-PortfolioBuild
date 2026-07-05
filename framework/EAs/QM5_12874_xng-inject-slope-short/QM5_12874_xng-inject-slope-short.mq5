@@ -49,20 +49,9 @@ input double strategy_atr_sl_mult          = 3.0;
 input int    strategy_max_hold_days        = 28;
 input int    strategy_max_spread_points    = 2500;
 
-int g_last_entry_month_key = 0;
-
 bool Strategy_IsXngD1()
   {
    return (_Symbol == "XNGUSD.DWX" && _Period == PERIOD_D1);
-  }
-
-int Strategy_MonthKey(const datetime t)
-  {
-   if(t <= 0)
-      return 0;
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 100 + dt.mon;
   }
 
 int Strategy_MonthFromTime(const datetime t)
@@ -78,15 +67,6 @@ bool Strategy_InInjectionWindow(const datetime t)
   {
    const int month = Strategy_MonthFromTime(t);
    return (month >= 4 && month <= 10);
-  }
-
-bool Strategy_IsFirstBarOfMonth()
-  {
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: monthly calendar gate.
-   const datetime closed_bar = iTime(_Symbol, PERIOD_D1, 1);  // perf-allowed: monthly calendar gate.
-   if(current_bar <= 0 || closed_bar <= 0)
-      return false;
-   return (Strategy_MonthKey(current_bar) != Strategy_MonthKey(closed_bar));
   }
 
 bool Strategy_HasOpenPosition()
@@ -218,9 +198,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   Strategy_CloseOpenPositionsIfNeeded();
-
-   if(!Strategy_IsFirstBarOfMonth())
+   // Latched exactly once per broker-calendar month via the framework's D1
+   // calendar tracker. Must be called unconditionally on every invocation
+   // (before any early-return) so the month-transition edge is never missed
+   // while a position is held or spread/data checks fail on that bar.
+   const bool is_first_bar_of_month = QM_IsNewCalendarPeriod(PERIOD_MN1);
+   if(!is_first_bar_of_month)
       return false;
 
    if(Strategy_HasOpenPosition())
@@ -249,9 +232,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                                current_bar_time))
       return false;
 
-   const int current_month_key = Strategy_MonthKey(current_bar_time);
-   if(current_month_key <= 0 || current_month_key == g_last_entry_month_key)
-      return false;
    if(!Strategy_InInjectionWindow(current_bar_time))
       return false;
    if(close_last >= slow_sma)
@@ -272,7 +252,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.reason = "XNG_INJECT_SLOPE_SHORT";
-   g_last_entry_month_key = current_month_key;
    return true;
   }
 
@@ -329,23 +308,18 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
+   // Position management and rule-based exits (season end / fast-SMA
+   // recovery / slope flip / max-hold) must keep running through news
+   // windows -- the news gate below blocks NEW entries only. See the
+   // 2026-07-02 audit finding (QM5_12821 OnTick, commit dc418a720) for the
+   // canonical order this mirrors.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -361,6 +335,19 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
