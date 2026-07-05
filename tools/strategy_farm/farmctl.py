@@ -139,7 +139,7 @@ PHASE_ACTIVE_TIMEOUT_MIN = {
     "Q05": 60,     # MED stress, full history
     "Q06": 60,     # HARSH stress, full history
     "Q07": 120,    # 5 seeds × full history under HARSH stress
-    "Q08": 30,     # Davey aggregator reads log; cheap
+    "Q08": 120,    # aggregator runs a full-history baseline backtest; basket EAs (Model 4 multi-symbol) need 90min
     "Q09": 120,    # news-mode sweep (1 or 7 modes)
     "Q10": 60,     # full-history canonical confirmation
 }
