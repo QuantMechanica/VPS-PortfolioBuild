@@ -4,7 +4,7 @@
 **Slug:** `eia-xng-shfade`
 **Source:** `EIA-XNG-SHOULDER-2026`
 **Author of this spec:** Codex
-**Last revised:** 2026-06-27
+**Last revised:** 2026-07-05
 
 ## 1. Strategy Logic
 
@@ -61,3 +61,4 @@ No live manifest or `T_Live` file is touched by this build.
 | Version | Date | Change | Actor |
 |---|---|---|---|
 | v1 | 2026-06-27 | Initial structural XNG shoulder-season failed-rally fade build | Codex |
+| v2 | 2026-07-05 | Rebuild in place: reorder OnTick so the news blackout gates entries only, not position management/exits (2026-07-02 audit finding) | Claude |
