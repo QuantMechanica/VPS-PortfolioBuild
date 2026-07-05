@@ -52,6 +52,7 @@ input group "Risk"
 input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
+input double qm_risk_cap_pct           = 1.0;   // per-trade risk cap, % of equity (framework default 1.0)
 
 input group "News"
 input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
@@ -314,6 +315,9 @@ int OnInit()
                         qm_stress_reject_probability,
                         qm_news_temporal,              // FW1 Axis A
                         qm_news_compliance))           // FW1 Axis B
+      return INIT_FAILED;
+
+   if(!QM_FrameworkSetRiskCapPct(qm_risk_cap_pct))
       return INIT_FAILED;
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");

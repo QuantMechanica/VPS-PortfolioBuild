@@ -196,6 +196,25 @@ bool QM_FrameworkInit(const int ea_id,
    return true;
   }
 
+// 2026-07-05 — per-trade risk-cap override for prop-account books (Round25 FTMO
+// Two-Speed, OWNER-ratified). QM_FrameworkInit hard-caps per-trade risk money at
+// 1% of account equity (risk_cap_money above); prop legs sized above 1% of the
+// account need a wider cap. Call AFTER QM_FrameworkInit. cap_pct=1.0 keeps the
+// framework default; bounds (0, 5.0] are a hard safety ceiling (FTMO daily limit).
+bool QM_FrameworkSetRiskCapPct(const double cap_pct)
+  {
+   if(!g_qm_fw_initialized)
+      return false;
+   if(cap_pct <= 0.0 || cap_pct > 5.0)
+      return false;
+   const double cap_money = AccountInfoDouble(ACCOUNT_EQUITY) * (cap_pct / 100.0);
+   g_qm_risk_per_trade_cap_money = cap_money;
+   if(MathAbs(cap_pct - 1.0) > 1e-9)
+      QM_LogEvent(QM_INFO, "RISK_CAP_OVERRIDE",
+                  StringFormat("{\"cap_pct\":%.4f,\"cap_money\":%.2f}", cap_pct, cap_money));
+   return true;
+  }
+
 int QM_FrameworkMagic()
   {
    return g_qm_fw_magic;
