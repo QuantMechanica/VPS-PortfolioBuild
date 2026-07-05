@@ -99,9 +99,8 @@ sets at RISK_FIXED = $1,000/trade (HR4 convention). Therefore on a 100k FTMO acc
 | QM5_12475:NDX | 0.0361 | 325 | 0.33% |
 | **Σ (all legs simultaneously at full SL)** | 1.0000 | **9,000** | **9.0%** |
 
-Pre-deploy verification (deterministic, MUST run before any live setfile generation):
-parse each source report.htm's input block and confirm its actual RISK_FIXED — any leg
-whose report ran at a different RISK_FIXED gets its factor corrected accordingly.
+Pre-deploy verification — **DONE 2026-07-05 morning: all 12 source reports parsed,
+12/12 confirm RISK_FIXED=1000.** The translation table above is exact as printed.
 Note: worst-case 9.0% simultaneous full-loss < FTMO 10% max-loss limit even before
 correlation effects; the sim puts the realistic breach probability at 4.24%.
 
