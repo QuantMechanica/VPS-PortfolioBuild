@@ -128,13 +128,17 @@ bool Strategy_LoadCarryState(int &direction, double &swap_edge, double &return_1
    return true;
   }
 
+// Called ONCE per new closed D1 bar (from OnTick's latched new-bar flag).
+// Recomputes the carry direction + 12M adverse-return guard (CopyClose over
+// up to ~315 bars) and caches it. Per-tick code below (management, entry)
+// reads only the cached fields — never recomputes this per tick.
+void Strategy_AdvanceCarryState_OnNewBar()
+  {
+   g_cache_carry_valid = Strategy_LoadCarryState(g_cache_carry_direction, g_cache_swap_edge, g_cache_return_12m_pct);
+  }
+
 void Strategy_CloseOpenPositionsIfNeeded()
   {
-   int carry_direction = 0;
-   double swap_edge = 0.0;
-   double return_12m_pct = 0.0;
-   const bool carry_ready = Strategy_LoadCarryState(carry_direction, swap_edge, return_12m_pct);
-
    const int magic = QM_FrameworkMagic();
    const datetime now = TimeCurrent();
    const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
@@ -154,11 +158,11 @@ void Strategy_CloseOpenPositionsIfNeeded()
       if(opened > 0 && now - opened >= hold_seconds)
          should_close = true;
 
-      if(carry_ready && carry_direction != 0)
+      if(g_cache_carry_valid && g_cache_carry_direction != 0)
         {
          const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
          const int position_direction = (position_type == POSITION_TYPE_BUY) ? 1 : -1;
-         if(position_direction != carry_direction)
+         if(position_direction != g_cache_carry_direction)
             should_close = true;
         }
 
@@ -200,14 +204,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   Strategy_CloseOpenPositionsIfNeeded();
-
-   if(!Strategy_IsRebalanceBar())
-      return false;
-
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 de-dupe behind new-bar.
-   const int day_key = Strategy_DayKey(current_bar);
-   if(day_key <= 0 || day_key == g_last_entry_day_key)
+   // Called only on a latched new D1 bar (see OnTick) — QM_Sig_DayOfWeek gates
+   // the configured rebalance weekday (1=Mon..5=Fri maps to array idx 0..4).
+   bool day_enabled[7];
+   for(int d = 0; d < 7; ++d)
+      day_enabled[d] = false;
+   const int enabled_idx = strategy_rebalance_weekday - 1;
+   if(enabled_idx >= 0 && enabled_idx < 7)
+      day_enabled[enabled_idx] = true;
+   if(QM_Sig_DayOfWeek(TimeCurrent(), day_enabled) == 0)
       return false;
 
    if(Strategy_HasOpenPosition())
@@ -220,15 +225,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   int direction = 0;
-   double swap_edge = 0.0;
-   double return_12m_pct = 0.0;
-   if(!Strategy_LoadCarryState(direction, swap_edge, return_12m_pct))
-      return false;
-   if(direction == 0)
+   if(!g_cache_carry_valid || g_cache_carry_direction == 0)
       return false;
 
-   req.type = (direction > 0) ? QM_BUY : QM_SELL;
+   req.type = (g_cache_carry_direction > 0) ? QM_BUY : QM_SELL;
    const double entry_price = QM_EntryMarketPrice(req.type);
    if(entry_price <= 0.0)
       return false;
@@ -241,8 +241,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(req.sl <= 0.0)
       return false;
 
-   req.reason = (direction > 0) ? "XTI_SWAP_CARRY_LONG" : "XTI_SWAP_CARRY_SHORT";
-   g_last_entry_day_key = day_key;
+   req.reason = (g_cache_carry_direction > 0) ? "XTI_SWAP_CARRY_LONG" : "XTI_SWAP_CARRY_SHORT";
    return true;
   }
 
@@ -299,23 +298,24 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   if(!QM_IsNewBar())
-      return;
+   // Latch QM_IsNewBar() ONCE per tick (single-consume) and reuse the flag
+   // both to refresh the cached carry state and, later, to gate entry only.
+   const bool new_bar = QM_IsNewBar();
 
-   QM_EquityStreamOnNewBar();
+   if(new_bar)
+      Strategy_AdvanceCarryState_OnNewBar();
+
+   // Management/exit run every tick, ungated by the news filter below, so the
+   // ATR hard stop / max-hold / carry-flip close keep enforcing through news
+   // windows (2026-07-02 audit finding: a news gate above management silently
+   // suspends risk handling exactly when spreads spike).
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -331,6 +331,21 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // News blackout gates NEW entries only (below it must not sit above
+   // management — see comment above).
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!new_bar)
+      return;
+
+   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
