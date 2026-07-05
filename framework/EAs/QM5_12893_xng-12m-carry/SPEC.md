@@ -4,7 +4,7 @@
 **Slug:** `xng-12m-carry`  
 **Source:** `KOIJEN-CARRY-2018`  
 **Author of this spec:** Codex  
-**Last revised:** 2026-07-02
+**Last revised:** 2026-07-05
 
 ## 1. Strategy Logic
 
@@ -75,3 +75,4 @@ touched by this build.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-02 | Initial build from card | Enqueue Q02 |
+| v2 | 2026-07-05 | Rework: OnTick ordering + smoke evidence | Moved the news-blackout gate below `Strategy_ManageOpenPosition`/`Strategy_ExitSignal` per the 2026-07-02 audit finding (management/time/carry-flip exits must keep running through news windows); cached carry-direction state once per closed D1 bar instead of recomputing on every tick; ran the required Q01 smoke test (build_task_id 041888a8-7cde-4e72-b4ff-5315c795f422) |
