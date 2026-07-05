@@ -25,8 +25,12 @@ pass attempt. Trial-pass (5% in 14d) is a free-roll bonus. G1 closes when ALL ho
       (2026-07-06 00:05 broker = 21:05Z; decision record has the log evidence)
 - [ ] ≥5 trading days with `ftmo_trial_pulse` verdict OK (no EA errors, 12/12 magics,
       terminal uptime through the daily FTMO server maintenance window)
-- [ ] ≥1 fill per: index (.cash), metal, FX leg class — sizing sane vs RISK_FIXED
-      table (lot = risk/SL-distance×tick-value; spot-check 3 trades in EA logs)
+- [~] ≥1 fill per: index (.cash), metal, FX leg class — sizing sane vs RISK_FIXED
+      table. **First fills 2026-07-06 01:05 broker: 10286 USOIL.cash SELL 1.15
+      lots (risk 4.501×100×1.15 = $517.6 ≈ RISK_FIXED 518 ✓ EXACT) + 12475
+      US100.cash BUY 3.20 lots (101.55×3.2 = $325.0 = RISK_FIXED 325 ✓ EXACT);
+      retcode 10009 clean, symbol_slot set. Commodity + index classes verified;
+      FX/metal fill pending.**
 - [ ] `RISK_CAP_OVERRIDE` present in exactly the 4 cap-2.0 legs (verified 07-05)
 - [ ] No framework-level surprises (silent clamps, symbol mismatches, news-filter
       misfires) — the QM_Common risk-cap class of bug
