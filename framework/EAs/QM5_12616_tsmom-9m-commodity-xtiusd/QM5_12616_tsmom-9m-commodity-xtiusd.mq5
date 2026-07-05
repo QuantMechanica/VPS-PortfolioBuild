@@ -56,20 +56,18 @@ bool Strategy_IsXtiD1()
    return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
   }
 
-int Strategy_MonthKey(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 100 + dt.mon;
-  }
-
 bool Strategy_IsMonthlyRebalanceBar()
   {
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 calendar gate behind framework new-bar.
-   const datetime prior_bar = iTime(_Symbol, PERIOD_D1, 1);   // perf-allowed: D1 calendar gate behind framework new-bar.
-   if(current_bar <= 0 || prior_bar <= 0)
+   // Framework calendar-cadence helper (QM_Indicators.mqh) -- stateless key
+   // comparison across two D1 shifts, NOT the latching QM_IsNewCalendarPeriod
+   // (which would double-consume its single-fire edge between the close-check
+   // in Strategy_ManageOpenPosition and the entry-check in Strategy_EntrySignal
+   // on the same tick).
+   const int current_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   const int prior_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 1);
+   if(current_key <= 0 || prior_key <= 0)
       return false;
-   return Strategy_MonthKey(current_bar) != Strategy_MonthKey(prior_bar);
+   return current_key != prior_key;
   }
 
 bool Strategy_HasOpenPosition()
@@ -188,8 +186,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!Strategy_IsMonthlyRebalanceBar())
       return false;
 
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 monthly de-dupe behind new-bar gate.
-   const int month_key = Strategy_MonthKey(current_bar);
+   const int month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
    if(month_key <= 0 || month_key == g_last_entry_month_key)
       return false;
 
@@ -220,7 +217,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry_price <= 0.0)
       return false;
 
-   req.sl = QM_StopATR(_Symbol, req.type, entry_price, strategy_atr_period, strategy_atr_sl_mult);
+   // QM_StopATRFromValue reuses the already-pooled atr_last read above.
+   // QM_StopATR itself re-derives ATR via a raw iATR handle that is opened
+   // and released within the call (QM_StopRulesReadATRValue), which never
+   // back-calculates in the tester -- root-caused 2026-07-05 on the WTI
+   // calendar-fade family (1 trade then permanent silence).
+   req.sl = QM_StopATRFromValue(_Symbol, req.type, entry_price, atr_last, strategy_atr_sl_mult);
    if(req.sl <= 0.0)
       return false;
 
@@ -282,23 +284,13 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -314,6 +306,22 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // News blackout gates NEW entries only (below), per the 2026-07-02 audit
+   // rule -- it must not sit above Strategy_ManageOpenPosition/ExitSignal so
+   // the ATR hard stop keeps enforcing through news windows.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
