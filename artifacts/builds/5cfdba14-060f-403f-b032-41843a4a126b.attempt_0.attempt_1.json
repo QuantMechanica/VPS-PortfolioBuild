@@ -1,0 +1,32 @@
+{
+  "task_id": "5cfdba14-060f-403f-b032-41843a4a126b",
+  "ea_id": "QM5_10760",
+  "ea_dir": "framework/EAs/QM5_10760_tv-iu-orb",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10760_tv-iu-orb\\QM5_10760_tv-iu-orb.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10760_tv-iu-orb\\QM5_10760_tv-iu-orb.ex5",
+  "ex5_bytes": 303514,
+  "magic_base": 107600000,
+  "symbols_registered": ["EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX", "XAUUSD.DWX", "GDAXI.DWX", "NDX.DWX", "WS30.DWX", "SP500.DWX"],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10760_tv-iu-orb\\sets\\QM5_10760_tv-iu-orb_EURUSD.DWX_M5_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10760_tv-iu-orb\\sets\\QM5_10760_tv-iu-orb_GBPUSD.DWX_M5_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10760_tv-iu-orb\\sets\\QM5_10760_tv-iu-orb_USDJPY.DWX_M5_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10760_tv-iu-orb\\sets\\QM5_10760_tv-iu-orb_XAUUSD.DWX_M5_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10760_tv-iu-orb\\sets\\QM5_10760_tv-iu-orb_GDAXI.DWX_M5_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10760_tv-iu-orb\\sets\\QM5_10760_tv-iu-orb_NDX.DWX_M5_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10760_tv-iu-orb\\sets\\QM5_10760_tv-iu-orb_WS30.DWX_M5_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10760_tv-iu-orb\\sets\\QM5_10760_tv-iu-orb_SP500.DWX_M5_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10760_tv-iu-orb\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "q02_requested_by_mission_after_clean_compile_build_check",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": [
+    "OnTick ordering fixed per 2026-07-02 audit binding: news_allows check moved below ExitSignal loop; previously news gate was above ExitSignal (old skeleton ordering). Recompiled 2026-07-05.",
+    "Session times use a configurable NY offset (strategy_broker_to_ny_offset_hours=7) rather than DST-aware QM_IsUSDSTUTC helper — the rework v2 comment explains this was done deliberately to match sibling QM5_10654. The offset is setfile-adjustable per DST period.",
+    "SP500.DWX registered per card R3 (listed as optional backtest-only); it is matrix-verified for T1-T5 backtests but broker-not-routable for live T6. Live gate concern is Board Advisor's T6 decision, not build scope."
+  ]
+}

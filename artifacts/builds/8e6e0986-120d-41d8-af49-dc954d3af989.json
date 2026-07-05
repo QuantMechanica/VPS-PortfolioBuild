@@ -1,0 +1,39 @@
+{
+  "task_id": "8e6e0986-120d-41d8-af49-dc954d3af989",
+  "ea_id": "QM5_13017",
+  "slug": "grimes-context-pb-xau-v2",
+  "build_result": "PASS",
+  "build_date": "2026-07-05",
+  "build_agent": "Claude",
+  "parent_ea": "QM5_10939_grimes-context-pb",
+  "sibling_surgery": "QM5_12990_grimes-context-pb-v2 (GBPUSD, slot 1)",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13017_grimes-context-pb-xau-v2.md",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13017_grimes-context-pb-xau-v2",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13017_grimes-context-pb-xau-v2\\QM5_13017_grimes-context-pb-xau-v2.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13017_grimes-context-pb-xau-v2\\QM5_13017_grimes-context-pb-xau-v2.ex5",
+  "ex5_bytes": 309124,
+  "ex5_sha256": "F4C39C88C68FC7EF10C564ECE633A4AA5BCAE75903F486C44AF2399D6C0250CF",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_result": "PASS",
+  "spec_validation": "PASS",
+  "magic_number": 130170000,
+  "magic_slot": 0,
+  "symbol": "XAUUSD.DWX",
+  "timeframe": "H4",
+  "surgical_delta": "strategy_time_exit_h4_bars 18 -> 36 (72h -> 144h)",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "q02_requested_by_mission_after_clean_compile_build_check",
+  "set_files": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13017_grimes-context-pb-xau-v2\\sets\\QM5_13017_grimes-context-pb-xau-v2_XAUUSD.DWX_H4_backtest.set"
+  ],
+  "magic_numbers_csv_row": "13017,grimes-context-pb-xau-v2,0,XAUUSD.DWX,130170000,2026-07-05,Claude,active",
+  "update_magic_resolver_result": "OK: 14298 rows kept, sha=231700E159CFFFB3",
+  "open_questions": [
+    "breakeven_r_mult=1.5 inherited from QM5_12990 (GBPUSD sibling); original parent card says 1.0R \u2014 confirm which value is correct for the XAUUSD surgery or treat as accepted v2-level default.",
+    "strategy_time_exit_h4_bars=36 matches GBPUSD sibling (12990); OWNER instruction says 36 H4 bars = 144h, consistent with the evidence bucket being >3d (72h+). No ambiguity.",
+    "Only XAUUSD.DWX registered (surgery scope); the 12990 SPEC.md lists the full basket (EURUSD/GBPUSD/USDJPY/XAUUSD/GDAXI) but the magic CSV shows only GBPUSD slot 1. Pattern confirmed: single-symbol surgery, single magic entry."
+  ],
+  "compile_succeeded": true,
+  "build_check_passed": true
+}

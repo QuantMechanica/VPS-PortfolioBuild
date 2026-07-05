@@ -5250,11 +5250,55 @@ def _spawn_codex_for_pre_review(root: Path, build_task_row: sqlite3.Row) -> dict
     }
 
 
+def _resolve_build_result_file(root: Path, build_task_row: sqlite3.Row) -> Path | None:
+    """Locate a build_result JSON across the known bases and attempt-suffixed names.
+
+    Root-split-brain guard (2026-07-05): the pump runs with root=D:\\QM\\strategy_farm
+    while CLI-primed missions historically wrote to C:\\QM\\repo\\artifacts\\builds.
+    A hard root-only check made every repo-written result invisible here, producing
+    the block -> attempt-rename -> re-record loop (events: build_pre_review_not_
+    reviewable "missing_build_result" on files that existed). Resolve instead:
+    payload build_result_path first, then <base>/artifacts/builds/<id>.json for both
+    bases, then the newest attempt-suffixed sibling.
+    """
+    build_task_id = build_task_row["id"]
+    candidates: list[Path] = []
+    try:
+        payload = json.loads(build_task_row["payload_json"] or "{}")
+        raw = payload.get("build_result_path")
+        if raw:
+            candidates.append(Path(str(raw)))
+    except (json.JSONDecodeError, TypeError):
+        pass
+    bases = [root]
+    if CANONICAL_REPO_ROOT not in bases:
+        bases.append(CANONICAL_REPO_ROOT)
+    for base in bases:
+        candidates.append(base / "artifacts" / "builds" / f"{build_task_id}.json")
+    for cand in candidates:
+        try:
+            if cand.exists() and cand.stat().st_size > 0:
+                return cand
+        except OSError:
+            continue
+    # Fall back to the newest attempt-archived sibling (retry archiver renames
+    # <id>.json -> <id>.attempt_N[.attempt_M...].json without updating readers).
+    globbed: list[Path] = []
+    for base in bases:
+        try:
+            globbed.extend((base / "artifacts" / "builds").glob(f"{build_task_id}*.json"))
+        except OSError:
+            continue
+    globbed = [p for p in globbed if p.stat().st_size > 0]
+    if globbed:
+        return max(globbed, key=lambda p: p.stat().st_mtime)
+    return None
+
+
 def _pre_review_ready(root: Path, build_task_row: sqlite3.Row) -> tuple[bool, str]:
     """Return whether a done build has enough durable artifacts for Codex review."""
-    build_task_id = build_task_row["id"]
-    build_result_path = root / "artifacts" / "builds" / f"{build_task_id}.json"
-    if not build_result_path.exists():
+    build_result_path = _resolve_build_result_file(root, build_task_row)
+    if build_result_path is None:
         return False, "missing_build_result"
     try:
         build_result = json.loads(build_result_path.read_text(encoding="utf-8-sig"))
