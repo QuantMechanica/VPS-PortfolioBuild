@@ -1,0 +1,35 @@
+{
+  "task_id": "90a99219-7aef-4392-828b-9be553c73c0a",
+  "ea_id": "QM5_10209",
+  "ea_dir": "framework/EAs/QM5_10209_tv-atr-ema-session",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10209_tv-atr-ema-session\\QM5_10209_tv-atr-ema-session.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10209_tv-atr-ema-session\\QM5_10209_tv-atr-ema-session.ex5",
+  "ex5_bytes": 307346,
+  "magic_base": 102090000,
+  "symbols_registered": ["GDAXI.DWX", "NDX.DWX", "WS30.DWX", "XAUUSD.DWX", "EURUSD.DWX"],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10209_tv-atr-ema-session\\sets\\QM5_10209_tv-atr-ema-session_GDAXI.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10209_tv-atr-ema-session\\sets\\QM5_10209_tv-atr-ema-session_NDX.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10209_tv-atr-ema-session\\sets\\QM5_10209_tv-atr-ema-session_WS30.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10209_tv-atr-ema-session\\sets\\QM5_10209_tv-atr-ema-session_XAUUSD.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10209_tv-atr-ema-session\\sets\\QM5_10209_tv-atr-ema-session_EURUSD.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10209_tv-atr-ema-session\\sets\\QM5_10209_tv-atr-ema-session_GDAXI.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10209_tv-atr-ema-session\\sets\\QM5_10209_tv-atr-ema-session_NDX.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10209_tv-atr-ema-session\\sets\\QM5_10209_tv-atr-ema-session_WS30.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10209_tv-atr-ema-session\\sets\\QM5_10209_tv-atr-ema-session_XAUUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_10209_tv-atr-ema-session\\sets\\QM5_10209_tv-atr-ema-session_EURUSD.DWX_H1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10209_tv-atr-ema-session\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "q02_requested_by_mission_after_clean_compile_build_check",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": [
+    "OnTick ordering fixed per 2026-07-02 audit binding: news_allows check moved below ExitSignal loop. SPEC.md rewritten from incomplete stub to full 7-section validator format. Recompiled 2026-07-05.",
+    "iClose calls at bar shifts 1 and 2 in Strategy_EntrySignal annotated // perf-allowed: closed-bar EMA cross detection, called after QM_IsNewBar gate.",
+    "Prior build generated H1 setfiles; card specifies M15/M30. M15 setfiles generated and listed first; H1 setfiles preserved for backward compat. Q02 phase runner should use M15 setfiles per card spec. ATR thresholds (strategy_long_atr_points_max=20, strategy_short_atr_points_min=25) are expressed in price POINTS — they will need per-symbol calibration in P3 since 20 points is meaningful for EURUSD but tiny for NDX/GDAXI. Default values will likely produce very few or no trades on index CFDs; P3 sweep must adjust.",
+    "Session defaults use broker-time windows embedded in code (GDAXI: 10:00-18:30, US indices: 16:30-23:00, FX/gold: 09:00-17:30). These are DST-aware via TimeCurrent() (broker time) but use a fixed GMT+2/+3 DXZ mapping; setfile overrides available if DST offset changes."
+  ]
+}
