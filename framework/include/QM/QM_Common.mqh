@@ -656,7 +656,9 @@ void QM_FrameworkOnTradeTransaction(const MqlTradeTransaction &trans,
       QM_FrameworkCloseAllOwnedPositions("ks_distribution_divergence");
       // The fatal log inside QM_KillSwitchKSCheck already carries the d / d_crit / n.
       // Manual halt-flag is the most reliable cross-restart suppression.
-      const string halt_path = StringFormat("D:\\QM\\data\\halt\\%d.halt", g_qm_fw_ea_id);
+      // H2 fix (2026-07-05): sandbox-relative path (the old D:\QM\... literal was
+      // invalid inside the MQL5 file sandbox — the write silently failed forever).
+      const string halt_path = StringFormat("QM\\halt\\%d.halt", g_qm_fw_ea_id);
       int handle = FileOpen(halt_path, FILE_WRITE | FILE_TXT | FILE_ANSI);
       if(handle != INVALID_HANDLE)
         {

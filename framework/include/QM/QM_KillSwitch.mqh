@@ -19,6 +19,8 @@ double g_qm_ks_portfolio_dd_halt_pct     = 0.0;
 double g_qm_ks_per_trade_risk_cap_pct    = 1.0;
 string g_qm_ks_manual_halt_file          = "";
 string g_qm_ks_portfolio_dd_signal_file  = "";
+bool   g_qm_ks_portfolio_signal_explicit = false;
+string g_qm_ks_book_tag                  = "";
 
 bool   g_qm_ks_initialized               = false;
 bool   g_qm_ks_halted                    = false;
@@ -212,10 +214,18 @@ bool QM_KillSwitchInit(const int ea_id,
    g_qm_ks_per_trade_risk_cap_pct = MathMax(0.0, per_trade_risk_cap_pct);
    g_qm_ks_portfolio_dd_signal_file = QM_KillSwitchTrim(portfolio_dd_signal_file);
    g_qm_ks_manual_halt_file = QM_KillSwitchTrim(manual_halt_file);
+   g_qm_ks_portfolio_signal_explicit = (StringLen(g_qm_ks_portfolio_dd_signal_file) > 0);
+   // H2 fix (2026-07-05): the historical defaults were absolute D:\QM\data\halt\
+   // paths, which the MQL5 file sandbox can never resolve (drive-letter paths are
+   // invalid for FileIsExist/FileOpen) — the halt-file channel was silently dead
+   // on live terminals since introduction (D:\QM\data\halt stayed empty; no
+   // KS_MANUAL/KS_PORTFOLIO_DD ever fired). Defaults are now sandbox-relative:
+   // terminal-local MQL5\Files\QM\halt\ is checked first (terminal-scoped halt),
+   // then Common\Files\QM\halt\ via FILE_COMMON (machine-wide halt).
    if(StringLen(g_qm_ks_manual_halt_file) == 0 && ea_id > 0)
-      g_qm_ks_manual_halt_file = StringFormat("D:\\QM\\data\\halt\\%d.halt", ea_id);
+      g_qm_ks_manual_halt_file = StringFormat("QM\\halt\\%d.halt", ea_id);
    if(StringLen(g_qm_ks_portfolio_dd_signal_file) == 0 && ea_id > 0)
-      g_qm_ks_portfolio_dd_signal_file = "D:\\QM\\data\\halt\\portfolio_dd.signal";
+      g_qm_ks_portfolio_dd_signal_file = "QM\\halt\\portfolio_dd.signal";
 
    g_qm_ks_halted = false;
    g_qm_ks_halt_reason = "";
@@ -235,6 +245,29 @@ bool QM_KillSwitchInit(const int ea_id,
                             g_qm_ks_portfolio_dd_halt_pct,
                             g_qm_ks_per_trade_risk_cap_pct,
                             QM_LoggerEscapeJson(g_qm_ks_manual_halt_file),
+                            QM_LoggerEscapeJson(g_qm_ks_portfolio_dd_signal_file)));
+   return true;
+}
+
+// H2 book-scoping (2026-07-05): route the portfolio-DD signal per book so a
+// halt of one live book (e.g. FTMO challenge) can never flatten another (e.g.
+// the DXZ T_Live book). Call AFTER QM_KillSwitchInit — same rollout pattern as
+// QM_FrameworkSetRiskCapPct: book EAs gain an input (qm_ks_book_tag) at their
+// next rebuild; all other EAs keep the un-scoped default. No-op when init
+// received an explicit signal path. Runtime proof: KS_BOOK_TAG_SET event.
+bool QM_KillSwitchSetBookTag(const string tag)
+{
+   string t = QM_KillSwitchTrim(tag);
+   if(StringLen(t) == 0 || !g_qm_ks_initialized)
+      return false;
+   g_qm_ks_book_tag = t;
+   if(!g_qm_ks_portfolio_signal_explicit)
+      g_qm_ks_portfolio_dd_signal_file =
+         StringFormat("QM\\halt\\book_%s\\portfolio_dd.signal", t);
+   QM_LogEvent(QM_INFO,
+               "KS_BOOK_TAG_SET",
+               StringFormat("{\"book_tag\":\"%s\",\"portfolio_dd_signal_file\":\"%s\"}",
+                            QM_LoggerEscapeJson(t),
                             QM_LoggerEscapeJson(g_qm_ks_portfolio_dd_signal_file)));
    return true;
 }
