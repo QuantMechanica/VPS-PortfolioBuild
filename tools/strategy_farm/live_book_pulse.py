@@ -38,6 +38,12 @@ EXPERT_LOADED_RE = re.compile(
     r"expert\s+(?P<name>QM5_(?P<ea_id>\d+)_[^(]+)\s+\((?P<symbol>[^,]+),(?P<tf>[^)]+)\)\s+loaded successfully",
     re.IGNORECASE,
 )
+EXPERT_REMOVED_RE = re.compile(
+    r"expert\s+(?P<name>QM5_(?P<ea_id>\d+)_[^(]+)\s+\((?P<symbol>[^,]+),(?P<tf>[^)]+)\)\s+removed",
+    re.IGNORECASE,
+)
+# D2-d S3 15-sleeve book live since 2026-07-05 (decisions/2026-07-04_t_live_d2d_s3_15sleeve_book.md)
+EXPECTED_LIVE_SLEEVES = 15
 PRESET_FILE_RE = re.compile(
     r"^slot(?P<slot>\d+)_(?P<symbol>[^_]+)_(?P<tf>[^_]+)_QM5_(?P<ea_id>\d+)_.*_magic(?P<magic>\d+)\.set$",
     re.IGNORECASE,
@@ -425,6 +431,7 @@ def parse_terminal_journals(
 
     accounts: Counter[str] = Counter()
     loaded_candidates: list[dict[str, Any]] = []
+    removed_candidates: list[dict[str, Any]] = []
     transitions: list[dict[str, Any]] = []
     warning_samples: list[dict[str, Any]] = []
     warning_counts: Counter[str] = Counter()
@@ -470,6 +477,14 @@ def parse_terminal_journals(
                         "ts_terminal": ts_terminal,
                     }
                 )
+            elif removed_match := EXPERT_REMOVED_RE.search(line):
+                removed_candidates.append(
+                    {
+                        "ea_id": int(removed_match.group("ea_id")),
+                        "symbol": removed_match.group("symbol"),
+                        "ts_terminal": ts_terminal,
+                    }
+                )
             if AUTOTRADING_RE.search(line):
                 lowered = line.lower()
                 state = "unknown"
@@ -501,6 +516,9 @@ def parse_terminal_journals(
         loaded_candidates = [
             row for row in loaded_candidates if row.get("ts_terminal") and str(row["ts_terminal"]) >= latest_terminal_start
         ]
+        removed_candidates = [
+            row for row in removed_candidates if row.get("ts_terminal") and str(row["ts_terminal"]) >= latest_terminal_start
+        ]
     loaded_sleeves: dict[str, dict[str, Any]] = {}
     for row in loaded_candidates:
         # Keep the newest loaded chart per EA+symbol. A live sleeve can be
@@ -511,6 +529,14 @@ def parse_terminal_journals(
         if previous and str(previous.get("ts_terminal") or "") > str(row.get("ts_terminal") or ""):
             continue
         loaded_sleeves[key] = row
+    for row in removed_candidates:
+        # A sleeve detached AFTER its last load is no longer part of the live
+        # book (e.g. the 10940 removal in the D2-d S3 swap). Only a removal
+        # newer than the load counts - a reload after removal re-adds it.
+        key = f"{row['ea_id']}|{row['symbol']}"
+        current = loaded_sleeves.get(key)
+        if current and str(row.get("ts_terminal") or "") >= str(current.get("ts_terminal") or ""):
+            del loaded_sleeves[key]
     loaded = sorted(loaded_sleeves.values(), key=lambda row: (row["ea_id"], row["symbol"], row["tf"]))
     return {
         "journal_files": [str(p) for p in journal_files],
@@ -864,14 +890,14 @@ def build_alarms(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
             }
         )
     terminal = snapshot.get("terminal_journals", {})
-    if terminal.get("loaded_sleeve_count") != 13:
+    if terminal.get("loaded_sleeve_count") != EXPECTED_LIVE_SLEEVES:
         alarms.append(
             {
                 "class": "live_book",
                 "severity": "WARN",
                 "metric": "loaded_sleeve_count",
                 "value": terminal.get("loaded_sleeve_count"),
-                "detail": "expected_13_loaded_chart_sleeves",
+                "detail": f"expected_{EXPECTED_LIVE_SLEEVES}_loaded_chart_sleeves",
             }
         )
     if not terminal.get("account_id"):

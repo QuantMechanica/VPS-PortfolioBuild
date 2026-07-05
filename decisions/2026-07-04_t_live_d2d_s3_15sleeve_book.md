@@ -94,4 +94,16 @@ new EAs.
 - Package recommendation (S3): Claude, 2026-07-04, on evidence D2D_COMPOSITE_PACKAGE_2026-07-03
 - **Decision + manifest approval: OWNER, 2026-07-04, chat — "Ja los gehts … nehm s3"**
 - File-side deployed: **2026-07-04, Claude (15 presets + 3 binaries, SHA-verified)**
-- Charts applied: _pending Sunday session_
+- **Charts applied: 2026-07-05 ~16:13–16:23 local, OWNER (Teil 1+2+3 in one session —
+  10940 was flat, so Teil 2 ran same-day).** Claude verification evidence:
+  - Journal 20260705.log: 10940 `removed` 16:13:10; 10919 (XTIUSD,H4) / 10476
+    (USDCAD,H1) / 12989 (XAUUSD,H4) `loaded successfully` 16:16–16:18.
+  - QM EA logs: fresh `INIT_OK` for **all 15 sleeves** 16:17–16:23 local; magic set
+    matches the S3 target table **15/15, 0 unexpected** (magic comes from the preset →
+    proves correct preset per chart).
+  - `live_book_pulse`: verdict **OK**, loaded_sleeve_count **15**, alarms **[]**
+    (pulse updated same day: EXPECTED_LIVE_SLEEVES 13→15 + removal-aware journal count).
+  - Obsolete `QM5_10940_grimes-nested-pb.ex5` deleted from Live EAs (backup in
+    `pre_sunday_backup\`). AutoTrading untouched throughout.
+  - Open: OWNER to note the broker-side closing-deal timestamp of 10940 ticket
+    3162733509 from the History tab (position closed while terminal disconnected).
