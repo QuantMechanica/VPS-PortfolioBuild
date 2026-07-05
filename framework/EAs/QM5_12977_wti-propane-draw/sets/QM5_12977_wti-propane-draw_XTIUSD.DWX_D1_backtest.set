@@ -3,16 +3,16 @@
 ; ea_id:        12977
 ; ea_slug:      wti-propane-draw
 ; ea_version:   v5.0
-; set_version:  s20260702-001
+; set_version:  s20260705-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   0a93f3256f7fd45395f1d1ae4c9cee0e48b2257d1c6a79d4f6b395edc3f1d0fc
+; build_hash:   pending
 ; author:       Development
-; date:         2026-07-02
+; date:         2026-07-05
 ;==========================================================
 qm_ea_id=12977
 qm_magic_slot_offset=0
