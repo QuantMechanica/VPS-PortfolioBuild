@@ -51,18 +51,9 @@ bool Strategy_IsBrentD1()
    return (_Symbol == "XBRUSD.DWX" && _Period == PERIOD_D1);
   }
 
-int Strategy_DayKey(const datetime t)
+int Strategy_MonthFromDayKey(const int day_key)
   {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 10000 + dt.mon * 100 + dt.day;
-  }
-
-int Strategy_Month(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.mon;
+   return (day_key / 100) % 100;
   }
 
 bool Strategy_HasOpenPosition()
@@ -86,9 +77,14 @@ void Strategy_CloseTimeExpiredPositions()
   {
    const int magic = QM_FrameworkMagic();
    const datetime now = TimeCurrent();
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 exit check behind new-bar gate.
-   const int current_month = (current_d1_bar > 0) ? Strategy_Month(current_d1_bar) : Strategy_Month(now);
-   const int current_day_key = (current_d1_bar > 0) ? Strategy_DayKey(current_d1_bar) : Strategy_DayKey(now);
+   int current_day_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 0);
+   if(current_day_key <= 0)
+     {
+      MqlDateTime now_dt;
+      TimeToStruct(now, now_dt);
+      current_day_key = now_dt.year * 10000 + now_dt.mon * 100 + now_dt.day;
+     }
+   const int current_month = Strategy_MonthFromDayKey(current_day_key);
    const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -102,7 +98,9 @@ void Strategy_CloseTimeExpiredPositions()
          continue;
 
       const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-      const int opened_day_key = Strategy_DayKey(opened);
+      MqlDateTime opened_dt;
+      TimeToStruct(opened, opened_dt);
+      const int opened_day_key = opened_dt.year * 10000 + opened_dt.mon * 100 + opened_dt.day;
       bool should_close = (current_month != strategy_entry_month);
       if(current_day_key > opened_day_key)
          should_close = true;
@@ -151,14 +149,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 entry calendar gate behind new-bar gate.
-   if(current_d1_bar <= 0)
+   const int day_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 0);
+   if(day_key <= 0)
       return false;
-   if(Strategy_Month(current_d1_bar) != strategy_entry_month)
+   if(Strategy_MonthFromDayKey(day_key) != strategy_entry_month)
       return false;
-
-   const int day_key = Strategy_DayKey(current_d1_bar);
-   if(day_key <= 0 || day_key == g_last_entry_day_key)
+   if(day_key == g_last_entry_day_key)
       return false;
 
    const double atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
