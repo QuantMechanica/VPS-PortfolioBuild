@@ -269,7 +269,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(entry_price <= 0.0)
       return false;
 
-   req.sl = QM_StopATR(_Symbol, req.type, entry_price, strategy_atr_period, strategy_atr_sl_mult);
+   // Reuse the pooled g_atr_last reading cached in Strategy_AdvanceCachedState
+   // instead of QM_StopATR: QM_StopATR's internal helper creates/copies/
+   // releases a fresh raw iATR handle in one call, which the tester never
+   // back-fills on later bars -- root-caused 2026-07-05 as a 1-trade-then-
+   // permanent-silence defect on multiple WTI D1 EAs sharing this exact
+   // QM_StopATR-after-QM_ATR call pattern (this build had it too).
+   req.sl = QM_StopATRFromValue(_Symbol, req.type, entry_price, g_atr_last, strategy_atr_sl_mult);
    if(req.sl <= 0.0)
       return false;
 
