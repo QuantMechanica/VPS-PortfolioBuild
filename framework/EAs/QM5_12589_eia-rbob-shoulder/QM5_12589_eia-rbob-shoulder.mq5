@@ -49,8 +49,6 @@ input double strategy_atr_sl_mult         = 3.0;
 input int    strategy_max_hold_days       = 25;
 input int    strategy_max_spread_points   = 1000;
 
-int g_last_signal_day_key = 0;
-
 bool Strategy_IsXtiD1()
   {
    return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
@@ -158,44 +156,6 @@ bool Strategy_LoadClosedState(double &close_last,
 
    day_key = Strategy_DayKey(closed_time);
    return true;
-  }
-
-void Strategy_CloseOpenPositionsIfNeeded()
-  {
-   double close_last = 0.0;
-   double trend_sma = 0.0;
-   double trend_sma_prior = 0.0;
-   double trigger_low = 0.0;
-   double exit_high = 0.0;
-   int setup_peak_shift = 0;
-   datetime closed_time = 0;
-   int day_key = 0;
-   if(!Strategy_LoadClosedState(close_last, trend_sma, trend_sma_prior, trigger_low, exit_high,
-                                setup_peak_shift, closed_time, day_key))
-      return;
-
-   const bool in_window = Strategy_InShoulderWindow(closed_time);
-   const int magic = QM_FrameworkMagic();
-   const datetime now = TimeCurrent();
-   const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-      bool should_close = (!in_window || close_last > trend_sma || close_last > exit_high);
-      should_close = should_close || (opened > 0 && now - opened >= hold_seconds);
-
-      if(should_close)
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-     }
   }
 
 bool Strategy_NoTradeFilter()
