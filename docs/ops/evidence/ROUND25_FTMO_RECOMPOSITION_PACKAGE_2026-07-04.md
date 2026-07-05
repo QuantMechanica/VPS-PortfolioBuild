@@ -173,7 +173,59 @@ Decision remains OWNER's (challenge fee = money decision); no urgency.
 3. Prop-slate EAs (12985/12986/12988, Q02 in flight) and future exit-surgery v2s get
    screened against THIS bar (67.72) going forward, not Round24.
 
+## Horizon appendix (2026-07-05) — FTMO time-unbound + OWNER Two-Speed decision
+
+FTMO removed the phase time limits; everything above simulates a 60-day phase
+horizon, where ~28–33% of all sim-fails were pure "target not reached in 60d"
+timeouts. Time-unbound, those convert almost entirely into passes. Re-evaluated
+with the SAME CLI chain (`--phase-horizon-days`, h=365 as unbounded proxy) plus a
+module-level grid calling the optimizer's own library functions (cross-validation
+cell reproduces the CLI confirm EXACTLY: 95.70 / 4.30 @ 8.5, h365, full window).
+
+### Time-unbound (h365, 5000 runs; 8.5 = 5 seeds, others seed-0 / harness 5-seed)
+
+| Scale | Pass full | Pass 2025 | Max-loss breach | Median days (both phases) |
+|---|---|---|---|---|
+| 6.0 | 98.90% | 98.66% | 1.08–1.32% | 98–102 |
+| 7.0 | 97.80% | 97.38% | 2.20–2.62% | 84–86 |
+| **8.5** | **95.70%** | **95.04%** | **4.30–4.94% ✓ guard-clean** | **~69** |
+| 9.0 | 94.78% | 93.88% | 5.22–6.12% (grazes guard) | — |
+
+Timeout probability ≈ 0 in every cell; the ONLY remaining fail mode is the
+max-loss breach. Daily-loss breach = 0.00% everywhere.
+
+### P(Phase 1 ≤ 30 days) ladder (h=30, 5000×5, conservative min-over-seeds/methods)
+
+| Scale | Phase 1 ≤ 30d (full / 2025) | Breach within 30d |
+|---|---|---|
+| 8.0 | 27.6% / 26.5% | 0.7–1.0% |
+| 8.5 | 31.2% / 30.2% | 1.1–1.3% |
+| 9.0 | 35.0% / 33.9% | 1.5–1.8% |
+| 9.5 | 38.1% / 37.6% | 2.0–2.2% |
+| 10.0 | 41.3% / 40.5% | 2.5–3.0% |
+
+Reading: a 30-day Phase 1 is a ~⅓ chance, not a plan basis — the book is
+velocity-bound (+10% takes a median ~5–7 weeks), not risk-bound; each extra
+scale step buys only ~3–4pp of 30d-probability. Time-unbound this goal is a
+free roll: missing 30 days is not a fail, the phase simply continues.
+
+### OWNER decision (2026-07-05, chat): TWO-SPEED RATIFIED
+
+- **Phase 1 @ scale 9.0** — chases the 30d goal (~⅓ chance), median Phase 1
+  ~5–6 weeks. RISK_FIXED(leg i) = 1000 × 9.0 × wᵢ, Σ = $9,000.
+- **Phase 2 @ scale 6.0–7.0** (redeploy set files between phases) — 5% target
+  without hurry, breach risk ~1–2.6%. RISK_FIXED Σ = $6,000–7,000; final pick
+  at deployment.
+- Execution deferred to challenge start (OWNER: "später umsetzen"); expected
+  realistic totals after the overfit haircut: **~85–90% overall pass,
+  ~25–30% Phase-1-in-30d**.
+
+Artifacts: `D:\QM\strategy_farm\artifacts\portfolio\round25_horizon_20260705\`
+(eval_full_h365_*.json = CLI full-fidelity; phase1_grid_progress.log +
+round25_horizon_20260705_progress.log = grids incl. cross-validation).
+
 ## Sign-off
 
 - Composition + evidence: Claude, 2026-07-04 (token-burn wave, OWNER-directed)
-- Decision: _pending OWNER_
+- Decision: composition/scale plan **Two-Speed ratified 2026-07-05** (see horizon
+  appendix); challenge start (money) remains _pending OWNER_
