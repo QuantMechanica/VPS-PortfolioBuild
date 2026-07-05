@@ -50,33 +50,14 @@ input double strategy_atr_sl_mult           = 3.5;
 input int    strategy_max_hold_days         = 5;
 input int    strategy_max_spread_points     = 1000;
 
-int g_last_entry_day_key = 0;
+int    g_cache_carry_direction   = 0;
+double g_cache_swap_edge         = 0.0;
+double g_cache_return_12m_pct    = 0.0;
+bool   g_cache_carry_valid       = false;
 
 bool Strategy_IsXtiD1()
   {
    return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
-  }
-
-int Strategy_DayOfWeek(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.day_of_week;
-  }
-
-int Strategy_DayKey(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 10000 + dt.mon * 100 + dt.day;
-  }
-
-bool Strategy_IsRebalanceBar()
-  {
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 calendar gate behind new-bar.
-   if(current_bar <= 0)
-      return false;
-   return (Strategy_DayOfWeek(current_bar) == strategy_rebalance_weekday);
   }
 
 bool Strategy_HasOpenPosition()
