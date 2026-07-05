@@ -1,0 +1,22 @@
+{
+  "cycle_ts_utc": "2026-07-05T14:11Z",
+  "agent": "claude-sonnet-4-6",
+  "worktree": "agents/claude-orchestration-1",
+  "health_overall": "WARN",
+  "health_warn": 4,
+  "health_fail": 0,
+  "health_notes": "LSM degradation ongoing (tasks_failing=2/3); hygiene reboot planned Saturday. All other checks OK.",
+  "tasks_completed": [
+    {
+      "task_id": "45ec67a7-4b09-4600-83cd-4773ef419906",
+      "description": "DIAG: QM5_12772 cointegration Q08 INFRA persists after recompile",
+      "final_state": "REVIEW",
+      "verdict": "ROOT_CAUSE: Q08 baseline timeout (2400s) insufficient for 3-symbol Model4 basket GBPJPY+AUDJPY+USDJPY. FIX: 5400s for basket EAs (aggregate.py), Q08 phase budget 30->120min (farmctl.py). Path mismatch already fixed in prior commits. Evidence on main. Q08 work_item 68dc6e09 status=pending, will re-run with extended timeout.",
+      "artifact_path": "docs/ops/evidence/q08_basket_timeout_fix_2026-07-05.md",
+      "main_commit": "45b8a8d01"
+    }
+  ],
+  "merge_note": "cherry-pick 45d4c6174 onto main (cto_main) — resolved conflict in aggregate.py (3 markers). Pushed to origin/main as 45b8a8d01.",
+  "qm5_10260_check": "Q08 FAIL_HARD x3 — confirmed terminal failure, no action needed this cycle.",
+  "routing_outcome": "0 IN_PROGRESS remaining after task completion. No new tasks routed."
+}
