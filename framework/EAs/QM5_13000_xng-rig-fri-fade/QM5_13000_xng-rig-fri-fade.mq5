@@ -52,36 +52,56 @@ input double strategy_reversion_close_atr_mult  = 0.90;
 input double strategy_adverse_close_atr_mult    = 0.90;
 input int    strategy_max_spread_points         = 2500;
 
-int g_last_entry_week_key = 0;
+// Cached per-bar state, advanced ONCE per new closed D1 bar (see
+// Strategy_AdvanceCachedState, called from OnTick behind the single
+// QM_IsNewBar() consumption). Strategy_ManageOpenPosition / LoadFadeSignal
+// read only these cached fields on the per-tick path - no CopyRates/CopyClose
+// there.
+bool   g_cached_week_rollover = false;
+bool   g_cached_signal_valid  = false;
+double g_cached_signal_close  = 0.0;
+double g_cached_signal_high   = 0.0;
+double g_cached_signal_low    = 0.0;
+double g_cached_prev2_close   = 0.0;
+double g_cached_atr           = 0.0;
+int    g_cached_signal_dow    = -1;
 
 bool Strategy_IsHostD1()
   {
    return (_Symbol == "XNGUSD.DWX" && _Period == PERIOD_D1);
   }
 
-int Strategy_WeekKey(const datetime t)
+void Strategy_AdvanceCachedState()
   {
-   if(t <= 0)
-      return 0;
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 100 + (dt.day_of_year / 7);
-  }
+   // Calendar-cadence edge via the framework helper (never a hand-rolled
+   // iTime week key) - latches internally, so this call must happen exactly
+   // once per new closed D1 bar.
+   g_cached_week_rollover = QM_IsNewCalendarPeriod(PERIOD_W1);
+   g_cached_signal_valid  = false;
 
-int Strategy_DayOfWeek(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.day_of_week;
-  }
+   MqlRates bars[];
+   ArraySetAsSeries(bars, true);
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, 2, bars); // perf-allowed: bounded 2-bar D1 sample, cached once per new bar.
+   if(copied < 2)
+      return;
 
-bool Strategy_IsFirstNewWeekBar(datetime &current_bar, datetime &signal_bar)
-  {
-   current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 calendar gate behind framework new-bar.
-   signal_bar = iTime(_Symbol, PERIOD_D1, 1);  // perf-allowed: D1 calendar gate behind framework new-bar.
-   if(current_bar <= 0 || signal_bar <= 0)
-      return false;
-   return Strategy_WeekKey(current_bar) != Strategy_WeekKey(signal_bar);
+   g_cached_signal_close = bars[0].close;
+   g_cached_signal_high  = bars[0].high;
+   g_cached_signal_low   = bars[0].low;
+   g_cached_prev2_close  = bars[1].close;
+   g_cached_atr          = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+
+   const datetime signal_bar_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: single closed-bar weekday read (not a calendar-period key), cached once per new bar.
+   if(signal_bar_time > 0)
+     {
+      MqlDateTime dt;
+      TimeToStruct(signal_bar_time, dt);
+      g_cached_signal_dow = dt.day_of_week;
+     }
+   else
+      g_cached_signal_dow = -1;
+
+   g_cached_signal_valid = (g_cached_signal_close > 0.0 && g_cached_prev2_close > 0.0 && g_cached_atr > 0.0);
   }
 
 bool Strategy_HasOpenPosition()
@@ -106,25 +126,16 @@ bool Strategy_LoadFadeSignal(QM_OrderType &entry_type, double &signal_return_pct
    entry_type = QM_BUY;
    signal_return_pct = 0.0;
 
-   datetime current_bar = 0;
-   datetime signal_bar_time = 0;
-   if(!Strategy_IsFirstNewWeekBar(current_bar, signal_bar_time))
+   if(!g_cached_week_rollover)
+      return false;
+   if(!g_cached_signal_valid)
       return false;
 
-   const int signal_dow = Strategy_DayOfWeek(signal_bar_time);
-   if(signal_dow < strategy_signal_min_dow || signal_dow > 5)
+   if(g_cached_signal_dow < strategy_signal_min_dow || g_cached_signal_dow > 5)
       return false;
 
-   MqlRates bars[];
-   ArraySetAsSeries(bars, true);
-   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, 2, bars); // perf-allowed: bounded D1 signal sample behind new-bar gate.
-   if(copied < 2)
-      return false;
-
-   const double signal_close = bars[0].close;
-   const double prev_close = bars[1].close;
-   if(signal_close <= 0.0 || prev_close <= 0.0)
-      return false;
+   const double signal_close = g_cached_signal_close;
+   const double prev_close = g_cached_prev2_close;
 
    signal_return_pct = 100.0 * MathLog(signal_close / prev_close);
    if(!MathIsValidNumber(signal_return_pct))
@@ -136,17 +147,14 @@ bool Strategy_LoadFadeSignal(QM_OrderType &entry_type, double &signal_return_pct
    if(abs_ret > strategy_max_signal_return_pct)
       return false;
 
-   const double atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   if(atr_last <= 0.0)
-      return false;
-   const double atr_pct = 100.0 * atr_last / signal_close;
+   const double atr_pct = 100.0 * g_cached_atr / signal_close;
    if(abs_ret < strategy_min_atr_return_mult * atr_pct)
       return false;
 
-   const double range = bars[0].high - bars[0].low;
+   const double range = g_cached_signal_high - g_cached_signal_low;
    if(range <= 0.0)
       return false;
-   const double close_location = (signal_close - bars[0].low) / range;
+   const double close_location = (signal_close - g_cached_signal_low) / range;
    const double loc_min = MathMax(0.50, MathMin(0.95, strategy_close_location_min));
 
    if(signal_return_pct > 0.0)
@@ -174,14 +182,8 @@ void Strategy_CloseOpenPositionsIfNeeded()
    const datetime now = TimeCurrent();
    const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
 
-   double prior_close = 0.0;
-   double close_buffer[];
-   ArraySetAsSeries(close_buffer, true);
-   const int copied = CopyClose(_Symbol, PERIOD_D1, 1, 1, close_buffer); // perf-allowed: single closed D1 close behind new-bar gate.
-   if(copied >= 1)
-      prior_close = close_buffer[0];
-
-   const double atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   const double prior_close = g_cached_signal_valid ? g_cached_signal_close : 0.0;
+   const double atr_last = g_cached_signal_valid ? g_cached_atr : 0.0;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -273,15 +275,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   datetime current_bar = 0;
-   datetime signal_bar = 0;
-   if(!Strategy_IsFirstNewWeekBar(current_bar, signal_bar))
-      return false;
-
-   const int week_key = Strategy_WeekKey(current_bar);
-   if(week_key <= 0 || week_key == g_last_entry_week_key)
-      return false;
-
    QM_OrderType entry_type = QM_BUY;
    double signal_return_pct = 0.0;
    if(!Strategy_LoadFadeSignal(entry_type, signal_return_pct))
@@ -297,7 +290,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.reason = (entry_type == QM_BUY) ? "XNG_RIGCOUNT_FRI_FADE_LONG" : "XNG_RIGCOUNT_FRI_FADE_SHORT";
-   g_last_entry_week_key = week_key;
    return true;
   }
 
@@ -354,23 +346,21 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   if(!QM_IsNewBar())
-      return;
+   // QM_IsNewBar() is single-consume per tick; latch it once and reuse for
+   // both the cached-state advance below and the entry-only gate further
+   // down, so per-tick management/exit never repeats the CopyRates/CopyClose
+   // work that Strategy_AdvanceCachedState does once per closed bar.
+   const bool is_new_bar = QM_IsNewBar();
+   if(is_new_bar)
+      Strategy_AdvanceCachedState();
 
-   QM_EquityStreamOnNewBar();
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -386,6 +376,22 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // News blackout gates NEW entries only (below). It must not sit above the
+   // management path above so the ATR stop / time-stop keep enforcing through
+   // news windows. Fail-closed init in OnInit is unchanged.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!is_new_bar)
+      return;
+
+   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

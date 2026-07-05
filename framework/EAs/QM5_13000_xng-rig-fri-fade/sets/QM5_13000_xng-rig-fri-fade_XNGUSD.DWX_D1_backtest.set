@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        13000
 ; ea_slug:      xng-rig-fri-fade
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   e6cad78552ccb3da917ab25322cdf1cabee3b1b193b4d148f0815db1deb11851
+; build_hash:   ca8fbdb76fa2f8dde5e995917796b8cc1d373957401e7d389abc5c6476f3826e
 ; author:       Codex
 ; date:         2026-07-03
 ;==========================================================
