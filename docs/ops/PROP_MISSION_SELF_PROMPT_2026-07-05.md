@@ -40,6 +40,20 @@ pass attempt. Trial-pass (5% in 14d) is a free-roll bonus. G1 closes when ALL ho
 - Discipline: NO mid-run composition changes. Challenger swaps only between phases
   and only with full evidence chain (Q09 rule applies in spirit).
 - Median expectation ~5–6 weeks; timeout is not a fail (time-unbound).
+- **Scale policy (MC study 2026-07-05, SELF_REVIEW pending Codex spot-check):**
+  drawdown-triggered step-down **dd −3% → scale 5.0** (variant: −4% → 5.0) adds
+  **+2.0–2.4pp phase-pass** for only +2–5 median days — near static-6.0 safety at
+  static-9.0 speed, because the trigger fires on only ~28–30% of paths.
+  Progress-triggered step-downs are rejected (+0.06–0.42pp; breach risk is
+  front-loaded, de-risking after profit protects nothing). Implementation = preset
+  redeploy on trigger day (pulse alarms at −3% total); no EA code change.
+  Artifacts: `D:\QM\strategy_farm\artifacts\portfolio\round25_dynamic_scale_20260705\`
+  (extension validated bit-exact vs `prop_challenge_optimizer --screen-candidate`
+  machinery: static anchors reproduced, policy engine max diff 1.4e-14 pp).
+  Known limits inherited from the study: closed-daily P&L basis (intraday floating
+  DD invisible), linear scale multiplier. OWNER decides the policy at challenge
+  start; the live kill-switch (−3% daily flatten, QM_KillSwitch.mqh) sits on top
+  and was never modeled — real odds are strictly better than these numbers.
 
 ### G3 — Phase 2 @ scale 6.0–7.0
 - Setfile redeploy between phases (Two-Speed, OWNER-ratified 07-05); scale choice
