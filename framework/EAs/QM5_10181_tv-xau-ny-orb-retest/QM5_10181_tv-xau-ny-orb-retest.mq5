@@ -156,14 +156,14 @@ bool FindPivotStop(const QM_OrderType side, const double level, double &stop)
       bool pivot = true;
       if(side == QM_BUY)
         {
-         const double low = iLow(_Symbol, PERIOD_M5, center);
+         const double low = iLow(_Symbol, PERIOD_M5, center); // perf-allowed: structural pivot scan, runs once per new bar only
          if(low <= 0.0 || low >= level)
             continue;
          for(int k = 1; k <= left; ++k)
-            if(iLow(_Symbol, PERIOD_M5, center + k) <= low)
+            if(iLow(_Symbol, PERIOD_M5, center + k) <= low) // perf-allowed: structural pivot scan
                pivot = false;
          for(int k = 1; k <= right; ++k)
-            if(iLow(_Symbol, PERIOD_M5, center - k) <= low)
+            if(iLow(_Symbol, PERIOD_M5, center - k) <= low) // perf-allowed: structural pivot scan
                pivot = false;
          if(pivot)
            {
@@ -173,14 +173,14 @@ bool FindPivotStop(const QM_OrderType side, const double level, double &stop)
         }
       else
         {
-         const double high = iHigh(_Symbol, PERIOD_M5, center);
+         const double high = iHigh(_Symbol, PERIOD_M5, center); // perf-allowed: structural pivot scan, runs once per new bar only
          if(high <= 0.0 || high <= level)
             continue;
          for(int k = 1; k <= left; ++k)
-            if(iHigh(_Symbol, PERIOD_M5, center + k) >= high)
+            if(iHigh(_Symbol, PERIOD_M5, center + k) >= high) // perf-allowed: structural pivot scan
                pivot = false;
          for(int k = 1; k <= right; ++k)
-            if(iHigh(_Symbol, PERIOD_M5, center - k) >= high)
+            if(iHigh(_Symbol, PERIOD_M5, center - k) >= high) // perf-allowed: structural pivot scan
                pivot = false;
          if(pivot)
            {
@@ -215,14 +215,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(g_trade_taken_today)
       return false;
 
-   const datetime bar_time = iTime(_Symbol, PERIOD_M5, 1);
+   const datetime bar_time = iTime(_Symbol, PERIOD_M5, 1); // perf-allowed: closed-bar timestamp for OR session classification; gate: called after QM_IsNewBar
    if(bar_time <= 0)
       return false;
 
-   const double open1 = iOpen(_Symbol, PERIOD_M5, 1);
-   const double high1 = iHigh(_Symbol, PERIOD_M5, 1);
-   const double low1 = iLow(_Symbol, PERIOD_M5, 1);
-   const double close1 = iClose(_Symbol, PERIOD_M5, 1);
+   const double open1 = iOpen(_Symbol, PERIOD_M5, 1);   // perf-allowed: last closed M5 bar OHLC for candle-pattern check; per-bar, not per-tick
+   const double high1 = iHigh(_Symbol, PERIOD_M5, 1);   // perf-allowed: same
+   const double low1 = iLow(_Symbol, PERIOD_M5, 1);     // perf-allowed: same
+   const double close1 = iClose(_Symbol, PERIOD_M5, 1); // perf-allowed: same
    if(open1 <= 0.0 || high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0)
       return false;
 
@@ -232,7 +232,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const double ema_h1 = QM_EMA(_Symbol, PERIOD_H1, strategy_ema_period_h1, 1);
-   const double h1_close = iClose(_Symbol, PERIOD_H1, 1);
+   const double h1_close = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: single closed H1 bar for directional bias; per-bar, not per-tick
    const double atr = QM_ATR(_Symbol, PERIOD_M5, strategy_atr_period_m5, 1);
    if(ema_h1 <= 0.0 || h1_close <= 0.0 || atr <= 0.0)
       return false;
@@ -346,24 +346,22 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
+   // Custom news hook (no-op for this EA — defers to central gate below).
    if(Strategy_NewsFilterHook(broker_now))
       return;
 
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: trade management (none for this card baseline).
    Strategy_ManageOpenPosition();
 
+   // Per-tick: time-stop exit (16:00 NY). Must run BEFORE the news gate so
+   // the session close keeps enforcing through news windows.
+   // (2026-07-02 audit finding: exit handling must sit above the news gate.)
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -377,6 +375,16 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // News blackout gates NEW entries only — sits below management/exit so the
+   // time-stop keeps enforcing through news windows (2026-07-02 audit binding).
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
 
    if(!QM_IsNewBar())
       return;
