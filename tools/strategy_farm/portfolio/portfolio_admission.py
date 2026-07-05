@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import re
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -43,6 +44,11 @@ except ImportError:  # pragma: no cover - direct script execution
 Key = tuple[int, str]
 DEFAULT_MAX_CORR = 0.30
 DEFAULT_MIN_OVERLAP_DAYS = 60
+DEFAULT_ADMISSION_COMMON_DIR = Path(r"D:\QM\reports\portfolio\sleeve_streams")
+DEFAULT_EXIT_SURGERY_BUILD_EVIDENCE = Path(
+    r"D:\QM\strategy_farm\artifacts\ops\exit_surgery_v2_build_fab16f34_2026-07-03.json"
+)
+DEFAULT_LINEAGE_ARTIFACTS = (DEFAULT_EXIT_SURGERY_BUILD_EVIDENCE,)
 # Low-frequency fallback: structural edges trade a few times a year, so two sleeves
 # almost never share >=60 active days. When daily overlap is insufficient, retry the
 # diversification test on calendar-month buckets, correlating over the window where both
@@ -85,10 +91,12 @@ def load_quarantine(path: Path = QUARANTINE_PATH) -> set[Key]:
 def evaluate_candidate(
     candidate_key: Key,
     book_keys: Sequence[Key],
-    common_dir: Path = DEFAULT_COMMON_DIR,
+    common_dir: Path = DEFAULT_ADMISSION_COMMON_DIR,
     *,
     max_corr: float = DEFAULT_MAX_CORR,
     starting_capital: float = DEFAULT_STARTING_CAPITAL,
+    lineage_payload: dict[str, Any] | None = None,
+    lineage_artifacts: Sequence[Path] | None = None,
 ) -> dict[str, Any]:
     candidate = _normalize_key(candidate_key)
 
@@ -219,20 +227,35 @@ def evaluate_candidate(
         reason = "admitted"
 
     # Challenger-swap evaluation (OWNER directive 2026-07-03):
-    # When rejected for high correlation, check if replacing the most-correlated incumbent
-    # with the challenger would improve the book. Emit CHALLENGER_SUPERIOR for OWNER Q12
-    # review when the swap improves both Sharpe and MaxDD (or Sharpe strongly).
-    # NEVER auto-swap — live deployment stays OWNER+manifest protocol.
+    # High-correlation rejects keep the original behavior: test replacement of the
+    # most-correlated incumbent. Lineage challengers also get a swap check on ANY
+    # non-admit reason because controlled exit-surgery variants may be replacements,
+    # not new diversifiers. NEVER auto-swap — live deployment stays OWNER+manifest.
     challenger_swap: dict | None = None
+    lineage_incumbent = _lineage_incumbent_in_book(
+        candidate,
+        book,
+        lineage_payload=lineage_payload,
+        lineage_artifacts=lineage_artifacts,
+    )
     if reason == "correlation_above_max_corr":
         challenger_swap = _evaluate_challenger_swap(
             candidate, book, aligned_keys, correlations,
             common_dir, without_metrics, starting_capital,
             streams=streams,
         )
-        if challenger_swap.get("challenger_superior"):
-            reason = "CHALLENGER_SUPERIOR"
-            # admit stays False — OWNER must approve any swap at Q12
+    elif not admit and lineage_incumbent is not None:
+        challenger_swap = _evaluate_challenger_swap(
+            candidate, book, aligned_keys, correlations,
+            common_dir, without_metrics, starting_capital,
+            streams=streams,
+            incumbent_hint=lineage_incumbent,
+        )
+        challenger_swap["trigger"] = f"lineage_rejection:{reason}"
+
+    if challenger_swap and challenger_swap.get("challenger_superior"):
+        reason = "CHALLENGER_SUPERIOR"
+        # admit stays False — OWNER must approve any swap at Q12
 
     return {
         "admit": admit,
@@ -253,11 +276,13 @@ def evaluate_candidate(
 def build_artifact(
     candidate_key: Key,
     *,
-    common_dir: Path = DEFAULT_COMMON_DIR,
+    common_dir: Path = DEFAULT_ADMISSION_COMMON_DIR,
     candidates_db: Path = DEFAULT_CANDIDATES_DB,
     all_streams: bool = False,
     max_corr: float = DEFAULT_MAX_CORR,
     starting_capital: float = DEFAULT_STARTING_CAPITAL,
+    lineage_payload: dict[str, Any] | None = None,
+    lineage_artifacts: Sequence[Path] | None = None,
 ) -> dict[str, Any]:
     candidate = _normalize_key(candidate_key)
     if all_streams:
@@ -275,6 +300,8 @@ def build_artifact(
         common_dir,
         max_corr=max_corr,
         starting_capital=starting_capital,
+        lineage_payload=lineage_payload,
+        lineage_artifacts=lineage_artifacts,
     )
 
     model = load_model()
@@ -310,11 +337,20 @@ def write_artifact(artifact: dict[str, Any], out_path: Path) -> None:
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate portfolio-relative EA-symbol admission.")
     parser.add_argument("--candidate", required=True, type=_parse_key, help="Candidate as ea_id:SYMBOL.")
-    parser.add_argument("--common-dir", type=Path, default=DEFAULT_COMMON_DIR)
+    parser.add_argument("--common-dir", type=Path, default=DEFAULT_ADMISSION_COMMON_DIR)
     parser.add_argument("--candidates-db", type=Path, default=DEFAULT_CANDIDATES_DB)
     parser.add_argument("--all-streams", action="store_true")
     parser.add_argument("--max-corr", type=float, default=DEFAULT_MAX_CORR)
     parser.add_argument("--starting-capital", type=float, default=DEFAULT_STARTING_CAPITAL)
+    parser.add_argument("--lineage-payload-json", help="Optional work-item payload JSON carrying challenger_of.")
+    parser.add_argument("--lineage-payload-file", type=Path, help="Optional JSON file carrying challenger_of.")
+    parser.add_argument(
+        "--lineage-artifact",
+        type=Path,
+        action="append",
+        dest="lineage_artifacts",
+        help="Optional challenger-build evidence JSON. Repeatable.",
+    )
     parser.add_argument(
         "--out",
         type=Path,
@@ -326,6 +362,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    lineage_payload = load_lineage_payload(args.lineage_payload_json, args.lineage_payload_file)
     artifact = build_artifact(
         args.candidate,
         common_dir=args.common_dir,
@@ -333,6 +370,8 @@ def main(argv: list[str] | None = None) -> int:
         all_streams=args.all_streams,
         max_corr=args.max_corr,
         starting_capital=args.starting_capital,
+        lineage_payload=lineage_payload,
+        lineage_artifacts=args.lineage_artifacts,
     )
     out_path = args.out
     if out_path is None:
@@ -527,6 +566,101 @@ def _monthly_find_most_correlated_incumbent(
     return best_key, best_corr
 
 
+def load_lineage_payload(
+    payload_json: str | None = None,
+    payload_file: Path | None = None,
+) -> dict[str, Any] | None:
+    if payload_json:
+        data = json.loads(payload_json)
+        return data if isinstance(data, dict) else None
+    if payload_file is not None:
+        data = json.loads(payload_file.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else None
+    return None
+
+
+def _lineage_incumbent_in_book(
+    candidate: Key,
+    book: Sequence[Key],
+    *,
+    lineage_payload: dict[str, Any] | None = None,
+    lineage_artifacts: Sequence[Path] | None = None,
+) -> Key | None:
+    parent_ids = _lineage_parent_ids(
+        candidate,
+        lineage_payload=lineage_payload,
+        lineage_artifacts=lineage_artifacts,
+    )
+    if not parent_ids:
+        return None
+    candidates = sorted(key for key in book if int(key[0]) in parent_ids)
+    if not candidates:
+        return None
+    same_symbol = [key for key in candidates if key[1] == candidate[1]]
+    return (same_symbol or candidates)[0]
+
+
+def _lineage_parent_ids(
+    candidate: Key,
+    *,
+    lineage_payload: dict[str, Any] | None,
+    lineage_artifacts: Sequence[Path] | None,
+) -> set[int]:
+    parents: set[int] = set()
+    if lineage_payload:
+        for key in ("challenger_of", "parent_ea", "parent_eas"):
+            if key in lineage_payload:
+                parents.update(_extract_ea_ids(lineage_payload.get(key)))
+
+    artifacts = tuple(DEFAULT_LINEAGE_ARTIFACTS if lineage_artifacts is None else lineage_artifacts)
+    for artifact_path in artifacts:
+        try:
+            artifact = json.loads(Path(artifact_path).read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        for build in artifact.get("builds", []):
+            if not isinstance(build, dict):
+                continue
+            if _extract_one_ea_id(build.get("new_ea")) != candidate[0]:
+                continue
+            target_symbol = str(build.get("target_symbol") or "").strip()
+            if target_symbol and target_symbol != candidate[1]:
+                continue
+            parent = _extract_one_ea_id(build.get("parent_ea"))
+            if parent is not None:
+                parents.add(parent)
+    return parents
+
+
+def _extract_ea_ids(value: Any) -> set[int]:
+    if isinstance(value, dict):
+        values = value.values()
+    elif isinstance(value, (list, tuple, set)):
+        values = value
+    else:
+        values = (value,)
+    out: set[int] = set()
+    for item in values:
+        ea_id = _extract_one_ea_id(item)
+        if ea_id is not None:
+            out.add(ea_id)
+    return out
+
+
+def _extract_one_ea_id(value: Any) -> int | None:
+    if value is None:
+        return None
+    if isinstance(value, int):
+        return value
+    text = str(value).strip()
+    match = re.search(r"QM5_(\d+)", text)
+    if match:
+        return int(match.group(1))
+    if text.isdigit():
+        return int(text)
+    return None
+
+
 def _evaluate_challenger_swap(
     candidate: Key,
     book: Sequence[Key],
@@ -537,6 +671,7 @@ def _evaluate_challenger_swap(
     starting_capital: float,
     *,
     streams: "dict[Key, Sequence[Any]] | None" = None,
+    incumbent_hint: Key | None = None,
 ) -> dict:
     """Check if challenger replacing the most-correlated incumbent improves the book.
 
@@ -550,9 +685,17 @@ def _evaluate_challenger_swap(
     """
     SHARPE_STRONG_DELTA = 0.05
 
-    incumbent, incumbent_corr = _find_most_correlated_incumbent(
-        candidate, book, aligned_keys, correlations
-    )
+    if incumbent_hint is not None and incumbent_hint in book:
+        incumbent = incumbent_hint
+        incumbent_corr = _correlation_for_pair(candidate, incumbent_hint, aligned_keys, correlations)
+        if incumbent_corr is None and streams is not None:
+            _, incumbent_corr = _monthly_find_most_correlated_incumbent(
+                candidate, [incumbent_hint], streams
+            )
+    else:
+        incumbent, incumbent_corr = _find_most_correlated_incumbent(
+            candidate, book, aligned_keys, correlations
+        )
     # Monthly fallback: when daily overlap is too sparse to compute Pearson (all daily
     # correlations are None), use monthly returns to identify the most-correlated
     # incumbent — the same basis that produced the rejection verdict.
@@ -613,6 +756,18 @@ def _evaluate_challenger_swap(
         "challenger_superior": challenger_superior,
         "note": "CHALLENGER_SUPERIOR flags OWNER Q12 review; live deployment stays OWNER+manifest protocol",
     }
+
+
+def _correlation_for_pair(
+    candidate: Key,
+    incumbent: Key,
+    aligned_keys: Sequence[Key],
+    correlations: list[list[float | None]],
+) -> float | None:
+    if candidate not in aligned_keys or incumbent not in aligned_keys:
+        return None
+    value = correlations[aligned_keys.index(candidate)][aligned_keys.index(incumbent)]
+    return None if value is None else float(value)
 
 
 def _parse_key(value: str) -> Key:

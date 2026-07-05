@@ -61,12 +61,13 @@ def equity_curve(trades: Sequence[Trade]) -> list[dict[str, Any]]:
 def evaluate_q08_soft_rescue(
     candidate_key: Key,
     *,
-    common_dir: Path = DEFAULT_COMMON_DIR,
+    common_dir: Path = portfolio_admission.DEFAULT_ADMISSION_COMMON_DIR,
     candidates_db: Path = DEFAULT_CANDIDATES_DB,
     q08_summary_path: Path | None = None,
     min_portfolio_trades: int = DEFAULT_MIN_PORTFOLIO_TRADES,
     max_corr: float = portfolio_admission.DEFAULT_MAX_CORR,
     starting_capital: float = DEFAULT_STARTING_CAPITAL,
+    lineage_payload: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     candidate = (int(candidate_key[0]), str(candidate_key[1]))
     streams = load_streams(common_dir, candidates=[candidate])
@@ -110,12 +111,17 @@ def evaluate_q08_soft_rescue(
     book = read_candidates(candidates_db)
     book = [key for key in book if key != candidate]
     try:
+        admission_kwargs: dict[str, Any] = {
+            "max_corr": max_corr,
+            "starting_capital": starting_capital,
+        }
+        if lineage_payload is not None:
+            admission_kwargs["lineage_payload"] = lineage_payload
         admission = portfolio_admission.evaluate_candidate(
             candidate,
             book,
             common_dir,
-            max_corr=max_corr,
-            starting_capital=starting_capital,
+            **admission_kwargs,
         )
     except ValueError as exc:
         if "missing q08 trade streams" not in str(exc):
@@ -202,17 +208,23 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--symbol", required=True)
     parser.add_argument("--report-root", type=Path, required=True)
     parser.add_argument("--q08-summary", type=Path)
-    parser.add_argument("--common-dir", type=Path, default=DEFAULT_COMMON_DIR)
+    parser.add_argument("--common-dir", type=Path, default=portfolio_admission.DEFAULT_ADMISSION_COMMON_DIR)
     parser.add_argument("--candidates-db", type=Path, default=DEFAULT_CANDIDATES_DB)
     parser.add_argument("--min-portfolio-trades", type=int, default=DEFAULT_MIN_PORTFOLIO_TRADES)
     parser.add_argument("--max-corr", type=float, default=portfolio_admission.DEFAULT_MAX_CORR)
     parser.add_argument("--starting-capital", type=float, default=DEFAULT_STARTING_CAPITAL)
+    parser.add_argument("--lineage-payload-json")
+    parser.add_argument("--lineage-payload-file", type=Path)
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     candidate = _parse_candidate(args.ea_id, args.symbol)
+    lineage_payload = portfolio_admission.load_lineage_payload(
+        args.lineage_payload_json,
+        args.lineage_payload_file,
+    )
     artifact = evaluate_q08_soft_rescue(
         candidate,
         common_dir=args.common_dir,
@@ -221,6 +233,7 @@ def main(argv: list[str] | None = None) -> int:
         min_portfolio_trades=args.min_portfolio_trades,
         max_corr=args.max_corr,
         starting_capital=args.starting_capital,
+        lineage_payload=lineage_payload,
     )
     out_dir = (
         args.report_root

@@ -442,6 +442,105 @@ class ChallengerSwapTests(unittest.TestCase):
         self.assertEqual(verdict["reason"], "no_diversification")
         self.assertIsNone(verdict["challenger_swap"])
 
+    def test_lineage_rejection_runs_challenger_swap_without_auto_swap(self) -> None:
+        # A lineage challenger rejected for no_diversification is not a new sleeve, but it
+        # still needs the replacement question answered. Inferior swaps keep the original
+        # rejection reason and never auto-admit.
+        with tempfile.TemporaryDirectory() as tmp:
+            common_dir = Path(tmp)
+            stream_dir = self._stream_dir(common_dir)
+            start = dt.datetime(2022, 1, 1, tzinfo=dt.UTC)
+            cost = self._cost()
+
+            self._write_stream(stream_dir / "100_EURUSD_DWX.jsonl", start, [20.0, 10.0] * 60, cost)
+            self._write_stream(stream_dir / "101_EURUSD_DWX.jsonl", start, [-30.0, -20.0, -10.0, -20.0] * 30, cost)
+
+            verdict = evaluate_candidate(
+                (101, "EURUSD.DWX"),
+                [(100, "EURUSD.DWX")],
+                common_dir,
+                lineage_payload={"challenger_of": "QM5_100"},
+                lineage_artifacts=(),
+            )
+
+        self.assertFalse(verdict["admit"])
+        self.assertEqual(verdict["reason"], "no_diversification")
+        self.assertIsNotNone(verdict["challenger_swap"])
+        self.assertFalse(verdict["challenger_swap"]["challenger_superior"])
+        self.assertEqual(verdict["challenger_swap"]["incumbent"], "100:EURUSD.DWX")
+        self.assertEqual(verdict["challenger_swap"]["trigger"], "lineage_rejection:no_diversification")
+
+    def test_lineage_rejection_with_superior_swap_emits_challenger_superior(self) -> None:
+        from unittest import mock
+
+        with tempfile.TemporaryDirectory() as tmp:
+            common_dir = Path(tmp)
+            stream_dir = self._stream_dir(common_dir)
+            start = dt.datetime(2022, 1, 1, tzinfo=dt.UTC)
+            cost = self._cost()
+
+            self._write_stream(stream_dir / "100_EURUSD_DWX.jsonl", start, [10.0, 9.0, 11.0, 8.0] * 40, cost)
+            self._write_stream(stream_dir / "101_EURUSD_DWX.jsonl", start, [9.0, 11.0, 8.0, 10.0, 12.0] * 32, cost)
+
+            metrics = [
+                {"sharpe": 2.0, "max_drawdown_pct": 6.0},  # current book
+                {"sharpe": 1.8, "max_drawdown_pct": 7.0},  # add challenger: no_diversification
+                {"sharpe": 2.2, "max_drawdown_pct": 5.0},  # replace incumbent: superior
+            ]
+            with mock.patch(
+                "portfolio.portfolio_admission.portfolio_metrics", side_effect=list(metrics)
+            ):
+                verdict = evaluate_candidate(
+                    (101, "EURUSD.DWX"),
+                    [(100, "EURUSD.DWX")],
+                    common_dir,
+                    lineage_payload={"challenger_of": "QM5_100"},
+                    lineage_artifacts=(),
+                )
+
+        self.assertFalse(verdict["admit"])
+        self.assertEqual(verdict["reason"], "CHALLENGER_SUPERIOR")
+        self.assertIsNotNone(verdict["challenger_swap"])
+        self.assertTrue(verdict["challenger_swap"]["challenger_superior"])
+        self.assertEqual(verdict["challenger_swap"]["incumbent"], "100:EURUSD.DWX")
+
+    def test_lineage_artifact_fallback_identifies_parent_incumbent(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            common_dir = Path(tmp)
+            stream_dir = self._stream_dir(common_dir)
+            artifact_path = common_dir / "exit_surgery_build.json"
+            artifact_path.write_text(
+                json.dumps(
+                    {
+                        "builds": [
+                            {
+                                "new_ea": "QM5_101",
+                                "parent_ea": "QM5_100",
+                                "target_symbol": "EURUSD.DWX",
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            start = dt.datetime(2022, 1, 1, tzinfo=dt.UTC)
+            cost = self._cost()
+
+            self._write_stream(stream_dir / "100_EURUSD_DWX.jsonl", start, [20.0, 10.0] * 60, cost)
+            self._write_stream(stream_dir / "101_EURUSD_DWX.jsonl", start, [-30.0, -20.0, -10.0, -20.0] * 30, cost)
+
+            verdict = evaluate_candidate(
+                (101, "EURUSD.DWX"),
+                [(100, "EURUSD.DWX")],
+                common_dir,
+                lineage_artifacts=[artifact_path],
+            )
+
+        self.assertFalse(verdict["admit"])
+        self.assertEqual(verdict["reason"], "no_diversification")
+        self.assertIsNotNone(verdict["challenger_swap"])
+        self.assertEqual(verdict["challenger_swap"]["incumbent"], "100:EURUSD.DWX")
+
     def test_challenger_swap_multi_book_targets_most_correlated_incumbent(self) -> None:
         # Book has two incumbents: A (highly correlated to challenger) and B (uncorrelated).
         # The swap should replace A (most correlated), not B.
