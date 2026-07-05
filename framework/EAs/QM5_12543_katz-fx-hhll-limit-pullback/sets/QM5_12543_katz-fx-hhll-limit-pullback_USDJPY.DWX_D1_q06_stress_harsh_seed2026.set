@@ -1,23 +1,24 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        12759
-; ea_slug:      wti-roll-relief
+; ea_id:        12543
+; ea_slug:      katz-fx-hhll-limit-pullback
 ; ea_version:   v5.0
-; set_version:  s20260628-001
-; symbol:       XTIUSD.DWX
+; set_version:  s20260705-stress-harsh
+; symbol:       USDJPY.DWX
 ; timeframe:    D1
-; environment:  backtest
-; magic_slot:   0
+; environment:  q06_stress_harsh
+; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   50014fd34f26dc98de872f6535311a0db177acdc1a8586b8be5bd6f81a6e0545
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-28
+; date:         2026-07-05
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
@@ -31,15 +32,4 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\wti-roll-relief_card.md
-strategy_min_reclaim_return_pct=0.10
-strategy_min_pressure_return_pct=0.10
-strategy_atr_sl_mult=2.50
-strategy_relief_end_trading_day=14
-strategy_trend_period=20
-strategy_pressure_end_trading_day=9
-strategy_max_spread_points=1000
-strategy_pressure_start_trading_day=5
-strategy_relief_start_trading_day=10
-strategy_atr_period=20
-strategy_max_hold_days=5
+; card_defaults_source=not_found
