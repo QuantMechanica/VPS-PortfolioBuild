@@ -197,7 +197,8 @@ DURABLE_STREAM_ROOT = Path(r"D:\QM\reports\portfolio\sleeve_streams")
 
 
 def _persist_durable_sleeve_stream(ea_id: int, symbol: str,
-                                   raw_trades: list[dict]) -> dict:
+                                   raw_trades: list[dict],
+                                   common_log_override: "Path | None" = None) -> dict:
     """Persist a builder-compatible per-trade stream to the durable store.
 
     Fidelity rule: the portfolio commission model needs per-trade volume/notional.
@@ -205,6 +206,11 @@ def _persist_durable_sleeve_stream(ea_id: int, symbol: str,
     Otherwise serialise the in-memory trades ONLY when every trade carries volume
     (i.e. it came from a TRADE_CLOSED source, not the volume-less HTML report
     fallback) — feeding the builder volume-less rows would silently zero commission.
+
+    common_log_override: when the EA is a basket EA running on a host_symbol, the
+    Common\\Files path is keyed on host_symbol, not the logical composite symbol.
+    Pass the already-resolved common_log Path from run_all so the copy uses the
+    correct source.
     """
     sym_clean = symbol.replace(".", "_")
     dst = DURABLE_STREAM_ROOT / "QM" / "q08_trades" / f"{ea_id}_{sym_clean}.jsonl"
@@ -212,7 +218,7 @@ def _persist_durable_sleeve_stream(ea_id: int, symbol: str,
         return {"persisted": False, "reason": "no_trades", "n": 0}
     try:
         dst.parent.mkdir(parents=True, exist_ok=True)
-        common_log = _common_q08_trade_log(ea_id, symbol)
+        common_log = common_log_override or _common_q08_trade_log(ea_id, symbol)
         if common_log.exists() and common_log.stat().st_size > 0:
             shutil.copyfile(common_log, dst)
             return {"persisted": True, "source": "common_copy",
@@ -319,23 +325,31 @@ def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None,
     m = _re.search(r"_(M1|M5|M15|M30|H1|H4|H6|H8|D1|W1|MN1)_backtest", baseline.name)
     period = m.group(1) if m else "H1"
     report_root = Path(f"D:/QM/reports/pipeline/QM5_{ea_id}/Q08/_baseline")
+    test_symbol = _host_symbol_from_setfile(baseline, symbol)
+    # Basket EAs run on the host physical symbol rather than the logical composite.
+    # Real-tick (Model 4) multi-symbol baskets can exceed 2400s; allow 5400s.
+    # The Q08 phase-runner timeout in farmctl must be >= 90 min for basket EAs.
+    is_basket = test_symbol != symbol
+    timeout_run = 5400 if is_basket else 2400
+    timeout_proc = timeout_run + 120
     args = [
         "pwsh.exe", "-NoProfile", "-File",
         str(repo_root / "framework" / "scripts" / "run_smoke.ps1"),
-        "-EAId", str(ea_id), "-Expert", expert, "-Symbol", _host_symbol_from_setfile(baseline, symbol),
+        "-EAId", str(ea_id), "-Expert", expert, "-Symbol", test_symbol,
         "-Year", "2025", "-FromDate", "2017.01.01", "-ToDate", "2025.12.31",
         "-Terminal", terminal or "T1", "-Period", period,
         "-Runs", "1", "-MinTrades", "1", "-Model", "4",
         "-SetFile", str(baseline), "-ReportRoot", str(report_root),
         "-DispatchPhase", "Q08", "-DispatchVersion", "q08_baseline",
         "-DispatchSubGateHash", f"q08base_{ea_id}_{symbol.replace('.', '_')}",
-        "-TimeoutSeconds", "2400",
+        "-TimeoutSeconds", str(timeout_run),
     ]
     flags = 0x08000000 if sys.platform == "win32" else 0
     try:
-        p = _sp.run(args, capture_output=True, text=True, timeout=2500, creationflags=flags)
+        p = _sp.run(args, capture_output=True, text=True, timeout=timeout_proc, creationflags=flags)
         summary = _latest_baseline_summary(report_root, ea_id, wait_seconds=10)
-        out = {"exit_code": p.returncode, "expert": expert, "period": period}
+        out = {"exit_code": p.returncode, "expert": expert, "period": period,
+               "test_symbol": test_symbol}
         if summary is not None:
             out.update(_baseline_report_metadata(summary))
         structured_log = _latest_structured_qm_log(ea_id, symbol, terminal)
@@ -343,7 +357,7 @@ def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None,
             out["structured_log_path"] = str(structured_log)
         return out
     except Exception as exc:
-        return {"error": repr(exc)}
+        return {"error": repr(exc), "test_symbol": test_symbol}
 
 
 def _latest_baseline_summary(report_root: Path, ea_id: int, wait_seconds: int = 0) -> Path | None:
@@ -648,6 +662,7 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
     # Tester writes the EA log to the agent sandbox, so the farmctl --log path is empty.
     # The recompiled EA also dumps a TRADE_CLOSED stream to Common\Files; read that, and
     # run a clean baseline backtest first if it's not there yet.
+    host_log: "Path | None" = None  # resolved to host-symbol path for basket EAs; used below
     baseline_run = None
     if not trades:
         common_log = _common_q08_trade_log(ea_id, symbol)
@@ -656,7 +671,6 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
         # key, so TRADE_CLOSED lands in a per-host path, not the logical-symbol path.
         _repo_root_q8 = Path(__file__).resolve().parents[3]
         _baseline_sf_q8 = baseline_setfile or _guess_baseline_setfile(_repo_root_q8, ea_id, symbol)
-        host_log: Path | None = None
         if _baseline_sf_q8 is not None:
             _h_sym = _host_symbol_from_setfile(Path(_baseline_sf_q8), symbol)
             if _h_sym and _h_sym != symbol:
@@ -706,7 +720,7 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
     # portfolio stream carries gross-of-worst-case net (the builder reapplies its own
     # commission model), matching the raw Common\Files stream format.
     raw_trades = [dict(t) for t in trades]
-    portfolio_stream = _persist_durable_sleeve_stream(ea_id, symbol, raw_trades)
+    portfolio_stream = _persist_durable_sleeve_stream(ea_id, symbol, raw_trades, host_log)
 
     trades, commission_info = _apply_worst_case_commission(trades, symbol)
 
