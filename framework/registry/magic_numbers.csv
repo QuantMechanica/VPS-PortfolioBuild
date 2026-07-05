@@ -14415,3 +14415,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13017,grimes-context-pb-xau-v2,0,XAUUSD.DWX,130170000,2026-07-05,Claude,active
 12970,sp500-overnight-session,0,SP500.DWX,129700000,2026-07-05,Claude,active
 12974,xau-asia-session-drift,0,XAUUSD.DWX,129740000,2026-07-05,Claude,active
+12913,xti-12m-carry,0,XTIUSD.DWX,129130000,2026-07-05,Claude,active
