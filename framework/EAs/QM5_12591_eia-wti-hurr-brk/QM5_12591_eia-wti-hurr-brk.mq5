@@ -51,25 +51,33 @@ input int    strategy_start_month         = 6;
 input int    strategy_end_month           = 11;
 input int    strategy_max_spread_points   = 1000;
 
-int g_last_signal_day_key = 0;
+// Cached per-closed-bar state. Refreshed exactly once per new D1 bar by
+// Strategy_AdvanceCachedState() (called after the QM_IsNewBar() gate) so the
+// per-tick path (ManageOpenPosition / ExitSignal / EntrySignal) never calls
+// CopyRates or re-derives the channel/trend/range state on every tick.
+bool   g_state_valid       = false;
+double g_close_last        = 0.0;
+double g_entry_high        = 0.0;
+double g_exit_low          = 0.0;
+double g_atr_last          = 0.0;
+double g_sma_last          = 0.0;
+double g_range_last        = 0.0;
+double g_close_location    = 0.0;
+bool   g_in_season         = false;
 
 bool Strategy_IsXtiD1()
   {
    return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
   }
 
-int Strategy_DayKey(const datetime t)
+// Derives the current calendar month from the QM calendar-period primitive
+// (yyyymm) instead of a hand-rolled iTime()+TimeToStruct() month key.
+int Strategy_CurrentMonth()
   {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 10000 + dt.mon * 100 + dt.day;
-  }
-
-int Strategy_MonthFromTime(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.mon;
+   const int cal_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0); // yyyymm
+   if(cal_key <= 0)
+      return 0;
+   return cal_key % 100;
   }
 
 bool Strategy_MonthInWindow(const int month)
@@ -79,14 +87,6 @@ bool Strategy_MonthInWindow(const int month)
    if(strategy_start_month <= strategy_end_month)
       return (month >= strategy_start_month && month <= strategy_end_month);
    return (month >= strategy_start_month || month <= strategy_end_month);
-  }
-
-bool Strategy_IsCurrentSeason()
-  {
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 hurricane-season calendar gate.
-   if(current_bar <= 0)
-      return false;
-   return Strategy_MonthInWindow(Strategy_MonthFromTime(current_bar));
   }
 
 bool Strategy_HasOpenPosition()
@@ -106,96 +106,59 @@ bool Strategy_HasOpenPosition()
    return false;
   }
 
-bool Strategy_LoadClosedState(double &close_last,
-                              double &entry_high,
-                              double &exit_low,
-                              double &atr_last,
-                              double &sma_last,
-                              double &range_last,
-                              double &close_location,
-                              int &signal_day_key)
+// Called once per new closed D1 bar (caller guarantees QM_IsNewBar()==true).
+// Single CopyRates call for the channel state; QM_ATR / QM_SMA are handle-
+// pooled readers. Populates the g_* cache consumed by the per-tick hooks.
+void Strategy_AdvanceCachedState()
   {
+   g_state_valid = false;
+   g_in_season = Strategy_MonthInWindow(Strategy_CurrentMonth());
+
    const int max_channel = MathMax(strategy_entry_channel, strategy_exit_channel);
    const int bars_needed = max_channel + 2;
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   if(CopyRates(_Symbol, PERIOD_D1, 1, bars_needed, rates) < bars_needed) // perf-allowed: bespoke D1 channel/range state for structural hurricane breakout.
-      return false;
+   if(CopyRates(_Symbol, PERIOD_D1, 1, bars_needed, rates) < bars_needed)
+      return;
 
-   close_last = rates[0].close;
+   const double close_last = rates[0].close;
    const double high_last = rates[0].high;
    const double low_last = rates[0].low;
-   signal_day_key = Strategy_DayKey(rates[0].time);
 
-   entry_high = rates[1].high;
+   double entry_high = rates[1].high;
    for(int i = 2; i <= strategy_entry_channel; ++i)
      {
       if(rates[i].high > entry_high)
          entry_high = rates[i].high;
      }
 
-   exit_low = rates[1].low;
+   double exit_low = rates[1].low;
    for(int j = 2; j <= strategy_exit_channel; ++j)
      {
       if(rates[j].low < exit_low)
          exit_low = rates[j].low;
      }
 
-   atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   sma_last = QM_SMA(_Symbol, PERIOD_D1, strategy_trend_period, 1, PRICE_CLOSE);
-   range_last = high_last - low_last;
+   const double atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   const double sma_last = QM_SMA(_Symbol, PERIOD_D1, strategy_trend_period, 1, PRICE_CLOSE);
+   const double range_last = high_last - low_last;
    if(close_last <= 0.0 || entry_high <= 0.0 || exit_low <= 0.0 || atr_last <= 0.0 || sma_last <= 0.0)
-      return false;
+      return;
    if(range_last <= 0.0)
-      return false;
+      return;
 
-   close_location = (close_last - low_last) / range_last;
-   return MathIsValidNumber(close_location);
-  }
+   const double close_location = (close_last - low_last) / range_last;
+   if(!MathIsValidNumber(close_location))
+      return;
 
-void Strategy_CloseOpenPositionsIfNeeded()
-  {
-   double close_last = 0.0;
-   double entry_high = 0.0;
-   double exit_low = 0.0;
-   double atr_last = 0.0;
-   double sma_last = 0.0;
-   double range_last = 0.0;
-   double close_location = 0.0;
-   int signal_day_key = 0;
-   const bool have_state = Strategy_LoadClosedState(close_last, entry_high, exit_low, atr_last,
-                                                    sma_last, range_last, close_location, signal_day_key);
-   const bool in_season = Strategy_IsCurrentSeason();
-   const int magic = QM_FrameworkMagic();
-   const datetime now = TimeCurrent();
-   const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-      const ENUM_POSITION_TYPE pos_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-      bool should_close = (!in_season);
-      if(opened > 0 && now - opened >= hold_seconds)
-         should_close = true;
-      if(pos_type != POSITION_TYPE_BUY)
-         should_close = true;
-      if(have_state && pos_type == POSITION_TYPE_BUY)
-        {
-         if(close_last < exit_low || close_last < sma_last)
-            should_close = true;
-        }
-
-      if(should_close)
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-     }
+   g_close_last = close_last;
+   g_entry_high = entry_high;
+   g_exit_low = exit_low;
+   g_atr_last = atr_last;
+   g_sma_last = sma_last;
+   g_range_last = range_last;
+   g_close_location = close_location;
+   g_state_valid = true;
   }
 
 bool Strategy_NoTradeFilter()
@@ -217,6 +180,58 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
+// Called every tick when an open position exists for this EA's magic. This
+// strategy carries a fixed hard SL (no trailing, no BE shift, no partials in
+// v1 per the card), so there is nothing to actively adjust here.
+void Strategy_ManageOpenPosition()
+  {
+  }
+
+// Discretionary close, evaluated every tick against cached per-bar state plus
+// a live max-hold-duration check. Only one position per magic/symbol can
+// exist (enforced at entry), so a single boolean is sufficient.
+bool Strategy_ExitSignal()
+  {
+   const int magic = QM_FrameworkMagic();
+   datetime opened = 0;
+   bool have_position = false;
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      opened = (datetime)PositionGetInteger(POSITION_TIME);
+      have_position = true;
+      break;
+     }
+   if(!have_position)
+      return false;
+
+   if(opened > 0)
+     {
+      const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
+      if(TimeCurrent() - opened >= hold_seconds)
+         return true;
+     }
+
+   if(!g_in_season)
+      return true;
+
+   if(!g_state_valid)
+      return false;
+
+   if(g_close_last < g_exit_low)
+      return true;
+   if(g_close_last < g_sma_last)
+      return true;
+
+   return false;
+  }
+
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
    req.type = QM_BUY;
@@ -227,9 +242,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   Strategy_CloseOpenPositionsIfNeeded();
-
-   if(!Strategy_IsCurrentSeason())
+   if(!g_in_season)
+      return false;
+   if(!g_state_valid)
       return false;
    if(Strategy_HasOpenPosition())
       return false;
@@ -241,30 +256,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   double close_last = 0.0;
-   double entry_high = 0.0;
-   double exit_low = 0.0;
-   double atr_last = 0.0;
-   double sma_last = 0.0;
-   double range_last = 0.0;
-   double close_location = 0.0;
-   int signal_day_key = 0;
-   if(!Strategy_LoadClosedState(close_last, entry_high, exit_low, atr_last,
-                                sma_last, range_last, close_location, signal_day_key))
+   if(g_close_last <= g_entry_high)
       return false;
-   if(signal_day_key <= 0 || signal_day_key == g_last_signal_day_key)
+   if(g_close_last <= g_sma_last)
+      return false;
+   if(g_range_last < strategy_min_range_atr * g_atr_last)
+      return false;
+   if(g_close_location < strategy_min_close_location)
       return false;
 
-   if(close_last <= entry_high)
-      return false;
-   if(close_last <= sma_last)
-      return false;
-   if(range_last < strategy_min_range_atr * atr_last)
-      return false;
-   if(close_location < strategy_min_close_location)
-      return false;
-
-   req.type = QM_BUY;
    const double entry_price = QM_EntryMarketPrice(req.type);
    if(entry_price <= 0.0)
       return false;
@@ -274,18 +274,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.reason = "EIA_WTI_HURRICANE_BREAKOUT_LONG";
-   g_last_signal_day_key = signal_day_key;
    return true;
-  }
-
-void Strategy_ManageOpenPosition()
-  {
-   Strategy_CloseOpenPositionsIfNeeded();
-  }
-
-bool Strategy_ExitSignal()
-  {
-   return false;
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
@@ -331,23 +320,13 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -363,6 +342,23 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // News blackout gates NEW entries only (below). It must not sit above the
+   // management path so stop enforcement / time exits keep running through
+   // news windows. Fail-closed init in OnInit is unchanged.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
+   Strategy_AdvanceCachedState();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

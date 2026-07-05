@@ -3,8 +3,8 @@
 **EA ID:** QM5_12591
 **Slug:** `eia-wti-hurr-brk`
 **Source:** `EIA-WTI-HURRICANE-2025`
-**Author of this spec:** Codex
-**Last revised:** 2026-06-27
+**Author of this spec:** Claude
+**Last revised:** 2026-07-05
 
 ## 1. Strategy Logic
 
@@ -67,3 +67,10 @@ https://www.eia.gov/todayinenergy/detail.php?id=65304.
 | Live, if ever approved later | RISK_PERCENT | allocated by portfolio process |
 
 No live manifest or `T_Live` file is touched by this build.
+
+## Revision History
+
+| Version | Date | Reason | Notes |
+|---|---|---|---|
+| v1 | 2026-06-27 | Initial build from card | task fb9242d4-5cab-41f7-aa3b-ea2b3de38349 (prior smoke attempts: INFRA_FAIL/ONINIT_FAILED family) |
+| v2 | 2026-07-05 | Rebuild in place: OnTick reordered so the two-axis news gate sits below `Strategy_ManageOpenPosition`/`Strategy_ExitSignal` and gates only entries (2026-07-02 binding audit fix); replaced hand-rolled `iTime`+`TimeToStruct` season-month key with `QM_CalendarPeriodKey(PERIOD_MN1)`; per-bar channel/ATR/SMA state now computed once per closed bar via `Strategy_AdvanceCachedState()` and cached, removing duplicate `CopyRates` calls. No change to Entry/Exit/Stop mechanics vs the card. | task fb9242d4-5cab-41f7-aa3b-ea2b3de38349 |
