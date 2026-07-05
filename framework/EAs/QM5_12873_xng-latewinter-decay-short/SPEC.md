@@ -77,3 +77,4 @@ AutoTrading setting is touched by this build.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-02 | Initial build from card | Enqueue Q02 |
+| v2 | 2026-07-05 | Rebuild in place: fixed OnTick news-gate ordering (was above `Strategy_ManageOpenPosition`/`ExitSignal`, violating the 2026-07-02 binding audit-finding ordering rule) and ran the mandatory smoke test that the prior build had deferred | build_task_id 9bbdabf3-3633-4568-95d4-9bd83b03e505 |
