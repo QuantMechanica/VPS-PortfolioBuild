@@ -7,7 +7,8 @@ actually tests, and now officially tests:
   Window:     full available history per symbol
   Parameters: Q03 plateau-median (locked, not re-optimised)
   Costs:      gross .DWX basis (cost realism lives in Q04's commission gate;
-              genuine cost STRESS is a planned Q08 sub-gate extension)
+              cost STRESS lives in Q08's DL-072 cost-cushion gate: PASS needs
+              the gross edge to survive 2x worst-case commission)
   Trade-rejection: 0% (Q06 HARSH only)
   Verdict:    PF > 1.0 AND DD < 15% AND trades >= 20
 

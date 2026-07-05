@@ -35,21 +35,29 @@ parameters; verdict PF > 1.0 AND DD < 15% AND trades ≥ 20.
    (2026-07-05); runner docstring fixed (no behaviour change).
 4. Ops ticket `ea21909d` resolved by this record.
 
-## Q08 cost-stress sub-gate — design sketch (NOT yet implemented)
+## Q08 cost-stress sub-gate — RESOLVED AS ALREADY IMPLEMENTED (2026-07-05, post-GO)
 
-- Mechanism: reuse the **proven** Q04 commission machinery
-  (`run_smoke.ps1 -CommissionPerLot` → `Set-TesterGroupsCommission`, empirically
-  verified against tester reports) with the registry commission × **1.5** for one
-  additional Q08 baseline run per (ea,symbol).
-- New sub-gate 8.x "cost_stress": net PF under 1.5× commission ≥ 1.0. Spread/
-  slippage multipliers stay OUT (not implementable via the groups file; slippage
-  realism is covered by Model-4 real ticks).
-- Failure semantics: SOFT (feeds Q09 context like 8.4/8.6/8.10 per DL-075), not
-  hard-kill — the portfolio admission weighs it.
-- Cost: +1 full-history run per Q08 item (~30–60 min) — acceptable; Q08 volume
-  is low (~10% of Q04 passers).
-- Implementation owner: Claude (Sonnet lane per rule 24), review: Codex.
-  Prerequisite: OWNER signs off this design (one line suffices).
+OWNER signed off the design („Q08-Design GO", 2026-07-05 chat). Implementation
+scoping then found the ratified criterion **already exists — and stricter —**
+as the **DL-072 cost-cushion gate** (OWNER-ratified 2026-06-09), live in
+`framework/scripts/q08_davey/aggregate.py`:
+
+- `_apply_worst_case_commission` (lines ~442–477): applies the worst-case
+  DXZ/FTMO per-instrument commission model to every Q08 trade;
+  `cushion = gross_total / cost_total`.
+- Thresholds (lines ~420–421): `cushion ≥ 2.0` → PASS (survives **2×**
+  worst-case commission — dominates the sketched 1.5×); `1 ≤ cushion < 2` →
+  **EDGE_SOFT** (exactly the sketched SOFT-feeds-Q09 semantics);
+  `gross ≤ cost` → EDGE_HARD (with DL-077 zero-trade INVALID guard).
+- Verdict wiring (lines ~599–617): tier flows into the Q08
+  PASS/FAIL_SOFT/FAIL_HARD classification.
+
+**Decision: no new code.** Building a second commission sub-gate would duplicate
+DL-072 with a weaker threshold. The 2026-07-05 doc references describing cost
+stress at Q08 as "planned" (vault Q05 page, q05 runner docstring) are corrected
+to cite DL-072 as the existing mechanism. Lesson recorded: before designing gate
+changes, grep the sub-gate implementations — the DL-072 cushion was indexed in
+memory but its Q08 wiring was not re-checked when this DL was drafted.
 
 ## Why not option (a) — implement the documented stress at Q05
 
@@ -64,4 +72,5 @@ parameters; verdict PF > 1.0 AND DD < 15% AND trades ≥ 20.
 - Finding + options: Claude, 2026-07-05 evening (ticket `ea21909d`).
 - Recommendation (b) incl. Q08 relocation: Claude, same evening, in chat.
 - **OWNER: „Folge deinem Rat" — 2026-07-05.**
-- Q08 design sign-off: _pending OWNER_ (implementation blocked until then).
+- **Q08 design sign-off: OWNER „Q08-Design GO" — 2026-07-05**; resolved same
+  evening as already-implemented via DL-072 (see section above; no code shipped).
