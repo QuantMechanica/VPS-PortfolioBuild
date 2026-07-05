@@ -105,5 +105,9 @@ new EAs.
     (pulse updated same day: EXPECTED_LIVE_SLEEVES 13→15 + removal-aware journal count).
   - Obsolete `QM5_10940_grimes-nested-pb.ex5` deleted from Live EAs (backup in
     `pre_sunday_backup\`). AutoTrading untouched throughout.
-  - Open: OWNER to note the broker-side closing-deal timestamp of 10940 ticket
-    3162733509 from the History tab (position closed while terminal disconnected).
+  - ✅ Closing loop resolved (OWNER, 2026-07-05 chat): 10940 ticket 3162733509 closing
+    deal = **2026-06-30 09:32** (DXZ live account history; BE-stop, worst case ≈ 0).
+    The position had therefore been flat since Tuesday 06-30 — the Sat-night (07-04)
+    "position still open" reading was a stale EA-log artifact: server-side SL/TP fills
+    never appear as TM_CLOSE in EA-derived logs. Lesson: position state comes ONLY
+    from broker sync / terminal position list, never from EA logs.

@@ -1,6 +1,9 @@
 # FTMO decision — Round25 12-leg book, Phase 1 @ scale 9.0 (Two-Speed)
 
 **Status: DRAFT — file-side staged 2026-07-05; awaiting OWNER manifest approval + chart session + AutoTrading**
+**OWNER direction 2026-07-05 (chat): run the book on an FTMO Free Trial first — dress
+rehearsal (plumbing verification: symbols, sizing, server-time offset, risk-cap events,
+first fills), not a pass attempt; challenge purchase deferred.**
 
 ## Decision basis
 
@@ -100,7 +103,12 @@ the cap input natively.
       `C:\QM\deploy\FTMO_Round25_2026-07-05\live_eas_sha256.txt`)
 - [x] SHA256 staged presets == terminal `MQL5\Presets` copies (12/12; old 13 demo
       presets + 11 old binaries moved to `pre_deploy_backup\`)
-- [ ] OWNER confirms account identity (challenge vs trial, balance/currency = USD 100k)
+- [ ] Account identity: **Free Trial first (OWNER 2026-07-05)**. Still open: trial
+      account with balance/currency **USD 100,000** (sizing basis of all 12 presets and
+      of the FTMO limit percentages); if the trial is a new login (terminal currently
+      holds 1513845506 / FTMO-Demo, connected, 0 positions — journal 20260705.log),
+      OWNER logs the terminal in; Claude then re-verifies SHA 12/12 and records the
+      trial terms (duration/target per FTMO dashboard) here
 - [ ] OWNER manifest approval in writing
 - [ ] Charts applied (12), journal `loaded successfully` + `INIT_OK` 12/12,
       `RISK_CAP_OVERRIDE` in exactly 4 EA logs
