@@ -53,19 +53,15 @@ input int    strategy_max_hold_days              = 5;
 input int    strategy_max_spread_points          = 1000;
 
 int g_last_entry_month_key = 0;
+int g_last_managed_day_key = 0;
 
 bool Strategy_IsXtiD1()
   {
    return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
   }
 
-int Strategy_DayKey(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 10000 + dt.mon * 100 + dt.day;
-  }
-
+// Position-lifecycle bookkeeping only (POSITION_TIME is a real broker
+// timestamp, not a bar shift QM_CalendarPeriodKey can look up).
 int Strategy_MonthKey(const datetime t)
   {
    MqlDateTime dt;
@@ -73,41 +69,42 @@ int Strategy_MonthKey(const datetime t)
    return dt.year * 100 + dt.mon;
   }
 
-int Strategy_TradingDayOfMonth(const datetime t)
+// Ordinal count of D1 trading days from the start of `target_shift`'s
+// calendar month through `target_shift`, inclusive. Built entirely on
+// QM_CalendarPeriodKey (never raw iTime) per framework-corset rules.
+int Strategy_TradingDayOfMonth(const int target_shift)
   {
-   if(t <= 0)
+   const int target_month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, target_shift);
+   const int target_day_key   = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, target_shift);
+   if(target_month_key <= 0 || target_day_key <= 0)
       return 0;
 
-   MqlDateTime target;
-   TimeToStruct(t, target);
    int count = 0;
-
    for(int shift = 0; shift < 80; ++shift)
      {
-      const datetime bar_time = iTime(_Symbol, PERIOD_D1, shift); // perf-allowed: D1 trading-day-of-month calendar gate, new-bar gated.
-      if(bar_time <= 0)
+      const int month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, shift);
+      if(month_key <= 0 || month_key < target_month_key)
          break;
+      if(month_key != target_month_key)
+         continue;
 
-      MqlDateTime bar_dt;
-      TimeToStruct(bar_time, bar_dt);
-      if(bar_dt.year < target.year || (bar_dt.year == target.year && bar_dt.mon < target.mon))
-         break;
-      if(bar_dt.year == target.year && bar_dt.mon == target.mon && bar_dt.day <= target.day)
+      const int day_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, shift);
+      if(day_key > 0 && day_key <= target_day_key)
          ++count;
      }
 
    return count;
   }
 
-bool Strategy_InPressureWindow(const datetime bar_time)
+bool Strategy_InPressureWindow(const int shift)
   {
-   const int td = Strategy_TradingDayOfMonth(bar_time);
+   const int td = Strategy_TradingDayOfMonth(shift);
    return (td >= strategy_pressure_start_trading_day && td <= strategy_pressure_end_trading_day);
   }
 
-bool Strategy_InReliefWindow(const datetime current_bar_time)
+bool Strategy_InReliefWindow(const int shift)
   {
-   const int td = Strategy_TradingDayOfMonth(current_bar_time);
+   const int td = Strategy_TradingDayOfMonth(shift);
    return (td >= strategy_relief_start_trading_day && td <= strategy_relief_end_trading_day);
   }
 
@@ -131,20 +128,16 @@ bool Strategy_HasOpenPosition()
 bool Strategy_LoadClosedState(double &close_last,
                               double &close_prev,
                               double &return_pct,
-                              double &sma_last,
-                              datetime &signal_time,
-                              int &signal_day_key)
+                              double &sma_last)
   {
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
    if(CopyRates(_Symbol, PERIOD_D1, 1, 2, rates) < 2) // perf-allowed: prior D1 relief-reclaim confirmation state, new-bar gated.
       return false;
 
-   signal_time = rates[0].time;
-   signal_day_key = Strategy_DayKey(signal_time);
    close_last = rates[0].close;
    close_prev = rates[1].close;
-   if(close_last <= 0.0 || close_prev <= 0.0 || signal_day_key <= 0)
+   if(close_last <= 0.0 || close_prev <= 0.0)
       return false;
 
    return_pct = ((close_last / close_prev) - 1.0) * 100.0;
@@ -155,27 +148,20 @@ bool Strategy_LoadClosedState(double &close_last,
    return MathIsValidNumber(return_pct);
   }
 
-bool Strategy_HadPressureInCurrentMonth(const datetime current_bar_time)
+bool Strategy_HadPressureInCurrentMonth()
   {
-   if(current_bar_time <= 0)
+   const int current_month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   if(current_month_key <= 0)
       return false;
-
-   MqlDateTime current_dt;
-   TimeToStruct(current_bar_time, current_dt);
 
    for(int shift = 1; shift < 80; ++shift)
      {
-      const datetime bar_time = iTime(_Symbol, PERIOD_D1, shift); // perf-allowed: bounded D1 same-month pressure scan, new-bar gated.
-      if(bar_time <= 0)
+      const int month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, shift);
+      if(month_key <= 0 || month_key < current_month_key)
          break;
-
-      MqlDateTime bar_dt;
-      TimeToStruct(bar_time, bar_dt);
-      if(bar_dt.year < current_dt.year || (bar_dt.year == current_dt.year && bar_dt.mon < current_dt.mon))
-         break;
-      if(bar_dt.year != current_dt.year || bar_dt.mon != current_dt.mon)
+      if(month_key != current_month_key)
          continue;
-      if(!Strategy_InPressureWindow(bar_time))
+      if(!Strategy_InPressureWindow(shift))
          continue;
 
       const double close_bar = iClose(_Symbol, PERIOD_D1, shift); // perf-allowed: closed D1 pressure bar, same-symbol only.
@@ -200,19 +186,15 @@ bool Strategy_HadPressureInCurrentMonth(const datetime current_bar_time)
 
 void Strategy_CloseOpenPositionsIfNeeded()
   {
-   const datetime current_bar_time = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 relief-window exit gate.
-   const int current_td = Strategy_TradingDayOfMonth(current_bar_time);
-   const int current_month_key = Strategy_MonthKey(current_bar_time);
-   const bool in_relief_window = Strategy_InReliefWindow(current_bar_time);
+   const int current_td = Strategy_TradingDayOfMonth(0);
+   const int current_month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   const bool in_relief_window = Strategy_InReliefWindow(0);
 
    double close_last = 0.0;
    double close_prev = 0.0;
    double return_pct = 0.0;
    double sma_last = 0.0;
-   datetime signal_time = 0;
-   int signal_day_key = 0;
-   const bool have_state = Strategy_LoadClosedState(close_last, close_prev, return_pct,
-                                                    sma_last, signal_time, signal_day_key);
+   const bool have_state = Strategy_LoadClosedState(close_last, close_prev, return_pct, sma_last);
 
    const int magic = QM_FrameworkMagic();
    const datetime now = TimeCurrent();
@@ -280,8 +262,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   Strategy_CloseOpenPositionsIfNeeded();
-
    if(Strategy_HasOpenPosition())
       return false;
 
@@ -292,26 +272,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   const datetime current_bar_time = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 relief-window entry calendar gate.
-   if(current_bar_time <= 0)
-      return false;
-   if(!Strategy_InReliefWindow(current_bar_time))
+   if(!Strategy_InReliefWindow(0))
       return false;
 
-   const int current_month_key = Strategy_MonthKey(current_bar_time);
+   const int current_month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
    if(current_month_key <= 0 || current_month_key == g_last_entry_month_key)
       return false;
-   if(!Strategy_HadPressureInCurrentMonth(current_bar_time))
+   if(!Strategy_HadPressureInCurrentMonth())
       return false;
 
    double close_last = 0.0;
    double close_prev = 0.0;
    double return_pct = 0.0;
    double sma_last = 0.0;
-   datetime signal_time = 0;
-   int signal_day_key = 0;
-   if(!Strategy_LoadClosedState(close_last, close_prev, return_pct, sma_last,
-                                signal_time, signal_day_key))
+   if(!Strategy_LoadClosedState(close_last, close_prev, return_pct, sma_last))
       return false;
    if(return_pct < strategy_min_reclaim_return_pct)
       return false;
@@ -331,8 +305,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return true;
   }
 
+// Management is invoked unconditionally every tick (canonical OnTick order
+// keeps risk management above the news gate), but the actual D1-close-driven
+// exit evaluation only needs to run once per new calendar day. Gating on
+// QM_CalendarPeriodKey (not QM_IsNewBar) avoids double-consuming the
+// single-use new-bar edge that OnTick still needs for the entry gate.
 void Strategy_ManageOpenPosition()
   {
+   const int today_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 0);
+   if(today_key <= 0 || today_key == g_last_managed_day_key)
+      return;
+   g_last_managed_day_key = today_key;
    Strategy_CloseOpenPositionsIfNeeded();
   }
 
@@ -381,26 +364,16 @@ void OnTick()
    if(!QM_KillSwitchCheck())
       return;
 
-   const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
+   // Canonical order (2026-07-02 audit finding): management/exit run ABOVE
+   // the news gate so risk handling never suspends during news windows.
+   // Management self-gates to once-per-day via QM_CalendarPeriodKey, so
+   // calling it unconditionally here does not blow the smoke perf budget.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -416,6 +389,22 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
