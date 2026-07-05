@@ -134,40 +134,78 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    Strategy_CloseTimeExpiredPositions();
 
-   if(Strategy_HasOpenPosition())
+   const int month_key = QM_CalendarPeriodKey(PERIOD_MN1);
+   const int day_key   = QM_CalendarPeriodKey(PERIOD_D1);
+   const bool has_pos  = Strategy_HasOpenPosition();
+   // Diagnostic (once/bar, gated by the OnTick QM_IsNewBar edge): proves
+   // whether this hook is even being reached every day -- the WTI
+   // calendar-fade family (project_qm_calendar_fade_family_1trade_bug_2026-07-05)
+   // shows exactly 1 trade ever then permanent silence across ~22 EAs; this
+   // line lets a stale upstream gate (news/IsNewBar) be told apart from an
+   // internal early-return by simply checking whether ENTRY_EVAL keeps
+   // appearing in the tester log after the first fill.
+   QM_LogEvent(QM_INFO, "ENTRY_EVAL",
+      StringFormat("{\"day_key\":%d,\"month_key\":%d,\"has_pos\":%s,\"last_entry_day_key\":%d}",
+                   day_key, month_key, has_pos ? "true" : "false", g_last_entry_day_key));
+
+   if(has_pos)
       return false;
 
    if(strategy_max_spread_points > 0)
      {
       const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
       if(spread_points > strategy_max_spread_points)
+        {
+         QM_LogEvent(QM_INFO, "ENTRY_BLOCK", "{\"reason\":\"spread\"}");
          return false;
+        }
      }
 
-   const int month_key = QM_CalendarPeriodKey(PERIOD_MN1);
    if(month_key <= 0)
+     {
+      QM_LogEvent(QM_INFO, "ENTRY_BLOCK", "{\"reason\":\"month_key_invalid\"}");
       return false;
+     }
    if((month_key % 100) != strategy_entry_month)
       return false;
 
-   const int day_key = QM_CalendarPeriodKey(PERIOD_D1);
    if(day_key <= 0 || day_key == g_last_entry_day_key)
+     {
+      QM_LogEvent(QM_INFO, "ENTRY_BLOCK",
+         StringFormat("{\"reason\":\"day_key_dup_or_invalid\",\"day_key\":%d,\"last\":%d}", day_key, g_last_entry_day_key));
       return false;
+     }
 
    const double atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if(atr_last <= 0.0)
+     {
+      QM_LogEvent(QM_INFO, "ENTRY_BLOCK", "{\"reason\":\"atr_zero\"}");
       return false;
+     }
 
    const double entry_price = QM_EntryMarketPrice(req.type);
    if(entry_price <= 0.0)
+     {
+      QM_LogEvent(QM_INFO, "ENTRY_BLOCK", "{\"reason\":\"price_invalid\"}");
       return false;
+     }
 
-   req.sl = QM_StopATR(_Symbol, req.type, entry_price, strategy_atr_period, strategy_atr_sl_mult);
+   // Reuse the already-fetched pooled ATR reading instead of QM_StopATR,
+   // whose internal helper (see QM_StopRules.mqh) creates a fresh raw
+   // indicator handle per call instead of going through the pooled reader --
+   // needless per-call handle churn for a value we already hold, and the
+   // exact create/read/release-in-one-call pattern build_check flags via
+   // BUILD_CHECK_DWX_ADVISORY_DWX_LAZY_INDICATOR_HANDLE / _INDICATOR_RELEASE.
+   req.sl = QM_StopATRFromValue(_Symbol, req.type, entry_price, atr_last, strategy_atr_sl_mult);
    if(req.sl <= 0.0)
+     {
+      QM_LogEvent(QM_INFO, "ENTRY_BLOCK", "{\"reason\":\"sl_zero\"}");
       return false;
+     }
 
    req.reason = "WTI_MAY_PREMIUM_LONG";
    g_last_entry_day_key = day_key;
+   QM_LogEvent(QM_INFO, "ENTRY_SIGNAL_FIRE", StringFormat("{\"day_key\":%d}", day_key));
    return true;
   }
 
@@ -224,23 +262,16 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
+   // 2026-07-02 audit rule: management/exit run every tick, ungated by the
+   // news blackout below -- the news gate must suspend NEW entries only.
+   // See QM5_12821 OnTick (commit dc418a720) for the canonical reference.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -256,6 +287,19 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
