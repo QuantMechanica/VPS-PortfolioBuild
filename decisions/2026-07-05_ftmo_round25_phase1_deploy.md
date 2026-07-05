@@ -129,9 +129,13 @@ the cap input natively.
       behavior == evidence behavior; funded-stage compliance = deviation 4, still
       open). Transient `unconfigured` (magic 0) pre-preset inits during attach were
       all superseded within the session; market closed → no trade risk.
-- [ ] Server-time offset check at first tick — preliminary: last FX tick Friday
-      23:54:59 broker / USOIL 19:59:44 (EA log `ts_broker`) is consistent with UTC+3;
-      definitive check at Monday market open (~23:00 CEST)
+- [x] Server-time offset VERIFIED at first tick (2026-07-06 market open):
+      `ts_utc 2026-07-05T21:05:02.062Z` vs `ts_broker 2026-07-06T00:05:02` =
+      **UTC+3 exactly** (expected for US-DST period). Same-tick evidence:
+      `EQUITY_SNAPSHOT equity=100000.00` (live account basis confirmed) and
+      `NEWS_LIVE_CALENDAR_SELFTEST healthy=true` (217 events/7d, next HIGH:
+      USD S&P Global Services PMI 2026.07.06 16:45 srv). Logs: QM5_11476/10847/
+      12990 first 2026-07-06 broker events.
 - [x] AutoTrading enabled 16:47:47 local by OWNER (during chart session; market
       closed, 0 positions)
 

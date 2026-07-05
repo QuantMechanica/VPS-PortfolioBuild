@@ -21,7 +21,8 @@ gate closes on a file path, never on narrative.
 ### G1 — Trial plumbing verification (target: ≤ 2026-07-12)
 Trial (acct 1513845506, USD 100k, live since 2026-07-05) is a dress rehearsal, NOT a
 pass attempt. Trial-pass (5% in 14d) is a free-roll bonus. G1 closes when ALL hold:
-- [ ] Server-time offset empirically verified at first tick (expected UTC+3)
+- [x] Server-time offset empirically verified at first tick — UTC+3 exactly
+      (2026-07-06 00:05 broker = 21:05Z; decision record has the log evidence)
 - [ ] ≥5 trading days with `ftmo_trial_pulse` verdict OK (no EA errors, 12/12 magics,
       terminal uptime through the daily FTMO server maintenance window)
 - [ ] ≥1 fill per: index (.cash), metal, FX leg class — sizing sane vs RISK_FIXED
