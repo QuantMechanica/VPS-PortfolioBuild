@@ -1567,6 +1567,11 @@ def main() -> int:
 
     # Watchdog pulse: last self-heal action + interactive-session state. Answers
     # OWNER's recurring "ist die Factory eigentlich gelaufen?" without log-digging.
+    # Heartbeat records (action="heartbeat") are emitted after every run; the last
+    # heartbeat ts determines freshness.  The last operational record (non-heartbeat)
+    # carries the meaningful action + session state.
+    # STALE rule: if the last heartbeat is >30 min old, the watchdog itself has stopped
+    # cycling — override the display with "WATCHDOG-STALE since <ts>" (wd-crit).
     watchdog_str = "no watchdog telemetry"
     watchdog_cls = "wd-warn"
     try:
@@ -1574,24 +1579,48 @@ def main() -> int:
         if wd_log.exists():
             tail = wd_log.read_text(encoding="utf-8", errors="ignore").strip().splitlines()
             if tail:
-                wd = json.loads(tail[-1])
-                wd_ts = str(wd.get("ts") or "")
+                # Parse lines in reverse to find the last heartbeat and last operational record
+                last_hb_ts = None
+                last_op: dict = {}
+                for raw in reversed(tail):
+                    try:
+                        rec = json.loads(raw)
+                    except Exception:
+                        continue
+                    if rec.get("action") == "heartbeat":
+                        if last_hb_ts is None:
+                            last_hb_ts = str(rec.get("ts") or "")
+                    else:
+                        if not last_op:
+                            last_op = rec
+                    if last_hb_ts and last_op:
+                        break
+
+                # Freshness: use the last heartbeat if available, else last operational ts
+                freshness_ts = last_hb_ts or str(last_op.get("ts") or "")
                 age_min = None
                 try:
-                    t = dt.datetime.fromisoformat(wd_ts.replace("Z", "+00:00"))
+                    t = dt.datetime.fromisoformat(freshness_ts.replace("Z", "+00:00"))
                     age_min = int((dt.datetime.now(dt.timezone.utc) - t).total_seconds() // 60)
                 except Exception:
                     pass
-                act = str(wd.get("action") or "?")
-                sess = "SESSION LOST" if wd.get("session_lost") else "session ok"
-                age_txt = f" // {age_min}m ago" if age_min is not None else ""
-                watchdog_str = f"{act} // {wd.get('workers', '?')}/{wd.get('expect', '?')} workers // {sess}{age_txt}"
-                if wd.get("session_lost") or act in ("heal_failed", "session_lost_no_autologon"):
+
+                if age_min is not None and age_min > 30:
+                    # Watchdog stopped cycling — show explicit STALE label
+                    watchdog_str = f"WATCHDOG-STALE since {freshness_ts} // {age_min}m ago"
                     watchdog_cls = "wd-crit"
-                elif act.startswith("healed") or (age_min is not None and age_min > 45):
-                    watchdog_cls = "wd-warn"
-                else:
-                    watchdog_cls = "wd-ok"
+                elif last_op:
+                    act = str(last_op.get("action") or "?")
+                    sess = "SESSION LOST" if last_op.get("session_lost") else "session ok"
+                    age_txt = f" // {age_min}m ago" if age_min is not None else ""
+                    watchdog_str = (f"{act} // {last_op.get('workers', '?')}/"
+                                    f"{last_op.get('expect', '?')} workers // {sess}{age_txt}")
+                    if last_op.get("session_lost") or act in ("heal_failed", "session_lost_no_autologon"):
+                        watchdog_cls = "wd-crit"
+                    elif act.startswith("healed"):
+                        watchdog_cls = "wd-warn"
+                    else:
+                        watchdog_cls = "wd-ok"
     except Exception:
         pass
 
