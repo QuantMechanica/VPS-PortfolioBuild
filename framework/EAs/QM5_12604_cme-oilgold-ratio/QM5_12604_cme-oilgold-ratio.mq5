@@ -50,8 +50,6 @@ input double strategy_atr_sl_mult         = 3.0;
 input int    strategy_xti_max_spread_pts  = 1000;
 input int    strategy_xau_max_spread_pts  = 500;
 input int    strategy_deviation_points    = 20;
-input int    strategy_entry_hour_broker   = 2;
-input int    strategy_entry_minute_broker = 0;
 
 string   g_leg_xti = "XTIUSD.DWX";
 string   g_leg_xau = "XAUUSD.DWX";
@@ -61,7 +59,6 @@ double   g_spread_sd = 0.0;
 bool     g_state_ready = false;
 datetime g_pair_entry_time = 0;
 datetime g_last_state_bar = 0;
-datetime g_last_entry_signal_bar = 0;
 
 int Strategy_SlotForSymbol(const string symbol)
   {
@@ -84,78 +81,6 @@ bool Strategy_SpreadAllowed(const string symbol)
       return (spread_points <= strategy_xti_max_spread_pts);
    if(symbol == g_leg_xau && strategy_xau_max_spread_pts > 0)
       return (spread_points <= strategy_xau_max_spread_pts);
-   return true;
-  }
-
-int Strategy_SecondsOfDay(const datetime value)
-  {
-   MqlDateTime dt;
-   TimeToStruct(value, dt);
-   return dt.hour * 3600 + dt.min * 60 + dt.sec;
-  }
-
-bool Strategy_SymbolTradeSessionOpen(const string symbol, const datetime broker_time)
-  {
-   MqlDateTime now;
-   TimeToStruct(broker_time, now);
-   const int seconds_now = now.hour * 3600 + now.min * 60 + now.sec;
-
-   bool has_schedule = false;
-   datetime session_from = 0;
-   datetime session_to = 0;
-   for(uint session = 0; session < 16; ++session)
-     {
-      if(!SymbolInfoSessionTrade(symbol, (ENUM_DAY_OF_WEEK)now.day_of_week, session, session_from, session_to))
-         break;
-
-      has_schedule = true;
-      int from_seconds = Strategy_SecondsOfDay(session_from);
-      int to_seconds = Strategy_SecondsOfDay(session_to);
-      if(from_seconds == to_seconds)
-         continue;
-      if(to_seconds == 0)
-         to_seconds = 24 * 3600;
-
-      if(from_seconds < to_seconds)
-        {
-         if(seconds_now >= from_seconds && seconds_now < to_seconds)
-            return true;
-        }
-      else
-        {
-         if(seconds_now >= from_seconds || seconds_now < to_seconds)
-            return true;
-        }
-     }
-
-   return (!has_schedule && now.day_of_week >= 1 && now.day_of_week <= 5);
-  }
-
-bool Strategy_SymbolTradeReady(const string symbol, const datetime broker_time)
-  {
-   const long trade_mode = SymbolInfoInteger(symbol, SYMBOL_TRADE_MODE);
-   if(trade_mode == SYMBOL_TRADE_MODE_DISABLED || trade_mode == SYMBOL_TRADE_MODE_CLOSEONLY)
-      return false;
-   return Strategy_SymbolTradeSessionOpen(symbol, broker_time);
-  }
-
-bool Strategy_EntryTimeReady(const datetime broker_time)
-  {
-   if(strategy_entry_hour_broker < 0 || strategy_entry_hour_broker > 23)
-      return false;
-   if(strategy_entry_minute_broker < 0 || strategy_entry_minute_broker > 59)
-      return false;
-
-   MqlDateTime now;
-   TimeToStruct(broker_time, now);
-   const int now_minutes = now.hour * 60 + now.min;
-   const int entry_minutes = strategy_entry_hour_broker * 60 + strategy_entry_minute_broker;
-   if(now_minutes < entry_minutes)
-      return false;
-   if(!Strategy_SymbolTradeReady(g_leg_xti, broker_time))
-      return false;
-   if(!Strategy_SymbolTradeReady(g_leg_xau, broker_time))
-      return false;
    return true;
   }
 

@@ -64,3 +64,10 @@ https://www.aqr.com/Insights/Research/Journal-Article/Time-Series-Momentum.
 No live manifest, `T_Live` file, portfolio gate, or AutoTrading setting is
 touched by this build.
 
+## Revision History
+
+| Version | Date | Reason | Notes |
+|---|---|---|---|
+| v1 | 2026-06-27 | Initial build from card | task 9919bd3b-ef3d-437b-9e7a-c00578827125 |
+| v2 | 2026-07-05 | Rebuild-in-place (DL-069): codex review flagged hand-rolled `iTime`/`TimeToStruct` monthly-rebalance gating as a framework-corset violation; fixed by switching to `QM_CalendarPeriodKey(PERIOD_MN1)`. Also proactively fixed the `QM_StopATR`-after-`QM_ATR` raw-handle bug (root-caused 2026-07-05 on the WTI TSMOM/calendar-fade family, same skeleton as QM5_12616) and the 2026-07-02 news-gate/OnTick-ordering audit rule. | task 9919bd3b-ef3d-437b-9e7a-c00578827125 |
+
