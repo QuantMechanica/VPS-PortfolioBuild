@@ -3,8 +3,8 @@
 **EA ID:** QM5_12589
 **Slug:** `eia-rbob-shoulder`
 **Source:** `EIA-RBOB-CRACK-SEASON-2025`
-**Author of this spec:** Codex
-**Last revised:** 2026-06-26
+**Author of this spec:** Codex / Claude
+**Last revised:** 2026-07-05
 
 ## 1. Strategy Logic
 
@@ -72,3 +72,10 @@ at runtime and no external EIA, RBOB, refinery, inventory, or futures-spread fee
 | Live, if ever approved later | RISK_PERCENT | allocated by portfolio process |
 
 No live manifest or `T_Live` file is touched by this build.
+
+## Revision History
+
+| Version | Date | Reason | Notes |
+|---|---|---|---|
+| v1 | 2026-06-26 | Initial build from card | 86fdf89e1 |
+| v1.1 | 2026-07-05 | Pre-smoke correctness fix on the same build task (f2146adf-d9c9-47dc-b5d4-03d8b7d10396): reordered `OnTick` so the news blackout gate sits below `Strategy_ManageOpenPosition`/`Strategy_ExitSignal` per the 2026-07-02 audit finding (management/exit must keep enforcing through news windows), removed a forbidden per-EA `g_last_signal_day_key` bar-gate variable (redundant with the framework `QM_IsNewBar()` gate), and moved all discretionary-close logic into `Strategy_ExitSignal` (was living in `Strategy_ManageOpenPosition`, leaving `Strategy_ExitSignal` a permanent no-op). Regenerated the setfile via `gen_setfile.ps1` (prior one predated several framework inputs). Ran the deferred Q01 smoke: 3 deterministic trades on XTIUSD.DWX 2024, within the card's own 3-7/yr estimate. | this build |

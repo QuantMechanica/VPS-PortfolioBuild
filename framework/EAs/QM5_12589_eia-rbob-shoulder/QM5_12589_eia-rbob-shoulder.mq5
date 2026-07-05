@@ -210,7 +210,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!Strategy_LoadClosedState(close_last, trend_sma, trend_sma_prior, trigger_low, exit_high,
                                 setup_peak_shift, closed_time, day_key))
       return false;
-   if(day_key <= 0 || day_key == g_last_signal_day_key)
+   if(day_key <= 0)
       return false;
 
    if(!Strategy_InShoulderWindow(closed_time))
@@ -232,17 +232,54 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.reason = "EIA_RBOB_SHOULDER_SHORT";
-   g_last_signal_day_key = day_key;
    return true;
   }
 
 void Strategy_ManageOpenPosition()
   {
-   Strategy_CloseOpenPositionsIfNeeded();
+   // No dynamic trade management: card forbids pyramiding, grid, martingale,
+   // partial close, and trailing stop. The ATR stop set at entry (req.sl) is
+   // the only in-trade risk control; all discretionary exits live below in
+   // Strategy_ExitSignal.
   }
 
 bool Strategy_ExitSignal()
   {
+   double close_last = 0.0;
+   double trend_sma = 0.0;
+   double trend_sma_prior = 0.0;
+   double trigger_low = 0.0;
+   double exit_high = 0.0;
+   int setup_peak_shift = 0;
+   datetime closed_time = 0;
+   int day_key = 0;
+   if(!Strategy_LoadClosedState(close_last, trend_sma, trend_sma_prior, trigger_low, exit_high,
+                                setup_peak_shift, closed_time, day_key))
+      return false;
+
+   if(!Strategy_InShoulderWindow(closed_time))
+      return true;
+   if(close_last > trend_sma)
+      return true;
+   if(close_last > exit_high)
+      return true;
+
+   const int magic = QM_FrameworkMagic();
+   const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
+   const datetime now = TimeCurrent();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
+      if(opened > 0 && now - opened >= hold_seconds)
+         return true;
+     }
    return false;
   }
 
@@ -286,26 +323,12 @@ void OnTick()
    if(!QM_KillSwitchCheck())
       return;
 
-   const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -321,6 +344,26 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // News blackout gates NEW entries only (below). Position management and
+   // the strategy-exit path above must keep enforcing through news windows
+   // per the 2026-07-02 OnTick-ordering audit finding (news gate must not
+   // sit above management/exit).
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
