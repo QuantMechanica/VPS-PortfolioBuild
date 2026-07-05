@@ -213,6 +213,7 @@ void OnTick()
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req); // uninitialized symbol_slot = stack garbage -> magic_resolution_failed on every entry
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
