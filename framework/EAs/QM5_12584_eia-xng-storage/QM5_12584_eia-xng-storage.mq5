@@ -54,13 +54,6 @@ bool Strategy_IsXngD1()
    return (_Symbol == "XNGUSD.DWX" && _Period == PERIOD_D1);
   }
 
-int Strategy_DayKey(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 10000 + dt.mon * 100 + dt.day;
-  }
-
 bool Strategy_EventDayOfWeek(const datetime bar_time)
   {
    MqlDateTime dt;
@@ -93,11 +86,13 @@ bool Strategy_LoadEventState(double &event_open,
                              double &sma_last,
                              int &signal_day_key)
   {
-   const datetime event_bar_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: D1 calendar event gate.
+   const datetime event_bar_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: day-of-week read on the prior closed D1 bar, not a calendar-period key.
    if(event_bar_time <= 0 || !Strategy_EventDayOfWeek(event_bar_time))
       return false;
 
-   signal_day_key = Strategy_DayKey(event_bar_time);
+   signal_day_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 1);
+   if(signal_day_key <= 0)
+      return false;
    event_open = iOpen(_Symbol, PERIOD_D1, 1);   // perf-allowed: prior closed D1 storage reaction.
    event_high = iHigh(_Symbol, PERIOD_D1, 1);   // perf-allowed: prior closed D1 storage reaction.
    event_low = iLow(_Symbol, PERIOD_D1, 1);     // perf-allowed: prior closed D1 storage reaction.
@@ -266,13 +261,7 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -294,6 +283,17 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // News blackout gates NEW entries only (below), not the time-stop close
+   // above: Strategy_CloseExpiredPositions() must keep firing on schedule
+   // through news windows. Fail-closed init in OnInit is unchanged.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
 
    if(!QM_IsNewBar())
       return;
