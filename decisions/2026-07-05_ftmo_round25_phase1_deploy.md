@@ -79,6 +79,16 @@ four legs above 1%; all other EAs framework-wide keep the 1% default.
    verification — evidence news params kept 1:1; funded stage will need the FTMO
    compliance profile pass.
 
+**Repo-artifact note:** the 12 rebuilt `.ex5` in `framework/EAs/` were reverted to
+their prior committed content by farm automation shortly after deploy (manual
+compile = no build-lane record; sources remain committed via `dd53213e8` +
+`a83d01fc6`). The DEPLOYED binaries are pinned + SHA256-verified in
+`C:\QM\deploy\FTMO_Round25_2026-07-05\live_eas\` (+ `live_eas_sha256.txt`), and
+staging-vs-old-backup overlap = 0/12 (all genuinely fresh builds). Runtime proof
+at attach: `RISK_CAP_OVERRIDE` must appear in exactly the 4 cap-2.0 EA logs. Any
+future factory rebuild of these EAs compiles from the committed source and gets
+the cap input natively.
+
 ## Verification log (Claude)
 
 - [x] 12/12 validation setfiles located; param-carry 1:1, risk fields only overridden

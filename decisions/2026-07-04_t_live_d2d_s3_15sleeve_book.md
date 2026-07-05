@@ -72,6 +72,23 @@ new EAs.
   needed — plain reboot uses the designed autologon recovery chain). 10940 binary deletion
   deferred until after Sunday chart detach.
 
+## Sunday pre-session verification (2026-07-05 evening, Claude)
+
+- ✅ Provider-panel reboot landed 15:26 local; `sunday_go_ampel.ps1` = **GO**
+  (4 boot-grace WARNs, all cleared: watchdog+governor now result=0 with jsonl
+  heartbeat; lsm probe reinstalled).
+- ✅ `install_hygiene_and_lsm_tasks.ps1` executed: HygieneReboot + LsmHealthProbe +
+  WorkerDedupe registered (all Ready).
+- ✅ `live_book_pulse` verdict OK; 13 experts `loaded successfully` post-reboot;
+  T_Live S3 preset SHA re-verified **15/15** vs `post_cleanup_sha256.txt`.
+- ✅ News calendar refreshed 2026-07-05 15:42 local.
+- ★ **10940 position is CLOSED** — broker sync `'4000090541': 0 positions` repeatedly
+  today incl. post-reboot 15:27:06 (terminal journal 20260705.log). The EA log holds
+  no TM_CLOSE (close happened broker-side while disconnected/market closed; position
+  was BE-secured, worst case ≈ 0). Terminal > derived logs. → **Teil 2 (10940 EA
+  removal) is UNBLOCKED for tonight's session**; OWNER to note the closing deal
+  timestamp from the History tab for this record.
+
 ## Sign-off
 
 - Package recommendation (S3): Claude, 2026-07-04, on evidence D2D_COMPOSITE_PACKAGE_2026-07-03
