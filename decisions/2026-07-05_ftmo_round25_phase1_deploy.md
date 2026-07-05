@@ -135,6 +135,18 @@ the cap input natively.
 - [x] AutoTrading enabled 16:47:47 local by OWNER (during chart session; market
       closed, 0 positions)
 
+## Reboot resilience (added 2026-07-05 evening)
+
+- `QM_FTMO_AtLogon` scheduled task registered (mirrors `QM_T_Live_AtLogon`):
+  runs `tools/strategy_farm/FTMO_ON.ps1` at logon — idempotent start of the FTMO
+  terminal; pins `ProfileLast=Default` + `Experts Enabled=1` in the data-dir
+  `common.ini` before a cold start, so the 12-leg book reloads and AutoTrading
+  resumes (login 1513845506 is pinned in `common.ini` by the terminal itself).
+  Idempotency verified live (no-op while terminal running).
+- Factory kill scripts (`Factory_OFF.ps1`/`Factory_ON.ps1`) are positively
+  path-anchored to `D:\QM\mt5\` since commit `da5a42979` — the FTMO terminal and
+  T_Live can structurally never match the factory kill selection.
+
 ## Sign-off
 
 - Package + staging: Claude, 2026-07-05
