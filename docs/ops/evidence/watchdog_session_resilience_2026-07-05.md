@@ -175,6 +175,28 @@ QM_T_Live_Watchdog                    | SYSTEM/ServiceAccount | LastResult=0x000
 | `tools/strategy_farm/weekly_hygiene_reboot.ps1` | Pre-existing (committed 2707463e9) |
 | `tools/strategy_farm/lsm_health_probe.ps1` | Pre-existing (committed 2707463e9) |
 | `tools/strategy_farm/install_hygiene_and_lsm_tasks.ps1` | Pre-existing (committed 2707463e9) |
-| `tools/strategy_farm/health.py` | Pre-existing `chk_lsm_session_health` in ALL_CHECKS |
+| `tools/strategy_farm/health.py` | Added `chk_lsm_session_health()` + ALL_CHECKS entry (2026-07-05T13:xx cycle) |
+| `tools/strategy_farm/factory_watchdog.ps1` | Multisym guard fix: blocks clean-slate only, not dedupe (task 674f3cbc) |
 | `docs/ops/QUOTA_GOVERNOR_AND_FACTORY_RECOVERY_2026-06-21.md` | Added section 6 (dedupe-spawn pattern) |
 | `docs/ops/evidence/watchdog_session_resilience_2026-07-05.md` | This doc |
+
+---
+
+## 5. Multisym guard fix — pure worker shortage always uses dedupe (task 674f3cbc)
+
+**Problem (2026-07-04):** Multisym guard at the TOP of the heal-routing block blocked
+BOTH clean-slate AND surgical dedupe-spawn paths. When T5 died during T10718 basket EA,
+`heal_deferred_active_multisym` fired every 5 minutes for 9+ hours.
+
+**Fix (factory_watchdog.ps1):** Guard now only blocks dispatch-stall + multisym
+combination. Pure worker shortage (no stall, no real-stall) always routes to
+`QM_StrategyFarm_WorkerDedupe` — safe because dedupe never kills running terminals.
+
+```
+if ($dispatchStalled -and $activeMultisymCount -gt 0) → heal_deferred_active_multisym
+if ($dispatchStalled -and $activeMultisymCount -eq 0) → FactoryON_AtLogon (clean-slate)
+else (pure shortage)                                  → WorkerDedupe (surgical, always)
+```
+
+Runbook: `docs/ops/QUOTA_GOVERNOR_AND_FACTORY_RECOVERY_2026-06-21.md` §6.
+Parse check: `PARSE_OK` (PS5 parser, confirmed post-edit).
