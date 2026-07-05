@@ -4,7 +4,7 @@
 **Slug:** `eia-xng-season`
 **Source:** `706222b7-2d60-5fdb-8dab-d722d3c96f92`
 **Author of this spec:** Codex
-**Last revised:** 2026-06-26
+**Last revised:** 2026-07-06
 
 ## 1. Strategy Logic
 
@@ -35,7 +35,9 @@ it does not use RSI or short-horizon pullback logic.
 
 - Base timeframe: D1.
 - Multi-timeframe refs: none.
-- Bar gating: `QM_IsNewBar()`.
+- Bar gating: `QM_IsNewBar()` for the entry evaluation tick; monthly rebalance
+  cadence via `QM_IsNewCalendarPeriod(PERIOD_MN1)` / `QM_CalendarPeriodKey(PERIOD_D1)`
+  (D1-derived, tester-safe — replaces the prior hand-rolled `iTime` month key).
 
 ## 5. Expected Behaviour
 
@@ -58,3 +60,10 @@ https://www.eia.gov/todayinenergy/detail.php?id=22892.
 | Live, if ever approved later | RISK_PERCENT | allocated by portfolio process |
 
 No live manifest or `T_Live` file is touched by this build.
+
+## Revision History
+
+| Version | Date | Reason | Notes |
+|---|---|---|---|
+| v1 | 2026-06-26 | Initial build from card | build task 2026-06-26 |
+| v2 | 2026-07-06 | Rebuild in place (DL-069): prior v1 hand-rolled an `iTime`-based month key inside `Strategy_EntrySignal`/`Strategy_CloseOpenPositionsIfNeeded` — a framework-corset calendar-cadence violation. Replaced with `QM_IsNewCalendarPeriod(PERIOD_MN1)` for the month-roll edge and `QM_CalendarPeriodKey(PERIOD_D1)` for the month number; also reordered `OnTick` so the news gate sits below `Strategy_ManageOpenPosition`/exit handling per the 2026-07-02 audit finding (ref QM5_12821, commit dc418a720). No change to strategy rules themselves. | build task 167873a4-f949-41f8-971e-99ddfbedbd77 |

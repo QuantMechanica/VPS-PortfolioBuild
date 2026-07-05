@@ -13,6 +13,9 @@
 //   - Neutral: Mar, Jun
 // Entry occurs only at month roll and only when the closed D1 price confirms
 // direction versus SMA(63). Runtime uses MT5 OHLC only; no external EIA data.
+// Calendar cadence uses QM_CalendarPeriodKey/QM_IsNewCalendarPeriod (D1-derived,
+// corset-conform) rather than a hand-rolled iTime month key (rebuild 2026-07-06:
+// prior version's raw iTime-based month key was a framework-corset violation).
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -40,40 +43,14 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_trend_period        = 63;
-input int    strategy_atr_period          = 20;
-input double strategy_atr_sl_mult         = 3.0;
-input int    strategy_max_spread_points   = 800;
+input int    strategy_trend_period        = 63;   // Card Entry/Exit: SMA(63) price confirmation.
+input int    strategy_atr_period          = 20;   // Card Exit Rules: ATR(20) hard stop.
+input double strategy_atr_sl_mult         = 3.0;  // Card Exit Rules: SL = ATR(20) * 3.0.
+input int    strategy_max_spread_points   = 800;  // Card Filters: skip entries above this spread.
 
-int g_last_entry_month_key = 0;
-
-bool Strategy_IsXngD1()
-  {
-   return (_Symbol == "XNGUSD.DWX" && _Period == PERIOD_D1);
-  }
-
-int Strategy_MonthKey(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 100 + dt.mon;
-  }
-
-int Strategy_MonthFromTime(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.mon;
-  }
-
-bool Strategy_IsFirstBarOfMonth()
-  {
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: monthly calendar gate needs D1 bar timestamps
-   const datetime closed_bar = iTime(_Symbol, PERIOD_D1, 1);  // perf-allowed: monthly calendar gate needs D1 bar timestamps
-   if(current_bar <= 0 || closed_bar <= 0)
-      return false;
-   return (Strategy_MonthKey(current_bar) != Strategy_MonthKey(closed_bar));
-  }
+// -----------------------------------------------------------------------------
+// Strategy helpers
+// -----------------------------------------------------------------------------
 
 int Strategy_SeasonDirection(const int month)
   {
@@ -84,40 +61,40 @@ int Strategy_SeasonDirection(const int month)
    return 0;
   }
 
-bool Strategy_HasOpenPosition()
-  {
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-      return true;
-     }
-   return false;
-  }
-
-bool Strategy_CloseAndSma(double &close_last, double &sma_last)
+// close_last uses QM_SMA(period=1) as the corset-conform prior-closed-bar
+// close reader (no direct iClose call for strategy math).
+bool Strategy_ClosedCloseAndSma(double &close_last, double &sma_last)
   {
    close_last = QM_SMA(_Symbol, PERIOD_D1, 1, 1, PRICE_CLOSE);
-   sma_last = QM_SMA(_Symbol, PERIOD_D1, strategy_trend_period, 1, PRICE_CLOSE);
+   sma_last   = QM_SMA(_Symbol, PERIOD_D1, strategy_trend_period, 1, PRICE_CLOSE);
    return (close_last > 0.0 && sma_last > 0.0);
   }
 
-void Strategy_CloseOpenPositionsIfNeeded()
+bool Strategy_NoTradeFilter()
   {
-   double close_last = 0.0;
-   double sma_last = 0.0;
-   if(!Strategy_CloseAndSma(close_last, sma_last))
+   if(_Symbol != "XNGUSD.DWX" || _Period != PERIOD_D1)
+      return true;
+   if(strategy_trend_period <= 1 || strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
+      return true;
+   return false;
+  }
+
+void Strategy_ManageOpenPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(QM_TM_OpenPositionCount(magic) <= 0)
       return;
 
-   const int month = Strategy_MonthFromTime(iTime(_Symbol, PERIOD_D1, 0)); // perf-allowed: monthly calendar gate needs D1 bar timestamp
+   const int cal_key = QM_CalendarPeriodKey(PERIOD_D1);
+   if(cal_key <= 0)
+      return;
+   const int month = (cal_key / 100) % 100;
    const int season_dir = Strategy_SeasonDirection(month);
-   const int magic = QM_FrameworkMagic();
+
+   double close_last = 0.0;
+   double sma_last = 0.0;
+   if(!Strategy_ClosedCloseAndSma(close_last, sma_last))
+      return;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -133,7 +110,7 @@ void Strategy_CloseOpenPositionsIfNeeded()
       bool should_close = false;
       if(pos_type == POSITION_TYPE_BUY)
          should_close = (season_dir != 1 || close_last < sma_last);
-      if(pos_type == POSITION_TYPE_SELL)
+      else if(pos_type == POSITION_TYPE_SELL)
          should_close = (season_dir != -1 || close_last > sma_last);
 
       if(should_close)
@@ -141,12 +118,10 @@ void Strategy_CloseOpenPositionsIfNeeded()
      }
   }
 
-bool Strategy_NoTradeFilter()
+bool Strategy_ExitSignal()
   {
-   if(!Strategy_IsXngD1())
-      return true;
-   if(strategy_trend_period <= 1 || strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
-      return true;
+   // Card Exit Rules: all exits are season-window-end / SMA-flip (handled in
+   // Strategy_ManageOpenPosition) or the hard ATR stop (handled by broker SL).
    return false;
   }
 
@@ -156,21 +131,18 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_12575_EIA_XNG_SEASON";
+   req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   Strategy_CloseOpenPositionsIfNeeded();
-
-   if(!Strategy_IsFirstBarOfMonth())
+   // Card Entry Rules: "Evaluate only on the first new D1 bar of a calendar
+   // month." QM_IsNewCalendarPeriod latches per (symbol, MN1-cadence) and
+   // fires true exactly once per month roll (D1-derived, tester-safe).
+   if(!QM_IsNewCalendarPeriod(PERIOD_MN1))
       return false;
 
-   const int current_month_key = Strategy_MonthKey(iTime(_Symbol, PERIOD_D1, 0)); // perf-allowed: monthly rebalance key needs D1 bar timestamp
-   if(current_month_key <= 0 || current_month_key == g_last_entry_month_key)
-      return false;
-   g_last_entry_month_key = current_month_key;
-
-   if(Strategy_HasOpenPosition())
+   const int magic = QM_FrameworkMagic();
+   if(QM_TM_OpenPositionCount(magic) > 0)
       return false;
 
    if(strategy_max_spread_points > 0)
@@ -180,14 +152,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   double close_last = 0.0;
-   double sma_last = 0.0;
-   if(!Strategy_CloseAndSma(close_last, sma_last))
+   const int cal_key = QM_CalendarPeriodKey(PERIOD_D1);
+   if(cal_key <= 0)
       return false;
-
-   const int month = Strategy_MonthFromTime(iTime(_Symbol, PERIOD_D1, 0)); // perf-allowed: monthly seasonal direction needs D1 bar timestamp
+   const int month = (cal_key / 100) % 100;
    const int season_dir = Strategy_SeasonDirection(month);
    if(season_dir == 0)
+      return false;
+
+   double close_last = 0.0;
+   double sma_last = 0.0;
+   if(!Strategy_ClosedCloseAndSma(close_last, sma_last))
       return false;
 
    if(season_dir > 0 && close_last <= sma_last)
@@ -208,19 +183,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    return true;
   }
 
-void Strategy_ManageOpenPosition()
-  {
-  }
-
-bool Strategy_ExitSignal()
-  {
-   return false;
-  }
-
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false;
+   return false; // defer to QM_NewsAllowsTrade2 / QM_NewsAllowsTrade
   }
+
+// -----------------------------------------------------------------------------
+// Framework wiring — do NOT edit below this line unless you know why.
+// -----------------------------------------------------------------------------
 
 int OnInit()
   {
@@ -260,13 +230,7 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -288,6 +252,16 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // News blackout gates NEW entries only (below); management/exits above keep
+   // running through news windows (2026-07-02 audit finding, dc418a720).
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
 
    if(!QM_IsNewBar())
       return;
