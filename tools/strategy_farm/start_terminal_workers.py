@@ -17,18 +17,29 @@ FACTORY_TERMINAL_RE = re.compile(r"^T(?:[1-9]|10)$", re.IGNORECASE)
 
 
 def _pid_alive(pid: int) -> bool:
+    # 2026-07-06: in-process ctypes check instead of a tasklist subprocess.
+    # Console children (tasklist/powershell) can die under 0xC0000142-class
+    # console-init failures, which made BOTH duplicate protections (CIM scan +
+    # pid-file) report "nothing alive" at once and triggered a full re-spawn of
+    # already-running workers (midnight 07-06 incident). OpenProcess cannot fail
+    # that way.
     if pid <= 0:
         return False
     if sys.platform == "win32":
-        creationflags = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0
-        result = subprocess.run(
-            ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV", "/NH"],
-            capture_output=True,
-            text=True,
-            errors="replace",
-            creationflags=creationflags,
-        )
-        return str(pid) in (result.stdout or "")
+        import ctypes
+        kernel32 = ctypes.windll.kernel32
+        PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        STILL_ACTIVE = 259
+        handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, int(pid))
+        if not handle:
+            return False
+        try:
+            code = ctypes.c_ulong(0)
+            if not kernel32.GetExitCodeProcess(handle, ctypes.byref(code)):
+                return False
+            return code.value == STILL_ACTIVE
+        finally:
+            kernel32.CloseHandle(handle)
     try:
         os.kill(pid, 0)
     except OSError:
@@ -50,7 +61,7 @@ def _scan_running_workers() -> dict[str, list[int]]:
             capture_output=True,
             text=True,
             errors="replace",
-            timeout=15,
+            timeout=45,  # 15s starved out under the :00 scheduled-task burst (07-06)
             creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0,
         )
     except Exception:

@@ -1818,12 +1818,43 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
     return 0
 
 
+def _acquire_instance_mutex(terminal: str):
+    """One worker per terminal, enforced by the OS (2026-07-06).
+
+    The recurring duplicate-spawn class (watchdog flap 06-22, double-spawn
+    06-05/07-05, midnight dedupe re-spawn 07-06) always came from SPAWNER-side
+    detection failing (console children like tasklist/powershell can die under
+    0xC0000142-class console-init failures while pythonw keeps running). A named
+    mutex held by the worker itself makes duplicates structurally impossible no
+    matter how broken the spawner's view is. Returns the handle (keep alive for
+    process lifetime), False if another instance holds it, None if unavailable
+    (non-win32 / create failed -> proceed unguarded, spawner checks still apply).
+    """
+    if sys.platform != "win32":
+        return None
+    import ctypes
+    kernel32 = ctypes.windll.kernel32
+    name = f"Global\\QM_TerminalWorker_{terminal.upper()}"
+    handle = kernel32.CreateMutexW(None, True, name)
+    if not handle:
+        return None
+    ERROR_ALREADY_EXISTS = 183
+    if kernel32.GetLastError() == ERROR_ALREADY_EXISTS:
+        kernel32.CloseHandle(handle)
+        return False
+    return handle
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--terminal", required=True, choices=farmctl.MT5_TERMINALS)
     parser.add_argument("--root", type=Path, default=farmctl.DEFAULT_ROOT)
     parser.add_argument("--timeout-minutes", type=float, default=90.0)
     args = parser.parse_args(argv)
+    mutex = _acquire_instance_mutex(args.terminal)
+    if mutex is False:
+        print(json.dumps({"event": "duplicate_instance_exit", "terminal": args.terminal}))
+        return 0
     faulthandler.enable()
     _start_stalldump_watcher(args.terminal)
     return run_loop(args.root, args.terminal, int(args.timeout_minutes * 60))
