@@ -49,35 +49,18 @@ input double strategy_atr_sl_mult          = 2.5;
 input int    strategy_max_hold_days        = 40;
 input int    strategy_max_spread_points    = 2500;
 
-int g_last_signal_month_key = -1;
+// Cached per-closed-D1-bar reversal state. Refreshed once per QM_IsNewBar()
+// edge by Strategy_AdvanceState_OnNewBar(); management + entry read the
+// cache only, so the CopyClose/SMA math never runs on the per-tick path.
+double g_half_year_return_pct = 0.0;
+double g_atr_last             = 0.0;
+double g_sma_last             = 0.0;
+double g_stretch_atr          = 0.0;
+bool   g_state_ready          = false;
 
 bool Strategy_IsXngD1()
   {
    return (_Symbol == "XNGUSD.DWX" && _Period == PERIOD_D1);
-  }
-
-int Strategy_MonthKey(const datetime t)
-  {
-   if(t <= 0)
-      return -1;
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 100 + dt.mon;
-  }
-
-bool Strategy_IsFirstD1BarOfMonth(const datetime t)
-  {
-   if(t <= 0)
-      return false;
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-
-   const datetime prev_bar_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: D1 calendar gate.
-   if(prev_bar_time <= 0)
-      return false;
-   MqlDateTime prev_dt;
-   TimeToStruct(prev_bar_time, prev_dt);
-   return (dt.year != prev_dt.year || dt.mon != prev_dt.mon);
   }
 
 bool Strategy_HasOpenPosition()
@@ -97,18 +80,13 @@ bool Strategy_HasOpenPosition()
    return false;
   }
 
-bool Strategy_LoadReversalState(double &half_year_return_pct,
-                                double &atr_last,
-                                double &sma_last,
-                                double &stretch_atr,
-                                int &signal_month_key,
-                                const bool require_monthly_gate)
+void Strategy_AdvanceState_OnNewBar()
   {
-   const datetime current_bar_time = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 monthly calendar gate.
-   if(require_monthly_gate && !Strategy_IsFirstD1BarOfMonth(current_bar_time))
-      return false;
-
-   signal_month_key = Strategy_MonthKey(current_bar_time);
+   // Called ONCE per new closed D1 bar (from OnTick, behind QM_IsNewBar()).
+   // Recomputes the 120-bar return / SMA / ATR stretch from the last closed
+   // bar and caches it; ManageOpenPosition + EntrySignal read the cache only
+   // so no CopyClose/summing loop ever runs on the per-tick path.
+   g_state_ready = false;
 
    int lookback = strategy_lookback_days;
    if(lookback < 30)
@@ -116,9 +94,9 @@ bool Strategy_LoadReversalState(double &half_year_return_pct,
 
    double closes[];
    ArraySetAsSeries(closes, true);
-   const int close_count = CopyClose(_Symbol, PERIOD_D1, 1, lookback + 1, closes); // perf-allowed: bounded D1 return window behind new-bar.
+   const int close_count = CopyClose(_Symbol, PERIOD_D1, 1, lookback + 1, closes);
    if(close_count < lookback + 1)
-      return false;
+      return;
 
    int sma_period = strategy_sma_period;
    if(sma_period < 2)
@@ -126,9 +104,9 @@ bool Strategy_LoadReversalState(double &half_year_return_pct,
 
    double sma_closes[];
    ArraySetAsSeries(sma_closes, true);
-   const int sma_count = CopyClose(_Symbol, PERIOD_D1, 1, sma_period, sma_closes); // perf-allowed: bounded D1 SMA confirmation behind new-bar.
+   const int sma_count = CopyClose(_Symbol, PERIOD_D1, 1, sma_period, sma_closes);
    if(sma_count < sma_period)
-      return false;
+      return;
 
    double sma_sum = 0.0;
    for(int i = 0; i < sma_period; ++i)
@@ -137,24 +115,23 @@ bool Strategy_LoadReversalState(double &half_year_return_pct,
    const double close_last = closes[0];
    const double close_lookback = closes[lookback];
    if(close_last <= 0.0 || close_lookback <= 0.0)
-      return false;
+      return;
 
-   sma_last = sma_sum / (double)sma_period;
-   atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   const double sma_last = sma_sum / (double)sma_period;
+   const double atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(sma_last <= 0.0 || atr_last <= 0.0)
+      return;
 
-   if(signal_month_key < 0)
-      return false;
-   if(sma_last <= 0.0)
-      return false;
-   if(atr_last <= 0.0)
-      return false;
-
-   half_year_return_pct = 100.0 * ((close_last / close_lookback) - 1.0);
-   stretch_atr = (close_last - sma_last) / atr_last;
+   const double half_year_return_pct = 100.0 * ((close_last / close_lookback) - 1.0);
+   const double stretch_atr = (close_last - sma_last) / atr_last;
    if(!MathIsValidNumber(half_year_return_pct) || !MathIsValidNumber(stretch_atr))
-      return false;
+      return;
 
-   return true;
+   g_half_year_return_pct = half_year_return_pct;
+   g_atr_last             = atr_last;
+   g_sma_last             = sma_last;
+   g_stretch_atr          = stretch_atr;
+   g_state_ready          = true;
   }
 
 void Strategy_CloseOpenPositionsIfNeeded()
@@ -165,18 +142,6 @@ void Strategy_CloseOpenPositionsIfNeeded()
    if(hold_days < 1)
       hold_days = 1;
    const int hold_seconds = hold_days * 86400;
-
-   double half_year_return_pct = 0.0;
-   double atr_last = 0.0;
-   double sma_last = 0.0;
-   double stretch_atr = 0.0;
-   int signal_month_key = -1;
-   const bool state_ready = Strategy_LoadReversalState(half_year_return_pct,
-                                                       atr_last,
-                                                       sma_last,
-                                                       stretch_atr,
-                                                       signal_month_key,
-                                                       false);
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
@@ -193,12 +158,12 @@ void Strategy_CloseOpenPositionsIfNeeded()
       if(opened > 0 && now - opened >= hold_seconds)
          should_close = true;
 
-      if(state_ready)
+      if(g_state_ready)
         {
          const ENUM_POSITION_TYPE position_type = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-         if(position_type == POSITION_TYPE_BUY && half_year_return_pct >= 0.0)
+         if(position_type == POSITION_TYPE_BUY && g_half_year_return_pct >= 0.0)
             should_close = true;
-         if(position_type == POSITION_TYPE_SELL && half_year_return_pct <= 0.0)
+         if(position_type == POSITION_TYPE_SELL && g_half_year_return_pct <= 0.0)
             should_close = true;
         }
 
@@ -232,9 +197,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   Strategy_CloseOpenPositionsIfNeeded();
-
    if(Strategy_HasOpenPosition())
+      return false;
+   if(!g_state_ready)
+      return false;
+   // Monthly rebalance: only evaluate the fade signal on the first D1 bar of
+   // a new calendar month (QM_IsNewCalendarPeriod is D1-derived and latches
+   // once per period; single-consume like QM_IsNewBar, called once here).
+   if(!QM_IsNewCalendarPeriod(PERIOD_MN1))
       return false;
 
    if(strategy_max_spread_points > 0)
@@ -244,28 +214,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   double half_year_return_pct = 0.0;
-   double atr_last = 0.0;
-   double sma_last = 0.0;
-   double stretch_atr = 0.0;
-   int signal_month_key = -1;
-   if(!Strategy_LoadReversalState(half_year_return_pct,
-                                  atr_last,
-                                  sma_last,
-                                  stretch_atr,
-                                  signal_month_key,
-                                  true))
-      return false;
-   if(signal_month_key == g_last_signal_month_key)
-      return false;
-
    const double min_return = strategy_fade_threshold_pct;
    const double min_stretch = strategy_stretch_atr_mult;
 
    int reversal_direction = 0;
-   if(half_year_return_pct <= -min_return && stretch_atr <= -min_stretch)
+   if(g_half_year_return_pct <= -min_return && g_stretch_atr <= -min_stretch)
       reversal_direction = 1;
-   else if(half_year_return_pct >= min_return && stretch_atr >= min_stretch)
+   else if(g_half_year_return_pct >= min_return && g_stretch_atr >= min_stretch)
       reversal_direction = -1;
    else
       return false;
@@ -280,7 +235,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.reason = (reversal_direction > 0) ? "XNG_6M_REVERSAL_LONG" : "XNG_6M_REVERSAL_SHORT";
-   g_last_signal_month_key = signal_month_key;
    return true;
   }
 
