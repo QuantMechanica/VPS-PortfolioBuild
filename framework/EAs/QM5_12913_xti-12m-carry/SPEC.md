@@ -73,4 +73,5 @@ touched by this build.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-02 | Initial build from card | Enqueue Q02 |
+| v2 | 2026-07-05 | Rebuild in place (DL-069): OnTick news-gate ordering audit fix, replaced hand-rolled day-of-week/day-key gating with `QM_Sig_DayOfWeek`, cached carry state per new bar instead of per tick | Ran first real smoke (d33cf15b-253d-4ae3-8d0a-f83705bab74f) |
 
