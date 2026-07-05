@@ -1,8 +1,8 @@
 # FTMO decision — Round25 12-leg book, Phase 1 @ scale 9.0 (Two-Speed)
 
-**Status: DEPLOYED ON FREE TRIAL — charts applied + AutoTrading ON 2026-07-05
-16:47–16:54 local; Claude-verified 12/12 (checklist below). Open: FTMO-portal
-account-number confirm (1513845506) + server-time check at first tick.**
+**Status: DEPLOYED ON FREE TRIAL (account 1513845506, OWNER-confirmed) — charts
+applied + AutoTrading ON 2026-07-05 16:47–16:54 local; Claude-verified 12/12
+(checklist below). Sole open item: server-time offset check at first tick.**
 **OWNER direction 2026-07-05 (chat): run the book on an FTMO Free Trial first — dress
 rehearsal (plumbing verification: symbols, sizing, server-time offset, risk-cap events,
 first fills), not a pass attempt; challenge purchase deferred.**
@@ -109,11 +109,10 @@ the cap input natively.
       account created with USD 100,000. Equity evidence: `RISK_CAP_OVERRIDE`
       `cap_money=2000.00` at `cap_pct=2.0` in all 4 big legs → equity exactly 100,000.
       Virgin account: journals 06-29/06-30 show logins only (no experts, no deals),
-      07-05 sync `0 positions`. **Residual open item:** terminal journal shows NO new
-      login today — session runs on `1513845506` (FTMO-Demo, authorized since 06-29).
-      OWNER to confirm the FTMO-portal trial account number IS 1513845506; if the
-      portal shows a different number, re-login + re-verify re-inits. Trial terms
-      (web-verified 07-05): 14 days, target 5%, daily 5% / max 10%.
+      07-05 sync `0 positions`. ✅ **OWNER confirmed (2026-07-05 chat): the FTMO-portal
+      trial account number IS 1513845506** („ja, das ist die richtige Trial Nummer!") —
+      terminal, trial, and book are on the same account. Trial terms (web-verified
+      07-05): 14 days, target 5%, daily 5% / max 10%.
 - [x] OWNER manifest approval — 2026-07-05 chat chain: „deployen!" (deploy order) +
       Trial-first direction + „EAs sind alle auf den Charts, überprüfe!" (execution
       confirmation). Recorded as written approval for the TRIAL run; to be re-confirmed
