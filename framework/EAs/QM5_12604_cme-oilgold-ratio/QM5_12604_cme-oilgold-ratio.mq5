@@ -260,10 +260,6 @@ bool Strategy_NoTradeFilter()
       return true;
    if(strategy_exit_z < 0.0 || strategy_atr_period_d1 <= 0 || strategy_atr_sl_mult <= 0.0)
       return true;
-   if(strategy_entry_hour_broker < 0 || strategy_entry_hour_broker > 23)
-      return true;
-   if(strategy_entry_minute_broker < 0 || strategy_entry_minute_broker > 59)
-      return true;
    return false;
   }
 
@@ -320,22 +316,28 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
       Strategy_ClosePair(QM_EXIT_FRIDAY_CLOSE);
       return true;
      }
+   return false;
+  }
 
+// Axis-based news gate for both basket legs. Called from OnTick AFTER
+// Strategy_ManageOpenPosition / Strategy_ExitSignal (2026-07-02 audit rule):
+// the news blackout must gate NEW entries only, never suspend management of
+// already-open legs.
+bool Strategy_LegsNewsAllow(const datetime broker_time)
+  {
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
      {
       if(!QM_NewsAllowsTrade2(g_leg_xti, broker_time, qm_news_temporal, qm_news_compliance))
-         return true;
+         return false;
       if(!QM_NewsAllowsTrade2(g_leg_xau, broker_time, qm_news_temporal, qm_news_compliance))
-         return true;
+         return false;
+      return true;
      }
-   else
-     {
-      if(!QM_NewsAllowsTrade(g_leg_xti, broker_time, qm_news_mode_legacy))
-         return true;
-      if(!QM_NewsAllowsTrade(g_leg_xau, broker_time, qm_news_mode_legacy))
-         return true;
-     }
-   return false;
+   if(!QM_NewsAllowsTrade(g_leg_xti, broker_time, qm_news_mode_legacy))
+      return false;
+   if(!QM_NewsAllowsTrade(g_leg_xau, broker_time, qm_news_mode_legacy))
+      return false;
+   return true;
   }
 
 int OnInit()
@@ -383,13 +385,6 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -412,16 +407,13 @@ void OnTick()
         }
      }
 
-   const bool new_bar = QM_IsNewBar();
-   if(new_bar)
-      QM_EquityStreamOnNewBar();
+   if(!Strategy_LegsNewsAllow(broker_now))
+      return;
 
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0);
-   if(current_d1_bar <= 0 || current_d1_bar == g_last_entry_signal_bar)
+   if(!QM_IsNewBar())
       return;
-   if(!Strategy_EntryTimeReady(broker_now))
-      return;
-   g_last_entry_signal_bar = current_d1_bar;
+
+   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))

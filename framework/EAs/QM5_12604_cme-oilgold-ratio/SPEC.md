@@ -37,8 +37,6 @@ gas, and it uses CME oil-through-gold lineage rather than EIA oil/gas linkage.
 | `strategy_xti_max_spread_pts` | 1000 | 700-1500 | XTI entry spread cap |
 | `strategy_xau_max_spread_pts` | 500 | 300-800 | XAU entry spread cap |
 | `strategy_deviation_points` | 20 | 10-50 | Broker deviation points for market legs |
-| `strategy_entry_hour_broker` | 2 | 0-23 | Earliest broker hour to attempt the daily basket entry |
-| `strategy_entry_minute_broker` | 0 | 0-59 | Earliest broker minute to attempt the daily basket entry |
 
 ---
 
@@ -62,7 +60,7 @@ gas, and it uses CME oil-through-gold lineage rather than EIA oil/gas linkage.
 |---|---|
 | Base timeframe | `D1` |
 | Multi-timeframe refs | none |
-| Bar gating | D1 state refresh on `QM_IsNewBar`; entry can be delayed until the configured broker entry time and both legs are tradable |
+| Bar gating | `QM_IsNewBar()` single-consume; evaluated only on a new D1 bar per the card |
 
 ---
 
@@ -105,5 +103,6 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v2 | 2026-06-28 | Delay basket entry until XAU trade session is open | avoids one-leg XTI packages at the D1 bar open |
+| v3 | 2026-07-05 | Rebuild in place: reverted v2's entry-hour-broker delay | v2 hand-rolled an `iTime`/`g_last_entry_signal_bar` bar-gate (forbidden corset pattern, flagged by codex review) and was not in the card; v2 also FAILED Q04 (2026-06-28). Reverted to the card's literal "evaluate only on a new D1 bar" rule via plain `QM_IsNewBar()`. Also reordered the axis-based news gate below `Strategy_ManageOpenPosition`/`Strategy_ExitSignal` per the 2026-07-02 binding OnTick-ordering rule (previously it sat above, and it read `_Symbol` only instead of both legs). |
+| v2 | 2026-06-28 | Delay basket entry until XAU trade session is open | avoids one-leg XTI packages at the D1 bar open; REVERTED in v3 |
 | v1 | 2026-06-27 | Initial build from card | pending commit |
