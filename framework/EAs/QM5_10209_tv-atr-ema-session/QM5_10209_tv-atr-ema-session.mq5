@@ -288,8 +288,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double atr_points = atr_value / point;
 
    // Closed-bar EMA cross: bar 2 -> bar 1 transition relative to EMA(50).
-   const double close_1 = iClose(_Symbol, tf, 1);
-   const double close_2 = iClose(_Symbol, tf, 2);
+   const double close_1 = iClose(_Symbol, tf, 1); // perf-allowed: single closed-bar close for EMA cross; called after QM_IsNewBar gate
+   const double close_2 = iClose(_Symbol, tf, 2); // perf-allowed: prior bar close for cross detection; per-bar, not per-tick
    const double ema_1   = QM_EMA(_Symbol, tf, strategy_ema_period, 1);
    const double ema_2   = QM_EMA(_Symbol, tf, strategy_ema_period, 2);
    if(close_1 <= 0.0 || close_2 <= 0.0 || ema_1 <= 0.0 || ema_2 <= 0.0)
@@ -380,27 +380,22 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
+   // Custom news hook (no-op for this EA — defers to central gate below).
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
-   // when both new axes are at their OFF defaults.
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   // Per-tick: trade management can adjust SL/TP on open positions.
+   // Per-tick: trade management (fixed SL/TP broker-managed — no trailing here).
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (session end). Separate from broker SL/TP.
+   // Per-tick: session-end flat. Must run BEFORE the news gate so the
+   // EOD close keeps enforcing through news windows.
+   // (2026-07-02 audit finding: exit handling must sit above the news gate.)
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -414,6 +409,18 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // News blackout gates NEW entries only — sits below management/exit so the
+   // session-end close keeps enforcing through news windows (2026-07-02 audit binding).
+   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
+   // when both new axes are at their OFF defaults.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
 
    // Per-closed-bar: entry-signal evaluation. Single-consume of QM_IsNewBar().
    if(!QM_IsNewBar())

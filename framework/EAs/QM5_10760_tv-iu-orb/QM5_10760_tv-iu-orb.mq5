@@ -387,24 +387,22 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
+   // Custom news hook (no-op for this EA — defers to central gate below).
    if(Strategy_NewsFilterHook(broker_now))
       return;
 
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
+   // Per-tick: no active management in this baseline (flat by session-end).
    Strategy_ManageOpenPosition();
 
+   // Per-tick: session-end flat. Must run BEFORE the news gate so the
+   // time-stop keeps enforcing through news windows.
+   // (2026-07-02 audit finding: exit handling must sit above the news gate.)
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -420,6 +418,16 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // News blackout gates NEW entries only — sits below management/exit so the
+   // session-end close keeps enforcing through news windows (2026-07-02 audit binding).
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
 
    if(!QM_IsNewBar())
       return;
