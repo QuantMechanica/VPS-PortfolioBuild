@@ -89,3 +89,4 @@ gate, or AutoTrading setting is touched by this build.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-27 | Initial build from card | branch-local build |
+| v2 | 2026-07-05 | Rebuild in place (DL-069) | Replaced hand-rolled iTime/TimeToStruct month-key with `QM_CalendarPeriodKey(PERIOD_MN1)`; replaced `QM_StopATR` (raw-handle re-derive, root-caused 2026-07-05 on WTI calendar-fade family as a 1-trade-then-silent-forever defect) with `QM_StopATRFromValue` reusing the already-pooled `QM_ATR` read; reordered `OnTick` so the news gate sits below `Strategy_ManageOpenPosition`/`ExitSignal` per the 2026-07-02 audit rule. Smoke re-verified: 8 trades in 2024 (card expects ~8/yr), deterministic across 2 runs. Task 1c97c9e4-dceb-428f-9fe8-695ecd9a54bb |
