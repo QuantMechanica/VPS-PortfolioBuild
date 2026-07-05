@@ -62,23 +62,14 @@ bool Strategy_IsXtiD1()
    return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
   }
 
-int Strategy_DateKey(const MqlDateTime &dt)
+bool Strategy_InRampWindow(const int mmdd_key)
   {
-   return dt.mon * 100 + dt.day;
-  }
-
-bool Strategy_InRampWindow(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-
    const int start_key = strategy_start_month * 100 + strategy_start_day;
    const int end_key = strategy_end_month * 100 + strategy_end_day;
-   const int current_key = Strategy_DateKey(dt);
 
    if(start_key <= end_key)
-      return (current_key >= start_key && current_key <= end_key);
-   return (current_key >= start_key || current_key <= end_key);
+      return (mmdd_key >= start_key && mmdd_key <= end_key);
+   return (mmdd_key >= start_key || mmdd_key <= end_key);
   }
 
 bool Strategy_HasOpenPosition()
@@ -126,12 +117,15 @@ bool Strategy_LoadClosedState(double &open_last,
                               double &trend_sma,
                               double &trend_sma_prior,
                               double &atr,
-                              datetime &closed_time)
+                              int &mmdd_key)
   {
-   closed_time = iTime(_Symbol, PERIOD_D1, 1);  // perf-allowed: D1 calendar gate.
+   const int cal_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 1);  // yyyymmdd of last closed D1 bar
+   if(cal_key == 0)
+      return false;
+   mmdd_key = cal_key % 10000;
    open_last = iOpen(_Symbol, PERIOD_D1, 1);    // perf-allowed: D1 rebound body check.
    close_last = iClose(_Symbol, PERIOD_D1, 1);  // perf-allowed: D1 pullback close on closed bars.
-   if(closed_time <= 0 || open_last <= 0.0 || close_last <= 0.0)
+   if(open_last <= 0.0 || close_last <= 0.0)
       return false;
 
    double recent_low = 0.0;
@@ -163,12 +157,12 @@ void Strategy_CloseOpenPositionsIfNeeded()
    double trend_sma = 0.0;
    double trend_sma_prior = 0.0;
    double atr = 0.0;
-   datetime closed_time = 0;
+   int mmdd_key = 0;
    if(!Strategy_LoadClosedState(open_last, close_last, recent_high, rebound_high,
-                                exit_low, trend_sma, trend_sma_prior, atr, closed_time))
+                                exit_low, trend_sma, trend_sma_prior, atr, mmdd_key))
       return;
 
-   const bool in_window = Strategy_InRampWindow(closed_time);
+   const bool in_window = Strategy_InRampWindow(mmdd_key);
    const int magic = QM_FrameworkMagic();
    const datetime now = TimeCurrent();
    const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
@@ -250,11 +244,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double trend_sma = 0.0;
    double trend_sma_prior = 0.0;
    double atr = 0.0;
-   datetime closed_time = 0;
+   int mmdd_key = 0;
    if(!Strategy_LoadClosedState(open_last, close_last, recent_high, rebound_high,
-                                exit_low, trend_sma, trend_sma_prior, atr, closed_time))
+                                exit_low, trend_sma, trend_sma_prior, atr, mmdd_key))
       return false;
-   if(!Strategy_InRampWindow(closed_time))
+   if(!Strategy_InRampWindow(mmdd_key))
       return false;
    if(close_last <= trend_sma || trend_sma <= trend_sma_prior)
       return false;
