@@ -1,17 +1,22 @@
 #property strict
-#property version   "5.0"
-#property description "QM5_12708 WTI 6M Time Series Momentum"
+#property version   "5.1"
+#property description "QM5_12708 Commodity TS-MOM 6-Month (Zhang & Urquhart 2021)"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QM5_12708 - WTI Six-Month Time-Series Momentum
+// QM5_12708 - Commodity Time-Series Momentum 6-Month (TS-MOM J=6, K=1)
 // -----------------------------------------------------------------------------
-// D1 structural WTI sleeve:
-//   - first D1 bar of each month only
-//   - direction = sign of prior six-month log return
-//   - monthly package exits at next rebalance or stale-position guard
-// Runtime uses MT5 OHLC/broker calendar only; no curve, inventory, API, or ML.
+// Single-symbol sleeve, deployed independently per commodity (XAUUSD, XAGUSD,
+// XTIUSD, XNGUSD). Monthly D1 rebalance: sign of the trailing 6-month
+// (126 trading-day) return sets the direction; hold, flip, or open
+// flat -> directional once per calendar month. Hard stop at 2.0x ATR(D1,20),
+// fixed for the month (no trailing/BE/partial).
+// Card: artifacts/cards_approved/QM5_12708_commodity-tsmom-6m.md
+// Rebuild-in-place 2026-07-05 (DL-069): prior version hand-rolled an iTime
+// month-key gate (flagged framework_corset by review) and produced exactly
+// 1 trade then permanent silence in smoke; replaced with the sanctioned
+// QM_IsNewCalendarPeriod helper and rebuilt for the current 4-symbol card.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
@@ -25,7 +30,11 @@ input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
 input group "News"
-input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_PRE30_POST30;
+// Card Zusaetzliche Filter: skip entry near major commodity events
+// (EIA, FOMC, NFP). Closest built-in temporal mode to the card's "+/-48h"
+// blackout intent is the framework SKIP_DAY mode (24h pre + 24h post around
+// the news day) restricted to qm_news_min_impact="high".
+input QM_NewsTemporalMode      qm_news_temporal   = QM_NEWS_TEMPORAL_SKIP_DAY;
 input QM_NewsComplianceProfile qm_news_compliance = QM_NEWS_COMPLIANCE_DXZ;
 input int    qm_news_stale_max_hours      = 336;
 input string qm_news_min_impact           = "high";
@@ -39,124 +48,39 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_momentum_lookback_d1 = 126;
-input double strategy_min_abs_return_pct   = 2.0;
-input int    strategy_atr_period           = 20;
-input double strategy_atr_sl_mult          = 3.0;
-input int    strategy_max_hold_days        = 31;
-input int    strategy_max_spread_points    = 1000;
+input int    strategy_formation_bars    = 126;   // Card Entry #1: R6 lookback, 6M ~= 126 trading days (J=6)
+input int    strategy_atr_period        = 20;    // Card Stop Loss: ATR(D1,20)
+input double strategy_atr_stop_mult     = 2.0;   // Card Stop Loss: 2.0x ATR hard stop
+input double strategy_min_atr_pct       = 0.003; // Card Filter: ATR(20)/Close > 0.003
 
-int g_last_entry_month_key = 0;
-
-bool Strategy_IsXtiD1()
+bool Strategy_CurrentPosition(int &direction, ulong &ticket)
   {
-   return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
-  }
-
-int Strategy_MonthKey(const datetime t)
-  {
-   if(t <= 0)
-      return 0;
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 100 + dt.mon;
-  }
-
-bool Strategy_IsMonthlyRebalanceBar()
-  {
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 calendar gate behind framework new-bar.
-   const datetime prior_bar = iTime(_Symbol, PERIOD_D1, 1);   // perf-allowed: D1 calendar gate behind framework new-bar.
-   if(current_bar <= 0 || prior_bar <= 0)
-      return false;
-   return Strategy_MonthKey(current_bar) != Strategy_MonthKey(prior_bar);
-  }
-
-bool Strategy_HasOpenPosition()
-  {
+   direction = 0;
+   ticket = 0;
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
+      const ulong t = PositionGetTicket(i);
+      if(t == 0 || !PositionSelectByTicket(t))
          continue;
       if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
+      direction = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY) ? 1 : -1;
+      ticket = t;
       return true;
      }
    return false;
   }
 
-bool Strategy_LoadMomentum(double &momentum, int &direction)
-  {
-   momentum = 0.0;
-   direction = 0;
-
-   const int lookback = MathMax(42, strategy_momentum_lookback_d1);
-   double closes[];
-   ArraySetAsSeries(closes, true);
-   const int copied = CopyClose(_Symbol, PERIOD_D1, 1, lookback + 1, closes); // perf-allowed: bounded D1 six-month momentum sample behind new-bar gate.
-   if(copied < lookback + 1)
-      return false;
-
-   const double close_recent = closes[0];
-   const double close_past = closes[lookback];
-   if(close_recent <= 0.0 || close_past <= 0.0)
-      return false;
-
-   momentum = MathLog(close_recent / close_past);
-   if(!MathIsValidNumber(momentum))
-      return false;
-
-   const double threshold = MathMax(0.0, strategy_min_abs_return_pct) / 100.0;
-   if(momentum > threshold)
-      direction = 1;
-   else if(momentum < -threshold)
-      direction = -1;
-   else
-      direction = 0;
-   return true;
-  }
-
-void Strategy_CloseOpenPositionsIfNeeded()
-  {
-   const bool monthly_rebalance = Strategy_IsMonthlyRebalanceBar();
-   const int magic = QM_FrameworkMagic();
-   const datetime now = TimeCurrent();
-   const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
-
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-         continue;
-
-      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-      bool should_close = monthly_rebalance;
-      if(opened > 0 && now - opened >= hold_seconds)
-         should_close = true;
-
-      if(should_close)
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-     }
-  }
-
 bool Strategy_NoTradeFilter()
   {
-   if(!Strategy_IsXtiD1())
+   if((ENUM_TIMEFRAMES)_Period != PERIOD_D1)
       return true;
-   if(qm_magic_slot_offset != 0)
+   if(strategy_formation_bars < 20)
       return true;
-   if(strategy_momentum_lookback_d1 < 42)
-      return true;
-   if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
-      return true;
-   if(strategy_max_hold_days <= 0)
+   if(strategy_atr_period <= 0 || strategy_atr_stop_mult <= 0.0)
       return true;
    return false;
   }
@@ -167,68 +91,79 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_12708_WTI_TSMOM6M";
+   req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   Strategy_CloseOpenPositionsIfNeeded();
-
-   if(!Strategy_IsMonthlyRebalanceBar())
+   // Card Entry: evaluate exactly once, on the first D1 bar of each calendar
+   // month. MN1 bars are untestable on .DWX (0 bars); QM_IsNewCalendarPeriod
+   // derives the month key from D1 bar time internally and latches per
+   // (symbol, period) so it fires exactly once per real calendar month.
+   if(!QM_IsNewCalendarPeriod(PERIOD_MN1))
       return false;
 
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 monthly de-dupe behind new-bar gate.
-   const int month_key = Strategy_MonthKey(current_bar);
-   if(month_key <= 0 || month_key == g_last_entry_month_key)
+   const double close_last = QM_SMA(_Symbol, PERIOD_D1, 1, 1, PRICE_CLOSE);
+   const double atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(close_last <= 0.0 || atr <= 0.0)
       return false;
 
-   if(Strategy_HasOpenPosition())
+   // Card Zusaetzliche Filter: minimum ATR filter, ATR(20)/Close > 0.003.
+   if(atr / close_last <= strategy_min_atr_pct)
       return false;
 
-   if(strategy_max_spread_points > 0)
-     {
-      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread_points > strategy_max_spread_points)
-         return false;
-     }
-
-   double momentum = 0.0;
-   int direction = 0;
-   if(!Strategy_LoadMomentum(momentum, direction))
+   // Card Entry #1: R6 = (Close[0]-Close[126])/Close[126] on the last closed
+   // bar. QM_Momentum(shift=1) reads iMomentum's Close[1]/Close[1+period]*100,
+   // so r6 = mom/100 - 1 reproduces the card's ratio without a raw iClose call.
+   const double mom = QM_Momentum(_Symbol, PERIOD_D1, strategy_formation_bars, 1, PRICE_CLOSE);
+   if(mom <= 0.0)
       return false;
-   if(direction == 0)
+   const double r6 = mom / 100.0 - 1.0;
+
+   const int target_dir = (r6 > 0.0) ? 1 : ((r6 < 0.0) ? -1 : 0);
+   if(target_dir == 0)
       return false;
 
-   const double atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   if(atr_last <= 0.0)
+   int current_dir = 0;
+   ulong current_ticket = 0;
+   Strategy_CurrentPosition(current_dir, current_ticket);
+
+   // Card Entry #6: hold if signal matches current direction.
+   if(target_dir == current_dir)
       return false;
 
-   req.type = (direction > 0) ? QM_BUY : QM_SELL;
+   // Card Entry #4/#5: flip -- close the opposite-direction position first.
+   if(current_ticket != 0)
+      QM_TM_ClosePosition(current_ticket, QM_EXIT_OPPOSITE_SIGNAL);
+
+   req.type = (target_dir > 0) ? QM_BUY : QM_SELL;
    const double entry_price = QM_EntryMarketPrice(req.type);
    if(entry_price <= 0.0)
       return false;
 
-   req.sl = QM_StopATR(_Symbol, req.type, entry_price, strategy_atr_period, strategy_atr_sl_mult);
+   req.sl = QM_StopATRFromValue(_Symbol, req.type, entry_price, atr, strategy_atr_stop_mult);
    if(req.sl <= 0.0)
       return false;
 
-   req.reason = (direction > 0) ? "WTI_TSMOM6M_LONG" : "WTI_TSMOM6M_SHORT";
-   g_last_entry_month_key = month_key;
+   req.reason = (target_dir > 0) ? "TSMOM6_LONG" : "TSMOM6_SHORT";
    return true;
   }
 
 void Strategy_ManageOpenPosition()
   {
-   Strategy_CloseOpenPositionsIfNeeded();
+   // Card Stop Loss: hard stop is fixed for the 1-month holding window --
+   // no trailing, no break-even, no partial close.
   }
 
 bool Strategy_ExitSignal()
   {
+   // Card Exit: exits are the hard ATR stop (broker-side SL) and the monthly
+   // flip handled inside Strategy_EntrySignal; no separate discretionary exit.
    return false;
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   return false;
+   return false; // defer to the framework's two-axis QM_NewsAllowsTrade2 gate
   }
 
 int OnInit()
@@ -251,7 +186,7 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12708\",\"ea\":\"commodity-tsmom-6m\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12708_commodity-tsmom-6m\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -269,23 +204,17 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
+   // Per-tick: trade management (none) then discretionary exit (none). Kept
+   // above the news gate per the 2026-07-02 OnTick-ordering rule: management
+   // must keep running through news windows even though this EA has no
+   // trailing logic today.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -301,6 +230,21 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // News blackout gates NEW entries only, below management/exit -- the ATR
+   // hard stop is broker-side and keeps enforcing through news windows.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
@@ -327,4 +271,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-

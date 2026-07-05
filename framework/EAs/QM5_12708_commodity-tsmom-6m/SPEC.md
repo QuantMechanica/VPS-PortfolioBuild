@@ -2,73 +2,76 @@
 
 **EA ID:** QM5_12708
 **Slug:** `commodity-tsmom-6m`
-**Source:** `MOP-TSMOM-2012`
-**Author of this spec:** Codex
-**Last revised:** 2026-06-28
+**Source:** `516fdfd0-0cc3-5474-8012-91879fbf79ed`
+**Author of this spec:** Claude
+**Last revised:** 2026-07-05
 
 ## 1. Strategy Logic
 
-This EA implements a low-frequency WTI six-month time-series-momentum sleeve on
-`XTIUSD.DWX`. On the first D1 bar of each broker-calendar month, it computes
-the prior six-month log return from completed D1 closes. A positive trend opens
-a monthly long package; a negative trend opens a monthly short package. Any
-open package is flattened on the next monthly rebalance or by the max-hold
-stale-position guard.
-
-The strategy is not a calendar, inventory, hurricane, refinery, OPEC, expiry,
-or reversal setup. It differs from `QM5_12603_wti-tsmom12m` by using a
-six-month horizon, and from `QM5_12616_tsmom-9m-commodity-xtiusd` by omitting
-the 9-month/3-month confirmation structure.
+On the first D1 bar of each calendar month, the EA computes the trailing
+six-month return `R6 = (Close[0]-Close[126])/Close[126]` (126 trading days).
+If `R6 > 0` and flat, it opens LONG; if `R6 < 0` and flat, it opens SHORT. If
+already positioned opposite to the new signal it closes and flips; if the
+signal matches the current position it holds. The EA is always evaluating to
+be in the market, once per month. A hard stop at 2.0x ATR(D1,20) is placed at
+entry and held fixed for the month (no trailing/BE/partial). An ATR% floor
+(ATR(20)/Close > 0.3%) blocks entries in dead-volatility regimes, and the
+framework news filter blocks entries in a blackout window around high-impact
+events. This EA is rebuilt in place (DL-069) from a prior single-symbol WTI
+build under the same ea_id; the current card is a different, independently
+G0-approved source (Zhang & Urquhart 2021) covering four commodity symbols.
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
-| `strategy_momentum_lookback_d1` | 126 | 105-147 | Completed D1 bars used for the six-month return-sign signal |
-| `strategy_min_abs_return_pct` | 2.0 | 0.5-3.5 | Neutral band around the trailing return |
-| `strategy_atr_period` | 20 | 14-30 | ATR period for hard stop |
-| `strategy_atr_sl_mult` | 3.0 | 2.5-4.0 | ATR hard-stop distance multiplier |
-| `strategy_max_hold_days` | 31 | 21-45 | Calendar-day stale-position guard |
-| `strategy_max_spread_points` | 1000 | 700-1500 | Entry spread cap |
+| `strategy_formation_bars` | 126 | 105-147 | R6 lookback in completed D1 bars (J=6 formation window) |
+| `strategy_atr_period` | 20 | 14-20 | ATR period for the hard stop |
+| `strategy_atr_stop_mult` | 2.0 | 1.5-2.5 | ATR hard-stop distance multiplier |
+| `strategy_min_atr_pct` | 0.003 | - | Minimum ATR(20)/Close ratio required to trade |
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `XTIUSD.DWX` - WTI crude-oil CFD proxy named in the approved card and present
-  in the DWX symbol matrix.
+- `XAUUSD.DWX` - gold, named in the card's R3 portable basket
+- `XAGUSD.DWX` - silver, named in the card's R3 portable basket
+- `XTIUSD.DWX` - WTI crude, named in the card's R3 portable basket
+- `XNGUSD.DWX` - natural gas, named in the card's R3 portable basket
 
 **Explicitly NOT for:**
-- `XNGUSD.DWX` - natural-gas exposure has separate XNG cards.
-- `XAUUSD.DWX` and `XAGUSD.DWX` - metal sleeves are outside this WTI card.
-- Equity index symbols - the mission is an energy commodity sleeve.
+- FX pairs / equity indices - the card's signal and cost model (commission
+  ~$0.4-6.7/trade) is calibrated to commodity CFDs; monthly rebalancing on FX
+  spreads is a different cost regime and not part of this card.
 
 ## 4. Timeframe
 
 | Aspect | Value |
 |---|---|
 | Base timeframe | D1 |
-| Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar()` |
+| Multi-timeframe refs | none (MN1 is untestable on .DWX; monthly cadence is derived via `QM_IsNewCalendarPeriod(PERIOD_MN1)`, which internally keys off D1 bar time) |
+| Bar gating | `QM_IsNewBar()` + `QM_IsNewCalendarPeriod(PERIOD_MN1)` for the once-per-month rebalance edge |
 
 ## 5. Expected Behaviour
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | about 7-12 |
-| Typical hold time | one monthly package, capped at 31 calendar days |
-| Expected drawdown profile | medium-high crude-oil trend reversals bounded by ATR stop |
-| Regime preference | intermediate WTI trend persistence |
+| Trades / year / symbol | about 12 |
+| Typical hold time | one monthly package (~21 trading days), or shorter if the ATR hard stop is hit |
+| Expected drawdown profile | ~22% (card `expected_dd_pct`), commodity trend reversals bounded by the ATR stop |
+| Regime preference | trend-following / time-series momentum |
 | Win rate target | medium |
 
 ## 6. Source Citation
 
 This card was mechanised from:
 
-**Source ID:** `MOP-TSMOM-2012`
-**Source type:** `paper`
-**Pointer:** `strategy-seeds/sources/MOP-TSMOM-2012/`
+**Source ID:** `516fdfd0-0cc3-5474-8012-91879fbf79ed`
+**Source type:** `paper` (Zhang, H. & Urquhart, A., "Do momentum and reversal
+strategies work in commodity futures?", Review of Behavioral Finance, 2021;
+SSRN 3271841)
+**Pointer:** `https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3271841`
 **R1-R4 verdict (Q00):** all PASS / see
-`strategy-seeds/cards/approved/QM5_12708_commodity-tsmom-6m_card.md`
+`artifacts/cards_approved/QM5_12708_commodity-tsmom-6m.md`
 
 ## 7. Risk Model
 
@@ -76,7 +79,7 @@ This card was mechanised from:
 |---|---|---:|
 | Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
 
 ENV->mode validation is enforced by `QM_FrameworkInit`
 (`EA_INPUT_RISK_MODE_MISMATCH`). No live manifest, `T_Live` file, portfolio
@@ -86,5 +89,5 @@ gate, or AutoTrading setting is touched by this build.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-28 | Initial build from card | branch-local build |
-
+| v1 | 2026-06-28 | Initial build from prior (single-symbol WTI, source MOP-TSMOM-2012) card | branch-local build |
+| v2 | 2026-07-05 | Rebuild in place (DL-069) for current 4-symbol card (Zhang & Urquhart 2021); replaced hand-rolled iTime month-key gate (review-flagged framework_corset violation + 1-trade-then-silent smoke symptom) with `QM_IsNewCalendarPeriod`; registered XAUUSD/XAGUSD/XNGUSD alongside existing XTIUSD per P2 saturation rule | task 44bfeb0c-2896-4949-896b-390244680c06 |
