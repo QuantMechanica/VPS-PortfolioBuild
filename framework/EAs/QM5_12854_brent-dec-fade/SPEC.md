@@ -3,8 +3,8 @@
 **EA ID:** QM5_12854
 **Slug:** `brent-dec-fade`
 **Source:** `KHAN-WTI-BRENT-SEASON-2023`
-**Author of this spec:** Codex
-**Last revised:** 2026-07-01
+**Author of this spec:** Claude
+**Last revised:** 2026-07-05
 
 ## 1. Strategy Logic
 
@@ -69,4 +69,5 @@ touched by this build.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-01 | Initial build from card | build commit pending |
+| v1 | 2026-07-01 | Initial build from card | commit 159ed4348 |
+| v2 | 2026-07-05 | Rebuild in place: replaced hand-rolled `iTime()` day/month calendar keys with framework `QM_CalendarPeriodKey`/`QM_IsNewCalendarPeriod` readers (corset compliance); added mandatory Q01 smoke test | build_task_id 8f78c1a7-a329-4126-b417-97c9f60eba4c |

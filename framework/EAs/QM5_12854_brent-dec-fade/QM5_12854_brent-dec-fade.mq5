@@ -44,25 +44,20 @@ input double strategy_atr_sl_mult         = 2.25;
 input int    strategy_max_hold_days       = 1;
 input int    strategy_max_spread_points   = 1200;
 
-int g_last_entry_day_key = 0;
-
 bool Strategy_IsBrentD1()
   {
    return (_Symbol == "XBRUSD.DWX" && _Period == PERIOD_D1);
   }
 
-int Strategy_DayKey(const datetime t)
+// Card §5: a position's open time is an arbitrary stored timestamp, not the
+// current bar — QM_CalendarPeriodKey only keys off the current chart via
+// iTime(shift), so a plain TimeToStruct conversion is used here instead of a
+// hand-rolled iTime() call.
+int Strategy_DayKeyFromTime(const datetime t)
   {
    MqlDateTime dt;
    TimeToStruct(t, dt);
    return dt.year * 10000 + dt.mon * 100 + dt.day;
-  }
-
-int Strategy_Month(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.mon;
   }
 
 bool Strategy_HasOpenPosition()
@@ -86,9 +81,11 @@ void Strategy_CloseTimeExpiredPositions()
   {
    const int magic = QM_FrameworkMagic();
    const datetime now = TimeCurrent();
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 exit check behind new-bar gate.
-   const int current_month = (current_d1_bar > 0) ? Strategy_Month(current_d1_bar) : Strategy_Month(now);
-   const int current_day_key = (current_d1_bar > 0) ? Strategy_DayKey(current_d1_bar) : Strategy_DayKey(now);
+   // Card §5: month-end + next-bar exit keyed off the D1 calendar, via the
+   // framework's centralised (never hand-rolled iTime) calendar-key readers.
+   const int mn_key = QM_CalendarPeriodKey(PERIOD_MN1);
+   const int current_month = (mn_key > 0) ? (mn_key % 100) : 0;
+   const int current_day_key = QM_CalendarPeriodKey(PERIOD_D1);
    const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
 
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -102,9 +99,9 @@ void Strategy_CloseTimeExpiredPositions()
          continue;
 
       const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-      const int opened_day_key = Strategy_DayKey(opened);
-      bool should_close = (current_month != strategy_entry_month);
-      if(current_day_key > opened_day_key)
+      const int opened_day_key = Strategy_DayKeyFromTime(opened);
+      bool should_close = (current_month > 0 && current_month != strategy_entry_month);
+      if(current_day_key > 0 && current_day_key > opened_day_key)
          should_close = true;
       if(opened > 0 && now - opened >= hold_seconds)
          should_close = true;
@@ -151,18 +148,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
      }
 
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 entry calendar gate behind new-bar gate.
-   if(current_d1_bar <= 0)
+   // Card §4: entry gated to broker-calendar December via the centralised
+   // D1-derived calendar-key reader (caller already guarantees one call per
+   // new closed D1 bar via QM_IsNewBar(), so no separate per-EA dedup key
+   // is needed here).
+   const int mn_key = QM_CalendarPeriodKey(PERIOD_MN1);
+   if(mn_key <= 0)
       return false;
-   if(Strategy_Month(current_d1_bar) != strategy_entry_month)
-      return false;
-
-   const int day_key = Strategy_DayKey(current_d1_bar);
-   if(day_key <= 0 || day_key == g_last_entry_day_key)
-      return false;
-
-   const double atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
-   if(atr_last <= 0.0)
+   if((mn_key % 100) != strategy_entry_month)
       return false;
 
    const double entry_price = QM_EntryMarketPrice(req.type);
@@ -174,7 +167,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.reason = "BRENT_DECEMBER_FADE_SHORT";
-   g_last_entry_day_key = day_key;
    return true;
   }
 
