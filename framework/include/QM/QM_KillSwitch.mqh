@@ -38,6 +38,7 @@ double g_qm_ks_day_start_equity          = 0.0;
 int    g_qm_ks_day_anchor_offset_hours   = 0;
 bool   g_qm_ks_anchor_use_max_be         = false;
 string g_qm_ks_state_file                = "";
+datetime g_qm_ks_halt_retry_ts           = 0;
 
 CTrade g_qm_ks_trade;
 
@@ -264,6 +265,55 @@ int QM_KillSwitchClosePositionsByMagic(const long magic)
    return closed;
 }
 
+// Review 27c36fb7 (2026-07-06): the trip flatten previously ignored PENDING
+// orders — a resting limit/stop with the EA's magic could fill AFTER the halt,
+// leaving an open position no EA logic would ever manage (OnTick is gated on
+// the halt). Pendings are now deleted at trip and during halted re-sweeps.
+int QM_KillSwitchDeletePendingsByMagic(const long magic)
+{
+   int deleted = 0;
+   const int total = OrdersTotal();
+   for(int i = total - 1; i >= 0; --i)
+   {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0)
+         continue;
+      if(magic > 0 && OrderGetInteger(ORDER_MAGIC) != magic)
+         continue;
+      if(g_qm_ks_trade.OrderDelete(ticket))
+      {
+         ++deleted;
+         continue;
+      }
+      QM_LogEvent(QM_ERROR,
+                  "KILL_SWITCH_PENDING_DELETE_FAILED",
+                  StringFormat("{\"ticket\":%I64u,\"retcode\":%u}",
+                               ticket, g_qm_ks_trade.ResultRetcode()));
+   }
+   return deleted;
+}
+
+bool QM_KillSwitchOwnExposureExists(const long magic)
+{
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(magic <= 0 || PositionGetInteger(POSITION_MAGIC) == magic)
+         return true;
+   }
+   for(int i = OrdersTotal() - 1; i >= 0; --i)
+   {
+      const ulong ticket = OrderGetTicket(i);
+      if(ticket == 0)
+         continue;
+      if(magic <= 0 || OrderGetInteger(ORDER_MAGIC) == magic)
+         return true;
+   }
+   return false;
+}
+
 bool QM_KillSwitchPortfolioSignalTriggered(double &signal_value, bool &value_present)
 {
    signal_value = 0.0;
@@ -301,12 +351,14 @@ void QM_KillSwitchTrip(const string reason, const string details_json)
    QM_KillSwitchSaveState();
 
    const int closed = QM_KillSwitchClosePositionsByMagic(g_qm_ks_magic);
+   const int pendings_deleted = QM_KillSwitchDeletePendingsByMagic(g_qm_ks_magic);
    QM_LogFatal("KILL_SWITCH_TRIGGERED",
-               StringFormat("{\"reason\":\"%s\",\"ea_id\":%d,\"magic\":%I64d,\"closed_positions\":%d,\"details\":%s}",
+               StringFormat("{\"reason\":\"%s\",\"ea_id\":%d,\"magic\":%I64d,\"closed_positions\":%d,\"pendings_deleted\":%d,\"details\":%s}",
                             QM_LoggerEscapeJson(reason),
                             g_qm_ks_ea_id,
                             g_qm_ks_magic,
                             closed,
+                            pendings_deleted,
                             details_json));
 }
 
@@ -348,9 +400,16 @@ bool QM_KillSwitchInit(const int ea_id,
    g_qm_ks_day_start_equity = 0.0;
    g_qm_ks_unconfigured_logged = false;
    g_qm_ks_initialized = true;
-   QM_KillSwitchRefreshBrokerDay();
-   // E2: same-day persisted anchor/halt wins over the fresh attach-time anchor.
+   // E2 ordering (adversarial review 27c36fb7, 2026-07-06): RestoreState MUST
+   // read the state file BEFORE anything writes it. RefreshBrokerDay always
+   // sees a day change on init (day_key==-1) and its SaveState would truncate
+   // the file with halted=0 + a fresh anchor — restore would then read back
+   // its own clobbering. So: compute the fresh anchor WITHOUT persisting,
+   // let a same-day persisted state override it, then persist the result.
+   g_qm_ks_day_key = QM_KillSwitchCurrentDayKey();
+   g_qm_ks_day_start_equity = QM_KillSwitchAnchorEquity();
    QM_KillSwitchRestoreState();
+   QM_KillSwitchSaveState();
 
    QM_LogEvent(QM_INFO,
                "KILL_SWITCH_INIT",
@@ -389,12 +448,17 @@ bool QM_KillSwitchSetBookTag(const string tag)
 }
 
 // E3 (2026-07-06 audit): configurable halt-day anchor. offset_hours shifts the
-// day boundary relative to broker midnight (FTMO's daily loss resets at
-// midnight Prague CE(S)T = -1h/-2h vs a UTC+3 server); use_max_balance_equity
-// mirrors FTMO's baseline = max(balance, equity) at reset. Call AFTER
-// QM_KillSwitchInit (SetBookTag rollout pattern — the FTMO preset gains inputs
-// at the challenge rebuild; every existing EA keeps broker-midnight/equity).
-// Fail-safe: an already-active halt is never cleared by re-anchoring.
+// day boundary relative to broker midnight. FTMO's daily loss resets at
+// midnight Prague CE(S)T; on a US-DST-coupled server (UTC+3 summer / UTC+2
+// winter) the gap is 1h in BOTH stable seasons (-1), but 2h during the ~4
+// weeks/year of US/EU DST divergence (mid/late March + late Oct/early Nov)
+// where a static -1 rolls the KS day 1h EARLY — un-halting and re-arming one
+// hour before FTMO's counter resets (review 27c36fb7, non-conservative).
+// Operator rule: run -2 during divergence windows, or accept the 1h window
+// (the -3% internal halt sits well inside FTMO's -5% budget).
+// use_max_balance_equity mirrors FTMO's baseline = max(balance, equity) at
+// reset. Call AFTER QM_KillSwitchInit (SetBookTag rollout pattern). Fail-safe:
+// an already-active halt is never cleared by re-anchoring.
 bool QM_KillSwitchSetDayAnchor(const int offset_hours, const bool use_max_balance_equity)
 {
    if(!g_qm_ks_initialized || offset_hours < -12 || offset_hours > 12)
@@ -403,6 +467,10 @@ bool QM_KillSwitchSetDayAnchor(const int offset_hours, const bool use_max_balanc
    g_qm_ks_anchor_use_max_be = use_max_balance_equity;
    g_qm_ks_day_key = QM_KillSwitchCurrentDayKey();
    g_qm_ks_day_start_equity = QM_KillSwitchAnchorEquity();
+   // Keep an active halt pinned to the re-based day so it reliably survives
+   // until the next boundary instead of expiring on a key mismatch.
+   if(g_qm_ks_halted)
+      g_qm_ks_halt_day_key = g_qm_ks_day_key;
    QM_KillSwitchRestoreState();
    QM_KillSwitchSaveState();
    QM_LogEvent(QM_INFO, "KS_DAY_ANCHOR_SET",
@@ -454,7 +522,29 @@ bool QM_KillSwitchCheck()
    QM_FrameworkTrackOpenPositionMae();
    QM_KillSwitchRefreshBrokerDay();
    if(g_qm_ks_halted)
+   {
+      // Review 27c36fb7: the trip flatten was ONE-SHOT — a failed close
+      // (market closed on a leg, disconnect, partial fill) or a pending that
+      // filled after the trip left exposure open and unmanaged forever while
+      // halted. Re-sweep at most once per 60 broker-seconds until flat.
+      const datetime now_retry = TimeCurrent();
+      if(now_retry - g_qm_ks_halt_retry_ts >= 60)
+      {
+         g_qm_ks_halt_retry_ts = now_retry;
+         if(QM_KillSwitchOwnExposureExists(g_qm_ks_magic))
+         {
+            const int closed_retry = QM_KillSwitchClosePositionsByMagic(g_qm_ks_magic);
+            const int deleted_retry = QM_KillSwitchDeletePendingsByMagic(g_qm_ks_magic);
+            QM_LogEvent(QM_ERROR,
+                        "KILL_SWITCH_FLATTEN_RETRY",
+                        StringFormat("{\"reason\":\"%s\",\"closed\":%d,\"pendings_deleted\":%d}",
+                                     QM_LoggerEscapeJson(g_qm_ks_halt_reason),
+                                     closed_retry,
+                                     deleted_retry));
+         }
+      }
       return false;
+   }
 
    // Operator-signal files (manual halt + portfolio DD) live only in live ops.
    const bool is_tester = (MQLInfoInteger(MQL_TESTER) != 0);
