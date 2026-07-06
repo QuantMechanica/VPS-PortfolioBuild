@@ -14418,3 +14418,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12708,commodity-tsmom-6m,1,XAUUSD.DWX,127080001,2026-07-05,Claude,active
 12708,commodity-tsmom-6m,2,XAGUSD.DWX,127080002,2026-07-05,Claude,active
 12708,commodity-tsmom-6m,3,XNGUSD.DWX,127080003,2026-07-05,Claude,active
+13021,ws30-h4-zone-fade,0,WS30.DWX,130210000,2026-07-06,Claude,active
+13020,audnzd-coint-reversion,0,AUDNZD.DWX,130200000,2026-07-06,Claude,active
+13018,xag-vol-compression-breakout,0,XAGUSD.DWX,130180000,2026-07-06,Claude,active
