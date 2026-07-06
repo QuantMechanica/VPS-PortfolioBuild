@@ -41,7 +41,15 @@ import statistics
 import sys
 from pathlib import Path
 
-BASELINE_DIR = Path("D:/QM/data/baselines")
+# 2026-07-06 audit: baselines MUST live inside the MT5 file sandbox or no EA
+# can ever read them (drive-letter paths are invalid for MQL5 FileOpen — the
+# historical D:/QM/data/baselines target made the KS kill path permanently
+# dormant). QM_KillSwitchKS loads `QM\baselines\QM5_<id>_<sym>.json` local-
+# first, then Common\Files via FILE_COMMON; this writer targets the shared
+# Common root so every terminal (factory + T_Live) sees the same baseline.
+BASELINE_DIR = Path(
+    r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files\QM\baselines"
+)
 
 # MT5 .htm report parsing: extract the deals table (DEAL_ENTRY=OUT rows)
 # and read the per-trade net profit. MT5 reports are UTF-16 LE BOM by default.
