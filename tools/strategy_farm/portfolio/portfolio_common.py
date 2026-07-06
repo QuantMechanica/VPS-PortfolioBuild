@@ -67,6 +67,81 @@ def stream_path_key(path: Path) -> tuple[int, str]:
     return int(ea_token), symbol_token.replace("_", ".")
 
 
+# Basket EAs carry a logical composite work-item symbol (QM5_<id>_..., never a
+# real MT5 symbol) but their q08 stream files are keyed by HOST symbol
+# (volatile Common\Files) or by the logical name (durable store). Adversarial
+# review b4e2a62b (2026-07-06) showed the one-sided candidate fix poisoned the
+# BOOK: portfolio_candidates stores the logical symbol, load_streams could
+# never match it, and every consumer of the book (admission -> hard error;
+# assemble/correlation/manifest/MC -> SILENT drop of the sleeve) broke. The
+# resolution therefore lives HERE, at the single choke point every consumer
+# uses, and streams are returned under the ORIGINAL candidate key.
+BASKET_SYMBOL_RE = re.compile(r"^QM5_\d+_", re.IGNORECASE)
+REPO_EAS = Path(r"C:\QM\repo\framework\EAs")
+HOST_SYMBOL_HEADER_RE = re.compile(r";\s*host_symbol\s*:\s*(\S+)", re.IGNORECASE)
+
+
+def resolve_basket_stream_key(candidate: tuple[int, str], common_dir: Path):
+    """Return ((ea, stream_key_symbol), note) for logical basket symbols, else (None, None).
+
+    Order: '; host_symbol:' setfile header -> host-keyed stream file; logical-
+    named stream file (durable-store layout). When BOTH exist, the NEWER file
+    wins (review b4e2a62b: a refresh through the farmctl --log path updates
+    only the logical name — a stale host copy must not shadow it). Fallback:
+    unique non-logical <ea>_*.jsonl. Commission stays correct regardless of
+    key: _load_one_stream prices each trade from the row's own symbol field."""
+    ea, sym = candidate
+    if not BASKET_SYMBOL_RE.match(str(sym)):
+        return None, None
+    stream_dir = common_dir / "QM" / "q08_trades"
+    logical_name = f"{ea}_{str(sym).replace('.', '_')}.jsonl"
+    logical_key = (int(ea), str(sym).replace("_", "."))
+    logical_file = stream_dir / logical_name
+
+    host = None
+    host_note = None
+    for sf in sorted(REPO_EAS.glob(f"QM5_{ea}_*/sets/*.set")):
+        try:
+            for line in sf.read_text(encoding="utf-8-sig").splitlines():
+                m = HOST_SYMBOL_HEADER_RE.match(line.strip())
+                if m:
+                    host = m.group(1)
+                    host_note = f"host_symbol_from_setfile:{sf.name}"
+                    break
+        except (OSError, UnicodeDecodeError):
+            continue
+        if host is not None:
+            break
+
+    if host is not None:
+        host_file = stream_dir / f"{ea}_{host.replace('.', '_')}.jsonl"
+        host_exists = host_file.exists()
+        logical_exists = logical_file.exists()
+        if host_exists and logical_exists:
+            try:
+                if logical_file.stat().st_mtime > host_file.stat().st_mtime:
+                    return logical_key, f"logical_stream_newer:{logical_name}"
+            except OSError:
+                pass
+            return (int(ea), host), host_note
+        if host_exists:
+            return (int(ea), host), host_note
+        if logical_exists:
+            return logical_key, f"logical_stream_fallback:{logical_name}"
+        # Neither file present yet (e.g. volatile dir pre-run): keep the host
+        # key so a later-appearing stream still matches.
+        return (int(ea), host), host_note
+
+    if logical_file.exists():
+        return logical_key, f"logical_stream_fallback:{logical_name}"
+    others = [p for p in stream_dir.glob(f"{ea}_*.jsonl") if p.name != logical_name]
+    if len(others) == 1:
+        sym_part = others[0].stem.split("_", 1)[1]
+        resolved = re.sub(r"_([A-Z0-9]+)$", r".\1", sym_part)
+        return (int(ea), resolved), f"unique_stream_fallback:{others[0].name}"
+    return None, f"basket_stream_ambiguous:{len(others)}_candidates"
+
+
 def read_candidates(
     db_path: Path = DEFAULT_CANDIDATES_DB,
     *,
@@ -125,20 +200,31 @@ def load_streams(
         return {}
 
     candidate_set: set[tuple[int, str]] | None = None
+    alias: dict[tuple[int, str], tuple[int, str]] = {}
     if candidates is not None:
         candidate_set = {
             (ce, str(symbol))
             for ea_id, symbol in candidates
             if (ce := _coerce_ea_int(ea_id)) is not None
         }
+        # Review b4e2a62b: map basket candidates' logical keys to the file key
+        # their stream actually lives under, and hand the trades back under the
+        # ORIGINAL candidate key so every consumer stays keyed by candidate
+        # identity. A file key that is itself a candidate is owned by that
+        # candidate and never aliased away.
+        for cand in candidate_set:
+            resolved, _note = resolve_basket_stream_key(cand, common_dir)
+            if resolved is not None and resolved != cand and resolved not in candidate_set:
+                alias[resolved] = cand
 
     streams: dict[tuple[int, str], list[Trade]] = {}
     for path in sorted(q08_dir.glob("*.jsonl"), key=lambda item: item.name):
         key = stream_path_key(path)
-        if candidate_set is not None and key not in candidate_set:
+        mapped = alias.get(key, key)
+        if candidate_set is not None and mapped not in candidate_set:
             continue
-        trades = _load_one_stream(path, key[0], key[1], model)
-        streams[key] = trades
+        trades = _load_one_stream(path, mapped[0], mapped[1], model)
+        streams[mapped] = trades
     return dict(sorted(streams.items(), key=lambda item: item[0]))
 
 
