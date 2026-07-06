@@ -1,0 +1,32 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13022
+; ea_slug:      ftq-xau-riskoff-long
+; ea_version:   v5.0
+; set_version:  s20260706-001
+; symbol:       XAUUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-06
+;==========================================================
+qm_ea_id=13022
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_13022_ftq-xau-riskoff-long.md
+strategy_regime_symbol="SP500.DWX"
+strategy_regime_sma=200
+strategy_mom_sma=50
+strategy_donchian_entry=20
+strategy_atr_period=14
+strategy_atr_sl_mult=2.5
+strategy_donchian_trail=10
+strategy_max_hold_bars=60
+strategy_max_spread_points=80

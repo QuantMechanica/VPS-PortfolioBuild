@@ -1,0 +1,31 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13023
+; ea_slug:      ftq-audjpy-riskoff-short
+; ea_version:   v5.0
+; set_version:  s20260706-001
+; symbol:       AUDJPY.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-06
+;==========================================================
+qm_ea_id=13023
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_13023_ftq-audjpy-riskoff-short.md
+strategy_sma_regime=200
+strategy_sma_mom=50
+strategy_donchian_entry=20
+strategy_atr_period=14
+strategy_atr_sl_mult=2.5
+strategy_donchian_trail=15
+strategy_max_hold_bars=40
+strategy_max_spread_points=40
