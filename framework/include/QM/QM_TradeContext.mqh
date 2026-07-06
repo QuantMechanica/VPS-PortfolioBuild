@@ -6,6 +6,7 @@
 
 bool g_qm_trade_block_not_enough_money = false;
 int  g_qm_trade_block_day_key = -1;
+datetime g_qm_trade_block_warn_ts = 0;
 
 // Entry-class requests open NEW exposure: deals without a position ticket, or
 // pending placements. Closes, SL/TP modifies, pending removals and close-by
@@ -88,11 +89,18 @@ bool QM_TradeContextSend(const MqlTradeRequest &request, MqlTradeResult &result,
    if(g_qm_trade_block_not_enough_money && QM_TradeContextOpensExposure(request))
    {
       out_error_class = BROKER_NOT_ENOUGH_MONEY;
-      QM_LogEvent(QM_WARN, BROKER_NOT_ENOUGH_MONEY,
-                  StringFormat("{\"latched\":true,\"symbol\":\"%s\",\"action\":%d,\"magic\":%I64d}",
-                               QM_LoggerEscapeJson(request.symbol),
-                               (int)request.action,
-                               request.magic));
+      // Review 83be4dd3 M-4: per-tick senders under a day-long latch would
+      // otherwise write a WARN (full file open/write/close) at tick rate.
+      const datetime warn_now = TimeCurrent();
+      if(warn_now - g_qm_trade_block_warn_ts >= 60)
+      {
+         g_qm_trade_block_warn_ts = warn_now;
+         QM_LogEvent(QM_WARN, BROKER_NOT_ENOUGH_MONEY,
+                     StringFormat("{\"latched\":true,\"symbol\":\"%s\",\"action\":%d,\"magic\":%I64d}",
+                                  QM_LoggerEscapeJson(request.symbol),
+                                  (int)request.action,
+                                  request.magic));
+      }
       return false;
    }
 

@@ -43,6 +43,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from framework.scripts._phase_utils import period_from_setfile
+from framework.scripts.q05_stress_medium import summary_invalid_reason
 
 # Wrapper must outlive the tester budget, or a run finishing at the buzzer
 # loses its summary write (2026-07-06 audit G16; mirrors q05/q06).
@@ -239,6 +240,13 @@ def fire_backtest(*, ea_id: int, ea_expert: str, symbol: str,
                / sym_clean / run_tag / "summary.json")
     if not summary.exists():
         summary = latest_run_smoke_summary(report_root, ea_id, started_at) or summary
+    # Review 83be4dd3 M-1: infra-invalid summaries (NO_HISTORY cold cache,
+    # BARS_ZERO, REPORT_FORMAT_DRIFT) carry DEFAULTED pf=0.0 in their run rows
+    # — parsing them graded infra failures as plateau breaches (the exact G5
+    # class, closed for timeouts but not for invalid summaries). Return the
+    # infra sentinel so sub_8_5 records an invalid perturbation instead.
+    if summary.exists() and summary_invalid_reason(summary):
+        return None, None, 0
     return _parse_pf_dd_trades(summary)
 
 

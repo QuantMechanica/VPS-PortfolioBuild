@@ -208,6 +208,18 @@ void QM_KillSwitchKSInit(const int ea_id,
    // FILE_COMMON (the loader retries with FILE_COMMON automatically).
    g_qm_ks_baseline_path = StringFormat("QM\\baselines\\QM5_%d_%s.json", ea_id, sym_clean);
 
+   // Adversarial review 83be4dd3 C-2 (2026-07-06): tester agents share the
+   // machine-wide Common root — once a Q10 baseline exists, loading it in the
+   // Strategy Tester would arm the divergence kill inside BACKTESTS (Q05/Q06
+   // stress runs deliberately perturb the distribution!) and make gate
+   // evidence non-deterministic on an out-of-repo file. The KS distribution
+   // switch is a LIVE/burn-in protection only; never arm it in the tester.
+   if(MQLInfoInteger(MQL_TESTER) != 0)
+     {
+      g_qm_ks_baseline_loaded = false;
+      return;
+     }
+
    if(!QM_KS_LoadBaseline(g_qm_ks_baseline_path))
      {
       g_qm_ks_baseline_loaded = false;

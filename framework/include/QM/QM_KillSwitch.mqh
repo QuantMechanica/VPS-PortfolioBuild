@@ -155,6 +155,11 @@ void QM_KillSwitchSaveState()
    FileWriteString(fh, StringFormat("halt_reason=%s\n", g_qm_ks_halt_reason));
    FileWriteString(fh, StringFormat("halt_day_key=%d\n", g_qm_ks_halt_day_key));
    FileWriteString(fh, StringFormat("magic=%I64d\n", g_qm_ks_magic));
+   // Review 83be4dd3 (E3 round-trip): state is only valid under the SAME
+   // anchor configuration — a state saved pre-SetDayAnchor must not override
+   // the max(balance,equity)/offset baseline computed after it.
+   FileWriteString(fh, StringFormat("anchor_offset=%d\n", g_qm_ks_day_anchor_offset_hours));
+   FileWriteString(fh, StringFormat("anchor_max_be=%d\n", g_qm_ks_anchor_use_max_be ? 1 : 0));
    FileClose(fh);
 }
 
@@ -167,6 +172,7 @@ void QM_KillSwitchRestoreState()
       return; // first run on this terminal — nothing to restore
 
    int saved_day_key = -1, saved_halted = 0, saved_halt_day_key = -1;
+   int saved_anchor_offset = 0, saved_anchor_max_be = 0;
    double saved_anchor = 0.0;
    long saved_magic = 0;
    string saved_reason = "";
@@ -184,19 +190,29 @@ void QM_KillSwitchRestoreState()
       else if(key == "halt_reason")      saved_reason = val;
       else if(key == "halt_day_key")     saved_halt_day_key = (int)StringToInteger(val);
       else if(key == "magic")            saved_magic = StringToInteger(val);
+      else if(key == "anchor_offset")    saved_anchor_offset = (int)StringToInteger(val);
+      else if(key == "anchor_max_be")    saved_anchor_max_be = (int)StringToInteger(val);
    }
    FileClose(fh);
 
-   if(saved_magic != g_qm_ks_magic || saved_day_key != g_qm_ks_day_key || saved_anchor <= 0.0)
+   if(saved_magic != g_qm_ks_magic || saved_day_key != g_qm_ks_day_key || saved_anchor <= 0.0 ||
+      saved_anchor_offset != g_qm_ks_day_anchor_offset_hours ||
+      saved_anchor_max_be != (g_qm_ks_anchor_use_max_be ? 1 : 0))
    {
       QM_LogEvent(QM_INFO, "KS_STATE_STALE_IGNORED",
-                  StringFormat("{\"saved_day_key\":%d,\"current_day_key\":%d,\"saved_magic\":%I64d}",
-                               saved_day_key, g_qm_ks_day_key, saved_magic));
+                  StringFormat("{\"saved_day_key\":%d,\"current_day_key\":%d,\"saved_magic\":%I64d,\"saved_anchor_offset\":%d,\"saved_anchor_max_be\":%d}",
+                               saved_day_key, g_qm_ks_day_key, saved_magic,
+                               saved_anchor_offset, saved_anchor_max_be));
       return;
    }
 
+   // Review 83be4dd3 M-3: only the fileless KS_DAILY_LOSS halt is restored
+   // from state — KS_MANUAL/KS_PORTFOLIO_DD self-restore via their signal
+   // files, and restoring them from stale state would re-halt an EA whose
+   // halt file the operator deliberately deleted while it was offline.
    g_qm_ks_day_start_equity = saved_anchor;
-   if(saved_halted == 1 && saved_halt_day_key == g_qm_ks_day_key)
+   if(saved_halted == 1 && saved_halt_day_key == g_qm_ks_day_key &&
+      saved_reason == KS_DAILY_LOSS)
    {
       g_qm_ks_halted = true;
       g_qm_ks_halt_reason = saved_reason;
@@ -389,8 +405,10 @@ bool QM_KillSwitchInit(const int ea_id,
       g_qm_ks_manual_halt_file = StringFormat("QM\\halt\\%d.halt", ea_id);
    if(StringLen(g_qm_ks_portfolio_dd_signal_file) == 0 && ea_id > 0)
       g_qm_ks_portfolio_dd_signal_file = "QM\\halt\\portfolio_dd.signal";
+   // Review 83be4dd3 M-2: the magic scopes the file — two charts of the same
+   // EA on different symbols (different slots) must not clobber each other.
    g_qm_ks_state_file = (ea_id > 0)
-      ? StringFormat("QM\\halt\\ks_state_%d.state", ea_id)
+      ? StringFormat("QM\\halt\\ks_state_%d_%I64d.state", ea_id, magic)
       : "";
 
    g_qm_ks_halted = false;
