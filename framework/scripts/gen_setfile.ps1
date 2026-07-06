@@ -360,14 +360,21 @@ if ($EaSlug -match '^QM5_(\d+)_(.+)$') {
     $eaId = $matches[1]
     $eaSlugOnly = $matches[2]
     $registryPath = Join-Path $repoRoot 'framework\registry\magic_numbers.csv'
-    if (Test-Path -LiteralPath $registryPath) {
-        $magicRow = Import-Csv -LiteralPath $registryPath |
-            Where-Object { $_.ea_id -eq ([int]$eaId).ToString() -and $_.symbol -eq $Symbol -and $_.status -eq 'active' } |
-            Select-Object -First 1
-        if ($magicRow) {
-            $magicSlot = [int]$magicRow.symbol_slot
-        }
+    # 2026-07-06 audit G9: a missing active registry row previously defaulted
+    # SILENTLY to slot 0 — a collision-prone artifact that QM_MagicRegistered
+    # would happily validate (slot-0 magic IS registered, just for the wrong
+    # symbol). The operating rule (dirs -> CSV -> regen -> verify -> compile)
+    # requires the row to exist BEFORE setfile generation; enforce it.
+    if (-not (Test-Path -LiteralPath $registryPath)) {
+        throw "MAGIC_REGISTRY_MISSING: $registryPath not found; cannot resolve symbol_slot for $EaSlug $Symbol."
     }
+    $magicRow = Import-Csv -LiteralPath $registryPath |
+        Where-Object { $_.ea_id -eq ([int]$eaId).ToString() -and $_.symbol -eq $Symbol -and $_.status -eq 'active' } |
+        Select-Object -First 1
+    if (-not $magicRow) {
+        throw "MAGIC_REGISTRY_ROW_MISSING: no active magic_numbers.csv row for ea_id=$eaId symbol=$Symbol; register the slot before generating setfiles (order-of-operations rule)."
+    }
+    $magicSlot = [int]$magicRow.symbol_slot
 }
 
 $today = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd')

@@ -18,24 +18,53 @@ HOST_SYMBOL_HEADER_RE = re.compile(r";\s*host_symbol\s*:\s*(\S+)", re.IGNORECASE
 
 
 def _resolve_basket_stream_key(candidate, common_dir: Path):
-    """Return ((ea, host_symbol), note) for logical basket symbols, else (None, None).
+    """Return ((ea, stream_key_symbol), note) for logical basket symbols, else (None, None).
 
-    Resolution order: '; host_symbol:' setfile header (authoritative, mirrors
-    q08_davey.aggregate._host_symbol_from_setfile) -> unique non-logical
-    <ea>_*.jsonl stream in common_dir. Ambiguity keeps the miss (explicit note)."""
+    Resolution order (2026-07-06 audit G7 — existence-aware, because the durable
+    store persists basket streams under the LOGICAL symbol while the volatile
+    Common\\Files stream is keyed by HOST symbol):
+      1. '; host_symbol:' setfile header (mirrors q08_davey.aggregate.
+         _host_symbol_from_setfile) — used when the host-keyed stream file exists.
+      2. Logical-named stream file (durable-store layout) — key mangled exactly
+         as stream_path_key() mangles the filename, so load_streams matches.
+         Commission stays correct: _load_one_stream prices each trade from the
+         row's own symbol field, not the file key.
+      3. Unique non-logical <ea>_*.jsonl stream in common_dir.
+    Ambiguity keeps the miss (explicit note)."""
     ea, sym = candidate
     if not BASKET_SYMBOL_RE.match(str(sym)):
         return None, None
+    stream_dir = common_dir / "QM" / "q08_trades"
+    logical_name = f"{ea}_{str(sym).replace('.', '_')}.jsonl"
+    logical_key = (int(ea), str(sym).replace("_", "."))
+
+    host = None
+    host_note = None
     for sf in sorted(REPO_EAS.glob(f"QM5_{ea}_*/sets/*.set")):
         try:
             for line in sf.read_text(encoding="utf-8-sig").splitlines():
                 m = HOST_SYMBOL_HEADER_RE.match(line.strip())
                 if m:
-                    return (int(ea), m.group(1)), f"host_symbol_from_setfile:{sf.name}"
+                    host = m.group(1)
+                    host_note = f"host_symbol_from_setfile:{sf.name}"
+                    break
         except (OSError, UnicodeDecodeError):
             continue
-    logical_name = f"{ea}_{str(sym).replace('.', '_')}.jsonl"
-    others = [p for p in common_dir.glob(f"{ea}_*.jsonl") if p.name != logical_name]
+        if host is not None:
+            break
+
+    if host is not None:
+        if (stream_dir / f"{ea}_{host.replace('.', '_')}.jsonl").exists():
+            return (int(ea), host), host_note
+        if (stream_dir / logical_name).exists():
+            return logical_key, f"logical_stream_fallback:{logical_name}"
+        # Neither file present yet (e.g. volatile dir pre-run): keep the host
+        # key — the pre-G7 behavior — so a later-appearing stream still matches.
+        return (int(ea), host), host_note
+
+    if (stream_dir / logical_name).exists():
+        return logical_key, f"logical_stream_fallback:{logical_name}"
+    others = [p for p in stream_dir.glob(f"{ea}_*.jsonl") if p.name != logical_name]
     if len(others) == 1:
         sym_part = others[0].stem.split("_", 1)[1]
         resolved = re.sub(r"_([A-Z0-9]+)$", r".\1", sym_part)

@@ -214,6 +214,19 @@ def _persist_durable_sleeve_stream(ea_id: int, symbol: str,
     """
     sym_clean = symbol.replace(".", "_")
     dst = DURABLE_STREAM_ROOT / "QM" / "q08_trades" / f"{ea_id}_{sym_clean}.jsonl"
+
+    # 2026-07-06 audit G7: basket EAs are admitted under the LOGICAL symbol but
+    # their live stream is keyed by HOST symbol. Persist under BOTH names so
+    # every downstream keying convention (Q09 resolver host-key path, durable
+    # logical-name path) finds the stream without manual copies.
+    host_dst: Path | None = None
+    if common_log_override is not None and common_log_override.name != dst.name:
+        host_dst = dst.parent / common_log_override.name
+
+    def _mirror_host_copy() -> None:
+        if host_dst is not None:
+            shutil.copyfile(dst, host_dst)
+
     if not raw_trades:
         return {"persisted": False, "reason": "no_trades", "n": 0}
     try:
@@ -221,8 +234,10 @@ def _persist_durable_sleeve_stream(ea_id: int, symbol: str,
         common_log = common_log_override or _common_q08_trade_log(ea_id, symbol)
         if common_log.exists() and common_log.stat().st_size > 0:
             shutil.copyfile(common_log, dst)
+            _mirror_host_copy()
             return {"persisted": True, "source": "common_copy",
-                    "path": str(dst), "n": len(raw_trades)}
+                    "path": str(dst), "n": len(raw_trades),
+                    "host_copy": str(host_dst) if host_dst else None}
         if all("volume" in t for t in raw_trades):
             lines = []
             for t in raw_trades:
@@ -238,8 +253,10 @@ def _persist_durable_sleeve_stream(ea_id: int, symbol: str,
                     "symbol": t.get("symbol") or symbol,
                 }))
             dst.write_text("\n".join(lines) + "\n", encoding="utf-8")
+            _mirror_host_copy()
             return {"persisted": True, "source": "serialized",
-                    "path": str(dst), "n": len(lines)}
+                    "path": str(dst), "n": len(lines),
+                    "host_copy": str(host_dst) if host_dst else None}
         return {"persisted": False, "reason": "report_fallback_no_volume",
                 "n": len(raw_trades)}
     except OSError as exc:
@@ -347,7 +364,8 @@ def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None,
     flags = 0x08000000 if sys.platform == "win32" else 0
     try:
         p = _sp.run(args, capture_output=True, text=True, timeout=timeout_proc, creationflags=flags)
-        summary = _latest_baseline_summary(report_root, ea_id, wait_seconds=10)
+        summary = _latest_baseline_summary(report_root, ea_id, wait_seconds=10,
+                                           expected_symbol=test_symbol)
         out = {"exit_code": p.returncode, "expert": expert, "period": period,
                "test_symbol": test_symbol}
         if summary is not None:
@@ -360,14 +378,27 @@ def _run_baseline_for_trades(ea_id: int, symbol: str, terminal: str | None,
         return {"error": repr(exc), "test_symbol": test_symbol}
 
 
-def _latest_baseline_summary(report_root: Path, ea_id: int, wait_seconds: int = 0) -> Path | None:
+def _latest_baseline_summary(report_root: Path, ea_id: int, wait_seconds: int = 0,
+                             expected_symbol: str | None = None) -> Path | None:
+    """Newest baseline summary, symbol-gated (2026-07-06 audit G3): the _baseline
+    dir is shared per-EA, so for multi-symbol EAs the newest summary can belong
+    to a DIFFERENT symbol's earlier run — adopting it grades wrong-symbol trades
+    as this symbol's evidence. When expected_symbol is given, only a summary
+    whose top-level symbol matches is eligible."""
     base = report_root / f"QM5_{ea_id}"
     deadline = time.time() + max(0, wait_seconds)
     while True:
         if base.exists():
             summaries = sorted(base.glob("*/summary.json"), key=lambda p: p.stat().st_mtime, reverse=True)
-            if summaries:
-                return summaries[0]
+            for candidate in summaries:
+                if expected_symbol is None:
+                    return candidate
+                try:
+                    data = json.loads(candidate.read_text(encoding="utf-8-sig"))
+                except (OSError, json.JSONDecodeError):
+                    continue
+                if str(data.get("symbol") or "").upper() == str(expected_symbol).upper():
+                    return candidate
         if time.time() >= deadline:
             return None
         time.sleep(1)
@@ -445,10 +476,13 @@ def _apply_worst_case_commission(trades: list[dict], fallback_symbol: str) -> tu
     total_cost = 0.0
     gross_total = 0.0
 
+    volumeless = 0
     for trade in trades:
         row = dict(trade)
         trade_symbol = str(row.get("symbol") or fallback_symbol)
         volume = _float_or_none(row.get("volume")) or 0.0
+        if volume <= 0.0:
+            volumeless += 1
         notional = _float_or_none(row.get("notional"))
         cost = model.cost_round_trip(trade_symbol, volume, notional)
         total_cost += cost
@@ -462,6 +496,13 @@ def _apply_worst_case_commission(trades: list[dict], fallback_symbol: str) -> tu
         adjusted.append(row)
 
     cushion, tier = _cost_cushion(gross_total, total_cost)
+    # 2026-07-06 audit G4: volume-less rows (HTML-report fallback) price every
+    # trade at $0 commission — cushion "PASS" and net==gross are then data
+    # artifacts, not cost statements. The durable-stream persister already
+    # refuses such rows (report_fallback_no_volume); grading must refuse them
+    # too, on any trade set that actually traded.
+    if trades and volumeless == len(trades):
+        cushion, tier = None, "INVALID"
     model_info = commission.describe_model(model)
     return adjusted, {
         "commission_basis": "worst_case_dxz_ftmo",
@@ -615,6 +656,12 @@ def _aggregate_verdict(sub_results: list[dict], trades: list[dict] | None = None
         soft = True
     elif cost_cushion_tier == "PASS":
         classification["cost_cushion"] = "PASS"
+    elif cost_cushion_tier == "INVALID":
+        # 2026-07-06 audit G4: all-volume-less trade set (report fallback) —
+        # commission was un-computable, so BOTH hard profitability gates
+        # (cushion + net PF) graded gross. Re-run with a real stream.
+        classification["cost_cushion"] = "INVALID"
+        invalid = True
 
     # HARD dominates: a definitive edge failure (e.g. PBO 88%, net PF < 1.0) means the EA is
     # not robust regardless of a non-evaluable gate.
@@ -695,6 +742,7 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
                 Path(f"D:/QM/reports/pipeline/QM5_{ea_id}/Q08/_baseline"),
                 ea_id,
                 wait_seconds=5,
+                expected_symbol=baseline_run.get("test_symbol"),
             )
             if retry_summary is not None:
                 baseline_run.update(_baseline_report_metadata(retry_summary))

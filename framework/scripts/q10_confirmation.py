@@ -25,7 +25,11 @@ if __package__ in (None, ""):
 from framework.scripts._phase_utils import (ensure_dir, utc_now_iso, write_json,
                                             resolve_ea_expert_path, period_from_setfile,
                                             find_latest_summary, full_history_window)
-from framework.scripts.q05_stress_medium import _parse_pf_dd_trades, STARTING_EQUITY
+from framework.scripts.q05_stress_medium import (_parse_pf_dd_trades, STARTING_EQUITY,
+                                                 summary_invalid_reason)
+
+# Wrapper must outlive the tester budget (2026-07-06 audit G16).
+RUNNER_HEADROOM_SEC = 120
 
 GATE_NAME = "Q10"
 PF_FLOOR = 1.0
@@ -89,14 +93,32 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
         "-TimeoutSeconds", str(timeout_sec),
     ]
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
-    proc = subprocess.run(args, capture_output=True, text=True,
-                          timeout=timeout_sec, creationflags=creationflags)
+    timed_out = False
+    exit_code: int | None = None
+    try:
+        proc = subprocess.run(args, capture_output=True, text=True,
+                              timeout=timeout_sec + RUNNER_HEADROOM_SEC,
+                              creationflags=creationflags)
+        exit_code = proc.returncode
+    except subprocess.TimeoutExpired:
+        timed_out = True
     sym_clean = symbol.replace(".", "_")
     summary = find_latest_summary(report_root)
     pf, dd_money, trades = _parse_pf_dd_trades(summary) if summary else (None, None, 0)
     dd_pct = (dd_money / STARTING_EQUITY * 100.0) if dd_money is not None else None
 
-    if pf is None or dd_money is None:
+    # 2026-07-06 audit G2 (mirror of the q05/q06 pattern): an infra-invalid
+    # summary (NO_HISTORY cold cache, BARS_ZERO, ONINIT_FAILED, empty report)
+    # still carries defaulted pf=0.0/dd=0.0 run rows — grading those as
+    # strategy metrics turned first-attempt cold-cache transients into
+    # terminal FAILs at the final confirmation gate.
+    invalid_reason = summary_invalid_reason(summary) if summary else None
+
+    if timed_out:
+        verdict, reason = "INVALID", f"timeout_expired:timeout_sec={timeout_sec}"
+    elif invalid_reason:
+        verdict, reason = "INVALID", invalid_reason
+    elif pf is None or dd_money is None:
         verdict, reason = "INVALID", "missing_pf_or_dd_in_summary"
     elif pf <= PF_FLOOR:
         verdict, reason = "FAIL", f"pf_below_floor:pf={pf:.3f}:floor={PF_FLOOR}"
@@ -115,7 +137,7 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
         "dd_money": dd_money,
         "dd_pct": dd_pct,
         "trades": trades,
-        "exit_code": proc.returncode,
+        "exit_code": exit_code,
         "summary_path": str(summary) if summary else None,
         "report_htm": _find_report_htm(summary) if summary else None,
         "history_year": history_year,

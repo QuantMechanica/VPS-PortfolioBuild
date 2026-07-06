@@ -42,6 +42,15 @@ from pathlib import Path
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from framework.scripts._phase_utils import period_from_setfile
+
+# Wrapper must outlive the tester budget, or a run finishing at the buzzer
+# loses its summary write (2026-07-06 audit G16; mirrors q05/q06).
+RUNNER_HEADROOM_SEC = 120
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
 from framework.scripts._phase_utils import ensure_dir, utc_now_iso, write_json
 from framework.scripts.q05_stress_medium import _parse_pf_dd_trades
 
@@ -185,7 +194,8 @@ def resolve_ea_expert(ea_label: str, ea_id: int) -> str:
 
 def fire_backtest(*, ea_id: int, ea_expert: str, symbol: str,
                    setfile: Path, terminal: str, run_tag: str,
-                   report_root: Path, timeout_sec: int = 900) -> tuple[float | None, float | None, int]:
+                   report_root: Path, timeout_sec: int = 900,
+                   period: str = "H1") -> tuple[float | None, float | None, int]:
     """One full-history backtest for a perturbation; returns (pf, dd_money, trades)."""
     repo_root = Path(__file__).resolve().parents[2]
     run_smoke_ps1 = repo_root / "framework" / "scripts" / "run_smoke.ps1"
@@ -202,7 +212,10 @@ def fire_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         "-FromDate", "2017.01.01",
         "-ToDate", "2025.12.31",
         "-Terminal", terminal,
-        "-Period", "H1",
+        # 2026-07-06 audit G6: was hardcoded "H1" — non-H1 EAs got their entire
+        # plateau evidence generated on the wrong chart timeframe (the exact
+        # class period_from_setfile was created for).
+        "-Period", period,
         "-DispatchSubGateHash", run_tag,
         "-DispatchPhase", "Q08.5",
         "-DispatchVersion", "q08_neighborhood",
@@ -217,7 +230,8 @@ def fire_backtest(*, ea_id: int, ea_expert: str, symbol: str,
     started_at = time.time()
     try:
         subprocess.run(args, capture_output=True, text=True,
-                       timeout=timeout_sec, creationflags=creationflags)
+                       timeout=timeout_sec + RUNNER_HEADROOM_SEC,
+                       creationflags=creationflags)
     except subprocess.TimeoutExpired:
         return None, None, 0
     sym_clean = symbol.replace(".", "_")
@@ -270,13 +284,15 @@ def main() -> int:
     out_dir = ensure_dir(args.report_root / f"QM5_{ea_id}" / "Q08" / "neighborhood" / sym_clean)
     setfile_dir = ensure_dir(out_dir / "setfiles")
 
+    period = period_from_setfile(args.baseline_setfile)
+
     # Baseline (nominal) backtest
-    print(f"Q08.5 {args.ea} {args.symbol}: baseline (no perturbation)...")
+    print(f"Q08.5 {args.ea} {args.symbol}: baseline (no perturbation, period={period})...")
     bl_pf, bl_dd, bl_trades = fire_backtest(
         ea_id=ea_id, ea_expert=ea_expert, symbol=args.symbol,
         setfile=args.baseline_setfile, terminal=args.terminal,
         run_tag="baseline", report_root=args.report_root,
-        timeout_sec=args.timeout_sec,
+        timeout_sec=args.timeout_sec, period=period,
     )
     print(f"  baseline -> PF={bl_pf}  DD={bl_dd}  trades={bl_trades}")
 
@@ -320,6 +336,7 @@ def main() -> int:
                 ea_id=ea_id, ea_expert=ea_expert, symbol=args.symbol,
                 setfile=setfile, terminal=args.terminal, run_tag=run_tag,
                 report_root=args.report_root, timeout_sec=args.timeout_sec,
+                period=period,
             )
             perturbations.append({
                 "param": param_name,

@@ -79,12 +79,18 @@ function Get-ReportMetricValue {
     # report.htm (QM5_10440 baseline 2026-06-05), not invented; "Symbol" is
     # identical in the German UI so it needs no alias.
     $germanAliases = @{
-        "Total Trades"     = "Gesamtanzahl Trades"
-        "Profit Factor"    = "Profitfaktor"
-        "Total Net Profit" = "Nettogewinn gesamt"
-        "Expert"           = "Expertenprogramm"
-        "Period"           = "Periode"
-        "Bars"             = "Balken"
+        "Total Trades"            = "Gesamtanzahl Trades"
+        "Profit Factor"           = "Profitfaktor"
+        "Total Net Profit"        = "Nettogewinn gesamt"
+        "Expert"                  = "Expertenprogramm"
+        "Period"                  = "Periode"
+        "Bars"                    = "Balken"
+        # 2026-07-06 audit G1: these two were missing from the alias map, so on
+        # German terminals the drawdown silently parsed as 0.0 — the DD ceiling
+        # never bound there. Verified against the same real German report
+        # (QM5_10440 baseline: "Rückgang Equity maximal", "Qualität der Historie").
+        "Equity Drawdown Maximal" = "Rückgang Equity maximal"
+        "History Quality"         = "Qualität der Historie"
     }
     $candidateLabels = @($Label)
     if ($germanAliases.ContainsKey($Label)) { $candidateLabels += $germanAliases[$Label] }
@@ -176,6 +182,18 @@ function Get-ReportInvalidReasons {
             if ($bars -le 0) { $reasons.Add("BARS_ZERO") }
         } catch {
             $reasons.Add("REPORT_METRIC_UNPARSEABLE:Bars")
+        }
+    }
+
+    # 2026-07-06 audit G13: graded metrics (Trades/PF/Drawdown/Net) previously
+    # had NO invalid marker — a drifted or unlocalized label produced a
+    # structurally "OK" run whose 0-defaults were then graded as strategy
+    # metrics (0 trades -> MIN_TRADES_NOT_MET, pf 0.0 -> pf_below_floor).
+    # A missing label on an otherwise-real report is parser drift, not a result.
+    foreach ($gradedLabel in @("Total Trades", "Profit Factor", "Equity Drawdown Maximal", "Total Net Profit")) {
+        $gradedValue = Get-ReportMetricValue -Html $Html -Label $gradedLabel -AllowMissing
+        if ($null -eq $gradedValue) {
+            $reasons.Add("REPORT_METRIC_MISSING:$($gradedLabel -replace '\s', '')")
         }
     }
 

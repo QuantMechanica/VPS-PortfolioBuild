@@ -80,8 +80,22 @@ def run(ea_id: int | None = None, symbol: str | None = None,
 
     baseline_dd = float(baseline.get("dd", 0) or 0)
     breaches: list[dict] = []
+    invalid_perturbs: list[dict] = []
 
     for p in perturbs:
+        # 2026-07-06 audit G5 (per-perturbation edition of the degenerate-
+        # baseline guard above): pf=None means that perturbation RUN failed
+        # (timeout, missing summary — the runner returns (None, None, 0)) —
+        # infra evidence, never a plateau breach. Coercing None->0.0 here
+        # hard-failed EAs on a single slow backtest (8.5 FAIL -> EDGE_HARD).
+        # NB: a PARSED pf with 0 trades stays in the breach logic — a
+        # perturbation that kills all trades is genuine parameter fragility.
+        if p.get("pf") is None:
+            invalid_perturbs.append({"param": p.get("param", "?"),
+                                     "delta": p.get("delta", "?"),
+                                     "pf": None,
+                                     "trades": p.get("trades")})
+            continue
         pf = float(p.get("pf", 0) or 0)
         dd = float(p.get("dd", 0) or 0)
         param = p.get("param", "?")
@@ -94,6 +108,16 @@ def run(ea_id: int | None = None, symbol: str | None = None,
             ratio = dd / baseline_dd
             breaches.append({"param": param, "delta": delta, "reason": "dd_ratio_exceeded",
                              "pf": pf, "dd": dd, "ratio": round(ratio, 3)})
+
+    if invalid_perturbs and not breaches:
+        # Untested neighborhood cells: without them the plateau claim is
+        # incomplete — INVALID (re-run), mirroring the vacuous-pass rule.
+        return make_result(
+            GATE_NAME, "INVALID",
+            value=len(invalid_perturbs), threshold=None,
+            detail=f"{len(invalid_perturbs)}_perturbation_runs_invalid",
+            evidence={"invalid_perturbations": invalid_perturbs[:8],
+                      "n_perturbations_tested": len(perturbs)})
 
     if breaches:
         return make_result(
