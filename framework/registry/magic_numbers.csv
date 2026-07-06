@@ -14421,3 +14421,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13021,ws30-h4-zone-fade,0,WS30.DWX,130210000,2026-07-06,Claude,active
 13020,audnzd-coint-reversion,0,AUDNZD.DWX,130200000,2026-07-06,Claude,active
 13018,xag-vol-compression-breakout,0,XAGUSD.DWX,130180000,2026-07-06,Claude,active
+13019,crisis-short-idx-breakout,0,GDAXI.DWX,130190000,2026-07-06,Claude,active
+13019,crisis-short-idx-breakout,1,WS30.DWX,130190001,2026-07-06,Claude,active

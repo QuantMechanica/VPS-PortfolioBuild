@@ -1,0 +1,32 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13018
+; ea_slug:      xag-vol-compression-breakout
+; ea_version:   v5.0
+; set_version:  s20260706-001
+; symbol:       XAGUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   8ff18823c4dddcc88b948f2ff9238afd3710da7ada0fc6007332a0d75089b704
+; author:       Development
+; date:         2026-07-06
+;==========================================================
+qm_ea_id=13018
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_13018_xag-vol-compression-breakout.md
+strategy_atr_compress_period=10
+strategy_compress_window_d1=120
+strategy_compress_pct=33.3
+strategy_donchian_entry=20
+strategy_donchian_trail=10
+strategy_atr_period=14
+strategy_atr_sl_mult=2.5
+strategy_max_hold_bars=40
+strategy_max_spread_points=200

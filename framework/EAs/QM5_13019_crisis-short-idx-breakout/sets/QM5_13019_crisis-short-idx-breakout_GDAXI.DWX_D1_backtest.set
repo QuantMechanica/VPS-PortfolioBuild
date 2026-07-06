@@ -1,0 +1,31 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13019
+; ea_slug:      crisis-short-idx-breakout
+; ea_version:   v5.0
+; set_version:  s20260706-001
+; symbol:       GDAXI.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   6559a5848dc1c93e40af7a9e54e0a7ec2c6ab164ae02b93b4f74d771a79c5603
+; author:       Development
+; date:         2026-07-06
+;==========================================================
+qm_ea_id=13019
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_13019_crisis-short-idx-breakout.md
+strategy_donchian_entry=40
+strategy_sma_regime=200
+strategy_atr_period=14
+strategy_vol_expansion_lag=20
+strategy_atr_sl_mult=3.0
+strategy_donchian_trail=15
+strategy_max_hold_bars=25
+strategy_max_spread_points=150
