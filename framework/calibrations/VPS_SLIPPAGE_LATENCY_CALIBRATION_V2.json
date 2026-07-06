@@ -390,6 +390,25 @@
       "stub_created_at": "2026-07-03T05:37:04+00:00",
       "stub_source": "farmctl_pump_p5_calibration_autostub"
     },
+    "USDCHF.DWX": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "D:\\QM\\reports\\work_items\\43cc22a1-9d8d-48b6-91e5-db3fb5b1bdf5\\QM5_11891\\Q04\\USDCHF.DWX\\aggregate.json",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-07-06T03:52:29+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
     "USDJPY.DWX": {
       "auto_stub": true,
       "commission_cents_per_lot": 700.0,
