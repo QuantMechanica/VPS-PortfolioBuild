@@ -12348,7 +12348,22 @@ def _write_csv_atomic(path: Path, fieldnames: list[str], rows: list[dict[str, An
         writer.writeheader()
         for row in rows:
             writer.writerow({key: row.get(key, "") for key in fieldnames})
-    tmp.replace(path)
+    # 2026-07-06: on Windows, os.replace fails with PermissionError while a
+    # concurrent reader (pump/dashboards) holds the CSV open without
+    # FILE_SHARE_DELETE — an intermittent race observed on ea_id_registry.csv.
+    # Retry briefly; clean the tmp up on final failure instead of orphaning it.
+    for attempt in range(5):
+        try:
+            tmp.replace(path)
+            return
+        except PermissionError:
+            if attempt == 4:
+                try:
+                    tmp.unlink()
+                except OSError:
+                    pass
+                raise
+            time.sleep(0.2 * (attempt + 1))
 
 
 def reserve_ea_ids(
