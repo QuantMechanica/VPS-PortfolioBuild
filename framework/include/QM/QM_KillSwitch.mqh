@@ -32,6 +32,13 @@ int    g_qm_ks_halt_day_key              = -1;
 int    g_qm_ks_day_key                   = -1;
 double g_qm_ks_day_start_equity          = 0.0;
 
+// E2/E3 (2026-07-06 audit): restart persistence + configurable day anchor.
+// Defaults preserve historical behavior (broker-midnight boundary, equity
+// anchor); the FTMO preset opts into the anchor options at challenge rebuild.
+int    g_qm_ks_day_anchor_offset_hours   = 0;
+bool   g_qm_ks_anchor_use_max_be         = false;
+string g_qm_ks_state_file                = "";
+
 CTrade g_qm_ks_trade;
 
 void QM_FrameworkTrackOpenPositionMae();
@@ -107,15 +114,109 @@ bool QM_KillSwitchTryParseDouble(string text, double &value)
    return true;
 }
 
+int QM_KillSwitchCurrentDayKey()
+{
+   return QM_KillSwitchDayKey(TimeCurrent() + g_qm_ks_day_anchor_offset_hours * 3600);
+}
+
+double QM_KillSwitchAnchorEquity()
+{
+   const double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   if(!g_qm_ks_anchor_use_max_be)
+      return equity;
+   // FTMO semantics: the daily-loss baseline is max(balance, equity) at reset.
+   return MathMax(equity, AccountInfoDouble(ACCOUNT_BALANCE));
+}
+
+// E2 fix (2026-07-06 audit): KS_DAILY_LOSS halt + day anchor lived only in
+// globals — any mid-day reload (recompile, terminal restart, watchdog reboot)
+// erased an active halt AND re-anchored the day at the already-depleted
+// equity, silently granting a second full daily-loss budget the same day.
+// State persists terminal-locally (each terminal is its own risk domain) and
+// is restored on init only when it belongs to the SAME halt-day. Tester runs
+// never persist or restore (evidence determinism). KS_MANUAL/KS_PORTFOLIO_DD
+// self-restore via their signal files; this file is what saves KS_DAILY_LOSS.
+void QM_KillSwitchSaveState()
+{
+   if(MQLInfoInteger(MQL_TESTER) != 0 || StringLen(g_qm_ks_state_file) == 0)
+      return;
+   int fh = FileOpen(g_qm_ks_state_file, FILE_WRITE | FILE_TXT | FILE_ANSI);
+   if(fh == INVALID_HANDLE)
+   {
+      QM_LogEvent(QM_WARN, "KS_STATE_SAVE_FAILED",
+                  StringFormat("{\"path\":\"%s\",\"error\":%d}",
+                               QM_LoggerEscapeJson(g_qm_ks_state_file), GetLastError()));
+      return;
+   }
+   FileWriteString(fh, StringFormat("day_key=%d\n", g_qm_ks_day_key));
+   FileWriteString(fh, StringFormat("day_start_equity=%.2f\n", g_qm_ks_day_start_equity));
+   FileWriteString(fh, StringFormat("halted=%d\n", g_qm_ks_halted ? 1 : 0));
+   FileWriteString(fh, StringFormat("halt_reason=%s\n", g_qm_ks_halt_reason));
+   FileWriteString(fh, StringFormat("halt_day_key=%d\n", g_qm_ks_halt_day_key));
+   FileWriteString(fh, StringFormat("magic=%I64d\n", g_qm_ks_magic));
+   FileClose(fh);
+}
+
+void QM_KillSwitchRestoreState()
+{
+   if(MQLInfoInteger(MQL_TESTER) != 0 || StringLen(g_qm_ks_state_file) == 0)
+      return;
+   int fh = FileOpen(g_qm_ks_state_file, FILE_READ | FILE_TXT | FILE_ANSI | FILE_SHARE_READ);
+   if(fh == INVALID_HANDLE)
+      return; // first run on this terminal — nothing to restore
+
+   int saved_day_key = -1, saved_halted = 0, saved_halt_day_key = -1;
+   double saved_anchor = 0.0;
+   long saved_magic = 0;
+   string saved_reason = "";
+   while(!FileIsEnding(fh))
+   {
+      const string line = QM_KillSwitchTrim(FileReadString(fh));
+      const int eq = StringFind(line, "=");
+      if(eq <= 0)
+         continue;
+      const string key = StringSubstr(line, 0, eq);
+      const string val = StringSubstr(line, eq + 1);
+      if(key == "day_key")               saved_day_key = (int)StringToInteger(val);
+      else if(key == "day_start_equity") saved_anchor = StringToDouble(val);
+      else if(key == "halted")           saved_halted = (int)StringToInteger(val);
+      else if(key == "halt_reason")      saved_reason = val;
+      else if(key == "halt_day_key")     saved_halt_day_key = (int)StringToInteger(val);
+      else if(key == "magic")            saved_magic = StringToInteger(val);
+   }
+   FileClose(fh);
+
+   if(saved_magic != g_qm_ks_magic || saved_day_key != g_qm_ks_day_key || saved_anchor <= 0.0)
+   {
+      QM_LogEvent(QM_INFO, "KS_STATE_STALE_IGNORED",
+                  StringFormat("{\"saved_day_key\":%d,\"current_day_key\":%d,\"saved_magic\":%I64d}",
+                               saved_day_key, g_qm_ks_day_key, saved_magic));
+      return;
+   }
+
+   g_qm_ks_day_start_equity = saved_anchor;
+   if(saved_halted == 1 && saved_halt_day_key == g_qm_ks_day_key)
+   {
+      g_qm_ks_halted = true;
+      g_qm_ks_halt_reason = saved_reason;
+      g_qm_ks_halt_day_key = saved_halt_day_key;
+      QM_LogEvent(QM_WARN, "KS_STATE_RESTORED_HALT",
+                  StringFormat("{\"halt_reason\":\"%s\",\"day_start_equity\":%.2f}",
+                               QM_LoggerEscapeJson(saved_reason), saved_anchor));
+   }
+   else
+      QM_LogEvent(QM_INFO, "KS_STATE_RESTORED_ANCHOR",
+                  StringFormat("{\"day_start_equity\":%.2f}", saved_anchor));
+}
+
 void QM_KillSwitchRefreshBrokerDay()
 {
-   const datetime now_broker = TimeCurrent();
-   const int current_day_key = QM_KillSwitchDayKey(now_broker);
+   const int current_day_key = QM_KillSwitchCurrentDayKey();
    if(g_qm_ks_day_key == current_day_key)
       return;
 
    g_qm_ks_day_key = current_day_key;
-   g_qm_ks_day_start_equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   g_qm_ks_day_start_equity = QM_KillSwitchAnchorEquity();
 
    if(g_qm_ks_halted && g_qm_ks_halt_day_key != current_day_key)
    {
@@ -125,6 +226,8 @@ void QM_KillSwitchRefreshBrokerDay()
                   "KILL_SWITCH_RESET_NEXT_BROKER_DAY",
                   StringFormat("{\"day_key\":%d,\"equity_start\":%.2f}", current_day_key, g_qm_ks_day_start_equity));
    }
+
+   QM_KillSwitchSaveState();
 }
 
 int QM_KillSwitchClosePositionsByMagic(const long magic)
@@ -191,6 +294,9 @@ void QM_KillSwitchTrip(const string reason, const string details_json)
    g_qm_ks_halt_reason = reason;
    g_qm_ks_halt_day_key = g_qm_ks_day_key;
 
+   // Persist BEFORE the close sweep: a crash mid-flatten must not lose the halt.
+   QM_KillSwitchSaveState();
+
    const int closed = QM_KillSwitchClosePositionsByMagic(g_qm_ks_magic);
    QM_LogFatal("KILL_SWITCH_TRIGGERED",
                StringFormat("{\"reason\":\"%s\",\"ea_id\":%d,\"magic\":%I64d,\"closed_positions\":%d,\"details\":%s}",
@@ -228,6 +334,9 @@ bool QM_KillSwitchInit(const int ea_id,
       g_qm_ks_manual_halt_file = StringFormat("QM\\halt\\%d.halt", ea_id);
    if(StringLen(g_qm_ks_portfolio_dd_signal_file) == 0 && ea_id > 0)
       g_qm_ks_portfolio_dd_signal_file = "QM\\halt\\portfolio_dd.signal";
+   g_qm_ks_state_file = (ea_id > 0)
+      ? StringFormat("QM\\halt\\ks_state_%d.state", ea_id)
+      : "";
 
    g_qm_ks_halted = false;
    g_qm_ks_halt_reason = "";
@@ -237,6 +346,8 @@ bool QM_KillSwitchInit(const int ea_id,
    g_qm_ks_unconfigured_logged = false;
    g_qm_ks_initialized = true;
    QM_KillSwitchRefreshBrokerDay();
+   // E2: same-day persisted anchor/halt wins over the fresh attach-time anchor.
+   QM_KillSwitchRestoreState();
 
    QM_LogEvent(QM_INFO,
                "KILL_SWITCH_INIT",
@@ -271,6 +382,32 @@ bool QM_KillSwitchSetBookTag(const string tag)
                StringFormat("{\"book_tag\":\"%s\",\"portfolio_dd_signal_file\":\"%s\"}",
                             QM_LoggerEscapeJson(t),
                             QM_LoggerEscapeJson(g_qm_ks_portfolio_dd_signal_file)));
+   return true;
+}
+
+// E3 (2026-07-06 audit): configurable halt-day anchor. offset_hours shifts the
+// day boundary relative to broker midnight (FTMO's daily loss resets at
+// midnight Prague CE(S)T = -1h/-2h vs a UTC+3 server); use_max_balance_equity
+// mirrors FTMO's baseline = max(balance, equity) at reset. Call AFTER
+// QM_KillSwitchInit (SetBookTag rollout pattern — the FTMO preset gains inputs
+// at the challenge rebuild; every existing EA keeps broker-midnight/equity).
+// Fail-safe: an already-active halt is never cleared by re-anchoring.
+bool QM_KillSwitchSetDayAnchor(const int offset_hours, const bool use_max_balance_equity)
+{
+   if(!g_qm_ks_initialized || offset_hours < -12 || offset_hours > 12)
+      return false;
+   g_qm_ks_day_anchor_offset_hours = offset_hours;
+   g_qm_ks_anchor_use_max_be = use_max_balance_equity;
+   g_qm_ks_day_key = QM_KillSwitchCurrentDayKey();
+   g_qm_ks_day_start_equity = QM_KillSwitchAnchorEquity();
+   QM_KillSwitchRestoreState();
+   QM_KillSwitchSaveState();
+   QM_LogEvent(QM_INFO, "KS_DAY_ANCHOR_SET",
+               StringFormat("{\"offset_hours\":%d,\"use_max_balance_equity\":%s,\"day_key\":%d,\"day_start_equity\":%.2f}",
+                            offset_hours,
+                            use_max_balance_equity ? "true" : "false",
+                            g_qm_ks_day_key,
+                            g_qm_ks_day_start_equity));
    return true;
 }
 
