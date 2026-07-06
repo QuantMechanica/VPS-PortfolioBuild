@@ -3,8 +3,44 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import re
 from pathlib import Path
 from typing import Any, Sequence
+
+# Basket EAs carry a logical composite work-item symbol (QM5_<id>_..., which can
+# never be a real MT5 symbol) but dump their q08 stream under the HOST symbol —
+# the Q09 edition of the 45ec67a7 host_symbol class (Q08's aggregate.py got the
+# fix on 2026-07-05; this module never did, so every basket died NEED_MORE_DATA
+# with trade_count=0 despite a full stream, e.g. 12778 AUDUSD~EURJPY).
+BASKET_SYMBOL_RE = re.compile(r"^QM5_\d+_", re.IGNORECASE)
+REPO_EAS = Path(r"C:\QM\repo\framework\EAs")
+HOST_SYMBOL_HEADER_RE = re.compile(r";\s*host_symbol\s*:\s*(\S+)", re.IGNORECASE)
+
+
+def _resolve_basket_stream_key(candidate, common_dir: Path):
+    """Return ((ea, host_symbol), note) for logical basket symbols, else (None, None).
+
+    Resolution order: '; host_symbol:' setfile header (authoritative, mirrors
+    q08_davey.aggregate._host_symbol_from_setfile) -> unique non-logical
+    <ea>_*.jsonl stream in common_dir. Ambiguity keeps the miss (explicit note)."""
+    ea, sym = candidate
+    if not BASKET_SYMBOL_RE.match(str(sym)):
+        return None, None
+    for sf in sorted(REPO_EAS.glob(f"QM5_{ea}_*/sets/*.set")):
+        try:
+            for line in sf.read_text(encoding="utf-8-sig").splitlines():
+                m = HOST_SYMBOL_HEADER_RE.match(line.strip())
+                if m:
+                    return (int(ea), m.group(1)), f"host_symbol_from_setfile:{sf.name}"
+        except (OSError, UnicodeDecodeError):
+            continue
+    logical_name = f"{ea}_{str(sym).replace('.', '_')}.jsonl"
+    others = [p for p in common_dir.glob(f"{ea}_*.jsonl") if p.name != logical_name]
+    if len(others) == 1:
+        sym_part = others[0].stem.split("_", 1)[1]
+        resolved = re.sub(r"_([A-Z0-9]+)$", r".\1", sym_part)
+        return (int(ea), resolved), f"unique_stream_fallback:{others[0].name}"
+    return None, f"basket_stream_ambiguous:{len(others)}_candidates"
 
 try:
     from . import portfolio_admission
@@ -70,8 +106,16 @@ def evaluate_q08_soft_rescue(
     lineage_payload: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     candidate = (int(candidate_key[0]), str(candidate_key[1]))
-    streams = load_streams(common_dir, candidates=[candidate])
-    trades = streams.get(candidate, [])
+    stream_key = candidate
+    stream_resolution = None
+    resolved, note = _resolve_basket_stream_key(candidate, Path(common_dir))
+    if resolved is not None:
+        stream_key = resolved
+        stream_resolution = note
+    elif note is not None:
+        stream_resolution = note
+    streams = load_streams(common_dir, candidates=[stream_key])
+    trades = streams.get(stream_key, [])
     trade_count = len(trades)
 
     q08_summary = _load_json(q08_summary_path)
@@ -85,6 +129,8 @@ def evaluate_q08_soft_rescue(
         "trade_count": trade_count,
         "q08_summary_path": str(q08_summary_path) if q08_summary_path else None,
         "q08_regime_catastrophe": regime_catastrophe,
+        "stream_key": key_label(stream_key),
+        "stream_resolution": stream_resolution,
         "monthly_returns": monthly_returns(trades),
         "equity_curve": equity_curve(trades),
     }
@@ -109,7 +155,7 @@ def evaluate_q08_soft_rescue(
     # sleeve that does NOT improve the book still FAILs at the admission check.
 
     book = read_candidates(candidates_db)
-    book = [key for key in book if key != candidate]
+    book = [key for key in book if key not in (candidate, stream_key)]
     try:
         admission_kwargs: dict[str, Any] = {
             "max_corr": max_corr,
@@ -118,7 +164,7 @@ def evaluate_q08_soft_rescue(
         if lineage_payload is not None:
             admission_kwargs["lineage_payload"] = lineage_payload
         admission = portfolio_admission.evaluate_candidate(
-            candidate,
+            stream_key,
             book,
             common_dir,
             **admission_kwargs,
