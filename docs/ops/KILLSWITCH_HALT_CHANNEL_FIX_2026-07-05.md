@@ -40,6 +40,13 @@ A working global `portfolio_dd.signal` would have halted BOTH live books
 ## Operational semantics after rollout (runbook delta)
 
 - Manual halt one EA in ONE terminal: drop `<terminal>\MQL5\Files\QM\halt\<ea_id>.halt`.
+  EXACT paths (review 27c36fb7 — the portable data root sits one level below
+  the vault convention; `C:\QM\mt5\T_Live\MQL5\...` is a DEAD location):
+  - T_Live: `C:\QM\mt5\T_Live\MT5_Base\MQL5\Files\QM\halt\<ea_id>.halt`
+  - machine-wide: `C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files\QM\halt\<ea_id>.halt`
+  Create the `QM\halt\` folder first if absent. Halt files are honored on the
+  next TICK of the chart symbol (throttled 1×/broker-second) — expect a delay
+  on quiet symbols, not instant action.
 - Manual halt one EA machine-wide: drop `Common\Files\QM\halt\<ea_id>.halt`
   (NB: EAs living in both books, e.g. 10440/10692, are halted in both).
 - Total-DD floor per book: operator/pulse writes
