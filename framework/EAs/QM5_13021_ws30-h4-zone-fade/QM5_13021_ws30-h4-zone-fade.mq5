@@ -1,41 +1,14 @@
 #property strict
 #property version   "5.0"
-#property description "QuantMechanica V5 EA skeleton template"
+#property description "QM5_13021 WS30 H4 Prior-Day Zone Fade (QM5-10094-GHH4ZONE-PORT-2026-07-06_WS30)"
+// Strategy Card: QM5-10094-GHH4ZONE-PORT-2026-07-06_WS30 (ws30-h4-zone-fade),
+// G0 APPROVED 2026-07-06. Port of the QM5_10094 gh-h4-zone family (graveyard
+// mining 2026-07-06) to WS30.DWX H4 with a vol-percentile instability filter.
 
 #include <QM/QM_Common.mqh>
 
-// =============================================================================
-// QuantMechanica V5 EA SKELETON
-// -----------------------------------------------------------------------------
-// Fill in only the five Strategy_* hooks below. Everything else is framework
-// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
-// risk + magic + news + Friday-close guard rails). The framework provides:
-//
-//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
-//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
-//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
-//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
-//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
-//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
-//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
-//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
-//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
-//
-// DO NOT
-//   - Write per-EA IsNewBar() — use QM_IsNewBar()
-//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
-//     use the QM_* readers above. The framework pools handles and releases them
-//     on shutdown.
-//   - CopyRates over warmup windows on every tick. If you genuinely need raw
-//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
-//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
-//     to magic_numbers.csv, run:
-//         python framework/scripts/update_magic_resolver.py
-//     This is idempotent and preserves all rows.
-// =============================================================================
-
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 9999;
+input int    qm_ea_id                   = 13021;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -73,11 +46,41 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-// TODO: declare strategy-specific input params here, e.g.:
-//   input int    strategy_atr_period   = 14;
-//   input double strategy_atr_sl_mult  = 2.0;
-//   input double strategy_atr_tp_mult  = 3.0;
-input int    strategy_placeholder       = 0;
+input int    strategy_atr_period_h4         = 14;   // Card Rules/Entry: ATR(period, H4) for both the vol filter and the hard stop.
+input double strategy_atr_sl_mult           = 2.0;  // Card Exit & Stops: hard SL = ATR * mult from entry.
+input double strategy_vol_pct_threshold     = 80.0; // Card Entry: skip when ATR is above this percentile.
+input int    strategy_vol_pct_window_h4     = 250;  // Card Entry: trailing H4-bar window for the percentile.
+input int    strategy_max_hold_bars_h4      = 12;   // Card Exit & Stops: time stop after N closed H4 bars.
+input int    strategy_max_spread_points     = 100;  // Card Entry/Risk: spread cap in points.
+
+// -----------------------------------------------------------------------------
+// Bespoke structural reads — no QM_* reader exists for raw OHLC (Framework
+// Corset: "Direct iOpen/iHigh/iLow/iClose ... use QM_* readers/signals or a
+// documented `// perf-allowed` exception only for bespoke structural logic").
+// Each call is a single closed-bar value: either behind the framework's own
+// QM_IsNewBar() gate (Strategy_EntrySignal only runs post-gate; see
+// EA_Skeleton OnTick wiring) or a one-shot per-position lookup in the exit
+// hook — never a per-tick loop.
+// -----------------------------------------------------------------------------
+
+bool ReadClosedValue(const string sym, const ENUM_TIMEFRAMES tf, const int shift,
+                     const int which, double &out_value) // which: 0=high 1=low 2=close
+  {
+   out_value = 0.0;
+   double buf[];
+   ArraySetAsSeries(buf, true);
+   int got = -1;
+   if(which == 0)
+      got = CopyHigh(sym, tf, shift, 1, buf);  // perf-allowed: single closed-bar zone/touch read
+   else if(which == 1)
+      got = CopyLow(sym, tf, shift, 1, buf);   // perf-allowed: single closed-bar zone/touch read
+   else
+      got = CopyClose(sym, tf, shift, 1, buf); // perf-allowed: single closed-bar zone/touch read
+   if(got != 1 || buf[0] <= 0.0)
+      return false;
+   out_value = buf[0];
+   return true;
+  }
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -87,7 +90,18 @@ input int    strategy_placeholder       = 0;
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
-   // TODO: e.g. "only trade London session" or "skip if ADX<20"
+   // Card Entry/Risk: "No entry if WS30.DWX spread exceeds
+   // strategy_max_spread_points." DWX invariant #1: never fail-closed on a
+   // zero-modeled spread — only block a genuinely wide one.
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask > 0.0 && bid > 0.0 && point > 0.0 && ask > bid)
+     {
+      const double spread_points = (ask - bid) / point;
+      if(spread_points > (double)strategy_max_spread_points)
+         return true;
+     }
    return false;
   }
 
@@ -96,11 +110,113 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   // TODO: build req.type / req.price / req.sl / req.tp / req.reason /
-   //       req.symbol_slot / req.expiration_seconds — set ALL fields (the
-   //       caller ZeroMemory's req; symbol_slot stays 0 for single-symbol
-   //       EAs). Lots are NOT part of QM_EntryRequest: sizing happens inside
-   //       QM_Entry via QM_LotsForRisk from req.sl.
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
+   if(strategy_atr_period_h4 <= 0 || strategy_atr_sl_mult <= 0.0 ||
+      strategy_vol_pct_window_h4 < 2 || strategy_max_hold_bars_h4 <= 0)
+      return false;
+
+   // Card Rules: no entry while a position is open for this magic (one
+   // position at a time).
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+   if(QM_TM_OpenPositionCount(magic) > 0)
+      return false;
+
+   // Card Mechanism: zones from the prior D1 session high/low.
+   double zone_high = 0.0;
+   double zone_low = 0.0;
+   if(!ReadClosedValue(_Symbol, PERIOD_D1, 1, 0, zone_high) ||
+      !ReadClosedValue(_Symbol, PERIOD_D1, 1, 1, zone_low))
+      return false; // card: skip entries when D1 history is unavailable
+   if(zone_high <= 0.0 || zone_low <= 0.0 || zone_high <= zone_low)
+      return false;
+
+   // Card Entry: the completed H4 bar's high/low/close.
+   double h1 = 0.0;
+   double l1 = 0.0;
+   double c1 = 0.0;
+   if(!ReadClosedValue(_Symbol, PERIOD_CURRENT, 1, 0, h1) ||
+      !ReadClosedValue(_Symbol, PERIOD_CURRENT, 1, 1, l1) ||
+      !ReadClosedValue(_Symbol, PERIOD_CURRENT, 1, 2, c1))
+      return false; // card: skip entries when H4 history is unavailable
+
+   // Card Entry: instability filter — skip when ATR(H4) sits above its
+   // trailing percentile. This loop runs O(window) once per closed H4 bar
+   // only, because Strategy_EntrySignal is invoked exclusively after the
+   // framework's own QM_IsNewBar() gate (EA_Skeleton OnTick); it must NOT be
+   // duplicated into Strategy_NoTradeFilter, which runs every tick and would
+   // turn this into a per-tick O(window) cost.
+   const double current_atr = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_atr_period_h4, 1);
+   if(current_atr <= 0.0)
+      return false; // card: skip entries when the ATR series is unavailable
+
+   double atr_samples[];
+   ArrayResize(atr_samples, strategy_vol_pct_window_h4);
+   int sample_count = 0;
+   for(int i = 0; i < strategy_vol_pct_window_h4; ++i)
+     {
+      const double v = QM_ATR(_Symbol, PERIOD_CURRENT, strategy_atr_period_h4, 1 + i);
+      if(v <= 0.0)
+         continue;
+      atr_samples[sample_count] = v;
+      sample_count++;
+     }
+   if(sample_count < strategy_vol_pct_window_h4)
+      return false; // card: skip entries when the percentile window is unavailable (warmup)
+
+   ArrayResize(atr_samples, sample_count);
+   ArraySort(atr_samples);
+   int rank_idx = (int)MathCeil((strategy_vol_pct_threshold / 100.0) * sample_count) - 1;
+   if(rank_idx < 0)
+      rank_idx = 0;
+   if(rank_idx >= sample_count)
+      rank_idx = sample_count - 1;
+   const double vol_threshold = atr_samples[rank_idx];
+   if(current_atr > vol_threshold)
+      return false; // card: high-vol regime — instability filter suppresses the entry
+
+   // Card Entry: Entry Short — upper-zone rejection (touch-and-reject close).
+   if(h1 >= zone_high && c1 < zone_high)
+     {
+      const double entry_price = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      if(entry_price <= 0.0)
+         return false;
+      const double sl = QM_StopATR(_Symbol, QM_SELL, entry_price, strategy_atr_period_h4, strategy_atr_sl_mult);
+      if(sl <= 0.0 || sl <= entry_price)
+         return false;
+
+      req.type = QM_SELL;
+      req.sl = sl;
+      req.tp = QM_StopRulesNormalizePrice(_Symbol, zone_low);
+      req.reason = "WS30_H4_ZONE_FADE_SHORT";
+      return true;
+     }
+
+   // Card Entry: Entry Long — lower-zone rejection (touch-and-reject close).
+   if(l1 <= zone_low && c1 > zone_low)
+     {
+      const double entry_price = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(entry_price <= 0.0)
+         return false;
+      const double sl = QM_StopATR(_Symbol, QM_BUY, entry_price, strategy_atr_period_h4, strategy_atr_sl_mult);
+      if(sl <= 0.0 || sl >= entry_price)
+         return false;
+
+      req.type = QM_BUY;
+      req.sl = sl;
+      req.tp = QM_StopRulesNormalizePrice(_Symbol, zone_high);
+      req.reason = "WS30_H4_ZONE_FADE_LONG";
+      return true;
+     }
+
    return false;
   }
 
@@ -108,22 +224,41 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 // Typical work: break-even shift, ATR trail, partial close at +1R, etc.
 void Strategy_ManageOpenPosition()
   {
-   // TODO: e.g.
-   //   const int magic = QM_FrameworkMagic();
-   //   for(int i = PositionsTotal() - 1; i >= 0; --i) {
-   //       const ulong ticket = PositionGetTicket(i);
-   //       if(!PositionSelectByTicket(ticket)) continue;
-   //       if(PositionGetInteger(POSITION_MAGIC) != magic) continue;
-   //       QM_TM_MoveToBreakEven(ticket, /*trigger_pips=*/30, /*buffer=*/2);
-   //       QM_TM_TrailATR(ticket, /*atr_period=*/14, /*atr_mult=*/2.0);
-   //   }
+   // Card Trade Management Rules: "No pyramiding, gridding, martingale,
+   // partial close, or trailing stop. Stop and target are fixed at entry;
+   // only the time stop can close earlier." No per-tick management needed.
   }
 
 // Return TRUE to close the open position now (e.g. opposite-signal exit,
 // max-hold-time exceeded, session end).
 bool Strategy_ExitSignal()
   {
-   // TODO: when to close manually (separate from SL/TP and trade management)
+   if(strategy_max_hold_bars_h4 <= 0)
+      return false;
+
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return false;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      // Card Exit & Stops: time stop after strategy_max_hold_bars_h4 closed
+      // H4 bars. perf-allowed: single iBarShift lookup per open position, no
+      // QM_TM_* time-stop helper exists.
+      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
+      const int open_shift = iBarShift(_Symbol, PERIOD_CURRENT, opened, false);
+      if(open_shift >= strategy_max_hold_bars_h4)
+         return true;
+     }
+
    return false;
   }
 
@@ -201,7 +336,7 @@ void OnTick()
             continue;
          if(PositionGetInteger(POSITION_MAGIC) != magic)
             continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+         QM_TM_ClosePosition(ticket, QM_EXIT_TIME_STOP);
         }
      }
 
