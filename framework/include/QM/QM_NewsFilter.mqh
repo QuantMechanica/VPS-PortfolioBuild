@@ -906,6 +906,70 @@ bool QM_NewsLiveTemporalAllows(const string symbol, const datetime server_time,
    return !QM_NewsLiveInWindow(symbol, server_time, before, after, out_ok);
   }
 
+// Live compliance-axis verdict (native-calendar mirror of QM_NewsInFirmWindow).
+// E4 fix (2026-07-06 audit): the live branch previously evaluated ONLY the
+// temporal axis — FTMO/5ers firm windows were enforced in the tester CSV path
+// and silently dropped live, so gate evidence was compliance-gated while live
+// trading was not. Mirrors the tester exactly (incl. the min-impact pre-filter)
+// for backtest/live parity; per-impact windows come from news_rules tables.
+bool QM_NewsLiveComplianceAllows(const string symbol, const datetime server_time,
+                                 const QM_NewsComplianceProfile compliance, bool &out_ok)
+  {
+   out_ok = true;
+   if(compliance == QM_NEWS_COMPLIANCE_NONE || compliance == QM_NEWS_COMPLIANCE_DXZ)
+      return true;
+
+   // Widest firm window is minutes-scale; ±60min bounds every table safely.
+   MqlCalendarValue values[];
+   const datetime from = server_time - 3600;
+   const datetime to   = server_time + 3600;
+   const int n = CalendarValueHistory(values, from, to);
+   if(n <= 0)
+     {
+      if(!QM_NewsLiveCalendarHealthy())
+         out_ok = false;             // data missing → caller fails closed
+      return true;                   // healthy calendar, no events near now
+     }
+   for(int i = 0; i < n; i++)
+     {
+      MqlCalendarEvent ev;
+      if(!CalendarEventById(values[i].event_id, ev))
+         continue;
+      string imp = "LOW";
+      if(ev.importance == CALENDAR_IMPORTANCE_HIGH)
+         imp = "HIGH";
+      else if(ev.importance == CALENDAR_IMPORTANCE_MODERATE)
+         imp = "MEDIUM";
+      if(!QM_NewsImpactMeetsMinimum(imp, g_qm_news_min_impact_upper))
+         continue;
+      MqlCalendarCountry country;
+      if(!CalendarCountryById(ev.country_id, country))
+         continue;
+      if(!QM_NewsEventAffectsSymbol(country.currency, symbol))
+         continue;
+
+      int before = 0;
+      int after  = 0;
+      if(compliance == QM_NEWS_COMPLIANCE_FTMO)
+        {
+         before = QM_NewsFTMOBeforeMinutes(imp);
+         after  = QM_NewsFTMOAfterMinutes(imp);
+        }
+      else if(compliance == QM_NEWS_COMPLIANCE_5ERS)
+        {
+         before = QM_News5ersBeforeMinutes(imp);
+         after  = QM_News5ersAfterMinutes(imp);
+        }
+      if(before <= 0 && after <= 0)
+         continue;
+
+      if(server_time >= values[i].time - (before * 60) &&
+         server_time <= values[i].time + (after * 60))
+         return false;               // inside a firm blackout window
+     }
+   return true;
+  }
+
 // FW1 canonical query — two-axis composed via AND.
 //
 // FW7 2026-05-23 — fast-path + per-bar cache.
@@ -939,9 +1003,13 @@ bool QM_NewsAllowsTrade2(const string symbol,
       QM_NewsLiveSelfTest(symbol); // one-time diagnostic for attach-time verification
       const datetime srv = (broker_time > 0 ? broker_time : TimeTradeServer());
       bool ok = true;
+      bool ok_comp = true;
       const bool allows = QM_NewsLiveTemporalAllows(symbol, srv, temporal, ok);
-      bool verdict_live = allows;
-      if(!ok)
+      // E4 (2026-07-06 audit): compliance axis now enforced live too — the
+      // tester branch below has always ANDed both axes; live must match.
+      const bool comp_allows = QM_NewsLiveComplianceAllows(symbol, srv, compliance, ok_comp);
+      bool verdict_live = (allows && comp_allows);
+      if(!ok || !ok_comp)
         {
          QM_NewsLogSetupMissing("live_calendar_unavailable");
          verdict_live = false; // fail-closed: never trade blind through live news

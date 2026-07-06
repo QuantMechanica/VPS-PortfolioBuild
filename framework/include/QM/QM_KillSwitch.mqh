@@ -244,6 +244,9 @@ int QM_KillSwitchClosePositionsByMagic(const long magic)
       if(magic > 0 && pos_magic != magic)
          continue;
 
+      // F3/F14 (2026-07-06 audit): resolve filling per symbol — the single most
+      // safety-critical close path must not die on TRADE_RETCODE_INVALID_FILL.
+      g_qm_ks_trade.SetTypeFillingBySymbol(PositionGetString(POSITION_SYMBOL));
       if(g_qm_ks_trade.PositionClose(ticket))
       {
          ++closed;

@@ -12,6 +12,22 @@ int  g_qm_trade_block_day_key = -1;
 // requests must NEVER be latched — they need no margin, and blocking
 // risk-reducing requests turns a fail-stop into a fail-open (positions the EA
 // can no longer close). 2026-07-06 audit finding F1/D2.
+// F3 (2026-07-06 audit): resolve the symbol's allowed filling mode instead of
+// defaulting to FOK (ZeroMemory'd requests carry type_filling=0=FOK). The
+// tester accepts any filling mode; a live broker/symbol without FOK returns
+// TRADE_RETCODE_INVALID_FILL — a tester-invisible, broker-fragile divergence
+// that previously covered every path except QM_Exit. Darwinex and FTMO differ
+// per-symbol; resolve per request.
+ENUM_ORDER_TYPE_FILLING QM_TradeContextResolveFilling(const string symbol)
+{
+   const long fill_flags = SymbolInfoInteger(symbol, SYMBOL_FILLING_MODE);
+   if((fill_flags & SYMBOL_FILLING_FOK) != 0)
+      return ORDER_FILLING_FOK;
+   if((fill_flags & SYMBOL_FILLING_IOC) != 0)
+      return ORDER_FILLING_IOC;
+   return ORDER_FILLING_RETURN;
+}
+
 bool QM_TradeContextOpensExposure(const MqlTradeRequest &request)
 {
    if(request.action == TRADE_ACTION_SLTP ||

@@ -127,6 +127,7 @@ bool QM_TM_CloseByVolume(const ulong ticket,
    request.type = is_buy_position ? ORDER_TYPE_SELL : ORDER_TYPE_BUY;
    request.price = QM_TM_NormalizePrice(symbol, close_price);
    request.deviation = QM_TM_DEFAULT_DEVIATION_POINTS;
+   request.type_filling = QM_TradeContextResolveFilling(symbol);
    request.comment = partial ? "qm_tm_partial_close" : "qm_tm_close";
 
    MqlTradeResult result;
