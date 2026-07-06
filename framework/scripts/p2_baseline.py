@@ -277,6 +277,24 @@ def derive_verdict(summary: dict, min_trades: int) -> tuple[str, str, str]:
 
     if summary.get("result") != "PASS":
         reasons = summary.get("reason_classes") or ["UNKNOWN"]
+        # G10 (2026-07-06 audit): mirror farmctl._derive_verdict_from_summary's
+        # infra taxonomy — this runner previously graded cold-cache/report
+        # infra classes as strategy FAIL while farmctl classified the same
+        # summary INFRA_FAIL (two Q02 graders, opposite verdicts). Keep the
+        # marker set in sync with farmctl (the source of truth).
+        infra_reasons = {
+            "NO_HISTORY",
+            "NO_HISTORY_LOG",
+            "NO_REAL_TICKS",
+            "REPORT_MISSING",
+            "REPORT_PARSE_ERROR",
+            "INVALID_REPORT",
+            "INCOMPLETE_RUNS",
+            "HISTORY_CONTEXT_INVALID",
+            "TIMEOUT",
+        }
+        if any(str(r).upper() in infra_reasons for r in reasons):
+            return "INVALID", "run_smoke_fail:" + ";".join(reasons), report_dir
         return "FAIL", "run_smoke_fail:" + ";".join(reasons), report_dir
 
     # DL-054 G1: model 4 real-ticks log marker is mandatory; INVALID beats all gates.
@@ -573,8 +591,10 @@ def run_one_symbol(ea_id: int, ea_dir: Path, ea_label: str, symbol: str, year: i
 
         summary = parse_summary(summary_path)
         verdict, reason, evidence = derive_verdict(summary, min_trades)
-        transient_fault = any(flag in (reason or "") for flag in ("REPORT_MISSING", "METATESTER_HUNG", "INCOMPLETE_RUNS"))
-        if verdict == "FAIL" and transient_fault and attempt < max_attempts:
+        # G10: NO_HISTORY added — 96% of cold-cache faults self-heal on the
+        # immediate retry (2026-06-20 root cause), saving a full requeue cycle.
+        transient_fault = any(flag in (reason or "") for flag in ("REPORT_MISSING", "METATESTER_HUNG", "INCOMPLETE_RUNS", "NO_HISTORY"))
+        if verdict in ("FAIL", "INVALID") and transient_fault and attempt < max_attempts:
             safe_print(f"[RETRY] {symbol} ({terminal}) {elapsed:.0f}s reason={reason} -> retrying once")
             attempt += 1
             time.sleep(2)

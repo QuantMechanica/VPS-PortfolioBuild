@@ -14,6 +14,7 @@ distribution for the Q13 KS-test kill-switch.
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import subprocess
 import sys
@@ -104,6 +105,18 @@ def run_confirmation(*, ea_id: int, ea_expert: str, symbol: str,
         timed_out = True
     sym_clean = symbol.replace(".", "_")
     summary = find_latest_summary(report_root)
+    # G11 (2026-07-06 audit, sibling of the G3 fix): newest-mtime adoption from
+    # a shared report root can pick up a FOREIGN EA's summary under a
+    # saturated factory (ad-hoc/manual runs use the shared default root).
+    # Never adopt a summary whose identity doesn't match this run.
+    if summary is not None:
+        try:
+            sj = json.loads(summary.read_text(encoding="utf-8-sig"))
+            if (str(sj.get("symbol") or "").upper() != symbol.upper()
+                    or int(sj.get("ea_id") or 0) != int(ea_id)):
+                summary = None
+        except (OSError, json.JSONDecodeError, ValueError):
+            summary = None
     pf, dd_money, trades = _parse_pf_dd_trades(summary) if summary else (None, None, 0)
     dd_pct = (dd_money / STARTING_EQUITY * 100.0) if dd_money is not None else None
 

@@ -240,7 +240,12 @@ def main() -> int:
             for slice_id, slice_start, slice_end in slices:
                 pf = _slice_pf(trades, slice_start, slice_end)
                 if pf is None:
-                    pf = 0.0
+                    # G14 (2026-07-06 audit): empty slices are frequent for the
+                    # low-frequency edges this funnel selects; scoring them as
+                    # catastrophic 0.0 distorted IS/OOS ranks and biased PBO.
+                    # Omit the cell — pbo_calculator's common-slice
+                    # intersection handles missing cells honestly.
+                    continue
                 # CSCV PF in [-inf, +inf]; cap inf for numerical sanity
                 if pf == float("inf"):
                     pf = 99.0

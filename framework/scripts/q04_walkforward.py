@@ -650,6 +650,12 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
         comm_total = None
         gross_total = None
         oos_nets = []
+    # G8 (2026-07-06 audit): both net-evidence channels lost (Common stream +
+    # EA self-report) while the report proves the fold ran AND traded — that
+    # is infra (volatile-dir churn), not a strategy result. INVALID → re-run,
+    # never FAIL.
+    if not invalid_reason and pf_net is None and (report_trades or 0) > 0:
+        invalid_reason = "stream_and_selfreport_missing"
     status = "INVALID" if invalid_reason else ("OK" if (pf_net is not None and proc.returncode == 0) else "FAIL")
     return {
         **fold,

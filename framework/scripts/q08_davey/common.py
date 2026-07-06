@@ -98,6 +98,13 @@ def load_trades_from_mt5_report(report_path: Path) -> list[dict]:
     text = raw.decode(encoding, errors="ignore")
     match = re.search(r"<b>\s*Deals\s*</b>", text, flags=re.IGNORECASE)
     if not match:
+        # G17 (2026-07-06): German-locale terminals title the deals table
+        # "Trades" (verified on a real T2/T6 report, QM5_10440); English
+        # reports have no standalone bold "Trades" section, so the fallback
+        # is unambiguous. Without it the report-fallback path returned "no
+        # trades" — evidence — on every German report.
+        match = re.search(r"<b>\s*Trades\s*</b>", text, flags=re.IGNORECASE)
+    if not match:
         return []
     section = text[match.start():]
     trades: list[dict] = []
