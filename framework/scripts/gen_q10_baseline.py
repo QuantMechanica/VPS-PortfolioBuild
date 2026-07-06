@@ -115,6 +115,17 @@ def write_baseline(ea_id: int, symbol: str, profits: list[float]) -> Path:
     sym_clean = symbol.replace(".", "_")
     out_path = BASELINE_DIR / f"QM5_{ea_id}_{sym_clean}.json"
 
+    # Review 27c36fb7 flow 5 (2026-07-06): a live EA calls QM_KillSwitchKSInit
+    # with the BROKER chart symbol (e.g. 'NDX'), while Q10 evidence is .DWX-
+    # keyed ('NDX_DWX') — without an alias no live EA would ever find its
+    # baseline and the KS distribution path would stay silently dormant on
+    # live books. Emit a suffix-stripped alias alongside the canonical file.
+    alias_path = None
+    if sym_clean.upper().endswith("_DWX"):
+        alias_clean = sym_clean[: -len("_DWX")]
+        if alias_clean:
+            alias_path = BASELINE_DIR / f"QM5_{ea_id}_{alias_clean}.json"
+
     payload = {
         "ea_id": ea_id,
         "symbol": symbol,
@@ -127,6 +138,8 @@ def write_baseline(ea_id: int, symbol: str, profits: list[float]) -> Path:
         "hash": h,
     }
     out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    if alias_path is not None:
+        alias_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return out_path
 
 
