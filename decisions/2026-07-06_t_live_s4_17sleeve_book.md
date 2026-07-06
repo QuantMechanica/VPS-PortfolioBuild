@@ -1,7 +1,14 @@
 # T_Live decision — S4: 15 → 17 sleeves (first probation admits)
 
-**Status: PACKAGE READY — awaiting OWNER manifest approval. Nothing touched on
-T_Live yet (staging only).**
+**Status: DEFERRED BY OWNER (2026-07-06 chat) — candidate collection through
+end of week, then ONE combined session admitting the week's harvest to BOTH
+books (DXZ + FTMO).** Package stays staged and valid (frozen streams); weights
+will be RECOMPUTED over the final candidate set before the session (the compute
+script re-runs in minutes — do not reuse these S4 weights if the set grows).
+Collected so far: 10706/GBPUSD (Q09 PASS), 11708/EURUSD (Q09 PASS),
+12778/AUDUSD~EURJPY pairs basket (PASS pending official re-run post
+f8e79266b fix). FTMO side: same candidates feed a Round26 recomposition via the
+report.htm chain once ≥3 new validated reports exist.
 
 ## Decision basis
 
