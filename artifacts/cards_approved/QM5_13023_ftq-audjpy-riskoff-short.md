@@ -140,6 +140,16 @@ the book's long-risk sleeves suffer.
 - Time stop: close after `strategy_max_hold_bars` D1 bars (default 40).
 - Friday close remains enabled by the V5 framework.
 
+## Validation Note (smoke window — REQUIRED for the builder)
+
+This is a REGIME-GATED episodic EA: it is deliberately SILENT outside
+risk-off regimes. A calm-year smoke window (e.g. 2024) yields zero trades BY
+DESIGN and must not be read as a build defect (q01_trade_generation false
+positive). **Smoke/validation runs MUST use 2022** (canonical bear-regime
+year: equity index below SMA200 for most of the year, risk-off alignment) —
+FromDate 2022.01.01, ToDate 2022.12.31. Q02+ gates run full history and are
+unaffected. Expected smoke behavior in 2022: multiple entries.
+
 ## Risk & Filters
 
 - Only trade AUDJPY.DWX on D1 with the registered magic slot.
