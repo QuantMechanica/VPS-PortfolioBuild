@@ -118,6 +118,7 @@ QM_NewsTemporalMode          g_qm_news_cache_temporal   = QM_NEWS_TEMPORAL_OFF;
 QM_NewsComplianceProfile     g_qm_news_cache_compliance = QM_NEWS_COMPLIANCE_NONE;
 bool                         g_qm_news_cache_verdict    = true;
 bool                         g_qm_news_cache_valid      = false;
+datetime                     g_qm_news_cache_wall_utc   = 0; // E10: live TTL basis
 int           g_qm_news_rows_loaded                  = 0;
 string        g_qm_news_hash                         = "";
 datetime      g_qm_news_latest_modified_utc          = 0;
@@ -900,7 +901,20 @@ bool QM_NewsLiveTemporalAllows(const string symbol, const datetime server_time,
       case QM_NEWS_TEMPORAL_PRE30_POST30:  before = 30;      after = 30;      break;
       case QM_NEWS_TEMPORAL_PRE60_POST60:  before = 60;      after = 60;      break;
       case QM_NEWS_TEMPORAL_CLOSE_ALL_PRE: before = 30;      after = 0;       break;
-      case QM_NEWS_TEMPORAL_SKIP_DAY:      before = 24 * 60; after = 24 * 60; break;
+      case QM_NEWS_TEMPORAL_SKIP_DAY:
+        {
+         // E5 (2026-07-06 audit): the tester blocks the UTC calendar DAY of a
+         // qualifying event (QM_NewsDayHasEvent); the previous ±24h rolling
+         // window here blocked live EAs up to twice as long (a Tue 14:30
+         // event blocked Mon 14:30 → Wed 14:30) — live traded a different
+         // strategy than the evidence. Window = the CURRENT UTC day expressed
+         // as elapsed/remaining minutes around now (minute skew immaterial).
+         const datetime now_utc = TimeGMT();
+         const int elapsed_min = (int)((now_utc % 86400) / 60);
+         after  = elapsed_min;
+         before = 24 * 60 - elapsed_min;
+         break;
+        }
       default:                             before = 30;      after = 30;      break;
      }
    return !QM_NewsLiveInWindow(symbol, server_time, before, after, out_ok);
@@ -987,13 +1001,18 @@ bool QM_NewsAllowsTrade2(const string symbol,
       return true;
 
    // Cache lookup. Bar-time is the current chart bar's open time; one verdict
-   // per bar is sufficient because all permission edges happen on bar close.
+   // per bar is sufficient IN THE TESTER (deterministic CSV, bar-close edges).
+   // E10 (2026-07-06 audit): LIVE verdicts additionally expire after 60s — a
+   // D1/H4 chart otherwise samples 5-minute firm windows once per bar and
+   // caches a transient fail-closed calendar hiccup for up to a full day.
    const datetime bar_time = iTime(symbol, _Period, 0);
    if(g_qm_news_cache_valid &&
       g_qm_news_cache_bar_time == bar_time &&
       g_qm_news_cache_symbol == symbol &&
       g_qm_news_cache_temporal == temporal &&
-      g_qm_news_cache_compliance == compliance)
+      g_qm_news_cache_compliance == compliance &&
+      (MQLInfoInteger(MQL_TESTER) != 0 ||
+       (TimeGMT() - g_qm_news_cache_wall_utc) < 60))
       return g_qm_news_cache_verdict;
 
    // FW-LIVE: real-time trading uses the native MT5 calendar. The CSV path below
@@ -1020,6 +1039,7 @@ bool QM_NewsAllowsTrade2(const string symbol,
       g_qm_news_cache_compliance = compliance;
       g_qm_news_cache_verdict    = verdict_live;
       g_qm_news_cache_valid      = true;
+      g_qm_news_cache_wall_utc   = TimeGMT(); // E10: 60s live TTL
       return verdict_live;
      }
 
