@@ -512,6 +512,16 @@ bool QM_NewsInit(const string base_dir = "D:\\QM\\data\\news_calendar",
 
    g_qm_news_rows_loaded = rows_primary + rows_secondary;
 
+   // 2026-07-06 audit (D5): a calendar whose every row fails to parse (format
+   // drift, truncation) previously passed init with 0 events — the EA then
+   // traded "news-filtered" evidence with no filter at all. Zero parsed rows
+   // is always a broken calendar, never a valid state for active news axes.
+   if(g_qm_news_rows_loaded <= 0)
+     {
+      QM_NewsLogSetupMissing("calendar_zero_rows_parsed");
+      return false;
+     }
+
    string primary_hash = "";
    string secondary_hash = "";
    if(!QM_NewsHashBytes(bytes_primary, primary_hash) || !QM_NewsHashBytes(bytes_secondary, secondary_hash))

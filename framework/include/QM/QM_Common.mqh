@@ -172,9 +172,10 @@ bool QM_FrameworkInit(const int ea_id,
    QM_KillSwitchInit(ea_id, g_qm_fw_magic, 3.0, 0.0, 1.0);
 
    // FW4 2026-05-23 — KS-test kill-switch (Q13 burn-in safety).
-   // Loads baseline at `D:/QM/data/baselines/QM5_<ea>_<sym>.json` if present;
-   // otherwise stays dormant (pre-Q13 EAs have no baseline file). Live trade
-   // window starts empty and fills as OnTradeTransaction delivers closed deals.
+   // Loads baseline at `QM\baselines\QM5_<ea>_<sym>.json` (sandbox: terminal
+   // MQL5\Files, then Common\Files) if present; otherwise stays dormant
+   // (pre-Q13 EAs have no baseline file). Live trade window starts empty and
+   // fills as OnTradeTransaction delivers closed deals.
    QM_KillSwitchKSInit(ea_id, _Symbol);
    g_qm_fw_friday_close_enabled = friday_close_enabled;
    g_qm_fw_friday_close_hour_broker = MathMin(23, MathMax(0, friday_close_hour_broker));
@@ -703,6 +704,10 @@ void QM_FrameworkShutdown()
          FileWriteString(q04_fh, payload);
          FileClose(q04_fh);
         }
+      else
+         QM_LogEvent(QM_WARN, "Q04_RESULT_WRITE_FAILED",
+                     StringFormat("{\"path\":\"%s\",\"error\":%d}",
+                                  QM_LoggerEscapeJson(q04_path), GetLastError()));
      }
    // Q08 per-trade stream: dump the accumulated TRADE_CLOSED lines to a deterministic
    // Common\Files path so the Davey aggregator can read real per-trade P&L (the tester
@@ -719,6 +724,10 @@ void QM_FrameworkShutdown()
          FileWriteString(q08_fh, g_qm_q08_trade_log);
          FileClose(q08_fh);
         }
+      else
+         QM_LogEvent(QM_WARN, "Q08_STREAM_WRITE_FAILED",
+                     StringFormat("{\"path\":\"%s\",\"error\":%d}",
+                                  QM_LoggerEscapeJson(q08_path), GetLastError()));
      }
    ArrayResize(g_qm_q08_mae_states, 0);
    if(g_qm_fw_initialized)

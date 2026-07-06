@@ -5,6 +5,23 @@
 #include "QM_Logger.mqh"
 
 bool g_qm_trade_block_not_enough_money = false;
+int  g_qm_trade_block_day_key = -1;
+
+// Entry-class requests open NEW exposure: deals without a position ticket, or
+// pending placements. Closes, SL/TP modifies, pending removals and close-by
+// requests must NEVER be latched — they need no margin, and blocking
+// risk-reducing requests turns a fail-stop into a fail-open (positions the EA
+// can no longer close). 2026-07-06 audit finding F1/D2.
+bool QM_TradeContextOpensExposure(const MqlTradeRequest &request)
+{
+   if(request.action == TRADE_ACTION_SLTP ||
+      request.action == TRADE_ACTION_REMOVE ||
+      request.action == TRADE_ACTION_CLOSE_BY)
+      return false;
+   if(request.action == TRADE_ACTION_DEAL && request.position > 0)
+      return false;
+   return true;
+}
 
 string QM_TradeContextRetcodeClass(const uint retcode)
 {
@@ -41,7 +58,25 @@ bool QM_TradeContextSend(const MqlTradeRequest &request, MqlTradeResult &result,
 
    if(g_qm_trade_block_not_enough_money)
    {
+      // The latch re-arms each broker day: margin conditions change as
+      // positions close and equity moves; a permanent latch silences the EA
+      // for the rest of the session. If NO_MONEY persists, the next rejected
+      // entry re-sets it immediately.
+      MqlDateTime block_dt;
+      TimeToStruct(TimeCurrent(), block_dt);
+      const int block_day_key = block_dt.year * 1000 + block_dt.day_of_year;
+      if(block_day_key != g_qm_trade_block_day_key)
+         g_qm_trade_block_not_enough_money = false;
+   }
+
+   if(g_qm_trade_block_not_enough_money && QM_TradeContextOpensExposure(request))
+   {
       out_error_class = BROKER_NOT_ENOUGH_MONEY;
+      QM_LogEvent(QM_WARN, BROKER_NOT_ENOUGH_MONEY,
+                  StringFormat("{\"latched\":true,\"symbol\":\"%s\",\"action\":%d,\"magic\":%I64d}",
+                               QM_LoggerEscapeJson(request.symbol),
+                               (int)request.action,
+                               request.magic));
       return false;
    }
 
@@ -89,6 +124,9 @@ bool QM_TradeContextSend(const MqlTradeRequest &request, MqlTradeResult &result,
    if(out_error_class == BROKER_NOT_ENOUGH_MONEY)
    {
       g_qm_trade_block_not_enough_money = true;
+      MqlDateTime latch_dt;
+      TimeToStruct(TimeCurrent(), latch_dt);
+      g_qm_trade_block_day_key = latch_dt.year * 1000 + latch_dt.day_of_year;
       QM_LogFatal(BROKER_NOT_ENOUGH_MONEY, payload);
    }
    else if(out_error_class == BROKER_TRADE_DISABLED || out_error_class == BROKER_INVALID_VOLUME)

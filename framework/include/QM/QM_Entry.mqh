@@ -19,6 +19,22 @@ struct QM_EntryRequest
    string        reason;
    int           symbol_slot;
    int           expiration_seconds;
+
+   // Default-init (2026-07-06 audit, class fix for the silent-zero-trades
+   // incident 9e4cfedb1): MQL5 does NOT zero local structs — call sites that
+   // skip a field otherwise send stack garbage into magic resolution
+   // (symbol_slot) or order expiry. symbol_slot=0 is the host slot, the
+   // correct default for every single-symbol EA.
+   QM_EntryRequest()
+   {
+      type               = QM_BUY;
+      price              = 0.0;
+      sl                 = 0.0;
+      tp                 = 0.0;
+      reason             = "";
+      symbol_slot        = 0;
+      expiration_seconds = 0;
+   }
 };
 
 enum QM_EntryResult

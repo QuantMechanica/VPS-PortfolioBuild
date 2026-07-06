@@ -60,9 +60,12 @@ string QM_EquityStreamATRRegime()
    if(atr_now[0] <= 0.0)
       return "unknown";
 
-   // 100-day baseline median for atr_today/baseline ratio
+   // 100-day baseline median for atr_today/baseline ratio. A PARTIAL copy
+   // must be rejected: local fixed arrays are not zero-initialized in MQL5,
+   // so sorting a partially-filled buffer mixes stack garbage into the
+   // median (2026-07-06 audit, found independently by 4 lanes).
    double atr_hist[100];
-   if(CopyBuffer(g_qm_eqstream_atr_handle, 0, 2, 100, atr_hist) <= 0)
+   if(CopyBuffer(g_qm_eqstream_atr_handle, 0, 2, 100, atr_hist) != 100)
       return "unknown";
 
    // simple selection-sort partial for median (cheap; 100 is small)

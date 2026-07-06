@@ -10,7 +10,9 @@
 // Three independent kill paths:
 // - KS_DAILY_LOSS: day PnL breach versus broker-day starting equity
 // - KS_PORTFOLIO_DD: external signal file from monitor
-// - KS_MANUAL: manual halt file D:\QM\data\halt\<ea_id>.halt
+// - KS_MANUAL: manual halt file QM\halt\<ea_id>.halt (MQL5 sandbox:
+//   terminal MQL5\Files first, then Common\Files — see the H2 fix note in
+//   QM_KillSwitchInit; drive-letter paths are invalid in the file sandbox)
 
 int    g_qm_ks_ea_id                     = 0;
 long   g_qm_ks_magic                     = 0;

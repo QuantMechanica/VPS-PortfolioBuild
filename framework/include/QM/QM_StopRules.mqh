@@ -2,6 +2,7 @@
 #define QM_STOPRULES_MQH
 
 #include "QM_OrderTypes.mqh"
+#include "QM_Indicators.mqh"
 
 double QM_StopRulesNormalizePrice(const string symbol, const double price)
   {
@@ -58,19 +59,16 @@ bool QM_StopRulesReadATRValue(const string symbol,
    if(atr_period_value <= 0 || shift < 0)
       return false;
 
-   int handle = iATR(symbol, PERIOD_CURRENT, atr_period_value);
-   if(handle == INVALID_HANDLE)
+   // 2026-07-06 audit (fleet fix for the "1 trade then permanent silence"
+   // class, ops record 2026-07-05): the previous raw iATR/CopyBuffer/
+   // IndicatorRelease-per-call here never back-calculates in the tester after
+   // the first read, and the release can collide with an EA's pooled handle
+   // of the same spec. All reads now go through the QM_Indicators pool.
+   const double value = QM_ATR(symbol, PERIOD_CURRENT, atr_period_value, shift);
+   if(value <= 0.0)
       return false;
 
-   double values[];
-   ArraySetAsSeries(values, true);
-   int copied = CopyBuffer(handle, 0, shift, 1, values);
-   IndicatorRelease(handle);
-
-   if(copied != 1 || values[0] <= 0.0)
-      return false;
-
-   out_atr = values[0];
+   out_atr = value;
    return true;
   }
 
