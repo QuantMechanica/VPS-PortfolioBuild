@@ -14423,3 +14423,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13018,xag-vol-compression-breakout,0,XAGUSD.DWX,130180000,2026-07-06,Claude,active
 13019,crisis-short-idx-breakout,0,GDAXI.DWX,130190000,2026-07-06,Claude,active
 13019,crisis-short-idx-breakout,1,WS30.DWX,130190001,2026-07-06,Claude,active
+13022,ftq-xau-riskoff-long,0,XAUUSD.DWX,130220000,2026-07-06,Claude,active
+13023,ftq-audjpy-riskoff-short,0,AUDJPY.DWX,130230000,2026-07-06,Claude,active
