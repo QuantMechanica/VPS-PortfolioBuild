@@ -118,19 +118,27 @@ uninit class at next compile; skeleton ZeroMemory + corrected TODO).
 
 ## 3. Wave-2 ticket queue (design-sensitive; Codex review after Tuesday reset)
 
-1. **KS daily-loss restart persistence (E2/E15) + FTMO day-anchor decision (E3)** —
-   before paid challenge. Persist {day_key, day_start_equity, halted, reason} outside
-   tester; decide anchor policy per book.
-2. **Live news compliance axis (E4/D4)** — live branch evaluates temporal only;
-   FTMO/5ers firm windows are tester-only. Needed before FUNDED FTMO (rule binds
-   funded). Implement firm-window check on the native calendar. Related: E5 (SKIP_DAY
-   live=±24h vs tester=UTC-day — different strategies live vs tested), E10 (news
-   verdict cached per chart bar — D1 charts sample firm windows once/day; failed
-   live-calendar reads cached 24h).
-3. **Filling-mode resolution everywhere (F3)** — only QM_Exit resolves
-   SYMBOL_FILLING_MODE; every other path (incl. TM_CloseByVolume — the main close
-   path — and the KS CTrade close) defaults FOK → latent INVALID_FILL class on
-   broker/symbol changes, tester-invisible. Helper exists; pure reuse.
+1. **IMPLEMENTED 2026-07-06 (eb5195a14) — review-only.** KS daily-loss restart
+   persistence (E2/E15): state persisted terminal-locally (`QM\halt\
+   ks_state_<ea>.state`, write on trip BEFORE the flatten + on day roll,
+   restore only for the same halt-day, magic-checked, tester-exempt).
+   FTMO day anchor (E3): `QM_KillSwitchSetDayAnchor(offset_hours,
+   use_max_balance_equity)` — defaults preserve historical behavior; the FTMO
+   preset opts in at challenge rebuild (recommended: offset −1h ≈ Prague
+   midnight on the UTC+3/+2 server both seasons except brief US/EU DST
+   divergence windows; baseline max(balance,equity)). Fail-safe: re-anchoring
+   never clears an active halt.
+2. **IMPLEMENTED 2026-07-06 (fadd5eaf8, pump-swept) — review-only.** Live news
+   compliance axis (E4/D4): `QM_NewsLiveComplianceAllows` = native-calendar
+   mirror of the tester firm-window check (per-impact tables + min-impact
+   pre-filter for exact parity); live branch now ANDs both axes; fail-closed.
+   STILL OPEN in this area: E5 (SKIP_DAY live=±24h vs tester=UTC-day) and E10
+   (per-bar verdict cache — D1 charts sample firm windows once per bar; failed
+   live reads cached until next bar) — both remain design items.
+3. **IMPLEMENTED 2026-07-06 (fadd5eaf8 + ce7516286) — review-only.**
+   Filling-mode resolution (F3): `QM_TradeContextResolveFilling` applied in
+   QM_Entry, QM_BasketOrder, QM_TM_CloseByVolume; kill-switch CTrade close
+   sets filling per position symbol (F14 residue closed).
 4. **DONE_PARTIAL reconciliation (F4)** — partial fills treated as full; entry logs
    overstate exposure; partial close leaves residual position with flat EA state.
 5. **Stops-level/freeze-level backstop (F5)** — trailing/modify paths never check
