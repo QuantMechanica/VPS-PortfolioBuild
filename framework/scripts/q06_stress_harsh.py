@@ -1,16 +1,15 @@
-"""Q06 — Stress HARSH runner.
+"""Q06 — Trade-Rejection Stress (HARSH) runner.
 
-Per Vault Q06 spec:
-  Slippage: 5 pips
-  Spread:   × 3 broker baseline
-  Commission: × 3 baseline (FW2/FW5 multiplier)
-  Trade-rejection: 10% (via FW2 hook qm_stress_reject_probability=0.10)
-  Window: full available history per symbol
-  Verdict: PF > 1.0 AND DD < 15%
-
-Same shape as Q05 but with the HARSH stress level. Trade-rejection is
-applied inside the EA via the FW2 hook reading qm_stress_reject_probability
-from the setfile (set to 0.10 by gen_stress_setfile.py --level HARSH).
+Re-ratified 2026-07-06 (decisions/2026-07-06_q06_spec_reratification.md,
+extension of the Q05 DL): the historically documented cost stress (slip +5,
+spread x3, commission x3) was NEVER implemented — this runner passes no cost
+parameters to run_smoke. The implemented (and ratified) test is:
+  Trade-rejection: 10% via the FW2 EA hook qm_stress_reject_probability=0.10
+  (seeded, deterministic; set by gen_stress_setfile.py --level HARSH)
+  Window: full available history per symbol, Q03 plateau-median params
+  Verdict: PF > 1.0 AND DD < 15% AND >= 20 trades (gross, like every tester run)
+Cost STRESS lives at Q08 (DL-072 cost-cushion: gross >= 2x worst-case
+commission); cost REALISM at Q04. All historical Q06 verdicts remain valid.
 """
 
 from __future__ import annotations

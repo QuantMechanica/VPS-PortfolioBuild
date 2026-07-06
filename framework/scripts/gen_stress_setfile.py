@@ -2,16 +2,16 @@
 
 Per 2026-05-23 pipeline rewrite (Vault: Q05 Stress MEDIUM, Q06 Stress HARSH).
 
-Stress dimensions:
-- Slippage: tester option (set in the .ini, not the .set) — passed to runner
-- Spread multiplier: tester option (set in the .ini) — passed to runner
-- Commission multiplier: framework/registry/tester_defaults.json baseline * multiplier
-- Trade-rejection probability: EA input qm_stress_reject_probability — IN the .set file
+Stress dimensions AS IMPLEMENTED (re-ratified: Q05 DL 2026-07-05 + Q06 DL
+2026-07-06 — the historically planned slip/spread/commission stress was never
+wired; no companion tester .ini generator exists and the runners pass no cost
+parameters to run_smoke):
+- Trade-rejection probability: EA input qm_stress_reject_probability — IN the
+  .set file. This is the ONLY stress dimension. Cost stress lives at Q08
+  (DL-072 cost cushion); cost realism at Q04.
 
-This script handles the .set-file side: takes a baseline backtest .set and
-emits a stress-level variant with the rejection-probability input set and
-the header annotated. The companion tester .ini generator (for slip/spread)
-lives elsewhere (q05/q06 runner — TODO under the gate code rewrite).
+This script takes a baseline backtest .set and emits a stress-level variant
+with the rejection-probability input set and the header annotated.
 
 Usage:
     python gen_stress_setfile.py BASELINE.set --level MED  --out OUT.set
@@ -20,8 +20,8 @@ Usage:
 
 Stress level → rejection probability:
     OFF    : 0.00  (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 — baseline)
-    MED    : 0.00  (Q05 — slip/spread/commission stressed via tester only)
-    HARSH  : 0.10  (Q06 — slip/spread/commission stressed via tester + 10% rejection)
+    MED    : 0.00  (Q05 — gross full-history robustness; no stress applied here)
+    HARSH  : 0.10  (Q06 — 10% seeded trade rejection; the only implemented stress)
 """
 
 from __future__ import annotations
