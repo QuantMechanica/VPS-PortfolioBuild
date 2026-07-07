@@ -14525,3 +14525,17 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1801,chande-momentum-oscillator-h4,11,NZDUSD.DWX,18010011,2026-07-07,Development,active
 1801,chande-momentum-oscillator-h4,12,XAUUSD.DWX,18010012,2026-07-07,Development,active
 1801,chande-momentum-oscillator-h4,13,XTIUSD.DWX,18010013,2026-07-07,Development,active
+1910,chande-stochastic-rsi-pop-h4,0,SP500.DWX,19100000,2026-07-07,Development,active
+1910,chande-stochastic-rsi-pop-h4,1,NDX.DWX,19100001,2026-07-07,Development,active
+1910,chande-stochastic-rsi-pop-h4,2,WS30.DWX,19100002,2026-07-07,Development,active
+1910,chande-stochastic-rsi-pop-h4,3,GDAXI.DWX,19100003,2026-07-07,Development,active
+1910,chande-stochastic-rsi-pop-h4,4,UK100.DWX,19100004,2026-07-07,Development,active
+1910,chande-stochastic-rsi-pop-h4,5,EURUSD.DWX,19100005,2026-07-07,Development,active
+1910,chande-stochastic-rsi-pop-h4,6,GBPUSD.DWX,19100006,2026-07-07,Development,active
+1910,chande-stochastic-rsi-pop-h4,7,USDJPY.DWX,19100007,2026-07-07,Development,active
+1910,chande-stochastic-rsi-pop-h4,8,USDCHF.DWX,19100008,2026-07-07,Development,active
+1910,chande-stochastic-rsi-pop-h4,9,USDCAD.DWX,19100009,2026-07-07,Development,active
+1910,chande-stochastic-rsi-pop-h4,10,AUDUSD.DWX,19100010,2026-07-07,Development,active
+1910,chande-stochastic-rsi-pop-h4,11,NZDUSD.DWX,19100011,2026-07-07,Development,active
+1910,chande-stochastic-rsi-pop-h4,12,XAUUSD.DWX,19100012,2026-07-07,Development,active
+1910,chande-stochastic-rsi-pop-h4,13,XTIUSD.DWX,19100013,2026-07-07,Development,active

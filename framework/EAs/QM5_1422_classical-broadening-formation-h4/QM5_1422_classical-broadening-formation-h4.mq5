@@ -945,8 +945,6 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -981,6 +979,8 @@ void OnTick()
    else
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows)
+      return;
+   if(Strategy_NewsFilterHook(broker_now))
       return;
 
    if(!QM_IsNewBar())
