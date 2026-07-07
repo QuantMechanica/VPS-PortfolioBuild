@@ -96,9 +96,12 @@ Three independent, mutually masking failures:
   ticket fe1704fc). Review tickets await a fresh codex heartbeat — the next
   scheduled codex orchestration writes it pre-guard, then the 5-min router
   assigns; no manual codex/agy exec sessions needed (Operating Rules 07-03).
-- Watch item: first post-fix gemini exec must produce returncode 0 and a
-  research artifact; if the Node surface differs further, iterate on
-  `command_for` (the shim forwards everything verbatim).
+- 07:00Z slot under qm-admin/Interactive: **PASS** — session alive past the
+  auth stage (the auth-fail signature died in ~13s; arg-fail in ~11s), two
+  agy.exe processes, live log shows real agentic execution ("I have run the
+  first command `python tools/strategy_farm/farmctl.py health` ..."). First
+  successful scheduled agy spawn ever. Remaining watch: the session's ticket
+  artifacts (assigned: 3b3332e3 prio-3 + fe1704fc OWNER scalping extraction).
 
 ## Lessons
 
