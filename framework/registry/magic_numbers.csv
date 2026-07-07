@@ -14608,3 +14608,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9504,brooks-failed-channel-h4,11,WS30.DWX,95040011,2026-07-07,Codex,active
 9504,brooks-failed-channel-h4,12,UK100.DWX,95040012,2026-07-07,Codex,active
 13040,xti-days-supply-brk,0,XTIUSD.DWX,130400000,2026-07-07,Codex,active
+13041,xti-loose-supply-fade,0,XTIUSD.DWX,130410000,2026-07-07,Codex,active

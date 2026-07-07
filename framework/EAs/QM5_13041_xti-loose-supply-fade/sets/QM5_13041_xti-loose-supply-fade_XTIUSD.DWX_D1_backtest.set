@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13041
 ; ea_slug:      xti-loose-supply-fade
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   905f171a711a221c9a445e4e70901722233854539adf928bbf34d6e9a20f787e
 ; author:       Codex
 ; date:         2026-07-07
 ;==========================================================
