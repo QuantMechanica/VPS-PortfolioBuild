@@ -1,0 +1,61 @@
+{
+  "ea_id": "QM5_13020",
+  "slug": "audnzd-coint-reversion",
+  "task_id": "119a6369-7315-4637-b50f-d409295dfdba",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13020_audnzd-coint-reversion.md",
+  "unit_of_work": "Recorded rework build for the AUDNZD.DWX D1 cointegration-reversion sleeve and confirmed Q02 queue state.",
+  "farm_claim": {
+    "claimed_by": "codex-board-advisor",
+    "claim_reason": "board-advisor diversity build: AUDNZD FX cointegration reversion"
+  },
+  "validation": {
+    "spec_validation": "PASS",
+    "build_check": "PASS",
+    "compile_one_strict": "PASS",
+    "smoke_result": "PASS",
+    "smoke_mode": true,
+    "smoke_min_trades_required": 1,
+    "smoke_total_trades_per_run": 3,
+    "smoke_summary": "D:\\QM\\reports\\smoke\\QM5_13020\\20260707_080439\\summary.json",
+    "smoke_summary_sha256": "6802C40C60F6D03D1996FA661197BCE03D43C53AF3D932523CB8F876B8A7E8D6"
+  },
+  "artifacts": {
+    "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13020_audnzd-coint-reversion\\QM5_13020_audnzd-coint-reversion.mq5",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13020_audnzd-coint-reversion\\QM5_13020_audnzd-coint-reversion.ex5",
+    "ex5_bytes": 311984,
+    "ex5_sha256": "8E158FFD86C1D216D43F8F0BC71990A6BE3CDA72B6250C543DBC5BFB6B7C7C54",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13020_audnzd-coint-reversion\\sets\\QM5_13020_audnzd-coint-reversion_AUDNZD.DWX_D1_backtest.set",
+    "setfile_sha256": "2431C1E7C8C46AE6CCCE76C5BBB6E0732DF87B54D75B0F5A3E3336E9540B2817",
+    "farm_build_result": "D:\\QM\\strategy_farm\\artifacts\\builds\\119a6369-7315-4637-b50f-d409295dfdba.json",
+    "farm_build_result_sha256": "F387F73D42680147CD1A5CF10E0F368DC093E3E36E2BD87B44A3E2DAD725C4FD"
+  },
+  "farm_record_build": {
+    "recorded": true,
+    "new_status": "done",
+    "smoke_result": "passed",
+    "auto_q02_enqueued": {
+      "enqueued": [],
+      "skipped": [
+        {
+          "reason": "existing_q02_pending",
+          "existing_wi_id": "34851790",
+          "symbol": "AUDNZD.DWX",
+          "setfile": "QM5_13020_audnzd-coint-reversion_AUDNZD.DWX_D1_backtest.set"
+        }
+      ]
+    }
+  },
+  "q02_state": {
+    "work_item_id": "34851790-071e-4e77-8c86-f01db08311c1",
+    "phase": "Q02",
+    "symbol": "AUDNZD.DWX",
+    "status": "pending",
+    "claimed_by": null,
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13020_audnzd-coint-reversion\\sets\\QM5_13020_audnzd-coint-reversion_AUDNZD.DWX_D1_backtest.set"
+  },
+  "notes": [
+    "This rework resolves the prior codex_review smoke_sanity blocker by rerunning the current run_smoke.ps1 contract with -SmokeMode -MinTrades 1.",
+    "Q02 insertion was intentionally idempotent; the existing pending AUDNZD.DWX work item was preserved and no duplicate work item was created.",
+    "No T_Live, AutoTrading, deploy manifest, or portfolio gate files were touched."
+  ]
+}
