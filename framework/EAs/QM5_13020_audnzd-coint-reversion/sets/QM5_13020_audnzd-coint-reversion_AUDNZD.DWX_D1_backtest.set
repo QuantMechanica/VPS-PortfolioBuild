@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13020
 ; ea_slug:      audnzd-coint-reversion
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   612ffa6fd92af5f95c087f451b4db96f044510694ee2b4bdeefe630a9588e047
+; build_hash:   2431c1e7c8c46ae6ccce76c5bbb6e0732df87b54d75b0f5a3e3336e9540b2817
 ; author:       Development
 ; date:         2026-07-06
 ;==========================================================
