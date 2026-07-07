@@ -56,7 +56,7 @@ input int    strategy_atr_period           = 14;   // ATR period for the hard st
 input double strategy_atr_sl_mult          = 2.5;  // ATR hard-stop multiple
 input int    strategy_donchian_trail       = 15;   // Donchian high lookback for the cover trail
 input int    strategy_max_hold_bars        = 40;   // max D1 bars to hold before time-stop close
-input int    strategy_max_spread_points    = 40;   // spread cap; 0 = SYMBOL_SPREAD reads 0 on .DWX so never blocks
+input int    strategy_max_spread_points    = 60;   // entry spread cap in broker points; 0 disables
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -79,6 +79,24 @@ bool Strategy_NoTradeFilter()
    return false;
   }
 
+bool Strategy_SpreadAllowsEntry()
+  {
+   if(strategy_max_spread_points <= 0)
+      return true;
+
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(ask <= 0.0 || bid <= 0.0 || point <= 0.0)
+      return false;
+
+   if(ask < bid)
+      return false;
+
+   const double spread_points = (ask - bid) / point;
+   return (spread_points <= (double)strategy_max_spread_points);
+  }
+
 // Populate `req` with entry order parameters and return TRUE if a NEW entry
 // should fire on this closed bar. Caller guarantees QM_IsNewBar() == true.
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
@@ -96,12 +114,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
       return false;
 
-   if(strategy_max_spread_points > 0)
-     {
-      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread_points > strategy_max_spread_points)
-         return false;
-     }
+   if(!Strategy_SpreadAllowsEntry())
+      return false;
 
    // Regime gate + stacked-bearish momentum alignment: no signal mixin covers
    // a plain-SMA stacked read (QM_Sig_MA_Position is EMA-only), so this reads

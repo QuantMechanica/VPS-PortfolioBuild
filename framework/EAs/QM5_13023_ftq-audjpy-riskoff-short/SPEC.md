@@ -34,7 +34,7 @@ long branch does not exist.
 | `strategy_atr_sl_mult` | 2.5 | 2.0-3.0 | ATR multiple for the hard stop distance |
 | `strategy_donchian_trail` | 15 | 10-20 | Donchian high lookback for the channel-trail cover |
 | `strategy_max_hold_bars` | 40 | 25-55 | Max D1 bars held before the time-stop close |
-| `strategy_max_spread_points` | 40 | 30-60 | Spread cap in broker points; 0 = SYMBOL_SPREAD reads 0 on .DWX so never blocks |
+| `strategy_max_spread_points` | 60 | 30-60 | Entry spread cap in broker points, measured from bid/ask when available; 0 disables the cap |
 
 > Note: framework-level inputs (RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
 > qm_news_mode, qm_rng_seed, qm_stress_reject_probability, qm_friday_close_*)
