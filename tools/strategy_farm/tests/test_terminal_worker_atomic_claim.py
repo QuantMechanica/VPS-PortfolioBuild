@@ -80,6 +80,31 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertEqual(rows[0][0], "active")
             self.assertIn(rows[0][1], {"T1", "T2"})
 
+    def test_claim_respects_payload_avoid_terminals(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "wi-avoid-t1",
+                "AUDCAD.DWX",
+                phase="Q04",
+                payload={"avoid_terminals": ["T1"]},
+            )
+
+            blocked = terminal_worker.claim_atomic(root, "T1")
+            self.assertFalse(blocked.get("claimed"))
+            self.assertEqual(blocked.get("reason"), "no_pending_claimable")
+            self.assertEqual(blocked["terminal_avoid_skipped"][0]["item_id"], "wi-avoid-t1")
+
+            claimed = terminal_worker.claim_atomic(root, "T2")
+            self.assertTrue(claimed.get("claimed"))
+            self.assertEqual(claimed["item"]["id"], "wi-avoid-t1")
+
+            with sqlite3.connect(root / farmctl.DB_REL) as conn:
+                row = conn.execute("SELECT status, claimed_by FROM work_items WHERE id='wi-avoid-t1'").fetchone()
+            self.assertEqual(row[0], "active")
+            self.assertEqual(row[1], "T2")
+
     def test_per_symbol_lock_is_respected(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"

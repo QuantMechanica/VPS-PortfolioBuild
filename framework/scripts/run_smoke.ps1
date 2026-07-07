@@ -254,6 +254,19 @@ function Test-TesterLogShowsSetupDataMissing {
         [regex]::IsMatch($TesterLogTail, "(?im)\b(calendar_file_missing_or_unreadable|calendar_file_stale|calendar_csv_parse_failed|calendar_hash_failed|calendar_unavailable)\b")
 }
 
+function Test-TesterLogShowsAccountNotSpecified {
+    param(
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [string]$TesterLogTail
+    )
+
+    if ([string]::IsNullOrWhiteSpace($TesterLogTail)) {
+        return $false
+    }
+    return [regex]::IsMatch($TesterLogTail, "(?im)\btester not started because the account is not specified\b")
+}
+
 function Test-TesterLogHasNoHistoryForRun {
     param(
         [Parameter(Mandatory = $true)]
@@ -1809,6 +1822,10 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
         if (Test-TesterLogShowsSetupDataMissing -TesterLogTail $testerLogTail) {
             $failureHints.Add("SETUP_DATA_MISSING")
             $reasonClasses.Add("SETUP_DATA_MISSING")
+        }
+        if (Test-TesterLogShowsAccountNotSpecified -TesterLogTail $testerLogTail) {
+            $failureHints.Add("ACCOUNT_NOT_SPECIFIED")
+            $reasonClasses.Add("ACCOUNT_NOT_SPECIFIED")
         }
         $lingeringMeta = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $terminalRoot)
         if (@($lingeringMeta).Count -gt 0) {

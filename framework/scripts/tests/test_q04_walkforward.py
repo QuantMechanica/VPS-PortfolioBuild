@@ -96,6 +96,31 @@ class Q04WalkForwardTests(unittest.TestCase):
         self.assertIn("REPORT_MISSING", reason)
         self.assertIn("INCOMPLETE_RUNS", reason)
 
+    def test_account_missing_summary_is_invalid_evidence(self) -> None:
+        mod = _load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            summary = Path(tmp) / "summary.json"
+            summary.write_text(
+                """
+                {
+                  "result": "FAIL",
+                  "reason_classes": ["REPORT_MISSING", "ACCOUNT_NOT_SPECIFIED", "INCOMPLETE_RUNS"],
+                  "runs": [{
+                    "status": "FAIL",
+                    "failure": "REPORT_MISSING",
+                    "failure_hints": ["ACCOUNT_NOT_SPECIFIED"],
+                    "total_trades": 0
+                  }]
+                }
+                """,
+                encoding="utf-8",
+            )
+
+            reason = mod.summary_invalid_reason(summary)
+
+        self.assertIsNotNone(reason)
+        self.assertIn("ACCOUNT_NOT_SPECIFIED", reason)
+
     def test_pass_summary_ignores_failed_retry_attempts(self) -> None:
         mod = _load_module()
         with tempfile.TemporaryDirectory() as tmp:

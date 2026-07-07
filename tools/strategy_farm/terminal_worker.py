@@ -425,6 +425,23 @@ def _work_item_is_multisymbol(
         return False
 
 
+def _payload_avoid_terminals(payload: dict[str, Any]) -> set[str]:
+    """Return factory terminals this item must not be claimed by."""
+    raw = payload.get("avoid_terminals", payload.get("skip_terminals", []))
+    if isinstance(raw, str):
+        values = [raw]
+    elif isinstance(raw, (list, tuple, set)):
+        values = list(raw)
+    else:
+        values = []
+    terminals: set[str] = set()
+    for value in values:
+        terminal = str(value or "").strip().upper()
+        if farmctl.is_factory_terminal_name(terminal):
+            terminals.add(terminal)
+    return terminals
+
+
 def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     """Atomically claim one pending work_item for a terminal.
 
@@ -532,10 +549,19 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 skipped_history: list[dict[str, Any]] = []
                 skipped_launch_cooldown: list[dict[str, Any]] = []
                 skipped_multisym_ram: list[dict[str, Any]] = []
+                skipped_avoid_terminal: list[dict[str, Any]] = []
                 multisym_free_ram: float | None = None
                 history_registry = farmctl._dwx_symbol_history_registry()
                 for item in conn.execute(_priority_pending_query()).fetchall():
                     payload = _json_loads(item["payload_json"])
+                    avoid_terminals = _payload_avoid_terminals(payload)
+                    if str(terminal).upper() in avoid_terminals:
+                        skipped_avoid_terminal.append({
+                            "item_id": item["id"],
+                            "ea_id": item["ea_id"],
+                            "avoid_terminals": sorted(avoid_terminals),
+                        })
+                        continue
                     launch_not_before = _parse_utc_iso(payload.get("launch_not_before_utc"))
                     if launch_not_before is not None:
                         try:
@@ -598,6 +624,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     "history_skipped": skipped_history,
                     "launch_cooldown_skipped": skipped_launch_cooldown,
                     "multisymbol_ram_skipped": skipped_multisym_ram,
+                    "terminal_avoid_skipped": skipped_avoid_terminal,
                 }
             except Exception:
                 conn.rollback()
