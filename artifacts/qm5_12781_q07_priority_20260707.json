@@ -1,0 +1,100 @@
+{
+  "generated_at_utc": "2026-07-07T12:19:35Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves",
+  "decision": {
+    "selected_path": "advance_existing_forex_cointegration_card",
+    "reason": "No unbuilt card-worthy FX cointegration pair remains in the current branch/frontier evidence. The strict 66-pair scan survivors QM5_12532 and QM5_12533 are already built and not Q02-blocked; the current frontier rows QM5_13024 and QM5_13029 are already in the farm. Under the backtest CPU ceiling, prioritize an existing pending downstream forex basket without creating a duplicate row.",
+    "new_unbuilt_pair_found": false,
+    "manual_mt5_backtest_launched": false
+  },
+  "selected_work_item": {
+    "work_item_id": "38226031-b41f-4f03-ab86-d1697ca5e203",
+    "ea_id": "QM5_12781",
+    "phase": "Q07",
+    "pair": "USDJPY.DWX/AUDJPY.DWX",
+    "symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1",
+    "status_before": "pending",
+    "verdict_before": null,
+    "priority_track_before": false,
+    "status_after": "pending",
+    "verdict_after": null,
+    "priority_track_after": true,
+    "updated_at_after": "2026-07-07T12:19:35Z",
+    "promoted_from_phase": "Q06",
+    "promoted_from_work_item": "f1147d03-5c9b-4874-ba86-0406e1a90bdc"
+  },
+  "queue_mutation": {
+    "sqlite": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "db_backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12781_q07_priority_20260707T121935Z.sqlite",
+    "event_id": 220890,
+    "event": "priority_track_set",
+    "payload_changes": {
+      "priority_track": true,
+      "priority_updated_at_utc": "2026-07-07T12:19:35Z",
+      "priority_updated_by": "codex/agents-board-advisor",
+      "mission_fallback": "advance_existing_forex_cointegration_card",
+      "priority_reason": "OWNER 2026-07-07 forex portfolio mission fallback: no unbuilt card-worthy FX cointegration pair remains; prioritize existing QM5_12781 USDJPY~AUDJPY Q07 after Q05/Q06 PASS without creating a duplicate work_item or launching MT5 under CPU ceiling."
+    },
+    "duplicate_guard_before": [
+      {
+        "id": "38226031-b41f-4f03-ab86-d1697ca5e203",
+        "status": "pending",
+        "claimed_by": null
+      }
+    ],
+    "duplicate_guard_after": [
+      {
+        "id": "38226031-b41f-4f03-ab86-d1697ca5e203",
+        "status": "pending",
+        "claimed_by": null
+      }
+    ],
+    "duplicate_work_item_created": false
+  },
+  "queue_snapshot_after": {
+    "counts": {
+      "active": 4,
+      "done": 43205,
+      "failed": 45265,
+      "pending": 5509
+    },
+    "active_forex_frontier": [
+      {
+        "ea_id": "QM5_13029",
+        "phase": "Q02",
+        "symbol": "QM5_13029_GBPCAD_GBPNZD_COINTEGRATION_D1",
+        "status": "active",
+        "claimed_by": "T4",
+        "work_item_id": "8acc9930-38b8-4dbb-a3e1-dc9ae665366f"
+      }
+    ],
+    "queued_priority_fx": [
+      {
+        "ea_id": "QM5_12781",
+        "phase": "Q07",
+        "symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1",
+        "status": "pending",
+        "work_item_id": "38226031-b41f-4f03-ab86-d1697ca5e203"
+      }
+    ]
+  },
+  "source_evidence": {
+    "primary_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "frontier_audit": "artifacts/fx_cointegration_frontier_audit_20260707T0934Z.json",
+    "prior_q02_priority": "artifacts/fx_cointegration_q02_priority_20260707T102015Z.json",
+    "prior_q07_requeue": "artifacts/qm5_12781_q07_requeue_20260707.json"
+  },
+  "guardrails": {
+    "t_live_touched": false,
+    "auto_trading_toggled": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "new_backtest_work_item_created": false,
+    "manual_mt5_backtest_launched": false
+  }
+}
