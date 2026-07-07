@@ -106,6 +106,50 @@ switch.
 - Direction: long only.
 - Runtime data: native MT5 OHLC, spread, ATR/SMA helpers, broker calendar.
 
+## 4. Entry Rules
+
+Evaluate once per new D1 bar, using only the prior completed D1 bar as the
+signal bar.
+
+1. Signal bar day-of-week must be Wednesday or Thursday in broker time.
+2. Signal bar and current broker date must be inside the April-October Gulf
+   Coast PADD 3 draw-pressure window.
+3. Signal bar must close bullish with range and body above ATR thresholds.
+4. Signal close location must be in the upper portion of the bar.
+5. Signal close must be above a rising D1 SMA trend filter.
+6. The preceding pullback over the configured lookback must be at least the
+   configured ATR fraction.
+7. Signal close must reclaim the prior short local high.
+8. Skip if an open position already exists, this signal month has already been
+   consumed, spread is too wide, or any guardrail input is invalid.
+
+## 5. Exit Rules
+
+- ATR hard stop and ATR profit target are set at entry.
+- Exit on max-hold timeout, close below the SMA trend filter, leaving the
+  April-October season, non-long position mismatch, framework Friday close, or
+  kill switch.
+- One position per magic/symbol. No pyramiding, grid, martingale, ML, or
+  external data calls.
+
+## 6. Filters (No-Trade Module)
+
+- Do not trade any symbol other than `XTIUSD.DWX` or any timeframe other than
+  D1.
+- Do not trade outside magic slot 0.
+- Do not trade outside the April-October Gulf Coast draw-pressure window.
+- Do not trade outside the Wednesday/Thursday WPSR proxy window.
+- Do not trade when the spread exceeds `strategy_max_spread_points`.
+- Do not trade when V5 news, Friday-close, kill-switch, or input guardrails
+  block trading.
+
+## 7. Trade Management Rules
+
+Position sizing is delegated to the V5 framework fixed-risk module using
+`RISK_FIXED=1000`. Stops are normalized through framework stop rules. Management
+is limited to ATR stop, ATR target, time stop, SMA invalidation, and season
+invalidation.
+
 ## Parameters
 
 | param | default | range | meaning |
