@@ -3,32 +3,41 @@
 ; ea_id:        2133
 ; ea_slug:      demark-td-trend-factor-h4
 ; ea_version:   v5.0
-; set_version:  s20260623-001
+; set_version:  s20260707-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   305eadbe85566e078ab9489af2b40a497797967ce59b7d118986e1ebc697eb04
 ; author:       Development
-; date:         2026-06-23
+; date:         2026-07-07
 ;==========================================================
+qm_ea_id=2133
 qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_2133_demark-td-trend-factor-h4.md
+strategy_factor_1=1.0556
+strategy_factor_2=1.1118
+strategy_down_factor_1=0.9474
+strategy_down_factor_2=0.8993
+strategy_pivot_wing_bars=2
+strategy_max_active_per_side=4
+strategy_projection_expiry_h4=200
+strategy_zone_window_h4=8
+strategy_trend_lookback_h4=20
+strategy_atr_period=20
+strategy_atr_slow_period=50
+strategy_d1_ema_period=50
+strategy_spread_atr_mult=0.30
+strategy_min_projection_atr=1.50
+strategy_vol_ratio_max=2.00
+strategy_entry_stop_atr_mult=0.50
+strategy_hard_stop_atr_mult=0.30
+strategy_trail_atr_mult=2.00
+strategy_time_stop_h4_bars=60
+strategy_warmup_h4_bars=200
