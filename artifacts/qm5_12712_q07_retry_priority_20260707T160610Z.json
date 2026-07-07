@@ -1,0 +1,149 @@
+{
+  "generated_at_utc": "2026-07-07T16:06:10Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves",
+  "unit_of_work": "advance existing non-duplicate FX market-neutral cointegration basket under CPU ceiling",
+  "decision": {
+    "selected_path": "advance_existing_forex_card",
+    "reason": "No unbuilt card-worthy FX cointegration pair remained from the strict 66-pair scan or the extended local scan. The strict scan anchors QM5_12532 and QM5_12533 are already built and not Q02-blocked. The extended positive trade-check frontier is already built through QM5_13024 and QM5_13029; the remaining all-gates AUDCAD/EURUSD survivor has negative OOS trade-check performance.",
+    "selected_existing_ea": "QM5_12712",
+    "selected_existing_pair": "EURGBP.DWX/EURAUD.DWX",
+    "selected_existing_symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+    "selected_existing_state_before": "Q02 PASS, Q03 PASS, Q04 PASS, Q05 PASS, Q06 PASS, Q07 INFRA_FAIL",
+    "new_unbuilt_pair_found": false,
+    "manual_mt5_dispatch_started": false,
+    "manual_dispatch_reason": "Factory was already at the active work-item ceiling: 7 active work_items. The row was requeued pending only; no terminal was launched manually."
+  },
+  "source_evidence": {
+    "strict_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "extended_screen": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/survivors.json",
+    "extended_trade_check": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/trade_check.json",
+    "q07_failed_aggregate": "D:/QM/reports/work_items/1b9fa7a5-48a7-4e57-a699-9e55dfb0cb19/QM5_12712/Q07/QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1/aggregate.json"
+  },
+  "anchor_status": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "state": "Q02 PASS, Q04 PASS, Q05 FAIL",
+      "q02_blocked": false
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "state": "Q02 PASS, Q04 FAIL",
+      "q02_blocked": false
+    }
+  },
+  "extended_pair_review": [
+    {
+      "pair": "AUDCAD.DWX/EURUSD.DWX",
+      "decision": "do_not_card",
+      "reason": "All-gates extended-screen survivor, but trade_check.json shows OOS net Sharpe -0.39 and OOS return -4.94%."
+    },
+    {
+      "pair": "AUDCAD.DWX/GBPAUD.DWX",
+      "decision": "already_built",
+      "ea_id": "QM5_13024",
+      "latest_state": "Q02 PASS, Q04 FAIL"
+    },
+    {
+      "pair": "GBPCAD.DWX/GBPNZD.DWX",
+      "decision": "already_built",
+      "ea_id": "QM5_13029",
+      "latest_state": "Q02 PASS, Q03 PASS, Q04 FAIL"
+    },
+    {
+      "pair": "AUDCAD.DWX/GBPNZD.DWX",
+      "decision": "do_not_card_now",
+      "reason": "Watchlist only; trade_check.json OOS net Sharpe 0.76 is below the 0.8 bar and overlaps AUDCAD exposure with QM5_13024."
+    },
+    {
+      "pair": "AUDNZD.DWX/EURGBP.DWX",
+      "decision": "do_not_card",
+      "reason": "Screen note says it collapses toward existing AUDNZD reversion exposure rather than a clean new market-neutral sleeve."
+    }
+  ],
+  "queue_mutation": {
+    "sqlite": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "command": "python tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_12712 --phase Q07",
+    "work_item_id": "1b9fa7a5-48a7-4e57-a699-9e55dfb0cb19",
+    "phase": "Q07",
+    "status_after": "pending",
+    "duplicate_work_item_created": false,
+    "duplicate_guard": {
+      "same_ea_phase_symbol_setfile_rows": 1,
+      "row_ids": [
+        "1b9fa7a5-48a7-4e57-a699-9e55dfb0cb19"
+      ]
+    },
+    "payload_changes": {
+      "priority_track": true,
+      "priority_updated_at_utc": "2026-07-07T16:06:10+00:00",
+      "priority_updated_by": "codex/agents-board-advisor",
+      "q07_seed_timeout_sec": 5400,
+      "cpu_ceiling_dispatch_hold": true,
+      "q07_seed_timeout_reason": "prior Q07 invalid evidence included seed timeouts/blank M0 tester reports at default 2400s; retry under long per-seed timeout, no manual dispatch under active CPU ceiling"
+    }
+  },
+  "queue_snapshot_after": {
+    "counts": {
+      "active": 7,
+      "pending": 5527,
+      "done": 43324,
+      "failed": 45265
+    },
+    "active_work_items": [
+      {
+        "terminal": "T8",
+        "ea": "QM5_12969",
+        "phase": "Q08",
+        "symbol": "USDJPY.DWX"
+      },
+      {
+        "terminal": "T6",
+        "ea": "QM5_10703",
+        "phase": "Q02",
+        "symbol": "NDX.DWX"
+      },
+      {
+        "terminal": "T1",
+        "ea": "QM5_12781",
+        "phase": "Q07",
+        "symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1"
+      },
+      {
+        "terminal": "T7",
+        "ea": "QM5_10788",
+        "phase": "Q07",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T4",
+        "ea": "QM5_9286",
+        "phase": "Q02",
+        "symbol": "GBPJPY.DWX"
+      },
+      {
+        "terminal": "T2",
+        "ea": "QM5_9993",
+        "phase": "Q04",
+        "symbol": "XTIUSD.DWX"
+      },
+      {
+        "terminal": "T3",
+        "ea": "QM5_10483",
+        "phase": "Q04",
+        "symbol": "GBPUSD.DWX"
+      }
+    ]
+  },
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
