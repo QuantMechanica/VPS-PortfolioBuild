@@ -1,0 +1,48 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1422
+; ea_slug:      classical-broadening-formation-h4
+; ea_version:   v5.0
+; set_version:  s20260707-001
+; symbol:       EURUSD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-07
+;==========================================================
+qm_ea_id=1422
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1422_classical-broadening-formation-h4.md
+strategy_atr_period=14
+strategy_pattern_min_bars=50
+strategy_pattern_max_bars=150
+strategy_pivot_span=2
+strategy_pivot_amplitude_atr=1.00
+strategy_divergence_atr_buffer=0.50
+strategy_slope_atr_per_bar_min=0.05
+strategy_divergence_ratio_min=1.20
+strategy_prior_break_atr_buffer=0.50
+strategy_pivot_recency_bars=20
+strategy_entry_atr_buffer=0.50
+strategy_sl_atr_buffer=0.50
+strategy_sl_atr_cap=4.00
+strategy_tp_measured_move=0.65
+strategy_partial_move_scale=0.50
+strategy_partial_close_fraction=0.50
+strategy_order_valid_bars=8
+strategy_time_stop_bars=35
+strategy_failure_exit_bars=5
+strategy_reuse_guard_bars=30
+strategy_spread_atr_max=0.20
+strategy_d1_atr_median_bars=60
+strategy_d1_atr_ratio_min=0.80
+strategy_d1_atr_ratio_max=2.00
+strategy_news_blackout_h4_bars=2
