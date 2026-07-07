@@ -1,0 +1,70 @@
+{
+  "ea_id": "QM5_10481",
+  "ea_slug": "mql5-exec-ao",
+  "work_unit": "Q02 infrastructure repair for diverse DWX matrix coverage",
+  "branch": "agents/board-advisor",
+  "completed_at_utc": "2026-07-07T18:42:32.756085Z",
+  "root_cause": "Pending Q02 work items referenced DWX matrix setfiles with magic slot offsets beyond the registered QM5_10481 range, causing OnInit EA_MAGIC_NOT_REGISTERED failures.",
+  "root_cause_evidence": {
+    "summary_report": "D:\\QM\\reports\\work_items\\d5952c11-319c-4501-8ca4-de6c69c3d60b\\QM5_10481\\20260707_103350\\summary.json",
+    "terminal_log": "D:\\QM\\mt5\\T2\\Tester\\logs\\20260707.log",
+    "observed_classes": [
+      "ONINIT_FAILED",
+      "INCOMPLETE_RUNS"
+    ]
+  },
+  "repo_fix_commit": "ac320e6a6",
+  "repo_fix_summary": [
+    "Added QM5_10481 magic-number registry coverage for slots 14-36, extending the EA from 14 to 37 DWX matrix symbols.",
+    "Regenerated QM_MagicResolver.mqh from the registry.",
+    "Regenerated canonical RISK_FIXED M15 backtest setfiles for the full DWX matrix.",
+    "Recompiled QM5_10481_mql5-exec-ao.ex5.",
+    "Moved the news gate below open-position management and exit handling so blackout logic gates entries only."
+  ],
+  "farm_db_repair": {
+    "db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "backup": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_10481_magic_repair_20260707T184232Z.sqlite",
+    "updated_pending_q02_rows": 24,
+    "skipped_pending_q02_rows": 1,
+    "skipped_reason": "AUDJPY.DWX pending row uses an ablation setfile variant and was left untouched.",
+    "updated_symbols": [
+      "CHFJPY.DWX",
+      "EURJPY.DWX",
+      "EURUSD.DWX",
+      "GBPAUD.DWX",
+      "GBPCAD.DWX",
+      "GBPCHF.DWX",
+      "GBPJPY.DWX",
+      "GBPNZD.DWX",
+      "GBPUSD.DWX",
+      "GDAXI.DWX",
+      "NDX.DWX",
+      "NZDCAD.DWX",
+      "NZDCHF.DWX",
+      "NZDJPY.DWX",
+      "NZDUSD.DWX",
+      "SP500.DWX",
+      "UK100.DWX",
+      "USDCAD.DWX",
+      "USDCHF.DWX",
+      "USDJPY.DWX",
+      "WS30.DWX",
+      "XAGUSD.DWX",
+      "XNGUSD.DWX",
+      "XTIUSD.DWX"
+    ]
+  },
+  "verification": {
+    "validate_spec_doc": "PASS",
+    "build_check": "PASS",
+    "strict_compile": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "smoke_or_backtest": "not launched; farm already had 6 active backtest work items, so CPU ceiling constraint applied"
+  },
+  "scope_notes": [
+    "No T_Live files or AutoTrading settings touched.",
+    "No portfolio gate or T_Live manifest touched.",
+    "Unrelated dirty worktree files were left untouched."
+  ]
+}
