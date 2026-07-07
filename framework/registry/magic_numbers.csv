@@ -11941,10 +11941,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11803,carter-h1-s14-ema51362-macd-gap-h1,5,USDCAD.DWX,118030005,2026-06-18,Claude,reserved
 11804,carter-h1-s16-mtf-candle-align-h1,0,EURUSD.DWX,118040000,2026-06-18,Claude,reserved
 11804,carter-h1-s16-mtf-candle-align-h1,1,GBPUSD.DWX,118040001,2026-06-18,Claude,reserved
-11806,carter-h1-s18-ema510-stoch-rsi-h1,0,EURUSD.DWX,118060000,2026-06-18,Claude,reserved
-11806,carter-h1-s18-ema510-stoch-rsi-h1,1,GBPUSD.DWX,118060001,2026-06-18,Claude,reserved
-11806,carter-h1-s18-ema510-stoch-rsi-h1,2,AUDUSD.DWX,118060002,2026-06-18,Claude,reserved
-11806,carter-h1-s18-ema510-stoch-rsi-h1,3,USDJPY.DWX,118060003,2026-06-18,Claude,reserved
+11806,carter-h1-s18-ema510-stoch-rsi-h1,0,EURUSD.DWX,118060000,2026-06-18,Claude,active
+11806,carter-h1-s18-ema510-stoch-rsi-h1,1,GBPUSD.DWX,118060001,2026-06-18,Claude,active
+11806,carter-h1-s18-ema510-stoch-rsi-h1,2,AUDUSD.DWX,118060002,2026-06-18,Claude,active
+11806,carter-h1-s18-ema510-stoch-rsi-h1,3,USDJPY.DWX,118060003,2026-06-18,Claude,active
 11807,fin-kelt10,0,EURUSD.DWX,118070000,2026-06-18,Claude,reserved
 11807,fin-kelt10,1,GBPUSD.DWX,118070001,2026-06-18,Claude,reserved
 11807,fin-kelt10,2,USDJPY.DWX,118070002,2026-06-18,Claude,reserved
@@ -14440,3 +14440,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12935,sperandeo-tlb-refinement-h4,8,GBPUSD.DWX,129350008,2026-07-07,Development,active
 12935,sperandeo-tlb-refinement-h4,9,USDJPY.DWX,129350009,2026-07-07,Development,active
 13025,xti-psm-mom,0,XTIUSD.DWX,130250000,2026-07-07,Codex,active
+12933,aa-tom-sma10-card,0,SP500.DWX,129330000,2026-07-07,Development,active
+12933,aa-tom-sma10-card,1,NDX.DWX,129330001,2026-07-07,Development,active
+12933,aa-tom-sma10-card,2,WS30.DWX,129330002,2026-07-07,Development,active
+
+12934,aa-comm-spot-rev-card,0,XAUUSD.DWX,129340000,2026-07-07,Development,active
+12934,aa-comm-spot-rev-card,1,XAGUSD.DWX,129340001,2026-07-07,Development,active
+12934,aa-comm-spot-rev-card,2,XTIUSD.DWX,129340002,2026-07-07,Development,active
+12934,aa-comm-spot-rev-card,3,XNGUSD.DWX,129340003,2026-07-07,Development,active
