@@ -249,8 +249,17 @@ def command_for(agent: str, cwd: Path, prompt_path: Path | None = None) -> list[
         # Antigravity CLI (agy): headless via `-p`. agy does NOT read stdin, and a full
         # orchestration prompt can exceed the Windows cmdline limit, so pass a short
         # POINTER telling the agentic CLI to read+execute the prompt FILE; agy reads it
-        # via its file tools (workspace = the --add-dir paths). yolo/auto-approve =
-        # --dangerously-skip-permissions. Auth = Windows Credential Manager (no key).
+        # via its file tools (workspace = the --include-directories paths).
+        # Auth = Windows Credential Manager (no key).
+        #
+        # 2026-07-07: the agy Go shim forwards argv verbatim to its embedded Node
+        # gemini-cli, and the 2026-07-02 agy update dropped the claude-style flags
+        # there (--dangerously-skip-permissions / --add-dir / --print-timeout ->
+        # yargs "Unknown arguments", exit 1 in ~11s; the lane failed silently on
+        # every slot from the first real ticket 07-05 onward). Current Node
+        # surface (from the usage dump): -y/--yolo auto-approves, workspace dirs
+        # via --include-directories (repeatable), no print-timeout (our own
+        # proc.wait(timeout_minutes) already bounds the session).
         extra_dirs = [str(cwd)]
         if prompt_path is not None:
             extra_dirs.append(str(Path(prompt_path).parent))
@@ -261,9 +270,9 @@ def command_for(agent: str, cwd: Path, prompt_path: Path | None = None) -> list[
         ):
             if extra.exists():
                 extra_dirs.append(str(extra))
-        add_dir_flags: list[str] = []
+        include_dir_flags: list[str] = []
         for d in extra_dirs:
-            add_dir_flags += ["--add-dir", d]
+            include_dir_flags += ["--include-directories", d]
         model_args = ["--model", GEMINI_HEADLESS_MODEL] if GEMINI_HEADLESS_MODEL else []
         pointer = (
             f"Read the file '{prompt_path}' and execute its instructions exactly, then exit."
@@ -275,10 +284,8 @@ def command_for(agent: str, cwd: Path, prompt_path: Path | None = None) -> list[
             str(CONPTY_RUNNER),
             cli,
             *model_args,
-            "--dangerously-skip-permissions",
-            "--print-timeout",
-            "60m",
-            *add_dir_flags,
+            "--yolo",
+            *include_dir_flags,
             "-p",
             pointer,
         ]
@@ -456,17 +463,9 @@ def run_agent_slot(agent: str, slot: int, dry_run: bool, stale_minutes: int, tim
         result_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
         return payload
 
-    # Write lane heartbeat so the router and pump janitor can verify the lane is alive.
-    heartbeat_path = FARM_ROOT / "state" / f"lane_{agent}_heartbeat.json"
-    try:
-        heartbeat_path.parent.mkdir(parents=True, exist_ok=True)
-        heartbeat_path.write_text(
-            json.dumps({"agent": agent, "slot": slot, "pid": os.getpid(), "at": utc_stamp()},
-                       sort_keys=True),
-            encoding="utf-8",
-        )
-    except OSError:
-        pass
+    # Refresh lane heartbeat at spawn time (initial write happens in run_agent
+    # BEFORE the empty-spawn guards — see _write_lane_heartbeat).
+    _write_lane_heartbeat(agent, slot=slot)
 
     cmd = command_for(agent, cwd, prompt_path)
     payload: dict[str, Any] = {
@@ -684,8 +683,14 @@ def _agent_tasks_work_available(agent: str) -> dict[str, Any]:
             "SELECT COUNT(*) FROM agent_tasks WHERE assigned_agent=? AND state IN ('TODO','IN_PROGRESS')",
             (agent,),
         ).fetchone()[0]
+        # Unassigned tickets sit in TODO (enqueue default), not only BACKLOG.
+        # Counting BACKLOG alone dead-locked the codex lane 2026-07-04..07: lane
+        # drains -> skip before heartbeat -> heartbeat goes stale -> router skips
+        # the lane -> waiting unassigned TODO tickets are never routed -> "no
+        # work" forever.
         n_backlog = con.execute(
-            "SELECT COUNT(*) FROM agent_tasks WHERE state='BACKLOG'",
+            "SELECT COUNT(*) FROM agent_tasks WHERE state='BACKLOG' "
+            "OR (state='TODO' AND (assigned_agent IS NULL OR assigned_agent=''))",
         ).fetchone()[0]
         con.close()
         any_work = (n_assigned + n_backlog) > 0
@@ -699,7 +704,29 @@ def _agent_tasks_work_available(agent: str) -> dict[str, Any]:
         return {"any_work": True, "reason": f"work_check_error:{exc!r}"}
 
 
+def _write_lane_heartbeat(agent: str, slot: int = 0) -> None:
+    """Lane heartbeat = 'this lane's scheduled infrastructure is alive', NOT
+    'this lane is busy'. The router skips lanes whose heartbeat is older than
+    LANE_HEARTBEAT_STALE_HOURS, so the heartbeat MUST be written before any
+    empty-spawn guard: a drained lane that skips before heartbeating goes
+    router-invisible and can never be assigned new work (codex deadlock
+    2026-07-04..07). Stuck-broken lanes are handled by the router's 6h
+    stale-IN_PROGRESS release, not by heartbeat staleness."""
+    heartbeat_path = FARM_ROOT / "state" / f"lane_{agent}_heartbeat.json"
+    try:
+        heartbeat_path.parent.mkdir(parents=True, exist_ok=True)
+        heartbeat_path.write_text(
+            json.dumps({"agent": agent, "slot": slot, "pid": os.getpid(), "at": utc_stamp()},
+                       sort_keys=True),
+            encoding="utf-8",
+        )
+    except OSError:
+        pass
+
+
 def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: int, max_sessions: int) -> dict[str, Any]:
+    if not dry_run:
+        _write_lane_heartbeat(agent)
     if agent == "claude" and CLAUDE_DISABLED_FLAG.exists():
         return {
             "agent": agent,
