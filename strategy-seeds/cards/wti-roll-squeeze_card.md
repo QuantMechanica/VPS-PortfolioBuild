@@ -96,6 +96,13 @@ This is deliberately different from:
   oil-FX, XNG, XAU/XAG, and generic RSI sleeves: different source clock and
   signal definition.
 
+## rules
+
+Use the early-month CFTC ETF-roll window as a fixed broker-calendar clock. Only
+trade after pre-signal D1 compression resolves through a completed-bar channel
+break, then manage with ATR stop/target, SMA failure, exit-window,
+month-change, max-hold, standard news handling, and Friday close.
+
 ## Markets And Timeframe
 
 - Symbol: `XTIUSD.DWX`.
@@ -105,7 +112,7 @@ This is deliberately different from:
 - Runtime data: Darwinex MT5 D1 OHLC, spread, ATR, SMA, broker calendar, and
   V5 framework state only.
 
-## Entry Rules
+## 4. entry rules
 
 - Evaluate only on a new `XTIUSD.DWX` D1 bar.
 - Host chart must be `XTIUSD.DWX` on D1 and magic slot 0.
@@ -127,7 +134,7 @@ This is deliberately different from:
 - No entry if an open `XTIUSD.DWX` position already exists for this EA magic.
 - No entry if spread exceeds `strategy_max_spread_points`.
 
-## Exit Rules
+## 5. exit rules
 
 - Stop loss: fixed hard SL at ATR(`strategy_atr_period`) *
   `strategy_atr_sl_mult`.
@@ -143,7 +150,7 @@ This is deliberately different from:
 - Close after `strategy_max_hold_days` calendar days.
 - Friday close remains enabled by the V5 framework.
 
-## Filters
+## 6. filters (no-trade module)
 
 - Only `XTIUSD.DWX` D1 is valid.
 - Magic slot offset must be 0.
@@ -153,7 +160,7 @@ This is deliberately different from:
 - Framework news, kill-switch, magic, risk, and Friday-close guards remain
   active.
 
-## Trade Management Rules
+## 7. trade management rules
 
 - Symmetric long/short single-symbol breakout.
 - One open position per magic/symbol.
