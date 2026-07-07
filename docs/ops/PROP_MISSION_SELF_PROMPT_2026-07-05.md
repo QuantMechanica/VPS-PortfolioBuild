@@ -45,10 +45,11 @@ pass attempt. Trial-pass (5% in 14d) is a free-roll bonus. G1 closes when ALL ho
 - Discipline: NO mid-run composition changes. Challenger swaps only between phases
   and only with full evidence chain (Q09 rule applies in spirit).
 - Median expectation ~5–6 weeks; timeout is not a fail (time-unbound).
-- **Scale policy (MC study 2026-07-05, SELF_REVIEW pending Codex spot-check):**
+- **Scale policy (MC study 2026-07-05, Codex spot-check 44203b14 PASS_CONDITIONAL 07-07):**
   drawdown-triggered step-down **dd −3% → scale 5.0** (variant: −4% → 5.0) adds
-  **+2.0–2.4pp phase-pass** for only +2–5 median days — near static-6.0 safety at
-  static-9.0 speed, because the trigger fires on only ~28–30% of paths.
+  **+2.06pp (full fold) / +2.44pp (2025 fold) phase-pass** for only +4–5 median
+  days — near static-6.0 safety at static-9.0 speed, because the trigger fires
+  on only ~28–30% of paths.
   Progress-triggered step-downs are rejected (+0.06–0.42pp; breach risk is
   front-loaded, de-risking after profit protects nothing). Implementation = preset
   redeploy on trigger day (pulse alarms at −3% total); no EA code change.

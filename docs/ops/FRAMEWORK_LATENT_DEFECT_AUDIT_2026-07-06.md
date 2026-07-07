@@ -37,6 +37,12 @@ fail through the just-set latch → naked FX leg (12778 class).
 (`QM_TradeContextOpensExposure`: DEAL with position=0, or PENDING); closes/SLTP/
 REMOVE/CLOSE_BY always pass; latch re-arms per broker day; latched rejections are
 WARN-logged (were silent). *Reaches live books at next rebuild.*
+**BUILD RULE (review 83be4dd3, not enforced by type):** the exemption relies on
+the framework convention that risk-REDUCING `TRADE_ACTION_DEAL` requests set
+`request.position`. All framework close helpers (`QM_TM_ClosePosition`, grid cap
+close, pair close) do; any custom EA calling `QM_TradeContextSend()` directly for
+a close/reduce DEAL MUST set `request.position`, or the latch will classify it as
+exposure-opening and can block the flatten.
 
 ### C1/D3/E1 — QM_StopATR raw-handle helper still poisoned the fleet
 `QM_StopRules.mqh:52-75` (`QM_StopRulesReadATRValue`): raw iATR → CopyBuffer →
@@ -100,7 +106,7 @@ the ratified order-of-operations rule.
 | G1 | German terminals (T2/T6): no alias for "Equity Drawdown Maximal" → DD parsed 0.0 → **15% DD ceiling never bound there** | passed DD-blowout EAs | real-report-verified aliases ("Rückgang Equity maximal", "Qualität der Historie") |
 | G13 | Missing graded-metric labels defaulted to 0s with no invalid marker → parse drift graded as strategy FAIL | both | `REPORT_METRIC_MISSING:<metric>` markers (0-trade reports verified to carry all labels — no requeue-churn risk) |
 | G4 | Q08 report-fallback trades carry no volume → commission $0 → **DL-072 cushion auto-PASS + PF-net==PF-gross** exactly on degraded evidence | passed cost-fragile EAs | all-volume-less trade set → cushion INVALID → aggregate INVALID (re-run) |
-| G7 | Q09 basket fix f8e79266b incomplete: durable store keys streams by LOGICAL symbol, resolver looked only for host-keyed files (12772/12864 verified broken on disk; 12778 worked only via manual copy) | blocked baskets (NEED_MORE_DATA) | existence-aware resolver with logical-name fallback + persister writes host AND logical copies. Functional test: 12772 0→226 trades, 12864 0→106, 12778 regression-free |
+| G7 | Q09 basket fix f8e79266b incomplete: durable store keys streams by LOGICAL symbol, resolver looked only for host-keyed files (12772/12864 verified broken on disk; 12778 worked only via manual copy) | blocked baskets (NEED_MORE_DATA) | existence-aware resolver with logical-name fallback + persister writes host AND logical copies. Functional test (resolver-level durable-stream proof, NOT pipeline Q09 verdicts — review 83be4dd3): 12772 0→226 trades (12772 has no Q09 work item; its latest pipeline state is Q08 FAIL_HARD), 12864 0→106 (Q09 FAIL_PORTFOLIO), 12778 regression-free (Q09 PASS_PORTFOLIO) |
 | G3 | Q08 baseline retry adopted newest summary from the shared per-EA dir — possibly ANOTHER SYMBOL's run | cross-symbol contamination | symbol-gated summary adoption |
 | G6 | Q08.5 runner hardcoded `-Period H1` → non-H1 EAs got plateau evidence on the wrong timeframe | wrong evidence | `period_from_setfile` |
 | G5 | One timed-out perturbation (pf=None→0.0) → plateau breach → **FAIL_HARD** | killed EAs on infra | pf=None rows → INVALID (re-run); parsed pf with 0 trades REMAINS a breach (real fragility). Suite 39/39 |
