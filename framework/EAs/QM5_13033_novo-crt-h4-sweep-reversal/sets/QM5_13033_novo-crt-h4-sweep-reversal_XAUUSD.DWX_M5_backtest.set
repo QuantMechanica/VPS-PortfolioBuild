@@ -1,0 +1,34 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13033
+; ea_slug:      novo-crt-h4-sweep-reversal
+; ea_version:   v5.0
+; set_version:  s20260707-001
+; symbol:       XAUUSD.DWX
+; timeframe:    M5
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   74b0224e462cbdd938193ebb7b71b80d5dcac4a43d3e504018677745fae58f67
+; author:       Development
+; date:         2026-07-07
+;==========================================================
+qm_ea_id=13033
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_13033_novo-crt-h4-sweep-reversal.md
+strategy_body_max_frac=0.50
+strategy_prior_body_max_frac=0.50
+strategy_anchor_open_hour=12
+strategy_sweep_start_minute=960
+strategy_sweep_end_minute=1110
+strategy_trigger_window_min=120
+strategy_atr_period_m5=14
+strategy_sl_buffer_atr=0.10
+strategy_tp_mode=0
+strategy_flatten_minute=1200
+strategy_max_spread_points=2500

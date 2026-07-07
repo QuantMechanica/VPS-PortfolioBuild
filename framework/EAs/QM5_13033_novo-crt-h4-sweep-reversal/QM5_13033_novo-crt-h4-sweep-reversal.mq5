@@ -44,13 +44,13 @@ input group "Strategy"
 input double strategy_body_max_frac        = 0.50;
 input double strategy_prior_body_max_frac  = 0.50;
 input int    strategy_anchor_open_hour     = 12;
-input int    strategy_sweep_start_minute   = 16 * 60;
-input int    strategy_sweep_end_minute     = 18 * 60 + 30;
+input int    strategy_sweep_start_minute   = 960;
+input int    strategy_sweep_end_minute     = 1110;
 input int    strategy_trigger_window_min   = 120;
 input int    strategy_atr_period_m5        = 14;
 input double strategy_sl_buffer_atr        = 0.10;
 input int    strategy_tp_mode              = 0;     // 0=opposite anchor side, 1=anchor midpoint
-input int    strategy_flatten_minute       = 20 * 60;
+input int    strategy_flatten_minute       = 1200;
 input int    strategy_max_spread_points    = 2500;
 
 const int STRATEGY_WAIT_ANCHOR  = 0;
