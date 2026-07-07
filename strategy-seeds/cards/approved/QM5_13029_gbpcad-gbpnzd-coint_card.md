@@ -179,3 +179,4 @@ gates.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-07 | initial extended-screen FX cointegration sibling card | G0 | APPROVED |
+| v2 | 2026-07-07 | compiled basket EA and logical basket Q02 enqueued as work item 8acc9930 | Q02 | PENDING |
