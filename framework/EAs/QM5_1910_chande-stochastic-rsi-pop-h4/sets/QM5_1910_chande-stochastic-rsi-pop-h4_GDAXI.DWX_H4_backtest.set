@@ -1,0 +1,38 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1910
+; ea_slug:      chande-stochastic-rsi-pop-h4
+; ea_version:   v5.0
+; set_version:  s20260707-001
+; symbol:       GDAXI.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   3
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-07
+;==========================================================
+qm_ea_id=1910
+qm_magic_slot_offset=3
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1910_chande-stochastic-rsi-pop-h4.md
+strategy_rsi_period=14
+strategy_stoch_rsi_period=14
+strategy_signal_period=3
+strategy_oversold_level=20.0
+strategy_overbought_level=80.0
+strategy_midline_level=50.0
+strategy_d1_ema_period=50
+strategy_atr_period=20
+strategy_initial_sl_atr_mult=2.5
+strategy_trail_atr_mult=2.0
+strategy_trail_start_atr_mult=1.5
+strategy_spread_atr_mult=0.35
+strategy_time_stop_h4_bars=24
+strategy_ema_slope_lookback_d1=5
+strategy_ema_slope_atr_mult=0.5

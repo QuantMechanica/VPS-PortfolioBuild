@@ -14440,6 +14440,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12935,sperandeo-tlb-refinement-h4,8,GBPUSD.DWX,129350008,2026-07-07,Development,active
 12935,sperandeo-tlb-refinement-h4,9,USDJPY.DWX,129350009,2026-07-07,Development,active
 13025,xti-psm-mom,0,XTIUSD.DWX,130250000,2026-07-07,Codex,active
+13026,xti-import-flow-fade,0,XTIUSD.DWX,130260000,2026-07-07,Codex,active
 12933,aa-tom-sma10-card,0,SP500.DWX,129330000,2026-07-07,Development,active
 12933,aa-tom-sma10-card,1,NDX.DWX,129330001,2026-07-07,Development,active
 12933,aa-tom-sma10-card,2,WS30.DWX,129330002,2026-07-07,Development,active
@@ -14539,3 +14540,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1910,chande-stochastic-rsi-pop-h4,11,NZDUSD.DWX,19100011,2026-07-07,Development,active
 1910,chande-stochastic-rsi-pop-h4,12,XAUUSD.DWX,19100012,2026-07-07,Development,active
 1910,chande-stochastic-rsi-pop-h4,13,XTIUSD.DWX,19100013,2026-07-07,Development,active
+2024,pring-trend-deviation-oscillator-h4,0,SP500.DWX,20240000,2026-07-07,Development,active
+2024,pring-trend-deviation-oscillator-h4,1,NDX.DWX,20240001,2026-07-07,Development,active
+2024,pring-trend-deviation-oscillator-h4,2,WS30.DWX,20240002,2026-07-07,Development,active
+2024,pring-trend-deviation-oscillator-h4,3,GDAXI.DWX,20240003,2026-07-07,Development,active
+2024,pring-trend-deviation-oscillator-h4,4,UK100.DWX,20240004,2026-07-07,Development,active
+2024,pring-trend-deviation-oscillator-h4,5,EURUSD.DWX,20240005,2026-07-07,Development,active
+2024,pring-trend-deviation-oscillator-h4,6,GBPUSD.DWX,20240006,2026-07-07,Development,active
+2024,pring-trend-deviation-oscillator-h4,7,USDJPY.DWX,20240007,2026-07-07,Development,active
+2024,pring-trend-deviation-oscillator-h4,8,XAUUSD.DWX,20240008,2026-07-07,Development,active
+2024,pring-trend-deviation-oscillator-h4,9,XTIUSD.DWX,20240009,2026-07-07,Development,active
