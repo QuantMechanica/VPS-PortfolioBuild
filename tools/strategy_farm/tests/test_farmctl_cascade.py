@@ -826,6 +826,7 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
                         "host_timeframe": "D1",
                         "portfolio_scope": "basket",
                         "q04_latest_full_year": 2024,
+                        "q07_seed_timeout_sec": 5400,
                     }),
                 ),
             )
@@ -840,6 +841,8 @@ Universe: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, XAUUSD, XTIUSD, NDX.DWX, GDAXI
             self.assertEqual(cmd[cmd.index("--logical-symbol") + 1], logical)
             self.assertIn("--latest-full-year", cmd)
             self.assertEqual(cmd[cmd.index("--latest-full-year") + 1], "2024")
+            self.assertIn("--timeout-sec", cmd)
+            self.assertEqual(cmd[cmd.index("--timeout-sec") + 1], "5400")
             self.assertIn("--full-history-from", cmd)
             self.assertEqual(
                 cmd[cmd.index("--full-history-from") + 1],

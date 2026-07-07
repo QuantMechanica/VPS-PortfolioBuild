@@ -3218,6 +3218,14 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--baseline-setfile", str(item_row["setfile_path"] or ""),
             "--terminal", terminal or "T1",
         ])
+        q07_seed_timeout_sec = payload.get("q07_seed_timeout_sec")
+        if q07_seed_timeout_sec is not None:
+            try:
+                seed_timeout = int(str(q07_seed_timeout_sec).strip())
+            except (TypeError, ValueError):
+                seed_timeout = 0
+            if seed_timeout > 0:
+                cmd.extend(["--timeout-sec", str(seed_timeout)])
         latest_full_year = payload.get("q04_latest_full_year", payload.get("latest_full_year"))
         if latest_full_year is not None:
             try:
