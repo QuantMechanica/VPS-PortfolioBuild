@@ -44,7 +44,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 last_updated: 2026-07-06
-smoke_year: 2022  # regime-gated: calm years trade zero BY DESIGN; smoke on a bear year
+smoke_year: 2020  # AUDJPY short: needs a JPY-strength/risk-off downtrend year (2020 COVID crash); AUDJPY rose in 2022
 expected_pf: 1.12
 expected_dd_pct: 14.0
 risk_class: medium
