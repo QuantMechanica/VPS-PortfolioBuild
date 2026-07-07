@@ -476,6 +476,18 @@ def _lane_heartbeat_stale(root: Path, agent_id: str) -> bool:
         return False
 
 
+def _declared_registry_capabilities(conn: sqlite3.Connection) -> set[str]:
+    """Union of capabilities over ALL registry agents (incl. disabled ones), so
+    a skill owned only by a temporarily-disabled lane keeps gating routing."""
+    caps: set[str] = set()
+    for row in conn.execute("SELECT capabilities_json FROM agent_registry").fetchall():
+        try:
+            caps |= set(json.loads(row["capabilities_json"] or "[]"))
+        except (TypeError, ValueError):
+            continue
+    return caps
+
+
 def _eligible_agents(conn: sqlite3.Connection, required: set[str], root: Path = DEFAULT_ROOT) -> list[sqlite3.Row]:
     rows = conn.execute(
         """
@@ -515,10 +527,21 @@ def route_once(root: Path = DEFAULT_ROOT, *, claude_disabled_flag: Path = CLAUDE
         if not tasks:
             conn.commit()
             return RouteDecision("", "", None, "no_routable_task")
+        declared_caps = _declared_registry_capabilities(conn)
         skipped: list[str] = []
         selected: tuple[sqlite3.Row, sqlite3.Row, set[str]] | None = None
         for task in tasks:
             required = set(json.loads(task["required_capabilities_json"] or "[]"))
+            # required_skills gate routing too — but only skills some agent
+            # actually DECLARES (e.g. gemini: video_analysis). Routing was
+            # skills-blind and put two OWNER video tickets on codex while
+            # gemini was full (2026-07-07). Skills nobody declares
+            # ("code-review", "gemini-output-review" on auto-created review
+            # tasks) are descriptive metadata and must not make a task
+            # unroutable. Declared-but-disabled lane => ticket waits rather
+            # than falling to an incapable agent.
+            skills = set(json.loads(task["required_skills_json"] or "[]"))
+            required |= skills & declared_caps
             agents = _eligible_agents(conn, required, root)
             if not agents:
                 skipped.append(task["id"])
