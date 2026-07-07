@@ -25,3 +25,7 @@ T_Live, portfolio gate, or AutoTrading setting is touched. This is not
 `QM5_13039` gasoline-stock summer pressure, not broad distillate seasonal
 breakout/pullback, not crude inventory momentum, not product-supplied breakout,
 not XAU/XAG, not XNG RSI logic, and not ML.
+
+Build evidence: `artifacts/qm5_13042_build_result.json`. Q02 enqueue evidence:
+`artifacts/qm5_13042_q02_enqueue_20260707.json`, work item
+`f1d9d859-f479-4922-b8f8-f66ccb7f6e2a`.

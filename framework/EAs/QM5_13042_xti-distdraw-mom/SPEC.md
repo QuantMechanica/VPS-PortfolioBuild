@@ -80,6 +80,12 @@ source family:
 No live manifest, `T_Live` file, portfolio gate, or AutoTrading setting is
 touched by this build.
 
+## Evidence
+
+- Build result: `artifacts/qm5_13042_build_result.json`.
+- Q02 enqueue: `artifacts/qm5_13042_q02_enqueue_20260707.json`.
+- Q02 work item: `f1d9d859-f479-4922-b8f8-f66ccb7f6e2a`.
+
 ## Revision History
 
 | Version | Date | Reason | Notes |

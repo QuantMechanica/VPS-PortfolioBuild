@@ -1,0 +1,45 @@
+{
+  "ea_id": "QM5_13042",
+  "slug": "xti-distdraw-mom",
+  "enqueued_at_utc": "2026-07-07T16:29:46+00:00",
+  "source": "record_build_result.auto_q02",
+  "primary_build_task_id": "d6cf065c-2039-4467-a70a-fc47ced40cfb",
+  "build_result": "artifacts/qm5_13042_build_result.json",
+  "work_items": [
+    {
+      "id": "f1d9d859-f479-4922-b8f8-f66ccb7f6e2a",
+      "wi_id_short": "f1d9d859",
+      "kind": "backtest",
+      "phase": "Q02",
+      "status": "pending",
+      "symbol": "XTIUSD.DWX",
+      "host_symbol": "XTIUSD.DWX",
+      "host_timeframe": "D1",
+      "setfile_path": "framework/EAs/QM5_13042_xti-distdraw-mom/sets/QM5_13042_xti-distdraw-mom_XTIUSD.DWX_D1_backtest.set",
+      "attempt_count": 0,
+      "created_at": "2026-07-07T16:29:46+00:00",
+      "updated_at": "2026-07-07T16:29:46+00:00"
+    }
+  ],
+  "duplicate_build_task_closed": {
+    "task_id": "e6dde08a-b5be-4b86-9ec7-2e56ad218002",
+    "status": "done",
+    "auto_q02_enqueued": [],
+    "auto_q02_skipped": [
+      {
+        "existing_wi_id": "f1d9d859",
+        "reason": "existing_q02_pending",
+        "symbol": "XTIUSD.DWX",
+        "setfile": "QM5_13042_xti-distdraw-mom_XTIUSD.DWX_D1_backtest.set"
+      }
+    ]
+  },
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false
+  }
+}
