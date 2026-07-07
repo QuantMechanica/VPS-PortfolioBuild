@@ -41,6 +41,7 @@ from framework.scripts.q06_stress_harsh import gen_harsh_setfile_for, _basket_lo
 GATE_NAME = "Q07"
 PF_VARIANCE_PCT_MAX = 20.0
 PER_SEED_PF_MIN = 1.0
+DEFAULT_SEED_TIMEOUT_SEC = 5400
 
 
 def _text_from_completed_process(proc: subprocess.CompletedProcess | subprocess.TimeoutExpired) -> str:
@@ -389,7 +390,7 @@ def main() -> int:
                     help="Q03 plateau-median setfile (Q06 HARSH stress will be applied per Q07 spec)")
     ap.add_argument("--terminal", default="T2")
     ap.add_argument("--report-root", type=Path, default=Path("D:/QM/reports/pipeline"))
-    ap.add_argument("--timeout-sec", type=int, default=2400)
+    ap.add_argument("--timeout-sec", type=int, default=DEFAULT_SEED_TIMEOUT_SEC)
     ap.add_argument("--latest-full-year", type=int,
                     help="Cap full-history window when validated custom-symbol history ends before default")
     ap.add_argument("--full-history-from",

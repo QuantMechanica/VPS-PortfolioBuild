@@ -1,0 +1,97 @@
+{
+  "generated_at_utc": "2026-07-07T17:07:24Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves",
+  "selected_path": "advance_existing_forex_card",
+  "reason": "No unbuilt card-worthy FX cointegration pair remained; QM5_12532 and QM5_12533 were not Q02-blocked; QM5_13024 and QM5_13029 had already reached Q04 strategy failures. QM5_12781 remained the cleanest existing FX cointegration retry target after Q05/Q06 PASS and Q07 INFRA_FAIL on a single seed timeout.",
+  "ea": {
+    "ea_id": "QM5_12781",
+    "slug": "edgelab-usdjpy-audjpy-cointegration",
+    "pair": "USDJPY.DWX/AUDJPY.DWX",
+    "logical_symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1",
+    "basket_manifest": "framework/EAs/QM5_12781_edgelab-usdjpy-audjpy-cointegration/basket_manifest.json"
+  },
+  "problem_found": {
+    "prior_requeue_artifact": "artifacts/qm5_12781_q07_requeue_seed_timeout_20260707T150517Z.json",
+    "intended_seed_timeout_sec": 5400,
+    "actual_latest_q07_seed_timeout_sec": 2400,
+    "actual_latest_q07_runner_timeout_sec": 2520,
+    "actual_latest_q07_reason": "seeds_invalid_evidence:[(7, 'invalid_summary:INCOMPLETE_RUNS,TIMEOUT')]",
+    "diagnosis": "The live Q07 row had q07_seed_timeout_sec=5400, but the long-lived terminal worker still ran the Q07 script without --timeout-sec. Making q07_multiseed.py default to 5400 protects this retry even when an already-running worker imports stale farmctl code."
+  },
+  "code_changes": [
+    {
+      "path": "framework/scripts/q07_multiseed.py",
+      "change": "Added DEFAULT_SEED_TIMEOUT_SEC=5400 and used it as the --timeout-sec parser default."
+    },
+    {
+      "path": "framework/scripts/tests/test_q05_q07_verdicts.py",
+      "change": "Added a regression assertion for the Q07 default seed timeout."
+    },
+    {
+      "path": "tools/strategy_farm/tests/test_farmctl_cascade.py",
+      "change": "Moved the q07_seed_timeout_sec command assertion from the Q06 command test to the Q07 command test."
+    }
+  ],
+  "queue_action": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_12781 --phase Q07",
+    "result": {
+      "created": [],
+      "requeued": [
+        {
+          "id": "38226031-b41f-4f03-ab86-d1697ca5e203",
+          "symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1"
+        }
+      ],
+      "skipped": []
+    },
+    "post_state": {
+      "work_item_id": "38226031-b41f-4f03-ab86-d1697ca5e203",
+      "status": "pending",
+      "verdict": null,
+      "claimed_by": null,
+      "attempt_count": 0,
+      "evidence_path": null,
+      "updated_at_utc": "2026-07-07T17:06:52+00:00",
+      "pending_active_q07_rows": 1
+    },
+    "duplicate_work_item_created": false
+  },
+  "validation": [
+    {
+      "command": "python -m unittest framework.scripts.tests.test_q05_q07_verdicts",
+      "result": "PASS",
+      "tests": 23
+    },
+    {
+      "command": "python -m unittest tools.strategy_farm.tests.test_farmctl_cascade.CascadePromotionTests.test_q06_runner_cmd_keeps_basket_logical_symbol tools.strategy_farm.tests.test_farmctl_cascade.CascadePromotionTests.test_q07_runner_cmd_keeps_basket_logical_symbol",
+      "result": "PASS",
+      "tests": 2
+    },
+    {
+      "command": "python -m py_compile framework/scripts/q07_multiseed.py tools/strategy_farm/farmctl.py tools/strategy_farm/tests/test_farmctl_cascade.py",
+      "result": "PASS"
+    }
+  ],
+  "queue_snapshot_after": {
+    "counts": {
+      "active": 7,
+      "pending": 5516,
+      "done": 43353,
+      "failed": 45266
+    },
+    "qm5_12781_queue_rank": "queued_top[1]",
+    "cpu_ceiling": "active factory work at 7; no manual MT5 dispatch launched"
+  },
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

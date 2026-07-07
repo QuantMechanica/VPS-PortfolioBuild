@@ -15,6 +15,9 @@ from framework.scripts import q07_multiseed as q07
 
 
 class Q05Q07VerdictTests(unittest.TestCase):
+    def test_q07_default_seed_timeout_is_basket_safe(self) -> None:
+        self.assertEqual(q07.DEFAULT_SEED_TIMEOUT_SEC, 5400)
+
     def test_q05_parser_preserves_zero_pf_and_zero_drawdown(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             summary = Path(tmp) / "summary.json"
