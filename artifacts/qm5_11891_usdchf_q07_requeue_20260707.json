@@ -1,0 +1,94 @@
+{
+  "generated_at_utc": "2026-07-07T11:19:03Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves",
+  "unit_of_work": "advance existing low-frequency forex card after FX cointegration frontier exhaustion",
+  "decision": {
+    "selected_path": "advance_existing_forex_card",
+    "new_unbuilt_fx_cointegration_pair_found": false,
+    "reason": "The strict 66-pair FX cointegration anchors QM5_12532 and QM5_12533 are already built and not Q02-blocked. The current non-duplicate extended FX cointegration frontier is already open: QM5_13024 AUDCAD/GBPAUD is Q04 pending and QM5_13029 GBPCAD/GBPNZD is Q02 pending. The fallback path advanced one existing low-frequency structural forex card without creating a duplicate work item.",
+    "runtime_dispatch_started": false,
+    "runtime_dispatch_reason": "No manual MT5 backtest was launched; the paced fleet owns pending work_items."
+  },
+  "source_evidence": {
+    "primary_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "method_source": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+    "frontier_audit": "artifacts/fx_cointegration_frontier_audit_20260707T0934Z.json",
+    "priority_artifact": "artifacts/fx_cointegration_q02_priority_20260707T102015Z.json"
+  },
+  "anchor_status_checked": {
+    "QM5_12532": {
+      "symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "state": "Q02 PASS, Q04 PASS, Q05 FAIL",
+      "q02_blocked": false
+    },
+    "QM5_12533": {
+      "symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "state": "Q02 PASS, Q04 FAIL",
+      "q02_blocked": false
+    },
+    "QM5_13024": {
+      "pair": "AUDCAD.DWX/GBPAUD.DWX",
+      "state": "Q04 pending",
+      "work_item_id": "0334f308-2519-4c3c-8d80-2f7e96e8c126"
+    },
+    "QM5_13029": {
+      "pair": "GBPCAD.DWX/GBPNZD.DWX",
+      "state": "Q02 pending",
+      "work_item_id": "8acc9930-38b8-4dbb-a3e1-dc9ae665366f"
+    }
+  },
+  "selected_existing_card": {
+    "ea_id": "QM5_11891",
+    "slug": "unger-daily-factor-indecision-pattern",
+    "spec": "framework/EAs/QM5_11891_unger-daily-factor-indecision-pattern/SPEC.md",
+    "symbol": "USDCHF.DWX",
+    "timeframe": "D1",
+    "logic_class": "structural candle indecision breakout with ATR stop/target and time stop",
+    "backtest_risk_mode": "RISK_FIXED",
+    "reason_selected": "D1 structural forex sleeve with Q06 PASS and Q07 infra-only failure; EURJPY sibling was left untouched because it already passed Q07 and failed later at Q08."
+  },
+  "queue_mutation": {
+    "sqlite": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "work_item_id": "2d4a44a5-6d6a-4842-b610-4400e5dd7dd4",
+    "ea_id": "QM5_11891",
+    "symbol": "USDCHF.DWX",
+    "phase": "Q07",
+    "previous_status": "done",
+    "previous_verdict": "INFRA_FAIL",
+    "previous_reason": "seeds_invalid_evidence:[(42, 'invalid_summary:INCOMPLETE_RUNS,REPORT_MISSING'), (17, 'invalid_summary:INCOMPLETE_RUNS,REPORT_MISSING'), (99, 'invalid_summary:INCOMPLETE_RUNS,REPORT_MISSING'), (7, 'invalid_summary:INCOMPLETE_RUNS,REPORT_MISSING'), (2026, 'invalid_summary:INCOMPLETE_RUNS,REPORT_MISSING')]",
+    "predecessor_phase": "Q06",
+    "predecessor_work_item_id": "7368da93-fe2f-4bd8-bef5-a749f0869f08",
+    "predecessor_verdict": "PASS",
+    "status_after": "pending",
+    "duplicate_work_item_created": false,
+    "archived_report_root": "D:/QM/reports/work_items/2d4a44a5-6d6a-4842-b610-4400e5dd7dd4.requeued_20260707T1119030000"
+  },
+  "queue_snapshot_after": {
+    "qm5_11891_summary": {
+      "Q06_done_PASS": 2,
+      "Q07_done_PASS": 1,
+      "Q07_pending": 1,
+      "Q08_done_FAIL_HARD": 1
+    },
+    "target_row": {
+      "status": "pending",
+      "verdict": null,
+      "evidence_path": null,
+      "claimed_by": null
+    }
+  },
+  "guardrails": {
+    "manual_mt5_backtest_launched": false,
+    "new_work_item_created": false,
+    "duplicate_work_item_created": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
