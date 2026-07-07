@@ -55,6 +55,7 @@ input int    strategy_max_hold_days         = 10;
 input int    strategy_max_spread_points     = 2500;
 
 int g_last_entry_month_key = 0;
+int g_entry_candidate_month_key = 0;
 
 bool Strategy_IsXngD1()
   {
@@ -284,6 +285,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.reason = "QM5_13037_XNG_PROD_BRK";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
+   g_entry_candidate_month_key = 0;
 
    if(Strategy_HasOpenPosition())
       return false;
@@ -328,7 +330,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    req.reason = (direction > 0) ? "XNG_DRYPROD_BRK_LONG" : "XNG_DRYPROD_BRK_SHORT";
-   g_last_entry_month_key = signal_month_key;
+   g_entry_candidate_month_key = signal_month_key;
    return true;
   }
 
@@ -429,7 +431,9 @@ void OnTick()
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
+      if(QM_TM_OpenPosition(req, out_ticket))
+         g_last_entry_month_key = g_entry_candidate_month_key;
+      g_entry_candidate_month_key = 0;
      }
   }
 
