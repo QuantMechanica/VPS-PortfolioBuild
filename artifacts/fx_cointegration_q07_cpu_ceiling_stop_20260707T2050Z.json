@@ -1,0 +1,131 @@
+{
+  "generated_at_utc": "2026-07-07T20:50:00Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves",
+  "unit_of_work": "non-duplicate FX cointegration frontier triage under paced-fleet CPU ceiling",
+  "decision": {
+    "selected_path": "advance_existing_forex_card",
+    "reason": "No unbuilt card-worthy FX cointegration pair remains from the documented 66-pair scan or the already-carded extended frontier. The newest extended sleeves QM5_13024 and QM5_13029 have already passed Q02 but failed Q04 on valid fold evidence. The remaining pass-through forex frontier is Q07, where QM5_12781 is active and QM5_12712 is priority pending/retrying under long seed timeout.",
+    "new_unbuilt_pair_found": false,
+    "new_work_item_created": false,
+    "duplicate_work_item_created": false,
+    "manual_mt5_dispatch_started": false,
+    "stop_reason": "Backtest CPU ceiling: 7 work_items active and factory terminal64/metatester64 processes occupied; no duplicate enqueue or manual dispatch was launched."
+  },
+  "source_evidence": {
+    "primary_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "method_source": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+    "prior_frontier_audit": "artifacts/fx_cointegration_frontier_audit_20260707T0934Z.json",
+    "prior_q02_priority": "artifacts/fx_cointegration_q02_priority_20260707T102015Z.json",
+    "qm5_13029_q02_q03_q04_followthrough": "artifacts/qm5_13029_q02_pass_q03_q04_priority_20260707T133238Z.json"
+  },
+  "verified_frontier": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "latest_state": "Q02 PASS, Q04 PASS, Q05 FAIL",
+      "q02_blocked": false
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "latest_state": "Q02 PASS, Q04 FAIL",
+      "q02_blocked": false
+    },
+    "QM5_13024": {
+      "pair": "AUDCAD.DWX/GBPAUD.DWX",
+      "latest_state": "Q02 PASS x2, Q04 FAIL",
+      "q04_evidence": "D:/QM/reports/work_items/0334f308-2519-4c3c-8d80-2f7e96e8c126/QM5_13024/Q04/QM5_13024_AUDCAD_GBPAUD_COINTEGRATION_D1/aggregate.json",
+      "q04_reason": "F1 pf_net 0.792; F2 pf_net 1.011"
+    },
+    "QM5_13029": {
+      "pair": "GBPCAD.DWX/GBPNZD.DWX",
+      "latest_state": "Q02 PASS, Q03 PASS, Q04 FAIL",
+      "q04_evidence": "D:/QM/reports/work_items/629d9f34-d7a4-42e6-82f0-c7b4d26289b7/QM5_13029/Q04/QM5_13029_GBPCAD_GBPNZD_COINTEGRATION_D1/aggregate.json",
+      "q04_reason": "F1 pf_net 0.920; F2 pf_net 1.420"
+    },
+    "QM5_12712": {
+      "pair": "EURGBP.DWX/EURAUD.DWX",
+      "latest_state": "Q02 PASS, Q03 PASS, Q04 PASS, Q05 PASS, Q06 PASS, Q07 priority pending/retrying",
+      "work_item_id": "1b9fa7a5-48a7-4e57-a699-9e55dfb0cb19",
+      "payload_q07_seed_timeout_sec": 5400,
+      "partial_evidence": [
+        "D:/QM/reports/work_items/1b9fa7a5-48a7-4e57-a699-9e55dfb0cb19/QM5_12712/20260707_181339/summary.json",
+        "D:/QM/reports/work_items/1b9fa7a5-48a7-4e57-a699-9e55dfb0cb19/QM5_12712/20260707_190810/summary.json"
+      ]
+    },
+    "QM5_12781": {
+      "pair": "USDJPY.DWX/AUDJPY.DWX",
+      "latest_state": "Q02 PASS, Q05 PASS, Q06 PASS, Q07 active",
+      "work_item_id": "38226031-b41f-4f03-ab86-d1697ca5e203",
+      "claimed_by": "T1",
+      "payload_q07_seed_timeout_sec": 5400,
+      "active_report_root": "D:/QM/reports/work_items/38226031-b41f-4f03-ab86-d1697ca5e203"
+    }
+  },
+  "queue_snapshot": {
+    "sqlite": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "counts": {
+      "active": 7,
+      "pending": 5477,
+      "done": 43458,
+      "failed": 45266
+    },
+    "active_work_items": [
+      {
+        "terminal": "T8",
+        "ea": "QM5_10465",
+        "phase": "Q02",
+        "symbol": "GBPUSD.DWX"
+      },
+      {
+        "terminal": "T2",
+        "ea": "QM5_10303",
+        "phase": "Q02",
+        "symbol": "USDCAD.DWX"
+      },
+      {
+        "terminal": "T6",
+        "ea": "QM5_11034",
+        "phase": "Q02",
+        "symbol": "GBPJPY.DWX"
+      },
+      {
+        "terminal": "T3",
+        "ea": "QM5_10681",
+        "phase": "Q02",
+        "symbol": "GDAXI.DWX"
+      },
+      {
+        "terminal": "T4",
+        "ea": "QM5_10805",
+        "phase": "Q02",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T1",
+        "ea": "QM5_12781",
+        "phase": "Q07",
+        "symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1"
+      },
+      {
+        "terminal": "T7",
+        "ea": "QM5_10143",
+        "phase": "Q02",
+        "symbol": "GBPAUD.DWX"
+      }
+    ],
+    "non_factory_terminals_observed_read_only": [
+      "C:/Program Files/FTMO Global Markets MT5 Terminal/terminal64.exe",
+      "C:/QM/mt5/T_Live/MT5_Base/terminal64.exe"
+    ]
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
