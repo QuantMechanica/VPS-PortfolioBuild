@@ -1,0 +1,13 @@
+{
+  "ea_id": "QM5_13046",
+  "ea_slug": "xti-vrp-proxy",
+  "symbol": "XTIUSD.DWX",
+  "phase": "Q02",
+  "work_item_id": "95a18815-8dcb-4051-a809-a97b68bafdb1",
+  "status": "pending",
+  "created_at": "2026-07-07T20:14:42+00:00",
+  "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13046_xti-vrp-proxy\\sets\\QM5_13046_xti-vrp-proxy_XTIUSD.DWX_D1_backtest.set",
+  "enqueue_command": "python tools\\strategy_farm\\sweep_enqueue_built_eas.py --apply --ea QM5_13046 --symbols XTIUSD.DWX --queue-ceiling 10000",
+  "enqueue_result": "enqueued=1 skipped=0",
+  "evidence": "D:\\QM\\reports\\state\\claude_sweep_enqueue_2026-06-10.json"
+}

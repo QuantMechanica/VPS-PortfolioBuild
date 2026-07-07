@@ -1,0 +1,19 @@
+{
+  "ea_id": "QM5_13046",
+  "ea_slug": "xti-vrp-proxy",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "compiled_at_utc": "2026-07-07T20:14:18Z",
+  "compile_result": "PASS",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_result": "PASS",
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260707_201418.json",
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260707_201418\\QM5_13046_xti-vrp-proxy.compile.log",
+  "ex5": "C:\\QM\\repo\\framework\\EAs\\QM5_13046_xti-vrp-proxy\\QM5_13046_xti-vrp-proxy.ex5",
+  "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_13046_xti-vrp-proxy\\sets\\QM5_13046_xti-vrp-proxy_XTIUSD.DWX_D1_backtest.set",
+  "setfile_build_hash": "cf616c42652e628f57c53fae7a82fd9abafbd9161bae32082e6254a4c6c7eda8",
+  "notes": "Build-only verification. No local backtest run."
+}
