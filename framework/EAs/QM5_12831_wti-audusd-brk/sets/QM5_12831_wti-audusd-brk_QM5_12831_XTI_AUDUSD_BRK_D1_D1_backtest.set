@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   5ec9484f95af7ad0ee8eba88346d111b28a85527471f59d5649f1a48e565c7cc
+; build_hash:   083922f5d26bcf1c1644e001ba9e089fbd0db045883317a87c5a203c8dd2ea71
 ; author:       Development
 ; date:         2026-06-30
 ;==========================================================
@@ -20,8 +20,11 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_filter_news_enabled=0
+qm_filter_news_mode=0
 qm_filter_regime_enabled=0
 qm_filter_regime_lookback_bars=100
 qm_filter_regime_bull_return_pct=2.0

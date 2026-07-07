@@ -497,12 +497,6 @@ bool Strategy_ExitSignal()
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   if(QM_FrameworkFridayCloseNow(broker_time))
-     {
-      Strategy_ClosePair(QM_EXIT_FRIDAY_CLOSE);
-      return true;
-     }
-
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
      {
       if(!QM_NewsAllowsTrade2(g_leg_xti, broker_time, qm_news_temporal, qm_news_compliance))
@@ -563,28 +557,11 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
-
-   const bool new_bar = QM_IsNewBar();
-   if(new_bar)
-     {
-      QM_EquityStreamOnNewBar();
-      if(Strategy_OpenPairLegCount() > 0)
-         Strategy_RefreshSpreadState();
-     }
 
    Strategy_ManageOpenPosition();
 
@@ -602,12 +579,17 @@ void OnTick()
         }
      }
 
-   if(!new_bar)
+   if(Strategy_NewsFilterHook(broker_now))
       return;
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
    if(!Strategy_EntryTimeReady(broker_now))
       return;
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
