@@ -14441,6 +14441,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12935,sperandeo-tlb-refinement-h4,9,USDJPY.DWX,129350009,2026-07-07,Development,active
 13025,xti-psm-mom,0,XTIUSD.DWX,130250000,2026-07-07,Codex,active
 13026,xti-import-flow-fade,0,XTIUSD.DWX,130260000,2026-07-07,Codex,active
+13027,xti-cot-mom,0,XTIUSD.DWX,130270000,2026-07-07,Codex,active
 12933,aa-tom-sma10-card,0,SP500.DWX,129330000,2026-07-07,Development,active
 12933,aa-tom-sma10-card,1,NDX.DWX,129330001,2026-07-07,Development,active
 12933,aa-tom-sma10-card,2,WS30.DWX,129330002,2026-07-07,Development,active
