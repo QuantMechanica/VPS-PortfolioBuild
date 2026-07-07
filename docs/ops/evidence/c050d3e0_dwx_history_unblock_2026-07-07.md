@@ -4,31 +4,31 @@ Task: `c050d3e0-e47b-4fd9-aade-45283d359825`
 
 ## Change
 
-- Added `infra/scripts/build_dwx_history_ranges.py` to regenerate `framework/registry/dwx_symbol_history_ranges.csv` from MT5 `.hcc` custom-symbol history.
-- Regenerated the registry for 37 canonical DWX symbols and 19 supported periods: `D1,H12,H8,H6,H4,H3,H2,H1,M30,M20,M15,M12,M10,M6,M5,M4,M3,M2,M1`.
-- Left `W1` and `MN1` excluded. No W1/MN1 relaxation was made.
-- Populated `source_terminals` from numeric factory terminals only (`T1` through `T10`) that cover the selected contiguous `.hcc` year range.
+- `fd5764642 ops: expand DWX history registry periods` added `infra/scripts/build_dwx_history_ranges.py` and regenerated `framework/registry/dwx_symbol_history_ranges.csv` from MT5 `.hcc` custom-symbol history.
+- Registry now covers 37 canonical DWX symbols and 19 supported MT5-derived periods: `D1,H12,H8,H6,H4,H3,H2,H1,M30,M20,M15,M12,M10,M6,M5,M4,M3,M2,M1`.
+- `W1` and `MN1` remain excluded. There are 0 `W1`/`MN1` rows in the registry.
+- This cycle added a worker claim fix: when the history guard adjusts a default request such as 2017-2022 to the registry range, `terminal_worker.claim_atomic()` now persists `from_year`, `to_year`, `history_first_year`, `history_last_year`, and `history_adjusted` into the payload before launch. That prevents legacy pending rows from being claimed as valid and then run over an unavailable 2017 slice.
 
 Regeneration log: `docs/ops/evidence/c050d3e0_dwx_history_registry_regen_2026-07-07.json`
 
-## Empirical Data
+## T9 Canaries
 
-No new MT5 terminal was launched in this headless cycle because the orchestration hard rule says never start `terminal64.exe` manually. Instead, I used existing completed work-item reports and tester-cache evidence for the exact derived-period classes.
+All runs used `framework/scripts/run_smoke.ps1`, `Terminal=T9`, `Model=4`, `Runs=1`, `MinTrades=0`, `SmokeMode`. T9 had no running terminal before/after the canaries.
 
-| Period | Symbol | EA | Phase | Verdict | Bars | Trades | Report |
-| --- | --- | --- | --- | --- | ---: | ---: | --- |
-| M30 | NDX.DWX | QM5_10805 | Q02 | PASS | 70,556 | 1,839 | `D:\QM\reports\work_items\aef06360-b6ca-420e-ac00-343ddd11f8a8\QM5_10805\20260704_125315\raw\run_01\report.htm` |
-| H8 | XAUUSD.DWX | QM5_10494 | Q03 | PASS | 774 | 96 | `D:\QM\reports\work_items\4fcc9a17-9dcb-428a-bf3f-a76cb25ac76c\QM5_10494\20260701_144855\raw\run_01\report.htm` |
-| M1 | GBPUSD.DWX | QM5_10502 | Q02 | PASS | 1,840,574 | 1,359 | `D:\QM\reports\work_items\d62c78b9-0109-40f5-8487-1f7ad515709b\QM5_10502\20260627_162251\raw\run_01\report.htm` |
-| M30 | WS30.DWX | QM5_10396 | Q02 | FAIL | 5,935 | 0 | `D:\QM\reports\work_items\7f55d701-bd80-497c-8d7a-a12e20451637\QM5_10396\20260704_231333\raw\run_01\report.htm` |
+| Class | Period | Symbol | EA | Window | Result | Bars | Trades | Report |
+| --- | --- | --- | --- | --- | --- | ---: | ---: | --- |
+| Derived period | M30 | AUDUSD.DWX | QM5_10012 | 2024.07.01-2024.07.31 | PASS | 1,055 | 22 | `D:\QM\reports\c050d3e0_history_canary\QM5_10012\20260707_134242\raw\run_02\report.htm` |
+| Derived period | H8 | EURJPY.DWX | QM5_10574 | 2024.07.01-2024.07.31 | PASS | 66 | 22 | `D:\QM\reports\c050d3e0_history_canary\QM5_10574\20260707_134822\raw\run_01\report.htm` |
+| Derived period | M1 | EURAUD.DWX | QM5_1118 | 2024.07.01-2024.07.07 | PASS | 7,143 | 26 | `D:\QM\reports\c050d3e0_history_canary\QM5_1118\20260707_135016\raw\run_01\report.htm` |
+| Adjusted window | D1 | WS30.DWX | QM5_10020 | 2018.07.02-2018.12.31 | PASS | 27 | 0 | `D:\QM\reports\c050d3e0_history_canary\QM5_10020\20260707_135039\raw\run_01\report.htm` |
 
-All four reports show `100% real ticks`. The WS30 row is a strategy FAIL, not an infra/history failure: it produced a valid report with real bars/ticks and zero trades.
+Detailed canary CSV: `docs/ops/evidence/c050d3e0_dwx_history_canary_results_2026-07-07.csv`
 
-Detailed CSV: `docs/ops/evidence/c050d3e0_dwx_history_empirical_runs_2026-07-07.csv`
+Earlier completed-report evidence remains in `docs/ops/evidence/c050d3e0_dwx_history_empirical_runs_2026-07-07.csv`.
 
 ## Queue Effect
 
-Snapshot source: `D:\QM\strategy_farm\state\farm_state.sqlite`, queried with the canonical `C:/QM/repo` worker code.
+Original non-writing probe against `D:\QM\strategy_farm\state\farm_state.sqlite`:
 
 | Metric | Before | After | Delta |
 | --- | ---: | ---: | ---: |
@@ -37,25 +37,23 @@ Snapshot source: `D:\QM\strategy_farm\state\farm_state.sqlite`, queried with the
 | History-ok rows | 5,062 | 5,380 | +318 |
 | Claimable ignoring multisymbol/terminal-busy gates | 2,325 | 2,430 | +105 |
 
-Non-writing worker simulation for `T9` after the registry change found a claimable row after scanning 16 priority rows:
+Before/after CSV: `docs/ops/evidence/c050d3e0_dwx_history_claimability_before_after_2026-07-07.csv`
 
-- `a9e1d513-9f3-4391-b61a-2fe4e2dbf34a`
-- `QM5_1118`, `CHFJPY.DWX`, `Q02`, `M1`
+Current residual/action snapshot after the registry commit and this cycle:
 
-Before/after and residual breakdown CSV: `docs/ops/evidence/c050d3e0_dwx_history_claimability_before_after_2026-07-07.csv`
+- `REQUEUE_NOT_NEEDED__CLAIM_PAYLOAD_ADJUSTS_TO_REGISTRY_WINDOW`: 1,272 rows. The worker now clamps these at claim time.
+- `KEEP_BLOCKED_UNSUPPORTED_PERIOD__NO_RELAX_W1_MN1`: 34 rows.
+- `KEEP_BLOCKED_NO_REGISTRY_SYMBOL_PERIOD__NEEDS_ALIAS_OR_INVALID_REVIEW`: 85 rows, led by `GER40.DWX`, `XBRUSD.DWX`, and `JPN225.DWX`.
 
-## Residual Blockers
+Residual/action CSV: `docs/ops/evidence/c050d3e0_dwx_history_invalid_requeue_breakdown_2026-07-07.csv`
 
-The 119 remaining history-blocked rows are not solved by derived-period expansion:
-
-- W1/MN1 remain blocked by design.
-- Non-canonical or unavailable symbols remain blocked, led by `GER40.DWX` (56), `XBRUSD.DWX` (18), and `JPN225.DWX` (4).
-- Some canonical rows still fall outside the conservative contiguous-year range and should be handled by explicit requeue/invalid decisions, not silent registry widening.
-
-No work-item status was mutated in this cycle.
+No W1/MN1 relaxation, no gate criteria change, and no broad work-item invalidation/requeue mutation were performed in this cycle.
 
 ## Verification
 
-- `python infra/scripts/build_dwx_history_ranges.py --mt5-root D:\QM\mt5 --symbol-matrix framework\registry\dwx_symbol_matrix.csv --out-csv framework\registry\dwx_symbol_history_ranges.csv --out-summary docs\ops\evidence\c050d3e0_dwx_history_registry_regen_2026-07-07.json`
+- `python infra/scripts/build_dwx_history_ranges.py --out-csv $env:TEMP\dwx_symbol_history_ranges_check.csv --out-summary $env:TEMP\dwx_symbol_history_ranges_check.json`
+- `Compare-Object` between the generated temp CSV and `framework/registry/dwx_symbol_history_ranges.csv`: no differences.
+- Registry row count: 704 file lines including header; 0 matches for `,W1,|,MN1,`.
 - `python -m unittest tools.strategy_farm.tests.test_dwx_history_ranges_builder`
-- Non-writing SQLite claimability probe against `D:\QM\strategy_farm\state\farm_state.sqlite`.
+- `python -m unittest tools.strategy_farm.tests.test_dwx_history_range_filter`
+- `python -m unittest tools.strategy_farm.tests.test_terminal_worker_atomic_claim.TerminalWorkerAtomicClaimTests.test_q02_claim_persists_adjusted_history_window tools.strategy_farm.tests.test_terminal_worker_atomic_claim.TerminalWorkerAtomicClaimTests.test_q02_claim_skips_terminal_without_symbol_history_source tools.strategy_farm.tests.test_terminal_worker_atomic_claim.TerminalWorkerAtomicClaimTests.test_dwx_history_range_registry_is_respected_for_p2_claims`

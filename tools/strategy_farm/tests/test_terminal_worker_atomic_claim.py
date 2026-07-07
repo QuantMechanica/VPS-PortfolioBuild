@@ -396,6 +396,43 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 row = conn.execute("SELECT status, claimed_by FROM work_items WHERE id='wi-audusd-q02'").fetchone()
             self.assertEqual(row, ("active", "T3"))
 
+    def test_q02_claim_persists_adjusted_history_window(self) -> None:
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root,
+                "wi-ws30-q02",
+                "WS30.DWX",
+                phase="Q02",
+                setfile_path="QM5_9999_demo_WS30.DWX_D1_backtest.set",
+            )
+
+            registry = {
+                ("WS30.DWX", "D1"): {
+                    "first_year": 2018,
+                    "last_year": 2026,
+                    "source_terminals": "T1,T2,T3,T4,T5,T6,T7,T8,T9,T10",
+                }
+            }
+            old_registry = terminal_worker.farmctl._dwx_symbol_history_registry
+            try:
+                terminal_worker.farmctl._dwx_symbol_history_registry = lambda: registry
+                claimed = terminal_worker.claim_atomic(root, "T9")
+            finally:
+                terminal_worker.farmctl._dwx_symbol_history_registry = old_registry
+
+            self.assertTrue(claimed.get("claimed"))
+            self.assertEqual(claimed["item"]["id"], "wi-ws30-q02")
+            payload = json.loads(claimed["item"]["payload_json"])
+            self.assertEqual(payload["from_year"], 2018)
+            self.assertEqual(payload["to_year"], farmctl.P2_DEFAULT_TO_YEAR)
+            self.assertEqual(payload["requested_from_year"], farmctl.P2_DEFAULT_FROM_YEAR)
+            self.assertEqual(payload["requested_to_year"], farmctl.P2_DEFAULT_TO_YEAR)
+            self.assertEqual(payload["history_first_year"], 2018)
+            self.assertEqual(payload["history_last_year"], 2026)
+            self.assertTrue(payload["history_adjusted"])
+            self.assertEqual(payload["history_adjustment_source"], "terminal_worker_claim")
+
     def test_q03_claim_uses_setfile_period_for_terminal_history_source(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"

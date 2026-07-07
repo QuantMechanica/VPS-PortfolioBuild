@@ -367,6 +367,27 @@ def _p2_history_claimable(
     return True, window
 
 
+def _merge_history_window_payload(payload: dict[str, Any], history: dict[str, Any] | None) -> None:
+    """Persist a non-skipped history window so the runner uses the guarded dates."""
+    if not history or history.get("skip"):
+        return
+    if "from_year" not in history or "to_year" not in history:
+        return
+    payload["from_year"] = history["from_year"]
+    payload["to_year"] = history["to_year"]
+    if "requested_from_year" in history:
+        payload["requested_from_year"] = history["requested_from_year"]
+    if "requested_to_year" in history:
+        payload["requested_to_year"] = history["requested_to_year"]
+    if "first_year" in history:
+        payload["history_first_year"] = history["first_year"]
+    if "last_year" in history:
+        payload["history_last_year"] = history["last_year"]
+    if history.get("adjusted"):
+        payload["history_adjusted"] = True
+        payload["history_adjustment_source"] = "terminal_worker_claim"
+
+
 MULTISYMBOL_REGISTRY_PATH = Path("D:/QM/strategy_farm/state/multisymbol_eas.txt")
 _multisym_cache: dict[str, Any] = {"mtime": -1.0, "ids": frozenset()}
 
@@ -600,6 +621,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     if not history_ok:
                         skipped_history.append({"item_id": item["id"], **(history or {})})
                         continue
+                    _merge_history_window_payload(payload, history)
                     payload.update({
                         "claimed_at_iso": now,
                         "claimed_by_worker_pid": os.getpid(),
