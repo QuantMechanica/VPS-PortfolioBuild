@@ -11377,10 +11377,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11577,robo-psar-awesome2-m30,0,EURUSD.DWX,115770000,2026-06-20,Development,active
 11577,robo-psar-awesome2-m30,1,USDCHF.DWX,115770001,2026-06-20,Development,active
 11577,robo-psar-awesome2-m30,2,GBPUSD.DWX,115770002,2026-06-20,Development,active
-11578,neely-weller-pct-filter-rule-d1,0,EURUSD.DWX,115780000,2026-06-18,Claude,reserved
-11578,neely-weller-pct-filter-rule-d1,1,GBPUSD.DWX,115780001,2026-06-18,Claude,reserved
-11578,neely-weller-pct-filter-rule-d1,2,USDJPY.DWX,115780002,2026-06-18,Claude,reserved
-11578,neely-weller-pct-filter-rule-d1,3,USDCHF.DWX,115780003,2026-06-18,Claude,reserved
+11578,neely-weller-pct-filter-rule-d1,0,EURUSD.DWX,115780000,2026-06-18,Development,active
+11578,neely-weller-pct-filter-rule-d1,1,GBPUSD.DWX,115780001,2026-06-18,Development,active
+11578,neely-weller-pct-filter-rule-d1,2,USDJPY.DWX,115780002,2026-06-18,Development,active
+11578,neely-weller-pct-filter-rule-d1,3,USDCHF.DWX,115780003,2026-06-18,Development,active
 11581,goodwin-kangaroo-tail-breakout-d1,0,USDJPY.DWX,115810000,2026-06-18,Development,active
 11582,goodwin-asian-session-breakout-usdjpy-h1,0,USDJPY.DWX,115820000,2026-06-18,Development,active
 11584,watthana-hammer-rsi-stoch-d1,0,EURUSD.DWX,115840000,2026-06-18,Claude,reserved

@@ -1,0 +1,27 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        11578
+; ea_slug:      neely-weller-pct-filter-rule-d1
+; ea_version:   v5.0
+; set_version:  s20260707-001
+; symbol:       USDJPY.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   2a972bd94662f3eaaffc6a66a8e05ef3971838ff625dbf72e0abea6d4161be01
+; author:       Development
+; date:         2026-07-07
+;==========================================================
+qm_ea_id=11578
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11578_neely-weller-pct-filter-rule-d1.md
+strategy_filter_pct=0.01
+strategy_atr_period=14
+strategy_sl_atr_mult=2.0
+strategy_sl_cap_pips=150.0
