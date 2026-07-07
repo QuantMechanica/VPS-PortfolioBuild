@@ -1,0 +1,37 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        13035
+; ea_slug:      xti-prod-sup-brk
+; ea_version:   v5.0
+; set_version:  s20260707-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   690900786a20c795a9d278dc94dddc1cb79476f190ca4b4242dd4a240607af2d
+; author:       Development
+; date:         2026-07-07
+;==========================================================
+qm_ea_id=13035
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\xti-prod-sup-brk_card.md
+strategy_long_start_month=4
+strategy_long_end_month=8
+strategy_short_start_month=9
+strategy_short_end_month=2
+strategy_channel_lookback=40
+strategy_sma_period=20
+strategy_sma_slope_shift=5
+strategy_atr_period=20
+strategy_min_range_atr=0.70
+strategy_min_body_atr=0.20
+strategy_atr_sl_mult=2.75
+strategy_atr_tp_mult=3.0
+strategy_max_hold_days=7
+strategy_max_spread_points=1000

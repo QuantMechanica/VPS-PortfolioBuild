@@ -14588,3 +14588,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13032,xng-cot-fade,0,XNGUSD.DWX,130320000,2026-07-07,Codex,active
 13034,xti-audcad-rspr,0,XTIUSD.DWX,130340000,2026-07-07,Codex,active
 13034,xti-audcad-rspr,1,AUDCAD.DWX,130340001,2026-07-07,Codex,active
+13035,xti-prod-sup-brk,0,XTIUSD.DWX,130350000,2026-07-07,Codex,active
