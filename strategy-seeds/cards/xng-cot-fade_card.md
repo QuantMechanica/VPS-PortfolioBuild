@@ -1,5 +1,5 @@
 ---
-ea_id: QM5_13033
+ea_id: QM5_13032
 slug: xng-cot-fade
 type: strategy
 strategy_id: CFTC-COT-XNG-FRI-FADE-2026
@@ -35,7 +35,7 @@ target_symbols: [XNGUSD.DWX]
 primary_target_symbols: [XNGUSD.DWX]
 markets: [commodities, energy, natural_gas]
 single_symbol_only: true
-logical_symbol: QM5_13033_XNG_COT_FRI_FADE_D1
+logical_symbol: QM5_13032_XNG_COT_FRI_FADE_D1
 period: D1
 timeframes: [D1]
 expected_trade_frequency: "D1 natural-gas first-new-week fade after an unusually large Friday COT-release-window displacement with close-location and SMA stretch confirmation; roughly 4-10 entries/year before Q02 validation."
@@ -272,5 +272,5 @@ gate.
 ## Pipeline
 
 - G0: APPROVED by mission-directed card criteria on 2026-07-07.
-- Q01: implemented as `framework/EAs/QM5_13033_xng-cot-fade`.
+- Q01: implemented as `framework/EAs/QM5_13032_xng-cot-fade`.
 - Q02: queued after compile.
