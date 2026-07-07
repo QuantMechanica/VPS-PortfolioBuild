@@ -1,0 +1,24 @@
+{
+  "build_check": "PASS",
+  "build_result_path": "D:\\QM\\strategy_farm\\artifacts\\builds\\d186904d-71fd-4080-a126-4bde58836da0.json",
+  "compile": "PASS",
+  "ea_id": "QM5_13033",
+  "generated_at_utc": "2026-07-07T11:14:02+00:00",
+  "q02_inserted": [
+    {
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13033_novo-crt-h4-sweep-reversal\\sets\\QM5_13033_novo-crt-h4-sweep-reversal_NDX.DWX_M5_backtest.set",
+      "symbol": "NDX.DWX",
+      "work_item_id": "f138e35b-ce38-49d1-8395-3bf2e0c5616f"
+    },
+    {
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13033_novo-crt-h4-sweep-reversal\\sets\\QM5_13033_novo-crt-h4-sweep-reversal_XAUUSD.DWX_M5_backtest.set",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "8c45e734-84ff-4d38-8d2d-7e1159125d74"
+    }
+  ],
+  "q02_skipped": [],
+  "repo_build_result_path": "C:\\QM\\repo\\artifacts\\qm5_13033_build_result.json",
+  "smoke_result": "PASS",
+  "smoke_summary_path": "D:\\QM\\reports\\smoke\\QM5_13033\\20260707_110937\\summary.json",
+  "task_id": "d186904d-71fd-4080-a126-4bde58836da0"
+}

@@ -1,0 +1,23 @@
+{
+  "blocked_reason": null,
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "ea_dir": "framework/EAs/QM5_13033_novo-crt-h4-sweep-reversal",
+  "ea_id": "QM5_13033",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13033_novo-crt-h4-sweep-reversal\\QM5_13033_novo-crt-h4-sweep-reversal.ex5",
+  "magic_base": 130330000,
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13033_novo-crt-h4-sweep-reversal\\QM5_13033_novo-crt-h4-sweep-reversal.mq5",
+  "open_questions": [],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13033_novo-crt-h4-sweep-reversal\\sets\\QM5_13033_novo-crt-h4-sweep-reversal_NDX.DWX_M5_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13033_novo-crt-h4-sweep-reversal\\sets\\QM5_13033_novo-crt-h4-sweep-reversal_XAUUSD.DWX_M5_backtest.set"
+  ],
+  "smoke_report_path": "D:\\QM\\reports\\smoke\\QM5_13033\\20260707_110937\\summary.json",
+  "smoke_result": "passed",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13033_novo-crt-h4-sweep-reversal\\SPEC.md",
+  "symbols_registered": [
+    "NDX.DWX",
+    "XAUUSD.DWX"
+  ],
+  "task_id": "d186904d-71fd-4080-a126-4bde58836da0"
+}
