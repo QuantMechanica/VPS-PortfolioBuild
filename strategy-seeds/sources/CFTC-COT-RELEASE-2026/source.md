@@ -13,6 +13,7 @@ cards_extracted:
   - xti-cot-fade
   - xti-cot-mom
   - xng-cot-mom
+  - xng-cot-fade
 ---
 
 # CFTC Commitments of Traders Release Cadence
@@ -48,6 +49,9 @@ Two mechanical hypotheses are intentionally separated:
 - `xng-cot-mom`: applies the same CFTC positioning-window continuation premise
   to natural gas with XNG volatility/spread parameters and an explicit
   non-duplicate boundary versus Baker Hughes rig-count XNG cards.
+- `xng-cot-fade`: applies the CFTC positioning-window exhaustion/fade premise
+  to natural gas, opposite to `xng-cot-mom` and without RSI, storage, weather,
+  rig-count, seasonality, or basket logic.
 
 ## R-Rules
 
