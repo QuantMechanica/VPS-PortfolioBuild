@@ -1,31 +1,27 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        13023
-; ea_slug:      ftq-audjpy-riskoff-short
+; ea_id:        9283
+; ea_slug:      mql5-keltner-break
 ; ea_version:   v5.0
 ; set_version:  s20260707-001
-; symbol:       AUDJPY.DWX
-; timeframe:    D1
+; symbol:       GBPJPY.DWX
+; timeframe:    H1
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
 ; date:         2026-07-07
 ;==========================================================
-qm_ea_id=13023
-qm_magic_slot_offset=0
+qm_ea_id=9283
+qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_13023_ftq-audjpy-riskoff-short.md
-strategy_sma_regime=200
-strategy_sma_mom=50
-strategy_donchian_entry=20
-strategy_atr_period=14
-strategy_atr_sl_mult=2.5
-strategy_donchian_trail=15
-strategy_max_hold_bars=40
-strategy_max_spread_points=40
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9283_mql5-keltner-break.md
+strategy_ma_period=10
+strategy_channel_multiplier=2.0
+strategy_stop_offset_points=150
+strategy_take_offset_points=500

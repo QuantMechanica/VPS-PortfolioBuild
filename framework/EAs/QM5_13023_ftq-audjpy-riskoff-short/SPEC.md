@@ -3,8 +3,8 @@
 **EA ID:** QM5_13023
 **Slug:** `ftq-audjpy-riskoff-short`
 **Source:** `RS-SAFEHAVEN-FX-2010` (see `strategy-seeds/sources/RS-SAFEHAVEN-FX-2010/`)
-**Author of this spec:** Claude
-**Last revised:** 2026-07-06
+**Author of this spec:** Codex
+**Last revised:** 2026-07-07
 
 ---
 
@@ -107,4 +107,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-06 | Initial build from card | 87a95c77-a8ef-404c-9ffa-0c771fdc0035 |
+| v1 | 2026-07-07 | Initial build from card | 20604212-5ad3-4cc2-88c3-b01a58700040 |

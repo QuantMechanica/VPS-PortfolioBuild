@@ -1,25 +1,45 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_13023 Flight-To-Quality AUDJPY Risk-Off Short"
+#property description "QM5_12956 WTI Six-Month Time-Series Momentum"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QM5_13023 - Flight-To-Quality AUDJPY Risk-Off Short
+// QuantMechanica V5 EA SKELETON
 // -----------------------------------------------------------------------------
-// Card: D:\QM\strategy_farm\artifacts\cards_approved\QM5_13023_ftq-audjpy-riskoff-short.md
-// Source: Ranaldo/Soederlind (2010) safe-haven currencies; Moskowitz/Ooi/
-// Pedersen (2012) time-series momentum. D1 short-only AUDJPY breakdown,
-// gated by a bear regime (close < SMA(sma_regime)) AND a stacked bearish
-// momentum alignment (close < SMA(sma_mom) < SMA(sma_regime)), triggered by
-// a Donchian(entry) low breakdown. Exit via ATR hard stop, Donchian(trail)
-// high cover, SMA(sma_mom) reclaim, or a max-hold time stop. Single-symbol,
-// self-contained (single_symbol_only: true) — no cross-symbol reads.
+// Fill in only the five Strategy_* hooks below. Everything else is framework
+// boilerplate that MUST stay intact (OnInit/OnTick wiring, framework lifecycle,
+// risk + magic + news + Friday-close guard rails). The framework provides:
+//
+//   - QM_IsNewBar(sym="", tf=PERIOD_CURRENT)  — closed-bar gate
+//   - QM_ATR / QM_EMA / QM_SMA / QM_RSI / QM_MACD_Main / QM_MACD_Signal /
+//     QM_ADX / QM_ADX_PlusDI / QM_ADX_MinusDI /
+//     QM_BB_Upper / QM_BB_Middle / QM_BB_Lower    (from QM_Indicators.mqh)
+//   - QM_TM_OpenPosition(req, ticket) / QM_TM_ClosePosition(ticket, reason)
+//   - QM_TM_MoveToBreakEven / QM_TM_TrailATR / QM_TM_TrailStep / QM_TM_PartialClose
+//   - QM_LotsForRisk(symbol, sl_points)        — risk model lot sizing
+//   - QM_StopFixedPips / QM_StopATR / QM_StopStructure / QM_StopVolatility
+//   - QM_FrameworkHandleFridayClose / QM_KillSwitchCheck / QM_NewsAllowsTrade
+//
+// DO NOT
+//   - Write per-EA IsNewBar() — use QM_IsNewBar()
+//   - Call iATR / iMA / iRSI / iMACD / iADX / iBands or CopyBuffer directly —
+//     use the QM_* readers above. The framework pools handles and releases them
+//     on shutdown.
+//   - CopyRates over warmup windows on every tick. If you genuinely need raw
+//     bar arrays, gate by QM_IsNewBar so the work runs once per closed bar.
+//   - Hand-edit framework/include/QM/QM_MagicResolver.mqh. After adding rows
+//     to magic_numbers.csv, run:
+//         python framework/scripts/update_magic_resolver.py
+//     This is idempotent and preserves all rows.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 13023;
+input int    qm_ea_id                   = 12956;
 input int    qm_magic_slot_offset       = 0;
+// FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
+// All other phases use 42 by default. Stress / noise dimensions read from
+// this single seed so reproducibility is guaranteed across re-runs.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
@@ -46,17 +66,19 @@ input int    qm_friday_close_hour_broker = 21;
 
 input group "Stress"
 // FW2 2026-05-23 — only populated by Q05 MED / Q06 HARSH stress setfiles.
+// Default 0.0 = no rejection (Q02/Q03/Q04/Q07/Q08/Q09/Q10/Q13 backtests).
+// Q06 HARSH sets to 0.10 (10% of entries randomly dropped before broker send,
+// deterministic per qm_rng_seed). MED slip/spread/commission live in the
+// tester groups file, not as EA inputs.
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_sma_regime           = 200;  // bear-regime gate: close below this SMA
-input int    strategy_sma_mom              = 50;   // momentum-stack SMA: close below + below sma_regime; also the reclaim-exit level
-input int    strategy_donchian_entry       = 20;   // Donchian low lookback for the breakdown trigger
-input int    strategy_atr_period           = 14;   // ATR period for the hard stop
-input double strategy_atr_sl_mult          = 2.5;  // ATR hard-stop multiple
-input int    strategy_donchian_trail       = 15;   // Donchian high lookback for the cover trail
-input int    strategy_max_hold_bars        = 40;   // max D1 bars to hold before time-stop close
-input int    strategy_max_spread_points    = 40;   // spread cap; 0 = SYMBOL_SPREAD reads 0 on .DWX so never blocks
+input int    strategy_momentum_lookback_d1 = 126;
+input double strategy_min_abs_return_pct   = 2.0;
+input int    strategy_atr_period           = 20;
+input double strategy_atr_sl_mult          = 3.0;
+input int    strategy_max_hold_days        = 31;
+input int    strategy_max_spread_points    = 1000;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
@@ -66,15 +88,19 @@ input int    strategy_max_spread_points    = 40;   // spread cap; 0 = SYMBOL_SPR
 // regime filter). Cheap O(1) checks only — runs on every tick.
 bool Strategy_NoTradeFilter()
   {
+   if(_Symbol != "XTIUSD.DWX")
+      return true;
    if(_Period != PERIOD_D1)
       return true;
-   if(strategy_sma_regime <= 1 || strategy_sma_mom <= 1)
+   if(qm_magic_slot_offset != 0)
       return true;
-   if(strategy_donchian_entry <= 1 || strategy_donchian_trail <= 1)
+   if(strategy_momentum_lookback_d1 < 21)
       return true;
    if(strategy_atr_period <= 0 || strategy_atr_sl_mult <= 0.0)
       return true;
-   if(strategy_max_hold_bars <= 0)
+   if(strategy_max_hold_days <= 0)
+      return true;
+   if(strategy_max_spread_points < 0)
       return true;
    return false;
   }
@@ -84,81 +110,29 @@ bool Strategy_NoTradeFilter()
 // Use QM_LotsForRisk + QM_Stop* helpers; do NOT compute lots inline.
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   req.type = QM_SELL;
+   static int last_entry_month_key = 0;
+
+   req.type = QM_BUY;
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "";
+   req.reason = "WTI_TSMOM6M";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   // Short-only, one position at a time (Card: Trade Management Rules).
-   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0)
+   const int current_month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   const int prior_month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 1);
+   if(current_month_key <= 0 || prior_month_key <= 0)
+      return false;
+   if(current_month_key == prior_month_key)
+      return false;
+   if(current_month_key == last_entry_month_key)
       return false;
 
-   if(strategy_max_spread_points > 0)
-     {
-      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread_points > strategy_max_spread_points)
-         return false;
-     }
-
-   // Regime gate + stacked-bearish momentum alignment: no signal mixin covers
-   // a plain-SMA stacked read (QM_Sig_MA_Position is EMA-only), so this reads
-   // SMA/close directly — single closed-bar reads, gated to once per D1 bar
-   // by the caller's QM_IsNewBar() check.
-   const double sma_regime = QM_SMA(_Symbol, PERIOD_CURRENT, strategy_sma_regime, 1);
-   const double sma_mom    = QM_SMA(_Symbol, PERIOD_CURRENT, strategy_sma_mom, 1);
-   if(sma_regime <= 0.0 || sma_mom <= 0.0)
-      return false;
-   const double close_last = iClose(_Symbol, PERIOD_CURRENT, 1); // perf-allowed: bespoke SMA-stack gate, no mixin fits; single closed-bar read
-   if(close_last <= 0.0)
-      return false;
-
-   // Card Rules > Entry: regime gate.
-   if(close_last >= sma_regime)
-      return false;
-   // Card Rules > Entry: momentum stack (close < SMA(mom) AND SMA(mom) < SMA(regime)).
-   if(close_last >= sma_mom)
-      return false;
-   if(sma_mom >= sma_regime)
-      return false;
-
-   // Trigger: close below the Donchian(strategy_donchian_entry) low of the prior bars.
-   if(QM_Sig_Range_Breakout(_Symbol, PERIOD_CURRENT, strategy_donchian_entry, 1) >= 0)
-      return false;
-
-   const double entry_price = QM_EntryMarketPrice(QM_SELL);
-   if(entry_price <= 0.0)
-      return false;
-
-   const double sl_price = QM_StopATR(_Symbol, QM_SELL, entry_price, strategy_atr_period, strategy_atr_sl_mult);
-   if(sl_price <= 0.0)
-      return false;
-
-   req.type = QM_SELL;
-   req.sl = sl_price;
-   req.reason = "FTQ_AUDJPY_RISKOFF_SHORT";
-   return true;
-  }
-
-// Called every tick when an open position exists for this EA's magic.
-// The ATR hard stop is a broker-side SL set at entry; the Donchian trail,
-// SMA reclaim, and time stop are discretionary closes handled in
-// Strategy_ExitSignal. No additional per-tick management needed.
-void Strategy_ManageOpenPosition()
-  {
-  }
-
-// Return TRUE to close the open position now (e.g. opposite-signal exit,
-// max-hold-time exceeded, session end).
-bool Strategy_ExitSignal()
-  {
    const int magic = QM_FrameworkMagic();
-   if(QM_TM_OpenPositionCount(magic) <= 0)
+   if(magic <= 0)
       return false;
 
-   // Time stop: close after strategy_max_hold_bars completed D1 bars.
    for(int i = PositionsTotal() - 1; i >= 0; --i)
      {
       const ulong ticket = PositionGetTicket(i);
@@ -168,23 +142,112 @@ bool Strategy_ExitSignal()
          continue;
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
-      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
-      const int bars_held = iBarShift(_Symbol, PERIOD_D1, opened, false);
-      if(bars_held >= strategy_max_hold_bars)
-         return true;
+      QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
      }
 
-   // Channel trail: cover on a closed D1 bar close above the Donchian(trail) high.
-   if(QM_Sig_Range_Breakout(_Symbol, PERIOD_CURRENT, strategy_donchian_trail, 1) > 0)
-      return true;
+   for(int j = PositionsTotal() - 1; j >= 0; --j)
+     {
+      const ulong ticket = PositionGetTicket(j);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      return false;
+     }
 
-   // SMA reclaim exit: cover when close reclaims back above SMA(strategy_sma_mom) —
-   // the risk-off downtrend leg that justified the position has stalled.
-   const double sma_mom = QM_SMA(_Symbol, PERIOD_CURRENT, strategy_sma_mom, 1);
-   const double close_last = iClose(_Symbol, PERIOD_CURRENT, 1); // perf-allowed: bespoke SMA-reclaim exit, single closed-bar read
-   if(sma_mom > 0.0 && close_last > 0.0 && close_last > sma_mom)
-      return true;
+   if(strategy_max_spread_points > 0)
+     {
+      const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+      if(spread_points > strategy_max_spread_points)
+         return false;
+     }
 
+   const int lookback = strategy_momentum_lookback_d1;
+   double closes[];
+   ArraySetAsSeries(closes, true);
+   const int copied = CopyClose(_Symbol, PERIOD_D1, 1, lookback + 1, closes); // perf-allowed: bounded D1 close window for the card's six-month log return, called only from the framework new-bar entry path.
+   if(copied < lookback + 1)
+      return false;
+
+   const double close_recent = closes[0];
+   const double close_past = closes[lookback];
+   if(close_recent <= 0.0 || close_past <= 0.0)
+      return false;
+
+   const double momentum = MathLog(close_recent / close_past);
+   if(!MathIsValidNumber(momentum))
+      return false;
+
+   const double threshold = MathMax(0.0, strategy_min_abs_return_pct) / 100.0;
+   int direction = 0;
+   if(momentum > threshold)
+      direction = 1;
+   else if(momentum < -threshold)
+      direction = -1;
+   if(direction == 0)
+      return false;
+
+   const double atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
+   if(atr_last <= 0.0)
+      return false;
+
+   req.type = (direction > 0) ? QM_BUY : QM_SELL;
+   const double entry_price = QM_EntryMarketPrice(req.type);
+   if(entry_price <= 0.0)
+      return false;
+
+   req.sl = QM_StopATRFromValue(_Symbol, req.type, entry_price, atr_last, strategy_atr_sl_mult);
+   if(req.sl <= 0.0)
+      return false;
+   if(req.type == QM_BUY && req.sl >= entry_price)
+      return false;
+   if(req.type == QM_SELL && req.sl <= entry_price)
+      return false;
+
+   req.reason = (direction > 0) ? "WTI_TSMOM6M_LONG" : "WTI_TSMOM6M_SHORT";
+   last_entry_month_key = current_month_key;
+   return true;
+  }
+
+// Called every tick when an open position exists for this EA's magic.
+// Typical work: break-even shift, ATR trail, partial close at +1R, etc.
+void Strategy_ManageOpenPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   if(magic <= 0)
+      return;
+
+   const int current_month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   const int prior_month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 1);
+   const bool monthly_rebalance = (current_month_key > 0 && prior_month_key > 0 && current_month_key != prior_month_key);
+   const datetime now = TimeCurrent();
+   const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
+
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+
+      const datetime opened = (datetime)PositionGetInteger(POSITION_TIME);
+      bool should_close = monthly_rebalance;
+      if(opened > 0 && now - opened >= hold_seconds)
+         should_close = true;
+      if(should_close)
+         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+     }
+  }
+
+// Return TRUE to close the open position now (e.g. opposite-signal exit,
+// max-hold-time exceeded, session end).
+bool Strategy_ExitSignal()
+  {
    return false;
   }
 
@@ -220,7 +283,7 @@ int OnInit()
                         qm_news_compliance))           // FW1 Axis B
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_13023\",\"ea\":\"ftq-audjpy-riskoff-short\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
 

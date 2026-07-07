@@ -9,8 +9,8 @@ Validator: `framework/scripts/validate_spec_doc.py`
 **EA ID:** QM5_13022
 **Slug:** `ftq-xau-riskoff-long`
 **Source:** `BL-SAFEHAVEN-2010` (see `strategy-seeds/sources/BL-SAFEHAVEN-2010/`)
-**Author of this spec:** Claude
-**Last revised:** 2026-07-06
+**Author of this spec:** Codex
+**Last revised:** 2026-07-07
 
 ---
 
@@ -120,4 +120,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-06 | Initial build from card | caf0a99e-215e-4a38-a990-5b70dd4df522 |
+| v1 | 2026-07-07 | Initial build from card | ffd769b7-bf7b-41f6-9063-b67f6630822e |

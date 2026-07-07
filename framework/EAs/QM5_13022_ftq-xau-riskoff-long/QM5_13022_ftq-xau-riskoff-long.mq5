@@ -123,6 +123,14 @@ bool QM13022_MomentumBullish()
 
 bool Strategy_NoTradeFilter()
   {
+   // Card scope: trade only XAUUSD.DWX on D1 with the registered single slot.
+   if(_Symbol != "XAUUSD.DWX")
+      return true;
+   if((ENUM_TIMEFRAMES)_Period != PERIOD_D1)
+      return true;
+   if(qm_magic_slot_offset != 0)
+      return true;
+
    // Never fail-closed on a genuinely zero .DWX spread — only block a
    // real wide spread (DWX backtest invariant #1).
    const long spread = (long)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
