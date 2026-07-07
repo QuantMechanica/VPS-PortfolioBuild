@@ -14582,3 +14582,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1493,hopwood-pattern-recognition-master-h4,9,XAUUSD.DWX,14930009,2026-07-07,Development,active
 1493,hopwood-pattern-recognition-master-h4,10,XTIUSD.DWX,14930010,2026-07-07,Development,active
 13028,xti-prod-brk,0,XTIUSD.DWX,130280000,2026-07-07,Codex,active
+13029,gbpcad-gbpnzd-coint,0,GBPCAD.DWX,130290000,2026-07-07,Development,active
+13029,gbpcad-gbpnzd-coint,1,GBPNZD.DWX,130290001,2026-07-07,Development,active
