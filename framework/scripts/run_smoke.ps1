@@ -40,7 +40,17 @@ param(
     [ValidatePattern('^[A-Z]{3}$')]
     [string]$TesterCurrencyOverride,
     [ValidateRange(0, 2147483647)]
-    [int]$TesterDepositOverride = 0
+    [int]$TesterDepositOverride = 0,
+    # 2026-07-07: build-smoke context. The Q02 min-trades floor (Max(5, 5*years))
+    # exists to judge FREQUENCY over full history; applying it to a single-year
+    # BUILD smoke false-fails genuinely low-frequency / episodic EAs with
+    # MIN_TRADES_NOT_MET (e.g. QM5_13018 XAG vol-compression: 4 real trades in
+    # 2024 -> FAIL vs floor 5), which codex_review then rejects. Frequency is
+    # Q02's judgment, not the build's — the build smoke only verifies the EA
+    # compiles AND generates orders. In SmokeMode the caller's -MinTrades is
+    # honored verbatim (build passes 1); Q02 never sets this switch, so its
+    # floor is untouched.
+    [switch]$SmokeMode
 )
 
 Set-StrictMode -Version Latest
@@ -1497,6 +1507,14 @@ $Q02MinTradesPerYear = 5
 $expectedTradeInfo = Get-ExpectedTradesPerYear -EAIdValue $EAId
 $smokeYearCount = Get-SmokeYearCount -StartDate $fromDate -EndDate $toDate
 $effectiveMinTrades = [Math]::Max($Q02MinTradesPerYear, [int]($Q02MinTradesPerYear * $smokeYearCount))
+# 2026-07-07: build smoke honors its explicit -MinTrades (does the EA run + trade
+# at all?) — the Q02 frequency floor belongs to Q02's full-history judgment, not
+# a single-year build check. Without this, low-freq/episodic EAs false-FAIL with
+# MIN_TRADES_NOT_MET at build and never reach the gate that can actually judge them.
+if ($SmokeMode) {
+    Write-Host ("run_smoke.smoke_mode min_trades={0} (Q02 floor bypassed for build smoke)" -f $MinTrades)
+    $effectiveMinTrades = $MinTrades
+}
 if ($effectiveMinTrades -ne $MinTrades) {
     $cardExpected = if ($null -ne $expectedTradeInfo) { $expectedTradeInfo.ExpectedTradesPerYearCard } else { "n/a" }
     $cardScope = if ($null -ne $expectedTradeInfo) { $expectedTradeInfo.MinTradeScope } else { "n/a" }

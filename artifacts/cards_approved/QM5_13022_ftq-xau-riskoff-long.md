@@ -44,6 +44,7 @@ r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 last_updated: 2026-07-06
+smoke_year: 2022  # regime-gated: calm years trade zero BY DESIGN; smoke on a bear year
 expected_pf: 1.15
 expected_dd_pct: 15.0
 risk_class: medium

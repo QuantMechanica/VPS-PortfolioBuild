@@ -562,10 +562,20 @@ build_result JSON is more valuable than masking it with a hopeful rewrite.
      -EALabel {{ea_id}}_{{slug}} -Symbol <FIRST_REGISTERED_SYMBOL.DWX> `
      -Year 2024 -Terminal any -Period <CARD_TIMEFRAME> `
      -SetFile C:\QM\repo\framework\EAs\{{ea_id}}_{{slug}}\sets\<GENERATED_SETFILE>.set `
-     -MinTrades 1
+     -MinTrades 1 -SmokeMode
    ```
+   `-SmokeMode` is MANDATORY (2026-07-07): it honors `-MinTrades 1` instead of
+   the Q02 full-history frequency floor (Max(5, 5*years)). Without it, genuinely
+   low-frequency / episodic EAs false-FAIL with `MIN_TRADES_NOT_MET` even after
+   trading (e.g. 4 trades in one year) and get rejected at review — frequency is
+   Q02's job over full history, not the build's on a single year.
    Must yield ≥1 trade for `smoke_result: passed`. If it yields zero trades,
    report `smoke_result: "zero_trades"` with `blocked_reason: "q01_trade_generation_zero_trades"`.
+   NOTE for regime-gated / episodic EAs (crisis-alpha, risk-off, seasonal): a
+   calm smoke year (2024) can legitimately produce zero trades BY DESIGN. If the
+   card frontmatter carries `smoke_year:` (or the card body names a required
+   regime year), smoke THAT year instead of 2024; a documented episodic EA that
+   is zero-in-calm-year is not a defect — its frequency is judged at Q02.
 
    If the card targets timeframes other than H1, generate one setfile per
    (symbol × TF) combination.
