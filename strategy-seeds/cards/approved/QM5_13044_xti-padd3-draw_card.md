@@ -200,3 +200,6 @@ manifests, portfolio gates, or live setfiles.
 
 G0 approved for Q02 on 2026-07-07 by mission-directed commodity/energy sleeve
 criteria. Q02 must validate or reject the mechanical Darwinex realization.
+Build evidence is `artifacts/qm5_13044_build_result.json`; Q02 enqueue evidence
+is `artifacts/qm5_13044_q02_enqueue_20260707.json` with pending work item
+`97930e93-bb99-4540-8c4f-bca418f9e46f`.
