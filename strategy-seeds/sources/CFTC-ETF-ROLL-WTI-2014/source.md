@@ -8,6 +8,7 @@ last_reviewed: 2026-06-29
 cards_extracted:
   - wti-roll-fade
   - wti-roll-relief
+  - wti-roll-squeeze
 ---
 
 # CFTC Crude Oil ETF Roll Source
@@ -30,11 +31,14 @@ The cards convert the structural idea into Darwinex `XTIUSD.DWX` D1 rules.
 window. `wti-roll-relief` trades the post-window relief side only after the
 same month has shown confirmed early roll pressure and price reclaims above a
 slow D1 mean.
+`wti-roll-squeeze` trades a symmetric early-month roll-window breakout only
+when the D1 bars before the signal were compressed.
 
 ## Extracted Card
 
 - `wti-roll-fade`: XTIUSD.DWX D1 ETF roll-pressure short sleeve.
 - `wti-roll-relief`: XTIUSD.DWX D1 post-roll relief long sleeve.
+- `wti-roll-squeeze`: XTIUSD.DWX D1 ETF roll-window compression breakout.
 
 ## R-Rules
 

@@ -14649,6 +14649,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9250,mql5-crt-amd,0,EURUSD.DWX,92500000,2026-07-07,Codex,active
 9250,mql5-crt-amd,1,GBPUSD.DWX,92500001,2026-07-07,Codex,active
 13047,eia-steo-fade,0,XTIUSD.DWX,130470000,2026-07-08,Codex,active
+13048,wti-roll-squeeze,0,XTIUSD.DWX,130480000,2026-07-08,Codex,active
 9505,chande-fo-bband-fade-h4,0,EURUSD.DWX,95050000,2026-07-08,Codex,active
 9505,chande-fo-bband-fade-h4,1,GBPUSD.DWX,95050001,2026-07-08,Codex,active
 9505,chande-fo-bband-fade-h4,2,USDJPY.DWX,95050002,2026-07-08,Codex,active
