@@ -55,6 +55,9 @@ target_modules: [framework-init, trade-entry, trade-management, news-gate, frida
 
 # XTI Residual Fuel Pressure Momentum
 
+Canonical approved card copy. Full source card lives at
+`strategy-seeds/cards/approved/QM5_13043_xti-resfuel-mom_card.md`.
+
 ## Hypothesis
 
 EIA publishes weekly residual fuel oil stock data through the WPSR, and its
@@ -72,14 +75,12 @@ confirmation on Darwinex `XTIUSD.DWX` D1 bars.
 
 ## Non-Duplicate Boundary
 
-This is not `QM5_13042_xti-distdraw-mom`: that sleeve is October-March
-distillate/heating-oil stock pressure with a different EIA product family and
-different trend defaults. This card is November-February residual fuel
-oil/bunker/industrial pressure. It is not `QM5_13039_xti-gasdraw-mom`, which is
-May-August gasoline stock pressure. It is not crude inventory momentum,
-product-supplied breakout, days-of-supply, refinery, Cushing, DPR, SPR,
-import/export, COT, rig-count, OPEC, IEA/STEO, expiry/roll, XAU/XAG, XNG RSI,
-or index logic.
+This is not `QM5_13042` distillate-stock pressure, not `QM5_13039` gasoline
+stock pressure, not crude inventory momentum, not product-supplied breakout,
+not days-of-supply, not Cushing/DPR/SPR/import/export/refinery/OPEC/IEA/expiry
+logic, not XAU/XAG, not XNG RSI, and not index beta. Backtests use
+`RISK_FIXED=1000`, no external runtime data, no ML, no grid, no martingale, and
+no live/deploy manifest changes.
 
 ## Rules
 
@@ -167,15 +168,6 @@ invalidation.
 Backtests use `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 `PORTFOLIO_WEIGHT=1`. The build does not touch T_Live, AutoTrading, deploy
 manifests, or portfolio gates.
-
-## R1-R4 Verdict
-
-- R1 PASS: official EIA WPSR, residual fuel oil stocks, residual fuel oil use,
-  and bunker-demand context provide the source family.
-- R2 PASS: deterministic D1 entry, exit, stop, spread, season, and trend rules.
-- R3 PASS: `XTIUSD.DWX` exists in the DWX symbol matrix.
-- R4 PASS: no ML, no grid, no martingale, one position per magic/symbol, no
-  external runtime feed.
 
 ## Pipeline
 
