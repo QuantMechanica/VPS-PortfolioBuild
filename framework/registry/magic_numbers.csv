@@ -14643,3 +14643,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9510,carver-forecast,6,WS30.DWX,95100006,2026-07-07,Codex,active
 9510,carver-forecast,7,GDAXI.DWX,95100007,2026-07-07,Codex,active
 13044,xti-padd3-draw,0,XTIUSD.DWX,130440000,2026-07-07,Codex,active
+13045,xti-netimp-fade,0,XTIUSD.DWX,130450000,2026-07-07,Codex,active

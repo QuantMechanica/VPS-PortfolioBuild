@@ -1,0 +1,73 @@
+{
+  "task_id": "QM5_13045_build_20260707",
+  "ea_id": "QM5_13045",
+  "slug": "xti-netimp-fade",
+  "strategy": "EIA WPSR net-import shock fade on XTIUSD.DWX D1",
+  "source_id": "EIA-XTI-NETIMP-FADE-2026",
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13045_xti-netimp-fade",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13045_xti-netimp-fade\\QM5_13045_xti-netimp-fade.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13045_xti-netimp-fade\\QM5_13045_xti-netimp-fade.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13045_xti-netimp-fade\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13045_xti-netimp-fade\\docs\\strategy_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13045_xti-netimp-fade_card.md",
+  "farm_approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13045_xti-netimp-fade.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13045_xti-netimp-fade\\sets\\QM5_13045_xti-netimp-fade_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_hashes": [
+    {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13045_xti-netimp-fade\\sets\\QM5_13045_xti-netimp-fade_XTIUSD.DWX_D1_backtest.set",
+      "sha256": "9D7F10E78CD962934DEE36046E8FD291563C29E68B03D7B0527817A7F935E8FA",
+      "build_hash": "5e33238e24fd912c61a764790818fdb9ce371a2b56d92beab58bd84d7f573b8f"
+    }
+  ],
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 130450000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13045_xti-netimp-fade/QM5_13045_xti-netimp-fade.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260707_192340\\QM5_13045_xti-netimp-fade.compile.log",
+    "mq5_sha256": "A46B2CDDD32DF444016EAB62A76A99BD7A1D025884DA6405E526B54483A8FD04",
+    "ex5_sha256": "82F40EF5C2C0143205B1463DDD708D8EE68A55EE998D54A5E26411F87E2E5A6F"
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13045_xti-netimp-fade -Strict",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260707_192401\\QM5_13045_xti-netimp-fade.compile.log",
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260707_192401.json"
+  },
+  "smoke_result": "deferred_to_q02",
+  "smoke_skipped_reason": "No manual backtest launched; Q02 farm queue owns runtime validation.",
+  "non_duplicate_reason": "Single-symbol WTI D1 WPSR net-import shock fade is distinct from existing XTI export-flow breakout, import-flow fade, product-supplied breakout, inventory momentum, PADD/Cushing, XTI/XNG, XAU/XAG, XNG RSI, metal, and index-beta sleeves.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  },
+  "notes": "Built one new structural low-frequency commodity/energy sleeve from an approved EIA-source card. No T_Live, AutoTrading, deploy manifest, live setfile, or portfolio gate files were touched."
+}

@@ -1,0 +1,50 @@
+{
+  "ea_id": "QM5_13045",
+  "slug": "xti-netimp-fade",
+  "queued_phase": "Q02",
+  "queued_at_utc": "2026-07-07T19:24:24+00:00",
+  "enqueue_command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --apply --ea QM5_13045 --queue-ceiling 10000 --max-part2-per-run 0",
+  "enqueue_result": {
+    "apply": true,
+    "part1_never_tested": {
+      "enqueued": 1,
+      "skipped": 0,
+      "skip_reasons": {}
+    },
+    "part2_stranded": {
+      "enqueued": 0,
+      "skipped": 0,
+      "by_phase": {}
+    },
+    "part3_deferred": {
+      "promoted": 0,
+      "kept": 0
+    },
+    "priority_track_items": 0,
+    "evidence_path": "D:\\QM\\reports\\state\\claude_sweep_enqueue_2026-06-10.json"
+  },
+  "work_item": {
+    "id": "c69daf2c-6b5c-4377-8b70-5a8734232cae",
+    "kind": "backtest",
+    "phase": "Q02",
+    "ea_id": "QM5_13045",
+    "symbol": "XTIUSD.DWX",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13045_xti-netimp-fade\\sets\\QM5_13045_xti-netimp-fade_XTIUSD.DWX_D1_backtest.set",
+    "status": "pending",
+    "attempt_count": 0,
+    "created_at": "2026-07-07T19:24:24+00:00",
+    "updated_at": "2026-07-07T19:24:24+00:00",
+    "payload_json": {
+      "host_symbol": "XTIUSD.DWX",
+      "host_timeframe": "D1",
+      "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested",
+      "enqueued_at_utc": "2026-07-07T19:24:24+00:00"
+    }
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}
