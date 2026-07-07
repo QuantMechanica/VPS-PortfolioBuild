@@ -1,0 +1,114 @@
+{
+  "work_unit": "QM5_13020 Q02 market-neutral FX infra reroute",
+  "timestamp_utc": "2026-07-07T18:02:58Z",
+  "agent": "codex/agents-board-advisor",
+  "mission_priority": "diversity_funnel_throughput",
+  "ea": {
+    "ea_id": "QM5_13020",
+    "slug": "audnzd-coint-reversion",
+    "instrument_class": "forex_market_neutral_pair",
+    "host_symbol": "AUDNZD.DWX",
+    "timeframe": "D1",
+    "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_13020_audnzd-coint-reversion\\sets\\QM5_13020_audnzd-coint-reversion_AUDNZD.DWX_D1_backtest.set",
+    "compiled_ex5": "C:\\QM\\repo\\framework\\EAs\\QM5_13020_audnzd-coint-reversion\\QM5_13020_audnzd-coint-reversion.ex5",
+    "risk_mode": "RISK_FIXED"
+  },
+  "prior_infra_failure": {
+    "work_item_id": "34851790-071e-4e77-8c86-f01db08311c1",
+    "phase": "Q02",
+    "verdict": "INFRA_FAIL",
+    "reason_classes": [
+      "NO_HISTORY",
+      "INCOMPLETE_RUNS"
+    ],
+    "terminal": "T1",
+    "requested_runs": 1,
+    "attempted_runs": 3,
+    "summary_path": "D:\\QM\\reports\\work_items\\34851790-071e-4e77-8c86-f01db08311c1\\QM5_13020\\20260707_141757\\summary.json",
+    "diagnosis": "The Q02 evidence contained three empty MT5 runs with no report/expert/symbol details. Local history was present, so this was routed as terminal/report infrastructure rather than a missing-data strategy failure."
+  },
+  "cache_audit": {
+    "command": "python tools\\strategy_farm\\cache_audit.py --ea QM5_13020",
+    "result": "PASS",
+    "summary": "AUDNZD.DWX D1 history spans 2017-2026; daily tester cache exists on non-T1 factory terminals including T2/T3/T4/T5/T7/T10.",
+    "history_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10",
+      "T_Export"
+    ],
+    "tester_cache_terminals_daily": [
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T7",
+      "T10"
+    ]
+  },
+  "farm_db_update": {
+    "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "backup_before_update": "D:\\QM\\strategy_farm\\state\\farm_state.pre_qm5_13020_reroute_20260707T180258Z.sqlite",
+    "pending_work_item_id": "8a545034-665d-479e-a8a0-33e8f72be748",
+    "conditional_guard": "status='pending' and claimed_by is null",
+    "rows_updated": 1,
+    "status_immediately_after_update": "pending",
+    "claimed_by_immediately_after_update": null,
+    "payload_added": {
+      "avoid_terminals": [
+        "T1"
+      ],
+      "host_timeframe": "D1",
+      "priority_track": true,
+      "priority_updated_by": "codex/agents-board-advisor",
+      "priority_updated_at_utc": "2026-07-07T18:02:58Z",
+      "reroute_from_work_item": "34851790-071e-4e77-8c86-f01db08311c1"
+    },
+    "priority_reason": "board-advisor market-neutral FX Q02 infra reroute: AUDNZD.DWX history/cache exists but prior T1 run emitted empty MT5 reports misclassified as NO_HISTORY"
+  },
+  "execution": {
+    "manual_mt5_launch": false,
+    "reason": "The paced terminal worker consumes avoid_terminals during atomic claim; the row was left pending for the factory fleet to claim without adding CPU load.",
+    "post_update_claim_observation": {
+      "observed_at_utc": "2026-07-07T18:04:00Z",
+      "status": "active",
+      "claimed_by": "T3",
+      "terminal": "T3",
+      "avoid_terminals": [
+        "T1"
+      ],
+      "interpretation": "The paced worker claimed the row on an allowed non-T1 terminal after the reroute."
+    },
+    "t_live_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "verification": [
+    {
+      "command": "git status --short",
+      "result": "pre-existing unrelated dirty files observed; scoped artifact added only"
+    },
+    {
+      "command": "python tools\\strategy_farm\\cache_audit.py --ea QM5_13020",
+      "result": "AUDNZD.DWX D1 history/cache available"
+    },
+    {
+      "command": "sqlite conditional update of pending Q02 row",
+      "result": "1 row updated; row was pending and unclaimed immediately after the mutation"
+    },
+    {
+      "command": "sqlite post-update read of pending Q02 row",
+      "result": "paced worker claimed the row on T3 with avoid_terminals=['T1']"
+    },
+    {
+      "command": "python -m pytest tools\\strategy_farm\\tests\\test_terminal_worker_atomic_claim.py::TerminalWorkerAtomicClaimTests::test_claim_respects_payload_avoid_terminals -q",
+      "result": "1 passed"
+    }
+  ]
+}
