@@ -125,3 +125,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | 0fe12180-f3b0-4f53-8fa8-5f646af594aa |
+| v2 | 2026-07-07 | Q02 infra recovery; replace per-bar full EMA rebuild with recursive D1 forecast smoothing | codex:agents/board-advisor:qm5-1229-q02-infra |
