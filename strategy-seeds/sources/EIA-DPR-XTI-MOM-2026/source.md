@@ -16,6 +16,15 @@ runtime. It tests whether the market's own `XTIUSD.DWX` D1 reaction inside a
 fixed mid-month DPR proxy window continues after ATR, Donchian, and SMA
 confirmation.
 
+## Use In QM5_13038
+
+The same official EIA DPR source is also used for a deliberately separate
+failed-breakout fade variant. `QM5_13038` tests whether an ATR-sized
+`XTIUSD.DWX` D1 breach inside the fixed mid-month proxy window that closes back
+inside the prior Donchian channel mean-reverts over the next several D1 bars.
+It does not follow the breakout and does not read any EIA data or release file
+at runtime.
+
 ## Reputable-Source Notes
 
 - EIA is the official U.S. energy statistics agency.
