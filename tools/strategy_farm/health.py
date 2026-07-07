@@ -54,6 +54,25 @@ ZERO_TRADE_REWORK_DEDUP_HOURS = 6
 PHASE_ACTIVE_TIMEOUT_MIN = dict(farmctl.PHASE_ACTIVE_TIMEOUT_MIN)
 FACTORY_TERMINALS = tuple(f"T{i}" for i in range(1, 11))
 MT5_SATURATION_MIN_WORKERS = 7
+# Operator/RAM-governor concurrency cap — terminals listed here are
+# intentionally offline (mirrors start_terminal_workers._disabled_terminals).
+# Saturation must be judged against the ENABLED fleet, not the installed one,
+# or every deliberate RAM throttle reads as a factory-down CRITICAL
+# (OWNER 2026-07-07: cockpit cried CRITICAL on a healthy 6/6-enabled fleet).
+DISABLED_TERMINALS_FILE = ROOT / "state" / "disabled_terminals.txt"
+
+
+def _disabled_terminals() -> set[str]:
+    try:
+        text = DISABLED_TERMINALS_FILE.read_text(encoding="utf-8-sig")
+    except (OSError, UnicodeDecodeError):
+        return set()
+    out: set[str] = set()
+    for line in text.splitlines():
+        name = line.strip().upper()
+        if re.fullmatch(r"T(?:[1-9]|10)", name):
+            out.add(name)
+    return out
 
 
 def _utc_now() -> dt.datetime:
@@ -792,10 +811,13 @@ def chk_mt5_dispatch_idle(con) -> dict:
 
 
 def chk_mt5_worker_saturation(con) -> dict:
-    """At least 2/3 of the T1-T10 worker fleet should be alive.
+    """At least 2/3 of the ENABLED T1-T10 worker fleet should be alive.
 
-    The factory now has ten terminal_worker daemons. T_Live is deliberately
-    outside this regex and must never be counted as factory capacity.
+    The factory has ten installed terminal_worker daemons, but the
+    disabled_terminals.txt cap (RAM governor) can deliberately park some.
+    Saturation compares alive workers against the enabled fleet only —
+    a fully-alive throttled fleet is OK, not CRITICAL. T_Live is
+    deliberately outside this regex and must never be counted.
     """
     try:
         out = subprocess.run(
@@ -826,17 +848,26 @@ def chk_mt5_worker_saturation(con) -> dict:
         match = re.search(r"--terminal\s+(T(?:[1-9]|10))\b", cmd, re.IGNORECASE)
         if match:
             running.add(match.group(1).upper())
-    count = len(running)
-    detail = f"{count}/{len(FACTORY_TERMINALS)} terminal_worker daemons alive ({', '.join(sorted(running)) or 'none'})"
-    if count < MT5_SATURATION_MIN_WORKERS:
-        return _check("mt5_worker_saturation", "FAIL", count, MT5_SATURATION_MIN_WORKERS,
+    disabled = _disabled_terminals()
+    enabled = [t for t in FACTORY_TERMINALS if t not in disabled]
+    expected = len(enabled) or len(FACTORY_TERMINALS)
+    # 2/3 of the enabled fleet, never stricter than the full-fleet floor of 7.
+    min_workers = min(MT5_SATURATION_MIN_WORKERS, max(1, -(-2 * expected // 3)))
+    running_enabled = {t for t in running if t not in disabled}
+    count = len(running_enabled)
+    detail = (f"{count}/{expected} enabled terminal_worker daemons alive "
+              f"({', '.join(sorted(running_enabled)) or 'none'})")
+    if disabled:
+        detail += f" // {len(disabled)} parked by disabled_terminals.txt cap: {', '.join(sorted(disabled))}"
+    if count < min_workers:
+        return _check("mt5_worker_saturation", "FAIL", count, min_workers,
                       detail,
                       "Run `python tools/strategy_farm/start_terminal_workers.py --dedupe`; inspect worker logs if any slot stays dark.")
-    if count < len(FACTORY_TERMINALS):
-        return _check("mt5_worker_saturation", "WARN", count, len(FACTORY_TERMINALS),
+    if count < expected:
+        return _check("mt5_worker_saturation", "WARN", count, expected,
                       detail,
-                      "Fleet is above 2/3 but not fully saturated; restart missing workers when convenient.")
-    return _check("mt5_worker_saturation", "OK", count, len(FACTORY_TERMINALS), detail, "")
+                      "Fleet is above 2/3 of enabled capacity but not fully saturated; restart missing workers when convenient.")
+    return _check("mt5_worker_saturation", "OK", count, expected, detail, "")
 
 
 def _parse_utc_datetime(value: str | None) -> dt.datetime | None:

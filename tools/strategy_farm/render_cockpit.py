@@ -1,16 +1,22 @@
 """QM strategy_farm cockpit — visual "what's happening NOW" dashboard.
 
 Renders D:/QM/strategy_farm/dashboards/cockpit.html every 2 min.
-Layout designed for OWNER's three primary questions:
-  1. What is Claude doing?
-  2. What is Codex doing?
-  3. What's in the backtest queue?
+Layout designed for OWNER's three primary questions (OWNER rework call 2026-07-07):
+  1. Is real money OK?          → LIVE MONEY row (DXZ book pulse + FTMO trial pulse)
+  2. What must I (OWNER) decide? → OWNER DECISIONS (curated feed + Q12 pool;
+                                    agent work queues are NOT owner decisions)
+  3. Is the factory running?     → AGENT STATUS + health pill (CRITICAL only
+                                    when the factory itself is down)
 
 Visual hierarchy:
-  HERO   — three live-worker panels (Claude / Codex / MT5) with current task names
-  FLOW   — horizontal pipeline showing EAs on each stage
-  QUEUES — clear backlog cards per work type
-  DETAIL — collapsible raw tables (Work Items / Wakes / Commits)
+  TOPBAR  — health pill; message names the failing factory check when not NOMINAL
+  MONEY   — DXZ live book / FTMO trial / next OWNER gate / mission target
+  DECIDE  — OWNER DECISIONS (left) + AGENT STATUS incl. T1-T10 fleet (right)
+  COMPANY — frontier tiles, per-phase pipeline progress, funnel, daily controlling
+
+Removed 2026-07-07 (OWNER): Recent Events tail (all-red noise), Q08 Portfolio
+Rescue table, Heureka leader + Next Actions (stale task-table derivations that
+contradicted the Q12 frontier).
 
 QM brand tokens from branding/brand_tokens.json.
 """
@@ -38,8 +44,11 @@ LOG_DIR = ROOT / "logs"
 CARDS_DRAFT = ROOT / "artifacts" / "cards_draft"
 CARDS_APPROVED = ROOT / "artifacts" / "cards_approved"
 QUOTA_SNAPSHOT = ROOT / "state" / "quota_snapshot.json"
+REPORTS_STATE = Path(r"D:\QM\reports\state")
+LIVE_BOOK_PULSE = REPORTS_STATE / "live_book_pulse.json"
+FTMO_TRIAL_PULSE = REPORTS_STATE / "ftmo_trial_pulse.json"
+OWNER_DECISIONS_FILE = REPORTS_STATE / "owner_decisions.json"
 
-PIPELINE_STAGES = ["Card", "Build", "Review", "Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08", "Q09", "Q10", "Q11", "Live"]
 PHASE_DISPLAY = {
     "Q01": "Q01",
     "Q02": "Q02",
@@ -63,58 +72,8 @@ PHASE_DISPLAY = {
     "P7": "Q10",
     "P8": "Q11",
 }
-PHASE_RANK = {
-    "Q01": 10,
-    "Q02": 20,
-    "Q03": 30,
-    "Q04": 40,
-    "Q05": 50,
-    "Q06": 60,
-    "Q07": 70,
-    "Q08": 80,
-    "Q09": 90,
-    "Q10": 100,
-    "Q11": 110,
-    "P2": 20,
-    "P3": 30,
-    "P3.5": 35,
-    "P4": 40,
-    "P5": 50,
-    "P5b": 55,
-    "P5c": 56,
-    "P6": 60,
-    "P7": 70,
-    "P8": 80,
-}
-PHASE_TO_STAGE = {
-    "Q01": "Q01",
-    "Q02": "Q02",
-    "Q03": "Q03",
-    "Q04": "Q04",
-    "Q05": "Q05",
-    "Q06": "Q06",
-    "Q07": "Q07",
-    "Q08": "Q08",
-    "Q09": "Q09",
-    "Q10": "Q10",
-    "Q11": "Q11",
-    "P2": "Q02",
-    "P3": "Q03",
-    "P3.5": "Q04",
-    "P4": "Q05",
-    "P5": "Q06",
-    "P5b": "Q07",
-    "P5c": "Q08",
-    "P6": "Q09",
-    "P7": "Q10",
-    "P8": "Q11",
-}
 
 
-def qid(phase: str | None) -> str:
-    """Canonical Qxx display id for a legacy phase key (vault naming — Qxx only)."""
-    p = str(phase or "")
-    return PHASE_DISPLAY.get(p, p or "—")
 
 
 def e(s) -> str:
@@ -478,6 +437,128 @@ def q08_portfolio_rescue_snapshot(limit: int = 8) -> dict:
     display_rows.sort(key=lambda r: (r.get("portfolio_only") is not True, r.get("updated_at") or ""), reverse=False)
     out["rows"] = sorted(display_rows, key=lambda r: r.get("updated_at") or "", reverse=True)[:limit]
     return out
+
+
+def _age_minutes(iso_ts: str | None) -> int | None:
+    if not iso_ts:
+        return None
+    try:
+        t = dt.datetime.fromisoformat(str(iso_ts).replace("Z", "+00:00"))
+        if t.tzinfo is None:
+            t = t.replace(tzinfo=dt.timezone.utc)
+        return max(0, int((dt.datetime.now(dt.timezone.utc) - t).total_seconds() // 60))
+    except Exception:
+        return None
+
+
+def live_money_snapshot() -> dict:
+    """Read-only DXZ live-book + FTMO trial pulse state for the LIVE MONEY row.
+
+    Sources are the pulse artifacts (evidence chain: T_Live terminal logs →
+    live_book_pulse.py, FTMO terminal → ftmo_trial_pulse), never manifests
+    (manifest DRAFT/NONE is default output, OWNER rule 2026-07-01).
+    """
+    out: dict = {"dxz": None, "ftmo": None}
+    try:
+        lb = json.loads(LIVE_BOOK_PULSE.read_text(encoding="utf-8"))
+        hb = lb.get("heartbeat") or {}
+        tj = lb.get("terminal_journals") or {}
+        at = tj.get("autotrading_transitions") or []
+        out["dxz"] = {
+            "verdict": str(lb.get("verdict") or "?").upper(),
+            "alarms": len(lb.get("alarms") or []),
+            "sleeves": tj.get("loaded_sleeve_count"),
+            "positions": hb.get("current_position_count"),
+            "autotrading": str((at[-1] or {}).get("state") or "?") if at else "?",
+            "account": str(tj.get("account_id") or ""),
+            "age_min": _age_minutes(lb.get("generated_at_utc")),
+        }
+    except Exception:
+        pass
+    try:
+        ft = json.loads(FTMO_TRIAL_PULSE.read_text(encoding="utf-8"))
+        out["ftmo"] = {
+            "verdict": str(ft.get("verdict") or "?").upper(),
+            "alarms": len(ft.get("alarms") or []) + len(ft.get("warns") or []),
+            "equity": ft.get("equity"),
+            "day_pnl": ft.get("day_pnl"),
+            "day_loss_pct": ft.get("day_loss_pct"),
+            "total_dd_pct": ft.get("total_dd_pct"),
+            "magics_seen": ft.get("magics_seen"),
+            "expected_magics": ft.get("expected_magics"),
+            "terminal_up": bool(ft.get("terminal_up")),
+            "age_min": _age_minutes(ft.get("checked_at_utc")),
+        }
+    except Exception:
+        pass
+    return out
+
+
+def q12_review_ready_count() -> int:
+    try:
+        rows = db_rows(
+            "SELECT COUNT(*) AS c FROM portfolio_candidates WHERE state='Q12_REVIEW_READY'"
+        )
+        return int(rows[0]["c"]) if rows else 0
+    except Exception:
+        return 0
+
+
+def owner_decision_rows(q12_count: int) -> list[dict]:
+    """Genuine OWNER decisions only (OWNER call 2026-07-07).
+
+    Sources, in order:
+      1. Curated feed D:/QM/reports/state/owner_decisions.json (maintained by
+         Claude; supports a literal "{q12_count}" placeholder).
+      2. BLOCKED agent_tasks whose unblock condition names OWNER.
+    Agent work queues (Claude reviews, ops-blocked tasks, router SLAs) are
+    agent status — they never belong in this panel.
+    """
+    rows: list[dict] = []
+    try:
+        data = json.loads(OWNER_DECISIONS_FILE.read_text(encoding="utf-8"))
+        for item in data.get("items") or []:
+            detail = str(item.get("detail") or "").replace("{q12_count}", str(q12_count))
+            rows.append({
+                "cat": str(item.get("cat") or "DECISION")[:16],
+                "title": str(item.get("title") or "?")[:52],
+                "detail": detail[:74],
+                "due": str(item.get("due") or ""),
+                "alert": str(item.get("severity") or "").lower() == "alert",
+            })
+    except Exception:
+        pass
+    if not any(r["cat"] == "ADMISSION" for r in rows) and q12_count:
+        rows.append({
+            "cat": "ADMISSION",
+            "title": f"{q12_count} candidates Q12_REVIEW_READY",
+            "detail": "portfolio admission is an OWNER gate",
+            "due": "",
+            "alert": False,
+        })
+    try:
+        blocked = db_rows(
+            "SELECT id, task_type, verdict, updated_at FROM agent_tasks "
+            "WHERE state='BLOCKED' AND verdict LIKE '%OWNER%' "
+            "ORDER BY updated_at DESC LIMIT 6"
+        )
+    except Exception:
+        blocked = []
+    # A superseded/obsolete BLOCKED row is a closed matter that merely
+    # mentions OWNER in its epitaph — not an open OWNER decision.
+    blocked = [
+        b for b in blocked
+        if not re.search(r"supersed|obsolete", str(b.get("verdict") or ""), re.IGNORECASE)
+    ][:3]
+    for b in blocked:
+        rows.append({
+            "cat": "UNBLOCK",
+            "title": f"{str(b.get('task_type') or 'task')} {str(b.get('id') or '')[:8]}",
+            "detail": str(b.get("verdict") or "")[:74],
+            "due": "",
+            "alert": False,
+        })
+    return rows
 
 
 def list_files(p: Path, pattern: str = "*.md") -> list[str]:
@@ -900,203 +981,6 @@ def pipeline_backlog_snapshot() -> dict:
     return out
 
 
-def compute_heureka_leader(pipeline: list[dict]) -> dict | None:
-    """Pick the most-advanced still-alive EA as the Heureka leader.
-
-    Rank by current_stage position in PIPELINE_STAGES, skipping failed/blocked.
-    Returns dict with ea_id, slug, current_stage, completed_count, next_stage,
-    pct (0-100), failed flag.
-    """
-    if not pipeline:
-        return None
-    stage_idx = {s: i for i, s in enumerate(PIPELINE_STAGES)}
-    # Map current_stage prefix → which Stage it belongs to
-    def stage_for(entry: dict) -> tuple[int, bool]:
-        st = entry.get("stage") or "Card"
-        if st in stage_idx:
-            return stage_idx[st], entry.get("stage_status") == "failed"
-        return 0, False
-    alive = [e for e in pipeline if "failed" not in (e.get("stage_status") or "")
-             and "blocked" not in (e.get("stage_status") or "")]
-    if not alive:
-        # fall back to anything
-        candidates = pipeline
-    else:
-        candidates = alive
-    leader = max(candidates, key=lambda e: stage_for(e)[0])
-    cur_idx, failed = stage_for(leader)
-    next_stage = PIPELINE_STAGES[cur_idx + 1] if cur_idx + 1 < len(PIPELINE_STAGES) else "live"
-    pct = int(100 * cur_idx / max(1, len(PIPELINE_STAGES) - 1))
-    return {
-        "ea_id": leader["ea_id"],
-        "slug": leader.get("slug", ""),
-        "current_stage": leader.get("stage", "Card"),
-        "current_stage_idx": cur_idx,
-        "completed_count": cur_idx,
-        "total_stages": len(PIPELINE_STAGES),
-        "next_stage": next_stage,
-        "pct": pct,
-        "failed": failed,
-        "stage_status": leader.get("stage_status", ""),
-    }
-
-
-def compute_pipeline() -> list[dict]:
-    rows = db_rows(
-        "SELECT id, kind, status, payload_json, updated_at "
-        "FROM tasks ORDER BY created_at"
-    )
-    eas: dict[str, dict] = {}
-    for r in rows:
-        payload = json.loads(r["payload_json"]) if r["payload_json"] else {}
-        ea_id = payload.get("ea_id")
-        if not ea_id:
-            continue
-        entry = eas.setdefault(ea_id, {
-            "ea_id": ea_id,
-            "slug": payload.get("slug") or "",
-            "stage": "Card",
-            "stage_status": "pending",
-            "last_activity": r["updated_at"],
-        })
-        if not entry["slug"] and payload.get("slug"):
-            entry["slug"] = payload["slug"]
-        if r["updated_at"] > entry["last_activity"]:
-            entry["last_activity"] = r["updated_at"]
-        kind = r["kind"]
-        st = r["status"]
-        if kind == "build_ea":
-            entry["stage"] = "Build"
-            if st == "pending":
-                entry["stage_status"] = "pending"
-            elif st == "active":
-                entry["stage_status"] = "active"
-            elif st == "done":
-                entry["stage_status"] = "done"
-                entry["stage"] = "Review"
-                entry["stage_status"] = "pending"  # awaiting review
-            elif st in ("blocked", "failed"):
-                entry["stage_status"] = "failed"
-        elif kind == "ea_review":
-            verdict = (payload.get("verdict") or {}).get("verdict", "")
-            entry["stage"] = "Review"
-            if st == "done":
-                if verdict == "APPROVE_FOR_BACKTEST":
-                    entry["stage_status"] = "done"
-                    entry["stage"] = "Q02"
-                    entry["stage_status"] = "pending"
-                else:
-                    entry["stage_status"] = "failed"
-            else:
-                entry["stage_status"] = "active"
-        elif kind.startswith("backtest_"):
-            phase = (payload.get("phase") or kind.replace("backtest_", "").upper())
-            classification = payload.get("classification") or {}
-            v = classification.get("verdict", "")
-            entry["stage"] = qid(phase)
-            if st == "pending":
-                entry["stage_status"] = "pending"
-            elif st == "active":
-                entry["stage_status"] = "active"
-            elif st == "done":
-                if v == "PASS":
-                    entry["stage_status"] = "done"
-                else:
-                    entry["stage_status"] = "failed"
-    # Overlay live work_item state. The task table is useful for build/review,
-    # but cascade phases P3.5..P8 advance as work_items; without this overlay
-    # the cockpit can under-report a P8 winner as still sitting at P2/Review.
-    work_rows = db_rows(
-        """
-        SELECT ea_id, phase, status, verdict, updated_at
-        FROM work_items
-        WHERE ea_id IS NOT NULL
-        """
-    )
-    for r in work_rows:
-        ea_id = r.get("ea_id")
-        phase = r.get("phase")
-        if not ea_id or phase not in PHASE_RANK:
-            continue
-        entry = eas.setdefault(ea_id, {
-            "ea_id": ea_id,
-            "slug": "",
-            "stage": "Card",
-            "stage_status": "pending",
-            "last_activity": r.get("updated_at") or "",
-        })
-        if (r.get("updated_at") or "") > (entry.get("last_activity") or ""):
-            entry["last_activity"] = r.get("updated_at") or entry.get("last_activity") or ""
-
-        current_phase = entry.get("_best_phase")
-        current_rank = PHASE_RANK.get(current_phase or "", -1)
-        row_rank = PHASE_RANK[phase]
-        verdict = str(r.get("verdict") or "").upper()
-        status = str(r.get("status") or "").lower()
-        is_progress = status in {"pending", "active", "claimed"} or verdict == "PASS"
-        if not is_progress:
-            continue
-        if row_rank >= current_rank:
-            entry["_best_phase"] = phase
-            entry["stage"] = PHASE_TO_STAGE.get(phase, phase)
-            if verdict == "PASS":
-                entry["stage_status"] = "done"
-            elif status == "active":
-                entry["stage_status"] = "active"
-            elif status in {"pending", "claimed"}:
-                entry["stage_status"] = "pending"
-
-    for entry in eas.values():
-        entry.pop("_best_phase", None)
-    return sorted(eas.values(), key=lambda e: e["ea_id"])
-
-
-def profitability_next_actions(pipeline: list[dict]) -> list[dict]:
-    """Rank active EAs by progress and show the next deterministic action."""
-    if not pipeline:
-        return []
-    stage_idx = {stage: idx for idx, stage in enumerate(PIPELINE_STAGES)}
-
-    def next_action(entry: dict) -> str:
-        stage = entry.get("stage") or "Card"
-        status = entry.get("stage_status") or "pending"
-        if status == "active":
-            return f"Wait for active {stage} evidence"
-        if status == "failed":
-            return "Review failure; no promotion without new evidence"
-        if stage == "Card":
-            return "Build EA from approved card"
-        if stage == "Build":
-            return "Finish build and compile evidence"
-        if stage == "Review":
-            return "Complete EA review"
-        idx = stage_idx.get(stage, 0)
-        if idx + 1 < len(PIPELINE_STAGES):
-            return f"Promote or enqueue {PIPELINE_STAGES[idx + 1]}"
-        return "Manual live-readiness gate"
-
-    ranked = sorted(
-        pipeline,
-        key=lambda e: (
-            stage_idx.get(str(e.get("stage") or "Card"), 0),
-            1 if e.get("stage_status") == "active" else 0,
-            str(e.get("last_activity") or ""),
-        ),
-        reverse=True,
-    )
-    out = []
-    for entry in ranked[:8]:
-        out.append({
-            "ea_id": entry.get("ea_id") or "?",
-            "slug": entry.get("slug") or "",
-            "stage": entry.get("stage") or "Card",
-            "status": entry.get("stage_status") or "?",
-            "updated": str(entry.get("last_activity") or "")[:19],
-            "next_action": next_action(entry),
-        })
-    return out
-
-
 def diagnose_bottleneck(procs: dict, q: dict, claude_workers: list, codex_workers: list) -> tuple[str, str]:
     mt5_backpressure = q.get("work_items_pending", 0) >= 1000 or q.get("work_items_active", 0) >= 10
     if q["builds_pending"] > 0 and len(codex_workers) == 0 and mt5_backpressure:
@@ -1138,12 +1022,11 @@ def main() -> int:
     _live = live_worker_terminals()
     mt5_work = [w for w in mt5_work if str(w.get("terminal") or "").upper() in _live]
     q = queue_snapshot()
-    pipeline = compute_pipeline()
-    next_actions = profitability_next_actions(pipeline)
     backlog = pipeline_backlog_snapshot()
     q08_rescue = q08_portfolio_rescue_snapshot()
-    heureka = compute_heureka_leader(pipeline)
     qsnap = quota_snapshot()
+    money = live_money_snapshot()
+    q12_count = q12_review_ready_count()
 
     # Pipeline health (written by `farmctl health`, scheduled every 15 min)
     health_file = ROOT / "state" / "health.json"
@@ -1334,16 +1217,21 @@ def main() -> int:
     pill_label = {"ok": "NOMINAL", "warn": "WARN", "block": "CRITICAL"}[severity]
     pill_class = {"ok": "", "warn": "warn", "block": "crit"}[severity]
     _checks = health.get("checks") or []
-    _factory_fail = any(
-        (c.get("status") or "").upper() == "FAIL"
-        and c.get("name") in _FACTORY_DOWN_CHECKS
-        for c in _checks
-    )
-    _any_fail = any((c.get("status") or "").upper() == "FAIL" for c in _checks)
+    _fail_checks = [c for c in _checks if (c.get("status") or "").upper() == "FAIL"]
+    _factory_fail_checks = [c for c in _fail_checks if c.get("name") in _FACTORY_DOWN_CHECKS]
+    _factory_fail = bool(_factory_fail_checks)
+    _any_fail = bool(_fail_checks)
     if _factory_fail:
         pill_label = "CRITICAL"; pill_class = "crit"
+        # Topbar must explain the CRITICAL, not narrate the build queue —
+        # a red pill next to "coding intentionally paused" is incoherent
+        # (OWNER 2026-07-07).
+        msg = " // ".join(
+            f"{c.get('name')}: {str(c.get('detail'))[:90]}" for c in _factory_fail_checks[:2]
+        )
     elif _any_fail and pill_class == "":
         pill_label = "WARN"; pill_class = "warn"
+        msg = f"{_fail_checks[0].get('name')}: {str(_fail_checks[0].get('detail'))[:80]} // {msg}"
     elif (health.get("overall") or "").upper() == "WARN" and pill_class == "":
         pill_label = "WARN"; pill_class = "warn"
 
@@ -1359,66 +1247,93 @@ def main() -> int:
             out.append(glyphs[max(0, min(len(glyphs) - 1, idx))])
         return "".join(out)
 
-    # ---------- 2. MISSION + HEUREKA ----------
-    p8_pass = backlog.get("p8_pass_total", 0)
-    portfolio_target = 5
-    mission_pct = int(100 * p8_pass / portfolio_target) if portfolio_target else 0
-    bar_filled = "█" * max(0, min(20, int(20 * p8_pass / portfolio_target))) if portfolio_target else ""
-    bar_empty = "─" * (20 - len(bar_filled))
-    if p8_pass == 0:
-        mission_sub = "No EA has cleared Q11 portfolio gate"
-        bar_html = f'<span class="empty">{bar_empty}</span>'
-    else:
-        mission_sub = f"{p8_pass} EA{'s' if p8_pass != 1 else ''} portfolio-ready"
-        bar_html = f'<span>{bar_filled}</span><span class="empty">{bar_empty}</span>'
+    # ---------- 2. LIVE MONEY ROW (OWNER rework 2026-07-07) ----------
+    decisions = owner_decision_rows(q12_count)
 
-    # 14-chip Q-strip (Card / Build / Review / Q02..Q11 / Live)
-    chip_labels = {
-        "Card": "CRD", "Build": "BLD", "Review": "REV",
-        "Q02": "Q02", "Q03": "Q03", "Q04": "Q04", "Q05": "Q05", "Q06": "Q06",
-        "Q07": "Q07", "Q08": "Q08", "Q09": "Q09", "Q10": "Q10", "Q11": "Q11",
-        "Live": "LIV",
-    }
-    if heureka:
-        cur_idx = heureka["current_stage_idx"]
-        chips_inner = []
-        for i, st in enumerate(PIPELINE_STAGES):
-            cls = ""
-            if i < cur_idx:
-                cls = "done"
-            elif i == cur_idx:
-                cls = "now"
-            chips_inner.append(f'<span class="chip {cls}">{chip_labels.get(st, st)}</span>')
-        heureka_chips_html = "".join(chips_inner)
-        heureka_pct = heureka["pct"]
-        heureka_done = heureka["completed_count"]
-        heureka_total = heureka["total_stages"]
-        next_stage = heureka["next_stage"]
-        next_label = chip_labels.get(heureka["current_stage"], heureka["current_stage"])
-        next_target = chip_labels.get(next_stage, next_stage)
-        heureka_next_act = f"PROMOTE {next_label} → {next_target}"
-        heureka_id = e(heureka["ea_id"])
-        heureka_slug = e(heureka["slug"] or "—")
-        heureka_aux = f'Furthest EA // {heureka_done} of {heureka_total}'
-    else:
-        heureka_chips_html = "".join(
-            f'<span class="chip">{chip_labels[s]}</span>' for s in PIPELINE_STAGES
+    dxz = money.get("dxz") or {}
+    ftmo = money.get("ftmo") or {}
+
+    def _tile_cls(verdict: str, alarms: int, warn: bool = False) -> str:
+        if not verdict or verdict == "?":
+            return ""
+        if verdict != "OK" or alarms:
+            return "alert"
+        return "warn" if warn else "ok"
+
+    if dxz:
+        _sleeves = dxz.get("sleeves")
+        dxz_val = f"{_sleeves} SLEEVES" if _sleeves is not None else "PULSE?"
+        dxz_cls = _tile_cls(dxz.get("verdict", "?"), dxz.get("alarms", 0))
+        _at = str(dxz.get("autotrading") or "?").upper()
+        _pos = dxz.get("positions")
+        _age = dxz.get("age_min")
+        dxz_sub = (
+            f"acct {dxz.get('account') or '?'} // AT {_at} // "
+            f"{_pos if _pos is not None else '?'} open pos // "
+            f"verdict {dxz.get('verdict', '?')} // pulse {_age}m ago" if _age is not None else
+            f"acct {dxz.get('account') or '?'} // AT {_at} // verdict {dxz.get('verdict', '?')}"
         )
-        heureka_pct = 0
-        heureka_done = 0
-        heureka_total = len(PIPELINE_STAGES)
-        heureka_next_act = "AWAIT FIRST EA"
-        heureka_id = "—"
-        heureka_slug = "no EA in flight"
-        heureka_aux = "No leader yet"
+    else:
+        dxz_val, dxz_cls, dxz_sub = "NO PULSE", "alert", "live_book_pulse.json unreadable"
 
-    # ---------- 3. OWNER ATTENTION ----------
-    router = q.get("agent_router") or {}
-    attention_rows: list[str] = []
+    if ftmo:
+        _eq = ftmo.get("equity")
+        ftmo_val = f"${_eq:,.0f}" if isinstance(_eq, (int, float)) else "PULSE?"
+        _dl = ftmo.get("day_loss_pct")
+        _dd = ftmo.get("total_dd_pct")
+        _soft_warn = (isinstance(_dl, (int, float)) and _dl >= 3.5) or (
+            isinstance(_dd, (int, float)) and _dd >= 6.0)
+        ftmo_cls = _tile_cls(ftmo.get("verdict", "?"), ftmo.get("alarms", 0), warn=_soft_warn)
+        _dp = ftmo.get("day_pnl")
+        _age = ftmo.get("age_min")
+        ftmo_sub = (
+            f"day {'+' if isinstance(_dp, (int, float)) and _dp >= 0 else ''}{_dp:,.0f}"
+            f" ({_dl:.1f}% of 5) // total DD {_dd:.1f}% of 10 // "
+            f"{ftmo.get('magics_seen')}/{ftmo.get('expected_magics')} magics // "
+            f"verdict {ftmo.get('verdict', '?')}"
+            + (f" // {_age}m ago" if _age is not None else "")
+            if isinstance(_dp, (int, float)) and isinstance(_dl, (int, float))
+            and isinstance(_dd, (int, float))
+            else f"verdict {ftmo.get('verdict', '?')}"
+        )
+    else:
+        ftmo_val, ftmo_cls, ftmo_sub = "NO PULSE", "alert", "ftmo_trial_pulse.json unreadable"
 
-    # T_LIVE-level rows would surface from a future portfolio_candidates table;
-    # for now we surface BLOCKED/OPS_FIX_REQUIRED/REVIEW agent_tasks + the
-    # build→review pending queue (Claude must approve those).
+    if decisions:
+        gate_val = decisions[0].get("due") or decisions[0].get("cat") or "—"
+        gate_sub = f"{decisions[0].get('title', '')} // {len(decisions)} decision(s) open"
+    else:
+        gate_val, gate_sub = "NONE", "no OWNER decisions pending"
+
+    money_html = f'''
+  <div class="frontier">
+    <div class="frontier-tile">
+      <div class="f-lbl">DXZ Live Book // Darwinex Zero</div>
+      <div class="f-val {dxz_cls}">{e(dxz_val)}</div>
+      <div class="f-sub">{e(dxz_sub)}</div>
+    </div>
+    <div class="frontier-tile">
+      <div class="f-lbl">FTMO Trial // 100K</div>
+      <div class="f-val {ftmo_cls}">{e(ftmo_val)}</div>
+      <div class="f-sub">{e(ftmo_sub)}</div>
+    </div>
+    <div class="frontier-tile">
+      <div class="f-lbl">Next OWNER Gate</div>
+      <div class="f-val hot">{e(gate_val)}</div>
+      <div class="f-sub">{e(gate_sub)}</div>
+    </div>
+    <div class="frontier-tile">
+      <div class="f-lbl">Mission Target</div>
+      <div class="f-val">+20% P.A.</div>
+      <div class="f-sub">DXZ &euro;100k mandate // DD guard 5% / 20% // no ML // evidence over claims</div>
+    </div>
+  </div>
+'''
+
+    # ---------- 3. OWNER DECISIONS ----------
+    # Only genuine OWNER decisions (OWNER call 2026-07-07: "was muss ich da
+    # alles entscheiden?" — the old panel listed Claude review tasks and
+    # zombie BLOCKED rows, none of which OWNER can act on).
     review_pending = db_rows(
         "SELECT b.id, b.payload_json FROM tasks b "
         "WHERE b.kind='build_ea' AND b.status='done' "
@@ -1426,70 +1341,29 @@ def main() -> int:
         "AND r.payload_json LIKE '%\"build_task_id\": \"' || b.id || '\"%') "
         "LIMIT 8"
     )
-    for row in review_pending[:4]:
-        try:
-            p = json.loads(row.get("payload_json") or "{}")
-        except Exception:
-            p = {}
-        ea_id = p.get("ea_id") or "?"
-        slug = (p.get("slug") or "")[:34]
+    attention_rows: list[str] = []
+    for d in decisions[:8]:
+        row_cls = "attention-row alert" if d.get("alert") else "attention-row"
+        due = d.get("due") or ""
         attention_rows.append(
-            f'<div class="attention-row">'
+            f'<div class="{row_cls}">'
             f'<span class="glyph">▸</span>'
-            f'<span class="cat">REVIEW PENDING</span>'
-            f'<span class="ent">{e(ea_id)}<span class="slug">{e(slug)}</span></span>'
-            f'<span class="status">CLAUDE TASK</span>'
+            f'<span class="cat">{e(d.get("cat", "DECISION"))}</span>'
+            f'<span class="ent">{e(d.get("title", ""))}<span class="slug">{e(d.get("detail", ""))}</span></span>'
+            f'<span class="status">{e(("DUE " + due) if due else "OWNER")}</span>'
             f'</div>'
         )
-
-    # BLOCKED / OPS_FIX_REQUIRED from agent_router
-    for task in router.get("recent_tasks", []):
-        state = str(task.get("state") or "").upper()
-        if state not in ("BLOCKED", "OPS_FIX_REQUIRED"):
-            continue
-        agent = task.get("agent") or "?"
-        ttype = (task.get("type") or "ops_issue")[:34]
-        artifact = (task.get("artifact") or task.get("verdict") or "")[:36]
-        age_h = task.get("age_h") or 0
-        attention_rows.append(
-            f'<div class="attention-row alert">'
-            f'<span class="glyph">▸</span>'
-            f'<span class="cat">{e(state)}</span>'
-            f'<span class="ent">{e(agent)} / {e(ttype)}'
-            f'<span class="slug">{e(artifact or "ops_issue")}</span></span>'
-            f'<span class="status">{age_h:.1f}H SLA</span>'
-            f'</div>'
-        )
-
-    # REVIEW-ready agent_tasks (Codex artefacts waiting Claude eyeballs)
-    for task in router.get("recent_tasks", []):
-        state = str(task.get("state") or "").upper()
-        if state != "REVIEW":
-            continue
-        agent = task.get("agent") or "?"
-        ttype = (task.get("type") or "ops_issue")[:34]
-        age_h = task.get("age_h") or 0
-        attention_rows.append(
-            f'<div class="attention-row">'
-            f'<span class="glyph">▸</span>'
-            f'<span class="cat">REVIEW READY</span>'
-            f'<span class="ent">{e(agent)} / {e(ttype)}'
-            f'<span class="slug">agent_task</span></span>'
-            f'<span class="status">{age_h:.1f}H // CLAUDE</span>'
-            f'</div>'
-        )
-
     if not attention_rows:
         attention_rows.append(
             '<div class="attention-row">'
             '<span class="glyph">·</span>'
             '<span class="cat">CLEAR</span>'
-            '<span class="ent">no owner-attention items<span class="slug">all SLAs green</span></span>'
+            '<span class="ent">no OWNER decisions pending<span class="slug">agents are working autonomously</span></span>'
             '<span class="status">OK</span>'
             '</div>'
         )
-    attention_html_inner = "\n".join(attention_rows[:8])
-    attention_aux = f"{len(attention_rows):02d} Items Open"
+    attention_html_inner = "\n".join(attention_rows)
+    attention_aux = f"{len(decisions):02d} Decisions Open"
 
     # ---------- 3. AGENT STATUS ----------
     claude_act = len(claude_workers)
@@ -1624,69 +1498,6 @@ def main() -> int:
     except Exception:
         pass
 
-    # ---------- 4. PROFITABILITY NEXT ACTIONS ----------
-    def stage_state_class(status: str) -> tuple[str, str]:
-        s = (status or "").lower()
-        if s == "done":
-            return ("state-done", "DONE")
-        if s == "active":
-            return ("state-act", "ACTIVE")
-        if s == "failed":
-            return ("state-fail", "FAIL")
-        return ("state-pend", "PEND")
-
-    action_rows_html: list[str] = []
-    for row in next_actions:
-        cls, label = stage_state_class(str(row.get("status") or ""))
-        ea = e(str(row.get("ea_id") or "?"))
-        slug = e(str(row.get("slug") or "")[:40])
-        next_act = e(str(row.get("next_action") or "")[:80])
-        # Lane heuristic from slug prefix
-        lane = "MULTI"
-        slug_lower = (row.get("slug") or "").lower()
-        if "carry" in slug_lower:
-            lane = "FX-CARRY"
-        elif "fx" in slug_lower or "eur" in slug_lower or "usd" in slug_lower:
-            lane = "FX"
-        elif "h4" in slug_lower:
-            lane = "H4"
-        elif "h1" in slug_lower:
-            lane = "H1"
-        elif "idx" in slug_lower or "spx" in slug_lower or "ndx" in slug_lower:
-            lane = "INDEX"
-        # Decide top-level action verb
-        st = (row.get("status") or "").lower()
-        stage_name = (row.get("stage") or "")
-        if st == "done":
-            verb = "PROMOTE"
-        elif st == "active":
-            verb = "WAIT EVIDENCE"
-        elif st == "failed":
-            verb = "REVIEW FAIL"
-        else:
-            verb = "ENQUEUE" if stage_name not in ("Card",) else "BUILD"
-        # Compute next gate hint (e.g. Q02 → Q03)
-        try:
-            idx = PIPELINE_STAGES.index(stage_name)
-            nxt_g = PIPELINE_STAGES[idx + 1] if idx + 1 < len(PIPELINE_STAGES) else "live"
-            next_gate = f"{chip_labels.get(stage_name, stage_name)} → {chip_labels.get(nxt_g, nxt_g)}"
-        except ValueError:
-            next_gate = chip_labels.get(stage_name, stage_name) or "—"
-        action_rows_html.append(
-            "<tr>"
-            f'<td class="action">{e(verb)}</td>'
-            f'<td class="ea-cell">{ea}</td>'
-            f'<td class="slug-cell">{e(lane)}</td>'
-            f'<td class="slug-cell">{slug}</td>'
-            f'<td><span class="state {cls}">{label}</span></td>'
-            f'<td class="gate">{e(next_gate)}</td>'
-            f'<td class="note">{next_act}</td>'
-            "</tr>"
-        )
-    if not action_rows_html:
-        action_rows_html.append('<tr><td colspan="7" class="note">no pipeline candidates</td></tr>')
-    profit_aux = f"{len(next_actions):02d} Rows // Sorted By Recency"
-
     # ---------- 5. PIPELINE FUNNEL ----------
     # Stage counts:
     # SRC      — sources pending  (input reservoir)
@@ -1797,68 +1608,8 @@ def main() -> int:
         portfolio_empty=" empty" if portfolio_count == 0 else "",
     )
 
-    # ---------- 5c. Q08 PORTFOLIO RESCUE ----------
-    rescue_rows_html: list[str] = []
-    for r in q08_rescue.get("rows") or []:
-        tier = str(r.get("tier") or "--")
-        q09v = str(r.get("q09_verdict") or "--")
-        tier_cls = "soft" if tier == "FAIL_SOFT" else ("hard" if tier == "FAIL_HARD" else "other")
-        q09_cls = (
-            "pass" if q09v == "PASS_PORTFOLIO"
-            else "wait" if q09v in {"NEED_MORE_DATA", "PENDING"}
-            else "fail" if q09v == "FAIL_PORTFOLIO"
-            else "other"
-        )
-        dd_delta = r.get("maxdd_delta")
-        dd_txt = _num(dd_delta)
-        if isinstance(dd_delta, (int, float)) and dd_delta < 0:
-            dd_txt = f"{dd_txt} better"
-        elif isinstance(dd_delta, (int, float)) and dd_delta > 0:
-            dd_txt = f"{dd_txt} worse"
-        rescue_rows_html.append(
-            '<tr>'
-            f'<td class="ea-cell">{e(r.get("ea_id"))}</td>'
-            f'<td class="slug-cell">{e(r.get("symbol"))}</td>'
-            f'<td><span class="rescue-tier {tier_cls}">{e(tier)}</span></td>'
-            f'<td class="note">{e(str(r.get("reason") or "--")[:90])}</td>'
-            f'<td class="num">{e(r.get("q08_trades") if r.get("q08_trades") is not None else "--")}</td>'
-            f'<td><span class="rescue-q09 {q09_cls}">{e(q09v)}</span></td>'
-            f'<td class="num">{e(_num(r.get("corr")))}</td>'
-            f'<td class="num">{e(_num(r.get("sharpe_delta")))}</td>'
-            f'<td class="num">{e(dd_txt)}</td>'
-            f'<td class="num">{e(_num(r.get("pf")))}</td>'
-            f'<td class="note">{e("portfolio-only" if r.get("portfolio_only") else (r.get("candidate_state") or "--"))}</td>'
-            '</tr>'
-        )
-    if not rescue_rows_html:
-        rescue_rows_html.append('<tr><td colspan="11" class="note">no Q08 rescue rows yet</td></tr>')
-    q08_rescue_aux = (
-        f'{q08_rescue.get("soft", 0)} soft // {q08_rescue.get("hard", 0)} hard // '
-        f'{q08_rescue.get("pass_portfolio", 0)} pass // {q08_rescue.get("need_more_data", 0)} need data'
-    )
-    q08_rescue_html = f'''
-  <div class="section demoted">
-    <div class="section-head">
-      <span class="section-glyph"></span>
-      <span class="section-title">Q08 Portfolio Rescue // Standalone Fail Track</span>
-      <span class="section-aux">{e(q08_rescue_aux)} // Reference</span>
-    </div>
-    <div class="rescue-summary">
-      <div class="rescue-stat"><span>FAIL_SOFT</span><strong>{q08_rescue.get("soft", 0)}</strong></div>
-      <div class="rescue-stat"><span>Q09 pending</span><strong>{q08_rescue.get("pending", 0)}</strong></div>
-      <div class="rescue-stat"><span>Need data</span><strong>{q08_rescue.get("need_more_data", 0)}</strong></div>
-      <div class="rescue-stat"><span>Portfolio-only</span><strong>{q08_rescue.get("candidates", 0)}</strong></div>
-    </div>
-    <table class="qm-table rescue-table">
-      <tr>
-        <th>EA</th><th>Symbol</th><th>Q08 Tier</th><th>Standalone Fail Reason</th>
-        <th>Trades</th><th>Q09 Verdict</th><th>Corr</th><th>Sharpe Delta</th>
-        <th>MaxDD Delta</th><th>PF</th><th>Flag</th>
-      </tr>
-      {"".join(rescue_rows_html)}
-    </table>
-  </div>
-'''
+    # Q08 Portfolio Rescue table removed 2026-07-07 (OWNER call) — the
+    # snapshot counts still feed the COMPANY FRONTIER Q08-cohort tile.
 
     # ---------- 5b. PIPELINE PROGRESS (per-Q breakdown — OWNER call) ----------
     # Cards total: filesystem count of cards_approved/
@@ -1950,68 +1701,8 @@ def main() -> int:
   </div>
 """
 
-    # ---------- 6. RECENT EVENTS ----------
-    try:
-        events_rows = db_rows(
-            "SELECT ts, entity_type, entity_id, event, detail_json "
-            "FROM events ORDER BY ts DESC LIMIT 10"
-        )
-    except Exception:
-        events_rows = []
-
-    def event_class(event: str) -> tuple[str, str]:
-        ev = (event or "").lower()
-        if "pass" in ev or "ok" in ev or "approve" in ev:
-            return ("pass", "✓")
-        if "fail" in ev or "dead" in ev or "blocked" in ev:
-            return ("fail", "✗")
-        if "stagnation" in ev or "p_pass" in ev:
-            return ("dead", "☠")
-        return ("", "⚙")
-
-    events_html_rows: list[str] = []
-    for idx, r in enumerate(events_rows):
-        try:
-            t = dt.datetime.fromisoformat(str(r.get("ts") or "").replace("Z", "+00:00"))
-            ts_str = t.strftime("%H:%M:%SZ")
-        except Exception:
-            ts_str = (str(r.get("ts") or "")[11:19] or "—") + "Z"
-        kind, gly = event_class(r.get("event"))
-        cls = kind or ""
-        evt = (r.get("event") or "").replace("_", " ").upper()[:24]
-        ent = r.get("entity_id") or "—"
-        # Try to pull slug + symbol from detail_json
-        slug = ""
-        sym = "--"
-        try:
-            d = json.loads(r.get("detail_json") or "{}")
-            slug = (d.get("slug") or d.get("source_title") or d.get("verdict") or "")[:40]
-            sym = (d.get("symbol") or d.get("source") or sym)[:14]
-            term = d.get("terminal")
-            if term:
-                slug = f"{slug} // {term}" if slug else term
-        except Exception:
-            pass
-        cur_cls = "cur live" if idx == 0 else "cur dim"
-        events_html_rows.append(
-            f'<div class="events-row {cls}">'
-            f'<span class="{cur_cls}">▮</span>'
-            f'<span class="ts">{e(ts_str)}</span>'
-            f'<span class="gly">{gly}</span>'
-            f'<span class="evt">{e(evt)}</span>'
-            f'<span class="ent">{e(str(ent))}</span>'
-            f'<span class="slug">{e(slug)}</span>'
-            f'<span class="sym">{e(sym)}</span>'
-            f'</div>'
-        )
-    if not events_html_rows:
-        events_html_rows.append(
-            '<div class="events-row">'
-            '<span class="cur dim">▮</span><span class="ts">—</span>'
-            '<span class="gly">·</span><span class="evt">NO EVENTS</span>'
-            '<span class="ent">—</span><span class="slug">events table empty</span>'
-            '<span class="sym">--</span></div>'
-        )
+    # Recent Events telemetry tail removed 2026-07-07 (OWNER call — all-red
+    # zero-trade noise with no decision value).
 
     # ---------- 7. DAILY CONTROLLING ----------
     cw = controlling["windows"]
@@ -2168,98 +1859,6 @@ body { padding: 32px; min-height: 100vh; }
 }
 .panel { background: var(--surface-1); border: 1px solid var(--border); box-shadow: 0 0 0 1px var(--border) inset; }
 
-/* MISSION */
-.mission {
-  display: grid; grid-template-columns: 1fr 1px 1fr; gap: 28px;
-  align-items: stretch; padding: 24px 28px; height: 100%;
-  background: var(--surface-1); border: 1px solid var(--border);
-}
-.mission .divider { background: var(--border); width: 1px; }
-.mission-tile { min-width: 0; display: flex; flex-direction: column; }
-.mission-label {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 11px; font-weight: 500; letter-spacing: 0.18em;
-  color: var(--text-3); text-transform: uppercase; margin-bottom: 10px;
-}
-.mission-hero {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-variant-numeric: tabular-nums;
-  font-size: 72px; line-height: 0.9; font-weight: 500;
-  color: var(--text); letter-spacing: -0.04em;
-}
-.mission-hero .denom { font-size: 28px; font-weight: 400; color: var(--text-3); margin-left: 4px; letter-spacing: 0; }
-.mission-hero .pct { font-size: 20px; font-weight: 400; color: var(--text-3); margin-left: 14px; letter-spacing: 0; }
-.mission-sub {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 11px; color: var(--text-3);
-  letter-spacing: 0.12em; margin-top: 14px; text-transform: uppercase;
-}
-.mission-bar {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  color: var(--text-2); font-size: 13px; letter-spacing: 0;
-  margin-top: 12px; word-break: break-all;
-}
-.mission-bar .empty { color: var(--text-4); }
-.mission-tag {
-  display: inline-block;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  margin-top: 12px; font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
-  text-transform: uppercase; color: var(--warn);
-  border: 1px solid var(--warn); padding: 4px 8px; align-self: flex-start;
-}
-
-/* HEUREKA */
-.heureka {
-  background: var(--surface-1); border: 1px solid var(--border);
-  padding: 22px 24px; height: 100%;
-  display: flex; flex-direction: column; gap: 18px;
-}
-.heureka-id {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-variant-numeric: tabular-nums;
-  font-size: 28px; font-weight: 500; line-height: 1;
-  color: var(--text); letter-spacing: -0.01em;
-}
-.heureka-slug {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 11px; color: var(--text-3); letter-spacing: 0.14em;
-  text-transform: uppercase; margin-top: 6px;
-}
-.heureka-chips { display: grid; grid-template-columns: repeat(14, 1fr); gap: 2px; }
-.chip {
-  text-align: center;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 9px; font-weight: 600; letter-spacing: 0.08em;
-  padding: 6px 0 5px;
-  border: 1px solid var(--border); background: var(--surface-2); color: var(--text-4);
-}
-.chip.done { color: var(--pass); background: var(--surface-3); border-color: var(--border-2); }
-.chip.now { color: var(--bg); background: var(--signal); border-color: var(--signal); font-weight: 700; }
-.heureka-metric {
-  display: grid; grid-template-columns: 1fr 1fr;
-  border-top: 1px solid var(--border); padding-top: 16px; gap: 16px;
-}
-.heureka-metric .m-lbl {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 10px; font-weight: 500; letter-spacing: 0.18em;
-  color: var(--text-3); text-transform: uppercase; margin-bottom: 6px;
-}
-.heureka-metric .m-val {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-variant-numeric: tabular-nums;
-  font-size: 28px; font-weight: 500; color: var(--text); line-height: 1;
-}
-.heureka-metric .m-val .unit { font-size: 14px; color: var(--text-3); margin-left: 4px; }
-.heureka-next {
-  margin-top: auto; border-top: 1px solid var(--border); padding-top: 14px;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 11px; letter-spacing: 0.08em; color: var(--text-2);
-  display: flex; align-items: baseline; gap: 10px; text-transform: uppercase;
-}
-.heureka-next .arr { color: var(--signal); font-weight: 700; }
-.heureka-next .lbl { font-size: 10px; letter-spacing: 0.22em; color: var(--text-3); }
-.heureka-next .act { color: var(--text); font-weight: 600; letter-spacing: 0.06em; }
-
 /* OWNER ATTENTION */
 .attention { background: var(--surface-1); border: 1px solid var(--border); }
 .attention-row {
@@ -2338,9 +1937,6 @@ body { padding: 32px; min-height: 100vh; }
 .watchdog-row.wd-ok .wval { color: var(--signal); }
 .watchdog-row.wd-warn .wval { color: var(--warn); }
 .watchdog-row.wd-crit .wval { color: var(--fail); font-weight: 700; }
-.section.demoted { opacity: 0.62; }
-.section.demoted:hover { opacity: 1; }
-.section.demoted .section-title { color: var(--text-3); }
 .agent-fleet { padding: 16px 20px 18px; border-bottom: none; }
 .agent-fleet .flbl {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
@@ -2364,71 +1960,6 @@ body { padding: 32px; min-height: 100vh; }
 .term.active .dot { color: var(--text); }
 .term.idle   .dot { color: var(--text-3); }
 .term.active .id  { color: var(--text-2); }
-
-/* TABLE */
-.qm-table {
-  width: 100%; border-collapse: collapse;
-  background: var(--surface-1); border: 1px solid var(--border);
-  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;
-}
-.qm-table th, .qm-table td {
-  padding: 11px 16px;
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  text-align: left; vertical-align: baseline;
-}
-.qm-table th:last-child, .qm-table td:last-child { border-right: none; }
-.qm-table tr:last-child td { border-bottom: none; }
-.qm-table th {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.2em;
-  text-transform: uppercase; color: var(--text-3); background: var(--bg);
-}
-.qm-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
-.qm-table .ea-cell    { color: var(--text); font-weight: 600; }
-.qm-table .slug-cell  { color: var(--text-3); }
-.qm-table .gate       { color: var(--text-2); letter-spacing: 0.06em; }
-.qm-table .note       { color: var(--text-3); font-size: 11px; }
-.qm-table .state {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
-}
-.qm-table .state-done { color: var(--pass); }
-.qm-table .state-act  { color: var(--text-2); }
-.qm-table .state-pend { color: var(--text-3); }
-.qm-table .state-fail { color: var(--fail); }
-.qm-table .action {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.16em;
-  text-transform: uppercase; color: var(--text-2);
-}
-.rescue-summary {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
-  background: var(--surface-1); border: 1px solid var(--border);
-  border-bottom: none;
-}
-.rescue-stat {
-  padding: 14px 18px; border-right: 1px solid var(--border);
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-}
-.rescue-stat:last-child { border-right: none; }
-.rescue-stat span {
-  display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
-  text-transform: uppercase; color: var(--text-3); margin-bottom: 6px;
-}
-.rescue-stat strong {
-  font-size: 26px; line-height: 1; font-weight: 500; color: var(--text);
-  font-variant-numeric: tabular-nums;
-}
-.rescue-table th:nth-child(4), .rescue-table td:nth-child(4) { max-width: 360px; }
-.rescue-tier, .rescue-q09 {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
-  text-transform: uppercase; white-space: nowrap;
-}
-.rescue-tier.soft { color: var(--warn); }
-.rescue-tier.hard { color: var(--fail); }
-.rescue-tier.other { color: var(--text-3); }
-.rescue-q09.pass { color: var(--signal); }
-.rescue-q09.wait { color: var(--promising); }
-.rescue-q09.fail { color: var(--fail); }
-.rescue-q09.other { color: var(--text-3); }
 
 /* PIPELINE PROGRESS — top-line counters + per-Q chip strip (OWNER call) */
 .prog-counters {
@@ -2538,45 +2069,6 @@ body { padding: 32px; min-height: 100vh; }
 }
 .funnel-stage.empty .stg-spark { color: var(--text-4); }
 
-/* EVENTS */
-.events {
-  background: var(--surface-1); border: 1px solid var(--border);
-  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;
-}
-.events-row {
-  display: grid;
-  grid-template-columns: 22px 92px 24px 140px 120px 1fr 140px;
-  gap: 12px; padding: 10px 18px;
-  border-bottom: 1px solid var(--border); align-items: baseline;
-}
-.events-row:last-child { border-bottom: none; }
-.events-row .cur {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  color: var(--signal); font-weight: 700;
-}
-.events-row .cur.live { animation: blink 1s steps(2) infinite; }
-.events-row .cur.dim { color: transparent; }
-.events-row .ts {
-  color: var(--text-3); font-variant-numeric: tabular-nums; letter-spacing: 0.02em;
-}
-.events-row .gly { text-align: center; font-weight: 600; color: var(--text); }
-.events-row.fail  .gly { color: var(--fail); }
-.events-row.pass  .gly { color: var(--pass); }
-.events-row.dead  .gly { color: var(--text-3); }
-.events-row .evt {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
-  text-transform: uppercase; color: var(--text-2);
-}
-.events-row.fail  .evt { color: var(--fail); }
-.events-row.pass  .evt { color: var(--pass); }
-.events-row.dead  .evt { color: var(--text-3); }
-.events-row .ent { color: var(--text); font-weight: 600; }
-.events-row .slug { color: var(--text-3); }
-.events-row .sym {
-  color: var(--text-2); text-align: right;
-  font-size: 11px; letter-spacing: 0.04em;
-}
-
 /* DAILY CONTROLLING */
 .control {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
@@ -2629,6 +2121,9 @@ body { padding: 32px; min-height: 100vh; }
   font-size: 22px; font-weight: 500; color: var(--text); line-height: 1.05;
 }
 .frontier-tile .f-val.hot { color: var(--live); }
+.frontier-tile .f-val.ok { color: var(--signal); }
+.frontier-tile .f-val.warn { color: var(--warn); }
+.frontier-tile .f-val.alert { color: var(--fail); }
 .frontier-tile .f-sub {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 10px; color: var(--text-3); margin-top: 7px;
@@ -2725,68 +2220,21 @@ body { padding: 32px; min-height: 100vh; }
     <div class="health-pill {pill_class}">{e(pill_label)}</div>
   </div>
 
-  <!-- 2. MISSION + HEUREKA -->
+  <!-- 2. LIVE MONEY -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Live Money // Real Accounts</span>
+      <span class="section-aux">DXZ Book // FTMO Trial // Pulse Evidence</span>
+    </div>
+    {money_html}
+  </div>
+
+  <!-- 3. OWNER DECISIONS + AGENT STATUS -->
   <div class="col-left">
     <div class="section-head">
       <span class="section-glyph"></span>
-      <span class="section-title">Mission Progress // Heureka Portfolio</span>
-      <span class="section-aux">Q11-PASS Cohort // Target {portfolio_target} EAs</span>
-    </div>
-    <div class="mission">
-      <div class="mission-tile">
-        <div class="mission-label">Q11-Pass Portfolio</div>
-        <div class="mission-hero">{p8_pass}<span class="denom">/{portfolio_target}</span><span class="pct">{mission_pct}%</span></div>
-        <div class="mission-bar">{bar_html}</div>
-        <div class="mission-sub">{e(mission_sub)}</div>
-      </div>
-      <div class="divider"></div>
-      <div class="mission-tile">
-        <div class="mission-label">Portfolio // Annualised Return</div>
-        <div class="mission-hero">+20.0<span class="pct">% p.a.</span></div>
-        <div class="mission-sub">Target // OWNER mandate // DXZ &euro;100k</div>
-        <span class="mission-tag">UNCALIB // NO LIVE EVIDENCE</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-right">
-    <div class="section-head">
-      <span class="section-glyph"></span>
-      <span class="section-title">Heureka Leader</span>
-      <span class="section-aux">{e(heureka_aux)}</span>
-    </div>
-    <div class="heureka">
-      <div>
-        <div class="heureka-id">{heureka_id}</div>
-        <div class="heureka-slug">{heureka_slug}</div>
-      </div>
-      <div class="heureka-chips">{heureka_chips_html}</div>
-      <div class="heureka-metric">
-        <div>
-          <div class="m-lbl">Phase Progress</div>
-          <div class="m-val">{heureka_done}<span class="unit">/{heureka_total}</span></div>
-        </div>
-        <div>
-          <div class="m-lbl">Pipeline % Complete</div>
-          <div class="m-val">{heureka_pct}<span class="unit">%</span></div>
-        </div>
-      </div>
-      <div class="heureka-next">
-        <span class="arr">&#9656;</span>
-        <span class="lbl">NEXT</span>
-        <span class="act">{e(heureka_next_act)}</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- 2b. COMPANY FRONTIER -->
-  {frontier_html}
-
-  <!-- 3. OWNER ATTENTION + AGENT STATUS -->
-  <div class="col-left">
-    <div class="section-head">
-      <span class="section-glyph"></span>
-      <span class="section-title">Owner Attention</span>
+      <span class="section-title">Owner Decisions</span>
       <span class="section-aux">{attention_aux}</span>
     </div>
     <div class="attention">
@@ -2836,6 +2284,16 @@ body { padding: 32px; min-height: 100vh; }
         <span class="wval">{e(watchdog_str)}</span>
       </div>
     </div>
+  </div>
+
+  <!-- 4. COMPANY FRONTIER -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-glyph"></span>
+      <span class="section-title">Company Frontier // Pipeline Edge</span>
+      <span class="section-aux">Furthest Candidate // Q08 Cohort // Conversion // Throughput</span>
+    </div>
+    {frontier_html}
   </div>
 
   {progress_html}
@@ -2935,41 +2393,10 @@ body { padding: 32px; min-height: 100vh; }
     </div>
   </div>
 
-  <!-- 7. RECENT EVENTS -->
-  <div class="section">
-    <div class="section-head">
-      <span class="section-glyph"></span>
-      <span class="section-title">Recent Events // Telemetry Tail</span>
-      <span class="section-aux">Last 10 // UTC</span>
-    </div>
-    <div class="events">
-      {"".join(events_html_rows)}
-    </div>
-  </div>
-
-  <!-- 8. NEXT ACTIONS (demoted below the fold — OWNER directive 2026-06-11) -->
-  <div class="section demoted">
-    <div class="section-head">
-      <span class="section-glyph"></span>
-      <span class="section-title">Profitability // Next Actions</span>
-      <span class="section-aux">{profit_aux} // Reference</span>
-    </div>
-    <table class="qm-table">
-      <tr>
-        <th>Action</th><th>EA</th><th>Lane</th><th>Symbol / Slug</th>
-        <th>State</th><th>Next Gate</th><th>Note</th>
-      </tr>
-      {"".join(action_rows_html)}
-    </table>
-  </div>
-
-  <!-- 9. Q08 RESCUE (demoted below the fold — OWNER directive 2026-06-11) -->
-  {q08_rescue_html}
-
-  <!-- 10. BOTTOM BAR -->
+  <!-- 8. BOTTOM BAR -->
   <div class="botbar">
     <div><span class="key">Next Refresh</span><span class="val">30S</span></div>
-    <div class="center"><span class="key">Renderer</span><span class="val">v5.0 // STEEL-EMERALD</span></div>
+    <div class="center"><span class="key">Renderer</span><span class="val">v6.0 // STEEL-EMERALD</span></div>
     <div class="right"><span class="key">Build</span><span class="val">SHA {e(build_sha)}</span></div>
   </div>
 
