@@ -1,85 +1,122 @@
-# Latent-Defect Audit Wave 1 Review - 2026-07-07
+# Codex Review: Latent-Defect Audit Wave 1
 
-- task_id: 83be4dd3-618b-4421-94f7-290aa353dcf3
-- reviewer: codex
-- task_type: ops_issue / review
-- source_audit: docs/ops/FRAMEWORK_LATENT_DEFECT_AUDIT_2026-07-06.md
-- reviewed_commits: d8b741d02, 8158dca1b, 6113c8927, 64dcd7c96, aa7b861ce
-- verdict: PASS_CONDITIONAL
+Task: `83be4dd3-618b-4421-94f7-290aa353dcf3`
+Review target: `REVIEW: latent-defect audit wave 1 (2026-07-06)`
+Date: 2026-07-07
 
-## Scope Reviewed
+## Verdict
 
-Focused review covered the wave-1 CRITICAL MQL5 fixes and evidence-layer fixes named by the router payload:
+PASS_CONDITIONAL. I found no blocking defect in the routed focus areas. The fixes are coherent with the audit register and the available focused verification is green.
 
-- `framework/include/QM/QM_TradeContext.mqh`
-- `framework/include/QM/QM_StopRules.mqh`
-- `framework/scripts/q08_davey/aggregate.py`
-- `framework/scripts/run_smoke.ps1`
-- `framework/scripts/gen_setfile.ps1`
+Conditions/caveats:
 
-## Findings
+- The Q09 resolver claim for `QM5_12772` is a standalone durable-stream resolver proof, not a farm Q09 verdict. The current farm DB has `QM5_12772` stopped at Q08 `FAIL_HARD`, with no Q09 work item. Wording should avoid implying a pipeline Q09 verdict for 12772.
+- The NO_MONEY latch semantics were statically reviewed against current framework callers. I did not produce a live broker retcode reproduction. If future custom EAs call `QM_TradeContextSend()` for a risk-reducing `TRADE_ACTION_DEAL` without setting `request.position`, the helper will still classify it as exposure-opening. Current framework close helpers set `position`.
 
-No blocking defect was found in the reviewed scope.
+## Evidence Reviewed
 
-Observed implementation points:
+- `docs/ops/FRAMEWORK_LATENT_DEFECT_AUDIT_2026-07-06.md`
+- Commits:
+  - `d8b741d02` - MQL5 wave-1 fixes.
+  - `8158dca1b` - skeleton gate order and KS baseline writer.
+  - `6113c8927` - evidence-layer gate fixes.
+  - `64dcd7c96` - audit register and recompile record.
+  - `aa7b861ce` - recompiled StopATR-profile pipeline EAs.
+- Files in focus:
+  - `framework/include/QM/QM_TradeContext.mqh`
+  - `framework/include/QM/QM_StopRules.mqh`
+  - `framework/scripts/q08_davey/aggregate.py`
+  - `framework/scripts/run_smoke.ps1`
+  - `framework/scripts/gen_setfile.ps1`
 
-- `QM_TradeContextSend` now gates the NO_MONEY latch through `QM_TradeContextOpensExposure`.
-- SL/TP modification, pending-order removal, close-by, and deal requests carrying an existing position bypass the latch.
-- The NO_MONEY latch re-arms by broker day and WARN logging is throttled to avoid tick-rate log writes.
-- `QM_StopRulesReadATRValue` now calls pooled `QM_ATR(symbol, PERIOD_CURRENT, atr_period_value, shift)` instead of creating/releasing a raw `iATR` handle per stop read.
-- Q08 cost-cushion grading marks all-volumeless report-fallback trade sets as `INVALID` instead of treating zero modeled commission as a PASS-like cost result.
-- Q08 baseline summary adoption is symbol-gated through `expected_symbol`, preventing a shared `_baseline` directory from adopting another symbol's freshest summary.
-- Q08 durable stream persistence refuses HTML report-fallback rows without volume and mirrors host-symbol basket streams where applicable.
-- `run_smoke.ps1` includes German report-label aliases for core graded metrics and preserves missing graded labels as `REPORT_METRIC_MISSING:*`.
-- `Resolve-RunInvalidReason` maps metric-only missing/unparseable reasons to `REPORT_FORMAT_DRIFT`.
-- `run_smoke.ps1` waits for complete report metrics before latching a stable tester report, reducing false success on incomplete shell reports.
-- `gen_setfile.ps1` hard-fails with `MAGIC_REGISTRY_ROW_MISSING` when no active magic registry row exists for the EA/symbol.
-- Backtest setfile guards remain strict: `RiskFixed > 0` and `RiskPercent == 0`.
+## Claim Checks
 
-## Verification
+1. `QM_TradeContext` NO_MONEY latch semantics: VERIFIED.
+   - `TRADE_ACTION_SLTP`, `TRADE_ACTION_REMOVE`, `TRADE_ACTION_CLOSE_BY`, and `TRADE_ACTION_DEAL` with `request.position > 0` bypass the latch.
+   - The latch blocks only `QM_TradeContextOpensExposure(request)`.
+   - The latch resets on broker-day change and logs latched rejections.
+   - Sampled framework close paths (`QM_TM_ClosePosition`, grid cap close, pair close callers via `QM_TM_ClosePosition`) set `request.position`.
 
-Commands run from `C:\QM\repo`:
+2. `QM_StopRules` pooled ATR route: VERIFIED.
+   - `QM_StopRules.mqh` now includes `QM_Indicators.mqh`.
+   - `QM_StopRulesReadATRValue()` reads via `QM_ATR(symbol, PERIOD_CURRENT, atr_period_value, shift)`.
+   - The helper no longer creates/releases a raw `iATR` handle per call.
 
-```powershell
-$errors=$null; [System.Management.Automation.PSParser]::Tokenize((Get-Content -Raw -LiteralPath 'framework/scripts/run_smoke.ps1'), [ref]$errors) | Out-Null; if (@($errors).Count -gt 0) { exit 1 }; 'run_smoke.ps1 parse PASS'
+3. `aggregate.py` cushion INVALID and symbol-gated baseline adoption: VERIFIED.
+   - All-volume-less trade sets set `cost_cushion_tier` to `INVALID` instead of cost PASS.
+   - `_latest_baseline_summary()` accepts `expected_symbol` and rejects shared `_baseline` summaries for other symbols.
+   - Baseline retry passes `expected_symbol=baseline_run.get("test_symbol")`.
+
+4. `run_smoke.ps1` German aliases and missing metric markers: VERIFIED.
+   - German aliases include `Rueckgang Equity maximal` equivalent and `Qualitaet der Historie` strings in source form.
+   - Missing graded metrics emit `REPORT_METRIC_MISSING:<metric>` markers instead of silently defaulting to zero.
+   - Parser classification explicitly routes these markers as parser drift.
+
+5. `gen_setfile.ps1` magic-row hard throw: VERIFIED.
+   - Missing `magic_numbers.csv` throws `MAGIC_REGISTRY_MISSING`.
+   - Missing active `(ea_id, symbol)` row throws `MAGIC_REGISTRY_ROW_MISSING`.
+   - Backtest risk guardrails remain present: `RiskFixed > 0` and `RiskPercent == 0`.
+
+6. Q09 resolver functional evidence: VERIFIED WITH WORDING CAVEAT.
+   - `portfolio_common.load_streams(D:/QM/reports/portfolio/sleeve_streams, candidates=[...])` resolves:
+     - `QM5_12772_GBPJPY_AUDJPY_COINTEGRATION_D1`: 226 trades.
+     - `QM5_12864_XTI_XAG_RSPREAD_D1`: 106 trades.
+     - `QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1`: 195 trades.
+   - Farm DB confirms current Q09 verdicts for 12864 and 12778 only:
+     - `QM5_12864`: Q09 `FAIL_PORTFOLIO`, 106 trades.
+     - `QM5_12778`: Q09 `PASS_PORTFOLIO`, 195 trades.
+     - `QM5_12772`: no Q09 row; current latest row is Q08 `FAIL_HARD`.
+
+## Focused Verification
+
+Commands run from `C:/QM/repo`:
+
+```text
+python -m pytest framework/scripts/tests/test_q08_davey_subgates.py -q
+python <static verifier for latch, StopRules, aggregate, run_smoke, gen_setfile>
+pwsh -NoProfile -Command "[scriptblock]::Create((Get-Content -Raw framework/scripts/run_smoke.ps1)) | Out-Null; ..."
+python <compile-summary scan for the nine named EAs>
+python <durable-stream load_streams check for 12772/12864/12778>
 ```
 
-Result: PASS.
+Results:
 
-```powershell
-$errors=$null; [System.Management.Automation.PSParser]::Tokenize((Get-Content -Raw -LiteralPath 'framework/scripts/gen_setfile.ps1'), [ref]$errors) | Out-Null; if (@($errors).Count -gt 0) { exit 1 }; 'gen_setfile.ps1 parse PASS'
+```text
+Q08 Davey suite: 39 passed in 0.57s
+PowerShell parser:
+  framework/scripts/run_smoke.ps1: PARSE_OK
+  framework/scripts/gen_setfile.ps1: PARSE_OK
+
+Static verifier:
+  latch_exempts_sltp_remove_closeby: PASS
+  latch_exempts_deal_with_position: PASS
+  latch_only_blocks_opening_requests: PASS
+  latch_rearms_by_day: PASS
+  stoprules_uses_pooled_qm_atr: PASS
+  stoprules_no_raw_iatr_in_helper: PASS
+  aggregate_volume_less_invalid: PASS
+  aggregate_symbol_gated_baseline: PASS
+  run_smoke_german_dd_alias: PASS
+  run_smoke_metric_missing_markers: PASS
+  gen_setfile_magic_missing_throw: PASS
 ```
 
-Result: PASS.
+Compile evidence found in `D:/QM/reports/compile/20260706_*`:
 
-```powershell
-python -m py_compile framework/scripts/q08_davey/aggregate.py
+```text
+QM5_10163_tv-rsi-macd-long: PASS, errors=0, warnings=0
+QM5_11132_tm-cum-rsi2: PASS, errors=0, warnings=0
+EA_Skeleton: PASS, errors=0, warnings=0
+QM5_12874_xng-inject-slope-short: PASS, errors=0, warnings=0
+QM5_13000_xng-rig-fri-fade: PASS, errors=0, warnings=0
+QM5_13004_xti-cot-fade: PASS, errors=0, warnings=0
+QM5_13009_xng-tom-mom: PASS, errors=0, warnings=0
+QM5_13014_mql5-dema-chan-v2: PASS, errors=0, warnings=0
+QM5_13016_tv-ma-scalper-relief-v2: PASS, errors=0, warnings=0
 ```
-
-Result: PASS.
-
-```powershell
-python -m unittest framework.scripts.tests.test_q08_davey_subgates framework.scripts.tests.test_p2_baseline tools.strategy_farm.tests.test_portfolio_common tools.strategy_farm.tests.test_portfolio_q08_contribution
-```
-
-Result: PASS, 64 tests.
-
-```powershell
-python tools/strategy_farm/validate_build_guardrails.py framework/include/QM/QM_TradeContext.mqh framework/include/QM/QM_StopRules.mqh framework/scripts/q08_davey/aggregate.py framework/scripts/run_smoke.ps1 framework/scripts/gen_setfile.ps1
-```
-
-Result: PASS, `max_news_stale_hours=336`, no findings.
-
-Static assertions also passed for:
-
-- entry-only trade latch classifier
-- broker-day latch rearm and WARN throttle
-- pooled ATR stop-route
-- all-volumeless Q08 cost-cushion INVALID
-- symbol-gated Q08 baseline summary adoption
-- German report aliases and `REPORT_FORMAT_DRIFT` routing
-- active magic-row hard throw
 
 ## Residual Risk
 
-This review did not launch MT5, start `terminal64.exe`, enable AutoTrading, or interrupt active terminals. Evidence is code review plus static/unit verification only. Live rollout, rebuild evidence, and pipeline verdicts must still come from the appropriate Q-phase evidence.
+- The live-book effect of these fixes still depends on rebuilding the live binaries. This review did not enable `T_Live`, AutoTrading, or start `terminal64.exe`.
+- The `QM_TradeContextOpensExposure()` helper relies on callers using the framework convention that close/reduce `DEAL` requests set `request.position`. That convention holds in the reviewed framework paths, but it is not enforced by type.
+
