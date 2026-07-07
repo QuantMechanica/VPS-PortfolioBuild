@@ -14439,3 +14439,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12935,sperandeo-tlb-refinement-h4,7,EURUSD.DWX,129350007,2026-07-07,Development,active
 12935,sperandeo-tlb-refinement-h4,8,GBPUSD.DWX,129350008,2026-07-07,Development,active
 12935,sperandeo-tlb-refinement-h4,9,USDJPY.DWX,129350009,2026-07-07,Development,active
+13025,xti-psm-mom,0,XTIUSD.DWX,130250000,2026-07-07,Codex,active

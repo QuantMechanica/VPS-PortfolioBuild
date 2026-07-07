@@ -1,0 +1,46 @@
+{
+  "ea_id": "QM5_13025",
+  "slug": "xti-psm-mom",
+  "generated_at": "2026-07-07T02:12:31+00:00",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "source_id": "EIA-PSM-XTI-MOM-2026",
+  "card": "strategy-seeds/cards/approved/QM5_13025_xti-psm-mom_card.md",
+  "ea_path": "framework/EAs/QM5_13025_xti-psm-mom/QM5_13025_xti-psm-mom.mq5",
+  "ex5_path": "framework/EAs/QM5_13025_xti-psm-mom/QM5_13025_xti-psm-mom.ex5",
+  "setfile": "framework/EAs/QM5_13025_xti-psm-mom/sets/QM5_13025_xti-psm-mom_XTIUSD.DWX_D1_backtest.set",
+  "setfile_build_hash": "69a5027c57570019a8f5b171020f6dd75206721541c957a491b5398d1cfff96e",
+  "file_hashes_sha256": {
+    "mq5": "D79464D4556CDF0E769EF76867B70E259FD8C8F10927C01ADC60977BDE213345",
+    "ex5": "E983493509D4E59584BCFCF533AF2966F18150B7A2985941815606C2A9925DA3",
+    "setfile": "4925E0F4F9DDCBCA6E148397851054C6E1A1DB07797064EE60DE06BB23D9B225"
+  },
+  "checks": {
+    "card_schema_lint": "PASS",
+    "spec_doc": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_guardrails": "PASS",
+    "compile_one_strict": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260707_021200/QM5_13025_xti-psm-mom.compile.log",
+      "summary": "D:/QM/reports/compile/20260707_021200/summary.csv"
+    },
+    "build_check_strict": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 14,
+      "report": "D:/QM/reports/framework/21/build_check_20260707_021212.json",
+      "note": "Warnings are existing shared-framework indicator-handle advisories emitted from QM include files, not from the new EA body."
+    }
+  },
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false
+  }
+}
