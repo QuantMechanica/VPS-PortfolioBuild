@@ -1,0 +1,54 @@
+{
+  "ea_id": "QM5_1229",
+  "slug": "carver-statevol",
+  "agent": "codex:agents/board-advisor:qm5-1229-q02-infra",
+  "claim_key": "manual:codex:agents/board-advisor:QM5_1229:q02_infra_recovery",
+  "claimed_until_utc": "2026-07-07T13:04:27.005394+00:00",
+  "work_type": "q02_infra_recovery",
+  "reason": "Q02 rows were infra-only with summary_missing_retries_exhausted after prior METATESTER_HUNG/REPORT_MISSING smoke evidence.",
+  "repair_summary": [
+    "Verified current EA source uses bounded D1 history and recursive state-vol EMA smoothing instead of rebuilding full historical EMA on every D1 bar.",
+    "Recompiled and ran strict build_check after clearing DWX spread advisory false positives.",
+    "Ran one bounded SmokeMode probe on EURUSD.DWX D1 2024; report generation completed with no ONINIT failure, no report-missing, no log bomb, and Model 4 marker present."
+  ],
+  "validation": {
+    "spec_validation": "PASS",
+    "build_check_result": "PASS",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260707_100738.json",
+    "compile_log": "C:/QM/repo/framework/build/compile/20260707_100738/QM5_1229_carver-statevol.compile.log",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "smoke_summary": "D:/QM/reports/smoke/QM5_1229/20260707_100806/summary.json",
+    "smoke_result": "MIN_TRADES_NOT_MET",
+    "smoke_infra_clear": true
+  },
+  "farm_record": {
+    "build_task_id": "97d2abe9-10ef-4a94-86c8-5e8927251cf3",
+    "build_result_path": "D:/QM/strategy_farm/artifacts/builds/97d2abe9-10ef-4a94-86c8-5e8927251cf3.json",
+    "record_build_status": "done",
+    "recorded_smoke_result": "zero_trades",
+    "q02_enqueued": [
+      {
+        "wi_id": "2ddbd188",
+        "symbol": "AUDCAD.DWX",
+        "timeframe": "D1"
+      },
+      {
+        "wi_id": "78794f32",
+        "symbol": "GDAXI.DWX",
+        "timeframe": "D1"
+      },
+      {
+        "wi_id": "9ee5e1ae",
+        "symbol": "XAUUSD.DWX",
+        "timeframe": "D1"
+      }
+    ],
+    "q02_deferred_symbol_count": 32
+  },
+  "live_ops_boundary": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
