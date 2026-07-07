@@ -14581,3 +14581,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1493,hopwood-pattern-recognition-master-h4,8,UK100.DWX,14930008,2026-07-07,Development,active
 1493,hopwood-pattern-recognition-master-h4,9,XAUUSD.DWX,14930009,2026-07-07,Development,active
 1493,hopwood-pattern-recognition-master-h4,10,XTIUSD.DWX,14930010,2026-07-07,Development,active
+13028,xti-prod-brk,0,XTIUSD.DWX,130280000,2026-07-07,Codex,active
