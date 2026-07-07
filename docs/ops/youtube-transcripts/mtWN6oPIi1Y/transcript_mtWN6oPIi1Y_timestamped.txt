@@ -1,0 +1,999 @@
+# Timestamped Transcript for video mtWN6oPIi1Y (The Wayward Trading Bot)
+
+[0:00] If you have a computer, an internet
+[0:01] connection, and a couple of hours, then
+[0:03] by the end of this video you will have
+[0:05] built this trading bot line by line all
+[0:08] by yourself, even if you have never
+[0:10] coded before. It's a mean reversion
+[0:11] scalping bot. It waits for the price to
+[0:13] stretch far away from an average and
+[0:15] then bets on it to snap back. We'll
+[0:17] honestly talk about where it works and
+[0:19] where it is struggles at the end, but
+[0:21] let me show you a very quick test and
+[0:23] then we'll build the whole thing a step
+[0:24] by step and we'll test everything as we
+[0:27] go along. So, here we are in the
+[0:28] strategy tester. I'm going to run it on
+[0:30] USD/JPY starting from the beginning of
+[0:32] this year until today. I'm going to run
+[0:34] it on every tick. I know, real ticks,
+[0:36] every ticks, Obama ticks, Trump ticks. I
+[0:39] mean, all of these are just data
+[0:40] provided by your broker. I have flash
+[0:42] news. None of them is accurate. I have
+[0:45] made another video where I compared
+[0:46] every tick versus real tick versus the
+[0:48] live results. You can go check it out.
+[0:50] I'm going to run it on every tick
+[0:51] because I just want to see how the
+[0:52] strategy is doing. Let's do it on 1,000
+[0:54] deposit and let's run. Now, one of the
+[0:57] things you will see is that there are no
+[0:58] running drawdowns and that is because of
+[1:00] a tight stop loss that we put in place.
+[1:02] And the second thing is that you're
+[1:03] going to see a lot of periods quite long
+[1:07] which are completely flat. Now, it's a
+[1:09] back test at the end of the day, so take
+[1:10] it with a grain of salt. Take it with a
+[1:12] full kilogram of salt. Well, on to the
+[1:14] back test results, we started with a
+[1:15] balance of 1,000 and we're ending up
+[1:17] somewhere close to 2 million. Now, this
+[1:20] is not going to happen in the real
+[1:21] world, but it does give me the
+[1:22] confidence, especially looking at the
+[1:24] drawdown numbers, looking at the win
+[1:26] percentages, and looking at the risk to
+[1:29] reward ratio of almost two to one that
+[1:31] this is something that I would like to
+[1:34] apply in a demo account for a longer
+[1:36] period of time to see how it works in
+[1:38] the real market. And that's what the
+[1:40] back test are for. They're good for
+[1:42] visual test because you can see that the
+[1:44] codes that you have written, they are
+[1:45] actually working properly in a visual
+[1:47] environment. And they're good at giving
+[1:50] you a bit of an indication of how and
+[1:53] what to expect when you apply them in
+[1:55] the real world. Now, the real world will
+[1:57] have slippages, will have execution
+[1:59] delays, will have tons of other things
+[2:01] including broker manipulations, which is
+[2:04] going to cause the results to change.
+[2:05] But, are you going to become a
+[2:07] millionaire starting from a thousand
+[2:08] dollars in six months? No. But, is this
+[2:11] EA worth trying?
+[2:13] At least in my books it is. So, if
+[2:15] you're still interested, get your
+[2:17] laptop, make a cup of coffee, and let's
+[2:19] start with the strategy itself. The idea
+[2:21] is very simple. When the price is
+[2:22] stretches too far away from an average,
+[2:24] it tends to come back. And we're going
+[2:26] to measure too far with Bollinger Bands,
+[2:28] which tend to widen when the price is
+[2:30] volatile and tend to shrink when the
+[2:32] price is stable. Now, you can use other
+[2:34] oscillators as well, but we're going to
+[2:36] build a strategy on Bollinger Bands. And
+[2:38] when the price is going to poke outside
+[2:39] those bands, that's when we're going to
+[2:41] call it is a stretch. But, a stretch
+[2:43] market can remain stretch for a very
+[2:45] long time. And to buy it just because
+[2:46] the price looks low is like catching a
+[2:48] falling knife. And that is why we're
+[2:50] going to add a second check, RSI for
+[2:52] exhaust momentum. And even then, we
+[2:54] don't buy immediately. If we are
+[2:56] expecting the price to bounce back up,
+[2:58] we're going to put a stop order above
+[3:00] the current price. So, we only catch the
+[3:02] trade on a bounce. If the price
+[3:04] continues to keep dropping, we don't
+[3:06] catch that falling knife. We only enter
+[3:08] once the reversal has started. And we
+[3:10] target the middle band, which is the
+[3:12] average. But, we're also going to have
+[3:14] an aggressive trailing stop, so we move
+[3:16] our stop loss into profit territory as
+[3:18] soon as we can. Our stop loss is going
+[3:20] to be very tight, and this is why even
+[3:22] if we catch three or four positive
+[3:24] trades, that will be more than enough to
+[3:26] compensate for the times when we
+[3:27] actually have a stop loss hit. So,
+[3:29] that's the entire idea. Now, if you're
+[3:31] still interested, get your laptop, make
+[3:33] a cup of coffee, and with no more
+[3:35] shenanigans, let's start building this
+[3:37] thing. So, let's go back to MetaTrader,
+[3:39] and we're going to click on the
+[3:41] development environment, and here we are
+[3:43] in MetaEditor. So, first thing's first,
+[3:45] I'm going to create a new folder, and
+[3:47] let's call it the Wayward EA.
+[3:51] Now, within this folder, while selecting
+[3:53] it, I'm going to click new.
+[3:56] And let's give it the name Wave Rider EA
+[3:59] with panel. Next, next, next. And here
+[4:03] we are in the opening template. I'm
+[4:06] going to clean it up. So, we're left
+[4:07] with initialization function and all the
+[4:09] codes written here are going to be run
+[4:11] on the initialization of the EA. Then we
+[4:13] have the deinitialization, which is the
+[4:15] reverse. So, all the codes here are
+[4:17] going to be run when you stop the EA.
+[4:19] And on tick function and all here are
+[4:22] going to be run on every tick. Meaning
+[4:25] every time a new price data arrives into
+[4:27] MetaTrader. Okay, so let's start at the
+[4:29] top. And the first thing we're going to
+[4:31] do is we're going to include a trade.mqh
+[4:33] file, which if you look here in the
+[4:35] include folder, in the trade folder, you
+[4:38] have this file trade.mqh, which comes
+[4:41] with all these pre-written codes that
+[4:43] MetaEditor has already written so that
+[4:45] we don't have to write them. And these
+[4:47] can be used to do all of the trading
+[4:49] operations like buying, selling, getting
+[4:51] position information, modifying TPs and
+[4:53] stop losses, getting information on
+[4:55] orders. So, for all the trade
+[4:57] operations, we're going to use the class
+[4:59] CTrade. And I'm going to assign it to a
+[5:01] variable by the name of trade. Then
+[5:03] CPositionInfo class, which can be used
+[5:06] to get information on the current open
+[5:09] positions in the market. So, I'm
+[5:10] assigning it to a variable by the name
+[5:12] PositionInfo.
+[5:14] And all the order information class, I'm
+[5:16] assigning it to OrderInfo. Then in order
+[5:18] to create a drop-down menu for the user
+[5:20] to select the start hour and the end
+[5:23] hour, I'm going to create an enum. And
+[5:25] the members within that is going to be
+[5:27] inactive equals zero, one equals to 100
+[5:30] hours, 200 hours, 300 hours, all the way
+[5:33] to 2300 hours. And then we create an
+[5:36] input group, which are going to be the
+[5:38] magic number for the EA, what's the time
+[5:40] frame, a higher time frame because we're
+[5:42] going to need higher time frame for
+[5:44] confluence,
+[5:46] a start hour input, end hour input, and
+[5:48] the gradient color because we're going
+[5:50] to put a gradient on chart, the blue
+[5:52] color that you saw in the beginning. So,
+[5:54] these are the values that the user can
+[5:56] define, and this is why these are input
+[5:58] variables. Now, if I compile, it
+[6:00] compiles properly, and one thing you
+[6:02] notice here the enum hour is this enum
+[6:05] that we have created up here. So, this
+[6:07] is going to become a drop down because
+[6:08] we're assigning this variable type to
+[6:11] these two variables
+[6:13] so that these two variables are going to
+[6:14] look up their information from this
+[6:17] variable type. Now, if I go back to
+[6:19] MetaTrader, and here after compilation
+[6:21] is our EA.
+[6:22] So, if I pull it down here
+[6:24] and we go to the inputs, now you're
+[6:26] going to see that we have the magic
+[6:27] number, we have the time frame that the
+[6:29] user can select, we have the higher time
+[6:32] frame, which the user can select. And
+[6:34] now our end hour and beginning hour is
+[6:38] based on the enum that we have created
+[6:41] here. And same goes for the end hour
+[6:43] because we're assigning the same enum to
+[6:45] the end hour as well. The color of the
+[6:47] gradient now the user can select because
+[6:49] it is variable type color, which comes
+[6:51] predefined with MQL. And then as we
+[6:53] talked about the strategy is going to be
+[6:55] built around Bollinger Bands and RSI, so
+[6:57] we need certain indicator parameters
+[6:59] from the user as well. So, once again,
+[7:01] input variables so the user can provide
+[7:03] these values, which are the Bollinger
+[7:05] Bands, Bollinger Band Deviation, RSI
+[7:08] period, RSI filter, and filter basically
+[7:11] means from the middle point 50 on RSI
+[7:14] how much above and how much below. So,
+[7:16] 30
+[7:17] means 80 and 20. So, 50 + 30 and 50 -
+[7:21] 30. And then what's the applied price
+[7:23] for RSI and Bollinger?
+[7:25] If I compile and go back, now we have
+[7:28] the indicators parameters here as well,
+[7:30] which the user can provide. Then let's
+[7:32] create a section for our global
+[7:35] variables, and these are the variables
+[7:37] which are going to be available
+[7:38] throughout the EA. And here I'm creating
+[7:41] a handle for Bollinger Band, a handle
+[7:43] for RSI, and a handle for ATR. I'm
+[7:46] already creating the ATR. We're going to
+[7:47] create the indicator parameters for ATR
+[7:49] separately. Then in order to copy the
+[7:52] values from these handles into
+[7:54] variables, we're going to need an
+[7:55] indicator buffer, an array variable,
+[7:58] which is what these two brackets are,
+[8:00] which means that the same variable
+[8:01] indicator buffer can store more than one
+[8:03] value at a time. It's going to do
+[8:05] indexing, 0 1 2 3 4, and you can ask for
+[8:08] whatever value by providing the index
+[8:10] number. Then in order to assign these
+[8:12] values, we're going to create a
+[8:13] Bollinger lower, a Bollinger main line,
+[8:16] a Bollinger upper, an RSI value, and an
+[8:19] ATR value. Then we're going to need some
+[8:21] helper functions, and the first one is
+[8:23] is it a new bar? And the way we're going
+[8:25] to do it is we're going to set a
+[8:26] previous time into a static date time
+[8:28] variable as zero. Then we're going to
+[8:30] get the current time as iTime, which is
+[8:33] what is the time on the current candle
+[8:35] on our time frame. And then if the
+[8:38] previous time is not equal to current
+[8:40] time, that means a new candle has
+[8:41] formed, in which case we're going to
+[8:43] return true. But before returning true,
+[8:45] we're going to say that the previous
+[8:46] time is equals to current time, so that
+[8:48] the next time on the same candle, if the
+[8:51] tick arrives here, the previous time
+[8:53] that we have updated is going to be
+[8:54] equal to current time, unless there is a
+[8:56] new bar. And then in that case, we're
+[8:59] going to return false. And another
+[9:00] helper function that I'm going to create
+[9:02] is is it a back test or visual, which is
+[9:05] we're going to have a lot of stuff on
+[9:07] the chart like a beautiful gradient, a
+[9:09] panel, some lines and indicators.
+[9:12] But we don't want to see them when we're
+[9:14] not running a visual test. This is where
+[9:16] we're going to use return, which is if
+[9:18] it is MQL tester and it's not visual
+[9:22] mode, so it is a back test run without
+[9:24] the visual mode, or if it is an
+[9:27] optimization run. In those cases, return
+[9:29] true. And if it returns true, then we
+[9:31] know that we're not supposed to put all
+[9:33] the chart objects and gradients and
+[9:36] panels, so that it runs faster. And now
+[9:38] we go back to our initializations. As
+[9:41] soon as the EA starts, set the magic
+[9:43] number, right trade, and hit dot. It's
+[9:45] going to give you all of the
+[9:46] possibilities that you can use. And
+[9:48] we're using the set expert magic number.
+[9:51] And we're setting the magic number of
+[9:52] the EA to our input magic number. And
+[9:55] then I don't like to see grid on my
+[9:57] charts. So I am saying on the current
+[9:59] chart, which is zero, chart show grid
+[10:02] equals false. Don't show the grid. And
+[10:04] then we're going to initialize the three
+[10:06] handles that we have created up here. So
+[10:09] first the Bollinger by calling the
+[10:11] iBands, providing it the current symbol,
+[10:14] the time frame that the user has
+[10:15] selected, Bollinger period, standard
+[10:17] deviation, and the applied price. All of
+[10:19] these variables come from here. And then
+[10:22] RSI by calling the iRSI, providing it
+[10:26] the parameters that RSI needs. And then
+[10:29] also the ATR, which is underscore
+[10:30] symbol, time frame, and we're going for
+[10:32] a thousand ATR to a smooth in the ATR.
+[10:36] We don't want the ATR to fluctuate too
+[10:38] much. So I'm using a large enough
+[10:39] number. You can use even 10,000, but
+[10:42] 1,000 is probably enough. And then we
+[10:44] come back here. And now we're going to
+[10:46] create the trade management section,
+[10:48] which is the ATR multiplier, which is
+[10:50] when we're going to be placing a trade.
+[10:52] We want the candle on which we are
+[10:54] placing the trade to be large enough. We
+[10:56] don't want the small candles where we're
+[10:58] placing the orders. So there's the ATR
+[11:00] multiplier. So minimum candle size in
+[11:03] ATR thousand terms. Then the stop loss
+[11:05] based on ATR. So initially stop loss
+[11:08] times the ATR. So if you say one, then
+[11:10] the stop loss is going to be one ATR. If
+[11:12] you say two, the stop loss is going to
+[11:13] be two ATR. If you going to say three,
+[11:15] then ATR is going to be three ATRs away
+[11:17] from wherever the order is. And then the
+[11:19] trailing of the ATR. Like we said, when
+[11:21] our trade is triggered, and if it's in
+[11:23] profit by a certain margin, then we want
+[11:26] to start trailing by a distance which we
+[11:28] are again linking to ATR so that it is
+[11:30] stands across different time frames and
+[11:32] different currency pairs. So we're not
+[11:34] providing a hard coded number. We're
+[11:37] providing a trailing based on ATR. So
+[11:39] 0.2 means
+[11:41] 20% of the ATR.
+[11:43] Then order distance. So when we are
+[11:45] going to place the buy order, like we
+[11:47] said in our strategy, once the price
+[11:49] goes outside of the Bollinger band, we
+[11:50] don't want to immediately buy.
+[11:53] We want to place a buy stop above so
+[11:56] that price moves back into us. So this
+[11:59] is from the current price, how much
+[12:01] distance do we want? That again is based
+[12:03] on ATR because across different currency
+[12:06] pairs, you're going to have different
+[12:08] candle sizes, different fluctuations,
+[12:11] volatilities.
+[12:12] So linking it to ATR smooths all of that
+[12:15] out. And then the max of spread, you can
+[12:17] link that to ATR as well, but I'm happy
+[12:20] with max of spread being 10 points. So
+[12:22] not above one pip. Now while we are on
+[12:25] max of spread, let's also include a
+[12:27] slippage and I'm going to set the
+[12:29] maximum slippage to 10 as well. And
+[12:32] let's set the slippage by using the
+[12:35] trade.set
+[12:36] deviation in points, which is the
+[12:39] slippage, and providing it our input
+[12:41] slippage variable,
+[12:44] which the user can define up here. Now
+[12:46] we have our variables. If I compile now
+[12:49] and go back here, now we can see that in
+[12:51] our input settings tab, we have the
+[12:54] trade management criteria as well that
+[12:56] the user can define. And because now we
+[12:58] have all the variables that we need so
+[13:00] far, we can start working on the on tick
+[13:03] function. And I'm going to start by
+[13:04] saying that the the trade signal is
+[13:07] zero, meaning there is no trade signal
+[13:09] in the beginning.
+[13:10] I'm going to get the value of the ask
+[13:12] and the bid by using symbol info double
+[13:14] method, providing the symbol and asking
+[13:16] for the ask and bid, and it stored it
+[13:18] into these two variables that I'm
+[13:20] creating locally.
+[13:21] These are the global variables because
+[13:23] they are defined at the global level, so
+[13:25] they're are
+[13:26] to every function whether on init,
+[13:29] whether on deinit, whether on tick or
+[13:31] any other function that we're going to
+[13:32] create. But, these we are creating
+[13:34] locally, so they're only going to be
+[13:36] created when the on tick is run, and
+[13:39] then at the end they're going to be
+[13:40] destroyed. Then, we're going to use the
+[13:42] copy buffer method to copy the value
+[13:44] from the Bollinger Band handle that we
+[13:47] have initialized here and paste the
+[13:49] value into indicator buffer variable
+[13:51] that we have created here. And what we
+[13:54] are storing in this is the buffer
+[13:56] number, which is zero, which is the main
+[13:58] line. Then, the starting position, zero
+[14:01] means current candle, and how many
+[14:03] values do we want? Starting from the
+[14:05] current candle, how many values? So,
+[14:06] only one, just the current candle. Store
+[14:09] that value into indicator buffer, and
+[14:11] then we can assign the value from
+[14:14] indicator buffer index zero, so the very
+[14:17] first index that we have just stored the
+[14:18] value in, into a variable Bollinger
+[14:21] main, which we created at the global
+[14:24] variable level. Then, same for the
+[14:26] Bollinger upper, where we're getting the
+[14:28] value of the indicator buffer number one
+[14:30] instead of zero, so this is the main
+[14:32] line.
+[14:33] This is the upper, and this is the
+[14:35] lower. And then, copying that into
+[14:37] indicator buffer, and then from
+[14:38] indicator buffer assign it to the
+[14:40] variable Bollinger upper. Then, in the
+[14:42] exactly the same fashion, we get the
+[14:44] value for the lower Bollinger Band as
+[14:46] well, which is the value number two.
+[14:48] Then, we use the copy buffer method on
+[14:51] RSI handle, put the value into indicator
+[14:54] buffer, only one value starting from the
+[14:56] current candle for the main line, and
+[14:59] assign it to our RSI variable. And then,
+[15:01] also the ATR values, so from ATR handle
+[15:05] copy the value into indicator buffer for
+[15:07] the main ATR line is starting at the
+[15:09] current candle, only get one line, put
+[15:11] it into indicator buffer, so it's going
+[15:13] to be at index zero,
+[15:15] so we can assign it to the ATR. So, now
+[15:17] we've gotten all of our indicator values
+[15:19] that we're going to need. Then, after
+[15:21] that we're going to create three more
+[15:23] variables, which is the candle high, the
+[15:25] candle low, and the candle size.
+[15:27] Candle high through the IHigh function
+[15:29] for the time frame that the user has
+[15:30] specified, and getting the value for the
+[15:33] current candle. And then, the same way
+[15:35] ILow, so get the lowest value for the
+[15:37] current candle, for the current symbol,
+[15:40] on the time frame that the user has
+[15:41] specified. And then, obviously, the
+[15:43] candle size is going to be candle high
+[15:45] minus candle low. So, now we have the
+[15:47] information on the candles as well. And
+[15:49] here comes our trading criteria, which
+[15:52] is if the candle size is bigger than the
+[15:55] ATR value times ATR multiplier, which,
+[15:58] going back to what we have defined here,
+[16:01] ATR multiplier, which is the minimum
+[16:02] candle size.
+[16:04] That's what we are checking here, that
+[16:06] the ATR value times the ATR multiplier,
+[16:09] that width. If the candle is bigger than
+[16:12] that, then check if the bid is a smaller
+[16:16] than the Bollinger lower.
+[16:18] Meaning, the price is outside of the
+[16:20] Bollinger band on the lower side. And
+[16:23] the RSI is less than 50 minus the RSI
+[16:26] filter, which we had defined as 30, so
+[16:29] my 50 minus 30 equals 20. So, the bid is
+[16:32] below
+[16:33] the Bollinger band lower, and the RSI is
+[16:36] below 20. So, both of our conditions are
+[16:39] met, we're going to set the trade
+[16:41] signal,
+[16:42] which we have created here, is started
+[16:44] as zero,
+[16:45] as minus one. And minus one will mean
+[16:48] buy signal. And if the ask has gone
+[16:51] above the Bollinger upper, it's outside
+[16:53] the upper Bollinger band, and the RSI is
+[16:56] greater than 50 plus 30, meaning it's
+[16:58] gone above 80 as well, so we're in
+[17:01] extreme on RSI, outside of the Bollinger
+[17:03] band, so the trading signal becomes a
+[17:06] one. So, it's a sell signal. Okay, so
+[17:08] now let's do a quick check. I'm going to
+[17:10] comment, and the comment is going to be
+[17:12] signal, trade signal, which is is to
+[17:15] come from here, and the RSI value we're
+[17:18] going to get from RSI and then bid
+[17:21] double to to string, again converting it
+[17:23] to text, the bid value. And if I compile
+[17:26] it now,
+[17:27] I have zero warning, zero errors. And if
+[17:29] I run it,
+[17:30] then the first thing I'm seeing is that
+[17:32] my Bollinger Bands, my RSI, and my ATR
+[17:36] values are properly being pasted on the
+[17:39] chart.
+[17:40] And here is our signal.
+[17:42] So, whenever that signal was generated,
+[17:43] this was printed. If I run it, the RSI
+[17:46] values are changing, the bid value is
+[17:48] changing, and the signal is also getting
+[17:50] printed. So, we have a visual
+[17:51] confirmation that our code so far are
+[17:54] okay, and I'm going to delete this
+[17:55] comment, and we can start looking at
+[17:58] actually building an order. So, in order
+[18:01] to build an order, we need money
+[18:03] management section as well. So, I'm
+[18:05] going to come back up to the top, and
+[18:07] here I'm going to create one more enum,
+[18:09] where there are going to be four
+[18:10] different possibilities, either to use
+[18:12] fixed lots as zero percentage of
+[18:15] balance, and that will equal to value
+[18:17] one, percentage of equity equals to
+[18:19] value two, and percentage of free
+[18:21] margin. So, once we have created this
+[18:23] enum lot type, we come back down, and
+[18:25] now we can create a money management
+[18:28] section as well, which is the first
+[18:30] thing is going to be using that variable
+[18:32] type. We're going to assign it to a
+[18:33] variable lot type. All of these are
+[18:35] input variables, so user can provide the
+[18:37] value. And as a default from those four
+[18:40] values, I'm going to provide percentage
+[18:41] of balance as a default. And if I
+[18:43] compile, and we go back to MetaTrader,
+[18:46] now we're going to see this money
+[18:48] management, and percentage of balance is
+[18:50] our default option. But because of that
+[18:52] enum, the user has the ability to choose
+[18:55] whatever he wants. But if he chooses
+[18:57] fixed lots, then in that case he needs
+[18:59] to provide what the value of that fixed
+[19:01] lots is. And if he chooses any other
+[19:04] method, which is percentage of balance,
+[19:06] percentage of equity, or percentage of
+[19:07] free margin, then in that case he needs
+[19:09] to to
+[19:10] the risk percentage. And I'm going to
+[19:12] call this as lot size defined by risk
+[19:16] percentage or fixed lots. Compile again,
+[19:18] and now this should change to lot size
+[19:20] defined by percentage of balance. Good
+[19:23] so far? So, we can return to MetaEditor.
+[19:26] And I will go down to the bottom where
+[19:28] we have the helper functions. And now
+[19:31] we're going to start calculating
+[19:34] the lot size. Create a function by the
+[19:35] name calc lots, and we're going to send
+[19:37] to it the stop loss distance because the
+[19:40] calculation here is going to be based on
+[19:42] what's the distance between when the
+[19:43] trade is taken versus the stop loss. How
+[19:46] big is the stop loss? And that is going
+[19:48] to determine what the lot size should be
+[19:50] in order to have 2% risk, 3% risk, 4%
+[19:53] risk. Now, we're going to start with a
+[19:56] variable lots, and I'm going to assign
+[19:58] to it the minimum lot that the broker
+[20:00] allows. And that is just to safeguard
+[20:01] that we don't have a zero lot size. Then
+[20:04] let's get these three values because
+[20:05] that's what we're going to use as
+[20:07] percentage when we are going to be doing
+[20:08] the percentage of balance, percentage of
+[20:10] equity, percentage of free margin. We're
+[20:11] going to need these values. I'm creating
+[20:13] these three variables and assigning to
+[20:15] them the account balance, the account
+[20:17] equity, and account free margin. Then I
+[20:19] create a variable by the name risk
+[20:22] and start it as zero. And then we're
+[20:24] going to switch through the lot type
+[20:26] variable.
+[20:27] This variable up here, which can have
+[20:29] four different values.
+[20:31] So, we're going to switch through those
+[20:33] four different value. And if it is case
+[20:35] zero, which is the fixed lots, then we
+[20:37] assign the fixed lots that the user has
+[20:39] defined to the lots variable and just
+[20:41] return that because we don't need to do
+[20:43] anything else. It's fixed lots.
+[20:46] But in case of one, which is the
+[20:47] percentage of account balance, then the
+[20:49] risk is equal to account balance times
+[20:52] whatever risk the user has defined
+[20:54] divided by 100 to convert it into a
+[20:56] percentage and break.
+[20:58] Break basically means that if you have
+[21:00] already found case one to be true, you
+[21:02] don't need to go to case two and case
+[21:03] three. Just break here.
+[21:05] But if it is not case zero and not case
+[21:07] two, then go to case two.
+[21:09] And then the risk is going to be equals
+[21:10] to equity times the risk percentage and
+[21:13] break. But if none of these are true,
+[21:15] then go next, which is it's going to be
+[21:17] the value three. In which case, it's the
+[21:19] free margin times the risk percentage
+[21:22] and break. Then I'm going to get the
+[21:24] value for the tick size from the broker.
+[21:26] What's the value of one tick?
+[21:29] And then what's the lot steps? So, 0.1
+[21:32] to 0.2 to 0.3 is 0.01 lot step. And then
+[21:36] we can create a variable, which is money
+[21:38] per lot step. So,
+[21:40] one lot of step equals this much dollars
+[21:43] value by using the formula dividing the
+[21:46] stop loss distance by tick size and
+[21:49] multiplying it with tick value times the
+[21:50] lot step. That's just a general formula.
+[21:53] You can use chat GPT to understand it
+[21:55] more if you want.
+[21:57] And then the lots become the math floor
+[22:00] of because you want to round it down by
+[22:02] dividing the risk divide by the money
+[22:04] lot per step times the lot step. This is
+[22:07] how we're going to get the lot size for
+[22:09] these three cases. In case zero, we
+[22:11] already had the fixed lot and we had
+[22:13] exited the function. So, none of this
+[22:15] will be run in that case. Once we've got
+[22:17] the lot, then just to check that our lot
+[22:19] sizes are okay,
+[22:21] we're going to get the minimum volume
+[22:22] from the broker, maximum volume from the
+[22:24] broker, and the volume limit from the
+[22:26] broker. And we're going to do these
+[22:27] three validations that if the volume
+[22:29] limit is not equal to zero, so broker
+[22:32] has a volume limit, then between that
+[22:35] volume limit and lot size, whichever one
+[22:38] is smaller, math minimum. Whichever one
+[22:41] is a smaller, that becomes the lot size.
+[22:44] Then similarly, if there is a max volume
+[22:46] at the broker, I don't know, 100 lots,
+[22:49] then whatever calculation we have gotten
+[22:51] here, if it turns out to be 150 above
+[22:55] the maximum volume allowed by the
+[22:56] broker, then choose the minimum between
+[23:00] the lots that we have calculated
+[23:02] and the max volume allowed by the
+[23:04] broker. And then for the minimum as
+[23:06] well, if our lot size turns out to be
+[23:08] less than what the broker allows as the
+[23:09] minimum volume, then choose the math
+[23:12] max, meaning the higher of the two
+[23:14] values between the lot size and the
+[23:16] minimum volume. Then we normalize it to
+[23:18] two decimal places and we return the
+[23:20] value of the lots. So that's our
+[23:22] calculation of lot size function as a
+[23:25] helper function that we're going to need
+[23:27] and use. And now we can actually send
+[23:29] the order. I'm not going to create it in
+[23:31] on tick.
+[23:33] I'm going to create a separate function
+[23:35] and let's call them trade-related
+[23:38] functions. And the first one I'm going
+[23:40] to create is a send order function and
+[23:43] we're going to send to it the trade
+[23:44] signal that we're going to get from
+[23:46] here, ask and bid value, which also we
+[23:49] got on in the on tick.
+[23:51] And the Bollinger mean because that's
+[23:53] what we're going to use as a TP. So the
+[23:55] first thing we're going to do is we're
+[23:56] going to create two variables. One is
+[23:58] entry equals to zero and a stop loss
+[24:00] initialize as zero.
+[24:01] Then the stop loss distance is equal to
+[24:03] ATR value times the SL ATR that the user
+[24:06] has defined up here in terms of ATR
+[24:09] 1000, how big the stop loss needs to be.
+[24:13] So we need to convert that as ATR value,
+[24:15] whatever is the ATR value on the chart,
+[24:18] times whatever the user has specified,
+[24:20] one time ATR, two times ATR, three times
+[24:22] ATR. Then use the calculate lot size,
+[24:24] the function we have just written,
+[24:26] sending to it the stop loss distance
+[24:28] that we got here to calculate the lot
+[24:30] size. So we have the entry, we have the
+[24:32] stop loss,
+[24:34] we have the stop loss distance and the
+[24:35] lot size. Then if trade signal is less
+[24:38] than zero, so it's a buy signal, then
+[24:40] entry becomes ask plus the ATR value
+[24:44] times the order distance because we're
+[24:45] sending a buy order,
+[24:47] which is going to be placed
+[24:49] a certain amount above the current price
+[24:52] and that is the order distance that the
+[24:54] user defines
+[24:56] in terms of ATR value.
+[24:59] So, 0.2 of ATR, meaning 20% of the ATR,
+[25:02] 0.3, meaning 30% of the ATR, and so on
+[25:06] and so forth.
+[25:07] Then the stop loss is going to become
+[25:08] entry wherever we are entering minus the
+[25:10] stop loss distance, which is coming from
+[25:12] here. And then as a check of a spread,
+[25:16] if ask minus bid is smaller than max
+[25:19] spread converted into points, then in
+[25:21] that case send the buy stop, sending the
+[25:23] lot size entry on current symbol, the
+[25:26] stop loss that we have calculated.
+[25:28] Bollinger middle line as the TP, and
+[25:31] then comment whatever you want to put.
+[25:33] If there's a sell signal, then in that
+[25:36] case entry is going to be bid minus the
+[25:38] ATR distance, because the price is here
+[25:41] and we want to put the stop order below
+[25:43] it. The stop loss becomes entry plus SL
+[25:46] distance, because stop loss goes above
+[25:49] for the sell trades. And then using the
+[25:50] same max spread check, we send the sell
+[25:54] order, sending the lot size entry
+[25:56] symbol, Bollinger main as our TP, the
+[25:58] stop loss that we calculated here.
+[26:01] And that is our
+[26:03] send order function. If I compile,
+[26:06] I don't have any errors, but now we're
+[26:08] going to we're going to need to write
+[26:10] something to trail the stop loss, but
+[26:12] also if the price keeps dropping, we
+[26:14] need to trail our stop order with it at
+[26:17] that distance as well. So, that's what
+[26:19] we're going to write next, but we're
+[26:20] going to be needing two more functions
+[26:22] before we do that. So, we go down to the
+[26:24] helper functions,
+[26:26] and here I'm going to write the first
+[26:27] one, which is is it trading time, which
+[26:30] goes back to these two values, the start
+[26:33] hour and the end hour. So, we only want
+[26:35] to trade in between these two times,
+[26:38] and that's what we're going to do here.
+[26:39] So, we're going to create an MQL
+[26:41] datetime variable by the name time. The
+[26:43] MQL datetime variable is very useful
+[26:45] because you can use, for example, time
+[26:47] and then hit dot,
+[26:49] then this variable will be able to give
+[26:51] you the breakdown by day, hour, minute,
+[26:53] month, second, and the year. So, we
+[26:56] create that variable and then we store
+[26:58] the current time into that variable
+[27:00] time.
+[27:01] And once we have that, now we can create
+[27:03] an hour now
+[27:04] variable and store in that the time.
+[27:07] hour. So, if it is 16:15 in the
+[27:10] afternoon, then time. hour is going to
+[27:12] return the 16. And then we can check
+[27:15] that if the hour now
+[27:16] is less than the SH input, then in that
+[27:19] case we're outside of the trading range.
+[27:21] So, in that case close all of the
+[27:23] orders, a function that we will write,
+[27:26] and return false. It's not trading time.
+[27:29] And if the hour now is bigger than the
+[27:31] end time and the end hour input is not
+[27:33] zero,
+[27:34] then in that case also close all of the
+[27:36] orders and return false. So, we're
+[27:38] checking both possibilities.
+[27:40] Is smaller than this? Close all orders.
+[27:42] Bigger than this? Close all orders.
+[27:45] But if it is neither this nor that, then
+[27:48] in that case return true that we are in
+[27:51] the trading time. And then because we're
+[27:53] calling the close all orders, we're
+[27:55] going to write a function for the
+[27:56] closing of all orders, which is loop
+[27:58] through all of the orders, select by
+[28:01] index, get the ticket, and if the order
+[28:04] symbol is our symbol and the order magic
+[28:07] number is our magic number, then we know
+[28:09] that it is a trade by this particular
+[28:11] trading bot on the current chart symbol.
+[28:14] In that case, just delete that order by
+[28:17] using the trade.order.delete
+[28:19] and sending the ticket value. That's
+[28:21] outside of the trading time this
+[28:23] happens.
+[28:24] But within the trading time, once we
+[28:26] have sent the order, we also need to
+[28:28] monitor those orders so that if the
+[28:30] price continues to go to go down, we
+[28:31] trail the order. And once the trade is
+[28:34] active and in profit, then we want to
+[28:35] trail the stop loss. So, we're going to
+[28:37] come back up here at trade related
+[28:39] functions, and here I'm going to create
+[28:41] another function, which is order and
+[28:43] position modifier function. We're going
+[28:45] to start by creating a few variables as
+[28:48] doubles, meaning they can have decimal
+[28:49] values.
+[28:50] Current stop loss, new stop loss,
+[28:52] current order price, and entry.
+[28:55] And an integer variable, so it can only
+[28:57] store 1 2 3 4 5, not decimals,
+[29:00] as order positions total as zero. What
+[29:03] we're going to send to this function is
+[29:04] the ask price and the bid price from the
+[29:07] on tick because we got those values
+[29:08] there. And then we create another
+[29:10] variable, trailing distance,
+[29:12] and that is going to be ATR value times
+[29:14] the trailing of the stop loss ATR. Then
+[29:17] a minimum stop loss distance is whatever
+[29:20] is the broker's stop level requirement.
+[29:23] Some brokers do not allow either the
+[29:24] stop orders or the stop losses to be
+[29:26] placed very close to the price. So,
+[29:28] let's get that value from the broker if
+[29:30] there is any.
+[29:32] And then if the trailing distance that
+[29:34] we have calculated is a smaller than
+[29:36] what the broker allows, then in that
+[29:39] case, we make it whatever the broker
+[29:41] allows. Then we again set the order
+[29:43] distance to ATR value times the order
+[29:45] distance ATR.
+[29:47] And the stop loss distance is equals to
+[29:49] ATR times the SL ATR. And now we're
+[29:52] going to loop through all of the current
+[29:54] open positions. Select them by index,
+[29:57] and then we're going to check that if
+[29:59] the [snorts] position which has been
+[30:00] selected here, if the symbol of that
+[30:03] position is the symbol currently on the
+[30:05] chart, and the magic number of the
+[30:07] position is equal to our magic number,
+[30:10] then in that case, it is our trade on
+[30:12] the current chart. So, we get the ticket
+[30:14] number
+[30:15] by using positioninfo.ticket and the
+[30:18] open price of the current position.
+[30:20] And because it is an open position, so
+[30:22] we increase the number of order
+[30:24] positions total by one. Plus plus means
+[30:27] equals to plus one. And then we check if
+[30:30] it is a buy type position, then we get
+[30:32] the current stop loss
+[30:34] of the position, and the new stop loss
+[30:36] becomes bid minus the trailing distance
+[30:39] that we have calculated and verified
+[30:41] against the broker minimum. And if then
+[30:43] the new stop loss is bigger than the
+[30:45] current stop loss, so it has moved
+[30:48] favorably in our direction,
+[30:50] and the new stop loss is bigger than the
+[30:52] open price, so it has come into the
+[30:54] profitable territory, then in that case
+[30:56] we modify the position by sending the
+[30:58] ticket number, the new stop loss,
+[31:01] and whatever was the take profit of the
+[31:03] position anyway. So, we don't change the
+[31:05] take profit. And if it is a sell, then
+[31:08] it's just the reverse. We get the
+[31:09] current stop loss, and the new stop loss
+[31:12] is ask plus the trailing distance. And
+[31:14] now if the new stop loss is a smaller
+[31:17] than, so it's below the current stop
+[31:19] loss, meaning it has moved positively
+[31:22] for our sell trade, and the new stop
+[31:24] loss is less than the price open, so it
+[31:26] has come into a profit territory as
+[31:28] well, then again we modify the stop loss
+[31:31] for our open position as well. Then we
+[31:33] close the bracket for this if statement,
+[31:36] and then close the bracket for the for
+[31:38] loop as well. So, this is our trailing
+[31:40] of the stop loss months activated. And
+[31:43] now we're going to loop through all the
+[31:45] orders total selected by index, and then
+[31:47] check if it if the symbol equals our
+[31:49] symbol and the magic number of that
+[31:51] order equals our magic number, then it
+[31:54] is our trade on the on the current
+[31:56] symbol, then get the ticket value and
+[31:58] also increase the order positions total
+[32:00] by one. And then we say if it's a buy
+[32:03] stop, then the current order price is
+[32:06] whatever is the price that the order is
+[32:08] sitting on.
+[32:09] And then entry is ask plus the order
+[32:12] distance. If the distance was supposed
+[32:13] to be two pips,
+[32:15] but now the price has moved, so it's
+[32:16] three pips.
+[32:18] So, we want to move it back again to two
+[32:20] pips as well. So, entry becomes ask plus
+[32:22] that.
+[32:24] And now if the entry is less than our
+[32:26] current order price, because the price
+[32:27] is falling below, then in that case new
+[32:30] stop loss is entry minus the stop loss
+[32:32] distance, which is the original ATR
+[32:34] value, then we modify the order sending
+[32:37] it the new entry price. Now the stop
+[32:39] order is going to trail with the price
+[32:41] going down, keeping the same distance.
+[32:44] And the new stop loss, and whatever was
+[32:46] the take profit before. And then the
+[32:48] same for the seller stop, which is if
+[32:50] the price keeps rising, we want to also
+[32:53] trail our stop order up to keep the same
+[32:56] distance from the price.
+[32:58] So we do exactly the same thing, but
+[33:00] just in reverse. And then we close the
+[33:03] if bracket, and then we close
+[33:06] this for bracket as well.
+[33:08] And then at the bottom, we return the
+[33:10] value of the total number of orders and
+[33:12] positions. So that's our order position
+[33:15] modify function.
+[33:17] If I compile,
+[33:19] I don't have any errors. So we can go
+[33:22] back to our on tick, and now below the
+[33:25] signal generation, we get the value of
+[33:28] the order positions total by running the
+[33:30] order position modify function. It's
+[33:32] doing two things at the same time, two
+[33:34] birds with one stone. When we're going
+[33:36] to run this function,
+[33:37] it's going to modify the positions if it
+[33:40] needs to be modified, but also it's
+[33:42] going to return the number of total
+[33:45] orders and positions, which we're going
+[33:47] to store here. And then we can say that
+[33:49] if the order positions total is zero, so
+[33:51] there is no order placed and there is no
+[33:53] open trade,
+[33:55] and this trading signal is not equal to
+[33:57] zero, so there is a buy signal or a sell
+[33:59] signal,
+[34:00] and it is within the trading time, that
+[34:03] the function we created, then in that
+[34:05] case, just send the order, which is with
+[34:07] the trade signal, buy or sell,
+[34:10] sending it the ask, bid, and the
+[34:12] Bollinger mean to this function,
+[34:15] which is actually going to send the buy
+[34:17] stop and the sell stop. So if I compile
+[34:21] now,
+[34:22] and let's put
+[34:24] a block
+[34:25] here
+[34:27] and here, because this is where we want
+[34:28] the codes to stop, and I run it.
+[34:31] The the visual test has to stop here
+[34:33] because now we are at
+[34:36] a sell stop. So, I'm going to make it
+[34:38] slow
+[34:40] and run.
+[34:41] And this is our stop order,
+[34:43] which is placed at a smaller value. And
+[34:46] as the price continues to rise,
+[34:48] our stop order continues to rise with
+[34:51] it. But if the price comes down,
+[34:54] then the order is going to be taken. We
+[34:57] have our TP on the main Bollinger line.
+[35:00] But if the price moves in a favorable
+[35:02] direction and we enter into the profit
+[35:05] territory,
+[35:06] then the stop loss is trailed and it's
+[35:09] going to continue to trail at a distance
+[35:10] that we have defined until either this
+[35:13] TP is hit or the trailing stop is taken.
+[35:16] So, this is for the sell trade.
+[35:18] Now, let's go back and remove this this
+[35:20] block from the sell stop and we only
+[35:22] have the buy stop now.
+[35:24] And if we run it,
+[35:26] we're going to stop when there is a buy
+[35:28] stop.
+[35:29] And if I play,
+[35:31] then we have the buy stop here. There
+[35:32] was a TP below, but the TP is now being
+[35:35] trailed at a distance that we wanted to
+[35:37] trail. Here is our TP at the Bollinger
+[35:39] mean. And normally, your trailing stop
+[35:43] loss, once it's in profit and trailing,
+[35:45] is going to be taken. So, this is the
+[35:47] entire strategy. And now what we are
+[35:49] going to do is we're going to build
+[35:50] confluences. So, we're going to look at
+[35:52] higher time frames and things like those
+[35:55] to make it a little bit more watertight.
+[35:58] And then we're going to build panels and
+[36:00] beautify the year.

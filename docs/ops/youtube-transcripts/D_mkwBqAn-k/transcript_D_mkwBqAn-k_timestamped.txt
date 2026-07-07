@@ -1,0 +1,986 @@
+# Timestamped Transcript for video D_mkwBqAn-k (Wayward EA / ICT FVG Silver Bullet)
+
+[0:00] ICT fair value gaps, one of the most
+[0:02] popular concepts in the retail trading
+[0:03] world. And I thought, why not automate
+[0:06] them? And what better way to automate
+[0:07] than collaborating with Claude? In this
+[0:09] series, we're going to build eight
+[0:11] different ICT fair value gaps strategies
+[0:14] all within one trading bot. And today we
+[0:17] start with silver bullet. By the end of
+[0:19] this video, you will know exactly how
+[0:20] Claude and I built this ICT silver
+[0:22] bullet trading bot from scratch. So,
+[0:24] buckle up because we're going from
+[0:26] concepts to rules to code to a fully
+[0:29] functioning trading bot. So, with no
+[0:31] more shenanigans, let's start. The
+[0:33] journey we are embarking on with Claude
+[0:35] is going to be eight different ICT fair
+[0:37] value gap strategies. The one that we're
+[0:39] going to be looking at today is called
+[0:41] silver bullet, and the foundation of
+[0:42] this strategy is threefold: the market
+[0:45] structure shift, the liquidity sweep,
+[0:47] and the fair value gaps. Now, if you
+[0:48] don't understand the fair value gaps,
+[0:50] it's a three-candlestick structure where
+[0:52] you have a gap between the high of the
+[0:54] first candle and the low of the second
+[0:55] candle, and that gap is called fair
+[0:57] value gap, and the assumption is that
+[0:59] market is going to try to fill that gap.
+[1:01] So, for a sell trade setup, you have the
+[1:04] day's high at a certain cut-off time,
+[1:06] let's say at the Asian session. And so,
+[1:07] at the start of the London session, you
+[1:09] determine the high and the low of the
+[1:10] market. Once you have the high of the
+[1:12] market, then we're waiting for a
+[1:14] liquidity sweep, which is a candle that
+[1:16] breaks the day's high, but then reverses
+[1:18] back and closes within the day's high
+[1:20] and day's low range. Once we have that
+[1:22] liquidity sweep, then we can look back
+[1:24] to identify the most recent low in the
+[1:26] market, and that is what we call market
+[1:28] structure shift. And then we wait for a
+[1:29] candle to come and close below this
+[1:32] structure for this MSS to be valid. Once
+[1:34] it's validated, then a starting from the
+[1:36] sweep candle, we look for all of the
+[1:38] fair value gaps that the market has
+[1:40] created. And we wait for the price to
+[1:42] trade back into the fair value gap. Once
+[1:45] it trades back into the fair value gap,
+[1:46] we can put a stop order at the bottom of
+[1:49] the fair value gap, expecting the market
+[1:50] to return from here to the downside.
+[1:53] It's a sell setup. Once the trade is
+[1:54] taken, you can go for 1:1 risk to
+[1:56] reward, 1 to 2 risk to reward, 1 to 3
+[1:58] risk to reward, and your stop loss can
+[2:00] go above the fair value gap with a bit
+[2:02] of buffer. Now, you can have one fair
+[2:04] value gap, or you can have multiple fair
+[2:07] value gaps during the day. And as long
+[2:09] as your setup is still valid, you can
+[2:11] trade these multiple FVGs. Now, on the
+[2:13] buy side, the concept is in reverse. So,
+[2:15] you have the day's low at the end of
+[2:17] Asian session on London session, then
+[2:19] you wait for the market structure and a
+[2:21] liquidity sweep. Once the liquidity
+[2:23] sweep happens, you look for the most
+[2:25] recent swing high. Once a candle closes
+[2:27] above that market structure shift, MSS
+[2:29] becomes confirmed, and we start looking
+[2:31] for the fair value gap is starting from
+[2:33] the liquidity sweep candle. And we can
+[2:35] take the trade at the upper boundary and
+[2:37] put the stop loss below with a buffer,
+[2:39] risk to reward 1 to 1, 1 to 2, or 1 to
+[2:41] 3. So, now that we have covered the
+[2:43] strategy that we're going to be
+[2:44] automating today with Claude,
+[2:46] let's say hello to Claude. Just like the
+[2:48] revert to mean strategy that we coded
+[2:50] with Claude a few weeks ago, let's start
+[2:52] by building up a frame, which is you are
+[2:54] an expert in MQL coding. You use
+[2:56] trade.mqh, trade position info, see
+[2:58] order info. And I told Claude that we're
+[3:00] going to be building eight different ICT
+[3:03] fair value gap strategies one by one
+[3:05] into a single year. So, start with a
+[3:07] structure, a user drop down, so the user
+[3:09] can select which a strategy he wants to
+[3:11] apply, and then the code should be able
+[3:12] to follow. Then keep on tick clean with
+[3:14] help of functions and use position info
+[3:16] and order info. We will build the
+[3:18] strategies one by one, but I want the
+[3:20] basis structure to be solid and
+[3:21] flexible, so we don't run into issues
+[3:23] later on. So far, are we clear? Give me
+[3:25] a short structure of how you will handle
+[3:27] it. Claude came back with a basis
+[3:28] structure plan, the file organization,
+[3:30] input blocks, core functions that it's
+[3:32] going to create, the FVG struct that
+[3:34] it's going to create, the strategy enums
+[3:36] on ticker structure, and told me that
+[3:38] ready to build the strategy whenever I
+[3:40] am. But there was one thing which I
+[3:41] forgot to mention, so I mention it now,
+[3:43] which is we're going to have to create
+[3:45] two sections within on tick, one section
+[3:48] for everything that is going to be run
+[3:50] on every tick whenever a new price data
+[3:52] arrives on the chart, and one section
+[3:54] for things that are only going to be
+[3:56] done once every new candle. We're going
+[3:58] to have eight strategies. We cannot run
+[4:00] everything in every one of those eight
+[4:02] strategies on every tick because it's
+[4:04] going to make the EA extremely slow. So,
+[4:06] there are things, for example, the fair
+[4:08] value gap detection, that doesn't need
+[4:10] to happen on every tick. We can move
+[4:12] things like those into a separate
+[4:14] section, which is only going to be done
+[4:16] every new candle. And after that, I
+[4:18] started with the strategy. So, we're
+[4:20] going to go step by step. Step one,
+[4:22] determine the day's high and low. So, at
+[4:24] a user-defined cutoff time, determine
+[4:26] the high and the low of the current day.
+[4:28] And once you have identified it, these
+[4:30] remain fixed for the remainder of the
+[4:32] day and do not change. Any concerns? If
+[4:34] not, let's create the code so I can
+[4:36] check it. Because it is a very
+[4:37] complicated strategy, I wanted to build
+[4:39] it a step by step. So, as a chart
+[4:41] object, put a day's high and a day's low
+[4:43] on the chart from the start of the day
+[4:45] to the end of the day with dashed lines
+[4:47] in gold color. User input, so user can
+[4:49] change the color if he wants to. Claude
+[4:51] had one question, which is what does the
+[4:53] current trading day mean? When does it
+[4:55] start? Broker time, New York time, or
+[4:58] custom time? And I said, \\"Trading day
+[5:00] starts at the broker's midnight. So, use
+[5:02] the broker server time.\\" And I would
+[5:04] prefer to have the format as hour hour
+[5:06] colon minute minute. For not only for
+[5:08] the cutoff time, but for every time
+[5:10] input that we're going to ask the user
+[5:11] to provide, we're going to use this
+[5:13] format. And put a separate function
+[5:15] where we're going to check all of the
+[5:16] user-provided input against the format
+[5:19] that we want to use it. And if any of
+[5:21] the input is wrong, put a big bold error
+[5:24] message on the chart. Claude said it's
+[5:25] clear, clean approach, and asked me if
+[5:27] we are ready to code. And I said, \\"Yes.\\"
+[5:30] So, it has started building and gave me
+[5:32] the first set of codes. These looks
+[5:34] quite clean with the trade.mqh position
+[5:36] info and order info as I asked. The on
+[5:39] tick function is relatively very clean
+[5:41] with an every tick section
+[5:43] and an every new candle section.
+[5:47] All fine. We copy it, go into
+[5:49] MetaEditor,
+[5:50] and we're going to call this ICT FVG
+[5:53] Silver Bullet, and I'm going to call it
+[5:55] version 1.1 because we are at a step
+[5:58] one. Let's paste it, compile, and we
+[6:01] don't have any errors. Let's look at the
+[6:03] input settings. So, here now we have the
+[6:05] Silver Bullet strategy. We have the
+[6:07] magic number, slippage, cut-off time
+[6:09] that the user can define, and show the
+[6:11] day high or low as true or false, and in
+[6:14] which color. So, let's run this thing.
+[6:16] And here we can see at the start of the
+[6:18] day, we have the day's high and day's
+[6:21] low clearly marked, and once the cut-off
+[6:24] time is hit, then these don't move
+[6:26] anymore during the day. So, this is all
+[6:28] good stuff. Let's see what happens the
+[6:30] next day. And the next day the previous
+[6:32] day's lines are removed, and we have a
+[6:34] new day's high and day's low for the
+[6:35] current day. So, that seems good, but
+[6:37] one of the things that I don't like to
+[6:39] see on my chart are these grid lines.
+[6:41] So, let's go back to Claude and ask it
+[6:43] to remove the grid lines, and put the
+[6:45] bear candles in crimson color, and the
+[6:47] bull candles in lime color. That's just
+[6:49] how I like to see my chart. Simple
+[6:51] addition, and we have the new lines of
+[6:53] code. Let's copy it, go back to
+[6:55] MetaEditor, paste it, compile, and now
+[6:58] we have a clean chart without the grid
+[7:00] lines. Brilliant. So, now let's go back
+[7:02] to Claude and build a step number two,
+[7:04] which is the liquidity sweep, which is
+[7:05] when the price breaks the day's high or
+[7:07] the day's low, and then sweeps back into
+[7:09] the range again within a certain number
+[7:11] of candles. The first valid liquidity
+[7:13] sweep of the day becomes a liquidity
+[7:15] sweep for that day. It stores the
+[7:16] values, and all subsequent liquidity
+[7:19] sweeps for that day must be ignored. So,
+[7:21] we're only interested in the first
+[7:22] liquidity sweep, not the ones that
+[7:24] happen later. And as chart object, mark
+[7:27] these liquidity sweeps with an arrow,
+[7:29] and the reverse setup for the sell
+[7:30] setup. Let's update the code so I can
+[7:32] test that it's working. So, Claude has
+[7:34] the full picture, and then something
+[7:35] happened, and Claude got it stuck. So, I
+[7:37] said continue. So, it has started
+[7:39] adding,
+[7:40] told me what it has added in step number
+[7:42] two and gave me the code file. So, let's
+[7:45] copy these codes. Let's go back to
+[7:46] MetaEditor and these codes we are going
+[7:48] to save as version 1.2 because we are on
+[7:51] a step number two now. Compile
+[7:53] and everything is still fine. Let's look
+[7:55] into the input tab and here we have our
+[7:58] liquidity sweep, the maximum number of
+[8:00] candles to look back. So, let's run this
+[8:02] thing.
+[8:04] And here the liquidity sweep happens for
+[8:06] the sell setup and we have an arrow
+[8:07] marking it. So, let's go back to Claude
+[8:09] with a step number three which is the
+[8:10] market structure. So, after the
+[8:12] liquidity sweep, we identify the most
+[8:14] recent high
+[8:16] and the way to do that will be using a
+[8:17] fractal with a strength that the user
+[8:19] can define. So, two for example will
+[8:22] mean two candles to the right and two
+[8:24] candles to the left. Then as chart
+[8:26] object, I want the MSS level in a dash
+[8:28] line in Dodger Blue color to be put on
+[8:31] the chart as well. Claude asked for a
+[8:32] confirmation that it understands it
+[8:34] properly which is we are now looking for
+[8:36] the most recent fractal high and most
+[8:38] recent fractal low before the sweep bar.
+[8:40] To which I said, \\"Yes, the most recent
+[8:42] before the liquidity sweep and look back
+[8:44] 30 candles max which is a user input but
+[8:47] within the current trading day.\\"
+[8:49] So, all clear. It has started building
+[8:51] what's new in step number three and gave
+[8:53] me the code file again. So, let's copy
+[8:55] it, go back to MetaEditor and we're
+[8:58] going to save it as version 1.3 and
+[9:01] compile.
+[9:02] And now if I run it and here I can see
+[9:04] that after the liquidity sweep, the most
+[9:06] recent swing low has been identified and
+[9:09] marked with a blue dash line. Let's look
+[9:11] for a buy setup as well and here the
+[9:13] liquidity sweep to the downside and we
+[9:15] have the most recent swing high
+[9:17] identified and marked on the chart as
+[9:19] well. But one thing which we can
+[9:21] probably use here is the labeling. So, I
+[9:23] went back to Claude and said, \\"Let's
+[9:26] label the MSS line as MSS buyer for buy
+[9:29] setup and MSS sell for sell setup.\\" And
+[9:31] also for the liquidity sweep arrows, if
+[9:33] it is the sweep of the day's high, then
+[9:35] the arrow is red pointing down and if it
+[9:37] is a sweep of the day's low, then it's
+[9:39] an arrow in lime color pointing upwards.
+[9:42] Claude said, \\"Good.\\" It understands
+[9:44] everything, started to make the changes,
+[9:46] added the MSS lines, and gave me the
+[9:48] code files back again. So, we are going
+[9:49] to copy it, go back to MetaEditor, but
+[9:52] since we are in the same step as still,
+[9:54] I'm just simply going to copy-paste it.
+[9:57] Compile.
+[9:59] And works properly. So, let's run it.
+[10:01] And now, after the liquidity sweep, we
+[10:03] have a red arrow pointing downwards, and
+[10:06] the market is structure lines are now
+[10:08] marked as MSS sell and MSS buy. And the
+[10:11] sweep arrow for the liquidity range of
+[10:13] the day's low is marked in green
+[10:14] pointing upwards. So, the liquidity
+[10:16] sweep of the high, the arrow looking
+[10:19] downwards is on the candle itself, so
+[10:22] it's not really clear.
+[10:23] So, let's go back to Claude and say,
+[10:25] \\"The arrow for the day's high sweep is
+[10:27] not in a good place. It needs to be
+[10:28] above. Currently, it is lying on top of
+[10:30] the candles.\\" Claude says, \\"Correct.\\"
+[10:33] Makes all the necessary changes what was
+[10:35] wrong, fixes it, and then gives me the
+[10:37] code file again, which we're going to
+[10:38] copy, and we're going to paste it within
+[10:40] the same version because we're still at
+[10:43] step number three. Compile.
+[10:46] Run. And now, I can see the liquidity
+[10:48] sweep of the day's high, the red arrow
+[10:51] is also visible on the chart. So, all
+[10:53] good. Everything works perfectly so far.
+[10:55] Thank you very much. And now, we go to
+[10:57] step number four, which is the market
+[10:58] structure shift. So, after the liquidity
+[11:00] sweep, wait for a candle to close above
+[11:02] the MSS level. We want it to be
+[11:04] confirmed. A wick does not qualify. And
+[11:07] if the MSS is not confirmed within an
+[11:09] allowed number of candles, we want it to
+[11:11] happen within a certain time lapse.
+[11:12] Then, in that case, we invalidate the
+[11:14] setup, and then there is no more buy
+[11:16] setup for that day. The reverse is true
+[11:18] for the sell. Chart objects, MSS labels
+[11:20] are MSS buy unconfirmed and MSS sell
+[11:22] unconfirmed until the time that they are
+[11:24] confirmed. And once they are confirmed,
+[11:27] this changes into MSS buy or sell
+[11:29] confirmed. Claude needed a
+[11:30] clarification, which is a time lapse
+[11:32] candle. Counted from where? So, I said,
+[11:34] \\"Count it from the first candle after
+[11:36] the sweep is confirmed.\\" Default value
+[11:38] of zero means no expiry, and MSS can be
+[11:41] confirmed until the end of that day. So,
+[11:43] Claude has started working again, made
+[11:45] all the changes for the step four, and
+[11:47] gave me the code file, which we're going
+[11:49] to copy, and we're going to store it as
+[11:51] version 1.04.
+[11:53] Because maybe we're going to end up with
+[11:54] more than nine steps, so I want some
+[11:56] spacing. So, let's mark the versions as
+[11:58] 1.01, 1.02, 1.03, and the current
+[12:02] version as 1.04. Save, paste,
+[12:06] and compile.
+[12:08] Everything is fine so far. Now, let's go
+[12:10] and run it. And now we see that when the
+[12:13] liquidity sweep happens, the MSS sell
+[12:15] line is unconfirmed. And once the price
+[12:17] comes down and a candle closes below the
+[12:20] MSS, this is where it became confirmed.
+[12:23] Now, let's see for the buy side. So,
+[12:25] yes, after the liquidity sweep, the MSS
+[12:27] buy is unconfirmed, and it remains
+[12:30] unconfirmed for the rest of the day.
+[12:32] Everything is fine, works like a charm.
+[12:35] Claude is amazing. And now we go to step
+[12:37] number five, which is the fair value gap
+[12:39] detection.
+[12:40] So, only starts searching for the
+[12:42] bullish fair value gap after the MSS has
+[12:45] been confirmed. The search range begins
+[12:47] at the liquidity sweep candle and
+[12:48] includes all the candles up to and after
+[12:51] the MSS confirmation. And because we are
+[12:53] interested in trading multiple FVGs, so
+[12:55] all valid bullish FVGs must be tracked.
+[12:58] Remember, I mean, it's the opposite for
+[13:00] the sell trade. And a new FVG does not
+[13:02] invalidate the previous FVGs. It stores
+[13:05] the values, and then comes the question
+[13:07] of what if it is a one pip fair value
+[13:09] gap? Do you want to trade that also? So,
+[13:11] in that case, we need a minimum width
+[13:14] for the fair value gaps to be valid.
+[13:16] Now, you can provide hard-coded numbers
+[13:17] like five pips and above, six pips and
+[13:20] above, but that's not going to hold
+[13:21] across time frames, because on a
+[13:23] one-minute chart, 10 pips might mean a
+[13:25] lot, but on a four-hour chart, 10 pips
+[13:28] mean nothing. And this is where what we
+[13:30] did in the river to mean here, linking
+[13:32] the things to ATR, made sense to me. So,
+[13:35] back to Claude, ignore the FVG's
+[13:37] outside of the configured minimum and
+[13:40] maximum size limit based on ATR 100,
+[13:42] which is going to be a user input. And
+[13:45] zero default, meaning it's not applied.
+[13:47] Even if it is one pip, it's going to be
+[13:49] traded. And for the chart object, put
+[13:51] all of the detected FVG's in the normal
+[13:54] ICT colors. And all of the historical
+[13:56] setup remain visible for review and back
+[13:59] testing as default. But give the user a
+[14:01] toggle to turn off and turn on whether
+[14:04] or not he wants to keep the history.
+[14:05] Claude said, \\"Good, but two questions.
+[14:07] First is the definition of the FVG
+[14:09] because different people might have
+[14:11] different definitions, so it gave me the
+[14:12] definition that it is the gap between
+[14:14] the low of bar one high of bar two. Is
+[14:17] that the definition that I'm using or do
+[14:19] I have a variation?\\" So, I said, \\"Yes,
+[14:20] the definition is fine, and that's what
+[14:22] I'm using.\\" Then for clarification two,
+[14:24] it understood that all of the FVG's
+[14:26] rectangles from previous days stay on
+[14:28] the chart, but what if within the day
+[14:30] there is a new sweep?
+[14:32] To which my point was that we're only
+[14:34] interested in the first sweep, so there
+[14:36] can be no new FVG's for among new sweep.
+[14:39] And if MSS becomes invalidated, then
+[14:42] leave the FVG's still on the chart. And
+[14:43] the third clarification Claude asked is
+[14:45] if the price moves into the FVG's, do we
+[14:48] change the color or do we keep it? And I
+[14:50] said, \\"I don't mind leaving them the
+[14:52] traditional color even after activation,
+[14:54] so color them only in the ICT FVG
+[14:57] traditional colors.\\" So, perfect. Just
+[14:59] one last thing, what is the ICT FVG
+[15:02] color? Are you happy with light blue and
+[15:04] light orange? And I said, \\"Fine, go with
+[15:06] these as defaults, and if I end up
+[15:07] selecting a different color, I'll tell
+[15:09] you to change the defaults.\\" So, Claude
+[15:11] has started working on the thing. What's
+[15:12] new in a step five? Made all the changes
+[15:15] and gave me the code file.
+[15:17] Let's copy it, save it as version 1.05.
+[15:22] Paste.
+[15:24] Compile.
+[15:26] Let's look at the setting step. So, we
+[15:28] have our strategy as silver bullet, cut
+[15:30] off time 10.
+[15:31] But, liquidity sweep we have added. The
+[15:33] maximum number of candles within which
+[15:35] the price must come back. Fractal
+[15:37] strength as two, two candles to the
+[15:38] right and two candles to the left in
+[15:40] order to identify the most recent high
+[15:42] or low. How many candles to look back as
+[15:44] 30. How many candles do we allow for the
+[15:46] MSS confirmation to happen? Default is
+[15:49] zero. And then the FVG minimum size and
+[15:51] the FVG maximum size based on ATR, 100
+[15:55] multiplier, and zero means not applied.
+[15:57] And then at the bottom, the user has the
+[15:59] ability to select the colors for the
+[16:01] bullish and the bearish FVGs. And run.
+[16:04] And here after the liquidity sweep, the
+[16:06] market is structure was identified. Once
+[16:08] a candle closed below it, it was
+[16:10] confirmed. And immediately we see two
+[16:12] FVGs appearing on the chart.
+[16:16] And they seem to be very valid according
+[16:18] to our definitions. The only thing I
+[16:20] don't like is the orange color. And then
+[16:22] we go on and we have
+[16:25] many more FVGs identified.
+[16:28] Some of them are actually outside of the
+[16:31] day's range, which I also don't like.
+[16:33] So, the first three I like because they
+[16:35] are within the day's range of high and
+[16:37] low.
+[16:38] But, the other three are way below and I
+[16:40] at least would not be interested in
+[16:42] trading those. Let's look at the buy
+[16:44] side as well.
+[16:46] And here on the 13th of Jan, after the
+[16:48] market is structure is confirmed, we see
+[16:51] these FVGs appearing as well.
+[16:53] But, some of them are outside of the
+[16:55] day's high and low.
+[16:57] So, that's the part that I don't like.
+[16:59] So, let's go back to Claude. Like, yeah,
+[17:01] I ran some visual tests and below are
+[17:03] the observations. One, I would like to
+[17:04] see the bullish FVG in lime color and
+[17:07] the bearish FVG in hot pink. And some
+[17:10] additional criteria. For first, the
+[17:11] market is structure location, that if
+[17:14] identifying a valid market structure for
+[17:16] buy and sell, that should be within the
+[17:18] day's high and low.
+[17:19] And also for the fair value gap
+[17:21] detection, it requires that it is inside
+[17:24] the day's high and low, at least
+[17:26] partially. Some part of it could be
+[17:28] outside, but at least some part of it
+[17:30] should be within the day's high and the
+[17:32] day's low range. That makes sense?
+[17:34] Claude said, \\"Yes.\\"
+[17:36] The colors changed, making all the
+[17:38] changes. What changed? And gave me the
+[17:40] code files again.
+[17:42] So, let's copy them again.
+[17:44] Paste.
+[17:45] Compile.
+[17:47] And run.
+[17:49] And after the confirmation of the MSS,
+[17:51] we have three fair value gaps, but all
+[17:54] of them within the day's range. Nothing
+[17:56] outside.
+[17:57] Let's look at the buy ones as well. So,
+[17:59] after the liquidity sweep, we have the
+[18:01] MSS confirmation, and now we have the
+[18:03] FVG,
+[18:05] which is at least partially within the
+[18:07] day's range
+[18:08] of high and low. And all the other ones
+[18:10] are also forming within the range. I
+[18:13] mean, they're very small that we can fix
+[18:15] through the ATR number, but for now, at
+[18:17] least all the codes are working
+[18:18] properly. So, let's go back to our
+[18:20] settings, and we're going to change the
+[18:22] 100 ATR multiplier for the minimum FVG
+[18:26] size to 0.5, so we don't get those funny
+[18:29] one pip
+[18:30] fair value gaps.
+[18:32] We have our three sell side.
+[18:35] And then on the buy side, we shouldn't
+[18:37] see those very, very small ones. So, we
+[18:39] have a decent size this one, and all the
+[18:42] other very small ones which were
+[18:43] appearing before on the 13th of Jan,
+[18:46] they are now gone. So, you only have a
+[18:48] decent size fair value gap to trade with
+[18:51] the ATR value. Brilliant. And now, step
+[18:54] six to step nine, we're going to do it
+[18:56] in one go. So, step six is the fair
+[18:58] value gap activation and putting the
+[19:00] pending orders. So, when a valid bullish
+[19:03] FVG is created, no orders are placed
+[19:05] immediately. It only becomes activated
+[19:07] when the price reaches or trades beyond
+[19:10] the midpoint of the FVG. So, what we
+[19:12] want is in our FVG, the price to come
+[19:15] back and at least go to the middle
+[19:17] point. Once it has been activated,
+[19:19] meaning the midpoint has been hit, we
+[19:21] place a buy order at the upper boundary
+[19:24] of the FVG. It remains active until it
+[19:26] is triggered or it is invalidated as per
+[19:30] below or it expires at the closing of
+[19:33] the day or whatever time the user has
+[19:35] defined. And the invalidation of the
+[19:37] fair value gap is only going to happen
+[19:39] if the price comes to the midpoint, it's
+[19:41] activated, but then it continues and
+[19:44] breaks the lower boundary and closes
+[19:46] below the fair value gap. When it is
+[19:48] inactivated, cancel the buy order. The
+[19:50] market did not respect the fair value
+[19:52] gap, so we are not interested in trading
+[19:54] it. Mark the FVG as invalid, keep it,
+[19:56] but change the color to gray and do not
+[19:59] allow any future entries from that fair
+[20:01] value gap. Continue monitoring all the
+[20:03] other valid fair value gaps, but forget
+[20:06] about this one. All clear? And I told
+[20:08] Claude not to code. Just let me know if
+[20:10] it is all clear before we go to the next
+[20:12] step, which is lot sizing.
+[20:14] So, everything is clear, activation,
+[20:16] invalidation, and expiry. Two things it
+[20:18] wanted to flag. Is there going to be one
+[20:21] order per FVG or one order total? And
+[20:23] secondly, if the already activated FVG
+[20:26] is re-entered, meaning the price enters,
+[20:28] activates it, exits, and then comes
+[20:30] back, which cannot happen actually.
+[20:34] So, I said expiry, yes, let's ask the
+[20:36] user for that. Call it the closing time.
+[20:38] And let's change all of the end of the
+[20:40] day resets to this expiry time as well.
+[20:43] The default value is zero, which is the
+[20:44] end of the day broker time. Then your
+[20:46] flag number one, one order or more is
+[20:49] one order per FVG. And if we haven't
+[20:51] already, then let's also put the max
+[20:54] number of trades allowed per symbol and
+[20:56] max number of trades allowed per EA
+[20:58] because we don't want to end up with
+[21:00] seven FVGs on a day or eight FVGs or 10
+[21:04] FVGs on a day. And for flag number two,
+[21:06] which is what happens if an already
+[21:09] activated FVG is reentered, which is
+[21:12] like once the price touches the midpoint
+[21:14] and the order is placed, the FVG is
+[21:16] active, it only gets invalidated if the
+[21:18] price goes below it and closes below it.
+[21:20] Otherwise, as long as the price is stays
+[21:23] in the FVG, it should still remain
+[21:25] active. So, crystal clear, confirming
+[21:27] back everything. One small thing before
+[21:29] we go to lot sizing, which is when the
+[21:31] price re-touches the midpoint of an
+[21:33] already active FVG, what do we do? And I
+[21:36] said, \\"Just ignore it. Once activated,
+[21:38] it's active until triggered,
+[21:39] invalidated, or the closing time
+[21:41] reached.\\" So, perfect. Let's go on to
+[21:43] position sizing.
+[21:45] So, our step seven. Now, position sizing
+[21:47] is determined from the account risk. So,
+[21:50] you take the percentage risk. The first
+[21:52] FVG after the sweep receives the full
+[21:54] one. So, if the user has defined 2%, the
+[21:57] first fair value gap that is identified
+[21:59] will get a stop order with a lot size
+[22:02] which is risking 2% as the user has
+[22:05] defined. But then, every subsequent FVG
+[22:07] receives a reduced risk according to a
+[22:10] risk decay factor. If your risk decay
+[22:12] factor is 0.5, first FVG when placing
+[22:15] the buy order will have a lot size
+[22:16] according 2% risk. The next FVG will
+[22:19] have a lot size based on 1% risk, half.
+[22:23] The next FVG will have a lot size which
+[22:25] is going to be risking 0.5. So, every
+[22:27] time half the risks or whatever the user
+[22:29] has defined as the risk decay factor.
+[22:31] And FVG numbering is determined by the
+[22:33] creation order. So, whichever one is
+[22:35] created first is going to get the bigger
+[22:37] treatment, whichever is going to create
+[22:39] later is going to get a a smaller lot
+[22:41] size. And the stop loss is going to go
+[22:43] below the lower boundary of the FVG.
+[22:45] Again, we're talking about the buy
+[22:46] setup, the sell setup is the inverse.
+[22:48] And the distance of the stop loss below
+[22:50] the FVG is based on the FVG width
+[22:53] multiplied by a user-defined multiplier.
+[22:56] Meaning, if the user says one, then you
+[22:58] take the FVG. Here is your buy order.
+[23:01] Here is your lower boundary. Here is the
+[23:03] width. Take that width one more time and
+[23:06] put the stop loss below. And the take
+[23:08] profit is going to be calculated using a
+[23:10] configured risk to reward ratio, which
+[23:12] the user is going to define. If multiple
+[23:14] positions are open, then we're going to
+[23:16] revise the TP into one unified TP based
+[23:19] on the total dollar risk at this point
+[23:22] in time and collectively that risk to
+[23:25] reward ratio. Any concerns? And Claude
+[23:27] needed a lot of clarification. So, first
+[23:30] the risk decay. What does it mean? As an
+[23:32] example, so 2% and the risk decay is
+[23:34] 0.5. So, fair value gap one is full 2%
+[23:37] risk. Fair value gap two is half,
+[23:40] meaning 1%. Fair value gap three is half
+[23:43] of that 1% 0.5. Is that the decay
+[23:46] pattern?
+[23:47] Or are we reducing 0.5 every time? So,
+[23:49] from two to 1.5 to one to one to 0.5 to
+[23:52] zero. To which I said, risk decay is
+[23:55] yes, your example is correct. This is
+[23:57] how I want it. Then on the stop loss,
+[23:59] just confirming that the stop loss is
+[24:01] going to be wherever the lower boundary
+[24:03] minus the width of the FVG times a
+[24:06] multiplier. So, if the FVG is 10 pip
+[24:08] wide and the multiplier is 0.5, the SL
+[24:10] is going to be five pip below the lower
+[24:13] boundary. Which is correct. So, I said
+[24:15] yes. And then on the TP, it gave me an
+[24:17] example and let's suppose the position
+[24:19] one risked $100, position two risked
+[24:21] $$50. So, the collective risk is 150. So,
+[24:24] do we unify the TP as 150 times whatever
+[24:28] risk to reward ratio the user has said?
+[24:30] I said yes. If it is risk to reward two,
+[24:33] then given your example of 150 risk, the
+[24:36] total profit needs to be $300. So, we
+[24:38] adjust the unified TP as a weighted
+[24:41] average. To which Claude had another
+[24:42] question that what happens if one of the
+[24:44] position is stopped and the second
+[24:46] position is still running.
+[24:48] To which my point was, keep the original
+[24:50] unified TP because we are aiming for the
+[24:52] day's risk to reward ratio. So, if today
+[24:55] we have a risk 150, the TP should be
+[24:57] 300. If one of the position is closed,
+[25:00] fine. We still target the same unified
+[25:02] TP. Perfect. Everything is clear. It has
+[25:04] started doing its thing. What is updated
+[25:06] in step six to nine?
+[25:09] And then gave me the codes. So, I copy
+[25:11] it, and go to MetaEditor, and we're
+[25:13] going to save it as 1.09
+[25:16] because the step six to nine are all
+[25:18] together in this one.
+[25:21] Paste it and compile.
+[25:23] And we got 10 errors.
+[25:25] So, let's copy all these errors and just
+[25:28] paste them back to Claude.
+[25:30] So, Claude has started taking two issues
+[25:32] to fix. The order select method is
+[25:34] clashes with the MQL built-in, so we
+[25:37] need to rename it. And the trade.set
+[25:39] comment is not a valid C trade method,
+[25:42] so comment should go directly into the
+[25:44] buy stop and sell stop calls.
+[25:46] Updating.
+[25:48] And the new file. Let's copy this one,
+[25:51] go back to MetaEditor, paste, compile,
+[25:54] and this time it works perfectly.
+[25:57] Okay, let's look at the inputs tab
+[25:58] again. What has been added? So, the
+[26:00] strategy is silver bullet cut-off time
+[26:02] 10:00. Closing time is now user
+[26:04] definition. Default is 0000, which is
+[26:08] the end of the day. Close the open
+[26:09] positions at closing time, true or
+[26:11] false, let them run or not. How many
+[26:14] candles within a liquidity sweep is the
+[26:16] maximum? Fractal look back, how many
+[26:18] candles look back? The MSS confirmation
+[26:20] in time lapse, is there a limit? Minimum
+[26:22] fair value gap width, then maximum
+[26:24] number of trades we added, and now that
+[26:26] is percentages. So, 1% as default, and
+[26:29] the risk decay factor is 0.5. The stop
+[26:32] loss multiplier is one. The risk to
+[26:34] reward ratio, show the lines in which
+[26:36] color, keep the history, yes or no, and
+[26:39] the color for the fair value gap,
+[26:41] bullish and bearish. But before we go
+[26:43] ahead and run it, one more thing that I
+[26:45] will test it, but for the visual test
+[26:47] it's best not to delete any chart
+[26:50] object. So, the day's high, low, MSS
+[26:53] level arrows. I want to see everything
+[26:55] in the history.
+[26:57] So, it updated the codes. Let's copy it.
+[26:59] Go back to Meta Editor, paste it,
+[27:02] compile. Everything seems fine. So,
+[27:04] let's run the test. So, here after the
+[27:06] liquidity sweep, our MSS sell level is
+[27:09] confirmed. And when the price comes back
+[27:11] into the fair value gap and touches the
+[27:13] midpoint, a sell stop has been placed.
+[27:16] The stop loss has gone above the fair
+[27:18] value gap and with a buffer which is the
+[27:20] size of the fair value gap itself
+[27:21] because we use the multiplier as one.
+[27:24] And when the trade is taken,
+[27:26] we have the update of the TP, which is
+[27:28] 1:2 risk to reward as we have defined in
+[27:31] our settings. Now, let's look at the buy
+[27:33] side. And here we see that once once the
+[27:36] price moves back into our fair value gap
+[27:39] midpoint, the buy order is placed.
+[27:43] The stop loss goes below. And once the
+[27:45] trade is triggered, we have the update
+[27:46] of the TP as 1:2 risk to reward ratio.
+[27:49] But one thing which I'm noticing is that
+[27:51] all of the historical stuff is still
+[27:54] getting deleted. So, let's go back to
+[27:56] Claude. The day high, low, sweep arrows
+[27:59] are still getting deleted. So, Claude
+[28:01] said, \\"Okay, let me find everything
+[28:02] remaining.\\"
+[28:03] He started working on the entire thing,
+[28:06] made all the changes, root cause, fixed
+[28:08] them, and then the files again.
+[28:12] Copy, go back to Meta Editor, paste it.
+[28:16] Compile.
+[28:19] And let's run. And now I can see that
+[28:21] all of the previous structures and lines
+[28:24] and confirmations and the arrows,
+[28:27] they're all being kept.
+[28:30] Brilliant. Let's run it a little bit
+[28:31] longer.
+[28:36] This is where I notice one thing which
+[28:39] was
+[28:41] that on the 13th of Feb, something
+[28:43] strange happened. The pending order from
+[28:45] the 12th of February, it [clears throat]
+[28:47] survived somehow the day's closing, most
+[28:50] likely because at the end of the day
+[28:51] when we sent the cancellation, the
+[28:53] market was already closed. So, even the
+[28:55] broker received that message, the order
+[28:57] could not be closed. And the second
+[28:59] thing I'm noticing is that after taking
+[29:01] the trade,
+[29:02] the TP should be updated, but it is not
+[29:05] getting updated, most likely because now
+[29:07] the EA has forgotten about this pending
+[29:10] order because it sent the cancellation,
+[29:12] so it thinks that it's gone, so it's not
+[29:15] it anymore. So, you have a case of a
+[29:17] rogue trade which runs away on its own
+[29:20] with a stop loss in place, but no TP.
+[29:22] Then another thing I'm noticing is that
+[29:24] in our settings, the max number of
+[29:26] candles allowed to identify the
+[29:27] liquidity sweep is three, but there are
+[29:29] cases where the liquidity sweep is being
+[29:32] confirmed even after 20 candles. So,
+[29:34] that is strange as well. So, let's go
+[29:36] back to Claude with the issue number
+[29:38] 9.1, which is I see a trade which wasn't
+[29:41] cancelled at the day close, most likely
+[29:43] because the market was closed and the
+[29:45] order was not received. So, I'm thinking
+[29:47] either to put a buffer, meaning whatever
+[29:49] is the broker close time minus 10
+[29:51] minutes to ensure the closing, or at the
+[29:54] start of the next day do a check that
+[29:56] there are no pending orders from the
+[29:57] previous day on every candle until the
+[30:00] cut off time to provide a little bit of
+[30:01] grace period. Then secondly, I notice
+[30:04] also that the same pending order from
+[30:06] 9.1 that survived the day, when it was
+[30:09] triggered, it did not update the TP,
+[30:11] most likely because the internal EA
+[30:13] believes that everything is already
+[30:14] closed. So, while we're checking after a
+[30:16] new day on every candle, let's also
+[30:18] check for open positions, and in case
+[30:21] one survives, then assign the
+[30:23] user-defined risk-to-reward ratio to it.
+[30:26] And then 9.3, the liquidity sweep. We
+[30:28] have it as default for three candles,
+[30:31] but I am seeing that MSS unconfirmed are
+[30:33] developing and the arrow sweeps
+[30:35] appearing even in cases where the price
+[30:37] went below the day's low and stayed
+[30:39] there for 20 plus candles before moving
+[30:42] back. So, something is seriously wrong.
+[30:44] And then two more additions, which is
+[30:46] 9.4, where we have the dash line for the
+[30:48] day high and the low. Let's also put a
+[30:50] vertical line at the cutoff time with
+[30:52] the same color. So, it is easy to see
+[30:54] visually where the cutoff time is. And
+[30:57] then in the end because we are putting
+[31:00] so many chart objects and keeping the
+[31:02] history, which is good for the visual
+[31:04] test, it's also good for the live
+[31:05] charts, so you can see all of the
+[31:07] history. But when you're going to run
+[31:08] optimizations, these are going to slow
+[31:11] the optimization down massively. So, in
+[31:14] case of optimization, then no chart
+[31:16] objects are created at all. So, Claude
+[31:19] started thinking orders are waving the
+[31:21] day close. Let's go ahead with a safety
+[31:23] sweep that runs every candle from the
+[31:24] day start until the cutoff, canceling
+[31:26] everything.
+[31:27] Then for the positions are waving the
+[31:29] TP, in case if it survives, do we give
+[31:32] it the TP as entry plus minus the stop
+[31:34] loss distance times the risk to reward
+[31:36] ratio? So, just treat it like a single
+[31:38] position. Then for the sweep after the
+[31:41] 20 candle, that's a proper bug, so it
+[31:43] will have to investigate it fully. Then
+[31:45] the vertical cutoff line, it will add
+[31:47] and hide all the objects during
+[31:49] optimization, it will add as well. So,
+[31:51] now let me investigate 9.3 first. So, it
+[31:54] has started, found the bug, came back
+[31:56] with a proposed fix, and asked me, \\"Does
+[31:58] it match my intent?\\" Which it did. So, I
+[32:01] said, \\"Yes, cancel all the pending
+[32:02] orders.
+[32:03] Yes, ideally the sweep from the 9.1 will
+[32:06] solve the issue with with the runaway
+[32:08] trade for the TP, but in case then yes,
+[32:10] put the TP as the formula that you
+[32:12] suggested just to be sure. And then for
+[32:14] the investigation, yes, let's properly
+[32:16] investigate the bug.\\" So, Claude has
+[32:18] started investigating the liquidity
+[32:20] sweep candles properly,
+[32:22] made all the changes that it needed to
+[32:24] make, and gave me the code files again.
+[32:26] So, let's copy it,
+[32:28] and I will save this file as version
+[32:30] 1.095
+[32:33] because we are at a step 9.5, adding
+[32:35] five more things to it.
+[32:37] Paste, compile.
+[32:40] Okay, let's go to settings and I will
+[32:41] change the liquidity sweep max candle to
+[32:43] look back from three to 10. And now
+[32:46] let's run.
+[32:49] So here, for example, I mean the
+[32:51] liquidity sweep happened, but it took
+[32:52] more than 10 candles. So the system is
+[32:55] not recognizing this as a liquidity
+[32:57] sweep, which is perfect. The only
+[32:59] problem I see is that this cutoff line,
+[33:02] it is going from the top of the chart to
+[33:04] the bottom of the chart. While I would
+[33:06] like to have it between the day high and
+[33:08] the day low only. So let's go back to
+[33:10] Claude. Great. Everything seems to be
+[33:12] working fine. Just one thing, the
+[33:13] vertical line for the cutoff time is
+[33:15] going from the top of the chart to the
+[33:17] bottom of the chart. I would like it to
+[33:18] be between the day's high and day's low
+[33:20] only.
+[33:21] So good, and it generated the code file
+[33:25] again.
+[33:26] Copy, paste it in MQL, compile, and run.
+[33:31] And now we see that the cutoff lines are
+[33:34] being drawn properly only between day's
+[33:36] high and day's low. Brilliant. I think
+[33:39] we've got everything. Just one last
+[33:40] thing, I like my charts prettied up. So
+[33:43] I'm giving Claude our revert to mean EA,
+[33:46] which has this beautiful gradient color,
+[33:49] and I'm going to ask it to use my
+[33:51] attached EA and take the concept of the
+[33:54] gradient across the chart and implement
+[33:56] it into our new silver bullet EA. So
+[33:59] Claude says, \\"I like it.
+[34:01] Have three questions. Which direction do
+[34:03] you want the bands? Horizontal, like the
+[34:05] attached EA? The color?
+[34:07] Black to blue, same as the attached EA?
+[34:10] And should there be a toggle?\\"
+[34:12] And no, always on, just match the EA's
+[34:14] behavior. Claude gets to working,
+[34:17] tells me what it has changed, and gave
+[34:19] me the final code, which is 2,048
+[34:23] lines of code in probably less than 3
+[34:27] hours.
+[34:28] Copy. Let's go back to MetaEditor, our
+[34:31] final file, and I'm going to call this
+[34:34] version 1.10
+[34:37] with gradient. Save, paste, compile,
+[34:42] and let's run. And now we have this
+[34:44] beautiful ICT fair value gap trading
+[34:47] bot. Writing it myself, it would have
+[34:49] probably taken me at least a week to
+[34:51] write it. With Claude, it took me
+[34:53] roughly around 4 to 5 hours. Now, very
+[34:55] important for those who are looking to
+[34:57] download, yes, I will make it available
+[34:59] in the store, but and it's a big but, I
+[35:02] just wrote this EA. I have no golden set
+[35:05] file that's going to rain money forever.
+[35:06] I receive a lot of emails every day
+[35:08] saying something along the lines of I
+[35:10] downloaded the code file, why am I not
+[35:13] rich yet? I don't know which part of
+[35:14] these videos make the promise that
+[35:16] downloading the EA equals money raining
+[35:19] forever. I share what I have and what I
+[35:22] find interesting. A lot of you ask me to
+[35:23] make these files available so you can
+[35:25] use them as a reference, so I do that.
+[35:27] But I am not able to take the
+[35:29] responsibility of making everybody who
+[35:31] watches this video and downloads the EA
+[35:34] rich. So, stay safe and trade safe.

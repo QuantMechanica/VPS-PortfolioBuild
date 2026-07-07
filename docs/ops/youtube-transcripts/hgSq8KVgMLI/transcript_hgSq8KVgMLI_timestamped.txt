@@ -1,0 +1,403 @@
+[00:00:00] and that's it there you have it these
+[00:00:01] are all of my settings I'm not hiding
+[00:00:03] anything here these are really simple
+[00:00:05] strategies this brought me from
+[00:00:08] 15,000 to
+[00:00:10] 25,000 profit so this makes a balance of
+[00:00:14] 40,000 right now with these simple
+[00:00:16] strategies hey guys this is welcome back
+[00:00:18] for another video and this is the video
+[00:00:20] that um a lot of you guys probably
+[00:00:23] waited for because I will reveal and
+[00:00:25] show all of my settings um for my live
+[00:00:28] trading account that I stream a lot on
+[00:00:30] on YouTube here and it is the account
+[00:00:32] that I just boosted from1 15,000 deposit
+[00:00:36] all the way up to um around 40,000 now
+[00:00:40] everything is on YouTube and I can
+[00:00:43] totally understand why you guys want to
+[00:00:46] have the settings and want to learn more
+[00:00:48] about the strategies but before I show
+[00:00:51] you um the actual settings I want to
+[00:00:54] lose a few words on how you should take
+[00:00:57] this video because usually and also in
+[00:01:00] the past I always rejected the questions
+[00:01:03] um about my settings I always said I
+[00:01:05] don't really like to share my settings
+[00:01:07] because I don't know if these settings
+[00:01:10] are even good in the future and this is
+[00:01:12] still my honest view on this because
+[00:01:16] these settings are the ones that I use
+[00:01:18] they worked great in the last few months
+[00:01:20] uh honestly and obviously but I have no
+[00:01:23] clue if this will work in the future I I
+[00:01:27] have absolutely no idea like starting
+[00:01:29] from the the day of tomorrow all of
+[00:01:32] these settings could be negative like
+[00:01:35] the performance could be negative every
+[00:01:37] single day I don't know what the future
+[00:01:39] brings so I cannot guarantee anything
+[00:01:42] still of course you guys want to see the
+[00:01:44] settings and I will reveal them I
+[00:01:47] actually I don't really have a problem
+[00:01:49] revealing my my strategies and my my
+[00:01:51] settings I I I don't care if you copy me
+[00:01:54] 100% like like really I don't mind like
+[00:01:57] I just want you to know that this is not
+[00:01:59] Financial advice I am not a financial
+[00:02:02] adviser actually I I I'm not really a
+[00:02:04] professional Trader I don't know
+[00:02:06] anything I just try to do my best and
+[00:02:10] for some reason I'm more successful than
+[00:02:12] others but this is not something I want
+[00:02:17] to um give advice on like on trading
+[00:02:20] like my business is teaching how to code
+[00:02:22] this is where I feel comfortable where I
+[00:02:24] can assure your success like I can say
+[00:02:28] for example if you take my programming
+[00:02:30] course you will learn how to code
+[00:02:34] there's no other option you will learn
+[00:02:36] it because there's everything in this
+[00:02:37] course but it's different with trading I
+[00:02:39] cannot say if you copy my settings if
+[00:02:42] you use my EAS you will be profitable
+[00:02:44] that's not how the world works that's
+[00:02:45] not especially how trading business
+[00:02:47] Works still of course you can have my
+[00:02:48] settings I don't care you can copy it
+[00:02:51] but uh please make sure to also make
+[00:02:53] your own test and this is my only
+[00:02:56] request to you that if you take these
+[00:02:58] settings then please use them in the
+[00:03:00] strategy tester first also some of my
+[00:03:03] programs that I use in this life account
+[00:03:05] are not the programs that I sell and
+[00:03:08] they are not the programs that I give
+[00:03:10] out for free maybe I will do so in the
+[00:03:12] future with the programs in my Live
+[00:03:14] account but so far the version for
+[00:03:16] example for the range breakout is
+[00:03:18] slightly different and again many people
+[00:03:21] are asking why are you selling or
+[00:03:23] providing another version than you use
+[00:03:26] it's not that simple I I use different
+[00:03:28] versions of the same expert advisor
+[00:03:31] really I use um the expert advisor from
+[00:03:33] my live stream but I also use other
+[00:03:35] expert advisor like I also for the range
+[00:03:37] record EA in my live stream I use a
+[00:03:39] version where I have the stop loss as a
+[00:03:42] percent of the position opening price
+[00:03:45] but I also use the version where I use
+[00:03:48] um where the stoploss is a factor of the
+[00:03:50] range I use it in different fdmo
+[00:03:51] projects and it's also profitable so
+[00:03:53] there's not only like the one correct
+[00:03:56] way to trade and this is what I always
+[00:03:59] try to
+[00:04:00] um teach on this channel that there is
+[00:04:02] not like this holy grade program that
+[00:04:04] will make profits that will make you
+[00:04:06] rich like every expert advisor has good
+[00:04:09] and bad periods like this the strategies
+[00:04:12] that I run in the Life account are
+[00:04:13] actually very good right now but also
+[00:04:15] not in all symbols like the the range
+[00:04:17] breakout that I use in my life account
+[00:04:19] the one with the percent is for example
+[00:04:23] it's performing worse than the one with
+[00:04:25] the factor in the currencies like in my
+[00:04:28] ftmo projects um
+[00:04:30] uh I think USD Japanese energy PS
+[00:04:32] performing way better than in the in the
+[00:04:34] Life account in the Life account it was
+[00:04:35] negative for most of the time like
+[00:04:37] really the only profit is coming from go
+[00:04:39] and um this is just to show you that I
+[00:04:44] am not holding back like my expert
+[00:04:47] advisors or my my my strategies because
+[00:04:50] I don't want you to
+[00:04:52] succeed that's not the point the point
+[00:04:54] is that even if I will give you like my
+[00:04:58] exact expert advisor
+[00:05:00] it's not a guarantee for anything and um
+[00:05:03] that's why I also want to encourage
+[00:05:06] everyone to really have a look at
+[00:05:07] trading and in the best case learn how
+[00:05:11] uh how to code and have a look at the
+[00:05:13] coding part and and this is where you
+[00:05:16] really learn and where you really make
+[00:05:18] progress because just copying my EAS
+[00:05:20] just copying my settings it will not
+[00:05:23] really get you far in my opinion but
+[00:05:27] again I can talk a lot um in the end I
+[00:05:29] will show you the settings now but
+[00:05:31] please just make sure to test everything
+[00:05:33] if you really want to take this whole
+[00:05:35] thing seriously then have a look at
+[00:05:37] coding write your own strategies maybe
+[00:05:40] make some adjustments to my expert
+[00:05:41] advisors you can use this as a basis as
+[00:05:44] a inspiration and you could also copy it
+[00:05:47] 100% what I do as I said I don't care
+[00:05:50] what you do with your money it's it's I
+[00:05:53] I really don't care but just please make
+[00:05:55] sure that you don't make me responsible
+[00:05:57] for your losses in the future if my set
+[00:05:59] thingss um turn out to not be profit
+[00:06:02] profitable in the future anymore because
+[00:06:04] none of my strategies is the Holy Grail
+[00:06:07] it's it's not even close it's just me as
+[00:06:09] a programmer trying to do my best trying
+[00:06:12] to survive in in in the market and um
+[00:06:16] yeah that's pretty much all I want to
+[00:06:17] say so now on the computer I will show
+[00:06:20] you my exact settings so as always I'm
+[00:06:23] trying to keep it as transparent as
+[00:06:25] possible and as as honest as possible so
+[00:06:28] um yeah enjoy okay so now here on my
+[00:06:31] server I will show you all of the
+[00:06:33] settings of all of my strategies one by
+[00:06:36] one so starting in the upper left corner
+[00:06:38] I mean it will be a total of 12 charts I
+[00:06:41] use three different strategies pretty
+[00:06:43] much and yeah we start in the uh on the
+[00:06:46] first column on the left side which is
+[00:06:49] the go long strategy so let's have a
+[00:06:51] look at the settings for
+[00:06:53] de40 the goal long strategy um is a
+[00:06:57] strategy that just opens a trade in the
+[00:07:00] beginning of the day and then closes it
+[00:07:02] at the end of the day in de40 I open the
+[00:07:06] position always every single day at 9:05
+[00:07:10] server time and close at
+[00:07:13] 2255 the time is always the server time
+[00:07:17] of I trading and do not change this time
+[00:07:20] if there's a change with the daylight
+[00:07:22] saving time for example so it is um or
+[00:07:25] it should always be GMT plus 2 or GMT
+[00:07:28] plus 3 depends on the daylight saving
+[00:07:30] time but you can also Google this it's
+[00:07:32] always the server time of IC trading so
+[00:07:35] these are the settings for the goong
+[00:07:37] strategy in my
+[00:07:40] de40 I do not use the TP I do not use
+[00:07:43] the stop loss I really just open the
+[00:07:45] position in the morning close it in the
+[00:07:47] evening that's it nothing more to add
+[00:07:49] for the strategy in us30 I use the exact
+[00:07:53] same strategy no TP no SL I open the
+[00:07:56] position in the morning here I open at
+[00:07:58] 105 and close at
+[00:08:01] 2350 that's it nothing to add no TP no
+[00:08:05] SL open in the morning close in the
+[00:08:07] evening then I have the goong strategy
+[00:08:10] in US tech which is the NASDAQ pretty
+[00:08:12] much um same sorry um notp nosl open the
+[00:08:18] position in the morning at 10:05 close
+[00:08:21] it in the evening
+[00:08:24] 2350 that's it so in the next in the
+[00:08:27] second column we have the range breakout
+[00:08:30] strategy this strategy um creates a
+[00:08:34] range in the beginning of the day let's
+[00:08:36] have one example here for us uh D
+[00:08:39] Japanese Yen so here for example the
+[00:08:41] range is from 3 to uh
+[00:08:45] 4 four 4 4:30 let me look this up uh 3
+[00:08:49] to 4:30 so in between these two times
+[00:08:53] during the day we find the highest point
+[00:08:55] and the lowest point and then when the
+[00:08:57] range is finished we close a s stop
+[00:08:59] order at the lower end of the range and
+[00:09:01] a buy stop order at the upper end of the
+[00:09:03] range that's it if one of these orders
+[00:09:06] is executed the other order is deleted
+[00:09:10] and then the trade will be hold if it
+[00:09:12] hits the stop loss or if it hits the or
+[00:09:16] um yeah there's no TP so the trade will
+[00:09:19] be closed either in the stop loss or um
+[00:09:22] at a certain time during the day and
+[00:09:24] here are the settings for wait let me
+[00:09:27] make this smaller again for USD Japanese
+[00:09:30] Yen with the range breakout expert
+[00:09:31] advisor so the stop loss is
+[00:09:36] 0.5% this is a percentage based on the
+[00:09:40] order open price or position open price
+[00:09:42] so let's say um the let's have a look at
+[00:09:45] this last um position it was opened here
+[00:09:48] so the stop loss was
+[00:09:50] 0.5% higher so the stop loss was up uh
+[00:09:55] yeah around here somewhere and again
+[00:09:58] once the first first order was executed
+[00:10:00] the second one was deleted immediately
+[00:10:03] and then the EA just waits for um either
+[00:10:06] the market to um or the the the time to
+[00:10:11] hit the 18:00 and then the trade will be
+[00:10:14] closed or it will be closed in the stop
+[00:10:16] loss so the range in USD Japanese yen is
+[00:10:19] from 3: in the morning to 4:30 that's it
+[00:10:22] only one trade is executed and they also
+[00:10:24] use a range filter also based on um like
+[00:10:28] as say percent of the order or position
+[00:10:31] open price it is
+[00:10:33] 0.2% minimum and
+[00:10:36] 0.4% maximum so to explain this if the
+[00:10:40] range is smaller than
+[00:10:43] 0.2% it will not trade if the range is
+[00:10:46] bigger than
+[00:10:48] 0.4% um it will not trade so here we can
+[00:10:52] can see this range was
+[00:10:54] 0.26% which is in between these two
+[00:10:57] numbers so we did trade this range okay
+[00:11:01] so this is the explanation for the range
+[00:11:03] breakout EA I also use it in EUR US
+[00:11:05] dollar here the settings look like this
+[00:11:07] the stop loss is 1% of the position open
+[00:11:10] price the range is from 1 to 2 in the
+[00:11:13] morning and close um of open positions
+[00:11:16] is also at 18:00 server time in the
+[00:11:20] afternoon or evening there's only one
+[00:11:22] trade maximum traded and then the Min
+[00:11:25] range is 0.1% maximum range is 0.6% %
+[00:11:29] for EUR US dollar then I have GP US
+[00:11:32] dollar which is the last currency that I
+[00:11:34] trade with the same strategy in the same
+[00:11:36] program here the range is from 4: to
+[00:11:38] 11:30 in the morning and then closes
+[00:11:42] also at 18:00 server time stop loss is
+[00:11:45] 0.5% of the position open price and
+[00:11:48] there's a maximum of one breakout so the
+[00:11:50] first breakout is traded during a day
+[00:11:52] and that's it minimum range size is
+[00:11:54] 0.15% and maximum is 0.4% for GBP US
+[00:11:58] dollar
+[00:12:00] then we do have de40 here I trade the
+[00:12:03] turnaround Tuesday strategy also the
+[00:12:05] turnaround Tuesday strategy to explain
+[00:12:07] this it is a very simple strategy it is
+[00:12:10] always or my interpretation of this
+[00:12:13] strategy is that I look at the market
+[00:12:16] here um on a Monday so on a Monday after
+[00:12:20] 900 a.m. in the morning I look at um the
+[00:12:24] chart or the expert advisor does and if
+[00:12:27] the price is below the moving average
+[00:12:29] here it opens a position this position
+[00:12:33] can be opened anytime on Monday after
+[00:12:37] 905 and it will be held until a specific
+[00:12:40] time on Tuesday that's it so trigger is
+[00:12:44] if the price is below the moving average
+[00:12:46] it will open a buy position and close it
+[00:12:48] one day later that's it very simple
+[00:12:50] strategy very easy so the settings for
+[00:12:53] de40 are as I show now um I do not use a
+[00:12:58] stop loss or a take profit the risk here
+[00:13:00] is just for the calculation of the
+[00:13:02] position size but I do not use ATP or a
+[00:13:05] stop loss the time for opening positions
+[00:13:09] on Monday is 9:05 so after 905 on Monday
+[00:13:14] a position can be open so if the price
+[00:13:16] drops below the moving average in the
+[00:13:18] evening it will still open the position
+[00:13:20] if it's still Monday then the position
+[00:13:22] is always closed one day later on
+[00:13:24] Tuesday
+[00:13:26] 2255 server time yeah this this is just
+[00:13:29] to show that it opens on Monday which is
+[00:13:31] the first day of the week it closes on
+[00:13:33] Tuesday which is the second day of the
+[00:13:35] week then as I said I use this moving
+[00:13:37] average filter it is a daily moving
+[00:13:39] average 40 bars period and it's a simple
+[00:13:43] moving average that's it so these were
+[00:13:45] the settings for D40 I also use this
+[00:13:48] strategy in us30 with the exact same
+[00:13:52] strategy but different settings so the
+[00:13:54] settings here are that I open the
+[00:13:55] position also from 105 in the morning so
+[00:14:00] on any Monday if the price is below the
+[00:14:04] 25 daily moving average simple moving
+[00:14:07] average then it will open a position if
+[00:14:12] um this happens anywhere between 10:5 on
+[00:14:15] a Monday and midnight this position will
+[00:14:17] be hold until Tuesday
+[00:14:21] 2350 server time and that's it I also
+[00:14:25] trade the strategy in US tech or the
+[00:14:27] nest Tec this is um these are completely
+[00:14:31] the same settings as for us30 the only
+[00:14:34] difference is the moving average trigger
+[00:14:36] here I use a nine period moving average
+[00:14:40] which is a simple moving average on the
+[00:14:42] daily chart so if the price on Monday is
+[00:14:45] below this moving average it will open a
+[00:14:47] position and close it on Tuesday so this
+[00:14:49] was the third column with the settings
+[00:14:53] for my turnaround Tuesday strategy so
+[00:14:55] let's get to the last uh column here
+[00:14:58] which is again the range breakout
+[00:15:00] strategy and here I trade the range
+[00:15:02] breakout strategy also in de40 let me
+[00:15:06] show you the settings the strategy is
+[00:15:08] pretty much the same there's one
+[00:15:10] difference which I will explain in a
+[00:15:11] second first of all let's have a look at
+[00:15:13] the settings here the stoploss per is
+[00:15:16] 1.5% of the current price then the time
+[00:15:19] is from 10:35 to
+[00:15:24] 1305 yeah after this the the range where
+[00:15:27] we traded and positions if there still
+[00:15:29] open will be closed as at 2055 there's a
+[00:15:32] maximum of one breakout traded and the
+[00:15:34] minimum range is
+[00:15:36] 0.25% of the current price the maximum
+[00:15:39] range size is
+[00:15:41] 0.45% of the current price then there's
+[00:15:44] one
+[00:15:45] specific um um position management tool
+[00:15:49] here that I use in this expert advisor
+[00:15:51] it's only in D40 that I use a break even
+[00:15:55] stop and here if the price is 0.2% in
+[00:15:58] profit again everything's based on the
+[00:16:00] current price then the stop loss will be
+[00:16:03] moved to break even that's it besides
+[00:16:05] this is the normal range breakout
+[00:16:08] strategy that I explained in detail for
+[00:16:10] USD japanes y then I also trade this
+[00:16:13] strategy without a trailing stop in us30
+[00:16:16] you can see all of the settings here the
+[00:16:18] stop loss is 0.5% of the position open
+[00:16:20] price the time is from
+[00:16:23] 1335 to 1605 and open positions will be
+[00:16:28] closed at 2055 if they did not hit the
+[00:16:30] 0.5% stop loss before only one breakout
+[00:16:34] is traded and only if the range is more
+[00:16:36] than
+[00:16:37] 0.25% and less than
+[00:16:41] 0.45% and this brings us to the very
+[00:16:44] last chart which is gold where I also
+[00:16:46] trade the range breakout strategy and
+[00:16:49] here you can see the settings stop- loss
+[00:16:51] is 1% of the
+[00:16:53] price uh the time is from 35 to 605 and
+[00:16:58] CL is at
+[00:17:00] 18855 there's a maximum of one breakout
+[00:17:03] traded and the minimum range is
+[00:17:05] 0.15% the maximum range is
+[00:17:08] 0.85% and that's it there you have it
+[00:17:10] these are all of my settings I'm not
+[00:17:12] hiding anything here these are really
+[00:17:14] simple strategies and that's all I do in
+[00:17:17] this account and this brought me from
+[00:17:19] 15,000 and I can show you this again
+[00:17:21] this brought me from 15,000 to
+[00:17:26] 25,000 profit so this makes a balance of
+[00:17:30] 40,000 right now with these simple
+[00:17:32] strategies again I brought all of the
+[00:17:34] disclaimers before I don't know if this
+[00:17:36] will be good in the future but you ask
+[00:17:38] for it here you have it do with it
+[00:17:41] whatever you want but please be
+[00:17:44] responsible for your own money and do
+[00:17:47] not risk money that you cannot afford to
+[00:17:48] lose so I hope you like this um and yeah
+[00:17:52] I just see you next time have a great
+[00:17:53] time good trades bye
