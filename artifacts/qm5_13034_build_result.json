@@ -1,0 +1,48 @@
+{
+  "ea_id": "QM5_13034",
+  "slug": "xti-audcad-rspr",
+  "card": "strategy-seeds/cards/approved/QM5_13034_xti-audcad-rspr_card.md",
+  "source_packet": "strategy-seeds/sources/EIA-RBA-BOC-XTI-AUDCAD-2026/source.md",
+  "mq5_path": "framework/EAs/QM5_13034_xti-audcad-rspr/QM5_13034_xti-audcad-rspr.mq5",
+  "ex5_path": "framework/EAs/QM5_13034_xti-audcad-rspr/QM5_13034_xti-audcad-rspr.ex5",
+  "spec_path": "framework/EAs/QM5_13034_xti-audcad-rspr/SPEC.md",
+  "basket_manifest": "framework/EAs/QM5_13034_xti-audcad-rspr/basket_manifest.json",
+  "setfiles_generated": [
+    "framework/EAs/QM5_13034_xti-audcad-rspr/sets/QM5_13034_xti-audcad-rspr_QM5_13034_XTI_AUDCAD_RSPREAD_D1_D1_backtest.set"
+  ],
+  "symbols": [
+    "XTIUSD.DWX",
+    "AUDCAD.DWX"
+  ],
+  "logical_symbol": "QM5_13034_XTI_AUDCAD_RSPREAD_D1",
+  "timeframe": "D1",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "compile": {
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log": "framework/build/compile/20260707_095551/QM5_13034_xti-audcad-rspr.compile.log",
+    "summary": "D:/QM/reports/compile/20260707_095551/summary.csv"
+  },
+  "build_check": {
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report": "D:/QM/reports/framework/21/build_check_20260707_095617.json"
+  },
+  "q02_enqueue": {
+    "result": "PENDING",
+    "work_item_id": "25b8585f-91bd-43d4-bb98-32480bbe89bf",
+    "evidence": "artifacts/qm5_13034_q02_enqueue_20260707.json"
+  },
+  "live_scope": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  }
+}

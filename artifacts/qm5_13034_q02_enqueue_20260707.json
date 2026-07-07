@@ -1,0 +1,72 @@
+{
+  "action": "enqueue_q02",
+  "build_result": {
+    "build_check_passed": true,
+    "compile_succeeded": true,
+    "created_at_utc": "2026-07-07T09:58:03.388153+00:00",
+    "ea_id": "QM5_13034",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13034_xti-audcad-rspr\\QM5_13034_xti-audcad-rspr.ex5",
+    "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13034_xti-audcad-rspr\\QM5_13034_xti-audcad-rspr.mq5",
+    "risk_mode": {
+      "PORTFOLIO_WEIGHT": 1,
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0
+    },
+    "setfiles_generated": [
+      "C:\\QM\\repo\\framework\\EAs\\QM5_13034_xti-audcad-rspr\\sets\\QM5_13034_xti-audcad-rspr_QM5_13034_XTI_AUDCAD_RSPREAD_D1_D1_backtest.set"
+    ],
+    "slug": "xti-audcad-rspr",
+    "smoke_result": "not_run_build_only",
+    "symbols": [
+      "XTIUSD.DWX",
+      "AUDCAD.DWX"
+    ],
+    "task_id": "codex-manual-build-QM5_13034-20260707T0956Z"
+  },
+  "ea_id": "QM5_13034",
+  "enqueue_result": {
+    "ea_id": "QM5_13034",
+    "enqueued": [
+      {
+        "setfile": "QM5_13034_xti-audcad-rspr_QM5_13034_XTI_AUDCAD_RSPREAD_D1_D1_backtest.set",
+        "symbol": "QM5_13034_XTI_AUDCAD_RSPREAD_D1",
+        "tf": "D1",
+        "wi_id": "25b8585f"
+      }
+    ],
+    "skipped": []
+  },
+  "existing_before": [],
+  "method": "farmctl._auto_enqueue_q02_for_build",
+  "queue_counts_after": {
+    "active": 4,
+    "done": 43186,
+    "failed": 45264,
+    "pending": 5510
+  },
+  "queue_counts_before": {
+    "active": 4,
+    "done": 43186,
+    "failed": 45264,
+    "pending": 5509
+  },
+  "work_items_after": [
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-07T09:58:03+00:00",
+      "ea_id": "QM5_13034",
+      "evidence_path": null,
+      "id": "25b8585f-91bd-43d4-bb98-32480bbe89bf",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "payload_json": "{\"host_symbol\": \"XTIUSD.DWX\", \"host_timeframe\": \"D1\", \"enqueued_by\": \"record_build_result.auto_q02\", \"enqueued_at_utc\": \"2026-07-07T09:58:03+00:00\", \"build_task_id\": \"codex-manual-build-QM5_13034-20260707T0956Z\", \"basket_manifest\": \"C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_13034_xti-audcad-rspr\\\\basket_manifest.json\", \"basket_symbol_count\": 2, \"logical_symbol\": \"QM5_13034_XTI_AUDCAD_RSPREAD_D1\", \"portfolio_scope\": \"basket\", \"timeout_min\": 450, \"basket_symbols\": [\"XTIUSD.DWX\", \"AUDCAD.DWX\"], \"traded_symbols\": [\"XTIUSD.DWX\", \"AUDCAD.DWX\"], \"risk_fixed\": 1000, \"risk_percent\": 0, \"portfolio_weight\": 1, \"risk_mode\": \"RISK_FIXED\"}",
+      "phase": "Q02",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13034_xti-audcad-rspr\\sets\\QM5_13034_xti-audcad-rspr_QM5_13034_XTI_AUDCAD_RSPREAD_D1_D1_backtest.set",
+      "status": "pending",
+      "symbol": "QM5_13034_XTI_AUDCAD_RSPREAD_D1",
+      "updated_at": "2026-07-07T09:58:03+00:00",
+      "verdict": null
+    }
+  ]
+}

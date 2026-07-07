@@ -74,3 +74,7 @@ This is not an XTI/AUDUSD breakout, XTI/NZD, XTI/CADJPY, XTI/CADCHF,
 WTI/USDCAD, XTI/XNG, WTI/Brent, oil-metal, calendar/event, COT, or RSI
 commodity sleeve. Backtests use `RISK_FIXED=1000`, no external runtime data,
 no ML, no grid, no martingale, and no live/deploy manifest changes.
+
+Q01 build validation passed on 2026-07-07. Q02 is pending as
+`work_items:25b8585f-91bd-43d4-bb98-32480bbe89bf` for logical basket
+`QM5_13034_XTI_AUDCAD_RSPREAD_D1`.

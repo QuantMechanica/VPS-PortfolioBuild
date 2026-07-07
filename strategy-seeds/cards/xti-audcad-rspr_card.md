@@ -252,12 +252,12 @@ stress limits.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
-| v1 | 2026-07-07 | initial XTI/AUDCAD return-spread mean-reversion basket build | Q02 | PENDING |
+| v1 | 2026-07-07 | initial XTI/AUDCAD return-spread mean-reversion basket build | Q02 | Q01 PASS; Q02 PENDING |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-07 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-07 | PENDING | local build |
-| Q02 Baseline Screening | 2026-07-07 | PENDING | enqueue after compile |
+| Q01 Build Validation | 2026-07-07 | PASS | artifacts/qm5_13034_build_result.json |
+| Q02 Baseline Screening | 2026-07-07 | PENDING | work_items:25b8585f-91bd-43d4-bb98-32480bbe89bf |
