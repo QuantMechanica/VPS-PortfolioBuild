@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13032
 ; ea_slug:      xng-cot-fade
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   fdf495fa9c1f75c9e9bf85dc36068131acd1f86f1eb564b4d54279d4095563f1
 ; author:       Development
 ; date:         2026-07-07
 ;==========================================================
