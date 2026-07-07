@@ -4,18 +4,18 @@
 ; ea_slug:      mql5-exec-ao
 ; ea_version:   v5.0
 ; set_version:  s20260707-001
-; symbol:       XAUUSD.DWX
+; symbol:       CADCHF.DWX
 ; timeframe:    M15
 ; environment:  backtest
-; magic_slot:   7
+; magic_slot:   18
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b83623c53eae26f8ddec91abab98af0a913679e7ac6c3b6d795be9d0cd21419c
+; build_hash:   dcb030d80afe8e2cdd017267786762d69043374ec7ae0edd821e9726564dc3ef
 ; author:       Development
 ; date:         2026-07-07
 ;==========================================================
 qm_ea_id=10481
-qm_magic_slot_offset=7
+qm_magic_slot_offset=18
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

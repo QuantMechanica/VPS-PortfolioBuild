@@ -4,18 +4,18 @@
 ; ea_slug:      mql5-exec-ao
 ; ea_version:   v5.0
 ; set_version:  s20260707-001
-; symbol:       XAUUSD.DWX
+; symbol:       XAGUSD.DWX
 ; timeframe:    M15
 ; environment:  backtest
-; magic_slot:   7
+; magic_slot:   35
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b83623c53eae26f8ddec91abab98af0a913679e7ac6c3b6d795be9d0cd21419c
+; build_hash:   2df7ac490047f9eb90a1f8860e077d1c6267a73cbc99d3c8f31162d07b2be488
 ; author:       Development
 ; date:         2026-07-07
 ;==========================================================
 qm_ea_id=10481
-qm_magic_slot_offset=7
+qm_magic_slot_offset=35
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

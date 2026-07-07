@@ -4,7 +4,7 @@
 **Slug:** `mql5-exec-ao`
 **Source:** `b8b5125a-c67f-5bbc-baff-33456e08f5b2` (see `strategy-seeds/sources/b8b5125a-c67f-5bbc-baff-33456e08f5b2/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-05-29
+**Last revised:** 2026-07-07
 
 ---
 
@@ -36,21 +36,10 @@ At each new M15 bar, the EA computes Awesome Oscillator as SMA(5, median price) 
 
 ## 3. Symbol Universe
 
-**Designed for:**
-- `EURUSD.DWX` - liquid FX major with DWX OHLC, AO, and ATR support.
-- `GBPUSD.DWX` - liquid FX major with DWX OHLC, AO, and ATR support.
-- `USDJPY.DWX` - liquid FX major with DWX OHLC, AO, and ATR support.
-- `USDCHF.DWX` - liquid FX major with DWX OHLC, AO, and ATR support.
-- `USDCAD.DWX` - liquid FX major with DWX OHLC, AO, and ATR support.
-- `AUDUSD.DWX` - liquid FX major with DWX OHLC, AO, and ATR support.
-- `NZDUSD.DWX` - liquid FX major with DWX OHLC, AO, and ATR support.
-- `XAUUSD.DWX` - card-stated metal exposure with DWX OHLC, AO, and ATR support.
-- `XTIUSD.DWX` - card-stated oil exposure with DWX OHLC, AO, and ATR support.
-- `SP500.DWX` - liquid US large-cap index CFD equivalent, backtest-only custom symbol.
-- `NDX.DWX` - liquid Nasdaq 100 index CFD equivalent.
-- `WS30.DWX` - liquid Dow 30 index CFD equivalent.
-- `GDAXI.DWX` - liquid DAX index CFD equivalent.
-- `UK100.DWX` - liquid FTSE 100 index CFD equivalent.
+**Designed for the full DWX backtest matrix because the card is symbol-agnostic and `farmctl` fans out Q02 accordingly:**
+- Forex: `AUDCAD.DWX`, `AUDCHF.DWX`, `AUDJPY.DWX`, `AUDNZD.DWX`, `AUDUSD.DWX`, `CADCHF.DWX`, `CADJPY.DWX`, `CHFJPY.DWX`, `EURAUD.DWX`, `EURCAD.DWX`, `EURCHF.DWX`, `EURGBP.DWX`, `EURJPY.DWX`, `EURNZD.DWX`, `EURUSD.DWX`, `GBPAUD.DWX`, `GBPCAD.DWX`, `GBPCHF.DWX`, `GBPJPY.DWX`, `GBPNZD.DWX`, `GBPUSD.DWX`, `NZDCAD.DWX`, `NZDCHF.DWX`, `NZDJPY.DWX`, `NZDUSD.DWX`, `USDCAD.DWX`, `USDCHF.DWX`, `USDJPY.DWX`.
+- Indices: `SP500.DWX` (backtest-only custom symbol), `NDX.DWX`, `WS30.DWX`, `GDAXI.DWX`, `UK100.DWX`.
+- Commodities: `XAUUSD.DWX`, `XAGUSD.DWX`, `XTIUSD.DWX`, `XNGUSD.DWX`.
 
 **Explicitly NOT for:**
 - Non-DWX symbols - registry and backtest artifacts require canonical `.DWX` symbols.
@@ -72,7 +61,7 @@ At each new M15 bar, the EA computes Awesome Oscillator as SMA(5, median price) 
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `100` |
+| Trades / year / symbol | `20` |
 | Typical hold time | `up to 24 M15 bars` |
 | Expected drawdown profile | `oscillator reversal strategy with fixed ATR risk and 2R target` |
 | Regime preference | `momentum-turn / oscillator reversal` |
@@ -108,3 +97,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-05-29 | Initial build from card | 23730b88-1d8c-427a-9410-2ea3cbd82d88 |
+| v2 | 2026-07-07 | Expand registry/setfile universe to full DWX matrix for Q02 retry | board-advisor infra repair |
