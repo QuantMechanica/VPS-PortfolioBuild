@@ -56,13 +56,19 @@ Three independent, mutually masking failures:
   fallback is REMOVED — if agy is missing the spawn fails loudly with agy's
   expected path instead of silently reviving the dead CLI. Original agy flags
   restored (proven by the rc=0 runs).
-- Residual risk (watch item): agy auth = Windows Credential Manager
-  (per-user). Under SYSTEM the credential vault of Administrator is not
-  available, so the next scheduled slot may still fail — then the correct fix
-  is re-registering the orchestration task to run in the OWNER/Administrator
-  session (the factory pattern), an OWNER-visible change. `G:\My Drive`
-  outputs are also unavailable under SYSTEM (prompt tolerates it; artifacts
-  go to cards_review).
+- Residual risk CONFIRMED at the 06:45Z slot: with the correct binary the run
+  now fails with `Error: authentication failed or timed out` — agy auth =
+  Windows Credential Manager, per-user, invisible to SYSTEM. Resolution
+  (06:52Z): `QM_StrategyFarm_GeminiOrchestration_15min` principal changed
+  SYSTEM/ServiceAccount → `qm-admin` / **Interactive** / Highest (no stored
+  password needed; runs in the always-on OWNER session = the established
+  factory pattern; note the account is `qm-admin`, the C:\Users\Administrator
+  profile-folder name is historical). Codex/Claude lanes stay SYSTEM — their
+  CLIs auth from files under the user profile, which SYSTEM can read. Under
+  qm-admin, `G:\My Drive` is visible again, restoring the Drive --add-dir.
+  Trade-off: if the OWNER session is ever logged off, the agy lane pauses —
+  the same dependency the MT5 factory already has (session watchdog covers
+  it).
 
 ## 3. codex lane starvation deadlock since 2026-07-04 00:15
 
