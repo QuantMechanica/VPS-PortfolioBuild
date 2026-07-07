@@ -14610,6 +14610,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13040,xti-days-supply-brk,0,XTIUSD.DWX,130400000,2026-07-07,Codex,active
 13041,xti-loose-supply-fade,0,XTIUSD.DWX,130410000,2026-07-07,Codex,active
 13042,xti-distdraw-mom,0,XTIUSD.DWX,130420000,2026-07-07,Codex,active
+13043,xti-resfuel-mom,0,XTIUSD.DWX,130430000,2026-07-07,Codex,active
 9510,carver-forecast,0,EURUSD.DWX,95100000,2026-07-07,Codex,active
 9510,carver-forecast,1,GBPUSD.DWX,95100001,2026-07-07,Codex,active
 9510,carver-forecast,2,USDJPY.DWX,95100002,2026-07-07,Codex,active
