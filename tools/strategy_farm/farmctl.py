@@ -693,11 +693,98 @@ def _find_approved_card_for_ea(root: Path, ea_id: str) -> Path | None:
     return matches[0] if matches else None
 
 
+# (mtime_ns, size)-keyed caches. ready_strategy_card_inventory validates every
+# approved card and each validation used to re-parse both registry CSVs and
+# re-glob the cards dir; at ~2900 cards x 14k magic rows that pushed one router
+# inventory to ~250s and the 5-min router task died at its 2-min limit on every
+# tick (silent routing outage 2026-07-05..07). Callers treat the returned rows
+# as read-only (all three call sites verified 2026-07-07); the token invalidates
+# on any file change.
+_CSV_DICT_CACHE: dict[str, tuple[tuple[int, int], list[dict[str, str]]]] = {}
+_MAGIC_DUP_CACHE: dict[str, tuple[tuple[int, int], list[str]]] = {}
+_EA_SLUG_INDEX_CACHE: dict[str, tuple[tuple[int, int], dict[str, list[str]]]] = {}
+_CARDS_NAME_CACHE: dict[str, tuple[tuple[int, int], list[str]]] = {}
+
+
+def _stat_token(path: Path) -> tuple[int, int] | None:
+    try:
+        st = path.stat()
+    except OSError:
+        return None
+    return (st.st_mtime_ns, st.st_size)
+
+
 def _read_csv_dicts_if_exists(path: Path) -> list[dict[str, str]]:
-    if not path.exists():
+    token = _stat_token(path)
+    if token is None:
         return []
+    key = str(path)
+    cached = _CSV_DICT_CACHE.get(key)
+    if cached and cached[0] == token:
+        return cached[1]
     with path.open("r", encoding="utf-8-sig", newline="") as handle:
-        return [dict(row) for row in csv.DictReader(handle)]
+        rows = [dict(row) for row in csv.DictReader(handle)]
+    _CSV_DICT_CACHE[key] = (token, rows)
+    return rows
+
+
+def _magic_registry_duplicate_errors(path: Path) -> list[str]:
+    """Card-independent duplicate scan over the magic registry (cached)."""
+    token = _stat_token(path)
+    if token is None:
+        return []
+    key = str(path)
+    cached = _MAGIC_DUP_CACHE.get(key)
+    if cached and cached[0] == token:
+        return cached[1]
+    errors: list[str] = []
+    seen_magic: dict[str, str] = {}
+    for row in _read_csv_dicts_if_exists(path):
+        magic = str(row.get("magic") or "").strip()
+        owner = f"{row.get('ea_id') or ''}:{row.get('symbol_slot') or row.get('slot') or ''}:{row.get('symbol') or ''}"
+        if not magic:
+            continue
+        if magic in seen_magic and seen_magic[magic] != owner:
+            errors.append(f"magic_registry_duplicate:{magic}:{seen_magic[magic]}:{owner}")
+        seen_magic[magic] = owner
+    _MAGIC_DUP_CACHE[key] = (token, errors)
+    return errors
+
+
+def _ea_registry_slug_index(path: Path) -> dict[str, list[str]]:
+    """ea_id -> non-empty registry slugs, for the per-card mismatch check (cached)."""
+    token = _stat_token(path)
+    if token is None:
+        return {}
+    key = str(path)
+    cached = _EA_SLUG_INDEX_CACHE.get(key)
+    if cached and cached[0] == token:
+        return cached[1]
+    index: dict[str, list[str]] = {}
+    for row in _read_csv_dicts_if_exists(path):
+        row_ea = str(row.get("ea_id") or row.get("id") or "").strip()
+        if not row_ea:
+            continue
+        row_slug = str(row.get("slug") or row.get("ea_slug") or "").strip()
+        if row_slug:
+            index.setdefault(row_ea, []).append(row_slug)
+    _EA_SLUG_INDEX_CACHE[key] = (token, index)
+    return index
+
+
+def _approved_card_names(cards_dir: Path) -> list[str]:
+    """Sorted *.md names in cards_approved, cached on the directory mtime
+    (NTFS bumps it on create/delete/rename in the dir)."""
+    token = _stat_token(cards_dir)
+    if token is None:
+        return []
+    key = str(cards_dir)
+    cached = _CARDS_NAME_CACHE.get(key)
+    if cached and cached[0] == token:
+        return cached[1]
+    names = sorted(p.name for p in cards_dir.glob("*.md"))
+    _CARDS_NAME_CACHE[key] = (token, names)
+    return names
 
 
 def _read_csv_dicts_with_columns(path: Path) -> tuple[list[str], list[dict[str, str]]]:
@@ -760,29 +847,22 @@ def prebuild_validate_card(root: Path, card_path: Path, fm: dict[str, Any]) -> d
     except OSError:
         pass
 
-    ea_rows = _read_csv_dicts_if_exists(REPO_ROOT / "framework" / "registry" / "ea_id_registry.csv")
-    for row in ea_rows:
-        row_ea = str(row.get("ea_id") or row.get("id") or "").strip()
-        if row_ea != ea_id:
-            continue
-        row_slug = str(row.get("slug") or row.get("ea_slug") or "").strip()
-        if row_slug and slug and row_slug != slug:
-            errors.append(f"ea_id_registry_slug_mismatch:{ea_id}:registry={row_slug}:card={slug}")
+    slug_index = _ea_registry_slug_index(REPO_ROOT / "framework" / "registry" / "ea_id_registry.csv")
+    if ea_id and slug:
+        for row_slug in slug_index.get(ea_id, []):
+            if row_slug != slug:
+                errors.append(f"ea_id_registry_slug_mismatch:{ea_id}:registry={row_slug}:card={slug}")
 
-    magic_rows = _read_csv_dicts_if_exists(REPO_ROOT / "framework" / "registry" / "magic_numbers.csv")
-    seen_magic: dict[str, str] = {}
-    for row in magic_rows:
-        magic = str(row.get("magic") or "").strip()
-        owner = f"{row.get('ea_id') or ''}:{row.get('symbol_slot') or row.get('slot') or ''}:{row.get('symbol') or ''}"
-        if not magic:
-            continue
-        if magic in seen_magic and seen_magic[magic] != owner:
-            errors.append(f"magic_registry_duplicate:{magic}:{seen_magic[magic]}:{owner}")
-        seen_magic[magic] = owner
+    errors.extend(_magic_registry_duplicate_errors(REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"))
 
-    sibling_cards = sorted((root / "artifacts" / "cards_approved").glob(f"{ea_id}_*.md"))
+    # case-insensitive prefix match = Windows glob semantics of f"{ea_id}_*.md"
+    sibling_prefix = f"{ea_id}_".lower()
+    sibling_cards = [
+        name for name in _approved_card_names(root / "artifacts" / "cards_approved")
+        if name.lower().startswith(sibling_prefix)
+    ]
     if len(sibling_cards) > 1:
-        warnings.append(f"multiple_approved_cards_for_ea:{ea_id}:{[p.name for p in sibling_cards]}")
+        warnings.append(f"multiple_approved_cards_for_ea:{ea_id}:{sibling_cards}")
 
     return {"ok": not errors, "errors": errors, "warnings": warnings}
 
@@ -1774,6 +1854,7 @@ def _derive_verdict_from_summary(summary: dict[str, Any], min_trades: int = 5, p
             "INCOMPLETE_RUNS",
             "HISTORY_CONTEXT_INVALID",
             "TIMEOUT",
+            "ACCOUNT_NOT_SPECIFIED",
         }
         verdict = "INFRA_FAIL" if any(str(r).upper() in infra_reasons for r in reasons) else "FAIL"
         return verdict, "run_smoke_fail:" + ";".join(str(r) for r in reasons)
