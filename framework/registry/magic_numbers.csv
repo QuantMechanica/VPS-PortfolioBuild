@@ -14425,3 +14425,17 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13019,crisis-short-idx-breakout,1,WS30.DWX,130190001,2026-07-06,Claude,active
 13022,ftq-xau-riskoff-long,0,XAUUSD.DWX,130220000,2026-07-06,Claude,active
 13023,ftq-audjpy-riskoff-short,0,AUDJPY.DWX,130230000,2026-07-06,Claude,active
+12956,commodity-tsmom-6m-card,0,XTIUSD.DWX,129560000,2026-07-07,Development,active
+9283,mql5-keltner-break,0,EURUSD.DWX,92830000,2026-07-07,Development,active
+9283,mql5-keltner-break,1,GBPJPY.DWX,92830001,2026-07-07,Development,active
+9283,mql5-keltner-break,2,GDAXI.DWX,92830002,2026-07-07,Development,active
+12935,sperandeo-tlb-refinement-h4,0,NDX.DWX,129350000,2026-07-07,Development,active
+12935,sperandeo-tlb-refinement-h4,1,WS30.DWX,129350001,2026-07-07,Development,active
+12935,sperandeo-tlb-refinement-h4,2,GDAXI.DWX,129350002,2026-07-07,Development,active
+12935,sperandeo-tlb-refinement-h4,3,UK100.DWX,129350003,2026-07-07,Development,active
+12935,sperandeo-tlb-refinement-h4,4,SP500.DWX,129350004,2026-07-07,Development,active
+12935,sperandeo-tlb-refinement-h4,5,XAUUSD.DWX,129350005,2026-07-07,Development,active
+12935,sperandeo-tlb-refinement-h4,6,XTIUSD.DWX,129350006,2026-07-07,Development,active
+12935,sperandeo-tlb-refinement-h4,7,EURUSD.DWX,129350007,2026-07-07,Development,active
+12935,sperandeo-tlb-refinement-h4,8,GBPUSD.DWX,129350008,2026-07-07,Development,active
+12935,sperandeo-tlb-refinement-h4,9,USDJPY.DWX,129350009,2026-07-07,Development,active
