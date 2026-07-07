@@ -109,3 +109,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit`
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-07 | Initial build from card | Mission-directed commodity/energy sleeve build |
+| v1-q02 | 2026-07-07 | Q01 validation and Q02 enqueue | `build_check`/strict compile PASS; Q02 work item `53d0ecbf-ed77-49f1-bde5-4947dd8d2397` |

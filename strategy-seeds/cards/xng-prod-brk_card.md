@@ -24,6 +24,7 @@ source_citations:
 strategy_type_flags: [official-release-window, structural-supply, channel-breakout, trend-filter-ma, atr-hard-stop, atr-profit-target, time-stop, symmetric-long-short, low-frequency]
 target_symbols: [XNGUSD.DWX]
 primary_target_symbols: [XNGUSD.DWX]
+markets: [XNGUSD.DWX]
 single_symbol_only: true
 logical_symbol: QM5_13037_XNG_DRYPROD_BRK_D1
 period: D1
@@ -42,11 +43,14 @@ expected_pf: 1.07
 expected_dd_pct: 20.0
 risk_class: medium-high
 ml_required: false
+modules_used: [calendar-window, donchian-channel, sma-trend-filter, atr-risk, time-stop]
+hard_rules_at_risk: [HR4_RISK_FIXED_BACKTEST, single-symbol-host-guard, one-position-per-magic, no-external-runtime-data]
+target_modules: [framework-init, trade-management, news-gate, friday-close, setfile-risk]
 ---
 
 # XNG Dry-Production Release-Window Breakout
 
-## Source Thesis
+## hypothesis
 
 EIA publishes official monthly natural gas market data including dry natural gas
 production. Dry production is a structural supply variable for U.S. natural gas,
@@ -69,7 +73,7 @@ rig-count, and not an XTI/XNG or gas/metal basket. The source family is monthly
 dry production and the signal is a late-month D1 supply-window compression
 breakout.
 
-## Mechanical Rules
+## rules
 
 - Host chart: `XNGUSD.DWX`, `D1`, magic slot 0 only.
 - Evaluate only on a new D1 bar.
@@ -88,6 +92,47 @@ breakout.
 - Enter market in the breakout direction with ATR stop and ATR profit target.
 - Exit on stop, target, slow-SMA failure, opposite exit-channel failure,
   maximum-hold timeout, framework Friday close, or kill switch.
+
+## 4. entry rules
+
+- Evaluate only once per new D1 bar.
+- The prior completed D1 bar must be inside the day-of-month 25-31 production
+  window.
+- Skip when this magic already has an open `XNGUSD.DWX` position or when this
+  EA already entered during the same calendar month.
+- Long entry requires compression, bullish signal close, close above the prior
+  Donchian high, close above the slow SMA, and rising SMA slope.
+- Short entry requires compression, bearish signal close, close below the prior
+  Donchian low, close below the slow SMA, and falling SMA slope.
+- Skip if the spread exceeds `strategy_max_spread_points`.
+
+## 5. exit rules
+
+- Hard stop: ATR(`strategy_atr_period`) times `strategy_atr_sl_mult`.
+- Profit target: ATR(`strategy_atr_period`) times `strategy_atr_tp_mult`.
+- Close a long when the prior D1 close falls below the slow SMA or below the
+  exit-channel low.
+- Close a short when the prior D1 close rises above the slow SMA or above the
+  exit-channel high.
+- Close after `strategy_max_hold_days` calendar days.
+- Framework Friday close and kill switch remain active.
+
+## 6. filters (no-trade module)
+
+- Only `XNGUSD.DWX` D1 is valid.
+- Only magic slot 0 is valid.
+- Require valid ATR, SMA, channel, compression, and signal OHLC data.
+- Reject invalid parameter ranges before entry logic runs.
+- Use framework news compliance, kill-switch, magic, and Friday-close guards.
+
+## 7. trade management rules
+
+- Symmetric long/short breakout.
+- One open position per magic/symbol.
+- No pyramiding, grid, martingale, partial close, trailing stop, ML model, or
+  external runtime feed.
+- Backtest setfile uses `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
+  `PORTFOLIO_WEIGHT=1`.
 
 ## Default Parameters
 
@@ -120,7 +165,7 @@ breakout.
 - R4 no ML/banned logic: PASS. No ML, grid, martingale, external runtime feed,
   discretionary input, or banned indicator family.
 
-## Risk and Pipeline
+## risk
 
 Backtests use `RISK_FIXED=1000`, `RISK_PERCENT=0`, and one
 `XNGUSD.DWX` setfile. This card does not change T_Live, AutoTrading, deploy
