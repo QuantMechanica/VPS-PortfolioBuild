@@ -88,7 +88,13 @@ continuation, gated to EIA report-window D1 bars and max one entry per month.
 - Direction: long in withdrawal season, short in injection shoulder months.
 - Runtime data: native MT5 OHLC, spread, ATR/SMA helpers, and broker calendar.
 
-## Entry Rules
+## Rules
+
+The strategy is a deterministic D1 implementation of storage-season drift
+continuation. All entries, exits, filters, and risk controls are defined below
+and map directly to the V5 modules.
+
+## 4. Entry Rules
 
 Evaluate once per new D1 bar, using the prior completed D1 bar as the signal
 bar.
@@ -107,15 +113,31 @@ bar.
    already consumed, spread is too wide, the symbol/timeframe/slot is wrong, or
    any guardrail input is invalid.
 
-## Exit Rules
+## 5. Exit Rules
 
 - ATR hard stop is set at entry.
 - Close on max-hold timeout.
 - Close a long when the previous D1 close falls back below the SMA anchor.
 - Close a short when the previous D1 close rises back above the SMA anchor.
-- Framework news gate, Friday close, kill switch, and one-position-per-magic
-  guardrails remain active.
 - No pyramiding, grid, martingale, ML, or external runtime data.
+
+## 6. Filters (No-Trade Module)
+
+- Do not trade any symbol other than `XNGUSD.DWX` or any timeframe other than
+  D1.
+- Do not trade outside magic slot 0.
+- Do not trade outside the Wednesday-Friday storage-report proxy window.
+- Do not trade outside the allowed storage-season month windows.
+- Do not trade when spread exceeds `strategy_max_spread_points`.
+- Do not trade when V5 news, Friday-close, kill-switch, or input guardrails
+  block trading.
+
+## 7. Trade Management Rules
+
+Position sizing is delegated to the V5 framework fixed-risk module using
+`RISK_FIXED=1000`. Stops are normalized through framework stop rules.
+Management is limited to ATR stop, SMA trend-failure exit, max-hold timeout,
+standard framework Friday close, and kill-switch handling.
 
 ## Parameters
 
