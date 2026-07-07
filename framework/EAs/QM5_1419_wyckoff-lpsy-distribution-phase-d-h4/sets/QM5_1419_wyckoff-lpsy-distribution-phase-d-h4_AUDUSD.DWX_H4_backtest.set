@@ -1,0 +1,55 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1419
+; ea_slug:      wyckoff-lpsy-distribution-phase-d-h4
+; ea_version:   v5.0
+; set_version:  s20260707-001
+; symbol:       AUDUSD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   5
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-07
+;==========================================================
+qm_ea_id=1419
+qm_magic_slot_offset=5
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1419_wyckoff-lpsy-distribution-phase-d-h4.md
+strategy_atr_period=14
+strategy_range_lookback_bars=200
+strategy_pivot_min_lookback_bars=80
+strategy_range_duration_min_bars=60
+strategy_range_min_atr=4.0
+strategy_range_max_atr=12.0
+strategy_range_containment_pct=0.85
+strategy_range_containment_atr=0.5
+strategy_prerange_slope_bars=80
+strategy_prerange_slope_atr_per_bar=0.10
+strategy_utad_recent_bars=30
+strategy_utad_break_atr=0.5
+strategy_sow_break_atr=0.3
+strategy_sow_rally_bars=5
+strategy_sow_rally_atr=1.5
+strategy_lpsy_lower_atr=0.2
+strategy_lpsy_upper_atr=0.5
+strategy_lpsy_rally_max_pct=0.80
+strategy_volume_filter_enabled=true
+strategy_volume_mean_bars=20
+strategy_volume_mult=1.10
+strategy_measured_move_mult=1.20
+strategy_partial_move_pct=0.50
+strategy_sl_utad_atr_buffer=0.40
+strategy_sl_max_atr=3.50
+strategy_time_stop_h4_bars=40
+strategy_reuse_guard_h4_bars=60
+strategy_spread_max_atr=0.20
+strategy_macro_sma_period=200
+strategy_macro_slope_bars=20
+strategy_macro_slope_atr_per_bar=0.05
+strategy_news_pause_h4_bars=2

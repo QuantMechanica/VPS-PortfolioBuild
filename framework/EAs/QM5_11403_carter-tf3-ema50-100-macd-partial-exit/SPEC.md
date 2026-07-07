@@ -3,8 +3,8 @@
 **EA ID:** QM5_11403
 **Slug:** `carter-tf3-ema50-100-macd-partial-exit`
 **Source:** `29c77a02-59bd-52f7-bcb3-b3108d5f1e79` (Thomas Carter, "20 Trend Following Systems" 2014, Strategy #3)
-**Author of this spec:** Claude
-**Last revised:** 2026-06-18
+**Author of this spec:** Codex
+**Last revised:** 2026-07-07
 
 ---
 
@@ -111,4 +111,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-06-18 | Initial build from card | EMA50/100 zone STATE + MACD-cross EVENT, 2R partial + EMA50 trail exit |
+| v1 | 2026-07-07 | Initial build from card | 9b29ebc5-7f55-4b70-9331-520a263e7c41 |

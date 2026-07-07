@@ -219,6 +219,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl     = sl;
    req.tp     = 0.0;   // no fixed TP — 2R partial + EMA50 trail exit
    req.reason = (side == QM_BUY) ? "carter_tf3_long" : "carter_tf3_short";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
    return true;
   }
 
@@ -272,7 +274,7 @@ void Strategy_ManageOpenPosition()
          const double min_lot = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
          // Only partial if both legs remain tradeable.
          if(part_lots >= min_lot && (volume - part_lots) >= min_lot)
-            QM_TM_PartialClose(ticket, part_lots, QM_EXIT_STRATEGY);
+            QM_TM_PartialClose(ticket, part_lots, QM_EXIT_PARTIAL);
 
          // Break-even on the remainder (only if it improves the stop).
          const double be_sl = QM_TM_NormalizePrice(_Symbol, open_price);
@@ -376,15 +378,6 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -407,12 +400,24 @@ void OnTick()
         }
      }
 
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    if(!QM_IsNewBar())
       return;
 
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
