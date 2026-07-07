@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13030
 ; ea_slug:      xng-cot-mom
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   c75c2dd7e8d43e34676b983f74756495b9fa4362c752087813b8e4a4ed816da6
 ; author:       Development
 ; date:         2026-07-07
 ;==========================================================
