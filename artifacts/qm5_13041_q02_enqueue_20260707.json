@@ -1,0 +1,55 @@
+{
+  "ea_id": "QM5_13041",
+  "ea_label": "QM5_13041_xti-loose-supply-fade",
+  "slug": "xti-loose-supply-fade",
+  "date": "2026-07-07",
+  "branch": "agents/board-advisor",
+  "edge": "XTI loose days-of-supply breakdown fade",
+  "source_lineage": [
+    "https://www.eia.gov/dnav/pet/PET_SUM_SNDW_A_EPC0_VSD_DAYS_W.htm",
+    "https://www.eia.gov/petroleum/supply/weekly/"
+  ],
+  "target_symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0
+  },
+  "build": {
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_guardrails": "PASS",
+    "compile_verdict": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13041_xti-loose-supply-fade\\QM5_13041_xti-loose-supply-fade.ex5",
+    "ex5_size_bytes": 318388,
+    "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260707_153846\\QM5_13041_xti-loose-supply-fade.compile.log",
+    "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260707_153846.json",
+    "build_check_status": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "magic": {
+      "symbol_slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 130410000
+    }
+  },
+  "q02_enqueue": {
+    "command": "python tools\\strategy_farm\\sweep_enqueue_built_eas.py --apply --ea QM5_13041 --queue-ceiling 10000 --max-part2-per-run 0",
+    "sweep_evidence": "D:\\QM\\reports\\state\\claude_sweep_enqueue_2026-06-10.json",
+    "part1_never_tested_enqueued": 1,
+    "part1_never_tested_skipped": 0,
+    "work_item_id": "ef59c9c7-7b94-42a4-8c39-78fd36066f82",
+    "phase": "Q02",
+    "status": "pending",
+    "symbol": "XTIUSD.DWX",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13041_xti-loose-supply-fade\\sets\\QM5_13041_xti-loose-supply-fade_XTIUSD.DWX_D1_backtest.set",
+    "created_at": "2026-07-07T15:39:24+00:00"
+  },
+  "constraints": {
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "autotrading_touched": false,
+    "backtest_launched": false
+  }
+}
