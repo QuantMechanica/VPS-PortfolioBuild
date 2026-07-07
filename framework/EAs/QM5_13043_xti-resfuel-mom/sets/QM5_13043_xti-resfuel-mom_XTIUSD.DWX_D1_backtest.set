@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13043
 ; ea_slug:      xti-resfuel-mom
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   e1b1d6068472182504e6700695909e5fea088c38f53fbd30e5e372043235f6b4
 ; author:       Development
 ; date:         2026-07-07
 ;==========================================================
