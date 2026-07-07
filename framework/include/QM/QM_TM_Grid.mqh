@@ -74,6 +74,33 @@ struct QM_GridState
 
 QM_GridState g_qm_grid_state;
 
+// Hardening 2026-07-07 (audit F7): quantize to the symbol's volume step and
+// clamp to min/max. The prior NormalizeDouble(lot,2) rejected on symbols with
+// step 0.1/1.0 (indices/CFDs) with INVALID_VOLUME and could round half-up past
+// the intended lot. Floor to step (never exceed the risk-sized lot).
+double QM_GridNormalizeVolume(const string symbol, const double lot)
+  {
+   const double step = SymbolInfoDouble(symbol, SYMBOL_VOLUME_STEP);
+   const double vmin = SymbolInfoDouble(symbol, SYMBOL_VOLUME_MIN);
+   const double vmax = SymbolInfoDouble(symbol, SYMBOL_VOLUME_MAX);
+   if(step <= 0.0)
+      return 0.0;
+   double v = MathFloor((lot + 1e-9) / step) * step;
+   if(vmax > 0.0 && v > vmax)
+      v = MathFloor(vmax / step) * step;
+   if(v < vmin)
+      return 0.0; // below min lot after flooring → cannot place this level
+   // Normalize to the step's decimal precision to avoid float dust.
+   int digits = 0;
+   double probe = step;
+   while(digits < 8 && MathAbs(probe - MathRound(probe)) > 1e-10)
+     {
+      probe *= 10.0;
+      ++digits;
+     }
+   return NormalizeDouble(v, digits);
+  }
+
 double QM_GridLevelLot(const QM_GridConfig &cfg, const int level_idx)
   {
    if(level_idx < 0)
@@ -155,6 +182,19 @@ bool QM_GridValidateConfig(const QM_GridConfig &cfg)
      }
 
    const double worst = QM_GridWorstCaseLossMoney(cfg);
+   // Hardening 2026-07-07 (audit F6): QM_GridWorstCaseLossMoney returns 0.0 when
+   // the symbol's tick_value/tick_size/point read 0 (unselected symbol, custom-
+   // symbol gap, market closed at init). Accepting worst=0 would pass the 1%
+   // cap check unconditionally — the risk gate silently disabled exactly when
+   // the data to prove it is missing. Fail closed: an uncomputable worst case
+   // is not a safe one.
+   if(worst <= 0.0)
+     {
+      QM_LogEvent(QM_FATAL, EA_GRID_RISK_EXCEEDED,
+                  StringFormat("{\"reason\":\"worst_case_uncomputable_failclosed\",\"symbol\":\"%s\"}",
+                               QM_LoggerEscapeJson(cfg.symbol)));
+      return false;
+     }
    const double cap_money = cfg.starting_equity_snapshot * (cfg.worst_case_loss_cap_pct / 100.0);
    if(worst > cap_money)
      {
@@ -164,6 +204,64 @@ bool QM_GridValidateConfig(const QM_GridConfig &cfg)
       return false;
      }
    return true;
+  }
+
+// Hardening 2026-07-07 (audit B5): reconstruct level state from open positions
+// carrying this grid's magic+symbol, so a mid-cycle reload does not leave the
+// drawdown guard blind. Positions are sorted by open time so reference_price
+// (the level-0 anchor) is the earliest fill, matching the live-open ordering.
+void QM_GridRebuildFromOpenPositions()
+  {
+   const int cap = g_qm_grid_state.cfg.max_levels;
+   ulong  found_tickets[];
+   double found_prices[];
+   double found_lots[];
+   datetime found_times[];
+   int n = 0;
+   ArrayResize(found_tickets, cap);
+   ArrayResize(found_prices, cap);
+   ArrayResize(found_lots, cap);
+   ArrayResize(found_times, cap);
+
+   for(int i = PositionsTotal() - 1; i >= 0 && n < cap; i--)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetInteger(POSITION_MAGIC) != g_qm_grid_state.cfg.magic)
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != g_qm_grid_state.cfg.symbol)
+         continue;
+      found_tickets[n] = ticket;
+      found_prices[n]  = PositionGetDouble(POSITION_PRICE_OPEN);
+      found_lots[n]    = PositionGetDouble(POSITION_VOLUME);
+      found_times[n]   = (datetime)PositionGetInteger(POSITION_TIME);
+      n++;
+     }
+   if(n == 0)
+      return;
+
+   // Insertion-sort by open time ascending (n <= 10, trivial cost).
+   for(int a = 1; a < n; a++)
+      for(int b = a; b > 0 && found_times[b] < found_times[b - 1]; b--)
+        {
+         datetime tt = found_times[b]; found_times[b] = found_times[b-1]; found_times[b-1] = tt;
+         ulong tk = found_tickets[b]; found_tickets[b] = found_tickets[b-1]; found_tickets[b-1] = tk;
+         double tp = found_prices[b]; found_prices[b] = found_prices[b-1]; found_prices[b-1] = tp;
+         double tl = found_lots[b]; found_lots[b] = found_lots[b-1]; found_lots[b-1] = tl;
+        }
+
+   for(int k = 0; k < n; k++)
+     {
+      g_qm_grid_state.level_tickets[k]      = found_tickets[k];
+      g_qm_grid_state.level_entry_prices[k] = found_prices[k];
+      g_qm_grid_state.level_lots[k]         = found_lots[k];
+     }
+   g_qm_grid_state.level_count     = n;
+   g_qm_grid_state.reference_price = found_prices[0];
+   QM_LogEvent(QM_WARN, "GRID_STATE_REBUILT_FROM_POSITIONS",
+               StringFormat("{\"levels_recovered\":%d,\"reference_price\":%.8f}",
+                            n, found_prices[0]));
   }
 
 bool QM_GridInit(const string symbol,
@@ -207,6 +305,13 @@ bool QM_GridInit(const string symbol,
    g_qm_grid_state.worst_case_loss_money = QM_GridWorstCaseLossMoney(g_qm_grid_state.cfg);
    g_qm_grid_state.initialized = true;
 
+   // Hardening 2026-07-07 (audit B5): grid level state is in-memory only, so an
+   // EA reload mid-cycle (recompile, terminal restart, watchdog reboot) would
+   // otherwise start with level_count=0 while real positions ride open — the
+   // max-drawdown guard blind from restart, the 1% cap unenforced. Rebuild the
+   // level state from the broker's own open positions for this magic.
+   QM_GridRebuildFromOpenPositions();
+
    QM_LogEvent(QM_INFO, "GRID_INIT",
                StringFormat("{\"symbol\":\"%s\",\"magic\":%d,\"max_levels\":%d,\"sizing\":%d,\"worst_case_money\":%.2f,\"cap_pct\":%.4f}",
                             QM_LoggerEscapeJson(symbol), magic, max_levels,
@@ -238,16 +343,24 @@ bool QM_GridOpenNextLevel(double &out_ticket_double)
       return false;
 
    const double lot = QM_GridLevelLot(cfg, g_qm_grid_state.level_count);
+   const double norm_lot = QM_GridNormalizeVolume(cfg.symbol, lot);
+   if(norm_lot <= 0.0)
+     {
+      QM_LogEvent(QM_WARN, "GRID_LEVEL_VOLUME_INVALID",
+                  StringFormat("{\"level\":%d,\"lot\":%.4f}", g_qm_grid_state.level_count, lot));
+      return false;
+     }
 
    MqlTradeRequest req;
    ZeroMemory(req);
    req.action  = TRADE_ACTION_DEAL;
    req.symbol  = cfg.symbol;
    req.magic   = cfg.magic;
-   req.volume  = NormalizeDouble(lot, 2);
+   req.volume  = norm_lot;
    req.type    = QM_OrderTypeToMT5(cfg.direction);
    req.price   = NormalizeDouble(entry, (int)SymbolInfoInteger(cfg.symbol, SYMBOL_DIGITS));
    req.deviation = 20;
+   req.type_filling = QM_TradeContextResolveFilling(cfg.symbol); // audit F3
    req.type_time = ORDER_TIME_GTC;
    req.comment = StringFormat("qm_grid_level_%d", g_qm_grid_state.level_count);
 
@@ -310,14 +423,23 @@ bool QM_GridMaxDrawdownGuard()
                StringFormat("{\"reason\":\"floating_loss_exceeds_cap\",\"floating\":%.2f,\"cap_money\":%.2f}",
                             floating, cap_money));
 
-   // Close every open grid level.
+   // Close every open grid level. Hardening 2026-07-07 (audit F6): a failed
+   // close previously still cleared level_count=0, orphaning a live position
+   // that the guard could then never see again (aggregate-PnL blind, guard
+   // cannot re-fire). Now: only untrack slots whose close SUCCEEDED; keep the
+   // rest tracked so the next tick re-attempts the flatten. The whole grid is
+   // considered cleared only when no tracked position remains.
+   int still_open = 0;
    for(int i = 0; i < g_qm_grid_state.level_count; i++)
      {
       const ulong ticket = g_qm_grid_state.level_tickets[i];
       if(ticket == 0)
          continue;
       if(!PositionSelectByTicket(ticket))
+        {
+         g_qm_grid_state.level_tickets[i] = 0; // already gone (SL/TP/manual)
          continue;
+        }
       MqlTradeRequest req;
       MqlTradeResult res;
       ZeroMemory(req);
@@ -332,11 +454,21 @@ bool QM_GridMaxDrawdownGuard()
                   ? SymbolInfoDouble(g_qm_grid_state.cfg.symbol, SYMBOL_ASK)
                   : SymbolInfoDouble(g_qm_grid_state.cfg.symbol, SYMBOL_BID);
       req.deviation = 20;
+      req.type_filling = QM_TradeContextResolveFilling(g_qm_grid_state.cfg.symbol); // audit F3
       req.comment = "qm_grid_cap_breach";
       string err_class = "";
-      QM_TradeContextSend(req, res, err_class);
+      if(QM_TradeContextSend(req, res, err_class))
+         g_qm_grid_state.level_tickets[i] = 0; // confirmed closed → untrack
+      else
+        {
+         still_open++;
+         QM_LogEvent(QM_ERROR, "GRID_CAP_CLOSE_FAILED",
+                     StringFormat("{\"level\":%d,\"ticket\":%I64u,\"err\":\"%s\"}",
+                                  i, ticket, QM_LoggerEscapeJson(err_class)));
+        }
      }
-   g_qm_grid_state.level_count = 0;
+   if(still_open == 0)
+      g_qm_grid_state.level_count = 0; // fully flat — safe to reset for a new cycle
    return true;
   }
 
