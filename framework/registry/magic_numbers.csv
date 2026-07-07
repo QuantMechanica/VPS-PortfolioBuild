@@ -14649,3 +14649,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9250,mql5-crt-amd,0,EURUSD.DWX,92500000,2026-07-07,Codex,active
 9250,mql5-crt-amd,1,GBPUSD.DWX,92500001,2026-07-07,Codex,active
 13047,eia-steo-fade,0,XTIUSD.DWX,130470000,2026-07-08,Codex,active
+9505,chande-fo-bband-fade-h4,0,EURUSD.DWX,95050000,2026-07-08,Codex,active
+9505,chande-fo-bband-fade-h4,1,GBPUSD.DWX,95050001,2026-07-08,Codex,active
+9505,chande-fo-bband-fade-h4,2,USDJPY.DWX,95050002,2026-07-08,Codex,active
+9505,chande-fo-bband-fade-h4,3,AUDUSD.DWX,95050003,2026-07-08,Codex,active
+9505,chande-fo-bband-fade-h4,4,USDCAD.DWX,95050004,2026-07-08,Codex,active
+9505,chande-fo-bband-fade-h4,5,USDCHF.DWX,95050005,2026-07-08,Codex,active
+9505,chande-fo-bband-fade-h4,6,NZDUSD.DWX,95050006,2026-07-08,Codex,active
+9505,chande-fo-bband-fade-h4,7,XAUUSD.DWX,95050007,2026-07-08,Codex,active
+9505,chande-fo-bband-fade-h4,8,XTIUSD.DWX,95050008,2026-07-08,Codex,active
+9505,chande-fo-bband-fade-h4,9,GDAXI.DWX,95050009,2026-07-08,Codex,active
+9505,chande-fo-bband-fade-h4,10,NDX.DWX,95050010,2026-07-08,Codex,active
+9505,chande-fo-bband-fade-h4,11,WS30.DWX,95050011,2026-07-08,Codex,active
+9505,chande-fo-bband-fade-h4,12,UK100.DWX,95050012,2026-07-08,Codex,active

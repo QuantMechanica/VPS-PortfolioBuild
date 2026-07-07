@@ -1,0 +1,35 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9505
+; ea_slug:      chande-fo-bband-fade-h4
+; ea_version:   v5.0
+; set_version:  s20260707-001
+; symbol:       UK100.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   12
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   e66358c3c61e58ffafe4e58526d5b8abcb88cd05924bb288d746c1ea5d1df3c1
+; author:       Development
+; date:         2026-07-07
+;==========================================================
+qm_ea_id=9505
+qm_magic_slot_offset=12
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9505_chande-fo-bband-fade-h4.md
+strategy_lr_period=14
+strategy_fo_mean_lookback=60
+strategy_band_devs=2.0
+strategy_vr_fast_atr=7
+strategy_vr_slow_atr=28
+strategy_vr_max=0.7
+strategy_atr_period=14
+strategy_sl_atr_mult=1.0
+strategy_max_hold_bars=14
+strategy_bar_confirm_frac=0.30
+strategy_slope_frac_max=0.005
+strategy_spread_atr_frac_max=0.20
