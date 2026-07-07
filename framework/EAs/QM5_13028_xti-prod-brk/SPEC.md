@@ -103,3 +103,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-07 | Initial build from card | Mission-directed commodity sleeve build |
+| v1-q02 | 2026-07-07 | Q01 validation and Q02 enqueue | `build_check`/strict compile PASS; Q02 work item `b967630d-4229-40dd-89ab-8d6263fbe992` |

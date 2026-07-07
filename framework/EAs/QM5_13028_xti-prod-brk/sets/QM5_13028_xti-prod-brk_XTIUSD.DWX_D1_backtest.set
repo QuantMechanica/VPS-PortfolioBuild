@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13028
 ; ea_slug:      xti-prod-brk
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING
+; build_hash:   f0f1c0418d780e0bc656c33f97e9e637c91d4f1565aa670408692744cb16bb85
 ; author:       Development
 ; date:         2026-07-07
 ;==========================================================
