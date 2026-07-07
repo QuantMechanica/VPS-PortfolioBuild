@@ -1,0 +1,85 @@
+{
+  "task_id": "56e26fa8-d982-4906-8fc1-56d6a541f951",
+  "ea_id": "QM5_13048",
+  "slug": "wti-roll-squeeze",
+  "generated_at": "2026-07-07T23:13:05Z",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "source_id": "CFTC-ETF-ROLL-WTI-SQUEEZE-2026",
+  "card": "strategy-seeds/cards/approved/QM5_13048_wti-roll-squeeze_card.md",
+  "canonical_card": "strategy-seeds/cards/wti-roll-squeeze_card.md",
+  "ea_dir": "framework/EAs/QM5_13048_wti-roll-squeeze",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_13048_wti-roll-squeeze/QM5_13048_wti-roll-squeeze.mq5",
+  "ea_path": "framework/EAs/QM5_13048_wti-roll-squeeze/QM5_13048_wti-roll-squeeze.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_13048_wti-roll-squeeze/QM5_13048_wti-roll-squeeze.ex5",
+  "magic_base": 130480000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfile": "framework/EAs/QM5_13048_wti-roll-squeeze/sets/QM5_13048_wti-roll-squeeze_XTIUSD.DWX_D1_backtest.set",
+  "setfiles_generated": [
+    "framework/EAs/QM5_13048_wti-roll-squeeze/sets/QM5_13048_wti-roll-squeeze_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_13048_wti-roll-squeeze/SPEC.md",
+  "setfile_build_hash": "606FC646B5403186BF4E59C8D59C416DBD0E9439334307BB9ADFBF44D73E3C6F",
+  "file_hashes_sha256": {
+    "card": "606FC646B5403186BF4E59C8D59C416DBD0E9439334307BB9ADFBF44D73E3C6F",
+    "mq5": "7E8437D2A8D1FB22B3E012AC75583EC809D308CA03E977CBC30A795A2202AEEF",
+    "ex5": "24733140882DB046419CDB2C2913BDD8962936D4259DCA9FB69B030B1A76785A",
+    "setfile": "9F1DC1D66C2D5834DC553826129C46BD1DCB8C57CB8E38805E1661A6C3CEFE09"
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "build_only_q02_enqueue_no_backtest_smoke_run",
+  "blocked_reason": "",
+  "open_questions": [],
+  "q02_work_item": {
+    "id": "56e26fa8-d982-4906-8fc1-56d6a541f951",
+    "phase": "Q02",
+    "status": "pending",
+    "symbol": "XTIUSD.DWX",
+    "created_at": "2026-07-07T23:11:47+00:00"
+  },
+  "checks": {
+    "card_schema_lint_canonical": "PASS",
+    "card_schema_lint_approved": "PASS",
+    "g0_card_lint_canonical": "PASS",
+    "g0_card_lint_approved": "PASS",
+    "spec_doc": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_guardrails": "PASS",
+    "magic_resolver_update": {
+      "result": "PASS",
+      "warnings": [
+        "pre-existing missing EA dirs for magic rows: 1001, 1015, 1016"
+      ]
+    },
+    "compile_one_strict": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260707_230955/QM5_13048_wti-roll-squeeze.compile.log"
+    },
+    "build_check_strict": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260707_231255.json"
+    },
+    "q02_enqueue": {
+      "result": "PASS",
+      "evidence": "artifacts/qm5_13048_q02_enqueue_20260708.json"
+    }
+  },
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "backtest_cpu_used": false
+  }
+}

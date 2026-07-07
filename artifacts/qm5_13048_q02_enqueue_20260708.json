@@ -1,0 +1,32 @@
+{
+  "ea_id": "QM5_13048",
+  "ea_label": "QM5_13048_wti-roll-squeeze",
+  "source_id": "CFTC-ETF-ROLL-WTI-SQUEEZE-2026",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "queued_at_utc": "2026-07-07T23:11:47+00:00",
+  "phase": "Q02",
+  "status": "pending",
+  "work_item_id": "56e26fa8-d982-4906-8fc1-56d6a541f951",
+  "setfile": "framework/EAs/QM5_13048_wti-roll-squeeze/sets/QM5_13048_wti-roll-squeeze_XTIUSD.DWX_D1_backtest.set",
+  "enqueue_command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --apply --ea QM5_13048 --queue-ceiling 10000 --max-part2-per-run 0",
+  "sweep_evidence": "D:/QM/reports/state/claude_sweep_enqueue_2026-06-10.json",
+  "sweep_result": {
+    "part1_never_tested_enqueued": 1,
+    "part1_never_tested_skipped": 0,
+    "part2_stranded_enqueued": 0,
+    "part2_stranded_skipped": 0,
+    "pending_at_start": 5434,
+    "queue_ceiling": 10000
+  },
+  "guardrails": {
+    "risk_fixed_backtest": true,
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false,
+    "backtest_started": false
+  }
+}
