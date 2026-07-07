@@ -97,9 +97,14 @@ def _prio(ea_id):
 reg = {}
 with REGISTRY.open(encoding="utf-8-sig") as f:
     for row in csv.DictReader(f):
+        raw_ea_id = (row.get("ea_id") or "").strip()
         try:
-            reg[int(row["ea_id"])] = (row["status"].strip().lower(), row["slug"].strip())
+            reg[int(raw_ea_id)] = (row["status"].strip().lower(), row["slug"].strip())
         except (KeyError, ValueError):
+            m = re.fullmatch(r"QM5_(\d+)", raw_ea_id)
+            if m:
+                reg[int(m.group(1))] = (row["status"].strip().lower(), row["slug"].strip())
+                continue
             continue
 
 con = sqlite3.connect(DB)
