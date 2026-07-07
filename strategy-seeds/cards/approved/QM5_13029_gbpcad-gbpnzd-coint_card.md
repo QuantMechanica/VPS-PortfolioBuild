@@ -29,7 +29,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02
+pipeline_phase: Q04
 last_updated: 2026-07-07
 g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-directed in-house FX cointegration screen; R2 PASS deterministic fixed-pair z-score basket; R3 PASS GBPCAD.DWX and GBPNZD.DWX data exist in the extended Darwinex scan; R4 PASS no ML/grid/martingale. Owner mission accepted the borderline OOS-heavy profile as the next non-duplicate FX cointegration sleeve."
 expected_pf: 1.05
@@ -179,4 +179,5 @@ gates.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-07 | initial extended-screen FX cointegration sibling card | G0 | APPROVED |
-| v2 | 2026-07-07 | compiled basket EA and logical basket Q02 enqueued as work item 8acc9930 | Q02 | PENDING |
+| v2 | 2026-07-07 | compiled basket EA and logical basket Q02 enqueued as work item 8acc9930 | Q02 | PASS |
+| v3 | 2026-07-07 | Q02 PASS follow-through; Q03 work item 4298cfb6 and Q04 work item 629d9f34 priority-routed | Q03/Q04 | PENDING |
