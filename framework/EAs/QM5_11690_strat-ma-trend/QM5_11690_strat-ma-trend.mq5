@@ -103,7 +103,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double ma_value = strategy_use_ema
                            ? QM_EMA(_Symbol, _Period, strategy_ma_period, 1, PRICE_CLOSE)
                            : QM_SMA(_Symbol, _Period, strategy_ma_period, 1, PRICE_CLOSE);
-   const double close_value = iClose(_Symbol, _Period, 1); // perf-allowed: fixed closed-bar close for card close-vs-MA rule.
+   const double close_value = QM_SMA(_Symbol, _Period, 1, 1, PRICE_CLOSE);
    if(ma_value <= 0.0 || close_value <= 0.0)
       return false;
 
@@ -155,7 +155,7 @@ bool Strategy_ExitSignal()
    const double ma_value = strategy_use_ema
                            ? QM_EMA(_Symbol, _Period, strategy_ma_period, 1, PRICE_CLOSE)
                            : QM_SMA(_Symbol, _Period, strategy_ma_period, 1, PRICE_CLOSE);
-   const double close_value = iClose(_Symbol, _Period, 1); // perf-allowed: fixed closed-bar close for card close-vs-MA exit.
+   const double close_value = QM_SMA(_Symbol, _Period, 1, 1, PRICE_CLOSE);
    if(ma_value <= 0.0 || close_value <= 0.0)
       return false;
 
