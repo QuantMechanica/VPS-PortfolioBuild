@@ -3,7 +3,7 @@
 ; ea_id:        12836
 ; ea_slug:      turnaround-tuesday-ws30
 ; ea_version:   v5.0
-; set_version:  s20260702-003
+; set_version:  s20260707-004
 ; symbol:       NDX.DWX
 ; timeframe:    H1
 ; environment:  backtest
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   d1c539c3bf572af5c2b51a972f55beb5c8e8d18f64c85357d46ae9e684eb346d
 ; author:       Development
-; date:         2026-07-02
+; date:         2026-07-07
 ;==========================================================
 qm_ea_id=12836
 qm_magic_slot_offset=2
@@ -23,7 +23,7 @@ PORTFOLIO_WEIGHT=1
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12836_turnaround-tuesday-ws30.md
 regime_sma_period=200
 weak_monday_mode=0
-use_volume_filter=true
+use_volume_filter=false
 volume_sma_period=25
 entry_mode=0
 sl_mode=1

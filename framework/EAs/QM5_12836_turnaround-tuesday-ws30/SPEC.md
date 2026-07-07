@@ -20,7 +20,7 @@ Long-only weekly mean-reversion on WS30 (Dow Jones 30). The strategy exploits th
 |---|---|---|---|
 | `regime_sma_period` | 200 | 100–200 | D1 SMA period for bull-regime filter (sweep 100/150/200) |
 | `weak_monday_mode` | WMM_BELOW_FRIDAY | enum | WMM_BELOW_FRIDAY=Monday close < Friday close (QS canonical); WMM_BAR_BEARISH=Monday close < Monday open |
-| `use_volume_filter` | true | bool | Block entry if Monday D1 tick-volume does not exceed SMA(vol,N) |
+| `use_volume_filter` | true (EA), false in Q02 setfiles | bool | Optional card-authorized A/B filter; Q02 baseline disables it after H2 2024 prescreen under-traded with the tick-volume proxy enabled |
 | `volume_sma_period` | 25 | 10–50 | Lookback for Monday volume SMA (D1 bars) |
 | `entry_mode` | EM_IMMEDIATE | enum | EM_IMMEDIATE=first eligible Tuesday H1 bar; EM_BREAKOUT=wait for last H1 bar to break Monday's high |
 | `sl_mode` | SL_MONDAY_LOW | enum | SL_MONDAY_LOW=stop at Monday's D1 low; SL_FIXED_PCT=entry minus sl_fixed_pct% |
@@ -99,3 +99,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | v1 | 2026-07-01 | Initial build from card | ceae2d90-54a4-49b8-a09c-26c2a6b8f272 |
 | v2 | 2026-07-02 | Correct DXZ ET+7 cash-close mapping and latch semantics | exit_hour=23; setup latch uses QM_CalendarPeriodKey; entry latch burns after successful send |
 | v3 | 2026-07-02 | Q01 margin rework for Q02 baseline | backtest setfiles use SL_FIXED_PCT at 2.0%; news gate moved below management/exit |
+| v4 | 2026-07-07 | Q02 prescreen throughput repair | backtest setfiles disable optional tick-volume filter; WS30/NDX/SP500 H2 2024 were profitable but below the 5-trade prescreen minimum with the proxy enabled |
