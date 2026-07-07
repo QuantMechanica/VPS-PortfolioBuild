@@ -1,4 +1,4 @@
-# QM5_9250_mql5-crt-amd — Strategy Spec
+# QM5_9250_mql5-crt-amd - Strategy Spec
 
 **EA ID:** QM5_9250
 **Slug:** `mql5-crt-amd`
@@ -37,12 +37,12 @@ The range must be between 0.5 and 2.5 times ATR(14) on H1. Stops use the manipul
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — liquid FX major in the approved DWX matrix and one of the card targets.
-- `GBPUSD.DWX` — liquid FX major in the approved DWX matrix and one of the card targets.
+- `EURUSD.DWX` - liquid FX major in the approved DWX matrix and one of the card targets.
+- `GBPUSD.DWX` - liquid FX major in the approved DWX matrix and one of the card targets.
 
 **Explicitly NOT for:**
-- `GER40.DWX` — listed on the card, but intentionally deferred in this build because the current mission prioritizes forex diversity over another index sleeve.
-- non-`.DWX` symbols — the farm gates and magic registry are defined for DWX instruments only.
+- `GER40.DWX` - listed on the card, but intentionally deferred in this build because the current mission prioritizes forex diversity over another index sleeve.
+- non-`.DWX` symbols - the farm gates and magic registry are defined for DWX instruments only.
 
 ---
 
