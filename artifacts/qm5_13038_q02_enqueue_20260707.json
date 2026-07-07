@@ -1,0 +1,80 @@
+{
+  "generated_at": "2026-07-07T12:41:59+00:00",
+  "action": "enqueue_q02",
+  "ea_id": "QM5_13038",
+  "build_result": {
+    "build_check_passed": true,
+    "compile_succeeded": true,
+    "ea_id": "QM5_13038",
+    "slug": "xti-dpr-fade",
+    "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13038_xti-dpr-fade\\QM5_13038_xti-dpr-fade.mq5",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13038_xti-dpr-fade\\QM5_13038_xti-dpr-fade.ex5",
+    "setfiles_generated": [
+      "C:\\QM\\repo\\framework\\EAs\\QM5_13038_xti-dpr-fade\\sets\\QM5_13038_xti-dpr-fade_XTIUSD.DWX_D1_backtest.set"
+    ],
+    "symbols": [
+      "XTIUSD.DWX"
+    ],
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "task_id": "codex-manual-build-QM5_13038-20260707T1241Z"
+  },
+  "enqueue_result": {
+    "ea_id": "QM5_13038",
+    "queue_ceiling": 7000,
+    "pending_at_successful_enqueue_start": 5503,
+    "enqueued": [
+      {
+        "setfile": "QM5_13038_xti-dpr-fade_XTIUSD.DWX_D1_backtest.set",
+        "symbol": "XTIUSD.DWX",
+        "tf": "D1",
+        "wi_id": "36e458a3"
+      }
+    ],
+    "skipped": []
+  },
+  "method": "claude_sweep_enqueue_2026-06-10.never_tested",
+  "initial_attempt": {
+    "result": "RETRIED",
+    "reason": "sqlite3.OperationalError: database is locked",
+    "work_items_after_failed_attempt": 0
+  },
+  "manual_auto_enqueue_recheck": {
+    "ea_id": "QM5_13038",
+    "result": "NO_NEW_ITEMS",
+    "work_items_after_recheck": 1,
+    "summary": {
+      "Q02_pending": 1
+    }
+  },
+  "work_items_after": [
+    {
+      "id": "36e458a3-30ad-4b79-81d5-e49234b4b260",
+      "kind": "backtest",
+      "phase": "Q02",
+      "phase_display": "Q02",
+      "ea_id": "QM5_13038",
+      "symbol": "XTIUSD.DWX",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13038_xti-dpr-fade\\sets\\QM5_13038_xti-dpr-fade_XTIUSD.DWX_D1_backtest.set",
+      "status": "pending",
+      "attempt_count": 0,
+      "created_at": "2026-07-07T12:41:30+00:00",
+      "updated_at": "2026-07-07T12:41:30+00:00",
+      "payload_json": {
+        "host_symbol": "XTIUSD.DWX",
+        "host_timeframe": "D1",
+        "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested",
+        "enqueued_at_utc": "2026-07-07T12:41:30+00:00"
+      }
+    }
+  ],
+  "constraints": {
+    "started_backtest_locally": false,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false
+  }
+}

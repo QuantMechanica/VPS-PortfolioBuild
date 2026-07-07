@@ -1,0 +1,59 @@
+{
+  "ea_id": "QM5_13038",
+  "slug": "xti-dpr-fade",
+  "generated_at": "2026-07-07T12:41:59+00:00",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "source_id": "EIA-DPR-XTI-MOM-2026",
+  "card": "strategy-seeds/cards/approved/QM5_13038_xti-dpr-fade_card.md",
+  "ea_path": "framework/EAs/QM5_13038_xti-dpr-fade/QM5_13038_xti-dpr-fade.mq5",
+  "ex5_path": "framework/EAs/QM5_13038_xti-dpr-fade/QM5_13038_xti-dpr-fade.ex5",
+  "setfile": "framework/EAs/QM5_13038_xti-dpr-fade/sets/QM5_13038_xti-dpr-fade_XTIUSD.DWX_D1_backtest.set",
+  "setfile_build_hash": "0519353eec4649cf8d62ae42673287c1a92bf1e0a0fa645aebe50edd9bf73d0d",
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13038_xti-dpr-fade\\sets\\QM5_13038_xti-dpr-fade_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "file_hashes_sha256": {
+    "mq5": "BD4BE48D5977A0F277A3564FB04492741D9912574074C3772CB29EDBEB8E4E91",
+    "ex5": "79E1B23ABFE8BDA0B90E30C0765D57749A8F2179AAE1B4397089CEBB6C10E3E7",
+    "setfile": "3464C1A9B028D3626CF96932125D27E74E7B8826E106280899040AF33100F725"
+  },
+  "checks": {
+    "card_schema_lint": "PASS",
+    "spec_doc": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_guardrails": "PASS",
+    "compile_one_strict": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260707_124017/QM5_13038_xti-dpr-fade.compile.log",
+      "summary": "D:/QM/reports/compile/20260707_124017/summary.csv"
+    },
+    "build_check_strict": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260707_124017.json"
+    }
+  },
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false
+  },
+  "task_id": "codex-manual-build-QM5_13038-20260707T1241Z"
+}

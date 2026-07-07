@@ -7,7 +7,6 @@ source_id: EIA-DPR-XTI-MOM-2026
 source_citation: "U.S. Energy Information Administration. Drilling Productivity Report and DPR FAQ."
 strategy_type_flags: [calendar-anomaly, official-release-window, failed-breakout-fade, mean-reversion-exit, atr-hard-stop, time-stop, symmetric-long-short, low-frequency]
 target_symbols: [XTIUSD.DWX]
-primary_target_symbols: [XTIUSD.DWX]
 single_symbol_only: true
 logical_symbol: QM5_13038_XTI_DPR_FADE_D1
 period: D1
@@ -30,26 +29,18 @@ ml_required: false
 
 # XTI DPR Failed-Breakout Fade
 
-Canonical approved card copy. Full source card lives at
-`strategy-seeds/cards/xti-dpr-fade_card.md`.
+Approved structural XTI D1 sleeve. Full canonical card lives at
+`strategy-seeds/cards/approved/QM5_13038_xti-dpr-fade_card.md`.
 
-The EA trades `XTIUSD.DWX` on D1. It uses the official EIA DPR source family
-only as structural lineage, then trades a price-only mid-month failed Donchian
-breakout fade when the proxy bar breaches and reclaims the channel with an ATR
-range/body/tail and SMA stretch.
-
-This is not `QM5_12996_xti-dpr-mom`, because it fades failed DPR proxy
-breakouts instead of following confirmed DPR proxy breakouts. It is also not
-WPSR/STEO/OPEC/IEA/Cushing/refinery/rig-count/roll/expiry/month-only/weekday/
-RSI/basket/metals logic. Backtests use `RISK_FIXED=1000`, no external runtime
-data, no ML, no grid, no martingale, and no live/deploy manifest changes.
+The EA trades `XTIUSD.DWX` on D1 using a price-only mid-month failed Donchian
+breakout fade around the official EIA DPR source lineage, with ATR range/body/
+tail confirmation, SMA stretch, ATR stop/target, and SMA mean-reversion exit.
+Q01/Q02 evidence: `artifacts/qm5_13038_build_result.json` and
+`artifacts/qm5_13038_q02_enqueue_20260707.json`.
 
 Entry signal: short when the prior completed D1 bar inside the DPR proxy window
 breaches the prior Donchian high, closes back below that high, closes below its
 open, remains above SMA, and leaves an ATR-sized upper tail; long is the mirror
 case below the prior Donchian low. Exit on ATR stop/target, SMA mean-reversion,
-max-hold, and framework Friday close.
-
-Q01 build validation passed on 2026-07-07. Q02 queue evidence:
-`artifacts/qm5_13038_q02_enqueue_20260707.json`; work item
-`36e458a3-30ad-4b79-81d5-e49234b4b260`.
+max-hold, and framework Friday close. Sizing/risk for Q02 is `RISK_FIXED=1000`
+with `RISK_PERCENT=0`.
