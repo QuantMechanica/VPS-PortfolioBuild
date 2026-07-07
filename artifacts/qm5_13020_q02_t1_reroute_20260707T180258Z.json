@@ -89,6 +89,71 @@
     "t_live_touched": false,
     "portfolio_gate_touched": false
   },
+  "post_reroute_outcome": {
+    "observed_at_utc": "2026-07-07T18:20:25Z",
+    "q02": {
+      "work_item_id": "8a545034-665d-479e-a8a0-33e8f72be748",
+      "status": "done",
+      "verdict": "PASS",
+      "terminal": "T3",
+      "evidence_path": "D:\\QM\\reports\\work_items\\8a545034-665d-479e-a8a0-33e8f72be748\\QM5_13020\\20260707_180352\\summary.json",
+      "trades": 77,
+      "profit_factor": 1.08,
+      "net_profit": 918.25,
+      "drawdown": 4881.14,
+      "drawdown_pct": 4.84,
+      "oninit_failure_detected": false,
+      "log_bomb_detected": false
+    },
+    "q03": {
+      "work_item_id": "14971761-a5f5-4dde-bc14-6ffdca7b5553",
+      "status": "done",
+      "verdict": "FAIL",
+      "terminal": "T4",
+      "evidence_path": "D:\\QM\\reports\\work_items\\14971761-a5f5-4dde-bc14-6ffdca7b5553\\QM5_13020\\20260707_181746\\summary.json",
+      "reason_classes": [
+        "MIN_TRADES_NOT_MET"
+      ],
+      "runs": 2,
+      "trades_per_run": 3,
+      "profit_factor": 0.21,
+      "net_profit": -432.83,
+      "oninit_failure_detected": false,
+      "log_bomb_detected": false
+    },
+    "q04": {
+      "work_item_id": "d2cf258f-2467-4846-a182-1f020771712b",
+      "status": "done",
+      "verdict": "FAIL",
+      "terminal": "T7",
+      "evidence_path": "D:\\QM\\reports\\work_items\\d2cf258f-2467-4846-a182-1f020771712b\\QM5_13020\\Q04\\AUDNZD.DWX\\aggregate.json",
+      "reason": "F1:pf_net=1.518;F2:pf_net=0.192;F3:pf_net=1.180 || lowfreq:INVALID:lowfreq_insufficient_pooled_trades:11<15(>=5/yr)",
+      "folds": [
+        {
+          "id": "F1",
+          "pf_net": 1.518289211500142,
+          "trades": 2,
+          "status": "FAIL"
+        },
+        {
+          "id": "F2",
+          "pf_net": 0.19174841844686896,
+          "trades": 3,
+          "status": "FAIL"
+        },
+        {
+          "id": "F3",
+          "pf_net": 1.1803208436585866,
+          "trades": 6,
+          "status": "OK"
+        }
+      ],
+      "lowfreq_verdict": "INVALID",
+      "lowfreq_reason": "lowfreq_insufficient_pooled_trades:11<15(>=5/yr)"
+    },
+    "successor_action": "none",
+    "successor_action_reason": "Q03 and Q04 are strategy/low-frequency failures after a clean Q02 PASS, not ONINIT/NO_HISTORY/report-infra blockers."
+  },
   "verification": [
     {
       "command": "git status --short",
@@ -105,6 +170,10 @@
     {
       "command": "sqlite post-update read of pending Q02 row",
       "result": "paced worker claimed the row on T3 with avoid_terminals=['T1']"
+    },
+    {
+      "command": "sqlite read after worker completion for QM5_13020",
+      "result": "Q02 PASS, Q03 FAIL, Q04 FAIL; no successor eligible for priority requeue"
     },
     {
       "command": "python -m pytest tools\\strategy_farm\\tests\\test_terminal_worker_atomic_claim.py::TerminalWorkerAtomicClaimTests::test_claim_respects_payload_avoid_terminals -q",
