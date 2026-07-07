@@ -69,7 +69,7 @@ g0_approval_reasoning: "Mission-directed G0 approval 2026-07-08: R1 PASS officia
 - Oil-market context: U.S. Energy Information Administration, STEO global oil
   markets, https://www.eia.gov/outlooks/steo/report/global_oil.php.
 
-## Concept
+## Hypothesis
 
 The STEO is a recurring official EIA monthly information event covering global
 oil supply, demand, inventories, and WTI/Brent price context. `QM5_12992` already
@@ -77,6 +77,8 @@ tests whether the release-window D1 bar can continue after a closing breakout.
 This card tests the opposite structural behavior: when the STEO proxy day probes
 outside the recent D1 crude range but closes back inside it, the next session
 fades that failed breakout.
+
+## Concept
 
 This is deliberately different from:
 
@@ -98,7 +100,7 @@ This is deliberately different from:
   framework state only. No EIA website read, release-content feed, CSV, API,
   futures curve, inventory data, analyst forecast, or ML model.
 
-## Entry Rules
+## 4. Entry Rules
 
 - Evaluate only on a new `XTIUSD.DWX` D1 bar.
 - The prior completed D1 bar must be the STEO proxy day: first Tuesday after
@@ -119,7 +121,13 @@ This is deliberately different from:
 - No entry if an open `XTIUSD.DWX` position already exists for this EA magic.
 - No entry if spread exceeds `strategy_max_spread_points`.
 
-## Exit Rules
+## Rules
+
+Use the STEO proxy day as a fixed monthly timing rule, fade failed probes outside
+the prior D1 context range, and manage every position with ATR stop, ATR target,
+standard V5 news handling, Friday close, and max-hold exit.
+
+## 5. Exit Rules
 
 - Stop loss: fixed hard SL at ATR(`strategy_atr_period`) *
   `strategy_atr_sl_mult`.
@@ -127,14 +135,14 @@ This is deliberately different from:
 - Close any still-open position after `strategy_max_hold_days` calendar days.
 - Friday close remains enabled by the V5 framework.
 
-## Filters
+## 6. Filters (No-Trade Module)
 
 - Host chart must be `XTIUSD.DWX` on D1.
 - Magic slot must be 0.
 - Invalid parameters fail closed.
 - Framework news, kill-switch, magic, and Friday-close guards remain active.
 
-## Trade Management Rules
+## 7. Trade Management Rules
 
 - Symmetric long/short.
 - No pyramiding.
@@ -239,5 +247,5 @@ gate.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-08 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-08 | PENDING | `artifacts/qm5_13047_build_result.json` |
-| Q02 Baseline Screening | 2026-07-08 | PENDING | `D:\QM\strategy_farm\state\farm_state.sqlite` |
+| Q01 Build Validation | 2026-07-08 | PASS | `artifacts/qm5_13047_build_result.json` |
+| Q02 Baseline Screening | 2026-07-08 | QUEUED | work item `0b20c287-1481-4783-94c1-b3ff23c37bbf` |
