@@ -32,7 +32,14 @@ GEMINI_NODE_BUNDLE = Path(r"C:\Users\Administrator\AppData\Roaming\npm\node_modu
 # Antigravity CLI (agy) — replaces the deprecated gemini-cli for the "gemini" lane
 # (2026-06-29). Headless via `agy -p`; auth = Windows Credential Manager (gemini:antigravity),
 # OWNER-authenticated, no API key. agy does NOT read stdin -> prompt passed as a -p file-pointer.
-AGY_BIN = Path(os.environ.get("LOCALAPPDATA", r"C:\Users\Administrator\AppData\Local")) / "agy" / "bin" / "agy.exe"
+# Candidate list, not a single env-derived path: the scheduled task runs as SYSTEM,
+# whose LOCALAPPDATA points into systemprofile — resolving agy ONLY via the env var
+# silently fell back to the dead npm gemini-cli on every scheduled slot (2026-07-06/07).
+_AGY_BIN_CANDIDATES = [
+    Path(os.environ.get("LOCALAPPDATA", r"C:\Users\Administrator\AppData\Local")) / "agy" / "bin" / "agy.exe",
+    Path(r"C:\Users\Administrator\AppData\Local\agy\bin\agy.exe"),
+]
+AGY_BIN = next((p for p in _AGY_BIN_CANDIDATES if p.exists()), _AGY_BIN_CANDIDATES[-1])
 # agy hangs on non-TTY stdout (redirected file/pipe). The ConPTY runner gives agy a real
 # pseudo-console via pywinpty so it runs headless; the runner forwards output to our stdout.
 CONPTY_RUNNER = REPO_ROOT / "tools" / "strategy_farm" / "agy_conpty_run.py"
@@ -67,13 +74,18 @@ def resolve_cli(agent: str) -> str:
             return found
         return str(CODEX_FALLBACK if CODEX_FALLBACK.exists() else "codex")
     if agent == "gemini":
-        # Antigravity CLI (agy) is the live backend; gemini-cli is deprecated/dead.
+        # Antigravity CLI (agy) is the live backend; gemini-cli is DEAD (OWNER
+        # 2026-07-02) and must never be silently revived. No gemini.cmd/gemini
+        # fallback: if agy is missing we return its expected path and let the
+        # spawn fail LOUDLY (visible in the result JSON) instead of running the
+        # deprecated CLI with incompatible args, which burned every scheduled
+        # slot 2026-07-06/07 while reporting only a generic rc=1.
         if AGY_BIN.exists():
             return str(AGY_BIN)
-        found = shutil.which("agy") or shutil.which("gemini.cmd") or shutil.which("gemini")
+        found = shutil.which("agy")
         if found:
             return found
-        return str(GEMINI_FALLBACK if GEMINI_FALLBACK.exists() else "agy")
+        return str(AGY_BIN)
     if agent == "claude":
         found = shutil.which("claude.cmd") or shutil.which("claude")
         if found:
@@ -249,17 +261,12 @@ def command_for(agent: str, cwd: Path, prompt_path: Path | None = None) -> list[
         # Antigravity CLI (agy): headless via `-p`. agy does NOT read stdin, and a full
         # orchestration prompt can exceed the Windows cmdline limit, so pass a short
         # POINTER telling the agentic CLI to read+execute the prompt FILE; agy reads it
-        # via its file tools (workspace = the --include-directories paths).
-        # Auth = Windows Credential Manager (no key).
-        #
-        # 2026-07-07: the agy Go shim forwards argv verbatim to its embedded Node
-        # gemini-cli, and the 2026-07-02 agy update dropped the claude-style flags
-        # there (--dangerously-skip-permissions / --add-dir / --print-timeout ->
-        # yargs "Unknown arguments", exit 1 in ~11s; the lane failed silently on
-        # every slot from the first real ticket 07-05 onward). Current Node
-        # surface (from the usage dump): -y/--yolo auto-approves, workspace dirs
-        # via --include-directories (repeatable), no print-timeout (our own
-        # proc.wait(timeout_minutes) already bounds the session).
+        # via its file tools (workspace = the --add-dir paths). yolo/auto-approve =
+        # --dangerously-skip-permissions. Auth = Windows Credential Manager (no key).
+        # These flags are the agy Go shim's own surface (proven rc=0 runs 06-29/07-02);
+        # do NOT swap in Node gemini-cli flags — a "yargs Unknown arguments" dump in
+        # the live log means the DEAD gemini-cli got resolved, not that agy changed
+        # (see resolve_cli 2026-07-07).
         extra_dirs = [str(cwd)]
         if prompt_path is not None:
             extra_dirs.append(str(Path(prompt_path).parent))
@@ -270,9 +277,9 @@ def command_for(agent: str, cwd: Path, prompt_path: Path | None = None) -> list[
         ):
             if extra.exists():
                 extra_dirs.append(str(extra))
-        include_dir_flags: list[str] = []
+        add_dir_flags: list[str] = []
         for d in extra_dirs:
-            include_dir_flags += ["--include-directories", d]
+            add_dir_flags += ["--add-dir", d]
         model_args = ["--model", GEMINI_HEADLESS_MODEL] if GEMINI_HEADLESS_MODEL else []
         pointer = (
             f"Read the file '{prompt_path}' and execute its instructions exactly, then exit."
@@ -284,8 +291,10 @@ def command_for(agent: str, cwd: Path, prompt_path: Path | None = None) -> list[
             str(CONPTY_RUNNER),
             cli,
             *model_args,
-            "--yolo",
-            *include_dir_flags,
+            "--dangerously-skip-permissions",
+            "--print-timeout",
+            "60m",
+            *add_dir_flags,
             "-p",
             pointer,
         ]

@@ -27,7 +27,7 @@ Three independent, mutually masking failures:
   (total 2454 / approved 2905 / ready 2454 / blocked 451). Task limit raised
   PT2M → PT10M (MultipleInstances=IgnoreNew) as growth headroom.
 
-## 2. gemini/agy lane broken since the 2026-07-02 agy update
+## 2. gemini/agy lane: scheduled slots resolve the DEAD gemini-cli, not agy
 
 - Symptom: every gemini orchestration exec exits 1 in ~11s. Live log
   (`gemini_orchestration_slot1_20260707T060001Z.live.log`): the CLI dumps
@@ -36,15 +36,33 @@ Three independent, mutually masking failures:
   break stayed invisible until the first real ticket went IN_PROGRESS
   (3b3332e3, 07-05 13:32Z) — which then hung 40+ h because fix #1 had also
   killed the stale-release.
-- Root cause: agy.exe (Go shim, updated 07-02 20:59Z) forwards argv verbatim
-  to its embedded Node gemini-cli; the updated Node payload dropped the
-  claude-style flags. The shim's own `--help` still advertises them —
-  misleading. Current Node surface (from the usage dump): `-y/--yolo`,
-  repeatable `--include-directories`, `-p`, `-m/--model`; no print-timeout.
-- Fix (commit c9f7d7f80): `command_for("gemini")` rewritten to
-  `--yolo` + `--include-directories` per dir + `-p` pointer; session bound by
-  the runner's own `proc.wait(timeout_minutes*60)` (default 240m) instead of
-  the removed `--print-timeout`.
+- Root cause (CORRECTED during triage — an earlier commit c9f7d7f80 wrongly
+  blamed an agy flag-surface change and swapped in Node gemini-cli flags;
+  reverted): the result JSONs show the failing runs invoked
+  `C:\Users\Administrator\AppData\Roaming\npm\gemini.cmd` (the deprecated
+  gemini-cli), NOT agy.exe. `resolve_cli` built AGY_BIN from
+  `%LOCALAPPDATA%`; the orchestration task runs as **SYSTEM**, whose
+  LOCALAPPDATA points into systemprofile → AGY_BIN "missing" → fallback chain
+  ended at the dead npm gemini-cli, which rejects agy's flags. Command-line
+  evidence: last rc=0 run (07-02 16:18Z) used
+  `...\AppData\Local\agy\bin\agy.exe` with exactly these flags and included
+  `G:\My Drive` in --add-dir; the failing scheduled runs (07-06 22:15Z onward,
+  clean :15 cadence — the 15-min lane's first real workload) used gemini.cmd
+  and lack the G: dir (per-user mount, invisible to SYSTEM). All prior rc=0
+  runs sit at irregular timestamps = interactive/manual Administrator-context
+  invocations; the scheduled SYSTEM slot had never successfully spawned agy.
+- Fix (commit after c9f7d7f80): AGY_BIN resolved from a candidate list (env
+  LOCALAPPDATA, then the hardcoded Administrator path); the gemini.cmd/gemini
+  fallback is REMOVED — if agy is missing the spawn fails loudly with agy's
+  expected path instead of silently reviving the dead CLI. Original agy flags
+  restored (proven by the rc=0 runs).
+- Residual risk (watch item): agy auth = Windows Credential Manager
+  (per-user). Under SYSTEM the credential vault of Administrator is not
+  available, so the next scheduled slot may still fail — then the correct fix
+  is re-registering the orchestration task to run in the OWNER/Administrator
+  session (the factory pattern), an OWNER-visible change. `G:\My Drive`
+  outputs are also unavailable under SYSTEM (prompt tolerates it; artifacts
+  go to cards_review).
 
 ## 3. codex lane starvation deadlock since 2026-07-04 00:15
 
