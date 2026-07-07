@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13023
 ; ea_slug:      ftq-audjpy-riskoff-short
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   1715921f51f51d0409e3509afa9d947c5c5a9d66840de713ea343b5b5aab3914
+; build_hash:   e90a06c564acdab7a618d99bb8d8c418fa880e69c2262237bb25f8d221de2430
 ; author:       Development
 ; date:         2026-07-07
 ;==========================================================
