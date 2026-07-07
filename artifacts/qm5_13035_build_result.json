@@ -1,0 +1,45 @@
+{
+  "ea_id": "QM5_13035",
+  "slug": "xti-prod-sup-brk",
+  "generated_at": "2026-07-07T10:52:58+00:00",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "source_id": "EIA-XTI-PRODSUP-BRK-2026",
+  "card": "strategy-seeds/cards/approved/QM5_13035_xti-prod-sup-brk_card.md",
+  "ea_path": "framework/EAs/QM5_13035_xti-prod-sup-brk/QM5_13035_xti-prod-sup-brk.mq5",
+  "ex5_path": "framework/EAs/QM5_13035_xti-prod-sup-brk/QM5_13035_xti-prod-sup-brk.ex5",
+  "setfile": "framework/EAs/QM5_13035_xti-prod-sup-brk/sets/QM5_13035_xti-prod-sup-brk_XTIUSD.DWX_D1_backtest.set",
+  "setfile_build_hash": "690900786a20c795a9d278dc94dddc1cb79476f190ca4b4242dd4a240607af2d",
+  "file_hashes_sha256": {
+    "mq5": "7DF4A32D2244F6AFD83CEEED7301F1DC03D7D3537FAEDA8277F5F2C29F09BD86",
+    "ex5": "F09B6AC4CC90E73661123006078B492689B2427B4A71E9E70893C62D43B6AAEC",
+    "setfile": "255092F092DA582D4F03A2020FA99BE08E2F00C22E35B720E0719143A7C5F4AA"
+  },
+  "checks": {
+    "card_schema_lint": "PASS",
+    "spec_doc": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_guardrails": "PASS",
+    "compile_one_strict": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260707_105220/QM5_13035_xti-prod-sup-brk.compile.log",
+      "summary": "D:/QM/reports/compile/20260707_105220/summary.csv"
+    },
+    "build_check_strict": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260707_105220.json"
+    }
+  },
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false
+  }
+}

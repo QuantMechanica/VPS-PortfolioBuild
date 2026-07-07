@@ -1,0 +1,70 @@
+{
+  "generated_at": "2026-07-07T10:52:58+00:00",
+  "action": "enqueue_q02",
+  "ea_id": "QM5_13035",
+  "build_result": {
+    "build_check_passed": true,
+    "compile_succeeded": true,
+    "ea_id": "QM5_13035",
+    "slug": "xti-prod-sup-brk",
+    "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13035_xti-prod-sup-brk\\QM5_13035_xti-prod-sup-brk.mq5",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13035_xti-prod-sup-brk\\QM5_13035_xti-prod-sup-brk.ex5",
+    "setfiles_generated": [
+      "C:\\QM\\repo\\framework\\EAs\\QM5_13035_xti-prod-sup-brk\\sets\\QM5_13035_xti-prod-sup-brk_XTIUSD.DWX_D1_backtest.set"
+    ],
+    "symbols": [
+      "XTIUSD.DWX"
+    ],
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "task_id": "codex-manual-build-QM5_13035-20260707T1052Z"
+  },
+  "enqueue_result": {
+    "ea_id": "QM5_13035",
+    "enqueued": [
+      {
+        "setfile": "QM5_13035_xti-prod-sup-brk_XTIUSD.DWX_D1_backtest.set",
+        "symbol": "XTIUSD.DWX",
+        "tf": "D1",
+        "wi_id": "dabc19c3"
+      }
+    ],
+    "skipped": []
+  },
+  "method": "claude_sweep_enqueue_2026-06-10.never_tested",
+  "manual_auto_enqueue_recheck": {
+    "ea_id": "QM5_13035",
+    "enqueued": [],
+    "skipped": [
+      {
+        "existing_wi_id": "dabc19c3",
+        "reason": "existing_q02_pending",
+        "setfile": "QM5_13035_xti-prod-sup-brk_XTIUSD.DWX_D1_backtest.set",
+        "symbol": "XTIUSD.DWX"
+      }
+    ]
+  },
+  "work_items_after": [
+    {
+      "id": "dabc19c3-f5ce-4c02-bb50-65b97463c6d1",
+      "kind": "backtest",
+      "phase": "Q02",
+      "ea_id": "QM5_13035",
+      "symbol": "XTIUSD.DWX",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13035_xti-prod-sup-brk\\sets\\QM5_13035_xti-prod-sup-brk_XTIUSD.DWX_D1_backtest.set",
+      "status": "pending",
+      "attempt_count": 0,
+      "created_at": "2026-07-07T10:52:58+00:00",
+      "updated_at": "2026-07-07T10:52:58+00:00",
+      "payload_json": {
+        "host_symbol": "XTIUSD.DWX",
+        "host_timeframe": "D1",
+        "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested",
+        "enqueued_at_utc": "2026-07-07T10:52:58+00:00"
+      }
+    }
+  ]
+}
