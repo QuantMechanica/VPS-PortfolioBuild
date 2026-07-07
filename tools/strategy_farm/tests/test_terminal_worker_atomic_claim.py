@@ -536,7 +536,15 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
                 phase="P3",
                 status="active",
                 claimed_by="T1",
-                payload={"pid": 999999999},
+                payload={
+                    "pid": 999999999,
+                    "started_at_iso": "2026-07-07T20:13:41+00:00",
+                    "log_path": "old-run.log",
+                    "claimed_at_iso": "2026-07-07T20:13:41+00:00",
+                    "claimed_by_worker_pid": 424242,
+                    "terminal": "T1",
+                    "priority_track": True,
+                },
             )
 
             old_pid_exists = terminal_worker.farmctl._pid_exists
@@ -549,8 +557,17 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             self.assertTrue(result.get("claimed"))
             self.assertEqual(result["item"]["id"], "stale-1")
             with sqlite3.connect(root / farmctl.DB_REL) as conn:
-                row = conn.execute("SELECT status, claimed_by FROM work_items WHERE id='stale-1'").fetchone()
-            self.assertEqual(row, ("active", "T1"))
+                row = conn.execute(
+                    "SELECT status, claimed_by, payload_json FROM work_items WHERE id='stale-1'"
+                ).fetchone()
+            self.assertEqual(row[0:2], ("active", "T1"))
+            payload = json.loads(row[2])
+            self.assertEqual(payload["prior_failure"], "worker_process_missing_released_stale_claim")
+            self.assertTrue(payload["priority_track"])
+            self.assertNotIn("pid", payload)
+            self.assertNotIn("started_at_iso", payload)
+            self.assertNotIn("log_path", payload)
+            self.assertNotEqual(payload.get("claimed_by_worker_pid"), 424242)
 
     def test_live_worker_without_child_pid_keeps_terminal_busy(self) -> None:
         with self._root() as tmp:

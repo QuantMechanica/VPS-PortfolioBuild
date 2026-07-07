@@ -463,6 +463,21 @@ def _payload_avoid_terminals(payload: dict[str, Any]) -> set[str]:
     return terminals
 
 
+_STALE_RUNTIME_PAYLOAD_KEYS = (
+    "pid",
+    "started_at_iso",
+    "log_path",
+    "claimed_at_iso",
+    "claimed_by_worker_pid",
+    "terminal",
+)
+
+
+def _clear_stale_runtime_payload(payload: dict[str, Any]) -> None:
+    for field in _STALE_RUNTIME_PAYLOAD_KEYS:
+        payload.pop(field, None)
+
+
 def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     """Atomically claim one pending work_item for a terminal.
 
@@ -512,7 +527,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
                         if terminal_stopped is not None:
                             payload["terminal_stopped_on_release"] = terminal_stopped
-                        payload.pop("pid", None)
+                        _clear_stale_runtime_payload(payload)
                         conn.execute(
                             """
                             UPDATE work_items
@@ -537,6 +552,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
                         if terminal_stopped is not None:
                             payload["terminal_stopped_on_release"] = terminal_stopped
+                        _clear_stale_runtime_payload(payload)
                         conn.execute(
                             """
                             UPDATE work_items
@@ -680,6 +696,7 @@ def release_stale_claims_for_terminal(root: Path, terminal: str) -> list[str]:
                 terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
                 if terminal_stopped is not None:
                     payload["terminal_stopped_on_release"] = terminal_stopped
+                _clear_stale_runtime_payload(payload)
                 conn.execute(
                     """
                     UPDATE work_items

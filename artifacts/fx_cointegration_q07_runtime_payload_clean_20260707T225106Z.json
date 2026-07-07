@@ -1,0 +1,85 @@
+{
+  "generated_at_utc": "2026-07-07T22:51:06Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves",
+  "selected_path": "advance_existing_forex_card",
+  "reason": "No unbuilt card-worthy FX cointegration pair remained; QM5_12532 and QM5_12533 were not Q02-blocked; the extended-screen frontier QM5_13020/QM5_13024/QM5_13029 had already reached Q04 or Q03/Q04 failures. The remaining non-duplicate forex continuation is QM5_12781 Q07 pending after Q05/Q06 PASS.",
+  "source_evidence": {
+    "primary_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "method_source": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+    "prior_frontier_audit": "artifacts/fx_cointegration_frontier_audit_20260707T0934Z.json",
+    "prior_q02_priority": "artifacts/fx_cointegration_q02_priority_20260707T102015Z.json"
+  },
+  "frontier_status_checked": {
+    "QM5_12532": "Q02 PASS, Q04 PASS, Q05 FAIL; not Q02-blocked",
+    "QM5_12533": "Q02 PASS, Q04 FAIL; not Q02-blocked",
+    "QM5_13020": "Q02 PASS, Q03 FAIL, Q04 FAIL",
+    "QM5_13024": "Q02 PASS, Q04 FAIL",
+    "QM5_13029": "Q02 PASS, Q03 PASS, Q04 FAIL",
+    "QM5_12712": "Q02/Q03/Q04/Q05/Q06 PASS; Q07 active",
+    "QM5_12781": "Q02/Q05/Q06 PASS; Q07 pending priority retry"
+  },
+  "code_fix": {
+    "problem": "Pending work_items released from stale active claims could retain dead runtime fields such as pid, started_at_iso, log_path, claimed_at_iso, claimed_by_worker_pid, and terminal. A later worker claim preserves pending payload metadata, so a stale pid could confuse adoption/evidence on the selected QM5_12781 Q07 retry.",
+    "files_changed": [
+      "tools/strategy_farm/terminal_worker.py",
+      "tools/strategy_farm/tests/test_terminal_worker_atomic_claim.py"
+    ],
+    "behavior": "Stale-release paths now clear transient runtime claim fields while preserving priority_track, basket metadata, tester_currency/tester_deposit, timeout, and diagnostic prior_failure fields."
+  },
+  "farm_db_update": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "backup_before_update": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12781_q07_runtime_payload_clean_20260707T225106Z.sqlite",
+    "work_item_id": "38226031-b41f-4f03-ab86-d1697ca5e203",
+    "ea_id": "QM5_12781",
+    "phase": "Q07",
+    "symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1",
+    "conditional_guard": "id match AND status='pending' AND claimed_by IS NULL",
+    "rows_updated": 1,
+    "removed_runtime_fields": {
+      "pid": 14764,
+      "started_at_iso": "2026-07-07T20:13:41+00:00",
+      "log_path": "D:/QM/strategy_farm/logs/work_item_38226031-b41f-4f03-ab86-d1697ca5e203.log",
+      "claimed_at_iso": "2026-07-07T20:13:41+00:00",
+      "claimed_by_worker_pid": 12420,
+      "terminal": "T1"
+    },
+    "preserved_payload_fields": {
+      "priority_track": true,
+      "q07_seed_timeout_sec": 5400,
+      "tester_currency": "JPY",
+      "tester_deposit": 15000000,
+      "host_symbol": "USDJPY.DWX",
+      "logical_symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1"
+    }
+  },
+  "cpu_ceiling": {
+    "active_work_items": 7,
+    "active_factory_terminals": ["T1", "T2", "T3", "T4", "T6", "T7", "T8"],
+    "manual_mt5_dispatch_started": false,
+    "new_work_item_created": false,
+    "duplicate_work_item_created": false
+  },
+  "validation": [
+    {
+      "command": "python -m unittest tools.strategy_farm.tests.test_terminal_worker_atomic_claim.TerminalWorkerAtomicClaimTests.test_stale_same_terminal_claim_is_released_before_next_claim",
+      "result": "PASS",
+      "tests": 1
+    },
+    {
+      "command": "python -m unittest tools.strategy_farm.tests.test_terminal_worker_atomic_claim",
+      "result": "PASS",
+      "tests": 32
+    }
+  ],
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
