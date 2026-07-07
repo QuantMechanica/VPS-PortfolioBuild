@@ -1,0 +1,71 @@
+{
+  "generated_at": "2026-07-07T11:48:24+00:00",
+  "action": "enqueue_q02",
+  "ea_id": "QM5_13037",
+  "build_result": {
+    "build_check_passed": true,
+    "compile_succeeded": true,
+    "ea_id": "QM5_13037",
+    "slug": "xng-prod-brk",
+    "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13037_xng-prod-brk\\QM5_13037_xng-prod-brk.mq5",
+    "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13037_xng-prod-brk\\QM5_13037_xng-prod-brk.ex5",
+    "setfiles_generated": [
+      "C:\\QM\\repo\\framework\\EAs\\QM5_13037_xng-prod-brk\\sets\\QM5_13037_xng-prod-brk_XNGUSD.DWX_D1_backtest.set"
+    ],
+    "symbols": [
+      "XNGUSD.DWX"
+    ],
+    "risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "task_id": "codex-manual-build-QM5_13037-20260707T1146Z"
+  },
+  "enqueue_result": {
+    "ea_id": "QM5_13037",
+    "enqueued": [
+      {
+        "setfile": "QM5_13037_xng-prod-brk_XNGUSD.DWX_D1_backtest.set",
+        "symbol": "XNGUSD.DWX",
+        "tf": "D1",
+        "wi_id": "53d0ecbf"
+      }
+    ],
+    "skipped": []
+  },
+  "method": "record_build_result.auto_q02.manual_invocation",
+  "manual_auto_enqueue_recheck": {
+    "ea_id": "QM5_13037",
+    "enqueued": [],
+    "skipped": [
+      {
+        "existing_wi_id": "53d0ecbf",
+        "reason": "existing_q02_pending",
+        "setfile": "QM5_13037_xng-prod-brk_XNGUSD.DWX_D1_backtest.set",
+        "symbol": "XNGUSD.DWX"
+      }
+    ]
+  },
+  "work_items_after": [
+    {
+      "id": "53d0ecbf-ed77-49f1-bde5-4947dd8d2397",
+      "kind": "backtest",
+      "phase": "Q02",
+      "ea_id": "QM5_13037",
+      "symbol": "XNGUSD.DWX",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13037_xng-prod-brk\\sets\\QM5_13037_xng-prod-brk_XNGUSD.DWX_D1_backtest.set",
+      "status": "pending",
+      "attempt_count": 0,
+      "created_at": "2026-07-07T11:48:24+00:00",
+      "updated_at": "2026-07-07T11:48:24+00:00",
+      "payload_json": {
+        "host_symbol": "XNGUSD.DWX",
+        "host_timeframe": "D1",
+        "enqueued_by": "record_build_result.auto_q02",
+        "enqueued_at_utc": "2026-07-07T11:48:24+00:00",
+        "build_task_id": "codex-manual-build-QM5_13037-20260707T1146Z"
+      }
+    }
+  ]
+}
