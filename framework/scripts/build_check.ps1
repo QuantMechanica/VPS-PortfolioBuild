@@ -598,8 +598,9 @@ function Invoke-ForbiddenScan {
            Pattern = '\bIndicatorRelease\s*\(';
            Hint = 'IndicatorRelease in EA body: framework pools+releases handles. Releasing in the EA (esp. same function as create) yields a never-back-calculated handle -> 0 trades.' }
     )
+    $dwxAdvisoryFiles = @($mqlFiles.ToArray() | Where-Object { $_ -notmatch '\\framework\\include\\' })
     foreach ($adv in $dwxAdvisories) {
-        $hits = Select-String -Path $mqlFiles.ToArray() -Pattern $adv.Pattern -AllMatches
+        $hits = Select-String -Path $dwxAdvisoryFiles -Pattern $adv.Pattern -AllMatches
         foreach ($hit in $hits) {
             Add-Warning "BUILD_CHECK_DWX_ADVISORY_$($adv.Code): $($hit.Path):$($hit.LineNumber) -- $($adv.Hint)"
         }
