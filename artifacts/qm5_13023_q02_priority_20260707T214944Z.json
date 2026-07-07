@@ -1,0 +1,123 @@
+{
+  "generated_at_utc": "2026-07-07T21:49:44Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves",
+  "unit_of_work": "advance existing non-duplicate forex card under FX cointegration CPU ceiling",
+  "decision": {
+    "selected_path": "advance_existing_forex_card",
+    "reason": "No unbuilt card-worthy FX cointegration pair remained from the documented 66-pair scan or the extended local screen. The strict survivors QM5_12532 and QM5_12533 are already built and not Q02-blocked; the current cointegration frontier is occupied by Q07 work under a saturated backtest fleet. QM5_13023 is a new approved AUDJPY D1 defensive FX sleeve with an existing pending Q02 row and no priority metadata.",
+    "new_unbuilt_pair_found": false,
+    "duplicate_work_item_created": false,
+    "manual_mt5_dispatch_started": false
+  },
+  "selected_ea": {
+    "ea_id": "QM5_13023",
+    "slug": "ftq-audjpy-riskoff-short",
+    "symbol": "AUDJPY.DWX",
+    "timeframe": "D1",
+    "setfile": "C:/QM/repo/framework/EAs/QM5_13023_ftq-audjpy-riskoff-short/sets/QM5_13023_ftq-audjpy-riskoff-short_AUDJPY.DWX_D1_backtest.set",
+    "card": "C:/QM/repo/artifacts/cards_approved/QM5_13023_ftq-audjpy-riskoff-short.md",
+    "source_quality": "A-tier academic primary source plus A-tier academic supplement",
+    "risk_mode": {
+      "environment": "backtest",
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "source_evidence": {
+    "strict_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "extended_screen": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/survivors.json",
+    "extended_trade_check": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/trade_check.json",
+    "fallback_card": "artifacts/cards_approved/QM5_13023_ftq-audjpy-riskoff-short.md"
+  },
+  "frontier_status_verified": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "latest_state": "Q02 PASS, Q04 PASS, Q05 FAIL",
+      "q02_blocked": false
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "latest_state": "Q02 PASS, Q04 FAIL",
+      "q02_blocked": false
+    },
+    "QM5_12712": {
+      "pair": "EURGBP.DWX/EURAUD.DWX",
+      "latest_state": "Q07 active on T1",
+      "work_item_id": "1b9fa7a5-48a7-4e57-a699-9e55dfb0cb19"
+    },
+    "QM5_12781": {
+      "pair": "USDJPY.DWX/AUDJPY.DWX",
+      "latest_state": "Q07 pending priority",
+      "work_item_id": "38226031-b41f-4f03-ab86-d1697ca5e203"
+    }
+  },
+  "preflight": {
+    "build_check_command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13023_ftq-audjpy-riskoff-short -SkipCompile",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260707_214906.json",
+    "build_check_result": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "duplicate_guard_before": {
+      "same_ea_phase_symbol_setfile_pending_active_rows": 1,
+      "row_ids": [
+        "164ba936-9c03-4616-923d-89fb94b47e41"
+      ]
+    }
+  },
+  "queue_mutation": {
+    "sqlite": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_13023_q02_priority_20260707T2149Z.sqlite",
+    "event_id": 223416,
+    "event": "priority_track_set",
+    "work_item_id": "164ba936-9c03-4616-923d-89fb94b47e41",
+    "phase": "Q02",
+    "status_after": "pending",
+    "verdict_after": null,
+    "claimed_by_after": null,
+    "payload_changes": {
+      "priority_track": true,
+      "priority_reason": "OWNER 2026-07-07 forex portfolio fallback: no unbuilt card-worthy FX cointegration pair remains and cointegration Q07 frontier is CPU-saturated; priority-track existing QM5_13023 AUDJPY D1 defensive FX Q02 without duplicate enqueue or manual MT5 dispatch.",
+      "priority_updated_at_utc": "2026-07-07T21:49:44+00:00",
+      "priority_updated_by": "codex/agents-board-advisor",
+      "cpu_ceiling_dispatch_hold": true,
+      "duplicate_work_item_created": false
+    },
+    "duplicate_guard_after": {
+      "same_ea_phase_symbol_setfile_pending_active_rows": 1,
+      "row_ids": [
+        "164ba936-9c03-4616-923d-89fb94b47e41"
+      ]
+    }
+  },
+  "queue_snapshot_after": {
+    "counts": {
+      "active": 7,
+      "pending": 5470,
+      "done": 43482,
+      "failed": 45267
+    },
+    "queued_top_contains": {
+      "QM5_13023": {
+        "position": 3,
+        "priority_track": true,
+        "status": "pending",
+        "phase": "Q02",
+        "symbol": "AUDJPY.DWX"
+      }
+    },
+    "cpu_ceiling": true
+  },
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
