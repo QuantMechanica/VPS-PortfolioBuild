@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12837
 ; ea_slug:      wti-audnzd-mr
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   ba146686cabd21e62c5e5f0775108c71388603b5e75dd687cdc539215f50502c
+; build_hash:   90308b51f5a80f40607fb6c87352b37b8faedee4166d692b56565d6108eea2f7
 ; author:       Development
 ; date:         2026-06-30
 ;==========================================================
@@ -19,9 +19,15 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+; Q02 structural baseline: keep all news axes explicitly off to avoid non-strategy init dependencies.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
 ; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
+qm_filter_news_enabled=0
+qm_filter_news_mode=0
 qm_filter_regime_enabled=0
 qm_filter_regime_lookback_bars=100
 qm_filter_regime_bull_return_pct=2.0
