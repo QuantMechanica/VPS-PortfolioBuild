@@ -1,0 +1,37 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13030
+; ea_slug:      xng-cot-mom
+; ea_version:   v5.0
+; set_version:  s20260707-001
+; symbol:       XNGUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-07
+;==========================================================
+qm_ea_id=13030
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\xng-cot-mom_card.md
+strategy_min_signal_return_pct=1.60
+strategy_min_atr_return_mult=0.55
+strategy_max_signal_return_pct=16.0
+strategy_close_location_min=0.62
+strategy_signal_dow=5
+strategy_channel_lookback=20
+strategy_trend_period=80
+strategy_sma_slope_shift=5
+strategy_atr_period=20
+strategy_atr_sl_mult=3.00
+strategy_max_hold_days=5
+strategy_profit_close_atr_mult=1.60
+strategy_adverse_close_atr_mult=1.10
+strategy_max_spread_points=2500
