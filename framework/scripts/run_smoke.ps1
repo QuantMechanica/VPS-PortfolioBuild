@@ -1031,6 +1031,68 @@ function Test-TesterReportHasCompleteMetrics {
     }
 }
 
+# Log-bomb guard (mirrors tools/strategy_farm/terminal_worker.py). Some EAs spam
+# the tester journal per-tick (~10 GB/min); the work-item worker guards its own
+# runs, but smoke/build/ad-hoc runs on free terminals were unguarded (2026-07-06:
+# 12 GB and 26 GB T8 journals from build smokes filled D:). Trigger on GROWTH
+# RATE (catches the spam within one check window) with a high absolute hard
+# ceiling as disk-safety backstop; a legit journal grows ~50-200 MB/min and
+# trips neither. Fail-open on any error so a measurement glitch never kills a
+# legit run.
+$script:LogBombRateMBPerMin = 1500.0
+$script:LogBombHardCeilBytes = 4GB
+$script:LogBombCheckSeconds = 10.0
+
+function Test-TesterJournalBomb {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$ScanDirs,
+        [Parameter(Mandatory = $true)]
+        [hashtable]$Sizes
+    )
+
+    try {
+        $nowUtc = (Get-Date).ToUniversalTime()
+        foreach ($dir in $ScanDirs) {
+            if (-not (Test-Path -LiteralPath $dir -PathType Container)) {
+                continue
+            }
+            $logs = @(Get-ChildItem -LiteralPath $dir -Recurse -Filter *.log -File -ErrorAction SilentlyContinue)
+            foreach ($log in $logs) {
+                $fp = $log.FullName
+                $sz = [double]$log.Length
+                $prev = $null
+                if ($Sizes.ContainsKey($fp)) {
+                    $prev = $Sizes[$fp]
+                }
+                $Sizes[$fp] = @($sz, $nowUtc)
+                $gb = [math]::Round($sz / 1GB, 2)
+                if ($sz -gt $script:LogBombHardCeilBytes) {
+                    return [pscustomobject]@{
+                        path = $fp
+                        gb = $gb
+                        reason = ("abs>{0}GB" -f [int]($script:LogBombHardCeilBytes / 1GB))
+                    }
+                }
+                if ($prev) {
+                    $dMin = [math]::Max(($nowUtc - $prev[1]).TotalMinutes, 1e-6)
+                    $rate = (($sz - $prev[0]) / 1MB) / $dMin
+                    if ($rate -gt $script:LogBombRateMBPerMin) {
+                        return [pscustomobject]@{
+                            path = $fp
+                            gb = $gb
+                            reason = ("rate>{0}MB/min(~{1})" -f [int]$script:LogBombRateMBPerMin, [int]$rate)
+                        }
+                    }
+                }
+            }
+        }
+    } catch {
+        return $null
+    }
+    return $null
+}
+
 function Start-TesterRun {
     param(
         [Parameter(Mandatory = $true)]
@@ -1052,11 +1114,60 @@ function Start-TesterRun {
 
     $finished = $false
     $latchedReport = $false
+    # Log-bomb guard state: tester journals live under <root>\Tester (dispatcher
+    # logs\ + per-run Agent-*\logs) and <root>\logs. Sizes carried across checks
+    # so growth rate can be measured.
+    $terminalRootForBomb = Split-Path -Parent $TerminalExe
+    $logBombScanDirs = @(
+        (Join-Path $terminalRootForBomb "Tester"),
+        (Join-Path $terminalRootForBomb "logs")
+    )
+    $logBombSizes = @{}
+    $logBombHit = $null
+    $logBombLastCheckUtc = (Get-Date).ToUniversalTime()
     $deadline = (Get-Date).ToUniversalTime().AddSeconds($TimeoutSec)
     while ((Get-Date).ToUniversalTime() -lt $deadline) {
         if ($childTerminal.HasExited) {
             $finished = $true
             break
+        }
+        $nowUtcForBomb = (Get-Date).ToUniversalTime()
+        if (($nowUtcForBomb - $logBombLastCheckUtc).TotalSeconds -ge $script:LogBombCheckSeconds) {
+            $logBombLastCheckUtc = $nowUtcForBomb
+            $logBombHit = Test-TesterJournalBomb -ScanDirs $logBombScanDirs -Sizes $logBombSizes
+            if ($logBombHit) {
+                Write-Host ("run_smoke.stage=log_bomb_killed terminal_pid={0} journal='{1}' journal_gb={2} bomb_reason='{3}'" -f $childTerminal.Id, $logBombHit.path, $logBombHit.gb, $logBombHit.reason)
+                try {
+                    Stop-Process -Id $childTerminal.Id -Force -ErrorAction Stop
+                } catch {
+                }
+                if ($proc.Id -ne $childTerminal.Id) {
+                    try {
+                        Stop-Process -Id $proc.Id -Force -ErrorAction Stop
+                    } catch {
+                    }
+                }
+                [void]$childTerminal.WaitForExit(10000)
+                $lingeringMeta = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $terminalRootForBomb)
+                foreach ($metaProc in $lingeringMeta) {
+                    try {
+                        Stop-Process -Id $metaProc.ProcessId -Force -ErrorAction Stop
+                    } catch {
+                    }
+                }
+                # Reclaim the disk immediately; the journal is spam, not evidence
+                # (the stage line above records path/size/reason). May be briefly
+                # locked while metatester dies -> short retry, then fail-open.
+                for ($delAttempt = 1; $delAttempt -le 3; $delAttempt++) {
+                    try {
+                        Remove-Item -LiteralPath $logBombHit.path -Force -ErrorAction Stop
+                        break
+                    } catch {
+                        Start-Sleep -Seconds 2
+                    }
+                }
+                break
+            }
         }
         if (-not [string]::IsNullOrWhiteSpace($ReportPath) -and (Test-Path -LiteralPath $ReportPath -PathType Leaf)) {
             $sizeBefore = (Get-Item -LiteralPath $ReportPath).Length
@@ -1092,11 +1203,11 @@ function Start-TesterRun {
         Start-Sleep -Milliseconds 500
     }
 
-    if (-not $finished -and -not $latchedReport -and $childTerminal.HasExited) {
+    if (-not $finished -and -not $latchedReport -and -not $logBombHit -and $childTerminal.HasExited) {
         $finished = $true
     }
 
-    $timedOut = (-not $finished) -and (-not $latchedReport)
+    $timedOut = (-not $finished) -and (-not $latchedReport) -and (-not $logBombHit)
     if ($timedOut) {
         try {
             Stop-Process -Id $childTerminal.Id -Force -ErrorAction Stop
@@ -1113,13 +1224,20 @@ function Start-TesterRun {
     if ($latchedReport) {
         $loggedExitCode = "<valid_report_latched>"
     }
-    Write-Host ("run_smoke.stage=terminal_exit terminal_pid={0} exit_code={1} timed_out={2} valid_report_latched={3}" -f $childTerminal.Id, $loggedExitCode, $timedOut, $latchedReport)
+    if ($logBombHit) {
+        $loggedExitCode = "<log_bomb_killed>"
+    }
+    Write-Host ("run_smoke.stage=terminal_exit terminal_pid={0} exit_code={1} timed_out={2} valid_report_latched={3} log_bomb={4}" -f $childTerminal.Id, $loggedExitCode, $timedOut, $latchedReport, [bool]$logBombHit)
 
     return [pscustomobject]@{
         exit_code = $(if ($finished) { $childTerminal.ExitCode } elseif ($latchedReport) { 0 } else { $null })
         timed_out = $timedOut
         terminal_pid = $childTerminal.Id
         valid_report_latched = $latchedReport
+        log_bomb = [bool]$logBombHit
+        log_bomb_journal = $(if ($logBombHit) { $logBombHit.path } else { $null })
+        log_bomb_journal_gb = $(if ($logBombHit) { $logBombHit.gb } else { $null })
+        log_bomb_reason = $(if ($logBombHit) { $logBombHit.reason } else { $null })
     }
 }
 
@@ -1532,6 +1650,7 @@ $runResults = @()
 $globalOnInitFailure = $false
 $globalRealTicksMarker = $true
 $globalTimeoutFailure = $false
+$globalLogBombFailure = $false
 $reasonClasses = New-Object System.Collections.Generic.List[string]
 
 # MT5 can occasionally emit an invalid warm-up report before history/tick context
@@ -1545,7 +1664,7 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
     if ($okRunCount -ge $Runs) {
         break
     }
-    if ($globalOnInitFailure -or $globalTimeoutFailure) {
+    if ($globalOnInitFailure -or $globalTimeoutFailure -or $globalLogBombFailure) {
         break
     }
 
@@ -1592,6 +1711,27 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
         throw
     }
     $exitCode = $runExec.exit_code
+
+    if ($runExec.log_bomb) {
+        # Journal bomb: the EA spams the tester journal per-tick; retrying would
+        # bomb again (~10 GB/min for the whole timeout window), so this is
+        # terminal for the smoke, like ONINIT_FAILED/TIMEOUT.
+        $globalLogBombFailure = $true
+        $globalRealTicksMarker = $false
+        $reasonClasses.Add("LOG_BOMB")
+        $runResults += [pscustomobject]@{
+            run = $runName
+            status = "FAIL"
+            failure = "LOG_BOMB"
+            error = ("Tester journal bomb killed the run: {0} ({1} GB, {2})" -f $runExec.log_bomb_journal, $runExec.log_bomb_journal_gb, $runExec.log_bomb_reason)
+            exit_code = $null
+            report_source_path = $sourceReportPath
+            report_canonical_path = $reportHtmPath
+            report_size_bytes = 0
+            tester_log_path = $null
+        }
+        continue
+    }
 
     if ($runExec.timed_out) {
         $lingeringMeta = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $terminalRoot)
@@ -1924,6 +2064,7 @@ $passed = ($completedRunCount -eq $Runs) -and
     $tradeGatePassed -and
     $deterministic -and
     (-not $globalTimeoutFailure) -and
+    (-not $globalLogBombFailure) -and
     $realTicksGatePassed
 
 if (@($reasonClasses).Count -eq 0) {
@@ -1950,6 +2091,7 @@ $summary = [ordered]@{
     min_trades_required = $MinTrades
     deterministic = $deterministic
     oninit_failure_detected = $globalOnInitFailure
+    log_bomb_detected = $globalLogBombFailure
     model4_log_marker_detected = $globalRealTicksMarker
     report_dir = $reportDir
     report_export_mode = "relative_with_absolute_fallback"
