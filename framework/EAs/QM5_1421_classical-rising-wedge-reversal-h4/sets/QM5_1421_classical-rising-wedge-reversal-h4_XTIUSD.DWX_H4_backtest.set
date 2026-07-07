@@ -1,0 +1,51 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1421
+; ea_slug:      classical-rising-wedge-reversal-h4
+; ea_version:   v5.0
+; set_version:  s20260707-001
+; symbol:       XTIUSD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   8
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-07
+;==========================================================
+qm_ea_id=1421
+qm_magic_slot_offset=8
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1421_classical-rising-wedge-reversal-h4.md
+strategy_atr_period=14
+strategy_prior_lookback_bars=60
+strategy_wedge_min_bars=30
+strategy_wedge_max_bars=100
+strategy_pivot_wing=2
+strategy_min_pivots=3
+strategy_prior_slope_atr_per_bar=0.15
+strategy_prior_rally_atr_mult=5.0
+strategy_slope_ratio_min=1.30
+strategy_slope_ratio_max=4.00
+strategy_apex_min_frac=0.15
+strategy_apex_max_frac=0.70
+strategy_range_contraction_min=1.50
+strategy_pivot_span_frac=0.50
+strategy_entry_atr_buffer=0.50
+strategy_sl_atr_buffer=0.40
+strategy_max_sl_atr_mult=3.00
+strategy_tp_height_mult=0.75
+strategy_partial_progress=0.50
+strategy_partial_fraction=0.50
+strategy_failure_bars=5
+strategy_time_stop_bars=30
+strategy_pending_valid_bars=10
+strategy_reuse_guard_bars=20
+strategy_spread_atr_frac=0.20
+strategy_macro_sma_period=50
+strategy_macro_slope_bars=20
+strategy_macro_slope_atr_per_bar=0.05

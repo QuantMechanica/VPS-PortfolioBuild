@@ -1,0 +1,51 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        1424
+; ea_slug:      bressert-short-cycle-counting-h4
+; ea_version:   v5.0
+; set_version:  s20260707-001
+; symbol:       GDAXI.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   11
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-07
+;==========================================================
+qm_ea_id=1424
+qm_magic_slot_offset=11
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1424_bressert-short-cycle-counting-h4.md
+strategy_cycle_window_bars=800
+strategy_atr_period=14
+strategy_pivot_side_bars=2
+strategy_pivot_swing_window=20
+strategy_pivot_atr_mult=2.5
+strategy_min_pivots=6
+strategy_iqr_max_ratio=0.40
+strategy_cycle_min_bars=20
+strategy_cycle_max_bars=120
+strategy_projection_min_mult=0.75
+strategy_projection_max_mult=1.30
+strategy_rally_atr_mult=1.5
+strategy_retrace_min=0.382
+strategy_retrace_max=0.786
+strategy_local_high_cycle_frac=0.20
+strategy_tp_amplitude_mult=0.80
+strategy_partial_close_fraction=0.50
+strategy_partial_move_fraction=0.50
+strategy_time_exit_cycle_mult=1.50
+strategy_time_exit_max_bars=60
+strategy_failure_first_bars=8
+strategy_sl_atr_mult=0.5
+strategy_sl_max_atr_mult=2.5
+strategy_spread_atr_mult=0.25
+strategy_macro_sma_period=100
+strategy_macro_slope_bars=20
+strategy_macro_slope_atr_mult=0.03
+strategy_news_blackout_h4_bars=2

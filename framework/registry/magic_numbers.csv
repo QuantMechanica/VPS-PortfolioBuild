@@ -14487,3 +14487,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1421,classical-rising-wedge-reversal-h4,10,WS30.DWX,14210010,2026-07-07,Development,active
 1421,classical-rising-wedge-reversal-h4,11,GDAXI.DWX,14210011,2026-07-07,Development,active
 1421,classical-rising-wedge-reversal-h4,12,UK100.DWX,14210012,2026-07-07,Development,active
+1422,classical-broadening-formation-h4,0,EURUSD.DWX,14220000,2026-07-07,Development,active
+1422,classical-broadening-formation-h4,1,GBPUSD.DWX,14220001,2026-07-07,Development,active
+1422,classical-broadening-formation-h4,2,USDJPY.DWX,14220002,2026-07-07,Development,active
+1422,classical-broadening-formation-h4,3,AUDUSD.DWX,14220003,2026-07-07,Development,active
+1422,classical-broadening-formation-h4,4,USDCAD.DWX,14220004,2026-07-07,Development,active
+1422,classical-broadening-formation-h4,5,USDCHF.DWX,14220005,2026-07-07,Development,active
+1422,classical-broadening-formation-h4,6,NZDUSD.DWX,14220006,2026-07-07,Development,active
+1422,classical-broadening-formation-h4,7,XAUUSD.DWX,14220007,2026-07-07,Development,active
+1422,classical-broadening-formation-h4,8,NDX.DWX,14220008,2026-07-07,Development,active
+1422,classical-broadening-formation-h4,9,WS30.DWX,14220009,2026-07-07,Development,active
+1422,classical-broadening-formation-h4,10,GDAXI.DWX,14220010,2026-07-07,Development,active
+1422,classical-broadening-formation-h4,11,UK100.DWX,14220011,2026-07-07,Development,active
+1422,classical-broadening-formation-h4,12,XTIUSD.DWX,14220012,2026-07-07,Development,active

@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3fc66d495b0952dfc6a485dd4101e0cdd032110eb71961288b53a8a62cc6b31d
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-07-07
 ;==========================================================
@@ -26,11 +26,10 @@ strategy_ema_slow_period=100
 strategy_macd_fast=12
 strategy_macd_slow=26
 strategy_macd_signal=9
-strategy_macd_window=5
-strategy_zone_break_pips=10.0
-strategy_sl_lookback=5
-strategy_sl_cap_pips=80.0
+strategy_macd_cross_lookback=5
+strategy_break_pips=10
+strategy_structure_lookback=5
+strategy_max_sl_pips=80
+strategy_spread_cap_pips=20
 strategy_partial_rr=2.0
-strategy_partial_close_pct=50.0
-strategy_exit_break_pips=10.0
-strategy_spread_cap_pips=20.0
+strategy_partial_fraction=0.50

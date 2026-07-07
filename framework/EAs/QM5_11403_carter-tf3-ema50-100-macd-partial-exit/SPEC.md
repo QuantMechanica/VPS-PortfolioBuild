@@ -1,8 +1,8 @@
-# QM5_11403_carter-tf3-ema50-100-macd-partial-exit — Strategy Spec
+# QM5_11403_carter-tf3-ema50-100-macd-partial-exit - Strategy Spec
 
 **EA ID:** QM5_11403
 **Slug:** `carter-tf3-ema50-100-macd-partial-exit`
-**Source:** `29c77a02-59bd-52f7-bcb3-b3108d5f1e79` (Thomas Carter, "20 Trend Following Systems" 2014, Strategy #3)
+**Source:** `29c77a02-59bd-52f7-bcb3-b3108d5f1e79` (see card source citation)
 **Author of this spec:** Codex
 **Last revised:** 2026-07-07
 
@@ -10,55 +10,42 @@
 
 ## 1. Strategy Logic
 
-H4 trend-continuation. The EMA50/EMA100 stack defines a directional zone STATE and
-a single MACD-cross EVENT triggers entry. Long: the closed bar is above both EMA50
-and EMA100, the EMA stack is bullish (EMA50 > EMA100), and price has broken past
-EMA50 by at least 10 pips (out of the EMA50–EMA100 squeeze zone); then a MACD(12,26,9)
-main-over-signal upward cross occurring within the last 5 closed bars fires a BUY at
-market. Short mirrors all conditions. The EMA zone is a persistent STATE; the MACD
-cross is the lone EVENT, evaluated over a 5-bar lookback window so the entry is not
-starved by requiring two crosses on the same bar. MACD may legitimately be negative —
-its sign is never used as a validity guard.
-
-The stop is the structure low/high of the last 5 closed bars, capped at 80 pips.
-There is no fixed take-profit: at +2R, 50% of the position is closed (partial TP1) and
-the stop on the remainder is moved to breakeven. The remainder is then closed when a
-closed bar breaks back through EMA50 by 10 pips (EMA50 trail exit). Framework Friday-close
-and news filters apply.
+The EA trades an H4 trend-following rule from Thomas Carter Strategy #3. A long setup requires price above EMA50 and EMA100, price at least 10 pips above EMA50, and a MACD(12,26,9) main-line cross above the signal line within the last five bars. A short setup mirrors the rule below EMA50 and EMA100. The initial stop is the 5-bar structure low/high capped at 80 pips; at 2R the EA moves the stop to breakeven and closes 50%, then exits the remainder if price breaks back through EMA50 by 10 pips.
 
 ---
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
-|---|---|---|---|
-| `strategy_ema_fast_period` | 50 | 20-100 | Fast EMA (zone boundary + trail anchor) |
-| `strategy_ema_slow_period` | 100 | 50-200 | Slow EMA (zone boundary) |
-| `strategy_macd_fast` | 12 | 5-20 | MACD fast EMA period |
-| `strategy_macd_slow` | 26 | 20-40 | MACD slow EMA period |
-| `strategy_macd_signal` | 9 | 5-15 | MACD signal period |
-| `strategy_macd_window` | 5 | 1-10 | MACD cross must occur within last N closed bars |
-| `strategy_zone_break_pips` | 10.0 | 0-50 | Min break past EMA50 to clear the squeeze zone (pips) |
-| `strategy_sl_lookback` | 5 | 3-20 | Structure-SL lookback (bars) |
-| `strategy_sl_cap_pips` | 80.0 | 20-200 | Max stop distance (pips) |
-| `strategy_partial_rr` | 2.0 | 1.0-3.0 | R-multiple at which TP1 partial is taken |
-| `strategy_partial_close_pct` | 50.0 | 25-75 | % of position closed at TP1 |
-| `strategy_exit_break_pips` | 10.0 | 0-50 | Close remainder if a bar breaks EMA50 by this (pips) |
-| `strategy_spread_cap_pips` | 20.0 | 1-100 | Block entry only if spread exceeds this (pips, fail-open on 0) |
+|---|---:|---|---|
+| `strategy_ema_fast_period` | 50 | `>0` | Fast EMA used for entry zone and trailing exit anchor. |
+| `strategy_ema_slow_period` | 100 | `> strategy_ema_fast_period` | Slow EMA used to confirm the trend zone. |
+| `strategy_macd_fast` | 12 | `>0` | MACD fast EMA period. |
+| `strategy_macd_slow` | 26 | `> strategy_macd_fast` | MACD slow EMA period. |
+| `strategy_macd_signal` | 9 | `>0` | MACD signal period. |
+| `strategy_macd_cross_lookback` | 5 | `>0` bars | Number of recent bars in which the MACD cross may have occurred. |
+| `strategy_break_pips` | 10 | `>0` pips | Required distance beyond EMA50 for entry and trailing exit. |
+| `strategy_structure_lookback` | 5 | `>0` bars | Lookback for the initial structure stop. |
+| `strategy_max_sl_pips` | 80 | `>0` pips | Maximum initial stop distance for P2. |
+| `strategy_spread_cap_pips` | 20 | `>0` pips | Entry-blocking spread cap. Zero modeled spread is allowed. |
+| `strategy_partial_rr` | 2.0 | `>0` | R multiple for the partial exit trigger. |
+| `strategy_partial_fraction` | 0.50 | `0.0-1.0` | Fraction of current position volume to close at TP1. |
+
+Framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md` and are not repeated here.
 
 ---
 
 ## 3. Symbol Universe
 
 **Designed for:**
-- `EURUSD.DWX` — deep liquidity, clean H4 trends; card primary.
-- `GBPUSD.DWX` — trending major, suits EMA-zone continuation.
-- `USDJPY.DWX` — strong directional regimes; JPY pip scaling handled via QM helpers.
-- `AUDUSD.DWX` — commodity-linked trender, diversifies the FX basket.
+- `EURUSD.DWX` - Card-listed H4 DWX FX major.
+- `GBPUSD.DWX` - Card-listed H4 DWX FX major.
+- `USDJPY.DWX` - Card-listed H4 DWX FX major.
+- `AUDUSD.DWX` - Card-listed H4 DWX FX major.
 
 **Explicitly NOT for:**
-- Index / metal `.DWX` symbols — card scopes H4 FX majors only; EMA50/100 + 10-pip
-  zone-break thresholds are calibrated to FX pip scale.
+- Non-DWX symbols - V5 research and backtest artifacts must use the `.DWX` symbol names.
+- Symbols outside the approved card list - the card specifies these four FX instruments only.
 
 ---
 
@@ -68,7 +55,7 @@ and news filters apply.
 |---|---|
 | Base timeframe | `H4` |
 | Multi-timeframe refs | `none` |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` via framework entry gate |
 
 ---
 
@@ -76,11 +63,12 @@ and news filters apply.
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | `~40` |
-| Typical hold time | `several days (H4 trend swing)` |
-| Expected drawdown profile | `moderate; structure SL capped at 80 pips, partial de-risks at 2R` |
-| Regime preference | `trend / trend-continuation` |
-| Win rate target (qualitative) | `medium` |
+| Trades / year / symbol | `40` |
+| Expected trade frequency | Card frontmatter does not provide `expected_trade_frequency`; approval notes describe H4 cadence around 40 trades/year/symbol. |
+| Typical hold time | Not specified in card frontmatter; exits are mechanical via SL, 2R partial, and EMA50 trail. |
+| Expected drawdown profile | Not specified in card frontmatter; P2 uses fixed $1,000 risk with an 80-pip initial SL cap. |
+| Regime preference | Trend-following. |
+| Win rate target (qualitative) | Not specified in card frontmatter. |
 
 ---
 
@@ -90,8 +78,8 @@ This card was mechanised from:
 
 **Source ID:** `29c77a02-59bd-52f7-bcb3-b3108d5f1e79`
 **Source type:** `book`
-**Pointer:** Thomas Carter, "20 Trend Following Systems" (2014), Strategy #3 (local PDF recorded in card frontmatter)
-**R1–R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_11403_carter-tf3-ema50-100-macd-partial-exit.md`
+**Pointer:** `Thomas Carter, 20 Trend Following Systems (2014), Strategy #3; local PDF C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\514732392-Forex-Trend-Following-Strategy.pdf`
+**R1-R4 verdict (Q00):** all PASS per `artifacts/cards_approved/QM5_11403_carter-tf3-ema50-100-macd-partial-exit.md`
 
 ---
 
@@ -99,11 +87,11 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% - 0.5%) |
 
-ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
