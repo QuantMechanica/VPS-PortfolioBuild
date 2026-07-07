@@ -1,0 +1,84 @@
+{
+  "generated_at_utc": "2026-07-07T19:03:23Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves",
+  "selected_path": "advance_existing_forex_card",
+  "reason": "No unbuilt card-worthy FX cointegration pair remained; QM5_12532 and QM5_12533 were not Q02-blocked; the latest extended-screen frontier had already reached Q04 failures. QM5_12781 remained the cleanest existing FX cointegration continuation after Q05/Q06 PASS and Q07 timeout repair.",
+  "ea": {
+    "ea_id": "QM5_12781",
+    "slug": "edgelab-usdjpy-audjpy-cointegration",
+    "pair": "USDJPY.DWX/AUDJPY.DWX",
+    "logical_symbol": "QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1",
+    "basket_manifest": "framework/EAs/QM5_12781_edgelab-usdjpy-audjpy-cointegration/basket_manifest.json",
+    "setfile": "framework/EAs/QM5_12781_edgelab-usdjpy-audjpy-cointegration/sets/QM5_12781_edgelab-usdjpy-audjpy-cointegration_QM5_12781_USDJPY_AUDJPY_COINTEGRATION_D1_D1_backtest.set"
+  },
+  "precheck": {
+    "strict_66_pair_survivors": {
+      "QM5_12532": "Q02 PASS, Q04 PASS, Q05 FAIL; not Q02-blocked",
+      "QM5_12533": "Q02 PASS, Q04 FAIL; not Q02-blocked"
+    },
+    "extended_frontier": {
+      "QM5_13024": "Q02 PASS, Q04 FAIL",
+      "QM5_13029": "Q02 PASS, Q03 PASS, Q04 FAIL",
+      "QM5_13020": "Q02 PASS, Q03 FAIL, Q04 FAIL"
+    },
+    "selected_existing_card_state": {
+      "Q02": "PASS",
+      "Q05": "PASS",
+      "Q06": "PASS",
+      "Q07_before": "pending, unclaimed, missing explicit priority_track and q07_seed_timeout_sec payload fields"
+    }
+  },
+  "farm_db_update": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "backup_before_update": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12781_q07_payload_restore_20260707T190316Z.sqlite",
+    "work_item_id": "38226031-b41f-4f03-ab86-d1697ca5e203",
+    "phase": "Q07",
+    "conditional_guard": "status='pending' and claimed_by is null",
+    "rows_updated": 1,
+    "duplicate_work_item_created": false,
+    "manual_mt5_dispatch_started": false,
+    "before_payload_selected": {
+      "priority_track": null,
+      "q07_seed_timeout_sec": null,
+      "timeout_min": 120,
+      "tester_currency": "JPY",
+      "tester_deposit": 15000000,
+      "full_history_from": "2018.07.02"
+    },
+    "after_payload_selected": {
+      "priority_track": true,
+      "priority_reason": "board-advisor FX cointegration continuation: QM5_12781 Q07 retry after Q05/Q06 PASS; keep existing work_item and explicit 5400s seed timeout under CPU ceiling",
+      "q07_seed_timeout_sec": 5400,
+      "timeout_min": 120,
+      "tester_currency": "JPY",
+      "tester_deposit": 15000000,
+      "full_history_from": "2018.07.02",
+      "payload_restore_from_artifact": "artifacts/qm5_12781_q07_default_timeout_requeue_20260707T170724Z.json"
+    },
+    "post_state": {
+      "status": "pending",
+      "verdict": null,
+      "claimed_by": null,
+      "attempt_count": 0,
+      "updated_at_utc": "2026-07-07T19:03:23Z"
+    }
+  },
+  "verification": {
+    "farmctl_work_items_qm5_12781": "Q07 pending; Q02/Q05/Q06 PASS evidence still present",
+    "sqlite_payload_check": "priority_track=true and q07_seed_timeout_sec=5400 on the existing Q07 row",
+    "active_queue_count": 7,
+    "pending_queue_count": 5503,
+    "cpu_ceiling_action": "No manual MT5 dispatch launched and no new work_item enqueued under saturated active load."
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
