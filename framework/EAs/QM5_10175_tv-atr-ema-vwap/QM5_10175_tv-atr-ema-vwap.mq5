@@ -85,13 +85,7 @@ double   g_session_pv = 0.0;
 double   g_session_volume = 0.0;
 double   g_session_vwap = 0.0;
 int      g_session_day_key = -1;
-
-int Strategy_DayKey(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return (dt.year * 1000 + dt.day_of_year);
-  }
+double   g_last_close = 0.0;
 
 double Strategy_NormalizePrice(const double price)
   {
@@ -107,19 +101,20 @@ bool Strategy_AdvanceStateOnClosedBar()
   {
    g_last_flip_dir = 0;
 
-   const datetime bar_time = iTime(_Symbol, _Period, 1);
-   const double close_1 = iClose(_Symbol, _Period, 1);
-   const double high_1 = iHigh(_Symbol, _Period, 1);
-   const double low_1 = iLow(_Symbol, _Period, 1);
-   const long tick_volume_1 = iVolume(_Symbol, _Period, 1);
+   const int day_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 1);
+   const double close_1 = iClose(_Symbol, _Period, 1);   // perf-allowed: single closed-bar OHLCV read for bespoke VWAP state after QM_IsNewBar gate.
+   const double high_1 = iHigh(_Symbol, _Period, 1);     // perf-allowed: single closed-bar OHLCV read for bespoke VWAP state after QM_IsNewBar gate.
+   const double low_1 = iLow(_Symbol, _Period, 1);       // perf-allowed: single closed-bar OHLCV read for bespoke VWAP state after QM_IsNewBar gate.
+   const long tick_volume_1 = iVolume(_Symbol, _Period, 1); // perf-allowed: single closed-bar tick-volume read for session VWAP state.
    const double atr_1 = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
    const double ema_1 = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
 
-   if(bar_time <= 0 || close_1 <= 0.0 || high_1 <= 0.0 || low_1 <= 0.0 ||
+   if(day_key <= 0 || close_1 <= 0.0 || high_1 <= 0.0 || low_1 <= 0.0 ||
       atr_1 <= 0.0 || ema_1 <= 0.0 || strategy_atr_mult <= 0.0)
       return false;
 
-   const int day_key = Strategy_DayKey(bar_time);
+   g_last_close = close_1;
+
    if(day_key != g_session_day_key)
      {
       g_session_day_key = day_key;
@@ -205,7 +200,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(g_last_flip_dir == 0 || g_session_vwap <= 0.0)
       return false;
 
-   const double close_1 = iClose(_Symbol, _Period, 1);
+   const double close_1 = g_last_close;
    const double ema_1 = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
    const double atr_1 = QM_ATR(_Symbol, _Period, strategy_atr_period, 1);
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
