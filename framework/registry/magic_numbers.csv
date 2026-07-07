@@ -11615,9 +11615,9 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11685,tc-h1-s19-psar-adx50,1,GBPUSD.DWX,116850001,2026-06-18,Claude,reserved
 11688,tc-h1-s17-smma28-ema100-macd,0,EURUSD.DWX,116880000,2026-06-18,Claude,reserved
 11688,tc-h1-s17-smma28-ema100-macd,1,GBPUSD.DWX,116880001,2026-06-18,Claude,reserved
-11690,strat-ma-trend,0,EURUSD.DWX,116900000,2026-06-18,Claude,reserved
-11690,strat-ma-trend,1,XAUUSD.DWX,116900001,2026-06-18,Claude,reserved
-11690,strat-ma-trend,2,GDAXI.DWX,116900002,2026-06-18,Claude,reserved
+11690,strat-ma-trend,0,EURUSD.DWX,116900000,2026-07-07,Development,active
+11690,strat-ma-trend,1,XAUUSD.DWX,116900001,2026-07-07,Development,active
+11690,strat-ma-trend,2,GDAXI.DWX,116900002,2026-07-07,Development,active
 11692,strat-macd,0,EURUSD.DWX,116920000,2026-06-25,Development,active
 11692,strat-macd,1,XAUUSD.DWX,116920001,2026-06-25,Development,active
 11692,strat-macd,2,GDAXI.DWX,116920002,2026-06-25,Development,active
