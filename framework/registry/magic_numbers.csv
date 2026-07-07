@@ -14593,3 +14593,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13035,xti-prod-sup-brk,0,XTIUSD.DWX,130350000,2026-07-07,Codex,active
 13037,xng-prod-brk,0,XNGUSD.DWX,130370000,2026-07-07,Codex,active
 13038,xti-dpr-fade,0,XTIUSD.DWX,130380000,2026-07-07,Codex,active
+9504,brooks-failed-channel-h4,0,EURUSD.DWX,95040000,2026-07-07,Codex,active
+9504,brooks-failed-channel-h4,1,GBPUSD.DWX,95040001,2026-07-07,Codex,active
+9504,brooks-failed-channel-h4,2,USDJPY.DWX,95040002,2026-07-07,Codex,active
+9504,brooks-failed-channel-h4,3,AUDUSD.DWX,95040003,2026-07-07,Codex,active
+9504,brooks-failed-channel-h4,4,USDCAD.DWX,95040004,2026-07-07,Codex,active
+9504,brooks-failed-channel-h4,5,USDCHF.DWX,95040005,2026-07-07,Codex,active
+9504,brooks-failed-channel-h4,6,NZDUSD.DWX,95040006,2026-07-07,Codex,active
+9504,brooks-failed-channel-h4,7,XAUUSD.DWX,95040007,2026-07-07,Codex,active
+9504,brooks-failed-channel-h4,8,XTIUSD.DWX,95040008,2026-07-07,Codex,active
+9504,brooks-failed-channel-h4,9,GDAXI.DWX,95040009,2026-07-07,Codex,active
+9504,brooks-failed-channel-h4,10,NDX.DWX,95040010,2026-07-07,Codex,active
+9504,brooks-failed-channel-h4,11,WS30.DWX,95040011,2026-07-07,Codex,active
+9504,brooks-failed-channel-h4,12,UK100.DWX,95040012,2026-07-07,Codex,active
