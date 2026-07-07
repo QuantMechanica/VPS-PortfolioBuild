@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13024
 ; ea_slug:      audcad-gbpaud-coint
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   288e54d688ffebc4017e9bb99ac3a304cc19aa473d357e056d58386fba8ca49b
+; build_hash:   bdb074a517f8075be3c26ba3909701f62029e504d0819a8b8284ea5fb9ed18ef
 ; author:       Development
 ; date:         2026-07-07
 ;==========================================================
