@@ -1,0 +1,96 @@
+{
+  "generated_at_utc": "2026-07-07T14:17:56Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves",
+  "unit_of_work": "advance existing approved low-frequency forex card through Q02 when no unbuilt non-duplicate FX cointegration basket remained",
+  "decision": {
+    "selected_path": "advance_existing_forex_card",
+    "selected_ea": "QM5_13020",
+    "selected_symbol": "AUDNZD.DWX",
+    "selected_phase": "Q02",
+    "reason": "The strict 66-pair scan survivors QM5_12532 and QM5_12533 are already built and not Q02-blocked. The visible extended market-neutral FX cointegration frontier is already built as QM5_13024 and QM5_13029. QM5_13020 is an approved low-frequency AUDNZD cointegration-reversion forex card with an existing pending Q02 row, so the non-duplicate fallback was to advance that row instead of creating another build or duplicate enqueue.",
+    "new_unbuilt_pair_found": false,
+    "duplicate_work_item_created": false
+  },
+  "source_evidence": {
+    "primary_research": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "gap_direction": "docs/research/PORTFOLIO_GAP_DIRECTED_EDGES_2026-06-21.md",
+    "approved_card": "artifacts/cards_approved/QM5_13020_audnzd-coint-reversion.md",
+    "ea_folder": "framework/EAs/QM5_13020_audnzd-coint-reversion"
+  },
+  "frontier_status_before_action": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "state": "built; logical-basket Q02 PASS in local artifacts; not Q02-blocked"
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "state": "built; logical-basket Q02 PASS in local artifacts; not Q02-blocked"
+    },
+    "QM5_13024": {
+      "pair": "AUDCAD.DWX/GBPAUD.DWX",
+      "state": "built; Q02 PASS; Q04 done FAIL in current farm view"
+    },
+    "QM5_13029": {
+      "pair": "GBPCAD.DWX/GBPNZD.DWX",
+      "state": "built; Q02 PASS; Q03 active on T4; Q04 done FAIL in current farm view"
+    }
+  },
+  "queue_mutation": {
+    "sqlite": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "db_backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_13020_q02_priority_20260707T141736Z.sqlite",
+    "work_item_id": "34851790-071e-4e77-8c86-f01db08311c1",
+    "ea_id": "QM5_13020",
+    "phase": "Q02",
+    "symbol": "AUDNZD.DWX",
+    "status_before": "pending",
+    "status_after_metadata_update": "pending",
+    "payload_changes": {
+      "priority_track": true,
+      "priority_reason": "board-advisor FX fallback: advance approved low-frequency AUDNZD cointegration-reversion card through existing Q02 row; strict basket frontier already built/non-Q02-blocked",
+      "priority_updated_at_utc": "2026-07-07T14:17:49Z",
+      "priority_updated_by": "codex/agents-board-advisor",
+      "duplicate_work_item_created": false
+    }
+  },
+  "dispatch_observation_after_action": {
+    "manual_mt5_backtest_launched_by_codex": false,
+    "worker_claimed_existing_row": true,
+    "status_after_worker_claim": "active",
+    "claimed_by": "T1",
+    "observed_at_utc": "2026-07-07T14:17:56Z"
+  },
+  "queue_snapshot_after": {
+    "counts": {
+      "active": 7,
+      "done": 43278,
+      "failed": 45265,
+      "pending": 5491
+    },
+    "active_work_items": [
+      {
+        "terminal": "T1",
+        "ea": "QM5_13020",
+        "phase": "Q02",
+        "symbol": "AUDNZD.DWX"
+      },
+      {
+        "terminal": "T4",
+        "ea": "QM5_13029",
+        "phase": "Q03",
+        "symbol": "QM5_13029_GBPCAD_GBPNZD_COINTEGRATION_D1"
+      }
+    ]
+  },
+  "safety": {
+    "new_backtest_work_item_created": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
