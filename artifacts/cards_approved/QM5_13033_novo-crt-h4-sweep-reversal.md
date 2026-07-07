@@ -1,5 +1,5 @@
 ---
-ea_id: QM5_13032
+ea_id: QM5_13033
 slug: novo-crt-h4-sweep-reversal
 type: strategy
 strategy_id: YT-NOVO-LEGACY-2026-07_CRT-H4-SWEEP
@@ -29,7 +29,7 @@ target_symbols: [NDX.DWX, XAUUSD.DWX]
 primary_target_symbols: [NDX.DWX]
 markets: [NDX.DWX, XAUUSD.DWX]
 single_symbol_only: true
-logical_symbol: QM5_13032_CRT_H4_SWEEP_M5
+logical_symbol: QM5_13033_CRT_H4_SWEEP_M5
 period: M5
 timeframes: [M5, H4]
 expected_trade_frequency: "One anchor candle per day, range-day filter plus sweep-in-window plus trigger requirement gate hard; estimate roughly 1-2 entries/week/symbol, approximately 60 trades/year/symbol; zero-trade weeks in strong trend regimes are expected."
