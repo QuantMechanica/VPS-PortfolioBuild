@@ -17,12 +17,12 @@ class DwxHistoryRangeFilterTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp) / "farm"
             repo_root = Path(tmp) / "repo"
-            ea_dir = repo_root / "framework" / "EAs" / "QM5_9999_demo"
+            ea_dir = repo_root / "framework" / "EAs" / "QM5_5999_demo"
             sets_dir = ea_dir / "sets"
             registry_dir = repo_root / "framework" / "registry"
             sets_dir.mkdir(parents=True)
             registry_dir.mkdir(parents=True)
-            (ea_dir / "QM5_9999_demo.ex5").write_text("compiled", encoding="utf-8")
+            (ea_dir / "QM5_5999_demo.ex5").write_text("compiled", encoding="utf-8")
 
             (registry_dir / "dwx_symbol_matrix.csv").write_text(
                 "\n".join([
@@ -46,15 +46,15 @@ class DwxHistoryRangeFilterTests(unittest.TestCase):
             (registry_dir / "magic_numbers.csv").write_text(
                 "\n".join([
                     "ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status",
-                    "9999,demo,10,EURUSD.DWX,99990010,2026-05-18,test,active",
-                    "9999,demo,20,GDAXI.DWX,99990020,2026-05-18,test,active",
-                    "9999,demo,30,UNKNOWN_SYM.DWX,99990030,2026-05-18,test,active",
+                    "5999,demo,10,EURUSD.DWX,59990010,2026-05-18,test,active",
+                    "5999,demo,20,GDAXI.DWX,59990020,2026-05-18,test,active",
+                    "5999,demo,30,UNKNOWN_SYM.DWX,59990030,2026-05-18,test,active",
                     "",
                 ]),
                 encoding="utf-8",
             )
 
-            seed_set = sets_dir / "QM5_9999_demo_EURUSD.DWX_D1_backtest.set"
+            seed_set = sets_dir / "QM5_5999_demo_EURUSD.DWX_D1_backtest.set"
             seed_set.write_text(
                 "\n".join([
                     "; symbol:       EURUSD.DWX",
@@ -70,7 +70,7 @@ class DwxHistoryRangeFilterTests(unittest.TestCase):
             db = root / "state" / "farm_state.sqlite"
             now = farmctl.utc_now()
             review_payload = {
-                "ea_id": "QM5_9999",
+                "ea_id": "QM5_5999",
                 "verdict": {"verdict": "APPROVE_FOR_BACKTEST"},
             }
             with sqlite3.connect(db) as conn:
@@ -79,7 +79,7 @@ class DwxHistoryRangeFilterTests(unittest.TestCase):
                     INSERT INTO tasks
                       (id, kind, status, source_id, card_id, payload_json, created_at, updated_at)
                     VALUES
-                      ('review-task', 'ea_review', 'done', NULL, 'QM5_9999', ?, ?, ?)
+                      ('review-task', 'ea_review', 'done', NULL, 'QM5_5999', ?, ?, ?)
                     """,
                     (json.dumps(review_payload), now, now),
                 )
