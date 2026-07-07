@@ -103,60 +103,86 @@ double D1Close(const int shift)
    return iClose(_Symbol, PERIOD_D1, shift); // perf-allowed: D1 regime close paired with QM_SMA.
   }
 
-int TLBEventAtShift(const int shift)
-  {
-   if(strategy_tlb_lines < 2 || shift < 1)
-      return 0;
-
-   const double close_value = H4Close(shift);
-   if(close_value <= 0.0)
-      return 0;
-
-   double prior_high = -DBL_MAX;
-   double prior_low = DBL_MAX;
-   for(int i = 1; i <= strategy_tlb_lines; ++i)
-     {
-      const double high_value = H4High(shift + i);
-      const double low_value = H4Low(shift + i);
-      if(high_value <= 0.0 || low_value <= 0.0)
-         return 0;
-      if(high_value > prior_high)
-         prior_high = high_value;
-      if(low_value < prior_low)
-         prior_low = low_value;
-     }
-
-   if(close_value > prior_high)
-      return 1;
-   if(close_value < prior_low)
-      return -1;
-   return 0;
-  }
-
-int LastTLBDirectionBefore(const int shift)
-  {
-   const int max_shift = shift + strategy_2b_lookback + strategy_tlb_lines;
-   for(int s = shift + 1; s <= max_shift; ++s)
-     {
-      const int event_dir = TLBEventAtShift(s);
-      if(event_dir != 0)
-         return event_dir;
-     }
-   return 0;
-  }
-
 int CurrentTLBFlip()
   {
-   const int current_dir = TLBEventAtShift(1);
-   if(current_dir == 0)
-      return 0;
+   const int line_window = MathMax(2, MathMin(strategy_tlb_lines, 10));
+   const int max_shift = MathMin(MathMax(strategy_2b_lookback + line_window + 80, line_window + 20), 240);
 
-   const int prior_dir = LastTLBDirectionBefore(1);
-   if(current_dir > 0 && prior_dir < 0)
-      return 1;
-   if(current_dir < 0 && prior_dir > 0)
-      return -1;
+   double tlb_lines[256];
+   int line_count = 0;
+   int last_dir = 0;
+
+   for(int shift = max_shift; shift >= 1; --shift)
+     {
+      const double close_value = H4Close(shift);
+      if(close_value <= 0.0)
+         continue;
+
+      if(line_count == 0)
+        {
+         tlb_lines[0] = close_value;
+         line_count = 1;
+         continue;
+        }
+
+      const double prior_close = tlb_lines[line_count - 1];
+      int new_dir = 0;
+
+      if(line_count < line_window)
+        {
+         if(close_value > prior_close)
+            new_dir = 1;
+         else if(close_value < prior_close)
+            new_dir = -1;
+        }
+      else
+        {
+         double prior_high = -DBL_MAX;
+         double prior_low = DBL_MAX;
+         for(int i = line_count - line_window; i < line_count; ++i)
+           {
+            if(tlb_lines[i] > prior_high)
+               prior_high = tlb_lines[i];
+            if(tlb_lines[i] < prior_low)
+               prior_low = tlb_lines[i];
+           }
+
+         if(close_value > prior_high)
+            new_dir = 1;
+         else if(close_value < prior_low)
+            new_dir = -1;
+        }
+
+      if(new_dir == 0)
+         continue;
+
+      const bool is_current_bar = (shift == 1);
+      const bool is_flip = (last_dir != 0 && new_dir != last_dir);
+      if(is_current_bar && is_flip)
+         return new_dir;
+
+      if(line_count >= 256)
+         return 0;
+
+      tlb_lines[line_count] = close_value;
+      line_count++;
+      last_dir = new_dir;
+     }
+
    return 0;
+  }
+
+bool EntrySpreadBlocked()
+  {
+   const double atr_value = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   if(atr_value > 0.0 && strategy_spread_atr_mult > 0.0 &&
+      bid > 0.0 && ask > 0.0 && ask > bid &&
+      (ask - bid) > (atr_value * strategy_spread_atr_mult))
+      return true;
+
+   return false;
   }
 
 bool IsLocalSwingLow(const int shift)
@@ -333,14 +359,6 @@ bool Strategy_NoTradeFilter()
    if(_Period != PERIOD_H4)
       return true;
 
-   const double atr_value = QM_ATR(_Symbol, PERIOD_H4, strategy_atr_period, 1);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(atr_value > 0.0 && strategy_spread_atr_mult > 0.0 &&
-      bid > 0.0 && ask > 0.0 && ask > bid &&
-      (ask - bid) > (atr_value * strategy_spread_atr_mult))
-      return true;
-
    return false;
   }
 
@@ -365,6 +383,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const int magic = QM_FrameworkMagic();
    if(magic <= 0 || QM_TM_OpenPositionCount(magic) > 0)
+      return false;
+   if(EntrySpreadBlocked())
       return false;
 
    const int tlb_flip = CurrentTLBFlip();
