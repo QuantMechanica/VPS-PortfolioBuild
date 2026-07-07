@@ -175,5 +175,6 @@ gates.
 ## Pipeline History
 
 | version | date | rebuild reason | phase reached | verdict |
-|---|---|---|---|
+|---|---|---|---|---|
 | v1 | 2026-07-07 | initial extended-screen FX cointegration sibling card | G0 | APPROVED |
+| v2 | 2026-07-07 | compiled basket EA and logical basket Q02 enqueued as work item f165f53e | Q02 | PENDING |
