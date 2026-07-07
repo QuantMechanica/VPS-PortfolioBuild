@@ -1,0 +1,90 @@
+{
+  "task_id": "d1e65216-4a8e-4a40-b950-23b577365179",
+  "ea_id": "QM5_13023",
+  "slug": "ftq-audjpy-riskoff-short",
+  "strategy": "Flight-to-quality AUDJPY D1 risk-off short",
+  "source_id": "RS-SAFEHAVEN-FX-2010_FTQ-AUDJPY-SHORT",
+  "source_citation": "Ranaldo and Soederlind (2010), Safe Haven Currencies, Review of Finance; Moskowitz, Ooi and Pedersen (2012), Time Series Momentum, Journal of Financial Economics.",
+  "symbols": [
+    "AUDJPY.DWX"
+  ],
+  "host_symbol": "AUDJPY.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13023_ftq-audjpy-riskoff-short",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13023_ftq-audjpy-riskoff-short\\QM5_13023_ftq-audjpy-riskoff-short.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13023_ftq-audjpy-riskoff-short\\QM5_13023_ftq-audjpy-riskoff-short.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13023_ftq-audjpy-riskoff-short\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13023_ftq-audjpy-riskoff-short.md",
+  "approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13023_ftq-audjpy-riskoff-short.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13023_ftq-audjpy-riskoff-short.md",
+  "magic_base": 130230000,
+  "symbols_registered": [
+    "AUDJPY.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13023_ftq-audjpy-riskoff-short\\sets\\QM5_13023_ftq-audjpy-riskoff-short_AUDJPY.DWX_D1_backtest.set"
+  ],
+  "mq5_sha256": "c8706fc9ce55bf237f179c78c6ce10af317e64324c0f04bc061da3571f07d197",
+  "ex5_sha256": "052e81d91d9966ee931552400398d6b706a86022aaa1c16c925ef2c430ae34a2",
+  "spec_sha256": "ca61b29b1b5918d16d452b80fe3fdfdf5f30084dc07168d9c7ccdd6e671642ac",
+  "setfile_header_build_hash": "7d9c1776c6e574596d5327907e7d70905a2fa9ff397ee05696a23bea25d851fb",
+  "setfile_current_sha256": "5bb814597e278feafc3774cce381a2fc6003846f6d3b1fc0b1f83fc910ec252f",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 1,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "AUDJPY.DWX",
+        "magic": 130230000,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "card_lint": {
+    "command": "python framework/scripts/skill_card_schema_lint.py --card artifacts/cards_approved/QM5_13023_ftq-audjpy-riskoff-short.md",
+    "result": "PASS"
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13023_ftq-audjpy-riskoff-short",
+    "result": "PASS"
+  },
+  "symbol_scope": {
+    "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_13023_ftq-audjpy-riskoff-short --verbose",
+    "result": "SINGLE_SYMBOL_OK"
+  },
+  "compile": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13023_ftq-audjpy-riskoff-short/QM5_13023_ftq-audjpy-riskoff-short.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260707_090244\\QM5_13023_ftq-audjpy-riskoff-short.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260707_090244\\summary.csv"
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13023_ftq-audjpy-riskoff-short -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260707_090427.json"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Paced fleet Q02 will run the tester pass. Earlier Q01 smoke blockers used a calm 2024 window; the approved card now documents 2022 as the required regime-smoke year, so no manual MT5 smoke was launched from this session.",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  },
+  "notes": "Advanced one high-diversity FX sleeve: AUDJPY.DWX D1 short-only risk-off momentum. Existing committed EA was recompiled strict-clean, stale wrong-year Q01 smoke blocker was bypassed via deferred Q02 smoke, and no live/portfolio artifacts were touched."
+}

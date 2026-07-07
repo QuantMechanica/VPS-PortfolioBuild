@@ -1,0 +1,42 @@
+{
+  "generated_at": "2026-07-07T09:05:20+00:00",
+  "unit_of_work": "QM5_13023 AUDJPY.DWX Q02 throughput unblock",
+  "ea_id": "QM5_13023",
+  "symbol": "AUDJPY.DWX",
+  "phase": "Q02",
+  "work_item_id": "164ba936-9c03-4616-923d-89fb94b47e41",
+  "status": "pending",
+  "build_task_id": "d1e65216-4a8e-4a40-b950-23b577365179",
+  "setfile": "framework/EAs/QM5_13023_ftq-audjpy-riskoff-short/sets/QM5_13023_ftq-audjpy-riskoff-short_AUDJPY.DWX_D1_backtest.set",
+  "record_build_result": {
+    "recorded": true,
+    "new_status": "done",
+    "smoke_result": "deferred_p2_smoke",
+    "auto_q02_enqueued": {
+      "ea_id": "QM5_13023",
+      "enqueued": [],
+      "skipped": [
+        {
+          "existing_wi_id": "164ba936",
+          "reason": "existing_q02_pending",
+          "setfile": "QM5_13023_ftq-audjpy-riskoff-short_AUDJPY.DWX_D1_backtest.set",
+          "symbol": "AUDJPY.DWX"
+        }
+      ]
+    }
+  },
+  "duplicate_guard": "farmctl record-build found the existing pending QM5_13023/AUDJPY.DWX Q02 work item and skipped inserting a duplicate.",
+  "risk_payload": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1,
+    "tester_currency": "USD",
+    "tester_deposit": 100000
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "note": "No manual MT5 backtest launched from this session; worker daemons should dispatch the existing Q02 pending item."
+}
