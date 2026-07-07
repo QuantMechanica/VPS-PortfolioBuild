@@ -86,6 +86,8 @@ input int    strategy_spread_lookback    = 20;
 double g_statevol_forecast = 0.0;
 bool   g_statevol_ready = false;
 bool   g_statevol_spread_allows = true;
+bool   g_statevol_ema_seeded = false;
+datetime g_statevol_last_bar_time = 0;
 
 double ClampForecast(const double value)
   {
@@ -164,7 +166,7 @@ bool SpreadAllowsEntry(const int &spreads[], const int n)
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    double current_spread = (double)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(current_spread <= 0.0 && point > 0.0)
+   if(current_spread == 0.0 && point > 0.0)
      {
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
@@ -172,7 +174,7 @@ bool SpreadAllowsEntry(const int &spreads[], const int n)
          current_spread = (ask - bid) / point;
      }
 
-   if(current_spread <= 0.0)
+   if(current_spread == 0.0)
       return true;
 
    double sample[];
@@ -196,7 +198,7 @@ bool SpreadAllowsEntry(const int &spreads[], const int n)
    if((got % 2) == 0)
       median = 0.5 * (sample[(got / 2) - 1] + sample[got / 2]);
 
-   if(median <= 0.0)
+   if(median == 0.0)
       return true;
 
    g_statevol_spread_allows = (current_spread <= 2.0 * median);
@@ -216,15 +218,12 @@ bool ComputeStateVolForecast(double &out_forecast)
       strategy_atr_sl_mult <= 0.0)
       return false;
 
-   const int smooth_warmup = MathMax(strategy_smooth_period * 12, 60);
-   const int requested_bars = strategy_long_vol_baseline +
-                              strategy_vol_lookback +
-                              strategy_min_prior_bars +
-                              smooth_warmup + 10;
+   const int requested_bars = MathMax(strategy_long_vol_baseline, strategy_min_prior_bars) +
+                              strategy_vol_lookback + 10;
 
    MqlRates rates[];
    const int copied = CopyRates(_Symbol, PERIOD_D1, 1, requested_bars, rates); // perf-allowed: D1 closed-bar volatility percentile calculation, called only from Strategy_EntrySignal after QM_IsNewBar().
-   if(copied < strategy_min_prior_bars + strategy_vol_lookback + smooth_warmup)
+   if(copied < strategy_min_prior_bars + strategy_vol_lookback + 1)
       return false;
 
    double closes[];
@@ -233,6 +232,14 @@ bool ComputeStateVolForecast(double &out_forecast)
    ArrayResize(spreads, copied);
 
    const bool newest_first = (rates[0].time > rates[copied - 1].time);
+   const int newest_src = newest_first ? 0 : copied - 1;
+   const datetime latest_closed_bar = rates[newest_src].time;
+   if(g_statevol_ready && g_statevol_last_bar_time == latest_closed_bar)
+     {
+      out_forecast = g_statevol_forecast;
+      return true;
+     }
+
    for(int i = 0; i < copied; ++i)
      {
       const int src = newest_first ? (copied - 1 - i) : i;
@@ -245,17 +252,47 @@ bool ComputeStateVolForecast(double &out_forecast)
    double daily_vol[];
    double prefix[];
    double normalised_vol[];
+   double returns[];
    ArrayResize(daily_vol, copied);
    ArrayResize(prefix, copied + 1);
    ArrayResize(normalised_vol, copied);
+   ArrayResize(returns, copied);
 
    prefix[0] = 0.0;
+   returns[0] = 0.0;
+   double rolling_sum = 0.0;
+   double rolling_sum_sq = 0.0;
    for(int i = 0; i < copied; ++i)
      {
       daily_vol[i] = 0.0;
       normalised_vol[i] = 0.0;
-      if(i >= strategy_vol_lookback)
-         daily_vol[i] = ReturnStdDev(closes, i, strategy_vol_lookback);
+
+      if(i > 0)
+        {
+         if(closes[i - 1] <= 0.0 || closes[i] <= 0.0)
+            return false;
+         returns[i] = (closes[i] / closes[i - 1]) - 1.0;
+         rolling_sum += returns[i];
+         rolling_sum_sq += returns[i] * returns[i];
+
+         if(i > strategy_vol_lookback)
+           {
+            const double old_return = returns[i - strategy_vol_lookback];
+            rolling_sum -= old_return;
+            rolling_sum_sq -= old_return * old_return;
+           }
+
+         if(i >= strategy_vol_lookback)
+           {
+            const double mean = rolling_sum / (double)strategy_vol_lookback;
+            double variance = (rolling_sum_sq / (double)strategy_vol_lookback) - (mean * mean);
+            if(variance < 0.0 && variance > -0.000000000001)
+               variance = 0.0;
+            if(variance > 0.0)
+               daily_vol[i] = MathSqrt(variance);
+           }
+        }
+
       prefix[i + 1] = prefix[i] + daily_vol[i];
      }
 
@@ -275,32 +312,22 @@ bool ComputeStateVolForecast(double &out_forecast)
          normalised_vol[i] = daily_vol[i] / avg_vol;
      }
 
+   double raw = 0.0;
    const int current_idx = copied - 1;
-   int start_idx = current_idx - smooth_warmup + 1;
-   if(start_idx < strategy_vol_lookback)
-      start_idx = strategy_vol_lookback;
-
-   const double alpha = 2.0 / ((double)strategy_smooth_period + 1.0);
-   double ema = 0.0;
-   bool seeded = false;
-   for(int i = start_idx; i <= current_idx; ++i)
-     {
-      double raw = 0.0;
-      if(!RawForecastAt(normalised_vol, i, raw))
-         continue;
-      if(!seeded)
-        {
-         ema = raw;
-         seeded = true;
-        }
-      else
-         ema = alpha * raw + (1.0 - alpha) * ema;
-     }
-
-   if(!seeded)
+   if(!RawForecastAt(normalised_vol, current_idx, raw))
       return false;
 
-   out_forecast = ClampForecast(ema);
+   const double alpha = 2.0 / ((double)strategy_smooth_period + 1.0);
+   if(!g_statevol_ema_seeded)
+     {
+      g_statevol_forecast = raw;
+      g_statevol_ema_seeded = true;
+     }
+   else
+      g_statevol_forecast = alpha * raw + (1.0 - alpha) * g_statevol_forecast;
+
+   g_statevol_last_bar_time = latest_closed_bar;
+   out_forecast = ClampForecast(g_statevol_forecast);
    return true;
   }
 

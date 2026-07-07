@@ -1,23 +1,24 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        1229
-; ea_slug:      carver-statevol
+; ea_id:        11267
+; ea_slug:      qt-macd-ma
 ; ea_version:   v5.0
-; set_version:  s20260618-001
-; symbol:       NZDCAD.DWX
+; set_version:  s20260707-stress-harsh
+; symbol:       XAUUSD.DWX
 ; timeframe:    D1
-; environment:  backtest
-; magic_slot:   21
+; environment:  q06_stress_harsh
+; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   092a99318bc1177a8f0b322fbc144842488bdbe0fdadcb9e48df87622f591984
+; build_hash:   15d67400577d411edecb5957dac6fe53ce595acc0a335c46158cc04242e1cc24
 ; author:       Development
-; date:         2026-06-18
+; date:         2026-07-07
 ;==========================================================
-qm_magic_slot_offset=21
+qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
