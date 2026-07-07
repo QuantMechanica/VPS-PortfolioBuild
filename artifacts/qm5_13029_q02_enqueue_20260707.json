@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-07-07T07:28:32+00:00",
+  "unit_of_work": "QM5_13029 Q02 logical basket enqueue",
+  "ea_id": "QM5_13029",
+  "symbol": "QM5_13029_GBPCAD_GBPNZD_COINTEGRATION_D1",
+  "phase": "Q02",
+  "work_item_id": "8acc9930-38b8-4dbb-a3e1-dc9ae665366f",
+  "status": "pending",
+  "build_task_id": "63eb795f-5cef-45f5-95d7-fe838b6a22ad",
+  "setfile": "framework/EAs/QM5_13029_gbpcad-gbpnzd-coint/sets/QM5_13029_gbpcad-gbpnzd-coint_QM5_13029_GBPCAD_GBPNZD_COINTEGRATION_D1_D1_backtest.set",
+  "duplicate_guard": "farmctl record-build auto_q02 inserted one item; QM5_13029 had zero work_items before record-build.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  }
+}

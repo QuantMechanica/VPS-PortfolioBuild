@@ -1,0 +1,143 @@
+{
+  "task_id": "63eb795f-5cef-45f5-95d7-fe838b6a22ad",
+  "ea_id": "QM5_13029",
+  "slug": "gbpcad-gbpnzd-coint",
+  "strategy": "GBPCAD/GBPNZD D1 market-neutral FX cointegration basket",
+  "source_id": "QM-COINT-SCREEN-EXT-2026-07-06_GBPCAD-GBPNZD",
+  "source_citation": "Chan, Ernest P. (2009). Quantitative Trading. Wiley, Chapter 7 stationarity and cointegration; plus QuantMechanica extended FX cointegration screen on Darwinex .DWX D1 data.",
+  "symbols": [
+    "GBPCAD.DWX",
+    "GBPNZD.DWX"
+  ],
+  "logical_symbol": "QM5_13029_GBPCAD_GBPNZD_COINTEGRATION_D1",
+  "host_symbol": "GBPCAD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13029_gbpcad-gbpnzd-coint",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13029_gbpcad-gbpnzd-coint\\QM5_13029_gbpcad-gbpnzd-coint.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13029_gbpcad-gbpnzd-coint\\QM5_13029_gbpcad-gbpnzd-coint.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13029_gbpcad-gbpnzd-coint\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13029_gbpcad-gbpnzd-coint_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13029_gbpcad-gbpnzd-coint_card.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13029_gbpcad-gbpnzd-coint.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13029_gbpcad-gbpnzd-coint\\basket_manifest.json",
+  "magic_base": 130290000,
+  "symbols_registered": [
+    "GBPCAD.DWX",
+    "GBPNZD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13029_gbpcad-gbpnzd-coint\\sets\\QM5_13029_gbpcad-gbpnzd-coint_QM5_13029_GBPCAD_GBPNZD_COINTEGRATION_D1_D1_backtest.set"
+  ],
+  "mq5_sha256": "ed87145e68e04b3f20b1ae96c4a8a362a1d640690e8f1bbe7341c238c3ec240e",
+  "ex5_sha256": "7dd21d5d89c164b9dddf38daa7ad8ded8e724de852bd1ae8c8d9f6ece59361d1",
+  "spec_sha256": "45cb53a6f9b8bd9c79bbd9010da48dd4a8a574db9813cff8cef132c95347264a",
+  "manifest_sha256": "964500a8d70936ec283ce26d6fb4b931c58ff809ab15eee3932f21f85fe8f00d",
+  "setfile_header_build_hash": "34080e9f4997188a6cfa581cf1aa5766de076ccb679ae08c627a4ecfeb1e2687",
+  "setfile_current_sha256": "26a63525b3f9b372e0b2ce71091abda04aa2fe040b742f70d7e0adc3ca66e7b1",
+  "scan_ranking": {
+    "source": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706",
+    "hard_bar_survivor": false,
+    "card_worthiness": "BORDERLINE - card only with OWNER risk acceptance",
+    "dev_sharpe_net": -0.11,
+    "oos_net_sharpe": 1.66,
+    "oos_return_pct": 14.15,
+    "oos_state_changes": 30,
+    "hedge_beta": 0.346,
+    "half_life_days": 84.8,
+    "half_adf_t1": -3.597,
+    "half_adf_t2": -3.264,
+    "rolling_z2_excursions": 42,
+    "selection_note": "Next non-duplicate card-worthy FX cointegration row after QM5_13024 AUDCAD/GBPAUD; OOS-heavy and high risk, so Q02+ must judge."
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "GBPCAD.DWX",
+        "magic": 130290000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "GBPNZD.DWX",
+        "magic": 130290001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "card_lint": {
+    "command": "python framework/scripts/skill_card_schema_lint.py --card strategy-seeds/cards/approved/QM5_13029_gbpcad-gbpnzd-coint_card.md",
+    "result": "PASS"
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13029_gbpcad-gbpnzd-coint",
+    "result": "PASS"
+  },
+  "symbol_scope": {
+    "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_13029_gbpcad-gbpnzd-coint --verbose",
+    "result": "BASKET_OK"
+  },
+  "manifest_tests": {
+    "command": "python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py -q",
+    "result": "PASS",
+    "tests": 10
+  },
+  "compile": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13029_gbpcad-gbpnzd-coint/QM5_13029_gbpcad-gbpnzd-coint.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260707_072234\\QM5_13029_gbpcad-gbpnzd-coint.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260707_072234\\summary.csv"
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13029_gbpcad-gbpnzd-coint -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260707_072302.json"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Paced fleet Q02 will run the first tester pass; no manual MT5 backtest was launched from this session.",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  },
+  "notes": "Built one non-duplicate GBPCAD/GBPNZD FX cointegration basket. Positive-beta leg direction is explicit. No live, T_Live, AutoTrading, or portfolio gate artifacts touched.",
+  "q02": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm record-build --task-id 63eb795f-5cef-45f5-95d7-fe838b6a22ad --result-file D:/QM/strategy_farm/artifacts/builds/63eb795f-5cef-45f5-95d7-fe838b6a22ad.json",
+    "phase": "Q02",
+    "work_item_id": "8acc9930-38b8-4dbb-a3e1-dc9ae665366f",
+    "status_at_handoff": "pending",
+    "claimed_by": null,
+    "symbol": "QM5_13029_GBPCAD_GBPNZD_COINTEGRATION_D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13029_gbpcad-gbpnzd-coint\\sets\\QM5_13029_gbpcad-gbpnzd-coint_QM5_13029_GBPCAD_GBPNZD_COINTEGRATION_D1_D1_backtest.set",
+    "basket_symbols": [
+      "GBPCAD.DWX",
+      "GBPNZD.DWX"
+    ],
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1,
+      "tester_currency": "USD",
+      "tester_deposit": 100000
+    },
+    "enqueued_at_utc": "2026-07-07T07:28:32+00:00",
+    "note": "Auto-enqueued by farmctl record-build as one logical-basket Q02 work item. No manual MT5 backtest launched from this session."
+  }
+}
