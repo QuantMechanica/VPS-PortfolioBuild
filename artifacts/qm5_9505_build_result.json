@@ -1,0 +1,59 @@
+{
+  "task_id": "64d69435-3f35-4280-9646-e3166e3b8767",
+  "ea_id": "QM5_9505",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_9505_chande-fo-bband-fade-h4",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9505_chande-fo-bband-fade-h4\\QM5_9505_chande-fo-bband-fade-h4.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9505_chande-fo-bband-fade-h4\\QM5_9505_chande-fo-bband-fade-h4.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9505_chande-fo-bband-fade-h4\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": "D:\\QM\\reports\\smoke\\QM5_9505\\20260707_224635\\summary.json",
+  "smoke_total_trades": null,
+  "smoke_reason_classes": [
+    "REPORT_MISSING",
+    "ACCOUNT_NOT_SPECIFIED",
+    "INCOMPLETE_RUNS",
+    "MODEL4_MARKER_REQUIRED"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9505_chande-fo-bband-fade-h4\\sets\\QM5_9505_chande-fo-bband-fade-h4_EURUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9505_chande-fo-bband-fade-h4\\sets\\QM5_9505_chande-fo-bband-fade-h4_GBPUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9505_chande-fo-bband-fade-h4\\sets\\QM5_9505_chande-fo-bband-fade-h4_USDJPY.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9505_chande-fo-bband-fade-h4\\sets\\QM5_9505_chande-fo-bband-fade-h4_AUDUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9505_chande-fo-bband-fade-h4\\sets\\QM5_9505_chande-fo-bband-fade-h4_USDCAD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9505_chande-fo-bband-fade-h4\\sets\\QM5_9505_chande-fo-bband-fade-h4_USDCHF.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9505_chande-fo-bband-fade-h4\\sets\\QM5_9505_chande-fo-bband-fade-h4_NZDUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9505_chande-fo-bband-fade-h4\\sets\\QM5_9505_chande-fo-bband-fade-h4_XAUUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9505_chande-fo-bband-fade-h4\\sets\\QM5_9505_chande-fo-bband-fade-h4_XTIUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9505_chande-fo-bband-fade-h4\\sets\\QM5_9505_chande-fo-bband-fade-h4_GDAXI.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9505_chande-fo-bband-fade-h4\\sets\\QM5_9505_chande-fo-bband-fade-h4_NDX.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9505_chande-fo-bband-fade-h4\\sets\\QM5_9505_chande-fo-bband-fade-h4_WS30.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9505_chande-fo-bband-fade-h4\\sets\\QM5_9505_chande-fo-bband-fade-h4_UK100.DWX_H4_backtest.set"
+  ],
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "AUDUSD.DWX",
+    "USDCAD.DWX",
+    "USDCHF.DWX",
+    "NZDUSD.DWX",
+    "XAUUSD.DWX",
+    "XTIUSD.DWX",
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "UK100.DWX"
+  ],
+  "magic_base": 95050000,
+  "risk_mode": "RISK_FIXED",
+  "blocked_reason": "",
+  "open_questions": [
+    "FRA40.DWX and JP225.DWX were card-listed but omitted because they are absent from dwx_symbol_matrix.csv and H4 history registry.",
+    "Build smoke was attempted exactly once on T5/EURUSD.DWX/H4/2024; T5 failed before tester start because the account is not specified, so no strategy report was produced.",
+    "The implementation uses the card default PRE60_POST60 high-impact news pause via qm_news_temporal."
+  ],
+  "build_smoke_framework_error": "build smoke framework_error on T5: REPORT_MISSING/ACCOUNT_NOT_SPECIFIED; compile and build_check passed, no EA OnInit failure detected; defer first valid MT5 run to Q02",
+  "smoke_skipped_reason": "framework_error_during_build_smoke_treated_as_done"
+}
