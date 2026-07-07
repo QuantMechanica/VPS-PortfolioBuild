@@ -1,0 +1,55 @@
+{
+  "task_id": "b837b5de-2b52-4180-9ba5-f19d404e8cf3",
+  "ea_id": "QM5_13032",
+  "slug": "xng-cot-fade",
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13032_xng-cot-fade.md",
+  "canonical_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\xng-cot-fade_card.md",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13032_xng-cot-fade",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13032_xng-cot-fade\\QM5_13032_xng-cot-fade.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13032_xng-cot-fade\\QM5_13032_xng-cot-fade.ex5",
+  "ex5_bytes": 316256,
+  "ex5_sha256": "7f5adda9d255be663bfabee17faee2c107ac4fa872df19d422eebc673b6b1e09",
+  "magic_base": 130320000,
+  "magic": 130320000,
+  "symbols_registered": [
+    "XNGUSD.DWX"
+  ],
+  "symbols": [
+    "XNGUSD.DWX"
+  ],
+  "risk_mode": "FIXED",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13032_xng-cot-fade\\sets\\QM5_13032_xng-cot-fade_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": "33ed03672435c3b46b8e889fc04130e2fe9c5e1382c14f1b9a1d5076250b2f3d",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13032_xng-cot-fade\\SPEC.md",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_method": "manual_metaeditor_t5_after_compile_one_global_include_lock",
+  "compile_process_exit_code": 1,
+  "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260707_091434\\QM5_13032_xng-cot-fade.final.manual.compile.log",
+  "compile_log_result": "Result: 0 errors, 0 warnings, 4472 ms elapsed, cpu='X64 Regular'",
+  "compile_one_attempt": {
+    "result": "FAIL",
+    "reason_class": "RUNTIME_EXCEPTION",
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260707_090312\\QM5_13032_xng-cot-fade.compile.log",
+    "failure_reason": "Framework include sync hit locked roaming-terminal QM_KillSwitchKS.mqh before MetaEditor log/output materialized."
+  },
+  "build_check_passed": true,
+  "build_check_skip_compile": true,
+  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260707_091447.json",
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "q02_enqueued_for_paced_fleet_no_manual_backtest",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": [
+    "No manual backtest launched; Q02 is delegated to paced farm workers.",
+    "compile_one.ps1 global include sync was blocked by an unrelated active MT5 terminal lock, so compile evidence uses non-live D:\\QM\\mt5\\T5 MetaEditor with repo includes synced only to T5.",
+    "A concurrent fleet commit briefly captured a duplicate QM5_13033_xng-cot-fade directory while resolving a 13032 registry collision; final commit deletes that duplicate and keeps xng-cot-fade at QM5_13032."
+  ],
+  "built_by": "Codex",
+  "built_at": "2026-07-07T09:14:54Z"
+}
