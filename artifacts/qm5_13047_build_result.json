@@ -1,0 +1,80 @@
+{
+  "task_id": "6a6cd855-3760-4f0c-a956-8d65b188f1e5",
+  "ea_id": "QM5_13047",
+  "slug": "eia-steo-fade",
+  "generated_at": "2026-07-07T22:29:30Z",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "source_id": "EIA-STEO-XTI-FADE-2026",
+  "card": "strategy-seeds/cards/approved/QM5_13047_eia-steo-fade_card.md",
+  "canonical_card": "strategy-seeds/cards/eia-steo-fade_card.md",
+  "ea_dir": "framework/EAs/QM5_13047_eia-steo-fade",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13047_eia-steo-fade\\QM5_13047_eia-steo-fade.mq5",
+  "ea_path": "framework/EAs/QM5_13047_eia-steo-fade/QM5_13047_eia-steo-fade.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13047_eia-steo-fade\\QM5_13047_eia-steo-fade.ex5",
+  "magic_base": 130470000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfile": "framework/EAs/QM5_13047_eia-steo-fade/sets/QM5_13047_eia-steo-fade_XTIUSD.DWX_D1_backtest.set",
+  "setfiles_generated": [
+    "framework/EAs/QM5_13047_eia-steo-fade/sets/QM5_13047_eia-steo-fade_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13047_eia-steo-fade\\SPEC.md",
+  "setfile_build_hash": "A119A7AF00F477BDB7F686D4068693E1FFD525F3A01DCA6DDFD4F517477C9DA0",
+  "file_hashes_sha256": {
+    "mq5": "D8FFE3B10E4D693B550DFDDBAF7D8DE6774435AC7C291F6CE36F9406965CAB09",
+    "ex5": "B14FF18885A43A845473CE09AC3DC5C3F9FBD8EC86CA48384748B847667403F0",
+    "setfile": "66D61D9A3BA0E1ACD06DDCB6F25CE5BC5C6596DD855B33433A995191D281544E"
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "build_only_q02_enqueue_no_backtest_smoke_run",
+  "blocked_reason": "",
+  "open_questions": [],
+  "q02_work_item": {
+    "id": "0b20c287-1481-4783-94c1-b3ff23c37bbf",
+    "phase": "Q02",
+    "status": "pending",
+    "symbol": "XTIUSD.DWX",
+    "created_at": "2026-07-07T22:25:58+00:00"
+  },
+  "checks": {
+    "card_schema_lint_canonical": "PASS",
+    "card_schema_lint_approved": "PASS",
+    "g0_card_lint_canonical": "PASS",
+    "g0_card_lint_approved": "PASS",
+    "spec_doc": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_guardrails": "PASS",
+    "magic_resolver_update": {
+      "result": "PASS",
+      "warnings": [
+        "pre-existing missing EA dirs for magic rows: 1001, 1015, 1016"
+      ]
+    },
+    "compile_one_strict": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260707_222519/QM5_13047_eia-steo-fade.compile.log"
+    },
+    "build_check_strict": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260707_223050.json"
+    }
+  },
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "backtest_cpu_used": false
+  }
+}
