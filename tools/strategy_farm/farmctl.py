@@ -224,7 +224,6 @@ def _assert_canonical_checkout() -> None:
         )
         sys.exit(1)
 
-
 def is_factory_terminal_name(value: Any) -> bool:
     terminal = str(value or "").upper()
     return bool(FACTORY_TERMINAL_PATTERN.fullmatch(terminal)) and terminal not in LIVE_TERMINAL_NAMES
@@ -12659,6 +12658,37 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+# Layer 2: subcommands that mutate persistent state must run from the canonical
+# checkout (C:/QM/repo) so FRAMEWORK_EAS_DIR resolves the full EA tree.
+# Running them from a worktree risks misclassifying ~92% of EA dirs as missing
+# (2026-07-03 mass false-invalidation incident, 5167 work_items).
+_CANONICAL_CHECKOUT = Path(os.environ.get("QM_CANONICAL_REPO_ROOT", r"C:\QM\repo"))
+_STATE_MUTATING_COMMANDS = frozenset({
+    "pump", "repair", "dispatch-tick", "tick", "backfill-work-items",
+    "enqueue-backtest", "approve-card", "reject-card", "seed-sources",
+})
+
+
+def _assert_canonical_checkout(command: str = "state-mutating command") -> None:
+    """Abort with a loud error if a state-mutating command is run from a worktree.
+
+    Set QM_ALLOW_NONCANONICAL=1 to skip this check (deliberate override only).
+    """
+    if os.environ.get("QM_ALLOW_NONCANONICAL"):
+        return
+    script_path = Path(__file__).resolve()
+    canonical_script = (_CANONICAL_CHECKOUT / "tools" / "strategy_farm" / "farmctl.py").resolve()
+    if script_path != canonical_script:
+        msg = (
+            f"[ABORT] farmctl '{command}' is a state-mutating command and must run from "
+            f"the canonical checkout ({canonical_script}). "
+            f"Current script: {script_path}. "
+            f"Set QM_ALLOW_NONCANONICAL=1 to override (for deliberate worktree tests)."
+        )
+        print(msg, file=sys.stderr)
+        sys.exit(1)
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     root = root_from_args(args)
@@ -12669,6 +12699,8 @@ def main(argv: list[str] | None = None) -> int:
     # those overrides. This attributes pump/controller actions correctly in the
     # agent_audit trail and is the prerequisite for later flipping unknown->fail-closed.
     os.environ.setdefault("QM_AGENT_ID", "controller")
+    if args.command in _STATE_MUTATING_COMMANDS:
+        _assert_canonical_checkout(args.command)
 
     if args.command == "init":
         init_db(root)

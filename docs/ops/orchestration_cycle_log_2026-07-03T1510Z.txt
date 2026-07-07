@@ -1,0 +1,67 @@
+Orchestration cycle log — 2026-07-03T1510Z
+Cycle runtime: ~15:05Z – 15:15Z (no IN_PROGRESS tasks; health + queue check only)
+
+=== HEALTH SUMMARY ===
+OVERALL: FAIL (4 FAIL, 2 WARN, 13 OK) — checked at 15:08Z
+
+FAIL:
+  codex_review_fail_rate_1h: 0.4 (threshold 0.8) — 2/5 system-class FAILs across 2 EAs in last hour
+    Action: Inspect framework_corset / magic_registry / forbidden_grep verdicts on those 2 EAs
+  p2_pass_no_p3: 127 profitable Q02-PASS work_items without Q03 promotion
+    Action: farmctl pump (§10c path); persistent alarm since 2026-05-25
+  unbuilt_cards_count: 786 approved cards lack .ex5 and auto-build task
+    Action: farmctl pump auto-build bridge (2 per cycle); backlog is structural
+  unenqueued_eas_count: 60 reviewed built EAs have no Q02 work_items
+    Action: farmctl pump should self-enqueue
+
+WARN:
+  mt5_worker_saturation: 7/10 workers alive (T1-T7 running; T8, T9, T10 down)
+    Note: T8-T10 are Codex FTMO terminals per MEMORY — do not touch
+  source_pool_drained: 7 pending sources (threshold 10)
+    Action: OWNER or Gemini to add sources when convenient
+
+OK (noteworthy):
+  p_pass_stagnation: 52 Q04+ PASSes in last 6h — pipeline flowing well
+  mt5_dispatch_idle: 6209 pending, 5 active, 8 pwsh workers — queue healthy
+  codex_zero_activity: 1 codex active, 25 pending — Codex running
+  quota_snapshot_fresh: codex=81s, claude=80s — quotas fresh
+  codex_auth_broken: 0 errors; auth_age 42.1h — auth healthy
+  disk_free_gb: 279.4GB free on D: — OK
+
+=== ROUTER RUN ===
+Routes created this cycle:
+  - codex: task 09e692a9 (ops_issue) — routed APPROVED→IN_PROGRESS
+  - claude: no_routable_task
+
+Claude running: 0 | max_parallel: 3 | claude_disabled: false
+Research replenishment: FROZEN (61 ready strategy cards ≥ 5 threshold minimum)
+
+Claude task queue (APPROVED, no IN_PROGRESS this cycle):
+  Priority 90: 0bf5dc87 ops_issue — Q02→Q03 cascade bug (recycled from stale Codex impl; needs clean rework)
+  Priority 25: 9a5dcdaf research_strategy — Variant-realization survey (APPROVED/complete, awaiting G0 card creation)
+  Priority 20: 9b4d86a2, 648ffc09 — DWX forbidden-scan (APPROVED codex pinned), H3-H5 own-data
+  Priority 15: 27195799, 7143e208 — XAU fix drift+OPEX, library mining
+  Priority  4: 44ae5229 — (unknown)
+  Priority 2-3: multiple APPROVED ops/research tasks
+  Priority 1: 1a52d28d, b80ee365 — (recent guard tasks from 07-03 hardening cycle)
+
+=== QM5_10260 QUEUE STATE ===
+  Q03 NDX.DWX: FAIL (verdict=FAIL, 2026-06-30T18:43Z) — legitimate pipeline verdict; no queue issue
+  Q02 NDX.DWX: pending (2026-06-30T08:52Z) — another Q02 run queued; will self-dispatch
+  Previous: Q08 NDX (3x done 2026-06-26), Q03 SP500 done (2026-06-28)
+  Status: EA actively cycling; Q03 FAIL is expected pipeline gate behavior
+
+=== BLOCKERS / FLAGS ===
+1. codex_review_fail_rate: 2 EAs failing system-class checks (framework_corset or magic_registry).
+   Codex should inspect those verdict logs; this is NOT a strategy-quality failure.
+2. p2_pass_no_p3 (127): Persistent since 2026-05-25. Task 0bf5dc87 (priority 90) assigned to claude
+   for rework — currently APPROVED but router not picking it up. OWNER: should this be force-promoted
+   to TODO manually, or is the router logic blocking it for a reason?
+3. source_pool_drained (7): Gemini research pipeline needs new sources soon.
+
+=== NEXT RECOMMENDED ACTIONS ===
+- OWNER: review whether task 0bf5dc87 (Q02→Q03 cascade, priority 90 claude APPROVED) should be
+  force-moved to TODO so the router picks it up. If the bug is already fixed (§10c), close it.
+- Codex: inspect framework_corset/magic_registry failures on the 2 EAs from the last hour.
+- Factory: run `farmctl pump` to progress unbuilt-card bridge tasks and unenqueued EAs.
+- Codex FTMO: T8-T10 terminal status (FTMO bench) — confirm they're intentionally offline.

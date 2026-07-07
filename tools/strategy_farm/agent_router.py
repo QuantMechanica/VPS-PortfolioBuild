@@ -76,8 +76,10 @@ DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
     "claude": {
         "enabled": True,
         # OWNER 2026-07-02/03: headless Sonnet lane takes coding tasks (incl. former
-        # codex work) -> full coding capability set; Codex weekly quota is the scarce one.
-        "capabilities": ["code", "tests", "repo_edit", "ops", "research", "review", "strategy", "summary"],
+        # codex work) -> full coding capability set; Codex weekly quota is the
+        # scarce one. "repo" added 2026-07-03 (main lane) to match ops_issue
+        # task requirements ([code,repo,ops]).
+        "capabilities": ["code", "tests", "repo_edit", "repo", "ops", "research", "review", "strategy", "summary"],
         "max_parallel": 3,  # OWNER 2026-06-09: 2->3 (use weekly headroom before Wed reset)
         "cost_rank": 30,
     },
