@@ -212,8 +212,9 @@ function Get-ReportInvalidReasons {
     # a current report with trades proves this run's OnInit succeeded.
     if ($ReportTotalTrades -le 0 -and (Test-TesterLogShowsOnInitFailure -TesterLogTail $TesterLogTail)) { $reasons.Add("ONINIT_FAILED") }
     if (Test-TesterLogShowsSetupDataMissing -TesterLogTail $TesterLogTail) { $reasons.Add("SETUP_DATA_MISSING") }
-    if (Test-TesterLogHasNoHistoryForRun -TesterLogTail $TesterLogTail -ExpectedSymbol $ExpectedSymbol -ExpectedFromDate $ExpectedFromDate -ExpectedToDate $ExpectedToDate) { $reasons.Add("NO_HISTORY_LOG") }
-    if ($bars -ge 0 -and ($periodValue -match "(?i)\bM0\b" -or $bars -le 0) -and $TesterLogTail -match "(?im)\bhistory\b") { $reasons.Add("HISTORY_CONTEXT_INVALID") }
+    $hasCurrentRunNoHistory = Test-TesterLogHasNoHistoryForRun -TesterLogTail $TesterLogTail -ExpectedSymbol $ExpectedSymbol -ExpectedFromDate $ExpectedFromDate -ExpectedToDate $ExpectedToDate
+    if ($hasCurrentRunNoHistory) { $reasons.Add("NO_HISTORY_LOG") }
+    if ($bars -ge 0 -and ($periodValue -match "(?i)\bM0\b" -or $bars -le 0) -and $hasCurrentRunNoHistory) { $reasons.Add("HISTORY_CONTEXT_INVALID") }
     # FW9 2026-05-24 — only flag NO_REAL_TICKS if the EA also produced 0 trades.
     # If the report shows real trade activity, the marker absence is a
     # logging quirk (esp. on basket EAs) not a tester-failure signal.
