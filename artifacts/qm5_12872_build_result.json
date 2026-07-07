@@ -1,0 +1,19 @@
+{
+  "ea_id": "QM5_12872",
+  "ea_slug": "eia-xng-stor-drift",
+  "symbol": "XNGUSD.DWX",
+  "timeframe": "D1",
+  "compiled_at_utc": "2026-07-07T21:26:33Z",
+  "compile_result": "PASS",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_result": "PASS",
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260707_212633.json",
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260707_212633\\QM5_12872_eia-xng-stor-drift.compile.log",
+  "ex5": "C:\\QM\\repo\\framework\\EAs\\QM5_12872_eia-xng-stor-drift\\QM5_12872_eia-xng-stor-drift.ex5",
+  "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_12872_eia-xng-stor-drift\\sets\\QM5_12872_eia-xng-stor-drift_XNGUSD.DWX_D1_backtest.set",
+  "setfile_build_hash": "e1021918186e797d51b437d2d21ac94418d5fe3d62d2370bbe970cf2314c53ee",
+  "notes": "Build-only verification. No local backtest run."
+}

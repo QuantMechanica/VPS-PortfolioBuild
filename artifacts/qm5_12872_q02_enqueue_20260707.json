@@ -1,0 +1,13 @@
+{
+  "ea_id": "QM5_12872",
+  "ea_slug": "eia-xng-stor-drift",
+  "symbol": "XNGUSD.DWX",
+  "phase": "Q02",
+  "work_item_id": "98f9753f-7051-4330-9955-e7cea3a1e28b",
+  "status": "pending",
+  "created_at": "2026-07-07T21:24:59+00:00",
+  "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12872_eia-xng-stor-drift\\sets\\QM5_12872_eia-xng-stor-drift_XNGUSD.DWX_D1_backtest.set",
+  "enqueue_command": "python tools\\strategy_farm\\sweep_enqueue_built_eas.py --apply --ea QM5_12872 --symbols XNGUSD.DWX --queue-ceiling 10000",
+  "enqueue_result": "enqueued=1 skipped=0",
+  "evidence": "D:\\QM\\reports\\state\\claude_sweep_enqueue_2026-06-10.json"
+}
