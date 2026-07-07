@@ -1,0 +1,746 @@
+Okay, previously we were automating the
+Wyckoff price cycle
+trying to create an expert advisor based
+on it using
+cloud AI. And
+we did part one, two, and three, and
+four, and this is part five. So, as for
+part five, we want to go ahead and make
+it advanced and um
+push and see what we can do. So, this is
+the Wyckoff cycle that we're trying to
+make sure we have it where we are maybe
+>> [snorts]
+>> have two types of consolidation. We have
+the accumulation and the distribution.
+They are kind of types of consolidation
+and we want to have
+We [snorts] have the markup and the
+markdown. So, which in a which
+technically tells us that a new trend is
+about to begin and this is what we want
+to be getting. So, previously we did
+create that particular expert advisor
+for part four and maybe I can run it for
+you to see where we did reach uh
+basically. So, we left off at we have
+clear visualizations and we had the
+system automate trades or get
+get a
+be able to get the actual
+uh accumulation, distribution, markup,
+and markdown phase, that entire cycle of
+the Wyckoff of the Wyckoff, I mean. But
+then, we want to push it a little bit
+further to make it super advanced. So
+far, we do have a profitable system
+which we can say it is not much
+much bad off, but
+maybe you can push it a little bit
+further to get clear visuals like we do
+not have clear visuals that are over
+here. We do have the support and
+resistance which defines the
+distribution or the accumulation phase,
+consolidation phase, apparently or that
+range, and then
+you can be able to open a trade like
+over here. We do have We did have
+accumulation over there and then an
+uptrend then we do have an accumulation
+over here again, which marks start of
+uptrend and that is entirely what we
+want to have because that is the Wyckoff
+market cycle
+strategy and that is what we are trying
+to automate over here. So basically, we
+did have
+clear pattern at the end. I'm not going
+to run this up to the end because yeah,
+you can watch part four if you want to
+see what we did come up in that previous
+cycle. So
+This is a continuous phase and I did I
+did not have actually much of things to
+say. I just want to
+push this further and
+Claude has released another model which
+is called fable five and that is what
+you want to use. We have been using
+actually almost all the models. So we do
+have we have used the I think we started
+with Sonnet and then we went to Opus 4.6
+4.7. We [snorts] were using Opus 4.8 as
+per the previous video or a session, but
+then we want to use the the latest model
+which is a fable five which they say it
+is included up to until maybe you know,
+July 7th and today is on the 2nd. So
+um
+Yeah, they are telling us over here. It
+is the most capable model and draws down
+Yeah, it takes that kind of a tokens
+much quicker than Opus 4.8. We have used
+Opus 4.8 and I can Yeah, we have seen
+how it takes
+the consumption and all that kind of
+stuff, but then um
+Yeah, apparently let's see what can do
+uh with this. So,
+maybe it's for tracking stuff, we can
+Let me check usage of a year. So, usage
+is zero. Everything is zero, actually.
+And I want to see how much you can use
+on this Fable
+5 and how it's uh response is to getting
+much better. All right, trying to push
+this on with the without any much
+further ado, I will just paste what I
+did copy over there.
+I had prepared this um
+earlier on, and I want to, you know, so
+that we can move a bit much quicker. So,
+let's see what Fable 5 can do. I have
+used the I. I think I is what comes by
+default. I'm not sure, yeah. That is the
+default. Maybe if it is not super fine,
+then it we can switch to maximum.
+But then we want to track how much it it
+draws and how much it can be of a help
+to us. So, basically, that is all.
+So, let's wait and see.
+So, it is as it is doing its thing over
+there, the part four that I did say it
+is over here, the part four, and that is
+what we did create last time that got us
+to where basically we
+are
+right now. So,
+yeah.
+Oh, and again, maybe something that I am
+forgetting is
+here is the code to get
+the other response it did it did
+generate. We have gone much far on this
+one and this is the last
+code
+lines of code that we add from the AI
+giving us and all that kind of stuff or
+instances. So, we want basically for the
+the EA to create us these and that to
+automate us
+for us the entire strategy.
+I usually like seeing opening EA and
+seeing
+what the AI is telling us. What
+happened?
+I think you comment read about what the
+AI is presenting to us over there.
+I think it is
+>> [snorts]
+>> creating another file because I told it
+to
+explicitly redo the entire file if it is
+a necessary really necessary.
+So, the command prompt that I did send
+at first over there, I will attach it at
+the comment section of this session.
+Okay, I think the build finished and
+the file is presented to us.
+And let's have a look at what they did
+say to us now. I will not I'm not going
+to
+read over everything that is over here,
+though.
+Yeah, basically that's let's see how
+much this took.
+Wow.
+Okay, it is super consummative
+because one promoter alone with the I
+applied and they're getting 50%
+just took 33% of our
+max plan. So,
+yeah, basically it is around two three
+more prompts that are remaining and we
+are out. Let's see. Okay, let's see what
+these
+give us.
+So, I'll copy just like we usually do
+and I paste it over here. I had already
+opened it, so I'll just
+paste it. Apparently, some parts of the
+code were removed, I think, because we
+had 17 and we have 1485.
+So, I'll press F7 to compile.
+I have already attached it to the
+strategy tester, so I'll just navigate
+to strategy tester over here and you can
+see this is where it is and all those
+stuffs. and I
+don't know if something got changed.
+I'll just run it.
+Never mind.
+Wow, this is super super aggressive.
+Maybe I don't know.
+Okay. Okay. [laughter] Okay. We do have
+distribution. We do have accumulation.
+We do have distribution distribution
+distribution distribution.
+Uh
+is this a progress or a retrogress
+because
+goes out. I don't know. I don't know. I
+don't know, man. So,
+let's run it and see. I'm not so sure.
+Okay, we do have so many setups that I
+think some others are not validated.
+Others are validated and the other kind
+of stuff, for instance.
+So,
+I'm not so sure. Let's just watch and
+see if it is making sense or it doesn't
+make sense so we can know what to tell
+it later on.
+Okay, to me for example, I think this is
+a retrogressing.
+I think I'm about to be pissed off. This
+is a clear distribution or accumulation
+or typically let me just be using
+consolidation. But
+how on earth is this a consolidation? It
+does not make any sense to me. Does not
+make any sense. This looks like kind of
+a uptrend.
+It It makes no sense.
+This a clear downtrend. It makes no
+no sense to me at all at all. How is
+this
+Okay, man.
+I I I don't think this is
+what you wanted, maybe.
+Um
+I I I always these are consolidation.
+I'm just like, "Well, okay. All right,
+let's see."
+This is a clear uptrend.
+This is a clear downtrend. Wow. Come on,
+man. Look at this. This is a clear
+downtrend and a very good downtrend.
+Okay, I think at this point I'm pissed
+because I think we are making
+retrogressing efforts.
+Maybe it just crashed everything we had.
+Oh, man. Okay, this can be a valid
+accumulation, but then I think we're
+back to square one.
+And this is a clear uptrend either way.
+Doesn't count to be an accumulation. So,
+I think I'm pissed.
+Yeah, this is a clear
+distribution.
+And we took too much time building that.
+Now, it looks like we are back to square
+one. Wow.
+Uh this is not good. No, no, good.
+And we have this is a clear
+distribution.
+Though.
+These uh doesn't qualify to be a to be a
+distribution. Neither does this. Neither
+does this.
+This does does qualify.
+This doesn't.
+Oh.
+Okay. Okay.
+Okay, I I uh
+we are retrogressing over here and I
+feel pissed because what we took time to
+build is now crushed entirely to the
+ground.
+Wow.
+Uh, this ain't good.
+This ain't
+ain't good, man. Uh, you just
+crashed
+everything we took
+time
+to build.
+We have many
+setups now and some
+of them
+are just clear
+trends
+that
+you classify as
+consolidations.
+What we added
+was better
+than this.
+We we better go back.
+We better go back
+to what was
+already
+working. If
+you are to make this
+worse, this
+This is a downgrade
+to what we
+ever built. It's a total crash.
+Uh,
+total crash. May- maybe I can copy this.
+I should be
+giving it over here.
+What's up?
+Okay, it is a total crash. What else can
+I tell it, man?
+I asked
+for an improvement,
+not
+the other way you
+uh works is to
+everything. Why not
+make this better? I I am pissed.
+Cuz now
+some setups
+look
+completely off.
+Read the code or
+the resources
+in the internet and the
+make this correct.
+Specifically,
+we need clear,
+correct
+consoli-
+consolidations to form
+the markups and
+mark downs.
+Okay.
+Not the markups or the mark downs, but
+the
+accumulations
+and distri-
+butions. Um
+what else can I tell it? Cuz I feel
+pissed. This is an example of an
+accumulation. Doesn't make sense what it
+gave us. It's completely out of
+of sync.
+I will still use this as an example. And
+consider this is a perfect example.
+Should I maybe give it
+these uh stuff because we gave it the
+image, it doesn't understand a thing
+about the image.
+I don't know if a fibo 5 could be able
+to understand the image, but uh opus 4.8
+completely doesn't understand images.
+That is to make no sense giving it
+the images. Never mind, I'll just copy
+the code. I mean, the the link.
+Uh I don't know if it will access it or
+not. We're just trying things over here.
+Look at this resource.
+Oh.
+What did I copy?
+Okay, let me reload it again.
+Cut.
+Does it mean you don't
+clearly know what
+defines a good
+consolidation
+range or what? I think
+it should be able to do these stuffs.
+So, now given that in mind,
+um I would like very much to test the
+maximum, but we have seen how the
+default high consumes uh stuff, so I'll
+stick with the fibo 5 I, but
+yeah, all in all we can say it is it
+ain't
+any better much of than the other one.
+Maybe
+we are prompting it bad. Maybe
+I need to attend um
+you know, those schools or maybe I am
+missing something, but
+I don't feel any
+any much impact from
+from all the from all the the models
+that we have tested so far in this
+creation.
+The [snorts] entire of the Sonnet, the
+Opas, the Ayiku, the
+the Fibo 5 now that
+I am still pissed. I think this AI thing
+is a
+It is It isn't yet there. Maybe it can
+do other stuffs, but
+specifically what we are doing over here
+uh creation creation of expert advisors,
+I think still I will insist we need to
+have some background of a coding.
+Because I am pretty much sure if I was
+the one who was a coding this one from a
+start, I would be maybe performing much
+better because I know what specifically
+I want. But this AI, it has access to
+all the
+to all the resources on the internet. It
+can Google this, Google that, go to this
+link, see these images and go to
+YouTube, maybe watch some videos over
+there and see
+>> [snorts]
+>> how the the strategy works. It is a
+common strategy. It is a basically
+almost everybody knows the Wyckoff. We
+did not give it something that is a new.
+So, it should be able to, you know, read
+the entire strategy and uh
+create an expert advisor based on it.
+But then again, this means it is not
+doing it.
+Uh we It is much of a struggle, no
+matter the
+how we raise the the models, whichever
+comes this much better, this more
+capable, this solves more complex tasks.
+But then
+I don't feel any much effects of
+the AI in this creation of stuff. Maybe
+it can help you solve something, but
+if you are just a beginner and you just
+want to create an expert advisor and you
+are on the go, then I think you need to
+have some background of a coding because
+you might end up pissed like I am.
+Anyway, let's see what it did this time.
+Again, I will check the the tokens that
+were consumed.
+It is the second prompt and
+we are currently at
+38. I think I can deploy the other one.
+I think maybe I can deploy
+the maximum of the next code.
+I mean, next prompt.
+If something is not okay, but let me
+have a look what we have here.
+>> [clears throat]
+>> So, it clearly sees it broke something.
+Why did you do that, buddy? I'm not
+going to read these stuff over here. I'm
+just going to scroll.
+If you want to read or have a look at
+what it did, save
+to us or report was over there. Just
+refresh
+again and copy the latest code and I
+will head back to our editor and tell it
+to do
+some other cool stuff.
+Okay, let's compile this one.
+One thing I like about it is that it
+doesn't have much errors. It understands
+the MQL4/5 syntax
+perfectly fine.
+>> [snorts]
+>> Okay, let's see.
+Um
+Oh man.
+I don't know how many times you are
+going to do this, but this ain't any
+better.
+Because look at now, we have How can we
+have markups?
+What What Yeah, I expect to see a
+consolidation or an accumulation. I
+mean, distribution or accumulation phase
+before the markup or markdown, but
+we cannot have markdown markdown. That's
+completely
+ignorance of
+the strategy. Doesn't make any sense
+to me. Let's have a look.
+Oh man, what do we have?
+This is completely shattered.
+Wow.
+Let me have a look at the journal.
+Nothing meaningful.
+Oh man.
+>> [snorts]
+>> This isn't just even making a loss.
+It doesn't follow any rules. They're
+They're
+Let me deploy the maximum. May Maybe it
+will do us something better. I'm just
+getting pissed each and every prompt we
+get.
+I mean, response.
+Okay, let me deploy the maximum.
+Um
+>> [clears throat]
+>> Okay, what am I going say? Okay, this
+this
+just got
+worse and um
+everything is uh shattered
+shattered to the ground.
+You are making
+this
+worse than better.
+Um
+what am I going to tell it, man? Uh
+I'm just pissed.
+>> [clears throat]
+>> Uh
+Eh.
+Okay, I tell it uh
+Okay, what does it not understand, man?
+Eh.
+>> [snorts]
+>> We need that Okay.
+Okay, okay, okay. Cool down, cool down.
+Composure.
+Mm.
+What I get is consecutive
+consecutive
+>> [snorts]
+>> I'm not used to doing this. Let me just
+go
+cut this one and do it over here.
+Allow me to do this.
+Okay.
+What I get is consecutive
+markups or
+mark downs, which
+>> [snorts]
+>> which I feel I don't want to stand at
+Mr. No All, which I don't feel
+is what the strategy
+cycle
+cycle entire
+in the all
+internet.
+I'm just pissed.
+And the all internet is that how it is
+typed. The whole internet
+defines it. I doubt
+>> [clears throat]
+[snorts]
+>> we needed to have
+consolidations
+and
+then
+trends or mark
+ups or
+mark downs. It's straightforward.
+>> [snorts]
+[snorts]
+>> Okay, I'll just provide it the image. I
+know it doesn't listen to any image.
+Does it will not really matter, but I'll
+just provide it anyway.
+Then
+I will provide an image again. Then
+Oh man, what am I supposed to tell this
+thing?
+Okay.
+Okay, let me just tell it just use
+common sense.
+What am I supposed to tell this thing?
+I'm just out of words. Mm.
+Oh man.
+Those of you who use AI to do creation
+of expert advisors, what do you usually
+do? Cuz I'm just I don't know. Maybe
+someone can tell me what to this thing.
+Mhm.
+Uh yeah.
+Okay, let me just tell it what we had.
+Okay, we might
+and
+go back to what we initially had because
+it used to
+follow the rules.
+This just like a downgrade. I don't
+know.
+And let me provide it this image.
+Where is the image?
+It's somewhere. This one.
+Uh open image in a new tab.
+Then I'll take a screenshot may or maybe
+a snippet.
+Can I copy the image and then paste it
+over here instead of taking a snippet?
+Let me see if that will work.
+It will work.
+Yeah, it does work.
+Perfect and that's the entire image. I
+did not snip it.
+Maybe I can take another image if it's
+really possible.
+I just want to give this thing resources
+as much as possible. We have fed it with
+a lot of information and uh
+it doesn't get us anywhere.
+I'm [snorts] not sure whose website this
+is but
+I just like it.
+It does it it visually has what we want
+to have. So, I'll just copy this one. At
+least see that is working and I'll paste
+it over here as well.
+Like that. Now it has two images. One
+uses the actual cuddle sticks that we
+wanted to see, and the other one has the
+Maybe I can call it the sketch. And uh
+take all your time, buddy. Take
+all your time. Give
+this your all.
+Uh maybe let me be kind somehow, please.
+Kindly
+the fatality.
+Yeah, let's see what it is like. Give us
+this drum roll, else we are gone. Just
+I don't
+>> [snorts]
+[laughter]
+>> Okay, uh let me not think what happened
+is what what I'm thinking is what
+happened.
+Uh maximum maybe used everything.
+And now,
+our tokens are finished.
+Exactly 100%.
+And what did we get? I don't know.
+Mhm.
+And now, I have to buy another one.
+Uh
+okay, we do not get anything, and our
+tokens are finished.
+Uh let me try to refresh these or not.
+Maybe I can copy these or I don't know.
+I don't know now what to do.
+Let me try to refresh. Maybe it yeah,
+did it presented, only I cannot see them
+over here.
+And I copy that one.
+Let me try to refresh it again.
+There is no way we are going to get it
+that uh stuff.
+Maybe switching to maximum was a bad
+idea, a really bad idea.
+And
+we continue next time when uh
+when we are back online because now we
+cannot do anything. Let me see if some
+uh updates kicked in.
+So, you can do some uh checking.
+Either way, 1596
+to 1590. I hope this is the file. Let me
+try to check it.
+And let's see if we have anything
+better.
+Now, I cannot assure you if we have what
+we wanted, but something
+somewhere
+changed in the file.
+It does compile, so let's see. It was in
+the moment of presenting it to us.
+Uh
+let's see what I have what we have here.
+Maybe this is making some sort of sense.
+We are back to square one from where we
+end, but it did make some
+a changes, and that is what I'm trying
+to see specifically what
+So,
+the sense of this thing is that
+this entire thing is markup. Doesn't
+make any sense. This was already
+breached. Let me take the crosshair.
+This is already breached. This is a
+clear downtrend, and it doesn't care
+about that one. It just guesses and uh
+Okay, basically, this is entirely what
+we had, just that the markup was not
+deceiving us like this one is.
+Um
+Yeah, we can assure that this is an
+uptrend. This is a markup. This is a
+perfect example.
+I do not have any issue with that. But,
+then, this one got breached over here.
+So, that's
+Uh
+it doesn't make any sense. It's just
+simple common sense. Uh
+I mean
+Uh
+Uh I don't feel this thing is really
+understanding us because
+uh in normal trading, instead of having
+the buy the buy and sell positions that
+we are having over here, in real sense,
+we should be able to opening a sell
+position over here. And there I'm doing
+the entire position up to the other the
+up to the start of the other
+consolidation of the other cycle,
+basically. So, if this is a sell trade,
+then we want to write up from to write
+it from this point over here to the next
+one. We just added the
+the trades opening stuff just for to see
+if the system is a really working, if it
+is able to do all that. So, which means
+basically our
+not a really good system
+specifically. So,
+>> [snorts]
+>> I think we still have to push it
+further. We we have a lot of stuffs to
+do. We aren't really where we want to
+be.
+And
+yeah, basically, sorry for wasting your
+time. I will I just wait. And next time,
+instead of putting the maximum, we have
+seen the pain of using the maximum in
+our favor of five. So, it'll be just
+using
+I
+to do to do this doesn't make much sense
+to me right now. So,
+So, next time we'll just use a
+I mean, not maximum, but I, which is the
+default one. At least that one can go a
+few few miles before getting depleted.
+Either way, I do not feel any impact of
+using favor from the whole person the
+other. So,
+maybe we might use another maybe a pass
+4.8, which doesn't which was not
+depleting our stuffs our tokens
+really quick like this one is doing.
+Um
+So, yeah. Maybe I'll be sorry for
+wasting my time. We'll just wait. And
+the next session now
+now we know where to get to. And we'll
+have a really well-prepared prompt to
+make these work.
+It It It It It should work either way. I
+feel it should work.
+Um
+Let's keep pushing it. But then
+basically
+I think it is really necessary to know
+the basics of coding because I don't
+feel AI is going to help you either way
+if you do not have the background.
+So
+Mm.
+Yeah, that's that's and then see you
+later.

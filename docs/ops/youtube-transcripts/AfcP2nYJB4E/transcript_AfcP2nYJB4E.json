@@ -1,0 +1,3732 @@
+[
+  {
+    "text": "Okay, previously we were automating the",
+    "start": 0.36,
+    "duration": 5.4
+  },
+  {
+    "text": "Wyckoff price cycle",
+    "start": 3.0,
+    "duration": 4.56
+  },
+  {
+    "text": "trying to create an expert advisor based",
+    "start": 5.76,
+    "duration": 3.24
+  },
+  {
+    "text": "on it using",
+    "start": 7.56,
+    "duration": 4.64
+  },
+  {
+    "text": "cloud AI. And",
+    "start": 9.0,
+    "duration": 5.64
+  },
+  {
+    "text": "we did part one, two, and three, and",
+    "start": 12.2,
+    "duration": 5.68
+  },
+  {
+    "text": "four, and this is part five. So, as for",
+    "start": 14.64,
+    "duration": 6.88
+  },
+  {
+    "text": "part five, we want to go ahead and make",
+    "start": 17.88,
+    "duration": 5.8
+  },
+  {
+    "text": "it advanced and um",
+    "start": 21.52,
+    "duration": 4.24
+  },
+  {
+    "text": "push and see what we can do. So, this is",
+    "start": 23.68,
+    "duration": 4.48
+  },
+  {
+    "text": "the Wyckoff cycle that we're trying to",
+    "start": 25.76,
+    "duration": 5.025
+  },
+  {
+    "text": "make sure we have it where we are maybe",
+    "start": 28.16,
+    "duration": 3.4
+  },
+  {
+    "text": ">> [snorts]",
+    "start": 30.785,
+    "duration": 3.215
+  },
+  {
+    "text": ">> have two types of consolidation. We have",
+    "start": 31.56,
+    "duration": 4.24
+  },
+  {
+    "text": "the accumulation and the distribution.",
+    "start": 34.0,
+    "duration": 3.44
+  },
+  {
+    "text": "They are kind of types of consolidation",
+    "start": 35.8,
+    "duration": 3.44
+  },
+  {
+    "text": "and we want to have",
+    "start": 37.44,
+    "duration": 3.68
+  },
+  {
+    "text": "We [snorts] have the markup and the",
+    "start": 39.24,
+    "duration": 4.0
+  },
+  {
+    "text": "markdown. So, which in a which",
+    "start": 41.12,
+    "duration": 5.08
+  },
+  {
+    "text": "technically tells us that a new trend is",
+    "start": 43.24,
+    "duration": 5.48
+  },
+  {
+    "text": "about to begin and this is what we want",
+    "start": 46.2,
+    "duration": 4.56
+  },
+  {
+    "text": "to be getting. So, previously we did",
+    "start": 48.72,
+    "duration": 4.08
+  },
+  {
+    "text": "create that particular expert advisor",
+    "start": 50.76,
+    "duration": 5.4
+  },
+  {
+    "text": "for part four and maybe I can run it for",
+    "start": 52.8,
+    "duration": 7.0
+  },
+  {
+    "text": "you to see where we did reach uh",
+    "start": 56.16,
+    "duration": 7.2
+  },
+  {
+    "text": "basically. So, we left off at we have",
+    "start": 59.8,
+    "duration": 6.8
+  },
+  {
+    "text": "clear visualizations and we had the",
+    "start": 63.36,
+    "duration": 7.92
+  },
+  {
+    "text": "system automate trades or get",
+    "start": 66.6,
+    "duration": 7.12
+  },
+  {
+    "text": "get a",
+    "start": 71.28,
+    "duration": 5.2
+  },
+  {
+    "text": "be able to get the actual",
+    "start": 73.72,
+    "duration": 4.8
+  },
+  {
+    "text": "uh accumulation, distribution, markup,",
+    "start": 76.48,
+    "duration": 4.84
+  },
+  {
+    "text": "and markdown phase, that entire cycle of",
+    "start": 78.52,
+    "duration": 5.72
+  },
+  {
+    "text": "the Wyckoff of the Wyckoff, I mean. But",
+    "start": 81.32,
+    "duration": 5.0
+  },
+  {
+    "text": "then, we want to push it a little bit",
+    "start": 84.24,
+    "duration": 4.6
+  },
+  {
+    "text": "further to make it super advanced. So",
+    "start": 86.32,
+    "duration": 4.92
+  },
+  {
+    "text": "far, we do have a profitable system",
+    "start": 88.84,
+    "duration": 6.4
+  },
+  {
+    "text": "which we can say it is not much",
+    "start": 91.24,
+    "duration": 6.0
+  },
+  {
+    "text": "much bad off, but",
+    "start": 95.24,
+    "duration": 3.52
+  },
+  {
+    "text": "maybe you can push it a little bit",
+    "start": 97.24,
+    "duration": 4.88
+  },
+  {
+    "text": "further to get clear visuals like we do",
+    "start": 98.76,
+    "duration": 5.36
+  },
+  {
+    "text": "not have clear visuals that are over",
+    "start": 102.12,
+    "duration": 3.64
+  },
+  {
+    "text": "here. We do have the support and",
+    "start": 104.12,
+    "duration": 3.76
+  },
+  {
+    "text": "resistance which defines the",
+    "start": 105.76,
+    "duration": 4.84
+  },
+  {
+    "text": "distribution or the accumulation phase,",
+    "start": 107.88,
+    "duration": 5.6
+  },
+  {
+    "text": "consolidation phase, apparently or that",
+    "start": 110.6,
+    "duration": 5.28
+  },
+  {
+    "text": "range, and then",
+    "start": 113.48,
+    "duration": 4.2
+  },
+  {
+    "text": "you can be able to open a trade like",
+    "start": 115.88,
+    "duration": 3.76
+  },
+  {
+    "text": "over here. We do have We did have",
+    "start": 117.68,
+    "duration": 3.68
+  },
+  {
+    "text": "accumulation over there and then an",
+    "start": 119.64,
+    "duration": 3.92
+  },
+  {
+    "text": "uptrend then we do have an accumulation",
+    "start": 121.36,
+    "duration": 4.68
+  },
+  {
+    "text": "over here again, which marks start of",
+    "start": 123.56,
+    "duration": 4.76
+  },
+  {
+    "text": "uptrend and that is entirely what we",
+    "start": 126.04,
+    "duration": 5.0
+  },
+  {
+    "text": "want to have because that is the Wyckoff",
+    "start": 128.32,
+    "duration": 6.36
+  },
+  {
+    "text": "market cycle",
+    "start": 131.04,
+    "duration": 3.64
+  },
+  {
+    "text": "strategy and that is what we are trying",
+    "start": 134.72,
+    "duration": 5.6
+  },
+  {
+    "text": "to automate over here. So basically, we",
+    "start": 137.16,
+    "duration": 4.76
+  },
+  {
+    "text": "did have",
+    "start": 140.32,
+    "duration": 3.32
+  },
+  {
+    "text": "clear pattern at the end. I'm not going",
+    "start": 141.92,
+    "duration": 4.28
+  },
+  {
+    "text": "to run this up to the end because yeah,",
+    "start": 143.64,
+    "duration": 4.76
+  },
+  {
+    "text": "you can watch part four if you want to",
+    "start": 146.2,
+    "duration": 4.759
+  },
+  {
+    "text": "see what we did come up in that previous",
+    "start": 148.4,
+    "duration": 3.96
+  },
+  {
+    "text": "cycle. So",
+    "start": 150.959,
+    "duration": 5.761
+  },
+  {
+    "text": "This is a continuous phase and I did I",
+    "start": 152.36,
+    "duration": 7.24
+  },
+  {
+    "text": "did not have actually much of things to",
+    "start": 156.72,
+    "duration": 6.28
+  },
+  {
+    "text": "say. I just want to",
+    "start": 159.6,
+    "duration": 5.76
+  },
+  {
+    "text": "push this further and",
+    "start": 163.0,
+    "duration": 4.8
+  },
+  {
+    "text": "Claude has released another model which",
+    "start": 165.36,
+    "duration": 5.44
+  },
+  {
+    "text": "is called fable five and that is what",
+    "start": 167.8,
+    "duration": 5.88
+  },
+  {
+    "text": "you want to use. We have been using",
+    "start": 170.8,
+    "duration": 6.6
+  },
+  {
+    "text": "actually almost all the models. So we do",
+    "start": 173.68,
+    "duration": 7.2
+  },
+  {
+    "text": "have we have used the I think we started",
+    "start": 177.4,
+    "duration": 7.88
+  },
+  {
+    "text": "with Sonnet and then we went to Opus 4.6",
+    "start": 180.88,
+    "duration": 8.2
+  },
+  {
+    "text": "4.7. We [snorts] were using Opus 4.8 as",
+    "start": 185.28,
+    "duration": 6.76
+  },
+  {
+    "text": "per the previous video or a session, but",
+    "start": 189.08,
+    "duration": 6.96
+  },
+  {
+    "text": "then we want to use the the latest model",
+    "start": 192.04,
+    "duration": 6.72
+  },
+  {
+    "text": "which is a fable five which they say it",
+    "start": 196.04,
+    "duration": 6.28
+  },
+  {
+    "text": "is included up to until maybe you know,",
+    "start": 198.76,
+    "duration": 8.04
+  },
+  {
+    "text": "July 7th and today is on the 2nd. So",
+    "start": 202.32,
+    "duration": 6.24
+  },
+  {
+    "text": "um",
+    "start": 206.8,
+    "duration": 4.2
+  },
+  {
+    "text": "Yeah, they are telling us over here. It",
+    "start": 208.56,
+    "duration": 6.76
+  },
+  {
+    "text": "is the most capable model and draws down",
+    "start": 211.0,
+    "duration": 6.28
+  },
+  {
+    "text": "Yeah, it takes that kind of a tokens",
+    "start": 215.32,
+    "duration": 4.76
+  },
+  {
+    "text": "much quicker than Opus 4.8. We have used",
+    "start": 217.28,
+    "duration": 6.239
+  },
+  {
+    "text": "Opus 4.8 and I can Yeah, we have seen",
+    "start": 220.08,
+    "duration": 5.439
+  },
+  {
+    "text": "how it takes",
+    "start": 223.519,
+    "duration": 3.72
+  },
+  {
+    "text": "the consumption and all that kind of",
+    "start": 225.519,
+    "duration": 4.961
+  },
+  {
+    "text": "stuff, but then um",
+    "start": 227.239,
+    "duration": 7.481
+  },
+  {
+    "text": "Yeah, apparently let's see what can do",
+    "start": 230.48,
+    "duration": 6.08
+  },
+  {
+    "text": "uh with this. So,",
+    "start": 234.72,
+    "duration": 7.4
+  },
+  {
+    "text": "maybe it's for tracking stuff, we can",
+    "start": 236.56,
+    "duration": 5.56
+  },
+  {
+    "text": "Let me check usage of a year. So, usage",
+    "start": 244.44,
+    "duration": 5.16
+  },
+  {
+    "text": "is zero. Everything is zero, actually.",
+    "start": 247.68,
+    "duration": 4.04
+  },
+  {
+    "text": "And I want to see how much you can use",
+    "start": 249.6,
+    "duration": 4.04
+  },
+  {
+    "text": "on this Fable",
+    "start": 251.72,
+    "duration": 5.16
+  },
+  {
+    "text": "5 and how it's uh response is to getting",
+    "start": 253.64,
+    "duration": 5.56
+  },
+  {
+    "text": "much better. All right, trying to push",
+    "start": 256.88,
+    "duration": 3.88
+  },
+  {
+    "text": "this on with the without any much",
+    "start": 259.2,
+    "duration": 3.8
+  },
+  {
+    "text": "further ado, I will just paste what I",
+    "start": 260.76,
+    "duration": 4.28
+  },
+  {
+    "text": "did copy over there.",
+    "start": 263.0,
+    "duration": 5.16
+  },
+  {
+    "text": "I had prepared this um",
+    "start": 265.04,
+    "duration": 5.76
+  },
+  {
+    "text": "earlier on, and I want to, you know, so",
+    "start": 268.16,
+    "duration": 5.52
+  },
+  {
+    "text": "that we can move a bit much quicker. So,",
+    "start": 270.8,
+    "duration": 6.32
+  },
+  {
+    "text": "let's see what Fable 5 can do. I have",
+    "start": 273.68,
+    "duration": 6.0
+  },
+  {
+    "text": "used the I. I think I is what comes by",
+    "start": 277.12,
+    "duration": 4.64
+  },
+  {
+    "text": "default. I'm not sure, yeah. That is the",
+    "start": 279.68,
+    "duration": 5.6
+  },
+  {
+    "text": "default. Maybe if it is not super fine,",
+    "start": 281.76,
+    "duration": 6.44
+  },
+  {
+    "text": "then it we can switch to maximum.",
+    "start": 285.28,
+    "duration": 5.44
+  },
+  {
+    "text": "But then we want to track how much it it",
+    "start": 288.2,
+    "duration": 6.6
+  },
+  {
+    "text": "draws and how much it can be of a help",
+    "start": 290.72,
+    "duration": 9.12
+  },
+  {
+    "text": "to us. So, basically, that is all.",
+    "start": 294.8,
+    "duration": 8.119
+  },
+  {
+    "text": "So, let's wait and see.",
+    "start": 299.84,
+    "duration": 3.079
+  },
+  {
+    "text": "So, it is as it is doing its thing over",
+    "start": 311.52,
+    "duration": 5.56
+  },
+  {
+    "text": "there, the part four that I did say it",
+    "start": 314.72,
+    "duration": 4.8
+  },
+  {
+    "text": "is over here, the part four, and that is",
+    "start": 317.08,
+    "duration": 6.52
+  },
+  {
+    "text": "what we did create last time that got us",
+    "start": 319.52,
+    "duration": 6.2
+  },
+  {
+    "text": "to where basically we",
+    "start": 323.6,
+    "duration": 3.4
+  },
+  {
+    "text": "are",
+    "start": 325.72,
+    "duration": 3.88
+  },
+  {
+    "text": "right now. So,",
+    "start": 327.0,
+    "duration": 4.919
+  },
+  {
+    "text": "yeah.",
+    "start": 329.6,
+    "duration": 2.319
+  },
+  {
+    "text": "Oh, and again, maybe something that I am",
+    "start": 348.28,
+    "duration": 4.72
+  },
+  {
+    "text": "forgetting is",
+    "start": 350.24,
+    "duration": 5.88
+  },
+  {
+    "text": "here is the code to get",
+    "start": 353.0,
+    "duration": 5.04
+  },
+  {
+    "text": "the other response it did it did",
+    "start": 356.12,
+    "duration": 5.16
+  },
+  {
+    "text": "generate. We have gone much far on this",
+    "start": 358.04,
+    "duration": 5.68
+  },
+  {
+    "text": "one and this is the last",
+    "start": 361.28,
+    "duration": 3.52
+  },
+  {
+    "text": "code",
+    "start": 363.72,
+    "duration": 4.64
+  },
+  {
+    "text": "lines of code that we add from the AI",
+    "start": 364.8,
+    "duration": 5.96
+  },
+  {
+    "text": "giving us and all that kind of stuff or",
+    "start": 368.36,
+    "duration": 4.92
+  },
+  {
+    "text": "instances. So, we want basically for the",
+    "start": 370.76,
+    "duration": 5.08
+  },
+  {
+    "text": "the EA to create us these and that to",
+    "start": 373.28,
+    "duration": 4.44
+  },
+  {
+    "text": "automate us",
+    "start": 375.84,
+    "duration": 5.84
+  },
+  {
+    "text": "for us the entire strategy.",
+    "start": 377.72,
+    "duration": 3.96
+  },
+  {
+    "text": "I usually like seeing opening EA and",
+    "start": 391.96,
+    "duration": 4.72
+  },
+  {
+    "text": "seeing",
+    "start": 395.32,
+    "duration": 4.0
+  },
+  {
+    "text": "what the AI is telling us. What",
+    "start": 396.68,
+    "duration": 5.2
+  },
+  {
+    "text": "happened?",
+    "start": 399.32,
+    "duration": 2.56
+  },
+  {
+    "text": "I think you comment read about what the",
+    "start": 434.2,
+    "duration": 7.4
+  },
+  {
+    "text": "AI is presenting to us over there.",
+    "start": 436.8,
+    "duration": 4.8
+  },
+  {
+    "text": "I think it is",
+    "start": 441.72,
+    "duration": 1.84
+  },
+  {
+    "text": ">> [snorts]",
+    "start": 442.785,
+    "duration": 2.855
+  },
+  {
+    "text": ">> creating another file because I told it",
+    "start": 443.56,
+    "duration": 3.52
+  },
+  {
+    "text": "to",
+    "start": 445.64,
+    "duration": 5.12
+  },
+  {
+    "text": "explicitly redo the entire file if it is",
+    "start": 447.08,
+    "duration": 6.839
+  },
+  {
+    "text": "a necessary really necessary.",
+    "start": 450.76,
+    "duration": 5.76
+  },
+  {
+    "text": "So, the command prompt that I did send",
+    "start": 453.919,
+    "duration": 5.241
+  },
+  {
+    "text": "at first over there, I will attach it at",
+    "start": 456.52,
+    "duration": 7.16
+  },
+  {
+    "text": "the comment section of this session.",
+    "start": 459.16,
+    "duration": 4.52
+  },
+  {
+    "text": "Okay, I think the build finished and",
+    "start": 479.16,
+    "duration": 6.4
+  },
+  {
+    "text": "the file is presented to us.",
+    "start": 482.8,
+    "duration": 6.8
+  },
+  {
+    "text": "And let's have a look at what they did",
+    "start": 485.56,
+    "duration": 7.12
+  },
+  {
+    "text": "say to us now. I will not I'm not going",
+    "start": 489.6,
+    "duration": 4.76
+  },
+  {
+    "text": "to",
+    "start": 492.68,
+    "duration": 4.16
+  },
+  {
+    "text": "read over everything that is over here,",
+    "start": 494.36,
+    "duration": 4.84
+  },
+  {
+    "text": "though.",
+    "start": 496.84,
+    "duration": 2.36
+  },
+  {
+    "text": "Yeah, basically that's let's see how",
+    "start": 501.96,
+    "duration": 6.52
+  },
+  {
+    "text": "much this took.",
+    "start": 504.52,
+    "duration": 3.96
+  },
+  {
+    "text": "Wow.",
+    "start": 513.76,
+    "duration": 5.32
+  },
+  {
+    "text": "Okay, it is super consummative",
+    "start": 515.84,
+    "duration": 6.6
+  },
+  {
+    "text": "because one promoter alone with the I",
+    "start": 519.08,
+    "duration": 6.28
+  },
+  {
+    "text": "applied and they're getting 50%",
+    "start": 522.44,
+    "duration": 6.2
+  },
+  {
+    "text": "just took 33% of our",
+    "start": 525.36,
+    "duration": 7.4
+  },
+  {
+    "text": "max plan. So,",
+    "start": 528.64,
+    "duration": 4.12
+  },
+  {
+    "text": "yeah, basically it is around two three",
+    "start": 533.08,
+    "duration": 3.92
+  },
+  {
+    "text": "more prompts that are remaining and we",
+    "start": 534.76,
+    "duration": 5.6
+  },
+  {
+    "text": "are out. Let's see. Okay, let's see what",
+    "start": 537.0,
+    "duration": 4.56
+  },
+  {
+    "text": "these",
+    "start": 540.36,
+    "duration": 2.52
+  },
+  {
+    "text": "give us.",
+    "start": 541.56,
+    "duration": 3.68
+  },
+  {
+    "text": "So, I'll copy just like we usually do",
+    "start": 542.88,
+    "duration": 5.0
+  },
+  {
+    "text": "and I paste it over here. I had already",
+    "start": 545.24,
+    "duration": 6.24
+  },
+  {
+    "text": "opened it, so I'll just",
+    "start": 547.88,
+    "duration": 3.6
+  },
+  {
+    "text": "paste it. Apparently, some parts of the",
+    "start": 553.44,
+    "duration": 5.76
+  },
+  {
+    "text": "code were removed, I think, because we",
+    "start": 556.52,
+    "duration": 5.319
+  },
+  {
+    "text": "had 17 and we have 1485.",
+    "start": 559.2,
+    "duration": 6.8
+  },
+  {
+    "text": "So, I'll press F7 to compile.",
+    "start": 561.839,
+    "duration": 7.121
+  },
+  {
+    "text": "I have already attached it to the",
+    "start": 566.0,
+    "duration": 5.16
+  },
+  {
+    "text": "strategy tester, so I'll just navigate",
+    "start": 568.96,
+    "duration": 4.6
+  },
+  {
+    "text": "to strategy tester over here and you can",
+    "start": 571.16,
+    "duration": 5.92
+  },
+  {
+    "text": "see this is where it is and all those",
+    "start": 573.56,
+    "duration": 5.12
+  },
+  {
+    "text": "stuffs. and I",
+    "start": 577.08,
+    "duration": 4.12
+  },
+  {
+    "text": "don't know if something got changed.",
+    "start": 578.68,
+    "duration": 4.08
+  },
+  {
+    "text": "I'll just run it.",
+    "start": 581.2,
+    "duration": 4.24
+  },
+  {
+    "text": "Never mind.",
+    "start": 582.76,
+    "duration": 2.68
+  },
+  {
+    "text": "Wow, this is super super aggressive.",
+    "start": 593.52,
+    "duration": 5.76
+  },
+  {
+    "text": "Maybe I don't know.",
+    "start": 596.24,
+    "duration": 3.04
+  },
+  {
+    "text": "Okay. Okay. [laughter] Okay. We do have",
+    "start": 599.4,
+    "duration": 4.76
+  },
+  {
+    "text": "distribution. We do have accumulation.",
+    "start": 601.4,
+    "duration": 5.48
+  },
+  {
+    "text": "We do have distribution distribution",
+    "start": 604.16,
+    "duration": 5.08
+  },
+  {
+    "text": "distribution distribution.",
+    "start": 606.88,
+    "duration": 4.04
+  },
+  {
+    "text": "Uh",
+    "start": 609.24,
+    "duration": 4.24
+  },
+  {
+    "text": "is this a progress or a retrogress",
+    "start": 610.92,
+    "duration": 5.56
+  },
+  {
+    "text": "because",
+    "start": 613.48,
+    "duration": 3.0
+  },
+  {
+    "text": "goes out. I don't know. I don't know. I",
+    "start": 617.68,
+    "duration": 4.04
+  },
+  {
+    "text": "don't know, man. So,",
+    "start": 619.56,
+    "duration": 7.0
+  },
+  {
+    "text": "let's run it and see. I'm not so sure.",
+    "start": 621.72,
+    "duration": 8.56
+  },
+  {
+    "text": "Okay, we do have so many setups that I",
+    "start": 626.56,
+    "duration": 6.24
+  },
+  {
+    "text": "think some others are not validated.",
+    "start": 630.28,
+    "duration": 4.68
+  },
+  {
+    "text": "Others are validated and the other kind",
+    "start": 632.8,
+    "duration": 4.36
+  },
+  {
+    "text": "of stuff, for instance.",
+    "start": 634.96,
+    "duration": 4.88
+  },
+  {
+    "text": "So,",
+    "start": 637.16,
+    "duration": 2.68
+  },
+  {
+    "text": "I'm not so sure. Let's just watch and",
+    "start": 640.64,
+    "duration": 4.6
+  },
+  {
+    "text": "see if it is making sense or it doesn't",
+    "start": 642.92,
+    "duration": 4.96
+  },
+  {
+    "text": "make sense so we can know what to tell",
+    "start": 645.24,
+    "duration": 5.92
+  },
+  {
+    "text": "it later on.",
+    "start": 647.88,
+    "duration": 3.28
+  },
+  {
+    "text": "Okay, to me for example, I think this is",
+    "start": 653.24,
+    "duration": 6.4
+  },
+  {
+    "text": "a retrogressing.",
+    "start": 656.0,
+    "duration": 3.64
+  },
+  {
+    "text": "I think I'm about to be pissed off. This",
+    "start": 660.88,
+    "duration": 4.72
+  },
+  {
+    "text": "is a clear distribution or accumulation",
+    "start": 662.96,
+    "duration": 4.44
+  },
+  {
+    "text": "or typically let me just be using",
+    "start": 665.6,
+    "duration": 4.16
+  },
+  {
+    "text": "consolidation. But",
+    "start": 667.4,
+    "duration": 5.16
+  },
+  {
+    "text": "how on earth is this a consolidation? It",
+    "start": 669.76,
+    "duration": 5.48
+  },
+  {
+    "text": "does not make any sense to me. Does not",
+    "start": 672.56,
+    "duration": 4.92
+  },
+  {
+    "text": "make any sense. This looks like kind of",
+    "start": 675.24,
+    "duration": 4.88
+  },
+  {
+    "text": "a uptrend.",
+    "start": 677.48,
+    "duration": 6.04
+  },
+  {
+    "text": "It It makes no sense.",
+    "start": 680.12,
+    "duration": 3.4
+  },
+  {
+    "text": "This a clear downtrend. It makes no",
+    "start": 683.839,
+    "duration": 6.081
+  },
+  {
+    "text": "no sense to me at all at all. How is",
+    "start": 687.56,
+    "duration": 3.48
+  },
+  {
+    "text": "this",
+    "start": 689.92,
+    "duration": 3.8
+  },
+  {
+    "text": "Okay, man.",
+    "start": 691.04,
+    "duration": 2.68
+  },
+  {
+    "text": "I I I don't think this is",
+    "start": 694.56,
+    "duration": 5.16
+  },
+  {
+    "text": "what you wanted, maybe.",
+    "start": 697.6,
+    "duration": 4.4
+  },
+  {
+    "text": "Um",
+    "start": 699.72,
+    "duration": 2.28
+  },
+  {
+    "text": "I I I always these are consolidation.",
+    "start": 703.72,
+    "duration": 4.04
+  },
+  {
+    "text": "I'm just like, \"Well, okay. All right,",
+    "start": 705.44,
+    "duration": 4.88
+  },
+  {
+    "text": "let's see.\"",
+    "start": 707.76,
+    "duration": 2.56
+  },
+  {
+    "text": "This is a clear uptrend.",
+    "start": 710.6,
+    "duration": 5.4
+  },
+  {
+    "text": "This is a clear downtrend. Wow. Come on,",
+    "start": 713.04,
+    "duration": 4.56
+  },
+  {
+    "text": "man. Look at this. This is a clear",
+    "start": 716.0,
+    "duration": 7.24
+  },
+  {
+    "text": "downtrend and a very good downtrend.",
+    "start": 717.6,
+    "duration": 5.64
+  },
+  {
+    "text": "Okay, I think at this point I'm pissed",
+    "start": 725.48,
+    "duration": 5.44
+  },
+  {
+    "text": "because I think we are making",
+    "start": 727.4,
+    "duration": 7.4
+  },
+  {
+    "text": "retrogressing efforts.",
+    "start": 730.92,
+    "duration": 7.16
+  },
+  {
+    "text": "Maybe it just crashed everything we had.",
+    "start": 734.8,
+    "duration": 6.64
+  },
+  {
+    "text": "Oh, man. Okay, this can be a valid",
+    "start": 738.08,
+    "duration": 5.56
+  },
+  {
+    "text": "accumulation, but then I think we're",
+    "start": 741.44,
+    "duration": 4.28
+  },
+  {
+    "text": "back to square one.",
+    "start": 743.64,
+    "duration": 5.4
+  },
+  {
+    "text": "And this is a clear uptrend either way.",
+    "start": 745.72,
+    "duration": 6.92
+  },
+  {
+    "text": "Doesn't count to be an accumulation. So,",
+    "start": 749.04,
+    "duration": 6.48
+  },
+  {
+    "text": "I think I'm pissed.",
+    "start": 752.64,
+    "duration": 4.8
+  },
+  {
+    "text": "Yeah, this is a clear",
+    "start": 755.52,
+    "duration": 4.76
+  },
+  {
+    "text": "distribution.",
+    "start": 757.44,
+    "duration": 2.84
+  },
+  {
+    "text": "And we took too much time building that.",
+    "start": 762.32,
+    "duration": 5.08
+  },
+  {
+    "text": "Now, it looks like we are back to square",
+    "start": 765.28,
+    "duration": 5.36
+  },
+  {
+    "text": "one. Wow.",
+    "start": 767.4,
+    "duration": 7.88
+  },
+  {
+    "text": "Uh this is not good. No, no, good.",
+    "start": 770.64,
+    "duration": 5.88
+  },
+  {
+    "text": "And we have this is a clear",
+    "start": 775.28,
+    "duration": 2.96
+  },
+  {
+    "text": "distribution.",
+    "start": 776.52,
+    "duration": 3.88
+  },
+  {
+    "text": "Though.",
+    "start": 778.24,
+    "duration": 4.52
+  },
+  {
+    "text": "These uh doesn't qualify to be a to be a",
+    "start": 780.4,
+    "duration": 4.96
+  },
+  {
+    "text": "distribution. Neither does this. Neither",
+    "start": 782.76,
+    "duration": 5.04
+  },
+  {
+    "text": "does this.",
+    "start": 785.36,
+    "duration": 6.28
+  },
+  {
+    "text": "This does does qualify.",
+    "start": 787.8,
+    "duration": 6.92
+  },
+  {
+    "text": "This doesn't.",
+    "start": 791.64,
+    "duration": 3.08
+  },
+  {
+    "text": "Oh.",
+    "start": 795.12,
+    "duration": 4.88
+  },
+  {
+    "text": "Okay. Okay.",
+    "start": 797.32,
+    "duration": 2.68
+  },
+  {
+    "text": "Okay, I I uh",
+    "start": 804.24,
+    "duration": 4.52
+  },
+  {
+    "text": "we are retrogressing over here and I",
+    "start": 806.28,
+    "duration": 4.84
+  },
+  {
+    "text": "feel pissed because what we took time to",
+    "start": 808.76,
+    "duration": 4.4
+  },
+  {
+    "text": "build is now crushed entirely to the",
+    "start": 811.12,
+    "duration": 3.52
+  },
+  {
+    "text": "ground.",
+    "start": 813.16,
+    "duration": 2.88
+  },
+  {
+    "text": "Wow.",
+    "start": 814.64,
+    "duration": 3.6
+  },
+  {
+    "text": "Uh, this ain't good.",
+    "start": 816.04,
+    "duration": 5.44
+  },
+  {
+    "text": "This ain't",
+    "start": 818.24,
+    "duration": 3.24
+  },
+  {
+    "text": "ain't good, man. Uh, you just",
+    "start": 822.4,
+    "duration": 4.84
+  },
+  {
+    "text": "crashed",
+    "start": 828.28,
+    "duration": 4.88
+  },
+  {
+    "text": "everything we took",
+    "start": 830.56,
+    "duration": 4.44
+  },
+  {
+    "text": "time",
+    "start": 833.16,
+    "duration": 4.12
+  },
+  {
+    "text": "to build.",
+    "start": 835.0,
+    "duration": 5.56
+  },
+  {
+    "text": "We have many",
+    "start": 837.28,
+    "duration": 6.32
+  },
+  {
+    "text": "setups now and some",
+    "start": 840.56,
+    "duration": 5.84
+  },
+  {
+    "text": "of them",
+    "start": 843.6,
+    "duration": 2.8
+  },
+  {
+    "text": "are just clear",
+    "start": 847.04,
+    "duration": 6.36
+  },
+  {
+    "text": "trends",
+    "start": 850.44,
+    "duration": 2.96
+  },
+  {
+    "text": "that",
+    "start": 853.64,
+    "duration": 2.68
+  },
+  {
+    "text": "you classify as",
+    "start": 856.72,
+    "duration": 3.56
+  },
+  {
+    "text": "consolidations.",
+    "start": 860.92,
+    "duration": 5.04
+  },
+  {
+    "text": "What we added",
+    "start": 863.8,
+    "duration": 5.04
+  },
+  {
+    "text": "was better",
+    "start": 865.96,
+    "duration": 2.88
+  },
+  {
+    "text": "than this.",
+    "start": 869.4,
+    "duration": 4.24
+  },
+  {
+    "text": "We we better go back.",
+    "start": 871.16,
+    "duration": 6.28
+  },
+  {
+    "text": "We better go back",
+    "start": 873.64,
+    "duration": 5.84
+  },
+  {
+    "text": "to what was",
+    "start": 877.44,
+    "duration": 4.76
+  },
+  {
+    "text": "already",
+    "start": 879.48,
+    "duration": 2.72
+  },
+  {
+    "text": "working. If",
+    "start": 883.12,
+    "duration": 7.44
+  },
+  {
+    "text": "you are to make this",
+    "start": 885.32,
+    "duration": 8.64
+  },
+  {
+    "text": "worse, this",
+    "start": 890.56,
+    "duration": 3.4
+  },
+  {
+    "text": "This is a downgrade",
+    "start": 894.44,
+    "duration": 3.36
+  },
+  {
+    "text": "to what we",
+    "start": 898.96,
+    "duration": 3.08
+  },
+  {
+    "text": "ever built. It's a total crash.",
+    "start": 904.0,
+    "duration": 5.0
+  },
+  {
+    "text": "Uh,",
+    "start": 908.28,
+    "duration": 3.16
+  },
+  {
+    "text": "total crash. May- maybe I can copy this.",
+    "start": 909.0,
+    "duration": 4.56
+  },
+  {
+    "text": "I should be",
+    "start": 911.44,
+    "duration": 5.44
+  },
+  {
+    "text": "giving it over here.",
+    "start": 913.56,
+    "duration": 3.32
+  },
+  {
+    "text": "What's up?",
+    "start": 921.08,
+    "duration": 2.8
+  },
+  {
+    "text": "Okay, it is a total crash. What else can",
+    "start": 925.52,
+    "duration": 5.8
+  },
+  {
+    "text": "I tell it, man?",
+    "start": 928.0,
+    "duration": 3.32
+  },
+  {
+    "text": "I asked",
+    "start": 931.56,
+    "duration": 5.24
+  },
+  {
+    "text": "for an improvement,",
+    "start": 933.92,
+    "duration": 5.48
+  },
+  {
+    "text": "not",
+    "start": 936.8,
+    "duration": 2.6
+  },
+  {
+    "text": "the other way you",
+    "start": 940.2,
+    "duration": 6.68
+  },
+  {
+    "text": "uh works is to",
+    "start": 944.0,
+    "duration": 5.84
+  },
+  {
+    "text": "everything. Why not",
+    "start": 946.88,
+    "duration": 8.28
+  },
+  {
+    "text": "make this better? I I am pissed.",
+    "start": 949.84,
+    "duration": 5.32
+  },
+  {
+    "text": "Cuz now",
+    "start": 958.48,
+    "duration": 4.32
+  },
+  {
+    "text": "some setups",
+    "start": 960.44,
+    "duration": 4.68
+  },
+  {
+    "text": "look",
+    "start": 962.8,
+    "duration": 5.72
+  },
+  {
+    "text": "completely off.",
+    "start": 965.12,
+    "duration": 6.36
+  },
+  {
+    "text": "Read the code or",
+    "start": 968.52,
+    "duration": 6.6
+  },
+  {
+    "text": "the resources",
+    "start": 971.48,
+    "duration": 3.64
+  },
+  {
+    "text": "in the internet and the",
+    "start": 976.64,
+    "duration": 4.48
+  },
+  {
+    "text": "make this correct.",
+    "start": 983.12,
+    "duration": 5.36
+  },
+  {
+    "text": "Specifically,",
+    "start": 985.92,
+    "duration": 5.0
+  },
+  {
+    "text": "we need clear,",
+    "start": 988.48,
+    "duration": 3.96
+  },
+  {
+    "text": "correct",
+    "start": 990.92,
+    "duration": 4.4
+  },
+  {
+    "text": "consoli-",
+    "start": 992.44,
+    "duration": 2.88
+  },
+  {
+    "text": "consolidations to form",
+    "start": 997.56,
+    "duration": 3.84
+  },
+  {
+    "text": "the markups and",
+    "start": 1001.76,
+    "duration": 5.6
+  },
+  {
+    "text": "mark downs.",
+    "start": 1004.6,
+    "duration": 3.76
+  },
+  {
+    "text": "Okay.",
+    "start": 1007.36,
+    "duration": 3.12
+  },
+  {
+    "text": "Not the markups or the mark downs, but",
+    "start": 1008.36,
+    "duration": 4.56
+  },
+  {
+    "text": "the",
+    "start": 1010.48,
+    "duration": 2.44
+  },
+  {
+    "text": "accumulations",
+    "start": 1013.12,
+    "duration": 5.0
+  },
+  {
+    "text": "and distri-",
+    "start": 1014.92,
+    "duration": 5.48
+  },
+  {
+    "text": "butions. Um",
+    "start": 1018.12,
+    "duration": 4.36
+  },
+  {
+    "text": "what else can I tell it? Cuz I feel",
+    "start": 1020.4,
+    "duration": 4.12
+  },
+  {
+    "text": "pissed. This is an example of an",
+    "start": 1022.48,
+    "duration": 4.24
+  },
+  {
+    "text": "accumulation. Doesn't make sense what it",
+    "start": 1024.52,
+    "duration": 6.04
+  },
+  {
+    "text": "gave us. It's completely out of",
+    "start": 1026.72,
+    "duration": 6.56
+  },
+  {
+    "text": "of sync.",
+    "start": 1030.56,
+    "duration": 2.72
+  },
+  {
+    "text": "I will still use this as an example. And",
+    "start": 1034.68,
+    "duration": 7.519
+  },
+  {
+    "text": "consider this is a perfect example.",
+    "start": 1037.12,
+    "duration": 5.079
+  },
+  {
+    "text": "Should I maybe give it",
+    "start": 1045.16,
+    "duration": 5.44
+  },
+  {
+    "text": "these uh stuff because we gave it the",
+    "start": 1047.959,
+    "duration": 5.001
+  },
+  {
+    "text": "image, it doesn't understand a thing",
+    "start": 1050.6,
+    "duration": 5.4
+  },
+  {
+    "text": "about the image.",
+    "start": 1052.96,
+    "duration": 3.04
+  },
+  {
+    "text": "I don't know if a fibo 5 could be able",
+    "start": 1057.08,
+    "duration": 6.6
+  },
+  {
+    "text": "to understand the image, but uh opus 4.8",
+    "start": 1060.28,
+    "duration": 5.92
+  },
+  {
+    "text": "completely doesn't understand images.",
+    "start": 1063.68,
+    "duration": 5.56
+  },
+  {
+    "text": "That is to make no sense giving it",
+    "start": 1066.2,
+    "duration": 4.92
+  },
+  {
+    "text": "the images. Never mind, I'll just copy",
+    "start": 1069.24,
+    "duration": 4.72
+  },
+  {
+    "text": "the code. I mean, the the link.",
+    "start": 1071.12,
+    "duration": 4.56
+  },
+  {
+    "text": "Uh I don't know if it will access it or",
+    "start": 1073.96,
+    "duration": 5.6
+  },
+  {
+    "text": "not. We're just trying things over here.",
+    "start": 1075.68,
+    "duration": 7.2
+  },
+  {
+    "text": "Look at this resource.",
+    "start": 1079.56,
+    "duration": 3.32
+  },
+  {
+    "text": "Oh.",
+    "start": 1089.92,
+    "duration": 2.52
+  },
+  {
+    "text": "What did I copy?",
+    "start": 1092.84,
+    "duration": 3.2
+  },
+  {
+    "text": "Okay, let me reload it again.",
+    "start": 1100.84,
+    "duration": 3.8
+  },
+  {
+    "text": "Cut.",
+    "start": 1106.84,
+    "duration": 2.48
+  },
+  {
+    "text": "Does it mean you don't",
+    "start": 1116.36,
+    "duration": 6.28
+  },
+  {
+    "text": "clearly know what",
+    "start": 1120.0,
+    "duration": 5.92
+  },
+  {
+    "text": "defines a good",
+    "start": 1122.64,
+    "duration": 6.28
+  },
+  {
+    "text": "consolidation",
+    "start": 1125.92,
+    "duration": 3.0
+  },
+  {
+    "text": "range or what? I think",
+    "start": 1130.64,
+    "duration": 4.24
+  },
+  {
+    "text": "it should be able to do these stuffs.",
+    "start": 1132.92,
+    "duration": 4.08
+  },
+  {
+    "text": "So, now given that in mind,",
+    "start": 1134.88,
+    "duration": 5.68
+  },
+  {
+    "text": "um I would like very much to test the",
+    "start": 1137.0,
+    "duration": 6.4
+  },
+  {
+    "text": "maximum, but we have seen how the",
+    "start": 1140.56,
+    "duration": 6.68
+  },
+  {
+    "text": "default high consumes uh stuff, so I'll",
+    "start": 1143.4,
+    "duration": 8.32
+  },
+  {
+    "text": "stick with the fibo 5 I, but",
+    "start": 1147.24,
+    "duration": 7.68
+  },
+  {
+    "text": "yeah, all in all we can say it is it",
+    "start": 1151.72,
+    "duration": 4.84
+  },
+  {
+    "text": "ain't",
+    "start": 1154.92,
+    "duration": 4.24
+  },
+  {
+    "text": "any better much of than the other one.",
+    "start": 1156.56,
+    "duration": 4.12
+  },
+  {
+    "text": "Maybe",
+    "start": 1159.16,
+    "duration": 4.56
+  },
+  {
+    "text": "we are prompting it bad. Maybe",
+    "start": 1160.68,
+    "duration": 6.12
+  },
+  {
+    "text": "I need to attend um",
+    "start": 1163.72,
+    "duration": 5.56
+  },
+  {
+    "text": "you know, those schools or maybe I am",
+    "start": 1166.8,
+    "duration": 4.56
+  },
+  {
+    "text": "missing something, but",
+    "start": 1169.28,
+    "duration": 5.2
+  },
+  {
+    "text": "I don't feel any",
+    "start": 1171.36,
+    "duration": 6.0
+  },
+  {
+    "text": "any much impact from",
+    "start": 1174.48,
+    "duration": 5.24
+  },
+  {
+    "text": "from all the from all the the models",
+    "start": 1177.36,
+    "duration": 4.88
+  },
+  {
+    "text": "that we have tested so far in this",
+    "start": 1179.72,
+    "duration": 3.76
+  },
+  {
+    "text": "creation.",
+    "start": 1182.24,
+    "duration": 2.84
+  },
+  {
+    "text": "The [snorts] entire of the Sonnet, the",
+    "start": 1183.48,
+    "duration": 4.24
+  },
+  {
+    "text": "Opas, the Ayiku, the",
+    "start": 1185.08,
+    "duration": 5.2
+  },
+  {
+    "text": "the Fibo 5 now that",
+    "start": 1187.72,
+    "duration": 5.8
+  },
+  {
+    "text": "I am still pissed. I think this AI thing",
+    "start": 1190.28,
+    "duration": 4.72
+  },
+  {
+    "text": "is a",
+    "start": 1193.52,
+    "duration": 4.12
+  },
+  {
+    "text": "It is It isn't yet there. Maybe it can",
+    "start": 1195.0,
+    "duration": 4.84
+  },
+  {
+    "text": "do other stuffs, but",
+    "start": 1197.64,
+    "duration": 4.72
+  },
+  {
+    "text": "specifically what we are doing over here",
+    "start": 1199.84,
+    "duration": 4.84
+  },
+  {
+    "text": "uh creation creation of expert advisors,",
+    "start": 1202.36,
+    "duration": 5.36
+  },
+  {
+    "text": "I think still I will insist we need to",
+    "start": 1204.68,
+    "duration": 6.64
+  },
+  {
+    "text": "have some background of a coding.",
+    "start": 1207.72,
+    "duration": 5.8
+  },
+  {
+    "text": "Because I am pretty much sure if I was",
+    "start": 1211.32,
+    "duration": 4.48
+  },
+  {
+    "text": "the one who was a coding this one from a",
+    "start": 1213.52,
+    "duration": 5.48
+  },
+  {
+    "text": "start, I would be maybe performing much",
+    "start": 1215.8,
+    "duration": 5.2
+  },
+  {
+    "text": "better because I know what specifically",
+    "start": 1219.0,
+    "duration": 4.88
+  },
+  {
+    "text": "I want. But this AI, it has access to",
+    "start": 1221.0,
+    "duration": 4.8
+  },
+  {
+    "text": "all the",
+    "start": 1223.88,
+    "duration": 3.96
+  },
+  {
+    "text": "to all the resources on the internet. It",
+    "start": 1225.8,
+    "duration": 5.24
+  },
+  {
+    "text": "can Google this, Google that, go to this",
+    "start": 1227.84,
+    "duration": 6.16
+  },
+  {
+    "text": "link, see these images and go to",
+    "start": 1231.04,
+    "duration": 4.8
+  },
+  {
+    "text": "YouTube, maybe watch some videos over",
+    "start": 1234.0,
+    "duration": 3.309
+  },
+  {
+    "text": "there and see",
+    "start": 1235.84,
+    "duration": 1.84
+  },
+  {
+    "text": ">> [snorts]",
+    "start": 1237.309,
+    "duration": 3.011
+  },
+  {
+    "text": ">> how the the strategy works. It is a",
+    "start": 1237.68,
+    "duration": 4.72
+  },
+  {
+    "text": "common strategy. It is a basically",
+    "start": 1240.32,
+    "duration": 4.04
+  },
+  {
+    "text": "almost everybody knows the Wyckoff. We",
+    "start": 1242.4,
+    "duration": 5.2
+  },
+  {
+    "text": "did not give it something that is a new.",
+    "start": 1244.36,
+    "duration": 6.44
+  },
+  {
+    "text": "So, it should be able to, you know, read",
+    "start": 1247.6,
+    "duration": 5.76
+  },
+  {
+    "text": "the entire strategy and uh",
+    "start": 1250.8,
+    "duration": 4.4
+  },
+  {
+    "text": "create an expert advisor based on it.",
+    "start": 1253.36,
+    "duration": 4.72
+  },
+  {
+    "text": "But then again, this means it is not",
+    "start": 1255.2,
+    "duration": 4.44
+  },
+  {
+    "text": "doing it.",
+    "start": 1258.08,
+    "duration": 3.44
+  },
+  {
+    "text": "Uh we It is much of a struggle, no",
+    "start": 1259.64,
+    "duration": 4.8
+  },
+  {
+    "text": "matter the",
+    "start": 1261.52,
+    "duration": 7.04
+  },
+  {
+    "text": "how we raise the the models, whichever",
+    "start": 1264.44,
+    "duration": 6.36
+  },
+  {
+    "text": "comes this much better, this more",
+    "start": 1268.56,
+    "duration": 5.64
+  },
+  {
+    "text": "capable, this solves more complex tasks.",
+    "start": 1270.8,
+    "duration": 5.08
+  },
+  {
+    "text": "But then",
+    "start": 1274.2,
+    "duration": 5.2
+  },
+  {
+    "text": "I don't feel any much effects of",
+    "start": 1275.88,
+    "duration": 6.48
+  },
+  {
+    "text": "the AI in this creation of stuff. Maybe",
+    "start": 1279.4,
+    "duration": 7.48
+  },
+  {
+    "text": "it can help you solve something, but",
+    "start": 1282.36,
+    "duration": 7.12
+  },
+  {
+    "text": "if you are just a beginner and you just",
+    "start": 1286.88,
+    "duration": 5.04
+  },
+  {
+    "text": "want to create an expert advisor and you",
+    "start": 1289.48,
+    "duration": 4.76
+  },
+  {
+    "text": "are on the go, then I think you need to",
+    "start": 1291.92,
+    "duration": 7.4
+  },
+  {
+    "text": "have some background of a coding because",
+    "start": 1294.24,
+    "duration": 5.08
+  },
+  {
+    "text": "you might end up pissed like I am.",
+    "start": 1300.48,
+    "duration": 7.84
+  },
+  {
+    "text": "Anyway, let's see what it did this time.",
+    "start": 1303.44,
+    "duration": 4.88
+  },
+  {
+    "text": "Again, I will check the the tokens that",
+    "start": 1308.44,
+    "duration": 5.52
+  },
+  {
+    "text": "were consumed.",
+    "start": 1310.88,
+    "duration": 3.08
+  },
+  {
+    "text": "It is the second prompt and",
+    "start": 1315.52,
+    "duration": 4.72
+  },
+  {
+    "text": "we are currently at",
+    "start": 1318.08,
+    "duration": 5.12
+  },
+  {
+    "text": "38. I think I can deploy the other one.",
+    "start": 1320.24,
+    "duration": 5.08
+  },
+  {
+    "text": "I think maybe I can deploy",
+    "start": 1323.2,
+    "duration": 4.76
+  },
+  {
+    "text": "the maximum of the next code.",
+    "start": 1325.32,
+    "duration": 5.44
+  },
+  {
+    "text": "I mean, next prompt.",
+    "start": 1327.96,
+    "duration": 5.72
+  },
+  {
+    "text": "If something is not okay, but let me",
+    "start": 1330.76,
+    "duration": 7.28
+  },
+  {
+    "text": "have a look what we have here.",
+    "start": 1333.68,
+    "duration": 4.36
+  },
+  {
+    "text": ">> [clears throat]",
+    "start": 1338.835,
+    "duration": 4.245
+  },
+  {
+    "text": ">> So, it clearly sees it broke something.",
+    "start": 1340.44,
+    "duration": 4.4
+  },
+  {
+    "text": "Why did you do that, buddy? I'm not",
+    "start": 1343.08,
+    "duration": 3.72
+  },
+  {
+    "text": "going to read these stuff over here. I'm",
+    "start": 1344.84,
+    "duration": 3.8
+  },
+  {
+    "text": "just going to scroll.",
+    "start": 1346.8,
+    "duration": 6.12
+  },
+  {
+    "text": "If you want to read or have a look at",
+    "start": 1348.64,
+    "duration": 6.04
+  },
+  {
+    "text": "what it did, save",
+    "start": 1352.92,
+    "duration": 4.08
+  },
+  {
+    "text": "to us or report was over there. Just",
+    "start": 1354.68,
+    "duration": 3.4
+  },
+  {
+    "text": "refresh",
+    "start": 1357.0,
+    "duration": 3.92
+  },
+  {
+    "text": "again and copy the latest code and I",
+    "start": 1358.08,
+    "duration": 5.68
+  },
+  {
+    "text": "will head back to our editor and tell it",
+    "start": 1360.92,
+    "duration": 4.16
+  },
+  {
+    "text": "to do",
+    "start": 1363.76,
+    "duration": 4.68
+  },
+  {
+    "text": "some other cool stuff.",
+    "start": 1365.08,
+    "duration": 3.36
+  },
+  {
+    "text": "Okay, let's compile this one.",
+    "start": 1369.32,
+    "duration": 3.4
+  },
+  {
+    "text": "One thing I like about it is that it",
+    "start": 1373.84,
+    "duration": 4.72
+  },
+  {
+    "text": "doesn't have much errors. It understands",
+    "start": 1376.24,
+    "duration": 5.92
+  },
+  {
+    "text": "the MQL4/5 syntax",
+    "start": 1378.56,
+    "duration": 6.8
+  },
+  {
+    "text": "perfectly fine.",
+    "start": 1382.16,
+    "duration": 3.2
+  },
+  {
+    "text": ">> [snorts]",
+    "start": 1387.305,
+    "duration": 4.535
+  },
+  {
+    "text": ">> Okay, let's see.",
+    "start": 1389.08,
+    "duration": 2.76
+  },
+  {
+    "text": "Um",
+    "start": 1398.84,
+    "duration": 2.64
+  },
+  {
+    "text": "Oh man.",
+    "start": 1402.92,
+    "duration": 3.84
+  },
+  {
+    "text": "I don't know how many times you are",
+    "start": 1404.96,
+    "duration": 4.48
+  },
+  {
+    "text": "going to do this, but this ain't any",
+    "start": 1406.76,
+    "duration": 3.8
+  },
+  {
+    "text": "better.",
+    "start": 1409.44,
+    "duration": 3.96
+  },
+  {
+    "text": "Because look at now, we have How can we",
+    "start": 1410.56,
+    "duration": 4.92
+  },
+  {
+    "text": "have markups?",
+    "start": 1413.4,
+    "duration": 4.24
+  },
+  {
+    "text": "What What Yeah, I expect to see a",
+    "start": 1415.48,
+    "duration": 4.6
+  },
+  {
+    "text": "consolidation or an accumulation. I",
+    "start": 1417.64,
+    "duration": 4.96
+  },
+  {
+    "text": "mean, distribution or accumulation phase",
+    "start": 1420.08,
+    "duration": 5.08
+  },
+  {
+    "text": "before the markup or markdown, but",
+    "start": 1422.6,
+    "duration": 4.64
+  },
+  {
+    "text": "we cannot have markdown markdown. That's",
+    "start": 1425.16,
+    "duration": 3.56
+  },
+  {
+    "text": "completely",
+    "start": 1427.24,
+    "duration": 3.2
+  },
+  {
+    "text": "ignorance of",
+    "start": 1428.72,
+    "duration": 4.08
+  },
+  {
+    "text": "the strategy. Doesn't make any sense",
+    "start": 1430.44,
+    "duration": 5.68
+  },
+  {
+    "text": "to me. Let's have a look.",
+    "start": 1432.8,
+    "duration": 3.32
+  },
+  {
+    "text": "Oh man, what do we have?",
+    "start": 1437.32,
+    "duration": 7.28
+  },
+  {
+    "text": "This is completely shattered.",
+    "start": 1441.04,
+    "duration": 3.56
+  },
+  {
+    "text": "Wow.",
+    "start": 1445.32,
+    "duration": 2.64
+  },
+  {
+    "text": "Let me have a look at the journal.",
+    "start": 1448.4,
+    "duration": 5.96
+  },
+  {
+    "text": "Nothing meaningful.",
+    "start": 1451.16,
+    "duration": 3.2
+  },
+  {
+    "text": "Oh man.",
+    "start": 1454.68,
+    "duration": 3.28
+  },
+  {
+    "text": ">> [snorts]",
+    "start": 1461.976,
+    "duration": 3.824
+  },
+  {
+    "text": ">> This isn't just even making a loss.",
+    "start": 1462.04,
+    "duration": 5.72
+  },
+  {
+    "text": "It doesn't follow any rules. They're",
+    "start": 1465.8,
+    "duration": 4.36
+  },
+  {
+    "text": "They're",
+    "start": 1467.76,
+    "duration": 2.4
+  },
+  {
+    "text": "Let me deploy the maximum. May Maybe it",
+    "start": 1472.28,
+    "duration": 6.0
+  },
+  {
+    "text": "will do us something better. I'm just",
+    "start": 1474.88,
+    "duration": 5.76
+  },
+  {
+    "text": "getting pissed each and every prompt we",
+    "start": 1478.28,
+    "duration": 3.36
+  },
+  {
+    "text": "get.",
+    "start": 1480.64,
+    "duration": 3.36
+  },
+  {
+    "text": "I mean, response.",
+    "start": 1481.64,
+    "duration": 6.4
+  },
+  {
+    "text": "Okay, let me deploy the maximum.",
+    "start": 1484.0,
+    "duration": 4.04
+  },
+  {
+    "text": "Um",
+    "start": 1489.8,
+    "duration": 3.672
+  },
+  {
+    "text": ">> [clears throat]",
+    "start": 1491.452,
+    "duration": 2.02
+  },
+  {
+    "text": ">> Okay, what am I going say? Okay, this",
+    "start": 1495.8,
+    "duration": 4.08
+  },
+  {
+    "text": "this",
+    "start": 1498.64,
+    "duration": 4.28
+  },
+  {
+    "text": "just got",
+    "start": 1499.88,
+    "duration": 6.96
+  },
+  {
+    "text": "worse and um",
+    "start": 1502.92,
+    "duration": 3.92
+  },
+  {
+    "text": "everything is uh shattered",
+    "start": 1507.0,
+    "duration": 5.92
+  },
+  {
+    "text": "shattered to the ground.",
+    "start": 1509.52,
+    "duration": 3.4
+  },
+  {
+    "text": "You are making",
+    "start": 1517.16,
+    "duration": 4.52
+  },
+  {
+    "text": "this",
+    "start": 1519.28,
+    "duration": 5.52
+  },
+  {
+    "text": "worse than better.",
+    "start": 1521.68,
+    "duration": 4.84
+  },
+  {
+    "text": "Um",
+    "start": 1524.8,
+    "duration": 4.2
+  },
+  {
+    "text": "what am I going to tell it, man? Uh",
+    "start": 1526.52,
+    "duration": 4.232
+  },
+  {
+    "text": "I'm just pissed.",
+    "start": 1529.0,
+    "duration": 1.84
+  },
+  {
+    "text": ">> [clears throat]",
+    "start": 1530.752,
+    "duration": 2.248
+  },
+  {
+    "text": ">> Uh",
+    "start": 1530.84,
+    "duration": 2.16
+  },
+  {
+    "text": "Eh.",
+    "start": 1534.04,
+    "duration": 4.16
+  },
+  {
+    "text": "Okay, I tell it uh",
+    "start": 1535.12,
+    "duration": 3.08
+  },
+  {
+    "text": "Okay, what does it not understand, man?",
+    "start": 1539.76,
+    "duration": 4.092
+  },
+  {
+    "text": "Eh.",
+    "start": 1543.04,
+    "duration": 1.6
+  },
+  {
+    "text": ">> [snorts]",
+    "start": 1543.852,
+    "duration": 3.828
+  },
+  {
+    "text": ">> We need that Okay.",
+    "start": 1544.64,
+    "duration": 5.6
+  },
+  {
+    "text": "Okay, okay, okay. Cool down, cool down.",
+    "start": 1547.68,
+    "duration": 4.2
+  },
+  {
+    "text": "Composure.",
+    "start": 1550.24,
+    "duration": 3.72
+  },
+  {
+    "text": "Mm.",
+    "start": 1551.88,
+    "duration": 2.08
+  },
+  {
+    "text": "What I get is consecutive",
+    "start": 1554.08,
+    "duration": 5.492
+  },
+  {
+    "text": "consecutive",
+    "start": 1557.08,
+    "duration": 4.512
+  },
+  {
+    "text": ">> [snorts]",
+    "start": 1559.572,
+    "duration": 2.02
+  },
+  {
+    "text": ">> I'm not used to doing this. Let me just",
+    "start": 1565.04,
+    "duration": 3.12
+  },
+  {
+    "text": "go",
+    "start": 1567.24,
+    "duration": 3.48
+  },
+  {
+    "text": "cut this one and do it over here.",
+    "start": 1568.16,
+    "duration": 4.64
+  },
+  {
+    "text": "Allow me to do this.",
+    "start": 1570.72,
+    "duration": 3.2
+  },
+  {
+    "text": "Okay.",
+    "start": 1572.8,
+    "duration": 5.0
+  },
+  {
+    "text": "What I get is consecutive",
+    "start": 1573.92,
+    "duration": 3.88
+  },
+  {
+    "text": "markups or",
+    "start": 1579.16,
+    "duration": 4.648
+  },
+  {
+    "text": "mark downs, which",
+    "start": 1582.28,
+    "duration": 3.548
+  },
+  {
+    "text": ">> [snorts]",
+    "start": 1583.808,
+    "duration": 2.02
+  },
+  {
+    "text": ">> which I feel I don't want to stand at",
+    "start": 1586.28,
+    "duration": 6.64
+  },
+  {
+    "text": "Mr. No All, which I don't feel",
+    "start": 1588.68,
+    "duration": 7.64
+  },
+  {
+    "text": "is what the strategy",
+    "start": 1592.92,
+    "duration": 5.04
+  },
+  {
+    "text": "cycle",
+    "start": 1596.32,
+    "duration": 5.56
+  },
+  {
+    "text": "cycle entire",
+    "start": 1597.96,
+    "duration": 3.92
+  },
+  {
+    "text": "in the all",
+    "start": 1602.2,
+    "duration": 4.36
+  },
+  {
+    "text": "internet.",
+    "start": 1604.16,
+    "duration": 4.12
+  },
+  {
+    "text": "I'm just pissed.",
+    "start": 1606.56,
+    "duration": 3.8
+  },
+  {
+    "text": "And the all internet is that how it is",
+    "start": 1608.28,
+    "duration": 4.76
+  },
+  {
+    "text": "typed. The whole internet",
+    "start": 1610.36,
+    "duration": 7.16
+  },
+  {
+    "text": "defines it. I doubt",
+    "start": 1613.04,
+    "duration": 4.48
+  },
+  {
+    "text": ">> [clears throat]",
+    "start": 1622.453,
+    "duration": 2.067
+  },
+  {
+    "text": "[snorts]",
+    "start": 1623.108,
+    "duration": 4.852
+  },
+  {
+    "text": ">> we needed to have",
+    "start": 1624.52,
+    "duration": 5.28
+  },
+  {
+    "text": "consolidations",
+    "start": 1627.96,
+    "duration": 3.32
+  },
+  {
+    "text": "and",
+    "start": 1629.8,
+    "duration": 3.48
+  },
+  {
+    "text": "then",
+    "start": 1631.28,
+    "duration": 5.64
+  },
+  {
+    "text": "trends or mark",
+    "start": 1633.28,
+    "duration": 3.64
+  },
+  {
+    "text": "ups or",
+    "start": 1637.64,
+    "duration": 6.68
+  },
+  {
+    "text": "mark downs. It's straightforward.",
+    "start": 1639.76,
+    "duration": 4.56
+  },
+  {
+    "text": ">> [snorts]",
+    "start": 1644.723,
+    "duration": 2.02
+  },
+  {
+    "text": "[snorts]",
+    "start": 1662.409,
+    "duration": 2.02
+  },
+  {
+    "text": ">> Okay, I'll just provide it the image. I",
+    "start": 1671.92,
+    "duration": 4.64
+  },
+  {
+    "text": "know it doesn't listen to any image.",
+    "start": 1673.92,
+    "duration": 4.48
+  },
+  {
+    "text": "Does it will not really matter, but I'll",
+    "start": 1676.56,
+    "duration": 4.0
+  },
+  {
+    "text": "just provide it anyway.",
+    "start": 1678.4,
+    "duration": 4.6
+  },
+  {
+    "text": "Then",
+    "start": 1680.56,
+    "duration": 2.44
+  },
+  {
+    "text": "I will provide an image again. Then",
+    "start": 1684.8,
+    "duration": 4.52
+  },
+  {
+    "text": "Oh man, what am I supposed to tell this",
+    "start": 1690.96,
+    "duration": 4.68
+  },
+  {
+    "text": "thing?",
+    "start": 1693.24,
+    "duration": 2.4
+  },
+  {
+    "text": "Okay.",
+    "start": 1696.04,
+    "duration": 2.44
+  },
+  {
+    "text": "Okay, let me just tell it just use",
+    "start": 1701.88,
+    "duration": 4.96
+  },
+  {
+    "text": "common sense.",
+    "start": 1703.96,
+    "duration": 2.88
+  },
+  {
+    "text": "What am I supposed to tell this thing?",
+    "start": 1707.72,
+    "duration": 4.72
+  },
+  {
+    "text": "I'm just out of words. Mm.",
+    "start": 1709.56,
+    "duration": 5.6
+  },
+  {
+    "text": "Oh man.",
+    "start": 1712.44,
+    "duration": 2.72
+  },
+  {
+    "text": "Those of you who use AI to do creation",
+    "start": 1717.08,
+    "duration": 4.08
+  },
+  {
+    "text": "of expert advisors, what do you usually",
+    "start": 1719.32,
+    "duration": 4.92
+  },
+  {
+    "text": "do? Cuz I'm just I don't know. Maybe",
+    "start": 1721.16,
+    "duration": 6.2
+  },
+  {
+    "text": "someone can tell me what to this thing.",
+    "start": 1724.24,
+    "duration": 5.36
+  },
+  {
+    "text": "Mhm.",
+    "start": 1727.36,
+    "duration": 2.24
+  },
+  {
+    "text": "Uh yeah.",
+    "start": 1730.92,
+    "duration": 3.2
+  },
+  {
+    "text": "Okay, let me just tell it what we had.",
+    "start": 1734.36,
+    "duration": 5.56
+  },
+  {
+    "text": "Okay, we might",
+    "start": 1737.08,
+    "duration": 2.84
+  },
+  {
+    "text": "and",
+    "start": 1740.56,
+    "duration": 8.24
+  },
+  {
+    "text": "go back to what we initially had because",
+    "start": 1741.8,
+    "duration": 9.56
+  },
+  {
+    "text": "it used to",
+    "start": 1748.8,
+    "duration": 5.0
+  },
+  {
+    "text": "follow the rules.",
+    "start": 1751.36,
+    "duration": 4.72
+  },
+  {
+    "text": "This just like a downgrade. I don't",
+    "start": 1753.8,
+    "duration": 4.64
+  },
+  {
+    "text": "know.",
+    "start": 1756.08,
+    "duration": 2.36
+  },
+  {
+    "text": "And let me provide it this image.",
+    "start": 1764.6,
+    "duration": 5.4
+  },
+  {
+    "text": "Where is the image?",
+    "start": 1767.88,
+    "duration": 5.52
+  },
+  {
+    "text": "It's somewhere. This one.",
+    "start": 1770.0,
+    "duration": 3.4
+  },
+  {
+    "text": "Uh open image in a new tab.",
+    "start": 1774.32,
+    "duration": 5.52
+  },
+  {
+    "text": "Then I'll take a screenshot may or maybe",
+    "start": 1777.24,
+    "duration": 5.36
+  },
+  {
+    "text": "a snippet.",
+    "start": 1779.84,
+    "duration": 2.76
+  },
+  {
+    "text": "Can I copy the image and then paste it",
+    "start": 1784.16,
+    "duration": 5.04
+  },
+  {
+    "text": "over here instead of taking a snippet?",
+    "start": 1786.28,
+    "duration": 5.44
+  },
+  {
+    "text": "Let me see if that will work.",
+    "start": 1789.2,
+    "duration": 5.24
+  },
+  {
+    "text": "It will work.",
+    "start": 1791.72,
+    "duration": 5.84
+  },
+  {
+    "text": "Yeah, it does work.",
+    "start": 1794.44,
+    "duration": 3.12
+  },
+  {
+    "text": "Perfect and that's the entire image. I",
+    "start": 1797.6,
+    "duration": 5.0
+  },
+  {
+    "text": "did not snip it.",
+    "start": 1799.96,
+    "duration": 5.0
+  },
+  {
+    "text": "Maybe I can take another image if it's",
+    "start": 1802.6,
+    "duration": 5.32
+  },
+  {
+    "text": "really possible.",
+    "start": 1804.96,
+    "duration": 2.96
+  },
+  {
+    "text": "I just want to give this thing resources",
+    "start": 1810.52,
+    "duration": 4.6
+  },
+  {
+    "text": "as much as possible. We have fed it with",
+    "start": 1812.88,
+    "duration": 5.68
+  },
+  {
+    "text": "a lot of information and uh",
+    "start": 1815.12,
+    "duration": 6.36
+  },
+  {
+    "text": "it doesn't get us anywhere.",
+    "start": 1818.56,
+    "duration": 5.32
+  },
+  {
+    "text": "I'm [snorts] not sure whose website this",
+    "start": 1821.48,
+    "duration": 4.24
+  },
+  {
+    "text": "is but",
+    "start": 1823.88,
+    "duration": 4.92
+  },
+  {
+    "text": "I just like it.",
+    "start": 1825.72,
+    "duration": 6.12
+  },
+  {
+    "text": "It does it it visually has what we want",
+    "start": 1828.8,
+    "duration": 5.44
+  },
+  {
+    "text": "to have. So, I'll just copy this one. At",
+    "start": 1831.84,
+    "duration": 4.64
+  },
+  {
+    "text": "least see that is working and I'll paste",
+    "start": 1834.24,
+    "duration": 5.56
+  },
+  {
+    "text": "it over here as well.",
+    "start": 1836.48,
+    "duration": 3.32
+  },
+  {
+    "text": "Like that. Now it has two images. One",
+    "start": 1839.84,
+    "duration": 4.48
+  },
+  {
+    "text": "uses the actual cuddle sticks that we",
+    "start": 1842.4,
+    "duration": 4.96
+  },
+  {
+    "text": "wanted to see, and the other one has the",
+    "start": 1844.32,
+    "duration": 5.84
+  },
+  {
+    "text": "Maybe I can call it the sketch. And uh",
+    "start": 1847.36,
+    "duration": 6.56
+  },
+  {
+    "text": "take all your time, buddy. Take",
+    "start": 1850.16,
+    "duration": 7.24
+  },
+  {
+    "text": "all your time. Give",
+    "start": 1853.92,
+    "duration": 5.84
+  },
+  {
+    "text": "this your all.",
+    "start": 1857.4,
+    "duration": 6.88
+  },
+  {
+    "text": "Uh maybe let me be kind somehow, please.",
+    "start": 1859.76,
+    "duration": 5.76
+  },
+  {
+    "text": "Kindly",
+    "start": 1864.28,
+    "duration": 4.16
+  },
+  {
+    "text": "the fatality.",
+    "start": 1865.52,
+    "duration": 2.92
+  },
+  {
+    "text": "Yeah, let's see what it is like. Give us",
+    "start": 1870.12,
+    "duration": 5.76
+  },
+  {
+    "text": "this drum roll, else we are gone. Just",
+    "start": 1872.4,
+    "duration": 4.196
+  },
+  {
+    "text": "I don't",
+    "start": 1875.88,
+    "duration": 2.736
+  },
+  {
+    "text": ">> [snorts]",
+    "start": 1876.596,
+    "duration": 2.02
+  },
+  {
+    "text": "[laughter]",
+    "start": 1904.106,
+    "duration": 3.494
+  },
+  {
+    "text": ">> Okay, uh let me not think what happened",
+    "start": 1905.08,
+    "duration": 4.48
+  },
+  {
+    "text": "is what what I'm thinking is what",
+    "start": 1907.6,
+    "duration": 3.04
+  },
+  {
+    "text": "happened.",
+    "start": 1909.56,
+    "duration": 5.32
+  },
+  {
+    "text": "Uh maximum maybe used everything.",
+    "start": 1910.64,
+    "duration": 4.24
+  },
+  {
+    "text": "And now,",
+    "start": 1915.8,
+    "duration": 5.04
+  },
+  {
+    "text": "our tokens are finished.",
+    "start": 1916.96,
+    "duration": 7.4
+  },
+  {
+    "text": "Exactly 100%.",
+    "start": 1920.84,
+    "duration": 3.52
+  },
+  {
+    "text": "And what did we get? I don't know.",
+    "start": 1927.84,
+    "duration": 5.08
+  },
+  {
+    "text": "Mhm.",
+    "start": 1934.12,
+    "duration": 5.48
+  },
+  {
+    "text": "And now, I have to buy another one.",
+    "start": 1935.44,
+    "duration": 4.88
+  },
+  {
+    "text": "Uh",
+    "start": 1939.6,
+    "duration": 2.92
+  },
+  {
+    "text": "okay, we do not get anything, and our",
+    "start": 1940.32,
+    "duration": 5.12
+  },
+  {
+    "text": "tokens are finished.",
+    "start": 1942.52,
+    "duration": 5.2
+  },
+  {
+    "text": "Uh let me try to refresh these or not.",
+    "start": 1945.44,
+    "duration": 4.08
+  },
+  {
+    "text": "Maybe I can copy these or I don't know.",
+    "start": 1947.72,
+    "duration": 4.36
+  },
+  {
+    "text": "I don't know now what to do.",
+    "start": 1949.52,
+    "duration": 4.76
+  },
+  {
+    "text": "Let me try to refresh. Maybe it yeah,",
+    "start": 1952.08,
+    "duration": 4.88
+  },
+  {
+    "text": "did it presented, only I cannot see them",
+    "start": 1954.28,
+    "duration": 5.16
+  },
+  {
+    "text": "over here.",
+    "start": 1956.96,
+    "duration": 2.48
+  },
+  {
+    "text": "And I copy that one.",
+    "start": 1961.28,
+    "duration": 6.48
+  },
+  {
+    "text": "Let me try to refresh it again.",
+    "start": 1964.12,
+    "duration": 3.64
+  },
+  {
+    "text": "There is no way we are going to get it",
+    "start": 1983.24,
+    "duration": 4.8
+  },
+  {
+    "text": "that uh stuff.",
+    "start": 1984.96,
+    "duration": 3.08
+  },
+  {
+    "text": "Maybe switching to maximum was a bad",
+    "start": 1988.76,
+    "duration": 6.52
+  },
+  {
+    "text": "idea, a really bad idea.",
+    "start": 1991.4,
+    "duration": 5.48
+  },
+  {
+    "text": "And",
+    "start": 1995.28,
+    "duration": 3.88
+  },
+  {
+    "text": "we continue next time when uh",
+    "start": 1996.88,
+    "duration": 4.12
+  },
+  {
+    "text": "when we are back online because now we",
+    "start": 1999.16,
+    "duration": 3.8
+  },
+  {
+    "text": "cannot do anything. Let me see if some",
+    "start": 2001.0,
+    "duration": 4.88
+  },
+  {
+    "text": "uh updates kicked in.",
+    "start": 2002.96,
+    "duration": 5.16
+  },
+  {
+    "text": "So, you can do some uh checking.",
+    "start": 2005.88,
+    "duration": 5.16
+  },
+  {
+    "text": "Either way, 1596",
+    "start": 2008.12,
+    "duration": 5.96
+  },
+  {
+    "text": "to 1590. I hope this is the file. Let me",
+    "start": 2011.04,
+    "duration": 4.6
+  },
+  {
+    "text": "try to check it.",
+    "start": 2014.08,
+    "duration": 3.8
+  },
+  {
+    "text": "And let's see if we have anything",
+    "start": 2015.64,
+    "duration": 3.36
+  },
+  {
+    "text": "better.",
+    "start": 2017.88,
+    "duration": 3.4
+  },
+  {
+    "text": "Now, I cannot assure you if we have what",
+    "start": 2019.0,
+    "duration": 5.64
+  },
+  {
+    "text": "we wanted, but something",
+    "start": 2021.28,
+    "duration": 6.08
+  },
+  {
+    "text": "somewhere",
+    "start": 2024.64,
+    "duration": 2.72
+  },
+  {
+    "text": "changed in the file.",
+    "start": 2028.64,
+    "duration": 6.24
+  },
+  {
+    "text": "It does compile, so let's see. It was in",
+    "start": 2031.92,
+    "duration": 6.36
+  },
+  {
+    "text": "the moment of presenting it to us.",
+    "start": 2034.88,
+    "duration": 4.12
+  },
+  {
+    "text": "Uh",
+    "start": 2038.28,
+    "duration": 5.56
+  },
+  {
+    "text": "let's see what I have what we have here.",
+    "start": 2039.0,
+    "duration": 4.84
+  },
+  {
+    "text": "Maybe this is making some sort of sense.",
+    "start": 2062.96,
+    "duration": 4.76
+  },
+  {
+    "text": "We are back to square one from where we",
+    "start": 2065.32,
+    "duration": 5.12
+  },
+  {
+    "text": "end, but it did make some",
+    "start": 2067.72,
+    "duration": 5.12
+  },
+  {
+    "text": "a changes, and that is what I'm trying",
+    "start": 2070.44,
+    "duration": 6.16
+  },
+  {
+    "text": "to see specifically what",
+    "start": 2072.84,
+    "duration": 3.76
+  },
+  {
+    "text": "So,",
+    "start": 2090.0,
+    "duration": 4.84
+  },
+  {
+    "text": "the sense of this thing is that",
+    "start": 2091.28,
+    "duration": 5.68
+  },
+  {
+    "text": "this entire thing is markup. Doesn't",
+    "start": 2094.84,
+    "duration": 3.64
+  },
+  {
+    "text": "make any sense. This was already",
+    "start": 2096.96,
+    "duration": 4.08
+  },
+  {
+    "text": "breached. Let me take the crosshair.",
+    "start": 2098.48,
+    "duration": 4.2
+  },
+  {
+    "text": "This is already breached. This is a",
+    "start": 2101.04,
+    "duration": 5.52
+  },
+  {
+    "text": "clear downtrend, and it doesn't care",
+    "start": 2102.68,
+    "duration": 8.92
+  },
+  {
+    "text": "about that one. It just guesses and uh",
+    "start": 2106.56,
+    "duration": 6.6
+  },
+  {
+    "text": "Okay, basically, this is entirely what",
+    "start": 2111.6,
+    "duration": 3.88
+  },
+  {
+    "text": "we had, just that the markup was not",
+    "start": 2113.16,
+    "duration": 5.56
+  },
+  {
+    "text": "deceiving us like this one is.",
+    "start": 2115.48,
+    "duration": 5.56
+  },
+  {
+    "text": "Um",
+    "start": 2118.72,
+    "duration": 2.32
+  },
+  {
+    "text": "Yeah, we can assure that this is an",
+    "start": 2121.8,
+    "duration": 4.56
+  },
+  {
+    "text": "uptrend. This is a markup. This is a",
+    "start": 2124.16,
+    "duration": 4.0
+  },
+  {
+    "text": "perfect example.",
+    "start": 2126.36,
+    "duration": 3.92
+  },
+  {
+    "text": "I do not have any issue with that. But,",
+    "start": 2128.16,
+    "duration": 4.24
+  },
+  {
+    "text": "then, this one got breached over here.",
+    "start": 2130.28,
+    "duration": 4.84
+  },
+  {
+    "text": "So, that's",
+    "start": 2132.4,
+    "duration": 3.56
+  },
+  {
+    "text": "Uh",
+    "start": 2135.12,
+    "duration": 2.4
+  },
+  {
+    "text": "it doesn't make any sense. It's just",
+    "start": 2135.96,
+    "duration": 3.6
+  },
+  {
+    "text": "simple common sense. Uh",
+    "start": 2137.52,
+    "duration": 4.08
+  },
+  {
+    "text": "I mean",
+    "start": 2139.56,
+    "duration": 4.2
+  },
+  {
+    "text": "Uh",
+    "start": 2141.6,
+    "duration": 2.16
+  },
+  {
+    "text": "Uh I don't feel this thing is really",
+    "start": 2174.24,
+    "duration": 4.6
+  },
+  {
+    "text": "understanding us because",
+    "start": 2176.52,
+    "duration": 5.0
+  },
+  {
+    "text": "uh in normal trading, instead of having",
+    "start": 2178.84,
+    "duration": 5.28
+  },
+  {
+    "text": "the buy the buy and sell positions that",
+    "start": 2181.52,
+    "duration": 4.52
+  },
+  {
+    "text": "we are having over here, in real sense,",
+    "start": 2184.12,
+    "duration": 3.76
+  },
+  {
+    "text": "we should be able to opening a sell",
+    "start": 2186.04,
+    "duration": 3.8
+  },
+  {
+    "text": "position over here. And there I'm doing",
+    "start": 2187.88,
+    "duration": 6.0
+  },
+  {
+    "text": "the entire position up to the other the",
+    "start": 2189.84,
+    "duration": 5.4
+  },
+  {
+    "text": "up to the start of the other",
+    "start": 2193.88,
+    "duration": 3.16
+  },
+  {
+    "text": "consolidation of the other cycle,",
+    "start": 2195.24,
+    "duration": 4.56
+  },
+  {
+    "text": "basically. So, if this is a sell trade,",
+    "start": 2197.04,
+    "duration": 5.64
+  },
+  {
+    "text": "then we want to write up from to write",
+    "start": 2199.8,
+    "duration": 5.12
+  },
+  {
+    "text": "it from this point over here to the next",
+    "start": 2202.68,
+    "duration": 4.84
+  },
+  {
+    "text": "one. We just added the",
+    "start": 2204.92,
+    "duration": 5.68
+  },
+  {
+    "text": "the trades opening stuff just for to see",
+    "start": 2207.52,
+    "duration": 5.72
+  },
+  {
+    "text": "if the system is a really working, if it",
+    "start": 2210.6,
+    "duration": 4.88
+  },
+  {
+    "text": "is able to do all that. So, which means",
+    "start": 2213.24,
+    "duration": 3.92
+  },
+  {
+    "text": "basically our",
+    "start": 2215.48,
+    "duration": 4.16
+  },
+  {
+    "text": "not a really good system",
+    "start": 2217.16,
+    "duration": 6.59
+  },
+  {
+    "text": "specifically. So,",
+    "start": 2219.64,
+    "duration": 5.4
+  },
+  {
+    "text": ">> [snorts]",
+    "start": 2223.75,
+    "duration": 3.01
+  },
+  {
+    "text": ">> I think we still have to push it",
+    "start": 2225.04,
+    "duration": 4.6
+  },
+  {
+    "text": "further. We we have a lot of stuffs to",
+    "start": 2226.76,
+    "duration": 5.24
+  },
+  {
+    "text": "do. We aren't really where we want to",
+    "start": 2229.64,
+    "duration": 4.4
+  },
+  {
+    "text": "be.",
+    "start": 2232.0,
+    "duration": 3.92
+  },
+  {
+    "text": "And",
+    "start": 2234.04,
+    "duration": 3.84
+  },
+  {
+    "text": "yeah, basically, sorry for wasting your",
+    "start": 2235.92,
+    "duration": 4.64
+  },
+  {
+    "text": "time. I will I just wait. And next time,",
+    "start": 2237.88,
+    "duration": 4.8
+  },
+  {
+    "text": "instead of putting the maximum, we have",
+    "start": 2240.56,
+    "duration": 4.0
+  },
+  {
+    "text": "seen the pain of using the maximum in",
+    "start": 2242.68,
+    "duration": 4.24
+  },
+  {
+    "text": "our favor of five. So, it'll be just",
+    "start": 2244.56,
+    "duration": 3.72
+  },
+  {
+    "text": "using",
+    "start": 2246.92,
+    "duration": 3.8
+  },
+  {
+    "text": "I",
+    "start": 2248.28,
+    "duration": 2.44
+  },
+  {
+    "text": "to do to do this doesn't make much sense",
+    "start": 2250.84,
+    "duration": 7.28
+  },
+  {
+    "text": "to me right now. So,",
+    "start": 2254.92,
+    "duration": 5.24
+  },
+  {
+    "text": "So, next time we'll just use a",
+    "start": 2258.12,
+    "duration": 5.0
+  },
+  {
+    "text": "I mean, not maximum, but I, which is the",
+    "start": 2260.16,
+    "duration": 5.6
+  },
+  {
+    "text": "default one. At least that one can go a",
+    "start": 2263.12,
+    "duration": 6.08
+  },
+  {
+    "text": "few few miles before getting depleted.",
+    "start": 2265.76,
+    "duration": 5.48
+  },
+  {
+    "text": "Either way, I do not feel any impact of",
+    "start": 2269.2,
+    "duration": 4.76
+  },
+  {
+    "text": "using favor from the whole person the",
+    "start": 2271.24,
+    "duration": 4.92
+  },
+  {
+    "text": "other. So,",
+    "start": 2273.96,
+    "duration": 4.84
+  },
+  {
+    "text": "maybe we might use another maybe a pass",
+    "start": 2276.16,
+    "duration": 5.48
+  },
+  {
+    "text": "4.8, which doesn't which was not",
+    "start": 2278.8,
+    "duration": 5.4
+  },
+  {
+    "text": "depleting our stuffs our tokens",
+    "start": 2281.64,
+    "duration": 5.48
+  },
+  {
+    "text": "really quick like this one is doing.",
+    "start": 2284.2,
+    "duration": 4.68
+  },
+  {
+    "text": "Um",
+    "start": 2287.12,
+    "duration": 3.68
+  },
+  {
+    "text": "So, yeah. Maybe I'll be sorry for",
+    "start": 2288.88,
+    "duration": 4.08
+  },
+  {
+    "text": "wasting my time. We'll just wait. And",
+    "start": 2290.8,
+    "duration": 4.2
+  },
+  {
+    "text": "the next session now",
+    "start": 2292.96,
+    "duration": 4.24
+  },
+  {
+    "text": "now we know where to get to. And we'll",
+    "start": 2295.0,
+    "duration": 6.64
+  },
+  {
+    "text": "have a really well-prepared prompt to",
+    "start": 2297.2,
+    "duration": 6.04
+  },
+  {
+    "text": "make these work.",
+    "start": 2301.64,
+    "duration": 4.68
+  },
+  {
+    "text": "It It It It It should work either way. I",
+    "start": 2303.24,
+    "duration": 5.0
+  },
+  {
+    "text": "feel it should work.",
+    "start": 2306.32,
+    "duration": 4.16
+  },
+  {
+    "text": "Um",
+    "start": 2308.24,
+    "duration": 2.24
+  },
+  {
+    "text": "Let's keep pushing it. But then",
+    "start": 2311.24,
+    "duration": 4.4
+  },
+  {
+    "text": "basically",
+    "start": 2314.04,
+    "duration": 5.16
+  },
+  {
+    "text": "I think it is really necessary to know",
+    "start": 2315.64,
+    "duration": 6.12
+  },
+  {
+    "text": "the basics of coding because I don't",
+    "start": 2319.2,
+    "duration": 5.52
+  },
+  {
+    "text": "feel AI is going to help you either way",
+    "start": 2321.76,
+    "duration": 6.68
+  },
+  {
+    "text": "if you do not have the background.",
+    "start": 2324.72,
+    "duration": 4.52
+  },
+  {
+    "text": "So",
+    "start": 2328.44,
+    "duration": 2.28
+  },
+  {
+    "text": "Mm.",
+    "start": 2329.24,
+    "duration": 3.88
+  },
+  {
+    "text": "Yeah, that's that's and then see you",
+    "start": 2330.72,
+    "duration": 4.92
+  },
+  {
+    "text": "later.",
+    "start": 2333.12,
+    "duration": 2.52
+  }
+]

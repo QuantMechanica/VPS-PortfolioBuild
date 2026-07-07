@@ -1,0 +1,746 @@
+[00:00:00] Okay, previously we were automating the
+[00:00:03] Wyckoff price cycle
+[00:00:05] trying to create an expert advisor based
+[00:00:07] on it using
+[00:00:09] cloud AI. And
+[00:00:12] we did part one, two, and three, and
+[00:00:14] four, and this is part five. So, as for
+[00:00:17] part five, we want to go ahead and make
+[00:00:21] it advanced and um
+[00:00:23] push and see what we can do. So, this is
+[00:00:25] the Wyckoff cycle that we're trying to
+[00:00:28] make sure we have it where we are maybe
+[00:00:30] >> [snorts]
+[00:00:31] >> have two types of consolidation. We have
+[00:00:34] the accumulation and the distribution.
+[00:00:35] They are kind of types of consolidation
+[00:00:37] and we want to have
+[00:00:39] We [snorts] have the markup and the
+[00:00:41] markdown. So, which in a which
+[00:00:43] technically tells us that a new trend is
+[00:00:46] about to begin and this is what we want
+[00:00:48] to be getting. So, previously we did
+[00:00:50] create that particular expert advisor
+[00:00:52] for part four and maybe I can run it for
+[00:00:56] you to see where we did reach uh
+[00:00:59] basically. So, we left off at we have
+[00:01:03] clear visualizations and we had the
+[00:01:06] system automate trades or get
+[00:01:11] get a
+[00:01:13] be able to get the actual
+[00:01:16] uh accumulation, distribution, markup,
+[00:01:18] and markdown phase, that entire cycle of
+[00:01:21] the Wyckoff of the Wyckoff, I mean. But
+[00:01:24] then, we want to push it a little bit
+[00:01:26] further to make it super advanced. So
+[00:01:28] far, we do have a profitable system
+[00:01:31] which we can say it is not much
+[00:01:35] much bad off, but
+[00:01:37] maybe you can push it a little bit
+[00:01:38] further to get clear visuals like we do
+[00:01:42] not have clear visuals that are over
+[00:01:44] here. We do have the support and
+[00:01:45] resistance which defines the
+[00:01:47] distribution or the accumulation phase,
+[00:01:50] consolidation phase, apparently or that
+[00:01:53] range, and then
+[00:01:55] you can be able to open a trade like
+[00:01:57] over here. We do have We did have
+[00:01:59] accumulation over there and then an
+[00:02:01] uptrend then we do have an accumulation
+[00:02:03] over here again, which marks start of
+[00:02:06] uptrend and that is entirely what we
+[00:02:08] want to have because that is the Wyckoff
+[00:02:11] market cycle
+[00:02:14] strategy and that is what we are trying
+[00:02:17] to automate over here. So basically, we
+[00:02:20] did have
+[00:02:21] clear pattern at the end. I'm not going
+[00:02:23] to run this up to the end because yeah,
+[00:02:26] you can watch part four if you want to
+[00:02:28] see what we did come up in that previous
+[00:02:30] cycle. So
+[00:02:32] This is a continuous phase and I did I
+[00:02:36] did not have actually much of things to
+[00:02:39] say. I just want to
+[00:02:43] push this further and
+[00:02:45] Claude has released another model which
+[00:02:47] is called fable five and that is what
+[00:02:50] you want to use. We have been using
+[00:02:53] actually almost all the models. So we do
+[00:02:57] have we have used the I think we started
+[00:03:00] with Sonnet and then we went to Opus 4.6
+[00:03:05] 4.7. We [snorts] were using Opus 4.8 as
+[00:03:09] per the previous video or a session, but
+[00:03:12] then we want to use the the latest model
+[00:03:16] which is a fable five which they say it
+[00:03:18] is included up to until maybe you know,
+[00:03:22] July 7th and today is on the 2nd. So
+[00:03:26] um
+[00:03:28] Yeah, they are telling us over here. It
+[00:03:31] is the most capable model and draws down
+[00:03:35] Yeah, it takes that kind of a tokens
+[00:03:37] much quicker than Opus 4.8. We have used
+[00:03:40] Opus 4.8 and I can Yeah, we have seen
+[00:03:43] how it takes
+[00:03:45] the consumption and all that kind of
+[00:03:47] stuff, but then um
+[00:03:50] Yeah, apparently let's see what can do
+[00:03:54] uh with this. So,
+[00:03:56] maybe it's for tracking stuff, we can
+[00:04:04] Let me check usage of a year. So, usage
+[00:04:07] is zero. Everything is zero, actually.
+[00:04:09] And I want to see how much you can use
+[00:04:11] on this Fable
+[00:04:13] 5 and how it's uh response is to getting
+[00:04:16] much better. All right, trying to push
+[00:04:19] this on with the without any much
+[00:04:20] further ado, I will just paste what I
+[00:04:23] did copy over there.
+[00:04:25] I had prepared this um
+[00:04:28] earlier on, and I want to, you know, so
+[00:04:30] that we can move a bit much quicker. So,
+[00:04:33] let's see what Fable 5 can do. I have
+[00:04:37] used the I. I think I is what comes by
+[00:04:39] default. I'm not sure, yeah. That is the
+[00:04:41] default. Maybe if it is not super fine,
+[00:04:45] then it we can switch to maximum.
+[00:04:48] But then we want to track how much it it
+[00:04:50] draws and how much it can be of a help
+[00:04:54] to us. So, basically, that is all.
+[00:04:59] So, let's wait and see.
+[00:05:11] So, it is as it is doing its thing over
+[00:05:14] there, the part four that I did say it
+[00:05:17] is over here, the part four, and that is
+[00:05:19] what we did create last time that got us
+[00:05:23] to where basically we
+[00:05:25] are
+[00:05:27] right now. So,
+[00:05:29] yeah.
+[00:05:48] Oh, and again, maybe something that I am
+[00:05:50] forgetting is
+[00:05:53] here is the code to get
+[00:05:56] the other response it did it did
+[00:05:58] generate. We have gone much far on this
+[00:06:01] one and this is the last
+[00:06:03] code
+[00:06:04] lines of code that we add from the AI
+[00:06:08] giving us and all that kind of stuff or
+[00:06:10] instances. So, we want basically for the
+[00:06:13] the EA to create us these and that to
+[00:06:15] automate us
+[00:06:17] for us the entire strategy.
+[00:06:31] I usually like seeing opening EA and
+[00:06:35] seeing
+[00:06:36] what the AI is telling us. What
+[00:06:39] happened?
+[00:07:14] I think you comment read about what the
+[00:07:16] AI is presenting to us over there.
+[00:07:21] I think it is
+[00:07:22] >> [snorts]
+[00:07:23] >> creating another file because I told it
+[00:07:25] to
+[00:07:27] explicitly redo the entire file if it is
+[00:07:30] a necessary really necessary.
+[00:07:33] So, the command prompt that I did send
+[00:07:36] at first over there, I will attach it at
+[00:07:39] the comment section of this session.
+[00:07:59] Okay, I think the build finished and
+[00:08:02] the file is presented to us.
+[00:08:05] And let's have a look at what they did
+[00:08:09] say to us now. I will not I'm not going
+[00:08:12] to
+[00:08:14] read over everything that is over here,
+[00:08:16] though.
+[00:08:21] Yeah, basically that's let's see how
+[00:08:24] much this took.
+[00:08:33] Wow.
+[00:08:35] Okay, it is super consummative
+[00:08:39] because one promoter alone with the I
+[00:08:42] applied and they're getting 50%
+[00:08:45] just took 33% of our
+[00:08:48] max plan. So,
+[00:08:53] yeah, basically it is around two three
+[00:08:54] more prompts that are remaining and we
+[00:08:57] are out. Let's see. Okay, let's see what
+[00:09:00] these
+[00:09:01] give us.
+[00:09:02] So, I'll copy just like we usually do
+[00:09:05] and I paste it over here. I had already
+[00:09:07] opened it, so I'll just
+[00:09:13] paste it. Apparently, some parts of the
+[00:09:16] code were removed, I think, because we
+[00:09:19] had 17 and we have 1485.
+[00:09:21] So, I'll press F7 to compile.
+[00:09:26] I have already attached it to the
+[00:09:28] strategy tester, so I'll just navigate
+[00:09:31] to strategy tester over here and you can
+[00:09:33] see this is where it is and all those
+[00:09:37] stuffs. and I
+[00:09:38] don't know if something got changed.
+[00:09:41] I'll just run it.
+[00:09:42] Never mind.
+[00:09:53] Wow, this is super super aggressive.
+[00:09:56] Maybe I don't know.
+[00:09:59] Okay. Okay. [laughter] Okay. We do have
+[00:10:01] distribution. We do have accumulation.
+[00:10:04] We do have distribution distribution
+[00:10:06] distribution distribution.
+[00:10:09] Uh
+[00:10:10] is this a progress or a retrogress
+[00:10:13] because
+[00:10:17] goes out. I don't know. I don't know. I
+[00:10:19] don't know, man. So,
+[00:10:21] let's run it and see. I'm not so sure.
+[00:10:26] Okay, we do have so many setups that I
+[00:10:30] think some others are not validated.
+[00:10:32] Others are validated and the other kind
+[00:10:34] of stuff, for instance.
+[00:10:37] So,
+[00:10:40] I'm not so sure. Let's just watch and
+[00:10:42] see if it is making sense or it doesn't
+[00:10:45] make sense so we can know what to tell
+[00:10:47] it later on.
+[00:10:53] Okay, to me for example, I think this is
+[00:10:56] a retrogressing.
+[00:11:00] I think I'm about to be pissed off. This
+[00:11:02] is a clear distribution or accumulation
+[00:11:05] or typically let me just be using
+[00:11:07] consolidation. But
+[00:11:09] how on earth is this a consolidation? It
+[00:11:12] does not make any sense to me. Does not
+[00:11:15] make any sense. This looks like kind of
+[00:11:17] a uptrend.
+[00:11:20] It It makes no sense.
+[00:11:23] This a clear downtrend. It makes no
+[00:11:27] no sense to me at all at all. How is
+[00:11:29] this
+[00:11:31] Okay, man.
+[00:11:34] I I I don't think this is
+[00:11:37] what you wanted, maybe.
+[00:11:39] Um
+[00:11:43] I I I always these are consolidation.
+[00:11:45] I'm just like, "Well, okay. All right,
+[00:11:47] let's see."
+[00:11:50] This is a clear uptrend.
+[00:11:53] This is a clear downtrend. Wow. Come on,
+[00:11:56] man. Look at this. This is a clear
+[00:11:57] downtrend and a very good downtrend.
+[00:12:05] Okay, I think at this point I'm pissed
+[00:12:07] because I think we are making
+[00:12:10] retrogressing efforts.
+[00:12:14] Maybe it just crashed everything we had.
+[00:12:18] Oh, man. Okay, this can be a valid
+[00:12:21] accumulation, but then I think we're
+[00:12:23] back to square one.
+[00:12:25] And this is a clear uptrend either way.
+[00:12:29] Doesn't count to be an accumulation. So,
+[00:12:32] I think I'm pissed.
+[00:12:35] Yeah, this is a clear
+[00:12:37] distribution.
+[00:12:42] And we took too much time building that.
+[00:12:45] Now, it looks like we are back to square
+[00:12:47] one. Wow.
+[00:12:50] Uh this is not good. No, no, good.
+[00:12:55] And we have this is a clear
+[00:12:56] distribution.
+[00:12:58] Though.
+[00:13:00] These uh doesn't qualify to be a to be a
+[00:13:02] distribution. Neither does this. Neither
+[00:13:05] does this.
+[00:13:07] This does does qualify.
+[00:13:11] This doesn't.
+[00:13:15] Oh.
+[00:13:17] Okay. Okay.
+[00:13:24] Okay, I I uh
+[00:13:26] we are retrogressing over here and I
+[00:13:28] feel pissed because what we took time to
+[00:13:31] build is now crushed entirely to the
+[00:13:33] ground.
+[00:13:34] Wow.
+[00:13:36] Uh, this ain't good.
+[00:13:38] This ain't
+[00:13:42] ain't good, man. Uh, you just
+[00:13:48] crashed
+[00:13:50] everything we took
+[00:13:53] time
+[00:13:55] to build.
+[00:13:57] We have many
+[00:14:00] setups now and some
+[00:14:03] of them
+[00:14:07] are just clear
+[00:14:10] trends
+[00:14:13] that
+[00:14:16] you classify as
+[00:14:20] consolidations.
+[00:14:23] What we added
+[00:14:25] was better
+[00:14:29] than this.
+[00:14:31] We we better go back.
+[00:14:33] We better go back
+[00:14:37] to what was
+[00:14:39] already
+[00:14:43] working. If
+[00:14:45] you are to make this
+[00:14:50] worse, this
+[00:14:54] This is a downgrade
+[00:14:58] to what we
+[00:15:04] ever built. It's a total crash.
+[00:15:08] Uh,
+[00:15:09] total crash. May- maybe I can copy this.
+[00:15:11] I should be
+[00:15:13] giving it over here.
+[00:15:21] What's up?
+[00:15:25] Okay, it is a total crash. What else can
+[00:15:28] I tell it, man?
+[00:15:31] I asked
+[00:15:33] for an improvement,
+[00:15:36] not
+[00:15:40] the other way you
+[00:15:44] uh works is to
+[00:15:46] everything. Why not
+[00:15:49] make this better? I I am pissed.
+[00:15:58] Cuz now
+[00:16:00] some setups
+[00:16:02] look
+[00:16:05] completely off.
+[00:16:08] Read the code or
+[00:16:11] the resources
+[00:16:16] in the internet and the
+[00:16:23] make this correct.
+[00:16:25] Specifically,
+[00:16:28] we need clear,
+[00:16:30] correct
+[00:16:32] consoli-
+[00:16:37] consolidations to form
+[00:16:41] the markups and
+[00:16:44] mark downs.
+[00:16:47] Okay.
+[00:16:48] Not the markups or the mark downs, but
+[00:16:50] the
+[00:16:53] accumulations
+[00:16:54] and distri-
+[00:16:58] butions. Um
+[00:17:00] what else can I tell it? Cuz I feel
+[00:17:02] pissed. This is an example of an
+[00:17:04] accumulation. Doesn't make sense what it
+[00:17:06] gave us. It's completely out of
+[00:17:10] of sync.
+[00:17:14] I will still use this as an example. And
+[00:17:17] consider this is a perfect example.
+[00:17:25] Should I maybe give it
+[00:17:27] these uh stuff because we gave it the
+[00:17:30] image, it doesn't understand a thing
+[00:17:32] about the image.
+[00:17:37] I don't know if a fibo 5 could be able
+[00:17:40] to understand the image, but uh opus 4.8
+[00:17:43] completely doesn't understand images.
+[00:17:46] That is to make no sense giving it
+[00:17:49] the images. Never mind, I'll just copy
+[00:17:51] the code. I mean, the the link.
+[00:17:53] Uh I don't know if it will access it or
+[00:17:55] not. We're just trying things over here.
+[00:17:59] Look at this resource.
+[00:18:09] Oh.
+[00:18:12] What did I copy?
+[00:18:20] Okay, let me reload it again.
+[00:18:26] Cut.
+[00:18:36] Does it mean you don't
+[00:18:40] clearly know what
+[00:18:42] defines a good
+[00:18:45] consolidation
+[00:18:50] range or what? I think
+[00:18:52] it should be able to do these stuffs.
+[00:18:54] So, now given that in mind,
+[00:18:57] um I would like very much to test the
+[00:19:00] maximum, but we have seen how the
+[00:19:03] default high consumes uh stuff, so I'll
+[00:19:07] stick with the fibo 5 I, but
+[00:19:11] yeah, all in all we can say it is it
+[00:19:14] ain't
+[00:19:16] any better much of than the other one.
+[00:19:19] Maybe
+[00:19:20] we are prompting it bad. Maybe
+[00:19:23] I need to attend um
+[00:19:26] you know, those schools or maybe I am
+[00:19:29] missing something, but
+[00:19:31] I don't feel any
+[00:19:34] any much impact from
+[00:19:37] from all the from all the the models
+[00:19:39] that we have tested so far in this
+[00:19:42] creation.
+[00:19:43] The [snorts] entire of the Sonnet, the
+[00:19:45] Opas, the Ayiku, the
+[00:19:47] the Fibo 5 now that
+[00:19:50] I am still pissed. I think this AI thing
+[00:19:53] is a
+[00:19:55] It is It isn't yet there. Maybe it can
+[00:19:57] do other stuffs, but
+[00:19:59] specifically what we are doing over here
+[00:20:02] uh creation creation of expert advisors,
+[00:20:04] I think still I will insist we need to
+[00:20:07] have some background of a coding.
+[00:20:11] Because I am pretty much sure if I was
+[00:20:13] the one who was a coding this one from a
+[00:20:15] start, I would be maybe performing much
+[00:20:19] better because I know what specifically
+[00:20:21] I want. But this AI, it has access to
+[00:20:23] all the
+[00:20:25] to all the resources on the internet. It
+[00:20:27] can Google this, Google that, go to this
+[00:20:31] link, see these images and go to
+[00:20:34] YouTube, maybe watch some videos over
+[00:20:35] there and see
+[00:20:37] >> [snorts]
+[00:20:37] >> how the the strategy works. It is a
+[00:20:40] common strategy. It is a basically
+[00:20:42] almost everybody knows the Wyckoff. We
+[00:20:44] did not give it something that is a new.
+[00:20:47] So, it should be able to, you know, read
+[00:20:50] the entire strategy and uh
+[00:20:53] create an expert advisor based on it.
+[00:20:55] But then again, this means it is not
+[00:20:58] doing it.
+[00:20:59] Uh we It is much of a struggle, no
+[00:21:01] matter the
+[00:21:04] how we raise the the models, whichever
+[00:21:08] comes this much better, this more
+[00:21:10] capable, this solves more complex tasks.
+[00:21:14] But then
+[00:21:15] I don't feel any much effects of
+[00:21:19] the AI in this creation of stuff. Maybe
+[00:21:22] it can help you solve something, but
+[00:21:26] if you are just a beginner and you just
+[00:21:29] want to create an expert advisor and you
+[00:21:31] are on the go, then I think you need to
+[00:21:34] have some background of a coding because
+[00:21:40] you might end up pissed like I am.
+[00:21:43] Anyway, let's see what it did this time.
+[00:21:48] Again, I will check the the tokens that
+[00:21:50] were consumed.
+[00:21:55] It is the second prompt and
+[00:21:58] we are currently at
+[00:22:00] 38. I think I can deploy the other one.
+[00:22:03] I think maybe I can deploy
+[00:22:05] the maximum of the next code.
+[00:22:07] I mean, next prompt.
+[00:22:10] If something is not okay, but let me
+[00:22:13] have a look what we have here.
+[00:22:18] >> [clears throat]
+[00:22:20] >> So, it clearly sees it broke something.
+[00:22:23] Why did you do that, buddy? I'm not
+[00:22:24] going to read these stuff over here. I'm
+[00:22:26] just going to scroll.
+[00:22:28] If you want to read or have a look at
+[00:22:32] what it did, save
+[00:22:34] to us or report was over there. Just
+[00:22:37] refresh
+[00:22:38] again and copy the latest code and I
+[00:22:40] will head back to our editor and tell it
+[00:22:43] to do
+[00:22:45] some other cool stuff.
+[00:22:49] Okay, let's compile this one.
+[00:22:53] One thing I like about it is that it
+[00:22:56] doesn't have much errors. It understands
+[00:22:58] the MQL4/5 syntax
+[00:23:02] perfectly fine.
+[00:23:07] >> [snorts]
+[00:23:09] >> Okay, let's see.
+[00:23:18] Um
+[00:23:22] Oh man.
+[00:23:24] I don't know how many times you are
+[00:23:26] going to do this, but this ain't any
+[00:23:29] better.
+[00:23:30] Because look at now, we have How can we
+[00:23:33] have markups?
+[00:23:35] What What Yeah, I expect to see a
+[00:23:37] consolidation or an accumulation. I
+[00:23:40] mean, distribution or accumulation phase
+[00:23:42] before the markup or markdown, but
+[00:23:45] we cannot have markdown markdown. That's
+[00:23:47] completely
+[00:23:48] ignorance of
+[00:23:50] the strategy. Doesn't make any sense
+[00:23:52] to me. Let's have a look.
+[00:23:57] Oh man, what do we have?
+[00:24:01] This is completely shattered.
+[00:24:05] Wow.
+[00:24:08] Let me have a look at the journal.
+[00:24:11] Nothing meaningful.
+[00:24:14] Oh man.
+[00:24:21] >> [snorts]
+[00:24:22] >> This isn't just even making a loss.
+[00:24:25] It doesn't follow any rules. They're
+[00:24:27] They're
+[00:24:32] Let me deploy the maximum. May Maybe it
+[00:24:34] will do us something better. I'm just
+[00:24:38] getting pissed each and every prompt we
+[00:24:40] get.
+[00:24:41] I mean, response.
+[00:24:44] Okay, let me deploy the maximum.
+[00:24:49] Um
+[00:24:51] >> [clears throat]
+[00:24:55] >> Okay, what am I going say? Okay, this
+[00:24:58] this
+[00:24:59] just got
+[00:25:02] worse and um
+[00:25:07] everything is uh shattered
+[00:25:09] shattered to the ground.
+[00:25:17] You are making
+[00:25:19] this
+[00:25:21] worse than better.
+[00:25:24] Um
+[00:25:26] what am I going to tell it, man? Uh
+[00:25:29] I'm just pissed.
+[00:25:30] >> [clears throat]
+[00:25:30] >> Uh
+[00:25:34] Eh.
+[00:25:35] Okay, I tell it uh
+[00:25:39] Okay, what does it not understand, man?
+[00:25:43] Eh.
+[00:25:43] >> [snorts]
+[00:25:44] >> We need that Okay.
+[00:25:47] Okay, okay, okay. Cool down, cool down.
+[00:25:50] Composure.
+[00:25:51] Mm.
+[00:25:54] What I get is consecutive
+[00:25:57] consecutive
+[00:25:59] >> [snorts]
+[00:26:05] >> I'm not used to doing this. Let me just
+[00:26:07] go
+[00:26:08] cut this one and do it over here.
+[00:26:10] Allow me to do this.
+[00:26:12] Okay.
+[00:26:13] What I get is consecutive
+[00:26:19] markups or
+[00:26:22] mark downs, which
+[00:26:23] >> [snorts]
+[00:26:26] >> which I feel I don't want to stand at
+[00:26:28] Mr. No All, which I don't feel
+[00:26:32] is what the strategy
+[00:26:36] cycle
+[00:26:37] cycle entire
+[00:26:42] in the all
+[00:26:44] internet.
+[00:26:46] I'm just pissed.
+[00:26:48] And the all internet is that how it is
+[00:26:50] typed. The whole internet
+[00:26:53] defines it. I doubt
+[00:27:02] >> [clears throat]
+[00:27:03] [snorts]
+[00:27:04] >> we needed to have
+[00:27:07] consolidations
+[00:27:09] and
+[00:27:11] then
+[00:27:13] trends or mark
+[00:27:17] ups or
+[00:27:19] mark downs. It's straightforward.
+[00:27:24] >> [snorts]
+[00:27:42] [snorts]
+[00:27:51] >> Okay, I'll just provide it the image. I
+[00:27:53] know it doesn't listen to any image.
+[00:27:56] Does it will not really matter, but I'll
+[00:27:58] just provide it anyway.
+[00:28:00] Then
+[00:28:04] I will provide an image again. Then
+[00:28:10] Oh man, what am I supposed to tell this
+[00:28:13] thing?
+[00:28:16] Okay.
+[00:28:21] Okay, let me just tell it just use
+[00:28:23] common sense.
+[00:28:27] What am I supposed to tell this thing?
+[00:28:29] I'm just out of words. Mm.
+[00:28:32] Oh man.
+[00:28:37] Those of you who use AI to do creation
+[00:28:39] of expert advisors, what do you usually
+[00:28:41] do? Cuz I'm just I don't know. Maybe
+[00:28:44] someone can tell me what to this thing.
+[00:28:47] Mhm.
+[00:28:50] Uh yeah.
+[00:28:54] Okay, let me just tell it what we had.
+[00:28:57] Okay, we might
+[00:29:00] and
+[00:29:01] go back to what we initially had because
+[00:29:08] it used to
+[00:29:11] follow the rules.
+[00:29:13] This just like a downgrade. I don't
+[00:29:16] know.
+[00:29:24] And let me provide it this image.
+[00:29:27] Where is the image?
+[00:29:30] It's somewhere. This one.
+[00:29:34] Uh open image in a new tab.
+[00:29:37] Then I'll take a screenshot may or maybe
+[00:29:39] a snippet.
+[00:29:44] Can I copy the image and then paste it
+[00:29:46] over here instead of taking a snippet?
+[00:29:49] Let me see if that will work.
+[00:29:51] It will work.
+[00:29:54] Yeah, it does work.
+[00:29:57] Perfect and that's the entire image. I
+[00:29:59] did not snip it.
+[00:30:02] Maybe I can take another image if it's
+[00:30:04] really possible.
+[00:30:10] I just want to give this thing resources
+[00:30:12] as much as possible. We have fed it with
+[00:30:15] a lot of information and uh
+[00:30:18] it doesn't get us anywhere.
+[00:30:21] I'm [snorts] not sure whose website this
+[00:30:23] is but
+[00:30:25] I just like it.
+[00:30:28] It does it it visually has what we want
+[00:30:31] to have. So, I'll just copy this one. At
+[00:30:34] least see that is working and I'll paste
+[00:30:36] it over here as well.
+[00:30:39] Like that. Now it has two images. One
+[00:30:42] uses the actual cuddle sticks that we
+[00:30:44] wanted to see, and the other one has the
+[00:30:47] Maybe I can call it the sketch. And uh
+[00:30:50] take all your time, buddy. Take
+[00:30:53] all your time. Give
+[00:30:57] this your all.
+[00:30:59] Uh maybe let me be kind somehow, please.
+[00:31:04] Kindly
+[00:31:05] the fatality.
+[00:31:10] Yeah, let's see what it is like. Give us
+[00:31:12] this drum roll, else we are gone. Just
+[00:31:15] I don't
+[00:31:16] >> [snorts]
+[00:31:44] [laughter]
+[00:31:45] >> Okay, uh let me not think what happened
+[00:31:47] is what what I'm thinking is what
+[00:31:49] happened.
+[00:31:50] Uh maximum maybe used everything.
+[00:31:55] And now,
+[00:31:56] our tokens are finished.
+[00:32:00] Exactly 100%.
+[00:32:07] And what did we get? I don't know.
+[00:32:14] Mhm.
+[00:32:15] And now, I have to buy another one.
+[00:32:19] Uh
+[00:32:20] okay, we do not get anything, and our
+[00:32:22] tokens are finished.
+[00:32:25] Uh let me try to refresh these or not.
+[00:32:27] Maybe I can copy these or I don't know.
+[00:32:29] I don't know now what to do.
+[00:32:32] Let me try to refresh. Maybe it yeah,
+[00:32:34] did it presented, only I cannot see them
+[00:32:36] over here.
+[00:32:41] And I copy that one.
+[00:32:44] Let me try to refresh it again.
+[00:33:03] There is no way we are going to get it
+[00:33:04] that uh stuff.
+[00:33:08] Maybe switching to maximum was a bad
+[00:33:11] idea, a really bad idea.
+[00:33:15] And
+[00:33:16] we continue next time when uh
+[00:33:19] when we are back online because now we
+[00:33:21] cannot do anything. Let me see if some
+[00:33:22] uh updates kicked in.
+[00:33:25] So, you can do some uh checking.
+[00:33:28] Either way, 1596
+[00:33:31] to 1590. I hope this is the file. Let me
+[00:33:34] try to check it.
+[00:33:35] And let's see if we have anything
+[00:33:37] better.
+[00:33:39] Now, I cannot assure you if we have what
+[00:33:41] we wanted, but something
+[00:33:44] somewhere
+[00:33:48] changed in the file.
+[00:33:51] It does compile, so let's see. It was in
+[00:33:54] the moment of presenting it to us.
+[00:33:58] Uh
+[00:33:59] let's see what I have what we have here.
+[00:34:22] Maybe this is making some sort of sense.
+[00:34:25] We are back to square one from where we
+[00:34:27] end, but it did make some
+[00:34:30] a changes, and that is what I'm trying
+[00:34:32] to see specifically what
+[00:34:50] So,
+[00:34:51] the sense of this thing is that
+[00:34:54] this entire thing is markup. Doesn't
+[00:34:56] make any sense. This was already
+[00:34:58] breached. Let me take the crosshair.
+[00:35:01] This is already breached. This is a
+[00:35:02] clear downtrend, and it doesn't care
+[00:35:06] about that one. It just guesses and uh
+[00:35:11] Okay, basically, this is entirely what
+[00:35:13] we had, just that the markup was not
+[00:35:15] deceiving us like this one is.
+[00:35:18] Um
+[00:35:21] Yeah, we can assure that this is an
+[00:35:24] uptrend. This is a markup. This is a
+[00:35:26] perfect example.
+[00:35:28] I do not have any issue with that. But,
+[00:35:30] then, this one got breached over here.
+[00:35:32] So, that's
+[00:35:35] Uh
+[00:35:35] it doesn't make any sense. It's just
+[00:35:37] simple common sense. Uh
+[00:35:39] I mean
+[00:35:41] Uh
+[00:36:14] Uh I don't feel this thing is really
+[00:36:16] understanding us because
+[00:36:18] uh in normal trading, instead of having
+[00:36:21] the buy the buy and sell positions that
+[00:36:24] we are having over here, in real sense,
+[00:36:26] we should be able to opening a sell
+[00:36:27] position over here. And there I'm doing
+[00:36:29] the entire position up to the other the
+[00:36:33] up to the start of the other
+[00:36:35] consolidation of the other cycle,
+[00:36:37] basically. So, if this is a sell trade,
+[00:36:39] then we want to write up from to write
+[00:36:42] it from this point over here to the next
+[00:36:44] one. We just added the
+[00:36:47] the trades opening stuff just for to see
+[00:36:50] if the system is a really working, if it
+[00:36:53] is able to do all that. So, which means
+[00:36:55] basically our
+[00:36:57] not a really good system
+[00:36:59] specifically. So,
+[00:37:03] >> [snorts]
+[00:37:05] >> I think we still have to push it
+[00:37:06] further. We we have a lot of stuffs to
+[00:37:09] do. We aren't really where we want to
+[00:37:12] be.
+[00:37:14] And
+[00:37:15] yeah, basically, sorry for wasting your
+[00:37:17] time. I will I just wait. And next time,
+[00:37:20] instead of putting the maximum, we have
+[00:37:22] seen the pain of using the maximum in
+[00:37:24] our favor of five. So, it'll be just
+[00:37:26] using
+[00:37:28] I
+[00:37:30] to do to do this doesn't make much sense
+[00:37:34] to me right now. So,
+[00:37:38] So, next time we'll just use a
+[00:37:40] I mean, not maximum, but I, which is the
+[00:37:43] default one. At least that one can go a
+[00:37:45] few few miles before getting depleted.
+[00:37:49] Either way, I do not feel any impact of
+[00:37:51] using favor from the whole person the
+[00:37:53] other. So,
+[00:37:56] maybe we might use another maybe a pass
+[00:37:58] 4.8, which doesn't which was not
+[00:38:01] depleting our stuffs our tokens
+[00:38:04] really quick like this one is doing.
+[00:38:07] Um
+[00:38:08] So, yeah. Maybe I'll be sorry for
+[00:38:10] wasting my time. We'll just wait. And
+[00:38:12] the next session now
+[00:38:15] now we know where to get to. And we'll
+[00:38:17] have a really well-prepared prompt to
+[00:38:21] make these work.
+[00:38:23] It It It It It should work either way. I
+[00:38:26] feel it should work.
+[00:38:28] Um
+[00:38:31] Let's keep pushing it. But then
+[00:38:34] basically
+[00:38:35] I think it is really necessary to know
+[00:38:39] the basics of coding because I don't
+[00:38:41] feel AI is going to help you either way
+[00:38:44] if you do not have the background.
+[00:38:48] So
+[00:38:49] Mm.
+[00:38:50] Yeah, that's that's and then see you
+[00:38:53] later.
