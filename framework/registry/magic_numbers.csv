@@ -14712,6 +14712,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13062,audcad-eurusd-coint,0,AUDCAD.DWX,130620000,2026-07-08,Development,active
 13062,audcad-eurusd-coint,1,EURUSD.DWX,130620001,2026-07-08,Development,active
 13063,xti-padd2-draw,0,XTIUSD.DWX,130630000,2026-07-08,Codex,active
+13064,xti-padd5-sqz,0,XTIUSD.DWX,130640000,2026-07-08,Codex,active
 1615,aa-breaktrend-2-12,0,SP500.DWX,16150000,2026-07-08,Codex,active
 1615,aa-breaktrend-2-12,1,NDX.DWX,16150001,2026-07-08,Codex,active
 1615,aa-breaktrend-2-12,2,WS30.DWX,16150002,2026-07-08,Codex,active
