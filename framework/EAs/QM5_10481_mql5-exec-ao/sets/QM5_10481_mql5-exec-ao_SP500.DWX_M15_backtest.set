@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        10481
 ; ea_slug:      mql5-exec-ao
@@ -10,7 +10,7 @@
 ; magic_slot:   9
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d3fea94c3d2c958e9d2071e2c52cf9c03568f720172679f4dee9d0b67835ed95
+; build_hash:   52f9618e02e8643e5a3ad83b3062639b290d11401f769c1cc16b8ad604826dbf
 ; author:       Development
 ; date:         2026-07-07
 ;==========================================================

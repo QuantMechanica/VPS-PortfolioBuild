@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13055
 ; ea_slug:      xbr-1w-mom-vol
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING_BUILD_CHECK
+; build_hash:   b0b03fa6884e4bfcb6b5c774b0e84618644af0048b77864ce04d71b7ea20e0d4
 ; author:       Development
 ; date:         2026-07-08
 ;==========================================================
