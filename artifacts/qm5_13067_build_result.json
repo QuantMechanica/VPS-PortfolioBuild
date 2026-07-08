@@ -1,0 +1,109 @@
+{
+  "task_id": "bc2e7b4b-1c2f-4e79-af89-16aa0da6a18b",
+  "ea_id": "QM5_13067",
+  "numeric_ea_id": 13067,
+  "slug": "iea-omr-brk",
+  "generated_at": "2026-07-08T16:25:00Z",
+  "strategy": "IEA Oil Market Report WTI D1 breakout proxy",
+  "source_id": "IEA-OMR-XTI-BRK-2026",
+  "source_citation": "International Energy Agency. Oil Market Report (OMR). https://www.iea.org/data-and-statistics/data-product/oil-market-report-omr",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "card": "strategy-seeds/cards/approved/QM5_13067_iea-omr-brk_card.md",
+  "canonical_card": "strategy-seeds/cards/iea-omr-brk_card.md",
+  "runtime_approved_card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_13067_iea-omr-brk_card.md",
+  "ea_dir": "framework/EAs/QM5_13067_iea-omr-brk",
+  "mq5_path": "framework/EAs/QM5_13067_iea-omr-brk/QM5_13067_iea-omr-brk.mq5",
+  "ex5_path": "framework/EAs/QM5_13067_iea-omr-brk/QM5_13067_iea-omr-brk.ex5",
+  "spec_md_path": "framework/EAs/QM5_13067_iea-omr-brk/SPEC.md",
+  "docs_strategy_card_path": "framework/EAs/QM5_13067_iea-omr-brk/docs/strategy_card.md",
+  "setfile": "framework/EAs/QM5_13067_iea-omr-brk/sets/QM5_13067_iea-omr-brk_XTIUSD.DWX_D1_backtest.set",
+  "setfiles_generated": [
+    "framework/EAs/QM5_13067_iea-omr-brk/sets/QM5_13067_iea-omr-brk_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 130670000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfile_build_hash": "c37a2a81c300c30bb3933461dbfd196a12593836270bb2af32a4f26d3d13a7e7",
+  "file_hashes_sha256": {
+    "framework/EAs/QM5_13067_iea-omr-brk/QM5_13067_iea-omr-brk.mq5": "F6594B96867DB072301FF6363205ECE363721BC9CDFE72AD2509AFEDF31688A1",
+    "framework/EAs/QM5_13067_iea-omr-brk/QM5_13067_iea-omr-brk.ex5": "25458F781BB31C3C9C8505513C97469838B3AB0E5102AA6734C2E068E62A7D7A",
+    "framework/EAs/QM5_13067_iea-omr-brk/sets/QM5_13067_iea-omr-brk_XTIUSD.DWX_D1_backtest.set": "F3F2F99D401B0A1BCD5A4A90BC0B2EE1D9FEA4DCCF299B88AA9FF6AFB8651588",
+    "strategy-seeds/cards/iea-omr-brk_card.md": "6C884C43C5CEA78B60DFDB1622269EB87B652894704D95984C524A11D406CF27",
+    "strategy-seeds/cards/approved/QM5_13067_iea-omr-brk_card.md": "62476893AE7EF797F40042B5C9B6155225FABF54A073D3D4123C8780CB76837D",
+    "framework/EAs/QM5_13067_iea-omr-brk/SPEC.md": "298DC168C9BCFCD840BC4FC075FBA2F136FC0F2F346532697361BA2159AFC0B2",
+    "framework/EAs/QM5_13067_iea-omr-brk/docs/strategy_card.md": "7217865B7A602D648A49C188FBE5545A176DA95CF039676EBC9A8A7225C637CD"
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "build_only_q02_enqueue_no_manual_backtest_under_paced_workers",
+  "blocked_reason": "",
+  "open_questions": [],
+  "checks": {
+    "spec_validation": {
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13067_iea-omr-brk",
+      "result": "PASS"
+    },
+    "magic_resolver": {
+      "command": "python framework/scripts/update_magic_resolver.py --strict",
+      "result": "PASS_WITH_PREEXISTING_WARNINGS",
+      "note": "Resolver regenerated and includes 13067; strict mode reported unrelated missing EA dirs 1001, 1015, and 1016."
+    },
+    "setfile_generation": {
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/gen_setfile.ps1 -EaSlug QM5_13067_iea-omr-brk -Symbol XTIUSD.DWX -TF D1 -Env backtest -RiskFixed 1000 -RiskPercent 0 -PortfolioWeight 1",
+      "result": "PASS",
+      "setfile_sha256": "084a9df830e8a99cc16155b0b66e5eb10e983f25caaaa5cff98646aa3039bc26"
+    },
+    "build_check": {
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13067_iea-omr-brk -Strict",
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "failures": 0,
+      "compile_log": "C:/QM/repo/framework/build/compile/20260708_162242/QM5_13067_iea-omr-brk.compile.log",
+      "compile_summary": "D:/QM/reports/compile/20260708_162242/summary.csv",
+      "report": "D:/QM/reports/framework/21/build_check_20260708_162242.json"
+    }
+  },
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "structural_only": true,
+    "ml_required": false,
+    "external_runtime_data": false,
+    "backtest_cpu_used": false,
+    "t_live_touched": false,
+    "auto_trading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13067",
+    "enqueued": [
+      {
+        "setfile": "QM5_13067_iea-omr-brk_XTIUSD.DWX_D1_backtest.set",
+        "symbol": "XTIUSD.DWX",
+        "tf": "D1",
+        "wi_id": "e9be4ee9-972c-43b9-9a68-3d300333b904",
+        "status": "pending"
+      }
+    ],
+    "skipped": []
+  },
+  "queue_snapshot_after": {
+    "active_work_items": 6,
+    "q02_pending_total": 5205,
+    "metatester64_running_count": 4,
+    "terminal64_running_count": 6,
+    "manual_mt5_backtest_launched": false
+  },
+  "handoff": {
+    "pipeline_phase": "Q02",
+    "enqueue_artifact": "artifacts/qm5_13067_q02_enqueue_20260708.json",
+    "work_item_id": "e9be4ee9-972c-43b9-9a68-3d300333b904"
+  }
+}

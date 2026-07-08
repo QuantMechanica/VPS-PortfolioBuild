@@ -1,0 +1,63 @@
+{
+  "artifact_id": "a9e9efc1-6da2-4774-bfc3-4c28178ef453",
+  "ea_id": "QM5_13067",
+  "numeric_ea_id": 13067,
+  "ea_label": "QM5_13067_iea-omr-brk",
+  "slug": "iea-omr-brk",
+  "source_id": "IEA-OMR-XTI-BRK-2026",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "queued_at_utc": "2026-07-08T16:25:19Z",
+  "recorded_at_utc": "2026-07-08T16:25:19Z",
+  "phase": "Q02",
+  "status": "pending",
+  "work_item": {
+    "id": "e9be4ee9-972c-43b9-9a68-3d300333b904",
+    "kind": "backtest",
+    "phase": "Q02",
+    "status": "pending",
+    "symbol": "XTIUSD.DWX",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_13067_iea-omr-brk/sets/QM5_13067_iea-omr-brk_XTIUSD.DWX_D1_backtest.set",
+    "attempt_count": 0,
+    "created_at": "2026-07-08T16:25:19+00:00",
+    "updated_at": "2026-07-08T16:25:19+00:00"
+  },
+  "setfile": "framework/EAs/QM5_13067_iea-omr-brk/sets/QM5_13067_iea-omr-brk_XTIUSD.DWX_D1_backtest.set",
+  "enqueue_command": "python tools/strategy_farm/farmctl.py record-build --task-id bc2e7b4b-1c2f-4e79-af89-16aa0da6a18b --result-file artifacts/qm5_13067_build_result.json",
+  "build_task_id": "bc2e7b4b-1c2f-4e79-af89-16aa0da6a18b",
+  "build_result": "artifacts/qm5_13067_build_result.json",
+  "record_build_result": {
+    "recorded": true,
+    "new_status": "done",
+    "smoke_result": "deferred_p2_smoke",
+    "auto_q02_enqueued": {
+      "ea_id": "QM5_13067",
+      "enqueued": [
+        {
+          "setfile": "QM5_13067_iea-omr-brk_XTIUSD.DWX_D1_backtest.set",
+          "symbol": "XTIUSD.DWX",
+          "tf": "D1",
+          "wi_id": "e9be4ee9-972c-43b9-9a68-3d300333b904"
+        }
+      ],
+      "skipped": []
+    }
+  },
+  "queue_snapshot_after": {
+    "active_work_items": 6,
+    "q02_pending_total": 5205,
+    "metatester64_running_count": 4,
+    "terminal64_running_count": 6,
+    "manual_mt5_backtest_launched": false
+  },
+  "guardrails": {
+    "q02_only": true,
+    "backtest_not_run_by_build_agent": true,
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "no_t_live_changes": true,
+    "auto_trading_unchanged": true,
+    "portfolio_gate_unchanged": true
+  }
+}
