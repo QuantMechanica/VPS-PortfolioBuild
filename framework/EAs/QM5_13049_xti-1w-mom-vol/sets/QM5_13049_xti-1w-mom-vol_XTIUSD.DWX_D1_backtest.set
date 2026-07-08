@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13049
 ; ea_slug:      xti-1w-mom-vol
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   1c42d35bc8a939ec30f9583c6e5762af59c50923a611037cf9462788acf378e8
 ; author:       Development
 ; date:         2026-07-08
 ;==========================================================
