@@ -1,0 +1,107 @@
+{
+  "generated_at_utc": "2026-07-08T07:48:04Z",
+  "generated_at_local": "2026-07-08T09:48:04+02:00",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves; prefer market-neutral FX cointegration baskets",
+  "unit_of_work": "fallback existing forex funnel advancement after FX cointegration duplicate guard",
+  "decision": {
+    "selected_path": "advance_existing_forex_card",
+    "new_unbuilt_fx_cointegration_pair_built": false,
+    "reason": "Strict 66-pair scan survivors QM5_12532 and QM5_12533 are already built and not Q02-blocked. The extended-screen unbuilt formal survivor AUDCAD~EURUSD is not card-worthy because the repository trade check shows OOS net Sharpe -0.39 and negative OOS return. Card-worthy extended siblings QM5_13024 and QM5_13029 are already built and have completed Q02 before later-gate failures. Existing cointegration continuation QM5_12712 is already pending Q07 after Q02-Q06 PASS."
+  },
+  "source_evidence": {
+    "strict_scan_doc": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "method_source": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+    "extended_screen": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/survivors.json",
+    "extended_trade_check": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/trade_check.json"
+  },
+  "anchor_status": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "latest_state": "Q02 PASS, Q04 PASS, later Q05 FAIL",
+      "q02_blocked": false
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "latest_state": "Q02 PASS, later Q04 FAIL",
+      "q02_blocked": false
+    }
+  },
+  "fallback_advancement": {
+    "ea_id": "QM5_10506",
+    "slug": "mql5-nightflat",
+    "selected_as": "existing forex card with Q02 PASS rows and incomplete Q04 coverage",
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_10506 --phase Q04",
+    "phase": "Q04",
+    "previous_phase": "Q02",
+    "created_work_items": [
+      {
+        "work_item_id": "f7d453a2-6470-4703-8fc3-ddc531e77753",
+        "symbol": "GBPUSD.DWX",
+        "setfile": "QM5_10506_mql5-nightflat_GBPUSD.DWX_H1_backtest_ablation_00.set"
+      },
+      {
+        "work_item_id": "a7ad65ea-9b27-48d0-8d8a-c0aa946eeddc",
+        "symbol": "EURUSD.DWX",
+        "setfile": "QM5_10506_mql5-nightflat_EURUSD.DWX_H1_backtest_ablation_01.set"
+      },
+      {
+        "work_item_id": "cd19abbd-fee9-4a55-b7d6-540377583a13",
+        "symbol": "USDJPY.DWX",
+        "setfile": "QM5_10506_mql5-nightflat_USDJPY.DWX_H1_backtest_ablation_01.set"
+      },
+      {
+        "work_item_id": "ba237d0b-75a0-4a3b-b13d-c695f790d41b",
+        "symbol": "EURUSD.DWX",
+        "setfile": "QM5_10506_mql5-nightflat_EURUSD.DWX_H1_backtest_ablation_00.set"
+      },
+      {
+        "work_item_id": "efedc851-18e0-47c7-ab06-e8abbbfc4e18",
+        "symbol": "USDJPY.DWX",
+        "setfile": "QM5_10506_mql5-nightflat_USDJPY.DWX_H1_backtest_ablation_00.set"
+      }
+    ],
+    "requeued_work_items": [
+      {
+        "work_item_id": "167b30b7-ff8c-483a-a70f-e2da1d0f232b",
+        "symbol": "EURUSD.DWX"
+      },
+      {
+        "work_item_id": "846b3afb-800a-467d-95d7-a8b61e55d7e3",
+        "symbol": "USDJPY.DWX"
+      }
+    ],
+    "post_enqueue_summary": {
+      "Q04_pending": 7,
+      "Q02_done_PASS": 7,
+      "Q02_pending_existing": 3
+    }
+  },
+  "cpu_ceiling_context": {
+    "active_work_items_before_enqueue": 6,
+    "manual_dispatch_started": false,
+    "direct_mt5_tester_started_by_codex": false,
+    "background_worker_claim_observed": true,
+    "background_worker_claim_observed_at_utc": "2026-07-08T07:49:01Z",
+    "background_worker_claim": {
+      "work_item_id": "167b30b7-ff8c-483a-a70f-e2da1d0f232b",
+      "terminal": "T3",
+      "ea_id": "QM5_10506",
+      "phase": "Q04",
+      "symbol": "EURUSD.DWX"
+    },
+    "note": "Codex did not run dispatch-tick or launch MT5 directly. The resident terminal worker claimed one newly pending Q04 work_item immediately after enqueue, so the backtest CPU ceiling is now active and no further dispatch/enqueue was attempted."
+  },
+  "guardrails": {
+    "duplicate_work_item_created": false,
+    "new_ea_built": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  }
+}
