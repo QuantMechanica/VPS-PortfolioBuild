@@ -1,0 +1,57 @@
+{
+  "artifact_id": "b09d13f5-bcfe-468d-9bfa-6c7f8fe54761",
+  "ea_id": "QM5_13070",
+  "numeric_ea_id": 13070,
+  "ea_label": "QM5_13070_xti-jodi-fade",
+  "slug": "xti-jodi-fade",
+  "source_id": "JODI-OIL-UPDATE-BRK-2026",
+  "strategy_id": "JODI-OIL-UPDATE-FADE-2026",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "queued_at_utc": "2026-07-08T19:26:19Z",
+  "recorded_at_utc": "2026-07-08T19:27:21Z",
+  "phase": "Q02",
+  "status": "pending",
+  "work_item": {
+    "id": "7b5d64ac-2f74-41f7-8f98-cae674af0231",
+    "kind": "backtest",
+    "phase": "Q02",
+    "status": "pending",
+    "symbol": "XTIUSD.DWX",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_13070_xti-jodi-fade/sets/QM5_13070_xti-jodi-fade_XTIUSD.DWX_D1_backtest.set",
+    "attempt_count": 0,
+    "created_at": "2026-07-08T19:26:19+00:00",
+    "updated_at": "2026-07-08T19:26:19+00:00",
+    "payload_json": {
+      "host_symbol": "XTIUSD.DWX",
+      "host_timeframe": "D1",
+      "enqueued_by": "claude_sweep_enqueue_2026-06-10.never_tested",
+      "enqueued_at_utc": "2026-07-08T19:26:19+00:00"
+    }
+  },
+  "setfile": "framework/EAs/QM5_13070_xti-jodi-fade/sets/QM5_13070_xti-jodi-fade_XTIUSD.DWX_D1_backtest.set",
+  "enqueue_command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --apply --ea QM5_13070 --queue-ceiling 10000 --max-part2-per-run 0",
+  "sweep_evidence": "D:/QM/reports/state/claude_sweep_enqueue_2026-06-10.json",
+  "sweep_result": {
+    "apply": true,
+    "pending_at_start": 5203,
+    "queue_ceiling": 10000,
+    "part1_never_tested_enqueued": 1,
+    "part1_never_tested_skipped": 0,
+    "part2_stranded_enqueued": 0,
+    "part2_stranded_skipped": 0,
+    "part3_deferred_promoted": 0,
+    "part3_deferred_kept": 0,
+    "priority_track_items": 0
+  },
+  "guardrails": {
+    "q02_only": true,
+    "backtest_not_run_by_build_agent": true,
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "no_t_live_changes": true,
+    "auto_trading_unchanged": true,
+    "portfolio_gate_unchanged": true
+  }
+}

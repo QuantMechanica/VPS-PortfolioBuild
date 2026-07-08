@@ -1,0 +1,108 @@
+{
+  "task_id": "88df72f4-5ad3-4988-ab90-dfc14607a0f7",
+  "ea_id": "QM5_13070",
+  "numeric_ea_id": 13070,
+  "slug": "xti-jodi-fade",
+  "generated_at": "2026-07-08T19:27:21Z",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "source_id": "JODI-OIL-UPDATE-BRK-2026",
+  "strategy_id": "JODI-OIL-UPDATE-FADE-2026",
+  "source_urls": [
+    "https://www.jodidata.org/oil/",
+    "https://www.jodidata.org/oil/support/update-calendar.aspx",
+    "https://www.ief.org/data/oil-gas-data-review",
+    "https://www.iea.org/about/international-collaborations/joint-organisations-data-initiative"
+  ],
+  "card": "strategy-seeds/cards/approved/QM5_13070_xti-jodi-fade_card.md",
+  "canonical_card": "strategy-seeds/cards/xti-jodi-fade_card.md",
+  "source_note": "strategy-seeds/sources/JODI-OIL-UPDATE-BRK-2026/source.md",
+  "ea_dir": "framework/EAs/QM5_13070_xti-jodi-fade",
+  "mq5_path": "framework/EAs/QM5_13070_xti-jodi-fade/QM5_13070_xti-jodi-fade.mq5",
+  "ex5_path": "framework/EAs/QM5_13070_xti-jodi-fade/QM5_13070_xti-jodi-fade.ex5",
+  "spec_md_path": "framework/EAs/QM5_13070_xti-jodi-fade/SPEC.md",
+  "docs_strategy_card_path": "framework/EAs/QM5_13070_xti-jodi-fade/docs/strategy_card.md",
+  "setfile": "framework/EAs/QM5_13070_xti-jodi-fade/sets/QM5_13070_xti-jodi-fade_XTIUSD.DWX_D1_backtest.set",
+  "setfiles_generated": [
+    "framework/EAs/QM5_13070_xti-jodi-fade/sets/QM5_13070_xti-jodi-fade_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 130700000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfile_build_hash": "0aa4a733a798493684fc871030fb34d36dfd3bee9e68b2bb260a7a66f4e6d4e4",
+  "file_hashes_sha256": {
+    "framework/EAs/QM5_13070_xti-jodi-fade/QM5_13070_xti-jodi-fade.mq5": "327F727D10FA1907F01E95AA3BD7245B522B4F189F0F2DC260C6976B42C1D7F0",
+    "framework/EAs/QM5_13070_xti-jodi-fade/QM5_13070_xti-jodi-fade.ex5": "219BA36F51EE1671C77FCA67F47D9FFF5EABA606F79E2E9C6BBEBE1597EDCFFF",
+    "framework/EAs/QM5_13070_xti-jodi-fade/sets/QM5_13070_xti-jodi-fade_XTIUSD.DWX_D1_backtest.set": "EF0D7158352D868798FA176A9FD0CB2AC68A9B5FB1C59255D97C61F4E16B3F09",
+    "strategy-seeds/cards/xti-jodi-fade_card.md": "2E7A4A2256F03B5D897DCB84BD6E2BFDDCF43DC067A618D11581953E785A1C90",
+    "strategy-seeds/cards/approved/QM5_13070_xti-jodi-fade_card.md": "2E7A4A2256F03B5D897DCB84BD6E2BFDDCF43DC067A618D11581953E785A1C90",
+    "framework/EAs/QM5_13070_xti-jodi-fade/SPEC.md": "3BE00D4F95799EDED1B97DB1F733E8593D38154FADD056A1882E2208D89F97B9",
+    "framework/EAs/QM5_13070_xti-jodi-fade/docs/strategy_card.md": "2E7A4A2256F03B5D897DCB84BD6E2BFDDCF43DC067A618D11581953E785A1C90",
+    "strategy-seeds/sources/JODI-OIL-UPDATE-BRK-2026/source.md": "D7DD37210087635165D192EACE1A749B6E24B8253CB6EEDB2B13B1253539EF82",
+    "framework/include/QM/QM_MagicResolver.mqh": "E0082A02E790ABA64AB7F656AA3C94808ED542B80ACD761449C661D295B9797C"
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_q02",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "mission requested Q02 enqueue; no local backtest run by build agent",
+  "blocked_reason": "",
+  "open_questions": [],
+  "checks": {
+    "source_verification": {
+      "result": "PASS",
+      "note": "Official JODI-Oil, JODI update calendar, IEF Oil and Gas Data Review, and IEA JODI overview pages verified on 2026-07-08."
+    },
+    "spec_validation": {
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13070_xti-jodi-fade",
+      "result": "PASS"
+    },
+    "magic_resolver": {
+      "command": "python framework/scripts/update_magic_resolver.py",
+      "result": "PASS_WITH_PREEXISTING_WARNINGS",
+      "note": "Resolver regenerated; warnings were for unrelated missing EA dirs 1001, 1015, and 1016."
+    },
+    "strict_compile": {
+      "command": "pwsh -File framework/scripts/compile_one.ps1 -EALabel QM5_13070_xti-jodi-fade -Strict",
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "compile_log": "C:/QM/repo/framework/build/compile/20260708_192652/QM5_13070_xti-jodi-fade.compile.log"
+    },
+    "build_check": {
+      "command": "pwsh -File framework/scripts/build_check.ps1 -EALabel QM5_13070_xti-jodi-fade -Strict",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "compile_log": "C:/QM/repo/framework/build/compile/20260708_192652/QM5_13070_xti-jodi-fade.compile.log",
+      "compile_summary": "D:/QM/reports/compile/20260708_192652/summary.csv",
+      "report": "D:/QM/reports/framework/21/build_check_20260708_192652.json"
+    },
+    "q02_enqueue": {
+      "command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --apply --ea QM5_13070 --queue-ceiling 10000 --max-part2-per-run 0",
+      "result": "PASS",
+      "work_item_id": "7b5d64ac-2f74-41f7-8f98-cae674af0231",
+      "status": "pending"
+    }
+  },
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "structural_only": true,
+    "low_frequency": true,
+    "ml_required": false,
+    "external_runtime_data": false,
+    "backtest_cpu_used": false,
+    "t_live_touched": false,
+    "auto_trading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "handoff": {
+    "pipeline_phase": "Q02",
+    "enqueue_artifact": "artifacts/qm5_13070_q02_enqueue_20260708.json",
+    "work_item_id": "7b5d64ac-2f74-41f7-8f98-cae674af0231"
+  }
+}
