@@ -332,7 +332,7 @@ bool SpreadAllowsEntry(const double atr)
       return false;
 
    const double spread = ask - bid;
-   if(spread <= 0.0)
+   if(!(spread > 0.0))
       return true;
    return (spread <= atr * strategy_max_spread_atr_mult);
   }
