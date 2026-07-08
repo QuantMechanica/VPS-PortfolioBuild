@@ -1,0 +1,24 @@
+{
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13056",
+    "enqueued": [
+      {
+        "setfile": "QM5_13056_xbr-1w-rev-vol_XBRUSD.DWX_D1_backtest.set",
+        "symbol": "XBRUSD.DWX",
+        "tf": "D1",
+        "wi_id": "648506f0",
+        "work_item_id": "648506f0-bdd2-45c0-9371-74f4acfc98d9",
+        "status": "pending",
+        "created_at": "2026-07-08T07:25:48+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "blocked_reason": "",
+  "fail_code": null,
+  "new_status": "done",
+  "next_action_hint": "Q02 auto-enqueued (1 work_items); worker daemons will dispatch on next tick",
+  "recorded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "task_id": "mission-commodity-sleeve-2026-07-08"
+}
