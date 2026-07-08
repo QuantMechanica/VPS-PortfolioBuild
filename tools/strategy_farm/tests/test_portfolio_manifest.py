@@ -332,5 +332,59 @@ class PortfolioManifestTests(unittest.TestCase):
                 )
 
 
+class ReadCandidatesReworkGuardTest(unittest.TestCase):
+    """codex_review_rework-flagged builds must never reach a book via
+    read_candidates (the shared choke point). QM5_1556 / QM5_10706, 2026-07-08."""
+
+    def _make_db(self, tmp):
+        import sqlite3
+
+        db = Path(tmp) / "farm_state.sqlite"
+        conn = sqlite3.connect(db)
+        conn.execute(
+            "CREATE TABLE portfolio_candidates(ea_id TEXT, symbol TEXT, "
+            "q11_work_item_id TEXT, state TEXT, evidence_path TEXT, "
+            "first_seen_at TEXT, updated_at TEXT)"
+        )
+        conn.execute(
+            "CREATE TABLE tasks(id TEXT, kind TEXT, status TEXT, source_id TEXT, "
+            "card_id TEXT, payload_json TEXT, created_at TEXT, updated_at TEXT)"
+        )
+        for ea, sym in (("QM5_2001", "EURUSD.DWX"), ("QM5_2002", "GBPUSD.DWX")):
+            conn.execute(
+                "INSERT INTO portfolio_candidates VALUES(?,?,?,?,?,?,?)",
+                (ea, sym, "w", "Q12_REVIEW_READY", "a.json", "2026-07-01", "2026-07-01"),
+            )
+        conn.commit()
+        return db, conn
+
+    def _add_build(self, conn, tid, ea, ts, rework):
+        payload = {"ea_id": ea}
+        if rework:
+            payload["codex_review_rework"] = True
+        conn.execute(
+            "INSERT INTO tasks VALUES(?,?,?,?,?,?,?,?)",
+            (tid, "build_ea", "done", None, None, json.dumps(payload), ts, ts),
+        )
+        conn.commit()
+
+    def test_rework_flagged_excluded_then_unblocked_by_clean_rebuild(self):
+        from portfolio.portfolio_common import read_candidates
+
+        with tempfile.TemporaryDirectory() as tmp:
+            db, conn = self._make_db(tmp)
+            try:
+                self._add_build(conn, "t1", "QM5_2002", "2026-06-20", rework=True)
+                self.assertEqual(read_candidates(db), [(2001, "EURUSD.DWX")])
+                # a NEWER clean rebuild (no flag) un-blocks 2002 automatically
+                self._add_build(conn, "t2", "QM5_2002", "2026-07-08", rework=False)
+                self.assertEqual(
+                    read_candidates(db),
+                    [(2001, "EURUSD.DWX"), (2002, "GBPUSD.DWX")],
+                )
+            finally:
+                conn.close()
+
+
 if __name__ == "__main__":
     unittest.main()

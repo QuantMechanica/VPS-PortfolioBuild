@@ -142,6 +142,42 @@ def resolve_basket_stream_key(candidate: tuple[int, str], common_dir: Path):
     return None, f"basket_stream_ambiguous:{len(others)}_candidates"
 
 
+def _rework_blocked_eas(conn: sqlite3.Connection) -> set[int]:
+    """EAs whose MOST RECENT build task is codex_review_rework-flagged.
+
+    A rework-flagged build failed code review (wrong indicator vs card, new-bar
+    ordering bug, ...) and must not enter a book until a fresh, clean cascade
+    rebuilds it. farmctl guards this in the BUILD path, but the admission path
+    had none — a flagged EA could still reach a book through its
+    Q12_REVIEW_READY row (QM5_1556, 2026-07-08). read_candidates is the shared
+    choke point every book-builder (manifest / admission / prop-optimizer) reads
+    through, so the exclusion lives here. A later clean rebuild (newer build task
+    without the flag) un-blocks the EA automatically."""
+    try:
+        rows = conn.execute(
+            "SELECT payload_json, updated_at FROM tasks WHERE kind LIKE '%build%'"
+        ).fetchall()
+    except sqlite3.Error:
+        return set()
+    latest_ts: dict[int, str] = {}
+    latest_flag: dict[int, bool] = {}
+    for payload_json, updated_at in rows:
+        if not payload_json:
+            continue
+        try:
+            payload = json.loads(payload_json)
+        except (ValueError, TypeError):
+            continue
+        ea = _coerce_ea_int(payload.get("ea_id"))
+        if ea is None:
+            continue
+        ts = str(updated_at or "")
+        if ea not in latest_ts or ts >= latest_ts[ea]:
+            latest_ts[ea] = ts
+            latest_flag[ea] = bool(payload.get("codex_review_rework"))
+    return {ea for ea, flagged in latest_flag.items() if flagged}
+
+
 def read_candidates(
     db_path: Path = DEFAULT_CANDIDATES_DB,
     *,
@@ -166,6 +202,7 @@ def read_candidates(
             """,
             states,
         ).fetchall()
+        rework_blocked = _rework_blocked_eas(conn)
     except sqlite3.Error:
         return []
     finally:
@@ -181,6 +218,10 @@ def read_candidates(
             continue
         ea_int = _coerce_ea_int(ea_id)
         if ea_int is None:
+            continue
+        if ea_int in rework_blocked:
+            # Build failed code review — excluded from every book until a fresh
+            # clean cascade rebuilds it. See _rework_blocked_eas.
             continue
         candidates.append((ea_int, symbol_text))
     return sorted(set(candidates))
