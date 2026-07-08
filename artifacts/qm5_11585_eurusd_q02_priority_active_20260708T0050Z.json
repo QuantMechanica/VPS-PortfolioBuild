@@ -1,0 +1,144 @@
+{
+  "generated_at_utc": "2026-07-08T00:50:45Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves",
+  "unit_of_work": "advance existing approved D1 forex card after FX cointegration frontier exhaustion",
+  "decision": {
+    "selected_path": "advance_existing_forex_card",
+    "reason": "No unbuilt card-worthy FX cointegration pair remains in the documented 66-pair scan or visible extended frontier. The strict survivors QM5_12532 and QM5_12533 are already built and not Q02-blocked. The current cointegration frontier is either terminal downstream or active later-phase work, so the non-duplicate fallback was to priority-track one existing approved low-frequency FX card.",
+    "new_unbuilt_pair_found": false,
+    "duplicate_work_item_created": false,
+    "manual_mt5_dispatch_started": false
+  },
+  "selected_existing_card": {
+    "ea_id": "QM5_11585",
+    "slug": "neely-weller-channel-buffer-band-d1",
+    "symbol": "EURUSD.DWX",
+    "timeframe": "D1",
+    "card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11585_neely-weller-channel-buffer-band-d1.md",
+    "spec": "framework/EAs/QM5_11585_neely-weller-channel-buffer-band-d1/SPEC.md",
+    "setfile": "framework/EAs/QM5_11585_neely-weller-channel-buffer-band-d1/sets/QM5_11585_neely-weller-channel-buffer-band-d1_EURUSD.DWX_D1_backtest.set",
+    "source_quality": "R1 PASS Federal Reserve/University paper source; G0 APPROVED",
+    "strategy_shape": "D1 mechanical FX channel-buffer breakout/flip rule with ATR safety stop",
+    "risk_mode": {
+      "environment": "backtest",
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "source_evidence": {
+    "strict_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "frontier_audit": "artifacts/fx_cointegration_frontier_audit_20260707T0934Z.json",
+    "q02_priority_prior_frontier": "artifacts/fx_cointegration_q02_priority_20260707T102015Z.json",
+    "fallback_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11585_neely-weller-channel-buffer-band-d1.md"
+  },
+  "frontier_status_verified": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "latest_state": "Q02 PASS, Q04 PASS, Q05 FAIL",
+      "q02_blocked": false
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "latest_state": "Q02 PASS, Q04 FAIL",
+      "q02_blocked": false
+    },
+    "QM5_13024": {
+      "pair": "AUDCAD.DWX/GBPAUD.DWX",
+      "latest_state": "Q02 PASS, Q04 FAIL"
+    },
+    "QM5_13029": {
+      "pair": "GBPCAD.DWX/GBPNZD.DWX",
+      "latest_state": "Q02 PASS, Q03 PASS, Q04 FAIL"
+    },
+    "QM5_12781": {
+      "pair": "USDJPY.DWX/AUDJPY.DWX",
+      "latest_state": "Q08 active",
+      "work_item_id": "7f432f3f-9fc8-4399-aea3-2827fd7f072f"
+    }
+  },
+  "preflight": {
+    "build_check_command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_11585_neely-weller-channel-buffer-band-d1 -SkipCompile",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260708_004831.json",
+    "build_check_result": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "setfile_risk_mode": "RISK_FIXED=1000, RISK_PERCENT=0, PORTFOLIO_WEIGHT=1"
+  },
+  "queue_mutation": {
+    "sqlite": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11585_eurusd_q02_priority_20260708T004929Z.sqlite",
+    "event_id": 224389,
+    "event": "priority_track_set",
+    "work_item_id": "8e5c5623-e031-4d9f-80d6-d1eaa27e8320",
+    "ea_id": "QM5_11585",
+    "phase": "Q02",
+    "symbol": "EURUSD.DWX",
+    "status_before": "pending",
+    "status_after_metadata_update": "pending",
+    "status_after_worker_claim": "active",
+    "claimed_by_after": "T6",
+    "verdict_after": null,
+    "payload_changes": {
+      "priority_track": true,
+      "priority_reason": "OWNER 2026-07-08 forex portfolio fallback: no unbuilt card-worthy FX cointegration pair remains; priority-track existing approved QM5_11585 EURUSD D1 Neely-Weller channel-buffer Q02 row without duplicate enqueue or manual MT5 dispatch.",
+      "priority_updated_at_utc": "2026-07-08T00:49:29+00:00",
+      "priority_updated_by": "codex/agents-board-advisor",
+      "cpu_ceiling_dispatch_hold": true,
+      "duplicate_work_item_created": false
+    },
+    "duplicate_guard_before": {
+      "same_ea_phase_symbol_setfile_pending_active_rows": 1,
+      "row_ids": [
+        "8e5c5623-e031-4d9f-80d6-d1eaa27e8320"
+      ],
+      "prior_terminal_rows_for_same_setfile": 0
+    },
+    "duplicate_guard_after": {
+      "same_ea_phase_symbol_setfile_pending_active_rows": 1,
+      "row_ids": [
+        "8e5c5623-e031-4d9f-80d6-d1eaa27e8320"
+      ]
+    }
+  },
+  "queue_snapshot_after": {
+    "work_items": {
+      "active": 7,
+      "pending": 5410,
+      "done": 43613,
+      "failed": 45267
+    },
+    "qm5_11585_summary": {
+      "Q02_active": 1,
+      "Q02_pending": 2
+    },
+    "selected_row": {
+      "status": "active",
+      "claimed_by": "T6",
+      "symbol": "EURUSD.DWX",
+      "phase": "Q02"
+    },
+    "terminal64_running_count": 7,
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T6"
+    ]
+  },
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "new_work_item_created": false,
+    "duplicate_work_item_created": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
