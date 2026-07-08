@@ -1,0 +1,83 @@
+{
+  "generated_at_utc": "2026-07-08T12:26:00Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with non-duplicate FX cointegration baskets",
+  "selected_pair": "AUDCAD.DWX/EURUSD.DWX",
+  "decision": {
+    "path": "new_formal_survivor_fx_cointegration_basket",
+    "reason": "Strict 66-pair anchors QM5_12532 and QM5_12533 are already built and not Q02-blocked. The extended-screen card-worthy siblings are already built. AUDCAD/EURUSD is the only unbuilt formal survivor in the 2026-07-06 extended screen, but the card explicitly records its OOS-negative fixed-hedge trade-check caveat.",
+    "hard_bar_survivor": true,
+    "manual_mt5_dispatch_started": false,
+    "cpu_ceiling_observed": true
+  },
+  "research_evidence": {
+    "primary_method_source": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+    "strict_scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "extended_screen_source": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706",
+    "hedge_beta": 0.5301,
+    "half_adf_t1": -3.337,
+    "half_adf_t2": -3.683,
+    "half_life_days": 51.4,
+    "rolling_z2_excursions": 43,
+    "dev_sharpe_net": 0.63,
+    "dev_return_pct": 15.24,
+    "dev_state_changes": 60,
+    "oos_sharpe_net": -0.39,
+    "oos_return_pct": -4.94,
+    "oos_state_changes": 20
+  },
+  "build": {
+    "ea_id": "QM5_13062",
+    "slug": "audcad-eurusd-coint",
+    "logical_symbol": "QM5_13062_AUDCAD_EURUSD_COINTEGRATION_D1",
+    "ea_dir": "framework/EAs/QM5_13062_audcad-eurusd-coint",
+    "card": "strategy-seeds/cards/approved/QM5_13062_audcad-eurusd-coint_card.md",
+    "artifact_card": "artifacts/cards_approved/QM5_13062_audcad-eurusd-coint.md",
+    "mq5": "framework/EAs/QM5_13062_audcad-eurusd-coint/QM5_13062_audcad-eurusd-coint.mq5",
+    "ex5": "framework/EAs/QM5_13062_audcad-eurusd-coint/QM5_13062_audcad-eurusd-coint.ex5",
+    "basket_manifest": "framework/EAs/QM5_13062_audcad-eurusd-coint/basket_manifest.json",
+    "setfile": "framework/EAs/QM5_13062_audcad-eurusd-coint/sets/QM5_13062_audcad-eurusd-coint_QM5_13062_AUDCAD_EURUSD_COINTEGRATION_D1_D1_backtest.set",
+    "risk_mode": "RISK_FIXED",
+    "compile_result": "PASS",
+    "compile_log": "framework/build/compile/20260708_122356/QM5_13062_audcad-eurusd-coint.compile.log",
+    "build_check_result": "PASS",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260708_122415.json",
+    "spec_validation": "PASS"
+  },
+  "q02_enqueue": {
+    "sqlite": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "build_task_id": "a0674b66-0cc4-48a2-8bfe-e0a9b2c1b28f",
+    "work_item_id": "92fef42a-a098-417c-ba9d-d4dd7d3a3d70",
+    "phase": "Q02",
+    "status": "pending",
+    "symbol": "QM5_13062_AUDCAD_EURUSD_COINTEGRATION_D1",
+    "host_symbol": "AUDCAD.DWX",
+    "host_timeframe": "D1",
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "timeout_min": 450,
+    "basket_symbols": [
+      "AUDCAD.DWX",
+      "EURUSD.DWX",
+      "USDCAD.DWX"
+    ],
+    "duplicate_work_item_created": false
+  },
+  "queue_snapshot_after": {
+    "active_work_items": 6,
+    "q02_pending_total": 5245,
+    "metatester64_running_count": 5,
+    "terminal64_running_count": 7
+  },
+  "guardrails": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "manual_mt5_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

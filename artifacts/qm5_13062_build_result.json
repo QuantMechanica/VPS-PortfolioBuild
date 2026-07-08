@@ -1,0 +1,123 @@
+{
+  "task_id": "a0674b66-0cc4-48a2-8bfe-e0a9b2c1b28f",
+  "ea_id": "QM5_13062",
+  "slug": "audcad-eurusd-coint",
+  "strategy": "AUDCAD/EURUSD D1 market-neutral FX cointegration basket",
+  "source_id": "QM-COINT-SCREEN-EXT-2026-07-06_AUDCAD-EURUSD",
+  "source_citation": "Chan, Ernest P. (2009). Quantitative Trading. Wiley, Chapter 7 stationarity and cointegration; plus QuantMechanica extended FX cointegration screen on Darwinex .DWX D1 data.",
+  "symbols": [
+    "AUDCAD.DWX",
+    "EURUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13062_AUDCAD_EURUSD_COINTEGRATION_D1",
+  "host_symbol": "AUDCAD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_13062_audcad-eurusd-coint",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_13062_audcad-eurusd-coint/QM5_13062_audcad-eurusd-coint.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_13062_audcad-eurusd-coint/QM5_13062_audcad-eurusd-coint.ex5",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_13062_audcad-eurusd-coint/SPEC.md",
+  "card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_13062_audcad-eurusd-coint_card.md",
+  "approved_card_path": "C:/QM/repo/artifacts/cards_approved/QM5_13062_audcad-eurusd-coint.md",
+  "runtime_approved_card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_13062_audcad-eurusd-coint.md",
+  "basket_manifest": "C:/QM/repo/framework/EAs/QM5_13062_audcad-eurusd-coint/basket_manifest.json",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_13062_audcad-eurusd-coint/sets/QM5_13062_audcad-eurusd-coint_QM5_13062_AUDCAD_EURUSD_COINTEGRATION_D1_D1_backtest.set"
+  ],
+  "mq5_sha256": "83b19bf576472831472bf222b15738533617bacdf3c0aeed52071fdd90638299",
+  "ex5_sha256": "10163e948148533e7b3065ceb027628ca46c70ecefdb8d172ae941cd1870e950",
+  "setfile_current_sha256": "f4cc5954b2b7d3e752567a977c079dbe0ea1a57914a960f093b3aa45e7ec50de",
+  "scan_ranking": {
+    "source": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706",
+    "selection_note": "Only unbuilt formal FX survivor in the extended scan; routed with explicit OOS-negative v3 fixed-hedge trade-check caveat.",
+    "hard_bar_survivor": true,
+    "card_worthiness": "FORMAL_SURVIVOR_BUT_TRADE_CHECK_OOS_NEGATIVE",
+    "hedge_beta": 0.5301,
+    "half_adf_t1": -3.337,
+    "half_adf_t2": -3.683,
+    "half_life_days": 51.4,
+    "rolling_z2_excursions": 43,
+    "dev_sharpe_net": 0.63,
+    "dev_return_pct": 15.24,
+    "dev_state_changes": 60,
+    "oos_net_sharpe": -0.39,
+    "oos_return_pct": -4.94,
+    "oos_state_changes": 20
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "AUDCAD.DWX",
+        "magic": 130620000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "EURUSD.DWX",
+        "magic": 130620001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13062_audcad-eurusd-coint/QM5_13062_audcad-eurusd-coint.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:/QM/repo/framework/build/compile/20260708_122356/QM5_13062_audcad-eurusd-coint.compile.log",
+    "summary_path": "D:/QM/reports/compile/20260708_122356/summary.csv"
+  },
+  "build_check": {
+    "command": "framework/scripts/build_check.ps1 -EALabel QM5_13062_audcad-eurusd-coint -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:/QM/reports/framework/21/build_check_20260708_122415.json"
+  },
+  "spec_validation": {
+    "result": "PASS",
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13062_audcad-eurusd-coint"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Q02 logical basket backtest is enqueued to paced MT5 workers; no manual tester dispatch under CPU ceiling",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "manual_mt5_backtest_launched": false
+  },
+  "notes": "Built one non-duplicate exploratory AUDCAD/EURUSD FX cointegration basket from the formal survivor row. Trade-check caveat is negative OOS; Q02 is evidence gathering.",
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13062",
+    "enqueued": [
+      {
+        "setfile": "QM5_13062_audcad-eurusd-coint_QM5_13062_AUDCAD_EURUSD_COINTEGRATION_D1_D1_backtest.set",
+        "symbol": "QM5_13062_AUDCAD_EURUSD_COINTEGRATION_D1",
+        "tf": "D1",
+        "wi_id": "92fef42a-a098-417c-ba9d-d4dd7d3a3d70",
+        "status": "pending",
+        "host_symbol": "AUDCAD.DWX",
+        "host_timeframe": "D1"
+      }
+    ],
+    "skipped": []
+  },
+  "queue_snapshot_after": {
+    "active_work_items": 6,
+    "q02_pending_total": 5245,
+    "metatester64_running_count": 5,
+    "terminal64_running_count": 7,
+    "manual_mt5_backtest_launched": false
+  }
+}
