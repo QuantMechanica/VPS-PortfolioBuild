@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13061
 ; ea_slug:      brent-jun-prem
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   809ea19b65a1cdd86f3e134fe9154e7c5abc124c8b3ecc492f01ad0746afc579
+; build_hash:   dde16f54fdf4640bf3b9aa00ae62adb226312c3dcc62fb8bdc922bdae2b3dc4a
 ; author:       Development
 ; date:         2026-07-08
 ;==========================================================
