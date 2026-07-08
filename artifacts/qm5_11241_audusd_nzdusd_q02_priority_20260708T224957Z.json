@@ -1,0 +1,112 @@
+{
+  "action": "priority_mark_existing_q02",
+  "branch": "agents/board-advisor",
+  "checked_at_utc": "2026-07-08T22:49:57Z",
+  "checked_at_local": "2026-07-09T00:49:57+02:00",
+  "ea_id": "QM5_11241",
+  "ea_label": "QM5_11241_ht-coint-spread",
+  "pair": [
+    "AUDUSD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "logical_symbol": "QM5_11241_AUDUSD_NZDUSD_COINT_D1",
+  "selected_path": "advance_existing_forex_card_through_q02_queue",
+  "work_item_id": "d3a12c8f-6853-46e2-871a-ada201c91425",
+  "phase": "Q02",
+  "status_after": "pending",
+  "new_work_items_inserted": 0,
+  "db_backup_before_update": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11241_audusd_nzdusd_q02_priority_20260708T224956Z.sqlite",
+  "decision_basis": {
+    "strict_scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_scan_result": "Only QM5_12533 EURJPY/GBPJPY and QM5_12532 AUDUSD/NZDUSD cleared the original 66-pair strict DEV/OOS bar; both are already built and no longer Q02-blocked.",
+    "extended_screen_source": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/survivors.json",
+    "extended_screen_result": "The follow-on card-worthy/formal rows visible in the repo are already built and have produced Q02 evidence: QM5_13024, QM5_13029, QM5_13058, and QM5_13062 later failed Q04.",
+    "fallback_reason": "No buildable unbuilt non-duplicate FX cointegration pair remained; this existing low-frequency FX cointegration card had a pending AUDUSD host Q02 row that lacked pair-scoped priority payload."
+  },
+  "anchor_status": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "latest_relevant_state": "Q02 PASS, Q04 PASS, Q05 FAIL",
+      "q02_blocked": false
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "latest_relevant_state": "Q02 PASS, Q04 FAIL",
+      "q02_blocked": false
+    }
+  },
+  "existing_frontier_status": {
+    "QM5_13024": "AUDCAD/GBPAUD Q02 PASS, Q04 FAIL",
+    "QM5_13029": "GBPCAD/GBPNZD Q02 PASS, Q03 PASS, Q04 FAIL",
+    "QM5_13058": "AUDCAD/GBPNZD Q02 PASS, Q03 PASS, Q04 FAIL",
+    "QM5_13062": "AUDCAD/EURUSD Q02 PASS, Q03 PASS, Q04 FAIL"
+  },
+  "setfile": {
+    "path": "framework/EAs/QM5_11241_ht-coint-spread/sets/QM5_11241_ht-coint-spread_AUDUSD.DWX_D1_backtest.set",
+    "risk_mode": "FIXED",
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "strategy_partner_symbol": "NZDUSD.DWX",
+    "strategy_partner_slot": 3,
+    "build_hash_after_check": "4f992124989991f6698bfe36d19eaab3ab737a708e51ae6bc50a4c7db5c76890"
+  },
+  "payload_updates": {
+    "priority_track": true,
+    "portfolio_scope": "basket",
+    "history_check_scope": "pair_basket_symbols",
+    "host_symbol": "AUDUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_symbols": [
+      "AUDUSD.DWX",
+      "NZDUSD.DWX"
+    ],
+    "basket_symbol_count": 2,
+    "from_date": "2018.07.02",
+    "to_date": "2022.12.31",
+    "tester_currency": "USD",
+    "tester_deposit": 100000
+  },
+  "verification": {
+    "build_check": {
+      "command": "pwsh -NoProfile -File framework/scripts/build_check.ps1 -EALabel QM5_11241_ht-coint-spread -SkipCompile",
+      "result": "PASS",
+      "report": "D:/QM/reports/framework/21/build_check_20260708_224852.json"
+    },
+    "symbol_scope": {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea QM5_11241_ht-coint-spread --json",
+      "result": "BASKET_OK",
+      "n_violations": 0
+    },
+    "db_check": {
+      "pending_same_work_item": true,
+      "status": "pending",
+      "verdict": null,
+      "attempt_count": 0
+    }
+  },
+  "cpu_ceiling_context": {
+    "scanned_at_utc": "2026-07-08T22:50:05+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T6"
+    ],
+    "terminal64_running_count": 7,
+    "manual_mt5_dispatch": false
+  },
+  "guardrails": {
+    "new_ea_built": false,
+    "new_work_item_created": false,
+    "duplicate_work_item_created": false,
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
