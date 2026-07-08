@@ -99,8 +99,8 @@ This is deliberately different from:
 - `QM5_13010_xti-cadjpy-rspr`, `QM5_13011_xti-cadchf-rspr`, and
   `QM5_13034_xti-audcad-rspr`: different CAD crosses and different quotation
   mechanics.
-- `QM5_13029_eurcad-eurnzd-coint`: FX-only EURCAD/EURNZD cointegration, not an
-  energy/FX oil-CAD sleeve.
+- `QM5_13029_gbpcad-gbpnzd-coint` and `QM5_13058_audcad-gbpnzd-coint`:
+  FX-only CAD-cross cointegration baskets, not energy/FX oil-CAD sleeves.
 - XAU/XAG, XNG, index, Brent/WTI, XTI/XNG, oil/metals, and single-symbol WTI
   trend/seasonality sleeves.
 
@@ -219,7 +219,7 @@ number. Q02 and later phases must validate or reject the `XTIUSD.DWX` /
   runtime feed, or more than one position per magic slot.
 - [x] Non-duplicate: paired WTI/EURCAD inverse-CAD return-spread mean
   reversion, not WTI/USDCAD, WTI/CADJPY, WTI/CADCHF, WTI/AUDCAD,
-  EURCAD/EURNZD cointegration, XTI/NZD, XTI/XNG, Brent/CAD, Brent/WTI,
+  FX-only CAD-cross cointegration, XTI/NZD, XTI/XNG, Brent/CAD, Brent/WTI,
   metal-ratio, XNG, index, or outright WTI logic.
 
 ## Risk

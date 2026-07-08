@@ -54,7 +54,7 @@ only one leg remains open.
 - `XNGUSD.DWX` - natural gas dynamics are outside the approved card.
 - `USDCAD.DWX` - related CAD exposure, but this card specifically uses EURCAD.
 - `CADJPY.DWX`, `CADCHF.DWX`, or `AUDCAD.DWX` - covered by separate oil/CAD baskets.
-- `EURNZD.DWX` - existing EURCAD/EURNZD cointegration is not this energy/FX sleeve.
+- `EURNZD.DWX` - FX-only CAD-cross or EUR-cross ideas are not this energy/FX sleeve.
 - `XBRUSD.DWX` - Brent is excluded; the card is WTI against EURCAD.
 
 ---

@@ -52,8 +52,8 @@ This source is related to prior WTI/CAD work, but the extracted card is not a
 rebuild of `wti-cad-confirm`, `wti-cad-spread-mr`, `wti-cad-brk`,
 `xti-cadjpy-rspr`, `xti-cadchf-rspr`, `xti-audcad-rspr`, `xbr-cad-rspr`,
 `xti-nzd-rspread`, or `xti-xng-rspread`. It also differs from
-`eurcad-eurnzd-coint`, which is an FX cointegration basket. The new sleeve
-uses WTI plus EURCAD, trades both legs as a two-leg basket, and opens from a
+the existing FX-only CAD-cross cointegration baskets. The new sleeve uses WTI
+plus EURCAD, trades both legs as a two-leg basket, and opens from a
 standardized D1 return-spread dislocation designed around EURCAD's inverse CAD
 quotation.
 
