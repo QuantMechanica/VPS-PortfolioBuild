@@ -11,7 +11,7 @@
     "NZDUSD.DWX"
   ],
   "notes": [
-    "Two-leg AUDCAD/GBPNZD FX cointegration basket from the 2026-07-06 extended screen. The row is card-worthy, not a formal strict survivor: both half-sample ADF tests pass and OOS net Sharpe is 1.16, but half-life is 81.2 days versus the original 60-day filter.",
+    "Two-leg AUDCAD/GBPNZD FX cointegration basket from the 2026-07-06 extended screen. The row is a watchlist replacement candidate, not a formal strict survivor: both half-sample ADF tests pass and DEV/OOS trade checks are positive, but OOS net Sharpe is 0.76 and half-life is 76.5 days versus the original 60-day filter.",
     "The scan hedge used for mechanization is negative (-0.7616), so the EA trades the second leg with sign(-beta) direction: long spread means long AUDCAD and long GBPNZD, short spread means short both legs.",
     "USDCAD.DWX and NZDUSD.DWX are declared for conversion/history warmup under a USD tester account; only AUDCAD.DWX and GBPNZD.DWX are traded."
   ]

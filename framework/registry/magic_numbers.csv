@@ -14702,3 +14702,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 12894,xng-mar-transseason-short,0,XNGUSD.DWX,128940000,2026-07-08,Codex,active
 13057,xti-gbpcad-rspr,0,XTIUSD.DWX,130570000,2026-07-08,Codex,active
 13057,xti-gbpcad-rspr,1,GBPCAD.DWX,130570001,2026-07-08,Codex,active
+13058,audcad-gbpnzd-coint,0,AUDCAD.DWX,130580000,2026-07-08,Development,active
+13058,audcad-gbpnzd-coint,1,GBPNZD.DWX,130580001,2026-07-08,Development,active

@@ -9,10 +9,16 @@ sources:
   - "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md"
   - "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/results_full.csv"
   - "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/survivors.json"
+  - "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/trade_check.json"
 concepts:
   - cointegration-pair-trade
   - zscore-band-reversion
   - market-neutral-fx-basket
+strategy_type_flags:
+  - symmetric-long-short
+  - atr-hard-stop
+  - signal-reversal-exit
+  - friday-close-flatten
 indicators:
   - rolling-zscore
   - atr-stop
@@ -27,10 +33,10 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
-last_updated: 2026-07-07
-g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-directed in-house FX cointegration scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS AUDCAD.DWX and GBPNZD.DWX data exist in the extended Darwinex scan; R4 PASS no ML/grid/martingale."
-expected_pf: 1.10
-expected_dd_pct: 25.0
+last_updated: 2026-07-08
+g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-directed in-house FX cointegration scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS AUDCAD.DWX and GBPNZD.DWX data exist in the extended Darwinex scan; R4 PASS no ML/grid/martingale. This is a watchlist replacement candidate after the stronger extended-screen siblings were already built and failed later gates."
+expected_pf: 1.03
+expected_dd_pct: 30.0
 portfolio_scope: basket
 ---
 
@@ -48,30 +54,31 @@ hedge scan certified only `QM5_12533` and `QM5_12532`.
 source_citation: Chan, Ernest P. (2009). Quantitative Trading. Wiley, Chapter 7;
 QuantMechanica 2026 extended FX cointegration screen on Darwinex `.DWX` D1 data.
 
-The extended screen flags `AUDCAD~GBPNZD` as the best card-worthy sibling
-candidate: both half-sample ADF tests pass (`t=-3.685`, `p=0.0197` and
-`t=-3.639`, `p=0.0225`), hedge sign is stable, and the 60-bar rolling z-score
-has 44 `|z| >= 2` excursions across 2,121 observations. It is not a formal
-all-gates survivor because the estimated half-life is 81.2 days versus the
-original strict 60-day filter. That caveat is anchor-like rather than disqualifying
-for this research card because `QM5_12532` already carried a 65-day half-life,
-and the trade-check output labels this row card-worthy with OOS net Sharpe 1.16,
-OOS return 11.2%, 34 OOS state changes, and DEV hedge `-0.7616`.
+The extended screen flags `AUDCAD~GBPNZD` as a watchlist replacement candidate,
+not a formal strict survivor. It passed both half-sample ADF tests (`t=-3.167`,
+`p=0.0768` and `t=-3.662`, `p=0.0211`), kept hedge sign stable, and the 60-bar
+rolling z-score had 41 `|z| >= 2` excursions across the scan window. It missed
+the original strict half-life gate at 76.5 days and its OOS net Sharpe was 0.76,
+just under the 0.8 carding bar. The reason to route it after `QM5_13024` and
+`QM5_13029` is explicit and limited: unlike those stronger-looking siblings, the
+v3-mechanics trade check was profitable in both windows, with DEV net Sharpe
+1.13, OOS return 7.94%, 22 OOS state changes, and DEV hedge `-0.7616`.
 
 ## Concept
 
-AUDCAD and GBPNZD share AUD exposure but express it through different commodity,
-rates, and GBP/CAD residual channels. The negative hedge ratio creates a
-same-direction package: long spread means long AUDCAD and long GBPNZD; short
+AUDCAD and GBPNZD combine commodity/risk-bloc FX exposure through AUD, CAD, NZD,
+and GBP without being a pure common-leg spread. The negative hedge ratio creates
+a same-direction package: long spread means long AUDCAD and long GBPNZD; short
 spread means short both legs. The basket is meant to be market-neutral at the
-spread level, not a directional AUD forecast.
+spread level, not a directional AUD or GBP forecast.
 
 ## Hypothesis
 
 Temporary dislocations in `ln(AUDCAD) - beta * ln(GBPNZD)` can mean-revert
-because both legs contain AUD while their non-AUD legs, CAD and GBP, carry
-distinct local-rate and commodity/risk premia. The scan result is in-house and
-the half-life is slow, so the pipeline gates remain the judge.
+because AUD/CAD and GBP/NZD embed related commodity-bloc, risk-sentiment, and
+local-rate premia. The scan result is in-house, the hedge magnitude drifted
+materially between halves, and the half-life is slow, so the pipeline gates
+remain the judge.
 
 ## Markets And Timeframe
 
@@ -120,7 +127,7 @@ the half-life is slow, so the pipeline gates remain the judge.
   sweep_range: [40, 60, 90]
 - name: strategy_beta
   default: -0.7616
-  sweep_range: [-0.60, -0.7616, -0.30]
+  sweep_range: [-1.00, -0.7616, -0.50]
 - name: strategy_entry_z
   default: 2.0
   sweep_range: [1.75, 2.0, 2.25]
@@ -137,16 +144,17 @@ the half-life is slow, so the pipeline gates remain the judge.
 ## Author Claims
 
 No external performance claim is taken from Chan for AUDCAD/GBPNZD specifically.
-The in-house extended scan found this as a card-worthy sibling candidate after
-the certified NZDUSD/NZDUSD and EURJPY/GBPJPY anchors. Pipeline gates are the
-judge.
+The in-house extended scan found this as a watchlist sibling candidate after the
+certified AUDUSD/NZDUSD and EURJPY/GBPJPY anchors. It is being routed only
+because the higher-ranked extended siblings are already built and later failed.
+Pipeline gates are the judge.
 
 ## Initial Risk Profile
 
-- expected_pf: 1.10.
-- expected_dd_pct: 25.
+- expected_pf: 1.03.
+- expected_dd_pct: 30.
 - expected_trade_frequency: approximately 4-8 basket packages/year.
-- risk_class: high because this is an in-house extended-screen sibling with a slow half-life.
+- risk_class: high because this is an in-house extended-screen watchlist sibling with a slow half-life and OOS just below the original 0.8 Sharpe bar.
 - gridding: false.
 - scalping: false.
 - ml_required: false.
@@ -176,6 +184,5 @@ gates.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-07 | initial extended-screen FX cointegration sibling card | G0 | APPROVED |
-| v2 | 2026-07-07 | compiled basket EA and logical basket Q02 enqueued as work item f165f53e | Q02 | PENDING |
+| v1 | 2026-07-08 | initial extended-screen FX cointegration watchlist replacement card | G0 | APPROVED |
 

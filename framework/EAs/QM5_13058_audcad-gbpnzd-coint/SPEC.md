@@ -4,7 +4,7 @@
 **Slug:** audcad-gbpnzd-coint
 **Source:** QM-COINT-SCREEN-EXT-2026-07-06_AUDCAD-GBPNZD plus Chan cointegration pair-trade method
 **Author of this spec:** Codex
-**Last revised:** 2026-07-07
+**Last revised:** 2026-07-08
 
 ---
 
@@ -19,12 +19,14 @@ when z is below -2.0. Because beta is negative, the second-leg hedge direction i
 sign-aware: long spread means long AUDCAD and long GBPNZD; short spread means
 short both legs. Each leg carries a 2.0 * ATR(20, D1) protective stop.
 
-The extended FX cointegration screen labels AUDCAD/GBPNZD as a card-worthy
-sibling candidate rather than a formal all-gates survivor. It passed both
-half-sample ADF tests, kept hedge sign stable, and produced 44 rolling-z
-excursions over 2,121 observations. It missed the original strict half-life gate
-with 81.2 days, so Q02 and later gates must judge whether the slow residual is
-tradable after costs.
+The extended FX cointegration screen labels AUDCAD/GBPNZD as a watchlist
+replacement candidate rather than a formal all-gates survivor. It passed both
+half-sample ADF tests, kept hedge sign stable, and produced 41 rolling-z
+excursions across the scan window. It missed the original strict half-life gate
+with a 76.5 day estimate, and its OOS net Sharpe of 0.76 is just below the 0.8
+bar. The reason to route it after the stronger extended siblings is narrow:
+the v3-mechanics trade check was profitable in both DEV and OOS, while the
+already-built AUDCAD/GBPAUD and GBPCAD/GBPNZD siblings have now failed Q04.
 
 ---
 
@@ -50,7 +52,7 @@ tradable after costs.
 
 **History/conversion dependencies:**
 - USDCAD.DWX - CAD profit-currency conversion support for USD tester accounting.
-- NZDUSD.DWX - AUD profit-currency conversion support for USD tester accounting.
+- NZDUSD.DWX - NZD profit-currency conversion support for USD tester accounting.
 
 **Explicitly not for:**
 - Other `.DWX` symbols. This card is a fixed two-leg FX basket, not a portable multi-pair strategy.
@@ -74,7 +76,7 @@ tradable after costs.
 | Trades / year / logical basket | 4-8 |
 | Typical hold time | weeks to months |
 | Expected drawdown profile | high; Q02/Q04/Q05 must judge whether this slow residual is tradable after cost |
-| Regime preference | shared-AUD residual between CAD and GBP exposures |
+| Regime preference | commodity/risk-bloc residual across AUD, CAD, NZD, and GBP exposures |
 | Win rate target | medium |
 
 ---
@@ -93,7 +95,7 @@ Screen excerpt for this candidate:
 
 | pair | half ADF t1 | half ADF t2 | rolling z excursions | half-life | hedge | OOS net Sharpe | OOS ret | OOS state changes |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| AUDCAD~GBPNZD | -3.685 | -3.639 | 44 | 81.2d | -0.7616 | 1.16 | 11.2% | 34 |
+| AUDCAD~GBPNZD | -3.167 | -3.662 | 41 | 76.5d | -0.7616 | 0.76 | 7.94% | 22 |
 
 ---
 
@@ -115,5 +117,5 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-07 | Initial extended-screen FX cointegration basket build | Built from the 13003 two-leg basket pattern with sign-aware negative-beta leg direction |
+| v1 | 2026-07-08 | Initial extended-screen FX cointegration basket build | Built from the 13024 two-leg basket pattern with sign-aware negative-beta leg direction |
 
