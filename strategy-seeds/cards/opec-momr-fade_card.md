@@ -181,12 +181,12 @@ risk controls.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-08 | mission-directed OPEC MOMR failed-breakout fade build | Q02 | PENDING |
+| v1 | 2026-07-08 | mission-directed OPEC MOMR failed-breakout fade build | Q02 | QUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-08 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-08 | PENDING | `artifacts/qm5_13065_build_result.json` |
-| Q02 Baseline Screening | 2026-07-08 | PENDING | `artifacts/qm5_13065_q02_enqueue_20260708.json` |
+| Q01 Build Validation | 2026-07-08 | PASS | `artifacts/qm5_13065_build_result.json` |
+| Q02 Baseline Screening | 2026-07-08 | QUEUED | `artifacts/qm5_13065_q02_enqueue_20260708.json` / work item `650a62c8-f15b-414a-8ebd-2a98bdbc20d5` |

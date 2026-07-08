@@ -1,0 +1,80 @@
+{
+  "task_id": "48d5c0a3-4f01-41bd-b7e0-ee74728e1f01",
+  "ea_id": "QM5_13065",
+  "slug": "opec-momr-fade",
+  "generated_at": "2026-07-08T14:41:40Z",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "source_id": "OPEC-MOMR-XTI-FADE-2026",
+  "card": "strategy-seeds/cards/approved/QM5_13065_opec-momr-fade_card.md",
+  "canonical_card": "strategy-seeds/cards/opec-momr-fade_card.md",
+  "ea_dir": "framework/EAs/QM5_13065_opec-momr-fade",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13065_opec-momr-fade\\QM5_13065_opec-momr-fade.mq5",
+  "ea_path": "framework/EAs/QM5_13065_opec-momr-fade/QM5_13065_opec-momr-fade.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13065_opec-momr-fade\\QM5_13065_opec-momr-fade.ex5",
+  "magic_base": 130650000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfile": "framework/EAs/QM5_13065_opec-momr-fade/sets/QM5_13065_opec-momr-fade_XTIUSD.DWX_D1_backtest.set",
+  "setfiles_generated": [
+    "framework/EAs/QM5_13065_opec-momr-fade/sets/QM5_13065_opec-momr-fade_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13065_opec-momr-fade\\SPEC.md",
+  "setfile_build_hash": "5849e7844a5d9ef28d8c670050e3c13f952d376ae1e7350fb96f1835a2b363c8",
+  "file_hashes_sha256": {
+    "mq5": "F13D69C7C13D26D288C712820CCAFC39B8F629205AED15EADCF2C85BFB603005",
+    "ex5": "170912275E0EF722165CF1CAC328695ABCC75C8D0D900D6113FBF2BD658C004D",
+    "setfile": "1DF733777D852D3D9BE31549B0FB4F5BCE06A73078BCB2096CDB726C22231574"
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "build_only_q02_enqueue_no_backtest_smoke_run",
+  "blocked_reason": "",
+  "open_questions": [],
+  "q02_work_item": {
+    "id": "650a62c8-f15b-414a-8ebd-2a98bdbc20d5",
+    "phase": "Q02",
+    "status": "pending",
+    "symbol": "XTIUSD.DWX",
+    "created_at": "2026-07-08T14:41:33+00:00"
+  },
+  "checks": {
+    "card_schema_lint_canonical": "PASS",
+    "card_schema_lint_approved": "PASS",
+    "g0_card_lint_canonical": "PASS",
+    "g0_card_lint_approved": "PASS",
+    "spec_doc": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_guardrails": "PASS",
+    "magic_resolver_update": {
+      "result": "PASS",
+      "warnings": [
+        "pre-existing missing EA dirs for magic rows: 1001, 1015, 1016"
+      ]
+    },
+    "compile_one_strict": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260708_144045/QM5_13065_opec-momr-fade.compile.log"
+    },
+    "build_check_strict": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260708_144100.json"
+    }
+  },
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "backtest_cpu_used": false
+  }
+}
