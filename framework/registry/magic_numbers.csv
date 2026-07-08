@@ -14678,3 +14678,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9502,chande-cmo-vr-divergence-h4,11,WS30.DWX,95020011,2026-07-08,Codex,active
 9502,chande-cmo-vr-divergence-h4,12,UK100.DWX,95020012,2026-07-08,Codex,active
 13050,xti-1w-rev-vol,0,XTIUSD.DWX,130500000,2026-07-08,Codex,active
+9453,chande-cmo-vr-composite-h4,0,EURUSD.DWX,94530000,2026-07-08,Codex,active
+9453,chande-cmo-vr-composite-h4,1,GBPUSD.DWX,94530001,2026-07-08,Codex,active
+9453,chande-cmo-vr-composite-h4,2,USDJPY.DWX,94530002,2026-07-08,Codex,active
+9453,chande-cmo-vr-composite-h4,3,AUDUSD.DWX,94530003,2026-07-08,Codex,active
+9453,chande-cmo-vr-composite-h4,4,USDCAD.DWX,94530004,2026-07-08,Codex,active
+9453,chande-cmo-vr-composite-h4,5,USDCHF.DWX,94530005,2026-07-08,Codex,active
+9453,chande-cmo-vr-composite-h4,6,NZDUSD.DWX,94530006,2026-07-08,Codex,active
+9453,chande-cmo-vr-composite-h4,7,XAUUSD.DWX,94530007,2026-07-08,Codex,active
+9453,chande-cmo-vr-composite-h4,8,XTIUSD.DWX,94530008,2026-07-08,Codex,active
+9453,chande-cmo-vr-composite-h4,9,GDAXI.DWX,94530009,2026-07-08,Codex,active
+9453,chande-cmo-vr-composite-h4,10,NDX.DWX,94530010,2026-07-08,Codex,active
+9453,chande-cmo-vr-composite-h4,11,WS30.DWX,94530011,2026-07-08,Codex,active
+9453,chande-cmo-vr-composite-h4,12,UK100.DWX,94530012,2026-07-08,Codex,active
