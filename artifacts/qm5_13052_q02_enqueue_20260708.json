@@ -1,0 +1,19 @@
+{
+  "generated_at": "2026-07-08T05:24:37Z",
+  "ea_id": "QM5_13052",
+  "slug": "brent-jul-prem",
+  "phase": "Q02",
+  "result": "PASS",
+  "queue_db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+  "enqueued": [
+    {
+      "wi_id": "cc4df4aa",
+      "work_item_id": "cc4df4aa-c55b-4254-899e-81ba83e20952",
+      "symbol": "XBRUSD.DWX",
+      "tf": "D1",
+      "status": "pending",
+      "setfile": "QM5_13052_brent-jul-prem_XBRUSD.DWX_D1_backtest.set"
+    }
+  ],
+  "skipped": []
+}

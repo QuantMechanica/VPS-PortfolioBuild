@@ -1,0 +1,44 @@
+{
+  "task_id": "mission-board-advisor-20260708-brent-jul-prem",
+  "ea_id": "QM5_13052",
+  "slug": "brent-jul-prem",
+  "source_id": "ARENDAS-OIL-SEASON-2018_BRENT_JUL_S05",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_13052_brent-jul-prem",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_13052_brent-jul-prem/QM5_13052_brent-jul-prem.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_13052_brent-jul-prem/QM5_13052_brent-jul-prem.ex5",
+  "ex5_size_bytes": 312376,
+  "magic_base": 130520000,
+  "symbols_registered": [
+    "XBRUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_13052_brent-jul-prem/sets/QM5_13052_brent-jul-prem_XBRUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "809ea19b65a1cdd86f3e134fe9154e7c5abc124c8b3ecc492f01ad0746afc579",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_13052_brent-jul-prem/SPEC.md",
+  "card_path": "C:/QM/repo/strategy-seeds/cards/brent-jul-prem_card.md",
+  "compile_succeeded": true,
+  "compile_command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_13052_brent-jul-prem --force --json --fail-on-error",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log_path": "C:/QM/repo/framework/build/compile/20260708_052358/QM5_13052_brent-jul-prem.compile.log",
+  "build_check_passed": true,
+  "build_check_command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13052_brent-jul-prem -SkipCompile",
+  "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260708_052414.json",
+  "build_check_warning_count": 0,
+  "build_check_failure_count": 0,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "q02_enqueued_for_paced_fleet_no_manual_backtest",
+  "q02_work_items": [
+    {
+      "id": "cc4df4aa-c55b-4254-899e-81ba83e20952",
+      "symbol": "XBRUSD.DWX",
+      "timeframe": "D1",
+      "status": "pending"
+    }
+  ],
+  "notes": [
+    "No manual backtest launched; Q02 is delegated to paced farm workers.",
+    "No T_Live, AutoTrading, live manifest, or portfolio gate files were touched."
+  ]
+}
