@@ -43,7 +43,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 last_updated: 2026-07-08
 expected_pf: 1.06
 expected_dd_pct: 22.0
@@ -252,13 +252,13 @@ both legs under the V5 one-position-per-magic model.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
-| v1 | 2026-07-08 | initial XTI/AUDUSD return-spread basket card | Q01 | APPROVED |
+| v1 | 2026-07-08 | initial XTI/AUDUSD return-spread basket card | Q02 queued | BUILD_PASS_Q02_QUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-08 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-08 | PENDING | `artifacts/qm5_13073_build_result.json` |
-| Q02 Baseline Screening | 2026-07-08 | PENDING | enqueue after compile |
+| Q01 Build Validation | 2026-07-08 | PASS | `artifacts/qm5_13073_build_result.json` |
+| Q02 Baseline Screening | 2026-07-08 | QUEUED | `artifacts/qm5_13073_q02_enqueue_20260708.json` / work item `7613c44b-c520-478f-903d-247a0de59e94` |
 
