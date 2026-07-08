@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        13051
 ; ea_slug:      xng-vrp-proxy
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   7c75426b4a3e516614db93d1860ff110e0624ce8f5d35df200658ab6d2e5bd1f
 ; author:       Development
 ; date:         2026-07-08
 ;==========================================================
