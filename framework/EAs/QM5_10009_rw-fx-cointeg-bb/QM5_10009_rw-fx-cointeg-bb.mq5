@@ -69,18 +69,17 @@ bool ReadCloses(double &aud[], double &nzd[], double &cad_inv[], const int bars)
    if(bars < 50)
       return false;
 
-   // perf-allowed: RefreshState calls this only behind the OnTick new-bar latch.
    ArraySetAsSeries(aud, true);
    ArraySetAsSeries(nzd, true);
    ArraySetAsSeries(cad_inv, true);
 
    double cad_raw[];
    ArraySetAsSeries(cad_raw, true);
-   if(CopyClose(g_symbols[0], PERIOD_D1, 1, bars, aud) != bars)
+   if(CopyClose(g_symbols[0], PERIOD_D1, 1, bars, aud) != bars) // perf-allowed: RefreshState is new-bar gated.
       return false;
-   if(CopyClose(g_symbols[1], PERIOD_D1, 1, bars, nzd) != bars)
+   if(CopyClose(g_symbols[1], PERIOD_D1, 1, bars, nzd) != bars) // perf-allowed: RefreshState is new-bar gated.
       return false;
-   if(CopyClose(g_symbols[2], PERIOD_D1, 1, bars, cad_raw) != bars)
+   if(CopyClose(g_symbols[2], PERIOD_D1, 1, bars, cad_raw) != bars) // perf-allowed: RefreshState is new-bar gated.
       return false;
 
    ArrayResize(cad_inv, bars);
