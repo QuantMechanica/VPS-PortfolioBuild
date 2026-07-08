@@ -148,9 +148,9 @@ bool Strategy_LoadTransseasonState(double &close_last,
    current_bar_time = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: D1 calendar gate.
    closed_bar_time = iTime(_Symbol, PERIOD_D1, 1);  // perf-allowed: prior closed D1 signal bar.
    close_last = iClose(_Symbol, PERIOD_D1, 1);      // perf-allowed: prior closed D1 signal bar.
-   const double open_last = iOpen(_Symbol, PERIOD_D1, 1);
-   const double high_last = iHigh(_Symbol, PERIOD_D1, 1);
-   const double low_last = iLow(_Symbol, PERIOD_D1, 1);
+   const double open_last = iOpen(_Symbol, PERIOD_D1, 1); // perf-allowed: prior closed D1 signal bar.
+   const double high_last = iHigh(_Symbol, PERIOD_D1, 1); // perf-allowed: prior closed D1 signal bar.
+   const double low_last = iLow(_Symbol, PERIOD_D1, 1);   // perf-allowed: prior closed D1 signal bar.
    if(current_bar_time <= 0 || closed_bar_time <= 0 || close_last <= 0.0 ||
       open_last <= 0.0 || high_last <= 0.0 || low_last <= 0.0 || high_last <= low_last)
       return false;
@@ -165,8 +165,8 @@ bool Strategy_LoadTransseasonState(double &close_last,
       return false;
 
    double recent_high = 0.0;
-   double drift_start_close = iClose(_Symbol, PERIOD_D1, 1 + drift_lookback);
-   double rebound_base_close = iClose(_Symbol, PERIOD_D1, 1 + rebound_lookback);
+   double drift_start_close = iClose(_Symbol, PERIOD_D1, 1 + drift_lookback);        // perf-allowed: bounded D1 drift lookback.
+   double rebound_base_close = iClose(_Symbol, PERIOD_D1, 1 + rebound_lookback);     // perf-allowed: bounded D1 transition-rebound lookback.
    if(drift_start_close <= 0.0 || rebound_base_close <= 0.0)
       return false;
 

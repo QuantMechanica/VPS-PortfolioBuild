@@ -60,7 +60,7 @@ g0_approval_reasoning: "R1 PASS official EIA natural-gas seasonality source; R2 
 - Source: [[sources/EIA-XNG-SHOULDER-2026]]
 - Primary citation: U.S. Energy Information Administration, "Natural gas consumption, production respond to seasonal changes", Today in Energy, 2015-09-24, URL https://www.eia.gov/todayinenergy/detail.php?id=22892.
 
-## Concept
+## Hypothesis
 
 The EIA source describes natural gas demand as seasonal, with winter heating
 demand and summer electric-sector demand peaks separated by lower-demand
@@ -98,7 +98,13 @@ This is intentionally not a duplicate of:
   power-load feed, futures curve, CSV, API, analyst forecast, or ML model is
   read at runtime.
 
-## Entry Rules
+## Rules
+
+The strategy is a deterministic D1 short-only implementation of the March-to-
+mid-April shoulder transition. All entries, exits, filters, and risk controls
+are fixed in advance and map directly to the V5 modules.
+
+## 4. Entry Rules
 
 - Evaluate only on a new D1 bar.
 - Entry is allowed only on the first tradable D1 bar of a new broker week.
@@ -119,7 +125,7 @@ This is intentionally not a duplicate of:
 - No entry if an open `XNGUSD.DWX` position already exists for this EA magic.
 - No entry if `XNGUSD.DWX` spread exceeds `strategy_max_spread_points`.
 
-## Exit Rules
+## 5. Exit Rules
 
 - Stop loss: fixed hard SL at ATR(`strategy_atr_period`) * `strategy_atr_sl_mult`.
 - Exit when the broker calendar is outside Mar 1-Apr 15.
@@ -127,14 +133,14 @@ This is intentionally not a duplicate of:
 - Exit after `strategy_max_hold_days` calendar days.
 - Friday close remains enabled by the V5 framework.
 
-## Filters
+## 6. Filters (No-Trade Module)
 
 - Only trade `XNGUSD.DWX` on D1.
 - Only magic slot 0 is valid.
 - Skip entries when SMA, ATR, OHLC, spread, or symbol data is unavailable.
 - Framework news, kill-switch, magic, and Friday-close guards remain active.
 
-## Trade Management Rules
+## 7. Trade Management Rules
 
 - Short-only.
 - No pyramiding.

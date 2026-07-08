@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12894
 ; ea_slug:      xng-mar-transseason-short
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   8277bc4eb85d68fd655f3281504bc09e56c67a4823ac8fa479ebefa6f57b1de8
 ; author:       Development
 ; date:         2026-07-08
 ;==========================================================
