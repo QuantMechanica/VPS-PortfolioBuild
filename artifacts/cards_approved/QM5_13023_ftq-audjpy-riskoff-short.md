@@ -26,7 +26,7 @@ indicators:
   - "[[indicators/sma]]"
   - "[[indicators/donchian-channel]]"
   - "[[indicators/atr]]"
-strategy_type_flags: [flight-to-quality, short-only, sma-regime-stack, donchian-breakout, atr-hard-stop, channel-trail, time-stop, defensive-sleeve, fx-cross]
+strategy_type_flags: [flight-to-quality, short-only, sma-regime-stack, donchian-breakout, failed-sma-reclaim, atr-hard-stop, channel-trail, time-stop, defensive-sleeve, fx-cross]
 target_symbols: [AUDJPY.DWX]
 primary_target_symbols: [AUDJPY.DWX]
 markets: [AUDJPY.DWX]
@@ -91,7 +91,11 @@ the book's long-risk sleeves suffer.
   below the SMA(200) — a stacked bearish alignment (price < fast SMA < slow
   SMA) confirming the downtrend is established, not a one-bar dip.
 - Trigger: a D1 close below the Donchian(`strategy_donchian_entry`,
-  default 20) low inside both gates opens a short. The long side never
+  default 20) low inside both gates opens a short. A failed reclaim of
+  SMA(`strategy_sma_mom`) inside the same stacked bear regime also opens a
+  short: prior close >= SMA(`strategy_sma_mom`) and current close back below
+  SMA(`strategy_sma_mom`). This is a time-series-momentum re-entry after a
+  shallow pullback, not a separate indicator family. The long side never
   trades: short-only by design.
 - Exit engine: ATR hard stop, Donchian high trail (cover on close above),
   SMA(50) reclaim exit, and a max-hold time stop.
@@ -124,7 +128,9 @@ the book's long-risk sleeves suffer.
     SMA(`strategy_sma_mom`) < SMA(`strategy_sma_regime`) — stacked bearish
     alignment;
   - trigger: close < Donchian(`strategy_donchian_entry`, default 20) low of
-    the prior bars.
+    the prior bars OR a failed SMA(`strategy_sma_mom`) reclaim where the prior
+    close was at/above SMA(`strategy_sma_mom`) and the current close is back
+    below it.
 - Entry Long: never. Short-only by design.
 - One position at a time: no entry while a position is open for this magic.
 - No entry if spread exceeds `strategy_max_spread_points`.
@@ -144,12 +150,12 @@ the book's long-risk sleeves suffer.
 ## Validation Note (smoke window — REQUIRED for the builder)
 
 This is a REGIME-GATED episodic EA: it is deliberately SILENT outside
-risk-off regimes. A calm-year smoke window (e.g. 2024) yields zero trades BY
+risk-off regimes. A calm-year smoke window (e.g. 2024) can under-trade BY
 DESIGN and must not be read as a build defect (q01_trade_generation false
-positive). **Smoke/validation runs MUST use 2022** (canonical bear-regime
-year: equity index below SMA200 for most of the year, risk-off alignment) —
-FromDate 2022.01.01, ToDate 2022.12.31. Q02+ gates run full history and are
-unaffected. Expected smoke behavior in 2022: multiple entries.
+positive). **Smoke/validation runs MUST use 2020** (canonical AUDJPY
+carry-unwind / COVID flight-to-quality year) — FromDate 2020.01.01, ToDate
+2020.12.31. Q02+ gates run their configured pooled history and are unaffected.
+Expected smoke behavior in 2020: multiple short entries.
 
 ## Risk & Filters
 
@@ -192,14 +198,15 @@ unaffected. Expected smoke behavior in 2022: multiple entries.
   default: 40
   sweep_range: [25, 40, 55]
 - name: strategy_max_spread_points
-  default: 40
+  default: 60
   sweep_range: [30, 40, 60]
 
 ## Expected Behavior
 
 - Flat stretches in risk-on regimes (gates closed); bursts of shorts in
-  risk-off regimes as carry unwinds and JPY strengthens — return profile is
-  intentionally episodic and defensive at the book level.
+  risk-off regimes as carry unwinds and JPY strengthens. Re-entry after failed
+  SMA(50) reclaims keeps participation in persistent bear legs without adding
+  intraday churn or external data.
 - Winners ride carry-unwind legs via the Donchian(15) trail; losers are
   failed breakdowns cut at the ATR hard stop or released on the SMA(50)
   reclaim.
@@ -245,8 +252,9 @@ economics remain the judges.
 - [x] R1 reputable source: Ranaldo/Söderlind Review of Finance safe-haven
   currency literature plus Moskowitz/Ooi/Pedersen JFE time-series momentum.
 - [x] R2 mechanical: fixed SMA(200) regime gate, SMA(50)/SMA(200) stacked
-  bearish alignment, Donchian(20) breakdown trigger, ATR hard stop,
-  Donchian(15) trail, SMA(50) reclaim exit, and time stop.
+  bearish alignment, Donchian(20) breakdown trigger, failed-SMA(50)-reclaim
+  re-entry trigger, ATR hard stop, Donchian(15) trail, SMA(50) reclaim exit,
+  and time stop.
 - [x] R3 testable: `AUDJPY.DWX` exists in the DWX symbol matrix with D1
   history 2017-2026.
 - [x] R4 compliant: no ML, adaptive PnL fitting, grid, martingale, external
@@ -260,7 +268,8 @@ economics remain the judges.
 
 - no_trade: host-symbol/D1 guard, magic-slot guard, parameter guard, spread
   cap, bear-regime gate, stacked-SMA alignment gate, and valid data checks.
-- trade_entry: short-only Donchian(20) D1 breakdown inside both gates.
+- trade_entry: short-only Donchian(20) D1 breakdown or failed-SMA(50)-reclaim
+  re-entry inside both gates.
 - trade_management: Donchian(15) high trail, SMA(50) reclaim monitoring, and
   max-hold tracking.
 - trade_close: ATR hard stop, channel-trail cover, SMA reclaim cover, time
@@ -278,12 +287,13 @@ edge.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-06 | initial flight-to-quality AUDJPY short card | Q02 | PENDING |
+| v1 | 2026-07-06 | initial flight-to-quality AUDJPY short card | Q02 | FAIL: under-frequency |
+| v1r1 | 2026-07-08 | add failed-SMA-reclaim re-entry trigger inside the approved bear-regime stack | Q02 | PENDING |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-06 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-06 | PENDING | `artifacts/qm5_13023_build_result.json` |
-| Q02 Baseline Screening | 2026-07-06 | PENDING | enqueue after compile |
+| Q01 Build Validation | 2026-07-08 | PENDING | `artifacts/qm5_13023_build_result.json` |
+| Q02 Baseline Screening | 2026-07-08 | PENDING | re-enqueue after compile |

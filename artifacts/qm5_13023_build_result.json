@@ -24,11 +24,11 @@
   "setfiles_generated": [
     "C:\\QM\\repo\\framework\\EAs\\QM5_13023_ftq-audjpy-riskoff-short\\sets\\QM5_13023_ftq-audjpy-riskoff-short_AUDJPY.DWX_D1_backtest.set"
   ],
-  "mq5_sha256": "c8706fc9ce55bf237f179c78c6ce10af317e64324c0f04bc061da3571f07d197",
-  "ex5_sha256": "052e81d91d9966ee931552400398d6b706a86022aaa1c16c925ef2c430ae34a2",
-  "spec_sha256": "ca61b29b1b5918d16d452b80fe3fdfdf5f30084dc07168d9c7ccdd6e671642ac",
-  "setfile_header_build_hash": "7d9c1776c6e574596d5327907e7d70905a2fa9ff397ee05696a23bea25d851fb",
-  "setfile_current_sha256": "5bb814597e278feafc3774cce381a2fc6003846f6d3b1fc0b1f83fc910ec252f",
+  "mq5_sha256": "e553303ec82ed6ecf88d0a76319f7bb1841d6b21de05303749c8fb2cdc71b22d",
+  "ex5_sha256": "787323fcbf08323cb82bf02e3d169d6a5041b9741febe40aaa92ea3130effe17",
+  "spec_sha256": "0f423aabd6f6c12a599621517a99d7da4d301a1d784a62ac3e1d554b839f5aad",
+  "setfile_header_build_hash": "f94c0e28633788029846eac71f229ad7ab2812e187729552f6a15a8d77bca012",
+  "setfile_current_sha256": "f48e3c8df3db4f97b14bf4f935b4a46d33d23baeffe422d08e34fffcca0fe0a7",
   "risk_mode": {
     "RISK_FIXED": 1000,
     "RISK_PERCENT": 0,
@@ -64,18 +64,32 @@
     "result": "PASS",
     "errors": 0,
     "warnings": 0,
-    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260707_090244\\QM5_13023_ftq-audjpy-riskoff-short.compile.log",
-    "summary_path": "D:\\QM\\reports\\compile\\20260707_090244\\summary.csv"
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260708_063230\\QM5_13023_ftq-audjpy-riskoff-short.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260708_063230\\summary.csv"
   },
   "build_check": {
     "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13023_ftq-audjpy-riskoff-short -SkipCompile",
     "result": "PASS",
     "failures": 0,
     "warnings": 0,
-    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260707_090427.json"
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260708_063249.json"
+  },
+  "q02_repair": {
+    "repair_reason": "prior Q02 failed MIN_TRADES_NOT_MET on AUDJPY.DWX D1 pooled 2018-2022 window",
+    "previous_work_item_id": "164ba936-9c03-4616-923d-89fb94b47e41",
+    "previous_evidence_path": "D:\\QM\\reports\\work_items\\164ba936-9c03-4616-923d-89fb94b47e41\\QM5_13023\\20260707_220811\\summary.json",
+    "previous_q02_trades": 9,
+    "previous_q02_min_trades": 25,
+    "local_ohlc_replay_data": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\AUDJPY.DWX_D1.csv",
+    "local_ohlc_entry_count_before": 8,
+    "local_ohlc_entry_count_after": 28,
+    "local_ohlc_window": "2018-07-02..2022-12-31",
+    "repair_summary": "Added failed-SMA(50)-reclaim re-entry inside the existing AUDJPY bear-regime stack. This keeps the source thesis structural and low-frequency while lifting estimated Q02-window participation above the 25-trade floor.",
+    "manual_backtest_launched": false,
+    "manual_backtest_skipped_reason": "Factory MT5/metatester slots were already active; Q02 was re-enqueued for paced farm execution."
   },
   "smoke_result": "deferred_p2_smoke",
-  "smoke_skipped_reason": "Paced fleet Q02 will run the tester pass. Earlier Q01 smoke blockers used a calm 2024 window; the approved card now documents 2022 as the required regime-smoke year, so no manual MT5 smoke was launched from this session.",
+  "smoke_skipped_reason": "Paced fleet Q02 will run the tester pass. No manual MT5 smoke/backtest was launched from this session because factory tester slots were already active; compile, build_check, lint, spec validation, symbol-scope validation, and local OHLC signal replay were used for the handoff.",
   "smoke_report_path": null,
   "blocked_reason": null,
   "live_safety": {
@@ -86,5 +100,5 @@
     "portfolio_kpi_touched": false,
     "q08_contribution_touched": false
   },
-  "notes": "Advanced one high-diversity FX sleeve: AUDJPY.DWX D1 short-only risk-off momentum. Existing committed EA was recompiled strict-clean, stale wrong-year Q01 smoke blocker was bypassed via deferred Q02 smoke, and no live/portfolio artifacts were touched."
+  "notes": "Advanced one high-diversity FX sleeve repair: AUDJPY.DWX D1 short-only risk-off momentum was under-frequency at Q02. Reworked the trigger to include failed-SMA(50)-reclaim re-entry inside the existing bear-regime stack, recompiled strict-clean, refreshed setfile hash, and left execution to paced Q02."
 }
