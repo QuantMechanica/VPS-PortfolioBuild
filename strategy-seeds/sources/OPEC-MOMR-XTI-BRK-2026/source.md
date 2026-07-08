@@ -9,6 +9,7 @@ created_by: Codex
 uri: https://www.opec.org/monthly-oil-market-report.html
 cards_extracted:
   - opec-momr-brk
+  - opec-momr-fade
 ---
 
 # OPEC Monthly Oil Market Report WTI Information Window
@@ -27,27 +28,31 @@ coming year, including oil demand, supply, and market balance. The same OPEC
 page publishes a dated monthly release schedule; the 2026 dates cluster around
 the 10th through 14th calendar day of each month.
 
-The QM expression does not ingest OPEC reports, appendix data, forecasts, APIs,
-CSV files, or web content at runtime. It uses a deterministic mid-month OPEC
-MOMR proxy window on `XTIUSD.DWX` D1 bars. If the completed proxy-window bar is
-an ATR-sized directional breakout beyond the prior D1 range, the EA follows the
-next-day continuation for a short fixed hold with ATR stop and target.
+The QM expressions do not ingest OPEC reports, appendix data, forecasts, APIs,
+CSV files, or web content at runtime. They use a deterministic mid-month OPEC
+MOMR proxy window on `XTIUSD.DWX` D1 bars. The breakout card follows completed
+proxy-window closing breakouts beyond the prior D1 range. The fade card tests
+the structurally opposite case: failed outside probes that close back inside the
+prior D1 range and are faded on the next D1 bar.
 
 This is separate from the existing `opec-wti-brk` ordinary-meeting-risk sleeve,
 which only targets June/December OPEC meeting windows, and from the EIA STEO
 and IEA OMR monthly information-window sleeves.
 
-## Extracted Card
+## Extracted Cards
 
 - `opec-momr-brk`: XTIUSD.DWX D1 OPEC Monthly Oil Market Report proxy-window
   breakout continuation.
+- `opec-momr-fade`: XTIUSD.DWX D1 OPEC Monthly Oil Market Report proxy-window
+  failed-breakout fade.
 
 ## R-Rules
 
 - R1 reputable source: PASS. OPEC is the official publisher of the Monthly Oil
   Market Report and release dates.
-- R2 mechanical: PASS. Fixed D1 calendar proxy, Donchian breakout, ATR range
-  and body filters, ATR stop/target, spread cap, and max-hold exit are
+- R2 mechanical: PASS. Fixed D1 calendar proxy, Donchian breakout or failed
+  probe/reclaim, ATR range and body filters, ATR stop/target, spread cap, and
+  max-hold exit are
   deterministic.
 - R3 data available: PASS. `XTIUSD.DWX` exists in the DWX symbol universe.
 - R4 no ML/banned logic: PASS. No ML, external runtime feed, grid, martingale,

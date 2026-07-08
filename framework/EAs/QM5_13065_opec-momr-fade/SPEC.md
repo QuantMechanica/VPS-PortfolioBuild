@@ -1,18 +1,17 @@
-# QM5_13047_eia-steo-fade - Strategy Spec
+# QM5_13065_opec-momr-fade - Strategy Spec
 
-**EA ID:** QM5_13047
-**Slug:** `eia-steo-fade`
-**Source:** `EIA-STEO-XTI-FADE-2026`
+**EA ID:** QM5_13065
+**Slug:** `opec-momr-fade`
+**Source:** `OPEC-MOMR-XTI-FADE-2026`
 **Author of this spec:** Codex
 **Last revised:** 2026-07-08
 
 ## 1. Strategy Logic
 
-This EA implements a low-frequency WTI Short-Term Energy Outlook failed-reaction
-fade on `XTIUSD.DWX`. On each new D1 bar it inspects the previous completed D1
-bar, requiring that bar to match the deterministic EIA STEO monthly release
-proxy: first Tuesday after the first Thursday of the broker-calendar month, with
-optional Wednesday delay handling.
+This EA implements a low-frequency WTI OPEC Monthly Oil Market Report failed
+reaction fade on `XTIUSD.DWX`. On each new D1 bar it inspects the previous
+completed D1 bar, requiring that bar to fall inside the deterministic OPEC MOMR
+proxy window: broker-calendar day 10 through day 14 of the month.
 
 Entries fade failed outside-range probes. A long setup requires a downside probe
 below the prior D1 context range and a close back inside that range. A short
@@ -35,7 +34,8 @@ standard V5 news and Friday close handling, and no runtime external data.
 | `strategy_atr_tp_mult` | 2.75 | 2.0-3.5 | ATR target distance |
 | `strategy_max_hold_days` | 5 | 3-8 | Calendar-day stale-position exit |
 | `strategy_max_spread_points` | 1000 | 700-1500 | Entry spread cap |
-| `strategy_allow_wed_delay` | true | true/false | Allow Wednesday delayed STEO proxy |
+| `strategy_event_start_day` | 10 | 9-11 | First broker-calendar day in MOMR proxy window |
+| `strategy_event_end_day` | 14 | 13-15 | Last broker-calendar day in MOMR proxy window |
 
 ## 3. Symbol Universe
 
@@ -52,17 +52,15 @@ standard V5 news and Friday close handling, and no runtime external data.
 - Expected trades/year/symbol: about 5-10.
 - Direction: symmetric long/short.
 - Typical hold: several D1 bars, capped by ATR target/stop and max-hold exit.
-- Regime preference: monthly EIA STEO information windows where WTI probes
+- Regime preference: monthly OPEC MOMR information windows where WTI probes
   outside the recent D1 range and fails back inside it.
 - Risk mode for Q02 backtests: `RISK_FIXED`.
 
 ## 6. Source Citation
 
-Official U.S. Energy Information Administration STEO source family:
+Official Organization of the Petroleum Exporting Countries MOMR source family:
 
-- https://www.eia.gov/outlooks/steo/
-- https://www.eia.gov/outlooks/steo/release_schedule.php
-- https://www.eia.gov/outlooks/steo/report/global_oil.php
+- https://www.opec.org/monthly-oil-market-report.html
 
 ## 7. Risk Model
 
@@ -76,11 +74,11 @@ touched by this build.
 
 ## Evidence
 
-- Build result: `artifacts/qm5_13047_build_result.json`.
-- Q02 enqueue: `artifacts/qm5_13047_q02_enqueue_20260708.json`.
+- Build result: `artifacts/qm5_13065_build_result.json`.
+- Q02 enqueue: `artifacts/qm5_13065_q02_enqueue_20260708.json`.
 
 ## Revision History
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-08 | Mission-directed STEO failed-breakout energy sleeve build | Enqueue to Q02 |
+| v1 | 2026-07-08 | Mission-directed OPEC MOMR failed-breakout energy sleeve build | Enqueue to Q02 |
