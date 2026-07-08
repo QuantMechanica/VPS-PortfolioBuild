@@ -1,0 +1,48 @@
+{
+  "generated_at": "2026-07-08T20:29:57Z",
+  "ea_id": "QM5_13071",
+  "slug": "xti-usdchf-rspr",
+  "phase": "Q02",
+  "result": "PASS",
+  "queue_db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+  "enqueued": [
+    {
+      "wi_id": "e7744084",
+      "work_item_id": "e7744084-4908-4e99-871d-4c15f5c2944d",
+      "symbol": "QM5_13071_XTI_USDCHF_RSPREAD_D1",
+      "host_symbol": "XTIUSD.DWX",
+      "host_timeframe": "D1",
+      "tf": "D1",
+      "status": "pending",
+      "attempt_count": 0,
+      "created_at": "2026-07-08T20:29:57+00:00",
+      "updated_at": "2026-07-08T20:29:57+00:00",
+      "setfile": "QM5_13071_xti-usdchf-rspr_QM5_13071_XTI_USDCHF_RSPREAD_D1_D1_backtest.set",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13071_xti-usdchf-rspr\\sets\\QM5_13071_xti-usdchf-rspr_QM5_13071_XTI_USDCHF_RSPREAD_D1_D1_backtest.set",
+      "portfolio_scope": "basket",
+      "basket_manifest": "C:\\QM\\repo\\framework\\EAs\\QM5_13071_xti-usdchf-rspr\\basket_manifest.json",
+      "basket_symbols": [
+        "XTIUSD.DWX",
+        "USDCHF.DWX"
+      ],
+      "risk_mode": "RISK_FIXED",
+      "risk_fixed": 1000
+    }
+  ],
+  "skipped": [],
+  "record_build": {
+    "recorded": true,
+    "task_id": "aa7b81fe-9e08-46c9-b4bf-4a0720eb4dd8",
+    "new_status": "done",
+    "smoke_result": "deferred_p2_smoke",
+    "blocked_reason": "",
+    "fail_code": null,
+    "next_action_hint": "Q02 auto-enqueued (1 work_items); worker daemons will dispatch on next tick"
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_manifest_touched": false
+  }
+}
