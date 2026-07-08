@@ -1,0 +1,101 @@
+{
+  "task_id": "e02d304e-708e-4604-807d-d7601c8dcf71",
+  "ea_id": "QM5_13069",
+  "numeric_ea_id": 13069,
+  "slug": "xti-jodi-brk",
+  "generated_at": "2026-07-08T18:40:07Z",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "source_id": "JODI-OIL-UPDATE-BRK-2026",
+  "source_urls": [
+    "https://www.jodidata.org/oil/",
+    "https://www.jodidata.org/oil/support/update-calendar.aspx",
+    "https://www.ief.org/data/oil-gas-data-review",
+    "https://www.iea.org/about/international-collaborations/joint-organisations-data-initiative"
+  ],
+  "card": "strategy-seeds/cards/approved/QM5_13069_xti-jodi-brk_card.md",
+  "canonical_card": "strategy-seeds/cards/xti-jodi-brk_card.md",
+  "source_note": "strategy-seeds/sources/JODI-OIL-UPDATE-BRK-2026/source.md",
+  "ea_dir": "framework/EAs/QM5_13069_xti-jodi-brk",
+  "mq5_path": "framework/EAs/QM5_13069_xti-jodi-brk/QM5_13069_xti-jodi-brk.mq5",
+  "ex5_path": "framework/EAs/QM5_13069_xti-jodi-brk/QM5_13069_xti-jodi-brk.ex5",
+  "spec_md_path": "framework/EAs/QM5_13069_xti-jodi-brk/SPEC.md",
+  "docs_strategy_card_path": "framework/EAs/QM5_13069_xti-jodi-brk/docs/strategy_card.md",
+  "setfile": "framework/EAs/QM5_13069_xti-jodi-brk/sets/QM5_13069_xti-jodi-brk_XTIUSD.DWX_D1_backtest.set",
+  "setfiles_generated": [
+    "framework/EAs/QM5_13069_xti-jodi-brk/sets/QM5_13069_xti-jodi-brk_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 130690000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfile_build_hash": "de2dceb22d88cec8bc3d00f45f49016060e539e5de893a170021cb35e0c6c46c",
+  "file_hashes_sha256": {
+    "framework/EAs/QM5_13069_xti-jodi-brk/QM5_13069_xti-jodi-brk.mq5": "DE2DCEB22D88CEC8BC3D00F45F49016060E539E5DE893A170021CB35E0C6C46C",
+    "framework/EAs/QM5_13069_xti-jodi-brk/QM5_13069_xti-jodi-brk.ex5": "C9DFA22DD81E72D8565FEF0532777EB2B437790C6E8023D32C671106679F40E0",
+    "framework/EAs/QM5_13069_xti-jodi-brk/sets/QM5_13069_xti-jodi-brk_XTIUSD.DWX_D1_backtest.set": "DA094E61484D653B110F769431B4E4F8E365E2BFA079B23D23316C0F82FBCF89",
+    "strategy-seeds/cards/xti-jodi-brk_card.md": "676941871B0A776E5F3C8B537008AEEE5EF6135B0A5FAFFB51AE7F94A339F1E7",
+    "strategy-seeds/cards/approved/QM5_13069_xti-jodi-brk_card.md": "676941871B0A776E5F3C8B537008AEEE5EF6135B0A5FAFFB51AE7F94A339F1E7",
+    "framework/EAs/QM5_13069_xti-jodi-brk/SPEC.md": "9F00901CEEFD769006AB27166F32E55B0695A4864CAFE53923778D26EC75599C",
+    "framework/EAs/QM5_13069_xti-jodi-brk/docs/strategy_card.md": "676941871B0A776E5F3C8B537008AEEE5EF6135B0A5FAFFB51AE7F94A339F1E7",
+    "strategy-seeds/sources/JODI-OIL-UPDATE-BRK-2026/source.md": "BAAEBF4E622A016AC0D77FA4FE5CD92FF117D0BBA9E319A93503918618E397C1",
+    "framework/include/QM/QM_MagicResolver.mqh": "332635252F9F16E5DA6B8858AD8A6E2AE8497BDD4031BD83A3AE4750E801C00C"
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_q02",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "mission requested Q02 enqueue; no local backtest run by build agent",
+  "blocked_reason": "",
+  "open_questions": [],
+  "checks": {
+    "source_verification": {
+      "result": "PASS",
+      "note": "Official JODI-Oil, JODI update calendar, IEF Oil and Gas Data Review, and IEA JODI overview pages verified on 2026-07-08."
+    },
+    "spec_validation": {
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13069_xti-jodi-brk",
+      "result": "PASS"
+    },
+    "magic_resolver": {
+      "command": "python framework/scripts/update_magic_resolver.py",
+      "result": "PASS_WITH_PREEXISTING_WARNINGS",
+      "note": "Resolver regenerated; warnings were for unrelated missing EA dirs 1001, 1015, and 1016."
+    },
+    "strict_compile": {
+      "command": "pwsh -File framework/scripts/compile_one.ps1 -EALabel QM5_13069_xti-jodi-brk -Strict",
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "compile_log": "C:/QM/repo/framework/build/compile/20260708_183932/QM5_13069_xti-jodi-brk.compile.log"
+    },
+    "build_check": {
+      "command": "pwsh -File framework/scripts/build_check.ps1 -EALabel QM5_13069_xti-jodi-brk -Strict",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "compile_log": "C:/QM/repo/framework/build/compile/20260708_183948/QM5_13069_xti-jodi-brk.compile.log",
+      "compile_summary": "D:/QM/reports/compile/20260708_183948/summary.csv",
+      "report": "D:/QM/reports/framework/21/build_check_20260708_183947.json"
+    }
+  },
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "structural_only": true,
+    "low_frequency": true,
+    "ml_required": false,
+    "external_runtime_data": false,
+    "backtest_cpu_used": false,
+    "t_live_touched": false,
+    "auto_trading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "handoff": {
+    "pipeline_phase": "Q02",
+    "enqueue_artifact": "artifacts/qm5_13069_q02_enqueue_20260708.json",
+    "work_item_id": "fbfc5804-d27a-423e-b782-09e0cff5e423"
+  }
+}
