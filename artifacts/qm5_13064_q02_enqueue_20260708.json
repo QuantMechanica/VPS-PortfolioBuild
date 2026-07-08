@@ -1,0 +1,31 @@
+{
+  "generated_at": "2026-07-08T13:58:39Z",
+  "ea_id": "QM5_13064",
+  "slug": "xti-padd5-sqz",
+  "phase": "Q02",
+  "enqueue_command": "python tools\\strategy_farm\\farmctl.py record-build --task-id 99e26179-d8db-43ce-995d-e615c8815429 --result-file artifacts\\qm5_13064_build_result.json",
+  "enqueue_summary": {
+    "recorded": true,
+    "auto_q02_enqueued": 1,
+    "skipped": 0
+  },
+  "work_item": {
+    "id": "d5b63456-cb7e-4ad8-81f5-7cbe26a7b823",
+    "kind": "backtest",
+    "phase": "Q02",
+    "status": "pending",
+    "symbol": "XTIUSD.DWX",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_13064_xti-padd5-sqz/sets/QM5_13064_xti-padd5-sqz_XTIUSD.DWX_D1_backtest.set",
+    "attempt_count": 0,
+    "created_at": "2026-07-08T13:58:39+00:00"
+  },
+  "constraints": {
+    "backtest_run_locally": false,
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false
+  }
+}
