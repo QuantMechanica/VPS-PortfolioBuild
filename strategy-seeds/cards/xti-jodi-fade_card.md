@@ -209,5 +209,5 @@ AutoTrading, or the portfolio gate.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-08 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-08 | PENDING | `artifacts/qm5_13070_build_result.json` |
-| Q02 Baseline Screening | 2026-07-08 | TO_ENQUEUE | `D:\QM\strategy_farm\state\farm_state.sqlite` |
+| Q01 Build Validation | 2026-07-08 | PASS | `artifacts/qm5_13070_build_result.json` |
+| Q02 Baseline Screening | 2026-07-08 | QUEUED | `artifacts/qm5_13070_q02_enqueue_20260708.json` |
