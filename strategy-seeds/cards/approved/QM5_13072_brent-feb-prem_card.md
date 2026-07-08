@@ -1,8 +1,8 @@
 ---
-ea_id: QM5_13061
-slug: brent-jun-prem
+ea_id: QM5_13072
+slug: brent-feb-prem
 type: strategy
-strategy_id: ARENDAS-OIL-SEASON-2018_BRENT_JUN_S06
+strategy_id: ARENDAS-OIL-SEASON-2018_BRENT_FEB_S07
 source_id: ARENDAS-OIL-SEASON-2018
 source_citation: "Arendas, P., Tkacova, D. and Bukoven, J. Seasonal patterns in oil prices and their implications for investors. Journal of International Studies, 11(2), 180-192. DOI 10.14254/2071-8330.2018/11-2/12. URL https://www.jois.eu/files/12_547_Arendas%20et%20al.pdf"
 source_citations:
@@ -23,11 +23,11 @@ target_symbols: [XBRUSD.DWX]
 primary_target_symbols: [XBRUSD.DWX]
 markets: [XBRUSD.DWX]
 single_symbol_only: true
-logical_symbol: QM5_13061_XBR_JUN_PREM_D1
+logical_symbol: QM5_13072_XBR_FEB_PREM_D1
 period: D1
 timeframes: [D1]
-expected_trade_frequency: "June-only D1 Brent source-window seasonal sleeve; estimate 18-23 entries/year after weekends, broker holidays, and framework filters."
-expected_trades_per_year_per_symbol: 20
+expected_trade_frequency: "February-only D1 Brent source-window seasonal sleeve; estimate 18-21 entries/year after weekends, broker holidays, and framework filters."
+expected_trades_per_year_per_symbol: 19
 g0_status: APPROVED
 status: APPROVED
 r1_track_record: PASS
@@ -43,10 +43,10 @@ ml_required: false
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
 hard_rules_at_risk: [xbr_history_sufficiency, friday_close, magic_schema, risk_mode_dual]
-g0_approval_reasoning: "Mission-directed G0 approval 2026-07-08: R1 PASS peer-reviewed oil-seasonality paper covering Brent and WTI; R2 PASS deterministic June Brent D1 long/time-flat rule with ATR hard stop; R3 PASS XBRUSD.DWX local Brent route used by prior builds, with Q02 validating current history sufficiency; R4 PASS no ML/grid/martingale/external runtime data. Non-duplicate because this isolates daily Brent June exposure inside the source-defined February-September window, not WTI June, broad Brent February-September first-month-bar exposure, Brent September terminal exposure, Brent weak-month fades, Brent weekday effects, WTI event/calendar, XTI/XNG, XNG, XAU/XAG, gas-metal, trend, carry, or commodity RSI logic."
+g0_approval_reasoning: "Mission-directed G0 approval 2026-07-08: R1 PASS peer-reviewed oil-seasonality paper covering Brent and WTI; R2 PASS deterministic February Brent D1 long/time-flat rule with ATR hard stop; R3 PASS XBRUSD.DWX local Brent route used by prior builds, with Q02 validating current history sufficiency; R4 PASS no ML/grid/martingale/external runtime data. Non-duplicate because this isolates daily Brent February exposure at the opening segment of the source-defined February-September window, not WTI February, broad Brent February-September first-month-bar exposure, Brent March/April/May/June/July/August/September sleeves, Brent weak-month fades, Brent weekday effects, WTI event/calendar, XTI/XNG, XNG, XAU/XAG, gas-metal, trend, carry, or commodity RSI logic."
 ---
 
-# Brent June Calendar Premium
+# Brent February Calendar Premium
 
 ## Source
 
@@ -60,21 +60,21 @@ g0_approval_reasoning: "Mission-directed G0 approval 2026-07-08: R1 PASS peer-re
 ## Concept
 
 The source describes crude-oil month-of-year effects and a February-September
-seasonal allocation window. This card isolates the mid-window June segment on
+seasonal allocation window. This card isolates the opening February segment on
 the Brent benchmark as a separate Darwinex-native energy sleeve: long-only
-`XBRUSD.DWX` exposure during broker-calendar June D1 bars, flattened on the
-next D1 bar unless the ATR hard stop or framework Friday close acts first.
+`XBRUSD.DWX` exposure during broker-calendar February D1 bars, flattened on
+the next D1 bar unless the ATR hard stop or framework Friday close acts first.
 
 This adds crude-oil benchmark exposure that is distinct from the current
 index/metal/XNG book. It is deliberately different from:
 
-- `QM5_12964_wti-jun-prem`: same month concept on WTI, not Brent.
+- `QM5_12944_wti-feb-prem`: same month concept on WTI, not Brent.
 - `QM5_12981_brent-febsep-prem`: broad February-September Brent source window
-  using only the first tradable D1 bar of each month, not daily June bars.
-- `QM5_12982_brent-sep-prem`: terminal September segment, not mid-window June.
+  using only the first tradable D1 bar of each month, not daily February bars.
 - `QM5_12976_brent-mar-prem`, `QM5_12866_brent-apr-prem`,
-  `QM5_12853_brent-may-prem`, and `QM5_12911_brent-aug-prem`: separate Brent
-  positive-month sleeves.
+  `QM5_12853_brent-may-prem`, `QM5_13061_brent-jun-prem`,
+  `QM5_13052_brent-jul-prem`, `QM5_12911_brent-aug-prem`, and
+  `QM5_12982_brent-sep-prem`: separate Brent positive-month sleeves.
 - `QM5_12871_brent-jan-fade`, `QM5_12854_brent-dec-fade`,
   `QM5_12855_brent-nov-fade`: separate Brent weak-month shorts.
 - Brent weekday, Brent trend, WTI event/calendar, XTI/XNG, oil/gold,
@@ -86,7 +86,7 @@ index/metal/XNG book. It is deliberately different from:
 
 - Symbol: `XBRUSD.DWX`.
 - Period: `D1`.
-- Expected trade frequency: about 18-23 trades/year before Q02 validation.
+- Expected trade frequency: about 18-21 trades/year before Q02 validation.
 - Backtest risk mode: `RISK_FIXED`.
 - Runtime data: Darwinex MT5 OHLC, spread, ATR, broker calendar, and V5
   framework state only. No futures curve, inventory feed, EIA feed, CFTC data,
@@ -94,25 +94,25 @@ index/metal/XNG book. It is deliberately different from:
 
 ## Hypothesis
 
-June sits inside the source-defined February-September crude-oil allocation
-window. Testing Brent June separately from WTI and from the broad first-day
-window can add a crude-oil energy sleeve with different contract behavior from
-XNG, XAU/XAG, indices, and the existing commodity RSI sleeve.
+February opens the source-defined February-September crude-oil allocation
+window. Testing Brent February separately from WTI February and from the broad
+first-day window can add a crude-oil energy sleeve with different contract
+behavior from XNG, XAU/XAG, indices, and the existing commodity RSI sleeve.
 
 ## Rules
 
 - Host chart: `XBRUSD.DWX` D1.
 - Direction: long only.
-- Entry gate: broker-calendar D1 bar is in June and no position exists for this
-  EA magic.
-- Exit gate: first new D1 bar after entry, outside June, max-hold expiry,
+- Entry gate: broker-calendar D1 bar is in February and no position exists for
+  this EA magic.
+- Exit gate: first new D1 bar after entry, outside February, max-hold expiry,
   Friday close, or hard ATR stop.
 - Risk mode: Q02 backtests use `RISK_FIXED=1000` and `RISK_PERCENT=0`.
 
 ## Entry Rules
 
 - Evaluate only on a new `XBRUSD.DWX` D1 bar.
-- Current broker-calendar D1 bar must be in June.
+- Current broker-calendar D1 bar must be in February.
 - Entry direction is long only: BUY `XBRUSD.DWX` at market.
 - Use ATR(`strategy_atr_period`) on prior completed D1 bars for the hard stop.
 - No entry if an open `XBRUSD.DWX` position already exists for this EA magic.
@@ -123,7 +123,7 @@ XNG, XAU/XAG, indices, and the existing commodity RSI sleeve.
 - Stop loss: fixed hard SL at ATR(`strategy_atr_period`) *
   `strategy_atr_sl_mult`.
 - Close the position on the first new D1 bar after entry.
-- Close immediately if the current D1 bar is no longer in June.
+- Close immediately if the current D1 bar is no longer in February.
 - Also close after `strategy_max_hold_days` calendar days as a stale-position
   guard.
 - Friday close remains enabled by the V5 framework.
@@ -148,8 +148,8 @@ XNG, XAU/XAG, indices, and the existing commodity RSI sleeve.
 ## Parameters To Test
 
 - name: strategy_entry_month
-  default: 6
-  sweep_range: [6]
+  default: 2
+  sweep_range: [2]
 - name: strategy_atr_period
   default: 20
   sweep_range: [14, 20, 30]
@@ -174,7 +174,7 @@ Darwinex `XBRUSD.DWX` bars.
 
 - expected_pf: 1.05.
 - expected_dd_pct: 16.
-- expected_trade_frequency: approximately 18-23 trades/year.
+- expected_trade_frequency: approximately 18-21 trades/year.
 - risk_class: medium for crude-oil overnight and month-end gap risk.
 - gridding: false.
 - scalping: false.
@@ -190,10 +190,10 @@ Darwinex `XBRUSD.DWX` bars.
   Q02 validates current history sufficiency.
 - [x] R4 compliant: no ML, no adaptive PnL fitting, no grid, no martingale,
   and one position per magic.
-- [x] Non-duplicate: Brent June exposure is not WTI June, not the broad Brent
-  February-September allocation, not Brent September terminal-month exposure,
-  not Brent weak-month shorts, not Brent weekday effects, not WTI
-  event/ratio/storage logic, and not the existing XNG RSI commodity sleeve.
+- [x] Non-duplicate: Brent February exposure is not WTI February, not the broad
+  Brent February-September allocation, not any existing Brent month sleeve, not
+  Brent weak-month shorts, not Brent weekday effects, not WTI event/ratio/
+  storage logic, and not the existing XNG RSI commodity sleeve.
 
 ## Risk
 
@@ -207,7 +207,7 @@ gate.
 
 - no_trade: D1 and `XBRUSD.DWX` guard, magic-slot guard, parameter guard, and
   spread cap.
-- trade_entry: June broker-calendar long entry.
+- trade_entry: February broker-calendar long entry.
 - trade_management: first post-entry D1 bar, month-end, and max-hold
   stale-position exits.
 - trade_close: hard ATR stop plus deterministic time exits.
@@ -216,12 +216,12 @@ gate.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
-| v1 | 2026-07-08 | initial structural Brent June calendar-premium build | Q02 | QUEUED |
+| v1 | 2026-07-08 | initial structural Brent February calendar-premium build | Q01 | PENDING |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-08 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-08 | PASS | `artifacts/qm5_13061_build_result.json`; `C:/QM/repo/framework/build/compile/20260708_115214/QM5_13061_brent-jun-prem.compile.log`; `D:/QM/reports/framework/21/build_check_20260708_115231.json` |
-| Q02 Baseline Screening | 2026-07-08 | QUEUED | `D:/QM/strategy_farm/state/farm_state.sqlite` work item `4f8bbc99-ead4-47ac-a686-d4d550a8f799` |
+| Q01 Build Validation | 2026-07-08 | PENDING | compile/build_check pending |
+| Q02 Baseline Screening | 2026-07-08 | PENDING | Q02 enqueue pending |

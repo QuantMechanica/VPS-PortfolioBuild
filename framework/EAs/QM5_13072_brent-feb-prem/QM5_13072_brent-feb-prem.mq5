@@ -1,20 +1,20 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_13061 Brent June Calendar Premium"
+#property description "QM5_13072 Brent February Calendar Premium"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QM5_13061 - Brent June Calendar Premium
+// QM5_13072 - Brent February Calendar Premium
 // -----------------------------------------------------------------------------
 // D1 structural month-of-year sleeve:
-//   - long XBRUSD.DWX only during broker-calendar June D1 bars
+//   - long XBRUSD.DWX only during broker-calendar February D1 bars
 //   - flatten on the next D1 bar, at month end, or by a one-day stale guard
 // Runtime uses MT5 OHLC/broker calendar only; no external energy data.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 13061;
+input int    qm_ea_id                   = 13072;
 input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
@@ -38,7 +38,7 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    strategy_entry_month        = 6;
+input int    strategy_entry_month        = 2;
 input int    strategy_atr_period          = 20;
 input double strategy_atr_sl_mult         = 2.25;
 input int    strategy_max_hold_days       = 1;
@@ -133,7 +133,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_13061_BRENT_JUN_PREM";
+   req.reason = "QM5_13072_BRENT_FEB_PREM";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
@@ -169,7 +169,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(req.sl <= 0.0)
       return false;
 
-   req.reason = "BRENT_JUNE_PREMIUM_LONG";
+   req.reason = "BRENT_FEBRUARY_PREMIUM_LONG";
    g_last_entry_day_key = day_key;
    return true;
   }
@@ -209,7 +209,7 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_13061\",\"ea\":\"brent-jun-prem\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_13072\",\"ea\":\"brent-feb-prem\"}");
    return INIT_SUCCEEDED;
   }
 
