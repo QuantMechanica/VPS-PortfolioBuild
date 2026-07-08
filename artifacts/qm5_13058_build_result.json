@@ -1,0 +1,54 @@
+{
+  "task_id": "f65f1a83-3a20-43da-87ae-ac2e9a806d36",
+  "ea_id": "QM5_13058",
+  "slug": "audcad-gbpnzd-coint",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_13058_audcad-gbpnzd-coint",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_13058_audcad-gbpnzd-coint/QM5_13058_audcad-gbpnzd-coint.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_13058_audcad-gbpnzd-coint/QM5_13058_audcad-gbpnzd-coint.ex5",
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile_log": "C:/QM/repo/framework/build/compile/20260708_093742/QM5_13058_audcad-gbpnzd-coint.compile.log",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Q02 logical basket backtest is enqueued to paced MT5 workers; no manual tester dispatch under CPU ceiling",
+  "symbols": [
+    "AUDCAD.DWX",
+    "GBPNZD.DWX"
+  ],
+  "logical_symbol": "QM5_13058_AUDCAD_GBPNZD_COINTEGRATION_D1",
+  "basket_manifest": "C:/QM/repo/framework/EAs/QM5_13058_audcad-gbpnzd-coint/basket_manifest.json",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_13058_audcad-gbpnzd-coint/sets/QM5_13058_audcad-gbpnzd-coint_QM5_13058_AUDCAD_GBPNZD_COINTEGRATION_D1_D1_backtest.set"
+  ],
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "scan_ranking": {
+    "source": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706",
+    "selection_note": "Unbuilt watchlist replacement after QM5_13024 and QM5_13029 were already built and later failed Q04; profitable in both DEV and OOS but below original OOS 0.8 Sharpe bar.",
+    "hard_bar_survivor": false,
+    "card_worthiness": "WATCHLIST - replacement only after stronger siblings exhausted",
+    "hedge_beta": -0.7616,
+    "half_adf_t1": -3.167,
+    "half_adf_t2": -3.662,
+    "half_life_days": 76.5,
+    "rolling_z2_excursions": 41,
+    "dev_sharpe_net": 1.13,
+    "oos_net_sharpe": 0.76,
+    "oos_return_pct": 7.94,
+    "oos_state_changes": 22
+  },
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13058",
+    "enqueued": [
+      {
+        "setfile": "QM5_13058_audcad-gbpnzd-coint_QM5_13058_AUDCAD_GBPNZD_COINTEGRATION_D1_D1_backtest.set",
+        "symbol": "QM5_13058_AUDCAD_GBPNZD_COINTEGRATION_D1",
+        "tf": "D1",
+        "wi_id": "df21c7a2"
+      }
+    ],
+    "skipped": []
+  }
+}
