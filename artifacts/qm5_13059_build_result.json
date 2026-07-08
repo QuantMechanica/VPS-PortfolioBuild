@@ -1,0 +1,160 @@
+{
+  "task_id": "e1ec6de4-c59c-49db-a407-e97a64163704",
+  "ea_id": "QM5_13059",
+  "ea_label": "QM5_13059_xti-audjpy-rspr",
+  "slug": "xti-audjpy-rspr",
+  "strategy": "XTI/AUDJPY D1 return-spread reversion basket",
+  "strategy_id": "EIA-RBA-JAPAN-XTI-AUDJPY-2026",
+  "source_id": "EIA-RBA-JAPAN-XTI-AUDJPY-2026",
+  "source_links": [
+    "https://www.eia.gov/workingpapers/pdf/oil_exchangerates_61317.pdf",
+    "https://www.rba.gov.au/education/resources/explainers/drivers-of-the-aud-exchange-rate.html",
+    "https://www.eia.gov/international/content/analysis/countries_long/japan/japan.pdf"
+  ],
+  "symbols": [
+    "XTIUSD.DWX",
+    "AUDJPY.DWX"
+  ],
+  "symbols_registered": [
+    "XTIUSD.DWX",
+    "AUDJPY.DWX"
+  ],
+  "logical_symbol": "QM5_13059_XTI_AUDJPY_RSPREAD_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13059_xti-audjpy-rspr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13059_xti-audjpy-rspr\\QM5_13059_xti-audjpy-rspr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13059_xti-audjpy-rspr\\QM5_13059_xti-audjpy-rspr.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13059_xti-audjpy-rspr\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13059_xti-audjpy-rspr.md",
+  "approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13059_xti-audjpy-rspr.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13059_xti-audjpy-rspr.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13059_xti-audjpy-rspr\\basket_manifest.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13059_xti-audjpy-rspr\\sets\\QM5_13059_xti-audjpy-rspr_QM5_13059_XTI_AUDJPY_RSPREAD_D1_D1_backtest.set"
+  ],
+  "setfile_build_hash": "87280028f0cf174dfc21b3d1651cb9d181ae6180df8353ae331524b31474eaed",
+  "mq5_sha256": "E1D4B7F88A4EBAC4E4A8687DCF209204B4F882C088C2A4E32DD72887D6394346",
+  "ex5_sha256": "056A93E0B1148B35E3AE61666D90661294E7D622AE161560293DA53AEDEA027A",
+  "setfile_current_sha256": "8C773575098D7501AED16F26AE907649CA2EA8B6BAFAFE725B004C7E0A7155CB",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic_base": 130590000,
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 130590000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "AUDJPY.DWX",
+        "magic": 130590001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_13059_xti-audjpy-rspr --force --json --fail-on-error",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260708_095638\\QM5_13059_xti-audjpy-rspr.compile.log",
+    "ex5_size_bytes": 322424,
+    "symbol_scope_verdict": "BASKET_OK"
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13059_xti-audjpy-rspr -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260708_095653.json"
+  },
+  "validations": {
+    "symbol_scope": "BASKET_OK",
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "magic_registry_rows_added": true,
+    "magic_resolver_update": {
+      "result": "PASS",
+      "warnings": [
+        "pre-existing missing EA dirs for magic rows: 1001, 1015, 1016"
+      ]
+    }
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "non_duplicate_reason": "XTI/AUDJPY return-spread reversion uses WTI plus a positive AUD commodity/risk quote against an energy-importer currency. It is distinct from WTI/USDCAD confirmation or residuals, WTI/CADJPY, WTI/CADCHF, WTI/AUDCAD, WTI/GBPCAD, WTI/AUDUSD, Brent/CAD, XTI/NZD, XTI/XNG, FX-only cointegration, metal-ratio, XNG, index, or outright WTI sleeves.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_manifest_touched": false
+  },
+  "manual_backtest": {
+    "status": "not_started",
+    "reason": "Q02 queued for paced fleet; no manual MT5 smoke/backtest was launched."
+  },
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "backtest_cpu_used": false
+  },
+  "paths": {
+    "source_packet": "C:\\QM\\repo\\strategy-seeds\\sources\\EIA-RBA-JAPAN-XTI-AUDJPY-2026\\source.md",
+    "strategy_card": "C:\\QM\\repo\\framework\\EAs\\QM5_13059_xti-audjpy-rspr\\docs\\strategy_card.md",
+    "canonical_card": "C:\\QM\\repo\\strategy-seeds\\cards\\xti-audjpy-rspr_card.md",
+    "approved_seed_card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13059_xti-audjpy-rspr_card.md"
+  },
+  "file_hashes_sha256": {
+    "source_packet": "2E8C2A9FDBE8D81A1EE171EBFE0CCC898BD5906795A8B490FEBB9005B08200DF",
+    "card": "77132ECDF1A1C2787BAE3AF1E4BE0374ED438816AE534D5D58AFC4E4BC0EBF75",
+    "mq5": "E1D4B7F88A4EBAC4E4A8687DCF209204B4F882C088C2A4E32DD72887D6394346",
+    "ex5": "056A93E0B1148B35E3AE61666D90661294E7D622AE161560293DA53AEDEA027A",
+    "setfile": "8C773575098D7501AED16F26AE907649CA2EA8B6BAFAFE725B004C7E0A7155CB",
+    "spec": "AAB8C2E660984F017661E6A8BB58B4C0BD17809304F7F6FA2C90B034E01541F6",
+    "basket_manifest": "70378DA473C87A07504DCAAA2C4DC2DE10D67D3AB4CD3C213D83B58073F61620"
+  },
+  "notes": "Completed a low-frequency energy/FX basket sleeve and prepared it for Q02 via record-build auto-enqueue.",
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "587be00b-b0a7-4260-b5fc-7c08e638c4a9",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "QM5_13059_XTI_AUDJPY_RSPREAD_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13059_xti-audjpy-rspr\\sets\\QM5_13059_xti-audjpy-rspr_QM5_13059_XTI_AUDJPY_RSPREAD_D1_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "attempt_count": 0,
+    "created_at_utc": "2026-07-08T09:58:37+00:00",
+    "portfolio_scope": "basket",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "artifact": "C:\\QM\\repo\\artifacts\\qm5_13059_q02_enqueue_20260708.json"
+  },
+  "record_build": {
+    "recorded": true,
+    "task_id": "e1ec6de4-c59c-49db-a407-e97a64163704",
+    "new_status": "done",
+    "auto_q02_enqueued_count": 1,
+    "auto_q02_short_id": "587be00b"
+  }
+}
