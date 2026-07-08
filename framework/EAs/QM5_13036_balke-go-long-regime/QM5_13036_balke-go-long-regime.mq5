@@ -155,9 +155,7 @@ bool Strategy_RegimeAllowsLong()
       return false;
 
    const double sma_value = QM_SMA(_Symbol, PERIOD_D1, strategy_regime_sma_period, 1, PRICE_CLOSE);
-   // perf-allowed: card-defined D1 regime gate needs the previous daily close;
-   // the framework has SMA readers but no raw close reader.
-   const double close_value = iClose(_Symbol, PERIOD_D1, 1);
+   const double close_value = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: card-defined D1 regime gate needs the previous daily close.
    if(sma_value <= 0.0 || close_value <= 0.0)
       return false;
 
