@@ -13667,6 +13667,17 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1505,connors-cumulative-rsi-h4,9,SP500.DWX,15050009,2026-06-26,Development,active
 1505,connors-cumulative-rsi-h4,10,XAUUSD.DWX,15050010,2026-06-26,Development,active
 1505,connors-cumulative-rsi-h4,11,XTIUSD.DWX,15050011,2026-06-26,Development,active
+1506,demark-td-sequential-combo-h4,0,EURUSD.DWX,15060000,2026-07-08,Development,active
+1506,demark-td-sequential-combo-h4,1,GBPUSD.DWX,15060001,2026-07-08,Development,active
+1506,demark-td-sequential-combo-h4,2,USDJPY.DWX,15060002,2026-07-08,Development,active
+1506,demark-td-sequential-combo-h4,3,AUDUSD.DWX,15060003,2026-07-08,Development,active
+1506,demark-td-sequential-combo-h4,4,USDCAD.DWX,15060004,2026-07-08,Development,active
+1506,demark-td-sequential-combo-h4,5,NDX.DWX,15060005,2026-07-08,Development,active
+1506,demark-td-sequential-combo-h4,6,WS30.DWX,15060006,2026-07-08,Development,active
+1506,demark-td-sequential-combo-h4,7,GDAXI.DWX,15060007,2026-07-08,Development,active
+1506,demark-td-sequential-combo-h4,8,UK100.DWX,15060008,2026-07-08,Development,active
+1506,demark-td-sequential-combo-h4,9,XAUUSD.DWX,15060009,2026-07-08,Development,active
+1506,demark-td-sequential-combo-h4,10,XTIUSD.DWX,15060010,2026-07-08,Development,active
 12580,fx-usd-exhaustion-reversal,0,EURUSD.DWX,125800000,2026-06-26,Codex,active
 12580,fx-usd-exhaustion-reversal,1,GBPUSD.DWX,125800001,2026-06-26,Codex,active
 12580,fx-usd-exhaustion-reversal,2,AUDUSD.DWX,125800002,2026-06-26,Codex,active
