@@ -1,0 +1,127 @@
+{
+  "generated_at_utc": "2026-07-08T15:17:11Z",
+  "generated_at_local": "2026-07-08T17:17:11+02:00",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves; prefer market-neutral FX cointegration baskets",
+  "selected_pair": {
+    "ea_id": "QM5_13062",
+    "pair": "AUDCAD.DWX/EURUSD.DWX",
+    "logical_symbol": "QM5_13062_AUDCAD_EURUSD_COINTEGRATION_D1",
+    "reason": "No approved unbuilt FX cointegration pair remains; this was the current formal extended-screen AUDCAD/EURUSD sleeve already built and in the funnel."
+  },
+  "anchor_status": {
+    "QM5_12532": "Q02 PASS, Q04 PASS, later Q05 FAIL; not Q02-blocked",
+    "QM5_12533": "Q02 PASS, later Q04 FAIL; not Q02-blocked"
+  },
+  "funnel_state": {
+    "q02": {
+      "work_item_id": "92fef42a-a098-417c-ba9d-d4dd7d3a3d70",
+      "status": "done",
+      "verdict": "PASS",
+      "evidence_path": "D:/QM/reports/work_items/92fef42a-a098-417c-ba9d-d4dd7d3a3d70/QM5_13062/20260708_132207/summary.json",
+      "trades": 136,
+      "profit_factor": 1.07,
+      "net_profit": 1124.49,
+      "oninit_failure_detected": false
+    },
+    "q03": {
+      "work_item_id": "8781eab1-1ed0-4b9c-a03b-09054eb998e9",
+      "status": "active",
+      "claimed_by": "T1",
+      "symbol": "QM5_13062_AUDCAD_EURUSD_COINTEGRATION_D1",
+      "updated_at_utc": "2026-07-08T14:24:48Z"
+    },
+    "q04": {
+      "work_item_id": "51d72669-7286-4469-8b12-f2979c3427aa",
+      "status": "done",
+      "verdict": "FAIL",
+      "evidence_path": "D:/QM/reports/work_items/51d72669-7286-4469-8b12-f2979c3427aa/QM5_13062/Q04/QM5_13062_AUDCAD_EURUSD_COINTEGRATION_D1/aggregate.json",
+      "reason": "F1:pf_net=0.845;F2:pf_net=0.896",
+      "folds": [
+        {
+          "id": "F1",
+          "status": "OK",
+          "trades": 30,
+          "pf_net": 0.8446149414460781,
+          "gross_total": -495.57
+        },
+        {
+          "id": "F2",
+          "status": "OK",
+          "trades": 32,
+          "pf_net": 0.8961142302377554,
+          "gross_total": -207.81
+        }
+      ]
+    }
+  },
+  "action_taken": {
+    "new_ea_built": false,
+    "new_work_item_created": false,
+    "duplicate_work_item_created": false,
+    "manual_mt5_backtest_launched": false,
+    "card_copies_updated": [
+      "artifacts/cards_approved/QM5_13062_audcad-eurusd-coint.md",
+      "strategy-seeds/cards/approved/QM5_13062_audcad-eurusd-coint_card.md",
+      "framework/EAs/QM5_13062_audcad-eurusd-coint/docs/strategy_card.md"
+    ],
+    "status_update": "Synced card history to Q02 PASS and Q04 FAIL, with Q03 still active. No further enqueue because the sleeve has strategy-fail Q04 evidence and CPU is occupied."
+  },
+  "cpu_ceiling_context": {
+    "active_work_items": 6,
+    "active_items": [
+      {
+        "terminal": "T3",
+        "ea_id": "QM5_11458",
+        "phase": "Q02",
+        "symbol": "USDJPY.DWX"
+      },
+      {
+        "terminal": "T7",
+        "ea_id": "QM5_1116",
+        "phase": "Q02",
+        "symbol": "GBPJPY.DWX"
+      },
+      {
+        "terminal": "T6",
+        "ea_id": "QM5_9993",
+        "phase": "Q02",
+        "symbol": "XAUUSD.DWX"
+      },
+      {
+        "terminal": "T4",
+        "ea_id": "QM5_1228",
+        "phase": "Q02",
+        "symbol": "GBPUSD.DWX"
+      },
+      {
+        "terminal": "T2",
+        "ea_id": "QM5_10572",
+        "phase": "Q02",
+        "symbol": "EURJPY.DWX"
+      },
+      {
+        "terminal": "T1",
+        "ea_id": "QM5_13062",
+        "phase": "Q03",
+        "symbol": "QM5_13062_AUDCAD_EURUSD_COINTEGRATION_D1"
+      }
+    ],
+    "metatester64_running_count": 5,
+    "pipeline_terminal64_running_count": 5,
+    "non_pipeline_terminals_observed": [
+      "C:/Program Files/FTMO Global Markets MT5 Terminal/terminal64.exe",
+      "C:/QM/mt5/T_Live/MT5_Base/terminal64.exe"
+    ]
+  },
+  "guardrails": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  }
+}
