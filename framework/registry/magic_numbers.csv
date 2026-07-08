@@ -14742,3 +14742,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9980,bandy-double-top-formalised-mr-index,4,GBPUSD.DWX,99800004,2026-07-08,Codex,active
 9980,bandy-double-top-formalised-mr-index,5,USDJPY.DWX,99800005,2026-07-08,Codex,active
 9980,bandy-double-top-formalised-mr-index,6,XAUUSD.DWX,99800006,2026-07-08,Codex,active
+11911,larry-williams-smash-day-d1,0,EURUSD.DWX,119110000,2026-07-08,Codex,active
+11911,larry-williams-smash-day-d1,1,GBPUSD.DWX,119110001,2026-07-08,Codex,active
+11911,larry-williams-smash-day-d1,2,USDJPY.DWX,119110002,2026-07-08,Codex,active
+11911,larry-williams-smash-day-d1,3,USDCAD.DWX,119110003,2026-07-08,Codex,active
+11911,larry-williams-smash-day-d1,4,USDCHF.DWX,119110004,2026-07-08,Codex,active
+11911,larry-williams-smash-day-d1,5,AUDUSD.DWX,119110005,2026-07-08,Codex,active
+11911,larry-williams-smash-day-d1,6,NZDUSD.DWX,119110006,2026-07-08,Codex,active
+11911,larry-williams-smash-day-d1,7,EURJPY.DWX,119110007,2026-07-08,Codex,active
+11911,larry-williams-smash-day-d1,8,GBPJPY.DWX,119110008,2026-07-08,Codex,active
+11911,larry-williams-smash-day-d1,9,AUDJPY.DWX,119110009,2026-07-08,Codex,active
