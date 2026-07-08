@@ -139,5 +139,5 @@ admission, and portfolio-gate edits are out of scope.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-08 | APPROVED | `strategy-seeds/cards/brent-tom-mom_card.md` |
-| Q01 Build Validation | 2026-07-08 | PENDING | `artifacts/qm5_13054_build_result.json` |
-| Q02 Baseline Screening | 2026-07-08 | PENDING | `artifacts/qm5_13054_q02_enqueue_20260708.json` |
+| Q01 Build Validation | 2026-07-08 | PASS | `artifacts/qm5_13054_build_result.json`; `C:/QM/repo/framework/build/compile/20260708_070926/QM5_13054_brent-tom-mom.compile.log`; `D:/QM/reports/framework/21/build_check_20260708_070943.json` |
+| Q02 Baseline Screening | 2026-07-08 | QUEUED | `artifacts/qm5_13054_q02_enqueue_20260708.json`; work item `a803f980-7675-46ca-8498-b22d43ed69b4` |
