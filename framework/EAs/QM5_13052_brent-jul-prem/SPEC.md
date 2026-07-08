@@ -1,32 +1,33 @@
-# QM5_12976_brent-mar-prem - Strategy Spec
+# QM5_13052_brent-jul-prem - Strategy Spec
 
-**EA ID:** QM5_12976
-**Slug:** `brent-mar-prem`
+**EA ID:** QM5_13052
+**Slug:** `brent-jul-prem`
 **Source:** `ARENDAS-OIL-SEASON-2018`
 **Author of this spec:** Codex
-**Last revised:** 2026-07-03
+**Last revised:** 2026-07-08
 
 ## 1. Strategy Logic
 
 This EA implements a low-frequency structural Brent month-of-year sleeve on
 `XBRUSD.DWX`. On each new D1 bar, it permits a long entry only when the current
-broker-calendar month is March. The position is flattened on the first
-subsequent D1 bar, when the chart leaves March, or by a one-calendar-day
+broker-calendar month is July. The position is flattened on the first
+subsequent D1 bar, when the chart leaves July, or by a one-calendar-day
 stale-position guard. The only price-derived input is ATR for the hard stop.
 
 The strategy is intentionally not a duplicate of the existing energy family:
-`QM5_12730_wti-mar-prem` is the same month thesis on the WTI benchmark, while
-this build isolates Brent. Brent April/May/August/November/December/January
-calendar, Brent weekday, Brent TSMOM, Brent/WTI spread, WTI event/calendar,
-XTI/XNG, XNG, XAU/XAG, and commodity RSI sleeves all use different information
-sets, markets, or timing. This EA is a pure Brent March calendar-premium
-anomaly.
+`QM5_12981_brent-febsep-prem` tests one first-tradable-day entry across the
+source window, while this build isolates daily July Brent exposure inside that
+window. Existing Brent March/April/May/August/September/November/December/
+January calendar, Brent weekday, Brent TSMOM, Brent/WTI spread, WTI
+event/calendar, XTI/XNG, XNG, XAU/XAG, and commodity RSI sleeves all use
+different information sets, markets, or timing. This EA is a pure Brent July
+calendar-premium anomaly.
 
 ## 2. Parameters
 
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
-| `strategy_entry_month` | 3 | 3 | Broker-calendar March |
+| `strategy_entry_month` | 7 | 7 | Broker-calendar July |
 | `strategy_atr_period` | 20 | 14-30 | ATR period for the hard stop |
 | `strategy_atr_sl_mult` | 2.25 | 1.5-3.0 | ATR stop distance multiplier |
 | `strategy_max_hold_days` | 1 | 1-2 | Calendar-day stale-position guard |
@@ -46,7 +47,7 @@ anomaly.
 
 - Expected trades/year/symbol: about 18-23.
 - Typical hold: one D1 bar.
-- Regime preference: Brent March month-of-year calendar premium.
+- Regime preference: Brent July month-of-year source-window premium.
 - Risk mode for Q02 backtests: `RISK_FIXED`.
 
 ## 6. Source Citation
@@ -70,4 +71,4 @@ touched by this build.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-03 | Initial build from card | Q02 queued as work_item 72ede470-ca54-4165-a5cf-7c93c781bca8 |
+| v1 | 2026-07-08 | Initial build from card | Q02 queued through paced fleet |

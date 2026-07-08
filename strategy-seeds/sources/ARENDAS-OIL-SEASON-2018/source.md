@@ -18,6 +18,7 @@ cards_extracted:
   - wti-sep-prem
   - brent-febsep-prem
   - brent-sep-prem
+  - brent-jul-prem
 ---
 
 # Arendas Oil Seasonality Source
@@ -46,6 +47,7 @@ crude-oil returns. The extraction used six mechanized cards:
 - `brent-febsep-prem`: XBRUSD.DWX first-tradable-day February-September
   source-window premium.
 - `brent-sep-prem`: XBRUSD.DWX D1 September terminal-month seasonal premium.
+- `brent-jul-prem`: XBRUSD.DWX D1 July mid-window seasonal premium.
 
 The March and April WTI cards isolate positive spring months reported by the
 source. They are intentionally separate from the February premium card that uses
@@ -84,6 +86,11 @@ source-defined February-September holding window on the Brent benchmark. It is
 separate from the WTI September card by benchmark and from the Brent
 February-September card by daily September-only exposure rather than one
 first-tradable-day entry per month.
+
+The Brent July card isolates a mid-window segment of the same source-defined
+February-September holding window on the Brent benchmark. It is separate from
+the broad Brent February-September card by daily July-only exposure, and from
+the September terminal-month card by month timing.
 
 The QM implementation does not import the paper's performance numbers into the
 portfolio. Q02+ must validate each deterministic rule on the mapped Darwinex
