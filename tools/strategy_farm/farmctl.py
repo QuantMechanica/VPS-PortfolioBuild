@@ -10131,6 +10131,27 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
         _priority_track = False
     history_registry = _dwx_symbol_history_registry() if is_q02 else {}
     for sym, setfile_path in setfiles:
+        existing = conn.execute(
+            """
+            SELECT id, status
+            FROM work_items
+            WHERE ea_id=? AND phase=? AND symbol=? AND setfile_path=?
+              AND status IN ('pending', 'active')
+            ORDER BY updated_at ASC, created_at ASC
+            LIMIT 1
+            """,
+            (ea_id, phase, sym, setfile_path),
+        ).fetchone()
+        if existing:
+            skipped.append({
+                "ea_id": ea_id,
+                "phase": phase,
+                "symbol": sym,
+                "setfile_path": setfile_path,
+                "reason": f"existing_{phase.lower()}_{existing['status']}",
+                "existing_work_item_id": str(existing["id"]),
+            })
+            continue
         payload: dict[str, Any] = {}
         if basket_manifest:
             payload = _basket_q02_payload(basket_manifest)

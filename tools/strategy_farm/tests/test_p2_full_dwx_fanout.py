@@ -113,6 +113,70 @@ Universe: EURUSD.DWX
                 [("Q02", "EURUSD.DWX")],
             )
 
+    def test_p2_enqueue_skips_existing_pending_work_item(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            repo_root = Path(tmp) / "repo"
+            ea_dir = repo_root / "framework" / "EAs" / "QM5_9998_demo"
+            sets_dir = ea_dir / "sets"
+            registry_dir = repo_root / "framework" / "registry"
+            cards_dir = root / "artifacts" / "cards_approved"
+            sets_dir.mkdir(parents=True)
+            registry_dir.mkdir(parents=True)
+            cards_dir.mkdir(parents=True)
+            (ea_dir / "QM5_9998_demo.ex5").write_text("compiled", encoding="utf-8")
+            (registry_dir / "dwx_symbol_matrix.csv").write_text(
+                "symbol,asset_class,canonical_name_verified\nEURUSD.DWX,forex,true\n",
+                encoding="utf-8",
+            )
+            (cards_dir / "QM5_9998_demo.md").write_text(
+                """---
+ea_id: QM5_9998
+slug: demo
+---
+
+Universe: EURUSD.DWX
+""",
+                encoding="utf-8",
+            )
+            setfile = sets_dir / "QM5_9998_demo_EURUSD.DWX_D1_backtest.set"
+            setfile.write_text("qm_magic_slot_offset=14\n", encoding="utf-8")
+
+            farmctl.init_db(root)
+            db = root / "state" / "farm_state.sqlite"
+            now = farmctl.utc_now()
+            review_payload = {
+                "ea_id": "QM5_9998",
+                "verdict": {"verdict": "APPROVE_FOR_BACKTEST"},
+            }
+            with sqlite3.connect(db) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO tasks
+                      (id, kind, status, source_id, card_id, payload_json, created_at, updated_at)
+                    VALUES
+                      ('review-task', 'ea_review', 'done', NULL, 'QM5_9998', ?, ?, ?)
+                    """,
+                    (json.dumps(review_payload), now, now),
+                )
+                conn.commit()
+
+            old_repo_root = farmctl.REPO_ROOT
+            try:
+                farmctl.REPO_ROOT = repo_root
+                first = farmctl.enqueue_backtest(root, "review-task", "P2")
+                second = farmctl.enqueue_backtest(root, "review-task", "P2")
+            finally:
+                farmctl.REPO_ROOT = old_repo_root
+
+            self.assertTrue(first["enqueued"])
+            self.assertEqual(len(first["work_items_created"]), 1)
+            self.assertTrue(second["enqueued"])
+            self.assertEqual(second["work_items_created"], [])
+            self.assertEqual(second["work_items_skipped"][0]["reason"], "existing_q02_pending")
+            with sqlite3.connect(db) as conn:
+                self.assertEqual(conn.execute("SELECT COUNT(*) FROM work_items").fetchone()[0], 1)
+
     def test_p2_enqueue_rejects_latest_zero_trade_q01_smoke(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp) / "farm"

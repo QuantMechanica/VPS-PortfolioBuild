@@ -44,6 +44,9 @@ Repair handlers (each is idempotent, returns count of actions taken):
   R17 Pending work_items whose stale preflight_failure payload is now clean →
       clear the stale payload/evidence marker so workers can claim them normally.
 
+  R18 Duplicate pending Q02/P2 work_items for the same EA/symbol/setfile →
+      keep one runnable row and mark the rest INVALID/superseded.
+
   R12 Incomplete P2 parent fanout with only one pending symbol while the EA
       has a full canonical setfile set → add the missing pending symbols.
 
@@ -101,6 +104,7 @@ REGISTRY_DIR = REPO_ROOT / "framework" / "registry"
 COMMON_Q08_STREAM_DIR = Path(r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files\QM\q08_trades")
 HEALTH_ALARMS_LOG = ROOT / "state" / "health_alarms.log"
 _R11_CIRCUIT_BREAKER_LIMIT = 200
+_R18_DUPLICATE_GROUP_CIRCUIT_BREAKER_LIMIT = 500
 
 
 def _utc_now() -> str:
@@ -731,6 +735,161 @@ def repair_clear_stale_preflight_work_items(con) -> list[dict]:
     return out
 
 
+_PENDING_DUPLICATE_RUNTIME_KEYS = (
+    "adopted_active_child_at_iso",
+    "child_stopped_on_orphan_release",
+    "claimed_at_iso",
+    "claimed_by_worker_pid",
+    "final_failure",
+    "log_path",
+    "pid",
+    "prior_failure",
+    "prior_infra",
+    "run_smoke_exit_code",
+    "started_at_iso",
+    "terminal",
+    "terminal_stopped_on_release",
+)
+
+
+def _load_payload(text: str | None) -> dict:
+    try:
+        payload = json.loads(text or "{}")
+    except Exception:
+        payload = {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def _pending_duplicate_parent_rank(con, parent_task_id: str | None) -> int:
+    if not parent_task_id:
+        return 1
+    row = con.execute("SELECT status FROM tasks WHERE id=?", (parent_task_id,)).fetchone()
+    if row and row["status"] in {"pending", "active"}:
+        return 0
+    return 2
+
+
+def _pending_duplicate_payload_rank(payload: dict) -> int:
+    return 1 if any(key in payload for key in _PENDING_DUPLICATE_RUNTIME_KEYS) else 0
+
+
+def _pending_duplicate_survivor(con, rows: list[sqlite3.Row]) -> sqlite3.Row:
+    def key(row: sqlite3.Row) -> tuple[int, int, int, str, str]:
+        payload = _load_payload(row["payload_json"])
+        return (
+            _pending_duplicate_parent_rank(con, row["parent_task_id"]),
+            int(row["attempt_count"] or 0),
+            _pending_duplicate_payload_rank(payload),
+            str(row["created_at"] or ""),
+            str(row["id"] or ""),
+        )
+
+    return sorted(rows, key=key)[0]
+
+
+def repair_duplicate_pending_q02_work_items(con, ea_id_filter: str | None = None) -> list[dict]:
+    """R18: collapse duplicate pending Q02/P2 rows to one runnable row per setfile."""
+    params: list[str] = []
+    ea_clause = ""
+    if ea_id_filter:
+        ea_clause = "AND ea_id=?"
+        params.append(str(ea_id_filter))
+    groups = con.execute(
+        f"""
+        SELECT ea_id, phase, symbol, setfile_path, COUNT(*) AS row_count
+        FROM work_items
+        WHERE status='pending'
+          AND phase IN ('Q02', 'P2')
+          {ea_clause}
+        GROUP BY ea_id, phase, symbol, setfile_path
+        HAVING COUNT(*) > 1
+        ORDER BY row_count DESC, ea_id ASC, symbol ASC
+        """,
+        params,
+    ).fetchall()
+    if not ea_id_filter and len(groups) > _R18_DUPLICATE_GROUP_CIRCUIT_BREAKER_LIMIT:
+        detail = (
+            f"R18_duplicate_q02_blocked: {len(groups)} duplicate pending groups exceed "
+            f"limit={_R18_DUPLICATE_GROUP_CIRCUIT_BREAKER_LIMIT}; run targeted repair first"
+        )
+        HEALTH_ALARMS_LOG.parent.mkdir(parents=True, exist_ok=True)
+        with HEALTH_ALARMS_LOG.open("a", encoding="utf-8") as f:
+            f.write(f"{_utc_now()}\tduplicate_q02\t{len(groups)}\t{detail}\n")
+        return [{
+            "handler": "R18_duplicate_pending_q02_work_item",
+            "target": "circuit_breaker",
+            "action": "ABORTED",
+            "detail": detail,
+        }]
+
+    out: list[dict] = []
+    now = _utc_now()
+    for group in groups:
+        rows = con.execute(
+            """
+            SELECT *
+            FROM work_items
+            WHERE status='pending'
+              AND ea_id=?
+              AND phase=?
+              AND symbol=?
+              AND setfile_path=?
+            ORDER BY created_at ASC, id ASC
+            """,
+            (group["ea_id"], group["phase"], group["symbol"], group["setfile_path"]),
+        ).fetchall()
+        if len(rows) < 2:
+            continue
+        survivor = _pending_duplicate_survivor(con, rows)
+        survivor_payload = _load_payload(survivor["payload_json"])
+        for key in _PENDING_DUPLICATE_RUNTIME_KEYS:
+            survivor_payload.pop(key, None)
+        survivor_payload["duplicate_repair_handler"] = "R18_duplicate_pending_q02_work_item"
+        survivor_payload["duplicate_repair_survivor_at"] = now
+        survivor_payload["duplicate_repair_suppressed_count"] = len(rows) - 1
+        con.execute(
+            """
+            UPDATE work_items
+            SET claimed_by=NULL, evidence_path=NULL, payload_json=?, updated_at=?
+            WHERE id=? AND status='pending'
+            """,
+            (json.dumps(survivor_payload, sort_keys=True), now, survivor["id"]),
+        )
+
+        suppressed = 0
+        for row in rows:
+            if row["id"] == survivor["id"]:
+                continue
+            payload = _load_payload(row["payload_json"])
+            payload["duplicate_repair_handler"] = "R18_duplicate_pending_q02_work_item"
+            payload["duplicate_repair_at"] = now
+            payload["duplicate_of_work_item_id"] = survivor["id"]
+            payload["superseded_by_work_item_id"] = survivor["id"]
+            con.execute(
+                """
+                UPDATE work_items
+                SET status='failed', verdict='INVALID', claimed_by=NULL,
+                    evidence_path=NULL, payload_json=?, updated_at=?
+                WHERE id=? AND status='pending'
+                """,
+                (json.dumps(payload, sort_keys=True), now, row["id"]),
+            )
+            suppressed += 1
+        if suppressed:
+            out.append({
+                "handler": "R18_duplicate_pending_q02_work_item",
+                "target": survivor["id"],
+                "action": f"kept 1 pending; superseded {suppressed} duplicate(s)",
+                "detail": (
+                    f"ea={group['ea_id']} phase={group['phase']} "
+                    f"sym={group['symbol']} setfile={Path(group['setfile_path']).name}"
+                ),
+            })
+    if out:
+        con.commit()
+    return out
+
+
 def _ea_dir_for_id(ea_id: str) -> Path | None:
     return farmctl._preferred_ea_dir(ea_id)
 
@@ -1161,6 +1320,7 @@ def run_all() -> dict:
         repair_permanent_build_failures,
         repair_pending_unclaimable_work_items,
         repair_clear_stale_preflight_work_items,
+        repair_duplicate_pending_q02_work_items,
         repair_incomplete_p2_parent_fanout,
         repair_infra_only_codex_review_failures,
         repair_sparse_q09_portfolio_overlap_fails,
