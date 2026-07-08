@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13063
 ; ea_slug:      xti-padd2-draw
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   TO_BE_FILLED_BY_BUILD_CHECK
+; build_hash:   8d00e6aed16871ee62e78e08da10dc719e7e3e3771f4e272bff26aed5b1041de
 ; author:       Codex
 ; date:         2026-07-08
 ;==========================================================
