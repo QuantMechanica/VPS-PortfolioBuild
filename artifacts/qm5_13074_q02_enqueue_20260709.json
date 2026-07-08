@@ -1,0 +1,53 @@
+{
+  "task_id": "8290124b-7c3f-4444-b853-cd6b4f63d7c2",
+  "record_build_result": {
+    "recorded": true,
+    "new_status": "done",
+    "smoke_result": "deferred_p2_smoke",
+    "blocked_reason": "",
+    "fail_code": null,
+    "auto_q02_enqueued": {
+      "ea_id": "QM5_13074",
+      "enqueued": [
+        {
+          "setfile": "QM5_13074_eia-jetfuel-fade_XTIUSD.DWX_D1_backtest.set",
+          "symbol": "XTIUSD.DWX",
+          "tf": "D1",
+          "wi_id": "d9753f99"
+        }
+      ],
+      "skipped": []
+    },
+    "next_action_hint": "Q02 auto-enqueued (1 work_items); worker daemons will dispatch on next tick"
+  },
+  "work_items": {
+    "count": 1,
+    "items": [
+      {
+        "id": "d9753f99-47ed-4e88-bc10-5bfa8ced88fc",
+        "kind": "backtest",
+        "phase": "Q02",
+        "phase_display": "Q02",
+        "phase_qid": "Q02",
+        "status": "pending",
+        "ea_id": "QM5_13074",
+        "symbol": "XTIUSD.DWX",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13074_eia-jetfuel-fade\\sets\\QM5_13074_eia-jetfuel-fade_XTIUSD.DWX_D1_backtest.set",
+        "attempt_count": 0,
+        "created_at": "2026-07-08T23:12:18+00:00",
+        "updated_at": "2026-07-08T23:12:18+00:00",
+        "evidence_path": null,
+        "verdict": null
+      }
+    ],
+    "summary": {
+      "Q02_pending": 1
+    }
+  },
+  "constraints_observed": {
+    "manual_mt5_backtest_launched": false,
+    "autotrading_touched": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false
+  }
+}

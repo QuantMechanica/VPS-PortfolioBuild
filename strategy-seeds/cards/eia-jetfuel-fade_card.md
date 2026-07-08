@@ -226,5 +226,5 @@ Darwinex `XTIUSD.DWX` bars.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-09 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-09 | PENDING | `artifacts/qm5_13074_build_result.json` |
-| Q02 Baseline Screening | 2026-07-09 | PENDING | `artifacts/qm5_13074_q02_enqueue_20260709.json` |
+| Q01 Build Validation | 2026-07-09 | PASS | `artifacts/qm5_13074_build_result.json` |
+| Q02 Baseline Screening | 2026-07-09 | QUEUED | `artifacts/qm5_13074_q02_enqueue_20260709.json` (`d9753f99-47ed-4e88-bc10-5bfa8ced88fc`) |

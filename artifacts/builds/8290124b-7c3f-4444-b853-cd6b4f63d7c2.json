@@ -1,0 +1,125 @@
+{
+  "task_id": "8290124b-7c3f-4444-b853-cd6b4f63d7c2",
+  "ea_id": "QM5_13074",
+  "ea_label": "QM5_13074_eia-jetfuel-fade",
+  "slug": "eia-jetfuel-fade",
+  "strategy": "XTIUSD.DWX D1 late jet-fuel-window failed-rally fade",
+  "strategy_id": "EIA-JETFUEL-SEASON-2026_S03",
+  "source_id": "EIA-JETFUEL-SEASON-2026",
+  "source_links": [
+    "https://www.eia.gov/todayinenergy/detail.php?id=64786",
+    "https://www.eia.gov/todayinenergy/detail.php?id=66004",
+    "https://www.eia.gov/todayinenergy/detail.php?id=67764"
+  ],
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13074_XTI_JETFUEL_FADE_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13074_eia-jetfuel-fade",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13074_eia-jetfuel-fade\\QM5_13074_eia-jetfuel-fade.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13074_eia-jetfuel-fade\\QM5_13074_eia-jetfuel-fade.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13074_eia-jetfuel-fade\\SPEC.md",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13074_eia-jetfuel-fade.md",
+  "approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13074_eia-jetfuel-fade.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13074_eia-jetfuel-fade\\sets\\QM5_13074_eia-jetfuel-fade_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 130740000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 130740000
+    }
+  ],
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "compile": {
+    "status": "COMPILED",
+    "warnings": 0,
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260708_230748\\QM5_13074_eia-jetfuel-fade.compile.log",
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_13074_eia-jetfuel-fade --force --json"
+  },
+  "build_check": {
+    "status": "PASS",
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260708_230805.json",
+    "setfile_build_hash": "eb26145d420546ea4081ca440396a735a28e4784d466dfae3cca00a0bc9248ff",
+    "command": "pwsh -File framework/scripts/build_check.ps1 -EALabel QM5_13074_eia-jetfuel-fade -SkipCompile"
+  },
+  "validations": {
+    "spec_doc": {
+      "status": "PASS",
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13074_eia-jetfuel-fade"
+    },
+    "magic_registry": {
+      "status": "PASS",
+      "slots": [
+        0
+      ],
+      "resolver_rows_kept": 14658,
+      "pre_existing_missing_ea_dir_warnings": [
+        1001,
+        1015,
+        1016
+      ]
+    },
+    "risk_mode": {
+      "status": "PASS",
+      "backtest_uses_risk_fixed": true,
+      "risk_percent_zero": true
+    },
+    "build_guardrails": {
+      "status": "PASS",
+      "ml_forbidden": "PASS",
+      "external_runtime_data": "PASS",
+      "setfile_schema": "PASS",
+      "five_input_groups": "PASS"
+    }
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "backtest_cpu_used": false
+  },
+  "file_hashes_sha256": {
+    "mq5": "3C58A7AB450F49F15C84D1A33BA607D98C3D00F4CEF2CEDE0A91EA5330D4C8B6",
+    "ex5": "73870C14947B163FF5BE305BF1639E735D5773BFE67A92AF993B5105273FB62C",
+    "setfile": "6A6F582C2B8DD6B8BF1C6D516D6B6A314ADDB747CA1F6F9439D0112042A8876D",
+    "spec": "E4674C6420B42DDECBE69E78D8182101F6BC5109D395D627D4C0FE171E616048",
+    "strategy_card_doc": "837A874A0C7B949089DEEA533AA273197768708BCEEA61880DFFACE67E1B9508",
+    "approved_card": "D9A0DFF8B88E4748637BC1878BC65846110E6DA1263812E2108892069EF99623",
+    "source_packet": "03AFFF4ADE9093DA8A74121A417DFDEDA9E3A136A1E965EB7091330E9C8E3F3F",
+    "full_card": "9C83F5208958DEBC4FAF67976D55F94A60C9A7657D5D35FC485202D12BD22EF5",
+    "strategy_seeds_approved_card": "0AAACDD721FCE21099E7DF85EF0664A35B5E40F9E0D9240AD702B63C485E40BE"
+  }
+}

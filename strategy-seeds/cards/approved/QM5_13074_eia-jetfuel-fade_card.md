@@ -48,3 +48,9 @@ short-only exhaustion/fade logic.
 Q02 risk mode must remain `RISK_FIXED=1000`, `RISK_PERCENT=0`. No live
 manifest, `T_Live`, AutoTrading, portfolio gate, external runtime data, ML,
 grid, martingale, or pyramiding is authorized.
+
+Build/Q02 evidence:
+
+- Q01 build validation PASS: `artifacts/qm5_13074_build_result.json`.
+- Q02 baseline screening QUEUED: `artifacts/qm5_13074_q02_enqueue_20260709.json`
+  (`d9753f99-47ed-4e88-bc10-5bfa8ced88fc`).
