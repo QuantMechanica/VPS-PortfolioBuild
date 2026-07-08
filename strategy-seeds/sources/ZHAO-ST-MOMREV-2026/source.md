@@ -1,6 +1,6 @@
 # ZHAO-ST-MOMREV-2026
 
-Canonical source for QM5_13049 and QM5_13050.
+Canonical source for QM5_13049, QM5_13050, QM5_13055, and QM5_13056.
 
 Source:
 
@@ -16,10 +16,12 @@ Cards extracted:
   five-day move when realized volatility is elevated.
 - `QM5_13055_xbr-1w-mom-vol`: XBRUSD.DWX D1 one-week continuation after a large
   five-day move when realized volatility is not elevated.
+- `QM5_13056_xbr-1w-rev-vol`: XBRUSD.DWX D1 one-week reversal after a large
+  five-day move when realized volatility is elevated.
 
 Research note:
 
-The paper documents short-horizon commodity futures momentum and reversal effects. The build uses only the short-term commodity momentum side as lineage: if recent non-residual commodity movement persists and the volatility backdrop is not elevated, one-week continuation can be expressed mechanically.
+The paper documents short-horizon commodity futures momentum and reversal effects. The builds use the short-term commodity momentum and reversal sides as lineage: if recent non-residual commodity movement persists and the volatility backdrop is not elevated, one-week continuation can be expressed mechanically; if the recent move is large and volatility is elevated, the reversal branch can be expressed mechanically.
 
 Runtime port:
 
@@ -33,4 +35,6 @@ documented reversal side: fade the prior 5-D1 move only when current 20-D1
 realized volatility ranks high versus the prior 120 observations. QM5_13055
 ports the continuation/low-volatility branch to Brent (`XBRUSD.DWX`) so the
 pipeline can test a separate crude benchmark rather than another WTI or XNG
-sleeve.
+sleeve. QM5_13056 ports the reversal/high-volatility branch to Brent using the
+same XBR D1 route, but fades the prior 5-D1 move only when current 20-D1
+realized volatility ranks high.
