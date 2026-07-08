@@ -223,4 +223,4 @@ invalidation, seasonal invalidation, and framework risk controls.
 |---|---|---|---|
 | G0 Research Intake | 2026-07-08 | APPROVED | this card |
 | Q01 Build Validation | 2026-07-08 | PASS | `artifacts/qm5_13066_build_result.json` |
-| Q02 Baseline Screening | 2026-07-08 | QUEUED | `artifacts/qm5_13066_q02_enqueue_20260708.json` |
+| Q02 Baseline Screening | 2026-07-08 | QUEUED | `artifacts/qm5_13066_q02_enqueue_20260708.json` / work item `fefd5fd3-0885-4930-ae49-486532615df8` |
