@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13064
 ; ea_slug:      xti-padd5-sqz
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING
+; build_hash:   ce8941bf02d1858fc4b536a62d432fbfa6ea1d2c077192c2c409f6561b849b57
 ; author:       Codex
 ; date:         2026-07-08
 ;==========================================================
