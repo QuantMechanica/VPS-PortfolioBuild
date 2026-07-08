@@ -1,0 +1,42 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13066
+; ea_slug:      xti-padd4-fade
+; ea_version:   v5.0
+; set_version:  s20260708-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   41c5efe57329b6101e5b15eed903db65ca74daf90a565b58c32407629e874b56
+; author:       Development
+; date:         2026-07-08
+;==========================================================
+qm_ea_id=13066
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\xti-padd4-fade_card.md
+strategy_season_start_month_a=1
+strategy_season_end_month_a=4
+strategy_season_start_month_b=9
+strategy_season_end_month_b=12
+strategy_report_start_dow=4
+strategy_report_end_dow=5
+strategy_context_lookback=14
+strategy_sma_period=55
+strategy_slow_sma_period=120
+strategy_sma_slope_shift=6
+strategy_atr_period=20
+strategy_min_range_atr=0.50
+strategy_min_body_atr=0.12
+strategy_min_probe_atr=0.06
+strategy_max_close_location=0.45
+strategy_atr_sl_mult=2.40
+strategy_atr_tp_mult=2.60
+strategy_max_hold_days=6
+strategy_max_spread_points=1000
