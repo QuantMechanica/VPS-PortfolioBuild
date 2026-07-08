@@ -18,11 +18,13 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 13023;
-input int    qm_magic_slot_offset       = 0;
+input int    qm_ea_id                   = 13023; // magic = qm_ea_id * 10000 + symbol_slot
+input int    qm_magic_slot_offset       = 0;     // AUDJPY.DWX slot 0 -> magic 130230000
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
+// Backtests use RISK_FIXED=1000 and RISK_PERCENT=0. Any future live/deploy
+// setfile must use portfolio-approved percent risk and RISK_FIXED=0.
 input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
@@ -138,8 +140,20 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(sma_mom >= sma_regime)
       return false;
 
-   // Trigger: close below the Donchian(strategy_donchian_entry) low of the prior bars.
-   if(QM_Sig_Range_Breakout(_Symbol, PERIOD_CURRENT, strategy_donchian_entry, 1) >= 0)
+   // Trigger A: fresh Donchian low breakdown.
+   const bool donchian_breakdown =
+      (QM_Sig_Range_Breakout(_Symbol, PERIOD_CURRENT, strategy_donchian_entry, 1) < 0);
+
+   // Trigger B: failed SMA(mom) reclaim inside the same bear stack. This keeps
+   // the source thesis as time-series momentum/flight-to-quality while allowing
+   // re-entry after shallow pullbacks, which the original pure-Donchian trigger
+   // under-sampled on AUDJPY's 2018-2022 risk-off regimes.
+   const double sma_mom_prev = QM_SMA(_Symbol, PERIOD_CURRENT, strategy_sma_mom, 2);
+   const double close_prev = iClose(_Symbol, PERIOD_CURRENT, 2); // perf-allowed: prior close for failed-reclaim trigger
+   const bool failed_reclaim =
+      (sma_mom_prev > 0.0 && close_prev > 0.0 && close_prev >= sma_mom_prev && close_last < sma_mom);
+
+   if(!donchian_breakdown && !failed_reclaim)
       return false;
 
    const double entry_price = QM_EntryMarketPrice(QM_SELL);
@@ -152,7 +166,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    req.type = QM_SELL;
    req.sl = sl_price;
-   req.reason = "FTQ_AUDJPY_RISKOFF_SHORT";
+   req.reason = donchian_breakdown ? "FTQ_AUDJPY_DONCHIAN_SHORT" : "FTQ_AUDJPY_RECLAIM_FAIL_SHORT";
    return true;
   }
 

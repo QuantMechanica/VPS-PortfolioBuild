@@ -4,7 +4,7 @@
 **Slug:** `ftq-audjpy-riskoff-short`
 **Source:** `RS-SAFEHAVEN-FX-2010` (see `strategy-seeds/sources/RS-SAFEHAVEN-FX-2010/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-07-07
+**Last revised:** 2026-07-08
 
 ---
 
@@ -15,11 +15,12 @@ AUD/JPY is the canonical FX risk barometer (high-beta carry currency vs. the
 classic funding safe-haven), so a stacked bearish trend on the pair itself is
 used as a self-contained flight-to-quality proxy. Entry: on a new D1 close,
 short when close < SMA(200) (bear regime) AND close < SMA(50) AND SMA(50) <
-SMA(200) (stacked bearish alignment) AND close breaks below the Donchian(20)
-low of the prior bars. Exit: ATR(14) x 2.5 hard stop from entry, cover on a
-D1 close above the Donchian(15) high (channel trail), cover on a D1 close
-back above SMA(50) (reclaim exit), or a 40-bar time stop. Short-only; the
-long branch does not exist.
+SMA(200) (stacked bearish alignment) AND either close breaks below the
+Donchian(20) low of the prior bars or AUDJPY fails a shallow SMA(50) reclaim
+by crossing back below SMA(50) inside the bear stack. Exit: ATR(14) x 2.5 hard
+stop from entry, cover on a D1 close above the Donchian(15) high (channel
+trail), cover on a D1 close back above SMA(50) (reclaim exit), or a 40-bar time
+stop. Short-only; the long branch does not exist.
 
 ---
 
@@ -108,3 +109,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-07 | Initial build from card | 20604212-5ad3-4cc2-88c3-b01a58700040 |
+| v1r1 | 2026-07-08 | Q02 under-frequency repair | Added failed-SMA-reclaim re-entry trigger inside the existing bear-regime stack; no new indicators or runtime data. |
