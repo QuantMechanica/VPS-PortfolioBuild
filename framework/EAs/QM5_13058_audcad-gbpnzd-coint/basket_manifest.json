@@ -1,0 +1,19 @@
+{
+  "logical_symbol": "QM5_13058_AUDCAD_GBPNZD_COINTEGRATION_D1",
+  "host_symbol": "AUDCAD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "AUDCAD.DWX",
+    "GBPNZD.DWX",
+    "USDCAD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg AUDCAD/GBPNZD FX cointegration basket from the 2026-07-06 extended screen. The row is card-worthy, not a formal strict survivor: both half-sample ADF tests pass and OOS net Sharpe is 1.16, but half-life is 81.2 days versus the original 60-day filter.",
+    "The scan hedge used for mechanization is negative (-0.7616), so the EA trades the second leg with sign(-beta) direction: long spread means long AUDCAD and long GBPNZD, short spread means short both legs.",
+    "USDCAD.DWX and NZDUSD.DWX are declared for conversion/history warmup under a USD tester account; only AUDCAD.DWX and GBPNZD.DWX are traded."
+  ]
+}
+
