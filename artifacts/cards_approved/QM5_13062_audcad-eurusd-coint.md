@@ -32,7 +32,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02
+pipeline_phase: Q04
 last_updated: 2026-07-08
 g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-directed in-house FX cointegration scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS AUDCAD.DWX and EURUSD.DWX data exist in the extended Darwinex scan; R4 PASS no ML/grid/martingale. This is the only unbuilt formal survivor in the extended scan, but its v3 fixed-hedge trade check is OOS-negative, so Q02 is evidence gathering rather than a clean performance claim."
 expected_pf: 0.95
@@ -187,3 +187,4 @@ gates.
 |---|---|---|---|---|
 | v1 | 2026-07-08 | initial extended-screen FX cointegration formal-survivor card with OOS-negative caveat | G0 | APPROVED |
 | v2 | 2026-07-08 | compiled basket EA and logical basket Q02 auto-enqueued as work item 92fef42a-a098-417c-ba9d-d4dd7d3a3d70 | Q02 | PENDING |
+| v3 | 2026-07-08 | Q02 logical basket completed on AUDCAD host; 136 trades, PF 1.07, net profit 1124.49, no ONINIT failure; existing Q03 row 8781eab1-1ed0-4b9c-a03b-09054eb998e9 marked priority while Q04 work item 51d72669-7286-4469-8b12-f2979c3427aa is active | Q04 | ACTIVE |

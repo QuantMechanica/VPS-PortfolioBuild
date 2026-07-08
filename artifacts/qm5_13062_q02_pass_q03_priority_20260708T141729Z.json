@@ -1,0 +1,86 @@
+{
+  "generated_at_utc": "2026-07-08T14:17:29Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves via market-neutral FX cointegration baskets",
+  "unit_of_work": "advance existing non-duplicate FX cointegration sleeve after confirming no unbuilt approved survivor remained",
+  "selected_ea": {
+    "ea_id": "QM5_13062",
+    "slug": "audcad-eurusd-coint",
+    "pair": "AUDCAD.DWX/EURUSD.DWX",
+    "logical_symbol": "QM5_13062_AUDCAD_EURUSD_COINTEGRATION_D1",
+    "source": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/survivors.json",
+    "reason": "Only formal extended-screen survivor not represented by the original 12532/12533 anchors; already built and enqueued earlier, so this turn advanced its existing queue state without duplicating work."
+  },
+  "q02_evidence": {
+    "work_item_id": "92fef42a-a098-417c-ba9d-d4dd7d3a3d70",
+    "status": "done",
+    "verdict": "PASS",
+    "summary": "D:/QM/reports/work_items/92fef42a-a098-417c-ba9d-d4dd7d3a3d70/QM5_13062/20260708_132207/summary.json",
+    "terminal": "T1",
+    "host_symbol": "AUDCAD.DWX",
+    "period": "D1",
+    "trades": 136,
+    "profit_factor": 1.07,
+    "net_profit": 1124.49,
+    "drawdown": 3224.04,
+    "oninit_failure_detected": false,
+    "real_ticks_marker_detected": true,
+    "risk_mode": "RISK_FIXED"
+  },
+  "queue_mutation": {
+    "sqlite": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "work_item_id": "8781eab1-1ed0-4b9c-a03b-09054eb998e9",
+    "phase": "Q03",
+    "status_after": "pending",
+    "duplicate_work_item_created": false,
+    "payload_changes": {
+      "priority_track": true,
+      "priority_reason": "OWNER 2026-07-08 forex portfolio mission: Q02 PASS follow-through for non-duplicate QM5_13062 AUDCAD~EURUSD cointegration basket; mark existing Q03 row priority without duplicate enqueue under active CPU ceiling.",
+      "priority_updated_at_utc": "2026-07-08T14:17:29Z",
+      "priority_updated_by": "codex/agents-board-advisor",
+      "q02_pass_work_item_id": "92fef42a-a098-417c-ba9d-d4dd7d3a3d70",
+      "q04_active_work_item_id": "51d72669-7286-4469-8b12-f2979c3427aa"
+    }
+  },
+  "current_pipeline_state": {
+    "q03": {
+      "work_item_id": "8781eab1-1ed0-4b9c-a03b-09054eb998e9",
+      "status": "pending",
+      "priority_track": true
+    },
+    "q04": {
+      "work_item_id": "51d72669-7286-4469-8b12-f2979c3427aa",
+      "status": "active",
+      "terminal": "T1"
+    }
+  },
+  "cpu_ceiling_snapshot": {
+    "active_work_items": {
+      "Q02": 3,
+      "Q04": 3
+    },
+    "pending_work_items": {
+      "Q02": 5209,
+      "Q03": 1,
+      "Q04": 2,
+      "Q07": 1
+    },
+    "metatester64_running_count": 5,
+    "terminal64_running_count": 7,
+    "manual_mt5_backtest_launched": false,
+    "decision": "stop after queue-priority mutation and committed evidence; no manual dispatch under CPU ceiling"
+  },
+  "guardrails": {
+    "new_ea_built_this_turn": false,
+    "new_work_item_created": false,
+    "duplicate_work_item_created": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
