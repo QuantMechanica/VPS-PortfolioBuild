@@ -1,21 +1,21 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_13066 EIA PADD4 WTI failed-upside fade"
+#property description "QM5_13068 EIA PADD1 WTI failed-breakdown reclaim"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QM5_13066 - EIA PADD 4 WTI Failed-Upside Fade
+// QM5_13068 - EIA PADD 1 WTI Failed-Breakdown Reclaim
 // -----------------------------------------------------------------------------
 // D1 structural WTI sleeve:
-//   - official EIA Rocky Mountain PADD 4 crude-stock source lineage
-//   - deterministic Jan-Apr and Sep-Dec post-WPSR proxy window
-//   - short-only failed-upside D1 range probe with falling SMA trend filter
+//   - official EIA East Coast PADD 1 crude-stock source lineage
+//   - deterministic Jan-Mar and Oct-Dec post-WPSR proxy window
+//   - long-only failed-breakdown D1 range reclaim with rising SMA trend filter
 //   - ATR stop/target, max-hold exit, no external runtime data
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 13066;
+input int    qm_ea_id                   = 13068;
 input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
@@ -40,23 +40,23 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input int    strategy_season_start_month_a = 1;
-input int    strategy_season_end_month_a   = 4;
-input int    strategy_season_start_month_b = 9;
+input int    strategy_season_end_month_a   = 3;
+input int    strategy_season_start_month_b = 10;
 input int    strategy_season_end_month_b   = 12;
 input int    strategy_report_start_dow     = 4;
 input int    strategy_report_end_dow       = 5;
-input int    strategy_context_lookback     = 14;
-input int    strategy_sma_period           = 55;
-input int    strategy_slow_sma_period      = 120;
-input int    strategy_sma_slope_shift      = 6;
+input int    strategy_context_lookback     = 16;
+input int    strategy_sma_period           = 34;
+input int    strategy_slow_sma_period      = 100;
+input int    strategy_sma_slope_shift      = 5;
 input int    strategy_atr_period           = 20;
-input double strategy_min_range_atr        = 0.50;
-input double strategy_min_body_atr         = 0.12;
-input double strategy_min_probe_atr        = 0.06;
-input double strategy_max_close_location   = 0.45;
-input double strategy_atr_sl_mult          = 2.40;
-input double strategy_atr_tp_mult          = 2.60;
-input int    strategy_max_hold_days        = 6;
+input double strategy_min_range_atr        = 0.45;
+input double strategy_min_body_atr         = 0.10;
+input double strategy_min_probe_atr        = 0.05;
+input double strategy_min_close_location   = 0.55;
+input double strategy_atr_sl_mult          = 2.20;
+input double strategy_atr_tp_mult          = 2.80;
+input int    strategy_max_hold_days        = 7;
 input int    strategy_max_spread_points    = 1000;
 
 int g_last_signal_month_key = 0;
@@ -88,7 +88,7 @@ bool Strategy_MonthInRange(const int month,
    return (month >= start_month || month <= end_month);
   }
 
-bool Strategy_IsPadd4FadeSeason(const datetime t)
+bool Strategy_IsPadd1ReclaimSeason(const datetime t)
   {
    if(t <= 0)
       return false;
@@ -159,14 +159,14 @@ bool Strategy_ContextRange(double &context_high,
    return (context_high > 0.0 && context_low > 0.0 && context_high >= context_low);
   }
 
-bool Strategy_LoadFadeState(double &atr_last,
-                            int &signal_month_key)
+bool Strategy_LoadReclaimState(double &atr_last,
+                               int &signal_month_key)
   {
    atr_last = 0.0;
    signal_month_key = 0;
 
    const datetime event_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: completed D1 event calendar state behind new-bar gate.
-   if(event_time <= 0 || !Strategy_IsPadd4FadeSeason(event_time) || !Strategy_IsReportProxyDay(event_time))
+   if(event_time <= 0 || !Strategy_IsPadd1ReclaimSeason(event_time) || !Strategy_IsReportProxyDay(event_time))
       return false;
 
    const double event_open = iOpen(_Symbol, PERIOD_D1, 1);   // perf-allowed: completed D1 event bar.
@@ -177,7 +177,7 @@ bool Strategy_LoadFadeState(double &atr_last,
       return false;
    if(event_high <= event_low)
       return false;
-   if(event_close >= event_open)
+   if(event_close <= event_open)
       return false;
 
    atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
@@ -195,11 +195,11 @@ bool Strategy_LoadFadeState(double &atr_last,
    if(event_body < strategy_min_body_atr * atr_last)
       return false;
 
-   if(event_close >= sma_fast)
+   if(event_close <= sma_fast)
       return false;
-   if(sma_fast >= sma_slow)
+   if(sma_fast <= sma_slow)
       return false;
-   if(sma_fast >= sma_fast_prior)
+   if(sma_fast <= sma_fast_prior)
       return false;
 
    double context_high = 0.0;
@@ -210,11 +210,11 @@ bool Strategy_LoadFadeState(double &atr_last,
    const double close_location = (event_close - event_low) / event_range;
    const double probe = strategy_min_probe_atr * atr_last;
 
-   const bool failed_upside =
-      event_high >= context_high + probe &&
-      event_close <= context_high &&
-      close_location <= strategy_max_close_location;
-   if(!failed_upside)
+   const bool failed_downside =
+      event_low <= context_low - probe &&
+      event_close >= context_low &&
+      close_location >= strategy_min_close_location;
+   if(!failed_downside)
       return false;
 
    signal_month_key = Strategy_MonthKey(event_time);
@@ -226,7 +226,7 @@ void Strategy_CloseOpenPositionsIfNeeded()
    const int magic = QM_FrameworkMagic();
    const datetime now = TimeCurrent();
    const int hold_seconds = MathMax(1, strategy_max_hold_days) * 86400;
-   const bool in_season_now = Strategy_IsPadd4FadeSeason(now);
+   const bool in_season_now = Strategy_IsPadd1ReclaimSeason(now);
    const double close_last = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: completed D1 management bar.
    const double sma_fast = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 1, PRICE_CLOSE);
 
@@ -246,13 +246,13 @@ void Strategy_CloseOpenPositionsIfNeeded()
       if(opened > 0 && now - opened >= hold_seconds)
          should_close = true;
 
-      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) != POSITION_TYPE_SELL)
+      if((ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE) != POSITION_TYPE_BUY)
          should_close = true;
 
       if(!in_season_now)
          should_close = true;
 
-      if(close_last > 0.0 && sma_fast > 0.0 && close_last > sma_fast)
+      if(close_last > 0.0 && sma_fast > 0.0 && close_last < sma_fast)
          should_close = true;
 
       if(should_close)
@@ -290,7 +290,7 @@ bool Strategy_NoTradeFilter()
       return true;
    if(strategy_min_range_atr <= 0.0 || strategy_min_body_atr < 0.0 || strategy_min_probe_atr < 0.0)
       return true;
-   if(strategy_max_close_location < 0.0 || strategy_max_close_location > 1.0)
+   if(strategy_min_close_location < 0.0 || strategy_min_close_location > 1.0)
       return true;
    if(strategy_atr_sl_mult <= 0.0 || strategy_atr_tp_mult <= 0.0)
       return true;
@@ -301,11 +301,11 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
-   req.type = QM_SELL;
+   req.type = QM_BUY;
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_13066_XTI_PADD4_FADE";
+   req.reason = "QM5_13068_XTI_PADD1_RECLAIM";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
@@ -321,28 +321,28 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    double atr_last = 0.0;
    int signal_month_key = 0;
-   if(!Strategy_LoadFadeState(atr_last, signal_month_key))
+   if(!Strategy_LoadReclaimState(atr_last, signal_month_key))
       return false;
    if(signal_month_key <= 0 || signal_month_key == g_last_signal_month_key)
       return false;
 
-   req.type = QM_SELL;
+   req.type = QM_BUY;
    const double entry_price = QM_EntryMarketPrice(req.type);
    if(entry_price <= 0.0)
       return false;
 
    req.sl = QM_StopATRFromValue(_Symbol, req.type, entry_price, atr_last, strategy_atr_sl_mult);
    req.sl = QM_StopRulesNormalizePrice(_Symbol, req.sl);
-   if(req.sl <= entry_price)
+   if(req.sl >= entry_price)
       return false;
 
    const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   req.tp = NormalizeDouble(entry_price - strategy_atr_tp_mult * atr_last, digits);
+   req.tp = NormalizeDouble(entry_price + strategy_atr_tp_mult * atr_last, digits);
    req.tp = QM_StopRulesNormalizePrice(_Symbol, req.tp);
-   if(req.tp <= 0.0 || req.tp >= entry_price)
+   if(req.tp <= entry_price)
       return false;
 
-   req.reason = "XTI_PADD4_FAILED_UPSIDE_SHORT";
+   req.reason = "XTI_PADD1_FAILED_BREAKDOWN_LONG";
    g_last_signal_month_key = signal_month_key;
    return true;
   }
@@ -382,7 +382,7 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_13066\",\"ea\":\"xti-padd4-fade\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_13068\",\"ea\":\"xti-padd1-reclaim\"}");
    return INIT_SUCCEEDED;
   }
 
