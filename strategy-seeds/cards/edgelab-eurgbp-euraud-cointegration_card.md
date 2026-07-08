@@ -25,8 +25,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q04_REQUEUED
-last_updated: 2026-06-28
+pipeline_phase: Q08_PENDING
+last_updated: 2026-07-08
 g0_approval_reasoning: "R1 PASS because the method comes from Chan cointegration pair-trading and pair selection comes from the OWNER-requested in-house 66-pair scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS EURGBP.DWX and EURAUD.DWX data exist in the exported scan universe; R4 PASS no ML/grid/martingale."
 expected_pf: 1.08
 expected_dd_pct: 20.0
@@ -142,8 +142,11 @@ cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 ## Pipeline History
 
 | version | date | rebuild reason | phase reached | verdict |
-|---|---|---|---|
+|---|---|---|---|---|
 | v1 | 2026-06-27 | initial next-best FX cointegration basket build | G0 | APPROVED |
 | v1 | 2026-06-27 | logical-basket Q02 passed; stale active Q03 row reset from dead T3 claim and classified by paced worker | Q03 | PASS |
 | v1 | 2026-06-27 | early Q04 probe: F1/F2 traded profitably, F3 invalid on 2025 NO_HISTORY/BARS_ZERO | Q04 | INFRA_FAIL |
 | v1 | 2026-06-28 | existing Q04 work item requeued with q04_latest_full_year=2024 because all checked terminals lack EURGBP.DWX 2025 host history while F1/F2 are valid | Q04 | PENDING |
+| v1 | 2026-06-28 | logical-basket Q04 completed on latest_full_year=2024 | Q04 | PASS |
+| v1 | 2026-07-03 | logical-basket stress gates Q05 and Q06 completed | Q06 | PASS |
+| v1 | 2026-07-08 | Q07 seed-variance gate passed; pump cascade created non-duplicate Q08 work item b1bd1d06-dbfb-4d16-9951-3ea89e14d64f | Q08 | PENDING |
