@@ -45,7 +45,7 @@ not claim to replicate true options VRP.
   market-data dependency.
 - No ML, adaptive PnL fitting, grid, martingale, pyramiding, or discretionary
   override.
-- One position per `XTIUSD.DWX` magic slot.
+- One position per `XTIUSD.DWX` or `XNGUSD.DWX` magic slot.
 
 ## R-Rules
 
