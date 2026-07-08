@@ -10,6 +10,7 @@ uri: https://www.eia.gov/todayinenergy/detail.php?id=64786
 cards_extracted:
   - eia-jetfuel-brk
   - eia-jetfuel-pb
+  - eia-jetfuel-fade
 ---
 
 # EIA Jet Fuel Season Source
@@ -38,7 +39,10 @@ weekday crude-oil sleeves.
 The mechanized cards narrow the source to Darwinex-native WTI expressions:
 trade `XTIUSD.DWX` D1 upside breakouts or controlled pullback continuations
 during the summer air-travel demand window after a crude trend filter confirms
-that the refinery/feedstock impulse is already visible in price.
+that the refinery/feedstock impulse is already visible in price. A third card,
+`eia-jetfuel-fade`, tests the other side of the same structural packet: late
+jet-fuel/post-spike failed rallies after the EIA-documented demand-growth
+slowdown and easing shortage concerns.
 
 No EIA data, jet fuel prices, refinery yields, crack spreads, production data,
 inventories, airline data, CSV files, APIs, or external feeds are read at
@@ -56,8 +60,8 @@ SMA only.
 ## R-Rules
 
 - R1 reputable source: PASS. Official U.S. EIA energy analysis with dated URLs.
-- R2 mechanical: PASS. Fixed date window, D1 breakout or pullback-continuation
-  triggers, SMA trend gate, ATR hard stop, and deterministic channel/date/time
-  exits.
+- R2 mechanical: PASS. Fixed date window, D1 breakout, pullback-continuation, or
+  failed-rally fade triggers, SMA trend gate, ATR hard stop, and deterministic
+  channel/date/time exits.
 - R3 data available: PASS. `XTIUSD.DWX` exists in the DWX symbol matrix.
 - R4 no ML/banned logic: PASS. Deterministic one-position structural sleeve.

@@ -1,0 +1,53 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13074
+; ea_slug:      eia-jetfuel-fade
+; ea_version:   v5.0
+; set_version:  s20260709-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-07-09
+;==========================================================
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; Q02 structural baseline: keep all news axes explicitly off to avoid non-strategy init dependencies.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+; core filter library params; filter-on/off variants must be pre-declared
+qm_filter_news_enabled=0
+qm_filter_news_mode=0
+qm_filter_regime_enabled=0
+qm_filter_regime_lookback_bars=100
+qm_filter_regime_bull_return_pct=2.0
+qm_filter_regime_bear_return_pct=2.0
+qm_filter_volatility_enabled=0
+qm_filter_volatility_atr_period=14
+qm_filter_volatility_lookback_bars=50
+qm_filter_volatility_compression_ratio=0.75
+qm_filter_volatility_expansion_ratio=1.25
+; strategy-specific params from card
+strategy_start_month=8
+strategy_start_day=15
+strategy_end_month=10
+strategy_end_day=31
+strategy_rejection_channel=20
+strategy_exit_channel=10
+strategy_trend_period=100
+strategy_sma_slope_shift=10
+strategy_max_close_location=0.40
+strategy_min_rejection_atr=0.35
+strategy_atr_period=20
+strategy_atr_sl_mult=2.75
+strategy_max_hold_days=18
+strategy_max_spread_points=1000
