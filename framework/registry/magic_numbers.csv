@@ -14734,3 +14734,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1615,aa-breaktrend-2-12,6,EURUSD.DWX,16150006,2026-07-08,Codex,active
 1615,aa-breaktrend-2-12,7,GBPUSD.DWX,16150007,2026-07-08,Codex,active
 1615,aa-breaktrend-2-12,8,USDJPY.DWX,16150008,2026-07-08,Codex,active
+9980,bandy-double-top-formalised-mr-index,0,SP500.DWX,99800000,2026-07-08,Codex,active
+9980,bandy-double-top-formalised-mr-index,1,NDX.DWX,99800001,2026-07-08,Codex,active
+9980,bandy-double-top-formalised-mr-index,2,WS30.DWX,99800002,2026-07-08,Codex,active
+9980,bandy-double-top-formalised-mr-index,3,EURUSD.DWX,99800003,2026-07-08,Codex,active
+9980,bandy-double-top-formalised-mr-index,4,GBPUSD.DWX,99800004,2026-07-08,Codex,active
+9980,bandy-double-top-formalised-mr-index,5,USDJPY.DWX,99800005,2026-07-08,Codex,active
+9980,bandy-double-top-formalised-mr-index,6,XAUUSD.DWX,99800006,2026-07-08,Codex,active
