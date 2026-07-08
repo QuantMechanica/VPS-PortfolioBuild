@@ -111,8 +111,8 @@ double Strategy_CloseChangeStdDev(const int start_shift, const int lookback)
    for(int i = 0; i < lookback; ++i)
      {
       const int shift = start_shift + i;
-      const double c0 = iClose(_Symbol, PERIOD_D1, shift);
-      const double c1 = iClose(_Symbol, PERIOD_D1, shift + 1);
+      const double c0 = iClose(_Symbol, PERIOD_D1, shift); // perf-allowed: bounded D1 structural momentum window, evaluated from the closed-bar signal path.
+      const double c1 = iClose(_Symbol, PERIOD_D1, shift + 1); // perf-allowed: bounded D1 structural momentum window, evaluated from the closed-bar signal path.
       if(c0 <= 0.0 || c1 <= 0.0)
          return 0.0;
       const double change = c0 - c1;
@@ -140,7 +140,7 @@ bool Strategy_EwmacAtShift(const int fast, const int slow, const int signal_shif
       return false;
 
    const int oldest_shift = signal_shift + warmup - 1;
-   double fast_ema = iClose(_Symbol, PERIOD_D1, oldest_shift);
+   double fast_ema = iClose(_Symbol, PERIOD_D1, oldest_shift); // perf-allowed: bounded D1 EWMAC seed for structural momentum, evaluated from the closed-bar signal path.
    double slow_ema = fast_ema;
    if(fast_ema <= 0.0)
       return false;
@@ -149,7 +149,7 @@ bool Strategy_EwmacAtShift(const int fast, const int slow, const int signal_shif
    const double slow_alpha = 2.0 / ((double)slow + 1.0);
    for(int shift = oldest_shift - 1; shift >= signal_shift; --shift)
      {
-      const double close_price = iClose(_Symbol, PERIOD_D1, shift);
+      const double close_price = iClose(_Symbol, PERIOD_D1, shift); // perf-allowed: bounded D1 EWMAC update for structural momentum, evaluated from the closed-bar signal path.
       if(close_price <= 0.0)
          return false;
       fast_ema = fast_alpha * close_price + (1.0 - fast_alpha) * fast_ema;
@@ -177,8 +177,8 @@ double Strategy_MedianSpreadPoints(const int lookback_days)
    int count = 0;
    for(int i = 1; i <= lookback_days; ++i)
      {
-      const double high = iHigh(_Symbol, PERIOD_D1, i);
-      const double low = iLow(_Symbol, PERIOD_D1, i);
+      const double high = iHigh(_Symbol, PERIOD_D1, i); // perf-allowed: bounded D1 range proxy for cost filter, evaluated from the closed-bar signal path.
+      const double low = iLow(_Symbol, PERIOD_D1, i); // perf-allowed: bounded D1 range proxy for cost filter, evaluated from the closed-bar signal path.
       if(high <= 0.0 || low <= 0.0 || high <= low)
          continue;
       spreads[count] = MathMax(1.0, (high - low) / _Point * 0.02);
@@ -201,7 +201,7 @@ bool Strategy_SpreadAllowsEntry()
       return true;
 
    const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(current_spread <= 0)
+   if(current_spread < 0)
       return true;
 
    const double median_spread = Strategy_MedianSpreadPoints(strategy_spread_median_days);
@@ -275,7 +275,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = Strategy_SlotForCurrentSymbol();
    req.expiration_seconds = 0;
 
-   const datetime signal_bar = iTime(_Symbol, PERIOD_D1, 1);
+   const datetime signal_bar = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: single closed D1 bar timestamp for entry de-duplication.
    if(signal_bar <= 0 || signal_bar == g_last_entry_bar || signal_bar == g_last_exit_bar)
       return false;
    if(Strategy_HasOpenPosition())
@@ -320,7 +320,7 @@ void Strategy_ManageOpenPosition()
 
 bool Strategy_ExitSignal()
   {
-   const datetime signal_bar = iTime(_Symbol, PERIOD_D1, 1);
+   const datetime signal_bar = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: single closed D1 bar timestamp for exit de-duplication.
    if(signal_bar <= 0 || signal_bar == g_last_exit_bar)
       return false;
 

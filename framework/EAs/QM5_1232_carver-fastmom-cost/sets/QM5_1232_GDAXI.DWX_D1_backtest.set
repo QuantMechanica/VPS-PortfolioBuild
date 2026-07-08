@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        1232
 ; ea_slug:      carver-fastmom-cost
@@ -10,7 +10,7 @@
 ; magic_slot:   6
 ; risk_mode:    FIXED
 ; portfolio_weight: 1.0
-; build_hash:   79ab086bc155240486f099183e9b3efb44b5a7f4305afc4bf17769186fe87e71
+; build_hash:   3b3811f290fe342a3b747d973ae54f14d7999875530eb35c2ad7fbf49769a0d1
 ; author:       Development
 ; date:         2026-05-26
 ;==========================================================
