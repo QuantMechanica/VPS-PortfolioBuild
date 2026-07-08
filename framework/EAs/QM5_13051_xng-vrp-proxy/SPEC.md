@@ -1,15 +1,15 @@
-# QM5_13046_xti-vrp-proxy - Strategy Spec
+# QM5_13051_xng-vrp-proxy - Strategy Spec
 
-**EA ID:** QM5_13046
-**Slug:** `xti-vrp-proxy`
-**Source:** `TROLLE-SCHWARTZ-ENERGY-VRP-2008_XTI_PROXY`
+**EA ID:** QM5_13051
+**Slug:** `xng-vrp-proxy`
+**Source:** `TROLLE-SCHWARTZ-ENERGY-VRP-2008_XNG_PROXY`
 **Author of this spec:** Codex
-**Last revised:** 2026-07-07
+**Last revised:** 2026-07-08
 
 ## 1. Strategy Logic
 
-This EA implements a low-frequency WTI realized-volatility proxy for the energy
-variance-risk-premium literature on `XTIUSD.DWX`. It does not consume option
+This EA implements a low-frequency natural-gas realized-volatility proxy for the
+energy variance-risk-premium literature on `XNGUSD.DWX`. It does not consume option
 chains or variance swap rates. On each new D1 bar it computes a 20-D1
 realized-volatility estimate and ranks it against a one-year rolling realized
 volatility history.
@@ -35,14 +35,14 @@ external data.
 | `strategy_mean_period` | 50 | 40-100 | D1 mean-reversion SMA period |
 | `strategy_min_stretch_atr` | 0.40 | 0.20-0.80 | Minimum close-to-SMA stretch in ATR units |
 | `strategy_atr_period` | 20 | 14-30 | ATR period for stop and stretch scaling |
-| `strategy_atr_sl_mult` | 2.75 | 2.0-3.5 | ATR stop distance |
+| `strategy_atr_sl_mult` | 3.25 | 2.25-4.25 | ATR stop distance |
 | `strategy_max_hold_days` | 10 | 5-15 | Calendar-day stale-position exit |
-| `strategy_max_spread_points` | 1000 | 700-1500 | Entry spread cap |
+| `strategy_max_spread_points` | 2500 | 1500-3500 | Entry spread cap |
 
 ## 3. Symbol Universe
 
-- `XTIUSD.DWX` only, magic slot 0.
-- `XTIUSD.DWX` is present in `framework/registry/dwx_symbol_matrix.csv`.
+- `XNGUSD.DWX` only, magic slot 0.
+- `XNGUSD.DWX` is present in `framework/registry/dwx_symbol_matrix.csv`.
 
 ## 4. Timeframe
 
@@ -56,7 +56,7 @@ external data.
 - Direction: symmetric long/short.
 - Typical hold: several D1 bars, capped by ATR stop, SMA mean-reversion,
   realized-volatility normalization, and stale-position guards.
-- Regime preference: high realized-volatility WTI stretches.
+- Regime preference: high realized-volatility natural-gas stretches.
 - Risk mode for Q02 backtests: `RISK_FIXED`.
 
 ## 6. Source Citation
@@ -71,6 +71,10 @@ The sources define energy volatility-risk-premium lineage. Runtime uses only
 Darwinex MT5 OHLC and broker state; this EA is an explicit realized-volatility
 spot-CFD proxy, not an option-implied VRP replication.
 
+This is not a duplicate of `QM5_12567_cum-rsi2-commodity`: it uses no RSI,
+oscillator pullback, or two-bar signal. It is also separate from XNG storage,
+weather, calendar, rig-count, carry, 52-week-anchor, and XTI VRP sleeves.
+
 ## 7. Risk Model
 
 | Phase | Risk mode | Value |
@@ -80,4 +84,3 @@ spot-CFD proxy, not an option-implied VRP replication.
 
 No live manifest, `T_Live` file, portfolio gate, or AutoTrading setting is
 touched by this build.
-

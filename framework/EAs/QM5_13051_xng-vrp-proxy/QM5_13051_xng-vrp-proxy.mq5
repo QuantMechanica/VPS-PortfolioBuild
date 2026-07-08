@@ -1,20 +1,20 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_13046 XTI realized-volatility VRP proxy"
+#property description "QM5_13051 XNG realized-volatility VRP proxy"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QM5_13046 - XTI VRP Proxy
+// QM5_13051 - XNG VRP Proxy
 // -----------------------------------------------------------------------------
-// D1 structural WTI sleeve:
+// D1 structural natural-gas sleeve:
 //   - uses top-quartile realized volatility as an OHLC-only energy VRP proxy
 //   - fades short-horizon return stretches back toward a slow D1 mean
 //   - ATR stop, SMA/vol/time exits, no external runtime data
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 13046;
+input int    qm_ea_id                   = 13051;
 input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
@@ -47,15 +47,15 @@ input double strategy_min_return_atr        = 1.20;
 input int    strategy_mean_period           = 50;
 input double strategy_min_stretch_atr       = 0.40;
 input int    strategy_atr_period            = 20;
-input double strategy_atr_sl_mult           = 2.75;
+input double strategy_atr_sl_mult           = 3.25;
 input int    strategy_max_hold_days         = 10;
-input int    strategy_max_spread_points     = 1000;
+input int    strategy_max_spread_points     = 2500;
 
 int g_last_signal_day_key = 0;
 
-bool Strategy_IsXtiD1()
+bool Strategy_IsXngD1()
   {
-   return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
+   return (_Symbol == "XNGUSD.DWX" && _Period == PERIOD_D1);
   }
 
 int Strategy_DayKey(const datetime t)
@@ -253,7 +253,7 @@ void Strategy_CloseOpenPositionsIfNeeded()
 
 bool Strategy_NoTradeFilter()
   {
-   if(!Strategy_IsXtiD1())
+   if(!Strategy_IsXngD1())
       return true;
    if(qm_magic_slot_offset != 0)
       return true;
@@ -278,7 +278,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_13046_XTI_VRP_PROXY";
+   req.reason = "QM5_13051_XNG_VRP_PROXY";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
@@ -316,7 +316,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(req.type == QM_SELL && req.sl <= entry_price)
       return false;
 
-   req.reason = (direction > 0) ? "XTI_VRP_PROXY_LONG" : "XTI_VRP_PROXY_SHORT";
+   req.reason = (direction > 0) ? "XNG_VRP_PROXY_LONG" : "XNG_VRP_PROXY_SHORT";
    g_last_signal_day_key = signal_day_key;
    return true;
   }
@@ -356,7 +356,7 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_13046\",\"ea\":\"xti-vrp-proxy\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_13051\",\"ea\":\"xng-vrp-proxy\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -432,4 +432,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
