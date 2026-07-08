@@ -32,7 +32,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02
+pipeline_phase: Q04
 last_updated: 2026-07-08
 g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-directed in-house FX cointegration scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS AUDCAD.DWX and GBPNZD.DWX data exist in the extended Darwinex scan; R4 PASS no ML/grid/martingale. This is a watchlist replacement candidate after the stronger extended-screen siblings were already built and failed later gates."
 expected_pf: 1.03
@@ -186,4 +186,5 @@ gates.
 |---|---|---|---|---|
 | v1 | 2026-07-08 | initial extended-screen FX cointegration watchlist replacement card | G0 | APPROVED |
 | v2 | 2026-07-08 | compiled basket EA and logical basket Q02 auto-enqueued as work item df21c7a2-a0e2-467c-9be9-56f490d2e40d | Q02 | PENDING |
-
+| v3 | 2026-07-08 | logical basket Q02 completed on AUDCAD host; 140 trades, PF 1.27, no ONINIT failure | Q02 | PASS |
+| v4 | 2026-07-08 | Q04 walk-forward completed without infra errors; F1 pf_net 1.173, F2 pf_net 0.937, below fold bar | Q04 | FAIL |
