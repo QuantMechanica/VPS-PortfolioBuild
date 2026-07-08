@@ -1,0 +1,46 @@
+{
+  "ea_id": "QM5_12860",
+  "ea_label": "QM5_12860_wti-brent-rshock",
+  "mission_unit": "Q02 infra rescue requeue",
+  "agent": "codex-agents-board-advisor",
+  "branch": "agents/board-advisor",
+  "claimed_task_key": "manual:codex:agents/board-advisor:QM5_12860:q02-infra-rescue",
+  "claimed_at_utc": "2026-07-08T08:24:47.160851Z",
+  "work_item_id": "cecc9658-8bee-464b-a2a7-fe9a50a2c712",
+  "phase": "Q02",
+  "logical_symbol": "QM5_12860_WTI_BRENT_RSHOCK_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XBRUSD.DWX"
+  ],
+  "previous_status": "done",
+  "previous_verdict": "INFRA_FAIL",
+  "previous_verdict_reason": "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS",
+  "previous_evidence_path": "D:/QM/reports/work_items/cecc9658-8bee-464b-a2a7-fe9a50a2c712/QM5_12860/20260706_195657/summary.json",
+  "diagnostics": {
+    "compile_one_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_result": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "tracked_ea_diff_after_compile": false
+  },
+  "requeue": {
+    "action": "reset_existing_work_item_to_pending",
+    "updated_at_utc": "2026-07-08T08:27:20.464537Z",
+    "new_status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "evidence_path": null,
+    "archived_report_root": "D:/QM/reports/work_items/cecc9658-8bee-464b-a2a7-fe9a50a2c712.requeued_20260708T0827204645370000",
+    "open_same_key_after_requeue": 1
+  },
+  "safety": {
+    "autotrading_touched": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "backtest_started": false
+  }
+}
