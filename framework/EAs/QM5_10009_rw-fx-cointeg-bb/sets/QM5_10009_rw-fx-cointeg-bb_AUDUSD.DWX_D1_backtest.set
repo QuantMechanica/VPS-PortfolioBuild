@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   12aa14fe977de7d35aae45308900ddb706aa45f3ee4e2299fbfb32376060237a
+; build_hash:   37b9e6d713d178a2576f27f2f8f57df8832c66d3feefb6c251b20f5ed4386ece
 ; author:       Development
 ; date:         2026-05-19
 ;==========================================================
@@ -19,4 +19,14 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; card_defaults_source=SPEC.md
+strategy_hedge_lookback=500
+strategy_min_half_life_bars=5
+strategy_max_half_life_bars=60
+strategy_min_z_lookback=20
+strategy_max_z_lookback=120
+strategy_entry_z=2.0
+strategy_exit_z=1.0
+strategy_emergency_z=4.0
+strategy_max_hold_cap_bars=90
+strategy_leg_stop_pips=250

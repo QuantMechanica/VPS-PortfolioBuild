@@ -69,6 +69,7 @@ bool ReadCloses(double &aud[], double &nzd[], double &cad_inv[], const int bars)
    if(bars < 50)
       return false;
 
+   // perf-allowed: RefreshState calls this only behind the OnTick new-bar latch.
    ArraySetAsSeries(aud, true);
    ArraySetAsSeries(nzd, true);
    ArraySetAsSeries(cad_inv, true);
@@ -341,7 +342,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!RefreshState() || HasBasketPosition())
+   if(!g_state_ready || HasBasketPosition())
       return false;
 
    g_signal_direction = 0;
@@ -366,16 +367,19 @@ bool Strategy_ExitSignal()
    if(!HasBasketPosition())
       return false;
 
-   if(MathAbs(g_current_z) <= strategy_exit_z)
+   if(g_state_ready)
      {
-      CloseBasket(QM_EXIT_STRATEGY);
-      return false;
-     }
+      if(MathAbs(g_current_z) <= strategy_exit_z)
+        {
+         CloseBasket(QM_EXIT_STRATEGY);
+         return false;
+        }
 
-   if(MathAbs(g_current_z) >= strategy_emergency_z)
-     {
-      CloseBasket(QM_EXIT_STRATEGY);
-      return false;
+      if(MathAbs(g_current_z) >= strategy_emergency_z)
+        {
+         CloseBasket(QM_EXIT_STRATEGY);
+         return false;
+        }
      }
 
    if(g_entry_bar_time > 0)
@@ -447,6 +451,22 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
+   if(QM_FrameworkHandleFridayClose())
+      return;
+
+   if(Strategy_NoTradeFilter())
+      return;
+
+   const bool new_bar = QM_IsNewBar();
+   if(new_bar)
+     {
+      QM_EquityStreamOnNewBar();
+
+      RefreshState();
+      Strategy_ManageOpenPosition();
+      Strategy_ExitSignal();
+     }
+
    if(Strategy_NewsFilterHook(broker_now))
       return;
 
@@ -455,22 +475,8 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
    else
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
+   if(!news_allows || !new_bar)
       return;
-   if(QM_FrameworkHandleFridayClose())
-      return;
-
-   if(Strategy_NoTradeFilter())
-      return;
-
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
-
-   Strategy_ManageOpenPosition();
-   RefreshState();
-   Strategy_ExitSignal();
 
    QM_EntryRequest req;
    Strategy_EntrySignal(req);
