@@ -1,0 +1,21 @@
+{
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13049",
+    "enqueued": [
+      {
+        "setfile": "QM5_13049_xti-1w-mom-vol_XTIUSD.DWX_D1_backtest.set",
+        "symbol": "XTIUSD.DWX",
+        "tf": "D1",
+        "wi_id": "0213f340"
+      }
+    ],
+    "skipped": []
+  },
+  "blocked_reason": "",
+  "fail_code": null,
+  "new_status": "done",
+  "next_action_hint": "Q02 auto-enqueued (1 work_items); worker daemons will dispatch on next tick",
+  "recorded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "task_id": "13ca12ed-1bda-418b-a111-992ffe169ec4"
+}

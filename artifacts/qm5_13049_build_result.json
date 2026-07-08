@@ -1,0 +1,81 @@
+{
+  "task_id": "13ca12ed-1bda-418b-a111-992ffe169ec4",
+  "ea_id": "QM5_13049",
+  "slug": "xti-1w-mom-vol",
+  "generated_at": "2026-07-08T00:16:30Z",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "source_id": "ZHAO-ST-MOMREV-2026_XTI_S01",
+  "card": "strategy-seeds/cards/approved/QM5_13049_xti-1w-mom-vol_card.md",
+  "canonical_card": "strategy-seeds/cards/xti-1w-mom-vol_card.md",
+  "ea_dir": "framework/EAs/QM5_13049_xti-1w-mom-vol",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_13049_xti-1w-mom-vol/QM5_13049_xti-1w-mom-vol.mq5",
+  "ea_path": "framework/EAs/QM5_13049_xti-1w-mom-vol/QM5_13049_xti-1w-mom-vol.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_13049_xti-1w-mom-vol/QM5_13049_xti-1w-mom-vol.ex5",
+  "magic_base": 130490000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfile": "framework/EAs/QM5_13049_xti-1w-mom-vol/sets/QM5_13049_xti-1w-mom-vol_XTIUSD.DWX_D1_backtest.set",
+  "setfiles_generated": [
+    "framework/EAs/QM5_13049_xti-1w-mom-vol/sets/QM5_13049_xti-1w-mom-vol_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_13049_xti-1w-mom-vol/SPEC.md",
+  "setfile_build_hash": "63722B88C9202F581407BF647FC2864079D8FA1115941572EC1A84580B327CCE",
+  "file_hashes_sha256": {
+    "card": "63722B88C9202F581407BF647FC2864079D8FA1115941572EC1A84580B327CCE",
+    "mq5": "B14825EB2A3755E87F629D9C13EB33992902829E2B7CB4A1BEE264CEB0582027",
+    "ex5": "C12D5C1FD5B4670A50379E06475C52404B5688C088BE3D942D42F11FA769CD61",
+    "setfile": "3D9E0B49765777BBB6F2E6B29622BE55249386E15AF7D1A6117B7AA7947D8121"
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "build_only_q02_enqueue_no_backtest_smoke_run",
+  "blocked_reason": "",
+  "open_questions": [],
+  "checks": {
+    "card_schema_lint_canonical": "PASS",
+    "card_schema_lint_approved": "PASS",
+    "g0_card_lint_approved": "PASS",
+    "spec_doc": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "magic_resolver_update": {
+      "result": "PASS",
+      "warnings": [
+        "pre-existing missing EA dirs for magic rows: 1001, 1015, 1016"
+      ]
+    },
+    "compile_one_strict": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260708_001529/QM5_13049_xti-1w-mom-vol.compile.log"
+    },
+    "build_check_strict": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260708_001529.json"
+    },
+    "q02_enqueue": {
+      "result": "PASS",
+      "evidence": "artifacts/qm5_13049_q02_enqueue_20260708.json",
+      "work_item": "0213f340"
+    },
+    "validate_registries_repo_wide": {
+      "result": "PRE_EXISTING_REPO_WIDE_FAIL",
+      "note": "Full registry validator has unrelated historical invalid rows; QM5_13049 registry and magic rows are present."
+    }
+  },
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "backtest_cpu_used": false
+  }
+}
