@@ -2338,6 +2338,28 @@ def _ea_dir_from_setfile_path(setfile_path: str | os.PathLike[str] | None,
     return ea_dir
 
 
+def _canonical_setfile_path_for_work_item(
+    ea_id: str, setfile_path: str | os.PathLike[str] | None
+) -> str | None:
+    """Map stale worktree setfiles back to the canonical repo copy when present."""
+    if not setfile_path:
+        return None
+    path = Path(str(setfile_path))
+    if not path.is_absolute():
+        return None
+    if not any(part.lower() == "worktrees" for part in path.parts):
+        return None
+    if path.parent.name.lower() != "sets":
+        return None
+    ea_dir_name = path.parent.parent.name
+    if not ea_dir_name.startswith(f"{ea_id}_"):
+        return None
+    canonical = FRAMEWORK_EAS_DIR / ea_dir_name / "sets" / path.name
+    if canonical.is_file():
+        return str(canonical)
+    return None
+
+
 def _ea_dir_version(dir_name: str) -> int:
     match = re.search(r"_v(\d+)(?:$|_)", dir_name)
     return int(match.group(1)) if match else 1
@@ -2412,7 +2434,11 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     """
     ea_id = item_row["ea_id"]  # e.g. QM5_1049
     symbol = item_row["symbol"]
-    setfile_path = item_row["setfile_path"]
+    original_setfile_path = item_row["setfile_path"]
+    canonical_setfile_path = _canonical_setfile_path_for_work_item(
+        ea_id, original_setfile_path
+    )
+    setfile_path = canonical_setfile_path or original_setfile_path
     phase = item_row["phase"]
     try:
         item_payload = json.loads(item_row["payload_json"] or "{}")
@@ -2485,6 +2511,10 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
             "ea_dir_name": ea_id,
             "phase_runner": cmd[1] if len(cmd) > 1 else None,
             "effective_min_trades": 5,
+            "setfile_path": setfile_path,
+            "setfile_path_canonicalized_from": (
+                original_setfile_path if canonical_setfile_path else None
+            ),
         }
 
     # Resolve full EA dir name (with slug) for the -EALabel arg. Existing
@@ -2703,6 +2733,10 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         "timeout_seconds": timeout_seconds,
         "from_date": from_date,
         "to_date": to_date,
+        "setfile_path": setfile_path,
+        "setfile_path_canonicalized_from": (
+            original_setfile_path if canonical_setfile_path else None
+        ),
     }
 
 
@@ -4477,15 +4511,27 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 "report_root": spawn["report_root"],
                 "ea_dir_name": spawn["ea_dir_name"],
                 "terminal": terminal,
+                "setfile_path": spawn.get("setfile_path") or item["setfile_path"],
                 "expected_trades_per_year_per_symbol": spawn.get("expected_trades_per_year_per_symbol"),
                 "smoke_year_count": spawn.get("smoke_year_count"),
                 "effective_min_trades": spawn.get("effective_min_trades"),
                 "phase_runner": spawn.get("phase_runner"),
             }
+            if spawn.get("setfile_path_canonicalized_from"):
+                new_payload["setfile_path_canonicalized_from"] = spawn[
+                    "setfile_path_canonicalized_from"
+                ]
             with connect(root) as conn2:
                 conn2.execute(
-                    "UPDATE work_items SET status='active', claimed_by=?, payload_json=?, updated_at=? WHERE id=?",
-                    (terminal, json.dumps(new_payload, sort_keys=True), started_iso, item["id"]),
+                    "UPDATE work_items SET status='active', claimed_by=?, "
+                    "setfile_path=?, payload_json=?, updated_at=? WHERE id=?",
+                    (
+                        terminal,
+                        new_payload["setfile_path"],
+                        json.dumps(new_payload, sort_keys=True),
+                        started_iso,
+                        item["id"],
+                    ),
                 )
                 conn2.commit()
             actions.append({
@@ -4497,6 +4543,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 "pid": spawn["pid"],
                 "phase_runner": spawn.get("phase_runner"),
                 "effective_min_trades": spawn.get("effective_min_trades"),
+                "setfile_path": new_payload["setfile_path"],
             })
             launched_pids.append(int(spawn["pid"]))
             if item_symbol_key:

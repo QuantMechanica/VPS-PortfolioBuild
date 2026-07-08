@@ -1,0 +1,53 @@
+{
+  "agent_branch": "agents/board-advisor",
+  "date": "2026-07-08",
+  "db_event_id": 226265,
+  "ea_id": "QM5_10481",
+  "ea_label": "QM5_10481_mql5-exec-ao",
+  "priority_path": "built-but-stuck diverse EA blocked at Q02 by infra",
+  "root_cause": {
+    "failed_work_item_id": "d5952c11-319c-4501-8ca4-de6c69c3d60b",
+    "failure": "ONINIT_FAILED",
+    "symbol": "EURUSD.DWX",
+    "stale_setfile_path": "C:\\QM\\worktrees\\claude-orchestration-3\\framework\\EAs\\QM5_10481_mql5-exec-ao\\sets\\QM5_10481_mql5-exec-ao_EURUSD.DWX_M15_backtest.set",
+    "stale_qm_magic_slot_offset": 14,
+    "registry_symbol_slot": 0,
+    "canonical_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10481_mql5-exec-ao\\sets\\QM5_10481_mql5-exec-ao_EURUSD.DWX_M15_backtest.set",
+    "canonical_qm_magic_slot_offset": 0
+  },
+  "repair": {
+    "file": "tools/strategy_farm/farmctl.py",
+    "behavior": "Canonicalize stale absolute worktree setfile paths to the same-name repo setfile when present, and persist the effective setfile path on launch.",
+    "scope": "Q02/Q03+ work item dispatch path",
+    "unmatched_paths": "Left unchanged when no same-name canonical repo setfile exists."
+  },
+  "queue_state": {
+    "pending_q02_total": 25,
+    "pending_q02_canonical_repo_setfiles": 24,
+    "pending_q02_worktree_setfiles": 1,
+    "backtest_launched": false
+  },
+  "verification": {
+    "build_check": {
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_10481_mql5-exec-ao -Strict -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:\\QM\\reports\\framework\\21\\build_check_20260708_072329.json"
+    },
+    "registry_setfile_slot_audit": {
+      "active_registry_rows": 37,
+      "slot_errors": 0
+    },
+    "tests": {
+      "py_compile": "PASS",
+      "pytest_command": "python -m pytest tools/strategy_farm/tests/test_setfile_canonicalization.py tools/strategy_farm/tests/test_enqueue_skips_missing_setfiles.py tools/strategy_farm/tests/test_unenqueued_ea_filter.py",
+      "pytest_result": "6 passed"
+    }
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
