@@ -88,18 +88,18 @@ bool Strategy_CMO(const int shift, double &out_cmo)
 bool Strategy_PivotHigh(const int shift)
   {
    const int left = MathMax(1, strategy_pivot_left_bars);
-   const double h = iHigh(_Symbol, PERIOD_H4, shift);
+   const double h = iHigh(_Symbol, PERIOD_H4, shift); // perf-allowed: bounded pivot high read for bespoke divergence geometry.
    if(h <= 0.0)
       return false;
 
-   const double newer = iHigh(_Symbol, PERIOD_H4, shift - 1);
-   const double older = iHigh(_Symbol, PERIOD_H4, shift + 1);
+   const double newer = iHigh(_Symbol, PERIOD_H4, shift - 1); // perf-allowed: adjacent confirmation bar for pivot geometry.
+   const double older = iHigh(_Symbol, PERIOD_H4, shift + 1); // perf-allowed: adjacent historical bar for pivot geometry.
    if(newer <= 0.0 || older <= 0.0 || h <= newer || h <= older)
       return false;
 
    for(int k = shift + 1; k <= shift + left; ++k)
      {
-      const double hk = iHigh(_Symbol, PERIOD_H4, k);
+      const double hk = iHigh(_Symbol, PERIOD_H4, k); // perf-allowed: bounded five-bar pivot-high confirmation window.
       if(hk <= 0.0 || h < hk)
          return false;
      }
@@ -109,18 +109,18 @@ bool Strategy_PivotHigh(const int shift)
 bool Strategy_PivotLow(const int shift)
   {
    const int left = MathMax(1, strategy_pivot_left_bars);
-   const double l = iLow(_Symbol, PERIOD_H4, shift);
+   const double l = iLow(_Symbol, PERIOD_H4, shift); // perf-allowed: bounded pivot low read for bespoke divergence geometry.
    if(l <= 0.0)
       return false;
 
-   const double newer = iLow(_Symbol, PERIOD_H4, shift - 1);
-   const double older = iLow(_Symbol, PERIOD_H4, shift + 1);
+   const double newer = iLow(_Symbol, PERIOD_H4, shift - 1); // perf-allowed: adjacent confirmation bar for pivot geometry.
+   const double older = iLow(_Symbol, PERIOD_H4, shift + 1); // perf-allowed: adjacent historical bar for pivot geometry.
    if(newer <= 0.0 || older <= 0.0 || l >= newer || l >= older)
       return false;
 
    for(int k = shift + 1; k <= shift + left; ++k)
      {
-      const double lk = iLow(_Symbol, PERIOD_H4, k);
+      const double lk = iLow(_Symbol, PERIOD_H4, k); // perf-allowed: bounded five-bar pivot-low confirmation window.
       if(lk <= 0.0 || l > lk)
          return false;
      }
@@ -243,7 +243,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // Bearish regular CMO divergence: price higher-high, CMO lower-high.
    if(strategy_shorts_enabled && Strategy_PivotHigh(2))
      {
-      const double high_pivot = iHigh(_Symbol, PERIOD_H4, 2);
+      const double high_pivot = iHigh(_Symbol, PERIOD_H4, 2); // perf-allowed: fixed confirmed pivot high for SL and divergence test.
       for(int prior = 2 + strategy_pivot_sep_min;
           prior <= 2 + strategy_pivot_sep_max;
           ++prior)
@@ -255,7 +255,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          if(!Strategy_CMO(prior, cmo_prior))
             return false;
 
-         const double high_prior = iHigh(_Symbol, PERIOD_H4, prior);
+         const double high_prior = iHigh(_Symbol, PERIOD_H4, prior); // perf-allowed: bounded prior pivot high comparison.
          if(high_prior <= 0.0)
             return false;
 
@@ -289,7 +289,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // Bullish regular CMO divergence: price lower-low, CMO higher-low.
    if(Strategy_PivotLow(2))
      {
-      const double low_pivot = iLow(_Symbol, PERIOD_H4, 2);
+      const double low_pivot = iLow(_Symbol, PERIOD_H4, 2); // perf-allowed: fixed confirmed pivot low for SL and divergence test.
       for(int prior = 2 + strategy_pivot_sep_min;
           prior <= 2 + strategy_pivot_sep_max;
           ++prior)
@@ -301,7 +301,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          if(!Strategy_CMO(prior, cmo_prior))
             return false;
 
-         const double low_prior = iLow(_Symbol, PERIOD_H4, prior);
+         const double low_prior = iLow(_Symbol, PERIOD_H4, prior); // perf-allowed: bounded prior pivot low comparison.
          if(low_prior <= 0.0)
             return false;
 
