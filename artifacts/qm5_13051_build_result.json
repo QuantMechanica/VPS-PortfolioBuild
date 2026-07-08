@@ -1,0 +1,84 @@
+{
+  "task_id": "29996f57-0ad8-4975-88da-ccb7bfc86dda",
+  "ea_id": "QM5_13051",
+  "slug": "xng-vrp-proxy",
+  "generated_at": "2026-07-08T02:11:30Z",
+  "symbol": "XNGUSD.DWX",
+  "timeframe": "D1",
+  "source_id": "TROLLE-SCHWARTZ-ENERGY-VRP-2008_XNG_PROXY",
+  "card": "strategy-seeds/cards/approved/QM5_13051_xng-vrp-proxy_card.md",
+  "canonical_card": "strategy-seeds/cards/xng-vrp-proxy_card.md",
+  "farm_approved_card": "artifacts/cards_approved/QM5_13051_xng-vrp-proxy.md",
+  "ea_dir": "framework/EAs/QM5_13051_xng-vrp-proxy",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_13051_xng-vrp-proxy/QM5_13051_xng-vrp-proxy.mq5",
+  "ea_path": "framework/EAs/QM5_13051_xng-vrp-proxy/QM5_13051_xng-vrp-proxy.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_13051_xng-vrp-proxy/QM5_13051_xng-vrp-proxy.ex5",
+  "magic_base": 130510000,
+  "symbols_registered": [
+    "XNGUSD.DWX"
+  ],
+  "setfile": "framework/EAs/QM5_13051_xng-vrp-proxy/sets/QM5_13051_xng-vrp-proxy_XNGUSD.DWX_D1_backtest.set",
+  "setfiles_generated": [
+    "framework/EAs/QM5_13051_xng-vrp-proxy/sets/QM5_13051_xng-vrp-proxy_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_13051_xng-vrp-proxy/SPEC.md",
+  "setfile_build_hash": "7c75426b4a3e516614db93d1860ff110e0624ce8f5d35df200658ab6d2e5bd1f",
+  "file_hashes_sha256": {
+    "card": "752F3DF253820E604B2E52E93570B175C10EE9EDCA380BC434C4A502BADA41F4",
+    "approved_card": "752F3DF253820E604B2E52E93570B175C10EE9EDCA380BC434C4A502BADA41F4",
+    "farm_approved_card": "66E82FA3D50EC46C8E6DA50BF6799F4D23E0B280863D2008CE57A83B8E490BF6",
+    "mq5": "E005866440FEB98ACE2E54DB7FE433C99F3D172952B3F99FCF8751AB0D241548",
+    "ex5": "6DADAD087F21FB13C61291AF4561937D4031E78904C6DFCFA633EA5F6BA643E4",
+    "setfile": "BC8FD95FF50AA12CDFE1AE86AB5F826EF4159F69DA93A4A658DA5724319706CF"
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "build_only_q02_enqueue_no_backtest_smoke_run",
+  "blocked_reason": "",
+  "open_questions": [],
+  "checks": {
+    "card_schema_lint_canonical": "PASS",
+    "card_schema_lint_approved": "PASS",
+    "g0_card_lint_approved": "PASS",
+    "spec_doc": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "magic_resolver_update": {
+      "result": "PASS",
+      "warnings": [
+        "resolver already contained 130510000 before this continuation"
+      ]
+    },
+    "compile_one_strict": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260708_020942/QM5_13051_xng-vrp-proxy.compile.log"
+    },
+    "build_check_strict": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/22/build_check_20260708_021059.json"
+    },
+    "q02_enqueue": {
+      "result": "PASS",
+      "evidence": "artifacts/qm5_13051_q02_enqueue_20260708.json",
+      "work_item": "f7b22c7c"
+    },
+    "validate_registries_repo_wide": {
+      "result": "PRE_EXISTING_REPO_WIDE_FAIL",
+      "note": "Full registry validator has unrelated historical invalid rows; QM5_13051 registry and magic rows are present and the EA-local build check passed."
+    }
+  },
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "backtest_cpu_used": false
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "generated_at": "2026-07-08T02:11:45Z",
+  "ea_id": "QM5_13051",
+  "slug": "xng-vrp-proxy",
+  "phase": "Q02",
+  "result": "PASS",
+  "enqueued": [
+    {
+      "wi_id": "f7b22c7c",
+      "symbol": "XNGUSD.DWX",
+      "tf": "D1",
+      "setfile": "QM5_13051_xng-vrp-proxy_XNGUSD.DWX_D1_backtest.set"
+    }
+  ],
+  "skipped": []
+}
