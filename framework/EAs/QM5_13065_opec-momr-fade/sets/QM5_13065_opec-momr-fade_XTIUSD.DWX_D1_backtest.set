@@ -1,0 +1,35 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13047
+; ea_slug:      eia-steo-fade
+; ea_version:   v5.0
+; set_version:  s20260707-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   a119a7af00f477bdb7f686d4068693e1ffd525f3a01dca6ddfd4f517477c9da0
+; author:       Development
+; date:         2026-07-07
+;==========================================================
+qm_ea_id=13047
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\eia-steo-fade_card.md
+strategy_context_lookback=14
+strategy_atr_period=20
+strategy_min_range_atr=0.50
+strategy_min_body_atr=0.10
+strategy_min_probe_atr=0.05
+strategy_long_min_close_location=0.50
+strategy_short_max_close_location=0.50
+strategy_atr_sl_mult=2.25
+strategy_atr_tp_mult=2.75
+strategy_max_hold_days=5
+strategy_max_spread_points=1000
+strategy_allow_wed_delay=true
