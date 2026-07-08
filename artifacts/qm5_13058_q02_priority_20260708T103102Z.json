@@ -1,0 +1,52 @@
+{
+  "generated_at_utc": "2026-07-08T10:31:02Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves; prefer market-neutral FX cointegration baskets",
+  "unit_of_work": "priority-track existing QM5_13058 logical Q02 row without duplicate enqueue",
+  "decision": {
+    "selected_path": "advance_existing_forex_card_through_funnel",
+    "selected_ea_id": "QM5_13058",
+    "selected_pair": "AUDCAD.DWX/GBPNZD.DWX",
+    "logical_symbol": "QM5_13058_AUDCAD_GBPNZD_COINTEGRATION_D1",
+    "reason": "QM5_13058 is the current fresh non-duplicate FX cointegration sleeve: already built and enqueued, but still pending Q02. The strict 66-pair anchors are not Q02-blocked and stronger extended-screen siblings have later-gate strategy failures."
+  },
+  "work_item_update": {
+    "sqlite": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_13058_q02_priority_20260708T1035Z.sqlite",
+    "work_item_id": "df21c7a2-a0e2-467c-9be9-56f490d2e40d",
+    "phase": "Q02",
+    "status_after": "pending",
+    "priority_track_after": true,
+    "priority_reason": "OWNER 2026-07-08 forex portfolio mission: advance current non-duplicate QM5_13058 AUDCAD~GBPNZD cointegration logical Q02 row after build/enqueue; no duplicate work_item and no manual MT5 dispatch under active CPU ceiling."
+  },
+  "verification": {
+    "farmctl_summary": {
+      "Q02_pending": 1
+    },
+    "payload_checks": {
+      "risk_mode": "RISK_FIXED",
+      "portfolio_scope": "basket",
+      "host_symbol": "AUDCAD.DWX",
+      "timeout_min": 450
+    },
+    "queue_position_after_update": {
+      "queued_top_rank": 3,
+      "ahead_of_regular_pending": true,
+      "active_work_items": 6
+    }
+  },
+  "guardrails": {
+    "new_ea_built": false,
+    "new_work_item_created": false,
+    "duplicate_work_item_created": false,
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
