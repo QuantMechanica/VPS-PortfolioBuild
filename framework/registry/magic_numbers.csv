@@ -14664,3 +14664,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9505,chande-fo-bband-fade-h4,10,NDX.DWX,95050010,2026-07-08,Codex,active
 9505,chande-fo-bband-fade-h4,11,WS30.DWX,95050011,2026-07-08,Codex,active
 9505,chande-fo-bband-fade-h4,12,UK100.DWX,95050012,2026-07-08,Codex,active
+9502,chande-cmo-vr-divergence-h4,0,EURUSD.DWX,95020000,2026-07-08,Codex,active
+9502,chande-cmo-vr-divergence-h4,1,GBPUSD.DWX,95020001,2026-07-08,Codex,active
+9502,chande-cmo-vr-divergence-h4,2,USDJPY.DWX,95020002,2026-07-08,Codex,active
+9502,chande-cmo-vr-divergence-h4,3,AUDUSD.DWX,95020003,2026-07-08,Codex,active
+9502,chande-cmo-vr-divergence-h4,4,USDCAD.DWX,95020004,2026-07-08,Codex,active
+9502,chande-cmo-vr-divergence-h4,5,USDCHF.DWX,95020005,2026-07-08,Codex,active
+9502,chande-cmo-vr-divergence-h4,6,NZDUSD.DWX,95020006,2026-07-08,Codex,active
+9502,chande-cmo-vr-divergence-h4,7,XAUUSD.DWX,95020007,2026-07-08,Codex,active
+9502,chande-cmo-vr-divergence-h4,8,XTIUSD.DWX,95020008,2026-07-08,Codex,active
+9502,chande-cmo-vr-divergence-h4,9,GDAXI.DWX,95020009,2026-07-08,Codex,active
+9502,chande-cmo-vr-divergence-h4,10,NDX.DWX,95020010,2026-07-08,Codex,active
+9502,chande-cmo-vr-divergence-h4,11,WS30.DWX,95020011,2026-07-08,Codex,active
+9502,chande-cmo-vr-divergence-h4,12,UK100.DWX,95020012,2026-07-08,Codex,active
