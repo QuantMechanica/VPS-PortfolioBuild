@@ -1,0 +1,98 @@
+{
+  "task_id": "b1d34277-b314-45f2-a8b3-afca37ee5b01",
+  "ea_id": "QM5_13068",
+  "numeric_ea_id": 13068,
+  "slug": "xti-padd1-reclaim",
+  "generated_at": "2026-07-08T17:39:15Z",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "source_id": "EIA-XTI-PADD1-RECLAIM-2026",
+  "source_urls": [
+    "https://www.eia.gov/dnav/pet/hist/LeafHandler.ashx?f=W&n=PET&s=WCESTP11",
+    "https://www.eia.gov/petroleum/supply/weekly/"
+  ],
+  "card": "strategy-seeds/cards/approved/QM5_13068_xti-padd1-reclaim_card.md",
+  "canonical_card": "strategy-seeds/cards/xti-padd1-reclaim_card.md",
+  "source_note": "strategy-seeds/sources/EIA-XTI-PADD1-RECLAIM-2026/source.md",
+  "ea_dir": "framework/EAs/QM5_13068_xti-padd1-reclaim",
+  "mq5_path": "framework/EAs/QM5_13068_xti-padd1-reclaim/QM5_13068_xti-padd1-reclaim.mq5",
+  "ex5_path": "framework/EAs/QM5_13068_xti-padd1-reclaim/QM5_13068_xti-padd1-reclaim.ex5",
+  "spec_md_path": "framework/EAs/QM5_13068_xti-padd1-reclaim/SPEC.md",
+  "docs_strategy_card_path": "framework/EAs/QM5_13068_xti-padd1-reclaim/docs/strategy_card.md",
+  "setfile": "framework/EAs/QM5_13068_xti-padd1-reclaim/sets/QM5_13068_xti-padd1-reclaim_XTIUSD.DWX_D1_backtest.set",
+  "setfiles_generated": [
+    "framework/EAs/QM5_13068_xti-padd1-reclaim/sets/QM5_13068_xti-padd1-reclaim_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 130680000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfile_build_hash": "3f15804247ca237dbbe525e96b21ecb7593fe8e0becbf20da8d7a6674b74b6de",
+  "file_hashes_sha256": {
+    "framework/EAs/QM5_13068_xti-padd1-reclaim/QM5_13068_xti-padd1-reclaim.mq5": "3F15804247CA237DBBE525E96B21ECB7593FE8E0BECBF20DA8D7A6674B74B6DE",
+    "framework/EAs/QM5_13068_xti-padd1-reclaim/QM5_13068_xti-padd1-reclaim.ex5": "300A9E47D4FF37361ECE8622B2A336976BB851F4281F4341A1A7714CD109A302",
+    "framework/EAs/QM5_13068_xti-padd1-reclaim/sets/QM5_13068_xti-padd1-reclaim_XTIUSD.DWX_D1_backtest.set": "FB949FD05385D464AAEF89EC5314F4F303E54BB2876E999DF7A932540D6CFEB1",
+    "strategy-seeds/cards/xti-padd1-reclaim_card.md": "CAADC552E6342347175F7C108F306B9DA2A62AE3FEB33CF4E1E109549A895FD3",
+    "strategy-seeds/cards/approved/QM5_13068_xti-padd1-reclaim_card.md": "CAADC552E6342347175F7C108F306B9DA2A62AE3FEB33CF4E1E109549A895FD3",
+    "framework/EAs/QM5_13068_xti-padd1-reclaim/SPEC.md": "E29036C7EB65F4E07B82344FA1A6CFBB52ADB4FF631B8DA05E3460F416AD4164",
+    "framework/EAs/QM5_13068_xti-padd1-reclaim/docs/strategy_card.md": "CAADC552E6342347175F7C108F306B9DA2A62AE3FEB33CF4E1E109549A895FD3",
+    "strategy-seeds/sources/EIA-XTI-PADD1-RECLAIM-2026/source.md": "06DC97706AE835B3E15C5B72CB1A4F09770BE936D6AA165DAF5723A0F809BF3F"
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_q02",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "mission requested Q02 enqueue; no local backtest run by build agent",
+  "blocked_reason": "",
+  "open_questions": [],
+  "checks": {
+    "source_verification": {
+      "result": "PASS",
+      "note": "Official EIA PADD 1 data page and WPSR page verified on 2026-07-08."
+    },
+    "spec_validation": {
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13068_xti-padd1-reclaim",
+      "result": "PASS"
+    },
+    "magic_resolver": {
+      "command": "python framework/scripts/update_magic_resolver.py",
+      "result": "PASS_WITH_PREEXISTING_WARNINGS",
+      "note": "Resolver regenerated; warnings were for unrelated missing EA dirs 1001, 1015, and 1016."
+    },
+    "strict_compile": {
+      "command": "pwsh -File framework/scripts/compile_one.ps1 -EALabel QM5_13068_xti-padd1-reclaim -Strict",
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "compile_log": "C:/QM/repo/framework/build/compile/20260708_173803/QM5_13068_xti-padd1-reclaim.compile.log"
+    },
+    "build_check": {
+      "command": "pwsh -File framework/scripts/build_check.ps1 -EALabel QM5_13068_xti-padd1-reclaim -Strict",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "compile_log": "C:/QM/repo/framework/build/compile/20260708_173822/QM5_13068_xti-padd1-reclaim.compile.log",
+      "compile_summary": "D:/QM/reports/compile/20260708_173822/summary.csv",
+      "report": "D:/QM/reports/framework/21/build_check_20260708_173822.json"
+    }
+  },
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "structural_only": true,
+    "low_frequency": true,
+    "ml_required": false,
+    "external_runtime_data": false,
+    "backtest_cpu_used": false,
+    "t_live_touched": false,
+    "auto_trading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "handoff": {
+    "pipeline_phase": "Q02",
+    "enqueue_artifact": "artifacts/qm5_13068_q02_enqueue_20260708.json",
+    "work_item_id": "22f18111-1e5d-4bfe-9c7d-6a8223f45f28"
+  }
+}
