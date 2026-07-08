@@ -1,0 +1,17 @@
+{
+  "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+  "host_symbol": "EURUSD.DWX",
+  "host_timeframe": "H1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "NDX.DWX",
+    "WS30.DWX"
+  ],
+  "notes": [
+    "QM5_12507 is a two-pair cointegration EA. The forex sleeve is EURUSD/GBPUSD on H1, while NDX/WS30 is also declared because Strategy_EnsureBasketScope warms all four symbols before evaluating the active host pair.",
+    "The 2026-07-08 Q02 advancement priority-marks only the existing pending EURUSD.DWX and GBPUSD.DWX rows; no duplicate work_items were inserted and the index-pair rows were left unchanged."
+  ]
+}
