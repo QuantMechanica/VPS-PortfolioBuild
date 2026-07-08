@@ -4,7 +4,7 @@
 **Slug:** `rw-fx-cointeg-bb`
 **Source:** `dcbac84f-6ecf-5d21-9630-50faa69306ec` (Robot Wealth blog)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-27
+**Last revised:** 2026-07-08
 
 ---
 
@@ -96,3 +96,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | v1 | 2026-06-27 | Initial registry-clean build from approved card | Build task `6b602cef-3f7b-4acb-a0c4-801874ae146e` |
 | v2 | 2026-06-28 | Q02 infrastructure repair | Q02 item `47d80830` loaded AUDUSD/NZDUSD/USDCAD history but generated repeated broker `Invalid volume` rejects from fractional basket leg lots. Repaired via common basket order lot-step quantization and re-enqueued the logical basket. |
 | v3 | 2026-07-02 | Build review rework | Renamed the runtime hedge vector and OLS estimator to explicit hedge-coefficient terminology so the basket no longer trips the forbidden adaptive-weight grep surface. Calendar cadence remains on `QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 1)`. |
+| v4 | 2026-07-08 | Q04 requeue after repaired logical Q02 PASS | Reopened Q04 work item `52731ceb-42b5-4b20-94b9-3e7785fe2546` from the repaired Q02 PASS `e210cd5c-dbf6-4d13-af69-83a53faf41c9` (80 trades, PF 1.23, no ONINIT failure). The prior Q04 failure was a stale zero-trade result from before the July 8 news-gate repair; row is pending with `q04_latest_full_year=2024`. |

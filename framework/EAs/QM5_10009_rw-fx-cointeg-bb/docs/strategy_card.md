@@ -23,8 +23,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
-last_updated: 2026-05-19
+pipeline_phase: Q04_PENDING
+last_updated: 2026-07-08
 g0_approval_reasoning: "R1 source URL cited; R2 deterministic Johansen/Bollinger basket entry-exit with ~30 trades/year/symbol; R3 AUDUSD/NZDUSD/USDCAD DWX-testable; R4 fixed rules, no ML/martingale."
 ---
 
@@ -79,11 +79,12 @@ g0_approval_reasoning: "R1 source URL cited; R2 deterministic Johansen/Bollinger
 Primary P2 basket: AUDUSD.DWX, NZDUSD.DWX, USDCAD.DWX. Not SP500-specific.
 
 ## Pipeline-Verlauf
-- G0: 2026-05-19, PENDING.
+- G0: 2026-05-19, APPROVED.
+- Q02: 2026-07-08, PASS on logical basket work item `e210cd5c-dbf6-4d13-af69-83a53faf41c9`; 80 trades, PF 1.23, no ONINIT failure.
+- Q04: 2026-07-08, PENDING after reopening stale zero-trade Q04 row `52731ceb-42b5-4b20-94b9-3e7785fe2546` from the repaired Q02 pass.
 
 ## Verwandte Strategien
 - [[strategies/QM5_10013_rw-fx-weekend-gap]] - related FX basket implementation from same source index.
 
 ## Lessons Learned
 - TBD during pipeline run.
-

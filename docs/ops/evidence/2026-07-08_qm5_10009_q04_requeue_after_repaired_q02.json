@@ -1,0 +1,57 @@
+{
+  "checked_at_utc": "2026-07-08T19:03:00Z",
+  "actor": "codex-headless-board-advisor",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves",
+  "fallback_selected": {
+    "reason": "No unbuilt strict 66-pair FX cointegration survivor remains; QM5_12532 and QM5_12533 are not Q02-blocked.",
+    "ea_id": "QM5_10009",
+    "slug": "rw-fx-cointeg-bb",
+    "pair_or_basket": "AUDUSD.DWX/NZDUSD.DWX/USDCAD.DWX",
+    "logical_symbol": "QM5_10009_AUD_NZD_CAD_COINTEG_D1"
+  },
+  "source_q02_pass": {
+    "work_item_id": "e210cd5c-dbf6-4d13-af69-83a53faf41c9",
+    "summary_path": "D:/QM/reports/work_items/e210cd5c-dbf6-4d13-af69-83a53faf41c9/QM5_10009/20260708_123027/summary.json",
+    "verdict": "PASS",
+    "trades": 80,
+    "profit_factor": 1.23,
+    "net_profit": 575.12,
+    "oninit_failure_detected": false,
+    "note": "This run used the July 8 repaired build; news gates suppress entries only and no longer block spread refresh, package management, or exits."
+  },
+  "stale_q04_context": {
+    "work_item_id": "52731ceb-42b5-4b20-94b9-3e7785fe2546",
+    "old_evidence_path": "D:/QM/reports/work_items/52731ceb-42b5-4b20-94b9-3e7785fe2546/QM5_10009/Q04/QM5_10009_AUD_NZD_CAD_COINTEG_D1/aggregate.json",
+    "old_verdict": "FAIL",
+    "old_reason": "F1:trades=0;F2:trades=0 || lowfreq:INVALID:lowfreq_insufficient_pooled_trades:0<10(>=5/yr)",
+    "why_requeue_is_non_duplicate": "The existing Q04 row was reopened in place; no second Q04 row exists for the same ea_id/symbol/setfile tuple."
+  },
+  "q04_requeue": {
+    "command": "python tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_10009 --phase Q04",
+    "work_item_id": "52731ceb-42b5-4b20-94b9-3e7785fe2546",
+    "status": "pending",
+    "verdict": null,
+    "promoted_from_phase": "Q02",
+    "promoted_from_work_item": "e210cd5c-dbf6-4d13-af69-83a53faf41c9",
+    "promotion_source": "farmctl_enqueue_backtest_ea",
+    "q04_latest_full_year": 2024,
+    "created_new_row": false
+  },
+  "farm_context": {
+    "active_work_items": 6,
+    "pending_work_items_after_requeue": 5209,
+    "manual_backtest_launched": false,
+    "reason_no_runtime_launch": "Backtest CPU ceiling was already occupied; the change only requeued a pending worker-owned item."
+  },
+  "guardrails": {
+    "risk_mode": "RISK_FIXED backtest setfile",
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  }
+}
