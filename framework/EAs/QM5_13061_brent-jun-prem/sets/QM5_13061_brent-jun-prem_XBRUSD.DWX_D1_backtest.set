@@ -1,0 +1,28 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        13061
+; ea_slug:      brent-jun-prem
+; ea_version:   v5.0
+; set_version:  s20260708-001
+; symbol:       XBRUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   809ea19b65a1cdd86f3e134fe9154e7c5abc124c8b3ecc492f01ad0746afc579
+; author:       Development
+; date:         2026-07-08
+;==========================================================
+qm_ea_id=13061
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\brent-jun-prem_card.md
+strategy_entry_month=6
+strategy_atr_period=20
+strategy_atr_sl_mult=2.25
+strategy_max_hold_days=1
+strategy_max_spread_points=1200
