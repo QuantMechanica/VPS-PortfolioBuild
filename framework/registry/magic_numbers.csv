@@ -14752,5 +14752,15 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11911,larry-williams-smash-day-d1,7,EURJPY.DWX,119110007,2026-07-08,Codex,active
 11911,larry-williams-smash-day-d1,8,GBPJPY.DWX,119110008,2026-07-08,Codex,active
 11911,larry-williams-smash-day-d1,9,AUDJPY.DWX,119110009,2026-07-08,Codex,active
+11910,larry-williams-18ma-2outside-bars-d1,0,EURUSD.DWX,119100000,2026-07-08,Codex,active
+11910,larry-williams-18ma-2outside-bars-d1,1,GBPUSD.DWX,119100001,2026-07-08,Codex,active
+11910,larry-williams-18ma-2outside-bars-d1,2,USDJPY.DWX,119100002,2026-07-08,Codex,active
+11910,larry-williams-18ma-2outside-bars-d1,3,USDCAD.DWX,119100003,2026-07-08,Codex,active
+11910,larry-williams-18ma-2outside-bars-d1,4,USDCHF.DWX,119100004,2026-07-08,Codex,active
+11910,larry-williams-18ma-2outside-bars-d1,5,AUDUSD.DWX,119100005,2026-07-08,Codex,active
+11910,larry-williams-18ma-2outside-bars-d1,6,NZDUSD.DWX,119100006,2026-07-08,Codex,active
+11910,larry-williams-18ma-2outside-bars-d1,7,EURJPY.DWX,119100007,2026-07-08,Codex,active
+11910,larry-williams-18ma-2outside-bars-d1,8,GBPJPY.DWX,119100008,2026-07-08,Codex,active
+11910,larry-williams-18ma-2outside-bars-d1,9,AUDJPY.DWX,119100009,2026-07-08,Codex,active
 13067,iea-omr-brk,0,XTIUSD.DWX,130670000,2026-07-08,Codex,active
 13068,xti-padd1-reclaim,0,XTIUSD.DWX,130680000,2026-07-08,Codex,active

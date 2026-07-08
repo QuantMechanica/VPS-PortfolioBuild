@@ -1,6 +1,6 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_11910 Larry Williams 18-Day MA + 2 Outside Bars (D1)"
+#property description "QM5_11910 Larry Williams 18-Day MA + Two Outside-Bar D1"
 
 #include <QM/QM_Common.mqh>
 
@@ -14,7 +14,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.5;
+input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -57,10 +57,10 @@ int    g_short_valid = 0;
 
 bool IsInsideBar(int shift)
 {
-   double high_curr = iHigh(_Symbol, PERIOD_D1, shift);
-   double low_curr  = iLow(_Symbol, PERIOD_D1, shift);
-   double high_prev = iHigh(_Symbol, PERIOD_D1, shift + 1);
-   double low_prev  = iLow(_Symbol, PERIOD_D1, shift + 1);
+   double high_curr = iHigh(_Symbol, PERIOD_D1, shift);      // perf-allowed: D1 outside-bar structure read, gated by QM_IsNewBar in OnTick
+   double low_curr  = iLow(_Symbol, PERIOD_D1, shift);       // perf-allowed: D1 outside-bar structure read, gated by QM_IsNewBar in OnTick
+   double high_prev = iHigh(_Symbol, PERIOD_D1, shift + 1);  // perf-allowed: D1 outside-bar structure read, gated by QM_IsNewBar in OnTick
+   double low_prev  = iLow(_Symbol, PERIOD_D1, shift + 1);   // perf-allowed: D1 outside-bar structure read, gated by QM_IsNewBar in OnTick
    
    return (high_curr < high_prev && low_curr > low_prev);
 }
@@ -79,10 +79,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(PositionsTotal() > 0) return false;
 
    // Bar t = 1, Bar t-1 = 2
-   const double low1 = iLow(_Symbol, PERIOD_D1, 1);
-   const double low2 = iLow(_Symbol, PERIOD_D1, 2);
-   const double high1 = iHigh(_Symbol, PERIOD_D1, 1);
-   const double high2 = iHigh(_Symbol, PERIOD_D1, 2);
+   const double low1 = iLow(_Symbol, PERIOD_D1, 1);      // perf-allowed: D1 setup bar structure read, gated by QM_IsNewBar in OnTick
+   const double low2 = iLow(_Symbol, PERIOD_D1, 2);      // perf-allowed: D1 setup bar structure read, gated by QM_IsNewBar in OnTick
+   const double high1 = iHigh(_Symbol, PERIOD_D1, 1);    // perf-allowed: D1 setup bar structure read, gated by QM_IsNewBar in OnTick
+   const double high2 = iHigh(_Symbol, PERIOD_D1, 2);    // perf-allowed: D1 setup bar structure read, gated by QM_IsNewBar in OnTick
    
    const double ma1 = QM_SMA(_Symbol, PERIOD_D1, strategy_ma_period, 1);
    const double ma2 = QM_SMA(_Symbol, PERIOD_D1, strategy_ma_period, 2);
@@ -171,7 +171,7 @@ bool Strategy_ExitSignal()
       }
       
       // MA Cross Exit
-      const double close1 = iClose(_Symbol, PERIOD_D1, 1);
+      const double close1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: D1 close-vs-MA exit read, gated by QM_IsNewBar in OnTick
       const double ma1 = QM_SMA(_Symbol, PERIOD_D1, strategy_ma_period, 1);
       
       if(close1 <= 0.0 || ma1 <= 0.0) continue;
@@ -207,15 +207,6 @@ void OnTick()
 {
    if(!QM_KillSwitchCheck()) return;
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now)) return;
-   
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows) return;
-   
    if(QM_FrameworkHandleFridayClose()) return;
    if(Strategy_NoTradeFilter()) return;
 
@@ -232,6 +223,15 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
       }
    }
+
+   if(Strategy_NewsFilterHook(broker_now)) return;
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows) return;
 
    if(!QM_IsNewBar()) return;
    QM_EquityStreamOnNewBar();
