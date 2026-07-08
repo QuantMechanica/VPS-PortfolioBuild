@@ -7,6 +7,7 @@ status: mined
 last_reviewed: 2026-07-08
 cards_extracted:
   - xti-jodi-brk
+  - xti-jodi-fade
 ---
 
 # JODI Oil Monthly Update Source
@@ -28,9 +29,9 @@ through the IEF and supported by major international energy organizations. The
 JODI-Oil database provides monthly oil market data, while the IEF Oil and Gas
 Data Review summarizes the latest JODI update on a monthly publication calendar.
 
-The QM expression does not import JODI data at runtime. It uses the official
+The QM expressions do not import JODI data at runtime. They use the official
 monthly update and review cadence as a structural global-oil information clock,
-then trades only Darwinex `XTIUSD.DWX` D1 price action during a deterministic
+then trade only Darwinex `XTIUSD.DWX` D1 price action during a deterministic
 mid-to-late-month proxy window.
 
 ## R-Rules
@@ -38,8 +39,8 @@ mid-to-late-month proxy window.
 - R1 reputable source: PASS. JODI/IEF/IEA are official global energy data
   institutions and the JODI oil database is public.
 - R2 mechanical: PASS. Fixed monthly date window, completed-bar Donchian
-  breakout, SMA trend/slope filter, ATR stop/target, time exit, and one signal
-  per month.
+  breakout or failed-probe fade, SMA confirmation/mean exit, ATR stop/target,
+  time exit, and one signal per month.
 - R3 data available: PASS. `XTIUSD.DWX` exists in the DWX symbol matrix.
 - R4 no ML/banned logic: PASS. No ML, external runtime API, grid, martingale,
   pyramiding, adaptive PnL fitting, or discretionary override.

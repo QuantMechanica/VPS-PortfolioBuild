@@ -14765,3 +14765,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13067,iea-omr-brk,0,XTIUSD.DWX,130670000,2026-07-08,Codex,active
 13068,xti-padd1-reclaim,0,XTIUSD.DWX,130680000,2026-07-08,Codex,active
 13069,xti-jodi-brk,0,XTIUSD.DWX,130690000,2026-07-08,Codex,active
+13070,xti-jodi-fade,0,XTIUSD.DWX,130700000,2026-07-08,Codex,active
