@@ -14768,3 +14768,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13070,xti-jodi-fade,0,XTIUSD.DWX,130700000,2026-07-08,Codex,active
 13071,xti-usdchf-rspr,0,XTIUSD.DWX,130710000,2026-07-08,Codex,active
 13071,xti-usdchf-rspr,1,USDCHF.DWX,130710001,2026-07-08,Codex,active
+13036,balke-go-long-regime,0,NDX.DWX,130360000,2026-07-08,Codex,active
+13036,balke-go-long-regime,1,GDAXI.DWX,130360001,2026-07-08,Codex,active

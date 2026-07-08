@@ -1,0 +1,32 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        13036
+; ea_slug:      balke-go-long-regime
+; ea_version:   v5.0
+; set_version:  s20260708-001
+; symbol:       NDX.DWX
+; timeframe:    M15
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   5ed95aa2844fea475f06858ed84e5e40db48fdf235c608172fa63549ed2c4bcd
+; author:       Development
+; date:         2026-07-08
+;==========================================================
+qm_ea_id=13036
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\balke-go-long-regime_card.md
+strategy_ndx_entry_hhmm=1005
+strategy_ndx_exit_hhmm=2350
+strategy_gdaxi_entry_hhmm=905
+strategy_gdaxi_exit_hhmm=2255
+strategy_entry_window_minutes=30
+strategy_regime_sma_period=200
+strategy_atr_period=14
+strategy_sl_atr_mult=2.5
+strategy_max_spread_points=0
