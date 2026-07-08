@@ -1,0 +1,68 @@
+{
+  "action": "priority_mark_existing_q02",
+  "branch": "agents/board-advisor",
+  "checked_at_utc": "2026-07-08T20:51:09Z",
+  "ea_id": "QM5_11241",
+  "ea_label": "QM5_11241_ht-coint-spread",
+  "pair": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX"
+  ],
+  "logical_symbol": "QM5_11241_EURUSD_GBPUSD_COINT_D1",
+  "work_item_id": "e8bd1527-42dd-4c0a-9c20-14bc7358f4b7",
+  "phase": "Q02",
+  "status_after": "pending",
+  "new_work_items_inserted": 0,
+  "db_backup_before_update": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11241_eurusd_gbpusd_q02_priority_20260708T205108Z.sqlite",
+  "strict_scan_anchors": {
+    "QM5_12532": "Q02 PASS, Q04 PASS, later Q05 FAIL",
+    "QM5_12533": "Q02 PASS, later Q04 FAIL"
+  },
+  "unbuilt_card_preflight": {
+    "slug": "chan-at-fx-coint-pair",
+    "ea_id": 1026,
+    "status": "APPROVED",
+    "blocked_reason": "missing required magic_numbers.csv rows for required FX legs; build not attempted"
+  },
+  "setfile": "framework/EAs/QM5_11241_ht-coint-spread/sets/QM5_11241_ht-coint-spread_EURUSD.DWX_D1_backtest.set",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0
+  },
+  "payload_updates": {
+    "priority_track": true,
+    "portfolio_scope": "basket",
+    "host_symbol": "EURUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "basket_symbol_count": 2,
+    "from_year": 2017,
+    "to_year": 2022,
+    "tester_currency": "USD",
+    "tester_deposit": 100000
+  },
+  "verification": {
+    "build_check": {
+      "command": "pwsh -NoProfile -File framework/scripts/build_check.ps1 -EALabel QM5_11241_ht-coint-spread -SkipCompile",
+      "result": "PASS",
+      "report": "D:/QM/reports/framework/21/build_check_20260708_205123.json"
+    },
+    "symbol_scope": {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea QM5_11241_ht-coint-spread --json",
+      "result": "BASKET_OK",
+      "n_violations": 0
+    },
+    "pending_same_ea_symbol_count": 1
+  },
+  "guardrails": {
+    "manual_mt5_dispatch": false,
+    "t_live_touched": false,
+    "auto_trading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  }
+}
