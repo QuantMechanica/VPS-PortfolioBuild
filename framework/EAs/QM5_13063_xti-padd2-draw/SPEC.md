@@ -4,21 +4,22 @@
 **Slug:** `xti-padd2-draw`
 **Source:** `EIA-XTI-PADD2-DRAW-2026`
 **Author of this spec:** Codex
-**Last revised:** 2026-07-07
+**Last revised:** 2026-07-08
 
 ## 1. Strategy Logic
 
 This EA implements a low-frequency WTI Midwest PADD 2 crude-stock draw
 pressure setup on `XTIUSD.DWX`. On each new D1 bar it inspects the previous
-completed D1 bar, requiring that bar to be Wednesday or Thursday in broker time
+completed D1 bar, requiring that bar to be Thursday or Friday in broker time
 and inside the April-October Midwest stockdraw pressure window. It consumes
 at most one signal per broker-calendar month.
 
 Entries require a short pre-signal pullback, a bullish ATR-sized WPSR proxy
 reaction, upper-range close location, local high reclaim, close above a rising
-`SMA(70)`, and fixed single-symbol WTI scope. Positions use ATR hard stop, ATR
-target, SMA trend-failure exit, seasonal invalidation, max-hold exit, standard
-V5 news and Friday close handling, and no runtime external data.
+`SMA(55)`, fast-over-slow `SMA(55) > SMA(120)` trend confirmation, and fixed
+single-symbol WTI scope. Positions use ATR hard stop, ATR target, SMA
+trend-failure exit, seasonal invalidation, max-hold exit, standard V5 news and
+Friday close handling, and no runtime external data.
 
 ## 2. Parameters
 
@@ -26,20 +27,21 @@ V5 news and Friday close handling, and no runtime external data.
 |---|---:|---|---|
 | `strategy_season_start_month` | 4 | fixed | First Midwest stockdraw pressure month |
 | `strategy_season_end_month` | 10 | fixed | Last Midwest stockdraw pressure month |
-| `strategy_report_start_dow` | 3 | fixed | First broker day-of-week for WPSR proxy window |
-| `strategy_report_end_dow` | 4 | fixed | Last broker day-of-week for WPSR holiday drift |
-| `strategy_pullback_lookback` | 6 | 4-8 | Completed D1 bars used for pre-signal pullback check |
-| `strategy_reclaim_lookback` | 3 | 2-5 | Local high window reclaimed by signal close |
-| `strategy_min_pullback_atr` | 0.35 | 0.20-0.60 | Minimum pullback before signal in ATR units |
-| `strategy_sma_period` | 70 | 50-90 | D1 trend filter period |
-| `strategy_sma_slope_shift` | 8 | 4-12 | Completed D1 bars used for SMA slope confirmation |
+| `strategy_report_start_dow` | 4 | fixed | First broker day-of-week for post-WPSR proxy window |
+| `strategy_report_end_dow` | 5 | fixed | Last broker day-of-week for post-WPSR proxy window |
+| `strategy_pullback_lookback` | 5 | 4-8 | Completed D1 bars used for pre-signal pullback check |
+| `strategy_reclaim_lookback` | 4 | 2-6 | Local high window reclaimed by signal close |
+| `strategy_min_pullback_atr` | 0.28 | 0.15-0.55 | Minimum pullback before signal in ATR units |
+| `strategy_sma_period` | 55 | 40-80 | Fast D1 trend filter period |
+| `strategy_slow_sma_period` | 120 | 90-160 | Slow D1 trend filter period |
+| `strategy_sma_slope_shift` | 6 | 4-12 | Completed D1 bars used for fast SMA slope confirmation |
 | `strategy_atr_period` | 20 | 14-30 | ATR period for signal sizing and stop/target |
-| `strategy_min_range_atr` | 0.65 | 0.45-0.90 | Minimum signal-bar range in ATR units |
-| `strategy_min_body_atr` | 0.20 | 0.12-0.35 | Minimum bullish signal-bar body in ATR units |
-| `strategy_min_close_location` | 0.68 | 0.58-0.80 | Minimum close location within signal-bar range |
-| `strategy_atr_sl_mult` | 2.85 | 2.0-3.6 | ATR stop distance |
-| `strategy_atr_tp_mult` | 2.70 | 2.0-4.0 | ATR target distance |
-| `strategy_max_hold_days` | 8 | 5-12 | Calendar-day stale-position exit |
+| `strategy_min_range_atr` | 0.55 | 0.40-0.85 | Minimum signal-bar range in ATR units |
+| `strategy_min_body_atr` | 0.16 | 0.10-0.32 | Minimum bullish signal-bar body in ATR units |
+| `strategy_min_close_location` | 0.62 | 0.55-0.78 | Minimum close location within signal-bar range |
+| `strategy_atr_sl_mult` | 2.65 | 2.0-3.6 | ATR stop distance |
+| `strategy_atr_tp_mult` | 2.20 | 1.8-3.4 | ATR target distance |
+| `strategy_max_hold_days` | 6 | 4-10 | Calendar-day stale-position exit |
 | `strategy_max_spread_points` | 1000 | 700-1500 | Entry spread cap |
 
 ## 3. Symbol Universe
@@ -54,11 +56,12 @@ V5 news and Friday close handling, and no runtime external data.
 
 ## 5. Expected Behaviour
 
-- Expected trades/year/symbol: about 3-7.
+- Expected trades/year/symbol: about 3-6.
 - Direction: long only.
 - Typical hold: several D1 bars, capped by ATR target/stop, SMA trend-failure,
   stale-position, and seasonal invalidation guards.
-- Regime preference: April-October Midwest/PADD 2 stockdraw pressure windows.
+- Regime preference: April-October Midwest/PADD 2 stockdraw pressure windows,
+  with Thursday/Friday lag after WPSR publication.
 - Risk mode for Q02 backtests: `RISK_FIXED`.
 
 ## 6. Source Citation

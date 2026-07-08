@@ -8,9 +8,9 @@
 // QM5_13063 - XTI Midwest PADD 2 Stockdraw Momentum
 // -----------------------------------------------------------------------------
 // D1 structural WTI sleeve:
-//   - uses Wednesday/Thursday as the weekly EIA PADD 2 crude-stock WPSR proxy
+//   - uses Thursday/Friday as the post-WPSR PADD 2 crude-stock proxy window
 //   - requires April-October season, monthly cap, pullback, local reclaim,
-//     bullish ATR-sized reaction, and rising SMA
+//     bullish ATR-sized reaction, and fast-over-slow SMA trend confirmation
 //   - ATR stop/target, SMA/season/time exits, no external runtime data
 // =============================================================================
 
@@ -41,20 +41,21 @@ input double qm_stress_reject_probability = 0.0;
 input group "Strategy"
 input int    strategy_season_start_month   = 4;
 input int    strategy_season_end_month     = 10;
-input int    strategy_report_start_dow     = 3;
-input int    strategy_report_end_dow       = 4;
-input int    strategy_pullback_lookback    = 6;
-input int    strategy_reclaim_lookback     = 3;
-input double strategy_min_pullback_atr     = 0.35;
-input int    strategy_sma_period           = 70;
-input int    strategy_sma_slope_shift      = 8;
+input int    strategy_report_start_dow     = 4;
+input int    strategy_report_end_dow       = 5;
+input int    strategy_pullback_lookback    = 5;
+input int    strategy_reclaim_lookback     = 4;
+input double strategy_min_pullback_atr     = 0.28;
+input int    strategy_sma_period           = 55;
+input int    strategy_slow_sma_period      = 120;
+input int    strategy_sma_slope_shift      = 6;
 input int    strategy_atr_period           = 20;
-input double strategy_min_range_atr        = 0.65;
-input double strategy_min_body_atr         = 0.20;
-input double strategy_min_close_location   = 0.68;
-input double strategy_atr_sl_mult          = 2.85;
-input double strategy_atr_tp_mult          = 2.70;
-input int    strategy_max_hold_days        = 8;
+input double strategy_min_range_atr        = 0.55;
+input double strategy_min_body_atr         = 0.16;
+input double strategy_min_close_location   = 0.62;
+input double strategy_atr_sl_mult          = 2.65;
+input double strategy_atr_tp_mult          = 2.20;
+input int    strategy_max_hold_days        = 6;
 input int    strategy_max_spread_points    = 1000;
 
 int g_last_signal_month_key = 0;
@@ -174,8 +175,9 @@ bool Strategy_LoadPadd2DrawState(double &atr_last,
 
    atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    const double sma_last = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 1, PRICE_CLOSE);
+   const double sma_slow = QM_SMA(_Symbol, PERIOD_D1, strategy_slow_sma_period, 1, PRICE_CLOSE);
    const double sma_past = QM_SMA(_Symbol, PERIOD_D1, strategy_sma_period, 1 + strategy_sma_slope_shift, PRICE_CLOSE);
-   if(atr_last <= 0.0 || sma_last <= 0.0 || sma_past <= 0.0)
+   if(atr_last <= 0.0 || sma_last <= 0.0 || sma_slow <= 0.0 || sma_past <= 0.0)
       return false;
 
    const double signal_range = signal_high - signal_low;
@@ -187,7 +189,7 @@ bool Strategy_LoadPadd2DrawState(double &atr_last,
       return false;
    if(close_location < strategy_min_close_location)
       return false;
-   if(signal_close <= sma_last || sma_last <= sma_past)
+   if(signal_close <= sma_last || sma_last <= sma_slow || sma_last <= sma_past)
       return false;
 
    const int pre_start_shift = 1 + MathMax(2, strategy_pullback_lookback);
@@ -258,7 +260,7 @@ bool Strategy_NoTradeFilter()
       return true;
    if(strategy_pullback_lookback < 2 || strategy_reclaim_lookback < 1)
       return true;
-   if(strategy_sma_period <= 1 || strategy_sma_slope_shift <= 0 || strategy_atr_period <= 1)
+   if(strategy_sma_period <= 1 || strategy_slow_sma_period <= strategy_sma_period || strategy_sma_slope_shift <= 0 || strategy_atr_period <= 1)
       return true;
    if(strategy_min_pullback_atr <= 0.0 || strategy_min_range_atr <= 0.0 || strategy_min_body_atr <= 0.0)
       return true;

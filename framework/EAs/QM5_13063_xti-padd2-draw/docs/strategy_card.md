@@ -15,6 +15,7 @@ Build-time strategy-card copy. Canonical card:
 
 This EA trades `XTIUSD.DWX` D1 only. It expresses official EIA Midwest
 PADD 2 crude-stock draw pressure as a price-only monthly-capped April-October
-WPSR-window pullback-reclaim long setup. It uses no external runtime feed, no
-ML, no grid, no martingale, one position per magic, V5 news/Friday close, and
-Q02 `RISK_FIXED=1000`.
+post-WPSR Thursday/Friday pullback-reclaim long setup with fast-over-slow SMA
+trend confirmation. It uses no external runtime feed, no ML, no grid, no
+martingale, one position per magic, V5 news/Friday close, and Q02
+`RISK_FIXED=1000`.
