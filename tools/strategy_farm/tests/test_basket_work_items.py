@@ -542,6 +542,7 @@ class BasketWorkItemsTests(unittest.TestCase):
                 "logical_symbol": logical,
                 "portfolio_scope": "basket",
                 "tester_currency": "USD",
+                "tester_deposit": 100000,
                 "from_date": "2018.07.02",
                 "to_date": "2024.12.31",
                 "smoke_year_count": 7,
@@ -597,6 +598,7 @@ class BasketWorkItemsTests(unittest.TestCase):
             self.assertEqual(cmd[cmd.index("-FromDate") + 1], "2018.07.02")
             self.assertEqual(cmd[cmd.index("-ToDate") + 1], "2024.12.31")
             self.assertEqual(cmd[cmd.index("-TesterCurrencyOverride") + 1], "USD")
+            self.assertEqual(cmd[cmd.index("-TesterDepositOverride") + 1], "100000")
             self.assertEqual(cmd[cmd.index("-MinTrades") + 1], "35")
 
     def test_single_symbol_dispatch_ignores_promoted_dates_without_basket_scope(self) -> None:

@@ -2701,6 +2701,12 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     tester_currency = str(item_payload.get("tester_currency") or "").strip().upper()
     if tester_currency:
         cmd.extend(["-TesterCurrencyOverride", tester_currency])
+    try:
+        tester_deposit = int(item_payload.get("tester_deposit") or 0)
+    except (TypeError, ValueError):
+        tester_deposit = 0
+    if tester_deposit > 0:
+        cmd.extend(["-TesterDepositOverride", str(tester_deposit)])
     if from_date:
         cmd.extend(["-FromDate", from_date])
     if to_date:

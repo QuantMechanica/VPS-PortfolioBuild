@@ -1,0 +1,43 @@
+{
+  "ea_id": "QM5_1228",
+  "slug": "carver-volatten-ewmac",
+  "symbol": "EURNZD.DWX",
+  "phase": "Q02",
+  "source_work_item_id": "c9d86d92-50a2-45b7-ad5e-4afec4e9f5da",
+  "replacement_work_item_id": "62066b53-d305-4a8e-943e-5c3be083ebac",
+  "source_verdict": "INFRA_FAIL",
+  "source_verdict_reason": "run_smoke_fail:BARS_ZERO;INCOMPLETE_RUNS",
+  "source_summary_path": "D:\\QM\\reports\\work_items\\c9d86d92-50a2-45b7-ad5e-4afec4e9f5da\\QM5_1228\\20260708_113759\\summary.json",
+  "source_tester_log_path": "D:\\QM\\reports\\work_items\\c9d86d92-50a2-45b7-ad5e-4afec4e9f5da\\QM5_1228\\20260708_113759\\raw\\run_01\\20260708.log",
+  "diagnosis": {
+    "classification": "infra:report_blank_after_valid_eurnzd_trades",
+    "evidence": [
+      "The raw tester log shows real EURNZD.DWX market orders during the attempted Q02 run.",
+      "The generated report.htm is a blank 1970/M0/0-bars shell, producing EMPTY_EXPERT, EMPTY_SYMBOL, M0_1970_PERIOD and BARS_ZERO.",
+      "The tester log then attempts unsuffixed NZDUSD history synchronization and times out before report finalization."
+    ],
+    "not_diagnosed_as": [
+      "ONINIT failure",
+      "EURNZD.DWX no-history",
+      "stale EX5"
+    ]
+  },
+  "repair": {
+    "action": "q02_requeue_with_nzd_tester_account",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1228_carver-volatten-ewmac\\sets\\QM5_1228_carver-volatten-ewmac_EURNZD.DWX_D1_backtest_NZD_account.set",
+    "tester_currency": "NZD",
+    "tester_deposit": 170000,
+    "risk_fixed": 1700,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "risk_contract": "RISK_FIXED remains 1% of tester equity after converting the canonical 100000 USD / 1000 fixed-risk setup to NZD accounting.",
+    "runner_fix": "tools/strategy_farm/farmctl.py now forwards payload tester_deposit to run_smoke.ps1 as -TesterDepositOverride."
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "autotrading_touched": false,
+    "manual_backtest_run": false
+  },
+  "created_at_utc": "2026-07-08T12:15:36+00:00"
+}
