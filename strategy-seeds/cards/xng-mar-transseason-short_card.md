@@ -242,12 +242,12 @@ gate.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-08 | initial structural XNG March transseason build | Q02 | READY_TO_QUEUE |
+| v1 | 2026-07-08 | initial structural XNG March transseason build | Q02 | QUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-08 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-08 | PENDING | `artifacts/qm5_12894_build_result.json` |
-| Q02 Baseline Screening | 2026-07-08 | PENDING | `artifacts/qm5_12894_q02_enqueue_20260708.json` |
+| Q01 Build Validation | 2026-07-08 | PASS | `artifacts/qm5_12894_build_result.json` |
+| Q02 Baseline Screening | 2026-07-08 | QUEUED | `D:\QM\strategy_farm\state\farm_state.sqlite` work item `0ec96770-9753-4b7c-89e5-6e9e636ff850` |

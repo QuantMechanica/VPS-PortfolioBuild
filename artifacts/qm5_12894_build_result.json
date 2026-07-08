@@ -1,0 +1,31 @@
+{
+  "ea_id": "QM5_12894",
+  "ea_slug": "xng-mar-transseason-short",
+  "symbol": "XNGUSD.DWX",
+  "timeframe": "D1",
+  "status": "PASS",
+  "built_at": "2026-07-08T08:12:26+00:00",
+  "strategy_card": "strategy-seeds/cards/approved/QM5_12894_xng-mar-transseason-short_card.md",
+  "ea_path": "framework/EAs/QM5_12894_xng-mar-transseason-short/QM5_12894_xng-mar-transseason-short.mq5",
+  "ex5_path": "framework/EAs/QM5_12894_xng-mar-transseason-short/QM5_12894_xng-mar-transseason-short.ex5",
+  "setfile_path": "framework/EAs/QM5_12894_xng-mar-transseason-short/sets/QM5_12894_xng-mar-transseason-short_XNGUSD.DWX_D1_backtest.set",
+  "ex5_sha256": "BDF3522C941F978D1E2FB01F63C707CA82EE4BA1D58C3C9BD118D758AF448B5C",
+  "risk_mode": "RISK_FIXED",
+  "risk_fixed": 1000,
+  "checks": {
+    "card_schema_lint": "PASS",
+    "g0_card_lint": "PASS",
+    "spec_doc": "PASS",
+    "symbol_scope": "PASS",
+    "compile_one_strict": "PASS",
+    "build_check_strict": "PASS"
+  },
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260708_081226\\QM5_12894_xng-mar-transseason-short.compile.log",
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260708_081226.json",
+  "constraints": {
+    "no_t_live_touched": true,
+    "no_autotrading_touched": true,
+    "no_portfolio_gate_touched": true,
+    "no_manual_backtest_started": true
+  }
+}
