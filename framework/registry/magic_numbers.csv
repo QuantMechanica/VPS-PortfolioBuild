@@ -14706,3 +14706,12 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13058,audcad-gbpnzd-coint,1,GBPNZD.DWX,130580001,2026-07-08,Development,active
 13059,xti-audjpy-rspr,0,XTIUSD.DWX,130590000,2026-07-08,Codex,active
 13059,xti-audjpy-rspr,1,AUDJPY.DWX,130590001,2026-07-08,Codex,active
+1615,aa-breaktrend-2-12,0,SP500.DWX,16150000,2026-07-08,Codex,active
+1615,aa-breaktrend-2-12,1,NDX.DWX,16150001,2026-07-08,Codex,active
+1615,aa-breaktrend-2-12,2,WS30.DWX,16150002,2026-07-08,Codex,active
+1615,aa-breaktrend-2-12,3,GDAXI.DWX,16150003,2026-07-08,Codex,active
+1615,aa-breaktrend-2-12,4,XAUUSD.DWX,16150004,2026-07-08,Codex,active
+1615,aa-breaktrend-2-12,5,XTIUSD.DWX,16150005,2026-07-08,Codex,active
+1615,aa-breaktrend-2-12,6,EURUSD.DWX,16150006,2026-07-08,Codex,active
+1615,aa-breaktrend-2-12,7,GBPUSD.DWX,16150007,2026-07-08,Codex,active
+1615,aa-breaktrend-2-12,8,USDJPY.DWX,16150008,2026-07-08,Codex,active
