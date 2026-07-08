@@ -1,0 +1,40 @@
+{
+  "task_id": "2881f157-5a9f-4d20-87c2-ef2023b2c9bf",
+  "ea_id": "QM5_1615",
+  "ea_dir": "framework/EAs/QM5_1615_aa-breaktrend-2-12",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1615_aa-breaktrend-2-12\\QM5_1615_aa-breaktrend-2-12.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1615_aa-breaktrend-2-12\\QM5_1615_aa-breaktrend-2-12.ex5",
+  "magic_base": 16150000,
+  "symbols_registered": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "GDAXI.DWX",
+    "XAUUSD.DWX",
+    "XTIUSD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1615_aa-breaktrend-2-12\\sets\\QM5_1615_aa-breaktrend-2-12_SP500.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1615_aa-breaktrend-2-12\\sets\\QM5_1615_aa-breaktrend-2-12_NDX.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1615_aa-breaktrend-2-12\\sets\\QM5_1615_aa-breaktrend-2-12_WS30.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1615_aa-breaktrend-2-12\\sets\\QM5_1615_aa-breaktrend-2-12_GDAXI.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1615_aa-breaktrend-2-12\\sets\\QM5_1615_aa-breaktrend-2-12_XAUUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1615_aa-breaktrend-2-12\\sets\\QM5_1615_aa-breaktrend-2-12_XTIUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1615_aa-breaktrend-2-12\\sets\\QM5_1615_aa-breaktrend-2-12_EURUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1615_aa-breaktrend-2-12\\sets\\QM5_1615_aa-breaktrend-2-12_GBPUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1615_aa-breaktrend-2-12\\sets\\QM5_1615_aa-breaktrend-2-12_USDJPY.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1615_aa-breaktrend-2-12\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "passed",
+  "smoke_report_path": "D:\\QM\\reports\\smoke\\QM5_1615\\20260708_102746\\summary.json",
+  "blocked_reason": null,
+  "open_questions": [
+    "Card names USOIL.DWX; USOIL.DWX is absent from dwx_symbol_matrix.csv, so XTIUSD.DWX was registered as the matrix-valid WTI crude proxy.",
+    ".DWX MN1 tester history is unavailable, so monthly 2/12 returns are implemented D1-native with a 21 trading-day/month proxy."
+  ]
+}
