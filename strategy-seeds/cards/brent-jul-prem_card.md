@@ -223,5 +223,5 @@ gate.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-08 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-08 | PENDING | build in progress |
-| Q02 Baseline Screening | 2026-07-08 | PENDING | paced fleet enqueue after build PASS |
+| Q01 Build Validation | 2026-07-08 | PASS | `artifacts/qm5_13052_build_result.json`; `C:/QM/repo/framework/build/compile/20260708_052358/QM5_13052_brent-jul-prem.compile.log`; `D:/QM/reports/framework/21/build_check_20260708_052414.json` |
+| Q02 Baseline Screening | 2026-07-08 | QUEUED | `D:/QM/strategy_farm/state/farm_state.sqlite` work item `cc4df4aa-c55b-4254-899e-81ba83e20952` |

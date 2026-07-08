@@ -71,4 +71,4 @@ touched by this build.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-08 | Initial build from card | Q02 queued through paced fleet |
+| v1 | 2026-07-08 | Initial build from card | Q02 queued as work_item cc4df4aa-c55b-4254-899e-81ba83e20952 |
