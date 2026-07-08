@@ -10,6 +10,7 @@ uri: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2515900
 cards_extracted:
   - wti-tom-mom
   - xng-tom-mom
+  - brent-tom-mom
 ---
 
 # VANHEMERT-MOMTOM-2014
@@ -42,6 +43,7 @@ time/ATR exit fires.
 
 - `wti-tom-mom`: `XTIUSD.DWX` D1 turn-of-month momentum.
 - `xng-tom-mom`: `XNGUSD.DWX` D1 turn-of-month momentum.
+- `brent-tom-mom`: `XBRUSD.DWX` D1 turn-of-month momentum.
 
 ## Duplicate Boundary
 
@@ -51,12 +53,21 @@ also not XNG storage/weather/month-seasonality/month-open/rig-count or 12-month
 TSMOM: the entry is a fixed turn-of-month timing window conditioned on a
 medium-horizon D1 return sign.
 
+The Brent card ports the same turn-of-month timing hypothesis to the Brent
+benchmark proxy. It is separate from WTI TOM by benchmark, from Brent
+month-of-year cards by using a recurring month-turn window conditioned on
+medium-horizon momentum, and from Brent TSMOM/52-week/spread sleeves by using a
+short deterministic holding window rather than a broad monthly trend or
+relative-value basket.
+
 ## R-Rules
 
 - R1 reputable source: PASS. Van Hemert SSRN source with public abstract page;
   JFE time-series momentum paper used as lineage.
 - R2 mechanical: PASS. Fixed calendar window, fixed return lookback, ATR stop
   and target, time/window exits.
-- R3 data available: PASS. `XNGUSD.DWX` exists in the DWX symbol matrix.
+- R3 data available: PASS. `XTIUSD.DWX`, `XNGUSD.DWX`, and `XBRUSD.DWX` have
+  active local routes through existing V5 energy builds; Q02 validates current
+  history sufficiency for each concrete EA.
 - R4 no ML/banned logic: PASS. Deterministic, one position per magic/symbol, no
   grid, no martingale, no adaptive PnL fitting.
