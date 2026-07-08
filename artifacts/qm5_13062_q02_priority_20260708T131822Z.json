@@ -1,0 +1,60 @@
+{
+  "generated_at_utc": "2026-07-08T13:18:22Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with non-duplicate FX cointegration baskets",
+  "ea_id": "QM5_13062",
+  "slug": "audcad-eurusd-coint",
+  "pair": "AUDCAD.DWX/EURUSD.DWX",
+  "logical_symbol": "QM5_13062_AUDCAD_EURUSD_COINTEGRATION_D1",
+  "action": "priority_track_existing_q02_work_item",
+  "work_item": {
+    "id": "92fef42a-a098-417c-ba9d-d4dd7d3a3d70",
+    "phase": "Q02",
+    "status": "pending",
+    "updated_at_utc": "2026-07-08T13:18:22Z",
+    "priority_track": true,
+    "priority_reason": "OWNER 2026-07-08 forex portfolio mission: advance existing non-duplicate QM5_13062 AUDCAD~EURUSD cointegration logical Q02 row after build/enqueue; no duplicate work_item and no manual MT5 dispatch under active CPU ceiling."
+  },
+  "db": {
+    "sqlite": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_13062_q02_priority_20260708T131822Z.sqlite",
+    "event": "priority_track_marked",
+    "already_priority": false
+  },
+  "selection_rationale": {
+    "strict_66_pair_anchors": {
+      "QM5_12532": "built; logical Q02 PASS; reached Q05 FAIL",
+      "QM5_12533": "built; logical Q02 PASS; reached Q04 FAIL"
+    },
+    "current_pair": "QM5_13062 is already the mechanized AUDCAD/EURUSD extended-screen formal survivor, and its single Q02 row was still pending.",
+    "non_duplicate_action": "Updated the existing pending row in place instead of inserting another work item."
+  },
+  "risk_contract": {
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_scope": "basket",
+    "host_symbol": "AUDCAD.DWX",
+    "host_timeframe": "D1",
+    "timeout_min": 450
+  },
+  "queue_verification": {
+    "active_work_items": 6,
+    "pending_work_items": 5228,
+    "queued_priority_position": 3,
+    "priority_rows_ahead": [
+      "QM5_12712 Q07 QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+      "QM5_12871 Q02 XBRUSD.DWX"
+    ]
+  },
+  "guardrails": {
+    "duplicate_work_item_created": false,
+    "manual_mt5_dispatch_started": false,
+    "cpu_ceiling_observed": true,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
