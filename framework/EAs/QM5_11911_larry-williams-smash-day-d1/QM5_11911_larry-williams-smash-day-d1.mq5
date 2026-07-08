@@ -90,13 +90,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(Strategy_HasOpenPosition()) return false;
 
    // 1. Process new closed bar for setups
-   const double close1 = iClose(_Symbol, PERIOD_D1, 1);
-   const double close2 = iClose(_Symbol, PERIOD_D1, 2);
-   const double high1  = iHigh(_Symbol, PERIOD_D1, 1);
-   const double high2  = iHigh(_Symbol, PERIOD_D1, 2);
-   const double low1   = iLow(_Symbol, PERIOD_D1, 1);
-   const double low2   = iLow(_Symbol, PERIOD_D1, 2);
-   const double open1  = iOpen(_Symbol, PERIOD_D1, 1);
+   const double close1 = iClose(_Symbol, PERIOD_D1, 1); // perf-allowed: fixed closed D1 bar for Smash Day geometry after QM_IsNewBar gate.
+   const double close2 = iClose(_Symbol, PERIOD_D1, 2); // perf-allowed: fixed closed D1 comparison bar for Smash Day geometry.
+   const double high1  = iHigh(_Symbol, PERIOD_D1, 1);  // perf-allowed: fixed closed D1 bar for breakout trigger geometry.
+   const double high2  = iHigh(_Symbol, PERIOD_D1, 2);  // perf-allowed: fixed closed D1 comparison bar for Smash Day geometry.
+   const double low1   = iLow(_Symbol, PERIOD_D1, 1);   // perf-allowed: fixed closed D1 bar for breakout trigger geometry.
+   const double low2   = iLow(_Symbol, PERIOD_D1, 2);   // perf-allowed: fixed closed D1 comparison bar for Smash Day geometry.
+   const double open1  = iOpen(_Symbol, PERIOD_D1, 1);  // perf-allowed: fixed closed D1 bar body test for Smash Day setup.
    const double atr1   = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
 
    if(close1 <= 0.0 || atr1 <= 0.0) return false;
