@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   915579ee4c81849e25617d088be15f7e62b9185cff5f9432b4c00a9567c33377
+; build_hash:   4f992124989991f6698bfe36d19eaab3ab737a708e51ae6bc50a4c7db5c76890
 ; author:       Development
 ; date:         2026-06-20
 ;==========================================================
@@ -31,4 +31,16 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+strategy_partner_symbol=NZDUSD.DWX
+strategy_partner_slot=3
+strategy_formation_bars=504
+strategy_z_window=60
+strategy_entry_z=2.0
+strategy_exit_z=0.25
+strategy_stop_z=4.0
+strategy_adf_p_max=0.10
+strategy_min_half_life=2
+strategy_max_half_life=60
+strategy_time_stop_cap=90
+strategy_min_d1_bars=560
+strategy_leg_risk_split=0.5
