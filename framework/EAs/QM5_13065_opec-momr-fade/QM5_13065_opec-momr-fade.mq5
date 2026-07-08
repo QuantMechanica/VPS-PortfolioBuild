@@ -1,20 +1,20 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_13047 EIA STEO WTI failed-breakout fade"
+#property description "QM5_13065 OPEC MOMR WTI failed-breakout fade"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QM5_13047 - EIA STEO WTI Failed-Breakout Fade
+// QM5_13065 - OPEC MOMR WTI Failed-Breakout Fade
 // -----------------------------------------------------------------------------
 // D1 structural WTI sleeve:
-//   - computes the official monthly STEO calendar proxy in broker dates
+//   - uses a deterministic mid-month OPEC MOMR proxy window in broker dates
 //   - fades failed D1 probes outside the prior crude range
 //   - ATR stop/target, max-hold exit, no external runtime data
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 13047;
+input int    qm_ea_id                   = 13065;
 input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
@@ -49,7 +49,8 @@ input double strategy_atr_sl_mult            = 2.25;
 input double strategy_atr_tp_mult            = 2.75;
 input int    strategy_max_hold_days          = 5;
 input int    strategy_max_spread_points      = 1000;
-input bool   strategy_allow_wed_delay        = true;
+input int    strategy_event_start_day        = 10;
+input int    strategy_event_end_day          = 14;
 
 int g_last_signal_day_key = 0;
 
@@ -67,28 +68,14 @@ int Strategy_DayKey(const datetime t)
    return dt.year * 10000 + dt.mon * 100 + dt.day;
   }
 
-bool Strategy_IsSteoProxyDay(const datetime t)
+bool Strategy_IsMomrProxyWindow(const datetime t)
   {
    if(t <= 0)
       return false;
 
    MqlDateTime dt;
    TimeToStruct(t, dt);
-
-   int first_day_dow = dt.day_of_week - ((dt.day - 1) % 7);
-   while(first_day_dow < 0)
-      first_day_dow += 7;
-   while(first_day_dow > 6)
-      first_day_dow -= 7;
-
-   const int first_thursday_day = 1 + ((4 - first_day_dow + 7) % 7);
-   const int normal_release_day = first_thursday_day + 5;
-
-   if(dt.day == normal_release_day && dt.day_of_week == 2)
-      return true;
-   if(strategy_allow_wed_delay && dt.day == normal_release_day + 1 && dt.day_of_week == 3)
-      return true;
-   return false;
+   return (dt.day >= strategy_event_start_day && dt.day <= strategy_event_end_day);
   }
 
 bool Strategy_HasOpenPosition()
@@ -137,7 +124,7 @@ bool Strategy_LoadFadeState(int &direction,
    signal_day_key = 0;
 
    const datetime event_time = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: completed D1 event calendar state behind new-bar gate.
-   if(event_time <= 0 || !Strategy_IsSteoProxyDay(event_time))
+   if(event_time <= 0 || !Strategy_IsMomrProxyWindow(event_time))
       return false;
 
    const double event_open = iOpen(_Symbol, PERIOD_D1, 1);   // perf-allowed: completed D1 event bar.
@@ -231,6 +218,10 @@ bool Strategy_NoTradeFilter()
       return true;
    if(strategy_max_hold_days <= 0)
       return true;
+   if(strategy_event_start_day < 1 || strategy_event_start_day > 28)
+      return true;
+   if(strategy_event_end_day < strategy_event_start_day || strategy_event_end_day > 31)
+      return true;
    return false;
   }
 
@@ -240,7 +231,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_13047_XTI_STEO_FADE";
+   req.reason = "QM5_13065_XTI_OPEC_MOMR_FADE";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
@@ -288,7 +279,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(req.type == QM_SELL && req.tp >= entry_price)
       return false;
 
-   req.reason = (direction > 0) ? "XTI_STEO_FAILED_BREAKDOWN_LONG" : "XTI_STEO_FAILED_BREAKOUT_SHORT";
+   req.reason = (direction > 0) ? "XTI_OPEC_MOMR_FAILED_BREAKDOWN_LONG" : "XTI_OPEC_MOMR_FAILED_BREAKOUT_SHORT";
    g_last_signal_day_key = signal_day_key;
    return true;
   }
@@ -328,7 +319,7 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_13047\",\"ea\":\"eia-steo-fade\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_13065\",\"ea\":\"opec-momr-fade\"}");
    return INIT_SUCCEEDED;
   }
 
