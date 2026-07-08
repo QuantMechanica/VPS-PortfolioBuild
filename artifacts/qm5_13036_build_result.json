@@ -1,0 +1,188 @@
+{
+  "task_id": "79ce8aca-8995-452f-931c-bdcd2d18a2fa",
+  "ea_id": "QM5_13036",
+  "ea_label": "QM5_13036_balke-go-long-regime",
+  "slug": "balke-go-long-regime",
+  "strategy": "Balke go-long regime-gated index day exposure",
+  "strategy_id": "YT-BALKE-2026-07_GO-LONG-REGIME",
+  "source_id": "YT-BALKE-FXBOT-2026-07",
+  "source_links": [
+    "https://www.youtube.com/watch?v=hgSq8KVgMLI"
+  ],
+  "symbols": [
+    "NDX.DWX",
+    "GDAXI.DWX"
+  ],
+  "symbols_registered": [
+    "NDX.DWX",
+    "GDAXI.DWX"
+  ],
+  "host_timeframe": "M15",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13036_balke-go-long-regime",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13036_balke-go-long-regime\\QM5_13036_balke-go-long-regime.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13036_balke-go-long-regime\\QM5_13036_balke-go-long-regime.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13036_balke-go-long-regime\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13036_balke-go-long-regime_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13036_balke-go-long-regime_card.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13036_balke-go-long-regime.md",
+  "docs_strategy_card_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13036_balke-go-long-regime\\docs\\strategy_card.md",
+  "canonical_card": "C:\\QM\\repo\\strategy-seeds\\cards\\balke-go-long-regime_card.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13036_balke-go-long-regime\\sets\\QM5_13036_balke-go-long-regime_NDX.DWX_M15_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13036_balke-go-long-regime\\sets\\QM5_13036_balke-go-long-regime_GDAXI.DWX_M15_backtest.set"
+  ],
+  "setfile_build_hash": {
+    "QM5_13036_balke-go-long-regime_NDX.DWX_M15_backtest.set": "8287171dc36b45f926177fa71412ed03052fa260548bb454ae0097247a4621aa",
+    "QM5_13036_balke-go-long-regime_GDAXI.DWX_M15_backtest.set": "780b8bf9aedb45b014a4a5478c0d1c2c5696bc7398efc1998b3850f64b24568a"
+  },
+  "mq5_sha256": "B485BBB8FCE87CF5937DB7D8B0B53649EC7C05730E282304380539E04AF90553",
+  "ex5_sha256": "AC4BFC9D37759F952B57A1E73EA2CAF08831AC8AC2DD37C27A2988E3AF5B4198",
+  "spec_sha256": "95A07451B051F4861BCE647FBC471C8A61B2AED8A2B7EB9FF0E673A12ECE2AC9",
+  "setfile_sha256": {
+    "QM5_13036_balke-go-long-regime_NDX.DWX_M15_backtest.set": "AD2AF9C53F6BA05CAEB67DA99AF1ECDB901FB0FCF61898C7A7318B4B37AD0093",
+    "QM5_13036_balke-go-long-regime_GDAXI.DWX_M15_backtest.set": "80DC96E896FA109EF31964AF8C617468E6737B1F0823F1616D1117B44C732B70"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic_base": 130360000,
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "NDX.DWX",
+        "magic": 130360000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "GDAXI.DWX",
+        "magic": 130360001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13036_balke-go-long-regime -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "reason_class": "OK",
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260708_204039\\QM5_13036_balke-go-long-regime.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260708_204039\\summary.csv",
+    "ex5_size_bytes": 315014
+  },
+  "build_check": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13036_balke-go-long-regime -Strict",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260708_204039.json",
+    "run_tag": "20260708_204039"
+  },
+  "validations": {
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "MULTI_SYMBOL_SINGLE_HOST_OK",
+    "magic_registry_rows_added": true,
+    "magic_resolver_update": {
+      "result": "PASS",
+      "warnings": [
+        "pre-existing missing EA dirs for magic rows: 1001, 1015, 1016"
+      ]
+    }
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 smoke/backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [
+    "Higher-diversity rates/lumber backlog cards were skipped because required non-DWX feeds were not approved for runtime backtest in this lane."
+  ],
+  "non_duplicate_reason": "Deterministic long-only M15 index day-exposure sleeve with D1 SMA200 regime gate and hard time exit; distinct from existing index breakout, metal/index mean-reversion, commodity spread, and FX pair sleeves.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_manifest_touched": false
+  },
+  "manual_backtest": {
+    "status": "not_started",
+    "reason": "Q02 queued for paced fleet; no manual MT5 smoke/backtest was launched."
+  },
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "backtest_cpu_used": false
+  },
+  "paths": {
+    "strategy_card": "C:\\QM\\repo\\framework\\EAs\\QM5_13036_balke-go-long-regime\\docs\\strategy_card.md",
+    "canonical_card": "C:\\QM\\repo\\strategy-seeds\\cards\\balke-go-long-regime_card.md",
+    "approved_seed_card": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13036_balke-go-long-regime_card.md",
+    "runtime_approved_card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13036_balke-go-long-regime.md"
+  },
+  "file_hashes_sha256": {
+    "approved_card": "FC1E5CD998AC2FE29676BDCBE467564EA2A78CD94C517827F705BBBD203FA0DD",
+    "canonical_card": "FC1E5CD998AC2FE29676BDCBE467564EA2A78CD94C517827F705BBBD203FA0DD",
+    "docs_strategy_card": "FC1E5CD998AC2FE29676BDCBE467564EA2A78CD94C517827F705BBBD203FA0DD",
+    "mq5": "B485BBB8FCE87CF5937DB7D8B0B53649EC7C05730E282304380539E04AF90553",
+    "ex5": "AC4BFC9D37759F952B57A1E73EA2CAF08831AC8AC2DD37C27A2988E3AF5B4198",
+    "spec": "95A07451B051F4861BCE647FBC471C8A61B2AED8A2B7EB9FF0E673A12ECE2AC9",
+    "QM5_13036_balke-go-long-regime_NDX.DWX_M15_backtest.set": "AD2AF9C53F6BA05CAEB67DA99AF1ECDB901FB0FCF61898C7A7318B4B37AD0093",
+    "QM5_13036_balke-go-long-regime_GDAXI.DWX_M15_backtest.set": "80DC96E896FA109EF31964AF8C617468E6737B1F0823F1616D1117B44C732B70"
+  },
+  "notes": "Completed build verification for the Balke go-long regime index sleeve and prepared it for Q02 via record-build auto-enqueue.",
+  "generated_at_utc": "2026-07-08T20:43:10.570284Z",
+  "q02_enqueue": {
+    "status": "enqueued",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "enqueued": [
+      {
+        "work_item_id": "9d518966-3022-420e-a64a-ea49e246386b",
+        "short_id": "9d518966",
+        "kind": "backtest",
+        "phase": "Q02",
+        "symbol": "GDAXI.DWX",
+        "host_symbol": "GDAXI.DWX",
+        "host_timeframe": "M15",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13036_balke-go-long-regime\\sets\\QM5_13036_balke-go-long-regime_GDAXI.DWX_M15_backtest.set",
+        "status_after_enqueue": "pending",
+        "attempt_count": 0,
+        "created_at_utc": "2026-07-08T20:43:16+00:00"
+      },
+      {
+        "work_item_id": "6e4b26f1-6e7f-4a02-b214-42a8b8e2069b",
+        "short_id": "6e4b26f1",
+        "kind": "backtest",
+        "phase": "Q02",
+        "symbol": "NDX.DWX",
+        "host_symbol": "NDX.DWX",
+        "host_timeframe": "M15",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13036_balke-go-long-regime\\sets\\QM5_13036_balke-go-long-regime_NDX.DWX_M15_backtest.set",
+        "status_after_enqueue": "pending",
+        "attempt_count": 0,
+        "created_at_utc": "2026-07-08T20:43:16+00:00"
+      }
+    ]
+  },
+  "record_build": {
+    "recorded": true,
+    "task_id": "79ce8aca-8995-452f-931c-bdcd2d18a2fa",
+    "new_status": "done",
+    "auto_q02_enqueued_count": 2,
+    "auto_q02_short_ids": [
+      "6e4b26f1",
+      "9d518966"
+    ]
+  }
+}
