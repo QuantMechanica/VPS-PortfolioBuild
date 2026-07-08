@@ -1,24 +1,24 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        12731
-; ea_slug:      edgelab-usdcad-eurgbp-cointegration
+; ea_id:        9515
+; ea_slug:      lt-multi-rule
 ; ea_version:   v5.0
-; set_version:  s20260628-001
-; symbol:       QM5_12731_USDCAD_EURGBP_COINTEGRATION_D1
-; host_symbol:  USDCAD.DWX
+; set_version:  s20260708-stress-harsh
+; symbol:       XAUUSD.DWX
 ; timeframe:    D1
-; environment:  backtest
-; magic_slot:   0
+; environment:  q06_stress_harsh
+; magic_slot:   7
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   ba56529ce6d5f43df90806b398679a53d17700e5ba2de751a65590903ea2d3ba
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-28
+; date:         2026-07-08
 ;==========================================================
-qm_magic_slot_offset=0
+qm_magic_slot_offset=7
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
 ; core filter library params; filter-on/off variants must be pre-declared
 qm_filter_news_enabled=1
 qm_filter_news_mode=3
@@ -31,11 +31,5 @@ qm_filter_volatility_atr_period=14
 qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card
-strategy_z_lookback_d1=60
-strategy_beta=0.49
-strategy_entry_z=2.0
-strategy_exit_z=0.5
-strategy_atr_period_d1=20
-strategy_atr_sl_mult=2.0
-strategy_deviation_points=20
+; strategy-specific params from card must be appended below this line
+; card_defaults_source=not_found
