@@ -185,4 +185,5 @@ gates.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-08 | initial extended-screen FX cointegration watchlist replacement card | G0 | APPROVED |
+| v2 | 2026-07-08 | compiled basket EA and logical basket Q02 auto-enqueued as work item df21c7a2-a0e2-467c-9be9-56f490d2e40d | Q02 | PENDING |
 
