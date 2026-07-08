@@ -1,0 +1,138 @@
+{
+  "task_id": "ba601525-48df-4751-a448-7bac4e47ee7f",
+  "ea_id": "QM5_13073",
+  "ea_label": "QM5_13073_xti-audusd-rspr",
+  "slug": "xti-audusd-rspr",
+  "strategy": "XTI/AUDUSD D1 commodity-FX return-spread reversion basket",
+  "strategy_id": "EIA-RBA-WTI-AUD-2026_S02",
+  "source_id": "EIA-RBA-WTI-AUD-2026",
+  "source_links": [
+    "https://www.eia.gov/workingpapers/pdf/oil_exchangerates_61317.pdf",
+    "https://www.rba.gov.au/education/resources/explainers/drivers-of-the-aud-exchange-rate.html"
+  ],
+  "symbols": [
+    "XTIUSD.DWX",
+    "AUDUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "AUDUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XTIUSD.DWX",
+    "AUDUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13073_XTI_AUDUSD_RSPREAD_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13073_xti-audusd-rspr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13073_xti-audusd-rspr\\QM5_13073_xti-audusd-rspr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13073_xti-audusd-rspr\\QM5_13073_xti-audusd-rspr.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13073_xti-audusd-rspr\\SPEC.md",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13073_xti-audusd-rspr.md",
+  "approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13073_xti-audusd-rspr.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13073_xti-audusd-rspr\\basket_manifest.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13073_xti-audusd-rspr\\sets\\QM5_13073_xti-audusd-rspr_QM5_13073_XTI_AUDUSD_RSPREAD_D1_D1_backtest.set"
+  ],
+  "magic_base": 130730000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 130730000
+    },
+    {
+      "slot": 1,
+      "symbol": "AUDUSD.DWX",
+      "magic": 130730001
+    }
+  ],
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "compile": {
+    "status": "COMPILED",
+    "warnings": 0,
+    "symbol_scope": "BASKET_OK",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260708_221722\\QM5_13073_xti-audusd-rspr.compile.log",
+    "command": "pwsh -File framework/scripts/compile_one.ps1 -EALabel QM5_13073_xti-audusd-rspr -Strict"
+  },
+  "build_check": {
+    "status": "PASS",
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260708_221856.json",
+    "setfile_build_hash": "838024ec2bc6c4c8e883877ad40880c10ff1101662c42aa600a41de99dedbaaa",
+    "command": "pwsh -File framework/scripts/build_check.ps1 -EALabel QM5_13073_xti-audusd-rspr -SkipCompile"
+  },
+  "validations": {
+    "spec_doc": {
+      "status": "PASS",
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13073_xti-audusd-rspr"
+    },
+    "magic_registry": {
+      "status": "PASS",
+      "slots": [
+        0,
+        1
+      ],
+      "resolver_rows_kept": 14657,
+      "pre_existing_missing_ea_dir_warnings": [
+        1001,
+        1015,
+        1016
+      ]
+    },
+    "risk_mode": {
+      "status": "PASS",
+      "backtest_uses_risk_fixed": true,
+      "risk_percent_zero": true
+    },
+    "basket_manifest": {
+      "status": "PASS",
+      "logical_symbol": "QM5_13073_XTI_AUDUSD_RSPREAD_D1",
+      "host_symbol": "XTIUSD.DWX",
+      "host_timeframe": "D1"
+    },
+    "build_guardrails": {
+      "status": "PASS",
+      "ml_forbidden": "PASS",
+      "external_runtime_data": "PASS",
+      "setfile_schema": "PASS",
+      "five_input_groups": "PASS"
+    }
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "backtest_cpu_used": false
+  },
+  "file_hashes_sha256": {
+    "mq5": "012CAADF1D8ED6A99126D547F4C304707DF9DFF191DE9594625B0046BE89C8E6",
+    "ex5": "6BD6C2E9845466D10F03925CB13C1D560DEA7D962CD300E1416F2BF5D0E74768",
+    "setfile": "78AB65E5D0F70A33BE7CBCF44E22AFD174864322AB9FE355C42EFBA73B70FD7D",
+    "spec": "2C259C4F9B46ACE3EB757CAFA0C979C66B9582BEF28792B1AF1549A1DA6A20C1",
+    "basket_manifest": "B8AB7DE0A0746F6C50C838AF2366F2CD6631CB0C88C2F193A401E9C30BDF3D2C",
+    "approved_card": "56DDFD7C2A0BC24DC206D650CEA1F84DACBA57BD9A8344516BC3940565DC9BD4",
+    "source_packet": "2F393FBBE32F42A7BC0D304CADE1FB78A9225462FF4F06F82B85842EB2662D30"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "task_id": "ba601525-48df-4751-a448-7bac4e47ee7f",
+  "record_build_result": {
+    "recorded": true,
+    "new_status": "done",
+    "smoke_result": "deferred_p2_smoke",
+    "blocked_reason": "",
+    "fail_code": null,
+    "auto_q02_enqueued": {
+      "ea_id": "QM5_13073",
+      "enqueued": [
+        {
+          "setfile": "QM5_13073_xti-audusd-rspr_QM5_13073_XTI_AUDUSD_RSPREAD_D1_D1_backtest.set",
+          "symbol": "QM5_13073_XTI_AUDUSD_RSPREAD_D1",
+          "tf": "D1",
+          "wi_id": "7613c44b"
+        }
+      ],
+      "skipped": []
+    },
+    "next_action_hint": "Q02 auto-enqueued (1 work_items); worker daemons will dispatch on next tick"
+  },
+  "work_items": {
+    "count": 1,
+    "items": [
+      {
+        "id": "7613c44b-c520-478f-903d-247a0de59e94",
+        "kind": "backtest",
+        "phase": "Q02",
+        "phase_display": "Q02",
+        "phase_qid": "Q02",
+        "status": "pending",
+        "ea_id": "QM5_13073",
+        "symbol": "QM5_13073_XTI_AUDUSD_RSPREAD_D1",
+        "attempt_count": 0,
+        "created_at": "2026-07-08T22:16:31+00:00",
+        "updated_at": "2026-07-08T22:16:31+00:00",
+        "evidence_path": null,
+        "verdict": null
+      }
+    ],
+    "summary": {
+      "Q02_pending": 1
+    }
+  },
+  "constraints_observed": {
+    "manual_mt5_backtest_launched": false,
+    "autotrading_touched": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
