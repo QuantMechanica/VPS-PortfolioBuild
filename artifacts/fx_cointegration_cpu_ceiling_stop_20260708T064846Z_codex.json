@@ -1,0 +1,130 @@
+{
+  "generated_at_utc": "2026-07-08T06:48:46Z",
+  "generated_at_local": "2026-07-08T08:48:46+02:00",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "base_commit": "57fe43c49",
+  "mission": "grow certified V5 portfolio book with new forex sleeves; prefer market-neutral FX cointegration baskets",
+  "unit_of_work": "FX cointegration duplicate guard and current funnel advancement check",
+  "decision": {
+    "selected_path": "stop_at_cpu_ceiling_after_nonduplicate_guard",
+    "new_unbuilt_pair_found": false,
+    "existing_forex_card_advanced_this_turn": false,
+    "runtime_dispatch_started": false,
+    "reason": "The strict 66-pair FX cointegration scan survivors QM5_12533 and QM5_12532 are already built and no longer Q02-blocked. The extended screen's card-worthy siblings, QM5_13024 AUDCAD/GBPAUD and QM5_13029 GBPCAD/GBPNZD, are already built and have completed Q02 before later-gate strategy failures. The only current non-duplicate survivor path is existing forex basket QM5_12712 at Q07 pending, already priority-tracked at the top of the queue after Q02-Q06 PASS. The farm is already at practical CPU ceiling, so no duplicate row or extra heavy Q07 basket run was launched."
+  },
+  "source_evidence": {
+    "strict_scan_doc": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "method_source": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+    "extended_screen": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/survivors.json",
+    "extended_trade_check": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/trade_check.json"
+  },
+  "strict_66_pair_scan_status": {
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "latest_state": "Q02 PASS, later Q04 FAIL",
+      "q02_blocked": false
+    },
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "latest_state": "Q02 PASS, Q04 PASS, later Q05 FAIL",
+      "q02_blocked": false
+    }
+  },
+  "extended_screen_review": [
+    {
+      "pair": "AUDCAD.DWX/EURUSD.DWX",
+      "decision": "do_not_card",
+      "reason": "Formal survivor but v3 mechanics trade check was OOS-dead: net Sharpe -0.39 and OOS return -4.94 percent."
+    },
+    {
+      "pair": "AUDCAD.DWX/GBPAUD.DWX",
+      "decision": "already_built_and_tested",
+      "ea_id": "QM5_13024",
+      "latest_state": "Q02 PASS x2, later Q04 strategy FAIL"
+    },
+    {
+      "pair": "GBPCAD.DWX/GBPNZD.DWX",
+      "decision": "already_built_and_tested",
+      "ea_id": "QM5_13029",
+      "latest_state": "Q02 PASS, Q03 PASS, later Q04 strategy FAIL"
+    },
+    {
+      "pair": "AUDCAD.DWX/GBPNZD.DWX",
+      "decision": "do_not_card_now",
+      "reason": "Watchlist only; OOS net Sharpe 0.76 is below the 0.8 bar and overlaps AUDCAD exposure with already-built QM5_13024."
+    },
+    {
+      "pair": "AUDNZD.DWX/EURGBP.DWX",
+      "decision": "do_not_card",
+      "reason": "Screen note says hedge collapses to existing AUDNZD solo reversion, already represented by QM5_13020."
+    },
+    {
+      "pair": "XTIUSD.DWX/EURNZD.DWX",
+      "decision": "do_not_card",
+      "reason": "Not a pure forex sleeve and weak OOS trade check: net Sharpe 0.34."
+    }
+  ],
+  "approved_build_gap_check": {
+    "approved_allocated_unbuilt_fx_cointegration_card_found": false,
+    "built_cointegration_ea_folder_count": 44,
+    "note": "Approved Edgelab/cointegration cards found in repo are already represented by framework/EAs folders; no buildable missing card was identified."
+  },
+  "fallback_existing_forex": {
+    "ea_id": "QM5_12712",
+    "pair": "EURGBP.DWX/EURAUD.DWX",
+    "logical_symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+    "phase": "Q07",
+    "status": "pending",
+    "work_item_id": "1b9fa7a5-48a7-4e57-a699-9e55dfb0cb19",
+    "priority_track": true,
+    "prior_gates": {
+      "Q02": "PASS",
+      "Q03": "PASS",
+      "Q04": "PASS",
+      "Q05": "PASS",
+      "Q06": "PASS"
+    },
+    "queue_position": "top priority pending row in work_items snapshot"
+  },
+  "queue_snapshot": {
+    "sqlite": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "counts": {
+      "active": 6,
+      "pending": 5340,
+      "done": 43771,
+      "failed": 45269
+    },
+    "top_queued": [
+      {
+        "ea_id": "QM5_12712",
+        "phase": "Q07",
+        "symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+        "work_item_id": "1b9fa7a5-48a7-4e57-a699-9e55dfb0cb19",
+        "priority_track": true
+      }
+    ],
+    "cpu_ceiling_context": {
+      "active_work_items": 6,
+      "terminal64_running_count": 7,
+      "non_pipeline_terminals_present": [
+        "FTMO Global Markets MT5 Terminal",
+        "C:/QM/mt5/T_Live/MT5_Base/terminal64.exe"
+      ],
+      "manual_dispatch_started": false
+    }
+  },
+  "guardrails": {
+    "new_ea_built": false,
+    "new_work_item_created": false,
+    "duplicate_work_item_created": false,
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
