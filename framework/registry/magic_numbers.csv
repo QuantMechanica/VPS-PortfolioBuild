@@ -14697,3 +14697,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13053,brentsilver-rspr,1,XAGUSD.DWX,130530001,2026-07-08,Codex,active
 12482,gh-oil-nok,0,USDJPY.DWX,124820000,2026-07-08,Codex,active
 13054,brent-tom-mom,0,XBRUSD.DWX,130540000,2026-07-08,Codex,active
+13055,xbr-1w-mom-vol,0,XBRUSD.DWX,130550000,2026-07-08,Codex,active
