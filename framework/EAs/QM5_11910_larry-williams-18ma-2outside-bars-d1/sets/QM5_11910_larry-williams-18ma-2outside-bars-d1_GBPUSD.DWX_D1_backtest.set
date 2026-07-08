@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        11910
 ; ea_slug:      larry-williams-18ma-2outside-bars-d1
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a1a958f17679ee44aa459dc58b861dfb9ad87d3a053c9972ea5f7b466cf07d02
+; build_hash:   f17938d175b199e266fbdc8db54fd154cdde1eb4e4a8e3da506318a774e2a1b9
 ; author:       Development
 ; date:         2026-06-20
 ;==========================================================
