@@ -25,8 +25,8 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q07
-last_updated: 2026-07-04
+pipeline_phase: Q12_REVIEW_READY
+last_updated: 2026-07-08
 g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-requested in-house 66-pair FX scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS AUDUSD.DWX and EURJPY.DWX data exist in scan universe; R4 PASS no ML/grid/martingale. Marked very high-risk because OOS net Sharpe was negative."
 expected_pf: 0.94
 expected_dd_pct: 35.0
@@ -186,12 +186,15 @@ on 2026-06-29 and auto-enqueued one logical basket work item,
 the paced farm owns the first Q02 tester pass.
 
 Current funnel state: the EUR-accounting Q02 repair passed, then Q03, Q04,
-Q05, and Q06 all passed on the logical basket. The first Q07 run produced valid
-seed evidence for 42/17/99/7 but seed 2026 ended with `NO_HISTORY` /
-`REPORT_MISSING` infra evidence. Existing work item
-`fc554e0c-e66e-486a-a83d-c7301e67c615` was requeued in place on
-2026-07-03T22:33:23Z; no duplicate Q07/Q08 row was created, and the farm still
-has five active tester work items.
+Q05, Q06, and the Q07 retry all passed on the logical basket. Q08 returned
+`FAIL_SOFT` with 195 trades, cost-cushion PASS, six passing sub-gates, and no
+regime-catastrophe flag. Q09_PORTFOLIO then admitted the sleeve as a
+portfolio-only diversifier: standalone PF 1.0459, trade_count 195,
+max_corr_to_book 0.1005, sharpe_with 2.4353 versus 2.4320 without, and
+maxdd_with 0.2917 versus 0.3366 without. The farm materialized
+`portfolio_candidates` state `Q12_REVIEW_READY` for work item
+`0b1fddba-6c4e-47ec-b9b3-6b54273e5832`. This is review-ready evidence only;
+no T_Live deploy, AutoTrading action, or live risk authorization is implied.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
@@ -203,4 +206,7 @@ has five active tester work items.
 | v1-q05 | 2026-07-03 | stress medium logical basket aggregate | Q05 | PASS `1c0405e7-16d3-40e6-b884-6be1b504dc4c` |
 | v1-q06 | 2026-07-03 | stress harsh logical basket aggregate | Q06 | PASS `a60892f1-0059-47e8-83b2-39120ee15478` |
 | v1-q07 | 2026-07-03 | statistical validation first attempt | Q07 | INFRA_FAIL seed 2026; four seeds valid |
-| v1-q07-requeue | 2026-07-04 | requeued existing Q07 row after seed-2026 infra failure | Q07 | PENDING `fc554e0c-e66e-486a-a83d-c7301e67c615` |
+| v1-q07-retry | 2026-07-04 | requeued existing Q07 row after seed-2026 infra failure | Q07 | PASS `fc554e0c-e66e-486a-a83d-c7301e67c615` |
+| v1-q08 | 2026-07-05 | Davey robustness gate on persisted basket stream | Q08 | FAIL_SOFT `8637b758-4763-4a1c-a88e-f2001a1da7b4` |
+| v1-q09-portfolio | 2026-07-06 | portfolio-only diversification admission | Q09_PORTFOLIO | PASS_PORTFOLIO `0b1fddba-6c4e-47ec-b9b3-6b54273e5832` |
+| v1-q12-ready | 2026-07-08 | farm candidate table reconciliation | Q12_REVIEW_READY | `portfolio_candidates` row present |

@@ -1,0 +1,67 @@
+{
+  "generated_at_utc": "2026-07-08T21:48:49Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves; prefer market-neutral FX cointegration baskets",
+  "unit_of_work": "reconcile first Q12-review-ready FX cointegration sleeve after confirming no unbuilt approved scan candidate remained",
+  "selection": {
+    "strict_66_pair_unbuilt_candidate_found": false,
+    "strict_scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "extended_scan_source": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/survivors.json",
+    "reason": "QM5_12532 and QM5_12533 are already built and not Q02-blocked; extended card-worthy FX cointegration candidates visible locally are already built. QM5_12778 is the current FX cointegration sleeve with Q09_PORTFOLIO PASS and a portfolio_candidates Q12_REVIEW_READY row."
+  },
+  "selected_ea": {
+    "ea_id": "QM5_12778",
+    "slug": "edgelab-audusd-eurjpy-cointegration",
+    "pair": "AUDUSD.DWX/EURJPY.DWX",
+    "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "q07": {
+      "work_item_id": "fc554e0c-e66e-486a-a83d-c7301e67c615",
+      "verdict": "PASS"
+    },
+    "q08": {
+      "work_item_id": "8637b758-4763-4a1c-a88e-f2001a1da7b4",
+      "verdict": "FAIL_SOFT",
+      "trade_count": 195,
+      "cost_cushion_tier": "PASS",
+      "regime_catastrophe": false,
+      "evidence_path": "D:/QM/reports/work_items/8637b758-4763-4a1c-a88e-f2001a1da7b4/QM5_12778/Q08/QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1/aggregate.json"
+    },
+    "q09_portfolio": {
+      "work_item_id": "0b1fddba-6c4e-47ec-b9b3-6b54273e5832",
+      "verdict": "PASS_PORTFOLIO",
+      "admit": true,
+      "standalone_pf": 1.0459218054,
+      "trade_count": 195,
+      "max_corr_to_book": 0.1004857919,
+      "sharpe_with": 2.4352605925,
+      "sharpe_without": 2.4320058978,
+      "maxdd_with": 0.2917107088,
+      "maxdd_without": 0.3366164535,
+      "evidence_path": "D:/QM/reports/work_items/0b1fddba-6c4e-47ec-b9b3-6b54273e5832/QM5_12778/Q09_PORTFOLIO/QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1/aggregate.json"
+    },
+    "portfolio_candidate": {
+      "state": "Q12_REVIEW_READY",
+      "q11_work_item_id": "0b1fddba-6c4e-47ec-b9b3-6b54273e5832",
+      "first_seen_at": "2026-07-06T09:56:16+00:00",
+      "updated_at": "2026-07-08T07:57:26.771Z"
+    }
+  },
+  "files_reconciled": [
+    "strategy-seeds/cards/approved/QM5_12778_edgelab-audusd-eurjpy-cointegration_card.md",
+    "artifacts/cards_approved/QM5_12778_edgelab-audusd-eurjpy-cointegration.md",
+    "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/docs/strategy_card.md"
+  ],
+  "guardrails": {
+    "new_work_item_created": false,
+    "duplicate_work_item_created": false,
+    "manual_mt5_backtest_launched": false,
+    "portfolio_gate_code_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "t_live_manifest_touched": false,
+    "autotrading_touched": false
+  }
+}
