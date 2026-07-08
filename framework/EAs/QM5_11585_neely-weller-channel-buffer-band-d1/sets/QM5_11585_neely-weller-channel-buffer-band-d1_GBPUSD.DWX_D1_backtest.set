@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        11585
 ; ea_slug:      neely-weller-channel-buffer-band-d1
@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f6cfb3d6744b7c78807eee2706c0faad4e6d50fdb1824dfb18a74065ec4e99e7
+; build_hash:   d1a34ba51f10c01e089caef10700456c4473e491c2a27c858ea756f19819f6ff
 ; author:       Development
 ; date:         2026-06-28
 ;==========================================================
