@@ -1,0 +1,43 @@
+{
+  "ea_id": "QM5_9278",
+  "ea_label": "QM5_9278_mql5-lw-outside",
+  "unit_of_work": "q02_stale_ex5_refresh",
+  "completed_at_utc": "2026-07-08T19:39:29Z",
+  "reason": "Diverse D1 FX/metal/index EA had pending Q02 rows carrying stale-preflight metadata; source and setfiles were intact, so the compiled artifact was refreshed and revalidated.",
+  "compiled_artifact": "framework/EAs/QM5_9278_mql5-lw-outside/QM5_9278_mql5-lw-outside.ex5",
+  "compiled_artifact_sha256": "B73D688EA0DDAD65FF4162E903CEE89F7571CB03E0129E2E36698AA8FDB75249",
+  "compile_command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_9278_mql5-lw-outside/QM5_9278_mql5-lw-outside.mq5 -Strict",
+  "compile_result": {
+    "result": "PASS",
+    "reason_class": "OK",
+    "errors": 0,
+    "warnings": 0,
+    "metaeditor_exit_code": 1,
+    "compile_log": "framework/build/compile/20260708_213929/QM5_9278_mql5-lw-outside.compile.log",
+    "summary_csv": "D:/QM/reports/compile/20260708_213929/summary.csv"
+  },
+  "q02_rows_reverified": [
+    {
+      "work_item_id": "5a31a2c3-0f3c-47f0-bb78-e34d7fe59925",
+      "symbol": "EURUSD.DWX",
+      "setfile": "framework/EAs/QM5_9278_mql5-lw-outside/sets/QM5_9278_mql5-lw-outside_EURUSD.DWX_D1_backtest.set"
+    },
+    {
+      "work_item_id": "878dc145-b3c5-4250-8cf9-c3d23276ca0d",
+      "symbol": "GDAXI.DWX",
+      "setfile": "framework/EAs/QM5_9278_mql5-lw-outside/sets/QM5_9278_mql5-lw-outside_GDAXI.DWX_D1_backtest.set"
+    },
+    {
+      "work_item_id": "1ef81ecd-2366-4cdf-ad86-56b6c8990182",
+      "symbol": "XAUUSD.DWX",
+      "setfile": "framework/EAs/QM5_9278_mql5-lw-outside/sets/QM5_9278_mql5-lw-outside_XAUUSD.DWX_D1_backtest.set"
+    }
+  ],
+  "q02_status_after_reverify": "pending",
+  "q02_deferred_symbols_left_to_sweep": [
+    "GBPUSD.DWX"
+  ],
+  "backtests_run": false,
+  "live_scope_touched": false,
+  "portfolio_gate_touched": false
+}
