@@ -1,0 +1,58 @@
+{
+  "task_id": "mission-board-advisor-20260708-brent-feb-prem",
+  "ea_id": "QM5_13072",
+  "slug": "brent-feb-prem",
+  "source_id": "ARENDAS-OIL-SEASON-2018_BRENT_FEB_S07",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_13072_brent-feb-prem",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_13072_brent-feb-prem/QM5_13072_brent-feb-prem.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_13072_brent-feb-prem/QM5_13072_brent-feb-prem.ex5",
+  "ex5_size_bytes": 313532,
+  "magic_base": 130720000,
+  "symbols_registered": [
+    "XBRUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_13072_brent-feb-prem/sets/QM5_13072_brent-feb-prem_XBRUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "aa56045e7000468c94e456ea3893e8dee8506d4869cbaebe557246aa0213573b",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_13072_brent-feb-prem/SPEC.md",
+  "card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_13072_brent-feb-prem_card.md",
+  "approved_card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_13072_brent-feb-prem_card.md",
+  "compile_succeeded": true,
+  "compile_command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_13072_brent-feb-prem --force --json",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log_path": "C:/QM/repo/framework/build/compile/20260708_212343/QM5_13072_brent-feb-prem.compile.log",
+  "strict_compile_succeeded": true,
+  "strict_compile_command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13072_brent-feb-prem/QM5_13072_brent-feb-prem.mq5 -EALabel QM5_13072_brent-feb-prem -Strict",
+  "strict_compile_log_path": "C:/QM/repo/framework/build/compile/20260708_212405/QM5_13072_brent-feb-prem.compile.log",
+  "build_check_passed": true,
+  "build_check_command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13072_brent-feb-prem",
+  "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260708_212423.json",
+  "build_check_warning_count": 0,
+  "build_check_failure_count": 0,
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13072_brent-feb-prem",
+    "status": "PASS"
+  },
+  "registry_validation": {
+    "command": "python framework/scripts/validate_registries.py",
+    "status": "FAIL_PREEXISTING_REPO_ISSUES",
+    "new_rows_verified": true,
+    "note": "The repo-wide registry validator still reports long-standing invalid legacy rows unrelated to QM5_13072. QM5_13072 exists in ea_id_registry.csv, magic_numbers.csv, and the regenerated QM_MagicResolver.mqh."
+  },
+  "smoke_result": "deferred_q02",
+  "smoke_skipped_reason": "q02_enqueued_for_paced_fleet_no_manual_backtest",
+  "q02_work_items": [
+    {
+      "id": "30931ee1-e03b-43f2-8e83-f5ff9f93ec88",
+      "symbol": "XBRUSD.DWX",
+      "timeframe": "D1",
+      "status": "pending"
+    }
+  ],
+  "notes": [
+    "No manual backtest launched; Q02 is delegated to paced farm workers.",
+    "No T_Live, AutoTrading, live manifest, or portfolio gate files were touched."
+  ]
+}

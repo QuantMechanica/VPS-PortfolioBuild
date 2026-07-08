@@ -71,4 +71,4 @@ touched by this build.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-08 | Initial build from card | Q02 enqueue pending |
+| v1 | 2026-07-08 | Initial build from card | Q02 queued as work_item 30931ee1-e03b-43f2-8e83-f5ff9f93ec88 |

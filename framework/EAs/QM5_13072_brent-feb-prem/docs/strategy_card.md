@@ -216,12 +216,12 @@ gate.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
-| v1 | 2026-07-08 | initial structural Brent February calendar-premium build | Q01 | PENDING |
+| v1 | 2026-07-08 | initial structural Brent February calendar-premium build | Q02 | QUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-08 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-08 | PENDING | compile/build_check pending |
-| Q02 Baseline Screening | 2026-07-08 | PENDING | Q02 enqueue pending |
+| Q01 Build Validation | 2026-07-08 | PASS | `artifacts/qm5_13072_build_result.json`; `C:/QM/repo/framework/build/compile/20260708_212405/QM5_13072_brent-feb-prem.compile.log`; `D:/QM/reports/framework/21/build_check_20260708_212423.json` |
+| Q02 Baseline Screening | 2026-07-08 | QUEUED | `artifacts/qm5_13072_q02_enqueue_20260708.json`; `D:/QM/strategy_farm/state/farm_state.sqlite` work item `30931ee1-e03b-43f2-8e83-f5ff9f93ec88` |
