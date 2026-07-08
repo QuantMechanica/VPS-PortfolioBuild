@@ -14766,3 +14766,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13068,xti-padd1-reclaim,0,XTIUSD.DWX,130680000,2026-07-08,Codex,active
 13069,xti-jodi-brk,0,XTIUSD.DWX,130690000,2026-07-08,Codex,active
 13070,xti-jodi-fade,0,XTIUSD.DWX,130700000,2026-07-08,Codex,active
+13071,xti-usdchf-rspr,0,XTIUSD.DWX,130710000,2026-07-08,Codex,active
+13071,xti-usdchf-rspr,1,USDCHF.DWX,130710001,2026-07-08,Codex,active
