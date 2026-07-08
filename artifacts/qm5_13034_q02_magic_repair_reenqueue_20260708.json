@@ -1,0 +1,48 @@
+{
+  "diagnosis": {
+    "root_cause": "repo/T1 .ex5 was compiled before QM5_13034 magic rows were baked into QM_MagicResolver.mqh",
+    "runtime_error": "EA_MAGIC_NOT_REGISTERED: ea_id=13034 slot=0 magic=130340000",
+    "source_reason_classes": [
+      "ONINIT_FAILED",
+      "INCOMPLETE_RUNS"
+    ],
+    "source_result": "FAIL",
+    "source_summary": "D:\\QM\\reports\\work_items\\25b8585f-91bd-43d4-bb98-32480bbe89bf\\QM5_13034\\20260708_042807\\summary.json",
+    "source_work_item_id": "25b8585f-91bd-43d4-bb98-32480bbe89bf"
+  },
+  "diversity_rationale": "energy beyond XNG plus AUDCAD FX relative-spread basket",
+  "ea_id": "QM5_13034",
+  "ea_slug": "xti-audcad-rspr",
+  "notes": [
+    "No portfolio gate, T_Live manifest, or AutoTrading state touched.",
+    "No backtest rerun was launched; Q02 was enqueued for the farm runner to avoid ad hoc CPU burn."
+  ],
+  "operator": "codex_board_advisor",
+  "repair": {
+    "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260708_053611.json",
+    "commit": "fad57604531468951f470775c1e160144f927943",
+    "compile_check": "PASS: build_check.result=PASS; compile_one.result=PASS; errors=0; warnings=0",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260708_053612\\QM5_13034_xti-audcad-rspr.compile.log",
+    "repo_ex5": "C:\\QM\\repo\\framework\\EAs\\QM5_13034_xti-audcad-rspr\\QM5_13034_xti-audcad-rspr.ex5",
+    "repo_ex5_sha256": "c1efe29d2e355abf0ba891bd0df4c83016410853d6a0770bbf9758c878b04631",
+    "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_13034_xti-audcad-rspr\\sets\\QM5_13034_xti-audcad-rspr_QM5_13034_XTI_AUDCAD_RSPREAD_D1_D1_backtest.set",
+    "setfile_sha256": "85a761821f3b8b4e9b19e5a674d29c56ceb72dde96698d8d1b5dad93df7bf80b",
+    "t1_ex5": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_13034_xti-audcad-rspr.ex5",
+    "t1_ex5_sha256": "c1efe29d2e355abf0ba891bd0df4c83016410853d6a0770bbf9758c878b04631"
+  },
+  "requeue": {
+    "basket_symbols": [
+      "XTIUSD.DWX",
+      "AUDCAD.DWX"
+    ],
+    "host_symbol": "XTIUSD.DWX",
+    "new_work_item_id": "af92c252-5c25-4640-b7ad-1c3f42dae646",
+    "payload_copied_from": "25b8585f-91bd-43d4-bb98-32480bbe89bf",
+    "phase": "Q02",
+    "status": "pending",
+    "symbol": "QM5_13034_XTI_AUDCAD_RSPREAD_D1",
+    "terminal": "T1"
+  },
+  "timestamp_utc": "2026-07-08T05:39:05+00:00",
+  "unit_of_work": "q02_infra_repair_reenqueue"
+}
