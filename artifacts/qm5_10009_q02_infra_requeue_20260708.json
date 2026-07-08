@@ -1,0 +1,78 @@
+{
+  "ea_id": "QM5_10009",
+  "ea_label": "QM5_10009_rw-fx-cointeg-bb",
+  "agent": "codex:agents/board-advisor",
+  "completed_at_utc": "2026-07-08T11:13:21Z",
+  "mission_priority": "priority_2_diverse_q02_infra_recovery",
+  "target": {
+    "phase": "Q02",
+    "logical_symbol": "QM5_10009_AUD_NZD_CAD_COINTEG_D1",
+    "host_symbol": "AUDUSD.DWX",
+    "basket_symbols": [
+      "AUDUSD.DWX",
+      "NZDUSD.DWX",
+      "USDCAD.DWX"
+    ],
+    "setfile": "framework/EAs/QM5_10009_rw-fx-cointeg-bb/sets/QM5_10009_rw-fx-cointeg-bb_QM5_10009_AUD_NZD_CAD_COINTEG_D1_D1_backtest.set"
+  },
+  "diagnosis": {
+    "latest_infra_work_item_id": "abedf1df-a3bf-47b9-80a4-9cf7488d7c64",
+    "latest_infra_summary": "D:/QM/reports/work_items/abedf1df-a3bf-47b9-80a4-9cf7488d7c64/QM5_10009/20260706_100728/summary.json",
+    "result": "FAIL",
+    "reason_classes": [
+      "REPORT_MISSING",
+      "INCOMPLETE_RUNS"
+    ],
+    "root_cause": "terminal_account_not_specified",
+    "terminal": "T5",
+    "evidence": "Tester log tail repeats 'tester not started because the account is not specified' across all attempts; no EA report was produced.",
+    "package_not_blocker": {
+      "prior_pass_work_item_id": "2ae2c04e-5b5c-47de-a9eb-c46caeeefe0a",
+      "prior_pass_summary": "D:/QM/reports/work_items/2ae2c04e-5b5c-47de-a9eb-c46caeeefe0a/QM5_10009/20260701_121627/summary.json",
+      "run": "run_02",
+      "total_trades": 80,
+      "profit_factor": 1.22,
+      "net_profit": 531.9,
+      "drawdown": 1272.76
+    }
+  },
+  "code_fix": {
+    "mq5_path": "framework/EAs/QM5_10009_rw-fx-cointeg-bb/QM5_10009_rw-fx-cointeg-bb.mq5",
+    "summary": "Moved news gating below spread-state refresh, basket management, and exit checks so news windows suppress only new entries; reused one QM_IsNewBar latch and removed duplicate RefreshState from the entry path.",
+    "setfile_guardrail": "Added explicit strategy defaults to the three legacy per-leg RISK_FIXED backtest setfiles so directory-level compile guardrails pass deterministically."
+  },
+  "validation": {
+    "guardrails": "PASS",
+    "spec": "PASS",
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260708_111254.json"
+    },
+    "compile": {
+      "result": "COMPILED",
+      "errors": 0,
+      "warnings": 0,
+      "ex5_path": "framework/EAs/QM5_10009_rw-fx-cointeg-bb/QM5_10009_rw-fx-cointeg-bb.ex5",
+      "ex5_size_bytes": 317964,
+      "ex5_sha256": "F02FAE6DBC09D3B3F4997AB7419952C176DB25F889DB085C2F8C42D3130FFBDF",
+      "compile_log_path": "framework/build/compile/20260708_111303/QM5_10009_rw-fx-cointeg-bb.compile.log"
+    }
+  },
+  "requeue": {
+    "work_item_id": "e210cd5c-dbf6-4d13-af69-83a53faf41c9",
+    "event_id": 227513,
+    "status": "pending",
+    "phase": "Q02",
+    "symbol": "QM5_10009_AUD_NZD_CAD_COINTEG_D1",
+    "payload_enqueued_by": "codex_board_advisor_q02_infra_requeue_20260708",
+    "created_at_utc": "2026-07-08T11:11:18Z"
+  },
+  "boundaries": {
+    "backtests_started": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false
+  }
+}
