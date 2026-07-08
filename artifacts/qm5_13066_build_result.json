@@ -1,0 +1,87 @@
+{
+  "task_id": "af849305-477d-40e7-a8f7-ff59662b223b",
+  "ea_id": "QM5_13066",
+  "numeric_ea_id": 13066,
+  "slug": "xti-padd4-fade",
+  "generated_at": "2026-07-08T15:40:36Z",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "source_id": "EIA-XTI-PADD4-FADE-2026",
+  "card": "strategy-seeds/cards/approved/QM5_13066_xti-padd4-fade_card.md",
+  "canonical_card": "strategy-seeds/cards/xti-padd4-fade_card.md",
+  "ea_dir": "framework/EAs/QM5_13066_xti-padd4-fade",
+  "mq5_path": "framework/EAs/QM5_13066_xti-padd4-fade/QM5_13066_xti-padd4-fade.mq5",
+  "ex5_path": "framework/EAs/QM5_13066_xti-padd4-fade/QM5_13066_xti-padd4-fade.ex5",
+  "spec_md_path": "framework/EAs/QM5_13066_xti-padd4-fade/SPEC.md",
+  "docs_strategy_card_path": "framework/EAs/QM5_13066_xti-padd4-fade/docs/strategy_card.md",
+  "setfile": "framework/EAs/QM5_13066_xti-padd4-fade/sets/QM5_13066_xti-padd4-fade_XTIUSD.DWX_D1_backtest.set",
+  "setfiles_generated": [
+    "framework/EAs/QM5_13066_xti-padd4-fade/sets/QM5_13066_xti-padd4-fade_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 130660000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfile_build_hash": "41c5efe57329b6101e5b15eed903db65ca74daf90a565b58c32407629e874b56",
+  "file_hashes_sha256": {
+    "framework/EAs/QM5_13066_xti-padd4-fade/QM5_13066_xti-padd4-fade.mq5": "6C8AB73C93B93B4F11F1B830FF9AA4903EBF31D006B4B16016C728F3A54A5B0C",
+    "framework/EAs/QM5_13066_xti-padd4-fade/QM5_13066_xti-padd4-fade.ex5": "E2681401AE70D3A3CF9ECFAB36C0DC5E27776576F5DF999DE945AA613B791689",
+    "framework/EAs/QM5_13066_xti-padd4-fade/sets/QM5_13066_xti-padd4-fade_XTIUSD.DWX_D1_backtest.set": "05C777C4FF6E74B0AC667372781071ECAECB277EF92A5ACE67D84F6FF094766D",
+    "strategy-seeds/cards/xti-padd4-fade_card.md": "8E0B9744C06E0B131E295181415FB0641ABE07F6900163C66CB6079349C2B72B",
+    "strategy-seeds/cards/approved/QM5_13066_xti-padd4-fade_card.md": "8E0B9744C06E0B131E295181415FB0641ABE07F6900163C66CB6079349C2B72B",
+    "framework/EAs/QM5_13066_xti-padd4-fade/SPEC.md": "41142ACFA678F5D5015A2A10ABF143A26C2163C0AB0F797DCDCC8566C3308337",
+    "framework/EAs/QM5_13066_xti-padd4-fade/docs/strategy_card.md": "9B58BD1B3684791399041FE41726115D46D2072B9D8714314CF05662B8875FCE"
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "build_only_q02_enqueue_no_backtest_smoke_run",
+  "blocked_reason": "",
+  "open_questions": [],
+  "checks": {
+    "spec_validation": {
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13066_xti-padd4-fade",
+      "result": "PASS"
+    },
+    "magic_resolver": {
+      "command": "python framework/scripts/update_magic_resolver.py",
+      "result": "PASS_WITH_PREEXISTING_WARNINGS",
+      "note": "Resolver regenerated; warnings were for unrelated missing EA dirs 1001, 1015, and 1016."
+    },
+    "strict_compile": {
+      "command": "pwsh -File framework/scripts/compile_one.ps1 -EALabel QM5_13066_xti-padd4-fade -Strict",
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "compile_log": "C:/QM/repo/framework/build/compile/20260708_153853/QM5_13066_xti-padd4-fade.compile.log"
+    },
+    "build_check": {
+      "command": "pwsh -File framework/scripts/build_check.ps1 -EALabel QM5_13066_xti-padd4-fade -Strict",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "compile_log": "C:/QM/repo/framework/build/compile/20260708_153908/QM5_13066_xti-padd4-fade.compile.log",
+      "compile_summary": "D:/QM/reports/compile/20260708_153908/summary.csv",
+      "report": "D:/QM/reports/framework/21/build_check_20260708_153908.json"
+    }
+  },
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "structural_only": true,
+    "ml_required": false,
+    "external_runtime_data": false,
+    "backtest_cpu_used": false,
+    "t_live_touched": false,
+    "auto_trading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "handoff": {
+    "pipeline_phase": "Q02",
+    "enqueue_artifact": "artifacts/qm5_13066_q02_enqueue_20260708.json",
+    "work_item_id": "fefd5fd3-0885-4930-ae49-486532615df8"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "artifact_id": "7135ed1d-fd4c-47cb-a1dd-c17dcbf2312b",
+  "ea_id": "QM5_13066",
+  "numeric_ea_id": 13066,
+  "ea_label": "QM5_13066_xti-padd4-fade",
+  "slug": "xti-padd4-fade",
+  "source_id": "EIA-XTI-PADD4-FADE-2026",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "queued_at_utc": "2026-07-08T15:39:44Z",
+  "recorded_at_utc": "2026-07-08T15:40:36Z",
+  "phase": "Q02",
+  "status": "pending",
+  "work_item": {
+    "id": "fefd5fd3-0885-4930-ae49-486532615df8",
+    "kind": "backtest",
+    "phase": "Q02",
+    "status": "pending",
+    "symbol": "XTIUSD.DWX",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_13066_xti-padd4-fade/sets/QM5_13066_xti-padd4-fade_XTIUSD.DWX_D1_backtest.set",
+    "attempt_count": 0,
+    "created_at": "2026-07-08T15:39:44+00:00",
+    "updated_at": "2026-07-08T15:39:44+00:00"
+  },
+  "setfile": "framework/EAs/QM5_13066_xti-padd4-fade/sets/QM5_13066_xti-padd4-fade_XTIUSD.DWX_D1_backtest.set",
+  "enqueue_command": "python tools/strategy_farm/sweep_enqueue_built_eas.py --apply --ea QM5_13066 --queue-ceiling 10000 --max-part2-per-run 0",
+  "sweep_evidence": "D:/QM/reports/state/claude_sweep_enqueue_2026-06-10.json",
+  "sweep_result": {
+    "apply": true,
+    "part1_never_tested_enqueued": 1,
+    "part1_never_tested_skipped": 0,
+    "part2_stranded_enqueued": 0,
+    "part2_stranded_skipped": 0,
+    "part1_skip_reasons": {},
+    "part2_by_phase": {},
+    "part3_deferred_promoted": 0,
+    "part3_deferred_kept": 0,
+    "priority_track_items": 0
+  },
+  "guardrails": {
+    "q02_only": true,
+    "backtest_not_run_by_build_agent": true,
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "no_t_live_changes": true,
+    "auto_trading_unchanged": true,
+    "portfolio_gate_unchanged": true
+  }
+}
