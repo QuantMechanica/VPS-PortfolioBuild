@@ -14771,3 +14771,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13036,balke-go-long-regime,0,NDX.DWX,130360000,2026-07-08,Codex,active
 13036,balke-go-long-regime,1,GDAXI.DWX,130360001,2026-07-08,Codex,active
 13072,brent-feb-prem,0,XBRUSD.DWX,130720000,2026-07-08,Codex,active
+13073,xti-audusd-rspr,0,XTIUSD.DWX,130730000,2026-07-08,Codex,active
+13073,xti-audusd-rspr,1,AUDUSD.DWX,130730001,2026-07-08,Codex,active

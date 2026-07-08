@@ -1,0 +1,13 @@
+{
+  "logical_symbol": "QM5_13073_XTI_AUDUSD_RSPREAD_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "AUDUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg WTI/AUDUSD commodity-FX return-spread reversion basket from the approved EIA-RBA-WTI-AUD-2026 card. The EA runs from the XTIUSD.DWX host setfile and reads both D1 close series to compute log(XTI return) minus beta times log(AUDUSD return), standardized over a fixed lookback. Q02 must evaluate the logical basket, not the standalone legs."
+  ]
+}
+
