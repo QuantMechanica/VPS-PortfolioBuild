@@ -45,6 +45,43 @@ class Q04LatestFullYearPayloadTests(unittest.TestCase):
         self.assertIn("--latest-full-year", cmd)
         self.assertEqual(cmd[cmd.index("--latest-full-year") + 1], "2024")
 
+    def test_q05_payload_timeout_reaches_phase_runner(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            setfile = root / (
+                "QM5_12834_wti-jpy-spread_"
+                "QM5_12834_XTI_USDJPY_SPREAD_D1_D1_backtest.set"
+            )
+            setfile.write_text("RISK_FIXED=1000\n", encoding="utf-8")
+            item = {
+                "phase": "Q05",
+                "ea_id": "QM5_12834",
+                "symbol": "QM5_12834_XTI_USDJPY_SPREAD_D1",
+                "setfile_path": str(setfile),
+                "payload_json": json.dumps(
+                    {
+                        "host_symbol": "XTIUSD.DWX",
+                        "host_timeframe": "D1",
+                        "timeout_min": 120,
+                    }
+                ),
+            }
+
+            cmd = farmctl._phase_runner_cmd_for_work_item(
+                root,
+                item,  # type: ignore[arg-type]
+                root / "reports",
+                terminal="T4",
+            )
+
+        self.assertIsNotNone(cmd)
+        assert cmd is not None
+        self.assertIn("--timeout-sec", cmd)
+        self.assertEqual(
+            cmd[cmd.index("--timeout-sec") + 1],
+            str(120 * 60 - farmctl.PHASE_RUNNER_TIMEOUT_HEADROOM_SEC),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

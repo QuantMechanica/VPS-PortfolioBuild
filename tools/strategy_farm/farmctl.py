@@ -3098,6 +3098,22 @@ def _console_python_executable() -> str:
     return sys.executable
 
 
+PHASE_RUNNER_TIMEOUT_HEADROOM_SEC = 300
+PHASE_RUNNER_TIMEOUT_MAX_SEC = 28800
+
+
+def _phase_runner_timeout_sec_from_payload(payload: dict[str, Any]) -> int | None:
+    """Convert a work-item timeout_min payload into a child runner budget."""
+    try:
+        timeout_min = int(str(payload.get("timeout_min") or "0").strip())
+    except (TypeError, ValueError):
+        return None
+    if timeout_min <= 0:
+        return None
+    timeout_sec = timeout_min * 60 - PHASE_RUNNER_TIMEOUT_HEADROOM_SEC
+    return max(60, min(timeout_sec, PHASE_RUNNER_TIMEOUT_MAX_SEC))
+
+
 def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
                                     report_root: Path,
                                     terminal: str | None = None,
@@ -3240,6 +3256,10 @@ def _phase_runner_cmd_for_work_item(root: Path, item_row: sqlite3.Row,
             "--baseline-setfile", str(item_row["setfile_path"] or ""),
             "--terminal", terminal or "T1",
         ])
+        if phase in {"Q05", "Q06"}:
+            timeout_sec = _phase_runner_timeout_sec_from_payload(payload)
+            if timeout_sec is not None:
+                cmd.extend(["--timeout-sec", str(timeout_sec)])
         if phase in ("Q05", "Q06", "Q10"):
             latest_full_year = payload.get("q04_latest_full_year", payload.get("latest_full_year"))
             if latest_full_year is not None:
