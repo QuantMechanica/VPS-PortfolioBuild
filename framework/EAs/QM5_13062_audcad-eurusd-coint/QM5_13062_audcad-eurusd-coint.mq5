@@ -120,7 +120,7 @@ bool Strategy_EnsureBasketScope()
    if(g_basket_scope_ready)
       return true;
 
-   string allowed[4] = {"AUDCAD.DWX", "EURUSD.DWX", "USDCAD.DWX", "NZDUSD.DWX"};
+   string allowed[3] = {"AUDCAD.DWX", "EURUSD.DWX", "USDCAD.DWX"};
    for(int i = 0; i < ArraySize(allowed); ++i)
       SymbolSelect(allowed[i], true);
 

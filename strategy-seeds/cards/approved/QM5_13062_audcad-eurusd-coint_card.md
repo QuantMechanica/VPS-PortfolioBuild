@@ -32,10 +32,10 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q04
+pipeline_phase: Q02
 last_updated: 2026-07-08
-g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-directed in-house FX cointegration scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS AUDCAD.DWX and EURUSD.DWX data exist in the extended Darwinex scan; R4 PASS no ML/grid/martingale. This is a watchlist replacement candidate after the stronger extended-screen siblings were already built and failed later gates."
-expected_pf: 1.03
+g0_approval_reasoning: "R1 PASS Chan cointegration method plus OWNER-directed in-house FX cointegration scan; R2 PASS deterministic fixed-pair z-score basket; R3 PASS AUDCAD.DWX and EURUSD.DWX data exist in the extended Darwinex scan; R4 PASS no ML/grid/martingale. This is the only unbuilt formal survivor in the extended scan, but its v3 fixed-hedge trade check is OOS-negative, so Q02 is evidence gathering rather than a clean performance claim."
+expected_pf: 0.95
 expected_dd_pct: 30.0
 portfolio_scope: basket
 ---
@@ -54,37 +54,37 @@ hedge scan certified only `QM5_12533` and `QM5_12532`.
 source_citation: Chan, Ernest P. (2009). Quantitative Trading. Wiley, Chapter 7;
 QuantMechanica 2026 extended FX cointegration screen on Darwinex `.DWX` D1 data.
 
-The extended screen flags `AUDCAD~EURUSD` as a watchlist replacement candidate,
-not a formal strict survivor. It passed both half-sample ADF tests (`t=-3.167`,
-`p=0.0768` and `t=-3.662`, `p=0.0211`), kept hedge sign stable, and the 60-bar
-rolling z-score had 41 `|z| >= 2` excursions across the scan window. It missed
-the original strict half-life gate at 76.5 days and its OOS net Sharpe was 0.76,
-just under the 0.8 carding bar. The reason to route it after `QM5_13024` and
-`QM5_13029` is explicit and limited: unlike those stronger-looking siblings, the
-v3-mechanics trade check was profitable in both windows, with DEV net Sharpe
-1.13, OOS return 7.94%, 22 OOS state changes, and DEV hedge `0.5301`.
+The extended screen flags `AUDCAD~EURUSD` as the only unbuilt formal survivor in
+the 2026-07-06 run. It passed both half-sample ADF tests (`t=-3.337`, `p=0.0508`
+and `t=-3.683`, `p=0.0199`), kept hedge sign stable, had a 51.4 day half-life,
+and the 60-bar rolling z-score had 43 `|z| >= 2` excursions across the scan
+window. The reason this card is high risk is also explicit: the v3 fixed-hedge
+trade check was positive in DEV but negative OOS, with DEV net Sharpe 0.63,
+OOS net Sharpe -0.39, OOS return -4.94%, 20 OOS state changes, and DEV hedge
+`0.5301`.
 
 ## Concept
 
-AUDCAD and EURUSD combine commodity/risk-bloc FX exposure through AUD, CAD, NZD,
-and GBP without being a pure common-leg spread. The negative hedge ratio creates
-a same-direction package: long spread means long AUDCAD and long EURUSD; short
-spread means short both legs. The basket is meant to be market-neutral at the
-spread level, not a directional AUD or GBP forecast.
+AUDCAD and EURUSD combine AUD/CAD commodity-bloc exposure with the broad EUR/USD
+risk and dollar complex without being a pure common-leg spread. The positive
+hedge ratio creates an opposing-leg package: long spread means long AUDCAD and
+short EURUSD; short spread means short AUDCAD and long EURUSD. The basket is
+meant to be market-neutral at the spread level, not a directional AUD, CAD, EUR,
+or USD forecast.
 
 ## Hypothesis
 
-Temporary dislocations in `ln(AUDCAD) - beta * ln(EURUSD)` can mean-revert
-because AUD/CAD and GBP/NZD embed related commodity-bloc, risk-sentiment, and
-local-rate premia. The scan result is in-house, the hedge magnitude drifted
-materially between halves, and the half-life is slow, so the pipeline gates
-remain the judge.
+Temporary dislocations in `ln(AUDCAD) - beta * ln(EURUSD)` can mean-revert if
+commodity-bloc and broad-dollar risk premia overshoot relative to each other.
+The scan result is in-house, the hedge magnitude drifted materially between
+halves (`0.745` to `0.124`), and the OOS trade check is negative, so the
+pipeline gates remain the judge.
 
 ## Markets And Timeframe
 
 - Host symbol: AUDCAD.DWX.
 - Basket legs: AUDCAD.DWX and EURUSD.DWX.
-- Conversion/history dependencies for USD tester accounting: USDCAD.DWX and NZDUSD.DWX.
+- Conversion/history dependency for USD tester accounting: USDCAD.DWX.
 - Logical symbol: QM5_13062_AUDCAD_EURUSD_COINTEGRATION_D1.
 - Period: D1.
 - Backtest risk mode: RISK_FIXED.
@@ -100,10 +100,10 @@ remain the judge.
 ## Entry Rules
 
 - Evaluate only after a new closed D1 bar.
-- Compute `spread = ln(AUDCAD) - (0.5301) * ln(EURUSD)`.
+- Compute `spread = ln(AUDCAD) - 0.5301 * ln(EURUSD)`.
 - Compute a 60-bar rolling z-score of the spread.
-- If no pair package is open and z > +2.0, open a short-spread package: short AUDCAD and short EURUSD.
-- If no pair package is open and z < -2.0, open a long-spread package: long AUDCAD and long EURUSD.
+- If no pair package is open and z > +2.0, open a short-spread package: short AUDCAD and long EURUSD.
+- If no pair package is open and z < -2.0, open a long-spread package: long AUDCAD and short EURUSD.
 - Size each leg from V5 fixed risk, split by absolute hedge weights.
 
 ## Exit Rules
@@ -127,7 +127,7 @@ remain the judge.
   sweep_range: [40, 60, 90]
 - name: strategy_beta
   default: 0.5301
-  sweep_range: [-1.00, 0.5301, -0.50]
+  sweep_range: [0.25, 0.5301, 0.75]
 - name: strategy_entry_z
   default: 2.0
   sweep_range: [1.75, 2.0, 2.25]
@@ -144,17 +144,18 @@ remain the judge.
 ## Author Claims
 
 No external performance claim is taken from Chan for AUDCAD/EURUSD specifically.
-The in-house extended scan found this as a watchlist sibling candidate after the
-certified AUDUSD/NZDUSD and EURJPY/GBPJPY anchors. It is being routed only
-because the higher-ranked extended siblings are already built and later failed.
-Pipeline gates are the judge.
+The in-house extended scan found this as a formal statistical survivor after the
+certified AUDUSD/NZDUSD and EURJPY/GBPJPY anchors, but the same artifact marks
+the v3 fixed-hedge mechanics as OOS-negative. It is routed only because the
+mission requested a non-duplicate unbuilt FX cointegration pair. Pipeline gates
+are the judge.
 
 ## Initial Risk Profile
 
-- expected_pf: 1.03.
+- expected_pf: 0.95.
 - expected_dd_pct: 30.
 - expected_trade_frequency: approximately 4-8 basket packages/year.
-- risk_class: high because this is an in-house extended-screen watchlist sibling with a slow half-life and OOS just below the original 0.8 Sharpe bar.
+- risk_class: high because this is an in-house extended-screen formal survivor with negative OOS fixed-hedge trade evidence.
 - gridding: false.
 - scalping: false.
 - ml_required: false.
@@ -168,7 +169,7 @@ gates.
 
 ## Strategy Allowability Check
 
-- [x] R1 reputable source: Chan cointegration method plus OWNER-directed in-house FX cointegration screen.
+- [x] R1 reputable source: Chan cointegration method plus OWNER-directed in-house FX cointegration screen; no positive external performance claim is imported.
 - [x] R2 mechanical: fixed beta, z-score entry/exit, ATR stop, broken-package close.
 - [x] R3 testable: AUDCAD.DWX and EURUSD.DWX are Darwinex-native `.DWX` symbols in the exported scan data.
 - [x] R4 compliant: no ML, no grid, no martingale, low-frequency D1.
@@ -176,7 +177,7 @@ gates.
 ## Framework Alignment
 
 - no_trade: fixed host/symbol guard plus framework news/Friday/kill-switch.
-- trade_entry: D1 cointegration spread z-score threshold with negative-beta leg direction.
+- trade_entry: D1 cointegration spread z-score threshold with positive-beta opposing-leg direction.
 - trade_management: broken-package cleanup only.
 - trade_close: mean-reversion exit and framework Friday close.
 
@@ -184,7 +185,4 @@ gates.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-08 | initial extended-screen FX cointegration watchlist replacement card | G0 | APPROVED |
-| v2 | 2026-07-08 | compiled basket EA and logical basket Q02 auto-enqueued as work item df21c7a2-a0e2-467c-9be9-56f490d2e40d | Q02 | PENDING |
-| v3 | 2026-07-08 | logical basket Q02 completed on AUDCAD host; 140 trades, PF 1.27, no ONINIT failure | Q02 | PASS |
-| v4 | 2026-07-08 | Q04 walk-forward completed without infra errors; F1 pf_net 1.173, F2 pf_net 0.937, below fold bar | Q04 | FAIL |
+| v1 | 2026-07-08 | initial extended-screen FX cointegration formal-survivor card with OOS-negative caveat | G0 | APPROVED |

@@ -15,18 +15,17 @@ computes `S = ln(AUDCAD) - beta * ln(EURUSD)` with beta defaulting to
 `0.5301`, then calculates a 60-bar rolling z-score of that spread.
 
 It opens a short-spread package when z is above +2.0 and a long-spread package
-when z is below -2.0. Because beta is negative, the second-leg hedge direction is
-sign-aware: long spread means long AUDCAD and long EURUSD; short spread means
-short both legs. Each leg carries a 2.0 * ATR(20, D1) protective stop.
+when z is below -2.0. Because beta is positive, the second-leg hedge direction is
+sign-aware: long spread means long AUDCAD and short EURUSD; short spread means
+short AUDCAD and long EURUSD. Each leg carries a 2.0 * ATR(20, D1) protective
+stop.
 
-The extended FX cointegration screen labels AUDCAD/EURUSD as a watchlist
-replacement candidate rather than a formal all-gates survivor. It passed both
-half-sample ADF tests, kept hedge sign stable, and produced 41 rolling-z
-excursions across the scan window. It missed the original strict half-life gate
-with a 76.5 day estimate, and its OOS net Sharpe of 0.76 is just below the 0.8
-bar. The reason to route it after the stronger extended siblings is narrow:
-the v3-mechanics trade check was profitable in both DEV and OOS, while the
-already-built AUDCAD/GBPAUD and GBPCAD/EURUSD siblings have now failed Q04.
+The extended FX cointegration screen labels AUDCAD/EURUSD as the only unbuilt
+formal survivor in the 2026-07-06 run. It passed both half-sample ADF tests,
+kept hedge sign stable, produced 43 rolling-z excursions across the scan window,
+and had a 51.4 day half-life. The reason this route is high risk is also
+explicit: the v3 fixed-hedge mechanics were positive in DEV but negative OOS
+with OOS net Sharpe -0.39 and OOS return -4.94%.
 
 ---
 
@@ -50,9 +49,8 @@ already-built AUDCAD/GBPAUD and GBPCAD/EURUSD siblings have now failed Q04.
 - AUDCAD.DWX - leg 1 of the fixed AUDCAD/EURUSD spread and the spread numerator.
 - EURUSD.DWX - leg 2 of the fixed AUDCAD/EURUSD spread and the beta-weighted spread denominator.
 
-**History/conversion dependencies:**
+**History/conversion dependency:**
 - USDCAD.DWX - CAD profit-currency conversion support for USD tester accounting.
-- NZDUSD.DWX - NZD profit-currency conversion support for USD tester accounting.
 
 **Explicitly not for:**
 - Other `.DWX` symbols. This card is a fixed two-leg FX basket, not a portable multi-pair strategy.
@@ -75,8 +73,8 @@ already-built AUDCAD/GBPAUD and GBPCAD/EURUSD siblings have now failed Q04.
 |---|---|
 | Trades / year / logical basket | 4-8 |
 | Typical hold time | weeks to months |
-| Expected drawdown profile | high; Q02/Q04/Q05 must judge whether this slow residual is tradable after cost |
-| Regime preference | commodity/risk-bloc residual across AUD, CAD, NZD, and GBP exposures |
+| Expected drawdown profile | high; Q02/Q04/Q05 must judge whether this residual is tradable after cost |
+| Regime preference | commodity-bloc AUD/CAD residual versus broad EUR/USD risk-dollar exposure |
 | Win rate target | medium |
 
 ---
@@ -95,7 +93,7 @@ Screen excerpt for this candidate:
 
 | pair | half ADF t1 | half ADF t2 | rolling z excursions | half-life | hedge | OOS net Sharpe | OOS ret | OOS state changes |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| AUDCAD~EURUSD | -3.167 | -3.662 | 41 | 76.5d | 0.5301 | 0.76 | 7.94% | 22 |
+| AUDCAD~EURUSD | -3.337 | -3.683 | 43 | 51.4d | 0.5301 | -0.39 | -4.94% | 20 |
 
 ---
 
@@ -117,5 +115,5 @@ Q02 tester note: the manifest pins `tester_currency=USD` and
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-08 | Initial extended-screen FX cointegration basket build | Built from the 13024 two-leg basket pattern with sign-aware negative-beta leg direction |
+| v1 | 2026-07-08 | Initial extended-screen FX cointegration basket build | Built from the 13058 two-leg basket pattern with sign-aware positive-beta leg direction |
 
