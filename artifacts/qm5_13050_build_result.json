@@ -1,0 +1,78 @@
+{
+  "task_id": "f704e52f-2196-466a-85b2-aaa6dcfb9ec7",
+  "ea_id": "QM5_13050",
+  "slug": "xti-1w-rev-vol",
+  "generated_at": "2026-07-08T01:09:23Z",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "source_id": "ZHAO-ST-MOMREV-2026_XTI_S02",
+  "card": "strategy-seeds/cards/approved/QM5_13050_xti-1w-rev-vol_card.md",
+  "canonical_card": "strategy-seeds/cards/xti-1w-rev-vol_card.md",
+  "farm_approved_card": "artifacts/cards_approved/QM5_13050_xti-1w-rev-vol.md",
+  "ea_dir": "framework/EAs/QM5_13050_xti-1w-rev-vol",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_13050_xti-1w-rev-vol/QM5_13050_xti-1w-rev-vol.mq5",
+  "ea_path": "framework/EAs/QM5_13050_xti-1w-rev-vol/QM5_13050_xti-1w-rev-vol.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_13050_xti-1w-rev-vol/QM5_13050_xti-1w-rev-vol.ex5",
+  "magic_base": 130500000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfile": "framework/EAs/QM5_13050_xti-1w-rev-vol/sets/QM5_13050_xti-1w-rev-vol_XTIUSD.DWX_D1_backtest.set",
+  "setfiles_generated": [
+    "framework/EAs/QM5_13050_xti-1w-rev-vol/sets/QM5_13050_xti-1w-rev-vol_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_13050_xti-1w-rev-vol/SPEC.md",
+  "setfile_build_hash": "8e9713a719b6f37daa916abc49cfc7255e27a5524e5a2455d5bdf9fb19057e16",
+  "file_hashes_sha256": {
+    "card": "DB44622375D58A37BB72D9996384D7EBDF8CA432F4627219CE0DE4224780CC68",
+    "mq5": "A45A9D0F96619C537D37130586DE5951753565C7D7CD45D44584168D3A2A9CC8",
+    "ex5": "5934594F2B9F0806FACB0E6E6A8DA9960DB95513BD062E15A06EEE035D4E3017",
+    "setfile": "63A7EE8320D5E28AE2BBAEC57940787AEBA0D4B2B3332A17C655133C187E17AD"
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "build_only_q02_enqueue_no_backtest_smoke_run",
+  "blocked_reason": "",
+  "open_questions": [],
+  "checks": {
+    "card_schema_lint_canonical": "PASS",
+    "card_schema_lint_approved": "PASS",
+    "g0_card_lint_approved": "PASS",
+    "spec_doc": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "magic_resolver_update": {
+      "result": "PASS",
+      "warnings": [
+        "pre-existing missing EA dirs for magic rows: 1001, 1015, 1016"
+      ]
+    },
+    "compile_one_strict": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260708_010900/QM5_13050_xti-1w-rev-vol.compile.log"
+    },
+    "build_check_strict": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260708_010900.json"
+    },
+    "q02_enqueue": {
+      "result": "PASS",
+      "evidence": "artifacts/qm5_13050_q02_enqueue_20260708.json",
+      "work_item": "9fb962da"
+    }
+  },
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "backtest_cpu_used": false
+  }
+}

@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13050
 ; ea_slug:      xti-1w-rev-vol
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   TBD
+; build_hash:   8e9713a719b6f37daa916abc49cfc7255e27a5524e5a2455d5bdf9fb19057e16
 ; author:       Development
 ; date:         2026-07-08
 ;==========================================================
