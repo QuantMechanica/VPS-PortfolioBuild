@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13065
 ; ea_slug:      opec-momr-fade
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   5849e7844a5d9ef28d8c670050e3c13f952d376ae1e7350fb96f1835a2b363c8
 ; author:       Development
 ; date:         2026-07-08
 ;==========================================================
