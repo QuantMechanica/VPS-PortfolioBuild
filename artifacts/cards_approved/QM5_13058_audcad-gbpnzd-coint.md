@@ -188,3 +188,4 @@ gates.
 | v2 | 2026-07-08 | compiled basket EA and logical basket Q02 auto-enqueued as work item df21c7a2-a0e2-467c-9be9-56f490d2e40d | Q02 | PENDING |
 | v3 | 2026-07-08 | logical basket Q02 completed on AUDCAD host; 140 trades, PF 1.27, no ONINIT failure | Q02 | PASS |
 | v4 | 2026-07-08 | Q04 walk-forward completed without infra errors; F1 pf_net 1.173, F2 pf_net 0.937, below fold bar | Q04 | FAIL |
+| v5 | 2026-07-08 | companion Q03 deterministic row 19ddc71f-d9d8-4740-adb2-8ec7a1bc2ee7 completed after the Q04 aggregate; 140 trades, PF 1.27, no ONINIT failure | Q03 | PASS |

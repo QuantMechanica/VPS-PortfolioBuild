@@ -1,0 +1,115 @@
+{
+  "generated_at_utc": "2026-07-08T19:46:55Z",
+  "generated_at_local": "2026-07-08T21:46:55+02:00",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves; prefer market-neutral FX cointegration baskets",
+  "unit_of_work": "non-duplicate FX cointegration state reconciliation under CPU ceiling",
+  "decision": {
+    "selected_path": "reconcile_existing_forex_cards_and_stop_at_cpu_ceiling",
+    "new_unbuilt_pair_found": false,
+    "q02_enqueue_created": false,
+    "reason": "The strict 66-pair survivors QM5_12532 and QM5_12533 are already built and not Q02-blocked. The extended-screen FX cointegration candidates visible in the repo are already built and have produced Q02 evidence. The only current clean continuation, QM5_12712, has moved to Q08/Q09 territory, which is outside this mission's allowed portfolio-gate surface."
+  },
+  "source_evidence": {
+    "strict_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "method_source": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+    "extended_screen": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/survivors.json",
+    "extended_trade_check": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/trade_check.json"
+  },
+  "anchor_status": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "latest_relevant_state": "Q02 PASS, Q04 PASS, Q05 FAIL",
+      "q02_blocked": false
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "latest_relevant_state": "Q02 PASS, Q04 FAIL",
+      "q02_blocked": false
+    }
+  },
+  "card_reconciliation": {
+    "QM5_13058": {
+      "pair": "AUDCAD.DWX/GBPNZD.DWX",
+      "logical_symbol": "QM5_13058_AUDCAD_GBPNZD_COINTEGRATION_D1",
+      "q02": {
+        "work_item_id": "df21c7a2-a0e2-467c-9be9-56f490d2e40d",
+        "verdict": "PASS",
+        "trades": 140,
+        "profit_factor": 1.27,
+        "net_profit": 3834.77,
+        "oninit_failure_detected": false
+      },
+      "q03": {
+        "work_item_id": "19ddc71f-d9d8-4740-adb2-8ec7a1bc2ee7",
+        "verdict": "PASS",
+        "trades": 140,
+        "profit_factor": 1.27,
+        "oninit_failure_detected": false
+      },
+      "q04": {
+        "work_item_id": "49c5f89a-c995-482d-95e4-a02f34a32c9d",
+        "verdict": "FAIL",
+        "reason": "F1:pf_net=1.173;F2:pf_net=0.937"
+      },
+      "files_updated": [
+        "strategy-seeds/cards/approved/QM5_13058_audcad-gbpnzd-coint_card.md",
+        "artifacts/cards_approved/QM5_13058_audcad-gbpnzd-coint.md",
+        "framework/EAs/QM5_13058_audcad-gbpnzd-coint/docs/strategy_card.md"
+      ]
+    },
+    "QM5_13062": {
+      "pair": "AUDCAD.DWX/EURUSD.DWX",
+      "logical_symbol": "QM5_13062_AUDCAD_EURUSD_COINTEGRATION_D1",
+      "q02": {
+        "work_item_id": "92fef42a-a098-417c-ba9d-d4dd7d3a3d70",
+        "verdict": "PASS",
+        "trades": 136,
+        "profit_factor": 1.07,
+        "net_profit": 1124.49,
+        "oninit_failure_detected": false
+      },
+      "q03": {
+        "work_item_id": "8781eab1-1ed0-4b9c-a03b-09054eb998e9",
+        "verdict": "PASS",
+        "trades": 136,
+        "profit_factor": 1.07,
+        "oninit_failure_detected": false
+      },
+      "q04": {
+        "work_item_id": "51d72669-7286-4469-8b12-f2979c3427aa",
+        "verdict": "FAIL",
+        "reason": "F1:pf_net=0.845;F2:pf_net=0.896"
+      },
+      "files_updated": [
+        "strategy-seeds/cards/approved/QM5_13062_audcad-eurusd-coint_card.md",
+        "artifacts/cards_approved/QM5_13062_audcad-eurusd-coint.md",
+        "framework/EAs/QM5_13062_audcad-eurusd-coint/docs/strategy_card.md"
+      ]
+    }
+  },
+  "queue_snapshot": {
+    "active_work_items": 6,
+    "pending_work_items": 5203,
+    "active_summary": {
+      "Q02": 1,
+      "Q04": 3,
+      "Q05": 1,
+      "Q07": 1
+    },
+    "cpu_ceiling_applied": true
+  },
+  "guardrails": {
+    "new_work_item_created": false,
+    "duplicate_work_item_created": false,
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

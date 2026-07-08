@@ -188,4 +188,5 @@ gates.
 | v1 | 2026-07-08 | initial extended-screen FX cointegration formal-survivor card with OOS-negative caveat | G0 | APPROVED |
 | v2 | 2026-07-08 | compiled basket EA and logical basket Q02 auto-enqueued as work item 92fef42a-a098-417c-ba9d-d4dd7d3a3d70 | Q02 | PENDING |
 | v3 | 2026-07-08 | Q02 logical basket completed on AUDCAD host; 136 trades, PF 1.07, net profit 1124.49, no ONINIT failure | Q02 | PASS |
-| v4 | 2026-07-08 | Q04 walk-forward completed on work item 51d72669-7286-4469-8b12-f2979c3427aa with valid F1/F2 reports but PF below floor: F1 pf_net 0.845, F2 pf_net 0.896; Q03 row 8781eab1-1ed0-4b9c-a03b-09054eb998e9 remains active on T1, so no duplicate enqueue or manual tester launch | Q04 | FAIL |
+| v4 | 2026-07-08 | Q04 walk-forward completed on work item 51d72669-7286-4469-8b12-f2979c3427aa with valid F1/F2 reports but PF below floor: F1 pf_net 0.845, F2 pf_net 0.896 | Q04 | FAIL |
+| v5 | 2026-07-08 | companion Q03 deterministic row 8781eab1-1ed0-4b9c-a03b-09054eb998e9 completed after the Q04 aggregate; 136 trades, PF 1.07, no ONINIT failure | Q03 | PASS |
