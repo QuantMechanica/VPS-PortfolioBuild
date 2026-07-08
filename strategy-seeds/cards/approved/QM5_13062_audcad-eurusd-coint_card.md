@@ -186,3 +186,4 @@ gates.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-08 | initial extended-screen FX cointegration formal-survivor card with OOS-negative caveat | G0 | APPROVED |
+| v2 | 2026-07-08 | compiled basket EA and logical basket Q02 auto-enqueued as work item 92fef42a-a098-417c-ba9d-d4dd7d3a3d70 | Q02 | PENDING |
