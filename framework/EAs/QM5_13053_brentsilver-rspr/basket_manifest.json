@@ -7,6 +7,6 @@
     "XAGUSD.DWX"
   ],
   "notes": [
-    "Two-leg XBR/XAG Brent-silver return-spread reversion basket from the approved CME-OIL-GOLD-RATIO-2024 source packet. The EA runs from the XBRUSD.DWX host setfile and reads both D1 close series to compute log-return spread over a fixed lookback. Q02 must evaluate the logical basket, not the standalone legs."
+    "Two-leg XBR/XAG Brent-silver return-spread reversion basket from the approved MACROTRENDS-SILVER-OIL-RATIO-2026 source packet and Chan pair-spread implementation lineage. The EA runs from the XBRUSD.DWX host setfile and reads both D1 close series to compute log-return spread over a fixed lookback. Q02 must evaluate the logical basket, not the standalone legs."
   ]
 }

@@ -14693,4 +14693,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9453,chande-cmo-vr-composite-h4,12,UK100.DWX,94530012,2026-07-08,Codex,active
 13051,xng-vrp-proxy,0,XNGUSD.DWX,130510000,2026-07-08,Codex,active
 13052,brent-jul-prem,0,XBRUSD.DWX,130520000,2026-07-08,Codex,active
+13053,brentsilver-rspr,0,XBRUSD.DWX,130530000,2026-07-08,Codex,active
+13053,brentsilver-rspr,1,XAGUSD.DWX,130530001,2026-07-08,Codex,active
 12482,gh-oil-nok,0,USDJPY.DWX,124820000,2026-07-08,Codex,active

@@ -2,9 +2,9 @@
 
 **EA ID:** QM5_13053
 **Slug:** `brentsilver-rspr`
-**Source:** `CME-OIL-GOLD-RATIO-2024`
+**Source:** `MACROTRENDS-SILVER-OIL-RATIO-2026`
 **Author of this spec:** Codex
-**Last revised:** 2026-07-02
+**Last revised:** 2026-07-08
 
 ## 1. Strategy Logic
 
@@ -15,15 +15,17 @@ return spread:
 `log(xbr[t] / xbr[t-L]) - beta * log(XAG[t] / XAG[t-L])`
 
 The current return spread is standardized against recent D1 history. A high
-positive z-score means Brent has outperformed silver over the fixed return window,
-so the basket sells Brent and buys silver. A high negative z-score buys Brent and
-sells silver. The package exits when the z-score reverts near zero, max hold
-expires, Friday close fires, an orphan leg appears, or a per-leg ATR stop is hit.
+positive z-score means Brent has outperformed silver over the fixed return
+window, so the basket sells Brent and buys silver. A high negative z-score buys
+Brent and sells silver. The package exits when the z-score reverts near zero,
+max hold expires, Friday close fires, an orphan leg appears, or a per-leg ATR
+stop is hit.
 
-This is not a duplicate of `QM5_12863_oilsilver-rspread`, which uses WTI as the
-oil leg. It is also not `QM5_12604_cme-oilsilver-ratio`, which fades the absolute
-WTI/XAG log price ratio, or `QM5_12605_cme-oilsilver-brk`, which follows a
-ratio-level breakout. This EA trades temporary D1 relative-return dislocation
+This is not a duplicate of `QM5_12864_oilsilver-rspr`, which uses WTI as the
+oil leg, or `QM5_12606_oil-silver-ratio`, which fades the absolute WTI/silver
+log price-ratio level. It is also distinct from Brent/gold, Brent/WTI,
+XTI/XNG, XBR/XNG, XAU/XAG, directional Brent/WTI/XNG/XAU, seasonal/event, and
+commodity RSI sleeves. This EA trades temporary D1 relative-return dislocation
 between Brent and silver.
 
 ## 2. Parameters
@@ -38,8 +40,8 @@ between Brent and silver.
 | `strategy_atr_period_d1` | 20 | 14-30 | ATR stop period for each leg |
 | `strategy_atr_sl_mult` | 3.0 | 2.0-4.0 | Per-leg hard stop distance |
 | `strategy_max_hold_days` | 20 | 10-30 | Calendar-day stale package exit |
-| `strategy_xbr_max_spread_pts` | 1000 | 700-1500 | Brent spread cap |
-| `strategy_xag_max_spread_pts` | 500 | 300-800 | Silver spread cap |
+| `strategy_xbr_max_spread_pts` | 1200 | 800-1800 | Brent spread cap |
+| `strategy_xag_max_spread_pts` | 200 | 100-350 | Silver spread cap |
 | `strategy_deviation_points` | 20 | 10-50 | Broker deviation points for market legs |
 
 ## 3. Symbol Universe
@@ -65,13 +67,16 @@ between Brent and silver.
 
 ## 6. Source Citation
 
-CME Group, "Through the Lens of Silver", 2024, URL
-https://www.cmegroup.com/articles/2024/through-the-lens-of-silver.html.
+Macrotrends, "Silver to Oil Ratio - Historical Chart", URL
+https://www.macrotrends.net/2612/silver-to-oil-ratio-historical-chart.
+
+Chan, Ernest P., *Algorithmic Trading: Winning Strategies and Their Rationale*,
+Wiley, 2013, pair-spread mean-reversion implementation lineage.
 
 The source frames crude oil through silver as a relative-value lens. The EA uses
-that lineage to define the XBR/XAG pair, with Brent as the crude-oil benchmark
-leg, and tests a fixed-window return-spread mechanization using Darwinex OHLC
-only. No source performance claim is imported.
+that lineage to define an oil/silver pair, with Brent as the crude benchmark leg,
+and tests a fixed-window return-spread mechanization using Darwinex OHLC only.
+No source performance claim is imported.
 
 ## 7. Risk Model
 
@@ -82,3 +87,9 @@ only. No source performance claim is imported.
 
 No live manifest, `T_Live` file, AutoTrading setting, portfolio admission file,
 or portfolio gate file is touched by this build.
+
+## Revision History
+
+| Version | Date | Reason | Notes |
+|---|---|---|---|
+| v1 | 2026-07-08 | Initial build from card | Q02 queued by paced fleet handoff |
