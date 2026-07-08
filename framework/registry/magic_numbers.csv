@@ -14764,3 +14764,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11910,larry-williams-18ma-2outside-bars-d1,9,AUDJPY.DWX,119100009,2026-07-08,Codex,active
 13067,iea-omr-brk,0,XTIUSD.DWX,130670000,2026-07-08,Codex,active
 13068,xti-padd1-reclaim,0,XTIUSD.DWX,130680000,2026-07-08,Codex,active
+13069,xti-jodi-brk,0,XTIUSD.DWX,130690000,2026-07-08,Codex,active
