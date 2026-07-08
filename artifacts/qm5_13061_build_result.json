@@ -1,0 +1,45 @@
+{
+  "task_id": "mission-board-advisor-20260708-brent-jun-prem",
+  "ea_id": "QM5_13061",
+  "slug": "brent-jun-prem",
+  "source_id": "ARENDAS-OIL-SEASON-2018_BRENT_JUN_S06",
+  "ea_dir": "C:/QM/repo/framework/EAs/QM5_13061_brent-jun-prem",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_13061_brent-jun-prem/QM5_13061_brent-jun-prem.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_13061_brent-jun-prem/QM5_13061_brent-jun-prem.ex5",
+  "ex5_size_bytes": 312974,
+  "magic_base": 130610000,
+  "symbols_registered": [
+    "XBRUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_13061_brent-jun-prem/sets/QM5_13061_brent-jun-prem_XBRUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_build_hash": "dde16f54fdf4640bf3b9aa00ae62adb226312c3dcc62fb8bdc922bdae2b3dc4a",
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_13061_brent-jun-prem/SPEC.md",
+  "card_path": "C:/QM/repo/strategy-seeds/cards/brent-jun-prem_card.md",
+  "approved_card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_13061_brent-jun-prem_card.md",
+  "compile_succeeded": true,
+  "compile_command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_13061_brent-jun-prem --force --json --fail-on-error",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log_path": "C:/QM/repo/framework/build/compile/20260708_115214/QM5_13061_brent-jun-prem.compile.log",
+  "build_check_passed": true,
+  "build_check_command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13061_brent-jun-prem -SkipCompile",
+  "build_check_report_path": "D:/QM/reports/framework/21/build_check_20260708_115231.json",
+  "build_check_warning_count": 0,
+  "build_check_failure_count": 0,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "q02_enqueued_for_paced_fleet_no_manual_backtest",
+  "q02_work_items": [
+    {
+      "id": "4f8bbc99-ead4-47ac-a686-d4d550a8f799",
+      "symbol": "XBRUSD.DWX",
+      "timeframe": "D1",
+      "status": "pending"
+    }
+  ],
+  "notes": [
+    "No manual backtest launched; Q02 is delegated to paced farm workers.",
+    "No T_Live, AutoTrading, live manifest, or portfolio gate files were touched."
+  ]
+}
