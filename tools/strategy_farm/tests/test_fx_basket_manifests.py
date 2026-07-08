@@ -136,3 +136,14 @@ def test_qm5_13058_manifest_declares_audcad_gbpnzd_conversion_history() -> None:
     assert manifest["tester_currency"] == "USD"
     assert {"AUDCAD.DWX", "GBPNZD.DWX", "USDCAD.DWX", "NZDUSD.DWX"} <= declared
     assert _mq5_allowed_symbols(ea_dir) <= declared
+
+
+def test_qm5_12507_manifest_declares_all_warmed_pair_symbols() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_12507_pair-coint-z"
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+
+    declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
+
+    assert manifest["tester_currency"] == "USD"
+    assert {"EURUSD.DWX", "GBPUSD.DWX", "NDX.DWX", "WS30.DWX"} <= declared
+    assert _mq5_allowed_symbols(ea_dir) <= declared
