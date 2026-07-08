@@ -14,7 +14,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.5;
+input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -57,6 +57,23 @@ double g_smash_short_level = 0.0;
 double g_smash_short_sl = 0.0;
 int    g_smash_short_bars_left = 0;
 
+bool Strategy_HasOpenPosition()
+{
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+   {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+         continue;
+      return true;
+   }
+   return false;
+}
+
 // -----------------------------------------------------------------------------
 // Strategy hooks
 // -----------------------------------------------------------------------------
@@ -68,7 +85,9 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
-   if(PositionsTotal() > 0) return false;
+   ZeroMemory(req);
+
+   if(Strategy_HasOpenPosition()) return false;
 
    // 1. Process new closed bar for setups
    const double close1 = iClose(_Symbol, PERIOD_D1, 1);
@@ -156,6 +175,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.tp = tp;
    req.reason = (side == QM_BUY) ? "WILLIAMS_SMASH_LONG" : "WILLIAMS_SMASH_SHORT";
    req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
 
    return true;
 }
