@@ -1,0 +1,70 @@
+{
+  "checked_at_local": "2026-07-08T19:17:10+02:00",
+  "checked_at_utc": "2026-07-08T17:17:10Z",
+  "branch": "agents/board-advisor",
+  "operator": "Codex",
+  "decision": "no_unbuilt_approved_nonduplicate_fx_cointegration_pair_remaining; fallback_existing_lane_active",
+  "strict_anchors": [
+    {
+      "ea_id": "QM5_12532",
+      "pair": "AUDUSD~NZDUSD",
+      "latest_states": ["Q02 PASS", "Q04 PASS", "Q05 FAIL"]
+    },
+    {
+      "ea_id": "QM5_12533",
+      "pair": "EURJPY~GBPJPY",
+      "latest_states": ["Q02 PASS", "Q04 FAIL"]
+    }
+  ],
+  "extended_frontier": [
+    {
+      "ea_id": "QM5_13024",
+      "pair": "AUDCAD~GBPAUD",
+      "latest_states": ["Q02 PASS", "Q04 FAIL"]
+    },
+    {
+      "ea_id": "QM5_13029",
+      "pair": "GBPCAD~GBPNZD",
+      "latest_states": ["Q02 PASS", "Q03 PASS", "Q04 FAIL"]
+    },
+    {
+      "ea_id": "QM5_13058",
+      "pair": "AUDCAD~GBPNZD",
+      "latest_states": ["Q02 PASS", "Q03 PASS", "Q04 FAIL"]
+    },
+    {
+      "ea_id": "QM5_13062",
+      "pair": "AUDCAD~EURUSD",
+      "latest_states": ["Q02 PASS", "Q03 PASS", "Q04 FAIL"]
+    }
+  ],
+  "selected_fallback": {
+    "ea_id": "QM5_12712",
+    "pair": "EURGBP~EURAUD",
+    "phase": "Q07",
+    "work_item_id": "1b9fa7a5-48a7-4e57-a699-9e55dfb0cb19",
+    "status": "active",
+    "claimed_by": "T3",
+    "attempt_count": 1,
+    "symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+    "priority_track": true,
+    "priority_reason": "OWNER 2026-07-08 forex portfolio mission fallback: requeue existing QM5_12712 EURGBP~EURAUD Q07 after T1-only seed timeouts/M0 reports; avoid T1 and leave pending under active CPU ceiling without duplicate work_item.",
+    "prior_gates": ["Q02 PASS", "Q03 PASS", "Q04 PASS", "Q05 PASS", "Q06 PASS"],
+    "updated_at": "2026-07-08T17:03:32+00:00",
+    "created_at": "2026-07-03T11:31:16+00:00"
+  },
+  "queue_snapshot": {
+    "active": 6,
+    "pending": 5200,
+    "done": 44088,
+    "failed": 45305
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "duplicate_q02_enqueued": false,
+    "manual_tester_launched": false
+  }
+}
