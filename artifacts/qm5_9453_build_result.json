@@ -1,0 +1,161 @@
+{
+  "task_id": "ec95129d-ccb7-4256-8de3-972cd15ef2ef",
+  "ea_id": "QM5_9453",
+  "slug": "chande-cmo-vr-composite-h4",
+  "generated_at": "2026-07-08T01:41:08Z",
+  "symbol": "MULTI",
+  "timeframe": "H4",
+  "source_id": "6e967762-b26d-59a3-b076-35c17f2e7c36",
+  "card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_9453_chande-cmo-vr-composite-h4.md",
+  "farm_approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_9453_chande-cmo-vr-composite-h4.md",
+  "ea_dir": "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/QM5_9453_chande-cmo-vr-composite-h4.mq5",
+  "ea_path": "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/QM5_9453_chande-cmo-vr-composite-h4.mq5",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/QM5_9453_chande-cmo-vr-composite-h4.ex5",
+  "magic_base": 94530000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "AUDUSD.DWX",
+    "USDCAD.DWX",
+    "USDCHF.DWX",
+    "NZDUSD.DWX",
+    "XAUUSD.DWX",
+    "XTIUSD.DWX",
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "UK100.DWX"
+  ],
+  "symbols_omitted": [
+    {
+      "symbol": "FRA40.DWX",
+      "reason": "absent_from_framework_registry_dwx_symbol_matrix"
+    },
+    {
+      "symbol": "JP225.DWX",
+      "reason": "absent_from_framework_registry_dwx_symbol_matrix"
+    }
+  ],
+  "setfiles_generated": [
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_EURUSD.DWX_H4_backtest.set",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_GBPUSD.DWX_H4_backtest.set",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_USDJPY.DWX_H4_backtest.set",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_AUDUSD.DWX_H4_backtest.set",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_USDCAD.DWX_H4_backtest.set",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_USDCHF.DWX_H4_backtest.set",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_NZDUSD.DWX_H4_backtest.set",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_XAUUSD.DWX_H4_backtest.set",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_XTIUSD.DWX_H4_backtest.set",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_GDAXI.DWX_H4_backtest.set",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_NDX.DWX_H4_backtest.set",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_WS30.DWX_H4_backtest.set",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_UK100.DWX_H4_backtest.set"
+  ],
+  "setfiles_generated_abs": [
+    "C:/QM/repo/framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_EURUSD.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_GBPUSD.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_USDJPY.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_AUDUSD.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_USDCAD.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_USDCHF.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_NZDUSD.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_XAUUSD.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_XTIUSD.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_GDAXI.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_NDX.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_WS30.DWX_H4_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_UK100.DWX_H4_backtest.set"
+  ],
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/SPEC.md",
+  "setfile_build_hash": "9bab2007bc1b9fa3f53cc4647a56b1cf092111b3b810ae202961ce9bb8a00d47",
+  "file_hashes_sha256": {
+    "card": "F31699C764D13B7DABF037A55EDBCC0599D76E78F53649778DD1561AD6D0EB5B",
+    "mq5": "5FB113FB06CB8E505A96D397C253AFF711D5F3CA7F2617F20AAD1D30AFF21408",
+    "ex5": "04A351776642E192AF42793BDB0C6C1B5DF9DEF6686B4E3FA13648983C2DD83D",
+    "spec": "47861230186E0003C9C74923D84B5461F6568ED77EB1BFF0494E5961A2487A01"
+  },
+  "setfile_hashes_sha256": {
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_EURUSD.DWX_H4_backtest.set": "D6E9A6FECFE6893A9ACE1C048363DC01CD828FE0CBC123F89200B499A3D619AA",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_GBPUSD.DWX_H4_backtest.set": "3CAD8CC32330A0883F6FFA0E6755B917AD92D4A873AB3A8341348263354CD513",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_USDJPY.DWX_H4_backtest.set": "F9521D44147D9A76A9C5D9E8DAB96C7759A421BA0AA3BF426514229A9DF79D45",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_AUDUSD.DWX_H4_backtest.set": "FC2603C90A66D82BDAFCD54A78DD6928EAFE944B8003715BEA695CFA8B728496",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_USDCAD.DWX_H4_backtest.set": "37C23A191FDEA04C839C79CC753A986813326EE08DC9E2EC1E56FCF1BA13A3B0",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_USDCHF.DWX_H4_backtest.set": "A53A28992366C4FD03D0A656C0EFD819D6FB4CA776D0ED44817FF0333888E985",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_NZDUSD.DWX_H4_backtest.set": "07249EBFF26E26760092EECE40C67E4A01674C4DC872B9E36C872D5AD34FF344",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_XAUUSD.DWX_H4_backtest.set": "3F05C0E2AD631066F5DDC7768B612232CAFE4617D822BD6A6E7841FA3EE05C06",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_XTIUSD.DWX_H4_backtest.set": "841EF539A357C811BB1C0B44397A073FDAA83403E24E1F1D93850A0ED4D15BFC",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_GDAXI.DWX_H4_backtest.set": "DF1A4062FF1E02FDD0EF625A416C0A1036088F97140FA2FE19E0DCEDB879F7D3",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_NDX.DWX_H4_backtest.set": "51BE53FE3C14F4F9082E9D140FDAD6B51AFAC43937087DC09AC54CC0C74F0F53",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_WS30.DWX_H4_backtest.set": "802E7F706FFBDBBDB32A98054A1F7AF61B352BABF6151DEC4AC4AE165C19A4A1",
+    "framework/EAs/QM5_9453_chande-cmo-vr-composite-h4/sets/QM5_9453_chande-cmo-vr-composite-h4_UK100.DWX_H4_backtest.set": "A9022B6CDE5F35ED2F4D74A886F5497DF33CE355426CD471C6234ED3A19641F0"
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "passed",
+  "smoke_report_path": "D:/QM/reports/smoke/QM5_9453/20260708_012900/summary.json",
+  "smoke_evidence_path": "D:/QM/reports/framework/22/20260708_012900_QM5_9453_T6_EURUSD_DWX_run_smoke.md",
+  "smoke_summary": {
+    "result": "PASS",
+    "symbol": "EURUSD.DWX",
+    "period": "H4",
+    "year": 2024,
+    "terminal": "any",
+    "attempted_runs": 4,
+    "ok_runs": 2,
+    "total_trades_per_ok_run": [
+      5,
+      5
+    ],
+    "oninit_failure_detected": false,
+    "log_bomb_detected": false
+  },
+  "blocked_reason": "",
+  "open_questions": [
+    "FRA40.DWX and JP225.DWX were listed on the card but omitted because they are absent from framework/registry/dwx_symbol_matrix.csv."
+  ],
+  "checks": {
+    "spec_doc": "PASS",
+    "risk_fixed_setfiles": {
+      "result": "PASS",
+      "count": 13,
+      "risk_fixed": 1000,
+      "risk_percent": 0
+    },
+    "magic_resolver_update": {
+      "result": "PASS",
+      "warnings": [
+        "pre-existing missing EA dirs for magic rows: 1001, 1015, 1016"
+      ]
+    },
+    "compile_one_strict": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260708_012828/QM5_9453_chande-cmo-vr-composite-h4.compile.log"
+    },
+    "build_check_strict": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260708_012828.json"
+    },
+    "smoke": {
+      "result": "PASS",
+      "summary": "D:/QM/reports/smoke/QM5_9453/20260708_012900/summary.json",
+      "evidence": "D:/QM/reports/framework/22/20260708_012900_QM5_9453_T6_EURUSD_DWX_run_smoke.md"
+    }
+  },
+  "constraints": {
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "t_live_touched": false,
+    "backtest_cpu_used": true,
+    "backtest_cpu_ceiling_hit": false
+  }
+}

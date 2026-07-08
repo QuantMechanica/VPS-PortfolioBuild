@@ -1,0 +1,128 @@
+{
+  "ea_id": "QM5_9453",
+  "task_id": "ec95129d-ccb7-4256-8de3-972cd15ef2ef",
+  "recorded_at_utc": "2026-07-08T01:41:50Z",
+  "record_build_result": {
+    "recorded": true,
+    "new_status": "done",
+    "smoke_result": "passed",
+    "auto_q02_stage1_count": 3
+  },
+  "q02_stage1_work_items": [
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-08T03:41:13+02:00",
+      "ea_id": "QM5_9453",
+      "evidence_path": null,
+      "id": "7e3ab50b-9c6e-4db1-9e3e-402f57d5be2e",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q02",
+      "phase_display": "Q02",
+      "phase_qid": "Q02",
+      "status": "pending",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-07-08T03:41:13+02:00",
+      "verdict": null
+    },
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-08T03:41:13+02:00",
+      "ea_id": "QM5_9453",
+      "evidence_path": null,
+      "id": "ec31da51-fd5f-4072-943c-6c12cd3fe250",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q02",
+      "phase_display": "Q02",
+      "phase_qid": "Q02",
+      "status": "pending",
+      "symbol": "GDAXI.DWX",
+      "updated_at": "2026-07-08T03:41:13+02:00",
+      "verdict": null
+    },
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-08T03:41:13+02:00",
+      "ea_id": "QM5_9453",
+      "evidence_path": null,
+      "id": "69b6e6d6-ffa5-4b91-a856-6941b54cc408",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q02",
+      "phase_display": "Q02",
+      "phase_qid": "Q02",
+      "status": "pending",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-07-08T03:41:13+02:00",
+      "verdict": null
+    }
+  ],
+  "q02_stage1_summary": {
+    "Q02_pending": 3
+  },
+  "q02_deferred": {
+    "source": "auto_q02_for_build",
+    "deferred_at": "2026-07-08T03:41:13+02:00",
+    "count": 10,
+    "setfiles": [
+      {
+        "setfile": "framework\\EAs\\QM5_9453_chande-cmo-vr-composite-h4\\sets\\QM5_9453_chande-cmo-vr-composite-h4_GBPUSD.DWX_H4_backtest.set",
+        "symbol": "GBPUSD.DWX",
+        "tf": "H4"
+      },
+      {
+        "setfile": "framework\\EAs\\QM5_9453_chande-cmo-vr-composite-h4\\sets\\QM5_9453_chande-cmo-vr-composite-h4_USDJPY.DWX_H4_backtest.set",
+        "symbol": "USDJPY.DWX",
+        "tf": "H4"
+      },
+      {
+        "setfile": "framework\\EAs\\QM5_9453_chande-cmo-vr-composite-h4\\sets\\QM5_9453_chande-cmo-vr-composite-h4_AUDUSD.DWX_H4_backtest.set",
+        "symbol": "AUDUSD.DWX",
+        "tf": "H4"
+      },
+      {
+        "setfile": "framework\\EAs\\QM5_9453_chande-cmo-vr-composite-h4\\sets\\QM5_9453_chande-cmo-vr-composite-h4_USDCAD.DWX_H4_backtest.set",
+        "symbol": "USDCAD.DWX",
+        "tf": "H4"
+      },
+      {
+        "setfile": "framework\\EAs\\QM5_9453_chande-cmo-vr-composite-h4\\sets\\QM5_9453_chande-cmo-vr-composite-h4_USDCHF.DWX_H4_backtest.set",
+        "symbol": "USDCHF.DWX",
+        "tf": "H4"
+      },
+      {
+        "setfile": "framework\\EAs\\QM5_9453_chande-cmo-vr-composite-h4\\sets\\QM5_9453_chande-cmo-vr-composite-h4_NZDUSD.DWX_H4_backtest.set",
+        "symbol": "NZDUSD.DWX",
+        "tf": "H4"
+      },
+      {
+        "setfile": "framework\\EAs\\QM5_9453_chande-cmo-vr-composite-h4\\sets\\QM5_9453_chande-cmo-vr-composite-h4_XTIUSD.DWX_H4_backtest.set",
+        "symbol": "XTIUSD.DWX",
+        "tf": "H4"
+      },
+      {
+        "setfile": "framework\\EAs\\QM5_9453_chande-cmo-vr-composite-h4\\sets\\QM5_9453_chande-cmo-vr-composite-h4_NDX.DWX_H4_backtest.set",
+        "symbol": "NDX.DWX",
+        "tf": "H4"
+      },
+      {
+        "setfile": "framework\\EAs\\QM5_9453_chande-cmo-vr-composite-h4\\sets\\QM5_9453_chande-cmo-vr-composite-h4_WS30.DWX_H4_backtest.set",
+        "symbol": "WS30.DWX",
+        "tf": "H4"
+      },
+      {
+        "setfile": "framework\\EAs\\QM5_9453_chande-cmo-vr-composite-h4\\sets\\QM5_9453_chande-cmo-vr-composite-h4_UK100.DWX_H4_backtest.set",
+        "symbol": "UK100.DWX",
+        "tf": "H4"
+      }
+    ]
+  },
+  "notes": [
+    "record-build auto-enqueued staged Q02 work_items from setfiles_generated.",
+    "Deferred symbols remain in D:/QM/strategy_farm/state/q02_deferred_symbols.json for sweep promotion."
+  ]
+}
