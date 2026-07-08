@@ -22,9 +22,11 @@ uri: https://www.eia.gov/workingpapers/pdf/oil_exchangerates_61317.pdf
 
 ## Mining Scope
 
-One card was extracted for a structural commodity/FX relative-value sleeve:
+Two cards were extracted for structural commodity/FX relative-value sleeves:
 
 - `wti-audusd-brk`: XTIUSD.DWX/AUDUSD.DWX D1 log-spread channel breakout basket.
+- `xti-audusd-rspr`: XTIUSD.DWX/AUDUSD.DWX D1 return-spread z-score
+  mean-reversion basket.
 
 ## Evidence Notes
 
