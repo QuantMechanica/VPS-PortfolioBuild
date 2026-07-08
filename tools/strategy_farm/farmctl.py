@@ -6539,6 +6539,15 @@ def _has_auto_build_task_file(root: Path, ea_id: str) -> bool:
 # diversification and only clogs the CPU-bound funnel. The build sweep prioritizes cards on
 # NEW instruments (FX/energy/other-index) first; all-redundant cards build last (OWNER 2026-06-26).
 _REDUNDANT_BUILD_INSTRUMENTS = {"XAUUSD.DWX", "SP500.DWX", "NDX.DWX"}
+_BUILD_DEDUP_PIPELINE_PHASES = tuple(dict.fromkeys(SUPPORTED_BACKTEST_PHASES + CASCADE_BACKTEST_PHASES))
+_BUILD_REWORK_PAYLOAD_KEYS = (
+    "codex_review_rework",
+    "force_rebuild",
+    "rebuild",
+    "rework",
+    "rework_directives",
+    "codex_review_findings",
+)
 
 
 def _card_build_div_rank(card_text: str) -> int:
@@ -6605,6 +6614,110 @@ def _detect_unbuilt_cards(root: Path) -> list[dict[str, Any]]:
     # Diversifiers (new instruments) first; all-redundant (XAU/SP500/NDX) cards build last.
     unbuilt.sort(key=lambda u: (u["div_rank"], u["ea_id"]))
     return unbuilt
+
+
+def _build_task_is_explicit_rework(payload: dict[str, Any]) -> bool:
+    if any(payload.get(key) for key in _BUILD_REWORK_PAYLOAD_KEYS):
+        return True
+    return str(payload.get("last_blocked_reason") or "") == "codex_review_fail"
+
+
+def _build_task_ea_dir(payload: dict[str, Any]) -> Path | None:
+    candidates: list[Path] = []
+    ea_dir_raw = str(payload.get("ea_dir") or "").strip()
+    if ea_dir_raw:
+        p = Path(ea_dir_raw)
+        candidates.append(p if p.is_absolute() else CANONICAL_REPO_ROOT / p)
+
+    ea_id = str(payload.get("ea_id") or "").strip()
+    slug = str(payload.get("slug") or "").strip()
+    if ea_id and slug:
+        candidates.append(FRAMEWORK_EAS_DIR / f"{ea_id}_{slug}")
+    if ea_id and FRAMEWORK_EAS_DIR.is_dir():
+        candidates.extend(sorted(p for p in FRAMEWORK_EAS_DIR.glob(f"{ea_id}_*") if p.is_dir()))
+
+    seen: set[str] = set()
+    for candidate in candidates:
+        key = str(candidate)
+        if key in seen:
+            continue
+        seen.add(key)
+        if candidate.is_dir():
+            return candidate
+    return candidates[0] if candidates else None
+
+
+def _compiled_ex5_in_ea_dir(ea_dir: Path | None) -> Path | None:
+    if ea_dir is None or not ea_dir.is_dir():
+        return None
+    preferred = ea_dir / f"{ea_dir.name}.ex5"
+    if preferred.exists():
+        return preferred
+    for ex5 in sorted(ea_dir.glob("*.ex5")):
+        if ex5.is_file():
+            return ex5
+    return None
+
+
+def _pipeline_work_count_for_build_dedup(conn: sqlite3.Connection, ea_id: str) -> int:
+    placeholders = ",".join("?" for _ in _BUILD_DEDUP_PIPELINE_PHASES)
+    row = conn.execute(
+        f"""
+        SELECT COUNT(*) AS n
+        FROM work_items
+        WHERE ea_id = ?
+          AND phase IN ({placeholders})
+          AND status IN ('pending', 'active', 'done', 'failed')
+        """,
+        (ea_id, *_BUILD_DEDUP_PIPELINE_PHASES),
+    ).fetchone()
+    return int(row["n"] if isinstance(row, sqlite3.Row) else row[0])
+
+
+def _block_duplicate_pending_build_if_pipelined(
+    conn: sqlite3.Connection,
+    task_row: sqlite3.Row,
+    payload: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    payload = dict(payload or json.loads(task_row["payload_json"] or "{}"))
+    ea_id = str(payload.get("ea_id") or task_row["card_id"] or "").strip()
+    if not ea_id or _build_task_is_explicit_rework(payload):
+        return None
+
+    ea_dir = _build_task_ea_dir(payload)
+    ex5 = _compiled_ex5_in_ea_dir(ea_dir)
+    if ex5 is None:
+        return None
+
+    work_count = _pipeline_work_count_for_build_dedup(conn, ea_id)
+    if work_count <= 0:
+        return None
+
+    reason = "duplicate_build_task_existing_pipeline_work"
+    updated_payload = dict(payload)
+    updated_payload.update({
+        "blocked_reason": reason,
+        "duplicate_existing_ex5_path": str(ex5),
+        "duplicate_pipeline_work_item_count": work_count,
+        "duplicate_build_blocked_at_utc": utc_now(),
+    })
+    conn.execute(
+        "UPDATE tasks SET status='blocked', payload_json=?, updated_at=? WHERE id=?",
+        (json.dumps(updated_payload, sort_keys=True), utc_now(), task_row["id"]),
+    )
+    event(conn, "task", task_row["id"], "duplicate_build_task_blocked", {
+        "ea_id": ea_id,
+        "reason": reason,
+        "existing_ex5_path": str(ex5),
+        "pipeline_work_item_count": work_count,
+    })
+    return {
+        "task_id": task_row["id"],
+        "ea_id": ea_id,
+        "reason": reason,
+        "existing_ex5_path": str(ex5),
+        "pipeline_work_item_count": work_count,
+    }
 
 
 def _slug_from_research_line(line: str) -> str | None:
@@ -8185,10 +8298,15 @@ def pump(root: Path) -> dict[str, Any]:
         seen_eas: set[str] = set()
         pending_builds = []
         skipped_perma_blocked = 0
+        result["duplicate_pending_builds_blocked"] = []
         for row in all_pending:
-            if len(pending_builds) >= total_build_spawn_budget:
-                break
             payload = json.loads(row["payload_json"])
+            duplicate_block = _block_duplicate_pending_build_if_pipelined(conn, row, payload)
+            if duplicate_block:
+                result["duplicate_pending_builds_blocked"].append(duplicate_block)
+                continue
+            if len(pending_builds) >= total_build_spawn_budget:
+                continue
             ea_id = payload.get("ea_id")
             if repo_dirty_guard.get("blocked"):
                 if not payload.get("codex_review_rework"):
