@@ -14709,6 +14709,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13060,xti-eurcad-rspr,0,XTIUSD.DWX,130600000,2026-07-08,Codex,active
 13060,xti-eurcad-rspr,1,EURCAD.DWX,130600001,2026-07-08,Codex,active
 13061,brent-jun-prem,0,XBRUSD.DWX,130610000,2026-07-08,Codex,active
+13062,audcad-eurusd-coint,0,AUDCAD.DWX,130620000,2026-07-08,Development,active
+13062,audcad-eurusd-coint,1,EURUSD.DWX,130620001,2026-07-08,Development,active
 1615,aa-breaktrend-2-12,0,SP500.DWX,16150000,2026-07-08,Codex,active
 1615,aa-breaktrend-2-12,1,NDX.DWX,16150001,2026-07-08,Codex,active
 1615,aa-breaktrend-2-12,2,WS30.DWX,16150002,2026-07-08,Codex,active
