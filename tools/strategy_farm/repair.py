@@ -75,6 +75,20 @@ from pathlib import Path
 
 import farmctl
 
+# Basket q08 streams are keyed by the resolved HOST symbol, not the logical
+# basket work-item name. Resolve through the shared portfolio choke point so
+# R16's stale-candidate guard checks the file that actually exists — otherwise
+# every basket candidate is false-flagged EVIDENCE_STALE (12778 cointegration,
+# 2026-07-08). portfolio_common lives in the sibling portfolio/ package.
+import sys as _sys
+_PORT_DIR = Path(__file__).resolve().parent / "portfolio"
+if str(_PORT_DIR) not in _sys.path:
+    _sys.path.insert(0, str(_PORT_DIR))
+try:
+    from portfolio_common import resolve_basket_stream_key  # type: ignore  # noqa: E402
+except Exception:  # pragma: no cover - never break repair on an import hiccup
+    resolve_basket_stream_key = None  # type: ignore
+
 ROOT = Path(r"D:\QM\strategy_farm")
 DB = ROOT / "state" / "farm_state.sqlite"
 LOG_DIR = ROOT / "logs"
@@ -1024,7 +1038,20 @@ def _portfolio_stream_path(ea_id: str, symbol: str) -> Path | None:
     m = re.search(r"QM5_(\d+)", str(ea_id))
     if not m:
         return None
-    symbol_token = str(symbol).replace(".", "_")
+    sym = str(symbol)
+    # Basket EAs store their q08 stream under the resolved HOST symbol, never the
+    # logical basket name. Resolve via the shared choke point so the guard checks
+    # the stream that actually exists (else baskets false-flag EVIDENCE_STALE).
+    if resolve_basket_stream_key is not None:
+        try:
+            resolved, _note = resolve_basket_stream_key(
+                (int(m.group(1)), sym), COMMON_Q08_STREAM_DIR.parent.parent
+            )
+        except Exception:
+            resolved = None
+        if resolved is not None:
+            sym = str(resolved[1])
+    symbol_token = sym.replace(".", "_")
     return COMMON_Q08_STREAM_DIR / f"{m.group(1)}_{symbol_token}.jsonl"
 
 

@@ -260,3 +260,40 @@ def test_repair_stale_portfolio_candidates_demotes_missing_stream(tmp_path: Path
         "SELECT state FROM portfolio_candidates WHERE ea_id='QM5_10692'"
     ).fetchone()
     assert row["state"] == "EVIDENCE_STALE"
+
+
+def test_repair_stale_portfolio_candidates_keeps_basket_host_stream(
+    tmp_path: Path, monkeypatch
+) -> None:
+    # Basket candidates store the LOGICAL symbol, but their q08 stream is keyed by
+    # the resolved HOST symbol. R16 must resolve through the shared choke point,
+    # else it false-flags a live sleeve EVIDENCE_STALE (12778 cointegration, 07-08).
+    stream_dir = tmp_path / "Common" / "Files" / "QM" / "q08_trades"
+    stream_dir.mkdir(parents=True)
+    (stream_dir / "12778_AUDUSD_DWX.jsonl").write_text('{"t":1}\n', encoding="utf-8")
+    monkeypatch.setattr(repair, "COMMON_Q08_STREAM_DIR", stream_dir)
+    # Force the unique-stream fallback (no on-disk setfile header dependency).
+    monkeypatch.setattr("portfolio_common.REPO_EAS", tmp_path / "no_eas")
+    db = tmp_path / "farm_state.sqlite"
+    conn = _make_portfolio_candidates_db(db)
+    conn.execute(
+        """
+        INSERT INTO portfolio_candidates(
+            ea_id, symbol, q11_work_item_id, state, evidence_path, first_seen_at, updated_at
+        )
+        VALUES (
+            'QM5_12778', 'QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1', 'q09-12778',
+            'Q12_REVIEW_READY', 'aggregate.json',
+            '2026-07-06T09:56:16+00:00', '2026-07-06T09:56:16+00:00'
+        )
+        """
+    )
+    conn.commit()
+
+    fixes = repair.repair_stale_portfolio_candidates(conn)
+
+    assert fixes == []
+    row = conn.execute(
+        "SELECT state FROM portfolio_candidates WHERE ea_id='QM5_12778'"
+    ).fetchone()
+    assert row["state"] == "Q12_REVIEW_READY"
