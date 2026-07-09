@@ -1,0 +1,109 @@
+{
+  "generated_at_utc": "2026-07-09T21:01:02Z",
+  "operator": "codex-headless-board-advisor",
+  "branch": "agents/board-advisor",
+  "head_at_audit": "05f28d3855544f5dfd5dfbdce9f6694b6b26fb53",
+  "mission": "grow the certified V5 portfolio book with new forex sleeves",
+  "unit_of_work": "current FX cointegration frontier and paced-fleet CPU-ceiling handoff",
+  "research_decision": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_scan_result": "Only EURJPY~GBPJPY and AUDUSD~NZDUSD cleared the published DEV/OOS/trade-count criteria.",
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "state": [
+        "Q02:PASS",
+        "Q04:PASS",
+        "Q05:FAIL"
+      ],
+      "q02_blocked": false
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "state": [
+        "Q02:PASS",
+        "Q04:FAIL"
+      ],
+      "q02_blocked": false
+    },
+    "approved_card_inventory": {
+      "approved_filename_matched_coint_or_cointegration_cards_checked": 20,
+      "cards_without_matching_framework_ea": 0,
+      "unbuilt_reputable_source_pair_found": false
+    },
+    "decision": "No new card or build: the strict scan is exhausted and every approved filename-matched coint/cointegration card has an EA folder."
+  },
+  "existing_forex_fallbacks": {
+    "QM5_9184": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "logical_symbol": "QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1",
+      "logical_q02_work_item_id": "f10fcf97-b4fb-4286-9188-d51415c8fb60",
+      "logical_q02_status": "pending",
+      "action": "Preserved the existing priority logical-basket Q02 row; no duplicate was inserted or dispatched."
+    },
+    "QM5_1058": {
+      "logical_symbol": "QM5_1058_EURUSD_GBPUSD_GGR_D1",
+      "completed_state": [
+        "Q02:PASS",
+        "Q03:PASS",
+        "Q04:PASS",
+        "Q05:PASS",
+        "Q06:PASS"
+      ],
+      "active_work_item_id": "82c0189f-f4a7-4e3f-ac76-79b38037bacb",
+      "active_phase": "Q07",
+      "claimed_by": "T4",
+      "action": "Left the already active non-duplicate FX continuation undisturbed."
+    }
+  },
+  "cpu_ceiling_observed": {
+    "farm_active_work_items": 7,
+    "active_by_phase": {
+      "Q02": 6,
+      "Q07": 1
+    },
+    "claimed_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "metatester64_processes_peak_during_audit": 5,
+    "metatester64_processes_at_final_snapshot": 4,
+    "tester_paths_seen": [
+      "D:/QM/mt5/T1/metatester64.exe",
+      "D:/QM/mt5/T3/metatester64.exe",
+      "D:/QM/mt5/T4/metatester64.exe",
+      "D:/QM/mt5/T6/metatester64.exe",
+      "D:/QM/mt5/T8/metatester64.exe"
+    ],
+    "stop_reason": "The paced fleet reached five concurrent tester processes during the audit and still had seven active DB claims. The mission's CPU-ceiling stop condition applies."
+  },
+  "result": {
+    "new_card_created": false,
+    "new_ea_built": false,
+    "new_q02_work_item_created": false,
+    "duplicate_work_item_created": false,
+    "manual_mt5_backtest_launched": false,
+    "dispatch_command_run": false,
+    "next_non_duplicate_action": "Let QM5_1058 Q07 finish and let the existing QM5_9184 logical-basket Q02 row claim capacity after the paced fleet clears."
+  },
+  "guardrails": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  },
+  "commands_run_summary": [
+    "read the complete strict FX scan and inspected the current branch state",
+    "compared approved filename-matched coint/cointegration cards with framework EA folders",
+    "queried QM5_12532, QM5_12533, QM5_9184, QM5_1058 and extended-screen work-item histories",
+    "queried all active farm work items",
+    "counted terminal64 and metatester64 processes without changing process state"
+  ]
+}
