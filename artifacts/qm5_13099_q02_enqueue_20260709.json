@@ -1,0 +1,45 @@
+{
+  "recorded_at_utc": "2026-07-09T20:27:21Z",
+  "source": "paced_fleet_targeted_sweep_enqueue",
+  "build_result_path": "artifacts/qm5_13099_build_result.json",
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13099",
+    "enqueued": [
+      {
+        "wi_id": "b86eac19",
+        "symbol": "XNGUSD.DWX",
+        "tf": "D1",
+        "setfile": "QM5_13099_xng-coal-switch_XNGUSD.DWX_D1_backtest.set"
+      }
+    ],
+    "skipped": []
+  },
+  "work_items": [
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-09T20:27:21+00:00",
+      "ea_id": "QM5_13099",
+      "evidence_path": null,
+      "id": "b86eac19-dd41-4abf-90d7-5ef851112be2",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q02",
+      "phase_display": "Q02",
+      "phase_qid": "Q02",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13099_xng-coal-switch\\sets\\QM5_13099_xng-coal-switch_XNGUSD.DWX_D1_backtest.set",
+      "status": "pending",
+      "symbol": "XNGUSD.DWX",
+      "updated_at": "2026-07-09T20:27:21+00:00",
+      "verdict": null
+    }
+  ],
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "backtest_cpu_used": false
+  }
+}
+
