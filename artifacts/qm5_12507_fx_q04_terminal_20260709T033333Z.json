@@ -1,0 +1,108 @@
+{
+  "generated_at_utc": "2026-07-09T03:33:33Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves",
+  "unit_of_work": "existing forex cointegration fallback advanced through Q04",
+  "selected_path": "advance_existing_forex_card",
+  "selected_ea": "QM5_12507",
+  "selected_label": "QM5_12507_pair-coint-z",
+  "selected_pair": "EURUSD.DWX/GBPUSD.DWX",
+  "frontier_decision": {
+    "new_unbuilt_fx_cointegration_pair_found": false,
+    "strict_scan_anchors_q02_blocked": false,
+    "strict_scan_anchor_status": {
+      "QM5_12532": "Q02 PASS; reached Q05 FAIL",
+      "QM5_12533": "Q02 PASS; reached Q04 FAIL"
+    },
+    "fallback_reason": "No unbuilt approved/card-worthy FX cointegration pair was found in the documented scan frontier; QM5_12507 was the existing forex fallback and had fresh Q04 evidence."
+  },
+  "q02": {
+    "EURUSD.DWX": {
+      "work_item_id": "ff64c149-ba52-48b1-a024-59d910212583",
+      "status": "done",
+      "verdict": "PASS",
+      "evidence_path": "D:/QM/reports/work_items/ff64c149-ba52-48b1-a024-59d910212583/QM5_12507/20260708_204634/summary.json"
+    },
+    "GBPUSD.DWX": {
+      "work_item_id": "b2cad7df-8f5c-44d6-8fa6-33c26dbc8a15",
+      "status": "done",
+      "verdict": "PASS",
+      "evidence_path": "D:/QM/reports/work_items/b2cad7df-8f5c-44d6-8fa6-33c26dbc8a15/QM5_12507/20260708_234006/summary.json"
+    }
+  },
+  "q04": {
+    "EURUSD.DWX": {
+      "work_item_id": "0068bf06-73ba-420a-8a87-c4da9b4567f7",
+      "status": "done",
+      "verdict": "FAIL",
+      "reason": "F1:pf_net=0.814;F2:pf_net=0.727;F3:pf_net=0.752",
+      "folds": [
+        {
+          "id": "F1",
+          "status": "OK",
+          "trades": 184,
+          "pf_net": 0.8141073499110062
+        },
+        {
+          "id": "F2",
+          "status": "OK",
+          "trades": 316,
+          "pf_net": 0.7265335195870899
+        },
+        {
+          "id": "F3",
+          "status": "OK",
+          "trades": 150,
+          "pf_net": 0.7522805119185791
+        }
+      ],
+      "evidence_path": "D:/QM/reports/work_items/0068bf06-73ba-420a-8a87-c4da9b4567f7/QM5_12507/Q04/EURUSD.DWX/aggregate.json"
+    },
+    "GBPUSD.DWX": {
+      "work_item_id": "f6242187-0a9c-46aa-8319-fd7aee20617c",
+      "status": "done",
+      "verdict": "FAIL",
+      "reason": "F1:trades=0;F2:trades=0;F3:trades=0 || lowfreq:INVALID:lowfreq_insufficient_pooled_trades:0<15(>=5/yr)",
+      "folds": [
+        {
+          "id": "F1",
+          "status": "FAIL",
+          "trades": 0,
+          "pf_net": null
+        },
+        {
+          "id": "F2",
+          "status": "FAIL",
+          "trades": 0,
+          "pf_net": null
+        },
+        {
+          "id": "F3",
+          "status": "FAIL",
+          "trades": 0,
+          "pf_net": null
+        }
+      ],
+      "lowfreq_verdict": "INVALID",
+      "evidence_path": "D:/QM/reports/work_items/f6242187-0a9c-46aa-8319-fd7aee20617c/QM5_12507/Q04/GBPUSD.DWX/aggregate.json"
+    }
+  },
+  "repo_updates": [
+    "framework/EAs/QM5_12507_pair-coint-z/SPEC.md",
+    "artifacts/qm5_12507_fx_q04_terminal_20260709T033333Z.json"
+  ],
+  "next_action": "Do not duplicate Q02/Q04 for QM5_12507 EURUSD/GBPUSD; select a different approved forex candidate if one appears, otherwise leave this FX sleeve terminal at Q04 FAIL.",
+  "guardrails": {
+    "manual_mt5_backtest_launched": false,
+    "new_backtest_work_item_inserted": false,
+    "duplicate_work_item_created": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

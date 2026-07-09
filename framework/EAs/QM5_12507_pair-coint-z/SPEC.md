@@ -4,7 +4,7 @@
 **Slug:** `pair-coint-z`
 **Source:** `46758070-d6b1-52ef-a3ee-ffcbffb7bb54` (see `strategy-seeds/sources/46758070-d6b1-52ef-a3ee-ffcbffb7bb54/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-07-03
+**Last revised:** 2026-07-09
 
 ---
 
@@ -91,6 +91,27 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 
 ---
 
+## Current Funnel State
+
+The 2026-07-09 forex fallback pass found no unbuilt, approved/card-worthy FX
+cointegration pair left in the documented scan frontier. `QM5_12507` was the
+existing forex fallback, and its EURUSD/GBPUSD sleeve has now reached a
+terminal Q04 outcome:
+
+- Q02 EURUSD.DWX: PASS, work item `ff64c149-ba52-48b1-a024-59d910212583`.
+- Q02 GBPUSD.DWX: PASS, work item `b2cad7df-8f5c-44d6-8fa6-33c26dbc8a15`.
+- Q04 EURUSD.DWX: FAIL with valid folds but below-floor net PF
+  (`0.814`, `0.727`, `0.752`), work item
+  `0068bf06-73ba-420a-8a87-c4da9b4567f7`.
+- Q04 GBPUSD.DWX: FAIL / low-frequency invalid with zero pooled trades, work
+  item `f6242187-0a9c-46aa-8319-fd7aee20617c`.
+
+Do not create duplicate Q02 or Q04 rows for the EURUSD/GBPUSD forex sleeve.
+The NDX.DWX/WS30.DWX rows are non-forex companion rows and were left outside
+the forex portfolio mission scope.
+
+---
+
 ## Revision History
 
 | Version | Date | Reason | Notes |
@@ -98,3 +119,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | v1 | 2026-06-11 | Initial build from card | 34b946aa-e1c9-4f38-b713-ee3a8efbb8e3 |
 | v2 | 2026-07-03 | Q02 infrastructure repair | Repaired pair entry to open both registered legs through `QM_BasketOpenPosition`, split fixed risk 50/50, preserved zero-spread `.DWX` behavior, and made P2 setfiles carry explicit card defaults before requeue. |
 | v3 | 2026-07-08 | FX Q02 basket-manifest repair | Added `basket_manifest.json` for the four symbols warmed by the EA and priority-marked only the existing EURUSD/GBPUSD Q02 rows for the forex sleeve. |
+| v4 | 2026-07-09 | FX Q04 verdict recorded | Existing fallback advanced through Q04: EURUSD valid-fold PF failure and GBPUSD low-frequency zero-trade invalid failure; no duplicate work items or manual MT5 dispatch. |
