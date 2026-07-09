@@ -1,0 +1,37 @@
+{
+  "ea_id": "QM5_13084",
+  "slug": "xng-lng-pb",
+  "build_task_id": "manual-codex-qm5-13084-20260709",
+  "auto_q02_enqueued": true,
+  "work_item": {
+    "id": "a9c7c7ea-ca75-4e83-b2e8-255c6ba28c67",
+    "kind": "backtest",
+    "phase": "Q02",
+    "ea_id": "QM5_13084",
+    "symbol": "XNGUSD.DWX",
+    "host_symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "status": "pending",
+    "created_at_utc": "2026-07-09T06:55:09+00:00",
+    "updated_at_utc": "2026-07-09T06:55:09+00:00",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13084_xng-lng-pb\\sets\\QM5_13084_xng-lng-pb_XNGUSD.DWX_D1_backtest.set",
+    "payload_json": {
+      "host_symbol": "XNGUSD.DWX",
+      "host_timeframe": "D1",
+      "enqueued_by": "record_build_result.auto_q02",
+      "enqueued_at_utc": "2026-07-09T06:55:09+00:00",
+      "build_task_id": "manual-codex-qm5-13084-20260709"
+    }
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
