@@ -1,6 +1,7 @@
 # ZHAO-ST-MOMREV-2026
 
-Canonical source for QM5_13049, QM5_13050, QM5_13055, and QM5_13056.
+Canonical source for QM5_13049, QM5_13050, QM5_13055, QM5_13056, and
+QM5_13101.
 
 Source:
 
@@ -18,6 +19,11 @@ Cards extracted:
   five-day move when realized volatility is not elevated.
 - `QM5_13056_xbr-1w-rev-vol`: XBRUSD.DWX D1 one-week reversal after a large
   five-day move when realized volatility is elevated.
+- `QM5_13101_xng-1w-mom-vol`: XNGUSD.DWX D1 one-week continuation after a
+  large five-day move when realized volatility is not elevated. Signal
+  parameters are locked to QM5_13049; only the carrier and execution spread
+  cap differ. This realization inherits no pipeline evidence from the pending
+  crude builds.
 
 Research note:
 
@@ -38,3 +44,8 @@ pipeline can test a separate crude benchmark rather than another WTI or XNG
 sleeve. QM5_13056 ports the reversal/high-volatility branch to Brent using the
 same XBR D1 route, but fades the prior 5-D1 move only when current 20-D1
 realized volatility ranks high.
+
+All five cards explicitly acknowledge that the source paper uses investor-
+position flow decomposition while the Darwinex-native EAs use an OHLC-only
+proxy. They do not claim to reproduce the unavailable `R_nonQ` series; Q02 is
+the falsification gate for each carrier-specific proxy.
