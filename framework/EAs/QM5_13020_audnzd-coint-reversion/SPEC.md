@@ -91,11 +91,18 @@ Granger (1987), Econometrica 55(2), https://www.jstor.org/stable/1913236
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 – Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 – Q10) | RISK_FIXED | 1,500 NZD per trade (roughly USD 1,000) |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio (typically 0.3% – 0.5%) |
 
 ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+
+Q02 tester repair note: this AUDNZD strategy is run with `tester_currency=NZD`
+and `tester_deposit=150000` in the farm work-item payload. The 2026-07-07 Q02
+infra failure was not missing AUDNZD history; MT5 synchronized AUDNZD and began
+real-tick D1 testing, then aborted while trying to download the native `NZDUSD`
+conversion leg for USD account reporting. Quote-currency tester accounting
+matches the existing FX-basket repair pattern and avoids that conversion path.
 
 ---
 
@@ -104,3 +111,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-06 | Initial build from card | dcb017fd-8b18-441d-bdc0-4059550c4be9 |
+| v1.1 | 2026-07-09 | Q02 infra repair | Use NZD tester accounting / 1,500 NZD fixed risk to avoid native NZDUSD conversion-history timeout. |
