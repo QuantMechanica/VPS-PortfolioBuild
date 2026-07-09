@@ -14848,6 +14848,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9639,ehlers-highpass-raw-h4,3,XAUUSD.DWX,96390003,2026-07-09,Codex,active
 13093,xbr-audusd-rspr,0,XBRUSD.DWX,130930000,2026-07-09,Codex,active
 13093,xbr-audusd-rspr,1,AUDUSD.DWX,130930001,2026-07-09,Codex,active
+13094,xti-xcu-brk,0,XTIUSD.DWX,130940000,2026-07-09,Codex,active
+13094,xti-xcu-brk,1,XCUUSD.DWX,130940001,2026-07-09,Codex,active
 1560,aa-zak-macd-3-12-6,0,SP500.DWX,15600000,2026-07-09,Codex,active
 1560,aa-zak-macd-3-12-6,1,NDX.DWX,15600001,2026-07-09,Codex,active
 1560,aa-zak-macd-3-12-6,2,WS30.DWX,15600002,2026-07-09,Codex,active
