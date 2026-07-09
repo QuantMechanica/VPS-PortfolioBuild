@@ -10,7 +10,7 @@
 ; magic_slot:   7
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   ecaca3e261886009604c0965bf310c1fdccc006080ea1e0e7b3a1b2cc335a50f
+; build_hash:   4f36a16ea000755ab2fce87d1a52ac2a2bb2b374a9098237c7626a1fdb63c009
 ; author:       Development
 ; date:         2026-06-14
 ;==========================================================
@@ -30,5 +30,17 @@ qm_filter_volatility_atr_period=14
 qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from approved card / SPEC.md
+; card_defaults_source=framework/EAs/QM5_1070_carver-relative-carry/SPEC.md
+strategy_entry_forecast=2.0
+strategy_vol_span_days=25
+strategy_atr_period=20
+strategy_atr_stop_mult=2.5
+strategy_min_valid_symbols=6
+strategy_max_positions=4
+strategy_spread_median_days=20
+strategy_spread_cap_mult=2.0
+strategy_forecast_scalar=30.0
+strategy_forecast_cap=20.0
+strategy_swap_days_per_year=256.0
+strategy_rebalance_hour=1
