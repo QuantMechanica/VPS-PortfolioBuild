@@ -1,5 +1,40 @@
 # T_Live decision — S4: 15 → 17 sleeves (first probation admits)
 
+> ## ⚠️ UPDATED 2026-07-09 — TARGET IS NOW 21 SLEEVES, NOT 17. DO NOT DEPLOY THE WEIGHTS BELOW.
+>
+> OWNER (2026-07-08 chat) expanded the end-of-week harvest from 2 to **6 admits**, so the
+> Sunday 2026-07-12 combined session target is **15 (S3 live) + 6 = 21 sleeves**. The
+> 17-sleeve weight table in this file is an OBSOLETE mid-week snapshot — per OWNER's own
+> deferral note (below), weights RECOMPUTE over the final candidate set before the session.
+>
+> **The 6 confirmed admits (all Q09_PORTFOLIO `PASS_PORTFOLIO`, in `portfolio_candidates`
+> `Q12_REVIEW_READY`, streams verified present 2026-07-09):**
+>
+> | EA / symbol | slug | Q09_PORTFOLIO evidence (work_item, date) |
+> |---|---|---|
+> | QM5_10706 / GBPUSD.DWX | tv-mon-ls (H1) | 22fca5c5… 2026-07-05 |
+> | QM5_11708 / EURUSD.DWX | anon-market-squeeze-d1 (D1) | 790edb77… 2026-07-06 |
+> | QM5_11165 / EURUSD.DWX | (EURUSD leg; AUDCAD leg already live in S3) | 80bcdc1b… 2026-07-06 |
+> | QM5_12969 / USDJPY.DWX | 2026-07-07 | de65a075… 2026-07-07 |
+> | QM5_10403 / XAUUSD.DWX | 2026-07-06 | e12845b9… 2026-07-06 |
+> | QM5_12778 / AUDUSD~EURJPY cointegration basket (D1) | 0b1fddba… 2026-07-06 |
+>
+> **Ground truth 2026-07-09 (filesystem-verified):** no 21-sleeve composite or deploy
+> package exists yet — only this 17-sleeve S4 (`s4_composite_2026-07-06`, `C:\QM\deploy\S4_2026-07-06\`).
+> Sunday task `QM_NewBook_LiveVsBook_Sunday` is scheduled (07-12 08:00, never run).
+>
+> **Remaining build step (before/at the Sunday session):** extend
+> `s4_composite_compute_2026-07-06.py` → 21 sleeves (add the 4 new admits to `NEW_META`
+> with registry-anchored magics; **12778 is a multi-symbol basket — the single-symbol
+> `SYM_SHORT_TO_KEY` path needs a basket branch**), regenerate 21 staged presets + SHA
+> manifest, recompute capped inv-vol weights. All 6 admit streams confirmed available in
+> Common/durable q08_trades (10403's XAUUSD only in durable — script falls back). Evidence:
+> `docs/ops/evidence/q02_q04_survival_by_assetclass_2026-07-09.csv` is unrelated; admit
+> status from `farm_state.sqlite portfolio_candidates` + `work_items` (queried 2026-07-09).
+>
+> Workflow unchanged: OWNER written approval → Claude file-side deploy + SHA re-verify →
+> OWNER chart session → Claude journal verify. **Nothing live has changed.**
+
 **Status: DEFERRED BY OWNER (2026-07-06 chat) — candidate collection through
 end of week, then ONE combined session admitting the week's harvest to BOTH
 books (DXZ + FTMO).** Package stays staged and valid (frozen streams); weights
