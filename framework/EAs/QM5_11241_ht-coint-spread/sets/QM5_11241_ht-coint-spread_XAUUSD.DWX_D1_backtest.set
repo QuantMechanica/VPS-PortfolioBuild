@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        11241
 ; ea_slug:      ht-coint-spread
@@ -10,7 +10,7 @@
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   882ee092ed5605bd49435beda38c0bc9757d32f2cd8e02f8e41afc6e8f1146e0
+; build_hash:   1ba34351f0647dab57c38bf64c59102ba3cd6d11c8859ba2f877eb9af02d735c
 ; author:       Development
 ; date:         2026-06-20
 ;==========================================================
@@ -31,4 +31,16 @@ qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+strategy_partner_symbol=XAGUSD.DWX
+strategy_partner_slot=5
+strategy_formation_bars=504
+strategy_z_window=60
+strategy_entry_z=2.0
+strategy_exit_z=0.25
+strategy_stop_z=4.0
+strategy_adf_p_max=0.10
+strategy_min_half_life=2
+strategy_max_half_life=60
+strategy_time_stop_cap=90
+strategy_min_d1_bars=560
+strategy_leg_risk_split=0.5

@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        11241
 ; ea_slug:      ht-coint-spread
@@ -10,7 +10,7 @@
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   4f992124989991f6698bfe36d19eaab3ab737a708e51ae6bc50a4c7db5c76890
+; build_hash:   7401817682ee2b2624d20d9d13d1b5f17364eed70b7ab1ca20b15f76bed4b53c
 ; author:       Development
 ; date:         2026-06-20
 ;==========================================================
