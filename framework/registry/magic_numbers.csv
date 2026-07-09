@@ -14842,3 +14842,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13091,xbr-vrp-proxy,0,XBRUSD.DWX,130910000,2026-07-09,Codex,active
 13092,xbr-eurcad-rspr,0,XBRUSD.DWX,130920000,2026-07-09,Codex,active
 13092,xbr-eurcad-rspr,1,EURCAD.DWX,130920001,2026-07-09,Codex,active
+9639,ehlers-highpass-raw-h4,0,EURUSD.DWX,96390000,2026-07-09,Codex,active
+9639,ehlers-highpass-raw-h4,1,GBPUSD.DWX,96390001,2026-07-09,Codex,active
+9639,ehlers-highpass-raw-h4,2,USDJPY.DWX,96390002,2026-07-09,Codex,active
+9639,ehlers-highpass-raw-h4,3,XAUUSD.DWX,96390003,2026-07-09,Codex,active

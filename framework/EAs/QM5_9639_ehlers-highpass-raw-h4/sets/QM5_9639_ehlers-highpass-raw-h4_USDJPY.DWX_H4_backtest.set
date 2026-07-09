@@ -1,0 +1,32 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9639
+; ea_slug:      ehlers-highpass-raw-h4
+; ea_version:   v5.0
+; set_version:  s20260709-001
+; symbol:       USDJPY.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   2
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   5a723daa7ffe33cfbfad60c4486f88a524e1190bc4745e542c65545bf1b87347
+; author:       Development
+; date:         2026-07-09
+;==========================================================
+qm_ea_id=9639
+qm_magic_slot_offset=2
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9639_ehlers-highpass-raw-h4.md
+strategy_hp_period=48
+strategy_ema_period=100
+strategy_atr_period=14
+strategy_max_hp_atr_mult=1.20
+strategy_swing_lookback=5
+strategy_swing_atr_buffer=0.20
+strategy_reward_risk=1.70
+strategy_time_stop_h4_bars=14
+strategy_warmup_h4_bars=220
