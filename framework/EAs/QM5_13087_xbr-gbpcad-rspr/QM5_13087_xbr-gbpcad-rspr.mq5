@@ -50,7 +50,7 @@ input int    strategy_atr_period_d1       = 20;
 input double strategy_atr_sl_mult         = 3.0;
 input int    strategy_max_hold_days       = 30;
 input int    strategy_xbr_max_spread_pts  = 1200;
-input int    strategy_gbpcad_max_spread_pts = 120;
+input int    strategy_gbpcad_max_spread_pts = 160;
 input int    strategy_deviation_points    = 20;
 
 string   g_leg_xbr    = "XBRUSD.DWX";
@@ -475,4 +475,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-

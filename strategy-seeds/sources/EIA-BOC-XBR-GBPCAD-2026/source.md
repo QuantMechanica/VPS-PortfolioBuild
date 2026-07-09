@@ -4,7 +4,7 @@ title: Oil price and Canadian dollar structural linkage for Brent/GBPCAD relativ
 publisher: U.S. Energy Information Administration / Bank of Canada
 source_type: government_and_central_bank_research
 status: cards_ready
-created: 2026-07-08
+created: 2026-07-09
 created_by: Codex
 uri: https://www.eia.gov/workingpapers/pdf/oil_exchangerates_61317.pdf
 cards_extracted:
@@ -48,14 +48,13 @@ unusually wide, and close when the spread mean-reverts or the time stop fires.
 
 ## Duplicate Boundary
 
-This source is related to prior Brent/CAD work, but the extracted card is not a
-rebuild of `wti-cad-confirm`, `wti-cad-spread-mr`, `wti-cad-brk`,
-`xbr-cadjpy-rspr`, `xbr-cadchf-rspr`, `xbr-audcad-rspr`, `xbr-cad-rspr`,
-`xbr-nzd-rspread`, or `xbr-xng-rspread`. It also differs from
-`gbpcad-gbpnzd-coint`, which is an FX cointegration basket. The new sleeve
-uses Brent plus GBPCAD, trades both legs as a two-leg basket, and opens from a
-standardized D1 return-spread dislocation designed around GBPCAD's inverse CAD
-quotation.
+This source is related to prior oil/CAD work, but the extracted card is not a
+rebuild of `xbr-cad-rspr`, `xbr-audcad-rspr`, `xbr-nzdcad-rspr`,
+`xbr-cadjpy-rspr`, `xbr-cadchf-rspr`, `xbr-xng-rspr`, or `xti-gbpcad-rspr`.
+It also differs from `gbpcad-gbpnzd-coint`, which is an FX cointegration
+basket. The new sleeve uses Brent plus GBPCAD, trades both legs as a two-leg
+basket, and opens from a standardized D1 return-spread dislocation designed
+around GBPCAD's inverse CAD quotation.
 
 ## R-Rules
 

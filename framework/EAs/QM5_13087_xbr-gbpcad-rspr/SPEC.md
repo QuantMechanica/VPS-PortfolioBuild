@@ -15,9 +15,10 @@ and `GBPCAD.DWX`. On each new D1 host bar it computes
 `log(XBR[t] / XBR[t-L]) + beta_gbpcad * log(GBPCAD[t] / GBPCAD[t-L])`,
 then standardizes that spread against a rolling lookback window.
 
-`GBPCAD` rises when AUD strengthens or CAD weakens. The plus sign is
+`GBPCAD` rises when GBP strengthens or CAD weakens. The plus sign is
 intentional: a Brent rally and CAD strength should pull the two terms in
-opposite directions, so unusually large same-direction dislocations are faded.
+opposite directions, so unusually large same-direction Brent/GBPCAD
+dislocations are faded.
 When the z-score is above the entry threshold, the EA sells Brent and sells
 GBPCAD. When the z-score is below the negative entry threshold, it buys Brent
 and buys GBPCAD. The package exits when the z-score reverts inside the exit
@@ -39,7 +40,7 @@ open.
 | `strategy_atr_sl_mult` | 3.0 | 2.5-4.0 | ATR multiple used for each leg's hard stop |
 | `strategy_max_hold_days` | 30 | 20-45 | Maximum calendar days before closing the package |
 | `strategy_xbr_max_spread_pts` | 1200 | 800-1800 | Maximum allowed XBR spread in points |
-| `strategy_gbpcad_max_spread_pts` | 120 | 80-200 | Maximum allowed GBPCAD spread in points |
+| `strategy_gbpcad_max_spread_pts` | 160 | 100-240 | Maximum allowed GBPCAD spread in points |
 | `strategy_deviation_points` | 20 | fixed | Basket order slippage/deviation cap in points |
 
 ---
@@ -48,7 +49,7 @@ open.
 
 **Designed for:**
 - `XBRUSD.DWX` - Brent crude leg and host chart for the oil side of the return spread.
-- `GBPCAD.DWX` - inverse-CAD commodity-FX leg contrasting AUD commodity exposure with CAD oil exposure.
+- `GBPCAD.DWX` - inverse-CAD FX leg contrasting GBP with CAD oil exposure.
 - `QM5_13087_XBR_GBPCAD_RSPREAD_D1` - logical Q02 basket symbol backed by the two traded legs above.
 
 **Explicitly NOT for:**
