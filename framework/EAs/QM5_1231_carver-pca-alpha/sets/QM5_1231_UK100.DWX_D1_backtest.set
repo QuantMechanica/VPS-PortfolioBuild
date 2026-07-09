@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        1231
 ; ea_slug:      carver-pca-alpha
@@ -10,7 +10,7 @@
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 0.0909
-; build_hash:   180d0ebbe5d266d433598c8fdb111fb98199359f1ab29824eb8ec59a4eedd2f9
+; build_hash:   0c8a1caf7e4e2666b6ba1bdb3a53ce1f8e70a5f3c58c72715225bcbce8cfc606
 ; author:       Development
 ; date:         2026-05-26
 ;==========================================================

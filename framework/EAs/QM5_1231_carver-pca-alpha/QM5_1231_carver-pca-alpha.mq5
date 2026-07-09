@@ -72,8 +72,8 @@ int Strategy_MonthKey(const datetime value)
 
 bool Strategy_IsMonthlyRebalance()
   {
-   const datetime last_closed = iTime(_Symbol, PERIOD_D1, 1);
-   const datetime prior = iTime(_Symbol, PERIOD_D1, 2);
+   const datetime last_closed = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: monthly D1 rebalance needs explicit closed-bar timestamps.
+   const datetime prior = iTime(_Symbol, PERIOD_D1, 2); // perf-allowed: monthly D1 rebalance needs explicit closed-bar timestamps.
    if(last_closed <= 0 || prior <= 0)
       return false;
    return (Strategy_MonthKey(last_closed) != Strategy_MonthKey(prior));
@@ -133,8 +133,8 @@ double Strategy_StdDevReturns(const string symbol, const int shift, const int pe
    int count = 0;
    for(int i = shift; i < shift + period; ++i)
      {
-      const double c0 = iClose(symbol, PERIOD_D1, i);
-      const double c1 = iClose(symbol, PERIOD_D1, i + 1);
+      const double c0 = iClose(symbol, PERIOD_D1, i); // perf-allowed: cross-symbol D1 return matrix requires aligned closes.
+      const double c1 = iClose(symbol, PERIOD_D1, i + 1); // perf-allowed: cross-symbol D1 return matrix requires aligned closes.
       if(c0 <= 0.0 || c1 <= 0.0)
          return 0.0;
       values[count] = (c0 - c1) / c1;
@@ -153,8 +153,8 @@ double Strategy_StdDevReturns(const string symbol, const int shift, const int pe
 
 double Strategy_NormalizedReturn(const string symbol, const int shift)
   {
-   const double c0 = iClose(symbol, PERIOD_D1, shift);
-   const double c1 = iClose(symbol, PERIOD_D1, shift + 1);
+   const double c0 = iClose(symbol, PERIOD_D1, shift); // perf-allowed: cross-symbol D1 return matrix requires aligned closes.
+   const double c1 = iClose(symbol, PERIOD_D1, shift + 1); // perf-allowed: cross-symbol D1 return matrix requires aligned closes.
    const double sd = Strategy_StdDevReturns(symbol, shift, strategy_norm_stddev_days);
    if(c0 <= 0.0 || c1 <= 0.0 || sd <= 0.0)
       return 0.0;
@@ -211,12 +211,12 @@ double Strategy_VectorNorm(double &values[], const int count)
   }
 
 void Strategy_PowerIteration(double &cov[][QM5_1231_SYMBOL_COUNT],
-                             double &weights[],
+                             double &loadings[],
                              double &eigen_value,
                              const int symbol_count)
   {
    for(int i = 0; i < symbol_count; ++i)
-      weights[i] = 1.0 / MathSqrt((double)symbol_count);
+      loadings[i] = 1.0 / MathSqrt((double)symbol_count);
 
    double next[QM5_1231_SYMBOL_COUNT];
    for(int iter = 0; iter < 30; ++iter)
@@ -225,13 +225,13 @@ void Strategy_PowerIteration(double &cov[][QM5_1231_SYMBOL_COUNT],
         {
          next[i] = 0.0;
          for(int j = 0; j < symbol_count; ++j)
-            next[i] += cov[i][j] * weights[j];
+            next[i] += cov[i][j] * loadings[j];
         }
       const double norm = Strategy_VectorNorm(next, symbol_count);
       if(norm <= 0.0)
          break;
       for(int i = 0; i < symbol_count; ++i)
-         weights[i] = next[i] / norm;
+         loadings[i] = next[i] / norm;
      }
 
    eigen_value = 0.0;
@@ -239,15 +239,15 @@ void Strategy_PowerIteration(double &cov[][QM5_1231_SYMBOL_COUNT],
      {
       double row = 0.0;
       for(int j = 0; j < symbol_count; ++j)
-         row += cov[i][j] * weights[j];
-      eigen_value += weights[i] * row;
+         row += cov[i][j] * loadings[j];
+      eigen_value += loadings[i] * row;
      }
    if(eigen_value < 0.0)
       eigen_value = 0.0;
   }
 
 void Strategy_Deflate(double &cov[][QM5_1231_SYMBOL_COUNT],
-                      double &weights[],
+                      double &loadings[],
                       const double eigen_value,
                       const int symbol_count)
   {
@@ -255,7 +255,7 @@ void Strategy_Deflate(double &cov[][QM5_1231_SYMBOL_COUNT],
       return;
    for(int i = 0; i < symbol_count; ++i)
       for(int j = 0; j < symbol_count; ++j)
-         cov[i][j] -= eigen_value * weights[i] * weights[j];
+         cov[i][j] -= eigen_value * loadings[i] * loadings[j];
   }
 
 bool Strategy_Forecasts(double &forecasts[])
@@ -266,7 +266,7 @@ bool Strategy_Forecasts(double &forecasts[])
       return false;
 
    for(int s = 0; s < QM5_1231_SYMBOL_COUNT; ++s)
-      if(Bars(g_symbols[s], PERIOD_D1) < lookback + strategy_norm_stddev_days + strategy_atr_period_d1 + 10)
+      if(Bars(g_symbols[s], PERIOD_D1) < lookback + strategy_norm_stddev_days + strategy_atr_period_d1 + 10) // perf-allowed: monthly basket forecast verifies all D1 series before PCA.
          return false;
 
    double raw[QM5_1231_SYMBOL_COUNT][QM5_1231_MAX_LOOKBACK];
@@ -402,7 +402,7 @@ double Strategy_MedianDailySpreadPoints()
    for(int shift = 1; shift <= strategy_spread_median_days; ++shift)
      {
       const long spread = iSpread(_Symbol, PERIOD_D1, shift);
-      if(spread <= 0)
+      if(spread < 0)
          continue;
       values[count] = (double)spread;
       ++count;
@@ -418,7 +418,7 @@ bool Strategy_SpreadAllowsEntry()
    if(median_spread <= 0.0 || strategy_spread_mult <= 0.0)
       return true;
    const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(current_spread <= 0)
+   if(current_spread < 0)
       return true;
    return ((double)current_spread <= median_spread * strategy_spread_mult);
   }
@@ -470,7 +470,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!Strategy_IsMonthlyRebalance())
       return false;
 
-   const int month_key = Strategy_MonthKey(iTime(_Symbol, PERIOD_D1, 1));
+   const int month_key = Strategy_MonthKey(iTime(_Symbol, PERIOD_D1, 1)); // perf-allowed: monthly D1 rebalance needs explicit closed-bar timestamp.
    if(month_key <= 0 || month_key == g_last_entry_month)
       return false;
    if(!Strategy_SpreadAllowsEntry())
@@ -518,7 +518,7 @@ bool Strategy_ExitSignal()
    if(!Strategy_HasOpenPosition(ticket, open_direction))
       return false;
 
-   const int month_key = Strategy_MonthKey(iTime(_Symbol, PERIOD_D1, 1));
+   const int month_key = Strategy_MonthKey(iTime(_Symbol, PERIOD_D1, 1)); // perf-allowed: monthly D1 rebalance needs explicit closed-bar timestamp.
    if(month_key <= 0 || month_key == g_last_exit_month)
       return false;
 
