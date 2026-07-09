@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        13091
 ; ea_slug:      xbr-vrp-proxy
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   cf616c42652e628f57c53fae7a82fd9abafbd9161bae32082e6254a4c6c7eda8
+; build_hash:   fdc37cc6a201b4fc478cb9d7bd5b484c3a99517b6f50e30f4296cc20f3354356
 ; author:       Development
 ; date:         2026-07-09
 ;==========================================================
