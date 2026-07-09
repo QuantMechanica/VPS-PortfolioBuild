@@ -53,6 +53,12 @@ Backtest setfiles use `RISK_FIXED=1000` and `RISK_PERCENT=0`. No live
 setfile, deploy manifest, `T_Live`, portfolio gate, or AutoTrading setting is
 part of this build.
 
+## hypothesis
+
+Large five-D1 natural-gas moves can partially reverse when realized volatility
+is elevated. This tests an overreaction regime distinct from the incumbent
+two-day RSI pullback and from the paired low-volatility continuation branch.
+
 ## Source
 
 Zhao, Shen; Ding, Yiyi; Yu, Jianfeng; Kang, Wenjin (2026), *Momentum and
@@ -75,7 +81,13 @@ not inherit performance evidence from its WTI or Brent realizations.
 - `QM5_13050` and `QM5_13056` use the same locked signal on WTI and Brent;
   this is the previously unbuilt XNG carrier and inherits no test evidence.
 
-## Entry Rules
+## rules
+
+Evaluate completed D1 bars only, require a large five-D1 move and elevated
+realized-volatility percentile, then trade opposite the move at most once per
+broker week.
+
+## 4. entry rules
 
 On each new D1 bar, using completed bars only:
 
@@ -102,7 +114,7 @@ PARAMETERS
 - strategy_exit_neutral_pct = 0.25
 - strategy_max_spread_points = 2500
 
-## Exit Rules
+## 5. exit rules
 
 - Hard stop at 2.25 times frozen ATR(20).
 - Time stop after five calendar days.
@@ -111,13 +123,13 @@ PARAMETERS
 - Framework Friday close and standard news handling remain enabled.
 - No fixed take-profit.
 
-## Filters
+## 6. filters (no-trade module)
 
 Require valid completed D1 close, ATR, and realized-volatility history. Apply
 the XNG/D1 host guard, magic-slot guard, parameter bounds, spread cap, standard
 news controls, kill switch, and Friday-close handling.
 
-## Trade Management Rules
+## 7. trade management rules
 
 One position per magic/symbol. No pyramiding, grid, martingale, partial close,
 adaptive PnL fitting, external runtime feed, cross-symbol state, or ML.
@@ -133,7 +145,7 @@ differs. No rescue retune is authorized.
 "We document both short-term momentum and reversal in commodity futures"
 (Zhao et al., 2026, abstract).
 
-## Initial Risk Profile
+## risk
 
 Expected frequency is 8-18 entries/year, above the binding five-trades/year
 Q02 floor. The risk class is high because natural-gas gaps can continue through
@@ -169,4 +181,3 @@ a contrarian setup. Retire on Q02 frequency, PF, or DD failure.
 | G0 Research Intake | 2026-07-10 | APPROVED | this card |
 | Q01 Build Validation | 2026-07-10 | PENDING | `artifacts/qm5_13102_build_result.json` |
 | Q02 Baseline Screening | 2026-07-10 | PENDING | paced work item after build PASS |
-
