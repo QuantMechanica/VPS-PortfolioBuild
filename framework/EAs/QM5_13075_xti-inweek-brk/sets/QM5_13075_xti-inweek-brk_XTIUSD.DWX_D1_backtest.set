@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13075
 ; ea_slug:      xti-inweek-brk
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   626aff942ba047e90f907ea223bd3eae8d32ded601c3eaad54c0ef0082d76379
 ; author:       Development
 ; date:         2026-07-09
 ;==========================================================
