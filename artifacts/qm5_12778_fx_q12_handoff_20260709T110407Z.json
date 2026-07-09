@@ -1,0 +1,94 @@
+{
+  "generated_at_utc": "2026-07-09T11:04:07Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with forex sleeves",
+  "decision": {
+    "new_unbuilt_fx_cointegration_candidate_found": false,
+    "approved_fx_cointegration_cards_checked": 24,
+    "approved_fx_cointegration_missing_ea_dirs": 0,
+    "strict_scan_anchors_q02_blocked": false,
+    "fallback_action": "advance_existing_forex_sleeve_to_q12_handoff",
+    "selected_ea": "QM5_12778",
+    "selected_pair": [
+      "AUDUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1"
+  },
+  "selected_status": {
+    "card_pipeline_phase": "Q12_REVIEW_READY",
+    "portfolio_candidate_state": "Q12_REVIEW_READY",
+    "portfolio_candidate_work_item": "0b1fddba-6c4e-47ec-b9b3-6b54273e5832"
+  },
+  "funnel": {
+    "Q02": {
+      "verdict": "PASS",
+      "work_item_id": "4dbf18f1-f8c0-4665-beea-778c9ad960c2"
+    },
+    "Q03": {
+      "verdict": "PASS",
+      "work_item_id": "7a11f24a-091f-49dd-983a-3dc8c7cef456"
+    },
+    "Q04": {
+      "verdict": "PASS",
+      "work_item_id": "9546f319-dc02-4249-b6ac-0c1bb64fec4f"
+    },
+    "Q05": {
+      "verdict": "PASS",
+      "work_item_id": "1c0405e7-16d3-40e6-b884-6be1b504dc4c"
+    },
+    "Q06": {
+      "verdict": "PASS",
+      "work_item_id": "a60892f1-0059-47e8-83b2-39120ee15478"
+    },
+    "Q07": {
+      "verdict": "PASS",
+      "work_item_id": "fc554e0c-e66e-486a-a83d-c7301e67c615"
+    },
+    "Q08": {
+      "verdict": "FAIL_SOFT",
+      "work_item_id": "8637b758-4763-4a1c-a88e-f2001a1da7b4",
+      "trade_count": 195,
+      "cost_cushion": 3.9213,
+      "cost_cushion_tier": "PASS",
+      "sub_gate_counts": {
+        "pass": 6,
+        "fail": 2,
+        "invalid": 3
+      },
+      "regime_catastrophe": false,
+      "mc_shuffle_maxdd_p95_pct": 6.7438
+    },
+    "Q09_PORTFOLIO": {
+      "verdict": "PASS_PORTFOLIO",
+      "work_item_id": "0b1fddba-6c4e-47ec-b9b3-6b54273e5832",
+      "admit": true,
+      "standalone_pf": 1.0459218054,
+      "trade_count": 195,
+      "max_corr_to_book": 0.1004857919,
+      "sharpe_with": 2.4352605925,
+      "sharpe_without": 2.4320058978,
+      "maxdd_with": 0.2917107088,
+      "maxdd_without": 0.3366164535,
+      "stream_resolution": "host_symbol_from_setfile"
+    }
+  },
+  "cpu_ceiling": {
+    "manual_mt5_backtest_launched": false,
+    "pending_work_items": 4949,
+    "active_workers": 7,
+    "active_timeout_observed": true
+  },
+  "guardrails": {
+    "duplicate_card_created": false,
+    "duplicate_work_item_created": false,
+    "queue_row_manually_dispatched": false,
+    "portfolio_gate_code_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  }
+}
