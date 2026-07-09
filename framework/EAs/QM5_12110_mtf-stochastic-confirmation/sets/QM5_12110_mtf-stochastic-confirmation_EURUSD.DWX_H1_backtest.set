@@ -10,18 +10,24 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1.00
-; build_hash:   f46359e43ceae740d1b7d5968ac91096660c891cc53ccc89474c7365c69fc5d3
+; build_hash:   b052b80adcb52cb1304f66b1cc4342e326dd43dd9d6cb72b69d7f85db17e8df7
 ; author:       Development
 ; date:         2026-05-26
 ;==========================================================
 qm_ea_id=12110
 qm_magic_slot_offset=0
+qm_rng_seed=42
 RISK_PERCENT=0.0
 RISK_FIXED=1000.0
 PORTFOLIO_WEIGHT=1.0
-qm_news_mode=0
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
 qm_friday_close_enabled=true
 qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
 stoch_k=14
 stoch_d=3
 stoch_slowing=3

@@ -47,42 +47,42 @@ input int    max_spread_points     = 25;
 // ----------------------------------------------------------------------
 void StochOnTF(const ENUM_TIMEFRAMES tf, double &out_k, double &out_d, const int shift)
 {
-   const int handle = iStochastic(_Symbol, tf, stoch_k, stoch_d, stoch_slowing, MODE_SMA, STO_CLOSECLOSE);
-   if(handle == INVALID_HANDLE) { out_k = 50.0; out_d = 50.0; return; }
-   double k_buf[], d_buf[];
-   ArraySetAsSeries(k_buf, true);
-   ArraySetAsSeries(d_buf, true);
-   CopyBuffer(handle, 0, shift + 1, 2, k_buf);
-   CopyBuffer(handle, 1, shift + 1, 2, d_buf);
-   IndicatorRelease(handle);
-   out_k = k_buf[0];
-   out_d = d_buf[0];
+   out_k = QM_Stoch_K(_Symbol, tf, stoch_k, stoch_d, stoch_slowing, shift);
+   out_d = QM_Stoch_D(_Symbol, tf, stoch_k, stoch_d, stoch_slowing, shift);
+   if(out_k == EMPTY_VALUE || out_d == EMPTY_VALUE)
+     {
+      out_k = 50.0;
+      out_d = 50.0;
+     }
 }
 
 bool StochH1BullishCross(const int shift)
 {
    double k1, d1, k2, d2;
-   StochOnTF(PERIOD_H1, k1, d1, shift);
-   StochOnTF(PERIOD_H1, k2, d2, shift + 1);
+   StochOnTF(PERIOD_H1, k1, d1, shift + 1);
+   StochOnTF(PERIOD_H1, k2, d2, shift + 2);
    return (k1 > d1 && k2 <= d2);
 }
 
 bool StochH1BearishCross(const int shift)
 {
    double k1, d1, k2, d2;
-   StochOnTF(PERIOD_H1, k1, d1, shift);
-   StochOnTF(PERIOD_H1, k2, d2, shift + 1);
+   StochOnTF(PERIOD_H1, k1, d1, shift + 1);
+   StochOnTF(PERIOD_H1, k2, d2, shift + 2);
    return (k1 < d1 && k2 >= d2);
 }
 
 double EMAValue(const int period, const int shift)
 {
-   const int handle = iMA(_Symbol, PERIOD_H1, period, 0, MODE_EMA, PRICE_CLOSE);
-   if(handle == INVALID_HANDLE) return 0.0;
-   double val[1];
-   CopyBuffer(handle, 0, shift + 1, 1, val);
-   IndicatorRelease(handle);
-   return val[0];
+   return QM_EMA(_Symbol, PERIOD_H1, period, shift, PRICE_CLOSE);
+}
+
+double H1Close(const int shift)
+{
+   double close_buf[1];
+   if(CopyClose(_Symbol, PERIOD_H1, shift, 1, close_buf) != 1) // perf-allowed
+      return 0.0;
+   return close_buf[0];
 }
 
 bool HasPosition()
@@ -141,10 +141,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    double d1_k, d1_d;
    StochOnTF(PERIOD_D1, d1_k, d1_d, 1);
 
-   const double close = iClose(_Symbol, PERIOD_H1, 1);
+   const double close = H1Close(1);
    if(close <= 0) return false;
 
-   const double ema = EMAValue(ema_period, 0);
+   const double ema = EMAValue(ema_period, 1);
    if(ema <= 0) return false;
 
    bool long_signal = false, short_signal = false;
@@ -261,33 +261,52 @@ void OnDeinit(const int reason)
   }
 
 void OnTick()
-  {{
+  {
    if(!QM_KillSwitchCheck()) return;
+
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now)) return;
+   if(QM_FrameworkHandleFridayClose()) return;
+
+   if(Strategy_NoTradeFilter()) return;
+
+   Strategy_ManageOpenPosition();
+   Strategy_ExitSignal();
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
    else
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows) return;
-   if(QM_FrameworkHandleFridayClose()) return;
-   if(Strategy_NoTradeFilter()) return;
-   Strategy_ManageOpenPosition();
-   Strategy_ExitSignal();
+
    if(!QM_IsNewBar()) return;
+
    QM_EquityStreamOnNewBar();
+
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
-   {{
+   {
       ulong out_ticket = 0;
       QM_TM_OpenPosition(req, out_ticket);
-   }}
-  }}
+   }
+  }
 
 
-void OnTimer() {{ QM_FrameworkOnTimer(); }}
+void OnTimer()
+  {
+   QM_FrameworkOnTimer();
+  }
+
 void OnTradeTransaction(const MqlTradeTransaction &trans, const MqlTradeRequest &request, const MqlTradeResult &result)
-  {{ QM_FrameworkOnTradeTransaction(trans, request, result); }}
-double OnTester() {{ QM_ChartUI_Refresh(); return QM_DefaultObjective(); }}
+  {
+   QM_FrameworkOnTradeTransaction(trans, request, result);
+  }
+
+double OnTester()
+  {
+   QM_ChartUI_Refresh();
+   return QM_DefaultObjective();
+  }
 
