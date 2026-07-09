@@ -152,7 +152,7 @@ bool CurrentSpreadWithinCap()
      }
 
    if(count <= 0)
-      return false;
+      return true;
 
    ArrayResize(spreads, count);
    ArraySort(spreads);
@@ -160,8 +160,8 @@ bool CurrentSpreadWithinCap()
                                 ? (double)spreads[count / 2]
                                 : ((double)spreads[(count / 2) - 1] + (double)spreads[count / 2]) / 2.0;
    const long current_spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(median_spread <= 0.0 || current_spread <= 0)
-      return false;
+   if(median_spread <= 0.0 || current_spread < 1)
+      return true;
 
    return ((double)current_spread <= strategy_spread_cap_mult * median_spread);
   }
