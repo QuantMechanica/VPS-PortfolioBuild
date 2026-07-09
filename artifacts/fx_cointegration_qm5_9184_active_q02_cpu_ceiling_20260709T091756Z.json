@@ -1,0 +1,84 @@
+{
+  "generated_at_utc": "2026-07-09T09:17:56Z",
+  "generated_at_local": "2026-07-09T11:17:56+02:00",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow the certified V5 portfolio book with new forex sleeves",
+  "unit_of_work": "existing FX cointegration fallback state audit under CPU ceiling",
+  "source_scan": {
+    "strict_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_scan_survivors": [
+      {
+        "ea_id": "QM5_12533",
+        "pair": "EURJPY.DWX/GBPJPY.DWX",
+        "current_state": "Q02 PASS; Q04 FAIL",
+        "q02_blocked": false
+      },
+      {
+        "ea_id": "QM5_12532",
+        "pair": "AUDUSD.DWX/NZDUSD.DWX",
+        "current_state": "Q02 PASS; Q04 PASS; Q05 FAIL",
+        "q02_blocked": false
+      }
+    ],
+    "decision": "No unbuilt strict-scan survivor remains; do not create duplicate cards or duplicate Q02 rows."
+  },
+  "selected_existing_forex_card": {
+    "ea_id": "QM5_9184",
+    "slug": "jstm-pair-cointegration-fx",
+    "pair": "AUDUSD.DWX/NZDUSD.DWX",
+    "logical_symbol": "QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1",
+    "phase": "Q02",
+    "work_item_id": "3bb02373-5f50-496e-9558-8590a25837db",
+    "status": "active",
+    "claimed_by": "T3",
+    "parent_task_id": "7fd5a807-876a-4d6e-8cf8-68c9b2bfa43f",
+    "db_updated_at_utc": "2026-07-09T08:27:01+00:00",
+    "report_root": "D:/QM/reports/work_items/3bb02373-5f50-496e-9558-8590a25837db",
+    "basket_manifest": "framework/EAs/QM5_9184_jstm-pair-cointegration-fx/basket_manifest.json",
+    "setfile": "framework/EAs/QM5_9184_jstm-pair-cointegration-fx/sets/QM5_9184_jstm-pair-cointegration-fx_AUDUSD.DWX_D1_backtest.set",
+    "existing_q02_history": {
+      "done_fail": 3,
+      "done_infra_fail": 3,
+      "latest_active_retry": "3bb02373-5f50-496e-9558-8590a25837db"
+    }
+  },
+  "fleet_state": {
+    "terminal64_processes_running": 8,
+    "metatester64_processes_running": 6,
+    "active_factory_terminals_observed": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T8"
+    ],
+    "non_pipeline_terminals_observed": [
+      "T_Live",
+      "FTMO"
+    ],
+    "manual_backtest_launched": false,
+    "cpu_ceiling_applied": true,
+    "stop_reason": "Existing QM5_9184 Q02 retry is active and the paced MT5 fleet is saturated; do not launch or enqueue duplicate work."
+  },
+  "guardrails": {
+    "new_card_created": false,
+    "new_ea_built": false,
+    "new_work_item_created": false,
+    "duplicate_work_item_created": false,
+    "farm_db_mutated": false,
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  },
+  "commands": [
+    "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --ea QM5_9184",
+    "Get-Process -Name terminal64,metatester64 -ErrorAction SilentlyContinue"
+  ]
+}
