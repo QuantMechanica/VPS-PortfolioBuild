@@ -16,6 +16,7 @@
 ; date:         2026-07-09
 ;==========================================================
 qm_magic_slot_offset=0
+qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
