@@ -42,12 +42,12 @@ portfolio gate, external runtime data, grid, martingale, or ML is involved.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
-| v1 | 2026-07-09 | initial XCU/AUDUSD basket build | Q01 | PENDING |
+| v1 | 2026-07-09 | initial XCU/AUDUSD basket build | Q02 | QUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-09 | APPROVED | `strategy-seeds/cards/xcu-audusd-rspr_card.md` |
-| Q01 Build Validation | TBD | TBD | TBD |
-| Q02 Baseline Screening | TBD | TBD | enqueue after compile |
+| Q01 Build Validation | 2026-07-09 | PASS | `artifacts/qm5_13085_build_result.json` |
+| Q02 Baseline Screening | 2026-07-09 | QUEUED | `artifacts/qm5_13085_q02_enqueue_20260709.json` |

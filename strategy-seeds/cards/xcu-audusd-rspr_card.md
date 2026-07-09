@@ -254,12 +254,12 @@ one-position-per-magic model.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
-| v1 | 2026-07-09 | initial XCU/AUDUSD return-spread basket card | Q02 | PENDING |
+| v1 | 2026-07-09 | initial XCU/AUDUSD return-spread basket card | Q02 | QUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-09 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-09 | PENDING | `artifacts/qm5_13085_build_result.json` |
-| Q02 Baseline Screening | 2026-07-09 | PENDING | enqueue after compile |
+| Q01 Build Validation | 2026-07-09 | PASS | `artifacts/qm5_13085_build_result.json` |
+| Q02 Baseline Screening | 2026-07-09 | QUEUED | `artifacts/qm5_13085_q02_enqueue_20260709.json` |
