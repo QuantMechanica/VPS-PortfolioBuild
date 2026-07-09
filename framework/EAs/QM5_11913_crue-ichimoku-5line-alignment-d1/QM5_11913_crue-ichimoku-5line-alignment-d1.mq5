@@ -45,103 +45,60 @@ input int    strategy_time_stop_bars    = 180;
 // Strategy hooks
 // -----------------------------------------------------------------------------
 
-// Helper to manually calculate Ichimoku lines since not in QM_Indicators yet
-bool GetIchimokuValues(int shift, double &tenkan, double &kijun, double &senkouA, double &senkouB)
-{
-   double t_high = iHigh(_Symbol, PERIOD_D1, iHighest(_Symbol, PERIOD_D1, MODE_HIGH, strategy_tenkan_period, shift));
-   double t_low  = iLow(_Symbol, PERIOD_D1, iLowest(_Symbol, PERIOD_D1, MODE_LOW, strategy_tenkan_period, shift));
-   tenkan = (t_high + t_low) / 2.0;
+// The framework owns the Ichimoku handle.  Cache the D1 alignment by the
+// framework calendar key so exit checks remain O(1) on the per-tick path.
+int g_alignment_day_key = 0;
+int g_alignment_state   = 0; // +1 bullish, -1 bearish, 0 unaligned/unavailable
 
-   double k_high = iHigh(_Symbol, PERIOD_D1, iHighest(_Symbol, PERIOD_D1, MODE_HIGH, strategy_kijun_period, shift));
-   double k_low  = iLow(_Symbol, PERIOD_D1, iLowest(_Symbol, PERIOD_D1, MODE_LOW, strategy_kijun_period, shift));
-   kijun = (k_high + k_low) / 2.0;
+int CurrentAlignment()
+  {
+   const int day_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 0);
+   if(day_key <= 0)
+      return 0;
+   if(day_key == g_alignment_day_key)
+      return g_alignment_state;
 
-   // Senkou A and B are shifted forward by 26 bars.
-   // To get the Senkou value plotted AT bar 'shift', we need the Tenkan/Kijun/High/Low from 'shift + 26' bars ago.
-   int past_shift = shift + strategy_shift;
-   
-   double past_t_high = iHigh(_Symbol, PERIOD_D1, iHighest(_Symbol, PERIOD_D1, MODE_HIGH, strategy_tenkan_period, past_shift));
-   double past_t_low  = iLow(_Symbol, PERIOD_D1, iLowest(_Symbol, PERIOD_D1, MODE_LOW, strategy_tenkan_period, past_shift));
-   double past_tenkan = (past_t_high + past_t_low) / 2.0;
+   g_alignment_day_key = day_key;
+   g_alignment_state   = 0;
 
-   double past_k_high = iHigh(_Symbol, PERIOD_D1, iHighest(_Symbol, PERIOD_D1, MODE_HIGH, strategy_kijun_period, past_shift));
-   double past_k_low  = iLow(_Symbol, PERIOD_D1, iLowest(_Symbol, PERIOD_D1, MODE_LOW, strategy_kijun_period, past_shift));
-   double past_kijun = (past_k_high + past_k_low) / 2.0;
+   const int signal_shift = 1;
+   const int cloud_shift  = signal_shift + strategy_shift;
+   const double tenkan = QM_Ichimoku_TenkanSen(_Symbol, PERIOD_D1,
+                                                strategy_tenkan_period,
+                                                strategy_kijun_period,
+                                                strategy_senkou_b_period,
+                                                signal_shift);
+   const double kijun = QM_Ichimoku_KijunSen(_Symbol, PERIOD_D1,
+                                              strategy_tenkan_period,
+                                              strategy_kijun_period,
+                                              strategy_senkou_b_period,
+                                              signal_shift);
+   const double senkou_a = QM_Ichimoku_SenkouSpanA(_Symbol, PERIOD_D1,
+                                                    strategy_tenkan_period,
+                                                    strategy_kijun_period,
+                                                    strategy_senkou_b_period,
+                                                    cloud_shift);
+   const double senkou_b = QM_Ichimoku_SenkouSpanB(_Symbol, PERIOD_D1,
+                                                    strategy_tenkan_period,
+                                                    strategy_kijun_period,
+                                                    strategy_senkou_b_period,
+                                                    cloud_shift);
+   const double chikou_proxy = iClose(_Symbol, PERIOD_D1, cloud_shift); // perf-allowed: one cached D1 close implements the card's fixed Chikou proxy
 
-   senkouA = (past_tenkan + past_kijun) / 2.0;
+   if(tenkan <= 0.0 || kijun <= 0.0 || senkou_a <= 0.0 ||
+      senkou_b <= 0.0 || chikou_proxy <= 0.0)
+      return 0;
 
-   double past_sb_high = iHigh(_Symbol, PERIOD_D1, iHighest(_Symbol, PERIOD_D1, MODE_HIGH, strategy_senkou_b_period, past_shift));
-   double past_sb_low  = iLow(_Symbol, PERIOD_D1, iLowest(_Symbol, PERIOD_D1, MODE_LOW, strategy_senkou_b_period, past_shift));
-   senkouB = (past_sb_high + past_sb_low) / 2.0;
+   // Preserve the approved card's literal five-value monotonic alignment.
+   if(tenkan > kijun && kijun > senkou_a &&
+      senkou_a > senkou_b && senkou_b > chikou_proxy)
+      g_alignment_state = 1;
+   else if(tenkan < kijun && kijun < senkou_a &&
+           senkou_a < senkou_b && senkou_b < chikou_proxy)
+      g_alignment_state = -1;
 
-   return true;
-}
-
-bool CheckBullishAlignment(int shift)
-{
-   double tenkan, kijun, senkouA, senkouB;
-   if(!GetIchimokuValues(shift, tenkan, kijun, senkouA, senkouB)) return false;
-
-   // Chikou check: Current close compared to close 26 bars ago (simulating if current price is above historical price)
-   double current_close = iClose(_Symbol, PERIOD_D1, shift);
-   double past_close = iClose(_Symbol, PERIOD_D1, shift + strategy_shift);
-   
-   // The strategy card specifically asks for:
-   // Tenkan > Kijun > SenkouA > SenkouB > Chikou_proxy
-   // Where Chikou_proxy(t) = close(t-26). (Price 26 bars ago).
-   // Wait, the card says: "SenkouB(t-26) > Chikou_proxy(t)"
-   // No, wait. For Long:
-   // Tenkan > Kijun
-   // Kijun > SenkouA
-   // SenkouA > SenkouB
-   // SenkouB > Chikou_proxy(t) (Wait, if Chikou proxy is close(t-26), this means SenkouB > close(t-26).
-   // Let's re-read carefully:
-   // "Chikou(t) = close(t) # plotted at t - 26"
-   // "Chikou_displayed_at_t = close(t + 26) -- but in real-time we use close(t)"
-   // The simplest implementation: "compare close(t) against close(t-26)."
-   // If close(t) > close(t-26), Chikou is "above" the price 26 bars ago.
-   // Let's stick to standard monotonic alignment implied:
-   // Tenkan > Kijun > SenkouA > SenkouB. And Current Close > Close 26 bars ago.
-   // Actually, the card says:
-   // - Tenkan(t) > Kijun(t)
-   // - Kijun(t) > SenkouA(t-26)
-   // - SenkouA(t-26) > SenkouB(t-26)
-   // - SenkouB(t-26) > Chikou_proxy(t) ??? This implies bearish if SenkouB is above price.
-   // Ah, the card says: "For the strict 5-line alignment, all four inequalities must hold."
-   // Let's look at standard Ichimoku bullish alignment: 
-   // Price > Tenkan > Kijun > SenkouA > SenkouB. And Chikou (Current Close) > Past Close (Close[26]).
-   
-   // Re-reading Card:
-   // 1. Tenkan(t) > Kijun(t)
-   // 2. Kijun(t) > SenkouA(t-26)
-   // 3. SenkouA(t-26) > SenkouB(t-26)
-   // 4. SenkouB(t-26) > Chikou_proxy(t) -- Wait, if SenkouB > Chikou_proxy, then SenkouB is at the bottom of the first 4, but ABOVE Chikou_proxy? That would mean Chikou_proxy is the LOWEST.
-   // Let's assume standard monotonic: Tenkan > Kijun > SenkouA > SenkouB > Close(t-26).
-   
-   if (tenkan > kijun && 
-       kijun > senkouA && 
-       senkouA > senkouB && 
-       senkouB > past_close) 
-       return true;
-       
-   return false;
-}
-
-bool CheckBearishAlignment(int shift)
-{
-   double tenkan, kijun, senkouA, senkouB;
-   if(!GetIchimokuValues(shift, tenkan, kijun, senkouA, senkouB)) return false;
-
-   double past_close = iClose(_Symbol, PERIOD_D1, shift + strategy_shift);
-
-   if (tenkan < kijun && 
-       kijun < senkouA && 
-       senkouA < senkouB && 
-       senkouB < past_close) 
-       return true;
-       
-   return false;
-}
+   return g_alignment_state;
+  }
 
 bool Strategy_NoTradeFilter()
 {
@@ -150,13 +107,14 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
-   if(PositionsTotal() > 0) return false; // One position per symbol
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0) return false;
    
    const double atr1 = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if(atr1 <= 0.0) return false;
 
-   bool signal_long  = CheckBullishAlignment(1);
-   bool signal_short = CheckBearishAlignment(1);
+   const int alignment = CurrentAlignment();
+   const bool signal_long  = (alignment > 0);
+   const bool signal_short = (alignment < 0);
 
    if(!signal_long && !signal_short) return false;
 
@@ -173,6 +131,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.tp = 0.0;
    req.reason = (side == QM_BUY) ? "ICHIMOKU_ALIGN_LONG" : "ICHIMOKU_ALIGN_SHORT";
    req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
 
    return true;
 }
@@ -198,9 +157,10 @@ bool Strategy_ExitSignal()
       
       ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       
-      // Exit if alignment is broken
-      if(ptype == POSITION_TYPE_BUY && !CheckBullishAlignment(1)) return true;
-      if(ptype == POSITION_TYPE_SELL && !CheckBearishAlignment(1)) return true;
+      // Exit when the cached D1 alignment breaks or reverses.
+      const int alignment = CurrentAlignment();
+      if(ptype == POSITION_TYPE_BUY && alignment != 1) return true;
+      if(ptype == POSITION_TYPE_SELL && alignment != -1) return true;
    }
    return false;
 }
@@ -219,24 +179,21 @@ int OnInit()
                         qm_stress_reject_probability, qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
 
+   QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
 }
 
-void OnDeinit(const int reason) { QM_FrameworkShutdown(); }
+void OnDeinit(const int reason)
+  {
+   QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
+   QM_FrameworkShutdown();
+  }
 
 void OnTick()
 {
    if(!QM_KillSwitchCheck()) return;
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now)) return;
-   
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows) return;
-   
    if(QM_FrameworkHandleFridayClose()) return;
    if(Strategy_NoTradeFilter()) return;
 
@@ -254,10 +211,19 @@ void OnTick()
       }
    }
 
+   // News blackout gates entries only; management and exits above stay live.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows) return;
+
    if(!QM_IsNewBar()) return;
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;

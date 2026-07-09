@@ -3,32 +3,28 @@
 ; ea_id:        11913
 ; ea_slug:      crue-ichimoku-5line-alignment-d1
 ; ea_version:   v5.0
-; set_version:  s20260620-001
+; set_version:  s20260709-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   0869ce21c1ce0bf2ef5e81285d35b1aaab6037b1fcccf30d7d120e2fe4eb8ca2
+; build_hash:   908a32ef80f2ef7c4d789fadfb6bcc819cf97d9f02895ea7b0eff0b959d37a1e
 ; author:       Development
-; date:         2026-06-20
+; date:         2026-07-09
 ;==========================================================
-qm_magic_slot_offset=0
+qm_ea_id=11913
+qm_magic_slot_offset=2
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11913_crue-ichimoku-5line-alignment-d1.md
+strategy_tenkan_period=9
+strategy_kijun_period=26
+strategy_senkou_b_period=52
+strategy_shift=26
+strategy_atr_period=14
+strategy_atr_sl_mult=3.0
+strategy_time_stop_bars=180
