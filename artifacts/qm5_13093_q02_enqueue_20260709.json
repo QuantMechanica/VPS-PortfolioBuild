@@ -1,0 +1,51 @@
+{
+  "ea_id": "QM5_13093",
+  "slug": "xbr-audusd-rspr",
+  "phase": "Q02",
+  "enqueue_result": {
+    "enqueued": [
+      {
+        "wi_id": "e76318c5",
+        "symbol": "QM5_13093_XBR_AUDUSD_RSPREAD_D1",
+        "tf": "D1",
+        "setfile": "QM5_13093_xbr-audusd-rspr_QM5_13093_XBR_AUDUSD_RSPREAD_D1_D1_backtest.set"
+      }
+    ],
+    "skipped": [],
+    "ea_id": "QM5_13093"
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "e76318c5-6995-4755-a578-2d839a9f38b9",
+    "status": "pending",
+    "symbol": "QM5_13093_XBR_AUDUSD_RSPREAD_D1",
+    "timeframe": "D1",
+    "created_at_utc": "2026-07-09T14:42:55+00:00",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13093_xbr-audusd-rspr\\sets\\QM5_13093_xbr-audusd-rspr_QM5_13093_XBR_AUDUSD_RSPREAD_D1_D1_backtest.set"
+  },
+  "payload": {
+    "host_symbol": "XBRUSD.DWX",
+    "host_timeframe": "D1",
+    "enqueued_by": "record_build_result.auto_q02",
+    "enqueued_at_utc": "2026-07-09T14:42:55+00:00",
+    "build_task_id": "manual-codex-qm5-13093-20260709",
+    "basket_manifest": "C:\\QM\\repo\\framework\\EAs\\QM5_13093_xbr-audusd-rspr\\basket_manifest.json",
+    "basket_symbol_count": 2,
+    "logical_symbol": "QM5_13093_XBR_AUDUSD_RSPREAD_D1",
+    "portfolio_scope": "basket",
+    "timeout_min": 450,
+    "basket_symbols": [
+      "XBRUSD.DWX",
+      "AUDUSD.DWX"
+    ],
+    "traded_symbols": [
+      "XBRUSD.DWX",
+      "AUDUSD.DWX"
+    ],
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "risk_mode": "RISK_FIXED"
+  },
+  "created_at_utc": "2026-07-09T14:42:55Z"
+}

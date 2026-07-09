@@ -1,0 +1,127 @@
+{
+  "task_id": "manual-codex-qm5-13093-20260709",
+  "ea_id": "QM5_13093",
+  "ea_id_int": 13093,
+  "ea_label": "QM5_13093_xbr-audusd-rspr",
+  "slug": "xbr-audusd-rspr",
+  "strategy": "XBR/AUDUSD D1 Brent/AUD return-spread reversion basket",
+  "source_id": "EIA-RBA-XBR-AUDUSD-2026",
+  "symbols": [
+    "XBRUSD.DWX",
+    "AUDUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13093_XBR_AUDUSD_RSPREAD_D1",
+  "host_symbol": "XBRUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13093_xbr-audusd-rspr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13093_xbr-audusd-rspr\\QM5_13093_xbr-audusd-rspr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13093_xbr-audusd-rspr\\QM5_13093_xbr-audusd-rspr.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13093_xbr-audusd-rspr\\SPEC.md",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13093_xbr-audusd-rspr.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13093_xbr-audusd-rspr_card.md",
+  "repo_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13093_xbr-audusd-rspr.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13093_xbr-audusd-rspr\\basket_manifest.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13093_xbr-audusd-rspr\\sets\\QM5_13093_xbr-audusd-rspr_QM5_13093_XBR_AUDUSD_RSPREAD_D1_D1_backtest.set"
+  ],
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "setfile_build_hash": "4b9fdda56d133141c5374d12d1fa3461dbb345cd0f282ed13a62674ee50e6886",
+  "mq5_sha256": "cd96d5b92d9a31ded6b7788c7fe9312b59757f83d3be250c7f417491e77a88cb",
+  "ex5_sha256": "4bb66a8d4a42510713be543acd8f5ae43e68635b8d2feed7d72e0d5a33f341fb",
+  "setfile_sha256": "ce8b9a19ea88be5c5b95d4215d5f3b255804c26325b15e987bcb9dd845717b4a",
+  "card_sha256": "1b52ea1e2bf65d0764fd51380df96eca5c857c8a340fd63de2ce2ad2f481e82f",
+  "approved_card_sha256": "1b52ea1e2bf65d0764fd51380df96eca5c857c8a340fd63de2ce2ad2f481e82f",
+  "repo_card_sha256": "1b52ea1e2bf65d0764fd51380df96eca5c857c8a340fd63de2ce2ad2f481e82f",
+  "farm_card_sha256": "1b52ea1e2bf65d0764fd51380df96eca5c857c8a340fd63de2ce2ad2f481e82f",
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "result": "PASS",
+    "reason_class": "OK",
+    "errors": 0,
+    "warnings": 0,
+    "metaeditor_exit_code": 1,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260709_144016\\QM5_13093_xbr-audusd-rspr.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260709_144016\\summary.csv"
+  },
+  "build_check": {
+    "result": "PASS",
+    "strict": true,
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260709_144016.json"
+  },
+  "validations": {
+    "spec_doc": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "risk_mode": "RISK_FIXED",
+    "setfile_scope": "logical_basket_only",
+    "q02_enqueued": "PASS",
+    "targeted_registry_rows": "PASS",
+    "basket_tests": "PASS: python -m pytest tools/strategy_farm/tests/test_basket_work_items.py tools/strategy_farm/tests/test_basket_order_helper_static.py tools/strategy_farm/tests/test_fx_basket_manifests.py -q (29 passed)",
+    "global_registry_validator": "FAIL_BASELINE_PREEXISTING: python framework/scripts/validate_registries.py reports existing unrelated registry debt; QM5_13093 targeted rows PASS."
+  },
+  "smoke_result": "deferred_q02_baseline",
+  "smoke_skipped_reason": "Mission requested Q02 enqueue after compile/build_check; no manual MT5 backtest or live smoke was launched from this session.",
+  "blocked_reason": "",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest": true,
+    "no_ml": true,
+    "no_grid": true,
+    "no_martingale": true,
+    "no_external_runtime_data": true
+  },
+  "source_links": [
+    "https://www.eia.gov/workingpapers/pdf/oil_exchangerates_61317.pdf",
+    "https://www.rba.gov.au/education/resources/explainers/drivers-of-the-aud-exchange-rate.html",
+    "https://www.eia.gov/dnav/pet/hist/rbrted.htm"
+  ],
+  "created_at_utc": "2026-07-09T14:42:55Z",
+  "q02_enqueue_result": {
+    "enqueued": [
+      {
+        "wi_id": "e76318c5",
+        "symbol": "QM5_13093_XBR_AUDUSD_RSPREAD_D1",
+        "tf": "D1",
+        "setfile": "QM5_13093_xbr-audusd-rspr_QM5_13093_XBR_AUDUSD_RSPREAD_D1_D1_backtest.set"
+      }
+    ],
+    "skipped": [],
+    "ea_id": "QM5_13093"
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "e76318c5-6995-4755-a578-2d839a9f38b9",
+    "status": "pending",
+    "symbol": "QM5_13093_XBR_AUDUSD_RSPREAD_D1",
+    "timeframe": "D1",
+    "created_at_utc": "2026-07-09T14:42:55+00:00",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13093_xbr-audusd-rspr\\sets\\QM5_13093_xbr-audusd-rspr_QM5_13093_XBR_AUDUSD_RSPREAD_D1_D1_backtest.set"
+  },
+  "record_build": {
+    "recorded": false,
+    "reason": "No active build_ea task was allocated in this paced headless mission; Q02 was enqueued directly via farmctl._auto_enqueue_q02_for_build.",
+    "recorded_at_utc": "2026-07-09T14:42:55Z",
+    "auto_q02_enqueued": {
+      "phase": "Q02",
+      "work_item_id": "e76318c5-6995-4755-a578-2d839a9f38b9",
+      "status": "pending",
+      "symbol": "QM5_13093_XBR_AUDUSD_RSPREAD_D1",
+      "timeframe": "D1",
+      "created_at_utc": "2026-07-09T14:42:55+00:00",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13093_xbr-audusd-rspr\\sets\\QM5_13093_xbr-audusd-rspr_QM5_13093_XBR_AUDUSD_RSPREAD_D1_D1_backtest.set"
+    }
+  }
+}
