@@ -99,6 +99,14 @@ This is deliberately different from:
 - XTI/XAU oil/gold, XNG/XAU gas/gold, XAU/XAG gold/silver, WTI event/calendar,
   index, and `QM5_12567_cum-rsi2-commodity` logic.
 
+## Hypothesis
+
+Extreme completed-D1 copper-minus-gold return spreads should partially
+normalize because copper and gold both sit in the metals complex while
+representing different macro regimes. The EA expresses that hypothesis as a
+two-leg basket and only needs a mean-reverting spread tail, not an outright
+forecast for either metal.
+
 ## Markets And Timeframe
 
 - Logical symbol: `QM5_13098_XCU_XAU_RSPREAD_D1`.
@@ -111,6 +119,13 @@ This is deliberately different from:
   V5 framework state only. No paper data, asset-manager data, CME feed,
   macro CSV, futures curve, API, analyst forecast, alternative data, or ML
   model is consumed at runtime.
+
+## Rules
+
+The mechanical rule set is fully specified below: D1 host-chart gating,
+completed-close return-spread construction, rolling z-score entry, paired
+basket orders, ATR hard stops, spread caps, normalization exit, max-hold exit,
+and broken-package repair.
 
 ## Entry Rules
 
@@ -265,4 +280,3 @@ one-position-per-magic model.
 | G0 Research Intake | 2026-07-09 | APPROVED | this card |
 | Q01 Build Validation | 2026-07-09 | PENDING | `artifacts/qm5_13098_build_result.json` |
 | Q02 Baseline Screening | 2026-07-09 | PENDING | `artifacts/qm5_13098_q02_enqueue_20260709.json` |
-

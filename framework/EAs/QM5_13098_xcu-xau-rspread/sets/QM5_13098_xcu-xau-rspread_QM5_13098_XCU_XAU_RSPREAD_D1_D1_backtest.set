@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13098
 ; ea_slug:      xcu-xau-rspread
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   ca55259457d9b6b21e05686eace297b8f227bad667e23a5f7143b7067ec3651c
 ; author:       Development
 ; date:         2026-07-09
 ;==========================================================

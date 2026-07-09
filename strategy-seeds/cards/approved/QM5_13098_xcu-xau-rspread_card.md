@@ -35,6 +35,22 @@ This is explicitly non-duplicate: it is not solo copper trend or reversal, not
 XCU/AUDUSD, not XTI/XCU, not XTI/XAU oil/gold, not XNG/XAU gas/gold, not
 XAU/XAG gold/silver, and not commodity-RSI logic.
 
+## Hypothesis
+
+Extreme completed-D1 copper-minus-gold return spreads should partially
+normalize because copper and gold are both metals while carrying different
+cyclical versus defensive exposures.
+
+## Rules
+
+Run only on `XCUUSD.DWX` D1. Compute
+`ln(XCU[t] / XCU[t-L]) - beta_xau * ln(XAU[t] / XAU[t-L])`, standardize over a
+rolling window, short the spread above `strategy_entry_z`, long the spread
+below `-strategy_entry_z`, close on `strategy_exit_z`, max hold, Friday close,
+or broken-package detection, and apply ATR hard stops to both legs.
+
+## Risk
+
 Backtests use `RISK_FIXED=1000`, `RISK_PERCENT=0`, and the logical basket
 setfile `QM5_13098_XCU_XAU_RSPREAD_D1`. No live manifest, AutoTrading,
 portfolio gate, external runtime data, grid, martingale, or ML is involved.
@@ -52,4 +68,3 @@ portfolio gate, external runtime data, grid, martingale, or ML is involved.
 | G0 Research Intake | 2026-07-09 | APPROVED | `strategy-seeds/cards/xcu-xau-rspread_card.md` |
 | Q01 Build Validation | 2026-07-09 | PENDING | `artifacts/qm5_13098_build_result.json` |
 | Q02 Baseline Screening | 2026-07-09 | PENDING | `artifacts/qm5_13098_q02_enqueue_20260709.json` |
-
