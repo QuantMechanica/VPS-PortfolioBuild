@@ -14,11 +14,6 @@ source_citations:
     location: "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6425598"
     quality_tier: B
     role: primary
-  - type: official_market_reference
-    citation: "U.S. Energy Information Administration. Natural Gas Explained: Factors affecting natural gas prices."
-    location: "https://www.eia.gov/energyexplained/natural-gas/factors-affecting-natural-gas-prices.php"
-    quality_tier: A
-    role: supplement
 sources:
   - "[[sources/ZHAO-ST-MOMREV-2026]]"
 strategy_type_flags: [vol-regime-gate, signal-reversal-exit, atr-hard-stop, time-stop, friday-close-flatten, symmetric-long-short]
@@ -45,7 +40,7 @@ ml_required: false
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 hard_rules_at_risk: [friday_close, magic_schema, risk_mode_dual, low_frequency_sample_size]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
-g0_approval_reasoning: "Mission-directed G0 approval 2026-07-10: R1 PASS named-author academic working paper with DOI plus official EIA market context; R2 PASS deterministic weekly-gated five-D1-return fade in an elevated realized-volatility regime, ATR hard stop, neutral-return exit, time exit, and Friday close; R3 PASS XNGUSD.DWX exists in the DWX matrix; R4 PASS no ML/grid/martingale/external runtime feed. The OHLC-only signal is explicitly a falsifiable proxy for the paper's position-flow-decomposed reversal component, not a claim to reproduce that unavailable decomposition."
+g0_approval_reasoning: "R1 PASS single DOI-indexed academic source; R2 PASS deterministic five-D1 return fade, high-volatility percentile gate, weekly cadence, ATR stop, neutral-return exit and time exit; R3 PASS XNGUSD.DWX; R4 PASS deterministic, ML-free, one position per magic."
 review_focus: "Adds a short-horizon high-volatility natural-gas reversal driver to the XAU/SP500/NDX/XNG book. Unlike QM5_12567 it does not use RSI or a two-day trend-filtered pullback; unlike longer XNG reversal sleeves it isolates five-day shocks and requires elevated realized volatility. Q09 must still reject it if realized returns remain correlated with the incumbent XNG sleeve."
 ---
 
@@ -76,9 +71,6 @@ must be established independently by Q02 and later gates.
 - Primary: Zhao, Shen; Ding, Yiyi; Yu, Jianfeng; Kang, Wenjin (2026),
   *Momentum and Reversal on the Short-Term Horizon: Evidence from Commodity
   Markets*, DOI `10.2139/ssrn.6425598`.
-- Supplement: U.S. Energy Information Administration, "Factors affecting
-  natural gas prices", used only to establish the target-market context.
-
 The paper documents both short-horizon momentum and reversal in its commodity
 sample and attributes the reversal side to a different component than the
 low-volatility continuation branch. No source performance number is imported
@@ -240,4 +232,3 @@ certified XNG return stream. Do not retune the locked signal to rescue a fail.
 | G0 Research Intake | 2026-07-10 | APPROVED | this card |
 | Q01 Build Validation | 2026-07-10 | PENDING | `artifacts/qm5_13102_build_result.json` |
 | Q02 Baseline Screening | 2026-07-10 | PENDING | queue work item after build PASS |
-
