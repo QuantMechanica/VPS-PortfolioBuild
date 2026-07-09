@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13079
 ; ea_slug:      xbr-audcad-rspr
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   831441a420d5b2d8d0037b663963a97daa5b52fab3118b352d056e5732aa1c4d
 ; author:       Development
 ; date:         2026-07-09
 ;==========================================================

@@ -262,5 +262,5 @@ V5 one-position-per-magic model.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-09 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-09 | PENDING | `artifacts/qm5_13079_build_result.json` |
-| Q02 Baseline Screening | 2026-07-09 | PENDING | enqueue after compile |
+| Q01 Build Validation | 2026-07-09 | PASS | `artifacts/qm5_13079_build_result.json` |
+| Q02 Baseline Screening | 2026-07-09 | PENDING | `work_items:b837731f-9786-4aa8-b320-e5f6a5ac6666` |

@@ -75,5 +75,6 @@ WTI/USDCAD, WTI/AUDUSD, XTI/XNG, XAU/XAG, XNG, index, or commodity-RSI logic.
 Backtests use `RISK_FIXED=1000`, no external runtime data, no ML, no grid, no
 martingale, and no live/deploy manifest changes.
 
-Q01 build validation is pending on 2026-07-09. Q02 will use logical basket
+Q01 build validation passed on 2026-07-09. Q02 is pending as
+`work_items:b837731f-9786-4aa8-b320-e5f6a5ac6666` for logical basket
 `QM5_13079_XBR_AUDCAD_RSPREAD_D1`.
