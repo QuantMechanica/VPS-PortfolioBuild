@@ -54,7 +54,7 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
-last_updated: 2026-07-04
+last_updated: 2026-07-09
 expected_pf: 1.08
 expected_dd_pct: 20.0
 risk_class: medium-high
@@ -62,7 +62,7 @@ ml_required: false
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
 hard_rules_at_risk: [symbol_history_sufficiency, basket_execution, friday_close, magic_schema, risk_mode_dual]
-g0_approval_reasoning: "Mission-directed G0 approval 2026-07-04: R1 PASS official EIA/central-bank source packet; R2 PASS deterministic D1 two-leg XBR/CADJPY return-spread z-score reversion with spread caps, mean exit, max-hold exit, and ATR hard stops; R3 PASS XBRUSD.DWX and CADJPY.DWX exist in the DWX matrix; R4 PASS no ML/grid/martingale/external runtime data. Non-duplicate because this is a paired Brent/CADJPY return-spread basket, not the Singh CADJPY leading-indicator build, Brent/USDCAD, Brent/USDJPY, XBR/NZD, XBR/XNG, Brent/Brent, metal-ratio, XNG, or index logic."
+g0_approval_reasoning: "Mission-directed G0 approval 2026-07-09: R1 PASS official EIA/central-bank source packet; R2 PASS deterministic D1 two-leg XBR/CADJPY return-spread z-score reversion with spread caps, mean exit, max-hold exit, and ATR hard stops; R3 PASS XBRUSD.DWX and CADJPY.DWX exist in the DWX matrix; R4 PASS no ML/grid/martingale/external runtime data. Non-duplicate because this is a paired Brent/CADJPY return-spread basket, not Singh CADJPY oil-breakout logic, WTI/CADJPY, Brent/USDCAD, Brent/USDJPY, XBR/NZDCAD, XBR/AUDCAD, XBR/XNG, Brent/WTI, metal-ratio, XNG, or index logic."
 ---
 
 # XBR/CADJPY D1 Return-Spread Reversion
@@ -97,9 +97,13 @@ This is deliberately different from:
 - `QM5_12609_wti-cad-spread-mr` and `QM5_12722_wti-cad-brk`: those use USDCAD,
   not CADJPY, and different spread definitions.
 - `QM5_12834_wti-jpy-spread`: that uses USDJPY as the Japan proxy, not CADJPY.
-- `QM5_13006_xbr-nzd-rspread`, `QM5_12840_xbr-xng-rspread`, Brent/Brent,
-  oil/gold, oil/silver, XAU/XAG, XNG, index, and outright Brent calendar/event
-  sleeves: this is a two-leg Brent/CADJPY return-spread basket.
+- `QM5_13010_xti-cadjpy-rspr`: that uses WTI, not Brent.
+- `QM5_13082_xbr-nzdcad-rspr` and `QM5_13079_xbr-audcad-rspr`: those use
+  different FX crosses and different commodity-FX exposure.
+- `QM5_13005_xbr-cad-rspr`: that uses USDCAD, not CADJPY.
+- `QM5_13051_xbr-xng-rspr`, Brent/WTI, oil/gold, oil/silver, XAU/XAG, XNG,
+  index, and outright Brent calendar/event sleeves: this is a two-leg
+  Brent/CADJPY return-spread basket.
 - `QM5_12567_cum-rsi2-commodity`: no RSI, oscillator, short-horizon pullback,
   or single-symbol commodity reversal logic is used.
 
@@ -182,8 +186,8 @@ This is deliberately different from:
   default: 30
   sweep_range: [20, 30, 45]
 - name: strategy_xbr_max_spread_pts
-  default: 1000
-  sweep_range: [700, 1000, 1500]
+  default: 1200
+  sweep_range: [800, 1200, 1800]
 - name: strategy_cadjpy_max_spread_pts
   default: 120
   sweep_range: [80, 120, 180]
@@ -217,8 +221,9 @@ performance number. Q02 and later phases must validate or reject the
 - [x] R4 compliant: no ML, adaptive PnL fitting, grid, martingale, external
   runtime feed, or more than one position per magic slot.
 - [x] Non-duplicate: paired Brent/CADJPY return-spread mean reversion, not Singh
-  oil-to-CADJPY breakout, Brent/USDCAD, Brent/USDJPY, XBR/NZD, XBR/XNG,
-  Brent/Brent, metal-ratio, XNG, index, or outright Brent logic.
+  oil-to-CADJPY breakout, WTI/CADJPY, Brent/USDCAD, Brent/USDJPY,
+  XBR/NZDCAD, XBR/AUDCAD, XBR/XNG, Brent/WTI, metal-ratio, XNG, index, or
+  outright Brent logic.
 
 ## Risk
 
@@ -255,12 +260,12 @@ V5 one-position-per-magic model.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-04 | initial XBR/CADJPY return-spread basket build | Q02 | PENDING |
+| v1 | 2026-07-09 | initial XBR/CADJPY return-spread basket build | Q02 | PENDING |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
-| G0 Research Intake | 2026-07-04 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-04 | PENDING | `artifacts/qm5_13083_build_result.json` |
-| Q02 Baseline Screening | 2026-07-04 | PENDING | enqueue after compile |
+| G0 Research Intake | 2026-07-09 | APPROVED | this card |
+| Q01 Build Validation | 2026-07-09 | PENDING | `artifacts/qm5_13083_build_result.json` |
+| Q02 Baseline Screening | 2026-07-09 | PENDING | enqueue after compile |

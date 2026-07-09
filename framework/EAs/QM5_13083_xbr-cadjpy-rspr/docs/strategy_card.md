@@ -5,7 +5,7 @@ strategy_id: EIA-BOC-BOJ-XBR-CADJPY-2026_S01
 source_id: EIA-BOC-BOJ-XBR-CADJPY-2026
 status: APPROVED
 pipeline_phase: Q02
-last_updated: 2026-07-04
+last_updated: 2026-07-09
 ---
 
 # XBR/CADJPY Return-Spread Reversion

@@ -2,7 +2,7 @@
 source_id: EIA-BOC-BOJ-XBR-CADJPY-2026
 title: Brent, CAD, and Japan oil-importer FX relative-value source packet
 status: cards_ready
-created: 2026-07-04
+created: 2026-07-09
 created_by: Codex
 source_type: official_energy_and_central_bank_sources
 uri: https://www.eia.gov/workingpapers/pdf/oil_exchangerates_61317.pdf

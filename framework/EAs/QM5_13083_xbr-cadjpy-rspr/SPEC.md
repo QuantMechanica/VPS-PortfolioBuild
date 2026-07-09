@@ -4,7 +4,7 @@
 **Slug:** `xbr-cadjpy-rspr`
 **Source:** `EIA-BOC-BOJ-XBR-CADJPY-2026` (see `strategy-seeds/sources/EIA-BOC-BOJ-XBR-CADJPY-2026/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-07-04
+**Last revised:** 2026-07-09
 
 ---
 
@@ -35,7 +35,7 @@ open.
 | `strategy_atr_period_d1` | 20 | 14-30 | D1 ATR lookback for each leg's hard stop |
 | `strategy_atr_sl_mult` | 3.0 | 2.5-4.0 | ATR multiple used for each leg's hard stop |
 | `strategy_max_hold_days` | 30 | 20-45 | Maximum calendar days before closing the package |
-| `strategy_xbr_max_spread_pts` | 1000 | 700-1500 | Maximum allowed XBR spread in points |
+| `strategy_xbr_max_spread_pts` | 1200 | 800-1800 | Maximum allowed XBR spread in points |
 | `strategy_cadjpy_max_spread_pts` | 120 | 80-180 | Maximum allowed CADJPY spread in points |
 | `strategy_deviation_points` | 20 | fixed | Basket order slippage/deviation cap in points |
 
@@ -52,7 +52,7 @@ open.
 - `XNGUSD.DWX` - natural gas dynamics are outside the approved card.
 - `USDCAD.DWX` - related CAD exposure, but this card specifically uses CADJPY.
 - `USDJPY.DWX` - related JPY exposure, but this card specifically uses CADJPY.
-- `XBRUSD.DWX` - Brent is excluded; the card is Brent against CADJPY.
+- `XTIUSD.DWX` - WTI is related but excluded; this card is Brent against CADJPY.
 
 ---
 
@@ -105,4 +105,4 @@ ENV to mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MI
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-04 | Initial build from approved card | manual-codex-2026-07-04-xbr-cadjpy-rspr |
+| v1 | 2026-07-09 | Initial build from approved card | manual-codex-2026-07-09-xbr-cadjpy-rspr |
