@@ -1,0 +1,99 @@
+{
+  "task_id": "32d5c291-8465-4ea6-902a-6fd25a9efe89",
+  "ea_id": "QM5_13089",
+  "slug": "xti-xng-carry",
+  "strategy": "XTI/XNG D1 market-neutral broker-swap carry ranking with 12M adverse-drift guard",
+  "symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13089_XTI_XNG_CARRY_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13089_xti-xng-carry",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13089_xti-xng-carry\\QM5_13089_xti-xng-carry.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13089_xti-xng-carry\\QM5_13089_xti-xng-carry.ex5",
+  "ex5_sha256": "1bb547ae43792f362012a6adcbcdcb4a86744279a220e6673c987831511716eb",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13089_xti-xng-carry\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13089_xti-xng-carry.md",
+  "source_id": "KOIJEN-CARRY-2018",
+  "basket_manifest": "C:\\QM\\repo\\framework\\EAs\\QM5_13089_xti-xng-carry\\basket_manifest.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13089_xti-xng-carry\\sets\\QM5_13089_xti-xng-carry_QM5_13089_XTI_XNG_CARRY_D1_D1_backtest.set"
+  ],
+  "setfile_build_hash": "9d418be94647d947d18d4c2e6a99fa982301fafa48ea08590d2ca4f2e105d4a0",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "XTIUSD.DWX",
+        "magic": 130890000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "XNGUSD.DWX",
+        "magic": 130890001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "framework/scripts/build_check.ps1 -EALabel QM5_13089_xti-xng-carry",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260709_104553\\QM5_13089_xti-xng-carry.compile.log",
+    "ex5_size_bytes": 324078
+  },
+  "build_check": {
+    "command": "framework/scripts/build_check.ps1 -EALabel QM5_13089_xti-xng-carry",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 5,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260709_104553.json",
+    "warning_note": "Warnings are expected .DWX swap-usage advisories. The EA uses broker swap as the carry-ranking signal and includes a deterministic all-zero swap fallback so tester symbols do not become a no-trade gate."
+  },
+  "pre_compile_validation": {
+    "card_schema_lint": "PASS",
+    "spec_doc": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "build_guardrails": "PASS"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet Q02 enqueue is the baseline/smoke path for this build; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": null,
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "notes": "Completed a structural D1 XTI/XNG market-neutral carry basket from Koijen et al. Carry (JFE 2018). Direction comes from cross-energy broker-swap carry ranking with a deterministic zero-swap fallback for .DWX tester ties; 12M return is only an adverse-drift guard. This is distinct from existing commodity RSI/pullback, XTI/XNG return-spread reversion, XTI/XNG breakout, seasonal energy switch, single-symbol XTI/XNG carry, WTI/XNG event-inventory-expiry-roll logic, and metal sleeves. Q02 must validate logical basket trade generation, costs, PF/DD, and portfolio correlation.",
+  "q02_enqueue": {
+    "status": "enqueued",
+    "work_item_id": "7461ca7a-c1fb-4007-b124-0ecaafa51993",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "QM5_13089_XTI_XNG_CARRY_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "basket_symbols": [
+      "XTIUSD.DWX",
+      "XNGUSD.DWX"
+    ],
+    "timeframe": "D1",
+    "risk_mode": "RISK_FIXED",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13089_xti-xng-carry\\sets\\QM5_13089_xti-xng-carry_QM5_13089_XTI_XNG_CARRY_D1_D1_backtest.set",
+    "status_after_enqueue": "pending",
+    "created_at_utc": "2026-07-09T10:48:03+00:00"
+  }
+}
