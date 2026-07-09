@@ -14807,3 +14807,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9451,demark-td-dwa-fade-h4,12,UK100.DWX,94510012,2026-07-09,Codex,active
 13082,xbr-nzdcad-rspr,0,XBRUSD.DWX,130820000,2026-07-09,Codex,active
 13082,xbr-nzdcad-rspr,1,NZDCAD.DWX,130820001,2026-07-09,Codex,active
+13083,xbr-cadjpy-rspr,0,XBRUSD.DWX,130830000,2026-07-09,Codex,active
+13083,xbr-cadjpy-rspr,1,CADJPY.DWX,130830001,2026-07-09,Codex,active
