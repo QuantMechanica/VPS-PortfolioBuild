@@ -1,0 +1,143 @@
+{
+  "task_id": "cc652ca1-79eb-49bd-85f9-450566373310",
+  "ea_id": "QM5_1560",
+  "ea_id_int": 1560,
+  "ea_label": "QM5_1560_aa-zak-macd-3-12-6",
+  "slug": "aa-zak-macd-3-12-6",
+  "strategy": "AA-ZAK monthly MACD(3,12,6) long/cash time-series momentum basket",
+  "source_id": "AA-ZAK-MACD-3-12-6",
+  "symbols": [
+    "SP500.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "GDAXI.DWX",
+    "XAUUSD.DWX",
+    "XTIUSD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+  ],
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_1560_aa-zak-macd-3-12-6",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1560_aa-zak-macd-3-12-6\\QM5_1560_aa-zak-macd-3-12-6.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1560_aa-zak-macd-3-12-6\\QM5_1560_aa-zak-macd-3-12-6.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1560_aa-zak-macd-3-12-6\\SPEC.md",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1560_aa-zak-macd-3-12-6.md",
+  "repo_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_1560_aa-zak-macd-3-12-6.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1560_aa-zak-macd-3-12-6\\sets\\QM5_1560_aa-zak-macd-3-12-6_EURUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1560_aa-zak-macd-3-12-6\\sets\\QM5_1560_aa-zak-macd-3-12-6_GBPUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1560_aa-zak-macd-3-12-6\\sets\\QM5_1560_aa-zak-macd-3-12-6_GDAXI.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1560_aa-zak-macd-3-12-6\\sets\\QM5_1560_aa-zak-macd-3-12-6_NDX.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1560_aa-zak-macd-3-12-6\\sets\\QM5_1560_aa-zak-macd-3-12-6_SP500.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1560_aa-zak-macd-3-12-6\\sets\\QM5_1560_aa-zak-macd-3-12-6_USDJPY.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1560_aa-zak-macd-3-12-6\\sets\\QM5_1560_aa-zak-macd-3-12-6_WS30.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1560_aa-zak-macd-3-12-6\\sets\\QM5_1560_aa-zak-macd-3-12-6_XAUUSD.DWX_D1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_1560_aa-zak-macd-3-12-6\\sets\\QM5_1560_aa-zak-macd-3-12-6_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "mq5_sha256": "335B7B77AD894B4ABEF3AF441FDE595293D22FF6F59E797C8E09772DB4E2907F",
+  "ex5_sha256": "9C04A7120611A4D8AF8E0672423672AF14B4022872F6436CA9846AD8CF5BF7D1",
+  "repo_card_sha256": "AAA65EA4A3D6A04CCD55FA622A01B0F967879A1E09E2141A3093786A69D11D89",
+  "setfile_sha256": {
+    "QM5_1560_aa-zak-macd-3-12-6_EURUSD.DWX_D1_backtest.set": "81856D1EC86EF4DB4DE249F369B148A61ED24FCD9132214E3DE9A60B8414C161",
+    "QM5_1560_aa-zak-macd-3-12-6_GBPUSD.DWX_D1_backtest.set": "2B0C5BD5BC24CE1A93D2702E609FA61525FCBB20FB98C0AE8457A692B95E0A4D",
+    "QM5_1560_aa-zak-macd-3-12-6_GDAXI.DWX_D1_backtest.set": "83643A1927AEFA616981EB776D5D704ACA0EBCD52109F741C2E9A9B3CA291A66",
+    "QM5_1560_aa-zak-macd-3-12-6_NDX.DWX_D1_backtest.set": "15095D02DD7730D09D3DA3980A476B999BEB037DCBBE3EA464EBFC8E3C711A1B",
+    "QM5_1560_aa-zak-macd-3-12-6_SP500.DWX_D1_backtest.set": "798E859BF461A11610D588E04809F7435B4868AF8FB6109836FA5AB6F0E43C3F",
+    "QM5_1560_aa-zak-macd-3-12-6_USDJPY.DWX_D1_backtest.set": "15581158896C6856B50ADD701609CBC6F472F0BF7B7094342E62BB646C6EBBB4",
+    "QM5_1560_aa-zak-macd-3-12-6_WS30.DWX_D1_backtest.set": "2DF741DD9E547FB81F742A6C6F589CC23F0A822EB3028FDDFB5DF58BFBBD4200",
+    "QM5_1560_aa-zak-macd-3-12-6_XAUUSD.DWX_D1_backtest.set": "EF6140112D96FEBCFC7A586DE85AC52C37E1C71628F55BF7840F522C9ADE4B37",
+    "QM5_1560_aa-zak-macd-3-12-6_XTIUSD.DWX_D1_backtest.set": "43C330076290D3E5A8F24140D91D2DC8A91E805F768229390ABC86AC40992025"
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "result": "PASS",
+    "reason_class": "OK",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260709_145130\\QM5_1560_aa-zak-macd-3-12-6.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260709_145130\\summary.csv"
+  },
+  "build_check": {
+    "result": "PASS",
+    "strict": true,
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260709_145104.json"
+  },
+  "validations": {
+    "spec_doc": "PASS",
+    "symbol_scope": "multi_asset_ok",
+    "risk_mode": "RISK_FIXED",
+    "setfile_scope": "per_symbol_backtest"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "q02_auto_enqueue_after_clean_build; no separate smoke run to avoid backtest CPU ceiling",
+  "blocked_reason": "",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest": true,
+    "no_ml": true,
+    "no_grid": true,
+    "no_martingale": true,
+    "no_external_runtime_data": true
+  },
+  "open_questions": [
+    "USOIL.DWX unavailable in the DWX matrix; built XTIUSD.DWX crude-oil proxy per DWX port discipline."
+  ],
+  "notes": "Approved monthly MACD long/cash absolute-asset-allocation sleeve built on D1 host bars with completed-month aggregation; setfiles generated for staged Q02 coverage across index, metal, energy, and FX symbols.",
+  "q02_enqueue_result": {
+    "enqueued": [],
+    "existing_pending": [
+      {
+        "work_item_id": "c321abcf",
+        "symbol": "EURUSD.DWX",
+        "timeframe": "D1",
+        "status": "pending"
+      },
+      {
+        "work_item_id": "6749f980",
+        "symbol": "GDAXI.DWX",
+        "timeframe": "D1",
+        "status": "pending"
+      },
+      {
+        "work_item_id": "b39e35ce",
+        "symbol": "XAUUSD.DWX",
+        "timeframe": "D1",
+        "status": "pending"
+      }
+    ],
+    "deferred_symbols": [
+      "GBPUSD.DWX",
+      "NDX.DWX",
+      "SP500.DWX",
+      "USDJPY.DWX",
+      "WS30.DWX",
+      "XTIUSD.DWX"
+    ],
+    "note": "record-build was idempotent: stage-one Q02 work items already existed, so no duplicate work items were inserted."
+  },
+  "record_build": {
+    "recorded": true,
+    "task_id": "cc652ca1-79eb-49bd-85f9-450566373310",
+    "new_status": "done",
+    "smoke_result": "deferred_p2_smoke",
+    "recorded_at_utc": "2026-07-09T14:55:33Z"
+  },
+  "created_at_utc": "2026-07-09T14:54:09Z"
+}
