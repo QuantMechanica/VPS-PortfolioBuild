@@ -14862,3 +14862,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13095,xti-outweek-fade,0,XTIUSD.DWX,130950000,2026-07-09,Codex,active
 13096,xti-nr7-brk,0,XTIUSD.DWX,130960000,2026-07-09,Codex,active
 13097,xti-ethanol-reblend,0,XTIUSD.DWX,130970000,2026-07-09,Codex,active
+13098,xcu-xau-rspread,0,XCUUSD.DWX,130980000,2026-07-09,Codex,active
+13098,xcu-xau-rspread,1,XAUUSD.DWX,130980001,2026-07-09,Codex,active
