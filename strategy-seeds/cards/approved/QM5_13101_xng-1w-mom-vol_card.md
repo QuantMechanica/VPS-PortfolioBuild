@@ -1,5 +1,3 @@
-
-
 ---
 ea_id: QM5_13101
 slug: xng-1w-mom-vol
@@ -233,6 +231,3 @@ return stream. Do not retune the locked signal to rescue a fail.
 | G0 Research Intake | 2026-07-10 | APPROVED | this card |
 | Q01 Build Validation | 2026-07-10 | PENDING | `artifacts/qm5_13101_build_result.json` |
 | Q02 Baseline Screening | 2026-07-10 | PENDING | queue work item after build PASS |
-
-
-

@@ -14866,3 +14866,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13098,xcu-xau-rspread,1,XAUUSD.DWX,130980001,2026-07-09,Codex,active
 13099,xng-coal-switch,0,XNGUSD.DWX,130990000,2026-07-09,Codex,active
 13100,wti-dmac16,0,XTIUSD.DWX,131000000,2026-07-09,Codex,active
+13101,xng-1w-mom-vol,0,XNGUSD.DWX,131010000,2026-07-10,Codex,active
