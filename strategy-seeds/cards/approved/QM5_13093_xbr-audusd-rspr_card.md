@@ -255,10 +255,12 @@ both legs under the V5 one-position-per-magic model.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-09 | initial XBR/AUDUSD return-spread basket build | Q02 | PENDING |
+| v1 | 2026-07-09 | initial XBR/AUDUSD return-spread basket build | Q02 | QUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-09 | APPROVED | this card |
+| Q01 Build | 2026-07-09 | PASS | `artifacts/qm5_13093_build_result.json` |
+| Q02 Baseline Backtest | 2026-07-09 | QUEUED | `artifacts/qm5_13093_q02_enqueue_20260709.json` (`e76318c5-6995-4755-a578-2d839a9f38b9`) |
