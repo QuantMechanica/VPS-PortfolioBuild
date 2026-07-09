@@ -56,7 +56,16 @@ close. Runtime uses broker D1 OHLC and calendar state only. The signal parameter
   realized volatility is not elevated.
 - Risk mode for Q02 backtests: `RISK_FIXED`.
 
-## 6. Source Citation\n\nThe academic paper uses investor-position flow decomposition. This EA does not reproduce the unavailable `R_nonQ` factor; it tests an explicitly declared OHLC-only proxy and must be falsified independently by Q02.\n\nNon-duplicate boundary: unlike QM5_12567, this EA follows a five-D1 move in low volatility and uses no RSI. Unlike QM5_12817, it rejects high volatility and does not fade shocks. QM5_13049 and QM5_13055 use the same proxy on crude carriers, but neither supplies XNG pipeline evidence.\n
+## 6. Source Citation
+
+The academic paper uses investor-position flow decomposition. This EA does not
+reproduce the unavailable `R_nonQ` factor; it tests an explicitly declared
+OHLC-only proxy and must be falsified independently by Q02.
+
+Non-duplicate boundary: unlike QM5_12567, this EA follows a five-D1 move in low
+volatility and uses no RSI. Unlike QM5_12817, it rejects high volatility and
+does not fade shocks. QM5_13049 and QM5_13055 use the same proxy on crude
+carriers, but neither supplies XNG pipeline evidence.
 
 Academic working paper:
 
@@ -82,5 +91,4 @@ touched by this build.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-10 | Mission-directed natural gas short-term low-vol momentum build | Enqueue to Q02 |
-
 
