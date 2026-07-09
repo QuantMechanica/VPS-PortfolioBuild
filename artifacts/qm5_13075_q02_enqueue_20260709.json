@@ -1,0 +1,55 @@
+{
+  "record_build": {
+    "recorded": true,
+    "task_id": "9e341deb-adf2-44a6-8a48-b1e3596109f7",
+    "new_status": "done",
+    "smoke_result": "deferred_p2_smoke",
+    "blocked_reason": "",
+    "fail_code": null,
+    "next_action_hint": "Q02 auto-enqueued (1 work_items); worker daemons will dispatch on next tick",
+    "auto_q02_enqueued": {
+      "ea_id": "QM5_13075",
+      "enqueued": [
+        {
+          "wi_id": "4e286038",
+          "symbol": "XTIUSD.DWX",
+          "tf": "D1",
+          "setfile": "QM5_13075_xti-inweek-brk_XTIUSD.DWX_D1_backtest.set"
+        }
+      ],
+      "skipped": []
+    }
+  },
+  "work_items_snapshot": {
+    "count": 1,
+    "summary": {
+      "Q02_pending": 1
+    },
+    "items": [
+      {
+        "id": "4e286038-7f79-4e4b-b92f-30a4fa2dda5e",
+        "kind": "backtest",
+        "phase": "Q02",
+        "ea_id": "QM5_13075",
+        "symbol": "XTIUSD.DWX",
+        "status": "pending",
+        "attempt_count": 0,
+        "created_at": "2026-07-09T00:15:26+00:00",
+        "updated_at": "2026-07-09T00:15:26+00:00"
+      }
+    ]
+  },
+  "slot_snapshot": {
+    "scanned_at": "2026-07-09T00:15:33+00:00",
+    "terminal64_running_count": 8,
+    "running_mt5_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T7"
+    ],
+    "manual_backtest_launched_by_this_session": false
+  }
+}
