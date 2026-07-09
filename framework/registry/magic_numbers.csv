@@ -14839,3 +14839,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13089,xti-xng-carry,1,XNGUSD.DWX,130890001,2026-07-09,Codex,active
 13090,xti-xcu-rspread,0,XTIUSD.DWX,130900000,2026-07-09,Codex,active
 13090,xti-xcu-rspread,1,XCUUSD.DWX,130900001,2026-07-09,Codex,active
+13091,xbr-vrp-proxy,0,XBRUSD.DWX,130910000,2026-07-09,Codex,active

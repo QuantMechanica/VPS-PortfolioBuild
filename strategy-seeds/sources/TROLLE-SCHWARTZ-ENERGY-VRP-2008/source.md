@@ -10,6 +10,7 @@ uri: https://www.anderson.ucla.edu/documents/areas/fac/finance/schwartz_risk_pre
 cards_extracted:
   - xti-vrp-proxy
   - xng-vrp-proxy
+  - xbr-vrp-proxy
 ---
 
 # Trolle-Schwartz Energy VRP Source
@@ -31,11 +32,16 @@ average and time-varying.
 
 V5 does not have runtime access to energy option chains, variance swaps, or
 implied-volatility surfaces. The extracted cards are therefore deliberately
-named `xti-vrp-proxy` and `xng-vrp-proxy`: they are OHLC-only
+named `xti-vrp-proxy`, `xng-vrp-proxy`, and `xbr-vrp-proxy`: they are OHLC-only
 realized-volatility proxies that trade Darwinex energy CFDs in top-quartile
 realized-volatility regimes, fading short-horizon directional stretches as a
 conservative spot-CFD expression of volatility carry normalization. They do
 not claim to replicate true options VRP.
+
+The Brent card ports the same crude-oil VRP proxy logic to `XBRUSD.DWX` so Q02
+can test a separate crude benchmark for portfolio fit. It is not a rebuild of
+the WTI proxy, natural-gas proxy, Brent calendar/weekday/TOM/TSMOM/anchor
+families, XTI/XNG baskets, or oil/metal ratio sleeves.
 
 ## Guardrails
 
