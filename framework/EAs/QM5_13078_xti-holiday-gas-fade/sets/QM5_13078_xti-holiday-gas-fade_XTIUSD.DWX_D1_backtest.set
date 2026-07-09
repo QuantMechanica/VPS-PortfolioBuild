@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13078
 ; ea_slug:      xti-holiday-gas-fade
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   f66f991cda464eee5e5e5d47f0d9ab7db14b6f4455829de0b6bff48088f47815
 ; author:       Development
 ; date:         2026-07-09
 ;==========================================================

@@ -246,14 +246,10 @@ int Strategy_BarShiftOnOrBefore(const datetime day)
   }
 
 bool Strategy_LoadSignalState(datetime &holiday,
-                              double &atr_last,
-                              double &sma_last,
-                              double &holiday_close)
+                              double &atr_last)
   {
    holiday = 0;
    atr_last = 0.0;
-   sma_last = 0.0;
-   holiday_close = 0.0;
 
    const datetime current_d1 = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: entry-day calendar state behind single new-bar gate.
    if(current_d1 <= 0)
@@ -278,13 +274,13 @@ bool Strategy_LoadSignalState(datetime &holiday,
    if(iTime(_Symbol, PERIOD_D1, lookback_shift) <= 0) // perf-allowed: bounded lookback validation behind single new-bar gate.
       return false;
 
-   holiday_close = iClose(_Symbol, PERIOD_D1, signal_shift);       // perf-allowed: completed pre/post-holiday signal close.
+   const double holiday_close = iClose(_Symbol, PERIOD_D1, signal_shift); // perf-allowed: completed pre/post-holiday signal close.
    const double lookback_close = iClose(_Symbol, PERIOD_D1, lookback_shift); // perf-allowed: bounded rally-reference close.
    if(holiday_close <= 0.0 || lookback_close <= 0.0)
       return false;
 
    atr_last = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, signal_shift);
-   sma_last = QM_SMA(_Symbol, PERIOD_D1, strategy_trend_period, signal_shift, PRICE_CLOSE);
+   const double sma_last = QM_SMA(_Symbol, PERIOD_D1, strategy_trend_period, signal_shift, PRICE_CLOSE);
    if(atr_last <= 0.0 || sma_last <= 0.0)
       return false;
 
@@ -347,9 +343,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    datetime holiday = 0;
    double atr_last = 0.0;
-   double sma_last = 0.0;
-   double holiday_close = 0.0;
-   if(!Strategy_LoadSignalState(holiday, atr_last, sma_last, holiday_close))
+   if(!Strategy_LoadSignalState(holiday, atr_last))
       return false;
 
    const double entry_price = QM_EntryMarketPrice(req.type);
