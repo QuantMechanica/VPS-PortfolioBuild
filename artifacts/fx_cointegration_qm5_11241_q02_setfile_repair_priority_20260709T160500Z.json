@@ -1,0 +1,88 @@
+{
+  "generated_at_utc": "2026-07-09T16:05:00Z",
+  "operator": "codex-headless-board-advisor",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves; prefer market-neutral FX cointegration baskets",
+  "unit_of_work": "advance existing FX cointegration card through Q02 without duplicate enqueue",
+  "selection_decision": {
+    "new_unbuilt_pair_found": false,
+    "strict_scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_scan_state": {
+      "QM5_12532": "Q02 PASS, Q04 PASS, Q05 FAIL; not Q02-blocked",
+      "QM5_12533": "Q02 PASS, Q04 FAIL; not Q02-blocked"
+    },
+    "reason": "All approved/card-worthy EdgeLab FX cointegration scan and extension candidates are already built and past Q02 or have downstream gate failures. The useful non-duplicate fallback was to repair and priority-track an existing pending FX cointegration Q02 row."
+  },
+  "selected_existing_forex_card": {
+    "ea_id": "QM5_11241",
+    "slug": "ht-coint-spread",
+    "source": "Hudson & Thames arbitrage research / Chan-style Engle-Granger cointegration pair trading",
+    "timeframe": "D1",
+    "basket_manifest": "framework/EAs/QM5_11241_ht-coint-spread/basket_manifest.json",
+    "corrected_fx_pair": ["NZDUSD.DWX", "AUDUSD.DWX"],
+    "pending_work_item_id": "b3148fd8-1c10-4b51-834a-ed660ea1becd",
+    "phase": "Q02",
+    "queue_status_after": "pending",
+    "setfile": "framework/EAs/QM5_11241_ht-coint-spread/sets/QM5_11241_ht-coint-spread_NZDUSD.DWX_D1_backtest.set"
+  },
+  "source_control_changes": [
+    "framework/EAs/QM5_11241_ht-coint-spread/sets/QM5_11241_ht-coint-spread_GBPUSD.DWX_D1_backtest.set",
+    "framework/EAs/QM5_11241_ht-coint-spread/sets/QM5_11241_ht-coint-spread_NZDUSD.DWX_D1_backtest.set",
+    "framework/EAs/QM5_11241_ht-coint-spread/sets/QM5_11241_ht-coint-spread_XAGUSD.DWX_D1_backtest.set",
+    "framework/EAs/QM5_11241_ht-coint-spread/sets/QM5_11241_ht-coint-spread_XAUUSD.DWX_D1_backtest.set",
+    "artifacts/fx_cointegration_qm5_11241_q02_setfile_repair_priority_20260709T160500Z.json"
+  ],
+  "repair": {
+    "defect": "Several QM5_11241 D1 backtest setfiles contained only '; card_defaults_source=not_found' after the strategy-specific marker, so pending runs could use EA defaults instead of the intended pair.",
+    "fix": "Filled explicit strategy_partner_symbol, strategy_partner_slot, formation/z-score/exit/stop/half-life/min-bars/risk-split parameters for the reverse FX pair setfiles and the XAU/XAG pair setfiles.",
+    "q02_advance": {
+      "action": "updated existing pending work_item payload only",
+      "duplicate_work_item_created": false,
+      "priority_track_after": true,
+      "priority_reason": "forex_portfolio_sleeve_gap_corrected_qm5_11241_nzdusd_audusd_setfile"
+    }
+  },
+  "validation": {
+    "build_check": {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_11241_ht-coint-spread -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260709_160422.json"
+    },
+    "symbol_scope": {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_11241_ht-coint-spread --verbose",
+      "result": "BASKET_OK",
+      "violations": 0
+    },
+    "setfile_scan": {
+      "card_defaults_source_remaining": 0,
+      "risk_mode": "RISK_FIXED backtest setfiles, RISK_PERCENT=0"
+    }
+  },
+  "farm_state_at_handoff": {
+    "active_work_items": 7,
+    "active_summary": {
+      "Q02_active": 3,
+      "Q04_active": 3,
+      "Q06_active": 1
+    },
+    "running_pipeline_terminals": ["T1", "T2", "T3", "T4", "T6", "T7"],
+    "non_pipeline_terminals_observed": ["T_Live", "FTMO"],
+    "manual_mt5_backtest_launched": false,
+    "cpu_ceiling_applied": true,
+    "stop_reason": "Paced fleet is saturated; leave corrected priority row for terminal workers."
+  },
+  "guardrails": {
+    "new_card_created": false,
+    "new_ea_built": false,
+    "duplicate_queue_row_created": false,
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
