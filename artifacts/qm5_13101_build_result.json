@@ -60,8 +60,8 @@
     "status": "PASS",
     "warnings": 0,
     "failures": 0,
-    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260709_230544.json",
-    "setfile_build_hash": "df983ab3a2978580220c500f93e99c50523d3cfcd7ee20ad29569ae395953b5f",
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260709_230738.json",
+    "setfile_build_hash": "76700aebde9821c401bb55bc4d95c373ef58d39ddc63d3239f0598da099b06e4",
     "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13101_xng-1w-mom-vol -Strict -SkipCompile"
   },
   "validations": {
@@ -153,6 +153,6 @@
     "mq5": "A7FAC0A9B4A913B75309A7830AB0B9870ED3DB0C92D22C375805336DC753D180",
     "ex5": "7ED53682F4A3F95288224FF943268275F213C6D7A5C2E4E7522654BCDC297062",
     "spec": "E027EED89763DD88D5DB642BEAE9ED07A8AFD2FEAB8AA8005ADE6C3957E2EC9E",
-    "setfile": "FC05431448B8E02E574A650D0A431348F09BFBC908540DFE9E9AFF8E11622911"
+    "setfile": "DD462DDF4BFFAE59BB2C39C9CED59B50B9F9B72957200857E87B735963E332BB"
   }
 }
