@@ -1,0 +1,106 @@
+{
+  "generated_at_utc": "2026-07-09T20:01:01Z",
+  "operator": "codex-headless-board-advisor",
+  "branch": "agents/board-advisor",
+  "head_at_audit": "785b790ebc24645d91171dd193785c121b02ca76",
+  "mission": "grow the certified V5 portfolio book with new forex sleeves",
+  "unit_of_work": "non-duplicate FX cointegration frontier and live CPU-ceiling handoff",
+  "research_decision": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_scan_result": "Only EURJPY~GBPJPY and AUDUSD~NZDUSD cleared the published DEV/OOS/trade-count criteria.",
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "state": [
+        "Q02:PASS",
+        "Q04:PASS",
+        "Q05:FAIL"
+      ],
+      "q02_blocked": false
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "state": [
+        "Q02:PASS",
+        "Q04:FAIL"
+      ],
+      "q02_blocked": false
+    },
+    "approved_card_inventory": {
+      "approved_coint_or_cointegration_cards_checked": 25,
+      "cards_without_matching_framework_ea": 0,
+      "unbuilt_reputable_source_pair_found": false
+    },
+    "decision": "Do not manufacture a third strict-scan survivor or duplicate an existing approved build."
+  },
+  "existing_forex_fallbacks": {
+    "QM5_9184": {
+      "slug": "jstm-pair-cointegration-fx",
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "latest_individual_host_q02": "PASS",
+      "logical_symbol": "QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1",
+      "logical_q02_work_item_id": "f10fcf97-b4fb-4286-9188-d51415c8fb60",
+      "logical_q02_status": "pending",
+      "action": "Preserved the already priority-tracked logical-basket row; no duplicate was inserted."
+    },
+    "QM5_11241": {
+      "slug": "ht-coint-spread",
+      "corrected_fx_pair": "NZDUSD.DWX/AUDUSD.DWX",
+      "q02_work_item_id": "b3148fd8-1c10-4b51-834a-ed660ea1becd",
+      "q02_status": "done",
+      "q02_verdict": "FAIL",
+      "action": "No retry: the repaired setfile produced a terminal strategy verdict rather than ONINIT/NO_HISTORY infrastructure evidence."
+    },
+    "QM5_1058": {
+      "logical_symbol": "QM5_1058_EURUSD_GBPUSD_GGR_D1",
+      "phase": "Q07",
+      "status": "active",
+      "claimed_by": "T4",
+      "action": "Left the active continuation undisturbed."
+    }
+  },
+  "cpu_ceiling_observed": {
+    "farm_active_work_items": 7,
+    "active_by_phase": {
+      "Q02": 3,
+      "Q03": 2,
+      "Q04": 1,
+      "Q07": 1
+    },
+    "claimed_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "metatester64_processes": 4,
+    "terminal64_processes": 7,
+    "stop_reason": "The paced backtest fleet is saturated, so the mission's CPU-ceiling stop condition applies."
+  },
+  "result": {
+    "new_card_created": false,
+    "new_ea_built": false,
+    "new_q02_work_item_created": false,
+    "duplicate_work_item_created": false,
+    "manual_mt5_backtest_launched": false,
+    "next_non_duplicate_action": "Allow the existing QM5_9184 logical-basket Q02 row to be claimed after capacity clears."
+  },
+  "guardrails": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  },
+  "commands_run_summary": [
+    "read the complete strict FX scan and gap-directed research brief",
+    "compared approved coint/cointegration cards with framework EA folders",
+    "queried farm status and active work items",
+    "queried QM5_12532, QM5_12533, QM5_9184, and QM5_11241 work-item histories",
+    "counted terminal64 and metatester64 processes"
+  ]
+}
