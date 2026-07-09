@@ -457,6 +457,14 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
+   QM_SymbolGuardInit(g_symbols);
+   const int warmup_bars = MathMax(300,
+                                   MathMax(60, strategy_conversion_lookback_days) +
+                                   strategy_slow_ema_days * 7 +
+                                   strategy_vol_ewma_days +
+                                   10);
+   QM_BasketWarmupHistory(g_symbols, PERIOD_D1, warmup_bars);
+
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_1251\",\"ea\":\"carver-trendconvert\"}");
    return INIT_SUCCEEDED;
   }
@@ -473,8 +481,6 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
    if(QM_FrameworkFridayCloseNow(broker_now))
      {
       QM_FrameworkCloseAllByMagic(QM_FrameworkMagic(), "friday_close");
@@ -498,6 +504,9 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
 
    if(!QM_IsNewBar())
       return;

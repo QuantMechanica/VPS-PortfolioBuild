@@ -3,31 +3,24 @@
 ; ea_id:        1251
 ; ea_slug:      carver-trendconvert
 ; ea_version:   v5.0
-; set_version:  s20260526-001
-; symbol:       USDCAD.DWX
+; set_version:  s20260709-001
+; symbol:       NZDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   4
+; magic_slot:   5
 ; risk_mode:    FIXED
 ; portfolio_weight: 0.083333
-; build_hash:   c7d2c86678dcb0820d3b0dfb76a96abc505794b5ab2ba9c6d73020aed0525440
+; build_hash:   ff05a3685a5cecfa440e555a2e51b1a16d9eb1b323fbbbb9139ac27bcbcfeb92
 ; author:       Development
-; date:         2026-05-26
+; date:         2026-07-09
 ;==========================================================
 qm_ea_id=1251
-qm_magic_slot_offset=4
-qm_rng_seed=42
-RISK_PERCENT=0
+qm_magic_slot_offset=5
 RISK_FIXED=1000
+RISK_PERCENT=0
 PORTFOLIO_WEIGHT=0.083333
-qm_news_temporal=3
-qm_news_compliance=1
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=true
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1251_carver-trendconvert.md
 strategy_fast_ema_days=64
 strategy_slow_ema_days=256
 strategy_vol_ewma_days=25

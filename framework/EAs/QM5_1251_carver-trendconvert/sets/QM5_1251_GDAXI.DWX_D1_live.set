@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        1251
 ; ea_slug:      carver-trendconvert
@@ -10,7 +10,7 @@
 ; magic_slot:   10
 ; risk_mode:    PERCENT
 ; portfolio_weight: 0.083333
-; build_hash:   951effb342ad4367f1d9143883e25287e0602ad3d3ecc8a8875b22f6ed34280b
+; build_hash:   689b6bf270d8d9da46dd1bc5a57d19cb08a67c022efb2addb8b508cb8c8ae6eb
 ; author:       Development
 ; date:         2026-05-26
 ;==========================================================
