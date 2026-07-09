@@ -14792,3 +14792,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1558,aa-zak-mac-3-10,6,EURUSD.DWX,15580006,2026-07-09,Codex,active
 1558,aa-zak-mac-3-10,7,GBPUSD.DWX,15580007,2026-07-09,Codex,active
 1558,aa-zak-mac-3-10,8,USDJPY.DWX,15580008,2026-07-09,Codex,active
+9451,demark-td-dwa-fade-h4,0,EURUSD.DWX,94510000,2026-07-09,Codex,active
+9451,demark-td-dwa-fade-h4,1,GBPUSD.DWX,94510001,2026-07-09,Codex,active
+9451,demark-td-dwa-fade-h4,2,USDJPY.DWX,94510002,2026-07-09,Codex,active
+9451,demark-td-dwa-fade-h4,3,AUDUSD.DWX,94510003,2026-07-09,Codex,active
+9451,demark-td-dwa-fade-h4,4,USDCAD.DWX,94510004,2026-07-09,Codex,active
+9451,demark-td-dwa-fade-h4,5,USDCHF.DWX,94510005,2026-07-09,Codex,active
+9451,demark-td-dwa-fade-h4,6,NZDUSD.DWX,94510006,2026-07-09,Codex,active
+9451,demark-td-dwa-fade-h4,7,XAUUSD.DWX,94510007,2026-07-09,Codex,active
+9451,demark-td-dwa-fade-h4,8,XTIUSD.DWX,94510008,2026-07-09,Codex,active
+9451,demark-td-dwa-fade-h4,9,GDAXI.DWX,94510009,2026-07-09,Codex,active
+9451,demark-td-dwa-fade-h4,10,NDX.DWX,94510010,2026-07-09,Codex,active
+9451,demark-td-dwa-fade-h4,11,WS30.DWX,94510011,2026-07-09,Codex,active
+9451,demark-td-dwa-fade-h4,12,UK100.DWX,94510012,2026-07-09,Codex,active
