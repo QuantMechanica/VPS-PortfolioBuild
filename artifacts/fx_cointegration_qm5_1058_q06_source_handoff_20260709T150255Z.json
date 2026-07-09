@@ -1,0 +1,73 @@
+{
+  "generated_at_utc": "2026-07-09T15:02:55Z",
+  "operator": "codex-headless-board-advisor",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves; prefer market-neutral FX cointegration baskets",
+  "unit_of_work": "advance existing non-duplicate FX market-neutral basket through Q06 source-control handoff",
+  "selection_decision": {
+    "new_unbuilt_pair_found": false,
+    "reason": "The strict 66-pair scan survivors QM5_12532 and QM5_12533 are already built and not Q02-blocked. The extended card-worthy or watchlist FX cointegration frontier is already represented by QM5_13024, QM5_13029, QM5_13058, and QM5_13062. Under the active farm CPU ceiling, the useful non-duplicate move was to persist the generated QM5_1058 Q06 harsh-stress setfile for the existing active FX basket."
+  },
+  "selected_existing_forex_card": {
+    "ea_id": "QM5_1058",
+    "slug": "gatev-fx-pairs-zscore",
+    "logical_symbol": "QM5_1058_EURUSD_GBPUSD_GGR_D1",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "declared_basket_symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "AUDUSD.DWX",
+      "NZDUSD.DWX"
+    ],
+    "active_phase": "Q06",
+    "active_work_item_id": "25c0e5ba-1456-4e74-8fb1-20a729ad4cd3",
+    "promoted_from_work_item": "93bda5b4-793e-4c18-a7ca-677a9f7d146b",
+    "phase_runner": "framework/scripts/q06_stress_harsh.py",
+    "basket_manifest": "framework/EAs/QM5_1058_gatev-fx-pairs-zscore/basket_manifest.json",
+    "q06_setfile": "framework/EAs/QM5_1058_gatev-fx-pairs-zscore/sets/QM5_1058_gatev-fx-pairs-zscore_QM5_1058_EURUSD_GBPUSD_GGR_D1_D1_q06_stress_harsh.set"
+  },
+  "source_control_changes": [
+    "framework/EAs/QM5_1058_gatev-fx-pairs-zscore/sets/QM5_1058_gatev-fx-pairs-zscore_QM5_1058_EURUSD_GBPUSD_GGR_D1_D1_q06_stress_harsh.set",
+    "framework/EAs/QM5_1058_gatev-fx-pairs-zscore/SPEC.md",
+    "artifacts/fx_cointegration_qm5_1058_q06_source_handoff_20260709T150255Z.json"
+  ],
+  "validation": {
+    "build_check": {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_1058_gatev-fx-pairs-zscore -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 1,
+      "warning": "EA_PERF_UNGATED_BAR_DATA at QM5_1058_gatev-fx-pairs-zscore.mq5:117",
+      "report": "D:/QM/reports/framework/21/build_check_20260709_150424.json"
+    },
+    "q06_setfile_checks": {
+      "environment": "q06_stress_harsh",
+      "risk_mode": "RISK_FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "stress_reject_probability": 0.1,
+      "portfolio_weight": 1,
+      "tester_currency": "USD",
+      "tester_deposit": 100000
+    }
+  },
+  "farm_state_at_handoff": {
+    "active_work_items": 7,
+    "selected_work_item_status": "active",
+    "selected_work_item_claimed_by": "T4",
+    "manual_mt5_backtest_launched": false,
+    "new_backtest_enqueued_this_turn": false,
+    "duplicate_work_item_created": false
+  },
+  "guardrails": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
