@@ -1,23 +1,23 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_13011 XTI CADCHF Return Spread Reversion"
+#property description "QM5_13086 XBR CADCHF Return Spread Reversion"
 
 #include <QM/QM_Common.mqh>
 #include <QM/QM_BasketOrder.mqh>
 
 // =============================================================================
-// QM5_13011 - WTI/CADCHF Return-Spread Reversion
+// QM5_13086 - Brent/CADCHF Return-Spread Reversion
 // -----------------------------------------------------------------------------
 // D1 two-leg energy/FX basket:
-//   rspread = log(XTI[t] / XTI[t-L]) - beta_cadchf * log(CADCHF[t] / CADCHF[t-L])
-//   z > entry: short return spread = sell WTI, buy CADCHF
-//   z < -entry: long return spread = buy WTI, sell CADCHF
-// The EA runs from the XTIUSD.DWX host chart and trades both registered legs
+//   rspread = log(XBR[t] / XBR[t-L]) - beta_cadchf * log(CADCHF[t] / CADCHF[t-L])
+//   z > entry: short return spread = sell Brent, buy CADCHF
+//   z < -entry: long return spread = buy Brent, sell CADCHF
+// The EA runs from the XBRUSD.DWX host chart and trades both registered legs
 // through QM_BasketOrder. Runtime uses MT5 OHLC only; no external feed.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 13011;
+input int    qm_ea_id                   = 13086;
 input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
@@ -49,11 +49,11 @@ input double strategy_exit_z              = 0.4;
 input int    strategy_atr_period_d1       = 20;
 input double strategy_atr_sl_mult         = 3.0;
 input int    strategy_max_hold_days       = 30;
-input int    strategy_xti_max_spread_pts  = 1000;
+input int    strategy_xbr_max_spread_pts  = 1200;
 input int    strategy_cadchf_max_spread_pts = 80;
 input int    strategy_deviation_points    = 20;
 
-string   g_leg_xti    = "XTIUSD.DWX";
+string   g_leg_xbr    = "XBRUSD.DWX";
 string   g_leg_cadchf = "CADCHF.DWX";
 double   g_spread_z = 0.0;
 double   g_spread_mean = 0.0;
@@ -63,7 +63,7 @@ datetime g_pair_entry_time = 0;
 
 int Strategy_SlotForSymbol(const string symbol)
   {
-   if(symbol == g_leg_xti)
+   if(symbol == g_leg_xbr)
       return 0;
    if(symbol == g_leg_cadchf)
       return 1;
@@ -72,14 +72,14 @@ int Strategy_SlotForSymbol(const string symbol)
 
 bool Strategy_IsHostChart()
   {
-   return (_Symbol == g_leg_xti && _Period == PERIOD_D1 && qm_magic_slot_offset == 0);
+   return (_Symbol == g_leg_xbr && _Period == PERIOD_D1 && qm_magic_slot_offset == 0);
   }
 
 bool Strategy_SpreadAllowed(const string symbol)
   {
    const long spread_points = SymbolInfoInteger(symbol, SYMBOL_SPREAD);
-   if(symbol == g_leg_xti && strategy_xti_max_spread_pts > 0)
-      return (spread_points <= strategy_xti_max_spread_pts);
+   if(symbol == g_leg_xbr && strategy_xbr_max_spread_pts > 0)
+      return (spread_points <= strategy_xbr_max_spread_pts);
    if(symbol == g_leg_cadchf && strategy_cadchf_max_spread_pts > 0)
       return (spread_points <= strategy_cadchf_max_spread_pts);
    return true;
@@ -146,11 +146,11 @@ bool Strategy_RefreshSpreadState()
    const int z_lookback = MathMax(40, strategy_z_lookback_d1);
    const int history_needed = z_lookback + return_lookback + 1;
 
-   double xti[];
+   double xbr[];
    double cadchf[];
-   ArraySetAsSeries(xti, true);
+   ArraySetAsSeries(xbr, true);
    ArraySetAsSeries(cadchf, true);
-   if(CopyClose(g_leg_xti, PERIOD_D1, 1, history_needed, xti) != history_needed) // perf-allowed: called only behind the D1 new-bar gate or close-state refresh.
+   if(CopyClose(g_leg_xbr, PERIOD_D1, 1, history_needed, xbr) != history_needed) // perf-allowed: called only behind the D1 new-bar gate or close-state refresh.
       return false;
    if(CopyClose(g_leg_cadchf, PERIOD_D1, 1, history_needed, cadchf) != history_needed) // perf-allowed: called only behind the D1 new-bar gate or close-state refresh.
       return false;
@@ -161,12 +161,12 @@ bool Strategy_RefreshSpreadState()
    for(int i = 0; i < z_lookback; ++i)
      {
       const int past_idx = i + return_lookback;
-      if(xti[i] <= 0.0 || cadchf[i] <= 0.0 || xti[past_idx] <= 0.0 || cadchf[past_idx] <= 0.0)
+      if(xbr[i] <= 0.0 || cadchf[i] <= 0.0 || xbr[past_idx] <= 0.0 || cadchf[past_idx] <= 0.0)
          return false;
 
-      const double xti_ret = MathLog(xti[i] / xti[past_idx]);
+      const double xbr_ret = MathLog(xbr[i] / xbr[past_idx]);
       const double cadchf_ret = MathLog(cadchf[i] / cadchf[past_idx]);
-      spreads[i] = xti_ret - strategy_beta_cadchf * cadchf_ret;
+      spreads[i] = xbr_ret - strategy_beta_cadchf * cadchf_ret;
       if(!MathIsValidNumber(spreads[i]))
          return false;
       sum += spreads[i];
@@ -252,21 +252,21 @@ bool Strategy_OpenPair(const int spread_direction)
   {
    if(spread_direction == 0 || Strategy_OpenPairLegCount() > 0)
       return false;
-   if(!Strategy_SpreadAllowed(g_leg_xti) || !Strategy_SpreadAllowed(g_leg_cadchf))
+   if(!Strategy_SpreadAllowed(g_leg_xbr) || !Strategy_SpreadAllowed(g_leg_cadchf))
       return false;
 
-   const double xti_weight = 1.0;
+   const double xbr_weight = 1.0;
    const double cadchf_weight = MathMax(0.1, MathAbs(strategy_beta_cadchf));
-   const double weight_sum = xti_weight + cadchf_weight;
+   const double weight_sum = xbr_weight + cadchf_weight;
    const bool long_spread = (spread_direction > 0);
-   const QM_OrderType xti_type = long_spread ? QM_BUY : QM_SELL;
+   const QM_OrderType xbr_type = long_spread ? QM_BUY : QM_SELL;
    const QM_OrderType cadchf_type = long_spread ? QM_SELL : QM_BUY;
-   const string reason = long_spread ? "QM5_13011_LONG_XTI_CADCHF_RSPREAD"
-                                     : "QM5_13011_SHORT_XTI_CADCHF_RSPREAD";
+   const string reason = long_spread ? "QM5_13086_LONG_XBR_CADCHF_RSPREAD"
+                                     : "QM5_13086_SHORT_XBR_CADCHF_RSPREAD";
 
-   bool xti_ok = Strategy_OpenLeg(g_leg_xti, xti_type, xti_weight, weight_sum, reason);
+   bool xbr_ok = Strategy_OpenLeg(g_leg_xbr, xbr_type, xbr_weight, weight_sum, reason);
    bool cadchf_ok = Strategy_OpenLeg(g_leg_cadchf, cadchf_type, cadchf_weight, weight_sum, reason);
-   if(xti_ok && cadchf_ok)
+   if(xbr_ok && cadchf_ok)
      {
       g_pair_entry_time = TimeCurrent();
       return true;
@@ -295,7 +295,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_13011_RSPREAD_HOST";
+   req.reason = "QM5_13086_RSPREAD_HOST";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
@@ -350,14 +350,14 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
   {
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
      {
-      if(!QM_NewsAllowsTrade2(g_leg_xti, broker_time, qm_news_temporal, qm_news_compliance))
+      if(!QM_NewsAllowsTrade2(g_leg_xbr, broker_time, qm_news_temporal, qm_news_compliance))
          return true;
       if(!QM_NewsAllowsTrade2(g_leg_cadchf, broker_time, qm_news_temporal, qm_news_compliance))
          return true;
      }
    else
      {
-      if(!QM_NewsAllowsTrade(g_leg_xti, broker_time, qm_news_mode_legacy))
+      if(!QM_NewsAllowsTrade(g_leg_xbr, broker_time, qm_news_mode_legacy))
          return true;
       if(!QM_NewsAllowsTrade(g_leg_cadchf, broker_time, qm_news_mode_legacy))
          return true;
@@ -367,7 +367,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
-   SymbolSelect(g_leg_xti, true);
+   SymbolSelect(g_leg_xbr, true);
    SymbolSelect(g_leg_cadchf, true);
 
    if(!QM_FrameworkInit(qm_ea_id,
@@ -388,13 +388,13 @@ int OnInit()
                         qm_news_compliance))
       return INIT_FAILED;
 
-   string basket_symbols[2] = {g_leg_xti, g_leg_cadchf};
+   string basket_symbols[2] = {g_leg_xbr, g_leg_cadchf};
    QM_SymbolGuardInit(basket_symbols);
    QM_BasketWarmupHistory(basket_symbols,
                           PERIOD_D1,
                           MathMax(220, strategy_z_lookback_d1 + strategy_return_lookback_d1 + strategy_atr_period_d1 + 10));
 
-   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_13011\",\"ea\":\"xti-cadchf-rspr\"}");
+   QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_13086\",\"ea\":\"xbr-cadchf-rspr\"}");
    return INIT_SUCCEEDED;
   }
 
