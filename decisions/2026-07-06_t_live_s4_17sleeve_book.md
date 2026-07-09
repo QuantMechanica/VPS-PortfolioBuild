@@ -1,39 +1,44 @@
 # T_Live decision — S4: 15 → 17 sleeves (first probation admits)
 
-> ## ⚠️ UPDATED 2026-07-09 — TARGET IS NOW 21 SLEEVES, NOT 17. DO NOT DEPLOY THE WEIGHTS BELOW.
+> ## ⚠️ UPDATED 2026-07-09 (corrected) — TARGET IS 20 SLEEVES, NOT 17. DO NOT DEPLOY THE WEIGHTS BELOW.
 >
-> OWNER (2026-07-08 chat) expanded the end-of-week harvest from 2 to **6 admits**, so the
-> Sunday 2026-07-12 combined session target is **15 (S3 live) + 6 = 21 sleeves**. The
-> 17-sleeve weight table in this file is an OBSOLETE mid-week snapshot — per OWNER's own
-> deferral note (below), weights RECOMPUTE over the final candidate set before the session.
+> OWNER (2026-07-08 chat) expanded the end-of-week harvest. Of the freed set, **10706 is
+> rework-flagged and STAYS EXCLUDED** (see below), so the Sunday 2026-07-12 combined-session
+> target is **15 (S3 live) + 5 clean admits = 20 sleeves**. The 17-sleeve weight table in
+> this file is an OBSOLETE mid-week snapshot.
 >
-> **The 6 confirmed admits (all Q09_PORTFOLIO `PASS_PORTFOLIO`, in `portfolio_candidates`
-> `Q12_REVIEW_READY`, streams verified present 2026-07-09):**
+> **The 5 confirmed admits (all Q09_PORTFOLIO `PASS_PORTFOLIO`, in `portfolio_candidates`
+> `Q12_REVIEW_READY`, q08 streams verified present 2026-07-09):**
 >
-> | EA / symbol | slug | Q09_PORTFOLIO evidence (work_item, date) |
-> |---|---|---|
-> | QM5_10706 / GBPUSD.DWX | tv-mon-ls (H1) | 22fca5c5… 2026-07-05 |
-> | QM5_11708 / EURUSD.DWX | anon-market-squeeze-d1 (D1) | 790edb77… 2026-07-06 |
-> | QM5_11165 / EURUSD.DWX | (EURUSD leg; AUDCAD leg already live in S3) | 80bcdc1b… 2026-07-06 |
-> | QM5_12969 / USDJPY.DWX | 2026-07-07 | de65a075… 2026-07-07 |
-> | QM5_10403 / XAUUSD.DWX | 2026-07-06 | e12845b9… 2026-07-06 |
-> | QM5_12778 / AUDUSD~EURJPY cointegration basket (D1) | 0b1fddba… 2026-07-06 |
+> | EA / symbol | note |
+> |---|---|
+> | QM5_12969 / USDJPY.DWX | corr low; admit |
+> | QM5_10403 / XAUUSD.DWX | corr −0.108 |
+> | QM5_11708 / EURUSD.DWX | corr −0.023; fills EURUSD gap |
+> | QM5_11165 / EURUSD.DWX | EURUSD leg (AUDCAD leg already live in S3) |
+> | QM5_12778 / AUDUSD~EURJPY cointegration basket (D1) | re-run 07-06, 195 trades |
 >
-> **Ground truth 2026-07-09 (filesystem-verified):** no 21-sleeve composite or deploy
-> package exists yet — only this 17-sleeve S4 (`s4_composite_2026-07-06`, `C:\QM\deploy\S4_2026-07-06\`).
-> Sunday task `QM_NewBook_LiveVsBook_Sunday` is scheduled (07-12 08:00, never run).
+> **EXCLUDED — QM5_10706 / GBPUSD.DWX:** has a Q09_PORTFOLIO PASS but the BUILD is
+> `codex_review_rework=true` (a real defect, same class as 1556). OWNER 2026-07-08 kept it
+> BLOCKED; code-guard `_rework_blocked_eas` (commit 14754b6ff) now excludes rework-builds
+> from EVERY book builder. A Q09 PASS does NOT override the rework block. (My first draft of
+> this banner wrongly listed 10706 as an admit / "21 sleeves" — corrected here.)
 >
-> **Remaining build step (before/at the Sunday session):** extend
-> `s4_composite_compute_2026-07-06.py` → 21 sleeves (add the 4 new admits to `NEW_META`
-> with registry-anchored magics; **12778 is a multi-symbol basket — the single-symbol
-> `SYM_SHORT_TO_KEY` path needs a basket branch**), regenerate 21 staged presets + SHA
-> manifest, recompute capped inv-vol weights. All 6 admit streams confirmed available in
-> Common/durable q08_trades (10403's XAUUSD only in durable — script falls back). Evidence:
-> `docs/ops/evidence/q02_q04_survival_by_assetclass_2026-07-09.csv` is unrelated; admit
-> status from `farm_state.sqlite portfolio_candidates` + `work_items` (queried 2026-07-09).
+> **Ground truth 2026-07-09 (filesystem-verified):** the 20-sleeve composite is ALREADY
+> computed — DRAFT manifest with inverse-vol weights at
+> `D:\QM\reports\portfolio\portfolio_manifest_sunday_20sleeve_DRAFT_20260708.json`
+> (n_sleeves=20, incl. all 5 admits, 12778 as AUDUSD host; 10706 absent — correct);
+> current-live ref `..._current_live_15sleeve_REF_20260708.json`. Headline KPIs 15→20:
+> Sharpe ~2.67→2.89, raw MaxDD ~37.8%→24.6% (~+35% return per DD-unit). Sunday tasks
+> registered (read-only): `QM_FTMO_Round26_Prep_Sunday` (05:30) + `QM_NewBook_LiveVsBook_Sunday`
+> (08:00). This 17-sleeve S4 composite/deploy package (`C:\QM\deploy\S4_2026-07-06\`) is superseded.
 >
-> Workflow unchanged: OWNER written approval → Claude file-side deploy + SHA re-verify →
-> OWNER chart session → Claude journal verify. **Nothing live has changed.**
+> **Remaining before the session:** build the 20-sleeve DEPLOY-staging package (staged presets +
+> fresh binaries + SHA manifest, like `C:\QM\deploy\S4_...`) from the DRAFT weights; recompute
+> only if a candidate lands before Sunday; verify 12778 basket host_symbol handling. Optimizer
+> DROP suggestions (10440/10513/11132/11421-AUD) are challenger-swaps — never auto, OWNER decides
+> at the session. Workflow unchanged: OWNER written approval → Claude file-side deploy + SHA
+> re-verify → OWNER chart session → Claude journal verify. **Nothing live has changed.**
 
 **Status: DEFERRED BY OWNER (2026-07-06 chat) — candidate collection through
 end of week, then ONE combined session admitting the week's harvest to BOTH
