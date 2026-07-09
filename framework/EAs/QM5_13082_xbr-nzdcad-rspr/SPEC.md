@@ -15,7 +15,7 @@ and `NZDCAD.DWX`. On each new D1 host bar it computes
 `log(XBR[t] / XBR[t-L]) + beta_nzdcad * log(NZDCAD[t] / NZDCAD[t-L])`,
 then standardizes that spread against a rolling lookback window.
 
-`NZDCAD` rises when AUD strengthens or CAD weakens. The plus sign is
+`NZDCAD` rises when NZD strengthens or CAD weakens. The plus sign is
 intentional: a Brent rally and CAD strength should pull the two terms in
 opposite directions, so unusually large same-direction dislocations are faded.
 When the z-score is above the entry threshold, the EA sells Brent and sells
@@ -48,7 +48,7 @@ open.
 
 **Designed for:**
 - `XBRUSD.DWX` - Brent crude leg and host chart for the oil side of the return spread.
-- `NZDCAD.DWX` - inverse-CAD commodity-FX leg contrasting AUD commodity exposure with CAD oil exposure.
+- `NZDCAD.DWX` - inverse-CAD commodity-FX leg contrasting NZD commodity exposure with CAD oil exposure.
 - `QM5_13082_XBR_NZDCAD_RSPREAD_D1` - logical Q02 basket symbol backed by the two traded legs above.
 
 **Explicitly NOT for:**

@@ -12,7 +12,7 @@ source_citations:
     quality_tier: A
     role: primary
   - type: central_bank_research
-    citation: "Bank of Canada Staff Analytical Note 2017-1. The Link Between the Canadian Dollar and Commodity Prices: Has It Broken?"
+    citation: "Bank of Canada Staff Analytical Note 2017-1. The Share of Systematic Variations in the Canadian Dollar - Part II."
     location: "https://www.bankofcanada.ca/2017/02/staff-analytical-note-2017-1/"
     quality_tier: A
     role: cad_channel

@@ -18,8 +18,8 @@ cards:
   "The Relationship between Oil Prices and Exchange Rates", U.S. Energy
   Information Administration working paper, June 2017.
 - Primary URL: https://www.eia.gov/workingpapers/pdf/oil_exchangerates_61317.pdf
-- Canada support: Bank of Canada, Staff Analytical Note 2017-1, "The Link
-  Between the Canadian Dollar and Commodity Prices: Has It Broken?"
+- Canada support: Bank of Canada, Staff Analytical Note 2017-1, "The Share of
+  Systematic Variations in the Canadian Dollar - Part II."
   https://www.bankofcanada.ca/2017/02/staff-analytical-note-2017-1/
 - New Zealand support: Reserve Bank of New Zealand, "Commodity prices and
   implications for monetary policy", 2011.
