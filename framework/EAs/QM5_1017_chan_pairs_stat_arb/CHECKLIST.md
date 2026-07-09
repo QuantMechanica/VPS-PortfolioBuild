@@ -1,19 +1,24 @@
-# DL-036 Checklist - QM5_1017 chan-pairs-stat-arb
+# Build Checklist — QM5_1017 chan-pairs-stat-arb
 
-- timestamp_utc: 2026-05-05T17:15:12Z
-- compile_pass: True
-- errors_zero: True
-- warnings_zero: True
-- compile_log: C:\QM\repo\framework\build\compile\20260501_090243\QM5_1017_chan_pairs_stat_arb.compile.log
-- card_ref: strategy-seeds/cards/chan-pairs-stat-arb_card.md
-- review_gate: DL-036
-- state: CTO_CONFIRMATION_COMPLETE
-- cto_confirmation_utc: 2026-05-05T21:14:00Z
-- cto_confirmation: Card §7/§12 two-slot-per-pair convention confirmed for QM5_1017.
-- cto_evidence:
-  - card: strategy-seeds/cards/chan-pairs-stat-arb_card.md (§7 Trade Management Rules; §12 hard_rules_at_risk one_position_per_magic_symbol)
-  - ea_impl: framework/EAs/QM5_1017_chan_pairs_stat_arb/QM5_1017_chan_pairs_stat_arb.mq5 (qm_magic_slot_offset leg-1, slot+1 leg-2 at lines 10, 45-46)
-  - registry_formula: framework/registry/magic_numbers.csv + framework/include/QM/QM_MagicResolver.mqh (magic = ea_id * 10000 + symbol_slot)
-  - zero_trade_adr_count: decisions/*_zero_trade_QM5_1017_<SYMBOL>.md = 36 files present
-- heartbeat_2026-05-05T21:00Z_ceo_redirect_ack: confirmed no gap between Card §7/§12 requirement and implementation; two-slot-per-pair is ratified via slot N + slot N+1 convention for ea_id 1017.
+- Card: `strategy-seeds/cards/chan-pairs-stat-arb_card.md`
+- Card status: `APPROVED`
+- EA ID / registry slug: `1017` / `chan-pairs-stat-arb`
+- Concrete pair: `AUDUSD.DWX` / `NZDUSD.DWX`, D1
+- Magic rows: AUDUSD slot 4 (`10170004`), NZDUSD slot 26 (`10170026`)
+- Logical Q02 symbol: `QM5_1017_AUDUSD_NZDUSD_COINTEGRATION_D1`
+- Risk mode: backtest `RISK_FIXED=1000`, `RISK_PERCENT=0`
+- Friday close: disabled under the approval recorded in the card
+- Native stop: none, per the approved Chan reversal-model rule
+- Two-leg executor: synchronized open, rollback on partial fill, orphan-leg cleanup
+- Entry model: annual prior-data OLS + one-lag CADF + OU half-life gate
+- Exits: mean reach or fitted half-life time stop
+- ML / grid / martingale / pyramiding: absent
+- Strict compile: PASS, 0 errors, 0 warnings
+- Scoped build check: PASS, 0 failures, 0 warnings
+- SPEC validation: PASS
+- Basket-manifest regression tests: PASS (14 tests)
+- Symbol-scope validation: `BASKET_OK`, 0 violations
 
+The May scaffold described the second leg as adjacent slot `N+1`. The active
+registry is symbol-slotted, so the completed executor uses the actual registered
+AUDUSD and NZDUSD slots (4 and 26). No magic row was added or repurposed.

@@ -1,9 +1,14 @@
 {
-  "timestamp_utc": "2026-05-05T17:15:12Z",
+  "timestamp_utc": "2026-07-09T23:41:05Z",
   "compile_pass": true,
   "compile_errors_zero": true,
   "compile_warnings_zero": true,
-  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260501_090243\\QM5_1017_chan_pairs_stat_arb.compile.log",
-  "review_gate": "DL-036",
-  "state": "READY_FOR_CTO_REVIEW"
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260709_234105\\QM5_1017_chan_pairs_stat_arb.compile.log",
+  "build_check_pass": true,
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260709_234105.json",
+  "spec_validation_pass": true,
+  "basket_manifest": "framework/EAs/QM5_1017_chan_pairs_stat_arb/basket_manifest.json",
+  "logical_symbol": "QM5_1017_AUDUSD_NZDUSD_COINTEGRATION_D1",
+  "review_gate": "Q01",
+  "state": "READY_FOR_Q02"
 }
