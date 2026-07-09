@@ -4,7 +4,7 @@
 **Slug:** `bb-double`
 **Source:** `d3c009d7-a8d6-5251-b572-4777b207c2b9` (see `strategy-seeds/sources/d3c009d7-a8d6-5251-b572-4777b207c2b9/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-10
+**Last revised:** 2026-07-09
 
 ---
 
@@ -57,7 +57,7 @@ No explicit stop loss from the source. An emergency ATR-based stop is applied at
 |---|---|
 | Base timeframe | `D1` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | `QM_IsNewBar(_Symbol, strategy_timeframe)` once, reused for exit and entry |
 
 ---
 
@@ -99,3 +99,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-10 | Initial build from card | task 4bf9e63f |
+| v2 | 2026-07-09 | Q02 active-timeout repair | Gate closed-bar exit on the single D1 new-bar edge; keep management/exit ahead of news entry gate |
