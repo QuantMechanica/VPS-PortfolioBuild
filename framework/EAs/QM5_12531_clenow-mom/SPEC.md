@@ -4,7 +4,7 @@
 **Slug:** clenow-mom
 **Source:** cfeee113-154e-549a-9fba-501b7e3160c0
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-07-09
 
 ---
 
@@ -90,10 +90,15 @@ This card was mechanised from:
 
 ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
 
+## 8. Q02 Infrastructure Repair
+
+The 2026-07-09 repair replaces legacy backtest setfile stubs that only carried obsolete `qm_filter_*` inputs. Q02 backtests now pass the declared V5 framework inputs, explicit RISK_FIXED settings, news settings, stress settings, and card strategy parameters for every registered basket symbol.
+
 ---
 
 ## Revision History
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
+| v1.1 | 2026-07-09 | Q02 infra repair | Backtest setfiles upgraded from legacy filter stubs to declared V5 inputs; `.ex5` rebuilt strict PASS. |
 | v1 | 2026-06-18 | Initial build from card | 4425ff56-b02e-4c26-a305-f0943aad2e2b |
