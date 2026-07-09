@@ -1,0 +1,141 @@
+{
+  "task_id": "c7771547-1c64-4bd1-aeb3-94beb2583eab",
+  "ea_id": "QM5_13077",
+  "ea_label": "QM5_13077_xti-prod-fade",
+  "slug": "xti-prod-fade",
+  "strategy": "XTIUSD.DWX D1 EIA field-production release-window failed-probe fade",
+  "strategy_id": "EIA-XTI-FIELDPROD-FADE-2026",
+  "source_id": "EIA-XTI-FIELDPROD-FADE-2026",
+  "source_links": [
+    "https://www.eia.gov/dnav/pet/hist/LeafHandler.ashx?f=W&n=PET&s=WCRFPUS2",
+    "https://www.eia.gov/petroleum/supply/weekly/",
+    "https://www.eia.gov/petroleum/supply/weekly/schedule.php"
+  ],
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13077_XTI_PROD_FADE_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13077_xti-prod-fade",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13077_xti-prod-fade\\QM5_13077_xti-prod-fade.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13077_xti-prod-fade\\QM5_13077_xti-prod-fade.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13077_xti-prod-fade\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\xti-prod-fade_card.md",
+  "approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13077_xti-prod-fade.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13077_xti-prod-fade\\sets\\QM5_13077_xti-prod-fade_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 130770000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 130770000
+    }
+  ],
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "compile": {
+    "status": "COMPILED",
+    "warnings": 0,
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260709_021606\\QM5_13077_xti-prod-fade.compile.log",
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_13077_xti-prod-fade --force --json"
+  },
+  "build_check": {
+    "status": "PASS",
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260709_021624.json",
+    "setfile_build_hash": "1a6d67bd690595de8eb384d6c8a13911bda2c913c06babbca52cd3882a695952",
+    "command": "pwsh -NoProfile -File framework/scripts/build_check.ps1 -EALabel QM5_13077_xti-prod-fade -SkipCompile"
+  },
+  "validations": {
+    "spec_doc": {
+      "status": "PASS",
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13077_xti-prod-fade"
+    },
+    "magic_registry": {
+      "status": "PASS",
+      "slots": [
+        0
+      ],
+      "resolver_rows_kept": 14662,
+      "pre_existing_missing_ea_dir_warnings": [
+        1001,
+        1015,
+        1016
+      ]
+    },
+    "repo_wide_registry_validator": {
+      "status": "PRE_EXISTING_FAIL",
+      "command": "python framework/scripts/validate_registries.py",
+      "note": "Repo-wide validator reports longstanding unrelated registry issues; QM5_13077 rows are present, formula-valid, and baked into QM_MagicResolver.mqh."
+    },
+    "risk_mode": {
+      "status": "PASS",
+      "backtest_uses_risk_fixed": true,
+      "risk_percent_zero": true
+    },
+    "build_guardrails": {
+      "status": "PASS",
+      "ml_forbidden": "PASS",
+      "external_runtime_data": "PASS",
+      "setfile_schema": "PASS",
+      "five_input_groups": "PASS"
+    }
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "backtest_cpu_used": false
+  },
+  "q02_enqueue": {
+    "status": "ENQUEUED",
+    "phase": "Q02",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "work_item_id": "419d5653-7116-45dd-8422-2d0ace83f3da",
+    "symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_13077_xti-prod-fade\\sets\\QM5_13077_xti-prod-fade_XTIUSD.DWX_D1_backtest.set",
+    "queued_at_utc": "2026-07-09T02:17:42+00:00",
+    "status_after_enqueue": "pending"
+  },
+  "file_hashes_sha256": {
+    "mq5": "1A6D67BD690595DE8EB384D6C8A13911BDA2C913C06BABBCA52CD3882A695952",
+    "ex5": "B8382E0418DF1F1D738F37843CC34A908B582A8C57ADBE154D71D57A2DE247F8",
+    "setfile": "74DB8DDE88395267AC693896AB7FEB6B68E40E611C7EF32E3241170E624260C4",
+    "spec": "7EB8B1B3BBF789B8185FB0AA6EDCC7DDBD10941B1A1CC3646FF2AD331B362C68",
+    "strategy_card_doc": "72C636FC6ECF91E4C85032E79A4D45A76F3EEDB5F37BD8EBEA5CC04B5FA1845D",
+    "approved_card": "7D816AA0674BEEA8D49FC87A8B71D42C5BAC75CFC2EE9FC9DC19639AE27E06E0",
+    "source_packet": "12FF726A236254A6660DAB77A38D68137931F0D5EE6BF64AAD8A53475CBB41ED",
+    "full_card": "E83D235F64A819CB1CD0D490543A2346EB38039B10EBAE2657F41D849A5C71D6",
+    "strategy_seeds_approved_card": "B242F709CC598C0EF7A1A9BEA1846AB2550698D1DB090EEDDEC6CB2AFE5F8A8B"
+  }
+}

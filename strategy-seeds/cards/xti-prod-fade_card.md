@@ -244,9 +244,14 @@ claim. Q02 and later phases must validate or reject the mechanical
 ## Pipeline History
 
 - 2026-07-09: Mission-directed card created and assigned `QM5_13077`.
+- 2026-07-09: Q01 spec validation PASS; `build_check` PASS with 0 warnings;
+  strict compile PASS.
+- 2026-07-09: Q02 baseline screening enqueued for `XTIUSD.DWX` as work item
+  `419d5653-7116-45dd-8422-2d0ace83f3da`.
 
 ## Pipeline Phase Status
 
 - G0: APPROVED.
-- Q01 build/spec: PENDING in `framework/EAs/QM5_13077_xti-prod-fade`.
-- Q02 backtest enqueue: PENDING.
+- Q01 build/spec: PASS in `framework/EAs/QM5_13077_xti-prod-fade`.
+- Q02 backtest enqueue: PENDING work item
+  `419d5653-7116-45dd-8422-2d0ace83f3da` on `XTIUSD.DWX`.

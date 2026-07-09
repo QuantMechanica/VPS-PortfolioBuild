@@ -1,0 +1,32 @@
+{
+  "ea_id": "QM5_13077",
+  "ea_label": "QM5_13077_xti-prod-fade",
+  "phase": "Q02",
+  "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "work_item": {
+    "id": "419d5653-7116-45dd-8422-2d0ace83f3da",
+    "kind": "backtest",
+    "phase": "Q02",
+    "ea_id": "QM5_13077",
+    "symbol": "XTIUSD.DWX",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13077_xti-prod-fade\\sets\\QM5_13077_xti-prod-fade_XTIUSD.DWX_D1_backtest.set",
+    "status": "pending",
+    "attempt_count": 0,
+    "created_at": "2026-07-09T02:17:42+00:00",
+    "updated_at": "2026-07-09T02:17:42+00:00",
+    "payload": {
+      "host_symbol": "XTIUSD.DWX",
+      "host_timeframe": "D1",
+      "enqueued_by": "record_build_result.auto_q02",
+      "enqueued_at_utc": "2026-07-09T02:17:42+00:00",
+      "build_task_id": "c7771547-1c64-4bd1-aeb3-94beb2583eab"
+    }
+  },
+  "backtest_cpu_used": false,
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  }
+}

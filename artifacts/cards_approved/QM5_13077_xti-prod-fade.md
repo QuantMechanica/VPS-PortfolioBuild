@@ -24,15 +24,13 @@ last_updated: 2026-07-09
 
 # QM5_13077 XTI Field-Production Failed-Probe Fade
 
-Approved copy of `strategy-seeds/cards/xti-prod-fade_card.md`.
+Approved artifact copy of `strategy-seeds/cards/xti-prod-fade_card.md`.
 
-This card uses official EIA weekly crude field-production and WPSR cadence as
-structural lineage, then trades only `XTIUSD.DWX` D1 OHLC. It is explicitly not
-`QM5_13028_xti-prod-brk`: this build fades rejected field-production-window
-channel probes instead of following confirmed breakouts.
-
-Q02 must run with the committed RISK_FIXED backtest setfile in
-`framework/EAs/QM5_13077_xti-prod-fade/sets/`.
+R1-R4 are PASS. This is a low-frequency, structural XTI energy sleeve using
+official EIA field-production/WPSR lineage and deterministic D1 OHLC rules. It
+does not read EIA data at runtime. It is non-duplicate versus `QM5_13028` because
+it fades failed probes back inside the prior channel rather than entering
+confirmed breakouts after compression.
 
 Q01 compile/build_check PASS recorded 2026-07-09. Q02 is pending in
 `D:\QM\strategy_farm\state\farm_state.sqlite` as work item
