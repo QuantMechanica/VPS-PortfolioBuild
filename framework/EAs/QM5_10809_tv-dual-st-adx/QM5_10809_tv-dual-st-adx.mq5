@@ -85,6 +85,135 @@ input int    strategy_max_h1_bars        = 120;
 input int    strategy_max_h4_bars        = 80;
 input int    strategy_supertrend_warmup_bars = 80;
 
+struct StrategySignalCache
+  {
+   bool   ready;
+   int    fast_dir;
+   int    slow_dir;
+   double slow_line;
+   bool   adx_rising;
+   bool   adx_flat;
+   double adx_last;
+   ulong  generation;
+  };
+
+StrategySignalCache g_strategy_cache;
+ulong g_strategy_trail_generation_applied = 0;
+
+// SuperTrend is bespoke card-authorized structure. Reconstruct it from closed
+// bars only when the framework admits a new bar, then share the result across
+// entry, management and exit hooks. The prior implementation rebuilt both
+// 80-bar paths on every tick while a position was open.
+bool Strategy_CalculateSuperTrend(const int atr_period,
+                                  const double multiplier,
+                                  const int warmup,
+                                  int &direction,
+                                  double &line)
+  {
+   direction = 0;
+   line = 0.0;
+   double final_upper = 0.0;
+   double final_lower = 0.0;
+   double previous_line = 0.0;
+
+   for(int i = warmup; i >= 1; --i)
+     {
+      const double hi = iHigh(_Symbol, _Period, i); // perf-allowed: bespoke SuperTrend OHLC, closed-bar cache refresh only
+      const double lo = iLow(_Symbol, _Period, i); // perf-allowed: bespoke SuperTrend OHLC, closed-bar cache refresh only
+      const double cl = iClose(_Symbol, _Period, i); // perf-allowed: bespoke SuperTrend OHLC, closed-bar cache refresh only
+      const double prev_cl = iClose(_Symbol, _Period, i + 1); // perf-allowed: bespoke SuperTrend OHLC, closed-bar cache refresh only
+      const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, atr_period, i);
+      if(hi <= 0.0 || lo <= 0.0 || cl <= 0.0 || prev_cl <= 0.0 || atr <= 0.0)
+         return false;
+
+      const double mid = (hi + lo) * 0.5;
+      const double basic_upper = mid + multiplier * atr;
+      const double basic_lower = mid - multiplier * atr;
+      if(i == warmup)
+        {
+         final_upper = basic_upper;
+         final_lower = basic_lower;
+         direction = (cl >= mid) ? 1 : -1;
+        }
+      else
+        {
+         final_upper = (basic_upper < final_upper || prev_cl > final_upper) ? basic_upper : final_upper;
+         final_lower = (basic_lower > final_lower || prev_cl < final_lower) ? basic_lower : final_lower;
+         if(previous_line == final_upper)
+            direction = (cl <= final_upper) ? -1 : 1;
+         else
+            direction = (cl >= final_lower) ? 1 : -1;
+        }
+      line = (direction > 0) ? final_lower : final_upper;
+      previous_line = line;
+     }
+
+   return (direction != 0 && line > 0.0);
+  }
+
+bool Strategy_RefreshSignalCache()
+  {
+   const int warmup = MathMax(strategy_supertrend_warmup_bars,
+                              MathMax(strategy_fast_st_atr_period, strategy_slow_st_atr_period) * 4);
+   if(strategy_fast_st_atr_period <= 1 || strategy_slow_st_atr_period <= 1 ||
+      strategy_fast_st_multiplier <= 0.0 || strategy_slow_st_multiplier <= 0.0 ||
+      strategy_adx_period <= 1 || strategy_adx_rising_window < 1 ||
+      strategy_adx_flat_exit_bars < 1 || warmup < 10)
+      return false;
+
+   int fast_dir = 0;
+   int slow_dir = 0;
+   double fast_line = 0.0;
+   double slow_line = 0.0;
+   if(!Strategy_CalculateSuperTrend(strategy_fast_st_atr_period,
+                                    strategy_fast_st_multiplier,
+                                    warmup,
+                                    fast_dir,
+                                    fast_line) ||
+      !Strategy_CalculateSuperTrend(strategy_slow_st_atr_period,
+                                    strategy_slow_st_multiplier,
+                                    warmup,
+                                    slow_dir,
+                                    slow_line))
+      return false;
+
+   bool adx_rising = true;
+   for(int k = 1; k <= strategy_adx_rising_window; ++k)
+     {
+      const double adx_now = QM_ADX(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_adx_period, k);
+      const double adx_prev = QM_ADX(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_adx_period, k + 1);
+      if(adx_now <= 0.0 || adx_prev <= 0.0)
+         return false;
+      if(adx_now <= adx_prev)
+         adx_rising = false;
+     }
+
+   bool adx_flat = true;
+   for(int k = 1; k <= strategy_adx_flat_exit_bars; ++k)
+     {
+      const double adx_now = QM_ADX(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_adx_period, k);
+      const double adx_prev = QM_ADX(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_adx_period, k + 1);
+      if(adx_now <= 0.0 || adx_prev <= 0.0)
+         return false;
+      if(adx_now > adx_prev)
+         adx_flat = false;
+     }
+
+   const double adx_last = QM_ADX(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_adx_period, 1);
+   if(adx_last <= 0.0)
+      return false;
+
+   g_strategy_cache.ready = true;
+   g_strategy_cache.fast_dir = fast_dir;
+   g_strategy_cache.slow_dir = slow_dir;
+   g_strategy_cache.slow_line = slow_line;
+   g_strategy_cache.adx_rising = adx_rising;
+   g_strategy_cache.adx_flat = adx_flat;
+   g_strategy_cache.adx_last = adx_last;
+   g_strategy_cache.generation++;
+   return true;
+  }
+
 // -----------------------------------------------------------------------------
 // Strategy hooks — implement these against the card mechanically.
 // -----------------------------------------------------------------------------
@@ -110,101 +239,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   const int warmup = MathMax(strategy_supertrend_warmup_bars,
-                              MathMax(strategy_fast_st_atr_period, strategy_slow_st_atr_period) * 4);
-   if(strategy_fast_st_atr_period <= 1 || strategy_slow_st_atr_period <= 1 ||
-      strategy_fast_st_multiplier <= 0.0 || strategy_slow_st_multiplier <= 0.0 ||
-      strategy_adx_period <= 1 || strategy_adx_rising_window < 1 || warmup < 10)
+   if(!Strategy_RefreshSignalCache())
       return false;
-
-   int fast_dir = 0;
-   double fast_upper = 0.0;
-   double fast_lower = 0.0;
-   double fast_prev_line = 0.0;
-   for(int i = warmup; i >= 1; --i)
-     {
-      const double hi = iHigh(_Symbol, _Period, i); // perf-allowed: bespoke SuperTrend OHLC, bounded closed-bar loop
-      const double lo = iLow(_Symbol, _Period, i); // perf-allowed: bespoke SuperTrend OHLC, bounded closed-bar loop
-      const double cl = iClose(_Symbol, _Period, i); // perf-allowed: bespoke SuperTrend OHLC, bounded closed-bar loop
-      const double prev_cl = iClose(_Symbol, _Period, i + 1); // perf-allowed: bespoke SuperTrend OHLC, bounded closed-bar loop
-      const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_fast_st_atr_period, i);
-      if(hi <= 0.0 || lo <= 0.0 || cl <= 0.0 || prev_cl <= 0.0 || atr <= 0.0)
-         return false;
-
-      const double mid = (hi + lo) * 0.5;
-      const double basic_upper = mid + strategy_fast_st_multiplier * atr;
-      const double basic_lower = mid - strategy_fast_st_multiplier * atr;
-      if(i == warmup)
-        {
-         fast_upper = basic_upper;
-         fast_lower = basic_lower;
-         fast_dir = (cl >= mid) ? 1 : -1;
-        }
-      else
-        {
-         fast_upper = (basic_upper < fast_upper || prev_cl > fast_upper) ? basic_upper : fast_upper;
-         fast_lower = (basic_lower > fast_lower || prev_cl < fast_lower) ? basic_lower : fast_lower;
-         if(fast_prev_line == fast_upper)
-            fast_dir = (cl <= fast_upper) ? -1 : 1;
-         else
-            fast_dir = (cl >= fast_lower) ? 1 : -1;
-        }
-      fast_prev_line = (fast_dir > 0) ? fast_lower : fast_upper;
-     }
-
-   int slow_dir = 0;
-   double slow_line = 0.0;
-   double slow_upper = 0.0;
-   double slow_lower = 0.0;
-   double slow_prev_line = 0.0;
-   for(int i = warmup; i >= 1; --i)
-     {
-      const double hi = iHigh(_Symbol, _Period, i); // perf-allowed: bespoke SuperTrend OHLC, bounded closed-bar loop
-      const double lo = iLow(_Symbol, _Period, i); // perf-allowed: bespoke SuperTrend OHLC, bounded closed-bar loop
-      const double cl = iClose(_Symbol, _Period, i); // perf-allowed: bespoke SuperTrend OHLC, bounded closed-bar loop
-      const double prev_cl = iClose(_Symbol, _Period, i + 1); // perf-allowed: bespoke SuperTrend OHLC, bounded closed-bar loop
-      const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_slow_st_atr_period, i);
-      if(hi <= 0.0 || lo <= 0.0 || cl <= 0.0 || prev_cl <= 0.0 || atr <= 0.0)
-         return false;
-
-      const double mid = (hi + lo) * 0.5;
-      const double basic_upper = mid + strategy_slow_st_multiplier * atr;
-      const double basic_lower = mid - strategy_slow_st_multiplier * atr;
-      if(i == warmup)
-        {
-         slow_upper = basic_upper;
-         slow_lower = basic_lower;
-         slow_dir = (cl >= mid) ? 1 : -1;
-        }
-      else
-        {
-         slow_upper = (basic_upper < slow_upper || prev_cl > slow_upper) ? basic_upper : slow_upper;
-         slow_lower = (basic_lower > slow_lower || prev_cl < slow_lower) ? basic_lower : slow_lower;
-         if(slow_prev_line == slow_upper)
-            slow_dir = (cl <= slow_upper) ? -1 : 1;
-         else
-            slow_dir = (cl >= slow_lower) ? 1 : -1;
-        }
-      slow_line = (slow_dir > 0) ? slow_lower : slow_upper;
-      slow_prev_line = slow_line;
-     }
-
-   if(fast_dir == 0 || slow_dir == 0 || slow_line <= 0.0)
-      return false;
-
-   bool adx_rising = true;
-   for(int k = 1; k <= strategy_adx_rising_window; ++k)
-     {
-      const double adx_now = QM_ADX(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_adx_period, k);
-      const double adx_prev = QM_ADX(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_adx_period, k + 1);
-      if(adx_now <= 0.0 || adx_prev <= 0.0 || adx_now <= adx_prev)
-        {
-         adx_rising = false;
-         break;
-        }
-     }
-   const double adx_last = QM_ADX(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_adx_period, 1);
-   if(!adx_rising || (strategy_adx_floor > 0.0 && adx_last <= strategy_adx_floor))
+   if(!g_strategy_cache.adx_rising ||
+      (strategy_adx_floor > 0.0 && g_strategy_cache.adx_last <= strategy_adx_floor))
       return false;
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
@@ -214,21 +252,22 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(point <= 0.0 || ask <= 0.0 || bid <= 0.0 || fallback_atr <= 0.0)
       return false;
 
-   if(fast_dir > 0 && slow_dir > 0)
+   if(g_strategy_cache.fast_dir > 0 && g_strategy_cache.slow_dir > 0)
      {
       req.type = QM_BUY;
       req.price = 0.0;
-      req.sl = (slow_line > 0.0 && slow_line < ask) ? slow_line : ask - 2.0 * fallback_atr;
+      req.sl = (g_strategy_cache.slow_line > 0.0 && g_strategy_cache.slow_line < ask) ?
+               g_strategy_cache.slow_line : ask - 2.0 * fallback_atr;
       req.tp = 0.0;
       req.reason = "dual_supertrend_adx_long";
       return (req.sl > 0.0 && req.sl < ask - point);
      }
 
-   if(fast_dir < 0 && slow_dir < 0)
+   if(g_strategy_cache.fast_dir < 0 && g_strategy_cache.slow_dir < 0)
      {
       req.type = QM_SELL;
       req.price = 0.0;
-      req.sl = (slow_line > bid) ? slow_line : bid + 2.0 * fallback_atr;
+      req.sl = (g_strategy_cache.slow_line > bid) ? g_strategy_cache.slow_line : bid + 2.0 * fallback_atr;
       req.tp = 0.0;
       req.reason = "dual_supertrend_adx_short";
       return (req.sl > bid + point);
@@ -242,48 +281,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 void Strategy_ManageOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
-   if(magic <= 0 || strategy_slow_st_atr_period <= 1 || strategy_slow_st_multiplier <= 0.0)
+   if(magic <= 0 || !g_strategy_cache.ready || g_strategy_cache.slow_line <= 0.0)
       return;
 
-   const int warmup = MathMax(strategy_supertrend_warmup_bars, strategy_slow_st_atr_period * 4);
-   int slow_dir = 0;
-   double slow_line = 0.0;
-   double slow_upper = 0.0;
-   double slow_lower = 0.0;
-   double slow_prev_line = 0.0;
-   for(int i = warmup; i >= 1; --i)
-     {
-      const double hi = iHigh(_Symbol, _Period, i); // perf-allowed: bespoke SuperTrend OHLC, bounded loop for trailing stop
-      const double lo = iLow(_Symbol, _Period, i); // perf-allowed: bespoke SuperTrend OHLC, bounded loop for trailing stop
-      const double cl = iClose(_Symbol, _Period, i); // perf-allowed: bespoke SuperTrend OHLC, bounded loop for trailing stop
-      const double prev_cl = iClose(_Symbol, _Period, i + 1); // perf-allowed: bespoke SuperTrend OHLC, bounded loop for trailing stop
-      const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_slow_st_atr_period, i);
-      if(hi <= 0.0 || lo <= 0.0 || cl <= 0.0 || prev_cl <= 0.0 || atr <= 0.0)
-         return;
-
-      const double mid = (hi + lo) * 0.5;
-      const double basic_upper = mid + strategy_slow_st_multiplier * atr;
-      const double basic_lower = mid - strategy_slow_st_multiplier * atr;
-      if(i == warmup)
-        {
-         slow_upper = basic_upper;
-         slow_lower = basic_lower;
-         slow_dir = (cl >= mid) ? 1 : -1;
-        }
-      else
-        {
-         slow_upper = (basic_upper < slow_upper || prev_cl > slow_upper) ? basic_upper : slow_upper;
-         slow_lower = (basic_lower > slow_lower || prev_cl < slow_lower) ? basic_lower : slow_lower;
-         if(slow_prev_line == slow_upper)
-            slow_dir = (cl <= slow_upper) ? -1 : 1;
-         else
-            slow_dir = (cl >= slow_lower) ? 1 : -1;
-        }
-      slow_line = (slow_dir > 0) ? slow_lower : slow_upper;
-      slow_prev_line = slow_line;
-     }
-   if(slow_line <= 0.0)
+   // A closed-bar SuperTrend line cannot change within the bar. Apply it at
+   // most once per cache generation so a market-closed modify rejection does
+   // not become a per-tick retry/log bomb.
+   if(g_strategy_trail_generation_applied == g_strategy_cache.generation)
       return;
+   g_strategy_trail_generation_applied = g_strategy_cache.generation;
 
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
@@ -303,10 +309,12 @@ void Strategy_ManageOpenPosition()
 
       const ENUM_POSITION_TYPE ptype = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
       const double current_sl = PositionGetDouble(POSITION_SL);
-      if(ptype == POSITION_TYPE_BUY && slow_line < bid && (current_sl <= 0.0 || slow_line > current_sl + point))
-         QM_TM_MoveSL(ticket, slow_line, "slow_supertrend_trail_long");
-      if(ptype == POSITION_TYPE_SELL && slow_line > ask && (current_sl <= 0.0 || slow_line < current_sl - point))
-         QM_TM_MoveSL(ticket, slow_line, "slow_supertrend_trail_short");
+      if(ptype == POSITION_TYPE_BUY && g_strategy_cache.slow_line < bid &&
+         (current_sl <= 0.0 || g_strategy_cache.slow_line > current_sl + point))
+         QM_TM_MoveSL(ticket, g_strategy_cache.slow_line, "slow_supertrend_trail_long");
+      if(ptype == POSITION_TYPE_SELL && g_strategy_cache.slow_line > ask &&
+         (current_sl <= 0.0 || g_strategy_cache.slow_line < current_sl - point))
+         QM_TM_MoveSL(ticket, g_strategy_cache.slow_line, "slow_supertrend_trail_short");
      }
   }
 
@@ -338,94 +346,17 @@ bool Strategy_ExitSignal()
    if(!has_position)
       return false;
 
-   const int warmup = MathMax(strategy_supertrend_warmup_bars,
-                              MathMax(strategy_fast_st_atr_period, strategy_slow_st_atr_period) * 4);
-   int fast_dir = 0;
-   double fast_upper = 0.0;
-   double fast_lower = 0.0;
-   double fast_prev_line = 0.0;
-   for(int i = warmup; i >= 1; --i)
+   if(g_strategy_cache.ready)
      {
-      const double hi = iHigh(_Symbol, _Period, i); // perf-allowed: bespoke SuperTrend OHLC, bounded loop for confirmed-bar exit
-      const double lo = iLow(_Symbol, _Period, i); // perf-allowed: bespoke SuperTrend OHLC, bounded loop for confirmed-bar exit
-      const double cl = iClose(_Symbol, _Period, i); // perf-allowed: bespoke SuperTrend OHLC, bounded loop for confirmed-bar exit
-      const double prev_cl = iClose(_Symbol, _Period, i + 1); // perf-allowed: bespoke SuperTrend OHLC, bounded loop for confirmed-bar exit
-      const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_fast_st_atr_period, i);
-      if(hi <= 0.0 || lo <= 0.0 || cl <= 0.0 || prev_cl <= 0.0 || atr <= 0.0)
-         return false;
-      const double mid = (hi + lo) * 0.5;
-      const double basic_upper = mid + strategy_fast_st_multiplier * atr;
-      const double basic_lower = mid - strategy_fast_st_multiplier * atr;
-      if(i == warmup)
-        {
-         fast_upper = basic_upper;
-         fast_lower = basic_lower;
-         fast_dir = (cl >= mid) ? 1 : -1;
-        }
-      else
-        {
-         fast_upper = (basic_upper < fast_upper || prev_cl > fast_upper) ? basic_upper : fast_upper;
-         fast_lower = (basic_lower > fast_lower || prev_cl < fast_lower) ? basic_lower : fast_lower;
-         if(fast_prev_line == fast_upper)
-            fast_dir = (cl <= fast_upper) ? -1 : 1;
-         else
-            fast_dir = (cl >= fast_lower) ? 1 : -1;
-        }
-      fast_prev_line = (fast_dir > 0) ? fast_lower : fast_upper;
+      if(ptype == POSITION_TYPE_BUY &&
+         (g_strategy_cache.fast_dir < 0 || g_strategy_cache.slow_dir < 0))
+         return true;
+      if(ptype == POSITION_TYPE_SELL &&
+         (g_strategy_cache.fast_dir > 0 || g_strategy_cache.slow_dir > 0))
+         return true;
+      if(g_strategy_cache.adx_flat)
+         return true;
      }
-
-   int slow_dir = 0;
-   double slow_upper = 0.0;
-   double slow_lower = 0.0;
-   double slow_prev_line = 0.0;
-   for(int i = warmup; i >= 1; --i)
-     {
-      const double hi = iHigh(_Symbol, _Period, i); // perf-allowed: bespoke SuperTrend OHLC, bounded loop for confirmed-bar exit
-      const double lo = iLow(_Symbol, _Period, i); // perf-allowed: bespoke SuperTrend OHLC, bounded loop for confirmed-bar exit
-      const double cl = iClose(_Symbol, _Period, i); // perf-allowed: bespoke SuperTrend OHLC, bounded loop for confirmed-bar exit
-      const double prev_cl = iClose(_Symbol, _Period, i + 1); // perf-allowed: bespoke SuperTrend OHLC, bounded loop for confirmed-bar exit
-      const double atr = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_slow_st_atr_period, i);
-      if(hi <= 0.0 || lo <= 0.0 || cl <= 0.0 || prev_cl <= 0.0 || atr <= 0.0)
-         return false;
-      const double mid = (hi + lo) * 0.5;
-      const double basic_upper = mid + strategy_slow_st_multiplier * atr;
-      const double basic_lower = mid - strategy_slow_st_multiplier * atr;
-      if(i == warmup)
-        {
-         slow_upper = basic_upper;
-         slow_lower = basic_lower;
-         slow_dir = (cl >= mid) ? 1 : -1;
-        }
-      else
-        {
-         slow_upper = (basic_upper < slow_upper || prev_cl > slow_upper) ? basic_upper : slow_upper;
-         slow_lower = (basic_lower > slow_lower || prev_cl < slow_lower) ? basic_lower : slow_lower;
-         if(slow_prev_line == slow_upper)
-            slow_dir = (cl <= slow_upper) ? -1 : 1;
-         else
-            slow_dir = (cl >= slow_lower) ? 1 : -1;
-        }
-      slow_prev_line = (slow_dir > 0) ? slow_lower : slow_upper;
-     }
-
-   if(ptype == POSITION_TYPE_BUY && (fast_dir < 0 || slow_dir < 0))
-      return true;
-   if(ptype == POSITION_TYPE_SELL && (fast_dir > 0 || slow_dir > 0))
-      return true;
-
-   bool adx_flat = true;
-   for(int k = 1; k <= strategy_adx_flat_exit_bars; ++k)
-     {
-      const double adx_now = QM_ADX(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_adx_period, k);
-      const double adx_prev = QM_ADX(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_adx_period, k + 1);
-      if(adx_now > adx_prev)
-        {
-         adx_flat = false;
-         break;
-        }
-     }
-   if(adx_flat)
-      return true;
 
    const int max_bars = (_Period == PERIOD_H4) ? strategy_max_h4_bars : strategy_max_h1_bars;
    const int period_seconds = PeriodSeconds((ENUM_TIMEFRAMES)_Period);
@@ -489,25 +420,16 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
-   // when both new axes are at their OFF defaults.
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   // Per-tick: trade management can adjust SL/TP on open positions.
+   // Management and exits remain active through news windows. SuperTrend
+   // management is internally limited to one attempt per closed-bar cache.
    Strategy_ManageOpenPosition();
 
-   // Per-tick: discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -522,17 +444,22 @@ void OnTick()
         }
      }
 
-   // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
-   // per-tick recompute mistakes — EntrySignal sees one new closed bar per
-   // call, not every incoming tick.
+   // FW1 — the two-axis news filter gates new entries only.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    if(!QM_IsNewBar())
       return;
 
-   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
-   // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
