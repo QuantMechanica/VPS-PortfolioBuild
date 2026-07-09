@@ -1,0 +1,121 @@
+{
+  "task_id": "8290124b-7c3f-4444-b853-cd6b4f63d7c2",
+  "ea_id": "QM5_13074",
+  "ea_label": "QM5_13074_eia-jetfuel-fade",
+  "slug": "eia-jetfuel-fade",
+  "strategy": "XTIUSD.DWX D1 late jet-fuel-window failed-rally fade",
+  "strategy_id": "EIA-JETFUEL-SEASON-2026_S03",
+  "source_id": "EIA-JETFUEL-SEASON-2026",
+  "source_links": [
+    "https://www.eia.gov/todayinenergy/detail.php?id=64786",
+    "https://www.eia.gov/todayinenergy/detail.php?id=66004",
+    "https://www.eia.gov/todayinenergy/detail.php?id=67764"
+  ],
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13074_XTI_JETFUEL_FADE_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13074_eia-jetfuel-fade",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13074_eia-jetfuel-fade\\QM5_13074_eia-jetfuel-fade.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13074_eia-jetfuel-fade\\QM5_13074_eia-jetfuel-fade.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13074_eia-jetfuel-fade\\SPEC.md",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13074_eia-jetfuel-fade.md",
+  "approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13074_eia-jetfuel-fade.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13074_eia-jetfuel-fade\\sets\\QM5_13074_eia-jetfuel-fade_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 130740000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 130740000
+    }
+  ],
+  "review_fix": {
+    "finding": "Strategy_LoadClosedState hand-rolled a D1 calendar key from iTime/TimeToStruct.",
+    "resolution": "Removed the local Strategy_DayKey implementation and now uses QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 1) for the closed D1 signal key.",
+    "scope": "No entry/exit threshold, risk, symbol, live, portfolio, or runner behavior changed."
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 smoke/backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "compile": {
+    "status": "COMPILED",
+    "warnings": 0,
+    "errors": 0,
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260709_032032\\QM5_13074_eia-jetfuel-fade.compile.log",
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_13074_eia-jetfuel-fade --force --json --fail-on-error",
+    "ex5_size_bytes": 317166
+  },
+  "build_check": {
+    "status": "PASS",
+    "warnings": 0,
+    "failures": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260709_032050.json",
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13074_eia-jetfuel-fade -SkipCompile"
+  },
+  "validations": {
+    "magic_registry": "PASS",
+    "risk_mode": "PASS",
+    "build_guardrails": "PASS",
+    "five_input_groups": "PASS",
+    "forbidden_imports": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "backtest_cpu_used": false
+  },
+  "file_hashes_sha256": {
+    "mq5": "C9D8AD5A0BC2B8457B7B6D21BE666FBFD3C77509238E54E82299BFB162942431",
+    "ex5": "663C5A6FA6DAA33136A9A790DA2883DD1EB530D66361FE5AE1B146FCC3410B37",
+    "setfile": "EED788DD57798758194F3E2326ACD6C8FB04BF8F0CD8A1185BE53B45517B246C",
+    "spec": "E4674C6420B42DDECBE69E78D8182101F6BC5109D395D627D4C0FE171E616048"
+  },
+  "q02_enqueue": {
+    "status": "already_pending",
+    "work_item_id": "d9753f99-47ed-4e88-bc10-5bfa8ced88fc",
+    "phase": "Q02",
+    "kind": "backtest",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "symbol": "XTIUSD.DWX",
+    "host_symbol": "XTIUSD.DWX",
+    "host_timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13074_eia-jetfuel-fade\\sets\\QM5_13074_eia-jetfuel-fade_XTIUSD.DWX_D1_backtest.set",
+    "status_after_rework": "pending",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000
+  },
+  "notes": "Completed the focused review repair for a low-frequency structural energy sleeve. Q02 remained queued for the paced factory; no manual backtest was launched."
+}
