@@ -110,6 +110,16 @@ This is deliberately different from:
 - Runtime data: Darwinex MT5 OHLC, spread, ATR, SMA, broker calendar, and V5
   framework state only.
 
+## Rules
+
+The EA is a symmetric D1 outside-week fade. It builds the previous two completed
+broker weeks from closed D1 bars, confirms that the most recent completed week
+expanded beyond both sides of its parent week, classifies the outside-week close
+as upper-tail or lower-tail exhaustion, and waits for the current week to print
+a confirming reversal bar. It then opens one market position in the fade
+direction, with fixed ATR stop/target, failed-fade exits, profitable SMA mean
+reach exits, max-hold exit, spread cap, and framework Friday close.
+
 ## Entry
 
 - Evaluate only on a new `XTIUSD.DWX` D1 bar.
