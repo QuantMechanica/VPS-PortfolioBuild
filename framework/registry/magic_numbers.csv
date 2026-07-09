@@ -14809,3 +14809,17 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13082,xbr-nzdcad-rspr,1,NZDCAD.DWX,130820001,2026-07-09,Codex,active
 13083,xbr-cadjpy-rspr,0,XBRUSD.DWX,130830000,2026-07-09,Codex,active
 13083,xbr-cadjpy-rspr,1,CADJPY.DWX,130830001,2026-07-09,Codex,active
+9351,demark-td-demand-line-active-h4,0,EURUSD.DWX,93510000,2026-07-09,Codex,active
+9351,demark-td-demand-line-active-h4,1,GBPUSD.DWX,93510001,2026-07-09,Codex,active
+9351,demark-td-demand-line-active-h4,2,USDJPY.DWX,93510002,2026-07-09,Codex,active
+9351,demark-td-demand-line-active-h4,3,AUDUSD.DWX,93510003,2026-07-09,Codex,active
+9351,demark-td-demand-line-active-h4,4,USDCAD.DWX,93510004,2026-07-09,Codex,active
+9351,demark-td-demand-line-active-h4,5,USDCHF.DWX,93510005,2026-07-09,Codex,active
+9351,demark-td-demand-line-active-h4,6,NZDUSD.DWX,93510006,2026-07-09,Codex,active
+9351,demark-td-demand-line-active-h4,7,XAUUSD.DWX,93510007,2026-07-09,Codex,active
+9351,demark-td-demand-line-active-h4,8,XTIUSD.DWX,93510008,2026-07-09,Codex,active
+9351,demark-td-demand-line-active-h4,9,NDX.DWX,93510009,2026-07-09,Codex,active
+9351,demark-td-demand-line-active-h4,10,WS30.DWX,93510010,2026-07-09,Codex,active
+9351,demark-td-demand-line-active-h4,11,GDAXI.DWX,93510011,2026-07-09,Codex,active
+9351,demark-td-demand-line-active-h4,12,UK100.DWX,93510012,2026-07-09,Codex,active
+9351,demark-td-demand-line-active-h4,13,SP500.DWX,93510013,2026-07-09,Codex,active
