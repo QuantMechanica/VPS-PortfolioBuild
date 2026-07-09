@@ -14781,3 +14781,12 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13078,xti-holiday-gas-fade,0,XTIUSD.DWX,130780000,2026-07-09,Codex,active
 13079,xbr-audcad-rspr,0,XBRUSD.DWX,130790000,2026-07-09,Codex,active
 13079,xbr-audcad-rspr,1,AUDCAD.DWX,130790001,2026-07-09,Codex,active
+1558,aa-zak-mac-3-10,0,SP500.DWX,15580000,2026-07-09,Codex,active
+1558,aa-zak-mac-3-10,1,NDX.DWX,15580001,2026-07-09,Codex,active
+1558,aa-zak-mac-3-10,2,WS30.DWX,15580002,2026-07-09,Codex,active
+1558,aa-zak-mac-3-10,3,GDAXI.DWX,15580003,2026-07-09,Codex,active
+1558,aa-zak-mac-3-10,4,XAUUSD.DWX,15580004,2026-07-09,Codex,active
+1558,aa-zak-mac-3-10,5,XTIUSD.DWX,15580005,2026-07-09,Codex,active
+1558,aa-zak-mac-3-10,6,EURUSD.DWX,15580006,2026-07-09,Codex,active
+1558,aa-zak-mac-3-10,7,GBPUSD.DWX,15580007,2026-07-09,Codex,active
+1558,aa-zak-mac-3-10,8,USDJPY.DWX,15580008,2026-07-09,Codex,active

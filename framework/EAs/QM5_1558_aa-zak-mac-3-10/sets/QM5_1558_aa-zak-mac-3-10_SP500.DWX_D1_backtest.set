@@ -1,0 +1,39 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        1558
+; ea_slug:      aa-zak-mac-3-10
+; ea_version:   v5.0
+; set_version:  s20260709-001
+; symbol:       SP500.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   8eb1c52327267828d94c9fcc731b50d4d0a386aa08acf6bbe9e4f269ebef63c2
+; author:       Development
+; date:         2026-07-09
+;==========================================================
+qm_ea_id=1558
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_PERCENT=0
+RISK_FIXED=1000
+PORTFOLIO_WEIGHT=1
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_news_mode_legacy=0
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy_fast_sma_months=3
+strategy_slow_sma_months=10
+strategy_min_completed_months=11
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.0
+strategy_use_dead_atr_filter=1
+strategy_monthly_atr_period=6
+strategy_atr_median_months=36
+strategy_min_atr_median_ratio=0.50
