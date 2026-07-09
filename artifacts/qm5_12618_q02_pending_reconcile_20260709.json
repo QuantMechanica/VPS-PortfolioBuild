@@ -1,0 +1,64 @@
+{
+  "generated_at_utc": "2026-07-09T04:37:18Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves",
+  "unit_of_work": "fallback existing forex card Q02 reconciliation",
+  "selection": {
+    "strict_66_pair_unbuilt_candidate_found": false,
+    "strict_scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "extended_scan_source": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/survivors.json",
+    "reason": "All approved/card-worthy FX cointegration scan candidates are already built and past Q02; selected the only approved built pure-FX card still pending Q02 instead of creating a duplicate cointegration card or work item."
+  },
+  "selected_ea": {
+    "ea_id": "QM5_12618",
+    "slug": "tsmom-dual-confirm-3m-12m-eurusd",
+    "symbol": "EURUSD.DWX",
+    "timeframe": "D1",
+    "strategy_family": "time-series-momentum",
+    "source": "Moskowitz, Ooi & Pedersen (2012), Time Series Momentum",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "expected_trades_per_year_per_symbol": 6
+  },
+  "live_work_item": {
+    "sqlite": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "id": "eb4abcd4-4372-4329-a406-c02fcac4a1f1",
+    "kind": "backtest",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "created_at": "2026-06-30T00:25:19+00:00",
+    "updated_at": "2026-07-03T12:33:34.631444Z",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_12618_tsmom-dual-confirm-3m-12m-eurusd/sets/QM5_12618_tsmom-dual-confirm-3m-12m-eurusd_EURUSD.DWX_D1_backtest.set",
+    "payload": {
+      "build_task_id": "609f90d9-f907-41b9-8c02-da0510b28f41",
+      "enqueued_by": "record_build_result.auto_q02",
+      "host_symbol": "EURUSD.DWX",
+      "host_timeframe": "D1",
+      "stale_preflight_repair_handler": "R17_clear_stale_preflight_work_item"
+    }
+  },
+  "queue_snapshot": {
+    "approved_built_forex_cards_missing_q02": 0,
+    "approved_built_forex_cards_pending_q02": 12,
+    "q02_duplicate_created": false,
+    "manual_mt5_backtest_launched": false,
+    "reason_not_requeued": "A valid pending Q02 row already exists; requeueing would duplicate work while the paced factory queue is saturated."
+  },
+  "files_reconciled": [
+    "strategy-seeds/cards/approved/QM5_12618_tsmom-dual-confirm-3m-12m-eurusd_card.md",
+    "framework/EAs/QM5_12618_tsmom-dual-confirm-3m-12m-eurusd/docs/strategy_card.md",
+    "framework/EAs/QM5_12618_tsmom-dual-confirm-3m-12m-eurusd/SPEC.md",
+    "artifacts/cards_approved/QM5_12618_tsmom-dual-confirm-3m-12m-eurusd.md"
+  ],
+  "guardrails": {
+    "portfolio_gate_code_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "t_live_manifest_touched": false,
+    "autotrading_touched": false
+  }
+}
