@@ -1,0 +1,88 @@
+{
+  "generated_at_utc": "2026-07-09T00:55:00Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves; prefer market-neutral FX cointegration baskets",
+  "unit_of_work": "non-duplicate FX cointegration frontier audit and existing-forex fallback status",
+  "decision": {
+    "selected_path": "stop_at_cpu_ceiling_after_existing_fallback_already_advanced",
+    "new_unbuilt_fx_cointegration_pair_found": false,
+    "anchor_q02_blocked": false,
+    "existing_forex_card_advanced": "QM5_12507_pair-coint-z already advanced to Q04 by existing queued work",
+    "new_work_item_created": false,
+    "runtime_dispatch_started": false,
+    "reason": "The documented strict 66-pair scan produced only QM5_12533 and QM5_12532, both already built and not Q02-blocked. All locally approved FX cointegration/coint cards have EA folders and Q02 work. The live farm has 7 active work_items across 7 enabled workers, so adding another runtime dispatch would violate the CPU-ceiling constraint."
+  },
+  "source_evidence": {
+    "primary_discovery_doc": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "method_source": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+    "strict_scan_result": "Only EURJPY/GBPJPY and AUDUSD/NZDUSD cleared DEV>0, OOS net Sharpe>0.8, and >=4 trades in the 66-pair scan.",
+    "approved_fx_cointegration_cards_checked": 20,
+    "unbuilt_approved_fx_cointegration_cards": []
+  },
+  "anchor_status": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "q02_blocked": false,
+      "latest_known_frontier": "Q02 PASS, Q04 PASS, later Q05 failed/infra-ceiling history documented in prior evidence"
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "q02_blocked": false,
+      "latest_known_frontier": "Q02 PASS, later Q04 strategy FAIL documented in prior evidence"
+    }
+  },
+  "existing_forex_fallback": {
+    "ea_id": "QM5_12507",
+    "label": "QM5_12507_pair-coint-z",
+    "selected_pair": "EURUSD.DWX/GBPUSD.DWX",
+    "current_state": {
+      "Q02_EURUSD": "done/PASS",
+      "Q02_GBPUSD": "done/PASS",
+      "Q04_EURUSD": "done/FAIL",
+      "Q04_GBPUSD": "pending",
+      "non_fx_index_rows": "NDX.DWX and WS30.DWX Q02 pending; not selected for this forex mission"
+    },
+    "decision": "Do not duplicate; the GBPUSD Q04 row is already pending and owned by the paced farm."
+  },
+  "cpu_snapshot": {
+    "work_items_active": 7,
+    "active_summary": {
+      "Q02_active": 5,
+      "Q04_active": 1,
+      "Q06_active": 1
+    },
+    "enabled_workers_alive": 7,
+    "active_eas": [
+      "QM5_10111",
+      "QM5_10294",
+      "QM5_10300",
+      "QM5_10437",
+      "QM5_10814",
+      "QM5_1258",
+      "QM5_13059"
+    ],
+    "metatester64_running_count": 3,
+    "pipeline_terminal64_running_count": 3,
+    "non_pipeline_terminal64_present": [
+      "C:/QM/mt5/T_Live/MT5_Base/terminal64.exe",
+      "C:/Program Files/FTMO Global Markets MT5 Terminal/terminal64.exe"
+    ]
+  },
+  "verification_commands": [
+    "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --status active",
+    "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm work-items --ea QM5_12507",
+    "approved FX cointegration/coint card scan compared against framework/EAs and work_items"
+  ],
+  "guardrails": {
+    "manual_mt5_backtest_launched": false,
+    "duplicate_work_item_created": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
