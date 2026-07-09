@@ -379,18 +379,19 @@ void OnTick()
    if(!QM_KillSwitchCheck())
       return;
 
-   const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   // Management and exits remain active on every tick. News clearance below
-   // gates new entries only.
+   // This strategy's management exits depend on completed D1 returns. Keep the
+   // bounded CopyClose work behind the single framework new-bar gate. Friday
+   // close remains per-tick above, and news clearance below gates entries only.
+   if(!QM_IsNewBar())
+      return;
+
+   QM_EquityStreamOnNewBar();
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -409,6 +410,10 @@ void OnTick()
         }
      }
 
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+
    bool news_allows = true;
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
@@ -416,11 +421,6 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
    if(!news_allows)
       return;
-
-   if(!QM_IsNewBar())
-      return;
-
-   QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
    ZeroMemory(req);
