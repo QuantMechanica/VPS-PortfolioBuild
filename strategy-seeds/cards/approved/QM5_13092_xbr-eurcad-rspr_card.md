@@ -262,4 +262,4 @@ V5 one-position-per-magic model.
 |---|---|---|---|
 | G0 Research Intake | 2026-07-09 | APPROVED | this card |
 | Q01 Build Validation | 2026-07-09 | PASS | `artifacts/qm5_13092_build_result.json` |
-| Q02 Baseline Screening | 2026-07-09 | PENDING | Q02 enqueue pending |
+| Q02 Baseline Screening | 2026-07-09 | PENDING | `work_items:00559d61-69e2-42a7-a842-934d5a500df5` |
