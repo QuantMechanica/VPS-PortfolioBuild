@@ -1,0 +1,90 @@
+{
+  "generated_at_utc": "2026-07-09T07:20:26Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves via market-neutral FX cointegration baskets",
+  "unit_of_work": "advance existing non-duplicate FX cointegration basket after confirming no unbuilt scan survivor remained",
+  "decision": {
+    "selected_path": "advance_existing_forex_card_through_funnel",
+    "selected_ea_id": "QM5_12751",
+    "selected_pair": "EURUSD.DWX/EURAUD.DWX",
+    "logical_symbol": "QM5_12751_EURUSD_EURAUD_COINTEGRATION_D1",
+    "reason": "Strict 66-pair anchors QM5_12532 and QM5_12533 are not Q02-blocked, and the approved EdgeLab FX cointegration scan inventory is already built. QM5_12751 had a repaired-scope Q02 PASS after its older Q04 result, but no Q04 rerun using the repaired three-symbol basket payload."
+  },
+  "precheck": {
+    "unbuilt_approved_edgelab_fx_cointegration_pair_found": false,
+    "qm5_12532_state": "Q02 PASS, Q04 PASS, later Q05 FAIL; not Q02-blocked",
+    "qm5_12533_state": "Q02 PASS, later Q04 FAIL; not Q02-blocked",
+    "q02_pass_work_item_id": "2eea4a0f-21a9-42a8-a0a0-4222eb37525e",
+    "q02_pass_evidence": "D:/QM/reports/work_items/2eea4a0f-21a9-42a8-a0a0-4222eb37525e/QM5_12751/20260702_223723/summary.json"
+  },
+  "queue_mutation": {
+    "sqlite": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "action": "farmctl_enqueue_backtest_ea_q04",
+    "work_item_id": "6d9c5116-10b3-4754-be2b-c4422734980d",
+    "phase": "Q04",
+    "status_after": "pending",
+    "verdict_after": null,
+    "attempt_count_after": 0,
+    "duplicate_work_item_created": false,
+    "created_rows": 0,
+    "requeued_rows": 1,
+    "promoted_from_phase": "Q02",
+    "promoted_from_work_item": "2eea4a0f-21a9-42a8-a0a0-4222eb37525e",
+    "promotion_source": "farmctl_enqueue_backtest_ea"
+  },
+  "payload_checks": {
+    "portfolio_scope": "basket",
+    "host_symbol": "EURUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_symbol_count": 3,
+    "basket_symbols": [
+      "EURUSD.DWX",
+      "EURAUD.DWX",
+      "AUDUSD.DWX"
+    ],
+    "traded_symbols": [
+      "EURUSD.DWX",
+      "EURAUD.DWX"
+    ],
+    "conversion_symbols": [
+      "AUDUSD.DWX"
+    ],
+    "q04_latest_full_year": 2024,
+    "q04_history_checked_symbols": [
+      "EURUSD.DWX",
+      "EURAUD.DWX",
+      "AUDUSD.DWX"
+    ],
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0
+  },
+  "verification": {
+    "farmctl_work_items_summary": {
+      "Q02_done_PASS": 2,
+      "Q04_pending": 1
+    },
+    "build_check": {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_12751_edgelab-eurusd-euraud-cointegration -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260709_072026.json"
+    }
+  },
+  "guardrails": {
+    "new_ea_built_this_turn": false,
+    "new_work_item_created": false,
+    "duplicate_work_item_created": false,
+    "manual_mt5_dispatch_started": false,
+    "cpu_ceiling_observed": true,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
