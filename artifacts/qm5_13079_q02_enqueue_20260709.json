@@ -1,0 +1,38 @@
+{
+  "ea_id": "QM5_13079",
+  "slug": "xbr-audcad-rspr",
+  "build_task_id": "62f6fa04-6f98-4cb2-bb4b-c0a0b080b1b6",
+  "record_build_result": "done",
+  "auto_q02_enqueued": true,
+  "work_item": {
+    "id": "b837731f-9786-4aa8-b320-e5f6a5ac6666",
+    "kind": "backtest",
+    "phase": "Q02",
+    "ea_id": "QM5_13079",
+    "symbol": "QM5_13079_XBR_AUDCAD_RSPREAD_D1",
+    "timeframe": "D1",
+    "status": "pending",
+    "created_at_utc": "2026-07-09T04:00:32+00:00",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13079_xbr-audcad-rspr\\sets\\QM5_13079_xbr-audcad-rspr_QM5_13079_XBR_AUDCAD_RSPREAD_D1_D1_backtest.set"
+  },
+  "basket_manifest": {
+    "logical_symbol": "QM5_13079_XBR_AUDCAD_RSPREAD_D1",
+    "host_symbol": "XBRUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_symbols": [
+      "XBRUSD.DWX",
+      "AUDCAD.DWX"
+    ]
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  }
+}

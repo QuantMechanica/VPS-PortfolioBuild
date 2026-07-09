@@ -1,0 +1,90 @@
+{
+  "task_id": "62f6fa04-6f98-4cb2-bb4b-c0a0b080b1b6",
+  "ea_id": "QM5_13079",
+  "ea_id_int": 13079,
+  "ea_label": "QM5_13079_xbr-audcad-rspr",
+  "slug": "xbr-audcad-rspr",
+  "strategy": "XBR/AUDCAD D1 Brent/commodity-FX return-spread reversion basket",
+  "source_id": "EIA-RBA-BOC-XBR-AUDCAD-2026",
+  "symbols": [
+    "XBRUSD.DWX",
+    "AUDCAD.DWX"
+  ],
+  "logical_symbol": "QM5_13079_XBR_AUDCAD_RSPREAD_D1",
+  "host_symbol": "XBRUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13079_xbr-audcad-rspr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13079_xbr-audcad-rspr\\QM5_13079_xbr-audcad-rspr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13079_xbr-audcad-rspr\\QM5_13079_xbr-audcad-rspr.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13079_xbr-audcad-rspr\\SPEC.md",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13079_xbr-audcad-rspr.md",
+  "repo_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13079_xbr-audcad-rspr.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13079_xbr-audcad-rspr\\basket_manifest.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13079_xbr-audcad-rspr\\sets\\QM5_13079_xbr-audcad-rspr_QM5_13079_XBR_AUDCAD_RSPREAD_D1_D1_backtest.set"
+  ],
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "setfile_build_hash": "831441a420d5b2d8d0037b663963a97daa5b52fab3118b352d056e5732aa1c4d",
+  "mq5_sha256": "41f0e4e8c66f664d1009e995edf6a9dacd8f4b37c522d5611912c5f9364e268c",
+  "ex5_sha256": "23e465456148753d842ad184ec2545016dcf69add6a73ae09bc6d2bc1b62aa74",
+  "setfile_sha256": "16a0d1aed345857bb25eabc66bd37e69ab3defc918b9bff2f65c1a108000a8a7",
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "result": "PASS",
+    "reason_class": "OK",
+    "errors": 0,
+    "warnings": 0,
+    "metaeditor_exit_code": 1,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260709_035918\\QM5_13079_xbr-audcad-rspr.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260709_035918\\summary.csv"
+  },
+  "build_check": {
+    "result": "PASS",
+    "strict": true,
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260709_035918.json"
+  },
+  "validations": {
+    "spec_doc": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "risk_mode": "RISK_FIXED",
+    "setfile_scope": "logical_basket_only"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue after compile/build_check; no manual MT5 backtest or live smoke was launched from this session.",
+  "blocked_reason": "",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest": true,
+    "no_ml": true,
+    "no_grid": true,
+    "no_martingale": true,
+    "no_external_runtime_data": true
+  },
+  "record_build": {
+    "recorded": true,
+    "recorded_at_utc": "2026-07-09T04:00:32Z",
+    "new_status": "done",
+    "auto_q02_enqueued": {
+      "ea_id": "QM5_13079",
+      "work_item_id": "b837731f-9786-4aa8-b320-e5f6a5ac6666",
+      "symbol": "QM5_13079_XBR_AUDCAD_RSPREAD_D1",
+      "timeframe": "D1",
+      "setfile": "QM5_13079_xbr-audcad-rspr_QM5_13079_XBR_AUDCAD_RSPREAD_D1_D1_backtest.set",
+      "status": "pending"
+    }
+  }
+}
