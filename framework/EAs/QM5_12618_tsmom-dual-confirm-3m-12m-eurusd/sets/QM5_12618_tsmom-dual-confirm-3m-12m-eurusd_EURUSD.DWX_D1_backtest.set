@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12618
 ; ea_slug:      tsmom-dual-confirm-3m-12m-eurusd
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   88290c9d8f25e52684b2159251d28a4d6f2682f5d4084a5e4fd3827caa48fdfa
+; build_hash:   97747891e8cc4358f1e0e7d0cd68dff46fa211b7d9d98ff8a5c00d06331f9bcd
 ; author:       Development
 ; date:         2026-06-30
 ;==========================================================

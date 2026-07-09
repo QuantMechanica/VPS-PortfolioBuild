@@ -89,3 +89,4 @@ ENV-to-mode validation is enforced by `QM_FrameworkInit`
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-30 | Initial build from approved EURUSD dual-confirm TSMOM card | Farm task 609f90d9-f907-41b9-8c02-da0510b28f41 |
+| v2 | 2026-07-09 | Q02 reconciliation | Live work item `eb4abcd4-4372-4329-a406-c02fcac4a1f1` is pending on EURUSD.DWX D1; approved-card artifact restored and no duplicate Q02 row created. |

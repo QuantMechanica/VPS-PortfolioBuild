@@ -20,9 +20,9 @@ r3_data_available: PASS
 r3_reasoning: "EURUSD.DWX is a core live-tradable DWX FX instrument with full history available."
 r4_ml_forbidden: PASS
 r4_reasoning: "No ML; two deterministic lookback comparisons; 1 position per magic; no martingale or PnL-adaptive sizing."
-pipeline_phase: G0
+pipeline_phase: Q02
 expected_trades_per_year_per_symbol: 6
-last_updated: 2026-06-29
+last_updated: 2026-07-09
 g0_approval_reasoning: "R1 one AQR/JFE source_id+URL; R2 monthly 3m+12m deterministic entries/exits with conservative low-freq cadence >=2/yr; R3 EURUSD.DWX testable; R4 deterministic no-ML one-position."
 expected_pf: 1.2
 expected_dd_pct: 18.0
@@ -121,6 +121,8 @@ Standard QM ATR-derived lot sizing. No vol scaling (sign-based entry only).
 ## Pipeline-Verlauf
 
 - G0: 2026-06-27, PENDING — drafted from MOP (2012) Table 2 cross-horizon evidence, batch 2
+- Build: 2026-06-30, PASS — EA compiled as `framework/EAs/QM5_12618_tsmom-dual-confirm-3m-12m-eurusd`.
+- Q02: 2026-06-30, PENDING — live work item `eb4abcd4-4372-4329-a406-c02fcac4a1f1` on `EURUSD.DWX` D1 with `RISK_FIXED=1000`; no duplicate requeue created during 2026-07-09 reconciliation.
 
 ## Verwandte Strategien
 
