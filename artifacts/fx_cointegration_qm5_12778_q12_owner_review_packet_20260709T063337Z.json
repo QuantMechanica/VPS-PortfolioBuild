@@ -1,0 +1,138 @@
+{
+  "generated_at_utc": "2026-07-09T06:33:37Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow the certified V5 portfolio book with new forex sleeves",
+  "unit_of_work": "advance existing FX cointegration sleeve to Q12 owner-review packet after confirming no unbuilt scan-derived candidate remains",
+  "selection_basis": {
+    "strict_scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "frontier_audit": "artifacts/fx_cointegration_frontier_audit_20260709.json",
+    "q02_priority_pairs": {
+      "QM5_12532": {
+        "pair": "AUDUSD.DWX/NZDUSD.DWX",
+        "q02_blocked": false,
+        "state": ["Q02:PASS", "Q04:PASS", "Q05:FAIL"]
+      },
+      "QM5_12533": {
+        "pair": "EURJPY.DWX/GBPJPY.DWX",
+        "q02_blocked": false,
+        "state": ["Q02:PASS", "Q04:FAIL"]
+      }
+    },
+    "unbuilt_scan_candidate_found": false,
+    "reason": "The strict 66-pair scan had only QM5_12533 and QM5_12532 as formal survivors, both already built and past Q02. The local extended-screen FX cointegration candidates visible in approved cards and EA folders are also already built and past Q02 or failed downstream gates."
+  },
+  "selected_ea": {
+    "ea_id": "QM5_12778",
+    "slug": "edgelab-audusd-eurjpy-cointegration",
+    "pair": "AUDUSD.DWX/EURJPY.DWX",
+    "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "strategy_card": "strategy-seeds/cards/approved/QM5_12778_edgelab-audusd-eurjpy-cointegration_card.md",
+    "ea_path": "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/QM5_12778_edgelab-audusd-eurjpy-cointegration.mq5",
+    "basket_manifest": "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/basket_manifest.json",
+    "portfolio_candidate_state": "Q12_REVIEW_READY"
+  },
+  "pipeline_history": [
+    {
+      "phase": "Q02",
+      "verdict": "PASS",
+      "work_item_id": "4dbf18f1-f8c0-4665-beea-778c9ad960c2",
+      "note": "EUR-accounting repair and enriched pending Q02 payload passed."
+    },
+    {
+      "phase": "Q03",
+      "verdict": "PASS",
+      "work_item_id": "7a11f24a-091f-49dd-983a-3dc8c7cef456"
+    },
+    {
+      "phase": "Q04",
+      "verdict": "PASS",
+      "work_item_id": "9546f319-dc02-4249-b6ac-0c1bb64fec4f"
+    },
+    {
+      "phase": "Q05",
+      "verdict": "PASS",
+      "work_item_id": "1c0405e7-16d3-40e6-b884-6be1b504dc4c"
+    },
+    {
+      "phase": "Q06",
+      "verdict": "PASS",
+      "work_item_id": "a60892f1-0059-47e8-83b2-39120ee15478"
+    },
+    {
+      "phase": "Q07",
+      "verdict": "PASS",
+      "work_item_id": "fc554e0c-e66e-486a-a83d-c7301e67c615",
+      "note": "Retry passed after a seed-2026 infrastructure failure."
+    },
+    {
+      "phase": "Q08",
+      "verdict": "FAIL_SOFT",
+      "work_item_id": "8637b758-4763-4a1c-a88e-f2001a1da7b4",
+      "evidence_path": "D:/QM/reports/work_items/8637b758-4763-4a1c-a88e-f2001a1da7b4/QM5_12778/Q08/QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1/aggregate.json"
+    },
+    {
+      "phase": "Q09_PORTFOLIO",
+      "verdict": "PASS_PORTFOLIO",
+      "work_item_id": "0b1fddba-6c4e-47ec-b9b3-6b54273e5832",
+      "evidence_path": "D:/QM/reports/work_items/0b1fddba-6c4e-47ec-b9b3-6b54273e5832/QM5_12778/Q09_PORTFOLIO/QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1/aggregate.json"
+    }
+  ],
+  "q08_summary": {
+    "verdict": "FAIL_SOFT",
+    "trade_count": 195,
+    "gross_total": 1595.99,
+    "commission_total": 407.002808,
+    "cost_cushion": 3.9213,
+    "cost_cushion_tier": "PASS",
+    "sub_gate_counts": {
+      "pass": 6,
+      "fail": 2,
+      "invalid": 3
+    },
+    "soft_or_invalid_reasons": [
+      "seasonal losing months: 1, 3, 4, 5, 11, 12",
+      "chopping-block PF after top 5 pct removal was 0.6986 versus 1.0 floor",
+      "neighborhood perturbations artifact missing after timeout",
+      "PBO scores missing because no trade-level data was extractable from sweep config",
+      "regime crisis input missing because no equity snapshots were present"
+    ],
+    "risk_note": "Q08 is not a standalone hard pass; it is eligible only as a portfolio-only soft-fail feeder."
+  },
+  "q09_portfolio_summary": {
+    "verdict": "PASS_PORTFOLIO",
+    "admit": true,
+    "standalone_pf": 1.0459218054,
+    "trade_count": 195,
+    "max_corr_to_book": 0.1004857919,
+    "sharpe_with": 2.4352605925,
+    "sharpe_without": 2.4320058978,
+    "maxdd_with": 0.2917107088,
+    "maxdd_without": 0.3366164535,
+    "reason": "admitted",
+    "portfolio_case": "The sleeve is not a standalone edge claim; it is a low-correlation FX diversifier with small positive portfolio impact and lower max drawdown in the Q09 evidence."
+  },
+  "owner_review_request": {
+    "requested_action": "Review QM5_12778 for Q12 portfolio-only forex sleeve consideration.",
+    "recommended_decision_frame": [
+      "Treat Q08 FAIL_SOFT and the negative original OOS scan result as material risk.",
+      "Use Q09 PASS_PORTFOLIO as the only admission argument.",
+      "Do not authorize live deployment from this packet alone."
+    ],
+    "not_live_authorization": true
+  },
+  "guardrails": {
+    "new_strategy_card_created": false,
+    "duplicate_pair_created": false,
+    "duplicate_work_item_created": false,
+    "manual_mt5_backtest_launched": false,
+    "backtest_cpu_used": false,
+    "portfolio_gate_code_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "t_live_manifest_touched": false,
+    "autotrading_touched": false
+  }
+}
