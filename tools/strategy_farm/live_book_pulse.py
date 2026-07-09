@@ -569,6 +569,7 @@ def parse_ea_logs(
     warning_counts: Counter[str] = Counter()
     warning_samples: list[dict[str, Any]] = []
     parse_errors = 0
+    latest_equity: dict[str, Any] | None = None
 
     for path in ea_log_files:
         try:
@@ -590,6 +591,18 @@ def parse_ea_logs(
             event_name = str(event.get("event") or "")
             event_counts[event_name] += 1
             payload = event.get("payload") if isinstance(event.get("payload"), dict) else {}
+            if event_name == "EQUITY_SNAPSHOT":
+                # Account-level equity is the same across all sleeve EAs; keep the
+                # newest snapshot so the cockpit can show the DXZ book's live value.
+                ts = event.get("ts_utc")
+                if latest_equity is None or (ts and ts > (latest_equity.get("ts_utc") or "")):
+                    latest_equity = {
+                        "equity": payload.get("equity"),
+                        "day_pnl": payload.get("day_pnl"),
+                        "month_pnl": payload.get("month_pnl"),
+                        "ts_utc": ts,
+                        "ts_broker": event.get("ts_broker"),
+                    }
             try:
                 magic = int(event.get("magic") or payload.get("magic") or 0)
             except (TypeError, ValueError):
@@ -682,6 +695,7 @@ def parse_ea_logs(
         "ea_log_files": [str(p) for p in ea_log_files],
         "ea_log_file_count": len(ea_log_files),
         "sleeve_count_from_ea_logs": len(sleeves),
+        "book_equity": latest_equity,
         "sleeves_from_ea_logs": sorted(sleeves.values(), key=lambda row: int(row["magic"])),
         "event_counts": dict(sorted(event_counts.items())),
         "position_events_by_magic": position_events_by_magic,

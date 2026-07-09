@@ -464,10 +464,13 @@ def live_money_snapshot() -> dict:
         hb = lb.get("heartbeat") or {}
         tj = lb.get("terminal_journals") or {}
         at = tj.get("autotrading_transitions") or []
+        be = (lb.get("ea_logs") or {}).get("book_equity") or {}
         out["dxz"] = {
             "verdict": str(lb.get("verdict") or "?").upper(),
             "alarms": len(lb.get("alarms") or []),
             "sleeves": tj.get("loaded_sleeve_count"),
+            "equity": be.get("equity"),
+            "day_pnl": be.get("day_pnl"),
             "positions": hb.get("current_position_count"),
             "autotrading": str((at[-1] or {}).get("state") or "?") if at else "?",
             "account": str(tj.get("account_id") or ""),
@@ -1262,16 +1265,26 @@ def main() -> int:
 
     if dxz:
         _sleeves = dxz.get("sleeves")
-        dxz_val = f"{_sleeves} SLEEVES" if _sleeves is not None else "PULSE?"
+        _eq = dxz.get("equity")
+        dxz_val = (
+            f"${_eq:,.0f}" if isinstance(_eq, (int, float))
+            else (f"{_sleeves} SLEEVES" if _sleeves is not None else "PULSE?")
+        )
         dxz_cls = _tile_cls(dxz.get("verdict", "?"), dxz.get("alarms", 0))
         _at = str(dxz.get("autotrading") or "?").upper()
         _pos = dxz.get("positions")
         _age = dxz.get("age_min")
+        _dp = dxz.get("day_pnl")
+        _slv = f"{_sleeves} sleeves // " if _sleeves is not None else ""
+        _dpf = (
+            f"day {'+' if isinstance(_dp, (int, float)) and _dp >= 0 else ''}{_dp:,.0f} // "
+            if isinstance(_dp, (int, float)) else ""
+        )
         dxz_sub = (
-            f"acct {dxz.get('account') or '?'} // AT {_at} // "
-            f"{_pos if _pos is not None else '?'} open pos // "
+            f"acct {dxz.get('account') or '?'} // {_slv}AT {_at} // "
+            f"{_dpf}{_pos if _pos is not None else '?'} open pos // "
             f"verdict {dxz.get('verdict', '?')} // pulse {_age}m ago" if _age is not None else
-            f"acct {dxz.get('account') or '?'} // AT {_at} // verdict {dxz.get('verdict', '?')}"
+            f"acct {dxz.get('account') or '?'} // {_slv}AT {_at} // verdict {dxz.get('verdict', '?')}"
         )
     else:
         dxz_val, dxz_cls, dxz_sub = "NO PULSE", "alert", "live_book_pulse.json unreadable"
