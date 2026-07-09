@@ -1,0 +1,95 @@
+{
+  "generated_at_utc": "2026-07-09T19:02:39Z",
+  "operator": "codex-headless-board-advisor",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with forex sleeves",
+  "unit_of_work": "priority-track existing logical FX cointegration Q02 row without duplicate enqueue",
+  "source_scan": {
+    "strict_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_scan_survivors": {
+      "QM5_12532": {
+        "pair": "AUDUSD.DWX/NZDUSD.DWX",
+        "q02_blocked": false,
+        "state": ["Q02:PASS", "Q04:PASS", "Q05:FAIL"]
+      },
+      "QM5_12533": {
+        "pair": "EURJPY.DWX/GBPJPY.DWX",
+        "q02_blocked": false,
+        "state": ["Q02:PASS", "Q04:FAIL"]
+      }
+    },
+    "extension_scan": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/survivors.json",
+    "unbuilt_card_worthy_pair_found": false,
+    "fallback_action": "advance_existing_forex_card"
+  },
+  "selected_existing_forex_card": {
+    "ea_id": "QM5_9184",
+    "slug": "jstm-pair-cointegration-fx",
+    "pair": ["AUDUSD.DWX", "NZDUSD.DWX"],
+    "logical_symbol": "QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1",
+    "host_symbol": "AUDUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_manifest": "framework/EAs/QM5_9184_jstm-pair-cointegration-fx/basket_manifest.json",
+    "logical_setfile": "framework/EAs/QM5_9184_jstm-pair-cointegration-fx/sets/QM5_9184_jstm-pair-cointegration-fx_QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1_D1_backtest.set"
+  },
+  "queue_action": {
+    "db_backup_before_update": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_9184_priority_20260709T190221Z.sqlite",
+    "work_item_id": "f10fcf97-b4fb-4286-9188-d51415c8fb60",
+    "phase": "Q02",
+    "status_after": "pending",
+    "duplicate_work_item_created": false,
+    "before": {
+      "priority_track": false,
+      "evidence_path": null,
+      "updated_at": "2026-07-09T18:05:16+00:00"
+    },
+    "after": {
+      "priority_track": true,
+      "priority_reason": "forex_portfolio_sleeve_gap_qm5_9184_logical_basket_q02",
+      "evidence_path": "docs/ops/evidence/2026-07-09_qm5_9184_logical_q02_priority.md",
+      "updated_at": "2026-07-09T19:02:39+00:00"
+    }
+  },
+  "validation": {
+    "pytest_manifest_tests": {
+      "command": "python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py -q",
+      "result": "PASS",
+      "tests": 14
+    },
+    "symbol_scope": {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_9184_jstm-pair-cointegration-fx --verbose",
+      "result": "BASKET_OK",
+      "violations": 0
+    },
+    "spec_validation": {
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_9184_jstm-pair-cointegration-fx",
+      "result": "PASS"
+    },
+    "build_check": {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_9184_jstm-pair-cointegration-fx -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260709_190357.json"
+    },
+    "queue_snapshot_after": {
+      "command": "python framework/scripts/mt5_queue_status.py --sqlite D:/QM/strategy_farm/state/farm_state.sqlite --limit 12",
+      "active_work_items": 3,
+      "pending_work_items": 4888,
+      "qm5_9184_priority_pending": true
+    }
+  },
+  "guardrails": {
+    "new_card_created": false,
+    "new_ea_built": false,
+    "duplicate_queue_row_created": false,
+    "manual_mt5_backtest_launched": false,
+    "manual_dispatch_tick_run": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  }
+}

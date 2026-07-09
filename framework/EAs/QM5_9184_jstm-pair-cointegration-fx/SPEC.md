@@ -4,7 +4,7 @@
 **Slug:** jstm-pair-cointegration-fx
 **Source:** 1b906e79-c619-5a61-90db-ee19ac95a19f (see `sources/github-jstm-quant-trading`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-26
+**Last revised:** 2026-07-09
 
 ---
 
@@ -113,6 +113,8 @@ as `AUDUSD.DWX`.
   `QM5_9184_jstm-pair-cointegration-fx_QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1_D1_backtest.set`
   so the official Q02 enqueue path can create a logical-symbol work item instead
   of another physical-leg row.
+- Priority-tracked the existing pending logical Q02 work item
+  `f10fcf97-b4fb-4286-9188-d51415c8fb60` without inserting a duplicate row.
 
 Validation after the manifest repair:
 
@@ -133,3 +135,4 @@ CPU-ceiling discipline.
 | v1 | 2026-06-26 | Initial build from card | 7fd5a807-876a-4d6e-8cf8-68c9b2bfa43f |
 | v2 | 2026-07-09 | FX Q02 basket-manifest repair | Added `basket_manifest.json`, validated basket scope/build check, and priority-marked the existing pending AUDUSD Q02 retry without inserting a duplicate work item. |
 | v3 | 2026-07-09 | Logical basket Q02 route | Added the canonical logical-symbol setfile so Q02/Q04 are keyed to `QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1` instead of the physical AUDUSD leg. |
+| v4 | 2026-07-09 | Logical basket Q02 priority | Priority-tracked existing pending logical Q02 row `f10fcf97-b4fb-4286-9188-d51415c8fb60`; no duplicate enqueue. |
