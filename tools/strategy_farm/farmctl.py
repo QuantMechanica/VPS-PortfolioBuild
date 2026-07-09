@@ -10110,6 +10110,22 @@ def _dwx_backtest_symbols() -> list[str]:
     return sorted(dict.fromkeys(symbols))
 
 
+def _q02_symbol_skip_reason(symbol: str, *, allow_logical_basket: bool = False) -> str | None:
+    """Return why a Q02/Qxx work-item symbol must not hit MT5, if any."""
+    s = str(symbol or "").strip().upper()
+    if (
+        allow_logical_basket
+        and not s.endswith(".DWX")
+        and (re.fullmatch(r"QM5_\d+_[A-Z0-9_]+", s) or "BASKET" in s)
+    ):
+        return None
+    if not s.endswith(".DWX"):
+        return "non_dwx_symbol"
+    if s not in set(_dwx_backtest_symbols()):
+        return "symbol_not_in_dwx_matrix"
+    return None
+
+
 def _truthy_card_value(value: Any) -> bool:
     return str(value).strip().lower() in {"1", "true", "yes", "y"}
 
@@ -10273,21 +10289,34 @@ def _create_backtest_work_items(conn: sqlite3.Connection, parent_task_id: str,
         }]
     basket_manifest = _load_basket_manifest(ea_id) if is_q02 else None
     basket_setfile = _find_basket_setfile(ea_id, basket_manifest) if basket_manifest else None
+    out: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
     if basket_manifest:
         setfiles = [basket_setfile] if basket_setfile else []
     else:
         setfiles = _ensure_p2_target_setfiles(root, ea_id) if is_q02 else _find_ea_setfiles(ea_id, phase)
         # OWNER directive 2026-06-20: only .DWX custom symbols. Bare broker
-        # symbols have no local history -> tester history-sync error [32] and a
-        # guaranteed INFRA_FAIL with no result. Never enqueue them.
-        setfiles = [(s, p) for s, p in setfiles if str(s).upper().endswith(".DWX")]
+        # symbols, plus stale aliases absent from dwx_symbol_matrix.csv, have no
+        # local history -> tester history-sync error [32] / INFRA_FAIL.
+    eligible_setfiles: list[tuple[str, str]] = []
+    for sym, setfile_path in setfiles:
+        reason = _q02_symbol_skip_reason(sym, allow_logical_basket=bool(basket_manifest))
+        if reason:
+            skipped.append({
+                "ea_id": ea_id,
+                "phase": phase,
+                "symbol": sym,
+                "setfile_path": setfile_path,
+                "reason": reason,
+            })
+            continue
+        eligible_setfiles.append((sym, setfile_path))
+    setfiles = eligible_setfiles
     if not setfiles:
-        return [], []
+        return [], skipped
     if surviving_symbols:
         symbol_set = set(surviving_symbols)
         setfiles = [(s, p) for s, p in setfiles if s in symbol_set]
-    out: list[dict[str, Any]] = []
-    skipped: list[dict[str, Any]] = []
     now = utc_now()
     period = _detect_ea_period(ea_id)
     # Fast-track the backtest queue for high-priority EAs (top strategy_priority
@@ -12303,6 +12332,18 @@ def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dic
                             "reason": "setfile_name_parse_failed"})
             continue
         parsed.append((setfile_path, m.group(1), m.group(2), {}))
+    eligible_parsed: list[tuple[Path, str, str, dict[str, Any]]] = []
+    for setfile_path, symbol, tf, payload_extra in parsed:
+        reason = _q02_symbol_skip_reason(symbol, allow_logical_basket=bool(basket_manifest))
+        if reason:
+            skipped.append({
+                "setfile": setfile_path.name,
+                "symbol": symbol,
+                "reason": reason,
+            })
+            continue
+        eligible_parsed.append((setfile_path, symbol, tf, payload_extra))
+    parsed = eligible_parsed
     if basket_only_setfiles is not None:
         logical_path = basket_only_setfiles[0]
         for setfile_str in setfiles:

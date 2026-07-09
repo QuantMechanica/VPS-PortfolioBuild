@@ -210,7 +210,13 @@ for ea_id in sorted((e for e in ea_dirs if e not in wi_eas), key=_prio):
             report["part1_never_tested"]["skipped"].append(
                 {"ea_id": ea_id, "reason": "setfile_parse_failed", "setfile": sf.name})
             continue
-        parsed.append((sf, m.group(1), m.group(2)))
+        symbol = m.group(1)
+        reason = farmctl._q02_symbol_skip_reason(symbol, allow_logical_basket=True)
+        if reason:
+            report["part1_never_tested"]["skipped"].append(
+                {"ea_id": ea_id, "symbol": symbol, "reason": reason, "setfile": sf.name})
+            continue
+        parsed.append((sf, symbol, m.group(2)))
     stage1, deferred = farmctl._stage_q02_setfiles(parsed)
     if deferred and APPLY:
         farmctl._record_q02_deferral(ea_id, deferred, "sweep_enqueue")
@@ -281,6 +287,12 @@ for phase in ("Q02", "Q03", "Q08"):
     for ea_id, symbol, setfile, _ts, infra_attempts in stranded_rows:
         if part2_count >= MAX_PART2_PER_RUN:
             break
+        reason = farmctl._q02_symbol_skip_reason(symbol, allow_logical_basket=True)
+        if reason:
+            report["part2_stranded"]["skipped"].append(
+                {"ea_id": ea_id, "phase": phase, "symbol": symbol,
+                 "reason": reason, "setfile": Path(setfile).name if setfile else None})
+            continue
         if TARGET_SYMBOLS and symbol not in TARGET_SYMBOLS:
             report["part2_stranded"]["skipped"].append(
                 {"ea_id": ea_id, "phase": phase, "symbol": symbol,
@@ -353,6 +365,12 @@ if deferred_state:
                  "deferred_setfiles": len(entry["setfiles"])})
             continue
         for sf in entry["setfiles"]:
+            reason = farmctl._q02_symbol_skip_reason(sf["symbol"], allow_logical_basket=True)
+            if reason:
+                report["part3_deferred_promotion"].setdefault("skipped", []).append(
+                    {"ea_id": ea_id, "symbol": sf["symbol"],
+                     "reason": reason, "setfile": Path(sf["setfile"]).name})
+                continue
             if TARGET_SYMBOLS and sf["symbol"] not in TARGET_SYMBOLS:
                 report["part3_deferred_promotion"].setdefault("skipped", []).append(
                     {"ea_id": ea_id, "symbol": sf["symbol"],

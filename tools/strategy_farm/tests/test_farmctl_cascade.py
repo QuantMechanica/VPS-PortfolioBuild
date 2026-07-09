@@ -45,6 +45,74 @@ class SymbolAliasTests(unittest.TestCase):
         self.assertEqual(farmctl._card_build_div_rank(mixed), 0)  # any new instrument -> build
 
 
+class Q02SymbolMatrixGateTests(unittest.TestCase):
+    def test_auto_q02_skips_non_matrix_dwx_alias_setfiles(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            root = Path(tmp) / "farm"
+            repo_root = Path(tmp) / "repo"
+            registry_dir = repo_root / "framework" / "registry"
+            registry_dir.mkdir(parents=True)
+            (registry_dir / "dwx_symbol_matrix.csv").write_text(
+                "\n".join([
+                    "symbol,asset_class,canonical_name_verified",
+                    "GDAXI.DWX,indices,true",
+                    "",
+                ]),
+                encoding="utf-8",
+            )
+            farmctl.init_db(root)
+
+            old_repo_root = farmctl.REPO_ROOT
+            old_deferred = farmctl.Q02_DEFERRED_SYMBOLS_FILE
+            try:
+                farmctl.REPO_ROOT = repo_root
+                farmctl.Q02_DEFERRED_SYMBOLS_FILE = root / "state" / "q02_deferred_symbols.json"
+                sets_dir = repo_root / "framework" / "EAs" / "QM5_9996_demo" / "sets"
+                result = farmctl._auto_enqueue_q02_for_build(root, {
+                    "ea_id": "QM5_9996",
+                    "task_id": "build-task",
+                    "setfiles_generated": [
+                        str(sets_dir / "QM5_9996_demo_GER40.DWX_D1_backtest.set"),
+                        str(sets_dir / "QM5_9996_demo_GDAXI.DWX_D1_backtest.set"),
+                    ],
+                })
+            finally:
+                farmctl.REPO_ROOT = old_repo_root
+                farmctl.Q02_DEFERRED_SYMBOLS_FILE = old_deferred
+
+            self.assertEqual([row["symbol"] for row in result["enqueued"]], ["GDAXI.DWX"])
+            self.assertIn(
+                {"setfile": "QM5_9996_demo_GER40.DWX_D1_backtest.set",
+                 "symbol": "GER40.DWX",
+                 "reason": "symbol_not_in_dwx_matrix"},
+                result["skipped"],
+            )
+            with sqlite3.connect(root / "state" / "farm_state.sqlite") as conn:
+                rows = conn.execute("SELECT symbol FROM work_items").fetchall()
+            self.assertEqual(rows, [("GDAXI.DWX",)])
+
+    def test_logical_basket_symbol_is_allowed_when_requested(self) -> None:
+        for symbol in ("QM5_13098_XCU_XAU_RSPREAD_D1", "FX8_BASKET_D1"):
+            with self.subTest(symbol=symbol):
+                self.assertIsNone(
+                    farmctl._q02_symbol_skip_reason(
+                        symbol,
+                        allow_logical_basket=True,
+                    )
+                )
+                self.assertEqual(
+                    farmctl._q02_symbol_skip_reason(symbol),
+                    "non_dwx_symbol",
+                )
+        self.assertEqual(
+            farmctl._q02_symbol_skip_reason(
+                "EURUSD",
+                allow_logical_basket=True,
+            ),
+            "non_dwx_symbol",
+        )
+
+
 class CascadePromotionTests(unittest.TestCase):
     def test_min_trades_floor_is_flat_rate_not_card_coupled(self) -> None:
         # OWNER 2026-06-26: the Q02 floor is a flat 5 trades/yr * window-years, decoupled
