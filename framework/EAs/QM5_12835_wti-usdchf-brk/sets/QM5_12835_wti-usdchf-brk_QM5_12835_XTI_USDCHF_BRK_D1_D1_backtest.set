@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12835
 ; ea_slug:      wti-usdchf-brk
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2950f75c4c746adc5b9ca7d44e7fde11c42c70224ce46cde69faa6b54f84954d
+; build_hash:   ee20e3c2716a6d02e332b616a060ae33b3eea34b91e7112393b3a54624ac6fc8
 ; author:       Development
 ; date:         2026-06-30
 ;==========================================================
