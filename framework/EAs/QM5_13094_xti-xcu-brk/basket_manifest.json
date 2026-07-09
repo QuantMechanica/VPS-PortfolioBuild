@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_13094_XTI_XCU_BRK_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XCUUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg XTI/XCU WTI-copper log-price spread channel-breakout basket from the approved EIA-CME-USGS-XTI-XCU-BRK-2026 source packet. The EA runs from the XTIUSD.DWX host setfile and reads both D1 close series to compute log(XTI) minus beta times log(XCU), then follows fixed channel breaks. Q02 must evaluate the logical basket, not standalone legs."
+  ]
+}
