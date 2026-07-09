@@ -1,0 +1,58 @@
+{
+  "recorded_at_utc": "2026-07-09T08:01:10+00:00",
+  "task_id": "d76cf0d6-3376-4374-9292-2d86237beddb",
+  "build_result_path": "D:\\QM\\strategy_farm\\artifacts\\builds\\d76cf0d6-3376-4374-9292-2d86237beddb.json",
+  "record_build_result": {
+    "recorded": true,
+    "new_status": "done",
+    "smoke_result": "deferred_p2_smoke",
+    "blocked_reason": "",
+    "fail_code": null,
+    "next_action_hint": "Q02 auto-enqueued (1 work_items); worker daemons will dispatch on next tick"
+  },
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13085",
+    "enqueued": [
+      {
+        "wi_id": "cd8fadbe-501e-45a2-a8fc-4de975283b14",
+        "symbol": "QM5_13085_XCU_AUDUSD_RSPREAD_D1",
+        "tf": "D1",
+        "setfile": "QM5_13085_xcu-audusd-rspr_QM5_13085_XCU_AUDUSD_RSPREAD_D1_D1_backtest.set",
+        "status": "pending",
+        "attempt_count": 0,
+        "payload": {
+          "host_symbol": "XCUUSD.DWX",
+          "host_timeframe": "D1",
+          "enqueued_by": "record_build_result.auto_q02",
+          "enqueued_at_utc": "2026-07-09T08:01:10+00:00",
+          "build_task_id": "d76cf0d6-3376-4374-9292-2d86237beddb",
+          "basket_manifest": "C:\\QM\\repo\\framework\\EAs\\QM5_13085_xcu-audusd-rspr\\basket_manifest.json",
+          "basket_symbol_count": 2,
+          "logical_symbol": "QM5_13085_XCU_AUDUSD_RSPREAD_D1",
+          "portfolio_scope": "basket",
+          "timeout_min": 450,
+          "basket_symbols": [
+            "XCUUSD.DWX",
+            "AUDUSD.DWX"
+          ],
+          "traded_symbols": [
+            "XCUUSD.DWX",
+            "AUDUSD.DWX"
+          ],
+          "risk_fixed": 1000,
+          "risk_percent": 0,
+          "portfolio_weight": 1,
+          "risk_mode": "RISK_FIXED"
+        }
+      }
+    ],
+    "skipped": []
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "backtest_cpu_used": false
+  }
+}

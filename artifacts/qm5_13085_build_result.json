@@ -1,0 +1,142 @@
+{
+  "task_id": "d76cf0d6-3376-4374-9292-2d86237beddb",
+  "ea_id": "QM5_13085",
+  "ea_label": "QM5_13085_xcu-audusd-rspr",
+  "slug": "xcu-audusd-rspr",
+  "strategy": "XCU/AUDUSD D1 base-metal commodity-FX return-spread reversion basket",
+  "strategy_id": "RBA-CME-XCU-AUDUSD-RSPREAD-2026",
+  "source_id": "RBA-CME-XCU-AUDUSD-RSPREAD-2026",
+  "source_links": [
+    "https://www.rba.gov.au/education/resources/explainers/drivers-of-the-aud-exchange-rate.html",
+    "https://www.cmegroup.com/markets/metals/base/copper.html",
+    "https://www.usgs.gov/centers/national-minerals-information-center/copper-statistics-and-information"
+  ],
+  "symbols": [
+    "XCUUSD.DWX",
+    "AUDUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XCUUSD.DWX",
+    "AUDUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XCUUSD.DWX",
+    "AUDUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13085_XCU_AUDUSD_RSPREAD_D1",
+  "host_symbol": "XCUUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13085_xcu-audusd-rspr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13085_xcu-audusd-rspr\\QM5_13085_xcu-audusd-rspr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13085_xcu-audusd-rspr\\QM5_13085_xcu-audusd-rspr.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13085_xcu-audusd-rspr\\SPEC.md",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13085_xcu-audusd-rspr.md",
+  "approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13085_xcu-audusd-rspr.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13085_xcu-audusd-rspr\\basket_manifest.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13085_xcu-audusd-rspr\\sets\\QM5_13085_xcu-audusd-rspr_QM5_13085_XCU_AUDUSD_RSPREAD_D1_D1_backtest.set"
+  ],
+  "magic_base": 130850000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XCUUSD.DWX",
+      "magic": 130850000
+    },
+    {
+      "slot": 1,
+      "symbol": "AUDUSD.DWX",
+      "magic": 130850001
+    }
+  ],
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "compile": {
+    "status": "COMPILED",
+    "warnings": 0,
+    "symbol_scope": "BASKET_OK",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260709_075657\\QM5_13085_xcu-audusd-rspr.compile.log",
+    "summary_csv": "D:\\QM\\reports\\compile\\20260709_075657\\summary.csv",
+    "command": "pwsh -File framework/scripts/compile_one.ps1 -EALabel QM5_13085_xcu-audusd-rspr -Strict"
+  },
+  "build_check": {
+    "status": "PASS",
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260709_075713.json",
+    "setfile_build_hash": "749d2b0b2cd950fad693c589a9fde14d370276ccc23bb5cc60eb864219f8f283",
+    "command": "pwsh -File framework/scripts/build_check.ps1 -EALabel QM5_13085_xcu-audusd-rspr -SkipCompile"
+  },
+  "validations": {
+    "spec_doc": {
+      "status": "PASS",
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13085_xcu-audusd-rspr"
+    },
+    "magic_registry": {
+      "status": "PASS",
+      "slots": [
+        0,
+        1
+      ],
+      "resolver_rows_kept": 14714,
+      "pre_existing_missing_ea_dir_warnings": [
+        1001,
+        1015,
+        1016
+      ]
+    },
+    "risk_mode": {
+      "status": "PASS",
+      "backtest_uses_risk_fixed": true,
+      "risk_percent_zero": true
+    },
+    "basket_manifest": {
+      "status": "PASS",
+      "logical_symbol": "QM5_13085_XCU_AUDUSD_RSPREAD_D1",
+      "host_symbol": "XCUUSD.DWX",
+      "host_timeframe": "D1"
+    },
+    "build_guardrails": {
+      "status": "PASS",
+      "ml_forbidden": "PASS",
+      "external_runtime_data": "PASS",
+      "setfile_schema": "PASS",
+      "five_input_groups": "PASS"
+    }
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "backtest_cpu_used": false
+  },
+  "file_hashes_sha256": {
+    "mq5": "C773EF8B210791AFCA34ED735FA261E52C25EF57AB09D54F0055AB728206D234",
+    "ex5": "86BA0D05CE7823C1BD013DC83E0E71B3247BDCDC8B5C1D438B17769431B4DC1E",
+    "setfile": "E965002F7332E0E59C03F067915719BA2843B522B4789B8B4272BC97780BC62A",
+    "spec": "2CBB25B14F9973A62B315B0FFCEC038BF9CBAF1AB6B459470BFEA8F147E50FE3",
+    "basket_manifest": "5B7DF6037110C8D13E21CB9E699387F2CB056CADB840C9EFB8125F36ADDE4FAB",
+    "approved_card": "38B81FD6F0A1617F0083060B53E4BD05954EF74E2FD43534BD0736912D8AFDA1",
+    "canonical_card": "DFA4C7EF16993762CDDDB6EFCC7D5ED881EAF6BA9A4547279A3860E60EB5E9BF",
+    "approved_card_copy": "CA487B025CAE4222F89F7E683967FBCB27B39731DE9740E18F986BF6CA50DFE3",
+    "source_packet": "F09DC26A556F94F08BF78260B3D208C3B334FF45BA4825974F2641EF975544DB"
+  }
+}
