@@ -1,0 +1,6 @@
+asset_class,q02_pass,q02_fail,q02_pass_pct_ex_infra,q04_pass,q04_fail,q04_infra,q04_pass_pct_ex_infra,pending_q02,expected_q04_survivors_in_queue
+METAL,849,309,73.3,147,1055,95,12.2,755,92.3
+INDEX,2354,1496,61.1,293,3977,267,6.9,1287,88.3
+ENERGY,275,179,60.6,9,360,19,2.4,319,7.8
+FX,6286,2881,68.6,89,5590,1067,1.6,2654,41.6
+OTHER,48,7,87.3,5,35,9,12.5,0,0.0

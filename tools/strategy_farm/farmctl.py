@@ -4464,10 +4464,29 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                   CASE WHEN EXISTS (
                     SELECT 1 FROM work_items wp
                     WHERE wp.ea_id=w.ea_id AND wp.status='done' AND wp.verdict='PASS'
-                  ) THEN 0 ELSE 1 END AS _winner_rank
+                  ) THEN 0 ELSE 1 END AS _winner_rank,
+                  -- Asset-class tie-break (2026-07-09) — twin of
+                  -- terminal_worker.py:_priority_pending_query. Prefer classes that
+                  -- survive Q04 (METAL 12.2% > INDEX 6.9% > ENERGY 2.4% > FX 1.6%,
+                  -- evidence docs/ops/evidence/q02_q04_survival_by_assetclass_2026-07-09.csv);
+                  -- only breaks the FIFO tie within a (phase, winner) tier, never
+                  -- delays a promoted survivor. Keep both queries in sync.
+                  CASE
+                    WHEN upper(w.symbol) LIKE 'XAU%' OR upper(w.symbol) LIKE 'XAG%'
+                      OR upper(w.symbol) LIKE 'XPT%' OR upper(w.symbol) LIKE 'XCU%' THEN 0
+                    WHEN upper(w.symbol) LIKE 'SP500%' OR upper(w.symbol) LIKE 'NDX%'
+                      OR upper(w.symbol) LIKE 'WS30%' OR upper(w.symbol) LIKE 'US30%'
+                      OR upper(w.symbol) LIKE 'US2000%' OR upper(w.symbol) LIKE 'GDAXI%'
+                      OR upper(w.symbol) LIKE 'GER40%' OR upper(w.symbol) LIKE 'UK100%'
+                      OR upper(w.symbol) LIKE 'STOXX%' OR upper(w.symbol) LIKE '%225%'
+                      OR upper(w.symbol) LIKE 'DAX%' THEN 1
+                    WHEN upper(w.symbol) LIKE 'XTI%' OR upper(w.symbol) LIKE 'XBR%'
+                      OR upper(w.symbol) LIKE 'XNG%' OR upper(w.symbol) LIKE 'WTI%'
+                      OR upper(w.symbol) LIKE 'NGAS%' OR upper(w.symbol) LIKE '%OIL%' THEN 2
+                    ELSE 3 END AS _asset_rank
                 FROM work_items w
                 WHERE w.status='pending'
-                ORDER BY _phase_rank ASC, _winner_rank ASC, w.updated_at ASC, w.created_at ASC
+                ORDER BY _phase_rank ASC, _winner_rank ASC, _asset_rank ASC, w.updated_at ASC, w.created_at ASC
                 """
             ).fetchall()
         claimed_symbol_keys = dict(active_symbol_keys)
