@@ -1,0 +1,96 @@
+{
+  "generated_at_utc": "2026-07-09T17:16:00Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves",
+  "unit_of_work": "FX cointegration frontier audit under active tester CPU ceiling",
+  "source_checked": {
+    "strict_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_scan_result": "Only EURJPY~GBPJPY and AUDUSD~NZDUSD cleared DEV/OOS/trade-count criteria; both were already carded and built as QM5_12533 and QM5_12532.",
+    "approved_cointegration_cards": "strategy-seeds/cards/approved/*coin*.md and *coint*.md",
+    "existing_ea_roots": "framework/EAs"
+  },
+  "strict_survivor_state": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "current_state": ["Q02:PASS", "Q04:PASS", "Q05:FAIL"],
+      "q02_blocked": false
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "current_state": ["Q02:PASS", "Q04:FAIL"],
+      "q02_blocked": false
+    }
+  },
+  "unbuilt_pair_search": {
+    "strict_scan_unbuilt_pair_found": false,
+    "approved_cointegration_cards_without_ea_folder_found": false,
+    "notes": [
+      "The strict 66-pair scan has no third card-worthy pair.",
+      "The local approved FX cointegration/coint cards visible under strategy-seeds/cards/approved all have framework/EAs folders.",
+      "QM5_13020_audnzd-coint-reversion was checked as a possible static repair target; SPEC says single_symbol_only on AUDNZD.DWX, not a basket-manifest case, and farm evidence already shows Q02 PASS followed by Q03/Q04 FAIL."
+    ]
+  },
+  "nearest_existing_fx_continuations": {
+    "QM5_12778": {
+      "pair": "AUDUSD.DWX/EURJPY.DWX",
+      "latest_state": [
+        "Q02:PASS",
+        "Q03:PASS",
+        "Q04:PASS",
+        "Q05:PASS",
+        "Q06:PASS",
+        "Q07:PASS",
+        "Q08:FAIL_SOFT",
+        "Q09_PORTFOLIO:PASS_PORTFOLIO",
+        "Q12_REVIEW_READY"
+      ],
+      "not_advanced_reason": "Further action is OWNER/Q12/portfolio-review territory; mission explicitly forbids touching portfolio gate surfaces."
+    },
+    "QM5_1058": {
+      "logical_symbol": "QM5_1058_EURUSD_GBPUSD_GGR_D1",
+      "latest_observed_state": "Q07 active on T4 at audit time",
+      "not_advanced_reason": "Already actively running; no duplicate queue row inserted."
+    }
+  },
+  "cpu_ceiling_observed": {
+    "farm_active_work_items": 7,
+    "active_by_phase": {
+      "Q02": 3,
+      "Q04": 3,
+      "Q07": 1
+    },
+    "active_tester_processes": {
+      "metatester64": 4,
+      "terminal64": 6
+    },
+    "notable_external_processes": [
+      "C:/QM/mt5/T_Live/MT5_Base/terminal64.exe observed but not touched",
+      "C:/Program Files/FTMO Global Markets MT5 Terminal/terminal64.exe observed but not touched"
+    ]
+  },
+  "decision": {
+    "new_card_created": false,
+    "new_ea_built": false,
+    "new_q02_work_item_created": false,
+    "manual_mt5_backtest_launched": false,
+    "reason": "The mission's preferred strict-scan candidates are not Q02-blocked, no unbuilt approved/card-worthy FX cointegration pair remains locally, and the farm is at the backtest CPU ceiling."
+  },
+  "guardrails": {
+    "duplicate_card_created": false,
+    "duplicate_work_item_created": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  },
+  "commands_run_summary": [
+    "rg cointegration/cross-asset under docs/research",
+    "farmctl work-items for QM5_12532/QM5_12533-related audit artifacts and selected FX continuation EAs",
+    "farmctl status/work-items --status active",
+    "Get-Process metatester64,terminal64",
+    "static SPEC/EA inspection for QM5_13020"
+  ]
+}
