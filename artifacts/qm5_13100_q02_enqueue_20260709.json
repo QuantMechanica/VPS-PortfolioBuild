@@ -1,0 +1,41 @@
+{
+  "recorded": true,
+  "ea_id": "QM5_13100",
+  "ea_label": "QM5_13100_wti-dmac16",
+  "build_task_id": "7c21362d-5174-4e81-8420-9280afde5cb8",
+  "work_item": {
+    "id": "7e88f78a-e0e9-4d3e-adb0-8d2a124c8f1b",
+    "kind": "backtest",
+    "phase": "Q02",
+    "status": "pending",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_13100_wti-dmac16\\sets\\QM5_13100_wti-dmac16_XTIUSD.DWX_D1_backtest.set",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "created_at_utc": "2026-07-09T21:45:28+00:00"
+  },
+  "enqueue_result": {
+    "source": "record_build_result.auto_q02",
+    "enqueued_count": 1,
+    "skipped": []
+  },
+  "build_validation": {
+    "compile": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "build_check": "PASS",
+    "card_schema": "PASS",
+    "spec_doc": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "build_result": "artifacts/qm5_13100_build_result.json"
+  },
+  "constraints": {
+    "backtest_cpu_used_by_build_session": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
