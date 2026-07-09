@@ -1,0 +1,62 @@
+{
+  "recorded_at_utc": "2026-07-09T11:41:34+00:00",
+  "source": "farmctl._auto_enqueue_q02_for_build.manual_invocation",
+  "build_result_path": "artifacts/qm5_13090_build_result.json",
+  "auto_q02_enqueued": {
+    "enqueued": [
+      {
+        "wi_id": "c135bd93",
+        "symbol": "QM5_13090_XTI_XCU_RSPREAD_D1",
+        "tf": "D1",
+        "setfile": "QM5_13090_xti-xcu-rspread_QM5_13090_XTI_XCU_RSPREAD_D1_D1_backtest.set"
+      }
+    ],
+    "skipped": [],
+    "ea_id": "QM5_13090"
+  },
+  "work_items": [
+    {
+      "id": "c135bd93-a7f2-4cd8-b5ca-9ec4d5a11f2b",
+      "kind": "backtest",
+      "phase": "Q02",
+      "ea_id": "QM5_13090",
+      "symbol": "QM5_13090_XTI_XCU_RSPREAD_D1",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13090_xti-xcu-rspread\\sets\\QM5_13090_xti-xcu-rspread_QM5_13090_XTI_XCU_RSPREAD_D1_D1_backtest.set",
+      "status": "pending",
+      "attempt_count": 0,
+      "created_at": "2026-07-09T11:41:34+00:00",
+      "updated_at": "2026-07-09T11:41:34+00:00",
+      "payload": {
+        "host_symbol": "XTIUSD.DWX",
+        "host_timeframe": "D1",
+        "enqueued_by": "record_build_result.auto_q02",
+        "enqueued_at_utc": "2026-07-09T11:41:34+00:00",
+        "build_task_id": "44927d96-3795-4eee-91b2-99409d65b157",
+        "basket_manifest": "C:\\QM\\repo\\framework\\EAs\\QM5_13090_xti-xcu-rspread\\basket_manifest.json",
+        "basket_symbol_count": 2,
+        "logical_symbol": "QM5_13090_XTI_XCU_RSPREAD_D1",
+        "portfolio_scope": "basket",
+        "timeout_min": 450,
+        "basket_symbols": [
+          "XTIUSD.DWX",
+          "XCUUSD.DWX"
+        ],
+        "traded_symbols": [
+          "XTIUSD.DWX",
+          "XCUUSD.DWX"
+        ],
+        "risk_fixed": 1000,
+        "risk_percent": 0,
+        "portfolio_weight": 1,
+        "risk_mode": "RISK_FIXED"
+      }
+    }
+  ],
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "backtest_cpu_used": false
+  }
+}
