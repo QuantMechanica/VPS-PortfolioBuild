@@ -1,0 +1,14 @@
+{
+  "logical_symbol": "QM5_13079_XBR_AUDCAD_RSPREAD_D1",
+  "host_symbol": "XBRUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XBRUSD.DWX",
+    "AUDCAD.DWX"
+  ],
+  "notes": [
+    "Q02 should dispatch only the logical basket symbol.",
+    "The EA runs from the XBRUSD.DWX D1 host chart and trades both registered legs through QM_BasketOrder.",
+    "Backtest setfile is RISK_FIXED=1000 with RISK_PERCENT=0."
+  ]
+}

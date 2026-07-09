@@ -14779,3 +14779,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13076,xti-nzdcad-rspr,1,NZDCAD.DWX,130760001,2026-07-09,Codex,active
 13077,xti-prod-fade,0,XTIUSD.DWX,130770000,2026-07-09,Codex,active
 13078,xti-holiday-gas-fade,0,XTIUSD.DWX,130780000,2026-07-09,Codex,active
+13079,xbr-audcad-rspr,0,XBRUSD.DWX,130790000,2026-07-09,Codex,active
+13079,xbr-audcad-rspr,1,AUDCAD.DWX,130790001,2026-07-09,Codex,active
