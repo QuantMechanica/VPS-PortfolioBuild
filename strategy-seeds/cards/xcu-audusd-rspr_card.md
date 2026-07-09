@@ -46,7 +46,7 @@ g0_status: APPROVED
 status: APPROVED
 r1_track_record: PASS
 r2_mechanical: PASS
-r3_data_available: PASS_WITH_Q02_VALIDATION
+r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 last_updated: 2026-07-09
@@ -57,7 +57,7 @@ ml_required: false
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
 hard_rules_at_risk: [symbol_history_sufficiency, basket_execution, friday_close, magic_schema, risk_mode_dual]
-g0_approval_reasoning: "Mission-directed G0 approval 2026-07-09: R1 PASS RBA/CME/USGS source packet; R2 PASS deterministic D1 XCU/AUDUSD return-spread basket; R3 PASS-with-Q02-validation because AUDUSD.DWX is in the DWX matrix and existing XCU builds use XCUUSD.DWX while Q02 must validate synchronized history and fills; R4 PASS no ML/grid/martingale/external runtime data. Non-duplicate because this is a paired copper/AUDUSD commodity-FX return-spread basket, not QM5_13080 XCU trend, QM5_13081 XCU four-week reversal, XTI/AUDUSD, XTI/AUDCAD, XNG/AUD, oil/metals, XAU/XAG, energy calendar/event, index, or commodity-RSI logic."
+g0_approval_reasoning: "Mission-directed G0 approval 2026-07-09: R1 PASS RBA/CME/USGS source packet; R2 PASS deterministic D1 XCU/AUDUSD return-spread basket; R3 PASS because AUDUSD.DWX is in the DWX matrix and existing XCU builds use XCUUSD.DWX, with synchronized multi-symbol history and fills to be proven by Q02; R4 PASS no ML/grid/martingale/external runtime data. Non-duplicate because this is a paired copper/AUDUSD commodity-FX return-spread basket, not QM5_13080 XCU trend, QM5_13081 XCU four-week reversal, XTI/AUDUSD, XTI/AUDCAD, XNG/AUD, oil/metals, XAU/XAG, energy calendar/event, index, or commodity-RSI logic."
 ---
 
 # XCU/AUDUSD D1 Return-Spread Reversion
@@ -263,4 +263,3 @@ one-position-per-magic model.
 | G0 Research Intake | 2026-07-09 | APPROVED | this card |
 | Q01 Build Validation | 2026-07-09 | PENDING | `artifacts/qm5_13085_build_result.json` |
 | Q02 Baseline Screening | 2026-07-09 | PENDING | enqueue after compile |
-

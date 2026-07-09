@@ -69,16 +69,18 @@ return-spread family because the commodity leg is industrial copper.
 
 ---
 
-## 5. Risk Model
+## 5. Expected Behaviour
 
-| Phase | Risk mode | Value |
-|---|---|---|
-| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per package |
-| Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
-| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio |
+The EA should trade infrequently on completed D1 bars only. It opens both legs
+as one package when the standardized copper-minus-AUDUSD return spread reaches
+an extreme, then closes the whole package on normalization, max-hold expiry,
+Friday close, hard-stop loss, or orphan detection.
 
-The committed Q02 setfile uses `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
-`PORTFOLIO_WEIGHT=1`.
+Expected exposure is market-neutral in implementation terms: every entry sends
+one copper leg and one AUDUSD hedge leg with opposite spread polarity. The
+strategy is expected to diversify away from the existing index/metal book by
+using industrial copper and commodity-currency exposure rather than equity
+index beta, gold, silver, oil, or natural gas directionality.
 
 ---
 
@@ -94,9 +96,21 @@ copper references
 
 ---
 
+## 7. Risk Model
+
+| Phase | Risk mode | Value |
+|---|---|---|
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per package |
+| Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
+| Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio |
+
+The committed Q02 setfile uses `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
+`PORTFOLIO_WEIGHT=1`.
+
+---
+
 ## Revision History
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-09 | Initial build from approved card | Mission-directed copper/AUD basket sleeve |
-

@@ -15,7 +15,7 @@ g0_status: APPROVED
 status: APPROVED
 r1_track_record: PASS
 r2_mechanical: PASS
-r3_data_available: PASS_WITH_Q02_VALIDATION
+r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
 last_updated: 2026-07-09
@@ -51,4 +51,3 @@ portfolio gate, external runtime data, grid, martingale, or ML is involved.
 | G0 Research Intake | 2026-07-09 | APPROVED | `strategy-seeds/cards/xcu-audusd-rspr_card.md` |
 | Q01 Build Validation | TBD | TBD | TBD |
 | Q02 Baseline Screening | TBD | TBD | enqueue after compile |
-

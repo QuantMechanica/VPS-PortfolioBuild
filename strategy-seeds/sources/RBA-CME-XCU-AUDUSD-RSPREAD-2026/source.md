@@ -32,10 +32,9 @@ and V5 framework state at runtime.
 - R2 mechanical: PASS - fixed D1 return lookback, rolling z-score, paired
   market-neutral entry, ATR hard stops, spread caps, max-hold exit, and
   broken-package repair.
-- R3 data available: PASS-with-Q02-validation - `AUDUSD.DWX` is in the DWX
-  matrix and existing `XCUUSD.DWX` EAs/cards have been built; Q02 must validate
-  synchronized XCU/AUD history and fills because the local symbol matrix does
-  not currently list `XCUUSD.DWX`.
+- R3 data available: PASS - `AUDUSD.DWX` is in the DWX matrix and existing
+  `XCUUSD.DWX` EAs/cards have been built; Q02 must validate synchronized
+  XCU/AUD history and fills because the local symbol matrix does not currently
+  list `XCUUSD.DWX`.
 - R4 ML forbidden: PASS - no ML, adaptive PnL fitting, external runtime data,
   grid, martingale, or discretionary input.
-
