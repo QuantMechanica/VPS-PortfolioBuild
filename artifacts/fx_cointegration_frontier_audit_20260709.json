@@ -1,0 +1,76 @@
+{
+  "generated_at_utc": "2026-07-09T02:39:25Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves",
+  "unit_of_work": "non-duplicate FX cointegration frontier audit",
+  "strict_scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+  "extension_scan_source": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/survivors.json",
+  "strict_survivors": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "state": ["Q02:PASS", "Q04:PASS", "Q05:FAIL"],
+      "q02_blocked": false
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "state": ["Q02:PASS", "Q04:FAIL"],
+      "q02_blocked": false
+    }
+  },
+  "extension_candidates": {
+    "QM5_13024": {
+      "pair": "AUDCAD.DWX/GBPAUD.DWX",
+      "state": ["Q02:PASS", "Q04:FAIL"],
+      "built": true
+    },
+    "QM5_13029": {
+      "pair": "GBPCAD.DWX/GBPNZD.DWX",
+      "state": ["Q02:PASS", "Q03:PASS", "Q04:FAIL"],
+      "built": true
+    },
+    "QM5_13058": {
+      "pair": "AUDCAD.DWX/GBPNZD.DWX",
+      "state": ["Q02:PASS", "Q03:PASS", "Q04:FAIL"],
+      "built": true
+    },
+    "QM5_13062": {
+      "pair": "AUDCAD.DWX/EURUSD.DWX",
+      "state": ["Q02:PASS", "Q03:PASS", "Q04:FAIL"],
+      "built": true,
+      "scan_trade_check": "not card-worthy despite formal gate survivor; OOS net Sharpe negative"
+    }
+  },
+  "nearest_book_candidate": {
+    "ea_id": "QM5_12778",
+    "pair": "AUDUSD.DWX/EURJPY.DWX",
+    "state": [
+      "Q02:PASS",
+      "Q03:PASS",
+      "Q04:PASS",
+      "Q05:PASS",
+      "Q06:PASS",
+      "Q07:PASS",
+      "Q08:FAIL_SOFT",
+      "Q09_PORTFOLIO:PASS_PORTFOLIO",
+      "portfolio_candidates:Q12_REVIEW_READY"
+    ],
+    "q12_reconciliation_artifact": "artifacts/fx_cointegration_qm5_12778_q12_reconciliation_20260708T214849Z.json"
+  },
+  "decision": {
+    "new_pair_built": false,
+    "new_q02_enqueued": false,
+    "reason": "No unbuilt approved/card-worthy FX cointegration pair was found; all scan-derived local candidates are already built and past Q02 or have downstream strategy/gate failures."
+  },
+  "guardrails": {
+    "duplicate_card_created": false,
+    "duplicate_work_item_created": false,
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  }
+}
