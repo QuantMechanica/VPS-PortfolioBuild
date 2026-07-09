@@ -1,8 +1,8 @@
-# QM5_13079_xbr-audcad-rspr - Strategy Spec
+# QM5_13086_xbr-cadchf-rspr - Strategy Spec
 
-**EA ID:** QM5_13079
-**Slug:** `xbr-audcad-rspr`
-**Source:** `EIA-RBA-BOC-XBR-AUDCAD-2026` (see `strategy-seeds/sources/EIA-RBA-BOC-XBR-AUDCAD-2026/`)
+**EA ID:** QM5_13086
+**Slug:** `xbr-cadchf-rspr`
+**Source:** `EIA-BOC-XBR-CADCHF-2026` (see `strategy-seeds/sources/EIA-BOC-XBR-CADCHF-2026/`)
 **Author of this spec:** Codex
 **Last revised:** 2026-07-09
 
@@ -11,18 +11,17 @@
 ## 1. Strategy Logic
 
 This EA trades a two-leg D1 return-spread reversion basket on `XBRUSD.DWX`
-and `AUDCAD.DWX`. On each new D1 host bar it computes
-`log(XBR[t] / XBR[t-L]) + beta_audcad * log(AUDCAD[t] / AUDCAD[t-L])`,
+and `CADCHF.DWX`. On each new D1 host bar it computes
+`log(XBR[t] / XBR[t-L]) - beta_cadchf * log(CADCHF[t] / CADCHF[t-L])`,
 then standardizes that spread against a rolling lookback window.
 
-`AUDCAD` rises when AUD strengthens or CAD weakens. The plus sign is
-intentional: a Brent rally and CAD strength should pull the two terms in
-opposite directions, so unusually large same-direction dislocations are faded.
-When the z-score is above the entry threshold, the EA sells Brent and sells
-AUDCAD. When the z-score is below the negative entry threshold, it buys Brent
-and buys AUDCAD. The package exits when the z-score reverts inside the exit
-band, the max-hold guard fires, Friday close fires, or only one leg remains
-open.
+`CADCHF` rises when CAD strengthens versus CHF. The minus sign is intentional:
+Brent and CADCHF are expected to partially confirm each other through the
+oil-CAD channel, so unusually wide return dislocations are faded. When the
+z-score is above the entry threshold, the EA sells Brent and buys CADCHF. When
+the z-score is below the negative entry threshold, it buys Brent and sells
+CADCHF. The package exits when the z-score reverts inside the exit band, the
+max-hold guard fires, Friday close fires, or only one leg remains open.
 
 ---
 
@@ -32,14 +31,14 @@ open.
 |---|---:|---|---|
 | `strategy_return_lookback_d1` | 20 | 10-40 | D1 return window for both legs |
 | `strategy_z_lookback_d1` | 120 | 80-180 | Rolling normalization window for the return spread |
-| `strategy_beta_audcad` | 0.60 | 0.40-0.85 | AUDCAD return multiplier and risk-weight proxy |
+| `strategy_beta_cadchf` | 0.55 | 0.35-0.80 | CADCHF return multiplier and risk-weight proxy |
 | `strategy_entry_z` | 1.9 | 1.6-2.2 | Absolute z-score threshold for opening the basket |
 | `strategy_exit_z` | 0.4 | 0.25-0.60 | Absolute z-score band for mean-reversion exit |
 | `strategy_atr_period_d1` | 20 | 14-30 | D1 ATR lookback for each leg's hard stop |
 | `strategy_atr_sl_mult` | 3.0 | 2.5-4.0 | ATR multiple used for each leg's hard stop |
 | `strategy_max_hold_days` | 30 | 20-45 | Maximum calendar days before closing the package |
 | `strategy_xbr_max_spread_pts` | 1200 | 800-1800 | Maximum allowed XBR spread in points |
-| `strategy_audcad_max_spread_pts` | 120 | 80-200 | Maximum allowed AUDCAD spread in points |
+| `strategy_cadchf_max_spread_pts` | 80 | 60-120 | Maximum allowed CADCHF spread in points |
 | `strategy_deviation_points` | 20 | fixed | Basket order slippage/deviation cap in points |
 
 ---
@@ -48,12 +47,12 @@ open.
 
 **Designed for:**
 - `XBRUSD.DWX` - Brent crude leg and host chart for the oil side of the return spread.
-- `AUDCAD.DWX` - inverse-CAD commodity-FX leg contrasting AUD commodity exposure with CAD oil exposure.
-- `QM5_13079_XBR_AUDCAD_RSPREAD_D1` - logical Q02 basket symbol backed by the two traded legs above.
+- `CADCHF.DWX` - CAD confirmation leg against defensive CHF.
+- `QM5_13086_XBR_CADCHF_RSPREAD_D1` - logical Q02 basket symbol backed by the two traded legs above.
 
 **Explicitly NOT for:**
-- `XTIUSD.DWX` - related oil exposure, but existing WTI return-spread cards use it.
-- `USDCAD.DWX` - already covered by separate oil/CAD sleeves.
+- `XTIUSD.DWX` - covered by the separate `QM5_13011_xti-cadchf-rspr`.
+- `USDCAD.DWX`, `AUDCAD.DWX`, and `CADJPY.DWX` - covered by separate Brent/oil-FX basket cards.
 - `XNGUSD.DWX`, `XAUUSD.DWX`, and `XAGUSD.DWX` - outside this card's source and logic.
 
 ---
@@ -72,10 +71,10 @@ open.
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 7-12 logical paired packages |
+| Trades / year / symbol | 5-10 logical paired packages |
 | Typical hold time | days to several weeks, capped at 30 days by default |
 | Expected drawdown profile | Medium-high, driven by Brent volatility and synchronized two-leg fills |
-| Regime preference | Mean-revert relative-value dislocations between Brent and inverse-CAD AUDCAD |
+| Regime preference | Mean-revert relative-value dislocations between Brent and CADCHF |
 | Win rate target | medium |
 
 ---
@@ -84,17 +83,17 @@ open.
 
 This card was mechanised from:
 
-**Source ID:** `EIA-RBA-BOC-XBR-AUDCAD-2026`
+**Source ID:** `EIA-BOC-XBR-CADCHF-2026`
 **Source type:** official energy research / central bank research
-**Pointer:** `strategy-seeds/sources/EIA-RBA-BOC-XBR-AUDCAD-2026/`
-**R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_13079_xbr-audcad-rspr.md`
+**Pointer:** `strategy-seeds/sources/EIA-BOC-XBR-CADCHF-2026/`
+**R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_13086_xbr-cadchf-rspr.md`
 
 ---
 
 ## 7. Risk Model
 
 | Phase | Risk mode | Value |
-|---|---|---|
+|---|---|---:|
 | Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio |
@@ -102,10 +101,20 @@ This card was mechanised from:
 ENV to mode validation is enforced by `QM_FrameworkInit`
 (`EA_INPUT_RISK_MODE_MISMATCH`).
 
+No live manifest, `T_Live` file, portfolio gate, or AutoTrading setting is
+touched by this build.
+
+---
+
+## Evidence
+
+- Build result: `artifacts/qm5_13086_build_result.json`.
+- Q02 enqueue: `artifacts/qm5_13086_q02_enqueue_20260709.json`.
+
 ---
 
 ## Revision History
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-09 | Initial build from approved card | manual-codex-2026-07-09-xbr-audcad-rspr |
+| v1 | 2026-07-09 | Mission-directed XBR/CADCHF return-spread basket build | Enqueue to Q02 |

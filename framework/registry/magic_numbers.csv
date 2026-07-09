@@ -14830,3 +14830,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9723,ff-sonicr-scout-h1,1,GBPUSD.DWX,97230001,2026-07-09,Codex,active
 9723,ff-sonicr-scout-h1,2,USDJPY.DWX,97230002,2026-07-09,Codex,active
 9723,ff-sonicr-scout-h1,3,EURJPY.DWX,97230003,2026-07-09,Codex,active
+13086,xbr-cadchf-rspr,0,XBRUSD.DWX,130860000,2026-07-09,Codex,active
+13086,xbr-cadchf-rspr,1,CADCHF.DWX,130860001,2026-07-09,Codex,active
