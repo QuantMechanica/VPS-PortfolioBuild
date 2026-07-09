@@ -1,0 +1,43 @@
+{
+  "ea_id": "QM5_13092",
+  "slug": "xbr-eurcad-rspr",
+  "phase": "Q02",
+  "enqueue_result": {
+    "enqueued": [
+      {
+        "wi_id": "00559d61",
+        "symbol": "QM5_13092_XBR_EURCAD_RSPREAD_D1",
+        "tf": "D1",
+        "setfile": "QM5_13092_xbr-eurcad-rspr_QM5_13092_XBR_EURCAD_RSPREAD_D1_D1_backtest.set"
+      }
+    ],
+    "skipped": [],
+    "ea_id": "QM5_13092"
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "00559d61-69e2-42a7-a842-934d5a500df5",
+    "status": "pending",
+    "symbol": "QM5_13092_XBR_EURCAD_RSPREAD_D1",
+    "timeframe": "D1",
+    "created_at_utc": "2026-07-09T13:44:59+00:00",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13092_xbr-eurcad-rspr\\sets\\QM5_13092_xbr-eurcad-rspr_QM5_13092_XBR_EURCAD_RSPREAD_D1_D1_backtest.set"
+  },
+  "payload": {
+    "host_symbol": "XBRUSD.DWX",
+    "host_timeframe": "D1",
+    "enqueued_by": "record_build_result.auto_q02",
+    "enqueued_at_utc": "2026-07-09T13:44:59+00:00",
+    "build_task_id": "manual-codex-qm5-13092-20260709",
+    "basket_manifest": "C:\\QM\\repo\\framework\\EAs\\QM5_13092_xbr-eurcad-rspr\\basket_manifest.json",
+    "basket_symbol_count": 2,
+    "logical_symbol": "QM5_13092_XBR_EURCAD_RSPREAD_D1",
+    "portfolio_scope": "basket",
+    "timeout_min": 450,
+    "basket_symbols": [
+      "XBRUSD.DWX",
+      "EURCAD.DWX"
+    ]
+  },
+  "created_at_utc": "2026-07-09T13:46:24Z"
+}

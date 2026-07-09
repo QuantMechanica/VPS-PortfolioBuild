@@ -1,0 +1,124 @@
+{
+  "task_id": "manual-codex-qm5-13092-20260709",
+  "ea_id": "QM5_13092",
+  "ea_id_int": 13092,
+  "ea_label": "QM5_13092_xbr-eurcad-rspr",
+  "slug": "xbr-eurcad-rspr",
+  "strategy": "XBR/EURCAD D1 Brent/inverse-CAD return-spread reversion basket",
+  "source_id": "EIA-BOC-XBR-EURCAD-2026",
+  "symbols": [
+    "XBRUSD.DWX",
+    "EURCAD.DWX"
+  ],
+  "logical_symbol": "QM5_13092_XBR_EURCAD_RSPREAD_D1",
+  "host_symbol": "XBRUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13092_xbr-eurcad-rspr",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13092_xbr-eurcad-rspr\\QM5_13092_xbr-eurcad-rspr.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13092_xbr-eurcad-rspr\\QM5_13092_xbr-eurcad-rspr.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13092_xbr-eurcad-rspr\\SPEC.md",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13092_xbr-eurcad-rspr.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13092_xbr-eurcad-rspr_card.md",
+  "repo_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13092_xbr-eurcad-rspr.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13092_xbr-eurcad-rspr\\basket_manifest.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13092_xbr-eurcad-rspr\\sets\\QM5_13092_xbr-eurcad-rspr_QM5_13092_XBR_EURCAD_RSPREAD_D1_D1_backtest.set"
+  ],
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "setfile_build_hash": "ed3f7fe1c5c6010e1788e1f8990acf04aa7633b414cf20d6799a33350176afdc",
+  "mq5_sha256": "d64b2d320295d890eb302cbb0db4c31d703618080b0ea3abc317edf1c8962bab",
+  "ex5_sha256": "e4050dde1ff81ecfb4e973555338c514bc922b9c8fd076a1ec92f4abd64790ae",
+  "setfile_sha256": "5aa0095b727a1f37d74af6e48dac7588322223287d5579e5fea743180e2fb482",
+  "card_sha256": "92a72bc98584d39fcd23ebdca095b8be7f689e92676b7244a5e2021b2f01ea80",
+  "approved_card_sha256": "92a72bc98584d39fcd23ebdca095b8be7f689e92676b7244a5e2021b2f01ea80",
+  "repo_card_sha256": "92a72bc98584d39fcd23ebdca095b8be7f689e92676b7244a5e2021b2f01ea80",
+  "farm_card_sha256": "92a72bc98584d39fcd23ebdca095b8be7f689e92676b7244a5e2021b2f01ea80",
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "result": "PASS",
+    "reason_class": "OK",
+    "errors": 0,
+    "warnings": 0,
+    "metaeditor_exit_code": 1,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260709_134235\\QM5_13092_xbr-eurcad-rspr.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260709_134235\\summary.csv"
+  },
+  "build_check": {
+    "result": "PASS",
+    "strict": true,
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260709_134310.json"
+  },
+  "validations": {
+    "spec_doc": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "risk_mode": "RISK_FIXED",
+    "setfile_scope": "logical_basket_only",
+    "q02_enqueued": "PASS"
+  },
+  "smoke_result": "deferred_q02_baseline",
+  "smoke_skipped_reason": "Mission requested Q02 enqueue after compile/build_check; no manual MT5 backtest or live smoke was launched from this session.",
+  "blocked_reason": "",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest": true,
+    "no_ml": true,
+    "no_grid": true,
+    "no_martingale": true,
+    "no_external_runtime_data": true
+  },
+  "source_links": [
+    "https://www.eia.gov/workingpapers/pdf/oil_exchangerates_61317.pdf",
+    "https://www.bankofcanada.ca/2017/02/staff-analytical-note-2017-1/",
+    "https://www.eia.gov/international/analysis/country/CAN"
+  ],
+  "created_at_utc": "2026-07-09T13:46:24Z",
+  "q02_enqueue_result": {
+    "enqueued": [
+      {
+        "wi_id": "00559d61",
+        "symbol": "QM5_13092_XBR_EURCAD_RSPREAD_D1",
+        "tf": "D1",
+        "setfile": "QM5_13092_xbr-eurcad-rspr_QM5_13092_XBR_EURCAD_RSPREAD_D1_D1_backtest.set"
+      }
+    ],
+    "skipped": [],
+    "ea_id": "QM5_13092"
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "00559d61-69e2-42a7-a842-934d5a500df5",
+    "status": "pending",
+    "symbol": "QM5_13092_XBR_EURCAD_RSPREAD_D1",
+    "timeframe": "D1",
+    "created_at_utc": "2026-07-09T13:44:59+00:00",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13092_xbr-eurcad-rspr\\sets\\QM5_13092_xbr-eurcad-rspr_QM5_13092_XBR_EURCAD_RSPREAD_D1_D1_backtest.set"
+  },
+  "record_build": {
+    "recorded": false,
+    "reason": "No active build_ea task was allocated in this paced headless mission; Q02 was enqueued directly via farmctl._auto_enqueue_q02_for_build.",
+    "recorded_at_utc": "2026-07-09T13:46:24Z",
+    "auto_q02_enqueued": {
+      "phase": "Q02",
+      "work_item_id": "00559d61-69e2-42a7-a842-934d5a500df5",
+      "status": "pending",
+      "symbol": "QM5_13092_XBR_EURCAD_RSPREAD_D1",
+      "timeframe": "D1",
+      "created_at_utc": "2026-07-09T13:44:59+00:00",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13092_xbr-eurcad-rspr\\sets\\QM5_13092_xbr-eurcad-rspr_QM5_13092_XBR_EURCAD_RSPREAD_D1_D1_backtest.set"
+    }
+  }
+}
