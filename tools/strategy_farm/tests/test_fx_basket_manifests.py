@@ -160,3 +160,19 @@ def test_qm5_1257_manifest_declares_audusd_usdjpy_logical_pair() -> None:
     assert manifest["tester_currency"] == "USD"
     assert declared == {"AUDUSD.DWX", "USDJPY.DWX"}
     assert _mq5_allowed_symbols(ea_dir) <= declared
+
+
+def test_qm5_9184_manifest_has_logical_audusd_nzdusd_setfile() -> None:
+    ea_dir = REPO / "framework" / "EAs" / "QM5_9184_jstm-pair-cointegration-fx"
+    manifest = json.loads((ea_dir / "basket_manifest.json").read_text(encoding="utf-8-sig"))
+    logical = manifest["logical_symbol"]
+    host_tf = manifest["host_timeframe"]
+    logical_setfile = ea_dir / "sets" / f"{ea_dir.name}_{logical}_{host_tf}_backtest.set"
+
+    declared = {manifest["host_symbol"], *manifest["basket_symbols"]}
+
+    assert logical == "QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1"
+    assert manifest["tester_currency"] == "USD"
+    assert declared == {"AUDUSD.DWX", "NZDUSD.DWX"}
+    assert logical_setfile.exists()
+    assert _mq5_allowed_symbols(ea_dir) <= declared

@@ -1,0 +1,119 @@
+{
+  "generated_at_utc": "2026-07-09T18:05:16Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with forex sleeves",
+  "unit_of_work": "advance existing FX cointegration card through a logical-basket Q02 route",
+  "source_scan": {
+    "strict_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_scan_survivors": {
+      "QM5_12532": {
+        "pair": "AUDUSD.DWX/NZDUSD.DWX",
+        "q02_blocked": false,
+        "state": ["Q02:PASS", "Q04:PASS", "Q05:FAIL"]
+      },
+      "QM5_12533": {
+        "pair": "EURJPY.DWX/GBPJPY.DWX",
+        "q02_blocked": false,
+        "state": ["Q02:PASS", "Q04:FAIL"]
+      }
+    },
+    "unbuilt_strict_survivor_found": false,
+    "fallback_action": "advance_existing_forex_card"
+  },
+  "selected_ea": {
+    "ea_id": "QM5_9184",
+    "slug": "jstm-pair-cointegration-fx",
+    "pair": "AUDUSD.DWX/NZDUSD.DWX",
+    "logical_symbol": "QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1",
+    "host_symbol": "AUDUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_manifest": "framework/EAs/QM5_9184_jstm-pair-cointegration-fx/basket_manifest.json",
+    "logical_setfile": "framework/EAs/QM5_9184_jstm-pair-cointegration-fx/sets/QM5_9184_jstm-pair-cointegration-fx_QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1_D1_backtest.set"
+  },
+  "prior_state": {
+    "physical_leg_q02_pass_work_item": "3bb02373-5f50-496e-9558-8590a25837db",
+    "physical_leg_q04_fail_work_item": "c5499375-84ca-49e4-9ff2-095e0ede7c7e",
+    "problem": "Q02/Q04 were keyed to physical AUDUSD.DWX instead of the logical basket symbol because no canonical logical setfile existed."
+  },
+  "repo_changes": {
+    "added_logical_setfile": true,
+    "added_manifest_regression_test": "tools/strategy_farm/tests/test_fx_basket_manifests.py::test_qm5_9184_manifest_has_logical_audusd_nzdusd_setfile",
+    "updated_spec": "framework/EAs/QM5_9184_jstm-pair-cointegration-fx/SPEC.md",
+    "build_check_normalized_setfile_hashes": [
+      "framework/EAs/QM5_9184_jstm-pair-cointegration-fx/sets/QM5_9184_jstm-pair-cointegration-fx_AUDUSD.DWX_D1_backtest.set",
+      "framework/EAs/QM5_9184_jstm-pair-cointegration-fx/sets/QM5_9184_jstm-pair-cointegration-fx_NZDUSD.DWX_D1_backtest.set",
+      "framework/EAs/QM5_9184_jstm-pair-cointegration-fx/sets/QM5_9184_jstm-pair-cointegration-fx_QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1_D1_backtest.set"
+    ]
+  },
+  "validation": {
+    "pytest_manifest_tests": {
+      "command": "python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py -q",
+      "result": "PASS",
+      "tests": 14
+    },
+    "symbol_scope": {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_9184_jstm-pair-cointegration-fx --verbose",
+      "result": "BASKET_OK",
+      "violations": 0
+    },
+    "build_check": {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_9184_jstm-pair-cointegration-fx -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report_path": "D:/QM/reports/framework/21/build_check_20260709_180439.json"
+    },
+    "spec_validation": {
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_9184_jstm-pair-cointegration-fx",
+      "result": "PASS"
+    }
+  },
+  "queue_action": {
+    "db_backup_before_enqueue": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_9184_logical_q02_20260709T180508Z.sqlite",
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm record-build --task-id 7fd5a807-876a-4d6e-8cf8-68c9b2bfa43f --result-file D:/QM/strategy_farm/artifacts/builds/7fd5a807-876a-4d6e-8cf8-68c9b2bfa43f.attempt_1.json",
+    "recorded": true,
+    "new_build_task_status": "done",
+    "created_work_item": {
+      "id": "f10fcf97-b4fb-4286-9188-d51415c8fb60",
+      "phase": "Q02",
+      "status": "pending",
+      "symbol": "QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1",
+      "setfile_path": "C:/QM/repo/framework/EAs/QM5_9184_jstm-pair-cointegration-fx/sets/QM5_9184_jstm-pair-cointegration-fx_QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1_D1_backtest.set",
+      "payload": {
+        "portfolio_scope": "basket",
+        "host_symbol": "AUDUSD.DWX",
+        "host_timeframe": "D1",
+        "basket_symbols": ["AUDUSD.DWX", "NZDUSD.DWX"],
+        "tester_currency": "USD",
+        "tester_deposit": 100000,
+        "timeout_min": 450
+      }
+    },
+    "skipped_leg_setfiles": [
+      "QM5_9184_jstm-pair-cointegration-fx_AUDUSD.DWX_D1_backtest.set",
+      "QM5_9184_jstm-pair-cointegration-fx_NZDUSD.DWX_D1_backtest.set"
+    ],
+    "duplicate_logical_pending_or_active_rows_before_enqueue": 0,
+    "duplicate_logical_pending_or_active_rows_after_enqueue": 1
+  },
+  "cpu_ceiling": {
+    "manual_mt5_backtest_launched": false,
+    "manual_dispatch_tick_run": false,
+    "pending_work_items": 4881,
+    "active_workers": 7,
+    "stop_reason": "Q02 was enqueued; paced worker fleet is already saturated, so no manual backtest or dispatch was launched."
+  },
+  "guardrails": {
+    "new_duplicate_card_created": false,
+    "new_duplicate_ea_created": false,
+    "duplicate_work_item_created": false,
+    "portfolio_gate_code_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "t_live_manifest_touched": false,
+    "autotrading_touched": false
+  }
+}
