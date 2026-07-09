@@ -1,0 +1,87 @@
+{
+  "generated_at_utc": "2026-07-09T22:15:11Z",
+  "generated_at_local": "2026-07-10T00:15:11+02:00",
+  "operator": "codex-headless-board-advisor",
+  "branch": "agents/board-advisor",
+  "head_at_audit": "1e0c05b5d6db7596fdb260cef4d3985e3b3b77c1",
+  "mission": "grow the certified V5 portfolio book with new forex sleeves",
+  "unit_of_work": "current FX cointegration frontier and CPU-ceiling handoff",
+  "research_decision": {
+    "strict_scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "extended_scan_source": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/survivors.json",
+    "strict_scan_result": "Only EURJPY~GBPJPY and AUDUSD~NZDUSD cleared the published DEV/OOS/trade-count criteria; both are already built.",
+    "extended_scan_result": "Every reputable-source card-worthy or formal-survivor pair is already built: AUDCAD~GBPAUD as QM5_13024, GBPCAD~GBPNZD as QM5_13029, AUDCAD~GBPNZD as QM5_13058, and AUDCAD~EURUSD as QM5_13062.",
+    "rejected_or_duplicate_rows": [
+      "AUDNZD~EURGBP collapses to the already-built QM5_13020 outright AUDNZD sleeve because its fitted hedge is approximately zero.",
+      "XTIUSD~EURNZD is not card-worthy because its half-life is 126 days and OOS trade-check Sharpe is 0.34.",
+      "AUDCAD~EURUSD is OOS-negative under the fixed-hedge trade check despite passing the formal stationarity screen."
+    ],
+    "unbuilt_reputable_source_pair_found": false,
+    "decision": "Do not create a duplicate or research-inferior card. Preserve the existing logical-basket Q02 continuation and stop because the backtest CPU ceiling is active."
+  },
+  "anchor_status": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "latest_state": [
+        "Q02:PASS",
+        "Q04:PASS",
+        "Q05:FAIL"
+      ],
+      "q02_blocked": false,
+      "q02_pass_work_item_id": "e4890d77-b865-4a48-b946-315faefca920"
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "latest_state": [
+        "Q02:PASS",
+        "Q04:FAIL"
+      ],
+      "q02_blocked": false,
+      "q02_pass_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62"
+    }
+  },
+  "existing_forex_continuation": {
+    "ea_id": "QM5_9184",
+    "pair": "AUDUSD.DWX/NZDUSD.DWX",
+    "logical_symbol": "QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1",
+    "logical_q02_work_item_id": "f10fcf97-b4fb-4286-9188-d51415c8fb60",
+    "logical_q02_status": "pending",
+    "action": "Preserved the already-enqueued logical-basket Q02 row; no duplicate row was inserted and no dispatch was attempted at the CPU ceiling."
+  },
+  "cpu_ceiling_observed": {
+    "farm_active_work_items": 7,
+    "active_by_phase": {
+      "Q02": 6,
+      "Q07": 1
+    },
+    "metatester64_processes": 5,
+    "tester_paths": [
+      "D:/QM/mt5/T1/metatester64.exe",
+      "D:/QM/mt5/T2/metatester64.exe",
+      "D:/QM/mt5/T3/metatester64.exe",
+      "D:/QM/mt5/T4/metatester64.exe",
+      "D:/QM/mt5/T7/metatester64.exe"
+    ],
+    "stop_reason": "Five tester processes and seven active farm claims were present. The mission explicitly requires stopping at the backtest CPU ceiling."
+  },
+  "result": {
+    "new_card_created": false,
+    "new_ea_built": false,
+    "new_q02_work_item_created": false,
+    "duplicate_work_item_created": false,
+    "manual_mt5_backtest_launched": false,
+    "dispatch_command_run": false,
+    "committed_work": "Fresh, branch-local reconciliation artifact records the exhausted non-duplicate scan frontier, anchor recovery state, preserved Q02 continuation, and current CPU saturation."
+  },
+  "guardrails": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
