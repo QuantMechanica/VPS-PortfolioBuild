@@ -1,0 +1,39 @@
+{
+  "task_id": "fde41b9f-3707-4b2d-9b85-9119f5008b01",
+  "ea_id": "QM5_9723",
+  "recorded_at_utc": "2026-07-09T07:11:14Z",
+  "record_build": {
+    "recorded": true,
+    "new_status": "done",
+    "smoke_result": "deferred_p2_smoke",
+    "auto_q02_enqueued": {
+      "enqueued": [
+        {
+          "wi_id": "b4195487",
+          "symbol": "EURUSD.DWX",
+          "tf": "H1",
+          "setfile": "QM5_9723_ff-sonicr-scout-h1_EURUSD.DWX_H1_backtest.set"
+        },
+        {
+          "wi_id": "f677e74c",
+          "symbol": "GBPUSD.DWX",
+          "tf": "H1",
+          "setfile": "QM5_9723_ff-sonicr-scout-h1_GBPUSD.DWX_H1_backtest.set"
+        },
+        {
+          "wi_id": "286a94b6",
+          "symbol": "USDJPY.DWX",
+          "tf": "H1",
+          "setfile": "QM5_9723_ff-sonicr-scout-h1_USDJPY.DWX_H1_backtest.set"
+        }
+      ],
+      "skipped": [
+        {
+          "reason": "staged_deferred_symbol",
+          "symbol": "EURJPY.DWX",
+          "setfile": "QM5_9723_ff-sonicr-scout-h1_EURJPY.DWX_H1_backtest.set"
+        }
+      ]
+    }
+  }
+}

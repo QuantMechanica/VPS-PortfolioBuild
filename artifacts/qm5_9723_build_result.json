@@ -1,0 +1,102 @@
+{
+  "task_id": "fde41b9f-3707-4b2d-9b85-9119f5008b01",
+  "ea_id": "QM5_9723",
+  "slug": "ff-sonicr-scout-h1",
+  "ea_dir": "framework/EAs/QM5_9723_ff-sonicr-scout-h1",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9723_ff-sonicr-scout-h1\\QM5_9723_ff-sonicr-scout-h1.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9723_ff-sonicr-scout-h1\\QM5_9723_ff-sonicr-scout-h1.ex5",
+  "ex5_bytes": 317670,
+  "mq5_sha256": "1D0B2A5C1E93D1859ADE97D3864638AC5F1055DFDC6010D6F5F7DF7E373CC7CD",
+  "ex5_sha256": "BDFCDED3BAFD21F51218E36E60A2E2A1D736BCF2A86C61F532018DAB15AF6C01",
+  "magic_base": 97230000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "EURJPY.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9723_ff-sonicr-scout-h1\\sets\\QM5_9723_ff-sonicr-scout-h1_EURUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9723_ff-sonicr-scout-h1\\sets\\QM5_9723_ff-sonicr-scout-h1_GBPUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9723_ff-sonicr-scout-h1\\sets\\QM5_9723_ff-sonicr-scout-h1_USDJPY.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9723_ff-sonicr-scout-h1\\sets\\QM5_9723_ff-sonicr-scout-h1_EURJPY.DWX_H1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9723_ff-sonicr-scout-h1\\SPEC.md",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9723_ff-sonicr-scout-h1.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile": {
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260709_070933\\QM5_9723_ff-sonicr-scout-h1.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260709_070933\\summary.csv"
+  },
+  "build_check": {
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260709_070933.json"
+  },
+  "validations": {
+    "spec_doc": "PASS",
+    "risk_mode": "RISK_FIXED",
+    "symbol_scope": "R3_body_fx_basket"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue after compile/build_check; no manual MT5 smoke or live run was launched from this session.",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": [
+    "Card frontmatter target_symbols contains GER40.DWX, but body/R3 primary P2 basket lists EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, EURJPY.DWX. Built and registered the R3 body FX basket because GER40.DWX is not in dwx_symbol_matrix and is not in the card R3 section."
+  ],
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest": true,
+    "no_ml": true,
+    "no_grid": true,
+    "no_martingale": true,
+    "no_external_runtime_data": true
+  },
+  "record_build": {
+    "recorded": true,
+    "new_status": "done",
+    "smoke_result": "deferred_p2_smoke",
+    "auto_q02_enqueued": {
+      "enqueued": [
+        {
+          "wi_id": "b4195487",
+          "symbol": "EURUSD.DWX",
+          "tf": "H1",
+          "setfile": "QM5_9723_ff-sonicr-scout-h1_EURUSD.DWX_H1_backtest.set"
+        },
+        {
+          "wi_id": "f677e74c",
+          "symbol": "GBPUSD.DWX",
+          "tf": "H1",
+          "setfile": "QM5_9723_ff-sonicr-scout-h1_GBPUSD.DWX_H1_backtest.set"
+        },
+        {
+          "wi_id": "286a94b6",
+          "symbol": "USDJPY.DWX",
+          "tf": "H1",
+          "setfile": "QM5_9723_ff-sonicr-scout-h1_USDJPY.DWX_H1_backtest.set"
+        }
+      ],
+      "skipped": [
+        {
+          "reason": "staged_deferred_symbol",
+          "symbol": "EURJPY.DWX",
+          "setfile": "QM5_9723_ff-sonicr-scout-h1_EURJPY.DWX_H1_backtest.set"
+        }
+      ]
+    }
+  }
+}
