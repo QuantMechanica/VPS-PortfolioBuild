@@ -43,12 +43,12 @@ portfolio gate, external runtime data, grid, martingale, or ML is involved.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|
-| v1 | 2026-07-09 | initial XTI/XCU basket build | Q02 | PENDING |
+| v1 | 2026-07-09 | initial XTI/XCU basket build | Q02 | QUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-09 | APPROVED | `strategy-seeds/cards/xti-xcu-rspread_card.md` |
-| Q01 Build Validation | 2026-07-09 | PENDING | `artifacts/qm5_13090_build_result.json` |
-| Q02 Baseline Screening | 2026-07-09 | PENDING | `artifacts/qm5_13090_q02_enqueue_20260709.json` |
+| Q01 Build Validation | 2026-07-09 | PASS | `artifacts/qm5_13090_build_result.json` |
+| Q02 Baseline Screening | 2026-07-09 | QUEUED | `artifacts/qm5_13090_q02_enqueue_20260709.json`; work item `c135bd93-a7f2-4cd8-b5ca-9ec4d5a11f2b` |
