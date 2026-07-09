@@ -1,13 +1,13 @@
 {
-  "logical_symbol": "QM5_13060_XTI_EURCAD_RSPREAD_D1",
+  "logical_symbol": "QM5_13076_XTI_NZDCAD_RSPREAD_D1",
   "host_symbol": "XTIUSD.DWX",
   "host_timeframe": "D1",
   "basket_symbols": [
     "XTIUSD.DWX",
-    "EURCAD.DWX"
+    "NZDCAD.DWX"
   ],
   "notes": [
-    "Two-leg WTI/EURCAD inverse-CAD return-spread reversion basket from the approved BOC-EURCAD-OIL-RSPREAD-2026 card. The EA runs from the XTIUSD.DWX host setfile and reads both D1 close series to compute a standardized log-return spread over a fixed lookback. Q02 must evaluate the logical basket, not the standalone legs."
+    "Two-leg WTI/NZDCAD inverse-CAD return-spread reversion basket from the approved EIA-BOC-RBNZ-XTI-NZDCAD-2026 card. The EA runs from the XTIUSD.DWX host setfile and reads both D1 close series to compute a standardized log-return spread over a fixed lookback. Q02 must evaluate the logical basket, not the standalone legs."
   ]
 }
 

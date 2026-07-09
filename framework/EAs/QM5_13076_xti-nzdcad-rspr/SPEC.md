@@ -1,27 +1,27 @@
-# QM5_13060_xti-eurcad-rspr - Strategy Spec
+# QM5_13076_xti-nzdcad-rspr - Strategy Spec
 
-**EA ID:** QM5_13060
-**Slug:** `xti-eurcad-rspr`
-**Source:** `BOC-EURCAD-OIL-RSPREAD-2026` (see `strategy-seeds/sources/BOC-EURCAD-OIL-RSPREAD-2026/`)
+**EA ID:** QM5_13076
+**Slug:** `xti-nzdcad-rspr`
+**Source:** `EIA-BOC-RBNZ-XTI-NZDCAD-2026` (see `strategy-seeds/sources/EIA-BOC-RBNZ-XTI-NZDCAD-2026/`)
 **Author of this spec:** Codex
-**Last revised:** 2026-07-08
+**Last revised:** 2026-07-09
 
 ---
 
 ## 1. Strategy Logic
 
 This EA trades a two-leg D1 return-spread reversion basket on `XTIUSD.DWX`
-and `EURCAD.DWX`. On each new D1 host bar it computes
-`log(XTI[t] / XTI[t-L]) + beta_eurcad * log(EURCAD[t] / EURCAD[t-L])`,
+and `NZDCAD.DWX`. On each new D1 host bar it computes
+`log(XTI[t] / XTI[t-L]) + beta_nzdcad * log(NZDCAD[t] / NZDCAD[t-L])`,
 then standardizes that spread against a rolling lookback window.
 
-`EURCAD` rises when CAD weakens against EUR, so the plus sign is intentional:
-the spread captures WTI strength paired with CAD weakness, or WTI weakness
-paired with CAD strength. When the z-score is above the entry threshold, the
-EA sells WTI and sells EURCAD. When the z-score is below the negative entry
-threshold, it buys WTI and buys EURCAD. The package exits when the z-score
-reverts inside the exit band, the max-hold guard fires, Friday close fires, or
-only one leg remains open.
+`NZDCAD` rises when NZD strengthens or CAD weakens. The plus sign is
+intentional: a WTI rally and CAD strength should pull the two terms in
+opposite directions, so unusually large same-direction dislocations are faded.
+When the z-score is above the entry threshold, the EA sells WTI and sells
+NZDCAD. When the z-score is below the negative entry threshold, it buys WTI and
+buys NZDCAD. The package exits when the z-score reverts inside the exit band,
+the max-hold guard fires, Friday close fires, or only one leg remains open.
 
 ---
 
@@ -31,14 +31,14 @@ only one leg remains open.
 |---|---:|---|---|
 | `strategy_return_lookback_d1` | 20 | 10-40 | D1 return window for both legs |
 | `strategy_z_lookback_d1` | 120 | 80-180 | Rolling normalization window for the return spread |
-| `strategy_beta_eurcad` | 0.60 | 0.40-0.85 | EURCAD return multiplier and risk-weight proxy |
+| `strategy_beta_nzdcad` | 0.55 | 0.35-0.80 | NZDCAD return multiplier and risk-weight proxy |
 | `strategy_entry_z` | 1.9 | 1.6-2.2 | Absolute z-score threshold for opening the basket |
 | `strategy_exit_z` | 0.4 | 0.25-0.60 | Absolute z-score band for mean-reversion exit |
 | `strategy_atr_period_d1` | 20 | 14-30 | D1 ATR lookback for each leg's hard stop |
 | `strategy_atr_sl_mult` | 3.0 | 2.5-4.0 | ATR multiple used for each leg's hard stop |
 | `strategy_max_hold_days` | 30 | 20-45 | Maximum calendar days before closing the package |
 | `strategy_xti_max_spread_pts` | 1000 | 700-1500 | Maximum allowed XTI spread in points |
-| `strategy_eurcad_max_spread_pts` | 160 | 100-240 | Maximum allowed EURCAD spread in points |
+| `strategy_nzdcad_max_spread_pts` | 140 | 90-220 | Maximum allowed NZDCAD spread in points |
 | `strategy_deviation_points` | 20 | fixed | Basket order slippage/deviation cap in points |
 
 ---
@@ -47,15 +47,16 @@ only one leg remains open.
 
 **Designed for:**
 - `XTIUSD.DWX` - crude leg and host chart for the oil side of the return spread.
-- `EURCAD.DWX` - inverse-CAD FX leg representing CAD commodity exposure against EUR.
-- `QM5_13060_XTI_EURCAD_RSPREAD_D1` - logical Q02 basket symbol backed by the two traded legs above.
+- `NZDCAD.DWX` - inverse-CAD FX leg contrasting oil-sensitive CAD against NZD commodity exposure.
+- `QM5_13076_XTI_NZDCAD_RSPREAD_D1` - logical Q02 basket symbol backed by the two traded legs above.
 
 **Explicitly NOT for:**
-- `XNGUSD.DWX` - natural gas dynamics are outside the approved card.
-- `USDCAD.DWX` - related CAD exposure, but this card specifically uses EURCAD.
-- `CADJPY.DWX`, `CADCHF.DWX`, or `AUDCAD.DWX` - covered by separate oil/CAD baskets.
-- `EURNZD.DWX` - FX-only CAD-cross or EUR-cross ideas are not this energy/FX sleeve.
-- `XBRUSD.DWX` - Brent is excluded; the card is WTI against EURCAD.
+- `USDCAD.DWX`, `CADJPY.DWX`, `CADCHF.DWX`, `AUDCAD.DWX`, `GBPCAD.DWX`, or
+  `EURCAD.DWX` - related CAD exposures, but already separate cards.
+- `NZDUSD.DWX` - related NZD exposure, but this card specifically uses the
+  direct NZD/CAD cross.
+- `XNGUSD.DWX`, `XAUUSD.DWX`, and `XAGUSD.DWX` - outside the approved source
+  and existing portfolio sleeve target.
 
 ---
 
@@ -73,11 +74,11 @@ only one leg remains open.
 
 | Metric | Expected |
 |---|---|
-| Trades / year / symbol | 6-12 logical paired packages |
+| Trades / year / symbol | 8-14 logical paired packages |
 | Typical hold time | days to several weeks, capped at 30 days by default |
 | Expected drawdown profile | Medium-high, driven by crude volatility and synchronized two-leg fills |
-| Regime preference | Mean-revert relative-value dislocations between WTI and inverse-CAD EURCAD |
-| Win rate target (qualitative) | medium |
+| Regime preference | Mean-revert relative-value dislocations between WTI and inverse-CAD NZDCAD |
+| Win rate target | medium |
 
 ---
 
@@ -85,10 +86,10 @@ only one leg remains open.
 
 This card was mechanised from:
 
-**Source ID:** `BOC-EURCAD-OIL-RSPREAD-2026`
-**Source type:** government energy / central bank research
-**Pointer:** `strategy-seeds/sources/BOC-EURCAD-OIL-RSPREAD-2026/`
-**R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_13060_xti-eurcad-rspr.md`
+**Source ID:** `EIA-BOC-RBNZ-XTI-NZDCAD-2026`
+**Source type:** official energy research / central bank research
+**Pointer:** `strategy-seeds/sources/EIA-BOC-RBNZ-XTI-NZDCAD-2026/`
+**R1-R4 verdict (Q00):** all PASS / see `artifacts/cards_approved/QM5_13076_xti-nzdcad-rspr.md`
 
 ---
 
@@ -96,11 +97,12 @@ This card was mechanised from:
 
 | Phase | Risk mode | Value |
 |---|---|---|
-| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade (HR4) |
+| Backtest (Q02 - Q10) | RISK_FIXED | $1,000 per trade |
 | Live burn-in (Q13) | RISK_PERCENT | Min-lot equivalent |
 | Full live (post-Q13 PASS) | RISK_PERCENT | Allocated by Q11 portfolio |
 
-ENV to mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMATCH`).
+ENV to mode validation is enforced by `QM_FrameworkInit`
+(`EA_INPUT_RISK_MODE_MISMATCH`).
 
 ---
 
@@ -108,5 +110,4 @@ ENV to mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MI
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-08 | Initial build from approved card | manual-codex-2026-07-08-xti-eurcad-rspr |
-
+| v1 | 2026-07-09 | Initial build from approved card | manual-codex-2026-07-09-xti-nzdcad-rspr |
