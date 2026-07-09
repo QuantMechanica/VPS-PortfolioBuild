@@ -26,6 +26,30 @@ Selected existing reputable-source FX cointegration fallback:
 
 Action taken: updated the existing pending Q02 work item payload with `priority_track=true`, `priority_reason=forex_portfolio_sleeve_gap_existing_logical_basket_no_duplicate`, and a dedupe note. No new work item was inserted.
 
+## Logical Basket Cleanup
+
+Follow-up action in the same mission lane: the EA still had 21 legacy pending
+per-slot Q02 rows from the older fanout, even though
+`framework/EAs/QM5_1257_lemishko-fx-cointpair/basket_manifest.json` says the
+slot setfiles are diagnostics and Q02 should evaluate the AUDUSD/USDJPY pair as
+one market-neutral basket.
+
+I backed up the farm DB, then marked those 21 stale slot rows
+`done/SUPERSEDED_BY_LOGICAL_BASKET`, each pointing to the canonical logical row
+`3e600d24-7536-463e-9c8d-9a57140dbaa1`. The canonical row remains the only
+pending `QM5_1257` Q02 row.
+
+DB backup:
+`D:/QM/strategy_farm/state/backups/farm_state_before_qm5_1257_logical_basket_supersede_20260709T141822Z.sqlite`
+
+Post-update Q02 state:
+
+| State | Count |
+|---|---:|
+| Pending logical basket row | 1 |
+| Legacy slot rows superseded | 21 |
+| Pre-existing obsolete non-DWX rows | 6 |
+
 ## Validation
 
 Commands:
@@ -39,9 +63,13 @@ Results:
 
 - `build_check`: PASS, 0 failures, 0 warnings.
 - `validate_symbol_scope`: `BASKET_OK`, 0 violations.
+- Post-update queue check: one pending logical-basket Q02 row; zero pending
+  legacy slot rows.
 
 ## CPU Ceiling
 
-Current live farm state showed 7 active work items and 4 active `metatester64` processes. I did not launch a manual MT5 backtest; the prioritized pending row is left for the paced workers.
+Current live farm state showed 8 `terminal64` processes and 6 active
+`metatester64` processes. I did not launch a manual MT5 backtest; the
+prioritized pending row is left for the paced workers.
 
 Guardrails: no `T_Live`, no AutoTrading, no portfolio admission/KPI/Q08 contribution changes, no T_Live manifest changes.

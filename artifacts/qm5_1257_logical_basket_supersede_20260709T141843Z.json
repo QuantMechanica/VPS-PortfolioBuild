@@ -1,0 +1,96 @@
+{
+  "generated_at_utc": "2026-07-09T14:18:43Z",
+  "operator": "codex-headless-board-advisor",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves; prefer market-neutral FX cointegration baskets",
+  "unit_of_work": "non-duplicate existing FX cointegration queue cleanup",
+  "strict_scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+  "strict_scan_result": {
+    "survivors": [
+      "QM5_12533 EURJPY.DWX/GBPJPY.DWX",
+      "QM5_12532 AUDUSD.DWX/NZDUSD.DWX"
+    ],
+    "unbuilt_strict_survivor_found": false,
+    "anchor_q02_blocked": false
+  },
+  "selected_existing_forex_card": {
+    "ea_id": "QM5_1257",
+    "slug": "lemishko-fx-cointpair",
+    "logical_symbol": "QM5_1257_AUDUSD_USDJPY_COINTEGRATION_H1",
+    "pair": [
+      "AUDUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "phase": "Q02",
+    "canonical_work_item_id": "3e600d24-7536-463e-9c8d-9a57140dbaa1",
+    "canonical_setfile": "framework/EAs/QM5_1257_lemishko-fx-cointpair/sets/QM5_1257_lemishko-fx-cointpair_QM5_1257_AUDUSD_USDJPY_COINTEGRATION_H1_H1_backtest.set",
+    "basket_manifest": "framework/EAs/QM5_1257_lemishko-fx-cointpair/basket_manifest.json"
+  },
+  "db_update": {
+    "backup_before_update": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_1257_logical_basket_supersede_20260709T141822Z.sqlite",
+    "action": "mark legacy per-slot pending Q02 rows done as SUPERSEDED_BY_LOGICAL_BASKET",
+    "legacy_slot_rows_superseded": 21,
+    "canonical_row_status_after": "pending",
+    "duplicate_work_item_created": false,
+    "manual_mt5_backtest_launched": false
+  },
+  "superseded_work_item_ids": [
+    "e17fba16-6f5a-4e93-a212-5f503da25da3",
+    "00a470f6-ef62-4fa4-a674-59476a8422e6",
+    "68aa72ac-36ec-4476-a52f-0b30c157724c",
+    "102c00a7-7114-48be-8db6-e7153cf969a9",
+    "d98982d3-33d8-485b-9dc6-53f88ececf0c",
+    "a43cc439-7e75-4740-8f58-8b05099bdced",
+    "6ee49460-e752-4a67-8b72-660a69f12431",
+    "80b06a14-423f-45d2-8530-f695a272e137",
+    "a8546c7c-df6d-45ed-8dd2-8c71af727301",
+    "08db03b8-33a1-4d39-bdba-d8959daf5ae1",
+    "f90743c5-a5e3-4ce4-837e-41367d95c047",
+    "54373931-75c6-4923-827c-7eaaa1be9516",
+    "e185834e-f5db-436a-93af-aba378911d64",
+    "d176b426-02b9-40df-9a82-e20e6937d5ca",
+    "1e3e9d47-38a3-4541-ad5e-ea42c4cc5148",
+    "9d3dad9b-6856-411e-96d8-e52e8b14eee8",
+    "54acb51e-6dc6-4546-9e2d-e8a52958344a",
+    "d96fa992-03da-4149-98aa-ba09625bff0c",
+    "5dd23818-53aa-4543-b34f-d3d8d932e864",
+    "37c291a6-6338-486e-9949-866086df8343",
+    "f1d488ea-a5cc-43b6-8795-c90567787030"
+  ],
+  "post_update_counts": {
+    "pending_logical_q02_rows": 1,
+    "legacy_slot_rows_superseded": 21,
+    "pre_existing_obsolete_non_dwx_failed_rows": 6
+  },
+  "validation": {
+    "build_check": {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_1257_lemishko-fx-cointpair -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260709_141902.json"
+    },
+    "symbol_scope": {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_1257_lemishko-fx-cointpair --verbose",
+      "result": "BASKET_OK",
+      "violations": 0
+    }
+  },
+  "cpu_ceiling_context": {
+    "active_terminal64_processes": 8,
+    "active_metatester64_processes": 6,
+    "manual_mt5_backtest_launched": false,
+    "reason": "Paced fleet already has active tester load; leave the one logical Q02 row for workers."
+  },
+  "guardrails": {
+    "new_card_created": false,
+    "new_ea_built": false,
+    "duplicate_queue_row_created": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
