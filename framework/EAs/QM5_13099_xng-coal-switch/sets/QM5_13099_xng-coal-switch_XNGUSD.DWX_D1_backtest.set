@@ -1,0 +1,44 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        13099
+; ea_slug:      xng-coal-switch
+; ea_version:   v5.0
+; set_version:  s20260709-001
+; symbol:       XNGUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   59e7d9b0f377712b38f56eaf12a564aab04969b34772d5b1020648bd13642598
+; author:       Codex
+; date:         2026-07-09
+;==========================================================
+qm_ea_id=13099
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_13099_xng-coal-switch_card.md
+strategy_spring_start_month=4
+strategy_spring_start_day=1
+strategy_spring_end_month=5
+strategy_spring_end_day=31
+strategy_autumn_start_month=9
+strategy_autumn_start_day=1
+strategy_autumn_end_month=10
+strategy_autumn_end_day=15
+strategy_price_rank_lookback=252
+strategy_entry_price_percentile=0.25
+strategy_exit_price_percentile=0.55
+strategy_reclaim_sma_period=10
+strategy_atr_period=20
+strategy_min_range_atr=0.55
+strategy_min_close_location=0.65
+strategy_exit_sma_buffer_atr=0.30
+strategy_atr_sl_mult=2.80
+strategy_atr_tp_mult=3.80
+strategy_max_hold_days=25
+strategy_max_spread_points=2500
+
