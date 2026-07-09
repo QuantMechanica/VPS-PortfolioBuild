@@ -3,18 +3,19 @@
 ; ea_id:        9184
 ; ea_slug:      jstm-pair-cointegration-fx
 ; ea_version:   v5.0
-; set_version:  s20260626-001
-; symbol:       NZDUSD.DWX
+; set_version:  s20260709-002
+; symbol:       QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1
+; host_symbol:  AUDUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   1
+; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   36846ddc11aa8c0dd62c71aec21725e16423b4a568a53e36dc13da41db0f58fb
+; build_hash:   56ad0bbcadacdb767b20eeae188c2fd624ff5ca1a1d34bb05a4422d283b49c1e
 ; author:       Development
-; date:         2026-06-26
+; date:         2026-07-09
 ;==========================================================
-qm_magic_slot_offset=1
+qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
@@ -30,5 +31,5 @@ qm_filter_volatility_atr_period=14
 qm_filter_volatility_lookback_bars=50
 qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params use EA defaults from the approved build
+; basket_manifest=../basket_manifest.json

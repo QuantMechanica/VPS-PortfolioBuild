@@ -98,24 +98,31 @@ cointegration pair left in the documented strict or extended scan frontier. The
 anchors `QM5_12532` and `QM5_12533` are not Q02-blocked, and the extended
 siblings already reached later terminal gates.
 
-`QM5_9184` remains an existing AUDUSD/NZDUSD D1 FX cointegration fallback with
-a pending AUDUSD-host Q02 retry:
+`QM5_9184` remains an existing AUDUSD/NZDUSD D1 FX cointegration fallback. The
+2026-07-09 AUDUSD-host retry reached Q02 PASS, but it was still keyed as the
+physical `AUDUSD.DWX` leg and auto-promoted a physical-leg Q04 row, which failed
+as `AUDUSD.DWX`.
 
-- Pending Q02 work item: `3bb02373-5f50-496e-9558-8590a25837db`.
+- Completed physical-leg Q02 work item: `3bb02373-5f50-496e-9558-8590a25837db`.
+- Failed physical-leg Q04 work item: `c5499375-84ca-49e4-9ff2-095e0ede7c7e`.
 - Prior AUDUSD Q02 attempts stopped on `NO_HISTORY` / `INCOMPLETE_RUNS`.
 - Prior NZDUSD Q02 attempts reached a strategy `MIN_TRADES_NOT_MET` verdict.
 - Added `basket_manifest.json` so the worker warms both `AUDUSD.DWX` and
   `NZDUSD.DWX` for the pending AUDUSD retry.
-- Updated the existing pending Q02 payload in place with `portfolio_scope=basket`
-  and the manifest path; no duplicate work item was inserted.
+- Added the canonical logical basket setfile
+  `QM5_9184_jstm-pair-cointegration-fx_QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1_D1_backtest.set`
+  so the official Q02 enqueue path can create a logical-symbol work item instead
+  of another physical-leg row.
 
 Validation after the manifest repair:
 
 - `validate_symbol_scope.py --ea-label QM5_9184_jstm-pair-cointegration-fx --verbose`: `BASKET_OK`, 0 violations.
 - `build_check.ps1 -EALabel QM5_9184_jstm-pair-cointegration-fx -SkipCompile`: `PASS`, 0 failures, 0 warnings.
+- `python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py -q`:
+  includes a regression asserting the `QM5_9184` logical setfile exists.
 
-No manual MT5 run was launched; the paced worker owns the pending Q02 row under
-the CPU-ceiling discipline.
+No manual MT5 run was launched; the paced worker owns execution under the
+CPU-ceiling discipline.
 
 ---
 
@@ -125,3 +132,4 @@ the CPU-ceiling discipline.
 |---|---|---|---|
 | v1 | 2026-06-26 | Initial build from card | 7fd5a807-876a-4d6e-8cf8-68c9b2bfa43f |
 | v2 | 2026-07-09 | FX Q02 basket-manifest repair | Added `basket_manifest.json`, validated basket scope/build check, and priority-marked the existing pending AUDUSD Q02 retry without inserting a duplicate work item. |
+| v3 | 2026-07-09 | Logical basket Q02 route | Added the canonical logical-symbol setfile so Q02/Q04 are keyed to `QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1` instead of the physical AUDUSD leg. |
