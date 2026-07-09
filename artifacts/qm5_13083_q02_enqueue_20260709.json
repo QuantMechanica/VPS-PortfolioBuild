@@ -1,0 +1,39 @@
+{
+  "ea_id": "QM5_13083",
+  "slug": "xbr-cadjpy-rspr",
+  "build_task_id": "e3f771a1-edc3-4aac-abb6-19ec9c94539b",
+  "record_build_result": "done",
+  "auto_q02_enqueued": true,
+  "work_item": {
+    "id": "251d30e8-b824-4cdb-832e-e679c9060b97",
+    "kind": "backtest",
+    "phase": "Q02",
+    "ea_id": "QM5_13083",
+    "symbol": "QM5_13083_XBR_CADJPY_RSPREAD_D1",
+    "host_symbol": "XBRUSD.DWX",
+    "timeframe": "D1",
+    "status": "pending",
+    "created_at_utc": "2026-07-09T06:09:09+00:00",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13083_xbr-cadjpy-rspr\\sets\\QM5_13083_xbr-cadjpy-rspr_QM5_13083_XBR_CADJPY_RSPREAD_D1_D1_backtest.set"
+  },
+  "basket_manifest": {
+    "logical_symbol": "QM5_13083_XBR_CADJPY_RSPREAD_D1",
+    "host_symbol": "XBRUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_symbols": [
+      "XBRUSD.DWX",
+      "CADJPY.DWX"
+    ]
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
