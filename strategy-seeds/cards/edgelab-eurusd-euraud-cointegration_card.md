@@ -150,4 +150,4 @@ cost, below the original 0.8 survivor threshold. Pipeline gates are the judge.
 | v1 | 2026-06-28 | initial OOS-positive next-best FX cointegration basket build | G0 | APPROVED |
 | v1 | 2026-06-28 | logical-basket Q02 enqueued as non-duplicate paced worker item `0480d11b-9754-4586-b461-e4e677fb58dc` | Q02 | PENDING |
 | v1-q02a | 2026-07-03 | manifest repaired to declare AUDUSD.DWX conversion history used by the EA runtime, then logical-basket Q02 work item `2eea4a0f-21a9-42a8-a0a0-4222eb37525e` queued | Q02 | PENDING |
-
+| v1-q04a | 2026-07-09 | repaired-scope Q02 PASS confirmed, then stale pre-repair Q04 work item `6d9c5116-10b3-4754-be2b-c4422734980d` requeued in place using the latest Q02 PASS payload | Q04 | PENDING |
