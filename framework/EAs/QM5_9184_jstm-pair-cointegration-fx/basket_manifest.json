@@ -1,0 +1,15 @@
+{
+  "logical_symbol": "QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1",
+  "host_symbol": "AUDUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "AUDUSD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "notes": [
+    "QM5_9184 is a two-leg FX cointegration basket. AUDUSD.DWX is the Q02 host row and NZDUSD.DWX is the paired hedge leg warmed for history and execution scope.",
+    "Added 2026-07-09 for the existing pending AUDUSD.DWX Q02 retry; no duplicate work_item was inserted."
+  ]
+}

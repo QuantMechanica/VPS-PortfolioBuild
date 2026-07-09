@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        9184
 ; ea_slug:      jstm-pair-cointegration-fx
@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b2315f48056b87348947e643556aa016bf6c1a65b56fa29176ed20e1e942e1e0
+; build_hash:   bacf1a2a5cd4f03bf7499b684f1f72e9f58f85eeecffec492a24ce4699bfa1ea
 ; author:       Development
 ; date:         2026-06-26
 ;==========================================================
