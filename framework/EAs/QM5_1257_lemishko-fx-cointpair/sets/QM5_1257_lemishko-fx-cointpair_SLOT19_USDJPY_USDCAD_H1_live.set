@@ -7,11 +7,12 @@
 ; pair_a:       USDJPY.DWX
 ; pair_b:       USDCAD.DWX
 ; timeframe:    H1
+; symbol:       USDJPY.DWX
 ; environment:  live
 ; magic_slot:   19
 ; risk_mode:    PERCENT
 ; portfolio_weight: 1
-; build_hash:   4531c3919eeb91cb0707c2670ee6092d50fd425d0533a255231cc128b6efa55f
+; build_hash:   d159bffce4108aff282d8bcd036d86beee678df0f3eec479917e6dc45a623c2c
 ; author:       Development
 ; date:         2026-05-26
 ;==========================================================

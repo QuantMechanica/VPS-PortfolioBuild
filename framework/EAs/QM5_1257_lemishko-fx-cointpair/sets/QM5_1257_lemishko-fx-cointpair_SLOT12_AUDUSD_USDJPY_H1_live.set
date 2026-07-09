@@ -7,11 +7,12 @@
 ; pair_a:       AUDUSD.DWX
 ; pair_b:       USDJPY.DWX
 ; timeframe:    H1
+; symbol:       AUDUSD.DWX
 ; environment:  live
 ; magic_slot:   12
 ; risk_mode:    PERCENT
 ; portfolio_weight: 1
-; build_hash:   74ea98986332098a67271101870599873ff50daabad2dc5c149177d991875a16
+; build_hash:   38455e22172a70637918ed05708ecf3c301b6c42b51b3a0dc2d934ffa99bd213
 ; author:       Development
 ; date:         2026-05-26
 ;==========================================================

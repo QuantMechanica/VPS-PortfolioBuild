@@ -7,11 +7,12 @@
 ; pair_a:       EURUSD.DWX
 ; pair_b:       NZDUSD.DWX
 ; timeframe:    H1
+; symbol:       EURUSD.DWX
 ; environment:  live
 ; magic_slot:   2
 ; risk_mode:    PERCENT
 ; portfolio_weight: 1
-; build_hash:   fe659df5d7b48d8b0ab7683f5b5cf1fd67a1d45bf58119be4a89efe5660fb8c6
+; build_hash:   8fa790442ca2dd0db25f4c554e464f435f029f59de7eaa6f86956ed9cb6c673f
 ; author:       Development
 ; date:         2026-05-26
 ;==========================================================

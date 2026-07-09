@@ -7,11 +7,12 @@
 ; pair_a:       EURUSD.DWX
 ; pair_b:       USDCAD.DWX
 ; timeframe:    H1
+; symbol:       EURUSD.DWX
 ; environment:  live
 ; magic_slot:   5
 ; risk_mode:    PERCENT
 ; portfolio_weight: 1
-; build_hash:   1dd05d9487f8af945b8ec9d4b2365941106dc15f307928c12531d8bd3003af4b
+; build_hash:   d2aac2d8560263dbb6e632b598b6b172d614e660337e7683773dee2c4fe0a54f
 ; author:       Development
 ; date:         2026-05-26
 ;==========================================================

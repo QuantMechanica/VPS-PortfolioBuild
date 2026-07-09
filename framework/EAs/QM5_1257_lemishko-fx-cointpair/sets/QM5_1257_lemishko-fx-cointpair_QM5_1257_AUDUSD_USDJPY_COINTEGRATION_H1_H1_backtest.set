@@ -3,24 +3,25 @@
 ; ea_id:        1257
 ; ea_slug:      lemmishko-fx-cointpair
 ; ea_version:   v5.0
-; set_version:  s20260526-001
+; set_version:  s20260709-001
 ; pair_a:       AUDUSD.DWX
-; pair_b:       USDCAD.DWX
+; pair_b:       USDJPY.DWX
+; symbol:       QM5_1257_AUDUSD_USDJPY_COINTEGRATION_H1
+; host_symbol:  AUDUSD.DWX
 ; timeframe:    H1
-; symbol:       AUDUSD.DWX
-; environment:  live
-; magic_slot:   14
-; risk_mode:    PERCENT
+; environment:  backtest
+; magic_slot:   12
+; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a504a04f91c534e71a9255265c2ba9c2e7503cc1cf32286d5fc2c8c2c40a11ee
+; build_hash:   c75efb4b3ab12a4c705fc40187b6e70760202ac7ff84b95bac26d0334a18dd03
 ; author:       Development
-; date:         2026-05-26
+; date:         2026-07-09
 ;==========================================================
-qm_magic_slot_offset=14
-RISK_FIXED=0
-RISK_PERCENT=0.25
+qm_magic_slot_offset=12
+RISK_FIXED=1000
+RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-strategy_pair_slot=14
+strategy_pair_slot=12
 strategy_formation_days=252
 strategy_zscore_h1_bars=60
 strategy_entry_z=2.0

@@ -7,11 +7,12 @@
 ; pair_a:       GBPUSD.DWX
 ; pair_b:       USDJPY.DWX
 ; timeframe:    H1
+; symbol:       GBPUSD.DWX
 ; environment:  live
 ; magic_slot:   8
 ; risk_mode:    PERCENT
 ; portfolio_weight: 1
-; build_hash:   dc3874ca217e6ddb12d10153d92529ed26cc99e5e5163bcc900bec01c1726689
+; build_hash:   82431ed7bd0f83a96903227bf1dd0e2e5ad8000288b4c48fc2c55b339766846f
 ; author:       Development
 ; date:         2026-05-26
 ;==========================================================

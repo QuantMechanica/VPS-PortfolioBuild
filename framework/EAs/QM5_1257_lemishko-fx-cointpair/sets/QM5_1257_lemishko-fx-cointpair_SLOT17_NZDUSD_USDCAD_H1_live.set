@@ -7,11 +7,12 @@
 ; pair_a:       NZDUSD.DWX
 ; pair_b:       USDCAD.DWX
 ; timeframe:    H1
+; symbol:       NZDUSD.DWX
 ; environment:  live
 ; magic_slot:   17
 ; risk_mode:    PERCENT
 ; portfolio_weight: 1
-; build_hash:   8faa9e18e3d7a80d361b0bf2415adf18ed1acf0793caba90fc4c93cbb6c3b706
+; build_hash:   5b8fe5ba6c8968acbe3dd45ce68f8cd2ae2908749a3e9dba100b00e28992ee5a
 ; author:       Development
 ; date:         2026-05-26
 ;==========================================================

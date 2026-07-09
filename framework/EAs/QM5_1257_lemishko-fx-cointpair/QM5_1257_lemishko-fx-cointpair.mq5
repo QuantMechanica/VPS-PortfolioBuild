@@ -79,29 +79,6 @@ bool ResolvePair(const int slot, string &a, string &b)
    return false;
 }
 
-int MonthKey(const datetime t)
-{
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 100 + dt.mon;
-}
-
-bool IsLastBarOfMonth(const datetime t)
-{
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   const int dom = dt.day;
-   const int mon = dt.mon;
-   const int year = dt.year;
-   datetime next;
-   if (mon == 12)
-      next = StringToTime(StringFormat("%d.01.01 00:00", year + 1));
-   else
-      next = StringToTime(StringFormat("%d.%02d.01 00:00", year, mon + 1));
-   const datetime last_of_month = next - 86400;
-   return (t >= last_of_month - 86400 && t <= last_of_month);
-}
-
 double AdfCriticalFromP(const double p_value)
 {
    if (p_value <= 0.01) return -3.43;
@@ -115,7 +92,7 @@ bool ReadLogCloses(const string symbol, double &out[], const int bars)
    if (bars < 30) return false;
    double closes[];
    ArraySetAsSeries(closes, true);
-   if (CopyClose(symbol, PERIOD_D1, 1, bars, closes) != bars)
+   if (CopyClose(symbol, PERIOD_D1, 1, bars, closes) != bars) // perf-allowed: bounded D1 formation window, called only from the QM_IsNewBar-gated path.
       return false;
    ArrayResize(out, bars);
    ArraySetAsSeries(out, true);
@@ -251,7 +228,7 @@ bool RefreshState()
 
    const int formation = MathMax(30, strategy_formation_days);
    const int required = MathMax(formation, strategy_zscore_h1_bars + 2);
-   if (Bars(g_pair_a, PERIOD_D1) < required + 5 || Bars(g_pair_b, PERIOD_D1) < required + 5)
+   if (Bars(g_pair_a, PERIOD_D1) < required + 5 || Bars(g_pair_b, PERIOD_D1) < required + 5) // perf-allowed: bounded D1 warmup guard for both basket legs.
    {
       g_state_ready = false;
       return false;
@@ -264,9 +241,13 @@ bool RefreshState()
       return false;
    }
 
-   const datetime last_d1 = iTime(g_pair_a, PERIOD_D1, 1);
-   const int month_key = MonthKey(last_d1);
-   if (g_estimate_month_key < 0 || (month_key != g_estimate_month_key && IsLastBarOfMonth(last_d1)))
+   const int month_key = QM_CalendarPeriodKey(PERIOD_MN1, g_pair_a, 1);
+   if (month_key == 0)
+   {
+      g_state_ready = false;
+      return false;
+   }
+   if (g_estimate_month_key < 0 || month_key != g_estimate_month_key)
    {
       if (!EstimateOls(logx, logy, formation, g_alpha, g_beta))
       {
@@ -322,14 +303,14 @@ bool H1ZScoreRefresh()
 {
    if (g_pair_a == "" || g_pair_b == "") return false;
    const int zbars = MathMax(10, strategy_zscore_h1_bars);
-   if (Bars(g_pair_a, PERIOD_H1) < zbars + 2 || Bars(g_pair_b, PERIOD_H1) < zbars + 2)
+   if (Bars(g_pair_a, PERIOD_H1) < zbars + 2 || Bars(g_pair_b, PERIOD_H1) < zbars + 2) // perf-allowed: bounded H1 z-score warmup guard for both basket legs.
       return false;
 
    double closes_a[], closes_b[];
    ArraySetAsSeries(closes_a, true);
    ArraySetAsSeries(closes_b, true);
-   if (CopyClose(g_pair_a, PERIOD_H1, 1, zbars, closes_a) != zbars) return false;
-   if (CopyClose(g_pair_b, PERIOD_H1, 1, zbars, closes_b) != zbars) return false;
+   if (CopyClose(g_pair_a, PERIOD_H1, 1, zbars, closes_a) != zbars) return false; // perf-allowed: bounded H1 residual refresh, called only from the QM_IsNewBar-gated path.
+   if (CopyClose(g_pair_b, PERIOD_H1, 1, zbars, closes_b) != zbars) return false; // perf-allowed: bounded H1 residual refresh, called only from the QM_IsNewBar-gated path.
 
    double residuals[];
    ArrayResize(residuals, zbars);
@@ -648,7 +629,6 @@ void OnTick()
       return;
 
    Strategy_ManageOpenPosition();
-   Strategy_ExitSignal();
 
    if (!QM_IsNewBar())
       return;
@@ -656,6 +636,7 @@ void OnTick()
    QM_EquityStreamOnNewBar();
    RefreshState();
    H1ZScoreRefresh();
+   Strategy_ExitSignal();
 
    QM_EntryRequest req;
    Strategy_EntrySignal(req);

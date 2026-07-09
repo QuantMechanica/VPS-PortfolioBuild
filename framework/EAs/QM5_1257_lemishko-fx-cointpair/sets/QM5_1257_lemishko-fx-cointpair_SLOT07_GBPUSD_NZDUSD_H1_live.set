@@ -7,11 +7,12 @@
 ; pair_a:       GBPUSD.DWX
 ; pair_b:       NZDUSD.DWX
 ; timeframe:    H1
+; symbol:       GBPUSD.DWX
 ; environment:  live
 ; magic_slot:   7
 ; risk_mode:    PERCENT
 ; portfolio_weight: 1
-; build_hash:   c2b6932cee7983a43c67f89ad463e0657abbda877f4d0c7556e4d111109f07b4
+; build_hash:   d9c123e9790b3010801c82b2cef7f0cb21e86558c76751eb20ab6f268cdd8e78
 ; author:       Development
 ; date:         2026-05-26
 ;==========================================================

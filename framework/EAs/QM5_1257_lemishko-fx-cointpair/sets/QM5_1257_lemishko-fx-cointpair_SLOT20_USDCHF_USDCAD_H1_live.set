@@ -7,11 +7,12 @@
 ; pair_a:       USDCHF.DWX
 ; pair_b:       USDCAD.DWX
 ; timeframe:    H1
+; symbol:       USDCHF.DWX
 ; environment:  live
 ; magic_slot:   20
 ; risk_mode:    PERCENT
 ; portfolio_weight: 1
-; build_hash:   a36eed03af05fed3236d39e29f4ddf5181ec886aa6a39793e1109ec75b71ec75
+; build_hash:   f2f2bf9d22b519aefbd18d345249676cc0bf136b79fa9e693e64b19daa2143bf
 ; author:       Development
 ; date:         2026-05-26
 ;==========================================================

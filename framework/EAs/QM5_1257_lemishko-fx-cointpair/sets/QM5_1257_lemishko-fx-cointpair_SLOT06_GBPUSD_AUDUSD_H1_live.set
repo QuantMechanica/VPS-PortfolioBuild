@@ -7,11 +7,12 @@
 ; pair_a:       GBPUSD.DWX
 ; pair_b:       AUDUSD.DWX
 ; timeframe:    H1
+; symbol:       GBPUSD.DWX
 ; environment:  live
 ; magic_slot:   6
 ; risk_mode:    PERCENT
 ; portfolio_weight: 1
-; build_hash:   9c93052fd1cc9ba3e97c0765558d0053284bed746a4e9d8c3e03648a413d960d
+; build_hash:   ad65899043ccdeb1e118a7a56cb48e592de498ebe5dcf1f57ba89bb5c8dfc5de
 ; author:       Development
 ; date:         2026-05-26
 ;==========================================================

@@ -7,11 +7,12 @@
 ; pair_a:       AUDUSD.DWX
 ; pair_b:       USDCHF.DWX
 ; timeframe:    H1
+; symbol:       AUDUSD.DWX
 ; environment:  live
 ; magic_slot:   13
 ; risk_mode:    PERCENT
 ; portfolio_weight: 1
-; build_hash:   ea2246859d97804e4666ce5938559a5ac24924b19b7630dfc0ab95fca1dd094b
+; build_hash:   b6cb531e1a551166a53e8a57b69d294aea33f85181c69b0728250c6a28b78343
 ; author:       Development
 ; date:         2026-05-26
 ;==========================================================

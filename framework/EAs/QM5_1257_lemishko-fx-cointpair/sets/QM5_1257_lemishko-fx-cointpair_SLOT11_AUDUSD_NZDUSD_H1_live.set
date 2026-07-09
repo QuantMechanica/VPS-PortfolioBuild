@@ -7,11 +7,12 @@
 ; pair_a:       AUDUSD.DWX
 ; pair_b:       NZDUSD.DWX
 ; timeframe:    H1
+; symbol:       AUDUSD.DWX
 ; environment:  live
 ; magic_slot:   11
 ; risk_mode:    PERCENT
 ; portfolio_weight: 1
-; build_hash:   85f48112990f83ff6aabe3ab71637bf96d7f8575ca3126bc6d8b5c5e4be1188c
+; build_hash:   d4588e9651e6d190882d9058a300b34635fb876881bbb973aa51dec80dd18258
 ; author:       Development
 ; date:         2026-05-26
 ;==========================================================

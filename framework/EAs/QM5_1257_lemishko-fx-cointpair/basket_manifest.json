@@ -1,0 +1,17 @@
+{
+  "logical_symbol": "QM5_1257_AUDUSD_USDJPY_COINTEGRATION_H1",
+  "host_symbol": "AUDUSD.DWX",
+  "host_timeframe": "H1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "AUDUSD.DWX",
+    "USDJPY.DWX"
+  ],
+  "q02_from_date": "2017.01.01",
+  "q02_to_date": "2022.12.31",
+  "notes": [
+    "Canonical logical basket row for slot 12 of QM5_1257. The original 21 per-slot setfiles remain for diagnostics, but Q02 should evaluate this AUDUSD/USDJPY pair as one market-neutral basket rather than as a standalone host-leg symbol.",
+    "Uses the existing slot 12 RISK_FIXED backtest parameters: strategy_pair_slot=12, RISK_FIXED=1000, RISK_PERCENT=0."
+  ]
+}

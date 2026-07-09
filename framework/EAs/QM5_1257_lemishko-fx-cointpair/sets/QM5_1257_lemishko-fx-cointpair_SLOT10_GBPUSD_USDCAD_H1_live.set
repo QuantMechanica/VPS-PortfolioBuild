@@ -7,11 +7,12 @@
 ; pair_a:       GBPUSD.DWX
 ; pair_b:       USDCAD.DWX
 ; timeframe:    H1
+; symbol:       GBPUSD.DWX
 ; environment:  live
 ; magic_slot:   10
 ; risk_mode:    PERCENT
 ; portfolio_weight: 1
-; build_hash:   a618dd69a4156162504a63248f2da3ec84afd3bbb246acedebc6db5042f9a6b9
+; build_hash:   3ceb2b6e56ee1f80caa2023eb4614541429372b4b86eab08899f870ccca79974
 ; author:       Development
 ; date:         2026-05-26
 ;==========================================================

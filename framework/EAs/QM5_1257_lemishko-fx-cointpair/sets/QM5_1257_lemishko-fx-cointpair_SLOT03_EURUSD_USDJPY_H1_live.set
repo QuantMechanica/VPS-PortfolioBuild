@@ -7,11 +7,12 @@
 ; pair_a:       EURUSD.DWX
 ; pair_b:       USDJPY.DWX
 ; timeframe:    H1
+; symbol:       EURUSD.DWX
 ; environment:  live
 ; magic_slot:   3
 ; risk_mode:    PERCENT
 ; portfolio_weight: 1
-; build_hash:   aafb2a464a3ca5e84efebf9b5d3c90a872ca0fe9a6ae267ba52e3f9ec28b1793
+; build_hash:   827094ea406f51e8cba13daa7e3dd717818eadefb8753fb0067f4a411a23a3f0
 ; author:       Development
 ; date:         2026-05-26
 ;==========================================================
