@@ -67,3 +67,7 @@ g0_approval_reasoning: "Mission-directed commodity/energy sleeve 2026-07-09: R1 
 # XNG LNG Export-Demand Pullback Continuation
 
 See canonical card `strategy-seeds/cards/xng-lng-pb_card.md`.
+
+Pipeline status: Q01 build/spec PASS; strict compile/build_check PASS; Q02
+pending as work item `a9c7c7ea-ca75-4e83-b2e8-255c6ba28c67` for
+`XNGUSD.DWX` D1.

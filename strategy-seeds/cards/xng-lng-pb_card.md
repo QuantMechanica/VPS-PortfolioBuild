@@ -272,9 +272,15 @@ Darwinex bars.
 ## Pipeline History
 
 - 2026-07-09: Mission-directed card created and assigned `QM5_13084`.
+- 2026-07-09: Q01 build/spec validation PASS; strict compile/build_check PASS
+  with 0 errors, 0 warnings, and RISK_FIXED backtest setfile hash
+  `0dc34f513f71344717a82acf2af036bf3668a59c139ec9266aeb3e0be395ee37`.
+- 2026-07-09: Q02 baseline backtest enqueued for `XNGUSD.DWX` D1 as work
+  item `a9c7c7ea-ca75-4e83-b2e8-255c6ba28c67`.
 
 ## Pipeline Phase Status
 
 - G0: APPROVED.
-- Q01 build/spec: pending.
-- Q02 backtest enqueue: pending.
+- Q01 build/spec: PASS.
+- Q02 backtest enqueue: pending work item
+  `a9c7c7ea-ca75-4e83-b2e8-255c6ba28c67`.
