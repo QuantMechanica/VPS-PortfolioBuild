@@ -54,15 +54,15 @@
     "warnings": 0,
     "errors": 0,
     "symbol_scope": "SINGLE_SYMBOL_OK",
-    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260709_184249\\QM5_13097_xti-ethanol-reblend.compile.log",
-    "summary_csv": "D:\\QM\\reports\\compile\\20260709_184249\\summary.csv",
-    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13097_xti-ethanol-reblend/QM5_13097_xti-ethanol-reblend.mq5 -Strict"
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260709_184710\\QM5_13097_xti-ethanol-reblend.compile.log",
+    "summary_csv": "D:\\QM\\reports\\compile\\20260709_184710\\summary.csv",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13097_xti-ethanol-reblend/QM5_13097_xti-ethanol-reblend.mq5 -Strict"
   },
   "build_check": {
     "status": "PASS",
     "warnings": 0,
-    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260709_184259.json",
-    "setfile_build_hash": "3d2d5a4d3bb02debbcb16d168fc78d8ae05dd004572b4d73fd54178174914e4b",
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260709_184726.json",
+    "setfile_build_hash": "f619ba0403d2737de3bc8fb106054fb9be9fdd61563ada1db1d09cc30806d8c4",
     "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13097_xti-ethanol-reblend -Strict -SkipCompile"
   },
   "validations": {
@@ -133,9 +133,9 @@
     "strategy_card_doc": "1223456539BFA2FC8CC9F9E35F0054A7DA2724C535D2B7E574A65E411817E36A",
     "approved_card": "F9E7D4987D207F70E2842347082F88C51CEDE208DEC42DDE578426886CE30320",
     "source_packet": "A462A3688083D7AB239C6FE6778CF5C29885289DE46E8D3CCB01741708BBDB56",
-    "mq5": "004FC24CD34BEC17CCD23C77AF98B163BEB3184B23901D00EDF2D694219039C6",
-    "ex5": "0C9B9D8EBAA3F6C6EBDF686101EECC9A07522ACD51F8B7D5D4E8FD6CFBA9D474",
+    "mq5": "F38AB494CE5E53C4A15ADAE2A56174735D414AD1ABE28B635BF041868241A2B8",
+    "ex5": "5552CCE046D1161FD153CC991741A42378F9E8790DD2E77796CFCC0E074EF638",
     "spec": "E01B190B3F42068FE8913D02DD910EA1984071435F48D1097EB5582C8C858502",
-    "setfile": "071A242649B01BC4F68C134B993D8DA23218A719A6E6BE660639ABE0A696A776"
+    "setfile": "4824399D7CB81FBE0566D3328B632712DBBF124FF7BBA05960DE42ADCD561C6C"
   }
 }
