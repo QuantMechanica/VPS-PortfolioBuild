@@ -60,13 +60,6 @@ bool Strategy_IsXtiD1()
    return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
   }
 
-int Strategy_DayKey(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 10000 + dt.mon * 100 + dt.day;
-  }
-
 int Strategy_MonthDayKey(const datetime t)
   {
    MqlDateTime dt;
@@ -168,7 +161,7 @@ bool Strategy_LoadClosedState(double &open_last,
       return false;
 
    in_window = Strategy_InFadeWindow(closed_bar_time);
-   day_key = Strategy_DayKey(closed_bar_time);
+   day_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 1);
    return true;
   }
 

@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13074
 ; ea_slug:      eia-jetfuel-fade
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   eb26145d420546ea4081ca440396a735a28e4784d466dfae3cca00a0bc9248ff
+; build_hash:   6a6f582c2b8dd6b8bf1c6d516d6b6a314addb747ca1f6f9439d0112042a8876d
 ; author:       Development
 ; date:         2026-07-09
 ;==========================================================
