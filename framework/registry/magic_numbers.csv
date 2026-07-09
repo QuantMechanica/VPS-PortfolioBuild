@@ -14782,6 +14782,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13079,xbr-audcad-rspr,0,XBRUSD.DWX,130790000,2026-07-09,Codex,active
 13079,xbr-audcad-rspr,1,AUDCAD.DWX,130790001,2026-07-09,Codex,active
 13080,xcu-donchian55,0,XCUUSD.DWX,130800000,2026-07-09,Codex,active
+13081,xcu-4w-reversal,0,XCUUSD.DWX,130810000,2026-07-09,Codex,active
 1558,aa-zak-mac-3-10,0,SP500.DWX,15580000,2026-07-09,Codex,active
 1558,aa-zak-mac-3-10,1,NDX.DWX,15580001,2026-07-09,Codex,active
 1558,aa-zak-mac-3-10,2,WS30.DWX,15580002,2026-07-09,Codex,active
