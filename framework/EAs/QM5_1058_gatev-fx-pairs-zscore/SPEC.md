@@ -101,3 +101,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-13 | Initial build from card | 47df779e-2f47-4204-ae59-703192fef6be |
+| v2 | 2026-07-09 | Q06 harsh-stress handoff | Persisted the logical-basket Q06 stress setfile generated from the Q05 PASS path for active work item `25c0e5ba-1456-4e74-8fb1-20a729ad4cd3`; no new Q02 duplicate was inserted under the active farm CPU ceiling. |
