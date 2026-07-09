@@ -253,5 +253,4 @@ hard_rules_at_risk:
 |---|---|---|---|
 | G0 Research Intake | 2026-07-09 | APPROVED | this card |
 | Q01 Build Validation | 2026-07-09 | PASS | `artifacts/qm5_13089_build_result.json` |
-| Q02 Baseline Screening | 2026-07-09 | QUEUED | `D:\\QM\\strategy_farm\\state\\farm_state.sqlite` |
-
+| Q02 Baseline Screening | 2026-07-09 | QUEUED | `D:\\QM\\strategy_farm\\state\\farm_state.sqlite` work item `7461ca7a-c1fb-4007-b124-0ecaafa51993` |
