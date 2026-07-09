@@ -14861,3 +14861,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 1560,aa-zak-macd-3-12-6,8,USDJPY.DWX,15600008,2026-07-09,Codex,active
 13095,xti-outweek-fade,0,XTIUSD.DWX,130950000,2026-07-09,Codex,active
 13096,xti-nr7-brk,0,XTIUSD.DWX,130960000,2026-07-09,Codex,active
+13097,xti-ethanol-reblend,0,XTIUSD.DWX,130970000,2026-07-09,Codex,active

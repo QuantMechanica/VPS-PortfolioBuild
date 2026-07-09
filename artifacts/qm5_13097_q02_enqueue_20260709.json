@@ -1,0 +1,45 @@
+{
+  "recorded_at_utc": "2026-07-09T18:45:30Z",
+  "source": "farmctl.record_build_result.auto_q02",
+  "build_result_path": "artifacts/qm5_13097_build_result.json",
+  "build_task_id": "b52f7e39-2395-4f01-916e-c1df078b2643",
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13097",
+    "enqueued": [
+      {
+        "wi_id": "7760b938",
+        "symbol": "XTIUSD.DWX",
+        "tf": "D1",
+        "setfile": "QM5_13097_xti-ethanol-reblend_XTIUSD.DWX_D1_backtest.set"
+      }
+    ],
+    "skipped": []
+  },
+  "work_items": [
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-09T18:45:21+00:00",
+      "ea_id": "QM5_13097",
+      "evidence_path": null,
+      "id": "7760b938-46ea-4fd8-85ac-9ee8ff2849f6",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q02",
+      "phase_display": "Q02",
+      "phase_qid": "Q02",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13097_xti-ethanol-reblend\\sets\\QM5_13097_xti-ethanol-reblend_XTIUSD.DWX_D1_backtest.set",
+      "status": "pending",
+      "symbol": "XTIUSD.DWX",
+      "updated_at": "2026-07-09T18:45:21+00:00",
+      "verdict": null
+    }
+  ],
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "backtest_cpu_used": false
+  }
+}
