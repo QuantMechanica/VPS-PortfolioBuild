@@ -189,12 +189,13 @@ phases must validate or reject this mechanical `XCUUSD.DWX` port.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-09 | initial structural XCU commodity-reversal build | G0 | APPROVED |
+| v1-q01 | 2026-07-09 | strict framework build validation | Q01 | PASS |
+| v1-q02 | 2026-07-09 | paced-fleet Q02 enqueue after build pass | Q02 | PENDING work item 27d704dc-d095-480f-b7bd-634fc3b7ed70 |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-09 | APPROVED | this card |
-| Q01 Build Validation | TBD | TBD | TBD |
-| Q02 Baseline Screening | TBD | TBD | enqueue after compile |
-
+| Q01 Build Validation | 2026-07-09 | PASS | `artifacts/qm5_13081_build_result.json` |
+| Q02 Baseline Screening | 2026-07-09 | PENDING | work item `27d704dc-d095-480f-b7bd-634fc3b7ed70` in `D:\QM\strategy_farm\state\farm_state.sqlite` |

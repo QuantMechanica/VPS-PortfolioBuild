@@ -1,0 +1,47 @@
+{
+  "ea_id": "QM5_13081",
+  "slug": "xcu-4w-reversal",
+  "symbol": "XCUUSD.DWX",
+  "timeframe": "D1",
+  "created_at_utc": "2026-07-09T05:04:52.259663+00:00",
+  "risk_mode": "RISK_FIXED",
+  "risk_fixed": 1000,
+  "risk_percent": 0,
+  "build_check": {
+    "command": "framework/scripts/build_check.ps1 -EALabel QM5_13081_xcu-4w-reversal",
+    "run_tag": "20260709_050155",
+    "status": "PASS",
+    "strict": true,
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:/QM/reports/framework/21/build_check_20260709_050155.json"
+  },
+  "compile": {
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "compile_log_path": "C:/QM/repo/framework/build/compile/20260709_050155/QM5_13081_xcu-4w-reversal.compile.log",
+    "summary_csv_path": "D:/QM/reports/compile/20260709_050155/summary.csv",
+    "ex5_path": "C:/QM/repo/framework/EAs/QM5_13081_xcu-4w-reversal/QM5_13081_xcu-4w-reversal.ex5"
+  },
+  "hashes": {
+    "mq5_sha256": "F3D4E0A401AF98258BBA4C8C44332583426128D31E71D9A24A64F2D93F3232E2",
+    "ex5_sha256": "733E0BDDF60267D7218855B8FD5752412ABEE4CAC633F23B7C5456F591405C46",
+    "setfile_sha256": "AE6D4DFED938C00136DDA1B344BBFAB0C807CC3E374720C8216FAF14BFE4AE36",
+    "setfile_build_hash": "6581fa175add825494b2b924374393c03d5e2f4184361b5525e5f48084531a01",
+    "magic_resolver_sha256": "21DA9DC83709711AEA27C4C16D72A8BF57DFDD7F06FBAC7CC78C6EAAAE336FDA"
+  },
+  "q02_enqueue": {
+    "status": "pending",
+    "work_item_id": "27d704dc-d095-480f-b7bd-634fc3b7ed70",
+    "build_task_id": "ac21995f-125f-4a70-bc72-91fed1c5853b",
+    "queue_db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_13081_xcu-4w-reversal/sets/QM5_13081_xcu-4w-reversal_XCUUSD.DWX_D1_backtest.set"
+  },
+  "scope_controls": {
+    "t_live_manifest_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "backtest_run": false
+  }
+}
