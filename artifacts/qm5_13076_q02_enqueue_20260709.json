@@ -1,0 +1,90 @@
+{
+  "action": "enqueue_q02",
+  "ea_id": "QM5_13076",
+  "ea_label": "QM5_13076_xti-nzdcad-rspr",
+  "slug": "xti-nzdcad-rspr",
+  "strategy_id": "EIA-BOC-RBNZ-XTI-NZDCAD-2026",
+  "build_task_id": "7266baa4-02d0-4d0b-b46e-edaec0ac0c08",
+  "phase": "Q02",
+  "source": "record_build_result.auto_q02",
+  "record_build": {
+    "recorded": true,
+    "task_id": "7266baa4-02d0-4d0b-b46e-edaec0ac0c08",
+    "new_status": "done",
+    "smoke_result": "deferred_p2_smoke",
+    "blocked_reason": "",
+    "fail_code": null,
+    "next_action_hint": "Q02 auto-enqueued (1 work_items); worker daemons will dispatch on next tick",
+    "auto_q02_enqueued": {
+      "ea_id": "QM5_13076",
+      "enqueued": [
+        {
+          "wi_id": "f9634f67",
+          "symbol": "QM5_13076_XTI_NZDCAD_RSPREAD_D1",
+          "tf": "D1",
+          "setfile": "QM5_13076_xti-nzdcad-rspr_QM5_13076_XTI_NZDCAD_RSPREAD_D1_D1_backtest.set"
+        }
+      ],
+      "skipped": []
+    }
+  },
+  "work_item": {
+    "id": "f9634f67-205b-4e48-bdd8-4800bf985825",
+    "kind": "backtest",
+    "phase": "Q02",
+    "ea_id": "QM5_13076",
+    "symbol": "QM5_13076_XTI_NZDCAD_RSPREAD_D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13076_xti-nzdcad-rspr\\sets\\QM5_13076_xti-nzdcad-rspr_QM5_13076_XTI_NZDCAD_RSPREAD_D1_D1_backtest.set",
+    "status": "pending",
+    "attempt_count": 0,
+    "created_at_utc": "2026-07-09T01:16:20+00:00",
+    "updated_at_utc": "2026-07-09T01:16:20+00:00",
+    "payload": {
+      "host_symbol": "XTIUSD.DWX",
+      "host_timeframe": "D1",
+      "enqueued_by": "record_build_result.auto_q02",
+      "enqueued_at_utc": "2026-07-09T01:16:20+00:00",
+      "build_task_id": "7266baa4-02d0-4d0b-b46e-edaec0ac0c08",
+      "basket_manifest": "C:\\QM\\repo\\framework\\EAs\\QM5_13076_xti-nzdcad-rspr\\basket_manifest.json",
+      "basket_symbol_count": 2,
+      "logical_symbol": "QM5_13076_XTI_NZDCAD_RSPREAD_D1",
+      "portfolio_scope": "basket",
+      "timeout_min": 450,
+      "basket_symbols": [
+        "XTIUSD.DWX",
+        "NZDCAD.DWX"
+      ],
+      "traded_symbols": [
+        "XTIUSD.DWX",
+        "NZDCAD.DWX"
+      ],
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_weight": 1,
+      "risk_mode": "RISK_FIXED"
+    }
+  },
+  "queue_snapshot": {
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "q02_active": 2,
+    "q02_pending": 5129,
+    "active_work_items_total": 7,
+    "terminal64_running_count": 6,
+    "running_mt5_terminals": [
+      "T1",
+      "T3",
+      "T4",
+      "T6"
+    ],
+    "scanned_at_utc": "2026-07-09T01:16:30+00:00",
+    "note": "No manual MT5 smoke/backtest was launched; Q02 was left pending for paced fleet dispatch."
+  },
+  "constraints_observed": {
+    "manual_mt5_backtest_launched": false,
+    "autotrading_touched": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_manifest_touched": false
+  },
+  "artifact": "C:\\QM\\repo\\artifacts\\qm5_13076_q02_enqueue_20260709.json"
+}
