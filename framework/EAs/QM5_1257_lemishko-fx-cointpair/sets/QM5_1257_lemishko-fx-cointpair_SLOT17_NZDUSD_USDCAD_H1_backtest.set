@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        1257
 ; ea_slug:      lemmishko-fx-cointpair
@@ -12,7 +12,7 @@
 ; magic_slot:   17
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   6141ee342f989ec62cf7c7d3e902ad0417fdaa61068eed0ac48f9c13d263e7a8
 ; author:       Development
 ; date:         2026-05-26
 ;==========================================================
