@@ -243,5 +243,5 @@ hard_rules_at_risk:
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-09 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-09 | PENDING | `artifacts/qm5_13094_build_result.json` |
-| Q02 Baseline Screening | 2026-07-09 | PENDING | `artifacts/qm5_13094_q02_enqueue_20260709.json` |
+| Q01 Build Validation | 2026-07-09 | PASS | `artifacts/qm5_13094_build_result.json` |
+| Q02 Baseline Screening | 2026-07-09 | QUEUED | `artifacts/qm5_13094_q02_enqueue_20260709.json`; work item `f1df80d1-5f46-45b8-986e-639a5f45c1d8` |

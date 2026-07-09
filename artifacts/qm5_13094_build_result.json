@@ -1,0 +1,161 @@
+{
+  "task_id": "143001cb-e0dd-4e93-8d57-9b5419cb1388",
+  "ea_id": "QM5_13094",
+  "ea_label": "QM5_13094_xti-xcu-brk",
+  "slug": "xti-xcu-brk",
+  "strategy": "XTI/XCU D1 WTI-copper log-spread channel-breakout basket",
+  "strategy_id": "EIA-CME-USGS-XTI-XCU-BRK-2026",
+  "source_id": "EIA-CME-USGS-XTI-XCU-BRK-2026",
+  "source_links": [
+    "https://www.eia.gov/finance/markets/crudeoil/spot_prices.php",
+    "https://www.cmegroup.com/markets/metals/base/copper.html",
+    "https://www.usgs.gov/centers/national-minerals-information-center/copper-statistics-and-information"
+  ],
+  "symbols": [
+    "XTIUSD.DWX",
+    "XCUUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XCUUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XTIUSD.DWX",
+    "XCUUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13094_XTI_XCU_BRK_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13094_xti-xcu-brk",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13094_xti-xcu-brk\\QM5_13094_xti-xcu-brk.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13094_xti-xcu-brk\\QM5_13094_xti-xcu-brk.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13094_xti-xcu-brk\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13094_xti-xcu-brk.md",
+  "approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13094_xti-xcu-brk.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13094_xti-xcu-brk\\basket_manifest.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13094_xti-xcu-brk\\sets\\QM5_13094_xti-xcu-brk_QM5_13094_XTI_XCU_BRK_D1_D1_backtest.set"
+  ],
+  "magic_base": 130940000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 130940000
+    },
+    {
+      "slot": 1,
+      "symbol": "XCUUSD.DWX",
+      "magic": 130940001
+    }
+  ],
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "compile": {
+    "status": "COMPILED",
+    "warnings": 0,
+    "symbol_scope": "BASKET_OK",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260709_153928\\QM5_13094_xti-xcu-brk.compile.log",
+    "summary_csv": "D:/QM/reports/compile/20260709_153928/summary.csv",
+    "command": "pwsh -File framework/scripts/compile_one.ps1 -EALabel QM5_13094_xti-xcu-brk -Strict"
+  },
+  "build_check": {
+    "status": "PASS",
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260709_154354.json",
+    "command": "pwsh -File framework/scripts/build_check.ps1 -EALabel QM5_13094_xti-xcu-brk -SkipCompile"
+  },
+  "validations": {
+    "spec_doc": {
+      "status": "PASS",
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13094_xti-xcu-brk"
+    },
+    "symbol_scope": {
+      "status": "PASS",
+      "verdict": "BASKET_OK",
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_13094_xti-xcu-brk --json"
+    },
+    "magic_registry": {
+      "status": "PASS",
+      "slots": [
+        0,
+        1
+      ],
+      "resolver_rows_kept": 14743,
+      "pre_existing_missing_ea_dir_warnings": [
+        1001,
+        1015,
+        1016
+      ]
+    },
+    "risk_mode": {
+      "status": "PASS",
+      "backtest_uses_risk_fixed": true,
+      "risk_percent_zero": true
+    },
+    "basket_manifest": {
+      "status": "PASS",
+      "logical_symbol": "QM5_13094_XTI_XCU_BRK_D1",
+      "host_symbol": "XTIUSD.DWX",
+      "host_timeframe": "D1"
+    },
+    "build_guardrails": {
+      "status": "PASS",
+      "ml_forbidden": "PASS",
+      "external_runtime_data": "PASS",
+      "setfile_schema": "PASS",
+      "five_input_groups": "PASS"
+    }
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "backtest_cpu_used": false
+  },
+  "file_hashes_sha256": {
+    "mq5": "7F8B02CFB8FA259316C7B90C3E227C1405CAC61035BE6637BA1F0BD83D765BA2",
+    "ex5": "3CEB08AE68001DAA02C9B77683DBB4E22AE3C82C835047DFD4F4888ED238C7C9",
+    "setfile": "6EF7CDC7BE912C0C4ED0B18984D84C191EE3526164482AD984BC2CB892629AA6",
+    "spec": "6C14DC60B3408A2558EC7883E337EFE5D3B82EE1394E746BFCBA5945FA6B2AAC",
+    "basket_manifest": "FEEAE31FE810F538E64B12F9BF9091BB9CE7262EC0AA5C8EB4B5BDB975FD2D8B",
+    "approved_card": "6EF5608E243D855ED255C8366B8FB6378E3B38DFDBB46E5997D752076630F001",
+    "canonical_card": "6EF5608E243D855ED255C8366B8FB6378E3B38DFDBB46E5997D752076630F001",
+    "source_packet": "6FEB0CE3B231D03255C95B5C2872AFDA28B388DF5284974062B2995A0A243958",
+    "approved_card_copy": "6EF5608E243D855ED255C8366B8FB6378E3B38DFDBB46E5997D752076630F001",
+    "strategy_card_doc": "6EF5608E243D855ED255C8366B8FB6378E3B38DFDBB46E5997D752076630F001"
+  },
+  "auto_q02_enqueued": {
+    "method": "farmctl._auto_enqueue_q02_for_build.manual_invocation",
+    "artifact": "artifacts/qm5_13094_q02_enqueue_20260709.json",
+    "enqueued": [
+      {
+        "wi_id": "f1df80d1",
+        "symbol": "QM5_13094_XTI_XCU_BRK_D1",
+        "tf": "D1",
+        "setfile": "QM5_13094_xti-xcu-brk_QM5_13094_XTI_XCU_BRK_D1_D1_backtest.set"
+      }
+    ],
+    "skipped": [],
+    "ea_id": "QM5_13094"
+  }
+}
