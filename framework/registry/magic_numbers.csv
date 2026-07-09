@@ -14834,3 +14834,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13086,xbr-cadchf-rspr,1,CADCHF.DWX,130860001,2026-07-09,Codex,active
 13087,xbr-gbpcad-rspr,0,XBRUSD.DWX,130870000,2026-07-09,Codex,active
 13087,xbr-gbpcad-rspr,1,GBPCAD.DWX,130870001,2026-07-09,Codex,active
+13088,xti-export-fade,0,XTIUSD.DWX,130880000,2026-07-09,Codex,active
