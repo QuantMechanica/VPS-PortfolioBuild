@@ -1,0 +1,43 @@
+{
+  "recorded_at_utc": "2026-07-09T17:43:38Z",
+  "source": "farmctl.record_build_result.auto_q02",
+  "build_result_path": "artifacts/qm5_13096_build_result.json",
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13096",
+    "enqueued": [
+      {
+        "wi_id": "3c451296",
+        "symbol": "XTIUSD.DWX",
+        "tf": "D1",
+        "setfile": "QM5_13096_xti-nr7-brk_XTIUSD.DWX_D1_backtest.set"
+      }
+    ],
+    "skipped": []
+  },
+  "work_items": [
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-09T19:42:21+02:00",
+      "ea_id": "QM5_13096",
+      "evidence_path": null,
+      "id": "3c451296-8540-4840-b92f-a51533828764",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q02",
+      "phase_display": "Q02",
+      "phase_qid": "Q02",
+      "status": "pending",
+      "symbol": "XTIUSD.DWX",
+      "updated_at": "2026-07-09T19:42:21+02:00",
+      "verdict": null
+    }
+  ],
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "backtest_cpu_used": false
+  }
+}
