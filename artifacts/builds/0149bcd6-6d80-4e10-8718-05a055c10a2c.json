@@ -1,0 +1,297 @@
+{
+  "task_id": "0149bcd6-6d80-4e10-8718-05a055c10a2c",
+  "ea_id": "QM5_9351",
+  "slug": "demark-td-demand-line-active-h4",
+  "strategy": "DeMark TD Demand Line Active H4",
+  "strategy_id": "6e967762-b26d-59a3-b076-35c17f2e7c36",
+  "source_id": "6e967762-b26d-59a3-b076-35c17f2e7c36",
+  "symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "AUDUSD.DWX",
+    "USDCAD.DWX",
+    "USDCHF.DWX",
+    "NZDUSD.DWX",
+    "XAUUSD.DWX",
+    "XTIUSD.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "GDAXI.DWX",
+    "UK100.DWX",
+    "SP500.DWX"
+  ],
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "AUDUSD.DWX",
+    "USDCAD.DWX",
+    "USDCHF.DWX",
+    "NZDUSD.DWX",
+    "XAUUSD.DWX",
+    "XTIUSD.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "GDAXI.DWX",
+    "UK100.DWX",
+    "SP500.DWX"
+  ],
+  "host_timeframe": "H4",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_9351_demark-td-demand-line-active-h4",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9351_demark-td-demand-line-active-h4\\QM5_9351_demark-td-demand-line-active-h4.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9351_demark-td-demand-line-active-h4\\QM5_9351_demark-td-demand-line-active-h4.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9351_demark-td-demand-line-active-h4\\SPEC.md",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9351_demark-td-demand-line-active-h4.md",
+  "approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9351_demark-td-demand-line-active-h4.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9351_demark-td-demand-line-active-h4\\sets\\QM5_9351_demark-td-demand-line-active-h4_EURUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9351_demark-td-demand-line-active-h4\\sets\\QM5_9351_demark-td-demand-line-active-h4_GBPUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9351_demark-td-demand-line-active-h4\\sets\\QM5_9351_demark-td-demand-line-active-h4_USDJPY.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9351_demark-td-demand-line-active-h4\\sets\\QM5_9351_demark-td-demand-line-active-h4_AUDUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9351_demark-td-demand-line-active-h4\\sets\\QM5_9351_demark-td-demand-line-active-h4_USDCAD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9351_demark-td-demand-line-active-h4\\sets\\QM5_9351_demark-td-demand-line-active-h4_USDCHF.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9351_demark-td-demand-line-active-h4\\sets\\QM5_9351_demark-td-demand-line-active-h4_NZDUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9351_demark-td-demand-line-active-h4\\sets\\QM5_9351_demark-td-demand-line-active-h4_XAUUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9351_demark-td-demand-line-active-h4\\sets\\QM5_9351_demark-td-demand-line-active-h4_XTIUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9351_demark-td-demand-line-active-h4\\sets\\QM5_9351_demark-td-demand-line-active-h4_NDX.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9351_demark-td-demand-line-active-h4\\sets\\QM5_9351_demark-td-demand-line-active-h4_WS30.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9351_demark-td-demand-line-active-h4\\sets\\QM5_9351_demark-td-demand-line-active-h4_GDAXI.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9351_demark-td-demand-line-active-h4\\sets\\QM5_9351_demark-td-demand-line-active-h4_UK100.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_9351_demark-td-demand-line-active-h4\\sets\\QM5_9351_demark-td-demand-line-active-h4_SP500.DWX_H4_backtest.set"
+  ],
+  "mq5_sha256": "69a4480b5e21c72131031c171d7ebcc431025e606b5d3635ef97bd33bcb50dbf",
+  "ex5_sha256": "1fac0b7e5d736b2aa360f82dbf944d3fe4edc5829a9cdf30d6e0b6f71755fbad",
+  "ex5_bytes": 320954,
+  "setfile_sha256": {
+    "QM5_9351_demark-td-demand-line-active-h4_EURUSD.DWX_H4_backtest.set": "1422bb8db83b0cf763f0cca25b502d5a66f5da9dd36c93d05d9be80144b32cfd",
+    "QM5_9351_demark-td-demand-line-active-h4_XTIUSD.DWX_H4_backtest.set": "01002fab7143e7f3b797c2cdc4299f876011264d7fae25114c57cced2ed4111c",
+    "QM5_9351_demark-td-demand-line-active-h4_XAUUSD.DWX_H4_backtest.set": "5b61fc7e728f2e282a9b5c711bef998a7c42d71d9171b6d9c6e4a7fd0a746891",
+    "QM5_9351_demark-td-demand-line-active-h4_GBPUSD.DWX_H4_backtest.set": "d914d009c0b1a5f57bf6e3221cf8564813149e9938e478ed27c9699e4537163d",
+    "QM5_9351_demark-td-demand-line-active-h4_USDJPY.DWX_H4_backtest.set": "42aaac6b974a21d1a47db816b36673af2692601814805e304c3d5a39c25a3dec",
+    "QM5_9351_demark-td-demand-line-active-h4_AUDUSD.DWX_H4_backtest.set": "77fecbf19541290a45a8564aef05a0ce62cac3d9a3d38bcb5d13e6fc118b015c",
+    "QM5_9351_demark-td-demand-line-active-h4_USDCAD.DWX_H4_backtest.set": "2cd1b74ad468d5087d0e20b2462d4a288c07ef2262752dafdb237967ec409184",
+    "QM5_9351_demark-td-demand-line-active-h4_USDCHF.DWX_H4_backtest.set": "354419bea13e4ffe20ad981bac0fcfc3b86028bf0d6dd954e365ed7e1fb6596d",
+    "QM5_9351_demark-td-demand-line-active-h4_NZDUSD.DWX_H4_backtest.set": "c02bdf4c9e7aaff81570a6aacf799ca4480ecd292ecb7e5e6bdee4550442c9bc",
+    "QM5_9351_demark-td-demand-line-active-h4_NDX.DWX_H4_backtest.set": "f0c78055ba6d540e70fb0c4e4bd6082a0f26e9390dfff23183e948d4cce06308",
+    "QM5_9351_demark-td-demand-line-active-h4_WS30.DWX_H4_backtest.set": "26333f9db9e98b32604e7b8f8d06c6ec44ff8503e160e4abe24e66647f8b2cae",
+    "QM5_9351_demark-td-demand-line-active-h4_GDAXI.DWX_H4_backtest.set": "179aca80063a2bb456bccd857b8ec39db54d8f543784ab4e9f61c63bc6781191",
+    "QM5_9351_demark-td-demand-line-active-h4_UK100.DWX_H4_backtest.set": "c31efe68a5c70c8d4b09b439b3bf14efc279aa153f1c5fedc19a2c8b48fd27d1",
+    "QM5_9351_demark-td-demand-line-active-h4_SP500.DWX_H4_backtest.set": "253690d5157aff9f559ddd26192df06fa5a9de384364970d15a05fdcd714f3f7"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic_base": 93510000,
+  "magic": {
+    "target_magic_count": 14,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "EURUSD.DWX",
+        "magic": 93510000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "GBPUSD.DWX",
+        "magic": 93510001,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 2,
+        "symbol": "USDJPY.DWX",
+        "magic": 93510002,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 3,
+        "symbol": "AUDUSD.DWX",
+        "magic": 93510003,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 4,
+        "symbol": "USDCAD.DWX",
+        "magic": 93510004,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 5,
+        "symbol": "USDCHF.DWX",
+        "magic": 93510005,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 6,
+        "symbol": "NZDUSD.DWX",
+        "magic": 93510006,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 7,
+        "symbol": "XAUUSD.DWX",
+        "magic": 93510007,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 8,
+        "symbol": "XTIUSD.DWX",
+        "magic": 93510008,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 9,
+        "symbol": "NDX.DWX",
+        "magic": 93510009,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 10,
+        "symbol": "WS30.DWX",
+        "magic": 93510010,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 11,
+        "symbol": "GDAXI.DWX",
+        "magic": 93510011,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 12,
+        "symbol": "UK100.DWX",
+        "magic": 93510012,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 13,
+        "symbol": "SP500.DWX",
+        "magic": 93510013,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "compile": {
+    "command": "pwsh -File C:\\QM\\repo\\framework\\scripts\\compile_one.ps1 -EALabel QM5_9351_demark-td-demand-line-active-h4",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0
+  },
+  "build_check": {
+    "command": "pwsh -File C:\\QM\\repo\\framework\\scripts\\build_check.ps1 -EALabel QM5_9351_demark-td-demand-line-active-h4",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 0
+  },
+  "validations": {
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "registry_rows_added": true,
+    "magic_resolver_regenerated": true,
+    "risk_mode": "RISK_FIXED"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": "D:\\QM\\reports\\smoke\\QM5_9351\\20260709_061133\\summary.json",
+  "smoke": {
+    "command": "pwsh -File C:\\QM\\repo\\framework\\scripts\\run_smoke.ps1 -EALabel QM5_9351_demark-td-demand-line-active-h4 -Symbol EURUSD.DWX -Year 2024 -Terminal any -Period H4 -SetFile <generated EURUSD setfile> -MinTrades 1 -SmokeMode",
+    "result": "framework_error",
+    "raw_result": "FAIL",
+    "reason_classes": [
+      "REPORT_MISSING",
+      "METATESTER_HUNG",
+      "INCOMPLETE_RUNS",
+      "MODEL4_MARKER_REQUIRED"
+    ],
+    "symbol": "EURUSD.DWX",
+    "year": 2024,
+    "attempted_runs": 4,
+    "successful_runs": 1,
+    "total_trades_successful_run": 26,
+    "profit_factor_successful_run": 0.43,
+    "net_profit_successful_run": -7898.42,
+    "drawdown_successful_run": 9506.73,
+    "oninit_failure_detected": false,
+    "model4_log_marker_detected": false,
+    "real_ticks_marker_detected_in_successful_run": true,
+    "summary_path": "D:\\QM\\reports\\smoke\\QM5_9351\\20260709_061133\\summary.json",
+    "evidence_path": "D:\\QM\\reports\\framework\\22\\20260709_061133_QM5_9351_T6_EURUSD_DWX_run_smoke.md"
+  },
+  "blocked_reason": "",
+  "open_questions": [
+    "Build smoke produced one valid real-ticks EURUSD.DWX report after three missing-report/hung attempts; record-build deferred P2 smoke and auto-enqueued staged Q02 per farm policy.",
+    "XTIUSD.DWX was added to the Q02 deferred sidecar; the current farm stage-1 classifier launched EURUSD.DWX, NDX.DWX, and XAUUSD.DWX first."
+  ],
+  "non_duplicate_reason": "TD active demand/supply line breakout is a price-structure H4 implementation on FX majors plus XTI/XAU/index CFDs, distinct from existing TD Sequential/Combo, oscillator, and generic trendline variants; selected for FX-first diversity and energy beyond XNG.",
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false
+  },
+  "notes": "Compile/build_check/spec PASS. Smoke harness classified framework_error despite run_04 producing 26 trades; recorded through farm DB for deferred P2 smoke and staged Q02.",
+  "built_by": "Codex",
+  "built_at": "2026-07-09T06:29:32Z",
+  "build_smoke_framework_error": "framework_error REPORT_MISSING;METATESTER_HUNG;INCOMPLETE_RUNS;MODEL4_MARKER_REQUIRED (run_04 produced 26 trades on EURUSD.DWX 2024, PF 0.43, net -7898.42)",
+  "smoke_skipped_reason": "framework_error_during_build_smoke_treated_as_done",
+  "q02_enqueue": {
+    "status": "enqueued_staged",
+    "phase": "Q02",
+    "queue_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "stage1_work_items": [
+      {
+        "work_item_id": "3e6c3e4c",
+        "symbol": "EURUSD.DWX",
+        "host_timeframe": "H4",
+        "setfile": "QM5_9351_demark-td-demand-line-active-h4_EURUSD.DWX_H4_backtest.set",
+        "status_after_enqueue": "pending"
+      },
+      {
+        "work_item_id": "0534c1b6",
+        "symbol": "NDX.DWX",
+        "host_timeframe": "H4",
+        "setfile": "QM5_9351_demark-td-demand-line-active-h4_NDX.DWX_H4_backtest.set",
+        "status_after_enqueue": "pending"
+      },
+      {
+        "work_item_id": "cf42cc92",
+        "symbol": "XAUUSD.DWX",
+        "host_timeframe": "H4",
+        "setfile": "QM5_9351_demark-td-demand-line-active-h4_XAUUSD.DWX_H4_backtest.set",
+        "status_after_enqueue": "pending"
+      }
+    ],
+    "deferred_symbols": [
+      "XTIUSD.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX",
+      "AUDUSD.DWX",
+      "USDCAD.DWX",
+      "USDCHF.DWX",
+      "NZDUSD.DWX",
+      "WS30.DWX",
+      "GDAXI.DWX",
+      "UK100.DWX",
+      "SP500.DWX"
+    ],
+    "deferred_source": "D:\\QM\\strategy_farm\\state\\q02_deferred_symbols.json"
+  },
+  "record_build": {
+    "recorded": true,
+    "task_id": "0149bcd6-6d80-4e10-8718-05a055c10a2c",
+    "new_status": "done",
+    "smoke_result_before_normalization": "framework_error",
+    "normalized_smoke_result": "deferred_p2_smoke",
+    "auto_q02_enqueued_count": 3,
+    "auto_q02_short_ids": [
+      "3e6c3e4c",
+      "0534c1b6",
+      "cf42cc92"
+    ],
+    "needs_p2_smoke_via_pump": true
+  }
+}
