@@ -1,0 +1,69 @@
+{
+  "generated_at_utc": "2026-07-09T13:16:52Z",
+  "operator": "codex-headless-board-advisor",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves; prefer market-neutral FX cointegration baskets",
+  "unit_of_work": "non-duplicate existing FX cointegration Q02 priority advance",
+  "strict_scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+  "strict_scan_result": {
+    "survivors": [
+      "QM5_12533 EURJPY.DWX/GBPJPY.DWX",
+      "QM5_12532 AUDUSD.DWX/NZDUSD.DWX"
+    ],
+    "unbuilt_strict_survivor_found": false,
+    "anchor_q02_blocked": false
+  },
+  "selected_existing_forex_card": {
+    "ea_id": "QM5_1257",
+    "slug": "lemishko-fx-cointpair",
+    "logical_symbol": "QM5_1257_AUDUSD_USDJPY_COINTEGRATION_H1",
+    "pair": [
+      "AUDUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "phase": "Q02",
+    "work_item_id": "3e600d24-7536-463e-9c8d-9a57140dbaa1",
+    "queue_status_after": "pending",
+    "setfile": "framework/EAs/QM5_1257_lemishko-fx-cointpair/sets/QM5_1257_lemishko-fx-cointpair_QM5_1257_AUDUSD_USDJPY_COINTEGRATION_H1_H1_backtest.set",
+    "basket_manifest": "framework/EAs/QM5_1257_lemishko-fx-cointpair/basket_manifest.json"
+  },
+  "queue_update": {
+    "action": "updated existing pending work_item payload only",
+    "duplicate_work_item_created": false,
+    "priority_track_before": null,
+    "priority_track_after": true,
+    "priority_reason": "forex_portfolio_sleeve_gap_existing_logical_basket_no_duplicate",
+    "priority_set_at_utc": "2026-07-09T13:16:52Z"
+  },
+  "validation": {
+    "build_check": {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_1257_lemishko-fx-cointpair -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260709_131603.json"
+    },
+    "symbol_scope": {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_1257_lemishko-fx-cointpair --verbose",
+      "result": "BASKET_OK",
+      "violations": 0
+    }
+  },
+  "cpu_ceiling": {
+    "active_work_items": 7,
+    "active_metatester64_processes": 4,
+    "manual_mt5_backtest_launched": false,
+    "reason": "Paced fleet already has active tester load; leave prioritized row for workers."
+  },
+  "guardrails": {
+    "new_card_created": false,
+    "new_ea_built": false,
+    "duplicate_queue_row_created": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
