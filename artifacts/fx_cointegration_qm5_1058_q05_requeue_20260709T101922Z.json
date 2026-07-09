@@ -1,0 +1,123 @@
+{
+  "generated_at_utc": "2026-07-09T10:19:22Z",
+  "generated_at_local": "2026-07-09T12:19:22+02:00",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves",
+  "unit_of_work": "fallback advancement of existing FX market-neutral basket under CPU ceiling",
+  "decision": {
+    "selected_path": "advance_existing_forex_card",
+    "reason": "The strict 66-pair scan survivors QM5_12532 and QM5_12533 are already built and not Q02-blocked. The July 6 extended cointegration screen's card-worthy FX pairs are also already built. QM5_1058 had Q02/Q03/Q04 PASS and a Q05 INFRA_FAIL caused by incomplete/timeout summary evidence, with no pending or active duplicate.",
+    "new_unbuilt_pair_found": false,
+    "manual_mt5_dispatch_started": false,
+    "manual_mt5_dispatch_reason": "Paced fleet was saturated; queue-only in-place requeue was safe, but no terminal launch was performed."
+  },
+  "source_evidence": {
+    "strict_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "extended_screen": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/survivors.json",
+    "extended_trade_check": "D:/QM/strategy_farm/artifacts/research/coint_screen_ext_20260706/trade_check.json",
+    "ea_manifest": "framework/EAs/QM5_1058_gatev-fx-pairs-zscore/basket_manifest.json",
+    "q05_setfile": "framework/EAs/QM5_1058_gatev-fx-pairs-zscore/sets/QM5_1058_gatev-fx-pairs-zscore_QM5_1058_EURUSD_GBPUSD_GGR_D1_D1_q05_stress_medium.set"
+  },
+  "frontier_status": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "state": "Q02 PASS; Q04 PASS; Q05 FAIL",
+      "q02_blocked": false
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "state": "Q02 PASS; Q04 FAIL",
+      "q02_blocked": false
+    },
+    "QM5_13024": {
+      "pair": "AUDCAD.DWX/GBPAUD.DWX",
+      "state": "Q02 PASS; Q04 FAIL"
+    },
+    "QM5_13029": {
+      "pair": "GBPCAD.DWX/GBPNZD.DWX",
+      "state": "Q02 PASS; Q03 PASS; Q04 FAIL"
+    },
+    "QM5_13058": {
+      "pair": "AUDCAD.DWX/GBPNZD.DWX",
+      "state": "Q02 PASS; Q03 PASS; Q04 FAIL"
+    },
+    "QM5_13062": {
+      "pair": "AUDCAD.DWX/EURUSD.DWX",
+      "state": "Q02 PASS; Q03 PASS; Q04 FAIL"
+    }
+  },
+  "selected_existing_forex_card": {
+    "ea_id": "QM5_1058",
+    "slug": "gatev-fx-pairs-zscore",
+    "logical_symbol": "QM5_1058_EURUSD_GBPUSD_GGR_D1",
+    "basket_symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "AUDUSD.DWX",
+      "NZDUSD.DWX"
+    ],
+    "active_pair": "EURUSD.DWX/GBPUSD.DWX",
+    "host_symbol": "EURUSD.DWX",
+    "phase_before": "Q05",
+    "status_before": "done",
+    "verdict_before": "INFRA_FAIL",
+    "infra_fail_reason": "invalid_summary:INCOMPLETE_RUNS,TIMEOUT",
+    "prior_work_item_id": "93bda5b4-793e-4c18-a7ca-677a9f7d146b",
+    "prior_evidence": "D:/QM/reports/work_items/93bda5b4-793e-4c18-a7ca-677a9f7d146b/QM5_1058/Q05/QM5_1058_EURUSD_GBPUSD_GGR_D1/aggregate.json",
+    "risk_mode": {
+      "environment": "q05_stress_medium",
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "setfile_checked": true
+    }
+  },
+  "queue_mutation": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_1058 --phase Q05",
+    "db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "enqueued": true,
+    "created": [],
+    "requeued": [
+      {
+        "id": "93bda5b4-793e-4c18-a7ca-677a9f7d146b",
+        "symbol": "QM5_1058_EURUSD_GBPUSD_GGR_D1"
+      }
+    ],
+    "skipped": [],
+    "duplicate_work_item_created": false,
+    "status_after": "pending",
+    "verdict_after": null,
+    "updated_at_utc_after": "2026-07-09T10:19:22+00:00"
+  },
+  "fleet_state": {
+    "scanned_at_utc": "2026-07-09T10:19:39Z",
+    "terminal64_running_count": 9,
+    "active_factory_terminals_observed": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "non_pipeline_terminals_observed": [
+      "T_Live",
+      "FTMO"
+    ],
+    "cpu_ceiling_applied": true
+  },
+  "safety": {
+    "manual_mt5_backtest_launched": false,
+    "duplicate_work_item_created": false,
+    "new_card_created": false,
+    "new_ea_built": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
