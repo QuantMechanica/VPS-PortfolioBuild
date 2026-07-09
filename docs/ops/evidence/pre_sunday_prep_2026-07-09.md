@@ -17,7 +17,7 @@
 | 10286 | USOIL.cash | ENERGY | 2 | -21.99 |
 | 10847 | GBPUSD | FX | 2 | -111.79 |
 | 12990 | GBPUSD | FX | 0 | 18.3 |
-| 11476 | USDJPY | FX | 4 | 53.95 |
+| 11476 | USDJPY | FX | 5 | 53.95 |
 | 10911 | GER40.cash | INDEX | 3 | -0.88 |
 | 10163 | US100.cash | INDEX | 0 | -10.74 |
 | 10440 | US100.cash | INDEX | 1 | -9.83 |

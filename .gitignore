@@ -93,3 +93,8 @@ scripts/*.exe
 /scratch/
 # transient build-retry attempt artifacts (build_result renamed across retries)
 artifacts/*build_result.attempt*.json
+
+# stray repo-root runtime DB (real state DB lives on D:\QM\strategy_farm\state) + build retry attempts
+state/
+artifacts/*attempt*.json
+artifacts/**/*attempt*.json
