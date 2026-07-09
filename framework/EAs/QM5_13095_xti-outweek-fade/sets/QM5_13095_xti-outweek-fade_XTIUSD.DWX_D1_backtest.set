@@ -1,0 +1,47 @@
+﻿;==========================================================
+; QM5 Set File
+; ea_id:        13095
+; ea_slug:      xti-outweek-fade
+; ea_version:   v5.0
+; set_version:  s20260709-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   3ef0c9d997d97708b364eaa9fa69a6b1272dd2b9651a7b7ea10dbe29a5cbed00
+; author:       Development
+; date:         2026-07-09
+;==========================================================
+qm_ea_id=13095
+qm_magic_slot_offset=0
+qm_rng_seed=42
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; Q02 structural baseline: keep all news axes explicitly off to avoid non-strategy init dependencies.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
+qm_news_stale_max_hours=336
+qm_news_min_impact=high
+qm_friday_close_enabled=1
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+; strategy-specific params from card
+strategy_min_week_bars=3
+strategy_signal_min_dow=1
+strategy_signal_max_dow=4
+strategy_atr_period=20
+strategy_trend_period=60
+strategy_min_outside_range_atr=1.20
+strategy_max_outside_range_atr=4.50
+strategy_min_parent_range_atr=0.80
+strategy_reclaim_buffer_atr=0.15
+strategy_extreme_close_location=0.65
+strategy_min_reversal_close_location=0.58
+strategy_atr_sl_mult=2.80
+strategy_atr_tp_mult=2.20
+strategy_max_hold_days=10
+strategy_max_spread_points=1000
