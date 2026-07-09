@@ -1,0 +1,15 @@
+{
+  "logical_symbol": "QM5_1017_AUDUSD_NZDUSD_COINTEGRATION_D1",
+  "host_symbol": "AUDUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "AUDUSD.DWX",
+    "NZDUSD.DWX"
+  ],
+  "notes": [
+    "Approved Chan SRC02_S01 two-leg cointegration pair. AUDUSD.DWX is the D1 host; NZDUSD.DWX is the synchronized hedge leg. Registry slots 4 and 26 preserve each symbol's allocated magic.",
+    "The logical basket replaces component-symbol Q02 attempts against the former inert P1 scaffold. The implementation performs annual walk-forward OLS/CADF/OU fitting, mean-reach or half-life exits, and card-authorized no-native-stop sizing under RISK_FIXED."
+  ]
+}
