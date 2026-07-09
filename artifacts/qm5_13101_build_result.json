@@ -1,0 +1,158 @@
+{
+  "task_id": "b7dd86ee-a0db-4208-8d9c-4ed040951881",
+  "ea_id": "QM5_13101",
+  "ea_label": "QM5_13101_xng-1w-mom-vol",
+  "slug": "xng-1w-mom-vol",
+  "strategy": "XNGUSD.DWX D1 five-day continuation gated to the lower 55 percent of realized volatility",
+  "strategy_id": "ZHAO-ST-MOMREV-2026_XNG_S01",
+  "source_id": "ZHAO-ST-MOMREV-2026",
+  "source_links": [
+    "https://doi.org/10.2139/ssrn.6425598",
+    "https://www.eia.gov/energyexplained/natural-gas/factors-affecting-natural-gas-prices.php"
+  ],
+  "symbols": [
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XNGUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XNGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13101_XNG_1W_MOM_VOL_D1",
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13101_xng-1w-mom-vol",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13101_xng-1w-mom-vol\\QM5_13101_xng-1w-mom-vol.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13101_xng-1w-mom-vol\\QM5_13101_xng-1w-mom-vol.ex5",
+  "ex5_size_bytes": 317388,
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13101_xng-1w-mom-vol\\SPEC.md",
+  "approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13101_xng-1w-mom-vol.md",
+  "strategy_seed_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13101_xng-1w-mom-vol_card.md",
+  "source_packet_path": "C:\\QM\\repo\\strategy-seeds\\sources\\ZHAO-ST-MOMREV-2026\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13101_xng-1w-mom-vol\\sets\\QM5_13101_xng-1w-mom-vol_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 131010000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XNGUSD.DWX",
+      "magic": 131010000
+    }
+  ],
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "compile": {
+    "status": "COMPILED",
+    "warnings": 0,
+    "errors": 0,
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260709_225947\\QM5_13101_xng-1w-mom-vol.compile.log",
+    "command": "python tools/strategy_farm/compile_ea.py --ea-label QM5_13101_xng-1w-mom-vol --force --json --fail-on-error"
+  },
+  "build_check": {
+    "status": "PASS",
+    "warnings": 0,
+    "failures": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260709_230544.json",
+    "setfile_build_hash": "df983ab3a2978580220c500f93e99c50523d3cfcd7ee20ad29569ae395953b5f",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13101_xng-1w-mom-vol -Strict -SkipCompile"
+  },
+  "validations": {
+    "spec_doc": {
+      "status": "PASS"
+    },
+    "card_schema_canonical": {
+      "status": "PASS"
+    },
+    "card_schema_approved": {
+      "status": "PASS"
+    },
+    "g0_lint_canonical": {
+      "status": "PASS"
+    },
+    "g0_lint_approved": {
+      "status": "PASS"
+    },
+    "symbol_scope": {
+      "status": "PASS",
+      "verdict": "SINGLE_SYMBOL_OK"
+    },
+    "magic_registry": {
+      "status": "PASS_WITH_PREEXISTING_WARNINGS",
+      "slots": [
+        0
+      ],
+      "resolver_rows_kept": 14751,
+      "pre_existing_missing_ea_dir_warnings": [
+        1001,
+        1015,
+        1016
+      ],
+      "resolver_hash": "062765D52C64E0AD5DF7D2A631EE94F01BD543437E2455722C33291B3A08FDA2"
+    },
+    "risk_mode": {
+      "status": "PASS",
+      "backtest_uses_risk_fixed": true,
+      "risk_percent_zero": true
+    },
+    "build_guardrails": {
+      "status": "PASS",
+      "ml_forbidden": "PASS",
+      "external_runtime_data": "PASS",
+      "setfile_schema": "PASS"
+    },
+    "registry_full_validate": {
+      "status": "FAIL_PREEXISTING_GLOBAL_DEBT",
+      "note": "Scoped EA-ID, magic, resolver, setfile and symbol checks pass for 13101; the full legacy registry validator reports unrelated pre-existing rows."
+    }
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "q02_enqueue": {
+    "status": "pending",
+    "work_item_id": "efcfa7d5-4bf2-455d-ab37-aa2b75f3026d",
+    "phase": "Q02",
+    "symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "risk_mode": "RISK_FIXED",
+    "created_at_utc": "2026-07-09T23:06:02+00:00",
+    "dispatched_by_this_session": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "backtest_cpu_used": false
+  },
+  "non_duplicate_reason": "This XNG realization follows a five-D1 move only in a subdued realized-volatility regime. It is directionally and regime-opposite to QM5_12567 RSI pullback mean reversion and QM5_12817 elevated-volatility shock fade, and materially shorter-horizon than QM5_12804 twelve-month trend.",
+  "source_proxy_disclosure": "The academic paper decomposes returns with investor-position data unavailable to the Darwinex CFD runtime. The implemented OHLC-only five-day continuation signal is an explicit falsifiable proxy and does not claim source-exact replication.",
+  "file_hashes_sha256": {
+    "strategy_card_doc": "DF983AB3A2978580220C500F93E99C50523D3CFCD7EE20AD29569AE395953B5F",
+    "approved_card": "DF983AB3A2978580220C500F93E99C50523D3CFCD7EE20AD29569AE395953B5F",
+    "canonical_card": "DF983AB3A2978580220C500F93E99C50523D3CFCD7EE20AD29569AE395953B5F",
+    "source_packet": "3ECCF5ECF089AE2D93A3C638471E1985744013039596C8F3FAAC2864EA157B78",
+    "mq5": "A7FAC0A9B4A913B75309A7830AB0B9870ED3DB0C92D22C375805336DC753D180",
+    "ex5": "7ED53682F4A3F95288224FF943268275F213C6D7A5C2E4E7522654BCDC297062",
+    "spec": "E027EED89763DD88D5DB642BEAE9ED07A8AFD2FEAB8AA8005ADE6C3957E2EC9E",
+    "setfile": "FC05431448B8E02E574A650D0A431348F09BFBC908540DFE9E9AFF8E11622911"
+  }
+}
