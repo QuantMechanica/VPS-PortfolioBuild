@@ -14824,6 +14824,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9351,demark-td-demand-line-active-h4,12,UK100.DWX,93510012,2026-07-09,Codex,active
 9351,demark-td-demand-line-active-h4,13,SP500.DWX,93510013,2026-07-09,Codex,active
 13084,xng-lng-pb,0,XNGUSD.DWX,130840000,2026-07-09,Codex,active
+13085,xcu-audusd-rspr,0,XCUUSD.DWX,130850000,2026-07-09,Codex,active
+13085,xcu-audusd-rspr,1,AUDUSD.DWX,130850001,2026-07-09,Codex,active
 9723,ff-sonicr-scout-h1,0,EURUSD.DWX,97230000,2026-07-09,Codex,active
 9723,ff-sonicr-scout-h1,1,GBPUSD.DWX,97230001,2026-07-09,Codex,active
 9723,ff-sonicr-scout-h1,2,USDJPY.DWX,97230002,2026-07-09,Codex,active
