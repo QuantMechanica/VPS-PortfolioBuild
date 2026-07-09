@@ -1,0 +1,13 @@
+{
+  "logical_symbol": "QM5_13089_XTI_XNG_CARRY_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg XTI/XNG energy carry-spread basket from the approved KOIJEN-CARRY-2018_XTI_XNG_S03 card. The EA runs from the XTIUSD.DWX host setfile, ranks the broker swap carry edge of XTI versus XNG, and opens a market-neutral long/short package. Q02 must evaluate the logical basket, not standalone legs."
+  ]
+}
+
