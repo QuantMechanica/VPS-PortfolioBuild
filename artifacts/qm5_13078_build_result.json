@@ -1,0 +1,67 @@
+{
+  "task_id": "e84c2e4a-e9f3-47f1-a7cf-96ea93effa94",
+  "ea_id": "QM5_13078",
+  "slug": "xti-holiday-gas-fade",
+  "strategy_id": "EIA-GAS-HOLIDAY-PULLFORWARD-2018",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13078_xti-holiday-gas-fade",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13078_xti-holiday-gas-fade\\QM5_13078_xti-holiday-gas-fade.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13078_xti-holiday-gas-fade\\QM5_13078_xti-holiday-gas-fade.ex5",
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13078_xti-holiday-gas-fade.md",
+  "source_path": "C:\\QM\\repo\\strategy-seeds\\sources\\EIA-GAS-HOLIDAY-PULLFORWARD-2018\\source.md",
+  "source_url": "https://www.eia.gov/todayinenergy/detail.php?id=36992",
+  "magic_base": 130780000,
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13078_xti-holiday-gas-fade\\sets\\QM5_13078_xti-holiday-gas-fade_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13078_xti-holiday-gas-fade\\SPEC.md",
+  "strategy_card_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13078_xti-holiday-gas-fade\\docs\\strategy_card.md",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "risk_mode": "RISK_FIXED",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260709_031237\\QM5_13078_xti-holiday-gas-fade.compile.log",
+  "compile_summary_path": "D:\\QM\\reports\\compile\\20260709_031237\\summary.csv",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260709_031237.json",
+  "spec_validation": {
+    "result": "PASS",
+    "command": "python framework\\scripts\\validate_spec_doc.py framework\\EAs\\QM5_13078_xti-holiday-gas-fade"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "build-only paced-fleet handoff; no local MT5 backtest launched, Q02 is queued through farmctl record-build",
+  "blocked_reason": null,
+  "open_questions": [],
+  "hashes": {
+    "mq5_sha256": "3362E12209A4D9B7A43183DDFA8792EC5677A01B40C9E1CC5DA6DF95AAEF2840",
+    "ex5_sha256": "C48BD7E5F5F1150021BDF3E5A4A481350CCE1EB8FBECF542B0A9582FAD83EE46",
+    "setfile_sha256": "68D8B12EF8B7F08BB6721B92C26D31F48F90D6DA7951342E75DFFCAF8B4577E6",
+    "setfile_build_hash": "f66f991cda464eee5e5e5d47f0d9ab7db14b6f4455829de0b6bff48088f47815"
+  },
+  "notes": "Built QM5_13078 as a new low-frequency structural XTIUSD.DWX sleeve: short-only post-Memorial-Day, observed-Independence-Day, and Labor-Day gasoline pull-forward fade after a pre-holiday rally. This is non-duplicate with the existing oil pre-holiday long and WTI report/seasonality sleeves.",
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13078",
+    "enqueued": [
+      {
+        "setfile": "QM5_13078_xti-holiday-gas-fade_XTIUSD.DWX_D1_backtest.set",
+        "symbol": "XTIUSD.DWX",
+        "tf": "D1",
+        "wi_id": "276249d6"
+      }
+    ],
+    "skipped": []
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
