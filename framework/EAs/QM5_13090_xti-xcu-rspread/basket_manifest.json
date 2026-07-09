@@ -1,0 +1,12 @@
+{
+  "logical_symbol": "QM5_13090_XTI_XCU_RSPREAD_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XCUUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg XTI/XCU WTI-copper return-spread reversion basket from the approved EIA-CME-USGS-XTI-XCU-RSPREAD-2026 source packet and Chan pair-spread implementation lineage. The EA runs from the XTIUSD.DWX host setfile and reads both D1 close series to compute log(XTI return) minus beta times log(XCU return), standardized over a fixed lookback. Q02 must evaluate the logical basket, not standalone legs."
+  ]
+}
