@@ -172,7 +172,7 @@ do not validate the OHLC-only XNG proxy.
 ## 10. initial risk profile
 
 - expected_pf: 1.08.
-- expected_dd_pct: 25.
+- expected_dd_pct: 20.
 - expected_trade_frequency: 6-14 entries/year.
 - risk_class: high because XNG gaps and regime shifts can turn continuation
   into rapid reversal.
