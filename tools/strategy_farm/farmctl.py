@@ -10168,13 +10168,13 @@ def _latest_build_smoke_result(con: sqlite3.Connection, ea_id: str) -> dict[str,
     }
 
 
-def _magic_slot_for_symbol(ea_id: str, symbol: str) -> int:
+def _magic_slot_for_symbol(ea_id: str, symbol: str) -> int | None:
     m = re.match(r"^QM5_(\d+)$", ea_id)
     if not m:
-        return 0
+        return None
     registry = REPO_ROOT / "framework" / "registry" / "magic_numbers.csv"
     if not registry.exists():
-        return 0
+        return None
     with registry.open(encoding="utf-8-sig", newline="") as f:
         for row in csv.DictReader(f):
             if (
@@ -10185,8 +10185,8 @@ def _magic_slot_for_symbol(ea_id: str, symbol: str) -> int:
                 try:
                     return int(str(row.get("symbol_slot") or "0").strip())
                 except ValueError:
-                    return 0
-    return 0
+                    return None
+    return None
 
 
 def _retarget_setfile_template(template_text: str, symbol: str, magic_slot: int) -> str:
@@ -10222,7 +10222,11 @@ def _ensure_p2_target_setfiles(root: Path, ea_id: str) -> list[tuple[str, str]]:
         return existing
     sets_dir = ea_dir / "sets"
     period = _detect_ea_period(ea_id)
-    by_symbol = {symbol: path for symbol, path in existing}
+    by_symbol = {
+        symbol: path
+        for symbol, path in existing
+        if _magic_slot_for_symbol(ea_id, symbol) is not None
+    }
     template_path = Path(existing[0][1])
     try:
         template_text = template_path.read_text(encoding="utf-8-sig")
@@ -10233,8 +10237,10 @@ def _ensure_p2_target_setfiles(root: Path, ea_id: str) -> list[tuple[str, str]]:
         if symbol in by_symbol:
             continue
         target = sets_dir / f"{ea_dir.name}_{symbol}_{period}_backtest.set"
+        magic_slot = _magic_slot_for_symbol(ea_id, symbol)
+        if magic_slot is None:
+            continue
         if not target.exists():
-            magic_slot = _magic_slot_for_symbol(ea_id, symbol)
             target.write_text(
                 _retarget_setfile_template(template_text, symbol, magic_slot),
                 encoding="utf-8",
