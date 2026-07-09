@@ -1,0 +1,32 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        9403
+; ea_slug:      williams-pro-go-h4
+; ea_version:   v5.0
+; set_version:  s20260709-001
+; symbol:       NZDUSD.DWX
+; timeframe:    H4
+; environment:  backtest
+; magic_slot:   6
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   b3a52f48a92168fe689b2b14e380d50277d7b39382b8ab2ed6c444ff8a0f7a9c
+; author:       Development
+; date:         2026-07-09
+;==========================================================
+qm_ea_id=9403
+qm_magic_slot_offset=6
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9403_williams-pro-go-h4.md
+strategy_pro_period=14
+strategy_sma_period=50
+strategy_atr_period=14
+strategy_max_extension_atr=1.5
+strategy_sl_atr_mult=1.0
+strategy_tp_atr_mult=2.0
+strategy_time_stop_bars=30
+strategy_weekly_open_skip_hours=4
+strategy_spread_atr_mult=0.20

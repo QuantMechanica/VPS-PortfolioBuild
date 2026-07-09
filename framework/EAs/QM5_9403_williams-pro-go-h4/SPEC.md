@@ -4,7 +4,7 @@
 **Slug:** `williams-pro-go-h4`
 **Source:** `6e967762-b26d-59a3-b076-35c17f2e7c36` (see `sources/forexfactory-strategies-and-systems`)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-21
+**Last revised:** 2026-07-09
 
 ---
 
@@ -108,3 +108,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-21 | Initial build from card | 1bc889a2-a35c-4ca2-8bb4-654f6b6672a0 |
+| v2 | 2026-07-09 | Q01 rework: revalidate native EA identity, eliminate raw Pro loops, and restore entry-only news gating | f5eb37c2-2923-4769-b417-a9d82a009450 |

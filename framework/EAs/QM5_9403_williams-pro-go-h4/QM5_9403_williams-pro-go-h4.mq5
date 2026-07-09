@@ -89,21 +89,20 @@ input double strategy_spread_atr_mult        = 0.20;
 
 bool Strategy_ProSum(const int shift, double &pro_sum)
   {
-   pro_sum = 0.0;
    if(strategy_pro_period < 1)
       return false;
 
-   MqlRates rates[];
-   ArraySetAsSeries(rates, false);
-   // perf-allowed: Williams Pro is a bespoke closed-OHLC sum; EntrySignal is framework-new-bar gated,
-   // and ExitSignal calls it only while this EA has an open position.
-   const int copied = CopyRates(_Symbol, PERIOD_H4, shift, strategy_pro_period, rates);
-   if(copied != strategy_pro_period)
+   // Williams Pro is sum(Close-Open).  N * (SMA(close)-SMA(open)) is
+   // algebraically identical and keeps the per-tick exit path on the
+   // framework's pooled O(1) indicator readers instead of CopyRates loops.
+   const double close_sma = QM_SMA(_Symbol, PERIOD_H4,
+                                   strategy_pro_period, shift, PRICE_CLOSE);
+   const double open_sma  = QM_SMA(_Symbol, PERIOD_H4,
+                                   strategy_pro_period, shift, PRICE_OPEN);
+   if(close_sma <= 0.0 || open_sma <= 0.0)
       return false;
 
-   for(int i = 0; i < copied; ++i)
-      pro_sum += (rates[i].close - rates[i].open);
-
+   pro_sum = strategy_pro_period * (close_sma - open_sma);
    return true;
   }
 
@@ -322,15 +321,6 @@ void OnTick()
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
       return;
-   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
-   // when both new axes are at their OFF defaults.
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -355,6 +345,16 @@ void OnTick()
         }
      }
 
+   // FW1 — news blackout gates NEW entries only. Position management and
+   // strategy exits above must continue during news windows.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    // Per-closed-bar: entry-signal evaluation. Gating here avoids 99% of
    // per-tick recompute mistakes — EntrySignal sees one new closed bar per
    // call, not every incoming tick.
@@ -366,6 +366,7 @@ void OnTick()
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
