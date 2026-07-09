@@ -1,0 +1,94 @@
+{
+  "generated_at_utc": "2026-07-09T05:33:26Z",
+  "operator": "codex",
+  "branch": "agents/board-advisor",
+  "mission": "grow certified V5 portfolio book with new forex sleeves",
+  "unit_of_work": "advance existing approved low-frequency forex fallback through Q02 without duplicate enqueue",
+  "decision": {
+    "selected_path": "advance_existing_forex_card",
+    "selected_ea": "QM5_12618",
+    "selected_symbol": "EURUSD.DWX",
+    "selected_timeframe": "D1",
+    "selected_strategy": "tsmom-dual-confirm-3m-12m-eurusd",
+    "reason": "The strict 66-pair FX cointegration survivors QM5_12532 and QM5_12533 are not Q02-blocked, and the extended FX cointegration frontier already has built/evaluated candidates. The clean non-duplicate fallback was the single pending Q02 row for approved low-frequency EURUSD.DWX TSMOM."
+  },
+  "source_evidence": {
+    "strict_scan": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "gap_note": "docs/research/PORTFOLIO_GAP_DIRECTED_EDGES_2026-06-21.md",
+    "fallback_card": "strategy-seeds/cards/approved/QM5_12618_tsmom-dual-confirm-3m-12m-eurusd_card.md",
+    "fallback_source": "Moskowitz, Ooi and Pedersen (2012), Time Series Momentum, Journal of Financial Economics / AQR"
+  },
+  "frontier_status": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "state": "Q02 logical-basket PASS, Q04 PASS, Q05 FAIL",
+      "q02_blocked": false
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "state": "Q02 logical-basket PASS, Q04 FAIL",
+      "q02_blocked": false
+    },
+    "extended_fx_cointegration": {
+      "state": "reviewed built frontier; no pending unbuilt card-worthy pair selected",
+      "examples_completed": [
+        "QM5_13024",
+        "QM5_13029",
+        "QM5_13058",
+        "QM5_13062"
+      ]
+    }
+  },
+  "queue_mutation": {
+    "sqlite": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "backup_before_mutation": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12618_q02_priority_20260709T053326Z.sqlite",
+    "work_item_id": "eb4abcd4-4372-4329-a406-c02fcac4a1f1",
+    "ea_id": "QM5_12618",
+    "phase": "Q02",
+    "symbol": "EURUSD.DWX",
+    "status_after": "pending",
+    "payload_changes": {
+      "priority_track": true,
+      "priority_reason": "OWNER 2026-07-09 forex portfolio mission fallback: no unbuilt FX cointegration survivor found; advance existing approved low-frequency QM5_12618 EURUSD.DWX D1 TSMOM Q02 row in place; RISK_FIXED backtest, no duplicate work_item, no manual MT5 dispatch under active CPU ceiling.",
+      "priority_updated_at_utc": "2026-07-09T05:33:26Z",
+      "priority_updated_by": "codex/agents-board-advisor",
+      "risk_mode": "RISK_FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "portfolio_scope": "single_symbol"
+    },
+    "duplicate_work_item_created": false,
+    "active_or_pending_q02_rows_after": 1
+  },
+  "verification": {
+    "queue_counts_after": {
+      "active": 7,
+      "pending": 5042,
+      "done": 44530,
+      "failed": 45284
+    },
+    "priority_lane_after": "QM5_12618 appears as a priority pending Q02 row behind existing priority QM5_12871.",
+    "setfile": "framework/EAs/QM5_12618_tsmom-dual-confirm-3m-12m-eurusd/sets/QM5_12618_tsmom-dual-confirm-3m-12m-eurusd_EURUSD.DWX_D1_backtest.set",
+    "setfile_contract": {
+      "environment": "backtest",
+      "symbol": "EURUSD.DWX",
+      "timeframe": "D1",
+      "risk_fixed": 1000,
+      "risk_percent": 0
+    },
+    "manual_mt5_dispatch_started": false,
+    "cpu_ceiling_observed": true
+  },
+  "guardrails": {
+    "new_work_item_created": false,
+    "duplicate_work_item_created": false,
+    "manual_mt5_backtest_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
