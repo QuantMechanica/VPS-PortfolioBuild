@@ -14823,3 +14823,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9351,demark-td-demand-line-active-h4,11,GDAXI.DWX,93510011,2026-07-09,Codex,active
 9351,demark-td-demand-line-active-h4,12,UK100.DWX,93510012,2026-07-09,Codex,active
 9351,demark-td-demand-line-active-h4,13,SP500.DWX,93510013,2026-07-09,Codex,active
+13084,xng-lng-pb,0,XNGUSD.DWX,130840000,2026-07-09,Codex,active
