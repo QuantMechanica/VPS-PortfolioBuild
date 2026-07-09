@@ -1,5 +1,4 @@
-
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13101
 ; ea_slug:      xng-1w-mom-vol
@@ -11,8 +10,8 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   cdf3a1360f9e705fbbecff3bde4f96669844e2bc7d03850c0726081953267ef2
-; author:       Development
+; build_hash:   71b2cb8d152413d3342dcb823861e1ae815e0fa1b05ad3dacb6037e7c3751db7
+; author:       Codex
 ; date:         2026-07-10
 ;==========================================================
 qm_ea_id=13101
