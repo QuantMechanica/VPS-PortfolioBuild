@@ -49,7 +49,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
+pipeline_phase: Q02
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
 hard_rules_at_risk: [low_frequency_sample, friday_close, cfd_futures_basis, enhancement_doctrine]
@@ -249,10 +249,12 @@ portfolio admission, portfolio KPI, or portfolio gate.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-10 | initial source-backed WTI ROC-14 extreme-crossing build | G0 | PENDING |
+| v1 | 2026-07-10 | initial source-backed WTI ROC-14 extreme-crossing build | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
-| G0 Research Intake | 2026-07-10 | PENDING | this card |
+| G0 Research Intake | 2026-07-10 | APPROVED | this card |
+| Q01 Build Validation | 2026-07-10 | PASS | `artifacts/qm5_13114_build_result.json` |
+| Q02 Baseline Screening | 2026-07-10 | PENDING | work item `a442a21b-72db-407c-a6b0-c368332dc7c7` |
