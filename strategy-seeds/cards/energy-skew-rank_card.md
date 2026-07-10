@@ -266,5 +266,5 @@ gate, portfolio admission, or portfolio KPI path is authorized.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-10 | APPROVED by OWNER mission directive | this card |
-| Q01 Build Validation | 2026-07-10 | PENDING | `artifacts/qm5_13118_build_result.json` |
-| Q02 Baseline Screening | 2026-07-10 | PENDING ENQUEUE | evidence pending |
+| Q01 Build Validation | 2026-07-10 | PASS | `artifacts/qm5_13118_build_result.json` |
+| Q02 Baseline Screening | 2026-07-10 | ENQUEUED | `docs/ops/evidence/2026-07-10_qm5_13118_energy_skew_rank_q02_enqueue.md` |
