@@ -1,8 +1,8 @@
 ---
 strategy_id: SRC02_S09
-ea_id: TBD
+ea_id: QM5_13117
 slug: eurgbp-audjpy
-status: IN_REVIEW
+status: APPROVED
 type: strategy
 created: 2026-07-10
 created_by: Research
@@ -23,19 +23,20 @@ indicators:
   - rolling-zscore
   - atr-stop
 target_symbols: [EURGBP.DWX, AUDJPY.DWX]
-logical_symbol: TBD
+logical_symbol: QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1
 period: D1
 expected_trade_frequency: "D1 two-leg basket, approximately 5 logical spread packages/year from 20 OOS state changes over 2023-2024."
 expected_trades_per_year_per_symbol: 5
-g0_status: REVIEW
+g0_status: APPROVED
 r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0_REVIEW
-expected_pf: TBD
-expected_dd_pct: TBD
+pipeline_phase: Q01
+expected_pf: 1.05
+expected_dd_pct: 25.0
 portfolio_scope: basket
+g0_approval_reasoning: "R1 PASS Tier-A Chan method plus OWNER-requested reproducible 66-pair scan; R2 PASS deterministic fixed-beta D1 basket; R3 PASS EURGBP/AUDJPY and USD conversion histories available; R4 PASS structural only, no ML/grid/martingale/adaptive refit; explicit forex-book mission approves QM5_13117."
 ---
 
 # EURGBP/AUDJPY Cointegration Basket
@@ -218,8 +219,8 @@ Backtests must use `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 ## 10. Initial Risk Profile
 
 ```yaml
-expected_pf: TBD
-expected_dd_pct: TBD
+expected_pf: 1.05
+expected_dd_pct: 25.0
 expected_trade_frequency: approximately 5 logical packages/year
 risk_class: high
 gridding: false
@@ -243,7 +244,8 @@ conversion, spread, and real-tick costs are delegated to the pipeline.
   selection.
 - [x] No existing card or EA folder names the EURGBP/AUDJPY pair as of
   2026-07-10.
-- [ ] CEO + Quality-Business review and EA-ID allocation are still required.
+- [x] CEO + Quality-Business approval and CEO + CTO EA-ID allocation supplied
+  by the explicit forex-book mission; atomic allocation reserved QM5_13117.
 
 ## 12. Framework Alignment
 
@@ -279,10 +281,10 @@ at_risk_explanation: |
 
 ```yaml
 target_modules:
-  no_trade: TBD
-  entry: TBD
-  management: TBD
-  close: TBD
+  no_trade: "Logical host/slot guard, aligned closed-D1 history warmup, and standard framework gates."
+  entry: "Fixed-beta 60-bar spread z-score and atomic sign-aware two-leg order package."
+  management: "Broken-package and failed-partial-entry cleanup only."
+  close: "Mean-reach package exit plus framework Friday close and kill switch."
 estimated_complexity: medium
 estimated_test_runtime: "basket Q02 approximately 60-120 minutes; use paced fleet only"
 data_requirements: "EURGBP.DWX and AUDJPY.DWX D1 plus tester-currency conversion history declared by basket manifest"
@@ -293,13 +295,14 @@ data_requirements: "EURGBP.DWX and AUDJPY.DWX D1 plus tester-currency conversion
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-10 | initial all-sign 66-pair candidate extraction | G0 | IN_REVIEW |
+| v2 | 2026-07-10 | explicit forex-book mission approval and atomic QM5_13117 allocation | Q01 | APPROVED_FOR_BUILD |
 
 ## 15. Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
-| G0 Research Intake | 2026-07-10 | REVIEW | this card + `docs/research/FX_COINTEGRATION_EURGBP_AUDJPY_REVIEW_2026-07-10.md` |
-| Q01 Build Validation | TBD | BLOCKED_NO_EA_ID | TBD |
+| G0 Research Intake | 2026-07-10 | APPROVED | explicit forex-book mission + this card + `docs/research/FX_COINTEGRATION_EURGBP_AUDJPY_REVIEW_2026-07-10.md` |
+| Q01 Build Validation | 2026-07-10 | IN_PROGRESS | QM5_13117 allocation |
 | Q02 Baseline Screening | TBD | NOT_ENQUEUED | TBD |
 
 ## 16. Lessons Captured
