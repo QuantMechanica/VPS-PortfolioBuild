@@ -1,0 +1,45 @@
+{
+  "ea_id": "QM5_13111",
+  "ea_label": "QM5_13111_xng-invlev-brk",
+  "phase": "Q02",
+  "work_item_id": "91fa45bb-7c0e-47f3-91dd-238689b7884b",
+  "status": "pending",
+  "claimed_by": null,
+  "symbol": "XNGUSD.DWX",
+  "timeframe": "H4",
+  "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13111_xng-invlev-brk\\sets\\QM5_13111_xng-invlev-brk_XNGUSD.DWX_H4_backtest.set",
+  "created_at_utc": "2026-07-10T08:31:59+00:00",
+  "risk": {
+    "mode": "RISK_FIXED",
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "build": {
+    "task_id": "0aa62539-1bc3-4daf-8b12-a6894e8f8dbb",
+    "compile": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "spec": "PASS",
+    "card_schema": "PASS",
+    "g0_card": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "magic": 131110000
+  },
+  "cpu_guard": {
+    "scanned_at": "2026-07-10T10:31:04+02:00",
+    "active_factory_terminals": ["T2", "T4", "T6", "T7", "T8"],
+    "paced_workers": ["T1", "T2", "T3", "T4", "T6", "T7", "T8"],
+    "manual_mt5_run_launched": false,
+    "reason": "The paced factory occupied the tester fleet; smoke was deferred to Q02 rather than competing for MT5 CPU."
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
