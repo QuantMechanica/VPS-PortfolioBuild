@@ -112,6 +112,11 @@ This is deliberately different from:
 - Backtest risk: `RISK_FIXED=1000`, `RISK_PERCENT=0`,
   `PORTFOLIO_WEIGHT=1`.
 
+## Rules
+
+The locked calendar window and direction define the edge; ATR and spread
+inputs are execution and risk controls only.
+
 ## 4. Entry Rules
 
 - Evaluate only on a new `XNGUSD.DWX` D1 bar.
