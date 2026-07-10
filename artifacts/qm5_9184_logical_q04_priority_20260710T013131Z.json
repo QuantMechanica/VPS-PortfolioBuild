@@ -1,0 +1,139 @@
+{
+  "generated_at_utc": "2026-07-10T01:31:31Z",
+  "operator": "codex-headless-board-advisor",
+  "branch": "agents/board-advisor",
+  "head_before_evidence": "4a6b58de816359a9390254a4bb63ab3e6205695e",
+  "mission": "grow the certified V5 portfolio book with new forex sleeves",
+  "unit_of_work": "priority-track the existing QM5_9184 logical FX cointegration Q04 row without duplicate enqueue or dispatch",
+  "research_decision": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_scan_result": "Only EURJPY~GBPJPY and AUDUSD~NZDUSD cleared the published DEV/OOS/trade-count criteria.",
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "state": [
+        "Q02:PASS",
+        "Q04:PASS",
+        "Q05:FAIL"
+      ],
+      "q02_blocked": false
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "state": [
+        "Q02:PASS",
+        "Q04:FAIL"
+      ],
+      "q02_blocked": false
+    },
+    "approved_card_inventory": {
+      "approved_filename_matched_coint_or_cointegration_cards_checked": 20,
+      "cards_with_matching_framework_ea": 20,
+      "cards_without_matching_framework_ea": 0,
+      "unbuilt_reputable_source_pair_found": false
+    },
+    "decision": "No new card or build; advance an existing forex card through the funnel."
+  },
+  "selected_existing_forex_card": {
+    "ea_id": "QM5_9184",
+    "slug": "jstm-pair-cointegration-fx",
+    "pair": [
+      "AUDUSD.DWX",
+      "NZDUSD.DWX"
+    ],
+    "logical_symbol": "QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1",
+    "host_symbol": "AUDUSD.DWX",
+    "host_timeframe": "D1",
+    "basket_manifest": "framework/EAs/QM5_9184_jstm-pair-cointegration-fx/basket_manifest.json",
+    "logical_setfile": "framework/EAs/QM5_9184_jstm-pair-cointegration-fx/sets/QM5_9184_jstm-pair-cointegration-fx_QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1_D1_backtest.set",
+    "risk_contract": {
+      "environment": "backtest",
+      "risk_mode": "FIXED",
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0
+    },
+    "logical_q02": {
+      "work_item_id": "f10fcf97-b4fb-4286-9188-d51415c8fb60",
+      "status": "done",
+      "verdict": "PASS",
+      "updated_at": "2026-07-10T01:05:05+00:00"
+    }
+  },
+  "queue_action": {
+    "db_backup_before_update": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_9184_q04_priority_20260710T013131Z.sqlite",
+    "work_item_id": "0b1e3b58-95c0-4f94-8849-0c6f5d3040d0",
+    "phase": "Q04",
+    "symbol": "QM5_9184_AUDUSD_NZDUSD_COINTEGRATION_D1",
+    "status_after": "pending",
+    "duplicate_work_item_created": false,
+    "pending_active_duplicate_count_after": 1,
+    "before": {
+      "priority_track": null,
+      "priority_reason": null,
+      "evidence_path": null,
+      "updated_at": "2026-07-10T01:06:26+00:00"
+    },
+    "after": {
+      "priority_track": true,
+      "priority_reason": "OWNER 2026-07-10 forex portfolio fallback: advance existing QM5_9184 AUDUSD~NZDUSD logical basket to Q04 after logical Q02 PASS; update the existing row only and do not dispatch under the active CPU ceiling.",
+      "priority_updated_at_utc": "2026-07-10T01:31:31Z",
+      "priority_updated_by": "codex/agents-board-advisor",
+      "evidence_path": "docs/ops/evidence/2026-07-10_qm5_9184_logical_q04_priority.md",
+      "updated_at": "2026-07-10T01:31:31Z",
+      "queued_top_rank": 1
+    }
+  },
+  "validation": {
+    "manifest_tests": {
+      "command": "python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py -q",
+      "result": "PASS",
+      "tests": 14
+    },
+    "symbol_scope": {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_9184_jstm-pair-cointegration-fx --verbose",
+      "result": "BASKET_OK",
+      "violations": 0
+    },
+    "spec_validation": {
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_9184_jstm-pair-cointegration-fx",
+      "result": "PASS"
+    },
+    "build_check": {
+      "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_9184_jstm-pair-cointegration-fx -RepoRoot C:/QM/repo -SkipCompile",
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260710_013057.json"
+    }
+  },
+  "cpu_ceiling_observed": {
+    "farm_active_work_items": 7,
+    "active_by_phase": {
+      "Q02": 7
+    },
+    "claimed_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "stop_reason": "The paced fleet already had seven active tester claims, so no manual dispatch or additional work item was launched."
+  },
+  "guardrails": {
+    "new_card_created": false,
+    "new_ea_built": false,
+    "new_work_item_created": false,
+    "duplicate_work_item_created": false,
+    "manual_mt5_backtest_launched": false,
+    "dispatch_command_run": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
