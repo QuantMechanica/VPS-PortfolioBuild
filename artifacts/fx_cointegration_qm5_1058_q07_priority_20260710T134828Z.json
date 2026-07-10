@@ -1,0 +1,105 @@
+{
+  "generated_at_utc": "2026-07-10T13:48:28+00:00",
+  "operator": "codex-agents-board-advisor",
+  "branch": "agents/board-advisor",
+  "mission": "grow the certified V5 portfolio book with new forex sleeves; prefer market-neutral FX cointegration baskets",
+  "selection_decision": {
+    "new_unbuilt_strict_scan_pair_found": false,
+    "strict_scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_scan_survivors": {
+      "QM5_12532": "Q02 PASS; Q04 PASS; Q05 FAIL",
+      "QM5_12533": "Q02 PASS; Q04 FAIL"
+    },
+    "fallback_applied": "advance an existing forex card through the funnel"
+  },
+  "selected_existing_forex_card": {
+    "ea_id": "QM5_1058",
+    "slug": "gatev-fx-pairs-zscore",
+    "logical_symbol": "QM5_1058_EURUSD_GBPUSD_GGR_D1",
+    "traded_pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "timeframe": "D1",
+    "expected_trades_per_year_per_symbol": 2,
+    "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1058_gatev-fx-pairs-zscore.md",
+    "card_status": "APPROVED",
+    "source": "Gatev, Goetzmann, and Rouwenhorst (2006), Review of Financial Studies 19(3), 797-827, via the approved Quantpedia source packet",
+    "source_criteria": {
+      "R1_track_record": "PASS",
+      "R2_mechanical": "PASS",
+      "R3_data_available": "PASS",
+      "R4_ml_forbidden": "PASS"
+    },
+    "basket_manifest": "framework/EAs/QM5_1058_gatev-fx-pairs-zscore/basket_manifest.json",
+    "canonical_setfile": "framework/EAs/QM5_1058_gatev-fx-pairs-zscore/sets/QM5_1058_gatev-fx-pairs-zscore_QM5_1058_EURUSD_GBPUSD_GGR_D1_D1_backtest.set",
+    "risk_contract": {
+      "environment": "backtest",
+      "risk_mode": "FIXED",
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "prerequisites": {
+    "Q02": {
+      "work_item_id": "eeeb44cc-0cc3-4127-8107-18df9f96fa3f",
+      "verdict": "PASS"
+    },
+    "Q03": {
+      "work_item_id": "fe14ff78-4fc7-467b-a54f-80c82d3887a8",
+      "verdict": "PASS"
+    },
+    "Q04": {
+      "work_item_id": "cff1ca51-2d6f-4204-8fac-804ded4a4864",
+      "verdict": "PASS"
+    },
+    "Q05": {
+      "work_item_id": "93bda5b4-793e-4c18-a7ca-677a9f7d146b",
+      "verdict": "PASS"
+    },
+    "Q06": {
+      "work_item_id": "25c0e5ba-1456-4e74-8fb1-20a729ad4cd3",
+      "verdict": "PASS"
+    }
+  },
+  "queue_mutation": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "backup": "D:/QM/strategy_farm/state/backups/farm_state_pre_qm5_1058_q07_priority_20260710T134828+0000.sqlite",
+    "work_item_id": "82c0189f-f4a7-4e3f-ac76-79b38037bacb",
+    "phase": "Q07",
+    "prior_failure": "summary_missing",
+    "attempt_count": 1,
+    "before": {
+      "status": "pending",
+      "claimed_by": null,
+      "priority_track": null,
+      "open_matching_rows": 1,
+      "total_work_items": 95616
+    },
+    "after": {
+      "status": "pending",
+      "claimed_by": null,
+      "priority_track": true,
+      "open_matching_rows": 1,
+      "total_work_items": 95616
+    },
+    "dedupe_guard": "updated_existing_unique_q07_row_no_enqueue",
+    "new_work_item_inserted": false
+  },
+  "cpu_ceiling": {
+    "active_work_items": 7,
+    "ceiling_reached": true,
+    "manual_mt5_backtest_launched": false,
+    "dispatch_triggered": false
+  },
+  "guardrails": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
