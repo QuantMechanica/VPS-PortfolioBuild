@@ -103,3 +103,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | board-advisor build |
 | v2 | 2026-06-23 | Rebuild from card with one-bar stop-entry semantics | ecf6c2b6-fd7f-4a94-af87-8a34992aed5b |
+| v3 | 2026-07-10 | Q02 AUDUSD history-infra recovery | Refresh binary/set hashes and keep management active during entry-only news blackouts. |

@@ -1,0 +1,71 @@
+{
+  "timestamp_utc": "2026-07-10T20:08:40+00:00",
+  "unit_of_work": "Q02 NO_HISTORY infrastructure repair and requeue",
+  "agent_task_id": "5ad9abf1-6a9c-46fd-8d55-74154febaad0",
+  "ea_id": "QM5_11397",
+  "ea_slug": "naked-forex-kangaroo-tail-h4d1",
+  "strategy_shape": "Structural H4/D1 kangaroo-tail price action on four liquid forex pairs",
+  "source": {
+    "title": "Naked Forex: High-Probability Techniques for Trading Without Indicators",
+    "publisher": "Wiley",
+    "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11397_naked-forex-kangaroo-tail-h4d1.md"
+  },
+  "diversity_rationale": "AUDUSD forex exposure diversifies the index/metal/energy-only Q08 survivor set, while the strategy is structural price action with no ML or banned indicators.",
+  "prior_failure": {
+    "work_item_id": "38249032-e5d0-441a-991a-248ded946ea4",
+    "phase": "Q02",
+    "symbol": "AUDUSD.DWX",
+    "timeframe": "H4",
+    "verdict": "INFRA_FAIL",
+    "evidence_path": "D:/QM/reports/work_items/38249032-e5d0-441a-991a-248ded946ea4/QM5_11397/20260625_065310/summary.json",
+    "reason_classes": [
+      "NO_HISTORY",
+      "INCOMPLETE_RUNS"
+    ],
+    "diagnosis": "The T4 report was an empty 1970-period artifact with no expert, symbol, bars, or history context; it was not an OnInit or strategy verdict. The current cache audit now shows AUDUSD H4 history for 2017-2024 and 2026, including T4 cache for the exact 2024-07-01 through 2024-12-31 prescreen window."
+  },
+  "repair": {
+    "source_change": "Moved the callable and framework news filters below position management and exits so news blackouts gate entries only, then refreshed the binary against the committed framework snapshot.",
+    "setfile_change": "Regenerated build hashes for all eight H4/D1 backtest setfiles without changing strategy parameters.",
+    "risk_contract": {
+      "mode": "RISK_FIXED",
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0
+    }
+  },
+  "verification": {
+    "spec_validation": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK; violations=0",
+    "guardrails": "PASS; files=9; findings=0",
+    "cache_audit": "AUDUSD.DWX H4 history=2017-2024,2026; T4 tester cache includes 2024-07-01..2024-12-31",
+    "build_check": "PASS; failures=0; warnings=1",
+    "build_check_advisory": "The static .DWX spread advisory is a false positive: spread<=0 explicitly returns false from Strategy_NoTradeFilter, so zero modeled spread fails open.",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260710_200449.json",
+    "compile": "PASS; errors=0; warnings=0",
+    "compile_log": "C:/QM/repo/framework/build/compile/20260710_200621/QM5_11397_naked-forex-kangaroo-tail-h4d1.compile.log",
+    "compile_base_commit": "3c39004be1a9197164805757c024e41ff33a53fa",
+    "mq5_sha256": "ac8a2931302f41bd1db9b5b28b71fbae7837a994e3c781bdc1bcf5a6b75c5bc5",
+    "ex5_sha256": "fdac9e67592de4a07691619ea928d7f993068f6d0c6d10c5d74b3efcd6cf0c16",
+    "audusd_h4_setfile_build_hash": "3c7e8b698aff877aa65e125873973516e6484ef9a414ec0d29ad238d7571f7ec"
+  },
+  "q02_requeue": {
+    "work_item_id": "b1de39c8-5758-4cb3-ae1b-607395840b9f",
+    "status": "pending",
+    "symbol": "AUDUSD.DWX",
+    "host_symbol": "AUDUSD.DWX",
+    "host_timeframe": "H4",
+    "from_date": "2024.07.01",
+    "to_date": "2024.12.31",
+    "run_stage": "prescreen",
+    "duplicate_guard": "BEGIN IMMEDIATE found no in-flight or newer AUDUSD Q02+ work item before insertion."
+  },
+  "safety": {
+    "manual_mt5_backtest_started": false,
+    "factory_db_slots_observed_active": 4,
+    "existing_nonfarm_diagnostic_testers_observed": 1,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
