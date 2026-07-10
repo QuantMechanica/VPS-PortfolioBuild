@@ -50,6 +50,12 @@ The complete approved card of record is
 symmetric `XNGUSD.DWX` H4 close-confirmed breakout of the previous D1 range in
 the source volatility windows, with `RISK_FIXED=1000` backtest risk.
 
+## Hypothesis
+
+Storage- and demand-linked natural-gas volatility is seasonally concentrated;
+an H4 close beyond the prior D1 range can discover direction without imposing
+a fixed calendar side.
+
 ## Rules
 
 See the complete card of record.
@@ -93,4 +99,3 @@ See the complete card of record.
 ## Risk
 
 No `T_Live`, AutoTrading, deploy manifest, live setfile, or portfolio gate.
-
