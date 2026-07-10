@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        9637
 ; ea_slug:      williams-ocr-reversal-h4
@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   da368184ab9384ebbc0c77b5dd8f35eada17751758d409bce0890967a42f861b
 ; author:       Development
 ; date:         2026-06-11
 ;==========================================================
