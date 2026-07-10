@@ -88,8 +88,7 @@ bool Strategy_LoadClosedCloses(double &closes[])
 
    ArrayResize(closes, required);
    ArraySetAsSeries(closes, true);
-   // Perf-allowed: one bounded D1 history copy, called only on a new D1 bar.
-   const int copied = CopyClose(_Symbol, PERIOD_D1, 1, required, closes);
+   const int copied = CopyClose(_Symbol, PERIOD_D1, 1, required, closes); // perf-allowed: new-D1 bounded history copy.
    if(copied != required)
       return false;
 
@@ -268,7 +267,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(strategy_max_spread_points > 0)
      {
       const long spread_points = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread_points <= 0 || spread_points > strategy_max_spread_points)
+      // Custom .DWX tester bars may report zero spread; only a wide spread blocks.
+      if(spread_points > strategy_max_spread_points)
          return false;
      }
 
@@ -437,4 +437,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
