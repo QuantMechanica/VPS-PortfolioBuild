@@ -1,0 +1,152 @@
+{
+  "task_id": "6b91d74e-5e01-4ef7-b40b-3933aa7e5923",
+  "ea_id": "QM5_13110",
+  "ea_label": "QM5_13110_xng-svol-brk",
+  "slug": "xng-svol-brk",
+  "strategy": "XNGUSD.DWX H4 once-weekly close-confirmed breakout of the prior D1 range during source-defined seasonal volatility windows",
+  "strategy_id": "SUENAGA-XNG-SEASVOL-2008_S01",
+  "source_id": "SUENAGA-XNG-SEASVOL-2008",
+  "source_links": [
+    "https://doi.org/10.1002/fut.20317",
+    "https://files.asmith.ucdavis.edu/2008_JFutMkt_SSW_NGfutures.pdf"
+  ],
+  "symbols": ["XNGUSD.DWX"],
+  "traded_symbols": ["XNGUSD.DWX"],
+  "symbols_registered": ["XNGUSD.DWX"],
+  "logical_symbol": "QM5_13110_XNG_SVOL_BRK_H4",
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "H4",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13110_xng-svol-brk",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13110_xng-svol-brk\\QM5_13110_xng-svol-brk.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13110_xng-svol-brk\\QM5_13110_xng-svol-brk.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13110_xng-svol-brk\\SPEC.md",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13110_xng-svol-brk.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13110_xng-svol-brk_card.md",
+  "canonical_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\xng-svol-brk_card.md",
+  "source_packet_path": "C:\\QM\\repo\\strategy-seeds\\sources\\SUENAGA-XNG-SEASVOL-2008\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13110_xng-svol-brk\\sets\\QM5_13110_xng-svol-brk_XNGUSD.DWX_H4_backtest.set"
+  ],
+  "magic_base": 131100000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XNGUSD.DWX",
+      "magic": 131100000,
+      "registry_status": "active"
+    }
+  ],
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Backtest CPU ceiling / paced-fleet guard: T1, T3, T4, and T6 had active path-anchored non-live MT5 runs and paced worker wrappers covered T1, T2, T3, T4, T6, T7, and T8 at 2026-07-10T09:29:07+02:00; no manual MT5 run was launched.",
+  "blocked_reason": "",
+  "compile": {
+    "status": "PASS",
+    "warnings": 0,
+    "errors": 0,
+    "reason_class": "OK",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260710_072814\\QM5_13110_xng-svol-brk.compile.log",
+    "summary_csv": "D:\\QM\\reports\\compile\\20260710_072814\\summary.csv",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13110_xng-svol-brk/QM5_13110_xng-svol-brk.mq5 -Strict"
+  },
+  "build_check": {
+    "status": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260710_073231.json",
+    "setfile_build_hash": "6efb3f0844f71c245954ccbea70d6a33bf2945c40042e702cb9214d1acc3e07c",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13110_xng-svol-brk -RepoRoot C:/QM/repo -SkipCompile"
+  },
+  "validations": {
+    "dedup": {
+      "status": "CLEAN_BEFORE_ALLOCATION",
+      "command": "python framework/scripts/research_dedup_check.py check --slug xng-svol-brk --strategy-id SUENAGA-XNG-SEASVOL-2008_S01 --author 'Suenaga Smith Williams' --mechanic 'XNG H4 once-weekly symmetric close-confirmed breakout of prior completed D1 range during source high-volatility windows May-September and November-January with structural stop fixed-R target and time exit'"
+    },
+    "spec_doc": {
+      "status": "PASS",
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13110_xng-svol-brk"
+    },
+    "card_schema": {
+      "status": "PASS",
+      "command": "python framework/scripts/skill_card_schema_lint.py --card strategy-seeds/cards/approved/QM5_13110_xng-svol-brk_card.md"
+    },
+    "g0_card": {
+      "status": "PASS",
+      "command": "python framework/scripts/skill_g0_card_lint.py --card strategy-seeds/cards/approved/QM5_13110_xng-svol-brk_card.md"
+    },
+    "symbol_scope": {
+      "status": "PASS",
+      "verdict": "SINGLE_SYMBOL_OK",
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_13110_xng-svol-brk --json"
+    },
+    "magic_registry": {
+      "status": "PASS_WITH_PREEXISTING_WARNINGS",
+      "slots": [0],
+      "resolver_rows_kept": 14774,
+      "pre_existing_missing_ea_dir_warnings": [1001, 1015, 1016],
+      "resolver_sha_prefix": "A0503AC39D37F266"
+    },
+    "risk_mode": {
+      "status": "PASS",
+      "backtest_uses_risk_fixed": true,
+      "risk_percent_zero": true,
+      "portfolio_weight": 1
+    },
+    "build_guardrails": {
+      "status": "PASS",
+      "ml_forbidden": "PASS",
+      "external_runtime_data": "PASS",
+      "setfile_schema": "PASS",
+      "friday_close_enabled": true
+    }
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "manual_backtest_cpu_used": false
+  },
+  "file_hashes_sha256": {
+    "mq5": "C85911C478FB3A0C28458D32202A61536379283BD6127673E1EC203AD53F3C39",
+    "ex5": "64271CB981CD5C6F4DCEFD3533D8AD9F5AABE84C8C69CB494F2DF844067F381E",
+    "spec": "A504DB3051E6313F5DB99EC4B32EAB8580667D0D6BCEA27EA2DACDD0E3A38F56",
+    "setfile": "F90726311B970F5547DA4E13FA390400DD9088811531A727088374B97C23C99A",
+    "canonical_card": "130683FE73E5478DD5D62EB8ACC13D89A5BE281AF6D9EB917B9748A187C715DF",
+    "source_packet": "1EE46CE2C386F914E5CD6B6623C3A987FEBF02FA8E5B1A5E746C165608EE90C0"
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "a4e141ed-3058-4964-944e-1c0520b527e2",
+    "status_at_handoff": "pending",
+    "claimed_by": null,
+    "symbol": "XNGUSD.DWX",
+    "timeframe": "H4",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13110_xng-svol-brk\\sets\\QM5_13110_xng-svol-brk_XNGUSD.DWX_H4_backtest.set",
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "enqueued_at_utc": "2026-07-10T07:30:14+00:00",
+    "note": "Auto-enqueued by farmctl record-build. No manual dispatch or smoke while paced factory automation was active."
+  }
+}
