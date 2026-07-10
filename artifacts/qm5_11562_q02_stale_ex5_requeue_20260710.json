@@ -1,0 +1,100 @@
+{
+  "mission_unit": "priority_2_diverse_fx_q02_stale_ex5_repair_requeue",
+  "timestamp_utc": "2026-07-10T04:25:05+00:00",
+  "agent": "codex-agents-board-advisor",
+  "branch": "agents/board-advisor",
+  "claim": {
+    "agent_task_id": "6e7ab1f9-e009-4c5d-96d3-16ea9b33995e",
+    "claimed_at_utc": "2026-07-10T04:23:11+00:00",
+    "collision_guard": "no pending/active Q02-Q03 work item, legacy task, or agent task for QM5_11562"
+  },
+  "ea": {
+    "ea_id": "QM5_11562",
+    "label": "QM5_11562_watthana-2018-candlestick-rsi14-stoch14-h4",
+    "instrument_class": "forex",
+    "symbol": "EURUSD.DWX",
+    "timeframe": "H4",
+    "expected_trades_per_year_per_symbol": 60,
+    "source": "Watthana Pongsena et al., International Journal of Trade, Economics and Finance 9(6), 2018",
+    "source_doi": "10.18178/ijtef.2018.9.6.622",
+    "g0_status": "APPROVED",
+    "review_task_id": "ee16720f-433b-4df1-ada6-d62f347ca55f",
+    "review_verdict": "APPROVE_FOR_BACKTEST",
+    "risk_mode": "RISK_FIXED",
+    "ml_used": false
+  },
+  "upstream_evidence": {
+    "q01_smoke_result": "passed",
+    "q01_smoke_trades": 32,
+    "q01_smoke_report": "D:/QM/reports/smoke/QM5_11562/20260611_023327/summary.json",
+    "codex_review_verdict": "PASS"
+  },
+  "prior_q02_infra": {
+    "terminal_rows": 12,
+    "strategy_verdict_rows": 0,
+    "latest_work_item_id": "8a2045ea-448f-44ea-a947-02b7280d7e6c",
+    "latest_status": "failed",
+    "latest_verdict": "INFRA_FAIL",
+    "latest_reason": "summary_missing_retries_exhausted",
+    "latest_updated_at_utc": "2026-06-24T16:16:51+00:00",
+    "diagnosis": "The Q02 cohort produced no tester summary or strategy verdict. The retained ex5 was older than 20 current V5 framework includes, so it was rebuilt against the current framework before a guarded requeue."
+  },
+  "repair": {
+    "repo_commits": {
+      "setfile_generation": "41dc9813d25d12088575907dfeaea13f699cef95",
+      "final_ex5_and_setfile_hash": "01ab1c716f671640d9bf1e2cfa31fabd0f6908b6"
+    },
+    "mq5_changed": false,
+    "mq5_sha256": "DF05DEBB028EC661258394B4F43FD1816FA19AC68BE2FEE87D218CD736A03B3A",
+    "newer_framework_include_count_before_rebuild": 20,
+    "compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260710_042413/QM5_11562_watthana-2018-candlestick-rsi14-stoch14-h4.compile.log",
+      "summary": "D:/QM/reports/compile/20260710_042413/summary.csv",
+      "old_ex5_sha256": "833DC54EB1DA8ECF255CAF7A914FE7DF1BF592B49E38C873A3802852FB81380D",
+      "new_ex5_sha256": "3E4E0298DC2A86D49A91E51AE39FB599E126F97E6161F3A742CB43A853568F11"
+    },
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260710_042445.json"
+    },
+    "spec_validation": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "setfile": {
+      "path": "C:/QM/repo/framework/EAs/QM5_11562_watthana-2018-candlestick-rsi14-stoch14-h4/sets/QM5_11562_watthana-2018-candlestick-rsi14-stoch14-h4_EURUSD.DWX_H4_backtest.set",
+      "old_sha256": "7AE0EF8470E538ED70928E57EF28D9F3D67824D41CBF5A814FFCCCF5EF9F81F4",
+      "generated_sha256_before_build_hash_refresh": "D8F3ECB7D93250B6610F4210B32313580349258C76AAE4AABEC829728E2B33DB",
+      "new_sha256": "D02AABAE99A4596676CFB2955894B07E367A846241288CC152552641958C34B6",
+      "environment": "backtest",
+      "risk_mode": "FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "strategy_defaults_materialized": true
+    }
+  },
+  "requeue": {
+    "action": "enqueue_backtest_through_approved_review",
+    "parent_task_id": "2b972a80-82df-44ba-92df-6ce3599c6321",
+    "work_item_id": "6a4c00e2-9474-40f3-a185-cabe5e0215f5",
+    "phase": "Q02",
+    "symbol": "EURUSD.DWX",
+    "status_after": "pending",
+    "attempt_count_after": 0,
+    "claimed_by_after": null,
+    "open_same_ea_phase_after": 1,
+    "work_items_skipped": 0
+  },
+  "safety": {
+    "factory_terminals_active_at_handoff": ["T1", "T2", "T3", "T4", "T6", "T8"],
+    "manual_backtest_started": false,
+    "backtest_cpu_added": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
