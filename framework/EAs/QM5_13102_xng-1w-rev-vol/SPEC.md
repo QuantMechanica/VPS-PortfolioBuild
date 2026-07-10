@@ -81,11 +81,10 @@ touched by this build.
 ## Evidence
 
 - Build result: `artifacts/qm5_13102_build_result.json`.
-- Q02 handoff is recorded in the build result and farm work-item state.
+- Q02 handoff: work item `09900431-3c61-4ecd-9da2-96fa69758cf3`.
 
 ## Revision History
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-10 | Mission-directed XNG one-week high-volatility reversal | Enqueue to Q02 |
-

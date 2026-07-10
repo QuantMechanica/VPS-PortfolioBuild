@@ -172,12 +172,12 @@ a contrarian setup. Retire on Q02 frequency, PF, or DD failure.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-10 | initial parameter-locked XNG high-volatility reversal build | Q02 | PENDING |
+| v1 | 2026-07-10 | initial parameter-locked XNG high-volatility reversal build | Q02 | QUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-10 | APPROVED | this card |
-| Q01 Build Validation | 2026-07-10 | PENDING | `artifacts/qm5_13102_build_result.json` |
-| Q02 Baseline Screening | 2026-07-10 | PENDING | paced work item after build PASS |
+| Q01 Build Validation | 2026-07-10 | PASS | `artifacts/qm5_13102_build_result.json` |
+| Q02 Baseline Screening | 2026-07-10 | QUEUED | work item `09900431-3c61-4ecd-9da2-96fa69758cf3` |
