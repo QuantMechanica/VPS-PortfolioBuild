@@ -1,0 +1,17 @@
+{
+  "logical_symbol": "QM5_13118_ENERGY_SKEW_RANK_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Market-neutral monthly XTI/XNG commodity-skewness basket from the approved FERNANDEZ-SKEW-2018_XTI_XNG_S01 card. The EA runs from the XTIUSD.DWX D1 host, computes each leg's Pearson skewness from completed D1 log returns in the prior 12 complete broker months, buys the lower-skew leg, and shorts the higher-skew leg. Q02 must evaluate the logical basket, not standalone legs."
+  ]
+}
+
