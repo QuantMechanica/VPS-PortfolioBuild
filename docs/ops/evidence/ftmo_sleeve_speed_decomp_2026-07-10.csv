@@ -1,0 +1,19 @@
+ea,symbol,tf,trades,trades_per_yr,ann_pnl_usd,profit_factor,worst_mae_usd,pnl_per_abs_mae
+11476,USDJPY.DWX,H1,2719,330,28702,1.11,-10358,22.81
+12958,XAUUSD.DWX,D1,71,24,12770,2.05,-2699,14.05
+10848,XAUUSD.DWX,H1,1344,164,6588,1.15,-1123,48.23
+10692,NDX.DWX,H1,675,90,6118,1.16,-3571,12.81
+12475,NDX.DWX,H1,807,236,4827,1.14,-881,18.70
+10700,XAUUSD.DWX,H1,373,46,4700,1.32,-745,51.52
+10911,GDAXI.DWX,H1,330,45,3432,1.17,-1669,15.24
+10286,XTIUSD.DWX,D1,485,62,2828,1.26,-598,37.08
+10847,GBPUSD.DWX,H1,802,98,2299,1.11,-635,29.76
+10440,NDX.DWX,H1,768,103,2188,1.08,-951,17.20
+12990,GBPUSD.DWX,H4,34,12,1095,1.74,-381,8.44
+10163,NDX.DWX,H1,168,88,-950,0.94,-1086,-1.68
+# sub-book speed at matched annualized PnL = $30k/yr, P1 +10% target:
+# full12: 64.0% pass, 49 active / 65 cal days
+# top8_edge_per_dd: 59.5% pass, 39 active / 51 cal days
+# top6_edge_per_dd: 54.0% pass, 32 active / 42 cal days
+# top4_edge_per_dd: 77.3% pass, 60 active / 79 cal days
+# NOTE 10163 NDX.DWX H1 is NET-NEGATIVE in the book (PF 0.94, -$950/yr) -> remove (DD-only ballast)
