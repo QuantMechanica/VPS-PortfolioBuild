@@ -1,0 +1,117 @@
+{
+  "mission_unit": "priority_2_diverse_fx_q02_infra_repair_requeue",
+  "timestamp_utc": "2026-07-10T15:39:30+00:00",
+  "agent": "codex-agents-board-advisor",
+  "branch": "agents/board-advisor",
+  "claim": {
+    "agent_task_id": "50c49420-423f-4455-bfe1-f27761c7bf55",
+    "source_work_item_id": "4f633e30-075c-40de-be73-700e8c00b007",
+    "claimed_at_utc": "2026-07-10T15:34:54+00:00",
+    "claimed_by": "codex:agents/board-advisor",
+    "collision_guard": "No pending or active work item and no open agent task existed for QM5_11891 when the claim transaction committed."
+  },
+  "ea": {
+    "ea_id": "QM5_11891",
+    "label": "QM5_11891_unger-daily-factor-indecision-pattern",
+    "instrument_class": "forex",
+    "symbol_repaired": "USDCAD.DWX",
+    "timeframe": "D1",
+    "edge": "symmetric breakout after a low-body-ratio indecision day",
+    "source": "Andrea Unger, Better System Trader episode 045 transcript, pages 6-7",
+    "g0_status": "APPROVED",
+    "risk_mode": "RISK_FIXED",
+    "ml_used": false
+  },
+  "funnel_context": {
+    "q02_pass_count_before_repair": 9,
+    "q02_pass_symbols": [
+      "AUDJPY.DWX",
+      "AUDUSD.DWX",
+      "EURJPY.DWX",
+      "EURUSD.DWX",
+      "GBPJPY.DWX",
+      "GBPUSD.DWX",
+      "NZDUSD.DWX",
+      "USDCHF.DWX",
+      "USDJPY.DWX"
+    ],
+    "sole_unresolved_symbol_before_repair": "USDCAD.DWX",
+    "why_high_value": "This recovers the tenth instrument in a forex family with nine real Q02 passes instead of adding another index, metal, or energy build."
+  },
+  "prior_infra_failure": {
+    "summary": "D:/QM/reports/work_items/4f633e30-075c-40de-be73-700e8c00b007/QM5_11891/20260706_033130/summary.json",
+    "verdict": "INFRA_FAIL",
+    "reason_classes": [
+      "REPORT_MISSING",
+      "INCOMPLETE_RUNS"
+    ],
+    "oninit_failure_detected": false,
+    "root_cause": "All three retained tester attempts exited before loading the EA because the tester account was not specified.",
+    "tester_log_marker": "tester not started because the account is not specified"
+  },
+  "repair": {
+    "package_commit": "f192a48e9",
+    "package_commit_subject": "build: pump auto-commit 1 factory artifact path(s)",
+    "mq5_changed": false,
+    "mq5_sha256": "49D28C2B387A64A9EFDFFF24E24E7CF952F905CF9063D83E2FDC005C2FB27C09",
+    "newer_framework_include_count_before_rebuild": 20,
+    "newer_framework_include_count_after_rebuild": 0,
+    "compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260710_153620/QM5_11891_unger-daily-factor-indecision-pattern.compile.log",
+      "summary": "D:/QM/reports/compile/20260710_153620/summary.csv",
+      "old_ex5_sha256": "13AD6D874E8166033DDF5823ECBC5DE21F7502D4DC26271B500E6DDB55DB8ED9",
+      "new_ex5_sha256": "E1E44DE5265BD7D36EF1758C1CA25E8495CF1A6365AFABCB8D223059F45AFC0B"
+    },
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260710_153620.json"
+    },
+    "spec_validation": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "package_files_committed": 25,
+    "setfile": {
+      "path": "C:/QM/repo/framework/EAs/QM5_11891_unger-daily-factor-indecision-pattern/sets/QM5_11891_unger-daily-factor-indecision-pattern_USDCAD.DWX_D1_backtest.set",
+      "old_sha256": "0821943068ED907E2C1C35748E2E7FB90BF5FED6075D2D7FCC00828DAF50C68A",
+      "new_sha256": "82CADE2A4B25FF9CB24EB88665AD2E3FAE6EE5CC0E42FA68A9B38082C283A620",
+      "environment": "backtest",
+      "risk_mode": "FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0,
+      "strategy_defaults_materialized": true
+    }
+  },
+  "requeue": {
+    "work_item_id": "acf7c2ba-b7bf-4ae0-a8e1-b62b89b49a72",
+    "phase": "Q02",
+    "symbol": "USDCAD.DWX",
+    "from_date": "2018.07.02",
+    "to_date": "2024.12.31",
+    "effective_min_trades": 35,
+    "status_at_handoff": "active",
+    "claimed_by_terminal": "T7",
+    "attempt_count": 0,
+    "parent_build_task_id": "88fd82ef-d7bc-4e4b-9ba3-4a057a1ca431",
+    "execution_path": "native farm worker dispatch"
+  },
+  "safety": {
+    "factory_terminals_active_before_enqueue": [
+      "T1",
+      "T3",
+      "T4",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "manual_backtest_started": false,
+    "direct_smoke_started": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
