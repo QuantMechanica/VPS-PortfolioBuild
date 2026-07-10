@@ -1,0 +1,149 @@
+{
+  "task_id": "d7e39a5b-323d-43e3-a291-1889c1f33e81",
+  "ea_id": "QM5_13102",
+  "ea_label": "QM5_13102_xng-1w-rev-vol",
+  "slug": "xng-1w-rev-vol",
+  "strategy": "XNGUSD.DWX D1 five-day return-shock reversal gated to the upper realized-volatility regime",
+  "strategy_id": "ZHAO-ST-MOMREV-2026_XNG_S02",
+  "source_id": "ZHAO-ST-MOMREV-2026",
+  "source_links": [
+    "https://doi.org/10.2139/ssrn.6425598"
+  ],
+  "symbols": [
+    "XNGUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XNGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13102_XNG_1W_REV_VOL_D1",
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13102_xng-1w-rev-vol",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13102_xng-1w-rev-vol\\QM5_13102_xng-1w-rev-vol.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13102_xng-1w-rev-vol\\QM5_13102_xng-1w-rev-vol.ex5",
+  "ex5_size_bytes": 318752,
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13102_xng-1w-rev-vol\\SPEC.md",
+  "approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13102_xng-1w-rev-vol.md",
+  "strategy_seed_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13102_xng-1w-rev-vol_card.md",
+  "source_packet_path": "C:\\QM\\repo\\strategy-seeds\\sources\\ZHAO-ST-MOMREV-2026\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13102_xng-1w-rev-vol\\sets\\QM5_13102_xng-1w-rev-vol_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 131020000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XNGUSD.DWX",
+      "magic": 131020000
+    }
+  ],
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced fleet mission requested Q02 enqueue; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "compile": {
+    "status": "COMPILED",
+    "warnings": 0,
+    "errors": 0,
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260709_235556\\QM5_13102_xng-1w-rev-vol.compile.log",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13102_xng-1w-rev-vol/QM5_13102_xng-1w-rev-vol.mq5 -Strict"
+  },
+  "build_check": {
+    "status": "PASS",
+    "warnings": 0,
+    "failures": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260709_235902.json",
+    "setfile_build_hash": "8c2548f14d595cfa177c355342d4cee0a99686c730025454c43f22dbd307c259",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13102_xng-1w-rev-vol -Strict -SkipCompile"
+  },
+  "validations": {
+    "spec_doc": {
+      "status": "PASS"
+    },
+    "card_schema_canonical": {
+      "status": "PASS"
+    },
+    "card_schema_approved": {
+      "status": "PASS"
+    },
+    "g0_lint_canonical": {
+      "status": "PASS"
+    },
+    "g0_lint_approved": {
+      "status": "PASS"
+    },
+    "symbol_scope": {
+      "status": "PASS",
+      "verdict": "SINGLE_SYMBOL_OK"
+    },
+    "magic_registry": {
+      "status": "PASS_WITH_PREEXISTING_WARNINGS",
+      "slots": [
+        0
+      ],
+      "resolver_rows_kept": 14762,
+      "pre_existing_missing_ea_dir_warnings": [
+        1001,
+        1015,
+        1016
+      ],
+      "resolver_hash": "44A2163953F4DE0E03C88BF5EF49F31CF92B71D74706935AF3B6CFE46891B657"
+    },
+    "risk_mode": {
+      "status": "PASS",
+      "backtest_uses_risk_fixed": true,
+      "risk_percent_zero": true
+    },
+    "build_guardrails": {
+      "status": "PASS",
+      "ml_forbidden": "PASS",
+      "external_runtime_data": "PASS",
+      "setfile_schema": "PASS"
+    }
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "q02_enqueue": {
+    "status": "pending",
+    "work_item_id": "09900431-3c61-4ecd-9da2-96fa69758cf3",
+    "phase": "Q02",
+    "symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "risk_mode": "RISK_FIXED",
+    "created_at_utc": "2026-07-09T23:57:12+00:00",
+    "dispatched_by_this_session": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "backtest_cpu_used": false
+  },
+  "non_duplicate_reason": "This XNG realization fades five-D1 shocks only in the upper realized-volatility regime. It uses no RSI or slow trend filter, is much shorter than the existing 20-D1 and 120-D1 reversal sleeves, and is directionally opposite to QM5_13101's low-volatility continuation branch.",
+  "source_proxy_disclosure": "The academic paper decomposes returns with investor-position data unavailable to the Darwinex CFD runtime. The implemented OHLC-only five-day high-volatility reversal is an explicit falsifiable proxy and does not claim source-exact replication.",
+  "file_hashes_sha256": {
+    "canonical_card": "E4DE66EDB9D9B2EBC2530F074A3D1D3AA2FDAF02B927804AA97CA445F841488F",
+    "approved_card": "85F8F02872769ACEF97883FCFC888C5EF1C010A1C28915E7A9E97AEEF925F431",
+    "source_packet": "798A8252E97293DBE5E612B6161D4A97850F02D8DC151265EEF0E5E3B0AF6511",
+    "mq5": "50FEBDDA973F2CC7D17C31CC9436283CC2B65D4BB5665DB28F92718B4274AC95",
+    "ex5": "C2A92AFA1B28BE1FEF1A443808E78B6B58E3090F3D5BC1C81ABE78F09FF4F04E",
+    "spec": "C08666687D135C4762BE013FFFF9E1B99F77148468E991ACA217C2F972377C22",
+    "setfile": "7E1917D003B163F047D0B38CAD499EB2DCECA898094A5CD6CECC3EEBC8452B6E"
+  }
+}

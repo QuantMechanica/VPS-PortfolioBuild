@@ -1,0 +1,21 @@
+{
+  "ea_id": "QM5_13102",
+  "ea_label": "QM5_13102_xng-1w-rev-vol",
+  "build_task_id": "d7e39a5b-323d-43e3-a291-1889c1f33e81",
+  "phase": "Q02",
+  "work_item_id": "09900431-3c61-4ecd-9da2-96fa69758cf3",
+  "status": "pending",
+  "symbol": "XNGUSD.DWX",
+  "timeframe": "D1",
+  "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_13102_xng-1w-rev-vol\\sets\\QM5_13102_xng-1w-rev-vol_XNGUSD.DWX_D1_backtest.set",
+  "risk_mode": "RISK_FIXED",
+  "risk_fixed": 1000,
+  "risk_percent": 0,
+  "created_at_utc": "2026-07-09T23:57:12+00:00",
+  "enqueue_method": "farmctl record-build auto-Q02 handoff",
+  "manual_backtest_launched": false,
+  "t_live_touched": false,
+  "autotrading_touched": false,
+  "deploy_manifest_touched": false,
+  "portfolio_gate_touched": false
+}
