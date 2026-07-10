@@ -1,0 +1,17 @@
+{
+  "logical_symbol": "QM5_13120_ENERGY_MOMREV_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Market-neutral monthly XTI/XNG momentum-reversal package from approved card BIANCHI-MOMREV-2015_XTI_XNG_S01. Run on XTIUSD.DWX D1; open only when the synchronized 12-completed-month rank and 18-completed-month rank disagree. Q02 must evaluate the logical basket, not standalone legs."
+  ]
+}
+

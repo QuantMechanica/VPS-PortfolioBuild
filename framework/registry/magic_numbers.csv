@@ -14934,3 +14934,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13118,energy-skew-rank,1,XNGUSD.DWX,131180001,2026-07-10,Codex,active
 13119,usdjpy-euraud,0,USDJPY.DWX,131190000,2026-07-10,Codex,active
 13119,usdjpy-euraud,1,EURAUD.DWX,131190001,2026-07-10,Codex,active
+13120,energy-momrev,0,XTIUSD.DWX,131200000,2026-07-10,Codex,active
+13120,energy-momrev,1,XNGUSD.DWX,131200001,2026-07-10,Codex,active
