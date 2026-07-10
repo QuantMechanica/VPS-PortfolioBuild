@@ -57,3 +57,43 @@ Deferred sidecar source: `codex_infra_repair.q02_requeue`
 
 Deferred symbols: `GBPUSD.DWX`, `USDCAD.DWX`, `USDCHF.DWX`, `AUDUSD.DWX`,
 `NZDUSD.DWX`, `EURJPY.DWX`, `GBPJPY.DWX`.
+
+## Recovery Completion - 2026-07-10
+
+The historical Q02 failure class was rechecked against the real work-item
+evidence before advancing the recycle task. The latest complete pre-repair
+reports still show `ONINIT_FAILED`, `EA_MAGIC_NOT_REGISTERED`, `BARS_ZERO`, and
+`HISTORY_CONTEXT_INVALID`; no post-repair strategy verdict existed. The June 28
+registry/slot fix therefore remains the applicable infrastructure correction.
+
+This completion pass also repaired two build-safety issues in the current EA:
+
+- position management and strategy exits now run before either news-entry gate,
+  so an open position remains managed through a blackout window;
+- `QM_EntryRequest` is zero-initialized before the strategy fills it.
+
+The approved Federal Reserve-sourced card is now copied into
+`docs/strategy_card.md`. Validation evidence:
+
+- `validate_spec_doc.py`: PASS (1 PASS, 0 FAIL)
+- build check: PASS, 0 failures, 0 warnings
+  (`D:\QM\reports\framework\21\build_check_20260710_132505.json`)
+- strict compile: PASS, 0 errors, 0 warnings
+  (`C:\QM\repo\framework\build\compile\20260710_132518\QM5_11916_neely-weller-alexander-filter-2pct-d1.compile.log`)
+- build result:
+  `D:\QM\strategy_farm\artifacts\builds\4baddbe8-c2da-479b-b9fe-9be4ec4eb046.json`
+
+The standard `record-build` path staged the next Q02 recovery wave without
+launching an interactive backtest:
+
+| Work item | Symbol | Status |
+|---|---|---|
+| `2d118c6a` | `GBPUSD.DWX` | pending |
+| `52efb82d` | `USDCAD.DWX` | pending |
+| `7a8d456a` | `USDCHF.DWX` | pending |
+
+The earlier EURUSD/USDJPY/AUDJPY wave remains pending. AUDUSD, NZDUSD, EURJPY,
+and GBPJPY remain in the canonical Q02 deferred-symbol sidecar and will promote
+under the normal staged-wave rule. T1, T2, T3, and T8 were already running
+factory work at the check, so no manual MT5 smoke was started and no T_Live
+process or setting was touched.

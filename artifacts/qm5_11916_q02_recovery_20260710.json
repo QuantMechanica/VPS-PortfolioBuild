@@ -1,0 +1,50 @@
+{
+  "ea_id": "QM5_11916",
+  "ea_label": "QM5_11916_neely-weller-alexander-filter-2pct-d1",
+  "mission_unit": "diverse_fx_q02_infra_recovery",
+  "claimed_agent_task_id": "836df77f-4836-49f6-9773-a129eaa17bdc",
+  "record_build_task_id": "4baddbe8-c2da-479b-b9fe-9be4ec4eb046",
+  "status": "PIPELINE",
+  "historical_root_cause": [
+    "EA_MAGIC_NOT_REGISTERED",
+    "ONINIT_FAILED",
+    "BARS_ZERO",
+    "HISTORY_CONTEXT_INVALID"
+  ],
+  "repair": [
+    "confirmed ten active symbol-specific magic slots",
+    "kept management and exits ahead of news entry gates",
+    "zero-initialized QM_EntryRequest",
+    "added approved strategy-card build reference",
+    "rebuilt current ex5 against the canonical magic resolver"
+  ],
+  "validation": {
+    "spec_validation": "PASS",
+    "build_check": "PASS_0_FAILURES_0_WARNINGS",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260710_132505.json",
+    "compile": "PASS_0_ERRORS_0_WARNINGS",
+    "compile_log": "C:/QM/repo/framework/build/compile/20260710_132518/QM5_11916_neely-weller-alexander-filter-2pct-d1.compile.log",
+    "mq5_sha256": "F2DE162B78D1A98DC7FCC2CE629AA40640E9AA95C0945B660DC01F75A8425C50",
+    "ex5_sha256": "32268E71A67E7E396B2EC4F97541501C5DC140E73849B10FC79BBC0624395C01",
+    "factory_artifact_commit": "807c266dea4a74df8d5551cbccf11d8bd145a8a6"
+  },
+  "q02_pending": [
+    {"work_item_id": "50063539-f816-4021-97f3-f89f637917ae", "symbol": "AUDJPY.DWX"},
+    {"work_item_id": "ad1aaca6-e639-4680-94c7-5108902438d2", "symbol": "EURUSD.DWX"},
+    {"work_item_id": "ddfca25d-7fd1-4dac-bbef-ca1c6ebf8bdd", "symbol": "USDJPY.DWX"},
+    {"work_item_id": "2d118c6a-7e1d-46ee-ab33-2928642a10b7", "symbol": "GBPUSD.DWX"},
+    {"work_item_id": "52efb82d-1da4-40f9-b768-b8a37f13de42", "symbol": "USDCAD.DWX"},
+    {"work_item_id": "7a8d456a-4b8e-4fa3-b064-50edae17e1c4", "symbol": "USDCHF.DWX"}
+  ],
+  "q02_deferred": [
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "EURJPY.DWX",
+    "GBPJPY.DWX"
+  ],
+  "manual_backtest_started": false,
+  "manual_backtest_reason": "Factory terminals were already active; paced Q02 workers own real-evidence execution and cold-cache retry.",
+  "t_live_touched": false,
+  "portfolio_gate_touched": false,
+  "live_manifest_touched": false
+}
