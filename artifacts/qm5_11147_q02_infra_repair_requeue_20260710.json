@@ -1,0 +1,93 @@
+{
+  "mission_unit": "priority_2_diverse_fx_q02_infra_repair_requeue",
+  "timestamp_utc": "2026-07-10T12:33:12+00:00",
+  "agent": "codex-agents-board-advisor",
+  "branch": "agents/board-advisor",
+  "claim": {
+    "task_key": "manual:codex:agents/board-advisor:QM5_11147:q02-stale-ex5-requeue",
+    "collision_guard": "No pending or active Q02/Q03 work item existed for QM5_11147 when the repair was claimed."
+  },
+  "ea": {
+    "ea_id": "QM5_11147",
+    "label": "QM5_11147_clenow-vam-rot",
+    "g0_status": "APPROVED",
+    "timeframe": "D1",
+    "execution_mode": "per_instance",
+    "structural_edge": "Weekly Clenow volatility-adjusted cross-sectional momentum rotation",
+    "source": "Andreas F. Clenow, Stocks on the Move, 2015, ISBN 9781511466141",
+    "source_url": "https://www.followingthetrend.com/stocks-on-the-move/",
+    "expected_trades_per_year_per_symbol": 12,
+    "risk_mode": "RISK_FIXED",
+    "ml_used": false,
+    "diverse_hosts": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ]
+  },
+  "prior_q02": {
+    "terminal_rows": 120,
+    "infra_fail_rows": 114,
+    "strategy_fail_rows": 6,
+    "pass_rows": 0,
+    "latest_usdjpy_work_item_id": "742fe85c-0180-433e-9cae-ac6963eef504",
+    "latest_usdjpy_status": "done",
+    "latest_usdjpy_verdict": "INFRA_FAIL",
+    "latest_usdjpy_reason": "run_smoke_fail:NO_HISTORY;INCOMPLETE_RUNS",
+    "latest_usdjpy_updated_at_utc": "2026-06-25T12:05:59+00:00"
+  },
+  "repair": {
+    "diagnosis": "The checked-in EX5 was stale, the per-instance basket manifest was implicit, the two European host setfiles used obsolete aliases, the weekly event evaluated Tuesday rather than the approved Wednesday close, news blocked management and exits, and the entry request was incompletely initialized.",
+    "changes": [
+      "Recompiled against the current V5 framework.",
+      "Changed the new-D1-bar trigger to Thursday so completed Wednesday data is evaluated.",
+      "Moved news gating below management and exits so it suppresses entries only.",
+      "Fully initialized QM_EntryRequest at both caller and callee boundaries.",
+      "Replaced GER40.DWX and FTSE100.DWX setfiles with registered GDAXI.DWX and UK100.DWX hosts.",
+      "Declared execution_mode=per_instance in the basket manifest.",
+      "Regenerated all ten canonical backtest setfiles with RISK_FIXED=1000 and RISK_PERCENT=0."
+    ],
+    "mq5_sha256": "C94DA604A397B605374C6ED7EA8D0603C959918F1C61A1568E7DB569DFAA45C9",
+    "ex5_sha256": "7E298A760F3FB27C16BC4E35B48C2221E0C3A34F8267C4EB96E92EBAE280A309",
+    "compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260710_123007/QM5_11147_clenow-vam-rot.compile.log",
+      "summary": "D:/QM/reports/compile/20260710_123007/summary.csv"
+    },
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260710_123007.json"
+    },
+    "spec_validation": "PASS",
+    "canonical_setfile_count": 10,
+    "usdjpy_setfile_sha256": "3D84CBEAD91C308A656BD0BA9AC3ADD1B3EA886B20B37ECF90CBCA0622D679D0"
+  },
+  "requeue": {
+    "action": "reset_existing_q02_infra_work_item_to_pending",
+    "work_item_id": "742fe85c-0180-433e-9cae-ac6963eef504",
+    "phase": "Q02",
+    "symbol": "USDJPY.DWX",
+    "rows_updated": 1,
+    "database_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11147_q02_requeue_20260710T123114Z.sqlite",
+    "conditional_guard": "Exact work-item/EA/phase/symbol match, prior status=done and verdict=INFRA_FAIL, unclaimed, and no pending/active Q02-Q03 duplicate.",
+    "status_after": "pending",
+    "verdict_after": null,
+    "attempt_count_after": 0,
+    "claimed_by_after": null,
+    "open_same_ea_q02_q03_after": 1,
+    "priority_track": true,
+    "basket_guard_observation": "The generic logical-basket enqueue correctly produced no rows because this legacy manifest is per-instance rather than single-host; the guarded retry therefore advances only the existing USDJPY per-instance infrastructure row."
+  },
+  "safety": {
+    "manual_backtest_started": false,
+    "backtest_cpu_added": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

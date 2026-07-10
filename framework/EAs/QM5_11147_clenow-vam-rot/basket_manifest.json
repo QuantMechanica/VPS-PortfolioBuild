@@ -1,6 +1,7 @@
 {
   "logical_symbol": "QM5_11147_CLENOW_VAM_ROT_D1",
   "host_symbol": "_per_instance",
+  "execution_mode": "per_instance",
   "host_timeframe": "D1",
   "basket_symbols": [
     "SP500.DWX", "NDX.DWX", "WS30.DWX", "GDAXI.DWX", "UK100.DWX",

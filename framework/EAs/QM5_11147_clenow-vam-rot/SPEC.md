@@ -4,7 +4,7 @@
 **Slug:** `clenow-vam-rot`
 **Source:** `2b7435de-4a8d-5fb9-a03d-a032f026fd6b` (Andreas F. Clenow, *Stocks on the Move*, 2015, ISBN 9781511466141)
 **Author of this spec:** Claude
-**Last revised:** 2026-06-17
+**Last revised:** 2026-07-10
 
 ---
 
@@ -42,7 +42,7 @@ the primary close.
 | `strategy_stop_atr_mult` | 3.0 | 2.5-3.5 | Emergency stop distance = mult × ATR |
 | `strategy_min_warmup_bars` | 120 | 120-300 | Min D1 bars required per member |
 | `strategy_min_universe_active` | 4 | 4-8 | Min members with valid rank data for a usable rank |
-| `strategy_rebalance_weekday` | 3 | 0-6 | Broker-time weekday of the weekly eval (3 = Wednesday) |
+| `strategy_rebalance_weekday` | 4 | 0-6 | Broker-time weekday of the new D1 bar; 4 = Thursday, which evaluates Wednesday's completed close |
 | `strategy_spread_pct_of_stop` | 20.0 | 10-50 | Skip if host spread > this % of stop distance |
 
 ---
@@ -120,3 +120,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MIS
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-17 | Initial build from card | basket EA; GER40→GDAXI, FTSE100→UK100 ports flagged |
+| v2 | 2026-07-10 | Q02 infrastructure recovery | Current-framework rebuild; canonical symbol setfiles; entry-only news gate; fully initialized entry request |

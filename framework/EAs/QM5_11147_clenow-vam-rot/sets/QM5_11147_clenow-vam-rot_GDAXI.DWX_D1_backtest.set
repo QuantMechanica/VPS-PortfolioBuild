@@ -4,18 +4,18 @@
 ; ea_slug:      clenow-vam-rot
 ; ea_version:   v5.0
 ; set_version:  s20260710-001
-; symbol:       XAUUSD.DWX
+; symbol:       GDAXI.DWX
 ; timeframe:    D1
 ; environment:  backtest
-; magic_slot:   5
+; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   8fa4f6f3ad0e943b8fc13d31c219e32dee4f8064b8c4724c3bfb0cd62cdb1e43
+; build_hash:   8a29d5e589ae07a0e518ab26042f8dc929a714b8404ac4807b53de53b28315b3
 ; author:       Development
 ; date:         2026-07-10
 ;==========================================================
 qm_ea_id=11147
-qm_magic_slot_offset=5
+qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1

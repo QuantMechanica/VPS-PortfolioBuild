@@ -81,7 +81,7 @@ input int    strategy_atr_period        = 20;    // catastrophic-stop ATR period
 input double strategy_stop_atr_mult     = 3.0;   // emergency stop = mult * ATR (P3 {2.5,3.0,3.5})
 input int    strategy_min_warmup_bars   = 120;   // min D1 warmup bars per symbol
 input int    strategy_min_universe_active = 4;   // min eligible-data symbols for a valid rank
-input int    strategy_rebalance_weekday = 3;     // 0=Sun..6=Sat; 3 = Wednesday (broker time)
+input int    strategy_rebalance_weekday = 4;     // new-D1-bar weekday; 4=Thu evaluates Wednesday's completed close
 input double strategy_spread_pct_of_stop = 20.0; // skip if host spread > this % of stop distance
 
 // -----------------------------------------------------------------------------
@@ -144,7 +144,7 @@ bool QM_ScoreSymbol(const string sym, double &score, bool &eligible)
    eligible = false;
 
    const int L = strategy_rank_lookback;
-   if(Bars(sym, PERIOD_D1) < strategy_min_warmup_bars)
+   if(Bars(sym, PERIOD_D1) < strategy_min_warmup_bars) // perf-allowed: weekly basket warmup guard, evaluated only at rebalance
       return false;
    if(strategy_min_warmup_bars < L + 2)
       return false;                       // misconfig guard
@@ -157,7 +157,7 @@ bool QM_ScoreSymbol(const string sym, double &score, bool &eligible)
    for(int i = 0; i < L; ++i)
      {
       const int shift = L - i;            // i=0 -> shift L (oldest), i=L-1 -> shift 1 (newest)
-      const double v = iClose(sym, PERIOD_D1, shift);
+      const double v = iClose(sym, PERIOD_D1, shift); // perf-allowed: weekly cross-sectional regression close, evaluated only at rebalance
       if(v <= 0.0)
          return false;                    // missing data -> symbol has no valid rank
       c[i] = v;
@@ -301,6 +301,14 @@ bool Strategy_NoTradeFilter()
 // before this call (g_rank / g_score / g_regime_bearish / g_ready).
 bool Strategy_EntrySignal(QM_EntryRequest &req)
   {
+   req.type = QM_BUY;
+   req.price = 0.0;
+   req.sl = 0.0;
+   req.tp = 0.0;
+   req.reason = "";
+   req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
+
    const int magic = QM_FrameworkMagic();
    if(QM_TM_OpenPositionCount(magic) > 0)
       return false;
@@ -451,15 +459,6 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -489,12 +488,25 @@ void OnTick()
         }
      }
 
+   // News gates suppress new entries only. Weekly rank exits and hard-risk
+   // management above must remain active through blackout windows.
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    if(!nb)
       return;
 
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
