@@ -124,7 +124,15 @@ Pre-allocation repository dedup verdict: `CLEAN` for slug
   `PORTFOLIO_WEIGHT=1`.
 - Runtime data: native MT5 D1 OHLC, ATR, spread, calendar, and position state.
 
-## Entry Rules
+## Rules
+
+The source state is deterministic: use completed month-end closes, record a
+short target only when 14-month ROC crosses outward through +40%, record a long
+target only when it crosses outward through -40%, and retain the latest target
+until the opposite crossing. The V5 carrier rolls that target into one bounded
+package per broker month.
+
+## 4. Entry Rules
 
 - Evaluate only on the first new `XTIUSD.DWX` D1 bar of a broker month.
 - Reconstruct up to `strategy_state_history_months=360` completed month-end
@@ -145,7 +153,7 @@ Pre-allocation repository dedup verdict: `CLEAN` for slug
   ATR.
 - Every entry receives a frozen D1 ATR hard stop and no take-profit.
 
-## Exit And Management Rules
+## 5. Exit Rules
 
 - Close the prior monthly package at the next broker-month transition. If the
   retained target remains unchanged, a new package may open after the close.
@@ -156,16 +164,22 @@ Pre-allocation repository dedup verdict: `CLEAN` for slug
 - Broker ATR stop remains active throughout the month.
 - Friday close is disabled for this backtest card because weekly flattening
   would replace the source's monthly holding cadence.
-- No take-profit, trailing stop, partial close, scale-in, grid, martingale,
-  pyramiding, or adaptive PnL rule.
 
-## Filters
+## 6. Filters (No-Trade Module)
 
 - Exact `XTIUSD.DWX` D1 host and magic slot 0.
 - Parameter, history, price, ROC, ATR, spread, and calendar checks fail closed.
 - Standard V5 kill switch and news entry compliance remain authoritative.
 - No futures chain, COT, inventory, EIA, OPEC, volume, open interest, CSV,
   API, external feed, or ML model.
+
+## 7. Trade Management Rules
+
+- One position per magic/symbol and one accepted entry per broker month.
+- No take-profit, trailing stop, break-even move, partial close, scale-in,
+  grid, martingale, pyramiding, or adaptive PnL rule.
+- Monthly rollover and the 35-day stale guard are the only active management
+  actions beyond the frozen broker ATR hard stop.
 
 ## Parameters To Test
 
@@ -242,4 +256,3 @@ portfolio admission, portfolio KPI, or portfolio gate.
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-10 | PENDING | this card |
-

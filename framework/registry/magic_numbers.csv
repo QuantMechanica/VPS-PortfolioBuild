@@ -14904,3 +14904,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11907,davey-momentum-big-range-h1,7,EURJPY.DWX,119070007,2026-07-10,Codex,active
 11907,davey-momentum-big-range-h1,8,GBPJPY.DWX,119070008,2026-07-10,Codex,active
 11907,davey-momentum-big-range-h1,9,AUDJPY.DWX,119070009,2026-07-10,Codex,active
+13114,wti-roc14-xtrm,0,XTIUSD.DWX,131140000,2026-07-10,Codex,active
