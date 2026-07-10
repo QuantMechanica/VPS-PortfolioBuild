@@ -17,9 +17,13 @@
 input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 12598;
 input int    qm_magic_slot_offset       = 0;
+// HR5: QM_FrameworkMagic() resolves ea_id * 10000 + symbol_slot;
+// slot 0 is therefore 12598 * 10000 + 0 = 125980000. Never hand-compute it.
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
+// HR4: backtests keep RISK_FIXED=1000 and RISK_PERCENT=0. A separately
+// approved full-live package sets RISK_PERCENT=0.5 and RISK_FIXED=0.
 input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;

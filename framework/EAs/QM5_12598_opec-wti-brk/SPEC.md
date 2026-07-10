@@ -68,7 +68,7 @@ https://www.eia.gov/finance/markets/crudeoil/supply-opec.php.
 | Phase | Risk mode | Value |
 |---|---|---:|
 | Q02+ backtest | RISK_FIXED | 1000 |
-| Live, if ever approved later | RISK_PERCENT | allocated by portfolio process |
+| Full live, only after separate approval | RISK_PERCENT | 0.5%; RISK_FIXED=0 |
 
 No live manifest, `T_Live` file, portfolio gate, or AutoTrading setting is
 touched by this build.
@@ -79,3 +79,4 @@ touched by this build.
 |---|---|---|---|
 | v1 | 2026-06-27 | Initial build from card | eefacdeb9 |
 | v2 | 2026-07-05 | Rebuild in place (DL-069): prior build had the pre-2026-07-02 OnTick ordering (2-axis news gate above Strategy_ManageOpenPosition/ExitSignal), which silently suspends the strategy's channel/SMA/window/time-stop exits during news windows. Reordered to canonical kill-switch -> Friday-close -> NoTradeFilter -> ManageOpenPosition -> ExitSignal -> news gate -> IsNewBar -> EntrySignal, with per-bar state cached once via Strategy_AdvanceStateOnNewBar() so Management stays O(1) per tick. No change to entry/exit rules or params. | 78af9e87-f2bf-40c3-882b-1ba00329fed0 |
+| v3 | 2026-07-10 | Q02 infrastructure recovery | Documented HR4 live-risk and HR5 resolver contracts; strategy rules and parameters unchanged. |
