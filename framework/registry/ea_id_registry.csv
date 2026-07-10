@@ -4007,5 +4007,10 @@ QM5_1491,ehlers-sinewave-leadsine-cross-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,
 13119,usdjpy-euraud,SRC02_S10,active,CEO+CTO mission allocation,2026-07-10
 13120,energy-momrev,BIANCHI-MOMREV-2015_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-10
 13121,energy-tfmom,CLARE-TFMOM-2014_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-10
+13122,tokyo-fix-5m,SRCCEO-ANOMALY-SLATE-2026-07-03_S07,active,OWNER-delegated CEO+CTO allocation,2026-07-10
 13123,energy-val-rank,AMP-VALUE-2013_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-10
+13124,fx-early-asia-drift,CODEX-FTMO-H1-RESEARCH-2026-07-10_S01,retired,OWNER-delegated CEO+CTO allocation,2026-07-10
+13125,xau-usclose-ovnt,CODEX-FTMO-H1-RESEARCH-2026-07-10_S02,retired,OWNER-delegated CEO+CTO allocation,2026-07-10
 13126,energy-momcarry,FMR-MOMTS-2010_XTI_XNG_S01,active,CEO+CTO mission allocation,2026-07-10
+13127,et-open-atr-long,CODEX-FTMO-ORB-LONG-2026-07-10_S01,retired,OWNER-delegated CEO+CTO allocation,2026-07-10
+13128,pre-fomc-drift-ndx,nyfed-sr512-pre-fomc-drift,active,claude,2026-07-10

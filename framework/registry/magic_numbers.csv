@@ -14938,7 +14938,16 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13120,energy-momrev,1,XNGUSD.DWX,131200001,2026-07-10,Codex,active
 13121,energy-tfmom,0,XTIUSD.DWX,131210000,2026-07-10,Codex,active
 13121,energy-tfmom,1,XNGUSD.DWX,131210001,2026-07-10,Codex,active
+13122,tokyo-fix-5m,0,USDJPY.DWX,131220000,2026-07-10,OWNER-delegated Codex,active
 13123,energy-val-rank,0,XTIUSD.DWX,131230000,2026-07-10,Codex,active
 13123,energy-val-rank,1,XNGUSD.DWX,131230001,2026-07-10,Codex,active
+13124,fx-early-asia-drift,0,EURGBP.DWX,131240000,2026-07-10,OWNER-delegated Codex,retired
+13124,fx-early-asia-drift,1,GBPUSD.DWX,131240001,2026-07-10,OWNER-delegated Codex,retired
+13124,fx-early-asia-drift,2,EURAUD.DWX,131240002,2026-07-10,OWNER-delegated Codex,retired
+13124,fx-early-asia-drift,3,AUDJPY.DWX,131240003,2026-07-10,OWNER-delegated Codex,retired
+13124,fx-early-asia-drift,4,NZDUSD.DWX,131240004,2026-07-10,OWNER-delegated Codex,retired
+13125,xau-usclose-ovnt,0,XAUUSD.DWX,131250000,2026-07-10,OWNER-delegated Codex,retired
 13126,energy-momcarry,0,XTIUSD.DWX,131260000,2026-07-10,Codex,active
 13126,energy-momcarry,1,XNGUSD.DWX,131260001,2026-07-10,Codex,active
+13127,et-open-atr-long,0,NDX.DWX,131270000,2026-07-10,OWNER-delegated Codex,retired
+13128,pre-fomc-drift-ndx,0,NDX.DWX,131280000,2026-07-10,claude,active
