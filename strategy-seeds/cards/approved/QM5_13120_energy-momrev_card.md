@@ -110,7 +110,9 @@ no 12/18 cross-sectional commodity momentum-contrarian implementation.
 - Runtime data: native MT5 D1 closes, ATR, spread, broker calendar, and
   framework position state only.
 
-## Entry Rules
+## Rules
+
+### Entry Rules
 
 - Detect a broker-month transition on the XTI D1 host.
 - Use the last completed D1 close strictly before the current month boundary.
@@ -125,7 +127,7 @@ no 12/18 cross-sectional commodity momentum-contrarian implementation.
 - Do not enter on same-rank states, ties, stale history, invalid ATR/volume,
   excessive spread, an existing package, or a month already attempted.
 
-## Exit Rules
+### Exit Rules
 
 - Close both legs on the first tradable D1 bar of the next broker month, then
   recompute and open a new package only if the opposite-rank gate is valid.
@@ -165,7 +167,9 @@ Changing a horizon, adding a skip month, trading an agreeing rank, adding a
 magnitude threshold, or using a standalone time-series direction requires a
 new card.
 
-## Initial Risk Profile And Kill Criteria
+## Risk
+
+### Initial Risk Profile And Kill Criteria
 
 - `expected_pf: 1.05` is a conservative queue prior, not source evidence.
 - `expected_dd_pct: 30.0` reflects XNG gaps, legging, rank sparsity, and the
@@ -221,4 +225,3 @@ portfolio gate, portfolio admission, or portfolio KPI path is authorized.
 | G0 Research Intake | 2026-07-10 | APPROVED | this card |
 | P1 Build Validation | 2026-07-10 | IN_PROGRESS | pending strict build evidence |
 | P2 Baseline Screening | 2026-07-10 | QUEUED | pending Q02 worker |
-
