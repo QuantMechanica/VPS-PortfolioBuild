@@ -63,15 +63,15 @@
     "warnings": 0,
     "errors": 0,
     "symbol_scope": "SINGLE_SYMBOL_OK",
-    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260710_005603\\QM5_13103_xti-idnr4-brk.compile.log",
-    "summary_csv": "D:\\QM\\reports\\compile\\20260710_005603\\summary.csv",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260710_010018\\QM5_13103_xti-idnr4-brk.compile.log",
+    "summary_csv": "D:\\QM\\reports\\compile\\20260710_010018\\summary.csv",
     "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13103_xti-idnr4-brk/QM5_13103_xti-idnr4-brk.mq5 -Strict"
   },
   "build_check": {
     "status": "PASS",
     "warnings": 0,
-    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260710_005627.json",
-    "setfile_build_hash": "7221886823ec6a7ee44b75b0850acdd3ee7118f5330f4c3476e64b4b56a23ec5",
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260710_010023.json",
+    "setfile_build_hash": "92a8e38f3d6097b0b0b90563181eeb4c692e4461f8ac8efd5e3bb12bc0989da0",
     "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13103_xti-idnr4-brk -Strict -SkipCompile"
   },
   "validations": {
@@ -139,12 +139,12 @@
     "backtest_cpu_used": false
   },
   "file_hashes_sha256": {
-    "strategy_card_doc": "01DB387F7D31407A9C1A00EEF8B0ABF1F59814F2256AFB7572A130B9696C094E",
-    "setfile": "251FA8C11B396B031B07C36878AE406E5EFD375FC7785393C6944290AACED165",
-    "spec": "1F354463DF2FF0D446482FC52F7DFD38D611D10D52D044FD81329B98D4C75AFE",
-    "ex5": "62B2362817B6B09803775B659B02D307E5FA6581E050CF145F5E77C2B3ED71B3",
-    "source_packet": "53227D435AC171526749C4295E09EB7EF876A00A730C5E50A6BE4B845917A2BB",
-    "approved_card": "01DB387F7D31407A9C1A00EEF8B0ABF1F59814F2256AFB7572A130B9696C094E",
-    "mq5": "99519F4214029625306149EC243BAFEB49D0E855311A6E5347F064F3D292E7F2"
+    "strategy_card_doc": "C8F116419F6C0C33BDFDBD52F754EDD28DBE6F06C8FA5BBB400ACEB5E5475C81",
+    "setfile": "40B0BD6FB4DD0FF947A93049DB709784298FBDA5FB3F7D8ADAFED887C84AB29A",
+    "spec": "95044C4AB056CF71BD695746A244C1F2A027E4544C2636B67532FA72E10CAF1B",
+    "ex5": "3ED82D933BB53573AE6AD14DA8C91136C1FD978478C74F87236705028D9BBC16",
+    "source_packet": "DE5C7187275C604E6EE05BE3CF45E40C219D06EDC2CAAE22C11CDC38539D5D71",
+    "approved_card": "C8F116419F6C0C33BDFDBD52F754EDD28DBE6F06C8FA5BBB400ACEB5E5475C81",
+    "mq5": "A97D9F05C038311E332BB8E7F2518A0C22F080345861DB21C6BED7F6D86A08E2"
   }
 }
