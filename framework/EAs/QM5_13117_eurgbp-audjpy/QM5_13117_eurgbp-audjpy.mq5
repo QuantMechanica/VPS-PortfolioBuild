@@ -49,8 +49,6 @@ double   g_spread_z = 0.0;
 double   g_spread_mean = 0.0;
 double   g_spread_sd = 0.0;
 bool     g_state_ready = false;
-datetime g_pair_entry_time = 0;
-datetime g_last_state_bar = 0;
 
 int Strategy_SlotForSymbol(const string symbol)
   {
@@ -130,11 +128,19 @@ bool Strategy_RefreshSpreadState()
 
    double eurgbp[];
    double audjpy[];
+   datetime eurgbp_time[];
+   datetime audjpy_time[];
    ArraySetAsSeries(eurgbp, true);
    ArraySetAsSeries(audjpy, true);
+   ArraySetAsSeries(eurgbp_time, true);
+   ArraySetAsSeries(audjpy_time, true);
    if(CopyClose(g_leg_eurgbp, PERIOD_D1, 1, lookback, eurgbp) != lookback) // perf-allowed: new-bar gated.
       return false;
    if(CopyClose(g_leg_audjpy, PERIOD_D1, 1, lookback, audjpy) != lookback) // perf-allowed: new-bar gated.
+      return false;
+   if(CopyTime(g_leg_eurgbp, PERIOD_D1, 1, lookback, eurgbp_time) != lookback) // perf-allowed: new-bar gated alignment check.
+      return false;
+   if(CopyTime(g_leg_audjpy, PERIOD_D1, 1, lookback, audjpy_time) != lookback) // perf-allowed: new-bar gated alignment check.
       return false;
 
    double sum = 0.0;
@@ -142,6 +148,8 @@ bool Strategy_RefreshSpreadState()
    ArrayResize(spreads, lookback);
    for(int i = 0; i < lookback; ++i)
      {
+      if(eurgbp_time[i] <= 0 || eurgbp_time[i] != audjpy_time[i])
+         return false;
       if(eurgbp[i] <= 0.0 || audjpy[i] <= 0.0)
          return false;
       spreads[i] = MathLog(eurgbp[i]) - strategy_beta * MathLog(audjpy[i]);
@@ -164,8 +172,6 @@ bool Strategy_RefreshSpreadState()
 
    g_spread_z = (spreads[0] - g_spread_mean) / g_spread_sd;
    g_state_ready = MathIsValidNumber(g_spread_z);
-   if(g_state_ready)
-      g_last_state_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: cached D1 timestamp.
    return g_state_ready;
   }
 
@@ -264,10 +270,7 @@ bool Strategy_OpenPair(const int spread_direction)
                                             weight_sum,
                                             reason);
    if(eurgbp_ok && audjpy_ok)
-     {
-      g_pair_entry_time = TimeCurrent();
       return true;
-     }
 
    Strategy_ClosePair(QM_EXIT_STRATEGY);
    return false;
@@ -297,7 +300,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
-   if(!Strategy_RefreshSpreadState())
+   if(!g_state_ready)
       return false;
    if(Strategy_OpenPairLegCount() > 0)
       return false;
@@ -312,7 +315,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
   {
-   // No trailing, break-even, partial close, grid, or averaging.
+   // No trailing, break-even, partial close, grid, or averaging. A package
+   // with only one surviving leg is invalid and must be flattened promptly.
+   if(Strategy_OpenPairLegCount() == 1)
+      Strategy_ClosePair(QM_EXIT_STRATEGY);
   }
 
 bool Strategy_ExitSignal()
@@ -321,14 +327,7 @@ bool Strategy_ExitSignal()
    if(open_legs <= 0)
       return false;
    if(open_legs != 2)
-     {
-      Strategy_ClosePair(QM_EXIT_STRATEGY);
       return false;
-     }
-
-   const datetime current_d1_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: timestamp guard.
-   if(current_d1_bar > 0 && current_d1_bar != g_last_state_bar)
-      Strategy_RefreshSpreadState();
    if(g_state_ready && MathAbs(g_spread_z) < strategy_exit_z)
       Strategy_ClosePair(QM_EXIT_STRATEGY);
    return false;
@@ -336,12 +335,6 @@ bool Strategy_ExitSignal()
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
   {
-   if(QM_FrameworkFridayCloseNow(broker_time))
-     {
-      Strategy_ClosePair(QM_EXIT_FRIDAY_CLOSE);
-      return true;
-     }
-
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
       qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
      {
@@ -403,35 +396,39 @@ void OnDeinit(const int reason)
 void OnTick()
   {
    if(!QM_KillSwitchCheck())
+     {
+      Strategy_ClosePair(QM_EXIT_KILLSWITCH);
       return;
+     }
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
+   if(QM_FrameworkFridayCloseNow(broker_now))
+     {
+      Strategy_ClosePair(QM_EXIT_FRIDAY_CLOSE);
       return;
-
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
-      qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol,
-                                        broker_now,
-                                        qm_news_temporal,
-                                        qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
+     }
    if(QM_FrameworkHandleFridayClose())
       return;
    if(Strategy_NoTradeFilter())
       return;
 
+   // Calendar cadence is framework-owned and tester-safe. Refresh the closed
+   // D1 pair state before management so mean exits remain active through news.
+   const bool new_d1_period = QM_IsNewCalendarPeriod(PERIOD_D1, _Symbol);
+   if(new_d1_period)
+     {
+      Strategy_RefreshSpreadState();
+      QM_EquityStreamOnNewBar();
+     }
+
    Strategy_ManageOpenPosition();
    Strategy_ExitSignal();
 
-   if(!QM_IsNewBar())
+   // News gates entry only; package cleanup and exits above never pause.
+   if(Strategy_NewsFilterHook(broker_now))
       return;
-
-   QM_EquityStreamOnNewBar();
+   if(!new_d1_period)
+      return;
 
    QM_EntryRequest req;
    if(Strategy_EntrySignal(req))
@@ -458,5 +455,4 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
 

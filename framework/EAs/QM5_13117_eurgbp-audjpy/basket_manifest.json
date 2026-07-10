@@ -1,0 +1,18 @@
+{
+  "logical_symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+  "host_symbol": "EURGBP.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "EURGBP.DWX",
+    "AUDJPY.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+  ],
+  "notes": [
+    "Two-leg EURGBP/AUDJPY FX cointegration basket selected as the next unbuilt strict all-sign row from the OWNER-requested 66-pair scan: DEV net Sharpe 0.4168, OOS net Sharpe 0.8919, OOS return 4.4752%, 20 OOS state changes, fixed beta -0.12202869296345396, and 36.84-day half-life.",
+    "The negative hedge makes long spread long both traded legs and short spread short both legs. The small hedge and cross-bloc relationship are explicit directional-risk caveats; Q02 onward remains the judge.",
+    "GBPUSD.DWX and USDJPY.DWX are declared only for USD-account conversion/history warmup. EURGBP.DWX and AUDJPY.DWX are the only traded legs."
+  ]
+}
