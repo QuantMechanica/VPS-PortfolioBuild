@@ -130,8 +130,9 @@ partial-moment or MTSM implementation.
   returns; non-negative observations contribute zero.
 - Build older UPM and LPM samples from the immediately preceding
   `strategy_percentile_history=252` completed observations. Each historical
-  observation uses its own five returns. No sample may contain the current
-  five-return window or a future close.
+  observation uses its own five returns. The current five-return statistic is
+  excluded; adjacent prior rolling windows may overlap recent returns, but no
+  observation may use a future close.
 - Compute separate nearest-rank
   `strategy_tail_percentile=80` reference levels. A current value at or above
   its positive reference is in the tail.
@@ -252,13 +253,12 @@ setfile, the portfolio gate, portfolio admission, or portfolio KPI code.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-10 | initial MTSM-S2 WTI carrier build | Q02 | PLANNED |
+| v1 | 2026-07-10 | initial MTSM-S2 WTI carrier build | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-10 | APPROVED by mission directive | this card |
-| Q01 Build Validation | TBD | TBD | TBD |
-| Q02 Baseline Screening | TBD | TBD | TBD |
-
+| Q01 Build Validation | 2026-07-10 | PASS | `artifacts/qm5_13108_build_result.json` |
+| Q02 Baseline Screening | 2026-07-10 | QUEUED | work item `c95eb757-f320-4187-87dc-c62126b46f31` |

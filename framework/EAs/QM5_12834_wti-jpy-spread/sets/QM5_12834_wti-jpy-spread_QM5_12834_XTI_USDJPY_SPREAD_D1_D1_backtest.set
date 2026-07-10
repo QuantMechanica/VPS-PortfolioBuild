@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        12834
 ; ea_slug:      wti-jpy-spread
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f6ea4a0cc79292d326a0ced1ee8ec1e503f18581c639d460b16bc24d98c71a24
+; build_hash:   9dafaa9e50a1f7e0da54c4816b8bdb790aa2aadee72fe3449f17a0069f13cad9
 ; author:       Development
 ; date:         2026-06-30
 ;==========================================================

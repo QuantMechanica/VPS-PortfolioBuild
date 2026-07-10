@@ -187,7 +187,8 @@ bool Strategy_CalculateTarget(int &target_state)
      {
       double obs_upm = 0.0;
       double obs_lpm = 0.0;
-      // base_shift=2 excludes every return used by the current five-day state.
+      // base_shift=2 excludes the current observation; older rolling windows
+      // overlap recent returns exactly as in the source's daily construction.
       if(!Strategy_PartialMoments(closes, i + 2, obs_upm, obs_lpm))
          return false;
       historical_upm[i] = obs_upm;
