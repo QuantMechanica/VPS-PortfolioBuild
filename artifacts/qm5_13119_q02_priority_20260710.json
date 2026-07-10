@@ -1,0 +1,78 @@
+{
+  "artifact_type": "fx_cointegration_q02_priority_handoff",
+  "recorded_at_utc": "2026-07-10T17:04:05+00:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_13119",
+  "slug": "usdjpy-euraud",
+  "strategy_id": "SRC02_S10",
+  "logical_symbol": "QM5_13119_USDJPY_EURAUD_COINTEGRATION_D1",
+  "work_item": {
+    "id": "f8767f2f-4bcb-4b32-b857-cf9063b1c935",
+    "phase": "Q02",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "created_at": "2026-07-10T16:10:02+00:00",
+    "updated_at": "2026-07-10T16:10:02+00:00",
+    "priority_track_before": null,
+    "priority_track_after": true,
+    "priority_reason": "forex_portfolio_gap_final_strict_all_sign_cointegration_survivor",
+    "queue_rank_after": 1,
+    "same_ea_q02_row_count": 1,
+    "duplicate_rows_created": 0
+  },
+  "basket": {
+    "host_symbol": "USDJPY.DWX",
+    "host_timeframe": "D1",
+    "traded_symbols": [
+      "USDJPY.DWX",
+      "EURAUD.DWX"
+    ],
+    "conversion_history_symbols": [
+      "AUDUSD.DWX"
+    ],
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "basket_manifest": "framework/EAs/QM5_13119_usdjpy-euraud/basket_manifest.json"
+  },
+  "risk_contract": {
+    "risk_mode": "RISK_FIXED",
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "selection": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "method_supplement": "Ernest P. Chan, Quantitative Trading (Wiley, 2009), Example 3.6 and Chapter 7",
+    "reason": "The two published strict survivors QM5_12532 and QM5_12533 already passed Q02. QM5_13119 is the final strict all-sign reproduction row and was already built and enqueued, so its existing row was advanced in place instead of duplicating the build or queue entry.",
+    "dev_sharpe": 0.5059112597468951,
+    "oos_net_sharpe": 0.8837435894739475,
+    "oos_return_pct": 16.014828282752738,
+    "oos_state_changes": 23,
+    "hedge_beta": -1.4182482311707278,
+    "half_life_days": 77.4565445658866
+  },
+  "audit": {
+    "event": "priority_track_set",
+    "event_id": 246643,
+    "fifo_timestamp_preserved": true,
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_13119_priority_20260710T170405Z.sqlite"
+  },
+  "cpu_ceiling": {
+    "active_work_items": 7,
+    "pause_threshold": 7,
+    "pending_work_items": 3607,
+    "dispatch_invoked": false,
+    "manual_backtest_started": false,
+    "stop_reason": "Backtest CPU ceiling reached. Priority handoff was recorded without launching MT5."
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  }
+}
