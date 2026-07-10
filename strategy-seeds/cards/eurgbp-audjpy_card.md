@@ -32,7 +32,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 expected_pf: 1.05
 expected_dd_pct: 25.0
 portfolio_scope: basket
@@ -296,14 +296,15 @@ data_requirements: "EURGBP.DWX and AUDJPY.DWX D1 plus tester-currency conversion
 |---|---|---|---|---|
 | v1 | 2026-07-10 | initial all-sign 66-pair candidate extraction | G0 | IN_REVIEW |
 | v2 | 2026-07-10 | explicit forex-book mission approval and atomic QM5_13117 allocation | Q01 | APPROVED_FOR_BUILD |
+| v3 | 2026-07-10 | strict compile and one logical-basket enqueue; smoke deferred at seven-job CPU ceiling | Q02 | PENDING_CPU_CEILING |
 
 ## 15. Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-10 | APPROVED | explicit forex-book mission + this card + `docs/research/FX_COINTEGRATION_EURGBP_AUDJPY_REVIEW_2026-07-10.md` |
-| Q01 Build Validation | 2026-07-10 | IN_PROGRESS | QM5_13117 allocation |
-| Q02 Baseline Screening | TBD | NOT_ENQUEUED | TBD |
+| Q01 Build Validation | 2026-07-10 | PASS | `D:/QM/reports/framework/21/build_check_20260710_145341.json`; strict compile 0 errors/0 warnings |
+| Q02 Baseline Screening | 2026-07-10 | PENDING_CPU_CEILING | work item `ed75430e-2ff4-4ea1-9d50-e49a7912d323` |
 
 ## 16. Lessons Captured
 
@@ -312,3 +313,6 @@ data_requirements: "EURGBP.DWX and AUDJPY.DWX D1 plus tester-currency conversion
   66-pair frontier exhausted.
 - 2026-07-10: Seven paced Q02 jobs were active during extraction, so no manual
   backtest was launched and no queue row was created.
+- 2026-07-10: Build handoff again found seven active paced jobs. Q01 smoke was
+  deferred and exactly one logical Q02 row was enqueued; no MT5 dispatch was
+  invoked.
