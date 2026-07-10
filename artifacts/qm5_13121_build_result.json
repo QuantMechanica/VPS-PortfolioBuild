@@ -1,0 +1,51 @@
+{
+  "task_id": "bd46e0c8-07c0-44cd-b9b4-408371ef636a",
+  "ea_id": "QM5_13121",
+  "ea_label": "QM5_13121_energy-tfmom",
+  "slug": "energy-tfmom",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13121_energy-tfmom.md",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13121_energy-tfmom",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13121_energy-tfmom\\QM5_13121_energy-tfmom.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13121_energy-tfmom\\QM5_13121_energy-tfmom.ex5",
+  "mq5_sha256": "25f6e48c0f932dcc54363e1662c522922a775b094716a849679c5d0cf266d82d",
+  "ex5_sha256": "0065168aca7a79ce997f776f5569c0b3bfe5f96eaefeffcd3d17d2023ee152f3",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260710_174742\\QM5_13121_energy-tfmom.compile.log",
+  "compile_summary": "D:\\QM\\reports\\compile\\20260710_174742\\summary.csv",
+  "build_check_passed": true,
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260710_174752.json",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "BASKET_OK",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13121_energy-tfmom\\sets\\QM5_13121_energy-tfmom_QM5_13121_ENERGY_TFMOM_D1_D1_backtest.set"
+  ],
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "paced_fleet_mission_enqueues_q02_without_manual_backtest_to_respect_cpu_ceiling",
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13121",
+    "enqueued": [
+      {
+        "work_item_id": "3dc3cec3-3691-4bdd-9f67-fa6b245be574",
+        "symbol": "QM5_13121_ENERGY_TFMOM_D1",
+        "host_symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "status": "pending",
+        "setfile": "QM5_13121_energy-tfmom_QM5_13121_ENERGY_TFMOM_D1_D1_backtest.set"
+      }
+    ],
+    "skipped": []
+  },
+  "registry_validation": {
+    "ea_id_row": "13121,energy-tfmom,CLARE-TFMOM-2014_XTI_XNG_S01,active",
+    "magic_rows": [
+      "13121,energy-tfmom,0,XTIUSD.DWX,131210000,active",
+      "13121,energy-tfmom,1,XNGUSD.DWX,131210001,active"
+    ],
+    "resolver_contains_ea": true,
+    "global_validator_note": "Repository-wide validate_registries remains red on pre-existing legacy rows; no new 13121 issue was reported."
+  },
+  "notes": "New low-frequency market-neutral energy sleeve: 12-month XTI/XNG relative momentum with two-sided 7-month trend confirmation and 60-D1 inverse-volatility weights. No T_Live, AutoTrading, portfolio gate, live setfile, or deploy manifest touched."
+}

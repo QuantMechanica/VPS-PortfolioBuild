@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_13121_ENERGY_TFMOM_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Market-neutral monthly XTI/XNG trend-filtered momentum package from approved card CLARE-TFMOM-2014_XTI_XNG_S01. Run on XTIUSD.DWX D1; enter only when the synchronized 12-month relative winner is above its seven-month mean and the loser below its mean. Q02 must evaluate the logical basket, not standalone legs."
+  ]
+}
