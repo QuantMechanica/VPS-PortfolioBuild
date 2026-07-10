@@ -3,32 +3,28 @@
 ; ea_id:        12382
 ; ea_slug:      ts-mom-12m
 ; ea_version:   v5.0
-; set_version:  s20260618-001
+; set_version:  s20260710-001
 ; symbol:       USDCAD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   06431127e379800e4e6a36b7e11277f905e84c7a4cf8268022a198962635e9e8
+; build_hash:   pending
 ; author:       Development
-; date:         2026-06-18
+; date:         2026-07-10
 ;==========================================================
+qm_ea_id=12382
 qm_magic_slot_offset=4
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12382_ts-mom-12m.md
+strategy_momentum_lookback_d1=252
+strategy_vol_lookback_d1=60
+strategy_spread_lookback_d1=60
+strategy_atr_period_d1=20
+strategy_atr_stop_mult=3.0
+strategy_min_warmup_bars=260
+strategy_portfolio_stop_r=6.0

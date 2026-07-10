@@ -677,6 +677,40 @@ void QM_FrameworkOnTradeTransaction(const MqlTradeTransaction &trans,
      }
   }
 
+// Flush the buffered Q08 TRADE_CLOSED lines to the deterministic Common\Files path.
+// First flush of a run truncates (fresh file); later flushes append. Called both mid-run
+// (bounded buffer) and at shutdown for the remainder. Emits the identical per-trade JSONL
+// as before; only the write cadence changed (2026-07-10 OOM fix).
+void QM_FrameworkQ08Flush()
+  {
+   if(!g_qm_fw_initialized || StringLen(g_qm_q08_trade_log) == 0)
+      return;
+   string q08_sym = _Symbol;
+   StringReplace(q08_sym, ".", "_");
+   const string q08_path = StringFormat("QM\\q08_trades\\%d_%s.jsonl", g_qm_fw_ea_id, q08_sym);
+   const int base_flags = FILE_TXT | FILE_ANSI | FILE_COMMON;
+   int q08_fh;
+   if(g_qm_q08_stream_started)
+     {
+      q08_fh = FileOpen(q08_path, FILE_READ | FILE_WRITE | base_flags);
+      if(q08_fh != INVALID_HANDLE)
+         FileSeek(q08_fh, 0, SEEK_END);
+     }
+   else
+      q08_fh = FileOpen(q08_path, FILE_WRITE | base_flags);  // truncate fresh on first flush
+   if(q08_fh != INVALID_HANDLE)
+     {
+      FileWriteString(q08_fh, g_qm_q08_trade_log);
+      FileClose(q08_fh);
+      g_qm_q08_stream_started = true;
+      g_qm_q08_trade_log = "";
+     }
+   else
+      QM_LogEvent(QM_WARN, "Q08_STREAM_WRITE_FAILED",
+                  StringFormat("{\"path\":\"%s\",\"error\":%d}",
+                               QM_LoggerEscapeJson(q08_path), GetLastError()));
+  }
+
 void QM_FrameworkShutdown()
   {
    if(g_qm_fw_timer_active)
@@ -717,26 +751,12 @@ void QM_FrameworkShutdown()
                      StringFormat("{\"path\":\"%s\",\"error\":%d}",
                                   QM_LoggerEscapeJson(q04_path), GetLastError()));
      }
-   // Q08 per-trade stream: dump the accumulated TRADE_CLOSED lines to a deterministic
-   // Common\Files path so the Davey aggregator can read real per-trade P&L (the tester
-   // writes the EA's own log to the agent sandbox, which Q08 can't find). Always written
-   // when trades occurred — Q08 runs its own backtest, reads this, then clears/re-runs.
-   if(g_qm_fw_initialized && StringLen(g_qm_q08_trade_log) > 0)
-     {
-      string q08_sym = _Symbol;
-      StringReplace(q08_sym, ".", "_");
-      const string q08_path = StringFormat("QM\\q08_trades\\%d_%s.jsonl", g_qm_fw_ea_id, q08_sym);
-      int q08_fh = FileOpen(q08_path, FILE_WRITE | FILE_TXT | FILE_ANSI | FILE_COMMON);
-      if(q08_fh != INVALID_HANDLE)
-        {
-         FileWriteString(q08_fh, g_qm_q08_trade_log);
-         FileClose(q08_fh);
-        }
-      else
-         QM_LogEvent(QM_WARN, "Q08_STREAM_WRITE_FAILED",
-                     StringFormat("{\"path\":\"%s\",\"error\":%d}",
-                                  QM_LoggerEscapeJson(q08_path), GetLastError()));
-     }
+   // Q08 per-trade stream: flush the remaining buffered TRADE_CLOSED lines to the
+   // deterministic Common\Files path so the Davey aggregator can read real per-trade P&L.
+   // Bounded/incremental emission (see QM_FrameworkQ08Flush) — the old single unbounded
+   // write OOMed the tester on high-trade EAs (2026-07-10 fix). If no mid-run flush
+   // happened this run, this call truncates+writes exactly as before.
+   QM_FrameworkQ08Flush();
    ArrayResize(g_qm_q08_mae_states, 0);
    if(g_qm_fw_initialized)
       QM_LogEvent(QM_INFO, "DEINIT", "{}");

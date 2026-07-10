@@ -81,6 +81,8 @@ input double strategy_atr_stop_mult        = 3.0;
 input int    strategy_min_warmup_bars      = 260;
 input double strategy_portfolio_stop_r     = 6.0;
 
+bool g_strategy_stop_triggered = false;
+
 bool IsD1CalendarMonthBoundary()
   {
    // Use the framework calendar key instead of a local iTime/CopyRates month
@@ -258,6 +260,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
+   if(g_strategy_stop_triggered)
+      return false;
+
    if(!SpreadAllowsEntry())
       return false;
 
@@ -306,6 +311,7 @@ void Strategy_ManageOpenPosition()
       const double open_pnl = QM_TM_OpenPnL(QM_FrameworkMagic());
       if(open_pnl <= -RISK_FIXED * strategy_portfolio_stop_r)
         {
+         g_strategy_stop_triggered = true;
          QM_TM_ClosePosition(ticket, QM_EXIT_KILLSWITCH);
          return;
         }
@@ -402,6 +408,7 @@ void OnTick()
       return;
 
    // Risk management stays live on every tick, including news windows.
+   g_strategy_stop_triggered = false;
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
