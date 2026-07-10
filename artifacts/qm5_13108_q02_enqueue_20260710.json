@@ -1,0 +1,44 @@
+{
+  "ea_id": "QM5_13108",
+  "ea_label": "QM5_13108_xti-mtsm-s2",
+  "phase": "Q02",
+  "work_item_id": "c95eb757-f320-4187-87dc-c62126b46f31",
+  "status": "pending",
+  "claimed_by": null,
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13108_xti-mtsm-s2\\sets\\QM5_13108_xti-mtsm-s2_XTIUSD.DWX_D1_backtest.set",
+  "created_at_utc": "2026-07-10T05:19:19+00:00",
+  "risk": {
+    "mode": "RISK_FIXED",
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "build": {
+    "task_id": "9f8f8459-b29a-427a-a09c-d02eff80b38d",
+    "compile": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "spec": "PASS",
+    "card_schema": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "magic": 131080000
+  },
+  "cpu_guard": {
+    "scanned_at": "2026-07-10T07:17:51+02:00",
+    "active_factory_terminals": ["T1", "T4", "T6", "T7", "T8"],
+    "paced_worker_wrappers": ["T1", "T2", "T3", "T4", "T6", "T7", "T8"],
+    "manual_mt5_run_launched": false,
+    "reason": "Factory automation was live; deferred smoke to Q02 instead of competing for MT5 CPU."
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  }
+}

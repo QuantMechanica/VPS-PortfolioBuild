@@ -1,0 +1,159 @@
+{
+  "task_id": "9f8f8459-b29a-427a-a09c-d02eff80b38d",
+  "ea_id": "QM5_13108",
+  "ea_label": "QM5_13108_xti-mtsm-s2",
+  "slug": "xti-mtsm-s2",
+  "strategy": "XTIUSD.DWX D1 managed time-series momentum S2 with asymmetric partial-moment tail states",
+  "strategy_id": "LIU-MTSM-2021_XTI_S01",
+  "source_id": "LIU-MTSM-2021",
+  "source_links": [
+    "https://doi.org/10.1016/j.irfa.2021.101938",
+    "https://centaur.reading.ac.uk/100824/1/FINANA-D-21-00329-R1.pdf"
+  ],
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13108_XTI_MTSM_S2_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13108_xti-mtsm-s2",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13108_xti-mtsm-s2\\QM5_13108_xti-mtsm-s2.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13108_xti-mtsm-s2\\QM5_13108_xti-mtsm-s2.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13108_xti-mtsm-s2\\SPEC.md",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13108_xti-mtsm-s2.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13108_xti-mtsm-s2_card.md",
+  "source_packet_path": "C:\\QM\\repo\\strategy-seeds\\sources\\LIU-MTSM-2021\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13108_xti-mtsm-s2\\sets\\QM5_13108_xti-mtsm-s2_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 131080000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 131080000,
+      "registry_status": "active"
+    }
+  ],
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Backtest CPU ceiling / paced-fleet guard: T1, T4, T6, T7, and T8 were actively backtesting and terminal-worker wrappers were present on T1, T2, T3, T4, T6, T7, and T8 at 2026-07-10T07:17:51+02:00; no manual MT5 run was launched.",
+  "blocked_reason": "",
+  "compile": {
+    "status": "PASS",
+    "warnings": 0,
+    "errors": 0,
+    "reason_class": "OK",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260710_052157\\QM5_13108_xti-mtsm-s2.compile.log",
+    "summary_csv": "D:\\QM\\reports\\compile\\20260710_052157\\summary.csv",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13108_xti-mtsm-s2/QM5_13108_xti-mtsm-s2.mq5 -Strict"
+  },
+  "build_check": {
+    "status": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260710_052204.json",
+    "setfile_build_hash": "4c500dd5460a2867f82b58a29433e81c38204cd8a8e6c7d3e68854abaa010282",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13108_xti-mtsm-s2 -RepoRoot C:/QM/repo -SkipCompile"
+  },
+  "validations": {
+    "dedup": {
+      "status": "CLEAN_BEFORE_ALLOCATION",
+      "command": "python framework/scripts/research_dedup_check.py check --slug xti-mtsm-s2 --strategy-id LIU-MTSM-2021_XTI_S01 --author 'Liu Lu Wang' --mechanic 'WTI D1 30-day time-series momentum adjusted by 5-day upper and lower partial moments against recursive 80th percentiles MTSM-S2'"
+    },
+    "spec_doc": {
+      "status": "PASS",
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13108_xti-mtsm-s2"
+    },
+    "card_schema": {
+      "status": "PASS",
+      "command": "python framework/scripts/skill_card_schema_lint.py --card strategy-seeds/cards/approved/QM5_13108_xti-mtsm-s2_card.md"
+    },
+    "symbol_scope": {
+      "status": "PASS",
+      "verdict": "SINGLE_SYMBOL_OK",
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_13108_xti-mtsm-s2 --json"
+    },
+    "magic_registry": {
+      "status": "PASS_WITH_PREEXISTING_WARNINGS",
+      "slots": [
+        0
+      ],
+      "resolver_rows_kept": 14772,
+      "pre_existing_missing_ea_dir_warnings": [
+        1001,
+        1015,
+        1016
+      ],
+      "resolver_sha_prefix": "383A7B2E252D2106"
+    },
+    "risk_mode": {
+      "status": "PASS",
+      "backtest_uses_risk_fixed": true,
+      "risk_percent_zero": true,
+      "portfolio_weight": 1
+    },
+    "build_guardrails": {
+      "status": "PASS",
+      "ml_forbidden": "PASS",
+      "external_runtime_data": "PASS",
+      "setfile_schema": "PASS",
+      "friday_close_enabled": true
+    }
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "manual_backtest_cpu_used": false
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "c95eb757-f320-4187-87dc-c62126b46f31",
+    "status_at_handoff": "pending",
+    "claimed_by": null,
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13108_xti-mtsm-s2\\sets\\QM5_13108_xti-mtsm-s2_XTIUSD.DWX_D1_backtest.set",
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "enqueued_at_utc": "2026-07-10T05:19:19+00:00",
+    "note": "Auto-enqueued by farmctl record-build. No manual dispatch or smoke while paced factory automation was active."
+  },
+  "file_hashes_sha256": {
+    "mq5": "E054865F577F05EC7C055EE95EC5649009E50AFECDD9A6527814A1BB0FBB99F1",
+    "ex5": "248D8FC2CB19AA18E781377036F13B34DE1A5C41CB0F8EB4F7CD0228532591B7",
+    "spec": "71FE4433FA43E8981FC73D2F6B3C6773782CBA9276AFA8AB093C17F14885B546",
+    "setfile": "1DB9BA21F61BF497AB527EB1EF8C8F61B35A74107D7106478CBF9D0371A0C987",
+    "approved_card": "EE4B63002263F7869D0718590B3FB7D8681503DE57915AD68A1C14E111634C60",
+    "source_packet": "734EABE8A3C7A378A5A1D0C8B1DCC33608C65AF21C7314D95739C82327B78ED7"
+  }
+}
