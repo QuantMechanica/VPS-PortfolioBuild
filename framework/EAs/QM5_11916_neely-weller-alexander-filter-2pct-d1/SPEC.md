@@ -4,7 +4,7 @@
 **Slug:** `neely-weller-alexander-filter-2pct-d1`
 **Source:** `7e2b8f4a-3c95-5d68-9a47-d3b6e1f4c7a8`
 **Author of this spec:** Codex
-**Last revised:** 2026-06-28
+**Last revised:** 2026-07-10
 
 ---
 
@@ -98,3 +98,4 @@ ENV-mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISMA
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-28 | Q02 infra repair | Added missing spec while repairing magic registration and setfile slots. |
+| v2 | 2026-07-10 | Q02 recovery completion | Kept management/exits live through news windows and initialized entry requests before full-basket requeue. |

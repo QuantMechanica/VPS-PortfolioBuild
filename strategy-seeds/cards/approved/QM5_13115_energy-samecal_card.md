@@ -123,7 +123,7 @@ energy-rank mechanic.
 - Runtime data: native MT5 D1 OHLC, ATR, spread, broker calendar, and position
   state only.
 
-## Entry Rules
+## Rules
 
 - Evaluate only on the first new `XTIUSD.DWX` D1 bar of a broker month.
 - Copy a bounded D1 history for XTI and XNG.

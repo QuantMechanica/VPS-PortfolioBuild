@@ -14915,3 +14915,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11912,cheng-triangle-2touch-second-break-h1,7,EURJPY.DWX,119120007,2026-07-10,Codex,active
 11912,cheng-triangle-2touch-second-break-h1,8,GBPJPY.DWX,119120008,2026-07-10,Codex,active
 11912,cheng-triangle-2touch-second-break-h1,9,AUDJPY.DWX,119120009,2026-07-10,Codex,active
+13115,energy-samecal,0,XTIUSD.DWX,131150000,2026-07-10,Codex,active
+13115,energy-samecal,1,XNGUSD.DWX,131150001,2026-07-10,Codex,active

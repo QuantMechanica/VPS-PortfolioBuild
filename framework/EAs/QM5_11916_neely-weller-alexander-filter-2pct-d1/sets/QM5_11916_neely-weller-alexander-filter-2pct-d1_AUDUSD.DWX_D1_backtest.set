@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        11916
 ; ea_slug:      neely-weller-alexander-filter-2pct-d1
@@ -10,7 +10,7 @@
 ; magic_slot:   5
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   8e7d7c4915bf144af0524c8d6ce69787530616161f9e2ba3ce8073e3ba206bc1
+; build_hash:   183c6f1fdbbf7fec59224bd419d006d875a71f4aaff2458ce593c1ee91d1f510
 ; author:       Development
 ; date:         2026-06-28
 ;==========================================================
