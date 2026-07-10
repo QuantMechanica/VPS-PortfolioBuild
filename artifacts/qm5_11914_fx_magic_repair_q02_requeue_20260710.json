@@ -1,0 +1,103 @@
+{
+  "timestamp_utc": "2026-07-10T22:09:59+00:00",
+  "unit_of_work": "Q02 ONINIT infrastructure repair and staged requeue",
+  "agent_task_id": "53d907d1-a86b-411d-8459-d526faceadee",
+  "ea_id": "QM5_11914",
+  "ea_slug": "ciurea-100sma-cross-h4",
+  "strategy_shape": "Low-frequency H4 SMA(100) close-cross trend following on ten liquid forex pairs",
+  "source": {
+    "title": "The Truth Behind Commonly Used Indicators",
+    "author": "Cristina Ciurea",
+    "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11914_ciurea-100sma-cross-h4.md",
+    "source_results": "Four-year published tables: EURUSD 216 trades and +29.86%; GBPUSD 269 trades and +55.08%"
+  },
+  "diversity_rationale": "The current Q08 soft survivors are concentrated in indices, metals, and energy. This candidate adds ten FX carriers and a slower H4 trend sleeve.",
+  "prior_failure": {
+    "work_item_id": "590f3764-086a-4afb-8347-1449d2656f23",
+    "phase": "Q02",
+    "symbol": "USDJPY.DWX",
+    "verdict": "INFRA_FAIL",
+    "evidence_path": "D:/QM/reports/work_items/590f3764-086a-4afb-8347-1449d2656f23/QM5_11914/20260623_090737/summary.json",
+    "reason_classes": [
+      "ONINIT_FAILED",
+      "INCOMPLETE_RUNS"
+    ],
+    "diagnosis": "The EA had an active ea_id_registry row but no magic_numbers.csv or resolver entries for any target symbol. Legacy setfiles also assigned slot 0 to every symbol and omitted the card strategy parameters."
+  },
+  "repair": {
+    "magic_slots": {
+      "EURUSD.DWX": 0,
+      "GBPUSD.DWX": 1,
+      "USDJPY.DWX": 2,
+      "USDCAD.DWX": 3,
+      "USDCHF.DWX": 4,
+      "AUDUSD.DWX": 5,
+      "NZDUSD.DWX": 6,
+      "EURJPY.DWX": 7,
+      "GBPJPY.DWX": 8,
+      "AUDJPY.DWX": 9
+    },
+    "source_changes": [
+      "Use framework-pooled closed-price readers instead of raw iClose calls.",
+      "Fail closed on a non-H4 host chart.",
+      "Initialize every QM_EntryRequest field and zero the request before use.",
+      "Keep management and hard exits above the entry-only news blackout.",
+      "Default the source risk inputs to the backtest-safe RISK_FIXED mode."
+    ],
+    "setfile_change": "Regenerated ten H4 backtest setfiles with unique magic slots, card strategy defaults, current build hashes, RISK_FIXED=1000, and RISK_PERCENT=0.",
+    "spec_change": "Added a complete Q01 SPEC.md and the approved build-time strategy-card copy."
+  },
+  "verification": {
+    "spec_validation": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK; violations=0",
+    "guardrails": "PASS; findings=0",
+    "magic_active_duplicates": 0,
+    "build_check": "PASS; failures=0; warnings=0",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260710_220755.json",
+    "compile": "PASS; errors=0; warnings=0",
+    "compile_log": "C:/QM/repo/framework/build/compile/20260710_220809/QM5_11914_ciurea-100sma-cross-h4.compile.log",
+    "compile_base_commit": "7cc4e7f4258db5a52a0395e71cd42464c3828e84",
+    "mq5_sha256": "dc23528a0088396df409a19ae399886fe65a4277dfd4f4124e3bd50ce9d7ca09",
+    "ex5_sha256": "efa7c5a73a143005ca9a031027d259b40f1d61e0aa0ca58e6d8b0acfc60e458e",
+    "eurusd_setfile_build_hash": "deb0628a5cee18c9444c0e9e7eb1bc7f238e77f56aafe6c8eaf00bed7263c795"
+  },
+  "q02_requeue": {
+    "status": "pending",
+    "stage_one": [
+      {
+        "work_item_id": "639dbff0-4d85-4173-9b4f-715256068f2e",
+        "symbol": "EURUSD.DWX",
+        "timeframe": "H4"
+      },
+      {
+        "work_item_id": "45471ccd-2d7f-453d-a75b-3c551b945ea3",
+        "symbol": "GBPUSD.DWX",
+        "timeframe": "H4"
+      },
+      {
+        "work_item_id": "36675969-1d6d-425f-8061-b0c2650d4b0e",
+        "symbol": "USDJPY.DWX",
+        "timeframe": "H4"
+      }
+    ],
+    "deferred_symbols": [
+      "USDCAD.DWX",
+      "USDCHF.DWX",
+      "AUDUSD.DWX",
+      "NZDUSD.DWX",
+      "EURJPY.DWX",
+      "GBPJPY.DWX",
+      "AUDJPY.DWX"
+    ],
+    "duplicate_guard": "The standard auto-Q02 helper found no pending or active QM5_11914 work item before insertion."
+  },
+  "safety": {
+    "factory_off_observed": true,
+    "manual_mt5_backtest_started": false,
+    "terminal_or_tester_process_started": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

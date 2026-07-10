@@ -14,7 +14,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.5;
+input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -44,13 +44,14 @@ input int    strategy_time_stop_bars    = 250;
 
 bool Strategy_NoTradeFilter()
 {
-   return false;
+   return (_Period != PERIOD_H4);
 }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
-   const double close1 = iClose(_Symbol, PERIOD_H4, 1);
-   const double close2 = iClose(_Symbol, PERIOD_H4, 2);
+   // A one-period SMA is the framework-native closed-bar close reader.
+   const double close1 = QM_SMA(_Symbol, PERIOD_H4, 1, 1, PRICE_CLOSE);
+   const double close2 = QM_SMA(_Symbol, PERIOD_H4, 1, 2, PRICE_CLOSE);
    
    const double sma1 = QM_SMA(_Symbol, PERIOD_H4, strategy_sma_period, 1);
    const double sma2 = QM_SMA(_Symbol, PERIOD_H4, strategy_sma_period, 2);
@@ -80,6 +81,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.tp = 0.0;
    req.reason = (side == QM_BUY) ? "CIUREA_SMA100_CROSS_LONG" : "CIUREA_SMA100_CROSS_SHORT";
    req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
 
    return true;
 }
@@ -110,8 +112,8 @@ bool Strategy_ExitSignal()
       // Opposite signal exit (Flip is handled natively if Strategy_EntrySignal 
       // returns true and framework opens opposite, but the framework exit logic 
       // is useful to close the existing one cleanly first).
-      const double close1 = iClose(_Symbol, PERIOD_H4, 1);
-      const double close2 = iClose(_Symbol, PERIOD_H4, 2);
+      const double close1 = QM_SMA(_Symbol, PERIOD_H4, 1, 1, PRICE_CLOSE);
+      const double close2 = QM_SMA(_Symbol, PERIOD_H4, 1, 2, PRICE_CLOSE);
       const double sma1 = QM_SMA(_Symbol, PERIOD_H4, strategy_sma_period, 1);
       const double sma2 = QM_SMA(_Symbol, PERIOD_H4, strategy_sma_period, 2);
       
@@ -155,18 +157,10 @@ void OnTick()
 {
    if(!QM_KillSwitchCheck()) return;
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now)) return;
-   
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows) return;
-   
    if(QM_FrameworkHandleFridayClose()) return;
    if(Strategy_NoTradeFilter()) return;
 
+   // Management and hard exits remain live through news windows.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -181,10 +175,20 @@ void OnTick()
       }
    }
 
+   // News blackout is entry-only; it must not suspend position risk controls.
+   if(Strategy_NewsFilterHook(broker_now)) return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows) return;
+
    if(!QM_IsNewBar()) return;
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;

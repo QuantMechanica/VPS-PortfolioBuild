@@ -14951,3 +14951,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13126,energy-momcarry,1,XNGUSD.DWX,131260001,2026-07-10,Codex,active
 13127,et-open-atr-long,0,NDX.DWX,131270000,2026-07-10,OWNER-delegated Codex,retired
 13128,pre-fomc-drift-ndx,0,NDX.DWX,131280000,2026-07-10,claude,active
+11914,ciurea-100sma-cross-h4,0,EURUSD.DWX,119140000,2026-07-10,Codex,active
+11914,ciurea-100sma-cross-h4,1,GBPUSD.DWX,119140001,2026-07-10,Codex,active
+11914,ciurea-100sma-cross-h4,2,USDJPY.DWX,119140002,2026-07-10,Codex,active
+11914,ciurea-100sma-cross-h4,3,USDCAD.DWX,119140003,2026-07-10,Codex,active
+11914,ciurea-100sma-cross-h4,4,USDCHF.DWX,119140004,2026-07-10,Codex,active
+11914,ciurea-100sma-cross-h4,5,AUDUSD.DWX,119140005,2026-07-10,Codex,active
+11914,ciurea-100sma-cross-h4,6,NZDUSD.DWX,119140006,2026-07-10,Codex,active
+11914,ciurea-100sma-cross-h4,7,EURJPY.DWX,119140007,2026-07-10,Codex,active
+11914,ciurea-100sma-cross-h4,8,GBPJPY.DWX,119140008,2026-07-10,Codex,active
+11914,ciurea-100sma-cross-h4,9,AUDJPY.DWX,119140009,2026-07-10,Codex,active
