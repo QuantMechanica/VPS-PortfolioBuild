@@ -1,0 +1,64 @@
+{
+  "agent_task_id": "b8fa4324-a2cf-4e0a-807d-0f2c855bbde2",
+  "diagnosis": {
+    "framework_includes_newer_than_retained_ex5": 20,
+    "oninit_failure_detected": false,
+    "reason_classes": [
+      "TIMEOUT",
+      "METATESTER_HUNG",
+      "INCOMPLETE_RUNS"
+    ],
+    "result": "FAIL",
+    "root_cause_class": "terminal_only_infra_with_stale_framework_binary",
+    "source_evidence_path": "D:\\QM\\reports\\work_items\\6921a6ea-86c2-48dc-8b58-9c8cde7a4444\\QM5_12577\\20260706_202737\\summary.json",
+    "source_work_item_id": "6921a6ea-86c2-48dc-8b58-9c8cde7a4444",
+    "strategy_verdict_published": false,
+    "valid_tester_report_published": false
+  },
+  "diversity_rationale": "Low-frequency D1 market-neutral XAU/XAG ratio spread, structurally distinct from outright metal sleeves.",
+  "ea_id": "QM5_12577",
+  "ea_slug": "cme-xauxag-ratio",
+  "notes": [
+    "Approved source and strategy mechanics were left unchanged.",
+    "No manual smoke or backtest was launched; the repaired artifact was handed to the paced farm queue.",
+    "No portfolio gate, T_Live manifest, T_Live file, or AutoTrading state was touched."
+  ],
+  "operator": "codex:agents/board-advisor",
+  "repair": {
+    "build_check": "PASS: 0 failures, 0 warnings",
+    "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260710_073651.json",
+    "compiled_artifact_commit": "4474d19451548f22ef484374e77ea1c4ee0228dc",
+    "compile_check": "PASS: strict compile, 0 errors, 0 warnings",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260710_073757\\QM5_12577_cme-xauxag-ratio.compile.log",
+    "new_ex5_bytes": 323062,
+    "new_ex5_sha256": "8F938CD9551AC11426403566C3F2D0004D0BBF03ECB52B56DEDC2652B173F6B8",
+    "old_ex5_bytes": 283104,
+    "old_ex5_sha256": "ED77E7FEE0DE9DC1AB66032F322A0EFA0CD81C37E6CFF9F32BBC9927D9060178",
+    "repo_ex5": "C:\\QM\\repo\\framework\\EAs\\QM5_12577_cme-xauxag-ratio\\QM5_12577_cme-xauxag-ratio.ex5",
+    "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_12577_cme-xauxag-ratio\\sets\\QM5_12577_cme-xauxag-ratio_QM5_12577_XAU_XAG_RATIO_D1_D1_backtest.set",
+    "setfile_sha256": "89CE03C4DEA1A2C71FD3786DC926C44A16966B2CDAED1EA56F79C63D1AA1AB4D",
+    "setfile_risk_contract": {
+      "environment": "backtest",
+      "portfolio_weight": 1,
+      "risk_fixed": 1000,
+      "risk_mode": "FIXED",
+      "risk_percent": 0
+    },
+    "spec_validation": "PASS"
+  },
+  "requeue": {
+    "backup": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_12577_q02_requeue_20260710T073919Z.sqlite",
+    "basket_symbols": [
+      "XAUUSD.DWX",
+      "XAGUSD.DWX"
+    ],
+    "host_symbol": "XAUUSD.DWX",
+    "new_work_item_id": "07c52869-1318-47fa-9833-c39c28c06205",
+    "open_q02_rows_after_enqueue": 1,
+    "phase": "Q02",
+    "status": "pending",
+    "symbol": "QM5_12577_XAU_XAG_RATIO_D1"
+  },
+  "timestamp_utc": "2026-07-10T07:39:19+00:00",
+  "unit_of_work": "q02_infra_stale_ex5_recompile_reenqueue"
+}
