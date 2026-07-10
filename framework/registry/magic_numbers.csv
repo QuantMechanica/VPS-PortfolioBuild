@@ -14879,3 +14879,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11913,crue-ichimoku-5line-alignment-d1,9,AUDJPY.DWX,119130009,2026-07-10,Codex,active
 13102,xng-1w-rev-vol,0,XNGUSD.DWX,131020000,2026-07-10,Codex,active
 13103,xti-idnr4-brk,0,XTIUSD.DWX,131030000,2026-07-10,Codex,active
+13104,xng-mon-range,0,XNGUSD.DWX,131040000,2026-07-10,Codex,active

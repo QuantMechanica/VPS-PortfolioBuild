@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13104
 ; ea_slug:      xng-mon-range
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending-build-check
+; build_hash:   6ce1ffb1bd79affb88012b64a4f55e61ca3a138a766c06f38ca1a08ea4532bf5
 ; author:       Development
 ; date:         2026-07-10
 ;==========================================================
