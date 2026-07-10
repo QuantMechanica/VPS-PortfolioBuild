@@ -44,7 +44,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
+pipeline_phase: Q02
 review_focus: "Adds calendar-defined WTI risk-premium exposure to the XAU/SP500/NDX/XNG book; Q09 alone may determine realized return-stream correlation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -225,10 +225,12 @@ setfile, the portfolio gate, portfolio admission, or portfolio KPI code.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-10 | initial WTI trading-time seasonal build | G0 | PENDING | 
+| v1 | 2026-07-10 | initial WTI trading-time seasonal build | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
-| G0 Research Intake | 2026-07-10 | PENDING mission-directed approval | this card |
+| G0 Research Intake | 2026-07-10 | APPROVED by mission directive | this card |
+| Q01 Build Validation | 2026-07-10 | PASS | `artifacts/qm5_13107_build_result.json` |
+| Q02 Baseline Screening | 2026-07-10 | QUEUED | work item `0251f2ca-5a43-4ebf-9b25-f4f4ab910996` |
