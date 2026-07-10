@@ -54,7 +54,6 @@ bool Strategy_IsXtiD1()
   {
    return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
   }
-
 bool Strategy_HasOpenPosition()
   {
    const int magic = QM_FrameworkMagic();
@@ -387,4 +386,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-

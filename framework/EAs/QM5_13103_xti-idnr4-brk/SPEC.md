@@ -89,4 +89,3 @@ AutoTrading.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-07-10 | initial build | mission-directed structural WTI sleeve |
-

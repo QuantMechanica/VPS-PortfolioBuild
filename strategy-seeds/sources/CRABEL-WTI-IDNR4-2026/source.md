@@ -53,4 +53,3 @@ whether the deterministic `XTIUSD.DWX` CFD realization has an edge.
   close confirmation, range-anchored stop, fixed-R target, and time exit.
 - R3 data available: PASS. `XTIUSD.DWX` is registered in the DWX symbol matrix.
 - R4 no ML/banned logic: PASS. Deterministic OHLC-only, single-position sleeve.
-
