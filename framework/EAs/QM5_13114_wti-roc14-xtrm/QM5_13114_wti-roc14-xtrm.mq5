@@ -109,7 +109,7 @@ bool Strategy_LoadTargetState(int &target_state,
    ArraySetAsSeries(rates, true);
    // perf-allowed: one bounded D1 history copy on the first bar of each month;
    // the framework new-bar/calendar gates prevent per-tick recomputation.
-   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, scan_bars, rates);
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, scan_bars, rates); // perf-allowed: monthly-only bounded structural history reconstruction.
    if(copied <= 0)
       return false;
 
@@ -421,4 +421,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
