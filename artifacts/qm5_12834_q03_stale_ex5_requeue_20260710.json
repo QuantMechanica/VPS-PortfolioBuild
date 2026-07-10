@@ -1,0 +1,124 @@
+{
+  "mission_unit": "priority_2_diverse_market_neutral_q03_stale_ex5_repair_requeue",
+  "timestamp_utc": "2026-07-10T05:23:24+00:00",
+  "agent": "codex-agents-board-advisor",
+  "branch": "agents/board-advisor",
+  "claim": {
+    "agent_task_id": "dcc0a3b8-d500-4177-a0a9-66e47b225997",
+    "claimed_at_utc": "2026-07-10T05:20:35+00:00",
+    "collision_guard": "no pending/active Q02-Q03 work item and no open agent task for QM5_12834"
+  },
+  "ea": {
+    "ea_id": "QM5_12834",
+    "label": "QM5_12834_wti-jpy-spread",
+    "instrument_class": "energy_fx_market_neutral_pair",
+    "logical_symbol": "QM5_12834_XTI_USDJPY_SPREAD_D1",
+    "basket_symbols": [
+      "XTIUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "host_symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "expected_trades_per_year": 7,
+    "expected_frequency": "4-10 basket packages/year",
+    "source": "U.S. Energy Information Administration Japan Country Analysis Brief; Bank of Japan 2026-06-03 policy speech; EIA 2017 oil/exchange-rate working paper",
+    "source_id": "EIA-BOJ-WTI-JPY-2026",
+    "g0_status": "APPROVED",
+    "review_task_id": "bd6935ea-f0f6-4c46-95ef-08228931e531",
+    "review_verdict": "APPROVE_FOR_BACKTEST",
+    "risk_mode": "RISK_FIXED",
+    "ml_used": false
+  },
+  "upstream_evidence": {
+    "q02": {
+      "work_item_id": "5a0aefae-6e1d-41df-ab15-5746b2f2044e",
+      "result": "PASS",
+      "model": 4,
+      "trades": 158,
+      "profit_factor": 1.02,
+      "oninit_failure_detected": false,
+      "summary": "D:/QM/reports/work_items/5a0aefae-6e1d-41df-ab15-5746b2f2044e/QM5_12834/20260705_022816/summary.json"
+    },
+    "q04_walk_forward": {
+      "work_item_id": "5d92142c-a246-4048-9c28-eb1d8e92646f",
+      "result": "PASS",
+      "fold_pf_net": [
+        4.315659440442505,
+        2.6854300911805575,
+        1.5550929082514011
+      ],
+      "aggregate": "D:/QM/reports/work_items/5d92142c-a246-4048-9c28-eb1d8e92646f/QM5_12834/Q04/QM5_12834_XTI_USDJPY_SPREAD_D1/aggregate.json"
+    }
+  },
+  "prior_q03_infra": {
+    "work_item_id": "b46fef91-427c-4f4e-a921-cd1b3f6e46fc",
+    "parent_task_id": "b45366fc-8562-4949-9b07-412baffa523a",
+    "status": "failed",
+    "verdict": "INFRA_FAIL",
+    "attempt_count": 2,
+    "prior_failure": "launch_fault",
+    "final_failure": "summary_missing_retries_exhausted",
+    "diagnosis": "Q03 twice produced a complete 363320-byte run_01 tester report, followed by an incomplete 22338-byte run_02 report and no run_03 report. No strategy summary or strategy verdict was published. The retained EX5 also predated 20 current V5 framework includes, so it was rebuilt before the guarded retry.",
+    "archived_report_root": "D:/QM/reports/work_items/b46fef91-427c-4f4e-a921-cd1b3f6e46fc.requeued_20260710T052240Z"
+  },
+  "repair": {
+    "mq5_changed": false,
+    "mq5_sha256": "164B2C5309BA2828DF04CA2990D58FBC80BD17A0832E3E6A911850F7077A1620",
+    "newer_framework_include_count_before_rebuild": 20,
+    "compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260710_052126/QM5_12834_wti-jpy-spread.compile.log",
+      "summary": "D:/QM/reports/compile/20260710_052126/summary.csv",
+      "old_ex5_sha256": "AB9BD1C682D26D6FAA6C6C92549304D53CFAD548B6C6A14641A76B78A3223579",
+      "new_ex5_sha256": "FB2D9FFE146E37967B34D21DB1E81AB9DBB2E1C22FC3D73DAE5C4A81942217BD",
+      "artifact_commit": "6dbd042938cf5d3abead9dc431a2af9990d621af"
+    },
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260710_052622.json"
+    },
+    "spec_validation": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "setfile": {
+      "path": "C:/QM/repo/framework/EAs/QM5_12834_wti-jpy-spread/sets/QM5_12834_wti-jpy-spread_QM5_12834_XTI_USDJPY_SPREAD_D1_D1_backtest.set",
+      "sha256": "17662D52258C5EA62CFD2B3CCF1ED8E647ACB6ACFB35D87F90050F625E69BF5F",
+      "environment": "backtest",
+      "risk_mode": "FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0
+    }
+  },
+  "requeue": {
+    "action": "reset_existing_q03_work_item_to_pending",
+    "database_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12834_q03_requeue_20260710T052240Z.sqlite",
+    "conditional_guard": "target status=failed, verdict=INFRA_FAIL, claimed_by NULL; Q02 PASS and Q04 PASS present; no open Q03 duplicate",
+    "work_item_id": "b46fef91-427c-4f4e-a921-cd1b3f6e46fc",
+    "parent_task_id": "b45366fc-8562-4949-9b07-412baffa523a",
+    "phase": "Q03",
+    "status_after": "pending",
+    "verdict_after": null,
+    "attempt_count_after": 0,
+    "claimed_by_after": null,
+    "open_same_ea_phase_after": 1,
+    "duplicate_row_inserted": false
+  },
+  "safety": {
+    "factory_terminals_active_at_handoff": [
+      "T1",
+      "T2",
+      "T6",
+      "T8"
+    ],
+    "terminal_worker_wrappers_present": 7,
+    "manual_backtest_started": false,
+    "backtest_cpu_added": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
