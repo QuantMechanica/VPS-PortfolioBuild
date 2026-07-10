@@ -1,0 +1,164 @@
+{
+  "task_id": "0d5c807a-471e-4b8f-b846-230d2f804b95",
+  "ea_id": "QM5_13116",
+  "ea_label": "QM5_13116_xng-signmom",
+  "slug": "xng-signmom",
+  "strategy": "Monthly XNG return-sign momentum using the fixed probability of non-negative returns over 12 completed months",
+  "strategy_id": "PAPAILIAS-RSM-2021_XNG_S01",
+  "source_id": "PAPAILIAS-RSM-2021",
+  "source_links": [
+    "https://doi.org/10.1016/j.jbankfin.2021.106063",
+    "https://pure.qub.ac.uk/en/publications/return-signal-momentum-2/",
+    "https://pureadmin.qub.ac.uk/ws/files/229452162/RSM_011220.pdf"
+  ],
+  "symbols": [
+    "XNGUSD.DWX"
+  ],
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13116_xng-signmom",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13116_xng-signmom\\QM5_13116_xng-signmom.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13116_xng-signmom\\QM5_13116_xng-signmom.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13116_xng-signmom\\SPEC.md",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13116_xng-signmom.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13116_xng-signmom_card.md",
+  "canonical_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\xng-signmom_card.md",
+  "source_packet_path": "C:\\QM\\repo\\strategy-seeds\\sources\\PAPAILIAS-RSM-2021\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13116_xng-signmom\\sets\\QM5_13116_xng-signmom_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 131160000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XNGUSD.DWX",
+      "magic": 131160000,
+      "registry_status": "active"
+    }
+  ],
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Backtest CPU ceiling / paced-fleet guard: T1, T3, T4, T6, and T8 had active path-anchored MT5 pipeline terminals at 2026-07-10T14:28:50Z; no manual MT5 smoke, dispatch, or backtest was launched.",
+  "blocked_reason": "",
+  "open_questions": [
+    "The source validates rolled commodity futures while Q02 tests a Darwinex continuous CFD; roll and basis translation remain falsification risks.",
+    "The source's headline evidence is diversified across 55 futures. Individual XNG tables are positive, but they do not validate this carrier or its ATR-stop overlay.",
+    "Different logic from QM5_12567 makes lower correlation plausible, not proven; Q09 alone judges realized book orthogonality."
+  ],
+  "compile": {
+    "status": "PASS",
+    "warnings": 0,
+    "errors": 0,
+    "reason_class": "OK",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260710_142810\\QM5_13116_xng-signmom.compile.log",
+    "summary_csv": "D:\\QM\\reports\\compile\\20260710_142810\\summary.csv",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13116_xng-signmom/QM5_13116_xng-signmom.mq5 -Strict"
+  },
+  "build_check": {
+    "status": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260710_142824.json",
+    "setfile_build_hash": "37b4eec40bc475c7c7e4c1fc9e3c2cb9989e25021eb0dfe84abce8bdf660f496",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13116_xng-signmom -RepoRoot C:/QM/repo -SkipCompile"
+  },
+  "validations": {
+    "dedup": {
+      "status": "CLEAN_BEFORE_ALLOCATION",
+      "command": "python framework/scripts/research_dedup_check.py check --slug xng-signmom --strategy-id PAPAILIAS-RSM-2021_XNG_S01 --author 'Papailias Liu Thomakos' --mechanic 'Monthly XNG return-sign momentum: count positive versus negative completed monthly returns over 12 months, buy at fixed positive-sign probability threshold 0.40 and sell otherwise, hold one month'"
+    },
+    "source_read": {
+      "status": "PASS",
+      "scope": "Peer-reviewed accepted manuscript read end-to-end including Appendices A-I"
+    },
+    "card_schema": {
+      "status": "PASS"
+    },
+    "g0_card": {
+      "status": "PASS"
+    },
+    "symbol_scope": {
+      "status": "PASS",
+      "verdict": "XNGUSD.DWX_ONLY"
+    },
+    "magic_registry": {
+      "status": "PASS_WITH_PREEXISTING_WARNINGS",
+      "slots": [
+        0
+      ],
+      "resolver_rows_kept": 14802,
+      "pre_existing_missing_ea_dir_warnings": [
+        1001,
+        1015,
+        1016
+      ],
+      "resolver_sha_prefix": "696DD0580E62DEA3"
+    },
+    "risk_mode": {
+      "status": "PASS",
+      "backtest_uses_risk_fixed": true,
+      "risk_percent_zero": true,
+      "portfolio_weight": 1
+    },
+    "build_guardrails": {
+      "status": "PASS",
+      "ml_forbidden": "PASS",
+      "external_runtime_data": "PASS",
+      "setfile_schema": "PASS",
+      "friday_close_enabled": false,
+      "friday_close_exception": "Source-aligned one-month holding period; next-month renewal, 35-day stale exit, kill switch, and frozen ATR broker stop remain active."
+    }
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "different_logic_from_qm5_12567": true,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "manual_backtest_cpu_used": false
+  },
+  "file_hashes_sha256": {
+    "mq5": "9041DFD565EBDBC9CEC5913F0E3A539AC5548286EBDF078AD214FD57BCBD1770",
+    "ex5": "43F1C081F480E99CD681353AD34FE3E323D1936C2185B652704109CEE8F8D9FF",
+    "spec": "D49AA7C3FD4533AA07A4A9EDD66BDA1EF65EFD03F613100D428ABF86169D063F",
+    "setfile": "77A7486C0054D5298F97AA32CFE8CC5F52B89FCD1A924822EB08C1C7FE264C18",
+    "canonical_card": "E97F5DFF194A1A5350ECD27E2742AF8EE362CF6B3B3577FD97267AA0A7E40D66",
+    "approved_card": "5E9187ACDFF4FBFA615C474C409A1EA7C5A372BCC98D9D4E924832749264878D",
+    "approved_farm_card": "5ACAF445CB8D49F870640CC452E1F4E9739452D9B06CB921619371AA1AB3A5B3",
+    "source_packet": "B07D7A4412B1D98059C121AB15494D4AB76471C22906CF7A76CE3179963DB117"
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "d3bef250-99ff-492c-b737-5eba646cff3e",
+    "status_at_handoff": "pending",
+    "claimed_by": null,
+    "symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13116_xng-signmom\\sets\\QM5_13116_xng-signmom_XNGUSD.DWX_D1_backtest.set",
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "enqueued_at_utc": "2026-07-10T14:30:17+00:00",
+    "note": "Auto-enqueued by farmctl record-build. No manual MT5 smoke, dispatch, or backtest was started at the paced-fleet CPU ceiling."
+  }
+}

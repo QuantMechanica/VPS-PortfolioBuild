@@ -1,0 +1,41 @@
+{
+  "ea_id": "QM5_13116",
+  "ea_label": "QM5_13116_xng-signmom",
+  "phase": "Q02",
+  "work_item_id": "d3bef250-99ff-492c-b737-5eba646cff3e",
+  "status_at_handoff": "pending",
+  "claimed_by": null,
+  "symbol": "XNGUSD.DWX",
+  "timeframe": "D1",
+  "setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_13116_xng-signmom\\sets\\QM5_13116_xng-signmom_XNGUSD.DWX_D1_backtest.set",
+  "enqueued_at_utc": "2026-07-10T14:30:17+00:00",
+  "risk": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "build_task_id": "0d5c807a-471e-4b8f-b846-230d2f804b95",
+  "build_task_status": "done",
+  "compile": {
+    "status": "PASS",
+    "errors": 0,
+    "warnings": 0
+  },
+  "build_check": {
+    "status": "PASS",
+    "failures": 0,
+    "warnings": 0
+  },
+  "cpu_guard": {
+    "manual_backtest_started": false,
+    "active_factory_terminals_observed": ["T1", "T3", "T4", "T6", "T8"],
+    "observed_at_utc": "2026-07-10T14:28:50+00:00",
+    "decision": "enqueue_only_defer_smoke_to_paced_fleet"
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
