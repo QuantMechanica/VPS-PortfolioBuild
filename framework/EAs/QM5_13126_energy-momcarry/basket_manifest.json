@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_13126_ENERGY_MOMCARRY_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Market-neutral monthly XTI/XNG momentum-carry double screen from approved card FMR-MOMTS-2010_XTI_XNG_S01. Run on XTIUSD.DWX D1; rank synchronized last-completed-month log returns and broker long-minus-short swap differentials independently, trade only on rank agreement, and evaluate the logical basket rather than standalone legs. The .DWX tester exposes zero swap, so the locked Q02 setfile uses a predeclared +1 carry rank while still requiring independent one-month momentum agreement."
+  ]
+}

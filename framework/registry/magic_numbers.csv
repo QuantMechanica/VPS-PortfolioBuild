@@ -14940,3 +14940,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13121,energy-tfmom,1,XNGUSD.DWX,131210001,2026-07-10,Codex,active
 13123,energy-val-rank,0,XTIUSD.DWX,131230000,2026-07-10,Codex,active
 13123,energy-val-rank,1,XNGUSD.DWX,131230001,2026-07-10,Codex,active
+13126,energy-momcarry,0,XTIUSD.DWX,131260000,2026-07-10,Codex,active
+13126,energy-momcarry,1,XNGUSD.DWX,131260001,2026-07-10,Codex,active

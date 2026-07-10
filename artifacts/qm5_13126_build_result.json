@@ -1,0 +1,54 @@
+{
+  "task_id": "7e1aae76-0f35-421b-a172-6d41b2aba465",
+  "ea_id": "QM5_13126",
+  "ea_label": "QM5_13126_energy-momcarry",
+  "slug": "energy-momcarry",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13126_energy-momcarry.md",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13126_energy-momcarry",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13126_energy-momcarry\\QM5_13126_energy-momcarry.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13126_energy-momcarry\\QM5_13126_energy-momcarry.ex5",
+  "mq5_sha256": "d6cfd8f098d97cbdd771e199af6fceb272d41e3a6acf19aa5cdc12fdfedf46d8",
+  "ex5_sha256": "e0d93ade49841c1312991140ba1004495450eedd2232414d8c214a668719f960",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260710_210355\\QM5_13126_energy-momcarry.compile.log",
+  "compile_summary": "D:\\QM\\reports\\compile\\20260710_210355\\summary.csv",
+  "build_check_passed": true,
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260710_210355.json",
+  "build_check_advisories": [
+    "Four DWX swap-usage review advisories were resolved by the card-locked all-zero tester fallback; nonzero swap remains an independent carry rank and one-month momentum agreement remains mandatory."
+  ],
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "BASKET_OK",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13126_energy-momcarry\\sets\\QM5_13126_energy-momcarry_QM5_13126_ENERGY_MOMCARRY_D1_D1_backtest.set"
+  ],
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Build-only workflow; no manual backtest or terminal automation started before Q02 enqueue.",
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13126",
+    "enqueued": [
+      {
+        "work_item_id": "03354f53-f0a4-4d55-9193-d7badf2a83ce",
+        "symbol": "QM5_13126_ENERGY_MOMCARRY_D1",
+        "host_symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "status": "pending",
+        "setfile": "QM5_13126_energy-momcarry_QM5_13126_ENERGY_MOMCARRY_D1_D1_backtest.set"
+      }
+    ],
+    "skipped": []
+  },
+  "registry_validation": {
+    "ea_id_row": "13126,energy-momcarry,FMR-MOMTS-2010_XTI_XNG_S01,active",
+    "magic_rows": [
+      "13126,energy-momcarry,0,XTIUSD.DWX,131260000,active",
+      "13126,energy-momcarry,1,XNGUSD.DWX,131260001,active"
+    ],
+    "resolver_contains_ea": true,
+    "global_validator_note": "Targeted registry, resolver, card, spec, build, and basket-scope checks passed; three pre-existing missing-directory resolver warnings were not changed."
+  },
+  "notes": "New low-frequency market-neutral energy sleeve: monthly XTI/XNG completed-month momentum and broker-carry rank agreement, equal fixed package risk, no ML/banned indicators. The DWX Q02 baseline transparently uses a fixed +1 carry rank because tester swaps are zero. No T_Live, AutoTrading, portfolio gate, live setfile, or deploy manifest touched."
+}
