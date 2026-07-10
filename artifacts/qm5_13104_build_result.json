@@ -1,0 +1,152 @@
+{
+  "task_id": "mission-20260710-qm5-13104",
+  "ea_id": "QM5_13104",
+  "ea_label": "QM5_13104_xng-mon-range",
+  "slug": "xng-mon-range",
+  "strategy": "XNGUSD.DWX H4 compressed-Friday Monday range expansion",
+  "strategy_id": "MU-XNG-MONVOL-2007_S01",
+  "source_id": "MU-XNG-MONVOL-2007",
+  "source_links": [
+    "https://doi.org/10.1016/j.eneco.2006.04.003",
+    "https://www.iaee.org/en/students/best_papers/xiaoyi_mu2.pdf"
+  ],
+  "symbols": [
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XNGUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XNGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13104_XNG_MON_RANGE_H4",
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "H4",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13104_xng-mon-range",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13104_xng-mon-range\\QM5_13104_xng-mon-range.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13104_xng-mon-range\\QM5_13104_xng-mon-range.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13104_xng-mon-range\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13104_xng-mon-range.md",
+  "approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13104_xng-mon-range.md",
+  "strategy_seed_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13104_xng-mon-range_card.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13104_xng-mon-range\\sets\\QM5_13104_xng-mon-range_XNGUSD.DWX_H4_backtest.set"
+  ],
+  "magic_base": 131040000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XNGUSD.DWX",
+      "magic": 131040000
+    }
+  ],
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_q02",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced-fleet mission requested a Q02 enqueue; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13104",
+    "enqueued": [
+      {
+        "wi_id": "82d39543",
+        "symbol": "XNGUSD.DWX",
+        "tf": "H4",
+        "setfile": "QM5_13104_xng-mon-range_XNGUSD.DWX_H4_backtest.set"
+      }
+    ],
+    "skipped": []
+  },
+  "compile": {
+    "status": "COMPILED",
+    "warnings": 0,
+    "errors": 0,
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260710_021029\\QM5_13104_xng-mon-range.compile.log",
+    "summary_csv": "D:\\QM\\reports\\compile\\20260710_021029\\summary.csv",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13104_xng-mon-range/QM5_13104_xng-mon-range.mq5 -Strict"
+  },
+  "build_check": {
+    "status": "PASS",
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260710_021041.json",
+    "setfile_build_hash": "6ce1ffb1bd79affb88012b64a4f55e61ca3a138a766c06f38ca1a08ea4532bf5",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13104_xng-mon-range -Strict -SkipCompile"
+  },
+  "validations": {
+    "spec_doc": {
+      "status": "PASS",
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13104_xng-mon-range"
+    },
+    "card_schema": {
+      "status": "PASS",
+      "command": "python framework/scripts/skill_card_schema_lint.py --card strategy-seeds/cards/approved/QM5_13104_xng-mon-range_card.md"
+    },
+    "symbol_scope": {
+      "status": "PASS",
+      "verdict": "SINGLE_SYMBOL_OK",
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_13104_xng-mon-range --json --fail-on-leak"
+    },
+    "magic_registry": {
+      "status": "PASS_WITH_PREEXISTING_WARNINGS",
+      "slots": [
+        0
+      ],
+      "resolver_rows_kept": 14764,
+      "pre_existing_missing_ea_dir_warnings": [
+        1001,
+        1015,
+        1016
+      ],
+      "resolver_hash": "9E34EA174559B71A34310BC6C2E2C0F799D96E74277CE97C1F35163895721C0E"
+    },
+    "risk_mode": {
+      "status": "PASS",
+      "backtest_uses_risk_fixed": true,
+      "risk_percent_zero": true
+    },
+    "build_guardrails": {
+      "status": "PASS",
+      "ml_forbidden": "PASS",
+      "external_runtime_data": "PASS",
+      "setfile_schema": "PASS",
+      "five_input_groups": "PASS",
+      "perf_static_check": "PASS"
+    },
+    "registry_full_validate": {
+      "status": "NOT_RUN",
+      "note": "Scoped build, magic, setfile, spec, card, and symbol validation passed; global registry validation was not required for this single-EA build."
+    }
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "backtest_cpu_used": false
+  },
+  "file_hashes_sha256": {
+    "strategy_card_doc": "FFF518931836CF729AF6A806833A4E86B89F611CF6F58D89DAA8D25AAA800CD9",
+    "approved_card": "FFF518931836CF729AF6A806833A4E86B89F611CF6F58D89DAA8D25AAA800CD9",
+    "mq5": "E79412BED96F90177BF8089C9939233A7197AE55D39911F1B7E16085AE7257DF",
+    "ex5": "53E12E330A8A27E3F0265239B3C52CC1DC55B08D1FC1ABF0910138647F919857",
+    "spec": "A137B55EDB9556B2F8E1F350FE8B7290F24DB629764FF854415942EB718EE041",
+    "setfile": "2744E6E82A5077620A6ABA180C3574824A387EDC82DE48035376EA1D5C33D208",
+    "source_packet": "334AC3E16A841943D0E43057F39012999BF0BDEFD6F0266C718651B990E87EEF"
+  }
+}

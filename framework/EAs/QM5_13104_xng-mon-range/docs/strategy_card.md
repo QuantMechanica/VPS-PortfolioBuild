@@ -237,4 +237,3 @@ AutoTrading, a deploy manifest, the portfolio gate, or a live setfile.
 |---|---|---|---|
 | G0 Research Intake | 2026-07-10 | APPROVED by mission directive | this card |
 | Q02 Baseline Screening | 2026-07-10 | QUEUED | work_items/82d39543-f4eb-400d-ad04-e3998bf0abcf |
-

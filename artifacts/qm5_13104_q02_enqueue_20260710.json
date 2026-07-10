@@ -1,0 +1,43 @@
+{
+  "recorded_at_utc": "2026-07-10T02:11:42Z",
+  "source": "farmctl._auto_enqueue_q02_for_build",
+  "build_result_path": "artifacts/qm5_13104_build_result.json",
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13104",
+    "enqueued": [
+      {
+        "wi_id": "82d39543",
+        "symbol": "XNGUSD.DWX",
+        "tf": "H4",
+        "setfile": "QM5_13104_xng-mon-range_XNGUSD.DWX_H4_backtest.set"
+      }
+    ],
+    "skipped": []
+  },
+  "work_items": [
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-07-10T02:11:42+00:00",
+      "ea_id": "QM5_13104",
+      "evidence_path": null,
+      "id": "82d39543-f4eb-400d-ad04-e3998bf0abcf",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q02",
+      "phase_display": "Q02",
+      "phase_qid": "Q02",
+      "status": "pending",
+      "symbol": "XNGUSD.DWX",
+      "updated_at": "2026-07-10T02:11:42+00:00",
+      "verdict": null
+    }
+  ],
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "backtest_cpu_used": false
+  }
+}
