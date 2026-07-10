@@ -1,0 +1,130 @@
+{
+  "generated_at_utc": "2026-07-10T06:47:24Z",
+  "operator": "codex-headless-board-advisor",
+  "branch": "agents/board-advisor",
+  "head_at_audit": "8db2684d8d86fb76b354a2941bc72f872932d209",
+  "mission": "grow the certified V5 portfolio book with new forex sleeves",
+  "unit_of_work": "fresh FX basket frontier audit and recurrent-Q07 timeout handoff at the CPU ceiling",
+  "research_decision": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_scan_result": "Only EURJPY~GBPJPY and AUDUSD~NZDUSD cleared the published DEV/OOS/trade-count criteria; both are already built.",
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "state": [
+        "Q02:PASS",
+        "Q04:PASS",
+        "Q05:FAIL"
+      ],
+      "q02_blocked": false
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "state": [
+        "Q02:PASS",
+        "Q04:FAIL"
+      ],
+      "q02_blocked": false
+    },
+    "approved_card_inventory": {
+      "approved_filename_matched_coint_or_cointegration_cards_checked": 21,
+      "cards_without_matching_framework_ea": 0,
+      "unbuilt_reputable_source_pair_found": false
+    },
+    "decision": "No duplicate card or build was created; the strict scan is exhausted and every approved filename-matched FX cointegration card has a framework EA folder."
+  },
+  "existing_forex_fallbacks": {
+    "QM5_13106": {
+      "pair": "AUDUSD.DWX/EURGBP.DWX",
+      "logical_symbol": "QM5_13106_AUDUSD_EURGBP_COINTEGRATION_D1",
+      "completed_state": [
+        "Q02:PASS"
+      ],
+      "q03_work_item_id": "1e2f36e1-a88c-4ee1-b23d-0b2aa2027cc6",
+      "q03_status": "pending",
+      "q03_priority_track": true,
+      "q04_work_item_id": "a33683ca-ddff-4291-93c7-df149fb5a324",
+      "q04_status": "pending",
+      "action": "Preserved the existing priority Q03 continuation and did not insert or dispatch a duplicate."
+    },
+    "QM5_1058": {
+      "pair": "EURUSD.DWX/GBPUSD.DWX",
+      "logical_symbol": "QM5_1058_EURUSD_GBPUSD_GGR_D1",
+      "completed_state": [
+        "Q02:PASS",
+        "Q03:PASS",
+        "Q04:PASS",
+        "Q05:PASS",
+        "Q06:PASS"
+      ],
+      "q07_work_item_id": "82c0189f-f4a7-4e3f-ac76-79b38037bacb",
+      "q07_status": "pending",
+      "q07_attempt_count": 1,
+      "q07_priority_track": false,
+      "q07_payload_prior_failure": "summary_missing",
+      "forensic_result": {
+        "completed_timeout_summaries": 4,
+        "timeout_seconds_each": 5400,
+        "reason_classes_each": [
+          "TIMEOUT",
+          "METATESTER_HUNG",
+          "INCOMPLETE_RUNS",
+          "MODEL4_MARKER_REQUIRED"
+        ],
+        "summary_timestamps_utc": [
+          "2026-07-09T18:22:57.6228361Z",
+          "2026-07-09T19:53:00.2620908Z",
+          "2026-07-09T21:23:02.6649696Z",
+          "2026-07-09T22:53:05.8239509Z"
+        ],
+        "oninit_failure_detected": false,
+        "interpretation": "This is a recurrent Q07 tester-hang path, not a Q02 ONINIT/NO_HISTORY blocker and not a safe priority retry under the current ceiling."
+      },
+      "action": "Left the existing retry row unchanged and did not reprioritize or dispatch it."
+    }
+  },
+  "cpu_ceiling_observed": {
+    "farm_active_work_items": 7,
+    "active_by_phase": {
+      "Q02": 7
+    },
+    "claimed_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "metatester64_processes": 6,
+    "pipeline_terminal64_processes": 6,
+    "stop_reason": "The farm had seven active claims and six concurrent tester processes. The mission's CPU-ceiling stop condition applies."
+  },
+  "result": {
+    "new_card_created": false,
+    "new_ea_built": false,
+    "new_q02_work_item_created": false,
+    "duplicate_work_item_created": false,
+    "farm_state_mutated": false,
+    "manual_mt5_backtest_launched": false,
+    "dispatch_command_run": false,
+    "next_non_duplicate_action": "Let capacity clear and run the already-priority QM5_13106 Q03 continuation. Do not blindly prioritize QM5_1058 Q07 until its repeated 5400-second tester hangs are addressed."
+  },
+  "guardrails": {
+    "risk_mode_expected": "RISK_FIXED",
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false
+  },
+  "commands_run_summary": [
+    "read the complete strict FX scan and inspected the current branch state",
+    "compared 21 approved filename-matched coint/cointegration cards with framework EA folders",
+    "verified current QM5_12532, QM5_12533, QM5_13106, and QM5_1058 work-item state",
+    "read all four completed QM5_1058 Q07 timeout summaries",
+    "counted active work-item claims and MT5 processes without changing process or farm state"
+  ]
+}
