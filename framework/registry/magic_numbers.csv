@@ -14890,3 +14890,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13108,xti-mtsm-s2,0,XTIUSD.DWX,131080000,2026-07-10,Codex,active
 13109,xng-febjun-long,0,XNGUSD.DWX,131090000,2026-07-10,Codex,active
 13110,xng-svol-brk,0,XNGUSD.DWX,131100000,2026-07-10,Codex,active
+13111,xng-invlev-brk,0,XNGUSD.DWX,131110000,2026-07-10,Codex,active
