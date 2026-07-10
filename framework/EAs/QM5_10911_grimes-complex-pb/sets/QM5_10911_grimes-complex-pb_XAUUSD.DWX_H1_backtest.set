@@ -32,3 +32,5 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
+; time-sensitive strategy params (mq5 defaults, explicit for build guard 2026-07-10)
+strategy_ema_exit_period=20
