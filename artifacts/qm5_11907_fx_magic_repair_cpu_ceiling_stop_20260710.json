@@ -1,0 +1,106 @@
+{
+  "mission_unit": "priority_2_diverse_fx_q02_magic_init_repair_cpu_ceiling_stop",
+  "timestamp_utc": "2026-07-10T11:37:14+00:00",
+  "agent": "codex:agents/board-advisor",
+  "branch": "agents/board-advisor",
+  "farm_claim": {
+    "work_item_id": "e0911bc9-6e0b-48bb-8e95-212de2de4204",
+    "claimed_at_utc": "2026-07-10T11:20:45+00:00",
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11907_fx_magic_repair_20260710T112045Z.sqlite",
+    "collision_guard": "no active/pending/claimed work item, downstream Q04+ row, or existing agent repair claim for QM5_11907"
+  },
+  "ea": {
+    "ea_id": "QM5_11907",
+    "label": "QM5_11907_davey-momentum-big-range-h1",
+    "instrument_class": "forex",
+    "symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX",
+      "USDCAD.DWX",
+      "USDCHF.DWX",
+      "AUDUSD.DWX",
+      "NZDUSD.DWX",
+      "EURJPY.DWX",
+      "GBPJPY.DWX",
+      "AUDJPY.DWX"
+    ],
+    "timeframe": "H1",
+    "source": "Kevin J. Davey, My 5 Favorite Entries, Entry 1 Momentum and Big Range",
+    "g0_status": "APPROVED",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "ml_used": false
+  },
+  "diagnosis": {
+    "prior_q02_terminal_rows": 120,
+    "prior_q02_strategy_verdict_rows": 0,
+    "observed_failure_classes": [
+      "ONINIT_FAILED",
+      "NO_HISTORY",
+      "summary_missing_retries_exhausted"
+    ],
+    "root_cause": "ea_id_registry.csv contained EA 11907 but magic_numbers.csv contained zero EA 11907 rows, so QM_FrameworkInit could not resolve a registered magic for any of the ten approved FX symbols. Every legacy setfile also used slot 0."
+  },
+  "repair": {
+    "repo_commits": [
+      "93c29e87c146016d1da5460bdd2657cca2dc388c",
+      "ad071501d8b286466d75be1ebff8aefcea205046"
+    ],
+    "magic_rows_added": 10,
+    "magic_range": [119070000, 119070009],
+    "magic_collisions": 0,
+    "setfiles_regenerated": 10,
+    "setfile_slots": {
+      "EURUSD.DWX": 0,
+      "GBPUSD.DWX": 1,
+      "USDJPY.DWX": 2,
+      "USDCAD.DWX": 3,
+      "USDCHF.DWX": 4,
+      "AUDUSD.DWX": 5,
+      "NZDUSD.DWX": 6,
+      "EURJPY.DWX": 7,
+      "GBPJPY.DWX": 8,
+      "AUDJPY.DWX": 9
+    },
+    "risk_fixed_all_setfiles": 1000,
+    "risk_percent_all_setfiles": 0,
+    "spec_validation": "PASS",
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260710_112324.json"
+    },
+    "compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260710_112344/QM5_11907_davey-momentum-big-range-h1.compile.log",
+      "summary": "D:/QM/reports/compile/20260710_112344/summary.csv"
+    },
+    "mq5_sha256": "665060DB8FEE0407266D43E2965C4845F7047FFD25616D328CF05ADA022338CD",
+    "ex5_sha256": "D89A56893C884140D87703C8B2FD624FC45D37A15250C5CE64BF334A2EFBF3DA",
+    "registry_sha256": "07EF0FC4232C3EA9D7AD815BCE727948AEBD6B04140BCAEF38E3D20340AE7566",
+    "resolver_sha256": "346BE3FCE2F4A41042D8B510DB6504C3668044764DB3D240C868D1CC265B3464"
+  },
+  "smoke": {
+    "result": "framework_error",
+    "runtime_seconds": 654,
+    "ceiling_seconds": 600,
+    "summary_path": null,
+    "report_dir": "D:/QM/reports/smoke/QM5_11907/20260710_112411",
+    "diagnostic": "The bounded -Terminal any invocation collided with worker-owned T3. Its retained run_01 log begins with QM5_9403_williams-pro-go-h4 and contains no QM5_11907 marker; three incomplete run directories were created and two logs grew to about 230 MB before the command ceiling stopped the invocation.",
+    "orphaned_terminal_process_after_stop": false
+  },
+  "q02_handoff": {
+    "enqueued": false,
+    "reason": "User CPU-ceiling stop condition and one-pass smoke rule; no valid QM5_11907 runtime summary exists."
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
