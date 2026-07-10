@@ -272,11 +272,12 @@ setfile, the portfolio gate, portfolio admission, or portfolio KPI code.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-10 | initial WTI leverage-effect downside build | Q02 | PENDING BUILD |
+| v1 | 2026-07-10 | initial WTI leverage-effect downside build | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-10 | APPROVED by mission directive | this card |
-
+| Q01 Build Validation | 2026-07-10 | PASS; strict compile/build check; smoke deferred at CPU ceiling | `artifacts/qm5_13112_build_result.json` |
+| Q02 Baseline Screening | 2026-07-10 | QUEUED; pending and unclaimed | work item `f15fcbab-42d7-45cb-af23-c0baf40bc56f` |
