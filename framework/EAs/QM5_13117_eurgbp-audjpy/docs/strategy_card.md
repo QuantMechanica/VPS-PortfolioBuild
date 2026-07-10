@@ -6,7 +6,7 @@ status: APPROVED
 type: strategy
 created: 2026-07-10
 created_by: Research
-last_updated: 2026-07-10
+last_updated: 2026-07-11
 source_id: SRC02
 source_citation: "QuantMechanica OWNER-requested all-sign reproduction of the 2026-06-09 66-pair FX cointegration scan on Darwinex .DWX D1 data; methodology grounded in Chan, Ernest P. (2009), Quantitative Trading, Wiley, Chapter 7 and Example 3.6."
 strategy_type_flags:
@@ -32,7 +32,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02
+pipeline_phase: Q03
 expected_pf: 1.05
 expected_dd_pct: 25.0
 portfolio_scope: basket
@@ -297,6 +297,7 @@ data_requirements: "EURGBP.DWX and AUDJPY.DWX D1 plus tester-currency conversion
 | v1 | 2026-07-10 | initial all-sign 66-pair candidate extraction | G0 | IN_REVIEW |
 | v2 | 2026-07-10 | explicit forex-book mission approval and atomic QM5_13117 allocation | Q01 | APPROVED_FOR_BUILD |
 | v3 | 2026-07-10 | strict compile and one logical-basket enqueue; smoke deferred at seven-job CPU ceiling | Q02 | PENDING_CPU_CEILING |
+| v4 | 2026-07-11 | targeted paced real-tick baseline completed; unique priority successor enqueued | Q03 | Q02_PASS_Q03_PENDING |
 
 ## 15. Pipeline Phase Status
 
@@ -304,7 +305,8 @@ data_requirements: "EURGBP.DWX and AUDJPY.DWX D1 plus tester-currency conversion
 |---|---|---|---|
 | G0 Research Intake | 2026-07-10 | APPROVED | explicit forex-book mission + this card + `docs/research/FX_COINTEGRATION_EURGBP_AUDJPY_REVIEW_2026-07-10.md` |
 | Q01 Build Validation | 2026-07-10 | PASS | `D:/QM/reports/framework/21/build_check_20260710_145341.json`; strict compile 0 errors/0 warnings |
-| Q02 Baseline Screening | 2026-07-10 | PENDING_CPU_CEILING | work item `ed75430e-2ff4-4ea1-9d50-e49a7912d323` |
+| Q02 Baseline Screening | 2026-07-11 | PASS | work item `ed75430e-2ff4-4ea1-9d50-e49a7912d323`; PF 1.75, 104 trades, 2.82% DD, +6582.67 net |
+| Q03 Parameter Sweep | 2026-07-11 | PENDING | work item `dc01fd4d-0f8f-414a-a6b1-80441204fefc` |
 
 ## 16. Lessons Captured
 
@@ -316,4 +318,7 @@ data_requirements: "EURGBP.DWX and AUDJPY.DWX D1 plus tester-currency conversion
 - 2026-07-10: Build handoff again found seven active paced jobs. Q01 smoke was
   deferred and exactly one logical Q02 row was enqueued; no MT5 dispatch was
   invoked.
-
+- 2026-07-11: The full 2018-07-02 through 2022-12-31 real-tick baseline passed
+  without ONINIT or history failure. The same logical row produced 104 tester
+  trades at PF 1.75 and 2.82% drawdown, then one guarded Q03 successor inherited
+  the basket and RISK_FIXED context.

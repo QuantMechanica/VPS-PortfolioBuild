@@ -1,0 +1,94 @@
+{
+  "artifact_type": "fx_cointegration_q02_pass_q03_handoff",
+  "branch": "agents/board-advisor",
+  "created_at_utc": "2026-07-10T23:52:20.7188108Z",
+  "ea_id": "QM5_13117",
+  "expert": "QM5_13117_eurgbp-audjpy",
+  "pair": [
+    "EURGBP.DWX",
+    "AUDJPY.DWX"
+  ],
+  "logical_symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+  "selection": {
+    "action": "advance_existing_forex_card",
+    "reason": "all seven strict sign-aware 66-pair scan rows already have EA builds",
+    "anchor_q02_blockers": {
+      "QM5_12532": false,
+      "QM5_12533": false
+    }
+  },
+  "build": {
+    "build_check_reports": [
+      "D:/QM/reports/framework/21/build_check_20260710_225029.json",
+      "D:/QM/reports/framework/21/build_check_20260710_235335.json"
+    ],
+    "failures": 0,
+    "result": "PASS",
+    "warnings": 0,
+    "ex5_sha256": "477530fc2c9d1ce5b8b8b321e6b0e68f746735b4f6e4d4205f370aa68d881d9d",
+    "q02_execution_setfile_build_hash": "926a3fcc36950f8cb148451d56d01c93999996c15e434c8712872b59a42e8e3f",
+    "final_setfile_build_hash": "2f1e358766a53521b6be73097b33a746a2a4fb68bfdec2a9473b62d42c03e796"
+  },
+  "risk_contract": {
+    "environment": "backtest",
+    "portfolio_weight": 1,
+    "risk_fixed": 1000,
+    "risk_percent": 0
+  },
+  "q02": {
+    "work_item_id": "ed75430e-2ff4-4ea1-9d50-e49a7912d323",
+    "status": "done",
+    "verdict": "PASS",
+    "terminal": "T3",
+    "from_date": "2018.07.02",
+    "to_date": "2022.12.31",
+    "model": 4,
+    "total_trades": 104,
+    "profit_factor": 1.75,
+    "net_profit": 6582.67,
+    "drawdown": 3049.81,
+    "drawdown_pct": 2.82,
+    "oninit_failure_detected": false,
+    "real_ticks_marker_detected": true,
+    "log_bomb_detected": false,
+    "evidence_path": "D:/QM/reports/work_items/ed75430e-2ff4-4ea1-9d50-e49a7912d323/QM5_13117/20260710_230457/summary.json"
+  },
+  "terminal_recovery": {
+    "failed_terminal": "T5",
+    "reason": "tester account is not specified",
+    "duplicate_q02_inserted": false,
+    "final_attempt_count": 1,
+    "avoid_terminals": [
+      "T5"
+    ],
+    "evidence_path": "D:/QM/reports/work_items/ed75430e-2ff4-4ea1-9d50-e49a7912d323/QM5_13117/20260710_225219/raw/run_01/20260711.log"
+  },
+  "runner_fix": {
+    "description": "stale run_smoke exit detection now recognizes canonical Q02/Q03 and legacy P2/P3 phase keys",
+    "tests": {
+      "tools.strategy_farm.tests.test_terminal_worker_q_phase_stall": "PASS (1)",
+      "tools.strategy_farm.tests.test_terminal_worker_atomic_claim": "PASS (34)"
+    }
+  },
+  "q03": {
+    "work_item_id": "dc01fd4d-0f8f-414a-a6b1-80441204fefc",
+    "parent_task_id": "caf51649-e9fa-4db9-ba79-53632a514992",
+    "status": "pending",
+    "priority_track": true,
+    "portfolio_scope": "basket",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "avoid_terminals": [
+      "T5"
+    ],
+    "duplicate_count": 1,
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_pre_qm5_13117_q03_enqueue_20260710T235125Z.sqlite"
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "cpu_ceiling_reached": false,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false
+  }
+}

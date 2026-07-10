@@ -933,11 +933,12 @@ def _acquire_launch_slot(terminal: str) -> None:
 def _smoke_terminal_exit_stalled(item: dict[str, Any], payload: dict[str, Any]) -> bool:
     """Detect run_smoke wrappers stuck after MT5 already exited.
 
-    P2/P3 use a single run_smoke.ps1 child. If its log has reached
-    terminal_exit but no summary appears and the log is quiet, waiting for the
-    full worker timeout only blocks the symbol dedupe queue.
+    Q02/Q03 (and legacy P2/P3 aliases) use a single run_smoke.ps1 child. If
+    its log has reached terminal_exit but no summary appears and the log is
+    quiet, waiting for the full worker timeout only blocks the symbol dedupe
+    queue.
     """
-    if str(item.get("phase") or "").upper() not in {"P2", "P3"}:
+    if str(item.get("phase") or "").upper() not in {"Q02", "Q03", "P2", "P3"}:
         return False
     if _find_summary(payload.get("report_root"), payload):
         return False
