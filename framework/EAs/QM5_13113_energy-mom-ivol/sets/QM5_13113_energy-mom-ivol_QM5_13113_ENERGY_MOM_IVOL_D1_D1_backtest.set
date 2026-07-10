@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13113
 ; ea_slug:      energy-mom-ivol
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING
+; build_hash:   a7fed88e5c41364e230df1a369594d0607697e1d51485b973c95cf848a880c4a
 ; author:       Development
 ; date:         2026-07-10
 ;==========================================================

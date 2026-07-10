@@ -21,12 +21,20 @@ timeframes: [D1]
 primary_target_symbols: [XTIUSD.DWX, XNGUSD.DWX]
 target_symbols: [XTIUSD.DWX, XNGUSD.DWX]
 factor_symbols: [XTIUSD.DWX, XNGUSD.DWX, XAUUSD.DWX, XAGUSD.DWX]
+single_symbol_only: false
 logical_symbol: QM5_13113_ENERGY_MOM_IVOL_D1
+period: D1
 expected_pf: 1.08
 expected_dd_pct: 18.0
 expected_trade_frequency: "6-10 completed monthly packages/year before Q02."
+expected_trades_per_year_per_symbol: 8
 risk_class: medium-high
 ml_required: false
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+review_focus: "Market-neutral XTI/XNG momentum-plus-IVol selection, distinct from outright commodity RSI and energy trend signals; Q09 alone may establish realized orthogonality."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 hard_rules_at_risk: [basket_execution, friday_close, magic_schema, risk_mode_dual, cfd_futures_basis]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -117,4 +125,3 @@ This is a four-proxy/two-traded-leg carrier test, not a replication. Q02 must
 reject it below five packages/year or on invalid basket/economic evidence. No
 live, portfolio-gate, deploy-manifest, `T_Live`, or AutoTrading mutation is
 authorized.
-
