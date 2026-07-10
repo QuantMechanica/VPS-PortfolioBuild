@@ -280,7 +280,20 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
    g_custom_news_cache_bucket = bucket;
    g_custom_news_cache_blocked = false;
 
-   if(!QM_NewsInit())
+   // FrameworkInit normally loads the calendar once because the default
+   // compliance profile is active.  Do not call QM_NewsInit on every M15
+   // cache miss: it clears, reparses, and reindexes the full calendar.
+   if(!QM_NewsIsLoaded() &&
+      !QM_NewsInit("D:\\QM\\data\\news_calendar",
+                   qm_news_stale_max_hours,
+                   30,
+                   30,
+                   qm_news_min_impact))
+     {
+      g_custom_news_cache_blocked = true;
+      return g_custom_news_cache_blocked;
+     }
+   if(!QM_NewsIsAvailable())
      {
       g_custom_news_cache_blocked = true;
       return g_custom_news_cache_blocked;
