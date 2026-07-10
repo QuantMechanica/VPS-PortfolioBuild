@@ -27,10 +27,12 @@ input double strategy_spread_median_mult = 3.0;
 input int    strategy_spread_lookback    = 20;
 input int    strategy_required_d1_bars   = 60;
 
-datetime g_last_spread_d1_bar = 0;
+int      g_last_spread_d1_key = 0;
 double   g_cached_median_spread = 0.0;
 datetime g_last_entry_d1_bar = 0;
 datetime g_last_exit_d1_bar = 0;
+datetime g_cached_position_open_time = 0;
+datetime g_cached_position_exit_day = 0;
 
 datetime DateFloor(const datetime value)
   {
@@ -267,11 +269,11 @@ bool GetOurPosition(datetime &open_time)
 
 void RefreshMedianSpread()
   {
-   const datetime d1 = iTime(_Symbol, PERIOD_D1, 0);
-   if(d1 <= 0 || d1 == g_last_spread_d1_bar)
+   const int d1_key = QM_CalendarPeriodKey(PERIOD_D1);
+   if(d1_key <= 0 || d1_key == g_last_spread_d1_key)
       return;
 
-   g_last_spread_d1_bar = d1;
+   g_last_spread_d1_key = d1_key;
    g_cached_median_spread = 0.0;
 
    const int lookback = MathMax(1, strategy_spread_lookback);
@@ -281,10 +283,11 @@ void RefreshMedianSpread()
    for(int shift = 1; shift <= lookback; ++shift)
      {
       const int spread_points = iSpread(_Symbol, PERIOD_D1, shift);
-      if(spread_points <= 0)
-         continue;
-      values[samples] = (double)spread_points;
-      samples++;
+      if(spread_points > 0)
+        {
+         values[samples] = (double)spread_points;
+         samples++;
+        }
      }
 
    if(samples <= 0)
@@ -302,7 +305,26 @@ void RefreshMedianSpread()
 bool HasRequiredD1History()
   {
    const int required = MathMax(1, strategy_required_d1_bars);
-   return (Bars(_Symbol, PERIOD_D1) > required && iTime(_Symbol, PERIOD_D1, required) > 0);
+   return (QM_CalendarPeriodKey(PERIOD_D1, _Symbol, required) > 0);
+  }
+
+bool CachePositionExitDay(const datetime open_time)
+  {
+   if(open_time <= 0)
+      return false;
+
+   if(open_time == g_cached_position_open_time)
+      return (g_cached_position_exit_day > 0);
+
+   g_cached_position_open_time = open_time;
+   g_cached_position_exit_day = 0;
+
+   const datetime holiday = FirstConfiguredHolidayAfter(open_time);
+   if(holiday <= 0)
+      return false;
+
+   g_cached_position_exit_day = AddTradingDays(holiday, -1);
+   return (g_cached_position_exit_day > 0);
   }
 
 bool SpreadAllowsNewEntry()
@@ -342,7 +364,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(_Period != PERIOD_D1)
       return false;
 
-   const datetime current_d1 = iTime(_Symbol, PERIOD_D1, 0);
+   const datetime current_d1 = DateFloor(TimeCurrent());
    if(current_d1 <= 0 || current_d1 == g_last_entry_d1_bar)
       return false;
 
@@ -391,20 +413,25 @@ void Strategy_ManageOpenPosition()
 // Trade Close
 bool Strategy_ExitSignal()
   {
-   const datetime current_d1 = iTime(_Symbol, PERIOD_D1, 0);
+   const datetime current_d1 = DateFloor(TimeCurrent());
    if(current_d1 <= 0 || current_d1 == g_last_exit_d1_bar)
       return false;
 
    datetime open_time = 0;
    if(!GetOurPosition(open_time))
+     {
+      g_cached_position_open_time = 0;
+      g_cached_position_exit_day = 0;
+      return false;
+     }
+
+   // Holiday resolution is deliberately cached once per position.  The old
+   // path rebuilt the full holiday calendar on every real tick throughout a
+   // multi-day hold, which made the 10-year Q02 run hit METATESTER_HUNG.
+   if(!CachePositionExitDay(open_time))
       return false;
 
-   const datetime holiday = FirstConfiguredHolidayAfter(open_time);
-   if(holiday <= 0)
-      return false;
-
-   const datetime exit_day = AddTradingDays(holiday, -1);
-   if(exit_day <= 0 || !SameDate(current_d1, exit_day))
+   if(!SameDate(current_d1, g_cached_position_exit_day))
       return false;
 
    if(!IsNearD1SessionClose(current_d1))
@@ -447,11 +474,6 @@ void OnTick()
    if(!QM_KillSwitchCheck())
       return;
 
-   const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -473,6 +495,14 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
         }
      }
+
+   // News blackout gates entries only.  Position management and mandatory
+   // holiday exits must continue while the entry blackout is active.
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   if(!QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode))
+      return;
 
    if(!QM_IsNewBar())
       return;

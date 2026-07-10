@@ -3,20 +3,26 @@
 ; ea_id:        1168
 ; ea_slug:      qp-oil-preholiday
 ; ea_version:   v5.0
-; set_version:  s20260518-001
+; set_version:  s20260710-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   31bfc186fc87bf023e3c7b34ea531a0572958a4cb455047ef6f8306169f9233f
+; build_hash:   b1b9f894fd5f3e56fa4a24e9d23f3ea59cb7b0f590d15c6bfda91c7363685662
 ; author:       Development
-; date:         2026-05-18
+; date:         2026-07-10
 ;==========================================================
+qm_ea_id=1168
 qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_1168_qp-oil-preholiday.md
+strategy_atr_period=20
+strategy_atr_stop_mult=2.5
+strategy_spread_median_mult=3.0
+strategy_spread_lookback=20
+strategy_required_d1_bars=60
