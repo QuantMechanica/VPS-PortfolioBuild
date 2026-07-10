@@ -1,0 +1,82 @@
+{
+  "mission_unit": "priority_2_diverse_fx_q03_stale_ex5_repair_requeue",
+  "timestamp_utc": "2026-07-10T01:11:08.142501+00:00",
+  "agent": "codex-agents-board-advisor",
+  "branch": "agents/board-advisor",
+  "claim": {
+    "task_key": "manual:codex:agents/board-advisor:QM5_10516:q03-stale-ex5-requeue",
+    "acquired_at_utc": "2026-07-10T01:08:15.007066+00:00",
+    "expires_at_utc": "2026-07-10T04:08:15.007066+00:00"
+  },
+  "ea": {
+    "ea_id": "QM5_10516",
+    "label": "QM5_10516_mql5-sar-rsi",
+    "instrument_class": "forex",
+    "symbol": "GBPUSD.DWX",
+    "timeframe": "M30",
+    "source": "Vladimir Karputov / barabashkakvn, SAR RSI MTS, MQL5 CodeBase (2018-03-01)",
+    "source_url": "https://www.mql5.com/en/code/19940",
+    "g0_status": "APPROVED",
+    "risk_mode": "RISK_FIXED",
+    "ml_used": false
+  },
+  "upstream_evidence": {
+    "q02_pass_rows": 5,
+    "q02_latest_real_result": "PASS",
+    "q02_reference": "docs/ops/evidence/treasure_hunt_false_fails_2026-07-03.md",
+    "q02_reference_metrics": "PF 1.14, 24 trades on GBPUSD.DWX"
+  },
+  "prior_q03_infra": {
+    "work_item_id": "034d008d-c86a-4ec1-afb2-67f2cfa3a8c0",
+    "status": "done",
+    "verdict": "INFRA_FAIL",
+    "reason": "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS",
+    "evidence_path": "D:/QM/reports/work_items/034d008d-c86a-4ec1-afb2-67f2cfa3a8c0/QM5_10516/20260611_215748/summary.json",
+    "diagnosis": "The retained ONINIT evidence was produced before the resolver-aware rebuild; the later 2026-06-21 queue retry retained that old evidence. The recovery register classifies this as a stale-binary race, not a strategy verdict."
+  },
+  "repair": {
+    "magic_registry_rows_verified": [
+      105160000,
+      105160001,
+      105160002,
+      105160003
+    ],
+    "magic_resolver_regeneration": "CLEAN_NO_DIFF",
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260710_010859.json"
+    },
+    "compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260710_010919/QM5_10516_mql5-sar-rsi.compile.log",
+      "old_ex5_sha256": "88D9F89B712C83CEC3827982EBC5EB42DDC14882C0B5FC8618AFF7F6086B8633",
+      "new_ex5_sha256": "1C210834F0B85DD16919250EDD3CDB31979AE09E260A2DD6409ACE8BC7AC38F7",
+      "artifact_commit": "9f4b24d19"
+    }
+  },
+  "requeue": {
+    "action": "reset_existing_q03_work_item_to_pending",
+    "rows_updated": 1,
+    "database_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_10516_q03_requeue_20260710T011108Z.sqlite",
+    "conditional_guard": "id matches, status=done, verdict=INFRA_FAIL, claimed_by IS NULL, upstream Q02 PASS exists, no open duplicate",
+    "status_after": "pending",
+    "verdict_after": null,
+    "attempt_count_after": 0,
+    "claimed_by_after": null,
+    "open_same_key_after": 1,
+    "duplicate_row_inserted": false,
+    "priority_track": true
+  },
+  "safety": {
+    "manual_backtest_started": false,
+    "backtest_cpu_added": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
