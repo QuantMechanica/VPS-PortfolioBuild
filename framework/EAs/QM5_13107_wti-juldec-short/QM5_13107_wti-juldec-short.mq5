@@ -62,7 +62,20 @@ int Strategy_WeekKey(const datetime value)
 
    MqlDateTime parts;
    TimeToStruct(value, parts);
-   return parts.year * 100 + (parts.day_of_year / 7);
+   // Anchor the bucket to broker-calendar Monday. A raw day_of_year/7 bucket
+   // changes every seventh day from Jan 1, which is not necessarily Monday
+   // and can misclassify the actual first tradable bar of a week.
+   const int days_since_monday = (parts.day_of_week + 6) % 7;
+   parts.hour = 12; // noon keeps the date stable across broker DST changes
+   parts.min = 0;
+   parts.sec = 0;
+   const datetime monday_noon = StructToTime(parts) - days_since_monday * 86400;
+   if(monday_noon <= 0)
+      return 0;
+
+   MqlDateTime monday;
+   TimeToStruct(monday_noon, monday);
+   return monday.year * 1000 + monday.day_of_year;
   }
 
 bool Strategy_IsFirstTradingBarOfWeek()

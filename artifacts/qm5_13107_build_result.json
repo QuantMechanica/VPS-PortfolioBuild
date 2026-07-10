@@ -1,0 +1,159 @@
+{
+  "task_id": "e7238fa6-98db-4a4c-a5cc-3f80aaa9a363",
+  "ea_id": "QM5_13107",
+  "ea_label": "QM5_13107_wti-juldec-short",
+  "slug": "wti-juldec-short",
+  "strategy": "XTIUSD.DWX D1 July-to-December trading-time seasonal short",
+  "strategy_id": "EWALD-WTI-TRDTIME-2022_S01",
+  "source_id": "EWALD-WTI-TRDTIME-2022",
+  "source_links": [
+    "https://doi.org/10.1016/j.eneco.2022.106324",
+    "https://eprints.gla.ac.uk/281581/1/281581.pdf"
+  ],
+  "symbols": [
+    "XTIUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XTIUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13107_XTI_JULDEC_SHORT_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13107_wti-juldec-short",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13107_wti-juldec-short\\QM5_13107_wti-juldec-short.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13107_wti-juldec-short\\QM5_13107_wti-juldec-short.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13107_wti-juldec-short\\SPEC.md",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13107_wti-juldec-short.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13107_wti-juldec-short_card.md",
+  "source_packet_path": "C:\\QM\\repo\\strategy-seeds\\sources\\EWALD-WTI-TRDTIME-2022\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13107_wti-juldec-short\\sets\\QM5_13107_wti-juldec-short_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 131070000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 131070000,
+      "registry_status": "active"
+    }
+  ],
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Backtest CPU ceiling / paced-fleet guard: five factory terminals were actively backtesting and seven terminal-worker wrappers were present at 2026-07-10T06:12:57+02:00; no manual MT5 run was launched while factory automation was live.",
+  "blocked_reason": "",
+  "compile": {
+    "status": "PASS",
+    "warnings": 0,
+    "errors": 0,
+    "reason_class": "OK",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260710_041600\\QM5_13107_wti-juldec-short.compile.log",
+    "summary_csv": "D:\\QM\\reports\\compile\\20260710_041600\\summary.csv",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13107_wti-juldec-short/QM5_13107_wti-juldec-short.mq5 -Strict"
+  },
+  "build_check": {
+    "status": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260710_041607.json",
+    "setfile_build_hash": "c6d71e054623e31daa6774ebe455007420e14a2b6c9fe940097e8c63d9ae732e",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13107_wti-juldec-short -RepoRoot C:/QM/repo -SkipCompile"
+  },
+  "validations": {
+    "dedup": {
+      "status": "CLEAN",
+      "command": "python framework/scripts/research_dedup_check.py check --slug wti-juldec-short --strategy-id EWALD-WTI-TRDTIME-2022_S01 --author 'Ewald Haugom Lien Stordal Wu' --mechanic 'WTI trading-time seasonality short July close December'"
+    },
+    "spec_doc": {
+      "status": "PASS",
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13107_wti-juldec-short"
+    },
+    "card_schema": {
+      "status": "PASS",
+      "command": "python framework/scripts/skill_card_schema_lint.py --card strategy-seeds/cards/approved/QM5_13107_wti-juldec-short_card.md"
+    },
+    "symbol_scope": {
+      "status": "PASS",
+      "verdict": "SINGLE_SYMBOL_OK",
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_13107_wti-juldec-short --json"
+    },
+    "magic_registry": {
+      "status": "PASS_WITH_PREEXISTING_WARNINGS",
+      "slots": [
+        0
+      ],
+      "resolver_rows_kept": 14771,
+      "pre_existing_missing_ea_dir_warnings": [
+        1001,
+        1015,
+        1016
+      ],
+      "resolver_sha_prefix": "048D60F00E9217B3"
+    },
+    "risk_mode": {
+      "status": "PASS",
+      "backtest_uses_risk_fixed": true,
+      "risk_percent_zero": true,
+      "portfolio_weight": 1
+    },
+    "build_guardrails": {
+      "status": "PASS",
+      "ml_forbidden": "PASS",
+      "external_runtime_data": "PASS",
+      "setfile_schema": "PASS",
+      "friday_close_enabled": true
+    }
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "manual_backtest_cpu_used": false
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "0251f2ca-5a43-4ebf-9b25-f4f4ab910996",
+    "status_at_handoff": "pending",
+    "claimed_by": null,
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13107_wti-juldec-short\\sets\\QM5_13107_wti-juldec-short_XTIUSD.DWX_D1_backtest.set",
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "enqueued_at_utc": "2026-07-10T04:14:01+00:00",
+    "note": "Auto-enqueued by farmctl record-build. No manual dispatch or smoke while paced factory automation was active."
+  },
+  "file_hashes_sha256": {
+    "mq5": "69C8E1B8321BB0CC972D421432E27C2AA740FE78ED6D3C16D865F14B27488197",
+    "ex5": "4EDE9AE75E84633493CD86DE17BB99CF891116A064DE4A620D0A6C26AD5E7A94",
+    "spec": "3504D180268031A43299CE85C23067E45870060926D2491E0C68F372E6BD8341",
+    "setfile": "C2DCBECE9C828A1C8604E2E2C1CE2D6FB50A8A0BAE5D4C16FB4705CA583A562C",
+    "approved_card": "ECC416669782319DE908804AB1CA62D8763524B5993636A3D0F2DE74C5ADF446",
+    "source_packet": "B6D5EA44BEF6CAEFAD97BA630F9543170B9A952E01801CBFC8003BD55D524797"
+  }
+}
