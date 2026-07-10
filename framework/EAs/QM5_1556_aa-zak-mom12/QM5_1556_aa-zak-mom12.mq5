@@ -10,7 +10,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.0;
+input double RISK_PERCENT               = 0.0;   // live-deploy: RISK_PERCENT=0.3 (Q13 min-lot) to 0.5 (full live) per card §7; backtests use RISK_FIXED
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -33,7 +33,7 @@ input int    strategy_momentum_lookback_d1 = 252;   // 12-month proxy: 21 D1 bar
 input double strategy_momentum_trigger     = 100.0; // MT5 momentum ratio; >100 means positive 12m return
 input int    strategy_atr_period_d1        = 20;
 input double strategy_atr_sl_mult          = 3.0;
-input int    strategy_max_spread_points    = 0;     // 0 disables; .DWX modeled spread is often zero
+input int    strategy_max_spread_points    = 0;     // retained for parameter-table compatibility; spread guard uses 20-day median×2.5 instead
 input bool   strategy_first_d1_bar_only    = true;
 
 int g_last_entry_rebalance_key = 0;
@@ -62,25 +62,76 @@ bool Strategy_HasOpenPosition()
    return (QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0);
   }
 
-bool Strategy_SpreadAllowsEntry()
+// Compute median D1 spread (in points) over the last `lookback` completed D1 bars.
+// Returns 0 if insufficient data — callers treat 0 as "no cap available".
+int MedianSpreadD1(const string sym, const int lookback)
   {
-   if(strategy_max_spread_points <= 0)
-      return true;
+   if(lookback <= 0)
+      return 0;
 
-   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   if((ask == 0.0 && bid == 0.0) || ask < 0.0 || bid < 0.0 || point <= 0.0)
-      return false;
-   const double raw_spread = ask - bid;
-   if(raw_spread <= 0.0)
-      return true;
+   MqlRates rates[];
+   const int copied = CopyRates(sym, PERIOD_D1, 1, lookback, rates);
+   if(copied <= 0)
+      return 0;
 
-   const double spread_points = raw_spread / point;
-   return (spread_points <= (double)strategy_max_spread_points);
+   int spreads[];
+   ArrayResize(spreads, copied);
+   int n = 0;
+   for(int i = 0; i < copied; ++i)
+     {
+      if(rates[i].spread < 0)
+         continue;
+      spreads[n] = rates[i].spread;
+      n++;
+     }
+   if(n <= 0)
+      return 0;
+
+   // Insertion sort for small n (≤20 typical).
+   for(int i = 1; i < n; ++i)
+     {
+      const int key = spreads[i];
+      int j = i - 1;
+      while(j >= 0 && spreads[j] > key)
+        {
+         spreads[j + 1] = spreads[j];
+         j--;
+        }
+      spreads[j + 1] = key;
+     }
+
+   return spreads[n / 2];
   }
 
-// No Trade Filter (time, spread, news).
+// Spread guard: block only a genuinely wide spread (card: D1 spread > 2.5 × 20-day median).
+// Fail-OPEN on zero/negative spread — .DWX models ask==bid (0 spread).
+bool Strategy_SpreadAllowsEntry()
+  {
+   const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(ask <= 0.0 || bid <= 0.0)
+      return false;
+   if(!(ask > bid))
+      return true;   // zero or inverted spread — fail-open (.DWX invariant)
+
+   const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+   if(point <= 0.0)
+      return false;
+
+   const int current_spread = (int)MathRound((ask - bid) / point);
+   if(current_spread <= 0)
+      return true;   // fail-open
+
+   const int median_spread = MedianSpreadD1(_Symbol, 20);
+   if(median_spread <= 0)
+      return true;   // insufficient history — fail-open (.DWX invariant)
+
+   const int cap = (int)MathMax(1.0, MathRound(2.5 * median_spread));
+   return (current_spread <= cap);
+  }
+
+// No Trade Filter (timeframe, parameter bounds, minimum warmup bars).
+// Returns TRUE to block trading. Checked once per new D1 bar before any signal logic.
 bool Strategy_NoTradeFilter()
   {
    if((ENUM_TIMEFRAMES)_Period != PERIOD_D1)
@@ -89,6 +140,14 @@ bool Strategy_NoTradeFilter()
       return true;
    if(strategy_atr_period_d1 <= 0 || strategy_atr_sl_mult <= 0.0)
       return true;
+
+   // Card requires sufficient D1 history for the 12-month momentum lookback.
+   // Need at least momentum_lookback + atr_period + 2 completed D1 bars.
+   const int bars_needed = strategy_momentum_lookback_d1 + strategy_atr_period_d1 + 2;
+   const int bars_avail  = iBars(_Symbol, PERIOD_D1);
+   if(bars_avail < bars_needed)
+      return true;
+
    return false;
   }
 
@@ -144,7 +203,10 @@ bool Strategy_ExitSignal()
    g_last_exit_rebalance_key = month_key;
 
    const double momentum = Strategy_MomentumRatio();
-   return (momentum > 0.0 && momentum <= strategy_momentum_trigger);
+   if(momentum <= 0.0)
+      return false;   // indicator not ready / warmup — fail-open, do not force-exit
+   // Card: exit (go to cash) when the 12-month momentum ratio ≤ 100 (strategy_momentum_trigger).
+   return (momentum <= strategy_momentum_trigger);
   }
 
 // News Filter Hook (callable for P8 News Impact phase).

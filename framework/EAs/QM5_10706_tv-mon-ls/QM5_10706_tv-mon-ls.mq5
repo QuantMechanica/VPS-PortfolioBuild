@@ -27,7 +27,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.0;
+input double RISK_PERCENT               = 0.0;   // live-deploy: RISK_PERCENT=0.3–0.5% per card (Q13 burn-in: min-lot equivalent); backtests use RISK_FIXED
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -48,6 +48,7 @@ input double qm_stress_reject_probability = 0.0;
 input group "Strategy"
 // Monday box / sweep parameters — defaults are the source ("WolfWeb") defaults
 // per the strategy card mechanics section.
+input double strategy_spread_atr_mult   = 0.25;     // Spread guard: skip entry if spread > 0.25 * ATR(14,H1). Fail-open on zero spread (.DWX: ask==bid).
 input int    MondayBoxShiftHours        = 7;        // Logical day-boundary shift for the Monday box (source default 7h).
 input double LiqPct                     = 0.0002;   // Min penetration beyond the Monday level for a valid sweep.
 input double MaxWickPct                 = 0.0025;   // Max penetration — deeper = real breakout, skip.
@@ -197,6 +198,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // Confirmation candle must close back inside the Monday range.
    if(c1 > g_monday_high || c1 < g_monday_low)
       return false;
+
+   // Spread filter: skip entry if spread > strategy_spread_atr_mult * ATR(14, H1).
+   // Fail-open convention: never block on zero or negative spread (.DWX models ask==bid).
+   {
+      const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      if(ask > 0.0 && bid > 0.0 && ask > bid)
+        {
+         const double atr = QM_ATR(_Symbol, _Period, 14, 1);   // perf-allowed: structural H1 entry guard
+         if(atr > 0.0 && (ask - bid) > strategy_spread_atr_mult * atr)
+            return false;
+        }
+   }
 
    // SHORT — failed break above the Monday high.
    const double pen_up = (h2 - g_monday_high) / g_monday_high;
