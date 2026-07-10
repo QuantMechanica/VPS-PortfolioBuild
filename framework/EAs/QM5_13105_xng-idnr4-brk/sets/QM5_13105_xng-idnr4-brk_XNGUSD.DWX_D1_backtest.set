@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13105
 ; ea_slug:      xng-idnr4-brk
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING_BUILD_CHECK
+; build_hash:   1ac2df7a1a5dc255d17e7fa4480e92573a06d5b55dc2a90dc9e07c28b27fa3a7
 ; author:       Development
 ; date:         2026-07-10
 ;==========================================================

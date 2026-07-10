@@ -95,8 +95,7 @@ bool Strategy_LoadIdNr4State(double &setup_high,
    const int lookback = MathMax(4, strategy_nr_lookback);
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   // Evaluated only on a new D1 bar; all copied bars are completed.
-   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, lookback + 2, rates);
+   const int copied = CopyRates(_Symbol, PERIOD_D1, 1, lookback + 2, rates); // perf-allowed: caller runs only on a new D1 bar; copied bars are completed.
    if(copied < lookback + 1)
       return false;
 
