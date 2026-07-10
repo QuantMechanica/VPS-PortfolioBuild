@@ -1,0 +1,35 @@
+{
+  "ea_id": "QM5_13115",
+  "ea_label": "QM5_13115_energy-samecal",
+  "phase": "Q02",
+  "work_item_id": "43841062-306a-4f8a-9b2f-d9a513e6ed77",
+  "status_at_handoff": "pending",
+  "claimed_by": null,
+  "symbol": "QM5_13115_ENERGY_SAMECAL_D1",
+  "timeframe": "D1",
+  "host_symbol": "XTIUSD.DWX",
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13115_energy-samecal\\sets\\QM5_13115_energy-samecal_QM5_13115_ENERGY_SAMECAL_D1_D1_backtest.set",
+  "risk_payload": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "build_task_id": "ff26ecf6-23ab-4bbe-a06d-8bb7164eab9d",
+  "build_status": "done",
+  "compile_status": "PASS",
+  "build_check_status": "PASS",
+  "enqueued_at_utc": "2026-07-10T13:24:15+00:00",
+  "dispatch_started": false,
+  "manual_backtest_started": false,
+  "cpu_ceiling_observation": "T1, T2, T3, T4, and T8 were already active on path-anchored Q02 work at 2026-07-10T13:21:05+00:00.",
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
