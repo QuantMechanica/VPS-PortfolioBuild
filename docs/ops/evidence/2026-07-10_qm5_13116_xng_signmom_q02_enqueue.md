@@ -14,6 +14,8 @@ and enqueued to Q02 on `XNGUSD.DWX` D1.
 - Build task: `0d5c807a-471e-4b8f-b846-230d2f804b95`, `done`
 - Strict compile: `PASS`, 0 errors, 0 warnings
 - Build check: `PASS`, 0 failures, 0 warnings
+- Codex mechanical-review rework: framework calendar helper and canonical
+  runtime build-result findings corrected; recompile/recheck remain clean
 - Magic: slot 0, `131160000`, resolver verified
 - Risk: `RISK_FIXED=1000`, `RISK_PERCENT=0`, `PORTFOLIO_WEIGHT=1`
 
@@ -46,10 +48,10 @@ risks; no source result is treated as V5 evidence.
 ## Validation Evidence
 
 - Compile log:
-  `framework/build/compile/20260710_142810/QM5_13116_xng-signmom.compile.log`
-- Compile summary: `D:/QM/reports/compile/20260710_142810/summary.csv`
+  `framework/build/compile/20260710_143759/QM5_13116_xng-signmom.compile.log`
+- Compile summary: `D:/QM/reports/compile/20260710_143759/summary.csv`
 - Build check report:
-  `D:/QM/reports/framework/21/build_check_20260710_142824.json`
+  `D:/QM/reports/framework/21/build_check_20260710_143808.json`
 - Machine build record: `artifacts/qm5_13116_build_result.json`
 - Queue record: `artifacts/qm5_13116_q02_enqueue_20260710.json`
 

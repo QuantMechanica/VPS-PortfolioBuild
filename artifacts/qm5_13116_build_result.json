@@ -52,16 +52,16 @@
     "warnings": 0,
     "errors": 0,
     "reason_class": "OK",
-    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260710_142810\\QM5_13116_xng-signmom.compile.log",
-    "summary_csv": "D:\\QM\\reports\\compile\\20260710_142810\\summary.csv",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260710_143759\\QM5_13116_xng-signmom.compile.log",
+    "summary_csv": "D:\\QM\\reports\\compile\\20260710_143759\\summary.csv",
     "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13116_xng-signmom/QM5_13116_xng-signmom.mq5 -Strict"
   },
   "build_check": {
     "status": "PASS",
     "failures": 0,
     "warnings": 0,
-    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260710_142824.json",
-    "setfile_build_hash": "37b4eec40bc475c7c7e4c1fc9e3c2cb9989e25021eb0dfe84abce8bdf660f496",
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260710_143808.json",
+    "setfile_build_hash": "97e74cf736bd8cf7b2ef65d163e61678a0458b510ee4aba674147a9dbe04e2bc",
     "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13116_xng-signmom -RepoRoot C:/QM/repo -SkipCompile"
   },
   "validations": {
@@ -109,6 +109,11 @@
       "setfile_schema": "PASS",
       "friday_close_enabled": false,
       "friday_close_exception": "Source-aligned one-month holding period; next-month renewal, 35-day stale exit, kill switch, and frozen ATR broker stop remain active."
+    },
+    "codex_review_rework": {
+      "status": "PASS",
+      "finding_1": "Monthly cadence and de-duplication now use QM_CalendarPeriodKey(PERIOD_MN1); no EA-owned iTime calendar key remains.",
+      "finding_2": "The canonical runtime build result is materialized at D:/QM/strategy_farm/artifacts/builds/0d5c807a-471e-4b8f-b846-230d2f804b95.json."
     }
   },
   "risk_mode": {
@@ -136,10 +141,10 @@
     "manual_backtest_cpu_used": false
   },
   "file_hashes_sha256": {
-    "mq5": "9041DFD565EBDBC9CEC5913F0E3A539AC5548286EBDF078AD214FD57BCBD1770",
-    "ex5": "43F1C081F480E99CD681353AD34FE3E323D1936C2185B652704109CEE8F8D9FF",
-    "spec": "D49AA7C3FD4533AA07A4A9EDD66BDA1EF65EFD03F613100D428ABF86169D063F",
-    "setfile": "77A7486C0054D5298F97AA32CFE8CC5F52B89FCD1A924822EB08C1C7FE264C18",
+    "mq5": "CC549FF3DDCA8FA06829454B5E356F2649FF91D17A9C2FCEB2DF23CFED497262",
+    "ex5": "30147AAE89F5E06FFC403FE71C501E1C8FEBE2DDB394B5ED97250707A3A55455",
+    "spec": "F068F6A087335BD971FF18FA6926B5F42E218E5943E92269CE6ADE06B6ADD97F",
+    "setfile": "F98593210A226D4028BAE884B90ADA2EFE25CF1307E953371A1296A50C008254",
     "canonical_card": "E97F5DFF194A1A5350ECD27E2742AF8EE362CF6B3B3577FD97267AA0A7E40D66",
     "approved_card": "5E9187ACDFF4FBFA615C474C409A1EA7C5A372BCC98D9D4E924832749264878D",
     "approved_farm_card": "5ACAF445CB8D49F870640CC452E1F4E9739452D9B06CB921619371AA1AB3A5B3",
