@@ -41,13 +41,29 @@ half-life. The small hedge is an explicit directional-risk caveat.
 - GBPUSD.DWX: USD tester conversion/history dependency only; never traded.
 - All other symbols are out of scope.
 
-## 4. Timeframe And Cadence
+## 4. Timeframe
 
 - D1 base timeframe, evaluated once per closed host bar.
+
+## 5. Expected Behaviour
+
 - Expected 3-5 logical packages per year.
 - Expected holding period is weeks to months; Friday close remains enabled.
+- Expected drawdown is high because the fixed hedge is small and the measured
+  half-life is long.
+- Q02/Q04 must determine whether the residual survives real spread, conversion,
+  commission, and swap costs.
 
-## 5. Risk Model
+## 6. Source Citation
+
+Single lineage source:
+`docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md`.
+
+Reproduction uses `framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py`
+on `D:/QM/mt5/T_Export/MQL5/Files` with the positive-hedge exclusion removed so
+all 66 pair orientations remain in the ranked result.
+
+## 7. Risk Model
 
 | Phase | Risk mode | Value |
 |---|---|---|
@@ -58,18 +74,8 @@ The Q02 manifest pins tester currency to USD and deposit to 100,000. The
 logical setfile has `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 `PORTFOLIO_WEIGHT=1`.
 
-## 6. Source And Reproduction
-
-Single lineage source:
-`docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md`.
-
-Reproduction uses `framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py`
-on `D:/QM/mt5/T_Export/MQL5/Files` with the positive-hedge exclusion removed so
-all 66 pair orientations remain in the ranked result.
-
 ## Revision History
 
 | Version | Date | Reason |
 |---|---|---|
 | v1 | 2026-07-10 | Initial all-sign 66-pair strict-survivor basket build |
-

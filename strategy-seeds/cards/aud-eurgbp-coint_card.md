@@ -72,6 +72,15 @@ exposure even though it is regression-neutral at the spread level. That is an
 explicit risk, not hidden evidence of diversification; Q02-Q09 must reject it
 if realized behavior is directional or duplicates the book.
 
+## Hypothesis
+
+The fixed DEV spread captures a slow relative-risk equilibrium between
+Antipodean/USD pressure and the EUR/GBP cross. A two-standard-deviation
+departure is expected to mean-revert slowly enough for D1 execution costs to
+remain subordinate to the spread move. The 112.50-day half-life and small hedge
+make that claim fragile, so no additional regime filter or fitted parameter is
+introduced before the standard gates judge it.
+
 ## Markets And Timeframe
 
 - Host symbol: AUDUSD.DWX.
@@ -80,6 +89,12 @@ if realized behavior is directional or duplicates the book.
 - Logical symbol: QM5_13106_AUDUSD_EURGBP_COINTEGRATION_D1.
 - Period: D1.
 - Backtest risk mode: RISK_FIXED.
+
+## Rules
+
+All signals use closed D1 data, one fixed pair, one fixed beta, and one logical
+package. Entry, exit, hard-stop, orphan cleanup, and risk allocation are fully
+deterministic.
 
 ## Entry Rules
 
@@ -144,6 +159,8 @@ standard gates.
 - scalping: false.
 - ml_required: false.
 
+## Risk
+
 Backtests use `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 `PORTFOLIO_WEIGHT=1`. No live risk or deployment is authorized by this card.
 
@@ -166,4 +183,3 @@ Backtests use `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-10 | initial all-sign 66-pair strict-survivor basket | G0 | APPROVED |
-
