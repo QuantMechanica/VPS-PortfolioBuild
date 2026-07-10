@@ -3,32 +3,29 @@
 ; ea_id:        11912
 ; ea_slug:      cheng-triangle-2touch-second-break-h1
 ; ea_version:   v5.0
-; set_version:  s20260620-001
+; set_version:  s20260710-001
 ; symbol:       AUDJPY.DWX
 ; timeframe:    H1
 ; environment:  backtest
-; magic_slot:   0
+; magic_slot:   9
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   6fabdc65698951214badf265364adf92996fe17ce31dbdaaca33c8a757d5ca3d
 ; author:       Development
-; date:         2026-06-20
+; date:         2026-07-10
 ;==========================================================
-qm_magic_slot_offset=0
+qm_ea_id=11912
+qm_magic_slot_offset=9
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_11912_cheng-triangle-2touch-second-break-h1.md
+strategy_zigzag_depth=8
+strategy_zigzag_deviation=8
+strategy_zigzag_backstep=3
+strategy_triangle_min_bars=30
+strategy_triangle_max_bars=200
+strategy_entry_buffer_pips=10.0
+strategy_stop_buffer_pips=10.0
+strategy_time_stop_bars=240
