@@ -1,0 +1,73 @@
+{
+  "artifact_type": "fx_cointegration_q02_history_scope_repair",
+  "recorded_at_utc": "2026-07-10T19:02:37Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_13117",
+  "slug": "eurgbp-audjpy",
+  "logical_symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+  "defect": {
+    "class": "PREEMPTIVE_NO_HISTORY_REPAIR",
+    "description": "basket_manifest.json declared GBPUSD.DWX and USDJPY.DWX as USD tester conversion histories, but Strategy_EnsureBasketScope selected and warmed only EURGBP.DWX and AUDJPY.DWX",
+    "reference_pattern": "QM5_12533 warms traded and conversion symbols in one basket scope"
+  },
+  "repair": {
+    "traded_symbols": [
+      "EURGBP.DWX",
+      "AUDJPY.DWX"
+    ],
+    "conversion_history_symbols": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "scope_symbol_count_before": 2,
+    "scope_symbol_count_after": 4,
+    "strategy_logic_changed": false,
+    "risk_logic_changed": false
+  },
+  "verification": {
+    "strict_compile": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "compile_log": "framework/build/compile/20260710_190137/QM5_13117_eurgbp-audjpy.compile.log",
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260710_190152.json",
+    "symbol_scope": "BASKET_OK",
+    "symbol_scope_violations": 0,
+    "mq5_sha256": "0bace7dae33dbfa9e76418c338df7dfcafbfed6adcbe00d0871d43be5d881597",
+    "ex5_sha256": "477530fc2c9d1ce5b8b8b321e6b0e68f746735b4f6e4d4205f370aa68d881d9d",
+    "setfile_sha256": "383c1b2e43b0700aaf8a8f6307c62503da3bc41597f2ea20229d1ba715530ebc"
+  },
+  "risk_contract": {
+    "environment": "backtest",
+    "risk_mode": "RISK_FIXED",
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "queue": {
+    "work_item_id": "ed75430e-2ff4-4ea1-9d50-e49a7912d323",
+    "phase": "Q02",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "priority_track": true,
+    "duplicate_rows_created": 0
+  },
+  "factory_state": {
+    "active_work_items": 4,
+    "factory_off_flag_present": true,
+    "dispatch_invoked": false,
+    "manual_backtest_started": false
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  }
+}

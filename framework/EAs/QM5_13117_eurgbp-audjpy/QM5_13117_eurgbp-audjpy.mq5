@@ -78,8 +78,11 @@ bool Strategy_EnsureBasketScope()
    if(g_basket_scope_ready)
       return true;
 
-   string allowed[2] = {"EURGBP.DWX", "AUDJPY.DWX"};
-   for(int i = 0; i < 2; ++i)
+   // Both traded legs settle outside the USD tester currency. Keep the
+   // manifest-declared GBP/USD and JPY/USD conversion histories in the same
+   // warmup scope so valuation is available before the first package entry.
+   string allowed[4] = {"EURGBP.DWX", "AUDJPY.DWX", "GBPUSD.DWX", "USDJPY.DWX"};
+   for(int i = 0; i < 4; ++i)
       SymbolSelect(allowed[i], true);
 
    QM_SymbolGuardInit(allowed);
@@ -455,4 +458,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
