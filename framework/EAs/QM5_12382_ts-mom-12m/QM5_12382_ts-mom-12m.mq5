@@ -81,23 +81,14 @@ input double strategy_atr_stop_mult        = 3.0;
 input int    strategy_min_warmup_bars      = 260;
 input double strategy_portfolio_stop_r     = 6.0;
 
-int MonthKeyFromTime(const datetime t)
-  {
-   MqlDateTime dt;
-   TimeToStruct(t, dt);
-   return dt.year * 100 + dt.mon;
-  }
-
 bool IsD1CalendarMonthBoundary()
   {
-   MqlRates rates[];
-   ArrayResize(rates, 2);
-   ArraySetAsSeries(rates, true);
-   if(CopyRates(_Symbol, PERIOD_D1, 0, 2, rates) != 2) // perf-allowed: called only after the framework QM_IsNewBar(_Symbol, PERIOD_D1) gate in OnTick.
-      return false;
-   if(rates[0].time <= 0 || rates[1].time <= 0)
-      return false;
-   return MonthKeyFromTime(rates[0].time) != MonthKeyFromTime(rates[1].time);
+   // Use the framework calendar key instead of a local iTime/CopyRates month
+   // detector.  The helper derives MN1 cadence from reliable D1 bars, so it
+   // remains tester-safe on .DWX symbols where native MN1 bars are absent.
+   const int current_month = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   const int prior_month   = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 1);
+   return current_month > 0 && prior_month > 0 && current_month != prior_month;
   }
 
 bool LoadD1Closes(const int required_bars, double &closes[])
@@ -319,6 +310,17 @@ void Strategy_ManageOpenPosition()
          return;
         }
      }
+  }
+
+// The source changes direction only at the monthly rebalance. Keep that
+// expensive 252-bar signal calculation out of the per-tick management hook,
+// while the fixed-risk emergency stop above remains live on every tick.
+void ManageMonthlyRebalance()
+  {
+   ENUM_POSITION_TYPE ptype;
+   ulong ticket = 0;
+   if(!GetOurPosition(ptype, ticket))
+      return;
 
    double momentum_return = 0.0;
    double annualized_vol = 0.0;
@@ -393,38 +395,15 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-   // FW1 — 2-axis check. Falls through to legacy `qm_news_mode_legacy` only
-   // when both new axes are at their OFF defaults.
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
    if(QM_FrameworkHandleFridayClose())
       return;
 
    if(Strategy_NoTradeFilter())
       return;
 
-   // Per-closed-D1-bar: monthly rebalance logic is evaluated only after the
-   // framework gate consumes the new daily bar event.
-   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
-      return;
-
-   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
-   // since last tick. Cheap: most calls early-return on same-day check.
-   QM_EquityStreamOnNewBar();
-
-   if(!IsD1CalendarMonthBoundary())
-      return;
-
+   // Risk management stays live on every tick, including news windows.
    Strategy_ManageOpenPosition();
 
-   // Monthly discretionary exit (e.g. time stop). Separate from SL/TP.
    if(Strategy_ExitSignal())
      {
       const int magic = QM_FrameworkMagic();
@@ -439,7 +418,35 @@ void OnTick()
         }
      }
 
+   // Per-closed-D1-bar: monthly rebalance logic is evaluated only after the
+   // framework gate consumes the new daily bar event.
+   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
+      return;
+
+   // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled
+   // since last tick. Cheap: most calls early-return on same-day check.
+   QM_EquityStreamOnNewBar();
+
+   if(!IsD1CalendarMonthBoundary())
+      return;
+
+   // Monthly sign-reversal exits also remain active through news windows.
+   ManageMonthlyRebalance();
+
+   // News gates block new entries only; they never suspend stop or rebalance
+   // exits (binding 2026-07-02 OnTick ordering rule).
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

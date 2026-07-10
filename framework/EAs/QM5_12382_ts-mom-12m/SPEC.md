@@ -4,13 +4,13 @@
 **Slug:** `ts-mom-12m`
 **Source:** `b7832a20-938e-5f24-b9d7-e0b2ab63b623` (see approved card)
 **Author of this spec:** Codex
-**Last revised:** 2026-06-18
+**Last revised:** 2026-07-10
 
 ---
 
 ## 1. Strategy Logic
 
-On the first tradable D1 bar of each calendar month, the EA compares the most recent closed D1 close with the close 252 D1 bars earlier. A positive 12-month return opens or keeps a long position; a negative 12-month return opens or keeps a short position. The signal is ignored when 60-day annualized volatility cannot be computed. Existing positions are reviewed monthly and closed when the sign reverses or the volatility calculation becomes invalid.
+On the first tradable D1 bar of each calendar month, the EA compares the most recent closed D1 close with the close 252 D1 bars earlier. A positive 12-month return opens or keeps a long position; a negative 12-month return opens or keeps a short position. The signal is ignored when 60-day annualized volatility cannot be computed. Existing positions are reviewed monthly and closed when the sign reverses or the volatility calculation becomes invalid; the fixed-risk emergency stop remains active on every tick, including news windows.
 
 ---
 
@@ -100,3 +100,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | 325477c2-b3fe-4ae8-b628-725238c2d90f |
+| v2 | 2026-07-10 | Q02 infrastructure recovery | Current resolver rebuild; framework calendar cadence; news-safe risk and monthly exits |

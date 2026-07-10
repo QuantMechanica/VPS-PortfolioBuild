@@ -48,9 +48,12 @@ long   g_qm_sim_closed_deals     = 0;
 
 // Q08 (Davey) per-trade stream. The framework previously emitted closing-deal data
 // only on kill-switch divergence, so Q08's load_trades_from_log() found ZERO trades.
-// Accumulate one TRADE_CLOSED JSON line per closing deal and dump to Common\Files at
-// shutdown so the Q08 aggregator (and any robustness gate) can read real per-trade P&L.
+// Accumulate TRADE_CLOSED JSON lines and flush to Common\Files INCREMENTALLY (bounded
+// buffer) so the Q08 aggregator can read real per-trade P&L without OOMing the tester on
+// high-trade EAs. 2026-07-10 fix: the line-631 unbounded `+=` string grew until MT5 logged
+// "out of memory in 'QM_Common.mqh' (631,23)" (QM5_11476, 1968 trades) and emitted 0 rows.
 string g_qm_q08_trade_log = "";
+bool   g_qm_q08_stream_started = false;  // false => truncate file on the first flush this run
 
 CTrade g_qm_fw_trade;
 
@@ -119,6 +122,7 @@ bool QM_FrameworkInit(const int ea_id,
    if(g_qm_fw_magic <= 0)
       return false;
    g_qm_q08_trade_log = "";
+   g_qm_q08_stream_started = false;
    ArrayResize(g_qm_q08_mae_states, 0);
 
    const string slug = QM_FrameworkSlug(ea_id);
@@ -632,6 +636,10 @@ void QM_FrameworkOnTradeTransaction(const MqlTradeTransaction &trans,
       "{\"event\":\"TRADE_CLOSED\",\"time\":%I64d,\"entry_time\":%I64d,\"mae_acct\":%.2f,\"net\":%.2f,\"profit\":%.2f,\"swap\":%.2f,\"commission\":%.2f,\"volume\":%.2f,\"notional\":%.2f,\"symbol\":\"%s\"}\r\n",
       q08_t, (long)q08_entry_time, q08_mae_acct, net, profit, swap, commission, q08_vol, q08_notional, QM_LoggerEscapeJson(q08_symbol));
    QM_FrameworkMaeRemoveIndex(QM_FrameworkMaeFind(q08_position_id));
+   // Bounded emission: flush to file once the buffer grows past ~32 KB so the in-memory
+   // string never accumulates a whole high-trade backtest (2026-07-10 OOM fix).
+   if(StringLen(g_qm_q08_trade_log) >= 32768)
+      QM_FrameworkQ08Flush();
 
    // Q04 EA-side simulated commission: accumulate a PF-net that reflects a worst-case
    // USD/lot round-trip charge the tester does not apply to custom symbols. Charged once
