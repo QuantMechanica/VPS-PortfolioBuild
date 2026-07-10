@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13119
 ; ea_slug:      usdjpy-euraud
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING_REFRESH
+; build_hash:   97d07fb28bc33e11b4dfceda5f8914006756ab7af00e9eb84dc26ba562b22f80
 ; author:       Development
 ; date:         2026-07-10
 ;==========================================================
