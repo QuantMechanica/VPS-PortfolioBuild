@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13112
 ; ea_slug:      xti-levbrk
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   TBD_BY_BUILD_CHECK
+; build_hash:   dfe8c1ee52f1b3c46adce367b80d3660d4cd2699bf2ba381705f917bcc1e85e2
 ; author:       Development
 ; date:         2026-07-10
 ;==========================================================
