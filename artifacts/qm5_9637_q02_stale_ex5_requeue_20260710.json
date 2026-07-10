@@ -75,6 +75,10 @@
     "status_after": "pending",
     "verdict_after": null,
     "attempt_count_after": 0,
+    "effective_min_trades_before": 36,
+    "effective_min_trades_after": 40,
+    "q02_frequency_floor_trades_per_year": 5,
+    "q02_frequency_floor_window_years": 8,
     "claimed_by_after": null,
     "open_same_ea_phase_after": 1,
     "priority_track": true
