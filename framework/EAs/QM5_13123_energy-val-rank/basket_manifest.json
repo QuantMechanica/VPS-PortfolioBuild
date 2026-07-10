@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_13123_ENERGY_VALUE_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Market-neutral monthly XTI/XNG long-horizon value package from approved card AMP-VALUE-2013_XTI_XNG_S01. Run on XTIUSD.DWX D1; rank synchronized log(mean completed month-end close at 54 through 66 months / latest completed month-end close), buy the higher-value leg, and sell the lower-value leg. Q02 must evaluate the logical basket, not standalone legs."
+  ]
+}

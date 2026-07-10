@@ -1,0 +1,51 @@
+{
+  "task_id": "b74b448b-22ce-4a92-9574-4216f6847f52",
+  "ea_id": "QM5_13123",
+  "ea_label": "QM5_13123_energy-val-rank",
+  "slug": "energy-val-rank",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13123_energy-val-rank.md",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13123_energy-val-rank",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13123_energy-val-rank\\QM5_13123_energy-val-rank.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13123_energy-val-rank\\QM5_13123_energy-val-rank.ex5",
+  "mq5_sha256": "bd1da501f08c870147f278263630a7f7baac20f26092789419718f5255e7218b",
+  "ex5_sha256": "0560a992ab3002916d6751f6d92bc32cdd9ca1d6557a030f7308a445088580f0",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260710_195628\\QM5_13123_energy-val-rank.compile.log",
+  "compile_summary": "D:\\QM\\reports\\compile\\20260710_195628\\summary.csv",
+  "build_check_passed": true,
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260710_195637.json",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "BASKET_OK",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13123_energy-val-rank\\sets\\QM5_13123_energy-val-rank_QM5_13123_ENERGY_VALUE_D1_D1_backtest.set"
+  ],
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "paced_fleet_cpu_ceiling_saturated_t3_t7_q02_enqueued_without_manual_backtest",
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13123",
+    "enqueued": [
+      {
+        "work_item_id": "f50a1355-50ff-4637-a4f8-c482adc5abee",
+        "symbol": "QM5_13123_ENERGY_VALUE_D1",
+        "host_symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "status": "pending",
+        "setfile": "QM5_13123_energy-val-rank_QM5_13123_ENERGY_VALUE_D1_D1_backtest.set"
+      }
+    ],
+    "skipped": []
+  },
+  "registry_validation": {
+    "ea_id_row": "13123,energy-val-rank,AMP-VALUE-2013_XTI_XNG_S01,active",
+    "magic_rows": [
+      "13123,energy-val-rank,0,XTIUSD.DWX,131230000,active",
+      "13123,energy-val-rank,1,XNGUSD.DWX,131230001,active"
+    ],
+    "resolver_contains_ea": true,
+    "global_validator_note": "Targeted registry/build checks passed; repository-wide legacy issues were not changed."
+  },
+  "notes": "New low-frequency market-neutral energy sleeve: pure XTI/XNG cross-sectional value using the source-defined average spot proxy 4.5 to 5.5 years earlier versus the latest completed month-end proxy. No T_Live, AutoTrading, portfolio gate, live setfile, or deploy manifest touched."
+}
