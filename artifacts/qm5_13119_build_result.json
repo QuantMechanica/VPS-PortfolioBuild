@@ -1,0 +1,143 @@
+{
+  "task_id": "537f2dc1-b542-42d2-95a3-b6d72ddcd65d",
+  "ea_id": "QM5_13119",
+  "slug": "usdjpy-euraud",
+  "strategy": "USDJPY/EURAUD D1 negative-beta FX cointegration basket",
+  "source_id": "SRC02_S10",
+  "source_citation": "QuantMechanica OWNER-requested all-sign reproduction of the 2026-06-09 66-pair FX cointegration scan, grounded in Ernest Chan's published cointegration method.",
+  "symbols": [
+    "USDJPY.DWX",
+    "EURAUD.DWX"
+  ],
+  "logical_symbol": "QM5_13119_USDJPY_EURAUD_COINTEGRATION_D1",
+  "host_symbol": "USDJPY.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13119_usdjpy-euraud",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13119_usdjpy-euraud\\QM5_13119_usdjpy-euraud.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13119_usdjpy-euraud\\QM5_13119_usdjpy-euraud.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13119_usdjpy-euraud\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\usdjpy-euraud_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13119_usdjpy-euraud_card.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13119_usdjpy-euraud.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13119_usdjpy-euraud\\basket_manifest.json",
+  "magic_base": 131190000,
+  "symbols_registered": [
+    "USDJPY.DWX",
+    "EURAUD.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13119_usdjpy-euraud\\sets\\QM5_13119_usdjpy-euraud_QM5_13119_USDJPY_EURAUD_COINTEGRATION_D1_D1_backtest.set"
+  ],
+  "mq5_sha256": "137521c77dac7f94c4caa035bd81858831fd6e94c432ca9626f2fc0188d9d291",
+  "ex5_sha256": "2cd8d03f883925b249df53e9c4932ebd8470942cdfef2317edf30d665647833b",
+  "spec_sha256": "d30e87ea4b488f3da1b0198fb66852129d6f34f11e0b54deb86ac37f9299f5ed",
+  "manifest_sha256": "17ddb247f681342473dc3aa72c08a945d80b748b98983735600fc45552bb3854",
+  "approved_card_sha256": "bfdae857e2dcfe3a49f424c48521a22c42c5188724e8eebbd49ca73364f545da",
+  "setfile_header_build_hash": "97d07fb28bc33e11b4dfceda5f8914006756ab7af00e9eb84dc26ba562b22f80",
+  "setfile_current_sha256": "abf2a75cf8d38d35753631a959c218bd805f33dfba66740cdb5f309417c5d99f",
+  "scan_ranking": {
+    "source": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "hard_bar_survivor": true,
+    "dev_sharpe": 0.5059112597468951,
+    "oos_net_sharpe": 0.8837435894739475,
+    "oos_return_pct": 16.014828282752738,
+    "oos_state_changes": 23,
+    "hedge_beta": -1.4182482311707278,
+    "half_life_days": 77.4565445658866,
+    "selection_note": "Final strict all-sign row after the already-built EURGBP/AUDJPY sleeve; no card, registry row, evidence record, or EA folder previously named USDJPY/EURAUD."
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "USDJPY.DWX",
+        "magic": 131190000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "EURAUD.DWX",
+        "magic": 131190001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "card_lint": {
+    "command": "python framework/scripts/skill_card_schema_lint.py --card strategy-seeds/cards/approved/QM5_13119_usdjpy-euraud_card.md",
+    "result": "PASS"
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13119_usdjpy-euraud",
+    "result": "PASS"
+  },
+  "symbol_scope": {
+    "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_13119_usdjpy-euraud --json --fail-on-leak",
+    "result": "BASKET_OK"
+  },
+  "compile": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13119_usdjpy-euraud/QM5_13119_usdjpy-euraud.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260710_160739\\QM5_13119_usdjpy-euraud.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260710_160739\\summary.csv"
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13119_usdjpy-euraud -RepoRoot C:/QM/repo -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260710_160754.json"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Backtest CPU ceiling reached: seven paced factory work items were active, so no manual MT5 process was launched.",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": [],
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  },
+  "cpu_ceiling": {
+    "active_work_items": 7,
+    "active_pause_threshold": 7,
+    "manual_backtest_started": false,
+    "dispatch_invoked": false
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "f8767f2f-4bcb-4b32-b857-cf9063b1c935",
+    "status_at_handoff": "pending",
+    "claimed_by": null,
+    "symbol": "QM5_13119_USDJPY_EURAUD_COINTEGRATION_D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13119_usdjpy-euraud\\sets\\QM5_13119_usdjpy-euraud_QM5_13119_USDJPY_EURAUD_COINTEGRATION_D1_D1_backtest.set",
+    "basket_symbols": [
+      "USDJPY.DWX",
+      "EURAUD.DWX",
+      "AUDUSD.DWX"
+    ],
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1,
+      "tester_currency": "USD",
+      "tester_deposit": 100000
+    },
+    "enqueued_at_utc": "2026-07-10T16:10:02+00:00",
+    "note": "Auto-enqueued by farmctl record-build as one logical-basket Q02 row. No manual dispatch because all seven paced workers were active."
+  },
+  "notes": "Built one non-duplicate USDJPY/EURAUD FX cointegration basket. AUDUSD is conversion/history scope only; stopped at the CPU ceiling before smoke."
+}

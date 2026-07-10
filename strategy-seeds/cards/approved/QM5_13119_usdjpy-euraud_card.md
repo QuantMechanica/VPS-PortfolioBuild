@@ -32,7 +32,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 expected_pf: 1.05
 expected_dd_pct: 25.0
 portfolio_scope: basket
@@ -297,13 +297,15 @@ data_requirements: "USDJPY.DWX and EURAUD.DWX D1 plus tester-currency conversion
 |---|---|---|---|---|
 | v1 | 2026-07-10 | next non-duplicate strict all-sign 66-pair candidate extraction | G0 | APPROVED |
 | v2 | 2026-07-10 | explicit forex-book mission approval and atomic QM5_13119 allocation | Q01 | APPROVED_FOR_BUILD |
+| v3 | 2026-07-10 | strict compile and one logical-basket enqueue; smoke deferred at seven-job CPU ceiling | Q02 | PENDING_CPU_CEILING |
 
 ## 15. Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-10 | APPROVED | explicit forex-book mission + this card + `docs/research/FX_COINTEGRATION_USDJPY_EURAUD_REVIEW_2026-07-10.md` |
-| Q01 Build Validation | 2026-07-10 | PENDING | build not yet run |
+| Q01 Build Validation | 2026-07-10 | PASS | `D:/QM/reports/framework/21/build_check_20260710_160754.json`; strict compile 0 errors/0 warnings |
+| Q02 Baseline Screening | 2026-07-10 | PENDING_CPU_CEILING | work item `f8767f2f-4bcb-4b32-b857-cf9063b1c935` |
 
 ## 16. Lessons Captured
 
@@ -311,4 +313,5 @@ data_requirements: "USDJPY.DWX and EURAUD.DWX D1 plus tester-currency conversion
   row after the already-built EURGBP/AUDJPY sleeve.
 - 2026-07-10: A negative hedge ratio creates same-direction legs; regression
   neutrality must not be described as currency or directional neutrality.
-
+- 2026-07-10: Seven paced work items were active at handoff, so Q02 was left
+  pending and no manual smoke, MT5 launch, or dispatch was attempted.
