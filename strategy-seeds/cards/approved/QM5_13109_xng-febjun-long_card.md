@@ -112,9 +112,7 @@ This is deliberately different from:
 - Backtest risk: `RISK_FIXED=1000`, `RISK_PERCENT=0`,
   `PORTFOLIO_WEIGHT=1`.
 
-## Rules
-
-### Entry
+## 4. Entry Rules
 
 - Evaluate only on a new `XNGUSD.DWX` D1 bar.
 - The current bar must be the first tradable D1 bar of a new broker-calendar
@@ -126,7 +124,7 @@ This is deliberately different from:
   already entered, spread exceeds `strategy_max_spread_points`, ATR is
   invalid, or parameters are invalid.
 
-### Stop And Exit
+## 5. Exit Rules
 
 - Initial broker-side hard stop: ATR(`strategy_atr_period`) times
   `strategy_atr_sl_mult` below entry.
@@ -138,7 +136,7 @@ This is deliberately different from:
 - No profit target, trailing stop, break-even move, partial close, reversal,
   grid, martingale, pyramiding, or same-week re-entry.
 
-## Filters
+## 6. Filters (No-Trade Module)
 
 - Exact symbol/timeframe guard: `XNGUSD.DWX`, D1.
 - Magic slot must be 0; one open position per magic/symbol.
@@ -146,6 +144,14 @@ This is deliberately different from:
 - Parameter-domain, ATR, and spread guards fail closed.
 - Standard V5 kill switch, news compliance, connection protections, and
   Friday close remain authoritative.
+
+## 7. Trade Management Rules
+
+- On each new D1 bar, close a position that is outside February-May, older
+  than seven calendar days, or unexpectedly short.
+- The framework Friday-close handler remains the normal weekly exit and runs
+  before the strategy entry gate.
+- The broker-side ATR stop remains live between D1 management passes.
 
 ## Parameters To Test
 

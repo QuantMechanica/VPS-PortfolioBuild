@@ -14888,3 +14888,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9269,mql5-gator-ad-hidden,2,XAUUSD.DWX,92690002,2026-07-10,Codex,active
 13107,wti-juldec-short,0,XTIUSD.DWX,131070000,2026-07-10,Codex,active
 13108,xti-mtsm-s2,0,XTIUSD.DWX,131080000,2026-07-10,Codex,active
+13109,xng-febjun-long,0,XNGUSD.DWX,131090000,2026-07-10,Codex,active

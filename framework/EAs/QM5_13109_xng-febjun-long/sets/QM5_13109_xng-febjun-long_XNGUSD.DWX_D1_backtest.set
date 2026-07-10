@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13109
 ; ea_slug:      xng-febjun-long
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING_BUILD_CHECK
+; build_hash:   417749963295df868ee6048a1b7c962d6b9f3ed2823cfab9b52d6fc57cb5cf2c
 ; author:       Codex
 ; date:         2026-07-10
 ;==========================================================
