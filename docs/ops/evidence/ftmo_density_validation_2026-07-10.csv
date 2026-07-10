@@ -1,0 +1,10 @@
+comparison,book,sleeves,ann_usd,p_reach_10pct,median_cal_days,daily_breach_pct,max_breach_pct
+matched_return_30k,current_12,12,30000,47.1,37,22,31
+matched_return_30k,12_minus_10163,11,30000,48.3,38,19,32
+matched_return_30k,15_plus_3_dense,14,30000,61.0,54,5,34
+matched_daily_budget_20pct,current_12,12,29592,47.5,38,21,31
+matched_daily_budget_20pct,12_minus_10163,11,30448,48.2,38,19,33
+matched_daily_budget_20pct,15_plus_3_dense,14,34030,52.3,40,19,29
+new_sleeve,10118_NDX_H1,,,,,,
+new_sleeve,10916_GDAXI_H1,,,,,,
+new_sleeve,10546_XAUUSD_M30,,,,,,
