@@ -9,6 +9,7 @@ Canonical approved card:
 - Entry: z above +2 short both legs; z below -2 long both legs.
 - Exit: `abs(z) < 0.5`, per-leg `ATR(20) * 2.0` hard stops, orphan cleanup.
 - Backtest: D1, `RISK_FIXED=1000`, `RISK_PERCENT=0`.
+- Pipeline: Q02 real-tick PASS (PF 1.15, 138 tester trades, 3.37% DD); the
+  existing Q03 work item is priority pending under the paced-fleet CPU ceiling.
 - Constraints: deterministic, no ML, no adaptive refit, no grid/martingale,
   no pyramiding, and no live authorization.
-

@@ -74,8 +74,21 @@ The Q02 manifest pins tester currency to USD and deposit to 100,000. The
 logical setfile has `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 `PORTFOLIO_WEIGHT=1`.
 
+## 8. Pipeline Handoff
+
+The logical-basket Q02 run passed on 2026-07-10 with real ticks: PF `1.15`,
+138 tester trades, net profit `2222.95`, and `3.37%` drawdown. No ONINIT or
+log-bomb condition was detected. Evidence:
+`D:/QM/reports/work_items/78e5573f-9b83-42fc-8cbc-04125c4e42f1/QM5_13106/20260710_045016/summary.json`.
+
+The paced pump already created Q03 work item
+`1e2f36e1-a88c-4ee1-b23d-0b2aa2027cc6` and Q04 early-probe work item
+`a33683ca-ddff-4291-93c7-df149fb5a324`. Only the existing Q03 row was moved
+to the priority track; no duplicate row or manual tester run was created.
+
 ## Revision History
 
 | Version | Date | Reason |
 |---|---|---|
 | v1 | 2026-07-10 | Initial all-sign 66-pair strict-survivor basket build |
+| v2 | 2026-07-10 | Record Q02 PASS and priority handoff to the existing Q03 continuation |

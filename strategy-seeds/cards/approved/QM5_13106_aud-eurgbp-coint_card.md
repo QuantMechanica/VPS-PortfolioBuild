@@ -30,7 +30,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02
+pipeline_phase: Q03
 created: 2026-07-10
 created_by: Research
 last_updated: 2026-07-10
@@ -184,3 +184,4 @@ Backtests use `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 |---|---|---|---|---|
 | v1 | 2026-07-10 | initial all-sign 66-pair strict-survivor basket | G0 | APPROVED |
 | v2 | 2026-07-10 | strict compile and logical basket enqueue as work item 78e5573f-9b83-42fc-8cbc-04125c4e42f1 | Q02 | PENDING_CPU_CEILING |
+| v3 | 2026-07-10 | real-tick Q02 PASS (PF 1.15, 138 tester trades, 3.37% DD); carried priority to existing work item 1e2f36e1-a88c-4ee1-b23d-0b2aa2027cc6 without a duplicate enqueue | Q03 | PRIORITY_PENDING_CPU_CEILING |

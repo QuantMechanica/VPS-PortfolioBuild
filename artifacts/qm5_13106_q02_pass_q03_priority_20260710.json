@@ -1,0 +1,80 @@
+{
+  "mission_unit": "fx_cointegration_existing_card_q02_pass_q03_priority",
+  "timestamp_utc": "2026-07-10T05:49:03+00:00",
+  "agent": "codex-agents-board-advisor",
+  "branch": "agents/board-advisor",
+  "selection": {
+    "strict_scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "unbuilt_strict_survivor_found": false,
+    "anchor_q02_blocked": false,
+    "fallback_action": "advance_existing_forex_card",
+    "selected_ea": "QM5_13106",
+    "selected_pair": "AUDUSD.DWX/EURGBP.DWX",
+    "reason": "QM5_13106 is the newest non-duplicate scan-derived FX basket and its logical Q02 row passed after the prior priority handoff."
+  },
+  "q02_evidence": {
+    "work_item_id": "78e5573f-9b83-42fc-8cbc-04125c4e42f1",
+    "summary": "D:/QM/reports/work_items/78e5573f-9b83-42fc-8cbc-04125c4e42f1/QM5_13106/20260710_045016/summary.json",
+    "result": "PASS",
+    "terminal": "T8",
+    "model": 4,
+    "period": "D1",
+    "real_ticks": true,
+    "oninit_failure": false,
+    "log_bomb": false,
+    "tester_trades": 138,
+    "profit_factor": 1.15,
+    "net_profit": 2222.95,
+    "drawdown_pct": 3.37
+  },
+  "q03_priority_mutation": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "work_item_id": "1e2f36e1-a88c-4ee1-b23d-0b2aa2027cc6",
+    "status_before": "pending",
+    "status_after": "pending",
+    "claimed_by_after": null,
+    "attempt_count_after": 0,
+    "priority_track_before": false,
+    "priority_track_after": true,
+    "priority_reason": "OWNER forex-book mission: QM5_13106 AUDUSD/EURGBP Q02 PASS continuation to Q03 under paced-fleet CPU ceiling",
+    "duplicate_work_items_created": 0
+  },
+  "existing_q04_probe": {
+    "work_item_id": "a33683ca-ddff-4291-93c7-df149fb5a324",
+    "status": "pending",
+    "mutated": false
+  },
+  "validation": {
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260710_055027.json"
+    },
+    "symbol_scope": {
+      "result": "BASKET_OK",
+      "violations": 0
+    },
+    "setfile_build_hash_refreshed": true,
+    "setfile_risk_inputs_changed": false
+  },
+  "cpu_ceiling": {
+    "pipeline_terminals_active_at_handoff": ["T1", "T2", "T3", "T6", "T8"],
+    "active_work_items_at_validation": 7,
+    "manual_backtest_started": false,
+    "dispatch_invoked": false,
+    "action": "stop_after_priority_handoff"
+  },
+  "safety": {
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  }
+}
