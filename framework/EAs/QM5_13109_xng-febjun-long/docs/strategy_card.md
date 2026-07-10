@@ -230,12 +230,12 @@ setfile, the portfolio gate, portfolio admission, or portfolio KPI code.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-10 | initial XNG trading-time seasonal build | Q02 | ENQUEUE PENDING |
+| v1 | 2026-07-10 | initial XNG trading-time seasonal build | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-10 | APPROVED by mission directive | this card |
-| Q01 Build Validation | 2026-07-10 | PENDING | `artifacts/qm5_13109_build_result.json` |
-| Q02 Baseline Screening | 2026-07-10 | PENDING | enqueue evidence pending |
+| Q01 Build Validation | 2026-07-10 | PASS | `artifacts/qm5_13109_build_result.json` |
+| Q02 Baseline Screening | 2026-07-10 | QUEUED | work item `5a8bd70d-08ef-4772-a029-a527dfeb2f6e` |
