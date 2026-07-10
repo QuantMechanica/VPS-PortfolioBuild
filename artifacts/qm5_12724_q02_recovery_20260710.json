@@ -1,0 +1,59 @@
+{
+  "timestamp_utc": "2026-07-10T16:40:25+00:00",
+  "unit_of_work": "Q02 infrastructure repair and requeue",
+  "agent_task_id": "d41f8ede-c94f-4218-aa16-1d05629c54b0",
+  "ea_id": "QM5_12724",
+  "ea_slug": "cme-xauxag-brk",
+  "strategy_shape": "D1 structural XAU/XAG gold-silver ratio breakout basket",
+  "diversity_rationale": "market-neutral precious-metals pair sleeve with a silver leg, not a standalone index, XNG, or outright directional metal sleeve",
+  "prior_failure": {
+    "work_item_id": "2aa4e34e-c99d-43e9-bedd-4364dec0825b",
+    "phase": "Q02",
+    "verdict": "INFRA_FAIL",
+    "evidence_path": "D:/QM/reports/work_items/2aa4e34e-c99d-43e9-bedd-4364dec0825b/QM5_12724/20260706_103932/summary.json",
+    "reason_classes": [
+      "TIMEOUT",
+      "METATESTER_HUNG",
+      "INCOMPLETE_RUNS"
+    ],
+    "diagnosis": "The seven-year Model-4 path evaluated the news calendar for both basket legs and then the host again on every real tick, before position management. The prior recompile did not change this runtime path and timed out after 7200 seconds."
+  },
+  "repair": {
+    "source_change": "Moved the basket news hook below management and exits, removed duplicate host news evaluation and duplicate Friday-close handling, and initialized the entry request deterministically.",
+    "setfile_change": "Disabled baseline news temporal/compliance/filter axes while preserving the callable news hook for the dedicated news-impact gate.",
+    "risk_contract": {
+      "mode": "RISK_FIXED",
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "verification": {
+    "spec_validation": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "guardrails": "PASS",
+    "build_check": "PASS; failures=0; warnings=0",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260710_163910.json",
+    "compile": "PASS; errors=0; warnings=0",
+    "compile_log": "C:/QM/repo/framework/build/compile/20260710_163832/QM5_12724_cme-xauxag-brk.compile.log",
+    "mq5_sha256": "172d76b915d00d2f2f002f1a957e41e79dfd2af30d5ec1cffb6fd1d90a074bb9",
+    "ex5_sha256": "ac27456a7c115dba31b7340ece2128ce39a393b22ed9c5aa6865486a130e262b",
+    "setfile_build_hash": "847fed2a150d71488be01ca3ed9f39834ecd78b758a8d1811fb790dd54d35640"
+  },
+  "q02_requeue": {
+    "work_item_id": "69f6fe8b-3d49-4099-ab8f-450b84dddc3d",
+    "status": "pending",
+    "symbol": "QM5_12724_XAU_XAG_BRK_D1",
+    "host_symbol": "XAUUSD.DWX",
+    "host_timeframe": "D1",
+    "duplicate_guard": "Atomic claim check found no pending or active QM5_12724 work item before insertion."
+  },
+  "safety": {
+    "manual_mt5_backtest_started": false,
+    "factory_cpu_slots_observed_active": 6,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
