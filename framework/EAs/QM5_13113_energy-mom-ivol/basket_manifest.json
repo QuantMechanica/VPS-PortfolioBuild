@@ -1,0 +1,23 @@
+{
+  "logical_symbol": "QM5_13113_ENERGY_MOM_IVOL_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX",
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "read_only_factor_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Market-neutral XTI/XNG momentum plus idiosyncratic-volatility double screen. The EA runs from the XTIUSD.DWX D1 host setfile. It builds an equal-weight XTI/XNG/XAU/XAG D1 commodity factor, ranks only XTI and XNG by three-month momentum and OLS residual volatility, and trades only when the momentum winner is the lower-IVol energy leg. XAU and XAG are read-only factor members. Q02 must evaluate the logical basket, not standalone legs."
+  ]
+}
+
