@@ -231,12 +231,12 @@ portfolio gate, portfolio admission, or portfolio KPI code.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-10 | initial source-backed XNG return-sign momentum build | Q01 | PENDING |
+| v1 | 2026-07-10 | initial source-backed XNG return-sign momentum build | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-10 | APPROVED by mission directive | this card |
-| Q01 Build Validation | TBD | PENDING | TBD |
-| Q02 Baseline Screening | TBD | PENDING | TBD |
+| Q01 Build Validation | 2026-07-10 | PASS | `artifacts/qm5_13116_build_result.json` |
+| Q02 Baseline Screening | 2026-07-10 | ENQUEUED | work item `d3bef250-99ff-492c-b737-5eba646cff3e` |
