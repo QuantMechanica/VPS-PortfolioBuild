@@ -1,0 +1,147 @@
+{
+  "task_id": "9eb4fb08-4f81-493e-a36c-19765f9b573e",
+  "ea_id": "QM5_13113",
+  "ea_label": "QM5_13113_energy-mom-ivol",
+  "slug": "energy-mom-ivol",
+  "strategy": "Monthly market-neutral XTI/XNG momentum and idiosyncratic-volatility double screen",
+  "strategy_id": "FUERTES-MOMIVOL-2015_XTI_XNG_S01",
+  "source_id": "FUERTES-MOMIVOL-2015",
+  "source_links": [
+    "https://doi.org/10.1002/fut.21656",
+    "https://openaccess.city.ac.uk/id/eprint/6418/",
+    "https://openaccess.city.ac.uk/id/eprint/6418/1/JFM_SSRN_13Jan2014.pdf"
+  ],
+  "symbols": ["XTIUSD.DWX", "XNGUSD.DWX", "XAUUSD.DWX", "XAGUSD.DWX"],
+  "traded_symbols": ["XTIUSD.DWX", "XNGUSD.DWX"],
+  "read_only_factor_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"],
+  "symbols_registered": ["XTIUSD.DWX", "XNGUSD.DWX", "XAUUSD.DWX", "XAGUSD.DWX"],
+  "logical_symbol": "QM5_13113_ENERGY_MOM_IVOL_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13113_energy-mom-ivol",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13113_energy-mom-ivol\\QM5_13113_energy-mom-ivol.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13113_energy-mom-ivol\\QM5_13113_energy-mom-ivol.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13113_energy-mom-ivol\\SPEC.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13113_energy-mom-ivol\\basket_manifest.json",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13113_energy-mom-ivol.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13113_energy-mom-ivol_card.md",
+  "canonical_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\energy-mom-ivol_card.md",
+  "source_packet_path": "C:\\QM\\repo\\strategy-seeds\\sources\\FUERTES-MOMIVOL-2015\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13113_energy-mom-ivol\\sets\\QM5_13113_energy-mom-ivol_QM5_13113_ENERGY_MOM_IVOL_D1_D1_backtest.set"
+  ],
+  "magic_base": 131130000,
+  "magic": [
+    {"slot": 0, "symbol": "XTIUSD.DWX", "magic": 131130000, "registry_status": "active"},
+    {"slot": 1, "symbol": "XNGUSD.DWX", "magic": 131130001, "registry_status": "active"}
+  ],
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Backtest CPU ceiling / paced-fleet guard: T1, T3, T4, T6, T7, and T8 had active path-anchored Q02 MT5 terminals and all paced workers except T5 were present at 2026-07-10T11:03:27+00:00; no manual MT5 run was launched.",
+  "blocked_reason": "",
+  "open_questions": [
+    "The source validates diversified futures long-short portfolios, not this two-traded-leg DWX carrier; Q02 must validate package frequency and economics.",
+    "The EA uses continuous Darwinex CFD proxies and an equal-weight four-proxy factor, so futures-roll and benchmark-basis translation remain falsification risks.",
+    "Realized portfolio orthogonality is unclaimed until Q09 measures it."
+  ],
+  "compile": {
+    "status": "PASS",
+    "warnings": 0,
+    "errors": 0,
+    "reason_class": "OK",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260710_110307\\QM5_13113_energy-mom-ivol.compile.log",
+    "summary_csv": "D:\\QM\\reports\\compile\\20260710_110307\\summary.csv",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13113_energy-mom-ivol/QM5_13113_energy-mom-ivol.mq5 -Strict"
+  },
+  "build_check": {
+    "status": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260710_110321.json",
+    "setfile_build_hash": "a7fed88e5c41364e230df1a369594d0607697e1d51485b973c95cf848a880c4a",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13113_energy-mom-ivol -RepoRoot C:/QM/repo -SkipCompile"
+  },
+  "validations": {
+    "dedup": {
+      "status": "CLEAN_BEFORE_ALLOCATION",
+      "command": "python framework/scripts/research_dedup_check.py check --slug energy-mom-ivol --strategy-id FUERTES-MOMIVOL-2015_XTI_XNG_S01 --author 'Fuertes Miffre Fernandez-Perez' --mechanic 'XTI XNG momentum idiosyncratic volatility double screen market neutral'"
+    },
+    "spec_doc": {"status": "PASS"},
+    "card_schema": {"status": "PASS"},
+    "g0_card": {"status": "PASS"},
+    "symbol_scope": {"status": "PASS", "verdict": "BASKET_OK"},
+    "magic_registry": {
+      "status": "PASS_WITH_PREEXISTING_WARNINGS",
+      "slots": [0, 1],
+      "resolver_rows_kept": 14778,
+      "pre_existing_missing_ea_dir_warnings": [1001, 1015, 1016],
+      "resolver_sha_prefix": "DD4CA1EAC520B5F0"
+    },
+    "registry_full": {
+      "status": "PREEXISTING_LEGACY_BACKLOG",
+      "new_ea_rows_recognized": 1,
+      "new_magic_rows_recognized": 2
+    },
+    "risk_mode": {
+      "status": "PASS",
+      "backtest_uses_risk_fixed": true,
+      "risk_percent_zero": true,
+      "portfolio_weight": 1
+    },
+    "build_guardrails": {
+      "status": "PASS",
+      "ml_forbidden": "PASS",
+      "external_runtime_data": "PASS",
+      "setfile_schema": "PASS",
+      "friday_close_enabled": false,
+      "friday_close_exception": "Source-aligned one-month market-neutral hold; monthly and 35-day package exits remain active."
+    }
+  },
+  "risk_mode": {"RISK_FIXED": 1000, "RISK_PERCENT": 0, "PORTFOLIO_WEIGHT": 1},
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "market_neutral_basket": true,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "manual_backtest_cpu_used": false
+  },
+  "file_hashes_sha256": {
+    "mq5": "F506C089938FAE8C1C30A4DD0E0236E5E613AF23DF27F6F11AD0D1496321C187",
+    "ex5": "F134794D6988C475FD994443649160B1A459B236DBAFDD5CFF7FF94D9D8F45E6",
+    "spec": "1FBC9D4020BDBB8BEE2E68B5498A3D2DE172504320E0364553D29F1F33501057",
+    "basket_manifest": "CBEF88907D79A04D42871754D39199939FFFF2F1345319C60809400AB4D86EB1",
+    "setfile": "C718B3AFE3AEB479B74267A96863651ED9EBE0E0DA2D62C25CAC13EB7E485B78",
+    "canonical_card": "C37DD815B16C859B5D0BAD8657EA82043DB12A3F202496CCEDF005103EBCAB42",
+    "source_packet": "50A97424E187E137C1EED9C72292DC68A90CB8733C79921A775072388AE0F3E7"
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "0d2f573f-e478-4691-b463-a6e6c6c47746",
+    "status_at_handoff": "pending",
+    "claimed_by": null,
+    "symbol": "QM5_13113_ENERGY_MOM_IVOL_D1",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13113_energy-mom-ivol\\sets\\QM5_13113_energy-mom-ivol_QM5_13113_ENERGY_MOM_IVOL_D1_D1_backtest.set",
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "enqueued_at_utc": "2026-07-10T11:07:54+00:00",
+    "note": "Auto-enqueued by farmctl record-build as one logical basket. No manual dispatch or smoke was started at the paced-fleet CPU ceiling."
+  }
+}

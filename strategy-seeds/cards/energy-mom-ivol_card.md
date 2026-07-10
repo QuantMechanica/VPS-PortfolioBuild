@@ -242,13 +242,12 @@ No live setfile, deploy manifest, portfolio gate, portfolio admission file,
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-10 | initial energy momentum-IVol double-screen | Q02 | PLANNED |
+| v1 | 2026-07-10 | initial energy momentum-IVol double-screen | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-10 | APPROVED by OWNER mission directive | this card |
-| Q01 Build Validation | 2026-07-10 | PENDING | `artifacts/qm5_13113_build_result.json` |
-| Q02 Baseline Screening | 2026-07-10 | PENDING | enqueue evidence TBD |
-
+| Q01 Build Validation | 2026-07-10 | PASS | `artifacts/qm5_13113_build_result.json` |
+| Q02 Baseline Screening | 2026-07-10 | ENQUEUED | `docs/ops/evidence/2026-07-10_qm5_13113_energy_mom_ivol_q02_enqueue.md` |
