@@ -1,0 +1,91 @@
+{
+  "artifact_type": "fx_cointegration_q02_priority_handoff",
+  "recorded_at_utc": "2026-07-10T18:19:23+00:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_13117",
+  "slug": "eurgbp-audjpy",
+  "strategy_id": "SRC02_S09",
+  "logical_symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+  "work_item": {
+    "id": "ed75430e-2ff4-4ea1-9d50-e49a7912d323",
+    "phase": "Q02",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "created_at": "2026-07-10T14:55:16+00:00",
+    "updated_at": "2026-07-10T14:55:16+00:00",
+    "updated_at_preserved": true,
+    "priority_track_before": null,
+    "priority_track_after": true,
+    "priority_reason": "forex_portfolio_gap_highest_ranked_strict_all_sign_cointegration_survivor",
+    "queue_rank_before": 472,
+    "queue_rank_after": 1,
+    "same_ea_q02_row_count": 1,
+    "duplicate_rows_created": 0
+  },
+  "basket": {
+    "host_symbol": "EURGBP.DWX",
+    "host_timeframe": "D1",
+    "traded_symbols": [
+      "EURGBP.DWX",
+      "AUDJPY.DWX"
+    ],
+    "conversion_history_symbols": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "tester_currency": "USD",
+    "tester_deposit": 100000,
+    "basket_manifest": "framework/EAs/QM5_13117_eurgbp-audjpy/basket_manifest.json"
+  },
+  "risk_contract": {
+    "risk_mode": "RISK_FIXED",
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "selection": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "method_supplement": "Ernest P. Chan, Quantitative Trading (Wiley, 2009), Example 3.6 and Chapter 7",
+    "reason": "All approved cointegration cards already have EA directories. QM5_13117 is the highest-ranked strict all-sign scan row in its lineage and already had exactly one pending logical-basket Q02 row, so that row was advanced in place instead of duplicating a build or enqueue.",
+    "dev_sharpe": 0.416833593,
+    "oos_net_sharpe": 0.8918614046,
+    "oos_return_pct": 4.475153414,
+    "oos_state_changes": 20,
+    "hedge_beta": -0.12202869296345396,
+    "half_life_days": 36.83805248
+  },
+  "build_evidence": {
+    "compile_succeeded": true,
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_passed": true,
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "source_artifact": "artifacts/qm5_13117_build_result.json"
+  },
+  "audit": {
+    "event": "priority_track_set",
+    "event_id": 246650,
+    "fifo_timestamp_preserved": true,
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_13117_priority_20260710T181923Z.sqlite"
+  },
+  "factory_state": {
+    "factory_off_flag_present": true,
+    "active_work_items_before": 5,
+    "active_work_items_after": 5,
+    "pending_work_items_before": 3610,
+    "dispatch_invoked": false,
+    "manual_backtest_started": false,
+    "reason_not_dispatched": "The canonical FACTORY_OFF flag was present. The existing queue row was prioritized without overriding factory state or launching MT5."
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  }
+}
