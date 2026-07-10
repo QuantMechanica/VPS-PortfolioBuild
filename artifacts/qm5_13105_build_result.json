@@ -1,0 +1,141 @@
+{
+  "task_id": "7f38893c-2c4c-4194-b594-ad41765400f1",
+  "ea_id": "QM5_13105",
+  "ea_label": "QM5_13105_xng-idnr4-brk",
+  "slug": "xng-idnr4-brk",
+  "strategy": "XNGUSD.DWX D1 ID/NR4 contraction breakout",
+  "strategy_id": "CRABEL-XNG-IDNR4-2026_S01",
+  "source_id": "CRABEL-XNG-IDNR4-2026",
+  "source_links": [
+    "https://books.google.com/books?id=xpgbAAAACAAJ"
+  ],
+  "symbols": [
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XNGUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XNGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13105_XNG_IDNR4_BRK_D1",
+  "host_symbol": "XNGUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13105_xng-idnr4-brk",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13105_xng-idnr4-brk\\QM5_13105_xng-idnr4-brk.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13105_xng-idnr4-brk\\QM5_13105_xng-idnr4-brk.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13105_xng-idnr4-brk\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13105_xng-idnr4-brk.md",
+  "approved_card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_13105_xng-idnr4-brk.md",
+  "strategy_seed_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13105_xng-idnr4-brk_card.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13105_xng-idnr4-brk\\sets\\QM5_13105_xng-idnr4-brk_XNGUSD.DWX_D1_backtest.set"
+  ],
+  "magic_base": 131050000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XNGUSD.DWX",
+      "magic": 131050000
+    }
+  ],
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Paced-fleet mission requested Q02 enqueue; no manual MT5 backtest was launched from this session.",
+  "blocked_reason": "",
+  "open_questions": [],
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13105",
+    "enqueued": [
+      {
+        "wi_id": "c04d7df8",
+        "symbol": "XNGUSD.DWX",
+        "tf": "D1",
+        "setfile": "QM5_13105_xng-idnr4-brk_XNGUSD.DWX_D1_backtest.set"
+      }
+    ],
+    "skipped": []
+  },
+  "compile": {
+    "status": "COMPILED",
+    "warnings": 0,
+    "errors": 0,
+    "symbol_scope": "SINGLE_SYMBOL_OK",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260710_030718\\QM5_13105_xng-idnr4-brk.compile.log",
+    "summary_csv": "D:\\QM\\reports\\compile\\20260710_030718\\summary.csv",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13105_xng-idnr4-brk/QM5_13105_xng-idnr4-brk.mq5 -Strict"
+  },
+  "build_check": {
+    "status": "PASS",
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260710_030724.json",
+    "setfile_build_hash": "1ac2df7a1a5dc255d17e7fa4480e92573a06d5b55dc2a90dc9e07c28b27fa3a7",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13105_xng-idnr4-brk -Strict -SkipCompile"
+  },
+  "validations": {
+    "spec_doc": {
+      "status": "PASS",
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13105_xng-idnr4-brk"
+    },
+    "card_schema": {
+      "status": "PASS",
+      "command": "python framework/scripts/skill_card_schema_lint.py --card strategy-seeds/cards/approved/QM5_13105_xng-idnr4-brk_card.md"
+    },
+    "symbol_scope": {
+      "status": "PASS",
+      "verdict": "SINGLE_SYMBOL_OK",
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_13105_xng-idnr4-brk --json --fail-on-leak"
+    },
+    "magic_registry": {
+      "status": "PASS_WITH_PREEXISTING_WARNINGS",
+      "slots": [0],
+      "resolver_rows_kept": 14765,
+      "pre_existing_missing_ea_dir_warnings": [1001, 1015, 1016],
+      "resolver_hash": "370384E862A1F76B"
+    },
+    "risk_mode": {
+      "status": "PASS",
+      "backtest_uses_risk_fixed": true,
+      "risk_percent_zero": true
+    },
+    "build_guardrails": {
+      "status": "PASS",
+      "ml_forbidden": "PASS",
+      "external_runtime_data": "PASS",
+      "setfile_schema": "PASS",
+      "five_input_groups": "PASS",
+      "perf_static_check": "PASS"
+    }
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "backtest_cpu_used": false
+  },
+  "file_hashes_sha256": {
+    "strategy_card_doc": "D14E8F5E664C71D1507F0EFEEEA306BEA9BAD2AB1129A93B6E08DFB69EBB0206",
+    "approved_card": "D14E8F5E664C71D1507F0EFEEEA306BEA9BAD2AB1129A93B6E08DFB69EBB0206",
+    "mq5": "C5CD983B18CA486C8BE280B10A0D36E6EC86A53A9E66B83F2382A02C07FDEFE8",
+    "ex5": "D44E4E2A061C045369717EA43C22282807E28CD09762F01DC9F251814C8919C7",
+    "spec": "F670E5A70F561E3A3971E34B10F67AA993CFAF73AA948637A026CAE46D3BFA5A",
+    "setfile": "73CA18471D7509AC5487E9ADFD6EF9BC1C733C6E6BDC7E760FB144DF93883771",
+    "source_packet": "F6726446CB49FB23751BF51A209BD8348EA78AFF3D3513F03867DA054C8ACA99"
+  }
+}
