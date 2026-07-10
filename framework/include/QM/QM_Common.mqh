@@ -53,7 +53,7 @@ long   g_qm_sim_closed_deals     = 0;
 // high-trade EAs. 2026-07-10 fix: the line-631 unbounded `+=` string grew until MT5 logged
 // "out of memory in 'QM_Common.mqh' (631,23)" (QM5_11476, 1968 trades) and emitted 0 rows.
 string g_qm_q08_trade_log = "";
-bool   g_qm_q08_stream_started = false;  // false => truncate file on the first flush this run
+int    g_qm_q08_fh = INVALID_HANDLE;      // persistent Q08 stream handle: open once (truncate) per run, append, close at shutdown
 
 CTrade g_qm_fw_trade;
 
@@ -64,7 +64,8 @@ struct QM_PositionMaeState
    double   min_floating_pnl;
   };
 
-QM_PositionMaeState g_qm_q08_mae_states[];
+QM_PositionMaeState g_qm_q08_mae_states[];       // MAE of currently-open positions (swept on close)
+QM_PositionMaeState g_qm_q08_mae_closed[];       // archived MAE of closed positions, kept for the OnDeinit history walk
 
 string QM_FrameworkSlug(const int ea_id)
   {
@@ -122,8 +123,13 @@ bool QM_FrameworkInit(const int ea_id,
    if(g_qm_fw_magic <= 0)
       return false;
    g_qm_q08_trade_log = "";
-   g_qm_q08_stream_started = false;
+   if(g_qm_q08_fh != INVALID_HANDLE)
+     {
+      FileClose(g_qm_q08_fh);
+      g_qm_q08_fh = INVALID_HANDLE;
+     }
    ArrayResize(g_qm_q08_mae_states, 0);
+   ArrayResize(g_qm_q08_mae_closed, 0);
 
    const string slug = QM_FrameworkSlug(ea_id);
    QM_LoggerInit(ea_id, slug, _Symbol, (ENUM_TIMEFRAMES)_Period, g_qm_fw_magic);
@@ -358,7 +364,15 @@ void QM_FrameworkTrackOpenPositionMae()
    for(int index = ArraySize(g_qm_q08_mae_states) - 1; index >= 0; --index)
      {
       if(!QM_FrameworkMaePositionStillOpen(g_qm_q08_mae_states[index].position_id))
+        {
+         // Archive the closed position's MAE (worst floating loss is not in deal history,
+         // so the OnDeinit Q08 history walk needs it kept). Then drop from the active array
+         // so the per-tick find stays fast.
+         const int ci = ArraySize(g_qm_q08_mae_closed);
+         ArrayResize(g_qm_q08_mae_closed, ci + 1);
+         g_qm_q08_mae_closed[ci] = g_qm_q08_mae_states[index];
          QM_FrameworkMaeRemoveIndex(index);
+        }
      }
   }
 
@@ -622,24 +636,13 @@ void QM_FrameworkOnTradeTransaction(const MqlTradeTransaction &trans,
    const double commission = HistoryDealGetDouble(trans.deal, DEAL_COMMISSION);
    const double net        = profit + swap + commission;
 
-   // Q08 per-trade stream: one TRADE_CLOSED line per closing deal (real net P&L).
-   const double q08_vol = HistoryDealGetDouble(trans.deal, DEAL_VOLUME);
-   const double q08_price = HistoryDealGetDouble(trans.deal, DEAL_PRICE);
-   const double q08_notional = QM_FrameworkDealNotionalAccount(trans.deal, q08_symbol, q08_vol, q08_price);
-   const long   q08_t   = (long)HistoryDealGetInteger(trans.deal, DEAL_TIME);
-   datetime q08_entry_time = 0;
-   double q08_mae_acct = 0.0;
-   QM_FrameworkMaeLookup(q08_position_id, q08_entry_time, q08_mae_acct);
-   q08_entry_time = QM_FrameworkMaeFindEntryTimeInHistory(q08_position_id, q08_entry_time > 0 ? q08_entry_time : (datetime)q08_t);
-   q08_mae_acct = MathMin(q08_mae_acct, net);
-   g_qm_q08_trade_log += StringFormat(
-      "{\"event\":\"TRADE_CLOSED\",\"time\":%I64d,\"entry_time\":%I64d,\"mae_acct\":%.2f,\"net\":%.2f,\"profit\":%.2f,\"swap\":%.2f,\"commission\":%.2f,\"volume\":%.2f,\"notional\":%.2f,\"symbol\":\"%s\"}\r\n",
-      q08_t, (long)q08_entry_time, q08_mae_acct, net, profit, swap, commission, q08_vol, q08_notional, QM_LoggerEscapeJson(q08_symbol));
-   QM_FrameworkMaeRemoveIndex(QM_FrameworkMaeFind(q08_position_id));
-   // Bounded emission: flush to file once the buffer grows past ~32 KB so the in-memory
-   // string never accumulates a whole high-trade backtest (2026-07-10 OOM fix).
-   if(StringLen(g_qm_q08_trade_log) >= 32768)
-      QM_FrameworkQ08Flush();
+   // Q08 per-trade stream is NOT emitted here anymore. The MT5 strategy tester does not
+   // reliably deliver a DEAL_ADD OnTradeTransaction for every closing deal (observed 54/1762
+   // closes missing on a high-trade run), so an event-driven stream silently undercounts vs
+   // the tester report. The stream is instead rebuilt deterministically from HistorySelect at
+   // shutdown (QM_FrameworkQ08EmitFromHistory). The closing-deal MAE is preserved for that walk
+   // by the OnTick sweep, which archives into g_qm_q08_mae_closed instead of discarding. This
+   // handler keeps only the live kill-switch feed below (OnTradeTransaction is reliable LIVE).
 
    // Q04 EA-side simulated commission: accumulate a PF-net that reflects a worst-case
    // USD/lot round-trip charge the tester does not apply to custom symbols. Charged once
@@ -677,6 +680,94 @@ void QM_FrameworkOnTradeTransaction(const MqlTradeTransaction &trans,
      }
   }
 
+// Worst floating loss (MAE) for a position, from the active or archived MAE state. Not present
+// in deal history, so it must come from the live-tracked arrays. Returns 0 if never tracked.
+double QM_FrameworkQ08LookupMae(const ulong position_id, datetime &entry_time_out)
+  {
+   for(int i = ArraySize(g_qm_q08_mae_states) - 1; i >= 0; --i)
+      if(g_qm_q08_mae_states[i].position_id == position_id)
+        {
+         entry_time_out = g_qm_q08_mae_states[i].entry_time;
+         return MathMin(0.0, g_qm_q08_mae_states[i].min_floating_pnl);
+        }
+   for(int i = ArraySize(g_qm_q08_mae_closed) - 1; i >= 0; --i)
+      if(g_qm_q08_mae_closed[i].position_id == position_id)
+        {
+         entry_time_out = g_qm_q08_mae_closed[i].entry_time;
+         return MathMin(0.0, g_qm_q08_mae_closed[i].min_floating_pnl);
+        }
+   entry_time_out = 0;
+   return 0.0;
+  }
+
+// Rebuild the entire Q08 per-trade stream deterministically from the deal HISTORY at shutdown.
+// This is the authoritative source (matches the tester report by construction) — the previous
+// OnTradeTransaction event stream silently dropped closes the tester never delivered an event
+// for. One TRADE_CLOSED line per closing deal (OUT / OUT_BY / INOUT) owned by this EA, in deal
+// order, with the MAE looked up from the live-tracked arrays. Buffer is flushed at ~32 KB.
+void QM_FrameworkQ08EmitFromHistory()
+  {
+   if(!g_qm_fw_initialized)
+      return;
+   if(!HistorySelect(0, TimeCurrent()))
+      return;
+   const int total = HistoryDealsTotal();
+   // Pass 1: collect the position_ids this EA OPENED. The opening deal (IN / INOUT) reliably
+   // carries the EA magic. SL/TP-triggered CLOSING deals often carry DEAL_MAGIC 0, so ownership
+   // MUST be decided on the open — deciding it on the close silently drops every TP/SL exit
+   // (observed: 54/1762 closes with magic 0, all take-profit winners, $46.7k, on QM5_10546).
+   ulong owned_pos[];
+   for(int i = 0; i < total; ++i)
+     {
+      const ulong deal = HistoryDealGetTicket(i);
+      if(deal == 0)
+         continue;
+      const long entry = HistoryDealGetInteger(deal, DEAL_ENTRY);
+      if(entry != DEAL_ENTRY_IN && entry != DEAL_ENTRY_INOUT)
+         continue;
+      if(!QM_FrameworkOwnsMagicSymbol(HistoryDealGetInteger(deal, DEAL_MAGIC),
+                                      HistoryDealGetString(deal, DEAL_SYMBOL)))
+         continue;
+      const int n = ArraySize(owned_pos);
+      ArrayResize(owned_pos, n + 1);
+      owned_pos[n] = (ulong)HistoryDealGetInteger(deal, DEAL_POSITION_ID);
+     }
+   // Pass 2: emit one TRADE_CLOSED line per closing deal of a position we opened.
+   for(int i = 0; i < total; ++i)
+     {
+      const ulong deal = HistoryDealGetTicket(i);
+      if(deal == 0)
+         continue;
+      const long entry = HistoryDealGetInteger(deal, DEAL_ENTRY);
+      if(entry != DEAL_ENTRY_OUT && entry != DEAL_ENTRY_OUT_BY && entry != DEAL_ENTRY_INOUT)
+         continue;
+      const ulong pos_id = (ulong)HistoryDealGetInteger(deal, DEAL_POSITION_ID);
+      bool owned = false;
+      for(int k = ArraySize(owned_pos) - 1; k >= 0; --k)
+         if(owned_pos[k] == pos_id) { owned = true; break; }
+      if(!owned)
+         continue;
+      const string sym        = HistoryDealGetString(deal, DEAL_SYMBOL);
+      const double profit     = HistoryDealGetDouble(deal, DEAL_PROFIT);
+      const double swap       = HistoryDealGetDouble(deal, DEAL_SWAP);
+      const double commission = HistoryDealGetDouble(deal, DEAL_COMMISSION);
+      const double net        = profit + swap + commission;
+      const double vol        = HistoryDealGetDouble(deal, DEAL_VOLUME);
+      const double price      = HistoryDealGetDouble(deal, DEAL_PRICE);
+      const double notional   = QM_FrameworkDealNotionalAccount(deal, sym, vol, price);
+      const long   d_t        = (long)HistoryDealGetInteger(deal, DEAL_TIME);
+      datetime entry_time = 0;
+      double mae_acct = QM_FrameworkQ08LookupMae(pos_id, entry_time);
+      entry_time = QM_FrameworkMaeFindEntryTimeInHistory(pos_id, entry_time > 0 ? entry_time : (datetime)d_t);
+      mae_acct = MathMin(mae_acct, net);
+      g_qm_q08_trade_log += StringFormat(
+         "{\"event\":\"TRADE_CLOSED\",\"time\":%I64d,\"entry_time\":%I64d,\"mae_acct\":%.2f,\"net\":%.2f,\"profit\":%.2f,\"swap\":%.2f,\"commission\":%.2f,\"volume\":%.2f,\"notional\":%.2f,\"symbol\":\"%s\"}\r\n",
+         d_t, (long)entry_time, mae_acct, net, profit, swap, commission, vol, notional, QM_LoggerEscapeJson(sym));
+      if(StringLen(g_qm_q08_trade_log) >= 32768)
+         QM_FrameworkQ08Flush();
+     }
+  }
+
 // Flush the buffered Q08 TRADE_CLOSED lines to the deterministic Common\Files path.
 // First flush of a run truncates (fresh file); later flushes append. Called both mid-run
 // (bounded buffer) and at shutdown for the remainder. Emits the identical per-trade JSONL
@@ -685,30 +776,29 @@ void QM_FrameworkQ08Flush()
   {
    if(!g_qm_fw_initialized || StringLen(g_qm_q08_trade_log) == 0)
       return;
-   string q08_sym = _Symbol;
-   StringReplace(q08_sym, ".", "_");
-   const string q08_path = StringFormat("QM\\q08_trades\\%d_%s.jsonl", g_qm_fw_ea_id, q08_sym);
-   const int base_flags = FILE_TXT | FILE_ANSI | FILE_COMMON;
-   int q08_fh;
-   if(g_qm_q08_stream_started)
+   // Persistent-handle append (2026-07-10 fix v2). The previous version re-opened the file on
+   // EVERY flush with FILE_READ|FILE_WRITE and FileSeek(SEEK_END). In the tester's FILE_TXT mode
+   // that seek did not reliably land on the true end of a just-closed file, so the next write
+   // overwrote the tail of the prior chunk and silently dropped trades — the loss scaled with the
+   // number of mid-run flushes (~3 trades on a short run, ~54 on a long one; stream undercounted
+   // vs the MT5 report). Opening the file ONCE (truncate) and holding the handle open for the
+   // whole run removes the re-open and the seek, so appends are strictly sequential and lossless.
+   if(g_qm_q08_fh == INVALID_HANDLE)
      {
-      q08_fh = FileOpen(q08_path, FILE_READ | FILE_WRITE | base_flags);
-      if(q08_fh != INVALID_HANDLE)
-         FileSeek(q08_fh, 0, SEEK_END);
+      string q08_sym = _Symbol;
+      StringReplace(q08_sym, ".", "_");
+      const string q08_path = StringFormat("QM\\q08_trades\\%d_%s.jsonl", g_qm_fw_ea_id, q08_sym);
+      g_qm_q08_fh = FileOpen(q08_path, FILE_WRITE | FILE_TXT | FILE_ANSI | FILE_COMMON);  // truncate fresh, keep open
+      if(g_qm_q08_fh == INVALID_HANDLE)
+        {
+         QM_LogEvent(QM_WARN, "Q08_STREAM_OPEN_FAILED",
+                     StringFormat("{\"ea\":%d,\"error\":%d}", g_qm_fw_ea_id, GetLastError()));
+         return;   // keep the buffer; retry on the next flush
+        }
      }
-   else
-      q08_fh = FileOpen(q08_path, FILE_WRITE | base_flags);  // truncate fresh on first flush
-   if(q08_fh != INVALID_HANDLE)
-     {
-      FileWriteString(q08_fh, g_qm_q08_trade_log);
-      FileClose(q08_fh);
-      g_qm_q08_stream_started = true;
-      g_qm_q08_trade_log = "";
-     }
-   else
-      QM_LogEvent(QM_WARN, "Q08_STREAM_WRITE_FAILED",
-                  StringFormat("{\"path\":\"%s\",\"error\":%d}",
-                               QM_LoggerEscapeJson(q08_path), GetLastError()));
+   FileWriteString(g_qm_q08_fh, g_qm_q08_trade_log);
+   FileFlush(g_qm_q08_fh);   // durable on disk in case the run is killed before shutdown
+   g_qm_q08_trade_log = "";
   }
 
 void QM_FrameworkShutdown()
@@ -751,13 +841,19 @@ void QM_FrameworkShutdown()
                      StringFormat("{\"path\":\"%s\",\"error\":%d}",
                                   QM_LoggerEscapeJson(q04_path), GetLastError()));
      }
-   // Q08 per-trade stream: flush the remaining buffered TRADE_CLOSED lines to the
-   // deterministic Common\Files path so the Davey aggregator can read real per-trade P&L.
-   // Bounded/incremental emission (see QM_FrameworkQ08Flush) — the old single unbounded
-   // write OOMed the tester on high-trade EAs (2026-07-10 fix). If no mid-run flush
-   // happened this run, this call truncates+writes exactly as before.
+   // Q08 per-trade stream: build the COMPLETE stream from the deal history now (the tester
+   // does not fire an OnTradeTransaction for every close), then flush to the deterministic
+   // Common\Files path so the Davey aggregator reads real per-trade P&L that matches the
+   // tester report. Bounded/incremental flush inside (2026-07-10 OOM fix) keeps memory capped.
+   QM_FrameworkQ08EmitFromHistory();
    QM_FrameworkQ08Flush();
+   if(g_qm_q08_fh != INVALID_HANDLE)
+     {
+      FileClose(g_qm_q08_fh);
+      g_qm_q08_fh = INVALID_HANDLE;
+     }
    ArrayResize(g_qm_q08_mae_states, 0);
+   ArrayResize(g_qm_q08_mae_closed, 0);
    if(g_qm_fw_initialized)
       QM_LogEvent(QM_INFO, "DEINIT", "{}");
    g_qm_fw_initialized = false;
