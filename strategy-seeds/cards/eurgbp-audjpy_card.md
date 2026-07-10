@@ -2,7 +2,7 @@
 strategy_id: SRC02_S09
 ea_id: TBD
 slug: eurgbp-audjpy
-status: DRAFT
+status: IN_REVIEW
 type: strategy
 created: 2026-07-10
 created_by: Research
@@ -27,12 +27,12 @@ logical_symbol: TBD
 period: D1
 expected_trade_frequency: "D1 two-leg basket, approximately 5 logical spread packages/year from 20 OOS state changes over 2023-2024."
 expected_trades_per_year_per_symbol: 5
-g0_status: PENDING_REVIEW
+g0_status: REVIEW
 r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0
+pipeline_phase: G0_REVIEW
 expected_pf: TBD
 expected_dd_pct: TBD
 portfolio_scope: basket
@@ -64,9 +64,12 @@ under `D:/QM/mt5/T_Export/MQL5/Files`.
 
 The published positive-beta pass retained only the already-built
 EURJPY/GBPJPY and AUDUSD/NZDUSD anchors. Reproducing the same 66-pair method
-without discarding negative regression hedges leaves EURGBP/AUDJPY as the next
-strict row after the already-built GBPUSD/USDCAD, EURJPY/GBPJPY,
-AUDUSD/NZDUSD, USDCAD/NZDUSD, and AUDUSD/EURGBP sleeves.
+with `python framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py
+--include-negative-hedges` leaves EURGBP/AUDJPY as the next strict row after
+the already-built GBPUSD/USDCAD, EURJPY/GBPJPY, AUDUSD/NZDUSD,
+USDCAD/NZDUSD, and AUDUSD/EURGBP sleeves. The flag changes only the hedge-sign
+screen; the DEV/OOS split, fixed-beta fit, thresholds, and cost model remain
+unchanged.
 
 | Scan measurement | Value |
 |---|---:|
@@ -289,13 +292,13 @@ data_requirements: "EURGBP.DWX and AUDJPY.DWX D1 plus tester-currency conversion
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-10 | initial all-sign 66-pair candidate extraction | G0 | DRAFT_PENDING_REVIEW |
+| v1 | 2026-07-10 | initial all-sign 66-pair candidate extraction | G0 | IN_REVIEW |
 
 ## 15. Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
-| G0 Research Intake | 2026-07-10 | PENDING_REVIEW | this card |
+| G0 Research Intake | 2026-07-10 | REVIEW | this card + `docs/research/FX_COINTEGRATION_EURGBP_AUDJPY_REVIEW_2026-07-10.md` |
 | Q01 Build Validation | TBD | BLOCKED_NO_EA_ID | TBD |
 | Q02 Baseline Screening | TBD | NOT_ENQUEUED | TBD |
 

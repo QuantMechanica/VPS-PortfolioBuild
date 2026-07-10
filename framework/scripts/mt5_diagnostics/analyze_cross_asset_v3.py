@@ -2,7 +2,15 @@
 (A) Cointegration scan over ALL C(12,2)=66 FX pairs (D1, hedge fit on DEV, OOS net backtest).
 (B) Triangular mispricing reversion (structural, near-zero-param).
 Pure stdlib. DEV 2017-22 / OOS 23-25, net of ~0.8bp/leg. OOS is the judge."""
-import csv, math, os, itertools, datetime as dt
+import argparse, csv, math, os, itertools, datetime as dt
+
+parser=argparse.ArgumentParser(description="Run the fixed DEV/OOS 66-pair FX cointegration scan.")
+parser.add_argument(
+    "--include-negative-hedges",
+    action="store_true",
+    help="Retain negative fitted hedge ratios for the sign-aware research extension.",
+)
+args=parser.parse_args()
 DATA=r"D:/QM/mt5/T_Export/MQL5/Files"; OOS=int(dt.datetime(2023,1,1,tzinfo=dt.timezone.utc).timestamp()); RT=0.00008
 SYMS=["EURUSD","GBPUSD","USDJPY","USDCHF","USDCAD","AUDUSD","NZDUSD","EURJPY","GBPJPY","EURGBP","AUDJPY","EURAUD"]
 def load(s):
@@ -42,13 +50,14 @@ def pairs_backtest(a,b,idxs,hedge,LOOK=60):
 
 print("="*78); print("(A) SYSTEMATIC COINTEGRATION SCAN — all 66 FX pairs, ranked by OOS net Sharpe")
 print("    (require: DEV net Sharpe>0 AND OOS net Sharpe>0.8 AND >=4 OOS trades)")
+print(f"    (hedge universe: {'all fitted signs' if args.include_negative_hedges else 'positive only'})")
 print("="*78)
 res=[]
 for a,b in itertools.combinations(SYMS,2):
     la=[L(a,i) for i in di]; lb=[L(b,i) for i in di]
     if std(lb)==0: continue
     hedge=corr(lb,la)*(std(la)/std(lb))
-    if hedge<=0: continue
+    if hedge<=0 and not args.include_negative_hedges: continue
     sd_s,sd_r,_=pairs_backtest(a,b,di,hedge); so_s,so_r,so_n=pairs_backtest(a,b,oi,hedge)
     sp_dev=[L(a,i)-hedge*L(b,i) for i in di]; ac1=corr(sp_dev[:-1],sp_dev[1:])
     hl=(-math.log(2)/math.log(ac1)) if 0<ac1<1 else 9999
