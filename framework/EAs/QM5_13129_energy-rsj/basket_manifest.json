@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_13129_ENERGY_RSJ_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Market-neutral monthly XTI/XNG relative-signed-jump basket from approved card KISS-RSJ-2025_XTI_XNG_S01. Run on XTIUSD.DWX D1; calculate each leg's RSJ from simple daily returns in the immediately preceding complete broker month, buy the lower-RSJ leg, short the higher-RSJ leg, and evaluate the logical basket rather than standalone legs."
+  ]
+}

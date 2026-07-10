@@ -14961,3 +14961,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11914,ciurea-100sma-cross-h4,7,EURJPY.DWX,119140007,2026-07-10,Codex,active
 11914,ciurea-100sma-cross-h4,8,GBPJPY.DWX,119140008,2026-07-10,Codex,active
 11914,ciurea-100sma-cross-h4,9,AUDJPY.DWX,119140009,2026-07-10,Codex,active
+13129,energy-rsj,0,XTIUSD.DWX,131290000,2026-07-11,Codex,active
+13129,energy-rsj,1,XNGUSD.DWX,131290001,2026-07-11,Codex,active

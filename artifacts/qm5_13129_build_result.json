@@ -1,0 +1,54 @@
+{
+  "task_id": "040412e6-1b99-4127-9e35-7b326c4a230b",
+  "ea_id": "QM5_13129",
+  "ea_label": "QM5_13129_energy-rsj",
+  "slug": "energy-rsj",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13129_energy-rsj.md",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13129_energy-rsj",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13129_energy-rsj\\QM5_13129_energy-rsj.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13129_energy-rsj\\QM5_13129_energy-rsj.ex5",
+  "mq5_sha256": "8f7a41cc4b8cdb86a5e88fb8ca52fdc3c9cedb038e1fccf73e11b41ee53813f0",
+  "ex5_sha256": "cc0109d18736189d1e9b6c84b9c4259133b9d13a1a8ab31f42f006e53fe79a7f",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260710_233037\\QM5_13129_energy-rsj.compile.log",
+  "compile_summary": "D:\\QM\\reports\\compile\\20260710_233037\\summary.csv",
+  "build_check_passed": true,
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260710_233037.json",
+  "build_check_advisories": [],
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "BASKET_OK",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13129_energy-rsj\\sets\\QM5_13129_energy-rsj_QM5_13129_ENERGY_RSJ_D1_D1_backtest.set"
+  ],
+  "setfile_sha256": "a4c9a9625f38d0be738c22d4656a2c71802b26d1127b761d1bfe27801fca78f7",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Build-only workflow; no manual backtest or terminal automation started before Q02 enqueue.",
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13129",
+    "enqueued": [
+      {
+        "work_item_id": "9d4fe6ed-97fc-41d0-9b81-3466cef8d53c",
+        "symbol": "QM5_13129_ENERGY_RSJ_D1",
+        "host_symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "status": "pending",
+        "setfile": "QM5_13129_energy-rsj_QM5_13129_ENERGY_RSJ_D1_D1_backtest.set",
+        "enqueued_at": "2026-07-10T23:31:57+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "registry_validation": {
+    "ea_id_row": "13129,energy-rsj,KISS-RSJ-2025_XTI_XNG_S01,active",
+    "magic_rows": [
+      "13129,energy-rsj,0,XTIUSD.DWX,131290000,active",
+      "13129,energy-rsj,1,XNGUSD.DWX,131290001,active"
+    ],
+    "resolver_contains_ea": true,
+    "global_validator_note": "Targeted registry, resolver, card, spec, build, and basket-scope checks passed; three pre-existing missing-directory resolver warnings were not changed."
+  },
+  "notes": "New low-frequency market-neutral energy sleeve: monthly XTI/XNG relative-signed-jump rank from the immediately preceding complete month of daily returns, equal fixed package risk, no ML/banned indicators. No T_Live, AutoTrading, portfolio gate, live setfile, deploy manifest, or backtest dispatch was touched."
+}
