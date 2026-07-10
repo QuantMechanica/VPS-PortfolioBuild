@@ -1,0 +1,156 @@
+{
+  "task_id": "87ef8fb3-e78b-4f32-99a9-23786fe87008",
+  "ea_id": "QM5_13112",
+  "ea_label": "QM5_13112_xti-levbrk",
+  "slug": "xti-levbrk",
+  "strategy": "XTIUSD.DWX H4 short-only downside continuation after a large completed negative D1 impulse",
+  "strategy_id": "KRISTOUFEK-XTI-LEV-2014_S02",
+  "source_id": "KRISTOUFEK-ENERGY-LEV-2014",
+  "source_links": [
+    "https://doi.org/10.1016/j.eneco.2014.06.009",
+    "https://library.utia.cas.cz/separaty/2014/E/kristoufek-0433531.pdf"
+  ],
+  "symbols": ["XTIUSD.DWX"],
+  "traded_symbols": ["XTIUSD.DWX"],
+  "symbols_registered": ["XTIUSD.DWX"],
+  "logical_symbol": "QM5_13112_XTI_LEVBRK_H4",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "H4",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13112_xti-levbrk",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13112_xti-levbrk\\QM5_13112_xti-levbrk.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13112_xti-levbrk\\QM5_13112_xti-levbrk.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13112_xti-levbrk\\SPEC.md",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13112_xti-levbrk.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13112_xti-levbrk_card.md",
+  "canonical_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\xti-levbrk_card.md",
+  "source_packet_path": "C:\\QM\\repo\\strategy-seeds\\sources\\KRISTOUFEK-ENERGY-LEV-2014\\source.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13112_xti-levbrk\\sets\\QM5_13112_xti-levbrk_XTIUSD.DWX_H4_backtest.set"
+  ],
+  "magic_base": 131120000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 131120000,
+      "registry_status": "active"
+    }
+  ],
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Backtest CPU ceiling / paced-fleet guard: T1, T2, T3, T4, T7, and T8 had active path-anchored non-live MT5 terminals and paced workers covered T1, T2, T3, T4, T6, T7, and T8 at 2026-07-10T09:27:18+00:00; no manual MT5 run was launched.",
+  "blocked_reason": "",
+  "open_questions": [
+    "The source supports negative crude-oil return/volatility asymmetry, not downside-breakout profitability; Q02 must validate the mechanized proxy.",
+    "The source uses front futures while the EA uses the continuous Darwinex XTIUSD.DWX CFD; the basis translation remains a falsification risk."
+  ],
+  "compile": {
+    "status": "PASS",
+    "warnings": 0,
+    "errors": 0,
+    "reason_class": "OK",
+    "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260710_092631\\QM5_13112_xti-levbrk.compile.log",
+    "summary_csv": "D:\\QM\\reports\\compile\\20260710_092631\\summary.csv",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13112_xti-levbrk/QM5_13112_xti-levbrk.mq5 -Strict"
+  },
+  "build_check": {
+    "status": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260710_092644.json",
+    "setfile_build_hash": "dfe8c1ee52f1b3c46adce367b80d3660d4cd2699bf2ba381705f917bcc1e85e2",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13112_xti-levbrk -RepoRoot C:/QM/repo -SkipCompile"
+  },
+  "validations": {
+    "dedup": {
+      "status": "CLEAN_BEFORE_ALLOCATION",
+      "command": "python framework/scripts/research_dedup_check.py check --slug xti-levbrk --strategy-id KRISTOUFEK-XTI-LEV-2014_S02 --author 'Ladislav Kristoufek' --mechanic 'WTI H4 short-only downside continuation after a completed large negative D1 impulse, close-confirmed break below the impulse low, structural stop above impulse high, fixed-R target, weekly gate, and 48-hour exit'"
+    },
+    "spec_doc": {
+      "status": "PASS",
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13112_xti-levbrk"
+    },
+    "card_schema": {
+      "status": "PASS",
+      "command": "python framework/scripts/skill_card_schema_lint.py --card strategy-seeds/cards/approved/QM5_13112_xti-levbrk_card.md"
+    },
+    "g0_card": {
+      "status": "PASS",
+      "command": "python framework/scripts/skill_g0_card_lint.py --card strategy-seeds/cards/approved/QM5_13112_xti-levbrk_card.md"
+    },
+    "symbol_scope": {
+      "status": "PASS",
+      "verdict": "SINGLE_SYMBOL_OK",
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_13112_xti-levbrk --json"
+    },
+    "magic_registry": {
+      "status": "PASS_WITH_PREEXISTING_WARNINGS",
+      "slots": [0],
+      "resolver_rows_kept": 14776,
+      "pre_existing_missing_ea_dir_warnings": [1001, 1015, 1016],
+      "resolver_sha_prefix": "BCCB203C6E3ECF19"
+    },
+    "risk_mode": {
+      "status": "PASS",
+      "backtest_uses_risk_fixed": true,
+      "risk_percent_zero": true,
+      "portfolio_weight": 1
+    },
+    "build_guardrails": {
+      "status": "PASS",
+      "ml_forbidden": "PASS",
+      "external_runtime_data": "PASS",
+      "setfile_schema": "PASS",
+      "friday_close_enabled": true
+    }
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "autotrading_touched": false,
+    "manual_backtest_cpu_used": false
+  },
+  "file_hashes_sha256": {
+    "mq5": "2E2A15163739D4B52D3993EFF9D108233E41775D8906F08DC68587B4FFE63071",
+    "ex5": "7521CAF4005134E8A2E991F18ED0A77B74D732178876C1443F856542DED4640F",
+    "spec": "09B0954C590743AD1162B28FADC5E4A0AF835C02B79C32FE1E06906AA8B668D7",
+    "setfile": "57DFABBDEF4429CBC0E540B74BAD7CD2D27E85ED7D4692C1587A6A85F2E92647",
+    "canonical_card": "5D889E3EF4A6DB6FA164E9283B033A48B42EEA45B70734FDD695FEC3C12E1541",
+    "source_packet": "B9C092A15AA823F259B57D2CD5B1A14AC761D5087393D51906AA23DAF549C0F5"
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "f15fcbab-42d7-45cb-af23-c0baf40bc56f",
+    "status_at_handoff": "pending",
+    "claimed_by": null,
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "H4",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13112_xti-levbrk\\sets\\QM5_13112_xti-levbrk_XTIUSD.DWX_H4_backtest.set",
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "enqueued_at_utc": "2026-07-10T09:30:41+00:00",
+    "note": "Auto-enqueued by farmctl record-build. No manual dispatch or smoke while paced factory automation was at the backtest CPU ceiling."
+  }
+}
