@@ -1,0 +1,18 @@
+{
+  "logical_symbol": "QM5_13119_USDJPY_EURAUD_COINTEGRATION_D1",
+  "host_symbol": "USDJPY.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "USDJPY.DWX",
+    "EURAUD.DWX",
+    "AUDUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg USDJPY/EURAUD FX cointegration basket selected as the final unbuilt strict all-sign row from the OWNER-requested 66-pair scan: DEV net Sharpe 0.5059, OOS net Sharpe 0.8837, OOS return 16.0148%, 23 OOS state changes, fixed beta -1.4182482311707278, and 77.46-day half-life.",
+    "The negative hedge makes long spread long both traded legs and short spread short both legs. Regression neutrality does not imply currency, carry, directional, or portfolio neutrality; Q02 onward remains the judge.",
+    "AUDUSD.DWX is declared only for USD-account conversion/history warmup. USDJPY.DWX and EURAUD.DWX are the only traded legs."
+  ]
+}
+
