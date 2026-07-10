@@ -55,8 +55,8 @@
     "status": "PASS",
     "failures": 0,
     "warnings": 0,
-    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260710_073231.json",
-    "setfile_build_hash": "6efb3f0844f71c245954ccbea70d6a33bf2945c40042e702cb9214d1acc3e07c",
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260710_073403.json",
+    "setfile_build_hash": "8fec508831d740ea0ce449ae672a5b5a3471df04963deb0f18a0902876ab685c",
     "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13110_xng-svol-brk -RepoRoot C:/QM/repo -SkipCompile"
   },
   "validations": {
@@ -129,7 +129,7 @@
     "mq5": "C85911C478FB3A0C28458D32202A61536379283BD6127673E1EC203AD53F3C39",
     "ex5": "64271CB981CD5C6F4DCEFD3533D8AD9F5AABE84C8C69CB494F2DF844067F381E",
     "spec": "A504DB3051E6313F5DB99EC4B32EAB8580667D0D6BCEA27EA2DACDD0E3A38F56",
-    "setfile": "F90726311B970F5547DA4E13FA390400DD9088811531A727088374B97C23C99A",
+    "setfile": "4ED6ED3B2C2EFF655F90BFAABE093B05ACCC50D78780A2C4BF27BC1C278CA0B7",
     "canonical_card": "130683FE73E5478DD5D62EB8ACC13D89A5BE281AF6D9EB917B9748A187C715DF",
     "source_packet": "1EE46CE2C386F914E5CD6B6623C3A987FEBF02FA8E5B1A5E746C165608EE90C0"
   },
