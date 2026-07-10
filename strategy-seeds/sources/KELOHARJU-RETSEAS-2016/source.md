@@ -1,0 +1,125 @@
+---
+source_id: KELOHARJU-RETSEAS-2016
+title: Return Seasonalities / Common Factors in Return Seasonalities
+publisher: Journal of Finance / NBER
+source_type: peer_reviewed_paper_with_open_working_paper
+status: cards_ready
+approval_basis: OWNER mission directive 2026-07-10
+created: 2026-07-10
+created_by: Codex
+cards_extracted:
+  - energy-samecal
+---
+
+# Keloharju, Linnainmaa, and Nyberg Return-Seasonality Source Packet
+
+## Source Identity And Approval
+
+- Keloharju, Matti; Linnainmaa, Juhani T.; and Nyberg, Peter (2016),
+  "Return Seasonalities", *The Journal of Finance* 71(4), 1557-1590.
+- Published DOI: https://doi.org/10.1111/jofi.12398.
+- Full open working-paper version: NBER Working Paper 20815,
+  https://www.nber.org/papers/w20815 and
+  https://www.nber.org/system/files/working_papers/w20815/w20815.pdf.
+- Approval basis: the OWNER mission dated 2026-07-10 directs Codex to select,
+  card, build, and enqueue one new structural commodity/energy sleeve.
+
+The complete 57-page NBER version was reviewed, including the model, data,
+commodity construction, portfolio rules, risk analysis, robustness, tables,
+conclusions, and references. The later *Journal of Finance* publication is the
+peer-reviewed primary citation; the NBER file is the reproducible full text.
+
+## Bounded Extraction
+
+The paper tests whether assets with high historical returns in a given calendar
+month continue to outperform other assets in that same calendar month. Its
+commodity panel contains 24 futures, explicitly including crude oil and natural
+gas, from January 1970 through July 2011. Each month it ranks eligible
+commodities by their average return in that calendar month over prior history,
+using at least five years of data, then buys the high-ranked group and sells the
+low-ranked group.
+
+This packet extracts one constrained energy carrier: `energy-samecal`. It ranks
+only `XTIUSD.DWX` and `XNGUSD.DWX` by their historical same-calendar-month
+returns, buys the higher seasonal leg, and shorts the lower seasonal leg. The
+source uses a broad 24-future cross-section and up to 20 years of history. The
+two-leg DWX port is therefore a falsifiable market-neutral carrier test, not a
+replication of the paper's diversified portfolio.
+
+## QM Translation
+
+On the first tradable D1 bar of each broker month, the EA reconstructs each
+leg's completed return for that same calendar month in prior years:
+
+`r(symbol, year, month) = ln(month_end_close / prior_month_end_close)`.
+
+For every year in which both energy legs have synchronized data, it computes
+the cross-sectional relative seasonal return:
+
+`relative_return = r_XTI - r_XNG`.
+
+The signal is the average relative return across the bounded historical window.
+A positive signal opens long XTI / short XNG; a negative signal opens short XTI
+/ long XNG. Both legs close and rerank at the next month transition. Per-leg
+ATR hard stops, orphan cleanup, and a 35-day stale guard implement the V5 risk
+contract without changing the source ranking direction.
+
+## Evidence And Limitations
+
+- The source commodity portfolio earns 0.93% per month in its sample with a
+  reported t-value of 1.93; this is marginal, diversified evidence, not a
+  forecast for a two-leg CFD basket.
+- The source uses 24 exchange-traded futures and long/short tail portfolios;
+  this port has only two continuous CFD legs.
+- The source uses a 20-year estimation window when available. Local DWX
+  history supports a shorter bounded window, with at least five complete
+  synchronized same-month samples required.
+- The source reports near-zero correlation between its commodity seasonality
+  strategy and equity seasonality strategies. That does not establish
+  correlation against the current QM book; only Q09 may do so.
+- Futures rolls, collateral returns, and contract selection are absent from the
+  continuous Darwinex CFDs. Q02 and later gates must reject the port if that
+  translation destroys economics.
+
+## Non-Duplicate Boundary
+
+- Not `QM5_12733_xti-xng-xmom`: that ranks recent price momentum, not recurring
+  same-calendar-month history.
+- Not `QM5_12840_xti-xng-rspread`: that fades a short-horizon standardized
+  return spread, while this basket holds the historical seasonal rank.
+- Not `QM5_12850_xti-xng-vcb`: no volatility-contraction breakout.
+- Not `QM5_13089_xti-xng-carry`: no swap/carry rank.
+- Not `QM5_13113_energy-mom-ivol`: no momentum or residual-volatility screen.
+- Not the single-symbol WTI or XNG month cards: those use fixed directions in
+  selected months; this reranks two energy legs independently every month from
+  rolling same-calendar-month evidence.
+- Not `QM5_12567_cum-rsi2-commodity`: no RSI, pullback, oscillator, or
+  directional single-leg commodity logic.
+
+Repository dedup was run before allocation with slug `energy-samecal`, strategy
+ID `KELOHARJU-RETSEAS-2016_XTI_XNG_S01`, and the complete mechanic fingerprint;
+the verdict was `CLEAN`.
+
+## Runtime Guardrails
+
+- Native `XTIUSD.DWX` and `XNGUSD.DWX` D1 OHLC, ATR, spread, broker calendar,
+  symbol metadata, and framework position state only.
+- No futures curve, contract chain, inventory, volume, open interest, COT,
+  EIA, weather, external file, API, ML, adaptive PnL fit, grid, martingale, or
+  pyramiding.
+- Backtests use `RISK_FIXED=1000`, `RISK_PERCENT=0`, split equally across the
+  two legs. No live setfile is created.
+- Friday close is disabled for the source-aligned monthly package; monthly
+  reset, per-leg ATR stops, orphan repair, and the 35-day stale guard remain.
+
+## Reputable-Source Criteria
+
+- R1: PASS. Peer-reviewed *Journal of Finance* paper with DOI and complete open
+  NBER version; explicit crude-oil and natural-gas membership and commodity
+  portfolio evidence.
+- R2: PASS. Fixed same-calendar-month historical return estimate, deterministic
+  cross-sectional rank, monthly rebalance, ATR hard stops, and stale exit.
+- R3: PASS. Registered XTIUSD.DWX and XNGUSD.DWX D1 data only.
+- R4: PASS. Deterministic arithmetic; no banned indicator, ML, external runtime
+  data, grid, martingale, pyramiding, or adaptive fitting.
+
