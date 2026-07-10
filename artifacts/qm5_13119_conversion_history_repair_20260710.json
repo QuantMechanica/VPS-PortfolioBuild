@@ -1,0 +1,78 @@
+{
+  "artifact_type": "fx_cointegration_q02_history_scope_repair",
+  "recorded_at_utc": "2026-07-10T20:19:29Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_13119",
+  "slug": "usdjpy-euraud",
+  "logical_symbol": "QM5_13119_USDJPY_EURAUD_COINTEGRATION_D1",
+  "defect": {
+    "class": "PREEMPTIVE_NO_HISTORY_REPAIR",
+    "description": "basket_manifest.json declared AUDUSD.DWX as the USD tester conversion history, but Strategy_EnsureBasketScope selected and warmed only USDJPY.DWX and EURAUD.DWX",
+    "reference_pattern": "QM5_12533 and repaired QM5_13117 warm traded and conversion symbols in one basket scope"
+  },
+  "repair": {
+    "traded_symbols": [
+      "USDJPY.DWX",
+      "EURAUD.DWX"
+    ],
+    "conversion_history_symbols": [
+      "AUDUSD.DWX"
+    ],
+    "scope_symbol_count_before": 2,
+    "scope_symbol_count_after": 3,
+    "strategy_logic_changed": false,
+    "risk_logic_changed": false
+  },
+  "verification": {
+    "strict_compile": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "compile_log": "framework/build/compile/20260710_201825/QM5_13119_usdjpy-euraud.compile.log",
+    "build_check": "PASS",
+    "build_check_failures": 0,
+    "build_check_warnings": 0,
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260710_201859.json",
+    "spec_validation": "PASS",
+    "card_lint": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "symbol_scope_violations": 0,
+    "mq5_sha256": "477f17d5f6799b46b733da018b0bc0e9fb2a3acfa90d9e8e4052aad36de59f45",
+    "ex5_sha256": "d4a88064f131f29bc251331429dcba0618ff2e891ed51e144debe90806b02434",
+    "spec_sha256": "82820b4a0313e00940c86bc7b91ff43e376651ed260788e8fc41efc55a11319a",
+    "setfile_sha256": "c050a55d5fa7495a6a466ef24ba5fab6ad4b21778461dbc2729acfbf6bebb11a",
+    "setfile_build_hash": "e5c0bebb5b80b7fc070d6d24cb4059fd789fd22f50df73d132e44fbb7942cea7"
+  },
+  "risk_contract": {
+    "environment": "backtest",
+    "risk_mode": "RISK_FIXED",
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "queue": {
+    "work_item_id": "f8767f2f-4bcb-4b32-b857-cf9063b1c935",
+    "phase": "Q02",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "priority_track": true,
+    "duplicate_rows_created": 0
+  },
+  "factory_state": {
+    "active_work_items": 4,
+    "pending_work_items": 3612,
+    "factory_off_flag_present": true,
+    "dispatch_invoked": false,
+    "manual_backtest_started": false,
+    "stop_reason": "The paced factory is explicitly OFF; preserve its state and leave the repaired priority Q02 row pending."
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  }
+}

@@ -78,8 +78,11 @@ bool Strategy_EnsureBasketScope()
    if(g_basket_scope_ready)
       return true;
 
-   string allowed[2] = {"USDJPY.DWX", "EURAUD.DWX"};
-   for(int i = 0; i < 2; ++i)
+   // EURAUD settles outside the USD tester currency. Keep the
+   // manifest-declared AUD/USD conversion history in the same warmup scope
+   // so valuation is available before the first package entry.
+   string allowed[3] = {"USDJPY.DWX", "EURAUD.DWX", "AUDUSD.DWX"};
+   for(int i = 0; i < 3; ++i)
       SymbolSelect(allowed[i], true);
 
    QM_SymbolGuardInit(allowed);
@@ -455,6 +458,5 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
 
 
