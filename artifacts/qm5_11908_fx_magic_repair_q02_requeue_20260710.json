@@ -1,0 +1,121 @@
+{
+  "mission_unit": "priority_2_diverse_fx_q02_magic_init_repair_and_requeue",
+  "timestamp_utc": "2026-07-10T14:40:11+00:00",
+  "agent": "codex:agents/board-advisor",
+  "branch": "agents/board-advisor",
+  "farm_claim": {
+    "work_item_id": "4d2cdaf0-6de7-478a-9561-da8df85a98be",
+    "claimed_at_utc": "2026-07-10T14:34:54+00:00",
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_11908_fx_magic_repair_20260710T143454Z.sqlite",
+    "collision_guard": "no active/pending work item, downstream row, or existing agent repair claim for QM5_11908"
+  },
+  "backlog_triage": {
+    "diverse_build_cards_not_runnable": [
+      "QM5_1457 requires Treasury yield, IEF, BIL, and DBC series absent from the approved DWX inputs",
+      "QM5_1459 requires lumber and IEF series absent from the approved DWX inputs"
+    ],
+    "remaining_pending_build_classes": [
+      "index/metal",
+      "XNG"
+    ],
+    "selected_priority": 2
+  },
+  "ea": {
+    "ea_id": "QM5_11908",
+    "label": "QM5_11908_davey-dueling-momentum-h1",
+    "instrument_class": "forex",
+    "timeframe": "H1",
+    "source": "Kevin J. Davey, My 5 Favorite Entries, Entry 5 Dueling Momentum",
+    "g0_status": "APPROVED",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "ml_used": false
+  },
+  "diagnosis": {
+    "prior_q02_rows": 120,
+    "prior_q02_infra_fail_rows": 120,
+    "prior_q02_pass_rows": 0,
+    "prior_open_q02_rows": 0,
+    "root_cause": "ea_id_registry.csv contained active EA 11908 but magic_numbers.csv contained zero EA 11908 rows, so QM_FrameworkInit could not resolve a registered magic for any approved FX symbol; all legacy setfiles also selected slot 0"
+  },
+  "repair": {
+    "factory_commits": [
+      "9997b0a89c7e71fbd028af917aa8facaf8a3e23d",
+      "a838000f6bafc1c77c41e1fd5a1e6b1fd7b1994e"
+    ],
+    "magic_rows_added": 10,
+    "magic_range": [
+      119080000,
+      119080009
+    ],
+    "magic_collisions": 0,
+    "setfiles_regenerated": 10,
+    "setfile_slots": {
+      "EURUSD.DWX": 0,
+      "GBPUSD.DWX": 1,
+      "USDJPY.DWX": 2,
+      "USDCAD.DWX": 3,
+      "USDCHF.DWX": 4,
+      "AUDUSD.DWX": 5,
+      "NZDUSD.DWX": 6,
+      "EURJPY.DWX": 7,
+      "GBPJPY.DWX": 8,
+      "AUDJPY.DWX": 9
+    },
+    "risk_fixed_all_setfiles": 1000,
+    "risk_percent_all_setfiles": 0,
+    "source_corset_repairs": [
+      "magic-scoped one-position gate",
+      "zero-initialized QM_EntryRequest with explicit expiration",
+      "position management and exits before the entry-only news blackout",
+      "documented bounded raw-close reads",
+      "complete Q01 SPEC.md"
+    ]
+  },
+  "validation": {
+    "spec_validation": "PASS",
+    "build_check": "PASS_0_FAILURES_0_WARNINGS",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260710_143802.json",
+    "compile": "PASS_0_ERRORS_0_WARNINGS",
+    "compile_log": "C:/QM/repo/framework/build/compile/20260710_143802/QM5_11908_davey-dueling-momentum-h1.compile.log",
+    "compile_summary": "D:/QM/reports/compile/20260710_143802/summary.csv",
+    "mq5_sha256": "2EDB27F0EEBA658F3C03323C42A356AE705683EEF816F0347C0292510E2CC985",
+    "ex5_sha256": "1FBB3890DC29F1FC2250D7340E8DC1ACA745D7B7B594C0A1698824B83AD0DD86",
+    "magic_registry_sha256": "6079C3209C56DFAE5CD36F1EFE9F118EA2B247C07A585C3DA17AC0770EFD08E0",
+    "resolver_sha256": "A36E0CF4F8657FE8EF27E8BE4AD7192FECD111EB7D367E9F47AB1B39B24B655C"
+  },
+  "q02_handoff": {
+    "staging_policy": "Q02_STAGE1_MAX_SYMBOLS=3",
+    "enqueued": [
+      {
+        "work_item_id": "ab24eb1d-9bb3-43ad-ab66-38253758605b",
+        "symbol": "AUDJPY.DWX"
+      },
+      {
+        "work_item_id": "b9bc2085-d3f4-4cb8-84c3-93b73e71396a",
+        "symbol": "EURUSD.DWX"
+      },
+      {
+        "work_item_id": "79b2b607-802d-4463-adb7-0a99e8c434cc",
+        "symbol": "USDCAD.DWX"
+      }
+    ],
+    "deferred_for_automatic_promotion": [
+      "GBPUSD.DWX",
+      "USDJPY.DWX",
+      "USDCHF.DWX",
+      "AUDUSD.DWX",
+      "NZDUSD.DWX",
+      "EURJPY.DWX",
+      "GBPJPY.DWX"
+    ],
+    "manual_backtest_started": false,
+    "manual_backtest_reason": "Paced Q02 workers own real-evidence execution; compile and deterministic build gates were sufficient for queue handoff"
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
