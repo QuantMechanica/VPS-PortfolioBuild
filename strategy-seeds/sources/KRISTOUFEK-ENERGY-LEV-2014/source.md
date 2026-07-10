@@ -9,6 +9,7 @@ created: 2026-07-10
 created_by: Codex
 cards_extracted:
   - xng-invlev-brk
+  - xti-levbrk
 ---
 
 # Kristoufek Energy-Futures Leverage-Effect Source
@@ -22,10 +23,11 @@ cards_extracted:
 - Full accepted paper:
   `https://library.utia.cas.cz/separaty/2014/E/kristoufek-0433531.pdf`.
 
-The 2026-07-10 mission directive approved one new structural, low-frequency
-commodity/energy card and build. This bounded peer-reviewed source was chosen
-because it documents a natural-gas return/volatility asymmetry that is absent
-from the incumbent `QM5_12567` cumulative-RSI pullback logic.
+The 2026-07-10 mission directives approved bounded structural, low-frequency
+commodity/energy cards and builds. This peer-reviewed source was chosen
+because it separately documents the standard crude-oil leverage effect and a
+natural-gas inverse leverage effect, neither of which is the incumbent
+`QM5_12567` cumulative-RSI pullback logic.
 
 ## Complete Read And Bounded Extraction
 
@@ -34,28 +36,34 @@ literature review, range-volatility methodology, long-memory tests,
 cross-correlation methods, 2000-2013 front-futures dataset, Tables 1-5,
 conclusion, acknowledgements, and references.
 
-The paper studies Brent, WTI, heating oil, and natural-gas futures. Its one
+The paper studies Brent, WTI, heating oil, and natural-gas futures. Its
 distinct natural-gas result is an inverse leverage effect: standardized
 natural-gas returns and logarithmic range volatility are positively correlated
-in both reported detrended measures. The paper also finds no long-range
-cross-correlation, and the 2019 replication says natural-gas significance is
-sensitive to method and return definition. Those limitations prohibit any
-claim of a persistent directional premium.
+in both reported detrended measures. Its separate crude-oil result is a stable,
+statistically significant standard leverage effect: negative returns and
+volatility are associated for both Brent and WTI, with stronger coefficients
+at longer measurement scales. The paper also finds no long-range return/
+volatility cross-correlation, and its literature review records mixed earlier
+WTI asymmetry results. Those limitations prohibit any claim of a persistent
+directional premium.
 
-The source contains no mechanical trading strategy. The sole card therefore
+The source contains no mechanical trading strategy. The XNG card therefore
 uses a positive native-price impulse only as a short-lived volatility regime,
-then lets a separate completed H4 range break discover direction. The
-positive-impulse threshold, confirmation, stop, target, weekly gate, and time
-exit are a falsifiable QM mechanization, not author rules.
+then lets a separate completed H4 range break discover direction. The WTI card
+uses a completed negative D1 impulse as the source-backed volatility regime,
+but enters short only after a later completed H4 close confirms downside trend
+continuation below the impulse low. All thresholds, confirmations, stops,
+targets, weekly gates, and time exits are falsifiable QM mechanizations, not
+author rules.
 
 ## Runtime Guardrails
 
-- Native `XNGUSD.DWX` H4/D1 OHLC, ATR, spread, broker calendar, and framework
-  state only.
+- Native `XNGUSD.DWX` or `XTIUSD.DWX` H4/D1 OHLC, ATR, spread, broker calendar,
+  and framework state only, according to the card's locked symbol.
 - No DCCA/DMCA, GARCH, Hurst estimation, futures curve, roll series, storage,
   weather, EIA feed, API, CSV, volume, open interest, ML, or adaptive fit at
   runtime.
-- One position on magic slot 0 and one accepted entry per broker week.
+- One position on magic slot 0 and one accepted entry per broker week per EA.
 - Backtest setfile only: `RISK_FIXED=1000`, `RISK_PERCENT=0`.
 
 ## R-Rules
@@ -70,8 +78,14 @@ exit are a falsifiable QM mechanization, not author rules.
 
 ## Extraction Completeness
 
-One card was extracted. Crude-oil leverage effects are not separate builds in
-this source pass because the mission requested one edge and the selected XNG
-inverse-asymmetry is the source's distinct non-crude finding. Heating oil is
-not a registered target symbol. No further card remains open under this source.
+Two cards were extracted, one for each distinct registered result needed by
+the approved missions:
 
+- `xng-invlev-brk`: positive-return-conditioned, direction-neutral XNG H4
+  expansion for the inverse-leverage finding.
+- `xti-levbrk`: negative-D1-impulse, short-only WTI H4 continuation for the
+  standard crude-oil leverage finding.
+
+Brent is not extracted because it would be a carrier port of the same crude
+result rather than a distinct strategy. Heating oil is not a registered target
+symbol. No further card remains open under this source.
