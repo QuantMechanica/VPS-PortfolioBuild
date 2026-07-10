@@ -116,5 +116,4 @@ futures-to-CFD basis are hard Q02 risks.
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-07-10 | initial build from approved card | pending strict build evidence |
-
+| v1 | 2026-07-10 | initial build from approved card | strict compile/build PASS; Q02 pending |

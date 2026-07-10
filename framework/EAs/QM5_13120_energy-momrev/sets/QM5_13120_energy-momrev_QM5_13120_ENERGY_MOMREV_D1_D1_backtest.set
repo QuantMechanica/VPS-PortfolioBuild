@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        13120
 ; ea_slug:      energy-momrev
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING_STRICT_COMPILE
+; build_hash:   a82157ac4ea98701a307233301cc5b644bb5a388995718e8c656a606467aafb0
 ; author:       Development
 ; date:         2026-07-10
 ;==========================================================

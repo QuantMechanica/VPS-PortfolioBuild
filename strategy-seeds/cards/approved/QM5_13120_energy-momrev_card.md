@@ -216,12 +216,12 @@ portfolio gate, portfolio admission, or portfolio KPI path is authorized.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| _v1 | 2026-07-10 | initial build | Q02 | IN_PROGRESS |
+| _v1 | 2026-07-10 | initial build | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-10 | APPROVED | this card |
-| P1 Build Validation | 2026-07-10 | IN_PROGRESS | pending strict build evidence |
-| P2 Baseline Screening | 2026-07-10 | QUEUED | pending Q02 worker |
+| P1 Build Validation | 2026-07-10 | PASS | `artifacts/qm5_13120_build_result.json` |
+| P2 Baseline Screening | 2026-07-10 | ENQUEUED | work item `24943b6e-5388-4c4c-9e75-b7b2bad0c02f` |

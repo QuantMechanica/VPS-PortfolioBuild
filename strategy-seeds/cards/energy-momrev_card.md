@@ -47,7 +47,7 @@ review_focus: "Adds a monthly energy momentum-reversal interaction package; real
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
 hard_rules_at_risk: [basket_execution, friday_close, magic_schema, risk_mode_dual, cfd_futures_basis, narrow_cross_section]
-g0_approval_reasoning: "Mission-directed G0 2026-07-10: R1 peer-reviewed JBF DOI/full institutional manuscript with explicit crude-oil and natural-gas contracts; R2 locked synchronized 12/18-month opposite-rank gate; R3 native registered XTI/XNG D1; R4 no ML/banned/external/grid/martingale; exact pre-allocation dedup CLEAN."
+g0_approval_reasoning: "OWNER mission 2026-07-10: R1 peer-reviewed JBF DOI and complete Griffith manuscript; R2 locked synchronized 12/18-month opposite-rank energy package; R3 native registered XTI/XNG D1; R4 no ML, banned indicators, external runtime data, grid, or martingale; exact repository dedup clean."
 ---
 
 # XTI/XNG Momentum-Reversal Double Sort
@@ -216,12 +216,12 @@ portfolio gate, portfolio admission, or portfolio KPI path is authorized.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| _v1 | 2026-07-10 | initial build | Q02 | IN_PROGRESS |
+| _v1 | 2026-07-10 | initial build | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-10 | APPROVED | this card |
-| P1 Build Validation | 2026-07-10 | IN_PROGRESS | pending strict build evidence |
-| P2 Baseline Screening | 2026-07-10 | QUEUED | pending Q02 worker |
+| P1 Build Validation | 2026-07-10 | PASS | `artifacts/qm5_13120_build_result.json` |
+| P2 Baseline Screening | 2026-07-10 | ENQUEUED | work item `24943b6e-5388-4c4c-9e75-b7b2bad0c02f` |
