@@ -1,0 +1,146 @@
+{
+  "task_id": "5bd33354-c9f1-4221-8e51-e78767867913",
+  "ea_id": "QM5_13117",
+  "slug": "eurgbp-audjpy",
+  "strategy": "EURGBP/AUDJPY D1 negative-beta FX cointegration basket",
+  "source_id": "SRC02_S09",
+  "source_citation": "QuantMechanica OWNER-requested all-sign reproduction of the 2026-06-09 66-pair FX cointegration scan, grounded in Ernest Chan's published cointegration method.",
+  "symbols": [
+    "EURGBP.DWX",
+    "AUDJPY.DWX"
+  ],
+  "logical_symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+  "host_symbol": "EURGBP.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\QM5_13117_eurgbp-audjpy.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\QM5_13117_eurgbp-audjpy.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\eurgbp-audjpy_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13117_eurgbp-audjpy_card.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13117_eurgbp-audjpy.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\basket_manifest.json",
+  "magic_base": 131170000,
+  "symbols_registered": [
+    "EURGBP.DWX",
+    "AUDJPY.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\sets\\QM5_13117_eurgbp-audjpy_QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1_D1_backtest.set"
+  ],
+  "mq5_sha256": "13fc019699c92ab389a676f9cc94c5da3c3b549a1afa0ecb351d2bce75bebe5d",
+  "ex5_sha256": "499ae8f89467d00102b377a259e70cf80712b30625400236040c8f34d3ad459a",
+  "spec_sha256": "b406a63d7fb3de766e8a851ad962b37a839d25c93d8bbd18bf6218b6b0754a17",
+  "manifest_sha256": "e8d1fcf2e2b5cd96258b4c4aef496871c54f247ad671e449a3d2f92a2d186387",
+  "approved_card_sha256": "5e6766a557c4090917b959504cb06a77097d570e6ddfbd98e4dc02b9ffde75de",
+  "setfile_header_build_hash": "d85b1951fc1ec37f0983fa402cd62b3f69b1c523a6a1a7885b0f566182e771d9",
+  "setfile_current_sha256": "c54307249e2380d2888c3dc5ae5a3e72f0659be2feaac78c3ef8a3615ef1c101",
+  "scan_ranking": {
+    "source": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "hard_bar_survivor": true,
+    "dev_sharpe": 0.416833593,
+    "oos_net_sharpe": 0.8918614046,
+    "oos_return_pct": 4.475153414,
+    "oos_state_changes": 20,
+    "hedge_beta": -0.12202869296345396,
+    "half_life_days": 36.83805248,
+    "selection_note": "Existing reviewed draft for the highest-ranked strict all-sign row without an EA build after the already-built scan sleeves."
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "EURGBP.DWX",
+        "magic": 131170000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "AUDJPY.DWX",
+        "magic": 131170001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "card_lint": {
+    "command": "python framework/scripts/skill_card_schema_lint.py --card strategy-seeds/cards/approved/QM5_13117_eurgbp-audjpy_card.md",
+    "result": "PASS"
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13117_eurgbp-audjpy",
+    "result": "PASS"
+  },
+  "symbol_scope": {
+    "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_13117_eurgbp-audjpy --json --fail-on-leak",
+    "result": "BASKET_OK"
+  },
+  "compile": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13117_eurgbp-audjpy/QM5_13117_eurgbp-audjpy.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260710_145321\\QM5_13117_eurgbp-audjpy.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260710_145321\\summary.csv"
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13117_eurgbp-audjpy -RepoRoot C:/QM/repo -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260710_145341.json"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Backtest CPU ceiling reached: seven paced factory work items were active, so no manual MT5 process was launched.",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "open_questions": [
+    "The generated build handoff's G: company-reference drive was unavailable in this headless checkout; repository V5 design, approved card, skill contract, and the compile-clean QM5_13106 basket pattern were used."
+  ],
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  },
+  "cpu_ceiling": {
+    "active_work_items": 7,
+    "active_pause_threshold": 7,
+    "manual_backtest_started": false,
+    "dispatch_invoked": false
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "ed75430e-2ff4-4ea1-9d50-e49a7912d323",
+    "status_at_handoff": "pending",
+    "claimed_by": null,
+    "symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\sets\\QM5_13117_eurgbp-audjpy_QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1_D1_backtest.set",
+    "basket_symbols": [
+      "EURGBP.DWX",
+      "AUDJPY.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1,
+      "tester_currency": "USD",
+      "tester_deposit": 100000
+    },
+    "enqueued_at_utc": "2026-07-10T14:55:16+00:00",
+    "note": "Auto-enqueued by farmctl record-build as one logical-basket Q02 row. No manual dispatch because all seven paced workers were active."
+  },
+  "notes": "Built one non-duplicate EURGBP/AUDJPY FX cointegration basket. GBPUSD and USDJPY are conversion/history scope only; stopped at the CPU ceiling before smoke."
+}
