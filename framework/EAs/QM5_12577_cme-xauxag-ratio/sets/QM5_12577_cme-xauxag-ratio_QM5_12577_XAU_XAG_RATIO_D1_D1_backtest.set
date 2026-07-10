@@ -1,4 +1,4 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        12577
 ; ea_slug:      cme-xauxag-ratio
@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2291cb9395f5ad5c1ae0f2610e3b421be152f889e2dcc342eed50df9dcc786de
+; build_hash:   062d854c99391b47cddb2d0cf60bdcc41e9adc19b1ca4be03ba28dc86c738e4c
 ; author:       Development
 ; date:         2026-06-26
 ;==========================================================
