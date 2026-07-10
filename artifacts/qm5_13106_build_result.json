@@ -1,0 +1,136 @@
+{
+  "task_id": "ad9dce6d-8e19-4999-bfed-f9a263354234",
+  "ea_id": "QM5_13106",
+  "slug": "aud-eurgbp-coint",
+  "strategy": "AUDUSD/EURGBP D1 negative-beta FX cointegration basket",
+  "source_id": "AI-CLAUDE-FX-COINT66-20260609-AUDUSD-EURGBP",
+  "source_citation": "QuantMechanica OWNER-requested all-sign rerun of the 2026-06-09 66-pair FX cointegration scan on Darwinex .DWX D1 data.",
+  "symbols": [
+    "AUDUSD.DWX",
+    "EURGBP.DWX"
+  ],
+  "logical_symbol": "QM5_13106_AUDUSD_EURGBP_COINTEGRATION_D1",
+  "host_symbol": "AUDUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13106_aud-eurgbp-coint",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13106_aud-eurgbp-coint\\QM5_13106_aud-eurgbp-coint.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13106_aud-eurgbp-coint\\QM5_13106_aud-eurgbp-coint.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13106_aud-eurgbp-coint\\SPEC.md",
+  "card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\aud-eurgbp-coint_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13106_aud-eurgbp-coint_card.md",
+  "runtime_approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13106_aud-eurgbp-coint.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13106_aud-eurgbp-coint\\basket_manifest.json",
+  "magic_base": 131060000,
+  "symbols_registered": [
+    "AUDUSD.DWX",
+    "EURGBP.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13106_aud-eurgbp-coint\\sets\\QM5_13106_aud-eurgbp-coint_QM5_13106_AUDUSD_EURGBP_COINTEGRATION_D1_D1_backtest.set"
+  ],
+  "mq5_sha256": "0b7ba027d0f946551218e7322131ff992d1af1bb804e863f86db1fb0fa2f3040",
+  "ex5_sha256": "8125826b8a01eb89a3e5ab981d42a51ce6bfc758e3d0ccb3ebefad41f2296e43",
+  "spec_sha256": "c6297d366657e236596553a3159fbb8f98c73fd3741773a8c13f6de21061a90c",
+  "manifest_sha256": "7d5d41f6f204ecfa95006b46bca9daaa0c302150462d715f6b702922db3a7ba0",
+  "approved_card_sha256": "10f586788fd47b3f2144c9f98da6c2ac2514f68860f69b989a33cdebbecd4b99",
+  "setfile_header_build_hash": "99ebb5cb4bac97bcfdbf342428ed4254ae951f250b193e9e0ee296062515b9b4",
+  "setfile_current_sha256": "380b0dc8587cfab504eaa0f603059394675eaf06921225857712e4f5f264ada3",
+  "scan_ranking": {
+    "source": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py",
+    "hard_bar_survivor": true,
+    "rank_by_oos_net_sharpe_full_hedge": 6,
+    "dev_sharpe": 0.5535928821666717,
+    "oos_net_sharpe": 1.0472370393437835,
+    "oos_return_pct": 10.864739725823966,
+    "oos_state_changes": 25,
+    "hedge_beta": -0.0545763736541407,
+    "half_life_days": 112.50376293625608,
+    "selection_note": "Highest OOS-ranked strict 66-pair all-sign row not already built after EURUSD/AUDUSD, GBPUSD/USDCAD, EURJPY/GBPJPY, AUDUSD/NZDUSD, and USDCAD/NZDUSD."
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "magic": {
+    "target_magic_count": 2,
+    "rows": [
+      {
+        "symbol_slot": 0,
+        "symbol": "AUDUSD.DWX",
+        "magic": 131060000,
+        "registry_status": "active"
+      },
+      {
+        "symbol_slot": 1,
+        "symbol": "EURGBP.DWX",
+        "magic": 131060001,
+        "registry_status": "active"
+      }
+    ]
+  },
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "card_lint": {
+    "command": "python framework/scripts/skill_card_schema_lint.py --card strategy-seeds/cards/approved/QM5_13106_aud-eurgbp-coint_card.md",
+    "result": "PASS"
+  },
+  "spec_validation": {
+    "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_13106_aud-eurgbp-coint",
+    "result": "PASS"
+  },
+  "symbol_scope": {
+    "command": "python tools/strategy_farm/validate_symbol_scope.py --ea-label QM5_13106_aud-eurgbp-coint --json",
+    "result": "BASKET_OK"
+  },
+  "compile": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/compile_one.ps1 -EAPath framework/EAs/QM5_13106_aud-eurgbp-coint/QM5_13106_aud-eurgbp-coint.mq5 -Strict",
+    "result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "log_path": "C:\\QM\\repo\\framework\\build\\compile\\20260710_033937\\QM5_13106_aud-eurgbp-coint.compile.log",
+    "summary_path": "D:\\QM\\reports\\compile\\20260710_033937\\summary.csv"
+  },
+  "build_check": {
+    "command": "powershell -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_13106_aud-eurgbp-coint -RepoRoot C:/QM/repo -SkipCompile",
+    "result": "PASS",
+    "failures": 0,
+    "warnings": 0,
+    "report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260710_034206.json"
+  },
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_skipped_reason": "Backtest CPU ceiling reached: seven paced factory workers were active, so no manual MT5 run was launched.",
+  "smoke_report_path": null,
+  "blocked_reason": null,
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "78e5573f-9b83-42fc-8cbc-04125c4e42f1",
+    "status_at_handoff": "pending",
+    "claimed_by": null,
+    "symbol": "QM5_13106_AUDUSD_EURGBP_COINTEGRATION_D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13106_aud-eurgbp-coint\\sets\\QM5_13106_aud-eurgbp-coint_QM5_13106_AUDUSD_EURGBP_COINTEGRATION_D1_D1_backtest.set",
+    "basket_symbols": [
+      "AUDUSD.DWX",
+      "EURGBP.DWX",
+      "GBPUSD.DWX"
+    ],
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1,
+      "tester_currency": "USD",
+      "tester_deposit": 100000
+    },
+    "enqueued_at_utc": "2026-07-10T03:43:22+00:00",
+    "note": "Auto-enqueued by farmctl record-build as one logical-basket Q02 row. No manual dispatch because all seven paced workers were active."
+  },
+  "notes": "Built one non-duplicate AUDUSD/EURGBP FX cointegration basket and stopped at the CPU ceiling after pending Q02 enqueue. GBPUSD is conversion/history scope only."
+}

@@ -183,3 +183,4 @@ Backtests use `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-07-10 | initial all-sign 66-pair strict-survivor basket | G0 | APPROVED |
+| v2 | 2026-07-10 | strict compile and logical basket enqueue as work item 78e5573f-9b83-42fc-8cbc-04125c4e42f1 | Q02 | PENDING_CPU_CEILING |
