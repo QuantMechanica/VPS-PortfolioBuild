@@ -14,7 +14,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.5;
+input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -52,12 +52,14 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
-   if(PositionsTotal() > 0) return false;
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0) return false;
 
-   const double high1 = iHigh(_Symbol, PERIOD_H1, 1);
-   const double low1  = iLow(_Symbol, PERIOD_H1, 1);
-   const double close1 = iClose(_Symbol, PERIOD_H1, 1);
-   const double close_n = iClose(_Symbol, PERIOD_H1, 1 + strategy_daysback); // N bars ago relative to the completed bar
+   // perf-allowed: the Davey rule is defined on raw completed-bar ranges and
+   // closes; all reads are behind the framework's once-per-H1-bar entry gate.
+   const double high1 = iHigh(_Symbol, PERIOD_H1, 1); // perf-allowed
+   const double low1  = iLow(_Symbol, PERIOD_H1, 1); // perf-allowed
+   const double close1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed
+   const double close_n = iClose(_Symbol, PERIOD_H1, 1 + strategy_daysback); // perf-allowed: N bars before the completed bar
    const double atr1 = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
    
    if(high1 <= 0.0 || low1 <= 0.0 || close1 <= 0.0 || close_n <= 0.0 || atr1 <= 0.0) return false;
@@ -72,8 +74,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    for(int i = 0; i < strategy_range_lookback; i++)
    {
       int shift = i + 2;
-      double h = iHigh(_Symbol, PERIOD_H1, shift);
-      double l = iLow(_Symbol, PERIOD_H1, shift);
+      double h = iHigh(_Symbol, PERIOD_H1, shift); // perf-allowed: bounded 50-bar range sample on new bar only
+      double l = iLow(_Symbol, PERIOD_H1, shift); // perf-allowed: bounded 50-bar range sample on new bar only
       if(h > 0 && l > 0)
       {
          ranges[i] = h - l;
@@ -116,6 +118,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.tp = tp;
    req.reason = (side == QM_BUY) ? "DAVEY_MOM_BIGRANGE_LONG" : "DAVEY_MOM_BIGRANGE_SHORT";
    req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
 
    return true;
 }
@@ -165,15 +168,6 @@ void OnTick()
 {
    if(!QM_KillSwitchCheck()) return;
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now)) return;
-   
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows) return;
-   
    if(QM_FrameworkHandleFridayClose()) return;
    if(Strategy_NoTradeFilter()) return;
 
@@ -191,10 +185,21 @@ void OnTick()
       }
    }
 
+   // News blackout gates new entries only. Position management and the hard
+   // time exit above remain active through news windows.
+   if(Strategy_NewsFilterHook(broker_now)) return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows) return;
+
    if(!QM_IsNewBar()) return;
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;

@@ -14894,3 +14894,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13112,xti-levbrk,0,XTIUSD.DWX,131120000,2026-07-10,Codex,active
 13113,energy-mom-ivol,0,XTIUSD.DWX,131130000,2026-07-10,Codex,active
 13113,energy-mom-ivol,1,XNGUSD.DWX,131130001,2026-07-10,Codex,active
+11907,davey-momentum-big-range-h1,0,EURUSD.DWX,119070000,2026-07-10,Codex,active
+11907,davey-momentum-big-range-h1,1,GBPUSD.DWX,119070001,2026-07-10,Codex,active
+11907,davey-momentum-big-range-h1,2,USDJPY.DWX,119070002,2026-07-10,Codex,active
+11907,davey-momentum-big-range-h1,3,USDCAD.DWX,119070003,2026-07-10,Codex,active
+11907,davey-momentum-big-range-h1,4,USDCHF.DWX,119070004,2026-07-10,Codex,active
+11907,davey-momentum-big-range-h1,5,AUDUSD.DWX,119070005,2026-07-10,Codex,active
+11907,davey-momentum-big-range-h1,6,NZDUSD.DWX,119070006,2026-07-10,Codex,active
+11907,davey-momentum-big-range-h1,7,EURJPY.DWX,119070007,2026-07-10,Codex,active
+11907,davey-momentum-big-range-h1,8,GBPJPY.DWX,119070008,2026-07-10,Codex,active
+11907,davey-momentum-big-range-h1,9,AUDJPY.DWX,119070009,2026-07-10,Codex,active
