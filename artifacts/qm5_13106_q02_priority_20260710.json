@@ -1,0 +1,87 @@
+{
+  "mission_unit": "fx_cointegration_existing_card_q02_priority",
+  "timestamp_utc": "2026-07-10T04:45:59+00:00",
+  "agent": "codex-agents-board-advisor",
+  "branch": "agents/board-advisor",
+  "selection": {
+    "strict_scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_scan_survivors": [
+      {
+        "ea_id": "QM5_12533",
+        "pair": "EURJPY.DWX/GBPJPY.DWX",
+        "latest_logical_q02": "PASS",
+        "current_frontier": "Q04_FAIL"
+      },
+      {
+        "ea_id": "QM5_12532",
+        "pair": "AUDUSD.DWX/NZDUSD.DWX",
+        "latest_logical_q02": "PASS",
+        "current_frontier": "Q05_FAIL"
+      }
+    ],
+    "unbuilt_strict_survivor_found": false,
+    "fallback_action": "advance_existing_forex_card",
+    "selected_ea": "QM5_13106",
+    "selected_pair": "AUDUSD.DWX/EURGBP.DWX",
+    "reason": "Newest non-duplicate approved FX cointegration basket already built and awaiting its first logical Q02 run."
+  },
+  "ea": {
+    "ea_id": "QM5_13106",
+    "label": "QM5_13106_aud-eurgbp-coint",
+    "logical_symbol": "QM5_13106_AUDUSD_EURGBP_COINTEGRATION_D1",
+    "host_symbol": "AUDUSD.DWX",
+    "timeframe": "D1",
+    "traded_symbols": [
+      "AUDUSD.DWX",
+      "EURGBP.DWX"
+    ],
+    "conversion_history_symbols": [
+      "GBPUSD.DWX"
+    ],
+    "basket_manifest": "C:/QM/repo/framework/EAs/QM5_13106_aud-eurgbp-coint/basket_manifest.json",
+    "setfile": "C:/QM/repo/framework/EAs/QM5_13106_aud-eurgbp-coint/sets/QM5_13106_aud-eurgbp-coint_QM5_13106_AUDUSD_EURGBP_COINTEGRATION_D1_D1_backtest.set",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "structural": true,
+    "ml_used": false,
+    "expected_trade_frequency": "approximately 3-5 logical spread packages/year",
+    "build_evidence": "artifacts/qm5_13106_build_result.json",
+    "compile_result": "PASS",
+    "build_check_result": "PASS"
+  },
+  "q02_priority_mutation": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "work_item_id": "78e5573f-9b83-42fc-8cbc-04125c4e42f1",
+    "phase": "Q02",
+    "status_before": "pending",
+    "status_after": "pending",
+    "claimed_by_after": null,
+    "attempt_count_after": 0,
+    "priority_track_before": false,
+    "priority_track_after": true,
+    "priority_reason": "OWNER forex-book mission: newest non-duplicate approved FX cointegration basket awaiting Q02 under seven-worker CPU ceiling",
+    "priority_set_by": "codex-agents-board-advisor",
+    "priority_set_at_utc": "2026-07-10T04:45:59+00:00",
+    "open_same_ea_q02_after": 1,
+    "duplicate_work_items_created": 0
+  },
+  "cpu_ceiling": {
+    "pending_work_items_at_handoff": 4590,
+    "active_work_items_at_handoff": 7,
+    "active_pause_threshold": 7,
+    "manual_backtest_started": false,
+    "dispatch_invoked": false,
+    "action": "stop_after_priority_handoff"
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  }
+}
