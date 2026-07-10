@@ -31,20 +31,8 @@ input double strategy_proft_usd           = 5000.0; // Card §8 + §5, pp. 259-2
 input int    strategy_time_cutoff_hhmm    = 1500;   // Card §4 + §6, pp. 259-261: entry gate time < 1500.
 
 CTrade   g_trade;
-datetime g_last_bar_time = 0;
 datetime g_last_session_bar_time = 0;
 bool     g_trade_taken_today = false;
-
-bool IsNewBar()
-  {
-   const datetime t0 = iTime(_Symbol, _Period, 0);
-   if(t0 <= 0)
-      return false;
-   if(t0 == g_last_bar_time)
-      return false;
-   g_last_bar_time = t0;
-   return true;
-  }
 
 int Hhmm(const datetime t)
   {
@@ -56,7 +44,7 @@ int Hhmm(const datetime t)
 void RefreshTradeDayState()
   {
    // Card Build Notes: tradestoday reset occurs on the new session-start H1 bar at 13:00 broker.
-   const datetime bar_t = iTime(_Symbol, _Period, 1);
+   const datetime bar_t = iTime(_Symbol, _Period, 1); // perf-allowed: called only from the framework closed-H1-bar path.
    if(bar_t <= 0)
       return;
 
@@ -164,7 +152,7 @@ double HighestHigh(const int bars)
       return 0.0;
    double hi = -DBL_MAX;
    for(int i = 1; i <= bars; ++i)
-      hi = MathMax(hi, iHigh(_Symbol, _Period, i));
+      hi = MathMax(hi, iHigh(_Symbol, _Period, i)); // perf-allowed: bespoke card-authorized xb window, evaluated once per closed H1 bar.
    return hi;
   }
 
@@ -174,7 +162,7 @@ double LowestLow(const int bars)
       return 0.0;
    double lo = DBL_MAX;
    for(int i = 1; i <= bars; ++i)
-      lo = MathMin(lo, iLow(_Symbol, _Period, i));
+      lo = MathMin(lo, iLow(_Symbol, _Period, i)); // perf-allowed: bespoke card-authorized xb window, evaluated once per closed H1 bar.
    return lo;
   }
 
@@ -194,17 +182,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(g_trade_taken_today)
       return false;
 
-   const datetime bar_t = iTime(_Symbol, _Period, 1);
+   const datetime bar_t = iTime(_Symbol, _Period, 1); // perf-allowed: framework new-bar gate guarantees one closed H1 read.
    if(bar_t <= 0 || Hhmm(bar_t) >= strategy_time_cutoff_hhmm)
       return false;
 
    if(strategy_xb < 1 || strategy_xb2 < 1)
       return false;
 
-   const double c1 = iClose(_Symbol, _Period, 1);
-   const double cmom = iClose(_Symbol, _Period, 1 + strategy_xb2);
-   const double h1 = iHigh(_Symbol, _Period, 1);
-   const double l1 = iLow(_Symbol, _Period, 1);
+   const double c1 = iClose(_Symbol, _Period, 1); // perf-allowed: card-authorized closed-bar value behind QM_IsNewBar().
+   const double cmom = iClose(_Symbol, _Period, 1 + strategy_xb2); // perf-allowed: card-authorized momentum reference behind QM_IsNewBar().
+   const double h1 = iHigh(_Symbol, _Period, 1); // perf-allowed: card-authorized closed-bar extreme behind QM_IsNewBar().
+   const double l1 = iLow(_Symbol, _Period, 1); // perf-allowed: card-authorized closed-bar extreme behind QM_IsNewBar().
    if(c1 <= 0.0 || cmom <= 0.0 || h1 <= 0.0 || l1 <= 0.0)
       return false;
 
@@ -316,7 +304,7 @@ void OnTick()
    ulong ticket;
    GetOurPosition(ptype, price_open, ticket);
 
-   if(!IsNewBar())
+   if(!QM_IsNewBar())
       return;
 
    // Card Build Notes: cancel unfilled day-strategy limit orders on the next H1 bar.
