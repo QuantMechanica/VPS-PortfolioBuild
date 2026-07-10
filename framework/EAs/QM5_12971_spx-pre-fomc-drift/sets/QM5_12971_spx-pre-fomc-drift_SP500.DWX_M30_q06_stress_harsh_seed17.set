@@ -1,0 +1,30 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        12971
+; ea_slug:      spx-pre-fomc-drift
+; ea_version:   v5.0
+; set_version:  s20260710-stress-harsh
+; symbol:       SP500.DWX
+; timeframe:    M30
+; environment:  q06_stress_harsh
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   39a169b8e33954cfdf3cffdb1771ae377bf5b63270388c218e297a0da5f0980a
+; author:       Development
+; date:         2026-07-10
+;==========================================================
+qm_ea_id=12971
+qm_magic_slot_offset=0
+qm_rng_seed=17
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_12971_spx-pre-fomc-drift.md
+strategy_pre_event_entry_hours=24
+strategy_pre_event_exit_min=30
+strategy_atr_period=14
+strategy_sizing_stop_atr_mult=6.0
+strategy_calendar_path="D:\\QM\\data\\news_calendar\\news_calendar_2015_2025.csv"
