@@ -1,0 +1,90 @@
+{
+  "mission_unit": "priority_2_diverse_fx_q02_stale_ex5_repair_requeue",
+  "timestamp_utc": "2026-07-10T10:11:51+00:00",
+  "agent": "codex-agents-board-advisor",
+  "branch": "agents/board-advisor",
+  "claim": {
+    "agent_task_id": "b6ef7033-8da5-4ea2-b680-7cb80c9f7c66",
+    "collision_guard": "no pending/active Q02-Q03 work item or TODO/IN_PROGRESS/REVIEW agent task for QM5_9637 before claim"
+  },
+  "ea": {
+    "ea_id": "QM5_9637",
+    "label": "QM5_9637_williams-ocr-reversal-h4",
+    "instrument_class": "forex",
+    "symbol": "EURUSD.DWX",
+    "timeframe": "H4",
+    "structural_edge": "Larry Williams open-close-range false-continuation reversal",
+    "source": "Larry Williams OCR / open-close-range discussion, ForexFactory Larry Williams cluster",
+    "source_url": "https://www.forexfactory.com/thread/1255877-conversation-with-market-master-larry-williams",
+    "g0_status": "APPROVED",
+    "expected_trades_per_year_per_symbol": {
+      "approved_card": 45,
+      "farm_work_item": 9
+    },
+    "risk_mode": "RISK_FIXED",
+    "ml_used": false
+  },
+  "prior_q02_infra": {
+    "terminal_rows": 48,
+    "strategy_verdict_rows": 0,
+    "latest_work_item_id": "264cc601-1c30-48a7-b1c8-040c5a975317",
+    "latest_status": "failed",
+    "latest_verdict": "INFRA_FAIL",
+    "latest_reason": "summary_missing_retries_exhausted",
+    "latest_updated_at_utc": "2026-06-24T23:42:45+00:00",
+    "diagnosis": "Every retained Q02 attempt ended in infrastructure state without a real tester verdict. The checked-in ex5 predated 20 current V5 framework includes, so it was rebuilt against the current resolver/framework before a guarded retry."
+  },
+  "repair": {
+    "mq5_changed": false,
+    "mq5_sha256": "7266BB385ECC4361A2DFDF417003AAFA0DA90157984D528821CDE88FBD3CCD61",
+    "newer_framework_include_count_before_rebuild": 20,
+    "compile": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "log": "C:/QM/repo/framework/build/compile/20260710_100933/QM5_9637_williams-ocr-reversal-h4.compile.log",
+      "summary": "D:/QM/reports/compile/20260710_100933/summary.csv",
+      "old_ex5_sha256": "6E8C954AAC98FEA65AD92F17698AB3D361090B1587C1AD2F00B8CBC0937B0A35",
+      "new_ex5_sha256": "78069AA42E8A2CA9BE86E0CF5A64320ECEBE35D4F8F2F4CBB700F0D49966D11E",
+      "binary_commit": "804641f65"
+    },
+    "build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260710_101010.json",
+      "setfile_hash_commit": "a7413ee88"
+    },
+    "setfile": {
+      "path": "C:/QM/repo/framework/EAs/QM5_9637_williams-ocr-reversal-h4/sets/QM5_9637_williams-ocr-reversal-h4_EURUSD.DWX_H4_backtest.set",
+      "sha256": "A19512EAB9B2B58BAD8785F545771F17855E86B4E02EE66A61801121B7011AE7",
+      "environment": "backtest",
+      "risk_mode": "FIXED",
+      "risk_fixed": 1000,
+      "risk_percent": 0
+    }
+  },
+  "requeue": {
+    "action": "reset_existing_q02_work_item_to_pending",
+    "work_item_id": "264cc601-1c30-48a7-b1c8-040c5a975317",
+    "phase": "Q02",
+    "symbol": "EURUSD.DWX",
+    "rows_updated": 1,
+    "database_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_9637_q02_stale_ex5_requeue_20260710T101151Z.sqlite",
+    "conditional_guard": "id/EA/phase/symbol match, status=failed, verdict=INFRA_FAIL, claimed_by IS NULL, no pending/active duplicate",
+    "status_after": "pending",
+    "verdict_after": null,
+    "attempt_count_after": 0,
+    "claimed_by_after": null,
+    "open_same_ea_phase_after": 1,
+    "priority_track": true
+  },
+  "safety": {
+    "manual_backtest_started": false,
+    "backtest_cpu_added": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}
