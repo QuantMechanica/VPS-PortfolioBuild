@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        11562
 ; ea_slug:      watthana-2018-candlestick-rsi14-stoch14-h4
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   c75519e255328d8372bc72d8465870e84a818be3ac01de3f9172e3ab4598f8a5
 ; author:       Development
 ; date:         2026-06-11
 ;==========================================================
