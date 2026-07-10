@@ -14,7 +14,7 @@ input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
 
 input group "Risk"
-input double RISK_PERCENT               = 0.5;
+input double RISK_PERCENT               = 0.0;
 input double RISK_FIXED                 = 1000.0;
 input double PORTFOLIO_WEIGHT           = 1.0;
 
@@ -52,11 +52,13 @@ bool Strategy_NoTradeFilter()
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
 {
-   if(PositionsTotal() > 0) return false;
+   if(QM_TM_OpenPositionCount(QM_FrameworkMagic()) > 0) return false;
 
-   const double close1 = iClose(_Symbol, PERIOD_H1, 1);
-   const double close_sl = iClose(_Symbol, PERIOD_H1, 1 + strategy_short_lookback);
-   const double close_slx = iClose(_Symbol, PERIOD_H1, 1 + strategy_long_lookback);
+   // perf-allowed: Davey's signal is defined by three raw completed-bar
+   // closes, and this hook runs behind the framework's once-per-H1-bar gate.
+   const double close1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed
+   const double close_sl = iClose(_Symbol, PERIOD_H1, 1 + strategy_short_lookback); // perf-allowed
+   const double close_slx = iClose(_Symbol, PERIOD_H1, 1 + strategy_long_lookback); // perf-allowed
    
    const double atr1 = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
 
@@ -74,7 +76,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double sl = QM_StopATRFromValue(_Symbol, side, entry, atr1, strategy_atr_sl_mult);
    if(sl <= 0.0) return false;
 
-   double risk_dist = MathAbs(entry - sl);
    double tp_dist = atr1 * strategy_atr_tp_mult;
    double tp = (side == QM_BUY) ? entry + tp_dist : entry - tp_dist;
 
@@ -84,6 +85,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.tp = tp;
    req.reason = (side == QM_BUY) ? "DAVEY_DUELING_LONG" : "DAVEY_DUELING_SHORT";
    req.symbol_slot = qm_magic_slot_offset;
+   req.expiration_seconds = 0;
 
    return true;
 }
@@ -109,8 +111,10 @@ bool Strategy_ExitSignal()
       
       if(strategy_align_exit)
       {
-         const double close1 = iClose(_Symbol, PERIOD_H1, 1);
-         const double close_slx = iClose(_Symbol, PERIOD_H1, 1 + strategy_long_lookback);
+         // perf-allowed: fixed closed-bar comparison implementing the card's
+         // momentum-alignment exit; no rolling history scan occurs here.
+         const double close1 = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed
+         const double close_slx = iClose(_Symbol, PERIOD_H1, 1 + strategy_long_lookback); // perf-allowed
          
          if(close1 > 0.0 && close_slx > 0.0)
          {
@@ -146,15 +150,6 @@ void OnTick()
 {
    if(!QM_KillSwitchCheck()) return;
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now)) return;
-   
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows) return;
-   
    if(QM_FrameworkHandleFridayClose()) return;
    if(Strategy_NoTradeFilter()) return;
 
@@ -172,10 +167,21 @@ void OnTick()
       }
    }
 
+   // News blackout gates new entries only. Position management and the hard
+   // time/momentum exits above remain active through news windows.
+   if(Strategy_NewsFilterHook(broker_now)) return;
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows) return;
+
    if(!QM_IsNewBar()) return;
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;

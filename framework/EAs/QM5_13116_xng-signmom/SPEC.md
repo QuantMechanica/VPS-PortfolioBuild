@@ -87,4 +87,4 @@ path, or AutoTrading setting is part of the build.
 | version | date | reason | next phase |
 |---|---|---|---|
 | v1 | 2026-07-10 | initial XNG return-sign momentum build | Q02 |
-
+| v1.1 | 2026-07-10 | Codex review rework: replace hand-rolled monthly keys with `QM_CalendarPeriodKey(PERIOD_MN1)` and reuse the pooled ATR value for the stop | Q02 |

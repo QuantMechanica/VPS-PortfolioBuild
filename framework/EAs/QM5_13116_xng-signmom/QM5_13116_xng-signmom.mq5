@@ -56,22 +56,13 @@ bool Strategy_IsXngD1()
    return (_Symbol == "XNGUSD.DWX" && _Period == PERIOD_D1);
   }
 
-int Strategy_MonthKey(const datetime value)
-  {
-   if(value <= 0)
-      return 0;
-   MqlDateTime fields;
-   TimeToStruct(value, fields);
-   return fields.year * 100 + fields.mon;
-  }
-
 bool Strategy_IsMonthlyRebalanceBar()
   {
-   const datetime current_bar = iTime(_Symbol, PERIOD_D1, 0); // perf-allowed: O(1) calendar gate behind new-bar.
-   const datetime previous_bar = iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: O(1) calendar gate behind new-bar.
-   if(current_bar <= 0 || previous_bar <= 0)
+   const int current_month = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   const int previous_month = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 1);
+   if(current_month <= 0 || previous_month <= 0)
       return false;
-   return Strategy_MonthKey(current_bar) != Strategy_MonthKey(previous_bar);
+   return current_month != previous_month;
   }
 
 bool Strategy_HasOpenPosition()
@@ -116,7 +107,7 @@ bool Strategy_LoadPositiveProbability(double &probability, int &positive_count)
    // for each distinct month is therefore that month's completed month-end close.
    for(int index = 0; index < copied && close_count < needed_closes; ++index)
      {
-      const int month_key = Strategy_MonthKey(rates[index].time);
+      const int month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, index + 1);
       const double close_value = rates[index].close;
       if(month_key <= 0 || close_value <= 0.0 || !MathIsValidNumber(close_value))
          continue;
@@ -206,7 +197,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!Strategy_IsMonthlyRebalanceBar())
       return false;
 
-   const int month_key = Strategy_MonthKey(iTime(_Symbol, PERIOD_D1, 0)); // perf-allowed: monthly de-duplication behind new-bar.
+   const int month_key = QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
    if(month_key <= 0 || month_key == g_last_attempt_month_key)
       return false;
    g_last_attempt_month_key = month_key;
@@ -234,8 +225,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(atr_last <= 0.0 || !MathIsValidNumber(atr_last))
       return false;
 
-   req.sl = QM_StopATR(_Symbol, req.type, entry_price,
-                       strategy_atr_period, strategy_atr_sl_mult);
+   req.sl = QM_StopATRFromValue(_Symbol, req.type, entry_price,
+                                atr_last, strategy_atr_sl_mult);
    if(req.sl <= 0.0 || !MathIsValidNumber(req.sl))
       return false;
 
@@ -360,4 +351,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
