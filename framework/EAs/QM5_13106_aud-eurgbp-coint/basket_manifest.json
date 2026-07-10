@@ -1,0 +1,18 @@
+{
+  "logical_symbol": "QM5_13106_AUDUSD_EURGBP_COINTEGRATION_D1",
+  "host_symbol": "AUDUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "AUDUSD.DWX",
+    "EURGBP.DWX",
+    "GBPUSD.DWX"
+  ],
+  "notes": [
+    "Two-leg AUDUSD/EURGBP FX cointegration basket from the OWNER-requested all-sign rerun of the 2026-06-09 66-pair scan. It is the highest OOS-ranked strict row not already built after the existing anchors and negative-beta survivors: DEV net Sharpe 0.5536, OOS net Sharpe 1.0472, OOS return 10.8647%, 25 OOS state changes, beta -0.0545763736541407, and 112.50-day half-life.",
+    "The negative hedge makes long spread long both traded legs and short spread short both legs. The small hedge is an explicit directional-risk caveat; the pipeline must judge realized neutrality and portfolio duplication.",
+    "GBPUSD.DWX is declared only for EURGBP profit-currency conversion/history warmup under the USD tester account; AUDUSD.DWX and EURGBP.DWX are the only traded legs."
+  ]
+}
+
