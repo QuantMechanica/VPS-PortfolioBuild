@@ -1,5 +1,5 @@
 ---
-strategy_id: AI-CLAUDE-FX-COINT66-20260609-EURGBP-AUDJPY
+strategy_id: SRC02_S09
 ea_id: TBD
 slug: eurgbp-audjpy
 status: DRAFT
@@ -7,7 +7,7 @@ type: strategy
 created: 2026-07-10
 created_by: Research
 last_updated: 2026-07-10
-source_id: AI-CLAUDE-FX-COINT66-20260609-EURGBP-AUDJPY
+source_id: SRC02
 source_citation: "QuantMechanica OWNER-requested all-sign reproduction of the 2026-06-09 66-pair FX cointegration scan on Darwinex .DWX D1 data; methodology grounded in Chan, Ernest P. (2009), Quantitative Trading, Wiley, Chapter 7 and Example 3.6."
 strategy_type_flags:
   - cointegration-pair-trade
@@ -96,6 +96,15 @@ identity. The small absolute beta leaves substantial EURGBP exposure, so
 not imply currency, USD, carry, or book neutrality. That caveat is a reason for
 high-risk review, not a reason to add an untested filter.
 
+## Hypothesis
+
+A fixed-beta deviation beyond two trailing spread standard deviations should
+mean-revert over a multi-week horizon because the all-sign DEV fit produced a
+positive net result and the measured half-life is 36.84 D1 bars. Keeping the
+beta and thresholds fixed preserves the source hypothesis; any failure under
+real-tick costs, swap, or walk-forward folds rejects this sleeve rather than
+authorizing an adaptive refit.
+
 ## 3. Markets & Timeframes
 
 ```yaml
@@ -114,6 +123,11 @@ portfolio_scope: basket
 Both traded legs and every tester-currency conversion dependency must be
 declared in `basket_manifest.json` at build time. Backtests must use
 `RISK_FIXED`; no live setfile is authorized by this draft.
+
+## Rules
+
+The rules below form one atomic two-leg package. All signal values come from
+closed D1 bars, and all parameters are fixed before a test window begins.
 
 ## 4. Entry Rules
 
@@ -191,6 +205,12 @@ cointegration is called the cointegrating augmented Dickey-Fuller test."
 No external author performance claim is imported for EURGBP/AUDJPY. The scan
 measurements above are explicitly provisional and net only of its approximate
 transaction-cost model.
+
+## Risk
+
+Backtests must use `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
+`PORTFOLIO_WEIGHT=1`. The eventual logical setfile must declare
+`ENV=backtest`; this draft grants no demo, shadow, or live risk authorization.
 
 ## 10. Initial Risk Profile
 
