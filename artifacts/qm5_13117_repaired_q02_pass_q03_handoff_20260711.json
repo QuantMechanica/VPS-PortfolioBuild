@@ -1,0 +1,115 @@
+{
+  "artifact_type": "fx_cointegration_repaired_q02_pass_q03_handoff",
+  "branch": "agents/board-advisor",
+  "created_at_utc": "2026-07-11T04:01:31+00:00",
+  "ea_id": "QM5_13117",
+  "expert": "QM5_13117_eurgbp-audjpy",
+  "logical_symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+  "pair": [
+    "EURGBP.DWX",
+    "AUDJPY.DWX"
+  ],
+  "selection": {
+    "action": "advance_existing_forex_card",
+    "reason": "The two published 66-pair survivors and all five additional strict sign-aware rows already have EA builds, so a new pair would duplicate the exhausted reputable-source frontier.",
+    "anchor_status": {
+      "QM5_12532": "Q02 PASS, Q04 PASS, Q05 FAIL; not Q02-blocked",
+      "QM5_12533": "Q02 PASS, Q04 FAIL; not Q02-blocked"
+    },
+    "strict_sign_aware_rows": [
+      {"pair": "GBPUSD/USDCAD", "ea_id": "QM5_12978", "built": true},
+      {"pair": "EURJPY/GBPJPY", "ea_id": "QM5_12533", "built": true},
+      {"pair": "AUDUSD/NZDUSD", "ea_id": "QM5_12532", "built": true},
+      {"pair": "USDCAD/NZDUSD", "ea_id": "QM5_13003", "built": true},
+      {"pair": "AUDUSD/EURGBP", "ea_id": "QM5_13106", "built": true},
+      {"pair": "EURGBP/AUDJPY", "ea_id": "QM5_13117", "built": true},
+      {"pair": "USDJPY/EURAUD", "ea_id": "QM5_13119", "built": true}
+    ],
+    "scan_command": "python framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "scan_metrics": {
+      "dev_net_sharpe": 0.416833593,
+      "oos_net_sharpe": 0.8918614046,
+      "oos_return_pct": 4.475153414,
+      "oos_state_changes": 20,
+      "fixed_beta": -0.12202869296345396,
+      "half_life_days": 36.83805248
+    }
+  },
+  "strategy_contract_repair": {
+    "class": "CARD_TO_CODE_ZSCORE_WINDOW_MISMATCH",
+    "repair_commit": "72237d508",
+    "history_bars_requested": 61,
+    "scored_observation_index": 0,
+    "calibration_indices": "1..60",
+    "scored_observation_in_calibration": false,
+    "mq5_sha256": "14ddccb7ac7fe8b1c1e9cec4c6a59c7045481de99f15e1728fb38a76cfe6bcd1",
+    "ex5_sha256": "aa8ff930a973632b0dbd9b2694ccf20869f441a4fa7c9eac670339800eb199ef",
+    "setfile_sha256": "c584bcf5b274ae293ebd0ea60ba9ba7ea0ca5a4afda09da2fb50423322531b83",
+    "setfile_build_hash": "4d9aee1701ea38dfa655d983b803ecaba51d6d7f0cd2bef59547b53b63f085d3"
+  },
+  "risk_contract": {
+    "environment": "backtest",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "q02": {
+    "work_item_id": "fb649d4a-3a9e-42e8-ae99-b492d2c65f5e",
+    "supersedes_pre_repair_work_item": "ed75430e-2ff4-4ea1-9d50-e49a7912d323",
+    "status": "done",
+    "verdict": "PASS",
+    "terminal": "T3",
+    "from_date": "2018.07.02",
+    "to_date": "2022.12.31",
+    "model": 4,
+    "total_trades": 112,
+    "profit_factor": 1.46,
+    "net_profit": 4991.52,
+    "drawdown": 3049.81,
+    "drawdown_pct": 2.86,
+    "oninit_failure_detected": false,
+    "real_ticks_marker_detected": true,
+    "log_bomb_detected": false,
+    "attempted_runs": 1,
+    "non_ok_attempts": 0,
+    "evidence_path": "D:/QM/reports/work_items/fb649d4a-3a9e-42e8-ae99-b492d2c65f5e/QM5_13117/20260711_031904/summary.json",
+    "report_size_bytes": 267090,
+    "tester_log_size_bytes": 631370
+  },
+  "q03_handoff": {
+    "work_item_id": "dc01fd4d-0f8f-414a-a6b1-80441204fefc",
+    "parent_task_id": "caf51649-e9fa-4db9-ba79-53632a514992",
+    "status": "pending",
+    "verdict": null,
+    "claimed_by": null,
+    "attempt_count": 0,
+    "action": "reopened_existing_invalidated_row_in_place",
+    "duplicate_row_created": false,
+    "open_q03_rows": 1,
+    "priority_track": true,
+    "event_id": 246685,
+    "event": "repaired_q02_pass_q03_requeued",
+    "database_backup": "D:/QM/strategy_farm/state/backups/farm_state_pre_qm5_13117_repaired_q03_handoff_20260711T040130Z.sqlite",
+    "database_integrity": "ok",
+    "backup_integrity": "ok",
+    "dispatch_invoked": false
+  },
+  "capacity": {
+    "active_work_item_rows_after_run": 3,
+    "running_factory_terminals_after_run": 0,
+    "factory_off_flag_present": true,
+    "cpu_ceiling_reached": false,
+    "additional_backtest_started": false
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "ml_or_banned_indicator_added": false
+  }
+}
