@@ -32,5 +32,6 @@ exits; same-month deal-history guard; and orphan cleanup.
 
 Approval preserves the broad-futures-to-two-CFD narrowing, daily-to-monthly
 translation, fixed-origin dependence, continuous-CFD basis, financing, gaps,
-legging, and costs as binding Q02 kill risks. Live artifacts, portfolio
-admission, and portfolio-gate changes are not approved.
+legging, and costs as binding Q02 kill risks. Q01 passed and logical basket
+work item `ce2bf983-059f-446f-ac69-f02b4a5f594d` is pending at Q02. Live
+artifacts, portfolio admission, and portfolio-gate changes are not approved.
