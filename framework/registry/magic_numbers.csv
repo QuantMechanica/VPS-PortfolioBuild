@@ -14972,6 +14972,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 13133,energy-ivol,0,XTIUSD.DWX,131330000,2026-07-11,Codex,active
 13133,energy-ivol,1,XNGUSD.DWX,131330001,2026-07-11,Codex,active
 13134,energy-vr-mom,0,XTIUSD.DWX,131340000,2026-07-11,Codex,active
+13139,energy-cv-rank,0,XTIUSD.DWX,131390000,2026-07-11,Codex,active
+13139,energy-cv-rank,1,XNGUSD.DWX,131390001,2026-07-11,Codex,active
 11906,watthana-candlestick-rsi-stoch-ea-h1,0,EURUSD.DWX,119060000,2026-07-11,Codex,active
 11906,watthana-candlestick-rsi-stoch-ea-h1,1,GBPUSD.DWX,119060001,2026-07-11,Codex,active
 11906,watthana-candlestick-rsi-stoch-ea-h1,2,USDJPY.DWX,119060002,2026-07-11,Codex,active

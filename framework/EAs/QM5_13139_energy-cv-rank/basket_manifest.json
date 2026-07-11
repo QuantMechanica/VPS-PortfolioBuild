@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_13139_XTI_XNG_CV_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XTI/XNG coefficient-of-variation basket from approved card SZYMANOWSKA-CV-2014_XTI_XNG_S01. Run on XTIUSD.DWX D1; at the first tradable bar of each odd-numbered broker month, reconstruct 37 completed month-end closes, calculate 36 monthly log returns, rank sample variance divided by absolute mean, buy the higher-CV leg, short the lower-CV leg, and evaluate the package rather than standalone legs. Q02 is a strict two-CFD out-of-sample falsification of a broad futures characteristic."
+  ]
+}
