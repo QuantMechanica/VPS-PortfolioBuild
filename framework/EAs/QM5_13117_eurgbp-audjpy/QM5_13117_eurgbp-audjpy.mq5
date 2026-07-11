@@ -123,6 +123,7 @@ bool Strategy_RefreshSpreadState()
   {
    g_state_ready = false;
    const int lookback = MathMax(20, strategy_z_lookback_d1);
+   const int history_count = lookback + 1;
 
    if(!Strategy_EnsureBasketScope())
       return false;
@@ -137,19 +138,18 @@ bool Strategy_RefreshSpreadState()
    ArraySetAsSeries(audjpy, true);
    ArraySetAsSeries(eurgbp_time, true);
    ArraySetAsSeries(audjpy_time, true);
-   if(CopyClose(g_leg_eurgbp, PERIOD_D1, 1, lookback, eurgbp) != lookback) // perf-allowed: new-bar gated.
+   if(CopyClose(g_leg_eurgbp, PERIOD_D1, 1, history_count, eurgbp) != history_count) // perf-allowed: new-bar gated.
       return false;
-   if(CopyClose(g_leg_audjpy, PERIOD_D1, 1, lookback, audjpy) != lookback) // perf-allowed: new-bar gated.
+   if(CopyClose(g_leg_audjpy, PERIOD_D1, 1, history_count, audjpy) != history_count) // perf-allowed: new-bar gated.
       return false;
-   if(CopyTime(g_leg_eurgbp, PERIOD_D1, 1, lookback, eurgbp_time) != lookback) // perf-allowed: new-bar gated alignment check.
+   if(CopyTime(g_leg_eurgbp, PERIOD_D1, 1, history_count, eurgbp_time) != history_count) // perf-allowed: new-bar gated alignment check.
       return false;
-   if(CopyTime(g_leg_audjpy, PERIOD_D1, 1, lookback, audjpy_time) != lookback) // perf-allowed: new-bar gated alignment check.
+   if(CopyTime(g_leg_audjpy, PERIOD_D1, 1, history_count, audjpy_time) != history_count) // perf-allowed: new-bar gated alignment check.
       return false;
 
-   double sum = 0.0;
    double spreads[];
-   ArrayResize(spreads, lookback);
-   for(int i = 0; i < lookback; ++i)
+   ArrayResize(spreads, history_count);
+   for(int i = 0; i < history_count; ++i)
      {
       if(eurgbp_time[i] <= 0 || eurgbp_time[i] != audjpy_time[i])
          return false;
@@ -158,12 +158,17 @@ bool Strategy_RefreshSpreadState()
       spreads[i] = MathLog(eurgbp[i]) - strategy_beta * MathLog(audjpy[i]);
       if(!MathIsValidNumber(spreads[i]))
          return false;
-      sum += spreads[i];
      }
+
+   // Score the newest closed spread against a strictly prior calibration
+   // window, matching pairs_backtest() in analyze_cross_asset_v3.py.
+   double sum = 0.0;
+   for(int i = 1; i < history_count; ++i)
+      sum += spreads[i];
 
    g_spread_mean = sum / (double)lookback;
    double var_sum = 0.0;
-   for(int i = 0; i < lookback; ++i)
+   for(int i = 1; i < history_count; ++i)
      {
       const double d = spreads[i] - g_spread_mean;
       var_sum += d * d;

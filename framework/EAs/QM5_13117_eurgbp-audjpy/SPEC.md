@@ -4,7 +4,7 @@
 **Slug:** eurgbp-audjpy  
 **Source:** SRC02_S09  
 **Author:** Codex  
-**Last revised:** 2026-07-10
+**Last revised:** 2026-07-11
 
 ## 1. Strategy Logic
 
@@ -42,8 +42,11 @@ pyramiding, partial exit, or trailing stop.
 ## 4. Timeframe
 
 - D1 base timeframe, evaluated once per new closed host D1 period.
-- Both traded histories must provide the same aligned D1 timestamps across the
-  full 60-bar state window before the EA may enter.
+- Both traded histories must provide the same aligned D1 timestamps for the
+  newest closed observation and the full 60-bar calibration window before the
+  EA may enter.
+- The newest closed spread is scored against the strictly preceding 60 closed
+  spreads; it is not included in its own mean or standard-deviation estimate.
 - The EA selects and warms the manifest-declared GBPUSD.DWX and USDJPY.DWX
   conversion histories with the traded legs before the first package entry.
 
@@ -88,3 +91,4 @@ ATR hard stop on each leg.
 |---|---|---|---|
 | v1 | 2026-07-10 | Initial build from approved card | 5bd33354-c9f1-4221-8e51-e78767867913 |
 | v2 | 2026-07-10 | Warm manifest-declared USD conversion histories before Q02 | existing Q02 row preserved |
+| v3 | 2026-07-11 | Exclude the scored spread from its prior 60-bar z-score calibration window | existing Q03 row preserved |

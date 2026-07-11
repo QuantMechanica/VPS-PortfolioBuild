@@ -298,6 +298,7 @@ data_requirements: "EURGBP.DWX and AUDJPY.DWX D1 plus tester-currency conversion
 | v2 | 2026-07-10 | explicit forex-book mission approval and atomic QM5_13117 allocation | Q01 | APPROVED_FOR_BUILD |
 | v3 | 2026-07-10 | strict compile and one logical-basket enqueue; smoke deferred at seven-job CPU ceiling | Q02 | PENDING_CPU_CEILING |
 | v4 | 2026-07-11 | targeted paced real-tick baseline completed; unique priority successor enqueued | Q03 | Q02_PASS_Q03_PENDING |
+| v5 | 2026-07-11 | align EA z-score with the card's strictly prior 60-bar calibration window; preserve the existing logical Q03 row | Q03 | PENDING_FACTORY_OFF |
 
 ## 15. Pipeline Phase Status
 
@@ -306,7 +307,7 @@ data_requirements: "EURGBP.DWX and AUDJPY.DWX D1 plus tester-currency conversion
 | G0 Research Intake | 2026-07-10 | APPROVED | explicit forex-book mission + this card + `docs/research/FX_COINTEGRATION_EURGBP_AUDJPY_REVIEW_2026-07-10.md` |
 | Q01 Build Validation | 2026-07-10 | PASS | `D:/QM/reports/framework/21/build_check_20260710_145341.json`; strict compile 0 errors/0 warnings |
 | Q02 Baseline Screening | 2026-07-11 | PASS | work item `ed75430e-2ff4-4ea1-9d50-e49a7912d323`; PF 1.75, 104 trades, 2.82% DD, +6582.67 net |
-| Q03 Parameter Sweep | 2026-07-11 | PENDING | work item `dc01fd4d-0f8f-414a-a6b1-80441204fefc` |
+| Q03 Parameter Sweep | 2026-07-11 | PENDING_FACTORY_OFF | work item `dc01fd4d-0f8f-414a-a6b1-80441204fefc`; `artifacts/qm5_13117_prior_window_repair_20260711.json` |
 
 ## 16. Lessons Captured
 
@@ -322,3 +323,6 @@ data_requirements: "EURGBP.DWX and AUDJPY.DWX D1 plus tester-currency conversion
   without ONINIT or history failure. The same logical row produced 104 tester
   trades at PF 1.75 and 2.82% drawdown, then one guarded Q03 successor inherited
   the basket and RISK_FIXED context.
+- 2026-07-11: The initial EA included the newest closed spread in its own
+  60-bar calibration sample. The repair now scores that observation against
+  60 strictly prior closed spreads, matching both the card and source scan.
