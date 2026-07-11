@@ -99,3 +99,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-11 | Initial build from card | 64dc490e-f8b5-4b7c-9663-9e7780320b5c |
+| v1.1 | 2026-07-11 | Compile recovery; entry-only news gate ordering | 1366fa6a-1a20-4f28-9999-f6d83ecc7793 |
