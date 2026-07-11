@@ -32,7 +32,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q02
+pipeline_phase: Q04
 expected_pf: 1.05
 expected_dd_pct: 25.0
 portfolio_scope: basket
@@ -300,6 +300,8 @@ data_requirements: "USDJPY.DWX and EURAUD.DWX D1 plus AUDUSD.DWX risk-conversion
 | v3 | 2026-07-10 | strict compile and one logical-basket enqueue; smoke deferred at seven-job CPU ceiling | Q02 | PENDING_CPU_CEILING |
 | v4 | 2026-07-11 | align EA z-score with the card's strictly prior 60-bar calibration window; preserve the existing logical Q02 row | Q02 | PENDING_FACTORY_OFF |
 | v5 | 2026-07-11 | preserve the pre-repair real-tick PASS as superseded, route the USDJPY host through the V5 trade manager, declare EURUSD conversion history, clean-build, and enqueue a distinct repaired-binary baseline | Q02 | PENDING_FACTORY_OFF |
+| v6 | 2026-07-11 | repaired binary passed Q02 and deterministic Q03; one de-duplicated Q04 walk-forward row was enqueued | Q04 | PENDING_FACTORY_OFF |
+| v7 | 2026-07-11 | complete the two-fold real-tick walk-forward; 2024 net PF fell below 1.0 | Q04 | FAIL |
 
 ## 15. Pipeline Phase Status
 
@@ -308,7 +310,9 @@ data_requirements: "USDJPY.DWX and EURAUD.DWX D1 plus AUDUSD.DWX risk-conversion
 | G0 Research Intake | 2026-07-10 | APPROVED | explicit forex-book mission + this card + `docs/research/FX_COINTEGRATION_USDJPY_EURAUD_REVIEW_2026-07-10.md` |
 | Q01 Build Validation | 2026-07-11 | PASS | repaired source: `D:/QM/reports/framework/21/build_check_20260711_050630.json`; strict compile `D:/QM/reports/compile/20260711_050605/summary.csv`, 0 errors/0 warnings |
 | Q02 Baseline Screening (pre-repair binary) | 2026-07-11 | PASS_SUPERSEDED | 136 trades, PF 1.06, net +954.43, DD 2.91%; `D:/QM/reports/work_items/f8767f2f-4bcb-4b32-b857-cf9063b1c935/QM5_13119/20260711_043425/summary.json` |
-| Q02 Baseline Screening (repaired binary) | 2026-07-11 | PENDING_FACTORY_OFF | work item `77ec9572-e064-44bd-a756-51647aa383b9`; `artifacts/qm5_13119_framework_repair_q02_requeue_20260711.json` |
+| Q02 Baseline Screening (repaired binary) | 2026-07-11 | PASS | 136 trades, PF 1.06, net +966.39, DD 2.92%; work item `77ec9572-e064-44bd-a756-51647aa383b9` |
+| Q03 Determinism | 2026-07-11 | PASS | two identical 136-trade runs; work item `e786ef7d-aaf8-4813-aae1-1e2f34f62ccb`; `artifacts/qm5_13119_fx_cointegration_q03_pass_20260711.json` |
+| Q04 Walk-Forward | 2026-07-11 | FAIL | F1 net PF 1.437 (40 trades), F2 net PF 0.872 (30 trades); work item `addea337-31f5-4267-b002-1281eaf9f94c` |
 
 ## 16. Lessons Captured
 
@@ -328,3 +332,7 @@ data_requirements: "USDJPY.DWX and EURAUD.DWX D1 plus AUDUSD.DWX risk-conversion
 - 2026-07-11: The tester requested EURUSD.DWX for account-currency P/L
   conversion even though AUDUSD.DWX covers the EA's EURAUD risk sizing. Both
   conversion-only histories are now declared and warmed for the repaired Q02.
+- 2026-07-11: The repaired binary passed Q02 and deterministic Q03 without an
+  ONINIT or history failure, but Q04 exposed year instability: 2023 net PF was
+  1.437 while 2024 net PF was 0.872. This is a strategy FAIL, so no Q05 row was
+  created.
