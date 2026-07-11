@@ -37,7 +37,7 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
+pipeline_phase: Q02
 review_focus: "Falsify whether the isolated 11-to-10-month commodity return slice survives as an opposite-side XTI/XNG carrier. It is neither the certified XNG RSI pullback nor cumulative trend, fixed seasonality, ratio reversion, or a metal/index signal; realized book orthogonality remains unclaimed until Q09."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
 target_modules: [Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ManageOpenPosition, Strategy_ExitSignal, Strategy_NewsFilterHook]
@@ -256,14 +256,15 @@ portfolio admission, or portfolio KPI path is authorized.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-11 | initial XTI/XNG 11-to-10-month microscopic rank | Q01 | APPROVED / IN_BUILD |
+| v1 | 2026-07-11 | initial XTI/XNG 11-to-10-month microscopic rank | Q02 | ENQUEUED |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Verdict | Evidence path |
 |---|---|---|---|
 | G0 Research Intake | 2026-07-11 | APPROVED under OWNER commodity-sleeve mission; R1-R4 and dedup clean | this card |
-| Q01 Build | 2026-07-11 | IN_PROGRESS | framework/EAs/QM5_13144_energy-micro11/ |
+| Q01 Build Validation | 2026-07-11 | PASS: clean staged resolver; strict compile and build check 0/0 | artifacts/qm5_13144_build_result.json |
+| Q02 Baseline Screening | 2026-07-11 | ENQUEUED: pending, attempt 0 | docs/ops/evidence/2026-07-11_qm5_13144_energy_micro11_q02_enqueue.md |
 
 ## Lessons Captured
 

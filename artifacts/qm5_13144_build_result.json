@@ -1,0 +1,182 @@
+{
+  "task_id": "00dbacdc-b4db-406f-9efe-5903b9f18165",
+  "ea_id": "QM5_13144",
+  "ea_label": "QM5_13144_energy-micro11",
+  "slug": "energy-micro11",
+  "strategy": "Monthly XTI/XNG 11-to-10-month microscopic-momentum rank basket",
+  "strategy_id": "FAN-MICROMOM-2014_XTI_XNG_S01",
+  "source_id": "FAN-MICROMOM-2014",
+  "source_links": [
+    "https://research-repository.griffith.edu.au/server/api/core/bitstreams/5b940466-77cf-5789-bdf3-14987ca5a12a/content",
+    "https://ssrn.com/abstract=2827237"
+  ],
+  "symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "read_only_factor_symbols": [],
+  "symbols_registered": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13144_XTI_XNG_MICRO11_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13144_energy-micro11",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13144_energy-micro11\\QM5_13144_energy-micro11.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13144_energy-micro11\\QM5_13144_energy-micro11.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13144_energy-micro11\\SPEC.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13144_energy-micro11\\basket_manifest.json",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13144_energy-micro11_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13144_energy-micro11_card.md",
+  "canonical_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\energy-micro11_card.md",
+  "source_packet_path": "C:\\QM\\repo\\strategy-seeds\\sources\\FAN-MICROMOM-2014\\source.md",
+  "repo_artifact_path": "C:\\QM\\repo\\artifacts\\qm5_13144_build_result.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13144_energy-micro11\\sets\\QM5_13144_energy-micro11_QM5_13144_XTI_XNG_MICRO11_D1_D1_backtest.set"
+  ],
+  "magic_base": 131440000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 131440000,
+      "registry_status": "active"
+    },
+    {
+      "slot": 1,
+      "symbol": "XNGUSD.DWX",
+      "magic": 131440001,
+      "registry_status": "active"
+    }
+  ],
+  "registry_validation": {
+    "ea_id_row": "13144,energy-micro11,FAN-MICROMOM-2014_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11",
+    "magic_rows": [
+      "13144,energy-micro11,0,XTIUSD.DWX,131440000,2026-07-11,Development,active",
+      "13144,energy-micro11,1,XNGUSD.DWX,131440001,2026-07-11,Development,active"
+    ],
+    "resolver_contains_ea": true,
+    "resolver_rows_kept": 14881,
+    "magic_registry_sha256": "2C9A265525C9F71DE0982E76643725F1F9F075312A0CABFFE9463D504FAE4EA8",
+    "resolver_file_sha256": "7BB755B24FD91EB56C002B0C426C05360D4BF7A49FCCD1A576BDB1D2D514AD16",
+    "note": "Resolver was generated from the clean build index, preserving the pre-existing QM5_13122 binding and dropping only historical missing-directory IDs 1001, 1015, and 1016. Unrelated dirty fleet allocations were excluded."
+  },
+  "build_commit": "b13120dadb06386adbf26142b9752da32204e9a9",
+  "mq5_sha256": "37DAA9C3945D480938888BBB4DBD4064798BF2D4EDF45262B01F5E9186FEB6B6",
+  "ex5_sha256": "9FDFC46DF9424BA7BCB8E3639E556AB7F94A5023EA7974FED68073D577A4337E",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "D:\\QM\\reports\\compile\\20260711_155605\\QM5_13144_energy-micro11.compile.log",
+  "compile_summary": "D:\\QM\\reports\\compile\\20260711_155605\\summary.csv",
+  "compile_reproducibility": "PASS_CLEAN_STAGED_RESOLVER",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260711_155510.json",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "BASKET_OK",
+  "card_schema_validation": "PASS",
+  "g0_card_validation": "PASS",
+  "setfile_build_hash": "37daa9c3945d480938888bbb4dbd4064798bf2d4edf45262b01f5e9186feb6b6",
+  "setfile_sha256": "CF0D7787E67CCA4282765F1D97E8534C874C1C7B7042A4CFB94118F1F6D0E8BB",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Build-only paced Q02 enqueue requested; no manual MT5 tester, dispatch tick, worker tick, terminal launch, or backtest was started.",
+  "blocked_reason": null,
+  "open_questions": [
+    "The exact 11-to-10-month rule is supported by a complete doctoral-thesis chapter and related working paper rather than a peer-reviewed journal result; Q02 must treat source quality as a kill risk.",
+    "The source ranks a broad commodity-futures universe into terciles; the fixed XTI/XNG continuous-CFD pair is a deliberately narrow carrier falsification with roll and basis risk.",
+    "Opposite directions and equal fixed-risk halves do not establish dollar, beta, volatility, factor, or realized market neutrality.",
+    "Q02 must retire the carrier if it does not produce at least five completed packages per year or clear the binding economic-quality gates."
+  ],
+  "validations": {
+    "dedup": "CLEAN_PRE_ALLOCATION; POST_ALLOCATION_EXACT_MATCH_IS_SELF",
+    "card_schema": "PASS",
+    "g0_card": "PASS",
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "strict_compile": "PASS_0_ERRORS_0_WARNINGS",
+    "build_check": "PASS_0_FAILURES_0_WARNINGS",
+    "risk_mode": "PASS",
+    "setfile_source_hash": "PASS"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1,
+    "package_allocation": "equal fixed-risk halves with independent frozen ATR(20) x 3.5 hard stops"
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "opposite_side_energy_basket": true,
+    "market_neutral_claimed": false,
+    "manual_backtest_cpu_used": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false
+  },
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13144",
+    "enqueued": [
+      {
+        "work_item_id": "c9aacee9-af30-40f6-b0f7-1b6ad2960a9b",
+        "symbol": "QM5_13144_XTI_XNG_MICRO11_D1",
+        "host_symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "status": "pending",
+        "setfile": "QM5_13144_energy-micro11_QM5_13144_XTI_XNG_MICRO11_D1_D1_backtest.set",
+        "enqueued_at": "2026-07-11T15:59:08+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "c9aacee9-af30-40f6-b0f7-1b6ad2960a9b",
+    "status_at_handoff": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "QM5_13144_XTI_XNG_MICRO11_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13144_energy-micro11\\sets\\QM5_13144_energy-micro11_QM5_13144_XTI_XNG_MICRO11_D1_D1_backtest.set",
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "enqueued_at_utc": "2026-07-11T15:59:08+00:00",
+    "note": "Auto-enqueued by farmctl record-build as one logical basket. No manual dispatch, tester, worker tick, terminal launch, or backtest was started."
+  },
+
+  "file_hashes_sha256": {
+    "mq5": "37DAA9C3945D480938888BBB4DBD4064798BF2D4EDF45262B01F5E9186FEB6B6",
+    "ex5": "9FDFC46DF9424BA7BCB8E3639E556AB7F94A5023EA7974FED68073D577A4337E",
+    "spec": "D200D6B9C7F3B90D500E29A8FBC5952DD1BE40797AE6574E2976665635591C8B",
+    "basket_manifest": "58B306A37452C245D58EEEC88E6F1C7C68F0411B74A97AD375C36E833FEC3333",
+    "setfile": "CF0D7787E67CCA4282765F1D97E8534C874C1C7B7042A4CFB94118F1F6D0E8BB",
+    "canonical_card_pre_enqueue": "4A6AB940E35403C55731A3B166B1D78BF5DE222317619E1DEFBCFACCD182CA26",
+    "canonical_card_post_enqueue": "92A318FAE914EDE4D76D8DD4C4430E2D49086F8F02AB9F1FA94A3973D123EDBB",
+    "approved_card": "2BAFCB004409BBEB294DC2388A5BAC21B1E466E1A3D892DE13E97D533FB22814",
+    "source_packet": "36F576243B27EB3958348CF49232E65DEB0A4C23ABD98FA8964F95839C5E39FF",
+    "magic_registry": "2C9A265525C9F71DE0982E76643725F1F9F075312A0CABFFE9463D504FAE4EA8",
+    "resolver": "7BB755B24FD91EB56C002B0C426C05360D4BF7A49FCCD1A576BDB1D2D514AD16"
+  }
+}
