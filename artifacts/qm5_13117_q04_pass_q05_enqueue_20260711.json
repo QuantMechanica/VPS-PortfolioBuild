@@ -1,0 +1,119 @@
+{
+  "artifact_type": "fx_cointegration_q04_pass_q05_enqueue",
+  "branch": "agents/board-advisor",
+  "head_before_evidence_commit": "709153899465e2cf046c060e4bbf9f1528dea10d",
+  "created_at_utc": "2026-07-11T15:06:24+00:00",
+  "ea_id": "QM5_13117",
+  "expert": "QM5_13117_eurgbp-audjpy",
+  "logical_symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+  "pair": [
+    "EURGBP.DWX",
+    "AUDJPY.DWX"
+  ],
+  "selection": {
+    "action": "advance_existing_forex_card",
+    "reason": "The sign-aware 66-pair scan has exactly seven strict survivors and all seven already have approved cards and basket EA builds. QM5_13117 was the oldest legitimate pending successor, with repaired Q02 and Q03 PASS evidence and one unique Q04 row.",
+    "anchor_status": {
+      "QM5_12532": "Q02 PASS, Q04 PASS, Q05 FAIL; no open ONINIT or NO_HISTORY Q02 blocker.",
+      "QM5_12533": "Q02 PASS, Q04 FAIL; no open ONINIT or NO_HISTORY Q02 blocker."
+    },
+    "strict_sign_aware_survivor_count": 7,
+    "unbuilt_strict_survivor_count": 0,
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md plus framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "method_source": "Ernest P. Chan, Quantitative Trading (Wiley, 2009), Example 3.6 and Chapter 7"
+  },
+  "validated_build": {
+    "mq5_sha256": "14ddccb7ac7fe8b1c1e9cec4c6a59c7045481de99f15e1728fb38a76cfe6bcd1",
+    "ex5_sha256": "aa8ff930a973632b0dbd9b2694ccf20869f441a4fa7c9eac670339800eb199ef",
+    "basket_manifest_sha256": "e8d1fcf2e2b5cd96258b4c4aef496871c54f247ad671e449a3d2f92a2d186387",
+    "backtest_setfile_sha256": "c584bcf5b274ae293ebd0ea60ba9ba7ea0ca5a4afda09da2fb50423322531b83",
+    "build_changed": false
+  },
+  "risk_contract": {
+    "environment": "backtest",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "timeframe": "D1",
+    "structural_only": true,
+    "ml_or_banned_indicators_added": false
+  },
+  "q04_result": {
+    "work_item_id": "82736cf7-2124-4e92-a54d-3102247f73ef",
+    "command": "python tools/strategy_farm/terminal_worker.py --terminal T1 --work-item-id 82736cf7-2124-4e92-a54d-3102247f73ef --timeout-minutes 180",
+    "execution_mode": "factory_off_single_item",
+    "terminal": "T1",
+    "status": "done",
+    "verdict": "PASS",
+    "reason": "F1:pf_net=1.410;F2:pf_net=1.540",
+    "aggregate_path": "D:/QM/reports/work_items/82736cf7-2124-4e92-a54d-3102247f73ef/QM5_13117/Q04/QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1/aggregate.json",
+    "commission_model": "worst_case_dxz_ftmo_notional (DL-073)",
+    "fold_count": 2,
+    "folds": [
+      {
+        "id": "F1",
+        "oos": "2023-01-01/2023-12-31",
+        "status": "OK",
+        "trades": 30,
+        "report_pf": 1.41,
+        "pf_net": 1.4098523645027825,
+        "net_profit": 1116.07,
+        "drawdown": 1933.55,
+        "drawdown_pct": 1.91,
+        "real_ticks": true,
+        "oninit_failure": false,
+        "summary_path": "D:/QM/reports/work_items/82736cf7-2124-4e92-a54d-3102247f73ef/QM5_13117/20260711_145214/summary.json"
+      },
+      {
+        "id": "F2",
+        "oos": "2024-01-01/2024-12-31",
+        "status": "OK",
+        "trades": 34,
+        "report_pf": 1.53,
+        "pf_net": 1.540034993119501,
+        "net_profit": 1486.28,
+        "drawdown": 1686.70,
+        "drawdown_pct": 1.66,
+        "real_ticks": true,
+        "oninit_failure": false,
+        "summary_path": "D:/QM/reports/work_items/82736cf7-2124-4e92-a54d-3102247f73ef/QM5_13117/20260711_145822/summary.json"
+      }
+    ]
+  },
+  "q05_handoff": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_13117 --phase Q05",
+    "work_item_id": "782c0516-b649-4b3b-87e8-12d76d828b64",
+    "status_at_verification": "pending",
+    "verdict": null,
+    "claimed_by": null,
+    "attempt_count": 0,
+    "created_at_utc": "2026-07-11T15:05:46+00:00",
+    "event_name": "cascade_backtest_enqueued",
+    "previous_phase": "Q04",
+    "duplicate_created": false,
+    "tester_launched_for_q05": false
+  },
+  "database_safety": {
+    "backup_path": "D:/QM/strategy_farm/state/backups/farm_state_pre_qm5_13117_q05_20260711T150545Z.sqlite",
+    "live_quick_check": "ok",
+    "backup_quick_check": "ok"
+  },
+  "capacity": {
+    "factory_off_flag_present": true,
+    "cpu_ceiling": 7,
+    "peak_factory_terminal_count_during_q04": 1,
+    "factory_terminal_count_after_q05_enqueue": 0,
+    "cpu_ceiling_reached": false
+  },
+  "safety": {
+    "t_live_observed_read_only": true,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "live_manifest_touched": false
+  }
+}

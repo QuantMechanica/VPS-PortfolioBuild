@@ -1,0 +1,81 @@
+{
+  "schema": "qm5_diverse_q02_infra_repair/v1",
+  "created_at_utc": "2026-07-11T14:58:44.019162+00:00",
+  "mission": "priority_2_diverse_fx_q02_infra_recovery",
+  "ea_id": "QM5_9640",
+  "ea_label": "QM5_9640_colby-disparity-index-h4",
+  "source": "Robert W. Colby, The Encyclopedia of Technical Market Indicators, McGraw-Hill, 2003",
+  "selection_reason": "Approved, price-native H4 structural mean-reversion sleeve with three FX carriers; 48 Q02 rows were infrastructure-only, with no strategy verdict, downstream work, open Q02/Q03 row, or competing claim.",
+  "claim": {
+    "agent_task_id": "6e6d8338-c313-403d-b771-8f8eaa3fdd2a",
+    "claimed_by": "codex:agents/board-advisor",
+    "claim_key": "manual:codex:agents/board-advisor:QM5_9640:q02-infra-recovery:20260711T145257Z",
+    "database_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_9640_q02_repair_claim_20260711T145257Z.sqlite"
+  },
+  "source_failure": {
+    "q02_infra_rows": 48,
+    "historical_oninit_evidence": [
+      "D:/QM/reports/work_items/544e551d-c083-4663-99a5-50b43a94964c/QM5_9640/20260621_103141/summary.json",
+      "D:/QM/reports/work_items/90a93b85-c206-4428-ac15-11a0de8204b2/QM5_9640/20260621_073113/summary.json"
+    ],
+    "review_blocker": "Missing standard entry spread gate and unproven smoke due terminal contention.",
+    "guardrail_blocker": "All four backtest setfiles omitted strategy_time_stop_bars and every other explicit strategy default."
+  },
+  "repair": {
+    "code": [
+      "Added a 50-point entry-only spread ceiling.",
+      "Enforced the approved H4 timeframe.",
+      "Initialized every QM_EntryRequest field explicitly.",
+      "Recompiled against the current V5 framework and magic resolver."
+    ],
+    "setfiles": "Regenerated all four canonical RISK_FIXED=1000 backtest setfiles with ea_id, correct magic slots, and every strategy input default.",
+    "mq5_sha256": "c7ba124a7b84fa89f46ad56bbb7b5290a7e9a88ee6142d637582975b3c34abf5",
+    "ex5_sha256": "324125ceeaf4cffcf0526e1c538a18fc192bc49214c869c9d6397bf5fd2459eb"
+  },
+  "validation": {
+    "compile": "PASS: 0 errors, 0 warnings",
+    "compile_log": "C:/QM/repo/framework/build/compile/20260711_150100/QM5_9640_colby-disparity-index-h4.compile.log",
+    "compile_summary": "D:/QM/reports/compile/20260711_qm5_9640_final/20260711_150100/summary.csv",
+    "build_check": "PASS: 0 failures, 0 warnings",
+    "build_check_report": "D:/QM/reports/framework/21/build_check_20260711_145634.json",
+    "build_guardrails": "PASS",
+    "spec": "PASS",
+    "forbidden_or_ml_indicators": "none"
+  },
+  "q02_requeue": {
+    "database_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_9640_fx_q02_requeue_20260711T145844Z.sqlite",
+    "reset_in_place": true,
+    "rows": [
+      {
+        "id": "6adfc3ea-de56-45af-996f-d9fd904676cd",
+        "symbol": "EURUSD.DWX",
+        "status": "pending",
+        "attempt_count": 0,
+        "setfile_sha256": "8339ffb01b5d960b23b0481c1bb5b7edf0982e58e27cb0888bbdcf123720e063"
+      },
+      {
+        "id": "e20d0f51-55a0-43ec-9523-629028c135f1",
+        "symbol": "GBPUSD.DWX",
+        "status": "pending",
+        "attempt_count": 0,
+        "setfile_sha256": "d08990ddb078f5e1448a90608f335b1cb8a4a3f91266ec4f07a5febd4b38eb89"
+      },
+      {
+        "id": "68575d53-0388-45ae-b38a-acddccf86d4a",
+        "symbol": "USDJPY.DWX",
+        "status": "pending",
+        "attempt_count": 0,
+        "setfile_sha256": "58e03d9abab01cdf6bdd89380a2654a7671b039eaf5ab35595846ae5580fefcb"
+      }
+    ],
+    "deferred_symbol": "XAUUSD.DWX",
+    "reason": "Stage the three FX carriers first to improve instrument diversity without duplicating queue rows."
+  },
+  "cpu_ceiling": {
+    "smoke": "NOT_RUN",
+    "factory_off_flag": true,
+    "active_job": "QM5_13117 Q04 work item 82736cf7-2124-4e92-a54d-3102247f73ef on T1",
+    "decision": "No additional tester process was launched."
+  },
+  "safety": "No T_Live, AutoTrading, portfolio gate, deploy manifest, live setfile, or terminal setting was changed."
+}

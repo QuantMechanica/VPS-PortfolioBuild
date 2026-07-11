@@ -1,0 +1,184 @@
+{
+  "task_id": "cf2dd733-e6d3-431a-850d-ba0a231107e5",
+  "ea_id": "QM5_13142",
+  "ea_label": "QM5_13142_energy-sal-rank",
+  "slug": "energy-sal-rank",
+  "strategy": "Monthly XTI/XNG commodity-salience high-minus-low basket",
+  "strategy_id": "HE-SALIENCE-2025_XTI_XNG_S01",
+  "source_id": "HE-SALIENCE-2025",
+  "source_links": [
+    "https://doi.org/10.13140/RG.2.2.26815.83364",
+    "https://www.researchgate.net/publication/388633155_Salience_Theory_and_the_Returns_of_Commodity_Futures",
+    "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2887956"
+  ],
+  "symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "read_only_factor_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "symbols_registered": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "logical_symbol": "QM5_13142_XTI_XNG_SAL_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13142_energy-sal-rank",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13142_energy-sal-rank\\QM5_13142_energy-sal-rank.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13142_energy-sal-rank\\QM5_13142_energy-sal-rank.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13142_energy-sal-rank\\SPEC.md",
+  "basket_manifest_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13142_energy-sal-rank\\basket_manifest.json",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13142_energy-sal-rank_card.md",
+  "approved_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_13142_energy-sal-rank_card.md",
+  "canonical_card_path": "C:\\QM\\repo\\strategy-seeds\\cards\\energy-sal-rank_card.md",
+  "source_packet_path": "C:\\QM\\repo\\strategy-seeds\\sources\\HE-SALIENCE-2025\\source.md",
+  "repo_artifact_path": "C:\\QM\\repo\\artifacts\\qm5_13142_build_result.json",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_13142_energy-sal-rank\\sets\\QM5_13142_energy-sal-rank_QM5_13142_XTI_XNG_SAL_D1_D1_backtest.set"
+  ],
+  "magic_base": 131420000,
+  "magic": [
+    {
+      "slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 131420000,
+      "registry_status": "active"
+    },
+    {
+      "slot": 1,
+      "symbol": "XNGUSD.DWX",
+      "magic": 131420001,
+      "registry_status": "active"
+    }
+  ],
+  "registry_validation": {
+    "ea_id_row": "13142,energy-sal-rank,HE-SALIENCE-2025_XTI_XNG_S01,active,Research+Development (OWNER commodity-sleeve mission),2026-07-11",
+    "magic_rows": [
+      "13142,energy-sal-rank,0,XTIUSD.DWX,131420000,2026-07-11,Development,active",
+      "13142,energy-sal-rank,1,XNGUSD.DWX,131420001,2026-07-11,Development,active"
+    ],
+    "resolver_contains_ea": true,
+    "resolver_rows_kept": 14877,
+    "magic_registry_sha256": "35517B38948937F17364324E5B084AD43BF842F5305A57F9D826A9C21087BFD8",
+    "resolver_file_sha256": "5233B5975736530E4E9DBFAB8309F6861C7775D58462E6E2A1AC586B1119322B",
+    "note": "Resolver was generated from a clean staged registry, preserving the pre-existing QM5_13122 row and dropping only historical missing-directory IDs 1001, 1015, and 1016. Unrelated dirty fleet allocations were excluded."
+  },
+  "build_commit": "bfae4b40b",
+  "mq5_sha256": "C0D5A7CD173391246806946A37CA7364957918718D02AF8079B9A5A8116EF308",
+  "ex5_sha256": "A50F35F867FED1F17C01FCE167F1E58F944097C0CBEF09FF220D0B0B6F78522A",
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "D:\\QM\\reports\\compile\\20260711_123904\\QM5_13142_energy-sal-rank.compile.log",
+  "compile_summary": "D:\\QM\\reports\\compile\\20260711_123904\\summary.csv",
+  "compile_reproducibility": "PASS_CLEAN_STAGED_RESOLVER",
+  "build_check_passed": true,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260711_123840.json",
+  "spec_validation": "PASS",
+  "guardrail_validation": "PASS",
+  "symbol_scope_validation": "BASKET_OK",
+  "card_schema_validation": "PASS",
+  "g0_card_validation": "PASS",
+  "setfile_build_hash": "b73de46ce71fdb7ab25fcb8a64eedf69f26c80cca549d35b7e70b5f08c4fa5c8",
+  "setfile_sha256": "9796679688E024F80287D18FCD2AE16DF3DF3FE25304BD4DFB79C611E9EAE4EE",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "Build-only paced Q02 enqueue requested; no manual MT5 tester, dispatch tick, worker tick, or backtest was started.",
+  "blocked_reason": null,
+  "open_questions": [
+    "The primary evidence is an author-uploaded academic preprint; the peer-reviewed supplement validates the salience method but not this commodity result.",
+    "The source ranks a broad futures universe; the fixed XTI/XNG/XAU/XAG reference payoff and two traded continuous CFDs are a deliberately bounded carrier falsification.",
+    "The package targets opposite sides and approximate equal dollar notional but does not claim beta, factor, or realized market neutrality.",
+    "Realized portfolio orthogonality is unclaimed until the later portfolio gate measures it."
+  ],
+  "validations": {
+    "dedup": "CLEAN_AFTER_MANUAL_REVIEW",
+    "card_schema": "PASS",
+    "g0_card": "PASS",
+    "spec_doc": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "BASKET_OK",
+    "strict_compile": "PASS_0_ERRORS_0_WARNINGS",
+    "build_check": "PASS_0_FAILURES_0_WARNINGS",
+    "risk_mode": "PASS"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1,
+    "package_allocation": "ATR-stop-risk weights translated toward equal dollar notional with a 20 percent post-rounding mismatch cap"
+  },
+  "constraints": {
+    "structural_only": true,
+    "low_frequency": true,
+    "risk_fixed_backtest_setfile": true,
+    "reputable_primary_source": true,
+    "approximately_equal_notional_long_short_basket": true,
+    "market_neutral_claimed": false,
+    "manual_backtest_cpu_used": false
+  },
+  "live_safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "deploy_manifest_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false
+  },
+  "auto_q02_enqueued": {
+    "ea_id": "QM5_13142",
+    "enqueued": [
+      {
+        "work_item_id": "fd1c8e2c-5047-4e1d-be9a-a6f0aff1c1fe",
+        "symbol": "QM5_13142_XTI_XNG_SAL_D1",
+        "host_symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "status": "pending",
+        "setfile": "QM5_13142_energy-sal-rank_QM5_13142_XTI_XNG_SAL_D1_D1_backtest.set",
+        "enqueued_at": "2026-07-11T12:44:25+00:00"
+      }
+    ],
+    "skipped": []
+  },
+  "q02": {
+    "phase": "Q02",
+    "work_item_id": "fd1c8e2c-5047-4e1d-be9a-a6f0aff1c1fe",
+    "status_at_handoff": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "symbol": "QM5_13142_XTI_XNG_SAL_D1",
+    "host_symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13142_energy-sal-rank\\sets\\QM5_13142_energy-sal-rank_QM5_13142_XTI_XNG_SAL_D1_D1_backtest.set",
+    "risk_payload": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "enqueued_at_utc": "2026-07-11T12:44:25+00:00",
+    "note": "Auto-enqueued by farmctl record-build as one logical basket. No manual dispatch, tester, worker tick, or backtest was started."
+  },
+  "file_hashes_sha256": {
+    "mq5": "C0D5A7CD173391246806946A37CA7364957918718D02AF8079B9A5A8116EF308",
+    "ex5": "A50F35F867FED1F17C01FCE167F1E58F944097C0CBEF09FF220D0B0B6F78522A",
+    "spec": "A868AAB4C89B164E87533D1FF02B6C93505849858E84E74FCCC8B1BA514E1989",
+    "basket_manifest": "FFC98E14A2F9D334FB15947D658C025B40202954082290735B2DA57F383B5157",
+    "setfile": "9796679688E024F80287D18FCD2AE16DF3DF3FE25304BD4DFB79C611E9EAE4EE",
+    "canonical_card_pre_enqueue": "6AEB12ABE5370CDC04204E4F1F314D2EB27282857B7E83844ACAF77B34A8B03D",
+    "canonical_card_post_enqueue": "B41D6A6A786E538074D164959E9EF56A28F4799D64588DE5D978F94D4ACA8035",
+    "approved_card": "89B9FFCD4EA882FFC8ACF173FB703FA297EAC80FA0719604D36C7C62ED4CACD7",
+    "source_packet": "81AE032F1D82295F957B731485F287784A9C284C80EA46BE42C29739FCC3AD84",
+    "magic_registry": "35517B38948937F17364324E5B084AD43BF842F5305A57F9D826A9C21087BFD8",
+    "resolver": "5233B5975736530E4E9DBFAB8309F6861C7775D58462E6E2A1AC586B1119322B"
+  }
+}

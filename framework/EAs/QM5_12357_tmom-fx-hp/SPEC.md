@@ -51,7 +51,7 @@ On each completed D1 bar, the EA reads the latest closed-price window and applie
 |---|---|
 | Base timeframe | `D1` |
 | Multi-timeframe refs | none |
-| Bar gating | `QM_IsNewBar(_Symbol, PERIOD_CURRENT)` (default) |
+| Bar gating | One `QM_IsNewBar(_Symbol, PERIOD_D1)` edge caches the HP signal for management, exits, and entry. |
 
 ---
 
@@ -97,3 +97,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-18 | Initial build from card | 53267b02-36ae-4fdf-ab17-9db938376c71 |
+| v2 | 2026-07-11 | Q02 infrastructure recovery | Current-framework rebuild, canonical per-symbol setfiles, and entry-only news gating; claim 7b3d32a2-7b77-44e6-917b-bb682075ad18. |

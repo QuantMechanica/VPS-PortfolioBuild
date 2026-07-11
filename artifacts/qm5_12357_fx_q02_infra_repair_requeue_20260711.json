@@ -1,0 +1,165 @@
+{
+  "mission_unit": "priority_2_diverse_fx_q02_infra_recovery",
+  "timestamp_utc": "2026-07-11T11:36:37.604799+00:00",
+  "agent": "codex:agents/board-advisor",
+  "branch": "agents/board-advisor",
+  "priority_1_audit": {
+    "eligible_diverse_build_found": false,
+    "pending_cards": {
+      "QM5_1457_as-predict-bonds": "Blocked by card-required Treasury-yield/IEF/BIL/DBC inputs that are not DWX instruments; the farm task already records non_dwx_rates_inputs_required_by_card.",
+      "QM5_1459_as-lumber-gold": "Blocked by unavailable lumber and IEF inputs; the card body retains R3 UNKNOWN.",
+      "QM5_13031_wayward-bbrsi-stopmr": "Approved but restricted to XAU/NDX, the already saturated metal/index cohort."
+    },
+    "fallback_used": "Repair the highest-value collision-free, price-native FX EA with only Q02 infrastructure failures."
+  },
+  "selection": {
+    "ea_id": "QM5_12357",
+    "label": "QM5_12357_tmom-fx-hp",
+    "instrument_class": "forex_plus_metal_and_indices",
+    "priority_carriers": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "timeframe": "D1",
+    "mechanism": "Fixed-lambda Hodrick-Prescott trend-state filter with price confirmation, signal-reversal exit, and ATR hard stop.",
+    "source": "ThewindMom/151-trading-strategies, Strategy 8.1 FX Moving Averages, src/strategies/fx/fx_moving_averages.py",
+    "source_id": "72f9fcfa-6c75-5544-80c4-31e15c9817ab",
+    "g0_status": "APPROVED",
+    "r1_r4": "PASS",
+    "structural_only": true,
+    "ml_or_banned_indicators_added": false,
+    "preclaim_state": {
+      "terminal_q02_infra_fail_rows": 84,
+      "economic_q02_q03_verdict_rows": 0,
+      "open_q02_q03_rows": 0,
+      "downstream_rows": 0,
+      "competing_agent_tasks": 0
+    }
+  },
+  "farm_claim": {
+    "agent_task_id": "7b3d32a2-7b77-44e6-917b-bb682075ad18",
+    "claim_key": "manual:codex:agents/board-advisor:QM5_12357:q02-infra-recovery:20260711T112336Z",
+    "claimed_at_utc": "2026-07-11T11:23:36.710724+00:00",
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12357_q02_repair_claim_20260711T112336Z.sqlite",
+    "collision_guard": "No open Q02/Q03 work item, economic verdict, downstream row, or competing task existed when the claim was acquired."
+  },
+  "diagnosis": {
+    "failure_evidence": "All 84 retained Q02 attempts ended INFRA_FAIL, predominantly summary_missing_retries_exhausted, without an economic verdict.",
+    "package_defects": [
+      "The EX5 and generated setfiles were stale relative to the current framework contract.",
+      "All setfiles used slot 0, retained build_hash=pending, and omitted the EA and strategy input contract.",
+      "News filtering defaulted on and ran before management, exits, and the D1 bar latch, introducing an entry-calendar dependency into core strategy lifecycle processing.",
+      "The HP signal was recomputed inside entry processing while reversal exits depended on stale signal state."
+    ],
+    "scope": "Package-local repair only; no shared framework, registry, portfolio gate, or live configuration change."
+  },
+  "repair": {
+    "changes": [
+      "Cache one completed-D1-bar HP signal for management, neutral/opposite-signal exits, and entry.",
+      "Run Friday handling, strategy management, and hard exits before entry-only news gating.",
+      "Default news temporal/compliance modes off for this price-native card while preserving explicit configurable inputs.",
+      "Restrict the exit loop to the host symbol and framework magic.",
+      "Regenerate seven canonical D1 backtest setfiles with allocated slots 0-6, complete strategy defaults, RISK_FIXED=1000, RISK_PERCENT=0, and non-pending build hashes.",
+      "Rebuild the final EX5 from a detached clean-HEAD framework snapshot so unrelated shared-worktree include edits cannot enter the binary."
+    ],
+    "mq5_sha256": "d501619424faa0812affd381b156c198cd5bf3b1f93bba0e28dc3a2c07e79690",
+    "ex5_sha256": "825e11cfcf68f908af3f659077c91437d58113470f2acf04c05eca6459eac411",
+    "setfile_sha256": {
+      "EURUSD.DWX": "bfc41b000005e2b35539bb7b7fad04a55e3ba59c10a67d53960805c48d757142",
+      "GBPUSD.DWX": "fcaf22f2e5b06980e41bad8ab835c4a25b6a3c5f222efb90bda5b9c00f0a0b73",
+      "USDJPY.DWX": "73b6a6a68ad901bb0481ce15a23a45ec18e71432d27ecb2b1c14376faef7df9e",
+      "XAUUSD.DWX": "8177121f348c4ead2f0deb6b073074aa46265c421e348edb6a5d796e82bc0f5a",
+      "GDAXI.DWX": "651ce78759689e8d6b1dab729754e96d28abd9de30fba2acdae69c0ea6147abd",
+      "NDX.DWX": "303402b2423d8f34f57d5f7b44b114ed97e4e24667718f469d9b3efff4fcca24",
+      "WS30.DWX": "37480aadfcc932b141d610b8f1347ea818aeae6ccdafc3b02e61762844624d1e"
+    }
+  },
+  "validation": {
+    "spec_validation": "PASS",
+    "build_guardrails": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK (0 violations)",
+    "strategy_conformance_findings": 0,
+    "dirty_worktree_build_check": {
+      "result": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:/QM/reports/framework/21/build_check_20260711_112740.json"
+    },
+    "clean_snapshot_build_check": {
+      "result": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "base_head": "82464f9641fa5d0ecd424db3f98c2648fff1b4cf",
+      "report": "D:/QM/reports/framework/21/build_check_20260711_113151.json",
+      "compile_summary": "D:/QM/reports/compile/20260711_113151/summary.csv",
+      "compile_log": "D:/QM/reports/compile/20260711_113151/QM5_12357_tmom-fx-hp.compile.log",
+      "current_head_delta_note": "The only commits added after the clean snapshot and before evidence creation changed unrelated artifacts/docs, not framework includes."
+    }
+  },
+  "smoke": {
+    "result": "PASS",
+    "summary": "D:/QM/reports/smoke/QM5_12357/20260711_113416/summary.json",
+    "evidence": "D:/QM/reports/framework/22/20260711_113416_QM5_12357_T6_EURUSD_DWX_run_smoke.md",
+    "terminal": "T6",
+    "symbol": "EURUSD.DWX",
+    "period": "D1",
+    "year": 2024,
+    "model": 4,
+    "deterministic_runs": 2,
+    "trades_per_run": 49,
+    "profit_factor_per_run": 0.99,
+    "net_profit_per_run": -141.42,
+    "oninit_failure_detected": false,
+    "interpretation": "Runtime and deterministic trade-generation evidence only; Q02 owns the full-history economic verdict."
+  },
+  "q02_handoff": {
+    "enqueued_at_utc": "2026-07-11T11:36:37.604799+00:00",
+    "timeframe": "D1",
+    "from_date": "2017.01.01",
+    "to_date": "2024.12.31",
+    "effective_min_trades": 40,
+    "work_items": [
+      {
+        "id": "f80841af-4300-4210-9d0e-a92644710ce6",
+        "symbol": "EURUSD.DWX",
+        "status": "pending",
+        "attempt_count": 0,
+        "claimed_by": null
+      },
+      {
+        "id": "c6fda705-0054-4c98-a55f-46728cee3879",
+        "symbol": "GBPUSD.DWX",
+        "status": "pending",
+        "attempt_count": 0,
+        "claimed_by": null
+      },
+      {
+        "id": "2facbe98-172e-4362-818b-3febb4e7dff7",
+        "symbol": "USDJPY.DWX",
+        "status": "pending",
+        "attempt_count": 0,
+        "claimed_by": null
+      }
+    ],
+    "db_backup": "D:/QM/strategy_farm/state/backups/farm_state_before_qm5_12357_q02_requeue_20260711T113637Z.sqlite",
+    "duplicate_guard": "Exactly three open rows exist for QM5_12357 after the guarded transaction; the latest terminal INFRA_FAIL row for each FX carrier was reset in place, so no row was inserted.",
+    "factory_off_at_enqueue": false
+  },
+  "risk_and_safety": {
+    "environment": "backtest",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "pre_smoke_factory_terminal": "T2",
+    "pre_smoke_metatester_processes": 1,
+    "backtest_cpu_ceiling_hit": false,
+    "smoke_invocations": 1,
+    "manual_smoke_retries": 0,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  }
+}

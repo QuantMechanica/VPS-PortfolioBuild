@@ -1,4 +1,4 @@
-;==========================================================
+﻿;==========================================================
 ; QM5 Set File
 ; ea_id:        11112
 ; ea_slug:      sr-lines-fade
@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   8aea1c22e9051a01cc599b3502e81b0e65e6ac2d1d73388756a1b370e96ad962
 ; author:       Development
 ; date:         2026-06-20
 ;==========================================================

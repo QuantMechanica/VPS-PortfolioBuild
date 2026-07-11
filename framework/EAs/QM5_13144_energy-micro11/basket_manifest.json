@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_13144_XTI_XNG_MICRO11_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XTI/XNG 11-to-10-month microscopic-momentum basket from approved card FAN-MICROMOM-2014_XTI_XNG_S01. Run on XTIUSD.DWX D1; at the first tradable bar of every broker month, calculate each leg's log return between the t-11 and t-10 completed-month boundaries, buy the higher-return leg, short the lower-return leg, and evaluate the package rather than standalone legs. Thesis/working-paper evidence quality, broad-futures-to-two-CFD narrowing, continuous-CFD basis, and sparse two-name ranking are binding Q02 falsification risks."
+  ]
+}

@@ -14996,3 +14996,11 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11903,lawler-supply-demand-zones-20-dma-h1,9,AUDJPY.DWX,119030009,2026-07-11,Codex,active
 13140,energy-aliq-rank,0,XTIUSD.DWX,131400000,2026-07-11,Development,active
 13140,energy-aliq-rank,1,XNGUSD.DWX,131400001,2026-07-11,Development,active
+13141,energy-ie-rank,0,XTIUSD.DWX,131410000,2026-07-11,Development,active
+13141,energy-ie-rank,1,XNGUSD.DWX,131410001,2026-07-11,Development,active
+13142,energy-sal-rank,0,XTIUSD.DWX,131420000,2026-07-11,Development,active
+13142,energy-sal-rank,1,XNGUSD.DWX,131420001,2026-07-11,Development,active
+13143,energy-es-rank,0,XTIUSD.DWX,131430000,2026-07-11,Development,active
+13143,energy-es-rank,1,XNGUSD.DWX,131430001,2026-07-11,Development,active
+13144,energy-micro11,0,XTIUSD.DWX,131440000,2026-07-11,Development,active
+13144,energy-micro11,1,XNGUSD.DWX,131440001,2026-07-11,Development,active

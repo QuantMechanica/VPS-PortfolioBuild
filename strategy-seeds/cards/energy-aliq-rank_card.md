@@ -242,7 +242,7 @@ portfolio admission, or portfolio KPI path is authorized.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-07-11 | initial monthly XTI/XNG ALIQ basket | Q02 | PENDING |
+| v1 | 2026-07-11 | initial monthly XTI/XNG ALIQ basket | Q02 | ENQUEUED |
 
 ## Lessons Captured
 

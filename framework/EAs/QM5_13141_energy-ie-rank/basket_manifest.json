@@ -1,0 +1,22 @@
+{
+  "logical_symbol": "QM5_13141_XTI_XNG_IE_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX",
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "read_only_factor_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XTI/XNG idiosyncratic-exceedance basket from approved card HAN-IE-2023_XTI_XNG_S01. Run on XTIUSD.DWX D1 and evaluate the paired package rather than standalone legs. At each broker-month transition, use synchronized simple returns from the prior six completed months, residualize each energy leg on an equal-weight XTI/XNG/XAU/XAG factor and its square, buy lower IE, sell higher IE, and reject excessive post-rounding dollar-notional mismatch. XAU and XAG are read-only factor members. Q02 is a strict four-CFD-factor and two-CFD-rank falsification; no source performance or portfolio admission is claimed."
+  ]
+}

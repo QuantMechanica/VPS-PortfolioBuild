@@ -3,32 +3,26 @@
 ; ea_id:        9191
 ; ea_slug:      mql5-butterfly
 ; ea_version:   v5.0
-; set_version:  s20260610-001
+; set_version:  s20260711-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   c64615da840c225d4defd7969135ad7afc1f55ceeeb98ea2b194165be18e8ece
 ; author:       Development
-; date:         2026-06-10
+; date:         2026-07-11
 ;==========================================================
+qm_ea_id=9191
 qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9191_mql5-butterfly.md
+strategy_pivot_strength=3
+strategy_pivot_lookback=600
+strategy_atr_period=14
+strategy_min_xa_atr_mult=1.0
+strategy_ratio_tol=0.05

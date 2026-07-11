@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_13143_XTI_XNG_ES_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XTI/XNG expected-shortfall basket from approved card YIYI-ES-2025_XTI_XNG_S02. Run on XTIUSD.DWX D1; at the first tradable bar of every broker month, calculate the mean of the worst 5% of simple daily returns from the prior twelve completed months, buy the higher-ES leg, short the lower-ES leg, and evaluate the package rather than standalone legs. Broad-futures-to-two-CFD narrowing, continuous-CFD basis, and weak full-sample one-way source significance are binding Q02 falsification risks."
+  ]
+}
