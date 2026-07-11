@@ -1,0 +1,114 @@
+{
+  "artifact_type": "q02_infrastructure_recovery",
+  "captured_at_utc": "2026-07-11T00:08:03.716550+00:00",
+  "ea_id": "QM5_1226",
+  "ea_slug": "psaradellis-oil-channel",
+  "instrument": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "diversity_class": "energy_crude_oil_beyond_XNG",
+  "source": {
+    "authors": [
+      "Ioannis Psaradellis",
+      "Jason Laws",
+      "Athanasios A. Pantelous",
+      "Georgios Sermpinis"
+    ],
+    "title": "Performance of Technical Trading Rules: Evidence from the Crude Oil Market",
+    "publication": "European Journal of Finance (2019)",
+    "ssrn": "2832600",
+    "approved_card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1226_psaradellis-oil-channel.md"
+  },
+  "coordination": {
+    "agent_task_id": "d96c13e5-466c-44b5-abb3-e7e17cf73dbe",
+    "claim_key": "manual:codex:agents/board-advisor:QM5_1226:q02-infra-rescue",
+    "duplicate_check": "no pending or active Q02 work item and no competing active agent task at enqueue",
+    "historical_q02_attempts": 12,
+    "historical_infra_failures": 12,
+    "historical_final_failure": "summary_missing_retries_exhausted"
+  },
+  "repair": {
+    "taxonomy": [
+      "infra:SUMMARY_MISSING_RETRIES_EXHAUSTED",
+      "infra:STALE_Q01_ARTIFACT"
+    ],
+    "changes": [
+      "replaced raw timeseries calls and duplicate bar timestamps with one framework new-bar edge and cached bounded D1 state",
+      "kept position management and channel exits active through entry-only news gates",
+      "refreshed the required seven-section Q01 specification",
+      "generated a canonical RISK_FIXED=1000, RISK_PERCENT=0 backtest setfile",
+      "strictly recompiled the EX5"
+    ],
+    "strategy_parameters_changed": false,
+    "approved_card_changed": false
+  },
+  "files": {
+    "mq5": {
+      "path": "framework/EAs/QM5_1226_psaradellis-oil-channel/QM5_1226_psaradellis-oil-channel.mq5",
+      "sha256": "2bb0ee0d31c687a417f918f71411fbeffe7197e714a43eac6f6935756b8274d0"
+    },
+    "ex5": {
+      "path": "framework/EAs/QM5_1226_psaradellis-oil-channel/QM5_1226_psaradellis-oil-channel.ex5",
+      "sha256": "e9a326b7e9c93936d29f5e927e563947608fb487efa7964351d15fb554c894fc"
+    },
+    "spec": {
+      "path": "framework/EAs/QM5_1226_psaradellis-oil-channel/SPEC.md",
+      "sha256": "6871601888e2f5ddf43e2e5f016f0a0d65632b358de96d8993e5c6b234221f2e"
+    },
+    "setfile": {
+      "path": "framework/EAs/QM5_1226_psaradellis-oil-channel/sets/QM5_1226_psaradellis-oil-channel_XTIUSD.DWX_D1_backtest.set",
+      "sha256": "fbd567518080e5eaed942b082b8441c0a5edf13ea7d6e7a6d1c0b366ff8c0909",
+      "risk_fixed": 1000,
+      "risk_percent": 0
+    }
+  },
+  "validation": {
+    "spec_validator": "PASS",
+    "build_guardrails": "PASS",
+    "build_check": {
+      "status": "PASS",
+      "failures": 0,
+      "warnings": 0,
+      "report": "D:\\QM\\reports\\framework\\21\\build_check_20260711_000113.json"
+    },
+    "strict_compile": {
+      "status": "PASS",
+      "errors": 0,
+      "warnings": 0,
+      "summary": "D:\\QM\\reports\\compile\\20260711_000014\\summary.csv",
+      "log": "C:\\QM\\repo\\framework\\build\\compile\\20260711_000014\\QM5_1226_psaradellis-oil-channel.compile.log"
+    },
+    "model4_smoke": {
+      "infrastructure_status": "PASS",
+      "gate_status": "FAIL_MIN_TRADES_NOT_MET",
+      "window": "2024",
+      "runs": 2,
+      "deterministic": true,
+      "valid_reports": 2,
+      "oninit_failure": false,
+      "log_bomb": false,
+      "trades_per_run": 0,
+      "summary": "D:\\QM\\reports\\smoke\\QM5_1226\\20260711_000213\\summary.json",
+      "interpretation": "The former report-generation failure is cleared; the full low-frequency Q02 window remains the economic judge. No smoke retry or parameter retune was performed."
+    }
+  },
+  "enqueue": {
+    "work_item_id": "682a3aff-bf5c-4ed5-b32e-7570710e18ee",
+    "phase": "Q02",
+    "status_at_capture": "pending",
+    "symbol": "XTIUSD.DWX",
+    "from_year": 2017,
+    "to_year": 2022,
+    "expected_trades_per_year_per_symbol": 20,
+    "priority_track": true,
+    "materialization": "standard farm Q02 helper inside an owned BEGIN IMMEDIATE transaction",
+    "wrapper_note": "The legacy approved card lacks the newer expected-frequency frontmatter field, so farmctl build-ea stopped before mutation; the approved card was not edited."
+  },
+  "scope": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "live_setfile_touched": false,
+    "live_manifest_touched": false,
+    "portfolio_gate_touched": false,
+    "backtest_cpu_ceiling_hit": false
+  }
+}

@@ -42,8 +42,12 @@ input int    strategy_max_spread_points   = 0;
 
 const string STRATEGY_SYMBOL = "XTIUSD.DWX";
 
-datetime g_last_entry_bar = 0;
-datetime g_last_exit_bar = 0;
+double g_entry_upper = 0.0;
+double g_entry_lower = 0.0;
+double g_exit_upper = 0.0;
+double g_exit_lower = 0.0;
+double g_signal_close = 0.0;
+bool   g_signal_state_ready = false;
 
 int Strategy_MaxLookback()
   {
@@ -92,8 +96,11 @@ bool Strategy_PriorChannel(const int shift, const int lookback, double &upper, d
    const int period = MathMax(1, lookback);
    for(int i = shift + 1; i <= shift + period; ++i)
      {
-      const double high_i = iHigh(_Symbol, strategy_signal_tf, i);
-      const double low_i = iLow(_Symbol, strategy_signal_tf, i);
+      MqlRates bar;
+      if(!QM_ReadBar(_Symbol, strategy_signal_tf, i, bar))
+         return false;
+      const double high_i = bar.high;
+      const double low_i = bar.low;
       if(high_i <= 0.0 || low_i <= 0.0 || high_i < low_i)
          return false;
       if(high_i > upper)
@@ -102,6 +109,34 @@ bool Strategy_PriorChannel(const int shift, const int lookback, double &upper, d
          lower = low_i;
      }
    return (upper > 0.0 && lower > 0.0 && upper > lower);
+  }
+
+void Strategy_AdvanceSignalState()
+  {
+   g_entry_upper = 0.0;
+   g_entry_lower = 0.0;
+   g_exit_upper = 0.0;
+   g_exit_lower = 0.0;
+   g_signal_close = 0.0;
+   g_signal_state_ready = false;
+
+   // The card requires 120 completed D1 bars before the first signal.
+   const int needed = MathMax(strategy_min_bars, Strategy_MaxLookback() + 3);
+   MqlRates warmup_bar;
+   if(!QM_ReadBar(_Symbol, strategy_signal_tf, needed, warmup_bar))
+      return;
+   if(!Strategy_PriorChannel(1, strategy_entry_channel, g_entry_upper, g_entry_lower))
+      return;
+   if(!Strategy_PriorChannel(1, strategy_exit_channel, g_exit_upper, g_exit_lower))
+      return;
+
+   MqlRates signal_bar;
+   if(!QM_ReadBar(_Symbol, strategy_signal_tf, 1, signal_bar))
+      return;
+   if(signal_bar.close <= 0.0)
+      return;
+   g_signal_close = signal_bar.close;
+   g_signal_state_ready = true;
   }
 
 double Strategy_AtrStop(const QM_OrderType side, const double entry)
@@ -140,8 +175,7 @@ bool Strategy_NoTradeFilter()
       return true;
    if(strategy_atr_sl_mult <= 0.0 || strategy_trail_atr_mult <= 0.0 || strategy_trail_trigger_r <= 0.0)
       return true;
-   const int needed = MathMax(strategy_min_bars, Strategy_MaxLookback() + 3);
-   if(Bars(_Symbol, strategy_signal_tf) < needed)
+   if(strategy_min_bars <= 0)
       return true;
    return false;
   }
@@ -155,8 +189,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
-   const datetime bar_time = iTime(_Symbol, strategy_signal_tf, 1);
-   if(bar_time <= 0 || bar_time == g_last_entry_bar)
+   if(!g_signal_state_ready)
       return false;
    ulong ticket = 0;
    ENUM_POSITION_TYPE pos_type = POSITION_TYPE_BUY;
@@ -164,17 +197,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
    if(!Strategy_SpreadOk())
       return false;
-   double upper = 0.0;
-   double lower = 0.0;
-   if(!Strategy_PriorChannel(1, strategy_entry_channel, upper, lower))
-      return false;
-   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1);
-   if(close_1 <= 0.0)
-      return false;
    QM_OrderType side = QM_BUY;
-   if(close_1 > upper)
+   if(g_signal_close > g_entry_upper)
       side = QM_BUY;
-   else if(close_1 < lower)
+   else if(g_signal_close < g_entry_lower)
       side = QM_SELL;
    else
       return false;
@@ -189,7 +215,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.reason = "psaradellis_oil_channel";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
-   g_last_entry_bar = bar_time;
    return true;
   }
 
@@ -227,26 +252,15 @@ void Strategy_ManageOpenPosition()
 
 bool Strategy_ExitSignal()
   {
-   const datetime bar_time = iTime(_Symbol, strategy_signal_tf, 1);
-   if(bar_time <= 0 || bar_time == g_last_exit_bar)
+   if(!g_signal_state_ready)
       return false;
    ulong ticket = 0;
    ENUM_POSITION_TYPE type = POSITION_TYPE_BUY;
    if(!Strategy_HasOpenPosition(ticket, type))
       return false;
-   double upper = 0.0;
-   double lower = 0.0;
-   if(!Strategy_PriorChannel(1, strategy_exit_channel, upper, lower))
-      return false;
-   const double close_1 = iClose(_Symbol, strategy_signal_tf, 1);
-   if(close_1 <= 0.0)
-      return false;
-   if((type == POSITION_TYPE_BUY && close_1 < lower) ||
-      (type == POSITION_TYPE_SELL && close_1 > upper))
-     {
-      g_last_exit_bar = bar_time;
+   if((type == POSITION_TYPE_BUY && g_signal_close < g_exit_lower) ||
+      (type == POSITION_TYPE_SELL && g_signal_close > g_exit_upper))
       return true;
-     }
    return false;
   }
 
@@ -293,6 +307,39 @@ void OnTick()
    if(!QM_KillSwitchCheck())
       return;
    const datetime broker_now = TimeCurrent();
+   if(QM_FrameworkHandleFridayClose())
+      return;
+   if(Strategy_NoTradeFilter())
+      return;
+
+   // Risk management remains live on every tick, including news windows.
+   Strategy_ManageOpenPosition();
+
+   // The channel entry and exit rules are both defined on completed D1 bars.
+   // Consume the framework new-bar edge once and cache the bounded windows.
+   const bool signal_bar_opened = QM_IsNewBar(_Symbol, strategy_signal_tf);
+   if(signal_bar_opened)
+     {
+      QM_EquityStreamOnNewBar();
+      Strategy_AdvanceSignalState();
+      if(Strategy_ExitSignal())
+        {
+         const int magic = QM_Magic(qm_ea_id, qm_magic_slot_offset);
+         for(int i = PositionsTotal() - 1; i >= 0; --i)
+           {
+            const ulong ticket = PositionGetTicket(i);
+            if(ticket == 0 || !PositionSelectByTicket(ticket))
+               continue;
+            if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+               continue;
+            if((int)PositionGetInteger(POSITION_MAGIC) != magic)
+               continue;
+            QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+           }
+        }
+     }
+
+   // News policy gates new entries only; it must never suspend management or exits.
    if(Strategy_NewsFilterHook(broker_now))
       return;
    bool news_allows = true;
@@ -300,32 +347,11 @@ void OnTick()
       news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
    else
       news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
+   if(!news_allows || !signal_bar_opened || !g_signal_state_ready)
       return;
-   if(QM_FrameworkHandleFridayClose())
-      return;
-   if(Strategy_NoTradeFilter())
-      return;
-   Strategy_ManageOpenPosition();
-   if(Strategy_ExitSignal())
-     {
-      const int magic = QM_Magic(qm_ea_id, qm_magic_slot_offset);
-      for(int i = PositionsTotal() - 1; i >= 0; --i)
-        {
-         const ulong ticket = PositionGetTicket(i);
-         if(ticket == 0 || !PositionSelectByTicket(ticket))
-            continue;
-         if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-            continue;
-         if((int)PositionGetInteger(POSITION_MAGIC) != magic)
-            continue;
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
-        }
-     }
-   if(!QM_IsNewBar(_Symbol, strategy_signal_tf))
-      return;
-   QM_EquityStreamOnNewBar();
+
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
