@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_13149_XTI_XNG_TREND36_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XTI/XNG 36-month relative-trend basket from approved card HOLLSTEIN-3YR-2021_XTI_XNG_S01. Run on XTIUSD.DWX D1; at the first tradable bar of every broker month, reconstruct 37 consecutive completed month-end closes, calculate 36 simple monthly returns and their arithmetic average, buy the higher-average-return leg, short the lower-return leg, and evaluate the package rather than standalone legs. The source uses at least six of 26 fixed-maturity collateralized futures; the two-CFD narrowing, continuous-CFD return proxy, insignificant two-portfolio source result, financing, gaps, and legging are binding Q02 falsification risks."
+  ]
+}
