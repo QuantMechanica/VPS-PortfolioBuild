@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_13140_XTI_XNG_ALIQ_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XTI/XNG Amihud-illiquidity basket from approved card YIYI-ALIQ-2025_XTI_XNG_S01. Run on XTIUSD.DWX D1; at the first tradable bar of every broker month, calculate the prior-12-completed-month mean of daily absolute log return divided by same-day MT5 tick volume, buy the higher-ALIq leg, short the lower-ALIq leg, and evaluate the package rather than standalone legs. Tick volume is an activity proxy, not source exchange dollar volume, and Q02 is a strict proxy and two-CFD falsification."
+  ]
+}
