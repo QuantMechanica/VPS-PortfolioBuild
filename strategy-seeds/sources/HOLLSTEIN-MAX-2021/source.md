@@ -10,6 +10,7 @@ created_by: Research
 uri: https://centaur.reading.ac.uk/100920/1/SSRN-id3567629.pdf
 cards_extracted:
   - xti-xng-lowmax
+  - energy-kurt-rank
 ---
 
 # Hollstein-Prokopczuk-Tharann Commodity MAX Source Packet
@@ -22,8 +23,10 @@ cards_extracted:
   end on 2026-07-11, including methodology, variable definitions, portfolio
   sorts, factor regressions, alternative portfolio splits, subperiods, annual
   holds, tables, and bibliography.
-- Extraction is bounded to one strategy: the paper's post-financialization
-  negative MAX-return relation, translated to a monthly XTI/XNG paired carrier.
+- The first extraction covers the paper's post-financialization negative
+  MAX-return relation. The second covers its historical-kurtosis sort. Each is
+  translated separately to a monthly XTI/XNG paired carrier; no other paper
+  characteristic is approved by this packet.
 
 ## Primary Citation
 
@@ -93,3 +96,76 @@ Pre-allocation repository dedup verdict: `CLEAN` on 2026-07-11.
   OHLC suffice; no futures chain or external feed is used.
 - R4 deterministic/no ML: PASS. No ML, banned indicator, external runtime
   data, grid, martingale, or pyramiding is present.
+
+## Second Extraction: Historical Kurtosis Rank
+
+### Source Rule And Evidence
+
+- pp. 9-10 define the month-end cross-sectional sort, one-month hold,
+  fully-collateralized long-short construction, and minimum six-commodity
+  source universe.
+- p. 19 reports a positive full-sample relationship between historical
+  kurtosis and next-month commodity returns.
+- Appendix B p. 27 defines historical kurtosis from daily returns over the
+  prior 12 months as the fourth central moment divided by the square of the
+  sample variance. The source uses Pearson kurtosis, not excess kurtosis.
+- Table 4 Panel F reports the full-sample three-portfolio high-minus-low
+  result; Table A1 reports an insignificant Fama-MacBeth slope.
+- Table A3 Panel F shows that the two-portfolio high-minus-low result is
+  positive but insignificant, while four- and five-portfolio results weaken.
+- Table A4 Panel F shows that the historical-kurtosis premium reverses sign
+  and is insignificant in the December 2000-December 2015
+  post-financialization subperiod.
+- Table 1 includes both WTI crude oil and natural gas as source instruments.
+
+### Bounded Mechanization
+
+At the first tradable D1 bar of each broker month, calculate exactly 252 simple
+daily returns for `XTIUSD.DWX` and `XNGUSD.DWX`. For each leg, compute the
+arithmetic mean, sample variance with denominator 251, fourth central moment
+with denominator 252, and Pearson historical kurtosis:
+
+`kurtosis = fourth_central_moment / sample_variance^2`.
+
+Buy the higher-kurtosis leg, short the lower-kurtosis leg, split fixed package
+risk equally, and hold until the next month transition. A numerical tie,
+nonpositive variance, incomplete history, or invalid arithmetic stays flat.
+
+This is a strict carrier translation. The paper ranks at least six
+collateralized futures and forms terciles; QM ranks only two continuous CFDs.
+The directly relevant two-portfolio source result is insignificant, and the
+modern source subperiod reverses sign. The 2017+ Q02 baseline is therefore a
+falsification test with a deliberately low prior, not inherited evidence.
+
+### Non-Duplicate Boundary
+
+- `QM5_13118_energy-skew-rank` ranks the third standardized moment and buys
+  lower skew; this extraction ranks the fourth standardized moment and buys
+  higher kurtosis.
+- `QM5_13129_energy-rsj` uses one month of separately squared positive and
+  negative returns; historical kurtosis uses all 252 returns and a centered
+  fourth moment.
+- `QM5_13130_xti-xng-lowmax` averages only the five largest daily returns and
+  buys the lower value; historical kurtosis uses the complete distribution and
+  buys the higher value.
+- `QM5_1212_carver-kurtsabs` and `QM5_1221_carver-kurtsrv` condition a skew
+  direction on excess kurtosis with daily forecast scaling. This extraction
+  uses no skew sign, forecast scalar, EMA, or daily state change.
+- `QM5_10322_realized-moments` is a weekly intraday composite of volatility,
+  skewness, and kurtosis; this extraction is a pure D1/monthly kurtosis rank.
+
+Manual review resolves the dedup tool's expected same-source fuzzy match to
+`QM5_13130`: the source lineage and carrier are shared, but the order statistic,
+direction, distribution support, and source evidence are different. Verdict:
+`CLEAN_AFTER_MANUAL_REVIEW` before allocation.
+
+### R1-R4
+
+- R1 source: PASS with strong negative translation caveats. Peer-reviewed DOI,
+  institutional full text, complete article and appendix review.
+- R2 mechanical: PASS. Fixed 252-return Pearson-kurtosis formula, monthly rank,
+  equal fixed risk, hard stops, time exit, and orphan cleanup.
+- R3 data: PASS with narrow-carrier risk. Registered XTI/XNG D1 OHLC suffices;
+  no futures chain, options, volume, or external feed is used.
+- R4 deterministic/no ML: PASS. No ML, banned indicator, grid, martingale,
+  pyramiding, or adaptive PnL logic.

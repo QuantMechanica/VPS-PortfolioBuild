@@ -1,0 +1,16 @@
+{
+  "logical_symbol": "QM5_13131_XTI_XNG_HKURT_D1",
+  "host_symbol": "XTIUSD.DWX",
+  "host_timeframe": "D1",
+  "basket_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XTIUSD.DWX",
+    "XNGUSD.DWX"
+  ],
+  "notes": [
+    "Logical two-leg XTI/XNG historical-kurtosis basket from approved card HOLLSTEIN-MAX-2021_XTI_XNG_S02. Run on XTIUSD.DWX D1; at the first tradable bar of each broker month, calculate source-defined Pearson kurtosis from the latest 252 completed simple D1 returns, buy the higher-kurtosis leg, short the lower-kurtosis leg, and evaluate the package rather than standalone legs. The directly relevant source tests are insignificant or sign-reversed, so Q02 is a strict out-of-sample falsification."
+  ]
+}
